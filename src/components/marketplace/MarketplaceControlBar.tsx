@@ -15,7 +15,7 @@ import { MarketplaceFilterSheet } from './MarketplaceFilterSheet';
 import { SavedSearchesButton } from './SavedSearchesButton';
 import type { MarketplaceFiltersInput, MarketplaceSort } from '@/hooks/useMarketplace';
 import {
-  useMarketplaceSubcategoryTiles,
+  useMarketplaceDepartmentCounts,
   useMarketplaceAttributeFacets,
   useMarketplaceAttributeVocab,
   useMarketplaceTagFacets,
@@ -24,6 +24,9 @@ import {
   DEPARTMENT_ORDER,
   SIZE_ORDER,
   departmentLabel,
+  // Still used by pickDepartment below to drop a raw subcategory that left the
+  // chosen umbrella. It is no longer used to COUNT anything — see the note at
+  // the department popover.
   departmentOf,
   attributeFacetsForDepartment,
   OCCASION_CHIPS,
@@ -143,14 +146,31 @@ export function MarketplaceControlBar({
     );
   };
 
-  // Department chip → popover with umbrella counts.
-  const { data: subcategoryOptions } = useMarketplaceSubcategoryTiles(null);
-  const departmentCounts = new Map<string, number>();
-  for (const opt of subcategoryOptions) {
-    const d = departmentOf(opt.slug);
-    departmentCounts.set(d, (departmentCounts.get(d) ?? 0) + opt.count);
-  }
-  const departments = DEPARTMENT_ORDER.filter((d) => (departmentCounts.get(d) ?? 0) > 0);
+  // Department chip → popover with umbrella counts, read from the `department`
+  // column via the RPC — NOT rebuilt client-side.
+  //
+  // This summed `get_marketplace_subcategory_counts` (raw merchant
+  // `subcategory_slug`, ~698 rows) through `departmentOf()`, a 28-entry hand
+  // map, and everything unmatched fell to 'other'. Measured on prod before the
+  // swap: apparel read 2,416 against a true 17,821 (-86%), underwear
+  // 2,789/6,202, jewelry 704/2,211 — and bdsm_fetish, intimacy, home and
+  // services each summed to 0, so their chips did not render at all, while
+  // 'other' collected 24,337 listings and rendered as a junk-drawer chip.
+  // `MarketplaceFilterSheet` already reads this RPC; now the two filter
+  // surfaces agree.
+  //
+  // `includeAdult` is passed for the same reason it is in the sheet: the RPC
+  // gates on content_rating, so a hardcoded-SFW call here would print
+  // different numbers than the sheet for the same department.
+  const { data: departmentCountData } = useMarketplaceDepartmentCounts(includeAdult);
+  const departmentCounts = new Map(departmentCountData.map((d) => [d.slug, d.count]));
+  // 'other' is excluded EXPLICITLY, matching MarketplaceLineIndex, rather than
+  // relying on the RPC's own `department <> 'other'`: that exclusion living
+  // only in SQL means a later widening of the RPC silently restores the
+  // junk-drawer chip here while the hub keeps hiding it.
+  const departments = DEPARTMENT_ORDER.filter(
+    (d) => d !== 'other' && (departmentCounts.get(d) ?? 0) > 0,
+  );
   const [deptOpen, setDeptOpen] = useState(false);
   const pickDepartment = (d: string | undefined) => {
     setDeptOpen(false);
