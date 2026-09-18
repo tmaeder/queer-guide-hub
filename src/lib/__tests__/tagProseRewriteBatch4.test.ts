@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 /**
- * Guards 99800101100300 — the measured rewrite, batch 4 (15 rows, HIGH USAGE).
+ * Guards 99900101110300 — the measured rewrite, batch 4 (15 rows, HIGH USAGE).
  *
  * 1. `queer` IS NEVER TOUCHED. At 13,053 assignments it is the most-used tag in
  *    the corpus and its description is already the standard this work aims at —
@@ -26,7 +26,7 @@ import { join } from 'node:path';
 
 const MIG = join(
   process.cwd(),
-  'supabase/migrations/99800101100300_tag_description_measured_rewrite_batch4.sql',
+  'supabase/migrations/99900101110300_tag_description_measured_rewrite_batch4.sql',
 );
 const sql = readFileSync(MIG, 'utf8');
 const bare = sql

@@ -3,13 +3,13 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 /**
- * Guards 99800101100100 — the measured rewrite, batch 2 (10 rows of 28 read).
+ * Guards 99900101110100 — the measured rewrite, batch 2 (10 rows of 28 read).
  *
  * WHAT THIS PRESERVES, each of which a later batch could undo:
  *
  * 1. VOICE CONFORMANCE IS NOW A CRITERION, not an afterthought. Batch 1 scored
  *    subject/sense/specificity/fabrication and omitted the published Tone of
- *    Voice, so four of eighteen shipped unpublishable (99800101100050). Every
+ *    Voice, so four of eighteen shipped unpublishable (99900101110000). Every
  *    replacement here is checked for British spelling, hyphenated non-binary,
  *    second person, hype punctuation and sentence count.
  *
@@ -29,7 +29,7 @@ import { join } from 'node:path';
 
 const MIG = join(
   process.cwd(),
-  'supabase/migrations/99800101100100_tag_description_measured_rewrite_batch2.sql',
+  'supabase/migrations/99900101110100_tag_description_measured_rewrite_batch2.sql',
 );
 const sql = readFileSync(MIG, 'utf8');
 const bare = sql
