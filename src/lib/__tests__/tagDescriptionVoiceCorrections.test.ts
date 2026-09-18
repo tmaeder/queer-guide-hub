@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 /**
- * Guards 99920101100000 — four Tone of Voice violations in the batch that
+ * Guards 99930101100000 — four Tone of Voice violations in the batch that
  * shipped as 99700101100300.
  *
  * WHY THIS EXISTS AT ALL, which is the part worth carrying forward: the
@@ -38,7 +38,7 @@ import { join } from 'node:path';
  */
 
 const MIG_DIR = join(process.cwd(), 'supabase/migrations');
-const FIX = join(MIG_DIR, '99920101100000_tag_description_voice_corrections.sql');
+const FIX = join(MIG_DIR, '99930101100000_tag_description_voice_corrections.sql');
 const APPLIED = join(MIG_DIR, '99700101100300_tag_description_measured_rewrite_batch1.sql');
 
 const fixSql = readFileSync(FIX, 'utf8');

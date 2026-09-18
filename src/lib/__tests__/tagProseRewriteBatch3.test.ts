@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 /**
- * Guards 99920101100200 — the measured rewrite, batch 3 (7 rows of 28 read).
+ * Guards 99930101100200 — the measured rewrite, batch 3 (7 rows of 28 read).
  *
  * WHAT THIS PRESERVES:
  *
@@ -28,7 +28,7 @@ import { join } from 'node:path';
 
 const MIG = join(
   process.cwd(),
-  'supabase/migrations/99920101100200_tag_description_measured_rewrite_batch3.sql',
+  'supabase/migrations/99930101100200_tag_description_measured_rewrite_batch3.sql',
 );
 const sql = readFileSync(MIG, 'utf8');
 const bare = sql
