@@ -9,7 +9,7 @@ import { join } from 'node:path';
  *
  * 1. VOICE CONFORMANCE IS NOW A CRITERION, not an afterthought. Batch 1 scored
  *    subject/sense/specificity/fabrication and omitted the published Tone of
- *    Voice, so four of eighteen shipped unpublishable (99800101100000). Every
+ *    Voice, so four of eighteen shipped unpublishable (99800101100050). Every
  *    replacement here is checked for British spelling, hyphenated non-binary,
  *    second person, hype punctuation and sentence count.
  *
