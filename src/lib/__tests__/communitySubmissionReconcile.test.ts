@@ -17,12 +17,28 @@ import { join } from 'node:path';
 
 const MIGRATIONS = join(__dirname, '../../../supabase/migrations');
 
-function latestMigration(needle: string): string {
-  const file = readdirSync(MIGRATIONS)
-    .filter((f) => f.endsWith('.sql') && readFileSync(join(MIGRATIONS, f), 'utf8').includes(needle))
-    .sort()
-    .pop();
-  if (!file) throw new Error(`no migration contains ${needle}`);
+/**
+ * PINNED TO ONE VERSION, deliberately — this used to be a `latestMigration(needle)`
+ * that took the last-sorted file containing `run_community_submission_reconcile`.
+ *
+ * That is the right shape for "the latest definition of a constraint" and the
+ * WRONG shape here, because most of what this file asserts exists only in
+ * 99000101100000: the admin_automations row, the cron schedule, the jsonb index,
+ * the looped backfill and that migration's own postconditions. The moment a
+ * follow-up did a CREATE OR REPLACE on the same function — 99910101100000, which
+ * adds the target-still-exists gate — the needle matched it instead and ELEVEN
+ * assertions here failed against a file that was never meant to satisfy them.
+ *
+ * Caught by CI, not locally, because the follow-up's own guard was run in
+ * isolation. Running one test file proves nothing about the one it displaced.
+ */
+const VERSION = '99000101100000';
+
+function migrationAt(version: string): string {
+  const file = readdirSync(MIGRATIONS).find(
+    (f) => f.startsWith(`${version}_`) && f.endsWith('.sql'),
+  );
+  if (!file) throw new Error(`no migration at version ${version}`);
   return readFileSync(join(MIGRATIONS, file), 'utf8');
 }
 
@@ -34,8 +50,13 @@ function statementsOf(sql: string): string {
     .join('\n');
 }
 
-const raw = latestMigration('run_community_submission_reconcile');
+const raw = migrationAt(VERSION);
 const sql = statementsOf(raw);
+
+// The pin is only honest if the file it points at is the one this suite describes.
+if (!raw.includes('run_community_submission_reconcile')) {
+  throw new Error(`${VERSION} no longer defines run_community_submission_reconcile`);
+}
 
 /** The body between CREATE FUNCTION run_community_submission_reconcile and its closing $$. */
 const fnBody = (() => {
