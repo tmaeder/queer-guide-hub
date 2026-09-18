@@ -122,35 +122,41 @@
 --     Merging those would destroy roughly 16,000 facet assignments. That pass
 --     needs a per-pair direction decision and belongs in its own change.
 --
--- RENUMBERED TWICE, 99800101100000 -> 99910101100000 -> 99920101100000, and the
--- two moves have DIFFERENT causes, which is the part worth keeping.
+-- RENUMBERED FOUR TIMES in about two hours:
+--   99800101100000 -> 99910101100000 -> 99920101100000 -> 99940101100000
+-- and the causes differ, which is the part worth keeping.
 --
--- The FIRST was a moved ceiling: #3772 and #3780 merged while this PR sat in
--- review and landed `99900101100000` / `99900101100100`, both above the original
--- version. `db push` aborts on the first file sorting below the remote
--- max(version) and takes every migration queued behind it.
+-- MOVED CEILING (#1, #3): #3772/#3780 landed 99900101100000 and 99900101100100;
+-- then five `tag_description_*` migrations landed 99930101100000-99930101100400.
+-- `db push` aborts on the first file sorting below the remote max(version) and
+-- takes every migration queued behind it.
 --
--- The SECOND was a DIRECT COLLISION, which is a different failure and a worse
--- one. #3778 landed `99910101100000_community_submission_reconcile_target_exists`
--- -- the exact version this file had just moved to. Both PRs passed
--- `migration-versions` honestly on their own branch, because the check is
--- per-branch and the collision is a property of the MERGE (CLAUDE.md records this
--- for #3274/#3275). Theirs merged first and IS APPLIED under its own name, so
--- leaving this file there would put two files on one version: the repo check
--- fails on the duplicate, and `db push` dies on
--- `duplicate key value violates unique constraint "schema_migrations_pkey"` --
--- which aborts the push for the whole repository, not for this PR.
+-- DIRECT COLLISION (#2), a different and worse failure: #3778 landed
+-- `99910101100000_community_submission_reconcile_target_exists` -- the exact
+-- version this file had just taken. Both PRs passed `migration-versions`
+-- honestly, because that check is per-branch and the collision is a property of
+-- the MERGE (CLAUDE.md records this for #3274/#3275). Two files on one version
+-- means `db push` dies on `duplicate key value violates unique constraint
+-- "schema_migrations_pkey"`, aborting the push for the whole REPOSITORY.
 --
 -- A version applied under ANOTHER PR's name is NOT evidence your migration ran.
 -- Verify by NAME, never by counting rows at a version.
 --
--- Headroom is now thin: three renumbers in under an hour, and the 14-digit space
--- caps at 99999999999999. That is a repository coordination problem -- a merge
--- queue or a shared convention -- and picking a bigger number is not a fix.
+-- ONE COMMAND CATCHES BOTH, and the `behind` label on a PR does not:
+--   git fetch origin main && git diff --name-only --diff-filter=A HEAD origin/main -- supabase/migrations/
 --
--- The version string lives in the filename plus three refs in the guard test and
--- NOWHERE in this file's body: nothing here stamps `migration:<version>`, so a
--- rename cannot silently desynchronise a postcondition from what it counts.
+-- CONTENT, NOT JUST VERSION: the 99930101* batch rewrites `unified_tags.description`,
+-- the same column this file nulls, so the renumber included a CONTENT check rather
+-- than only a version one. Measured after they applied: all 68 rows still carry
+-- the build note, 0 have gained real prose, 68 still indexable -- no overlap, and
+-- the UPDATE still matches all 68. A version check would not have shown that.
+--
+-- HEADROOM IS NEARLY GONE: 14 digits cap at 99999999999999 and the corpus is at
+-- 9994. Six increments remain on this convention. That is a repository
+-- coordination problem -- a merge queue or a shared allocation scheme -- and
+-- picking a bigger number has stopped being a fix. This file deliberately takes
+-- the NEXT increment rather than the top of the space, because grabbing the
+-- ceiling would leave the next author with nowhere to go.
 --
 -- Guarded by src/lib/__tests__/tagProseBuildNoteAsDefinition.test.ts, mutation-tested
 -- 14/14 with a comment-only control that correctly SURVIVES -- and one mutation
