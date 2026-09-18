@@ -31,6 +31,45 @@ export function normalizeCurrency(raw: unknown): string {
   return SAFE_CURRENCIES.has(s) ? s : 'USD'
 }
 
+/**
+ * A brand name, or the merchant's own name when the feed's vendor field is not one.
+ *
+ * Shopify's `vendor` is free text the merchant fills in, and it is taken verbatim
+ * as `brand` — which is then `marketplace_normalize_brand()`d into `brand_key`,
+ * the identity every brand row, maker page and directory tile hangs off. So a
+ * merchant who uses that field for something else does not merely mislabel a
+ * product: they mint a brand.
+ *
+ * Garçon Model put purchase-order numbers there. Measured on prod 2026-09-16:
+ * their 198 listings were split across 20 brand_keys — `12807-204144345`,
+ * `19868-001638740`, `‭1280-7204244927‬` — against 9 on the real `GARÇON` row,
+ * and all 20 artifacts published a maker page naming a PO number. Queer Lit had
+ * one book carrying its ISBN (`9781728209982`) where that feed puts the author.
+ *
+ * THE TEST IS "CONTAINS NO LETTER IN ANY SCRIPT", not a digit or punctuation
+ * pattern, because the failure is not that these strings have digits — plenty of
+ * real brands do (`2(X)IST`, `1979 SAS (Teil der Marc Dorcel Group)`, `b-Vibe`).
+ * It is that they have no word in them at all. Measured across all 70,585 live
+ * listings that predicate matches 190 rows on 2 merchants and nothing else, so
+ * every other shop is byte-identical and no re-commit is forced.
+ *
+ * `\p{L}` and not `[a-z]`: `東京`, `Åberg` and `Garçon` are brand names.
+ *
+ * Deliberately NOT a place to catch a vendor that is merely WRONG — "Shipping
+ * Protection" is a line item rather than a brand and sails through, because
+ * distinguishing that from a real brand needs judgement this cannot have.
+ */
+export function brandFromVendor(
+  vendor: string | null | undefined,
+  fallback: string | null | undefined,
+): string {
+  const v = String(vendor ?? '').trim()
+  if (/\p{L}/u.test(v)) return v
+  // The fallback is the merchant, never `vendor` again — that is the value just
+  // rejected, and a chain that falls back onto it reinstates the defect.
+  return String(fallback ?? '').trim() || v
+}
+
 export function validateMarketplaceNormalized(n: Record<string, unknown>): MarketplaceValidationResult {
   const errors: string[] = []
   const warnings: string[] = []
