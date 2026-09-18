@@ -1,7 +1,7 @@
 import { getServiceClient, jsonResponse, errorResponse, corsResponse, requireInternalOrAdmin } from '../_shared/supabase-client.ts'
 import type { SourceAdapter, RawItem, NormalizedItem, AdapterConfig } from '../_shared/source-adapter.ts'
 import { writeToStaging, skippedResponse } from '../_shared/source-adapter.ts'
-import { extractMerchantDomain, normalizeCurrency } from '../_shared/marketplace-pipeline-utils.ts'
+import { brandFromVendor, extractMerchantDomain, normalizeCurrency } from '../_shared/marketplace-pipeline-utils.ts'
 import { withErrorReporting } from '../_shared/report-api-error.ts'
 import { assertPublicHttpUrl } from '../_shared/ssrf-guard.ts'
 import { stripProductHtml } from '../_shared/product-html.ts'
@@ -48,6 +48,12 @@ interface MerchantOverrides {
   // `vendor` is the AUTHOR on a bookshop feed, not the seller — without this every
   // listing would name the author as the business.
   businessName?: string | null
+  // What to call the BRAND when `vendor` is not a brand name at all (see
+  // brandFromVendor). Separate from businessName on purpose: the seller and the
+  // brand are different facts, and a shop can need one pinned without the other.
+  // Only consulted on the fallback path, so a shop with a sane vendor field is
+  // unaffected whether or not it sets this.
+  brandName?: string | null
 }
 
 /** ISO-3166 country whose Shopify Market prices in the given currency. Only the
@@ -149,8 +155,10 @@ function makeStorefrontAdapter(
           price: Number.isFinite(price) && price != null && price > 0 ? price : null,
           // Straight off the wire — NOT the configured guess. This is the whole point.
           currency: normalizeCurrency(v?.price.currencyCode ?? expectedCurrency),
-          category: p.productType, brand: p.vendor, brand_name: p.vendor,
-          business_name: ov.businessName || p.vendor || shopDomain,
+          category: p.productType,
+          brand: brandFromVendor(p.vendor, ov.brandName || ov.businessName || shopDomain),
+          brand_name: brandFromVendor(p.vendor, ov.brandName || ov.businessName || shopDomain),
+          business_name: ov.businessName || brandFromVendor(p.vendor, shopDomain),
           in_stock: v?.availableForSale, sku: v?.sku ?? undefined, handle: p.handle,
           market_country: country,
           ...(ov.subcategory ? { subcategory: ov.subcategory } : {}),
@@ -234,8 +242,11 @@ function makeAdapter(shopDomain: string, sourceSlug: string, currency = 'EUR', o
           source_slug: sourceSlug, shop_domain: shopDomain, product_id: String(p.id),
           merchant_deep_link: externalUrl, merchant_domain: extractMerchantDomain(externalUrl),
           price: Number.isFinite(price) && price != null && price > 0 ? price : null,
-          currency: normalizeCurrency(currency), category: p.product_type, brand: p.vendor, brand_name: p.vendor,
-          business_name: ov.businessName || p.vendor || shopDomain, in_stock: inStock, sku: variant?.sku, handle: p.handle,
+          currency: normalizeCurrency(currency), category: p.product_type,
+          brand: brandFromVendor(p.vendor, ov.brandName || ov.businessName || shopDomain),
+          brand_name: brandFromVendor(p.vendor, ov.brandName || ov.businessName || shopDomain),
+          business_name: ov.businessName || brandFromVendor(p.vendor, shopDomain),
+          in_stock: inStock, sku: variant?.sku, handle: p.handle,
           // Emitted ONLY when the merchant configures it — see MerchantOverrides.
           ...(ov.subcategory ? { subcategory: ov.subcategory } : {}),
         },
@@ -287,6 +298,7 @@ Deno.serve(withErrorReporting('source-shopify-public', async (req) => {
     const overrides: MerchantOverrides = {
       subcategory: (typeof body.subcategory === 'string' && body.subcategory) || cfgStr('subcategory'),
       businessName: (typeof body.business_name === 'string' && body.business_name) || cfgStr('business_name'),
+      brandName: (typeof body.brand_name === 'string' && body.brand_name) || cfgStr('brand_name'),
     }
     const maxPages = Number(body.max_pages ?? 40)
     const dryRun = body.dry_run || false
