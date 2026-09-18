@@ -122,15 +122,32 @@
 --     Merging those would destroy roughly 16,000 facet assignments. That pass
 --     needs a per-pair direction decision and belongs in its own change.
 --
--- RENUMBERED 99800101100000 -> 99910101100000. Not a collision and not another
--- session on this backlog: #3772 and #3780 merged while this PR sat in review and
--- landed `99900101100000` / `99900101100100` (marketplace taxonomy and an ingest
--- fix), both of which sort ABOVE the original version. `db push` aborts on the
--- first file sorting below the remote max(version) and takes every migration
--- queued behind it, so the move is mandatory and free. The ceiling is a property
--- of the REPOSITORY, not of this backlog -- re-read max(version) from
--- schema_migrations immediately before every push, not once at authoring time,
--- and expect it to have moved even when nobody else is working on this table.
+-- RENUMBERED TWICE, 99800101100000 -> 99910101100000 -> 99920101100000, and the
+-- two moves have DIFFERENT causes, which is the part worth keeping.
+--
+-- The FIRST was a moved ceiling: #3772 and #3780 merged while this PR sat in
+-- review and landed `99900101100000` / `99900101100100`, both above the original
+-- version. `db push` aborts on the first file sorting below the remote
+-- max(version) and takes every migration queued behind it.
+--
+-- The SECOND was a DIRECT COLLISION, which is a different failure and a worse
+-- one. #3778 landed `99910101100000_community_submission_reconcile_target_exists`
+-- -- the exact version this file had just moved to. Both PRs passed
+-- `migration-versions` honestly on their own branch, because the check is
+-- per-branch and the collision is a property of the MERGE (CLAUDE.md records this
+-- for #3274/#3275). Theirs merged first and IS APPLIED under its own name, so
+-- leaving this file there would put two files on one version: the repo check
+-- fails on the duplicate, and `db push` dies on
+-- `duplicate key value violates unique constraint "schema_migrations_pkey"` --
+-- which aborts the push for the whole repository, not for this PR.
+--
+-- A version applied under ANOTHER PR's name is NOT evidence your migration ran.
+-- Verify by NAME, never by counting rows at a version.
+--
+-- Headroom is now thin: three renumbers in under an hour, and the 14-digit space
+-- caps at 99999999999999. That is a repository coordination problem -- a merge
+-- queue or a shared convention -- and picking a bigger number is not a fix.
+--
 -- The version string lives in the filename plus three refs in the guard test and
 -- NOWHERE in this file's body: nothing here stamps `migration:<version>`, so a
 -- rename cannot silently desynchronise a postcondition from what it counts.
