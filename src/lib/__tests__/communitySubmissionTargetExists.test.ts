@@ -3,7 +3,7 @@ import { readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 
 /**
- * Guards 99800101100000_community_submission_reconcile_target_exists.sql.
+ * Guards 99910101100000_community_submission_reconcile_target_exists.sql.
  *
  * 99000101100000 approved a submission from its staging row's terminal
  * disposition and copied target_record_id into promoted_to_id, without ever
@@ -25,12 +25,21 @@ import { join } from 'node:path';
 
 const MIGRATIONS = join(__dirname, '../../../supabase/migrations');
 
-function latestMigration(needle: string): string {
-  const file = readdirSync(MIGRATIONS)
-    .filter((f) => f.endsWith('.sql') && readFileSync(join(MIGRATIONS, f), 'utf8').includes(needle))
-    .sort()
-    .pop();
-  if (!file) throw new Error(`no migration contains ${needle}`);
+/**
+ * PINNED, for the reason the sibling suite records: a "last file containing the
+ * needle" lookup follows whichever migration most recently replaced the function,
+ * and most of what is asserted below — the REVOKE/GRANT pair, the verify block,
+ * the premise postcondition — exists only in THIS migration. Shipping this file
+ * is what broke the sibling's unpinned lookup; repeating the shape here would
+ * just move the trap one migration further out.
+ */
+const VERSION = '99910101100000';
+
+function migrationAt(version: string): string {
+  const file = readdirSync(MIGRATIONS).find(
+    (f) => f.startsWith(`${version}_`) && f.endsWith('.sql'),
+  );
+  if (!file) throw new Error(`no migration at version ${version}`);
   return readFileSync(join(MIGRATIONS, file), 'utf8');
 }
 
@@ -42,8 +51,13 @@ function statementsOf(sql: string): string {
     .join('\n');
 }
 
-const raw = latestMigration('community_submission_target_exists');
+const raw = migrationAt(VERSION);
 const sql = statementsOf(raw);
+
+// The pin is only honest if the file it points at is the one this suite describes.
+if (!raw.includes('community_submission_target_exists')) {
+  throw new Error(`${VERSION} no longer defines community_submission_target_exists`);
+}
 
 /** Body of the helper, between CREATE FUNCTION and its ALTER. */
 const helperBody = (() => {
