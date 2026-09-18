@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 /**
- * Guards `99200101100000_city_kowloon_wrong_qid.sql`.
+ * Guards `99600101100000_city_kowloon_wrong_qid.sql`.
  *
  * The restored `city_qid_gap_link` engine adopted Q1022918 — Kowloon Walled
  * City, demolished 1994, ~2.6 ha inside Kowloon City district — for a row
@@ -30,7 +30,7 @@ const MIGRATION = join(
   process.cwd(),
   'supabase',
   'migrations',
-  '99200101100000_city_kowloon_wrong_qid.sql',
+  '99600101100000_city_kowloon_wrong_qid.sql',
 );
 
 const raw = readFileSync(MIGRATION, 'utf8');
@@ -64,7 +64,7 @@ const WRONG_QID = 'Q1022918';
 /** Adopted correctly by the same cron run — the mirror control. */
 const KEEP_QIDS = ['Q4970', 'Q58401', 'Q179608'];
 
-describe('99200101100000 — the Kowloon wrong-QID repair', () => {
+describe('99600101100000 — the Kowloon wrong-QID repair', () => {
   it('targets exactly the one row, by id, and content-guards on the wrong QID', () => {
     // The id is a declared constant so every postcondition scopes to the same
     // row; the UPDATE references it rather than repeating the literal.
