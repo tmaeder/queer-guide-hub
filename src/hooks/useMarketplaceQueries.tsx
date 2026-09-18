@@ -90,7 +90,20 @@ export function useMarketplaceDepartmentCounts(includeAdult = false) {
   );
 }
 
-/** Finer sub-tile counts within a department (canonical groups), content-rating gated. */
+/**
+ * Canonical group counts, content-rating gated.
+ *
+ * The `department` argument carries TWO distinct meanings and they must stay
+ * distinct — `if (!department)` collapsed them and made the all-departments
+ * call impossible, which is why `/marketplace/categories` was still reading the
+ * raw merchant grain:
+ *
+ *   `undefined` — the caller is not on a department page. Skip the fetch.
+ *   `null`      — every department. The RPC's own `p_department DEFAULT NULL`
+ *                 means exactly this (`p_department IS NULL OR department = …`).
+ *
+ * Same convention as `useMarketplaceTagFacets`' unscoped `?? null` below.
+ */
 export function useMarketplaceSubcategoryGroupCounts(
   department: string | null | undefined,
   includeAdult = false,
@@ -98,9 +111,17 @@ export function useMarketplaceSubcategoryGroupCounts(
   return useAsync<DepartmentCount[]>(
     [department, includeAdult],
     async () => {
-      if (!department) return [];
+      if (department === undefined) return [];
       const { data, error } = await supabase.rpc('get_marketplace_subcategory_group_counts', {
-        p_department: department,
+        // `null` is spelled by OMITTING the argument, not by sending null:
+        // `supabase gen types` models `p_department` as optional `string`
+        // (it cannot express a nullable SQL arg), and an undefined value is
+        // dropped by JSON.stringify, so PostgREST applies the function's own
+        // `p_department text DEFAULT NULL` — which is exactly "every
+        // department". Sending an explicit null is the same query and a type
+        // error; the sibling hooks below do that and are in the ratchet
+        // baseline, so do not copy them here.
+        ...(department === null ? {} : { p_department: department }),
         p_include_adult: includeAdult,
       });
       if (error || !data) return [];
