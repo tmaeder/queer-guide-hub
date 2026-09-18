@@ -3248,9 +3248,18 @@ const TRUNCATED_DESCRIPTION_CEILING = 30
     headers: { ...headers, 'Content-Type': 'application/json' },
     body: '{}',
   })
-  if (!res.ok) {
+  // A 404 is "the migration has not landed yet" — legitimate while db push is in
+  // flight, and unavoidable on the PR that introduces both: this job builds the
+  // BRANCH but calls the LIVE backend, so a hard fail here could only go green
+  // after the merge it blocks. That is a deadlock, not a guard (CLAUDE.md records
+  // the same trap on `Critical paths`). Anything else IS a broken probe — a 500
+  // from a bad plan, a revoked grant, a statement timeout on the full scan — and
+  // collapsing both into a warning fails open exactly where the gate is needed.
+  if (res.status === 404) {
+    console.warn('⚠ tag_prose_standard_signals → HTTP 404 — glossary standard sentinel NOT DEPLOYED (migration 99200101100100). This is absence of a check, not absence of defects.')
+  } else if (!res.ok) {
     const detail = (await res.text()).slice(0, 200)
-    console.error(`✗ tag_prose_standard_signals → HTTP ${res.status} (migration 99200101100100 not applied? PGRST202 = the function does not exist) ${detail}`)
+    console.error(`✗ tag_prose_standard_signals → HTTP ${res.status} — the gate could not run. Absence of a check is not absence of defects; failing rather than warning so a broken probe cannot read as a clean corpus. ${detail}`)
     FAILED = true
   } else {
     const ts = (await res.json()) ?? {}

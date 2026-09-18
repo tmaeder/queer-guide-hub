@@ -75,6 +75,14 @@ const splitAt = (bare: string, marker = 'do $verify$') => {
   return { statements: bare.slice(0, i), verify: bare.slice(i) };
 };
 
+const HEALTH = join(process.cwd(), 'scripts/check-pipeline-health.mjs');
+const healthSrc = readFileSync(HEALTH, 'utf8');
+/** Just this sentinel's section, so an assertion cannot match a sibling check. */
+const healthSection = (() => {
+  const start = healthSrc.indexOf('rpc/tag_prose_standard_signals');
+  return healthSrc.slice(start, start + 4000);
+})();
+
 const standard = splitAt(standardBare);
 const signals = splitAt(signalsBare);
 const hygiene = splitAt(hygieneBare);
@@ -272,5 +280,41 @@ describe('glossary hygiene — the repair that needs no judgement', () => {
     expect(hygiene.verify).not.toMatch(/v_bad\s*(int)?\s*:=\s*0\s*;/);
     const reads = [...hygiene.verify.matchAll(/from unified_tags/g)];
     expect(reads.length).toBe(5);
+  });
+});
+
+describe('glossary structural standard — the health gate', () => {
+  it('treats a 404 as "not deployed yet", not as a clean corpus', () => {
+    // This job builds the BRANCH but calls the LIVE backend, so a hard fail on a
+    // missing RPC could only go green after the merge it blocks — a deadlock,
+    // not a guard.
+    expect(healthSection).toMatch(/res\.status === 404/);
+    expect(healthSection).toMatch(/NOT DEPLOYED \(migration 99200101100100\)/);
+    expect(healthSection).toMatch(/absence of a check, not absence of defects/i);
+  });
+
+  it('HARD-FAILS every other non-ok status — a broken probe is not a clean corpus', () => {
+    const idx404 = healthSection.indexOf('res.status === 404');
+    const idxElse = healthSection.indexOf('} else if (!res.ok) {');
+    expect(idxElse).toBeGreaterThan(idx404);
+    const broken = healthSection.slice(idxElse, healthSection.indexOf('} else {', idxElse));
+    expect(broken).toMatch(/FAILED = true/);
+  });
+
+  it('keeps whitespace and stamp as hard failures, truncation as growth-gated', () => {
+    expect(healthSection).toMatch(/zero-invariant since 99200101100200/);
+    expect(healthSection).toMatch(/TRUNCATED_DESCRIPTION_CEILING/);
+    // and the ceiling sits ABOVE the measured baseline of 23
+    const m = healthSrc.match(/const TRUNCATED_DESCRIPTION_CEILING = (\d+)/);
+    expect(m).not.toBeNull();
+    expect(Number(m![1])).toBeGreaterThan(23);
+  });
+
+  it('refuses a scan that measured nothing', () => {
+    expect(healthSection).toMatch(/rows_scanned \?\? 0\) < 1000/);
+  });
+
+  it('never tells a reader to close a truncation with a full stop', () => {
+    expect(healthSection).toMatch(/Do NOT "fix" these by appending a full stop/);
   });
 });
