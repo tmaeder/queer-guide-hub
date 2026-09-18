@@ -6,7 +6,7 @@
 -- THE CRITERIA NOW INCLUDE THE TONE OF VOICE, which is the whole correction
 -- carried over from batch 1. That batch pre-registered SUBJECT, SENSE,
 -- SPECIFICITY and FABRICATION and omitted conformance to `styleguide_rules`, so
--- four of its eighteen shipped unpublishable (99900101110000). Every proposal
+-- four of its eighteen shipped unpublishable (99920101100000). Every proposal
 -- below was run against the live standard BEFORE being scored: zero active
 -- avoid-term hits, zero British spellings, zero hyphenated "non-binary", zero
 -- second person, zero exclamation marks, and every replacement is ONE sentence.
