@@ -146,7 +146,7 @@ describe('the corrected end state conforms to the published Tone of Voice', () =
   it('uses American spelling — `spelling-and-units`, corpus agrees 25:4 and 29:5', () => {
     for (const t of correctedFragments) {
       expect(
-        /\b(organisation|characterised|recognised|behaviour|colour|centre|defence|licence)\b/i.test(
+        /\b(organisation|characterised|recognised|behaviour|colour|centre|defence|licence)s?\b/i.test(
           t,
         ),
         `British spelling survives: ${t}`,

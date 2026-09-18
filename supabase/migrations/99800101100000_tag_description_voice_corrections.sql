@@ -100,7 +100,7 @@ begin
   select count(*) into v_bad from unified_tags
   where status = 'active'
     and slug in ('fundraiser','tokenism','nala','facial-feminization-surgery')
-    and description ~* '\m(organisation|characterised|non-binary)\M';
+    and description ~* '\m(organisation|characterised)s?\M|\mnon-binary\M';
   if v_bad <> 0 then
     raise exception 'tag_description_voice_corrections: % row(s) still carry a violating form', v_bad;
   end if;
