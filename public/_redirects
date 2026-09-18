@@ -78,24 +78,183 @@
 /villages/west-hollywood   /city/west-hollywood   301
 /villages/wilton-manors    /city/wilton-manors    301
 
-# /help is the canonical crisis hub; /help-hotlines is the legacy URL and
-# was never a React Router route, so it rendered the SPA 404 — on the one
-# page where that is least acceptable. It still has inbound links (and the
-# edge HTML in functions/_lib/ linked to it until 2026-08-01), so redirect
-# rather than drop it.
+# These reader-critical legacy routes MUST stay before the large place-tag
+# block. This Pages project applies only the first 100 `_redirects` entries;
+# later place-tag rules have a middleware fallback, while these routes do not.
+# /help is the canonical crisis hub; /help-hotlines is its legacy URL.
 /help-hotlines   /help          301
 
-# /shop was /marketplace twice — two of its three sections were duplicates of
-# blocks the marketplace landing already rendered, and /marketplace is the
-# superset (every deep route, the slug-redirect table, the search entity).
-# Unprefixed only, deliberately: a `/:lang/shop` rule would ALSO match
-# /marketplace/shop, i.e. a listing whose slug is "shop". Localized paths
-# redirect in the router instead (src/routes.tsx) — same split as /places/*.
-# First match wins in this file: adding a broader rule above these silently
-# stops the 301 and /shop starts serving an SPA hop, which no test can see
-# because _redirects is inert off Cloudflare. scripts/smoke-pages.sh asserts it.
+# /shop was a subset of /marketplace. Localized paths redirect in the router;
+# keeping the splat here preserves old product-adjacent links.
 /shop            /marketplace   301
 /shop/*          /marketplace   301
+
+# Place-name tags that name a city, country or Berlin district we already publish as its own
+# entity. /tags/<slug> was a second page about the same place, serving encyclopaedic geography
+# under a glossary category; 20270501180000 + 81000101100000 deindexed them, and these send the
+# reader to the real page. A tag cannot redirect outside /tags via tag_slug_redirects (the edge
+# resolver hardcodes routePrefix '/tags'), so the 301 has to live here.
+#
+# STATIC rules on purpose, exactly like the merged-village block above: Cloudflare caps
+# :placeholder/splat rules at 100 per project and these carry no pattern. Unprefixed only —
+# src/lib/placeTagRedirects.ts covers the /:lang/ paths and client-side navigation, and
+# src/lib/__tests__/placeTagRedirects.test.ts asserts the two lists are identical.
+/tags/algeria              /country/algeria                    301
+/tags/argentina            /country/argentina                  301
+/tags/auckland             /city/auckland                      301
+/tags/australia            /country/australia                  301
+/tags/austria              /country/austria                    301
+/tags/badung               /city/badung                        301
+/tags/bangkok              /city/bangkok                       301
+/tags/barcelona            /city/barcelona                     301
+/tags/beijing              /city/beijing                       301
+/tags/berkeley             /city/berkeley-us-0wh5n             301
+/tags/berlin               /city/berlin                        301
+/tags/bielefeld            /city/bielefeld-de-jqije            301
+/tags/birmingham           /city/birmingham                    301
+/tags/braunschweig         /city/braunschweig-de-lzwc9         301
+/tags/brazil               /country/brazil                     301
+/tags/bremen               /city/bremen-de-srecc               301
+/tags/brighton             /city/brighton                      301
+/tags/brisbane             /city/brisbane                      301
+/tags/buenos-aires         /city/buenos-aires                  301
+/tags/canada               /country/canada                     301
+/tags/cape-town            /city/cape-town                     301
+/tags/casablanca           /city/casablanca                    301
+/tags/castro-district      /villages/castro-district           301
+/tags/chiang-mai           /city/chiang-mai-th-i65oi           301
+/tags/chicago              /city/chicago                       301
+/tags/chihuahua            /city/chihuahua-mx-t01r7            301
+/tags/colombia             /country/colombia                   301
+/tags/copenhagen           /city/copenhagen                    301
+/tags/costa-rica           /country/costa-rica                 301
+/tags/croatia              /country/croatia                    301
+/tags/cuernavaca           /city/cuernavaca-mx-i5l4z           301
+/tags/dallas               /city/dallas                        301
+/tags/denver               /city/denver                        301
+/tags/dortmund             /city/dortmund-de-zfu3i             301
+/tags/durban               /city/durban                        301
+/tags/eastbourne           /city/eastbourne-gb-1nfsz           301
+/tags/espana               /country/spain                      301
+/tags/estonia              /country/estonia                    301
+/tags/exeter               /city/exeter-gb-h5y0o               301
+/tags/fort-lauderdale      /city/fort-lauderdale               301
+/tags/fortitude-valley     /villages/fortitude-valley          301
+/tags/france               /country/france                     301
+/tags/friedrichshain       /villages/friedrichshain            301
+/tags/georgia              /country/georgia                    301
+/tags/germany              /country/germany                    301
+/tags/gothenburg           /city/gothenburg                    301
+/tags/gran-canaria         /city/gran-canaria                  301
+/tags/greece               /country/greece                     301
+/tags/guatemala-city       /city/guatemala-city                301
+/tags/harrisburg           /city/harrisburg-us-l5til           301
+/tags/iceland              /country/iceland                    301
+/tags/india                /country/india                      301
+/tags/indianapolis         /city/indianapolis                  301
+/tags/indonesia            /country/indonesia                  301
+/tags/israel               /country/israel                     301
+/tags/istanbul             /city/istanbul                      301
+/tags/italy                /country/italy                      301
+/tags/japan                /country/japan                      301
+/tags/johannesburg         /city/johannesburg                  301
+/tags/kazan                /city/kazan                         301
+/tags/key-west             /city/key-west                      301
+/tags/kolkata              /city/kolkata                       301
+/tags/kreuzberg            /villages/kreuzberg                 301
+/tags/la-spezia            /city/la-spezia-it-jd5n6            301
+/tags/lake-tahoe           /city/lake-tahoe                    301
+/tags/las-vegas            /city/las-vegas-united-states       301
+/tags/launceston           /city/launceston                    301
+/tags/lima                 /city/lima                          301
+/tags/los-angeles          /city/los-angeles                   301
+/tags/luxembourg           /country/luxembourg                 301
+/tags/madrid               /city/madrid                        301
+/tags/malta                /country/malta                      301
+/tags/merignac             /city/m-rignac-france               301
+/tags/mexico               /country/mexico                     301
+/tags/mexico-city          /city/mexico-city                   301
+/tags/milan                /city/milan                         301
+/tags/mill-valley          /city/mill-valley-us-57nze          301
+/tags/mitte                /villages/mitte                     301
+/tags/monterey             /city/monterey                      301
+/tags/montreal             /city/montreal                      301
+/tags/morelia              /city/morelia-mx-kxzkr              301
+/tags/morocco              /country/morocco                    301
+/tags/munich               /city/munich                        301
+/tags/murphys              /city/murphys                       301
+/tags/netherlands          /country/netherlands                301
+/tags/neukolln             /villages/neukoelln                 301
+/tags/new-orleans          /city/new-orleans                   301
+/tags/new-zealand          /country/new-zealand                301
+/tags/newcastle-upon-tyne  /city/newcastle-upon-tyne-gb-l7wnj  301
+/tags/nigeria              /country/nigeria                    301
+/tags/norway               /country/norway                     301
+/tags/oakland              /city/oakland                       301
+/tags/oldenburg            /city/oldenburg-de-cvzak            301
+/tags/olympia              /city/olympia                       301
+/tags/osaka                /city/osaka                         301
+/tags/paignton             /city/paignton-gb-zvny2             301
+/tags/palo-alto            /city/palo-alto-us-4k5vb            301
+/tags/paris                /city/paris                         301
+/tags/pembroke             /city/pembroke-gb-ccw0o             301
+/tags/peru                 /country/peru                       301
+/tags/philadelphia         /city/philadelphia                  301
+/tags/pittsburgh           /city/pittsburgh                    301
+/tags/poland               /country/poland                     301
+/tags/port-louis           /city/port-louis                    301
+/tags/prague               /city/prague                        301
+/tags/prenzlauer           /villages/prenzlauer-berg           301
+/tags/puerto-rico          /country/puerto-rico                301
+/tags/pune                 /city/pune-in-u6fuy                 301
+/tags/raleigh              /city/raleigh-us-nygbl              301
+/tags/reykjavik            /city/reykjavik                     301
+/tags/rijeka               /city/rijeka-hr-w60rh               301
+/tags/rio-de-janeiro       /city/rio-de-janeiro                301
+/tags/rosario              /city/rosario                       301
+/tags/rotterdam            /city/rotterdam                     301
+/tags/russia               /country/russia                     301
+/tags/sacramento           /city/sacramento                    301
+/tags/salt-lake-city       /city/salt-lake-city-united-states  301
+/tags/salvador             /city/salvador                      301
+/tags/san-antonio          /city/san-antonio                   301
+/tags/san-diego            /city/san-diego                     301
+/tags/san-francisco        /city/san-francisco                 301
+/tags/san-juan             /city/san-juan-1                    301
+/tags/santa-clarita        /city/santa-clarita                 301
+/tags/santiago             /city/santiago                      301
+/tags/sao-paulo            /city/s-o-paulo                     301
+/tags/schoneberg           /villages/schoeneberg               301
+/tags/seattle              /city/seattle                       301
+/tags/seminyak             /city/seminyak                      301
+/tags/sint-maarten         /country/sint-maarten               301
+/tags/skopje               /city/skopje                        301
+/tags/south-africa         /country/south-africa               301
+/tags/south-bend           /city/south-bend                    301
+/tags/split                /city/split-hr-z2ivf                301
+/tags/stuttgart            /city/stuttgart-germany             301
+/tags/sweden               /country/sweden                     301
+/tags/switzerland          /country/switzerland                301
+/tags/taipei               /city/taipei                        301
+/tags/tbilisi              /city/tbilisi                       301
+/tags/tel-aviv             /city/tel-aviv                      301
+/tags/thailand             /country/thailand                   301
+/tags/toronto              /city/toronto                       301
+/tags/torremolinos         /city/torremolinos                  301
+/tags/turkey               /country/turkey                     301
+/tags/turkiye              /country/turkey                     301
+/tags/uk                   /country/united-kingdom             301
+/tags/united-kingdom       /country/united-kingdom             301
+/tags/united-states        /country/united-states              301
+/tags/usti-nad-labem       /city/usti-nad-labem-cz-6zkxh       301
+/tags/venezia              /city/venice-italy                  301
+/tags/vienna               /city/vienna                        301
+/tags/washington-d-c       /city/washington-d-c                301
+/tags/washington-dc        /city/washington-d-c                301
+/tags/wellington           /city/wellington                    301
+/tags/west-hollywood       /city/west-hollywood                301
+/tags/wustrow              /city/wustrow-lower-saxony          301
+/tags/zurich               /city/zuerich                       301
 
 # ---------------------------------------------------------------------------
 # There is deliberately NO SPA catch-all rule below. Do not add one.
