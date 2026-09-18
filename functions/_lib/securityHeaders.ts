@@ -103,6 +103,28 @@ const FRAME_SRC = [
 ];
 
 const IMG_SRC = ["'self'", 'data:', 'blob:', 'https:'];
+// Podcast audio. Episodes are hosted on the SHOW's own CDN, never ours: 47
+// distinct hosts across the live corpus (media.blubrry.com, anchor.fm,
+// sphinx.acast.com, mcdn.podbean.com, traffic.libsyn.com, …) and a new show
+// brings a new one whenever it launches.
+//
+// WITHOUT THIS DIRECTIVE media-src falls back to `default-src 'self'` and the
+// browser refuses EVERY episode. Measured on prod before the fix:
+// `MEDIA_ELEMENT_ERROR: Media load rejected by URL safety check`, the element
+// stuck at readyState 0 / networkState 3 (NO_SOURCE), while the player UI
+// rendered and wired the src correctly. curl fetching the same URL proves the
+// SERVER serves it and says NOTHING about whether a BROWSER may load it —
+// which is why this survived a full round of prod verification.
+//
+// A host allowlist was considered and rejected: CSP re-checks media at EVERY
+// hop of a redirect, and podcast prefixes chain across domains for analytics —
+// one measured episode went podtrac.com → pdst.fm → mgln.ai → pscrb.fm →
+// traffic.megaphone.fm, five hosts for one file. A list that misses any
+// intermediate kills the episode silently, and prefixes change without notice.
+// So `https:`, exactly as IMG_SRC above already does for third-party imagery.
+// Plain http: is deliberately NOT allowed — `upgrade-insecure-requests` below
+// rewrites the 1,286 http:// episode URLs in the corpus.
+const MEDIA_SRC = ["'self'", 'blob:', 'https:'];
 // *.supabase.co allows custom brand fonts served from our storage bucket
 // (Design & Branding control center). Keep in sync with public/_headers font-src.
 const FONT_SRC = ["'self'", 'data:', 'https://protomaps.github.io', 'https://*.supabase.co'];
@@ -115,6 +137,7 @@ export function buildContentSecurityPolicy(nonce: string): string {
     // style= attributes — tightening this is tracked separately.
     "style-src 'self' 'unsafe-inline'",
     `img-src ${IMG_SRC.join(' ')}`,
+    `media-src ${MEDIA_SRC.join(' ')}`,
     `font-src ${FONT_SRC.join(' ')}`,
     `connect-src ${CONNECT_SRC.join(' ')}`,
     `frame-src ${FRAME_SRC.join(' ')}`,
