@@ -3209,6 +3209,97 @@ const CITY_SCALAR_DENSITY_REPORTED = 33 // measured 2026-09-08, post-repair. Con
   }
 }
 
+// § Glossary entries: conformance to the structural standard
+//
+//     The standard itself lives in styleguide_rules (99200101100000) — the
+//     three-field contract, both legal registers, and the rule that a truncated
+//     definition is never closed with a full stop. This is the number that says
+//     whether the corpus still obeys it.
+//
+//     TWO OF THE FOUR KEYS ARE ZERO-INVARIANTS AND TWO ARE NOT, and the split is
+//     about whether a machine can fix the row:
+//
+//       whitespace_dirty / stamp_as_definition — deterministically repairable
+//       (99200101100200 drove both to 0), so any non-zero reading is a NEW
+//       producer writing dirt, and that fails.
+//
+//       truncated_description — 23 rows sitting on a 500-char cap ending
+//       mid-clause. Repairing them means regenerating lost text, so gating at the
+//       baseline ships red on arrival and gets scrolled past (the cry-wolf shape
+//       already removed once from the dedup backlog rule). GROWTH fails; the
+//       standing 23 warn.
+//
+//       unresolved_disambiguation — 2 rows whose description is itself a "may
+//       refer to:" list. CLAUDE.md already records bicon as unrepairable under
+//       the rule, because the evidence column cannot be evidence for itself.
+//       Advisory.
+//
+//     rows_scanned IS CHECKED FIRST AND SEPARATELY. An empty scan, a revoked
+//     grant and a clean corpus all return the same reassuring zeros, and this
+//     corpus is none of them.
+//
+//     A MISSING RPC HARD-FAILS. The function catches its own exceptions and
+//     answers probe_ok=false, so a non-2xx means an unapplied migration or a
+//     revoked grant — an unreadable corpus must never read as a clean one.
+const TRUNCATED_DESCRIPTION_CEILING = 30
+{
+  const res = await fetch(`${BASE}/rest/v1/rpc/tag_prose_standard_signals`, {
+    method: 'POST',
+    headers: { ...headers, 'Content-Type': 'application/json' },
+    body: '{}',
+  })
+  if (!res.ok) {
+    const detail = (await res.text()).slice(0, 200)
+    console.error(`✗ tag_prose_standard_signals → HTTP ${res.status} (migration 99200101100100 not applied? PGRST202 = the function does not exist) ${detail}`)
+    FAILED = true
+  } else {
+    const ts = (await res.json()) ?? {}
+    if (ts.probe_ok !== true) {
+      console.error(`✗ tag_prose_standard_signals did not report probe_ok — the probe is broken${ts.error ? `: ${ts.error}` : ''}`)
+      FAILED = true
+    } else if (Number(ts.rows_scanned ?? 0) < 1000) {
+      console.error(`✗ tag_prose_standard_signals scanned only ${ts.rows_scanned ?? 0} descriptions — the probe is measuring nothing, not passing`)
+      FAILED = true
+    } else {
+      for (const key of ['truncated_description', 'stamp_as_definition', 'unresolved_disambiguation', 'whitespace_dirty']) {
+        if (!(key in ts)) {
+          console.error(`✗ tag_prose_standard_signals has no '${key}' key — that check measured NOTHING`)
+          FAILED = true
+        }
+      }
+      const ws = Number(ts.whitespace_dirty ?? 0)
+      const stamp = Number(ts.stamp_as_definition ?? 0)
+      const trunc = Number(ts.truncated_description ?? 0)
+      const disamb = Number(ts.unresolved_disambiguation ?? 0)
+
+      if (ws > 0) {
+        console.error(`✗ ${ws} active glossary description(s) carry stray whitespace — a zero-invariant since 99200101100200`)
+        FAILED = true
+      }
+      if (stamp > 0) {
+        console.error(`✗ ${stamp} active glossary description(s) publish a scrape timestamp as a definition`)
+        console.error('  A stamp reads as content and defeats both indexable_without_description and the thin-page deindexer. NULL it; never invent a definition.')
+        FAILED = true
+      }
+      if (trunc > TRUNCATED_DESCRIPTION_CEILING) {
+        console.error(`✗ ${trunc} glossary descriptions are truncated at a length cap, above the ${TRUNCATED_DESCRIPTION_CEILING} ceiling`)
+        console.error('  Growth means a producer is still writing into a cap. Do NOT "fix" these by appending a full stop — that hides the loss (styleguide rule tag-never-punctuate-a-truncation).')
+        FAILED = true
+      } else if (trunc > 0) {
+        console.warn(`⚠ ${trunc} glossary descriptions are truncated at a length cap (ending mid-clause)`)
+        console.warn('  Repairable only by regenerating the lost text. Never close one with a full stop.')
+      }
+      if (disamb > 0) {
+        console.warn(`⚠ ${disamb} glossary description(s) are themselves a "may refer to:" disambiguation list`)
+        console.warn('  Unrepairable under the evidence rule — the description cannot be evidence for itself. Needs a human sense decision.')
+      }
+      if (ws === 0 && stamp === 0 && trunc === 0 && disamb === 0) {
+        console.log('✓ glossary descriptions conform to the structural standard')
+      }
+    }
+  }
+}
+
 // § Prose left behind by a disowned Wikidata entity
 //
 //     The second half of the wrong-entity failure. tag_wikidata_repair_regressions()
