@@ -39,6 +39,17 @@ describe('place tag redirects', () => {
     }
   });
 
+  it('declares each tag slug exactly once in _redirects', () => {
+    // `_redirects` is first-match-wins, so a duplicated rule is inert rather than broken — which
+    // is precisely why nothing catches it. This block is generated, and regenerating over a file
+    // that already contained it once produced 313 rules for 157 slugs. The suite above passed
+    // throughout, because `.find()` returns the first match and never looks further.
+    const seen = new Map<string, number>();
+    for (const [src] of rules) seen.set(src, (seen.get(src) ?? 0) + 1);
+    const dupes = [...seen.entries()].filter(([, n]) => n > 1).map(([s, n]) => `${s} x${n}`);
+    expect(dupes, `duplicate _redirects rules: ${dupes.join(', ')}`).toEqual([]);
+  });
+
   it('has no single-segment /tags/ rule the map does not know about', () => {
     for (const rule of rules) {
       const tagSlug = rule[0].replace('/tags/', '');
@@ -70,8 +81,11 @@ describe('place tag redirects', () => {
 
   it('sends every target to a real place route, never back into /tags', () => {
     for (const [tagSlug, target] of Object.entries(PLACE_TAG_REDIRECTS)) {
+      // `/venues/` joined the set for friedrichstadt-palast: a Berlin revue theatre that already
+      // had a venue page. The route is PLURAL — src/routes.tsx has `venues/:slug`, and there is
+      // no `/venue/:slug`, so the singular form would 301 straight into the SPA 404.
       expect(target, `${tagSlug} does not target a place route`).toMatch(
-        /^\/(city|country|villages)\/[a-z0-9-]+$/,
+        /^\/(city|country|villages|venues)\/[a-z0-9-]+$/,
       );
       // A tag->tag redirect is what tag_slug_redirects is for; if one appears here it means a
       // merge was mistaken for a place duplicate.
@@ -86,6 +100,18 @@ describe('place tag redirects', () => {
     expect(placeTagRedirect('prenzlauer')).toBe('/villages/prenzlauer-berg');
     expect(placeTagRedirect('berlin')).toBe('/city/berlin');
     expect(placeTagRedirect('australia')).toBe('/country/australia');
+    expect(placeTagRedirect('friedrichstadt-palast')).toBe('/venues/friedrichstadt-palast');
+  });
+
+  it('does not redirect the four tags that were wrong-entity, not duplicates', () => {
+    // Chasing friedrichstadt-palast by Wikidata class found four MORE tags on a building QID, and
+    // none is a duplicate: `munch` is the BDSM meet-up linked to the Munch Museum, `hotel-bar` the
+    // generic venue feature linked to Hotel Barcelona Princess, `power-exchange` the BDSM concept
+    // linked to a defunct SF cinema, `city-center` linked to a Helsinki redevelopment plan. Those
+    // are fixed by NULLING the identifier, never by redirecting the reader to a building.
+    for (const slug of ['munch', 'hotel-bar', 'power-exchange', 'city-center']) {
+      expect(placeTagRedirect(slug), `${slug} is wrong-entity, not a duplicate`).toBeNull();
+    }
   });
 
   it('resolves the same-name cities by content mass, not by slug', () => {

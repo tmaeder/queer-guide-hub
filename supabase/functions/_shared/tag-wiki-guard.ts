@@ -137,6 +137,29 @@ const IMPLAUSIBLE_CLASS_PATTERNS: ReadonlyArray<readonly [string, RegExp]> = [
   ['institution', /(military unit|military branch|military formation|military command|armed forces|\barmy\b|\bnavy\b|naval\b|air force|aviation command|government agency|government body|government organization|government organisation|intelligence agency|law enforcement agency|police force)/i],
   ['artifact', /(\bwebsite\b|online database|\bdatabase\b|software|web service|mobile app|computer program|medal|\baward\b|\bship\b)/i],
   ['disambiguation', /(disambiguation|Wikimedia|Wikipedia language edition)/i],
+  // A SPECIFIC BUILT VENUE. Added 2026-09-18 after /tags/friedrichstadt-palast published
+  // Wikipedia's entry for a Berlin revue theatre under "Drag & Performance", while the venue
+  // itself already existed at /venues/friedrichstadt-palast. Its P31 label is `theatre building`,
+  // which the `place` arm does not test for (that arm is settlement-shaped) and the `org` arm
+  // does not either (a building is not an organisation).
+  //
+  // THE `type of` EXCLUSION IS THE WHOLE ARM. These labels come in two forms and only one is a
+  // defect: `theatre building` is an INSTANCE (one theatre in Berlin), while `type of building`
+  // is a CLASS and is exactly what a glossary term legitimately is. Live in this corpus on that
+  // side of the line: `bullring`, `church building`, `concert hall` and `house` are all classed
+  // `type of building`. Without the exclusion this arm would refuse all four.
+  //
+  // Measured over every distinct P31 label on the 1,570 QIDs of active tags (774 classes, all
+  // resolved): reaches 5 rows, every one a specific building, ZERO collateral —
+  // Friedrichstadt-Palast (`theatre building`), Hotel Barcelona Princess (`skyscraper`,
+  // `hotel building`), the Munch Museum (`art museum`), The Screening Room (`movie theater`) and
+  // a Helsinki redevelopment plan (`building`). Four of the five were on tags about something
+  // else entirely — `munch` is the BDSM meet-up, `power-exchange` the BDSM concept — so this arm
+  // catches wrong-entity links, not just duplicates.
+  //
+  // Bare `\bbuilding\b` is included and is safe ONLY because of the exclusion above; it is what
+  // reaches the fifth row, whose class label is just `building`.
+  ['building', /^(?!.*\b(?:type|class) of\b)(?!.*classification of).*(theatre building|theater building|opera house|concert venue|music venue|movie theater|movie theatre|cinema building|art museum|hotel building|\bskyscraper\b|department store|shopping mall|\bstadium\b|\barena\b|\bbuilding\b)/i],
 ]
 
 /**
