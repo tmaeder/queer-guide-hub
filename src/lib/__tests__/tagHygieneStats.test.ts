@@ -450,7 +450,40 @@ describe('tag_hygiene_stats() reads each hot table once', () => {
     // These are the two that ran the identical 153,102-block index-only scan,
     // plus the third counter that also reads the whole table.
     for (const key of ['assignments', 'assignment_to_non_active_tag', 'nonclean_entity_type']) {
-      expect(body).toMatch(new RegExp(`'${key}',\\s*\\(select\\s+\\w+\\s+from\\s+uta_rollup\\)`, 'i'));
+      expect(body).toMatch(
+        new RegExp(`'${key}',\\s*\\(select\\s+\\w+\\s+from\\s+uta_rollup\\)`, 'i'),
+      );
     }
+  });
+});
+
+// The gate script, not the function. A 57014 is the 8s statement_timeout on
+// `authenticator` — no metric was evaluated, so the PR goes red for a reason
+// unrelated to its diff. Measured 2026-09-14: the function is 1.3s warm against
+// that ceiling (6x headroom) and the one recorded failure passed on re-run while
+// three other PRs hit the same database and passed. Contention, not cost.
+//
+// Guards against the retry being tidied away. check-data-quality-gates.mjs and
+// check-search-facets-parity.mjs carry the same handling and neither is guarded;
+// this one is, because losing it turns a flake back into a blocked release.
+describe('the tag-hygiene gate survives a statement timeout', () => {
+  const SCRIPT = readFileSync(join(process.cwd(), 'scripts/check-tag-hygiene.mjs'), 'utf8');
+
+  it('retries once on 57014 instead of failing the PR', () => {
+    expect(SCRIPT).toMatch(/57014/);
+    // Anchored on the RETRY, not just the code: printing 57014 in an error
+    // message also matches a bare mention.
+    expect(SCRIPT).toMatch(/includes\('57014'\)[\s\S]{0,400}?await callStats\(\)/);
+  });
+
+  it('retries exactly once', () => {
+    // A retry that quietly succeeds is how a function creeps back toward the
+    // ceiling unnoticed. Two calls total: the first and one retry.
+    expect(SCRIPT.match(/await callStats\(\)/g) ?? []).toHaveLength(2);
+  });
+
+  it('still fails when the timeout persists', () => {
+    // The retry must not swallow a real failure.
+    expect(SCRIPT).toMatch(/if \(!res\.ok\) \{[\s\S]{0,200}?process\.exit\(1\)/);
   });
 });

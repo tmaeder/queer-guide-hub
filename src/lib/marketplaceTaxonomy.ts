@@ -88,6 +88,12 @@ export const DEPARTMENT_GROUPS: Record<string, string[]> = {
     'headwear',
     'socks',
     'accessories',
+    // The classifier's general-apparel residue: the subcategory said "Apparel"
+    // / "Clothing" / "Abbigliamento" / "Ropa" and matched no finer arm. It is a
+    // real group the SQL returns (782 SFW listings) and it was missing from
+    // BOTH this map and GROUP_LABELS, so anything iterating DEPARTMENT_GROUPS
+    // dropped it silently. Last, because it is the least specific.
+    'apparel',
   ],
   underwear: ['underwear', 'jockstraps', 'thongs', 'lingerie'],
   swimwear: ['swimwear'],
@@ -130,6 +136,10 @@ export const GROUP_LABELS: Record<string, string> = {
   headwear: 'Headwear',
   socks: 'Socks',
   accessories: 'Accessories',
+  // Labelled "Clothing", not "Apparel": this group sits under the department
+  // ALSO called Apparel, and a tile repeating its own section heading reads as
+  // a rendering bug rather than as a residue bucket.
+  apparel: 'Clothing',
   underwear: 'Underwear',
   jockstraps: 'Jockstraps',
   thongs: 'Thongs',
