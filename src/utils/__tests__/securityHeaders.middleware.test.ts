@@ -91,3 +91,50 @@ describe('applySecurityHeaders', () => {
     expect(Number(m![1])).toBeGreaterThanOrEqual(31536000);
   });
 });
+
+describe('media-src — podcast audio', () => {
+  // WHY THIS EXISTS. Without a media-src directive the browser falls back to
+  // `default-src 'self'` and refuses EVERY podcast episode, because episodes
+  // are hosted on each show's own CDN and never on ours. Measured on prod:
+  // `MEDIA_ELEMENT_ERROR: Media load rejected by URL safety check`, element
+  // stuck at readyState 0 / networkState 3, while the player UI rendered
+  // correctly and curl fetched the same URL happily — the server was never
+  // the thing under test.
+  const csp = buildContentSecurityPolicy('n0nce');
+
+  function directive(name: string): string {
+    const found = csp
+      .split(';')
+      .map((s) => s.trim())
+      .find((s) => s.startsWith(`${name} `));
+    if (!found) throw new Error(`no ${name} directive in CSP`);
+    return found;
+  }
+
+  it('is present at all — absence silently inherits default-src', () => {
+    expect(csp).toMatch(/(^|;\s*)media-src\s/);
+  });
+
+  it('allows any https host, because a podcast prefix redirects across domains', () => {
+    // CSP re-checks media at EVERY hop. One measured episode spanned five
+    // hosts (podtrac → pdst.fm → mgln.ai → pscrb.fm → traffic.megaphone.fm),
+    // so a host allowlist kills episodes whenever a prefix changes.
+    expect(directive('media-src')).toContain('https:');
+  });
+
+  it('does NOT allow plain http — upgrade-insecure-requests covers those rows', () => {
+    const media = directive('media-src');
+    expect(media).not.toMatch(/(^|\s)http:(\s|$)/);
+    expect(csp).toContain('upgrade-insecure-requests');
+  });
+
+  it('keeps the static _headers fallback in step with the generated CSP', async () => {
+    // public/_headers serves when Functions are quota-dead or unrouted. If the
+    // two disagree, podcast audio works only while Functions are executing —
+    // a failure mode that appears to be intermittent rather than structural.
+    const { readFileSync } = await import('node:fs');
+    const { join } = await import('node:path');
+    const headers = readFileSync(join(__dirname, '../../../public/_headers'), 'utf8');
+    expect(headers).toMatch(/media-src[^;]*https:/);
+  });
+});
