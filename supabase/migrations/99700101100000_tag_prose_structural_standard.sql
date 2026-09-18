@@ -57,7 +57,7 @@
 -- no prose at all. In `description` across 3,615 active rows: self-citation 0,
 -- advice-register padding 0, define-the-term-with-the-term 0, description equals
 -- name 0, literal backslash-n 0. Twenty prior passes closed those. The residue
--- is 19 whitespace rows (repaired by 99200101100200), 2 scrape timestamps, 2
+-- is 19 whitespace rows (repaired by 99700101100200), 2 scrape timestamps, 2
 -- disambiguation lists, 23 truncations, and 46 styleguide-drift rows.
 --
 -- SO THE GAP IS THE STANDARD, NOT THE CORPUS -- 20470922084600's finding

@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 /**
- * Guards 99200101100000 / 99200101100100 / 99200101100200 — the glossary
+ * Guards 99700101100000 / 99700101100100 / 99700101100200 — the glossary
  * structural standard, its sentinel, and the only repair that needs no
  * judgement.
  *
@@ -50,9 +50,10 @@ import { join } from 'node:path';
  */
 
 const MIG_DIR = join(process.cwd(), 'supabase/migrations');
-const STANDARD = join(MIG_DIR, '99200101100000_tag_prose_structural_standard.sql');
-const SIGNALS = join(MIG_DIR, '99200101100100_tag_prose_standard_signals.sql');
-const HYGIENE = join(MIG_DIR, '99200101100200_tag_description_deterministic_hygiene.sql');
+const STANDARD = join(MIG_DIR, '99700101100000_tag_prose_structural_standard.sql');
+const REWRITE = join(MIG_DIR, '99700101100300_tag_description_measured_rewrite_batch1.sql');
+const SIGNALS = join(MIG_DIR, '99700101100100_tag_prose_standard_signals.sql');
+const HYGIENE = join(MIG_DIR, '99700101100200_tag_description_deterministic_hygiene.sql');
 
 /** Comment-stripped: every header here quotes the defect it removes verbatim, so
  *  a raw-text assertion is satisfiable by the PROSE while the statement is gone. */
@@ -82,6 +83,9 @@ const healthSection = (() => {
   const start = healthSrc.indexOf('rpc/tag_prose_standard_signals');
   return healthSrc.slice(start, start + 4000);
 })();
+
+const rewriteSql = readFileSync(REWRITE, 'utf8');
+const rewrite = splitAt(strip(rewriteSql));
 
 const standard = splitAt(standardBare);
 const signals = splitAt(signalsBare);
@@ -289,7 +293,7 @@ describe('glossary structural standard — the health gate', () => {
     // missing RPC could only go green after the merge it blocks — a deadlock,
     // not a guard.
     expect(healthSection).toMatch(/res\.status === 404/);
-    expect(healthSection).toMatch(/NOT DEPLOYED \(migration 99200101100100\)/);
+    expect(healthSection).toMatch(/NOT DEPLOYED \(migration 99700101100100\)/);
     expect(healthSection).toMatch(/absence of a check, not absence of defects/i);
   });
 
@@ -302,7 +306,7 @@ describe('glossary structural standard — the health gate', () => {
   });
 
   it('keeps whitespace and stamp as hard failures, truncation as growth-gated', () => {
-    expect(healthSection).toMatch(/zero-invariant since 99200101100200/);
+    expect(healthSection).toMatch(/zero-invariant since 99700101100200/);
     expect(healthSection).toMatch(/TRUNCATED_DESCRIPTION_CEILING/);
     // and the ceiling sits ABOVE the measured baseline of 23
     const m = healthSrc.match(/const TRUNCATED_DESCRIPTION_CEILING = (\d+)/);
@@ -316,5 +320,84 @@ describe('glossary structural standard — the health gate', () => {
 
   it('never tells a reader to close a truncation with a full stop', () => {
     expect(healthSection).toMatch(/Do NOT "fix" these by appending a full stop/);
+  });
+});
+
+describe('glossary descriptions — the measured rewrite, batch 1', () => {
+  it('changes exactly the 18 measured rows and no others', () => {
+    const updates = [...rewrite.statements.matchAll(/^update unified_tags set description/gm)];
+    expect(updates.length).toBe(18);
+    // every UPDATE is slug-scoped, so none can reach the corpus
+    const unscoped = [
+      ...rewrite.statements.matchAll(/update unified_tags set description[\s\S]*?;/g),
+    ].filter((m) => !/where slug\s*=\s*'/.test(m[0]));
+    expect(unscoped.length, 'an UPDATE is not slug-scoped').toBe(0);
+  });
+
+  it('content-guards every write, so a concurrent repair no-ops instead of aborting', () => {
+    const stmts = [
+      ...rewrite.statements.matchAll(/update unified_tags set description[\s\S]*?;/g),
+    ].map((m) => m[0]);
+    for (const st of stmts) {
+      const guarded = /and description (like|=|not like|~|!~)/.test(st);
+      expect(guarded, `unguarded UPDATE: ${st.slice(0, 80)}`).toBe(true);
+    }
+  });
+
+  it('declares an actor — 7 of the 18 rows are human_reviewed', () => {
+    expect(rewrite.statements).toMatch(
+      /set_config\('app\.actor',\s*'admin:tag-description-measured-rewrite-b1',\s*true\)/,
+    );
+  });
+
+  it('KEEPS THE TRUNCATION REFUSAL — yandere must stay unclosed', () => {
+    // The single most dangerous available edit. yandere is at the 500 cap and
+    // ends mid-word; the postcondition asserts it is STILL truncated.
+    expect(rewrite.verify).toMatch(/slug = 'yandere'/);
+    expect(rewrite.verify).toMatch(/length\(description\) = 500/);
+    expect(rewrite.statements).not.toMatch(/slug\s*=\s*'yandere'/);
+  });
+
+  it('KEEPS THE SAFETY-CONTENT REFUSAL — four load-bearing rows asserted intact', () => {
+    for (const slug of ['poppers', 'chemsex', 'dependence', 'soft-limits']) {
+      expect(rewrite.verify).toContain(`'${slug}'`);
+      expect(rewrite.statements).not.toMatch(new RegExp(`slug\\s*=\\s*'${slug}'`));
+    }
+    expect(rewrite.verify).toMatch(/catastrophic drop in blood pressure/);
+    expect(rewrite.verify).toMatch(/the two need opposite responses/);
+  });
+
+  it('KEEPS THE ADVICE-PADDING REFUSAL — sti was proposed and dropped', () => {
+    expect(rewrite.verify).toMatch(/slug = 'sti'/);
+    expect(rewrite.statements).not.toMatch(/slug\s*=\s*'sti'/);
+  });
+
+  it('KEEPS THE FABRICATION CONTROL — chew-toy is the one judged proposal', () => {
+    expect(rewrite.verify).toMatch(/slug = 'chew-toy'/);
+    expect(rewrite.verify).toMatch(/Object for biting or chewing/);
+    expect(rewrite.statements).not.toMatch(/slug\s*=\s*'chew-toy'/);
+  });
+
+  it('counts the REACHED state positively, not rows in a bad state', () => {
+    // The vacuous form returns 0 for a slug that has gone missing entirely.
+    expect(rewrite.verify).toMatch(/if v_bad <> 18 then/);
+  });
+
+  it('no postcondition is short-circuited', () => {
+    expect(rewrite.verify).not.toMatch(/where false/);
+    expect(rewrite.verify).not.toMatch(/v_bad\s*:=\s*\d/);
+    const conds = [...rewrite.verify.matchAll(/if v_bad <> \d+ then/g)];
+    expect(conds.length).toBe(5);
+  });
+
+  it('guards are trim-insensitive substrings, not equality, for the two rows 99700101100200 trims', () => {
+    // tokenism and gender-identity carry a leading newline that the hygiene
+    // migration removes first; an equality guard would silently stop matching.
+    expect(rewrite.statements).toMatch(
+      /slug = 'tokenism'[\s\S]{0,120}description like '%In sociology, tokenism is the social practice%'/,
+    );
+    expect(rewrite.statements).toMatch(
+      /slug = 'gender-identity'[\s\S]{0,140}description like '%coined by psychiatry professor Robert J\. Stoller%'/,
+    );
   });
 });

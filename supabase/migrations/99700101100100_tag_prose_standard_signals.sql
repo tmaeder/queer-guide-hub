@@ -26,7 +26,7 @@
 --                             rule. GROWTH is the signal: a new one means a
 --                             producer is still writing into a cap.
 --   stamp_as_definition    -- a scrape timestamp published as a definition.
---                             Driven to 0 by 99200101100200 and gates there,
+--                             Driven to 0 by 99700101100200 and gates there,
 --                             because a stamp reads as content and defeats both
 --                             indexable_without_description and the thin-page
 --                             deindexer, while a blank is honest and self-heals.
@@ -35,7 +35,7 @@
 --                             (CLAUDE.md names bicon explicitly). Advisory.
 --   whitespace_dirty       -- leading/trailing whitespace or internal double
 --                             spaces. Deterministically repairable, so this one
---                             IS a zero-invariant after 99200101100200.
+--                             IS a zero-invariant after 99700101100200.
 --
 -- NOT COUNTED, on purpose: register conformance. Telling a noun phrase from a
 -- sentence is grammar, not a regex -- the <60 band holds both "Cute animal role"

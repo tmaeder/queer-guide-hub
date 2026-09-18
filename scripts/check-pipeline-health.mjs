@@ -3211,7 +3211,7 @@ const CITY_SCALAR_DENSITY_REPORTED = 33 // measured 2026-09-08, post-repair. Con
 
 // § Glossary entries: conformance to the structural standard
 //
-//     The standard itself lives in styleguide_rules (99200101100000) — the
+//     The standard itself lives in styleguide_rules (99700101100000) — the
 //     three-field contract, both legal registers, and the rule that a truncated
 //     definition is never closed with a full stop. This is the number that says
 //     whether the corpus still obeys it.
@@ -3220,7 +3220,7 @@ const CITY_SCALAR_DENSITY_REPORTED = 33 // measured 2026-09-08, post-repair. Con
 //     about whether a machine can fix the row:
 //
 //       whitespace_dirty / stamp_as_definition — deterministically repairable
-//       (99200101100200 drove both to 0), so any non-zero reading is a NEW
+//       (99700101100200 drove both to 0), so any non-zero reading is a NEW
 //       producer writing dirt, and that fails.
 //
 //       truncated_description — 23 rows sitting on a 500-char cap ending
@@ -3256,7 +3256,7 @@ const TRUNCATED_DESCRIPTION_CEILING = 30
   // from a bad plan, a revoked grant, a statement timeout on the full scan — and
   // collapsing both into a warning fails open exactly where the gate is needed.
   if (res.status === 404) {
-    console.warn('⚠ tag_prose_standard_signals → HTTP 404 — glossary standard sentinel NOT DEPLOYED (migration 99200101100100). This is absence of a check, not absence of defects.')
+    console.warn('⚠ tag_prose_standard_signals → HTTP 404 — glossary standard sentinel NOT DEPLOYED (migration 99700101100100). This is absence of a check, not absence of defects.')
   } else if (!res.ok) {
     const detail = (await res.text()).slice(0, 200)
     console.error(`✗ tag_prose_standard_signals → HTTP ${res.status} — the gate could not run. Absence of a check is not absence of defects; failing rather than warning so a broken probe cannot read as a clean corpus. ${detail}`)
@@ -3282,7 +3282,7 @@ const TRUNCATED_DESCRIPTION_CEILING = 30
       const disamb = Number(ts.unresolved_disambiguation ?? 0)
 
       if (ws > 0) {
-        console.error(`✗ ${ws} active glossary description(s) carry stray whitespace — a zero-invariant since 99200101100200`)
+        console.error(`✗ ${ws} active glossary description(s) carry stray whitespace — a zero-invariant since 99700101100200`)
         FAILED = true
       }
       if (stamp > 0) {
