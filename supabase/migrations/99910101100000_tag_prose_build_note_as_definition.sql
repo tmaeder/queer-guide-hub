@@ -122,6 +122,19 @@
 --     Merging those would destroy roughly 16,000 facet assignments. That pass
 --     needs a per-pair direction decision and belongs in its own change.
 --
+-- RENUMBERED 99800101100000 -> 99910101100000. Not a collision and not another
+-- session on this backlog: #3772 and #3780 merged while this PR sat in review and
+-- landed `99900101100000` / `99900101100100` (marketplace taxonomy and an ingest
+-- fix), both of which sort ABOVE the original version. `db push` aborts on the
+-- first file sorting below the remote max(version) and takes every migration
+-- queued behind it, so the move is mandatory and free. The ceiling is a property
+-- of the REPOSITORY, not of this backlog -- re-read max(version) from
+-- schema_migrations immediately before every push, not once at authoring time,
+-- and expect it to have moved even when nobody else is working on this table.
+-- The version string lives in the filename plus three refs in the guard test and
+-- NOWHERE in this file's body: nothing here stamps `migration:<version>`, so a
+-- rename cannot silently desynchronise a postcondition from what it counts.
+--
 -- Guarded by src/lib/__tests__/tagProseBuildNoteAsDefinition.test.ts, mutation-tested
 -- 14/14 with a comment-only control that correctly SURVIVES -- and one mutation
 -- SURVIVED the first round and was a real gap, for the reason this file keeps

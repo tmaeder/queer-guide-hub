@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 /**
- * Guards 99800101100000 — an internal build note published as the definition on
+ * Guards 99910101100000 — an internal build note published as the definition on
  * 68 indexable glossary pages.
  *
  * WHAT THIS FILE EXISTS TO PRESERVE, each of which a later reader could undo
@@ -42,7 +42,7 @@ import { join } from 'node:path';
 
 const MIGRATION = join(
   process.cwd(),
-  'supabase/migrations/99800101100000_tag_prose_build_note_as_definition.sql',
+  'supabase/migrations/99910101100000_tag_prose_build_note_as_definition.sql',
 );
 
 const sql = readFileSync(MIGRATION, 'utf8');
@@ -65,7 +65,7 @@ const setClauses = statements
   .map((s) => s.slice(0, s.search(/\bwhere\b/i)))
   .join('\n');
 
-describe('99800101100000 — build note published as a definition', () => {
+describe('99910101100000 — build note published as a definition', () => {
   it('nulls the description and writes nothing else', () => {
     expect(setClauses).toMatch(/\bdescription\s*=\s*null\b/i);
     // No replacement prose, ever.
