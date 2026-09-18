@@ -76,8 +76,12 @@ export default function MarketplaceCategory() {
     [searchParams],
   );
 
+  // `undefined`, not `null`: on the legacy raw-slug branch there is no
+  // department to scope to and `groupTiles` discards the result anyway, so the
+  // fetch must be skipped. `null` now means "every department" (see the hook),
+  // so passing it here would newly pull all 41 groups on every legacy page.
   const { data: groups } = useMarketplaceSubcategoryGroupCounts(
-    isDepartment ? subcategory : null,
+    isDepartment ? subcategory : undefined,
     includeAdult,
   );
   const { data: tagFacets } = useMarketplaceTagFacets(
