@@ -5,12 +5,12 @@ import { join } from 'node:path';
 /**
  * Guards the two marketplace taxonomy migrations.
  *
- * 99500101100000 — `dresses?` in the classifier's apparel arm matches "dresse"
+ * 99900101100000 — `dresses?` in the classifier's apparel arm matches "dresse"
  * and "dresses" and NEVER the singular "dress", so "Print Slip Dress" fell past
  * apparel onto the later art arm (matching `prints?`) and 289 slip dresses were
  * published under Books & Art. Same shape in `documentaries?` (0 rows, latent).
  *
- * 99500101100100 — deactivates the 2025-07-23 scrape residue in
+ * 99900101100100 — deactivates the 2025-07-23 scrape residue in
  * `marketplace_categories` (prices, brand names and explicit product copy stored
  * as category NAMES) without deleting anything.
  *
@@ -31,13 +31,13 @@ function stripSqlComments(src: string): string {
 const migrationsDir = join(process.cwd(), 'supabase', 'migrations');
 const classifier = stripSqlComments(
   readFileSync(
-    join(migrationsDir, '99500101100000_marketplace_classifier_plural_regex.sql'),
+    join(migrationsDir, '99900101100000_marketplace_classifier_plural_regex.sql'),
     'utf8',
   ),
 );
 const residue = stripSqlComments(
   readFileSync(
-    join(migrationsDir, '99500101100100_marketplace_categories_deactivate_scrape_residue.sql'),
+    join(migrationsDir, '99900101100100_marketplace_categories_deactivate_scrape_residue.sql'),
     'utf8',
   ),
 );
