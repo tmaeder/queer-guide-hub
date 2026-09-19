@@ -32,25 +32,46 @@ describe('summaries and bodies #3810 left gendered', () => {
     expect(writes).toContain("'erectile-dysfunction'");
   });
 
-  it('never writes description — it is the evidence each replacement restates', () => {
-    const setClauses = writes
-      .split(/\n(?=update\s)/i)
-      .filter((s) => /^update/i.test(s))
-      .map((s) => {
-        const i = s.search(/\bwhere\b/i);
-        return i === -1 ? s : s.slice(0, i);
-      });
-    expect(setClauses.length).toBeGreaterThanOrEqual(2);
-    for (const c of setClauses) {
-      expect(c).not.toMatch(/(^|[\s,])description\s*=/);
+  const statements = writes.split(/\n(?=update\s)/i).filter((s) => /^update/i.test(s));
+  const setOf = (s: string) => {
+    const i = s.search(/\bwhere\b/i);
+    return i === -1 ? s : s.slice(0, i);
+  };
+  // The de-gendering statements, as opposed to the two namesake repairs.
+  const degender = statements.filter((s) => /~\*\s*'\\m\(male\|female/.test(s));
+  const namesake = statements.filter((s) => /Sarmi Regency|genus of insects/.test(s));
+
+  it('writes description ONLY on the one row where it is itself the defect', () => {
+    // On the de-gendered rows the description is the evidence each replacement
+    // restates, so it must not be touched. `anus` is the deliberate exception:
+    // its description was zoology, which is a defect rather than evidence.
+    expect(degender.length).toBeGreaterThanOrEqual(2);
+    for (const s of degender) {
+      expect(setOf(s), `de-gendering statement wrote description:\n${s.slice(0, 140)}`).not.toMatch(
+        /(^|[\s,])description\s*=/,
+      );
+    }
+    const anus = namesake.find((s) => /Sarmi Regency/.test(s)) ?? '';
+    expect(anus).toMatch(/description\s*=\s*'The opening at the end of the digestive tract/);
+  });
+
+  it('content-guards every statement on the exact defect it removes', () => {
+    expect(statements.length).toBe(degender.length + namesake.length);
+    for (const s of degender) {
+      expect(s, `unguarded:\n${s.slice(0, 140)}`).toMatch(/~\*\s*'\\m\(male\|female/);
+    }
+    for (const s of namesake) {
+      expect(s, `unguarded:\n${s.slice(0, 140)}`).toMatch(
+        /ilike '%(village located in Sarmi Regency|genus of insects)%'/,
+      );
     }
   });
 
-  it('content-guards both statements on the gendered text they remove', () => {
-    const stmts = writes.split(/\n(?=update\s)/i).filter((s) => /^update/i.test(s));
-    for (const s of stmts) {
-      expect(s, `unguarded:\n${s.slice(0, 140)}`).toMatch(/~\*\s*'\\m\(male\|female/);
-    }
+  it('trims one sentence from labia rather than replacing its body', () => {
+    const labia = namesake.find((s) => /genus of insects/.test(s)) ?? '';
+    expect(labia).toMatch(/replace\(\s*\n?\s*long_description,/);
+    expect(labia).toMatch(/,\s*''\)\)/);
+    expect(labia).not.toMatch(/long_description\s*=\s*'[A-Z]/);
   });
 
   it('nulls bodies rather than minting replacements', () => {
