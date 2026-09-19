@@ -4259,96 +4259,6 @@ export type Database = {
         }
         Relationships: []
       }
-      contributor_mailing_addresses: {
-        Row: {
-          city: string
-          country_code: string
-          created_at: string
-          line1: string
-          line2: string | null
-          notes: string | null
-          opted_in_zine: boolean
-          postal_code: string | null
-          recipient: string
-          region: string | null
-          updated_at: string
-          user_id: string
-        }
-        Insert: {
-          city: string
-          country_code: string
-          created_at?: string
-          line1: string
-          line2?: string | null
-          notes?: string | null
-          opted_in_zine?: boolean
-          postal_code?: string | null
-          recipient: string
-          region?: string | null
-          updated_at?: string
-          user_id: string
-        }
-        Update: {
-          city?: string
-          country_code?: string
-          created_at?: string
-          line1?: string
-          line2?: string | null
-          notes?: string | null
-          opted_in_zine?: boolean
-          postal_code?: string | null
-          recipient?: string
-          region?: string | null
-          updated_at?: string
-          user_id?: string
-        }
-        Relationships: []
-      }
-      contributor_recognitions: {
-        Row: {
-          blurb_md: string | null
-          category: string
-          created_at: string
-          created_by: string | null
-          display_name_override: string | null
-          featured: boolean
-          id: string
-          opted_in: boolean
-          rank: number | null
-          updated_at: string
-          user_id: string
-          year: number
-        }
-        Insert: {
-          blurb_md?: string | null
-          category: string
-          created_at?: string
-          created_by?: string | null
-          display_name_override?: string | null
-          featured?: boolean
-          id?: string
-          opted_in?: boolean
-          rank?: number | null
-          updated_at?: string
-          user_id: string
-          year: number
-        }
-        Update: {
-          blurb_md?: string | null
-          category?: string
-          created_at?: string
-          created_by?: string | null
-          display_name_override?: string | null
-          featured?: boolean
-          id?: string
-          opted_in?: boolean
-          rank?: number | null
-          updated_at?: string
-          user_id?: string
-          year?: number
-        }
-        Relationships: []
-      }
       conversation_availability: {
         Row: {
           available_until: string
@@ -27057,36 +26967,6 @@ export type Database = {
         }
         Relationships: []
       }
-      contribution_metrics_yearly: {
-        Row: {
-          accepted_submissions: number | null
-          contribution_score: number | null
-          event_submissions: number | null
-          personality_submissions: number | null
-          quest_completions: number | null
-          safety_signals: number | null
-          total_submissions: number | null
-          translations: number | null
-          user_id: string | null
-          venue_submissions: number | null
-          year: number | null
-        }
-        Relationships: []
-      }
-      contributor_recognitions_public: {
-        Row: {
-          avatar_url: string | null
-          blurb_md: string | null
-          category: string | null
-          display_name: string | null
-          featured: boolean | null
-          id: string | null
-          rank: number | null
-          user_id: string | null
-          year: number | null
-        }
-        Relationships: []
-      }
       country_ingest_stats: {
         Row: {
           committed: number | null
@@ -31755,25 +31635,6 @@ export type Database = {
         Returns: Json
       }
       content_graph_norm_type: { Args: { p_type: string }; Returns: string }
-      contribution_metrics_for_year: {
-        Args: { p_year: number }
-        Returns: {
-          accepted_submissions: number
-          appear_in_recognition: boolean
-          avatar_url: string
-          contribution_score: number
-          display_name: string
-          event_submissions: number
-          personality_submissions: number
-          quest_completions: number
-          safety_signals: number
-          total_submissions: number
-          translations: number
-          user_id: string
-          venue_submissions: number
-          year: number
-        }[]
-      }
       count_invalid_coordinates: {
         Args: never
         Returns: {
@@ -36772,7 +36633,6 @@ export type Database = {
         Args: { p_ids: string[] }
         Returns: undefined
       }
-      refresh_contribution_metrics_yearly: { Args: never; Returns: undefined }
       refresh_dashboard_stats: { Args: never; Returns: undefined }
       refresh_my_community_score: { Args: never; Returns: undefined }
       refresh_news_corroboration: {
