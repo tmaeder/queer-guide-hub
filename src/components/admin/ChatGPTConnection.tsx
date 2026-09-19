@@ -93,13 +93,13 @@ export const ChatGPTConnection = () => {
 
             {/* Organization info */}
             {status?.organization_id && (
-              <div style={{ fontSize: '14px' }} className="text-muted-foreground">
+              <div className="text-sm text-muted-foreground">
                 Organization: {status.organization_id}
               </div>
             )}
 
             {/* Description of what AI enrichment does */}
-            <div style={{ fontSize: '13px', lineHeight: '1.5' }} className="text-muted-foreground">
+            <div style={{ lineHeight: '1.5' }} className="text-13 text-muted-foreground">
               When connected, ChatGPT automatically enriches imported venues with LGBTQ+ contextual
               descriptions, classifies events, generates personality bios, and adds relevant tags
               during imports and scraping.

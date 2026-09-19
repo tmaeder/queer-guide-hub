@@ -194,18 +194,16 @@ export function UserDetailSheet({ user, open, onOpenChange, onUserUpdated }: Use
               <div className="flex gap-1 mt-1 flex-wrap">
                 {userRoles.map((role) => (
                   <Badge
+                    className="text-xs2"
                     key={role}
                     variant="outline"
-                    style={{
-                      borderColor: ROLE_COLORS[role],
-                      color: ROLE_COLORS[role],
-                      fontSize: '0.7rem',
-                    }}
+                    style={{ borderColor: ROLE_COLORS[role], color: ROLE_COLORS[role] }}
                   >
                     {role}
                   </Badge>
                 ))}
                 <Badge
+                  className="text-xs2"
                   variant={
                     (user.moderation_status ?? 'approved') === 'approved'
                       ? 'default'
@@ -213,7 +211,6 @@ export function UserDetailSheet({ user, open, onOpenChange, onUserUpdated }: Use
                         ? 'secondary'
                         : 'destructive'
                   }
-                  style={{ fontSize: '0.7rem' }}
                 >
                   {user.moderation_status ?? 'approved'}
                 </Badge>

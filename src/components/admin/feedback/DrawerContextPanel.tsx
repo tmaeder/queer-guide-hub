@@ -81,12 +81,8 @@ export function DrawerContextPanel({ ctx, screenshotUrl, voteCount, submittedAt 
           <div>
             <span className="text-xs font-semibold block mb-1">Page URL</span>
             <div
-              className="flex items-center bg-muted gap-1.5 p-2"
-              style={{
-                borderRadius: 'var(--radius-badge)',
-                fontFamily: 'monospace',
-                fontSize: '0.7rem',
-              }}
+              className="text-xs2 flex items-center bg-muted gap-1.5 p-2"
+              style={{ borderRadius: 'var(--radius-badge)', fontFamily: 'monospace' }}
             >
               <a
                 href={ctx.url}
@@ -106,11 +102,10 @@ export function DrawerContextPanel({ ctx, screenshotUrl, voteCount, submittedAt 
           <div>
             <span className="text-xs font-semibold block mb-1">User Agent</span>
             <span
-              className="block bg-muted p-2"
+              className="text-2xs block bg-muted p-2"
               style={{
                 borderRadius: 'var(--radius-badge)',
                 fontFamily: 'monospace',
-                fontSize: '0.65rem',
                 wordBreak: 'break-all',
               }}
             >
@@ -181,11 +176,10 @@ export function DrawerContextPanel({ ctx, screenshotUrl, voteCount, submittedAt 
             </button>
             <CollapsibleContent>
               <div
-                className="bg-muted p-2"
+                className="text-2xs bg-muted p-2"
                 style={{
                   borderRadius: 'var(--radius-badge)',
                   fontFamily: 'monospace',
-                  fontSize: '0.65rem',
                   maxHeight: 240,
                   overflowY: 'auto',
                 }}
@@ -196,13 +190,11 @@ export function DrawerContextPanel({ ctx, screenshotUrl, voteCount, submittedAt 
                     style={{ borderBottom: '1px solid hsl(var(--border))' }}
                     className="mb-2 pb-2"
                   >
-                    <span className="block text-destructive" style={{ fontSize: '0.65rem' }}>
-                      {err.message}
-                    </span>
+                    <span className="text-2xs block text-destructive">{err.message}</span>
                     {err.stack && (
                       <span
-                        className="block text-muted-foreground mt-0.5"
-                        style={{ fontSize: '0.6rem', whiteSpace: 'pre-wrap' }}
+                        className="text-2xs block text-muted-foreground mt-0.5"
+                        style={{ whiteSpace: 'pre-wrap' }}
                       >
                         {err.stack.split('\n').slice(0, 3).join('\n')}
                       </span>
@@ -230,18 +222,17 @@ export function DrawerContextPanel({ ctx, screenshotUrl, voteCount, submittedAt 
             </button>
             <CollapsibleContent>
               <div
-                className="bg-muted p-2"
+                className="text-2xs bg-muted p-2"
                 style={{
                   borderRadius: 'var(--radius-badge)',
                   fontFamily: 'monospace',
-                  fontSize: '0.65rem',
                   maxHeight: 240,
                   overflowY: 'auto',
                 }}
               >
                 {ctx.network_failures.map((nf, i) => (
                   <div key={i} className="mb-1">
-                    <span className="block" style={{ fontSize: '0.65rem' }}>
+                    <span className="text-2xs block">
                       <span style={{ color: 'hsl(var(--muted-foreground))' }} className="font-bold">
                         {nf.status}
                       </span>{' '}
@@ -271,7 +262,7 @@ function MetaItem({
     <div className="flex items-center gap-1.5">
       <Icon style={{ width: 13, height: 13 }} className="text-muted-foreground shrink-0" />
       <div style={{ minWidth: 0 }}>
-        <span className="block text-muted-foreground" style={{ fontSize: '0.6rem', lineHeight: 1 }}>
+        <span className="text-2xs block text-muted-foreground" style={{ lineHeight: 1 }}>
           {label}
         </span>
         <span className="block font-semibold text-xs">{value}</span>

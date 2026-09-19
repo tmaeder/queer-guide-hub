@@ -109,7 +109,7 @@ export function FeedbackDrawerActionBar({
             {admins.map((a) => (
               <SelectItem key={a.user_id} value={a.user_id}>
                 <span className="inline-flex items-center">
-                  <Avatar style={{ width: 16, height: 16, fontSize: '0.6rem' }} className="mr-1.5">
+                  <Avatar style={{ width: 16, height: 16 }} className="text-2xs mr-1.5">
                     {a.avatar_url && <AvatarImage src={a.avatar_url} alt="" />}
                     <AvatarFallback>{(a.display_name || '?').slice(0, 1)}</AvatarFallback>
                   </Avatar>
