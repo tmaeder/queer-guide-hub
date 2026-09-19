@@ -3,7 +3,7 @@ import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 /**
- * Guards the bigint-key fix in unmerge_cities (99991789820609).
+ * Guards the bigint-key fix in unmerge_cities (99991789833326).
  *
  * The defect: the replay compared recorded ids with a hardcoded `v::uuid`, and
  * three replayed tables key on bigint (ingestion_events, venue_coord_fixes,
