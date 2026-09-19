@@ -1803,7 +1803,22 @@
     "news": {
       "title": "Últimas noticias",
       "eyebrow": "Crónicas",
-      "editorsPick": "[ES] Editors' pick"
+      "editorsPick": "[ES] Editors' pick",
+      "topics": "Temas de actualidad",
+      "topic": {
+        "all": "Todo",
+        "rights": "Derechos y leyes",
+        "community": "Comunidad",
+        "culture": "Cultura y arte",
+        "podcasts": "Pódcasts"
+      },
+      "moreStories": "{{count}} noticias más",
+      "followTopics": "Seguir temas",
+      "following": "{{count}} seguidos",
+      "searchTopics": "Buscar temas…",
+      "unfollow": "Dejar de seguir",
+      "trySearching": "Prueba: {{list}}",
+      "noTopic": "No hay ningún tema con ese nombre."
     },
     "discover": "Discover",
     "destinationsTitle": "Where the scene lives.",

@@ -1813,7 +1813,22 @@
     "news": {
       "title": "آخر الأخبار",
       "eyebrow": "مستجدات",
-      "editorsPick": "[AR] Editors' pick"
+      "editorsPick": "[AR] Editors' pick",
+      "topics": "مواضيع الأخبار",
+      "topic": {
+        "all": "الكل",
+        "rights": "الحقوق والقانون",
+        "community": "المجتمع",
+        "culture": "الثقافة والفنون",
+        "podcasts": "بودكاست"
+      },
+      "moreStories": "{{count}} أخبار إضافية",
+      "followTopics": "متابعة المواضيع",
+      "following": "متابَع {{count}}",
+      "searchTopics": "ابحث عن المواضيع…",
+      "unfollow": "إلغاء المتابعة",
+      "trySearching": "جرّب: {{list}}",
+      "noTopic": "لا يوجد موضوع بهذا الاسم."
     },
     "discover": "Discover",
     "destinationsTitle": "Where the scene lives.",
