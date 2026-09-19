@@ -84,19 +84,19 @@ export const useUnifiedTags = () => {
 
   const createTag = async (tagData: { name: string; description?: string; category?: string }) => {
     try {
-      const slug = tagData.name
-        .toLowerCase()
-        .replace(/[^a-z0-9\s-]/g, '')
-        .replace(/\s+/g, '-')
-        .replace(/-+/g, '-')
-        .trim();
-
       const { data, error } = await supabase
         .from('unified_tags')
         .insert([
           {
             ...tagData,
-            slug,
+            // '' is the documented "derive from the name" escape hatch that
+            // normalize_tag_input() honours. This hook has no production
+            // caller today — useVenueFilters takes only { tags, loading,
+            // fetchTags } — but it derived the slug itself with a regex that
+            // STRIPPED characters rather than separating on them, so
+            // 'HIV/AIDS' would have been stored as 'hivaids'. Dormant is a
+            // reason to fix it last, not to leave it armed.
+            slug: '',
           },
         ])
         .select()
@@ -262,7 +262,11 @@ export const useUnifiedTags = () => {
 
       if (error) throw error;
 
-      return data?.map((assignment) => (assignment as Record<string, unknown>).unified_tags).filter(Boolean) || [];
+      return (
+        data
+          ?.map((assignment) => (assignment as Record<string, unknown>).unified_tags)
+          .filter(Boolean) || []
+      );
     } catch (err) {
       console.error('Failed to fetch entity tags:', err);
       return [];
