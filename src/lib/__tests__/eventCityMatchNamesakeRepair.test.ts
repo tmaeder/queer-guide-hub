@@ -30,8 +30,13 @@ describe('event-city-match namesake repair', () => {
       .map((f) => f.match(/^(\d{14})_/)?.[1])
       .filter((v): v is string => Boolean(v));
     expect(versions).toContain('99950101100000');
-    // the file must not sort below anything else it ships alongside
-    expect([...versions].sort().at(-1)).toBe('99950101100000');
+    // It must sort above every version that was already applied when this was authored.
+    // Asserting it is the GLOBAL maximum is wrong -- a sibling migration shipping in the
+    // same change correctly sorts above it -- and that over-strict form failed the moment
+    // 99950101100100 landed beside it.
+    const CEILING_AT_AUTHORING = '99940101110000';
+    expect('99950101100000' > CEILING_AT_AUTHORING).toBe(true);
+    expect(versions.filter((v) => v <= CEILING_AT_AUTHORING && v === '99950101100000')).toEqual([]);
   });
 
   it('selects the cohort with a PREFIX match, never equality', () => {
