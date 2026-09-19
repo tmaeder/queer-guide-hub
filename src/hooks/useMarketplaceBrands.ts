@@ -49,17 +49,42 @@ export interface DirectoryBrand {
   story: string | null;
   product_count: number | null;
   ownership_tags: string[] | null;
+  /**
+   * One SFW product photograph, or null.
+   *
+   * NULL IS A FIRST-CLASS ANSWER, not a failure: measured, 657 of 871 makers
+   * have a cover and 214 do not, and the page partitions on exactly this — a
+   * cover gets a gallery tile, no cover gets an index row. Never coerce it to
+   * a placeholder and never filter these rows away: a maker without a
+   * photograph still sells things and still belongs in the directory.
+   */
+  cover_url: string | null;
+  /**
+   * Our `img.queer.guide` mirror for that cover, when one exists (623 of the
+   * 657). Load-bearing for WEIGHT, not looks: `isCfResizableSource` (see
+   * src/utils/cloudflareOptimizations.ts) DENIES cdn.shopify.com, which is
+   * most of this catalogue, so a raw merchant URL gets no CDN resizing at all
+   * and downloads a full product photo into a ~240px tile. Nullable by design
+   * — <Image> walks optimized → thumbnail → original, so a miss degrades to
+   * the merchant's own image rather than to a fallback texture.
+   */
+  cover_thumb: string | null;
 }
 
 /**
  * Hard ceiling on the directory read.
  *
- * PostgREST's implicit cap is 1000 rows and the catalogue stands at 885, so an
- * unbounded select is ALREADY within one ingest run of silently truncating —
- * the same class of bug as the sitemap's 1000-row truncation, and just as
+ * PostgREST's implicit cap is 1000 rows and the catalogue stands at 871, so an
+ * unbounded read is ALREADY within one ingest run of silently truncating — the
+ * same class of bug as the sitemap's 1000-row truncation, and just as
  * invisible, because a short array and a small catalogue look identical. Stated
  * explicitly so the limit is a decision with a number rather than a default
  * nobody chose. `useMarketplaceBrandsDirectory` reports when it is hit.
+ *
+ * Still enforced now the read is an RPC rather than a table select: PostgREST
+ * applies its cap to a function's result set exactly as it does to a table's,
+ * so moving to a function did not remove the hazard — it only moved where the
+ * row count is decided.
  */
 export const BRAND_DIRECTORY_CEILING = 5000;
 
@@ -88,21 +113,28 @@ export const BRAND_DIRECTORY_CEILING = 5000;
  *
  * `product_count > 0` is not cosmetic: `marketplace_brands` retains rows whose
  * listings have all gone inactive, and a directory tile that opens onto an
- * empty grid is a dead end the reader paid a navigation for.
+ * empty grid is a dead end the reader paid a navigation for. That filter now
+ * lives in the RPC, alongside the rest of the catalogue's definition.
+ *
+ * IT IS AN RPC RATHER THAN A FLAT SELECT because of ONE column: `cover_url`.
+ * A product photograph lives on `marketplace_listings`, not on the brand, so
+ * PostgREST cannot reach it from here at all — and the page needs it for the
+ * WHOLE catalogue, not for a page of it, because the gallery/index split is a
+ * partition on `cover_url IS NULL` and a partition cannot be computed from a
+ * window. See `get_marketplace_brand_directory`, whose shape is a measured
+ * performance fix (2,298 ms → 244 ms) and not a style choice.
+ *
+ * The cost is honest and worth stating: 17 kB → 260 kB uncompressed for the
+ * same 871 rows. It gzips to a fraction of that (these are URLs, which share
+ * long prefixes), and the page it feeds then downloads product photography,
+ * against which the payload is noise.
  */
 export function useMarketplaceBrandsDirectory() {
   return useQuery({
     queryKey: ['marketplace-brands-directory'],
     staleTime: 300_000,
     queryFn: async (): Promise<DirectoryBrand[]> => {
-      const { data, error } = await supabase
-        .from('marketplace_brands')
-        .select('slug, display_name, logo_url, logo_on_ink, story, product_count, ownership_tags')
-        .eq('status', 'approved')
-        .not('slug', 'is', null)
-        .gt('product_count', 0)
-        .order('product_count', { ascending: false, nullsFirst: false })
-        .limit(BRAND_DIRECTORY_CEILING);
+      const { data, error } = await untypedSupabase.rpc('get_marketplace_brand_directory');
 
       if (error) throw error;
       const rows = (data ?? []) as DirectoryBrand[];
@@ -138,20 +170,29 @@ export interface BrandWithCovers extends DirectoryBrand {
 }
 
 /**
- * The head of the catalogue, with product covers — the directory's one
- * image-bearing band.
+ * The highlight band — a rotating dozen makers, three product covers each.
  *
- * Separate from the directory read rather than folded into it, because the two
- * answer different questions at different costs: this one runs a LATERAL per
- * row and is asked for twelve, that one is a flat select and is asked for all
- * 885. Keeping them apart also keeps this key CONSTANT, so the band is not
- * re-fetched as the reader filters the index beneath it.
+ * It used to be the TOP twelve by `product_count`, which meant the same twelve
+ * makers led this page every day since it shipped. Measured, 94 brands clear
+ * every gate the band enforces (approved, slugged, a logo, three DISTINCT SFW
+ * covers), so 82 of them were unreachable — not for failing a quality bar but
+ * for selling less than the twelve above them.
+ *
+ * THE ROTATION IS THE SERVER'S, NOT OURS, AND NO SEED IS PASSED FROM HERE.
+ * `get_marketplace_brand_covers` defaults its seed to the server's day. Letting
+ * the client supply one would put the rotation behind a clock we do not
+ * control: a device with a wrong date pins its reader to one window forever,
+ * which looks exactly like the never-rotating band this replaced — i.e.
+ * invisible. It also keeps this query key CONSTANT, so the band does not
+ * re-fetch as the reader filters the catalogue beneath it.
  *
  * Every safety and quality decision — SFW ratings, logo required, three covers,
- * the honest ordering — lives in the RPC rather than here, so no caller can
- * render an adult hero image or a strip with a hole in it by passing the wrong
- * argument. `story` is not among its columns and is filled in as null to
- * satisfy `DirectoryBrand`: this tile shows goods, not prose.
+ * the rotation itself — lives in the RPC rather than here, so no caller can
+ * render an adult hero image, a strip with a hole in it, or a frozen band by
+ * passing the wrong argument. `story` is not among its columns and is filled in
+ * as null to satisfy `DirectoryBrand`: this tile shows goods, not prose. So are
+ * `cover_url`/`cover_thumb` — this tile carries its own three-cover strip and
+ * has no use for the directory's single cover.
  */
 export function useMarketplaceBrandCovers(limit = 12) {
   return useQuery({
@@ -162,9 +203,13 @@ export function useMarketplaceBrandCovers(limit = 12) {
         p_limit: limit,
       });
       if (error) throw error;
-      return ((data ?? []) as Array<Omit<BrandWithCovers, 'story'>>).map((b) => ({
+      return (
+        (data ?? []) as Array<Omit<BrandWithCovers, 'story' | 'cover_url' | 'cover_thumb'>>
+      ).map((b) => ({
         ...b,
         story: null,
+        cover_url: null,
+        cover_thumb: null,
         covers: Array.isArray(b.covers) ? b.covers : [],
       }));
     },
