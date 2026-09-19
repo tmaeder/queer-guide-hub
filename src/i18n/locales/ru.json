@@ -1835,7 +1835,22 @@
     "news": {
       "title": "Последние новости",
       "eyebrow": "Сводки",
-      "editorsPick": "[RU] Editors' pick"
+      "editorsPick": "[RU] Editors' pick",
+      "topics": "Темы новостей",
+      "topic": {
+        "all": "Все",
+        "rights": "Права и закон",
+        "community": "Сообщество",
+        "culture": "Культура и искусство",
+        "podcasts": "Подкасты"
+      },
+      "moreStories": "Ещё {{count}} новостей",
+      "followTopics": "Подписаться на темы",
+      "following": "Подписки: {{count}}",
+      "searchTopics": "Поиск тем…",
+      "unfollow": "Отписаться",
+      "trySearching": "Например: {{list}}",
+      "noTopic": "Тема с таким названием не найдена."
     },
     "discover": "Discover",
     "destinationsTitle": "Where the scene lives.",

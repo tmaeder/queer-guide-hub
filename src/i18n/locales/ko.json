@@ -1803,7 +1803,22 @@
     "news": {
       "title": "최신 뉴스",
       "eyebrow": "소식",
-      "editorsPick": "[KO] Editors' pick"
+      "editorsPick": "[KO] Editors' pick",
+      "topics": "뉴스 주제",
+      "topic": {
+        "all": "전체",
+        "rights": "권리와 법",
+        "community": "커뮤니티",
+        "culture": "문화·예술",
+        "podcasts": "팟캐스트"
+      },
+      "moreStories": "{{count}}개 기사 더보기",
+      "followTopics": "주제 팔로우",
+      "following": "{{count}}개 팔로우 중",
+      "searchTopics": "주제 검색…",
+      "unfollow": "팔로우 취소",
+      "trySearching": "예: {{list}}",
+      "noTopic": "해당 이름의 주제가 없습니다."
     },
     "discover": "Discover",
     "destinationsTitle": "Where the scene lives.",
