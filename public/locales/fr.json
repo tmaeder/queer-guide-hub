@@ -1807,7 +1807,22 @@
     "news": {
       "title": "Actualités",
       "eyebrow": "Dépêches",
-      "editorsPick": "[FR] Editors' pick"
+      "editorsPick": "[FR] Editors' pick",
+      "topics": "Thèmes d'actualité",
+      "topic": {
+        "all": "Tout",
+        "rights": "Droits & Justice",
+        "community": "Communauté",
+        "culture": "Culture & Arts",
+        "podcasts": "Podcasts"
+      },
+      "moreStories": "{{count}} autres articles",
+      "followTopics": "Suivre des thèmes",
+      "following": "{{count}} suivis",
+      "searchTopics": "Rechercher un thème…",
+      "unfollow": "Ne plus suivre",
+      "trySearching": "Essayez : {{list}}",
+      "noTopic": "Aucun thème à ce nom."
     },
     "discover": "Discover",
     "destinationsTitle": "Where the scene lives.",
