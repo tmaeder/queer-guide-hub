@@ -10,11 +10,15 @@ import { type CountryMapData, countryMapUrl, hasCountryMap } from './countryMapI
  * `scripts/generate-country-maps.mjs`) — this fetches one and renders it.
  *
  * INLINE svg, not `<img src>`, and that is load-bearing rather than incidental:
- * the design system requires the viewer's `data-theme` toggle to win in both
- * directions, and an externally-loaded SVG can only ever see
- * `prefers-color-scheme`. As an `<img>` the map would keep light-mode polarity
- * for anyone who flipped the toggle by hand. Inline, every colour is a token
- * and follows the toggle.
+ * `ThemeProvider` switches themes by toggling the `dark` CLASS on `<html>`, and
+ * an externally-loaded SVG is a separate document that cannot see that class —
+ * it only ever gets `prefers-color-scheme`. As an `<img>` the map would keep
+ * light-mode polarity for anyone who flipped the toggle by hand against their
+ * OS setting. Inline, every colour is a token and repaints with the class.
+ *
+ * Verified on prod rather than assumed: removing/adding `dark` on `<html>`
+ * moves the land fill #FAFAF5 <-> #111 and the stroke with it. Note this app
+ * has NO `data-theme` attribute (it reads null) — do not reach for one.
  *
  * The capital label is HTML, not SVG `<text>` — the `IntentMap` rule ("every
  * label on this map is HTML"). It gets Anton at the right optical size without
