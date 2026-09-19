@@ -38,6 +38,11 @@ export const onRequest: PagesFunction<Env> = async () => {
     // The 56 glossary category hubs. New URLs as of the 2026-08 rebuild: the
     // category used to be a query param, so no sitemap could have listed them.
     { loc: `${ORIGIN}/sitemap-tag-categories.xml`, lastmod },
+    // Marketplace makers. New 2026-09-19, and last in the order for the reason
+    // it could not exist sooner: `/marketplace/brands/:slug` had NO crawler
+    // head until that day, so every maker page served the generic SPA shell and
+    // a sitemap would have advertised ~871 identical-looking pages.
+    { loc: `${ORIGIN}/sitemap-brands.xml`, lastmod },
   ]);
   return xmlResponse(xml, 3600);
 };
