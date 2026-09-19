@@ -391,6 +391,21 @@ export const STATIC_ROUTE_META: Record<string, RouteMeta> = {
     description:
       'Every marketplace category in one place — books, apparel, art, home, beauty and gifts made for and about the LGBTQ+ community.',
   },
+  // The makers index. It had NO entry until 2026-09-19, so `resolveMeta` — an
+  // exact match — fell through to DEFAULT_META and the page served the
+  // site-wide homepage title, competing with `/` on its own URL. Same defect
+  // this file already records for the four `/people/*` matching modes.
+  //
+  // The description deliberately does NOT call these makers queer-owned. Only
+  // 37 of the 871 approved brands carry an ownership label (4.2%, measured
+  // 2026-09-19) — the same discipline as the `/marketplace` entry above, whose
+  // comment puts it exactly right: ownership is a labelled property of the
+  // brands we have actually checked, never an adjective for the whole shelf.
+  '/marketplace/brands': {
+    title: 'Shop LGBTQ+ Products by Maker',
+    description:
+      'Every maker whose products we list, A–Z. Queer ownership is labelled where we have verified it.',
+  },
   '/wishlists': {
     title: 'LGBTQ+ Gift Wishlists to Share',
     description:
