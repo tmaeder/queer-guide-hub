@@ -29,9 +29,16 @@ type Brand = {
   story: string | null;
   product_count: number | null;
   ownership_tags: string[] | null;
+  cover_url: string | null;
+  cover_thumb: string | null;
 };
 
-function brand(slug: string, name: string, count: number, tags: string[] = []): Brand {
+function brand(
+  slug: string,
+  name: string,
+  count: number,
+  opts: { tags?: string[]; cover?: boolean } = {},
+): Brand {
   return {
     slug,
     display_name: name,
@@ -39,18 +46,24 @@ function brand(slug: string, name: string, count: number, tags: string[] = []): 
     logo_on_ink: false,
     story: null,
     product_count: count,
-    ownership_tags: tags,
+    ownership_tags: opts.tags ?? [],
+    // `cover_url` is the partition key for gallery vs index, so a fixture that
+    // gave every maker one could not tell the two halves apart.
+    cover_url: opts.cover === false ? null : `https://cdn.example/${slug}.jpg`,
+    cover_thumb: null,
   };
 }
 
 // Deliberately NOT in product_count order for `Åberg`/`4Paws` — the A–Z branch
 // has to do the sorting, and a pre-sorted fixture would pass either way.
+// `zebra` and `fourpaws` carry NO cover: they are what proves a maker without
+// a photograph stays reachable instead of being quietly dropped.
 const DIRECTORY: Brand[] = [
   brand('big-maker', 'Big Maker', 7391),
-  brand('mid-maker', 'Mid Maker', 900, ['queer_owned']),
-  brand('zebra', 'Zebra Goods', 120),
+  brand('mid-maker', 'Mid Maker', 900, { tags: ['queer_owned'] }),
+  brand('zebra', 'Zebra Goods', 120, { cover: false }),
   brand('aberg', 'Åberg Atelier', 90),
-  brand('fourpaws', '4Paws Supply', 40),
+  brand('fourpaws', '4Paws Supply', 40, { cover: false }),
 ];
 
 const FEATURED = [
@@ -82,6 +95,14 @@ function renderPage() {
   );
 }
 
+/** Maker names currently rendered, in DOM order. */
+function renderedMakers(): string[] {
+  return screen
+    .getAllByRole('link')
+    .map((a) => a.getAttribute('aria-label'))
+    .filter((n): n is string => DIRECTORY.some((b) => b.display_name === n));
+}
+
 describe('MarketplaceBrands', () => {
   beforeEach(() => {
     state.directory = DIRECTORY;
@@ -89,37 +110,76 @@ describe('MarketplaceBrands', () => {
     state.loading = false;
   });
 
-  it('renders the counter band with the maker and its covers', () => {
+  it('renders the highlight band with the maker and its covers', () => {
     renderPage();
-    expect(screen.getByRole('heading', { name: /Most listings/i })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /On the counter today/i })).toBeInTheDocument();
     // One tile, three covers. The strip is aria-hidden, so query the DOM.
     expect(document.querySelectorAll('img[src*="cdn.example"]').length).toBeGreaterThanOrEqual(3);
   });
 
-  it('does not repeat a featured maker in the index below it', () => {
+  it('never calls the highlight a ranking', () => {
+    // The band rotates daily over everyone who qualifies, so "Most listings"
+    // would be false and "Featured"/"Picks" would claim an editorial judgement
+    // nobody made. This is the comment-outlives-its-data failure as copy.
+    renderPage();
+    const band = screen.getByRole('heading', { name: /On the counter today/i }).closest('section');
+    expect(band).toBeTruthy();
+    expect(band!.textContent).toMatch(/Not a ranking/i);
+    expect(band!.textContent).not.toMatch(/most listings|featured|hand-?picked|curated/i);
+  });
+
+  it('does not repeat a highlighted maker in the catalogue below it', () => {
     // The floor is "every OTHER maker"; without the skip set, the head of the
     // catalogue renders twice on one screen.
     renderPage();
     expect(screen.getAllByRole('link', { name: 'Big Maker' })).toHaveLength(1);
   });
 
-  it('hides the counter band once the reader searches', async () => {
+  it('splits the catalogue into a gallery and an index on the cover', () => {
+    // The whole point of the rebuild: a maker WITH a photograph gets a tile, a
+    // maker WITHOUT one gets a row. A gallery over everything would render the
+    // coverless makers as boxes with a hole in them.
+    renderPage();
+
+    const gallery = screen.getByRole('link', { name: 'Mid Maker' }).closest('li');
+    expect(within(gallery as HTMLElement).getByRole('presentation', { hidden: true })).toBeTruthy();
+
+    // Zebra has no cover, so it must appear under the honest heading instead.
+    expect(
+      screen.getByRole('heading', { name: /Makers we have no photograph of/i }),
+    ).toBeInTheDocument();
+    const row = screen.getByRole('link', { name: 'Zebra Goods' }).closest('li');
+    expect(within(row as HTMLElement).queryByRole('presentation', { hidden: true })).toBeNull();
+  });
+
+  it('keeps a maker with no photograph reachable', () => {
+    // A quarter of the catalogue has no product image. Dropping them from the
+    // gallery view would silently shrink the directory and make them
+    // unreachable from the page that exists to list every maker.
+    renderPage();
+    expect(screen.getByRole('link', { name: 'Zebra Goods' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: '4Paws Supply' })).toBeInTheDocument();
+  });
+
+  it('hides the highlight band once the reader searches', async () => {
     // The band is the head of the CATALOGUE, not of the RESULTS. Left up, it
     // puts twelve unrelated makers above a search for something else and reads
     // as though they were the answer.
     const user = userEvent.setup();
     renderPage();
-    expect(screen.getByRole('heading', { name: /Most listings/i })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /On the counter today/i })).toBeInTheDocument();
 
     await user.type(screen.getByPlaceholderText(/Search makers/i), 'zebra');
 
-    expect(screen.queryByRole('heading', { name: /Most listings/i })).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole('heading', { name: /On the counter today/i }),
+    ).not.toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Zebra Goods' })).toBeInTheDocument();
     expect(screen.queryByRole('link', { name: 'Mid Maker' })).not.toBeInTheDocument();
   });
 
-  it('returns a filtered-out featured maker to the index', async () => {
-    // Searching removes the counter, so its makers must rejoin the floor or
+  it('returns a filtered-out highlighted maker to the catalogue', async () => {
+    // Searching removes the band, so its makers must rejoin the catalogue or
     // they become unreachable by the very search meant to find them.
     const user = userEvent.setup();
     renderPage();
@@ -128,7 +188,7 @@ describe('MarketplaceBrands', () => {
   });
 
   it('shows the coverage note whenever an ownership chip is active', async () => {
-    // Content-safety contract: 37 of 885 brands carry any ownership tag, so a
+    // Content-safety contract: 37 of 871 brands carry any ownership tag, so a
     // filtered list looks exhaustive and is not.
     const user = userEvent.setup();
     renderPage();
@@ -141,15 +201,32 @@ describe('MarketplaceBrands', () => {
     expect(screen.queryByRole('link', { name: 'Zebra Goods' })).not.toBeInTheDocument();
   });
 
+  it('renders every maker as a row in the A–Z index, with no tiles', async () => {
+    // The index is the LOOK-SOMETHING-UP form. A gallery cannot carry an
+    // alphabetical index cleanly, and mixing the two would put the makers with
+    // photographs in a different place from the ones without — under headings
+    // that claim to cover the whole letter.
+    const user = userEvent.setup();
+    renderPage();
+    await user.click(screen.getByRole('button', { name: 'A–Z index' }));
+
+    expect(
+      screen.queryByRole('heading', { name: /Makers we have no photograph of/i }),
+    ).not.toBeInTheDocument();
+    // No gallery cover images outside the highlight band.
+    const bandImages = document.querySelectorAll('section img[src*="cdn.example"]').length;
+    expect(document.querySelectorAll('img[src*="cdn.example"]').length).toBe(bandImages);
+  });
+
   it('only shows the letter bar in A–Z mode, and sorts alphabetically there', async () => {
     // A letter bucket is incoherent against a count ordering, and the bar
-    // filters rather than jumps — left visible under "Most listings" it would
-    // silently remove rows with no way to tell why.
+    // filters rather than jumps — left visible in the gallery it would silently
+    // remove makers with no way to tell why.
     const user = userEvent.setup();
     renderPage();
     expect(screen.queryByRole('navigation', { name: /Jump to letter/i })).not.toBeInTheDocument();
 
-    await user.click(screen.getByRole('button', { name: 'A–Z' }));
+    await user.click(screen.getByRole('button', { name: 'A–Z index' }));
     expect(screen.getByRole('navigation', { name: /Jump to letter/i })).toBeInTheDocument();
 
     const names = screen.getAllByRole('heading', { level: 3 }).map((h) => h.textContent);
@@ -160,41 +237,36 @@ describe('MarketplaceBrands', () => {
 
   it('files the "#" bucket at the end of the index, not the front', async () => {
     // `localeCompare` alone sorts digits and symbols BEFORE "A", so the A–Z
-    // view opened on "#". On prod that bucket is 15 brands of which 13 are
-    // merchant-feed ID artifacts ("12807-203758186"), so switching to A–Z
-    // promoted the worst names in the catalogue to the top of the page.
+    // view opened on "#" — which at the time was mostly merchant-feed ID
+    // artifacts, i.e. the worst names in the catalogue at the top of the page.
     //
     // Asserted on the ROW order rather than only the headings: a heading list
     // still reads plausibly if the rows beneath it are interleaved, and the
     // rows are what the reader actually meets.
     const user = userEvent.setup();
     renderPage();
-    await user.click(screen.getByRole('button', { name: 'A–Z' }));
+    await user.click(screen.getByRole('button', { name: 'A–Z index' }));
 
-    const rows = screen
-      .getAllByRole('link')
-      .map((a) => a.getAttribute('aria-label'))
-      .filter((n): n is string => DIRECTORY.some((b) => b.display_name === n));
-
+    const rows = renderedMakers();
     expect(rows[rows.length - 1]).toBe('4Paws Supply');
     expect(rows.indexOf('Åberg Atelier')).toBeLessThan(rows.indexOf('4Paws Supply'));
   });
 
-  it('clears a letter filter when switching back to the count ordering', async () => {
-    // The bar that set it unmounts, so a surviving letter filter removes rows
+  it('clears a letter filter when switching back to the gallery', async () => {
+    // The bar that set it unmounts, so a surviving letter filter removes makers
     // with nothing on screen explaining it.
     const user = userEvent.setup();
     renderPage();
-    await user.click(screen.getByRole('button', { name: 'A–Z' }));
+    await user.click(screen.getByRole('button', { name: 'A–Z index' }));
     await user.click(screen.getByRole('button', { name: 'Filter by Z' }));
     expect(screen.queryByRole('link', { name: 'Mid Maker' })).not.toBeInTheDocument();
 
-    await user.click(screen.getByRole('button', { name: 'Most listings' }));
+    await user.click(screen.getByRole('button', { name: 'Gallery' }));
     expect(screen.getByRole('link', { name: 'Mid Maker' })).toBeInTheDocument();
   });
 
-  it('puts no interactive element inside the row link', () => {
-    // Ownership badges live inside the row, so the link has to be an absolute
+  it('puts no interactive element inside a tile or row link', () => {
+    // Ownership badges live inside both, so each link has to be an absolute
     // overlay sibling — a wrapper is `nested-interactive` (axe serious, WCAG
     // 4.1.2).
     const { container } = renderPage();
