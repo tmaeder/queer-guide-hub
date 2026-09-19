@@ -902,6 +902,72 @@ if (!hygieneRes.ok) {
   }
 }
 
+// 5a-bis. Personality wrong-entity regression (2026-09-19). The same namesake
+//     chimera as the glossary, on people, where it is defamation rather than a
+//     botany stub: our Jason Collins row carried the NBA player's birth date,
+//     death date and social handles, and /personalities/lee-smith served a named
+//     Māori language and gay rights advocate's biography as its <meta
+//     description> under the title "Lee Smith — Adult performer". Repaired by
+//     99970101100100 (84 public rows), 99991789833562 (125 out of the adult-link
+//     queue) and 99991789840157 (4 whose text came from the Wikipedia extract).
+//     Nothing watched it afterwards.
+//
+//     SQL cannot call Wikidata, so this cannot tell you a NEW identifier is
+//     wrong. It watches the three things it can prove: a refuted id coming back,
+//     a disposed row losing its SKIP_ sentinel, and a retracted biography
+//     returning. `unverified_reachable` is a work-list size and only prints.
+{
+  const res = await fetch(`${BASE}/rest/v1/rpc/personality_wikidata_signals`, {
+    method: 'POST',
+    headers: { ...headers, 'Content-Type': 'application/json' },
+    body: '{}',
+  })
+  if (!res.ok) {
+    console.error(`✗ personality_wikidata_signals → HTTP ${res.status} (RPC missing? not applied?)`)
+    FAILED = true
+  } else {
+    const s = await res.json()
+    if (!s || s.probe_ok !== true) {
+      console.error('✗ personality_wikidata_signals returned no probe_ok — treating as broken, not clean')
+      FAILED = true
+    } else {
+      // A clean corpus and an unreadable one both return zeroes. Assert the
+      // probe is reading something before trusting its zeroes.
+      if ((s.rows_with_qid ?? 0) < 1000) {
+        console.error(
+          `✗ personality_wikidata_signals sees only ${s.rows_with_qid} rows with a Q-id — the probe is not reading the corpus`,
+        )
+        FAILED = true
+      }
+      for (const [key, msg] of [
+        ['qid_regressed', 'personalit(ies) re-acquired the refuted Wikidata id they were cleared of'],
+        ['sentinel_lost', 'disposed personalit(ies) no longer carry a SKIP_ sentinel'],
+        ['retracted_text_back', 'retracted wrong-person biograph(ies) have returned'],
+      ]) {
+        if ((s[key] ?? 0) > 0) {
+          console.error(`✗ ${s[key]} ${msg}`)
+          for (const e of (s.examples ?? []).slice(0, 5)) {
+            console.error(`    /personalities/${e.slug} → ${e.qid} (was ${e.was})`)
+          }
+          if (key === 'qid_regressed') {
+            console.error('  personality-refresh is adopting name-resolved identities again.')
+            console.error('  Check resolveByNameAndProfession() still gates on isHuman() + occupation overlap.')
+          }
+          if (key === 'sentinel_lost') {
+            console.error('  A NULL here is not neutral: personality-refresh re-resolves by name when')
+            console.error('  wikidata_qid IS NULL, so the row re-enters resolution instead of recording its decision.')
+          }
+          FAILED = true
+        }
+      }
+      console.log(
+        `✓ Personality wrong-entity repairs intact (${s.dispositioned} dispositioned, ` +
+          `${s.unverified_reachable} reachable rows never swept)`,
+      )
+    }
+  }
+}
+
 // 5b. Automation run-tracking gaps (2026-09). Until this landed, 142 of 144
 //     enabled cron automations had never recorded a run, so consecutive_failures
 //     never moved and auto-pause could not fire. These two checks keep it that
