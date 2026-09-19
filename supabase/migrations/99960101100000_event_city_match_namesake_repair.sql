@@ -89,7 +89,7 @@ update cities c
        field_provenance = coalesce(c.field_provenance, '{}'::jsonb) || jsonb_build_object(
          'latitude', jsonb_build_object(
             'source', 'wikidata:' || f.qid,
-            'by',     'migration:99950101100000',
+            'by',     'migration:99960101100000',
             'reason', 'event_city_match_name_only_namesake',
             'from',   jsonb_build_object('latitude', c.latitude, 'longitude', c.longitude)))
   from fix f
@@ -104,7 +104,7 @@ update events e
        enrichment_status = coalesce(e.enrichment_status, '{}'::jsonb) || jsonb_build_object(
          'event_city_link', jsonb_build_object(
             'blocked', true,
-            'by',      'migration:99950101100000',
+            'by',      'migration:99960101100000',
             'reason',  'name_only_namesake_collision',
             'detail',  b.detail))
   from (values

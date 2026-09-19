@@ -12,7 +12,7 @@
 --     and were flagged only because their nearest neighbour is ITSELF junk: a row named
 --     "Londres" -- London -- minted by event-city-match at Utuado's coordinates and filed
 --     under the United States. THE REFERENCE ROW'S DEFECT MASQUERADED AS THE CANDIDATES'.
---     That row is repaired by 99950101100000, which is how this pass found that cohort.
+--     That row is repaired by 99960101100000, which is how this pass found that cohort.
 --
 -- So 19 of 27 are false positives. Only 8 are real, and they are three different things.
 -- Ten more of the 27 (the exonym and duplicate cases) are deliberately deferred below.
@@ -99,7 +99,7 @@ update cities c
        field_provenance = coalesce(c.field_provenance, '{}'::jsonb) || jsonb_build_object(
          'latitude', jsonb_build_object(
             'source', 'wikidata:Q160661',
-            'by',     'migration:99950101100100',
+            'by',     'migration:99960101100100',
             'reason', 'coordinates_disagreed_with_country_and_the_coordinates_were_wrong',
             'from',   jsonb_build_object('latitude', c.latitude, 'longitude', c.longitude)))
  where c.id = 'dbb3d43d-5da0-4f43-b5af-c9e0274133c2'
