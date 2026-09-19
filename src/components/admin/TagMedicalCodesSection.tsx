@@ -8,6 +8,17 @@
  * change what appears here is to fix the tag's `wikidata_id`, or the statement
  * on Wikidata itself.
  *
+ * "Retracts anything the source no longer carries" holds ONLY while the tag
+ * still has an identifier, and this docblock used to stop there — which made it
+ * actively misleading, because the remedy it recommends is what breaks it. The
+ * sync's work set is `status = 'active' AND wikidata_id ~ '^Q[0-9]+$'`, so
+ * CLEARING a wrong `wikidata_id` removes the tag from the sync entirely and
+ * freezes its codes forever. That stranded ICPC-2 A96 ("death") on `/tags/passing`
+ * and ICD-10 U07.1 (COVID-19) on `/tags/seafood` for weeks after both identifiers
+ * were correctly disowned. `run_tag_medical_codes_reap_orphans()` (migration
+ * 99970101100000) now runs after each sync and deletes exactly what the sync can
+ * no longer see; `tag_medical_code_signals().orphan_code_rows` is a zero-invariant.
+ *
  * The `tag_medical_codes` table does carry `source = 'editorial'`, which the
  * sync never deletes, so a curated lane can be opened later without a schema
  * change. It is closed today because nothing curates it.
