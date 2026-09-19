@@ -11,7 +11,7 @@ import { describe, expect, it } from 'vitest';
  * statement is gone.
  */
 
-const MIGRATION = '99991789819678_glossary_anatomy_degender.sql';
+const MIGRATION = '99991789823744_glossary_anatomy_degender.sql';
 const FILE = join(__dirname, '../../../supabase/migrations', MIGRATION);
 
 function stripComments(sql: string): string {
@@ -110,7 +110,7 @@ describe('anatomy de-gendering migration', () => {
 
   it('declares an actor, since several rows are human_reviewed', () => {
     expect(writes).toContain("set_config('app.actor'");
-    expect(writes).toContain('migration:99991789819678');
+    expect(writes).toContain('migration:99991789823744');
   });
 });
 

@@ -61,7 +61,7 @@
 
 begin;
 
-select set_config('app.actor', 'migration:99991789819678_glossary_anatomy_degender', true);
+select set_config('app.actor', 'migration:99991789823744_glossary_anatomy_degender', true);
 
 -- ---------------------------------------------------------- indexable, usage 8
 update unified_tags set
