@@ -112,7 +112,7 @@ test.describe('makers directory', () => {
     await expect(page.getByRole('link', { name: 'cherrykitten', exact: true })).toBeVisible();
   });
 
-  test('files "#" at the END of the A–Z index, and does not empty it', async ({ page }) => {
+  test('files "#" at the END of the A–Z index, and keeps artifacts out of it', async ({ page }) => {
     await page.goto('/marketplace/brands');
     await expect(page.getByRole('heading', { name: COUNTER_BAND })).toBeVisible({
       timeout: SETTLE,
@@ -131,19 +131,46 @@ test.describe('makers directory', () => {
     // "#" is deliberately NOT in that list. The floor renders 120 rows before
     // "Show more" and "#" sorts last, so it is now eight pages down — which is
     // the point, but it also means the ordering assertion above cannot double
-    // as proof the bucket survived. The letter bar is its real access path, so
-    // the control goes through that.
+    // as a check on what the bucket holds. The letter bar is its real access
+    // path, so that goes through the bar.
     await page.getByRole('button', { name: 'Filter by #' }).click();
 
-    // The one row left in "#" is "1979 SAS (Teil der Marc Dorcel Group)", a
-    // real company. An EMPTY bucket would mean the feed-ID retirement had
-    // over-reached and swept a legitimate brand with it — and a "# sorts last"
-    // assertion on its own would call that a pass.
-    await expect(page.locator('main h3')).toHaveText(['#']);
-    await expect(page.getByRole('link', { name: /1979 SAS/ })).toBeVisible();
+    // THIS ASSERTED "1979 SAS (Teil der Marc Dorcel Group)" WAS VISIBLE HERE,
+    // AND IT WAS WRONG WITHIN A DAY. `20260919193550` renamed 49 brands whose
+    // vendor field held a legal entity rather than a brand, and that row became
+    // "DORCEL" — so it files under D and the "#" bucket is now empty.
+    //
+    // The old assertion would have failed nightly with a message blaming the
+    // feed-ID retirement for an over-reach that never happened. Pinning a test
+    // to one row's NAME pins it to an editorial decision that is free to move;
+    // the invariant was never "1979 SAS is in #", it was "no feed-ID artifact
+    // is", and that is what is asserted now.
+    //
+    // Emptiness is therefore NOT asserted in either direction. A legitimate
+    // brand may re-enter this bucket at any time (a name starting with a digit
+    // is allowed), and asserting "empty" would then fail on correct data —
+    // which is the same mistake one rung along.
+    const hashNames = await page.locator('main a[aria-label]').evaluateAll((els) =>
+      els.map((e) => e.getAttribute('aria-label') ?? ''),
+    );
 
-    // And no feed-ID artifact came back with it.
-    await expect(page.getByRole('link', { name: /^\d{4,}[- ]\d+/ })).toHaveCount(0);
+    // The retirement invariant, stated over content rather than over a count:
+    // nothing in "#" may look like a merchant feed ID or an ISBN. 20 of those
+    // were retired by `99100101143000`; a 21st appearing here means the
+    // producer guard in marketplace_register_brands has stopped holding.
+    for (const name of hashNames) {
+      expect(name, `feed-ID artifact back in the "#" bucket: ${name}`).not.toMatch(
+        /^[‪-‮]?\d{4,}[- ]?\d*$/,
+      );
+    }
+
+    // POSITIVE CONTROL. Everything above passes vacuously if the click did
+    // nothing and the page is showing an empty result for an unrelated reason,
+    // so prove the filter is live: the bar reports "#" as the active letter.
+    await expect(page.getByRole('button', { name: 'Filter by #' })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    );
   });
 
   for (const slug of RETIRED_MAKERS) {
