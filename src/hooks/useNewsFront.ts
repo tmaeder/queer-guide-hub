@@ -28,6 +28,9 @@ export interface NewsFrontArticle {
   publisher_name: string | null;
   title_i18n: Record<string, string> | null;
   content_language: string | null;
+  media_type: string | null;
+  audio_url: string | null;
+  duration_seconds: number | null;
   hotness: number;
   personal_score: number;
   matches_interest: boolean;
@@ -59,16 +62,43 @@ const LIVE_OPTS = {
 } as const;
 
 /**
- * Global fresh front. Ordered purely by hotness (recency × quality × soft
- * featured boost × trending) so the headline is authoritative and shareable —
- * identical for every visitor, always fresh. The `auth.uid()` the client sends
- * still lets the RPC fill `is_read` for badge/demote use, but does not reorder.
+ * Global fresh front. The RPC's own ORDER BY is raw hotness (recency × quality
+ * × soft featured boost × trending), so the headline is authoritative and
+ * shareable. The `auth.uid()` the client sends still lets the RPC fill
+ * `is_read`, `tag_match` and therefore `personal_score`.
+ *
+ * `geo` is a BOOST, never a filter. Passing country/city ids with
+ * `p_personalized_only: false` leaves the WHERE clause admitting everything —
+ * only `personal_score` changes (×1.25 on a geo hit). A caller that wants the
+ * boost applied sorts by `personal_score` itself; one that wants the global
+ * consensus order leaves the array as returned.
+ *
+ * Filtering on geo was measured and rejected: articles per country over 21 days
+ * run US 404 · GB 105 · AU 71 · DE 14, so a region FILTER hands most European
+ * visitors a three-item band. 24·log2(1.25) = 7.7, i.e. the boost lets a local
+ * story outrank a non-local one up to 7.7 hours newer — enough to pull local
+ * items into view, not enough to lead with week-old news.
  */
-export function useNewsFront(limit = 40, windowDays = 21) {
+export function useNewsFront(
+  limit = 40,
+  windowDays = 21,
+  geo?: { countryIds?: string[] | null; cityIds?: string[] | null },
+) {
+  const countryIds = geo?.countryIds ?? null;
+  const cityIds = geo?.cityIds ?? null;
   const query = useQuery({
-    queryKey: ['news-front', limit, windowDays],
+    // Both geo args belong in the key: they change `personal_score` on every
+    // row, so a cached result from before the region resolved is a different
+    // ranking, not the same one.
+    queryKey: ['news-front', limit, windowDays, countryIds, cityIds],
     ...LIVE_OPTS,
-    queryFn: () => callNewsFront({ p_limit: limit, p_window_days: windowDays }),
+    queryFn: () =>
+      callNewsFront({
+        p_limit: limit,
+        p_window_days: windowDays,
+        p_country_ids: countryIds,
+        p_city_ids: cityIds,
+      }),
   });
   return {
     articles: query.data ?? [],

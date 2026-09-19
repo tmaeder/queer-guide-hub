@@ -102,13 +102,16 @@ export default function AdminTags() {
         await updateTag(editingTag.id, cleanData);
         toast.success('Success: Tag updated successfully');
       } else {
-        await createTag({
-          ...cleanData,
-          slug: cleanData.name
-            .toLowerCase()
-            .replace(/\s+/g, '-')
-            .replace(/[^a-z0-9-]/g, ''),
-        });
+        // No slug is sent: normalize_tag_slug() in Postgres is the single
+        // implementation. The regex that used to live here STRIPPED every
+        // character outside [a-z0-9-], and a lossy pre-normalisation cannot be
+        // repaired downstream — the database turns "/" into a separator, but
+        // it cannot restore a character the client already deleted. Measured
+        // against the live trigger chain: "HIV/AIDS" arrived as "hivaids"
+        // rather than "hiv-aids", "D/s" as "ds", "U=U" as "uu". Accented names
+        // happened to survive only because the non-ASCII seal in
+        // unified_tags_normalize_slug() overrides the caller's slug outright.
+        await createTag(cleanData);
         toast.success('Success: Tag created successfully');
       }
       resetForm();
