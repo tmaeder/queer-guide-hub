@@ -175,7 +175,18 @@ async function proseOf(
 
   await page.goto(`/tags/${slug}`);
   await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
-  return { text: (await page.locator('main').innerText()) ?? '', surface: 'spa' };
+  const text = (await page.locator('main').innerText()) ?? '';
+
+  // THE THIRD GATE. is_adult rows render an AGE interstitial in the SPA —
+  // "Adult content gated / Confirm you are 18 or older" — which is a different
+  // mechanism from the is_sensitive sign-in gate above and reaches a different
+  // set of rows (praise-kink is both; primal-play is adult only). Its copy
+  // contains neither the defect nor the fingerprint, so asserting through it is
+  // the vacuity this spec exists to avoid.
+  if (/Adult content gated|Confirm you are 18 or older/i.test(text)) {
+    return { text: '', surface: 'gated' };
+  }
+  return { text, surface: 'spa' };
 }
 
 function runCases(title: string, cases: Case[]) {
@@ -192,7 +203,7 @@ function runCases(title: string, cases: Case[]) {
         // table rather than the page.
         test.skip(
           surface === 'gated',
-          `/tags/${c.slug} is sensitive-gated to signed-out traffic — prose not observable`,
+          `/tags/${c.slug} is gated to signed-out traffic (sign-in or age) — prose not observable`,
         );
 
         expect(text, `/tags/${c.slug} lost even its own content (${surface})`).toMatch(c.present);
