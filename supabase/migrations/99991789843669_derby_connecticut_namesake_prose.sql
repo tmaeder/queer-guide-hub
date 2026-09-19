@@ -75,7 +75,7 @@ update public.cities c
          || jsonb_build_object('description',
               coalesce(c.field_provenance->'description', '{}'::jsonb)
               || jsonb_build_object('corrected', jsonb_build_object(
-                   'by', 'migration:99991789838474',
+                   'by', 'migration:99991789843669',
                    'source', 'field_provenance.description.candidates[0] (wikipedia), corroborated by wikidata:Q755197 P1082=12325',
                    'reason', 'namesake_prose_and_population_from_Q43475',
                    'from', c.description,
@@ -135,7 +135,7 @@ begin
 
   -- P5 MIRROR: this file touches exactly these two rows and no other Derby
   select count(*) into v_bad from public.cities c
-  where c.field_provenance->'description'->'corrected'->>'by' = 'migration:99991789838474';
+  where c.field_provenance->'description'->'corrected'->>'by' = 'migration:99991789843669';
   if v_bad <> 1 then
     raise exception 'P5 failed: this migration corrected % rows, it may correct exactly 1', v_bad;
   end if;
