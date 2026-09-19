@@ -24,8 +24,9 @@
  * `cityNetworkGeometry.ts`: this is ~1.2 MB of path data across 237 countries.
  * A TS module would land in the JS bundle that `check-bundle-shape.mjs` gates.
  * Static files under `public/` cost the bundle nothing and are CDN-cached, and
- * the component renders them as INLINE svg so the viewer's `data-theme` toggle
- * still wins — an <img> can only see `prefers-color-scheme`.
+ * the component renders them as INLINE svg so the theme toggle still wins —
+ * `ThemeProvider` switches the `dark` CLASS on <html>, which a separate <img>
+ * document cannot see (it only gets `prefers-color-scheme`).
  *
  * Dot safety, load-bearing: the dots are CITIES, never venues. City-level
  * presence is already public (`cities_directory()` is anon-granted and cities
