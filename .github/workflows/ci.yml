@@ -19,6 +19,10 @@ on:
 
 permissions:
   contents: read
+  # For scripts/check-open-pr-migrations.mjs, which lists OTHER open PRs and
+  # their changed files to catch a migration version two branches both claim.
+  # Read-only: the check reports, it never renumbers or comments.
+  pull-requests: read
 
 concurrency:
   group: ci-${{ github.ref }}
@@ -195,6 +199,42 @@ jobs:
           if [ "$rc" -eq 1 ]; then exit 1; fi
           if [ "$rc" -ne 0 ]; then
             echo "::warning::Migration version check could not verify against remote history (exit $rc)."
+          fi
+
+      # CROSS-PR. The step above compares against remote history and sibling
+      # worktrees. Neither can see a version claimed by a branch that exists only
+      # on the remote, and the worktree half is a no-op in CI — the hole
+      # check-migration-versions.mjs's own header has always named as still open:
+      # "closing that needs the GitHub API (open PRs and their changed files), a
+      # network dependency this guard deliberately does not have".
+      #
+      # Measured 2026-09-18/19: #3778 and #3779 independently claimed
+      # 99800101100000, then #3783 picked 99920101100000 — the version #3779 had
+      # renumbered TO inside the same hour. Every existing check was green in all
+      # three, because none could see the others.
+      #
+      # A SEPARATE SCRIPT, deliberately, not a sixth check in the one above: that
+      # file is pure-local by design (it runs in .husky/pre-push with no
+      # credentials) and a GitHub dependency there would make the local hook
+      # slow, flaky, or quietly degraded. Two scripts, two dependency profiles.
+      #
+      # Exit 2 = could not check (no token, rate limit, truncated listing). It is
+      # surfaced as a warning and never as a pass — "could not look" must not
+      # read as "nothing found", which is the convention every other gate here
+      # follows.
+      - name: Check for version collisions with other open PRs
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+        run: |
+          rc=0
+          node scripts/check-open-pr-migrations.mjs || rc=$?
+          if [ "$rc" -eq 1 ]; then
+            echo "::error title=Migration version claimed by another open PR::Two open PRs claim one 14-digit version. Whichever merges first wins; the other is skipped permanently and silently, or aborts the whole db push on schema_migrations_pkey and strands every unrelated pending migration. Fix: node scripts/next-migration-version.mjs --renumber <file>"
+            exit 1
+          fi
+          if [ "$rc" -ne 0 ]; then
+            echo "::warning::Cross-PR migration check could not run (exit $rc) — a collision with another open PR would be invisible."
           fi
 
       # SYNTAX. The two checks around this one only ever look at 14-digit
