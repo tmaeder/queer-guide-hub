@@ -1,6 +1,6 @@
 -- Round eighteen, sibling — TWO WRONG ENTITIES THE CLASS GATE CANNOT REACH.
 --
--- The gate in 99991789843679 refuses an entity whose CLASS is not clinical. It
+-- The gate in 99991789851492 refuses an entity whose CLASS is not clinical. It
 -- is silent about an entity that is simply the WRONG ONE, and re-reading all
 -- 135 code-bearing identifiers found two. Both were resolved live against
 -- wbgetentities before this file was written, never inferred from the tag name:
@@ -89,7 +89,7 @@
 -- changes no column and fires no trigger, which reads exactly like a permissive
 -- one.
 
-select set_config('app.actor', 'migration:99991789843682_tag_justice_infidelity_wrong_entity', true);
+select set_config('app.actor', 'migration:99991789851494_tag_justice_infidelity_wrong_entity', true);
 
 -- ------------------------------------------------------------------- justice
 update public.unified_tags

@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
 /**
- * Guards 99991789843679 + 99991789843682 — ROUND EIGHTEEN.
+ * Guards 99991789851492 + 99991789851494 — ROUND EIGHTEEN.
  *
  * A band headed "Diagnostic codes" published SNOMED geography (Australia, Spain,
  * California), SNOMED occupations (nurse, medical doctor, jurist,
@@ -17,8 +17,8 @@ import { resolve } from 'node:path';
  * latter publishing "Infidelity, also known as embezzlement" as its body.
  */
 
-const GATE = 'supabase/migrations/99991789843679_tag_medical_codes_nonclinical_entities.sql';
-const WRONG = 'supabase/migrations/99991789843682_tag_justice_infidelity_wrong_entity.sql';
+const GATE = 'supabase/migrations/99991789851492_tag_medical_codes_nonclinical_entities.sql';
+const WRONG = 'supabase/migrations/99991789851494_tag_justice_infidelity_wrong_entity.sql';
 const HEALTH = 'scripts/check-pipeline-health.mjs';
 
 const read = (p: string) => readFileSync(resolve(process.cwd(), p), 'utf8');
@@ -317,7 +317,7 @@ describe('the wrong-entity sibling', () => {
   it('declares an attributed actor — load-bearing for the human_reviewed row', () => {
     // infidelity is human_reviewed; verified live, an undeclared write returns
     // "cannot be modified by system:trigger".
-    expect(wrongStatements).toMatch(/set_config\('app\.actor', 'migration:99991789843682/);
+    expect(wrongStatements).toMatch(/set_config\('app\.actor', 'migration:99991789851494/);
   });
 
   it("lets round seventeen's reaper remove the codes rather than deleting them by hand", () => {
