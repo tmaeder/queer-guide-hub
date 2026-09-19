@@ -1987,10 +1987,136 @@ async function guideDetail(env: Env, slug: string, pathname: string): Promise<De
   return { meta, body, jsonLd: renderLd(prune(articleLd)), indexable: true };
 }
 
+// Marketplace makers (brands)
+
+/**
+ * A maker page with no brand behind it. Non-null on purpose — the middleware
+ * hard-404s a NULL detail on a detail path, and this route must keep serving
+ * the SPA so `MarketplaceBrand.tsx`'s "No maker here." dead end (with its "All
+ * makers" escape hatch) still renders for humans. `indexable: false` is what a
+ * crawler gets: measured on prod 2026-09-19, /marketplace/brands/12807-203758186
+ * — a feed-ID artifact retired by `99100101143000` — answered 200 with the
+ * generic SPA shell, the homepage `og:url` and the string `robots` appearing
+ * ZERO times. That is a soft 404, which is worse for the index than a real one
+ * because it looks alive.
+ *
+ * Same shape and same reason as gatedDetailResult(), a different reason for
+ * getting there: nothing exists here, rather than something exists and is
+ * hidden.
+ */
+function missingBrandResult(): DetailResult {
+  return {
+    meta: {
+      title: `No maker here${TITLE_SUFFIX}`,
+      description: 'This brand is not listed, or its page has been retired.',
+      ogImage: safeOgImage(DEFAULT_OG_IMAGE),
+    },
+    body: '',
+    jsonLd: '',
+    indexable: false,
+  };
+}
+
+/**
+ * /marketplace/brands/:slug — the maker page.
+ *
+ * Reads through `get_marketplace_brand(p_slug)` rather than selecting
+ * `marketplace_brands` directly, so this surface and the SPA resolve a maker
+ * through ONE definition. That RPC deliberately has no status filter (admins
+ * preview pending brands) and instead nulls `story` / empties `ownership_tags`
+ * unless the row is approved, so the trust-gated fields cannot leak here by
+ * this function forgetting a filter — which a direct table read would invite,
+ * since `fetchRows` uses the service role and RLS filters nothing for it.
+ * The function is `stable`, so PostgREST serves it over GET and `fetchRows`
+ * works unchanged; `order` is `slug.asc` because the RPC returns no `id`
+ * column and fetchRows' `id.asc` default would 400.
+ *
+ * `indexable` is NOT gated on `is_approved`. A pending brand is a real product
+ * grouping that the SPA already renders and that this path already indexed
+ * before head injection existed; noindexing that cohort would be a new policy,
+ * not a fix for the measured defect.
+ *
+ * Retired brands need no branch of their own: `99100101143000` NULLed their
+ * slug precisely so the lookup cannot match, so they arrive here as a miss.
+ *
+ * No BreadcrumbList. `breadcrumbJsonLd` keys on the FIRST path segment, which
+ * is `marketplace` here, and its two-level shape cannot express
+ * Marketplace > Makers > name. It returns '' for an unrecognised segment, which
+ * its own docblock calls the deliberate answer; a two-level trail that skipped
+ * Makers would disagree with the SPA's breadcrumb, so this stays absent rather
+ * than wrong.
+ */
+async function brandDetail(env: Env, slug: string, pathname: string): Promise<DetailResult | null> {
+  const rows = await fetchRows(
+    env,
+    'rpc/get_marketplace_brand',
+    'slug,display_name,story,website,logo_url,product_count,is_approved',
+    `p_slug=${encodeURIComponent(slug)}`,
+    1,
+    'slug.asc',
+  );
+  const row = rows[0] ?? null;
+  const name = row ? stringField(row, 'display_name') : undefined;
+  if (!row || !name) return missingBrandResult();
+
+  const story = stringField(row, 'story');
+  const website = stringField(row, 'website');
+  const logo = stringField(row, 'logo_url');
+  const count = typeof row.product_count === 'number' ? row.product_count : 0;
+
+  // Mirrors useDetailMeta in src/pages/MarketplaceBrand.tsx so the two surfaces
+  // tell one story; the story is preferred for the description when there is
+  // one, because "Products from X" says nothing a crawler can rank on.
+  const meta: RouteMeta = {
+    title: truncate(`${name} — Marketplace${TITLE_SUFFIX}`, MAX_TITLE),
+    description: truncate(
+      story ||
+        `${count > 0 ? `${count} products` : 'Products'} from ${name} in the Queer Guide marketplace.`,
+      MAX_DESC,
+    ),
+    // The maker's own logo, not a product shot. safeOgImage rejects anything
+    // that is not a usable absolute image URL, so a null logo falls through.
+    ogImage: safeOgImage(logo ?? DEFAULT_OG_IMAGE),
+  };
+
+  const body = `<main data-prerendered="bot-ua">
+    <article>
+      <h1>${escape(name)}</h1>
+      ${count > 0 ? `<p>${count} ${count === 1 ? 'product' : 'products'} in the Queer Guide marketplace.</p>` : ''}
+      ${story ? paragraphsHtml(story) : ''}
+      ${website ? `<p><a href="${escape(website)}" rel="nofollow noopener">${escape(name)} website</a></p>` : ''}
+    </article>
+    <nav aria-label="Site sections">
+      <ul>
+        <li><a href="/marketplace/brands">All makers</a></li>
+        <li><a href="/marketplace">Marketplace</a></li>
+      </ul>
+    </nav>
+  </main>`;
+
+  const brandLd: Record<string, unknown> = {
+    '@context': 'https://schema.org',
+    '@type': 'Brand',
+    name,
+    description: story || undefined,
+    logo,
+    // `sameAs`, not `url`: `url` is this page, the merchant's own site is a
+    // different resource that happens to be about the same brand.
+    sameAs: website ? [website] : undefined,
+    url: `${SITE_ORIGIN}${pathname}`,
+  };
+
+  return { meta, body, jsonLd: renderLd(prune(brandLd)), indexable: true };
+}
+
 // Dispatch
 
+// `marketplace/brands` is the one TWO-segment kind. The group is a literal
+// alternation, so a slash inside it is fine — the slug group still matches one
+// segment, and `/marketplace/brands` itself (no slug) cannot match because that
+// group requires at least one character.
 const DETAIL_ROUTE_RE =
-  /^\/(venues?|events?|news|podcasts|personalities|personality|city|country|hotels?|villages?|tags?|history|guides)\/([^/?#]+)\/?$/;
+  /^\/(venues?|events?|news|podcasts|personalities|personality|city|country|hotels?|villages?|tags?|history|guides|marketplace\/brands)\/([^/?#]+)\/?$/;
 // `podcasts` is LITERAL, deliberately not `podcasts?`. An optional `s` would
 // silently mint a second `/podcast/:slug` URL space that nothing links to and
 // nothing canonicalises.
@@ -2048,9 +2174,18 @@ export function isDetailPath(pathname: string): boolean {
 // Merged/renamed-entity slug redirects, one row per `kindRaw` match. Each
 // entity's merge core (or, for guides, the rename flow) leaves the old slug in
 // `<redirectTable>` (old_slug → <redirectIdColumn>); this drives the generic
-// lookup below. Marketplace and organizations aren't here — they have no edge
-// SSR detail route at all (not in DETAIL_ROUTE_RE), so an edge 301 isn't
-// architecturally possible for them yet.
+// lookup below. Organizations aren't here — they have no edge SSR detail route
+// at all (not in DETAIL_ROUTE_RE), so an edge 301 isn't architecturally
+// possible for them yet.
+//
+// `marketplace/brands` IS in DETAIL_ROUTE_RE since maker pages gained head
+// injection, and is still absent here for a different reason: there is no
+// `marketplace_brand_slug_redirects` table. A renamed brand leaves no trail —
+// `marketplace_brands_set_slug()` only ever fills a NULL slug, and the one
+// retirement on record (`99100101143000`) NULLed slugs rather than repointing
+// them, so there is nothing to redirect TO. brandDetail returns a non-null
+// noindex result rather than null, so this lookup is never reached for it
+// anyway; a redirect table would have to come first.
 //
 // Tags used to be excluded here, on the reasoning that "their public routes are
 // topic/category pages, not a single /tags/:slug detail page, so the redirect
@@ -2232,6 +2367,7 @@ export async function resolveDetailRoute(env: Env, pathname: string): Promise<De
     if (kindRaw.startsWith('tag')) return await tagDetail(env, slug, pathname);
     if (kindRaw === 'history') return await milestoneDetail(env, slug, pathname);
     if (kindRaw === 'guides') return await guideDetail(env, slug, pathname);
+    if (kindRaw === 'marketplace/brands') return await brandDetail(env, slug, pathname);
   } catch {
     return null;
   }
