@@ -22,6 +22,11 @@ const ROUTES = [
   '/venues',
   '/cities',
   '/news',
+  // The podcast hub (#3786). Its own surface, and the one listing page that
+  // renders a FIXED docked player on top of the scroll container — so a
+  // gutter regression here also risks the player colliding with the mobile
+  // nav, which no other route can exercise.
+  '/podcasts',
   '/guides',
   '/about',
   '/help',
