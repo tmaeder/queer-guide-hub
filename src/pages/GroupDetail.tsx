@@ -24,6 +24,7 @@ import {
   Crown,
   User,
   Folder,
+  Scale,
 } from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useGroups, Group } from '@/hooks/useGroups';
@@ -191,11 +192,15 @@ export default function GroupDetail() {
                       {group.name}
                     </Editable>
                   </h1>
-                  {group.is_private ? (
-                    <Lock size={20} className="text-muted-foreground" />
-                  ) : (
-                    <Globe size={20} className="text-muted-foreground" />
-                  )}
+                  {/* Labelled, not a bare icon. A reader asked to see that a group is
+                      public up here, and an icon-only cue is also a WCAG 1.4.1 failure —
+                      lock vs globe at 20px carries the whole meaning. The wording is
+                      lifted from the About tab's copy of this same fact, which this
+                      change removes. */}
+                  <Badge variant="outline" className="flex items-center gap-1">
+                    {group.is_private ? <Lock size={12} /> : <Globe size={12} />}
+                    {group.is_private ? 'Private group' : 'Public group'}
+                  </Badge>
                 </div>
 
                 <div className="flex items-center gap-4 justify-center md:justify-start text-muted-foreground">
@@ -297,9 +302,13 @@ export default function GroupDetail() {
       {/* Content Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList style={{ width: '100%', gridTemplateColumns: 'repeat(6, 1fr)' }} className="grid">
+          {/* "Rules", not "About": the About content moved into the hero (see the tab
+              body), so the label has to say what the tab now actually holds. The `value`
+              stays "about" — it is the default tab and is referenced elsewhere; renaming
+              the key would be a behaviour change dressed up as a label fix. */}
           <TabsTrigger value="about" style={{ alignItems: 'center', gap: '8px' }} className="flex">
-            <Users size={16} />
-            About
+            <Scale size={16} />
+            Rules
           </TabsTrigger>
           <TabsTrigger
             value="members"
@@ -336,78 +345,30 @@ export default function GroupDetail() {
           style={{ flexDirection: 'column', gap: '24px' }}
           className="flex"
         >
-          <Card>
-            <CardHeader>
-              <CardTitle>About this group</CardTitle>
-            </CardHeader>
-            <CardContent style={{ flexDirection: 'column', gap: '16px' }} className="flex">
-              {group.description ? (
-                <p className="text-muted-foreground" style={{ lineHeight: 1.7 }}>
-                  {group.description}
-                </p>
-              ) : (
-                <p className="text-muted-foreground italic">No description available.</p>
-              )}
-
-              <div className="flex flex-col gap-4">
-                <h4 className="text-base font-semibold">Group Details</h4>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                  <div className="flex items-center gap-2">
-                    <Users size={16} className="text-muted-foreground" />
-                    <span>{group.member_count} members</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    {group.is_private ? (
-                      <>
-                        <Lock size={16} className="text-muted-foreground" />
-                        <span>Private group</span>
-                      </>
-                    ) : (
-                      <>
-                        <Globe size={16} className="text-muted-foreground" />
-                        <span>Public group</span>
-                      </>
-                    )}
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Clock size={16} className="text-muted-foreground" />
-                    <span>Created {new Date(group.created_at).toLocaleDateString()}</span>
-                  </div>
-                </div>
-              </div>
-
-              {group.tags && group.tags.length > 0 && (
-                <>
-                  <div className="flex flex-col gap-4">
-                    <h4 className="text-base font-semibold">Tags</h4>
-                    <div className="flex flex-wrap gap-2">
-                      {group.tags.map((tag) => (
-                        <Badge
-                          key={tag}
-                          variant="outline"
-                          className="cursor-pointer"
-                          onClick={() => navigate(`/tags/${encodeURIComponent(tag)}`)}
-                        >
-                          {tag}
-                        </Badge>
-                      ))}
-                    </div>
-                  </div>
-                </>
-              )}
-
-              {group.rules && (
-                <>
-                  <div className="flex flex-col gap-4">
-                    <h4 className="text-base font-semibold">Group Rules</h4>
-                    <p className="text-sm text-muted-foreground whitespace-pre-wrap">
-                      {group.rules}
-                    </p>
-                  </div>
-                </>
-              )}
-            </CardContent>
-          </Card>
+          {/* Rules only.
+              This card used to restate the hero verbatim — description, member count,
+              visibility, created date and tags all render above under a "Group Details"
+              sub-heading, which is what a reader meant by "the group details are shown
+              twice, a grouping in the upper area would be cleaner". The hero is the copy
+              that survives: it is the one wired to `Editable` for admin inline editing,
+              and up-top is where the reader asked for it. Rules were the only thing this
+              card held that the hero does not. */}
+          {group.rules ? (
+            <Card>
+              <CardHeader>
+                <CardTitle>Group rules</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-muted-foreground whitespace-pre-wrap">{group.rules}</p>
+              </CardContent>
+            </Card>
+          ) : (
+            <Card>
+              <CardContent className="py-8 text-center text-muted-foreground">
+                This group has not set any rules.
+              </CardContent>
+            </Card>
+          )}
         </TabsContent>
 
         <TabsContent
