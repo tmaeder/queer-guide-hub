@@ -3270,7 +3270,7 @@ const TRUNCATED_DESCRIPTION_CEILING = 30
       console.error(`✗ tag_prose_standard_signals scanned only ${ts.rows_scanned ?? 0} descriptions — the probe is measuring nothing, not passing`)
       FAILED = true
     } else {
-      for (const key of ['truncated_description', 'stamp_as_definition', 'unresolved_disambiguation', 'whitespace_dirty']) {
+      for (const key of ['truncated_description', 'stamp_as_definition', 'unresolved_disambiguation', 'surname_stub', 'whitespace_dirty']) {
         if (!(key in ts)) {
           console.error(`✗ tag_prose_standard_signals has no '${key}' key — that check measured NOTHING`)
           FAILED = true
@@ -3280,6 +3280,7 @@ const TRUNCATED_DESCRIPTION_CEILING = 30
       const stamp = Number(ts.stamp_as_definition ?? 0)
       const trunc = Number(ts.truncated_description ?? 0)
       const disamb = Number(ts.unresolved_disambiguation ?? 0)
+      const surname = Number(ts.surname_stub ?? 0)
 
       if (ws > 0) {
         console.error(`✗ ${ws} active glossary description(s) carry stray whitespace — a zero-invariant since 99700101100200`)
@@ -3302,7 +3303,20 @@ const TRUNCATED_DESCRIPTION_CEILING = 30
         console.warn(`⚠ ${disamb} glossary description(s) are themselves a "may refer to:" disambiguation list`)
         console.warn('  Unrepairable under the evidence rule — the description cannot be evidence for itself. Needs a human sense decision.')
       }
-      if (ws === 0 && stamp === 0 && trunc === 0 && disamb === 0) {
+      // A ZERO-INVARIANT, unlike the warning above, and the difference is whether
+      // the row can be repaired at all. A "may refer to:" list cannot be — the
+      // description would have to be evidence for itself. A surname stub can:
+      // null it and let the thin-page gate deindex the row, which is what
+      // 99950101100000 did to the eight that were live and uncounted when this
+      // arm was added. So it gates at zero rather than warning, and was not red
+      // on arrival.
+      if (surname > 0) {
+        console.error(`✗ ${surname} active glossary description(s) are an English Wikipedia surname stub ("X is a surname. Notable people with the surname include:")`)
+        console.error('  A name-only Wikipedia lookup answered with a surname page — the namesake chimera _shared/tag-wiki-guard.ts seals at the producer, which does nothing for prose already written.')
+        console.error('  NULL the description and let trg_tag_thin_page_gate deindex the row as thin. Never write a definition to fill the hole: minting vocabulary is the guess this class came from.')
+        FAILED = true
+      }
+      if (ws === 0 && stamp === 0 && trunc === 0 && disamb === 0 && surname === 0) {
         console.log('✓ glossary descriptions conform to the structural standard')
       }
     }
