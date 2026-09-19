@@ -67,7 +67,12 @@ export function AudioMiniBar() {
         !reduced && 'motion-safe:animate-in motion-safe:slide-in-from-bottom-2',
       )}
       style={{
-        bottom: 'calc(var(--island-inset, 0px) + env(safe-area-inset-bottom, 0px) + 4.5rem)',
+        // `--consent-bar-clearance` is published by CookieConsentBanner while it
+        // is up. It paints at z-100 against this bar's z-30, so without the
+        // term the player is not merely crowded — it is entirely hidden behind
+        // the banner on a first visit (measured: bar 638-844, player 674-758).
+        bottom:
+          'calc(var(--island-inset, 0px) + env(safe-area-inset-bottom, 0px) + 4.5rem + var(--consent-bar-clearance, 0px))',
       }}
     >
       <div className="rounded-container bg-card shadow-soft-lg">
