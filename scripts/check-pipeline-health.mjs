@@ -3307,7 +3307,7 @@ const TRUNCATED_DESCRIPTION_CEILING = 30
       // the row can be repaired at all. A "may refer to:" list cannot be — the
       // description would have to be evidence for itself. A surname stub can:
       // null it and let the thin-page gate deindex the row, which is what
-      // 99950101100000 did to the eight that were live and uncounted when this
+      // 99960101100000 did to the eight that were live and uncounted when this
       // arm was added. So it gates at zero rather than warning, and was not red
       // on arrival.
       if (surname > 0) {

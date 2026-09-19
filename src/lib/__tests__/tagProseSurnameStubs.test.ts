@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 /**
- * Guards 99950101100000 — the 2026-08-30 flip residue: a misfiled summary on
+ * Guards 99960101100000 — the 2026-08-30 flip residue: a misfiled summary on
  * `queening`, and the eight-row surname-stub class that `kerle` led to.
  *
  * WHAT THIS FILE EXISTS TO PRESERVE, each of which a later reader could undo
@@ -54,7 +54,7 @@ import { join } from 'node:path';
 
 const MIGRATION = join(
   process.cwd(),
-  'supabase/migrations/99950101100000_tag_prose_surname_stubs_and_queening.sql',
+  'supabase/migrations/99960101100000_tag_prose_surname_stubs_and_queening.sql',
 );
 
 const sql = readFileSync(MIGRATION, 'utf8');
@@ -93,7 +93,7 @@ const stubs = updateBlocks.find((b) => /Notable people with the/.test(b.where));
 const HEALTH = join(process.cwd(), 'scripts/check-pipeline-health.mjs');
 const health = readFileSync(HEALTH, 'utf8');
 
-describe('99950101100000 — surname stubs and the queening summary', () => {
+describe('99960101100000 — surname stubs and the queening summary', () => {
   it('has exactly the two UPDATEs, each identifiable by its own guard', () => {
     expect(updateBlocks).toHaveLength(2);
     expect(queening).toBeDefined();
@@ -105,7 +105,7 @@ describe('99950101100000 — surname stubs and the queening summary', () => {
     // "human_reviewed tag ... cannot be modified by system:trigger". A
     // self-assignment fires no trigger, so that probe must never be the evidence.
     expect(statements).toMatch(
-      /set_config\(\s*'app\.actor'\s*,\s*'migration:99950101100000[^']*'\s*,\s*true\s*\)/i,
+      /set_config\(\s*'app\.actor'\s*,\s*'migration:99960101100000[^']*'\s*,\s*true\s*\)/i,
     );
   });
 
