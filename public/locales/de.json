@@ -1803,7 +1803,22 @@
     "news": {
       "title": "Aktuelle Nachrichten",
       "eyebrow": "Aktuelles",
-      "editorsPick": "[DE] Editors' pick"
+      "editorsPick": "[DE] Editors' pick",
+      "topics": "Nachrichtenthemen",
+      "topic": {
+        "all": "Alle",
+        "rights": "Recht & Gesetz",
+        "community": "Community",
+        "culture": "Kultur & Kunst",
+        "podcasts": "Podcasts"
+      },
+      "moreStories": "{{count}} weitere Meldungen",
+      "followTopics": "Themen folgen",
+      "following": "{{count}} gefolgt",
+      "searchTopics": "Themen suchen…",
+      "unfollow": "Nicht mehr folgen",
+      "trySearching": "Zum Beispiel: {{list}}",
+      "noTopic": "Kein Thema mit diesem Namen."
     },
     "discover": "Discover",
     "destinationsTitle": "Where the scene lives.",

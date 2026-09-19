@@ -22,13 +22,23 @@ const GlossaryBand = lazyOptional(() => import('@/components/home/GlossaryBand')
 
 // ── Section shells ───────────────────────────────────────────────────────────
 
+// Mirrors NewsMagazine's own loading state: a topic chip row over a lead image
+// beside five dense rows. The band swaps in at the DeferredSection boundary, so
+// a skeleton that does not match its shape is measurable CLS.
 const magazineSkeleton = (
-  <PageContainer className="grid grid-cols-1 gap-10 md:grid-cols-[1.1fr_1fr]">
-    <Skeleton className="aspect-[16/10] w-full rounded-container" />
-    <div className="grid grid-cols-2 gap-x-6 gap-y-8">
-      {Array.from({ length: 4 }).map((_, i) => (
-        <Skeleton key={i} className="aspect-[3/2] w-full rounded-element" />
+  <PageContainer>
+    <div className="mb-6 flex gap-2">
+      {Array.from({ length: 5 }).map((_, i) => (
+        <Skeleton key={i} className="h-8 w-24 rounded-element" />
       ))}
+    </div>
+    <div className="grid grid-cols-1 gap-10 md:grid-cols-[1.1fr_1fr]">
+      <Skeleton className="aspect-[16/10] w-full rounded-container" />
+      <div className="flex flex-col gap-2">
+        {Array.from({ length: 5 }).map((_, i) => (
+          <Skeleton key={i} className="h-12 w-full rounded-element" />
+        ))}
+      </div>
     </div>
   </PageContainer>
 );
