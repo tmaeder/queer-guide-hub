@@ -51,9 +51,27 @@ function titleOf(html: string): string {
   return html.match(/<title>([\s\S]*?)<\/title>/i)?.[1] ?? '';
 }
 
-function metaContent(html: string, property: string): string {
-  const re = new RegExp(`<meta\\s+property="${property}"\\s+content="([^"]*)"`, 'i');
-  return html.match(re)?.[1] ?? '';
+/**
+ * The LAST `og:<property>`, which is the one that counts.
+ *
+ * `functions/_middleware.ts` APPENDS its og/twitter tags to `<head>` rather
+ * than replacing them ("duplicates from the source HTML are tolerated;
+ * crawlers honor the *last* tag"), so every page carries at least two: the
+ * static one baked into index.html and the injected one. Measured on prod
+ * 2026-09-19, /tags/darkroom returns `og:url` twice — first
+ * `https://queer.guide/` from the shell, then
+ * `https://queer.guide/tags/darkroom` from the middleware.
+ *
+ * A first draft of this helper took the FIRST match and so read the homepage
+ * URL on every page. It would have failed against a perfectly correct deploy
+ * and been indistinguishable from the defect this file exists to catch. Found
+ * by curling a page whose injection already works, not by reading the
+ * middleware.
+ */
+function lastMetaContent(html: string, property: string): string {
+  const re = new RegExp(`<meta\\s+property="${property}"\\s+content="([^"]*)"`, 'gi');
+  const all = [...html.matchAll(re)];
+  return all.length ? (all[all.length - 1][1] ?? '') : '';
 }
 
 async function crawlerHtml(request: import('@playwright/test').APIRequestContext, path: string) {
@@ -96,7 +114,7 @@ test.describe('@smoke maker pages have their own crawler head', () => {
         `${name} — Marketplace | Queer Guide`,
       );
       expect(
-        metaContent(html, 'og:url'),
+        lastMetaContent(html, 'og:url'),
         `/marketplace/brands/${slug} canonicalises somewhere else`,
       ).toBe(`https://queer.guide/marketplace/brands/${slug}`);
 
