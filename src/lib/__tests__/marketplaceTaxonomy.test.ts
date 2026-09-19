@@ -35,4 +35,34 @@ describe('marketplace taxonomy mirror', () => {
     expect(groupLabel('some_new_group')).toBe('Some New Group');
     expect(groupLabel(null)).toBe('Other');
   });
+
+  // ── Invariants the reverse map depends on ────────────────────────────────
+  // `/marketplace/categories` turns DEPARTMENT_GROUPS inside out to build
+  // `/marketplace/category/<department>?g=<group>` links. Both checks below are
+  // pure and need no database; the direction a unit test CANNOT see (the SQL
+  // classifier adding a group this mirror lacks) is handled at runtime instead,
+  // by that page surfacing unroutable groups rather than dropping them.
+
+  it('no group belongs to two departments — the reverse map must be unambiguous', () => {
+    // A group claimed twice sends half its tiles to the wrong department page.
+    // There is no visible symptom: the page renders, and only the count
+    // disagrees with the tile the reader clicked.
+    const seen = new Map<string, string>();
+    for (const [dep, groups] of Object.entries(DEPARTMENT_GROUPS)) {
+      for (const g of groups) {
+        expect(seen.get(g), `group ${g} claimed by both ${seen.get(g)} and ${dep}`).toBeUndefined();
+        seen.set(g, dep);
+      }
+    }
+  });
+
+  it('every labelled group is routed by some department', () => {
+    // Catches the half-edit: a label added, the routing forgotten. Such a group
+    // is invisible on the index page even though it reads as fully configured.
+    // `apparel` was exactly this — a real SQL group missing from BOTH maps.
+    const routed = new Set(Object.values(DEPARTMENT_GROUPS).flat());
+    for (const g of Object.keys(GROUP_LABELS)) {
+      expect(routed.has(g), `group ${g} has a label but no department routes it`).toBe(true);
+    }
+  });
 });

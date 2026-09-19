@@ -2,7 +2,7 @@ import { getServiceClient, jsonResponse, errorResponse, corsResponse, requireInt
 import { withCircuitBreaker } from '../_shared/circuit-breaker.ts'
 import type { SourceAdapter, RawItem, NormalizedItem, AdapterConfig } from '../_shared/source-adapter.ts'
 import { writeToStaging, MissingCredentialsError, skippedResponse } from '../_shared/source-adapter.ts'
-import { extractMerchantDomain, normalizeCurrency } from '../_shared/marketplace-pipeline-utils.ts'
+import { brandFromVendor, extractMerchantDomain, normalizeCurrency } from '../_shared/marketplace-pipeline-utils.ts'
 import { withErrorReporting } from '../_shared/report-api-error.ts'
 import { assertPublicHttpUrl } from '../_shared/ssrf-guard.ts'
 
@@ -48,8 +48,14 @@ function makeAdapter(shopDomain: string): SourceAdapter {
           source_slug: 'shopify', shop_domain: shopDomain, product_id: String(p.id),
           merchant_deep_link: externalUrl, merchant_domain: extractMerchantDomain(externalUrl),
           price: Number.isFinite(price) && price != null && price > 0 ? price : null,
-          currency: normalizeCurrency('USD'), category: p.product_type, brand: p.vendor, brand_name: p.vendor,
-          business_name: p.vendor || shopDomain, in_stock: inStock, sku: variant?.sku, handle: p.handle,
+          currency: normalizeCurrency('USD'), category: p.product_type,
+          // This adapter has no merchant-registry overrides in scope, so the
+          // shop domain is the only fallback it can offer. Honest and stable —
+          // and far better than minting a brand named after a PO number.
+          brand: brandFromVendor(p.vendor, shopDomain),
+          brand_name: brandFromVendor(p.vendor, shopDomain),
+          business_name: brandFromVendor(p.vendor, shopDomain),
+          in_stock: inStock, sku: variant?.sku, handle: p.handle,
         },
       }
     },

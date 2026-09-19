@@ -51,11 +51,34 @@ export interface DirectoryBrand {
   ownership_tags: string[] | null;
 }
 
-/** Page size for /marketplace/brands. Also the "load more" step. */
-export const BRAND_DIRECTORY_PAGE_SIZE = 48;
+/**
+ * Hard ceiling on the directory read.
+ *
+ * PostgREST's implicit cap is 1000 rows and the catalogue stands at 885, so an
+ * unbounded select is ALREADY within one ingest run of silently truncating —
+ * the same class of bug as the sitemap's 1000-row truncation, and just as
+ * invisible, because a short array and a small catalogue look identical. Stated
+ * explicitly so the limit is a decision with a number rather than a default
+ * nobody chose. `useMarketplaceBrandsDirectory` reports when it is hit.
+ */
+export const BRAND_DIRECTORY_CEILING = 5000;
 
 /**
- * The makers directory behind /marketplace/brands.
+ * The makers directory behind /marketplace/brands — the WHOLE catalogue, once.
+ *
+ * This used to paginate: a growing `.range(0, (page+1)*48)` window plus server
+ * `ilike` search and `.overlaps()` ownership filtering, so browsing the tail
+ * cost eighteen round trips and every keystroke cost one. Measured, all 885
+ * rows of the six columns below are **17 kB** — smaller than most of the images
+ * on the page it feeds. Fetching once and filtering in memory is less code, one
+ * request, instant search, and it deletes the page state, the range arithmetic
+ * and the "Load more" network hop outright. It also makes an A–Z index possible
+ * at all: a letter jump over a 48-row window can only ever reach what happens
+ * to be loaded.
+ *
+ * Filtering therefore lives at the call site. That is deliberate — the page
+ * already owns the search box and the chips, and a filter that runs in the same
+ * tick as the keystroke cannot get out of step with them.
  *
  * Deliberately NOT built on `useVerifiedOwnedBrands`, which hard-filters to
  * `ownership_tags != '{}'` — that hook answers "who have we verified as
@@ -66,50 +89,84 @@ export const BRAND_DIRECTORY_PAGE_SIZE = 48;
  * `product_count > 0` is not cosmetic: `marketplace_brands` retains rows whose
  * listings have all gone inactive, and a directory tile that opens onto an
  * empty grid is a dead end the reader paid a navigation for.
- *
- * Ownership filtering uses `.overlaps()` (PostgREST `&&`) so a brand matches if
- * it carries ANY selected tag — the chips are a widening OR, not a narrowing
- * AND. Selecting "Trans-owned" and "BIPOC-owned" should show both, not only
- * brands that are both.
  */
-export function useMarketplaceBrandsDirectory(opts: {
-  search?: string;
-  ownership?: string[];
-  page?: number;
-}) {
-  const search = opts.search?.trim() ?? '';
-  const ownership = opts.ownership ?? [];
-  const page = opts.page ?? 0;
-
+export function useMarketplaceBrandsDirectory() {
   return useQuery({
-    queryKey: ['marketplace-brands-directory', search, ownership.join(','), page],
+    queryKey: ['marketplace-brands-directory'],
     staleTime: 300_000,
-    queryFn: async (): Promise<{ brands: DirectoryBrand[]; total: number }> => {
-      let q = supabase
+    queryFn: async (): Promise<DirectoryBrand[]> => {
+      const { data, error } = await supabase
         .from('marketplace_brands')
-        .select('slug, display_name, logo_url, logo_on_ink, story, product_count, ownership_tags', {
-          count: 'exact',
-        })
+        .select('slug, display_name, logo_url, logo_on_ink, story, product_count, ownership_tags')
         .eq('status', 'approved')
         .not('slug', 'is', null)
-        .gt('product_count', 0);
-
-      if (search) q = q.ilike('display_name', `%${search}%`);
-      if (ownership.length > 0) q = q.overlaps('ownership_tags', ownership);
-
-      // A GROWING WINDOW (0 .. n), not a page slice. "Load more" on a directory
-      // has to accumulate, and doing that by widening the range keeps the
-      // accumulation in the query cache instead of in a `useState` that has to
-      // be reset in an effect every time a chip or the search box changes —
-      // which is exactly where the listing views grew their set-state-in-effect
-      // exemptions. Brand rows are six small columns, so re-reading the window
-      // costs less than the bug class does.
-      const { data, error, count } = await q
+        .gt('product_count', 0)
         .order('product_count', { ascending: false, nullsFirst: false })
-        .range(0, (page + 1) * BRAND_DIRECTORY_PAGE_SIZE - 1);
+        .limit(BRAND_DIRECTORY_CEILING);
 
       if (error) throw error;
-      return { brands: (data ?? []) as DirectoryBrand[], total: count ?? 0 };
+      const rows = (data ?? []) as DirectoryBrand[];
+      if (rows.length >= BRAND_DIRECTORY_CEILING) {
+        // Say so rather than rendering a plausible-looking partial directory.
+        // A truncated catalogue is indistinguishable from a small one by
+        // looking at it, which is precisely why it needs to announce itself.
+        console.warn(
+          `[brands] directory hit its ${BRAND_DIRECTORY_CEILING}-row ceiling — the index is truncated`,
+        );
+      }
+      return rows;
+    },
+  });
+}
+
+export interface BrandCover {
+  /** The merchant's own image. Always present. */
+  url: string;
+  /**
+   * Our `img.queer.guide` mirror, when one exists (78.5% of active SFW
+   * listings). Null is normal and safe: `<Image>` walks optimized → thumbnail →
+   * original, so an un-mirrored cover — or a mirror the zone's Referer rule
+   * blocks, which is every request from localhost — falls back to `url` rather
+   * than to a placeholder texture.
+   */
+  thumb: string | null;
+}
+
+export interface BrandWithCovers extends DirectoryBrand {
+  /** Exactly three; the RPC drops any brand that cannot fill the strip. */
+  covers: BrandCover[];
+}
+
+/**
+ * The head of the catalogue, with product covers — the directory's one
+ * image-bearing band.
+ *
+ * Separate from the directory read rather than folded into it, because the two
+ * answer different questions at different costs: this one runs a LATERAL per
+ * row and is asked for twelve, that one is a flat select and is asked for all
+ * 885. Keeping them apart also keeps this key CONSTANT, so the band is not
+ * re-fetched as the reader filters the index beneath it.
+ *
+ * Every safety and quality decision — SFW ratings, logo required, three covers,
+ * the honest ordering — lives in the RPC rather than here, so no caller can
+ * render an adult hero image or a strip with a hole in it by passing the wrong
+ * argument. `story` is not among its columns and is filled in as null to
+ * satisfy `DirectoryBrand`: this tile shows goods, not prose.
+ */
+export function useMarketplaceBrandCovers(limit = 12) {
+  return useQuery({
+    queryKey: ['marketplace-brand-covers', limit],
+    staleTime: 300_000,
+    queryFn: async (): Promise<BrandWithCovers[]> => {
+      const { data, error } = await untypedSupabase.rpc('get_marketplace_brand_covers', {
+        p_limit: limit,
+      });
+      if (error) throw error;
+      return ((data ?? []) as Array<Omit<BrandWithCovers, 'story'>>).map((b) => ({
+        ...b,
+        story: null,
+        covers: Array.isArray(b.covers) ? b.covers : [],
+      }));
     },
   });
 }

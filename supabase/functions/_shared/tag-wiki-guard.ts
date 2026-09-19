@@ -86,7 +86,32 @@ const IMPLAUSIBLE_CLASS_PATTERNS: ReadonlyArray<readonly [string, RegExp]> = [
   ['name', /(given name|family name|unisex given name|male given name|female given name|surname)/i],
   ['taxon', /^(taxon|monotypic taxon|clade|fossil taxon|species|variety|cultivar|breed|strain)$/i],
   ['person', /^(human|human biblical figure|fictional human|pseudonym)$/i],
-  ['place', /(municipality|human settlement|\bcity\b|\btown\b|\bvillage\b|commune|county|province|state of|island|mountain|neighborhood|hamlet|administrative territorial entity|sovereign state|railway line|railway station|metro station|constellation|\bbay\b|valley)/i],
+  // The URBAN-SUBDIVISION vocabulary was added 2026-09-15 and it is the arm that lets a CITY
+  // DISTRICT through. The word list above is settlement-shaped ("city", "town", "village",
+  // "municipality"), and a district is none of those: Kreuzberg's P31 is Q35034452, whose English
+  // label is `locality of Berlin`, and Mitte's is Q821435, `borough of Berlin`. Neither string
+  // contains a single word the old arm tested for, so the sweep adopted Q308928 and published
+  // "Kreuzberg is a district of Berlin, Germany" as an INDEXABLE glossary page filed under the
+  // tag category "Vibe & Crowd" — a city district asserted to be a queer vibe.
+  //
+  // This is not a hypothetical class of entity for this platform: a district is exactly what
+  // `queer_villages` models, so a tag adopting one is always a duplicate of an entity that has
+  // its own page (or should have one). Kreuzberg now does: /villages/kreuzberg.
+  //
+  // Measured the way the `institution` arm below was, over every distinct P31 label carried by
+  // the 1,570 QIDs on active tags (774 distinct classes, ALL resolved — an unresolved label
+  // matches nothing, so a partial fetch silently under-reports both hits and collateral, and the
+  // first run of this measurement did exactly that with 500 of 774). The added words reach
+  // exactly 10 rows and every one is a genuine place: the 8 Berlin districts (Kreuzberg,
+  // Schöneberg, Friedrichshain, Neukölln, Mitte, Spandau, Steglitz, Tempelhof) plus Cuernavaca
+  // and Morelia, both `locality of Mexico` and both already city pages we publish. ZERO
+  // collateral — no concept tag is caught.
+  //
+  // `\bward\b` and `\bquarter\b` are deliberately word-bounded: they are ordinary English in a
+  // kink/health glossary ("hospital ward", "quarter"), but as a P31 CLASS label they can only
+  // mean the administrative unit, which is why they are safe here and would not be safe as a
+  // name test.
+  ['place', /(municipality|human settlement|\bcity\b|\btown\b|\bvillage\b|commune|county|province|state of|island|mountain|neighborhood|hamlet|administrative territorial entity|sovereign state|railway line|railway station|metro station|constellation|\bbay\b|valley|\bborough\b|\blocality\b|\bdistrict\b|\bquarter\b|\bward\b|\bsuburb\b|neighbourhood|Ortsteil|Bezirk|arrondissement|\bbarrio\b|subdistrict|census-designated place|civil parish)/i],
   ['media', /\b(film|films|album|albums|song|songs|single|television series|television program|tv series|video game|videogame|novel|manga|anime|musical group|musical duo|rock band|band|comic strip|opera|periodical|magazine|newspaper|podcast|episode|literary work|written work|soundtrack|discography|film character)\b/i],
   ['org', /(political party|business enterprise|\bcompany\b|enterprise|nonprofit|non-profit|organization|organisation|university|record label|\bbrand\b|airline|airport)/i],
   // An INSTITUTION whose class label does not happen to contain the word
@@ -112,6 +137,29 @@ const IMPLAUSIBLE_CLASS_PATTERNS: ReadonlyArray<readonly [string, RegExp]> = [
   ['institution', /(military unit|military branch|military formation|military command|armed forces|\barmy\b|\bnavy\b|naval\b|air force|aviation command|government agency|government body|government organization|government organisation|intelligence agency|law enforcement agency|police force)/i],
   ['artifact', /(\bwebsite\b|online database|\bdatabase\b|software|web service|mobile app|computer program|medal|\baward\b|\bship\b)/i],
   ['disambiguation', /(disambiguation|Wikimedia|Wikipedia language edition)/i],
+  // A SPECIFIC BUILT VENUE. Added 2026-09-18 after /tags/friedrichstadt-palast published
+  // Wikipedia's entry for a Berlin revue theatre under "Drag & Performance", while the venue
+  // itself already existed at /venues/friedrichstadt-palast. Its P31 label is `theatre building`,
+  // which the `place` arm does not test for (that arm is settlement-shaped) and the `org` arm
+  // does not either (a building is not an organisation).
+  //
+  // THE `type of` EXCLUSION IS THE WHOLE ARM. These labels come in two forms and only one is a
+  // defect: `theatre building` is an INSTANCE (one theatre in Berlin), while `type of building`
+  // is a CLASS and is exactly what a glossary term legitimately is. Live in this corpus on that
+  // side of the line: `bullring`, `church building`, `concert hall` and `house` are all classed
+  // `type of building`. Without the exclusion this arm would refuse all four.
+  //
+  // Measured over every distinct P31 label on the 1,570 QIDs of active tags (774 classes, all
+  // resolved): reaches 5 rows, every one a specific building, ZERO collateral —
+  // Friedrichstadt-Palast (`theatre building`), Hotel Barcelona Princess (`skyscraper`,
+  // `hotel building`), the Munch Museum (`art museum`), The Screening Room (`movie theater`) and
+  // a Helsinki redevelopment plan (`building`). Four of the five were on tags about something
+  // else entirely — `munch` is the BDSM meet-up, `power-exchange` the BDSM concept — so this arm
+  // catches wrong-entity links, not just duplicates.
+  //
+  // Bare `\bbuilding\b` is included and is safe ONLY because of the exclusion above; it is what
+  // reaches the fifth row, whose class label is just `building`.
+  ['building', /^(?!.*\b(?:type|class) of\b)(?!.*classification of).*(theatre building|theater building|opera house|concert venue|music venue|movie theater|movie theatre|cinema building|art museum|hotel building|\bskyscraper\b|department store|shopping mall|\bstadium\b|\barena\b|\bbuilding\b)/i],
 ]
 
 /**

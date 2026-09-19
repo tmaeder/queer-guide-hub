@@ -36,9 +36,13 @@ test.describe('removed: the CONCEPT chip on a glossary entry', () => {
 
   // CONTROL. Without this, deleting the whole chip mechanism would pass the
   // test above — which is the opposite of what was asked for.
-  test('a place tag still renders its kind chip', async ({ page }) => {
-    await open(page, '/tags/berlin');
-    await expect(page.getByRole('heading', { level: 1, name: 'Berlin' })).toBeVisible({
+  test('a non-duplicate place tag still renders its kind chip', async ({ page }) => {
+    // City/country/district duplicates such as Berlin now permanently redirect to
+    // their canonical geo page. California deliberately remains a tag because no
+    // canonical state/region page exists for it, so it is the correct control for
+    // the entity-kind chip itself.
+    await open(page, '/tags/california');
+    await expect(page.getByRole('heading', { level: 1, name: 'California' })).toBeVisible({
       timeout: BOOT,
     });
     await expect(page.getByText('Place', { exact: true }).first()).toBeVisible();

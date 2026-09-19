@@ -34,13 +34,46 @@ if (!BASE || !KEY) {
   process.exit(0)
 }
 
-const res = await fetch(`${BASE}/rest/v1/rpc/tag_hygiene_stats`, {
-  method: 'POST',
-  headers: { apikey: KEY, Authorization: `Bearer ${KEY}`, 'Content-Type': 'application/json' },
-  body: '{}',
-})
+const callStats = () =>
+  fetch(`${BASE}/rest/v1/rpc/tag_hygiene_stats`, {
+    method: 'POST',
+    headers: { apikey: KEY, Authorization: `Bearer ${KEY}`, 'Content-Type': 'application/json' },
+    body: '{}',
+  })
+
+let res = await callStats()
+let body = res.ok ? null : await res.text()
+
+// 57014 is Postgres's statement_timeout on `authenticator`, NOT a hygiene metric
+// growing. The RPC ran out of time, so NO metric was evaluated at all and the PR
+// goes red for a reason unrelated to its diff. Same handling as
+// check-data-quality-gates.mjs and check-search-facets-parity.mjs; this script
+// was the one that never got it.
+//
+// Measured 2026-09-14: the function is 1.3s warm against the 8s ceiling — 6x
+// headroom — and the one failure on record took 8.3s and passed on re-run while
+// three other PRs called the same database inside 40 seconds and passed. That is
+// contention, not cost, which is why this retries rather than shaving arms: a 20%
+// optimisation does not survive a 6x spike.
+//
+// Deliberately LOUD, and the retry count stays at ONE. A retry that quietly
+// succeeds is how a function creeps back toward the ceiling unnoticed. If this
+// appears in the logs, re-measure per arm — measured per arm, not by reading the
+// plan tree, because EXPLAIN reports buffers CUMULATIVELY through nested nodes
+// and a rolled-up figure reads exactly like an independent one.
+if (!res.ok && body?.includes('57014')) {
+  console.warn('⚠ tag_hygiene_stats() hit the statement timeout (57014) — no metric was evaluated. Retrying once.')
+  const t0 = Date.now()
+  res = await callStats()
+  body = res.ok ? null : await res.text()
+  console.warn(
+    `⚠ retry ${res.ok ? 'SUCCEEDED' : 'FAILED'} after ${Date.now() - t0}ms. The RPC is near its 8s ` +
+      'ceiling — re-measure per arm rather than retrying harder.',
+  )
+}
+
 if (!res.ok) {
-  console.error(`✗ tag_hygiene_stats() → HTTP ${res.status}: ${await res.text()}`)
+  console.error(`✗ tag_hygiene_stats() → HTTP ${res.status}: ${body}`)
   process.exit(1)
 }
 const stats = await res.json()
