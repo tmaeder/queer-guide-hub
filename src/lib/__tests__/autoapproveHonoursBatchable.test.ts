@@ -3,7 +3,7 @@ import { readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 
 /**
- * Guard for 99991789833591_autoapprove_honours_batchable.sql.
+ * Guard for 99991789843323_autoapprove_honours_batchable.sql.
  *
  * `run_review_queue_autoapprove` publishes content with no human in the loop.
  * What stops it publishing an accessibility claim, a safety rating or a travel
