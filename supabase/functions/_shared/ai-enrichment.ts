@@ -6,6 +6,7 @@
  */
 
 import type { SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5'
+import { extractJsonCandidates } from './json-extract.ts'
 import { chatCompletion, isOpenAIAvailable } from './openai-client.ts'
 import { withVoice, type VoiceProfile } from './voice-style.ts'
 
@@ -201,43 +202,6 @@ function parseAIResponse<T>(content: string, allowedKeys?: string[]): T | null {
     }
   }
   console.error('parseAIResponse: no parseable JSON in LLM output (full):', content)
-  return null
-}
-
-/** Yield candidate JSON strings from raw LLM content, best-first. */
-function extractJsonCandidates(content: string): string[] {
-  const out: string[] = []
-  // 1. ```json ... ``` fenced block
-  const fence = content.match(/```(?:json)?\s*([\s\S]*?)```/i)
-  if (fence) out.push(fence[1].trim())
-  // 2. Smallest balanced {...} starting at the first '{'
-  const balanced = extractBalancedObject(content)
-  if (balanced) out.push(balanced)
-  // 3. Last resort: greedy match (legacy behaviour)
-  const greedy = content.match(/\{[\s\S]*\}/)
-  if (greedy) out.push(greedy[0])
-  return out
-}
-
-/** Walk the string and return the first balanced {...} substring, respecting strings. */
-function extractBalancedObject(s: string): string | null {
-  const start = s.indexOf('{')
-  if (start === -1) return null
-  let depth = 0
-  let inStr = false
-  let escaped = false
-  for (let i = start; i < s.length; i++) {
-    const c = s[i]
-    if (escaped) { escaped = false; continue }
-    if (c === '\\') { escaped = true; continue }
-    if (c === '"') { inStr = !inStr; continue }
-    if (inStr) continue
-    if (c === '{') depth++
-    else if (c === '}') {
-      depth--
-      if (depth === 0) return s.slice(start, i + 1)
-    }
-  }
   return null
 }
 
