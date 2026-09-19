@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 
-const MIGRATION = '99970101100000_event_city_match_namesake_repair.sql';
+const MIGRATION = '99970901120000_event_city_match_namesake_repair.sql';
 const DIR = join(process.cwd(), 'supabase', 'migrations');
 
 const raw = readFileSync(join(DIR, MIGRATION), 'utf8');
@@ -29,14 +29,14 @@ describe('event-city-match namesake repair', () => {
     const versions = readdirSync(DIR)
       .map((f) => f.match(/^(\d{14})_/)?.[1])
       .filter((v): v is string => Boolean(v));
-    expect(versions).toContain('99970101100000');
+    expect(versions).toContain('99970901120000');
     // It must sort above every version that was already applied when this was authored.
     // Asserting it is the GLOBAL maximum is wrong -- a sibling migration shipping in the
     // same change correctly sorts above it -- and that over-strict form failed the moment
-    // 99970101100100 landed beside it.
+    // 99970901120100 landed beside it.
     const CEILING_AT_AUTHORING = '99950101100000';
-    expect('99970101100000' > CEILING_AT_AUTHORING).toBe(true);
-    expect(versions.filter((v) => v <= CEILING_AT_AUTHORING && v === '99970101100000')).toEqual([]);
+    expect('99970901120000' > CEILING_AT_AUTHORING).toBe(true);
+    expect(versions.filter((v) => v <= CEILING_AT_AUTHORING && v === '99970901120000')).toEqual([]);
   });
 
   it('selects the cohort with a PREFIX match, never equality', () => {

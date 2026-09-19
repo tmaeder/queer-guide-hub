@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
-const MIGRATION = '99970101100100_birth_place_shell_country_pass.sql';
+const MIGRATION = '99970901120100_birth_place_shell_country_pass.sql';
 const raw = readFileSync(join(process.cwd(), 'supabase', 'migrations', MIGRATION), 'utf8');
 
 /**
