@@ -87,24 +87,41 @@ BEGIN
 END;
 $function$;
 
+-- THE SEAL KEEPS THE FIRST BRANCH, AND THAT ORDER IS THE WHOLE COMPOSITION.
+-- `20261211120000_tag_slug_seal.sql` makes the NAME win for a non-ASCII name,
+-- because `source-tags-extract` slugifies with a regex that never
+-- transliterates ('u:' -> '-', so "Buhne" with an umlaut arrives as "b-hne")
+-- and upserts that string as the ON CONFLICT key. On the re-upsert path the
+-- caller supplies the SAME bad slug the row already carries, so
+-- `NEW.slug IS NOT DISTINCT FROM OLD.slug` holds -- and an unwritten-slug
+-- early return placed ABOVE the seal would pre-empt it and leave `b-hne`
+-- unhealed on every future run. That is not hypothetical: it is what
+-- src/lib/__tests__/tagSlugSeal.test.ts caught on the first draft of this file.
+--
+-- So the seal is untouched and still first, and this migration's rule is an
+-- ELSIF underneath it: it governs only what the seal makes no claim on.
+--
+-- COST, STATED: for a NON-ASCII name a display-name edit still moves the slug
+-- (88 rows, 11 active). The seal owns that case deliberately, it ships with a
+-- one-shot repair and blast-radius caps, and narrowing it is a decision for
+-- whoever owns the seal -- not something to reverse in passing from here. The
+-- ASCII corpus is 10,217 of 10,305 rows and includes `hiv-aids`, the case that
+-- motivated this change.
 CREATE OR REPLACE FUNCTION public.unified_tags_normalize_slug()
  RETURNS trigger
  LANGUAGE plpgsql
  SET search_path TO 'public', 'pg_catalog', 'extensions'
 AS $function$
 BEGIN
-  -- An UPDATE that leaves the slug exactly as it was is not a slug write, so
-  -- nothing below may touch it. Without this, the non-ASCII arm re-derives from
-  -- the name and a rename moves the page anyway.
-  IF TG_OP = 'UPDATE'
-     AND NEW.slug IS NOT DISTINCT FROM OLD.slug
-     AND NEW.slug IS NOT NULL AND NEW.slug <> '' THEN
-    RETURN NEW;
-  END IF;
-
   IF NEW.name IS NOT NULL AND NEW.name ~ '[^\x00-\x7F]' THEN
     -- A caller has no business hand-slugging a diacritic name.
     NEW.slug := normalize_tag_slug(NEW.name);
+  ELSIF TG_OP = 'UPDATE'
+     AND NEW.slug IS NOT DISTINCT FROM OLD.slug
+     AND NEW.slug IS NOT NULL AND NEW.slug <> '' THEN
+    -- An UPDATE that leaves the slug exactly as it was is not a slug write,
+    -- so nothing may move it. This is the rule this migration exists for.
+    RETURN NEW;
   ELSE
     NEW.slug := normalize_tag_slug(coalesce(NEW.slug, NEW.name));
   END IF;
@@ -146,13 +163,23 @@ begin
     v_probe := v_probe || format('P3=%s/%s|', v_slug,
       (select count(*) from public.tag_slug_redirects where old_slug = 'zzz-slug-probe-alpha'));
 
-    -- P4 a name-only edit on a NON-ASCII name must NOT move the slug either.
+    -- P4 a NON-ASCII name belongs to the seal, and P4b is the probe that pins
+    -- the composition: the name-only edit leaves NEW.slug equal to OLD.slug,
+    -- which is exactly the shape an early return above the seal would swallow.
+    -- If this reads `zzz-probe-gamma` the seal has been pre-empted and the
+    -- extractor's `b-hne` rows would never heal again.
     insert into public.unified_tags (name) values (U&'Zzz Prob\00E9 Gamma')
       returning id, slug into v_id, v_slug;
     v_probe := v_probe || format('P4a=%s|', v_slug);
     update public.unified_tags set name = U&'Zzz Prob\00E9 Delta' where id = v_id;
     select slug into v_slug from public.unified_tags where id = v_id;
     v_probe := v_probe || format('P4b=%s|', v_slug);
+
+    -- P7 the seal still beats a caller-supplied slug on a non-ASCII name,
+    -- which is the upsert path source-tags-extract takes every Sunday.
+    update public.unified_tags set slug = 'zzz-caller-junk' where id = v_id;
+    select slug into v_slug from public.unified_tags where id = v_id;
+    v_probe := v_probe || format('P7=%s|', v_slug);
 
     -- P5 slug = '' remains the explicit re-derive escape hatch.
     update public.unified_tags set name = 'Zzz Slug Probe Epsilon', slug = '' where id = v_id;
@@ -195,8 +222,11 @@ begin
   if v_probe not like '%P4a=zzz-probe-gamma|%' then
     raise exception 'tag slug guard: a non-ASCII INSERT no longer derives the slug (%)', v_probe;
   end if;
-  if v_probe not like '%P4b=zzz-probe-gamma|%' then
-    raise exception 'tag slug guard: a name-only edit on a non-ASCII name still moves the slug (%)', v_probe;
+  if v_probe not like '%P4b=zzz-probe-delta|%' then
+    raise exception 'tag slug guard: the non-ASCII seal was pre-empted -- a name-only edit no longer re-derives, so source-tags-extract rows can never heal (%)', v_probe;
+  end if;
+  if v_probe not like '%P7=zzz-probe-delta|%' then
+    raise exception 'tag slug guard: the seal no longer beats a caller-supplied slug on a non-ASCII name (%)', v_probe;
   end if;
   if v_probe not like '%P5=zzz-slug-probe-epsilon|%' then
     raise exception 'tag slug guard: slug = '''' no longer re-derives from the name (%)', v_probe;
@@ -215,7 +245,14 @@ begin
 
   select pg_get_functiondef('public.unified_tags_normalize_slug'::regproc) into v_src;
   if position('NEW.slug IS NOT DISTINCT FROM OLD.slug' in v_src) = 0 then
-    raise exception 'tag slug guard: unified_tags_normalize_slug lost its unchanged-slug early return';
+    raise exception 'tag slug guard: unified_tags_normalize_slug lost its unchanged-slug branch';
+  end if;
+  -- The seal must still be evaluated FIRST. Both branches exist in either
+  -- order, so presence proves nothing and only the offsets do.
+  if position('NEW.name ~ ''[^\x00-\x7F]''' in v_src) = 0
+     or position('NEW.name ~ ''[^\x00-\x7F]''' in v_src)
+        > position('NEW.slug IS NOT DISTINCT FROM OLD.slug' in v_src) then
+    raise exception 'tag slug guard: the non-ASCII seal is no longer the first branch';
   end if;
 end
 $verify$;

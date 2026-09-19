@@ -7,12 +7,20 @@
  * slug to `hiv-and-aids` on an indexable row carrying 289 assignments.
  *
  * TWO writers had to change. `trg_normalize_tag_input` fires first and carries
- * the name-triggered branch; `trg_unified_tags_normalize_slug` fires later and
- * its non-ASCII arm ALSO re-derives from the name unconditionally. With only
- * the first fixed, the 88 tags with a non-ASCII name would still have moved --
- * and a test written against an ASCII name would have passed while they did.
- * That is why this file asserts both, and asserts the early return sits ABOVE
- * the non-ASCII arm, where alone it does anything.
+ * the name-triggered branch; `trg_unified_tags_normalize_slug` fires later.
+ *
+ * THE SECOND ONE IS SHARED WITH THE SEAL, AND THE SEAL WINS THE FIRST BRANCH.
+ * `20261211120000_tag_slug_seal.sql` makes the NAME win for a non-ASCII name,
+ * because source-tags-extract upserts a non-transliterated slug as the ON
+ * CONFLICT key. On that re-upsert NEW.slug equals OLD.slug -- so an
+ * unwritten-slug early return placed above the seal swallows exactly the case
+ * the seal exists for, and `b-hne` never heals. A first draft of this file did
+ * that, and tagSlugSeal.test.ts caught it.
+ *
+ * So the ordering is asserted in the direction that composes: the seal first,
+ * this migration's rule as the ELSIF underneath. The cost is stated rather than
+ * hidden -- a non-ASCII display-name edit still moves the slug (88 rows, 11
+ * active), because the seal owns that case.
  *
  * THE HEADER OF THE MIGRATION QUOTES THE REMOVED DISJUNCT VERBATIM, so every
  * assertion here runs against comment-stripped SQL. A bare `toContain` over the
@@ -126,12 +134,14 @@ describe('unified_tags_normalize_slug leaves an unwritten slug alone', () => {
     // All three conjuncts matter: without the TG_OP guard an INSERT would skip
     // derivation; without the NOT NULL/non-empty tail a row could early-return
     // holding an empty slug and never reach the sha1 fallback.
-    expect(fnSql).toContain("IF TG_OP = 'UPDATE'");
+    // ELSIF, not IF: the seal owns the branch above it. `toContain("IF TG_OP")`
+    // passes on either spelling, so the ELSIF is pinned explicitly.
+    expect(fnSql).toContain("ELSIF TG_OP = 'UPDATE'");
     expect(fnSql).toContain('AND NEW.slug IS NOT DISTINCT FROM OLD.slug');
     expect(fnSql).toContain("AND NEW.slug IS NOT NULL AND NEW.slug <> ''");
   });
 
-  it('places the early return ABOVE the non-ASCII arm, where it does the work', () => {
+  it('keeps the non-ASCII seal as the FIRST branch, above this rule', () => {
     const guard = fnSql.indexOf('NEW.slug IS NOT DISTINCT FROM OLD.slug');
     const nonAscii = fnSql.indexOf("NEW.name ~ '[^\\x00-\\x7F]'");
     const fallback = fnSql.indexOf(
@@ -140,9 +150,10 @@ describe('unified_tags_normalize_slug leaves an unwritten slug alone', () => {
     expect(guard).toBeGreaterThan(-1);
     expect(nonAscii).toBeGreaterThan(-1);
     expect(fallback).toBeGreaterThan(-1);
-    // Below the non-ASCII arm the slug has already been overwritten from the
-    // name, so the guard would be decorative.
-    expect(guard).toBeLessThan(nonAscii);
+    // Both branches exist in either order, so presence proves nothing and only
+    // the offsets do. Swapping them is a silent regression of the seal: the
+    // re-upsert path has NEW.slug = OLD.slug, so this rule would swallow it.
+    expect(nonAscii).toBeLessThan(guard);
     expect(guard).toBeLessThan(fallback);
   });
 
@@ -173,9 +184,14 @@ describe('the migration proves its own behaviour before it is trusted', () => {
     expect(verifyBlock).toContain("'%P3=zzz-slug-probe-beta/1|%'");
   });
 
-  it('asserts the non-ASCII path in both directions', () => {
+  it('asserts the seal still owns a non-ASCII name, in both directions', () => {
+    // P4a: the INSERT derive. P4b: a name-ONLY edit (NEW.slug = OLD.slug) still
+    // re-derives -- the exact shape a pre-empting early return swallows, so
+    // reading `gamma` here would mean source-tags-extract rows never heal.
+    // P7: the seal still beats a caller-supplied slug, the weekly upsert path.
     expect(verifyBlock).toContain("'%P4a=zzz-probe-gamma|%'");
-    expect(verifyBlock).toContain("'%P4b=zzz-probe-gamma|%'");
+    expect(verifyBlock).toContain("'%P4b=zzz-probe-delta|%'");
+    expect(verifyBlock).toContain("'%P7=zzz-probe-delta|%'");
   });
 
   it("asserts slug = '' remains the explicit re-derive escape hatch", () => {
@@ -196,6 +212,9 @@ describe('the migration proves its own behaviour before it is trusted', () => {
     expect(verifyBlock).toContain(
       "position('NEW.slug IS NOT DISTINCT FROM OLD.slug' in v_src) = 0",
     );
+    // The migration must also assert the seal is still evaluated first, by
+    // OFFSET -- presence of both branches is satisfied by either order.
+    expect(verifyBlock).toContain('the non-ASCII seal is no longer the first branch');
   });
 
   it('refuses a silent no-op if the probes produce nothing', () => {
@@ -216,7 +235,7 @@ describe('the migration proves its own behaviour before it is trusted', () => {
     // assertion above intact while the check stops checking.
     expect(verifyBlock).not.toMatch(/\bfalse\b/);
     const conditions = verifyBlock.match(/if v_probe not like /g) ?? [];
-    expect(conditions).toHaveLength(7);
+    expect(conditions).toHaveLength(8);
   });
 
   it('writes no data of its own', () => {
