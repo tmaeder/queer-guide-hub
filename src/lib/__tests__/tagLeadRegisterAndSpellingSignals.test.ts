@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 /**
- * Guards 99991789856453 — the glossary lead-register rule and the two counters
+ * Guards 99991789858199 — the glossary lead-register rule and the two counters
  * added beside it.
  *
  * WHAT A LATER READER COULD UNDO WHILE EVERY OTHER CHECK STILL PASSED:
@@ -47,7 +47,7 @@ import { join } from 'node:path';
  *    success.
  */
 
-const MIGRATION = '99991789856453_tag_lead_register_and_spelling_signals.sql';
+const MIGRATION = '99991789858199_tag_lead_register_and_spelling_signals.sql';
 
 const sql = readFileSync(join(process.cwd(), 'supabase/migrations', MIGRATION), 'utf8');
 
@@ -80,7 +80,7 @@ const commonwealthPattern = (() => {
   return m ? m[1] : '';
 })();
 
-describe('99991789856453 — lead register rule + counters', () => {
+describe('99991789858199 — lead register rule + counters', () => {
   it('writes no prose: unified_tags is only ever READ', () => {
     expect(statements).not.toMatch(/update\s+unified_tags/i);
     expect(statements).not.toMatch(/insert\s+into\s+unified_tags/i);
