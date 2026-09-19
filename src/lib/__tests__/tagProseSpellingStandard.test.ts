@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 /**
- * Guards 99970101100000 — the spelling axis, batch 11 (65 rows, 77 substitutions).
+ * Guards 99990101100000 — the spelling axis, batch 11 (65 rows, 77 substitutions).
  *
  * 1. THE RULE HAS AN EXCEPTION AND THE EXCEPTION DOES MOST OF THE WORK.
  *    `styleguide_rules.spelling-and-units` (severity `should`) reads "Follow the
@@ -27,7 +27,7 @@ import { join } from 'node:path';
 
 const MIG = join(
   process.cwd(),
-  'supabase/migrations/99970101100000_tag_description_spelling_standard.sql',
+  'supabase/migrations/99990101100000_tag_description_spelling_standard.sql',
 );
 const sql = readFileSync(MIG, 'utf8');
 const bare = sql
