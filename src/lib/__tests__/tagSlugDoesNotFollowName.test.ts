@@ -24,7 +24,7 @@ import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
-const MIGRATION = '99950101100000_tag_slug_does_not_follow_name.sql';
+const MIGRATION = '99960101100000_tag_slug_does_not_follow_name.sql';
 
 const raw = readFileSync(join(process.cwd(), 'supabase/migrations', MIGRATION), 'utf8');
 
