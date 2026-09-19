@@ -38,6 +38,52 @@ export function CookieConsentBanner() {
     return () => window.removeEventListener(OPEN_COOKIE_PREFERENCES_EVENT, open);
   }, []);
 
+  /**
+   * Publish the bar's own height so the other bottom-fixed chrome can clear it.
+   *
+   * THE BANNER IS THE TOPMOST BOTTOM-FIXED LAYER: z-[var(--z-sticky)] is 100,
+   * against the audio player's 30 and the FABs' 45, and it is anchored at
+   * bottom-0. So it does not merely sit beside them — it PAINTS OVER them.
+   * Measured on prod at 390x844 with an episode playing: the bar occupied
+   * 638-844 (206px tall) and the player 674-758, i.e. the player was entirely
+   * inside the bar's box and completely invisible until consent was given.
+   *
+   * MEASURED, NEVER A CONSTANT. The height is 206px on a 390px viewport, one
+   * row on desktop, and changes again with translated copy — this text names
+   * three legal links and wraps differently in every locale. A hardcoded value
+   * is correct for exactly one language at one width.
+   *
+   * Cleared as soon as `showBanner` flips rather than on unmount: the exit
+   * animation keeps the node mounted for another ~200ms, and releasing the
+   * offset at the same moment lets the player settle down as the bar slides
+   * out instead of jumping afterwards.
+   */
+  const [barEl, setBarEl] = useState<HTMLDivElement | null>(null);
+  useEffect(() => {
+    const root = document.documentElement;
+    const clear = () => root.style.removeProperty('--consent-bar-clearance');
+    if (!showBanner || !barEl) {
+      clear();
+      return;
+    }
+    // Height is unaffected by the enter/exit transform — motion animates `y`,
+    // not the box — so this measures the settled height from the first frame.
+    const publish = () =>
+      root.style.setProperty(
+        '--consent-bar-clearance',
+        `${Math.round(barEl.getBoundingClientRect().height)}px`,
+      );
+    publish();
+    const ro = new ResizeObserver(publish);
+    ro.observe(barEl);
+    // Braces are load-bearing: removeProperty() RETURNS a string, so a concise
+    // arrow makes the cleanup `() => string` and the effect's type collapses.
+    return () => {
+      ro.disconnect();
+      clear();
+    };
+  }, [showBanner, barEl]);
+
   return (
     <>
       {/* Slim, monochrome bottom bar — flush to the viewport edge, sits at the
@@ -54,6 +100,7 @@ export function CookieConsentBanner() {
             transition={
               reduced ? { duration: 0 } : { duration: duration.normal, ease: easing.decel }
             }
+            ref={setBarEl}
             className="fixed inset-x-0 bottom-0 z-[var(--z-sticky)] bg-surface-container-highest/95 backdrop-blur-md"
           >
             <div className="mx-auto flex max-w-6xl flex-col gap-4 p-4 md:flex-row md:items-center md:gap-6">
