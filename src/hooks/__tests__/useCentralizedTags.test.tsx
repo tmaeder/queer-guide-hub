@@ -320,19 +320,60 @@ describe('searchTags', () => {
 });
 
 describe('createTag / updateTag / deleteTag', () => {
-  it('createTag normalizes name + falls back to slug derivation', async () => {
+  // The slug is NOT derived here. normalize_tag_slug() in Postgres is the one
+  // implementation, reached through the '' escape hatch that
+  // normalize_tag_input() honours. A second derivation in the client is free to
+  // drift from it, and a LOSSY one cannot be repaired downstream: the database
+  // turns "/" into a separator but cannot restore a character the client
+  // already deleted, which is how AdminTags.tsx sent "hivaids" for "HIV/AIDS".
+  const insertPayload = () => {
+    const insert = state.calls[4].chain.find((s) => s.method === 'insert');
+    return (insert?.args[0] as Array<Record<string, unknown>>)[0];
+  };
+
+  it('createTag normalizes the name and leaves the slug to Postgres', async () => {
     seedFetchAllResults();
     const { result } = renderHook(() => useCentralizedTags(), { wrapper });
     await waitFor(() => expect(result.current.loading).toBe(false));
 
     withResults({ data: { id: 't_new', name: 'queer code', slug: 'queer-code' }, error: null });
-    await result.current.createTag({ name: '  Queer Code  ', slug: '' });
+    await result.current.createTag({ name: '  Queer Code  ' });
 
-    const insertCall = state.calls[4];
-    const insert = insertCall.chain.find((s) => s.method === 'insert');
-    const payload = (insert?.args[0] as Array<Record<string, unknown>>)[0];
+    const payload = insertPayload();
     expect(payload.name).toBe('queer code');
-    expect(payload.slug).toBe('queer-code');
+    expect(payload.slug).toBe('');
+  });
+
+  it.each([
+    ['HIV/AIDS', 'hivaids'],
+    ['D/s', 'ds'],
+    ['U=U', 'uu'],
+    ['Rock & Roll', 'rock--roll'],
+  ])('createTag sends no client-derived slug for %s', async (name, lossy) => {
+    seedFetchAllResults();
+    const { result } = renderHook(() => useCentralizedTags(), { wrapper });
+    await waitFor(() => expect(result.current.loading).toBe(false));
+
+    withResults({ data: { id: 't_new' }, error: null });
+    await result.current.createTag({ name });
+
+    const payload = insertPayload();
+    // The exact string the deleted regex used to produce. Asserting only
+    // `slug === ''` would also pass if some NEW lossy derivation were added
+    // that happened to return '' for these inputs.
+    expect(payload.slug).toBe('');
+    expect(payload.slug).not.toBe(lossy);
+  });
+
+  it('createTag still forwards a slug that was passed deliberately', async () => {
+    seedFetchAllResults();
+    const { result } = renderHook(() => useCentralizedTags(), { wrapper });
+    await waitFor(() => expect(result.current.loading).toBe(false));
+
+    withResults({ data: { id: 't_new' }, error: null });
+    await result.current.createTag({ name: 'Queer Code', slug: 'chosen-slug' });
+
+    expect(insertPayload().slug).toBe('chosen-slug');
   });
 
   it('updateTag re-normalizes name when present', async () => {
