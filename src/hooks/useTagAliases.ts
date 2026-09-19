@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { untypedRpc } from '@/integrations/supabase/untyped';
 
 export interface TagAlias {
   id: string;
@@ -45,10 +46,32 @@ export function useTagAliases(tagId: string | null, opts?: { publicOnly?: boolea
   const createAlias = useMutation({
     mutationFn: async ({ alias_name, alias_type }: { alias_name: string; alias_type: string }) => {
       if (!tagId) throw new Error('No tag selected');
-      const alias_slug = alias_name
-        .toLowerCase()
-        .replace(/\s+/g, '-')
-        .replace(/[^a-z0-9-]/g, '');
+      // tag_aliases.alias_slug is NOT NULL with no default and no BEFORE
+      // trigger deriving it, so unlike unified_tags the caller genuinely has
+      // to supply one — '' is not an escape hatch here. It is taken from
+      // normalize_tag_slug(), the same implementation unified_tags uses, so
+      // the two can never drift.
+      //
+      // The regex that used to live here STRIPPED every character outside
+      // [a-z0-9-] instead of separating on it, and aliases have no non-ASCII
+      // seal to rescue them the way unified_tags does: measured against the
+      // live function, 'Cafe Society' with an acute accent became 'caf-society' rather than
+      // 'cafe-society', 'HIV/AIDS' became 'hivaids' rather than 'hiv-aids',
+      // and an accented Spanish alias became 'dominacin-...' rather than
+      // 'dominacion-...' — already the stored value on rows of this shape.
+      //
+      // A failure throws rather than falling back to a local slugifier: a
+      // lossy value cannot be repaired downstream, so no slug is better than
+      // a wrong one the admin cannot see.
+      const { data: normalized, error: slugError } = await untypedRpc<string>(
+        'normalize_tag_slug',
+        {
+          p_input: alias_name,
+        },
+      );
+      if (slugError) throw new Error(`Could not normalize alias slug: ${slugError.message}`);
+      const alias_slug = (normalized ?? '').trim();
+      if (!alias_slug) throw new Error(`Alias "${alias_name}" does not normalize to a usable slug`);
       const { data, error } = await supabase
         .from('tag_aliases')
         .insert([
