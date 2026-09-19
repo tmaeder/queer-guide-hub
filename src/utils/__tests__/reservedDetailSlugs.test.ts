@@ -23,9 +23,9 @@ import { isDetailPath } from '../../../functions/_lib/detail';
 const routesSrc = readFileSync(resolve(__dirname, '../../routes.tsx'), 'utf8');
 
 // path="foo/bar" — two static segments, no ":param", no "*" splat.
-const STATIC_SUBROUTES = [
-  ...routesSrc.matchAll(/path="([a-z0-9-]+\/[a-z0-9-]+)"/g),
-].map((m) => `/${m[1]}`);
+const STATIC_SUBROUTES = [...routesSrc.matchAll(/path="([a-z0-9-]+\/[a-z0-9-]+)"/g)].map(
+  (m) => `/${m[1]}`,
+);
 
 describe('reserved detail slugs vs. the real route table', () => {
   it('finds static sub-routes to check (guards against a broken regex)', () => {
@@ -46,5 +46,22 @@ describe('reserved detail slugs vs. the real route table', () => {
     // Otherwise the fix above could "pass" by disabling detail routing entirely.
     expect(isDetailPath('/news/some-real-article-slug')).toBe(true);
     expect(isDetailPath('/venues/berghain')).toBe(true);
+  });
+
+  it('matches a maker page but never the maker INDEX', () => {
+    // `marketplace/brands` is the one two-segment kind in DETAIL_ROUTE_RE. The
+    // index is the asymmetric half and the one that can fail silently: if the
+    // slug group ever went optional, `/marketplace/brands` would be treated as
+    // a detail route, miss, and come back `indexable: false` — deleting the
+    // whole makers directory from search while every per-maker check still
+    // passed. `/marketplace` and `/marketplace/categories` are here for the
+    // same reason: the new alternative must not widen to its own first segment.
+    expect(isDetailPath('/marketplace/brands/cherrykitten')).toBe(true);
+    expect(isDetailPath('/marketplace/brands')).toBe(false);
+    expect(isDetailPath('/marketplace/brands/')).toBe(false);
+    expect(isDetailPath('/marketplace')).toBe(false);
+    expect(isDetailPath('/marketplace/categories')).toBe(false);
+    // A deeper path is a listing route, not a maker.
+    expect(isDetailPath('/marketplace/brands/a/b')).toBe(false);
   });
 });
