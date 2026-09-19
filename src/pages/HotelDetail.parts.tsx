@@ -20,6 +20,25 @@ import { AmenityDisplay } from '@/components/venues/AmenityDisplay';
 import { Editable } from '@/components/admin/inline/Editable';
 import { EntityMap } from '@/components/map/EntityMap';
 import { useNearbyMapPoints } from '@/hooks/useNearbyMapPoints';
+import { useTagPreviews } from '@/hooks/useTagPreviews';
+import { TagChipRow } from '@/components/tags/TagChipRow';
+
+/**
+ * Resolve a hotel's raw `tags[]` slugs through the glossary, keeping only the ones
+ * that are still active.
+ *
+ * `hotels.tags` holds misterb&b import artifacts that were never run through a
+ * controlled vocabulary the way `venues.tags` are, and 5 of the 8 slugs in this corpus
+ * are `status='deprecated'`: misterbandb, local-tips, lgbtq-venues-nearby, gay-district
+ * and power-host — the last of which a reader hit head-on ("what is a Power-Host?").
+ * fetchTagPreviews already filters `status='active'`, so asking the glossary drops them
+ * and returns display names at the same time. A denylist const would work today and rot
+ * the next time the glossary moves.
+ */
+export function useHotelVisibleTags(tags: string[] | null | undefined) {
+  const { data } = useTagPreviews(tags ?? []);
+  return (data ?? []).map((p) => ({ tag: p.slug, name: p.name }));
+}
 import { getHotelPhotosToShow } from './hotelPhotosUtil';
 import { AFFILIATE_REL, tagKnownAffiliateUrl } from '@/lib/affiliate/links';
 import type { Database } from '@/integrations/supabase/types';
@@ -191,7 +210,11 @@ export function HotelHero({
             {'$'.repeat(hotel.price_range)}
           </Badge>
         )}
-        {hotel.lgbtq_friendly && <Badge>LGBTQ+ Friendly</Badge>}
+        {/* No LGBTQ+ Friendly badge here. `hotels.lgbtq_friendly` is true on 325 of 325
+            rows, so it carries zero information, and the `lgbtq-friendly` tag says the
+            same thing in the Tags card below — which is how a reader ended up asking why
+            LGBTQ-FRIENDLY appears twice on one page. HotelCard.tsx already routes around
+            this flag for the same reason. */}
         {cityName && (
           <Badge variant="outline" className="gap-1">
             <MapPin className="w-3.5 h-3.5" />
@@ -298,9 +321,19 @@ export function HotelOverview({
 export function HotelSidebar({
   hotel,
   t,
+  visibleTags = [],
 }: {
   hotel: HotelWithRelations;
   t: (k: string, d?: string) => string;
+  /**
+   * Glossary-resolved tags, passed in by the page (see useHotelVisibleTags).
+   *
+   * Resolved OUTSIDE this component on purpose. Calling the query hook in here made a
+   * presentational part require a QueryClientProvider, which turned its standalone
+   * render test into a provider test — the same mistake as pulling useAuth into a hero.
+   * Defaults to [] so the part still renders bare.
+   */
+  visibleTags?: Array<{ tag: string; name: string }>;
 }) {
   const hasContact = Boolean(hotel.address || hotel.phone || hotel.email);
   return (
@@ -337,19 +370,16 @@ export function HotelSidebar({
             </CardContent>
           </Card>
         )}
-        {hotel.tags && hotel.tags.length > 0 && (
+        {visibleTags.length > 0 && (
           <Card>
             <CardHeader>
               <CardTitle>{t('pages.hotelDetail.tags', 'Tags')}</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="flex flex-wrap gap-1">
-                {hotel.tags.map((tag, i) => (
-                  <Badge key={i} variant="outline">
-                    {tag}
-                  </Badge>
-                ))}
-              </div>
+              {/* TagChipRow, not a raw Badge map: Badge is uppercase, so a raw slug
+                  published as "LGBTQ-VENUES-NEARBY". Chips carry the glossary display
+                  name and link to the term, matching venue pages. */}
+              <TagChipRow tags={visibleTags} size="sm" more="expand" />
             </CardContent>
           </Card>
         )}

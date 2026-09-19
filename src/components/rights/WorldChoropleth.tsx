@@ -26,6 +26,23 @@ import { tallyFeatureClasses, type ClassifiedFeatureCollection } from './rightsW
  * layer keyed on MapLibre `feature-state`, never through a camera move.
  */
 
+/**
+ * The inhabited world, west to east and south to north.
+ *
+ * Cut to land rather than to ±180/±85: this is a rights choropleth, so ocean and the
+ * empty polar caps are wasted pixels. North stops at 78° (northern Greenland/Svalbard,
+ * past every country's populated area) and south at -56° (Cape Horn) — Antarctica has
+ * no entry in the dataset. East runs to 190° so the Aleutians and Kiribati stay in one
+ * piece instead of wrapping.
+ *
+ * Shared by the constructor and the ResizeObserver so the two cannot drift.
+ */
+const WORLD_BOUNDS: [[number, number], [number, number]] = [
+  [-168, -56],
+  [190, 78],
+];
+const WORLD_FIT_OPTIONS = { padding: 12, animate: false } as const;
+
 const SRC = 'world-choropleth';
 const FILL_LAYER = 'world-choropleth-fill';
 const LINE_LAYER = 'world-choropleth-line';
@@ -122,8 +139,17 @@ export function WorldChoropleth({
     const map = new maplibregl.Map({
       container: mapContainer.current,
       style: getMapStyle(),
-      center: [10, 25],
-      zoom: 0.9,
+      // Frame by BOUNDS, not a fixed center/zoom. `center:[10,25] zoom:0.9` ignored the
+      // container: MapLibre's world is 512·2^zoom px wide, so at zoom 0.9 the world is
+      // 955px while this container measures ~1036px — over 360° of longitude, with a
+      // repeated sliver at each edge and empty Southern Ocean below. Reported as "the
+      // map shows too much world". The same constant under-filled mobile (~350px = 37%
+      // of the world), so a different constant would only move the problem.
+      // renderWorldCopies:false makes the duplicate-sliver case impossible rather than
+      // merely unlikely at the current size.
+      bounds: WORLD_BOUNDS,
+      fitBoundsOptions: WORLD_FIT_OPTIONS,
+      renderWorldCopies: false,
       attributionControl: false,
       dragRotate: false,
     });
@@ -163,11 +189,17 @@ export function WorldChoropleth({
     const map = mapRef.current;
     if (!isMapAlive(map)) return;
     map.resize();
+    map.fitBounds(WORLD_BOUNDS, WORLD_FIT_OPTIONS);
     // A resize notification can still land between `map.remove()` and this
     // observer's own disconnect, and `resize()` on a removed map reaches a
     // painter that no longer exists.
     const observer = new ResizeObserver(() => {
-      if (isMapAlive(map)) map.resize();
+      if (!isMapAlive(map)) return;
+      map.resize();
+      // resize() alone PRESERVES zoom, so a width change (rotation, sidebar, the
+      // md: breakpoint) re-creates the too-much-world framing the bounds fixed.
+      // Re-fit so the framing follows the container instead of the first paint.
+      map.fitBounds(WORLD_BOUNDS, WORLD_FIT_OPTIONS);
     });
     observer.observe(el);
     return () => observer.disconnect();
