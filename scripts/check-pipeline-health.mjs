@@ -3300,6 +3300,28 @@ const CITY_SCALAR_DENSITY_REPORTED = 33 // measured 2026-09-08, post-repair. Con
 //       the rule, because the evidence column cannot be evidence for itself.
 //       Advisory.
 //
+//       refers_to_lead — 199 descriptions that open by announcing the term
+//       instead of stating the meaning ("Salirophilia refers to sexual arousal
+//       from..."). Governed by styleguide rule tag-lead-states-the-meaning-not-
+//       the-term. Repairing one means rewriting prose by hand, so GROWTH fails
+//       and the standing backlog warns — same shape as truncated_description.
+//       The anchor lives in SQL on purpose: hand measurements of this cohort
+//       ranged 133-199 depending on how the lead was matched, and that spread
+//       was a property of the regex rather than of the corpus.
+//
+//       commonwealth_in_own_voice — 4 rows. DELIBERATELY NOT a count of British
+//       spellings in the corpus, which is 44 and would be actively harmful to
+//       gate on: 39 of those sit in imported Wikipedia prose ("Norway, officially
+//       the Kingdom of Norway..." carrying `kilometres`), whose real defect is
+//       the imported lead, and Americanizing the spelling there polishes the
+//       wrong thing. Scoped to descriptions under 200 chars, where our own
+//       authored voice lives — measured at 0.15% against 3.9% above the bound.
+//       `grey`, `labour` and `haemo`+philus are excluded so the gate can never
+//       push someone to respell greysexual (a community's own name for itself),
+//       the International Labour Organization, or a Latin binomial.
+//       Ceiling is the exact baseline: the NEXT one fails, which is the point —
+//       two of the four were authored hours after the last sweep cleaned them.
+//
 //     rows_scanned IS CHECKED FIRST AND SEPARATELY. An empty scan, a revoked
 //     grant and a clean corpus all return the same reassuring zeros, and this
 //     corpus is none of them.
@@ -3308,6 +3330,8 @@ const CITY_SCALAR_DENSITY_REPORTED = 33 // measured 2026-09-08, post-repair. Con
 //     answers probe_ok=false, so a non-2xx means an unapplied migration or a
 //     revoked grant — an unreadable corpus must never read as a clean one.
 const TRUNCATED_DESCRIPTION_CEILING = 30
+const REFERS_TO_LEAD_CEILING = 205
+const COMMONWEALTH_OWN_VOICE_CEILING = 4
 {
   const res = await fetch(`${BASE}/rest/v1/rpc/tag_prose_standard_signals`, {
     method: 'POST',
@@ -3336,7 +3360,7 @@ const TRUNCATED_DESCRIPTION_CEILING = 30
       console.error(`✗ tag_prose_standard_signals scanned only ${ts.rows_scanned ?? 0} descriptions — the probe is measuring nothing, not passing`)
       FAILED = true
     } else {
-      for (const key of ['truncated_description', 'stamp_as_definition', 'unresolved_disambiguation', 'surname_stub', 'whitespace_dirty']) {
+      for (const key of ['truncated_description', 'stamp_as_definition', 'unresolved_disambiguation', 'surname_stub', 'whitespace_dirty', 'refers_to_lead', 'commonwealth_in_own_voice']) {
         if (!(key in ts)) {
           console.error(`✗ tag_prose_standard_signals has no '${key}' key — that check measured NOTHING`)
           FAILED = true
@@ -3347,6 +3371,8 @@ const TRUNCATED_DESCRIPTION_CEILING = 30
       const trunc = Number(ts.truncated_description ?? 0)
       const disamb = Number(ts.unresolved_disambiguation ?? 0)
       const surname = Number(ts.surname_stub ?? 0)
+      const refersTo = Number(ts.refers_to_lead ?? 0)
+      const britSpelling = Number(ts.commonwealth_in_own_voice ?? 0)
 
       if (ws > 0) {
         console.error(`✗ ${ws} active glossary description(s) carry stray whitespace — a zero-invariant since 99700101100200`)
@@ -3382,7 +3408,24 @@ const TRUNCATED_DESCRIPTION_CEILING = 30
         console.error('  NULL the description and let trg_tag_thin_page_gate deindex the row as thin. Never write a definition to fill the hole: minting vocabulary is the guess this class came from.')
         FAILED = true
       }
-      if (ws === 0 && stamp === 0 && trunc === 0 && disamb === 0 && surname === 0) {
+      if (refersTo > REFERS_TO_LEAD_CEILING) {
+        console.error(`✗ ${refersTo} glossary descriptions open by announcing the term rather than stating the meaning, above the ${REFERS_TO_LEAD_CEILING} ceiling`)
+        console.error('  Growth means new entries are still being written in this register (styleguide rule tag-lead-states-the-meaning-not-the-term).')
+        console.error('  Fix by rewriting the lead to start at the meaning — the term is already the heading. Never by deleting the description.')
+        FAILED = true
+      } else if (refersTo > 0) {
+        console.warn(`⚠ ${refersTo} glossary descriptions open by announcing the term ("X refers to...", "X is a slang term for...")`)
+        console.warn('  A hand-rewrite backlog, not a machine fix. Worked down in batches; this gate only stops it growing.')
+      }
+      if (britSpelling > COMMONWEALTH_OWN_VOICE_CEILING) {
+        console.error(`✗ ${britSpelling} short glossary descriptions carry a Commonwealth spelling in our own authored voice, above the ${COMMONWEALTH_OWN_VOICE_CEILING} ceiling`)
+        console.error('  styleguide rule spelling-and-units: follow the source material, otherwise American.')
+        console.error('  Do NOT widen this into a corpus-wide respelling. Imported encyclopedic prose is excluded on purpose, and greysexual / International Labour Organization / Haemophilus are never "fixed".')
+        FAILED = true
+      } else if (britSpelling > 0) {
+        console.warn(`⚠ ${britSpelling} short glossary description(s) carry a Commonwealth spelling in our own voice`)
+      }
+      if (ws === 0 && stamp === 0 && trunc === 0 && disamb === 0 && surname === 0 && refersTo === 0 && britSpelling === 0) {
         console.log('✓ glossary descriptions conform to the structural standard')
       }
     }
