@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 /**
- * Guards 99930101100700 — the measured rewrite, batch 8 (3 rows).
+ * Guards 99940101100100 — the measured rewrite, batch 8 (3 rows).
  *
  * 1. `top-surgery` PUBLISHED A WIKIPEDIA DISAMBIGUATION DUMP on an indexable
  *    trans-health page: a dangling colon followed by newline-separated article
@@ -28,7 +28,7 @@ import { join } from 'node:path';
 
 const MIG = join(
   process.cwd(),
-  'supabase/migrations/99930101100700_tag_description_measured_rewrite_batch8.sql',
+  'supabase/migrations/99940101100100_tag_description_measured_rewrite_batch8.sql',
 );
 const sql = readFileSync(MIG, 'utf8');
 const bare = sql
