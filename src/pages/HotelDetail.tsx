@@ -19,6 +19,7 @@ import {
   HotelSidebar,
   HotelPhotos,
   buildHotelBreadcrumbs,
+  useHotelVisibleTags,
   type HotelWithRelations,
 } from './HotelDetail.parts';
 import { getHotelPhotosToShow } from './hotelPhotosUtil';
@@ -75,6 +76,10 @@ export default function HotelDetail() {
   });
   const loading = primaryLoading || (!primary && fallbackLoading);
   const { data: tripStatus } = useEntityTripStatus('hotel', hotel?.id);
+  // Resolved here, not inside HotelSidebar, so that part stays renderable without a
+  // QueryClientProvider. Drops deprecated import slugs — see useHotelVisibleTags.
+  // Must sit above the early return below: hooks run in the same order every render.
+  const visibleTags = useHotelVisibleTags(hotel?.tags);
 
   useEffect(() => {
     if (primaryError) {
@@ -142,7 +147,7 @@ export default function HotelDetail() {
           ) : null
         }
         tabs={tabs}
-        sidebar={hotel ? <HotelSidebar hotel={hotel} t={t} /> : undefined}
+        sidebar={hotel ? <HotelSidebar hotel={hotel} t={t} visibleTags={visibleTags} /> : undefined}
         breadcrumbs={breadcrumbs}
         entityType="hotel"
         entityId={hotel?.id}
