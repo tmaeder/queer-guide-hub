@@ -27,7 +27,7 @@ import { join } from 'node:path';
 
 const MIGRATION = join(
   process.cwd(),
-  'supabase/migrations/99991789839250_outing_guard_seal_and_republish.sql',
+  'supabase/migrations/99991789842467_outing_guard_seal_and_republish.sql',
 );
 
 const sql = readFileSync(MIGRATION, 'utf8');
