@@ -3372,6 +3372,40 @@ const TRUNCATED_DESCRIPTION_CEILING = 30
       } else {
         console.log(`✓ no orphaned clinical codes (${mc.code_rows_total} rows over ${mc.tags_total} tags)`)
       }
+
+      // Round eighteen: a band headed "Diagnostic codes" publishing a code for a
+      // country, an occupation, a garment or a kinship relation. The verdict is
+      // STORED in tag_entity_class_probe because this probe is pure SQL and
+      // cannot fetch P31 itself — so coverage is read FIRST: zero refused rows
+      // over an unprobed corpus is vacuous, not clean, and only unprobed_qids
+      // tells the two apart.
+      //
+      // The key being ABSENT warns rather than fails, for the same reason the
+      // 404 above does — the nightly run checks out main and calls the LIVE
+      // backend, so in the window where main carries the newer script and prod
+      // has not applied the migration a hard fail would be red for something
+      // that is not a defect.
+      if (!('nonclinical_code_rows' in mc)) {
+        console.warn('⚠ tag_medical_code_signals has no \'nonclinical_code_rows\' key — the non-clinical gate is NOT DEPLOYED (migration 99991789851492). Absence of a check, not absence of defects.')
+      } else {
+        const nonclinical = Number(mc.nonclinical_code_rows ?? 0)
+        const probeRows = Number(mc.probe_rows ?? 0)
+        const unprobed = Number(mc.unprobed_qids ?? 0)
+        if (probeRows === 0) {
+          console.error('✗ tag_entity_class_probe is empty — the non-clinical invariant is measuring nothing, not passing')
+          FAILED = true
+        } else if (nonclinical > 0) {
+          const named = Array.isArray(mc.nonclinical_examples) ? mc.nonclinical_examples.join(', ') : ''
+          console.error(`✗ ${nonclinical} non-clinical code row(s) on ${mc.nonclinical_tags ?? 0} tag(s)${named ? `: ${named}` : ''}`)
+          console.error('  SNOMED CT, ICD-11 and ICPC-2 carry whole axes for geography, occupations, kinship, objects and social circumstances. Those are real codes and not diagnoses.')
+          console.error('  If the vocabulary in medical_code_entity_class_verdict() was just extended, call run_tag_medical_codes_reap_nonclinical() in the same migration rather than waiting for Monday.')
+          FAILED = true
+        } else if (unprobed > 0) {
+          console.warn(`⚠ ${unprobed} code-bearing entit(ies) have no class probe yet — the non-clinical invariant does not cover them until the Monday sync runs`)
+        } else {
+          console.log(`✓ no non-clinical clinical codes (${probeRows} entities probed, ${mc.unknown_verdict_qids ?? 0} with a class the gate does not recognise — those are ALLOWED by design)`)
+        }
+      }
     }
   }
 }
