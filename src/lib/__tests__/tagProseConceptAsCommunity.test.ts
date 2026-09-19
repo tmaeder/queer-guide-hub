@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 /**
- * Guards 99950101100000 — round sixteen, THE CONCEPT PUBLISHED AS A COMMUNITY.
+ * Guards 99960101100000 — round sixteen, THE CONCEPT PUBLISHED AS A COMMUNITY.
  *
  * The axis: the row's own `description` defines a TERM — a person-type, a
  * behaviour, an orientation — while the published prose reframes it as a
@@ -41,7 +41,7 @@ import { join } from 'node:path';
 
 const MIGRATION = join(
   process.cwd(),
-  'supabase/migrations/99950101100000_tag_prose_concept_as_community.sql',
+  'supabase/migrations/99960101100000_tag_prose_concept_as_community.sql',
 );
 const sql = readFileSync(MIGRATION, 'utf8');
 
@@ -74,7 +74,7 @@ const GROUP_A = [
 ];
 const GROUP_B = ['ukete', 'sensual-hedonist', 'smart-ass-sadomasochist'];
 
-describe('99950101100000 — the concept published as a community', () => {
+describe('99960101100000 — the concept published as a community', () => {
   it('writes short_description and never description', () => {
     expect(statements).toMatch(/set\s+short_description\s*=/);
     // The SET clauses are the half that matters: every UPDATE is content-guarded
@@ -162,7 +162,7 @@ describe('99950101100000 — the concept published as a community', () => {
   });
 
   it('declares the actor, which is load-bearing on twelve human_reviewed rows', () => {
-    expect(statements).toContain("set_config('app.actor', 'migration:99950101100000', true)");
+    expect(statements).toContain("set_config('app.actor', 'migration:99960101100000', true)");
   });
 
   it('keeps every postcondition counting the reached state and un-neuterable', () => {

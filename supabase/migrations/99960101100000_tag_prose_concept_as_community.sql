@@ -74,7 +74,7 @@
 -- (`queer-romantic` is the exception) -- log_unified_tag_change() RAISEs when an
 -- undeclared system actor modifies such a row.
 
-select set_config('app.actor', 'migration:99950101100000', true);
+select set_config('app.actor', 'migration:99960101100000', true);
 
 -- ---------------------------------------------------------------- GROUP A (10)
 
