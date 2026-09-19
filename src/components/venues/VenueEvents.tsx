@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Calendar, Clock, Users } from 'lucide-react';
+import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import type { Database } from '@/integrations/supabase/types';
 import { format } from 'date-fns';
 
@@ -111,8 +112,15 @@ export function VenueEvents({ venueId, venueName, events, compact = false }: Ven
                       : 'Price TBA'}
                   </span>
                 )}
-                <Button size="sm" variant="outline">
-                  Details
+                {/* Was a bare <Button> with no onClick and no link — it looked like a
+                    control and had never done anything ("click Details on the events,
+                    nothing happens"). asChild rather than wrapping the Button in a link:
+                    a <button> inside an <a> is the nested-interactive violation
+                    e2e/nested-interactive.spec.ts guards. */}
+                <Button size="sm" variant="outline" asChild>
+                  <LocalizedLink to={`/events/${event.slug}`} className="no-underline">
+                    Details
+                  </LocalizedLink>
                 </Button>
               </div>
             </div>
