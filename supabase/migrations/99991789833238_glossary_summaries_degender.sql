@@ -75,6 +75,37 @@ where slug in ('erectile-dysfunction','clitoris','fallopian-tubes','foreskin','o
                'seminal-vesicles','sperm','testicle','uncircumcised','vagina')
   and coalesce(long_description,'') ~* '\m(male|female|males|females|men|women|man|woman)\M';
 
+-- ── two NAMESAKE bodies the same three-field blindness left behind ───────────
+-- Sweeping the 46 revived rows for wrong-subject signatures in the BODY (the
+-- field checked last, and rendered first) returns two, and neither is a false
+-- positive:
+--
+--   anus   body OPENS "Anus is a village located in Sarmi Regency, Papua,
+--          Indonesia" and only then reaches the anatomy. #3807 removed exactly
+--          that wrong subject from the SUMMARY and left it here — the fourth
+--          time this pass has repaired one field of a row and stopped.
+--   labia  body is correct vulva anatomy that closes "In a separate context,
+--          Labia is also a genus of insects. The term is used in human anatomy
+--          and entomology." Namesake residue bolted onto a correct body.
+--
+-- `anus` also still carried a zoology DESCRIPTION ("In mammals, invertebrates
+-- and most fish...") — it was not in #3810's list because that pass selected on
+-- gendered wording, and this one is a different defect on the same row.
+update unified_tags set
+  description = 'The opening at the end of the digestive tract, between the buttocks. Its tissue is thin and absorbs readily, which is why receptive anal sex carries a higher HIV risk than other acts and why lube matters.',
+  long_description = null
+where slug = 'anus' and coalesce(long_description,'') ilike '%village located in Sarmi Regency%';
+
+-- labia keeps its body: it is accurate, so only the bolted-on entomology
+-- sentence goes. An exact-phrase replace() cannot author prose, so every other
+-- clause survives byte-identically rather than by retyping.
+update unified_tags set
+  long_description = btrim(replace(
+    long_description,
+    ' In a separate context, Labia is also a genus of insects. The term is used in human anatomy and entomology.',
+    ''))
+where slug = 'labia' and long_description ilike '%genus of insects%';
+
 -- ============================ postconditions ============================
 do $verify$
 declare v_bad int; v_n int;
@@ -109,11 +140,24 @@ begin
     and not tag_has_prose(description, short_description);
   if v_bad <> 0 then raise exception '% rows were left unpublishable', v_bad; end if;
 
-  -- 3. description untouched — it is the evidence each replacement restates
+  -- 3. description untouched on the de-gendered rows — it is the evidence each
+  --    replacement restates. (`anus` is the one deliberate exception above.)
   select count(*) into v_bad from unified_tags
   where slug in ('clitoris','fallopian-tubes','seminal-vesicles','sperm','testicle')
     and coalesce(btrim(description),'') = '';
   if v_bad <> 0 then raise exception '% rows lost their description', v_bad; end if;
+
+  -- 3b. the two namesake bodies are gone, and labia KEPT the prose that was
+  --     correct — a replace() that ate the body would satisfy "no genus" too
+  select count(*) into v_bad from unified_tags
+  where (slug = 'anus'  and (coalesce(long_description,'') ilike '%Sarmi Regency%'
+                          or coalesce(description,'') ilike '%invertebrates and most fish%'))
+     or (slug = 'labia' and coalesce(long_description,'') ilike '%genus of insects%');
+  if v_bad <> 0 then raise exception '% namesake bodies survive', v_bad; end if;
+
+  select count(*) into v_n from unified_tags
+  where slug = 'labia' and long_description ilike '%labia majora are large folds of skin%';
+  if v_n <> 1 then raise exception 'labia lost the body that was meant to survive'; end if;
 
   -- 4. CONTROLS: rows where the word is doing real work must survive. A sweep
   --    broad enough to take them would satisfy check 2 just as happily.
