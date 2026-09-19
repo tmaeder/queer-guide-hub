@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
-// Guards 99991789825952_derby_connecticut_namesake_prose.sql.
+// Guards 99991789833532_derby_connecticut_namesake_prose.sql.
 //
 // Derby, Connecticut (Q755197) published Derby, England's lead AND England's
 // Wikidata population (255,394 byte-exact) while its own QID and wikipedia_title
@@ -14,7 +14,7 @@ import { join } from 'node:path';
 // quote them again in their guards, so a whole-file assertion passes against a
 // gutted statement.
 
-const MIGRATION = '99991789825952_derby_connecticut_namesake_prose.sql';
+const MIGRATION = '99991789833532_derby_connecticut_namesake_prose.sql';
 const raw = readFileSync(join(process.cwd(), 'supabase/migrations', MIGRATION), 'utf8');
 const statements = raw
   .split('\n')
@@ -93,7 +93,7 @@ describe('derby connecticut namesake prose: postconditions', () => {
 
   it('MIRROR: exactly one row is corrected, so it cannot become a sweep', () => {
     const p5 = verify.slice(verify.indexOf('-- P5'), verify.indexOf('-- P6'));
-    expect(p5).toContain("'corrected'->>'by' = 'migration:99991789825952'");
+    expect(p5).toContain("'corrected'->>'by' = 'migration:99991789833532'");
     expect(p5).toMatch(/if v_bad <> 1 then/);
   });
 
