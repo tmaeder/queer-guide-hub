@@ -7,7 +7,7 @@ import { describe, expect, it } from 'vitest';
 const FILE = join(
   __dirname,
   '../../../supabase/migrations',
-  '99991789846890_glossary_category_refile.sql',
+  '99991789860750_glossary_category_refile.sql',
 );
 
 const stripped = readFileSync(FILE, 'utf8')
@@ -61,7 +61,7 @@ describe('category refile', () => {
   });
 
   it('declares an actor', () => {
-    expect(writes).toContain('migration:99991789846890');
+    expect(writes).toContain('migration:99991789860750');
   });
 });
 

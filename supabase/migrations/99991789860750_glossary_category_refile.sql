@@ -51,7 +51,7 @@
 
 begin;
 
-select set_config('app.actor', 'migration:99991789846890_glossary_category_refile', true);
+select set_config('app.actor', 'migration:99991789860750_glossary_category_refile', true);
 
 update unified_tags t set category_id = c.id
 from tag_categories c, (values
