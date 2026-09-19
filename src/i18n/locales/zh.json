@@ -1803,7 +1803,22 @@
     "news": {
       "title": "最新资讯",
       "eyebrow": "快讯",
-      "editorsPick": "[ZH] Editors' pick"
+      "editorsPick": "[ZH] Editors' pick",
+      "topics": "新闻主题",
+      "topic": {
+        "all": "全部",
+        "rights": "权利与法律",
+        "community": "社群",
+        "culture": "文化与艺术",
+        "podcasts": "播客"
+      },
+      "moreStories": "另外 {{count}} 条报道",
+      "followTopics": "关注主题",
+      "following": "已关注 {{count}}",
+      "searchTopics": "搜索主题…",
+      "unfollow": "取消关注",
+      "trySearching": "试试：{{list}}",
+      "noTopic": "没有找到该名称的主题。"
     },
     "discover": "Discover",
     "destinationsTitle": "Where the scene lives.",
