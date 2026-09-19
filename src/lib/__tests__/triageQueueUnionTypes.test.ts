@@ -233,3 +233,78 @@ describe('check-pipeline-health wiring', () => {
     expect(health).toMatch(/✓ Triage inbox loads: \$\{tq\.rows \?\? 0\}/);
   });
 });
+
+/*
+ * The e2e guard above the database: e2e/admin-inbox-renders.spec.ts asserts the
+ * inbox actually RENDERS its queue. It addresses the page by three string
+ * literals it does not own — the error-banner sentence, the row overlay's
+ * accessible name, and the empty state — so a rename in any of the three would
+ * leave the spec green while guarding nothing. That is the vacuous-assertion
+ * class this repo keeps re-learning, so the coupling is pinned here.
+ *
+ * Deliberately a source check and not a behavioural one: the spec is
+ * admin-only and skips wherever no admin storageState exists, which is every
+ * environment except the nightly — so nothing else would notice the drift.
+ */
+describe('the inbox e2e spec stays coupled to what it asserts about', () => {
+  const specRaw = readFileSync(join(process.cwd(), 'e2e/admin-inbox-renders.spec.ts'), 'utf8');
+  /*
+   * Comment-stripped, and that is load-bearing rather than tidy. The spec's own
+   * header quotes every string it asserts on - the banner sentence, the empty
+   * state - so a `toContain` over the raw file is satisfied by the PROSE while
+   * the executable line is gone. Mutation-testing caught exactly that: deleting
+   * the empty-state assertion left this suite green until the strip was added.
+   */
+  const spec = specRaw.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '');
+  const view = readFileSync(
+    join(process.cwd(), 'src/components/admin/triage/TriageView.tsx'),
+    'utf8',
+  );
+  const row = readFileSync(
+    join(process.cwd(), 'src/components/admin/triage/TriageItemRow.tsx'),
+    'utf8',
+  );
+  const list = readFileSync(
+    join(process.cwd(), 'src/components/admin/triage/TriageList.tsx'),
+    'utf8',
+  );
+
+  it('matches the error banner TriageView actually renders', () => {
+    expect(view).toContain('Failed to load triage queue:');
+    expect(spec).toMatch(/ERROR_BANNER = \/Failed to load triage queue\//);
+    expect(spec).toMatch(/getByText\(ERROR_BANNER\)/);
+  });
+
+  it('matches the accessible name the row overlay actually carries', () => {
+    // The spec finds rows by `button[aria-label^="Open "]`. That prefix is the
+    // row's a11y contract, not a class name, which is why it is the handle -
+    // but it is still a string, so it is pinned to its producer.
+    expect(row).toContain('aria-label={`Open ${item.title}`}');
+    expect(spec).toContain('button[aria-label^="Open "]');
+  });
+
+  it('matches the empty state, which is a DIFFERENT DOM state from the error', () => {
+    // Asserting the absence of both is what makes the spec non-vacuous: a
+    // broken union and a drained queue must not be able to look alike.
+    expect(list).toContain('No items to review.');
+    expect(spec).toContain("getByText('No items to review.')");
+  });
+
+  it('opens the inbox UNFILTERED, which is the only shape that failed', () => {
+    // Every `?queue=<one>` deep link built a one-view union and worked. A spec
+    // that only ever visited a filtered queue would have passed throughout.
+    expect(spec).toMatch(/goto\(`\/admin\/inbox\$\{query\}`/);
+    expect(spec).toMatch(/openInbox\(page\)\)/);
+  });
+
+  it('proves it reached the inbox before asserting the absence of an error', () => {
+    // Measured on prod: an anonymous visit to /admin/inbox lands on /auth, where
+    // "no error banner" is trivially true. Without the heading probe the whole
+    // file would pass having never seen the inbox.
+    expect(spec).toMatch(/getByRole\('heading', \{ name: 'Inbox', exact: true \}\)/);
+    // The heading is AdminInbox's, not TriageView's - and it has to be an <h1>
+    // with exactly that text, or `exact: true` silently never matches.
+    const pageSrc = readFileSync(join(process.cwd(), 'src/pages/admin/AdminInbox.tsx'), 'utf8');
+    expect(pageSrc).toMatch(/<h1[^>]*>Inbox<\/h1>/);
+  });
+});
