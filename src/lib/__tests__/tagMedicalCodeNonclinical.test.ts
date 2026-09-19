@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
 /**
- * Guards 99991789821608 + 99991789824132 — ROUND EIGHTEEN.
+ * Guards 99991789833517 + 99991789833518 — ROUND EIGHTEEN.
  *
  * A band headed "Diagnostic codes" published SNOMED geography (Australia, Spain,
  * California), SNOMED occupations (nurse, medical doctor, jurist,
