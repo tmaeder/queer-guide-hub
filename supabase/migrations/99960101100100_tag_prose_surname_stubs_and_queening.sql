@@ -149,7 +149,7 @@
 -- Prior values survive in tag_change_log.before_data, which is the only reason
 -- any of this is reversible and is why content writes go through a declared actor.
 
-select set_config('app.actor', 'migration:99960101100000_tag_prose_surname_stubs', true);
+select set_config('app.actor', 'migration:99960101100100_tag_prose_surname_stubs', true);
 
 -- (1) queening: drop the misfiled summary. Content-guarded, so a human who fixes
 --     it first keeps their work.
@@ -213,7 +213,7 @@ begin
     -- A SECOND disambiguation shape the anchor above structurally cannot see: an
     -- English Wikipedia surname stub, which names itself as a surname rather than
     -- opening "may refer to:". Eight of these were live and uncounted when this
-    -- arm was added (99960101100000). Kept a separate key because it is
+    -- arm was added (99960101100100). Kept a separate key because it is
     -- REPAIRABLE -- null the description and let the thin-page gate deindex --
     -- where unresolved_disambiguation sits at a deliberate, unrepairable
     -- baseline. Zero-invariant. Both arms were measured corpus-wide: together
