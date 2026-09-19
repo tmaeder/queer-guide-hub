@@ -12,7 +12,7 @@ import { join } from 'node:path';
  * function body deleted.
  */
 
-const MIGRATION = '99991789852488_personality_wikidata_signals';
+const MIGRATION = '99991789855974_personality_wikidata_signals';
 
 const stripSql = (s: string) =>
   s
