@@ -61,7 +61,7 @@
 -- null one regenerates nothing), and no prose is touched — `bearded` and
 -- `seafood` carry a NULL description, which is a separate seam.
 
-select set_config('app.actor', 'migration:99980101100000', true);
+select set_config('app.actor', 'migration:99980101100100', true);
 
 -- ---------------------------------------------------------------- the reaper
 create or replace function public.run_tag_medical_codes_reap_orphans()

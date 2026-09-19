@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
 /**
- * Guards 99980101100000 — THE CODES A DISOWNED ENTITY LEFT BEHIND.
+ * Guards 99980101100100 — THE CODES A DISOWNED ENTITY LEFT BEHIND.
  *
  * Six active, indexable tags published clinical codes derived from a Wikidata
  * entity that had since been disowned: ICPC-2 A96 ("death") on /tags/passing,
@@ -15,7 +15,7 @@ import { resolve } from 'node:path';
  * retract the codes ever again — the documented remedy freezes them.
  */
 
-const MIGRATION = 'supabase/migrations/99980101100000_tag_medical_codes_orphan_reap.sql';
+const MIGRATION = 'supabase/migrations/99980101100100_tag_medical_codes_orphan_reap.sql';
 const ADMIN_PANEL = 'src/components/admin/TagMedicalCodesSection.tsx';
 const HEALTH = 'scripts/check-pipeline-health.mjs';
 
@@ -43,7 +43,7 @@ const reaper = statements.slice(
   statements.indexOf('create or replace function public.tag_medical_code_signals'),
 );
 
-describe('99980101100000 — orphaned clinical codes', () => {
+describe('99980101100100 — orphaned clinical codes', () => {
   it('reaps by the exact complement of the sync work set', () => {
     expect(reaper).toMatch(/status\s*=\s*'active'\s+and\s+t\.wikidata_id\s*~\s*'\^Q\[0-9\]\+\$'/);
   });
@@ -167,13 +167,13 @@ describe('99980101100000 — orphaned clinical codes', () => {
     // by the name appearing in a comment, which let an "unwired sentinel"
     // mutation survive the first round.
     expect(health).toContain('/rest/v1/rpc/tag_medical_code_signals`');
-    expect(health).toMatch(/res\.status === 404[\s\S]{0,400}?99980101100000/);
+    expect(health).toMatch(/res\.status === 404[\s\S]{0,400}?99980101100100/);
     expect(health).toMatch(/orphan_code_rows[\s\S]{0,600}?FAILED = true/);
     // Coverage gate, so a probe that sees nothing cannot report success.
     expect(health).toMatch(/code_rows_total[\s\S]{0,200}?measuring nothing/);
   });
 
   it('declares the migration actor', () => {
-    expect(statements).toContain("set_config('app.actor', 'migration:99980101100000', true)");
+    expect(statements).toContain("set_config('app.actor', 'migration:99980101100100', true)");
   });
 });
