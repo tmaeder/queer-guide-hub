@@ -45,6 +45,8 @@ const INDEX_STEP = 120;
  * `99100101143000`, that is exactly one: "1979 SAS (Teil der Marc Dorcel
  * Group)", a real company. An EMPTY "#" bucket would mean the feed-ID
  * retirement rule had over-reached and taken it too.
+ * Group)", a real company. An EMPTY "#" bucket would mean the retirement
+ * rule had over-reached and taken it too.
  */
 function initialOf(name: string): string {
   const first = name
@@ -76,6 +78,15 @@ function initialOf(name: string): string {
  * Do NOT read this ordering as a suppression mechanism, and do NOT add a
  * display filter on top of it — a filter hides rows here while leaving them in
  * search and on their own /marketplace/brands/:slug pages, which is the
+ * The data half is now fixed at the source, so this rule is no longer
+ * carrying it: `99100101143000` retired the 20 feed-ID rows corpus-wide and
+ * re-keyed their 190 listings onto the merchant's real brand, and
+ * `marketplace_register_brands()` refuses to mint another. The "#" bucket is
+ * one legitimate brand, not fifteen.
+ *
+ * Do NOT read this ordering as a suppression mechanism, and do NOT add a
+ * display filter on top of it — a filter hides rows here while leaving them
+ * in search and on their own /marketplace/brands/:slug pages, which is the
  * half-fix the migration exists to avoid.
  */
 function bucketRank(name: string): number {
