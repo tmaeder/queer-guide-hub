@@ -487,3 +487,91 @@ describe('the tag-hygiene gate survives a statement timeout', () => {
     expect(SCRIPT).toMatch(/if \(!res\.ok\) \{[\s\S]{0,200}?process\.exit\(1\)/);
   });
 });
+
+/**
+ * No index-only scans (2026-09-18).
+ *
+ * The one-pass rewrite above held, and the gate still timed out with 57014 four
+ * times — most recently 2026-09-18 — always on an unrelated diff, always green
+ * on re-run. The arm it fixed was not the one that came back.
+ *
+ * Measured on prod by BUFFERS, never warm wall time (which has pointed at the
+ * wrong arm twice in this function's history):
+ *
+ *     ev_assign (index-only scan, 64,714 heap fetches)  45,945 blk   46%
+ *     event_tag_strings_unresolved (incl. the ev scan)  17,990 blk   18%
+ *     uta_rollup (seq scan, the WHOLE same table)        3,675 blk
+ *     TOTAL                                            100,299 blk
+ *
+ * `uta_rollup` reads all 264,185 rows of `unified_tag_assignments` in 3,675
+ * blocks; `ev_assign` spends 45,945 reading an 88,144-row SUBSET of that same
+ * table. The planner picks an index-only scan because `pg_class.relallvisible`
+ * says every page is all-visible — it reads 3,675 of 3,675 — so it costs the
+ * heap fetches at zero. The scan performs 64,714 of them. relallvisible only
+ * moves on VACUUM/ANALYZE and these tables are written continuously, so on this
+ * instance EVERY index-only scan is a latent 12x regression waiting on
+ * autovacuum lag. This is its third recorded occurrence.
+ *
+ * A migration cannot fix a visibility map (VACUUM cannot run in a transaction),
+ * so the fix is to stop depending on one: `SET enable_indexonlyscan TO 'off'`
+ * on the function. 100,299 -> 55,149 blocks, output structurally unchanged
+ * because a planner directive cannot change a result.
+ *
+ * Why this is a test and not just the migration's own verify block: `create or
+ * replace function` RESETS proconfig wholesale when the new definition omits
+ * the SET clause. Several branches restate this function, and the one that
+ * applies last silently wins. A restatement that drops this line reinstates the
+ * 45,945-block scan while every other assertion — here and in the migration —
+ * still passes, and the gate goes back to flaking with nothing saying why.
+ */
+describe('tag_hygiene_stats() does not use index-only scans', () => {
+  /**
+   * The function SIGNATURE only — from `create ... function` to the body
+   * delimiter, comments stripped.
+   *
+   * Scoping matters more than usual here. The migration's header prose and its
+   * `do $verify$` block both contain the literal string `enable_indexonlyscan`,
+   * so a whole-file `toContain` passes with the SET clause deleted — the
+   * vacuous-assertion class this suite has already been bitten by twice.
+   * Verified by mutation while writing this.
+   */
+  const signature = (() => {
+    const at = sql.search(/create\s+(or\s+replace\s+)?function\s+public\.tag_hygiene_stats\s*\(/i);
+    expect(at, 'no tag_hygiene_stats definition').toBeGreaterThan(-1);
+    const end = sql.indexOf('AS $function$', at);
+    expect(end, 'the function body is not $function$-quoted').toBeGreaterThan(at);
+    return sql.slice(at, end).replace(/^\s*--.*$/gm, '');
+  })();
+
+  it('sets enable_indexonlyscan off in the function header', () => {
+    expect(
+      signature,
+      'tag_hygiene_stats lost SET enable_indexonlyscan — the 45,945-block ev_assign ' +
+        'index-only scan is back; re-add the setting rather than re-baselining the gate',
+    ).toMatch(/\bSET\s+enable_indexonlyscan\s+TO\s+'off'/i);
+  });
+
+  it('keeps search_path on the SECURITY DEFINER function', () => {
+    // Adding the second SET must not cost the first. Losing search_path on a
+    // SECURITY DEFINER function is a security defect, not a performance one.
+    expect(signature).toMatch(/\bSET\s+search_path\s+TO\s+'public'/i);
+    expect(signature).toMatch(/SECURITY\s+DEFINER/i);
+  });
+
+  it('does not reintroduce a covering index on events', () => {
+    // Measured and REJECTED on prod, recorded so it is not re-derived: a
+    // covering partial index on events takes the `ev` CTE 16,112 -> 6,294
+    // blocks, ~7k better than this fix, and buys back the exact dependency the
+    // fix removes — it only pays while the visibility map is fresh, and its
+    // reading already carried 5,868 heap fetches 7 minutes after an autovacuum.
+    // It also needs a write-blocking SHARE lock on a 126 MB ingest table.
+    const created = sources.some((s) =>
+      /create\s+index[^;]*\bon\s+(public\.)?events\b[^;]*\binclude\s*\([^)]*\btags\b/i.test(s),
+    );
+    expect(
+      created,
+      'a covering index on events.tags was added; it is only a win while the ' +
+        'visibility map is fresh — fix autovacuum on events instead',
+    ).toBe(false);
+  });
+});
