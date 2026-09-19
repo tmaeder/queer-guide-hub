@@ -162,9 +162,8 @@ const PASS_TWO: Case[] = [
  */
 async function proseOf(
   request: import('@playwright/test').APIRequestContext,
-  page: import('@playwright/test').Page,
   slug: string,
-): Promise<{ text: string; surface: 'crawler' | 'spa' | 'gated' }> {
+): Promise<{ text: string; surface: 'crawler' | 'meta' | 'gated' }> {
   const res = await request.get(`/tags/${slug}`, { headers: { 'User-Agent': BOT_UA } });
   expect(res.status(), `/tags/${slug} should resolve`).toBe(200);
   const html = await res.text();
@@ -173,27 +172,35 @@ async function proseOf(
   const article = articleOf(html);
   if (article !== '') return { text: article, surface: 'crawler' };
 
-  await page.goto(`/tags/${slug}`);
-  await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
-  const text = (await page.locator('main').innerText()) ?? '';
-
-  // THE THIRD GATE. is_adult rows render an AGE interstitial in the SPA —
-  // "Adult content gated / Confirm you are 18 or older" — which is a different
-  // mechanism from the is_sensitive sign-in gate above and reaches a different
-  // set of rows (praise-kink is both; primal-play is adult only). Its copy
-  // contains neither the defect nor the fingerprint, so asserting through it is
-  // the vacuity this spec exists to avoid.
-  if (/Adult content gated|Confirm you are 18 or older/i.test(text)) {
-    return { text: '', surface: 'gated' };
-  }
-  return { text, surface: 'spa' };
+  // NO SPA FALLBACK, DELIBERATELY — it was tried and removed. Two things make
+  // the rendered page an unreliable surface for this assertion:
+  //
+  //  1. THE AGE GATE IS STICKY PER BROWSER CONTEXT. is_adult rows render an
+  //     "Adult content gated / Confirm you are 18 or older" interstitial, and
+  //     once a worker has loaded one, LATER pages in the same context inherit
+  //     it. Measured on prod: /tags/ovaries is is_adult=false and is_sensitive
+  //     =false, and still showed the gate after /tags/praise-kink had been
+  //     visited. So SPA results depend on test ORDER, and the failure surfaces
+  //     as "still publishes <the defect>" on a row whose data is correct —
+  //     the most misleading shape a flake can take.
+  //  2. Cold-route hydration runs 3.5-7s, well past Playwright's 5s default.
+  //
+  // For a DEINDEXED row the crawler emits no <article>, but it does emit the
+  // meta description, which `tagDetail()` resolves description-first — and
+  // `description` is the field these migrations repaired. That is a stable,
+  // order-independent, ~0.4s surface. What it cannot see is `long_description`;
+  // that field is covered by the migrations' own postconditions, which read the
+  // table rather than the page, and by the indexable rows below where the
+  // <article> renders the body directly.
+  const meta = html.match(/<meta name="description" content="([^"]*)"/i)?.[1] ?? '';
+  return { text: meta, surface: 'meta' };
 }
 
 function runCases(title: string, cases: Case[]) {
   test.describe(title, () => {
     for (const c of cases) {
-      test(`/tags/${c.slug} no longer publishes ${c.was}`, async ({ request, page }) => {
-        const { text, surface } = await proseOf(request, page, c.slug);
+      test(`/tags/${c.slug} no longer publishes ${c.was}`, async ({ request }) => {
+        const { text, surface } = await proseOf(request, c.slug);
 
         // A sensitive row (is_sensitive / is_adult) serves the sign-in gate to
         // anon traffic on BOTH surfaces, so neither the bad string nor the good
@@ -245,8 +252,8 @@ test.describe('sex glossary: correct-as-written rows survived', () => {
   ];
 
   for (const c of CONTROLS) {
-    test(`/tags/${c.slug} kept its prose — ${c.why}`, async ({ request, page }) => {
-      const { text, surface } = await proseOf(request, page, c.slug);
+    test(`/tags/${c.slug} kept its prose — ${c.why}`, async ({ request }) => {
+      const { text, surface } = await proseOf(request, c.slug);
       test.skip(surface === 'gated', `/tags/${c.slug} is sensitive-gated`);
       expect(text, `/tags/${c.slug} was swept and should not have been`).toMatch(c.keep);
     });
