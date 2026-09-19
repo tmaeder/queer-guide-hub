@@ -145,5 +145,98 @@ test.describe('@smoke maker pages have their own crawler head', () => {
     expect(titleOf(html), '/marketplace/brands rendered a maker page').not.toBe(
       'No maker here | Queer Guide',
     );
+
+    // The index had NO STATIC_ROUTE_META entry until 2026-09-19, so resolveMeta
+    // — an exact match — fell through to DEFAULT_META and it served the
+    // site-wide homepage title, competing with `/` on its own URL.
+    expect(titleOf(html), '/marketplace/brands is back on the generic homepage title').not.toMatch(
+      /LGBTQ\+ Safe Spaces, Events/i,
+    );
+  });
+});
+
+/**
+ * Discovery. The heads above make a maker page worth crawling; these make it
+ * FINDABLE. Kept in this file rather than a new one because the two halves fail
+ * together: a sitemap that advertises pages with no head is the soft-404 farm
+ * this whole effort removed, and a head nothing links to is an orphan.
+ */
+test.describe('@smoke maker pages are discoverable', () => {
+  const RETIRED_IN_SITEMAP = RETIRED_MAKERS;
+
+  test('sitemap-brands.xml lists the makers, and only the real ones', async ({ request }) => {
+    const res = await request.get('/sitemap-brands.xml', { headers: { 'User-Agent': BOT_UA } });
+    expect(res.status(), '/sitemap-brands.xml should resolve').toBe(200);
+    const xml = await res.text();
+    expect(res.headers()['content-type'] ?? '', 'not served as XML').toMatch(/xml/i);
+
+    const locs = [...xml.matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => m[1]);
+
+    // FLOOR. `sitemap-blog.xml` served a valid, EMPTY urlset at HTTP 200 for its
+    // entire life because its floor was 0 — a 200 and well-formed XML prove
+    // nothing on their own. 871 approved brands carry a slug (2026-09-19).
+    expect(locs.length, 'sitemap-brands.xml collapsed').toBeGreaterThan(500);
+
+    // CEILING, and it guards a different failure than the floor. The generator
+    // filters `status=eq.approved`, but `fetchRows` reads with the SERVICE ROLE
+    // and bypasses RLS, so dropping that filter would expose the whole ~5,142-row
+    // table — the count would JUMP, which no floor can catch. It would also look
+    // correct to anyone checking through the anon key, where RLS hides the
+    // difference.
+    expect(locs.length, 'the approved-only filter looks dropped — service role sees every row')
+      .toBeLessThan(2000);
+
+    for (const loc of locs.slice(0, 50)) {
+      expect(loc, 'a non-maker URL leaked into the makers sitemap').toMatch(
+        /^https:\/\/queer\.guide\/marketplace\/brands\/[^/]+$/,
+      );
+    }
+
+    // Retired feed-ID artifacts were retired by NULLing their slug, so the
+    // filter that keeps them out is `slug=not.is.null` — NOT the status filter,
+    // which is a separate fact about the same rows.
+    for (const slug of RETIRED_IN_SITEMAP) {
+      expect(xml, `retired maker ${slug} is advertised in the sitemap`).not.toContain(
+        `/marketplace/brands/${slug}<`,
+      );
+    }
+  });
+
+  test('the sitemap index links it, and a sampled URL really has a head', async ({ request }) => {
+    const idx = await request.get('/sitemap.xml', { headers: { 'User-Agent': BOT_UA } });
+    expect(idx.status()).toBe(200);
+    expect(await idx.text(), 'sitemap-brands.xml is not linked from the index').toContain(
+      'https://queer.guide/sitemap-brands.xml',
+    );
+
+    // The pairing that matters: take a URL the sitemap actually advertises and
+    // prove it is not a soft 404. Asserting the sitemap alone would pass just as
+    // well against the pre-2026-09-19 state, where every one of these URLs
+    // returned the generic shell.
+    const xml = await (
+      await request.get('/sitemap-brands.xml', { headers: { 'User-Agent': BOT_UA } })
+    ).text();
+    const first = xml.match(/<loc>([^<]+)<\/loc>/)?.[1];
+    expect(first, 'sitemap had no URL to sample').toBeTruthy();
+
+    const page = await request.get(first as string, { headers: { 'User-Agent': BOT_UA } });
+    expect(page.status(), `${first} is advertised but does not resolve`).toBe(200);
+    const html = await page.text();
+    expect(titleOf(html), `${first} is advertised but serves the generic shell`).toMatch(
+      /— Marketplace \| Queer Guide$/,
+    );
+    expect(html, `${first} is advertised but noindexed`).not.toMatch(ROBOTS_NOINDEX);
+  });
+
+  test('the makers index is in the static sitemap', async ({ request }) => {
+    // sitemap-static.xml is derived from Object.keys(STATIC_ROUTE_META), so this
+    // is the observable consequence of the meta entry existing at all — and the
+    // control for it, since the title assertion above would also pass if someone
+    // hardcoded a title somewhere else.
+    const res = await request.get('/sitemap-static.xml', { headers: { 'User-Agent': BOT_UA } });
+    expect(res.status()).toBe(200);
+    expect(await res.text(), '/marketplace/brands missing from sitemap-static.xml').toContain(
+      'https://queer.guide/marketplace/brands<',
+    );
   });
 });
