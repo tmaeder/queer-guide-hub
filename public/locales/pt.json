@@ -1803,7 +1803,22 @@
     "news": {
       "title": "Últimas notícias",
       "eyebrow": "Boletins",
-      "editorsPick": "[PT] Editors' pick"
+      "editorsPick": "[PT] Editors' pick",
+      "topics": "Temas de notícias",
+      "topic": {
+        "all": "Tudo",
+        "rights": "Direitos e leis",
+        "community": "Comunidade",
+        "culture": "Cultura e artes",
+        "podcasts": "Podcasts"
+      },
+      "moreStories": "Mais {{count}} notícias",
+      "followTopics": "Seguir temas",
+      "following": "{{count}} seguidos",
+      "searchTopics": "Procurar temas…",
+      "unfollow": "Deixar de seguir",
+      "trySearching": "Experimente: {{list}}",
+      "noTopic": "Nenhum tema com esse nome."
     },
     "discover": "Discover",
     "destinationsTitle": "Where the scene lives.",
