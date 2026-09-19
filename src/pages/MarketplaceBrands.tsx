@@ -29,8 +29,11 @@ const FLOOR_STEP = 120;
  * The letter bucket a maker files under.
  *
  * Diacritics are folded first, so "Éclat" indexes at E where a naive
- * `charAt(0)` would drop it into the "#" bucket alongside the fifteen brands
- * whose names genuinely begin with a digit or a symbol.
+ * `charAt(0)` would drop it into the "#" bucket alongside the brands whose
+ * names genuinely begin with a digit or a symbol. Measured on prod after
+ * `99100101143000`, that is exactly one: "1979 SAS (Teil der Marc Dorcel
+ * Group)", a real company. An EMPTY "#" bucket would mean the retirement
+ * rule had over-reached and taken it too.
  */
 function initialOf(name: string): string {
   const first = name
@@ -46,15 +49,24 @@ function initialOf(name: string): string {
  * Sort key for a bucket: "#" files at the END of the index, never the start.
  *
  * `localeCompare` alone puts digits and symbols before "A", so the A–Z view
- * OPENED on the "#" bucket — and measured on prod that bucket is 15 brands of
- * which 13 are merchant-feed ID artifacts ("12807-203758186"), carrying 143
+ * OPENED on the "#" bucket — and at the time that bucket was 15 brands of
+ * which 13 were merchant-feed ID artifacts ("12807-203758186"), carrying 143
  * listings between them. The count ordering had buried them; switching to A–Z
  * promoted the worst names in the catalogue to the first thing a reader sees.
  *
  * Filing them last is also just what a printed index does — numbers and
- * symbols are the tail. It does NOT fix the underlying data: those 13 rows
- * should not be in the directory at all, which is a separate decision about
- * whether to drop, merge or suppress them.
+ * symbols are the tail, whatever the data underneath is doing.
+ *
+ * The data half is now fixed at the source, so this rule is no longer
+ * carrying it: `99100101143000` retired the 20 feed-ID rows corpus-wide and
+ * re-keyed their 190 listings onto the merchant's real brand, and
+ * `marketplace_register_brands()` refuses to mint another. The "#" bucket is
+ * one legitimate brand, not fifteen.
+ *
+ * Do NOT read this ordering as a suppression mechanism, and do NOT add a
+ * display filter on top of it — a filter hides rows here while leaving them
+ * in search and on their own /marketplace/brands/:slug pages, which is the
+ * half-fix the migration exists to avoid.
  */
 function bucketRank(name: string): number {
   return initialOf(name) === '#' ? 1 : 0;
