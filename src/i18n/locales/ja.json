@@ -1803,7 +1803,22 @@
     "news": {
       "title": "最新ニュース",
       "eyebrow": "ニュース",
-      "editorsPick": "[JA] Editors' pick"
+      "editorsPick": "[JA] Editors' pick",
+      "topics": "ニュースのトピック",
+      "topic": {
+        "all": "すべて",
+        "rights": "権利と法律",
+        "community": "コミュニティ",
+        "culture": "文化・アート",
+        "podcasts": "ポッドキャスト"
+      },
+      "moreStories": "他{{count}}件の記事",
+      "followTopics": "トピックをフォロー",
+      "following": "フォロー中{{count}}件",
+      "searchTopics": "トピックを検索…",
+      "unfollow": "フォロー解除",
+      "trySearching": "例: {{list}}",
+      "noTopic": "その名前のトピックはありません。"
     },
     "discover": "Discover",
     "destinationsTitle": "Where the scene lives.",
