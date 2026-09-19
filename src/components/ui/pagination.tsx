@@ -1,6 +1,8 @@
 import * as React from 'react';
 import { ChevronLeft, ChevronRight, MoreHorizontal } from 'lucide-react';
 
+import { cn } from '@/lib/utils';
+
 const Pagination = ({ className, style, ...props }: React.ComponentProps<'nav'>) => (
   <nav
     role="navigation"
@@ -52,9 +54,8 @@ const PaginationLink = ({
   ...props
 }: PaginationLinkProps) => (
   <a
-    className="text-sm"
     aria-current={isActive ? 'page' : undefined}
-    className={className}
+    className={cn('text-sm', className)}
     style={{
       display: 'inline-flex',
       alignItems: 'center',

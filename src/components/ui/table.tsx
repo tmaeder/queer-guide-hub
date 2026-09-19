@@ -6,9 +6,8 @@ const Table = React.forwardRef<HTMLTableElement, React.HTMLAttributes<HTMLTableE
   ({ className, style, ...props }, ref) => (
     <div style={{ width: '100%' }} className="relative overflow-auto">
       <table
-        className="text-sm"
         ref={ref}
-        className={className}
+        className={cn('text-sm', className)}
         style={{ width: '100%', captionSide: 'bottom', borderCollapse: 'collapse', ...style }}
         {...props}
       />
@@ -110,9 +109,8 @@ const TableCaption = React.forwardRef<
   React.HTMLAttributes<HTMLTableCaptionElement>
 >(({ className, style, ...props }, ref) => (
   <caption
-    className="text-sm"
     ref={ref}
-    className={className}
+    className={cn('text-sm', className)}
     style={{ marginTop: 16, color: 'hsl(var(--muted-foreground))', ...style }}
     {...props}
   />
