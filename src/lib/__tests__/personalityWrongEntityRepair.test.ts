@@ -14,7 +14,7 @@ import { join } from 'node:path';
  * with the statements deleted — the trap CLAUDE.md records repeatedly.
  */
 
-const MIGRATION = '99991789824947_personality_wrong_entity_repair';
+const MIGRATION = '99991789833562_personality_wrong_entity_repair';
 
 const stripSql = (s: string) =>
   s

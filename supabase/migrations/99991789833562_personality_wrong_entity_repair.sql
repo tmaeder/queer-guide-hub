@@ -259,7 +259,7 @@ insert into _wrong_entity (qid, wd_label, wd_class, wd_desc, wd_birth, wd_death,
 
 do $repair$
 declare
-  v_actor      text := 'migration:99991789824947_personality_wrong_entity_repair';
+  v_actor      text := 'migration:99991789833562_personality_wrong_entity_repair';
   v_rejected   int;
   v_repaired   int;
 begin
