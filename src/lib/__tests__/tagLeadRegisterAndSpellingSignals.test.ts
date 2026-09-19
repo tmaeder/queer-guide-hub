@@ -47,7 +47,7 @@ import { join } from 'node:path';
  *    success.
  */
 
-const MIGRATION = '99991789824205_tag_lead_register_and_spelling_signals.sql';
+const MIGRATION = '99991789833545_tag_lead_register_and_spelling_signals.sql';
 
 const sql = readFileSync(join(process.cwd(), 'supabase/migrations', MIGRATION), 'utf8');
 
