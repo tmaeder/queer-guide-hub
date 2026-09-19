@@ -3,7 +3,10 @@ import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 /**
- * Guards the bigint-key fix in unmerge_cities (99991789844793).
+ * Guards the bigint-key fix in unmerge_cities
+ * (supabase/migrations/*_unmerge_cities_non_uuid_keys.sql -- resolved by SLUG,
+ * never by version. This file has been renumbered five times chasing a moving
+ * ceiling; a version in this header is one more place to forget.)
  *
  * The defect: the replay compared recorded ids with a hardcoded `v::uuid`, and
  * three replayed tables key on bigint (ingestion_events, venue_coord_fixes,
