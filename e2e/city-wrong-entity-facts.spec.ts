@@ -68,6 +68,20 @@ const REPAIRED: Case[] = [
       { needle: /R[ée]union/i, why: "Saint-Paul, Réunion's description" },
     ],
   },
+  {
+    // The non-US half of the same defect (20260919141647). León, Guanajuato
+    // carried Q15699 — León, SPAIN — and published its mayor, postcodes, area
+    // code, twinnings and university. Its Mexican description and population
+    // came from elsewhere and are correct, which is why they are asserted to
+    // SURVIVE in the test below rather than merely left alone.
+    slug: 'leon',
+    present: /Le[oó]n/i,
+    absent: [
+      { needle: /Jos[ée]\s+Antonio\s+Diez/i, why: 'mayor of León, SPAIN' },
+      { needle: /24001/, why: 'a León, Spain postal code' },
+      { needle: /University of Le[oó]n/i, why: "León Spain's university" },
+    ],
+  },
 ];
 
 /** Give the SPA a chance to hydrate and paint the overview tab. */
@@ -95,6 +109,15 @@ test.describe('city pages do not publish another same-name city’s facts', () =
       }
     });
   }
+
+  test('control: León keeps its own correct Mexican prose', async ({ page }) => {
+    // The repair retracted every Wikidata-derived field on this row but NOT the
+    // description or population, which came from another source and are right.
+    // Without this the León case above would also pass against a pass that
+    // simply blanked the page — the over-reach the migrations argue against.
+    const text = await cityText(page, 'leon');
+    expect(text, 'León lost its correct Mexican description').toMatch(/Guanajuato/i);
+  });
 
   test('control: Berlin still publishes its own real mayor', async ({ page }) => {
     // 994 cities legitimately carry a mayor. If this fails, the repair (or a
