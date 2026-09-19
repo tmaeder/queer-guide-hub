@@ -15,7 +15,7 @@ import { FavoriteButton } from '@/components/ui/favorite-button';
 import { ReportButton } from '@/components/moderation/ReportButton';
 import { AdminEditButton } from '@/components/admin/AdminEditButton';
 import { Editable } from '@/components/admin/inline/Editable';
-import { formatPhoneDisplay } from '@/lib/formatPhone';
+import { formatPhoneDisplay, formatPhoneHref } from '@/lib/formatPhone';
 import { VenueEvents } from '@/components/venues/VenueEvents';
 import { VenueCheckInButton } from '@/components/venues/VenueCheckInButton';
 import { VenueSafetySignalDisplay } from '@/components/venues/VenueSafetySignalDisplay';
@@ -333,26 +333,49 @@ export function VenueBodyLead({ venue }: { venue: VenueWithRelations }) {
  * on this corpus is most of them for most venues: amenities are set on 8.9% of
  * the 23,335 live rows and `accessibility_attributes` on **6 of them**.
  */
+/**
+ * Identity only — City / Category / Price. Address, phone and website are NOT here.
+ *
+ * They used to be, and `VenueLocationContact` below carries the same three (website
+ * a third time, as a masthead action button), so a venue page stated its address,
+ * phone and homepage twice. Reported three separate ways on /venues/alphabet-city-beer-co:
+ * "further down the page the address, phone and homepage are shown again", "the address
+ * field shows the city, which is also in the field next to it", "the homepage link is
+ * shown twice". `VenueLocationContact`'s own docblock already claims to be the contact
+ * block, so it becomes the sole owner rather than a second one.
+ *
+ * The city-inside-the-address complaint falls out with the deletion rather than needing
+ * a parser: `venues.address` legitimately contains the city on 8,648 of 26,710 rows
+ * (32%) — a full postal address SHOULD contain its city. It only read as a duplicate
+ * because a separate City fact sat next to it. Stripping the city out of the stored
+ * address would be the wrong fix; it's correct data in the wrong company.
+ *
+ * Removing Phone also fixes a fourth report ("where other locations have a Price field,
+ * this one shows the phone number", /venues/b-bar): FactGrid drops empty facts, so on a
+ * venue with no price_range the Phone fact simply slid up into the Price slot. Nothing
+ * was mis-mapped — the grid was re-flowing.
+ */
 export function VenueFacts({ venue, t }: { venue: VenueWithRelations; t: TFunction }) {
   const cityLabel = [venue.cities?.name, venue.countries?.name].filter(Boolean).join(', ');
   return (
     <FactGrid
       facts={[
-        { label: t('venues.detail.address', 'Address'), value: venue.address },
-        { label: t('venues.detail.city', 'City'), value: cityLabel },
+        {
+          // Label by what the value actually holds. cityLabel is city + country joined,
+          // but 3,149 live venues have `city_id IS NULL` with a country set, so the cell
+          // rendered the COUNTRY under a "City" label ("the City field shows the
+          // country", /venues/b-bar). The raw `venues.city` text is deliberately never
+          // rendered — it mixes names with ISO codes — so relabelling is the honest fix
+          // here; linking b-bar's city_id is a separate backfill item.
+          label: venue.cities?.name
+            ? t('venues.detail.city', 'City')
+            : t('venues.detail.country', 'Country'),
+          value: cityLabel,
+        },
         { label: t('venues.detail.category', 'Category'), value: venue.category },
         {
           label: t('venues.detail.price', 'Price'),
           value: getPriceRange(venue.price_range ?? null),
-        },
-        { label: t('venues.detail.phone', 'Phone'), value: venue.phone },
-        {
-          label: t('venues.detail.website', 'Website'),
-          value: venue.website ? (
-            <a href={venue.website} target="_blank" rel="noopener noreferrer">
-              {venue.website.replace(/^https?:\/\//, '').replace(/\/$/, '')}
-            </a>
-          ) : null,
         },
       ]}
     />
@@ -684,7 +707,12 @@ export function VenueLocationContact({
                 >
                   {venue.address}
                 </Editable>
-                {venue.postal_code ? `, ${venue.postal_code}` : ''}
+                {/* Only append the postcode when the stored address doesn't already
+                    carry it — 3,206 of 26,710 venues (12%) do, and appending
+                    unconditionally printed "…New York, NY 10009, 10009". */}
+                {venue.postal_code && !venue.address?.includes(venue.postal_code)
+                  ? `, ${venue.postal_code}`
+                  : ''}
               </p>
             </div>
           </div>
@@ -701,9 +729,20 @@ export function VenueLocationContact({
                 value={venue.phone}
                 onSaved={onContentUpdated}
               >
-                <a href={`tel:${venue.phone}`} className="text-primary hover:underline">
-                  {formatPhoneDisplay(venue.phone)}
-                </a>
+                {/* Spaces and parens are not valid in a tel: URI (RFC 3966) and this
+                    corpus is full of both; formatPhoneHref strips them so tapping the
+                    number dials on mobile. Falls back to plain text when the stored
+                    "phone" holds nothing dialable, rather than shipping a dead link. */}
+                {formatPhoneHref(venue.phone) ? (
+                  <a
+                    href={formatPhoneHref(venue.phone) as string}
+                    className="text-primary hover:underline"
+                  >
+                    {formatPhoneDisplay(venue.phone)}
+                  </a>
+                ) : (
+                  formatPhoneDisplay(venue.phone)
+                )}
               </Editable>
             </span>
           </div>
