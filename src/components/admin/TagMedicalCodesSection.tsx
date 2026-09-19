@@ -16,7 +16,7 @@
  * freezes its codes forever. That stranded ICPC-2 A96 ("death") on `/tags/passing`
  * and ICD-10 U07.1 (COVID-19) on `/tags/seafood` for weeks after both identifiers
  * were correctly disowned. `run_tag_medical_codes_reap_orphans()` (migration
- * 99970101100000) now runs after each sync and deletes exactly what the sync can
+ * 99980101100000) now runs after each sync and deletes exactly what the sync can
  * no longer see; `tag_medical_code_signals().orphan_code_rows` is a zero-invariant.
  *
  * The `tag_medical_codes` table does carry `source = 'editorial'`, which the

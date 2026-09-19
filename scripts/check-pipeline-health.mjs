@@ -3330,7 +3330,7 @@ const TRUNCATED_DESCRIPTION_CEILING = 30
 //     work set (`status='active' AND wikidata_id ~ '^Q[0-9]+$'`), so the sync can
 //     never refresh OR retract its codes again — the documented remedy is what
 //     freezes them. That left ICPC-2 A96 ("death") rendering on /tags/passing and
-//     ICD-10 U07.1 (COVID-19) on /tags/seafood. 99970101100000 reaps them after
+//     ICD-10 U07.1 (COVID-19) on /tags/seafood. 99980101100000 reaps them after
 //     every sync; this asserts the reaper is still wired and still winning.
 {
   const res = await fetch(`${BASE}/rest/v1/rpc/tag_medical_code_signals`, {
@@ -3343,7 +3343,7 @@ const TRUNCATED_DESCRIPTION_CEILING = 30
   // hard fail could only go green after the merge it blocks — a deadlock, not a
   // guard). Every other non-ok status IS a broken probe and must fail.
   if (res.status === 404) {
-    console.warn('⚠ tag_medical_code_signals → HTTP 404 — clinical-code sentinel NOT DEPLOYED (migration 99970101100000). This is absence of a check, not absence of defects.')
+    console.warn('⚠ tag_medical_code_signals → HTTP 404 — clinical-code sentinel NOT DEPLOYED (migration 99980101100000). This is absence of a check, not absence of defects.')
   } else if (!res.ok) {
     const detail = (await res.text()).slice(0, 200)
     console.error(`✗ tag_medical_code_signals → HTTP ${res.status} — the gate could not run. A broken probe must not read as a clean corpus. ${detail}`)
