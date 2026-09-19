@@ -105,10 +105,21 @@ test.describe('a glossary summary names its own subject', () => {
   // its one-line summary read "Drag culture performance art". That line is the
   // page lead and, because search_documents_index_tags emits
   // coalesce(short_description, description), it was also what site search
-  // returned. The summary was NULLED rather than rewritten, so the indexer's
-  // existing coalesce falls through to the row's own correct description —
-  // which is why the POSITIVE fingerprint below is the facesitting definition
-  // and not merely the word "queening".
+  // returned. 99960101100100 NULLED it rather than rewriting, so the coalesce
+  // fell through to the row's own correct description.
+  //
+  // It is no longer null: a concurrent session
+  // (99991789812138_sex_glossary_active_corrections, 2026-09-19 11:51) filled
+  // the gap with a summary that restates the description and chooses no sense.
+  // The two composed — one removed a false claim, the other supplied the
+  // missing one — and the current lead is that new summary, not the fallback.
+  //
+  // THE ASSERTION IS DELIBERATELY BLIND TO WHICH OF THE TWO IS SERVING. Both
+  // express the same definition, so the POSITIVE fingerprint is that
+  // definition rather than the word "queening" or either exact string: a
+  // fingerprint pinned to one of them would fail the next time somebody
+  // legitimately improves the other, and pinning to the bare term would pass
+  // against the drag summary this spec exists to keep out.
   test('/tags/queening is facesitting, not drag performance', async ({ request }) => {
     const res = await request.get('/tags/queening', {
       headers: { 'User-Agent': BOT_UA },
