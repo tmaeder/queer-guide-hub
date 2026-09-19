@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 /**
- * Guards 99940101110200 — the measured rewrite, batch 9 (4 rows, TWO groups).
+ * Guards 99950101100100 — the measured rewrite, batch 9 (4 rows, TWO groups).
  *
  * 1. THE GROUPS ARE LABELLED AND THE TEST KEEPS THEM APART. Group A is the
  *    lead-shape axis (2 of 25 read = 8%); Group B was found OFF-AXIS while
@@ -36,7 +36,7 @@ import { join } from 'node:path';
 
 const MIG = join(
   process.cwd(),
-  'supabase/migrations/99940101110200_tag_description_measured_rewrite_batch9.sql',
+  'supabase/migrations/99950101100100_tag_description_measured_rewrite_batch9.sql',
 );
 const sql = readFileSync(MIG, 'utf8');
 const bare = sql

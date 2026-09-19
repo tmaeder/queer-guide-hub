@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 /**
- * Guards 99940101110300 — the measured rewrite, batch 10 (7 rows).
+ * Guards 99950101100200 — the measured rewrite, batch 10 (7 rows).
  *
  * 1. A NEW AXIS: the description is a NEWS-TAXONOMY LABEL rather than a
  *    definition, while the row's own summary AND body both define the term.
@@ -26,7 +26,7 @@ import { join } from 'node:path';
 
 const MIG = join(
   process.cwd(),
-  'supabase/migrations/99940101110300_tag_description_measured_rewrite_batch10.sql',
+  'supabase/migrations/99950101100200_tag_description_measured_rewrite_batch10.sql',
 );
 const sql = readFileSync(MIG, 'utf8');
 const bare = sql
