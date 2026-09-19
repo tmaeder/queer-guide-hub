@@ -3323,6 +3323,59 @@ const TRUNCATED_DESCRIPTION_CEILING = 30
   }
 }
 
+// § Clinical codes left behind by a disowned Wikidata entity
+//
+//     The same failure as the prose section below, in a worse artifact. A tag
+//     whose wrong `wikidata_id` is cleared leaves run_tag_medical_codes_sync's
+//     work set (`status='active' AND wikidata_id ~ '^Q[0-9]+$'`), so the sync can
+//     never refresh OR retract its codes again — the documented remedy is what
+//     freezes them. That left ICPC-2 A96 ("death") rendering on /tags/passing and
+//     ICD-10 U07.1 (COVID-19) on /tags/seafood. 99980101100100 reaps them after
+//     every sync; this asserts the reaper is still wired and still winning.
+{
+  const res = await fetch(`${BASE}/rest/v1/rpc/tag_medical_code_signals`, {
+    method: 'POST',
+    headers: { ...headers, 'Content-Type': 'application/json' },
+    body: '{}',
+  })
+  // 404 = the migration has not landed yet, which is unavoidable on the PR that
+  // introduces both (this job builds the BRANCH and calls the LIVE backend, so a
+  // hard fail could only go green after the merge it blocks — a deadlock, not a
+  // guard). Every other non-ok status IS a broken probe and must fail.
+  if (res.status === 404) {
+    console.warn('⚠ tag_medical_code_signals → HTTP 404 — clinical-code sentinel NOT DEPLOYED (migration 99980101100100). This is absence of a check, not absence of defects.')
+  } else if (!res.ok) {
+    const detail = (await res.text()).slice(0, 200)
+    console.error(`✗ tag_medical_code_signals → HTTP ${res.status} — the gate could not run. A broken probe must not read as a clean corpus. ${detail}`)
+    FAILED = true
+  } else {
+    const mc = (await res.json()) ?? {}
+    if (mc.probe_ok !== true) {
+      console.error('✗ tag_medical_code_signals did not report probe_ok — the probe is broken')
+      FAILED = true
+    } else if (Number(mc.code_rows_total ?? 0) < 100) {
+      // Coverage before verdict: zero orphans over an empty table is not clean.
+      console.error(`✗ tag_medical_code_signals sees only ${mc.code_rows_total ?? 0} code rows — it is measuring nothing, not passing`)
+      FAILED = true
+    } else {
+      const orphans = Number(mc.orphan_code_rows ?? 0)
+      const orphanTags = Number(mc.orphan_tags ?? 0)
+      if (!('orphan_code_rows' in mc)) {
+        console.error("✗ tag_medical_code_signals has no 'orphan_code_rows' key — that check measured NOTHING")
+        FAILED = true
+      } else if (orphans > 0) {
+        const named = Array.isArray(mc.orphan_examples) ? mc.orphan_examples.join(', ') : ''
+        console.error(`✗ ${orphans} clinical code row(s) on ${orphanTags} tag(s) the sync can no longer refresh${named ? `: ${named}` : ''}`)
+        console.error('  A code whose tag lost its Wikidata identifier can only ever be stale — it outlives the entity that produced it and renders to readers.')
+        console.error('  Do NOT repoint the identifier to silence this: the sync rebuilds codes from it weekly, so a plausible-but-wrong QID regenerates wrong codes forever.')
+        FAILED = true
+      } else {
+        console.log(`✓ no orphaned clinical codes (${mc.code_rows_total} rows over ${mc.tags_total} tags)`)
+      }
+    }
+  }
+}
+
 // § Prose left behind by a disowned Wikidata entity
 //
 //     The second half of the wrong-entity failure. tag_wikidata_repair_regressions()
