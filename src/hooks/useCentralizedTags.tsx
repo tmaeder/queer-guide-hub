@@ -377,7 +377,9 @@ export const useCentralizedTags = () => {
 
   const createTag = async (tagData: {
     name: string;
-    slug: string;
+    // Optional, and normally omitted. Postgres derives the slug from the name
+    // via normalize_tag_slug(); pass a value only to set one deliberately.
+    slug?: string;
     category?: string | null;
     description?: string | null;
   }): Promise<CentralizedTag | null> => {
@@ -389,7 +391,11 @@ export const useCentralizedTags = () => {
           {
             ...tagData,
             name: normalizedName,
-            slug: tagData.slug || normalizedName.toLowerCase().replace(/\s+/g, '-'),
+            // '' is the documented "derive from the name" escape hatch that
+            // normalize_tag_input() honours. Deriving here instead would be a
+            // SECOND implementation of normalize_tag_slug() free to drift from
+            // it — which is exactly how AdminTags.tsx came to send "hivaids".
+            slug: tagData.slug?.trim() || '',
           },
         ])
         .select()
