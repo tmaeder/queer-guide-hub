@@ -34,7 +34,11 @@ const BASE = process.argv[2] ?? process.env.SITEMAP_BASE ?? 'https://queer-guide
 // · places 2,713 · hotels 323 · villages 131 · tags 2,604 · landings 647
 // · landmarks 1 · milestones 2,923 · tag-categories 54.
 const SITEMAPS = [
-  { path: '/sitemap.xml', minEntries: 14, kind: 'index' },
+  // 15 children since sitemap-brands.xml landed 2026-09-19. The floor tracks
+  // the real count exactly, unlike the urlset floors below: children are added
+  // by hand in sitemap.xml.ts and never churn, so "one fewer than yesterday"
+  // is always a regression and never ordinary movement.
+  { path: '/sitemap.xml', minEntries: 15, kind: 'index' },
   { path: '/sitemap-static.xml', minEntries: 40, kind: 'urlset' },
   { path: '/sitemap-venues.xml', minEntries: 15000, kind: 'urlset' },
   { path: '/sitemap-events.xml', minEntries: 1000, kind: 'urlset', maxAgeDays: 7 },
@@ -59,6 +63,17 @@ const SITEMAPS = [
   { path: '/sitemap-landmarks.xml', minEntries: 1, kind: 'urlset' },
   { path: '/sitemap-milestones.xml', minEntries: 1500, kind: 'urlset' },
   { path: '/sitemap-tag-categories.xml', minEntries: 30, kind: 'urlset' },
+  // Marketplace makers, new 2026-09-19. 871 approved brands carry a slug and at
+  // least one listing (measured that day); 500 is the ~60% collapse floor.
+  //
+  // A floor here matters more than for most: this generator filters on
+  // `status=eq.approved` while `fetchRows` reads with the SERVICE ROLE, which
+  // bypasses RLS. If that filter were ever dropped the count would JUMP, not
+  // collapse — so the floor cannot catch it, and the e2e asserts the ceiling
+  // instead. What the floor catches is the opposite failure: the generator
+  // returning nothing, which is exactly how sitemap-blog.xml served an empty
+  // urlset at HTTP 200 for its entire life behind `minEntries: 0`.
+  { path: '/sitemap-brands.xml', minEntries: 500, kind: 'urlset' },
 ];
 
 const fail = (m) => {
