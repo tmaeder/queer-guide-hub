@@ -89,7 +89,7 @@
 -- changes no column and fires no trigger, which reads exactly like a permissive
 -- one.
 
-select set_config('app.actor', 'migration:99991789824132_tag_justice_infidelity_wrong_entity', true);
+select set_config('app.actor', 'migration:99991789833518_tag_justice_infidelity_wrong_entity', true);
 
 -- ------------------------------------------------------------------- justice
 update public.unified_tags
