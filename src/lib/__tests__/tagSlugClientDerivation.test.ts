@@ -20,6 +20,23 @@
  * caller's slug outright (`Bühne` -> `buhne` either way), so the seal was
  * masking the defect for exactly the inputs most likely to be spot-checked.
  *
+ * Sweeping for other writers found two more, and the sweep is why the claim
+ * "the one surface that creates tags" was wrong:
+ *
+ *   useUnifiedTags.createTag   — identically lossy, but DORMANT: its only
+ *     production consumer (useVenueFilters) takes { tags, loading, fetchTags }
+ *     and never createTag. Fixed anyway; dormant is a reason to schedule the
+ *     work last, not to leave it armed.
+ *
+ *   useTagAliases.createAlias  — LIVE, and worse than the tag path, because
+ *     `tag_aliases.alias_slug` is NOT NULL with no default and NO BEFORE
+ *     trigger deriving it, so '' is not an escape hatch there AND there is no
+ *     non-ASCII seal to mask the damage. Measured against the live function:
+ *     an accented alias yielded 'caf-society' / 'dominacin-...' where
+ *     normalize_tag_slug gives 'cafe-society' / 'dominacion-...'. It now calls
+ *     normalize_tag_slug over RPC — one implementation, no drift — and THROWS
+ *     on failure rather than falling back to a local slugifier.
+ *
  * Behavioural coverage of the hook lives in
  * `src/hooks/__tests__/useCentralizedTags.test.tsx`; this file guards the CALL
  * SITE, which no behavioural test of the hook can see.
@@ -43,6 +60,8 @@ const statementsOf = (rel: string): string =>
 describe('no client-side tag slug derivation', () => {
   const ADMIN = 'src/pages/admin/AdminTags.tsx';
   const HOOK = 'src/hooks/useCentralizedTags.tsx';
+  const UNIFIED = 'src/hooks/useUnifiedTags.tsx';
+  const ALIASES = 'src/hooks/useTagAliases.ts';
 
   it('AdminTags.tsx does not strip characters out of a slug', () => {
     const src = statementsOf(ADMIN);
@@ -75,5 +94,35 @@ describe('no client-side tag slug derivation', () => {
       // of a slugifier wherever it is written.
       expect(statementsOf(rel)).not.toMatch(/toLowerCase\(\)[\s\S]{0,80}?replace\([^)]*'-'\)/);
     }
+  });
+
+  it('the dormant useUnifiedTags.createTag derives nothing either', () => {
+    const src = statementsOf(UNIFIED);
+    expect(src).not.toMatch(/\[\^a-z0-9\\s-\]/);
+    expect(src).not.toMatch(/toLowerCase\(\)[\s\S]{0,80}?replace\([^)]*'-'\)/);
+    // Scoped to the insert, because `slug` is a legitimate read elsewhere.
+    const insert = src.slice(src.indexOf("from('unified_tags')\n        .insert"));
+    expect(insert.slice(0, 400)).toContain("slug: ''");
+  });
+
+  it('createAlias takes its slug from the database, not a regex', () => {
+    const src = statementsOf(ALIASES);
+    // Whitespace-tolerant: Prettier re-wraps this call across four lines, so
+    // a single-line literal is a formatter-fragile assertion that fails on
+    // correct code.
+    expect(src).toMatch(/untypedRpc<string>\(\s*'normalize_tag_slug'/);
+    // The lossy pair that used to build alias_slug.
+    expect(src).not.toMatch(/\[\^a-z0-9-\]/);
+    expect(src).not.toMatch(/toLowerCase\(\)[\s\S]{0,80}?replace\([^)]*'-'\)/);
+  });
+
+  it('createAlias fails loudly instead of falling back to a local slugifier', () => {
+    const src = statementsOf(ALIASES);
+    // A fallback is the whole defect: it would reintroduce a second
+    // implementation free to drift, on the path where nothing downstream
+    // repairs it.
+    expect(src).toMatch(/if \(slugError\) throw new Error/);
+    expect(src).toMatch(/if \(!alias_slug\) throw new Error/);
+    expect(src).not.toMatch(/slugError[\s\S]{0,120}?\|\|\s*alias_name/);
   });
 });
