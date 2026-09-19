@@ -23,16 +23,31 @@ const writes = stripped.slice(0, verifyAt);
 const verify = stripped.slice(verifyAt);
 
 describe('penis and egg bodies', () => {
-  it('nulls both bodies rather than rewriting them', () => {
+  const statements = writes.split(/\n(?=update\s)/i).filter((s) => /^update/i.test(s));
+
+  it('nulls the penis and egg bodies rather than rewriting them', () => {
     expect(writes).toMatch(/slug = 'penis' and long_description ilike '%male reproductive organ%'/);
     expect(writes).toMatch(/slug = 'egg' and long_description ilike '%female reproductive cell%'/);
-    const bodyStmts = writes
-      .split(/\n(?=update\s)/i)
-      .filter((s) => /long_description/.test(s) && /^update/i.test(s));
-    expect(bodyStmts.length).toBeGreaterThanOrEqual(2);
-    for (const s of bodyStmts) {
+    // Scoped to those two: sexual-arousal below deliberately REWRITES, because
+    // its physiology is worth keeping. Iterating every long_description
+    // statement would fail on correct code.
+    const nulled = statements.filter(
+      (s) => /slug = '(penis|egg)'/.test(s) && /long_description/.test(s),
+    );
+    expect(nulled.length).toBe(2);
+    for (const s of nulled) {
       expect(s).toMatch(/long_description = null/);
     }
+  });
+
+  it('de-binarises sexual-arousal with an exact-phrase replace, keeping the physiology', () => {
+    const sa = statements.find((s) => /slug = 'sexual-arousal'/.test(s)) ?? '';
+    expect(sa).toMatch(/replace\(/);
+    expect(sa).toContain('In males, arousal leads to erection');
+    expect(sa).toContain('people with a penis');
+    // never a wholesale body replacement
+    expect(sa).not.toMatch(/long_description = '[A-Z]/);
+    expect(sa).not.toMatch(/long_description = null/);
   });
 
   it('never touches the penis description — it is the sentence being defended', () => {

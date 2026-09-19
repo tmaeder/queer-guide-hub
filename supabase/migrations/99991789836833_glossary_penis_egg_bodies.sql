@@ -60,6 +60,23 @@ update unified_tags set
   short_description = 'The reproductive cell released from an ovary at ovulation.'
 where slug = 'egg' and description ilike '%organic vessel grown by an animal%';
 
+-- `sexual-arousal` is the fourth, and it is a DIFFERENT shape from the other
+-- three: its body is accurate physiology told in a binary — "In males, arousal
+-- leads to erection and pre-ejaculate, while in females, it causes engorged
+-- sexual tissues, cervical changes, and vaginal lubrication." Nothing there is
+-- factually wrong; it names the two anatomies by gender instead of by anatomy,
+-- which on this platform puts the reader outside their own body.
+--
+-- So this one is an exact-phrase replace() rather than a null: the physiology
+-- is worth keeping and a replace() cannot author prose, so every other clause
+-- survives byte-identically. A postcondition asserts the surviving detail.
+update unified_tags set
+  long_description = replace(
+    long_description,
+    'In males, arousal leads to erection and pre-ejaculate, while in females, it causes engorged sexual tissues, cervical changes, and vaginal lubrication.',
+    'In people with a penis, arousal leads to erection and pre-ejaculate; in people with a vulva, it causes engorged tissue, cervical changes and vaginal lubrication.')
+where slug = 'sexual-arousal' and long_description ilike '%In males, arousal leads to erection%';
+
 -- ============================ postconditions ============================
 do $verify$
 declare v_bad int; v_n int;
@@ -87,12 +104,22 @@ begin
   --    the check #3838 ran before the corpus moved under it.
   select count(*) into v_bad from unified_tags
   where slug in ('erectile-dysfunction','clitoris','ovaries','fallopian-tubes','foreskin','perineum',
-                 'pregnancy','seminal-vesicles','sperm','testicle','vagina','uncircumcised','penis','egg','anus','labia')
+                 'pregnancy','seminal-vesicles','sperm','testicle','vagina','uncircumcised','penis','egg',
+                 'anus','labia','sexual-arousal')
     and (coalesce(short_description,'') ~* '\m(male|female)\M'
       or coalesce(long_description,'')  ~* '\m(male reproductive|female reproductive|female sex organ|in males|placental mammals)\M');
   if v_bad <> 0 then
     raise exception '% rows across the pass are still gendered on a rendered field', v_bad;
   end if;
+
+  -- 3b. sexual-arousal kept the physiology the replace() was meant to preserve.
+  --     A replace() that ate the body would satisfy check 3 just as happily.
+  select count(*) into v_n from unified_tags
+  where slug = 'sexual-arousal'
+    and long_description ilike '%people with a penis%'
+    and long_description ilike '%cervical changes%'
+    and long_description ilike '%body''s preparation for%';
+  if v_n <> 1 then raise exception 'sexual-arousal lost the physiology it was meant to keep'; end if;
 
   -- 4. CONTROLS. female-ejaculation keeps its wording — the word is in the
   --    term's own name. A sweep broad enough to take it satisfies check 3 too.
