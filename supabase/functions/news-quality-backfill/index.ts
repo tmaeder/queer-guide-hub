@@ -47,11 +47,36 @@ interface RunSummary {
   processed: number; passed: number; review: number; rejected: number; failed: number; mutated: number
 }
 
+/** A completion that arrived but could not be read, recorded where SQL can see it.
+ *
+ * WHY THE JOB ROW AND NOT JUST THE LOG.
+ *
+ *   `parseQualityDecision` already console.errors an unparseable completion,
+ *   and that is the right place for it — but the edge-function log is not
+ *   reachable from every environment that has to diagnose this (no log source
+ *   resolves through the Supabase MCP, and reading it needs a token an
+ *   operator may not hold). Measured 2026-09-19: three articles were re-run
+ *   after the json-extract fix shipped, all three produced REAL completions
+ *   (Cloudflare llama-3.1-8b, 673/688/1229 output tokens, none pinned at the
+ *   2200 ceiling), and all three still recorded a bare `no_decision`. The
+ *   answers are arriving and something about their SHAPE defeats all three
+ *   extraction stages — and the row said nothing about which.
+ *
+ *   So the snippet rides the `error` column, which is already read by hand
+ *   whenever this queue is investigated. It is bounded and newline-collapsed
+ *   so one row stays greppable, and it is written ONLY on the failure path:
+ *   a decided article records exactly what it always did.
+ */
+export function describeUnparseable(content: string): string {
+  const flat = content.replace(/\s+/g, ' ').trim()
+  return `no_decision:len=${content.length}:${flat.slice(0, 240)}`
+}
+
 async function callQualityLLM(
   supabase: ReturnType<typeof getServiceClient>,
   userPrompt: string,
-): Promise<QualityDecision | null> {
-  if (!(await isOpenAIAvailable(supabase))) return null
+): Promise<{ decision: QualityDecision | null; unparseable?: string }> {
+  if (!(await isOpenAIAvailable(supabase))) return { decision: null }
   const result = await chatCompletion(supabase, {
     callerFn: 'news-quality-backfill',
     messages: [
@@ -62,7 +87,11 @@ async function callQualityLLM(
     max_tokens: 2200,
     response_format: { type: 'json_object' },
   })
-  return parseQualityDecision(result.content)
+  const decision = parseQualityDecision(result.content)
+  if (decision) return { decision }
+  // A completion arrived and could not be read. That is a DIFFERENT fact from
+  // "no completion arrived", and until now both landed as the same string.
+  return { decision: null, unparseable: describeUnparseable(result.content ?? '') }
 }
 
 async function processJob(
@@ -95,15 +124,22 @@ async function processJob(
   })
 
   let decision: QualityDecision | null = null
+  let unparseable: string | undefined
   let llmError: string | null = null
   try {
-    decision = await withCircuitBreaker(supabase, 'llm.openai.quality-enhance',
+    const out = await withCircuitBreaker(supabase, 'llm.openai.quality-enhance',
       () => callQualityLLM(supabase, userPrompt))
+    decision = out.decision
+    unparseable = out.unparseable
   } catch (e) {
     llmError = e instanceof CircuitOpenError ? `circuit_open:${e.apiName}` : (e as Error).message
   }
 
-  if (!decision) return { status: 'failed', error: llmError ?? 'no_decision' }
+  // Order matters: a thrown error (circuit open, transport) outranks an
+  // unreadable body, because in that case there IS no body. `no_decision`
+  // stays the last resort and now means what it always claimed to mean —
+  // the model was asked and returned nothing usable that we never saw.
+  if (!decision) return { status: 'failed', error: llmError ?? unparseable ?? 'no_decision' }
 
   const gate = evaluatePublishGate({
     decision,
