@@ -55,7 +55,7 @@
 
 do $repair$
 declare
-  v_actor   text := 'migration:99991789837865_personality_extract_sourced_descriptions';
+  v_actor   text := 'migration:99991789840157_personality_extract_sourced_descriptions';
   v_cleared int;
 begin
   perform set_config('app.actor', v_actor, true);
@@ -123,7 +123,7 @@ begin
   select count(*) into v_stamped
     from public.personalities
    where enrichment_status -> 'wrong_entity_description_retracted' ->> 'by'
-         like 'migration:99991789837865%'
+         like 'migration:99991789840157%'
      and enrichment_status -> 'wrong_entity_description_retracted' ->> 'from' is not null;
   if v_stamped < 1 then
     raise exception 'extract repair: no row carries a recoverable retraction snapshot';

@@ -131,7 +131,7 @@ test.describe('personality pages do not publish another person as an adult perfo
     // These four kept a description through the first repair because it came
     // from the Wikipedia extract rather than the Wikidata description, so the
     // content guard had no evidence against it. Cleared by
-    // 99991789837865. All four are draft, so the expected status is 404.
+    // 99991789840157. All four are draft, so the expected status is 404.
     const cases: Array<[string, RegExp]> = [
       ['jason-collins', /professional basketball player|Stanford Cardinal/i],
       ['scott-miller', /ambassador to Switzerland/i],
