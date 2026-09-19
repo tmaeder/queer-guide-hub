@@ -595,7 +595,12 @@ export function EventDecisionCard({
   const venueName = event.venues?.name || event.venue_name;
 
   return (
-    <Card className="md:sticky md:top-24">
+    // Deliberately NOT sticky. SinglePage already pins the rail's follow-along
+    // content in StickyRailGroup (top = --header-pinned-bottom, 82px) and its docblock
+    // requires other rail modules to be ordinary siblings. This card pinned itself at
+    // top-24 (96px) in the same column, so once the page scrolled the two overlapped by
+    // a measured 264px — reported as "the areas overlap on the right-hand side".
+    <Card>
       <CardContent className="flex flex-col gap-4 p-6">
         {/* Unknown price stays in the fact strip; a headline-sized "Price TBA"
             here duplicated it and read like a price. */}
