@@ -6,6 +6,22 @@ import type { ReactNode } from 'react';
 const eqCalls: [string, unknown][] = [];
 const insertPayloads: unknown[] = [];
 
+// createAlias takes alias_slug from normalize_tag_slug() over RPC rather than
+// deriving it locally, so the untyped module has to be mocked too. Default is
+// the value the live function returns for the fixture name; `rpcResult` lets a
+// case make it fail.
+let rpcResult: { data: string | null; error: { message: string } | null } = {
+  data: 'found-family',
+  error: null,
+};
+const rpcCalls: [string, unknown][] = [];
+vi.mock('@/integrations/supabase/untyped', () => ({
+  untypedRpc: (fn: string, args?: unknown) => {
+    rpcCalls.push([fn, args]);
+    return Promise.resolve(rpcResult);
+  },
+}));
+
 vi.mock('@/integrations/supabase/client', () => {
   const handler: ProxyHandler<object> = {
     get: (_t, p) =>
@@ -65,6 +81,7 @@ describe('useTagAliases', () => {
 
   it('admin-created aliases land approved (the admin IS the review)', async () => {
     insertPayloads.length = 0;
+    rpcResult = { data: 'found-family', error: null };
     const { result } = renderHook(() => useTagAliases('tag-1'), { wrapper: w() });
     result.current.createAlias.mutate({ alias_name: 'Found family', alias_type: 'synonym' });
     await vi.waitFor(() => {
@@ -72,5 +89,35 @@ describe('useTagAliases', () => {
     });
     const rows = insertPayloads[0] as Array<Record<string, unknown>>;
     expect(rows[0].review_status).toBe('approved');
+  });
+
+  // alias_slug is NOT NULL with no default and no BEFORE trigger deriving it,
+  // so the caller must supply one. It comes from normalize_tag_slug() so there
+  // is a single implementation; the regex that used to live here STRIPPED
+  // characters, turning an accented alias into 'caf-society'.
+  it('alias_slug is whatever normalize_tag_slug returned', async () => {
+    insertPayloads.length = 0;
+    rpcCalls.length = 0;
+    rpcResult = { data: 'cafe-society', error: null };
+    const { result } = renderHook(() => useTagAliases('tag-1'), { wrapper: w() });
+    result.current.createAlias.mutate({ alias_name: 'Café Society', alias_type: 'synonym' });
+    await vi.waitFor(() => {
+      expect(insertPayloads.length).toBeGreaterThan(0);
+    });
+    expect(rpcCalls[0]).toEqual(['normalize_tag_slug', { p_input: 'Café Society' }]);
+    const rows = insertPayloads[0] as Array<Record<string, unknown>>;
+    expect(rows[0].alias_slug).toBe('cafe-society');
+    // The lossy value the deleted regex produced for this exact input.
+    expect(rows[0].alias_slug).not.toBe('caf-society');
+  });
+
+  it('a failed normalize throws instead of inserting a locally-derived slug', async () => {
+    insertPayloads.length = 0;
+    rpcResult = { data: null, error: { message: 'boom' } };
+    const { result } = renderHook(() => useTagAliases('tag-1'), { wrapper: w() });
+    await expect(
+      result.current.createAlias.mutateAsync({ alias_name: 'Café Society', alias_type: 'synonym' }),
+    ).rejects.toThrow(/normalize/i);
+    expect(insertPayloads).toHaveLength(0);
   });
 });
