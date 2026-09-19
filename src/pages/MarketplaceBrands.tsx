@@ -5,11 +5,13 @@ import { useBreadcrumbs } from '@/contexts/BreadcrumbContext';
 import { PageContainer } from '@/components/layout/PageContainer';
 import { MarketplaceMasthead } from '@/components/marketplace/MarketplaceMasthead';
 import { BrandPlate } from '@/components/marketplace/BrandPlate';
+import { BrandGalleryTile } from '@/components/marketplace/BrandGalleryTile';
 import { BrandIndexRow } from '@/components/marketplace/BrandIndexRow';
 import { COMMUNITY_OWNED_OPTIONS } from '@/components/marketplace/marketplaceFilterOptions';
 import {
   useMarketplaceBrandsDirectory,
   useMarketplaceBrandCovers,
+  type DirectoryBrand,
 } from '@/hooks/useMarketplaceBrands';
 import { FilterChip } from '@/components/transit/FilterChip';
 import { TransitIcon } from '@/components/transit/TransitIcon';
@@ -19,18 +21,30 @@ import { CoverageNote } from '@/components/intent/CoverageNote';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { Button } from '@/components/ui/button';
 
-/** How many makers the featured band asks for. The RPC clamps at 24. */
+/** How many makers the highlight band asks for. The RPC clamps at 24. */
 const FEATURED_COUNT = 12;
 
-/** Index rows rendered before "Show more". Client-side — no network. */
-const FLOOR_STEP = 120;
+/**
+ * Makers rendered before "Show more". Client-side — no network.
+ *
+ * The gallery's step is deliberately far smaller than the index's. A ruled row
+ * is ~56px and scans in ONE dimension, so 120 of them is a column a reader
+ * flicks down; a tile is ~300px and scans in TWO, so 120 tiles is roughly eight
+ * screens of photographs — which is the "too long, overwhelming" this rebuild
+ * exists to fix, merely restated in pictures.
+ */
+const GALLERY_STEP = 48;
+const INDEX_STEP = 120;
 
 /**
  * The letter bucket a maker files under.
  *
  * Diacritics are folded first, so "Éclat" indexes at E where a naive
- * `charAt(0)` would drop it into the "#" bucket alongside the fifteen brands
- * whose names genuinely begin with a digit or a symbol.
+ * `charAt(0)` would drop it into the "#" bucket alongside the brands whose
+ * names genuinely begin with a digit or a symbol. Measured on prod after
+ * `99100101143000`, that is exactly one: "1979 SAS (Teil der Marc Dorcel
+ * Group)", a real company. An EMPTY "#" bucket would mean the feed-ID
+ * retirement rule had over-reached and taken it too.
  */
 function initialOf(name: string): string {
   const first = name
@@ -46,15 +60,23 @@ function initialOf(name: string): string {
  * Sort key for a bucket: "#" files at the END of the index, never the start.
  *
  * `localeCompare` alone puts digits and symbols before "A", so the A–Z view
- * OPENED on the "#" bucket — and measured on prod that bucket is 15 brands of
- * which 13 are merchant-feed ID artifacts ("12807-203758186"), carrying 143
+ * OPENED on the "#" bucket — and at the time that bucket was 15 brands of
+ * which 13 were merchant-feed ID artifacts ("12807-203758186"), carrying 143
  * listings between them. The count ordering had buried them; switching to A–Z
  * promoted the worst names in the catalogue to the first thing a reader sees.
  *
  * Filing them last is also just what a printed index does — numbers and
- * symbols are the tail. It does NOT fix the underlying data: those 13 rows
- * should not be in the directory at all, which is a separate decision about
- * whether to drop, merge or suppress them.
+ * symbols are the tail, whatever the data underneath is doing.
+ *
+ * The data half is now fixed at the source, so this rule is no longer carrying
+ * it: `99100101143000` retired the 20 feed-ID rows corpus-wide and re-keyed
+ * their 190 listings onto the merchant's real brand, and
+ * `marketplace_register_brands()` refuses to mint another.
+ *
+ * Do NOT read this ordering as a suppression mechanism, and do NOT add a
+ * display filter on top of it — a filter hides rows here while leaving them in
+ * search and on their own /marketplace/brands/:slug pages, which is the
+ * half-fix the migration exists to avoid.
  */
 function bucketRank(name: string): number {
   return initialOf(name) === '#' ? 1 : 0;
@@ -63,43 +85,69 @@ function bucketRank(name: string): number {
 /**
  * The makers directory — /marketplace/brands.
  *
- * This route did not exist. `/marketplace/brands/:slug` did, so a reader who
- * trimmed the URL (or any crawler that did) fell through to the
- * `marketplace/:slug` catch-all and was told the ITEM was not found — a 200
- * page lying about what it could not find.
+ * Four bands: a rotating highlight, the controls, the catalogue, and the ink
+ * block. The catalogue's FORM is the part worth understanding.
  *
- * It then spent its life as one flat grid of 885 near-empty cards, 48 at a time
- * behind a "Load more", while the maker DETAIL page it feeds had bands, an ink
- * banner and a closing block. The rebuild is four bands, and the split between
- * the first and the third is the whole idea:
+ * ── The highlight rotates, so it may not call itself a ranking ──────────────
  *
- *   1. THE COUNTER — twelve makers with three product covers each. Measured, the
- *      catalogue has `story` on 24 brands and a logo on 118, but SFW listing
- *      imagery on 671 of 885. The goods were the one rich signal on hand and
- *      the page had never asked for them.
- *   2. CONTROLS — search, ownership, and a sort that decides band 3's shape.
- *   3. THE FLOOR — every other maker as a ruled index. 885 cards is not a grid,
- *      it is a wall; 885 ruled rows is a catalogue index, which is a form that
- *      has worked for as long as catalogues have existed.
- *   4. END OF LINE — the ink block, borrowed from the maker page.
+ * The band used to be the top twelve by `product_count` and was titled "Most
+ * listings", which was exactly true. It now rotates daily over the 94 makers
+ * that clear the band's gates, so that title would be a claim the page no
+ * longer earns — the same defect as a comment that outlives its data, one
+ * layer up. It says what it now is: a dozen makers, different each day, and
+ * explicitly not a ranking.
+ *
+ * Rotation is the SERVER'S (the RPC seeds on its own date). Nothing here
+ * animates, auto-advances or carousels: "rotating" is a different set on a
+ * different day, not motion. A carousel would also put the makers it is
+ * showing behind a timer the reader did not ask for.
+ *
+ * ── The catalogue is a GALLERY or an INDEX, and the toggle picks which ──────
+ *
+ * 871 makers is too many to meet as one undifferentiated run, in any form.
+ * Both halves of that were measured before choosing:
+ *
+ *   • A gallery over everything does not work. 214 of 871 makers have no
+ *     product photograph at all, so a tile each means 214 boxes with a hole in
+ *     them — and 871 tiles is a bigger wall than 871 rows, not a smaller one.
+ *   • An index over everything is what this page did, and it is right for
+ *     LOOKING SOMETHING UP and wrong for BROWSING. 657 makers have a
+ *     photograph and the page was showing none of them.
+ *
+ * So the view toggle chooses the form, and each form does the job it is good
+ * at. Gallery: the makers with photography, biggest first, 48 at a time.
+ * A–Z index: every maker as a ruled row under letter headings, which is the
+ * shape a catalogue index has had for as long as catalogues have existed.
+ *
+ * In gallery view the 214 photograph-less makers are NOT dropped — they follow
+ * in a compact index under their own heading. Dropping them would quietly
+ * shrink the catalogue by a quarter, and "we have no photograph of this maker"
+ * is not a reason to make it unreachable.
+ *
+ * ── Contracts that are not styling ─────────────────────────────────────────
+ *
+ * The highlight band is the head of the CATALOGUE, not of the RESULTS, so it
+ * unmounts the moment the reader searches or filters — left up, it puts twelve
+ * unrelated makers above a search for something else and reads as the answer.
+ * Its makers then rejoin the catalogue below, or the very search meant to find
+ * them could not.
  *
  * Ownership chips are a widening OR, and the CoverageNote renders whenever one
  * is active. That is a content-safety contract, not decoration: filtering to
  * "Queer-owned" produces a page that looks like an exhaustive list of the
- * queer-owned brands we carry, and it is nothing of the kind — 37 of 885 brands
- * carry any ownership tag at all. Without the note the page silently overstates
- * the catalogue.
+ * queer-owned brands we carry, and it is nothing of the kind — 37 of 871
+ * brands carry any ownership tag at all.
  *
- * Filtering runs in memory over the whole catalogue (17 kB, one request) rather
- * than against PostgREST. See `useMarketplaceBrandsDirectory` for why.
+ * Filtering runs in memory over the whole catalogue (one request) rather than
+ * against PostgREST. See `useMarketplaceBrandsDirectory` for why.
  */
 export default function MarketplaceBrands() {
   const { t } = useTranslation();
   const [search, setSearch] = useState('');
   const [ownership, setOwnership] = useState<string[]>([]);
-  const [sort, setSort] = useState<'count' | 'az'>('count');
+  const [view, setView] = useState<'gallery' | 'az'>('gallery');
   const [letter, setLetter] = useState<string | null>(null);
-  const [shown, setShown] = useState(FLOOR_STEP);
+  const [shown, setShown] = useState(GALLERY_STEP);
 
   const { data: all, isLoading } = useMarketplaceBrandsDirectory();
   const { data: featured } = useMarketplaceBrandCovers(FEATURED_COUNT);
@@ -117,18 +165,13 @@ export default function MarketplaceBrands() {
     { label: t('marketplace.makers', 'Makers') },
   ]);
 
-  /**
-   * The counter is the head of the CATALOGUE, not of the RESULTS. Showing it
-   * above a filtered index would put twelve unrelated makers at the top of a
-   * search for "rodeo" and read as though they were the answer.
-   */
   const isFiltering = search.trim() !== '' || ownership.length > 0;
-  const showCounter = !isFiltering && featuredBrands.length > 0;
+  const showHighlight = !isFiltering && featuredBrands.length > 0;
 
   const floor = useMemo(() => {
     const needle = search.trim().toLowerCase();
-    // Only skip the featured twelve when they are actually on screen above.
-    const skip = showCounter ? new Set(featuredBrands.map((b) => b.slug)) : new Set<string>();
+    // Only skip the highlighted makers when they are actually on screen above.
+    const skip = showHighlight ? new Set(featuredBrands.map((b) => b.slug)) : new Set<string>();
 
     const rows = brands.filter((b) => {
       if (skip.has(b.slug)) return false;
@@ -137,29 +180,52 @@ export default function MarketplaceBrands() {
         return false;
       }
       // A letter bucket only means anything against an alphabetical ordering.
-      if (sort === 'az' && letter && initialOf(b.display_name) !== letter) return false;
+      if (view === 'az' && letter && initialOf(b.display_name) !== letter) return false;
       return true;
     });
 
     // `brands` already arrives ordered by product_count, so only A–Z re-sorts.
     // localeCompare so "Ålesund" files next to "Alexander", not after "Zebra";
     // bucketRank first so the "#" tail cannot sort ahead of "A".
-    return sort === 'az'
+    return view === 'az'
       ? [...rows].sort(
           (a, b) =>
             bucketRank(a.display_name) - bucketRank(b.display_name) ||
             a.display_name.localeCompare(b.display_name),
         )
       : rows;
-  }, [brands, featuredBrands, showCounter, search, ownership, sort, letter]);
+  }, [brands, featuredBrands, showHighlight, search, ownership, view, letter]);
 
-  const visible = floor.slice(0, shown);
+  /**
+   * The gallery/index split, computed ONCE over the filtered catalogue.
+   *
+   * Partitioning before the slice is what makes the two sections coherent: a
+   * split computed over the visible window would move makers between the
+   * gallery and the index as the reader pressed "Show more", which is the sort
+   * of thing that reads as the page losing its place.
+   */
+  const [withCover, withoutCover] = useMemo(() => {
+    if (view === 'az') return [[] as DirectoryBrand[], floor];
+    const yes: DirectoryBrand[] = [];
+    const no: DirectoryBrand[] = [];
+    for (const b of floor) (b.cover_url ? yes : no).push(b);
+    return [yes, no];
+  }, [floor, view]);
+
+  const step = view === 'az' ? INDEX_STEP : GALLERY_STEP;
+  const visibleTiles = withCover.slice(0, shown);
+  // The index half only starts once the gallery is exhausted — otherwise
+  // "Show more" would grow two lists at once and the reader could never tell
+  // which of them they were at the end of.
+  const indexBudget = Math.max(0, shown - withCover.length);
+  const visibleRows = view === 'az' ? floor.slice(0, shown) : withoutCover.slice(0, indexBudget);
+  const renderedCount = visibleTiles.length + visibleRows.length;
 
   /** Reset the slice on any control change — never in an effect. */
   const withReset =
     <T,>(fn: (value: T) => void) =>
     (value: T) => {
-      setShown(FLOOR_STEP);
+      setShown(step);
       fn(value);
     };
 
@@ -169,12 +235,13 @@ export default function MarketplaceBrands() {
     ),
   );
 
-  const setSortMode = withReset((next: 'count' | 'az') => {
-    setSort(next);
-    // A letter filter that survives into the count ordering is invisible: the
-    // bar that set it is gone and the rows it removed never come back.
-    if (next === 'count') setLetter(null);
-  });
+  const setViewMode = (next: 'gallery' | 'az') => {
+    setShown(next === 'az' ? INDEX_STEP : GALLERY_STEP);
+    setView(next);
+    // A letter filter that survives into the gallery is invisible: the bar
+    // that set it is gone and the makers it removed never come back.
+    if (next === 'gallery') setLetter(null);
+  };
 
   const total = isFiltering ? floor.length : brands.length;
 
@@ -194,8 +261,8 @@ export default function MarketplaceBrands() {
         }
       />
 
-      {/* ── 1. The counter ───────────────────────────────────────────────── */}
-      {showCounter && (
+      {/* ── 1. The highlight ─────────────────────────────────────────────── */}
+      {showHighlight && (
         <section
           aria-labelledby="makers-counter"
           className="border-b border-border-hairline bg-surface-container-low"
@@ -204,13 +271,14 @@ export default function MarketplaceBrands() {
             <SectionHeader
               id="makers-counter"
               eyebrow={t('marketplace.makersCounterEyebrow', 'The counter')}
-              // "Most listings" and never "Featured" — the ordering is
-              // product_count DESC and nothing has curated it. A curation word
-              // here would be a claim about the catalogue we have not earned.
-              title={t('marketplace.makersCounterTitle', 'Most listings')}
+              // NOT "Most listings" and never "Featured" or "Picks": the band
+              // rotates over everyone who qualifies, so a ranking word would
+              // be false and a curation word would claim an editorial judgement
+              // nobody made.
+              title={t('marketplace.makersCounterTitle', 'On the counter today')}
               subtitle={t(
                 'marketplace.makersCounterSubtitle',
-                'The makers with the most on the shelf right now.',
+                'A different set of makers each day, drawn from everyone with photographed goods on the shelf. Not a ranking.',
               )}
             />
             <ul className="m-0 grid list-none grid-cols-1 gap-4 p-0 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
@@ -233,7 +301,7 @@ export default function MarketplaceBrands() {
             <input
               value={search}
               onChange={(e) => {
-                setShown(FLOOR_STEP);
+                setShown(step);
                 setSearch(e.target.value);
               }}
               placeholder={t('marketplace.searchMakers', 'Search makers')}
@@ -253,18 +321,21 @@ export default function MarketplaceBrands() {
 
             <span aria-hidden="true" className="mx-2 h-6 w-px shrink-0 bg-border" />
 
-            <div role="group" aria-label={t('marketplace.sortMakers', 'Sort makers')}>
-              <span className="sr-only">{t('marketplace.sortMakers', 'Sort makers')}</span>
+            {/* Labelled "View" rather than "Sort": these do not reorder one
+                list, they choose between two different presentations of the
+                catalogue, and calling that a sort would mislead. */}
+            <div role="group" aria-label={t('marketplace.viewMakers', 'View makers')}>
+              <span className="sr-only">{t('marketplace.viewMakers', 'View makers')}</span>
               <span className="flex gap-2">
                 <FilterChip
-                  active={sort === 'count'}
-                  label={t('marketplace.sortByListings', 'Most listings')}
-                  onClick={() => setSortMode('count')}
+                  active={view === 'gallery'}
+                  label={t('marketplace.viewGallery', 'Gallery')}
+                  onClick={() => setViewMode('gallery')}
                 />
                 <FilterChip
-                  active={sort === 'az'}
-                  label={t('marketplace.sortAz', 'A–Z')}
-                  onClick={() => setSortMode('az')}
+                  active={view === 'az'}
+                  label={t('marketplace.viewAz', 'A–Z index')}
+                  onClick={() => setViewMode('az')}
                 />
               </span>
             </div>
@@ -272,7 +343,7 @@ export default function MarketplaceBrands() {
         </PageContainer>
       </section>
 
-      {/* ── 3. The floor ─────────────────────────────────────────────────── */}
+      {/* ── 3. The catalogue ─────────────────────────────────────────────── */}
       <PageContainer>
         {ownership.length > 0 && (
           <CoverageNote>
@@ -284,11 +355,11 @@ export default function MarketplaceBrands() {
 
         {/* The bar filters rather than jumps, so it is only coherent while the
             rows beneath it are in alphabetical order. */}
-        {sort === 'az' && (
+        {view === 'az' && (
           <StickyLetterBar
             letter={letter}
             onChange={(next) => {
-              setShown(FLOOR_STEP);
+              setShown(INDEX_STEP);
               setLetter(next);
             }}
           />
@@ -309,7 +380,7 @@ export default function MarketplaceBrands() {
           </p>
         ) : (
           <>
-            {showCounter && (
+            {showHighlight && (
               <SectionHeader
                 id="makers-floor"
                 eyebrow={t('marketplace.makersFloorEyebrow', 'The floor')}
@@ -317,40 +388,64 @@ export default function MarketplaceBrands() {
               />
             )}
 
-            <ul className="m-0 list-none p-0">
-              {visible.map((b, i) => {
-                const bucket = initialOf(b.display_name);
-                const showHeading =
-                  sort === 'az' && (i === 0 || bucket !== initialOf(visible[i - 1].display_name));
-                return (
+            {visibleTiles.length > 0 && (
+              <ul className="m-0 grid list-none grid-cols-2 gap-4 p-0 sm:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-6">
+                {visibleTiles.map((b) => (
                   <li key={b.slug}>
-                    {showHeading && (
-                      <h3
-                        className="mt-8 border-b-2 border-foreground pb-1 font-display text-headline leading-none first:mt-0"
-                        aria-label={
-                          bucket === '#'
-                            ? t(
-                                'marketplace.makersNonAlpha',
-                                'Makers filed under numbers and symbols',
-                              )
-                            : undefined
-                        }
-                      >
-                        {bucket}
-                      </h3>
-                    )}
-                    <BrandIndexRow brand={b} />
+                    <BrandGalleryTile brand={b} />
                   </li>
-                );
-              })}
-            </ul>
+                ))}
+              </ul>
+            )}
 
-            {floor.length > visible.length && (
+            {/* Named honestly. These makers are not lesser — we simply hold no
+                photograph of their goods, and saying so is more useful than a
+                grid of empty tiles pretending otherwise. */}
+            {view === 'gallery' && visibleRows.length > 0 && (
+              <SectionHeader
+                id="makers-no-photo"
+                eyebrow={t('marketplace.makersNoPhotoEyebrow', 'Also on the shelf')}
+                title={t('marketplace.makersNoPhotoTitle', 'Makers we have no photograph of')}
+              />
+            )}
+
+            {visibleRows.length > 0 && (
+              <ul className="m-0 list-none p-0">
+                {visibleRows.map((b, i) => {
+                  const bucket = initialOf(b.display_name);
+                  const showHeading =
+                    view === 'az' &&
+                    (i === 0 || bucket !== initialOf(visibleRows[i - 1].display_name));
+                  return (
+                    <li key={b.slug}>
+                      {showHeading && (
+                        <h3
+                          className="mt-8 border-b-2 border-foreground pb-1 font-display text-headline leading-none first:mt-0"
+                          aria-label={
+                            bucket === '#'
+                              ? t(
+                                  'marketplace.makersNonAlpha',
+                                  'Makers filed under numbers and symbols',
+                                )
+                              : undefined
+                          }
+                        >
+                          {bucket}
+                        </h3>
+                      )}
+                      <BrandIndexRow brand={b} />
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
+
+            {floor.length > renderedCount && (
               <div className="mt-10 flex items-center justify-center">
-                <Button variant="outline" size="lg" onClick={() => setShown((n) => n + FLOOR_STEP)}>
+                <Button variant="outline" size="lg" onClick={() => setShown((n) => n + step)}>
                   {t('marketplace.showMoreMakers', {
                     defaultValue: 'Show {{count}} more',
-                    count: Math.min(FLOOR_STEP, floor.length - visible.length),
+                    count: Math.min(step, floor.length - renderedCount),
                   })}
                 </Button>
               </div>
