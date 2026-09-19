@@ -31,13 +31,8 @@ export function getRedirectColumns() {
         return (
           <div className="flex items-center gap-1">
             <span
-              style={{
-                fontFamily: 'monospace',
-                fontSize: '0.8rem',
-                maxWidth: 200,
-                textOverflow: 'ellipsis',
-              }}
-              className="overflow-hidden whitespace-nowrap"
+              style={{ fontFamily: 'monospace', maxWidth: 200, textOverflow: 'ellipsis' }}
+              className="text-13 overflow-hidden whitespace-nowrap"
             >
               {source}
             </span>
@@ -51,13 +46,8 @@ export function getRedirectColumns() {
       header: 'Target',
       cell: (info) => (
         <span
-          style={{
-            fontFamily: 'monospace',
-            fontSize: '0.8rem',
-            maxWidth: 240,
-            textOverflow: 'ellipsis',
-          }}
-          className="overflow-hidden whitespace-nowrap block"
+          style={{ fontFamily: 'monospace', maxWidth: 240, textOverflow: 'ellipsis' }}
+          className="text-13 overflow-hidden whitespace-nowrap block"
         >
           {info.getValue()}
         </span>

@@ -142,7 +142,7 @@ export function NewsSavedSearchesPanel({
                       value={alertFrequency}
                       onValueChange={(v) => setAlertFrequency(v as 'daily' | 'weekly')}
                     >
-                      <SelectTrigger style={{ height: 28, fontSize: '0.75rem' }}>
+                      <SelectTrigger className="text-xs" style={{ height: 28 }}>
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -195,8 +195,9 @@ export function NewsSavedSearchesPanel({
                           )}
                           {s.alert_enabled && (
                             <Badge
+                              className="text-2xs"
                               variant="secondary"
-                              style={{ fontSize: '0.65rem', padding: '0 4px', marginTop: 2 }}
+                              style={{ padding: '0 4px', marginTop: 2 }}
                             >
                               {s.alert_frequency} alert
                             </Badge>
@@ -238,9 +239,10 @@ export function NewsSavedSearchesPanel({
               {onOpenHistory && (
                 <>
                   <Button
+                    className="text-13"
                     variant="ghost"
                     size="sm"
-                    style={{ width: '100%', justifyContent: 'flex-start', fontSize: '0.8rem' }}
+                    style={{ width: '100%', justifyContent: 'flex-start' }}
                     onClick={() => {
                       setOpen(false);
                       onOpenHistory();

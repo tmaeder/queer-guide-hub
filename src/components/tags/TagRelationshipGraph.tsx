@@ -305,14 +305,9 @@ export default function TagRelationshipGraph({
               onClick={() => goToTag({ id: node.id, name: node.name, slug: node.slug })}
             >
               <CardContent className="p-4">
-                <p className="text-sm font-semibold truncate" style={{ fontSize: '0.8rem' }}>
-                  {node.name}
-                </p>
+                <p className="text-13 text-sm font-semibold truncate">{node.name}</p>
                 {node.category && (
-                  <span
-                    className="block text-xs text-muted-foreground mt-1"
-                    style={{ fontSize: '0.7rem' }}
-                  >
+                  <span className="text-xs2 block text-xs text-muted-foreground mt-1">
                     {node.category}
                   </span>
                 )}

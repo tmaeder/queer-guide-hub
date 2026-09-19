@@ -171,10 +171,7 @@ export const IngestionSourcesManager = () => {
                         <Badge variant="secondary">{source.source_type}</Badge>
                         <Badge variant="outline">{source.target_table}</Badge>
                       </div>
-                      <div
-                        className="flex gap-6 text-muted-foreground"
-                        style={{ fontSize: '0.8rem' }}
-                      >
+                      <div className="text-13 flex gap-6 text-muted-foreground">
                         <div className="flex items-center gap-1">
                           <Clock size={12} />
                           Last run: {formatRelativeTime(source.last_run_at)}

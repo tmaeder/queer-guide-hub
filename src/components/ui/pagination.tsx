@@ -52,6 +52,7 @@ const PaginationLink = ({
   ...props
 }: PaginationLinkProps) => (
   <a
+    className="text-sm"
     aria-current={isActive ? 'page' : undefined}
     className={className}
     style={{
@@ -59,7 +60,6 @@ const PaginationLink = ({
       alignItems: 'center',
       justifyContent: 'center',
       borderRadius: 'var(--radius-none)',
-      fontSize: '0.875rem',
       fontWeight: 500,
       cursor: 'pointer',
       textDecoration: 'none',

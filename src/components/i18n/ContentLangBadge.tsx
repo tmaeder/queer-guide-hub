@@ -43,7 +43,7 @@ export function ContentLangBadge({ text, language }: Props) {
     defaultValue: `In ${lang}`,
   });
   return (
-    <Badge variant="outline" style={{ fontSize: '0.7rem' }} className="font-normal ml-1.5">
+    <Badge variant="outline" className="text-xs2 font-normal ml-1.5">
       {label}
     </Badge>
   );
