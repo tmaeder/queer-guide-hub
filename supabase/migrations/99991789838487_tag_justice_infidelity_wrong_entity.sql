@@ -1,6 +1,6 @@
 -- Round eighteen, sibling — TWO WRONG ENTITIES THE CLASS GATE CANNOT REACH.
 --
--- The gate in 99991789833517 refuses an entity whose CLASS is not clinical. It
+-- The gate in 99991789838485 refuses an entity whose CLASS is not clinical. It
 -- is silent about an entity that is simply the WRONG ONE, and re-reading all
 -- 135 code-bearing identifiers found two. Both were resolved live against
 -- wbgetentities before this file was written, never inferred from the tag name:

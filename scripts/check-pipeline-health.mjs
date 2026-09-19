@@ -3386,7 +3386,7 @@ const TRUNCATED_DESCRIPTION_CEILING = 30
       // has not applied the migration a hard fail would be red for something
       // that is not a defect.
       if (!('nonclinical_code_rows' in mc)) {
-        console.warn('⚠ tag_medical_code_signals has no \'nonclinical_code_rows\' key — the non-clinical gate is NOT DEPLOYED (migration 99991789833517). Absence of a check, not absence of defects.')
+        console.warn('⚠ tag_medical_code_signals has no \'nonclinical_code_rows\' key — the non-clinical gate is NOT DEPLOYED (migration 99991789838485). Absence of a check, not absence of defects.')
       } else {
         const nonclinical = Number(mc.nonclinical_code_rows ?? 0)
         const probeRows = Number(mc.probe_rows ?? 0)
