@@ -97,7 +97,7 @@ values
    '58581332-7745-430b-8b51-dd1537e85cf0', 'England',
    52.9247, -1.478, 'Q43475', 'wikidata', false,
    jsonb_build_object('latitude', jsonb_build_object(
-     'by', 'migration:99991789833531',
+     'by', 'migration:99991789838472',
      'source', 'wikidata:Q43475',
      'reason', 'namesake_collision_resolved_new_country_row')))
 on conflict do nothing;
@@ -110,7 +110,7 @@ update public.events e
        needs_attention = false,
        enrichment_status = coalesce(e.enrichment_status, '{}'::jsonb)
          || jsonb_build_object('event_city_link', jsonb_build_object(
-              'by', 'migration:99991789833531',
+              'by', 'migration:99991789838472',
               'linked', true,
               'reason', 'namesake_collision_resolved',
               'detail', 'Derby, England created from wikidata Q43475 and corroborated at 0.4 km against the event''s own coordinates'))
@@ -130,7 +130,7 @@ update public.venues v
        needs_attention = true,
        enrichment_status = coalesce(v.enrichment_status, '{}'::jsonb)
          || jsonb_build_object('venue_city_link', jsonb_build_object(
-              'by', 'migration:99991789833531',
+              'by', 'migration:99991789838472',
               'blocked', true,
               'reason', 'name_only_namesake_collision',
               'detail', 'venue is in Roseville, Minnesota (Q983979, 1.7 km); it was linked to the Roseville, California row. Roseville, Minnesota cannot be created: cities is unique on (name, country) and the split-name trigger removes a qualifier.'))
@@ -172,7 +172,7 @@ begin
   where lower(v.state) = 'minnesota' and v.duplicate_of_id is null
     and v.latitude is not null
     and haversine_m(v.latitude, v.longitude, 45.01527778::numeric, -93.15305556::numeric) < 25000
-    and v.enrichment_status->'venue_city_link'->>'by' = 'migration:99991789833531'
+    and v.enrichment_status->'venue_city_link'->>'by' = 'migration:99991789838472'
     and (v.city_id is not null or not v.needs_attention);
   if v_bad <> 0 then
     raise exception 'P3 failed: % Minnesota venue(s) still linked or unflagged', v_bad;

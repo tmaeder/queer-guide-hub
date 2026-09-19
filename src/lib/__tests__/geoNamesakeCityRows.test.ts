@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
-// Guards 99991789833531_geo_namesake_city_rows.sql.
+// Guards 99991789838472_geo_namesake_city_rows.sql.
 //
 // The migration creates Derby, England and links its event, unlinks two Minnesota
 // venues from a California city row, and REFUSES to create College Park, Georgia or
@@ -15,7 +15,7 @@ import { join } from 'node:path';
 // the whole file passes against a gutted statement -- the vacuous-assertion class
 // CLAUDE.md records repeatedly.
 
-const MIGRATION = '99991789833531_geo_namesake_city_rows.sql';
+const MIGRATION = '99991789838472_geo_namesake_city_rows.sql';
 const raw = readFileSync(join(process.cwd(), 'supabase/migrations', MIGRATION), 'utf8');
 
 /** Migration text with comment lines removed, so prose cannot satisfy a guard. */
