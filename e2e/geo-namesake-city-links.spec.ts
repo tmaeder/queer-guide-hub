@@ -12,7 +12,7 @@ import { test, expect, type APIRequestContext } from '@playwright/test';
 // ENGLAND IDAHOBIT event on Derby, CONNECTICUT.
 //
 // These tests assert the INVARIANT, not the repair's transient state, so they hold
-// both before and after 99991789823216 creates Derby, England and links its event:
+// both before and after 99991789843667 creates Derby, England and links its event:
 // each repaired event is EITHER unlinked OR on a city that its own coordinates and
 // region corroborate. A spec pinned to "city_id is null" would go red the moment the
 // follow-up it is guarding actually lands.
