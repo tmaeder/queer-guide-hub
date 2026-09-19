@@ -46,15 +46,22 @@ function initialOf(name: string): string {
  * Sort key for a bucket: "#" files at the END of the index, never the start.
  *
  * `localeCompare` alone puts digits and symbols before "A", so the A–Z view
- * OPENED on the "#" bucket — and measured on prod that bucket is 15 brands of
- * which 13 are merchant-feed ID artifacts ("12807-203758186"), carrying 143
- * listings between them. The count ordering had buried them; switching to A–Z
- * promoted the worst names in the catalogue to the first thing a reader sees.
+ * OPENED on the "#" bucket — and at the time that bucket was 15 brands, all but
+ * one of them merchant-feed ID artifacts ("12807-203758186"). The count
+ * ordering had buried them; switching to A–Z promoted the worst names in the
+ * catalogue to the first thing a reader sees.
  *
- * Filing them last is also just what a printed index does — numbers and
- * symbols are the tail. It does NOT fix the underlying data: those 13 rows
- * should not be in the directory at all, which is a separate decision about
- * whether to drop, merge or suppress them.
+ * THE DATA BEHIND THAT IS NOW FIXED — `99100101143000` retired 20 feed-ID rows
+ * and re-keyed their 189 listings onto the merchant they belonged to — so this
+ * function no longer has junk to hide. It stays because the reason it gives is
+ * not a workaround: numbers and symbols are the tail of a printed index, and
+ * the producer guard only stops NEW artifacts, it cannot promise the bucket
+ * stays clean forever.
+ *
+ * Do not "simplify" this away on the grounds that "#" is nearly empty. The one
+ * row in it is "1979 SAS (Teil der Marc Dorcel Group)", a real company, and an
+ * EMPTY bucket would mean the retirement rule had over-reached and taken it too
+ * — see `initialOf`, which asserts the same thing from the other direction.
  */
 function bucketRank(name: string): number {
   return initialOf(name) === '#' ? 1 : 0;
