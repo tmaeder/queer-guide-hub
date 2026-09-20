@@ -141,6 +141,30 @@ begin
 end
 $schedule$;
 
+-- News ingestion can merge a survivor that already has duplicate children,
+-- briefly producing chained pointers. Collapse the measured live breach before
+-- release gates run again, and fail closed if any dangling/chained row remains.
+do $news_duplicates$
+declare
+  v_repaired integer;
+  v_remaining bigint;
+begin
+  v_repaired := public.collapse_entity_dup_chains('news');
+
+  select count(*) into v_remaining
+  from public.news_articles n
+  left join public.news_articles parent on parent.id = n.duplicate_of_id
+  where n.duplicate_of_id is not null
+    and (parent.id is null or parent.duplicate_of_id is not null);
+
+  if v_remaining <> 0 then
+    raise exception 'news duplicate integrity repair left % invalid pointer(s)', v_remaining;
+  end if;
+
+  raise notice 'collapsed % chained news duplicate pointer(s)', v_repaired;
+end
+$news_duplicates$;
+
 -- The new parser is deployed immediately after migrations. Forgive attempts
 -- made before this release, plus a bounded deployment window; attempts after
 -- that boundary count normally and cannot retry forever.
