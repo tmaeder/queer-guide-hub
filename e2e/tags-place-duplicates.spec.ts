@@ -49,31 +49,24 @@ const DUPLICATES: Array<{ slug: string; geo: string; bucket: string }> = [
   // and pins the middleware fallback. Brighton pins a same-name resolution.
   { slug: 'san-francisco', geo: '/city/san-francisco', bucket: 'late city rule' },
   { slug: 'brighton', geo: '/city/brighton', bucket: 'same-name city resolution' },
+  { slug: 'travel', geo: '/travel', bucket: 'first-class product surface' },
 ];
 
-// The controls are the whole value of this file. "Place tags are deindexed" also passes on a
-// corpus where the sweep deindexed everything, or where the classifier over-matched and took
-// the region and travel vocabulary with it. Each of these was measured indexable on
-// 2026-09-04 and each encodes a DECISION the classification made.
-const MUST_STAY_INDEXABLE: Array<{ slug: string; why: string }> = [
+// These rows have no canonical first-class state/region target. They therefore remain usable
+// as facets but are deliberately non-publishing utility vocabulary. The reviewed article
+// control below prevents a globally empty/truncated sitemap from satisfying every absence.
+const PLACE_LIKE_UTILITIES: Array<{ slug: string; why: string }> = [
   {
     slug: 'california',
-    why:
-      'bucket E — a US state. The only thing it name-matches is a tmp- slug shell city, ' +
-      'so there is no geo entity for it to duplicate. Region tags are the one Destination ' +
-      'class that groups content no geo page groups.',
+    why: 'a US-state facet with no reviewed canonical entity target',
   },
   {
     slug: 'pennsylvania',
-    why: 'bucket E — same shape as california.',
-  },
-  {
-    slug: 'travel',
-    why:
-      'bucket F — a real travel concept with no geo match at all. These are the tags the ' +
-      'description backfill SHOULD fill; suppressing the whole category would have hit them.',
+    why: 'a US-state facet with no reviewed canonical entity target',
   },
 ];
+
+const PUBLISHED_CONTROL = 'bisexual';
 
 test.describe('place-named glossary tags redirect to the canonical geo page', () => {
   for (const c of DUPLICATES) {
@@ -98,14 +91,14 @@ test.describe('place-named glossary tags redirect to the canonical geo page', ()
     });
   }
 
-  for (const c of MUST_STAY_INDEXABLE) {
-    test(`/tags/${c.slug} stays indexable`, async ({ request }) => {
+  for (const c of PLACE_LIKE_UTILITIES) {
+    test(`/tags/${c.slug} remains a non-publishing utility`, async ({ request }) => {
       const res = await request.get(`/tags/${c.slug}`, { headers: { 'User-Agent': BOT_UA } });
       expect(res.status(), `/tags/${c.slug} should resolve`).toBe(200);
       expect(
         hasRobotsNoindex(await res.text()),
-        `/tags/${c.slug} was deindexed but should not have been: ${c.why}`,
-      ).toBe(false);
+        `/tags/${c.slug} became a thin article despite its utility disposition: ${c.why}`,
+      ).toBe(true);
     });
   }
 
@@ -126,8 +119,9 @@ test.describe('place-named glossary tags redirect to the canonical geo page', ()
     for (const c of DUPLICATES) {
       expect(slugs.has(c.slug), `sitemap still advertises /tags/${c.slug}`).toBe(false);
     }
-    for (const c of MUST_STAY_INDEXABLE) {
-      expect(slugs.has(c.slug), `sitemap dropped /tags/${c.slug}: ${c.why}`).toBe(true);
+    for (const c of PLACE_LIKE_UTILITIES) {
+      expect(slugs.has(c.slug), `sitemap advertises utility /tags/${c.slug}: ${c.why}`).toBe(false);
     }
+    expect(slugs.has(PUBLISHED_CONTROL), 'sitemap dropped the reviewed article control').toBe(true);
   });
 });

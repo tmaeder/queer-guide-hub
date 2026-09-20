@@ -830,7 +830,7 @@ html {
    failure mode the frame-grey page was introduced to avoid on 2026-08-17,
    solved a different way.
 
-   Data-URI, not an <img> or a component: it must paint before first
+   Data-URI, not an image element or a component: it must paint before first
    contentful paint on every route, under every surface, with no request.
    The strokes obey hard rule #1 — every track bends, no straight runs.
 

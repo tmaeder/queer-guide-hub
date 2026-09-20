@@ -891,6 +891,7 @@ export const AppRoutes = () => {
                       none exists today and this route is what reserves it. */}
                   <Route path="tags/interactions" element={<SubstanceInteractionsPage />} />
                   <Route path="tags/sti-guide" element={<StiGuidePage />} />
+                  <Route path="tags/travel" element={<LocalizedRedirect to="/travel" />} />
                   <Route path="tags/:tagName" element={<TagDetail />} />
                   {/* The topic hubs are gone — 8 curated tag clusters that
                       duplicated what the taxonomy already expresses. 301'd in

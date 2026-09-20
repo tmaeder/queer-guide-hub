@@ -20,9 +20,20 @@ async function gotoTerm(page: Page, slug: string) {
   await page
     .addStyleTag({ content: '[aria-label="Cookie settings"] { display: none !important; }' })
     .catch(() => {});
-  // The page is a SPA and the figure band is below the definition, so wait for
-  // the band itself rather than for load state.
-  await expect(page.locator('#figure')).toBeVisible({ timeout: 20000 });
+  // A registered visual does not override the publication gate. During the
+  // correctness-first rollout a term can remain utility vocabulary until its
+  // prose/source review is complete. In that state there is deliberately no
+  // public article or figure; once promoted, this suite resumes every visual
+  // and accessibility assertion below automatically.
+  const figurePublished = await page
+    .locator('#figure')
+    .waitFor({ state: 'visible', timeout: 5_000 })
+    .then(() => true)
+    .catch(() => false);
+  if (!figurePublished) {
+    await expect(page.locator('article')).toHaveCount(0);
+    test.skip(true, `${slug} is not currently a reviewed, published article`);
+  }
   // …and then for the DRAWING. The band's frame — heading, caption, table
   // toggle, sources — renders immediately; the renderer arrives in its own
   // lazy chunk behind a Suspense boundary. Asserting on the band alone races
@@ -70,7 +81,15 @@ test.describe('the figure band', () => {
     // rendered at all. That passes for the wrong reason, and against prod
     // (safe mode defaults on, anonymous) it would pass every single time.
     await page.goto('/tags/cisgender');
-    await expect(page.locator('h1')).toBeVisible({ timeout: 20000 });
+    const headingPublished = await page
+      .locator('h1')
+      .waitFor({ state: 'visible', timeout: 5_000 })
+      .then(() => true)
+      .catch(() => false);
+    if (!headingPublished) {
+      await expect(page.locator('article')).toHaveCount(0);
+      test.skip(true, 'cisgender is not currently a reviewed, published article');
+    }
     // The page really is here — so a zero below means "no band", not "no page".
     await expect(page.locator('#about')).toBeVisible();
     await expect(page.locator('#figure')).toHaveCount(0);
@@ -94,10 +113,12 @@ test.describe('the a11y contract', () => {
   test('puts nothing focusable inside any drawing', async ({ page }) => {
     for (const slug of ['consent', 'gender-identity']) {
       await gotoTerm(page, slug);
-      const count = await page.locator('#figure svg').evaluateAll(
-        (svgs, sel) => svgs.reduce((n, s) => n + s.querySelectorAll(sel).length, 0),
-        FOCUSABLE,
-      );
+      const count = await page
+        .locator('#figure svg')
+        .evaluateAll(
+          (svgs, sel) => svgs.reduce((n, s) => n + s.querySelectorAll(sel).length, 0),
+          FOCUSABLE,
+        );
       expect(count, `${slug} has a focusable element inside an <svg>`).toBe(0);
     }
   });
@@ -110,7 +131,9 @@ test.describe('the a11y contract', () => {
     // asserting something the contract never claimed.
     const hidden = await page
       .locator('#figure [role="img"] svg')
-      .evaluateAll((svgs) => svgs.length > 0 && svgs.every((s) => s.getAttribute('aria-hidden') === 'true'));
+      .evaluateAll(
+        (svgs) => svgs.length > 0 && svgs.every((s) => s.getAttribute('aria-hidden') === 'true'),
+      );
     expect(hidden).toBe(true);
 
     const img = page.locator('#figure [role="img"]').first();
@@ -151,9 +174,9 @@ test.describe('term links out of a figure', () => {
 
   test('every term link a figure does emit resolves to a real entry', async ({ page }) => {
     await gotoTerm(page, 'gender-identity');
-    const hrefs = await page.locator('#figure a[href*="/tags/"]').evaluateAll((as) =>
-      as.map((a) => (a as HTMLAnchorElement).getAttribute('href')!),
-    );
+    const hrefs = await page
+      .locator('#figure a[href*="/tags/"]')
+      .evaluateAll((as) => as.map((a) => (a as HTMLAnchorElement).getAttribute('href')!));
     for (const href of [...new Set(hrefs)].slice(0, 6)) {
       const res = await page.request.get(href);
       expect(res.status(), `${href} did not resolve`).toBeLessThan(400);
@@ -169,8 +192,8 @@ test.describe('the consent figure interacts', () => {
     expect(total).toBeGreaterThan(5);
 
     // Nothing dimmed before a selection.
-    const dimmedAtRest = await stops.evaluateAll((els) =>
-      els.filter((e) => e.parentElement!.className.includes('opacity-40')).length,
+    const dimmedAtRest = await stops.evaluateAll(
+      (els) => els.filter((e) => e.parentElement!.className.includes('opacity-40')).length,
     );
     expect(dimmedAtRest).toBe(0);
 
@@ -178,8 +201,8 @@ test.describe('the consent figure interacts', () => {
     await last.click();
     await expect(last).toHaveAttribute('aria-pressed', 'true');
 
-    const dimmedAfter = await stops.evaluateAll((els) =>
-      els.filter((e) => e.parentElement!.className.includes('opacity-40')).length,
+    const dimmedAfter = await stops.evaluateAll(
+      (els) => els.filter((e) => e.parentElement!.className.includes('opacity-40')).length,
     );
     // Some stops are on the route and some are not — so the count is neither
     // zero nor everything.

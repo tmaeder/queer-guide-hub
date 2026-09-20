@@ -11,6 +11,11 @@
 /resources  /tags  301
 /resources/*  /tags/:splat  301
 
+# `travel` is a first-class product surface, not a glossary article. Keep this
+# above the 100-rule Pages cutoff; the dynamic tag fallback must never publish
+# a generic thin page for the utility-vocabulary row.
+/tags/travel  /travel  301
+
 # Taxonomy v2 -> v3 category slugs (2026-08-29 recategorization program,
 # migrations 20261006140000 / 20261006150000). ONLY the slugs that changed are
 # listed: the surviving stops kept their rows AND their URLs, so

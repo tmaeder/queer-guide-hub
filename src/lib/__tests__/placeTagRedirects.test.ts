@@ -16,6 +16,8 @@ import { placeTagEdgeLocation } from '../../../functions/_lib/placeTagRedirect';
 
 const redirects = readFileSync(join(process.cwd(), 'public', '_redirects'), 'utf8');
 const middleware = readFileSync(join(process.cwd(), 'functions', '_middleware.ts'), 'utf8');
+const routes = readFileSync(join(process.cwd(), 'src', 'routes.tsx'), 'utf8');
+const NON_PLACE_TAG_REDIRECTS = new Map([['travel', '/travel']]);
 
 /**
  * Only single-segment `/tags/<slug>` rules. `_redirects` also carries `/tags/topic/*` and the
@@ -53,11 +55,23 @@ describe('place tag redirects', () => {
   it('has no single-segment /tags/ rule the map does not know about', () => {
     for (const rule of rules) {
       const tagSlug = rule[0].replace('/tags/', '');
+      const nonPlaceTarget = NON_PLACE_TAG_REDIRECTS.get(tagSlug);
+      if (nonPlaceTarget) {
+        expect(rule[1]).toBe(nonPlaceTarget);
+        continue;
+      }
       expect(
         placeTagRedirect(tagSlug),
         `_redirects sends /tags/${tagSlug} somewhere the map does not`,
       ).not.toBeNull();
     }
+  });
+
+  it('redirects the travel utility to its first-class product surface', () => {
+    expect(routes).toContain(
+      '<Route path="tags/travel" element={<LocalizedRedirect to="/travel" />} />',
+    );
+    expect(NON_PLACE_TAG_REDIRECTS.get('travel')).toBe('/travel');
   });
 
   it('uses the shared map from Pages middleware when _redirects reaches its rule limit', () => {
