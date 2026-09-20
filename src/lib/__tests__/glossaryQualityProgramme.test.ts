@@ -15,6 +15,14 @@ const restorationMigration = readFileSync(
   join(process.cwd(), 'supabase/migrations/20260920182925_repair_overdeprecated_tag_corpus.sql'),
   'utf8',
 );
+const migratedEntitySeal = readFileSync(
+  join(process.cwd(), 'supabase/migrations/99991789919000_seal_migrated_entity_tag_pointers.sql'),
+  'utf8',
+);
+const homonymMigration = readFileSync(
+  join(process.cwd(), 'supabase/migrations/99991789918010_close_reviewed_tag_entity_homonyms.sql'),
+  'utf8',
+);
 
 describe('systematic glossary quality programme', () => {
   it('assigns every publication role deterministically and prevents non-articles indexing', () => {
@@ -116,5 +124,15 @@ describe('systematic glossary quality programme', () => {
     expect(restorationMigration).toContain('restoration_candidate_in_public_search');
     expect(restorationMigration).toMatch(/v_restored\s*<\s*3000/);
     expect(restorationMigration).toMatch(/v_pending\s*<>\s*0/);
+    expect(migratedEntitySeal).toContain("canonical_entity_type='personality'");
+    expect(migratedEntitySeal).toContain("canonical_entity_type='organization'");
+    expect(migratedEntitySeal).toContain('migrated entity tag remains unsealed');
+  });
+
+  it('closes reviewed homonyms without treating normalised names as identity evidence', () => {
+    expect(homonymMigration).toContain("select t.id,c.typ,c.id,'homonym'");
+    expect(homonymMigration).toContain('join candidates c on c.slug=t.slug');
+    expect(homonymMigration).not.toContain('regexp_replace(t.name');
+    expect(homonymMigration).toContain('reviewed tag/entity collision ledger is incomplete');
   });
 });
