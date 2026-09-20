@@ -107,6 +107,7 @@ describe('systematic glossary quality programme', () => {
     expect(restorationMigration).toContain('review_tag_restoration');
     expect(restorationMigration).toContain("p_decision not in ('article','utility','retire')");
     expect(restorationMigration).toContain('insert into public.personalities');
+    expect(restorationMigration).toContain('Editorial verification required.');
     expect(restorationMigration).toContain('insert into public.organizations');
     expect(restorationMigration).toMatch(/canonical_entity_type\s*=\s*'personality'/);
     expect(restorationMigration).toContain('restoration_candidate_indexable');

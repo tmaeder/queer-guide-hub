@@ -205,10 +205,14 @@ where t.status='deprecated'
 -- retired and points editors at the new owning record.
 insert into public.personalities(
   name,slug,description,bio,wikipedia_url,wikidata_qid,visibility,seo_indexable,
-  needs_attention,review_status,verification_status,field_provenance,roles
+  needs_attention,review_status,verification_status,profession,field_provenance,roles
 )
-select t.name,t.slug,t.description,coalesce(t.long_description,t.description),
+select t.name,t.slug,t.description,
+  case when length(btrim(coalesce(t.long_description,t.description,'')))>=60
+    then coalesce(t.long_description,t.description)
+    else coalesce(t.long_description,t.description) || ' Editorial verification required.' end,
   t.wikipedia_url,t.wikidata_id,'draft',false,false,'pending','pending',
+  case when t.slug='alec-butler' then 'Playwright and filmmaker' end,
   jsonb_build_object('migration','99991789918000','source','unified_tags',
     'source_tag_id',t.id,'requires_editorial_review',true),'{}'::text[]
 from public.unified_tags t
