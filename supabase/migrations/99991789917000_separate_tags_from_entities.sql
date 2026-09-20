@@ -302,6 +302,20 @@ set entity_kind='descriptor', publication_role='utility',
     seo_indexable=false, seo_deindex_reason='publication_role:utility'
 where status='active' and entity_kind='place' and canonical_entity_path is null;
 
+-- Person imports can also remain unresolved when their slug already belongs to
+-- an archived/duplicate personality. A redirect without a live reviewed target
+-- is never valid: retain it as usable vocabulary and make it non-public.
+update public.unified_tags
+set entity_kind='descriptor', publication_role='utility',
+    canonical_entity_type=null, canonical_entity_id=null,
+    canonical_entity_path=null, canonical_entity_reviewed_at=null,
+    publication_role_reviewed_at=now(),
+    publication_role_review_note='entity-like vocabulary; no reviewed canonical target',
+    seo_indexable=false, seo_deindex_reason='publication_role:utility'
+where status='active' and publication_role='entity_redirect'
+  and (canonical_entity_type is null or canonical_entity_id is null
+    or canonical_entity_path is null or canonical_entity_reviewed_at is null);
+
 alter table public.unified_tags
   drop constraint if exists unified_tags_entity_redirect_target_check,
   add constraint unified_tags_entity_redirect_target_check check (

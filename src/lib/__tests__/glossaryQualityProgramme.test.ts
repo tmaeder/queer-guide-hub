@@ -36,6 +36,7 @@ describe('systematic glossary quality programme', () => {
     expect(entityMigration).toContain('tag_entity_audit_queue');
     expect(entityMigration).toContain('review_tag_entity_candidate');
     expect(entityMigration).toContain('A slug collision is a candidate, not proof of identity');
+    expect(entityMigration).toContain('entity-like vocabulary; no reviewed canonical target');
     expect(entityMigration).toMatch(
       /entity_kind in \('person','place'\).*publication_role='article'/s,
     );
