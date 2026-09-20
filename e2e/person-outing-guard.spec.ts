@@ -144,12 +144,20 @@ test('the merged duplicate a human re-published is not served to anyone', async 
 // --- what a reader and a crawler actually get --------------------------------
 
 test('the restored pages render on prod', async ({ page }) => {
-  for (const slug of ['bones', 'spice']) {
+  // Asserted on the TITLE rather than on an <h1> becoming visible. The title is
+  // injected per request by functions/_lib/detail.ts, so it is deterministic;
+  // waiting for the SPA's <h1> races hydration and flaked once under parallel
+  // workers while passing on every serial run. A flaky trust-&-safety spec
+  // teaches people to re-run it, which is the failure mode this whole incident
+  // was about.
+  for (const [slug, name] of [
+    ['bones', 'Bones'],
+    ['spice', 'Spice'],
+  ] as const) {
     const res = await page.goto(`/personality/${slug}`, { waitUntil: 'domcontentloaded' });
     expect(res?.status(), `/personality/${slug} -> HTTP ${res?.status()}`).toBeLessThan(400);
-    // The SPA renders the name into <h1>; a draft row would render the
-    // not-found fallback instead.
-    await expect(page.locator('h1').first()).toBeVisible();
+    // A draft row serves the not-found shell, whose title is not the person's name.
+    await expect(page).toHaveTitle(new RegExp(name));
     await expect(page.locator('body')).not.toContainText(/page not found/i);
   }
 });
