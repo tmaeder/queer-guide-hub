@@ -1,5 +1,5 @@
 import { assert, assertEquals, assertMatch } from 'https://deno.land/std@0.224.0/assert/mod.ts'
-import { describeUnparseable } from './index.ts'
+import { describeUnparseable, parseQualityDecisionPreservingBody } from './index.ts'
 
 // Until 2026-09-19 an unreadable completion and a completion that never
 // arrived both landed on the job row as the bare string `no_decision`. The
@@ -58,6 +58,50 @@ Deno.test('records the length in full, so the ratio against output tokens stays 
 Deno.test('carries the tail — the one part a head-only sample never showed', () => {
   const out = describeUnparseable('{"a": 1' + 'z'.repeat(400) + 'THE-VERY-END')
   assert(out.endsWith('THE-VERY-END'), out.slice(-40))
+})
+
+Deno.test('salvages structured fields while refusing a malformed cleaned body', () => {
+  const raw = `{
+    "isRelevant": true,
+    "relevanceScore": 0.9,
+    "qualityScoreBefore": 0.7,
+    "qualityScoreAfter": 0.85,
+    "shouldPublish": true,
+    "needsManualReview": false,
+    "title": "A real verdict",
+    "excerpt": "Short summary",
+    "cleanedBody": "She said "no" and left.
+Second paragraph.",
+    "sentiment": "neutral",
+    "tags": ["news"],
+    "linkedCountries": [],
+    "linkedCities": [],
+    "linkedRegions": [],
+    "linkedVenues": [],
+    "linkedEvents": [],
+    "linkedPersonalities": [],
+    "linkedOrganisations": [],
+    "imageAssessment": {"isUsable": true, "qualityScore": 0.8, "isRelevant": true, "needsReplacement": false, "reason": ""},
+    "removedArtifacts": [],
+    "warnings": [],
+    "confidence": 0.9,
+    "isSatire": false,
+    "isAdvertorial": false
+  }`
+
+  const decision = parseQualityDecisionPreservingBody(raw)
+  assert(decision)
+  assertEquals(decision.cleanedBody, '')
+  assertEquals(decision.shouldPublish, true)
+  assertEquals(decision.confidence, 0.9)
+  assert(decision.warnings.includes('cleaned_body_preserved_after_json_repair'))
+})
+
+Deno.test('body salvage still refuses prose without the complete schema tail', () => {
+  assertEquals(
+    parseQualityDecisionPreservingBody('{"cleanedBody":"broken "quote"", "sentiment":"neutral"}'),
+    null,
+  )
 })
 
 Deno.test('is bounded, so one failure cannot swamp the error column', () => {

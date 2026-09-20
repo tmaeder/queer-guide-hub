@@ -120,6 +120,44 @@ export function describeUnparseable(content: string): string {
   return `no_decision:len=${content.length}:cands=${candidates}:why=${why}:tail=${tail}`
 }
 
+/**
+ * Recover the structured verdict when the model's long `cleanedBody` value is
+ * the only malformed field.
+ *
+ * The body is deliberately discarded rather than heuristically repaired: the
+ * caller already preserves the article's existing content when cleanedBody is
+ * empty. Everything before and after the body still has to parse against the
+ * normal schema, so this cannot turn arbitrary prose into a verdict.
+ */
+export function parseQualityDecisionPreservingBody(content: string): QualityDecision | null {
+  for (const candidate of extractJsonCandidates(content)) {
+    const bodyKey = /"cleanedBody"\s*:/.exec(candidate)
+    if (!bodyKey?.index && bodyKey?.index !== 0) continue
+
+    // The prompt fixes `sentiment` immediately after `cleanedBody`. Use the
+    // last matching key so quoted article prose that happens to mention the
+    // word cannot truncate the candidate early.
+    const tail = candidate.slice(bodyKey.index + bodyKey[0].length)
+    const boundary = [...tail.matchAll(/,\s*"sentiment"\s*:/g)].at(-1)
+    if (!boundary?.index && boundary?.index !== 0) continue
+
+    const bodyEnd = bodyKey.index + bodyKey[0].length + boundary.index
+    const withoutBody =
+      candidate.slice(0, bodyKey.index + bodyKey[0].length) +
+      ' ""' +
+      candidate.slice(bodyEnd)
+    const decision = parseQualityDecision(withoutBody)
+    if (decision) {
+      decision.warnings = [
+        ...decision.warnings,
+        'cleaned_body_preserved_after_json_repair',
+      ].slice(0, 20)
+      return decision
+    }
+  }
+  return null
+}
+
 async function callQualityLLM(
   supabase: ReturnType<typeof getServiceClient>,
   userPrompt: string,
@@ -135,7 +173,8 @@ async function callQualityLLM(
     max_tokens: 2200,
     response_format: { type: 'json_object' },
   })
-  const decision = parseQualityDecision(result.content)
+  const decision = parseQualityDecision(result.content) ??
+    parseQualityDecisionPreservingBody(result.content)
   if (decision) return { decision }
   // A completion arrived and could not be read. That is a DIFFERENT fact from
   // "no completion arrived", and until now both landed as the same string.
