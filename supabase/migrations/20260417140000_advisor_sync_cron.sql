@@ -6,7 +6,7 @@
 -- Required one-time setup:
 --   1. Create a Personal Access Token at
 --      https://supabase.com/dashboard/account/tokens (needs project:read)
---   2. Set function secret `SUPABASE_MANAGEMENT_ACCESS_TOKEN` to that PAT via
+--   2. Set function secret `MANAGEMENT_ACCESS_TOKEN` to that PAT via
 --      Project Settings → Edge Functions → Secrets
 --   3. Deploy the edge function: `supabase functions deploy sync-supabase-advisors`
 --
