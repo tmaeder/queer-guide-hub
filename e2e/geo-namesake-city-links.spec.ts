@@ -48,6 +48,112 @@ const REPAIRED = [
   },
 ] as const;
 
+// --- the twelve 99991789886174 swept up -------------------------------------
+//
+// Found mechanically rather than one row at a time -- every live event over 250 km
+// from the city it is linked to -- which is why this is not two more entries on
+// REPAIRED above. Three remedies, because the evidence differs per row and the
+// distance does not decide:
+//
+//   block   the city is unrepresentable (same country, and `cities` holds at most one
+//           row per (name, country)), so the link is removed rather than guessed at
+//   relink  the collision crosses a border and the correct row already exists
+//   geo     the LINK is correct and the COORDINATES were wrong, so the coordinates
+//           were retracted -- these rows are asserted to have KEPT their city, which
+//           is the opposite of what their distance argued for
+//
+// Keyed by id: three of them (the Lakewood trio) share a postal code and two carry
+// none at all. The corpus-wide form of this claim -- that NO event anywhere sits over
+// 250 km from its city -- is postcondition P4 of the migration, which runs as postgres
+// over every row. It deliberately does not live here: anon cannot read safety-gated
+// events, so a sweep from this role would check a subset and report it as the whole.
+const SWEPT = [
+  {
+    id: '39fe5af6-7d44-401d-8c0b-41020fb5eeed',
+    remedy: 'block',
+    lat: 43.656551,
+    lon: -70.258943,
+    was: 'Portland, Oregon',
+  },
+  {
+    id: 'e223aa71-3edf-4ead-b46a-afc12c040344',
+    remedy: 'block',
+    lat: 41.477055,
+    lon: -81.773585,
+    was: 'Lakewood, Colorado',
+  },
+  {
+    id: 'f21efc92-11d5-4774-846b-e769b95abb3a',
+    remedy: 'block',
+    lat: 41.477055,
+    lon: -81.773585,
+    was: 'Lakewood, Colorado',
+  },
+  {
+    id: '15560889-b4bf-49f9-a584-13709c565f4d',
+    remedy: 'block',
+    lat: 41.477055,
+    lon: -81.773585,
+    was: 'Lakewood, Colorado',
+  },
+  {
+    id: '77bcbdab-b20d-4f7d-a87e-de14f05bd18a',
+    remedy: 'block',
+    lat: 32.68074,
+    lon: -97.107349,
+    was: 'Arlington, Virginia',
+  },
+  {
+    id: '0d3a2d4c-d470-458b-9f04-641f4721ce6f',
+    remedy: 'block',
+    lat: 42.843561,
+    lon: -70.816296,
+    was: 'Salisbury, North Carolina',
+  },
+  {
+    id: '7bee9d1f-f908-47c6-9220-e5796f1d6cd5',
+    remedy: 'block',
+    lat: 28.810713,
+    lon: -81.265142,
+    was: 'Sanford, North Carolina',
+  },
+  {
+    id: 'f4acf601-07f8-4790-b498-0b2a6b36d89e',
+    remedy: 'block',
+    lat: 38.7673,
+    lon: -75.285797,
+    was: 'Milton, Pennsylvania',
+  },
+  {
+    id: '40aefb71-e3b8-40d9-a206-4cbd33827e65',
+    remedy: 'relink',
+    lat: 33.50539,
+    lon: -86.79049,
+    was: 'Birmingham, England',
+  },
+  {
+    id: 'aac86082-299f-4e2e-8944-5c4049581807',
+    remedy: 'relink',
+    lat: 42.3709,
+    lon: -71.11449,
+    was: 'Cambridge, England',
+  },
+  {
+    id: '0aa93667-3d85-4714-8d2f-ec4adbc582c3',
+    remedy: 'geo',
+    lat: null,
+    lon: null,
+    was: 'coordinates in Saint Petersburg, Russia',
+  },
+  {
+    id: '03ec22b3-38cc-4bda-b20e-da1534e22898',
+    remedy: 'geo',
+    lat: null,
+    lon: null,
+    was: 'the centroid of a merged-away Łódź row in Ukraine',
+  },
+] as const;
+
 test.skip(!ANON_KEY, 'VITE_SUPABASE_ANON_KEY not set');
 
 async function rest<T>(request: APIRequestContext, path: string): Promise<T[]> {
@@ -217,4 +323,109 @@ test('the rendered Derby page does not name the English event', async ({ request
   ).toBeTruthy();
 
   expect(html).not.toMatch(/Homophobia, Biphobia and Transphobia/i);
+});
+
+// --- the sweep ---------------------------------------------------------------
+
+test('all twelve swept events are still live and readable by anon', async ({ request }) => {
+  // Positive control, and the load-bearing one for everything below: "the event is
+  // not on the wrong city" is equally true of an event that was deleted, of a broken
+  // query, and of a role that can read nothing at all.
+  const rows = await rest<{ id: string }>(
+    request,
+    `events?select=id&id=in.(${SWEPT.map((s) => s.id).join(',')})`,
+  );
+  const seen = new Set(rows.map((r) => r.id));
+  for (const s of SWEPT) {
+    expect(seen.has(s.id), `${s.id} (taken off ${s.was}) is not anon-readable`).toBeTruthy();
+  }
+  expect(rows.length).toBe(SWEPT.length);
+});
+
+test('each swept event got the remedy its own evidence supports', async ({ request }) => {
+  for (const s of SWEPT) {
+    const [ev] = await rest<{
+      id: string;
+      title: string;
+      city_id: string | null;
+      latitude: string | null;
+      longitude: string | null;
+    }>(request, `events?select=id,title,city_id,latitude,longitude&id=eq.${s.id}`);
+    expect(ev, `${s.id} is gone`).toBeTruthy();
+
+    if (s.remedy === 'block') {
+      // Unrepresentable city: blocked rather than guessed. A null city_id is
+      // recoverable, a wrong one is not.
+      expect(
+        ev.city_id,
+        `${ev.title} is still presented on ${s.was}, which cannot be corrected because ` +
+          `that city row is not creatable — cities is unique on (name, country)`,
+      ).toBeNull();
+      continue;
+    }
+
+    // relink and geo both KEEP a city, and asserting that is what stops a future
+    // sweep from "fixing" these two groups by unlinking them like group A.
+    expect(ev.city_id, `${ev.title} lost the city link that was correct`).not.toBeNull();
+
+    if (s.remedy === 'geo') {
+      // The coordinates were the defect, not the link. Retracted, never replaced
+      // with a centroid — prefer NULL to a guess.
+      expect(
+        ev.latitude,
+        `${ev.title} still carries ${s.was}; the link was right and the coordinates were not`,
+      ).toBeNull();
+      continue;
+    }
+
+    const [city] = await rest<{
+      name: string;
+      region_name: string | null;
+      latitude: string | null;
+      longitude: string | null;
+    }>(request, `cities?select=name,region_name,latitude,longitude&id=eq.${ev.city_id}`);
+    expect(city, `${ev.title} points at a city anon cannot read`).toBeTruthy();
+    expect(
+      city.latitude !== null,
+      `${ev.title} was relinked to a city with no coordinates, so nothing corroborates it`,
+    ).toBeTruthy();
+
+    const d = km(s.lat!, s.lon!, Number(city.latitude), Number(city.longitude));
+    expect(
+      d,
+      `${ev.title} was moved off ${s.was} onto ${city.name}, ${city.region_name} — ` +
+        `${d.toFixed(1)} km from its own coordinates, so the new row is no better`,
+    ).toBeLessThan(MAX_KM);
+  }
+});
+
+test('blocking an event never emptied the city it was taken off', async ({ request }) => {
+  // Mirror. Every assertion above is satisfied by a pass that deleted the city rows
+  // outright; these are the rows that must survive being unlinked FROM. Salisbury,
+  // North Carolina is the sharpest case — it is the wrong city for a Massachusetts
+  // event and the RIGHT one for Wakefield Poole, who was born there. That personality
+  // is `draft`, so anon cannot count it and this test deliberately does not try; the
+  // migration's P6 compares the count against a pre-write snapshot as postgres.
+  const slugs = [
+    'portland',
+    'lakewood',
+    'arlington-us-imfac',
+    'tmp-4f3d2206-b747-4617-9a0d-37be27aee945',
+    'sanford-us-5ibkl',
+    'milton',
+    'birmingham',
+    'cambridge-gb-2wpbj',
+    'st-petersburg',
+    'od-1',
+  ];
+  for (const slug of slugs) {
+    const [city] = await rest<{ id: string; name: string }>(
+      request,
+      `cities?select=id,name&slug=eq.${encodeURIComponent(slug)}&duplicate_of_id=is.null`,
+    );
+    expect(
+      city,
+      `the ${slug} row is gone or merged — unlinking must not remove a city`,
+    ).toBeTruthy();
+  }
 });
