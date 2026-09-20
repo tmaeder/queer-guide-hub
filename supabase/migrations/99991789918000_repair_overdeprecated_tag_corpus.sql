@@ -385,7 +385,12 @@ revoke all on function public.review_tag_description(uuid,text) from public,anon
 grant execute on function public.review_tag_description(uuid,text) to authenticated,service_role;
 
 -- Patch the role-aware scorecard with the restoration backlog.
-alter function public.tag_quality_scorecard_v2() rename to tag_quality_scorecard_entity_base;
+do $scorecard_base$
+begin
+  if to_regprocedure('public.tag_quality_scorecard_entity_base()') is null then
+    alter function public.tag_quality_scorecard_v2() rename to tag_quality_scorecard_entity_base;
+  end if;
+end $scorecard_base$;
 create or replace function public.tag_quality_scorecard_v2()
 returns jsonb language plpgsql stable security definer set search_path=public as $$
 declare v jsonb; v_pending bigint;

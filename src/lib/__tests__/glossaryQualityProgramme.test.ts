@@ -112,6 +112,9 @@ describe('systematic glossary quality programme', () => {
     expect(restorationMigration).toMatch(/canonical_entity_type\s*=\s*'personality'/);
     expect(restorationMigration).toContain('restoration_candidate_indexable');
     expect(restorationMigration).toContain('restoration_candidate_in_public_search');
+    expect(restorationMigration).toContain(
+      "to_regprocedure('public.tag_quality_scorecard_entity_base()')",
+    );
     expect(restorationMigration).toMatch(/v_restored\s*<\s*3000/);
     expect(restorationMigration).toMatch(/v_pending\s*<>\s*0/);
   });
