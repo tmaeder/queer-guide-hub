@@ -45,8 +45,6 @@ const INDEX_STEP = 120;
  * `99100101143000`, that is exactly one: "1979 SAS (Teil der Marc Dorcel
  * Group)", a real company. An EMPTY "#" bucket would mean the feed-ID
  * retirement rule had over-reached and taken it too.
- * Group)", a real company. An EMPTY "#" bucket would mean the retirement
- * rule had over-reached and taken it too.
  */
 function initialOf(name: string): string {
   const first = name
@@ -70,14 +68,6 @@ function initialOf(name: string): string {
  * Filing them last is also just what a printed index does — numbers and
  * symbols are the tail, whatever the data underneath is doing.
  *
- * The data half is now fixed at the source, so this rule is no longer carrying
- * it: `99100101143000` retired the 20 feed-ID rows corpus-wide and re-keyed
- * their 190 listings onto the merchant's real brand, and
- * `marketplace_register_brands()` refuses to mint another.
- *
- * Do NOT read this ordering as a suppression mechanism, and do NOT add a
- * display filter on top of it — a filter hides rows here while leaving them in
- * search and on their own /marketplace/brands/:slug pages, which is the
  * The data half is now fixed at the source, so this rule is no longer
  * carrying it: `99100101143000` retired the 20 feed-ID rows corpus-wide and
  * re-keyed their 190 listings onto the merchant's real brand, and
@@ -159,6 +149,7 @@ export default function MarketplaceBrands() {
   const [view, setView] = useState<'gallery' | 'az'>('gallery');
   const [letter, setLetter] = useState<string | null>(null);
   const [shown, setShown] = useState(GALLERY_STEP);
+  const [shownIndex, setShownIndex] = useState(INDEX_STEP);
 
   const { data: all, isLoading } = useMarketplaceBrandsDirectory();
   const { data: featured } = useMarketplaceBrandCovers(FEATURED_COUNT);
@@ -224,19 +215,30 @@ export default function MarketplaceBrands() {
   }, [floor, view]);
 
   const step = view === 'az' ? INDEX_STEP : GALLERY_STEP;
-  const visibleTiles = withCover.slice(0, shown);
-  // The index half only starts once the gallery is exhausted — otherwise
-  // "Show more" would grow two lists at once and the reader could never tell
-  // which of them they were at the end of.
-  const indexBudget = Math.max(0, shown - withCover.length);
-  const visibleRows = view === 'az' ? floor.slice(0, shown) : withoutCover.slice(0, indexBudget);
-  const renderedCount = visibleTiles.length + visibleRows.length;
+  const visibleTiles = view === 'az' ? [] : withCover.slice(0, shown);
+  /**
+   * The two sections page INDEPENDENTLY, and that is a correctness fix rather
+   * than a preference.
+   *
+   * The first cut gave them one shared budget, so the index only began once
+   * the gallery was exhausted: `max(0, shown - withCover.length)`. With 657
+   * makers carrying a photograph and a step of 48, that put the 214 without
+   * one behind FOURTEEN presses of "Show more" — reachable in principle and
+   * unreachable in practice. That is the same failure as dropping them from
+   * the query, arrived at through pagination instead of through a filter, and
+   * it is invisible from the page: the gallery looks complete either way.
+   *
+   * The cost is a second button. That is the honest trade — one button that
+   * silently grows whichever list the reader is not looking at is worse.
+   */
+  const visibleRows = view === 'az' ? floor.slice(0, shown) : withoutCover.slice(0, shownIndex);
 
-  /** Reset the slice on any control change — never in an effect. */
+  /** Reset both slices on any control change — never in an effect. */
   const withReset =
     <T,>(fn: (value: T) => void) =>
     (value: T) => {
       setShown(step);
+      setShownIndex(INDEX_STEP);
       fn(value);
     };
 
@@ -248,6 +250,7 @@ export default function MarketplaceBrands() {
 
   const setViewMode = (next: 'gallery' | 'az') => {
     setShown(next === 'az' ? INDEX_STEP : GALLERY_STEP);
+    setShownIndex(INDEX_STEP);
     setView(next);
     // A letter filter that survives into the gallery is invisible: the bar
     // that set it is gone and the makers it removed never come back.
@@ -313,6 +316,7 @@ export default function MarketplaceBrands() {
               value={search}
               onChange={(e) => {
                 setShown(step);
+                setShownIndex(INDEX_STEP);
                 setSearch(e.target.value);
               }}
               placeholder={t('marketplace.searchMakers', 'Search makers')}
@@ -371,6 +375,7 @@ export default function MarketplaceBrands() {
             letter={letter}
             onChange={(next) => {
               setShown(INDEX_STEP);
+              setShownIndex(INDEX_STEP);
               setLetter(next);
             }}
           />
@@ -407,6 +412,24 @@ export default function MarketplaceBrands() {
                   </li>
                 ))}
               </ul>
+            )}
+
+            {/* The gallery's own control. It must sit ABOVE the index section
+                rather than at the foot of the page: a single button below both
+                lists cannot say which one it grows. */}
+            {withCover.length > visibleTiles.length && (
+              <div className="mt-10 flex items-center justify-center">
+                <Button
+                  variant="outline"
+                  size="lg"
+                  onClick={() => setShown((n) => n + GALLERY_STEP)}
+                >
+                  {t('marketplace.showMoreWithPhotos', {
+                    defaultValue: 'Show {{count}} more with photos',
+                    count: Math.min(GALLERY_STEP, withCover.length - visibleTiles.length),
+                  })}
+                </Button>
+              </div>
             )}
 
             {/* Named honestly. These makers are not lesser — we simply hold no
@@ -451,12 +474,25 @@ export default function MarketplaceBrands() {
               </ul>
             )}
 
-            {floor.length > renderedCount && (
+            {(view === 'az'
+              ? floor.length > visibleRows.length
+              : withoutCover.length > visibleRows.length) && (
               <div className="mt-10 flex items-center justify-center">
-                <Button variant="outline" size="lg" onClick={() => setShown((n) => n + step)}>
+                <Button
+                  variant="outline"
+                  size="lg"
+                  onClick={() =>
+                    view === 'az'
+                      ? setShown((n) => n + INDEX_STEP)
+                      : setShownIndex((n) => n + INDEX_STEP)
+                  }
+                >
                   {t('marketplace.showMoreMakers', {
                     defaultValue: 'Show {{count}} more',
-                    count: Math.min(step, floor.length - renderedCount),
+                    count: Math.min(
+                      INDEX_STEP,
+                      (view === 'az' ? floor.length : withoutCover.length) - visibleRows.length,
+                    ),
                   })}
                 </Button>
               </div>
