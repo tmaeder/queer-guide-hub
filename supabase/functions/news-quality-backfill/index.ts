@@ -3,6 +3,7 @@ import { withCircuitBreaker, CircuitOpenError } from '../_shared/circuit-breaker
 import { chatCompletion, isOpenAIAvailable } from '../_shared/openai-client.ts'
 import { sanitizeArticle } from '../_shared/news-quality/sanitize.ts'
 import { parseQualityDecision, QUALITY_PIPELINE_VERSION, type QualityDecision } from '../_shared/news-quality/schema.ts'
+import { extractJsonCandidates } from '../_shared/json-extract.ts'
 import { QUALITY_SYSTEM_PROMPT, buildQualityUserPrompt } from '../_shared/news-quality/prompts.ts'
 import { evaluatePublishGate } from '../_shared/news-quality/decision.ts'
 import { probeImage } from '../_shared/news-quality/image-check.ts'
@@ -55,21 +56,60 @@ interface RunSummary {
  *   and that is the right place for it — but the edge-function log is not
  *   reachable from every environment that has to diagnose this (no log source
  *   resolves through the Supabase MCP, and reading it needs a token an
- *   operator may not hold). Measured 2026-09-19: three articles were re-run
- *   after the json-extract fix shipped, all three produced REAL completions
- *   (Cloudflare llama-3.1-8b, 673/688/1229 output tokens, none pinned at the
- *   2200 ceiling), and all three still recorded a bare `no_decision`. The
- *   answers are arriving and something about their SHAPE defeats all three
- *   extraction stages — and the row said nothing about which.
+ *   operator may not hold). So the diagnosis rides the `error` column, which
+ *   is already read by hand whenever this queue is investigated.
  *
- *   So the snippet rides the `error` column, which is already read by hand
- *   whenever this queue is investigated. It is bounded and newline-collapsed
- *   so one row stays greppable, and it is written ONLY on the failure path:
- *   a decided article records exactly what it always did.
+ * WHY IT NAMES THE PARSE ERROR RATHER THAN SHOWING MORE OF THE TEXT.
+ *
+ *   The first cut of this recorded `len` plus the first 240 chars, and that
+ *   measurement (prod, 2026-09-20, three articles) ruled two hypotheses out
+ *   and identified none. It showed the completions are REAL and their heads
+ *   are well-formed JSON — `{ "isRelevant": true, "relevanceScore": 0.9, ...`
+ *   from character 0, every key correct — at 2,641 / 5,092 / 5,239 chars for
+ *   624 / 1,203 / 1,201 output tokens, i.e. a steady ~4.2 chars per token and
+ *   nothing near the 2,200 ceiling. So the answer is not missing and it is not
+ *   truncated; `JSON.parse` is rejecting a complete object, and a longer head
+ *   cannot say why because the head is the part that is fine.
+ *
+ *   `JSON.parse`'s own error does say why, and names the offset: a raw newline
+ *   inside a string value reads `Bad control character in string literal ... at
+ *   position N`, an unterminated object reads `Unexpected end of JSON input`,
+ *   trailing prose reads `Unexpected non-whitespace character after JSON`. That
+ *   is a cause, not another clue — which is the whole reason to spend a second
+ *   round trip here instead of guessing a third time.
+ *
+ *   The tail rides along because it is the one part never yet seen, and it
+ *   distinguishes "stopped mid-sentence" from "closed and kept talking" at a
+ *   glance. Every candidate is tried, not just the first: the stages are
+ *   ordered best-first, so an error from the fenced candidate alone would
+ *   misreport a run the balanced candidate also failed.
  */
 export function describeUnparseable(content: string): string {
   const flat = content.replace(/\s+/g, ' ').trim()
-  return `no_decision:len=${content.length}:${flat.slice(0, 240)}`
+  const errs: string[] = []
+  let candidates = 0
+  for (const candidate of extractJsonCandidates(content)) {
+    candidates++
+    try {
+      JSON.parse(candidate)
+      // Parsed, so `parseQualityDecision` rejected it for the only other
+      // reason it can: the value is not a JSON object (an array, a bare
+      // string). Worth naming — it is a different bug from a parse failure.
+      if (!errs.includes('parsed_but_not_object')) errs.push('parsed_but_not_object')
+    } catch (e) {
+      const m = (e as Error).message
+      if (!errs.includes(m)) errs.push(m)
+    }
+  }
+  // Zero candidates has two causes and they are not the same finding: no brace
+  // anywhere (a refusal, prose) versus a brace that never closes (a cut-off
+  // answer — every stage needs a closing '}', including the legacy greedy one).
+  // Reading them apart off the tail works but asks the next person to squint.
+  const why = candidates === 0
+    ? (content.includes('{') ? 'unterminated_object' : 'no_candidates')
+    : errs.slice(0, 2).join(' | ')
+  const tail = flat.slice(-120)
+  return `no_decision:len=${content.length}:cands=${candidates}:why=${why}:tail=${tail}`
 }
 
 async function callQualityLLM(
