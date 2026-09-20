@@ -682,6 +682,47 @@ async function handleTrack(request: Request, env: Env, cors: HeadersInit): Promi
 	const session = await resolveSession(request, env, bodySid);
 	const session_id = session.sid;
 
+	// A WRITE NEEDS A SIGNED SESSION. `resolveSession` has computed `verified`
+	// since bug #14 and nothing has ever read it, so every caller could write:
+	// measured on prod 2026-09-20, a POST with a forged Origin and no cookie
+	// reached validation, i.e. CORS never rejected it. The file's own comment
+	// already conceded this — "Server-side scrapers bypass CORS either way" —
+	// because origin-locking only sets response headers; the browser enforces
+	// it and curl does not.
+	//
+	// Enforcing an allowlisted Origin instead would be theatre: an attacker
+	// sets one header. A signed cookie is the only thing here with teeth, and
+	// the request must survive a round trip to get one.
+	//
+	// THE COST IS ONE EVENT PER SESSION, AND THE BENEFIT IS THE SIGNAL ITSELF.
+	// Over 7 days, 69,357 of 69,670 behavioural events — 99.6% — came from
+	// sessions holding exactly ONE event, the signature of a cookie-less
+	// client minting a fresh session per request. Umami, which is bot-filtered
+	// and consent-gated, saw ~20 sessions/day against ~9,900 here. Only ~112
+	// sessions ever accumulated a second event, which is about the real
+	// visitor count. So the bias vector and trending were built almost
+	// entirely from crawler noise, and this gate is a data-quality fix as much
+	// as a security one.
+	//
+	// A real browser loses only its very first entity view per cookie window,
+	// because the 202 below still carries the Set-Cookie that makes the next
+	// call verified.
+	//
+	// `user_id` is deliberately NOT an escape hatch: it is an unverified body
+	// field on this endpoint, so trusting it would reopen the hole under a
+	// different name.
+	if (!session.verified) {
+		const headers: Record<string, string> = { ...(cors as Record<string, string>) };
+		if (session.setCookie) headers["Set-Cookie"] = session.setCookie;
+		// 202, not 200-with-ok:true. Reporting success for a write that did
+		// not happen is the exact failure this codebase keeps rediscovering.
+		return json(
+			{ ok: false, recorded: false, reason: "unverified_session", session_verified: false },
+			202,
+			headers,
+		);
+	}
+
 	const id = await trackEvent(env, { user_id, session_id, event_type, entity_type, entity_id, metadata });
 
 	// Record seen-recently in KV for decay (24h TTL).
