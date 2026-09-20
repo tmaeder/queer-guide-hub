@@ -11,9 +11,12 @@ import { describeUnparseable } from './index.ts'
 // `JSON.parse`'s own message, which names the cause and its offset.
 
 Deno.test('names the parse failure, because that is the cause and the head is not', () => {
-  // A raw newline inside a string value: valid-looking, complete, unparseable.
-  const out = describeUnparseable('{"cleanedBody": "para one\npara two"}')
-  assertMatch(out, /why=[^:]*[Cc]ontrol character/)
+  // This case used to be a raw newline. That fault is REPAIRED now (see
+  // _shared/json-extract.ts), so the assertion moved to the one the repair
+  // deliberately does not touch: an unescaped quote inside a string value.
+  // Valid-looking, complete, unparseable.
+  const out = describeUnparseable('{"cleanedBody": "she said "no" and left"}')
+  assertMatch(out, /why=[^:]*Expected/)
 })
 
 Deno.test('a cut-off answer is named as such, not as "no JSON here"', () => {
@@ -97,4 +100,33 @@ Deno.test('the call site describes every unparseable completion, empty included'
     !/result\.content\s*\?\s*describeUnparseable/.test(statements),
     'a truthiness guard here makes an empty completion indistinguishable from no completion',
   )
+})
+
+// Mutation testing found this gap: nothing pinned the description to the same
+// repair the PARSER uses, so reverting it here left every test green while the
+// row reported a cause that no longer exists. A completion whose only fault is
+// a literal newline inside cleanedBody is recovered now — describing it as
+// "Bad control character" would send the next reader after a fixed bug.
+Deno.test('describes what the PARSER sees, repair included', () => {
+  const onlyFaultIsANewline = '{ "isRelevant": true, "cleanedBody": "One.\nTwo." }'
+  const out = describeUnparseable(onlyFaultIsANewline)
+  assert(!/control character/i.test(out), `must not report the repaired fault: ${out}`)
+  assert(out.includes('parsed_as_object'), out)
+})
+
+Deno.test('a value that parses but is not an object stays distinguishable', () => {
+  const out = describeUnparseable('```json\n["a", "b"]\n```')
+  assert(out.includes('parsed_but_not_object'), out)
+  assert(!out.includes('parsed_as_object'), out)
+})
+
+// Reaching the catch branch WITH a repairable fault needs a candidate that is
+// valid-once-repaired but still not an object — a fenced array carrying a
+// literal newline. Without the repair this reports "Bad control character";
+// with it, the honest `parsed_but_not_object`. The object-path test above
+// cannot see that branch, which is how the first mutation round missed it.
+Deno.test('the repair reaches the non-object branch too', () => {
+  const out = describeUnparseable('```json\n["one\ntwo"]\n```')
+  assert(!/control character/i.test(out), `repaired fault must not be reported: ${out}`)
+  assert(out.includes('parsed_but_not_object'), out)
 })

@@ -116,6 +116,35 @@ describe('unmerge_cities bigint keys', () => {
     expect(verify).toMatch(/v_uuid_casts\s*<>\s*7/);
   });
 
+  it('counts over the SAME denominator this file does: comments stripped', () => {
+    // This is the assertion that was missing, and its absence broke db push on
+    // main for four and a half hours.
+    //
+    // `statements()` above strips `--` comments before counting, and gets 7.
+    // The DB-side postcondition counted the raw `pg_get_functiondef`, which
+    // returns the body INCLUDING its comments -- and this body quotes
+    // `v::uuid` inside a comment explaining why the bigint sites use the text
+    // form. So the two checks measured different denominators: this file said
+    // 7 and passed in CI, the database said 8 and aborted, on a rewrite that
+    // was correct. `db push` stops at the first failing file and takes every
+    // migration queued behind it, so the blast radius was the whole repo.
+    //
+    // Verified against the live server rather than reasoned about:
+    // pg_get_functiondef DOES preserve body comments (a probe function with a
+    // commented marker read raw=2 / stripped=1).
+    const rawBody = migrationSource().slice(
+      migrationSource().indexOf('as $function$'),
+      migrationSource().indexOf('$function$;'),
+    );
+    expect(rawBody.match(/v::uuid/g) ?? []).toHaveLength(8); // 7 casts + 1 comment
+    expect(FN_BODY.match(/v::uuid/g) ?? []).toHaveLength(7); // this file's count
+
+    // The postcondition must therefore strip before it counts, or it is
+    // asserting against a denominator nothing else in the repo uses.
+    const verify = SRC.slice(SRC.indexOf('do $verify$'));
+    expect(verify).toMatch(/regexp_replace\s*\(\s*pg_get_functiondef/);
+  });
+
   it('never grants unmerge_cities beyond service_role', () => {
     expect(SRC).toMatch(
       /revoke\s+all\s+on\s+function\s+public\.unmerge_cities\(uuid,\s*boolean\)\s+from\s+public,\s*anon,\s*authenticated/i,
