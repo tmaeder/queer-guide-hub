@@ -12,7 +12,7 @@ const entityMigration = readFileSync(
   'utf8',
 );
 const restorationMigration = readFileSync(
-  join(process.cwd(), 'supabase/migrations/99991789918000_repair_overdeprecated_tag_corpus.sql'),
+  join(process.cwd(), 'supabase/migrations/20260920182925_repair_overdeprecated_tag_corpus.sql'),
   'utf8',
 );
 
@@ -107,14 +107,13 @@ describe('systematic glossary quality programme', () => {
     expect(restorationMigration).toContain('review_tag_restoration');
     expect(restorationMigration).toContain("p_decision not in ('article','utility','retire')");
     expect(restorationMigration).toContain('insert into public.personalities');
-    expect(restorationMigration).toContain('Editorial verification required.');
+    expect(restorationMigration).toContain(
+      "case when t.slug='alec-butler' then 'Playwright and filmmaker' end",
+    );
     expect(restorationMigration).toContain('insert into public.organizations');
     expect(restorationMigration).toMatch(/canonical_entity_type\s*=\s*'personality'/);
     expect(restorationMigration).toContain('restoration_candidate_indexable');
     expect(restorationMigration).toContain('restoration_candidate_in_public_search');
-    expect(restorationMigration).toContain(
-      "to_regprocedure('public.tag_quality_scorecard_entity_base()')",
-    );
     expect(restorationMigration).toMatch(/v_restored\s*<\s*3000/);
     expect(restorationMigration).toMatch(/v_pending\s*<>\s*0/);
   });

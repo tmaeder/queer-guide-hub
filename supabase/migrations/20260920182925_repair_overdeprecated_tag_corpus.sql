@@ -207,10 +207,7 @@ insert into public.personalities(
   name,slug,description,bio,wikipedia_url,wikidata_qid,visibility,seo_indexable,
   needs_attention,review_status,verification_status,profession,field_provenance,roles
 )
-select t.name,t.slug,t.description,
-  case when length(btrim(coalesce(t.long_description,t.description,'')))>=60
-    then coalesce(t.long_description,t.description)
-    else coalesce(t.long_description,t.description) || ' Editorial verification required.' end,
+select t.name,t.slug,t.description,coalesce(t.long_description,t.description),
   t.wikipedia_url,t.wikidata_id,'draft',false,false,'pending','pending',
   case when t.slug='alec-butler' then 'Playwright and filmmaker' end,
   jsonb_build_object('migration','99991789918000','source','unified_tags',
@@ -385,12 +382,7 @@ revoke all on function public.review_tag_description(uuid,text) from public,anon
 grant execute on function public.review_tag_description(uuid,text) to authenticated,service_role;
 
 -- Patch the role-aware scorecard with the restoration backlog.
-do $scorecard_base$
-begin
-  if to_regprocedure('public.tag_quality_scorecard_entity_base()') is null then
-    alter function public.tag_quality_scorecard_v2() rename to tag_quality_scorecard_entity_base;
-  end if;
-end $scorecard_base$;
+alter function public.tag_quality_scorecard_v2() rename to tag_quality_scorecard_entity_base;
 create or replace function public.tag_quality_scorecard_v2()
 returns jsonb language plpgsql stable security definer set search_path=public as $$
 declare v jsonb; v_pending bigint;
@@ -453,3 +445,4 @@ begin
     raise exception 'unsupported bulk deprecation remains';
   end if;
 end $verify$;
+;
