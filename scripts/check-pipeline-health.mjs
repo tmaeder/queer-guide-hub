@@ -1603,11 +1603,11 @@ substanceFreshness: {
         '2026-08-30 a rejected credential is an InvalidCredentialsError raised OUTSIDE the breaker ' +
         'and records a SUCCESS, so this row should self-clear on the next venue DAG run.',
       awin:
-        'UNFIXED, tracked. AWIN_FEED_URL is set (an unset one would return a skipped 200 before ' +
-        'the breaker is touched) but the feed does not answer 2xx. mp_fill_awin auto-paused on ' +
-        '2026-08-19 — correctly, because source-awin does NOT swallow its breaker error — yet the ' +
-        'marketplace-ingestion DAG (04:00) still calls it, which is why the count keeps moving ' +
-        'after the pause. Pausing a fill cron does not stop a DAG node.',
+        'RETIRED FROM THE DAG 2026-09-20 (99991789915000). AWIN_FEED_URL is set but the feed ' +
+        'does not answer 2xx, so mp_fill_awin remains correctly auto-paused. The duplicate ' +
+        'marketplace-ingestion source node was removed; the dedicated pause-aware automation is ' +
+        'now the sole caller and can be re-enabled if AWIN recovers. This breaker should age out ' +
+        'of the 24h window; a newer failure means another caller still exists.',
     }
 
     const dayAgo = Date.now() - 86400_000
