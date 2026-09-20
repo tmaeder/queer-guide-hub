@@ -9,7 +9,7 @@
  * the cockpit's Quality Gates widget sent all seven of its rows to a bare
  * /admin/quality).
  *
- * Three details are load-bearing and not derivable, which is most of why this
+ * Several details are load-bearing and not derivable, which is most of why this
  * file exists:
  *
  *  - `slaKey` is the UNPREFIXED `triage_sources.count_key`, while `countKey` is
@@ -33,6 +33,7 @@
 
 import {
   Bot,
+  BookOpen,
   Building,
   CopyCheck,
   FileText,
@@ -91,7 +92,8 @@ const inbox = (queueKey: string) => `/admin/inbox?queue=${queueKey}`;
 
 /**
  * Every queue `get_admin_counts` reports on: the 17 active `triage_sources`
- * rows plus the three static gates (feedback, group requests, existence audit).
+ * rows plus the static gates (feedback, group requests, existence audit, and
+ * glossary readiness).
  * Order here is documentation only — `rankQueueRows` sorts by urgency.
  */
 export const ADMIN_QUEUES: readonly AdminQueueDef[] = [
@@ -373,6 +375,21 @@ export const ADMIN_QUEUES: readonly AdminQueueDef[] = [
   },
   {
     queueKey: null,
+    countKey: 'quality_glossary',
+    slaKey: null,
+    hasOverdue: false,
+    label: 'Glossary quality',
+    title: 'Glossary',
+    description:
+      'Publication-role, prose, source, and ontology decisions for public glossary articles.',
+    icon: BookOpen,
+    route: '/admin/settings',
+    weight: 40,
+    surfaces: ['cockpit', 'quality'],
+    minRole: 'moderator',
+  },
+  {
+    queueKey: null,
     countKey: 'quality_existence',
     slaKey: null,
     hasOverdue: false,
@@ -392,6 +409,7 @@ export const QUALITY_GATES: readonly AdminQueueDef[] = [
   'quality_city',
   'quality_venue',
   'quality_personality',
+  'quality_glossary',
   'quality_marketplace',
   'quality_village',
   'quality_duplicates',

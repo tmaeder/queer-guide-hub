@@ -4,8 +4,7 @@
  * ordering rule the cockpit feed depends on.
  *
  * EXPECTED_COUNT_KEYS is transcribed from the live `triage_sources` rows plus
- * the three static gates in the RPC body (migration
- * 20260801050000_p4_fold_quality_queues_into_triage.sql). This test cannot see
+ * the static gates in the RPC body (including glossary readiness). This test cannot see
  * SQL, so a NEW migration adding a queue will not fail it — but any refactor
  * that drops, renames or duplicates an entry here will.
  */
@@ -43,10 +42,11 @@ const EXPECTED_COUNT_KEYS = [
   'review_feedback',
   'review_group_requests',
   'quality_existence',
+  'quality_glossary',
 ];
 
-/** The only two gates the RPC emits with no `<key>_overdue` companion. */
-const NO_OVERDUE_KEYS = ['review_group_requests', 'quality_existence'];
+/** Static gates the RPC emits with no `<key>_overdue` companion. */
+const NO_OVERDUE_KEYS = ['review_group_requests', 'quality_existence', 'quality_glossary'];
 
 describe('ADMIN_QUEUES', () => {
   it('covers exactly the keys get_admin_counts emits', () => {
@@ -58,7 +58,7 @@ describe('ADMIN_QUEUES', () => {
     expect(new Set(keys).size).toBe(keys.length);
   });
 
-  it('marks exactly the two known static gates as having no overdue companion', () => {
+  it('marks exactly the known static gates as having no overdue companion', () => {
     const without = ADMIN_QUEUES.filter((q) => !q.hasOverdue).map((q) => q.countKey);
     expect(new Set(without)).toEqual(new Set(NO_OVERDUE_KEYS));
   });
@@ -83,8 +83,8 @@ describe('ADMIN_QUEUES', () => {
     }
   });
 
-  it('exposes the nine quality-hub gates, all present in the registry', () => {
-    expect(QUALITY_GATES).toHaveLength(9);
+  it('exposes the ten quality-hub gates, all present in the registry', () => {
+    expect(QUALITY_GATES).toHaveLength(10);
     for (const gate of QUALITY_GATES) {
       expect(queueByCountKey(gate.countKey)).toBe(gate);
       expect(gate.surfaces).toContain('quality');

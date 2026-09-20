@@ -16,7 +16,8 @@ export interface SensitiveTag {
 /**
  * Active sensitive/adult tags awaiting human review. The SEO sensitivity gate
  * (enforce_tag_seo_sensitivity_gate) keeps these out of the search index until
- * human_reviewed=true, so this queue is the surface that releases them.
+ * prose_reviewed_at is the canonical evidence that the displayed definition
+ * was reviewed; the legacy human_reviewed flag is incomplete for migrated rows.
  * Highest-exposure (most-used) tags first.
  */
 export function useSensitiveTagReview(limit = 50) {
@@ -27,10 +28,13 @@ export function useSensitiveTagReview(limit = 50) {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('unified_tags')
-        .select('id, name, category, description, is_sensitive, is_adult, usage_count, quality_score')
+        .select(
+          'id, name, category, description, is_sensitive, is_adult, usage_count, quality_score',
+        )
         .eq('status', 'active')
+        .eq('publication_role', 'article')
         .or('is_sensitive.eq.true,is_adult.eq.true')
-        .not('human_reviewed', 'is', true)
+        .is('prose_reviewed_at', null)
         .order('usage_count', { ascending: false, nullsFirst: false })
         .limit(limit);
       if (error) throw error;
@@ -44,7 +48,12 @@ export function useSensitiveTagReview(limit = 50) {
     mutationFn: async ({ id, index }: { id: string; index: boolean }) => {
       const { error } = await supabase
         .from('unified_tags')
-        .update({ human_reviewed: true, seo_indexable: index, verification_status: 'reviewed' })
+        .update({
+          human_reviewed: true,
+          prose_reviewed_at: new Date().toISOString(),
+          seo_indexable: index,
+          verification_status: 'reviewed',
+        })
         .eq('id', id);
       if (error) throw error;
     },

@@ -2434,6 +2434,10 @@ const CITY_SCALAR_DENSITY_REPORTED = 33 // measured 2026-09-08, post-repair. Con
       ['restoration_candidate_indexable', 'restoration candidate tag(s) are indexable before review'],
       ['restoration_candidate_in_public_search', 'restoration candidate tag(s) leaked into public search'],
       ['article_indexable_without_canonical_description', 'indexable article(s) have no canonical description'],
+      ['article_indexable_without_prose_review', 'indexable article(s) have no recorded prose review'],
+      ['article_indexable_without_source_review', 'indexable high-risk article(s) lack an authoritative source decision'],
+      ['article_indexable_without_ontology_decision', 'indexable article(s) have no ontology decision'],
+      ['article_indexable_without_localisation_decision', 'indexable article(s) have no localisation decision'],
       ['article_without_primary_category', 'article-role tag(s) have no primary category'],
     ]
     for (const [key, why] of zeroInvariants) {

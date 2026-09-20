@@ -7,8 +7,9 @@ const ISSUE_LABELS: Record<string, string> = {
   article_missing_description: 'Articles missing canonical summary',
   article_missing_category: 'Articles missing primary category',
   article_unreviewed: 'Articles awaiting prose review',
-  high_risk_missing_source: 'High-risk articles missing source',
+  published_high_risk_missing_source: 'Published high-risk articles missing source',
   ontology_pending: 'Articles awaiting ontology decision',
+  localisation_pending: 'Articles awaiting localisation decision',
   utility_indexable: 'Utility tags published as articles',
   redirect_indexable: 'Redirect tags published as articles',
   redirect_missing_target: 'Entity redirects missing canonical target',
@@ -48,6 +49,7 @@ export function TagQualityPanel() {
         )}
         <div className="flex flex-wrap gap-2">
           <AdminStat label="Articles" value={data.roles.article} />
+          <AdminStat label="Published articles" value={data.article.published} />
           <AdminStat label="Utility vocabulary" value={data.roles.utility} />
           <AdminStat label="Entity redirects" value={data.roles.entity_redirect} />
           <AdminStat
@@ -55,9 +57,6 @@ export function TagQualityPanel() {
             value={completion(data.redirect.valid_target, data.redirect.total)}
             hardFail={data.redirect.valid_target !== data.redirect.total}
           />
-          {data.sensitive_unreviewed > 0 && (
-            <AdminStat label="Sensitive · unreviewed" value={data.sensitive_unreviewed} hardFail />
-          )}
         </div>
 
         <div>
@@ -67,9 +66,9 @@ export function TagQualityPanel() {
               ['Definition', data.article.definition_complete],
               ['Primary category', data.article.category_complete],
               ['Prose review', data.article.review_complete],
-              ['Public source', data.article.source_complete],
+              ['Source decision', data.article.source_decision_complete],
               ['Ontology decision', data.article.ontology_complete],
-              ['Localisation started', data.article.localisation_started],
+              ['Localisation decision', data.article.localisation_decision_complete],
             ].map(([label, done]) => (
               <div key={String(label)} className="rounded-element bg-muted/40 px-4 py-2">
                 <div className="text-body-lg tabular-nums">
@@ -77,6 +76,27 @@ export function TagQualityPanel() {
                 </div>
                 <div className="text-13 text-muted-foreground">{label}</div>
               </div>
+            ))}
+          </div>
+        </div>
+
+        <div>
+          <div className="mb-2 text-13 text-muted-foreground">Top 500 published articles</div>
+          <div className="flex flex-wrap gap-2">
+            {[
+              ['Definition', data.top500.definition_complete],
+              ['Category', data.top500.category_complete],
+              ['Prose review', data.top500.review_complete],
+              ['Source decision', data.top500.source_decision_complete],
+              ['Ontology', data.top500.ontology_complete],
+              ['Localisation', data.top500.localisation_decision_complete],
+            ].map(([label, done]) => (
+              <AdminStat
+                key={String(label)}
+                label={String(label)}
+                value={completion(Number(done), data.top500.total)}
+                hardFail={Number(done) !== data.top500.total}
+              />
             ))}
           </div>
         </div>

@@ -4,8 +4,11 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { MemoryRouter } from 'react-router';
+import type { AdminCounts } from '@/hooks/useAdminCounts';
 
-const counts = vi.fn(() => ({ data: { review_org_links: 50, quality_city: 2 } }));
+const counts = vi.fn<() => { data: Partial<AdminCounts> }>(() => ({
+  data: { review_org_links: 50, quality_city: 2 },
+}));
 
 // The status card fetches through react-query; these tests render without a
 // QueryClientProvider on purpose (they are about routing and the header), so
@@ -85,6 +88,7 @@ function renderHub() {
 const cardButton = () => screen.getByRole('button', { name: /^Business links 50/ });
 
 beforeEach(() => {
+  counts.mockReturnValue({ data: { review_org_links: 50, quality_city: 2 } });
   // jsdom implements neither; the card handler calls both.
   Element.prototype.scrollIntoView = vi.fn();
   globalThis.requestAnimationFrame = ((cb: FrameRequestCallback) => {
@@ -105,6 +109,16 @@ describe('QualityHub — business link review', () => {
     renderHub();
     // 50 org links + 2 city items, every other gate 0.
     expect(screen.getByText(/52 items awaiting review/i)).toBeTruthy();
+  });
+
+  it('includes the glossary backlog in the truthful header total', () => {
+    counts.mockReturnValue({ data: { quality_glossary: 7 } });
+    renderHub();
+    expect(screen.getByText(/7 items awaiting review/i)).toBeTruthy();
+    expect(screen.getByRole('link', { name: /^Glossary 7/ })).toHaveAttribute(
+      'href',
+      '/admin/settings',
+    );
   });
 
   it('renders the queue only after the card expands its section', async () => {

@@ -92,6 +92,14 @@ describe('AdminDashboard — Needs you', () => {
     expect(link.getAttribute('href')).toBe('/admin/inbox?queue=quality-city');
   });
 
+  it('does not say all clear when glossary work is pending', () => {
+    mockCounts.mockReturnValue(counts({ quality_glossary: 9 }));
+    render();
+    expect(screen.queryByText('All clear.')).toBeNull();
+    const link = screen.getByRole('link', { name: /Glossary quality/ });
+    expect(link.getAttribute('href')).toBe('/admin/settings');
+  });
+
   it('ranks an overdue queue above a heavier, larger, on-time one', () => {
     mockCounts.mockReturnValue(
       counts({

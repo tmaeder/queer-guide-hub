@@ -27,6 +27,10 @@ const mergeQueueMigration = readFileSync(
   join(process.cwd(), 'supabase/migrations/20260920183949_close_stale_tag_merge_proposals.sql'),
   'utf8',
 );
+const backlogCompletion = readFileSync(
+  join(process.cwd(), 'supabase/migrations/99991789930597_complete_editorial_backlog.sql'),
+  'utf8',
+);
 
 describe('systematic glossary quality programme', () => {
   it('assigns every publication role deterministically and prevents non-articles indexing', () => {
@@ -147,5 +151,14 @@ describe('systematic glossary quality programme', () => {
     );
     expect(mergeQueueMigration).toContain("set status='rejected'");
     expect(mergeQueueMigration).toContain('tag merge review queue still contains pending rows');
+  });
+
+  it('finishes the backlog without manufacturing review or deleting unsupported vocabulary', () => {
+    expect(backlogCompletion).toContain('correctness-first-completion');
+    expect(backlogCompletion).toContain('private.event_tag_quarantine');
+    expect(backlogCompletion).toContain("review_status='rejected'");
+    expect(backlogCompletion).toContain('stale attention flag cleared');
+    expect(backlogCompletion).toContain("'quality_glossary'");
+    expect(backlogCompletion).toContain('tag hygiene completion assertions failed');
   });
 });

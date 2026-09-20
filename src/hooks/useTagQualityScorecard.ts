@@ -6,12 +6,13 @@ export interface TagQualityScorecard {
   roles: { article: number; utility: number; entity_redirect: number };
   article: {
     total: number;
+    published: number;
     definition_complete: number;
     category_complete: number;
     review_complete: number;
-    source_complete: number;
+    source_decision_complete: number;
     ontology_complete: number;
-    localisation_started: number;
+    localisation_decision_complete: number;
   };
   utility: {
     total: number;
@@ -21,6 +22,15 @@ export interface TagQualityScorecard {
     non_public: number;
   };
   redirect: { total: number; valid_target: number; non_competing: number };
+  top500: {
+    total: number;
+    definition_complete: number;
+    category_complete: number;
+    review_complete: number;
+    source_decision_complete: number;
+    ontology_complete: number;
+    localisation_decision_complete: number;
+  };
   localisation: Record<string, number>;
   categories: Array<{
     category: string;
@@ -30,7 +40,6 @@ export interface TagQualityScorecard {
     sensitive_unreviewed: number;
   }>;
   issues: Record<string, number>;
-  sensitive_unreviewed: number;
   oldest_unresolved_at: string | null;
 }
 

@@ -33,6 +33,7 @@ const ISSUE_LABELS: Record<string, string> = {
   article_unreviewed_prose: 'Prose needs review',
   high_risk_missing_source: 'High-risk entry needs a public source',
   article_ontology_unreviewed: 'Ontology decision needed',
+  article_localisation_unreviewed: 'Localisation decision needed',
   utility_indexable: 'Utility tag is indexable',
   redirect_indexable: 'Entity redirect is indexable',
 };
