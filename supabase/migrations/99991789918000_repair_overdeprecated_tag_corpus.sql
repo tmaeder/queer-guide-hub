@@ -1,6 +1,8 @@
 -- Repair the historical misuse of deprecation as a zero-usage staging state.
--- Review candidates become active vocabulary but remain quarantined from every
--- public glossary/search surface until an editor records a disposition.
+-- Rows removed only because they had zero usage or no graph edges become active
+-- vocabulary again. They remain non-indexable unless they already have the
+-- evidence required for a glossary article. The repair is a completed corpus
+-- decision, not a newly-created queue containing thousands of items.
 
 select set_config('app.actor','editorial:deprecated-tag-repair',true);
 
@@ -70,12 +72,14 @@ insert into _tag_restore_false_person(slug) values
   ('hormone-replacement-therapy-hrt');
 
 -- Preserve the old classification before changing anything. A row with a real
--- primary category and a substantive canonical summary can remain an article
--- candidate; incomplete vocabulary is utility until reviewed.
+-- primary category, substantive canonical summary, and recorded human review
+-- can return as an article. Incomplete or unreviewed vocabulary remains usable
+-- as utility vocabulary without being published or creating an admin backlog.
 with candidates as (
   select t.id,
     (t.entity_kind in ('concept','audience')
       and length(btrim(coalesce(t.description,''))) >= 80
+      and (coalesce(t.human_reviewed,false) or t.prose_reviewed_at is not null)
       and (select count(*) from public.tag_category_assignments a
            where a.tag_id=t.id and a.is_primary)=1) as article_ready
   from public.unified_tags t
@@ -86,7 +90,7 @@ with candidates as (
   )
 )
 update public.unified_tags t
-set restoration_review_required=true,
+set restoration_review_required=false,
     restoration_previous_reason=t.deprecation_reason,
     restoration_original_entity_kind=t.entity_kind,
     restoration_started_at=now(),
@@ -95,8 +99,10 @@ set restoration_review_required=true,
       then 'descriptor'::public.tag_entity_kind else t.entity_kind end,
     publication_role=case when c.article_ready then 'article' else 'utility' end,
     publication_role_reviewed_at=now(),
-    publication_role_review_note='quarantined restoration from unsupported bulk deprecation',
-    seo_indexable=false,seo_deindex_reason='restoration_review_required'
+    publication_role_review_note='restored after audit of unsupported bulk deprecation',
+    seo_indexable=case when c.article_ready then coalesce(t.seo_indexable,false) else false end,
+    seo_deindex_reason=case when c.article_ready and coalesce(t.seo_indexable,false)
+      then null else 'publication_role:' || case when c.article_ready then 'article' else 'utility' end end
 from candidates c where t.id=c.id;
 
 -- Two event names and one organisation already have canonical typed records.
@@ -122,7 +128,7 @@ from targets x where t.slug=x.tag_slug and t.status='deprecated';
 insert into public.organizations(
   name,slug,description,status,needs_attention,field_provenance
 )
-select t.name,t.slug,t.description,'draft',true,
+select t.name,t.slug,t.description,'draft',false,
   jsonb_build_object('migration','99991789918000','source','unified_tags',
     'source_tag_id',t.id,'requires_editorial_review',true)
 from public.unified_tags t
@@ -153,7 +159,7 @@ insert into public.personalities(
   needs_attention,review_status,verification_status,field_provenance,roles
 )
 select t.name,t.slug,t.description,coalesce(t.long_description,t.description),
-  t.wikipedia_url,t.wikidata_id,'draft',false,true,'pending','pending',
+  t.wikipedia_url,t.wikidata_id,'draft',false,false,'pending','pending',
   jsonb_build_object('migration','99991789918000','source','unified_tags',
     'source_tag_id',t.id,'requires_editorial_review',true),'{}'::text[]
 from public.unified_tags t
@@ -365,12 +371,17 @@ revoke all on function public.tag_publication_signals() from public,anon,authent
 grant execute on function public.tag_publication_signals() to service_role;
 
 do $verify$
-declare v_restored bigint;
+declare v_restored bigint; v_pending bigint;
 begin
   select count(*) into v_restored from public.unified_tags
-   where status='active' and restoration_review_required;
+   where status='active' and restoration_started_at is not null;
   if v_restored<3000 then
-    raise exception 'deprecated-corpus repair restored only % candidates; expected at least 3000',v_restored;
+    raise exception 'deprecated-corpus repair restored only % rows; expected at least 3000',v_restored;
+  end if;
+  select count(*) into v_pending from public.unified_tags
+   where status='active' and restoration_review_required;
+  if v_pending<>0 then
+    raise exception 'deprecated-corpus repair created % unresolved admin items',v_pending;
   end if;
   if exists(select 1 from public.unified_tags where restoration_review_required and seo_indexable) then
     raise exception 'restoration candidate became indexable';

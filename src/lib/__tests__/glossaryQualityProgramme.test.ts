@@ -84,7 +84,7 @@ describe('systematic glossary quality programme', () => {
     expect(healthCheck).toContain('article_without_primary_category');
   });
 
-  it('restores unsupported bulk deprecations into a non-public review quarantine', () => {
+  it('restores unsupported bulk deprecations without manufacturing a review backlog', () => {
     expect(restorationMigration).toContain('restoration_review_required');
     expect(restorationMigration).toContain('restoration_previous_reason');
     expect(restorationMigration).toContain("'auto: zero usage'");
@@ -95,9 +95,8 @@ describe('systematic glossary quality programme', () => {
     expect(restorationMigration).toMatch(
       /search_documents_index_tags[\s\S]*not t\.restoration_review_required/i,
     );
-    expect(restorationMigration).toMatch(
-      /gated_entity_exists[\s\S]*not restoration_review_required/i,
-    );
+    expect(restorationMigration).toContain('set restoration_review_required=false');
+    expect(restorationMigration).toContain('recorded human review');
   });
 
   it('provides serial restoration decisions and migrates misplaced biographies', () => {
@@ -110,5 +109,6 @@ describe('systematic glossary quality programme', () => {
     expect(restorationMigration).toContain('restoration_candidate_indexable');
     expect(restorationMigration).toContain('restoration_candidate_in_public_search');
     expect(restorationMigration).toMatch(/v_restored\s*<\s*3000/);
+    expect(restorationMigration).toMatch(/v_pending\s*<>\s*0/);
   });
 });

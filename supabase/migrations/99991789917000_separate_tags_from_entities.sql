@@ -51,15 +51,16 @@ set description='Melitta Sundström was a German writer, singer, drag performer,
 where status='active' and slug='melitta-sundstrom';
 
 -- The remaining six rows were biographies stored only as tags. Create conservative,
--- noindex personality shells from their existing data so the prose has the
--- correct content owner. They remain pending editorial review.
+-- non-public personality shells from their existing data so the prose has the
+-- correct content owner. They remain available to editors without adding six
+-- synthetic "needs attention" incidents to the admin cockpit.
 insert into public.personalities (
   name, slug, description, bio, wikipedia_url, wikidata_qid,
-  visibility, seo_indexable, review_status, verification_status,
+  visibility, seo_indexable, needs_attention, review_status, verification_status,
   field_provenance, roles
 )
 select t.name, t.slug, t.description, coalesce(t.long_description, t.description),
-  t.wikipedia_url, t.wikidata_id, 'public', false, 'pending', 'pending',
+  t.wikipedia_url, t.wikidata_id, 'draft', false, false, 'pending', 'pending',
   jsonb_build_object(
     'migration', '99991789917000',
     'source', 'unified_tags',
