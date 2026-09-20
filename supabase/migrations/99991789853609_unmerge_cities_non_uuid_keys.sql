@@ -213,7 +213,15 @@ begin
   select count(*) into v_uuid_casts
     from pg_proc p
     join pg_namespace n on n.oid = p.pronamespace
-    cross join lateral regexp_matches(pg_get_functiondef(p.oid), 'v::uuid', 'g') m
+    cross join lateral regexp_matches(
+      -- pg_get_functiondef returns the body INCLUDING its own comments, and this
+      -- function's body quotes `v::uuid` in a comment explaining why the bigint
+      -- sites use the text form instead. Counting the raw definition therefore
+      -- reports 8 and the postcondition aborts db push for the whole repo on a
+      -- CORRECT rewrite. Strip line comments so the count measures what it
+      -- claims to measure: actual cast sites.
+      regexp_replace(pg_get_functiondef(p.oid), '--[^\n]*', '', 'g'),
+      'v::uuid', 'g') m
    where n.nspname = 'public' and p.proname = 'unmerge_cities';
   -- 7 legitimate uuid sites remain: venues/events city_text, news_article_cities,
   -- city_favorites, event_coverage_gaps, city_aliases, dup_children.
