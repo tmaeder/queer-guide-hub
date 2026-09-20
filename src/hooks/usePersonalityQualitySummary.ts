@@ -57,12 +57,16 @@ export const usePersonalityQualitySummary = createQualitySummaryHook({
           .from('personalities')
           .select('id', { count: 'exact', head: true })
           .eq('needs_attention', true)
+          .or('review_status.is.null,review_status.not.in.(archived,rejected)')
           .is('duplicate_of_id', null),
     },
     reviewOpen: {
       kind: 'count',
       build: () =>
-        db.from('personality_review_queue').select('id', { count: 'exact', head: true }).eq('status', 'open'),
+        db
+          .from('personality_review_queue')
+          .select('id', { count: 'exact', head: true })
+          .eq('status', 'open'),
     },
     lowCompleteness: {
       kind: 'count',
