@@ -33,9 +33,7 @@ function SectionHeader({
     <div className="flex justify-between items-center mb-4">
       <div className="flex items-center gap-2">
         <Icon style={{ height: 18, width: 18 }} className="text-primary" />
-        <span className="font-semibold" style={{ fontSize: '0.95rem' }}>
-          {title}
-        </span>
+        <span className="text-15 font-semibold">{title}</span>
       </div>
       {/* asChild, not a Link wrapping a Button — that nests a <button>
           inside an <a>, which is invalid HTML. */}

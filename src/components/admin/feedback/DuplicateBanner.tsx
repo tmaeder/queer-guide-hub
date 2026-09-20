@@ -91,6 +91,7 @@ export function DuplicateBanner({
               </div>
 
               <Button
+                className="text-xs2"
                 size="sm"
                 variant="outline"
                 onClick={() =>
@@ -100,11 +101,12 @@ export function DuplicateBanner({
                     suggestionId: s.suggestionId,
                   })
                 }
-                style={{ textTransform: 'none', fontSize: '0.7rem' }}
+                style={{ textTransform: 'none' }}
               >
                 This is a dup of that
               </Button>
               <Button
+                className="text-xs2"
                 size="sm"
                 onClick={() =>
                   onMerge({
@@ -113,20 +115,17 @@ export function DuplicateBanner({
                     suggestionId: s.suggestionId,
                   })
                 }
-                style={{
-                  textTransform: 'none',
-                  fontSize: '0.7rem',
-                  backgroundColor: 'hsl(var(--foreground) / 0.55)',
-                }}
+                style={{ textTransform: 'none', backgroundColor: 'hsl(var(--foreground) / 0.55)' }}
               >
                 <ArrowRightLeft size={12} className="mr-1" />
                 That's a dup of this
               </Button>
               <Button
+                className="text-xs2"
                 size="sm"
                 variant="ghost"
                 onClick={() => onDismiss(s.suggestionId)}
-                style={{ textTransform: 'none', fontSize: '0.7rem' }}
+                style={{ textTransform: 'none' }}
               >
                 Not a dup
               </Button>

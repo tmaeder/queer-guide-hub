@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { TrackLoader } from '@/components/transit/TrackLoader';
 import { useTranslation } from 'react-i18next';
-import { Heart} from 'lucide-react';
+import { Heart } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -77,10 +77,11 @@ export function DonationForm() {
           <div className="grid grid-cols-4 gap-2">
             {TIP_AMOUNTS.map((amount) => (
               <Button
+                className="text-base"
                 key={amount}
                 variant={selectedTip === amount ? 'default' : 'outline'}
                 onClick={() => handleTipSelect(amount)}
-                style={{ height: 44, fontSize: '1rem', fontWeight: 600 }}
+                style={{ height: 44, fontWeight: 600 }}
               >
                 {fmt(amount)}
               </Button>
@@ -130,7 +131,6 @@ export function DonationForm() {
             ))}
           </div>
         </div>
-
 
         {/* Donor info */}
         <div className="flex flex-col gap-4">

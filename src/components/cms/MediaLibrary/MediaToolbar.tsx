@@ -124,7 +124,8 @@ export function MediaToolbar(props: MediaToolbarProps) {
             placeholder="Search name, alt text, URL... (alt: format: size:>1mb dim:>1920)"
             value={search}
             onChange={(e) => onSearchChange(e.target.value)}
-            style={{ paddingLeft: 32, fontSize: '0.875rem' }}
+            className="text-sm"
+            style={{ paddingLeft: 32 }}
           />
         </div>
 
@@ -343,7 +344,8 @@ export function MediaToolbar(props: MediaToolbarProps) {
             }
           }}
           placeholder="Filter by tag slug…"
-          style={{ width: 180, fontSize: '0.8125rem' }}
+          className="text-13"
+          style={{ width: 180 }}
         />
       </div>
     </div>

@@ -80,7 +80,7 @@ export function TagAliasesSection({ tagId }: TagAliasesSectionProps) {
                   className="gap-1 pr-0.5"
                 >
                   {alias.alias_name}
-                  <span className="ml-0.5" style={{ opacity: 0.6, fontSize: '0.65rem' }}>
+                  <span className="text-2xs ml-0.5" style={{ opacity: 0.6 }}>
                     {[
                       alias.alias_type === 'abbreviation'
                         ? 'abbr'

@@ -117,11 +117,11 @@ export default function AdminUsers() {
           const primary = roles.includes('admin') ? 'admin' : roles[0];
           return (
             <Badge
+              className="text-xs2"
               variant="outline"
               style={{
                 borderColor: ROLE_COLORS[primary] ?? 'hsl(var(--muted-foreground))',
                 color: ROLE_COLORS[primary] ?? 'hsl(var(--muted-foreground))',
-                fontSize: '0.7rem',
               }}
             >
               <Shield size={10} style={{ marginRight: 3 }} />
@@ -153,10 +153,7 @@ export default function AdminUsers() {
           const val = (info.getValue() as string) ?? 'approved';
           if (val === 'approved') return null;
           return (
-            <Badge
-              variant={val === 'banned' ? 'destructive' : 'secondary'}
-              style={{ fontSize: '0.7rem' }}
-            >
+            <Badge className="text-xs2" variant={val === 'banned' ? 'destructive' : 'secondary'}>
               {val}
             </Badge>
           );

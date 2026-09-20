@@ -90,11 +90,12 @@ export function BulkImportDialog({ open, onClose, onImport }: BulkImportDialogPr
           or <code>source_path,target,status_code,is_enabled</code> (for path redirects).
         </p>
         <Textarea
+          className="text-sm"
           rows={8}
           value={csvText}
           onChange={(e) => setCsvText(e.target.value)}
           placeholder={`slug,target,status_code\npride-zrh,/events/pride-zurich-2026,301\nnyc-guide,/city/new-york,302`}
-          style={{ fontFamily: 'monospace', fontSize: '0.85rem' }}
+          style={{ fontFamily: 'monospace' }}
         />
         {result && (
           <div className="mt-4">

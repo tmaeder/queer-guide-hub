@@ -61,6 +61,7 @@ export function ApiErrorFilters({ state, update, counts }: Props) {
       >
         <Search size={14} className="text-muted-foreground" />
         <Input
+          className="text-13"
           value={state.q}
           onChange={(e) => update({ q: e.target.value })}
           placeholder="Search message, service, rule…"
@@ -69,7 +70,6 @@ export function ApiErrorFilters({ state, update, counts }: Props) {
             background: 'transparent',
             padding: 0,
             height: 24,
-            fontSize: '0.8rem',
             flex: 1,
             boxShadow: 'none',
           }}
@@ -95,10 +95,7 @@ export function ApiErrorFilters({ state, update, counts }: Props) {
 
       {/* Source chips */}
       <div className="inline-flex items-center gap-1.5">
-        <span
-          className="text-muted-foreground uppercase"
-          style={{ fontSize: '0.65rem', letterSpacing: 0.5 }}
-        >
+        <span className="text-2xs text-muted-foreground uppercase" style={{ letterSpacing: 0.5 }}>
           Source
         </span>
         {(Object.keys(SOURCE_LABELS) as ErrorSource[]).map((src) => {
@@ -118,10 +115,7 @@ export function ApiErrorFilters({ state, update, counts }: Props) {
 
       {/* Severity chips */}
       <div className="inline-flex items-center gap-1.5">
-        <span
-          className="text-muted-foreground uppercase"
-          style={{ fontSize: '0.65rem', letterSpacing: 0.5 }}
-        >
+        <span className="text-2xs text-muted-foreground uppercase" style={{ letterSpacing: 0.5 }}>
           Severity
         </span>
         {(Object.keys(SEVERITY_COLORS) as ErrorSeverity[]).map((sev) => {
@@ -150,13 +144,13 @@ export function ApiErrorFilters({ state, update, counts }: Props) {
 
       {hasActive && (
         <button
+          className="text-xs2"
           type="button"
           onClick={() => update({ q: '', sources: [], severities: [], hideResolved: true })}
           style={{
             border: 0,
             background: 'transparent',
             color: 'hsl(var(--muted-foreground))',
-            fontSize: '0.7rem',
             cursor: 'pointer',
             textDecoration: 'none',
             padding: 0,
@@ -192,14 +186,13 @@ function FilterChip({
         padding: '2px 6px',
         color: active ? 'hsl(var(--foreground))' : 'hsl(var(--muted-foreground))',
         fontWeight: active ? 700 : 500,
-        fontSize: '0.72rem',
         letterSpacing: 0.2,
         alignItems: 'center',
         transition: 'color 0.15s, opacity 0.15s',
         opacity: active ? 1 : 0.85,
         borderBottom: active ? '2px solid currentColor' : '2px solid transparent',
       }}
-      className="cursor-pointer inline-flex gap-1"
+      className="text-xs2 cursor-pointer inline-flex gap-1"
       onMouseEnter={(e) => {
         if (!active) e.currentTarget.style.color = 'hsl(var(--foreground))';
       }}
