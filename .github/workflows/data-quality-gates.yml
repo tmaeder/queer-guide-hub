@@ -86,6 +86,16 @@ jobs:
         if: ${{ !cancelled() && env.SUPABASE_URL != '' && env.SUPABASE_SERVICE_ROLE_KEY != '' }}
         run: node scripts/check-tag-hygiene.mjs
 
+      # A trigger that runs in production but no migration creates. The seal on the
+      # CRITICAL person_outing_guard was attached BY HAND during the 2026-09-19
+      # incident and lived in no migration; check-migration-drift.mjs compares
+      # migration HISTORY against repo FILES and is structurally blind to a missing
+      # OBJECT, so a rebuild from migrations came up silently without it. Fails on a
+      # NEW one; the 21 already on prod are a shrink-only baseline.
+      - name: Every production trigger is created by a migration
+        if: ${{ !cancelled() && env.SUPABASE_URL != '' && env.SUPABASE_SERVICE_ROLE_KEY != '' }}
+        run: node scripts/check-schema-object-drift.mjs
+
       # The published legal citations on /tags/:slug are external URLs on other
       # people's servers, and they rot. NOT run on pull_request on purpose: the
       # failure lives on third-party hosts, so wiring it to PRs would let a UN
