@@ -53,28 +53,40 @@ const ADMIN_ROUTES = [...new Set([...ARCHETYPE_ROUTES, ...CONTENT_ROUTES])];
  * so a route keeps failing on any rule not listed here. This list may only
  * SHRINK — delete an entry when the fix lands; never add one to make CI green.
  *
- * What is actually wrong, so the next person does not have to re-derive it:
- *   - `color-contrast` is overwhelmingly the ad-hoc `hsl(var(--foreground) /
- *     0.55)` inline alpha ramp (74 sites, 13 distinct alphas). At 0.55 on a muted
- *     ground it computes to 3.81:1 against a 4.5:1 requirement. It is lint-legal
- *     by construction — the hex selector needs a digit after `hsl(`, and this
- *     starts with `var`. A real token is the fix.
- *   - `button-name` survives here because `scripts/audit-admin-button-names.mjs`
- *     scans `src/components/admin/**` and `src/pages/admin/**`, and these routes
- *     render components outside both — `/admin/media` is `src/components/cms/
- *     MediaLibrary`. Widening that script's roots is the fix.
- *   - `aria-valid-attr-value` is a dangling aria reference, not a missing label.
+ * **PRUNED 27 -> 13 entries on 2026-09-19, from CI's own stale-entry warnings
+ * rather than from inference.** The warning this file emits was read across FOUR
+ * consecutive successful runs on `main` and the stale set was byte-identical every
+ * time (same checksum), which is what distinguishes a real fix from the
+ * data-dependent flapping this docblock warns about. Every deleted entry is now a
+ * hard failure if it returns, which is the correct outcome — the list is
+ * shrink-only and a returning violation is a real violation.
+ *
+ * What is actually wrong in what REMAINS, so the next person does not re-derive it:
+ *   - `button-name` is the bulk of it, and **widening
+ *     `scripts/audit-admin-button-names.mjs` into `src/components/cms` did NOT
+ *     clear it.** That fix named 16 real buttons and took the script to 0/0, yet
+ *     8 of these 9 routes still fail the rule — only `/admin/feedback` went quiet.
+ *     So the remaining unnamed buttons are NOT in the three trees the script walks.
+ *     The likeliest source is a `src/components/ui` primitive rendered without a
+ *     name at its call site, which that script deliberately does not report
+ *     (it would name the primitive instead of the caller). Finding them needs
+ *     axe's own DOM output per route, not another source scan.
+ *   - `color-contrast` survives on `/admin/feedback` alone. The `hsl(var(
+ *     --foreground) / 0.55)` alpha ramp that caused it on the other eight was
+ *     fixed by a token; this route has its own source.
+ *   - `aria-valid-attr-value` survives on three routes — a dangling aria
+ *     reference, not a missing label.
  */
 const KNOWN_VIOLATIONS: Record<string, readonly string[]> = {
-  '/admin/design': ['color-contrast', 'button-name', 'aria-valid-attr-value'],
-  '/admin/business': ['color-contrast', 'button-name', 'aria-valid-attr-value'],
-  '/admin/audit': ['color-contrast', 'button-name', 'aria-valid-attr-value'],
-  '/admin/imports/email-ingestions': ['color-contrast', 'button-name', 'aria-valid-attr-value'],
-  '/admin/media': ['color-contrast', 'button-name', 'aria-valid-attr-value'],
-  '/admin/affiliate': ['color-contrast', 'button-name', 'aria-valid-attr-value'],
-  '/admin/search-intelligence': ['color-contrast', 'button-name', 'aria-valid-attr-value'],
-  '/admin/inbox': ['color-contrast', 'button-name', 'aria-valid-attr-value'],
-  '/admin/feedback': ['color-contrast', 'button-name', 'aria-valid-attr-value'],
+  '/admin/design': ['button-name'],
+  '/admin/business': ['button-name', 'aria-valid-attr-value'],
+  '/admin/audit': ['color-contrast', 'button-name'],
+  '/admin/imports/email-ingestions': ['button-name'],
+  '/admin/media': ['button-name'],
+  '/admin/affiliate': ['button-name', 'aria-valid-attr-value'],
+  '/admin/search-intelligence': ['button-name'],
+  '/admin/inbox': ['button-name'],
+  '/admin/feedback': ['color-contrast', 'aria-valid-attr-value'],
 };
 
 test.describe('Admin shell — automated a11y', () => {

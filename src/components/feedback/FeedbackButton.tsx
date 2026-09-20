@@ -191,8 +191,8 @@ export function FeedbackButton() {
               // --map-rail-clearance is published by the map's spotlight rail
               // while one is on screen, so the FAB also clears the rail.
               bottom: isMobile
-                ? 'calc(max(6rem, var(--map-rail-clearance, 0rem) + 1rem) + env(safe-area-inset-bottom, 0px) + var(--audio-bar-clearance, 0rem))'
-                : 'calc(1.5rem + var(--audio-bar-clearance, 0rem))',
+                ? 'calc(max(6rem, var(--map-rail-clearance, 0rem) + 1rem) + env(safe-area-inset-bottom, 0px) + var(--audio-bar-clearance, 0rem) + var(--consent-bar-clearance, 0px))'
+                : 'calc(1.5rem + var(--audio-bar-clearance, 0rem) + var(--consent-bar-clearance, 0px))',
             }}
           >
             <MessageSquarePlus size={22} />
@@ -357,13 +357,13 @@ export function FeedbackButton() {
               </div>
 
               {/* Context preview */}
-              <div className="mb-4 rounded-element bg-muted p-2.5" style={{ fontSize: '0.7rem' }}>
+              <div className="text-xs2 mb-4 rounded-element bg-muted p-2.5">
                 <p className="block text-xs text-muted-foreground">
                   Automatically included: current page URL, browser info, recent errors
                 </p>
                 <p
-                  className="block text-muted-foreground overflow-hidden whitespace-nowrap mt-0.5"
-                  style={{ fontFamily: 'monospace', fontSize: '0.65rem', textOverflow: 'ellipsis' }}
+                  className="text-2xs block text-muted-foreground overflow-hidden whitespace-nowrap mt-0.5"
+                  style={{ fontFamily: 'monospace', textOverflow: 'ellipsis' }}
                 >
                   {pageUrl}
                 </p>

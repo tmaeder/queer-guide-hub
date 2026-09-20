@@ -145,6 +145,7 @@ const mapCalls = vi.hoisted(() => ({
   addSource: [] as { id: string; opts: { data: unknown } }[],
   instances: 0,
   resize: 0,
+  fitBounds: [] as { bounds: unknown; opts: unknown }[],
 }));
 
 vi.mock('@/lib/webglSupport', () => ({
@@ -234,6 +235,20 @@ vi.mock('maplibre-gl', () => {
     resize() {
       mapCalls.resize += 1;
     }
+    /**
+     * Same trap as resize() directly above, one method later.
+     *
+     * The map is framed by BOUNDS, not a fixed center/zoom: a hardcoded `zoom: 0.9`
+     * made the world 955px wide inside a ~1036px container, i.e. more than 360° of
+     * longitude with a repeated sliver at each edge ("the map shows too much world").
+     * The component fitBounds on mount AND from the ResizeObserver, because resize()
+     * alone preserves zoom and a width change would re-break the framing. Omitting it
+     * here threw `map.fitBounds is not a function` and took two passing assertions
+     * down with it — exactly as the resize() note predicted.
+     */
+    fitBounds(bounds: unknown, opts: unknown) {
+      mapCalls.fitBounds.push({ bounds, opts });
+    }
     getCanvas() {
       return { style: {} };
     }
@@ -251,6 +266,7 @@ beforeEach(() => {
   mapCalls.addSource = [];
   mapCalls.instances = 0;
   mapCalls.resize = 0;
+  mapCalls.fitBounds = [];
 });
 
 describe('RightsWorldMap', () => {
@@ -270,6 +286,34 @@ describe('RightsWorldMap', () => {
     const zz = data.features.find((f) => f.properties?.ISO_A2 === 'ZZ');
     expect(de?.properties?.rightsClass).toBe('protected');
     expect(zz?.properties?.rightsClass).toBe('nodata');
+  });
+
+  // Regression guard for "the map shows too much world" (/rights/trans).
+  // The framing must come from the CONTAINER via bounds, not from a hardcoded zoom:
+  // `zoom: 0.9` renders the world 955px wide, so a ~1036px container showed over 360°
+  // of longitude with a duplicated sliver at each edge, while the same constant
+  // under-filled a ~350px mobile canvas.
+  it('frames the map by bounds so it cannot show more than one world', () => {
+    render(
+      <RightsWorldMap
+        countries={[countryDE]}
+        topic={CRIMINALISATION}
+        lens="all"
+        activeClass={null}
+        onCountrySelect={() => {}}
+      />,
+    );
+    expect(mapCalls.fitBounds.length).toBeGreaterThan(0);
+    const [{ bounds, opts }] = mapCalls.fitBounds;
+    // The inhabited world: Cape Horn to northern Greenland, and far enough east that
+    // the Aleutians/Kiribati stay in one piece rather than wrapping.
+    expect(bounds).toEqual([
+      [-168, -56],
+      [190, 78],
+    ]);
+    // animate:false — this also runs from the ResizeObserver, where a flight would
+    // read as the map drifting on every layout change.
+    expect(opts).toMatchObject({ animate: false });
   });
 
   it('reports the right counts in aria-label', () => {

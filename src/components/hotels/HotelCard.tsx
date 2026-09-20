@@ -56,7 +56,7 @@ const HotelCardFixture = () => (
       <div className="flex items-center gap-2 mt-auto pt-2">
         <Star size={14} />
         <p className="text-sm font-semibold">4.5</p>
-        <Badge variant="outline" style={{ fontSize: '0.65rem', padding: '1px 5px' }}>
+        <Badge className="text-2xs" variant="outline" style={{ padding: '1px 5px' }}>
           LGBTQ+
         </Badge>
       </div>
@@ -168,16 +168,17 @@ function HotelCardImpl({ hotel, loading = false }: HotelCardProps) {
                   if (tags.length > 0) {
                     return tags.map((tag) => (
                       <Badge
+                        className="text-2xs"
                         key={tag}
                         variant="outline"
-                        style={{ fontSize: '0.65rem', padding: '1px 5px' }}
+                        style={{ padding: '1px 5px' }}
                       >
                         {tag}
                       </Badge>
                     ));
                   }
                   return hotel.lgbtq_friendly ? (
-                    <Badge variant="outline" style={{ fontSize: '0.65rem', padding: '1px 5px' }}>
+                    <Badge className="text-2xs" variant="outline" style={{ padding: '1px 5px' }}>
                       LGBTQ+
                     </Badge>
                   ) : null;

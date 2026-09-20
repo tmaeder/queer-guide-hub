@@ -100,10 +100,9 @@ export function FeedbackCard({ item, voteCount, hasVoted, onVote, onClick }: Fee
                 color: cat.color,
                 alignItems: 'center',
                 gap: 3,
-                fontSize: '0.65rem',
                 padding: '1px 6px',
               }}
-              className="inline-flex"
+              className="text-2xs inline-flex"
             >
               <Icon style={{ width: 10, height: 10 }} />
               {cat.label}
@@ -123,9 +122,7 @@ export function FeedbackCard({ item, voteCount, hasVoted, onVote, onClick }: Fee
           </p>
           <div className="flex items-center gap-1 mt-1.5">
             <Clock size={10} className="text-muted-foreground" />
-            <span className="text-muted-foreground" style={{ fontSize: '0.65rem' }}>
-              {timeAgo(item.submitted_at)}
-            </span>
+            <span className="text-2xs text-muted-foreground">{timeAgo(item.submitted_at)}</span>
           </div>
         </div>
       </div>

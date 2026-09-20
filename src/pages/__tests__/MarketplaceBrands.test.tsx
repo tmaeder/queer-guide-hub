@@ -161,6 +161,34 @@ describe('MarketplaceBrands', () => {
     expect(screen.getByRole('link', { name: '4Paws Supply' })).toBeInTheDocument();
   });
 
+  it('reaches the photograph-less makers WITHOUT exhausting the gallery first', () => {
+    // The defect this exists for: the two sections shared one budget, so the
+    // index only began once the gallery ran out. On prod that is 657 makers at
+    // 48 a page — FOURTEEN presses of "Show more" before the other 214 appear.
+    // Reachable in principle, unreachable in practice, and indistinguishable
+    // from dropping them entirely by looking at the page.
+    //
+    // The five-row fixture above cannot catch this: it never paginates. This
+    // one is deliberately larger than one gallery step.
+    state.directory = [
+      ...Array.from({ length: 60 }, (_, i) =>
+        brand(`photo-${i}`, `Photo Maker ${String(i).padStart(2, '0')}`, 500 - i),
+      ),
+      brand('no-photo-one', 'Unphotographed One', 10, { cover: false }),
+    ];
+    state.featured = [];
+    renderPage();
+
+    // The gallery is paginated — the precondition the defect needed.
+    expect(screen.getByRole('button', { name: /more with photos/i })).toBeInTheDocument();
+
+    // ...and the index is reachable anyway, on the very first screen.
+    expect(
+      screen.getByRole('heading', { name: /Makers we have no photograph of/i }),
+    ).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Unphotographed One' })).toBeInTheDocument();
+  });
+
   it('hides the highlight band once the reader searches', async () => {
     // The band is the head of the CATALOGUE, not of the RESULTS. Left up, it
     // puts twelve unrelated makers above a search for something else and reads
