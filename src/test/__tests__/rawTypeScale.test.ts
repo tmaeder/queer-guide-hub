@@ -47,20 +47,34 @@ const BUDGETS = {
 } as const;
 
 /**
- * Inline `style={{ fontSize }}` is a SECOND, larger, wholly ungoverned type
- * scale, and nothing could see it — not the eslint `text-[` selector, not the
- * class scan above, because it is not a class at all.
+ * Inline `style={{ fontSize: '0.7rem' }}` is a SECOND type scale that no class
+ * rule can see — not the eslint `text-[` selector, not the scan above, because
+ * it is not a class at all.
  *
- * Measured when this was added: **345 sites, 92 admin and 253 public, across 13
- * distinct values** — 0.55rem, 0.6rem, 0.65rem, 0.68rem, 0.7rem, 0.72rem,
- * 0.78rem, 0.8rem, 0.85rem, 0.875rem, 0.9em, 13px, 14px. That is more sites than
- * the class-based scale had, and it is precisely the "arbitrary text-[19px]"
- * problem the config's own rule message says the type scale replaced — simply
- * written in a form no selector matches.
+ * **The budget that shipped with this was slack by 206 and the comment was the
+ * reason.** It said "345 sites" — the count of EVERY `fontSize` occurrence in
+ * `src/`, bare numbers and chart props included — while the regex below matches
+ * only QUOTED values and counted **139**. So the gate permitted 2.5x the real
+ * figure, i.e. it would have let this grow to two and a half times its size
+ * before failing. A budget derived from a different measurement than the one the
+ * code performs is not a ratchet; it is a number that happens to be larger.
  *
- * Capped rather than cleared: 345 token decisions is its own pass, and the
- * public 253 are outside the admin remit. The cap is what stops it growing while
- * it waits.
+ * What this regex measures, stated so the next person does not have to re-derive
+ * it: a `fontSize` whose value is a STRING LITERAL. That is exactly the CSS
+ * type-scale shape — `'0.7rem'`, `'13px'` — and it is what `text-xs2` and
+ * friends replace.
+ *
+ * **Bare numbers are deliberately NOT counted, and the reason is that most of
+ * them are not typography.** Measured across all 329 `style={{ fontSize }}`
+ * sites: 132 literal strings, 188 bare numbers, 9 expressions. Of the bare
+ * numbers, **159 are in `src/pages/PatternLibrary/patterns/*`** — a living style
+ * specimen whose whole job is to show raw CSS — and the rest are MapLibre text
+ * sizing, SVG attributes, and `fontSize: size` / `Math.round(...)` computed per
+ * render, none of which a class can express. Counting them would make the
+ * number bigger and the signal worse.
+ *
+ * Post-conversion: **admin 1, public 12** (was 71 / 68). Shrink-only — lower it
+ * in the commit that removes the sites, never raise it.
  */
 const INLINE_FONT_SIZE = /fontSize:\s*['"`]/g;
 
@@ -68,8 +82,8 @@ const INLINE_FONT_SIZE = /fontSize:\s*['"`]/g;
 const RAW_TYPE_SCALE = /\btext-(lg|xl|[2-9]xl)\b/g;
 
 const INLINE_BUDGETS = {
-  admin: 92,
-  public: 253,
+  admin: 1,
+  public: 12,
 } as const;
 
 /** Files whose own purpose is to name these classes. */

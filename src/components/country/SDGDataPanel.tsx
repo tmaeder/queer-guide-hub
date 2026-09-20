@@ -65,10 +65,7 @@ export const SDGDataPanel = ({ data, countryName: _countryName }: SDGDataPanelPr
             const hasValue = goalData?.value != null;
 
             return (
-              <div
-                key={goal.number}
-                className="flex flex-col gap-1 p-4 bg-muted rounded-element"
-              >
+              <div key={goal.number} className="flex flex-col gap-1 p-4 bg-muted rounded-element">
                 <div className="flex items-center justify-between">
                   <span
                     className="text-xs font-bold uppercase"
@@ -78,8 +75,9 @@ export const SDGDataPanel = ({ data, countryName: _countryName }: SDGDataPanelPr
                   </span>
                   {hasValue && goalData?.year && (
                     <Badge
+                      className="text-2xs"
                       variant="outline"
-                      style={{ fontSize: '0.65rem', padding: '1px 6px', lineHeight: 1.2 }}
+                      style={{ padding: '1px 6px', lineHeight: 1.2 }}
                     >
                       {goalData.year}
                     </Badge>
@@ -98,7 +96,10 @@ export const SDGDataPanel = ({ data, countryName: _countryName }: SDGDataPanelPr
                     </p>
                   </>
                 ) : (
-                  <p className="text-sm mt-1 italic" style={{ color: 'hsl(var(--muted-foreground) / 0.6)' }}>
+                  <p
+                    className="text-sm mt-1 italic"
+                    style={{ color: 'hsl(var(--muted-foreground) / 0.6)' }}
+                  >
                     No data available
                   </p>
                 )}

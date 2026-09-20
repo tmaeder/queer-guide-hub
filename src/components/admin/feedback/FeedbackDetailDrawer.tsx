@@ -244,24 +244,16 @@ export function FeedbackDetailDrawer({
               <div className="flex items-center flex-wrap mb-1.5 gap-1">
                 <Badge
                   variant="outline"
-                  style={{
-                    borderColor: cat.color,
-                    color: cat.color,
-                    alignItems: 'center',
-                    fontSize: '0.65rem',
-                  }}
-                  className="inline-flex gap-1"
+                  style={{ borderColor: cat.color, color: cat.color, alignItems: 'center' }}
+                  className="text-2xs inline-flex gap-1"
                 >
                   <CatIcon style={{ width: 11, height: 11 }} />
                   {cat.label}
                 </Badge>
                 <Badge
+                  className="text-2xs"
                   variant="outline"
-                  style={{
-                    borderColor: prio.color,
-                    color: prio.color,
-                    fontSize: '0.65rem',
-                  }}
+                  style={{ borderColor: prio.color, color: prio.color }}
                 >
                   {prio.short}
                 </Badge>
@@ -362,8 +354,7 @@ export function FeedbackDetailDrawer({
                     <Badge
                       key={l}
                       variant="secondary"
-                      className="cursor-pointer"
-                      style={{ fontSize: '0.7rem' }}
+                      className="text-xs2 cursor-pointer"
                       onClick={() => onRemoveLabel(l)}
                     >
                       {l} <X size={10} className="ml-1" />

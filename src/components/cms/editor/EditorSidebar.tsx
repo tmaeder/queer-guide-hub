@@ -291,9 +291,7 @@ function RevisionEntry({ revision }: { revision: ContentRevision }) {
         <p className="text-xs text-muted-foreground block overflow-hidden text-ellipsis whitespace-nowrap">
           {revision.changed_fields.join(', ')}
         </p>
-        <p className="text-muted-foreground" style={{ fontSize: '0.65rem' }}>
-          by {authorName}
-        </p>
+        <p className="text-2xs text-muted-foreground">by {authorName}</p>
       </div>
     </div>
   );

@@ -175,9 +175,8 @@ export function FeedbackCard({
           </Tooltip>
 
           <p
-            className="flex-1 font-semibold min-w-0 break-words overflow-hidden"
+            className="text-xs flex-1 font-semibold min-w-0 break-words overflow-hidden"
             style={{
-              fontSize: '0.78rem',
               lineHeight: 1.3,
               display: '-webkit-box',
               WebkitLineClamp: 2,
@@ -193,11 +192,10 @@ export function FeedbackCard({
                       paddingRight: 3,
                       borderRadius: 'var(--radius-badge)',
                       background: prio.color,
-                      fontSize: '0.55rem',
                       letterSpacing: 0.3,
                       verticalAlign: '2px',
                     }}
-                    className="inline-block mr-1 text-background font-bold"
+                    className="text-3xs inline-block mr-1 text-background font-bold"
                   >
                     {prio.short}
                   </span>
@@ -231,10 +229,7 @@ export function FeedbackCard({
         </div>
 
         {/* Footer row 1 — time/SLA + assignee */}
-        <div
-          className="flex items-center gap-1.5 text-muted-foreground"
-          style={{ fontSize: '0.65rem' }}
-        >
+        <div className="text-2xs flex items-center gap-1.5 text-muted-foreground">
           <Tooltip>
             <TooltipTrigger asChild>
               <span
@@ -319,14 +314,13 @@ export function FeedbackCard({
                   }}
                   role="button"
                   tabIndex={0}
-                  className="inline-flex items-center flex-shrink-0 overflow-hidden whitespace-nowrap"
+                  className="text-3xs inline-flex items-center flex-shrink-0 overflow-hidden whitespace-nowrap"
                   style={{
                     gap: 2,
                     paddingLeft: 4,
                     paddingRight: 4,
                     paddingTop: 1,
                     paddingBottom: 1,
-                    fontSize: '0.55rem',
                     background:
                       story.status === 'resolved'
                         ? 'hsl(var(--muted))'
@@ -353,11 +347,10 @@ export function FeedbackCard({
             <Tooltip>
               <TooltipTrigger asChild>
                 <span
-                  className="bg-muted text-muted-foreground flex-shrink-0 overflow-hidden whitespace-nowrap pl-1 pr-1"
+                  className="text-3xs bg-muted text-muted-foreground flex-shrink-0 overflow-hidden whitespace-nowrap pl-1 pr-1"
                   style={{
                     paddingTop: 1,
                     paddingBottom: 1,
-                    fontSize: '0.55rem',
                     borderRadius: 'var(--radius-badge)',
                     maxWidth: 60,
                     textOverflow: 'ellipsis',
@@ -404,7 +397,7 @@ export function FeedbackCard({
               <TooltipTrigger asChild>
                 <Avatar style={{ width: 16, height: 16 }}>
                   {assignee.avatar_url && <AvatarImage src={assignee.avatar_url} />}
-                  <AvatarFallback style={{ fontSize: '0.55rem' }}>
+                  <AvatarFallback className="text-3xs">
                     {(assignee.display_name || '?').slice(0, 1).toUpperCase()}
                   </AvatarFallback>
                 </Avatar>
@@ -416,10 +409,7 @@ export function FeedbackCard({
 
         {/* Footer row 2 — story, handoff/github, errors (conditional) */}
         {(story || handoffChip || isForwarded || errorCount > 0) && (
-          <div
-            className="flex items-center gap-1.5 text-muted-foreground mt-1"
-            style={{ fontSize: '0.65rem' }}
-          >
+          <div className="text-2xs flex items-center gap-1.5 text-muted-foreground mt-1">
             {story && (
               <Tooltip>
                 <TooltipTrigger asChild>
@@ -436,14 +426,13 @@ export function FeedbackCard({
                     }}
                     role="button"
                     tabIndex={0}
-                    className="inline-flex items-center flex-shrink-0 overflow-hidden whitespace-nowrap"
+                    className="text-3xs inline-flex items-center flex-shrink-0 overflow-hidden whitespace-nowrap"
                     style={{
                       gap: 2,
                       paddingLeft: 4,
                       paddingRight: 4,
                       paddingTop: 1,
                       paddingBottom: 1,
-                      fontSize: '0.55rem',
                       background:
                         story.status === 'resolved'
                           ? 'hsl(var(--muted))'

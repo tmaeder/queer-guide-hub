@@ -112,7 +112,9 @@ test.describe('makers directory', () => {
     await expect(page.getByRole('link', { name: 'cherrykitten', exact: true })).toBeVisible();
   });
 
-  test('files "#" at the END of the A–Z index, and keeps artifacts out of it', async ({ page }) => {
+  test('files "#" at the END of the A–Z index, and publishes no feed-ID artifact', async ({
+    page,
+  }) => {
     await page.goto('/marketplace/brands');
     await expect(page.getByRole('heading', { name: COUNTER_BAND })).toBeVisible({
       timeout: SETTLE,
@@ -128,6 +130,42 @@ test.describe('makers directory', () => {
     expect(headings[0]).toBe('A');
     expect(headings).not.toContain('#');
 
+    // THE RETIREMENT GUARD, asserted over the WHOLE index rather than inside the
+    // "#" bucket. Until 2026-09-19 this clicked "Filter by #" and required the
+    // one row there — "1979 SAS (Teil der Marc Dorcel Group)" — on the reasoning
+    // that an empty bucket would mean the feed-ID retirement had swept a real
+    // brand with it. That control is gone, and NOT because anything over-reached:
+    // migration 99991789846273 renamed the row to its actual brand, DORCEL,
+    // because the vendor field held a legal entity rather than a maker. The row
+    // is `status='approved'` with 4 listings and now sorts under D, so "#" is
+    // legitimately empty — measured, 0 of 862 live makers sort to it.
+    //
+    // A control anchored to one row dies the moment that row is correctly
+    // edited. The INVARIANT the retirement actually protects survives any
+    // rename: no purchase-order number is published as a maker, anywhere. That
+    // is asserted here across the index. (This comment read "strictly stronger
+    // than the one-row bucket it replaces" until the two concurrent fixes were
+    // merged; it is broader, but not strictly stronger — see the note below the
+    // assertion.)
+    await expect(page.getByRole('link', { name: /^\d{4,}[- ]\d+/ })).toHaveCount(0);
+
+    // PRESENCE CONTROL for the line above: "no artifacts" passes just as well on
+    // an index that renders nothing at all, which is exactly how this spec's
+    // sibling assertions have failed before.
+    //
+    // Counted by HREF, never by link text. A maker row's click target is the
+    // absolutely-positioned overlay sibling this repo uses for every card, so it
+    // carries an aria-label and NO text content — a `hasText` filter matches
+    // zero of the 132 links the page actually renders, which is how the first
+    // draft of this control failed against a perfectly healthy index.
+    const makerLinks = await page.locator('main a[href^="/marketplace/brands/"]').count();
+    expect(makerLinks).toBeGreaterThan(20);
+
+    // BOTH halves are kept, and they are NOT redundant. Two sessions fixed the
+    // same stale assertion at once, and the sweep above only sees rows the page
+    // has RENDERED — while "#" sorts LAST, past the 120-row floor, which is
+    // precisely where a digit-named artifact lands. Drop the bucket check below
+    // and the sweep silently stops covering the one bucket that matters.
     // "#" is deliberately NOT in that list. The floor renders 120 rows before
     // "Show more" and "#" sorts last, so it is now eight pages down — which is
     // the point, but it also means the ordering assertion above cannot double
@@ -150,9 +188,9 @@ test.describe('makers directory', () => {
     // brand may re-enter this bucket at any time (a name starting with a digit
     // is allowed), and asserting "empty" would then fail on correct data —
     // which is the same mistake one rung along.
-    const hashNames = await page.locator('main a[aria-label]').evaluateAll((els) =>
-      els.map((e) => e.getAttribute('aria-label') ?? ''),
-    );
+    const hashNames = await page
+      .locator('main a[aria-label]')
+      .evaluateAll((els) => els.map((e) => e.getAttribute('aria-label') ?? ''));
 
     // The retirement invariant, stated over content rather than over a count:
     // nothing in "#" may look like a merchant feed ID or an ISBN. 20 of those

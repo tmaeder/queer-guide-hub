@@ -448,10 +448,11 @@ export const NewsFilters = ({
           <div className="flex gap-1">
             {(['', 'positive', 'neutral', 'negative'] as const).map((s) => (
               <Button
+                className="text-xs2"
                 key={s || 'any'}
                 variant={sentiment === s ? 'default' : 'outline'}
                 size="sm"
-                style={{ flex: 1, fontSize: '0.7rem', padding: '0 4px', height: 28 }}
+                style={{ flex: 1, padding: '0 4px', height: 28 }}
                 onClick={() => {
                   setSentiment(s);
                   emitFilters({ sentiment: s });
@@ -575,8 +576,7 @@ export const NewsFilters = ({
                   <Badge
                     key={countryId}
                     variant="default"
-                    style={{ fontSize: '0.7rem' }}
-                    className="cursor-pointer"
+                    className="text-xs2 cursor-pointer"
                     onClick={() => handleCountryToggle(countryId)}
                   >
                     {country.name}
@@ -615,8 +615,7 @@ export const NewsFilters = ({
                   <Badge
                     key={cityId}
                     variant="default"
-                    style={{ fontSize: '0.7rem' }}
-                    className="cursor-pointer"
+                    className="text-xs2 cursor-pointer"
                     onClick={() => handleCityToggle(cityId)}
                   >
                     {city.name}
@@ -683,9 +682,10 @@ export const NewsFilters = ({
               ] as [string, string][]
             ).map(([val, label]) => (
               <Badge
+                className="text-xs2"
                 key={val || 'any'}
                 variant={dateRange === val && !customDateRange ? 'default' : 'outline'}
-                style={{ fontSize: '0.7rem', cursor: 'pointer' }}
+                style={{ cursor: 'pointer' }}
                 onClick={() => {
                   const newVal = val;
                   setDateRange(newVal);
@@ -698,8 +698,9 @@ export const NewsFilters = ({
               </Badge>
             ))}
             <Badge
+              className="text-xs2"
               variant={showCustomDate || customDateRange ? 'default' : 'outline'}
-              style={{ fontSize: '0.7rem', cursor: 'pointer' }}
+              style={{ cursor: 'pointer' }}
               onClick={() => {
                 setShowCustomDate((v) => !v);
                 if (!showCustomDate) setDateRange('');
@@ -732,8 +733,8 @@ export const NewsFilters = ({
                   <Badge
                     key={tag}
                     variant={selectedTags.includes(tag) ? 'default' : 'outline'}
-                    style={{ fontSize: '0.7rem', transition: 'all 0.2s' }}
-                    className="cursor-pointer"
+                    style={{ transition: 'all 0.2s' }}
+                    className="text-xs2 cursor-pointer"
                     onClick={() => handleTagToggle(tag)}
                   >
                     {formatNewsTag(tag)}

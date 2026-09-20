@@ -135,9 +135,7 @@ export function PersonalizedFeed() {
                 <CardContent className="p-4">
                   <div className="flex justify-between items-start mb-2">
                     <div>
-                      <p className="font-bold" style={{ fontSize: '0.95rem' }}>
-                        {city.name}
-                      </p>
+                      <p className="text-15 font-bold">{city.name}</p>
                       <p className="text-muted-foreground text-xs">{city.country_name}</p>
                     </div>
                     {city.equality_score != null && (
@@ -153,9 +151,7 @@ export function PersonalizedFeed() {
                                   : 'hsl(var(--destructive))',
                           }}
                         />
-                        <span className="font-semibold" style={{ fontSize: '0.7rem' }}>
-                          {city.equality_score}
-                        </span>
+                        <span className="text-xs2 font-semibold">{city.equality_score}</span>
                       </div>
                     )}
                   </div>

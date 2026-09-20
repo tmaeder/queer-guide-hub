@@ -63,9 +63,7 @@ export function ReadingHistoryPanel({ open, onOpenChange }: ReadingHistoryPanelP
           </div>
         )}
 
-        {loading && (
-          <p className="text-sm text-muted-foreground mt-8 text-center">Loading…</p>
-        )}
+        {loading && <p className="text-sm text-muted-foreground mt-8 text-center">Loading…</p>}
 
         {!loading && reads.length === 0 && (
           <p className="text-sm text-muted-foreground mt-8 text-center">No reading history yet.</p>
@@ -108,7 +106,11 @@ export function ReadingHistoryPanel({ open, onOpenChange }: ReadingHistoryPanelP
                             </span>
                           )}
                           {a.category && (
-                            <Badge variant="outline" style={{ fontSize: '0.65rem', padding: '0 4px' }}>
+                            <Badge
+                              className="text-2xs"
+                              variant="outline"
+                              style={{ padding: '0 4px' }}
+                            >
                               {a.category}
                             </Badge>
                           )}

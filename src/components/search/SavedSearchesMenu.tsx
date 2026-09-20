@@ -56,11 +56,12 @@ export function SavedSearchesMenu({
             </label>
             <div className="flex gap-1.5">
               <Input
+                className="text-sm"
                 id="qg-saved-name"
                 placeholder={suggestedName || t('search.namePlaceholder', 'Name…')}
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                style={{ fontSize: '0.875rem', flex: 1 }}
+                style={{ flex: 1 }}
               />
               <Button size="sm" onClick={handleSave} aria-label={t('common.save', 'Save')}>
                 <BookmarkPlus size={14} />

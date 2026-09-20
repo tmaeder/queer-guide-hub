@@ -26,8 +26,7 @@ export function BoostReasonBadge({ reason }: BoostReasonBadgeProps) {
   const label = t(`search.boost.${reason}`, reason);
   return (
     <span
-      className="inline-flex items-center gap-1 text-muted-foreground mt-1"
-      style={{ fontSize: '0.7rem' }}
+      className="text-xs2 inline-flex items-center gap-1 text-muted-foreground mt-1"
       title={label}
     >
       <Icon style={{ width: 11, height: 11 }} />

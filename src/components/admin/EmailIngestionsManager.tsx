@@ -291,13 +291,13 @@ export function EmailIngestionsManager() {
                       {ing.status === 'completed' && (
                         <div className="flex items-center gap-1">
                           {ing.extracted_events > 0 && (
-                            <Badge variant="outline" style={{ fontSize: '0.7rem' }}>
+                            <Badge className="text-xs2" variant="outline">
                               <Calendar size={10} style={{ marginRight: 3 }} />
                               {ing.extracted_events}
                             </Badge>
                           )}
                           {ing.extracted_venues > 0 && (
-                            <Badge variant="outline" style={{ fontSize: '0.7rem' }}>
+                            <Badge className="text-xs2" variant="outline">
                               <Building size={10} style={{ marginRight: 3 }} />
                               {ing.extracted_venues}
                             </Badge>
@@ -400,7 +400,7 @@ export function EmailIngestionsManager() {
                                   {ev.start_date &&
                                     ` (${new Date(ev.start_date).toLocaleDateString()})`}
                                 </span>
-                                <Badge variant="outline" style={{ fontSize: '0.65rem' }}>
+                                <Badge className="text-2xs" variant="outline">
                                   {ev.event_type}
                                 </Badge>
                               </div>
@@ -424,7 +424,7 @@ export function EmailIngestionsManager() {
                                 <span>
                                   <strong>{v.name}</strong> — {v.address}, {v.city}
                                 </span>
-                                <Badge variant="outline" style={{ fontSize: '0.65rem' }}>
+                                <Badge className="text-2xs" variant="outline">
                                   {v.category}
                                 </Badge>
                               </div>
@@ -437,10 +437,9 @@ export function EmailIngestionsManager() {
                         <div className="md:col-span-2">
                           <span className="font-medium">Body Preview:</span>
                           <p
-                            className="text-sm text-muted-foreground mt-1 p-2 rounded-element overflow-auto whitespace-pre-wrap"
+                            className="text-13 text-sm text-muted-foreground mt-1 p-2 rounded-element overflow-auto whitespace-pre-wrap"
                             style={{
                               maxHeight: 200,
-                              fontSize: '0.8rem',
                               backgroundColor: 'hsl(var(--foreground) / 0.03)',
                             }}
                           >
@@ -453,10 +452,11 @@ export function EmailIngestionsManager() {
                       {ing.ai_extraction && (
                         <div className="md:col-span-2">
                           <Button
+                            className="text-13"
                             variant="ghost"
                             size="sm"
                             onClick={() => toggleJson(ing.id)}
-                            style={{ padding: '4px 8px', fontSize: '0.8rem' }}
+                            style={{ padding: '4px 8px' }}
                           >
                             {expandedJson.has(ing.id) ? 'Hide' : 'Show'} Raw AI Response
                             {expandedJson.has(ing.id) ? (
