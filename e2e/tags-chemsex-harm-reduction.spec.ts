@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { GLOSSARY_LINK_ATTR, unlinkGlossary } from './support/glossaryProse';
 
 // The chemsex / harm-reduction corner of the glossary, verified on the surface a
 // non-JS crawler actually indexes.
@@ -25,7 +26,9 @@ const BOT_UA = 'Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/b
 /** The tag's own prose block, excluding the rails and nav that follow it. */
 function articleOf(html: string): string {
   const m = html.match(/<article[\s\S]*?<\/article>/i);
-  return m ? m[0] : '';
+  // Glossary auto-links are removed before any phrase assertion runs — see
+  // e2e/support/glossaryProse.ts for why a linked word is not a content defect.
+  return m ? unlinkGlossary(m[0]) : '';
 }
 
 interface Case {
@@ -197,5 +200,26 @@ test.describe('chemsex glossary — reader surface', () => {
     await page.goto('/tags/priapism');
     await expect(page.locator('h1')).toContainText(/priapism/i, { timeout: 20_000 });
     await expect(page.locator('body')).toContainText(/erection/i);
+  });
+});
+
+// ── Positive control for the glossary-link strip ──────────────────────────────
+// unlinkGlossary() is a no-op the day the renderer renames its attribute, and a
+// no-op here is invisible: the phrase assertions above would keep passing until
+// the next word inside one of them became a glossary term, then go red for a
+// content defect that is not there. So assert the strip had something to do.
+test.describe('@smoke glossary-link strip control', () => {
+  test('chemsex: the crawler HTML carries glossary links, and the strip removes them', async ({
+    request,
+  }) => {
+    const res = await request.get('/tags/k-hole', { headers: { 'user-agent': BOT_UA } });
+    expect(res.status(), '/tags/k-hole must be reachable').toBeLessThan(400);
+    const raw = await res.text();
+    expect(raw, 'the renderer no longer emits ' + GLOSSARY_LINK_ATTR + ' — unlinkGlossary is now a silent no-op').toContain(
+      GLOSSARY_LINK_ATTR,
+    );
+    expect(unlinkGlossary(raw), 'unlinkGlossary left a glossary anchor behind').not.toContain(
+      GLOSSARY_LINK_ATTR,
+    );
   });
 });

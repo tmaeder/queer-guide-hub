@@ -6,98 +6,120 @@
  * This module exposes the *additional* v2 endpoints that the hook doesn't cover.
  */
 
-const SEARCH_URL =
-	import.meta.env?.VITE_SEARCH_PROXY_URL ||
-	"https://search.queer.guide";
+import { analyticsAllowed } from '@/lib/analyticsConsent';
 
-const SESSION_KEY = "qg_sid";
+const SEARCH_URL = import.meta.env?.VITE_SEARCH_PROXY_URL || 'https://search.queer.guide';
+
+const SESSION_KEY = 'qg_sid';
 
 export function getSessionId(): string {
-	if (typeof window === "undefined") return "";
-	const existing = localStorage.getItem(SESSION_KEY);
-	if (existing) return existing;
-	const id = crypto.randomUUID();
-	localStorage.setItem(SESSION_KEY, id);
-	return id;
+  if (typeof window === 'undefined') return '';
+  const existing = localStorage.getItem(SESSION_KEY);
+  if (existing) return existing;
+  const id = crypto.randomUUID();
+  localStorage.setItem(SESSION_KEY, id);
+  return id;
 }
 
 export interface SearchHit {
-	id: string;
-	objectID?: string;
-	type: string;
-	title?: string;
-	/** Server-highlighted title (HTML with <em>match</em>). Only set on /autocomplete responses. */
-	title_formatted?: string | null;
-	name?: string;
-	category?: string;
-	location?: string;
-	city?: string;
-	description?: string;
-	/** Raw entity image URL (may hotlink-fail). */
-	image_url?: string | null;
-	/** R2-mirrored optimized copy from image_assets — always reachable. */
-	optimized_url?: string | null;
-	/** R2-mirrored thumbnail copy from image_assets. */
-	thumbnail_url?: string | null;
-	[key: string]: unknown;
+  id: string;
+  objectID?: string;
+  type: string;
+  title?: string;
+  /** Server-highlighted title (HTML with <em>match</em>). Only set on /autocomplete responses. */
+  title_formatted?: string | null;
+  name?: string;
+  category?: string;
+  location?: string;
+  city?: string;
+  description?: string;
+  /** Raw entity image URL (may hotlink-fail). */
+  image_url?: string | null;
+  /** R2-mirrored optimized copy from image_assets — always reachable. */
+  optimized_url?: string | null;
+  /** R2-mirrored thumbnail copy from image_assets. */
+  thumbnail_url?: string | null;
+  [key: string]: unknown;
 }
 
 // Write endpoints (/track, /feedback, /onboarding) need credentials: 'include'
 // so the signed qg_sid cookie travels — the worker uses it to verify the
 // session id (bug #14). Read endpoints don't need credentials and stay
 // `same-origin` to keep CORS simple.
-const WRITE_PATHS = new Set(["/track", "/feedback", "/onboarding"]);
+const WRITE_PATHS = new Set(['/track', '/feedback', '/onboarding']);
 
 async function post<T>(path: string, body: object): Promise<T> {
-	const res = await fetch(`${SEARCH_URL}${path}`, {
-		method: "POST",
-		headers: { "Content-Type": "application/json" },
-		body: JSON.stringify(body),
-		credentials: WRITE_PATHS.has(path) ? "include" : "same-origin",
-		keepalive: true,
-	});
-	if (!res.ok) throw new Error(`${path} ${res.status}: ${await res.text()}`);
-	const data = (await res.json()) as T & { session_verified?: boolean };
-	// One-shot migration: once the worker confirms it has a verified signed
-	// cookie for this session, drop the legacy localStorage id so future
-	// sessions rely on the cookie alone.
-	if (data?.session_verified && typeof window !== "undefined") {
-		try { localStorage.removeItem(SESSION_KEY); } catch { /* private mode */ }
-	}
-	return data;
+  const res = await fetch(`${SEARCH_URL}${path}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+    credentials: WRITE_PATHS.has(path) ? 'include' : 'same-origin',
+    keepalive: true,
+  });
+  if (!res.ok) throw new Error(`${path} ${res.status}: ${await res.text()}`);
+  const data = (await res.json()) as T & { session_verified?: boolean };
+  // One-shot migration: once the worker confirms it has a verified signed
+  // cookie for this session, drop the legacy localStorage id so future
+  // sessions rely on the cookie alone.
+  if (data?.session_verified && typeof window !== 'undefined') {
+    try {
+      localStorage.removeItem(SESSION_KEY);
+    } catch {
+      /* private mode */
+    }
+  }
+  return data;
 }
 
 export type TrackEvent =
-	| "click"
-	| "view"
-	| "save"
-	| "favorite"
-	| "book"
-	| "attend"
-	| "dismiss"
-	| "search_submit"
-	| "facet_apply"
-	| "zero_results";
+  | 'click'
+  | 'view'
+  | 'save'
+  | 'favorite'
+  | 'book'
+  | 'attend'
+  | 'dismiss'
+  | 'search_submit'
+  | 'facet_apply'
+  | 'zero_results';
 
-/** Fire-and-forget user event — feeds the bias vector for personalization. */
+/**
+ * Fire-and-forget user event — feeds the bias vector for personalization.
+ *
+ * CONSENT GATE. This writes `user_events` — the same table `useTrackEvent`
+ * gates — with a persisted `session_id` and an `entity_id` trail. On this
+ * platform that trail runs through venues, events and intimate features, so
+ * it is behavioural profiling, not a strictly-necessary cookie.
+ *
+ * It was ungated until 2026-09-19 while `useTrackEvent` was gated, and the
+ * split was invisible because both write the same table: measured on prod,
+ * 7,441 ungated `view` rows in 24h against 295 gated `page_view` rows, i.e.
+ * 96% of that table arrived past the gate. Two writers, one table, one of
+ * them hardened — "the table is gated" was true of the half that was read.
+ *
+ * `trackSearchUx` delegates here, so this is the single chokepoint for every
+ * analytics path. `submitFeedback` and `submitOnboarding` are deliberately
+ * NOT gated: both are user-initiated actions, not passive telemetry.
+ */
 export async function trackSearchEvent(
-	event: TrackEvent,
-	entity: { type: string; id: string },
-	metadata: Record<string, unknown> = {},
-	userId?: string | null,
+  event: TrackEvent,
+  entity: { type: string; id: string },
+  metadata: Record<string, unknown> = {},
+  userId?: string | null,
 ): Promise<void> {
-	try {
-		await post("/track", {
-			user_id: userId ?? null,
-			session_id: getSessionId(),
-			event_type: event,
-			entity_type: entity.type,
-			entity_id: entity.id,
-			metadata,
-		});
-	} catch {
-		/* best-effort */
-	}
+  if (!analyticsAllowed()) return;
+  try {
+    await post('/track', {
+      user_id: userId ?? null,
+      session_id: getSessionId(),
+      event_type: event,
+      entity_type: entity.type,
+      entity_id: entity.id,
+      metadata,
+    });
+  } catch {
+    /* best-effort */
+  }
 }
 
 /**
@@ -106,36 +128,41 @@ export async function trackSearchEvent(
  * /track schema can store it without changes.
  */
 export async function trackSearchUx(
-	event: Extract<TrackEvent, "search_submit" | "facet_apply" | "zero_results">,
-	metadata: Record<string, unknown>,
-	userId?: string | null,
+  event: Extract<TrackEvent, 'search_submit' | 'facet_apply' | 'zero_results'>,
+  metadata: Record<string, unknown>,
+  userId?: string | null,
 ): Promise<void> {
-	await trackSearchEvent(event, { type: "search", id: String(metadata.query ?? "") }, metadata, userId);
+  await trackSearchEvent(
+    event,
+    { type: 'search', id: String(metadata.query ?? '') },
+    metadata,
+    userId,
+  );
 }
 
 /** Thumbs up/down on a result — stored as save/dismiss to feed bias. */
 export async function submitFeedback(
-	entity: { type: string; id: string },
-	vote: "up" | "down",
-	query?: string,
-	userId?: string | null,
+  entity: { type: string; id: string },
+  vote: 'up' | 'down',
+  query?: string,
+  userId?: string | null,
 ): Promise<void> {
-	await post("/feedback", {
-		user_id: userId ?? null,
-		session_id: getSessionId(),
-		entity_type: entity.type,
-		entity_id: entity.id,
-		vote,
-		query,
-	});
+  await post('/feedback', {
+    user_id: userId ?? null,
+    session_id: getSessionId(),
+    entity_type: entity.type,
+    entity_id: entity.id,
+    vote,
+    query,
+  });
 }
 
 /** Persist initial preferences at signup. */
 export async function submitOnboarding(
-	userId: string,
-	prefs: { vibes?: string[]; home_city?: string; languages?: string[] },
+  userId: string,
+  prefs: { vibes?: string[]; home_city?: string; languages?: string[] },
 ): Promise<void> {
-	await post("/onboarding", { user_id: userId, ...prefs });
+  await post('/onboarding', { user_id: userId, ...prefs });
 }
 
 /**
@@ -146,34 +173,34 @@ export async function submitOnboarding(
  * other cross-type hits out of the related rail.
  */
 export async function fetchSimilar(
-	entity: { type: string; id: string },
-	limit = 10,
-	contentTypes?: string[],
+  entity: { type: string; id: string },
+  limit = 10,
+  contentTypes?: string[],
 ): Promise<SearchHit[]> {
-	const data = await post<{ results: SearchHit[] }>("/similar", {
-		entity_type: entity.type,
-		entity_id: entity.id,
-		limit,
-		...(contentTypes && contentTypes.length > 0 ? { content_types: contentTypes } : {}),
-	});
-	return data.results ?? [];
+  const data = await post<{ results: SearchHit[] }>('/similar', {
+    entity_type: entity.type,
+    entity_id: entity.id,
+    limit,
+    ...(contentTypes && contentTypes.length > 0 ? { content_types: contentTypes } : {}),
+  });
+  return data.results ?? [];
 }
 
 /** Trending entities by 7d weighted popularity (clicks + saves). */
 export async function fetchTrending(
-	types: string[] = ["venue", "event"],
-	city?: string,
-	limit = 10,
-	userId?: string | null,
+  types: string[] = ['venue', 'event'],
+  city?: string,
+  limit = 10,
+  userId?: string | null,
 ): Promise<SearchHit[]> {
-	const data = await post<{ trending: SearchHit[] }>("/trending", {
-		types,
-		city,
-		limit,
-		user_id: userId ?? null,
-		session_id: getSessionId(),
-	});
-	return data.trending ?? [];
+  const data = await post<{ trending: SearchHit[] }>('/trending', {
+    types,
+    city,
+    limit,
+    user_id: userId ?? null,
+    session_id: getSessionId(),
+  });
+  return data.trending ?? [];
 }
 
 /**
@@ -183,42 +210,42 @@ export async function fetchTrending(
  * Returns raw worker rows (objectID/type/…); callers normalize to SearchHit.
  */
 export async function fetchRecommendations(
-	opts: {
-		types?: string[];
-		city?: string;
-		lat?: number;
-		lng?: number;
-		radius?: number;
-		excludeIds?: string[];
-		limit?: number;
-		userId?: string | null;
-	} = {},
+  opts: {
+    types?: string[];
+    city?: string;
+    lat?: number;
+    lng?: number;
+    radius?: number;
+    excludeIds?: string[];
+    limit?: number;
+    userId?: string | null;
+  } = {},
 ): Promise<SearchHit[]> {
-	const data = await post<{ recommendations: SearchHit[] }>("/recommendations", {
-		types: opts.types,
-		city: opts.city,
-		lat: opts.lat,
-		lng: opts.lng,
-		radius: opts.radius,
-		exclude_ids: opts.excludeIds,
-		limit: opts.limit ?? 12,
-		user_id: opts.userId ?? null,
-		session_id: getSessionId(),
-	});
-	return data.recommendations ?? [];
+  const data = await post<{ recommendations: SearchHit[] }>('/recommendations', {
+    types: opts.types,
+    city: opts.city,
+    lat: opts.lat,
+    lng: opts.lng,
+    radius: opts.radius,
+    exclude_ids: opts.excludeIds,
+    limit: opts.limit ?? 12,
+    user_id: opts.userId ?? null,
+    session_id: getSessionId(),
+  });
+  return data.recommendations ?? [];
 }
 
 /** Fast lexical autocomplete — typo-tolerant prefix + trigram match (search_autocomplete RPC). */
 export async function fetchAutocomplete(
-	query: string,
-	types?: string[],
-	limit = 6,
+  query: string,
+  types?: string[],
+  limit = 6,
 ): Promise<SearchHit[]> {
-	if (!query?.trim()) return [];
-	const data = await post<{ suggestions: SearchHit[] }>("/autocomplete", {
-		query,
-		types,
-		limit,
-	});
-	return data.suggestions ?? [];
+  if (!query?.trim()) return [];
+  const data = await post<{ suggestions: SearchHit[] }>('/autocomplete', {
+    query,
+    types,
+    limit,
+  });
+  return data.suggestions ?? [];
 }

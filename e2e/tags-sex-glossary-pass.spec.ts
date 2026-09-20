@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { GLOSSARY_LINK_ATTR, unlinkGlossary } from './support/glossaryProse';
 
 // Prod guard for the sex & sexual-health glossary pass (#3807) and the anatomy
 // de-gendering follow-up (#3810).
@@ -33,7 +34,9 @@ const BOT_UA =
 /** The tag's own prose block, excluding the nav/rails that follow it. */
 function articleOf(html: string): string {
   const m = html.match(/<article[\s\S]*?<\/article>/i);
-  return m ? m[0] : '';
+  // Glossary auto-links are removed before any phrase assertion runs — see
+  // e2e/support/glossaryProse.ts for why a linked word is not a content defect.
+  return m ? unlinkGlossary(m[0]) : '';
 }
 
 /**
@@ -300,5 +303,29 @@ test.describe('sex glossary: created rows are unpublished by design', () => {
     // not applied blindly.
     const res = await request.get('/tags/semen', { headers: { 'User-Agent': BOT_UA } });
     expect(res.status(), '/tags/semen should stay unresolvable').toBe(404);
+  });
+});
+
+// ── Positive control for the glossary-link strip ──────────────────────────────
+// unlinkGlossary() is a no-op the day the renderer renames its attribute, and a
+// no-op here is invisible: the phrase assertions above would keep passing until
+// the next word inside one of them became a glossary term, then go red for a
+// content defect that is not there. That is not hypothetical here — this file's
+// /tags/lgbti case went red on prod on 2026-09-19 for exactly that, when
+// `intersex` inside "lesbian, gay, bisexual, trans and intersex" became a link.
+test.describe('@smoke glossary-link strip control', () => {
+  test('sex-glossary: the crawler HTML carries glossary links, and the strip removes them', async ({
+    request,
+  }) => {
+    const res = await request.get('/tags/lgbti', { headers: { 'user-agent': BOT_UA } });
+    expect(res.status(), '/tags/lgbti must be reachable').toBeLessThan(400);
+    const raw = await res.text();
+    expect(
+      raw,
+      'the renderer no longer emits ' + GLOSSARY_LINK_ATTR + ' — unlinkGlossary is now a silent no-op',
+    ).toContain(GLOSSARY_LINK_ATTR);
+    expect(unlinkGlossary(raw), 'unlinkGlossary left a glossary anchor behind').not.toContain(
+      GLOSSARY_LINK_ATTR,
+    );
   });
 });

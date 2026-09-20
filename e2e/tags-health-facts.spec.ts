@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { GLOSSARY_LINK_ATTR, unlinkGlossary } from './support/glossaryProse';
 
 // The health and drug fact-check (PRs #3066 #3067 #3070 #3071 #3078 #3082
 // #3096; audit at docs/audits/2026-08-28-health-drug-tag-facts.md).
@@ -36,7 +37,9 @@ async function tagHtml(request: import('@playwright/test').APIRequestContext, sl
   // Guards every negative assertion below from passing on an empty or error
   // body: the tag's own name must be in what we are about to search.
   expect(html.length, `/tags/${slug} returned an empty document`).toBeGreaterThan(1000);
-  return html;
+  // Glossary auto-links are removed before any phrase assertion runs — see
+  // e2e/support/glossaryProse.ts for why a linked word is not a content defect.
+  return unlinkGlossary(html);
 }
 
 test.describe('@smoke glossary health & drug facts', () => {
@@ -181,5 +184,26 @@ test.describe('@smoke glossary health & drug facts', () => {
     await page.goto('/tags/ghb');
     await expect(page.getByRole('heading', { level: 1 })).toBeVisible(RENDER);
     await expect(page.locator('a', { hasText: /^TripSit$/ })).toHaveCount(1, RENDER);
+  });
+});
+
+// ── Positive control for the glossary-link strip ──────────────────────────────
+// unlinkGlossary() is a no-op the day the renderer renames its attribute, and a
+// no-op here is invisible: the phrase assertions above would keep passing until
+// the next word inside one of them became a glossary term, then go red for a
+// content defect that is not there. So assert the strip had something to do.
+test.describe('@smoke glossary-link strip control', () => {
+  test('health-facts: the crawler HTML carries glossary links, and the strip removes them', async ({
+    request,
+  }) => {
+    const res = await request.get('/tags/doxy-pep', { headers: { 'user-agent': CRAWLER['user-agent'] } });
+    expect(res.status(), '/tags/doxy-pep must be reachable').toBeLessThan(400);
+    const raw = await res.text();
+    expect(raw, 'the renderer no longer emits ' + GLOSSARY_LINK_ATTR + ' — unlinkGlossary is now a silent no-op').toContain(
+      GLOSSARY_LINK_ATTR,
+    );
+    expect(unlinkGlossary(raw), 'unlinkGlossary left a glossary anchor behind').not.toContain(
+      GLOSSARY_LINK_ATTR,
+    );
   });
 });
