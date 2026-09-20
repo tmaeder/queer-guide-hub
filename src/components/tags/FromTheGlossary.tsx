@@ -8,7 +8,7 @@ import { isAdultTag } from '@/components/resources/categoryMeta';
 import { TagDefinitionCard } from './TagDefinitionCard';
 
 function richness(p: TagPreview): number {
-  return (p.short_description ? 2 : 0) + (p.description ? 1 : 0);
+  return p.description ? 1 : 0;
 }
 
 /**
@@ -36,7 +36,7 @@ export function FromTheGlossary({
   const { data: previews = [] } = useTagPreviews(lookup);
 
   const picks = previews
-    .filter((p) => p.short_description || p.description)
+    .filter((p) => p.description)
     .filter((p) => affirmed || !isAdultTag(p))
     .sort((a, b) => richness(b) - richness(a) || (b.usage_count ?? 0) - (a.usage_count ?? 0))
     .slice(0, max);

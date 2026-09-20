@@ -78,7 +78,7 @@ export function TagIndexCard({
 
 export function TagIndexRow({ tag, uses, categoryLabel, aliasMatch }: TagIndexItemProps) {
   const { t } = useTranslation();
-  const blurb = tag.short_description || tag.description;
+  const blurb = tag.description;
 
   return (
     <LocalizedLink

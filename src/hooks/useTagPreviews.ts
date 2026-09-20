@@ -8,13 +8,12 @@ import { isAdultTag } from '@/components/resources/categoryMeta';
  * entries seeded by the batch hook are interchangeable with single fetches.
  */
 export const TAG_PREVIEW_COLUMNS =
-  'id,slug,name,short_description,description,category,is_adult,is_sensitive,image_url,usage_count';
+  'id,slug,name,description,category,is_adult,is_sensitive,image_url,usage_count';
 
 export interface TagPreview {
   id: string;
   slug: string;
   name: string;
-  short_description: string | null;
   description: string | null;
   category: string | null;
   is_adult: boolean;
@@ -40,7 +39,9 @@ export async function fetchTagPreviews(slugs: string[]): Promise<TagPreview[]> {
     .from('unified_tags')
     .select(TAG_PREVIEW_COLUMNS)
     .in('slug', normalized)
-    .eq('status', 'active');
+    .eq('status', 'active')
+    .eq('publication_role', 'article')
+    .eq('restoration_review_required', false);
   if (error) throw error;
   return (data ?? []) as TagPreview[];
 }
@@ -88,10 +89,13 @@ export function useHomeGlossaryPool() {
         .from('unified_tags')
         .select(TAG_PREVIEW_COLUMNS)
         .eq('status', 'active')
+        .eq('publication_role', 'article')
+        .eq('restoration_review_required', false)
         .eq('is_adult', false)
         .eq('seo_indexable', true)
-        .not('short_description', 'is', null)
-        .order('quality_score', { ascending: false, nullsFirst: false })
+        .not('description', 'is', null)
+        .not('prose_reviewed_at', 'is', null)
+        .order('usage_count', { ascending: false, nullsFirst: false })
         .limit(24);
       if (error) throw error;
       return ((data ?? []) as TagPreview[]).filter((p) => !isAdultTag(p));

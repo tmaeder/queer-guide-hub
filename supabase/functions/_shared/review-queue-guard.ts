@@ -36,6 +36,12 @@ export interface ReviewQueueGuardOptions {
   fields: readonly string[]
   /** Entity ids in this run. */
   ids: string[]
+  /**
+   * Treat any prior rejection for the entity/field as final, regardless of a
+   * model's later wording. Use this for subjective LLM fields where a fresh
+   * paraphrase is not new evidence.
+   */
+  rejectAnyValue?: boolean
 }
 
 /**
@@ -136,7 +142,8 @@ export async function loadReviewQueueGuard(
       // repeat rejection on record (126 groups, 273 rows): ALL 126 re-proposed a
       // byte-identical value and NONE differed, so this suppresses pure repeats and
       // leaves a genuinely changed proposal free to reach a human.
-      if (rejectedValues?.get(k)?.has(canonicalJson(proposedValue))) return 'rejected'
+      const rejected = rejectedValues?.get(k)
+      if (rejected && (opts.rejectAnyValue || rejected.has(canonicalJson(proposedValue)))) return 'rejected'
       return null
     },
     markQueued(entityId, field) {

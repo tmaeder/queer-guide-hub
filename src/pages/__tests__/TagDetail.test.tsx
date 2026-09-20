@@ -217,6 +217,72 @@ describe('TagDetail — SEO', () => {
 });
 
 describe('TagDetail — page', () => {
+  it('routes utility vocabulary to tag search without rendering an article', async () => {
+    tagRow = { ...BASE, publication_role: 'utility' };
+    const qc = new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: 0 } } });
+    render(
+      <QueryClientProvider client={qc}>
+        <MemoryRouter initialEntries={['/tags/bear']}>
+          <SafeModeProvider>
+            <Routes>
+              <Route path="/tags/:tagName" element={<TagDetail />} />
+              <Route path="/search" element={<div data-testid="tag-search-route" />} />
+            </Routes>
+          </SafeModeProvider>
+        </MemoryRouter>
+      </QueryClientProvider>,
+    );
+    expect(await screen.findByTestId('tag-search-route')).toBeInTheDocument();
+    expect(screen.queryByRole('heading', { level: 1, name: 'Bear' })).not.toBeInTheDocument();
+  });
+
+  it('routes person redirects to the canonical personality page', async () => {
+    tagRow = { ...BASE, publication_role: 'entity_redirect', entity_kind: 'person' };
+    const qc = new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: 0 } } });
+    render(
+      <QueryClientProvider client={qc}>
+        <MemoryRouter initialEntries={['/tags/bear']}>
+          <SafeModeProvider>
+            <Routes>
+              <Route path="/tags/:tagName" element={<TagDetail />} />
+              <Route
+                path="/personalities/:slug"
+                element={<div data-testid="personality-route" />}
+              />
+            </Routes>
+          </SafeModeProvider>
+        </MemoryRouter>
+      </QueryClientProvider>,
+    );
+    expect(await screen.findByTestId('personality-route')).toBeInTheDocument();
+  });
+
+  it('uses the reviewed canonical path for non-person entity redirects', async () => {
+    tagRow = {
+      ...BASE,
+      publication_role: 'entity_redirect',
+      canonical_entity_type: 'organization',
+      canonical_entity_path: '/organizations/act-up',
+    };
+    const qc = new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: 0 } } });
+    render(
+      <QueryClientProvider client={qc}>
+        <MemoryRouter initialEntries={['/tags/bear']}>
+          <SafeModeProvider>
+            <Routes>
+              <Route path="/tags/:tagName" element={<TagDetail />} />
+              <Route
+                path="/organizations/:slug"
+                element={<div data-testid="organization-route" />}
+              />
+            </Routes>
+          </SafeModeProvider>
+        </MemoryRouter>
+      </QueryClientProvider>,
+    );
+    expect(await screen.findByTestId('organization-route')).toBeInTheDocument();
+  });
+
   it('redirects a place tag without rendering a false 404 or probing the gate', async () => {
     tagRow = null;
     const qc = new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: 0 } } });

@@ -3,93 +3,123 @@ import { Gauge } from 'lucide-react';
 import { useTagQualityScorecard } from '@/hooks/useTagQualityScorecard';
 import { AdminStat } from '@/components/admin/primitives/AdminStat';
 
-const GAP_LABELS: Record<string, string> = {
-  description: 'No description',
-  image: 'No image',
-  category: 'Uncategorized',
-  i18n: 'Untranslated',
-  links: 'No wiki link',
-  used: 'Unused',
-  embedding: 'No embedding',
+const ISSUE_LABELS: Record<string, string> = {
+  article_missing_description: 'Articles missing canonical summary',
+  article_missing_category: 'Articles missing primary category',
+  article_unreviewed: 'Articles awaiting prose review',
+  high_risk_missing_source: 'High-risk articles missing source',
+  ontology_pending: 'Articles awaiting ontology decision',
+  utility_indexable: 'Utility tags published as articles',
+  redirect_indexable: 'Redirect tags published as articles',
+  redirect_missing_target: 'Entity redirects missing canonical target',
+  place_like_facets_without_target: 'Place-like facets needing entity review',
+  restoration_review_pending: 'Restored tags awaiting disposition',
 };
 
-const BUCKETS: {
-  key: keyof NonNullable<ReturnType<typeof useTagQualityScorecard>['data']>['buckets'];
-  label: string;
-}[] = [
-  { key: 'p0_20', label: '0–20' },
-  { key: 'p20_40', label: '20–40' },
-  { key: 'p40_60', label: '40–60' },
-  { key: 'p60_80', label: '60–80' },
-  { key: 'p80_100', label: '80–100' },
-];
+function completion(done: number, total: number) {
+  return total ? `${done}/${total}` : '0/0';
+}
 
 /**
- * Content-quality scorecard for the active tag glossary: mean score, per-dimension
- * gap counts, and a score distribution. Counts come from tag_quality_scorecard(),
- * populated nightly by run_tag_quality_recompute().
+ * Role-aware glossary governance. Usage determines queue order, never quality;
+ * embeddings and a per-tag image quota are deliberately absent.
  */
 export function TagQualityPanel() {
   const { data } = useTagQualityScorecard();
-  if (!data || !data.scored) return null;
-
-  const { mean_score, mean_confidence, scored, active_total, gaps, buckets, sensitive_unreviewed } =
-    data;
-  const maxBucket = Math.max(1, ...BUCKETS.map((b) => buckets[b.key] ?? 0));
+  if (!data) return null;
+  const issueRows = Object.entries(data.issues).sort(([, a], [, b]) => b - a);
 
   return (
     <Card className="mb-6">
       <CardHeader className="pb-2">
         <CardTitle className="flex items-center gap-2 text-title">
           <Gauge size={16} />
-          Tag quality
+          Glossary quality by publication role
         </CardTitle>
       </CardHeader>
       <CardContent className="flex flex-col gap-4">
+        {data.oldest_unresolved_at && (
+          <p className="text-13 text-muted-foreground">
+            Oldest unresolved entry:{' '}
+            <span className="font-medium text-foreground">
+              {new Date(data.oldest_unresolved_at).toLocaleDateString()}
+            </span>
+          </p>
+        )}
         <div className="flex flex-wrap gap-2">
+          <AdminStat label="Articles" value={data.roles.article} />
+          <AdminStat label="Utility vocabulary" value={data.roles.utility} />
+          <AdminStat label="Entity redirects" value={data.roles.entity_redirect} />
           <AdminStat
-            label={`Mean score (${scored}/${active_total} scored)`}
-            value={mean_score ?? 0}
+            label="Redirect targets verified"
+            value={completion(data.redirect.valid_target, data.redirect.total)}
+            hardFail={data.redirect.valid_target !== data.redirect.total}
           />
-          {mean_confidence != null && <AdminStat label="Mean confidence" value={mean_confidence} />}
-          {sensitive_unreviewed > 0 && (
-            <AdminStat label="Sensitive · unreviewed" value={sensitive_unreviewed} hardFail />
+          {data.sensitive_unreviewed > 0 && (
+            <AdminStat label="Sensitive · unreviewed" value={data.sensitive_unreviewed} hardFail />
           )}
         </div>
 
         <div>
-          <div className="mb-2 text-13 text-muted-foreground">Missing data by dimension</div>
-          <div className="flex flex-wrap gap-2">
-            {Object.entries(gaps)
-              .sort(([, a], [, b]) => b - a)
-              .map(([key, count]) => (
-                <div
-                  key={key}
-                  className="flex items-center gap-2 rounded-element bg-muted/40 px-4 py-2"
-                >
-                  <span className="text-body-lg tabular-nums">{count}</span>
-                  <span className="text-13 text-muted-foreground">{GAP_LABELS[key] ?? key}</span>
+          <div className="mb-2 text-13 text-muted-foreground">Article decisions completed</div>
+          <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+            {[
+              ['Definition', data.article.definition_complete],
+              ['Primary category', data.article.category_complete],
+              ['Prose review', data.article.review_complete],
+              ['Public source', data.article.source_complete],
+              ['Ontology decision', data.article.ontology_complete],
+              ['Localisation started', data.article.localisation_started],
+            ].map(([label, done]) => (
+              <div key={String(label)} className="rounded-element bg-muted/40 px-4 py-2">
+                <div className="text-body-lg tabular-nums">
+                  {completion(Number(done), data.article.total)}
                 </div>
-              ))}
+                <div className="text-13 text-muted-foreground">{label}</div>
+              </div>
+            ))}
           </div>
         </div>
 
         <div>
-          <div className="mb-2 text-13 text-muted-foreground">Score distribution</div>
-          <div className="flex items-end gap-2 h-24">
-            {BUCKETS.map((b) => {
-              const v = buckets[b.key] ?? 0;
-              return (
-                <div key={b.key} className="flex flex-1 flex-col items-center justify-end gap-1">
-                  <span className="text-13 tabular-nums text-muted-foreground">{v}</span>
-                  <div
-                    className="w-full rounded-element bg-foreground/80"
-                    style={{ height: `${Math.round((v / maxBucket) * 72)}px` }}
-                  />
-                  <span className="text-2xs text-muted-foreground">{b.label}</span>
+          <div className="mb-2 text-13 text-muted-foreground">Open editorial issues</div>
+          <div className="flex flex-wrap gap-2">
+            {issueRows.map(([key, count]) => (
+              <div
+                key={key}
+                className="flex items-center gap-2 rounded-element bg-muted/40 px-4 py-2"
+              >
+                <span className="text-body-lg tabular-nums">{count}</span>
+                <span className="text-13 text-muted-foreground">{ISSUE_LABELS[key] ?? key}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div>
+          <div className="mb-2 text-13 text-muted-foreground">Localised article summaries</div>
+          <div className="flex flex-wrap gap-2">
+            {Object.entries(data.localisation).map(([language, count]) => (
+              <div key={language} className="rounded-element bg-muted/40 px-4 py-2 text-13">
+                <span className="font-medium uppercase">{language.replace('_reviewed', '')}</span>{' '}
+                <span className="tabular-nums text-muted-foreground">{count}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div>
+          <div className="mb-2 text-13 text-muted-foreground">Category hotspots</div>
+          <div className="grid gap-2 sm:grid-cols-2">
+            {data.categories.slice(0, 8).map((row) => (
+              <div key={row.category} className="rounded-element bg-muted/40 px-4 py-2">
+                <div className="font-medium">{row.category}</div>
+                <div className="text-13 tabular-nums text-muted-foreground">
+                  {row.missing_description} missing · {row.weak_definition} weak ·{' '}
+                  {row.sensitive_unreviewed} sensitive unreviewed
                 </div>
-              );
-            })}
+              </div>
+            ))}
           </div>
         </div>
       </CardContent>

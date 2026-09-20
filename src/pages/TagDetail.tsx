@@ -200,6 +200,18 @@ export default function TagDetail() {
     }
   }, [tag?.slug, slug, navigate]);
 
+  const nonArticleRedirect =
+    tag?.publication_role && tag.publication_role !== 'article'
+      ? tag.publication_role === 'entity_redirect' && tag.canonical_entity_path
+        ? tag.canonical_entity_path
+        : tag.publication_role === 'entity_redirect' && tag.entity_kind === 'person'
+          ? `/personalities/${encodeURIComponent(tag.slug)}`
+          : `/search?tags=${encodeURIComponent(tag.slug)}`
+      : null;
+  useEffect(() => {
+    if (nonArticleRedirect) navigate(nonArticleRedirect, { replace: true });
+  }, [nonArticleRedirect, navigate]);
+
   // Curated legal citations, for law tags only. `fetchTagWithCategories` attaches
   // them; the `CentralizedTag` cast above does not know about them, hence the
   // local widening — same shape as the `human_reviewed` read further down.
@@ -410,7 +422,7 @@ export default function TagDetail() {
     // own canonical with no robots tag: an indexable soft 404, the same failure
     // that got merged slugs indexed before they were 301'd. `noIndex` is the
     // lever that shuts that off — the canonical cannot be suppressed here.
-    if (placeRedirect || isLoading) {
+    if (placeRedirect || nonArticleRedirect || isLoading) {
       return { title: t('tags.detail.loading', 'Loading'), noIndex: true };
     }
     if (isError || !tag) {
@@ -441,7 +453,6 @@ export default function TagDetail() {
       ?.trim();
     const description =
       tag.description?.trim() ||
-      tag.short_description?.trim() ||
       (longFirst ? longFirst.slice(0, 200) : '') ||
       `${tag.name} — Queer Guide glossary entry.`;
     // The live route is /tags/<slug>. This used to emit /resources/<slug>,
@@ -486,6 +497,7 @@ export default function TagDetail() {
     publishedSources,
     isAdult,
     placeRedirect,
+    nonArticleRedirect,
     isLoading,
     isError,
     isGatedTag,
@@ -497,7 +509,7 @@ export default function TagDetail() {
   // The navigation effect above runs after render. Keep that transition visually and semantically
   // neutral: the destination is known, so rendering the missing-tag branch in the meantime would
   // flash a false 404 and expose the wrong page title to assistive technology.
-  if (placeRedirect) return null;
+  if (placeRedirect || nonArticleRedirect) return null;
 
   if (isLoading) {
     return (

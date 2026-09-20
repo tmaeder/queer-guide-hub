@@ -4,6 +4,14 @@ import { EDGES, NODES } from './data';
 
 export const consentFlowMeta: InfographicMeta = {
   id: 'consent-flow',
+  visualType: 'diagram',
+  componentKey: 'tag-infographic/consent-flow',
+  provenance: {
+    authoredBy: 'Queer Guide editorial team',
+    license: 'CC BY 4.0',
+    reviewedOn: '2026-09-20',
+    reviewedBy: 'Queer Guide editorial team',
+  },
   archetype: 'flow-graph',
   // The outcome plates ARE risk statements, so the figure takes the locked
   // trip-safety palette and — by construction of the type — cannot also name

@@ -185,6 +185,10 @@ Deno.serve(async (req: Request) => {
     idColumn: 'city_id',
     fields: CITY_GATED_FIELDS,
     ids: cities.map((c) => c.id),
+    // These are subjective model outputs. A paraphrase of a city rating or hook
+    // is not new evidence, and production showed the same cities returning every
+    // hour after human rejection (up to 14 rounds per field).
+    rejectAnyValue: true,
   })
   const results: Array<Record<string, unknown>> = []
 
@@ -318,7 +322,12 @@ Deno.serve(async (req: Request) => {
       }
 
       if (skipGated) gatedProposals.length = 0
-      if (gatedProposals.length) update.needs_attention = true
+      // Do not resurrect needs_attention when every generated proposal has already
+      // been rejected. Open proposals still keep the flag because this composer
+      // intentionally refreshes them when its grounding changes.
+      if (gatedProposals.some((g) => guard.blocked(c.id, g.field, g.value) !== 'rejected')) {
+        update.needs_attention = true
+      }
 
       if (!dryRun) {
         await supabase.from('cities').update(update).eq('id', c.id)

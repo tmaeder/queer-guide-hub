@@ -23562,6 +23562,10 @@ export type Database = {
       }
       unified_tags: {
         Row: {
+          canonical_entity_id: string | null
+          canonical_entity_path: string | null
+          canonical_entity_reviewed_at: string | null
+          canonical_entity_type: string | null
           category: string | null
           category_id: string | null
           confidence_score: number | null
@@ -23589,9 +23593,18 @@ export type Database = {
           merged_into_id: string | null
           name: string
           name_i18n: Json
+          ontology_review_status: string
+          ontology_reviewed_at: string | null
           prose_reviewed_at: string | null
+          publication_role: string
+          publication_role_review_note: string | null
+          publication_role_reviewed_at: string | null
           quality_breakdown: Json | null
           quality_score: number | null
+          restoration_original_entity_kind: Database["public"]["Enums"]["tag_entity_kind"] | null
+          restoration_previous_reason: string | null
+          restoration_review_required: boolean
+          restoration_started_at: string | null
           scientific_data: Json | null
           sensitive_topics: string[] | null
           seo_deindex_reason: string | null
@@ -23607,6 +23620,10 @@ export type Database = {
           wolfram_enriched_at: string | null
         }
         Insert: {
+          canonical_entity_id?: string | null
+          canonical_entity_path?: string | null
+          canonical_entity_reviewed_at?: string | null
+          canonical_entity_type?: string | null
           category?: string | null
           category_id?: string | null
           confidence_score?: number | null
@@ -23634,9 +23651,18 @@ export type Database = {
           merged_into_id?: string | null
           name: string
           name_i18n?: Json
+          ontology_review_status?: string
+          ontology_reviewed_at?: string | null
           prose_reviewed_at?: string | null
+          publication_role?: string
+          publication_role_review_note?: string | null
+          publication_role_reviewed_at?: string | null
           quality_breakdown?: Json | null
           quality_score?: number | null
+          restoration_original_entity_kind?: Database["public"]["Enums"]["tag_entity_kind"] | null
+          restoration_previous_reason?: string | null
+          restoration_review_required?: boolean
+          restoration_started_at?: string | null
           scientific_data?: Json | null
           sensitive_topics?: string[] | null
           seo_deindex_reason?: string | null
@@ -23652,6 +23678,10 @@ export type Database = {
           wolfram_enriched_at?: string | null
         }
         Update: {
+          canonical_entity_id?: string | null
+          canonical_entity_path?: string | null
+          canonical_entity_reviewed_at?: string | null
+          canonical_entity_type?: string | null
           category?: string | null
           category_id?: string | null
           confidence_score?: number | null
@@ -23679,9 +23709,18 @@ export type Database = {
           merged_into_id?: string | null
           name?: string
           name_i18n?: Json
+          ontology_review_status?: string
+          ontology_reviewed_at?: string | null
           prose_reviewed_at?: string | null
+          publication_role?: string
+          publication_role_review_note?: string | null
+          publication_role_reviewed_at?: string | null
           quality_breakdown?: Json | null
           quality_score?: number | null
+          restoration_original_entity_kind?: Database["public"]["Enums"]["tag_entity_kind"] | null
+          restoration_previous_reason?: string | null
+          restoration_review_required?: boolean
+          restoration_started_at?: string | null
           scientific_data?: Json | null
           sensitive_topics?: string[] | null
           seo_deindex_reason?: string | null

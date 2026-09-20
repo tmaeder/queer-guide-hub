@@ -113,6 +113,22 @@ Deno.test('a rejection on one field does not block another field', async () => {
   assertEquals(g.blocked('v1', 'accessibility_notes', { value: 1 }), null)
 })
 
+Deno.test('rejectAnyValue respects a human rejection across LLM paraphrases', async () => {
+  const g = await loadReviewQueueGuard(
+    fakeClient({
+      open: [],
+      rejected: [{
+        venue_id: 'v1',
+        field: 'accessibility_notes',
+        proposed_value: { value: 'old wording' },
+      }],
+    }),
+    { ...OPTS, rejectAnyValue: true },
+  )
+  assertEquals(g.blocked('v1', 'accessibility_notes', { value: 'new wording' }), 'rejected')
+  assertEquals(g.blocked('v1', 'accessibility_attributes', { value: 'new wording' }), null)
+})
+
 Deno.test('markQueued stops a second proposal in the same run', async () => {
   const g = await loadReviewQueueGuard(fakeClient({ open: [], rejected: [] }), OPTS)
   assertEquals(g.blocked('v1', 'accessibility_attributes', { v: 1 }), null)

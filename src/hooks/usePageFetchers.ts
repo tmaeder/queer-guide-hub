@@ -431,6 +431,7 @@ export async function fetchTagWithCategories(name: string) {
     .select('*')
     .eq('slug', name.toLowerCase())
     .eq('status', 'active')
+    .eq('restoration_review_required', false)
     .limit(1)
     .maybeSingle();
   let data = bySlug.data as Record<string, unknown> | null;
@@ -440,6 +441,7 @@ export async function fetchTagWithCategories(name: string) {
       .select('*')
       .ilike('name', name)
       .eq('status', 'active')
+      .eq('restoration_review_required', false)
       .limit(1)
       .maybeSingle();
     data = byName.data as Record<string, unknown> | null;
@@ -468,6 +470,7 @@ export async function fetchTagWithCategories(name: string) {
         .select('*')
         .eq('slug', canonicalSlug)
         .eq('status', 'active')
+        .eq('restoration_review_required', false)
         .limit(1)
         .maybeSingle();
       data = byRedirect.data as Record<string, unknown> | null;

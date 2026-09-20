@@ -32,6 +32,9 @@ import {
 import { formatDateTime } from '@/lib/format';
 import { TagCategorizer } from '@/components/admin/TagCategorizer';
 import { TagQualityPanel } from '@/components/admin/TagQualityPanel';
+import { TagEditorialQueue } from '@/components/admin/TagEditorialQueue';
+import { TagEntityAuditQueue } from '@/components/admin/TagEntityAuditQueue';
+import { TagRestorationQueue } from '@/components/admin/TagRestorationQueue';
 import { TagVocabularyHealthPanel } from '@/components/admin/TagVocabularyHealthPanel';
 import { TagHygienePanel } from '@/components/admin/TagHygienePanel';
 import { TagSuggestionsReviewPanel } from '@/components/admin/TagSuggestionsReviewPanel';
@@ -53,6 +56,7 @@ interface TagRow {
   name: string;
   slug: string;
   category: string;
+  publication_role: string;
   description: string | null;
   usage_count: number;
   status: string;
@@ -73,20 +77,19 @@ const TAXONOMY_PAGES: Array<{ label: string; route: string }> = [
 ];
 
 export default function AdminTags() {
-  const { categoriesTree, createTag, updateTag, deleteTag, allTags: tags } = useCentralizedTags();
+  const { categoriesTree, createTag, updateTag, deleteTag } = useCentralizedTags();
 
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [editingTag, setEditingTag] = useState<TagRow | null>(null);
-  const [isBulkEditOpen, setIsBulkEditOpen] = useState(false);
-  const [bulkEditTags, setBulkEditTags] = useState<Record<string, string>>({});
   const [formData, setFormData] = useState({
     name: '',
     category: '',
     description: '',
+    publication_role: 'auto',
   });
 
   const resetForm = () => {
-    setFormData({ name: '', category: '', description: '' });
+    setFormData({ name: '', category: '', description: '', publication_role: 'auto' });
     setEditingTag(null);
   };
 
@@ -97,6 +100,9 @@ export default function AdminTags() {
         name: normalizeTagName(formData.name),
         category: formData.category?.trim() || null,
         description: formData.description?.trim() || null,
+        ...(formData.publication_role !== 'auto'
+          ? { publication_role: formData.publication_role }
+          : {}),
       };
       if (editingTag) {
         await updateTag(editingTag.id, cleanData);
@@ -126,6 +132,7 @@ export default function AdminTags() {
       name: tag.name,
       category: tag.category,
       description: tag.description || '',
+      publication_role: tag.publication_role || 'auto',
     });
     setEditingTag(tag);
     setIsCreateDialogOpen(true);
@@ -151,29 +158,6 @@ export default function AdminTags() {
       toast.error(err instanceof Error ? err.message : 'Failed to delete tag', {
         duration: 12_000,
       });
-    }
-  };
-
-  const handleBulkEditDescriptions = () => {
-    const withoutDesc = tags.filter((t) => !t.description?.trim());
-    const initial: Record<string, string> = {};
-    withoutDesc.forEach((t) => {
-      initial[t.id] = `${t.name} related to ${t.category}`;
-    });
-    setBulkEditTags(initial);
-    setIsBulkEditOpen(true);
-  };
-
-  const saveBulkDescriptions = async () => {
-    try {
-      await Promise.all(
-        Object.entries(bulkEditTags).map(([id, description]) => updateTag(id, { description })),
-      );
-      toast.success(`Updated ${Object.keys(bulkEditTags).length} tags`);
-      setIsBulkEditOpen(false);
-      setBulkEditTags({});
-    } catch {
-      toast.error('Error: Failed to update descriptions');
     }
   };
 
@@ -233,6 +217,16 @@ export default function AdminTags() {
           hideable: true,
         } satisfies AdminColumnMeta,
       }),
+      columnHelper.accessor('publication_role', {
+        header: 'Publication role',
+        cell: (info) => <Badge variant="outline">{info.getValue()}</Badge>,
+        meta: {
+          serverSortable: true,
+          serverFilterable: true,
+          groupable: true,
+          hideable: true,
+        } satisfies AdminColumnMeta,
+      }),
       columnHelper.accessor('usage_count', {
         header: 'Usage',
         cell: (info) => info.getValue()?.toLocaleString() ?? 0,
@@ -267,7 +261,8 @@ export default function AdminTags() {
   const tableConfig: AdminTableConfig<TagRow> = useMemo(
     () => ({
       tableName: 'unified_tags',
-      select: 'id,name,slug,category,description,usage_count,status,deprecation_reason,created_at',
+      select:
+        'id,name,slug,category,publication_role,description,usage_count,status,deprecation_reason,created_at',
       columns,
       defaultSort: { column: 'name', direction: 'asc' },
       defaultPageSize: 50,
@@ -300,6 +295,17 @@ export default function AdminTags() {
             { value: 'active', label: 'Active' },
             { value: 'deprecated', label: 'Deprecated' },
             { value: 'merged', label: 'Merged' },
+          ],
+        },
+        {
+          key: 'publication_role',
+          label: 'Publication role',
+          type: 'select',
+          column: 'publication_role',
+          options: [
+            { value: 'article', label: 'Article' },
+            { value: 'utility', label: 'Utility' },
+            { value: 'entity_redirect', label: 'Entity redirect' },
           ],
         },
       ],
@@ -351,10 +357,6 @@ export default function AdminTags() {
           />
           <BulkCreateAITags onComplete={() => window.location.reload()} />
           <BatchGeoLinkDialog onComplete={() => window.location.reload()} />
-          <Button variant="outline" size="sm" onClick={handleBulkEditDescriptions}>
-            <Edit className="h-3.5 w-3.5 mr-1" />
-            Bulk Descriptions
-          </Button>
           <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
             <DialogTrigger asChild>
               <Button size="sm" onClick={resetForm}>
@@ -412,6 +414,32 @@ export default function AdminTags() {
                     rows={3}
                   />
                 </div>
+                <div>
+                  <Label htmlFor="publication-role">Publication role</Label>
+                  <Select
+                    value={formData.publication_role}
+                    onValueChange={(value) =>
+                      setFormData((previous) => ({ ...previous, publication_role: value }))
+                    }
+                  >
+                    <SelectTrigger id="publication-role">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="auto">Automatic from entity kind</SelectItem>
+                      <SelectItem value="article">Article</SelectItem>
+                      <SelectItem value="utility">Utility</SelectItem>
+                      <SelectItem value="entity_redirect" disabled>
+                        Entity redirect (set through entity review)
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <p className="mt-2 text-13 text-muted-foreground">
+                    Article/utility changes are editorial publication decisions. Entity redirects
+                    are created through the tag/entity review queue so a verified target is saved
+                    atomically.
+                  </p>
+                </div>
                 {editingTag && <TagAliasesSection tagId={editingTag.id} />}
                 {editingTag && <TagLegalSourcesSection tagId={editingTag.id} />}
                 <Button type="submit" className="w-full">
@@ -447,6 +475,9 @@ export default function AdminTags() {
             </div>
           </div>
           <TagQualityPanel />
+          <TagRestorationQueue />
+          <TagEntityAuditQueue />
+          <TagEditorialQueue />
           <TagVocabularyHealthPanel />
           <TagHygienePanel />
           <SensitiveTagReviewPanel />
@@ -456,53 +487,6 @@ export default function AdminTags() {
           </div>
           <TagMergeReviewQueue />
         </>
-      }
-      afterTable={
-        <Dialog open={isBulkEditOpen} onOpenChange={setIsBulkEditOpen}>
-          <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle>Bulk Edit Tag Descriptions</DialogTitle>
-              <p className="text-sm text-muted-foreground">
-                Add descriptions to tags that don't have them.
-              </p>
-            </DialogHeader>
-            <div className="flex flex-col gap-4">
-              {Object.entries(bulkEditTags).map(([tagId, description]) => {
-                const tag = tags.find((t) => t.id === tagId);
-                if (!tag) return null;
-                return (
-                  <div key={tagId} className="rounded-element bg-muted p-4">
-                    <div className="flex items-center gap-2 mb-2">
-                      <span className="font-medium">{tag.name}</span>
-                      <Badge variant="outline">{tag.category}</Badge>
-                    </div>
-                    <Textarea
-                      value={description}
-                      onChange={(e) => setBulkEditTags((p) => ({ ...p, [tagId]: e.target.value }))}
-                      placeholder="Enter description..."
-                      rows={2}
-                    />
-                  </div>
-                );
-              })}
-              {Object.keys(bulkEditTags).length === 0 && (
-                <div className="text-center py-8">
-                  <p className="text-sm text-muted-foreground">All tags have descriptions!</p>
-                </div>
-              )}
-              {Object.keys(bulkEditTags).length > 0 && (
-                <div className="flex gap-2 pt-4">
-                  <Button onClick={saveBulkDescriptions} className="flex-1">
-                    Save All ({Object.keys(bulkEditTags).length} tags)
-                  </Button>
-                  <Button variant="outline" onClick={() => setIsBulkEditOpen(false)}>
-                    Cancel
-                  </Button>
-                </div>
-              )}
-            </div>
-          </DialogContent>
-        </Dialog>
       }
     />
   );

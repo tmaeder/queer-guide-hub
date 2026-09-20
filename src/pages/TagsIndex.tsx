@@ -167,20 +167,26 @@ export default function TagsIndex() {
 
   // ── The single indexing pass ────────────────────────────────────────────
   const { entries, byId } = useMemo(() => {
-    const list: TagIndexEntry[] = (allTags ?? []).map((tag) => {
-      const categoryNames = [
-        ...(tag.categories?.map((c) => c.name) ?? []),
-        ...(tag.categories?.map((c) => c.parent_name ?? null) ?? []),
-      ];
-      const primary = tag.categories?.find((c) => c.is_primary) ?? tag.categories?.[0];
-      return {
-        tag,
-        haystack: `${tag.name} ${tag.slug} ${tag.description ?? ''}`.toLowerCase(),
-        letter: letterFor(tag.name),
-        parentName: primary?.parent_name ?? primary?.name ?? null,
-        categoryNames,
-      };
-    });
+    const list: TagIndexEntry[] = (allTags ?? [])
+      // Older/test backends omit the new field, so absence keeps the historical
+      // article behaviour. Once migrated, utility facets and entity redirects
+      // remain usable for tagging/search without becoming thin glossary pages.
+      .filter((tag) => !tag.publication_role || tag.publication_role === 'article')
+      .filter((tag) => !tag.restoration_review_required)
+      .map((tag) => {
+        const categoryNames = [
+          ...(tag.categories?.map((c) => c.name) ?? []),
+          ...(tag.categories?.map((c) => c.parent_name ?? null) ?? []),
+        ];
+        const primary = tag.categories?.find((c) => c.is_primary) ?? tag.categories?.[0];
+        return {
+          tag,
+          haystack: `${tag.name} ${tag.slug} ${tag.description ?? ''}`.toLowerCase(),
+          letter: letterFor(tag.name),
+          parentName: primary?.parent_name ?? primary?.name ?? null,
+          categoryNames,
+        };
+      });
     return { entries: list, byId: new Map(list.map((e) => [e.tag.id, e])) };
   }, [allTags]);
 

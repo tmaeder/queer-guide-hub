@@ -196,6 +196,34 @@ describe('TagsIndex', () => {
     expect(within(status).queryByRole('article')).toBeNull();
   });
 
+  it('renders only article-role tags in the glossary', () => {
+    corpus = [
+      tag({ id: '1', name: 'Bear', slug: 'bear', publication_role: 'article' }),
+      tag({ id: '2', name: 'Blue', slug: 'color-blue', publication_role: 'utility' }),
+      tag({ id: '3', name: 'Berlin', slug: 'berlin', publication_role: 'entity_redirect' }),
+    ];
+    renderAt('/tags');
+    expect(screen.getByRole('link', { name: /Bear/ })).toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: /Blue/ })).not.toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: /Berlin/ })).not.toBeInTheDocument();
+  });
+
+  it('does not expose an article restored into editorial quarantine', () => {
+    corpus = [
+      tag({ id: '1', name: 'Bear', slug: 'bear', publication_role: 'article' }),
+      tag({
+        id: '2',
+        name: 'Restored candidate',
+        slug: 'restored-candidate',
+        publication_role: 'article',
+        restoration_review_required: true,
+      }),
+    ];
+    renderAt('/tags');
+    expect(screen.getByRole('link', { name: /Bear/ })).toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: /Restored candidate/ })).not.toBeInTheDocument();
+  });
+
   it('filters by letter from the URL', () => {
     renderAt('/tags?letter=D');
     expect(screen.getByRole('link', { name: /Drag/ })).toBeInTheDocument();

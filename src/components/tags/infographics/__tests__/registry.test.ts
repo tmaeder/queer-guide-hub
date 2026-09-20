@@ -105,6 +105,19 @@ describe('infographic registry', () => {
   );
 
   it.each(INFOGRAPHICS.map((f) => [f.id, f] as const))(
+    '%s: records type, asset key, provenance, licence and editorial review',
+    (_id, figure) => {
+      expect(['diagram', 'chart', 'timeline', 'symbol-guide', 'map']).toContain(figure.visualType);
+      expect(figure.componentKey.trim().length).toBeGreaterThan(0);
+      expect(figure.provenance.authoredBy.trim().length).toBeGreaterThan(0);
+      expect(figure.provenance.reviewedBy.trim().length).toBeGreaterThan(0);
+      expect(['CC BY 4.0', 'CC0', 'all-rights-reserved']).toContain(figure.provenance.license);
+      expect(figure.provenance.reviewedOn).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+      expect(Number.isNaN(new Date(figure.provenance.reviewedOn).getTime())).toBe(false);
+    },
+  );
+
+  it.each(INFOGRAPHICS.map((f) => [f.id, f] as const))(
     '%s: a risk-encoding figure never also names a track',
     (_id, figure) => {
       // The type makes this unrepresentable; the runtime assert covers a

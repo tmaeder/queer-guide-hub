@@ -107,6 +107,15 @@ export interface InfographicViewProps {
 
 interface InfographicBase {
   id: string;
+  visualType: 'diagram' | 'chart' | 'timeline' | 'symbol-guide' | 'map';
+  /** Stable registry key for the locally authored renderer or asset. */
+  componentKey: string;
+  provenance: {
+    authoredBy: string;
+    license: 'CC BY 4.0' | 'CC0' | 'all-rights-reserved';
+    reviewedOn: string;
+    reviewedBy: string;
+  };
   archetype: Archetype;
   titleKey: string;
   titleFallback: string;

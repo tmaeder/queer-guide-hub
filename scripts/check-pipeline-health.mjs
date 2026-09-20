@@ -2410,6 +2410,49 @@ const CITY_SCALAR_DENSITY_REPORTED = 33 // measured 2026-09-08, post-repair. Con
 }
 
 // ---------------------------------------------------------------------------
+// §  Glossary publication roles
+// ---------------------------------------------------------------------------
+//
+// These are zero-tolerance publication invariants, separate from the editorial
+// backlog. A large review queue is work; a utility facet published as an
+// article or an indexable article with no canonical summary is a regression.
+{
+  const res = await fetch(`${BASE}/rest/v1/rpc/tag_publication_signals`, {
+    method: 'POST', headers: { ...headers, 'Content-Type': 'application/json' }, body: '{}',
+  })
+  if (!res.ok) {
+    console.warn(`⚠ tag_publication_signals → HTTP ${res.status} (99991789916000 not applied?) — this check measured NOTHING`)
+  } else {
+    const sig = await res.json()
+    let sectionOk = true
+    const zeroInvariants = [
+      ['active_without_role', 'active tag(s) have no publication role'],
+      ['utility_indexable', 'utility tag(s) are indexable as glossary articles'],
+      ['redirect_indexable', 'entity redirect tag(s) compete with canonical entity pages'],
+      ['redirect_missing_canonical_target', 'entity redirect tag(s) have no reviewed canonical target'],
+      ['entity_kind_published_as_article', 'person/place tag(s) are published as glossary articles'],
+      ['restoration_candidate_indexable', 'restoration candidate tag(s) are indexable before review'],
+      ['restoration_candidate_in_public_search', 'restoration candidate tag(s) leaked into public search'],
+      ['article_indexable_without_canonical_description', 'indexable article(s) have no canonical description'],
+      ['article_without_primary_category', 'article-role tag(s) have no primary category'],
+    ]
+    for (const [key, why] of zeroInvariants) {
+      if (!(key in (sig ?? {}))) {
+        console.warn(`⚠ tag_publication_signals has no '${key}' key — that check measured NOTHING`)
+        sectionOk = false
+        continue
+      }
+      const n = Number(sig[key] ?? 0)
+      if (n > 0) {
+        console.error(`✗ ${n} ${why}`)
+        FAILED = true; sectionOk = false
+      }
+    }
+    if (sectionOk) console.log('✓ glossary publication roles and article gates are clean')
+  }
+}
+
+// ---------------------------------------------------------------------------
 // §  Tag category representations
 // ---------------------------------------------------------------------------
 //

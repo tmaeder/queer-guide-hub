@@ -9,6 +9,14 @@ import { AXES } from './data';
  */
 export const fourLinesMeta: InfographicMeta = {
   id: 'four-lines',
+  visualType: 'diagram',
+  componentKey: 'tag-infographic/four-lines',
+  provenance: {
+    authoredBy: 'Queer Guide editorial team',
+    license: 'CC BY 4.0',
+    reviewedOn: '2026-09-20',
+    reviewedBy: 'Queer Guide editorial team',
+  },
   archetype: 'axis-set',
   encodesRisk: false,
   // Four tracks, one per line: this is a diagram whose CONTENT is lines, and

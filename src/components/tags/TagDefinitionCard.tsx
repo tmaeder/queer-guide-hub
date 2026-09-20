@@ -31,7 +31,7 @@ export function TagDefinitionCard({
 }) {
   const { t } = useTranslation();
   const gated = isAdultTag(preview) && !affirmed;
-  const definition = preview.short_description || preview.description;
+  const definition = preview.description;
 
   return (
     <div className={cn('min-w-0', compact ? 'space-y-1' : 'space-y-2', className)}>

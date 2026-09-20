@@ -58,6 +58,15 @@ export interface CentralizedTag {
   short_description?: string | null;
   /** `concept` | `practice` | `aesthetic` | `descriptor` | `label` | `person`. */
   entity_kind?: string | null;
+  /** Publishing intent, deliberately separate from the semantic entity kind. */
+  publication_role?: string | null;
+  /** Reviewed destination for entity_redirect rows; never inferred client-side. */
+  canonical_entity_type?: string | null;
+  canonical_entity_id?: string | null;
+  canonical_entity_path?: string | null;
+  canonical_entity_reviewed_at?: string | null;
+  /** Restored from an unsupported bulk retirement; excluded from public glossary surfaces. */
+  restoration_review_required?: boolean;
   usage_count: number;
   status?: string;
   deprecation_reason?: string | null;
@@ -112,7 +121,7 @@ const EMPTY_TREE: CategoryTreeNode[] = [];
  * SINGLE surface needs a field, fetch that row where you need it instead.
  */
 export const TAG_INDEX_COLUMNS =
-  'id, name, slug, category, description, short_description, usage_count, created_at, entity_kind, status, deprecation_reason';
+  'id, name, slug, category, description, short_description, usage_count, created_at, entity_kind, publication_role, restoration_review_required, status, deprecation_reason';
 
 const PAGE = 1000;
 

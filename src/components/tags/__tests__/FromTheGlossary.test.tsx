@@ -19,7 +19,6 @@ function makePreview(overrides: Partial<TagPreview>): TagPreview {
     id: overrides.slug ?? 'x',
     slug: 'x',
     name: 'X',
-    short_description: null,
     description: null,
     category: null,
     is_adult: false,
@@ -51,7 +50,7 @@ describe('FromTheGlossary', () => {
 
   it('renders defined terms as definition cards', () => {
     previews.push(
-      makePreview({ slug: 'bear-bar', name: 'Bear bar', short_description: 'A bar for bears.' }),
+      makePreview({ slug: 'bear-bar', name: 'Bear bar', description: 'A bar for bears.' }),
     );
     wrap(<FromTheGlossary tags={['bear-bar']} />);
     expect(screen.getByText('From the glossary')).toBeInTheDocument();
@@ -59,27 +58,23 @@ describe('FromTheGlossary', () => {
   });
 
   it('drops adult terms entirely when unaffirmed', () => {
-    previews.push(
-      makePreview({ slug: 'kink', name: 'Kink', short_description: 'Def.', is_adult: true }),
-    );
+    previews.push(makePreview({ slug: 'kink', name: 'Kink', description: 'Def.', is_adult: true }));
     const { container } = wrap(<FromTheGlossary tags={['kink']} />);
     expect(container.firstChild).toBeNull();
   });
 
   it('keeps adult terms once affirmed', () => {
     affirmed = true;
-    previews.push(
-      makePreview({ slug: 'kink', name: 'Kink', short_description: 'Def.', is_adult: true }),
-    );
+    previews.push(makePreview({ slug: 'kink', name: 'Kink', description: 'Def.', is_adult: true }));
     wrap(<FromTheGlossary tags={['kink']} />);
     expect(screen.getByText('Def.')).toBeInTheDocument();
   });
 
-  it('caps at max, ranked by definition richness then usage', () => {
+  it('caps at max, ranked by usage once canonical definitions are present', () => {
     previews.push(
       makePreview({ slug: 'a', name: 'Alpha', description: 'Long only.', usage_count: 1 }),
-      makePreview({ slug: 'b', name: 'Beta', short_description: 'Short.', usage_count: 5 }),
-      makePreview({ slug: 'c', name: 'Gamma', short_description: 'Short too.', usage_count: 9 }),
+      makePreview({ slug: 'b', name: 'Beta', description: 'Definition.', usage_count: 5 }),
+      makePreview({ slug: 'c', name: 'Gamma', description: 'Definition too.', usage_count: 9 }),
     );
     wrap(<FromTheGlossary tags={['a', 'b', 'c']} max={2} />);
     expect(screen.getByText('Gamma')).toBeInTheDocument();
