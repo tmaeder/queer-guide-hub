@@ -1,37 +1,82 @@
-import { assert, assertEquals } from 'https://deno.land/std@0.224.0/assert/mod.ts'
+import { assert, assertEquals, assertMatch } from 'https://deno.land/std@0.224.0/assert/mod.ts'
 import { describeUnparseable } from './index.ts'
 
 // Until 2026-09-19 an unreadable completion and a completion that never
-// arrived both landed on the job row as the bare string `no_decision`. Three
-// articles re-run after the json-extract fix proved they are different facts:
-// all three produced real Cloudflare completions (673/688/1229 output tokens,
-// none truncated at the 2200 ceiling) and all three still recorded
-// `no_decision`, so the row carried no evidence about what defeated the parse.
+// arrived both landed on the job row as the bare string `no_decision`. The
+// first cut of this helper separated them and recorded the head of the text;
+// measured on prod 2026-09-20 that ruled out two hypotheses and identified no
+// cause, because the head is the part that is fine — all three completions
+// opened with well-formed JSON and correct keys, at ~4.2 chars per output
+// token with nothing near the 2,200 ceiling. So the row now carries
+// `JSON.parse`'s own message, which names the cause and its offset.
 
-Deno.test('records the length, so a truncated body is distinguishable from a wrapped one', () => {
+Deno.test('names the parse failure, because that is the cause and the head is not', () => {
+  // A raw newline inside a string value: valid-looking, complete, unparseable.
+  const out = describeUnparseable('{"cleanedBody": "para one\npara two"}')
+  assertMatch(out, /why=[^:]*[Cc]ontrol character/)
+})
+
+Deno.test('a cut-off answer is named as such, not as "no JSON here"', () => {
+  // Every extraction stage needs a closing brace, the legacy greedy span
+  // included, so a truncated object yields NO candidates at all — the same
+  // count as a flat refusal. Those are different findings and the row says
+  // which; leaving it to be read off the tail asks the next person to squint.
+  const out = describeUnparseable('{"title": "half a decision"')
+  assert(out.includes(':cands=0:'), out)
+  assert(out.includes('why=unterminated_object'), out)
+})
+
+Deno.test('a refusal with no brace anywhere is distinguishable from a cut-off one', () => {
+  const out = describeUnparseable('I am sorry, I cannot answer that.')
+  assert(out.includes(':cands=0:'), out)
+  assert(out.includes('why=no_candidates'), out)
+})
+
+Deno.test('tries every candidate, not just the best-ranked one', () => {
+  // The fenced candidate and the balanced candidate fail DIFFERENTLY. Reporting
+  // only the first would misattribute the failure to the fence.
+  const out = describeUnparseable('```json\n{"a": nope}\n```\ntrailing {"b": "x\nz"}')
+  const why = out.slice(out.indexOf('why=') + 4, out.indexOf(':tail='))
+  assert(why.includes('|'), `expected two distinct parse errors, got: ${why}`)
+})
+
+Deno.test('a candidate that parses but is not an object is named, not silently dropped', () => {
+  // parseQualityDecision rejects a non-object; without this the row would say
+  // the text was unparseable when in fact it parsed and was the wrong shape.
+  const out = describeUnparseable('```json\n["a", "b"]\n```')
+  assert(out.includes('parsed_but_not_object'), out)
+})
+
+Deno.test('records the length in full, so the ratio against output tokens stays checkable', () => {
   const out = describeUnparseable('x'.repeat(1234))
   assert(out.startsWith('no_decision:len=1234:'), out.slice(0, 40))
 })
 
-Deno.test('keeps the sample greppable — newlines and runs collapse to single spaces', () => {
-  const out = describeUnparseable('Here is\n\n  my  thinking:\n\t{"a": 1}')
-  assertEquals(out, `no_decision:len=34:Here is my thinking: {"a": 1}`)
-  assert(!out.includes('\n'))
+Deno.test('carries the tail — the one part a head-only sample never showed', () => {
+  const out = describeUnparseable('{"a": 1' + 'z'.repeat(400) + 'THE-VERY-END')
+  assert(out.endsWith('THE-VERY-END'), out.slice(-40))
 })
 
 Deno.test('is bounded, so one failure cannot swamp the error column', () => {
   const out = describeUnparseable('y'.repeat(50_000))
-  // prefix + 240 chars of sample; the length is still reported in full.
   assert(out.includes('len=50000:'))
-  assertEquals(out.split(':').slice(2).join(':').length, 240)
+  const tail = out.slice(out.indexOf(':tail=') + 6)
+  assertEquals(tail.length, 120)
 })
 
 Deno.test('an empty completion still reports zero rather than reading as absent', () => {
-  assertEquals(describeUnparseable(''), 'no_decision:len=0:')
+  const out = describeUnparseable('')
+  assert(out.startsWith('no_decision:len=0:'), out)
+  assert(out.includes('cands=0'), out)
 })
 
-// The three tests above exercise the pure helper, and mutation testing showed
-// that is not enough: neutering the CALL SITE so an empty completion reports
+Deno.test('stays greppable — no newline survives into the column', () => {
+  const out = describeUnparseable('Here is\n\n  my  thinking:\n\t{"a": 1,}\n\ndone')
+  assert(!out.includes('\n'), out)
+})
+
+// The tests above exercise the pure helper, and mutation testing showed that is
+// not enough: neutering the CALL SITE so an empty completion reports
 // `undefined` (and so falls back to the bare `no_decision`) left all of them
 // green. An empty body is still a body that arrived — the one case where the
 // old and new strings look alike is exactly the one worth keeping apart — so
