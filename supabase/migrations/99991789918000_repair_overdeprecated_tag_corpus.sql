@@ -36,25 +36,35 @@ grant execute on function public.deprecate_unused_tags(int,text) to service_role
 create or replace function public.search_documents_index_tags(p_id uuid default null)
 returns void language sql security definer set search_path=public,extensions,pg_temp as $$
   insert into public.search_documents
-    (doc_id,entity_type,entity_id,title,description,search_tsv,embedding,facets,geog,
+    (doc_id,entity_type,entity_id,title,description,search_tsv,facets,geog,
      trust_score,liveness_status,is_featured,quality_score,closed_at,start_date,end_date,
      is_free,price_min,price_max,slug,image_url,city,country,content_language,updated_at)
   select 'tag:'||t.id,'tag',t.id,t.name,t.description,
        setweight(to_tsvector('simple',unaccent(coalesce(t.name,''))),'A')
     || setweight(to_tsvector('simple',unaccent(coalesce(t.category,''))),'B')
-    || setweight(to_tsvector('simple',unaccent(coalesce(t.description,''))),'D'),
-    ce.embedding,jsonb_strip_nulls(jsonb_build_object('category',t.category,'entity_kind',t.entity_kind)),
+    || setweight(to_tsvector('simple',unaccent(coalesce(t.description,''))),'D')
+    || public.i18n_to_tsv(t.name_i18n,'A') || public.i18n_to_tsv(t.description_i18n,'D')
+    || setweight(to_tsvector('simple',unaccent(coalesce(
+         (select string_agg(a.alias_name,' ')
+          from public.tag_aliases a
+          join public.search_synonyms s on s.tag_alias_id=a.id and s.status='active'
+          where a.canonical_tag_id=t.id),''))),'A'),
+    jsonb_strip_nulls(jsonb_build_object(
+      'category',t.category,'entity_kind',t.entity_kind,
+      'tags',(select to_jsonb(array_agg(distinct t2.slug))
+              from public.tag_assignments_norm a2
+              join public.unified_tags t2 on t2.id=a2.tag_id
+              where a2.entity_id=t.id and a2.entity_type='tag' and t2.slug is not null))),
     null::geography,null::smallint,'live',false,null::smallint,null::timestamptz,
     null::timestamptz,null::timestamptz,null::boolean,null::numeric,null::numeric,
     t.slug,t.image_url,null::text,null::text,null::text,now()
   from public.unified_tags t
-  left join public.content_embeddings ce on ce.content_type='tag' and ce.content_id=t.id
   where t.status='active' and t.merged_into_id is null and t.deprecated_at is null
     and t.publication_role='article' and not t.restoration_review_required
     and (p_id is null or t.id=p_id)
   on conflict(entity_type,entity_id) do update set
     title=excluded.title,description=excluded.description,search_tsv=excluded.search_tsv,
-    embedding=excluded.embedding,facets=excluded.facets,slug=excluded.slug,
+    facets=excluded.facets,slug=excluded.slug,
     image_url=excluded.image_url,updated_at=now();
 $$;
 
@@ -70,6 +80,40 @@ insert into _tag_restore_false_person(slug) values
   ('direct-action'),('international-covenant-on-civil-and-political-rights'),
   ('refugee-convention'),('title-ix'),('trans-rights-movement'),
   ('hormone-replacement-therapy-hrt');
+
+-- A tag cannot be reactivated while its slug is deliberately owned as an
+-- alias of another canonical tag. Remove only redundant self-aliases; keep
+-- real cross-tag aliases retired and replace their misleading bulk reason
+-- with the actual disposition.
+delete from public.search_synonyms s
+using public.tag_aliases a, public.unified_tags t
+where s.tag_alias_id=a.id and a.canonical_tag_id=t.id
+  and public.normalize_tag_slug(a.alias_name)=t.slug;
+
+delete from public.tag_aliases a
+using public.unified_tags t
+where a.canonical_tag_id=t.id
+  and public.normalize_tag_slug(a.alias_name)=t.slug;
+
+with alias_resolution as (
+  select distinct on (source.id) source.id as source_id,target.slug as target_slug
+  from public.unified_tags source
+  join public.tag_aliases a
+    on public.normalize_tag_slug(a.alias_name)=source.slug
+   and a.canonical_tag_id<>source.id
+  join public.unified_tags target on target.id=a.canonical_tag_id
+  where source.status='deprecated' and source.merged_into_id is null
+    and (source.deprecation_reason='auto: zero usage'
+      or source.deprecation_reason like 'data-quality audit 2026-06-05: orphan tag%')
+  order by source.id,(target.status='active') desc,target.slug
+)
+update public.unified_tags t
+set deprecation_reason='canonical alias of ' || c.target_slug || '; duplicate vocabulary row retired',
+    deprecated_at=coalesce(t.deprecated_at,now()),
+    seo_indexable=false,
+    seo_deindex_reason='canonical_alias'
+from alias_resolution c
+where t.id=c.source_id;
 
 -- Preserve the old classification before changing anything. A row with a real
 -- primary category, substantive canonical summary, and recorded human review
@@ -87,6 +131,11 @@ with candidates as (
     t.deprecation_reason='auto: zero usage'
     or t.deprecation_reason like 'data-quality audit 2026-06-05: orphan tag%'
     or exists(select 1 from _tag_restore_false_person f where f.slug=t.slug)
+  )
+  and not exists(
+    select 1 from public.tag_aliases a
+    where public.normalize_tag_slug(a.alias_name)=t.slug
+      and a.canonical_tag_id<>t.id
   )
 )
 update public.unified_tags t

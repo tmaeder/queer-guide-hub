@@ -98,6 +98,8 @@ describe('systematic glossary quality programme', () => {
     );
     expect(restorationMigration).toContain('set restoration_review_required=false');
     expect(restorationMigration).toContain('recorded human review');
+    expect(restorationMigration).toContain('canonical alias of ');
+    expect(restorationMigration).toContain('duplicate vocabulary row retired');
   });
 
   it('provides serial restoration decisions and migrates misplaced biographies', () => {
