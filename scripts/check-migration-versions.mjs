@@ -2,6 +2,15 @@
 /**
  * Migration-version guard (CI, pure-local — no DB, no secrets).
  *
+ * THIS FILE VALIDATES. IT DOES NOT ALLOCATE — `scripts/next-migration-version.mjs`
+ * does, and every failure below names it with the exact `--renumber` command,
+ * because the error text is what someone reads at the moment they need it. Until
+ * 2026-09-19 nothing answered "what version should I use", so every session
+ * answered it the same way (next round number above the current max) and a shared
+ * heuristic gives a shared answer — which is the collision these checks then
+ * report. Do not hand-pick a version, off-round ones included: hand-picked values
+ * reached 99980101100000 within an hour of the allocator landing.
+ *
  * Two things break `supabase db push` and have repeatedly regressed this repo:
  *
  *   1. Duplicate 14-digit versions across two migration files. `db push`
@@ -218,7 +227,8 @@ for (const [version, group] of byVersion) {
   if (newOnes.length > 0) {
     errors.push(
       `${line}\n    → ${newOnes.length} of these are new on this branch (${newOnes.join(', ')}). ` +
-        `Give each migration a unique 14-digit version.`,
+        `Fix: node scripts/next-migration-version.mjs --renumber ` +
+        `${MIGRATIONS_DIR}/${newOnes[0]}`,
     )
   } else if (remote?.has(version)) {
     errors.push(
@@ -251,7 +261,8 @@ for (const [version, group] of byVersion) {
       `${line}\n    → NEITHER file is applied yet, so \`supabase db push\` will abort on ` +
         `schema_migrations_pkey the next time it runs — and it aborts the WHOLE push, stranding ` +
         `every other pending migration in the repo while edge functions still deploy.\n` +
-        `    → Rename all but one to a version above the current max.`,
+        `    → Rename all but one: node scripts/next-migration-version.mjs --renumber ` +
+        `${MIGRATIONS_DIR}/${group[1]}`,
     )
   } else {
     unverified.push(
@@ -330,8 +341,10 @@ if (base !== null && !DUPLICATES_ONLY) {
         `version ${v} (${f}) is not above the highest existing version ${maxBase}.\n` +
         `    → \`supabase db push\` aborts on the first migration that sorts below ` +
         `remote history ("local migration files to be inserted before the last ` +
-        `migration on remote"), taking every later migration in the same PR with it. ` +
-        `Rename this file to a version greater than ${maxBase}.`
+        `migration on remote"), taking every later migration in the same PR with it.\n` +
+        `    → Fix: node scripts/next-migration-version.mjs --renumber ${MIGRATIONS_DIR}/${f}\n` +
+        `    → Do NOT hand-pick the next round number above ${maxBase} — that is the ` +
+        `heuristic every session reaches for, so it is the one that collides.`
 
       // Only a CONFIRMED violation blocks. When remote history is unreadable we
       // cannot tell this apart from the legitimate already-applied recovery, and
@@ -376,7 +389,8 @@ for (const hit of findAppliedNameMismatches(files, remoteMap, isNew)) {
     `that version is "${hit.file}".\n` +
     `    → \`db push\` matches by version, so THIS FILE'S SQL HAS NEVER RUN and never will. ` +
     `The deploy stays green and history looks normal.\n` +
-    `    → Rename it to a version above the current max, then re-run the deploy.`
+    `    → Fix: node scripts/next-migration-version.mjs --renumber ${MIGRATIONS_DIR}/${hit.file}, ` +
+    `then re-run the deploy.`
   if (hit.isNew) errors.push(line)
   else warnings.push(`${line}\n    (pre-existing — clean up in a dedicated pass)`)
 }
@@ -415,8 +429,10 @@ for (const hit of sibling.blocking) {
       `in ${hit.worktrees.length} sibling worktree(s): ${wts}\n` +
       `    → Both cannot apply. \`db push\` matches by version: whichever merges first wins, ` +
       `the other is skipped SILENTLY and its PR still reads as shipped.\n` +
-      `    → Rename above the current max, and prefer an OFF-ROUND timestamp — every session ` +
-      `picking <next-day>100000 is what produced a four-way collision on 20261211100000.`,
+      `    → Fix: node scripts/next-migration-version.mjs --renumber ${MIGRATIONS_DIR}/${hit.file}\n` +
+      `    → Do NOT hand-pick an off-round number either — every session picking ` +
+      `<next-day>100000 is what produced a four-way collision on 20261211100000, and ` +
+      `hand-picked values reached 99980101100000 within an hour of the allocator landing.`,
   )
 }
 // Advisory half is deliberately one line, not one per hit. It is dominated by
