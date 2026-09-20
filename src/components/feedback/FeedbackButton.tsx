@@ -357,13 +357,13 @@ export function FeedbackButton() {
               </div>
 
               {/* Context preview */}
-              <div className="mb-4 rounded-element bg-muted p-2.5" style={{ fontSize: '0.7rem' }}>
+              <div className="text-xs2 mb-4 rounded-element bg-muted p-2.5">
                 <p className="block text-xs text-muted-foreground">
                   Automatically included: current page URL, browser info, recent errors
                 </p>
                 <p
-                  className="block text-muted-foreground overflow-hidden whitespace-nowrap mt-0.5"
-                  style={{ fontFamily: 'monospace', fontSize: '0.65rem', textOverflow: 'ellipsis' }}
+                  className="text-2xs block text-muted-foreground overflow-hidden whitespace-nowrap mt-0.5"
+                  style={{ fontFamily: 'monospace', textOverflow: 'ellipsis' }}
                 >
                   {pageUrl}
                 </p>

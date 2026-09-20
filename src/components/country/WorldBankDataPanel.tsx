@@ -72,7 +72,10 @@ const getIncomeBadgeColor = (level?: string | null): string => {
   return '#6b7280';
 };
 
-export const WorldBankDataPanel = ({ data, countryName: _countryName }: WorldBankDataPanelProps) => {
+export const WorldBankDataPanel = ({
+  data,
+  countryName: _countryName,
+}: WorldBankDataPanelProps) => {
   const { indicators } = data;
   const hasEconomyData =
     data.gdp_usd ||
@@ -109,9 +112,9 @@ export const WorldBankDataPanel = ({ data, countryName: _countryName }: WorldBan
       {data.wb_income_level && (
         <div className="flex items-center gap-4 flex-wrap">
           <Badge
+            className="text-13"
             variant="secondary"
             style={{
-              fontSize: '0.8rem',
               padding: '4px 12px',
               backgroundColor: getIncomeBadgeColor(data.wb_income_level),
               color: 'white',
@@ -120,7 +123,7 @@ export const WorldBankDataPanel = ({ data, countryName: _countryName }: WorldBan
             {data.wb_income_level}
           </Badge>
           {data.wb_region && (
-            <Badge variant="outline" style={{ fontSize: '0.8rem', padding: '4px 12px' }}>
+            <Badge className="text-13" variant="outline" style={{ padding: '4px 12px' }}>
               {data.wb_region}
             </Badge>
           )}

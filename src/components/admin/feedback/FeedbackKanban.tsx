@@ -54,9 +54,7 @@ export function FeedbackKanban({
   onStatusDrop,
 }: Props) {
   const [activeId, setActiveId] = useState<string | null>(null);
-  const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
-  );
+  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 6 } }));
 
   const allIds = useMemo(() => {
     const out: Record<KanbanStatus, string[]> = {
@@ -180,7 +178,7 @@ function Column({
         <h6 className="font-bold text-sm" style={{ color: col.color, letterSpacing: 0.3 }}>
           {col.label}
         </h6>
-        <Badge variant="secondary" style={{ fontSize: '0.65rem' }}>
+        <Badge className="text-2xs" variant="secondary">
           {items.length}
         </Badge>
       </div>
@@ -196,17 +194,16 @@ function Column({
         }}
       >
         <SortableContext items={itemIds} strategy={verticalListSortingStrategy}>
-          {items.length === 0 && (() => {
-            const { icon: EmptyIcon, copy } = COLUMN_EMPTY[col.id];
-            return (
-              <div className="flex flex-col items-center gap-1.5 py-8 opacity-55">
-                <EmptyIcon size={22} color={col.color} strokeWidth={1.5} />
-                <span className="text-xs text-muted-foreground" style={{ fontSize: '0.7rem' }}>
-                  {copy}
-                </span>
-              </div>
-            );
-          })()}
+          {items.length === 0 &&
+            (() => {
+              const { icon: EmptyIcon, copy } = COLUMN_EMPTY[col.id];
+              return (
+                <div className="flex flex-col items-center gap-1.5 py-8 opacity-55">
+                  <EmptyIcon size={22} color={col.color} strokeWidth={1.5} />
+                  <span className="text-xs2 text-xs text-muted-foreground">{copy}</span>
+                </div>
+              );
+            })()}
           {items.map((item) => (
             <FeedbackCard
               key={item.id}
@@ -215,7 +212,7 @@ function Column({
               selected={selectedIds.has(item.id)}
               focused={focusedId === item.id}
               watchers={watchersByItem[item.id] ?? []}
-              assignee={item.assignee_id ? adminById[item.assignee_id] ?? null : null}
+              assignee={item.assignee_id ? (adminById[item.assignee_id] ?? null) : null}
               story={storyByItem?.[item.id] ?? null}
               onStoryClick={onStoryClick}
               isNew={isNew(item.id, item.submitted_at)}

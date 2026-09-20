@@ -224,8 +224,8 @@ export function StructuredFieldDisplay({
         return (
           <React.Fragment key={field.key}>
             <span
-              className="text-muted-foreground font-semibold uppercase"
-              style={{ fontSize: '0.65rem', letterSpacing: 0.5, paddingTop: '2.4px' }}
+              className="text-2xs text-muted-foreground font-semibold uppercase"
+              style={{ letterSpacing: 0.5, paddingTop: '2.4px' }}
             >
               {field.label}
             </span>

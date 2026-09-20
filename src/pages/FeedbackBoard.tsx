@@ -125,7 +125,7 @@ export default function FeedbackBoard() {
                 style={{ borderColor: col.color }}
               >
                 <p className="text-sm font-bold">{col.label}</p>
-                <Badge variant="secondary" style={{ fontSize: '0.65rem' }}>
+                <Badge className="text-2xs" variant="secondary">
                   {colItems.length}
                 </Badge>
               </div>

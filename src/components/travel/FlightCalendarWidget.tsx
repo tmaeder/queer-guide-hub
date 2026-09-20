@@ -67,9 +67,7 @@ export function FlightCalendarWidget({
       <div>
         <div className="flex items-center gap-2 mb-4">
           <Calendar size={18} className="text-primary" />
-          <span className="font-semibold" style={{ fontSize: '0.95rem' }}>
-            Best Time to Fly to {destinationCity}
-          </span>
+          <span className="text-15 font-semibold">Best Time to Fly to {destinationCity}</span>
         </div>
         <div
           className="flex gap-2 overflow-x-auto pb-2"
@@ -87,16 +85,14 @@ export function FlightCalendarWidget({
                 }`}
                 style={{ minWidth: 72, padding: 8 }}
               >
-                <div style={{ fontSize: '0.65rem', opacity: 0.8 }} className="font-medium">
+                <div style={{ opacity: 0.8 }} className="text-2xs font-medium">
                   {m.month}
                 </div>
                 <div className="text-sm font-bold">€{Math.round(m.price)}</div>
                 {isCheapest && (
                   <div className="flex items-center justify-center gap-0.5 mt-0.5">
                     <TrendingDown size={10} />
-                    <span style={{ fontSize: '0.55rem' }} className="font-semibold">
-                      Cheapest
-                    </span>
+                    <span className="text-3xs font-semibold">Cheapest</span>
                   </div>
                 )}
               </div>
@@ -119,9 +115,7 @@ export function FlightCalendarWidget({
     <div>
       <div className="flex items-center gap-2 mb-2">
         <Calendar size={18} className="text-primary" />
-        <span className="font-semibold" style={{ fontSize: '0.95rem' }}>
-          Cheapest Days to Fly
-        </span>
+        <span className="text-15 font-semibold">Cheapest Days to Fly</span>
       </div>
       <div
         className="flex gap-1 overflow-x-auto pb-2"
@@ -140,15 +134,13 @@ export function FlightCalendarWidget({
               }`}
               style={{ minWidth: 56, padding: 6 }}
             >
-              <div style={{ fontSize: '0.55rem', opacity: 0.7 }}>
+              <div className="text-3xs" style={{ opacity: 0.7 }}>
                 {d.toLocaleDateString('en-US', { weekday: 'short' })}
               </div>
-              <div style={{ fontSize: '0.65rem' }}>
+              <div className="text-2xs">
                 {d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
               </div>
-              <div style={{ fontSize: '0.8rem' }} className="font-bold">
-                €{Math.round(p.price)}
-              </div>
+              <div className="text-13 font-bold">€{Math.round(p.price)}</div>
             </div>
           );
         })}
