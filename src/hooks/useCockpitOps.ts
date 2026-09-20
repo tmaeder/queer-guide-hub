@@ -55,7 +55,7 @@ interface AutomationRow {
 
 interface PipelineErrorRow {
   function_name?: string;
-  errors_24h?: number;
+  last_24h?: number;
 }
 
 /**
@@ -84,7 +84,7 @@ function startOfTodayISO(): string {
 async function fetchOps(): Promise<CockpitOps> {
   const [automations, errors, gates, imports] = await Promise.all([
     untypedFrom('admin_automations').select('slug, name, enabled, last_run_status, last_run_at'),
-    untypedFrom('pipeline_error_summary').select('function_name, errors_24h').limit(100),
+    untypedFrom('pipeline_error_summary').select('function_name, last_24h').limit(100),
     // admin_release_gates(), not release_gate_checks(): the core grants EXECUTE
     // only to postgres + service_role, so calling it as the signed-in admin
     // returned 42501 and blanked this whole section on production.
@@ -112,7 +112,7 @@ async function fetchOps(): Promise<CockpitOps> {
     }));
 
   const pipelineErrors = ((errors.data ?? []) as PipelineErrorRow[])
-    .map((e) => ({ functionName: e.function_name ?? 'unknown', errors24h: e.errors_24h ?? 0 }))
+    .map((e) => ({ functionName: e.function_name ?? 'unknown', errors24h: e.last_24h ?? 0 }))
     .filter((e) => e.errors24h > 0)
     .sort((a, b) => b.errors24h - a.errors24h);
 
