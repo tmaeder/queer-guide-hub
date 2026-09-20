@@ -13,8 +13,12 @@ const healthCheck = readFileSync(join(process.cwd(), 'scripts/check-pipeline-hea
 
 describe('glossary publication readiness completion', () => {
   it('migrates only corroborated legacy prose reviews', () => {
-    expect(migration).toMatch(/human_reviewed\s*\n\s*and verification_status in \('reviewed', 'locked'\)/);
-    expect(migration).toContain('prose_reviewed_at = coalesce(last_verified_at, updated_at, now())');
+    expect(migration).toMatch(
+      /human_reviewed\s*\n\s*and verification_status in \('reviewed', 'locked'\)/,
+    );
+    expect(migration).toContain(
+      'prose_reviewed_at = coalesce(last_verified_at, updated_at, now())',
+    );
     expect(migration).not.toMatch(/set prose_reviewed_at\s*=\s*now\(\)\s*where status = 'active';/);
   });
 
