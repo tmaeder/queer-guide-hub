@@ -87,6 +87,7 @@ describe('YourLines', () => {
     // to be personal.
     expect(screen.getByText(/you looked at this/i)).toBeTruthy();
     expect(screen.getByText('In Zürich')).toBeTruthy();
+    expect(screen.getByText(/trail from places you viewed/i)).toBeTruthy();
   });
 
   it('never nests an interactive element inside the overlay link', () => {

@@ -118,7 +118,13 @@ export function YourLines() {
   if (!hasOwnThread || cards.length === 0) return null;
 
   return (
-    <Band title={t('home.yourLines.title', 'Your lines')}>
+    <Band
+      title={t('home.yourLines.title', 'Your lines')}
+      description={t(
+        'home.yourLines.description',
+        'A trail from places you viewed, plus nearby picks matched to your interests and location.',
+      )}
+    >
       <ul className="m-0 grid list-none grid-cols-2 gap-4 p-0 md:grid-cols-4">
         {cards.map((c) => (
           <li key={c.key} className="card-lift relative bg-card rounded-container shadow-soft">

@@ -1762,6 +1762,15 @@
     "backHome": "Zurück zur Startseite"
   },
   "home": {
+    "yourLines": {
+      "title": "Deine Linien",
+      "description": "Dein Weg durch bereits angesehene Orte, ergänzt um passende Empfehlungen aus deinen Interessen und deiner Umgebung.",
+      "reasonRecent": "Von dir angesehen",
+      "reasonInterest": "Passt zu deinen Interessen",
+      "reasonCity": "In deiner Nähe",
+      "reasonFeatured": "Einen Blick wert",
+      "reasonIn": "In {{city}}"
+    },
     "heroLine1": "Queere Orte,",
     "heroLine2": "Events und Menschen.",
     "heroLine3": "Weltweit.",

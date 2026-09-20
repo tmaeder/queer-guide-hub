@@ -5,6 +5,7 @@ import { Map, CalendarClock, FileCheck, FileX, FileQuestion, Share2 } from 'luci
 import { ShareEntityDialog } from '@/components/messaging/ShareEntityDialog';
 import { useSubmissionNotifMeta, type SubmissionNotifMeta } from '@/hooks/useSubmissionNotifMeta';
 import type { InboxItem } from '@/hooks/useInboxFeed';
+import { LocalizedLink } from '@/components/routing/LocalizedLink';
 
 function notifIcon(subtype: string, meta?: SubmissionNotifMeta | null) {
   if (subtype === 'trip_nudge') return <Map size={32} className="text-muted-foreground" />;
@@ -56,7 +57,7 @@ export function NotificationDetailCard({ item }: { item: InboxItem }) {
       )}
       {hasAction && (
         <Button asChild>
-          <a href={item.open_target}>{actionLabel(item.subtype, t)}</a>
+          <LocalizedLink to={item.open_target}>{actionLabel(item.subtype, t)}</LocalizedLink>
         </Button>
       )}
       {shareable && (
@@ -79,9 +80,9 @@ export function NotificationDetailCard({ item }: { item: InboxItem }) {
       )}
       {item.subtype === 'submission_update' && (
         <Button variant="outline" asChild>
-          <a href="/me/contributions">
+          <LocalizedLink to="/me/contributions">
             {t('inbox.notification.allSubmissions', { defaultValue: 'All my submissions' })}
-          </a>
+          </LocalizedLink>
         </Button>
       )}
     </div>

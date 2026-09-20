@@ -2,7 +2,7 @@
  * @vitest-environment jsdom
  */
 import { describe, it, expect, vi } from 'vitest';
-import { render, screen, within } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 const items = [
@@ -41,12 +41,17 @@ const items = [
   },
 ];
 
+const mocks = vi.hoisted(() => ({
+  navigate: vi.fn(),
+  rpc: vi.fn().mockResolvedValue({ data: null, error: null }),
+}));
+
 vi.mock('@/hooks/useInboxFeed', () => ({
   useInboxFeed: () => ({ items, loading: false, unreadCount: 2 }),
 }));
-vi.mock('@/hooks/useLocalizedNavigate', () => ({ useLocalizedNavigate: () => vi.fn() }));
+vi.mock('@/hooks/useLocalizedNavigate', () => ({ useLocalizedNavigate: () => mocks.navigate }));
 vi.mock('@/integrations/supabase/untyped', () => ({
-  untypedRpc: vi.fn().mockResolvedValue({ data: null, error: null }),
+  untypedRpc: mocks.rpc,
 }));
 vi.mock('@/components/routing/LocalizedLink', () => ({
   LocalizedLink: ({ to, children, ...rest }: { to: string; children: React.ReactNode }) => (
@@ -117,5 +122,15 @@ describe('SignalPanel', () => {
     // the notifier does not keep.
     renderPanel();
     expect(screen.queryByText(/quiet hours/i)).not.toBeInTheDocument();
+  });
+
+  it('navigates immediately and persists the selected unread alert in the background', async () => {
+    renderPanel();
+    fireEvent.click(screen.getByText('Doors in 2 hours').closest('button')!);
+
+    expect(mocks.navigate).toHaveBeenCalledWith('/events/ballroom');
+    await waitFor(() =>
+      expect(mocks.rpc).toHaveBeenCalledWith('mark_inbox_alert_read', { p_item: 'n-event' }),
+    );
   });
 });

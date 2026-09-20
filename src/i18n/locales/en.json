@@ -1839,6 +1839,15 @@
     "error": "Failed to send alert. Please try again."
   },
   "home": {
+    "yourLines": {
+      "title": "Your lines",
+      "description": "A trail from places you viewed, plus nearby picks matched to your interests and location.",
+      "reasonRecent": "You looked at this",
+      "reasonInterest": "Matches your interests",
+      "reasonCity": "Near you",
+      "reasonFeatured": "Worth a look",
+      "reasonIn": "In {{city}}"
+    },
     "map": {
       "interchangeEyebrow": "Interchange",
       "interchange": {

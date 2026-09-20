@@ -13,7 +13,7 @@ import {
   Megaphone,
   BarChart3,
   Clock,
-  Users
+  Users,
 } from 'lucide-react';
 import { GroupPost } from '@/hooks/useGroupPosts';
 import { formatDistanceToNow } from 'date-fns';
@@ -49,26 +49,33 @@ export const GroupPostCard = ({
 
   const renderMentions = (content: string) => {
     if (!post.mentions || post.mentions.length === 0) {
-      return <ContentSanitizer
-        content={content}
-        allowedTags={['span', 'br', 'strong', 'em', 'u', 'a']}
-      />;
+      return (
+        <ContentSanitizer
+          content={content}
+          allowedTags={['span', 'br', 'strong', 'em', 'u', 'a']}
+        />
+      );
     }
 
     let processedContent = content;
-    post.mentions.forEach(mention => {
+    post.mentions.forEach((mention) => {
       const sanitizedUsername = mention.username.replace(/[<>]/g, '');
-      const mentionPattern = new RegExp(`@${sanitizedUsername.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`, 'g');
+      const mentionPattern = new RegExp(
+        `@${sanitizedUsername.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`,
+        'g',
+      );
       processedContent = processedContent.replace(
         mentionPattern,
-        `<span class="text-primary font-medium">@${sanitizedUsername}</span>`
+        `<span class="text-primary font-medium">@${sanitizedUsername}</span>`,
       );
     });
 
-    return <ContentSanitizer
-      content={processedContent}
-      allowedTags={['span', 'br', 'strong', 'em', 'u', 'a']}
-    />;
+    return (
+      <ContentSanitizer
+        content={processedContent}
+        allowedTags={['span', 'br', 'strong', 'em', 'u', 'a']}
+      />
+    );
   };
 
   const renderPoll = () => {
@@ -91,10 +98,15 @@ export const GroupPostCard = ({
             return (
               <div key={index} className="flex flex-col gap-1">
                 <Button
-                  variant={isVoted ? "default" : "outline"}
+                  variant={isVoted ? 'default' : 'outline'}
                   onClick={() => onVote({ postId: post.id, optionIndex: index })}
                   disabled={post.user_vote !== null && post.user_vote !== index}
-                  style={{ width: '100%', justifyContent: 'flex-start', height: 'auto', padding: 12 }}
+                  style={{
+                    width: '100%',
+                    justifyContent: 'flex-start',
+                    height: 'auto',
+                    padding: 12,
+                  }}
                 >
                   <span className="text-left">{option}</span>
                 </Button>
@@ -110,12 +122,8 @@ export const GroupPostCard = ({
         </div>
 
         <div className="flex items-center justify-between mt-4 pt-2">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setShowPollResults(!showPollResults)}
-          >
-            {showPollResults ? "Hide Results" : "Show Results"}
+          <Button variant="ghost" size="sm" onClick={() => setShowPollResults(!showPollResults)}>
+            {showPollResults ? 'Hide Results' : 'Show Results'}
           </Button>
 
           <div className="flex items-center gap-1">
@@ -135,9 +143,7 @@ export const GroupPostCard = ({
             <div className="flex items-start gap-4">
               <Avatar>
                 <AvatarImage src={post.profiles?.avatar_url || undefined} />
-                <AvatarFallback>
-                  {post.profiles?.display_name?.charAt(0) || 'U'}
-                </AvatarFallback>
+                <AvatarFallback>{post.profiles?.display_name?.charAt(0) || 'U'}</AvatarFallback>
               </Avatar>
 
               <div className="flex-1 min-w-0">
@@ -156,9 +162,7 @@ export const GroupPostCard = ({
                       </Badge>
                     )}
 
-                    {post.is_pinned && (
-                      <Pin size={12} color="hsl(var(--primary))" />
-                    )}
+                    {post.is_pinned && <Pin size={12} color="hsl(var(--primary))" />}
                   </div>
                 </div>
 
@@ -177,11 +181,7 @@ export const GroupPostCard = ({
                     size="sm"
                     onClick={() => onTogglePin?.({ postId: post.id, isPinned: !post.is_pinned })}
                   >
-                    {post.is_pinned ? (
-                      <PinOff size={16} />
-                    ) : (
-                      <Pin size={16} />
-                    )}
+                    {post.is_pinned ? <PinOff size={16} /> : <Pin size={16} />}
                   </Button>
 
                   <Button variant="ghost" size="sm">
@@ -195,12 +195,11 @@ export const GroupPostCard = ({
 
         <CardContent>
           <div className="flex flex-col gap-4">
-            <div className="text-sm leading-relaxed">
+            <div className="whitespace-pre-line text-sm leading-relaxed" data-testid="post-message">
               {renderMentions(post.content)}
             </div>
 
             {post.post_type === 'poll' && renderPoll()}
-
 
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
@@ -211,7 +210,14 @@ export const GroupPostCard = ({
                   style={post.user_liked ? { color: 'hsl(var(--foreground))' } : undefined}
                 >
                   <span className="flex items-center gap-2">
-                    <Heart className="transition-transform group-active:scale-90" style={{ width: 16, height: 16, ...(post.user_liked && { fill: 'currentColor' }) }} />
+                    <Heart
+                      className="transition-transform group-active:scale-90"
+                      style={{
+                        width: 16,
+                        height: 16,
+                        ...(post.user_liked && { fill: 'currentColor' }),
+                      }}
+                    />
                     <span>{post.likes_count}</span>
                   </span>
                 </Button>

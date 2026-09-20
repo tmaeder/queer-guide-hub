@@ -212,6 +212,18 @@ export function SignalPanel() {
     void queryClient.invalidateQueries({ queryKey: ['inbox-unread'] });
   };
 
+  const openAlert = (item: InboxItem) => {
+    // Navigation is immediate. Read-state persistence is deliberately
+    // best-effort in the background so a slow network cannot trap the reader
+    // inside the bell popover.
+    navigate(item.open_target);
+    if (!item.unread) return;
+    void untypedRpc('mark_inbox_alert_read', { p_item: item.id }).then(() => {
+      void queryClient.invalidateQueries({ queryKey: ['inbox-feed'] });
+      void queryClient.invalidateQueries({ queryKey: ['inbox-unread'] });
+    });
+  };
+
   return (
     <div className="w-full">
       {/* Rank 4 is Space Grotesk 700, never Anton (rankFourFace.test.ts) —
@@ -235,7 +247,7 @@ export function SignalPanel() {
         <div key={item.id} className="px-4 pb-2">
           <button
             type="button"
-            onClick={() => navigate(item.open_target)}
+            onClick={() => openAlert(item)}
             className="flex w-full items-start gap-2.5 rounded-element bg-foreground px-2.5 py-2.5 text-left text-background"
           >
             <TrackSwatch track="pink" tone="ink" className="mt-1.5" />
@@ -260,7 +272,7 @@ export function SignalPanel() {
         <ScrollArea style={{ maxHeight: 384 }}>
           <div className="flex flex-col gap-0.5 px-1.5 pb-2">
             {rows.map((item) => (
-              <SignalRow key={item.id} item={item} onSelect={(i) => navigate(i.open_target)} />
+              <SignalRow key={item.id} item={item} onSelect={openAlert} />
             ))}
           </div>
         </ScrollArea>
