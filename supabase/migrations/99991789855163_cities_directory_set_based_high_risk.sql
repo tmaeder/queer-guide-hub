@@ -180,7 +180,15 @@ begin
 
   -- The per-row call is what made this time out; make its return a hard failure
   -- rather than a silent performance regression on the next CREATE OR REPLACE.
-  select pg_get_functiondef(p.oid) into v_src
+  -- COMMENT-STRIPPED, and that is why this migration could not apply:
+  -- pg_get_functiondef() returns the body verbatim, comments included, and the
+  -- body carries an explanatory line naming location_is_high_risk() to say it is
+  -- NOT called per row. The check below then read its own prose as the defect and
+  -- raised against a correct function. Measured on this body: 1 occurrence,
+  -- on a comment line, 0 on statement lines. `hr as materialized` is on a
+  -- statement line and survives the strip, and no `--` appears inside any string
+  -- literal here, so the strip cannot eat executable text.
+  select regexp_replace(pg_get_functiondef(p.oid), '--[^\n]*', '', 'g') into v_src
   from pg_proc p join pg_namespace n on n.oid = p.pronamespace
   where n.nspname = 'public' and p.proname = 'cities_directory';
   if position('location_is_high_risk' in v_src) > 0 then
