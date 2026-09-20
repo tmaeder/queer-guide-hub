@@ -213,7 +213,14 @@ begin
   select count(*) into v_uuid_casts
     from pg_proc p
     join pg_namespace n on n.oid = p.pronamespace
-    cross join lateral regexp_matches(pg_get_functiondef(p.oid), 'v::uuid', 'g') m
+    -- COMMENT-STRIPPED, and that is the whole reason this migration failed to
+    -- apply: pg_get_functiondef() returns the body verbatim, comments included,
+    -- so the explanatory line above that spells `%I in (select v::uuid ...)`
+    -- counted as an eighth site and the check raised against a CORRECT body.
+    -- Measured on this file: 8 raw, 7 on statements, 1 in that comment.
+    -- No `--` appears inside a string literal in this body, so the strip is safe.
+    cross join lateral regexp_matches(
+      regexp_replace(pg_get_functiondef(p.oid), '--[^\n]*', '', 'g'), 'v::uuid', 'g') m
    where n.nspname = 'public' and p.proname = 'unmerge_cities';
   -- 7 legitimate uuid sites remain: venues/events city_text, news_article_cities,
   -- city_favorites, event_coverage_gaps, city_aliases, dup_children.
