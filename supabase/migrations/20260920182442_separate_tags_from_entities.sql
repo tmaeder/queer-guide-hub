@@ -285,13 +285,17 @@ where t.status='active' and t.slug=r.tag_slug;
 -- Every biography-only tag now has a typed personality destination.
 update public.unified_tags t
 set publication_role='entity_redirect', canonical_entity_type='personality',
-    canonical_entity_id=p.id, canonical_entity_path='/personalities/' || p.slug,
+    canonical_entity_id=canonical.id,
+    canonical_entity_path='/personalities/' || canonical.slug,
     canonical_entity_reviewed_at=now(), publication_role_reviewed_at=now(),
     publication_role_review_note='migrated biography tag to personality',
     seo_indexable=false, seo_deindex_reason='publication_role:entity_redirect'
-from public.personalities p
+from public.personalities alias
+join public.personalities canonical
+  on canonical.id=coalesce(alias.duplicate_of_id,alias.id)
+ and canonical.duplicate_of_id is null
 where t.status='active' and t.entity_kind='person'
-  and p.slug=t.slug and p.duplicate_of_id is null;
+  and alias.slug=t.slug;
 
 -- A place-ish filter with no reviewed canonical destination is vocabulary, not
 -- an entity and not an article. Preserve assignments but correct its kind.
@@ -532,3 +536,4 @@ begin
     raise exception 'person or place remains published as a glossary article';
   end if;
 end $verify$;
+;

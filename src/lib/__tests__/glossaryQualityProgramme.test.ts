@@ -8,7 +8,7 @@ const migration = readFileSync(
 );
 const healthCheck = readFileSync(join(process.cwd(), 'scripts/check-pipeline-health.mjs'), 'utf8');
 const entityMigration = readFileSync(
-  join(process.cwd(), 'supabase/migrations/99991789917000_separate_tags_from_entities.sql'),
+  join(process.cwd(), 'supabase/migrations/20260920182442_separate_tags_from_entities.sql'),
   'utf8',
 );
 const restorationMigration = readFileSync(
