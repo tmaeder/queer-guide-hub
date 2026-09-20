@@ -16,6 +16,12 @@ attributes are utility; people and places are redirects; concepts and audiences
 are articles; descriptors are articles only when indexable, otherwise utility.
 Editors may override the default without changing the semantic kind.
 
+Entity redirects carry a reviewed canonical content type, entity ID and route.
+Existing tag assignments remain intact for filters, but a person, city, country,
+village, venue, organisation or event can no longer compete as a glossary
+article. Exact-name collisions are only review candidates: common terms such as
+“Male”, “Reading”, “Angel” and “Party” must never be converted by string match.
+
 ## Content contract
 
 `description` is the only published summary. `short_description` is legacy
@@ -57,3 +63,23 @@ introduced.
 6. Verify migrations, focused unit tests, typecheck, lint and build before
    rollout.
 
+## Deprecated-corpus repair
+
+`deprecated` is reserved for a reviewed retirement, invalid import, superseded
+term, or content moved to another canonical entity. Zero usage and absence of
+assignments are prioritisation signals, not retirement evidence.
+
+Rows retired only by the historical zero-use/orphan sweeps are restored as
+active, quarantined review candidates. Their former reason and entity kind are
+retained in dedicated audit fields. They remain excluded from the public
+glossary, detail resolver, previews, and search index until an editor records a
+publication decision. Categorised concepts with substantial prose keep the
+article role; incomplete rows remain utility vocabulary during review. This
+does not mark machine prose as human-reviewed.
+
+The old `deprecate_unused_tags` RPC becomes a compatibility no-op. A serial
+admin queue can approve a candidate as an article, approve it as utility
+vocabulary, or return it to reviewed retirement. Actual biographies and other
+canonical entities are moved to their owning content type rather than restored
+as glossary articles. CI treats a quarantined row leaking into public search or
+index surfaces as a hard failure.
