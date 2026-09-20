@@ -164,7 +164,7 @@
     "husky": "^9.1.7",
     "jsdom": "^30.0.1",
     "knip": "^6.35.1",
-    "libpg-query": "^17.7.4",
+    "libpg-query": "^18.1.5",
     "lint-staged": "^17.5.1",
     "playwright": "^1.62.1",
     "prettier": "^3.9.6",
