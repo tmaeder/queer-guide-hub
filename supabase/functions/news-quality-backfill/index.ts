@@ -3,7 +3,7 @@ import { withCircuitBreaker, CircuitOpenError } from '../_shared/circuit-breaker
 import { chatCompletion, isOpenAIAvailable } from '../_shared/openai-client.ts'
 import { sanitizeArticle } from '../_shared/news-quality/sanitize.ts'
 import { parseQualityDecision, QUALITY_PIPELINE_VERSION, type QualityDecision } from '../_shared/news-quality/schema.ts'
-import { extractJsonCandidates } from '../_shared/json-extract.ts'
+import { extractJsonCandidates, parseJsonObject, repairJsonControlChars } from '../_shared/json-extract.ts'
 import { QUALITY_SYSTEM_PROMPT, buildQualityUserPrompt } from '../_shared/news-quality/prompts.ts'
 import { evaluatePublishGate } from '../_shared/news-quality/decision.ts'
 import { probeImage } from '../_shared/news-quality/image-check.ts'
@@ -90,8 +90,16 @@ export function describeUnparseable(content: string): string {
   let candidates = 0
   for (const candidate of extractJsonCandidates(content)) {
     candidates++
+    // Ask EXACTLY what the parser asks, or this reports a cause the parser no
+    // longer has: a completion whose only fault is a literal newline inside
+    // cleanedBody is recovered now, and describing it as having failed on a
+    // control character would send the next reader after a fixed bug.
+    if (parseJsonObject(candidate)) {
+      if (!errs.includes('parsed_as_object')) errs.push('parsed_as_object')
+      continue
+    }
     try {
-      JSON.parse(candidate)
+      JSON.parse(repairJsonControlChars(candidate))
       // Parsed, so `parseQualityDecision` rejected it for the only other
       // reason it can: the value is not a JSON object (an array, a bare
       // string). Worth naming — it is a different bug from a parse failure.
