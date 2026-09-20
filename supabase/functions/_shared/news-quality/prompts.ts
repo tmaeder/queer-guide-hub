@@ -93,5 +93,11 @@ export function buildQualityUserPrompt(input: QualityUserInputs): string {
   if (input.alreadyRemoved?.length) lines.push(`Already-removed artefacts (do not re-flag): ${ud(input.alreadyRemoved.join(', '))}`)
 
   lines.push('\nReturn JSON only. No prose, no markdown.')
+  // Measured on prod 2026-09-20: 19 of 19 unparseable completions failed on
+  // cleanedBody, which the contract above calls "readable paragraphs" and the
+  // model therefore writes with literal newlines inside the JSON string. The
+  // parser repairs that deterministically; this asks the model not to do it,
+  // which is the only lever that also reaches the unescaped-quote cases.
+  lines.push('Inside every JSON string, write a line break as \\n and a quotation mark as \\" — never as a literal newline or a bare ".')
   return lines.join('\n')
 }

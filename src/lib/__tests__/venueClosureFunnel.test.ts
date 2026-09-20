@@ -3,7 +3,7 @@ import { readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 
 /**
- * Guard for 99991789891919_venue_closure_decision_funnel.sql.
+ * Guard for 99991789897891_venue_closure_decision_funnel.sql.
  *
  * `run_venue_closure_decision` returned `close_eligible: 0` nightly while
  * booking last_run_status='success', and that zero has two opposite meanings
