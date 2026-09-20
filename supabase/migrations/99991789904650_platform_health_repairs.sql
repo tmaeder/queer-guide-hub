@@ -37,6 +37,10 @@ create index if not exists ingestion_staging_podcast_created_idx
 -- One newly-authored short glossary entry exceeded the documented American-
 -- spelling ceiling. Guard on the exact source text so an editorial change is
 -- never overwritten by a later replay.
+-- The row is human-reviewed, so declare the migration actor explicitly; the
+-- write-protection trigger rejects the implicit system:trigger identity.
+select set_config('app.actor', 'migration:platform-health-repairs', true);
+
 update public.unified_tags
 set description = replace(description, 'oestrogen', 'estrogen'),
     updated_at = now()
