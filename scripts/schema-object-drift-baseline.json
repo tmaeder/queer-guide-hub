@@ -1,0 +1,26 @@
+{
+  "note": "Prod triggers with no create-trigger statement in supabase/migrations. SHRINK-ONLY: codify one and remove its entry. Never add.",
+  "uncovered": [
+    "competition_editions.trg_competition_editions_touch_updated_at",
+    "competition_entrants.trg_competition_entrants_touch_updated_at",
+    "competition_episode_results.trg_competition_episode_results_touch_updated_at",
+    "competition_episodes.trg_competition_episodes_touch_updated_at",
+    "competitions.trg_competitions_touch_updated_at",
+    "events.trg_events_null_island",
+    "events.trg_events_set_currency",
+    "group_memberships.trg_update_group_member_count",
+    "hotels.trg_hotels_null_island",
+    "news_articles.news_articles_sanitize_author",
+    "news_articles.trg_normalize_news_tags",
+    "personalities.trg_personalities_thin_not_indexable",
+    "styleguide_examples.styleguide_examples_audit",
+    "styleguide_examples.styleguide_examples_guard",
+    "styleguide_rules.styleguide_rules_audit",
+    "styleguide_rules.styleguide_rules_guard",
+    "styleguide_terms.styleguide_terms_audit",
+    "styleguide_terms.styleguide_terms_guard",
+    "tag_category_assignments.unified_tags_recompute_is_adult_trigger",
+    "unified_tags.unified_tags_lowercase_slug_trigger",
+    "venues.trg_venues_null_island"
+  ]
+}
