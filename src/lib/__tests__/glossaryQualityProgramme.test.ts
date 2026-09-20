@@ -20,7 +20,11 @@ const migratedEntitySeal = readFileSync(
   'utf8',
 );
 const homonymMigration = readFileSync(
-  join(process.cwd(), 'supabase/migrations/99991789918010_close_reviewed_tag_entity_homonyms.sql'),
+  join(process.cwd(), 'supabase/migrations/20260920183423_close_reviewed_tag_entity_homonyms.sql'),
+  'utf8',
+);
+const mergeQueueMigration = readFileSync(
+  join(process.cwd(), 'supabase/migrations/20260920183949_close_stale_tag_merge_proposals.sql'),
   'utf8',
 );
 
@@ -134,5 +138,14 @@ describe('systematic glossary quality programme', () => {
     expect(homonymMigration).toContain('join candidates c on c.slug=t.slug');
     expect(homonymMigration).not.toContain('regexp_replace(t.name');
     expect(homonymMigration).toContain('reviewed tag/entity collision ledger is incomplete');
+  });
+
+  it('closes stale merge proposals and permanently excludes active false positives', () => {
+    expect(mergeQueueMigration).toContain('insert into public.tag_relationship_exclusions');
+    expect(mergeQueueMigration).toContain(
+      "where r.status='pending' and c.status='active' and d.status='active'",
+    );
+    expect(mergeQueueMigration).toContain("set status='rejected'");
+    expect(mergeQueueMigration).toContain('tag merge review queue still contains pending rows');
   });
 });
