@@ -180,12 +180,28 @@ begin
 
   -- The per-row call is what made this time out; make its return a hard failure
   -- rather than a silent performance regression on the next CREATE OR REPLACE.
-  select pg_get_functiondef(p.oid) into v_src
+  --
+  -- COMMENTS ARE STRIPPED FIRST, and that is what makes this check mean anything.
+  -- pg_get_functiondef returns the body INCLUDING its comments, and the body's own
+  -- line "-- from location_is_high_risk() rather than calling it per row" contains
+  -- the exact symbol this asserts is absent. Scanning the raw definition therefore
+  -- fails on a function with ZERO real calls — measured on this body: raw 1,
+  -- comment-stripped 0 — which is what aborted `db push` on main and stalled every
+  -- migration queued behind it. Deleting the comment would also go green and would
+  -- throw away the explanation; stripping keeps both.
+  --
+  -- Third instance of this class in one day (see 99991789853609, fixed in #3862):
+  -- a verify block that greps pg_get_functiondef for a symbol matches the
+  -- function's own prose. Grep the CODE, not the definition.
+  select regexp_replace(pg_get_functiondef(p.oid), '--[^' || chr(10) || ']*', '', 'g')
+    into v_src
   from pg_proc p join pg_namespace n on n.oid = p.pronamespace
   where n.nspname = 'public' and p.proname = 'cities_directory';
   if position('location_is_high_risk' in v_src) > 0 then
     raise exception 'cities_directory calls location_is_high_risk per row again';
   end if;
+  -- Also asserted against the stripped source: a `hr as materialized` that survives
+  -- only inside a comment is not a materialized CTE.
   if position('hr as materialized' in v_src) = 0 then
     raise exception 'the hr CTE lost its materialized hint; it would be inlined per row';
   end if;
