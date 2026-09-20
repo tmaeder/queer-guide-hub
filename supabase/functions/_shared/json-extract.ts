@@ -74,3 +74,98 @@ export function extractBalancedObject(s: string): string | null {
   }
   return null
 }
+
+// REPAIRING WHAT THE MODEL GOT WRONG, WITHOUT INVENTING ANYTHING.
+//
+//   Extraction above assumes the object is valid JSON once you find its edges.
+//   Measured on prod 2026-09-20, that assumption fails on this corpus: 19 of 19
+//   re-run quality completions produced a REAL answer whose heads were
+//   well-formed, at ~4.2 chars per output token with nothing near the ceiling,
+//   and every single one failed `JSON.parse` -- 14 with
+//   `Bad control character in string literal`, 5 with
+//   `Expected ',' or '}' after property value`. ALL NINETEEN reported LINE 10,
+//   which is one field: `cleanedBody`, the one the prompt asks for as
+//   "readable paragraphs". The model writes the paragraph breaks as literal
+//   newlines inside a JSON string.
+//
+// THIS REPAIRS THE CONTROL-CHARACTER HALF ONLY, AND THAT IS A DELIBERATE STOP.
+//
+//   A raw control character inside a JSON string literal is invalid under
+//   RFC 8259 in every context, so escaping one can only turn invalid JSON into
+//   valid JSON -- it can never change the meaning of text that already parses.
+//   That property is what makes this safe to run over every candidate, and it
+//   is asserted directly in the tests rather than argued for here.
+//
+//   The unescaped-QUOTE half is deliberately NOT repaired. The usual heuristic
+//   (treat a `"` as closing only when the next non-space character is one of
+//   `,}]:`) is wrong on exactly the input this corpus is made of -- prose
+//   containing a quotation before a comma -- and when it is wrong it does not
+//   fail, it silently returns a TRUNCATED string. `cleanedBody` is written to
+//   `news_articles.content`, so a wrong repair publishes a cut-off article body
+//   where today the row simply stays unjudged. Under-reaching is the correct
+//   error here. The shape of a safe version is known and is left for its own
+//   change: parse with the lossy repair but refuse to take PROSE from it,
+//   keeping only the short structured verdict fields.
+
+/** Escape raw control characters that appear inside JSON string literals.
+ *
+ * Text that is already valid JSON is returned byte-identical, because a control
+ * character can only be invalid where this touches it. */
+export function repairJsonControlChars(s: string): string {
+  let out = ''
+  let inString = false
+  let escaped = false
+  for (let i = 0; i < s.length; i++) {
+    const c = s[i]
+    if (escaped) {
+      out += c
+      escaped = false
+      continue
+    }
+    if (c === '\\') {
+      out += c
+      escaped = true
+      continue
+    }
+    if (c === '"') {
+      inString = !inString
+      out += c
+      continue
+    }
+    if (inString) {
+      const code = c.charCodeAt(0)
+      if (code < 0x20) {
+        out += CONTROL_ESCAPES[code] ?? `\\u${code.toString(16).padStart(4, '0')}`
+        continue
+      }
+    }
+    out += c
+  }
+  return out
+}
+
+const CONTROL_ESCAPES: Record<number, string> = {
+  0x08: '\\b',
+  0x09: '\\t',
+  0x0a: '\\n',
+  0x0c: '\\f',
+  0x0d: '\\r',
+}
+
+/** Parse a candidate as a JSON OBJECT, repairing control characters if needed.
+ *
+ * Returns null for anything that is not a plain object, so an array or a bare
+ * string is refused rather than handed on as a decision. */
+export function parseJsonObject(candidate: string): Record<string, unknown> | null {
+  for (const text of [candidate, repairJsonControlChars(candidate)]) {
+    try {
+      const parsed = JSON.parse(text) as unknown
+      if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
+        return parsed as Record<string, unknown>
+      }
+    } catch {
+      // Try the repaired form, then give up on this candidate.
+    }
+  }
+  return null
+}

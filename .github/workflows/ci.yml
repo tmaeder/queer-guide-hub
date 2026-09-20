@@ -260,6 +260,27 @@ jobs:
             "libpg-query@$(node -p "require('./package.json').devDependencies['libpg-query']")"
           node scripts/check-migration-sql.mjs
 
+      # A verify block that greps pg_get_functiondef() matches the function's own
+      # COMMENTS, because pg_get_functiondef returns the body verbatim. On
+      # 2026-09-20 this aborted `db push` on main THREE times in one day from
+      # three different sessions — 99991789853609 (which stranded 14 migrations
+      # from 00:21), 99991789855163, and a third fixed in #3862. `db push` stops
+      # at the first failing migration, so the blast radius is the whole deploy
+      # queue rather than one PR, and it only fails at APPLY time because CI
+      # never applies migrations. Nothing else catches it.
+      #
+      # Both directions are wrong, which is why the rule is "strip", not "count
+      # differently": an ABSENCE check goes falsely RED when a comment inflates
+      # the count, and a PRESENCE check goes falsely GREEN when the symbol
+      # exists only in prose — several of these assert security properties, e.g.
+      # that find_duplicate_clusters still calls assert_admin_or_internal.
+      #
+      # Scoped to newly ADDED migrations: 17 of the 65 existing files would
+      # flag, and every one of them applied successfully, so gating the history
+      # would ship red with 17 entries nobody reads.
+      - name: Migration assertions on pg_get_functiondef strip comments
+        run: node scripts/check-functiondef-asserts.mjs
+
       # Remote-only versions: a migration applied to prod (MCP apply_migration or
       # raw Management-API SQL) with no committed file makes `supabase db push`
       # skip EVERYTHING — merged migrations silently never apply and nothing goes

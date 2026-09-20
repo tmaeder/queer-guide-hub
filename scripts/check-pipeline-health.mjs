@@ -845,13 +845,29 @@ if (!hygieneRes.ok) {
       }
     }
 
-    // ADVISORY, and non-zero by design: 12 merges on record are uncorroborated and
+    // ADVISORY, and non-zero by design: 13 merges on record are uncorroborated and
     // each needs its own decision (district merges this codebase deliberately does
     // not reverse, plus correct-but-unverifiable rows with no coordinates and no
-    // QID). Gating at the baseline would ship red on arrival — the cry-wolf shape
-    // already removed once from the dedup backlog rule — so it prints the pairs and
-    // fails only on GROWTH, which means a NEW uncorroborated merge was made.
-    const BASELINE_UNCORROBORATED = 12
+    // QID, plus the exonym-onto-a-junk-shell case below). Gating at the baseline
+    // would ship red on arrival — the cry-wolf shape already removed once from the
+    // dedup backlog rule — so it prints the pairs and fails only on GROWTH, which
+    // means a NEW uncorroborated merge was made.
+    //
+    // 12 → 13 on 2026-09-19: `London <=> Londres`, and the merge is CORRECT — the
+    // gate fired, the pair was read by hand, and the answer was benign. The drop
+    // row is a `data_source='event-city-match'` shell (slug `tmp-5cc324d4-…`,
+    // placeholder, deindexed, 0 venues) whose own data is junk: coordinates
+    // 18.2597/-66.7085 sit in PUERTO RICO while its country_id is GB. It held
+    // exactly one child, a London event (Shoreditch pub tour, EC2A 3NW, 1.3 km
+    // from the London row), which the merge moved onto London correctly.
+    //
+    // All four arms are structurally blind here, which is why it scores `none`
+    // rather than being a bad merge: despaced names differ (`london`/`londres`),
+    // no comma qualifier, NEITHER row has a wikidata_qid — London itself has none
+    // — and the geo arm measures 6,817 km because the shell's coordinates are
+    // Puerto Rican. It is the documented correct-but-unverifiable exonym class,
+    // the same as Venedig/Venice and Biel/Bienne, with a junk shell on one side.
+    const BASELINE_UNCORROBORATED = 13
     const unc = Number(sig?.merged_uncorroborated ?? 0)
     if (unc > BASELINE_UNCORROBORATED) {
       const ex = Array.isArray(sig?.merged_examples) ? sig.merged_examples : []

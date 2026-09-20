@@ -2,7 +2,7 @@
 // Mirrors the JSON contract in the project plan; parsing here strips unknown keys
 // (preventing field injection from a misbehaving model).
 
-import { extractJsonCandidates } from '../json-extract.ts'
+import { extractJsonCandidates, parseJsonObject } from '../json-extract.ts'
 
 export type Sentiment = 'positive' | 'neutral' | 'negative' | 'mixed'
 
@@ -70,17 +70,15 @@ export function parseQualityDecision(content: string): QualityDecision | null {
   // discarded answers are why 78 ordinary news articles sat unjudged in
   // /admin/inbox. See _shared/json-extract.ts for why the order is what it is
   // and why the legacy greedy span is kept as the final candidate.
+  // parseJsonObject retries each candidate with control characters escaped.
+  // Measured on prod 2026-09-20, that is 14 of 19 failures on this path: the
+  // model writes cleanedBody's paragraph breaks as literal newlines inside the
+  // JSON string. See _shared/json-extract.ts for why the unescaped-quote half
+  // is deliberately not repaired here.
   let raw: Record<string, unknown> | null = null
   for (const candidate of extractJsonCandidates(content)) {
-    try {
-      const parsed = JSON.parse(candidate) as Record<string, unknown>
-      if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
-        raw = parsed
-        break
-      }
-    } catch {
-      // Try the next candidate.
-    }
+    raw = parseJsonObject(candidate)
+    if (raw) break
   }
   if (!raw) {
     // A discarded answer must SAY so. The old path returned null silently, so
