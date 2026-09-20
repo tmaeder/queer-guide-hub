@@ -146,6 +146,33 @@ export function parseQualityDecisionPreservingBody(content: string): QualityDeci
       candidate.slice(0, bodyKey.index + bodyKey[0].length) +
       ' ""' +
       candidate.slice(bodyEnd)
+    const raw = parseJsonObject(withoutBody)
+    const required = [
+      'isRelevant',
+      'relevanceScore',
+      'qualityScoreBefore',
+      'qualityScoreAfter',
+      'shouldPublish',
+      'needsManualReview',
+      'title',
+      'excerpt',
+      'cleanedBody',
+      'sentiment',
+      'tags',
+      'linkedCountries',
+      'linkedCities',
+      'linkedRegions',
+      'linkedVenues',
+      'linkedEvents',
+      'linkedPersonalities',
+      'linkedOrganisations',
+      'imageAssessment',
+      'removedArtifacts',
+      'warnings',
+      'confidence',
+    ]
+    if (!raw || !required.every((key) => Object.hasOwn(raw, key))) continue
+
     const decision = parseQualityDecision(withoutBody)
     if (decision) {
       decision.warnings = [
