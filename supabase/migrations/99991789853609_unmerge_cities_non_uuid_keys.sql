@@ -210,10 +210,21 @@ begin
   --    text form is present" passes while the other site still casts to uuid.
   -- pg_proc must precede the lateral that reads p.oid; the comma form put the
   -- set-returning function first and failed 42P01.
+  -- COMMENTS ARE STRIPPED FIRST, and that is load-bearing rather than tidy:
+  -- pg_get_functiondef returns the body INCLUDING its comments, and the `%I in
+  -- (select v::uuid ...)` line above — the one explaining what this change
+  -- replaced — contains the very string being counted. Counting the raw
+  -- definition therefore yields 7 real casts + 1 of this migration's own prose
+  -- = 8, which is what aborted `db push` on main and stalled every migration
+  -- queued behind it. Bumping the expectation to 8 would have "fixed" it by
+  -- letting a genuine eighth cast through unnoticed, which is the opposite of
+  -- what this guard is for.
   select count(*) into v_uuid_casts
     from pg_proc p
     join pg_namespace n on n.oid = p.pronamespace
-    cross join lateral regexp_matches(pg_get_functiondef(p.oid), 'v::uuid', 'g') m
+    cross join lateral regexp_matches(
+      regexp_replace(pg_get_functiondef(p.oid), '--[^' || chr(10) || ']*', '', 'g'),
+      'v::uuid', 'g') m
    where n.nspname = 'public' and p.proname = 'unmerge_cities';
   -- 7 legitimate uuid sites remain: venues/events city_text, news_article_cities,
   -- city_favorites, event_coverage_gaps, city_aliases, dup_children.
