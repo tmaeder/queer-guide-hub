@@ -180,7 +180,17 @@ begin
 
   -- The per-row call is what made this time out; make its return a hard failure
   -- rather than a silent performance regression on the next CREATE OR REPLACE.
-  select pg_get_functiondef(p.oid) into v_src
+  --
+  -- COMMENTS ARE STRIPPED FIRST, and that is the whole point rather than a tidy-up.
+  -- pg_get_functiondef returns the body INCLUDING its comments, and the body's own
+  -- explanatory comment names the function it no longer calls ("Inlined from
+  -- location_is_high_risk() rather than calling it per row"). The first version of
+  -- this file scanned the raw text and so RAISED on itself: the migration was
+  -- rejected by its own postcondition and every migration queued behind it was
+  -- stranded. That is the identical defect as the unmerge_cities guard which held
+  -- up 14 migrations the same day (#3860) — a guard that greps a function's source
+  -- must look at the code, not at the prose explaining the code.
+  select regexp_replace(pg_get_functiondef(p.oid), '--[^\n]*', '', 'g') into v_src
   from pg_proc p join pg_namespace n on n.oid = p.pronamespace
   where n.nspname = 'public' and p.proname = 'cities_directory';
   if position('location_is_high_risk' in v_src) > 0 then
