@@ -1,4 +1,3 @@
-import { useEffect, useState, useCallback } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { untypedFrom } from '@/integrations/supabase/untyped';
@@ -30,57 +29,55 @@ export interface NewsStoryArticle {
   category_canonical: string | null;
 }
 
+interface NewsStoriesResult {
+  stories: NewsStory[];
+  heroArticles: Record<string, NewsStoryArticle>;
+}
+
+async function fetchNewsStories(minArticles: number, limit: number): Promise<NewsStoriesResult> {
+  const { data, error } = (await untypedFrom('news_stories')
+    .select(
+      'id, slug, title, summary, hero_article_id, article_count, first_seen_at, last_updated_at, top_tags, country_ids',
+    )
+    .gte('article_count', minArticles)
+    .order('last_updated_at', { ascending: false })
+    .limit(limit)) as unknown as { data: NewsStory[] | null; error: { message: string } | null };
+
+  if (error) throw new Error(error.message);
+
+  const stories = data ?? [];
+  const heroIds = stories
+    .map((story) => story.hero_article_id)
+    .filter((id): id is string => Boolean(id));
+  if (heroIds.length === 0) return { stories, heroArticles: {} };
+
+  const { data: articles } = (await supabase
+    .from('news_articles')
+    .select(
+      'id, title, slug, url, image_url, excerpt, published_at, source_id, views_count, category, category_canonical',
+    )
+    .in('id', heroIds)) as unknown as { data: NewsStoryArticle[] | null };
+
+  return {
+    stories,
+    heroArticles: Object.fromEntries((articles ?? []).map((article) => [article.id, article])),
+  };
+}
+
 export function useNewsStories(opts: { minArticles?: number; limit?: number } = {}) {
   const { minArticles = 2, limit = 50 } = opts;
-  const [stories, setStories] = useState<NewsStory[]>([]);
-  const [heroArticles, setHeroArticles] = useState<Record<string, NewsStoryArticle>>({});
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const query = useQuery({
+    queryKey: ['news-stories', minArticles, limit],
+    queryFn: () => fetchNewsStories(minArticles, limit),
+  });
 
-  const fetchStories = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    const { data, error: err } = (await untypedFrom('news_stories')
-      .select(
-        'id, slug, title, summary, hero_article_id, article_count, first_seen_at, last_updated_at, top_tags, country_ids',
-      )
-      .gte('article_count', minArticles)
-      .order('last_updated_at', { ascending: false })
-      .limit(limit)) as unknown as { data: NewsStory[] | null; error: { message: string } | null };
-
-    if (err) {
-      setError(err.message);
-      setLoading(false);
-      return;
-    }
-    const rows = data ?? [];
-    setStories(rows);
-
-    const heroIds = rows.map((r) => r.hero_article_id).filter((x): x is string => !!x);
-    if (heroIds.length > 0) {
-      const { data: arts } = (await supabase
-        .from('news_articles')
-        .select(
-          'id, title, slug, url, image_url, excerpt, published_at, source_id, views_count, category, category_canonical',
-        )
-        .in('id', heroIds)) as unknown as { data: NewsStoryArticle[] | null };
-      const map: Record<string, NewsStoryArticle> = {};
-      (arts ?? []).forEach((a) => {
-        map[a.id] = a;
-      });
-      setHeroArticles(map);
-    } else {
-      setHeroArticles({});
-    }
-    setLoading(false);
-  }, [minArticles, limit]);
-
-   
-  useEffect(() => {
-    fetchStories();
-  }, [fetchStories]);
-
-  return { stories, heroArticles, loading, error, refetch: fetchStories };
+  return {
+    stories: query.data?.stories ?? [],
+    heroArticles: query.data?.heroArticles ?? {},
+    loading: query.isLoading,
+    error: query.error ? (query.error as Error).message : null,
+    refetch: query.refetch,
+  };
 }
 
 export interface StoryDetail extends NewsStory {
