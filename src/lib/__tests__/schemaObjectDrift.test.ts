@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 /**
- * Guards the schema-object drift sentinel — 99991789844093 +
+ * Guards the schema-object drift sentinel — 99991789864912 +
  * scripts/check-schema-object-drift.mjs.
  *
  * WHAT IT IS FOR. `trg_personalities_outing_guard`, the seal on the CRITICAL
@@ -22,7 +22,7 @@ import { join } from 'node:path';
  */
 
 const ROOT = process.cwd();
-const MIGRATION = join(ROOT, 'supabase/migrations/99991789844093_schema_trigger_inventory.sql');
+const MIGRATION = join(ROOT, 'supabase/migrations/99991789864912_schema_trigger_inventory.sql');
 const SCRIPT = join(ROOT, 'scripts/check-schema-object-drift.mjs');
 const BASELINE = join(ROOT, 'scripts/schema-object-drift-baseline.json');
 const WORKFLOW = join(ROOT, '.github/workflows/data-quality-gates.yml');
