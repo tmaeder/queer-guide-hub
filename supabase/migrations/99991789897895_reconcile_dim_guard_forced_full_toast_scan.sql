@@ -97,7 +97,7 @@ comment on function public.search_embeddings_reconcile(integer) is
   'This job re-inserts those strays only; it is NOT the primary delivery path, contrary to the '
   'header of migration 20260910144533, which is corrected by 20380301100000. '
   'Deliberately contains no vector_dims() dimension check: the column type enforces it, and the '
-  'call forced a full-corpus TOAST detoast that timed the job out (99991789893178).';
+  'call forced a full-corpus TOAST detoast that timed the job out (99991789897895).';
 
 do $verify$
 declare
