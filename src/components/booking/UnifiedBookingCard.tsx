@@ -98,12 +98,12 @@ export function UnifiedBookingCard({ result, originCity, onAddToTrip }: UnifiedB
               </div>
             )}
             {result.rating && (
-              <Badge variant="outline" style={{ fontSize: '0.7rem', height: 20 }}>
+              <Badge className="text-xs2" variant="outline" style={{ height: 20 }}>
                 {result.rating.toFixed(1)}
               </Badge>
             )}
             {result.lgbtqFriendly && (
-              <Badge variant="outline" style={{ fontSize: '0.7rem', height: 20 }}>
+              <Badge className="text-xs2" variant="outline" style={{ height: 20 }}>
                 LGBTQ+ Friendly
               </Badge>
             )}
@@ -119,16 +119,16 @@ export function UnifiedBookingCard({ result, originCity, onAddToTrip }: UnifiedB
               </span>
             )}
             {result.airline && (
-              <Badge variant="outline" style={{ fontSize: '0.7rem', height: 20 }}>
+              <Badge className="text-xs2" variant="outline" style={{ height: 20 }}>
                 {result.airline}
               </Badge>
             )}
             {result.stops === 0 ? (
-              <Badge variant="outline" style={{ fontSize: '0.7rem', height: 20 }}>
+              <Badge className="text-xs2" variant="outline" style={{ height: 20 }}>
                 Direct
               </Badge>
             ) : result.stops !== undefined ? (
-              <Badge variant="outline" style={{ fontSize: '0.7rem', height: 20 }}>
+              <Badge className="text-xs2" variant="outline" style={{ height: 20 }}>
                 {result.stops} stop{result.stops > 1 ? 's' : ''}
               </Badge>
             ) : null}

@@ -379,15 +379,13 @@ export default function EmailTemplates() {
                       <div className="flex flex-col gap-2">
                         <Label htmlFor="html-content">HTML Content</Label>
                         <Textarea
+                          className="text-sm"
                           id="html-content"
                           value={editingTemplate.html_content}
                           onChange={(e) =>
-                            setEditingTemplate({
-                              ...editingTemplate,
-                              html_content: e.target.value,
-                            })
+                            setEditingTemplate({ ...editingTemplate, html_content: e.target.value })
                           }
-                          style={{ minHeight: 300, fontFamily: 'monospace', fontSize: '0.875rem' }}
+                          style={{ minHeight: 300, fontFamily: 'monospace' }}
                         />
                       </div>
                     </TabsContent>
@@ -396,15 +394,13 @@ export default function EmailTemplates() {
                       <div className="flex flex-col gap-2">
                         <Label htmlFor="text-content">Text Content (Optional)</Label>
                         <Textarea
+                          className="text-sm"
                           id="text-content"
                           value={editingTemplate.text_content || ''}
                           onChange={(e) =>
-                            setEditingTemplate({
-                              ...editingTemplate,
-                              text_content: e.target.value,
-                            })
+                            setEditingTemplate({ ...editingTemplate, text_content: e.target.value })
                           }
-                          style={{ minHeight: 300, fontFamily: 'monospace', fontSize: '0.875rem' }}
+                          style={{ minHeight: 300, fontFamily: 'monospace' }}
                           placeholder="Plain text version of the email..."
                         />
                       </div>

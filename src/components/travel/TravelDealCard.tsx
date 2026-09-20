@@ -133,18 +133,19 @@ export function TravelDealCard({
             </span>
           )}
           {deal.airline && (
-            <Badge variant="outline" style={{ fontSize: '0.7rem', height: 20 }}>
+            <Badge className="text-xs2" variant="outline" style={{ height: 20 }}>
               {deal.airline}
             </Badge>
           )}
           {deal.stops === 0 ? (
-            <Badge variant="outline" style={{ fontSize: '0.7rem', height: 20 }}>
+            <Badge className="text-xs2" variant="outline" style={{ height: 20 }}>
               Direct
             </Badge>
           ) : (
             <Badge
+              className="text-xs2"
               variant="outline"
-              style={{ fontSize: '0.7rem', height: 20 }}
+              style={{ height: 20 }}
             >{`${deal.stops} stop${deal.stops > 1 ? 's' : ''}`}</Badge>
           )}
           {deal.duration && (

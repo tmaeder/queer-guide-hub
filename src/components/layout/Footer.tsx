@@ -292,7 +292,16 @@ export function Footer({ variant = 'full' }: FooterProps = {}) {
               ~100px-wide controls that were completely invisible on every
               page. Recoloured here rather than in the components, which are
               correct where they are used on paper. */}
-          <span className="ms-auto flex flex-wrap items-center gap-2 [&_button]:text-background [&_button:hover]:bg-background [&_button:hover]:text-foreground">
+          {/* Hover is an underline, NOT the paper-plate invert it used to be.
+              The invert could never complete: both switcher triggers set an inline
+              `style={{ background: 'transparent' }}` (LanguageSwitcher.tsx,
+              CurrencySelector.tsx) and an inline declaration out-ranks a non-!important
+              class, so the plate stayed ink while the text flipped to `--foreground` —
+              ink on ink in light mode, paper on paper in dark. Reported as "the language
+              and currency links turn black when I hover them". Underlining matches the
+              neighbouring footer links above and needs no !important arms race with the
+              inline style. */}
+          <span className="ms-auto flex flex-wrap items-center gap-2 [&_button]:text-background [&_button:hover]:underline">
             <LanguageSwitcher />
             <CurrencySelector />
             <ThemeToggle />

@@ -65,8 +65,7 @@ export function FollowedTagsRail({ onFilterByTag }: FollowedTagsRailProps) {
               <Badge
                 key={tag.tagId}
                 variant="default"
-                style={{ fontSize: '0.7rem' }}
-                className="flex items-center gap-1 cursor-pointer"
+                className="text-xs2 flex items-center gap-1 cursor-pointer"
                 onClick={() => onFilterByTag?.(tag.slug || tag.name)}
               >
                 {formatNewsTag(tag.name)}
@@ -88,9 +87,10 @@ export function FollowedTagsRail({ onFilterByTag }: FollowedTagsRailProps) {
 
         {followedTags.length > 0 && onFilterByTag && (
           <Button
+            className="text-xs"
             variant="outline"
             size="sm"
-            style={{ width: '100%', fontSize: '0.75rem' }}
+            style={{ width: '100%' }}
             onClick={() => {
               const slugs = followedTags.map((t) => t.slug || t.name);
               if (slugs.length > 0) onFilterByTag(slugs[0]);
@@ -135,21 +135,21 @@ function FollowTagButton({
   return (
     <Popover open={open} onOpenChange={onOpenChange}>
       <PopoverTrigger asChild>
-        <Button variant="ghost" size="sm" style={{ fontSize: '0.75rem', justifyContent: 'flex-start', padding: '0 4px' }}>
+        <Button
+          className="text-xs"
+          variant="ghost"
+          size="sm"
+          style={{ justifyContent: 'flex-start', padding: '0 4px' }}
+        >
           <Plus size={12} className="mr-1" />
           Follow a topic
         </Button>
       </PopoverTrigger>
       <PopoverContent style={{ padding: 0, width: 240 }} align="start">
         <Command>
-          <CommandInput
-            placeholder="Search topics…"
-            onValueChange={onSearchTags}
-          />
+          <CommandInput placeholder="Search topics…" onValueChange={onSearchTags} />
           <CommandList>
-            {searchLoading && (
-              <CommandEmpty>Searching…</CommandEmpty>
-            )}
+            {searchLoading && <CommandEmpty>Searching…</CommandEmpty>}
             {!searchLoading && tagOptions.length === 0 && (
               <CommandEmpty>No topics found.</CommandEmpty>
             )}

@@ -115,16 +115,14 @@ export function StoriesKanban({ grouped, adminById, onStoryClick }: Props) {
                 <p className="text-sm font-bold" style={{ color: col.color, letterSpacing: 0.3 }}>
                   {col.label}
                 </p>
-                <span className="text-muted-foreground" style={{ fontSize: '0.65rem' }}>
-                  {items.length}
-                </span>
+                <span className="text-2xs text-muted-foreground">{items.length}</span>
               </div>
 
               <div className="flex flex-col gap-2">
                 {items.length === 0 && (
                   <span
-                    className="text-muted-foreground py-6 text-center"
-                    style={{ fontSize: '0.7rem', opacity: 0.5 }}
+                    className="text-xs2 text-muted-foreground py-6 text-center"
+                    style={{ opacity: 0.5 }}
                   >
                     —
                   </span>
@@ -230,12 +228,11 @@ function StoryCard({
           <Tooltip>
             <TooltipTrigger asChild>
               <span
-                className="inline-block rounded-badge flex-shrink-0 text-background font-bold"
+                className="text-3xs inline-block rounded-badge flex-shrink-0 text-background font-bold"
                 style={{
                   paddingLeft: 3,
                   paddingRight: 3,
                   backgroundColor: prio.color,
-                  fontSize: '0.55rem',
                   letterSpacing: 0.3,
                 }}
               >
@@ -246,9 +243,8 @@ function StoryCard({
           </Tooltip>
         )}
         <p
-          className="flex-1 font-semibold min-w-0 overflow-hidden"
+          className="text-13 flex-1 font-semibold min-w-0 overflow-hidden"
           style={{
-            fontSize: '0.8rem',
             lineHeight: 1.3,
             display: '-webkit-box',
             WebkitLineClamp: 2,
@@ -263,12 +259,11 @@ function StoryCard({
       {/* Narrative */}
       {narrative && (
         <span
-          className="text-muted-foreground italic block overflow-hidden mb-1.5"
+          className="text-xs2 text-muted-foreground italic block overflow-hidden mb-1.5"
           style={{
             display: '-webkit-box',
             WebkitLineClamp: 2,
             WebkitBoxOrient: 'vertical',
-            fontSize: '0.68rem',
             lineHeight: 1.35,
           }}
         >
@@ -277,10 +272,7 @@ function StoryCard({
       )}
 
       {/* Footer */}
-      <div
-        className="flex items-center text-muted-foreground gap-1.5"
-        style={{ fontSize: '0.6rem' }}
-      >
+      <div className="text-2xs flex items-center text-muted-foreground gap-1.5">
         {story.feedback_count > 0 && (
           <Tooltip>
             <TooltipTrigger asChild>
@@ -308,8 +300,8 @@ function StoryCard({
           <Tooltip>
             <TooltipTrigger asChild>
               <span
-                className="bg-muted text-muted-foreground rounded-badge flex-shrink-0 truncate pl-1 pr-1"
-                style={{ paddingTop: 1, paddingBottom: 1, fontSize: '0.55rem', maxWidth: 70 }}
+                className="text-3xs bg-muted text-muted-foreground rounded-badge flex-shrink-0 truncate pl-1 pr-1"
+                style={{ paddingTop: 1, paddingBottom: 1, maxWidth: 70 }}
               >
                 {story.labels.length === 1 ? story.labels[0] : `${story.labels.length} tags`}
               </span>
@@ -321,12 +313,7 @@ function StoryCard({
         {story.origin === 'ai_suggested' && (
           <Tooltip>
             <TooltipTrigger asChild>
-              <span
-                className="font-bold flex-shrink-0 pl-1 pr-1 text-foreground"
-                style={{ fontSize: '0.55rem' }}
-              >
-                AI
-              </span>
+              <span className="text-3xs font-bold flex-shrink-0 pl-1 pr-1 text-foreground">AI</span>
             </TooltipTrigger>
             <TooltipContent>Auto-detected cluster</TooltipContent>
           </Tooltip>
@@ -338,13 +325,12 @@ function StoryCard({
               <span
                 data-testid="story-phase-chip"
                 data-phase={phase}
-                className="font-bold flex-shrink-0 whitespace-nowrap rounded-badge"
+                className="text-3xs font-bold flex-shrink-0 whitespace-nowrap rounded-badge"
                 style={{
                   paddingLeft: 4,
                   paddingRight: 4,
                   paddingTop: 1,
                   paddingBottom: 1,
-                  fontSize: '0.55rem',
                   color: PHASE_COLORS[phase],
                   backgroundColor: `color-mix(in srgb, ${PHASE_COLORS[phase]} 14%, transparent)`,
                   border: `1px solid ${PHASE_COLORS[phase]}`,
@@ -364,7 +350,7 @@ function StoryCard({
             <TooltipTrigger asChild>
               <Avatar style={{ width: 16, height: 16 }}>
                 <AvatarImage src={assignee.avatar_url || undefined} />
-                <AvatarFallback style={{ fontSize: '0.55rem' }}>
+                <AvatarFallback className="text-3xs">
                   {(assignee.display_name || '?').slice(0, 1).toUpperCase()}
                 </AvatarFallback>
               </Avatar>

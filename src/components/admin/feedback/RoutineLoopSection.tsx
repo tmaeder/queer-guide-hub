@@ -369,13 +369,14 @@ function RoutineRunCard({
     >
       <div className="flex items-center gap-2 flex-wrap">
         <span className="text-sm font-semibold">Run · {run.runner}</span>
-        <Badge variant="secondary" style={{ height: 20, fontSize: '0.7rem' }}>
+        <Badge className="text-xs2" variant="secondary" style={{ height: 20 }}>
           {run.status}
         </Badge>
         {run.external_ref && (
           <Badge
+            className="text-xs2"
             variant="secondary"
-            style={{ height: 20, fontSize: '0.7rem', fontFamily: 'monospace' }}
+            style={{ height: 20, fontFamily: 'monospace' }}
           >
             {run.external_ref}
           </Badge>
@@ -464,6 +465,7 @@ function RoutineRunCard({
             <div key={r.id} className="flex items-center gap-2 text-xs">
               <span className="font-mono text-xs">{r.kind}</span>
               <Badge
+                className="text-2xs"
                 variant={
                   r.status === 'passed'
                     ? 'default'
@@ -471,7 +473,7 @@ function RoutineRunCard({
                       ? 'destructive'
                       : 'secondary'
                 }
-                style={{ height: 18, fontSize: '0.65rem' }}
+                style={{ height: 18 }}
               >
                 {r.status}
               </Badge>

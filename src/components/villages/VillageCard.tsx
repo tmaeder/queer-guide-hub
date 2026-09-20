@@ -33,8 +33,7 @@ export const VillageCard = memo(function VillageCard({ village }: VillageCardPro
           {village.featured && <FeaturedBadge />}
           {isVisited && (
             <div
-              className="absolute bottom-2 left-2 inline-flex items-center px-1.5 py-0.5 font-semibold bg-foreground/80 text-background"
-              style={{ fontSize: '0.65rem' }}
+              className="text-2xs absolute bottom-2 left-2 inline-flex items-center px-1.5 py-0.5 font-semibold bg-foreground/80 text-background"
               title="Visited"
             >
               ✓ Visited

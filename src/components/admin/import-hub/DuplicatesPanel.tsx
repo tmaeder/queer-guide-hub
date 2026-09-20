@@ -366,8 +366,7 @@ function MergeHistorySection() {
                 return (
                   <div
                     key={entry.id}
-                    className="flex items-center gap-4 p-4 rounded-element bg-muted"
-                    style={{ fontSize: '0.85rem' }}
+                    className="text-sm flex items-center gap-4 p-4 rounded-element bg-muted"
                   >
                     <Merge size={14} className="text-muted-foreground shrink-0" />
                     <div className="flex-1 min-w-0">
