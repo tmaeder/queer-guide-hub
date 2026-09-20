@@ -18,7 +18,7 @@ const items = [
     open_target: '/help',
   },
   {
-    id: 'n-event',
+    id: 'notif_4cdbf777-8a37-4373-b70c-6ab36ec0b2b4',
     kind: 'notification',
     subtype: 'event_reminder',
     title: 'Doors in 2 hours',
@@ -130,7 +130,9 @@ describe('SignalPanel', () => {
 
     expect(mocks.navigate).toHaveBeenCalledWith('/events/ballroom');
     await waitFor(() =>
-      expect(mocks.rpc).toHaveBeenCalledWith('mark_inbox_alert_read', { p_item: 'n-event' }),
+      expect(mocks.rpc).toHaveBeenCalledWith('mark_inbox_alert_read', {
+        p_item: 'notif_4cdbf777-8a37-4373-b70c-6ab36ec0b2b4',
+      }),
     );
   });
 });
