@@ -112,6 +112,12 @@ out-swiss-events/
 out-berlin-events/
 out-testfinder/
 out-aids-ch/
+# gays-cruising crawl artifacts. 107 MB, and the JSONL carries the source's
+# users' authored write-ups — republishing them here would be a second copy of
+# exactly the thing Condiciones de Uso §5 governs. The importer is committed;
+# the crawl is not. sha256 of enriched_spots.jsonl is recorded in the importer
+# header so a re-run can prove it read the same bytes.
+out-gays-cruising/
 # Kinktionary scrape cache + the browser profile whose cf_clearance cookie is
 # what gets the run past Cloudflare. The fetcher is committed; the fetch is not.
 scripts/data-quality/out-kinktionary/
