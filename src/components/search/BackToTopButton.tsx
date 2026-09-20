@@ -19,9 +19,12 @@ const SHOW_AFTER_PX = 600;
  * opened the feedback dialog instead. e2e caught it only intermittently
  * because the FAB is lazy-mounted: the test passed whenever it clicked first.
  */
-const FAB_BOTTOM_DESKTOP = 'calc(1.5rem + var(--audio-bar-clearance, 0rem))';
+// `--consent-bar-clearance`: the consent bar is z-100 and bottom-0, so it
+// covers this FAB too until a choice is stored. Published by CookieConsentBanner.
+const FAB_BOTTOM_DESKTOP =
+  'calc(1.5rem + var(--audio-bar-clearance, 0rem) + var(--consent-bar-clearance, 0px))';
 const FAB_BOTTOM_MOBILE =
-  'calc(max(6rem, var(--map-rail-clearance, 0rem) + 1rem) + env(safe-area-inset-bottom, 0px) + var(--audio-bar-clearance, 0rem))';
+  'calc(max(6rem, var(--map-rail-clearance, 0rem) + 1rem) + env(safe-area-inset-bottom, 0px) + var(--audio-bar-clearance, 0rem) + var(--consent-bar-clearance, 0px))';
 /** FAB height (48) + a 12px gap. */
 const FAB_CLEARANCE = '60px';
 
