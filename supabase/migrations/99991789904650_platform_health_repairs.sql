@@ -37,6 +37,10 @@ create index if not exists ingestion_staging_podcast_created_idx
 -- One newly-authored short glossary entry exceeded the documented American-
 -- spelling ceiling. Guard on the exact source text so an editorial change is
 -- never overwritten by a later replay.
+-- The row is human-reviewed, so declare the migration actor explicitly; the
+-- write-protection trigger rejects the implicit system:trigger identity.
+select set_config('app.actor', 'migration:platform-health-repairs', true);
+
 update public.unified_tags
 set description = replace(description, 'oestrogen', 'estrogen'),
     updated_at = now()
@@ -136,6 +140,30 @@ begin
   end loop;
 end
 $schedule$;
+
+-- News ingestion can merge a survivor that already has duplicate children,
+-- briefly producing chained pointers. Collapse the measured live breach before
+-- release gates run again, and fail closed if any dangling/chained row remains.
+do $news_duplicates$
+declare
+  v_repaired integer;
+  v_remaining bigint;
+begin
+  v_repaired := public.collapse_entity_dup_chains('news');
+
+  select count(*) into v_remaining
+  from public.news_articles n
+  left join public.news_articles parent on parent.id = n.duplicate_of_id
+  where n.duplicate_of_id is not null
+    and (parent.id is null or parent.duplicate_of_id is not null);
+
+  if v_remaining <> 0 then
+    raise exception 'news duplicate integrity repair left % invalid pointer(s)', v_remaining;
+  end if;
+
+  raise notice 'collapsed % chained news duplicate pointer(s)', v_repaired;
+end
+$news_duplicates$;
 
 -- The new parser is deployed immediately after migrations. Forgive attempts
 -- made before this release, plus a bounded deployment window; attempts after
