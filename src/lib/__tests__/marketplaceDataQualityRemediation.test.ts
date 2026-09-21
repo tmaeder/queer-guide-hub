@@ -159,10 +159,14 @@ describe('variant and taxonomy boundary fixtures', () => {
       ),
       migration.indexOf('CREATE OR REPLACE FUNCTION public.marketplace_department_for_group'),
     );
-    const apparel = wrapper.indexOf('t-?shirt|hoodie');
+    const apparel = wrapper.indexOf('t-?shirts?|tees?');
     const fallback = wrapper.indexOf('marketplace_subcategory_group_v3(p_subcategory, p_title)');
     expect(apparel).toBeGreaterThan(-1);
     expect(fallback).toBeGreaterThan(apparel);
     expect(migration).toContain('marketplace_department_for_group');
+    expect(wrapper.indexOf('cycling kit|cycle kit')).toBeLessThan(
+      wrapper.indexOf('dildo|vibrator|masturbator'),
+    );
+    expect(wrapper).toContain("THEN 'bottoms'");
   });
 });
