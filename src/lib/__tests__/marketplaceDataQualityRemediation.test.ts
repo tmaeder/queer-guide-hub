@@ -96,6 +96,11 @@ describe('marketplace data-quality remediation contracts', () => {
     expect(migration).toContain("'source_defect_spike'");
   });
 
+  it('does not count an examined but nonproductive HTTP dispatch as success', () => {
+    expect(migration).toContain('worker examined rows but made no changed or terminal progress');
+    expect(migration).toContain("'marketplace_image_optimize'");
+  });
+
   it('registers a bounded taxonomy drain instead of assuming a legacy row exists', () => {
     expect(migration).toContain(
       "'marketplace_taxonomy_v3_backfill','Marketplace taxonomy v4 rollout'",

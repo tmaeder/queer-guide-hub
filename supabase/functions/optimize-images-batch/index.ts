@@ -186,6 +186,10 @@ Deno.serve(async (req) => {
     return jsonResponse({
       done: false,
       processed: pending.length,
+      items_examined: pending.length,
+      items_changed: mirrored + cdnMarked,
+      items_terminal: mirrored + cdnMarked + failed,
+      items_failed: failed,
       mirrored,
       cdn_marked: cdnMarked,
       failed,
