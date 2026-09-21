@@ -77,10 +77,10 @@ begin
   assert v_snapshot.quality_tier = 'verified', 'evidenced verification did not reach verified';
   assert v_snapshot.verified_at is not null, 'verification timestamp was not stored';
 
-  update public.venues set country_id = null where id = v_id;
+  delete from public.venue_sources where venue_id = v_id;
   select * into v_snapshot from public.recompute_venue_quality_snapshot(v_id);
   assert v_snapshot.quality_tier = 'suppressed', 'hard blocker did not suppress venue';
-  assert 'missing_country' = any(v_snapshot.blocker_codes), 'missing country blocker absent';
+  assert 'no_source' = any(v_snapshot.blocker_codes), 'missing source blocker absent';
 
   -- Shadow mode preserves legacy eligibility and handles NULL status/source explicitly.
   assert exists(select 1 from public.venue_catalog_public where id = v_id),
