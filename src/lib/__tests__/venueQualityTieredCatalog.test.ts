@@ -10,6 +10,10 @@ const OPERATIONAL_SQL = readFileSync(
   join(process.cwd(), 'supabase/migrations/99991790011920_venue_quality_operational_hardening.sql'),
   'utf8',
 );
+const GEO_RELATIONSHIP_SQL = readFileSync(
+  join(process.cwd(), 'supabase/migrations/99991790011930_venue_catalog_geo_relationship.sql'),
+  'utf8',
+);
 
 describe('venue quality tiered catalog migration', () => {
   it('starts in shadow mode and keeps hard blockers separate from the score', () => {
@@ -78,5 +82,11 @@ describe('venue quality tiered catalog migration', () => {
     expect(OPERATIONAL_SQL).toContain("lower(btrim(license)) not in ('unknown'");
     expect(OPERATIONAL_SQL).toContain("where slug = 'venue_accessibility_osm'");
     expect(OPERATIONAL_SQL).toContain("'resolution', 'no_precision_match'");
+  });
+
+  it('keeps the catalog view embeddable for venue detail geo metadata', () => {
+    expect(GEO_RELATIONSHIP_SQL).toContain('function public.cities(v public.venue_catalog_public)');
+    expect(GEO_RELATIONSHIP_SQL).toContain('where c.id = v.city_id');
+    expect(GEO_RELATIONSHIP_SQL).toContain("notify pgrst, 'reload schema'");
   });
 });

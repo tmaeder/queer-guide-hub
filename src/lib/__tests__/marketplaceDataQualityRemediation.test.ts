@@ -88,6 +88,12 @@ describe('marketplace data-quality remediation contracts', () => {
     expect(migration).toContain("'worker_stalled'");
     expect(migration).toContain("'source_defect_spike'");
   });
+
+  it('registers a bounded taxonomy drain instead of assuming a legacy row exists', () => {
+    expect(migration).toContain("'marketplace_taxonomy_v3_backfill','Marketplace taxonomy v4 rollout'");
+    expect(migration).toContain("marketplace_taxonomy_v3_backfill'',100");
+    expect(migration).toContain("'* * * * *',3");
+  });
 });
 
 describe('image metadata fixtures', () => {

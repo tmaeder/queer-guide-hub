@@ -1359,9 +1359,18 @@ VALUES
 ON CONFLICT(slug) DO UPDATE SET name=excluded.name,description=excluded.description,enabled=excluded.enabled,
   action=excluded.action,schedule=excluded.schedule,auto_pause_threshold=excluded.auto_pause_threshold;
 
-UPDATE public.admin_automations SET auto_pause_threshold=3,
-  action=jsonb_set(action,'{command}',to_jsonb('SET statement_timeout=''120s''; SELECT public.run_marketplace_quality_worker(''marketplace_taxonomy_v3_backfill'',50);'::text))
-WHERE slug='marketplace_taxonomy_v3_backfill';
+INSERT INTO public.admin_automations
+  (slug,name,description,managed_by,enabled,"trigger",conditions,action,schedule,auto_pause_threshold)
+VALUES
+  ('marketplace_taxonomy_v3_backfill','Marketplace taxonomy v4 rollout',
+   'Reversible deterministic taxonomy rollout: frozen-corpus gate, 1% canary, distribution guard, then bounded expansion.',
+   'system',true,'{"type":"schedule"}'::jsonb,'[]'::jsonb,
+   jsonb_build_object('type','cron','jobname','marketplace-taxonomy-v4-backfill',
+     'command','SET statement_timeout=''120s''; SELECT public.run_marketplace_quality_worker(''marketplace_taxonomy_v3_backfill'',100);'),
+   '* * * * *',3)
+ON CONFLICT(slug) DO UPDATE SET name=excluded.name,description=excluded.description,
+  enabled=excluded.enabled,action=excluded.action,schedule=excluded.schedule,
+  auto_pause_threshold=excluded.auto_pause_threshold;
 
 SELECT public.sync_automations_to_cron(true);
 SELECT public.run_marketplace_quality_snapshot();
