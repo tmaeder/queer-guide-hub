@@ -14,6 +14,10 @@ const GEO_RELATIONSHIP_SQL = readFileSync(
   join(process.cwd(), 'supabase/migrations/99991790011930_venue_catalog_geo_relationship.sql'),
   'utf8',
 );
+const PHASH_SAFETY_SQL = readFileSync(
+  join(process.cwd(), 'supabase/migrations/99991790011940_venue_phash_memory_guard.sql'),
+  'utf8',
+);
 
 describe('venue quality tiered catalog migration', () => {
   it('starts in shadow mode and keeps hard blockers separate from the score', () => {
@@ -88,5 +92,10 @@ describe('venue quality tiered catalog migration', () => {
     expect(GEO_RELATIONSHIP_SQL).toContain('function public.cities(v public.venue_catalog_public)');
     expect(GEO_RELATIONSHIP_SQL).toContain('where c.id = v.city_id');
     expect(GEO_RELATIONSHIP_SQL).toContain("notify pgrst, 'reload schema'");
+  });
+
+  it('resumes perceptual hashing with bounded edge-memory usage', () => {
+    expect(PHASH_SAFETY_SQL).toContain('consecutive_failures = 0');
+    expect(PHASH_SAFETY_SQL).toContain('body := \'{"limit":1}\'::jsonb');
   });
 });
