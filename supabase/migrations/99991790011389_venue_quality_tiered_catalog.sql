@@ -710,10 +710,21 @@ set description = 'Reconciles versioned venue quality snapshots. A successful ru
     enabled = true
 where slug = 'venue_quality_recompute';
 
-update cron.job
-set schedule = '0 * * * *',
-    command = $$SELECT public.reconcile_venue_quality_queue(10000); SELECT public.run_venue_quality_recompute(5000);$$
-where jobname in ('venue_quality_recompute', 'venue-quality-recompute');
+do $quality_cron$
+begin
+  if exists (select 1 from cron.job where jobname = 'venue_quality_recompute') then
+    perform cron.unschedule('venue_quality_recompute');
+  end if;
+  if exists (select 1 from cron.job where jobname = 'venue-quality-recompute') then
+    perform cron.unschedule('venue-quality-recompute');
+  end if;
+  perform cron.schedule(
+    'venue_quality_recompute',
+    '0 * * * *',
+    'SELECT public.reconcile_venue_quality_queue(10000); SELECT public.run_venue_quality_recompute(5000);'
+  );
+end;
+$quality_cron$;
 
 -- The event linker is already precision-gated to one exact normalized-name
 -- match in the same city; ambiguous candidates go to review. Activate that
@@ -739,11 +750,21 @@ end;
 $event_link_cron$;
 
 -- The phash worker already has a bounded, forward-progress selector using
--- phash_checked_at. Restore an auto-paused existing job without inventing a
--- second schedule or bypassing its internal authentication contract.
-update cron.job
-set active = true
-where jobname = 'image_phash_backfill';
+-- phash_checked_at. Re-register an existing auto-paused job through pg_cron's
+-- supported API while retaining its reviewed command and schedule.
+do $phash_cron$
+declare
+  v_command text;
+  v_schedule text;
+begin
+  select command, schedule into v_command, v_schedule
+  from cron.job where jobname = 'image_phash_backfill' limit 1;
+  if v_command is not null then
+    perform cron.unschedule('image_phash_backfill');
+    perform cron.schedule('image_phash_backfill', v_schedule, v_command);
+  end if;
+end;
+$phash_cron$;
 
 -- ---------------------------------------------------------------------------
 -- 5. Venue-specific tags become authoritative and mirror to the unified graph.
