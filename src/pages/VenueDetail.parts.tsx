@@ -39,6 +39,12 @@ export type VenueReview = Database['public']['Tables']['venue_reviews']['Row'] &
 };
 
 export type VenueWithRelations = Venue & {
+  quality_tier?: 'suppressed' | 'listed' | 'guide_ready' | 'verified';
+  public_quality_score?: number;
+  quality_scored_at?: string | null;
+  catalog_promotable?: boolean;
+  catalog_indexable?: boolean;
+  quality_enforcement_enabled?: boolean;
   social_links?: Record<string, string> | null;
   cities?: { id: string; slug?: string; name: string } | null;
   countries?: {

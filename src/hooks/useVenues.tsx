@@ -1,12 +1,21 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { untypedRpc } from '@/integrations/supabase/untyped';
+import { untypedFrom, untypedRpc } from '@/integrations/supabase/untyped';
 import type { Database } from '@/integrations/supabase/types';
 import { calculateDistanceKm } from '@/utils/calculateDistance';
 import { queryWithRetry } from '@/utils/fetchWithRetry';
 
 type Venue = Database['public']['Tables']['venues']['Row'];
 type VenueInsert = Database['public']['Tables']['venues']['Insert'];
+export type VenueQualityTier = 'suppressed' | 'listed' | 'guide_ready' | 'verified';
+export type CatalogVenue = Venue & {
+  quality_tier: VenueQualityTier;
+  public_quality_score: number;
+  quality_scored_at: string | null;
+  catalog_promotable: boolean;
+  catalog_indexable: boolean;
+  quality_enforcement_enabled: boolean;
+};
 
 /**
  * @param autoFetch  run the initial list query on mount
@@ -18,7 +27,7 @@ type VenueInsert = Database['public']['Tables']['venues']['Insert'];
  */
 export function useVenues(autoFetch: boolean = true, opts?: { skipDatasetTotal?: boolean }) {
   const skipDatasetTotal = opts?.skipDatasetTotal ?? false;
-  const [venues, setVenues] = useState<Venue[]>([]);
+  const [venues, setVenues] = useState<CatalogVenue[]>([]);
   const [loading, setLoading] = useState(autoFetch);
   const [error, setError] = useState<string | null>(null);
   const [hasMore, setHasMore] = useState(true);
@@ -30,13 +39,12 @@ export function useVenues(autoFetch: boolean = true, opts?: { skipDatasetTotal?:
     if (skipDatasetTotal) return;
     let cancelled = false;
     (async () => {
-      const { count } = await supabase
-        .from('venues')
-        .select('id', { head: true, count: 'exact' })
-        .neq('data_source', 'refuge-restrooms')
-        .neq('review_status', 'archived')
-        .is('duplicate_of_id', null)
-        .is('closed_at', null);
+      // The view owns eligibility. The old chain used `.neq()` for data source
+      // and review status, which silently excluded NULL rows in PostgREST.
+      const { count } = await untypedFrom('venue_catalog_public').select('id', {
+        head: true,
+        count: 'exact',
+      });
       if (!cancelled) setDatasetTotal(count ?? 0);
     })();
     return () => {
@@ -120,6 +128,7 @@ export function useVenues(autoFetch: boolean = true, opts?: { skipDatasetTotal?:
           if (filters?.accessibilityAttributes?.length)
             rpcFilters.accessibility = filters.accessibilityAttributes;
           if (filters?.targetGroups?.length) rpcFilters.groups = filters.targetGroups;
+          if (filters?.railQuality) rpcFilters.promotedOnly = true;
           if (typeof filters?.radiusKm === 'number') rpcFilters.radiusKm = filters.radiusKm;
           if (filters?.openNow) rpcFilters.openNow = true;
           if (typeof filters?.priceLevel === 'number') rpcFilters.priceLevel = filters.priceLevel;
@@ -146,7 +155,7 @@ export function useVenues(autoFetch: boolean = true, opts?: { skipDatasetTotal?:
             ...(r.venue as Venue),
             distance: r.distance_m != null ? r.distance_m / 1000 : undefined,
             relevance_score: r.score,
-          })) as Venue[];
+          })) as unknown as CatalogVenue[];
 
           if (options.append) {
             setVenues((prev) => {
@@ -168,13 +177,7 @@ export function useVenues(autoFetch: boolean = true, opts?: { skipDatasetTotal?:
         }
       }
 
-      let query = supabase
-        .from('venues')
-        .select('*', { count: 'exact' })
-        .neq('data_source', 'refuge-restrooms')
-        .neq('review_status', 'archived')
-        .is('duplicate_of_id', null)
-        .is('closed_at', null);
+      let query = untypedFrom('venue_catalog_public').select('*', { count: 'exact' });
 
       // Server-side sort
       const sort = options?.sort ?? 'featured';
@@ -200,7 +203,7 @@ export function useVenues(autoFetch: boolean = true, opts?: { skipDatasetTotal?:
       }
 
       if (filters?.railQuality) {
-        query = query.or('category.neq.other,lgbti_relevance_score.gte.0.5');
+        query = query.eq('catalog_promotable', true);
       }
 
       if (filters?.countryId) {
@@ -280,7 +283,7 @@ export function useVenues(autoFetch: boolean = true, opts?: { skipDatasetTotal?:
 
       if (error) throw error;
 
-      let processedVenues = data || [];
+      let processedVenues = (data || []) as unknown as CatalogVenue[];
 
       // If nearMe filter is active and user location is available, sort by distance
       if (filters?.nearMe && filters?.userLocation) {

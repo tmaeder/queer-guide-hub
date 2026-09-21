@@ -78,11 +78,11 @@ type HubSpec = {
 const HUBS: Record<string, HubSpec[]> = {
   '/venues': [
     {
-      table: 'venues',
+      table: 'venue_catalog_public',
       labelColumn: 'name',
       prefix: '/venues/',
-      filter: 'slug=not.is.null&seo_indexable=eq.true&safety_gated=eq.false&duplicate_of_id=is.null',
-      order: 'quality_score.desc.nullslast,slug.asc',
+      filter: 'slug=not.is.null&catalog_indexable=eq.true&safety_gated=eq.false&duplicate_of_id=is.null',
+      order: 'public_quality_score.desc.nullslast,slug.asc',
       limit: 60,
       heading: 'LGBTQ+ venues on Queer Guide',
     },

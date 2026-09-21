@@ -511,7 +511,7 @@ async function venueDetail(env: Env, slug: string, pathname: string): Promise<De
   // the stale duplicate's own content forever.
   const rows = await fetchRows(
     env,
-    'venues',
+    'venue_catalog_public',
     // cities(...) is embedded so the city LINK can use the city's real slug.
     // The body used to link `/places/${slugify(city_text)}`, and slugify here is
     // `toLowerCase().replace(/[^a-z0-9]+/g,'-')` — no transliteration, no trim —
@@ -522,12 +522,12 @@ async function venueDetail(env: Env, slug: string, pathname: string): Promise<De
     // every venue in Victoria, BC pointed at Victoria, SEYCHELLES, and Grad Hvar
     // (Croatia) at a French commune. That is the same-name-city collision class
     // recorded in CLAUDE.md, reached through a link rather than a resolver.
-    'name,slug,description,address,city,state,country,postal_code,latitude,longitude,phone,website,images,category,venue_subtype,foursquare_rating,tripadvisor_rating,tomtom_rating,hours,updated_at,safety_gated,review_status,seo_indexable,cities(slug,seo_indexable,duplicate_of_id,shell_status)',
+    'name,slug,description,address,city,state,country,postal_code,latitude,longitude,phone,website,images,category,venue_subtype,foursquare_rating,tripadvisor_rating,tomtom_rating,hours,updated_at,safety_gated,review_status,seo_indexable,catalog_indexable,quality_tier,public_quality_score,cities(slug,seo_indexable,duplicate_of_id,shell_status)',
     // review_status=neq.archived: fetchRows runs with the service role, so the
     // SPA's own archived filter (usePageFetchers → notFound) never applies here;
     // without it every soft-archived venue kept serving full meta + JSON-LD to
     // crawlers with HTTP 200.
-    `slug=eq.${encodeURIComponent(slug)}&duplicate_of_id=is.null&review_status=neq.archived`,
+    `slug=eq.${encodeURIComponent(slug)}&duplicate_of_id=is.null`,
     1,
   );
   const row = rows[0] ?? null;
@@ -648,7 +648,12 @@ async function venueDetail(env: Env, slug: string, pathname: string): Promise<De
       : undefined,
   };
 
-  return { meta, body, jsonLd: renderLd(prune(localBusiness)), indexable: row.seo_indexable !== false };
+  return {
+    meta,
+    body,
+    jsonLd: renderLd(prune(localBusiness)),
+    indexable: row.catalog_indexable === true,
+  };
 }
 
 function mapVenueType(subtype: string): string {

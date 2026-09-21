@@ -9,12 +9,12 @@ export const onRequest: PagesFunction<Env> = async ({ env }) => {
   // (RLS bypassed), so this filter must be explicit.
   const rows = await fetchRows(
     env,
-    'venues',
-    'slug,updated_at',
+    'venue_catalog_public',
+    'slug,updated_at,catalog_indexable',
     // duplicate_of_id — merged venues are redirect stubs, not pages. Before
     // pagination landed the 1000-row truncation hid them; unpaginated this
     // filter is worth 10,538 duplicate URLs (measured 2026-08-02).
-    'slug=not.is.null&seo_indexable=eq.true&safety_gated=eq.false&duplicate_of_id=is.null',
+    'slug=not.is.null&catalog_indexable=eq.true&safety_gated=eq.false&duplicate_of_id=is.null',
   );
   const entries: SitemapEntry[] = rows
     .filter((r) => typeof r.slug === 'string' && (r.slug as string).length > 0)

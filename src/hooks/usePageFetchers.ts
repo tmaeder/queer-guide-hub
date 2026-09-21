@@ -392,7 +392,22 @@ export async function fetchVenueWithReviews<TVenue, TReview>(
   if ((venueData as { review_status?: string }).review_status === 'archived') {
     return { venue: null, reviews: [], notFound: true };
   }
-  const venue = venueData as TVenue & { id: string };
+  const venueId = (venueData as { id: string }).id;
+  // Resolve tier visibility through the same catalog contract as the directory.
+  // In shadow mode every legacy-eligible row remains present; once enforcement
+  // is enabled a suppressed row disappears from this view and becomes a 404.
+  const { data: catalogData, error: catalogError } = await untypedFrom('venue_catalog_public')
+    .select(
+      'id,quality_tier,public_quality_score,quality_scored_at,catalog_promotable,catalog_indexable,quality_enforcement_enabled',
+    )
+    .eq('id', venueId)
+    .maybeSingle();
+  if (catalogError) throw catalogError;
+  if (!catalogData) return { venue: null, reviews: [], notFound: true };
+  const venue = {
+    ...(venueData as unknown as Record<string, unknown>),
+    ...(catalogData as unknown as Record<string, unknown>),
+  } as unknown as TVenue & { id: string };
   const { data: reviewsData, error: reviewsError } = await supabase
     .from('venue_reviews')
     .select(`*, profiles:user_id (display_name, avatar_url)`)

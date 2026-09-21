@@ -56,16 +56,16 @@ const SRC = readFileSync(join(process.cwd(), 'functions/_lib/detail.ts'), 'utf8'
  * carries the column means adding it here.
  */
 const GATED = [
-  { fn: 'venueDetail', table: 'venues' },
-  { fn: 'personalityDetail', table: 'personalities' },
-  { fn: 'tagDetail', table: 'unified_tags' },
-  { fn: 'villageDetail', table: 'queer_villages' },
-  { fn: 'milestoneDetail', table: 'milestones' },
-  { fn: 'cityDetail', table: 'cities' },
-  { fn: 'eventDetail', table: 'events' },
-  { fn: 'countryDetail', table: 'countries' },
-  { fn: 'newsDetail', table: 'news_articles' },
-  { fn: 'hotelDetail', table: 'hotels' },
+  { fn: 'venueDetail', table: 'venue_catalog_public', field: 'catalog_indexable' },
+  { fn: 'personalityDetail', table: 'personalities', field: 'seo_indexable' },
+  { fn: 'tagDetail', table: 'unified_tags', field: 'seo_indexable' },
+  { fn: 'villageDetail', table: 'queer_villages', field: 'seo_indexable' },
+  { fn: 'milestoneDetail', table: 'milestones', field: 'seo_indexable' },
+  { fn: 'cityDetail', table: 'cities', field: 'seo_indexable' },
+  { fn: 'eventDetail', table: 'events', field: 'seo_indexable' },
+  { fn: 'countryDetail', table: 'countries', field: 'seo_indexable' },
+  { fn: 'newsDetail', table: 'news_articles', field: 'seo_indexable' },
+  { fn: 'hotelDetail', table: 'hotels', field: 'seo_indexable' },
 ] as const;
 
 /** Slice the source of one `async function <name>(` up to the next one. */
@@ -78,8 +78,8 @@ function bodyOf(fnName: string): string {
 }
 
 describe('detail.ts honours seo_indexable', () => {
-  for (const { fn, table } of GATED) {
-    it(`${fn} selects seo_indexable and returns indexable`, () => {
+  for (const { fn, table, field } of GATED) {
+    it(`${fn} selects its indexability field and returns indexable`, () => {
       const body = bodyOf(fn);
       expect(body, `${fn} not found in detail.ts`).not.toBe('');
 
@@ -87,8 +87,8 @@ describe('detail.ts honours seo_indexable', () => {
       // without selecting it yields undefined -> always indexable, which is the
       // same bug wearing the fix's clothes.
       expect(
-        body.includes('seo_indexable'),
-        `${fn} never selects seo_indexable from ${table}; its page will be indexable regardless of the column`,
+        body.includes(field),
+        `${fn} never selects ${field} from ${table}; its page will be indexable regardless of the column`,
       ).toBe(true);
 
       // And it must USE it in the returned shape. The identifier is matched
@@ -96,8 +96,10 @@ describe('detail.ts honours seo_indexable', () => {
       // renderer; what is asserted is that the returned `indexable` is derived
       // from the fetched row's column and not from a literal.
       expect(
-        /\bindexable:\s*\w*[Rr]ow\.seo_indexable\s*(!==\s*false|===\s*true)/.test(body),
-        `${fn} does not return \`indexable\` derived from the row's seo_indexable`,
+        new RegExp(`\\bindexable:\\s*\\w*[Rr]ow\\.${field}\\s*(!==\\s*false|===\\s*true)`).test(
+          body,
+        ),
+        `${fn} does not return \`indexable\` derived from the row's ${field}`,
       ).toBe(true);
     });
   }

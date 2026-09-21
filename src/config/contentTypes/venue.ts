@@ -159,7 +159,28 @@ export const venueFields: FieldConfig[] = [
   // The legacy `venues.featured` column was dropped in PR #312; the toggle kept writing
   // to it and did nothing. `is_featured` is the column every other entity uses.
   { name: 'is_featured', label: 'Featured', type: 'boolean', group: 'settings' },
+  {
+    name: 'verification_source',
+    label: 'Verification Source',
+    type: 'text',
+    group: 'settings',
+    helpText: 'Required before marking a venue verified (for example: owner, editor visit).',
+  },
+  {
+    name: 'verification_evidence',
+    label: 'Verification Evidence',
+    type: 'json',
+    group: 'settings',
+    helpText: 'Evidence and citations supporting verification. Required before verification.',
+  },
   { name: 'verified', label: 'Verified', type: 'boolean', group: 'settings' },
+  {
+    name: 'verified_at',
+    label: 'Verified At',
+    type: 'datetime',
+    group: 'settings',
+    readOnly: true,
+  },
   { name: 'star_rating', label: 'Star Rating', type: 'number', group: 'settings', min: 1, max: 5 },
   {
     name: 'closed_at',

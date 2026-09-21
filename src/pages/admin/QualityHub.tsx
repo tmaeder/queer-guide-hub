@@ -26,6 +26,7 @@ import { OrgLinkReviewQueue } from '@/components/admin/business/OrgLinkReviewQue
 import { GeoAddressQualityPanel } from '@/components/admin/GeoAddressQualityPanel';
 import { CategoryCoveragePanel } from '@/components/admin/CategoryCoveragePanel';
 import { VenueReviewQueuePanel } from '@/components/admin/VenueReviewQueuePanel';
+import { VenueQualityTierPanel } from '@/components/admin/VenueQualityTierPanel';
 import type { FreigabeStufe } from '@/lib/personalityStatus';
 import { AdminArchetypeHeader } from '@/components/admin/frames/AdminArchetypeHeader';
 import { AutomationStatusCard } from '@/components/admin/AutomationStatusCard';
@@ -112,6 +113,7 @@ const SECTIONS: EngineSection[] = [
     editLabel: 'Edit venues',
     render: () => (
       <>
+        <VenueQualityTierPanel />
         <AmenityQualityPanel />
         <DedupPendingLink entityType="venue" />
       </>

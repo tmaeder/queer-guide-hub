@@ -35,7 +35,7 @@ describe('hub crawl links — safety gate', () => {
   // Tables whose rows can be safety-gated. Stated explicitly rather than
   // derived, so ADDING a gated table to hubLinks without adding it here is a
   // review question rather than a silent omission.
-  const GATED = ['venues', 'events', 'hotels'];
+  const GATED = ['venue_catalog_public', 'events', 'hotels'];
 
   for (const table of GATED) {
     it(`${table} filter excludes safety_gated rows`, () => {
@@ -60,7 +60,7 @@ describe('hub crawl links — safety gate', () => {
   // stated explicitly: a new hub table with no entry FAILS, so its indexability
   // rule is a review question instead of a silent omission.
   const INDEXABLE_GATE: Record<string, string> = {
-    venues: 'seo_indexable=eq.true',
+    venue_catalog_public: 'catalog_indexable=eq.true',
     events: 'seo_indexable=eq.true',
     cities: 'seo_indexable=eq.true',
     countries: 'seo_indexable=eq.true',
@@ -107,7 +107,7 @@ describe('hub crawl links — safety gate', () => {
     // already-reviewed sitemap gates. Without this the two silently diverge and
     // the crawler body starts advertising rows the sitemap refuses to list.
     const pairs: [string, string][] = [
-      ['venues', 'functions/sitemap-venues.xml.ts'],
+      ['venue_catalog_public', 'functions/sitemap-venues.xml.ts'],
       ['personalities', 'functions/sitemap-personalities.xml.ts'],
       ['hotels', 'functions/sitemap-hotels.xml.ts'],
       ['news_sources', 'functions/sitemap-podcasts.xml.ts'],
@@ -152,7 +152,7 @@ describe('hub crawl links — rendering', () => {
 
   it('renders detail links for a hub path', async () => {
     const { mod } = await load({
-      venues: [
+      venue_catalog_public: [
         { slug: 'bar-1-5', name: 'Bar 1' },
         { slug: 'sauna-x', name: 'Sauna X' },
       ],
@@ -172,13 +172,17 @@ describe('hub crawl links — rendering', () => {
   });
 
   it('emits no empty heading when the table returns nothing', async () => {
-    const { mod } = await load({ venues: [] });
+    const { mod } = await load({ venue_catalog_public: [] });
     expect(await mod.buildHubLinksHtml({} as never, '/venues')).toBe('');
   });
 
   it('escapes labels and skips rows missing a slug or name', async () => {
     const { mod } = await load({
-      venues: [{ slug: 'a', name: 'Rosie & "Jim"' }, { slug: 'b' }, { name: 'no slug' }],
+      venue_catalog_public: [
+        { slug: 'a', name: 'Rosie & "Jim"' },
+        { slug: 'b' },
+        { name: 'no slug' },
+      ],
     });
     const html = await mod.buildHubLinksHtml({} as never, '/venues');
     expect(html).toContain('Rosie &amp; &quot;Jim&quot;');

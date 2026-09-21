@@ -25786,6 +25786,10 @@ export type Database = {
           url_status: string | null
           venue_subtype: string | null
           verified: boolean | null
+          verification_evidence: Json
+          verification_source: string | null
+          verified_at: string | null
+          verified_by: string | null
           vibe_tags: string[] | null
           website: string | null
           website_domain: string | null
@@ -25878,6 +25882,10 @@ export type Database = {
           url_status?: string | null
           venue_subtype?: string | null
           verified?: boolean | null
+          verification_evidence?: Json
+          verification_source?: string | null
+          verified_at?: string | null
+          verified_by?: string | null
           vibe_tags?: string[] | null
           website?: string | null
           website_domain?: string | null
@@ -25970,6 +25978,10 @@ export type Database = {
           url_status?: string | null
           venue_subtype?: string | null
           verified?: boolean | null
+          verification_evidence?: Json
+          verification_source?: string | null
+          verified_at?: string | null
+          verified_by?: string | null
           vibe_tags?: string[] | null
           website?: string | null
           website_domain?: string | null

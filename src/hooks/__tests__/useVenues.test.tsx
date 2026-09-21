@@ -71,7 +71,7 @@ describe('useVenues', () => {
   // reads datasetTotal — paid for it on each visit.
   it('runs the dataset-total count on mount by default', async () => {
     renderHook(() => useVenues(false));
-    await waitFor(() => expect(mockFrom).toHaveBeenCalledWith('venues'));
+    await waitFor(() => expect(mockFrom).toHaveBeenCalledWith('venue_catalog_public'));
   });
 
   it('skips the dataset-total count when skipDatasetTotal is set', async () => {
