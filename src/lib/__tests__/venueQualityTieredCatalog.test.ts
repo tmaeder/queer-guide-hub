@@ -6,6 +6,10 @@ const SQL = readFileSync(
   join(process.cwd(), 'supabase/migrations/99991790011389_venue_quality_tiered_catalog.sql'),
   'utf8',
 );
+const OPERATIONAL_SQL = readFileSync(
+  join(process.cwd(), 'supabase/migrations/99991790011920_venue_quality_operational_hardening.sql'),
+  'utf8',
+);
 
 describe('venue quality tiered catalog migration', () => {
   it('starts in shadow mode and keeps hard blockers separate from the score', () => {
@@ -66,5 +70,13 @@ describe('venue quality tiered catalog migration', () => {
     expect(SQL).toContain("when 'verified' then 3");
     expect(SQL).toContain("when 'guide_ready' then 2");
     expect(SQL).toContain("when 'listed' then 1");
+  });
+
+  it('operationalizes venue-first media, accessibility, and unresolved event review', () => {
+    expect(OPERATIONAL_SQL).toContain('venue_image_assets_due_phash');
+    expect(OPERATIONAL_SQL).toContain("where l.asset_id = ia.id and l.entity_type = 'venue'");
+    expect(OPERATIONAL_SQL).toContain("lower(btrim(license)) not in ('unknown'");
+    expect(OPERATIONAL_SQL).toContain("where slug = 'venue_accessibility_osm'");
+    expect(OPERATIONAL_SQL).toContain("'resolution', 'no_precision_match'");
   });
 });

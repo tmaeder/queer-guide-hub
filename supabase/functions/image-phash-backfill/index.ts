@@ -47,15 +47,22 @@ Deno.serve(async (req) => {
     const body = await req.json().catch(() => ({}))
     // Small batches only — bounded by the isolate memory limit (see MAX_BYTES).
     const limit = Math.min(Math.max(Number(body.limit) || 6, 1), 20)
-    // Only rows never attempted (phash_checked_at IS NULL) so the sweep advances
-    // instead of re-selecting the same dead-URL cluster forever.
-    const { data: rows, error } = await supabase
-      .from('image_assets')
-      .select('id, url, optimized_url')
-      .is('phash', null)
-      .is('phash_checked_at', null)
-      .eq('status', 'active')
-      .limit(limit)
+    // Venue-linked assets are the product-critical cohort. Drain those first,
+    // then fall back to the global queue after venue coverage converges.
+    let { data: rows, error } = await supabase.rpc('venue_image_assets_due_phash', {
+      p_limit: limit,
+    })
+    if (!error && (rows?.length ?? 0) === 0) {
+      const fallback = await supabase
+        .from('image_assets')
+        .select('id, url, optimized_url')
+        .is('phash', null)
+        .is('phash_checked_at', null)
+        .eq('status', 'active')
+        .limit(limit)
+      rows = fallback.data
+      error = fallback.error
+    }
     if (error) return errorResponse(error.message, 500, req)
 
     const now = new Date().toISOString()
