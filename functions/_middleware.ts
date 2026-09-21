@@ -142,6 +142,12 @@ class MetaContentRewriter {
   }
 }
 
+class ElementRemover {
+  element(el: Element) {
+    el.remove();
+  }
+}
+
 class HeadInjector {
   constructor(private readonly html: string) {}
   element(el: Element) {
@@ -544,6 +550,20 @@ export const onRequest: PagesFunction<Env> = async (context) => {
     .on('html', new HtmlLangRewriter(locale))
     .on('title', new TitleRewriter(meta.title))
     .on('meta[name="description"]', new MetaContentRewriter(meta.description))
+    // index.html contains generic social tags. Remove them before appending
+    // route-specific values so browser clients and validators see one
+    // authoritative tag rather than two identical-but-competing entries.
+    .on('meta[property="og:url"]', new ElementRemover())
+    .on('meta[property="og:title"]', new ElementRemover())
+    .on('meta[property="og:description"]', new ElementRemover())
+    .on('meta[property="og:image"]', new ElementRemover())
+    .on('meta[property="og:type"]', new ElementRemover())
+    .on('meta[property="og:site_name"]', new ElementRemover())
+    .on('meta[name="twitter:card"]', new ElementRemover())
+    .on('meta[name="twitter:site"]', new ElementRemover())
+    .on('meta[name="twitter:title"]', new ElementRemover())
+    .on('meta[name="twitter:description"]', new ElementRemover())
+    .on('meta[name="twitter:image"]', new ElementRemover())
     .on('script', new ScriptNonceInjector(cspNonce))
     .on('head', new HeadInjector(headInjections.join('\n    ')));
 

@@ -13,6 +13,11 @@ import { coerceLgbtiConnection } from '../_shared/lgbti-connection.ts'
 import { resolveContentType } from '../_shared/content-registry.ts'
 import { extractSocialUrlsFromText, normalizeSocialLinks, detectPlatform, canonicalizeUrl } from '../_shared/social.ts'
 import { normalizeVenueCategory } from '../_shared/venue-category.ts'
+import {
+  isKnownPlaceholderPersonalityImage,
+  normalizeLegacyPersonalityFields,
+  normalizeWikidata,
+} from '../_shared/personality-contract.ts'
 
 // ============================================================
 // Pipeline Normalize
@@ -348,28 +353,48 @@ function normalizeItem(raw: Record<string, unknown>, entityType: string): Record
       : (raw.is_living != null ? Boolean(raw.is_living) : true)
 
     // Core fields with multi-alias fallback
-    const profArr = raw.professions ?? raw.occupation ?? raw.profession
-    n.profession  = Array.isArray(profArr)
-      ? profArr.map(String).filter(Boolean).join(', ')
-      : cleanText(profArr ?? '')
+    const professionInput = raw.professions ?? raw.occupation ?? raw.profession
+    const professionLabels = (Array.isArray(professionInput)
+      ? professionInput.map(String)
+      : String(professionInput ?? '').split(/[,;|/]+/))
+      .map((value) => cleanText(value)).filter(Boolean)
+    n.profession = professionLabels[0] ?? ''
+    if (professionLabels.length > 1) {
+      n.roles = [...new Set(professionLabels.slice(1).map((value) => value.toLowerCase()
+        .normalize('NFKD').replace(/[\u0300-\u036f]/g, '')
+        .replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')).filter(Boolean))]
+    }
+    if (professionLabels.length) n.profession_source_labels = professionLabels
     n.nationality = cleanText(raw.nationality ?? raw.citizenship ?? raw.country_of_citizenship ?? '')
     n.birth_place = cleanText(raw.birth_place ?? raw.place_of_birth ?? raw.birthplace ?? '')
     n.pronouns    = cleanText(raw.pronouns ?? raw.gender_pronouns ?? '')
     n.bio         = cleanText(raw.bio ?? raw.biography ?? '')
     n.top_book    = cleanText(raw.top_book ?? '')
 
+    n.is_adult = Boolean(raw.is_adult ?? raw.adult ?? false)
+    if (n.is_adult && Array.isArray(n.tags)) {
+      n.adult_attributes = n.tags
+      delete n.tags
+    }
+
     // Image: validate scheme only
     const img = String(raw.image_url ?? raw.image ?? raw.photo ?? '').trim()
-    if (img && /^https?:\/\//i.test(img)) n.image_url = img
+    if (img && /^https?:\/\//i.test(img) && !isKnownPlaceholderPersonalityImage(img)) {
+      n.image_url = img
+      n.image_status = 'needs_review'
+    } else if (isKnownPlaceholderPersonalityImage(img)) {
+      n.image_status = 'rejected'
+      n.rejected_image_url = img
+    }
 
     // Website
     const web = String(raw.website_url ?? raw.website ?? raw.url ?? '').trim()
     if (web && /^https?:\/\//i.test(web)) n.website_url = web
 
     // Wikidata QID — strong dedup key
-    const qidRaw = String(raw.wikidata_qid ?? raw.qid ?? raw.wikidata ?? '').trim()
-    const qidMatch = qidRaw.match(/Q\d+/)
-    if (qidMatch) n.wikidata_qid = qidMatch[0]
+    const wikidata = normalizeWikidata(raw.wikidata_qid ?? raw.qid ?? raw.wikidata)
+    n.wikidata_status = wikidata.wikidata_status
+    if (wikidata.wikidata_qid) n.wikidata_qid = wikidata.wikidata_qid
 
     // External IDs → JSONB map
     const ext: Record<string, string> = {}
@@ -382,9 +407,10 @@ function normalizeItem(raw: Record<string, unknown>, entityType: string): Record
     // Fields (jsonb array of strings, no duplicates, trimmed)
     const fieldsRaw = raw.fields ?? raw.field ?? raw.interests
     if (fieldsRaw) {
-      const arr = Array.isArray(fieldsRaw) ? fieldsRaw
-        : String(fieldsRaw).split(/[,;]/)
-      n.fields = [...new Set(arr.map((f) => cleanText(f)).filter(Boolean))]
+      const legacy = normalizeLegacyPersonalityFields(fieldsRaw)
+      n.fields = legacy.fields
+      if (legacy.affiliations.length) n.affiliations = legacy.affiliations
+      if (legacy.rejected.length) n.fields_quarantine = legacy.rejected
     }
 
     // Social links
