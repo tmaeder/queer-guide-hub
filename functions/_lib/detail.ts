@@ -1148,9 +1148,9 @@ async function personalityDetail(
   // unverified.
   const rows = await fetchRows(
     env,
-    'personalities',
-    'name,slug,bio,description,image_url,profession,lgbti_connection,lgbti_details,birth_date,death_date,birth_place,nationality,pronouns,website_url,updated_at,is_living,seo_indexable',
-    `slug=eq.${encodeURIComponent(slug)}&duplicate_of_id=is.null&visibility=eq.public`,
+    'personality_public_profiles',
+    'name,slug,bio,description,image_url,resolved_image_url,profession,lgbti_connection,lgbti_details,birth_date,death_date,birth_place,nationality,pronouns,website_url,updated_at,is_living,seo_indexable',
+    `slug=eq.${encodeURIComponent(slug)}`,
     1,
   );
   const row = rows[0] ?? null;
@@ -1160,7 +1160,7 @@ async function personalityDetail(
   const bio = stringField(row, 'bio') ?? '';
   const description = stringField(row, 'description') ?? '';
   const profession = stringField(row, 'profession');
-  const image = stringField(row, 'image_url');
+  const image = stringField(row, 'resolved_image_url') ?? stringField(row, 'image_url');
   const birthDate = stringField(row, 'birth_date');
   const deathDate = stringField(row, 'death_date');
 

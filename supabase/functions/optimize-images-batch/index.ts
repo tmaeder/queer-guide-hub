@@ -1,4 +1,5 @@
 import { getCorsHeaders, getServiceClient, requireAdmin, jsonResponse, errorResponse } from '../_shared/supabase-client.ts'
+import { readImageDimensions } from '../_shared/image-dimensions.ts'
 
 const BATCH_SIZE = 15
 const FETCH_TIMEOUT_MS = 8000
@@ -29,6 +30,13 @@ function extFromContentType(ct: string): string {
   return 'jpg'
 }
 
+function formatFromContentType(ct: string): 'jpeg' | 'png' | 'webp' | 'avif' | 'gif' | 'svg' | 'other' {
+  const ext = extFromContentType(ct)
+  if (ext === 'jpg') return 'jpeg'
+  if (['png', 'webp', 'avif', 'gif', 'svg'].includes(ext)) return ext as 'png' | 'webp' | 'avif' | 'gif' | 'svg'
+  return 'other'
+}
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: getCorsHeaders(req) })
@@ -42,15 +50,18 @@ Deno.serve(async (req) => {
     const body = req.method === 'POST' ? await req.json().catch(() => ({})) : {}
     const batchSize = Math.min(body.batch_size || BATCH_SIZE, 50)
     const mode = body.mode || 'auto' // 'auto' | 'mirror' | 'mark_cdn'
+    const entityType = body.entity_type || null
 
     // Fetch pending images
-    const { data: pending, error: fetchErr } = await supabase
-      .from('image_assets')
-      .select('id, url, format')
-      .eq('status', 'active')
-      .eq('optimization_status', 'pending')
-      .order('created_at', { ascending: true })
-      .limit(batchSize)
+    const { data: pending, error: fetchErr } = entityType === 'marketplace_listing'
+      ? await supabase.rpc('marketplace_claim_image_assets', { p_limit: batchSize })
+      : await supabase
+        .from('image_assets')
+        .select('id, url, format, metadata')
+        .eq('status', 'active')
+        .eq('optimization_status', 'pending')
+        .order('created_at', { ascending: true })
+        .limit(batchSize)
 
     if (fetchErr) return errorResponse(`Query failed: ${fetchErr.message}`, 500, req)
     if (!pending || pending.length === 0) {
@@ -72,17 +83,23 @@ Deno.serve(async (req) => {
       const url = row.url as string
       const id = row.id as string
 
-      // Phase 1: If on a known CDN, just mark it
-      if (mode !== 'mirror' && isOnCdn(url)) {
-        await supabase
-          .from('image_assets')
-          .update({ optimization_status: 'cdn_optimized', optimized_at: new Date().toISOString() })
-          .eq('id', id)
-        cdnMarked++
-        continue
+      const existingMetadata = (row.metadata ?? {}) as Record<string, unknown>
+      const markFailed = async (reason: string) => {
+        const attempts = Number(existingMetadata.optimization_attempts ?? 0) + 1
+        await supabase.from('image_assets').update({
+          optimization_status: 'failed',
+          metadata: {
+            ...existingMetadata,
+            optimization_attempts: attempts,
+            last_failure_reason: reason,
+            failure_class: reason.replace(/_.*/, ''),
+            terminal: attempts >= 3,
+            last_failed_at: new Date().toISOString(),
+          },
+        }).eq('id', id)
       }
 
-      // Phase 2: Download and mirror to Storage
+      // Download even CDN-hosted assets so width/height/bytes are factual.
       try {
         const controller = new AbortController()
         const timeout = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS)
@@ -94,23 +111,33 @@ Deno.serve(async (req) => {
         clearTimeout(timeout)
 
         if (!imgRes.ok) {
-          await supabase
-            .from('image_assets')
-            .update({ optimization_status: 'failed' })
-            .eq('id', id)
+          await markFailed(`http_${imgRes.status}`)
           failed++
           continue
         }
 
         const contentType = imgRes.headers.get('content-type') || 'image/jpeg'
         const buffer = await imgRes.arrayBuffer()
+        const bytes = new Uint8Array(buffer)
 
         if (buffer.byteLength < 100) {
-          await supabase
-            .from('image_assets')
-            .update({ optimization_status: 'failed' })
-            .eq('id', id)
+          await markFailed('invalid_too_small')
           failed++
+          continue
+        }
+
+        const dimensions = readImageDimensions(bytes)
+        if (mode !== 'mirror' && isOnCdn(url)) {
+          await supabase.from('image_assets').update({
+            optimization_status: 'cdn_optimized',
+            optimized_at: new Date().toISOString(),
+            bytes: buffer.byteLength,
+            width: dimensions?.width ?? null,
+            height: dimensions?.height ?? null,
+            format: dimensions?.format ?? formatFromContentType(contentType),
+            metadata: { ...existingMetadata, optimization_attempts: Number(existingMetadata.optimization_attempts ?? 0) + 1 },
+          }).eq('id', id)
+          cdnMarked++
           continue
         }
 
@@ -127,10 +154,7 @@ Deno.serve(async (req) => {
 
         if (uploadErr) {
           console.error(`Upload failed for ${id}:`, uploadErr.message)
-          await supabase
-            .from('image_assets')
-            .update({ optimization_status: 'failed' })
-            .eq('id', id)
+          await markFailed('upload_failed')
           failed++
           continue
         }
@@ -144,16 +168,17 @@ Deno.serve(async (req) => {
             optimized_url: pubUrl.publicUrl,
             optimized_at: new Date().toISOString(),
             bytes: buffer.byteLength,
+            width: dimensions?.width ?? null,
+            height: dimensions?.height ?? null,
+            format: dimensions?.format ?? formatFromContentType(contentType),
+            metadata: { ...existingMetadata, optimization_attempts: Number(existingMetadata.optimization_attempts ?? 0) + 1 },
           })
           .eq('id', id)
 
         mirrored++
       } catch (err) {
         console.error(`Mirror failed for ${id}:`, (err as Error).message)
-        await supabase
-          .from('image_assets')
-          .update({ optimization_status: 'failed' })
-          .eq('id', id)
+        await markFailed(err instanceof DOMException && err.name === 'AbortError' ? 'timeout' : 'fetch_error')
         failed++
       }
     }
@@ -161,10 +186,15 @@ Deno.serve(async (req) => {
     return jsonResponse({
       done: false,
       processed: pending.length,
+      items_examined: pending.length,
+      items_changed: mirrored + cdnMarked,
+      items_terminal: mirrored + cdnMarked + failed,
+      items_failed: failed,
       mirrored,
       cdn_marked: cdnMarked,
       failed,
       remaining: (remaining ?? 0) - pending.length,
+      entity_type: entityType,
     }, 200, req)
 
   } catch (error) {
