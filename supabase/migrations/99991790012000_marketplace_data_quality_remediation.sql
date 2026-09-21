@@ -158,10 +158,9 @@ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public, pg_temp AS $$
 BEGIN
   DELETE FROM public.marketplace_link_check_claims WHERE claimed_at < now() - interval '20 minutes';
   RETURN QUERY
-  WITH eligible AS MATERIALIZED (
-    SELECT l.id,row_number() OVER(
-      PARTITION BY coalesce(nullif(l.merchant_domain,''),nullif(l.source_type,''),'unknown')
-      ORDER BY l.link_checked_at ASC NULLS FIRST,l.id) domain_rank
+  WITH preeligible AS MATERIALIZED (
+    SELECT l.id,l.link_checked_at,
+      coalesce(nullif(l.merchant_domain,''),nullif(l.source_type,''),'unknown') domain_key
     FROM public.marketplace_listings l
     WHERE l.status='active'
       AND (l.link_checked_at IS NULL OR l.link_checked_at < now()-make_interval(days=>greatest(1,p_stale_days)))
@@ -169,12 +168,18 @@ BEGIN
       -- credited without spending an HTTP probe.
       AND (l.last_seen_at IS NULL OR l.last_seen_at < now()-make_interval(days=>greatest(1,p_stale_days)))
       AND NOT EXISTS (SELECT 1 FROM public.marketplace_link_check_claims c WHERE c.listing_id=l.id)
-  ), candidates AS MATERIALIZED (
-    SELECT l.id FROM eligible e JOIN public.marketplace_listings l ON l.id=e.id
-    WHERE e.domain_rank<=10
-    ORDER BY l.link_checked_at ASC NULLS FIRST, l.id
-    LIMIT GREATEST(1, LEAST(p_limit, 200))
+    ORDER BY l.link_checked_at ASC NULLS FIRST,l.id
+    LIMIT greatest(500,least(p_limit*20,4000))
     FOR UPDATE OF l SKIP LOCKED
+  ), eligible AS MATERIALIZED (
+    SELECT p.id,p.link_checked_at,row_number() OVER(
+      PARTITION BY p.domain_key ORDER BY p.link_checked_at ASC NULLS FIRST,p.id) domain_rank
+    FROM preeligible p
+  ), candidates AS MATERIALIZED (
+    SELECT e.id FROM eligible e
+    WHERE e.domain_rank<=10
+    ORDER BY e.link_checked_at ASC NULLS FIRST,e.id
+    LIMIT GREATEST(1, LEAST(p_limit, 200))
   ), claimed AS (
     INSERT INTO public.marketplace_link_check_claims(listing_id,claim_token)
     SELECT candidates.id,p_claim_token FROM candidates ON CONFLICT DO NOTHING

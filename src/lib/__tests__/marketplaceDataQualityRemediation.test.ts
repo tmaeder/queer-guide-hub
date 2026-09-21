@@ -29,6 +29,9 @@ describe('marketplace data-quality remediation contracts', () => {
       /marketplace_claim_variant_extract[\s\S]*FOR UPDATE OF l SKIP LOCKED/,
     );
     expect(migration).toMatch(/marketplace_claim_link_checks[\s\S]*FOR UPDATE OF l SKIP LOCKED/);
+    expect(migration).toMatch(
+      /marketplace_claim_link_checks[\s\S]*preeligible AS MATERIALIZED[\s\S]*LIMIT greatest\(500,least\(p_limit\*20,4000\)\)[\s\S]*eligible AS MATERIALIZED/,
+    );
     expect(variantWorker).toContain("rpc('marketplace_claim_variant_extract'");
     expect(variantWorker).toContain("rpc('marketplace_release_variant_extract_claims'");
   });
