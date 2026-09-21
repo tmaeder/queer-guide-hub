@@ -62,6 +62,8 @@ describe('marketplace data-quality remediation contracts', () => {
     );
     expect(migration).toContain("'derived:listing_context'");
     expect(migration).toContain('marketplace_retry_failed_images');
+    expect(migration).toContain('marketplace_claim_image_assets');
+    expect(migration).toContain("'marketplace_image_optimize'");
     expect(migration).toContain('marketplace_backfill_gallery_assets');
     expect(migration).toContain("CASE WHEN v_position=0 THEN 'cover' ELSE 'gallery' END");
   });

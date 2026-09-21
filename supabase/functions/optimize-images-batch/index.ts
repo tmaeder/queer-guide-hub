@@ -50,15 +50,18 @@ Deno.serve(async (req) => {
     const body = req.method === 'POST' ? await req.json().catch(() => ({})) : {}
     const batchSize = Math.min(body.batch_size || BATCH_SIZE, 50)
     const mode = body.mode || 'auto' // 'auto' | 'mirror' | 'mark_cdn'
+    const entityType = body.entity_type || null
 
     // Fetch pending images
-    const { data: pending, error: fetchErr } = await supabase
-      .from('image_assets')
-      .select('id, url, format, metadata')
-      .eq('status', 'active')
-      .eq('optimization_status', 'pending')
-      .order('created_at', { ascending: true })
-      .limit(batchSize)
+    const { data: pending, error: fetchErr } = entityType === 'marketplace_listing'
+      ? await supabase.rpc('marketplace_claim_image_assets', { p_limit: batchSize })
+      : await supabase
+        .from('image_assets')
+        .select('id, url, format, metadata')
+        .eq('status', 'active')
+        .eq('optimization_status', 'pending')
+        .order('created_at', { ascending: true })
+        .limit(batchSize)
 
     if (fetchErr) return errorResponse(`Query failed: ${fetchErr.message}`, 500, req)
     if (!pending || pending.length === 0) {
@@ -187,6 +190,7 @@ Deno.serve(async (req) => {
       cdn_marked: cdnMarked,
       failed,
       remaining: (remaining ?? 0) - pending.length,
+      entity_type: entityType,
     }, 200, req)
 
   } catch (error) {

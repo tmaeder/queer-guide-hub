@@ -35075,6 +35075,15 @@ export type Database = {
           link_health: string
         }[]
       }
+      marketplace_claim_image_assets: {
+        Args: { p_limit?: number }
+        Returns: {
+          format: string
+          id: string
+          metadata: Json
+          url: string
+        }[]
+      }
       marketplace_claim_variant_extract: {
         Args: { p_claim_token?: string; p_limit?: number }
         Returns: { id: string }[]
