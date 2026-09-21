@@ -46,6 +46,8 @@ describe('marketplace data-quality remediation contracts', () => {
     expect(linkWorker).toContain("archived_reason = 'link_broken_confirmed'");
     expect(linkWorker).toContain('const byHost = new Map');
     expect(linkWorker).toContain('marketplace_release_link_check_claims');
+    expect(migration).toContain("'X-Internal-Secret'");
+    expect(migration).not.toContain("name='SUPABASE_SERVICE_ROLE_KEY'");
   });
 
   it('keeps operational tables private and image alt text source-factual', () => {

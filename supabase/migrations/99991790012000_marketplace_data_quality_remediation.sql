@@ -1330,7 +1330,7 @@ UPDATE public.admin_automations SET
   action=jsonb_build_object('type','cron','jobname','marketplace-link-checker','command',$cmd$
     SELECT net.http_post(
       url := 'https://xqeacpakadqfxjxjcewc.supabase.co/functions/v1/marketplace-link-checker',
-      headers := jsonb_build_object('Content-Type','application/json','Authorization','Bearer '||(SELECT decrypted_secret FROM vault.decrypted_secrets WHERE name='SUPABASE_SERVICE_ROLE_KEY')),
+      headers := jsonb_build_object('Content-Type','application/json','X-Internal-Secret',(SELECT decrypted_secret FROM vault.decrypted_secrets WHERE name='internal_invoke_secret')),
       body := '{"batch_size":75}'::jsonb, timeout_milliseconds := 120000);
   $cmd$)
 WHERE slug='marketplace_link_checker';
@@ -1353,7 +1353,7 @@ VALUES
 ('marketplace_taxonomy_classify','Marketplace taxonomy model fallback','Hourly factual model fallback for v4 listings that remain in other after source mappings, structured attributes and deterministic text rules.','system',true,'{"type":"schedule"}'::jsonb,'[]'::jsonb,
  jsonb_build_object('type','cron','jobname','marketplace-taxonomy-classify','command',$cmd$
    SELECT net.http_post(url:='https://xqeacpakadqfxjxjcewc.supabase.co/functions/v1/marketplace-taxonomy-classify',
-     headers:=jsonb_build_object('Content-Type','application/json','Authorization','Bearer '||(SELECT decrypted_secret FROM vault.decrypted_secrets WHERE name='SUPABASE_SERVICE_ROLE_KEY')),
+     headers:=jsonb_build_object('Content-Type','application/json','X-Internal-Secret',(SELECT decrypted_secret FROM vault.decrypted_secrets WHERE name='internal_invoke_secret')),
      body:='{"batch_size":25}'::jsonb,timeout_milliseconds:=120000);
  $cmd$),'20 * * * *',3)
 ON CONFLICT(slug) DO UPDATE SET name=excluded.name,description=excluded.description,enabled=excluded.enabled,
