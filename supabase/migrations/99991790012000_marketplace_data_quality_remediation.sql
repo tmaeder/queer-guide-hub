@@ -1319,7 +1319,7 @@ GRANT EXECUTE ON FUNCTION public.run_marketplace_quality_worker(text,integer) TO
 -- ---------------------------------------------------------------------------
 
 UPDATE public.admin_automations SET
-  enabled=true, consecutive_failures=0, auto_pause_threshold=3,
+  enabled=true, consecutive_failures=0, auto_pause_threshold=3, schedule='*/2 * * * *',
   description='Indexed, claimed variant/attribute extraction. Starts at 50 rows per run; response accounting records examined/changed/terminal/failed counts.',
   action=jsonb_build_object('type','cron','jobname','marketplace-variant-backfill','command',$cmd$
     SELECT net.http_post(

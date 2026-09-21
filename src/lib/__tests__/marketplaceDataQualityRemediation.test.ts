@@ -101,6 +101,11 @@ describe('marketplace data-quality remediation contracts', () => {
     expect(migration).toContain("marketplace_taxonomy_v3_backfill'',100");
     expect(migration).toContain("'* * * * *',3");
   });
+
+  it('gives the variant backlog enough scheduled throughput for the 48-hour target', () => {
+    expect(migration).toContain("schedule='*/2 * * * *'");
+    expect(migration).toContain('body := \'{"batch_limit":50}\'::jsonb');
+  });
 });
 
 describe('image metadata fixtures', () => {
