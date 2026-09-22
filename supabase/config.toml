@@ -450,6 +450,9 @@ verify_jwt = false
 [functions.marketplace-link-checker]
 verify_jwt = false
 
+[functions.optimize-images-batch]
+verify_jwt = false
+
 # Existence Truth Engine collectors — self-gate via X-Webhook-Secret (cron) / admin.
 [functions.existence-deep-probe]
 verify_jwt = false
