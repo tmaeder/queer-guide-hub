@@ -23,7 +23,7 @@ import { BrandMark } from './BrandMark';
  */
 export function VerifiedOwnedBrands() {
   const { data: brands } = useVerifiedOwnedBrands(24);
-  if (!brands || brands.length === 0) return null;
+  if (!brands) return null;
 
   return (
     <section aria-labelledby="verified-owned-brands">
@@ -35,39 +35,45 @@ export function VerifiedOwnedBrands() {
         of everything we list — most brands carry no ownership information either way, so we do not
         claim it for them.
       </CoverageNote>
-      <ul className="m-0 grid list-none grid-cols-1 gap-4 p-0 sm:grid-cols-2 lg:grid-cols-4">
-        {brands.map((b) => (
-          <li key={b.id}>
-            <NestedEntityCard
-              type="marketplace"
-              eyebrow="Verified owner"
-              name={b.display_name ?? b.brand_key}
-              description={
-                b.product_count
-                  ? `${b.product_count.toLocaleString()} product${b.product_count !== 1 ? 's' : ''}`
-                  : null
-              }
-              href={b.slug ? `/marketplace/brands/${b.slug}` : undefined}
-              /* Logo only, never the monogram fallback: the card already leads
-                 with the marketplace bullet and states the name, so a monogram
-                 on the trailing edge would repeat the name as a second graphic
-                 and give a logo-less brand a heavier card than one with a real
-                 mark. Absent stays absent. */
-              media={
-                b.logo_url ? (
-                  <BrandMark
-                    name={b.display_name ?? b.brand_key}
-                    logoUrl={b.logo_url}
-                    onInk={b.logo_on_ink ?? false}
-                    className="ml-auto h-12 w-12 rounded-element"
-                    padding="p-1"
-                  />
-                ) : undefined
-              }
-            />
-          </li>
-        ))}
-      </ul>
+      {brands.length === 0 ? (
+        <p className="m-0 text-sm text-muted-foreground">
+          No brand currently meets the evidence and review requirements for this shelf.
+        </p>
+      ) : (
+        <ul className="m-0 grid list-none grid-cols-1 gap-4 p-0 sm:grid-cols-2 lg:grid-cols-4">
+          {brands.map((b) => (
+            <li key={b.id}>
+              <NestedEntityCard
+                type="marketplace"
+                eyebrow="Verified owner"
+                name={b.display_name ?? b.brand_key}
+                description={
+                  b.product_count
+                    ? `${b.product_count.toLocaleString()} product${b.product_count !== 1 ? 's' : ''}`
+                    : null
+                }
+                href={b.slug ? `/marketplace/brands/${b.slug}` : undefined}
+                /* Logo only, never the monogram fallback: the card already leads
+                   with the marketplace bullet and states the name, so a monogram
+                   on the trailing edge would repeat the name as a second graphic
+                   and give a logo-less brand a heavier card than one with a real
+                   mark. Absent stays absent. */
+                media={
+                  b.logo_url ? (
+                    <BrandMark
+                      name={b.display_name ?? b.brand_key}
+                      logoUrl={b.logo_url}
+                      onInk={b.logo_on_ink ?? false}
+                      className="ml-auto h-12 w-12 rounded-element"
+                      padding="p-1"
+                    />
+                  ) : undefined
+                }
+              />
+            </li>
+          ))}
+        </ul>
+      )}
     </section>
   );
 }

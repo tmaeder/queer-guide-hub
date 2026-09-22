@@ -216,7 +216,8 @@ declare
     'username','verified_identity','website','age_range','education','gender_identity',
     'has_children','has_pets','interests','occupation','pronouns','relationship_status',
     'onboarding_completed_at','body_type','height_cm','moderation_status',
-    'privacy_settings','sexual_orientation','social_links','updated_at'
+    'privacy_settings','sexual_orientation','social_links','updated_at',
+    'vibe_emoji','vibe_text','vibe_expires_at'
   ];
   granted text[];
   sensitive text[] := array['email','phone','phone_encrypted','date_of_birth',
@@ -239,7 +240,7 @@ begin
   if leaked is not null then
     raise exception 'FAIL(9): sensitive column(s) selectable by authenticated: %', leaked;
   end if;
-  raise notice 'PASS 9: authenticated holds exactly the 38-column allowlist';
+  raise notice 'PASS 9: authenticated holds exactly the 41-column allowlist';
 end $$;
 
 -- 10: the authenticated WRITE allowlist (20540101100000) --------------------

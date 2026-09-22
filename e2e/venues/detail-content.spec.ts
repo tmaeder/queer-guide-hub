@@ -25,16 +25,13 @@ test.describe('Venue detail — content blocks', () => {
     const name = await page.locator('h1').first().textContent();
     expect(name?.trim().length).toBeGreaterThan(0);
 
-    // If description exists, "About" card is visible.
-    const aboutCard = page.locator('text=About').first();
-    const hasAbout = await aboutCard.isVisible().catch(() => false);
-
-    // If contact section exists, it's a card.
-    const contactCard = page.locator('text=Contact').first();
-    const hasContact = await contactCard.isVisible().catch(() => false);
-
-    // At least one content block should render (about, contact, hours, map, etc.)
-    expect(hasAbout || hasContact).toBe(true);
+    // Detail sections render after the initial venue query, so wait for a
+    // semantic content block instead of sampling visibility immediately after
+    // the h1 appears. Sparse records can legitimately have only a map.
+    const contentBlock = page
+      .locator('h2:has-text("About"), h2:has-text("contact"), [role="region"][aria-label="Map"]')
+      .first();
+    await expect(contentBlock).toBeVisible({ timeout: 10_000 });
   });
 
   test('website link is a real <a> with target=_blank and nofollow', async ({ page, request }) => {

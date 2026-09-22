@@ -17,6 +17,18 @@ export interface PersonalityQualitySummary {
   lowCompleteness: number;
   promotable: number;
   adultConsentCandidates: number;
+  unsupportedPublicClaims: number;
+  invalidPublicImages: number;
+  pendingWithoutQueue: number;
+  openTagReviews: number;
+  cohorts: Array<{
+    cohort: 'adult' | 'encyclopedia';
+    total: number;
+    public: number;
+    low_quality: number;
+    hard_gate_failures: number;
+    average_quality: number;
+  }>;
 }
 
 // New tables/RPCs are not in the generated Supabase types yet.
@@ -83,14 +95,26 @@ export const usePersonalityQualitySummary = createQualitySummaryHook({
       kind: 'rows',
       build: () => db.rpc('personalities_adult_consent_candidates', { p_limit: 1000 }),
     },
+    dashboard: {
+      kind: 'single',
+      build: () => db.rpc('personality_quality_dashboard'),
+    },
   },
-  reshape: (r): PersonalityQualitySummary => ({
-    gaps: r.gaps as PersonalityCoverageGap[],
-    publicCount: r.publicCount,
-    needsAttention: r.needsAttention,
-    reviewOpen: r.reviewOpen,
-    lowCompleteness: r.lowCompleteness,
-    promotable: r.promotable.length,
-    adultConsentCandidates: r.adultConsentCandidates.length,
-  }),
+  reshape: (r): PersonalityQualitySummary => {
+    const dashboard = (r.dashboard ?? {}) as Record<string, unknown>;
+    return {
+      gaps: r.gaps as PersonalityCoverageGap[],
+      publicCount: r.publicCount,
+      needsAttention: r.needsAttention,
+      reviewOpen: r.reviewOpen,
+      lowCompleteness: r.lowCompleteness,
+      promotable: r.promotable.length,
+      adultConsentCandidates: r.adultConsentCandidates.length,
+      unsupportedPublicClaims: Number(dashboard.unsupported_public_claims ?? 0),
+      invalidPublicImages: Number(dashboard.invalid_public_images ?? 0),
+      pendingWithoutQueue: Number(dashboard.pending_without_queue ?? 0),
+      openTagReviews: Number(dashboard.open_tag_reviews ?? 0),
+      cohorts: (dashboard.cohorts ?? []) as PersonalityQualitySummary['cohorts'],
+    };
+  },
 });

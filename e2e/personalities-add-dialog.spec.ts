@@ -35,7 +35,17 @@ test.describe('Add Personality dialog', () => {
     const dialog = page.getByRole('dialog', { name: /add new personality/i });
     await expect(dialog).toBeVisible();
 
+    const viewport = page.viewportSize();
+    const bounds = await dialog.boundingBox();
+    expect(viewport).not.toBeNull();
+    expect(bounds).not.toBeNull();
+    expect(bounds!.y).toBeGreaterThanOrEqual(0);
+    expect(bounds!.y + bounds!.height).toBeLessThanOrEqual(viewport!.height);
+    expect(await dialog.evaluate((node) => node.scrollHeight > node.clientHeight)).toBe(true);
+
     const submit = dialog.getByRole('button', { name: /^add personality$/i });
+    await submit.scrollIntoViewIfNeeded();
+    await expect(submit).toBeInViewport();
     await submit.click();
 
     const nameInput = dialog.getByLabel(/^name/i);
