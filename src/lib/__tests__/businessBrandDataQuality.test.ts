@@ -33,6 +33,8 @@ describe('business and brand data-quality contracts', () => {
     );
     expect(migration).toContain("ownership_review_status='verified'");
     expect(verifiedBrandsHook).toContain(".eq('ownership_review_status', 'verified')");
+    expect(verifiedBrandsHook).toContain("['42703', 'PGRST204']");
+    expect(verifiedBrandsHook).toContain("includes('ownership_review_status')");
   });
 
   it('requires evidence and review provenance for a verified ownership claim', () => {
