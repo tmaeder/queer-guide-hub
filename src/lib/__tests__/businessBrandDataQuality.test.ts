@@ -3,7 +3,7 @@ import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 const migration = readFileSync(
-  join(process.cwd(), 'supabase/migrations/99991790059688_business_brand_quality_completion.sql'),
+  join(process.cwd(), 'supabase/migrations/99991790099425_business_brand_quality_completion.sql'),
   'utf8',
 );
 const businessPage = readFileSync(join(process.cwd(), 'src/pages/admin/AdminBusiness.tsx'), 'utf8');
