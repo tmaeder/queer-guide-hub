@@ -41,6 +41,10 @@ const SOURCE_EVIDENCE_SQL = readFileSync(
   ),
   'utf8',
 );
+const GEO_EVIDENCE_SQL = readFileSync(
+  join(process.cwd(), 'supabase/migrations/99991790072010_venue_deterministic_geo_evidence.sql'),
+  'utf8',
+);
 
 describe('venue quality tiered catalog migration', () => {
   it('starts in shadow mode and keeps hard blockers separate from the score', () => {
@@ -175,5 +179,15 @@ describe('venue quality tiered catalog migration', () => {
     expect(SOURCE_EVIDENCE_SQL).toContain(
       'venue evidence remediation created multiple winning provenance rows',
     );
+  });
+
+  it('limits further geo repair to unique cities or terminal source countries', () => {
+    expect(GEO_EVIDENCE_SQL).toContain('venue_unique_city_geo_candidates');
+    expect(GEO_EVIDENCE_SQL).toContain('where m.match_count = 1');
+    expect(GEO_EVIDENCE_SQL).toContain('venue_address_country_geo_candidates');
+    expect(GEO_EVIDENCE_SQL).toContain('having count(distinct country_id) = 1');
+    expect(GEO_EVIDENCE_SQL).toContain("'source_address_country_suffix'");
+    expect(GEO_EVIDENCE_SQL).toContain('venue_deterministic_geo_candidates');
+    expect(GEO_EVIDENCE_SQL).toContain('deterministic venue geo candidate did not persist');
   });
 });
