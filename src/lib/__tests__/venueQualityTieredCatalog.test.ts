@@ -18,6 +18,49 @@ const PHASH_SAFETY_SQL = readFileSync(
   join(process.cwd(), 'supabase/migrations/99991790011940_venue_phash_memory_guard.sql'),
   'utf8',
 );
+const EVIDENCE_COMPLETION_SQL = readFileSync(
+  join(process.cwd(), 'supabase/migrations/99991790054000_venue_source_evidence_completion.sql'),
+  'utf8',
+);
+const PHASH_WORKER = readFileSync(
+  join(process.cwd(), 'supabase/functions/image-phash-backfill/index.ts'),
+  'utf8',
+);
+const REVIEW_SCOPE_SQL = readFileSync(
+  join(process.cwd(), 'supabase/migrations/99991790054010_venue_review_queue_live_scope.sql'),
+  'utf8',
+);
+const SOURCE_BLOCKER_SQL = readFileSync(
+  join(process.cwd(), 'supabase/migrations/99991790054020_venue_source_blocker_review.sql'),
+  'utf8',
+);
+const SOURCE_EVIDENCE_SQL = readFileSync(
+  join(
+    process.cwd(),
+    'supabase/migrations/99991790072000_venue_source_description_and_country_evidence.sql',
+  ),
+  'utf8',
+);
+const GEO_EVIDENCE_SQL = readFileSync(
+  join(process.cwd(), 'supabase/migrations/99991790072010_venue_deterministic_geo_evidence.sql'),
+  'utf8',
+);
+const IMAGE_METADATA_SQL = readFileSync(
+  join(process.cwd(), 'supabase/migrations/99991790072020_venue_image_metadata_completion.sql'),
+  'utf8',
+);
+const IMAGE_OPTIMIZER = readFileSync(
+  join(process.cwd(), 'supabase/functions/optimize-images-batch/index.ts'),
+  'utf8',
+);
+const DEAD_IMAGE_SQL = readFileSync(
+  join(process.cwd(), 'supabase/migrations/99991790072030_venue_dead_image_quarantine.sql'),
+  'utf8',
+);
+const QUEUE_CLOSEOUT_SQL = readFileSync(
+  join(process.cwd(), 'supabase/migrations/99991790072040_venue_quality_queue_closeout.sql'),
+  'utf8',
+);
 
 describe('venue quality tiered catalog migration', () => {
   it('starts in shadow mode and keeps hard blockers separate from the score', () => {
@@ -97,5 +140,93 @@ describe('venue quality tiered catalog migration', () => {
   it('resumes perceptual hashing with bounded edge-memory usage', () => {
     expect(PHASH_SAFETY_SQL).toContain('consecutive_failures = 0');
     expect(PHASH_SAFETY_SQL).toContain('body := \'{"limit":1}\'::jsonb');
+  });
+
+  it('finishes only evidence-backed fields and queues irreducible gaps', () => {
+    expect(EVIDENCE_COMPLETION_SQL).toContain('venue_description_evidence_candidates');
+    expect(EVIDENCE_COMPLETION_SQL).toContain(
+      'public.venue_description_issue(v.description) is null',
+    );
+    expect(EVIDENCE_COMPLETION_SQL).toContain("'kind', 'legacy_venue_snapshot'");
+    expect(EVIDENCE_COMPLETION_SQL).toContain(
+      "lower(btrim(v.data_source)) not in ('unknown', 'manual')",
+    );
+    expect(EVIDENCE_COMPLETION_SQL).toContain('having count(distinct category) = 1');
+    expect(EVIDENCE_COMPLETION_SQL).toContain("'venue_missing_country'");
+    expect(EVIDENCE_COMPLETION_SQL).toContain("'licensed_relevant_cover_required'");
+    expect(EVIDENCE_COMPLETION_SQL).toContain("cron.schedule('image_phash_backfill', '7 * * * *'");
+  });
+
+  it('keeps perceptual hashing scoped to venue-linked assets after convergence', () => {
+    expect(PHASH_WORKER).toContain("rpc('venue_image_assets_due_phash'");
+    expect(PHASH_WORKER).not.toContain(".select('id, url, optimized_url')");
+  });
+
+  it('keeps remediation queues limited to live venues and accounts for new events', () => {
+    expect(REVIEW_SCOPE_SQL).toContain("r.review_type = 'venue_missing_country'");
+    expect(REVIEW_SCOPE_SQL).toContain('v.duplicate_of_id is not null');
+    expect(REVIEW_SCOPE_SQL).toContain('v.closed_at is not null');
+    expect(REVIEW_SCOPE_SQL).toContain("v.review_status = 'archived'");
+    expect(REVIEW_SCOPE_SQL).toContain("'non_live_venue_removed_from_queue'");
+    expect(REVIEW_SCOPE_SQL).toContain("'venue_link_candidate'");
+  });
+
+  it('routes irreducible live source blockers to evidence review', () => {
+    expect(SOURCE_BLOCKER_SQL).toContain("'venue_source_evidence'");
+    expect(SOURCE_BLOCKER_SQL).toContain("array['no_source']::text[]");
+    expect(SOURCE_BLOCKER_SQL).toContain('v.duplicate_of_id is null');
+    expect(SOURCE_BLOCKER_SQL).toContain('v.closed_at is null');
+    expect(SOURCE_BLOCKER_SQL).toContain("v.review_status is distinct from 'archived'");
+    expect(SOURCE_BLOCKER_SQL).toContain("'source_observation_required'");
+  });
+
+  it('fills only recent source descriptions and unanimous explicit countries', () => {
+    expect(SOURCE_EVIDENCE_SQL).toContain('venue_description_fill_candidates');
+    expect(SOURCE_EVIDENCE_SQL).toContain('length(src.description) >= 120');
+    expect(SOURCE_EVIDENCE_SQL).toContain(
+      'public.venue_description_issue(src.description) is null',
+    );
+    expect(SOURCE_EVIDENCE_SQL).toContain("s.last_seen_at >= now() - interval '180 days'");
+    expect(SOURCE_EVIDENCE_SQL).toContain('venue_country_link_candidates');
+    expect(SOURCE_EVIDENCE_SQL).toContain('having count(distinct country_id) = 1');
+    expect(SOURCE_EVIDENCE_SQL).toContain("lower(o.country_signal) <> 'various locations'");
+    expect(SOURCE_EVIDENCE_SQL).toContain("'source_country_linked'");
+    expect(SOURCE_EVIDENCE_SQL).toContain('venue_category_provenance_candidates');
+    expect(SOURCE_EVIDENCE_SQL).toContain(
+      'venue evidence remediation created multiple winning provenance rows',
+    );
+  });
+
+  it('limits further geo repair to unique cities or terminal source countries', () => {
+    expect(GEO_EVIDENCE_SQL).toContain('venue_unique_city_geo_candidates');
+    expect(GEO_EVIDENCE_SQL).toContain('where m.match_count = 1');
+    expect(GEO_EVIDENCE_SQL).toContain('venue_address_country_geo_candidates');
+    expect(GEO_EVIDENCE_SQL).toContain('having count(distinct country_id) = 1');
+    expect(GEO_EVIDENCE_SQL).toContain("'source_address_country_suffix'");
+    expect(GEO_EVIDENCE_SQL).toContain('venue_deterministic_geo_candidates');
+    expect(GEO_EVIDENCE_SQL).toContain('deterministic venue geo candidate did not persist');
+  });
+
+  it('completes factual venue image metadata without fabricating editorial evidence', () => {
+    expect(IMAGE_METADATA_SQL).toContain('venue_claim_image_assets_for_metadata');
+    expect(IMAGE_METADATA_SQL).toContain("l.entity_type = 'venue'");
+    expect(IMAGE_METADATA_SQL).toContain('ia.width is null or ia.height is null');
+    expect(IMAGE_METADATA_SQL).toContain("'venue_image_metadata'");
+    expect(IMAGE_METADATA_SQL).not.toMatch(/set\s+(license|alt_text|attribution)\s*=/i);
+    expect(IMAGE_OPTIMIZER).toContain("entityType === 'venue'");
+    expect(IMAGE_OPTIMIZER).toContain("rpc('venue_claim_image_assets_for_metadata'");
+    expect(IMAGE_OPTIMIZER).toContain("reason === 'http_404'");
+    expect(IMAGE_OPTIMIZER).toContain("flagged_reason: 'source_http_404_after_3_attempts'");
+    expect(DEAD_IMAGE_SQL).toContain("flagged_reason = 'source_http_404_after_3_attempts'");
+    expect(DEAD_IMAGE_SQL).toContain('terminal 404 venue image remained active');
+  });
+
+  it('closes stale event reviews and retains only evidence-backed venue source repairs', () => {
+    expect(QUEUE_CLOSEOUT_SQL).toContain("'https://www.electrowerkz.co.uk/'");
+    expect(QUEUE_CLOSEOUT_SQL).toContain("'official_venue_website'");
+    expect(QUEUE_CLOSEOUT_SQL).toContain('resolve_event_venue_link_reviews');
+    expect(QUEUE_CLOSEOUT_SQL).toContain("'event_no_longer_actionable'");
+    expect(QUEUE_CLOSEOUT_SQL).toContain("schedule = '17 * * * *'");
+    expect(QUEUE_CLOSEOUT_SQL).not.toMatch(/verified\s*=\s*true/i);
   });
 });
