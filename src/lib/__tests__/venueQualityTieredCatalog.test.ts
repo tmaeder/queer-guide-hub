@@ -18,6 +18,14 @@ const PHASH_SAFETY_SQL = readFileSync(
   join(process.cwd(), 'supabase/migrations/99991790011940_venue_phash_memory_guard.sql'),
   'utf8',
 );
+const EVIDENCE_COMPLETION_SQL = readFileSync(
+  join(process.cwd(), 'supabase/migrations/99991790054000_venue_source_evidence_completion.sql'),
+  'utf8',
+);
+const PHASH_WORKER = readFileSync(
+  join(process.cwd(), 'supabase/functions/image-phash-backfill/index.ts'),
+  'utf8',
+);
 
 describe('venue quality tiered catalog migration', () => {
   it('starts in shadow mode and keeps hard blockers separate from the score', () => {
@@ -97,5 +105,25 @@ describe('venue quality tiered catalog migration', () => {
   it('resumes perceptual hashing with bounded edge-memory usage', () => {
     expect(PHASH_SAFETY_SQL).toContain('consecutive_failures = 0');
     expect(PHASH_SAFETY_SQL).toContain('body := \'{"limit":1}\'::jsonb');
+  });
+
+  it('finishes only evidence-backed fields and queues irreducible gaps', () => {
+    expect(EVIDENCE_COMPLETION_SQL).toContain('venue_description_evidence_candidates');
+    expect(EVIDENCE_COMPLETION_SQL).toContain(
+      'public.venue_description_issue(v.description) is null',
+    );
+    expect(EVIDENCE_COMPLETION_SQL).toContain("'kind', 'legacy_venue_snapshot'");
+    expect(EVIDENCE_COMPLETION_SQL).toContain(
+      "lower(btrim(v.data_source)) not in ('unknown', 'manual')",
+    );
+    expect(EVIDENCE_COMPLETION_SQL).toContain('having count(distinct category) = 1');
+    expect(EVIDENCE_COMPLETION_SQL).toContain("'venue_missing_country'");
+    expect(EVIDENCE_COMPLETION_SQL).toContain("'licensed_relevant_cover_required'");
+    expect(EVIDENCE_COMPLETION_SQL).toContain("cron.schedule('image_phash_backfill', '7 * * * *'");
+  });
+
+  it('keeps perceptual hashing scoped to venue-linked assets after convergence', () => {
+    expect(PHASH_WORKER).toContain("rpc('venue_image_assets_due_phash'");
+    expect(PHASH_WORKER).not.toContain(".select('id, url, optimized_url')");
   });
 });
