@@ -471,7 +471,8 @@ begin
           when o.linkage_disposition='not_applicable' then 'link_not_applicable' when o.linkage_disposition='needs_review' then 'expected_link_missing' else 'linkage_unresolved' end,
         jsonb_build_object('disposition',o.linkage_disposition)),
       ('provenance',case when o.field_provenance<>'{}'::jsonb then 'pass' else 'fail' end,
-        case when o.field_provenance<>'{}'::jsonb then 'field_provenance_present' else 'field_provenance_missing' end,jsonb_build_object('fields',jsonb_object_length(o.field_provenance))),
+        case when o.field_provenance<>'{}'::jsonb then 'field_provenance_present' else 'field_provenance_missing' end,
+        jsonb_build_object('fields',(select count(*) from jsonb_object_keys(o.field_provenance)))),
       ('freshness',case when o.last_verified_at is null then 'pending' when o.last_verified_at>=now()-interval '365 days' then 'pass' else 'fail' end,
         case when o.last_verified_at is null then 'never_verified' when o.last_verified_at>=now()-interval '365 days' then 'verified_within_365d' else 'verification_stale' end,jsonb_build_object('last_verified_at',o.last_verified_at))
     ) v(dimension,state,reason_code,evidence)
