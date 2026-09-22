@@ -57,6 +57,10 @@ const DEAD_IMAGE_SQL = readFileSync(
   join(process.cwd(), 'supabase/migrations/99991790072030_venue_dead_image_quarantine.sql'),
   'utf8',
 );
+const QUEUE_CLOSEOUT_SQL = readFileSync(
+  join(process.cwd(), 'supabase/migrations/99991790072040_venue_quality_queue_closeout.sql'),
+  'utf8',
+);
 
 describe('venue quality tiered catalog migration', () => {
   it('starts in shadow mode and keeps hard blockers separate from the score', () => {
@@ -215,5 +219,14 @@ describe('venue quality tiered catalog migration', () => {
     expect(IMAGE_OPTIMIZER).toContain("flagged_reason: 'source_http_404_after_3_attempts'");
     expect(DEAD_IMAGE_SQL).toContain("flagged_reason = 'source_http_404_after_3_attempts'");
     expect(DEAD_IMAGE_SQL).toContain('terminal 404 venue image remained active');
+  });
+
+  it('closes stale event reviews and retains only evidence-backed venue source repairs', () => {
+    expect(QUEUE_CLOSEOUT_SQL).toContain("'https://www.electrowerkz.co.uk/'");
+    expect(QUEUE_CLOSEOUT_SQL).toContain("'official_venue_website'");
+    expect(QUEUE_CLOSEOUT_SQL).toContain('resolve_event_venue_link_reviews');
+    expect(QUEUE_CLOSEOUT_SQL).toContain("'event_no_longer_actionable'");
+    expect(QUEUE_CLOSEOUT_SQL).toContain("schedule = '17 * * * *'");
+    expect(QUEUE_CLOSEOUT_SQL).not.toMatch(/verified\s*=\s*true/i);
   });
 });
