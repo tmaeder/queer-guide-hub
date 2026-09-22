@@ -34,6 +34,13 @@ const SOURCE_BLOCKER_SQL = readFileSync(
   join(process.cwd(), 'supabase/migrations/99991790054020_venue_source_blocker_review.sql'),
   'utf8',
 );
+const SOURCE_EVIDENCE_SQL = readFileSync(
+  join(
+    process.cwd(),
+    'supabase/migrations/99991790072000_venue_source_description_and_country_evidence.sql',
+  ),
+  'utf8',
+);
 
 describe('venue quality tiered catalog migration', () => {
   it('starts in shadow mode and keeps hard blockers separate from the score', () => {
@@ -151,5 +158,22 @@ describe('venue quality tiered catalog migration', () => {
     expect(SOURCE_BLOCKER_SQL).toContain('v.closed_at is null');
     expect(SOURCE_BLOCKER_SQL).toContain("v.review_status is distinct from 'archived'");
     expect(SOURCE_BLOCKER_SQL).toContain("'source_observation_required'");
+  });
+
+  it('fills only recent source descriptions and unanimous explicit countries', () => {
+    expect(SOURCE_EVIDENCE_SQL).toContain('venue_description_fill_candidates');
+    expect(SOURCE_EVIDENCE_SQL).toContain('length(src.description) >= 120');
+    expect(SOURCE_EVIDENCE_SQL).toContain(
+      'public.venue_description_issue(src.description) is null',
+    );
+    expect(SOURCE_EVIDENCE_SQL).toContain("s.last_seen_at >= now() - interval '180 days'");
+    expect(SOURCE_EVIDENCE_SQL).toContain('venue_country_link_candidates');
+    expect(SOURCE_EVIDENCE_SQL).toContain('having count(distinct country_id) = 1');
+    expect(SOURCE_EVIDENCE_SQL).toContain("lower(o.country_signal) <> 'various locations'");
+    expect(SOURCE_EVIDENCE_SQL).toContain("'source_country_linked'");
+    expect(SOURCE_EVIDENCE_SQL).toContain('venue_category_provenance_candidates');
+    expect(SOURCE_EVIDENCE_SQL).toContain(
+      'venue evidence remediation created multiple winning provenance rows',
+    );
   });
 });
