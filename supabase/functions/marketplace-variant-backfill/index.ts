@@ -83,7 +83,6 @@ Deno.serve(async (req: Request) => {
     const healthy = recentRuns?.length === 3 && recentRuns.every((run) =>
       ['success', 'partial'].includes(run.status)
       && Number(run.items_changed) > 0
-      && new Date(run.finished_at as string).getTime() - new Date(run.started_at).getTime() < 90_000
     )
     if (healthy) {
       const lastSize = Math.max(batchLimit, ...recentRuns.map((run) => Number(run.items_examined) || 0))
