@@ -287,7 +287,27 @@ export async function fetchPublicPersonalityBySlugOrId<T = unknown>(
     error = fb.error;
   }
   if (error) throw error;
-  return (data ?? null) as T | null;
+  if (!data) return null;
+  const { data: canonical, error: canonicalError } = await untypedFrom(
+    'personality_public_profiles',
+  )
+    .select('resolved_image_url,canonical_tags,image_status,unresolved_tag_count')
+    .eq('id', data.id)
+    .maybeSingle();
+  if (canonicalError) throw canonicalError;
+  const readModel = canonical as {
+    resolved_image_url?: string | null;
+    canonical_tags?: string[] | null;
+    image_status?: string | null;
+    unresolved_tag_count?: number | null;
+  } | null;
+  return {
+    ...data,
+    image_url: readModel?.resolved_image_url ?? data.image_url,
+    tags: readModel?.canonical_tags ?? [],
+    image_status: readModel?.image_status ?? 'pending',
+    unresolved_tag_count: readModel?.unresolved_tag_count ?? 0,
+  } as unknown as T;
 }
 
 /** Admin data-sheet — personality by id WITHOUT the public visibility filter,

@@ -11,14 +11,14 @@
 //      stamp attributes_extracted_at (the work-list resume marker) — the
 //      GENERATED sizes/colors arrays recompute on that UPDATE.
 //   5. Mirror attributes into unified_tag_assignments as namespaced tags
-//      (color-*/size-*/genre-*/fit-*; size = alpha ladder only) and remove
-//      stale assignments in those four namespaces.
+//      (color-*/size-*/mat-*/genre-*/fit-*; size = alpha ladder only) and remove
+//      stale assignments in those five namespaces.
 //   6. Concept auto-tagging: merchant tag strings (Shopify raw.tags) matched
 //      EXACTLY against active unified_tags names/slugs + APPROVED aliases —
 //      never fuzzy, never from title substrings (alias-collision discipline),
 //      never onto sensitive tags.
 //
-// Batch cap 300 (search-trigger discipline — the listings UPDATE enqueues a
+// Batch cap 125 (search-trigger discipline — the listings UPDATE enqueues a
 // search reindex per row). Auth: X-Webhook-Secret (cron) or admin/service.
 // Body: { batch_limit?, dry_run?, listing_ids? }
 
@@ -38,7 +38,7 @@ import {
 } from '../_shared/marketplace-attributes.ts'
 
 const STEP = 'marketplace-variant-extract'
-const MAX_BATCH = 300
+const MAX_BATCH = 125
 
 interface ListingRow {
   id: string
@@ -49,9 +49,10 @@ interface ListingRow {
   attributes: Record<string, unknown> | null
 }
 
-const ATTR_TAG_PREFIXES: Array<{ kind: 'size' | 'color' | 'genre' | 'fit'; prefix: string }> = [
+const ATTR_TAG_PREFIXES: Array<{ kind: 'size' | 'color' | 'material' | 'genre' | 'fit'; prefix: string }> = [
   { kind: 'size', prefix: 'size-' },
   { kind: 'color', prefix: 'color-' },
+  { kind: 'material', prefix: 'mat-' },
   { kind: 'genre', prefix: 'genre-' },
   { kind: 'fit', prefix: 'fit-' },
 ]
@@ -67,33 +68,76 @@ Deno.serve(async (req: Request) => {
   }
 
   const body = await req.json().catch(() => ({}))
-  const batchLimit = Math.min(Number(body.batch_limit ?? MAX_BATCH), MAX_BATCH)
+  let batchLimit = Math.min(Number(body.batch_limit ?? 50), MAX_BATCH)
   const dryRun: boolean = body.dry_run ?? false
   const listingIds: string[] | undefined = body.listing_ids
 
-  // Work-list.
+  if (!listingIds?.length && body.auto_scale !== false) {
+    const { data: recentRuns } = await supabase
+      .from('admin_automation_runs')
+      .select('status, items_examined, items_changed, started_at, finished_at')
+      .eq('automation_slug', 'marketplace_variant_backfill')
+      .not('finished_at', 'is', null)
+      .order('started_at', { ascending: false })
+      .limit(3)
+    const healthy = recentRuns?.length === 3 && recentRuns.every((run) =>
+      ['success', 'partial'].includes(run.status)
+      && Number(run.items_changed) > 0
+      && new Date(run.finished_at as string).getTime() - new Date(run.started_at).getTime() < 90_000
+    )
+    if (healthy) {
+      const lastSize = Math.max(batchLimit, ...recentRuns.map((run) => Number(run.items_examined) || 0))
+      batchLimit = Math.min(MAX_BATCH, lastSize + 25)
+    }
+  }
+
+  // Work-list. Scheduled runs use an expiring database claim so overlapping
+  // edge invocations never extract the same listing. Explicit listing_ids are
+  // a manual/debug path and deliberately bypass the shared queue.
   let ids: string[]
+  let claimToken: string | null = null
+  const releaseClaim = async () => {
+    if (!claimToken) return
+    await supabase.rpc('marketplace_release_variant_extract_claims', {
+      p_claim_token: claimToken,
+      p_listing_ids: ids,
+    })
+    claimToken = null
+  }
   if (listingIds?.length) {
     ids = listingIds.slice(0, batchLimit)
   } else {
-    const { data, error } = await supabase.rpc('marketplace_due_for_variant_extract', { p_limit: batchLimit })
+    claimToken = crypto.randomUUID()
+    const { data, error } = await supabase.rpc('marketplace_claim_variant_extract', {
+      p_limit: batchLimit,
+      p_claim_token: claimToken,
+    })
     if (error) return jsonResponse({ error: error.message, success: false }, 500, req)
     ids = ((data ?? []) as Array<{ id: string }>).map((r) => r.id)
   }
-  if (!ids.length) return jsonResponse({ processed: 0, message: 'no listings due' }, 200, req)
+  if (!ids.length) {
+    await releaseClaim()
+    return jsonResponse({ success: true, items_examined: 0, items_changed: 0, items_terminal: 0, items_failed: 0, message: 'no listings due' }, 200, req)
+  }
 
   const { data: listingData, error: lErr } = await supabase
     .from('marketplace_listings')
     .select('id, title, description, currency, subcategory_group, attributes')
     .in('id', ids)
-  if (lErr) return jsonResponse({ error: lErr.message, success: false }, 500, req)
+  if (lErr) {
+    await releaseClaim()
+    return jsonResponse({ error: lErr.message, success: false, items_examined: 0, items_changed: 0, items_terminal: 0, items_failed: ids.length }, 500, req)
+  }
   const listings = (listingData ?? []) as ListingRow[]
 
   const { data: srcRows, error: sErr } = await supabase
     .from('marketplace_listing_sources')
     .select('listing_id, source_slug, raw')
     .in('listing_id', ids)
-  if (sErr) return jsonResponse({ error: sErr.message, success: false }, 500, req)
+  if (sErr) {
+    await releaseClaim()
+    return jsonResponse({ error: sErr.message, success: false, items_examined: listings.length, items_changed: 0, items_terminal: 0, items_failed: listings.length }, 500, req)
+  }
   const sourcesByListing = new Map<string, Array<{ source_slug: string; raw: Record<string, unknown> }>>()
   for (const s of srcRows ?? []) {
     const arr = sourcesByListing.get(s.listing_id) ?? []
@@ -101,14 +145,24 @@ Deno.serve(async (req: Request) => {
     sourcesByListing.set(s.listing_id, arr)
   }
 
+  const { data: fxRows, error: fxErr } = await supabase.from('fx_rates').select('currency, rate_to_usd')
+  if (fxErr) {
+    await releaseClaim()
+    return jsonResponse({ error: fxErr.message, success: false, items_examined: listings.length, items_changed: 0, items_terminal: 0, items_failed: listings.length }, 500, req)
+  }
+  const usdRate = new Map<string, number>((fxRows ?? []).map((r) => [String(r.currency).toUpperCase(), Number(r.rate_to_usd)]))
+
   // Attribute tag ids (namespaced) — keyed by slug PREFIX, never by the
   // trigger-derived category text (destroyed by the tag-category consolidation).
   const { data: attrTags, error: tErr } = await supabase
     .from('unified_tags')
     .select('id, slug')
-    .or('slug.like.size-%,slug.like.color-%,slug.like.genre-%,slug.like.fit-%')
+    .or('slug.like.size-%,slug.like.color-%,slug.like.mat-%,slug.like.genre-%,slug.like.fit-%')
     .eq('status', 'active')
-  if (tErr) return jsonResponse({ error: tErr.message, success: false }, 500, req)
+  if (tErr) {
+    await releaseClaim()
+    return jsonResponse({ error: tErr.message, success: false, items_examined: listings.length, items_changed: 0, items_terminal: 0, items_failed: listings.length }, 500, req)
+  }
   const attrTagIdBySlug = new Map<string, string>((attrTags ?? []).map((t) => [t.slug, t.id]))
   const attrTagIds = new Set<string>(attrTagIdBySlug.values())
 
@@ -182,6 +236,9 @@ Deno.serve(async (req: Request) => {
               listing_id: l.id,
               source_slug: s.source_slug,
               ...v,
+              price_usd: v.price != null && v.currency && usdRate.has(v.currency.toUpperCase())
+                ? Math.round(v.price * (usdRate.get(v.currency.toUpperCase()) as number) * 100) / 100
+                : null,
               last_seen_at: new Date().toISOString(),
             })
           }
@@ -236,7 +293,7 @@ Deno.serve(async (req: Request) => {
         const existingAttrIds = new Set<string>()
         const staleAssignmentIds: string[] = []
         for (const a of existing ?? []) {
-          if (!attrTagIds.has(a.tag_id)) continue // not one of the four namespaces
+          if (!attrTagIds.has(a.tag_id)) continue // not one of the five namespaces
           existingAttrIds.add(a.tag_id)
           if (!wantedIds.has(a.tag_id)) staleAssignmentIds.push(a.id)
         }
@@ -284,7 +341,15 @@ Deno.serve(async (req: Request) => {
     }
   }
 
+  await releaseClaim()
+  const completed = listings.length - failed
   return jsonResponse({
+    success: failed === 0,
+    items_examined: listings.length,
+    items_changed: completed,
+    items_terminal: completed,
+    items_failed: failed,
+    batch_size: batchLimit,
     processed: listings.length,
     variants_written: variantsWritten,
     listings_updated: listingsUpdated,

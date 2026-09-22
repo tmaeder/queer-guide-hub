@@ -331,7 +331,7 @@ export function PersonalityHero({
 
 function RelatedContent({ personality }: { personality: Personality }) {
   const { t } = useTranslation();
-  const { news, events, loading } = usePersonalityRelated(personality.name, personality.slug);
+  const { news, events, loading } = usePersonalityRelated(personality.id);
 
   if (loading) return null;
   if (news.length === 0 && events.length === 0) return null;
