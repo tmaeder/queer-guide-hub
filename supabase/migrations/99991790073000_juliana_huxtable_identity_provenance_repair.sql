@@ -134,10 +134,17 @@ begin
     raise exception 'Juliana Huxtable claim provenance postcondition failed';
   end if;
 
-  select failing into v_guard from public.trust_safety_gate_status()
-  where gate = 'person_outing_guard';
-  select failing into v_release_guard from public.release_gate_checks()
-  where gate = 'person_outing_guard';
+  select coalesce((to_jsonb(g)->>'failing')::integer,
+                  (to_jsonb(g)->>'failures')::integer)
+  into v_guard
+  from public.trust_safety_gate_status() g
+  where g.gate = 'person_outing_guard';
+
+  select coalesce((to_jsonb(g)->>'failing')::integer,
+                  (to_jsonb(g)->>'failures')::integer)
+  into v_release_guard
+  from public.release_gate_checks() g
+  where g.gate = 'person_outing_guard';
 
   if coalesce(v_guard, -1) <> 0 or coalesce(v_release_guard, -1) <> 0 then
     raise exception 'person_outing_guard postcondition failed: trust %, release %',
