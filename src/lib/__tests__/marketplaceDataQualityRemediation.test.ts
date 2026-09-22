@@ -23,6 +23,13 @@ const taxonomyTerminalMigration = readFileSync(
   ),
   'utf8',
 );
+const inactiveReasonMigration = readFileSync(
+  join(
+    process.cwd(),
+    'supabase/migrations/99991790102309_marketplace_inactive_reason_invariant.sql',
+  ),
+  'utf8',
+);
 const variantWorker = readFileSync(
   join(process.cwd(), 'supabase/functions/marketplace-variant-backfill/index.ts'),
   'utf8',
@@ -58,6 +65,13 @@ describe('marketplace data-quality remediation contracts', () => {
     expect(migration).toContain('rollback_of');
     expect(migration).toContain("'marketplace-taxonomy-v4'");
     expect(migration).not.toMatch(/DELETE FROM public\.marketplace_listings/);
+  });
+
+  it('requires explicit inactive reasons without weakening dead-link confirmation', () => {
+    expect(inactiveReasonMigration).toContain('marketplace_require_inactive_reason_trg');
+    expect(inactiveReasonMigration).toContain("NEW.link_health='broken'");
+    expect(inactiveReasonMigration).toContain('coalesce(NEW.link_broken_streak,0)>=2');
+    expect(inactiveReasonMigration).toContain("THEN 'source_feed_stale'");
   });
 
   it('requires two confirmed dead-link results and limits concurrency by domain', () => {
