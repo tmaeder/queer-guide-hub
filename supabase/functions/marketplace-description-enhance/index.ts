@@ -1,4 +1,9 @@
-import { getServiceClient, getCorsHeaders, corsResponse } from '../_shared/supabase-client.ts'
+import {
+  getServiceClient,
+  getCorsHeaders,
+  corsResponse,
+  requireInternalOrAdmin,
+} from '../_shared/supabase-client.ts'
 import { consumeLlmBudget } from '../_shared/llm-budget.ts'
 import { marketplaceDescriptionFromRaw } from '../_shared/marketplace-description.ts'
 
@@ -78,6 +83,8 @@ async function enhance(title: string, source: string, modelOverride?: string): P
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return corsResponse(req)
   const supabase = client()
+  const auth = await requireInternalOrAdmin(req, supabase)
+  if (auth instanceof Response) return auth
   try {
     const body = await req.json().catch(() => ({}))
     // A merchant_domain in the body scopes a manual run; the cron passes none
@@ -162,7 +169,25 @@ Deno.serve(async (req) => {
     // before.
     const budget = await consumeLlmBudget(supabase, 'marketplace-description-enhance', pending.length)
     if (!budget.allowed) {
-      return json({ success: true, items: recovered, items_examined: (rows || []).length, items_changed: recovered, items_terminal: recovered + recoveryMisses, items_failed: 0, skipped: pending.length, recovered, recovery_misses: recoveryMisses, message: 'llm_budget_exhausted', daily_cap: budget.cap, merchant_domain: merchantDomain, dry_run: dryRun })
+      return json({
+        success: true,
+        items: recovered,
+        items_examined: (rows || []).length,
+        items_changed: recovered,
+        // The queue claim is terminal for this dispatch even though inference
+        // is deferred to a later UTC budget window. Refill makes the rows
+        // eligible again; this avoids treating an intentional spend ceiling as
+        // a broken worker and auto-pausing it for the following day.
+        items_terminal: (rows || []).length,
+        items_failed: 0,
+        skipped: pending.length,
+        recovered,
+        recovery_misses: recoveryMisses,
+        message: 'llm_budget_deferred',
+        daily_cap: budget.cap,
+        merchant_domain: merchantDomain,
+        dry_run: dryRun,
+      })
     }
     let done = 0, skipped = 0, failed = 0, firstErr: string | null = null
     for (const row of pending) {
