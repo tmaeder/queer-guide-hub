@@ -84,6 +84,14 @@ describe('business and brand data-quality contracts', () => {
     expect(migration).toContain("array['support','advocacy','community']");
   });
 
+  it('keeps normalized domains current and avoids unsupported UUID aggregates', () => {
+    expect(migration).toMatch(
+      /new\.website is distinct from old\.website[\s\S]*new\.website_domain is not distinct from old\.website_domain[\s\S]*org_normalize_domain\(new\.website\)/,
+    );
+    expect(migration).toContain('(array_agg(id order by id))[1] id');
+    expect(migration).not.toMatch(/min\(id\)/);
+  });
+
   it('exposes every supported organization role in the Business filters', () => {
     expect(businessPage).toContain("'advocacy'");
     expect(businessPage).toContain("'community'");

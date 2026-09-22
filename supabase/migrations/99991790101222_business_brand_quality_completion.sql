@@ -90,7 +90,13 @@ returns trigger language plpgsql set search_path=public as $$
 begin
   new.name := btrim(new.name);
   new.website := nullif(btrim(new.website),'');
-  new.website_domain := public.org_normalize_domain(coalesce(new.website_domain,new.website));
+  if tg_op='UPDATE'
+     and new.website is distinct from old.website
+     and new.website_domain is not distinct from old.website_domain then
+    new.website_domain := public.org_normalize_domain(new.website);
+  else
+    new.website_domain := public.org_normalize_domain(coalesce(new.website_domain,new.website));
+  end if;
   new.email := lower(nullif(btrim(new.email),''));
   new.phone := nullif(btrim(new.phone),'');
   return new;
@@ -392,7 +398,7 @@ returns jsonb language plpgsql security definer set search_path=public as $$
 declare v_linked integer:=0;
 begin
   with unique_org_domain as (
-    select public.org_normalize_domain(website_domain) domain,min(id) id
+    select public.org_normalize_domain(website_domain) domain,(array_agg(id order by id))[1] id
     from organizations where status='active' and duplicate_of_id is null
       and public.org_normalize_domain(website_domain) is not null
     group by 1 having count(*)=1
