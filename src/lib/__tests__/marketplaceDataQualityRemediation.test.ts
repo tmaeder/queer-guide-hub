@@ -45,6 +45,9 @@ describe('marketplace data-quality remediation contracts', () => {
     );
     expect(variantWorker).toContain("rpc('marketplace_claim_variant_extract'");
     expect(variantWorker).toContain("rpc('marketplace_release_variant_extract_claims'");
+    expect(variantWorker).toContain('recentRuns?.length === 3');
+    expect(variantWorker).toContain('lastSize + 25');
+    expect(variantWorker).not.toContain('< 90_000');
   });
 
   it('makes backfills idempotent and preserves an auditable rollback ledger', () => {
