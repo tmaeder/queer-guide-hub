@@ -131,8 +131,9 @@ Deno.serve(async (req: Request) => {
 
   const { data: srcRows, error: sErr } = await supabase
     .from('marketplace_listing_sources')
-    .select('listing_id, source_slug, raw')
+    .select('listing_id, source_slug, raw, last_seen_at')
     .in('listing_id', ids)
+    .order('last_seen_at', { ascending: false })
   if (sErr) {
     await releaseClaim()
     return jsonResponse({ error: sErr.message, success: false, items_examined: listings.length, items_changed: 0, items_terminal: 0, items_failed: listings.length }, 500, req)
@@ -215,6 +216,7 @@ Deno.serve(async (req: Request) => {
     try {
       const sources = sourcesByListing.get(l.id) ?? []
       const variantRows: Array<Record<string, unknown>> = []
+      const variantKeys = new Set<string>()
       const attrParts: ExtractedAttributes[] = []
       const merchantTags = new Set<string>()
 
@@ -231,6 +233,15 @@ Deno.serve(async (req: Request) => {
         if (extracted) {
           attrParts.push(extracted.attributes)
           for (const v of extracted.variants) {
+            // A renamed source entity can leave two provenance rows for the
+            // same upstream product. Keep the newest occurrence (source rows
+            // are ordered above) and avoid violating either variants unique
+            // index when their payloads expose the same variant IDs/options.
+            const variantKey = v.source_variant_id != null
+              ? `${s.source_slug}\u0000id:${v.source_variant_id}`
+              : `${s.source_slug}\u0000options:${JSON.stringify(v.options)}`
+            if (variantKeys.has(variantKey)) continue
+            variantKeys.add(variantKey)
             variantRows.push({
               listing_id: l.id,
               source_slug: s.source_slug,
