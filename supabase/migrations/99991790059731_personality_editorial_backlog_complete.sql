@@ -1,4 +1,4 @@
--- Complete the sourced public personality summary backlog and repair identity collisions.
+-- Complete the sourced public personality editorial backlog and repair identity collisions.
 -- Every changed value is preserved in private.personality_remediation_audit.
 
 begin;
