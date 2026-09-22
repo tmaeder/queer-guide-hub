@@ -51,22 +51,13 @@ Deno.serve(async (req) => {
     // per invocation keeps memory bounded even when the source is near the
     // pixel ceiling; cron supplies the throughput.
     const limit = 1
-    // Venue-linked assets are the product-critical cohort. Drain those first,
-    // then fall back to the global queue after venue coverage converges.
-    let { data: rows, error } = await supabase.rpc('venue_image_assets_due_phash', {
+    // This worker is intentionally scoped to venue-linked assets. The venue
+    // backlog is finite and the hourly cron keeps newly linked assets covered;
+    // silently spilling into the global DAM queue would keep this automation
+    // running indefinitely and spend edge capacity outside its stated scope.
+    const { data: rows, error } = await supabase.rpc('venue_image_assets_due_phash', {
       p_limit: limit,
     })
-    if (!error && (rows?.length ?? 0) === 0) {
-      const fallback = await supabase
-        .from('image_assets')
-        .select('id, url, optimized_url')
-        .is('phash', null)
-        .is('phash_checked_at', null)
-        .eq('status', 'active')
-        .limit(limit)
-      rows = fallback.data
-      error = fallback.error
-    }
     if (error) return errorResponse(error.message, 500, req)
 
     const now = new Date().toISOString()
