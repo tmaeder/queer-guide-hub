@@ -16,6 +16,13 @@ const completionMigration = readFileSync(
   join(process.cwd(), 'supabase/migrations/99991790053301_marketplace_quality_completion.sql'),
   'utf8',
 );
+const taxonomyTerminalMigration = readFileSync(
+  join(
+    process.cwd(),
+    'supabase/migrations/99991790070959_marketplace_taxonomy_terminal_cleanup.sql',
+  ),
+  'utf8',
+);
 const variantWorker = readFileSync(
   join(process.cwd(), 'supabase/functions/marketplace-variant-backfill/index.ts'),
   'utf8',
@@ -141,6 +148,13 @@ describe('marketplace data-quality remediation contracts', () => {
     expect(completionMigration).toContain('variant_observed_hourly_rate');
     expect(completionMigration).toContain("'marketplace_taxonomy_classify'");
     expect(completionMigration).toContain("'marketplace_image_optimize'");
+  });
+
+  it('keeps packing accessories out of sex toys and stops an exhausted model drain', () => {
+    expect(taxonomyTerminalMigration).toContain("THEN 'accessories'");
+    expect(taxonomyTerminalMigration).toContain("'marketplace-taxonomy-v4.1'");
+    expect(taxonomyTerminalMigration).toContain('taxonomy_model_attempts<3');
+    expect(taxonomyTerminalMigration).toContain('IF v_model_pending=0 THEN');
   });
 });
 
