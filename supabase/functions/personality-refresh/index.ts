@@ -7,7 +7,7 @@
 import { getServiceClient, jsonResponse, errorResponse, corsResponse } from '../_shared/supabase-client.ts'
 import { withErrorReporting } from '../_shared/report-api-error.ts'
 import { fillBlanks, parseWikipediaSummary } from '../_shared/personality-enrich-core.ts'
-import { personalityQualityScore } from '../_shared/personality-quality.ts'
+import { personalityQualityDimensions } from '../_shared/personality-quality.ts'
 import { resolveByNameAndProfession, readClaim, readTimeClaim } from '../_shared/wikidata-resolve.ts'
 
 const UA = 'QueerGuide/1.0 (https://queer.guide; contact@queer.guide)'
@@ -28,9 +28,8 @@ const WD_EXT: Record<string, string> = {
 //
 // Resolution now goes through resolveByNameAndProfession(), which requires
 // P31=Q5 and an occupation overlap with the local profession, and refuses
-// ambiguous matches. When it declines we persist a SKIP_<uuid> sentinel — the
-// convention the promotion gate and truth engine already read as "no Wikidata
-// match" — so the row is not retried forever and is never guessed at.
+// ambiguous matches. When it declines we persist wikidata_status='not_found';
+// workflow state never occupies the identifier column.
 async function wdEntity(qid: string): Promise<Record<string, unknown> | null> {
   try {
     const res = await fetch(`https://www.wikidata.org/wiki/Special:EntityData/${qid}.json`, { headers: { 'User-Agent': UA } })
@@ -87,16 +86,17 @@ Deno.serve(withErrorReporting('personality-refresh', async (req) => {
 
       const incoming: Row = {}
       const existingQid = p.wikidata_qid as string | null
-      // A SKIP_ sentinel is a recorded decision that no match exists — honour it.
-      let qid = existingQid && !existingQid.startsWith('SKIP_') ? existingQid : null
+      const wikidataStatus = String(p.wikidata_status ?? 'needs_review')
+      let qid = existingQid
       let entity: Record<string, unknown> | null = null
       let wdUrl: string | null = null
       let unresolved = false
 
-      if (!qid && !existingQid && p.name) {
+      if (!qid && wikidataStatus === 'needs_review' && p.name) {
         const hit = await resolveByNameAndProfession(String(p.name), p.profession as string | null)
         if (hit) {
           qid = hit.qid
+          incoming.wikidata_status = 'resolved'
           entity = hit.entity
           if (hit.description) incoming.description = hit.description
         } else {
@@ -106,6 +106,7 @@ Deno.serve(withErrorReporting('personality-refresh', async (req) => {
       }
       if (qid) {
         incoming.wikidata_qid = qid
+        incoming.wikidata_status = 'resolved'
         wdUrl = `https://www.wikidata.org/wiki/${qid}`
         entity = entity ?? await wdEntity(qid)
         if (entity) {
@@ -127,7 +128,8 @@ Deno.serve(withErrorReporting('personality-refresh', async (req) => {
           if (extChanged) incoming.external_ids = ext
         }
       } else if (unresolved) {
-        incoming.wikidata_qid = `SKIP_${crypto.randomUUID()}`
+        incoming.wikidata_qid = null
+        incoming.wikidata_status = 'not_found'
       }
 
       // Wikipedia is fetched ONLY via the Wikidata-confirmed enwiki sitelink — never by
@@ -153,9 +155,18 @@ Deno.serve(withErrorReporting('personality-refresh', async (req) => {
       if (incoming.external_ids) patch.external_ids = incoming.external_ids
 
       const merged = { ...p, ...patch }
-      // quality_score is intentionally recomputed and overwritten every run — it is a
-      // derived rubric value, NOT curated data, so it does not go through fillBlanks.
-      const newScore = personalityQualityScore(merged as Row)
+      const { count: sourceCount } = await supabase
+        .from('personality_sources')
+        .select('id', { count: 'exact', head: true })
+        .eq('personality_id', id)
+      const dimensions = personalityQualityDimensions({
+        ...merged,
+        source_count: (sourceCount ?? 0) + (qid ? 1 : 0) + (wikiUrl ? 1 : 0),
+        claim_source_count: Object.keys((p.field_provenance as Record<string, unknown>) ?? {}).length > 0 ? 1 : 0,
+        has_optimized_image: p.image_status === 'available',
+        last_refreshed_at: new Date().toISOString(),
+      })
+      const newScore = dimensions.score
 
       results.push({ id, name: p.name, changed_keys: Object.keys(patch), new_quality: newScore })
       await sleep(120)
@@ -164,6 +175,9 @@ Deno.serve(withErrorReporting('personality-refresh', async (req) => {
       const { error: uErr } = await supabase.from('personalities').update({
         ...patch,
         quality_score: newScore,
+        quality_score_version: 2,
+        quality_dimensions: dimensions,
+        quality_evaluated_at: new Date().toISOString(),
         last_refreshed_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
       }).eq('id', id)

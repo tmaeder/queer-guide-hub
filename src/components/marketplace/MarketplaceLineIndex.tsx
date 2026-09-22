@@ -72,7 +72,7 @@ export function MarketplaceLineIndex({ activeDepartment }: { activeDepartment?: 
   if (!loading && tiles.length === 0) return null;
 
   return (
-    <section aria-labelledby="category-tiles">
+    <section aria-labelledby="category-tiles" aria-busy={loading}>
       <div className="mb-6 flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
         <h2 id="category-tiles" className="font-display text-display">
           Departments
