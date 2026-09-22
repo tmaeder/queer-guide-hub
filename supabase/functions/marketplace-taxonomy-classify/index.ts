@@ -20,6 +20,20 @@ const GROUP_DEPARTMENT: Record<string, string> = {
   art: 'books_art', home_goods: 'home', grooming: 'hygiene', services: 'services', other: 'other',
 }
 
+const SAFETY_CATEGORY_GROUPS = new Set([
+  'anal_toys', 'dildos', 'masturbators', 'vibrators', 'cock_rings', 'chastity',
+  'pumps', 'lubes', 'poppers', 'safer_sex', 'sex_toys', 'pup_play', 'bondage',
+  'impact_play', 'gags', 'hoods_masks', 'fetish_gear',
+])
+
+const GROUP_ALIASES: Record<string, string> = {
+  lubricants: 'lubes', condoms: 'safer_sex', penis_pumps: 'pumps', butt_plugs: 'anal_toys',
+  bdsm: 'bondage', fetish_wear: 'fetish_gear', sex_toy: 'sex_toys', clothing: 'apparel',
+  t_shirts: 'tops', shirts: 'tops', pants: 'bottoms', shorts: 'bottoms', shoes: 'footwear',
+  hats: 'headwear', necklaces: 'jewelry', rings: 'jewelry', bracelets: 'jewelry',
+  movies: 'film', artwork: 'art', home_decor: 'home', personal_care: 'grooming',
+}
+
 const PROMPT = `Classify one marketplace product using ONLY the supplied source category, title, description and structured attributes. Return minified JSON {"group":"one allowed group","confidence":0.0}. Do not infer sensitive/adult meaning without explicit product evidence. Allowed groups: ${Object.keys(GROUP_DEPARTMENT).join(', ')}.`
 
 function parseResult(raw: unknown): { group: string; confidence: number } {
@@ -27,7 +41,8 @@ function parseResult(raw: unknown): { group: string; confidence: number } {
   const match = text.match(/\{[\s\S]*\}/)
   if (!match) throw new Error('model returned no JSON object')
   const parsed = JSON.parse(match[0]) as { group?: unknown; confidence?: unknown }
-  const group = String(parsed.group ?? '')
+  const rawGroup = String(parsed.group ?? '').trim().toLowerCase().replace(/[\s-]+/g, '_')
+  const group = GROUP_ALIASES[rawGroup] ?? rawGroup
   const confidence = Math.max(0, Math.min(1, Number(parsed.confidence ?? 0)))
   if (!(group in GROUP_DEPARTMENT)) throw new Error(`unknown taxonomy group: ${group}`)
   return { group, confidence }
@@ -81,11 +96,24 @@ Deno.serve(async (req) => {
       if (rows.length) {
         await supabase.from('marketplace_listings').update({ taxonomy_model_status: 'pending' }).in('id', rows.map((row) => row.id))
       }
-      return jsonResponse({ success: true, items_examined: 0, items_changed: 0, items_terminal: 0, items_failed: 0, message: 'llm_budget_exhausted' }, 200, req)
+      return jsonResponse({
+        success: true,
+        items_examined: rows.length,
+        items_changed: 0,
+        // Budget denial is a completed outcome for this dispatch. The rows
+        // return to pending and become eligible after the UTC budget window
+        // rolls; reporting zero terminal work would falsely auto-pause a
+        // healthy, deliberately capped worker.
+        items_terminal: rows.length,
+        items_failed: 0,
+        message: 'llm_budget_deferred',
+        daily_cap: budget.cap,
+      }, 200, req)
     }
     let changed = 0
     let terminal = 0
     let failed = 0
+    const errors: string[] = []
     for (const row of rows) {
       try {
         const result = await classify({
@@ -96,7 +124,11 @@ Deno.serve(async (req) => {
         })
         terminal++
         if (dryRun) continue
-        const { error: updateError } = await supabase.from('marketplace_listings').update({
+        const useSafetyCategory = SAFETY_CATEGORY_GROUPS.has(result.group)
+        const previousContentRating = useSafetyCategory
+          ? (await supabase.from('marketplace_listings').select('content_rating').eq('id', row.id).single()).data?.content_rating
+          : null
+        const { data: updated, error: updateError } = await supabase.from('marketplace_listings').update({
           subcategory_group: result.group,
           department: GROUP_DEPARTMENT[result.group],
           subcategory_fine: null,
@@ -104,11 +136,37 @@ Deno.serve(async (req) => {
           taxonomy_classifier_version: 'marketplace-taxonomy-model-v1',
           taxonomy_model_status: 'done',
           title: row.title,
-        }).eq('id', row.id)
+          ...(useSafetyCategory
+            ? {
+              subcategory: result.group,
+              attributes: {
+                ...(row.attributes ?? {}),
+                _quality_original_subcategory: row.source_category,
+                _quality_safety_normalized_at: new Date().toISOString(),
+                _quality_safety_version: 'marketplace-content-rating-v4',
+              },
+            }
+            : {}),
+        }).eq('id', row.id).select('content_rating').single()
         if (updateError) throw updateError
+        if (useSafetyCategory && previousContentRating !== updated?.content_rating) {
+          await supabase.from('marketplace_quality_events').insert({
+            listing_id: row.id,
+            dimension: 'safety',
+            previous_value: previousContentRating,
+            new_value: updated?.content_rating,
+            classifier_version: 'marketplace-content-rating-v4',
+            confidence: result.confidence,
+          })
+        }
+        if (updated?.content_rating === 'adult' || updated?.content_rating === 'explicit') {
+          await supabase.from('search_documents').delete()
+            .eq('entity_type', 'marketplace').eq('entity_id', row.id)
+        }
         changed++
       } catch (error) {
         failed++
+        if (errors.length < 3) errors.push((error as Error).message.slice(0, 240))
         if (!dryRun) {
           await supabase.from('marketplace_listings').update({ taxonomy_model_status: 'failed' }).eq('id', row.id)
         }
@@ -121,6 +179,7 @@ Deno.serve(async (req) => {
       items_changed: changed,
       items_terminal: terminal,
       items_failed: failed,
+      errors,
       dry_run: dryRun,
       classifier_version: 'marketplace-taxonomy-model-v1',
     }, 200, req)

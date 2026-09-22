@@ -12,6 +12,10 @@ const migration = readFileSync(
   ),
   'utf8',
 );
+const completionMigration = readFileSync(
+  join(process.cwd(), 'supabase/migrations/99991790053301_marketplace_quality_completion.sql'),
+  'utf8',
+);
 const variantWorker = readFileSync(
   join(process.cwd(), 'supabase/functions/marketplace-variant-backfill/index.ts'),
   'utf8',
@@ -112,6 +116,31 @@ describe('marketplace data-quality remediation contracts', () => {
   it('gives the variant backlog enough scheduled throughput for the 48-hour target', () => {
     expect(migration).toContain("schedule='*/2 * * * *'");
     expect(migration).toContain('body := \'{"batch_limit":50}\'::jsonb');
+  });
+
+  it('makes missing descriptions claimable and budget deferral non-fatal', () => {
+    expect(completionMigration).toContain('Priority zero visits each missing row once');
+    expect(completionMigration).toContain("? '_recovery_checked_at'");
+    expect(completionMigration).toContain("slug='marketplace_description_enhance'");
+    expect(completionMigration).toContain("name='internal_invoke_secret'");
+  });
+
+  it('makes the repaired taxonomy group part of the canonical safety rating', () => {
+    expect(completionMigration).toContain(
+      'CREATE OR REPLACE FUNCTION public.marketplace_content_rating(',
+    );
+    expect(completionMigration).toContain("'dildos','vibrators','anal_toys','cock_rings'");
+    expect(completionMigration).toContain('subcategory=ml.subcategory_group');
+    expect(completionMigration).toContain("'_quality_original_subcategory'");
+    expect(completionMigration).toContain('DELETE FROM public.search_documents');
+  });
+
+  it('accounts for every rollout change and every protected marketplace worker', () => {
+    expect(completionMigration).toContain('marketplace_rollout_count_event');
+    expect(completionMigration).toContain('marketplace_normalize_quality_snapshot');
+    expect(completionMigration).toContain('variant_observed_hourly_rate');
+    expect(completionMigration).toContain("'marketplace_taxonomy_classify'");
+    expect(completionMigration).toContain("'marketplace_image_optimize'");
   });
 });
 
