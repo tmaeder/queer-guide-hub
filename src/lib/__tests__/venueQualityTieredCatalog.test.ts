@@ -45,6 +45,14 @@ const GEO_EVIDENCE_SQL = readFileSync(
   join(process.cwd(), 'supabase/migrations/99991790072010_venue_deterministic_geo_evidence.sql'),
   'utf8',
 );
+const IMAGE_METADATA_SQL = readFileSync(
+  join(process.cwd(), 'supabase/migrations/99991790072020_venue_image_metadata_completion.sql'),
+  'utf8',
+);
+const IMAGE_OPTIMIZER = readFileSync(
+  join(process.cwd(), 'supabase/functions/optimize-images-batch/index.ts'),
+  'utf8',
+);
 
 describe('venue quality tiered catalog migration', () => {
   it('starts in shadow mode and keeps hard blockers separate from the score', () => {
@@ -189,5 +197,15 @@ describe('venue quality tiered catalog migration', () => {
     expect(GEO_EVIDENCE_SQL).toContain("'source_address_country_suffix'");
     expect(GEO_EVIDENCE_SQL).toContain('venue_deterministic_geo_candidates');
     expect(GEO_EVIDENCE_SQL).toContain('deterministic venue geo candidate did not persist');
+  });
+
+  it('completes factual venue image metadata without fabricating editorial evidence', () => {
+    expect(IMAGE_METADATA_SQL).toContain('venue_claim_image_assets_for_metadata');
+    expect(IMAGE_METADATA_SQL).toContain("l.entity_type = 'venue'");
+    expect(IMAGE_METADATA_SQL).toContain('ia.width is null or ia.height is null');
+    expect(IMAGE_METADATA_SQL).toContain("'venue_image_metadata'");
+    expect(IMAGE_METADATA_SQL).not.toMatch(/set\s+(license|alt_text|attribution)\s*=/i);
+    expect(IMAGE_OPTIMIZER).toContain("entityType === 'venue'");
+    expect(IMAGE_OPTIMIZER).toContain("rpc('venue_claim_image_assets_for_metadata'");
   });
 });

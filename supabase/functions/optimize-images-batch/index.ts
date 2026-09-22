@@ -55,6 +55,8 @@ Deno.serve(async (req) => {
     // Fetch pending images
     const { data: pending, error: fetchErr } = entityType === 'marketplace_listing'
       ? await supabase.rpc('marketplace_claim_image_assets', { p_limit: batchSize })
+      : entityType === 'venue'
+      ? await supabase.rpc('venue_claim_image_assets_for_metadata', { p_limit: batchSize })
       : await supabase
         .from('image_assets')
         .select('id, url, format, metadata')
@@ -69,11 +71,17 @@ Deno.serve(async (req) => {
     }
 
     // Get remaining count
-    const { count: remaining } = await supabase
-      .from('image_assets')
-      .select('id', { count: 'exact', head: true })
-      .eq('status', 'active')
-      .eq('optimization_status', 'pending')
+    const { count: remaining } = entityType === 'venue'
+      ? await supabase
+        .from('image_asset_links')
+        .select('asset_id, image_assets!inner(id)', { count: 'exact', head: true })
+        .eq('entity_type', 'venue')
+        .is('image_assets.width', null)
+      : await supabase
+        .from('image_assets')
+        .select('id', { count: 'exact', head: true })
+        .eq('status', 'active')
+        .eq('optimization_status', 'pending')
 
     let mirrored = 0
     let cdnMarked = 0
