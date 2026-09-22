@@ -30,6 +30,10 @@ const REVIEW_SCOPE_SQL = readFileSync(
   join(process.cwd(), 'supabase/migrations/99991790054010_venue_review_queue_live_scope.sql'),
   'utf8',
 );
+const SOURCE_BLOCKER_SQL = readFileSync(
+  join(process.cwd(), 'supabase/migrations/99991790054020_venue_source_blocker_review.sql'),
+  'utf8',
+);
 
 describe('venue quality tiered catalog migration', () => {
   it('starts in shadow mode and keeps hard blockers separate from the score', () => {
@@ -138,5 +142,14 @@ describe('venue quality tiered catalog migration', () => {
     expect(REVIEW_SCOPE_SQL).toContain("v.review_status = 'archived'");
     expect(REVIEW_SCOPE_SQL).toContain("'non_live_venue_removed_from_queue'");
     expect(REVIEW_SCOPE_SQL).toContain("'venue_link_candidate'");
+  });
+
+  it('routes irreducible live source blockers to evidence review', () => {
+    expect(SOURCE_BLOCKER_SQL).toContain("'venue_source_evidence'");
+    expect(SOURCE_BLOCKER_SQL).toContain("array['no_source']::text[]");
+    expect(SOURCE_BLOCKER_SQL).toContain('v.duplicate_of_id is null');
+    expect(SOURCE_BLOCKER_SQL).toContain('v.closed_at is null');
+    expect(SOURCE_BLOCKER_SQL).toContain("v.review_status is distinct from 'archived'");
+    expect(SOURCE_BLOCKER_SQL).toContain("'source_observation_required'");
   });
 });
