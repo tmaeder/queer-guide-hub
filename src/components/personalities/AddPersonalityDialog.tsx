@@ -478,7 +478,7 @@ export function AddPersonalityDialog({ onSuccess }: AddPersonalityDialogProps) {
         </Button>
       </DialogTrigger>
 
-      <DialogContent>
+      <DialogContent className="max-h-[calc(100dvh-2rem)] max-w-4xl overflow-y-auto overscroll-contain">
         <DialogHeader>
           <DialogTitle>Add New Personality</DialogTitle>
         </DialogHeader>
