@@ -61,6 +61,10 @@ const QUEUE_CLOSEOUT_SQL = readFileSync(
   join(process.cwd(), 'supabase/migrations/99991790072040_venue_quality_queue_closeout.sql'),
   'utf8',
 );
+const EVENT_RECONCILE_SQL = readFileSync(
+  join(process.cwd(), 'supabase/migrations/99991790072050_event_venue_review_reconciliation.sql'),
+  'utf8',
+);
 
 describe('venue quality tiered catalog migration', () => {
   it('starts in shadow mode and keeps hard blockers separate from the score', () => {
@@ -228,5 +232,14 @@ describe('venue quality tiered catalog migration', () => {
     expect(QUEUE_CLOSEOUT_SQL).toContain("'event_no_longer_actionable'");
     expect(QUEUE_CLOSEOUT_SQL).toContain("schedule = '17 * * * *'");
     expect(QUEUE_CLOSEOUT_SQL).not.toMatch(/verified\s*=\s*true/i);
+  });
+
+  it('keeps every upcoming named event linked or explicitly reviewable', () => {
+    expect(EVENT_RECONCILE_SQL).toContain('reconcile_event_venue_link_reviews');
+    expect(EVENT_RECONCILE_SQL).toContain('uq_event_venue_link_review_pending');
+    expect(EVENT_RECONCILE_SQL).toContain("'no_precision_match'");
+    expect(EVENT_RECONCILE_SQL).toContain("'unaccounted', v_unaccounted");
+    expect(EVENT_RECONCILE_SQL).toContain("schedule = '25 * * * *'");
+    expect(EVENT_RECONCILE_SQL).toContain('upcoming named event is neither linked nor reviewable');
   });
 });
