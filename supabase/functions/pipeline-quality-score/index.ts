@@ -4,6 +4,7 @@ import { withErrorReporting } from '../_shared/report-api-error.ts'
 import { gateImages } from '../_shared/image-gate.ts'
 import { resolveStagingContentType, type ContentType } from '../_shared/content-registry.ts'
 import { QUALITY_SCORE_ROW_FILTER, mayAdvanceEnrichmentStatus } from '../_shared/quality-score-gating.ts'
+import { personalityQualityDimensions } from '../_shared/personality-quality.ts'
 
 /** Content types that carry a photo `images[]` array worth gating before commit
  *  (was the IMAGE_GATED_TYPES + IMAGE_GATED_TABLES string sets). */
@@ -71,8 +72,11 @@ Deno.serve(withErrorReporting('pipeline-quality-score', async (req) => {
       }
 
       const rubric = cfg?.qualityRubric ?? 'generic'
+      const personalityDimensions = rubric === 'personality'
+        ? personalityQualityDimensions({ ...normalized, ...((item.enriched_data ?? {}) as Record<string, unknown>) })
+        : null
       const score = rubric === 'personality'
-        ? computePersonalityScore(normalized)
+        ? personalityDimensions!.score
         : rubric === 'marketplace'
           ? scoreMarketplaceQuality(normalized)
           : rubric === 'news'
@@ -91,6 +95,9 @@ Deno.serve(withErrorReporting('pipeline-quality-score', async (req) => {
             enriched_data: {
               ...(item.enriched_data as Record<string, unknown> || {}),
               quality_score: score,
+              ...(personalityDimensions
+                ? { quality_score_version: 2, quality_dimensions: personalityDimensions }
+                : {}),
               ...(imageGate ? { image_gate: { dropped: imageGate.dropped, kept: imageGate.kept.length } } : {}),
             },
             // Persist the filtered image array so the commit RPC (which reads
@@ -215,23 +222,4 @@ function computeScore(data: Record<string, unknown>): number {
   }
 
   return Math.min(score, max)
-}
-
-/** Personality rubric: image 15, description 20, lgbti_connection 20, birth_date 10, profession 10, nationality 10, wikidata_qid 15. */
-function computePersonalityScore(data: Record<string, unknown>): number {
-  let score = 0
-  const name = String(data.name || '')
-  if (name.length >= 2) score += 5
-  if (String(data.image_url || '')) score += 15
-  const desc = String(data.description || data.bio || '')
-  if (desc.length > 0) score += 10
-  if (desc.length > 80) score += 10
-  if (String(data.lgbti_connection || '')) score += 20
-  if (data.birth_date) score += 10
-  if (String(data.profession || '')) score += 10
-  if (String(data.nationality || '')) score += 10
-  if (String(data.wikidata_qid || '')) score += 15
-  const fields = data.fields as unknown[] | undefined
-  if (fields && fields.length > 0) score += 5
-  return Math.min(score, 100)
 }

@@ -1,5 +1,11 @@
-import { getServiceClient, getCorsHeaders, corsResponse } from '../_shared/supabase-client.ts'
+import {
+  getServiceClient,
+  getCorsHeaders,
+  corsResponse,
+  requireInternalOrAdmin,
+} from '../_shared/supabase-client.ts'
 import { consumeLlmBudget } from '../_shared/llm-budget.ts'
+import { marketplaceDescriptionFromRaw } from '../_shared/marketplace-description.ts'
 
 // ============================================================
 // marketplace-description-enhance — translate + clean poor marketplace
@@ -24,7 +30,7 @@ import { consumeLlmBudget } from '../_shared/llm-budget.ts'
 const json = (b: unknown, s = 200) => new Response(JSON.stringify(b), { status: s, headers: { ...getCorsHeaders(), 'Content-Type': 'application/json' } })
 const client = () => getServiceClient()
 
-const SYSTEM_PROMPT = `You rewrite e-commerce product descriptions for the queer.guide marketplace. Given a product title and its source description (often German), return ONE concise, factual ENGLISH paragraph (40-480 characters) describing what the product IS and its key real features. RULES: translate to natural English if not English; REMOVE size charts, care/washing instructions, shipping/returns/payment, material composition tables, SKU/article numbers, store policy, and marketing slop (discover, curated, elevate, premium experience, must-have); keep adult/fetish wording factual, plain, neutral; do NOT invent sizes, materials, measurements, brands, or claims not in the source; if already clean English just tighten it. Return ONLY minified JSON, no markdown: {"description":"...","source_lang":"de|en|fr|other"}`
+const SYSTEM_PROMPT = `You rewrite e-commerce product descriptions for the queer.guide marketplace. Given a product title and its source description (often German), return ONE concise, factual ENGLISH paragraph (40-600 characters) describing what the product IS and its key real features. RULES: translate to natural English if not English; remove duplicated specifications, shipping/returns/payment, SKU/article numbers, store policy, and marketing slop (discover, curated, elevate, premium experience, must-have); PRESERVE factual measurements, materials, care instructions, and safety information; keep adult/fetish wording factual, plain, neutral; do NOT invent sizes, materials, measurements, brands, or claims not in the source; if already clean English just tighten it. Return ONLY minified JSON, no markdown: {"description":"...","source_lang":"de|en|fr|other"}`
 
 function coerce(x: unknown): string {
   if (typeof x === 'string') return x
@@ -77,6 +83,8 @@ async function enhance(title: string, source: string, modelOverride?: string): P
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return corsResponse(req)
   const supabase = client()
+  const auth = await requireInternalOrAdmin(req, supabase)
+  if (auth instanceof Response) return auth
   try {
     const body = await req.json().catch(() => ({}))
     // A merchant_domain in the body scopes a manual run; the cron passes none
@@ -104,8 +112,56 @@ Deno.serve(async (req) => {
       if (res.error) return json({ success: false, error: res.error.message }, 500)
       rows = res.data
     }
-    const pending = (rows || []).filter((r) => { const i18n = (r.description_i18n ?? {}) as Record<string, unknown>; return !i18n._enhanced_at && String(r.description ?? '').trim().length > 20 }).slice(0, batchSize)
-    if (pending.length === 0) return json({ success: true, items: 0, message: 'nothing to enhance' })
+    const missing = (rows || []).filter((r) => String(r.description ?? '').trim().length <= 20)
+    const recoveredIds = new Set<string>()
+    let recovered = 0, recoveryMisses = 0
+    if (missing.length) {
+      const { data: sourceRows, error: sourceError } = await supabase
+        .from('marketplace_listing_sources')
+        .select('listing_id, source_slug, raw')
+        .in('listing_id', missing.map((r) => r.id))
+        .order('is_primary', { ascending: false })
+      if (sourceError) return json({ success: false, error: sourceError.message, items_examined: missing.length, items_changed: 0, items_terminal: 0, items_failed: missing.length }, 500)
+      const byListing = new Map<string, Array<{ source_slug: string; raw: Record<string, unknown> }>>()
+      for (const source of sourceRows ?? []) {
+        const current = byListing.get(source.listing_id) ?? []
+        current.push({ source_slug: source.source_slug, raw: (source.raw ?? {}) as Record<string, unknown> })
+        byListing.set(source.listing_id, current)
+      }
+      for (const row of missing) {
+        const sources = byListing.get(row.id) ?? []
+        const found = sources.map((source) => ({ source, text: marketplaceDescriptionFromRaw(source.raw) })).find((x) => x.text)
+        const i18n = { ...((row.description_i18n ?? {}) as Record<string, unknown>) }
+        if (!found?.text) {
+          recoveryMisses++
+          if (!dryRun) {
+            i18n._recovery_checked_at = new Date().toISOString()
+            i18n._recovery_version = 'source-payload-v1'
+            await supabase.from('marketplace_listings').update({ description_i18n: i18n }).eq('id', row.id)
+          }
+          continue
+        }
+        recovered++
+        recoveredIds.add(row.id)
+        if (!dryRun) {
+          i18n._recovered_at = new Date().toISOString()
+          i18n._recovered_from = found.source.source_slug
+          i18n._recovery_version = 'source-payload-v1'
+          i18n._original = found.text
+          await supabase.from('marketplace_listings').update({
+            description: found.text.slice(0, 1200),
+            description_i18n: i18n,
+            updated_at: new Date().toISOString(),
+          }).eq('id', row.id)
+        }
+      }
+    }
+
+    const pending = (rows || []).filter((r) => {
+      const i18n = (r.description_i18n ?? {}) as Record<string, unknown>
+      return !recoveredIds.has(r.id) && !i18n._enhanced_at && String(r.description ?? '').trim().length > 20
+    }).slice(0, batchSize)
+    if (pending.length === 0) return json({ success: true, items: recovered, items_examined: (rows || []).length, items_changed: recovered, items_terminal: recovered + recoveryMisses, items_failed: 0, recovered, recovery_misses: recoveryMisses, message: 'source recovery complete' })
     // Central daily cap (llm_budget, seeded 500/day — migration 20260817090000):
     // this fn previously ran the */5 cron with NO cap. One consume for the whole
     // batch (one LLM call per pending row). If the RPC is missing (fn deployed
@@ -113,7 +169,25 @@ Deno.serve(async (req) => {
     // before.
     const budget = await consumeLlmBudget(supabase, 'marketplace-description-enhance', pending.length)
     if (!budget.allowed) {
-      return json({ success: true, items: 0, skipped: pending.length, message: 'llm_budget_exhausted', daily_cap: budget.cap, merchant_domain: merchantDomain, dry_run: dryRun })
+      return json({
+        success: true,
+        items: recovered,
+        items_examined: (rows || []).length,
+        items_changed: recovered,
+        // The queue claim is terminal for this dispatch even though inference
+        // is deferred to a later UTC budget window. Refill makes the rows
+        // eligible again; this avoids treating an intentional spend ceiling as
+        // a broken worker and auto-pausing it for the following day.
+        items_terminal: (rows || []).length,
+        items_failed: 0,
+        skipped: pending.length,
+        recovered,
+        recovery_misses: recoveryMisses,
+        message: 'llm_budget_deferred',
+        daily_cap: budget.cap,
+        merchant_domain: merchantDomain,
+        dry_run: dryRun,
+      })
     }
     let done = 0, skipped = 0, failed = 0, firstErr: string | null = null
     for (const row of pending) {
@@ -131,6 +205,6 @@ Deno.serve(async (req) => {
         await new Promise((res) => setTimeout(res, 150))
       } catch (err) { if (!firstErr) firstErr = (err as Error).message; failed++ }
     }
-    return json({ success: true, items: done, items_processed: done + skipped + failed, items_succeeded: done, items_skipped: skipped, items_failed: failed, first_error: firstErr, merchant_domain: merchantDomain, dry_run: dryRun })
+    return json({ success: failed === 0, items: done + recovered, items_examined: (rows || []).length, items_changed: done + recovered, items_terminal: done + recovered + recoveryMisses + skipped, items_processed: done + skipped + failed + recovered + recoveryMisses, items_succeeded: done + recovered, items_skipped: skipped, items_failed: failed, recovered, recovery_misses: recoveryMisses, generator_version: 'marketplace-description-v2', first_error: firstErr, merchant_domain: merchantDomain, dry_run: dryRun })
   } catch (error) { return json({ success: false, error: (error as Error).message }, 500) }
 })

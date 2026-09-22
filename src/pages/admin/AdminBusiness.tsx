@@ -53,6 +53,9 @@ const ROLE_FILTERS = [
   'brand',
   'publisher',
   'support',
+  'advocacy',
+  'community',
+  'organizer',
 ];
 
 const TABS = ['directory', 'hotels', 'merchants', 'brands', 'partners'] as const;

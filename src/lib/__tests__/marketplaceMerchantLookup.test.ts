@@ -95,7 +95,11 @@ describe('marketplace commit resolves merchants, not affiliate partners', () => 
   });
 
   it('postconditions assert the reached state, including a non-vacuous agreement count', () => {
-    const { sql } = latestMigrationContaining('marketplace_resolve_merchant_id');
+    // Later operational migrations legitimately call the resolver without
+    // repeating the original one-time postcondition block. Select that block
+    // by its invariant marker instead of whichever migration mentions the
+    // resolver most recently.
+    const { sql } = latestMigrationContaining('expected marketplace_merchants');
     const body = stripComments(sql);
 
     expect(body).toContain('expected marketplace_merchants');
