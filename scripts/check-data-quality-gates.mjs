@@ -71,6 +71,38 @@ for (const r of rows.sort((a, b) => a.severity.localeCompare(b.severity) || a.ga
   }
 }
 
+// Personality v2 gates live separately so the existing release_gate_checks()
+// contract can remain stable for older deployments. PGRST202 means the branch
+// is being checked before its migration has reached the target database; warn
+// during that rollout window, but every other RPC failure remains fatal.
+const personalityRes = await fetch(`${BASE}/rest/v1/rpc/personality_quality_gate_checks`, {
+  method: 'POST',
+  headers: { apikey: KEY, Authorization: `Bearer ${KEY}`, 'Content-Type': 'application/json' },
+  body: '{}',
+})
+if (!personalityRes.ok) {
+  const body = await personalityRes.text()
+  if (personalityRes.status === 404 && body.includes('PGRST202')) {
+    console.warn('⚠ personality_quality_gate_checks is not deployed yet — rollout window')
+  } else {
+    console.error(`personality_quality_gate_checks → HTTP ${personalityRes.status}: ${body}`)
+    process.exit(1)
+  }
+} else {
+  const personalityRows = await personalityRes.json()
+  for (const r of personalityRows.sort((a, b) => a.severity.localeCompare(b.severity) || a.gate.localeCompare(b.gate))) {
+    const n = Number(r.failures)
+    const detail = r.detail && Object.keys(r.detail).length ? ` ${JSON.stringify(r.detail)}` : ''
+    if (n === 0) console.log(`✓ [${r.severity}] ${r.gate}: 0`)
+    else if (r.severity === 'critical') {
+      blocking += n
+      console.error(`✗ [critical] ${r.gate}: ${n}${detail}`)
+    } else {
+      console.warn(`⚠ [${r.severity}] ${r.gate}: ${n}${detail}`)
+    }
+  }
+}
+
 if (blocking > 0) {
   console.error(`\n✗ ${blocking} critical data-quality failure(s) — blocking.`)
   process.exit(1)

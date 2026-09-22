@@ -4,12 +4,14 @@
 // cost). Any decode/fetch failure is skipped, never fatal. Gated by
 // requireInternalOrAdmin (internal-secret / service-role / admin).
 import { getServiceClient, corsResponse, jsonResponse, errorResponse, requireInternalOrAdmin } from '../_shared/supabase-client.ts'
+import { readImageDimensions } from '../_shared/image-dimensions.ts'
 import { Image } from 'https://deno.land/x/imagescript@1.2.15/mod.ts'
 
 // Tight cap: imagescript decodes the FULL image into a bitmap (w*h*4 bytes), and
 // the edge isolate OOMs (546 WORKER_RESOURCE_LIMIT) after only a handful of large
 // decodes. Skip anything above this; large images are marked checked, not retried.
 const MAX_BYTES = 1_500_000
+const MAX_PIXELS = 6_000_000
 
 async function averageHashHex(bytes: Uint8Array): Promise<string | null> {
   try {
@@ -44,18 +46,18 @@ Deno.serve(async (req) => {
   const _auth = await requireInternalOrAdmin(req, supabase)
   if (_auth instanceof Response) return _auth
   try {
-    const body = await req.json().catch(() => ({}))
     // Small batches only — bounded by the isolate memory limit (see MAX_BYTES).
-    const limit = Math.min(Math.max(Number(body.limit) || 6, 1), 20)
-    // Only rows never attempted (phash_checked_at IS NULL) so the sweep advances
-    // instead of re-selecting the same dead-URL cluster forever.
-    const { data: rows, error } = await supabase
-      .from('image_assets')
-      .select('id, url, optimized_url')
-      .is('phash', null)
-      .is('phash_checked_at', null)
-      .eq('status', 'active')
-      .limit(limit)
+    // ImageScript retains sizeable decode buffers inside the isolate. One image
+    // per invocation keeps memory bounded even when the source is near the
+    // pixel ceiling; cron supplies the throughput.
+    const limit = 1
+    // This worker is intentionally scoped to venue-linked assets. The venue
+    // backlog is finite and the hourly cron keeps newly linked assets covered;
+    // silently spilling into the global DAM queue would keep this automation
+    // running indefinitely and spend edge capacity outside its stated scope.
+    const { data: rows, error } = await supabase.rpc('venue_image_assets_due_phash', {
+      p_limit: limit,
+    })
     if (error) return errorResponse(error.message, 500, req)
 
     const now = new Date().toISOString()
@@ -80,6 +82,12 @@ Deno.serve(async (req) => {
         if (clen > MAX_BYTES) { await markChecked(id); skipped++; continue }
         const buf = new Uint8Array(await res.arrayBuffer())
         if (buf.byteLength === 0 || buf.byteLength > MAX_BYTES) { await markChecked(id); skipped++; continue }
+        const dimensions = readImageDimensions(buf)
+        if (!dimensions || dimensions.width * dimensions.height > MAX_PIXELS) {
+          await markChecked(id)
+          skipped++
+          continue
+        }
         const hash = await averageHashHex(buf)
         if (!hash) { await markChecked(id); skipped++; continue }
         await markChecked(id, { phash: hash })

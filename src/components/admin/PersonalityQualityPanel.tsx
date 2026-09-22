@@ -12,7 +12,20 @@ import { AdminStat } from '@/components/admin/primitives/AdminStat';
 export function PersonalityQualityPanel() {
   const { data } = usePersonalityQualitySummary();
   if (!data) return null;
-  const { gaps, publicCount, needsAttention, reviewOpen, lowCompleteness, promotable, adultConsentCandidates } = data;
+  const {
+    gaps,
+    publicCount,
+    needsAttention,
+    reviewOpen,
+    lowCompleteness,
+    promotable,
+    adultConsentCandidates,
+    unsupportedPublicClaims,
+    invalidPublicImages,
+    pendingWithoutQueue,
+    openTagReviews,
+    cohorts,
+  } = data;
 
   return (
     <Card className="mb-6">
@@ -30,7 +43,36 @@ export function PersonalityQualityPanel() {
           <AdminStat label="Pending review" value={reviewOpen} hardFail={reviewOpen > 0} />
           <AdminStat label="Needs review" value={needsAttention} />
           <AdminStat label="Low completeness" value={lowCompleteness} />
+          <AdminStat
+            label="Unsupported public claims"
+            value={unsupportedPublicClaims}
+            hardFail={unsupportedPublicClaims > 0}
+          />
+          <AdminStat
+            label="Invalid public images"
+            value={invalidPublicImages}
+            hardFail={invalidPublicImages > 0}
+          />
+          <AdminStat
+            label="Pending without queue"
+            value={pendingWithoutQueue}
+            hardFail={pendingWithoutQueue > 0}
+          />
+          <AdminStat label="Open tag reviews" value={openTagReviews} />
         </div>
+
+        {cohorts.length > 0 && (
+          <div>
+            <div className="mb-2 text-13 text-muted-foreground">Quality by cohort</div>
+            <div className="flex flex-wrap gap-2">
+              {cohorts.map((cohort) => (
+                <Badge key={cohort.cohort} variant="outline" className="font-normal">
+                  {cohort.cohort} · {cohort.average_quality} avg · {cohort.hard_gate_failures} gated
+                </Badge>
+              ))}
+            </div>
+          </div>
+        )}
 
         {gaps.length > 0 && (
           <div>
@@ -40,7 +82,12 @@ export function PersonalityQualityPanel() {
             </div>
             <div className="flex flex-wrap gap-2">
               {gaps.map((g) => (
-                <Badge key={g.personality_id} variant="outline" className="font-normal" title={(g.missing_fields ?? []).join(', ')}>
+                <Badge
+                  key={g.personality_id}
+                  variant="outline"
+                  className="font-normal"
+                  title={(g.missing_fields ?? []).join(', ')}
+                >
                   {g.personality_name ?? 'Unknown'} · {g.gap_score}
                 </Badge>
               ))}

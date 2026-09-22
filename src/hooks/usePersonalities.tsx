@@ -23,6 +23,7 @@ export interface Personality {
   fields: string[];
   achievements: string[];
   image_url?: string;
+  image_status?: 'pending' | 'available' | 'unavailable' | 'rejected' | 'needs_review';
   social_links: Record<string, unknown>;
   website_url?: string;
   nationality?: string;
@@ -36,6 +37,10 @@ export interface Personality {
   updated_at: string;
   view_count: number;
   is_featured: boolean;
+  wikidata_status?: 'resolved' | 'not_found' | 'not_applicable' | 'needs_review';
+  quality_score_version?: number;
+  quality_dimensions?: Record<string, unknown>;
+  quality_evaluated_at?: string;
 }
 
 export type PersonalitySort = 'featured' | 'az' | 'za' | 'popular' | 'newest';
@@ -67,15 +72,25 @@ function transformRow(row: PersonalityRow): Personality {
     bio: row.bio || undefined,
     birth_date: row.birth_date || undefined,
     death_date: row.death_date || undefined,
-    death_place: (row as Record<string, unknown>).death_place as string || undefined,
-    cause_of_death: (row as Record<string, unknown>).cause_of_death as string || undefined,
+    death_place: ((row as Record<string, unknown>).death_place as string) || undefined,
+    cause_of_death: ((row as Record<string, unknown>).cause_of_death as string) || undefined,
     profession: row.profession || undefined,
     image_url: row.image_url || undefined,
+    image_status:
+      ((row as Record<string, unknown>).image_status as Personality['image_status']) || 'pending',
     website_url: row.website_url || undefined,
     nationality: row.nationality || undefined,
     birth_place: row.birth_place || undefined,
     created_by: row.created_by || undefined,
-    slug: (row as Record<string, unknown>).slug as string || undefined,
+    slug: ((row as Record<string, unknown>).slug as string) || undefined,
+    wikidata_status: (row as Record<string, unknown>)
+      .wikidata_status as Personality['wikidata_status'],
+    quality_score_version: (row as Record<string, unknown>).quality_score_version as
+      number | undefined,
+    quality_dimensions: (row as Record<string, unknown>).quality_dimensions as
+      Record<string, unknown> | undefined,
+    quality_evaluated_at: (row as Record<string, unknown>).quality_evaluated_at as
+      string | undefined,
     fields: Array.isArray(row.fields) ? (row.fields as string[]) : [],
     achievements: Array.isArray(row.achievements) ? (row.achievements as string[]) : [],
     social_links: (row.social_links as Record<string, unknown>) || {},
@@ -135,7 +150,11 @@ function applyFilters(query: ReturnType<typeof supabase.from>, filters?: Persona
     const v = filters.name_starts_with.toUpperCase();
     if (v === '#') {
       // Anything whose first unaccented character isn't A-Z (digits, symbols, CJK, etc.)
-      query = query.filter('name_initial', 'not.in', '(A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z)');
+      query = query.filter(
+        'name_initial',
+        'not.in',
+        '(A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z)',
+      );
     } else if (v.length === 1 && v >= 'A' && v <= 'Z') {
       query = query.eq('name_initial', v);
     }
@@ -153,13 +172,9 @@ function applySort(query: ReturnType<typeof supabase.from>, sortBy: PersonalityS
     case 'za':
       return query.order('name', { ascending: false }).order('id', { ascending: true });
     case 'popular':
-      return query
-        .order('view_count', { ascending: false })
-        .order('id', { ascending: true });
+      return query.order('view_count', { ascending: false }).order('id', { ascending: true });
     case 'newest':
-      return query
-        .order('created_at', { ascending: false })
-        .order('id', { ascending: true });
+      return query.order('created_at', { ascending: false }).order('id', { ascending: true });
     case 'featured':
     default:
       return query
@@ -268,7 +283,11 @@ export function usePersonalities(autoFetch: boolean = true) {
         return;
       }
 
-      const result = data as { staging_id?: string; pipeline_run_id?: string | null; inserted?: boolean };
+      const result = data as {
+        staging_id?: string;
+        pipeline_run_id?: string | null;
+        inserted?: boolean;
+      };
       toast({
         title: 'Queued for review',
         description: result.pipeline_run_id
@@ -322,7 +341,6 @@ export function usePersonalities(autoFetch: boolean = true) {
       // eslint-disable-next-line react-hooks/set-state-in-effect -- effect synchronizes state with external props/data; React Compiler can't infer the sync direction. Documented exemption from the eslint.config.js staged-ratchet plan.
       fetchPersonalities();
     }
-     
   }, [autoFetch]);
 
   return {

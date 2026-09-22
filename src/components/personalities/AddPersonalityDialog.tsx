@@ -478,7 +478,7 @@ export function AddPersonalityDialog({ onSuccess }: AddPersonalityDialogProps) {
         </Button>
       </DialogTrigger>
 
-      <DialogContent>
+      <DialogContent className="max-h-[calc(100dvh-2rem)] max-w-4xl overflow-y-auto overscroll-contain">
         <DialogHeader>
           <DialogTitle>Add New Personality</DialogTitle>
         </DialogHeader>
@@ -512,7 +512,7 @@ export function AddPersonalityDialog({ onSuccess }: AddPersonalityDialogProps) {
           </CardContent>
         </Card>
 
-        <form onSubmit={handleSubmit} className="flex flex-col gap-6">
+        <form noValidate onSubmit={handleSubmit} className="flex flex-col gap-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Basic Information */}
             <Card>
