@@ -18,6 +18,7 @@ export const ORG_ROLE_LABELS: Record<string, string> = {
   brand: 'Brand',
   publisher: 'Publisher',
   support: 'Support',
+  advocacy: 'Advocacy',
   organizer: 'Organizer',
   community: 'Community',
 };
@@ -44,7 +45,9 @@ export function useAdminOrgList(filters: OrgListFilters) {
         .limit(200);
       if (q && q.trim()) {
         const term = q.trim().replace(/[%_]/g, '');
-        query = query.or(`name.ilike.%${term}%,website_domain.ilike.%${term}%,slug.ilike.%${term}%`);
+        query = query.or(
+          `name.ilike.%${term}%,website_domain.ilike.%${term}%,slug.ilike.%${term}%`,
+        );
       }
       if (role) query = query.contains('roles', [role]);
       if (claimStatus) query = query.eq('claim_status', claimStatus);
@@ -86,15 +89,41 @@ export function useOrgLinkedEntities(orgId: string | undefined) {
     enabled: Boolean(orgId),
     queryFn: async () => {
       const [venues, hotels, merchants, partners, brands, sources] = await Promise.all([
-        supabase.from('venues').select('id,name,city,slug').eq('organization_id', orgId!).is('duplicate_of_id', null).limit(100),
-        supabase.from('hotels').select('id,name,city,hotel_type').eq('organization_id', orgId!).limit(100),
-        supabase.from('marketplace_merchants').select('id,display_name,provider,shop_domain').eq('organization_id', orgId!).limit(100),
-        supabase.from('affiliate_partners').select('id,partner_name,vertical,enabled').eq('organization_id', orgId!).limit(100),
-        supabase.from('marketplace_brands').select('id,display_name,brand_key,status').eq('organization_id', orgId!).limit(100),
+        supabase
+          .from('venues')
+          .select('id,name,city,slug')
+          .eq('organization_id', orgId!)
+          .is('duplicate_of_id', null)
+          .limit(100),
+        supabase
+          .from('hotels')
+          .select('id,name,city,hotel_type')
+          .eq('organization_id', orgId!)
+          .limit(100),
+        supabase
+          .from('marketplace_merchants')
+          .select('id,display_name,provider,shop_domain')
+          .eq('organization_id', orgId!)
+          .limit(100),
+        supabase
+          .from('affiliate_partners')
+          .select('id,partner_name,vertical,enabled')
+          .eq('organization_id', orgId!)
+          .limit(100),
+        supabase
+          .from('marketplace_brands')
+          .select('id,display_name,brand_key,status')
+          .eq('organization_id', orgId!)
+          .limit(100),
         supabase.from('news_sources').select('id,name').eq('organization_id', orgId!).limit(100),
       ]);
       const err =
-        venues.error ?? hotels.error ?? merchants.error ?? partners.error ?? brands.error ?? sources.error;
+        venues.error ??
+        hotels.error ??
+        merchants.error ??
+        partners.error ??
+        brands.error ??
+        sources.error;
       if (err) throw new Error(err.message);
       const map = (rows: LinkedEntityRow[]): LinkedEntityRow[] => rows;
       return {
@@ -139,7 +168,12 @@ export function useOrgLinkedEntities(orgId: string | undefined) {
           })),
         ),
         news_source: map(
-          (sources.data ?? []).map((s) => ({ id: s.id, name: s.name, detail: null, editHref: null })),
+          (sources.data ?? []).map((s) => ({
+            id: s.id,
+            name: s.name,
+            detail: null,
+            editHref: null,
+          })),
         ),
       };
     },
@@ -155,39 +189,79 @@ export function useOrgLinkCandidates(type: OrgEntityType, q: string, enabled: bo
       const term = `%${q.trim().replace(/[%_]/g, '')}%`;
       if (type === 'venue') {
         const { data, error } = await supabase
-          .from('venues').select('id,name,city')
-          .is('organization_id', null).is('duplicate_of_id', null)
-          .ilike('name', term).limit(10);
+          .from('venues')
+          .select('id,name,city')
+          .is('organization_id', null)
+          .is('duplicate_of_id', null)
+          .ilike('name', term)
+          .limit(10);
         if (error) throw new Error(error.message);
-        return (data ?? []).map((r) => ({ id: r.id, name: r.name, detail: r.city, editHref: null }));
+        return (data ?? []).map((r) => ({
+          id: r.id,
+          name: r.name,
+          detail: r.city,
+          editHref: null,
+        }));
       }
       if (type === 'hotel') {
         const { data, error } = await supabase
-          .from('hotels').select('id,name,city')
-          .is('organization_id', null).is('duplicate_of_id', null)
-          .ilike('name', term).limit(10);
+          .from('hotels')
+          .select('id,name,city')
+          .is('organization_id', null)
+          .is('duplicate_of_id', null)
+          .ilike('name', term)
+          .limit(10);
         if (error) throw new Error(error.message);
-        return (data ?? []).map((r) => ({ id: r.id, name: r.name, detail: r.city, editHref: null }));
+        return (data ?? []).map((r) => ({
+          id: r.id,
+          name: r.name,
+          detail: r.city,
+          editHref: null,
+        }));
       }
       if (type === 'merchant') {
         const { data, error } = await supabase
-          .from('marketplace_merchants').select('id,display_name,shop_domain')
-          .is('organization_id', null).ilike('display_name', term).limit(10);
+          .from('marketplace_merchants')
+          .select('id,display_name,shop_domain')
+          .is('organization_id', null)
+          .ilike('display_name', term)
+          .limit(10);
         if (error) throw new Error(error.message);
-        return (data ?? []).map((r) => ({ id: r.id, name: r.display_name, detail: r.shop_domain, editHref: null }));
+        return (data ?? []).map((r) => ({
+          id: r.id,
+          name: r.display_name,
+          detail: r.shop_domain,
+          editHref: null,
+        }));
       }
       if (type === 'affiliate_partner') {
         const { data, error } = await supabase
-          .from('affiliate_partners').select('id,partner_name,vertical')
-          .is('organization_id', null).ilike('partner_name', term).limit(10);
+          .from('affiliate_partners')
+          .select('id,partner_name,vertical')
+          .is('organization_id', null)
+          .ilike('partner_name', term)
+          .limit(10);
         if (error) throw new Error(error.message);
-        return (data ?? []).map((r) => ({ id: r.id, name: r.partner_name, detail: r.vertical, editHref: null }));
+        return (data ?? []).map((r) => ({
+          id: r.id,
+          name: r.partner_name,
+          detail: r.vertical,
+          editHref: null,
+        }));
       }
       const { data, error } = await supabase
-        .from('marketplace_brands').select('id,display_name,brand_key')
-        .is('organization_id', null).ilike('display_name', term).limit(10);
+        .from('marketplace_brands')
+        .select('id,display_name,brand_key')
+        .is('organization_id', null)
+        .ilike('display_name', term)
+        .limit(10);
       if (error) throw new Error(error.message);
-      return (data ?? []).map((r) => ({ id: r.id, name: r.display_name, detail: r.brand_key, editHref: null }));
+      return (data ?? []).map((r) => ({
+        id: r.id,
+        name: r.display_name,
+        detail: r.brand_key,
+        editHref: null,
+      }));
     },
   });
 }
@@ -204,7 +278,11 @@ function invalidateOrg(qc: ReturnType<typeof useQueryClient>, orgId?: string) {
 export function useLinkOrgEntity(orgId: string) {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async (args: { entityType: OrgEntityType | 'news_source'; entityId: string; unlink?: boolean }) => {
+    mutationFn: async (args: {
+      entityType: OrgEntityType | 'news_source';
+      entityId: string;
+      unlink?: boolean;
+    }) => {
       const fn = args.unlink ? 'unlink_organization_entity' : 'link_organization_entity';
       const { error } = await untypedRpc(fn, {
         p_org_id: orgId,
@@ -295,6 +373,116 @@ export function useOrgSpineDrift() {
       const { data, error } = await untypedRpc<OrgSpineDrift>('org_spine_drift_counts');
       if (error) throw new Error(error.message);
       return data;
+    },
+  });
+}
+
+export type QualityFindingState =
+  'pass' | 'fail' | 'pending' | 'not_applicable' | 'source_unavailable';
+export type BusinessBrandEntityType = 'organization' | 'marketplace_brand';
+
+export interface BusinessBrandQualityFinding {
+  id: number;
+  entity_type: BusinessBrandEntityType;
+  entity_id: string;
+  entity_name: string;
+  dimension: string;
+  state: QualityFindingState;
+  reason_code: string;
+  evidence: Record<string, unknown>;
+  checked_at: string;
+  waived_at: string | null;
+  waiver_note: string | null;
+}
+
+export interface BusinessBrandQualityStats {
+  latest: {
+    id: number;
+    taken_at: string;
+    stats: {
+      organizations_total?: number;
+      organizations_open?: number;
+      brands_total?: number;
+      brands_open?: number;
+      ownership_needs_review?: number;
+      brand_product_count_drift?: number;
+      roles_link_mismatch?: number;
+      findings_by_state?: Record<string, number>;
+    };
+    by_role: Record<string, number>;
+    by_brand_state: Record<string, number>;
+  } | null;
+  previous: BusinessBrandQualityStats['latest'];
+  open_findings: number;
+  by_dimension: Array<{
+    entity_type: BusinessBrandEntityType;
+    dimension: string;
+    state: QualityFindingState;
+    n: number;
+  }>;
+}
+
+export interface BusinessBrandQualityFilters {
+  entityType?: BusinessBrandEntityType;
+  state?: Extract<QualityFindingState, 'fail' | 'pending'>;
+  dimension?: string;
+  resolution?: 'open' | 'waived';
+}
+
+export function useBusinessBrandQualityStats() {
+  return useQuery({
+    queryKey: ['business-brand-quality-stats'],
+    queryFn: async (): Promise<BusinessBrandQualityStats | null> => {
+      const { data, error } = await untypedRpc<BusinessBrandQualityStats>(
+        'business_brand_quality_stats',
+      );
+      if (error) throw new Error(error.message);
+      return data ?? null;
+    },
+    staleTime: 60_000,
+  });
+}
+
+export function useBusinessBrandQualityFindings(filters: BusinessBrandQualityFilters) {
+  return useQuery({
+    queryKey: [
+      'business-brand-quality-findings',
+      filters.entityType ?? '',
+      filters.state ?? '',
+      filters.dimension ?? '',
+      filters.resolution ?? 'open',
+    ],
+    queryFn: async (): Promise<BusinessBrandQualityFinding[]> => {
+      const { data, error } = await untypedRpc<BusinessBrandQualityFinding[]>(
+        'business_brand_quality_findings',
+        {
+          p_entity_type: filters.entityType ?? null,
+          p_state: filters.state ?? null,
+          p_dimension: filters.dimension ?? null,
+          p_resolution: filters.resolution ?? 'open',
+          p_limit: 200,
+        },
+      );
+      if (error) throw new Error(error.message);
+      return data ?? [];
+    },
+  });
+}
+
+export function useResolveBusinessBrandQualityFindings() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (args: { ids: number[]; action: 'waive' | 'reopen'; note?: string }) => {
+      const { data, error } = await untypedRpc<{ action: string; changed: number }>(
+        'resolve_business_brand_quality_findings',
+        { p_ids: args.ids, p_action: args.action, p_note: args.note ?? null },
+      );
+      if (error) throw new Error(error.message);
+      return data;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['business-brand-quality-findings'] });
+      qc.invalidateQueries({ queryKey: ['business-brand-quality-stats'] });
     },
   });
 }
