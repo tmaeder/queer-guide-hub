@@ -318,7 +318,7 @@ export function useVerifiedOwnedBrands(limit = 24) {
     queryKey: ['marketplace-verified-brands', limit],
     staleTime: 600_000,
     queryFn: async (): Promise<VerifiedBrand[]> => {
-      const { data, error } = await supabase
+      const { data, error } = await untypedSupabase
         .from('marketplace_brands')
         // `not('ownership_tags','is',null)` did NOT filter: the column is
         // non-null on all 2,583 rows and 2,559 of them hold an EMPTY array. So
@@ -335,6 +335,7 @@ export function useVerifiedOwnedBrands(limit = 24) {
           'id, display_name, brand_key, slug, logo_url, logo_on_ink, product_count, ownership_tags',
         )
         .not('ownership_tags', 'eq', '{}')
+        .eq('ownership_review_status', 'verified')
         .order('product_count', { ascending: false, nullsFirst: false })
         .limit(limit);
       if (error) throw error;

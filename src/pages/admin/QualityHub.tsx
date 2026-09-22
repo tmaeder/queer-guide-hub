@@ -23,6 +23,7 @@ import { FreigabeFunnel } from '@/components/admin/FreigabeFunnel';
 import { PersonalityFreigabeQueue } from '@/components/admin/PersonalityFreigabeQueue';
 import { DedupPendingLink } from '@/components/admin/DedupPendingLink';
 import { OrgLinkReviewQueue } from '@/components/admin/business/OrgLinkReviewQueue';
+import { BusinessBrandQualityPanel } from '@/components/admin/business/BusinessBrandQualityPanel';
 import { GeoAddressQualityPanel } from '@/components/admin/GeoAddressQualityPanel';
 import { CategoryCoveragePanel } from '@/components/admin/CategoryCoveragePanel';
 import { VenueReviewQueuePanel } from '@/components/admin/VenueReviewQueuePanel';
@@ -158,7 +159,12 @@ const SECTIONS: EngineSection[] = [
     title: 'Business links — adoption review',
     editRoute: '/admin/business',
     editLabel: 'Open Business console',
-    render: () => <OrgLinkReviewQueue />,
+    render: () => (
+      <>
+        <BusinessBrandQualityPanel />
+        <OrgLinkReviewQueue />
+      </>
+    ),
   },
   {
     /* Cross-type rather than per-entity: state/postal/country share one derive
