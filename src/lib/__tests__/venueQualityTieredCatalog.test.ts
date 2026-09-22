@@ -53,6 +53,10 @@ const IMAGE_OPTIMIZER = readFileSync(
   join(process.cwd(), 'supabase/functions/optimize-images-batch/index.ts'),
   'utf8',
 );
+const DEAD_IMAGE_SQL = readFileSync(
+  join(process.cwd(), 'supabase/migrations/99991790072030_venue_dead_image_quarantine.sql'),
+  'utf8',
+);
 
 describe('venue quality tiered catalog migration', () => {
   it('starts in shadow mode and keeps hard blockers separate from the score', () => {
@@ -207,5 +211,9 @@ describe('venue quality tiered catalog migration', () => {
     expect(IMAGE_METADATA_SQL).not.toMatch(/set\s+(license|alt_text|attribution)\s*=/i);
     expect(IMAGE_OPTIMIZER).toContain("entityType === 'venue'");
     expect(IMAGE_OPTIMIZER).toContain("rpc('venue_claim_image_assets_for_metadata'");
+    expect(IMAGE_OPTIMIZER).toContain("reason === 'http_404'");
+    expect(IMAGE_OPTIMIZER).toContain("flagged_reason: 'source_http_404_after_3_attempts'");
+    expect(DEAD_IMAGE_SQL).toContain("flagged_reason = 'source_http_404_after_3_attempts'");
+    expect(DEAD_IMAGE_SQL).toContain('terminal 404 venue image remained active');
   });
 });

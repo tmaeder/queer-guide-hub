@@ -94,8 +94,18 @@ Deno.serve(async (req) => {
       const existingMetadata = (row.metadata ?? {}) as Record<string, unknown>
       const markFailed = async (reason: string) => {
         const attempts = Number(existingMetadata.optimization_attempts ?? 0) + 1
+        const venueAttempts = Number(existingMetadata.venue_metadata_attempts ?? 0)
+        const quarantineDeadVenueAsset = entityType === 'venue' &&
+          reason === 'http_404' && venueAttempts >= 3
         await supabase.from('image_assets').update({
           optimization_status: 'failed',
+          ...(quarantineDeadVenueAsset
+            ? {
+              status: 'flagged',
+              is_flagged: true,
+              flagged_reason: 'source_http_404_after_3_attempts',
+            }
+            : {}),
           metadata: {
             ...existingMetadata,
             optimization_attempts: attempts,
