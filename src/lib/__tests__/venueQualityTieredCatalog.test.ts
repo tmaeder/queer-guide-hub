@@ -26,6 +26,10 @@ const PHASH_WORKER = readFileSync(
   join(process.cwd(), 'supabase/functions/image-phash-backfill/index.ts'),
   'utf8',
 );
+const REVIEW_SCOPE_SQL = readFileSync(
+  join(process.cwd(), 'supabase/migrations/99991790054010_venue_review_queue_live_scope.sql'),
+  'utf8',
+);
 
 describe('venue quality tiered catalog migration', () => {
   it('starts in shadow mode and keeps hard blockers separate from the score', () => {
@@ -125,5 +129,14 @@ describe('venue quality tiered catalog migration', () => {
   it('keeps perceptual hashing scoped to venue-linked assets after convergence', () => {
     expect(PHASH_WORKER).toContain("rpc('venue_image_assets_due_phash'");
     expect(PHASH_WORKER).not.toContain(".select('id, url, optimized_url')");
+  });
+
+  it('keeps remediation queues limited to live venues and accounts for new events', () => {
+    expect(REVIEW_SCOPE_SQL).toContain("r.review_type = 'venue_missing_country'");
+    expect(REVIEW_SCOPE_SQL).toContain('v.duplicate_of_id is not null');
+    expect(REVIEW_SCOPE_SQL).toContain('v.closed_at is not null');
+    expect(REVIEW_SCOPE_SQL).toContain("v.review_status = 'archived'");
+    expect(REVIEW_SCOPE_SQL).toContain("'non_live_venue_removed_from_queue'");
+    expect(REVIEW_SCOPE_SQL).toContain("'venue_link_candidate'");
   });
 });
