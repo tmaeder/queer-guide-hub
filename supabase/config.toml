@@ -450,6 +450,12 @@ verify_jwt = false
 [functions.marketplace-link-checker]
 verify_jwt = false
 
+[functions.marketplace-taxonomy-classify]
+verify_jwt = false
+
+[functions.marketplace-description-enhance]
+verify_jwt = false
+
 [functions.optimize-images-batch]
 verify_jwt = false
 
