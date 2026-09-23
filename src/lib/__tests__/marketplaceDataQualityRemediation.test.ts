@@ -30,6 +30,13 @@ const inactiveReasonMigration = readFileSync(
   ),
   'utf8',
 );
+const structuredAdultMigration = readFileSync(
+  join(
+    process.cwd(),
+    'supabase/migrations/99991790109521_marketplace_structured_adult_categories.sql',
+  ),
+  'utf8',
+);
 const variantWorker = readFileSync(
   join(process.cwd(), 'supabase/functions/marketplace-variant-backfill/index.ts'),
   'utf8',
@@ -72,6 +79,12 @@ describe('marketplace data-quality remediation contracts', () => {
     expect(inactiveReasonMigration).toContain("NEW.link_health='broken'");
     expect(inactiveReasonMigration).toContain('coalesce(NEW.link_broken_streak,0)>=2');
     expect(inactiveReasonMigration).toContain("THEN 'source_feed_stale'");
+  });
+
+  it('rates explicit structured source categories at ingest time', () => {
+    expect(structuredAdultMigration).toContain("slug ~ '(^|_)(dildos?|ovipositors?)$'");
+    expect(structuredAdultMigration).toContain("'marketplace-content-rating-v4.2'");
+    expect(structuredAdultMigration).toContain('DELETE FROM public.search_documents');
   });
 
   it('requires two confirmed dead-link results and limits concurrency by domain', () => {
