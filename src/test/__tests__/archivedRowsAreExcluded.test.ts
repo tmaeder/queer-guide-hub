@@ -116,14 +116,35 @@ describe('archived cities are excluded', () => {
     ).toBe(true);
   });
 
-  it('the crawler renderer refuses a ghost city', () => {
+  it('the crawler renderer refuses a ghost city, and a merged one', () => {
     const body = fnBody(read('functions/_lib/detail.ts'), 'cityDetail');
     expect(body).not.toBe('');
     expect(body.includes('shell_status')).toBe(true);
+    // Asserted as the CONDITION, not as one phrasing of it. This check used to
+    // require the literal `shell_status') === 'ghost') return null`, and went
+    // red on a rewrite that PRESERVED the condition and added 'merged' beside
+    // it (99991790173320) — the 20810101100100 failure, where a guard encoding
+    // a phrasing blocks a correct change.
+    //
+    // 'ghost' is archived and must hard-404. 'merged' returns null too but
+    // reaches a different answer: the middleware tries resolveSlugRedirect
+    // first and emits a 301, which is better than a 404 when a canonical row
+    // exists. Before the city redirect table existed, a merged city was
+    // rendered like any other — measured on prod, /city/antwerpen served a
+    // self-canonical 200 while /city/antwerp held the content.
+    // Scoped to the GUARD LINE, not to the function body: the paragraph above
+    // names both states, so a body-wide search for 'merged' is satisfied by
+    // the comment while the condition has lost it. Mutation-tested — it was.
+    const shellVar = /const (\w+) = stringField\(cityRow, 'shell_status'\)/.exec(body)?.[1];
+    const guardLine = new RegExp(
+      `if \\(${shellVar ? shellVar : "stringField\\(cityRow, 'shell_status'\\)"}[^\n]*\\) return null;`,
+    ).exec(body)?.[0];
     expect(
-      /shell_status'\) === 'ghost'\) return null/.test(body),
-      'cityDetail must return null (hard 404) for an archived city',
-    ).toBe(true);
+      guardLine,
+      'cityDetail must return null (hard 404) on a shell_status check',
+    ).toBeTruthy();
+    expect(guardLine).toContain("'ghost'");
+    expect(guardLine).toContain("'merged'");
   });
 });
 
