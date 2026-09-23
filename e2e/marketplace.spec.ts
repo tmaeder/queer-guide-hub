@@ -120,6 +120,7 @@ test.describe('Marketplace — discovery surface', () => {
     await page.waitForLoadState('domcontentloaded');
     const band = page.locator('main section.sticky').first();
     const index = page.locator('#category-tiles');
+    const indexSection = page.locator('section[aria-labelledby="category-tiles"]');
     await expect(band).toBeVisible({ timeout: 30_000 });
     await expect(index).toBeVisible({ timeout: 30_000 });
 
@@ -136,6 +137,9 @@ test.describe('Marketplace — discovery surface', () => {
       await expect(page.locator('main header .tabular-nums')).not.toHaveText(/Counting/, {
         timeout: 15_000,
       });
+      // The index has its own aggregate query. Measuring its ten-card loading
+      // skeleton against the loaded list creates a false 600px "movement".
+      await expect(indexSection).toHaveAttribute('aria-busy', 'false', { timeout: 15_000 });
       await page.evaluate(() => window.scrollTo(0, 0));
       await page.waitForTimeout(300);
     };

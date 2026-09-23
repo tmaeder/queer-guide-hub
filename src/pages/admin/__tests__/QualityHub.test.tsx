@@ -39,6 +39,9 @@ vi.mock('@/components/admin/MarketplaceTagQualityPanel', () => ({
 vi.mock('@/components/admin/MarketplacePruneCard', () => ({
   MarketplacePruneCard: () => <div />,
 }));
+vi.mock('@/components/admin/business/BusinessBrandQualityPanel', () => ({
+  BusinessBrandQualityPanel: () => <div data-testid="business-brand-quality" />,
+}));
 vi.mock('@/components/admin/FreigabeFunnel', () => ({ FreigabeFunnel: () => <div /> }));
 vi.mock('@/components/admin/PersonalityFreigabeQueue', () => ({
   PersonalityFreigabeQueue: () => <div />,

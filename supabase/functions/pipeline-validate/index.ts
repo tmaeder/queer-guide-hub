@@ -18,6 +18,7 @@ import {
 import { withErrorReporting } from '../_shared/report-api-error.ts'
 import { isLgbtiConnectionVocab } from '../_shared/lgbti-connection.ts'
 import { resolveStagingContentType } from '../_shared/content-registry.ts'
+import { validatePersonalityContract } from '../_shared/personality-contract.ts'
 
 // ============================================================
 // Pipeline Validate
@@ -206,19 +207,11 @@ Deno.serve(withErrorReporting('pipeline-validate', async (req) => {
           errors.push('E_QUALITY_BELOW_THRESHOLD')
         }
       } else if (validator === 'personality') {
-        // Personality-specific validation
-        const name = String(n.name ?? '').trim()
-        if (name.length < 2) errors.push('E_MISSING_NAME')
-        if (name.length > 200) warnings.push('W_NAME_UNUSUALLY_LONG')
-
-        const qid = String(n.wikidata_qid ?? '').trim()
-        if (qid && !/^Q\d+$/.test(qid)) errors.push('E_INVALID_WIKIDATA_QID')
+        const contract = validatePersonalityContract(n)
+        errors.push(...contract.errors)
+        warnings.push(...contract.warnings)
 
         const birth = n.birth_date as string | undefined
-        const death = n.death_date as string | undefined
-        if (birth && !/^\d{4}-\d{2}-\d{2}$/.test(birth)) errors.push('E_INVALID_BIRTH_DATE')
-        if (death && !/^\d{4}-\d{2}-\d{2}$/.test(death)) errors.push('E_INVALID_DEATH_DATE')
-        if (birth && death && birth > death) errors.push('E_BIRTH_AFTER_DEATH')
         if (birth) {
           const year = Number(birth.slice(0, 4))
           if (year < 1000 || year > new Date().getFullYear()) warnings.push('W_BIRTH_YEAR_IMPLAUSIBLE')
@@ -235,10 +228,6 @@ Deno.serve(withErrorReporting('pipeline-validate', async (req) => {
           } catch { errors.push('E_INVALID_WEBSITE') }
         }
 
-        if (!n.description && !n.bio) warnings.push('W_NO_DESCRIPTION')
-        if (!n.profession)             warnings.push('W_NO_PROFESSION')
-        if (!n.nationality)            warnings.push('W_NO_NATIONALITY')
-        if (!n.image_url)              warnings.push('W_NO_IMAGE')
         // Outing guard (audit C-2/H-5): lgbti_connection is a controlled,
         // consent-anchored vocab — never an uncontrolled free-text identity
         // label. A missing value ("no claim") is allowed (warning only); a
@@ -247,8 +236,6 @@ Deno.serve(withErrorReporting('pipeline-validate', async (req) => {
         const conn = n.lgbti_connection == null ? null : String(n.lgbti_connection).trim()
         if (!conn) warnings.push('W_NO_LGBTI_CONNECTION')
         else if (!isLgbtiConnectionVocab(conn)) errors.push('E_INVALID_LGBTI_CONNECTION')
-        if (!n.wikidata_qid)           warnings.push('W_NO_WIKIDATA_QID')
-
         quality = Math.max(0, 100 - warnings.length * 5 - errors.length * 40)
       } else if (validator === 'event') {
         // Event-specific validation: title, dates, location, time sanity
