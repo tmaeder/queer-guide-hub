@@ -78,7 +78,12 @@ GRANT EXECUTE ON FUNCTION public.marketplace_image_failure_metrics() TO service_
 DO $$
 DECLARE v_def text; v_next text;
 BEGIN
-  SELECT pg_get_functiondef('public.run_marketplace_quality_snapshot()'::regprocedure)
+  SELECT regexp_replace(
+    pg_get_functiondef('public.run_marketplace_quality_snapshot()'::regprocedure),
+    '--[^' || chr(10) || ']*',
+    '',
+    'g'
+  )
   INTO v_def;
   IF position('image_opt_retryable_failed' IN v_def)>0 THEN RETURN; END IF;
 
