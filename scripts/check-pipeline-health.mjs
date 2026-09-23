@@ -1008,7 +1008,28 @@ if (!hygieneRes.ok) {
     // coordinates, 8 m away -- and its P1082 is 137678, BYTE-IDENTICAL to the
     // shell's stored population. Same documented correct-but-unverifiable class
     // as Venedig/Venice, Biel/Bienne and London/Londres above.
-    const BASELINE_UNCORROBORATED = 14
+    //
+    // 14 -> 23 (2026-09-23, 99991790187863): eighteen `personality-birth-place`
+    // shells whose NAME is a district of a city we already hold, merged into
+    // that city -- nine of them score uncorroborated.
+    //
+    // `place_pair_corroboration` has FOUR arms and none of them is the one
+    // these merges rest on: the parent city is named INSIDE the child's own
+    // name (`Berlin-Charlottenburg`, `Wuppertal-Elberfeld`). The name arms want
+    // the two names to be the same or to share a comma tail; the geo arm wants
+    // 10 km, and `Berlin-Lichterfelde` (11.5 km) and `Berlin-Wittenau`
+    // (10.3 km) sit just past it while the three Rixdorf rows and
+    // `Spandau, Berlin` carry NO coordinates at all.
+    //
+    // Measured, not estimated: the full stack of this PR was dry-run on prod in
+    // a rolled-back transaction and reported exactly 23.
+    //
+    // Considered and rejected: adding "child name starts with parent name" as a
+    // fifth arm. It would keep this number flat and make the merge graph
+    // self-describing, but it means restating a shared function that the
+    // `suggested_uncorroborated` ZERO-invariant depends on — and a hand-made
+    // merge with stated evidence is not what that gate exists to police.
+    const BASELINE_UNCORROBORATED = 23
     const unc = Number(sig?.merged_uncorroborated ?? 0)
     if (unc > BASELINE_UNCORROBORATED) {
       const ex = Array.isArray(sig?.merged_examples) ? sig.merged_examples : []
