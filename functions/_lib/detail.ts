@@ -1245,9 +1245,20 @@ async function cityDetail(env: Env, slug: string, pathname: string): Promise<Det
   // row that is not a place at all — a Bundesland, a continent, a country in
   // German. Returning null makes the middleware serve a hard 404, which matches
   // what the SPA now does, rather than publishing "LGBTQ+ guide to Hessen" with
-  // a mere noindex. 'merged' is left to resolveSlugRedirect, which turns it
-  // into a 301 — a redirect is better than a 404 when a canonical row exists.
-  if (stringField(cityRow, 'shell_status') === 'ghost') return null;
+  // a mere noindex.
+  //
+  // 'merged' returns null for the same reason but reaches a different answer:
+  // the middleware tries resolveSlugRedirect first and emits a 301, because a
+  // redirect is better than a 404 when a canonical row exists.
+  //
+  // THIS BRANCH USED TO TEST 'ghost' ALONE and the comment already claimed
+  // 'merged' was "left to resolveSlugRedirect" — which was false, because
+  // SLUG_REDIRECT_KINDS had no city entry and `city_slug_redirects` did not
+  // exist. So a merged city was fetched and rendered like any other: measured
+  // on prod, /city/antwerpen served HTTP 200 with a self-canonical while
+  // /city/antwerp held the content. Both halves are now real.
+  const shell = stringField(cityRow, 'shell_status');
+  if (shell === 'ghost' || shell === 'merged') return null;
 
   const name = stringField(cityRow, 'name') ?? slug;
   const description = stringField(cityRow, 'description') ?? '';
@@ -2231,6 +2242,26 @@ const SLUG_REDIRECT_KINDS: Array<{
     redirectIdColumn: 'country_id',
     entityTable: 'countries',
     routePrefix: '/country',
+  },
+  {
+    // Cities were the ONE entity with no redirect table, so this list had no
+    // city entry and `resolveSlugRedirect` could never answer for one --
+    // which made cityDetail's own "'merged' is left to resolveSlugRedirect"
+    // comment false. Measured on prod with a Googlebot UA (2026-09-23),
+    // against a nonsense-slug control that correctly 404s: /city/antwerpen,
+    // /city/bruessel and /city/city-of-rochester each returned HTTP 200 with a
+    // canonical pointing at THEMSELVES, beside the survivors /city/antwerp,
+    // /city/brussels and /city/rochester-us-6e3dn. 71 rows were in that state.
+    test: (k) => k === 'city',
+    redirectTable: 'city_slug_redirects',
+    redirectIdColumn: 'city_id',
+    entityTable: 'cities',
+    routePrefix: '/city',
+    // Same reasoning as the tags entry below: a redirect whose target is
+    // itself merged is a 301 into a retired slug, which is worse for a crawler
+    // than the 404 it replaces. The trigger repoints chains at merge time;
+    // this is the belt to that braces.
+    entityFilter: 'duplicate_of_id=is.null',
   },
   {
     test: (k) => k.startsWith('hotel'),

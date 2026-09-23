@@ -299,6 +299,132 @@ if (!hygieneRes.ok) {
   }
 }
 
+// § Every city writer goes through city_resolve_or_create
+//
+//     20261001100300 routed commit_city_staging_item through the shared
+//     identity ladder; 20261001110000 restated the whole body to add two
+//     capital columns and silently reverted it, leaving a three-arm probe with
+//     no QID arm, no alias arm, no proximity refusal and no evidence gate --
+//     while the function's COMMENT went on claiming the routing was there.
+//     The `near_pairs` check above measures the CONSEQUENCE (duplicates
+//     arriving) and did not move: live 107 against a 196 baseline. This block
+//     measures the CAUSE, which is the only thing that fails fast.
+{
+  const res = await fetch(`${BASE}/rest/v1/rpc/city_writer_signals`, {
+    method: 'POST',
+    headers: { ...headers, 'Content-Type': 'application/json' },
+    body: '{}',
+  })
+  // 404 = the migration has not landed yet. The nightly run checks out `main`
+  // and calls the LIVE backend, so in the window between a merged script and an
+  // applied migration a hard fail would go red for something that is not a
+  // defect. Every other non-ok status IS a broken probe and must fail.
+  if (res.status === 404) {
+    console.warn('⚠ city_writer_signals → HTTP 404 — city-writer sentinel NOT DEPLOYED (migration 99991790172641). This is absence of a check, not absence of defects.')
+  } else if (!res.ok) {
+    const detail = (await res.text()).slice(0, 200)
+    console.error(`✗ city_writer_signals → HTTP ${res.status} — the gate could not run. A broken probe must not read as a clean corpus. ${detail}`)
+    FAILED = true
+  } else {
+    const cw = (await res.json()) ?? {}
+    const scanned = Number(cw.functions_scanned ?? 0)
+    const inserters = Number(cw.inserters ?? 0)
+    if (!('offender_count' in cw)) {
+      console.error("✗ city_writer_signals has no 'offender_count' key — that check measured NOTHING")
+      FAILED = true
+    } else if (scanned < 100) {
+      // Coverage before verdict: zero offenders over a scan that matched
+      // nothing is vacuous, not clean.
+      console.error(`✗ city_writer_signals scanned only ${scanned} functions — it is measuring nothing, not passing`)
+      FAILED = true
+    } else if (inserters < 1) {
+      // Positive control. The pattern must still FIND the one sanctioned
+      // inserter; a regex that matches nothing reports zero offenders.
+      console.error('✗ city_writer_signals found no city inserters at all — the pattern matches nothing')
+      FAILED = true
+    } else if (Number(cw.offender_count ?? 0) > 0) {
+      const named = Array.isArray(cw.offenders) ? cw.offenders.join(', ') : ''
+      console.error(`✗ ${cw.offender_count} function(s) INSERT into cities without city_resolve_or_create: ${named}`)
+      console.error('  That bypasses the alias arm (the exonym catcher), the QID arm, the geo-proximity refusal and the evidence gate.')
+      console.error('  Do NOT add a local name probe to silence this: the ladder exists so the arms cannot drift apart per writer.')
+      FAILED = true
+    } else {
+      console.log(`✓ every city writer routes through city_resolve_or_create (${scanned} functions scanned, ${inserters} inserter)`)
+    }
+  }
+}
+
+// § Districts and administrative areas filed as cities
+//
+//     `cities` has no place-class column, so a Stadtteil filed as a city is
+//     indistinguishable from a city. Measured over a random sample of 48 live,
+//     indexable, QID-bearing, venue-bearing rows: NINE are not an ordinary city
+//     — Kensington ("area of London", 15 venues), Greenwich, Croydon, Amber
+//     Valley ("non-metropolitan district"), Dihlabeng ("local municipality"),
+//     City of Nottingham ("unitary authority area").
+//
+//     This REPORTS and never acts: demoting a live indexable page with venues
+//     on it cannot be undone per row, so the backlog is hand work and only
+//     GROWTH gates. A new indexable district means a writer minted one.
+{
+  const res = await fetch(`${BASE}/rest/v1/rpc/city_place_class_signals`, {
+    method: 'POST',
+    headers: { ...headers, 'Content-Type': 'application/json' },
+    body: '{}',
+  })
+  if (res.status === 404) {
+    console.warn('⚠ city_place_class_signals → HTTP 404 — place-class probe NOT DEPLOYED (migration 99991790173993). This is absence of a check, not absence of defects.')
+  } else if (!res.ok) {
+    const detail = (await res.text()).slice(0, 200)
+    console.error(`✗ city_place_class_signals → HTTP ${res.status} — the gate could not run. A broken probe must not read as a clean corpus. ${detail}`)
+    FAILED = true
+  } else {
+    const pc = (await res.json()) ?? {}
+    const liveQid = Number(pc.live_qid_rows ?? 0)
+    const probed = Number(pc.probe_rows ?? 0)
+    const judged = Number(pc.judged_rows ?? 0)
+    const sub = Number(pc.subdivision ?? 0)
+    const adm = Number(pc.admin_area ?? 0)
+    const idxSub = Number(pc.indexable_subdivision ?? 0)
+    const idxAdm = Number(pc.indexable_admin_area ?? 0)
+    // DELIBERATELY NO GROWTH GATE YET, and the reason is that a baseline has
+    // to be MEASURED. At introduction the probe carries only the two dozen
+    // seeded entities, so the live subdivision/admin counts are 1 and 3 — a
+    // gate built on those goes red the moment the probe is filled, for a
+    // backlog that was always there, and a rule that is red on arrival is one
+    // people scroll past. Once the corpus is fully probed, record the real
+    // numbers here and gate on growth; until then the counts WARN.
+    //
+    // The cause is gated regardless: `city_writer_signals` above fails the
+    // moment a writer stops going through city_resolve_or_create, which is the
+    // mechanism by which a district would be minted as a city.
+    if (!('subdivision' in pc)) {
+      console.error("✗ city_place_class_signals has no 'subdivision' key — that check measured NOTHING")
+      FAILED = true
+    } else if (liveQid < 100) {
+      console.error(`✗ city_place_class_signals sees only ${liveQid} live QID-bearing cities — it is measuring nothing`)
+      FAILED = true
+    } else if (probed === 0) {
+      // Coverage before verdict: zero districts over an unprobed corpus is
+      // vacuous, not clean.
+      console.error('✗ city_place_class_probe is EMPTY — the district check measured NOTHING. Run scripts/data-quality/probe-city-place-class.mjs')
+      FAILED = true
+    } else {
+      if (judged < liveQid) {
+        console.warn(`⚠ place-class coverage ${judged}/${liveQid} cities — run scripts/data-quality/probe-city-place-class.mjs`)
+      }
+      if (sub > 0 || adm > 0) {
+        console.warn(`⚠ ${sub} district and ${adm} administrative-area rows are filed as cities (${idxSub}+${idxAdm} indexable) — work list: public.city_place_class_review`)
+      }
+      const unknown = Array.isArray(pc.unrecognised_classes) ? pc.unrecognised_classes.length : 0
+      if (unknown > 0) {
+        console.warn(`⚠ ${unknown} unrecognised Wikidata class label(s) — a vocabulary gap, named in city_place_class_signals().unrecognised_classes`)
+      }
+      console.log(`✓ Place classes: ${judged}/${liveQid} judged, subdivision=${sub}, admin_area=${adm}, undetermined=${pc.undetermined ?? 0}`)
+    }
+  }
+}
+
 // Dead gaycities S3 image urls (2026-09-09). The gaycities-featured-images-
 // production.s3.amazonaws.com bucket lost its public-read policy and 403s
 // for every key, so a url pointing at it renders Chrome's torn-page glyph
@@ -867,7 +993,43 @@ if (!hygieneRes.ok) {
     // — and the geo arm measures 6,817 km because the shell's coordinates are
     // Puerto Rican. It is the documented correct-but-unverifiable exonym class,
     // the same as Venedig/Venice and Biel/Bienne, with a junk shell on one side.
-    const BASELINE_UNCORROBORATED = 13
+    //
+    // 13 -> 14 (2026-09-23, 99991790173553): `Luxembourg <=> Luxemburg`. Three
+    // rows were Luxembourg City -- the real one, a comma-qualified shell 8 m
+    // away, and a `personality-birth-place` shell carrying Q1842. All four arms
+    // are blind to the third: the despaced names differ, there is no comma
+    // qualifier, the geo arm measures 22.8 km because the SHELL's coordinates
+    // are a bad free-text geocode, and the shared-QID arm cannot see it because
+    // the merge moves Q1842 onto the survivor and CLEARS it from the loser (so
+    // that unmerge_cities cannot resurrect two live rows holding it).
+    //
+    // The evidence that it is one city was resolved live rather than inferred:
+    // Q1842's own P625 is Point(6.13 49.611388888) -- the survivor's
+    // coordinates, 8 m away -- and its P1082 is 137678, BYTE-IDENTICAL to the
+    // shell's stored population. Same documented correct-but-unverifiable class
+    // as Venedig/Venice, Biel/Bienne and London/Londres above.
+    //
+    // 14 -> 23 (2026-09-23, 99991790187863): eighteen `personality-birth-place`
+    // shells whose NAME is a district of a city we already hold, merged into
+    // that city -- nine of them score uncorroborated.
+    //
+    // `place_pair_corroboration` has FOUR arms and none of them is the one
+    // these merges rest on: the parent city is named INSIDE the child's own
+    // name (`Berlin-Charlottenburg`, `Wuppertal-Elberfeld`). The name arms want
+    // the two names to be the same or to share a comma tail; the geo arm wants
+    // 10 km, and `Berlin-Lichterfelde` (11.5 km) and `Berlin-Wittenau`
+    // (10.3 km) sit just past it while the three Rixdorf rows and
+    // `Spandau, Berlin` carry NO coordinates at all.
+    //
+    // Measured, not estimated: the full stack of this PR was dry-run on prod in
+    // a rolled-back transaction and reported exactly 23.
+    //
+    // Considered and rejected: adding "child name starts with parent name" as a
+    // fifth arm. It would keep this number flat and make the merge graph
+    // self-describing, but it means restating a shared function that the
+    // `suggested_uncorroborated` ZERO-invariant depends on — and a hand-made
+    // merge with stated evidence is not what that gate exists to police.
+    const BASELINE_UNCORROBORATED = 23
     const unc = Number(sig?.merged_uncorroborated ?? 0)
     if (unc > BASELINE_UNCORROBORATED) {
       const ex = Array.isArray(sig?.merged_examples) ? sig.merged_examples : []
