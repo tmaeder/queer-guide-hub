@@ -37,6 +37,13 @@ const structuredAdultMigration = readFileSync(
   ),
   'utf8',
 );
+const safetyTaxonomyClosureMigration = readFileSync(
+  join(
+    process.cwd(),
+    'supabase/migrations/99991790191617_marketplace_safety_taxonomy_ingest_closure.sql',
+  ),
+  'utf8',
+);
 const variantWorker = readFileSync(
   join(process.cwd(), 'supabase/functions/marketplace-variant-backfill/index.ts'),
   'utf8',
@@ -85,6 +92,13 @@ describe('marketplace data-quality remediation contracts', () => {
     expect(structuredAdultMigration).toContain("slug ~ '(^|_)(dildos?|ovipositors?)$'");
     expect(structuredAdultMigration).toContain("'marketplace-content-rating-v4.2'");
     expect(structuredAdultMigration).toContain('DELETE FROM public.search_documents');
+  });
+
+  it('closes recurring source-factual safety and taxonomy ingest gaps', () => {
+    expect(safetyTaxonomyClosureMigration).toContain("THEN 'lubricants'");
+    expect(safetyTaxonomyClosureMigration).toContain("THEN 'accessories'");
+    expect(safetyTaxonomyClosureMigration).toContain("'marketplace-content-rating-v4.3'");
+    expect(safetyTaxonomyClosureMigration).toContain('DELETE FROM public.search_documents');
   });
 
   it('requires two confirmed dead-link results and limits concurrency by domain', () => {
