@@ -44,6 +44,13 @@ const safetyTaxonomyClosureMigration = readFileSync(
   ),
   'utf8',
 );
+const imageTerminalAccountingMigration = readFileSync(
+  join(
+    process.cwd(),
+    'supabase/migrations/99991790192620_marketplace_image_terminal_accounting.sql',
+  ),
+  'utf8',
+);
 const variantWorker = readFileSync(
   join(process.cwd(), 'supabase/functions/marketplace-variant-backfill/index.ts'),
   'utf8',
@@ -156,6 +163,22 @@ describe('marketplace data-quality remediation contracts', () => {
   it('does not count an examined but nonproductive HTTP dispatch as success', () => {
     expect(migration).toContain('worker examined rows but made no changed or terminal progress');
     expect(migration).toContain("'marketplace_image_optimize'");
+  });
+
+  it('counts terminal image outcomes as progress without weakening no-progress detection', () => {
+    expect(imageTerminalAccountingMigration).toContain("(v_body->>'items_terminal')::int,0)=0");
+    expect(imageTerminalAccountingMigration).not.toContain(
+      "(v_body->>'items_failed')::int,(v_body->>'failed')::int,0)>0",
+    );
+    expect(imageTerminalAccountingMigration).toContain(
+      "automation_slug='marketplace_image_optimize'",
+    );
+    expect(imageTerminalAccountingMigration).toContain("summary#>>'{worker_metrics,terminal}'");
+    expect(imageTerminalAccountingMigration).toContain('marketplace_image_failure_metrics');
+    expect(imageTerminalAccountingMigration).toContain("('image_opt_retryable_failed')");
+    expect(imageTerminalAccountingMigration).toContain(
+      "(v_stats->>'image_opt_retryable_failed')::int>0",
+    );
   });
 
   it('registers a bounded taxonomy drain instead of assuming a legacy row exists', () => {
