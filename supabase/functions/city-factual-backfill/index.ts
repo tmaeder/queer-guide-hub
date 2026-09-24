@@ -201,14 +201,50 @@ async function writeCityAliases(
 
 // ------------------------------------------------------------------ state
 
-type Prov = Record<string, { candidates?: { source: string; value: unknown }[]; value?: unknown; sources?: string[] }>
+interface ProvenanceCandidate {
+  source: string
+  value: unknown
+  source_url?: string
+  source_identity?: string
+  retrieved_at?: string
+  source_hash?: string
+  language?: string
+  confidence?: number
+  license?: string
+}
 
-function addCandidate(prov: Prov, field: string, source: string, value: unknown) {
+type Prov = Record<string, {
+  candidates?: ProvenanceCandidate[]
+  value?: unknown
+  sources?: string[]
+  source?: string
+  source_url?: string
+  source_identity?: string
+  retrieved_at?: string
+  source_hash?: string
+  language?: string
+  confidence?: number
+  license?: string
+  [key: string]: unknown
+}>
+
+function addCandidate(
+  prov: Prov,
+  field: string,
+  source: string,
+  value: unknown,
+  metadata: Omit<ProvenanceCandidate, 'source' | 'value'> = {},
+) {
   if (value == null) return
   const entry = prov[field] ?? {}
   const kept = (entry.candidates ?? []).filter(c => c.source !== source)
-  kept.push({ source, value })
+  kept.push({ source, value, ...metadata })
   prov[field] = { ...entry, candidates: kept }
+}
+
+async function sha256Text(value: string): Promise<string> {
+  const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(value))
+  return Array.from(new Uint8Array(digest), b => b.toString(16).padStart(2, '0')).join('')
 }
 
 interface FieldState {
@@ -574,12 +610,35 @@ async function runLinkPhase(
           : null
         const extract = rich ?? summary?.extract
         if (extract) {
-          addCandidate(prov, 'description', 'wikipedia', extract)
-          if (!c.description || c.description.trim().length < 40) update.description = extract
+          const retrievedAt = new Date().toISOString()
+          const sourceUrl = `https://en.wikipedia.org/wiki/${encodeURIComponent(enwikiTitle.replaceAll(' ', '_'))}`
+          const sourceIdentity = `${qid ?? 'no-qid'}:${enwikiTitle}`
+          const sourceHash = await sha256Text(extract)
+          const metadata = {
+            source_url: sourceUrl,
+            source_identity: sourceIdentity,
+            retrieved_at: retrievedAt,
+            source_hash: sourceHash,
+            language: 'en',
+            confidence: 1,
+          }
+          addCandidate(prov, 'description', 'wikipedia', extract, metadata)
+          if (!c.description || c.description.trim().length < 40) {
+            update.description = extract
+            prov.description = { ...prov.description, source: 'wikipedia', ...metadata }
+          }
         }
         if (summary?.thumbnail) {
-          addCandidate(prov, 'image_url', 'wikipedia', summary.thumbnail)
-          if (!c.image_url && !c.curated_image_url) update.image_url = summary.thumbnail
+          const imageMetadata = {
+            source_url: `https://en.wikipedia.org/wiki/${encodeURIComponent(enwikiTitle.replaceAll(' ', '_'))}`,
+            source_identity: `${qid ?? 'no-qid'}:${enwikiTitle}`,
+            retrieved_at: new Date().toISOString(),
+            source_hash: await sha256Text(summary.thumbnail),
+            language: 'en',
+            confidence: 1,
+            license: 'unknown',
+          }
+          addCandidate(prov, 'image_url', 'wikipedia', summary.thumbnail, imageMetadata)
         }
         if (typeof summary?.lat === 'number' && typeof summary?.lon === 'number') {
           addCandidate(prov, 'coords', 'wikipedia', { lat: summary.lat, lng: summary.lon })

@@ -116,6 +116,11 @@ verify_jwt = false
 [functions.get-weather-forecast]
 verify_jwt = false
 
+# Cron reaches this function with X-Internal-Secret from Vault. The function
+# self-gates with requireInternalOrAdmin before creating a service client.
+[functions.backfill-cities-images]
+verify_jwt = false
+
 [functions.categorize-tags]
 # Gateway-level JWT is the wrong gate here: the function's own
 # requireAdmin() already accepts an admin JWT, a service-role bearer OR

@@ -34,6 +34,12 @@ jobs:
         if: ${{ env.SUPABASE_URL != '' && env.SUPABASE_SERVICE_ROLE_KEY != '' }}
         run: node scripts/check-data-quality-gates.mjs
 
+      - name: City quality has not regressed
+        # Unlike legacy gates, this probe fails closed: an absent credential or
+        # unreadable scorecard must never be presented as zero city defects.
+        if: ${{ !cancelled() }}
+        run: node scripts/check-city-quality.mjs
+
       # Stock ALTER DEFAULT PRIVILEGES grants anon/authenticated write on every new
       # view, which silently bypasses RLS on any SECURITY DEFINER view. Runs even if
       # the gate above fails, so both reports land in a single run.
