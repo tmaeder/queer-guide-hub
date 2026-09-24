@@ -37808,6 +37808,8 @@ export type Database = {
         Args: {
           p_accessibility_attributes?: string[]
           p_city?: string
+          p_city_id?: string
+          p_country_id?: string
           p_end?: string
           p_event_type?: string
           p_include_past?: boolean
