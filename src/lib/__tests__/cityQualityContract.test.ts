@@ -6,6 +6,10 @@ const MIGRATION = readFileSync(
   join(process.cwd(), 'supabase/migrations/99991790194100_city_quality_contract.sql'),
   'utf8',
 ).toLowerCase();
+const SCORECARD_AUTH = readFileSync(
+  join(process.cwd(), 'supabase/migrations/99991790272400_city_quality_scorecard_staff_access.sql'),
+  'utf8',
+).toLowerCase();
 const RELATIONSHIPS = readFileSync(
   join(process.cwd(), 'supabase/migrations/99991790194000_city_relationship_integrity.sql'),
   'utf8',
@@ -74,12 +78,13 @@ describe('city quality contract migration', () => {
     expect(MIGRATION).toContain('city_quality_snapshots_probe_ok');
     expect(MIGRATION).toMatch(/last_run_status[\s\S]{0,120}'missing'[\s\S]{0,80}'fresh', false/);
     expect(MIGRATION).toContain('create or replace function public._city_quality_scorecard()');
-    expect(MIGRATION).toMatch(
-      /create or replace function public\.city_quality_scorecard\(\)[\s\S]{0,220}security invoker/,
+    expect(SCORECARD_AUTH).toMatch(
+      /create or replace function public\.city_quality_scorecard\(\)[\s\S]{0,220}security definer/,
     );
-    expect(MIGRATION).toMatch(
-      /current_user not in \('postgres', 'service_role'\)[\s\S]{0,160}has_any_role_jwt/,
+    expect(SCORECARD_AUTH).toMatch(
+      /session_user <> 'postgres'[\s\S]{0,180}auth\.role\(\)[\s\S]{0,180}has_any_role_jwt/,
     );
+    expect(SCORECARD_AUTH).toContain('from public.city_quality_snapshots');
     expect(MIGRATION).toMatch(
       /revoke all on function public\._city_quality_scorecard\(\) from public, anon, authenticated/,
     );
