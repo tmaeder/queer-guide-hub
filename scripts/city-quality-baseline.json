@@ -1,9 +1,9 @@
 {
-  "measured_at": "2026-09-24",
-  "measurement": "privileged read-only production audit using the city_quality_profile contract",
-  "publication_blocked": 954,
+  "measured_at": "2026-09-24T17:38:46Z",
+  "measurement": "production activation snapshot after the first successful full city quality issue sync",
+  "publication_blocked": 965,
   "issues": {
-    "CITY_IDENTITY_AMBIGUOUS": 359,
+    "CITY_IDENTITY_AMBIGUOUS": 370,
     "CITY_GEO_INVALID": 2,
     "CITY_DESCRIPTION_WRONG_SUBJECT": 2,
     "CITY_DESCRIPTION_REUSED": 29,
@@ -18,7 +18,7 @@
     "CITY_PLACEHOLDER_EXPOSED": 0
   },
   "operations": {
-    "unlinked_venues": 3581,
-    "unlinked_events": 742
+    "unlinked_venues": 3584,
+    "unlinked_events": 743
   }
 }
