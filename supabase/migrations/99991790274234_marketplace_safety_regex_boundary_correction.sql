@@ -9,7 +9,9 @@ SET statement_timeout='120s';
 DO $$
 DECLARE v_def text; v_next text;
 BEGIN
-  SELECT pg_get_functiondef('public.marketplace_content_rating(text,text,text)'::regprocedure)
+  SELECT regexp_replace(
+    pg_get_functiondef('public.marketplace_content_rating(text,text,text)'::regprocedure),
+    '--[^' || chr(10) || ']*', '', 'g')
   INTO v_def;
   v_next:=replace(v_def,$needle$\me[- ]?stim|$needle$,$needle$\me[- ]?stim\M|$needle$);
   v_next:=replace(v_next,
@@ -31,7 +33,9 @@ $$;
 DO $$
 DECLARE v_def text; v_next text;
 BEGIN
-  SELECT pg_get_functiondef('public.marketplace_subcategory_group(text,text)'::regprocedure)
+  SELECT regexp_replace(
+    pg_get_functiondef('public.marketplace_subcategory_group(text,text)'::regprocedure),
+    '--[^' || chr(10) || ']*', '', 'g')
   INTO v_def;
   IF position($needle$thumb cuffs?$needle$ IN v_def)>0 THEN RETURN; END IF;
   v_next:=replace(v_def,

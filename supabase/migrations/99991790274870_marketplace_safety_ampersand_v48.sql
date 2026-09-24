@@ -7,7 +7,9 @@ SET statement_timeout='120s';
 DO $$
 DECLARE v_def text; v_next text;
 BEGIN
-  SELECT pg_get_functiondef('public.marketplace_content_rating(text,text,text)'::regprocedure)
+  SELECT regexp_replace(
+    pg_get_functiondef('public.marketplace_content_rating(text,text,text)'::regprocedure),
+    '--[^' || chr(10) || ']*', '', 'g')
   INTO v_def;
   IF position('pain_(&|and)_punishment' IN v_def)>0 THEN RETURN; END IF;
   v_next:=replace(v_def,'pain_and_punishment','pain_(&|and)_punishment');

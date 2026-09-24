@@ -10,7 +10,9 @@ SET statement_timeout='120s';
 DO $$
 DECLARE v_def text; v_next text;
 BEGIN
-  SELECT pg_get_functiondef('public.marketplace_content_rating(text,text,text)'::regprocedure)
+  SELECT regexp_replace(
+    pg_get_functiondef('public.marketplace_content_rating(text,text,text)'::regprocedure),
+    '--[^' || chr(10) || ']*', '', 'g')
   INTO v_def;
   v_next:=replace(v_def,
     $needle$WHEN slug ~ '^pup_play_' THEN 3$needle$,
@@ -26,7 +28,9 @@ $$;
 DO $$
 DECLARE v_def text; v_next text;
 BEGIN
-  SELECT pg_get_functiondef('public.run_marketplace_quality_snapshot()'::regprocedure)
+  SELECT regexp_replace(
+    pg_get_functiondef('public.run_marketplace_quality_snapshot()'::regprocedure),
+    '--[^' || chr(10) || ']*', '', 'g')
   INTO v_def;
   v_next:=replace(v_def,
     $needle$count(*) FILTER(WHERE content_rating='sfw' AND subcategory_group IN
