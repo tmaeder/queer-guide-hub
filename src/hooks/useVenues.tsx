@@ -114,6 +114,8 @@ export function useVenues(autoFetch: boolean = true, opts?: { skipDatasetTotal?:
           if (filters?.search) rpcFilters.search = filters.search;
           if (filters?.category) rpcFilters.category = filters.category;
           if (filters?.city) rpcFilters.city = filters.city;
+          if (filters?.cityId) rpcFilters.cityId = filters.cityId;
+          if (filters?.countryId) rpcFilters.countryId = filters.countryId;
           if (filters?.tags?.length) rpcFilters.tags = filters.tags;
           if (filters?.amenities?.length) rpcFilters.amenities = filters.amenities;
           if (filters?.services?.length) rpcFilters.services = filters.services;
@@ -212,13 +214,9 @@ export function useVenues(autoFetch: boolean = true, opts?: { skipDatasetTotal?:
       }
 
       if (filters?.cityId) {
-        // Fetch by city_id so correctly-linked venues with mismatched city TEXT
-        // still appear, while keeping name-text matches for the (many) venues
-        // whose city_id was never backfilled. PostgREST .or() uses * wildcards.
-        const nameClause = filters?.city
-          ? `,and(city_id.is.null,city.ilike.*${filters.city}*)`
-          : '';
-        query = query.or(`city_id.eq.${filters.cityId}${nameClause}`);
+        // A direct-query fallback must fail closed to the stable FK. The ranked
+        // RPC owns the only legacy text fallback and requires country evidence.
+        query = query.eq('city_id', filters.cityId);
       } else if (filters?.city) {
         query = query.ilike('city', `%${filters.city}%`);
       }

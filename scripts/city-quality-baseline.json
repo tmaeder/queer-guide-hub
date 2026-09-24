@@ -1,0 +1,24 @@
+{
+  "measured_at": "2026-09-24",
+  "measurement": "privileged read-only production audit using the city_quality_profile contract",
+  "publication_blocked": 954,
+  "issues": {
+    "CITY_IDENTITY_AMBIGUOUS": 359,
+    "CITY_GEO_INVALID": 2,
+    "CITY_DESCRIPTION_WRONG_SUBJECT": 2,
+    "CITY_DESCRIPTION_REUSED": 29,
+    "CITY_TEXT_MOJIBAKE": 1,
+    "CITY_IMAGE_FLAGGED": 452,
+    "CITY_IMAGE_REUSED": 238,
+    "CITY_LINK_NAMESAKE": 0,
+    "CITY_LINK_COUNTRY_MISMATCH": 0,
+    "CITY_DUPLICATE_UNRESOLVED": 0,
+    "CITY_GHOST_EXPOSED": 0,
+    "CITY_GHOST_HAS_LIVE_CHILDREN": 8,
+    "CITY_PLACEHOLDER_EXPOSED": 0
+  },
+  "operations": {
+    "unlinked_venues": 3581,
+    "unlinked_events": 742
+  }
+}
