@@ -108,16 +108,16 @@ export function VenuesRails({ userLocation, primaryCityId, primaryCityName }: Ve
   );
 
   const topInCity = useRailData(
-    !!primaryCityName,
+    !!primaryCityId,
     () =>
       fetchRanked({
         userId: user?.id ?? null,
         lat: userLocation?.latitude ?? null,
         lng: userLocation?.longitude ?? null,
-        filters: { city: primaryCityName ?? undefined },
+        filters: { cityId: primaryCityId ?? undefined, city: primaryCityName ?? undefined },
         sort: 'featured',
       }),
-    [user?.id, primaryCityName],
+    [user?.id, primaryCityId, primaryCityName],
   );
 
   const editorsPicks = useRailData(
@@ -131,9 +131,6 @@ export function VenuesRails({ userLocation, primaryCityId, primaryCityName }: Ve
       }),
     [user?.id],
   );
-
-  // Suppress city var lint if unused
-  void primaryCityId;
 
   return (
     <div className="space-y-12">

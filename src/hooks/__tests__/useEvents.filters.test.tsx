@@ -72,6 +72,25 @@ describe('useEvents filters → search_events RPC', () => {
     );
   });
 
+  it('sends stable city and country identities for namesake-safe retrieval', async () => {
+    const { result } = renderHook(() => useEvents(false));
+    await act(async () => {
+      await result.current.fetchEvents({
+        cityId: '00000000-0000-0000-0000-000000000001',
+        city: 'Berlin',
+        countryId: '00000000-0000-0000-0000-000000000002',
+      });
+    });
+    expect(rpcMock).toHaveBeenCalledWith(
+      'search_events',
+      expect.objectContaining({
+        p_city_id: '00000000-0000-0000-0000-000000000001',
+        p_city: 'Berlin',
+        p_country_id: '00000000-0000-0000-0000-000000000002',
+      }),
+    );
+  });
+
   it('surfaces RPC errors as hook error (not silent empty)', async () => {
     rpcMock.mockResolvedValue({ data: null, error: new Error('rpc boom') });
     const { result } = renderHook(() => useEvents(false));

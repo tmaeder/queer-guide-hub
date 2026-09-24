@@ -91,6 +91,8 @@ export function useEvents(autoFetch: boolean = true, opts?: { skipDatasetTotal?:
     async (
       filters?: {
         city?: string;
+        /** Stable city identity. Prefer this over the display label whenever available. */
+        cityId?: string;
         cities?: string[];
         countryId?: string;
         /**
@@ -145,14 +147,13 @@ export function useEvents(autoFetch: boolean = true, opts?: { skipDatasetTotal?:
           !filters?.isFree &&
           !filters?.sort &&
           !filters?.cities?.length &&
-          !filters?.countryId &&
           !filters?.eventTypes?.length &&
           !filters?.venueIds?.length &&
           !filters?.languages?.length &&
           !filters?.ageRestriction &&
           !filters?.organizerId &&
           !filters?.tags?.length &&
-          (Boolean(filters?.city) || Boolean(filters?.dateRange));
+          (Boolean(filters?.cityId) || Boolean(filters?.city) || Boolean(filters?.dateRange));
 
         let data: Event[] | null = null;
         let error: Error | null = null;
@@ -169,16 +170,18 @@ export function useEvents(autoFetch: boolean = true, opts?: { skipDatasetTotal?:
 
           const rpcResult = (await queryWithRetry(() => {
             const q = supabase.rpc('search_events', {
-              p_city: filters?.city ?? null,
-              p_event_type: filters?.eventType ?? null,
-              p_start: filters?.dateRange?.start ?? null,
-              p_end: filters?.dateRange?.end ?? null,
-              p_tags: filters?.tags?.length ? filters.tags : null,
+              p_city: filters?.city,
+              p_city_id: filters?.cityId,
+              p_country_id: filters?.countryId,
+              p_event_type: filters?.eventType,
+              p_start: filters?.dateRange?.start,
+              p_end: filters?.dateRange?.end,
+              p_tags: filters?.tags?.length ? filters.tags : undefined,
               p_accessibility_attributes: filters?.accessibilityAttributes?.length
                 ? filters.accessibilityAttributes
-                : null,
-              p_target_groups: filters?.targetGroups?.length ? filters.targetGroups : null,
-              p_search: filters?.search ?? null,
+                : undefined,
+              p_target_groups: filters?.targetGroups?.length ? filters.targetGroups : undefined,
+              p_search: filters?.search,
               p_include_past: filters?.includePast ?? false,
               p_limit: limit,
               p_offset: offset,
@@ -286,7 +289,7 @@ export function useEvents(autoFetch: boolean = true, opts?: { skipDatasetTotal?:
             query = query.eq('is_free', true);
           }
 
-          if (filters?.countryId) {
+          if (filters?.countryId && !filters?.cityId) {
             query = query.eq('country_id', filters.countryId);
           }
 
@@ -302,6 +305,11 @@ export function useEvents(autoFetch: boolean = true, opts?: { skipDatasetTotal?:
             // Multi-city: chained OR with sanitized ilike clauses
             const parts = filters.cities.map((c) => `city.ilike.${c.replace(/[,()*]/g, '')}`);
             query = query.or(parts.join(','));
+          } else if (filters?.cityId) {
+            // The RPC path normally handles city pages, including its guarded
+            // legacy fallback. If another filter forces this direct path, fail
+            // closed to the stable FK rather than reintroducing namesake leaks.
+            query = query.eq('city_id', filters.cityId);
           } else if (filters?.city) {
             query = query.ilike('city', filters.city);
           }
@@ -544,6 +552,7 @@ export function useEvents(autoFetch: boolean = true, opts?: { skipDatasetTotal?:
   ) => {
     try {
       const userId = (await supabase.auth.getUser()).data.user?.id;
+      if (!userId) throw new Error('Sign in to update attendance.');
       // D4: onConflict is required — table PK is `id`, uniqueness lives on
       // (event_id, user_id). Without it the second click hits a 23505 and
       // we surface "Failed to update attendance".
