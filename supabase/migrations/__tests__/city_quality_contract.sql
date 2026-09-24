@@ -141,4 +141,27 @@ begin
 end
 $test$;
 
+-- Exercise the PostgREST caller boundary, not only the postgres-owner path.
+-- The authenticated role cannot read the service-only cache directly, while
+-- an admin JWT can read it through the guarded security-definer wrapper.
+set local role authenticated;
+select set_config(
+  'request.jwt.claims',
+  '{"role":"authenticated","user_role":"admin","sub":"00000000-0000-0000-0000-000000000001"}',
+  true
+);
+
+do $staff_test$
+declare
+  scorecard jsonb;
+begin
+  scorecard := public.city_quality_scorecard();
+  if coalesce((scorecard->>'probe_ok')::boolean, false) is not true then
+    raise exception 'authenticated admin scorecard probe failed: %', scorecard;
+  end if;
+end
+$staff_test$;
+
+reset role;
+
 rollback;
