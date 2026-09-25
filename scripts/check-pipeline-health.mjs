@@ -1166,8 +1166,18 @@ if (!hygieneRes.ok) {
     headers: { ...headers, 'Content-Type': 'application/json' },
     body: '{}',
   })
-  if (!res.ok) {
-    console.error(`✗ city_wikidata_signals → HTTP ${res.status} (RPC missing? not applied?)`)
+  if (res.status === 404) {
+    // NOT-YET-DEPLOYED is a different fact from BROKEN, and conflating them makes a
+    // required gate block the merge that would deploy it: this script runs against
+    // LIVE prod from a PR branch, so a hard fail here cannot be cleared until after
+    // the merge it prevents — the deadlock CLAUDE.md records for `Critical paths`.
+    // The absence is still NAMED, so it never reads as a clean corpus, which is the
+    // rule that matters (`accessibility_contradictions`). Same shape as
+    // `admin_automation_tracking_gaps` below. ONLY a 404 is tolerated — a 500 or a
+    // malformed body still fails, so a genuinely broken sentinel cannot hide here.
+    console.warn('⚠ city_wikidata_signals not deployed yet (404) — migration pending, not clean')
+  } else if (!res.ok) {
+    console.error(`✗ city_wikidata_signals → HTTP ${res.status}`)
     FAILED = true
   } else {
     const s = await res.json()

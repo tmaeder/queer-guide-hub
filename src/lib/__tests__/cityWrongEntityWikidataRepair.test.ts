@@ -280,4 +280,23 @@ describe('the health script consumes the sentinel', () => {
   it('carries the corpus-size positive control', () => {
     expect(cityBlock).toMatch(/rows_with_qid\s*\?\?\s*0\)\s*<\s*1000/);
   });
+
+  it('tolerates a 404 but nothing else, so the gate cannot block its own merge', () => {
+    // This script runs against LIVE prod from a PR branch. Hard-failing on the RPC
+    // being absent makes a required check unfixable until after the merge that
+    // deploys it. A 404 warns and NAMES the absence; every other non-ok status still
+    // fails, so a broken deployed sentinel cannot hide behind this.
+    expect(cityBlock).toMatch(/res\.status\s*===\s*404/);
+    expect(cityBlock).toMatch(/not deployed yet/);
+    // The tolerant branch must WARN, never log a ✓.
+    const tolerant = cityBlock.slice(
+      cityBlock.indexOf('res.status === 404'),
+      cityBlock.indexOf('} else if'),
+    );
+    expect(tolerant).toMatch(/console\.warn/);
+    expect(tolerant).not.toMatch(/FAILED\s*=\s*true/);
+    expect(tolerant).not.toMatch(/✓/);
+    // And the non-404 branch must still fail.
+    expect(cityBlock).toMatch(/} else if \(!res\.ok\) \{[\s\S]{0,160}FAILED = true/);
+  });
 });
