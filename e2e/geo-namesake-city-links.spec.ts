@@ -429,3 +429,119 @@ test('blocking an event never emptied the city it was taken off', async ({ reque
     ).toBeTruthy();
   }
 });
+
+// --- venue-derived geography ---------------------------------------------------
+//
+// 99991790359680. `tg_event_venue_geography` propagated a venue's city onto its event
+// unconditionally, which put a Fort Lauderdale event on New York because it was
+// attached to "The Eagle" -- a bar name that exists in a dozen cities. The trigger now
+// refuses to propagate a venue city over 250 km from the event's own coordinates.
+//
+// Measured when the guard shipped: p50 0.0 km, p95 3.4 km, p99 6.1 km, second-largest
+// 23.1 km, largest 1,718.1 km. So this asserts the shape of that distribution through
+// the ANON role, which is what a visitor is actually served.
+
+/** PostgREST caps a response at 1000 rows, so anything corpus-wide must page. */
+async function restAll<T>(request: APIRequestContext, path: string): Promise<T[]> {
+  const out: T[] = [];
+  for (let offset = 0; ; offset += 1000) {
+    const page = await rest<T>(request, `${path}&limit=1000&offset=${offset}`);
+    out.push(...page);
+    if (page.length < 1000) return out;
+    // a corpus this size should never need more than a handful of pages
+    expect(offset, 'paged past 20k rows — the filter is probably wrong').toBeLessThan(20000);
+  }
+}
+
+test('the Fort Lauderdale event is on Fort Lauderdale, with its wrong venue detached', async ({
+  request,
+}) => {
+  const [ev] = await rest<{
+    title: string;
+    city_id: string | null;
+    venue_id: string | null;
+    venue_name: string | null;
+    latitude: string | null;
+    longitude: string | null;
+  }>(
+    request,
+    'events?select=title,city_id,venue_id,venue_name,latitude,longitude' +
+      '&id=eq.e277dc22-1de3-4d55-9842-f2d49d53d459',
+  );
+  expect(ev, 'the repaired event is not anon-readable').toBeTruthy();
+  expect(ev.venue_id, 'still attached to "The Eagle" in New York City').toBeNull();
+  // the source's own venue text must survive, or the re-attach is no longer actionable
+  expect(ev.venue_name, 'the venue text was wiped along with the link').toBeTruthy();
+  expect(ev.city_id).not.toBeNull();
+
+  const [city] = await rest<{ name: string; slug: string; latitude: string; longitude: string }>(
+    request,
+    `cities?select=name,slug,latitude,longitude&id=eq.${ev.city_id}`,
+  );
+  expect(city.slug).toBe('fort-lauderdale');
+  const d = km(
+    Number(ev.latitude),
+    Number(ev.longitude),
+    Number(city.latitude),
+    Number(city.longitude),
+  );
+  expect(d, `presented on ${city.name}, ${d.toFixed(1)} km from its own coordinates`).toBeLessThan(
+    MAX_KM,
+  );
+});
+
+test('no anon-visible event is presented on a city its venue put 250 km away', async ({
+  request,
+}) => {
+  // The corpus-wide form. The migration asserts this as postgres over every row;
+  // this asserts it over the rows a visitor can actually read, which is the subset
+  // that matters for what gets published.
+  const events = await restAll<{
+    id: string;
+    title: string;
+    city_id: string;
+    latitude: string;
+    longitude: string;
+  }>(
+    request,
+    'events?select=id,title,city_id,latitude,longitude&city_id=not.is.null' +
+      '&latitude=not.is.null&duplicate_of_id=is.null',
+  );
+  // positive control: an empty or truncated read makes every assertion below vacuous
+  expect(events.length, 'anon can read no linked events at all').toBeGreaterThan(1000);
+
+  const cityIds = [...new Set(events.map((e) => e.city_id))];
+  const cities = new Map<
+    string,
+    { name: string; latitude: string | null; longitude: string | null }
+  >();
+  for (let i = 0; i < cityIds.length; i += 200) {
+    const batch = await rest<{
+      id: string;
+      name: string;
+      latitude: string | null;
+      longitude: string | null;
+    }>(
+      request,
+      `cities?select=id,name,latitude,longitude&id=in.(${cityIds.slice(i, i + 200).join(',')})`,
+    );
+    for (const c of batch) cities.set(c.id, c);
+  }
+  expect(cities.size, 'none of the referenced cities resolved').toBeGreaterThan(0);
+
+  const far = events
+    .map((e) => {
+      const c = cities.get(e.city_id);
+      if (!c || c.latitude === null || c.longitude === null) return null;
+      const d = km(
+        Number(e.latitude),
+        Number(e.longitude),
+        Number(c.latitude),
+        Number(c.longitude),
+      );
+      return d > 250 ? `${e.title} → ${c.name} (${d.toFixed(0)} km)` : null;
+    })
+    .filter(Boolean);
+
+  expect(far, `events presented on a city they are nowhere near:\n${far.join('\n')}`).toEqual([]);
+});
