@@ -1,0 +1,44 @@
+{
+  "locales": {
+    "ar": {
+      "placeholders": 985,
+      "extra": 41
+    },
+    "de": {
+      "placeholders": 834,
+      "extra": 33
+    },
+    "es": {
+      "placeholders": 985,
+      "extra": 33
+    },
+    "fr": {
+      "placeholders": 985,
+      "extra": 37
+    },
+    "it": {
+      "placeholders": 985,
+      "extra": 33
+    },
+    "ja": {
+      "placeholders": 985,
+      "extra": 31
+    },
+    "ko": {
+      "placeholders": 985,
+      "extra": 31
+    },
+    "pt": {
+      "placeholders": 985,
+      "extra": 33
+    },
+    "ru": {
+      "placeholders": 985,
+      "extra": 67
+    },
+    "zh": {
+      "placeholders": 985,
+      "extra": 31
+    }
+  }
+}
