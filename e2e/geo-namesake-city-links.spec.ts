@@ -441,15 +441,29 @@ test('blocking an event never emptied the city it was taken off', async ({ reque
 // 23.1 km, largest 1,718.1 km. So this asserts the shape of that distribution through
 // the ANON role, which is what a visitor is actually served.
 
-/** PostgREST caps a response at 1000 rows, so anything corpus-wide must page. */
-async function restAll<T>(request: APIRequestContext, path: string): Promise<T[]> {
+/**
+ * PostgREST caps a response at 1000 rows, so anything set-wide must page.
+ *
+ * `maxRows` is a deliberate ceiling, not a safety net: it keeps this spec pointed at a
+ * BOUNDED set. The first draft swept every anon-visible linked event and tripped its
+ * own cap — measured, that set is 45,492 rows and 46 requests. It was also redundant:
+ * the migration's postcondition P4 asserts the same invariant as postgres over EVERY
+ * row, and the anon-visible rows are a strict subset of those (safety-gated events are
+ * hidden from anon), so the superset check already implies it. What is NOT redundant is
+ * the venue-derived slice below, which is ~1,670 rows and is the class this guard
+ * changed.
+ */
+async function restAll<T>(request: APIRequestContext, path: string, maxRows: number): Promise<T[]> {
   const out: T[] = [];
   for (let offset = 0; ; offset += 1000) {
     const page = await rest<T>(request, `${path}&limit=1000&offset=${offset}`);
     out.push(...page);
     if (page.length < 1000) return out;
-    // a corpus this size should never need more than a handful of pages
-    expect(offset, 'paged past 20k rows — the filter is probably wrong').toBeLessThan(20000);
+    expect(
+      out.length,
+      `paged past ${maxRows} rows — widen maxRows deliberately or narrow the filter, ` +
+        `but do not let this spec quietly become a full-corpus sweep`,
+    ).toBeLessThanOrEqual(maxRows);
   }
 }
 
@@ -490,12 +504,12 @@ test('the Fort Lauderdale event is on Fort Lauderdale, with its wrong venue deta
   );
 });
 
-test('no anon-visible event is presented on a city its venue put 250 km away', async ({
+test('no venue-backed event is presented on a city its venue put 250 km away', async ({
   request,
 }) => {
-  // The corpus-wide form. The migration asserts this as postgres over every row;
-  // this asserts it over the rows a visitor can actually read, which is the subset
-  // that matters for what gets published.
+  // Scoped to the slice this guard changed: events that carry a venue. The migration
+  // asserts the invariant over the WHOLE corpus as postgres (P4); this asserts the
+  // part a visitor is actually served, and does it over a bounded set.
   const events = await restAll<{
     id: string;
     title: string;
@@ -504,11 +518,14 @@ test('no anon-visible event is presented on a city its venue put 250 km away', a
     longitude: string;
   }>(
     request,
-    'events?select=id,title,city_id,latitude,longitude&city_id=not.is.null' +
-      '&latitude=not.is.null&duplicate_of_id=is.null',
+    'events?select=id,title,city_id,latitude,longitude&venue_id=not.is.null' +
+      '&city_id=not.is.null&latitude=not.is.null&duplicate_of_id=is.null',
+    6000,
   );
-  // positive control: an empty or truncated read makes every assertion below vacuous
-  expect(events.length, 'anon can read no linked events at all').toBeGreaterThan(1000);
+  // Positive control. "None of them is far away" is equally true of an empty read,
+  // a broken filter, and a role that can see nothing — and it was ~1,670 rows when
+  // the guard shipped, so a collapse to a handful is itself the signal.
+  expect(events.length, 'anon can read almost no venue-backed events').toBeGreaterThan(500);
 
   const cityIds = [...new Set(events.map((e) => e.city_id))];
   const cities = new Map<
@@ -532,16 +549,19 @@ test('no anon-visible event is presented on a city its venue put 250 km away', a
   const far = events
     .map((e) => {
       const c = cities.get(e.city_id);
-      if (!c || c.latitude === null || c.longitude === null) return null;
+      if (!c || c.latitude === null || c.longitude === null) return null; // fails open
       const d = km(
         Number(e.latitude),
         Number(e.longitude),
         Number(c.latitude),
         Number(c.longitude),
       );
-      return d > 250 ? `${e.title} → ${c.name} (${d.toFixed(0)} km)` : null;
+      return d > 250 ? `${e.title} \u2192 ${c.name} (${d.toFixed(0)} km)` : null;
     })
     .filter(Boolean);
 
-  expect(far, `events presented on a city they are nowhere near:\n${far.join('\n')}`).toEqual([]);
+  expect(
+    far,
+    `venue-backed events presented on a city they are nowhere near:\n${far.join('\n')}`,
+  ).toEqual([]);
 });
