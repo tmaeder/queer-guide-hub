@@ -31,7 +31,9 @@ import type { TFunction } from 'i18next';
 import type { useVenueSocialSignals } from '@/hooks/useVenueSocialSignals';
 import type { Database } from '@/integrations/supabase/types';
 import { fetchVenueWithReviews } from '@/hooks/usePageFetchers';
+import { useTranslation } from 'react-i18next';
 import { GlossaryLinkedText } from '@/components/tags/GlossaryLinkedText';
+import { localizedField, type I18nMap } from '@/lib/localizeContent';
 
 type Venue = Database['public']['Tables']['venues']['Row'];
 export type VenueReview = Database['public']['Tables']['venue_reviews']['Row'] & {
@@ -389,7 +391,18 @@ export function VenueAbout({
   venue: VenueWithRelations;
   onContentUpdated?: () => void;
 }) {
+  const { i18n } = useTranslation();
   if (!venue.description) return null;
+  // `<Editable>` renders its CHILDREN as the display value and uses `value`
+  // ONLY to seed the editor. So the translation goes in the children and
+  // `value` stays on the base column: a reader sees their locale, an admin
+  // still edits the English source of record. Localizing `value` instead
+  // would have an admin silently overwrite English with a translation.
+  const display = localizedField(
+    venue.description,
+    (venue as { description_i18n?: unknown }).description_i18n as I18nMap,
+    i18n.language,
+  );
   return (
     <Editable
       contentType="venues"
@@ -401,7 +414,7 @@ export function VenueAbout({
       as="div"
     >
       <p className="max-w-reading whitespace-pre-wrap text-body-lg leading-relaxed">
-        <GlossaryLinkedText text={venue.description} />
+        <GlossaryLinkedText text={display} />
       </p>
     </Editable>
   );
