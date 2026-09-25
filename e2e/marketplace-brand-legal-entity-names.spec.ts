@@ -54,15 +54,18 @@ const BOT_UA = 'Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/b
  * pins "old URL, new title" — the whole shape of the fix.
  */
 const RENAMED = [
+  // NOTE: `1979-sas-teil-der-marc-dorcel-group` and `svakom-europe-bv` were in
+  // this list until 20260920083621 MERGED them into `dorcel` and `svakom` — the
+  // rename had split those brands across two advertised pages. They moved to
+  // MERGED below, where the retired URL is asserted to be a dead end. This spec
+  // catching its own staleness is the mechanism working, not a flake.
   { slug: 'biorius', title: 'Shunga Erotic Art', wasCalled: 'BIORIUS' },
   { slug: 'hk-nalone-electronic-technology-co-ltd', title: 'Nalone', wasCalled: 'HK Nalone' },
-  { slug: '1979-sas-teil-der-marc-dorcel-group', title: 'DORCEL', wasCalled: '1979 SAS' },
   { slug: 'mapa-gmbh', title: 'Billy Boy', wasCalled: 'MAPA GmbH' },
   { slug: 'sarl-rolling-skulls', title: 'CUT4MEN', wasCalled: 'SARL Rolling Skulls' },
   { slug: 'playful-toys-inc', title: 'B Swish', wasCalled: 'Playful Toys' },
   { slug: 'blanche-industries-gmbh', title: 'FRÖHLE', wasCalled: 'Blanche Industries' },
   { slug: 'salzgeber-co-medien-gmbh', title: 'Salzgeber', wasCalled: 'Medien GmbH' },
-  { slug: 'svakom-europe-bv', title: 'SVAKOM', wasCalled: 'Svakom Europe BV' },
   { slug: 'mystim-gmbh', title: 'Mystim', wasCalled: 'Mystim GmbH' },
 ];
 
@@ -250,5 +253,104 @@ test.describe('@smoke maker page titles are brands, not legal entities', () => {
     }
     // Control: the loop above passes trivially if every fetch 404s.
     expect(seen.size, 'sample collapsed').toBeGreaterThan(15);
+  });
+});
+
+/**
+ * The rename split 13 brands across two maker pages each, and two follow-up
+ * migrations merged them. Both are asserted here because the DEFECT is only
+ * visible on the published surface: two advertised URLs whose `<title>` names
+ * the same brand.
+ *
+ *   20260920083621 — 8 pairs `marketplace_normalize_brand()` can see. Six differ
+ *                    only in CASE, which is why migration 2's `group by
+ *                    display_name` (string equality) missed them.
+ *   20260920084019 — 5 pairs it CANNOT see: it lowercases but does not strip
+ *                    punctuation, while the slug function does. `b-Vibe`/`B Vibe`,
+ *                    `OUCH`/`Ouch!`, `Rocks-Off`/`Rocks off`.
+ *
+ * Each retired URL is paired with the surviving one, which must render the brand
+ * AND still publish a Brand entity — "the duplicate is gone" is equally true of a
+ * merge that deleted the brand outright.
+ */
+const MERGED = [
+  // canonical-key merge: the legal-entity URL dies, the clean one lives
+  { retired: 'alura-group-bv', survivor: 'autoblow', title: 'Autoblow' },
+  { retired: 'crazy-bull-hair-products-ltd', survivor: 'crazy-bull', title: 'Crazy Bull' },
+  { retired: '1979-sas-teil-der-marc-dorcel-group', survivor: 'dorcel', title: 'DORCEL' },
+  { retired: 'advena-ltd', survivor: 'pasante', title: 'Pasante' },
+  { retired: 'pjur-group-luxembourg-s-a', survivor: 'pjur', title: 'pjur' },
+  { retired: 'svakom-europe-bv', survivor: 'svakom', title: 'SVAKOM' },
+  // Shape B: the clean slug was on the row being retired, so it MOVED to the
+  // survivor and the collision artifact is what 404s.
+  { retired: 'fort-troff-c6b6', survivor: 'fort-troff', title: 'Fort Troff' },
+  { retired: 'mr-riegillio-988d', survivor: 'mr-riegillio', title: 'MR. Riegillio' },
+  // slug-base merge
+  { retired: 'b-vibe-e3a1', survivor: 'b-vibe', title: 'b-Vibe' },
+  { retired: 'mr-s-leather-77da', survivor: 'mr-s-leather', title: 'MR S LEATHER' },
+  { retired: 'ouch-7434', survivor: 'ouch', title: 'OUCH' },
+  { retired: 'rocks-off-2', survivor: 'rocks-off', title: 'Rocks-Off' },
+  { retired: 'strap-on-me-7b42', survivor: 'strap-on-me', title: 'Strap-On-Me' },
+];
+
+test.describe('@smoke one brand, one advertised maker page', () => {
+  test('no merged-away URL is still advertised, and every survivor is', async ({ request }) => {
+    const res = await request.get('/sitemap-brands.xml');
+    expect(res.status()).toBe(200);
+    const locs = [...(await res.text()).matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => m[1]);
+    expect(
+      locs.length,
+      'sitemap floor — every check below passes against an empty sitemap',
+    ).toBeGreaterThan(700);
+
+    for (const { retired, survivor } of MERGED) {
+      expect(
+        locs.some((u) => u.endsWith(`/marketplace/brands/${retired}`)),
+        `${retired} was merged away and must not be advertised`,
+      ).toBe(false);
+      expect(
+        locs.some((u) => u.endsWith(`/marketplace/brands/${survivor}`)),
+        `${survivor} is the surviving URL and MUST be advertised`,
+      ).toBe(true);
+    }
+  });
+
+  for (const { retired, survivor, title } of MERGED) {
+    test(`/${retired} merged into /${survivor} ("${title}")`, async ({ request }) => {
+      const gone = await crawlerHtml(request, `/marketplace/brands/${retired}`);
+      // Only missingBrandResult() emits this, so it proves brandDetail RAN and
+      // took the miss branch rather than the route having stopped resolving.
+      expect(titleOf(gone), `/marketplace/brands/${retired} should be a dead end`).toBe(
+        'No maker here | Queer Guide',
+      );
+      expect(gone, `${retired} must not still publish a Brand entity`).not.toContain(
+        '"@type":"Brand"',
+      );
+
+      const live = await crawlerHtml(request, `/marketplace/brands/${survivor}`);
+      expect(titleOf(live), `/marketplace/brands/${survivor} title`).toBe(
+        `${title} — Marketplace | Queer Guide`,
+      );
+      expect(live).toContain(`<h1>${title}</h1>`);
+      expect(live, `${survivor} lost its Brand entity`).toContain('"@type":"Brand"');
+    });
+  }
+
+  test('the two queer-owned stories survived the merge', async ({ request }) => {
+    // `forttroff` and `mr riegillio` were the editorially rich rows and were the
+    // ones RETIRED, so their hand-written story and `ownership_tags` had to be
+    // carried onto the survivor. On a queer marketplace that marker is the most
+    // important claim a brand row carries, and a merge that silently dropped it
+    // would look identical to this one from every count in the migration.
+    for (const { survivor, phrase } of [
+      { survivor: 'fort-troff', phrase: 'gay-owned' },
+      { survivor: 'mr-riegillio', phrase: 'queer' },
+    ]) {
+      const html = await crawlerHtml(request, `/marketplace/brands/${survivor}`);
+      expect(
+        html.toLowerCase(),
+        `/marketplace/brands/${survivor} lost the story carried off the retired row`,
+      ).toContain(phrase);
+    }
   });
 });
