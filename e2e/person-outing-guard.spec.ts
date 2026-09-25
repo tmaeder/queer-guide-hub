@@ -161,3 +161,54 @@ test('the restored pages render on prod', async ({ page }) => {
     await expect(page.locator('body')).not.toContainText(/page not found/i);
   }
 });
+
+// --- the second door: provenance that rests on source rows -------------------
+//
+// The gate accepts EITHER a well-formed `wikidata_qid` OR a non-`SKIP_`
+// `personality_sources` row, so a person can be gate-clean with no identifier at
+// all. `99991790358865` seals the deletion of that last source row, which a
+// trigger on `personalities` cannot see.
+//
+// Anon cannot verify the seal directly — `personality_sources` is not
+// anon-readable (401) and RLS hides `draft` rows — so this asserts the OUTCOME
+// on the surface that actually matters. `seo_indexable` governs the crawler path
+// in `functions/_lib/detail.ts`, which runs as the service role and does NOT go
+// through RLS, so "anon cannot see it" is not the same claim as "a crawler
+// cannot fetch it" and must be tested separately.
+
+/**
+ * Living, positive-label rows whose only provenance is a source row — measured
+ * with the service role on 2026-09-25, because anon cannot enumerate them.
+ * Both are `visibility='draft'` with `seo_indexable=true`, which is why the
+ * gate's reach clause is `public OR seo_indexable` rather than `public` alone.
+ *
+ * This list is a tripwire, not a permission: if one of these is ever published,
+ * the crawler assertion below flips to 200 and fails, which is the review a
+ * human should be doing.
+ */
+const SOURCES_ARM_ONLY = ['jay-johnson', 'little-demon'] as const;
+
+test('a person whose only provenance is a source row is not served to crawlers', async ({
+  page,
+}) => {
+  for (const slug of SOURCES_ARM_ONLY) {
+    const res = await page.goto(`/personality/${slug}`, { waitUntil: 'domcontentloaded' });
+    expect(
+      res?.status(),
+      `/personality/${slug} is being served (HTTP ${res?.status()}) — it carries no Wikidata identifier, so a reader has no provenance to follow`,
+    ).toBe(404);
+  }
+});
+
+test('the strict cohort is still measured against a live corpus, not a frozen number', async ({
+  request,
+}) => {
+  // The published cohort was 1,074 when this file was written and is 632 now —
+  // six days of archival and repair passes. That is why the control above
+  // asserts a FLOOR rather than an exact count: an exact count turns every
+  // legitimate corpus change into a red spec, which is how a trust-&-safety
+  // check gets re-run until it passes.
+  const rows = await anon<{ id: string }>(request, `${COHORT}&select=id&limit=2000`);
+  expect(rows.length).toBeGreaterThan(500);
+  expect(rows.length).toBeLessThan(5000);
+});
