@@ -243,6 +243,11 @@ export const ADMIN_ARCHETYPES: AdminArchetypeEntry[] = [
   },
 
   // ── F · Inbox ─────────────────────────────────────────────────────────
+  { path: 'governance', archetype: 'F', title: 'Governance' },
+  // The three old paths stay registered because they still RESOLVE (as
+  // search-preserving redirects), and both e2e/a11y-admin.spec.ts and
+  // e2e/admin-route-baseline.spec.ts derive their route lists from this
+  // registry — dropping them here silently drops their coverage.
   { path: 'inbox', archetype: 'F', title: 'Inbox' },
   { path: 'postfach', archetype: 'F', title: 'Mailbox', adopted: true },
   { path: 'content/group-requests', archetype: 'F', title: 'Group requests', adopted: true },

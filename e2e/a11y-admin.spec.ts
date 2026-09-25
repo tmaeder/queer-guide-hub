@@ -86,6 +86,13 @@ const KNOWN_VIOLATIONS: Record<string, readonly string[]> = {
   '/admin/affiliate': ['button-name', 'aria-valid-attr-value'],
   '/admin/search-intelligence': ['button-name'],
   '/admin/inbox': ['button-name'],
+  // `/admin/inbox` now redirects here, so this route renders the same triage
+  // DOM and inherits the same debt. Carried across EXPLICITLY rather than left
+  // to be rediscovered: this allowlist is keyed by PATH, so a renamed or
+  // re-pointed route silently loses its entry and starts hard-failing on
+  // pre-existing debt nobody introduced. Shrink-only, as before — when the
+  // button-name violations are fixed, delete this line rather than widen it.
+  '/admin/governance': ['button-name'],
   '/admin/feedback': ['color-contrast', 'aria-valid-attr-value'],
 };
 
