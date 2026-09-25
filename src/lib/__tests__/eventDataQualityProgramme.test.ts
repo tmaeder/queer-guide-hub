@@ -13,6 +13,10 @@ const operationsCompletion = readFileSync(
   'supabase/migrations/99991790275000_event_quality_operations_completion.sql',
   'utf8',
 ).toLowerCase();
+const snapshotTimeoutFix = readFileSync(
+  'supabase/migrations/99991790275100_event_quality_snapshot_timeout_fix.sql',
+  'utf8',
+).toLowerCase();
 const gates = readFileSync('scripts/check-data-quality-gates.mjs', 'utf8');
 const queues = readFileSync('src/config/adminQueues.ts', 'utf8');
 const qualityPage = readFileSync('src/pages/admin/AdminEventQuality.tsx', 'utf8');
@@ -64,6 +68,10 @@ describe('event data quality programme', () => {
     expect(operationsCompletion).toContain('event_quality_issue_page');
     expect(operationsCompletion).toContain('e.duplicate_of_id is null');
     expect(operationsCompletion).toContain('event_became_duplicate');
+    expect(snapshotTimeoutFix).toContain('canonical_quality as materialized');
+    expect(snapshotTimeoutFix).toContain('canonical_issues as materialized');
+    expect(snapshotTimeoutFix).not.toContain('select q.*');
+    expect(snapshotTimeoutFix).not.toContain('select i.*');
   });
 
   it('records adapter contract failures and rejects them per item at validation', () => {
