@@ -432,7 +432,7 @@ test('blocking an event never emptied the city it was taken off', async ({ reque
 
 // --- venue-derived geography ---------------------------------------------------
 //
-// 99991790359680. `tg_event_venue_geography` propagated a venue's city onto its event
+// 99991790379818. `tg_event_venue_geography` propagated a venue's city onto its event
 // unconditionally, which put a Fort Lauderdale event on New York because it was
 // attached to "The Eagle" -- a bar name that exists in a dozen cities. The trigger now
 // refuses to propagate a venue city over 250 km from the event's own coordinates.

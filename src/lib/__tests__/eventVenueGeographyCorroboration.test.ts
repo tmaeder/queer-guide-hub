@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
-// Guards 99991790359680_seal_event_venue_geography_corroboration.sql.
+// Guards 99991790379818_seal_event_venue_geography_corroboration.sql.
 //
 // `tg_event_venue_geography` propagated a venue's city onto its event
 // unconditionally. It is only the SECOND link in the chain -- the event was attached
@@ -21,7 +21,7 @@ import { join } from 'node:path';
 // toContain over the whole file passes against a gutted function body -- the
 // vacuous-assertion class CLAUDE.md records repeatedly.
 
-const MIGRATION = '99991790359680_seal_event_venue_geography_corroboration.sql';
+const MIGRATION = '99991790379818_seal_event_venue_geography_corroboration.sql';
 const raw = readFileSync(join(process.cwd(), 'supabase/migrations', MIGRATION), 'utf8');
 
 /** Migration text with comment lines removed, so prose cannot satisfy a guard. */

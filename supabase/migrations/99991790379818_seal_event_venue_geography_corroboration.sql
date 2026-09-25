@@ -146,7 +146,7 @@ update public.events e
        needs_attention = true,
        enrichment_status = coalesce(e.enrichment_status,'{}'::jsonb)
          || jsonb_build_object('event_venue_link', jsonb_build_object(
-              'by', 'migration:99991790359680',
+              'by', 'migration:99991790379818',
               'detached', true,
               'reason', 'venue_name_collision_across_cities',
               'detail', 'was linked to "The Eagle" in New York City (40.7517/-74.0043), 1718 km from this Fort Lauderdale event; tg_event_venue_geography then propagated that venue''s city onto the event. City restored from the event''s own coordinates (0.0 km). Likely correct venue is "Eagle Wilton Manors" (26.1565/-80.1385, 4 km) -- NOT linked here, because a shared word plus proximity is what produced the defect.',
