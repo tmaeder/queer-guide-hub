@@ -18,7 +18,7 @@ import { join } from 'node:path';
 const ROOT = process.cwd();
 const MIGRATION = join(
   ROOT,
-  'supabase/migrations/99991790358865_outing_seal_covers_source_deletion.sql',
+  'supabase/migrations/99991790380534_outing_seal_covers_source_deletion.sql',
 );
 const DELETER = join(ROOT, 'scripts/data-quality/verify-personality-wikidata.mjs');
 
