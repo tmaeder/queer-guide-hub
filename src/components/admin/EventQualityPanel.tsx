@@ -4,16 +4,33 @@ import { MapPin, ShieldCheck } from 'lucide-react';
 import { useEventQualitySummary } from '@/hooks/useEventQualitySummary';
 import { AdminStat } from '@/components/admin/primitives/AdminStat';
 
+interface EventQualityPanelProps {
+  onIssueFilter?: (issueCode: string) => void;
+}
+
 /**
  * Compact health summary for the Continuous Event Truth Loop:
  * needs-review / low-trust / liveness-failure counts, plus the top coverage
  * gaps surfaced by run_event_coverage_radar().
  */
-export function EventQualityPanel() {
+export function EventQualityPanel({ onIssueFilter }: EventQualityPanelProps) {
   const { data } = useEventQualitySummary();
   if (!data) return null;
-  const { gaps, needsAttention, livenessFail, lowTrust, coverage, sourceGaps, avgQuality, avgTrust, total } = data;
-  if (!gaps.length && !needsAttention && !livenessFail && !lowTrust && !coverage.length) return null;
+  const {
+    gaps,
+    needsAttention,
+    livenessFail,
+    lowTrust,
+    coverage,
+    sourceGaps,
+    avgQuality,
+    avgTrust,
+    total,
+    programme,
+    programmeError,
+  } = data;
+  if (!gaps.length && !needsAttention && !livenessFail && !lowTrust && !coverage.length)
+    return null;
 
   return (
     <Card className="mb-6">
@@ -24,7 +41,7 @@ export function EventQualityPanel() {
           {avgQuality != null && (
             <span className="ml-auto text-13 font-normal text-muted-foreground tabular-nums">
               {total != null && <>{total.toLocaleString()} events · </>}
-              completeness {avgQuality} · trust {avgTrust}
+              legacy quality {avgQuality} · legacy trust {avgTrust}
             </span>
           )}
         </CardTitle>
@@ -33,8 +50,92 @@ export function EventQualityPanel() {
         <div className="flex flex-wrap gap-2">
           <AdminStat label="Needs review" value={needsAttention} />
           <AdminStat label="Low trust (upcoming)" value={lowTrust} />
-          <AdminStat label="Cancelled / dead link" value={livenessFail} hardFail={livenessFail > 0} />
+          <AdminStat
+            label="Cancelled / dead link"
+            value={livenessFail}
+            hardFail={livenessFail > 0}
+          />
+          {programme && (
+            <>
+              <AdminStat
+                label="Assessed"
+                value={`${programme.totals.assessed}/${programme.totals.canonical}`}
+              />
+              <AdminStat
+                label="Open issues"
+                value={programme.totals.open_issues}
+                hardFail={(programme.tiers.fail ?? 0) > 0}
+              />
+              <AdminStat label="Accepted gaps" value={programme.totals.accepted_dispositions} />
+            </>
+          )}
         </div>
+
+        {programmeError && (
+          <p className="m-0 rounded-element border border-destructive/30 bg-destructive/5 p-2 text-13 text-destructive">
+            Versioned quality summary unavailable: {programmeError}
+          </p>
+        )}
+
+        {programme && (
+          <div>
+            <div className="mb-2 flex items-center gap-2 text-13 text-muted-foreground">
+              Quality programme · rubric v{programme.rollout.rubric_version}
+              <Badge variant={programme.rollout.enforcement_enabled ? 'default' : 'outline'}>
+                {programme.rollout.enforcement_enabled ? 'enforced' : 'shadow mode'}
+              </Badge>
+            </div>
+            <p className="mb-4 mt-0 text-12 text-muted-foreground">
+              The rubric is {programme.rollout.enforcement_enabled ? 'enforced' : 'in shadow mode'}:
+              findings are measured and reviewed
+              {programme.rollout.enforcement_enabled
+                ? ' and can block publication.'
+                : ' without blocking publication.'}
+            </p>
+            <div className="grid grid-cols-1 gap-x-8 gap-y-2 sm:grid-cols-2">
+              {Object.entries(programme.dimensions).map(([field, value]) => (
+                <CoverageBar
+                  key={field}
+                  label={field[0].toUpperCase() + field.slice(1)}
+                  pct={Math.round(value ?? 0)}
+                />
+              ))}
+            </div>
+            <div className="mt-4 flex flex-wrap gap-2">
+              {(['pass', 'warn', 'fail'] as const).map((tier) => (
+                <Badge
+                  key={tier}
+                  variant={
+                    tier === 'fail' ? 'destructive' : tier === 'warn' ? 'default' : 'secondary'
+                  }
+                >
+                  {tier}: {programme.tiers[tier] ?? 0}
+                </Badge>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {programme?.issues.length ? (
+          <div>
+            <div className="mb-2 text-13 text-muted-foreground">Largest open issue cohorts</div>
+            <div className="flex flex-wrap gap-2">
+              {programme.issues.slice(0, 8).map((issue) => (
+                <button
+                  key={issue.code}
+                  type="button"
+                  onClick={() => onIssueFilter?.(issue.code)}
+                  className="rounded-element focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                  aria-label={`Filter issue queue by ${issue.code}, ${issue.count} open issues`}
+                >
+                  <Badge variant={issue.severity === 'critical' ? 'destructive' : 'outline'}>
+                    {issue.code} · {issue.count}
+                  </Badge>
+                </button>
+              ))}
+            </div>
+          </div>
+        ) : null}
 
         {coverage.length > 0 && (
           <div>
@@ -49,7 +150,9 @@ export function EventQualityPanel() {
 
         {sourceGaps.length > 0 && (
           <div>
-            <div className="mb-2 text-13 text-muted-foreground">Leakiest sources — fix upstream</div>
+            <div className="mb-2 text-13 text-muted-foreground">
+              Leakiest sources — fix upstream
+            </div>
             <div className="flex flex-col gap-1.5">
               {sourceGaps.map((s) => (
                 <div key={s.source} className="flex items-center gap-2 text-13">
@@ -72,7 +175,11 @@ export function EventQualityPanel() {
             </div>
             <div className="flex flex-wrap gap-2">
               {gaps.map((g, i) => (
-                <Badge key={`${g.city_name ?? 'unknown'}-${i}`} variant="outline" className="font-normal">
+                <Badge
+                  key={`${g.city_name ?? 'unknown'}-${i}`}
+                  variant="outline"
+                  className="font-normal"
+                >
                   {g.city_name ?? 'Unknown'} · {g.upcoming_count}
                 </Badge>
               ))}
