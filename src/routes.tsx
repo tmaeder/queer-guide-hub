@@ -84,13 +84,11 @@ const CountryDetail = lazyRetry(() => import('./pages/CountryDetail'));
 const Travel = lazyRetry(() => import('./pages/Travel'));
 const TravelBook = lazyRetry(() => import('./pages/travel/Book'));
 const MapPage = lazyRetry(() => import('./pages/Map'));
-const AdminDuplicates = lazyRetry(() => import('./pages/admin/AdminDuplicates'));
 const PersonalityDataSheet = lazyRetry(() => import('./pages/admin/PersonalityDataSheet'));
 const PersonalitiesAdmin = lazyRetry(() => import('./pages/admin/PersonalitiesAdmin'));
 const MilestonesAdmin = lazyRetry(() => import('./pages/admin/MilestonesAdmin'));
 const AdminMailbox = lazyRetry(() => import('./pages/admin/AdminMailbox'));
 const AdminLiveness = lazyRetry(() => import('./pages/admin/AdminLiveness'));
-const QualityHub = lazyRetry(() => import('./pages/admin/QualityHub'));
 const AdminTrash = lazyRetry(() => import('./pages/admin/AdminTrash'));
 const ContentGraph = lazyRetry(() => import('./pages/admin/ContentGraph'));
 const EmailTemplates = lazyRetry(() => import('./pages/admin/EmailTemplates'));
@@ -113,7 +111,7 @@ const PlaceDetail = lazyRetry(() => import('./pages/PlaceDetail'));
 
 // New admin pages
 const AdminGeography = lazyRetry(() => import('./pages/admin/AdminGeography'));
-const AdminInbox = lazyRetry(() => import('./pages/admin/AdminInbox'));
+const AdminGovernance = lazyRetry(() => import('./pages/admin/AdminGovernance'));
 const AdminAutomation = lazyRetry(() => import('./pages/admin/AdminAutomation'));
 const AdminFeedback = lazyRetry(() => import('./pages/admin/feedback'));
 const AdminNotFound = lazyRetry(() => import('./pages/admin/AdminNotFound'));
@@ -194,10 +192,30 @@ function SettingsRedirect() {
   return <Navigate to={`/settings${location.search}`} replace />;
 }
 
-/** /admin/review merged into /admin/inbox — preserve ?tab=/?queue= deep links. */
+/** /admin/review merged into governance triage — preserve ?tab=/?queue= deep links. */
 function ReviewRedirect() {
   const location = useLocation();
-  return <Navigate to={`/admin/inbox${location.search}`} replace />;
+  return <Navigate to={`/admin/governance?mode=triage&${location.search.replace(/^\?/, '')}`} replace />;
+}
+
+/**
+ * The three governance surfaces collapsed onto one route (`?mode=`), with the
+ * old paths kept as search-preserving shims.
+ *
+ * SHIMS RATHER THAN A SWEEP. ~60 places name these URLs — 12 `duplicatesRoute`
+ * and 5 `qualityRoute` literals across `src/config/contentTypes/*`, 3 nav
+ * entries, 8 hardcoded component links, and 16 `?queue=` builders. Redirecting
+ * keeps every one of them working on the day this lands, so the sweep is
+ * opportunistic instead of a 60-file change that has to be right all at once.
+ *
+ * `useLocation().search` is carried through because `?queue=` is orthogonal to
+ * `?mode=`: `/admin/inbox?queue=quality-city` must survive as
+ * `/admin/governance?mode=triage&queue=quality-city`, not lose its filter.
+ */
+function GovernanceRedirect({ mode }: { mode: 'triage' | 'engines' | 'merge' }) {
+  const location = useLocation();
+  const rest = location.search.replace(/^\?/, '');
+  return <Navigate to={`/admin/governance?mode=${mode}${rest ? `&${rest}` : ''}`} replace />;
 }
 
 /** Maps the legacy /profile/footprint/:userId/public URL to the unified profile Travel tab. */
@@ -447,7 +465,8 @@ export const AppRoutes = () => {
 
                   {/* Review & Workflow section -- unified dashboard */}
                   <Route path="review" element={<ReviewRedirect />} />
-                  <Route path="inbox" element={<AdminInbox />} />
+                  <Route path="governance" element={<AdminGovernance />} />
+                  <Route path="inbox" element={<GovernanceRedirect mode="triage" />} />
                   <Route path="automation" element={<AdminAutomation />} />
                   <Route path="feedback" element={<AdminFeedback />} />
                   <Route
@@ -474,7 +493,7 @@ export const AppRoutes = () => {
                     path="content/venue-quality"
                     element={<Navigate to="/admin/quality" replace />}
                   />
-                  <Route path="quality" element={<QualityHub />} />
+                  <Route path="quality" element={<GovernanceRedirect mode="engines" />} />
                   <Route path="trash" element={<AdminTrash />} />
                   <Route path="graph" element={<ContentGraph />} />
                   <Route path="content/liveness" element={<AdminLiveness />} />
@@ -558,7 +577,7 @@ export const AppRoutes = () => {
 
                   {/* Legacy routes -- redirect to new paths */}
                   <Route path="venues" element={<Navigate to="/admin/content/venues" replace />} />
-                  <Route path="duplicates" element={<AdminDuplicates />} />
+                  <Route path="duplicates" element={<GovernanceRedirect mode="merge" />} />
                   <Route path="events" element={<Navigate to="/admin/content/events" replace />} />
                   <Route
                     path="tags"
