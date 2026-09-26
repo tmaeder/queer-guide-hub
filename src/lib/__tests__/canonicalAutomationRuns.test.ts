@@ -9,6 +9,13 @@ const migration = readFileSync(
   ),
   'utf8',
 );
+const crossStatementMigration = readFileSync(
+  join(
+    process.cwd(),
+    'supabase/migrations/20260926165901_automation_run_context_cross_statement.sql',
+  ),
+  'utf8',
+);
 
 const functionFiles = [
   'amenity-truth-backfill/index.ts',
@@ -19,7 +26,12 @@ const functionFiles = [
 
 describe('canonical automation run contract', () => {
   it('propagates and idempotently finalizes the scheduler-owned run', () => {
-    expect(migration).toContain("jsonb_build_object('X-Automation-Run-Id', v_run_id)");
+    expect(crossStatementMigration).toContain('private.admin_automation_run_contexts');
+    expect(crossStatementMigration).toContain(
+      "jsonb_build_object('X-Automation-Run-Id', v_context.run_id::text)",
+    );
+    expect(crossStatementMigration).toContain('remaining_requests = remaining_requests - 1');
+    expect(crossStatementMigration).toContain("'zz_probe'', 2");
     expect(migration).toContain('for update;');
     expect(migration).toContain("'already_finalized', true");
     expect(migration).toContain("elsif new.status = 'partial'");
