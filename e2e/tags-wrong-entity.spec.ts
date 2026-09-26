@@ -21,8 +21,7 @@ import { test, expect } from '@playwright/test';
 // fistula" also passes on a 404, on an empty body, and on a page that failed to render
 // — the positive half is what makes the negative half mean anything.
 
-const BOT_UA =
-  'Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)';
+const BOT_UA = 'Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)';
 
 /** The tag's own prose block, excluding the nav/rails that follow it. */
 function articleOf(html: string): string {
@@ -41,27 +40,66 @@ interface Case {
 }
 
 const CASES: Case[] = [
-  { slug: 'golden-shower', was: 'Cassia fistula, a flowering plant',
-    present: /urinat/i, absent: [/cassia\s+fistula/i, /flowering\s+plant/i, /Fabaceae/i] },
-  { slug: 'anal', was: 'The Analyst, a peer-reviewed journal',
-    present: /anus|rectum/i, absent: [/peer-reviewed/i, /\bThe Analyst\b/] },
-  { slug: 'kilts', was: 'Kielce, a city in Poland',
-    present: /kilt/i, absent: [/Kielce/i, /Voivodeship/i] },
-  { slug: 'devourer', was: 'Galactus, a Marvel character',
-    present: /oral|consum/i, absent: [/Galactus/i, /Marvel/i] },
-  { slug: 'brats', was: 'the Bratsberg Line, a Norwegian railway',
-    present: /defiant|dominant/i, absent: [/Bratsberg/i, /railway/i] },
-  { slug: 'simp', was: 'Simple English Wikipedia',
-    present: /sympath/i, absent: [/Simple English Wikipedia/i, /Basic English/i] },
-  { slug: 'luna', was: 'the given name Luna / the Latin word for Moon',
-    present: /alpha|primal/i, absent: [/given name/i, /Latin word for Moon/i] },
-  { slug: 'otters', was: 'Lutrinae, the semiaquatic mammals',
-    present: /bear|slimmer|body hair/i, absent: [/Lutrinae/i, /carnivorous mammals/i] },
-  { slug: 'bussy', was: 'Bussy, a commune in Cher, France',
-    present: /slang|queer/i, absent: [/commune/i, /Centre-Val de Loire/i] },
-  { slug: 'autonomy', was: 'Autonomy Corporation, a British software company',
+  {
+    slug: 'golden-shower',
+    was: 'Cassia fistula, a flowering plant',
+    present: /urinat/i,
+    absent: [/cassia\s+fistula/i, /flowering\s+plant/i, /Fabaceae/i],
+  },
+  {
+    slug: 'anal',
+    was: 'The Analyst, a peer-reviewed journal',
+    present: /anus|rectum/i,
+    absent: [/peer-reviewed/i, /\bThe Analyst\b/],
+  },
+  {
+    slug: 'kilts',
+    was: 'Kielce, a city in Poland',
+    present: /kilt/i,
+    absent: [/Kielce/i, /Voivodeship/i],
+  },
+  {
+    slug: 'devourer',
+    was: 'Galactus, a Marvel character',
+    present: /oral|consum/i,
+    absent: [/Galactus/i, /Marvel/i],
+  },
+  {
+    slug: 'brats',
+    was: 'the Bratsberg Line, a Norwegian railway',
+    present: /defiant|dominant/i,
+    absent: [/Bratsberg/i, /railway/i],
+  },
+  {
+    slug: 'simp',
+    was: 'Simple English Wikipedia',
+    present: /sympath/i,
+    absent: [/Simple English Wikipedia/i, /Basic English/i],
+  },
+  {
+    slug: 'luna',
+    was: 'the given name Luna / the Latin word for Moon',
+    present: /alpha|primal/i,
+    absent: [/given name/i, /Latin word for Moon/i],
+  },
+  {
+    slug: 'otters',
+    was: 'Lutrinae, the semiaquatic mammals',
+    present: /bear|slimmer|body hair/i,
+    absent: [/Lutrinae/i, /carnivorous mammals/i],
+  },
+  {
+    slug: 'bussy',
+    was: 'Bussy, a commune in Cher, France',
+    present: /slang|queer/i,
+    absent: [/commune/i, /Centre-Val de Loire/i],
+  },
+  {
+    slug: 'autonomy',
+    was: 'Autonomy Corporation, a British software company',
     present: /decisions about their own|consent|bodies/i,
-    absent: [/Autonomy Corporation/i, /software company/i] },
+    absent: [/Autonomy Corporation/i, /software company/i],
+  },
 ];
 
 test.describe('@smoke glossary entries do not publish another entity', () => {
@@ -96,32 +134,52 @@ test.describe('@smoke glossary entries do not publish another entity', () => {
       expect(article, `/tags/${c.slug} lost its own definition`).toMatch(c.present);
 
       for (const bad of c.absent) {
-        expect(
-          article,
-          `/tags/${c.slug} still publishes ${c.was} (matched ${bad})`,
-        ).not.toMatch(bad);
+        expect(article, `/tags/${c.slug} still publishes ${c.was} (matched ${bad})`).not.toMatch(
+          bad,
+        );
       }
 
       // The Wikipedia link is rendered straight from `wikipedia_url`, which pointed at
       // the redirect target. Its absence is the observable proof the identifier itself
       // was cleared, not just the prose rewritten — the exact half the 2026-08 health
       // pass missed, which left six wrong QIDs regenerating clinical codes weekly.
-      expect(
-        article,
-        `/tags/${c.slug} still links out to the wrong Wikipedia article`,
-      ).not.toMatch(/wikipedia\.org/i);
+      expect(article, `/tags/${c.slug} still links out to the wrong Wikipedia article`).not.toMatch(
+        /wikipedia\.org/i,
+      );
     });
   }
 
   test('a correctly linked tag keeps its Wikipedia link', async ({ request }) => {
     // Control. Without it, "no wikipedia.org link" would also pass if the repair had
     // stripped every link on every tag, or if the crawler template stopped emitting
-    // them at all. `drag-queen` → Q337084, whose P31 is `occupation`: a link the guard
-    // in tag-wiki-guard.ts adopts, verified against live Wikidata.
-    const res = await request.get('/tags/drag-queen', { headers: { 'User-Agent': BOT_UA } });
+    // them at all.
+    //
+    // THE CONTROL TAG MUST BE INDEXABLE, which is the whole reason this is no longer
+    // `drag-queen`. A deindexed tag emits no <article> (the same branch the negative
+    // cases above skip on), so when drag-queen was deindexed this control went red
+    // claiming "the crawler template no longer emits Wikipedia links" — and that was
+    // FALSE: /tags/drag-queen still carries en.wikipedia.org/wiki/Drag_queen in its
+    // JSON-LD `sameAs`, it simply renders no crawler prose. A control that blames the
+    // wrong layer is worse than no control, because the alarming reading of a red
+    // control here is that every negative assertion in this file has gone vacuous.
+    //
+    // `music` → Q638: active, indexable, human-reviewed, 1,470 assignments, and a
+    // concept whose identity is not the kind that gets re-dispositioned. Verified
+    // against prod: <article> present, link inside it, no robots noindex.
+    const res = await request.get('/tags/music', { headers: { 'User-Agent': BOT_UA } });
     expect(res.status()).toBe(200);
     const article = articleOf(await res.text());
-    expect(article).toMatch(/drag/i);
+
+    // Asserted separately and FIRST so that a future deindex of the control tag says
+    // so, instead of surfacing as a template regression. `articleOf` returns '' when
+    // there is no <article>, which would otherwise fail the link assertion below for
+    // entirely the wrong reason.
+    expect(
+      article,
+      '/tags/music emits no <article>: the CONTROL TAG was deindexed. Pick another active, indexable tag with a wikipedia_url — do not conclude the template broke.',
+    ).not.toBe('');
+
+    expect(article).toMatch(/music/i);
     expect(article, 'the crawler template no longer emits Wikipedia links at all').toMatch(
       /wikipedia\.org/i,
     );
