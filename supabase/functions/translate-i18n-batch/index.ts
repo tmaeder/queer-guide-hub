@@ -36,6 +36,7 @@ import { hasValidWebhookSecret } from '../_shared/webhook-auth.ts'
 import { applySuggestion, insertSuggestion } from '../_shared/ai-suggestions.ts'
 import { decodeHtmlEntities } from '../_shared/news-quality/sanitize.ts'
 import { isSenseCategory } from '../_shared/tag-style.ts'
+import { TRANSLATION_LOCALES } from '../_shared/locales.ts'
 
 interface BatchInput {
   table: string
@@ -104,9 +105,14 @@ const TABLE_FIELDS: Record<
   },
 }
 
-const ALLOWED_LOCALES = new Set([
-  'de', 'fr', 'es', 'it', 'pt', 'nl', 'pl', 'ru', 'tr', 'uk', 'sv',
-])
+// Derived from _shared/locales.ts, never retyped. The hardcoded set that used
+// to live here was the pipeline's FIRST locale list and had drifted:
+// `de fr es it pt nl pl ru tr uk sv` against a dispatcher seeding
+// `de fr es it pt ru zh ja ko ar`. Measured on prod 2026-09-19, that rejected
+// 60 of 150 targets on every fire — zh/ja/ko/ar could never be translated —
+// while the cron reported success 5,562/5,562 because nothing read the
+// response. Drift-tested by _shared/locales.test.ts.
+const ALLOWED_LOCALES = new Set(TRANSLATION_LOCALES)
 
 const SYSTEM_PROMPT = `You translate UI strings for queer.guide, an LGBTQ+ travel and community platform. Source language is English. Translations must:
 

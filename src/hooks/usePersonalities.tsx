@@ -13,6 +13,10 @@ export interface Personality {
   name: string;
   pronouns?: string;
   description?: string;
+  /** Translations of `description`, keyed by ISO 639-1 — written by
+   *  `translate-i18n-batch`, read via `localizedField`. `bio` has no
+   *  counterpart: the pipeline does not translate it. */
+  description_i18n?: Record<string, string> | null;
   bio?: string;
   birth_date?: string;
   death_date?: string;
