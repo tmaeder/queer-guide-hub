@@ -1,4 +1,5 @@
 import { SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5'
+import { validateEventSourceContract } from './event-source-contract.ts'
 
 // ============================================================
 // Source Adapter Interface — standard contract for all data sources
@@ -206,6 +207,17 @@ export async function writeToStaging(
     if (seen.has(sid)) return []
     seen.add(sid)
     const normalized = adapter.normalize(raw)
+    if (entityType === 'event') {
+      const contract = validateEventSourceContract(normalized)
+      normalized.metadata = {
+        ...normalized.metadata,
+        source_contract: {
+          version: 1,
+          errors: contract.errors,
+          warnings: contract.warnings,
+        },
+      }
+    }
     return [{
       source_type: config.sourceType || adapter.name,
       source_name: adapter.name,
