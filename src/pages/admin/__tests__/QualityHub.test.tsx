@@ -144,6 +144,6 @@ describe('QualityHub — business link review', () => {
   it('keeps inbox-decided gates as plain links', () => {
     renderHub();
     const cities = screen.getByRole('link', { name: /Cities/i });
-    expect(cities.getAttribute('href')).toBe('/admin/inbox?queue=quality-city');
+    expect(cities.getAttribute('href')).toBe('/admin/governance?mode=triage&queue=quality-city');
   });
 });

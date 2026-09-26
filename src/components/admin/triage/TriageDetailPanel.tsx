@@ -9,6 +9,8 @@ import { StagingPreview } from './StagingPreview';
 import { FieldDiffView, computeFieldDiffs } from './FieldDiffView';
 import { ActionBar } from './ActionBar';
 import { DedupPairCompare } from './DedupPairCompare';
+import { PipelineInspector } from '@/components/admin/audit/PipelineInspector';
+import { useTriageSourceCapabilities } from '@/hooks/useTriageSourceCapabilities';
 import type { TriageItem } from '@/hooks/useUnifiedTriageQueue';
 import { useEntityData, useStagingData } from '@/hooks/useTriageDetail';
 
@@ -42,14 +44,16 @@ function formatDate(dateStr: string): string {
 }
 
 /**
- * Queues the inbox lists but cannot decide: triage_action has no branch for
- * them because the decision needs inputs this generic panel does not model.
- * Mirrors triage_sources.capabilities.external_console. Deliberately excludes
- * dedup-review, which does have a working branch and keeps its action bar.
+ * Queues the inbox lists but cannot decide: `triage_action` has no branch for
+ * them, because the decision needs inputs this generic panel does not model.
+ *
+ * This USED to be a hardcoded `{ 'org-link-review': '/admin/quality' }` map,
+ * which duplicated `triage_sources.capabilities.external_console` instead of
+ * reading it — so the registry could be repointed (it has been, twice) and this
+ * panel would keep sending reviewers to the old route. It is read from the
+ * registry now; `useTriageSourceCapabilities` is the one reader.
  */
-const EXTERNAL_CONSOLE: Record<string, { route: string; label: string }> = {
-  'org-link-review': { route: '/admin/quality', label: 'Review in Quality' },
-};
+const EXTERNAL_CONSOLE_LABEL = 'Open the console that decides this →';
 
 /** Keys to hide from meta display — internal or already shown in header */
 const META_HIDDEN_KEYS = new Set([
@@ -106,7 +110,12 @@ function humanize(raw: string): string {
 export function TriageDetailPanel({ item, onAction, isActionLoading }: TriageDetailPanelProps) {
   const { data: entityData, isLoading: entityLoading } = useEntityData(item);
   const { data: stagingData } = useStagingData(item);
-  const externalConsole = EXTERNAL_CONSOLE[item.queue_type];
+  // Read from `triage_sources`, not from a literal in this file. While the
+  // registry is still loading this is undefined — and the action bar is held
+  // back until it resolves, because rendering Approve for a queue that
+  // `triage_action` refuses is exactly the state this replaced.
+  const { externalConsoleFor, loading: capabilitiesLoading } = useTriageSourceCapabilities();
+  const externalConsole = externalConsoleFor(item.queue_type);
 
   const isDedup = item.queue_type === 'dedup-review';
   const meta = (item.meta ?? null) as Record<string, unknown> | null;
@@ -340,6 +349,26 @@ export function TriageDetailPanel({ item, onAction, isActionLoading }: TriageDet
               </div>
             )}
 
+            {/* Why the machine proposed this. Only for a row that already has a
+                committed entity: a pre-commit staging row has no entity_id, and
+                StagingPreview above is the surface for that half. `entity_table`
+                is already the plural table name, which is exactly what
+                audit_entity_registry keys on — no mapping needed. */}
+            {item.entity_id && item.entity_table && (
+              <div className="border-t">
+                <p className="px-4 py-1.5 text-2xs font-medium text-muted-foreground uppercase tracking-wider bg-muted/50">
+                  Pipeline &amp; audit
+                </p>
+                <div className="px-4 py-2">
+                  <PipelineInspector
+                    entityType={item.entity_table}
+                    entityId={item.entity_id}
+                    limit={60}
+                  />
+                </div>
+              </div>
+            )}
+
             {/* Venue consensus: sources + per-field confidence */}
             {consensus && (
               <div className="border-t">
@@ -409,14 +438,22 @@ export function TriageDetailPanel({ item, onAction, isActionLoading }: TriageDet
         )}
       </div>
 
-      {/* Action bar — or a deep link out for queues decided elsewhere */}
-      {externalConsole ? (
+      {/* Action bar — or a deep link out for queues decided elsewhere.
+          `capabilitiesLoading` is checked FIRST: until the registry answers we
+          do not know whether this queue has an external console, and showing
+          Approve for one that does means offering a button `triage_action`
+          refuses with 22023. Absence of an answer is not an answer. */}
+      {capabilitiesLoading ? (
+        <div className="border-t p-4">
+          <p className="text-13 text-muted-foreground">Checking how this queue is decided…</p>
+        </div>
+      ) : externalConsole ? (
         <div className="flex items-center justify-between gap-4 border-t p-4">
           <p className="text-13 text-muted-foreground">
             Decided in its own console — approving picks a target business.
           </p>
           <Button asChild size="sm" variant="outline">
-            <Link to={externalConsole.route}>{externalConsole.label} →</Link>
+            <Link to={externalConsole}>{EXTERNAL_CONSOLE_LABEL}</Link>
           </Button>
         </div>
       ) : (isDedup && namesake && !namesakeConfirmed) || (requiresConfirm && !safetyConfirmed) ? (
