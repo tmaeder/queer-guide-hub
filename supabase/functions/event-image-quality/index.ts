@@ -279,7 +279,8 @@ Deno.serve(async (req: Request) => {
       req,
     )
   } catch (error) {
-    return errorResponse(error instanceof Error ? error.message : String(error), 500, req)
+    console.error('event image quality failed:', error)
+    return errorResponse('Internal server error', 500, req)
   } finally {
     const { error } = await supabase.rpc('release_event_quality_worker_lease', {
       p_worker: DETECTOR,
