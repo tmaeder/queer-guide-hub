@@ -1146,6 +1146,75 @@ if (!hygieneRes.ok) {
   }
 }
 
+// 5a-ter. City wrong-entity regression. The same namesake chimera as the glossary
+//     and the personalities, on PLACES, where it makes a travel platform tell a
+//     reader that Frisco, Texas IS San Francisco. Repaired by 20261102100000
+//     (Geneva, Alabama wearing Q71, by hand) and 99991790358713 (11 rows found by
+//     sweeping all 2,959 QID-bearing cities against live Wikidata P625 -- Par in
+//     Cornwall serving Paris's article, Kos serving Koszalin's, a Kent village
+//     wearing St Petersburg's governor as its mayor). Nothing watched it after.
+//
+//     SQL cannot call Wikidata, so this cannot tell you a NEW identifier is wrong
+//     -- that sweep is an out-of-band job. It watches the three things it can
+//     prove, and the middle one is specific to cities: `city-factual-backfill`
+//     re-fetches the article by the CACHED `wikipedia_title` independently of the
+//     QID, so a title creeping back re-publishes the wrong article even while the
+//     identifier stays null. `coord_unswept` is a work-list size and only prints.
+{
+  const res = await fetch(`${BASE}/rest/v1/rpc/city_wikidata_signals`, {
+    method: 'POST',
+    headers: { ...headers, 'Content-Type': 'application/json' },
+    body: '{}',
+  })
+  if (res.status === 404) {
+    // NOT-YET-DEPLOYED is a different fact from BROKEN, and conflating them makes a
+    // required gate block the merge that would deploy it: this script runs against
+    // LIVE prod from a PR branch, so a hard fail here cannot be cleared until after
+    // the merge it prevents — the deadlock CLAUDE.md records for `Critical paths`.
+    // The absence is still NAMED, so it never reads as a clean corpus, which is the
+    // rule that matters (`accessibility_contradictions`). Same shape as
+    // `admin_automation_tracking_gaps` below. ONLY a 404 is tolerated — a 500 or a
+    // malformed body still fails, so a genuinely broken sentinel cannot hide here.
+    console.warn('⚠ city_wikidata_signals not deployed yet (404) — migration pending, not clean')
+  } else if (!res.ok) {
+    console.error(`✗ city_wikidata_signals → HTTP ${res.status}`)
+    FAILED = true
+  } else {
+    const s = await res.json()
+    if (!s || s.probe_ok !== true) {
+      console.error('✗ city_wikidata_signals returned no probe_ok — treating as broken, not clean')
+      FAILED = true
+    } else {
+      // A clean corpus and an unreadable one both return zeroes. Assert the probe
+      // is reading something before trusting its zeroes.
+      if ((s.rows_with_qid ?? 0) < 1000) {
+        console.error(
+          `✗ city_wikidata_signals sees only ${s.rows_with_qid} cities with a Q-id — the probe is not reading the corpus`,
+        )
+        FAILED = true
+      }
+      for (const [key, msg] of [
+        ['qid_regressed', 'cit(ies) re-acquired the refuted Wikidata id they were cleared of'],
+        [
+          'wrong_title_back',
+          'repaired cit(ies) carry a wikipedia_title again — the wrong article will be re-fetched',
+        ],
+        ['retracted_desc_back', 'retracted wrong-place description(s) have returned'],
+      ]) {
+        if ((s[key] ?? 0) > 0) {
+          console.error(`✗ ${s[key]} ${msg}`)
+          for (const e of (s.examples ?? []).slice(0, 5)) console.error(`    ${e}`)
+          FAILED = true
+        }
+      }
+      console.log(
+        `✓ City wrong-entity repairs intact (${s.dispositioned} dispositioned, ` +
+          `${s.coord_unswept} rows with an id never coordinate-swept)`,
+      )
+    }
+  }
+}
+
 // 5b. Automation run-tracking gaps (2026-09). Until this landed, 142 of 144
 //     enabled cron automations had never recorded a run, so consecutive_failures
 //     never moved and auto-pause could not fire. These two checks keep it that
