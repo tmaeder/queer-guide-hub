@@ -137,6 +137,23 @@ async function awaitInitialBeaconThenReset(
   beacons.reset();
 }
 
+/**
+ * EVERY case here needs more than Playwright's 30s default, and the reason is
+ * structural rather than a slow machine: each one drives two or three real
+ * navigations against production, and `page.goto` waits for `load` — i.e. for
+ * every image on an image-heavy page — before a single assertion runs.
+ *
+ * Measured against prod: the page-view case takes 28.9s and the scroll case
+ * 26s, both against a 30s ceiling. Margins of one and four seconds are not
+ * tests, they are coin flips, and a guard that flakes teaches people to re-run
+ * it instead of reading it.
+ *
+ * The budget moves rather than the work. Trimming navigations or shortening
+ * the scroll cadence would fit 30s by no longer exercising the defects these
+ * cases exist to catch. 120s is still far below any real hang.
+ */
+test.describe.configure({ timeout: 120_000 });
+
 test.describe('analytics consent gate', () => {
   test('no stored consent → nothing is tracked and window.umami never exists', async ({ page }) => {
     await presentAsHuman(page);
@@ -183,10 +200,6 @@ test.describe('analytics consent gate', () => {
     // detail route that silently stopped firing, or a slug that 404s, also
     // produces zero behavioural beacons and would pass the refusal case
     // alone while proving nothing at all.
-    // A detail route carries a map and far more data than the list routes the
-    // other cases use, so it needs a budget of its own rather than the 30s
-    // default — the work is real, not a hang.
-    test.setTimeout(120_000);
     const DETAIL = '/city/berlin';
 
     await presentAsHuman(page);
