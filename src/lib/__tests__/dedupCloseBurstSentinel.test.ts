@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
-const MIGRATION = '99991790359641_dedup_close_burst_sentinel.sql';
+const MIGRATION = '99991790384573_dedup_close_burst_sentinel.sql';
 const migrationPath = join(process.cwd(), 'supabase', 'migrations', MIGRATION);
 const raw = readFileSync(migrationPath, 'utf8');
 const healthScript = readFileSync(

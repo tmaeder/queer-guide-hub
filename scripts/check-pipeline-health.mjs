@@ -939,7 +939,7 @@ if (!hygieneRes.ok) {
     method: 'POST', headers: { ...headers, 'Content-Type': 'application/json' }, body: '{}',
   })
   if (!res.ok) {
-    console.warn(`⚠ dedup_close_burst_signals → HTTP ${res.status} (RPC missing? migration 99991790359641)`)
+    console.warn(`⚠ dedup_close_burst_signals → HTTP ${res.status} (RPC missing? migration 99991790384573)`)
     console.warn('  This check measured NOTHING — it did not pass.')
   } else {
     const d = await res.json()
