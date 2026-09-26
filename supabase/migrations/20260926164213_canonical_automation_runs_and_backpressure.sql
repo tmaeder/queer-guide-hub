@@ -36,7 +36,6 @@ create policy admin_automation_state_events_select
   using (public.has_any_role_jwt(array['admin'::public.app_role, 'moderator'::public.app_role]));
 
 revoke all on public.admin_automation_state_events from public, anon, authenticated;
-grant select on public.admin_automation_state_events to authenticated;
 grant all on public.admin_automation_state_events to service_role;
 
 create or replace function public.admin_automation_log_state_change()
