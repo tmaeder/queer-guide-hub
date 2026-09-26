@@ -498,6 +498,9 @@ verify_jwt = false
 [functions.event-image-backfill]
 verify_jwt = false
 
+[functions.event-image-quality]
+verify_jwt = false
+
 [functions.queer-imagery-backfill]
 verify_jwt = false
 

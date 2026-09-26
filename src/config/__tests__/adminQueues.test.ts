@@ -4,7 +4,7 @@
  * ordering rule the cockpit feed depends on.
  *
  * EXPECTED_COUNT_KEYS is transcribed from the live `triage_sources` rows plus
- * the three static gates in the RPC body (migration
+ * the four static gates in the RPC body (migrations
  * 20260801050000_p4_fold_quality_queues_into_triage.sql). This test cannot see
  * SQL, so a NEW migration adding a queue will not fail it — but any refactor
  * that drops, renames or duplicates an entry here will.
@@ -42,6 +42,7 @@ const EXPECTED_COUNT_KEYS = [
   // static gates computed outside the registry loop
   'review_feedback',
   'review_group_requests',
+  'quality_event',
   'quality_existence',
 ];
 
@@ -85,8 +86,8 @@ describe('ADMIN_QUEUES', () => {
     }
   });
 
-  it('exposes the nine quality-hub gates, all present in the registry', () => {
-    expect(QUALITY_GATES).toHaveLength(9);
+  it('exposes the ten quality-hub gates, all present in the registry', () => {
+    expect(QUALITY_GATES).toHaveLength(10);
     for (const gate of QUALITY_GATES) {
       expect(queueByCountKey(gate.countKey)).toBe(gate);
       expect(gate.surfaces).toContain('quality');
