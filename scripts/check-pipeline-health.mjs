@@ -920,6 +920,54 @@ if (!hygieneRes.ok) {
   }
 }
 
+// 4a-bis. Evidence-free MASS closes of the dedup queue (2026-09-25).
+//
+//     On 2026-09-20 an autonomous pass closed 676 open pairs in one burst because
+//     "confidence is below the merge threshold" -- which describes the PRODUCER'S
+//     uncertainty (0.70 is the sweep's own score for an uncorroborated candidate), not
+//     evidence about the pair. One row in that burst scored 0.97. Because
+//     `status='rejected'` is the sweep's permanent memory, roughly half that cohort --
+//     real duplicates with a mislinked city -- became permanently unfindable, and the
+//     symptom was a CLEAN QUEUE. Every other check in this file got greener.
+//
+//     Gates on VOLUME, not on note text: "was there evidence" is not mechanically
+//     decidable from a string, and a prefix allowlist is satisfied by the next pass that
+//     picks a conforming prefix. Measured over all history the legitimate closer's
+//     ceiling is 125 rejections/day, against incidents of 591 and 676.
+{
+  const res = await fetch(`${BASE}/rest/v1/rpc/dedup_close_burst_signals`, {
+    method: 'POST', headers: { ...headers, 'Content-Type': 'application/json' }, body: '{}',
+  })
+  if (!res.ok) {
+    console.warn(`⚠ dedup_close_burst_signals → HTTP ${res.status} (RPC missing? migration 99991790384573)`)
+    console.warn('  This check measured NOTHING — it did not pass.')
+  } else {
+    const d = await res.json()
+    if (!d?.probe_ok) {
+      console.error('✗ dedup_close_burst_signals did not report probe_ok — the probe is broken')
+      FAILED = true
+    } else if (Number(d.closes_total_ever ?? 0) === 0) {
+      console.error('✗ dedup_close_burst_signals sees no machine closes in all of history — it is measuring nothing')
+      FAILED = true
+    } else {
+      const bursts = Array.isArray(d.bursts) ? d.bursts : []
+      for (const b of bursts) {
+        console.error(`✗ ${b.closes} dedup pairs closed as "distinct" by machine on ${b.day} (threshold ${d.burst_threshold})`)
+        console.error(`  note: ${b.sample_note}`)
+      }
+      if (bursts.length > 0) {
+        console.error('  A close that large was not reviewed pair-by-pair, and status=rejected is')
+        console.error('  permanent: the sweep never re-suggests a rejected pair. If the pass was')
+        console.error('  right, reopen nothing; if it closed on a confidence score rather than on')
+        console.error('  evidence about each pair, restore them to open before the trail is cold.')
+        FAILED = true
+      } else {
+        console.log(`✓ Dedup close bursts: none in ${d.window_days}d (max day ${d.max_day_count}, threshold ${d.burst_threshold})`)
+      }
+    }
+  }
+}
+
 // 4b. Place dedup corroboration (2026-09-15). The requirement is that dedup of
 //     countries, cities and villages rests on real geographical sources and names,
 //     and never suggests merging two different PLACES. The engine satisfies it
