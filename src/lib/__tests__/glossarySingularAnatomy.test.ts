@@ -13,7 +13,7 @@ import { describe, expect, it } from 'vitest';
 const FILE = join(
   __dirname,
   '../../../supabase/migrations',
-  '99991790359756_glossary_singular_anatomy_degender.sql',
+  '99991790384461_glossary_singular_anatomy_degender.sql',
 );
 
 // The header quotes the very phrases the statements remove, so every assertion
@@ -90,7 +90,7 @@ describe('what it writes', () => {
   });
 
   it('declares an actor', () => {
-    expect(writes).toContain('migration:99991790359756');
+    expect(writes).toContain('migration:99991790384461');
   });
 });
 

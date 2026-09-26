@@ -80,7 +80,7 @@
 
 begin;
 
-select set_config('app.actor', 'migration:99991790359756_glossary_singular_anatomy_degender', true);
+select set_config('app.actor', 'migration:99991790384461_glossary_singular_anatomy_degender', true);
 
 -- ── A. gendered prose on a body part ────────────────────────────────────────
 update unified_tags t set
