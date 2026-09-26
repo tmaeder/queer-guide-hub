@@ -16,6 +16,7 @@ import { ReportButton } from '@/components/moderation/ReportButton';
 import { AdminEditButton } from '@/components/admin/AdminEditButton';
 import { Editable } from '@/components/admin/inline/Editable';
 import { formatPhoneDisplay, formatPhoneHref } from '@/lib/formatPhone';
+import { isPublishableLink, type VenueUrlStatus } from '@/lib/linkPublishable';
 import { VenueEvents } from '@/components/venues/VenueEvents';
 import { VenueCheckInButton } from '@/components/venues/VenueCheckInButton';
 import { VenueSafetySignalDisplay } from '@/components/venues/VenueSafetySignalDisplay';
@@ -31,7 +32,9 @@ import type { TFunction } from 'i18next';
 import type { useVenueSocialSignals } from '@/hooks/useVenueSocialSignals';
 import type { Database } from '@/integrations/supabase/types';
 import { fetchVenueWithReviews } from '@/hooks/usePageFetchers';
+import { useTranslation } from 'react-i18next';
 import { GlossaryLinkedText } from '@/components/tags/GlossaryLinkedText';
+import { localizedField, type I18nMap } from '@/lib/localizeContent';
 
 type Venue = Database['public']['Tables']['venues']['Row'];
 export type VenueReview = Database['public']['Tables']['venue_reviews']['Row'] & {
@@ -267,7 +270,12 @@ export function VenueActions({
           venueLongitude={venue.longitude}
         />
       )}
-      {venue.website && venue.url_status !== 'broken' && (
+      {/* `isPublishableLink`, not `!== 'broken'`. The old test let an `unsafe` URL
+          through — one the SSRF guard refused because it resolves to a private
+          target or is malformed — and this is a travel site, so an outbound link
+          is a place we are sending someone. Same predicate as the contact block
+          below, so the two can no longer disagree about one venue. */}
+      {venue.website && isPublishableLink(venue.url_status as VenueUrlStatus) && (
         <Button variant="outline" size="sm" asChild>
           <a href={venue.website} target="_blank" rel="noopener noreferrer nofollow">
             <Globe size={14} className="mr-1.5" />
@@ -389,7 +397,18 @@ export function VenueAbout({
   venue: VenueWithRelations;
   onContentUpdated?: () => void;
 }) {
+  const { i18n } = useTranslation();
   if (!venue.description) return null;
+  // `<Editable>` renders its CHILDREN as the display value and uses `value`
+  // ONLY to seed the editor. So the translation goes in the children and
+  // `value` stays on the base column: a reader sees their locale, an admin
+  // still edits the English source of record. Localizing `value` instead
+  // would have an admin silently overwrite English with a translation.
+  const display = localizedField(
+    venue.description,
+    (venue as { description_i18n?: unknown }).description_i18n as I18nMap,
+    i18n.language,
+  );
   return (
     <Editable
       contentType="venues"
@@ -401,7 +420,7 @@ export function VenueAbout({
       as="div"
     >
       <p className="max-w-reading whitespace-pre-wrap text-body-lg leading-relaxed">
-        <GlossaryLinkedText text={venue.description} />
+        <GlossaryLinkedText text={display} />
       </p>
     </Editable>
   );
@@ -778,14 +797,26 @@ export function VenueLocationContact({
                 value={venue.website}
                 onSaved={onContentUpdated}
               >
-                <a
-                  href={venue.website}
-                  target="_blank"
-                  rel="noopener noreferrer nofollow"
-                  className="text-primary hover:underline"
-                >
-                  {venue.website.replace(/^https?:\/\//, '').replace(/\/$/, '')}
-                </a>
+                {/* A known-dead or refused URL renders as TEXT, not as a link.
+                    This block was ungated while the masthead button was gated, so
+                    the page hid the broken link in one place and published it in
+                    the other — and after the fact-strip dedup this became the
+                    primary place a website appears at all. Reported as "the link
+                    on this location does not work". */}
+                {isPublishableLink(venue.url_status as VenueUrlStatus) ? (
+                  <a
+                    href={venue.website}
+                    target="_blank"
+                    rel="noopener noreferrer nofollow"
+                    className="text-primary hover:underline"
+                  >
+                    {venue.website.replace(/^https?:\/\//, '').replace(/\/$/, '')}
+                  </a>
+                ) : (
+                  <span className="text-muted-foreground">
+                    {venue.website.replace(/^https?:\/\//, '').replace(/\/$/, '')}
+                  </span>
+                )}
               </Editable>
             </span>
           </div>

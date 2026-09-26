@@ -123,6 +123,31 @@ if (!personalityRes.ok) {
   }
 }
 
+// Event programme gates remain advisory while event_quality_rollout is in
+// shadow mode. The RPC promotes zero-tolerance gates to critical only after
+// enforcement is explicitly enabled.
+const eventRes = await fetch(`${BASE}/rest/v1/rpc/event_quality_gate_checks`, {
+  method: 'POST',
+  headers: { apikey: KEY, Authorization: `Bearer ${KEY}`, 'Content-Type': 'application/json' },
+  body: '{}',
+});
+if (!eventRes.ok) {
+  const body = await eventRes.text();
+  if (eventRes.status === 404 && body.includes('PGRST202')) {
+    console.warn('⚠ event_quality_gate_checks is not deployed yet — rollout window');
+  } else {
+    console.error(`event_quality_gate_checks → HTTP ${eventRes.status}: ${body}`);
+    process.exit(1);
+  }
+} else {
+  const eventRows = await eventRes.json();
+  for (const r of eventRows.sort(
+    (a, b) => a.severity.localeCompare(b.severity) || a.gate.localeCompare(b.gate),
+  )) {
+    reportGate(r);
+  }
+}
+
 if (blocking > 0) {
   console.error(`\n✗ ${blocking} critical data-quality failure(s) — blocking.`);
   process.exit(1);

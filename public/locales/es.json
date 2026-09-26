@@ -1901,16 +1901,16 @@
       "celebrate": "[ES] Celebrate {{name}}"
     },
     "map": {
-      "interchangeEyebrow": "[ES] Interchange",
+      "interchangeEyebrow": "Intercambio",
       "interchange": {
-        "label": "[ES] Search everything",
-        "subtitle": "[ES] Every line meets here"
+        "label": "Busca en todo",
+        "subtitle": "Aquí se cruzan todas las líneas"
       }
     },
     "glossary": {
-      "eyebrow": "[ES] Glossary",
-      "title": "[ES] Know the words",
-      "seeAll": "[ES] All terms"
+      "eyebrow": "Glosario",
+      "title": "Conoce las palabras",
+      "seeAll": "Todos los términos"
     }
   },
   "header": {
@@ -1952,10 +1952,10 @@
       "trips": "Viajes",
       "organizations": "Organizaciones",
       "wishlists": "Listas de deseos",
-      "tags": "[ES] Glossary",
-      "tagsAll": "[ES] All terms",
-      "tagsInteractions": "[ES] Substance safety",
-      "tagsStiGuide": "[ES] STI guide",
+      "tags": "Glosario",
+      "tagsAll": "Todos los términos",
+      "tagsInteractions": "Seguridad con sustancias",
+      "tagsStiGuide": "Guía de ITS",
       "transRights": "Derechos trans",
       "competitions": "[ES] Drag Race"
     },
@@ -1987,8 +1987,8 @@
       "sheetHeading": "¿Qué buscas?",
       "browseHeading": "Explorar todo",
       "glossary": {
-        "label": "[ES] Glossary",
-        "subtitle": "[ES] What every term, flag and code means"
+        "label": "Glosario",
+        "subtitle": "Qué significa cada término, bandera y código"
       }
     },
     "userMenu": {
@@ -4498,8 +4498,8 @@
       "open": "[ES] Read the entry"
     },
     "fromGlossary": {
-      "title": "[ES] From the glossary",
-      "all": "[ES] All terms"
+      "title": "Del glosario",
+      "all": "Todos los términos"
     },
     "figures": {
       "eyebrow": "[ES] Diagram",

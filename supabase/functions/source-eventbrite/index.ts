@@ -69,8 +69,9 @@ const eventbriteAdapter: SourceAdapter = {
           })
 
           for (const event of items.slice(0, limit)) {
+            if (!event.id) continue
             allItems.push({
-              sourceId: event.id || `eb-${Date.now()}`,
+              sourceId: String(event.id),
               data: { ...event, _search_city: city },
             })
           }
