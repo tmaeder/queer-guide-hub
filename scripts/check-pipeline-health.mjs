@@ -4160,14 +4160,26 @@ const DISOWNED_PROSE_CEILING = 380
         console.error('  function refuses. Check _shared/locales.ts against the i18n_translation_targets seed.')
         FAILED = true
       }
+      // never_succeeded WARNS; it does not gate. It was a hard fail for the
+      // first hours after the sentinel shipped, and prod immediately showed
+      // why that is wrong: within three hours it fired on ONE target
+      // (unified_tags.name/zh) whose failure was `502 LLM returned non-JSON
+      // output` — a flake, not a contract. Measured at the same moment: 150
+      // of 150 targets resolved and 149 had succeeded, so the path plainly
+      // worked. Gating on it would have painted the board red for an LLM
+      // having a bad afternoon, which is how a check gets scrolled past.
+      //
+      // Nothing is lost by the downgrade, and that was checked rather than
+      // assumed: the incident this section exists for was 60 targets at HTTP
+      // 400, and `client_error_targets` above hard-fails on a single 4xx with
+      // no threshold. A contract break is still caught on the first fire.
       if (neverOk > 0) {
-        console.error(`✗ ${neverOk} i18n targets have been answered at least once and have NEVER succeeded`)
-        FAILED = true
+        console.warn(`⚠ ${neverOk} i18n targets have been answered and have never succeeded (5xx/parse — see consecutive_failures)`)
       }
       if (failing > 0) {
         console.warn(`⚠ ${failing} i18n targets have 3+ consecutive failures (5xx/network — transient until it isn't)`)
       }
-      if (clientErr === 0 && neverOk === 0) {
+      if (clientErr === 0) {
         const locales = Array.isArray(q.locales) ? q.locales.join(',') : '?'
         console.log(`✓ i18n dispatch reaching all targets (${q.targets_enabled} enabled, locales ${locales}, ${q.unresolved} in flight)`)
       }
