@@ -16,6 +16,13 @@ const crossStatementMigration = readFileSync(
   ),
   'utf8',
 );
+const airportRepairMigration = readFileSync(
+  join(
+    process.cwd(),
+    'supabase/migrations/20260926171800_restore_airport_refresh_canonical_wrapper.sql',
+  ),
+  'utf8',
+);
 
 const functionFiles = [
   'amenity-truth-backfill/index.ts',
@@ -50,5 +57,13 @@ describe('canonical automation run contract', () => {
     expect(migration).toContain('v_elapsed_ms >= 75000');
     expect(migration).toMatch(/order by id\s+limit 1\s+for update skip locked/s);
     expect(migration).toContain('stopped_for_budget');
+  });
+
+  it('keeps the repaired airport refresh inside the canonical run wrapper', () => {
+    expect(airportRepairMigration).toContain('select net.http_post(');
+    expect(airportRepairMigration).toContain("'X-Internal-Secret'");
+    expect(airportRepairMigration).toContain(
+      "v_command NOT LIKE 'SELECT public.admin_automation_run_begin(%'",
+    );
   });
 });
