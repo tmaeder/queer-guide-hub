@@ -328,9 +328,11 @@ SELECT cron.schedule(
 -- ---------------------------------------------------------------------------
 DO $verify$
 DECLARE
-  v_missing text;
-  v_sig     jsonb;
-  v_jobs    int;
+  v_missing      text;
+  v_sig          jsonb;
+  v_jobs         int;
+  v_dispatch_src text;
+  v_reap_src     text;
 BEGIN
   SELECT string_agg(c, ', ') INTO v_missing
   FROM unnest(ARRAY['last_request_id','last_status','last_error',
@@ -343,17 +345,29 @@ BEGIN
     RAISE EXCEPTION 'i18n_translation_targets is missing outcome columns: %', v_missing;
   END IF;
 
+  -- COMMENTS ARE STRIPPED BEFORE EVERY ASSERTION BELOW. pg_get_functiondef()
+  -- returns the body INCLUDING its comments, so an unstripped `position()`
+  -- can be satisfied by the prose that EXPLAINS a symbol rather than by the
+  -- code that uses it. Both needles here sit in real statements today — but
+  -- the next edit to either function could move the phrase into a comment and
+  -- the guard would go on passing while the behaviour was gone. Enforced
+  -- repo-wide by scripts/check-functiondef-asserts.mjs.
+  v_dispatch_src := regexp_replace(
+    pg_get_functiondef('public.run_i18n_translation_dispatch(integer)'::regprocedure),
+    '--[^' || chr(10) || ']*', '', 'g');
+  v_reap_src := regexp_replace(
+    pg_get_functiondef('public.run_i18n_translation_reap()'::regprocedure),
+    '--[^' || chr(10) || ']*', '', 'g');
+
   -- The dispatcher must actually keep the id. Guarding on the assignment, not
   -- on the mere presence of the column name somewhere in the body.
-  IF position('last_request_id = v_req_id' in
-       pg_get_functiondef('public.run_i18n_translation_dispatch(integer)'::regprocedure)) = 0 THEN
+  IF position('last_request_id = v_req_id' in v_dispatch_src) = 0 THEN
     RAISE EXCEPTION 'run_i18n_translation_dispatch does not record the pg_net request id';
   END IF;
 
   -- And the reaper must join on it. A reaper that resolved by recency would
   -- silently attribute another caller's response to a translation target.
-  IF position('r.id = t.last_request_id' in
-       pg_get_functiondef('public.run_i18n_translation_reap()'::regprocedure)) = 0 THEN
+  IF position('r.id = t.last_request_id' in v_reap_src) = 0 THEN
     RAISE EXCEPTION 'run_i18n_translation_reap must join net._http_response BY REQUEST ID';
   END IF;
 
