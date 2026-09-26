@@ -51,6 +51,7 @@ import { FactGrid } from '@/components/transit/FactGrid';
 import { NestedEntityCard } from '@/components/transit/NestedEntityCard';
 import { getEventLiveState } from '@/lib/event-countdown';
 import { GlossaryLinkedText } from '@/components/tags/GlossaryLinkedText';
+import { localizedField, type I18nMap } from '@/lib/localizeContent';
 
 export type EventWithRelations = Database['public']['Tables']['events']['Row'] & {
   social_links?: Record<string, string> | null;
@@ -746,6 +747,14 @@ export function EventAbout({
   event: EventWithRelations;
   onContentUpdated?: () => void;
 }) {
+  const { i18n } = useTranslation();
+  // Display only. `<Editable value>` keeps the base column so an admin edits
+  // the English source of record rather than overwriting it with a translation.
+  const displayDescription = localizedField(
+    event.description,
+    (event as { description_i18n?: unknown }).description_i18n as I18nMap,
+    i18n.language,
+  );
   const hasAccessibility =
     (event.accessibility_attributes?.length ?? 0) > 0 || Boolean(event.accessibility_notes);
   const priceUnknown = !event.is_free && !event.price_min;
@@ -786,7 +795,7 @@ export function EventAbout({
               className="max-w-[68ch] whitespace-pre-wrap text-body-lg text-foreground/90"
               style={{ lineHeight: 1.7 }}
             >
-              <GlossaryLinkedText text={event.description} />
+              <GlossaryLinkedText text={displayDescription} />
             </p>
           </Editable>
         </section>

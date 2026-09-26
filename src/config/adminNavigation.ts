@@ -590,6 +590,7 @@ export const ADMIN_ROUTE_ROLE_OVERRIDES: Record<string, AdminRole> = {
   // DO have nav rows, so they are fixed on the item instead — an override there
   // would leave the sidebar advertising a link that then denies you.
   '/admin/content/liveness': 'moderator',
+  '/admin/content/event-quality': 'moderator',
 };
 
 /**

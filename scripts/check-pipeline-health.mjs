@@ -1146,6 +1146,75 @@ if (!hygieneRes.ok) {
   }
 }
 
+// 5a-ter. City wrong-entity regression. The same namesake chimera as the glossary
+//     and the personalities, on PLACES, where it makes a travel platform tell a
+//     reader that Frisco, Texas IS San Francisco. Repaired by 20261102100000
+//     (Geneva, Alabama wearing Q71, by hand) and 99991790358713 (11 rows found by
+//     sweeping all 2,959 QID-bearing cities against live Wikidata P625 -- Par in
+//     Cornwall serving Paris's article, Kos serving Koszalin's, a Kent village
+//     wearing St Petersburg's governor as its mayor). Nothing watched it after.
+//
+//     SQL cannot call Wikidata, so this cannot tell you a NEW identifier is wrong
+//     -- that sweep is an out-of-band job. It watches the three things it can
+//     prove, and the middle one is specific to cities: `city-factual-backfill`
+//     re-fetches the article by the CACHED `wikipedia_title` independently of the
+//     QID, so a title creeping back re-publishes the wrong article even while the
+//     identifier stays null. `coord_unswept` is a work-list size and only prints.
+{
+  const res = await fetch(`${BASE}/rest/v1/rpc/city_wikidata_signals`, {
+    method: 'POST',
+    headers: { ...headers, 'Content-Type': 'application/json' },
+    body: '{}',
+  })
+  if (res.status === 404) {
+    // NOT-YET-DEPLOYED is a different fact from BROKEN, and conflating them makes a
+    // required gate block the merge that would deploy it: this script runs against
+    // LIVE prod from a PR branch, so a hard fail here cannot be cleared until after
+    // the merge it prevents — the deadlock CLAUDE.md records for `Critical paths`.
+    // The absence is still NAMED, so it never reads as a clean corpus, which is the
+    // rule that matters (`accessibility_contradictions`). Same shape as
+    // `admin_automation_tracking_gaps` below. ONLY a 404 is tolerated — a 500 or a
+    // malformed body still fails, so a genuinely broken sentinel cannot hide here.
+    console.warn('⚠ city_wikidata_signals not deployed yet (404) — migration pending, not clean')
+  } else if (!res.ok) {
+    console.error(`✗ city_wikidata_signals → HTTP ${res.status}`)
+    FAILED = true
+  } else {
+    const s = await res.json()
+    if (!s || s.probe_ok !== true) {
+      console.error('✗ city_wikidata_signals returned no probe_ok — treating as broken, not clean')
+      FAILED = true
+    } else {
+      // A clean corpus and an unreadable one both return zeroes. Assert the probe
+      // is reading something before trusting its zeroes.
+      if ((s.rows_with_qid ?? 0) < 1000) {
+        console.error(
+          `✗ city_wikidata_signals sees only ${s.rows_with_qid} cities with a Q-id — the probe is not reading the corpus`,
+        )
+        FAILED = true
+      }
+      for (const [key, msg] of [
+        ['qid_regressed', 'cit(ies) re-acquired the refuted Wikidata id they were cleared of'],
+        [
+          'wrong_title_back',
+          'repaired cit(ies) carry a wikipedia_title again — the wrong article will be re-fetched',
+        ],
+        ['retracted_desc_back', 'retracted wrong-place description(s) have returned'],
+      ]) {
+        if ((s[key] ?? 0) > 0) {
+          console.error(`✗ ${s[key]} ${msg}`)
+          for (const e of (s.examples ?? []).slice(0, 5)) console.error(`    ${e}`)
+          FAILED = true
+        }
+      }
+      console.log(
+        `✓ City wrong-entity repairs intact (${s.dispositioned} dispositioned, ` +
+          `${s.coord_unswept} rows with an id never coordinate-swept)`,
+      )
+    }
+  }
+}
+
 // 5b. Automation run-tracking gaps (2026-09). Until this landed, 142 of 144
 //     enabled cron automations had never recorded a run, so consecutive_failures
 //     never moved and auto-pause could not fire. These two checks keep it that
@@ -3974,6 +4043,77 @@ const DISOWNED_PROSE_CEILING = 380
         console.log(
           `✓ audit inspector honest (${a.registry_rows} entity types, ${a.explanation_rows} explanations, no catalog drift, definer gated, anon revoked)`,
         )
+      }
+    }
+  }
+}
+
+// §20 — the i18n dispatcher must be able to REACH the locales it dispatches.
+//
+//     `run_i18n_translation_dispatch` fires net.http_post and used to discard
+//     the request id, so a target the edge function REJECTED looked exactly
+//     like one it served: last_run_at advanced, the loop counted it, pg_cron
+//     recorded `succeeded` — 5,562 times out of 5,562.
+//
+//     Measured 2026-09-19, that hid a total outage of four locales.
+//     translate-i18n-batch still held the pipeline's FIRST allowlist
+//     (de fr es it pt nl pl ru tr uk sv) while the dispatcher seeded the
+//     frontend's (de fr es it pt ru zh ja ko ar). zh/ja/ko/ar 400'd on EVERY
+//     fire — 60 of 150 targets, 40% of every slot — and coverage showed it:
+//     12k-16k rows per European locale against 250-1,100 for the four.
+//
+//     A 4xx HARD-FAILS with no threshold. It is a contract bug (bad locale,
+//     bad table, bad field) and can never be transient, so waiting for it to
+//     happen three times only delays the same answer. 5xx and network errors
+//     accumulate into `failing_targets` instead, and a pg_net timeout is
+//     PARTIAL and never counted at all.
+//
+//     A MISSING RPC HARD-FAILS: a dispatcher nobody can measure must not read
+//     as a healthy one — which is the entire defect this section exists for.
+{
+  const res = await fetch(`${BASE}/rest/v1/rpc/i18n_dispatch_signals`, {
+    method: 'POST',
+    headers: { ...headers, 'Content-Type': 'application/json' },
+    body: '{}',
+  })
+  if (!res.ok) {
+    const detail = (await res.text()).slice(0, 200)
+    console.error(`✗ i18n_dispatch_signals → HTTP ${res.status} (migration 99991790380618 not applied? PGRST202 = the function does not exist) ${detail}`)
+    FAILED = true
+  } else {
+    const q = (await res.json()) ?? {}
+    if (q.probe_ok !== true) {
+      console.error('✗ i18n_dispatch_signals did not report probe_ok — the dispatcher could not be measured')
+      FAILED = true
+    } else if (Number(q.targets_enabled ?? 0) === 0) {
+      // Zero enabled targets returns zero of everything else too. An empty
+      // registry and a healthy one must not give the same reassuring answer.
+      console.error('✗ i18n_translation_targets has no enabled rows — the translation pipeline has no work list at all')
+      FAILED = true
+    } else {
+      const clientErr = Number(q.client_error_targets ?? 0)
+      const neverOk = Number(q.never_succeeded ?? 0)
+      const failing = Number(q.failing_targets ?? 0)
+
+      if (clientErr > 0) {
+        console.error(`✗ ${clientErr} i18n translation targets are being REJECTED by translate-i18n-batch (4xx)`)
+        for (const s of q.client_error_sample ?? []) {
+          console.error(`    ${s.target} → HTTP ${s.status}: ${s.error}`)
+        }
+        console.error('  A 4xx here is a contract bug, not a blip: the dispatcher is sending something the')
+        console.error('  function refuses. Check _shared/locales.ts against the i18n_translation_targets seed.')
+        FAILED = true
+      }
+      if (neverOk > 0) {
+        console.error(`✗ ${neverOk} i18n targets have been answered at least once and have NEVER succeeded`)
+        FAILED = true
+      }
+      if (failing > 0) {
+        console.warn(`⚠ ${failing} i18n targets have 3+ consecutive failures (5xx/network — transient until it isn't)`)
+      }
+      if (clientErr === 0 && neverOk === 0) {
+        const locales = Array.isArray(q.locales) ? q.locales.join(',') : '?'
+        console.log(`✓ i18n dispatch reaching all targets (${q.targets_enabled} enabled, locales ${locales}, ${q.unresolved} in flight)`)
       }
     }
   }
