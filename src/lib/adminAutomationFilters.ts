@@ -1,0 +1,82 @@
+export type AutomationView = 'active' | 'attention' | 'paused' | 'all';
+
+export interface FilterableAutomation {
+  slug: string;
+  name: string;
+  description: string | null;
+  managed_by: 'user' | 'system';
+  enabled: boolean;
+  last_run_status: string | null;
+  consecutive_failures: number;
+}
+
+const RETIRED_MARKER = /^\[(?:RETIRED|COMPLETED|CONSOLIDATED)\b/i;
+
+const DOMAIN_PREFIXES: Array<[string, string]> = [
+  ['marketplace_', 'Marketplace'],
+  ['milestone_', 'Milestones'],
+  ['event_', 'Events'],
+  ['venue_', 'Venues'],
+  ['city_', 'Cities'],
+  ['news_', 'News'],
+  ['personality_', 'People'],
+  ['profession_', 'People'],
+  ['hotel_', 'Hotels'],
+  ['push_', 'Notifications'],
+  ['workflow_', 'Workflows'],
+  ['wf_', 'Workflows'],
+  ['tag_', 'Taxonomy'],
+];
+
+export function automationDomain(slug: string): string {
+  return DOMAIN_PREFIXES.find(([prefix]) => slug.startsWith(prefix))?.[1] ?? 'Shared';
+}
+
+export function isRetiredAutomation(automation: FilterableAutomation): boolean {
+  return RETIRED_MARKER.test(automation.description?.trim() ?? '');
+}
+
+export function needsAutomationAttention(automation: FilterableAutomation): boolean {
+  return (
+    automation.last_run_status === 'auto_paused' ||
+    (automation.enabled && automation.consecutive_failures > 0)
+  );
+}
+
+export function filterAutomations<T extends FilterableAutomation>(
+  automations: T[],
+  options: { view: AutomationView; query: string; domain: string; owner: string },
+): T[] {
+  const query = options.query.trim().toLocaleLowerCase();
+  return automations.filter((automation) => {
+    const retired = isRetiredAutomation(automation);
+    const attention = needsAutomationAttention(automation);
+    const matchesView =
+      options.view === 'all' ||
+      (options.view === 'active' && automation.enabled && !retired) ||
+      (options.view === 'attention' && attention && !retired) ||
+      (options.view === 'paused' && !automation.enabled);
+    if (!matchesView) return false;
+    if (options.domain !== 'all' && automationDomain(automation.slug) !== options.domain)
+      return false;
+    if (options.owner !== 'all' && automation.managed_by !== options.owner) return false;
+    if (!query) return true;
+    return [
+      automation.name,
+      automation.slug,
+      automation.description ?? '',
+      automationDomain(automation.slug),
+    ].some((value) => value.toLocaleLowerCase().includes(query));
+  });
+}
+
+export function automationCounts(automations: FilterableAutomation[]) {
+  return {
+    active: automations.filter((a) => a.enabled && !isRetiredAutomation(a)).length,
+    attention: automations.filter((a) => needsAutomationAttention(a) && !isRetiredAutomation(a))
+      .length,
+    paused: automations.filter((a) => !a.enabled).length,
+    autoPaused: automations.filter((a) => a.last_run_status === 'auto_paused').length,
+    total: automations.length,
+  };
+}

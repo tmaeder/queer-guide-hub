@@ -3,7 +3,8 @@
  *
  * Two modes, selected by the caller (pg_cron jobs in
  * 20260418010000_push_subscriptions.sql):
- *   * `{ kind: "next_item" }` — iterate reservations starting in 25–35 min.
+ *   * `{ kind: "realtime" }` — dispatch DMs and reservations starting in 25–35 min.
+ *   * `{ kind: "next_item" }` — dispatch only upcoming reservations (legacy/manual).
  *   * `{ kind: "doc_expiry" }` — iterate trip_documents with 30/7 days left.
  *   * `{ user_id, title, body, url, tag }` — direct test invocation.
  *
@@ -207,6 +208,27 @@ Deno.serve(async (req) => {
       return new Response(JSON.stringify({ ok: true, sent }), {
         headers: { ...cors, 'Content-Type': 'application/json' },
       });
+    }
+    if (kind === 'realtime') {
+      // Keep the two queues failure-isolated: one broken source must not prevent
+      // the other from dispatching during the same consolidated cron tick.
+      const [dm, nextItem] = await Promise.allSettled([handleDm(), handleNextItem()]);
+      const result = {
+        dm: dm.status === 'fulfilled' ? { ok: true, sent: dm.value } : { ok: false },
+        next_item:
+          nextItem.status === 'fulfilled'
+            ? { ok: true, sent: nextItem.value }
+            : { ok: false },
+      };
+      if (dm.status === 'rejected') console.error('dm dispatch failed', dm.reason);
+      if (nextItem.status === 'rejected') console.error('next-item dispatch failed', nextItem.reason);
+      return new Response(
+        JSON.stringify({ ok: dm.status === 'fulfilled' && nextItem.status === 'fulfilled', ...result }),
+        {
+          status: dm.status === 'rejected' && nextItem.status === 'rejected' ? 500 : 200,
+          headers: { ...cors, 'Content-Type': 'application/json' },
+        },
+      );
     }
 
     // Direct test invocation: { user_id, title, body, url, tag }

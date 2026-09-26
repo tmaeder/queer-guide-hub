@@ -3,7 +3,7 @@
  * v0: read-only listing. Visual rule builder lands in a follow-up.
  */
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { TrackLoader } from '@/components/transit/TrackLoader';
 import { useNavigate } from 'react-router';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
@@ -16,6 +16,7 @@ import {
   Clock,
   AlertCircle,
   FlaskConical,
+  Search,
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { untypedFrom } from '@/integrations/supabase/untyped';
@@ -35,6 +36,13 @@ import { formatNextFire } from '@/lib/nextCronFire';
 import { toast } from 'sonner';
 import { AdminRegistryFrame } from '@/components/admin/frames/AdminRegistryFrame';
 import { AdminSimpleTable } from '@/components/admin/primitives/AdminSimpleTable';
+import { Input } from '@/components/ui/input';
+import {
+  automationCounts,
+  automationDomain,
+  filterAutomations,
+  type AutomationView,
+} from '@/lib/adminAutomationFilters';
 
 interface Automation {
   id: string;
@@ -105,6 +113,10 @@ export default function AdminAutomation() {
   const [busySlug, setBusySlug] = useState<string | null>(null);
   const [filterSlug, setFilterSlug] = useState<string | null>(null);
   const [detailSlug, setDetailSlug] = useState<string | null>(null);
+  const [registryView, setRegistryView] = useState<AutomationView>('active');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [domainFilter, setDomainFilter] = useState('all');
+  const [ownerFilter, setOwnerFilter] = useState('all');
 
   useRegisterAdminCommandAction({
     id: 'automation.view',
@@ -127,6 +139,23 @@ export default function AdminAutomation() {
   const detailRow = detailSlug
     ? (automationsQ.data?.find((a) => a.slug === detailSlug) ?? null)
     : null;
+
+  const automations = useMemo(() => automationsQ.data ?? [], [automationsQ.data]);
+  const counts = useMemo(() => automationCounts(automations), [automations]);
+  const domains = useMemo(
+    () => Array.from(new Set(automations.map((a) => automationDomain(a.slug)))).sort(),
+    [automations],
+  );
+  const visibleAutomations = useMemo(
+    () =>
+      filterAutomations(automations, {
+        view: registryView,
+        query: searchQuery,
+        domain: domainFilter,
+        owner: ownerFilter,
+      }),
+    [automations, registryView, searchQuery, domainFilter, ownerFilter],
+  );
 
   async function runNow(slug: string) {
     setBusySlug(`run:${slug}`);
@@ -318,10 +347,88 @@ export default function AdminAutomation() {
     >
       {/* Registry */}
       <section>
-        <h2 className="text-title font-semibold mb-2">Registered automations</h2>
+        <div className="flex flex-col gap-2 mb-4">
+          <div className="flex items-center justify-between gap-2 flex-wrap">
+            <h2 className="text-title font-semibold">Registered automations</h2>
+            <p className="text-2xs text-muted-foreground tabular-nums">
+              {counts.active} active · {counts.attention} attention · {counts.paused} paused ·{' '}
+              {counts.total} total
+            </p>
+          </div>
+          <div className="flex items-center gap-2 flex-wrap" aria-label="Automation filters">
+            {(
+              [
+                ['active', `Active ${counts.active}`],
+                ['attention', `Attention ${counts.attention}`],
+                ['paused', `Paused ${counts.paused}`],
+                ['all', `All ${counts.total}`],
+              ] as Array<[AutomationView, string]>
+            ).map(([view, label]) => (
+              <Button
+                key={view}
+                type="button"
+                size="sm"
+                variant={registryView === view ? 'secondary' : 'ghost'}
+                onClick={() => setRegistryView(view)}
+                aria-pressed={registryView === view}
+              >
+                {label}
+              </Button>
+            ))}
+            {counts.autoPaused > 0 && (
+              <Badge variant="destructive">{counts.autoPaused} auto-paused</Badge>
+            )}
+          </div>
+          <div className="grid gap-2 sm:grid-cols-[minmax(220px,1fr)_180px_150px]">
+            <div className="relative">
+              <Search
+                size={14}
+                className="absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground"
+                aria-hidden
+              />
+              <label className="sr-only" htmlFor="automation-search">
+                Search automations
+              </label>
+              <Input
+                id="automation-search"
+                value={searchQuery}
+                onChange={(event) => setSearchQuery(event.target.value)}
+                placeholder="Search automations"
+                className="pl-8"
+              />
+            </div>
+            <select
+              value={domainFilter}
+              onChange={(event) => setDomainFilter(event.target.value)}
+              className="h-10 rounded-element border border-input bg-background px-2 text-sm"
+              aria-label="Filter by domain"
+            >
+              <option value="all">All domains</option>
+              {domains.map((domain) => (
+                <option key={domain} value={domain}>
+                  {domain}
+                </option>
+              ))}
+            </select>
+            <select
+              value={ownerFilter}
+              onChange={(event) => setOwnerFilter(event.target.value)}
+              className="h-10 rounded-element border border-input bg-background px-2 text-sm"
+              aria-label="Filter by owner"
+            >
+              <option value="all">All owners</option>
+              <option value="system">System</option>
+              <option value="user">User</option>
+            </select>
+          </div>
+          <p className="text-2xs text-muted-foreground">
+            Showing {visibleAutomations.length} of {counts.total}. Retired and consolidated jobs
+            stay in Paused and All for audit history.
+          </p>
+        </div>
         <AdminSimpleTable
           caption="Automation registry"
-          rows={automationsQ.data ?? []}
+          rows={visibleAutomations}
           rowKey={(a) => a.id}
           isLoading={automationsQ.isLoading}
           emptyNoun="automations"
