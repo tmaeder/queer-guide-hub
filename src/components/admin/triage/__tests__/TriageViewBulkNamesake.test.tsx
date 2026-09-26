@@ -63,6 +63,34 @@ const ITEMS = [
     flag_type: null,
     risk_flags: { namesake: true },
   },
+  {
+    /**
+     * A personality dedup pair with NO namesake flag.
+     *
+     * This is the row that distinguishes bulk's predicate from the single-item
+     * gate's. Without it, swapping `isUnbatchablePerson` for the narrower
+     * `needsNamesakeConfirm` passes every other assertion in this file — found by
+     * mutation, not by reading. `approve_dedup_review_batch` refuses EVERY
+     * personality in its own WHERE precisely because a bulk approve has no checkbox
+     * to offer and nobody reading the pair.
+     */
+    id: 'unflagged-person-pair',
+    queue_type: 'dedup-review',
+    content_type: 'personality',
+    title: 'Chris Lee ⇄ Chris Lee',
+    subtitle: 'exact_name',
+    status: 'open',
+    confidence_score: 0.8,
+    created_at: '2026-09-01T00:00:00Z',
+    source: 'sweep',
+    entity_id: 'p2',
+    entity_table: 'personalities',
+    has_diff: false,
+    reporter_id: null,
+    meta: {},
+    flag_type: null,
+    risk_flags: {},
+  },
 ];
 
 const toastSuccess = vi.fn();
@@ -88,6 +116,9 @@ vi.mock('@/hooks/useUnifiedTriageQueue', () => ({
   useBulkApproveHighConf: () => ({ mutate: vi.fn(), isPending: false }),
 }));
 vi.mock('@/hooks/useReviewCounts', () => ({ useReviewCounts: () => ({ data: {} }) }));
+vi.mock('@/hooks/useTriageSourceCapabilities', () => ({
+  useTriageSourceCapabilities: () => ({ externalConsoleFor: () => null, loading: false }),
+}));
 // The cohort bar's own data source. Mocked to empty so these suites keep
 // testing what they are about; QualityCohortBar returns null on an empty list,
 // so the tree is unchanged. Its behaviour is covered by its own suite.
@@ -144,6 +175,23 @@ describe('bulk approve holds back namesake pairs', () => {
     expect(mutateAsync).toHaveBeenCalledTimes(1);
   });
 
+  it('holds back a personality pair that carries NO namesake flag', async () => {
+    const user = userEvent.setup();
+    render(<TriageView />);
+
+    await user.click(screen.getByText('select all'));
+    await user.click(screen.getByText('bulk approve'));
+
+    await waitFor(() => expect(mutateAsync).toHaveBeenCalled());
+
+    const ids = mutateAsync.mock.calls.map((c) => (c[0] as { itemId: string }).itemId);
+    // Bulk's rule is BROADER than the single-item gate's on purpose: every
+    // personality dedup pair, matching `approve_dedup_review_batch`'s own WHERE.
+    // A bulk approve has no checkbox to offer and nobody reading the pair, so the
+    // narrow `risk_flags.namesake` test is not enough here.
+    expect(ids).not.toContain('unflagged-person-pair');
+  });
+
   it('says what it held back rather than silently dropping it', async () => {
     const user = userEvent.setup();
     render(<TriageView />);
@@ -158,18 +206,35 @@ describe('bulk approve holds back namesake pairs', () => {
     expect(said).toMatch(/namesake/i);
   });
 
-  it('still lets bulk REJECT clear namesake pairs', async () => {
+  it('asks before rejecting in bulk — it cannot be undone from this screen', async () => {
+    // Bulk APPROVE has always had a confirmation; bulk reject closed 50 rows on one
+    // click. Undo (U) reopens the most recent action only, so a bulk rejection is the
+    // irreversible half and was the unguarded one.
     const user = userEvent.setup();
     render(<TriageView />);
 
     await user.click(screen.getByText('select all'));
     await user.click(screen.getByText('bulk reject'));
 
+    expect(await screen.findByRole('heading', { name: /Reject 3 selected/i })).toBeTruthy();
+    // Nothing is sent until the reviewer confirms.
+    expect(mutateAsync).not.toHaveBeenCalled();
+  });
+
+  it('still lets bulk REJECT clear namesake pairs once confirmed', async () => {
+    const user = userEvent.setup();
+    render(<TriageView />);
+
+    await user.click(screen.getByText('select all'));
+    await user.click(screen.getByText('bulk reject'));
+    await user.click(await screen.findByRole('button', { name: /^Reject 3$/i }));
+
     await waitFor(() => expect(mutateAsync).toHaveBeenCalled());
     const ids = mutateAsync.mock.calls.map((c) => (c[0] as { itemId: string }).itemId);
     // "These are two different people" must stay the EASY answer, or the flag
     // pushes reviewers toward approving to clear the queue.
     expect(ids).toContain('person-pair');
+    expect(ids).toContain('unflagged-person-pair');
     expect(ids).toContain('venue-pair');
   });
 });

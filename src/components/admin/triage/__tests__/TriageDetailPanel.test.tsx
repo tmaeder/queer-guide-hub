@@ -64,7 +64,7 @@ describe('TriageDetailPanel', () => {
   it('renders header + actionbar + entity preview', () => {
     useEntityDataMock.mockReturnValue({ data: { name: 'X' }, isLoading: false });
     useStagingDataMock.mockReturnValue({ data: null });
-    render(<TriageDetailPanel item={item} onAction={vi.fn()} isActionLoading={false} />);
+    render(<TriageDetailPanel item={item} answers={{}} onAnswersChange={vi.fn()} onAction={vi.fn()} isActionLoading={false} />);
     expect(screen.getByRole('heading', { name: 'Pride Bar' })).toBeInTheDocument();
     expect(screen.getByTestId('entity-preview')).toBeInTheDocument();
     expect(screen.getByTestId('actions')).toBeInTheDocument();
@@ -73,7 +73,7 @@ describe('TriageDetailPanel', () => {
   it('shows loading spinner while entity loads', () => {
     useEntityDataMock.mockReturnValue({ data: null, isLoading: true });
     useStagingDataMock.mockReturnValue({ data: null });
-    const { container } = render(<TriageDetailPanel item={item} onAction={vi.fn()} isActionLoading={false} />);
+    const { container } = render(<TriageDetailPanel item={item} answers={{}} onAnswersChange={vi.fn()} onAction={vi.fn()} isActionLoading={false} />);
     // The working indicator is the track loop, not a rotating icon — the
     // design system replaced every spinner with it. Asserting the class
     // keeps the test's intent (a loading state is shown) rather than
@@ -84,14 +84,14 @@ describe('TriageDetailPanel', () => {
   it('shows confidence percentage', () => {
     useEntityDataMock.mockReturnValue({ data: null, isLoading: false });
     useStagingDataMock.mockReturnValue({ data: null });
-    render(<TriageDetailPanel item={item} onAction={vi.fn()} isActionLoading={false} />);
+    render(<TriageDetailPanel item={item} answers={{}} onAnswersChange={vi.fn()} onAction={vi.fn()} isActionLoading={false} />);
     expect(screen.getByText(/Confidence: 85%/)).toBeInTheDocument();
   });
 
   it('renders meta entries under Context', () => {
     useEntityDataMock.mockReturnValue({ data: null, isLoading: false });
     useStagingDataMock.mockReturnValue({ data: null });
-    render(<TriageDetailPanel item={item} onAction={vi.fn()} isActionLoading={false} />);
+    render(<TriageDetailPanel item={item} answers={{}} onAnswersChange={vi.fn()} onAction={vi.fn()} isActionLoading={false} />);
     expect(screen.getByText('Context')).toBeInTheDocument();
     expect(screen.getByText('City')).toBeInTheDocument();
     expect(screen.getByText('Berlin')).toBeInTheDocument();
@@ -113,7 +113,7 @@ describe('TriageDetailPanel — queues decided in an external console', () => {
   it('replaces the action bar with the console the registry names', () => {
     render(
       <MemoryRouter>
-        <TriageDetailPanel item={orgLinkItem} onAction={vi.fn()} isActionLoading={false} />
+        <TriageDetailPanel item={orgLinkItem} answers={{}} onAnswersChange={vi.fn()} onAction={vi.fn()} isActionLoading={false} />
       </MemoryRouter>,
     );
     expect(screen.queryByTestId('actions')).not.toBeInTheDocument();
@@ -130,7 +130,7 @@ describe('TriageDetailPanel — queues decided in an external console', () => {
     const dedupItem = { ...(item as object), queue_type: 'dedup-review' } as never;
     render(
       <MemoryRouter>
-        <TriageDetailPanel item={dedupItem} onAction={vi.fn()} isActionLoading={false} />
+        <TriageDetailPanel item={dedupItem} answers={{}} onAnswersChange={vi.fn()} onAction={vi.fn()} isActionLoading={false} />
       </MemoryRouter>,
     );
     expect(screen.getByTestId('actions')).toBeInTheDocument();
