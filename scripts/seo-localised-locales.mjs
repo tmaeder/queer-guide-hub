@@ -29,6 +29,21 @@ const OUTPUT = resolve(ROOT, 'functions/_lib/localisedLocales.ts');
 const LOCALES = ['en', 'es', 'fr', 'de', 'pt', 'it', 'ru', 'zh', 'ja', 'ko', 'ar'];
 const LOCALISED_THRESHOLD = 0.05; // 5 % of strings must differ from English.
 
+/**
+ * `scripts/sync-translations.ts --fill` writes untranslated keys as
+ * "[ES] <english text>". Those differ from English AS STRINGS, so the old
+ * ratio counted every one of them as evidence of translation — a locale that
+ * was 100 % placeholder passed the 5 % gate comfortably.
+ *
+ * Measured 2026-09-19: ~985 of 3,739 keys per locale are placeholders and all
+ * eleven locales passed. The middleware then emitted hreflang and withheld
+ * `noindex` for four locales a reader receives as English with a language tag
+ * stamped on it, which is what Google was being offered as a translation.
+ *
+ * A placeholder is the ABSENCE of a translation and is now scored as one.
+ */
+const PLACEHOLDER_RE = /^\[[A-Z]{2}\]\s/;
+
 const dryRun = process.argv.includes('--check');
 
 function flatten(obj, prefix = '') {
@@ -62,9 +77,14 @@ for (const code of LOCALES) {
   }
   let differ = 0;
   let compared = 0;
+  let placeholders = 0;
   for (const k of enKeys) {
     if (!(k in local)) continue;
     compared++;
+    if (PLACEHOLDER_RE.test(local[k])) {
+      placeholders++;
+      continue; // absence of a translation, not a translation that differs
+    }
     if (local[k] !== en[k]) differ++;
   }
   const ratio = compared ? differ / compared : 0;
@@ -74,6 +94,7 @@ for (const code of LOCALES) {
     ratio,
     total: compared,
     differ,
+    placeholders,
   });
 }
 
@@ -82,7 +103,8 @@ console.log('=========================');
 for (const r of results) {
   const pct = (r.ratio * 100).toFixed(1);
   const badge = r.localised ? '✓ localised' : '✗ unlocalised';
-  console.log(`  ${r.code}  ${badge}  ${r.differ}/${r.total} keys differ from en (${pct}%)`);
+  const ph = r.placeholders ? `, ${r.placeholders} [XX] placeholders ignored` : '';
+  console.log(`  ${r.code}  ${badge}  ${r.differ}/${r.total} keys differ from en (${pct}%${ph})`);
 }
 const localisedCodes = results.filter((r) => r.localised).map((r) => r.code);
 console.log('');

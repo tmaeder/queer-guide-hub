@@ -8,6 +8,8 @@ import type { Personality } from '@/hooks/usePersonalities';
 import { resolveImageUrl } from '@/utils/resolveImageUrl';
 import { buildCfSrcSet } from '@/utils/cloudflareOptimizations';
 import { formatProfession } from '@/lib/professionDisplay';
+import { useTranslation } from 'react-i18next';
+import { localizedField, type I18nMap } from '@/lib/localizeContent';
 
 const HOVER_OPEN_MS = 350;
 const HOVER_CLOSE_MS = 120;
@@ -65,6 +67,7 @@ function PersonalityCardImpl({
   optimizedUrl,
   thumbnailUrl,
 }: PersonalityCardProps) {
+  const { i18n } = useTranslation();
   const [imgError, setImgError] = useState(false);
   const [previewOpen, setPreviewOpen] = useState(false);
   const openTimerRef = useRef<number | null>(null);
@@ -119,7 +122,14 @@ function PersonalityCardImpl({
     closeTimerRef.current = window.setTimeout(() => setPreviewOpen(false), HOVER_CLOSE_MS);
   };
 
-  const previewText = personality.description || personality.bio;
+  // description_i18n is the translated column; `bio` has none, so a locale
+  // with a translated description shows it and everyone else still gets bio.
+  const localizedDescription = localizedField(
+    personality.description,
+    personality.description_i18n as I18nMap,
+    i18n.language,
+  );
+  const previewText = localizedDescription || personality.bio;
   // Mouse-only preview: pointer:fine excludes touch, where the long-press
   // alternative would interfere with native link tap. Touch users still get
   // the inline snippet on the card body.
@@ -200,9 +210,9 @@ function PersonalityCardImpl({
             {metaParts.join(' · ')}
           </p>
         )}
-        {(personality.description || personality.bio) && (
+        {previewText && (
           <p className="mt-1.5 line-clamp-2 text-13 leading-snug text-muted-foreground">
-            {personality.description || personality.bio}
+            {previewText}
           </p>
         )}
       </div>
