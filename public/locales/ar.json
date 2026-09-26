@@ -1911,16 +1911,16 @@
       "celebrate": "[AR] Celebrate {{name}}"
     },
     "map": {
-      "interchangeEyebrow": "[AR] Interchange",
+      "interchangeEyebrow": "نقطة تبادل",
       "interchange": {
-        "label": "[AR] Search everything",
-        "subtitle": "[AR] Every line meets here"
+        "label": "ابحث في كل شيء",
+        "subtitle": "كل الخطوط تلتقي هنا"
       }
     },
     "glossary": {
-      "eyebrow": "[AR] Glossary",
-      "title": "[AR] Know the words",
-      "seeAll": "[AR] All terms"
+      "eyebrow": "المسرد",
+      "title": "اعرف الكلمات",
+      "seeAll": "كل المصطلحات"
     }
   },
   "header": {
@@ -1962,10 +1962,10 @@
       "trips": "الرحلات",
       "organizations": "المنظمات",
       "wishlists": "قوائم الرغبات",
-      "tags": "[AR] Glossary",
-      "tagsAll": "[AR] All terms",
-      "tagsInteractions": "[AR] Substance safety",
-      "tagsStiGuide": "[AR] STI guide",
+      "tags": "المسرد",
+      "tagsAll": "كل المصطلحات",
+      "tagsInteractions": "سلامة المواد",
+      "tagsStiGuide": "دليل الأمراض المنقولة جنسيًا",
       "transRights": "حقوق العابرين جنسيًا",
       "competitions": "[AR] Drag Race"
     },
@@ -1997,8 +1997,8 @@
       "sheetHeading": "ما الذي تبحث عنه؟",
       "browseHeading": "تصفح كل شيء",
       "glossary": {
-        "label": "[AR] Glossary",
-        "subtitle": "[AR] What every term, flag and code means"
+        "label": "المسرد",
+        "subtitle": "معنى كل مصطلح وعلم ورمز"
       }
     },
     "userMenu": {
@@ -4506,8 +4506,8 @@
       "open": "[AR] Read the entry"
     },
     "fromGlossary": {
-      "title": "[AR] From the glossary",
-      "all": "[AR] All terms"
+      "title": "من المسرد",
+      "all": "كل المصطلحات"
     },
     "figures": {
       "eyebrow": "[AR] Diagram",

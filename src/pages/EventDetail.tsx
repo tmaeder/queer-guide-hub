@@ -61,10 +61,11 @@ import {
 import { TagChipRow } from '@/components/tags/TagChipRow';
 import { FromTheGlossary } from '@/components/tags/FromTheGlossary';
 import SafetyAlertBanner from '@/components/country/SafetyAlertBanner';
+import { localizedField, type I18nMap } from '@/lib/localizeContent';
 
 export default function EventDetail() {
   const { slug } = useParams<{ slug: string }>();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const navigate = useLocalizedNavigate();
   const { user } = useAuth();
   const [userAttendance, setUserAttendance] = useState<string | null>(null);
@@ -420,7 +421,7 @@ export default function EventDetail() {
       <SinglePage
         type="event"
         eyebrow={[t('events.detail.eyebrow', 'Event'), cityName].filter(Boolean).join(' · ')}
-        title={event.title}
+        title={localizedField(event.title, event.title_i18n as I18nMap, i18n.language)}
         status={eventStatusLabel(event)}
         // No lead: the standfirst below carries where-and-whether-it-is-on,
         // and `events.description` is long-form (98.8% populated) — it belongs
