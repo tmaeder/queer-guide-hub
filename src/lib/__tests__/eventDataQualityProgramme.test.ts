@@ -10,11 +10,11 @@ const repairRescanFix = readFileSync(
   'utf8',
 ).toLowerCase();
 const operationsCompletion = readFileSync(
-  'supabase/migrations/99991790275000_event_quality_operations_completion.sql',
+  'supabase/migrations/20260925175727_event_quality_operations_completion.sql',
   'utf8',
 ).toLowerCase();
 const snapshotTimeoutFix = readFileSync(
-  'supabase/migrations/99991790275100_event_quality_snapshot_timeout_fix.sql',
+  'supabase/migrations/20260925183331_event_quality_snapshot_timeout_fix.sql',
   'utf8',
 ).toLowerCase();
 const gates = readFileSync('scripts/check-data-quality-gates.mjs', 'utf8');
