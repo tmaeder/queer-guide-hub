@@ -6,6 +6,7 @@ import {
   corsResponse,
 } from '../_shared/supabase-client.ts'
 import { withErrorReporting } from '../_shared/report-api-error.ts'
+import { finalizeAutomationRun } from '../_shared/automation-run.ts'
 
 // Backfill verified image candidates for cities missing a usable cover.
 // Multiple candidates are ranked by city/country/landmark evidence. Ambiguous
@@ -217,21 +218,6 @@ Deno.serve(
     const auth = await requireInternalOrAdmin(req, supabase)
     if (auth instanceof Response) return auth
     const startedAt = new Date().toISOString()
-    const { data: automation } = await supabase
-      .from('admin_automations')
-      .select('id')
-      .eq('slug', 'backfill-cities-images')
-      .maybeSingle()
-    const { data: run } = await supabase
-      .from('admin_automation_runs')
-      .insert({
-        automation_id: automation?.id ?? null,
-        automation_slug: 'backfill-cities-images',
-        started_at: startedAt,
-        status: 'success',
-      })
-      .select('id')
-      .maybeSingle()
     const finishRun = async (
       status: 'success' | 'partial' | 'error',
       examined: number,
@@ -239,22 +225,15 @@ Deno.serve(
       summary: Record<string, unknown>,
       error?: string,
     ) => {
-      if (run?.id) {
-        await supabase.from('admin_automation_runs').update({
-          finished_at: new Date().toISOString(),
-          status,
-          items_examined: examined,
-          items_changed: changed,
-          summary,
-          error: error ?? null,
-        }).eq('id', run.id)
-      }
-      if (automation?.id) {
-        await supabase.from('admin_automations').update({
-          last_run_at: startedAt,
-          last_run_status: status,
-        }).eq('id', automation.id)
-      }
+      await finalizeAutomationRun(req, supabase, {
+        slug: 'backfill-cities-images',
+        status,
+        startedAt,
+        itemsExamined: examined,
+        itemsChanged: changed,
+        summary,
+        error,
+      })
     }
 
     const pexelsKey = Deno.env.get('PEXELS_API_KEY')

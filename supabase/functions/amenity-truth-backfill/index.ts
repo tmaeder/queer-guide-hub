@@ -22,6 +22,7 @@ import { withCircuitBreaker, CircuitOpenError } from '../_shared/circuit-breaker
 import { loadAmenityVocabulary, normalizeVenueAmenities, type AmenityVocab } from '../_shared/amenity-normalize.ts'
 import { extractVenueAmenitiesFromText } from '../_shared/ai-enrichment.ts'
 import { loadReviewQueueGuard } from '../_shared/review-queue-guard.ts'
+import { finalizeAutomationRun } from '../_shared/automation-run.ts'
 
 const STEP = 'amenity-truth-backfill'                  // enrichment_log step (hyphen)
 const AUTOMATION_SLUG = 'amenity_truth_backfill'        // admin_automations slug (underscore)
@@ -177,7 +178,7 @@ Deno.serve(async (req: Request) => {
     venues = (data ?? []) as VenueRow[]
   }
   if (!venues.length) {
-    if (!venueIds?.length) await recordRun(supabase, runStarted, { processed: 0, message: 'no venues due', sources, only_fillable: onlyFillable })
+    if (!venueIds?.length) await recordRun(req, supabase, runStarted, { processed: 0, message: 'no venues due', sources, only_fillable: onlyFillable })
     return jsonResponse({ processed: 0, message: 'no venues due' }, 200, req)
   }
 
@@ -251,7 +252,7 @@ Deno.serve(async (req: Request) => {
             }))
         } catch (e) {
           if (e instanceof CircuitOpenError) {
-            await recordRun(supabase, runStarted, { processed: results.length, cleaned, filled, gated, circuit_open: true, sources, only_fillable: onlyFillable })
+            await recordRun(req, supabase, runStarted, { processed: results.length, cleaned, filled, gated, circuit_open: true, sources, only_fillable: onlyFillable })
             return jsonResponse({ cleaned, filled, gated, circuit_open: true, results }, 200, req)
           }
           throw e
@@ -365,33 +366,26 @@ Deno.serve(async (req: Request) => {
   }
 
   if (!dryRun && !venueIds?.length) {
-    await recordRun(supabase, runStarted, { processed: venues.length, cleaned, filled, gated, ...queueSummary, sources, only_fillable: onlyFillable })
+    await recordRun(req, supabase, runStarted, { processed: venues.length, cleaned, filled, gated, ...queueSummary, sources, only_fillable: onlyFillable })
   }
   return jsonResponse({ processed: venues.length, cleaned, filled, gated, ...queueSummary, dry_run: dryRun, sources, results }, 200, req)
 })
 
-/** Write a run summary to admin_automation_runs so the admin panel can see real
- *  outcomes (cron.job_run_details only shows that net.http_post enqueued). */
 async function recordRun(
+  req: Request,
   supabase: ReturnType<typeof getServiceClient>,
   startedAt: Date,
   summary: Record<string, unknown>,
 ) {
-  const { data: a } = await supabase
-    .from('admin_automations').select('id').eq('slug', AUTOMATION_SLUG).maybeSingle()
-  await supabase.from('admin_automation_runs').insert({
-    automation_id: a?.id ?? null,
-    automation_slug: AUTOMATION_SLUG,
-    started_at: startedAt.toISOString(),
-    finished_at: new Date().toISOString(),
+  await finalizeAutomationRun(req, supabase, {
+    slug: AUTOMATION_SLUG,
     status: summary.circuit_open ? 'error' : 'success',
-    items_examined: (summary.processed as number) ?? 0,
-    items_changed: ((summary.filled as number) ?? 0) + ((summary.gated as number) ?? 0),
+    startedAt,
+    itemsExamined: (summary.processed as number) ?? 0,
+    itemsChanged: ((summary.filled as number) ?? 0) + ((summary.gated as number) ?? 0),
     summary,
-  }).then(() => {}, () => {})
-  await supabase.from('admin_automations')
-    .update({ last_run_at: startedAt.toISOString(), last_run_status: summary.circuit_open ? 'error' : 'success' })
-    .eq('slug', AUTOMATION_SLUG).then(() => {}, () => {})
+    error: summary.circuit_open ? 'amenity source circuit open' : undefined,
+  })
 }
 
 async function logStep(supabase: ReturnType<typeof getServiceClient>, venueId: string, status: string, started: number, dryRun: boolean) {

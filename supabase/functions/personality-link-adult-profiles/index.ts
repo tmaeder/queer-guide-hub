@@ -28,6 +28,7 @@ import {
 import { hasValidWebhookSecret } from '../_shared/webhook-auth.ts'
 import { checkCircuit, recordFailure, recordSuccess } from '../_shared/circuit-breaker.ts'
 import { loadReviewQueueGuard } from '../_shared/review-queue-guard.ts'
+import { finalizeAutomationRun } from '../_shared/automation-run.ts'
 import {
   BREAKER,
   DEFAULT_PLATFORMS,
@@ -49,22 +50,8 @@ const UA =
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms))
 
-/**
- * Record the run against admin_automations / admin_automation_runs.
- *
- * `type:'cron'` automations fire through `net.http_post`, and NOTHING on that
- * path writes back — measured across the registry, almost every net.http_post
- * cron sits at `last_run_at = null` with zero rows in admin_automation_runs,
- * including ones that have been live for months. The consequence is not just a
- * blank admin column: `consecutive_failures` never increments, so the
- * auto-pause safety net (3 failures disables the job) can never fire and a
- * nightly job can fail forever in silence.
- *
- * So the function reports its own run. Best-effort by construction — a
- * bookkeeping failure must never fail the actual work, and a dry run is not a
- * real run and is not recorded.
- */
 async function recordRun(
+  req: Request,
   supabase: ReturnType<typeof getServiceClient>,
   startedAt: string,
   status: 'success' | 'error',
@@ -73,43 +60,15 @@ async function recordRun(
   summary: Record<string, unknown>,
   error?: string,
 ): Promise<void> {
-  try {
-    const { data: automation } = await supabase
-      .from('admin_automations')
-      .select('id, consecutive_failures')
-      .eq('slug', AUTOMATION_SLUG)
-      .maybeSingle()
-
-    await supabase.from('admin_automation_runs').insert({
-      automation_id: automation?.id ?? null,
-      automation_slug: AUTOMATION_SLUG,
-      started_at: startedAt,
-      finished_at: new Date().toISOString(),
-      status,
-      items_examined: examined,
-      items_changed: changed,
-      summary,
-      error: error ?? null,
-    })
-
-    // Reset on success, INCREMENT on failure — this counter is the input the
-    // auto-pause threshold reads, so it has to be written explicitly. (A
-    // `? 0 : undefined` here would be dropped from the JSON body and failures
-    // would never accumulate.)
-    const failures =
-      status === 'success' ? 0 : Number(automation?.consecutive_failures ?? 0) + 1
-
-    await supabase
-      .from('admin_automations')
-      .update({
-        last_run_at: new Date().toISOString(),
-        last_run_status: status,
-        consecutive_failures: failures,
-      })
-      .eq('slug', AUTOMATION_SLUG)
-  } catch (e) {
-    console.error(`run bookkeeping failed: ${e instanceof Error ? e.message : String(e)}`)
-  }
+  await finalizeAutomationRun(req, supabase, {
+    slug: AUTOMATION_SLUG,
+    status,
+    startedAt,
+    itemsExamined: examined,
+    itemsChanged: changed,
+    summary,
+    error,
+  })
 }
 
 interface DueRow {
@@ -176,7 +135,7 @@ Deno.serve(async (req) => {
   ) =>
     dryRun
       ? Promise.resolve()
-      : recordRun(supabase, startedAt, status, examined, changed, summary, error)
+      : recordRun(req, supabase, startedAt, status, examined, changed, summary, error)
   const batchSize = Math.max(1, Math.min(Number(body.batch_size) || DEFAULT_BATCH, 200))
 
   // An explicit `platforms` list is passed through to the SELECTOR too, so an

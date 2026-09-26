@@ -60,6 +60,7 @@ import {
 import { decideField, VENUE_FIELDS } from '../_shared/venue-consensus.ts'
 import { resolveContradictions } from '../_shared/accessibility-vocab.ts'
 import { loadReviewQueueGuard } from '../_shared/review-queue-guard.ts'
+import { finalizeAutomationRun } from '../_shared/automation-run.ts'
 import {
   osmPhone,
   osmVenueCategory,
@@ -238,7 +239,7 @@ Deno.serve(async (req: Request) => {
     venues = (data ?? []) as VenueRow[]
   }
   if (!venues.length) {
-    if (!venueIds?.length) await recordRun(supabase, runStarted, { processed: 0, message: 'no venues due' })
+    if (!venueIds?.length) await recordRun(req, supabase, runStarted, { processed: 0, message: 'no venues due' })
     return jsonResponse({ processed: 0, message: 'no venues due' }, 200, req)
   }
 
@@ -278,7 +279,7 @@ Deno.serve(async (req: Request) => {
         recent!.every((r) => (r.summary as Record<string, unknown> | null)?.upstream_busy === true)
     }
     const status = allBusy && !escalate ? 'success' : 'error'
-    await recordRun(supabase, runStarted, {
+    await recordRun(req, supabase, runStarted, {
       processed: 0, endpoints_unhealthy: true, upstream_busy: allBusy, escalated: escalate, probe, status,
     })
     return jsonResponse({
@@ -365,7 +366,7 @@ Deno.serve(async (req: Request) => {
       }
     } catch (e) {
       if (e instanceof CircuitOpenError) {
-        await recordRun(supabase, runStarted, { processed: results.length, circuit_open: true, ...queueSummary(), probe, status: 'error' })
+        await recordRun(req, supabase, runStarted, { processed: results.length, circuit_open: true, ...queueSummary(), probe, status: 'error' })
         return jsonResponse({ processed: results.length, circuit_open: true, ...queueSummary(), results }, 200, req)
       }
       verdict = 'error'
@@ -609,7 +610,7 @@ Deno.serve(async (req: Request) => {
     probe,
   }
   if (!dryRun && !venueIds?.length) {
-    await recordRun(supabase, runStarted, summary)
+    await recordRun(req, supabase, runStarted, summary)
   }
   return jsonResponse({
     processed: probed, matched, applied, conflicted, unknown,
@@ -693,23 +694,18 @@ async function stamp(
 }
 
 async function recordRun(
+  req: Request,
   supabase: ReturnType<typeof getServiceClient>,
   startedAt: Date,
   summary: Record<string, unknown>,
 ) {
-  const { data: a } = await supabase
-    .from('admin_automations').select('id').eq('slug', AUTOMATION_SLUG).maybeSingle()
-  await supabase.from('admin_automation_runs').insert({
-    automation_id: a?.id ?? null,
-    automation_slug: AUTOMATION_SLUG,
-    started_at: startedAt.toISOString(),
-    finished_at: new Date().toISOString(),
+  await finalizeAutomationRun(req, supabase, {
+    slug: AUTOMATION_SLUG,
     status: summary.status === 'error' ? 'error' : 'success',
-    items_examined: (summary.processed as number) ?? 0,
-    items_changed: (summary.applied as number) ?? 0,
+    startedAt,
+    itemsExamined: (summary.processed as number) ?? 0,
+    itemsChanged: (summary.applied as number) ?? 0,
     summary,
-  }).then(() => {}, () => {})
-  await supabase.from('admin_automations')
-    .update({ last_run_at: startedAt.toISOString(), last_run_status: summary.status === 'error' ? 'error' : 'success' })
-    .eq('slug', AUTOMATION_SLUG).then(() => {}, () => {})
+    error: summary.status === 'error' ? 'venue accessibility semantic failure' : undefined,
+  })
 }
