@@ -1,4 +1,8 @@
-import { getServiceClient, corsResponse } from '../_shared/supabase-client.ts'
+import {
+  getServiceClient,
+  corsResponse,
+  requireInternalOrAdmin,
+} from '../_shared/supabase-client.ts'
 import { extractContent, type ExtractResult } from '../_shared/extract-client.ts'
 import type { SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5'
 
@@ -81,6 +85,9 @@ Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return corsResponse(req)
 
   const supabase = getServiceClient()
+  const auth = await requireInternalOrAdmin(req, supabase)
+  if (auth instanceof Response) return auth
+
   const supabaseUrl = Deno.env.get('SUPABASE_URL')!
   const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
   const internalSecret = Deno.env.get('INTERNAL_INVOKE_SECRET')

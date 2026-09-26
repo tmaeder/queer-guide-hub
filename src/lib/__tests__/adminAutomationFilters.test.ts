@@ -30,12 +30,13 @@ describe('admin automation filtering', () => {
     }),
     row({ slug: 'city_paused', name: 'City paused', enabled: false }),
     row({ slug: 'push_dm', name: 'Push DM', enabled: false, last_run_status: 'auto_paused' }),
+    row({ slug: 'personality_refresh', name: 'People refresh', last_run_status: 'partial' }),
   ];
 
   it('hides retired rows from the default active view', () => {
     expect(
       filterAutomations(rows, { view: 'active', query: '', domain: 'all', owner: 'all' }),
-    ).toHaveLength(2);
+    ).toHaveLength(3);
   });
 
   it('finds attention rows and supports text and domain filters', () => {
@@ -47,18 +48,22 @@ describe('admin automation filtering', () => {
 
   it('reports operational summary counts', () => {
     expect(automationCounts(rows)).toEqual({
-      active: 2,
-      attention: 2,
+      active: 3,
+      attention: 3,
       paused: 2,
       autoPaused: 1,
       terminal: 1,
-      total: 5,
+      total: 6,
     });
   });
 
   it('does not label enabled jobs with failures as healthy', () => {
     expect(automationStatusLabel(row({ consecutive_failures: 1 }))).toBe('Attention · 1 error');
     expect(automationStatusLabel(row({ consecutive_failures: 2 }))).toBe('Attention · 2 errors');
+    expect(automationStatusLabel(row({ last_run_status: 'partial' }))).toBe('Attention · partial');
+    expect(
+      automationStatusLabel(row({ last_run_status: 'partial', consecutive_partials: 12 })),
+    ).toBe('Attention · 12 partials');
     expect(automationStatusLabel(row())).toBe('Healthy');
   });
 });

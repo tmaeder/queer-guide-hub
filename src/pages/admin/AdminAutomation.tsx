@@ -60,6 +60,7 @@ interface Automation {
   conditions: Array<Record<string, unknown>>;
   action: Record<string, unknown>;
   consecutive_failures: number;
+  consecutive_partials: number;
   auto_pause_threshold: number;
   created_at: string;
   updated_at: string;
@@ -603,7 +604,8 @@ export default function AdminAutomation() {
                 const terminal = ['completed', 'retired', 'consolidated'].includes(
                   a.lifecycle_state,
                 );
-                const hasFailures = a.enabled && a.consecutive_failures > 0;
+                const needsAttention =
+                  a.enabled && (a.consecutive_failures > 0 || a.last_run_status === 'partial');
                 const label = automationStatusLabel(a);
                 if (terminal) {
                   return (
@@ -614,7 +616,7 @@ export default function AdminAutomation() {
                 }
                 return isAdmin ? (
                   <Button
-                    variant={hasFailures ? 'destructive' : a.enabled ? 'outline' : 'secondary'}
+                    variant={needsAttention ? 'destructive' : a.enabled ? 'outline' : 'secondary'}
                     size="sm"
                     onClick={(e) => {
                       e.stopPropagation();
@@ -636,7 +638,10 @@ export default function AdminAutomation() {
                     {label}
                   </Button>
                 ) : a.enabled ? (
-                  <Badge variant={hasFailures ? 'destructive' : 'outline'} className="font-normal">
+                  <Badge
+                    variant={needsAttention ? 'destructive' : 'outline'}
+                    className="font-normal"
+                  >
                     {label}
                   </Badge>
                 ) : a.lifecycle_state === 'auto_paused' || a.last_run_status === 'auto_paused' ? (

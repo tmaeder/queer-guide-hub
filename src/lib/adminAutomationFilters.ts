@@ -8,6 +8,7 @@ export interface FilterableAutomation {
   enabled: boolean;
   last_run_status: string | null;
   consecutive_failures: number;
+  consecutive_partials?: number;
   lifecycle_state?: 'active' | 'paused' | 'auto_paused' | 'completed' | 'retired' | 'consolidated';
 }
 
@@ -46,6 +47,7 @@ export function needsAutomationAttention(automation: FilterableAutomation): bool
   return (
     automation.lifecycle_state === 'auto_paused' ||
     automation.last_run_status === 'auto_paused' ||
+    (automation.enabled && automation.last_run_status === 'partial') ||
     (automation.enabled && automation.consecutive_failures > 0)
   );
 }
@@ -55,6 +57,10 @@ export function automationStatusLabel(automation: FilterableAutomation): string 
     if (automation.consecutive_failures > 0) {
       const noun = automation.consecutive_failures === 1 ? 'error' : 'errors';
       return `Attention · ${automation.consecutive_failures} ${noun}`;
+    }
+    if (automation.last_run_status === 'partial') {
+      const count = Math.max(automation.consecutive_partials ?? 1, 1);
+      return count === 1 ? 'Attention · partial' : `Attention · ${count} partials`;
     }
     return 'Healthy';
   }
