@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import { TriageDetailPanel } from './TriageDetailPanel';
 import type { TriageItem } from '@/hooks/useUnifiedTriageQueue';
+import type { TriageAction, TriageAnswers } from './resolveDecision';
 
 interface TriageFocusModeProps {
   open: boolean;
@@ -21,7 +22,19 @@ interface TriageFocusModeProps {
   page: number;
   perPage: number;
   onNavigate: (id: string) => void;
-  onAction: (action: 'approve' | 'reject' | 'skip' | 'flag', notes?: string, cannedSlug?: string) => void;
+  /**
+   * Forwarded verbatim to `TriageDetailPanel`.
+   *
+   * This used to declare `(action, notes?, cannedSlug?)` while the real handler took
+   * five arguments — `payload` and `confirm` were silently dropped. Every parameter
+   * was optional, so it typechecked in BOTH directions and worked only because the
+   * real handler was passed straight through; the first person to wrap or memoise
+   * the prop would have deleted the outing-safety confirmation with no type error.
+   * The action carries one argument now, so there is nothing left to drop.
+   */
+  onAction: (action: TriageAction) => void;
+  answers: TriageAnswers;
+  onAnswersChange: (patch: Partial<TriageAnswers>) => void;
   isActionLoading: boolean;
 }
 
@@ -35,6 +48,8 @@ export function TriageFocusMode({
   perPage,
   onNavigate,
   onAction,
+  answers,
+  onAnswersChange,
   isActionLoading,
 }: TriageFocusModeProps) {
   const idx = activeItem ? items.findIndex((i) => i.id === activeItem.id) : -1;
@@ -70,6 +85,8 @@ export function TriageFocusMode({
           {activeItem ? (
             <TriageDetailPanel
               item={activeItem}
+              answers={answers}
+              onAnswersChange={onAnswersChange}
               onAction={onAction}
               isActionLoading={isActionLoading}
             />

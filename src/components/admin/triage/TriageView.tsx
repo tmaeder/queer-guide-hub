@@ -22,7 +22,6 @@ import {
   useHighConfCount,
   useBulkApproveHighConf,
   type TriageFilters,
-  type TriageItem,
 } from '@/hooks/useUnifiedTriageQueue';
 import { useReviewCounts } from '@/hooks/useReviewCounts';
 import { useReviewQueueCohorts } from '@/hooks/useReviewQueueCohorts';
@@ -33,6 +32,14 @@ import { TriageList } from './TriageList';
 import { TriageDetailPanel } from './TriageDetailPanel';
 import { TriageFocusMode } from './TriageFocusMode';
 import { useTriageKeyboard } from './useTriageKeyboard';
+import {
+  resolveDecision,
+  isUnbatchablePerson,
+  queuedKeepId,
+  type TriageAction,
+  type TriageAnswers,
+} from './resolveDecision';
+import { useTriageSourceCapabilities } from '@/hooks/useTriageSourceCapabilities';
 
 interface TriageViewProps {
   initialQueueType?: string;
@@ -50,6 +57,20 @@ export function TriageView({ initialQueueType }: TriageViewProps) {
   });
   const [activeId, setActiveId] = useState<string | null>(null);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  /**
+   * What the reviewer has told us, KEYED BY ITEM ID.
+   *
+   * This used to be two separate pieces of component state — `perPair` inside
+   * `TriageDetailPanel` and `notes`/`cannedSlug` inside `ActionBar` — and neither was
+   * reachable from the keyboard, which is wired here. Lifting them is what lets one
+   * resolver see everything an action carries.
+   *
+   * Keyed by id rather than reset on advance, so a leak across items is impossible by
+   * CONSTRUCTION rather than by remembering a `key` prop. That matters most for
+   * `safetyConfirmed`: a confirmation that survived the advance would already be
+   * satisfied for a row nobody read.
+   */
+  const [answers, setAnswers] = useState<Record<string, TriageAnswers>>({});
   // Last approve/reject, for one-step undo (U) — reopens the item in its queue.
   const [lastActed, setLastActed] = useState<{
     id: string;
@@ -68,6 +89,10 @@ export function TriageView({ initialQueueType }: TriageViewProps) {
     !filters.queueTypes || filters.queueTypes.some((k) => k.startsWith('quality-'));
   const { data: cohorts, isLoading: cohortsLoading } = useReviewQueueCohorts(qualityInScope);
   const triageAction = useTriageAction();
+  // Read from `triage_sources`, not from a literal: a queue decided in its own
+  // console has no `triage_action` branch, so every action on it must be refused
+  // here too — not only hidden in the panel.
+  const { externalConsoleFor } = useTriageSourceCapabilities();
 
   const items = useMemo(() => data?.items ?? [], [data]);
   const total = data?.total ?? 0;
@@ -101,24 +126,28 @@ export function TriageView({ initialQueueType }: TriageViewProps) {
     }
   }, [items, activeId]);
 
+  /**
+   * THE ONE PLACE AN ACTION IS DECIDED, for the mouse and the keyboard alike.
+   *
+   * Previously the panel computed `confirm` / `{keep_id}` / the namesake refusal and
+   * handed this function the result, while `useTriageKeyboard` called it directly —
+   * so the keyboard skipped every gate. Both callers now hand over an intent and
+   * `resolveDecision` answers with what it carries, or refuses and says why.
+   */
   const handleAction = useCallback(
-    (
-      action: 'approve' | 'reject' | 'skip' | 'flag',
-      notes?: string,
-      cannedSlug?: string,
-      // Queue-specific extras. `triage_action` has accepted `p_payload` since
-      // 20260801050000 and `useTriageAction` has always had the parameter, but this
-      // handler dropped it — which is why dedup-review's canonical flip (`keep_id`)
-      // was reachable from SQL and from the hook and from no button anywhere.
-      payload?: Record<string, unknown>,
-      // Outing-safety confirmation, forwarded to triage_action's p_confirm.
-      // Set only by TriageDetailPanel, only on approve, and only after the
-      // reviewer ticks the box — see the gate there. Without it,
-      // approve_entity_review raises 42501 for every risk-gated row, which is
-      // what made 347 proposals un-approvable from this screen.
-      confirm?: boolean,
-    ) => {
+    (action: TriageAction) => {
       if (!activeItem) return;
+
+      const decision = resolveDecision(activeItem, action, answers[activeItem.id] ?? {}, {
+        externalConsole: externalConsoleFor(activeItem.queue_type),
+      });
+
+      if (!decision.ok) {
+        // A shortcut that silently does nothing reads as a broken keyboard, which
+        // is how a reviewer learns to stop using it.
+        toast.warning(decision.reason);
+        return;
+      }
 
       if (action === 'skip') {
         advanceToNext();
@@ -130,10 +159,10 @@ export function TriageView({ initialQueueType }: TriageViewProps) {
           itemId: activeItem.id,
           queueType: activeItem.queue_type,
           action,
-          notes,
-          cannedSlug,
-          payload,
-          confirm,
+          notes: decision.notes,
+          cannedSlug: decision.cannedSlug,
+          payload: decision.payload,
+          confirm: decision.confirm,
         },
         {
           onSuccess: () => {
@@ -154,8 +183,25 @@ export function TriageView({ initialQueueType }: TriageViewProps) {
         },
       );
     },
-    [activeItem, triageAction, advanceToNext],
+    [activeItem, answers, externalConsoleFor, triageAction, advanceToNext],
   );
+
+  /** Merge one reviewer answer into the ACTIVE item's record. */
+  const updateAnswers = useCallback(
+    (patch: Partial<TriageAnswers>) => {
+      if (!activeId) return;
+      setAnswers((prev) => ({ ...prev, [activeId]: { ...prev[activeId], ...patch } }));
+    },
+    [activeId],
+  );
+
+  const activeAnswers: TriageAnswers = useMemo(() => {
+    if (!activeItem) return {};
+    const stored = answers[activeItem.id];
+    // The canonical defaults to whatever the sweep queued, so the compare table has
+    // something to mark as "keeping" before the reviewer touches anything.
+    return { keepId: queuedKeepId(activeItem), ...stored };
+  }, [activeItem, answers]);
 
   const handleUndo = useCallback(() => {
     if (!lastActed) {
@@ -181,6 +227,7 @@ export function TriageView({ initialQueueType }: TriageViewProps) {
   const [bulkLoading, setBulkLoading] = useState(false);
   const [focusOpen, setFocusOpen] = useState(false);
   const [confirmHighConf, setConfirmHighConf] = useState(false);
+  const [confirmBulkReject, setConfirmBulkReject] = useState(false);
 
   /**
    * A namesake merge can never be a bulk decision.
@@ -199,16 +246,21 @@ export function TriageView({ initialQueueType }: TriageViewProps) {
    * exactly this reason; the bulk path does not route through it, so the rule has to
    * be restated here. Reject and skip stay available — "these are two different
    * people" must remain the easy answer.
+   *
+   * NOTE the predicate is `isUnbatchablePerson`, NOT the resolver's
+   * `needsNamesakeConfirm`, and the difference is deliberate: bulk holds back EVERY
+   * personality dedup pair (flagged or not, matching that RPC's WHERE) because it has
+   * no checkbox to offer and nobody reading the pair, while the single-item gate has
+   * to match the predicate the checkbox renders on. Collapsing the two is wrong in
+   * both directions — see `resolveDecision.ts`.
    */
-  const isNamesakePair = (i: TriageItem) =>
-    i.queue_type === 'dedup-review' && i.content_type === 'personality';
-
   const runBulk = useCallback(
     async (targets: typeof items, action: 'approve' | 'reject') => {
       if (targets.length === 0) return;
 
-      const held = action === 'approve' ? targets.filter(isNamesakePair) : [];
-      const actionable = action === 'approve' ? targets.filter((i) => !isNamesakePair(i)) : targets;
+      const held = action === 'approve' ? targets.filter(isUnbatchablePerson) : [];
+      const actionable =
+        action === 'approve' ? targets.filter((i) => !isUnbatchablePerson(i)) : targets;
 
       if (held.length > 0 && actionable.length === 0) {
         toast.warning(
@@ -330,48 +382,48 @@ export function TriageView({ initialQueueType }: TriageViewProps) {
   const detailPanel = activeItem ? (
     <TriageDetailPanel
       item={activeItem}
+      answers={activeAnswers}
+      onAnswersChange={updateAnswers}
       onAction={handleAction}
       isActionLoading={triageAction.isPending}
     />
   ) : (
     <div className="flex flex-col items-center justify-center h-full text-sm text-muted-foreground gap-2">
       <p>Select an item to preview</p>
+      {/* The full shortcut legend used to live here — the third of three copies,
+          and the one that vanishes the moment you select something, i.e. exactly
+          when a reminder would be useful. `?` opens the dialog that works at any
+          time; that is the only copy left. */}
       <p className="text-2xs">
-        <kbd className="px-1 border">j</kbd>/<kbd className="px-1 border">k</kbd> navigate
-        {' · '}
-        <kbd className="px-1 border">a</kbd> approve
-        {' · '}
-        <kbd className="px-1 border">r</kbd> reject
-        {' · '}
-        <kbd className="px-1 border">s</kbd> skip
-        {' · '}
-        <kbd className="px-1 border">f</kbd> flag
-        {' · '}
-        <kbd className="px-1 border">u</kbd> undo
-        {' · '}
-        <kbd className="px-1 border">?</kbd> help
+        <kbd className="px-1 border">?</kbd> for shortcuts
       </p>
     </div>
   );
 
   return (
-    <div className="flex flex-col h-[calc(100vh-8rem)]">
+    <div className="flex flex-col h-full min-h-0">
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-2 border-b">
         <div className="flex items-center gap-2">
-          {/* h2, not h1. TriageView is EMBEDDED — /admin/inbox already renders
-            its own <h1>Inbox</h1> above this pane, so an h1 here gave that
-            route TWO page titles and a screen reader two competing answers to
-            "what page am I on".
-
-            Caught by e2e/admin-route-baseline.spec.ts on its first run with a
-            real admin session: "/admin/inbox has 2 h1s". The guard had been
-            skipping silently since the day it landed, for want of a CI
-            session — this is the defect it existed to find. */}
-          <h2 className="text-lg font-medium">Review</h2>
+          {/* NO heading here at all.
+              This used to read <h2>Review</h2> — deliberately an h2 rather than an
+              h1, because /admin/inbox renders its own <h1>Inbox</h1> above this pane
+              and two h1s gave a screen reader two competing answers to "what page am
+              I on" (caught by e2e/admin-route-baseline.spec.ts on its first run with
+              a real admin session). The h2 was the correct fix for that and still
+              left FOUR names for one screen visible at once: `Triage` in the mode
+              nav, `Inbox` in the h1, `Review` here, and `Governance` in
+              document.title. The count is the only thing this row was carrying that
+              a reviewer needs. */}
+          {/* The total gets a NOUN. A bare `3997` is one of the two unlabelled
+              numbers this pass set out to remove; the machine/human framing that
+              qualifies it stays in `AutomationStatusCard` above, because that card
+              shows both halves of one population and a cross-queue sum placed beside
+              this filtered total would compare different denominators — 4,710
+              "needs you" against a 3,997 total, which is worse than no framing. */}
           {total > 0 && (
             <Badge variant="secondary" className="text-xs">
-              {total}
+              {total.toLocaleString()} open
             </Badge>
           )}
           {isLoading && <TrackLoader size={14} />}
@@ -447,7 +499,11 @@ export function TriageView({ initialQueueType }: TriageViewProps) {
         onSelectAll={() => setSelectedIds(new Set(items.map((i) => i.id)))}
         onClearSelection={() => setSelectedIds(new Set())}
         onBulkApprove={() => handleBulkAction('approve')}
-        onBulkReject={() => handleBulkAction('reject')}
+        // Bulk approve is already gated by `runBulk`'s namesake hold-back and by the
+        // high-confidence dialog. Bulk REJECT had nothing: 50 rows closed on one
+        // click, with the only feedback a toast afterwards. Rejecting is recoverable
+        // per row via Undo but not in bulk, so it gets the confirmation.
+        onBulkReject={() => setConfirmBulkReject(true)}
         loading={bulkLoading}
       />
 
@@ -460,9 +516,39 @@ export function TriageView({ initialQueueType }: TriageViewProps) {
         page={filters.page}
         perPage={filters.perPage}
         onNavigate={handleSelect}
+        answers={activeAnswers}
+        onAnswersChange={updateAnswers}
         onAction={handleAction}
         isActionLoading={triageAction.isPending}
       />
+
+      <AlertDialog open={confirmBulkReject} onOpenChange={setConfirmBulkReject}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Reject {selectedIds.size} selected item(s)?</AlertDialogTitle>
+            <AlertDialogDescription>
+              {/* Undo (U) reopens the LAST action only, so a bulk rejection is not
+                  reversible from this screen — which is exactly why it is worth
+                  confirming, and worth saying so rather than implying symmetry with
+                  the per-row case. */}
+              Each row is closed in its queue. Undo reopens only the most recent action,
+              so a bulk rejection cannot be reversed from here — individual rows have to
+              be reopened in their own queue.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                setConfirmBulkReject(false);
+                handleBulkAction('reject');
+              }}
+            >
+              Reject {selectedIds.size}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       <AlertDialog open={confirmHighConf} onOpenChange={setConfirmHighConf}>
         <AlertDialogContent>
