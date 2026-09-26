@@ -34,6 +34,7 @@
 import {
   Bot,
   Building,
+  Calendar,
   CopyCheck,
   FileText,
   Flag,
@@ -376,6 +377,21 @@ export const ADMIN_QUEUES: readonly AdminQueueDef[] = [
   },
   {
     queueKey: null,
+    countKey: 'quality_event',
+    slaKey: 'quality_event',
+    hasOverdue: true,
+    label: 'Event quality',
+    title: 'Events',
+    description:
+      'Evidence-backed validity, linkage, provenance, media, freshness, and completeness decisions.',
+    icon: Calendar,
+    route: '/admin/content/event-quality',
+    weight: 40,
+    surfaces: ['cockpit', 'quality'],
+    minRole: 'moderator',
+  },
+  {
+    queueKey: null,
     countKey: 'quality_existence',
     slaKey: null,
     hasOverdue: false,
@@ -395,6 +411,7 @@ export const QUALITY_GATES: readonly AdminQueueDef[] = [
   'quality_city',
   'quality_venue',
   'quality_personality',
+  'quality_event',
   'quality_marketplace',
   'quality_village',
   'quality_duplicates',
