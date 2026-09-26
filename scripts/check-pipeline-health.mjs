@@ -1092,8 +1092,15 @@ if (!hygieneRes.ok) {
 //
 //     SQL cannot call Wikidata, so this cannot tell you a NEW identifier is
 //     wrong. It watches the three things it can prove: a refuted id coming back,
-//     a disposed row losing its SKIP_ sentinel, and a retracted biography
+//     a disposed row losing its recorded decision, and a retracted biography
 //     returning. `unverified_reachable` is a work-list size and only prints.
+//
+//     That decision used to be a `SKIP_<uuid>` stuffed into `wikidata_qid`.
+//     99991790059731 retired the overload corpus-wide — `wikidata_qid` now holds
+//     a real Q-id or NULL and nothing else, and the decision moved to the typed
+//     `wikidata_status` column (`not_found`), which personality-refresh reads
+//     before deciding whether to re-resolve. 99991790384521 moved this invariant
+//     onto that column; it did not relax it.
 {
   const res = await fetch(`${BASE}/rest/v1/rpc/personality_wikidata_signals`, {
     method: 'POST',
@@ -1119,7 +1126,7 @@ if (!hygieneRes.ok) {
       }
       for (const [key, msg] of [
         ['qid_regressed', 'personalit(ies) re-acquired the refuted Wikidata id they were cleared of'],
-        ['sentinel_lost', 'disposed personalit(ies) no longer carry a SKIP_ sentinel'],
+        ['sentinel_lost', 'disposed personalit(ies) no longer record their wikidata decision'],
         ['retracted_text_back', 'retracted wrong-person biograph(ies) have returned'],
       ]) {
         if ((s[key] ?? 0) > 0) {
@@ -1132,8 +1139,9 @@ if (!hygieneRes.ok) {
             console.error('  Check resolveByNameAndProfession() still gates on isHuman() + occupation overlap.')
           }
           if (key === 'sentinel_lost') {
-            console.error('  A NULL here is not neutral: personality-refresh re-resolves by name when')
-            console.error('  wikidata_qid IS NULL, so the row re-enters resolution instead of recording its decision.')
+            console.error('  A disposed row must carry wikidata_status=not_found and no Q-id.')
+            console.error('  Losing not_found puts the row back into name resolution; keeping it')
+            console.error('  alongside a Q-id is incoherent. personality-refresh reads that column.')
           }
           FAILED = true
         }
