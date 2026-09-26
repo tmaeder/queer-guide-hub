@@ -66,7 +66,9 @@ describe('ADMIN_QUEUES', () => {
   it('routes registry queues to their own inbox queue unless reviewed inline', () => {
     for (const q of ADMIN_QUEUES) {
       if (!q.queueKey || q.section) continue;
-      expect(q.route).toBe(`/admin/inbox?queue=${q.queueKey}`);
+      // Moved with the governance consolidation: triage is a MODE of one route
+      // now, and `?queue=` still partitions it.
+      expect(q.route).toBe(`/admin/governance?mode=triage&queue=${q.queueKey}`);
     }
   });
 
