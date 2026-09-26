@@ -3946,6 +3946,108 @@ const DISOWNED_PROSE_CEILING = 380
   }
 }
 
+// §19 — the item-level audit inspector must stay honest.
+//
+// The timeline is only as trustworthy as three things it cannot check about
+// itself: that audit_entity_registry still agrees with the catalog, that the
+// function is still DEFINER *with a role gate in its body*, and that anon holds
+// no EXECUTE. The second matters most here because
+// scripts/check-anon-function-grants.mjs is scoped to VOLATILE definers and is
+// structurally blind to a STABLE one like entity_audit_timeline — a future
+// CREATE OR REPLACE that drops the gate would ship silently.
+{
+  const res = await fetch(`${BASE}/rest/v1/rpc/audit_inspector_signals`, {
+    method: 'POST',
+    headers: { apikey: KEY, Authorization: `Bearer ${KEY}`, 'Content-Type': 'application/json' },
+    body: '{}',
+  })
+
+  if (res.status === 404) {
+    // Same carve-out reasoning as §16: the nightly run checks out main and calls
+    // the LIVE database, so in the window where main carries this script and
+    // prod has not applied 99991790362392, a hard fail would be red for
+    // something that is not a defect.
+    console.warn(
+      '⚠ audit_inspector_signals → HTTP 404 — audit-inspector sentinel NOT DEPLOYED (migration 99991790362392). This is absence of a check, not absence of defects.',
+    )
+  } else if (!res.ok) {
+    console.error(
+      `✗ audit_inspector_signals → HTTP ${res.status} — the gate could not run. A broken probe must not read as a clean corpus.`,
+    )
+    FAILED = true
+  } else {
+    const a = await res.json()
+
+    if (!a || a.probe_ok !== true) {
+      console.error(
+        `✗ audit_inspector_signals did not report probe_ok — the probe is broken: ${a?.error ?? 'no error given'}`,
+      )
+      FAILED = true
+    } else if (Number(a.registry_rows ?? 0) < 11) {
+      // Zero drift over an empty registry is vacuous, not clean.
+      console.error(
+        `✗ audit_inspector_signals sees only ${a.registry_rows ?? 0} registry rows — it is measuring nothing, not passing`,
+      )
+      FAILED = true
+    } else {
+      const drift = a.catalog_drift ?? []
+      const missingGaps = a.gap_keys_missing ?? []
+
+      if (drift.length > 0) {
+        console.error(
+          `✗ audit_entity_registry disagrees with the catalog on ${drift.length}: ${drift.join(', ')}` +
+            '\n  A row claiming a column the table does not have makes that type read as having no provenance at all.',
+        )
+        FAILED = true
+      }
+      if (missingGaps.length > 0) {
+        console.error(
+          `✗ ${missingGaps.length} coverage-gap key(s) have no written explanation: ${missingGaps.join(', ')}` +
+            '\n  These are the sentences saying what the timeline CANNOT show. Unexplained, they render as raw codes.',
+        )
+        FAILED = true
+      }
+      if (a.timeline_exists !== true) {
+        console.error(
+          '✗ entity_audit_timeline does not exist while its registry does — the inspector would fail for every record',
+        )
+        FAILED = true
+      }
+      if (a.timeline_is_definer === true && a.timeline_has_role_gate !== true) {
+        console.error(
+          '✗ entity_audit_timeline is SECURITY DEFINER with no has_any_role_jwt gate in its body.' +
+            '\n  check-anon-function-grants.mjs cannot see this — it only inspects VOLATILE definers.',
+        )
+        FAILED = true
+      }
+      for (const [key, what] of [
+        ['anon_can_call_timeline', 'call entity_audit_timeline'],
+        ['anon_can_read_registry', 'read audit_entity_registry'],
+        ['anon_can_read_explanations', 'read pipeline_explanations'],
+      ]) {
+        if (a[key] === true) {
+          console.error(`✗ anon can ${what} — the audit layer exposes raw ingest payloads and pipeline internals`)
+          FAILED = true
+        }
+      }
+
+      // Advisory and growth-gated rather than a zero-invariant: this can only be
+      // driven down by a human writing prose, so a zero rule would ship red and
+      // get scrolled past. The authoritative producer-side check is
+      // scripts/check-explanation-keys.mjs, which runs at PR time.
+      const unexplained = Number(a.unexplained_keys ?? 0)
+      if (unexplained > 0) {
+        console.warn(`⚠ ${unexplained} registered explanation(s) have an empty body`)
+      }
+      if (drift.length === 0 && missingGaps.length === 0) {
+        console.log(
+          `✓ audit inspector honest (${a.registry_rows} entity types, ${a.explanation_rows} explanations, no catalog drift, definer gated, anon revoked)`,
+        )
+      }
+    }
+  }
+}
+
 // The single exit. Reached whether or not anything failed, so the ✗ lines above
 // are the complete list rather than "the first one we tripped over".
 if (FAILED) {

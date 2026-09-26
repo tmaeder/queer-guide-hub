@@ -59,10 +59,8 @@ import {
   Palette,
   SpellCheck,
   Award,
-  CopyCheck,
   PenLine,
   UserPlus,
-  ShieldCheck,
   Waypoints,
   Network,
   Trash2,
@@ -127,35 +125,30 @@ export const adminNavSections: AdminNavSection[] = [
         route: '/admin',
       },
       {
-        id: 'inbox',
-        label: 'Inbox',
+        // The three governance surfaces are ONE nav entry and one route
+        // (`/admin/governance?mode=`). They were three (Inbox / Quality /
+        // Duplicates & merge) and the split was the problem: deciding an item,
+        // watching the engine that proposed it, and merging its duplicate are
+        // one job done in three places. `?mode=` keeps them distinct without
+        // making them separate destinations.
+        //
+        // Icons must stay unique tree-wide (the 64px rail is a flat icon list),
+        // so collapsing three entries frees ShieldCheck and CopyCheck.
+        //
+        // `moderator`, inherited from the old Quality row: it declared this
+        // explicitly because Cockpit's floor is `editor`, and the merge tool has
+        // always been moderator-and-up in practice.
+        id: 'governance',
+        label: 'Governance',
         icon: Inbox,
-        route: '/admin/inbox',
+        route: '/admin/governance',
+        minRole: 'moderator',
       },
       {
         id: 'postfach',
         label: 'Postfach',
         icon: Mail,
         route: '/admin/postfach',
-      },
-      {
-        id: 'quality',
-        label: 'Quality',
-        icon: ShieldCheck,
-        route: '/admin/quality',
-        // Explicit, matching the `quality` queue in adminQueues.ts, which has
-        // always declared `moderator`. This row inherited Cockpit's `editor`
-        // floor by omission, so the queue was hidden from editors while the page
-        // behind it stayed open to them — asserted by adminNavigation.test.ts.
-        minRole: 'moderator',
-      },
-      {
-        // Sits next to Quality, not under Data: the Quality hub already carries
-        // the Duplicates card and the nightly sweep's queue is an inbox queue.
-        id: 'duplicates',
-        label: 'Duplicates & merge',
-        icon: CopyCheck,
-        route: '/admin/duplicates',
       },
       {
         // Cross-type, so it cannot live under any one content type. The whole
