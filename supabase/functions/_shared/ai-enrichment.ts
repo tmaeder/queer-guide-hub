@@ -528,6 +528,92 @@ Respond with JSON using these keys (null where unknown):
 }
 
 // ---------------------------------------------------------------------------
+// Agentic hotel moat enrichment — grounded extraction from the property's own
+// page or an existing listing description. The caller decides which fields are
+// safe to apply and retains low-confidence output for review.
+// ---------------------------------------------------------------------------
+
+export interface HotelMoatEnrichment {
+  description?: string
+  amenities?: string[]
+  queer_safety_notes?: string
+  star_rating?: number
+  price_range?: number
+  lgbtq_relevance_score?: number
+  confidence?: number
+}
+
+const HOTEL_MOAT_KEYS = [
+  'description', 'amenities', 'queer_safety_notes', 'star_rating', 'price_range',
+  'lgbtq_relevance_score', 'confidence',
+]
+
+const HOTEL_MOAT_SYSTEM_PROMPT = `${BASE_CONTEXT}
+
+You extract structured travel facts for an LGBTQ+ accommodation guide. This is GROUNDED EXTRACTION, not creative writing.
+
+Hard rules:
+- Use ONLY facts stated in the supplied source text. Unknown means null or omitted; never infer facilities, policies, ratings, prices, or LGBTQ+ friendliness.
+- description: a factual 2-3 sentence summary based only on the source.
+- amenities: short lowercase identifiers for facilities explicitly stated by the source.
+- queer_safety_notes: calm, concise LGBTQ+ safety context. You may combine source facts with the supplied DESTINATION CONTEXT, but never claim that the property itself is welcoming unless the source says so.
+- star_rating: integer 1-5 only when the source explicitly states an official star class.
+- price_range: integer 1-4 only when the source contains enough pricing information; otherwise omit it.
+- lgbtq_relevance_score: 0.0-1.0 based only on explicit LGBTQ+ evidence in the source.
+- confidence: 0.0-1.0 for how strongly the source supports the extracted fields.
+
+Respond ONLY with valid JSON. No markdown code blocks.`
+
+export async function researchEnrichHotelFromPage(
+  supabase: SupabaseClient,
+  input: {
+    name: string
+    city?: string
+    country?: string
+    hotel_type?: string
+    existingDescription?: string | null
+    sourceText: string
+    safetyContext?: string
+  },
+): Promise<HotelMoatEnrichment | null> {
+  if (!(await isOpenAIAvailable(supabase))) return null
+  const source = (input.sourceText || '').slice(0, 6000)
+  if (source.trim().length < 60) return null
+
+  const userPrompt = `Property: ${ud(input.name)}
+Type: ${ud(input.hotel_type || 'N/A')} | City: ${ud(input.city || 'N/A')} | Country: ${ud(input.country || 'N/A')}
+${input.existingDescription ? `Existing description: ${ud(input.existingDescription.slice(0, 300))}` : ''}
+${input.safetyContext ? `DESTINATION CONTEXT (for queer_safety_notes only): ${ud(input.safetyContext)}` : ''}
+
+SOURCE TEXT:
+${ud(source)}
+
+Respond with JSON using these keys (null where unknown):
+{"description":"...","amenities":["..."],"queer_safety_notes":"...","star_rating":0,"price_range":0,"lgbtq_relevance_score":0.0,"confidence":0.0}`
+
+  try {
+    const result = await chatCompletion(supabase, {
+      callerFn: 'shared:ai-enrichment',
+      model: '@cf/meta/llama-3.3-70b-instruct-fp8-fast',
+      messages: [
+        { role: 'system', content: HOTEL_MOAT_SYSTEM_PROMPT },
+        { role: 'user', content: userPrompt },
+      ],
+      temperature: 0.2,
+      max_tokens: 700,
+      response_format: { type: 'json_object' },
+    })
+    const raw = typeof result.content === 'string'
+      ? result.content
+      : JSON.stringify(result.content ?? '')
+    return parseAIResponse<HotelMoatEnrichment>(raw, HOTEL_MOAT_KEYS)
+  } catch (err) {
+    console.error('Hotel moat enrichment failed:', (err as Error).message)
+    return null
+  }
+}
+
+// ---------------------------------------------------------------------------
 // Agentic city moat enrichment — extract queer-aware travel fields for a city,
 // grounded in fetched sources (Wikipedia + official site + destination context).
 // SAFETY: lgbt_friendly_rating + editorial_hook are review-gated by the caller —

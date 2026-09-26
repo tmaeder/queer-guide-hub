@@ -41,6 +41,7 @@ import { Input } from '@/components/ui/input';
 import {
   automationCounts,
   automationDomain,
+  automationStatusLabel,
   filterAutomations,
   type AutomationView,
 } from '@/lib/adminAutomationFilters';
@@ -602,11 +603,8 @@ export default function AdminAutomation() {
                 const terminal = ['completed', 'retired', 'consolidated'].includes(
                   a.lifecycle_state,
                 );
-                const label = a.enabled
-                  ? 'Healthy'
-                  : a.lifecycle_state === 'auto_paused' || a.last_run_status === 'auto_paused'
-                    ? `Auto-paused · ${a.consecutive_failures} errors`
-                    : a.lifecycle_state.replace('_', ' ');
+                const hasFailures = a.enabled && a.consecutive_failures > 0;
+                const label = automationStatusLabel(a);
                 if (terminal) {
                   return (
                     <Badge variant="secondary" className="font-normal capitalize">
@@ -616,7 +614,7 @@ export default function AdminAutomation() {
                 }
                 return isAdmin ? (
                   <Button
-                    variant={a.enabled ? 'outline' : 'secondary'}
+                    variant={hasFailures ? 'destructive' : a.enabled ? 'outline' : 'secondary'}
                     size="sm"
                     onClick={(e) => {
                       e.stopPropagation();
@@ -638,8 +636,8 @@ export default function AdminAutomation() {
                     {label}
                   </Button>
                 ) : a.enabled ? (
-                  <Badge variant="outline" className="font-normal">
-                    Healthy
+                  <Badge variant={hasFailures ? 'destructive' : 'outline'} className="font-normal">
+                    {label}
                   </Badge>
                 ) : a.lifecycle_state === 'auto_paused' || a.last_run_status === 'auto_paused' ? (
                   <Badge variant="destructive" className="font-normal">

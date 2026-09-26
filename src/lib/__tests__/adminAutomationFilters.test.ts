@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   automationCounts,
   automationDomain,
+  automationStatusLabel,
   filterAutomations,
   type FilterableAutomation,
 } from '../adminAutomationFilters';
@@ -53,5 +54,11 @@ describe('admin automation filtering', () => {
       terminal: 1,
       total: 5,
     });
+  });
+
+  it('does not label enabled jobs with failures as healthy', () => {
+    expect(automationStatusLabel(row({ consecutive_failures: 1 }))).toBe('Attention · 1 error');
+    expect(automationStatusLabel(row({ consecutive_failures: 2 }))).toBe('Attention · 2 errors');
+    expect(automationStatusLabel(row())).toBe('Healthy');
   });
 });

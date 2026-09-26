@@ -50,6 +50,23 @@ export function needsAutomationAttention(automation: FilterableAutomation): bool
   );
 }
 
+export function automationStatusLabel(automation: FilterableAutomation): string {
+  if (automation.enabled) {
+    if (automation.consecutive_failures > 0) {
+      const noun = automation.consecutive_failures === 1 ? 'error' : 'errors';
+      return `Attention · ${automation.consecutive_failures} ${noun}`;
+    }
+    return 'Healthy';
+  }
+  if (
+    automation.lifecycle_state === 'auto_paused' ||
+    automation.last_run_status === 'auto_paused'
+  ) {
+    return `Auto-paused · ${automation.consecutive_failures} errors`;
+  }
+  return automation.lifecycle_state?.replace('_', ' ') ?? 'paused';
+}
+
 export function filterAutomations<T extends FilterableAutomation>(
   automations: T[],
   options: { view: AutomationView; query: string; domain: string; owner: string },
