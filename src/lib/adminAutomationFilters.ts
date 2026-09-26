@@ -8,6 +8,7 @@ export interface FilterableAutomation {
   enabled: boolean;
   last_run_status: string | null;
   consecutive_failures: number;
+  lifecycle_state?: 'active' | 'paused' | 'auto_paused' | 'completed' | 'retired' | 'consolidated';
 }
 
 const RETIRED_MARKER = /^\[(?:RETIRED|COMPLETED|CONSOLIDATED)\b/i;
@@ -33,11 +34,17 @@ export function automationDomain(slug: string): string {
 }
 
 export function isRetiredAutomation(automation: FilterableAutomation): boolean {
-  return RETIRED_MARKER.test(automation.description?.trim() ?? '');
+  return (
+    automation.lifecycle_state === 'completed' ||
+    automation.lifecycle_state === 'retired' ||
+    automation.lifecycle_state === 'consolidated' ||
+    RETIRED_MARKER.test(automation.description?.trim() ?? '')
+  );
 }
 
 export function needsAutomationAttention(automation: FilterableAutomation): boolean {
   return (
+    automation.lifecycle_state === 'auto_paused' ||
     automation.last_run_status === 'auto_paused' ||
     (automation.enabled && automation.consecutive_failures > 0)
   );
@@ -55,7 +62,7 @@ export function filterAutomations<T extends FilterableAutomation>(
       options.view === 'all' ||
       (options.view === 'active' && automation.enabled && !retired) ||
       (options.view === 'attention' && attention && !retired) ||
-      (options.view === 'paused' && !automation.enabled);
+      (options.view === 'paused' && !automation.enabled && !retired);
     if (!matchesView) return false;
     if (options.domain !== 'all' && automationDomain(automation.slug) !== options.domain)
       return false;
@@ -75,8 +82,11 @@ export function automationCounts(automations: FilterableAutomation[]) {
     active: automations.filter((a) => a.enabled && !isRetiredAutomation(a)).length,
     attention: automations.filter((a) => needsAutomationAttention(a) && !isRetiredAutomation(a))
       .length,
-    paused: automations.filter((a) => !a.enabled).length,
-    autoPaused: automations.filter((a) => a.last_run_status === 'auto_paused').length,
+    paused: automations.filter((a) => !a.enabled && !isRetiredAutomation(a)).length,
+    autoPaused: automations.filter(
+      (a) => a.lifecycle_state === 'auto_paused' || a.last_run_status === 'auto_paused',
+    ).length,
+    terminal: automations.filter(isRetiredAutomation).length,
     total: automations.length,
   };
 }

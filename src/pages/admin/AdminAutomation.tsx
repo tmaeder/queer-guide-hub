@@ -3,7 +3,7 @@
  * v0: read-only listing. Visual rule builder lands in a follow-up.
  */
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { TrackLoader } from '@/components/transit/TrackLoader';
 import { useNavigate } from 'react-router';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
@@ -17,9 +17,10 @@ import {
   AlertCircle,
   FlaskConical,
   Search,
+  ShieldAlert,
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
-import { untypedFrom } from '@/integrations/supabase/untyped';
+import { untypedFrom, untypedRpc } from '@/integrations/supabase/untyped';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -61,6 +62,26 @@ interface Automation {
   auto_pause_threshold: number;
   created_at: string;
   updated_at: string;
+  lifecycle_state: 'active' | 'paused' | 'auto_paused' | 'completed' | 'retired' | 'consolidated';
+  can_run_now: boolean;
+  can_dry_run: boolean;
+  capability_reason: string | null;
+}
+
+interface MaintenanceState {
+  active: boolean;
+  generation: string | null;
+  entered_at: string | null;
+  entered_by: string | null;
+  snapshot_count: number;
+}
+
+interface DryRunAllSummary {
+  eligible: number;
+  skipped: number;
+  succeeded: number;
+  failed: number;
+  total_would_change: number;
 }
 
 interface AutomationRun {
@@ -98,12 +119,31 @@ async function fetchRecentRuns(slugFilter: string | null): Promise<AutomationRun
   return (data ?? []) as AutomationRun[];
 }
 
+async function fetchMaintenanceState(): Promise<MaintenanceState> {
+  const { data, error } = await untypedRpc<MaintenanceState>('admin_automation_maintenance_state');
+  if (error) throw new Error(error.message);
+  return data as unknown as MaintenanceState;
+}
+
 function StatusIcon({ status }: { status: AutomationRun['status'] }) {
-  if (status === 'success') return <CheckCircle2 size={14} className="text-foreground" />;
-  if (status === 'error') return <XCircle size={14} className="text-destructive" />;
-  if (status === 'dry_run') return <FlaskConical size={14} className="text-muted-foreground" />;
-  if (status === 'running') return <Clock size={14} className="text-muted-foreground" />;
-  return <AlertCircle size={14} className="text-muted-foreground" />;
+  const icon =
+    status === 'success' ? (
+      <CheckCircle2 size={14} className="text-foreground" />
+    ) : status === 'error' ? (
+      <XCircle size={14} className="text-destructive" />
+    ) : status === 'dry_run' ? (
+      <FlaskConical size={14} className="text-muted-foreground" />
+    ) : status === 'running' ? (
+      <Clock size={14} className="text-muted-foreground" />
+    ) : (
+      <AlertCircle size={14} className="text-muted-foreground" />
+    );
+  return (
+    <span className="inline-flex items-center gap-1" title={status}>
+      {icon}
+      <span className="sr-only">{status}</span>
+    </span>
+  );
 }
 
 export default function AdminAutomation() {
@@ -117,6 +157,8 @@ export default function AdminAutomation() {
   const [searchQuery, setSearchQuery] = useState('');
   const [domainFilter, setDomainFilter] = useState('all');
   const [ownerFilter, setOwnerFilter] = useState('all');
+  const [dryRunSummary, setDryRunSummary] = useState<DryRunAllSummary | null>(null);
+  const choseInitialView = useRef(false);
 
   useRegisterAdminCommandAction({
     id: 'automation.view',
@@ -130,6 +172,10 @@ export default function AdminAutomation() {
   }, []);
 
   const automationsQ = useQuery({ queryKey: ['admin-automations'], queryFn: fetchAutomations });
+  const maintenanceQ = useQuery({
+    queryKey: ['admin-automation-maintenance'],
+    queryFn: fetchMaintenanceState,
+  });
   const runsQ = useQuery({
     queryKey: ['admin-automation-runs', filterSlug],
     queryFn: () => fetchRecentRuns(filterSlug),
@@ -142,6 +188,12 @@ export default function AdminAutomation() {
 
   const automations = useMemo(() => automationsQ.data ?? [], [automationsQ.data]);
   const counts = useMemo(() => automationCounts(automations), [automations]);
+  const dryRunEligible = useMemo(
+    () =>
+      automations.filter((a) => a.enabled && a.lifecycle_state === 'active' && a.can_dry_run)
+        .length,
+    [automations],
+  );
   const domains = useMemo(
     () => Array.from(new Set(automations.map((a) => automationDomain(a.slug)))).sort(),
     [automations],
@@ -156,6 +208,13 @@ export default function AdminAutomation() {
       }),
     [automations, registryView, searchQuery, domainFilter, ownerFilter],
   );
+
+  useEffect(() => {
+    if (!automationsQ.isLoading && !choseInitialView.current) {
+      choseInitialView.current = true;
+      if (counts.attention > 0) setRegistryView('attention');
+    }
+  }, [automationsQ.isLoading, counts.attention]);
 
   async function runNow(slug: string) {
     setBusySlug(`run:${slug}`);
@@ -190,42 +249,52 @@ export default function AdminAutomation() {
     }
   }
 
-  async function pauseAll(enabled: boolean) {
-    const verb = enabled ? 'Resume' : 'Pause';
-    if (!window.confirm(`${verb} ALL automations? This affects every cron job.`)) return;
-    setBusySlug(`pause-all:${enabled}`);
+  async function setMaintenance(active: boolean) {
+    const message = active
+      ? `Enter maintenance mode? The ${maintenanceQ.data?.snapshot_count ?? counts.active} currently active automations will be snapshotted and paused.`
+      : `Exit maintenance mode? Only the ${maintenanceQ.data?.snapshot_count ?? 0} automations captured on entry will be restored.`;
+    if (!window.confirm(message)) return;
+    setBusySlug(`maintenance:${active}`);
     try {
-      const { data, error } = await supabase.rpc('admin_automation_pause_all', {
-        p_enabled: enabled,
-      });
-      if (error) throw error;
-      const n = (data as { changed: number })?.changed ?? 0;
-      toast.success(`${verb}d ${n} automation${n === 1 ? '' : 's'}`);
+      const { data, error } = await untypedRpc<{ changed: number }>(
+        'admin_automation_set_maintenance',
+        {
+          p_active: active,
+        },
+      );
+      if (error) throw new Error(error.message);
+      const n = data?.changed ?? 0;
+      toast.success(
+        active
+          ? `Maintenance mode active · paused ${n} automation${n === 1 ? '' : 's'}`
+          : `Maintenance mode ended · restored ${n} automation${n === 1 ? '' : 's'}`,
+      );
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Failed');
+      toast.error(err instanceof Error ? err.message : 'Maintenance-mode change failed');
     } finally {
       setBusySlug(null);
       qc.invalidateQueries({ queryKey: ['admin-automations'] });
+      qc.invalidateQueries({ queryKey: ['admin-automation-maintenance'] });
     }
   }
 
   useRegisterAdminCommandAction(
-    isAdmin
+    isAdmin && !maintenanceQ.data?.active
       ? {
           id: 'automation.pause-all',
-          label: 'Pause all automations',
+          label: 'Enter automation maintenance mode',
           keywords: 'emergency kill switch stop',
-          perform: () => pauseAll(false),
+          perform: () => setMaintenance(true),
         }
       : null,
   );
   useRegisterAdminCommandAction(
-    isAdmin
+    isAdmin && maintenanceQ.data?.active
       ? {
           id: 'automation.resume-all',
-          label: 'Resume all automations',
+          label: 'Exit automation maintenance mode',
           keywords: 'enable restart',
-          perform: () => pauseAll(true),
+          perform: () => setMaintenance(false),
         }
       : null,
   );
@@ -236,19 +305,15 @@ export default function AdminAutomation() {
       const { data, error } = await supabase.rpc('admin_automation_dry_run_all');
       if (error) throw error;
       const d = data as {
-        automations_examined: number;
+        eligible: number;
+        skipped: number;
+        succeeded: number;
+        failed: number;
         total_would_change: number;
-        per_slug: Record<string, number | { error: string }>;
+        per_slug: Record<string, { would_change?: number; error?: string }>;
       };
-      const details = Object.entries(d.per_slug)
-        .map(([slug, val]) =>
-          typeof val === 'number' ? `${slug}: ${val}` : `${slug}: ${val.error}`,
-        )
-        .join('\n');
-      toast(
-        `Dry-run all: would change ${d.total_would_change} items across ${d.automations_examined} automation${d.automations_examined === 1 ? '' : 's'}`,
-        { description: details, duration: 8000 },
-      );
+      setDryRunSummary(d);
+      toast.success(`Dry-run complete · ${d.succeeded}/${d.eligible} previews succeeded`);
     } catch (err) {
       toast.error(err instanceof Error ? err.message : 'Dry-run all failed');
     } finally {
@@ -257,12 +322,16 @@ export default function AdminAutomation() {
     }
   }
 
-  useRegisterAdminCommandAction({
-    id: 'automation.dry-run-all',
-    label: 'Dry-run all automations',
-    keywords: 'preview simulate everything',
-    perform: () => dryRunAll(),
-  });
+  useRegisterAdminCommandAction(
+    dryRunEligible > 0 && !maintenanceQ.data?.active
+      ? {
+          id: 'automation.dry-run-all',
+          label: `Dry-run ${dryRunEligible} eligible automations`,
+          keywords: 'preview simulate everything',
+          perform: () => dryRunAll(),
+        }
+      : null,
+  );
 
   async function dryRun(slug: string) {
     setBusySlug(`dry:${slug}`);
@@ -309,42 +378,91 @@ export default function AdminAutomation() {
             variant="ghost"
             size="sm"
             onClick={dryRunAll}
-            disabled={busySlug !== null}
-            title="Preview every enabled automation in one click"
+            disabled={busySlug !== null || dryRunEligible === 0 || maintenanceQ.data?.active}
+            title={
+              dryRunEligible > 0
+                ? `Preview ${dryRunEligible} eligible automation${dryRunEligible === 1 ? '' : 's'}`
+                : 'No enabled automations have a truthful dry-run'
+            }
           >
             {busySlug === 'dry-all' ? (
               <TrackLoader size={12} className="mr-1" />
             ) : (
               <FlaskConical size={12} className="mr-1" />
             )}
-            Dry-run all
+            Dry-run eligible ({dryRunEligible})
           </Button>
           {isAdmin && (
-            <>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => pauseAll(false)}
-                disabled={busySlug !== null}
-                title="Disable every automation (emergency kill switch)"
-              >
-                {busySlug === 'pause-all:false' ? <TrackLoader size={12} className="mr-1" /> : null}
-                Pause all
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => pauseAll(true)}
-                disabled={busySlug !== null}
-              >
-                {busySlug === 'pause-all:true' ? <TrackLoader size={12} className="mr-1" /> : null}
-                Resume all
-              </Button>
-            </>
+            <Button
+              variant={maintenanceQ.data?.active ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setMaintenance(!maintenanceQ.data?.active)}
+              disabled={busySlug !== null || maintenanceQ.isLoading}
+              title={
+                maintenanceQ.data?.active
+                  ? 'Restore only the automations captured when maintenance began'
+                  : 'Snapshot and pause currently active automations'
+              }
+            >
+              {busySlug?.startsWith('maintenance:') ? (
+                <TrackLoader size={12} className="mr-1" />
+              ) : (
+                <ShieldAlert size={12} className="mr-1" />
+              )}
+              {maintenanceQ.data?.active ? 'Exit maintenance' : 'Enter maintenance'}
+            </Button>
           )}
         </div>
       }
     >
+      {maintenanceQ.data?.active && (
+        <section className="mb-4 border border-destructive/40 bg-destructive/5 p-4" role="status">
+          <div className="flex items-center gap-2 font-semibold">
+            <ShieldAlert size={16} aria-hidden />
+            Automation maintenance mode is active
+          </div>
+          <p className="mt-1 text-13 text-muted-foreground">
+            {maintenanceQ.data.snapshot_count} previously active automation
+            {maintenanceQ.data.snapshot_count === 1 ? '' : 's'} will be eligible for exact
+            restoration. Jobs that were already paused or have become terminal will stay paused.
+          </p>
+        </section>
+      )}
+
+      {(automationsQ.isError || runsQ.isError || maintenanceQ.isError) && (
+        <section className="mb-4 border border-destructive/40 bg-destructive/5 p-4" role="alert">
+          <div className="flex items-center gap-2 font-semibold text-destructive">
+            <AlertCircle size={16} aria-hidden />
+            Automation data could not be loaded completely
+          </div>
+          <p className="mt-1 text-13 text-muted-foreground">
+            Refresh before making operational changes.{' '}
+            {[automationsQ.error, runsQ.error, maintenanceQ.error]
+              .filter(Boolean)
+              .map((error) => (error instanceof Error ? error.message : String(error)))
+              .join(' · ')}
+          </p>
+        </section>
+      )}
+
+      {dryRunSummary && (
+        <section className="mb-4 border border-border bg-muted/30 p-4" role="status">
+          <div className="flex items-center justify-between gap-4">
+            <div>
+              <div className="font-semibold">Dry-run summary</div>
+              <p className="mt-1 text-13 text-muted-foreground">
+                {dryRunSummary.succeeded} succeeded · {dryRunSummary.failed} failed ·{' '}
+                {dryRunSummary.skipped} unsupported · {dryRunSummary.total_would_change} items would
+                change
+              </p>
+            </div>
+            <Button variant="ghost" size="sm" onClick={() => setDryRunSummary(null)}>
+              Dismiss
+            </Button>
+          </div>
+        </section>
+      )}
+
       {/* Registry */}
       <section>
         <div className="flex flex-col gap-2 mb-4">
@@ -352,7 +470,7 @@ export default function AdminAutomation() {
             <h2 className="text-title font-semibold">Registered automations</h2>
             <p className="text-2xs text-muted-foreground tabular-nums">
               {counts.active} active · {counts.attention} attention · {counts.paused} paused ·{' '}
-              {counts.total} total
+              {counts.terminal} terminal · {counts.total} total
             </p>
           </div>
           <div className="flex items-center gap-2 flex-wrap" aria-label="Automation filters">
@@ -422,8 +540,8 @@ export default function AdminAutomation() {
             </select>
           </div>
           <p className="text-2xs text-muted-foreground">
-            Showing {visibleAutomations.length} of {counts.total}. Retired and consolidated jobs
-            stay in Paused and All for audit history.
+            Showing {visibleAutomations.length} of {counts.total}. Completed, retired, and
+            consolidated jobs remain available in All for audit history.
           </p>
         </div>
         <AdminSimpleTable
@@ -450,7 +568,7 @@ export default function AdminAutomation() {
             },
             {
               key: 'managed_by',
-              header: 'Managed by',
+              header: 'Control source',
               render: (a) => (
                 <Badge variant={a.managed_by === 'system' ? 'secondary' : 'outline'}>
                   {a.managed_by}
@@ -480,8 +598,23 @@ export default function AdminAutomation() {
             {
               key: 'status',
               header: 'Status',
-              render: (a) =>
-                isAdmin ? (
+              render: (a) => {
+                const terminal = ['completed', 'retired', 'consolidated'].includes(
+                  a.lifecycle_state,
+                );
+                const label = a.enabled
+                  ? 'Healthy'
+                  : a.lifecycle_state === 'auto_paused' || a.last_run_status === 'auto_paused'
+                    ? `Auto-paused · ${a.consecutive_failures} errors`
+                    : a.lifecycle_state.replace('_', ' ');
+                if (terminal) {
+                  return (
+                    <Badge variant="secondary" className="font-normal capitalize">
+                      {label}
+                    </Badge>
+                  );
+                }
+                return isAdmin ? (
                   <Button
                     variant={a.enabled ? 'outline' : 'secondary'}
                     size="sm"
@@ -489,23 +622,26 @@ export default function AdminAutomation() {
                       e.stopPropagation();
                       toggleEnabled(a.slug, !a.enabled);
                     }}
-                    disabled={busySlug !== null}
+                    disabled={busySlug !== null || maintenanceQ.data?.active}
                     className="font-normal h-6 text-2xs"
+                    title={
+                      maintenanceQ.data?.active
+                        ? 'Individual state changes are locked during maintenance mode'
+                        : a.enabled
+                          ? 'Pause this automation'
+                          : 'Enable this automation'
+                    }
                   >
                     {busySlug === `toggle:${a.slug}` ? (
                       <TrackLoader size={11} className="mr-1" />
                     ) : null}
-                    {a.enabled
-                      ? 'enabled · click to pause'
-                      : a.last_run_status === 'auto_paused'
-                        ? `auto-paused after ${a.consecutive_failures} errors · click to resume`
-                        : 'paused · click to enable'}
+                    {label}
                   </Button>
                 ) : a.enabled ? (
                   <Badge variant="outline" className="font-normal">
-                    enabled
+                    Healthy
                   </Badge>
-                ) : a.last_run_status === 'auto_paused' ? (
+                ) : a.lifecycle_state === 'auto_paused' || a.last_run_status === 'auto_paused' ? (
                   <Badge variant="destructive" className="font-normal">
                     auto-paused
                   </Badge>
@@ -513,7 +649,8 @@ export default function AdminAutomation() {
                   <Badge variant="secondary" className="font-normal">
                     paused
                   </Badge>
-                ),
+                );
+              },
             },
             {
               key: 'actions',
@@ -533,25 +670,27 @@ export default function AdminAutomation() {
                   >
                     {filterSlug === a.slug ? 'Clear filter' : 'Filter runs'}
                   </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      dryRun(a.slug);
-                    }}
-                    disabled={busySlug !== null}
-                    title="Preview without mutating"
-                    className="ml-2"
-                  >
-                    {busySlug === `dry:${a.slug}` ? (
-                      <TrackLoader size={12} className="mr-1" />
-                    ) : (
-                      <FlaskConical size={12} className="mr-1" />
-                    )}
-                    Dry-run
-                  </Button>
-                  {isAdmin && (
+                  {a.can_dry_run && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        dryRun(a.slug);
+                      }}
+                      disabled={busySlug !== null || maintenanceQ.data?.active}
+                      title="Preview without mutating"
+                      className="ml-2"
+                    >
+                      {busySlug === `dry:${a.slug}` ? (
+                        <TrackLoader size={12} className="mr-1" />
+                      ) : (
+                        <FlaskConical size={12} className="mr-1" />
+                      )}
+                      Dry-run
+                    </Button>
+                  )}
+                  {isAdmin && a.can_run_now && (
                     <Button
                       variant="outline"
                       size="sm"
@@ -559,9 +698,15 @@ export default function AdminAutomation() {
                         e.stopPropagation();
                         runNow(a.slug);
                       }}
-                      disabled={busySlug !== null || !a.enabled}
+                      disabled={busySlug !== null || !a.enabled || maintenanceQ.data?.active}
                       className="ml-2"
-                      title={a.enabled ? 'Run now' : 'Enable to run'}
+                      title={
+                        maintenanceQ.data?.active
+                          ? 'Manual runs are locked during maintenance mode'
+                          : a.enabled
+                            ? 'Run now'
+                            : 'Enable to run'
+                      }
                     >
                       {busySlug === `run:${a.slug}` ? (
                         <TrackLoader size={12} className="mr-1" />
@@ -672,10 +817,10 @@ export default function AdminAutomation() {
               )}
 
               <dl className="grid grid-cols-2 gap-x-4 gap-y-2 text-13 mb-6">
-                <dt className="text-muted-foreground">Managed by</dt>
+                <dt className="text-muted-foreground">Control source</dt>
                 <dd>{detailRow.managed_by}</dd>
                 <dt className="text-muted-foreground">Status</dt>
-                <dd>{detailRow.enabled ? 'enabled' : 'paused'}</dd>
+                <dd className="capitalize">{detailRow.lifecycle_state.replace('_', ' ')}</dd>
                 <dt className="text-muted-foreground">Schedule</dt>
                 <dd className="font-mono text-2xs">{detailRow.schedule ?? '—'}</dd>
                 <dt className="text-muted-foreground">Next run</dt>
@@ -699,7 +844,18 @@ export default function AdminAutomation() {
                 </dd>
                 <dt className="text-muted-foreground">Created</dt>
                 <dd>{formatDistanceToNow(new Date(detailRow.created_at), { addSuffix: true })}</dd>
+                <dt className="text-muted-foreground">Manual run</dt>
+                <dd>{detailRow.can_run_now ? 'Supported' : 'Unavailable'}</dd>
+                <dt className="text-muted-foreground">Dry-run</dt>
+                <dd>{detailRow.can_dry_run ? 'Supported' : 'Unavailable'}</dd>
               </dl>
+
+              {detailRow.capability_reason && (
+                <div className="mb-4 border border-border bg-muted/30 p-4 text-13">
+                  <span className="font-semibold">Manual capability:</span>{' '}
+                  <span className="text-muted-foreground">{detailRow.capability_reason}</span>
+                </div>
+              )}
 
               <h3 className="text-title font-semibold mb-2">Trigger</h3>
               <pre className="p-4 bg-muted border border-border text-2xs font-mono mb-4 overflow-auto">
@@ -727,15 +883,17 @@ export default function AdminAutomation() {
                 >
                   Show runs only
                 </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => dryRun(detailRow.slug)}
-                  disabled={busySlug !== null}
-                >
-                  <FlaskConical size={12} className="mr-1" />
-                  Dry-run
-                </Button>
+                {detailRow.can_dry_run && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => dryRun(detailRow.slug)}
+                    disabled={busySlug !== null || maintenanceQ.data?.active}
+                  >
+                    <FlaskConical size={12} className="mr-1" />
+                    Dry-run
+                  </Button>
+                )}
               </div>
             </>
           )}

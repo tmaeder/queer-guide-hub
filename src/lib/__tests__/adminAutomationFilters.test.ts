@@ -48,8 +48,9 @@ describe('admin automation filtering', () => {
     expect(automationCounts(rows)).toEqual({
       active: 2,
       attention: 2,
-      paused: 3,
+      paused: 2,
       autoPaused: 1,
+      terminal: 1,
       total: 5,
     });
   });

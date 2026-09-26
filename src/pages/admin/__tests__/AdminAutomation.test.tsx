@@ -38,6 +38,12 @@ const sampleAutomation = {
   trigger: { type: 'schedule' },
   conditions: [{ field: 'status', op: 'eq', value: 'active' }],
   action: { type: 'set_status', table: 'events', value: 'completed' },
+  lifecycle_state: 'active' as const,
+  can_run_now: true,
+  can_dry_run: true,
+  capability_reason: null,
+  consecutive_failures: 0,
+  auto_pause_threshold: 3,
   created_at: new Date(Date.now() - 86400e3 * 7).toISOString(),
   updated_at: new Date().toISOString(),
 };
@@ -56,7 +62,10 @@ const sampleRun = {
 
 import AdminAutomation from '../AdminAutomation';
 
-function setupQueryResponses(rows: typeof sampleAutomation[], runs: typeof sampleRun[]) {
+function setupQueryResponses(
+  rows: Array<Record<string, unknown>>,
+  runs: Array<Record<string, unknown>>,
+) {
   mocks.supabase.from.mockImplementation((table: string) => {
     if (table === 'admin_automations') {
       return {
@@ -93,6 +102,21 @@ describe('AdminAutomation', () => {
   beforeEach(() => {
     mocks.supabase.from.mockReset();
     mocks.supabase.rpc.mockReset();
+    mocks.supabase.rpc.mockImplementation((fn: string) =>
+      Promise.resolve({
+        data:
+          fn === 'admin_automation_maintenance_state'
+            ? {
+                active: false,
+                generation: null,
+                entered_at: null,
+                entered_by: null,
+                snapshot_count: 0,
+              }
+            : null,
+        error: null,
+      }),
+    );
     setupQueryResponses([sampleAutomation], [sampleRun]);
   });
 
@@ -103,16 +127,33 @@ describe('AdminAutomation', () => {
     expect(screen.getByText(/Recent runs/i)).toBeTruthy();
   });
 
-  it('shows Pause all + Resume all header buttons for admins', () => {
+  it('shows one maintenance-mode control instead of blanket pause and resume', async () => {
     render(wrap(<AdminAutomation />));
-    expect(screen.getByRole('button', { name: /^Pause all$/ })).toBeTruthy();
-    expect(screen.getByRole('button', { name: /^Resume all$/ })).toBeTruthy();
+    expect(await screen.findByRole('button', { name: /^Enter maintenance$/ })).toBeTruthy();
+    expect(screen.queryByRole('button', { name: /^Pause all$/ })).toBeNull();
+    expect(screen.queryByRole('button', { name: /^Resume all$/ })).toBeNull();
+  });
+
+  it('renders only capabilities supported by the registry contract', async () => {
+    setupQueryResponses(
+      [
+        {
+          ...sampleAutomation,
+          can_run_now: false,
+          can_dry_run: false,
+          capability_reason: 'No manual action registered',
+        },
+      ],
+      [sampleRun],
+    );
+    render(wrap(<AdminAutomation />));
+    expect(await screen.findByText('Auto-archive past events')).toBeTruthy();
+    expect(screen.queryByRole('button', { name: /^Run now$/ })).toBeNull();
+    expect(screen.queryByRole('button', { name: /^Dry-run$/ })).toBeNull();
   });
 
   it('shows Recent runs prompt when no filter active', () => {
     render(wrap(<AdminAutomation />));
-    expect(
-      screen.getByText(/"Filter runs" on any automation row/i),
-    ).toBeTruthy();
+    expect(screen.getByText(/"Filter runs" on any automation row/i)).toBeTruthy();
   });
 });

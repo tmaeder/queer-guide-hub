@@ -1,0 +1,2 @@
+create index if not exists admin_automation_maintenance_snapshot_automation_idx
+  on public.admin_automation_maintenance_snapshot(automation_id);
