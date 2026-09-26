@@ -243,6 +243,16 @@ Deno.serve(withErrorReporting('pipeline-validate', async (req) => {
         const title = String(n.title || n.name || '').trim()
         const loc = (n.location ?? {}) as Record<string, unknown>
         const dates = (n.dates ?? {}) as Record<string, unknown>
+        const metadata = (n.metadata ?? {}) as Record<string, unknown>
+        const sourceContract = (metadata.source_contract ?? {}) as Record<string, unknown>
+        const contractErrors = Array.isArray(sourceContract.errors)
+          ? sourceContract.errors.filter((value): value is string => typeof value === 'string')
+          : []
+        const contractWarnings = Array.isArray(sourceContract.warnings)
+          ? sourceContract.warnings.filter((value): value is string => typeof value === 'string')
+          : []
+        errors.push(...contractErrors)
+        warnings.push(...contractWarnings)
         const startStr = String(n.start_date || dates.start || '').trim()
         const endStr   = String(n.end_date || dates.end || '').trim()
 
@@ -302,6 +312,8 @@ Deno.serve(withErrorReporting('pipeline-validate', async (req) => {
           } catch { warnings.push('W_INVALID_URL') }
         }
 
+        errors = [...new Set(errors)]
+        warnings = [...new Set(warnings)]
         quality = Math.max(0, 100 - warnings.length * 5 - errors.length * 40)
       } else {
         // Minimal generic validation for remaining legacy entities
