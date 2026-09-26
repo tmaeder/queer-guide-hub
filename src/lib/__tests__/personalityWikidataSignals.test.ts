@@ -12,10 +12,10 @@ import { join } from 'node:path';
  * function body deleted.
  */
 
-// 99991790361793 supersedes 99991789855974: the SKIP_ overload of wikidata_qid
+// 99991790384521 supersedes 99991789855974: the SKIP_ overload of wikidata_qid
 // was retired corpus-wide by 99991790059731 and the decision moved to the typed
 // wikidata_status column. This guards the CURRENT definition.
-const MIGRATION = '99991790361793_personality_sentinel_wikidata_status';
+const MIGRATION = '99991790384521_personality_sentinel_wikidata_status';
 
 const stripSql = (s: string) =>
   s

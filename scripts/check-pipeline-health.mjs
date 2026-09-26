@@ -1099,7 +1099,7 @@ if (!hygieneRes.ok) {
 //     99991790059731 retired the overload corpus-wide — `wikidata_qid` now holds
 //     a real Q-id or NULL and nothing else, and the decision moved to the typed
 //     `wikidata_status` column (`not_found`), which personality-refresh reads
-//     before deciding whether to re-resolve. 99991790361793 moved this invariant
+//     before deciding whether to re-resolve. 99991790384521 moved this invariant
 //     onto that column; it did not relax it.
 {
   const res = await fetch(`${BASE}/rest/v1/rpc/personality_wikidata_signals`, {
