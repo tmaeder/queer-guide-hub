@@ -87,7 +87,10 @@ export interface AdminQueueDef {
   minRole: AdminRole;
 }
 
-const inbox = (queueKey: string) => `/admin/inbox?queue=${queueKey}`;
+// One helper, so the 16 queue links moved with a single edit when the three
+// governance surfaces collapsed onto `/admin/governance?mode=`. `?queue=` stays
+// orthogonal to `?mode=` — triage is still partitioned by queue.
+const inbox = (queueKey: string) => `/admin/governance?mode=triage&queue=${queueKey}`;
 
 /**
  * Every queue `get_admin_counts` reports on: the 17 active `triage_sources`
@@ -178,7 +181,7 @@ export const ADMIN_QUEUES: readonly AdminQueueDef[] = [
     icon: Link2,
     // Reviewed inline on the hub rather than in the inbox: approving picks a
     // target org, an input the generic triage panel does not model.
-    route: '/admin/quality',
+    route: '/admin/governance?mode=engines',
     section: 'business-links',
     weight: 40,
     surfaces: ['cockpit', 'quality'],
