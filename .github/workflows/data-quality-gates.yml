@@ -34,6 +34,23 @@ jobs:
         if: ${{ env.SUPABASE_URL != '' && env.SUPABASE_SERVICE_ROLE_KEY != '' }}
         run: node scripts/check-data-quality-gates.mjs
 
+      - name: City quality has not regressed
+        # Unlike legacy gates, this probe fails closed: an absent credential or
+        # unreadable scorecard must never be presented as zero city defects.
+        if: ${{ !cancelled() }}
+        run: node scripts/check-city-quality.mjs
+
+      # Every machine code the pipeline emits must have plain language written for
+      # it. Before 99991790358904 the admin UI ran codes through a regex that turned
+      # W_NO_COORDS into "W No Coords" — output that looks like content, so a code
+      # nobody had explained was indistinguishable from one that had been. This gate
+      # needs NO credentials: both halves it compares (the string literal in the edge
+      # function, the seed row in the migration) are in the repo, so it fires on the
+      # pull request that introduces the code rather than the morning after it ships.
+      - name: Every pipeline code has a written explanation
+        if: ${{ !cancelled() }}
+        run: node scripts/check-explanation-keys.mjs
+
       # Stock ALTER DEFAULT PRIVILEGES grants anon/authenticated write on every new
       # view, which silently bypasses RLS on any SECURITY DEFINER view. Runs even if
       # the gate above fails, so both reports land in a single run.
@@ -85,6 +102,16 @@ jobs:
       - name: Tag hygiene has not regressed
         if: ${{ !cancelled() && env.SUPABASE_URL != '' && env.SUPABASE_SERVICE_ROLE_KEY != '' }}
         run: node scripts/check-tag-hygiene.mjs
+
+      # A trigger that runs in production but no migration creates. The seal on the
+      # CRITICAL person_outing_guard was attached BY HAND during the 2026-09-19
+      # incident and lived in no migration; check-migration-drift.mjs compares
+      # migration HISTORY against repo FILES and is structurally blind to a missing
+      # OBJECT, so a rebuild from migrations came up silently without it. Fails on a
+      # NEW one; the 21 already on prod are a shrink-only baseline.
+      - name: Every production trigger is created by a migration
+        if: ${{ !cancelled() && env.SUPABASE_URL != '' && env.SUPABASE_SERVICE_ROLE_KEY != '' }}
+        run: node scripts/check-schema-object-drift.mjs
 
       # The published legal citations on /tags/:slug are external URLs on other
       # people's servers, and they rot. NOT run on pull_request on purpose: the

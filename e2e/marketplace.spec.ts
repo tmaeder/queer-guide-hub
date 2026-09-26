@@ -120,6 +120,7 @@ test.describe('Marketplace — discovery surface', () => {
     await page.waitForLoadState('domcontentloaded');
     const band = page.locator('main section.sticky').first();
     const index = page.locator('#category-tiles');
+    const indexSection = page.locator('section[aria-labelledby="category-tiles"]');
     await expect(band).toBeVisible({ timeout: 30_000 });
     await expect(index).toBeVisible({ timeout: 30_000 });
 
@@ -136,6 +137,9 @@ test.describe('Marketplace — discovery surface', () => {
       await expect(page.locator('main header .tabular-nums')).not.toHaveText(/Counting/, {
         timeout: 15_000,
       });
+      // The index has its own aggregate query. Measuring its ten-card loading
+      // skeleton against the loaded list creates a false 600px "movement".
+      await expect(indexSection).toHaveAttribute('aria-busy', 'false', { timeout: 15_000 });
       await page.evaluate(() => window.scrollTo(0, 0));
       await page.waitForTimeout(300);
     };
@@ -214,6 +218,31 @@ test.describe('Marketplace — discovery surface', () => {
       'main a[href^="/marketplace/"]:not([href*="category/"]):not([href*="merchants/"])',
     );
     await expect(cards.first()).toBeVisible({ timeout: 30_000 });
+  });
+
+  test('/marketplace/categories links only to clean taxonomy URLs', async ({ page }) => {
+    // One assertion for the whole junk class. This page used to render 698
+    // tiles built from the RAW merchant `subcategory_slug`, including 118
+    // breadcrumb paths (`pride_>_jersey_>_crop_jersey_shirts`), 195 slugs
+    // carrying `,` `$` `&` `/`, and a filter facet
+    // (`good_for_beginners,discreet,under_$50`). The generated slug column only
+    // replaces whitespace and hyphens, so all of that reached the href AND the
+    // canonical tag. Every one of those shapes fails the regex below —
+    // including percent-encoded forms, since `%` is not in the class.
+    await page.goto('/marketplace/categories');
+    await page.waitForLoadState('domcontentloaded');
+    const links = page.locator('main a[href*="/marketplace/category/"]');
+    await expect(links.first()).toBeVisible({ timeout: 30_000 });
+
+    const hrefs = await links.evaluateAll((els) => els.map((e) => e.getAttribute('href') ?? ''));
+    // Lower bound too: a collapse to zero tiles would otherwise pass an
+    // "every href is clean" check vacuously.
+    expect(hrefs.length).toBeGreaterThan(20);
+    for (const href of hrefs) {
+      expect(href, `unclean category href: ${href}`).toMatch(
+        /^(\/[a-z]{2})?\/marketplace\/category\/[a-z_]+(\?g=[a-z_]+)?$/,
+      );
+    }
   });
 
   test('/marketplace/merchants/:domain shows merchant listings + visit button', async ({

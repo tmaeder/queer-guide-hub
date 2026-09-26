@@ -299,6 +299,132 @@ if (!hygieneRes.ok) {
   }
 }
 
+// § Every city writer goes through city_resolve_or_create
+//
+//     20261001100300 routed commit_city_staging_item through the shared
+//     identity ladder; 20261001110000 restated the whole body to add two
+//     capital columns and silently reverted it, leaving a three-arm probe with
+//     no QID arm, no alias arm, no proximity refusal and no evidence gate --
+//     while the function's COMMENT went on claiming the routing was there.
+//     The `near_pairs` check above measures the CONSEQUENCE (duplicates
+//     arriving) and did not move: live 107 against a 196 baseline. This block
+//     measures the CAUSE, which is the only thing that fails fast.
+{
+  const res = await fetch(`${BASE}/rest/v1/rpc/city_writer_signals`, {
+    method: 'POST',
+    headers: { ...headers, 'Content-Type': 'application/json' },
+    body: '{}',
+  })
+  // 404 = the migration has not landed yet. The nightly run checks out `main`
+  // and calls the LIVE backend, so in the window between a merged script and an
+  // applied migration a hard fail would go red for something that is not a
+  // defect. Every other non-ok status IS a broken probe and must fail.
+  if (res.status === 404) {
+    console.warn('⚠ city_writer_signals → HTTP 404 — city-writer sentinel NOT DEPLOYED (migration 99991790172641). This is absence of a check, not absence of defects.')
+  } else if (!res.ok) {
+    const detail = (await res.text()).slice(0, 200)
+    console.error(`✗ city_writer_signals → HTTP ${res.status} — the gate could not run. A broken probe must not read as a clean corpus. ${detail}`)
+    FAILED = true
+  } else {
+    const cw = (await res.json()) ?? {}
+    const scanned = Number(cw.functions_scanned ?? 0)
+    const inserters = Number(cw.inserters ?? 0)
+    if (!('offender_count' in cw)) {
+      console.error("✗ city_writer_signals has no 'offender_count' key — that check measured NOTHING")
+      FAILED = true
+    } else if (scanned < 100) {
+      // Coverage before verdict: zero offenders over a scan that matched
+      // nothing is vacuous, not clean.
+      console.error(`✗ city_writer_signals scanned only ${scanned} functions — it is measuring nothing, not passing`)
+      FAILED = true
+    } else if (inserters < 1) {
+      // Positive control. The pattern must still FIND the one sanctioned
+      // inserter; a regex that matches nothing reports zero offenders.
+      console.error('✗ city_writer_signals found no city inserters at all — the pattern matches nothing')
+      FAILED = true
+    } else if (Number(cw.offender_count ?? 0) > 0) {
+      const named = Array.isArray(cw.offenders) ? cw.offenders.join(', ') : ''
+      console.error(`✗ ${cw.offender_count} function(s) INSERT into cities without city_resolve_or_create: ${named}`)
+      console.error('  That bypasses the alias arm (the exonym catcher), the QID arm, the geo-proximity refusal and the evidence gate.')
+      console.error('  Do NOT add a local name probe to silence this: the ladder exists so the arms cannot drift apart per writer.')
+      FAILED = true
+    } else {
+      console.log(`✓ every city writer routes through city_resolve_or_create (${scanned} functions scanned, ${inserters} inserter)`)
+    }
+  }
+}
+
+// § Districts and administrative areas filed as cities
+//
+//     `cities` has no place-class column, so a Stadtteil filed as a city is
+//     indistinguishable from a city. Measured over a random sample of 48 live,
+//     indexable, QID-bearing, venue-bearing rows: NINE are not an ordinary city
+//     — Kensington ("area of London", 15 venues), Greenwich, Croydon, Amber
+//     Valley ("non-metropolitan district"), Dihlabeng ("local municipality"),
+//     City of Nottingham ("unitary authority area").
+//
+//     This REPORTS and never acts: demoting a live indexable page with venues
+//     on it cannot be undone per row, so the backlog is hand work and only
+//     GROWTH gates. A new indexable district means a writer minted one.
+{
+  const res = await fetch(`${BASE}/rest/v1/rpc/city_place_class_signals`, {
+    method: 'POST',
+    headers: { ...headers, 'Content-Type': 'application/json' },
+    body: '{}',
+  })
+  if (res.status === 404) {
+    console.warn('⚠ city_place_class_signals → HTTP 404 — place-class probe NOT DEPLOYED (migration 99991790173993). This is absence of a check, not absence of defects.')
+  } else if (!res.ok) {
+    const detail = (await res.text()).slice(0, 200)
+    console.error(`✗ city_place_class_signals → HTTP ${res.status} — the gate could not run. A broken probe must not read as a clean corpus. ${detail}`)
+    FAILED = true
+  } else {
+    const pc = (await res.json()) ?? {}
+    const liveQid = Number(pc.live_qid_rows ?? 0)
+    const probed = Number(pc.probe_rows ?? 0)
+    const judged = Number(pc.judged_rows ?? 0)
+    const sub = Number(pc.subdivision ?? 0)
+    const adm = Number(pc.admin_area ?? 0)
+    const idxSub = Number(pc.indexable_subdivision ?? 0)
+    const idxAdm = Number(pc.indexable_admin_area ?? 0)
+    // DELIBERATELY NO GROWTH GATE YET, and the reason is that a baseline has
+    // to be MEASURED. At introduction the probe carries only the two dozen
+    // seeded entities, so the live subdivision/admin counts are 1 and 3 — a
+    // gate built on those goes red the moment the probe is filled, for a
+    // backlog that was always there, and a rule that is red on arrival is one
+    // people scroll past. Once the corpus is fully probed, record the real
+    // numbers here and gate on growth; until then the counts WARN.
+    //
+    // The cause is gated regardless: `city_writer_signals` above fails the
+    // moment a writer stops going through city_resolve_or_create, which is the
+    // mechanism by which a district would be minted as a city.
+    if (!('subdivision' in pc)) {
+      console.error("✗ city_place_class_signals has no 'subdivision' key — that check measured NOTHING")
+      FAILED = true
+    } else if (liveQid < 100) {
+      console.error(`✗ city_place_class_signals sees only ${liveQid} live QID-bearing cities — it is measuring nothing`)
+      FAILED = true
+    } else if (probed === 0) {
+      // Coverage before verdict: zero districts over an unprobed corpus is
+      // vacuous, not clean.
+      console.error('✗ city_place_class_probe is EMPTY — the district check measured NOTHING. Run scripts/data-quality/probe-city-place-class.mjs')
+      FAILED = true
+    } else {
+      if (judged < liveQid) {
+        console.warn(`⚠ place-class coverage ${judged}/${liveQid} cities — run scripts/data-quality/probe-city-place-class.mjs`)
+      }
+      if (sub > 0 || adm > 0) {
+        console.warn(`⚠ ${sub} district and ${adm} administrative-area rows are filed as cities (${idxSub}+${idxAdm} indexable) — work list: public.city_place_class_review`)
+      }
+      const unknown = Array.isArray(pc.unrecognised_classes) ? pc.unrecognised_classes.length : 0
+      if (unknown > 0) {
+        console.warn(`⚠ ${unknown} unrecognised Wikidata class label(s) — a vocabulary gap, named in city_place_class_signals().unrecognised_classes`)
+      }
+      console.log(`✓ Place classes: ${judged}/${liveQid} judged, subdivision=${sub}, admin_area=${adm}, undetermined=${pc.undetermined ?? 0}`)
+    }
+  }
+}
+
 // Dead gaycities S3 image urls (2026-09-09). The gaycities-featured-images-
 // production.s3.amazonaws.com bucket lost its public-read policy and 403s
 // for every key, so a url pointing at it renders Chrome's torn-page glyph
@@ -893,13 +1019,65 @@ if (!hygieneRes.ok) {
       }
     }
 
-    // ADVISORY, and non-zero by design: 12 merges on record are uncorroborated and
+    // ADVISORY, and non-zero by design: 13 merges on record are uncorroborated and
     // each needs its own decision (district merges this codebase deliberately does
     // not reverse, plus correct-but-unverifiable rows with no coordinates and no
-    // QID). Gating at the baseline would ship red on arrival — the cry-wolf shape
-    // already removed once from the dedup backlog rule — so it prints the pairs and
-    // fails only on GROWTH, which means a NEW uncorroborated merge was made.
-    const BASELINE_UNCORROBORATED = 12
+    // QID, plus the exonym-onto-a-junk-shell case below). Gating at the baseline
+    // would ship red on arrival — the cry-wolf shape already removed once from the
+    // dedup backlog rule — so it prints the pairs and fails only on GROWTH, which
+    // means a NEW uncorroborated merge was made.
+    //
+    // 12 → 13 on 2026-09-19: `London <=> Londres`, and the merge is CORRECT — the
+    // gate fired, the pair was read by hand, and the answer was benign. The drop
+    // row is a `data_source='event-city-match'` shell (slug `tmp-5cc324d4-…`,
+    // placeholder, deindexed, 0 venues) whose own data is junk: coordinates
+    // 18.2597/-66.7085 sit in PUERTO RICO while its country_id is GB. It held
+    // exactly one child, a London event (Shoreditch pub tour, EC2A 3NW, 1.3 km
+    // from the London row), which the merge moved onto London correctly.
+    //
+    // All four arms are structurally blind here, which is why it scores `none`
+    // rather than being a bad merge: despaced names differ (`london`/`londres`),
+    // no comma qualifier, NEITHER row has a wikidata_qid — London itself has none
+    // — and the geo arm measures 6,817 km because the shell's coordinates are
+    // Puerto Rican. It is the documented correct-but-unverifiable exonym class,
+    // the same as Venedig/Venice and Biel/Bienne, with a junk shell on one side.
+    //
+    // 13 -> 14 (2026-09-23, 99991790173553): `Luxembourg <=> Luxemburg`. Three
+    // rows were Luxembourg City -- the real one, a comma-qualified shell 8 m
+    // away, and a `personality-birth-place` shell carrying Q1842. All four arms
+    // are blind to the third: the despaced names differ, there is no comma
+    // qualifier, the geo arm measures 22.8 km because the SHELL's coordinates
+    // are a bad free-text geocode, and the shared-QID arm cannot see it because
+    // the merge moves Q1842 onto the survivor and CLEARS it from the loser (so
+    // that unmerge_cities cannot resurrect two live rows holding it).
+    //
+    // The evidence that it is one city was resolved live rather than inferred:
+    // Q1842's own P625 is Point(6.13 49.611388888) -- the survivor's
+    // coordinates, 8 m away -- and its P1082 is 137678, BYTE-IDENTICAL to the
+    // shell's stored population. Same documented correct-but-unverifiable class
+    // as Venedig/Venice, Biel/Bienne and London/Londres above.
+    //
+    // 14 -> 23 (2026-09-23, 99991790187863): eighteen `personality-birth-place`
+    // shells whose NAME is a district of a city we already hold, merged into
+    // that city -- nine of them score uncorroborated.
+    //
+    // `place_pair_corroboration` has FOUR arms and none of them is the one
+    // these merges rest on: the parent city is named INSIDE the child's own
+    // name (`Berlin-Charlottenburg`, `Wuppertal-Elberfeld`). The name arms want
+    // the two names to be the same or to share a comma tail; the geo arm wants
+    // 10 km, and `Berlin-Lichterfelde` (11.5 km) and `Berlin-Wittenau`
+    // (10.3 km) sit just past it while the three Rixdorf rows and
+    // `Spandau, Berlin` carry NO coordinates at all.
+    //
+    // Measured, not estimated: the full stack of this PR was dry-run on prod in
+    // a rolled-back transaction and reported exactly 23.
+    //
+    // Considered and rejected: adding "child name starts with parent name" as a
+    // fifth arm. It would keep this number flat and make the merge graph
+    // self-describing, but it means restating a shared function that the
+    // `suggested_uncorroborated` ZERO-invariant depends on — and a hand-made
+    // merge with stated evidence is not what that gate exists to police.
+    const BASELINE_UNCORROBORATED = 23
     const unc = Number(sig?.merged_uncorroborated ?? 0)
     if (unc > BASELINE_UNCORROBORATED) {
       const ex = Array.isArray(sig?.merged_examples) ? sig.merged_examples : []
@@ -947,6 +1125,72 @@ if (!hygieneRes.ok) {
       FAILED = true
     }
     console.log('✓ No glossary tag has re-acquired a cleared wrong-entity Wikidata id')
+  }
+}
+
+// 5a-bis. Personality wrong-entity regression (2026-09-19). The same namesake
+//     chimera as the glossary, on people, where it is defamation rather than a
+//     botany stub: our Jason Collins row carried the NBA player's birth date,
+//     death date and social handles, and /personalities/lee-smith served a named
+//     Māori language and gay rights advocate's biography as its <meta
+//     description> under the title "Lee Smith — Adult performer". Repaired by
+//     99970101100100 (84 public rows), 99991789833562 (125 out of the adult-link
+//     queue) and 99991789840157 (4 whose text came from the Wikipedia extract).
+//     Nothing watched it afterwards.
+//
+//     SQL cannot call Wikidata, so this cannot tell you a NEW identifier is
+//     wrong. It watches the three things it can prove: a refuted id coming back,
+//     a disposed row losing its SKIP_ sentinel, and a retracted biography
+//     returning. `unverified_reachable` is a work-list size and only prints.
+{
+  const res = await fetch(`${BASE}/rest/v1/rpc/personality_wikidata_signals`, {
+    method: 'POST',
+    headers: { ...headers, 'Content-Type': 'application/json' },
+    body: '{}',
+  })
+  if (!res.ok) {
+    console.error(`✗ personality_wikidata_signals → HTTP ${res.status} (RPC missing? not applied?)`)
+    FAILED = true
+  } else {
+    const s = await res.json()
+    if (!s || s.probe_ok !== true) {
+      console.error('✗ personality_wikidata_signals returned no probe_ok — treating as broken, not clean')
+      FAILED = true
+    } else {
+      // A clean corpus and an unreadable one both return zeroes. Assert the
+      // probe is reading something before trusting its zeroes.
+      if ((s.rows_with_qid ?? 0) < 1000) {
+        console.error(
+          `✗ personality_wikidata_signals sees only ${s.rows_with_qid} rows with a Q-id — the probe is not reading the corpus`,
+        )
+        FAILED = true
+      }
+      for (const [key, msg] of [
+        ['qid_regressed', 'personalit(ies) re-acquired the refuted Wikidata id they were cleared of'],
+        ['sentinel_lost', 'disposed personalit(ies) no longer carry a SKIP_ sentinel'],
+        ['retracted_text_back', 'retracted wrong-person biograph(ies) have returned'],
+      ]) {
+        if ((s[key] ?? 0) > 0) {
+          console.error(`✗ ${s[key]} ${msg}`)
+          for (const e of (s.examples ?? []).slice(0, 5)) {
+            console.error(`    /personalities/${e.slug} → ${e.qid} (was ${e.was})`)
+          }
+          if (key === 'qid_regressed') {
+            console.error('  personality-refresh is adopting name-resolved identities again.')
+            console.error('  Check resolveByNameAndProfession() still gates on isHuman() + occupation overlap.')
+          }
+          if (key === 'sentinel_lost') {
+            console.error('  A NULL here is not neutral: personality-refresh re-resolves by name when')
+            console.error('  wikidata_qid IS NULL, so the row re-enters resolution instead of recording its decision.')
+          }
+          FAILED = true
+        }
+      }
+      console.log(
+        `✓ Personality wrong-entity repairs intact (${s.dispositioned} dispositioned, ` +
+          `${s.unverified_reachable} reachable rows never swept)`,
+      )
+    }
   }
 }
 
@@ -1569,11 +1813,11 @@ substanceFreshness: {
         '2026-08-30 a rejected credential is an InvalidCredentialsError raised OUTSIDE the breaker ' +
         'and records a SUCCESS, so this row should self-clear on the next venue DAG run.',
       awin:
-        'UNFIXED, tracked. AWIN_FEED_URL is set (an unset one would return a skipped 200 before ' +
-        'the breaker is touched) but the feed does not answer 2xx. mp_fill_awin auto-paused on ' +
-        '2026-08-19 — correctly, because source-awin does NOT swallow its breaker error — yet the ' +
-        'marketplace-ingestion DAG (04:00) still calls it, which is why the count keeps moving ' +
-        'after the pause. Pausing a fill cron does not stop a DAG node.',
+        'RETIRED FROM THE DAG 2026-09-20 (99991789915000). AWIN_FEED_URL is set but the feed ' +
+        'does not answer 2xx, so mp_fill_awin remains correctly auto-paused. The duplicate ' +
+        'marketplace-ingestion source node was removed; the dedicated pause-aware automation is ' +
+        'now the sole caller and can be re-enabled if AWIN recovers. This breaker should age out ' +
+        'of the 24h window; a newer failure means another caller still exists.',
     }
 
     const dayAgo = Date.now() - 86400_000
@@ -3257,6 +3501,250 @@ const CITY_SCALAR_DENSITY_REPORTED = 33 // measured 2026-09-08, post-repair. Con
   }
 }
 
+// § Glossary entries: conformance to the structural standard
+//
+//     The standard itself lives in styleguide_rules (99700101100000) — the
+//     three-field contract, both legal registers, and the rule that a truncated
+//     definition is never closed with a full stop. This is the number that says
+//     whether the corpus still obeys it.
+//
+//     TWO OF THE FOUR KEYS ARE ZERO-INVARIANTS AND TWO ARE NOT, and the split is
+//     about whether a machine can fix the row:
+//
+//       whitespace_dirty / stamp_as_definition — deterministically repairable
+//       (99700101100200 drove both to 0), so any non-zero reading is a NEW
+//       producer writing dirt, and that fails.
+//
+//       truncated_description — 23 rows sitting on a 500-char cap ending
+//       mid-clause. Repairing them means regenerating lost text, so gating at the
+//       baseline ships red on arrival and gets scrolled past (the cry-wolf shape
+//       already removed once from the dedup backlog rule). GROWTH fails; the
+//       standing 23 warn.
+//
+//       unresolved_disambiguation — 2 rows whose description is itself a "may
+//       refer to:" list. CLAUDE.md already records bicon as unrepairable under
+//       the rule, because the evidence column cannot be evidence for itself.
+//       Advisory.
+//
+//       refers_to_lead — 199 descriptions that open by announcing the term
+//       instead of stating the meaning ("Salirophilia refers to sexual arousal
+//       from..."). Governed by styleguide rule tag-lead-states-the-meaning-not-
+//       the-term. Repairing one means rewriting prose by hand, so GROWTH fails
+//       and the standing backlog warns — same shape as truncated_description.
+//       The anchor lives in SQL on purpose: hand measurements of this cohort
+//       ranged 133-199 depending on how the lead was matched, and that spread
+//       was a property of the regex rather than of the corpus.
+//
+//       commonwealth_in_own_voice — 4 rows. DELIBERATELY NOT a count of British
+//       spellings in the corpus, which is 44 and would be actively harmful to
+//       gate on: 39 of those sit in imported Wikipedia prose ("Norway, officially
+//       the Kingdom of Norway..." carrying `kilometres`), whose real defect is
+//       the imported lead, and Americanizing the spelling there polishes the
+//       wrong thing. Scoped to descriptions under 200 chars, where our own
+//       authored voice lives — measured at 0.15% against 3.9% above the bound.
+//       `grey`, `labour` and `haemo`+philus are excluded so the gate can never
+//       push someone to respell greysexual (a community's own name for itself),
+//       the International Labour Organization, or a Latin binomial.
+//       Ceiling is the exact baseline: the NEXT one fails, which is the point —
+//       two of the four were authored hours after the last sweep cleaned them.
+//
+//     rows_scanned IS CHECKED FIRST AND SEPARATELY. An empty scan, a revoked
+//     grant and a clean corpus all return the same reassuring zeros, and this
+//     corpus is none of them.
+//
+//     A MISSING RPC HARD-FAILS. The function catches its own exceptions and
+//     answers probe_ok=false, so a non-2xx means an unapplied migration or a
+//     revoked grant — an unreadable corpus must never read as a clean one.
+const TRUNCATED_DESCRIPTION_CEILING = 30
+const REFERS_TO_LEAD_CEILING = 205
+const COMMONWEALTH_OWN_VOICE_CEILING = 4
+{
+  const res = await fetch(`${BASE}/rest/v1/rpc/tag_prose_standard_signals`, {
+    method: 'POST',
+    headers: { ...headers, 'Content-Type': 'application/json' },
+    body: '{}',
+  })
+  // A 404 is "the migration has not landed yet" — legitimate while db push is in
+  // flight, and unavoidable on the PR that introduces both: this job builds the
+  // BRANCH but calls the LIVE backend, so a hard fail here could only go green
+  // after the merge it blocks. That is a deadlock, not a guard (CLAUDE.md records
+  // the same trap on `Critical paths`). Anything else IS a broken probe — a 500
+  // from a bad plan, a revoked grant, a statement timeout on the full scan — and
+  // collapsing both into a warning fails open exactly where the gate is needed.
+  if (res.status === 404) {
+    console.warn('⚠ tag_prose_standard_signals → HTTP 404 — glossary standard sentinel NOT DEPLOYED (migration 99700101100100). This is absence of a check, not absence of defects.')
+  } else if (!res.ok) {
+    const detail = (await res.text()).slice(0, 200)
+    console.error(`✗ tag_prose_standard_signals → HTTP ${res.status} — the gate could not run. Absence of a check is not absence of defects; failing rather than warning so a broken probe cannot read as a clean corpus. ${detail}`)
+    FAILED = true
+  } else {
+    const ts = (await res.json()) ?? {}
+    if (ts.probe_ok !== true) {
+      console.error(`✗ tag_prose_standard_signals did not report probe_ok — the probe is broken${ts.error ? `: ${ts.error}` : ''}`)
+      FAILED = true
+    } else if (Number(ts.rows_scanned ?? 0) < 1000) {
+      console.error(`✗ tag_prose_standard_signals scanned only ${ts.rows_scanned ?? 0} descriptions — the probe is measuring nothing, not passing`)
+      FAILED = true
+    } else {
+      for (const key of ['truncated_description', 'stamp_as_definition', 'unresolved_disambiguation', 'surname_stub', 'whitespace_dirty', 'refers_to_lead', 'commonwealth_in_own_voice']) {
+        if (!(key in ts)) {
+          console.error(`✗ tag_prose_standard_signals has no '${key}' key — that check measured NOTHING`)
+          FAILED = true
+        }
+      }
+      const ws = Number(ts.whitespace_dirty ?? 0)
+      const stamp = Number(ts.stamp_as_definition ?? 0)
+      const trunc = Number(ts.truncated_description ?? 0)
+      const disamb = Number(ts.unresolved_disambiguation ?? 0)
+      const surname = Number(ts.surname_stub ?? 0)
+      const refersTo = Number(ts.refers_to_lead ?? 0)
+      const britSpelling = Number(ts.commonwealth_in_own_voice ?? 0)
+
+      if (ws > 0) {
+        console.error(`✗ ${ws} active glossary description(s) carry stray whitespace — a zero-invariant since 99700101100200`)
+        FAILED = true
+      }
+      if (stamp > 0) {
+        console.error(`✗ ${stamp} active glossary description(s) publish a scrape timestamp as a definition`)
+        console.error('  A stamp reads as content and defeats both indexable_without_description and the thin-page deindexer. NULL it; never invent a definition.')
+        FAILED = true
+      }
+      if (trunc > TRUNCATED_DESCRIPTION_CEILING) {
+        console.error(`✗ ${trunc} glossary descriptions are truncated at a length cap, above the ${TRUNCATED_DESCRIPTION_CEILING} ceiling`)
+        console.error('  Growth means a producer is still writing into a cap. Do NOT "fix" these by appending a full stop — that hides the loss (styleguide rule tag-never-punctuate-a-truncation).')
+        FAILED = true
+      } else if (trunc > 0) {
+        console.warn(`⚠ ${trunc} glossary descriptions are truncated at a length cap (ending mid-clause)`)
+        console.warn('  Repairable only by regenerating the lost text. Never close one with a full stop.')
+      }
+      if (disamb > 0) {
+        console.warn(`⚠ ${disamb} glossary description(s) are themselves a "may refer to:" disambiguation list`)
+        console.warn('  Unrepairable under the evidence rule — the description cannot be evidence for itself. Needs a human sense decision.')
+      }
+      // A ZERO-INVARIANT, unlike the warning above, and the difference is whether
+      // the row can be repaired at all. A "may refer to:" list cannot be — the
+      // description would have to be evidence for itself. A surname stub can:
+      // null it and let the thin-page gate deindex the row, which is what
+      // 99960101100100 did to the eight that were live and uncounted when this
+      // arm was added. So it gates at zero rather than warning, and was not red
+      // on arrival.
+      if (surname > 0) {
+        console.error(`✗ ${surname} active glossary description(s) are an English Wikipedia surname stub ("X is a surname. Notable people with the surname include:")`)
+        console.error('  A name-only Wikipedia lookup answered with a surname page — the namesake chimera _shared/tag-wiki-guard.ts seals at the producer, which does nothing for prose already written.')
+        console.error('  NULL the description and let trg_tag_thin_page_gate deindex the row as thin. Never write a definition to fill the hole: minting vocabulary is the guess this class came from.')
+        FAILED = true
+      }
+      if (refersTo > REFERS_TO_LEAD_CEILING) {
+        console.error(`✗ ${refersTo} glossary descriptions open by announcing the term rather than stating the meaning, above the ${REFERS_TO_LEAD_CEILING} ceiling`)
+        console.error('  Growth means new entries are still being written in this register (styleguide rule tag-lead-states-the-meaning-not-the-term).')
+        console.error('  Fix by rewriting the lead to start at the meaning — the term is already the heading. Never by deleting the description.')
+        FAILED = true
+      } else if (refersTo > 0) {
+        console.warn(`⚠ ${refersTo} glossary descriptions open by announcing the term ("X refers to...", "X is a slang term for...")`)
+        console.warn('  A hand-rewrite backlog, not a machine fix. Worked down in batches; this gate only stops it growing.')
+      }
+      if (britSpelling > COMMONWEALTH_OWN_VOICE_CEILING) {
+        console.error(`✗ ${britSpelling} short glossary descriptions carry a Commonwealth spelling in our own authored voice, above the ${COMMONWEALTH_OWN_VOICE_CEILING} ceiling`)
+        console.error('  styleguide rule spelling-and-units: follow the source material, otherwise American.')
+        console.error('  Do NOT widen this into a corpus-wide respelling. Imported encyclopedic prose is excluded on purpose, and greysexual / International Labour Organization / Haemophilus are never "fixed".')
+        FAILED = true
+      } else if (britSpelling > 0) {
+        console.warn(`⚠ ${britSpelling} short glossary description(s) carry a Commonwealth spelling in our own voice`)
+      }
+      if (ws === 0 && stamp === 0 && trunc === 0 && disamb === 0 && surname === 0 && refersTo === 0 && britSpelling === 0) {
+        console.log('✓ glossary descriptions conform to the structural standard')
+      }
+    }
+  }
+}
+
+// § Clinical codes left behind by a disowned Wikidata entity
+//
+//     The same failure as the prose section below, in a worse artifact. A tag
+//     whose wrong `wikidata_id` is cleared leaves run_tag_medical_codes_sync's
+//     work set (`status='active' AND wikidata_id ~ '^Q[0-9]+$'`), so the sync can
+//     never refresh OR retract its codes again — the documented remedy is what
+//     freezes them. That left ICPC-2 A96 ("death") rendering on /tags/passing and
+//     ICD-10 U07.1 (COVID-19) on /tags/seafood. 99980101100100 reaps them after
+//     every sync; this asserts the reaper is still wired and still winning.
+{
+  const res = await fetch(`${BASE}/rest/v1/rpc/tag_medical_code_signals`, {
+    method: 'POST',
+    headers: { ...headers, 'Content-Type': 'application/json' },
+    body: '{}',
+  })
+  // 404 = the migration has not landed yet, which is unavoidable on the PR that
+  // introduces both (this job builds the BRANCH and calls the LIVE backend, so a
+  // hard fail could only go green after the merge it blocks — a deadlock, not a
+  // guard). Every other non-ok status IS a broken probe and must fail.
+  if (res.status === 404) {
+    console.warn('⚠ tag_medical_code_signals → HTTP 404 — clinical-code sentinel NOT DEPLOYED (migration 99980101100100). This is absence of a check, not absence of defects.')
+  } else if (!res.ok) {
+    const detail = (await res.text()).slice(0, 200)
+    console.error(`✗ tag_medical_code_signals → HTTP ${res.status} — the gate could not run. A broken probe must not read as a clean corpus. ${detail}`)
+    FAILED = true
+  } else {
+    const mc = (await res.json()) ?? {}
+    if (mc.probe_ok !== true) {
+      console.error('✗ tag_medical_code_signals did not report probe_ok — the probe is broken')
+      FAILED = true
+    } else if (Number(mc.code_rows_total ?? 0) < 100) {
+      // Coverage before verdict: zero orphans over an empty table is not clean.
+      console.error(`✗ tag_medical_code_signals sees only ${mc.code_rows_total ?? 0} code rows — it is measuring nothing, not passing`)
+      FAILED = true
+    } else {
+      const orphans = Number(mc.orphan_code_rows ?? 0)
+      const orphanTags = Number(mc.orphan_tags ?? 0)
+      if (!('orphan_code_rows' in mc)) {
+        console.error("✗ tag_medical_code_signals has no 'orphan_code_rows' key — that check measured NOTHING")
+        FAILED = true
+      } else if (orphans > 0) {
+        const named = Array.isArray(mc.orphan_examples) ? mc.orphan_examples.join(', ') : ''
+        console.error(`✗ ${orphans} clinical code row(s) on ${orphanTags} tag(s) the sync can no longer refresh${named ? `: ${named}` : ''}`)
+        console.error('  A code whose tag lost its Wikidata identifier can only ever be stale — it outlives the entity that produced it and renders to readers.')
+        console.error('  Do NOT repoint the identifier to silence this: the sync rebuilds codes from it weekly, so a plausible-but-wrong QID regenerates wrong codes forever.')
+        FAILED = true
+      } else {
+        console.log(`✓ no orphaned clinical codes (${mc.code_rows_total} rows over ${mc.tags_total} tags)`)
+      }
+
+      // Round eighteen: a band headed "Diagnostic codes" publishing a code for a
+      // country, an occupation, a garment or a kinship relation. The verdict is
+      // STORED in tag_entity_class_probe because this probe is pure SQL and
+      // cannot fetch P31 itself — so coverage is read FIRST: zero refused rows
+      // over an unprobed corpus is vacuous, not clean, and only unprobed_qids
+      // tells the two apart.
+      //
+      // The key being ABSENT warns rather than fails, for the same reason the
+      // 404 above does — the nightly run checks out main and calls the LIVE
+      // backend, so in the window where main carries the newer script and prod
+      // has not applied the migration a hard fail would be red for something
+      // that is not a defect.
+      if (!('nonclinical_code_rows' in mc)) {
+        console.warn('⚠ tag_medical_code_signals has no \'nonclinical_code_rows\' key — the non-clinical gate is NOT DEPLOYED (migration 99991789851492). Absence of a check, not absence of defects.')
+      } else {
+        const nonclinical = Number(mc.nonclinical_code_rows ?? 0)
+        const probeRows = Number(mc.probe_rows ?? 0)
+        const unprobed = Number(mc.unprobed_qids ?? 0)
+        if (probeRows === 0) {
+          console.error('✗ tag_entity_class_probe is empty — the non-clinical invariant is measuring nothing, not passing')
+          FAILED = true
+        } else if (nonclinical > 0) {
+          const named = Array.isArray(mc.nonclinical_examples) ? mc.nonclinical_examples.join(', ') : ''
+          console.error(`✗ ${nonclinical} non-clinical code row(s) on ${mc.nonclinical_tags ?? 0} tag(s)${named ? `: ${named}` : ''}`)
+          console.error('  SNOMED CT, ICD-11 and ICPC-2 carry whole axes for geography, occupations, kinship, objects and social circumstances. Those are real codes and not diagnoses.')
+          console.error('  If the vocabulary in medical_code_entity_class_verdict() was just extended, call run_tag_medical_codes_reap_nonclinical() in the same migration rather than waiting for Monday.')
+          FAILED = true
+        } else if (unprobed > 0) {
+          console.warn(`⚠ ${unprobed} code-bearing entit(ies) have no class probe yet — the non-clinical invariant does not cover them until the Monday sync runs`)
+        } else {
+          console.log(`✓ no non-clinical clinical codes (${probeRows} entities probed, ${mc.unknown_verdict_qids ?? 0} with a class the gate does not recognise — those are ALLOWED by design)`)
+        }
+      }
+    }
+  }
+}
+
 // § Prose left behind by a disowned Wikidata entity
 //
 //     The second half of the wrong-entity failure. tag_wikidata_repair_regressions()
@@ -3432,6 +3920,108 @@ const DISOWNED_PROSE_CEILING = 380
         if (stale > 0) {
           console.log(`  note: ${stale} rows are blocked on 'image_unusable' whose image_url is now NULL — a stated reason that outlived what it described`)
         }
+      }
+    }
+  }
+}
+
+// §19 — the item-level audit inspector must stay honest.
+//
+// The timeline is only as trustworthy as three things it cannot check about
+// itself: that audit_entity_registry still agrees with the catalog, that the
+// function is still DEFINER *with a role gate in its body*, and that anon holds
+// no EXECUTE. The second matters most here because
+// scripts/check-anon-function-grants.mjs is scoped to VOLATILE definers and is
+// structurally blind to a STABLE one like entity_audit_timeline — a future
+// CREATE OR REPLACE that drops the gate would ship silently.
+{
+  const res = await fetch(`${BASE}/rest/v1/rpc/audit_inspector_signals`, {
+    method: 'POST',
+    headers: { apikey: KEY, Authorization: `Bearer ${KEY}`, 'Content-Type': 'application/json' },
+    body: '{}',
+  })
+
+  if (res.status === 404) {
+    // Same carve-out reasoning as §16: the nightly run checks out main and calls
+    // the LIVE database, so in the window where main carries this script and
+    // prod has not applied 99991790362392, a hard fail would be red for
+    // something that is not a defect.
+    console.warn(
+      '⚠ audit_inspector_signals → HTTP 404 — audit-inspector sentinel NOT DEPLOYED (migration 99991790362392). This is absence of a check, not absence of defects.',
+    )
+  } else if (!res.ok) {
+    console.error(
+      `✗ audit_inspector_signals → HTTP ${res.status} — the gate could not run. A broken probe must not read as a clean corpus.`,
+    )
+    FAILED = true
+  } else {
+    const a = await res.json()
+
+    if (!a || a.probe_ok !== true) {
+      console.error(
+        `✗ audit_inspector_signals did not report probe_ok — the probe is broken: ${a?.error ?? 'no error given'}`,
+      )
+      FAILED = true
+    } else if (Number(a.registry_rows ?? 0) < 11) {
+      // Zero drift over an empty registry is vacuous, not clean.
+      console.error(
+        `✗ audit_inspector_signals sees only ${a.registry_rows ?? 0} registry rows — it is measuring nothing, not passing`,
+      )
+      FAILED = true
+    } else {
+      const drift = a.catalog_drift ?? []
+      const missingGaps = a.gap_keys_missing ?? []
+
+      if (drift.length > 0) {
+        console.error(
+          `✗ audit_entity_registry disagrees with the catalog on ${drift.length}: ${drift.join(', ')}` +
+            '\n  A row claiming a column the table does not have makes that type read as having no provenance at all.',
+        )
+        FAILED = true
+      }
+      if (missingGaps.length > 0) {
+        console.error(
+          `✗ ${missingGaps.length} coverage-gap key(s) have no written explanation: ${missingGaps.join(', ')}` +
+            '\n  These are the sentences saying what the timeline CANNOT show. Unexplained, they render as raw codes.',
+        )
+        FAILED = true
+      }
+      if (a.timeline_exists !== true) {
+        console.error(
+          '✗ entity_audit_timeline does not exist while its registry does — the inspector would fail for every record',
+        )
+        FAILED = true
+      }
+      if (a.timeline_is_definer === true && a.timeline_has_role_gate !== true) {
+        console.error(
+          '✗ entity_audit_timeline is SECURITY DEFINER with no has_any_role_jwt gate in its body.' +
+            '\n  check-anon-function-grants.mjs cannot see this — it only inspects VOLATILE definers.',
+        )
+        FAILED = true
+      }
+      for (const [key, what] of [
+        ['anon_can_call_timeline', 'call entity_audit_timeline'],
+        ['anon_can_read_registry', 'read audit_entity_registry'],
+        ['anon_can_read_explanations', 'read pipeline_explanations'],
+      ]) {
+        if (a[key] === true) {
+          console.error(`✗ anon can ${what} — the audit layer exposes raw ingest payloads and pipeline internals`)
+          FAILED = true
+        }
+      }
+
+      // Advisory and growth-gated rather than a zero-invariant: this can only be
+      // driven down by a human writing prose, so a zero rule would ship red and
+      // get scrolled past. The authoritative producer-side check is
+      // scripts/check-explanation-keys.mjs, which runs at PR time.
+      const unexplained = Number(a.unexplained_keys ?? 0)
+      if (unexplained > 0) {
+        console.warn(`⚠ ${unexplained} registered explanation(s) have an empty body`)
+      }
+      if (drift.length === 0 && missingGaps.length === 0) {
+        console.log(
+          `✓ audit inspector honest (${a.registry_rows} entity types, ${a.explanation_rows} explanations, no catalog drift, definer gated, anon revoked)`,
+        )
       }
     }
   }

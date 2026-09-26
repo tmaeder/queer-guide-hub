@@ -3399,6 +3399,7 @@ export type Database = {
           created_at: string
           id: string
           images: string[] | null
+          image_assets_synced_at: string | null
           likes_count: number | null
           link_description: string | null
           link_title: string | null
@@ -4256,96 +4257,6 @@ export type Database = {
           id?: string
           name?: string
           updated_at?: string
-        }
-        Relationships: []
-      }
-      contributor_mailing_addresses: {
-        Row: {
-          city: string
-          country_code: string
-          created_at: string
-          line1: string
-          line2: string | null
-          notes: string | null
-          opted_in_zine: boolean
-          postal_code: string | null
-          recipient: string
-          region: string | null
-          updated_at: string
-          user_id: string
-        }
-        Insert: {
-          city: string
-          country_code: string
-          created_at?: string
-          line1: string
-          line2?: string | null
-          notes?: string | null
-          opted_in_zine?: boolean
-          postal_code?: string | null
-          recipient: string
-          region?: string | null
-          updated_at?: string
-          user_id: string
-        }
-        Update: {
-          city?: string
-          country_code?: string
-          created_at?: string
-          line1?: string
-          line2?: string | null
-          notes?: string | null
-          opted_in_zine?: boolean
-          postal_code?: string | null
-          recipient?: string
-          region?: string | null
-          updated_at?: string
-          user_id?: string
-        }
-        Relationships: []
-      }
-      contributor_recognitions: {
-        Row: {
-          blurb_md: string | null
-          category: string
-          created_at: string
-          created_by: string | null
-          display_name_override: string | null
-          featured: boolean
-          id: string
-          opted_in: boolean
-          rank: number | null
-          updated_at: string
-          user_id: string
-          year: number
-        }
-        Insert: {
-          blurb_md?: string | null
-          category: string
-          created_at?: string
-          created_by?: string | null
-          display_name_override?: string | null
-          featured?: boolean
-          id?: string
-          opted_in?: boolean
-          rank?: number | null
-          updated_at?: string
-          user_id: string
-          year: number
-        }
-        Update: {
-          blurb_md?: string | null
-          category?: string
-          created_at?: string
-          created_by?: string | null
-          display_name_override?: string | null
-          featured?: boolean
-          id?: string
-          opted_in?: boolean
-          rank?: number | null
-          updated_at?: string
-          user_id?: string
-          year?: number
         }
         Relationships: []
       }
@@ -11979,17 +11890,23 @@ export type Database = {
           last_verified_at: string | null
           lgbti_relevance_score: number | null
           link_checked_at: string | null
+          link_broken_streak: number
           link_health: string | null
+          link_last_failure_at: string | null
           location: string | null
           merchant_domain: string | null
           merchant_id: string | null
+          media_quality_score: number | null
           payload_hash: string | null
           price: number | null
           price_type: string | null
           price_usd: number | null
           quality_score: number | null
+          quality_dimensions_at: string | null
+          quality_dimensions_due: boolean
           review_status: string | null
           sensitivity_flags: Json | null
+          safety_confidence: number | null
           shipping_available: boolean | null
           shipping_info: string | null
           sizes: string[] | null
@@ -12004,12 +11921,19 @@ export type Database = {
           subcategory_slug: string | null
           tagged_at: string | null
           taxonomy_v3_at: string | null
+          taxonomy_confidence: number | null
+          taxonomy_classifier_version: string
+          taxonomy_model_attempts: number
+          taxonomy_model_status: string | null
+          taxonomy_version: number
           title: string
           title_i18n: Json
           title_normalized: string | null
           updated_at: string
           venue_id: string | null
           views_count: number | null
+          freshness_score: number | null
+          linkage_score: number | null
           website: string | null
         }
         Insert: {
@@ -12046,22 +11970,29 @@ export type Database = {
           id?: string
           image_hashes?: Json | null
           images?: string[] | null
+          image_assets_synced_at?: string | null
           in_stock?: boolean | null
           last_seen_at?: string | null
           last_verified_at?: string | null
           lgbti_relevance_score?: number | null
           link_checked_at?: string | null
+          link_broken_streak?: number
           link_health?: string | null
+          link_last_failure_at?: string | null
           location?: string | null
           merchant_domain?: string | null
           merchant_id?: string | null
+          media_quality_score?: number | null
           payload_hash?: string | null
           price?: number | null
           price_type?: string | null
           price_usd?: number | null
           quality_score?: number | null
+          quality_dimensions_at?: string | null
+          quality_dimensions_due?: boolean
           review_status?: string | null
           sensitivity_flags?: Json | null
+          safety_confidence?: number | null
           shipping_available?: boolean | null
           shipping_info?: string | null
           sizes?: string[] | null
@@ -12076,12 +12007,19 @@ export type Database = {
           subcategory_slug?: string | null
           tagged_at?: string | null
           taxonomy_v3_at?: string | null
+          taxonomy_confidence?: number | null
+          taxonomy_classifier_version?: string
+          taxonomy_model_attempts?: number
+          taxonomy_model_status?: string | null
+          taxonomy_version?: number
           title: string
           title_i18n?: Json
           title_normalized?: string | null
           updated_at?: string
           venue_id?: string | null
           views_count?: number | null
+          freshness_score?: number | null
+          linkage_score?: number | null
           website?: string | null
         }
         Update: {
@@ -12118,22 +12056,29 @@ export type Database = {
           id?: string
           image_hashes?: Json | null
           images?: string[] | null
+          image_assets_synced_at?: string | null
           in_stock?: boolean | null
           last_seen_at?: string | null
           last_verified_at?: string | null
           lgbti_relevance_score?: number | null
           link_checked_at?: string | null
+          link_broken_streak?: number
           link_health?: string | null
+          link_last_failure_at?: string | null
           location?: string | null
           merchant_domain?: string | null
           merchant_id?: string | null
+          media_quality_score?: number | null
           payload_hash?: string | null
           price?: number | null
           price_type?: string | null
           price_usd?: number | null
           quality_score?: number | null
+          quality_dimensions_at?: string | null
+          quality_dimensions_due?: boolean
           review_status?: string | null
           sensitivity_flags?: Json | null
+          safety_confidence?: number | null
           shipping_available?: boolean | null
           shipping_info?: string | null
           sizes?: string[] | null
@@ -12148,12 +12093,19 @@ export type Database = {
           subcategory_slug?: string | null
           tagged_at?: string | null
           taxonomy_v3_at?: string | null
+          taxonomy_confidence?: number | null
+          taxonomy_classifier_version?: string
+          taxonomy_model_attempts?: number
+          taxonomy_model_status?: string | null
+          taxonomy_version?: number
           title?: string
           title_i18n?: Json
           title_normalized?: string | null
           updated_at?: string
           venue_id?: string | null
           views_count?: number | null
+          freshness_score?: number | null
+          linkage_score?: number | null
           website?: string | null
         }
         Relationships: [
@@ -12330,6 +12282,63 @@ export type Database = {
             columns: ["listing_id"]
             isOneToOne: false
             referencedRelation: "marketplace_listings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      marketplace_quality_events: {
+        Row: {
+          classifier_version: string
+          confidence: number | null
+          created_at: string
+          dimension: string
+          id: number
+          listing_id: string
+          new_value: Json | null
+          previous_value: Json | null
+          rollback_of: number | null
+          rolled_back_at: string | null
+          run_id: number | null
+        }
+        Insert: {
+          classifier_version: string
+          confidence?: number | null
+          created_at?: string
+          dimension: string
+          id?: never
+          listing_id: string
+          new_value?: Json | null
+          previous_value?: Json | null
+          rollback_of?: number | null
+          rolled_back_at?: string | null
+          run_id?: number | null
+        }
+        Update: {
+          classifier_version?: string
+          confidence?: number | null
+          created_at?: string
+          dimension?: string
+          id?: never
+          listing_id?: string
+          new_value?: Json | null
+          previous_value?: Json | null
+          rollback_of?: number | null
+          rolled_back_at?: string | null
+          run_id?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "marketplace_quality_events_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "marketplace_listings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "marketplace_quality_events_run_id_fkey"
+            columns: ["run_id"]
+            isOneToOne: false
+            referencedRelation: "admin_automation_runs"
             referencedColumns: ["id"]
           },
         ]
@@ -27057,36 +27066,6 @@ export type Database = {
         }
         Relationships: []
       }
-      contribution_metrics_yearly: {
-        Row: {
-          accepted_submissions: number | null
-          contribution_score: number | null
-          event_submissions: number | null
-          personality_submissions: number | null
-          quest_completions: number | null
-          safety_signals: number | null
-          total_submissions: number | null
-          translations: number | null
-          user_id: string | null
-          venue_submissions: number | null
-          year: number | null
-        }
-        Relationships: []
-      }
-      contributor_recognitions_public: {
-        Row: {
-          avatar_url: string | null
-          blurb_md: string | null
-          category: string | null
-          display_name: string | null
-          featured: boolean | null
-          id: string | null
-          rank: number | null
-          user_id: string | null
-          year: number | null
-        }
-        Relationships: []
-      }
       country_ingest_stats: {
         Row: {
           committed: number | null
@@ -31755,25 +31734,6 @@ export type Database = {
         Returns: Json
       }
       content_graph_norm_type: { Args: { p_type: string }; Returns: string }
-      contribution_metrics_for_year: {
-        Args: { p_year: number }
-        Returns: {
-          accepted_submissions: number
-          appear_in_recognition: boolean
-          avatar_url: string
-          contribution_score: number
-          display_name: string
-          event_submissions: number
-          personality_submissions: number
-          quest_completions: number
-          safety_signals: number
-          total_submissions: number
-          translations: number
-          user_id: string
-          venue_submissions: number
-          year: number
-        }[]
-      }
       count_invalid_coordinates: {
         Args: never
         Returns: {
@@ -35046,6 +35006,47 @@ export type Database = {
       marketplace_department:
         | { Args: { p_subcategory: string }; Returns: string }
         | { Args: { p_subcategory: string; p_title: string }; Returns: string }
+      marketplace_department_for_group: {
+        Args: { p_group: string }
+        Returns: string
+      }
+      marketplace_claim_link_checks: {
+        Args: {
+          p_claim_token?: string
+          p_limit?: number
+          p_stale_days?: number
+        }
+        Returns: {
+          affiliate_url: string
+          external_url: string
+          id: string
+          link_broken_streak: number
+          link_health: string
+        }[]
+      }
+      marketplace_claim_image_assets: {
+        Args: { p_limit?: number }
+        Returns: {
+          format: string
+          id: string
+          metadata: Json
+          url: string
+        }[]
+      }
+      marketplace_claim_variant_extract: {
+        Args: { p_claim_token?: string; p_limit?: number }
+        Returns: { id: string }[]
+      }
+      marketplace_claim_taxonomy_model: {
+        Args: { p_dry_run?: boolean; p_limit?: number }
+        Returns: {
+          attributes: Json
+          description: string
+          id: string
+          source_category: string
+          title: string
+        }[]
+      }
       marketplace_due_for_existence_check: {
         Args: { p_limit?: number }
         Returns: {
@@ -35080,6 +35081,18 @@ export type Database = {
         Returns: string[]
       }
       marketplace_enhance_refill: { Args: { p_max?: number }; Returns: number }
+      marketplace_ensure_merchant: {
+        Args: {
+          p_display_name: string
+          p_merchant_domain: string
+          p_source_slug: string
+        }
+        Returns: string
+      }
+      marketplace_backfill_gallery_assets: {
+        Args: { p_limit?: number }
+        Returns: Json
+      }
       marketplace_image_upscale_worklist: {
         Args: { p_limit?: number; p_source_type?: string }
         Returns: {
@@ -35124,7 +35137,31 @@ export type Database = {
       }
       marketplace_prune_stats: { Args: never; Returns: Json }
       marketplace_quality_stats: { Args: never; Returns: Json }
+      marketplace_recompute_quality_dimensions: {
+        Args: { p_limit?: number }
+        Returns: Json
+      }
       marketplace_register_brands: { Args: never; Returns: Json }
+      marketplace_release_link_check_claims: {
+        Args: { p_claim_token: string }
+        Returns: number
+      }
+      marketplace_release_variant_extract_claims: {
+        Args: { p_claim_token: string; p_listing_ids?: string[] }
+        Returns: number
+      }
+      marketplace_retry_failed_images: {
+        Args: { p_limit?: number }
+        Returns: Json
+      }
+      marketplace_rollback_quality_events: {
+        Args: { p_event_ids: number[] }
+        Returns: Json
+      }
+      run_marketplace_quality_worker: {
+        Args: { p_limit: number; p_slug: string }
+        Returns: Json
+      }
       marketplace_set_cover_asset: {
         Args: { p_listing_id: string; p_optimized_url?: string; p_url: string }
         Returns: undefined
@@ -35140,6 +35177,11 @@ export type Database = {
       marketplace_subcategory_group:
         | { Args: { p_subcategory: string }; Returns: string }
         | { Args: { p_subcategory: string; p_title: string }; Returns: string }
+      marketplace_subcategory_group_v3: {
+        Args: { p_subcategory: string; p_title: string }
+        Returns: string
+      }
+      marketplace_validate_taxonomy_corpus: { Args: never; Returns: Json }
       match_city_with_aliases: {
         Args: { p_city_text: string }
         Returns: string
@@ -36772,7 +36814,6 @@ export type Database = {
         Args: { p_ids: string[] }
         Returns: undefined
       }
-      refresh_contribution_metrics_yearly: { Args: never; Returns: undefined }
       refresh_dashboard_stats: { Args: never; Returns: undefined }
       refresh_my_community_score: { Args: never; Returns: undefined }
       refresh_news_corroboration: {
@@ -37767,6 +37808,8 @@ export type Database = {
         Args: {
           p_accessibility_attributes?: string[]
           p_city?: string
+          p_city_id?: string
+          p_country_id?: string
           p_end?: string
           p_event_type?: string
           p_include_past?: boolean

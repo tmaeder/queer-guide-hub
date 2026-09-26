@@ -1,0 +1,4 @@
+{
+  "_comment": "Shrink-only ceilings for critical backlogs that predate their release gate. Omitted critical gates remain zero-tolerance. Lower a ceiling whenever production improves; never raise it.",
+  "personality_unsupported_claim": 226
+}

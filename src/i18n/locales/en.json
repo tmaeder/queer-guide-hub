@@ -1902,7 +1902,22 @@
     "news": {
       "title": "Latest News",
       "eyebrow": "Dispatches",
-      "editorsPick": "Editors' pick"
+      "editorsPick": "Editors' pick",
+      "topics": "News topics",
+      "topic": {
+        "all": "All",
+        "rights": "Rights & Legal",
+        "community": "Community",
+        "culture": "Culture & Arts",
+        "podcasts": "Podcasts"
+      },
+      "moreStories": "{{count}} more stories",
+      "followTopics": "Follow topics",
+      "following": "Following {{count}}",
+      "searchTopics": "Search topics…",
+      "unfollow": "Unfollow",
+      "trySearching": "Try: {{list}}",
+      "noTopic": "No topic by that name."
     },
     "eyebrow": "Queer Guide",
     "browseDirectory": "Browse the directory",

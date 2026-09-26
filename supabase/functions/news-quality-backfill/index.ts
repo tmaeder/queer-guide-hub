@@ -3,6 +3,7 @@ import { withCircuitBreaker, CircuitOpenError } from '../_shared/circuit-breaker
 import { chatCompletion, isOpenAIAvailable } from '../_shared/openai-client.ts'
 import { sanitizeArticle } from '../_shared/news-quality/sanitize.ts'
 import { parseQualityDecision, QUALITY_PIPELINE_VERSION, type QualityDecision } from '../_shared/news-quality/schema.ts'
+import { extractJsonCandidates, parseJsonObject, repairJsonControlChars } from '../_shared/json-extract.ts'
 import { QUALITY_SYSTEM_PROMPT, buildQualityUserPrompt } from '../_shared/news-quality/prompts.ts'
 import { evaluatePublishGate } from '../_shared/news-quality/decision.ts'
 import { probeImage } from '../_shared/news-quality/image-check.ts'
@@ -47,11 +48,148 @@ interface RunSummary {
   processed: number; passed: number; review: number; rejected: number; failed: number; mutated: number
 }
 
+/** A completion that arrived but could not be read, recorded where SQL can see it.
+ *
+ * WHY THE JOB ROW AND NOT JUST THE LOG.
+ *
+ *   `parseQualityDecision` already console.errors an unparseable completion,
+ *   and that is the right place for it — but the edge-function log is not
+ *   reachable from every environment that has to diagnose this (no log source
+ *   resolves through the Supabase MCP, and reading it needs a token an
+ *   operator may not hold). So the diagnosis rides the `error` column, which
+ *   is already read by hand whenever this queue is investigated.
+ *
+ * WHY IT NAMES THE PARSE ERROR RATHER THAN SHOWING MORE OF THE TEXT.
+ *
+ *   The first cut of this recorded `len` plus the first 240 chars, and that
+ *   measurement (prod, 2026-09-20, three articles) ruled two hypotheses out
+ *   and identified none. It showed the completions are REAL and their heads
+ *   are well-formed JSON — `{ "isRelevant": true, "relevanceScore": 0.9, ...`
+ *   from character 0, every key correct — at 2,641 / 5,092 / 5,239 chars for
+ *   624 / 1,203 / 1,201 output tokens, i.e. a steady ~4.2 chars per token and
+ *   nothing near the 2,200 ceiling. So the answer is not missing and it is not
+ *   truncated; `JSON.parse` is rejecting a complete object, and a longer head
+ *   cannot say why because the head is the part that is fine.
+ *
+ *   `JSON.parse`'s own error does say why, and names the offset: a raw newline
+ *   inside a string value reads `Bad control character in string literal ... at
+ *   position N`, an unterminated object reads `Unexpected end of JSON input`,
+ *   trailing prose reads `Unexpected non-whitespace character after JSON`. That
+ *   is a cause, not another clue — which is the whole reason to spend a second
+ *   round trip here instead of guessing a third time.
+ *
+ *   The tail rides along because it is the one part never yet seen, and it
+ *   distinguishes "stopped mid-sentence" from "closed and kept talking" at a
+ *   glance. Every candidate is tried, not just the first: the stages are
+ *   ordered best-first, so an error from the fenced candidate alone would
+ *   misreport a run the balanced candidate also failed.
+ */
+export function describeUnparseable(content: string): string {
+  const flat = content.replace(/\s+/g, ' ').trim()
+  const errs: string[] = []
+  let candidates = 0
+  for (const candidate of extractJsonCandidates(content)) {
+    candidates++
+    // Ask EXACTLY what the parser asks, or this reports a cause the parser no
+    // longer has: a completion whose only fault is a literal newline inside
+    // cleanedBody is recovered now, and describing it as having failed on a
+    // control character would send the next reader after a fixed bug.
+    if (parseJsonObject(candidate)) {
+      if (!errs.includes('parsed_as_object')) errs.push('parsed_as_object')
+      continue
+    }
+    try {
+      JSON.parse(repairJsonControlChars(candidate))
+      // Parsed, so `parseQualityDecision` rejected it for the only other
+      // reason it can: the value is not a JSON object (an array, a bare
+      // string). Worth naming — it is a different bug from a parse failure.
+      if (!errs.includes('parsed_but_not_object')) errs.push('parsed_but_not_object')
+    } catch (e) {
+      const m = (e as Error).message
+      if (!errs.includes(m)) errs.push(m)
+    }
+  }
+  // Zero candidates has two causes and they are not the same finding: no brace
+  // anywhere (a refusal, prose) versus a brace that never closes (a cut-off
+  // answer — every stage needs a closing '}', including the legacy greedy one).
+  // Reading them apart off the tail works but asks the next person to squint.
+  const why = candidates === 0
+    ? (content.includes('{') ? 'unterminated_object' : 'no_candidates')
+    : errs.slice(0, 2).join(' | ')
+  const tail = flat.slice(-120)
+  return `no_decision:len=${content.length}:cands=${candidates}:why=${why}:tail=${tail}`
+}
+
+/**
+ * Recover the structured verdict when the model's long `cleanedBody` value is
+ * the only malformed field.
+ *
+ * The body is deliberately discarded rather than heuristically repaired: the
+ * caller already preserves the article's existing content when cleanedBody is
+ * empty. Everything before and after the body still has to parse against the
+ * normal schema, so this cannot turn arbitrary prose into a verdict.
+ */
+export function parseQualityDecisionPreservingBody(content: string): QualityDecision | null {
+  for (const candidate of extractJsonCandidates(content)) {
+    const bodyKey = /"cleanedBody"\s*:/.exec(candidate)
+    if (!bodyKey?.index && bodyKey?.index !== 0) continue
+
+    // The prompt fixes `sentiment` immediately after `cleanedBody`. Use the
+    // last matching key so quoted article prose that happens to mention the
+    // word cannot truncate the candidate early.
+    const tail = candidate.slice(bodyKey.index + bodyKey[0].length)
+    const boundary = [...tail.matchAll(/,\s*"sentiment"\s*:/g)].at(-1)
+    if (!boundary?.index && boundary?.index !== 0) continue
+
+    const bodyEnd = bodyKey.index + bodyKey[0].length + boundary.index
+    const withoutBody =
+      candidate.slice(0, bodyKey.index + bodyKey[0].length) +
+      ' ""' +
+      candidate.slice(bodyEnd)
+    const raw = parseJsonObject(withoutBody)
+    const required = [
+      'isRelevant',
+      'relevanceScore',
+      'qualityScoreBefore',
+      'qualityScoreAfter',
+      'shouldPublish',
+      'needsManualReview',
+      'title',
+      'excerpt',
+      'cleanedBody',
+      'sentiment',
+      'tags',
+      'linkedCountries',
+      'linkedCities',
+      'linkedRegions',
+      'linkedVenues',
+      'linkedEvents',
+      'linkedPersonalities',
+      'linkedOrganisations',
+      'imageAssessment',
+      'removedArtifacts',
+      'warnings',
+      'confidence',
+    ]
+    if (!raw || !required.every((key) => Object.hasOwn(raw, key))) continue
+
+    const decision = parseQualityDecision(withoutBody)
+    if (decision) {
+      decision.warnings = [
+        ...decision.warnings,
+        'cleaned_body_preserved_after_json_repair',
+      ].slice(0, 20)
+      return decision
+    }
+  }
+  return null
+}
+
 async function callQualityLLM(
   supabase: ReturnType<typeof getServiceClient>,
   userPrompt: string,
-): Promise<QualityDecision | null> {
-  if (!(await isOpenAIAvailable(supabase))) return null
+): Promise<{ decision: QualityDecision | null; unparseable?: string }> {
+  if (!(await isOpenAIAvailable(supabase))) return { decision: null }
   const result = await chatCompletion(supabase, {
     callerFn: 'news-quality-backfill',
     messages: [
@@ -62,7 +200,12 @@ async function callQualityLLM(
     max_tokens: 2200,
     response_format: { type: 'json_object' },
   })
-  return parseQualityDecision(result.content)
+  const decision = parseQualityDecision(result.content) ??
+    parseQualityDecisionPreservingBody(result.content)
+  if (decision) return { decision }
+  // A completion arrived and could not be read. That is a DIFFERENT fact from
+  // "no completion arrived", and until now both landed as the same string.
+  return { decision: null, unparseable: describeUnparseable(result.content ?? '') }
 }
 
 async function processJob(
@@ -95,15 +238,22 @@ async function processJob(
   })
 
   let decision: QualityDecision | null = null
+  let unparseable: string | undefined
   let llmError: string | null = null
   try {
-    decision = await withCircuitBreaker(supabase, 'llm.openai.quality-enhance',
+    const out = await withCircuitBreaker(supabase, 'llm.openai.quality-enhance',
       () => callQualityLLM(supabase, userPrompt))
+    decision = out.decision
+    unparseable = out.unparseable
   } catch (e) {
     llmError = e instanceof CircuitOpenError ? `circuit_open:${e.apiName}` : (e as Error).message
   }
 
-  if (!decision) return { status: 'failed', error: llmError ?? 'no_decision' }
+  // Order matters: a thrown error (circuit open, transport) outranks an
+  // unreadable body, because in that case there IS no body. `no_decision`
+  // stays the last resort and now means what it always claimed to mean —
+  // the model was asked and returned nothing usable that we never saw.
+  if (!decision) return { status: 'failed', error: llmError ?? unparseable ?? 'no_decision' }
 
   const gate = evaluatePublishGate({
     decision,

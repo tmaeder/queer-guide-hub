@@ -39,6 +39,9 @@ vi.mock('@/components/admin/MarketplaceTagQualityPanel', () => ({
 vi.mock('@/components/admin/MarketplacePruneCard', () => ({
   MarketplacePruneCard: () => <div />,
 }));
+vi.mock('@/components/admin/business/BusinessBrandQualityPanel', () => ({
+  BusinessBrandQualityPanel: () => <div data-testid="business-brand-quality" />,
+}));
 vi.mock('@/components/admin/FreigabeFunnel', () => ({ FreigabeFunnel: () => <div /> }));
 vi.mock('@/components/admin/PersonalityFreigabeQueue', () => ({
   PersonalityFreigabeQueue: () => <div />,
@@ -141,6 +144,6 @@ describe('QualityHub — business link review', () => {
   it('keeps inbox-decided gates as plain links', () => {
     renderHub();
     const cities = screen.getByRole('link', { name: /Cities/i });
-    expect(cities.getAttribute('href')).toBe('/admin/inbox?queue=quality-city');
+    expect(cities.getAttribute('href')).toBe('/admin/governance?mode=triage&queue=quality-city');
   });
 });

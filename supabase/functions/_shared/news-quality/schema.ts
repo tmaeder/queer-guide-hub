@@ -2,6 +2,8 @@
 // Mirrors the JSON contract in the project plan; parsing here strips unknown keys
 // (preventing field injection from a misbehaving model).
 
+import { extractJsonCandidates, parseJsonObject } from '../json-extract.ts'
+
 export type Sentiment = 'positive' | 'neutral' | 'negative' | 'mixed'
 
 export interface QualityImageAssessment {
@@ -60,12 +62,33 @@ const sentiment = (v: unknown): Sentiment => {
 }
 
 export function parseQualityDecision(content: string): QualityDecision | null {
-  const match = content.match(/\{[\s\S]*\}/)
-  if (!match) return null
-  let raw: Record<string, unknown>
-  try {
-    raw = JSON.parse(match[0]) as Record<string, unknown>
-  } catch {
+  // Try each candidate, best-first, instead of the single greedy span this used
+  // to run. A reasoning model that fences its object or writes a sentence
+  // containing a brace defeats the greedy match, and the caller then records
+  // `no_decision` — indistinguishable from "the model had no answer". Measured
+  // on prod 2026-09-19: 547 successful completions, 268 decisions; the ~279
+  // discarded answers are why 78 ordinary news articles sat unjudged in
+  // /admin/inbox. See _shared/json-extract.ts for why the order is what it is
+  // and why the legacy greedy span is kept as the final candidate.
+  // parseJsonObject retries each candidate with control characters escaped.
+  // Measured on prod 2026-09-20, that is 14 of 19 failures on this path: the
+  // model writes cleanedBody's paragraph breaks as literal newlines inside the
+  // JSON string. See _shared/json-extract.ts for why the unescaped-quote half
+  // is deliberately not repaired here.
+  let raw: Record<string, unknown> | null = null
+  for (const candidate of extractJsonCandidates(content)) {
+    raw = parseJsonObject(candidate)
+    if (raw) break
+  }
+  if (!raw) {
+    // A discarded answer must SAY so. The old path returned null silently, so
+    // the only trace of ~279 lost verdicts was a bare 'no_decision' string on
+    // the job row with the response itself gone — nothing anyone could diagnose
+    // from. Bounded, because this is a per-article loop, not a one-shot.
+    console.error(
+      `[news-quality] no parseable JSON in a ${content.length}-char completion; first 600 chars: ` +
+        content.slice(0, 600),
+    )
     return null
   }
 

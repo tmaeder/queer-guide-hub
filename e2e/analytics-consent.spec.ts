@@ -28,7 +28,13 @@ import { waitForAppReady } from './support/appReady';
  * only nightly.
  */
 
-const INGEST = /\/api\/track|\/functions\/v1\/umami-analytics/;
+// THREE pipelines write analytics, not two. The third is the search proxy,
+// and leaving it out of this regex is why this spec passed 7/7 on 2026-09-19
+// while `trackSearchEvent` was writing `user_events` with no consent gate at
+// all: 7,441 ungated rows in 24h against 295 gated ones. A beacon counter is
+// only as honest as its list of destinations — an omitted host reads exactly
+// like a pipeline that stayed silent.
+const INGEST = /\/api\/track|\/functions\/v1\/umami-analytics|search\.[^/]+\/track/;
 
 /** Count every analytics beacon the page attempts, by pipeline. */
 function countBeacons(page: Page) {
@@ -47,6 +53,14 @@ function countBeacons(page: Page) {
     /** Straight at the edge function — the bypass. */
     get direct() {
       return urls.filter((u) => u.includes('/functions/v1/umami-analytics'));
+    },
+    /**
+     * Behavioural profiling into `user_events` via the search proxy — the
+     * entity_id trail, which on this platform runs through venues, events
+     * and intimate features.
+     */
+    get behavioural() {
+      return urls.filter((u) => /search\.[^/]+\/track/.test(u));
     },
     reset() {
       urls.length = 0;
@@ -123,6 +137,23 @@ async function awaitInitialBeaconThenReset(
   beacons.reset();
 }
 
+/**
+ * EVERY case here needs more than Playwright's 30s default, and the reason is
+ * structural rather than a slow machine: each one drives two or three real
+ * navigations against production, and `page.goto` waits for `load` — i.e. for
+ * every image on an image-heavy page — before a single assertion runs.
+ *
+ * Measured against prod: the page-view case takes 28.9s and the scroll case
+ * 26s, both against a 30s ceiling. Margins of one and four seconds are not
+ * tests, they are coin flips, and a guard that flakes teaches people to re-run
+ * it instead of reading it.
+ *
+ * The budget moves rather than the work. Trimming navigations or shortening
+ * the scroll cadence would fit 30s by no longer exercising the defects these
+ * cases exist to catch. 120s is still far below any real hang.
+ */
+test.describe.configure({ timeout: 120_000 });
+
 test.describe('analytics consent gate', () => {
   test('no stored consent → nothing is tracked and window.umami never exists', async ({ page }) => {
     await presentAsHuman(page);
@@ -157,6 +188,47 @@ test.describe('analytics consent gate', () => {
     }
 
     expect(beacons.all, 'analytics was explicitly refused').toHaveLength(0);
+  });
+
+  test('an entity page does not profile a visitor who refused', async ({ page }) => {
+    // THE CASE THE OTHER TWO COULD NOT SEE. They visit LIST routes, and the
+    // behavioural writer (`trackSearchEvent` via SearchTelemetryProvider)
+    // only fires on an entity DETAIL page — so a spec that never opened one
+    // reported a clean gate while 96% of `user_events` arrived past it.
+    //
+    // The positive control is the half that makes the zero mean anything: a
+    // detail route that silently stopped firing, or a slug that 404s, also
+    // produces zero behavioural beacons and would pass the refusal case
+    // alone while proving nothing at all.
+    const DETAIL = '/city/berlin';
+
+    await presentAsHuman(page);
+    await storeConsent(page, false);
+    const refused = countBeacons(page);
+
+    await page.goto(DETAIL);
+    await waitForAppReady(page, 60_000);
+    await settle(page);
+
+    expect(
+      refused.behavioural,
+      'an entity_id trail is behavioural profiling and needs consent',
+    ).toHaveLength(0);
+    expect(refused.all, 'nothing at all may be sent after a refusal').toHaveLength(0);
+
+    // Positive control: the same route DOES profile once consent is granted,
+    // so the zero above is a gate holding rather than a page that went quiet.
+    await storeConsent(page, true);
+    const granted = countBeacons(page);
+
+    await page.goto(DETAIL);
+    await waitForAppReady(page, 60_000);
+    await settle(page);
+
+    expect(
+      granted.behavioural.length,
+      'with consent the same page must still profile — otherwise the refusal case is vacuous',
+    ).toBeGreaterThan(0);
   });
 
   test('Do Not Track wins over consent', async ({ page }) => {
@@ -203,6 +275,14 @@ test.describe('analytics consent gate', () => {
   });
 
   test('scrolling one article is one page view, not one per section', async ({ page }) => {
+    // This test's own work is ~26s against prod: a page load, the initial
+    // beacon, then ten scroll steps that must EACH outlast the scroll-spy's
+    // 300ms debounce — 700ms is what makes the step trigger the write this
+    // test exists to catch. Cutting the cadence to fit 30s would stop
+    // exercising the defect and leave a green test that proves nothing, so
+    // the budget moves instead of the work.
+    test.setTimeout(90_000);
+
     await presentAsHuman(page);
     await storeConsent(page, true);
     const beacons = countBeacons(page);

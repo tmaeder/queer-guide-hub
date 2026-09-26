@@ -1803,7 +1803,22 @@
     "news": {
       "title": "Ultime notizie",
       "eyebrow": "Notizie",
-      "editorsPick": "[IT] Editors' pick"
+      "editorsPick": "[IT] Editors' pick",
+      "topics": "Temi di attualità",
+      "topic": {
+        "all": "Tutto",
+        "rights": "Diritti e leggi",
+        "community": "Comunità",
+        "culture": "Cultura e arte",
+        "podcasts": "Podcast"
+      },
+      "moreStories": "Altre {{count}} notizie",
+      "followTopics": "Segui temi",
+      "following": "{{count}} seguiti",
+      "searchTopics": "Cerca temi…",
+      "unfollow": "Smetti di seguire",
+      "trySearching": "Prova: {{list}}",
+      "noTopic": "Nessun tema con questo nome."
     },
     "discover": "Discover",
     "destinationsTitle": "Where the scene lives.",

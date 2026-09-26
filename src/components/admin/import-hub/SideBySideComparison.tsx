@@ -156,10 +156,7 @@ export function SideBySideComparison({
               >
                 {/* Field Name */}
                 <div className="p-4 flex items-center">
-                  <span
-                    className="text-xs font-semibold text-muted-foreground"
-                    style={{ fontSize: '0.7rem' }}
-                  >
+                  <span className="text-xs2 text-xs font-semibold text-muted-foreground">
                     {field.label}
                   </span>
                 </div>
@@ -192,16 +189,14 @@ export function SideBySideComparison({
                   tabIndex={isDiff ? 0 : undefined}
                   aria-pressed={isDiff ? choices[field.key] === 'left' : undefined}
                 >
-                  <p className="text-sm break-words" style={{ fontSize: '0.8rem' }}>
-                    {formatCellValue(leftVal)}
-                  </p>
+                  <p className="text-13 text-sm break-words">{formatCellValue(leftVal)}</p>
                 </div>
 
                 {/* Selection Indicator */}
                 <div className="flex items-center justify-center">
                   {isDiff && (
                     <div
-                      className="flex items-center justify-center text-white font-bold"
+                      className="text-2xs flex items-center justify-center text-white font-bold"
                       style={{
                         width: 20,
                         height: 20,
@@ -210,7 +205,6 @@ export function SideBySideComparison({
                           choices[field.key] === 'left'
                             ? 'hsl(var(--muted-foreground))'
                             : 'hsl(var(--foreground))',
-                        fontSize: '0.6rem',
                       }}
                     >
                       {choices[field.key] === 'left' ? 'L' : 'R'}
@@ -248,9 +242,7 @@ export function SideBySideComparison({
                   tabIndex={isDiff ? 0 : undefined}
                   aria-pressed={isDiff ? choices[field.key] === 'right' : undefined}
                 >
-                  <p className="text-sm break-words" style={{ fontSize: '0.8rem' }}>
-                    {formatCellValue(rightVal)}
-                  </p>
+                  <p className="text-13 text-sm break-words">{formatCellValue(rightVal)}</p>
                 </div>
               </div>
             );

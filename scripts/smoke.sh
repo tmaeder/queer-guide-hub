@@ -44,8 +44,18 @@ check "trending field"       "$tr" '"trending":'
 # since the validation hardening, and a constant id keeps smoke writes
 # idempotent/recognizable (session_id stays "smoke-test").
 echo "== /track =="
-tk=$(curl -sS -X POST "$SEARCH_URL/track" -H 'content-type: application/json' \
-	-d '{"session_id":"smoke-test","event_type":"click","entity_type":"venue","entity_id":"00000000-0000-4000-8000-00000000dead","metadata":{"source":"smoke"}}')
+cookie_jar=$(mktemp)
+trap 'rm -f "$cookie_jar"' EXIT
+track_body='{"session_id":"smoke-test","event_type":"click","entity_type":"venue","entity_id":"00000000-0000-4000-8000-00000000dead","metadata":{"source":"smoke"}}'
+
+# The first request intentionally does not write: it mints the signed session
+# cookie that protects /track from arbitrary server-side callers. The second
+# request proves that a browser-style round trip can still record telemetry.
+bootstrap=$(curl -sS -c "$cookie_jar" -X POST "$SEARCH_URL/track" -H 'content-type: application/json' \
+	-d "$track_body")
+check "track bootstrap"      "$bootstrap" '"reason":"unverified_session"'
+tk=$(curl -sS -b "$cookie_jar" -X POST "$SEARCH_URL/track" -H 'content-type: application/json' \
+	-d "$track_body")
 check "track ok"             "$tk" '"ok":true'
 
 echo "== /feedback =="

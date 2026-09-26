@@ -129,8 +129,8 @@ function SectionHeading({ flaggedCount = 0 }: { flaggedCount?: number }) {
   return (
     <div className="flex items-center justify-between mb-4">
       <p
-        className="font-bold uppercase text-muted-foreground"
-        style={{ letterSpacing: '0.04em', fontSize: '0.7rem' }}
+        className="text-xs2 font-bold uppercase text-muted-foreground"
+        style={{ letterSpacing: '0.04em' }}
       >
         {t('trips.news.heading', 'Recent news from your destinations')}
       </p>

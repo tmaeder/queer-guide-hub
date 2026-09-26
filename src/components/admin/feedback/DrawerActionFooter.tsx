@@ -44,8 +44,8 @@ export function DrawerActionFooter({
         />
         <label
           htmlFor="notify-submitter-toggle"
-          style={{ fontSize: '0.7rem', flex: 1 }}
-          className="text-muted-foreground cursor-pointer"
+          style={{ flex: 1 }}
+          className="text-xs2 text-muted-foreground cursor-pointer"
         >
           Email on status change
           {!hasContactEmail && <span className="ml-1">(no email)</span>}

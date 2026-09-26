@@ -5,14 +5,18 @@ on:
     branches:
       - main
     paths:
-      - "supabase/functions/**"
-      - "supabase/migrations/**"
-      - "supabase/config.toml"
-      - ".github/workflows/deploy-supabase-functions.yml"
+      - 'supabase/functions/**'
+      - 'supabase/migrations/**'
+      - 'supabase/config.toml'
+      - '.github/workflows/deploy-supabase-functions.yml'
   workflow_dispatch:
     inputs:
       redeploy_all:
-        description: "Redeploy every edge function (regardless of git diff)"
+        description: 'Redeploy every edge function (regardless of git diff)'
+        type: boolean
+        default: false
+      refresh_advisor_token:
+        description: "Refresh the advisor function's Management API token from the Actions secret"
         type: boolean
         default: false
 
@@ -85,6 +89,17 @@ jobs:
           # "failed to get api keys: SchemaError(... inserted_at)" — broke the
           # main deploy run. v2.98.2 verified against this project locally.
           version: 2.98.2
+
+      - name: Refresh advisor Management API token
+        if: github.event_name == 'workflow_dispatch' && inputs.refresh_advisor_token
+        run: |
+          if [ -z "$SUPABASE_ACCESS_TOKEN" ]; then
+            echo "::error::SUPABASE_ACCESS_TOKEN is not configured."
+            exit 1
+          fi
+          supabase secrets set \
+            "MANAGEMENT_ACCESS_TOKEN=$SUPABASE_ACCESS_TOKEN" \
+            --project-ref "$SUPABASE_PROJECT_REF"
 
       - name: Push migrations
         if: env.SUPABASE_ACCESS_TOKEN != ''

@@ -10,12 +10,18 @@
  *   high:     hotline_reachable, hotline_url_live
  */
 
-const BASE = process.env.SUPABASE_URL
-const KEY = process.env.SUPABASE_SERVICE_ROLE_KEY
+import { readFile } from 'node:fs/promises';
+
+const criticalCeilings = JSON.parse(
+  await readFile(new URL('./data-quality-gate-baseline.json', import.meta.url), 'utf8'),
+);
+
+const BASE = process.env.SUPABASE_URL;
+const KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
 if (!BASE || !KEY) {
-  console.warn('SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY not set — skipping data-quality gates')
-  process.exit(0)
+  console.warn('SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY not set — skipping data-quality gates');
+  process.exit(0);
 }
 
 const callGates = () =>
@@ -23,10 +29,10 @@ const callGates = () =>
     method: 'POST',
     headers: { apikey: KEY, Authorization: `Bearer ${KEY}`, 'Content-Type': 'application/json' },
     body: '{}',
-  })
+  });
 
-let res = await callGates()
-let body = res.ok ? null : await res.text()
+let res = await callGates();
+let body = res.ok ? null : await res.text();
 
 // 57014 is Postgres's statement_timeout, NOT a gate failing. The RPC ran out of
 // time, so no gate was evaluated at all — the safety checks silently did not run
@@ -40,39 +46,85 @@ let body = res.ok ? null : await res.text()
 // 20261021110000 and 20270401100400. If this appears in the logs, re-measure the
 // RPC per arm; do not raise the retry count.
 if (!res.ok && body?.includes('57014')) {
-  console.warn('⚠ release_gate_checks hit the statement timeout (57014) — no gate was evaluated. Retrying once.')
-  const t0 = Date.now()
-  res = await callGates()
-  body = res.ok ? null : await res.text()
+  console.warn(
+    '⚠ release_gate_checks hit the statement timeout (57014) — no gate was evaluated. Retrying once.',
+  );
+  const t0 = Date.now();
+  res = await callGates();
+  body = res.ok ? null : await res.text();
   console.warn(
     `⚠ retry ${res.ok ? 'SUCCEEDED' : 'FAILED'} after ${Date.now() - t0}ms. The RPC is near its 8s ` +
       'ceiling — re-measure per arm (see migration 20270401100400) rather than retrying harder.',
-  )
+  );
 }
 
 if (!res.ok) {
-  console.error(`release_gate_checks → HTTP ${res.status}: ${body}`)
-  process.exit(1)
+  console.error(`release_gate_checks → HTTP ${res.status}: ${body}`);
+  process.exit(1);
 }
 
-const rows = await res.json()
-let blocking = 0
+const rows = await res.json();
+let blocking = 0;
 
-for (const r of rows.sort((a, b) => a.severity.localeCompare(b.severity) || a.gate.localeCompare(b.gate))) {
-  const n = Number(r.failures)
-  const detail = r.detail && Object.keys(r.detail).length ? ` ${JSON.stringify(r.detail)}` : ''
+const reportGate = (r) => {
+  const n = Number(r.failures);
+  const detail = r.detail && Object.keys(r.detail).length ? ` ${JSON.stringify(r.detail)}` : '';
   if (n === 0) {
-    console.log(`✓ [${r.severity}] ${r.gate}: 0`)
-  } else if (r.severity === 'critical') {
-    blocking += n
-    console.error(`✗ [critical] ${r.gate}: ${n}${detail}`)
+    console.log(`✓ [${r.severity}] ${r.gate}: 0`);
+    return;
+  }
+  if (r.severity !== 'critical') {
+    console.warn(`⚠ [${r.severity}] ${r.gate}: ${n}${detail}`);
+    return;
+  }
+
+  const ceiling = Number(criticalCeilings[r.gate] ?? 0);
+  if (n > ceiling) {
+    blocking += n - ceiling;
+    console.error(`✗ [critical] ${r.gate}: ${n} > ceiling ${ceiling}${detail}`);
+  } else if (n < ceiling) {
+    console.warn(
+      `⚠ [critical ratchet] ${r.gate}: ${n} < ceiling ${ceiling}; lower the committed ceiling to ${n}${detail}`,
+    );
   } else {
-    console.warn(`⚠ [${r.severity}] ${r.gate}: ${n}${detail}`)
+    console.warn(`⚠ [critical backlog] ${r.gate}: ${n} at shrinking ceiling ${ceiling}${detail}`);
+  }
+};
+
+for (const r of rows.sort(
+  (a, b) => a.severity.localeCompare(b.severity) || a.gate.localeCompare(b.gate),
+)) {
+  reportGate(r);
+}
+
+// Personality v2 gates live separately so the existing release_gate_checks()
+// contract can remain stable for older deployments. PGRST202 means the branch
+// is being checked before its migration has reached the target database; warn
+// during that rollout window, but every other RPC failure remains fatal.
+const personalityRes = await fetch(`${BASE}/rest/v1/rpc/personality_quality_gate_checks`, {
+  method: 'POST',
+  headers: { apikey: KEY, Authorization: `Bearer ${KEY}`, 'Content-Type': 'application/json' },
+  body: '{}',
+});
+if (!personalityRes.ok) {
+  const body = await personalityRes.text();
+  if (personalityRes.status === 404 && body.includes('PGRST202')) {
+    console.warn('⚠ personality_quality_gate_checks is not deployed yet — rollout window');
+  } else {
+    console.error(`personality_quality_gate_checks → HTTP ${personalityRes.status}: ${body}`);
+    process.exit(1);
+  }
+} else {
+  const personalityRows = await personalityRes.json();
+  for (const r of personalityRows.sort(
+    (a, b) => a.severity.localeCompare(b.severity) || a.gate.localeCompare(b.gate),
+  )) {
+    reportGate(r);
   }
 }
 
 if (blocking > 0) {
-  console.error(`\n✗ ${blocking} critical data-quality failure(s) — blocking.`)
-  process.exit(1)
+  console.error(`\n✗ ${blocking} critical data-quality failure(s) — blocking.`);
+  process.exit(1);
 }
-console.log('\n✓ All critical data-quality gates passed.')
+console.log('\n✓ All critical data-quality gates passed.');

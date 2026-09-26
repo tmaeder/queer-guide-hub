@@ -38,8 +38,11 @@ export function BrandReviewQueue() {
   const draftFor = (r: BrandReviewRow) =>
     drafts[r.id] ?? { tags: r.suggested_tags ?? [], note: '' };
 
-  const setDraft = (id: string, patch: Partial<{ tags: string[]; note: string }>, base: BrandReviewRow) =>
-    setDrafts((d) => ({ ...d, [id]: { ...draftFor(base), ...d[id], ...patch } }));
+  const setDraft = (
+    id: string,
+    patch: Partial<{ tags: string[]; note: string }>,
+    base: BrandReviewRow,
+  ) => setDrafts((d) => ({ ...d, [id]: { ...draftFor(base), ...d[id], ...patch } }));
 
   const decide = useMutation({
     mutationFn: async ({
@@ -52,6 +55,9 @@ export function BrandReviewQueue() {
       confirmed: boolean;
     }) => {
       const draft = draftFor(row);
+      if (action === 'approve' && draft.tags.length > 0 && !draft.note.trim() && !row.evidence) {
+        throw new Error('Add source evidence before approving an ownership claim.');
+      }
       const { error } =
         action === 'approve'
           ? await untypedSupabase.rpc('approve_marketplace_brand', {
@@ -136,7 +142,11 @@ export function BrandReviewQueue() {
               </a>
             )}
             <Input
-              placeholder="Reviewer note (optional)"
+              placeholder={
+                draft.tags.length > 0
+                  ? 'Source evidence or URL (required for ownership claims)'
+                  : 'Reviewer note (optional)'
+              }
               value={draft.note}
               onChange={(e) => setDraft(r.id, { note: e.target.value }, r)}
               className="max-w-md"

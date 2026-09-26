@@ -7,14 +7,8 @@ const Table = React.forwardRef<HTMLTableElement, React.HTMLAttributes<HTMLTableE
     <div style={{ width: '100%' }} className="relative overflow-auto">
       <table
         ref={ref}
-        className={className}
-        style={{
-          width: '100%',
-          captionSide: 'bottom',
-          fontSize: '0.875rem',
-          borderCollapse: 'collapse',
-          ...style,
-        }}
+        className={cn('text-sm', className)}
+        style={{ width: '100%', captionSide: 'bottom', borderCollapse: 'collapse', ...style }}
         {...props}
       />
     </div>
@@ -116,8 +110,8 @@ const TableCaption = React.forwardRef<
 >(({ className, style, ...props }, ref) => (
   <caption
     ref={ref}
-    className={className}
-    style={{ marginTop: 16, fontSize: '0.875rem', color: 'hsl(var(--muted-foreground))', ...style }}
+    className={cn('text-sm', className)}
+    style={{ marginTop: 16, color: 'hsl(var(--muted-foreground))', ...style }}
     {...props}
   />
 ));

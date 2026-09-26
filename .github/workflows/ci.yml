@@ -19,6 +19,10 @@ on:
 
 permissions:
   contents: read
+  # For scripts/check-open-pr-migrations.mjs, which lists OTHER open PRs and
+  # their changed files to catch a migration version two branches both claim.
+  # Read-only: the check reports, it never renumbers or comments.
+  pull-requests: read
 
 concurrency:
   group: ci-${{ github.ref }}
@@ -197,6 +201,42 @@ jobs:
             echo "::warning::Migration version check could not verify against remote history (exit $rc)."
           fi
 
+      # CROSS-PR. The step above compares against remote history and sibling
+      # worktrees. Neither can see a version claimed by a branch that exists only
+      # on the remote, and the worktree half is a no-op in CI — the hole
+      # check-migration-versions.mjs's own header has always named as still open:
+      # "closing that needs the GitHub API (open PRs and their changed files), a
+      # network dependency this guard deliberately does not have".
+      #
+      # Measured 2026-09-18/19: #3778 and #3779 independently claimed
+      # 99800101100000, then #3783 picked 99920101100000 — the version #3779 had
+      # renumbered TO inside the same hour. Every existing check was green in all
+      # three, because none could see the others.
+      #
+      # A SEPARATE SCRIPT, deliberately, not a sixth check in the one above: that
+      # file is pure-local by design (it runs in .husky/pre-push with no
+      # credentials) and a GitHub dependency there would make the local hook
+      # slow, flaky, or quietly degraded. Two scripts, two dependency profiles.
+      #
+      # Exit 2 = could not check (no token, rate limit, truncated listing). It is
+      # surfaced as a warning and never as a pass — "could not look" must not
+      # read as "nothing found", which is the convention every other gate here
+      # follows.
+      - name: Check for version collisions with other open PRs
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+        run: |
+          rc=0
+          node scripts/check-open-pr-migrations.mjs || rc=$?
+          if [ "$rc" -eq 1 ]; then
+            echo "::error title=Migration version claimed by another open PR::Two open PRs claim one 14-digit version. Whichever merges first wins; the other is skipped permanently and silently, or aborts the whole db push on schema_migrations_pkey and strands every unrelated pending migration. Fix: node scripts/next-migration-version.mjs --renumber <file>"
+            exit 1
+          fi
+          if [ "$rc" -ne 0 ]; then
+            echo "::warning::Cross-PR migration check could not run (exit $rc) — a collision with another open PR would be invisible."
+          fi
+
       # SYNTAX. The two checks around this one only ever look at 14-digit
       # VERSIONS, so a migration that is not valid SQL sails past both. On
       # 2026-09-14 one did: `50500101100300` ended `COMMENT ON ... IS 'a' || 'b'`,
@@ -219,6 +259,27 @@ jobs:
           npm i --no-save --no-audit --no-fund \
             "libpg-query@$(node -p "require('./package.json').devDependencies['libpg-query']")"
           node scripts/check-migration-sql.mjs
+
+      # A verify block that greps pg_get_functiondef() matches the function's own
+      # COMMENTS, because pg_get_functiondef returns the body verbatim. On
+      # 2026-09-20 this aborted `db push` on main THREE times in one day from
+      # three different sessions — 99991789853609 (which stranded 14 migrations
+      # from 00:21), 99991789855163, and a third fixed in #3862. `db push` stops
+      # at the first failing migration, so the blast radius is the whole deploy
+      # queue rather than one PR, and it only fails at APPLY time because CI
+      # never applies migrations. Nothing else catches it.
+      #
+      # Both directions are wrong, which is why the rule is "strip", not "count
+      # differently": an ABSENCE check goes falsely RED when a comment inflates
+      # the count, and a PRESENCE check goes falsely GREEN when the symbol
+      # exists only in prose — several of these assert security properties, e.g.
+      # that find_duplicate_clusters still calls assert_admin_or_internal.
+      #
+      # Scoped to newly ADDED migrations: 17 of the 65 existing files would
+      # flag, and every one of them applied successfully, so gating the history
+      # would ship red with 17 entries nobody reads.
+      - name: Migration assertions on pg_get_functiondef strip comments
+        run: node scripts/check-functiondef-asserts.mjs
 
       # Remote-only versions: a migration applied to prod (MCP apply_migration or
       # raw Management-API SQL) with no committed file makes `supabase db push`

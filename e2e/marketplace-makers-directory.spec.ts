@@ -3,12 +3,18 @@ import { test, expect } from '@playwright/test';
 /**
  * The makers directory end to end, against the DEPLOYED site.
  *
- * Three separate changes landed on /marketplace/brands in quick succession and
+ * Four separate changes landed on /marketplace/brands in quick succession and
  * each one is only provable in a browser against real data:
  *
  *   1. The four-band rebuild (#3763) — the page was 885 near-empty cards built
  *      around a `story` field that 24 of 885 brands have, while SFW listing
  *      imagery (671 of 885) was never queried at all.
+ *   1b. The rotating counter (#3805) RENAMED the first band. "Most listings"
+ *      is gone, and deliberately so: the band rotates daily over everyone who
+ *      qualifies, so a ranking word would be false and a curation word would
+ *      claim an editorial judgement nobody made. The heading lives in
+ *      COUNTER_BAND below rather than inline — this spec shipped with the old
+ *      string repeated four times and every one of them broke at once.
  *   2. The "#" bucket filing last (#3764) — `localeCompare` sorts digits before
  *      "A", so switching to A–Z opened the index on the junkiest names we hold.
  *   3. The feed-ID retirement (#3776) — a merchant put purchase-order numbers in
@@ -37,6 +43,14 @@ const RETIRED_MAKERS = ['12807-203758186', '19868-001638740', '9781728209982'];
 const LIVE_MAKERS = ['cherrykitten', 'tomboyx'];
 
 /**
+ * The counter band's heading. ONE constant, because the four inline copies of
+ * its predecessor ("Most listings") all broke together when #3805 renamed it,
+ * and this spec runs only in the NIGHTLY suite — so PR CI reported green and
+ * the breakage would have surfaced a day later against prod.
+ */
+const COUNTER_BAND = 'On the counter today';
+
+/**
  * The brand query resolves through an RPC and is measurably slow on a cold
  * edge cache — observed at ~6s on prod. Assertions below wait on the settled
  * state rather than sampling early: a first draft read the DOM at 2.5s, found
@@ -46,10 +60,19 @@ const LIVE_MAKERS = ['cherrykitten', 'tomboyx'];
 const SETTLE = 20_000;
 
 test.describe('makers directory', () => {
+  // POSITIVE CONTROL for the two `for...of` blocks below. Emptying either array
+  // deletes its generated tests, and the suite then reports green on 7 of 9 —
+  // measured, not hypothetical. An absence check whose presence control can be
+  // deleted without a failure is the defect this file exists to refuse.
+  test('the fixtures are non-empty', () => {
+    expect(RETIRED_MAKERS.length).toBeGreaterThan(0);
+    expect(LIVE_MAKERS.length).toBeGreaterThan(0);
+  });
+
   test('opens on the four bands, with product covers that actually load', async ({ page }) => {
     await page.goto('/marketplace/brands');
 
-    await expect(page.getByRole('heading', { name: 'Most listings' })).toBeVisible({
+    await expect(page.getByRole('heading', { name: COUNTER_BAND })).toBeVisible({
       timeout: SETTLE,
     });
     await expect(page.getByRole('heading', { name: 'Every other maker' })).toBeVisible();
@@ -72,23 +95,28 @@ test.describe('makers directory', () => {
 
   test('the counter hides while filtering, and its makers rejoin the index', async ({ page }) => {
     // The band is the head of the CATALOGUE, not of the RESULTS. Left up, it
-    // puts twelve unrelated makers above a search for something else. But they
-    // must not simply vanish either — a maker that is featured AND filtered out
-    // would be unreachable by the very search meant to find it.
+    // puts unrelated makers above a search for something else. But they must
+    // not simply vanish either — a maker that is on the counter AND filtered
+    // out would be unreachable by the very search meant to find it.
+    //
+    // No count is asserted here on purpose: #3805 made the band rotate daily,
+    // so the size is not a fixed property of the page.
     await page.goto('/marketplace/brands');
-    await expect(page.getByRole('heading', { name: 'Most listings' })).toBeVisible({
+    await expect(page.getByRole('heading', { name: COUNTER_BAND })).toBeVisible({
       timeout: SETTLE,
     });
 
     await page.getByPlaceholder('Search makers').fill('cherrykitten');
 
-    await expect(page.getByRole('heading', { name: 'Most listings' })).toBeHidden();
+    await expect(page.getByRole('heading', { name: COUNTER_BAND })).toBeHidden();
     await expect(page.getByRole('link', { name: 'cherrykitten', exact: true })).toBeVisible();
   });
 
-  test('files "#" at the END of the A–Z index, and does not empty it', async ({ page }) => {
+  test('files "#" at the END of the A–Z index, and publishes no feed-ID artifact', async ({
+    page,
+  }) => {
     await page.goto('/marketplace/brands');
-    await expect(page.getByRole('heading', { name: 'Most listings' })).toBeVisible({
+    await expect(page.getByRole('heading', { name: COUNTER_BAND })).toBeVisible({
       timeout: SETTLE,
     });
 
@@ -102,22 +130,34 @@ test.describe('makers directory', () => {
     expect(headings[0]).toBe('A');
     expect(headings).not.toContain('#');
 
-    // "#" is deliberately NOT in that list. The floor renders 120 rows before
-    // "Show more" and "#" sorts last, so it is now eight pages down — which is
-    // the point, but it also means the ordering assertion above cannot double
-    // as proof the bucket survived. The letter bar is its real access path, so
-    // the control goes through that.
-    await page.getByRole('button', { name: 'Filter by #' }).click();
-
-    // The one row left in "#" is "1979 SAS (Teil der Marc Dorcel Group)", a
-    // real company. An EMPTY bucket would mean the feed-ID retirement had
-    // over-reached and swept a legitimate brand with it — and a "# sorts last"
-    // assertion on its own would call that a pass.
-    await expect(page.locator('main h3')).toHaveText(['#']);
-    await expect(page.getByRole('link', { name: /1979 SAS/ })).toBeVisible();
-
-    // And no feed-ID artifact came back with it.
+    // THE RETIREMENT GUARD, asserted over the WHOLE index rather than inside the
+    // "#" bucket. Until 2026-09-19 this clicked "Filter by #" and required the
+    // one row there — "1979 SAS (Teil der Marc Dorcel Group)" — on the reasoning
+    // that an empty bucket would mean the feed-ID retirement had swept a real
+    // brand with it. That control is gone, and NOT because anything over-reached:
+    // migration 99991789846273 renamed the row to its actual brand, DORCEL,
+    // because the vendor field held a legal entity rather than a maker. The row
+    // is `status='approved'` with 4 listings and now sorts under D, so "#" is
+    // legitimately empty — measured, 0 of 862 live makers sort to it.
+    //
+    // A control anchored to one row dies the moment that row is correctly
+    // edited. The INVARIANT the retirement actually protects survives any
+    // rename: no purchase-order number is published as a maker, anywhere. That
+    // is asserted here against the full index, which is strictly stronger than
+    // the one-row bucket it replaces.
     await expect(page.getByRole('link', { name: /^\d{4,}[- ]\d+/ })).toHaveCount(0);
+
+    // PRESENCE CONTROL for the line above: "no artifacts" passes just as well on
+    // an index that renders nothing at all, which is exactly how this spec's
+    // sibling assertions have failed before.
+    //
+    // Counted by HREF, never by link text. A maker row's click target is the
+    // absolutely-positioned overlay sibling this repo uses for every card, so it
+    // carries an aria-label and NO text content — a `hasText` filter matches
+    // zero of the 132 links the page actually renders, which is how the first
+    // draft of this control failed against a perfectly healthy index.
+    const makerLinks = await page.locator('main a[href^="/marketplace/brands/"]').count();
+    expect(makerLinks).toBeGreaterThan(20);
   });
 
   for (const slug of RETIRED_MAKERS) {

@@ -1,0 +1,24 @@
+{
+  "measured_at": "2026-09-24T17:38:46Z",
+  "measurement": "production activation snapshot after the first successful full city quality issue sync",
+  "publication_blocked": 965,
+  "issues": {
+    "CITY_IDENTITY_AMBIGUOUS": 370,
+    "CITY_GEO_INVALID": 2,
+    "CITY_DESCRIPTION_WRONG_SUBJECT": 2,
+    "CITY_DESCRIPTION_REUSED": 29,
+    "CITY_TEXT_MOJIBAKE": 1,
+    "CITY_IMAGE_FLAGGED": 452,
+    "CITY_IMAGE_REUSED": 238,
+    "CITY_LINK_NAMESAKE": 0,
+    "CITY_LINK_COUNTRY_MISMATCH": 0,
+    "CITY_DUPLICATE_UNRESOLVED": 0,
+    "CITY_GHOST_EXPOSED": 0,
+    "CITY_GHOST_HAS_LIVE_CHILDREN": 8,
+    "CITY_PLACEHOLDER_EXPOSED": 0
+  },
+  "operations": {
+    "unlinked_venues": 3584,
+    "unlinked_events": 743
+  }
+}
