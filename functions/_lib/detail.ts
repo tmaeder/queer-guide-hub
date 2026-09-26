@@ -2068,6 +2068,28 @@ async function brandDetail(env: Env, slug: string, pathname: string): Promise<De
   );
   const row = rows[0] ?? null;
   const name = row ? stringField(row, 'display_name') : undefined;
+
+  // `get_marketplace_brand` resolves `marketplace_brand_slug_redirects` INTERNALLY
+  // and returns the CANONICAL row, so a consolidated or renamed slug comes back
+  // carrying a DIFFERENT `slug` than the one that was asked for. Rendering it here
+  // would publish one brand at two URLs; returning null lets the middleware's
+  // `resolveSlugRedirect` emit a real 301 instead, which is what the other eleven
+  // detail kinds already do. The canonical slug is the whole signal and it costs no
+  // extra query — the RPC already selected it.
+  //
+  // This is the ONLY case that falls through. A slug with no brand and no redirect
+  // still reaches missingBrandResult() below, because that dead end is deliberate:
+  // `MarketplaceBrand.tsx` renders "No maker here." with an "All makers" escape
+  // hatch for humans, and `indexable: false` is what a crawler gets.
+  //
+  // Deliberately narrow on the other side too: a redirect whose target has since
+  // lost its own slug arrives with `canonicalSlug` undefined and keeps today's
+  // behaviour rather than becoming a hard 404. `99991790384358` refuses to create
+  // such a row and asserts against it, so this is the safe direction for a shape
+  // that should not exist.
+  const canonicalSlug = row ? stringField(row, 'slug') : undefined;
+  if (row && canonicalSlug && canonicalSlug !== slug) return null;
+
   if (!row || !name) return missingBrandResult();
 
   const story = stringField(row, 'story');
@@ -2189,14 +2211,24 @@ export function isDetailPath(pathname: string): boolean {
 // at all (not in DETAIL_ROUTE_RE), so an edge 301 isn't architecturally
 // possible for them yet.
 //
-// `marketplace/brands` IS in DETAIL_ROUTE_RE since maker pages gained head
-// injection, and is still absent here for a different reason: there is no
-// `marketplace_brand_slug_redirects` table. A renamed brand leaves no trail —
-// `marketplace_brands_set_slug()` only ever fills a NULL slug, and the one
-// retirement on record (`99100101143000`) NULLed slugs rather than repointing
-// them, so there is nothing to redirect TO. brandDetail returns a non-null
-// noindex result rather than null, so this lookup is never reached for it
-// anyway; a redirect table would have to come first.
+// `marketplace/brands` was excluded here on the reasoning that "there is no
+// `marketplace_brand_slug_redirects` table ... a redirect table would have to come
+// first". That table was created by `99991790101222` and `get_marketplace_brand()`
+// has resolved through it ever since — but it held ZERO rows and nothing ever wrote
+// it, and this comment kept the reader from noticing. The same shape as the tags
+// note below, for the same cost: measured on prod 2026-09-25,
+// /marketplace/brands/svakom-europe-bv and
+// /marketplace/brands/1979-sas-teil-der-marc-dorcel-group answered 200 with "No
+// maker here" while SVAKOM (50 listings) and DORCEL (9) were published at /svakom
+// and /dorcel. `99991790384358` backfills the 21 resolvable dead slugs and adds the
+// rename trigger; brandDetail now returns null when the RPC hands back a different
+// canonical slug, which is what lets this lookup be reached at all.
+//
+// No `entityFilter`: a brand page renders whatever its `publication_status`, since
+// `get_marketplace_brand` has no status filter by design (admins preview pending
+// brands), so filtering to `published` would refuse a legitimate redirect to a
+// draft maker. The protection is `resolveSlugRedirect`'s own `!newSlug` guard — a
+// retired brand has a NULL slug, so it yields no 301 and the dead end stands.
 //
 // Tags used to be excluded here, on the reasoning that "their public routes are
 // topic/category pages, not a single /tags/:slug detail page, so the redirect
@@ -2314,6 +2346,16 @@ const SLUG_REDIRECT_KINDS: Array<{
     // resolve_tag_slug() in Postgres joins `status = 'active'` for the same
     // reason; this keeps the two resolvers telling one story.
     entityFilter: 'status=eq.active',
+  },
+  {
+    // The one TWO-segment kind, so this tests for equality rather than a prefix —
+    // `kindRaw` is literally `marketplace/brands` (see the dispatch below).
+    test: (k) => k === 'marketplace/brands',
+    redirectTable: 'marketplace_brand_slug_redirects',
+    redirectIdColumn: 'brand_id',
+    entityTable: 'marketplace_brands',
+    routePrefix: '/marketplace/brands',
+    // No entityFilter — see the note above this list.
   },
 ];
 
