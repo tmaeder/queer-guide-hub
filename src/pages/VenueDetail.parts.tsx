@@ -16,6 +16,7 @@ import { ReportButton } from '@/components/moderation/ReportButton';
 import { AdminEditButton } from '@/components/admin/AdminEditButton';
 import { Editable } from '@/components/admin/inline/Editable';
 import { formatPhoneDisplay, formatPhoneHref } from '@/lib/formatPhone';
+import { isPublishableLink, type VenueUrlStatus } from '@/lib/linkPublishable';
 import { VenueEvents } from '@/components/venues/VenueEvents';
 import { VenueCheckInButton } from '@/components/venues/VenueCheckInButton';
 import { VenueSafetySignalDisplay } from '@/components/venues/VenueSafetySignalDisplay';
@@ -269,7 +270,12 @@ export function VenueActions({
           venueLongitude={venue.longitude}
         />
       )}
-      {venue.website && venue.url_status !== 'broken' && (
+      {/* `isPublishableLink`, not `!== 'broken'`. The old test let an `unsafe` URL
+          through — one the SSRF guard refused because it resolves to a private
+          target or is malformed — and this is a travel site, so an outbound link
+          is a place we are sending someone. Same predicate as the contact block
+          below, so the two can no longer disagree about one venue. */}
+      {venue.website && isPublishableLink(venue.url_status as VenueUrlStatus) && (
         <Button variant="outline" size="sm" asChild>
           <a href={venue.website} target="_blank" rel="noopener noreferrer nofollow">
             <Globe size={14} className="mr-1.5" />
@@ -791,14 +797,26 @@ export function VenueLocationContact({
                 value={venue.website}
                 onSaved={onContentUpdated}
               >
-                <a
-                  href={venue.website}
-                  target="_blank"
-                  rel="noopener noreferrer nofollow"
-                  className="text-primary hover:underline"
-                >
-                  {venue.website.replace(/^https?:\/\//, '').replace(/\/$/, '')}
-                </a>
+                {/* A known-dead or refused URL renders as TEXT, not as a link.
+                    This block was ungated while the masthead button was gated, so
+                    the page hid the broken link in one place and published it in
+                    the other — and after the fact-strip dedup this became the
+                    primary place a website appears at all. Reported as "the link
+                    on this location does not work". */}
+                {isPublishableLink(venue.url_status as VenueUrlStatus) ? (
+                  <a
+                    href={venue.website}
+                    target="_blank"
+                    rel="noopener noreferrer nofollow"
+                    className="text-primary hover:underline"
+                  >
+                    {venue.website.replace(/^https?:\/\//, '').replace(/\/$/, '')}
+                  </a>
+                ) : (
+                  <span className="text-muted-foreground">
+                    {venue.website.replace(/^https?:\/\//, '').replace(/\/$/, '')}
+                  </span>
+                )}
               </Editable>
             </span>
           </div>
