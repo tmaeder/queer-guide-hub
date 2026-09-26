@@ -27,12 +27,16 @@ import { test, expect } from '@playwright/test';
  * ── WHY THE SLUGS STILL LOOK WRONG, AND WHY THAT IS THE POINT ──
  * `20260919193550` renamed `display_name` ONLY. `brand_key` is GENERATED over
  * `marketplace_listings.brand` and `slug` derives from `brand_key`, so a re-key
- * moves the URL — and there is no brand slug-redirect table, which would make it
- * a hard 404 on a URL this very sitemap advertises. So
- * `/marketplace/brands/hk-nalone-electronic-technology-co-ltd` correctly renders
- * "Nalone" and keeps its ugly path. An ugly URL on a correct page beats a pretty
- * URL that 404s. These tests assert exactly that pairing, so a future "tidy-up"
- * that moves the slugs breaks here rather than in Search Console.
+ * moves the URL. So `/marketplace/brands/hk-nalone-electronic-technology-co-ltd`
+ * correctly renders "Nalone" and keeps its ugly path. An ugly URL on a correct
+ * page beats a pretty URL that 404s. These tests assert exactly that pairing, so a
+ * future "tidy-up" that moves the slugs breaks here rather than in Search Console.
+ *
+ * That paragraph used to end "and there is no brand slug-redirect table, which
+ * would make it a hard 404". `marketplace_brand_slug_redirects` exists as of
+ * `99991790101222` and is populated as of `99991790384358`, so a moved slug now
+ * 301s instead — see REDIRECTED below. The pairing above still holds for a row
+ * that was renamed IN PLACE, which is the whole RENAMED cohort.
  *
  * ── EVERY ABSENCE CHECK CARRIES A PRESENCE CONTROL ──
  * Same discipline as `marketplace-makers-crawler.spec.ts`. "No maker page is
@@ -70,33 +74,73 @@ const RENAMED = [
 ];
 
 /**
- * Retired by `20260919194058`. Each was the SAME brand as an existing approved
- * row under a second `brand_key`, so the rename gave two sitemapped pages one
- * title. Their listings were re-keyed onto the canonical row and their slug was
- * NULLed — `get_marketplace_brand()` has no status filter, so rejecting alone
- * would have left the page live over an empty grid.
+ * Consolidated duplicates: each was the SAME brand as an existing approved row
+ * under a second `brand_key`, so the rename gave two sitemapped pages one title.
+ * Their listings were re-keyed onto the canonical row and their slug was NULLed —
+ * `get_marketplace_brand()` has no status filter, so rejecting alone would have
+ * left the page live over an empty grid.
  *
- * `survivor` is the URL that MUST still work. Retirement without it is just
- * deletion, and this is the pair that proves nothing was lost.
+ * ── THIS COHORT USED TO ASSERT A DEAD END, AND THAT WAS THE DEFECT ──
+ * It was `CONSOLIDATED`, and it required each retired slug to answer 200 with
+ * "No maker here" — a soft 404 beside a live page carrying the same brand's
+ * listings. Reading the two docblocks that produced it, neither actually argued
+ * the dead end was BETTER: `detail.ts` excluded brands from the redirect lookup
+ * "because there is no `marketplace_brand_slug_redirects` table", and the
+ * assertion here existed to prove `brandDetail` RAN. Both were mechanism limits,
+ * not policy — the same stale-comment shape that left 144 merged tags as soft
+ * 404s for months. `99991790384358` fills the table, so the answer is now the 301
+ * that eleven other detail kinds already emit.
+ *
+ * The first two entries were filed under RENAMED until 2026-09-25 and are why
+ * this spec was red on prod: `20260919193550` renamed them in place, and a LATER
+ * pass consolidated them away. A cohort list is a claim about the data and decays
+ * like any other.
+ *
+ * `to` is the URL that MUST work. A redirect into a dead page is worse than the
+ * 404 it replaces, so both halves are asserted.
+ *
+ * The other ten rows of the 21-row backfill are asserted by that migration's own
+ * postconditions rather than by twenty more HTTP round trips here.
  */
-const CONSOLIDATED = [
-  { retired: 'cssl-office-2', survivor: 'bathmate', title: 'Bathmate' },
-  { retired: 'themis-arunterst-tzung-ug', survivor: 'lovense', title: 'Lovense' },
-  { retired: 'kiiroo-b-v', survivor: 'kiiroo', title: 'Kiiroo' },
-  { retired: 'shots-bv', survivor: 'shots', title: 'Shots' },
-  { retired: 'shenzhen-j-l-technology-co-ltd', survivor: 'pretty-love', title: 'Pretty Love' },
+const REDIRECTED = [
+  { from: 'svakom-europe-bv', to: 'svakom', title: 'SVAKOM' },
+  { from: '1979-sas-teil-der-marc-dorcel-group', to: 'dorcel', title: 'DORCEL' },
+  { from: 'cssl-office-2', to: 'bathmate', title: 'Bathmate' },
+  { from: 'themis-arunterst-tzung-ug', to: 'lovense', title: 'Lovense' },
+  { from: 'kiiroo-b-v', to: 'kiiroo', title: 'Kiiroo' },
+  { from: 'shots-bv', to: 'shots', title: 'Shots' },
+  { from: 'shenzhen-j-l-technology-co-ltd', to: 'pretty-love', title: 'Pretty Love' },
   {
-    retired: 'super-gay-underwear-official-online-store',
-    survivor: 'super-gay-underwear',
+    from: 'super-gay-underwear-official-online-store',
+    to: 'super-gay-underwear',
     title: 'Super Gay Underwear',
   },
-  { retired: 'secret-play-s-l', survivor: 'secret-play', title: 'Secret Play' },
-  { retired: 'kheper-games-inc', survivor: 'kheper-games', title: 'Kheper Games' },
+  { from: 'secret-play-s-l', to: 'secret-play', title: 'Secret Play' },
+  { from: 'kheper-games-inc', to: 'kheper-games', title: 'Kheper Games' },
   {
-    retired: 'creative-conceptions-kft',
-    survivor: 'creative-conceptions',
+    from: 'creative-conceptions-kft',
+    to: 'creative-conceptions',
     title: 'Creative Conceptions',
   },
+];
+
+/**
+ * Retired with NO survivor — the dead end is the right answer here, and this is
+ * the cohort that keeps the `missingBrandResult()` branch under test. Without it,
+ * making the consolidated slugs 301 would leave nothing exercising the miss path,
+ * and a regression that turned every unknown maker slug into a hard 404 (losing
+ * the "All makers" escape hatch a human needs) would pass unnoticed.
+ *
+ * The first three are feed-ID artifacts with nothing to redirect TO.
+ * `mr-s-leather-77da` is the deliberate REFUSAL: three same-name candidates, two
+ * of them published, so resolving it automatically is the same-name collision
+ * this codebase refuses to guess at. It must stay a dead end until a human picks.
+ */
+const RETIRED_NO_SURVIVOR = [
+  '12807-203758186',
+  '9781728209982',
+  '10819-50013638-8',
+  'mr-s-leather-77da',
 ];
 
 /**
@@ -144,24 +188,37 @@ test.describe('@smoke maker page titles are brands, not legal entities', () => {
     // satisfied by an empty sitemap. A ceiling, because the approved-only filter
     // is what keeps ~4,200 unreviewed rows out of it (the table holds ~5,142).
     expect(locs.length, 'brands sitemap floor').toBeGreaterThan(700);
-    expect(locs.length, 'brands sitemap ceiling — approved filter may have been dropped').toBeLessThan(1200);
+    expect(
+      locs.length,
+      'brands sitemap ceiling — approved filter may have been dropped',
+    ).toBeLessThan(1200);
 
-    // Every consolidated artifact slug must be gone: its brand row is rejected
-    // AND its slug is NULL, and only the second of those keeps it out of here.
-    for (const { retired, survivor } of CONSOLIDATED) {
+    // A slug that 301s must not ALSO be advertised — a sitemap entry for a
+    // redirect is a crawl budget spent to be told to go elsewhere. Its brand row
+    // is rejected AND its slug is NULL, and only the second of those keeps it out
+    // of here.
+    for (const { from, to } of REDIRECTED) {
       expect(
-        locs.some((u) => u.endsWith(`/marketplace/brands/${retired}`)),
-        `${retired} was consolidated away and must not be advertised`,
+        locs.some((u) => u.endsWith(`/marketplace/brands/${from}`)),
+        `${from} redirects and must not be advertised`,
       ).toBe(false);
       expect(
-        locs.some((u) => u.endsWith(`/marketplace/brands/${survivor}`)),
-        `${survivor} is the surviving URL and MUST be advertised`,
+        locs.some((u) => u.endsWith(`/marketplace/brands/${to}`)),
+        `${to} is the surviving URL and MUST be advertised`,
       ).toBe(true);
     }
 
+    // A dead end is advertised by nobody either.
+    for (const from of RETIRED_NO_SURVIVOR) {
+      expect(
+        locs.some((u) => u.endsWith(`/marketplace/brands/${from}`)),
+        `${from} is retired with no survivor and must not be advertised`,
+      ).toBe(false);
+    }
+
     // A renamed page keeps its slug, so it must still be advertised. This is the
-    // assertion that fails if someone "tidies up" the slugs without a redirect
-    // table.
+    // assertion that fails if someone "tidies up" the slugs of the rows that were
+    // renamed IN PLACE.
     for (const { slug } of RENAMED) {
       expect(
         locs.some((u) => u.endsWith(`/marketplace/brands/${slug}`)),
@@ -185,25 +242,45 @@ test.describe('@smoke maker page titles are brands, not legal entities', () => {
     });
   }
 
-  for (const { retired, survivor, title } of CONSOLIDATED) {
-    test(`/${retired} is retired and /${survivor} carries its listings`, async ({ request }) => {
-      const gone = await crawlerHtml(request, `/marketplace/brands/${retired}`);
-      // Only `missingBrandResult()` emits this, so it proves brandDetail RAN and
-      // took the miss branch — rather than the route having quietly stopped
-      // resolving, which a noindex check alone cannot distinguish.
-      expect(titleOf(gone), `/marketplace/brands/${retired} should be a dead end`).toBe(
-        'No maker here | Queer Guide',
-      );
-      expect(gone, `${retired} must not still publish a Brand entity`).not.toContain(
-        '"@type":"Brand"',
+  for (const { from, to, title } of REDIRECTED) {
+    test(`/${from} 301s to /${to}`, async ({ request }) => {
+      // maxRedirects: 0 is load-bearing — the default follows the redirect, which
+      // would make this assert 200 on the TARGET and pass just as happily against
+      // the soft 404 this replaced.
+      const res = await request.get(`/marketplace/brands/${from}`, {
+        headers: { 'User-Agent': BOT_UA },
+        maxRedirects: 0,
+      });
+      expect(res.status(), `/marketplace/brands/${from} must 301, not soft-404`).toBe(301);
+      // Asserted on the PATH, not the full URL: `Location` is absolute
+      // (`canonicalUrl`), so pinning the host would break on any preview origin.
+      expect(res.headers()['location'] ?? '', `/marketplace/brands/${from} Location`).toContain(
+        `/marketplace/brands/${to}`,
       );
 
-      // The paired half: the brand itself is still published, at ONE URL.
-      const live = await crawlerHtml(request, `/marketplace/brands/${survivor}`);
-      expect(titleOf(live), `/marketplace/brands/${survivor} title`).toBe(
+      // The paired half. A 301 into a dead page is worse than the 404 it replaced,
+      // so the target is fetched rather than assumed.
+      const live = await crawlerHtml(request, `/marketplace/brands/${to}`);
+      expect(titleOf(live), `/marketplace/brands/${to} title`).toBe(
         `${title} — Marketplace | Queer Guide`,
       );
       expect(live).toContain(`<h1>${title}</h1>`);
+    });
+  }
+
+  for (const slug of RETIRED_NO_SURVIVOR) {
+    test(`/${slug} stays a dead end — nothing to redirect to`, async ({ request }) => {
+      const gone = await crawlerHtml(request, `/marketplace/brands/${slug}`);
+      // Only `missingBrandResult()` emits this, so it proves brandDetail RAN and
+      // took the miss branch — rather than the route having quietly stopped
+      // resolving, which a noindex check alone cannot distinguish. It is also what
+      // proves the redirect fall-through stayed NARROW: if brandDetail started
+      // returning null for every unresolvable slug, this would become a hard 404
+      // and a human would lose the "All makers" escape hatch.
+      expect(titleOf(gone), `/marketplace/brands/${slug} should be a dead end`).toBe(
+        'No maker here | Queer Guide',
+      );
+      expect(gone, `${slug} must not publish a Brand entity`).not.toContain('"@type":"Brand"');
     });
   }
 
@@ -227,7 +304,7 @@ test.describe('@smoke maker page titles are brands, not legal entities', () => {
     // most likely to regress, and the per-page tests above carry the detail.
     const sample = [
       ...RENAMED.map((r) => r.slug),
-      ...CONSOLIDATED.map((c) => c.survivor),
+      ...REDIRECTED.map((r) => r.to),
       'shunga-erotic-art',
       'lovense',
     ];
