@@ -15,6 +15,7 @@ import { SignalIcons } from '@/components/social/signalIcons';
 import { QuietAddToTripButton } from '@/components/trips/QuietAddToTripButton';
 import { TagChipRow } from '@/components/tags/TagChipRow';
 import { getVenueVisual } from '@/lib/venueVisual';
+import { localizedField, type I18nMap } from '@/lib/localizeContent';
 
 const WEEKDAYS = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
 
@@ -81,7 +82,7 @@ const VenueCardFixture = () => (
 );
 
 function VenueCardImpl({ venue, loading = false, socialSignal }: VenueCardProps) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const visual = getVenueVisual(venue);
   const openNow = venue ? isOpenNow(venue.hours) : null;
   const priceTier =
@@ -189,7 +190,13 @@ function VenueCardImpl({ venue, loading = false, socialSignal }: VenueCardProps)
                 )}
               </p>
               {(() => {
-                const blurb = (venue.description ?? '').split(/(?<=[.!?])\s+/)[0]?.trim();
+                const blurb = localizedField(
+                  venue.description,
+                  venue.description_i18n as I18nMap,
+                  i18n.language,
+                )
+                  .split(/(?<=[.!?])\s+/)[0]
+                  ?.trim();
                 if (!blurb || blurb.length < 12) return null;
                 return <p className="mt-2 text-13 text-muted-foreground line-clamp-2">{blurb}</p>;
               })()}

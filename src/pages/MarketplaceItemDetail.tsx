@@ -42,6 +42,7 @@ import { formatListingPrice } from '@/components/marketplace/marketplaceHelpers'
 import type { ListingTag, ListingVariantRow } from '@/hooks/usePageFetchers';
 import { FeaturedInGuides } from '@/components/guides/FeaturedInGuides';
 import { PageContainer } from '@/components/layout/PageContainer';
+import { localizedField, type I18nMap } from '@/lib/localizeContent';
 
 interface ListingBundle {
   listing: MarketplaceListing;
@@ -99,7 +100,7 @@ function buildCategoryCrumb(
  */
 export default function MarketplaceItemDetail() {
   const { slug } = useParams<{ slug: string }>();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { user } = useAuth();
   const navigate = useLocalizedNavigate();
   const { incrementViews } = useMarketplace();
@@ -314,6 +315,9 @@ export default function MarketplaceItemDetail() {
   const tags = data?.tags ?? [];
   const variants = data?.variants ?? [];
   const price = formatListingPrice(listing);
+  // DetailMasthead takes a scalar `title` prop, so localization happens here
+  // where the row is still in scope. Gallery alt text uses the same string.
+  const displayTitle = localizedField(listing.title, listing.title_i18n as I18nMap, i18n.language);
 
   // Bordered ink chip, never a filled track colour — availability is a state,
   // and colour on this page is wayfinding.
@@ -326,7 +330,7 @@ export default function MarketplaceItemDetail() {
 
   const body = (
     <>
-      <MarketplaceGallery listingId={listing.id} images={listing.images} title={listing.title} />
+      <MarketplaceGallery listingId={listing.id} images={listing.images} title={displayTitle} />
       <ProductFacts listing={listing} curatedName={curatedName} />
       {variants.length > 0 && <VariantAvailability variants={variants} />}
       <MarketplaceContent listing={listing} reviews={reviews} onContentUpdated={refetch} />
@@ -361,7 +365,7 @@ export default function MarketplaceItemDetail() {
     <SinglePage
       type="marketplace"
       eyebrow={productEyebrow(listing, curatedName)}
-      title={listing.title}
+      title={displayTitle}
       status={status}
       lead={
         <span className="flex flex-wrap items-center gap-4">

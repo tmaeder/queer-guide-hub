@@ -4048,6 +4048,77 @@ const DISOWNED_PROSE_CEILING = 380
   }
 }
 
+// §20 — the i18n dispatcher must be able to REACH the locales it dispatches.
+//
+//     `run_i18n_translation_dispatch` fires net.http_post and used to discard
+//     the request id, so a target the edge function REJECTED looked exactly
+//     like one it served: last_run_at advanced, the loop counted it, pg_cron
+//     recorded `succeeded` — 5,562 times out of 5,562.
+//
+//     Measured 2026-09-19, that hid a total outage of four locales.
+//     translate-i18n-batch still held the pipeline's FIRST allowlist
+//     (de fr es it pt nl pl ru tr uk sv) while the dispatcher seeded the
+//     frontend's (de fr es it pt ru zh ja ko ar). zh/ja/ko/ar 400'd on EVERY
+//     fire — 60 of 150 targets, 40% of every slot — and coverage showed it:
+//     12k-16k rows per European locale against 250-1,100 for the four.
+//
+//     A 4xx HARD-FAILS with no threshold. It is a contract bug (bad locale,
+//     bad table, bad field) and can never be transient, so waiting for it to
+//     happen three times only delays the same answer. 5xx and network errors
+//     accumulate into `failing_targets` instead, and a pg_net timeout is
+//     PARTIAL and never counted at all.
+//
+//     A MISSING RPC HARD-FAILS: a dispatcher nobody can measure must not read
+//     as a healthy one — which is the entire defect this section exists for.
+{
+  const res = await fetch(`${BASE}/rest/v1/rpc/i18n_dispatch_signals`, {
+    method: 'POST',
+    headers: { ...headers, 'Content-Type': 'application/json' },
+    body: '{}',
+  })
+  if (!res.ok) {
+    const detail = (await res.text()).slice(0, 200)
+    console.error(`✗ i18n_dispatch_signals → HTTP ${res.status} (migration 99991790380618 not applied? PGRST202 = the function does not exist) ${detail}`)
+    FAILED = true
+  } else {
+    const q = (await res.json()) ?? {}
+    if (q.probe_ok !== true) {
+      console.error('✗ i18n_dispatch_signals did not report probe_ok — the dispatcher could not be measured')
+      FAILED = true
+    } else if (Number(q.targets_enabled ?? 0) === 0) {
+      // Zero enabled targets returns zero of everything else too. An empty
+      // registry and a healthy one must not give the same reassuring answer.
+      console.error('✗ i18n_translation_targets has no enabled rows — the translation pipeline has no work list at all')
+      FAILED = true
+    } else {
+      const clientErr = Number(q.client_error_targets ?? 0)
+      const neverOk = Number(q.never_succeeded ?? 0)
+      const failing = Number(q.failing_targets ?? 0)
+
+      if (clientErr > 0) {
+        console.error(`✗ ${clientErr} i18n translation targets are being REJECTED by translate-i18n-batch (4xx)`)
+        for (const s of q.client_error_sample ?? []) {
+          console.error(`    ${s.target} → HTTP ${s.status}: ${s.error}`)
+        }
+        console.error('  A 4xx here is a contract bug, not a blip: the dispatcher is sending something the')
+        console.error('  function refuses. Check _shared/locales.ts against the i18n_translation_targets seed.')
+        FAILED = true
+      }
+      if (neverOk > 0) {
+        console.error(`✗ ${neverOk} i18n targets have been answered at least once and have NEVER succeeded`)
+        FAILED = true
+      }
+      if (failing > 0) {
+        console.warn(`⚠ ${failing} i18n targets have 3+ consecutive failures (5xx/network — transient until it isn't)`)
+      }
+      if (clientErr === 0 && neverOk === 0) {
+        const locales = Array.isArray(q.locales) ? q.locales.join(',') : '?'
+        console.log(`✓ i18n dispatch reaching all targets (${q.targets_enabled} enabled, locales ${locales}, ${q.unresolved} in flight)`)
+      }
+    }
+  }
+}
+
 // The single exit. Reached whether or not anything failed, so the ✗ lines above
 // are the complete list rather than "the first one we tripped over".
 if (FAILED) {

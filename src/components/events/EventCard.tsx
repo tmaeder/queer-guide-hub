@@ -21,6 +21,7 @@ import { TagChipRow } from '@/components/tags/TagChipRow';
 import { SignalIcons } from '@/components/social/signalIcons';
 import { QuietAddToTripButton } from '@/components/trips/QuietAddToTripButton';
 import type { EventSocialSignal } from '@/hooks/useEventSocialSignals';
+import { localizedField, type I18nMap } from '@/lib/localizeContent';
 
 type Event = Database['public']['Tables']['events']['Row'] & {
   venues?: {
@@ -80,7 +81,9 @@ export const EventCard = memo(function EventCard({
   loading = false,
   socialSignal,
 }: EventCardProps) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  // Display title only. Sites that seed an admin editor keep the base column.
+  const title = localizedField(event?.title, event?.title_i18n as I18nMap, i18n.language);
   const { data: tripStatus } = useEntityTripStatus('event', event?.id);
   const { activeTrip } = useActiveTrip();
   const overlapsActiveTrip =
@@ -144,7 +147,7 @@ export const EventCard = memo(function EventCard({
           <Card hoverable="group" className="overflow-hidden">
             <Image
               src={resolvedImage}
-              alt={event.title}
+              alt={title}
               aspect="card"
               imageRole="cover"
               fallbackEntityType="event"
@@ -188,7 +191,7 @@ export const EventCard = memo(function EventCard({
             <div className="p-4">
               <div className="flex items-baseline gap-2 min-w-0">
                 <h3 className="text-title font-bold leading-tight truncate flex-1 min-w-0">
-                  {event.title}
+                  {title}
                 </h3>
                 {priceDisplay && (
                   <span className="text-xs font-medium text-muted-foreground tabular-nums shrink-0">
@@ -245,7 +248,7 @@ export const EventCard = memo(function EventCard({
               load-bearing: `li a:not(.no-underline)` in index.css forces position:relative. */}
           <LocalizedLink
             to={`/events/${event.slug}`}
-            aria-label={event.title}
+            aria-label={title}
             className="absolute inset-0 rounded-container no-underline"
           />
         </CardHoverEffect>

@@ -21,6 +21,7 @@ import { isAdultListing } from '@/hooks/useAdultContent';
 import { brandSlug, departmentLabel, departmentOf } from '@/lib/marketplaceTaxonomy';
 import type { MarketplaceSurface } from '@/lib/affiliate/marketplace';
 import { formatListingPrice, getOutboundLink, highlightMatches } from './marketplaceHelpers';
+import { localizedField, type I18nMap } from '@/lib/localizeContent';
 
 type MarketplaceListing = Database['public']['Tables']['marketplace_listings']['Row'];
 
@@ -117,12 +118,16 @@ function MarketplaceCardImpl({
   surface = 'marketplace_grid',
   variant = 'grid',
 }: MarketplaceCardProps) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { currency } = useCurrency();
   const { data: rates } = useFxRates();
   // Second image mounts only after first hover — 24 cards per page must
   // not double their image fetches for a hover flourish nobody triggers.
   const [hovered, setHovered] = useState(false);
+
+  // `title_i18n` carries ~35k translated titles — the largest translated set
+  // in the corpus, and until now nothing rendered any of it.
+  const title = localizedField(listing?.title, listing?.title_i18n as I18nMap, i18n.language);
 
   if (loading || !listing) {
     // A bordered pulse plate in the real card's shape, not a generic skeleton:
@@ -174,13 +179,13 @@ function MarketplaceCardImpl({
         <LocalizedLink
           to={`/marketplace/${listing.slug}`}
           className="block"
-          aria-label={listing.title}
+          aria-label={title}
           tabIndex={-1}
         >
           <div className="relative">
             <Image
               {...listingSources}
-              alt={listing.title}
+              alt={title}
               aspect="portrait"
               rounded="none"
               priority={priority}
@@ -219,12 +224,12 @@ function MarketplaceCardImpl({
             <LocalizedLink
               to={`/marketplace/${listing.slug}`}
               className="block"
-              aria-label={listing.title}
+              aria-label={title}
               tabIndex={-1}
             >
               <Image
                 {...listingSources}
-                alt={listing.title}
+                alt={title}
                 aspect="square"
                 rounded="none"
                 fallbackEntityType="marketplace"
@@ -303,7 +308,7 @@ function MarketplaceCardImpl({
               onClick={(e) => e.stopPropagation()}
               className="py-1 hover:underline underline-offset-2"
             >
-              <HighlightedText text={listing.title} query={searchQuery} />
+              <HighlightedText text={title} query={searchQuery} />
             </LocalizedLink>
           </h3>
 
@@ -358,7 +363,10 @@ function RowBody({
   outOfStock: boolean;
   queerOwned: boolean;
 }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  // The row variant is its own component and does not see the grid variant's
+  // local — resolve the title here too rather than threading a prop.
+  const title = localizedField(listing.title, listing.title_i18n as I18nMap, i18n.language);
   return (
     <div className="flex min-w-0 flex-1 flex-col justify-center gap-2 py-2 pr-2">
       <CardBadges isAdult={isAdult} isAffiliate={isAffiliate} queerOwned={queerOwned} />
@@ -388,7 +396,7 @@ function RowBody({
           onClick={(e) => e.stopPropagation()}
           className="hover:underline underline-offset-2"
         >
-          <HighlightedText text={listing.title} query={searchQuery} />
+          <HighlightedText text={title} query={searchQuery} />
         </LocalizedLink>
       </h3>
       <div className="flex items-baseline gap-2">
