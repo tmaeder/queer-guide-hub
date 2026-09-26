@@ -25,6 +25,23 @@ vi.mock('../ActionBar', () => ({
   ActionBar: () => <div data-testid="actions" />,
 }));
 
+// The registry read and the audit timeline both use TanStack Query, which needs
+// a provider these tests deliberately do not mount. Mocked at the module
+// boundary, the same way useTriageDetail already is.
+vi.mock('@/hooks/useTriageSourceCapabilities', () => ({
+  useTriageSourceCapabilities: () => ({
+    // Mirrors the live triage_sources row: org-link-review is the one queue
+    // carrying an external_console, because triage_action refuses it.
+    byQueue: { 'org-link-review': { external_console: '/admin/governance?mode=engines' } },
+    loading: false,
+    externalConsoleFor: (q: string) =>
+      q === 'org-link-review' ? '/admin/governance?mode=engines' : undefined,
+  }),
+}));
+vi.mock('@/components/admin/audit/PipelineInspector', () => ({
+  PipelineInspector: () => <div data-testid="pipeline-inspector" />,
+}));
+
 import { TriageDetailPanel } from '../TriageDetailPanel';
 
 const item = {
@@ -93,16 +110,19 @@ describe('TriageDetailPanel — queues decided in an external console', () => {
     useStagingDataMock.mockReturnValue({ data: null });
   });
 
-  it('replaces the action bar with a deep link to the Quality hub', () => {
+  it('replaces the action bar with the console the registry names', () => {
     render(
       <MemoryRouter>
         <TriageDetailPanel item={orgLinkItem} onAction={vi.fn()} isActionLoading={false} />
       </MemoryRouter>,
     );
     expect(screen.queryByTestId('actions')).not.toBeInTheDocument();
-    expect(screen.getByRole('link', { name: /Review in Quality/i })).toHaveAttribute(
+    // Route and label both come from triage_sources now, not from a literal in
+    // TriageDetailPanel — the duplication that let the registry be repointed
+    // while the panel kept sending reviewers to the old console.
+    expect(screen.getByRole('link', { name: /Open the console that decides this/i })).toHaveAttribute(
       'href',
-      '/admin/quality',
+      '/admin/governance?mode=engines',
     );
   });
 
