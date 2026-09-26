@@ -8,6 +8,11 @@ export interface EventSourceContractResult {
 
 const isHttpUrl = (value: string) => {
   try {
+    const parsed = new URL(value)
+    // A single-label hostname (for example `metadata`) is an internal-network
+    // name, not a verifiable public source. IPv6 literals remain eligible for
+    // the SSRF guard below, which rejects private and reserved ranges.
+    if (!parsed.hostname.includes('.') && !parsed.hostname.includes(':')) return false
     assertPublicHttpUrl(value)
     return true
   } catch {
@@ -83,4 +88,3 @@ export function assertEventSourceContract(item: NormalizedItem): EventSourceCont
   }
   return result
 }
-
