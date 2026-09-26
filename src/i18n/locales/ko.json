@@ -1901,16 +1901,16 @@
       "celebrate": "[KO] Celebrate {{name}}"
     },
     "map": {
-      "interchangeEyebrow": "[KO] Interchange",
+      "interchangeEyebrow": "환승",
       "interchange": {
-        "label": "[KO] Search everything",
-        "subtitle": "[KO] Every line meets here"
+        "label": "전체 검색",
+        "subtitle": "모든 노선이 만나는 곳"
       }
     },
     "glossary": {
-      "eyebrow": "[KO] Glossary",
-      "title": "[KO] Know the words",
-      "seeAll": "[KO] All terms"
+      "eyebrow": "용어집",
+      "title": "단어를 알아보기",
+      "seeAll": "모든 용어"
     }
   },
   "header": {
@@ -1952,10 +1952,10 @@
       "trips": "여행",
       "organizations": "단체",
       "wishlists": "위시리스트",
-      "tags": "[KO] Glossary",
-      "tagsAll": "[KO] All terms",
-      "tagsInteractions": "[KO] Substance safety",
-      "tagsStiGuide": "[KO] STI guide",
+      "tags": "용어집",
+      "tagsAll": "모든 용어",
+      "tagsInteractions": "약물 안전",
+      "tagsStiGuide": "성매개감염 안내",
       "transRights": "트랜스젠더 권리",
       "competitions": "[KO] Drag Race"
     },
@@ -1987,8 +1987,8 @@
       "sheetHeading": "무엇을 찾고 있나요?",
       "browseHeading": "전체 둘러보기",
       "glossary": {
-        "label": "[KO] Glossary",
-        "subtitle": "[KO] What every term, flag and code means"
+        "label": "용어집",
+        "subtitle": "모든 용어와 깃발, 코드의 의미"
       }
     },
     "userMenu": {
@@ -4496,8 +4496,8 @@
       "open": "[KO] Read the entry"
     },
     "fromGlossary": {
-      "title": "[KO] From the glossary",
-      "all": "[KO] All terms"
+      "title": "용어집에서",
+      "all": "모든 용어"
     },
     "figures": {
       "eyebrow": "[KO] Diagram",
