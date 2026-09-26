@@ -89,7 +89,7 @@ describe('AdminDashboard — Needs you', () => {
     mockCounts.mockReturnValue(counts({ quality_city: 2 }));
     render();
     const link = screen.getByRole('link', { name: /City quality/ });
-    expect(link.getAttribute('href')).toBe('/admin/inbox?queue=quality-city');
+    expect(link.getAttribute('href')).toBe('/admin/governance?mode=triage&queue=quality-city');
   });
 
   it('ranks an overdue queue above a heavier, larger, on-time one', () => {
