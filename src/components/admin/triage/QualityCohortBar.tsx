@@ -104,7 +104,25 @@ export function QualityCohortBar({
               <span className={cn(isActive ? 'text-background/70' : 'text-muted-foreground')}>
                 {ENTITY_LABELS[c.entity_type] ?? c.entity_type}
               </span>
-              <span className="tabular-nums font-medium">{c.n.toLocaleString()}</span>
+              {/* `decidable` FIRST, `n` second.
+                  This showed `c.n` alone — total open — while `useReviewQueueCohorts`
+                  documents `decidable` as the number that predicts the work: "a cohort
+                  of 692 where 346 need a confirmation is not the same work as one where
+                  none do". It was fetched and rendered nowhere, so a reviewer picked
+                  their pile on the one figure that does not say how much of it they can
+                  finish. Both appear because the GAP between them is the information;
+                  text, not colour, so WCAG 1.4.1 holds. */}
+              <span className="tabular-nums font-medium">
+                {c.decidable.toLocaleString()} ready
+              </span>
+              <span
+                className={cn(
+                  'tabular-nums',
+                  isActive ? 'text-background/70' : 'text-muted-foreground',
+                )}
+              >
+                of {c.n.toLocaleString()}
+              </span>
               {/* Glyph AND text, never colour alone (WCAG 1.4.1). */}
               {gated && (
                 <span className="inline-flex items-center gap-0.5">
