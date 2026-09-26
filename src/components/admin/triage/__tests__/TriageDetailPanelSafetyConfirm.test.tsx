@@ -61,6 +61,24 @@ vi.mock('../ActionBar', () => ({
   ),
 }));
 
+
+// The registry read and the audit timeline both use TanStack Query, which needs
+// a provider these tests deliberately do not mount. Mocked at the module
+// boundary, the same way useTriageDetail already is.
+vi.mock('@/hooks/useTriageSourceCapabilities', () => ({
+  useTriageSourceCapabilities: () => ({
+    // Mirrors the live triage_sources row: org-link-review is the one queue
+    // carrying an external_console, because triage_action refuses it.
+    byQueue: { 'org-link-review': { external_console: '/admin/governance?mode=engines' } },
+    loading: false,
+    externalConsoleFor: (q: string) =>
+      q === 'org-link-review' ? '/admin/governance?mode=engines' : undefined,
+  }),
+}));
+vi.mock('@/components/admin/audit/PipelineInspector', () => ({
+  PipelineInspector: () => <div data-testid="pipeline-inspector" />,
+}));
+
 import { TriageDetailPanel } from '../TriageDetailPanel';
 
 const gatedItem = {
