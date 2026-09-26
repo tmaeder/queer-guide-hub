@@ -32,6 +32,7 @@ import { resolveHistoricalPlace, type HistoricalNameEntry } from '@/lib/historic
 import { codeToFlagEmoji } from '@/lib/countryFlag';
 import { resolvePublisherName } from '@/lib/publisherName';
 import { GlossaryLinkedText } from '@/components/tags/GlossaryLinkedText';
+import { localizedField, type I18nMap } from '@/lib/localizeContent';
 
 export interface PersonalityBirthCity {
   id: string;
@@ -435,6 +436,14 @@ export function PersonalityOverview({
   personality: Personality;
   onContentUpdated?: () => void;
 }) {
+  const { i18n } = useTranslation();
+  // Display only. `<Editable value>` keeps the base column so an admin edits
+  // the English source of record rather than overwriting it with a translation.
+  const displayDescription = localizedField(
+    personality.description,
+    (personality as { description_i18n?: unknown }).description_i18n as I18nMap,
+    i18n.language,
+  );
   return (
     <ScrollReveal direction="up">
       <div className="flex flex-col gap-6 mt-4">
@@ -458,7 +467,7 @@ export function PersonalityOverview({
                 as="div"
               >
                 <p className="text-muted-foreground">
-                  <GlossaryLinkedText text={personality.description} />
+                  <GlossaryLinkedText text={displayDescription} />
                 </p>
               </Editable>
             </CardContent>
