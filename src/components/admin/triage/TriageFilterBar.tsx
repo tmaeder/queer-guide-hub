@@ -44,7 +44,27 @@ interface TriageFilterBarProps {
 }
 
 export function TriageFilterBar({ filters, counts, onFiltersChange }: TriageFilterBarProps) {
+  /**
+   * Follow the filter when something ELSE sets it.
+   *
+   * `useState(filters.search)` initialises once and never syncs, and this box is not
+   * the only writer: `QualityCohortBar.select()` sets `search: c.field` when a reviewer
+   * picks a campaign. So the list came back scoped to `editorial_hook` while this input
+   * still rendered empty — and the next Enter submitted that empty string, silently
+   * dropping the field scope while leaving the queue pinned. A state nothing on screen
+   * explained.
+   *
+   * Adjusted DURING RENDER, not in an effect: `react-hooks/set-state-in-effect` is an
+   * ESLint error here, and an effect would additionally render one frame with the
+   * stale value before correcting itself. Same pattern `TriageDetailPanel` used for its
+   * per-item answers before they moved up to `TriageView`.
+   */
   const [searchInput, setSearchInput] = useState(filters.search);
+  const [lastExternalSearch, setLastExternalSearch] = useState(filters.search);
+  if (filters.search !== lastExternalSearch) {
+    setLastExternalSearch(filters.search);
+    setSearchInput(filters.search);
+  }
 
   function toggleQueue(keys: readonly string[]) {
     const current = filters.queueTypes ?? [];
@@ -70,7 +90,15 @@ export function TriageFilterBar({ filters, counts, onFiltersChange }: TriageFilt
               key={chip.key}
               type="button"
               onClick={() => toggleQueue(chip.keys)}
-              className={`inline-flex items-center gap-1 px-2 py-0.5 text-xs border transition-colors ${
+              // `rounded-badge` is load-bearing, not cosmetic — the same opt-down
+              // QualityCohortBar documents at length. `index.css` gives every bare
+              // <button> a 44px min-height in @layer base for WCAG 2.5.8, and
+              // `button.rounded-badge` is the sanctioned 24px floor for pills.
+              // Without it the `py-0.5` here was purely decorative: nine chips
+              // rendered as 44px-tall boxes with 12px of text floating in them, and
+              // the bar wrapped to two rows above ~1280px. Do NOT add a per-chip
+              // `min-h-*` — that fights the base rule the system centralises.
+              className={`inline-flex items-center gap-1 rounded-badge px-2 py-0.5 text-xs border transition-colors ${
                 active
                   ? 'bg-foreground text-background'
                   : 'bg-background text-foreground border-border hover:bg-muted'

@@ -68,7 +68,44 @@ export default function AdminGovernance() {
   };
 
   return (
-    <div className="flex flex-col h-full">
+    /**
+     * TRIAGE NEEDS A DEFINITE HEIGHT AND IS THE ONLY MODE THAT DOES.
+     *
+     * `AdminShell`'s `<main>` is the scroll container and the last box in the chain
+     * with a definite height; the two wrappers below it (`max-w-page`, `content-enter`)
+     * are auto-height, so a percentage height here resolves to auto and `h-full` was
+     * ALREADY a no-op. That is why `TriageView` carried its own
+     * `h-[calc(100vh-8rem)]` — the only definite height in the page, measured from
+     * the viewport rather than from where the box actually starts, which put its
+     * bottom edge (and the action bar pinned there) below the fold.
+     *
+     * Derivation of 15rem = 240px, so the next reader can re-check it rather than
+     * trust it: breadcrumb band `min-h-11` (44) + `AdminAreaHint` (~34) + `<main>`'s
+     * own `py-12` top AND bottom (96) + this mode nav (~61) = 235px. `/admin/governance`
+     * is deliberately NOT `adopted` in `adminArchetypes.ts`, which is why the first two
+     * terms are there at all.
+     *
+     * COMPUTED FROM THE CSS, NOT MEASURED IN A BROWSER — `/admin/*` sits behind
+     * `AdminRouteGuard`, so verifying it live needs an admin session. Check it at
+     * 1440x900 before trusting the exact figure; the `min-h` floor is what keeps a
+     * wrong number survivable rather than blank.
+     *
+     * A constant is a standing bet that nobody adds a band above it, which is exactly
+     * how the last one broke. The bet is smaller now: the variable chrome that made
+     * any constant unstable — `AutomationStatusCard` (110-150px depending on data) and
+     * a rewrapping four-line keyboard paragraph — is gone from this surface, leaving
+     * the nav and one `<h1>`, both fixed.
+     *
+     * Per-mode because `AdminDuplicates` and `QualityHub` are normally-scrolling pages
+     * and clipping them would be a new bug.
+     */
+    <div
+      className={
+        mode === 'triage'
+          ? 'flex flex-col h-[calc(100dvh-15rem)] min-h-[32rem]'
+          : 'flex flex-col h-full'
+      }
+    >
       <nav
         aria-label="Governance mode"
         className="flex flex-wrap gap-2 border-b border-border px-4 py-2 bg-background"
