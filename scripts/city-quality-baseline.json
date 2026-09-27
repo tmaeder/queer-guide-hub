@@ -1,9 +1,24 @@
 {
   "measured_at": "2026-09-24T17:38:46Z",
   "measurement": "production activation snapshot after the first successful full city quality issue sync",
-  "publication_blocked": 965,
+  "revisions": [
+    {
+      "revised_at": "2026-09-26T00:00:00Z",
+      "raised": {
+        "publication_blocked": "965 -> 971",
+        "issues.CITY_IDENTITY_AMBIGUOUS": "370 -> 381"
+      },
+      "reason": "An honest retraction scores identically to an identifier that was never attempted, and the contract could not tell them apart. 99991790358713_city_wrong_entity_wikidata_repair nulled 11 wrong Wikidata QIDs and their cached wikipedia_titles in one transaction at 2026-09-25T19:00:56Z -- /city/frisco-us-xyxtu (Frisco, Texas) was serving Q62 San Francisco's article and mayor, /city/par-gb-n8jw1 (Par, Cornwall, pop 9k) was serving Q90 Paris, /city/saint-peters-gb-y5sot (Kent) was serving Q656 St Petersburg with a Russian governor over a Pennsylvania description, plus Pittsburg CA->Pittsburgh, Kos GR->Koszalin, City of Troy NY->ancient Troy, Arabkir AM->Arapgir, Ganda AO->Gandapura, Guara BR->Guaratingueta, Nayf AE->Nayfeld, Oetz DE->Oetzen. CITY_IDENTITY_AMBIGUOUS is `seo_indexable AND wikidata_qid IS NULL AND wikipedia_title IS NULL` (99991790194100:322), so all 11 became ambiguous the moment they stopped publishing another city's encyclopedia article. THE CEILING IS RAISED BECAUSE THE DATA CANNOT BE REPAIRED BACK UNDER IT: re-adding the identifiers republishes the wrong article, the correct QIDs are deliberately not guessed (prefer NULL to a guess), and city-factual-backfill's 100km coordinate guard now refuses re-adoption anyway. Those 11 rows are a human work list, not a regression. publication_blocked moves with it because 7 of the 11 had no other blocker (ready fell 1519 -> 1513 over the same window, net +6 after two unrelated image blockers cleared). Nothing renegotiated this at merge time because the repair was applied direct to prod and only reached the repo on 2026-09-26 in drift-recovery batch #3945, so it never passed a review where the live-data gate would have forced the contract change into the same diff."
+    },
+    {
+      "revised_at": "2026-09-26T00:00:00Z",
+      "raised": { "operations.unlinked_events": "743 -> 780" },
+      "reason": "THIS ONE IS NOT A BACKLOG AND THE ORIGINAL CEILING WAS MIS-SPECIFIED, not merely too low. `unlinked_events` is `count(*) from events where duplicate_of_id is null and city_id is null` (99991790194100:524) -- an INFLOW counter that rises with every ingested event whose city does not resolve and falls when run_event_city_link (cron `5 3 * * *`) drains it overnight. Measured across three consecutive daily snapshots it read 743 / 742 / 744, and the activation ceiling was pinned at the exact snapshot value with ZERO headroom, which makes it a coin flip that reds every open PR in the repo at random -- it did exactly that on 2026-09-26 when two events arrived with no resolvable city. The new ceiling is derived, not chosen: 744 currently unlinked + 90 days of the measured residue rate. Residue rate measured 2026-09-26 -- of the 744, only 12 were created in the trailing 30 days (0.4/day) while 727 came from a burst 30-90 days ago, so 0.4/day is normal accrual and 90 days of it is 36. A genuine producer regression is a step change of hundreds (that 727-event burst is the shape), so 36 of headroom still catches one while absorbing daily noise. `operations.unlinked_venues` carries the IDENTICAL defect and is green only by luck, because it happens to be falling (3584 -> 3534 -> 3518 over the same three snapshots); it is left alone here rather than pre-emptively loosened, but it is the same coin flip the day that trend reverses."
+    }
+  ],
+  "publication_blocked": 971,
   "issues": {
-    "CITY_IDENTITY_AMBIGUOUS": 370,
+    "CITY_IDENTITY_AMBIGUOUS": 381,
     "CITY_GEO_INVALID": 2,
     "CITY_DESCRIPTION_WRONG_SUBJECT": 2,
     "CITY_DESCRIPTION_REUSED": 29,
@@ -19,6 +34,6 @@
   },
   "operations": {
     "unlinked_venues": 3584,
-    "unlinked_events": 743
+    "unlinked_events": 780
   }
 }

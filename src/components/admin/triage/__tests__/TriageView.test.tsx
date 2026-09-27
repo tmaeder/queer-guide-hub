@@ -13,6 +13,9 @@ vi.mock('@/hooks/useUnifiedTriageQueue', () => ({
   useBulkApproveHighConf: () => ({ mutate: vi.fn(), isPending: false }),
 }));
 vi.mock('@/hooks/useReviewCounts', () => ({ useReviewCounts: () => ({ data: {} }) }));
+vi.mock('@/hooks/useTriageSourceCapabilities', () => ({
+  useTriageSourceCapabilities: () => ({ externalConsoleFor: () => null, loading: false }),
+}));
 // The cohort bar's own data source. Mocked to empty so these suites keep
 // testing what they are about; QualityCohortBar returns null on an empty list,
 // so the tree is unchanged. Its behaviour is covered by its own suite.

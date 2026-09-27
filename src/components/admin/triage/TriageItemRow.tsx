@@ -56,12 +56,26 @@ function formatAge(dateStr: string): string {
   return `${Math.floor(days / 30)}mo`;
 }
 
+/**
+ * Confidence, LABELLED and monotonic.
+ *
+ * This returned the identical `${pct}%` string in all three branches, across two
+ * colours, and gave the LOWEST band `font-medium` — so 30% rendered heavier than 60%.
+ * At `text-2xs` (10px) that left the foreground/muted distinction carrying the whole
+ * signal, and the number sat unlabelled directly beneath `formatAge` in the same font,
+ * size, colour and `tabular-nums`: two bare numbers stacked in a rail with no header.
+ *
+ * `StagingPreview`'s `ScoreChip` already had this right — a muted label beside the
+ * value, emphasis rising WITH the score — so this is its shape, not a new one. The
+ * label is rendered by the caller so it can sit in the same flex row.
+ */
 function confidenceLabel(score: number | null): { text: string; className: string } | null {
   if (score === null) return null;
   const pct = Math.round(score * 100);
-  if (score >= 0.8) return { text: `${pct}%`, className: 'text-foreground' };
-  if (score >= 0.5) return { text: `${pct}%`, className: 'text-muted-foreground' };
-  return { text: `${pct}%`, className: 'text-muted-foreground font-medium' };
+  return {
+    text: `${pct}%`,
+    className: score >= 0.8 ? 'font-semibold' : 'text-muted-foreground',
+  };
 }
 
 interface TriageItemRowProps {
@@ -177,7 +191,15 @@ export function TriageItemRow({
         <span className="text-2xs text-muted-foreground tabular-nums">
           {formatAge(item.created_at)}
         </span>
-        {conf && <span className={cn('text-2xs tabular-nums', conf.className)}>{conf.text}</span>}
+        {/* `conf` names the number. Without it this was a bare percentage sitting
+            directly under a bare age in the same font, size and colour — two
+            unlabelled figures in a rail with no header, so neither read as anything. */}
+        {conf && (
+          <span className="inline-flex items-baseline gap-1 text-2xs tabular-nums">
+            <span className="text-muted-foreground">conf</span>
+            <span className={conf.className}>{conf.text}</span>
+          </span>
+        )}
       </div>
 
       {/* Covers the whole row, so a click anywhere still opens the item — and a
