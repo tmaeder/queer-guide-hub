@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { anonHeaders, SUPABASE_REST_URL } from './support/anonKey';
 
 // End-to-end guard for the four body-fluids glossary passes shipped in #3960 and
 // #3961: piss play (99991790449537), fisting (99991790451897), the toilet role
@@ -37,56 +38,12 @@ import { test, expect } from '@playwright/test';
 
 const BOT_UA = 'Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)';
 
-const SUPABASE_URL = process.env.VITE_SUPABASE_URL ?? 'https://xqeacpakadqfxjxjcewc.supabase.co';
-
-/**
- * The anon key, discovered from the deployed bundle rather than required from
- * the environment.
- *
- * WHY. Measured 2026-09-27: NO workflow in this repo sets
- * VITE_SUPABASE_ANON_KEY and it is not a repository secret, so every existing
- * spec that reads PostgREST as anon guards on `test.skip(!ANON_KEY)` and those
- * groups skip in CI — a silent pass, which is the failure mode this whole suite
- * is written against. Hardcoding the key instead would put a JWT in the repo and
- * trip the secret scanner that gates this project, even though the anon key is
- * public by design.
- *
- * So it is read from prod. The key is `VITE_`-prefixed, therefore inlined into
- * the client bundle at build time, therefore guaranteed present on any site that
- * works at all. Two traps are handled: a nonexistent /assets path returns 200
- * with the SPA shell (so the content-type is checked rather than the status),
- * and the chunk name is content-hashed (so it is discovered from index.html
- * rather than guessed). The decoded payload's `role` is verified to be `anon`
- * before the token is used, so a different JWT in the bundle cannot be picked up
- * by accident.
- */
-async function discoverAnonKey(
-  request: import('@playwright/test').APIRequestContext,
-): Promise<string | null> {
-  if (process.env.VITE_SUPABASE_ANON_KEY) return process.env.VITE_SUPABASE_ANON_KEY;
-  const index = await request.get('/');
-  if (!index.ok()) return null;
-  const chunks = [...new Set((await index.text()).match(/\/assets\/js\/[A-Za-z0-9._-]+\.js/g) ?? [])];
-  for (const path of chunks) {
-    const res = await request.get(path);
-    // A missing asset is answered with the SPA shell at status 200, so the
-    // status alone proves nothing about whether this is JavaScript.
-    if (!/javascript/i.test(res.headers()['content-type'] ?? '')) continue;
-    for (const jwt of (await res.text()).match(
-      /eyJ[A-Za-z0-9_-]{10,}\.eyJ[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]{20,}/g,
-    ) ?? []) {
-      try {
-        const payload = JSON.parse(
-          Buffer.from(jwt.split('.')[1].replace(/-/g, '+').replace(/_/g, '/'), 'base64').toString(),
-        ) as { role?: string };
-        if (payload.role === 'anon') return jwt;
-      } catch {
-        // Not a JWT payload we can read; keep looking rather than guessing.
-      }
-    }
-  }
-  return null;
-}
+// The anon key and the REST origin both come from e2e/support/anonKey.ts, which
+// resolves the key from the DEPLOYED BUNDLE rather than an environment variable
+// no workflow sets — see that file for the measurement and the three traps it
+// handles. A missing key FAILS there rather than skipping, which is the
+// property this group depends on. This file carried its own copy until #3967
+// promoted the logic; one implementation, so the two cannot drift.
 
 /** The tag's own prose block, excluding the nav and rails that follow it. */
 function articleOf(html: string): string {
@@ -211,21 +168,9 @@ test.describe('glossary body-fluids passes — crawler HTML (article lane)', () 
 });
 
 test.describe('glossary body-fluids passes — anon API (utility lane)', () => {
-  let anonKey: string | null = null;
-
-  test.beforeAll(async ({ request }) => {
-    anonKey = await discoverAnonKey(request);
-  });
-
   async function tags(request: import('@playwright/test').APIRequestContext, query: string) {
-    // A missing key is a FAILURE, not a skip. The whole point of discovering it
-    // from the deployed bundle is that this group can never quietly do nothing.
-    expect(
-      anonKey,
-      'could not discover the anon key from the deployed bundle — this group would otherwise silently pass',
-    ).toBeTruthy();
-    const res = await request.get(`${SUPABASE_URL}/rest/v1/unified_tags?${query}`, {
-      headers: { apikey: anonKey!, Authorization: `Bearer ${anonKey!}` },
+    const res = await request.get(`${SUPABASE_REST_URL}/rest/v1/unified_tags?${query}`, {
+      headers: await anonHeaders(request),
     });
     expect(res.status(), 'anon PostgREST read failed').toBe(200);
     return (await res.json()) as Array<Record<string, unknown>>;
@@ -377,7 +322,11 @@ test.describe('glossary body-fluids passes — controls', () => {
     const article = articleOf(html);
     expect(article.length, 'no article to scope').toBeGreaterThan(200);
     expect(article.length, 'articleOf returned the whole page').toBeLessThan(html.length);
-    expect(article, 'articleOf leaked the crisis-support noscript block').not.toMatch(/Crisis support/i);
-    expect(article, 'articleOf leaked a Cloudflare challenge script').not.toMatch(/challenge-platform/i);
+    expect(article, 'articleOf leaked the crisis-support noscript block').not.toMatch(
+      /Crisis support/i,
+    );
+    expect(article, 'articleOf leaked a Cloudflare challenge script').not.toMatch(
+      /challenge-platform/i,
+    );
   });
 });
