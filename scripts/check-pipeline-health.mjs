@@ -4215,6 +4215,68 @@ const DISOWNED_PROSE_CEILING = 380
 
 // The single exit. Reached whether or not anything failed, so the ✗ lines above
 // are the complete list rather than "the first one we tripped over".
+// §22 — an event↔venue link is validated ONCE, at link time, and never re-checked.
+//
+// `link_event_venues` is not the problem and was measured before this was written: its
+// auto branch is `name_exact AND (distance_m IS NULL OR distance_m < 500)` -- five
+// hundred METRES -- and across all 132 links it has ever recorded the worst distance is
+// 430.0 m. What it cannot do is notice that a link it made correctly has since drifted,
+// because either side may acquire or correct its coordinates afterwards. Two links sat
+// at 2,398 km and 10,381 km for over a year on that blind spot (99991790537156), and
+// they were found by hand.
+//
+// 100 km is measured, not chosen: p99 is 10.2 km and the largest legitimate value is
+// 14.0 km (a Berlin event on its city centroid with its venue out at Marina Base), so
+// the bound carries ~7x headroom while catching both offenders by orders of magnitude.
+//
+// links_total and links_checkable are read BEFORE the count, because "zero links over
+// 100 km" is equally true of an empty corpus, a corpus with no coordinates at all, and
+// a clean one.
+{
+  const res = await fetch(`${BASE}/rest/v1/rpc/event_venue_link_signals`, {
+    method: 'POST',
+    headers: { ...headers, 'Content-Type': 'application/json' },
+    body: '{}',
+  })
+  if (!res.ok) {
+    console.warn(
+      `⚠ event_venue_link_signals → HTTP ${res.status} (RPC missing? migration 99991790537156)`,
+    )
+    console.warn('  This check measured NOTHING — it did not pass.')
+  } else {
+    const s = (await res.json()) ?? {}
+    // A probe that cannot look must never read as "looked and found none".
+    if (s.probe_ok !== true) {
+      console.error('✗ event_venue_link_signals returned no probe_ok — the probe is broken')
+      FAILED = true
+    } else if (Number(s.links_checkable ?? 0) < 1000) {
+      console.error(
+        `✗ only ${s.links_checkable} event↔venue link(s) carry coordinates on both sides ` +
+          `(of ${s.links_total} links) — the distance check below is measuring almost nothing`,
+      )
+      FAILED = true
+    } else {
+      const over = Number(s.over_100km ?? 0)
+      if (over > 0) {
+        console.error(`✗ ${over} event(s) are attached to a venue over 100 km away:`)
+        for (const o of s.offenders ?? []) {
+          console.error(`    ${o.title} → ${o.venue} (${o.km} km)`)
+        }
+        console.error('  → A venue name that exists in several cities was matched in the wrong one,')
+        console.error('    or a link made correctly has drifted since. Relink only onto a venue the')
+        console.error("    event's OWN coordinates corroborate; otherwise detach and flag.")
+        console.error('  → Do NOT reach for link_event_venues: its gate is 500 m and is holding.')
+        FAILED = true
+      } else {
+        console.log(
+          `✓ event↔venue links: ${s.links_checkable}/${s.links_total} checkable, ` +
+            `p99 ${s.p99_km} km, none over 100 km`,
+        )
+      }
+    }
+  }
+}
+
 if (FAILED) {
   console.error('')
   console.error('✗ Pipeline health check FAILED — every section above ran; each ✗ line is a separate problem')
