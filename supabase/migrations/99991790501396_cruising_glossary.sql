@@ -50,6 +50,67 @@ create temporary table _cruising_aliases (
 insert into _cruising_aliases values
   ('cruising-ground', 'Cruising Spot', 'cruising-spot', 'synonym');
 
+-- Production already contains a thin, unreviewed `cruising-spot` shell with
+-- live assignments. Reuse that row rather than creating a parallel concept so
+-- its stable id and all 13 current uses follow the reviewed canonical term.
+-- The exact-state guard makes a later editorial repair win.
+do $reconcile_cruising_spot$
+declare
+  v_spot_id uuid;
+begin
+  select t.id into v_spot_id
+    from public.unified_tags t
+   where t.slug = 'cruising-spot'
+     and t.name = 'Cruising-Spot'
+     and t.status = 'active'
+     and t.entity_kind = 'descriptor'
+     and t.description is null
+     and t.short_description is null
+     and t.long_description is null
+     and t.category = 'Venue Types'
+     and not t.seo_indexable
+     and not t.human_reviewed
+     and t.verification_status = 'unverified'
+     and not t.is_sensitive
+     and t.sensitive_topics is null
+     and not exists (select 1 from public.unified_tags x where x.slug = 'cruising-ground')
+     and not exists (
+       select 1 from public.unified_tags x
+        where lower(btrim(x.name)) = lower('Cruising Ground')
+     )
+     and not exists (
+       select 1 from public.tag_aliases a where a.alias_slug = 'cruising-ground'
+     )
+   for update;
+
+  if v_spot_id is not null then
+    update public.tag_category_assignments
+       set is_primary = false
+     where tag_id = v_spot_id and is_primary;
+
+    update public.unified_tags t
+       set name = n.name,
+           slug = n.slug,
+           entity_kind = 'concept',
+           description = n.description,
+           short_description = n.short_description,
+           long_description = n.long_description,
+           category_id = c.id,
+           category = c.name,
+           seo_indexable = false,
+           human_reviewed = true,
+           verification_status = 'reviewed',
+           is_sensitive = n.is_sensitive,
+           sensitive_topics = n.sensitive_topics,
+           updated_at = now(),
+           last_verified_at = now()
+      from _cruising_new n
+      join public.tag_categories c on c.slug = n.category_slug
+     where t.id = v_spot_id;
+  end if;
+end
+$reconcile_cruising_spot$;
+
 -- Refuse to create a second concept behind an existing name, slug or alias.
 insert into public.unified_tags (
   name, slug, entity_kind, description, short_description, long_description,
@@ -84,10 +145,6 @@ select t.id, c.id, true
   from _cruising_new n
   join public.unified_tags t on t.slug = n.slug
   join public.tag_categories c on c.slug = n.category_slug
- where not exists (
-   select 1 from public.tag_category_assignments a
-    where a.tag_id = t.id and a.category_id = c.id
- )
 on conflict (tag_id, category_id) do update set is_primary = true;
 
 -- Existing pages are updated only from the exact live state audited for this
