@@ -563,3 +563,95 @@ test('no venue-backed event is presented on a city its venue put 250 km away', a
     `venue-backed events presented on a city they are nowhere near:\n${far.join('\n')}`,
   ).toEqual([]);
 });
+
+// --- event↔venue drift --------------------------------------------------------
+//
+// 99991790537156. A link is validated once, at link time — `link_event_venues` gates
+// at 500 m and across all 132 links it has made the worst is 430 m — and nothing
+// re-checks it when either side's coordinates later move. Two links sat at 2,398 km
+// (a Denver event on Washington DC's "Trade") and 10,381 km (a Sitges event on
+// Taipei's "Bears Bar") for over a year on that blind spot.
+//
+// 100 km is the measured bound: p99 is 10.2 km and the largest legitimate value is
+// 14.0 km, a Berlin event sitting on its city centroid with its venue out at Marina
+// Base. Asserted through the ANON role, over the bounded venue-backed slice.
+
+test('no anon-visible event is attached to a venue over 100 km away', async ({ request }) => {
+  const events = await restAll<{
+    id: string;
+    title: string;
+    venue_id: string;
+    latitude: string;
+    longitude: string;
+  }>(
+    request,
+    'events?select=id,title,venue_id,latitude,longitude&venue_id=not.is.null' +
+      '&latitude=not.is.null&duplicate_of_id=is.null',
+    6000,
+  );
+  // positive control: an empty or truncated read makes the assertion below vacuous
+  expect(events.length, 'anon can read almost no venue-backed events').toBeGreaterThan(500);
+
+  const venueIds = [...new Set(events.map((e) => e.venue_id))];
+  const venues = new Map<
+    string,
+    { name: string; latitude: string | null; longitude: string | null }
+  >();
+  for (let i = 0; i < venueIds.length; i += 200) {
+    const batch = await rest<{
+      id: string;
+      name: string;
+      latitude: string | null;
+      longitude: string | null;
+    }>(
+      request,
+      `venues?select=id,name,latitude,longitude&id=in.(${venueIds.slice(i, i + 200).join(',')})`,
+    );
+    for (const v of batch) venues.set(v.id, v);
+  }
+  expect(venues.size, 'none of the referenced venues resolved').toBeGreaterThan(0);
+
+  const far = events
+    .map((e) => {
+      const v = venues.get(e.venue_id);
+      if (!v || v.latitude === null || v.longitude === null) return null; // fails open
+      const d = km(
+        Number(e.latitude),
+        Number(e.longitude),
+        Number(v.latitude),
+        Number(v.longitude),
+      );
+      return d > 100 ? `${e.title} → ${v.name} (${d.toFixed(0)} km)` : null;
+    })
+    .filter(Boolean);
+
+  expect(far, `events attached to a venue they are nowhere near:\n${far.join('\n')}`).toEqual([]);
+});
+
+test('the Sitges event is on the Sitges Bears Bar, and Denver is detached', async ({ request }) => {
+  const [sitges] = await rest<{ venue_id: string | null; latitude: string; longitude: string }>(
+    request,
+    'events?select=venue_id,latitude,longitude&id=eq.82e80cfa-2256-4be1-9582-ed3b0af6e9e5',
+  );
+  expect(sitges, 'the Sitges event is not anon-readable').toBeTruthy();
+  expect(sitges.venue_id, 'still detached — the relink did not land').not.toBeNull();
+  const [venue] = await rest<{ name: string; latitude: string; longitude: string }>(
+    request,
+    `venues?select=name,latitude,longitude&id=eq.${sitges.venue_id}`,
+  );
+  const d = km(
+    Number(sitges.latitude),
+    Number(sitges.longitude),
+    Number(venue.latitude),
+    Number(venue.longitude),
+  );
+  expect(d, `attached to ${venue.name}, ${d.toFixed(1)} km away`).toBeLessThan(5);
+
+  const [denver] = await rest<{ venue_id: string | null; venue_name: string | null }>(
+    request,
+    'events?select=venue_id,venue_name&id=eq.d5c0c33f-4186-475d-a609-91ed1603aa96',
+  );
+  expect(denver.venue_id, 'still attached to Washington DC’s Trade').toBeNull();
+  // the source's own text must survive, or the re-attach is no longer actionable
+  expect(denver.venue_name).toBeTruthy();
+});
