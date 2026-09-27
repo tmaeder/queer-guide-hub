@@ -1,4 +1,5 @@
 import { test, expect, type APIRequestContext } from '@playwright/test';
+import { anonHeaders } from './support/anonKey';
 
 // A place may never be presented as its namesake.
 //
@@ -24,7 +25,6 @@ import { test, expect, type APIRequestContext } from '@playwright/test';
 // SPA did not have before (`villageDetail` never selected `seo_indexable`).
 
 const SUPABASE_URL = process.env.VITE_SUPABASE_URL ?? 'https://xqeacpakadqfxjxjcewc.supabase.co';
-const ANON_KEY = process.env.VITE_SUPABASE_ANON_KEY;
 
 /** How far a city may sit from an event it is said to host. */
 const MAX_KM = 25;
@@ -154,11 +154,9 @@ const SWEPT = [
   },
 ] as const;
 
-test.skip(!ANON_KEY, 'VITE_SUPABASE_ANON_KEY not set');
-
 async function rest<T>(request: APIRequestContext, path: string): Promise<T[]> {
   const res = await request.get(`${SUPABASE_URL}/rest/v1/${path}`, {
-    headers: { apikey: ANON_KEY!, Authorization: `Bearer ${ANON_KEY!}` },
+    headers: await anonHeaders(request),
   });
   expect(res.ok(), `${path} -> HTTP ${res.status()}`).toBeTruthy();
   return res.json();

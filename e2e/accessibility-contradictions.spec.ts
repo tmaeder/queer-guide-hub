@@ -1,4 +1,5 @@
 import { test, expect, type APIRequestContext } from '@playwright/test';
+import { anonHeaders } from './support/anonKey';
 
 // No entity may assert both halves of an accessibility pair.
 //
@@ -21,7 +22,6 @@ import { test, expect, type APIRequestContext } from '@playwright/test';
 // query can see.
 
 const SUPABASE_URL = process.env.VITE_SUPABASE_URL ?? 'https://xqeacpakadqfxjxjcewc.supabase.co';
-const ANON_KEY = process.env.VITE_SUPABASE_ANON_KEY;
 
 /** [positive, negative] — the negative is the half that survives a conflict. */
 const PAIRS: ReadonlyArray<readonly [string, string]> = [
@@ -30,11 +30,9 @@ const PAIRS: ReadonlyArray<readonly [string, string]> = [
   ['accessible-restroom', 'no-accessible-restroom'],
 ];
 
-test.skip(!ANON_KEY, 'VITE_SUPABASE_ANON_KEY not set');
-
 async function rest<T>(request: APIRequestContext, path: string): Promise<T[]> {
   const res = await request.get(`${SUPABASE_URL}/rest/v1/${path}`, {
-    headers: { apikey: ANON_KEY!, Authorization: `Bearer ${ANON_KEY!}` },
+    headers: await anonHeaders(request),
   });
   expect(res.ok(), `${path} -> HTTP ${res.status()}`).toBeTruthy();
   return res.json();
@@ -46,10 +44,11 @@ async function rest<T>(request: APIRequestContext, path: string): Promise<T[]> {
 // are what make the assertion below mean something.
 
 test('the contradiction vocabulary is deployed and symmetric', async ({ request }) => {
-  const rows = await rest<{ slug: string; contradicts: string | null; is_negative_assertion: boolean }>(
-    request,
-    'amenities?select=slug,contradicts,is_negative_assertion&contradicts=not.is.null',
-  );
+  const rows = await rest<{
+    slug: string;
+    contradicts: string | null;
+    is_negative_assertion: boolean;
+  }>(request, 'amenities?select=slug,contradicts,is_negative_assertion&contradicts=not.is.null');
   expect(rows.length, 'public.amenities.contradicts is unseeded — the guard is not deployed').toBe(
     PAIRS.length * 2,
   );
@@ -103,7 +102,11 @@ for (const table of ['venues', 'events'] as const) {
       );
       for (const row of rows) {
         if ((row.accessibility_attributes ?? []).includes(pos)) {
-          offenders.push({ id: row.id, pair: `${pos} + ${neg}`, values: row.accessibility_attributes ?? [] });
+          offenders.push({
+            id: row.id,
+            pair: `${pos} + ${neg}`,
+            values: row.accessibility_attributes ?? [],
+          });
         }
       }
     }

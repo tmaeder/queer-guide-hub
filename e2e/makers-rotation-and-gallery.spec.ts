@@ -1,4 +1,5 @@
 import { test, expect, type APIRequestContext } from '@playwright/test';
+import { anonHeaders } from './support/anonKey';
 
 /**
  * The makers directory's ROTATION and its GALLERY/INDEX split, against the
@@ -38,9 +39,6 @@ import { test, expect, type APIRequestContext } from '@playwright/test';
  */
 
 const SUPABASE_URL = process.env.VITE_SUPABASE_URL ?? 'https://xqeacpakadqfxjxjcewc.supabase.co';
-const ANON_KEY = process.env.VITE_SUPABASE_ANON_KEY;
-
-test.skip(!ANON_KEY, 'VITE_SUPABASE_ANON_KEY not set');
 
 type DirectoryRow = {
   slug: string;
@@ -57,11 +55,7 @@ async function rpc<T>(
   body: Record<string, unknown> = {},
 ): Promise<T[]> {
   const res = await request.post(`${SUPABASE_URL}/rest/v1/rpc/${fn}`, {
-    headers: {
-      apikey: ANON_KEY!,
-      Authorization: `Bearer ${ANON_KEY!}`,
-      'Content-Type': 'application/json',
-    },
+    headers: { ...(await anonHeaders(request)), 'Content-Type': 'application/json' },
     data: body,
   });
   // A 404 here is the PGRST202 shape: the function is missing, or an argument

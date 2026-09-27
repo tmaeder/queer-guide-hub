@@ -1,4 +1,5 @@
 import { test, expect, type APIRequestContext } from '@playwright/test';
+import { anonHeaders } from './support/anonKey';
 
 /**
  * The events browse feed shows each real-world thing ONCE — end to end, on prod.
@@ -27,9 +28,6 @@ import { test, expect, type APIRequestContext } from '@playwright/test';
  */
 
 const SUPABASE_URL = process.env.VITE_SUPABASE_URL ?? 'https://xqeacpakadqfxjxjcewc.supabase.co';
-const ANON_KEY = process.env.VITE_SUPABASE_ANON_KEY;
-
-test.skip(!ANON_KEY, 'VITE_SUPABASE_ANON_KEY not set');
 
 type EventRow = {
   id: string;
@@ -46,11 +44,7 @@ async function searchEvents(
   body: Record<string, unknown>,
 ): Promise<{ total: number; rows: EventRow[] }> {
   const res = await request.post(`${SUPABASE_URL}/rest/v1/rpc/search_events`, {
-    headers: {
-      apikey: ANON_KEY!,
-      Authorization: `Bearer ${ANON_KEY!}`,
-      'Content-Type': 'application/json',
-    },
+    headers: { ...(await anonHeaders(request)), 'Content-Type': 'application/json' },
     data: body,
   });
   expect(res.ok(), `search_events -> HTTP ${res.status()}: ${await res.text()}`).toBeTruthy();
@@ -142,7 +136,7 @@ test('grouping costs the reader no page — every day-part URL still resolves', 
       `?select=slug,title,parent_event_id` +
       `&parent_event_id=not.is.null&duplicate_of_id=is.null&status=neq.cancelled` +
       `&safety_gated=is.false&limit=6`,
-    { headers: { apikey: ANON_KEY!, Authorization: `Bearer ${ANON_KEY!}` } },
+    { headers: await anonHeaders(request) },
   );
   expect(res.ok(), `events REST -> HTTP ${res.status()}`).toBeTruthy();
   const children = (await res.json()) as Array<{
@@ -153,14 +147,15 @@ test('grouping costs the reader no page — every day-part URL still resolves', 
 
   // Positive control: "every URL resolves" is trivially true of an empty list, and
   // this corpus has had programme children since the linker first ran.
-  expect(children.length, 'no programme children exist at all — nothing was checked').toBeGreaterThan(
-    0,
-  );
+  expect(
+    children.length,
+    'no programme children exist at all — nothing was checked',
+  ).toBeGreaterThan(0);
 
   const parentIds = [...new Set(children.map((c) => c.parent_event_id))];
   const parentsRes = await request.get(
     `${SUPABASE_URL}/rest/v1/events?select=slug&id=in.(${parentIds.join(',')})`,
-    { headers: { apikey: ANON_KEY!, Authorization: `Bearer ${ANON_KEY!}` } },
+    { headers: await anonHeaders(request) },
   );
   const parents = (await parentsRes.json()) as Array<{ slug: string }>;
 

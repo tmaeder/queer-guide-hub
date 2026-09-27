@@ -1,4 +1,5 @@
 import { test, expect, type APIRequestContext, type Page } from '@playwright/test';
+import { anonHeaders } from './support/anonKey';
 
 // Translated content must be REACHABLE and must RENDER.
 //
@@ -23,16 +24,13 @@ import { test, expect, type APIRequestContext, type Page } from '@playwright/tes
 // this asserts what a reader is actually served.
 
 const SUPABASE_URL = process.env.VITE_SUPABASE_URL ?? 'https://xqeacpakadqfxjxjcewc.supabase.co';
-const ANON_KEY = process.env.VITE_SUPABASE_ANON_KEY;
 
 /** Every locale the pipeline must accept. Mirrors SUPPORTED_LOCALES minus en. */
 const TRANSLATION_LOCALES = ['es', 'fr', 'de', 'pt', 'it', 'ru', 'zh', 'ja', 'ko', 'ar'] as const;
 
-test.skip(!ANON_KEY, 'VITE_SUPABASE_ANON_KEY not set');
-
 async function rest<T>(request: APIRequestContext, path: string): Promise<T[]> {
   const res = await request.get(`${SUPABASE_URL}/rest/v1/${path}`, {
-    headers: { apikey: ANON_KEY!, Authorization: `Bearer ${ANON_KEY!}` },
+    headers: await anonHeaders(request),
   });
   expect(res.ok(), `${path} -> HTTP ${res.status()}`).toBeTruthy();
   return res.json();
@@ -67,8 +65,10 @@ test.describe('i18n content pipeline', () => {
     const dead = Object.entries(present)
       .filter(([, ok]) => !ok)
       .map(([l]) => l);
-    expect(dead, `locales with zero translated listings (present: ${JSON.stringify(present)})`)
-      .toHaveLength(0);
+    expect(
+      dead,
+      `locales with zero translated listings (present: ${JSON.stringify(present)})`,
+    ).toHaveLength(0);
   });
 
   test('a translated venue description renders in its locale and falls back otherwise', async ({
@@ -153,8 +153,10 @@ test.describe('UI strings', () => {
       await page.goto(`/${locale}`, { waitUntil: 'domcontentloaded' });
       const body = await page.locator('body').innerText();
       const hits = body.match(/\[[A-Z]{2}\]\s\S/g) ?? [];
-      expect(hits, `/${locale} renders placeholder strings: ${hits.slice(0, 5).join(' | ')}`)
-        .toHaveLength(0);
+      expect(
+        hits,
+        `/${locale} renders placeholder strings: ${hits.slice(0, 5).join(' | ')}`,
+      ).toHaveLength(0);
     }
   });
 });
