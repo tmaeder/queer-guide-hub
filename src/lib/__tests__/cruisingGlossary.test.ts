@@ -46,10 +46,22 @@ describe('cruising glossary pass', () => {
     expect(writes).toContain('join public.tag_aliases x on x.alias_slug = a.alias_slug');
   });
 
+  it('reuses the live cruising-spot shell without losing its assignments', () => {
+    expect(writes).toContain('do $reconcile_cruising_spot$');
+    expect(writes).toContain("t.slug = 'cruising-spot'");
+    expect(writes).toContain("t.name = 'Cruising-Spot'");
+    expect(writes).toContain("t.verification_status = 'unverified'");
+    expect(writes).toContain('set is_primary = false');
+    expect(writes).toContain("slug = n.slug");
+    expect(writes).toContain("entity_kind = 'concept'");
+    expect(writes).not.toMatch(/delete from public\.unified_tags/i);
+  });
+
   it('writes every category representation for cruising-ground', () => {
     expect(writes).toContain("'venues-nightlife'");
     expect(writes).toMatch(/category_id, category, status/);
     expect(writes).toContain('insert into public.tag_category_assignments');
+    expect(writes).toContain('on conflict (tag_id, category_id) do update set is_primary = true');
     expect(verify).toContain('t.category_id = c.id');
     expect(verify).toContain('t.category = c.name');
     expect(verify).toContain('a.is_primary');
