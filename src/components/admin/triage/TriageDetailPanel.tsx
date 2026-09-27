@@ -1,8 +1,8 @@
-import { useState } from 'react';
 import { Link } from 'react-router';
 import { TrackLoader } from '@/components/transit/TrackLoader';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Clock, ShieldAlert, User, Zap } from 'lucide-react';
 import { EntityPreviewCard } from './EntityPreviewCard';
 import { StagingPreview } from './StagingPreview';
@@ -13,23 +13,25 @@ import { PipelineInspector } from '@/components/admin/audit/PipelineInspector';
 import { useTriageSourceCapabilities } from '@/hooks/useTriageSourceCapabilities';
 import type { TriageItem } from '@/hooks/useUnifiedTriageQueue';
 import { useEntityData, useStagingData } from '@/hooks/useTriageDetail';
+import {
+  needsNamesakeConfirm,
+  needsSafetyConfirm,
+  queuedKeepId,
+  type TriageAction,
+  type TriageAnswers,
+} from './resolveDecision';
 
 interface TriageDetailPanelProps {
   item: TriageItem;
-  onAction: (
-    action: 'approve' | 'reject' | 'skip' | 'flag',
-    notes?: string,
-    cannedSlug?: string,
-    /** Queue-specific extras — dedup-review uses `{ keep_id }` for the canonical flip. */
-    payload?: Record<string, unknown>,
-    /**
-     * Outing-safety confirmation, forwarded to triage_action's `p_confirm`.
-     * Separate from `payload` because it is not queue-specific data: it is a
-     * statement that a human read a safety claim and takes responsibility for
-     * publishing it, and `approve_entity_review` consults it directly.
-     */
-    confirm?: boolean,
-  ) => void;
+  /**
+   * CONTROLLED. This panel used to own the reviewer's answers and compute
+   * `confirm` / `{keep_id}` itself, which meant the keyboard — wired one level up in
+   * `TriageView` — bypassed every gate. It now reports answers up and asks for an
+   * action; `resolveDecision` decides what that action carries.
+   */
+  answers: TriageAnswers;
+  onAnswersChange: (patch: Partial<TriageAnswers>) => void;
+  onAction: (action: TriageAction) => void;
   isActionLoading: boolean;
 }
 
@@ -107,7 +109,13 @@ function humanize(raw: string): string {
     .replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
-export function TriageDetailPanel({ item, onAction, isActionLoading }: TriageDetailPanelProps) {
+export function TriageDetailPanel({
+  item,
+  answers,
+  onAnswersChange,
+  onAction,
+  isActionLoading,
+}: TriageDetailPanelProps) {
   const { data: entityData, isLoading: entityLoading } = useEntityData(item);
   const { data: stagingData } = useStagingData(item);
   // Read from `triage_sources`, not from a literal in this file. While the
@@ -119,78 +127,19 @@ export function TriageDetailPanel({ item, onAction, isActionLoading }: TriageDet
 
   const isDedup = item.queue_type === 'dedup-review';
   const meta = (item.meta ?? null) as Record<string, unknown> | null;
-  const originalKeepId = typeof meta?.keep_id === 'string' ? meta.keep_id : null;
+  const originalKeepId = queuedKeepId(item);
 
-  // Namesake: `triage_src_dedup_review` has emitted this for personalities since the
-  // queue existed and no component ever read it. Two different people with one name
-  // merged together is an outing risk, so it gets an explicit confirm.
-  const namesake = Boolean((item.risk_flags as { namesake?: boolean } | null)?.namesake);
+  // Both gate predicates come from `resolveDecision`, so the CHECKBOX and the
+  // REFUSAL can never drift apart. That split is exactly what let the keyboard
+  // approve a pair whose button was disabled.
+  const namesake = needsNamesakeConfirm(item);
+  const requiresConfirm = needsSafetyConfirm(item);
 
-  // Outing-safety confirm. `approve_entity_review` raises 42501 —
-  // "high-risk destination: <field> approval requires explicit confirmation" —
-  // whenever `_review_risk_blocked` holds and the caller did not pass
-  // p_confirm. `triage_action` has forwarded that flag since it was written
-  // and `useTriageAction` has always had the parameter, but NO component ever
-  // set it, so every risk-gated quality row was un-approvable from the inbox
-  // by anyone: 347 rows on prod, 346 of them criminalizing-destination safety
-  // notes, i.e. precisely the highest-stakes content in the queue.
-  const requiresConfirm = Boolean(
-    (item.risk_flags as { confirm_may_be_required?: boolean } | null)?.confirm_may_be_required,
-  );
-
-  // Per-pair state, reset when the queue advances. The panel is reused in place, so
-  // without the reset the previous pair's canonical choice and namesake confirmation
-  // would carry silently onto the next one — and on the namesake flag that means the
-  // confirm gate is already satisfied for a pair nobody looked at.
-  //
-  // Adjusted DURING RENDER rather than in an effect (react-hooks/set-state-in-effect):
-  // an effect here would render the new pair once with the old pair's answers before
-  // correcting itself.
-  const [perPair, setPerPair] = useState({
-    id: item.id,
-    keepId: originalKeepId,
-    namesakeConfirmed: false,
-    safetyConfirmed: false,
-  });
-  if (perPair.id !== item.id) {
-    setPerPair({
-      id: item.id,
-      keepId: originalKeepId,
-      namesakeConfirmed: false,
-      safetyConfirmed: false,
-    });
-  }
-  const keepId = perPair.id === item.id ? perPair.keepId : originalKeepId;
-  const namesakeConfirmed = perPair.id === item.id ? perPair.namesakeConfirmed : false;
-  // Carried in the same reset-on-advance object as the namesake flag and for
-  // the identical reason: the panel is reused in place, so a confirmation that
-  // survived the advance would already be satisfied for a row nobody read.
-  const safetyConfirmed = perPair.id === item.id ? perPair.safetyConfirmed : false;
-  const setKeepId = (v: string) => setPerPair((p) => ({ ...p, keepId: v }));
-  const setNamesakeConfirmed = (v: boolean) => setPerPair((p) => ({ ...p, namesakeConfirmed: v }));
-  const setSafetyConfirmed = (v: boolean) => setPerPair((p) => ({ ...p, safetyConfirmed: v }));
-
-  // The canonical flip. `triage_action` has taken `p_payload.keep_id` since
-  // 20260801050000 and `useUnifiedTriageQueue` has carried a payload slot all along,
-  // but `TriageView.handleAction` never passed one — so choosing which row survives was
-  // reachable from SQL and from the hook, and from nowhere a reviewer could click.
-  const handleAction = (
-    action: 'approve' | 'reject' | 'skip' | 'flag',
-    notes?: string,
-    cannedSlug?: string,
-  ) => {
-    // Only ever sent on APPROVE. p_confirm is a statement that a human read a
-    // safety claim and takes responsibility for publishing it; a rejection
-    // publishes nothing, so attaching it there would record a confirmation
-    // nobody made.
-    const confirm = action === 'approve' && requiresConfirm && safetyConfirmed ? true : undefined;
-
-    if (isDedup && action === 'approve' && keepId && keepId !== originalKeepId) {
-      onAction(action, notes, cannedSlug, { keep_id: keepId }, confirm);
-      return;
-    }
-    onAction(action, notes, cannedSlug, undefined, confirm);
-  };
+  // Reviewer answers are owned by TriageView and keyed by item id, so nothing here
+  // needs a reset-on-advance: a leak across items is impossible by construction.
+  const keepId = answers.keepId ?? originalKeepId;
+  const namesakeConfirmed = Boolean(answers.namesakeConfirmed);
+  const safetyConfirmed = Boolean(answers.safetyConfirmed);
 
   const diffs =
     item.has_diff && entityData && stagingData
@@ -282,7 +231,7 @@ export function TriageDetailPanel({ item, onAction, isActionLoading }: TriageDet
                   entityType={item.content_type}
                   meta={meta}
                   keepId={keepId}
-                  onFlip={setKeepId}
+                  onFlip={(v) => onAnswersChange({ keepId: v })}
                   flipped={Boolean(keepId && keepId !== originalKeepId)}
                 />
               </div>
@@ -301,11 +250,22 @@ export function TriageDetailPanel({ item, onAction, isActionLoading }: TriageDet
                       their relationship graph, which no undo can fully rebuild. Check the Wikidata
                       id and the dates before approving.
                     </p>
-                    <label className="flex items-center gap-2 text-13">
-                      <input
-                        type="checkbox"
+                    {/* The repo's Checkbox, not a raw <input>: `index.css` gives the
+                        44px WCAG 2.5.8 target to `label:has([role='checkbox'])`, and a
+                        native input carries no role attribute, so it fell through that
+                        rule and rendered ~13px wide inside a 44px-tall box. */}
+                    {/* htmlFor + id, the pairing TagMergeReviewQueue already uses:
+                        jsx-a11y cannot see Radix's button[role=checkbox] as a
+                        control, so a bare nested Checkbox fails
+                        label-has-associated-control. */}
+                    <label
+                      htmlFor="triage-namesake-confirm"
+                      className="flex items-center gap-2 text-13"
+                    >
+                      <Checkbox
+                        id="triage-namesake-confirm"
                         checked={namesakeConfirmed}
-                        onChange={(e) => setNamesakeConfirmed(e.target.checked)}
+                        onCheckedChange={(v) => onAnswersChange({ namesakeConfirmed: v === true })}
                       />
                       I have confirmed these are the same person
                     </label>
@@ -326,12 +286,15 @@ export function TriageDetailPanel({ item, onAction, isActionLoading }: TriageDet
                       — read the proposed text against the country&rsquo;s actual legal status
                       before approving.
                     </p>
-                    <label className="flex items-start gap-2 text-13">
-                      <input
-                        type="checkbox"
+                    <label
+                      htmlFor="triage-safety-confirm"
+                      className="flex items-start gap-2 text-13"
+                    >
+                      <Checkbox
+                        id="triage-safety-confirm"
                         className="mt-0.5"
                         checked={safetyConfirmed}
-                        onChange={(e) => setSafetyConfirmed(e.target.checked)}
+                        onCheckedChange={(v) => onAnswersChange({ safetyConfirmed: v === true })}
                       />
                       <span>I have read this note and confirm it should publish</span>
                     </label>
@@ -468,13 +431,22 @@ export function TriageDetailPanel({ item, onAction, isActionLoading }: TriageDet
               : 'Confirm the safety check above to enable publishing this note.'}
           </p>
           <ActionBar
-            onAction={handleAction}
+            notes={answers.notes ?? ''}
+            cannedSlug={answers.cannedSlug ?? ''}
+            onAnswersChange={onAnswersChange}
+            onAction={onAction}
             isLoading={isActionLoading}
             disabledActions={['approve']}
           />
         </div>
       ) : (
-        <ActionBar onAction={handleAction} isLoading={isActionLoading} />
+        <ActionBar
+          notes={answers.notes ?? ''}
+          cannedSlug={answers.cannedSlug ?? ''}
+          onAnswersChange={onAnswersChange}
+          onAction={onAction}
+          isLoading={isActionLoading}
+        />
       )}
     </div>
   );

@@ -300,6 +300,16 @@ function ContentDuplicates({
                     </Button>
                   </div>
 
+                  {/* Say what pre-selected the canonical. `suggestKeep` ranks on
+                      quality_score → featured → oldest, and named that rule NOWHERE on
+                      screen — so a reviewer was asked to accept or override a default
+                      whose reasoning was invisible, on a page whose entire job is that
+                      one choice. */}
+                  <p className="text-muted-foreground text-13">
+                    Pre-selected by highest quality score, then featured, then oldest. Pick another
+                    row to override.
+                  </p>
+
                   <div className="flex flex-col gap-1">
                     {c.members.map((m) => {
                       const vm = meta.get(m.id);
@@ -343,13 +353,24 @@ function ContentDuplicates({
 function FuzzyDuplicates({ type }: { type: DedupType }) {
   const queryClient = useQueryClient();
   const { clusters, isLoading, isError, error } = useFuzzyDuplicateClusters(type.key);
+  /**
+   * Reviewer overrides of the suggested canonical, keyed by pair.
+   *
+   * The fuzzy members rendered as non-interactive <div>s, so `keepDrop`'s suggestion
+   * was the ONLY possible outcome — a reviewer who could see the wrong row was about
+   * to win had no way to say so, and the exact-cluster view beside it has had that
+   * control all along. Mirrors `ContentDuplicates`' `picked` state exactly.
+   */
+  const [picked, setPicked] = useState<Record<string, string>>({});
   const refresh = () => {
     queryClient.invalidateQueries({ queryKey: ['fuzzy-dup-clusters', type.key] });
     queryClient.invalidateQueries({ queryKey: ['dup-clusters', type.key] });
   };
 
+  const pairKey = (c: FuzzyCluster) => `${c.members[0].id}|${c.members[1].id}`;
+
   // canonical = higher quality_score → featured → first listed
-  const keepDrop = (c: FuzzyCluster): [string, string] => {
+  const suggestKeepDrop = (c: FuzzyCluster): [string, string] => {
     const [a, b] = c.members;
     const aBetter =
       (a.quality_score ?? -1) > (b.quality_score ?? -1) ||
@@ -359,6 +380,14 @@ function FuzzyDuplicates({ type }: { type: DedupType }) {
       ((a.quality_score ?? -1) === (b.quality_score ?? -1) &&
         Boolean(a.is_featured) === Boolean(b.is_featured));
     return aBetter ? [a.id, b.id] : [b.id, a.id];
+  };
+
+  /** The suggestion, unless the reviewer picked the other row. */
+  const keepDrop = (c: FuzzyCluster): [string, string] => {
+    const chosen = picked[pairKey(c)];
+    if (!chosen) return suggestKeepDrop(c);
+    const other = c.members.find((m) => m.id !== chosen);
+    return other ? [chosen, other.id] : suggestKeepDrop(c);
   };
 
   // No bulk auto-merge button any more. Venues were the only type that had one
@@ -372,7 +401,15 @@ function FuzzyDuplicates({ type }: { type: DedupType }) {
       return mergeEntityPair(type.key, keep, drop);
     },
     onSuccess: (auditId) => {
+      // SAY when there is no undo. With no audit id the toast simply had no action
+      // and said nothing else, so an irreversible merge and a reversible one read
+      // identically — and the reviewer found out only by looking for a button that
+      // was never there. `reportUndo` already models this honesty for the other
+      // branch; this is the same rule one step earlier.
       toast.success('Merged', {
+        description: auditId
+          ? undefined
+          : 'This merge reported no audit id, so it cannot be undone from this screen.',
         action: auditId
           ? {
               label: 'Undo',
@@ -446,12 +483,26 @@ function FuzzyDuplicates({ type }: { type: DedupType }) {
                 Merge
               </Button>
             </div>
+            <p className="text-muted-foreground text-13">
+              Pre-selected by highest quality score, then featured. Pick another row to override.
+            </p>
             <div className="flex flex-col gap-1">
+              {/* <button>, not <div>: these were non-interactive, so the suggestion was
+                  the only reachable outcome even when a reviewer could see it was
+                  wrong. Same control the exact-cluster view has always had. */}
               {c.members.map((m) => (
-                <div
+                <button
                   key={m.id}
-                  className={`rounded-element flex items-center gap-2 p-2 ${m.id === keepId ? 'bg-accent' : ''}`}
+                  type="button"
+                  onClick={() => setPicked((p) => ({ ...p, [pairKey(c)]: m.id }))}
+                  className={`rounded-element flex items-center gap-2 p-2 text-left ${m.id === keepId ? 'bg-accent' : 'hover:bg-muted'}`}
                 >
+                  {/* Glyph as well as the fill, never colour alone (WCAG 1.4.1). */}
+                  <span
+                    className={`flex h-4 w-4 items-center justify-center rounded-full border ${m.id === keepId ? 'bg-foreground' : ''}`}
+                  >
+                    {m.id === keepId && <Check size={12} className="text-background" />}
+                  </span>
                   <span className="font-medium">{m.title}</span>
                   {m.id === keepId && <Badge variant="default">canonical</Badge>}
                   <code className="text-muted-foreground text-13">{m.slug}</code>
@@ -459,7 +510,8 @@ function FuzzyDuplicates({ type }: { type: DedupType }) {
                   {typeof m.quality_score === 'number' && (
                     <Badge variant="outline">q {Math.round(m.quality_score)}</Badge>
                   )}
-                </div>
+                  {m.is_featured && <Badge variant="outline">featured</Badge>}
+                </button>
               ))}
             </div>
           </div>

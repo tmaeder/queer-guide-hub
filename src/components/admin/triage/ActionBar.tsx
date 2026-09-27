@@ -1,15 +1,21 @@
-import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Check, X, SkipForward, Flag } from 'lucide-react';
 import { CannedResponsePicker } from './CannedResponsePicker';
+import type { TriageAction, TriageAnswers } from './resolveDecision';
 
 interface ActionBarProps {
-  onAction: (
-    action: 'approve' | 'reject' | 'skip' | 'flag',
-    notes?: string,
-    cannedSlug?: string,
-  ) => void;
+  /**
+   * CONTROLLED. These used to be local `useState`, and this component is rendered
+   * with no `key`, so a typed note survived the queue advancing and attached itself
+   * to the NEXT item. Worse, the keyboard path never reached this state at all, so
+   * pressing `r` sent the rejection with no note and left the text in the box.
+   * Owned by `TriageView` now, keyed by item id.
+   */
+  notes: string;
+  cannedSlug: string;
+  onAnswersChange: (patch: Partial<TriageAnswers>) => void;
+  onAction: (action: TriageAction) => void;
   isLoading: boolean;
   /**
    * Actions to render but refuse. Used by dedup-review's namesake gate: approve is
@@ -17,23 +23,28 @@ interface ActionBarProps {
    * whole point of the flag is that "these are two different people" should be the
    * easy answer, and disabling the entire bar would make it the hardest.
    */
-  disabledActions?: ReadonlyArray<'approve' | 'reject' | 'skip' | 'flag'>;
+  disabledActions?: ReadonlyArray<TriageAction>;
 }
 
-export function ActionBar({ onAction, isLoading, disabledActions = [] }: ActionBarProps) {
-  const blocked = (a: 'approve' | 'reject' | 'skip' | 'flag') => disabledActions.includes(a);
-  const [notes, setNotes] = useState('');
-  const [cannedSlug, setCannedSlug] = useState('');
+export function ActionBar({
+  notes,
+  cannedSlug,
+  onAnswersChange,
+  onAction,
+  isLoading,
+  disabledActions = [],
+}: ActionBarProps) {
+  const blocked = (a: TriageAction) => disabledActions.includes(a);
 
   function handleCannedSelect(slug: string, template: string) {
-    setCannedSlug(slug);
-    setNotes(template);
+    onAnswersChange({ cannedSlug: slug, notes: template });
   }
 
-  function handleAction(action: 'approve' | 'reject' | 'skip' | 'flag') {
-    onAction(action, notes || undefined, cannedSlug || undefined);
-    setNotes('');
-    setCannedSlug('');
+  // No local clear on act: the answers are keyed by item id upstream, so advancing
+  // the queue leaves this item's note on this item, which is what a reviewer who
+  // hits Undo expects to find.
+  function handleAction(action: TriageAction) {
+    onAction(action);
   }
 
   return (
@@ -88,8 +99,9 @@ export function ActionBar({ onAction, isLoading, disabledActions = [] }: ActionB
         <Textarea
           value={notes}
           onChange={(e) => {
-            setNotes(e.target.value);
-            setCannedSlug('');
+            // Editing clears the slug: the note is no longer the template, so
+            // recording which template was used would misattribute it.
+            onAnswersChange({ notes: e.target.value, cannedSlug: '' });
           }}
           placeholder="Review notes..."
           className="text-xs min-h-[60px] resize-none"
