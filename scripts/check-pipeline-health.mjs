@@ -2055,6 +2055,32 @@ const GEO_BASELINE = {
     } else {
       console.log(`✓ Geo authority loaded: ${rows} boundary rows, ${cells} cells, ${geo.boundary_iso_codes} ISO codes`)
 
+      // Every country holding content must have either its own polygon or a
+      // derived sovereign parent. Without one, geo_country_at resolves nothing
+      // inside it and EVERY row under that country reports as a containment
+      // mismatch that is not one — so a regression here does not look like
+      // missing geometry, it looks like a sudden pile of correct coordinates
+      // being flagged. Measured 0 of 191 when this check was added, so it is
+      // GATED rather than baselined.
+      //
+      // The denominator is printed because `without === 0` is equally true of a
+      // corpus with no content at all; it is what separates clean from
+      // measuring-nothing. An ABSENT key is reported separately from a zero,
+      // because an undeployed sentinel must never read as a clean corpus.
+      const holding = geo.countries_holding_content
+      const withoutGeom = geo.countries_without_geometry
+      if (holding === undefined || withoutGeom === undefined) {
+        console.warn('⚠ geo_hygiene_stats has no countries_without_geometry key — migration 99991790515886 is not applied. This is absence of a check, not absence of defects.')
+      } else if (holding < 150) {
+        console.error(`✗ Only ${holding} countries hold content — countries_without_geometry=${withoutGeom} is measuring almost nothing`)
+        FAILED = true
+      } else if (withoutGeom > 0) {
+        console.error(`✗ ${withoutGeom} of ${holding} countries hold venues or events with neither their own boundary polygon nor a derived sovereign parent — every row under them will be reported as a containment mismatch that is not one`)
+        FAILED = true
+      } else {
+        console.log(`✓ Containment resolvable for all ${holding} countries holding content`)
+      }
+
       const total = geo.containment_total ?? 0
       const byClass = geo.containment ?? {}
       if (total > GEO_BASELINE.containment_total) {

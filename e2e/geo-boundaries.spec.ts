@@ -125,38 +125,30 @@ test('geo_countries_equivalent is symmetric and does not over-match', async ({ r
 
 // ── the actual containment answer ────────────────────────────────────────────
 
-// PERMANENTLY SKIPPED, and the reason is not the one that used to hide it.
+// MOVED, not dropped: "every country holding content has boundary geometry" now
+// lives in `scripts/check-pipeline-health.mjs`, reading
+// `geo_hygiene_stats().countries_without_geometry` (added by 99991790515886).
 //
-// This calls `geo_hygiene_stats`, which `20270816143714` REVOKES from `anon` and
-// grants only to `authenticated` and `service_role`. From an anon spec it returns
-// HTTP 401, so **this test has never passed** — it was written against a role
-// this file does not have, and the file-level `test.skip(!ANON_KEY)` meant CI
-// never reported it, because a missing env var skipped all eight tests together.
-// Removing that skip (support/anonKey.ts now resolves the key from the deployed
-// bundle) is what surfaced it.
+// It was a test here for a while and it never once passed, for two independent
+// reasons that the file-level `test.skip(!ANON_KEY)` hid by skipping all eight
+// tests together on every CI run. First, `geo_hygiene_stats` is REVOKED from
+// `anon` by 20270816143714 and granted only to `authenticated` and
+// `service_role`, so from this file it returns HTTP 401. Second — and this is why
+// running it as another role would not have fixed it — the function returned
+// NEITHER key it asserted on: `Number(undefined)` is NaN, so both expectations
+// failed against a perfectly healthy corpus. The invariant was never measured
+// anywhere.
 //
-// The invariant is real: a country holding venues or events with neither its own
-// polygon nor a derived parent makes every row under it report as a mismatch
-// that is not one. It just cannot be checked from here. The right home is a
-// sentinel in `check-pipeline-health.mjs`, next to the other `*_hygiene_stats`
-// probes that already run as service_role, or an authenticated admin spec.
-// Reconstructing it from the anon surface is not available: anon can read
-// `countries`, but no geometry column is exposed to it.
+// The health script is the right home because it already runs as service_role
+// alongside every other `*_hygiene_stats` probe, and because the invariant is
+// about the whole corpus rather than about what a visitor is served — which is
+// what this file is for. Reconstructing it from the anon surface is not an
+// option: anon can read `countries`, but no geometry column is exposed to it.
 //
-// Left as a NAMED skip rather than deleted so the nightly report shows it. Do
-// NOT "fix" this by granting anon execute on the function — that is the
-// definer-leak class this repo gates on, and a hygiene aggregate granted broadly
-// is granted to every visitor.
-test.skip('every country holding content has boundary geometry — needs the authenticated or service_role surface, see comment', async ({
-  request,
-}) => {
-  const stats = await rpc<Record<string, unknown>>(request, 'geo_hygiene_stats');
-  expect(Number(stats.boundary_countries), 'no country polygons loaded').toBeGreaterThan(200);
-  expect(
-    Number(stats.countries_without_geometry),
-    'a country holding venues or events has neither its own polygon nor a derived parent — every row under it will be reported as a mismatch that is not one',
-  ).toBe(0);
-});
+// What stays here is the half that IS an anon question and does pass: the two
+// tests above prove the boundary table is loaded (>200 rows) and that the
+// microstates survived, which is the "no country polygons loaded" assertion the
+// removed test was also reaching for.
 
 test('known-correct places resolve to their own country', async ({ request }) => {
   // The four that the centroid-distance detector ranked as its TOP errors, plus
