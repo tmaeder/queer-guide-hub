@@ -9,6 +9,7 @@ import {
   parseWorkList,
   pathOf,
   resolveEventType,
+  typesOf,
 } from './parse.ts'
 
 // Every fixture is the REAL JSON-LD gayout served on 2026-09-28, copied
@@ -37,12 +38,19 @@ Deno.test('work list comes from ItemList JSON-LD and dedupes repeated urls', () 
   // The real listing carries 725 ListItems for 721 unique urls — three urls are
   // repeated (the same cruise sold from two ports, and one listed twice). This
   // fixture keeps those duplicates, so a parser that stopped deduping fails here.
-  const raw = JSON.parse(
-    /<script[^>]*>([\s\S]*?)<\/script>/.exec(LISTING)![1],
-  ) as { itemListElement: { url: string }[] }
+  //
+  // Read through `ldBlocks`, the parser's OWN extractor, rather than a second
+  // regex written here. A duplicate `<script>` pattern in the test is free to
+  // drift from the one in parse.ts — and the first version of this line did,
+  // omitting the `i` flag that the real `LD_RE` carries, which CodeQL correctly
+  // flagged as a case-sensitive HTML-filtering regexp.
+  const itemList = ldBlocks(LISTING).find(b => typesOf(b).includes('ItemList'))
+  assert(itemList, 'fixture has no ItemList block')
+  const rawCount = (itemList!.itemListElement as unknown[]).length
   assert(
-    raw.itemListElement.length > items.length,
-    'fixture must contain duplicate urls for the dedupe assertion to mean anything',
+    rawCount > items.length,
+    `fixture must contain duplicate urls for the dedupe assertion to mean anything ` +
+      `(raw ${rawCount} vs deduped ${items.length})`,
   )
 
   for (const i of items) {
