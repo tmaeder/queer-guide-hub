@@ -597,3 +597,12 @@ verify_jwt = false
 # auto-pause counter.
 [functions.venue-accessibility-osm]
 verify_jwt = false
+
+# Cron target (ev-fill-queerde, Mon 02:05) — self-gates on requireInternalOrAdmin.
+# Measured before adding this line: without it the platform answered
+# UNAUTHORIZED_NO_AUTH_HEADER *before* the request reached the function, while every
+# sibling event source (source-kweer, source-gaybasel, source-haz-ch) answered from
+# its own gate. It happens to work anyway while the cron sends the anon key — which
+# is precisely what would make the eventual 401 read as an upstream outage.
+[functions.source-queerde]
+verify_jwt = false
