@@ -17,6 +17,10 @@ const snapshotTimeoutFix = readFileSync(
   'supabase/migrations/99991790275100_event_quality_snapshot_timeout_fix.sql',
   'utf8',
 ).toLowerCase();
+const freshUnknownFix = readFileSync(
+  'supabase/migrations/20260928134153_event_liveness_fresh_unknown_not_stale.sql',
+  'utf8',
+).toLowerCase();
 const gates = readFileSync('scripts/check-data-quality-gates.mjs', 'utf8');
 const queues = readFileSync('src/config/adminQueues.ts', 'utf8');
 const qualityPage = readFileSync('src/pages/admin/AdminEventQuality.tsx', 'utf8');
@@ -58,6 +62,14 @@ describe('event data quality programme', () => {
       expect(migration).toContain(code.toLowerCase());
     }
     expect(migration).toContain("when cardinality(v_blockers)>0 or v_overall<70 then 'fail'");
+  });
+
+  it('separates a fresh inconclusive liveness probe from a stale probe', () => {
+    expect(freshUnknownFix).toContain(
+      "last_verified_at is null or last_verified_at<now()-interval ''7 days''",
+    );
+    expect(freshUnknownFix).toContain('execute replace(v_definition, v_old, v_new)');
+    expect(migration).toContain("case when e.liveness_status<>'unknown' then 50 else 0 end");
   });
 
   it('connects the programme to CI and the real admin review surfaces', () => {

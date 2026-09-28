@@ -1,4 +1,4 @@
--- Run after 99991790271091_event_data_quality_programme.sql on a non-production DB:
+-- Run after the event quality programme migrations on a non-production DB:
 -- psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f supabase/tests/event_data_quality_programme.sql
 begin;
 
@@ -21,6 +21,8 @@ do $$
 declare
   v_id uuid;
   v_historical_id uuid;
+  v_fresh_unknown_id uuid;
+  v_stale_unknown_id uuid;
   v_quality jsonb;
   v_issue uuid;
   v_before text[];
@@ -70,6 +72,30 @@ begin
   assert v_quality->>'event_scope'='historical','past fixture was not historical';
   assert not((v_quality->'issue_codes') ? 'CURRENT_URL_MISSING'),
     'historical event incorrectly required a current ticket/source URL';
+
+  insert into public.events(title,slug,description,start_date,event_type,data_source,
+    external_id,status,ticket_url,liveness_status,last_verified_at)
+  values('Fresh unknown liveness fixture','fresh-unknown-liveness-fixture',
+    'A current event whose remote source blocked a recent liveness probe.',
+    now()+interval '10 days','social','quality-fixture','fresh-unknown','active',
+    'https://events.example.org/fresh-unknown','unknown',now())
+  returning id into v_fresh_unknown_id;
+  v_quality:=public.compute_event_quality(v_fresh_unknown_id);
+  assert not((v_quality->'issue_codes') ? 'LIVENESS_STALE'),
+    'fresh inconclusive liveness probe was incorrectly classified as stale';
+  assert (v_quality->>'freshness_score')::int<100,
+    'fresh inconclusive liveness probe lost its score penalty';
+
+  insert into public.events(title,slug,description,start_date,event_type,data_source,
+    external_id,status,ticket_url,liveness_status,last_verified_at)
+  values('Stale unknown liveness fixture','stale-unknown-liveness-fixture',
+    'A current event whose last liveness probe is older than the freshness SLO.',
+    now()+interval '10 days','social','quality-fixture','stale-unknown','active',
+    'https://events.example.org/stale-unknown','unknown',now()-interval '8 days')
+  returning id into v_stale_unknown_id;
+  v_quality:=public.compute_event_quality(v_stale_unknown_id);
+  assert (v_quality->'issue_codes') ? 'LIVENESS_STALE',
+    'old liveness probe was not classified as stale';
 
   insert into public.dedup_review_queue(entity_type,keep_id,drop_id,confidence,reason,status,created_at)
   values('event',v_id,v_historical_id,0.60,'quality-fixture','open',now()-interval '15 days');
