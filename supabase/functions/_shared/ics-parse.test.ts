@@ -1,6 +1,6 @@
 import { assertEquals, assert } from 'https://deno.land/std@0.224.0/assert/mod.ts'
 import {
-  unfold, unescapeText, parseMoment, parseComponents, resolveEvents, parseIcs,
+  unfold, unescapeText, parseMoment, parseComponents, parseIcs,
   parseLocation, firstUrl, htmlToText,
 } from './ics-parse.ts'
 

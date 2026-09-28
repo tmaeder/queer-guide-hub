@@ -697,7 +697,9 @@ export function htmlToText(html: string | undefined): string | undefined {
     .replace(/&gt;/gi, '>')
     .replace(/&quot;/gi, '"')
     .replace(/&#39;|&apos;/gi, "'")
-    .replace(/ /g, ' ')
+    // Escaped, not literal: a raw NBSP here is invisible in review and trips
+    // no-irregular-whitespace. Google's descriptions are full of them.
+    .replace(/\u00a0/g, ' ')
     .split('\n')
     .map((l) => l.replace(/[ \t]+/g, ' ').trim())
     .join('\n')

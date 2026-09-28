@@ -1,5 +1,5 @@
 import { getServiceClient, jsonResponse, errorResponse, corsResponse, requireInternalOrAdmin } from '../_shared/supabase-client.ts'
-import type { SourceAdapter, RawItem, NormalizedItem, AdapterConfig } from '../_shared/source-adapter.ts'
+import type { SourceAdapter, RawItem, AdapterConfig } from '../_shared/source-adapter.ts'
 import { writeToStaging } from '../_shared/source-adapter.ts'
 import { withErrorReporting } from '../_shared/report-api-error.ts'
 import { parseIcs, type IcsEvent } from '../_shared/ics-parse.ts'
