@@ -14,12 +14,20 @@ import { parseListing, parseDetail, buildEvents, type G4uCard, type G4uDetail, t
 // what was asked for and they are the editorially curated subset.
 //
 // TWO REQUESTS PER EVENT IS WHY THIS IS RESUMABLE. The listing enumerates
-// slugs; the record lives on /event/<slug>/. 621 detail fetches do not fit a
-// 546s edge invocation with any margin, so each run SKIPS slugs already in
+// slugs; the record lives on /event/<slug>/. Each run SKIPS slugs already in
 // ingestion_staging and works the remainder. That is not an optimisation: a
 // run that always re-reads the same head is the selector-starvation shape
 // this codebase has been bitten by in city enrichment, embeddings and the
 // news drain. Once the corpus is staged a run costs 6 requests and stages 0.
+//
+// THE BOUND IS THE 150s IDLE TIMEOUT, NOT THE 546s WALL — measured, by
+// overrunning it. A batch of 220 at 700ms spacing is 154s of sequential
+// fetching with nothing written in between, and the platform killed it with
+// `{"code":"IDLE_TIMEOUT","message":"Request idle timeout limit (150s)
+// reached"}` and staged nothing. Anything that paces requests has to budget
+// against 150s, so the ceiling here is ~200 fetches and the default 150
+// (~105s + ~5s of listings) is the safe figure. Raising batch_size past ~180
+// does not import more, it imports NOTHING.
 //
 // EVENTS ONLY. The Event node carries no venue name, no street, no lat/lng
 // and no time of day — just a date-only startDate and locality + ISO country.
@@ -222,9 +230,10 @@ Deno.serve(withErrorReporting('source-gaytravel4u', async (req) => {
   try {
     const body = await req.json().catch(() => ({}))
     const dryRun = body.dry_run ?? body.dryRun ?? false
-    // 150 detail fetches is ~2-4 min, comfortably inside the 546s wall, and
-    // clears the 621-slug backlog in five nights.
-    const batchSize = body.limit ?? body.batch_size ?? 150
+    // 150 fetches at 700ms is ~105s, inside the 150s IDLE timeout that
+    // actually bounds this (see the header — 220 overran it and staged 0),
+    // and clears the 621-slug backlog in four nights.
+    const batchSize = Math.min(180, body.limit ?? body.batch_size ?? 150)
 
     // A dry run must see unstaged work, or it reports 0 once the corpus is in
     // and looks broken. `refetch: true` forces a full pass.
