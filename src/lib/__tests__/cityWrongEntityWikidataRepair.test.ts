@@ -223,8 +223,15 @@ describe('the city wikidata sentinel', () => {
   });
 
   it('never gates on the work-list size', () => {
-    // 167 of 2,959 failed the coordinate bound; ~154 still need a human per row.
-    // Gating on that ships red on arrival.
+    // 167 of 2,959 failed the coordinate bound; the residue still needs a human per
+    // row. Gating on that ships red on arrival.
+    //
+    // This asserts against THIS migration's text, which is immutable history: it
+    // shipped `coord_unswept`, and it still says so. 99991790619179 later replaced the
+    // function because that key was counted from `wikidata_link.coord_swept_at`, which
+    // NOTHING ever wrote — it read 3,031 forever and hid the real mismatches. The
+    // live contract is asserted against the health script below, and the retirement
+    // itself is guarded by cityCoordVerdictPersisted.test.ts.
     expect(signalsFn).toContain("'coord_unswept'");
     expect(signalsVerify).not.toMatch(/coord_unswept'\)::int\s*(<>|>)\s*\d/);
   });
@@ -272,9 +279,10 @@ describe('the health script consumes the sentinel', () => {
     for (const key of ['qid_regressed', 'wrong_title_back', 'retracted_desc_back']) {
       expect(cityBlock).toContain(key);
     }
-    // Reported, never gated.
-    expect(cityBlock).toContain('coord_unswept');
-    expect(cityBlock).not.toMatch(/coord_unswept[^\n]*>\s*0/);
+    // Reported, never gated. `coord_disagree` replaced `coord_unswept` in
+    // 99991790619179 — see the note on the sibling assertion above.
+    expect(cityBlock).toContain('coord_disagree');
+    expect(cityBlock).not.toMatch(/coord_disagree[^\n]*>\s*0/);
   });
 
   it('carries the corpus-size positive control', () => {
