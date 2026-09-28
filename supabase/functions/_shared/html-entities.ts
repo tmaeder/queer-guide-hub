@@ -41,22 +41,68 @@ function fromCodePoint(cp: number): string | null {
 /**
  * Decode the entities these feeds actually emit, in one pass.
  *
+ * `extra` is merged over the defaults so a caller with a richer table (the
+ * German and Dutch feeds carry umlauts, dashes and typographic quotes as
+ * named entities) keeps exactly the coverage it had before. That is what
+ * makes this safe to retrofit onto an existing parser: the vulnerable
+ * ORDERING changes, the vocabulary does not.
+ *
+ * Lookup tries exact case first and only then lowercase, because a few of
+ * those tables distinguish them — `&AElig;` is Æ while `&aelig;` is æ, and a
+ * blanket lowercase would silently collapse the pair.
+ *
  * An unrecognised entity is returned verbatim — a parser's job here is to
  * render source text faithfully, and silently dropping `&foo;` loses
  * information without telling anyone.
  */
-export function decodeEntities(input: string): string {
+export function decodeEntities(input: string, extra?: Record<string, string>): string {
+  const table = extra ? { ...NAMED, ...extra } : NAMED
   return input.replace(/&(#[0-9]+|#[xX][0-9a-fA-F]+|[a-zA-Z][a-zA-Z0-9]*);/g, (match, body: string) => {
     if (body[0] === '#') {
       const hex = body[1] === 'x' || body[1] === 'X'
       const cp = hex ? parseInt(body.slice(2), 16) : Number(body.slice(1))
       return fromCodePoint(cp) ?? match
     }
-    return NAMED[body.toLowerCase()] ?? match
+    return table[body] ?? table[body.toLowerCase()] ?? match
   })
 }
 
 /** Strip tags, then decode — in that order, so a decoded `<` can never form a tag. */
 export function stripTagsAndDecode(html: string): string {
   return decodeEntities(html.replace(/<[^>]*>/g, ' ')).replace(/\s+/g, ' ').trim()
+}
+
+/**
+ * Entities whose output can be re-read as markup or as the start of another
+ * entity. These are exactly what a second decoding pass must refuse.
+ */
+const MARKUP_PRODUCING = new Set(['amp', 'lt', 'gt', 'quot', 'apos'])
+
+/**
+ * Decode, then decode ONCE more — but the second pass may not produce markup.
+ *
+ * Some feeds genuinely double-encode: eventfrog emits `S&amp;uuml;dpol` and
+ * means `Südpol`, and a single pass would leave a visible `&uuml;` in the
+ * title. Its original implementation handled that by re-running the whole
+ * decoder, which is precisely the `js/double-escaping` hole — `&amp;lt;`
+ * came out as `<`.
+ *
+ * Both requirements are satisfiable at once, because they are about
+ * different entities. The second pass decodes only NAMED entities that
+ * cannot yield `& < > " '`, so:
+ *
+ *   S&amp;uuml;dpol  ->  S&uuml;dpol  ->  Südpol     (recovered, as intended)
+ *   &amp;lt;         ->  &lt;         ->  &lt;       (refused, stays inert)
+ *
+ * Numeric forms are deliberately excluded from the second pass entirely:
+ * `&#38;` and `&#60;` are the same hazard wearing a different spelling.
+ */
+export function decodeEntitiesDeep(input: string, extra?: Record<string, string>): string {
+  const table = extra ? { ...NAMED, ...extra } : NAMED
+  const once = decodeEntities(input, extra)
+  return once.replace(/&([a-zA-Z][a-zA-Z0-9]*);/g, (match, name: string) => {
+    if (MARKUP_PRODUCING.has(name.toLowerCase())) return match
+    const v = table[name] ?? table[name.toLowerCase()]
+    return v !== undefined && !/[&<>"']/.test(v) ? v : match
+  })
 }

@@ -1,3 +1,4 @@
+import { decodeEntities } from '../_shared/html-entities.ts'
 import { getServiceClient, jsonResponse, errorResponse, corsResponse, requireInternalOrAdmin } from '../_shared/supabase-client.ts'
 import type { SourceAdapter, RawItem, NormalizedItem, AdapterConfig } from '../_shared/source-adapter.ts'
 import { writeToStaging } from '../_shared/source-adapter.ts'
@@ -56,14 +57,7 @@ const stripTags = (s: unknown): string =>
     .replace(/<br\s*\/?>/gi, '\n')
     .replace(/<\/p\b[^>]*>/gi, '\n')
     .replace(/<[^>]+>/g, ' ')
-    .replace(/&#x([0-9a-f]+);/gi, (_m, h) => String.fromCodePoint(parseInt(h, 16)))
-    .replace(/&#(\d+);/g, (_m, d) => String.fromCodePoint(Number(d)))
-    .replace(/&nbsp;/g, ' ')
-    .replace(/&quot;/g, '"')
-    .replace(/&apos;/g, "'")
-    .replace(/&lt;/g, '<')
-    .replace(/&gt;/g, '>')
-    .replace(/&amp;/g, '&')
+    .replace(/&[#0-9a-zA-Z]+;/g, (m) => decodeEntities(m))
     .replace(/[ \t]+/g, ' ')
     .replace(/\n{3,}/g, '\n\n')
     .trim()
