@@ -764,7 +764,7 @@ export function htmlToText(html: string | undefined): string | undefined {
   const text = decodeEntities(stripTags(withBreaks))
     // Escaped, not literal: a raw NBSP here is invisible in review and trips
     // no-irregular-whitespace. Google's descriptions are full of them.
-    .replace(/ /g, ' ')
+    .replace(/\u00a0/g, ' ')
     .split('\n')
     .map((l) => l.replace(/[ \t]+/g, ' ').trim())
     .join('\n')
