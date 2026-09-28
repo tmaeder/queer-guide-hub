@@ -28,6 +28,7 @@
 // ============================================================
 
 import { inferEventType } from './berlin-events-parse.ts'
+import { stripTagsAndDecode } from './html-entities.ts'
 
 export interface QkEvent {
   id: string
@@ -45,16 +46,8 @@ export interface QkEvent {
 /** Strings this source uses to mean "not announced". Never a venue. */
 const PLACEHOLDER = /^(t\.?b\.?a\.?|t\.?b\.?d\.?|to be announced|onbekend|nader te bepalen|\?+)$/i
 
-function decodeEntities(s: string): string {
-  return s
-    .replace(/&#(\d+);/g, (_, d) => String.fromCodePoint(Number(d)))
-    .replace(/&#x([0-9a-f]+);/gi, (_, h) => String.fromCodePoint(parseInt(h, 16)))
-    .replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>')
-    .replace(/&quot;/g, '"').replace(/&#0?39;|&apos;/g, "'").replace(/&nbsp;/g, ' ')
-}
-
 function text(s: string): string {
-  return decodeEntities(s.replace(/<[^>]*>/g, ' ')).replace(/\s+/g, ' ').trim()
+  return stripTagsAndDecode(s)
 }
 
 /** `+`-for-space form used by both calendar providers. */
