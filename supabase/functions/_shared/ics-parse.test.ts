@@ -369,6 +369,33 @@ Deno.test('a partial postcode is dropped but its city is kept', () => {
   assertEquals(parseLocation('X, 50676 Köln, Deutschland').postalCode, '50676')
 })
 
+Deno.test('a Spanish province between town and country is not taken as the city', () => {
+  // Verbatim from the feed. Reading `Las Palmas` as the city puts a Maspalomas
+  // event in a real city 50 km away, and silently drops the postcode.
+  assertEquals(
+    parseLocation('Yumbo Centrum, Av. Estados Unidos, 54, 35100 Maspalomas, Las Palmas, Spanien'),
+    {
+      venueName: 'Yumbo Centrum',
+      address: 'Av. Estados Unidos, 54',
+      postalCode: '35100',
+      city: 'Maspalomas',
+      countryCode: 'ES',
+    },
+  )
+})
+
+Deno.test('the German shape, where the postcode IS the last segment, is untouched', () => {
+  // The province rule must not fire here, or every ordinary address loses its city.
+  assertEquals(parseLocation('Pullermanns, Mathiasstraße 22, 50676 Köln, Deutschland').city, 'Köln')
+  assertEquals(parseLocation('Dreizehn, Welserstraße 27, 10777 Berlin, Deutschland').city, 'Berlin')
+  assertEquals(parseLocation('Bremen, 28 Bremen, Deutschland').city, 'Bremen')
+  assertEquals(parseLocation('Köln, Deutschland').city, 'Köln')
+})
+
+Deno.test('with no postcode anywhere the trailing segment is still the city', () => {
+  assertEquals(parseLocation('Woof Berlin, Fuggerstraße 37, Berlin, Deutschland').city, 'Berlin')
+})
+
 Deno.test('non-German countries resolve', () => {
   assertEquals(parseLocation('Waagnatie Expo & Events, Rijnkaai 150, 2000 Antwerpen, België').countryCode, 'BE')
   assertEquals(parseLocation('Wien, Österreich').countryCode, 'AT')

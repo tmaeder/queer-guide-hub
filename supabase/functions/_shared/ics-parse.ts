@@ -635,11 +635,31 @@ export function parseLocation(raw: string | undefined): ParsedLocation {
     return out
   }
 
+  // `…, 35100 Maspalomas, Las Palmas, Spanien` — Spain and Italy put the
+  // PROVINCE between the town and the country, and Google emits it. Taken at
+  // face value the province becomes the city: the one instance in this feed put
+  // a Maspalomas event in Las Palmas, a real city 50 km away, which is exactly
+  // the wrong-place class the rest of this function guards against.
+  //
+  // The postcode is what disambiguates it. A trailing segment with no postcode,
+  // sitting directly behind one that HAS a postcode, is an administrative layer
+  // above the town rather than the town itself, so it is dropped. Where the
+  // trailing segment carries the postcode (the German shape, `50676 Köln`) or
+  // nothing does, this leaves the input untouched.
+  const POSTAL_CITY = /^(\d{2,6})\s+(.{2,})$/
+  if (
+    rest.length >= 2 &&
+    !POSTAL_CITY.test(rest[rest.length - 1]) &&
+    POSTAL_CITY.test(rest[rest.length - 2])
+  ) {
+    rest.pop()
+  }
+
   // `50676 Köln` / `2000 Antwerpen` / the partial `28 Bremen` Google sometimes
   // emits. Two digits is enough to recognise the shape; the value is kept only
   // when it is a plausible full postcode.
   const tail = rest[rest.length - 1]
-  const postal = tail ? /^(\d{2,6})\s+(.{2,})$/.exec(tail) : null
+  const postal = tail ? POSTAL_CITY.exec(tail) : null
   if (postal) {
     if (postal[1].length >= 4) out.postalCode = postal[1]
     out.city = postal[2].trim()
