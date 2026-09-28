@@ -597,3 +597,16 @@ verify_jwt = false
 # auto-pause counter.
 [functions.venue-accessibility-osm]
 verify_jwt = false
+
+# Cron targets for the 2026-09-28 event-calendar import (qcal.app,
+# queer-kalender.nl, gaytravel4u.com). Each self-gates via
+# requireInternalOrAdmin; without this line pg_cron gets a 401, which reads as
+# an outage and burns the auto-pause counter.
+[functions.source-qcal]
+verify_jwt = false
+
+[functions.source-queer-kalender]
+verify_jwt = false
+
+[functions.source-gaytravel4u]
+verify_jwt = false
