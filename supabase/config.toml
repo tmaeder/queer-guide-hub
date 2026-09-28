@@ -265,6 +265,12 @@ verify_jwt = false
 [functions.source-gaycities]
 verify_jwt = false
 
+# Reached by pg_cron through automation_http_post with X-Internal-Secret; the
+# function self-gates with requireInternalOrAdmin. Gateway JWT would reject that
+# call before the function's own gate ever runs.
+[functions.source-gayout]
+verify_jwt = false
+
 [functions.source-geonames]
 verify_jwt = false
 
