@@ -207,10 +207,24 @@ describe('postconditions', () => {
     // These two are deliberately SOURCE checks: a behavioural test cannot see that
     // a future CREATE OR REPLACE of the runner dropped the call while the helper
     // still exists and still works.
-    expect(verify).toContain("position('city_by_alias' in pg_get_functiondef(");
-    expect(verify).toContain(
-      "position('lower(btrim(c.name)) = lower(btrim(r.city))' in pg_get_functiondef(",
-    );
+    expect(verify).toContain("position('city_by_alias' in v_src)");
+    expect(verify).toContain("position('lower(btrim(c.name)) = lower(btrim(r.city))' in v_src)");
+  });
+
+  it('strip comments out of the source BEFORE asserting on it', () => {
+    // pg_get_functiondef returns the body INCLUDING its comments, and this body
+    // explains the arm in prose that names the helper, so an unstripped
+    // position() test passes with the CALL deleted and the comment left standing
+    // -- a postcondition that cannot fail. Proven on prod: given a body with only
+    // the comment, the unstripped form matches and the stripped form does not.
+    // This class aborted `db push` on main three times on 2026-09-20 and stranded
+    // the whole merge queue, which is why scripts/check-functiondef-asserts.mjs
+    // refuses the unstripped form outright.
+    expect(verify).toContain("'--[^' || chr(10) || ']*', '', 'g')");
+    expect(verify).toMatch(/v_src\s*:=\s*regexp_replace\(/);
+    // No assertion may read the raw definition. The pattern is deliberately
+    // broad: any `position(... in pg_get_functiondef` at all is the defect.
+    expect(verify).not.toMatch(/position\([^)]*in pg_get_functiondef/);
   });
 
   it('assert anon cannot execute the helper', () => {

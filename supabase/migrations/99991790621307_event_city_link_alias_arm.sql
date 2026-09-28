@@ -262,6 +262,7 @@ DECLARE
   v_us uuid;
   v_got uuid;
   v_name text;
+  v_src text;
 BEGIN
   SELECT id INTO v_de FROM public.countries WHERE code = 'DE';
   SELECT id INTO v_us FROM public.countries WHERE code = 'US';
@@ -297,15 +298,28 @@ BEGIN
     RAISE EXCEPTION 'P6: an empty city name resolved an alias';
   END IF;
 
+  -- P7/P8 read the runner's SOURCE, because no behavioural test can see that a
+  -- future CREATE OR REPLACE dropped the call while the helper still exists and
+  -- still works on its own.
+  --
+  -- COMMENTS MUST BE STRIPPED FIRST. pg_get_functiondef returns the body
+  -- INCLUDING its comments, and this body explains the arm in prose that names
+  -- the helper ("city_by_alias refuses an ambiguous alias..."), so an unstripped
+  -- position() test passes with the CALL deleted and the comment left standing —
+  -- a postcondition that cannot fail. The same class aborted `db push` on main
+  -- three times on 2026-09-20 and stranded the whole merge queue, which is why
+  -- scripts/check-functiondef-asserts.mjs now refuses the unstripped form.
+  v_src := regexp_replace(
+             pg_get_functiondef('public.run_event_city_link(integer,boolean)'::regprocedure),
+             '--[^' || chr(10) || ']*', '', 'g');
+
   -- P7: the runner must actually CALL the helper, or the rule is dead code.
-  IF position('city_by_alias' in pg_get_functiondef(
-       'public.run_event_city_link(integer,boolean)'::regprocedure)) = 0 THEN
+  IF position('city_by_alias' in v_src) = 0 THEN
     RAISE EXCEPTION 'P7: run_event_city_link does not call city_by_alias';
   END IF;
 
   -- P8: and it must remain a FALLBACK — the exact-name lookup has to come first.
-  IF position('lower(btrim(c.name)) = lower(btrim(r.city))' in pg_get_functiondef(
-       'public.run_event_city_link(integer,boolean)'::regprocedure)) = 0 THEN
+  IF position('lower(btrim(c.name)) = lower(btrim(r.city))' in v_src) = 0 THEN
     RAISE EXCEPTION 'P8: the exact-name arm is gone';
   END IF;
 
