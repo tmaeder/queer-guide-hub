@@ -59,16 +59,30 @@ test('anon can read Rheinfetisch events at all', async ({ request }) => {
   ).toBeGreaterThan(0);
 });
 
-test('the source is registered and enabled, so the feed keeps being read', async ({ request }) => {
-  const rows = await rest<{ slug: string; is_enabled: boolean; target_table: string; edge_function: string }>(
-    request,
-    'ingestion_sources?select=slug,is_enabled,target_table,edge_function&slug=eq.rheinfetisch',
-  );
-  // An unregistered source still imports once by hand and then silently rots.
-  expect(rows.length, 'ingestion_sources row for rheinfetisch is missing').toBe(1);
-  expect(rows[0].is_enabled).toBe(true);
-  expect(rows[0].target_table).toBe('events');
-  expect(rows[0].edge_function).toBe('source-rheinfetisch');
+test('what is live is the real calendar, not a handful of rows', async ({ request }) => {
+  // The second control. "No row is wrong" would also hold for three rows left
+  // over from a smoke test, and every invariant below would pass on them.
+  //
+  // NOT asserted here, deliberately: that `ingestion_sources` still carries an
+  // enabled row, which is what keeps the feed being re-read. Anon gets HTTP 401
+  // on that table — it is operational config, not public data — and measured,
+  // so this cannot check it. Registry liveness is asserted where it can be:
+  // the migration's own postconditions check the admin_automations row, the
+  // ingestion_sources row AND the live cron.job entry at apply time.
+  const rows = await rest<EventRow>(request, live('id,title,start_date,city,description'));
+  expect(rows.length, 'too few events for this to be the real calendar').toBeGreaterThan(20);
+
+  const cities = new Set(rows.map((r) => r.city).filter(Boolean));
+  expect(cities.size, `expected several cities, got ${[...cities].join(', ')}`).toBeGreaterThan(2);
+
+  const now = Date.now();
+  expect(rows.some((r) => Date.parse(r.start_date) >= now), 'no upcoming events').toBeTruthy();
+  expect(rows.some((r) => Date.parse(r.start_date) < now), 'no past events').toBeTruthy();
+
+  // Titles alone would pass every other test in this file; this proves the
+  // DESCRIPTION path works too.
+  const withProse = rows.filter((r) => (r.description ?? '').length > 40);
+  expect(withProse.length, 'almost nothing carries prose').toBeGreaterThan(rows.length / 4);
 });
 
 // --- the span rule -----------------------------------------------------------
