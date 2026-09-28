@@ -1215,7 +1215,14 @@ if (!hygieneRes.ok) {
 //     prove, and the middle one is specific to cities: `city-factual-backfill`
 //     re-fetches the article by the CACHED `wikipedia_title` independently of the
 //     QID, so a title creeping back re-publishes the wrong article even while the
-//     identifier stays null. `coord_unswept` is a work-list size and only prints.
+//     identifier stays null.
+//
+//     `coord_disagree` is the work-list size and only prints. It REPLACED
+//     `coord_unswept` (99991790619179), which was counted from a key nothing ever
+//     wrote — 0 of 3,032 rows — so it read 3,031 forever and hid the ~156 rows that
+//     really do hold another place's identifier. The replacement is SELF-DRAINING:
+//     a row counts only while it still holds the id its verdict was about, so
+//     clearing or correcting the id removes it with no second write.
 {
   const res = await fetch(`${BASE}/rest/v1/rpc/city_wikidata_signals`, {
     method: 'POST',
@@ -1263,9 +1270,18 @@ if (!hygieneRes.ok) {
           FAILED = true
         }
       }
+      // `coord_checked` is reported beside the work list on purpose: a clean corpus
+      // and a stamp that never landed both give `coord_disagree: 0`, and the count
+      // of rows carrying ANY verdict is what tells them apart.
+      if ((s.coord_checked ?? 0) < 100) {
+        console.error(
+          `✗ city_wikidata_signals sees only ${s.coord_checked} coordinate verdicts — the stamp is not landing`,
+        )
+        FAILED = true
+      }
       console.log(
         `✓ City wrong-entity repairs intact (${s.dispositioned} dispositioned, ` +
-          `${s.coord_unswept} rows with an id never coordinate-swept)`,
+          `${s.coord_disagree} of ${s.coord_checked} checked still hold a far-away id)`,
       )
     }
   }
