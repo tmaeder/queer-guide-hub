@@ -2,7 +2,7 @@ import { getServiceClient, jsonResponse, errorResponse, corsResponse, requireInt
 import type { SourceAdapter, RawItem, NormalizedItem, AdapterConfig } from '../_shared/source-adapter.ts'
 import { writeToStaging } from '../_shared/source-adapter.ts'
 import { withErrorReporting } from '../_shared/report-api-error.ts'
-import { parseListing, parseDetail, buildEvents, type G4uCard, type G4uDetail, type G4uEvent } from '../_shared/gaytravel4u-parse.ts'
+import { parseListing, parseDetail, buildEvents, selectSweepWindow, type G4uCard, type G4uDetail, type G4uEvent } from '../_shared/gaytravel4u-parse.ts'
 
 // ============================================================
 // Source: gaytravel4u.com — the six curated event listicles.
@@ -129,7 +129,7 @@ let lastDropped = { noDate: 0, placeholder: 0, cityConflict: 0 }
 let lastFetch: {
   listingsOk: number; listingsFailed: number
   detailsOk: number; detailsFailed: number
-  cardsFound?: number; todo?: number
+  cardsFound?: number; todo?: number; offset?: number
   firstError: string | null
 } = { listingsOk: 0, listingsFailed: 0, detailsOk: 0, detailsFailed: 0, firstError: null }
 
@@ -159,7 +159,27 @@ const eventAdapter: SourceAdapter = {
     }
 
     // 2. Fetch the record for each slug we have not looked at yet, paced.
-    const todo = [...cards.values()].filter((c) => !skip.has(c.slug)).slice(0, config.batchSize)
+    //
+    // THE WINDOW ROTATES, AND WITHOUT THAT THIS CAN NEVER FINISH. `skip` is
+    // built from ingestion_staging, and a slug with no date anywhere NEVER
+    // STAGES — so it is absent from skip and re-enters `todo` on every run,
+    // forever. Measured on the live corpus: of 621 cards roughly half are
+    // "Awaiting dates", and after three runs ~157 undated slugs had piled up
+    // at the head of the list against a 180 batch cap. One more run and the
+    // batch would have been entirely undated re-fetches, reaching no new slug
+    // ever again while still reporting a healthy `detailsOk`.
+    //
+    // This is exactly the selector-starvation shape the header warns about,
+    // and the first cut walked straight into it. The fix needs no new storage:
+    // rotate the start of the window so successive runs sweep the whole list.
+    // `offset` is explicit for a catch-up; the default derives from the day so
+    // an unattended cron cannot pin itself to the same prefix.
+    const all = [...cards.values()]
+    const dayIndex = Math.floor(Date.now() / 86_400_000)
+    const offset = (config.filters?.offset as number | undefined) ??
+      (all.length ? (dayIndex * config.batchSize) % all.length : 0)
+    const todo = selectSweepWindow(all, offset, config.batchSize, skip)
+    lastFetch.offset = all.length ? ((Math.trunc(offset) % all.length) + all.length) % all.length : 0
     const pairs: Array<{ card: G4uCard; detail: G4uDetail }> = []
     for (let i = 0; i < todo.length; i++) {
       const card = todo[i]
@@ -247,7 +267,12 @@ Deno.serve(withErrorReporting('source-gaytravel4u', async (req) => {
       dryRun,
       pipelineRunId: body.pipeline_run_id,
       nodeId: body.node_id,
-      filters: { skip, listings: body.listings, seedCities: staged.cities },
+      filters: {
+        skip,
+        listings: body.listings,
+        seedCities: staged.cities,
+        offset: body.offset === undefined ? undefined : Number(body.offset),
+      },
     }
 
     const rawEvents = await eventAdapter.fetch(config)

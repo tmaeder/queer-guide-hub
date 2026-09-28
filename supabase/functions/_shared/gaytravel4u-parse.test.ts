@@ -1,7 +1,8 @@
 import { assertEquals } from 'https://deno.land/std@0.224.0/assert/mod.ts'
 import {
   parseCardDate, parseListing, parseDetail, cityConflicts, localityVocabulary,
-  isPlaceholderDate, buildEvents, normToken, type G4uCard, type G4uDetail,
+  isPlaceholderDate, buildEvents, normToken, selectSweepWindow,
+  type G4uCard, type G4uDetail,
 } from './gaytravel4u-parse.ts'
 
 const NOW = new Date('2026-09-28T00:00:00Z')
@@ -130,6 +131,82 @@ Deno.test('g4u: accents normalise on both sides', () => {
   assertEquals(normToken('Curaçao'), 'curacao')
   assertEquals(normToken('Zürich'), 'zurich')
   assertEquals(cityConflicts('curacao-pride', 'Curaçao', VOCAB), false)
+})
+
+// ---- sweep window --------------------------------------------------------
+
+const deck = (n: number) => Array.from({ length: n }, (_, i) => ({ slug: `s${i}` }))
+
+Deno.test('g4u sweep: rotates to the offset and wraps', () => {
+  const d = deck(10)
+  assertEquals(selectSweepWindow(d, 0, 3, new Set()).map((c) => c.slug), ['s0', 's1', 's2'])
+  assertEquals(selectSweepWindow(d, 4, 3, new Set()).map((c) => c.slug), ['s4', 's5', 's6'])
+  assertEquals(selectSweepWindow(d, 9, 3, new Set()).map((c) => c.slug), ['s9', 's0', 's1'])
+})
+
+Deno.test('g4u sweep: an out-of-range or negative offset still returns work', () => {
+  // A bad cursor must degrade to "start somewhere", never to an empty window —
+  // an empty window is indistinguishable from a finished sweep.
+  const d = deck(10)
+  assertEquals(selectSweepWindow(d, 25, 2, new Set()).map((c) => c.slug), ['s5', 's6'])
+  assertEquals(selectSweepWindow(d, -1, 2, new Set()).map((c) => c.slug), ['s9', 's0'])
+  assertEquals(selectSweepWindow(d, 1000, 1, new Set()).length, 1)
+})
+
+Deno.test('g4u sweep: already-staged cards are skipped', () => {
+  const d = deck(6)
+  const got = selectSweepWindow(d, 0, 3, new Set(['s0', 's2']))
+  assertEquals(got.map((c) => c.slug), ['s1', 's3', 's4'])
+})
+
+Deno.test('g4u sweep: empty input and a zero batch yield nothing rather than throwing', () => {
+  assertEquals(selectSweepWindow([], 3, 5, new Set()).length, 0)
+  assertEquals(selectSweepWindow(deck(5), 0, 0, new Set()).length, 0)
+})
+
+Deno.test('g4u sweep: A SWEEP WHOSE CARDS NEVER STAGE STILL COVERS EVERYTHING', () => {
+  // This is the defect, encoded. Undated cards never stage, so they are never
+  // added to `skip` and re-enter the work list forever. With a fixed
+  // slice(0, batchSize) they pile up at the head until the batch is entirely
+  // re-fetches and no new card is ever reached — while the run still reports
+  // a healthy fetch count, so nothing looks wrong.
+  //
+  // Here only every 3rd card ever stages, i.e. two thirds are permanently
+  // un-skippable, which is close to the live corpus (~half "Awaiting dates").
+  const CARDS = 621
+  const BATCH = 150
+  const d = deck(CARDS)
+  const staged = new Set<string>()
+  const everSeen = new Set<string>()
+
+  for (let run = 0; run < Math.ceil(CARDS / BATCH) + 1; run++) {
+    const todo = selectSweepWindow(d, run * BATCH, BATCH, staged)
+    for (const c of todo) {
+      everSeen.add(c.slug)
+      if (Number(c.slug.slice(1)) % 3 === 0) staged.add(c.slug) // only these stage
+    }
+  }
+  assertEquals(everSeen.size, CARDS)
+})
+
+Deno.test('g4u sweep: a FIXED window starves on the same input — the control', () => {
+  // Same simulation with slice(0, batchSize) and no rotation. If this ever
+  // reaches full coverage the test above is proving nothing.
+  const CARDS = 621
+  const BATCH = 150
+  const d = deck(CARDS)
+  const staged = new Set<string>()
+  const everSeen = new Set<string>()
+
+  for (let run = 0; run < 12; run++) {
+    const todo = d.filter((c) => !staged.has(c.slug)).slice(0, BATCH)
+    for (const c of todo) {
+      everSeen.add(c.slug)
+      if (Number(c.slug.slice(1)) % 3 === 0) staged.add(c.slug)
+    }
+  }
+  // Starves well short of the corpus even after 12 runs.
+  assertEquals(everSeen.size < CARDS, true)
 })
 
 // ---- build ---------------------------------------------------------------

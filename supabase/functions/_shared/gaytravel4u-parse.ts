@@ -246,6 +246,37 @@ export function isPlaceholderDate(iso: string, now: Date): boolean {
   return t > limit.getTime()
 }
 
+/**
+ * Choose this run's slice of the card list.
+ *
+ * THE ROTATION IS WHY THE SWEEP TERMINATES. The caller's skip set comes from
+ * ingestion_staging, and a card with no date anywhere NEVER STAGES — so it is
+ * permanently absent from skip and re-enters the work list on every run. With
+ * a fixed `slice(0, batchSize)` the undated cards accumulate at the head until
+ * they fill the batch, at which point no new card is ever reached again while
+ * the run still reports a healthy fetch count. Measured on the live corpus:
+ * ~half of 621 cards are "Awaiting dates" and ~157 had piled up after three
+ * runs against a 180 cap.
+ *
+ * Rotating the start means successive offsets sweep the whole list regardless
+ * of what does or does not stage, and it needs no stored cursor.
+ */
+export function selectSweepWindow<T extends { slug: string }>(
+  cards: T[],
+  offset: number,
+  batchSize: number,
+  skip: Set<string>,
+): T[] {
+  if (cards.length === 0 || batchSize <= 0) return []
+  const n = cards.length
+  // Tolerate a negative or out-of-range offset rather than producing an empty
+  // window: a bad cursor must degrade to "start somewhere", never to "do
+  // nothing", which would look exactly like a finished sweep.
+  const start = ((Math.trunc(offset) % n) + n) % n
+  const rotated = [...cards.slice(start), ...cards.slice(0, start)]
+  return rotated.filter((c) => !skip.has(c.slug)).slice(0, batchSize)
+}
+
 export interface BuildResult {
   events: G4uEvent[]
   dropped: { noDate: number; placeholder: number; cityConflict: number }
