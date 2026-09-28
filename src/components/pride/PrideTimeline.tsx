@@ -17,8 +17,13 @@ interface PrideTimelineProps {
 
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 const TRACK_WIDTH = 1800;
-const LABEL_PX = 96;
 const ROW_HEIGHT = 28;
+// WCAG 2.5.8 floor for a pointer target. Stays under ROW_HEIGHT so rows keep a vertical gutter.
+const BAR_HEIGHT_PX = 24;
+// The widest a bar actually renders: the label budget plus the dot and its gap. placeOnRows must
+// reserve THIS and not the label budget alone -- reserving less than a bar renders lets two bars
+// whose dates sit closer than the rendered width share a row, and their click targets overlap.
+const BAR_MAX_WIDTH_PX = 112;
 
 interface PlacedEvent {
   event: PrideCalendarEvent;
@@ -53,7 +58,7 @@ function placeEvents(events: PrideCalendarEvent[], year: number): PlacedEvent[] 
     const endMs = e.end_date ? new Date(e.end_date).getTime() : startMs;
     return { id: e.id, startMs, endMs, _event: e };
   });
-  const placed = placeOnRows(placeables, pxForMs, LABEL_PX);
+  const placed = placeOnRows(placeables, pxForMs, BAR_MAX_WIDTH_PX);
   return placed.map((p) => {
     const d = new Date(p.item.startMs);
     return {
@@ -190,8 +195,9 @@ export function PrideTimeline({
                       style={{
                         left: `${xPct}%`,
                         top: `${y}px`,
-                        height: '20px',
-                        maxWidth: `${LABEL_PX + 16}px`,
+                        height: `${BAR_HEIGHT_PX}px`,
+                        minWidth: `${BAR_HEIGHT_PX}px`,
+                        maxWidth: `${BAR_MAX_WIDTH_PX}px`,
                       }}
                     >
                       <span
