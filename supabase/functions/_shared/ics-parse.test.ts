@@ -1,6 +1,6 @@
 import { assertEquals, assert } from 'https://deno.land/std@0.224.0/assert/mod.ts'
 import {
-  unfold, unescapeText, parseMoment, parseComponents, parseIcs,
+  unfold, unescapeText, parseMoment, parseComponents, parseIcs, decodeEntities, stripTags,
   parseLocation, firstUrl, htmlToText,
 } from './ics-parse.ts'
 
@@ -397,6 +397,75 @@ Deno.test('htmlToText keeps the line breaks that carry the structure', () => {
 
 Deno.test('htmlToText strips tags and decodes the entities the feed uses', () => {
   assertEquals(htmlToText('<b>Meet &amp; Greet</b>&nbsp;heute'), 'Meet & Greet heute')
+})
+
+Deno.test('entities decode in ONE pass — &amp;lt; stays the literal &lt;', () => {
+  // The double-unescape class: chained replaces resolve &amp; to & and then
+  // re-read `lt;`, so an author's literal &lt; silently becomes a real `<`.
+  assertEquals(decodeEntities('&amp;lt;'), '&lt;')
+  assertEquals(decodeEntities('&amp;'), '&')
+  assertEquals(decodeEntities('Meet &amp; Greet'), 'Meet & Greet')
+  assertEquals(decodeEntities('&lt;b&gt;'), '<b>')
+})
+
+Deno.test('an unrecognised entity is left exactly as written', () => {
+  assertEquals(decodeEntities('&bogus; &notreal;'), '&bogus; &notreal;')
+  // A bare ampersand is not an entity and must not be touched.
+  assertEquals(decodeEntities('R&D 5 & 6'), 'R&D 5 & 6')
+})
+
+Deno.test('numeric entities decode, and an out-of-range one does not throw', () => {
+  assertEquals(decodeEntities('&#39;'), "'")
+  assertEquals(decodeEntities('&#x27;'), "'")
+  assertEquals(decodeEntities('&#x1F3F3;'), '\u{1F3F3}')
+  assertEquals(decodeEntities('&#9999999999;'), '&#9999999999;')
+})
+
+/**
+ * The invariant is that NO `<...>` PAIR SURVIVES — not that no angle bracket
+ * does. `5 < 6` is ordinary prose and has to come through untouched, so a
+ * blanket bracket ban would be wrong in the common case while looking stricter.
+ */
+const hasTag = (s: string) => /<[^>]*>/.test(s)
+
+Deno.test('stripTags leaves no tag behind, including one spliced by its own removal', () => {
+  // Incomplete sanitization: a pass over `<<script>script>` deletes an inner
+  // match and can splice the remainder into a fresh tag behind the cursor.
+  assert(!hasTag(stripTags('<<script>script>alert(1)')))
+  assert(!hasTag(stripTags('<<b>b>text')))
+  assert(!hasTag(stripTags('<scr<script>ipt>x')))
+})
+
+Deno.test('an ESCAPED less-than survives; a RAW one is consumed as markup', () => {
+  // This is why entities decode AFTER stripping: `&lt;` is invisible to the
+  // stripper and comes through intact. Google encodes prose angle brackets, so
+  // this is the form the real feed uses.
+  assertEquals(htmlToText('<b>5 &lt; 6</b>'), '5 < 6')
+  assertEquals(htmlToText('Preis &lt; 10&euro;'), 'Preis < 10&euro;')
+
+  // The limitation, asserted so it is a known shape rather than a surprise: any
+  // `<` followed later by a `>` IS a tag match, so a raw one eats the text
+  // between. Regex extraction cannot separate that from real markup. The
+  // contract is only that it degrades to inert text, never to a tag.
+  const raw = htmlToText('<b>5 < 6</b>')
+  assert(!hasTag(raw ?? ''), `produced a tag: ${raw}`)
+})
+
+Deno.test('stripTags terminates on adversarial nesting', () => {
+  const nested = '<'.repeat(40) + 'script' + '>'.repeat(40)
+  const out = stripTags(nested)
+  assert(!hasTag(out), `left a tag: ${out}`)
+})
+
+Deno.test('htmlToText cannot reconstitute a tag from escaped source', () => {
+  // Tags are stripped BEFORE entities decode, so this stays inert text.
+  const out = htmlToText('&amp;lt;script&amp;gt;alert(1)&amp;lt;/script&amp;gt;')!
+  assert(!out.includes('<script'), `produced a tag: ${out}`)
+  assertEquals(out, '&lt;script&gt;alert(1)&lt;/script&gt;')
+})
+
+Deno.test('htmlToText strips a real tag and keeps deliberately escaped text', () => {
+  assertEquals(htmlToText('<b>bold</b> and &lt;not a tag&gt;'), 'bold and <not a tag>')
 })
 
 Deno.test('firstUrl prefers an href and rejects a non-http scheme', () => {

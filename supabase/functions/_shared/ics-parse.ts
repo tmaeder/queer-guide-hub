@@ -678,28 +678,93 @@ export function firstUrl(description: string | undefined): string | undefined {
   }
 }
 
+const NAMED_ENTITIES: Record<string, string> = {
+  amp: '&', lt: '<', gt: '>', quot: '"', apos: "'", nbsp: ' ',
+}
+
+/**
+ * Decode HTML entities in ONE left-to-right pass.
+ *
+ * Chained `.replace()` calls double-unescape, and no ordering fixes it — the
+ * same trap as `unescapeText` above, one layer up. Resolving `&amp;` before
+ * `&lt;` turns the input `&amp;lt;` into `&lt;` and then into `<`, so an author
+ * who wrote a LITERAL `&lt;` gets a real angle bracket, and a crafted
+ * `&amp;lt;script&amp;gt;` reconstitutes a tag after the tag stripper has
+ * already run. A single pass consumes each entity and never re-reads what it
+ * produced, so `&amp;lt;` decodes to the literal text `&lt;` and stops there.
+ *
+ * An unrecognised entity is left EXACTLY as written rather than guessed at:
+ * this is prose extraction, and inventing a character silently rewrites it.
+ */
+export function decodeEntities(text: string): string {
+  return text.replace(/&(#x[0-9a-f]+|#\d+|[a-z][a-z0-9]*);/gi, (match, body: string) => {
+    const b = body.toLowerCase()
+    try {
+      if (b.startsWith('#x')) {
+        const code = Number.parseInt(b.slice(2), 16)
+        return Number.isFinite(code) ? String.fromCodePoint(code) : match
+      }
+      if (b.startsWith('#')) {
+        const code = Number.parseInt(b.slice(1), 10)
+        return Number.isFinite(code) ? String.fromCodePoint(code) : match
+      }
+    } catch {
+      // Outside the Unicode range — keep the source text rather than throw.
+      return match
+    }
+    return Object.hasOwn(NAMED_ENTITIES, b) ? NAMED_ENTITIES[b] : match
+  })
+}
+
+/** Iteration cap for the tag strip. Far above any real nesting; see stripTags. */
+const STRIP_PASSES = 8
+
+/**
+ * Remove HTML tags, repeating until the result stops changing.
+ *
+ * A SINGLE pass is incomplete sanitization: `<<script>script>` contains
+ * `<script>` as an inner substring, so removing that one match splices the
+ * surrounding `<` and `script>` together and YIELDS a `<script>` the pass has
+ * already moved past. Repeating to a fixed point is what closes it.
+ *
+ * Bounded rather than `while (true)`: this runs on third-party calendar text,
+ * and an adversarial input must not be able to spin the ingest run. Eight
+ * passes strip eight levels of that nesting, against a real corpus whose
+ * deepest markup is an `<a>` inside a `<b>`.
+ */
+export function stripTags(html: string): string {
+  let out = html
+  for (let i = 0; i < STRIP_PASSES; i++) {
+    const next = out.replace(/<[^>]*>/g, '')
+    if (next === out) return out
+    out = next
+  }
+  // Still changing at the cap: drop every remaining angle bracket rather than
+  // return markup that outlived the loop.
+  return out.replace(/[<>]/g, '')
+}
+
 /**
  * Google Calendar descriptions are HTML fragments. Convert to readable plain
  * text, keeping the line structure that `<br>` and block tags carry — the
  * detail page splits prose into paragraphs on blank lines, so flattening
  * everything to one run would publish a wall of text.
+ *
+ * ORDER IS LOAD-BEARING: tags are stripped BEFORE entities are decoded. The
+ * other way round, a decoded `&lt;` becomes a real `<` that the stripper then
+ * reads as markup — so text an author deliberately escaped would be deleted,
+ * and a crafted payload could be promoted into a tag after sanitization.
  */
 export function htmlToText(html: string | undefined): string | undefined {
   if (!html) return undefined
-  const text = html
+  const withBreaks = html
     .replace(/<\s*br\s*\/?\s*>/gi, '\n')
     .replace(/<\s*\/\s*(p|div|li|tr|h[1-6])\s*>/gi, '\n')
     .replace(/<\s*li[^>]*>/gi, '• ')
-    .replace(/<[^>]+>/g, '')
-    .replace(/&nbsp;/gi, ' ')
-    .replace(/&amp;/gi, '&')
-    .replace(/&lt;/gi, '<')
-    .replace(/&gt;/gi, '>')
-    .replace(/&quot;/gi, '"')
-    .replace(/&#39;|&apos;/gi, "'")
+  const text = decodeEntities(stripTags(withBreaks))
     // Escaped, not literal: a raw NBSP here is invisible in review and trips
     // no-irregular-whitespace. Google's descriptions are full of them.
-    .replace(/\u00a0/g, ' ')
+    .replace(/ /g, ' ')
     .split('\n')
     .map((l) => l.replace(/[ \t]+/g, ' ').trim())
     .join('\n')
