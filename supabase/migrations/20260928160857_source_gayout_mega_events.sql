@@ -40,10 +40,22 @@
 -- failure. At that rate one run fetches roughly 80 pages inside its time budget,
 -- so the 721-event backfill drains over about ten runs.
 --
--- SCHEDULE. Hourly while the backfill drains, which is also the right long-term
--- cadence: once every event is staged the function returns `drained` after a
--- single cached listing call, and `refresh` mode is what re-checks dates. A mega
--- event moves its dates once a year; nothing here needs to be faster.
+-- THE BINDING LIMIT IS THE GATEWAY'S 150s IDLE TIMEOUT, NOT THE 546s WALL. This
+-- function streams nothing, so the whole invocation must finish inside one idle
+-- window. Measured: a first body budgeted at 420s was killed with
+-- `504 IDLE_TIMEOUT`, staged NOTHING and reported no counters, losing the run's
+-- entire Firecrawl spend. Hence `budget_ms` 120000 and `timeout_milliseconds`
+-- 145000 — the function stops early and RETURNS its work. At ~12 req/min that
+-- window is about 24 pages, which is also all the Firecrawl per-minute limit
+-- allows in 120s: the two ceilings agree, so raising one alone buys nothing.
+--
+-- SCHEDULE. Hourly is the steady-state cadence: once every event is staged the
+-- function returns `drained` after a single cached listing call, and `refresh`
+-- mode is what re-checks dates. A mega event moves its dates once a year.
+-- While the initial 721-event backfill drains, an operator may temporarily run
+-- this every few minutes (`*/4` was used for the first import, ~24 events a run,
+-- about two hours end to end) and then put it back to hourly. That is a plain
+-- UPDATE on this row plus a reschedule — no migration.
 --
 -- KILL SWITCH: disable this `admin_automations` row. Never DELETE it — a deleted
 -- row leaves the live cron unregistered, which the reconciler reports and
@@ -69,8 +81,8 @@ $$
       'Authorization', 'Bearer ' || (SELECT decrypted_secret FROM vault.decrypted_secrets WHERE name='legacy_anon_key'),
       'x-internal-secret', (SELECT decrypted_secret FROM vault.decrypted_secrets WHERE name='internal_invoke_secret')
     ),
-    body := '{"limit":60,"concurrency":2,"min_interval_ms":5000,"budget_ms":420000}'::jsonb,
-    timeout_milliseconds := 520000
+    body := '{"limit":24,"concurrency":2,"min_interval_ms":5000,"budget_ms":120000}'::jsonb,
+    timeout_milliseconds := 145000
   );
 $$),
   '35 * * * *'

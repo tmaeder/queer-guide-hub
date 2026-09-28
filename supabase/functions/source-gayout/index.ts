@@ -343,7 +343,7 @@ Deno.serve(withErrorReporting('source-gayout', async (req) => {
       )
     }
 
-    const limit = Math.min(Math.max(Number(body.limit ?? body.batch_size ?? 25), 1), 120)
+    const limit = Math.min(Math.max(Number(body.limit ?? body.batch_size ?? 24), 1), 120)
     const dryRun = Boolean(body.dry_run ?? body.dryRun)
     const refresh = Boolean(body.refresh)
     const probe = Boolean(body.probe)
@@ -356,10 +356,18 @@ Deno.serve(withErrorReporting('source-gayout', async (req) => {
     // Firecrawl plan and moves when the plan does.
     const pacer = new Pacer(Math.min(Math.max(Number(body.min_interval_ms ?? 5000), 250), 60000))
 
-    // Edge functions are killed at the wall clock. Stopping early and RETURNING
-    // what was parsed keeps the work — a killed run stages nothing and its
-    // whole Firecrawl spend is lost, and it reports no counters at all.
-    const deadline = Date.now() + Math.min(Math.max(Number(body.budget_ms ?? 420000), 30000), 520000)
+    // THE BINDING LIMIT IS THE GATEWAY'S 150s IDLE TIMEOUT, NOT THE 546s WALL.
+    // This function streams nothing, so the whole invocation has to finish
+    // inside one idle window: a run that overruns is killed with
+    // `504 IDLE_TIMEOUT`, stages NOTHING, reports no counters, and loses its
+    // entire Firecrawl spend. Measured — a first attempt budgeted at 420s was
+    // killed at 150s having parsed nothing. Stopping early and RETURNING what
+    // was parsed is the whole point of a deadline, so it must sit under 150s.
+    //
+    // 120s at ~12 req/min is about 24 pages a run, which is also what the
+    // Firecrawl per-minute limit allows in that window — the two ceilings agree,
+    // so raising this without raising the pacing buys nothing but a killed run.
+    const deadline = Date.now() + Math.min(Math.max(Number(body.budget_ms ?? 120000), 15000), 140000)
 
     // ── work list
     const listing = await firecrawlScrape(apiKey, LIST_URL, maxAge, pacer)
