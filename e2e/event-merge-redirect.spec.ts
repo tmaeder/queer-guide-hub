@@ -1,4 +1,5 @@
 import { test, expect, type APIRequestContext } from '@playwright/test';
+import { anonHeaders } from './support/anonKey';
 
 // A merged event's old URL must still reach the reader.
 //
@@ -19,13 +20,10 @@ import { test, expect, type APIRequestContext } from '@playwright/test';
 // asserts what a reader is actually served, not what a privileged query can see.
 
 const SUPABASE_URL = process.env.VITE_SUPABASE_URL ?? 'https://xqeacpakadqfxjxjcewc.supabase.co';
-const ANON_KEY = process.env.VITE_SUPABASE_ANON_KEY;
-
-test.skip(!ANON_KEY, 'VITE_SUPABASE_ANON_KEY not set');
 
 async function rest<T>(request: APIRequestContext, path: string): Promise<T[]> {
   const res = await request.get(`${SUPABASE_URL}/rest/v1/${path}`, {
-    headers: { apikey: ANON_KEY!, Authorization: `Bearer ${ANON_KEY!}` },
+    headers: await anonHeaders(request),
   });
   expect(res.ok(), `${path} -> HTTP ${res.status()}`).toBeTruthy();
   return res.json();

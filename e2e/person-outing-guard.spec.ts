@@ -1,4 +1,5 @@
 import { test, expect, type APIRequestContext } from '@playwright/test';
+import { anonHeaders } from './support/anonKey';
 
 /**
  * No living person is published asserting a queer identity we cannot source —
@@ -30,7 +31,6 @@ import { test, expect, type APIRequestContext } from '@playwright/test';
  */
 
 const SUPABASE_URL = process.env.VITE_SUPABASE_URL ?? 'https://xqeacpakadqfxjxjcewc.supabase.co';
-const ANON_KEY = process.env.VITE_SUPABASE_ANON_KEY;
 
 /** The gate's own vocabulary of positive identity labels. */
 const POSITIVE_LABELS = 'community_member,ally,activist,representation';
@@ -40,16 +40,17 @@ const COHORT =
   `personalities?is_living=eq.true&visibility=eq.public&duplicate_of_id=is.null` +
   `&lgbti_connection=in.(${POSITIVE_LABELS})`;
 
-// Scoped to the API tests ONLY. A file-level `test.skip` also disables the two
-// page tests, which need no key — and a run that silently drops a test while
-// still reporting "passed" is indistinguishable from one that checked
-// everything. Observed locally: the same command reported 7 passed and 6 passed
-// on alternate runs.
-const apiTest = ANON_KEY ? test : test.skip;
+// Formerly `ANON_KEY ? test : test.skip`, scoped to the API tests so a missing
+// key did not also disable the two page tests. The observation that motivated
+// it — "the same command reported 7 passed and 6 passed on alternate runs" — is
+// exactly the silent-drop this suite is written against, and it no longer
+// applies: support/anonKey.ts resolves the key from the deployed bundle and
+// FAILS if it cannot, so there is nothing left to skip on.
+const apiTest = test;
 
 async function anon<T>(request: APIRequestContext, path: string): Promise<T[]> {
   const res = await request.get(`${SUPABASE_URL}/rest/v1/${path}`, {
-    headers: { apikey: ANON_KEY!, Authorization: `Bearer ${ANON_KEY!}` },
+    headers: await anonHeaders(request),
   });
   expect(res.ok(), `${path} -> HTTP ${res.status()}`).toBeTruthy();
   return res.json();
