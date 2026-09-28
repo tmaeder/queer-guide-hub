@@ -121,6 +121,7 @@ export function GeoAddressQualityPanel() {
               venue, event and hotel — a gap here is a gap on thousands of rows. */}
           <AdminStat label="Cities without a region" value={cities?.geocodable_gap ?? 0} />
           <AdminStat label="Postal queue" value={queue?.depth ?? 0} />
+          <AdminStat label="No postal exists (terminal)" value={queue?.terminal ?? 0} />
           <AdminStat label="Parked (4 failed attempts)" value={parked} hardFail={parked > 0} />
         </div>
 

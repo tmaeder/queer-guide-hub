@@ -16,7 +16,10 @@ export interface GeoAddressCityGap {
 
 export interface GeoAddressQueueHealth {
   depth: number;
+  /** Transient failures that exhausted retries and still need intervention. */
   parked: number;
+  /** Measured no-postal outcomes retained as negative-cache memory. */
+  terminal: number;
   oldest_enqueued_at: string | null;
 }
 

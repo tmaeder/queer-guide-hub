@@ -47,6 +47,9 @@ vi.mock('@/components/admin/PersonalityFreigabeQueue', () => ({
   PersonalityFreigabeQueue: () => <div />,
 }));
 vi.mock('@/components/admin/DedupPendingLink', () => ({ DedupPendingLink: () => <div /> }));
+vi.mock('@/components/admin/GovernanceRemediationPanel', () => ({
+  GovernanceRemediationPanel: () => <div />,
+}));
 
 // Left unmocked so the REAL OrgLinkReviewQueue renders inside the section;
 // only its data layer is faked.

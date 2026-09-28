@@ -19,7 +19,7 @@ interface CoverageRow {
   total: number;
   uncategorised: number;
   uncategorised_pct: number;
-  /** Venues count unexamined rows; events count the mislabelled `concert` bucket. */
+  /** Unexamined rows only; explicit no-signal decisions are not backlog. */
   unexamined: number;
 }
 
@@ -114,8 +114,9 @@ export function CategoryCoveragePanel() {
           <AdminStat label="No signal (stays 'other')" value={venues.no_signal} />
           <AdminStat label="Probable non-venues" value={venues.nonvenue_candidates} />
           <AdminStat label="Events reclassified" value={events.reclassified} />
+          <AdminStat label="Events explicitly left 'other'" value={events.terminal_other} />
           <AdminStat
-            label="Mislabelled 'concert' left"
+            label="Known-bad 'concert' rows left"
             value={events.concert_bucket_remaining}
             hardFail={events.concert_bucket_remaining > 0}
           />

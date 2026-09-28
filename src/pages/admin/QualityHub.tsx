@@ -30,6 +30,7 @@ import { VenueQualityTierPanel } from '@/components/admin/VenueQualityTierPanel'
 import type { FreigabeStufe } from '@/lib/personalityStatus';
 import { AdminArchetypeHeader } from '@/components/admin/frames/AdminArchetypeHeader';
 import { AutomationStatusCard } from '@/components/admin/AutomationStatusCard';
+import { GovernanceRemediationPanel } from '@/components/admin/GovernanceRemediationPanel';
 
 interface QualityEngine {
   /** get_admin_counts key for pending review items; null = engine has no gate. */
@@ -297,6 +298,8 @@ export default function QualityHub() {
           depth, and depth alone is what made this page read as a wall of stuck
           work. This says how much of it clears tonight without anyone. */}
       <AutomationStatusCard />
+
+      <GovernanceRemediationPanel />
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         {ENGINES.map((e) => {

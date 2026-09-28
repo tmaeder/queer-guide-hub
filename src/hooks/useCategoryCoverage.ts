@@ -16,9 +16,11 @@ export interface EventCategoryCoverage {
   total: number;
   uncategorised: number;
   uncategorised_pct: number | null;
-  /** Rows the gaycities mapper actively mislabelled — wrong, not merely unknown. */
+  /** Unexamined rows from the gaycities mapper's known-bad concert cohort. */
   concert_bucket_remaining: number;
   reclassified: number;
+  /** Explicitly examined rows for which no defensible narrower type exists. */
+  terminal_other: number;
   unexamined_concert: number;
 }
 
