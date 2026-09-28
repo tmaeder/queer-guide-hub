@@ -265,6 +265,12 @@ verify_jwt = false
 [functions.source-gaycities]
 verify_jwt = false
 
+# Reached by pg_cron through automation_http_post with X-Internal-Secret; the
+# function self-gates with requireInternalOrAdmin. Gateway JWT would reject that
+# call before the function's own gate ever runs.
+[functions.source-gayout]
+verify_jwt = false
+
 [functions.source-geonames]
 verify_jwt = false
 
@@ -599,4 +605,13 @@ verify_jwt = false
 # gets a 401 from pg_cron, which then reads as an outage and burns the
 # auto-pause counter.
 [functions.venue-accessibility-osm]
+verify_jwt = false
+
+# Cron target (ev-fill-queerde, Mon 02:05) — self-gates on requireInternalOrAdmin.
+# Measured before adding this line: without it the platform answered
+# UNAUTHORIZED_NO_AUTH_HEADER *before* the request reached the function, while every
+# sibling event source (source-kweer, source-gaybasel, source-haz-ch) answered from
+# its own gate. It happens to work anyway while the cron sends the anon key — which
+# is precisely what would make the eventual 401 read as an upstream outage.
+[functions.source-queerde]
 verify_jwt = false
