@@ -1,5 +1,5 @@
 import { assertEquals } from 'https://deno.land/std@0.224.0/assert/mod.ts'
-import { decodeEntities, stripTagsAndDecode } from './html-entities.ts'
+import { decodeEntities, decodeEntitiesDeep, stripTagsAndDecode } from './html-entities.ts'
 
 Deno.test('entities: decodes the named set', () => {
   assertEquals(decodeEntities('Bear &amp; Bar'), 'Bear & Bar')
@@ -44,6 +44,40 @@ Deno.test('entities: malformed or out-of-range code points survive as text', () 
   assertEquals(decodeEntities('&#xD800;'), '&#xD800;') // lone surrogate
   assertEquals(decodeEntities('&#;'), '&#;')
   assertEquals(decodeEntities('&;'), '&;')
+})
+
+Deno.test('entities: extra table is merged, exact case wins over lowercase', () => {
+  const extra = { AElig: 'Æ', aelig: 'æ', uuml: 'ü' }
+  assertEquals(decodeEntities('&AElig; &aelig;', extra), 'Æ æ')
+  assertEquals(decodeEntities('S&uuml;dpol', extra), 'Südpol')
+  // Defaults still apply alongside the extra table.
+  assertEquals(decodeEntities('a &amp; b', extra), 'a & b')
+})
+
+Deno.test('deep: recovers a double-encoded entity (eventfrog really needs this)', () => {
+  const extra = { uuml: 'ü', ndash: '–' }
+  assertEquals(decodeEntitiesDeep('S&amp;uuml;dpol', extra), 'Südpol')
+  assertEquals(decodeEntitiesDeep('a &amp;ndash; b', extra), 'a – b')
+})
+
+Deno.test('deep: the second pass REFUSES markup-producing entities', () => {
+  // The whole point: recover &amp;uuml; without also turning &amp;lt; into '<'.
+  assertEquals(decodeEntitiesDeep('&amp;lt;'), '&lt;')
+  assertEquals(decodeEntitiesDeep('&amp;gt;'), '&gt;')
+  assertEquals(decodeEntitiesDeep('&amp;amp;'), '&amp;')
+  assertEquals(decodeEntitiesDeep('&amp;quot;'), '&quot;')
+  assertEquals(decodeEntitiesDeep('&amp;lt;script&amp;gt;'), '&lt;script&gt;')
+})
+
+Deno.test('deep: numerics are excluded from the second pass entirely', () => {
+  // &#38; and &#60; are the same hazard with a different spelling.
+  assertEquals(decodeEntitiesDeep('&amp;#60;'), '&#60;')
+  assertEquals(decodeEntitiesDeep('&amp;#38;lt;'), '&#38;lt;')
+})
+
+Deno.test('deep: an extra entry that yields markup is still refused on pass two', () => {
+  // A caller table cannot smuggle a '<' past the second pass.
+  assertEquals(decodeEntitiesDeep('&amp;evil;', { evil: '<' }), '&evil;')
 })
 
 Deno.test('entities: whitespace is collapsed and trimmed by stripTagsAndDecode', () => {

@@ -1,3 +1,4 @@
+import { decodeEntities } from '../html-entities.ts'
 // Deterministic news content sanitizer.
 // Pure functions — no AI, no IO. Safe to run on every staging row.
 
@@ -155,19 +156,15 @@ const NAMED_ENTITIES: Record<string, string> = {
   ntilde: 'ñ', ccedil: 'ç', szlig: 'ß',
 }
 
+/**
+ * Was numeric-then-named, which is `js/double-escaping`: `&#38;lt;` decoded to
+ * `&lt;` in the numeric pass and then to a live `<` in the named one. Single
+ * pass now, with this module's richer table layered over the shared defaults
+ * so coverage is unchanged.
+ */
 export function decodeHtmlEntities(s: string): string {
   if (!s) return ''
-  // Numeric: &#1234; or &#x4D2;
-  let out = s.replace(/&#x([0-9a-f]+);/gi, (_, hex) => {
-    const n = parseInt(hex, 16)
-    return Number.isFinite(n) && n > 0 && n < 0x110000 ? String.fromCodePoint(n) : ''
-  }).replace(/&#(\d+);/g, (_, dec) => {
-    const n = parseInt(dec, 10)
-    return Number.isFinite(n) && n > 0 && n < 0x110000 ? String.fromCodePoint(n) : ''
-  })
-  // Named refs.
-  out = out.replace(/&([a-zA-Z]{2,8});/g, (m, name) => NAMED_ENTITIES[name.toLowerCase()] ?? m)
-  return out
+  return decodeEntities(s, NAMED_ENTITIES)
 }
 
 export function cleanTitle(raw: string): string {

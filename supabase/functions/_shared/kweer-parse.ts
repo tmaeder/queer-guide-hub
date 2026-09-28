@@ -1,3 +1,4 @@
+import { decodeEntities } from './html-entities.ts'
 // ============================================================
 // kweer.io — Zurich queer party promoter (Wix Events)
 //
@@ -47,11 +48,7 @@ export const stripTags = (s: unknown): string =>
   String(s ?? '')
     .replace(/<(script|style)\b[^>]*>[\s\S]*?<\/\1>/gi, ' ')
     .replace(/<[^>]+>/g, ' ')
-    .replace(/&#x([0-9a-f]+);/gi, (_m, h) => String.fromCodePoint(parseInt(h, 16)))
-    .replace(/&#(\d+);/g, (_m, d) => String.fromCodePoint(Number(d)))
-    .replace(/&nbsp;/g, ' ').replace(/&quot;/g, '"').replace(/&#039;|&apos;/g, "'")
-    .replace(/&lt;/g, '<').replace(/&gt;/g, '>')
-    .replace(/&amp;/g, '&')
+    .replace(/&[#0-9a-zA-Z]+;/g, (m) => decodeEntities(m))
     .replace(/\s+/g, ' ')
     .trim()
 
