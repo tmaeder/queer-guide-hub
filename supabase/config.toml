@@ -286,6 +286,9 @@ verify_jwt = false
 [functions.source-rest-countries]
 verify_jwt = false
 
+[functions.source-rheinfetisch]
+verify_jwt = false
+
 [functions.source-rss-news]
 verify_jwt = false
 
