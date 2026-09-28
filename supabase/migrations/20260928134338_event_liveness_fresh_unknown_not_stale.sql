@@ -12,6 +12,19 @@
 --
 -- Never re-run: `db push` matches on version and skips an applied one. The file
 -- exists so history is complete and a rebuild from zero works.
+--
+-- functiondef-assert-ok: recovered file, not authored here. Its verify block
+-- greps pg_get_functiondef() without stripping comments, which
+-- check-functiondef-asserts.mjs rightly refuses in NEW migrations — but this one
+-- is new only to the repo. It already applied to prod on 2026-09-28, where the
+-- assertion passed against the real definition, and db push matches on version
+-- so it is never re-run. Rewriting the SQL to satisfy the guard would make the
+-- file stop matching what actually ran, and fidelity is the entire point of a
+-- recovered migration. The guard's scope rule ("newly ADDED files only") does
+-- not yet know about added-but-already-applied, which is what every recovery PR
+-- is; teaching it to exempt versions present in schema_migrations is the real
+-- fix and belongs in its own change, not on the critical path of a recovery
+-- that is currently blocking every PR in the repo.
 -- A successful attempt can be fresh even when the remote source blocks the
 -- server-side probe. Keep unknown as a freshness-score penalty, but do not
 -- label a check performed within the seven-day SLO as stale.
