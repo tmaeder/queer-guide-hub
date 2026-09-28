@@ -118,6 +118,7 @@ out-aids-ch/
 # the crawl is not. sha256 of enriched_spots.jsonl is recorded in the importer
 # header so a re-run can prove it read the same bytes.
 out-gays-cruising/
+out-gayout/
 # Kinktionary scrape cache + the browser profile whose cf_clearance cookie is
 # what gets the run past Cloudflare. The fetcher is committed; the fetch is not.
 scripts/data-quality/out-kinktionary/
