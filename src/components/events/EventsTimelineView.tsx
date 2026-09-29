@@ -48,9 +48,32 @@ interface EventsTimelineViewProps {
 }
 
 const TRACK_TARGET_WIDTH = 1800;
+/**
+ * The horizontal budget for one pin. It is BOTH the row-packing reserve passed to
+ * `placeOnRows` AND the label pin's `maxWidth`, and those two had drifted apart: the
+ * pin was capped at `LABEL_PX + 16` (126px) while only `LABEL_PX` (110px) was
+ * reserved on the row, so a label wider than 110px overflowed into its neighbour and
+ * STOLE ITS CLICKS. One constant now feeds both. Bars were never affected —
+ * `placeOnRows` reserves `max(actualEnd, start + LABEL_PX)`, which already covers a
+ * bar's own width — so only the label branch is capped.
+ */
 const LABEL_PX = 110;
 const ROW_HEIGHT = 30;
+/** The VISIBLE bar's height. Still drawn at this size; only the hit box grew. */
 const BAR_HEIGHT = 18;
+/**
+ * WCAG 2.2 AA (2.5.8 `target-size`) wants 24x24 CSS px. The pin's hit box was
+ * BAR_HEIGHT (18) and the cluster chip 18px wide, both under the floor.
+ *
+ * The pin grows INVISIBLY, and that needs one more step than /pride did: there the
+ * anchor was the only user of the old height, here `BAR_HEIGHT` is ALSO the visible
+ * bar's own height. So the anchor takes this constant while the inner bar keeps
+ * BAR_HEIGHT, and the anchor's top is offset by half the growth — the anchor is
+ * `flex items-center`, so an 18px bar inside a 24px box still centres on y+9,
+ * exactly where it was. Raising ROW_HEIGHT instead would add ~24px per row for no
+ * accessibility gain, since axe's rule is "size OR spacing", not both.
+ */
+const PIN_HEIGHT_PX = 24;
 const CLUSTER_PX = 24;
 const CLUSTER_MIN = 3;
 const DRAG_THRESHOLD_PX = 5;
@@ -482,16 +505,22 @@ export function EventsTimelineView({
                       type="button"
                       aria-label={`${count} events around ${format(new Date(p.startMs), 'PP')}`}
                       className={cn(
-                        'absolute flex items-center justify-center text-2xs font-medium leading-none',
+                        // `min-h-0` is load-bearing: `@layer base` in index.css gives
+                        // every <button> `min-height: 44px`, which BEATS an inline
+                        // height. This chip is `rounded-full`, not `rounded-badge`, so
+                        // it never hit the 24px chip exemption — it was rendering as a
+                        // 44px-tall pill inside a 30px row while measuring only 18px
+                        // wide, i.e. failing target-size on WIDTH.
+                        'absolute flex min-h-0 items-center justify-center text-2xs font-medium leading-none',
                         'bg-foreground text-background rounded-full border border-border-hairline hover:scale-110 transition-transform',
                         'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-foreground focus-visible:ring-offset-1',
                         isPast && 'opacity-50',
                       )}
                       style={{
                         left: `${xStart}px`,
-                        top: `${y}px`,
-                        width: `${Math.max(BAR_HEIGHT, BAR_HEIGHT + (count.toString().length - 1) * 4)}px`,
-                        height: `${BAR_HEIGHT}px`,
+                        top: `${y - (PIN_HEIGHT_PX - BAR_HEIGHT) / 2}px`,
+                        width: `${Math.max(PIN_HEIGHT_PX, BAR_HEIGHT + (count.toString().length - 1) * 4)}px`,
+                        height: `${PIN_HEIGHT_PX}px`,
                       }}
                     >
                       {count}
@@ -574,9 +603,13 @@ export function EventsTimelineView({
                   )}
                   style={{
                     left: `${xStart}px`,
-                    top: `${y}px`,
-                    height: `${BAR_HEIGHT}px`,
-                    maxWidth: isBar ? undefined : `${LABEL_PX + 16}px`,
+                    // Grown symmetrically about the old content line, not downward:
+                    // the hit box was BAR_HEIGHT at `y`, so its centre was y+9.
+                    // Adding the 6px purely below would shift every bar and label
+                    // down 3px, a visible change to a dense chart for no reason.
+                    top: `${y - (PIN_HEIGHT_PX - BAR_HEIGHT) / 2}px`,
+                    height: `${PIN_HEIGHT_PX}px`,
+                    maxWidth: isBar ? undefined : `${LABEL_PX}px`,
                   }}
                 >
                   {isBar ? (
