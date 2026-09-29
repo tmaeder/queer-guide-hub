@@ -486,6 +486,30 @@ describe('the tag-hygiene gate survives a statement timeout', () => {
     // The retry must not swallow a real failure.
     expect(SCRIPT).toMatch(/if \(!res\.ok\) \{[\s\S]{0,200}?process\.exit\(1\)/);
   });
+
+  // 2026-09-28. The retry existed and still could not save the gate: it fired
+  // IMMEDIATELY, so both attempts landed in the same contention window and both
+  // timed out, ~9s apart, measured twice on #3996. Contention on this instance
+  // lasts minutes — re-measured the same day, the function is 1,523 ms on a quiet
+  // instance (5.3x headroom under the 8s ceiling) and 4.2-19.4 s under 76
+  // backends. So the delay, not the retry, is what makes this gate report
+  // hygiene instead of load.
+  it('waits before retrying, so the retry samples a DIFFERENT load window', () => {
+    // Anchored from the 57014 branch THROUGH an awaited timer and INTO the retry
+    // call. A delay declared at the top of the file and never awaited, or awaited
+    // after the retry, does not satisfy this.
+    expect(SCRIPT).toMatch(
+      /includes\('57014'\)[\s\S]{0,400}?await new Promise[\s\S]{0,120}?setTimeout\([\s\S]{0,200}?await callStats\(\)/,
+    );
+  });
+
+  it('delays long enough to outlast a spike, not a token pause', () => {
+    // A 100ms sleep would satisfy the structural assertion above while changing
+    // nothing: the window that broke #3996 was >9s wide.
+    const m = SCRIPT.match(/RETRY_DELAY_MS\s*=\s*([0-9_]+)/);
+    expect(m, 'RETRY_DELAY_MS must be a literal so its magnitude is reviewable').not.toBeNull();
+    expect(Number(m![1].replace(/_/g, ''))).toBeGreaterThanOrEqual(10_000);
+  });
 });
 
 /**
