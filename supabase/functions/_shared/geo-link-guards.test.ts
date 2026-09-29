@@ -2,6 +2,7 @@ import { assert, assertAlmostEquals, assertEquals } from 'https://deno.land/std@
 import {
   CITY_COORD_MAX_KM,
   cityCoordContradiction,
+  cityLinkContradiction,
   distanceKm,
   mergeRoundRobin,
 } from './geo-link-guards.ts';
@@ -63,6 +64,19 @@ Deno.test('cityCoordContradiction: the bound is inclusive and is the measured 10
   const city = { name: 'X', latitude: 0, longitude: 0 };
   assertEquals(cityCoordContradiction({ latitude: 0.89, longitude: 0 }, city), null);
   assert(cityCoordContradiction({ latitude: 0.91, longitude: 0 }, city) !== null);
+});
+
+Deno.test('cityLinkContradiction: a country mismatch needs coordinate corroboration', () => {
+  const city = { ...PALM_SPRINGS_CITY, country_id: 'US' };
+  assert(
+    cityLinkContradiction({ latitude: null, longitude: null }, city, 'CA') !== null,
+  );
+  assertEquals(cityLinkContradiction(VENUE_IN_PALM_SPRINGS, city, 'CA'), null);
+});
+
+Deno.test('cityLinkContradiction: same-country matches still fail open without coordinates', () => {
+  const city = { ...PALM_SPRINGS_CITY, country_id: 'US' };
+  assertEquals(cityLinkContradiction({ latitude: null, longitude: null }, city, 'US'), null);
 });
 
 const ids = (...xs: string[]) => xs.map((id) => ({ id }));

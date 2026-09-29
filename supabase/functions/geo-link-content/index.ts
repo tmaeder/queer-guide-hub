@@ -15,7 +15,7 @@
 import { requireAdmin, getCorsHeaders, getServiceClient } from '../_shared/supabase-client.ts';
 import { COUNTRY_ALIASES } from '../_shared/automation-utils.ts';
 import { cityCollisionReason, proseStateContradiction } from '../_shared/city-collision-guard.ts';
-import { cityCoordContradiction, mergeRoundRobin } from '../_shared/geo-link-guards.ts';
+import { cityLinkContradiction, mergeRoundRobin } from '../_shared/geo-link-guards.ts';
 
 const supabase = getServiceClient();
 
@@ -337,7 +337,7 @@ async function processVenuesOrEvents(
       // standing quarantine is the fallback (it covers rows whose evidence
       // lives somewhere this function cannot see).
       blockedReason = cityCollisionReason(city, stateText, metroSlugs.get(id), cityText || '')
-        || cityCoordContradiction(rowCoords, city)
+        || cityLinkContradiction(rowCoords, city, country?.id)
         || (priorLink?.blocked ? `quarantined by run_event_city_link: ${priorLink.blocked}` : null);
 
       if (blockedReason) {
