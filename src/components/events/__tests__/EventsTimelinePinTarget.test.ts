@@ -29,6 +29,10 @@ const SRC = readFileSync(
   join(process.cwd(), 'src/components/events/EventsTimelineView.tsx'),
   'utf8',
 );
+const TOOLBAR = readFileSync(
+  join(process.cwd(), 'src/components/events/TimelineToolbar.tsx'),
+  'utf8',
+);
 
 // Comment-stripped: this component's header now explains the off-by-16, the 24px
 // minimum and the min-height trap in prose, so a whole-file match would be satisfiable
@@ -136,5 +140,36 @@ describe('the cluster chip is a legal touch target', () => {
     const offsets = code.match(/top: `\$\{y - \(PIN_HEIGHT_PX - BAR_HEIGHT\) \/ 2\}px`/g) ?? [];
     // Both the chip and the pin: asserting one occurrence is satisfied by the other.
     expect(offsets.length).toBe(2);
+  });
+});
+
+describe('dimmed text on the timeline meets AA contrast', () => {
+  // Adding `/events?view=timeline` to the sweep manifest is what surfaced these: the
+  // route had never been scanned, so 12 `color-contrast` (serious) instances sat there
+  // invisibly. Measured by axe on this branch against the light theme:
+  //
+  //   text-foreground/40 on bg-surface-container … 2.54:1  (month chip, empty bucket)
+  //   text-foreground/50 on the page             … 3.48:1  (viewport range, count, hint)
+  //
+  // Both are under the 4.5:1 AA threshold for 11px text. `text-muted-foreground`
+  // (light `0 0% 33%` = #545454) computes to ~7.25:1 on the page and ~6.1:1 on
+  // surface-container, so it clears AA on both grounds and keeps the palette
+  // monochrome rather than inventing a new opacity.
+  //
+  // The ban is deliberately SPECIFIC to /40 and /50 rather than to every opacity:
+  // /60 computes to 4.88:1 and /70 to 6.91:1, both of which pass, and several are
+  // still in use. A blanket ban would force needless churn and would not be true.
+  const files = { 'EventsTimelineView.tsx': code, 'TimelineToolbar.tsx': TOOLBAR };
+
+  for (const [name, src] of Object.entries(files)) {
+    it(`${name} uses no sub-AA text opacity`, () => {
+      expect(src).not.toMatch(/text-foreground\/(40|50)\b/);
+    });
+  }
+
+  it('still allows the opacities that do pass, so the rule is not a blanket ban', () => {
+    // Positive control: if this stops matching, the assertion above has quietly become
+    // "no dimmed text at all" and is no longer testing what it claims.
+    expect(code).toMatch(/text-foreground\/(60|70)\b/);
   });
 });

@@ -407,7 +407,7 @@ export function EventsTimelineView({
             return (
               <span
                 key={b.startMs}
-                className="px-2 py-1 text-xs2 text-foreground/40 rounded-badge whitespace-nowrap bg-surface-container"
+                className="px-2 py-1 text-xs2 text-muted-foreground rounded-badge whitespace-nowrap bg-surface-container"
               >
                 {b.label}
               </span>
@@ -425,7 +425,7 @@ export function EventsTimelineView({
               }}
               className="px-2 py-1 text-xs2 rounded-badge hover:bg-muted transition-colors min-h-0 whitespace-nowrap"
             >
-              {b.label} <span className="text-foreground/50">{count}</span>
+              {b.label} <span className="text-muted-foreground">{count}</span>
             </button>
           );
         })}
@@ -663,7 +663,7 @@ export function EventsTimelineView({
         }}
       />
 
-      <p className="text-xs2 text-foreground/50 mt-2">
+      <p className="text-xs2 text-muted-foreground mt-2">
         {visibleEvents.length} of {events.length} {events.length === 1 ? 'event' : 'events'} visible
         · drag to pan, cmd+scroll to zoom · solid markers are featured
       </p>
