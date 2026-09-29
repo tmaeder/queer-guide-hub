@@ -589,8 +589,14 @@ async function readCursor(entityType: string): Promise<string | null> {
   return typeof details?.cursor === 'string' ? details.cursor : null;
 }
 
-// deno-lint-ignore no-explicit-any
-type Filter = (q: any) => any;
+/**
+ * A work-list filter. Generic over the builder so each filter keeps the
+ * PostgREST builder type it was given — `or()` returns the same builder.
+ */
+interface OrFilterable<Q> {
+  or(filters: string): Q;
+}
+type Filter = <Q extends OrFilterable<Q>>(q: Q) => Q;
 
 /**
  * Round-robin read of the rows still missing a city or country: rows after the
@@ -615,14 +621,14 @@ async function fetchRoundRobin(
   if (cursor) {
     const { data, error } = await base().gt('id', cursor).limit(batchLimit);
     if (error) throw new Error(`${table} work list (after cursor) failed: ${error.message}`);
-    afterCursor = data || [];
+    afterCursor = (data || []) as unknown as { id: string }[];
   }
 
   let fromStart: { id: string }[] = [];
   if (afterCursor.length < batchLimit) {
     const { data, error } = await base().limit(batchLimit);
     if (error) throw new Error(`${table} work list (from start) failed: ${error.message}`);
-    fromStart = data || [];
+    fromStart = (data || []) as unknown as { id: string }[];
   }
 
   const { rows, cursor: next } = mergeRoundRobin(afterCursor, fromStart, batchLimit);
