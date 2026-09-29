@@ -82,6 +82,26 @@ export function cityCoordContradiction(
 }
 
 /**
+ * Full corroboration rule for a name match. Missing coordinates remain
+ * acceptable when the city agrees with the source country, but they cannot
+ * justify overriding a contradictory source country. The latter used to fall
+ * through to D10 and silently rewrite the country from a bare globally-unique
+ * name; loading the full city table makes that fallback much wider.
+ */
+export function cityLinkContradiction(
+  row: LatLng,
+  city: LatLng & { name: string; country_id: string },
+  sourceCountryId: string | null | undefined,
+  maxKm: number = CITY_COORD_MAX_KM,
+): string | null {
+  const km = distanceKm(row, city);
+  if (sourceCountryId && sourceCountryId !== city.country_id && km === null) {
+    return `"${city.name}" is in a different country and the row has no coordinates to corroborate it`;
+  }
+  return cityCoordContradiction(row, city, maxKm);
+}
+
+/**
  * Merge the two halves of a round-robin read: rows after the cursor, then —
  * when that half came back short — rows from the start of the key space. The
  * wrap half can overlap the first half when the whole work list is smaller
