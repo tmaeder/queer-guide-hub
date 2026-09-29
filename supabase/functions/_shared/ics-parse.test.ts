@@ -556,6 +556,11 @@ Deno.test('parseLocation: strips a Berlin borough suffix, with and without a pos
   // its own case — a fix applied to only one branch passes the other.
   const noPostcode = parseLocation('Fuggerstraße, Berlin-Bezirk Tempelhof-Schöneberg, Deutschland')
   assertEquals(noPostcode.city, 'Berlin')
+
+  // With only city + country, parseLocation returns through an earlier branch.
+  // Keep that third assignment site under the same normalization contract.
+  const cityOnly = parseLocation('Berlin-Bezirk Tempelhof-Schöneberg, Deutschland')
+  assertEquals(cityOnly.city, 'Berlin')
 })
 
 Deno.test('parseLocation: a hyphenated city name survives intact', () => {
