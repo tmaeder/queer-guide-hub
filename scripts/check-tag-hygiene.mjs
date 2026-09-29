@@ -61,14 +61,37 @@ let body = res.ok ? null : await res.text()
 // appears in the logs, re-measure per arm — measured per arm, not by reading the
 // plan tree, because EXPLAIN reports buffers CUMULATIVELY through nested nodes
 // and a rolled-up figure reads exactly like an independent one.
+//
+// THE RETRY IS DELAYED, AND THAT DELAY IS THE WHOLE FIX (2026-09-28). It used to
+// fire immediately, so both attempts landed inside the SAME contention window and
+// both timed out ~9s apart — measured, twice, on #3996. Contention here lasts
+// minutes, not milliseconds, so an instant retry re-samples nothing. A single
+// retry far enough away to sample a different window is the difference between a
+// gate that reports load and a gate that reports hygiene.
+//
+// RE-MEASURED THE SAME DAY, AND IT CONFIRMS THIS IS LOAD, NOT COST. On a quiet
+// instance (2 active backends) the function is **1,523 ms** against the 8s
+// ceiling — 5.3x headroom, matching the 1.3s recorded in 2026-09-14 — and
+// `uta_rollup`, its dominant CTE, is **321 ms**. Under load (76 backends, 17
+// active, a 1.7-hour query) the SAME function measured 4.2s to 19.4s and
+// `uta_rollup` 3,275 ms. Every per-arm figure taken during that window is void,
+// including three "optimisations" that looked 2-4x worse and were only contention.
+// Before trusting ANY timing here, re-run the unchanged baseline afterwards: if
+// the two baselines disagree, the measurement in between measured the instance.
+const RETRY_DELAY_MS = 30_000
 if (!res.ok && body?.includes('57014')) {
-  console.warn('⚠ tag_hygiene_stats() hit the statement timeout (57014) — no metric was evaluated. Retrying once.')
+  console.warn(
+    `⚠ tag_hygiene_stats() hit the statement timeout (57014) — no metric was evaluated. ` +
+      `Retrying ONCE in ${RETRY_DELAY_MS / 1000}s, to sample a different load window.`,
+  )
+  await new Promise((r) => setTimeout(r, RETRY_DELAY_MS))
   const t0 = Date.now()
   res = await callStats()
   body = res.ok ? null : await res.text()
   console.warn(
-    `⚠ retry ${res.ok ? 'SUCCEEDED' : 'FAILED'} after ${Date.now() - t0}ms. The RPC is near its 8s ` +
-      'ceiling — re-measure per arm rather than retrying harder.',
+    `⚠ retry ${res.ok ? 'SUCCEEDED' : 'FAILED'} after ${Date.now() - t0}ms. If it FAILED, the ` +
+      'database was busy for >30s or the function has genuinely regressed — measure it on a quiet ' +
+      'instance before concluding which.',
   )
 }
 
