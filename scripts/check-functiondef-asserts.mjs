@@ -38,11 +38,36 @@
 // pg_get_functiondef have applied successfully, and `db push` never re-runs an
 // applied migration. Condemning them would be a 58-entry allowlist nobody reads.
 //
+// ADDED IS NOT THE SAME AS NEW, and conflating them blocked the repo on
+// 2026-09-28. "Added" was computed as a git diff against the base ref, which is
+// right for a migration someone just wrote and wrong for a RECOVERY PR: those
+// files are added to the repo and were already applied to prod, which is the
+// exact condition this scope rule exists to forgive. PR #3990 recovered 13
+// drifted migrations and one of them — 20260928134338, authored elsewhere and
+// merely rebuilt from `schema_migrations` — tripped this guard, so the PR that
+// existed to clear drift for every open PR in the repo could not itself merge.
+// Its assertion had already run on prod, against the real definition, and
+// passed. The only ways out were to rewrite recovered SQL (which destroys the
+// one property a recovered file has: matching what ran) or to bolt on an
+// opt-out per file, forever, for a condition the guard can simply look up.
+//
+// So a version present in remote `schema_migrations` is exempt, for the same
+// reason the 64 historical files are: `db push` matches on version and skips an
+// applied one, so its text can never abort a deploy again.
+//
+// FAILS CLOSED. With no token nothing is treated as applied and every added
+// file is checked, exactly as before — the strict behaviour is the fallback, so
+// a missing secret can only make this guard noisier, never quieter. An API
+// error propagates rather than being swallowed into "nothing is applied", which
+// would be a silent downgrade to the old behaviour during an outage.
+//
 // OPT-OUT: a file may carry `-- functiondef-assert-ok: <reason>` when it really
 // does mean to assert on a comment. Rare and deliberate; it must give a reason.
 
 import { readFileSync } from 'node:fs'
 import { execFileSync } from 'node:child_process'
+import { basename } from 'node:path'
+import { fetchRemoteVersions } from './lib/remote-migrations.mjs'
 
 // `[ \t]` not `\s`: `\s` matches a newline, so a bare `-- functiondef-assert-ok:`
 // would be satisfied by the first character of the NEXT line and the opt-out
@@ -117,15 +142,58 @@ function addedMigrations() {
   }
 }
 
-function main() {
+/** Leading 14-digit version of a migration path, or null. */
+export function versionOf(file) {
+  const m = /^(\d{14})_/.exec(basename(file))
+  return m ? m[1] : null
+}
+
+/**
+ * Drop files whose version is already applied to prod.
+ *
+ * `applied` is null when no token was available, and that case must keep every
+ * file — see FAILS CLOSED above. A file with no parsable version is also kept:
+ * it cannot be proven applied, and the strict branch is the safe one.
+ */
+export function withoutApplied(files, applied) {
+  if (!applied) return { checked: files, exempt: [] }
+  const checked = []
+  const exempt = []
+  for (const f of files) {
+    const v = versionOf(f)
+    ;(v && applied.has(v) ? exempt : checked).push(f)
+  }
+  return { checked, exempt }
+}
+
+async function main() {
   const files = addedMigrations()
   if (files === null) process.exit(0)
   if (files.length === 0) {
     console.log('✓ no new migrations to check for pg_get_functiondef assertions')
     return
   }
+
+  // An API error propagates: "could not reach prod" is not "nothing is applied".
+  const applied = await fetchRemoteVersions()
+  const { checked, exempt } = withoutApplied(files, applied)
+
+  if (exempt.length) {
+    // Named, not just counted — an exemption is the guard declining to look, and
+    // a silent one is how a recovery PR could smuggle in a genuinely new file.
+    console.log(`  ${exempt.length} already applied to prod, exempt (db push skips an applied version):`)
+    for (const f of exempt) console.log(`    ${basename(f)}`)
+  }
+  if (applied === null && files.length) {
+    console.log('  no SUPABASE_ACCESS_TOKEN: nothing treated as applied, checking every added file')
+  }
+  if (checked.length === 0) {
+    console.log(`✓ ${files.length} added migration(s), all already applied: nothing to check`)
+    return
+  }
+
   let failed = false
-  for (const f of files) {
+  for (const f of checked) {
     let sql
     try { sql = readFileSync(f, 'utf8') } catch { continue }
     const hits = findUnstrippedAsserts(sql)
@@ -149,7 +217,15 @@ function main() {
     console.error('::error title=Migration asserts on pg_get_functiondef without stripping comments::See log.')
     process.exit(1)
   }
-  console.log(`✓ ${files.length} new migration(s): no unstripped pg_get_functiondef assertions`)
+  console.log(`✓ ${checked.length} new migration(s): no unstripped pg_get_functiondef assertions`)
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) main()
+if (import.meta.url === `file://${process.argv[1]}`) {
+  main().catch((e) => {
+    // Loud, not silent: a failure to establish what is applied must not read as
+    // a clean tree. The strict path would have been safe, but pretending we
+    // checked is the failure mode this repo keeps rediscovering.
+    console.error(`✗ check-functiondef-asserts could not run: ${e.message}`)
+    process.exit(1)
+  })
+}
