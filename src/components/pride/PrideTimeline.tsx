@@ -17,8 +17,31 @@ interface PrideTimelineProps {
 
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 const TRACK_WIDTH = 1800;
+/**
+ * The horizontal budget for one pin. It is BOTH the row-packing reserve passed to
+ * `placeOnRows` AND the pin's own `maxWidth`, and those two had drifted apart: the
+ * pin was capped at `LABEL_PX + 16` (112px) while only `LABEL_PX` (96px) was
+ * reserved on the row, so any pin whose label rendered wider than 96px overflowed
+ * into its neighbour and STOLE ITS CLICKS. Measured on the axe sweep of
+ * 2026-09-28: a 103px `CSD Görlitz` pin ending at x=1354 with the next pin
+ * starting at x=1353 — a 1px overlap. One constant now feeds both, so they cannot
+ * drift again; the label truncates 16px sooner instead, which `truncate` already
+ * handles and the tooltip shows in full.
+ */
 const LABEL_PX = 96;
 const ROW_HEIGHT = 28;
+/**
+ * WCAG 2.2 AA (2.5.8 `target-size`) wants 24x24 CSS px. The pin was 20px tall and
+ * axe flagged it `serious` on both viewports. It grows INVISIBLY: the anchor is
+ * `bg-transparent` with `items-center`, so the dot and label stay exactly where
+ * they were and only the hit box changes. ROW_HEIGHT stays 28, which leaves a 4px
+ * gap between rows and keeps the timeline the same height — raising the row pitch
+ * to clear the grid would have added ~300px to an already 2,200px track for no
+ * accessibility gain, because axe's rule is "size OR spacing", not both.
+ */
+const PIN_HEIGHT_PX = 24;
+/** The pin's original height, kept so the hit box can grow about the same centre line. */
+const PIN_CONTENT_PX = 20;
 
 interface PlacedEvent {
   event: PrideCalendarEvent;
@@ -189,9 +212,15 @@ export function PrideTimeline({
                       )}
                       style={{
                         left: `${xPct}%`,
-                        top: `${y}px`,
-                        height: '20px',
-                        maxWidth: `${LABEL_PX + 16}px`,
+                        // Grown SYMMETRICALLY about the old content line, not downward:
+                        // the pin was 20px at `y`, so its centre was y+10. Adding the
+                        // 4px purely below would shift every label down 2px, which is a
+                        // visible change to a dense chart for no reason. Offsetting the
+                        // top by half the growth keeps the dot and label on exactly the
+                        // pixels they occupied before.
+                        top: `${y - (PIN_HEIGHT_PX - PIN_CONTENT_PX) / 2}px`,
+                        height: `${PIN_HEIGHT_PX}px`,
+                        maxWidth: `${LABEL_PX}px`,
                       }}
                     >
                       <span
