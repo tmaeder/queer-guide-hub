@@ -14,26 +14,49 @@
       "revised_at": "2026-09-26T00:00:00Z",
       "raised": { "operations.unlinked_events": "743 -> 780" },
       "reason": "THIS ONE IS NOT A BACKLOG AND THE ORIGINAL CEILING WAS MIS-SPECIFIED, not merely too low. `unlinked_events` is `count(*) from events where duplicate_of_id is null and city_id is null` (99991790194100:524) -- an INFLOW counter that rises with every ingested event whose city does not resolve and falls when run_event_city_link (cron `5 3 * * *`) drains it overnight. Measured across three consecutive daily snapshots it read 743 / 742 / 744, and the activation ceiling was pinned at the exact snapshot value with ZERO headroom, which makes it a coin flip that reds every open PR in the repo at random -- it did exactly that on 2026-09-26 when two events arrived with no resolvable city. The new ceiling is derived, not chosen: 744 currently unlinked + 90 days of the measured residue rate. Residue rate measured 2026-09-26 -- of the 744, only 12 were created in the trailing 30 days (0.4/day) while 727 came from a burst 30-90 days ago, so 0.4/day is normal accrual and 90 days of it is 36. A genuine producer regression is a step change of hundreds (that 727-event burst is the shape), so 36 of headroom still catches one while absorbing daily noise. `operations.unlinked_venues` carries the IDENTICAL defect and is green only by luck, because it happens to be falling (3584 -> 3534 -> 3518 over the same three snapshots); it is left alone here rather than pre-emptively loosened, but it is the same coin flip the day that trend reverses."
+    },
+    {
+      "revised_at": "2026-09-29T21:00:00Z",
+      "repaired_not_raised": {
+        "issues.CITY_LINK_NAMESAKE": "1 -> 0",
+        "issues.CITY_LINK_COUNTRY_MISMATCH": "3 -> 0",
+        "issues.CITY_GHOST_HAS_LIVE_CHILDREN": "8 -> 2 (ceiling tightened to 2)",
+        "issues.CITY_TEXT_MOJIBAKE": "1 -> 0 (ceiling tightened to 0)",
+        "issues.CITY_DESCRIPTION_WRONG_SUBJECT": "2 -> 0 (ceiling tightened to 0)",
+        "issues.CITY_GEO_INVALID": "2 -> 1 (ceiling tightened to 1)"
+      },
+      "reason": "THESE TWO WERE ZERO-INVARIANTS, SO THEY WERE FIXED RATHER THAN RENEGOTIATED -- the distinction this file exists to draw. Three events carried all four counts and the remedy differed per row, which is why no sweep was possible: `CSD Burgdorf` (event DE) was linked to Burgdorf CH -- CSD is the German term for a pride march and a Burgdorf exists in Lower Saxony, so the EVENT was right and the LINK was wrong; `tri-Pride 2027` (event CA) was linked to Cambridge GB while tri-Pride is the Kitchener-Waterloo-Cambridge event in ONTARIO, same shape; `Hong Kong Gay pride 2026` was the OPPOSITE -- it really is in Hong Kong, so its city link was CORRECT and its own country_id pointed at CN. Unlinking all three as one shape would have stripped a correct link off a 73-venue metro. The two wrong links are unlinked AND quarantined via `enrichment_status.event_city_link.blocked`, which geo-link-content/index.ts:303 honours, because that job otherwise re-resolves by name and prefers the most populous same-name candidate -- without the stamp the repair reverts on the next hourly pass. No city row is created: there is no Burgdorf under DE and no Cambridge under CA, and `cities` is unique on (name, country) with the comma qualifier stripped before the index sees it. The Hong Kong write clears BOTH flags with one UPDATE, because `wrong_namesake_events` keys on another row in the EVENT'S OWN country and a `tmp-` Hong Kong shell exists under CN. Migration 99991790714431. The four tightened ceilings lock in gains measured in the same live sync rather than leaving slack nobody is using; CITY_GHOST_HAS_LIVE_CHILDREN fell because the junk city `Ch Ku` -- `Chuo-ku` with its non-ASCII stripped, minted by the venue-city-match resolver enqueue -- was merged into Tokyo, moving its 14 Ginza/Tsukiji/Nihonbashi venues (Tokyo 207 -> 221) rather than archived, which would have stranded them on a ghost."
+    },
+    {
+      "revised_at": "2026-09-29T21:00:00Z",
+      "raised": {
+        "publication_blocked": "971 -> 1037",
+        "issues.CITY_IDENTITY_AMBIGUOUS": "381 -> 416",
+        "issues.CITY_IMAGE_REUSED": "238 -> 279",
+        "operations.unlinked_venues": "3584 -> 6896",
+        "operations.unlinked_events": "780 -> 851"
+      },
+      "reason": "CORPUS GROWTH, NOT REGRESSION: the 2026-09-28 gayout import committed 8,036 venues, ~3,336 of which have no resolvable city, and the queer.de/qcal/gaytravel4u event imports landed in the same window. The three QUALITY backlogs (publication_blocked, CITY_IDENTITY_AMBIGUOUS, CITY_IMAGE_REUSED) are set to the EXACT measured value so they stay shrinking ceilings with no slack; 33 of the ambiguous rows are cities the venue-city-match resolver minted this week, which carry no wikidata_qid by construction and are legitimately ambiguous until city_qid_gap_link reaches them. The two INFLOW counters get derived headroom on the same basis as the 2026-09-26 revision above: unlinked_venues 6827 + 90 days of the ONGOING residue rate, measured by excluding the one-off import (23 of the 6,827 were created in the trailing 30 days from any source other than gayout = 0.77/day, so 90 days is 69); unlinked_events 815 + 36 at the previously measured 0.4/day non-bulk rate. The gayout backlog is being worked rather than parked -- the venue-city-match resolver queue is at 0 pending / 91 resolved / 140 cities minted. STATED LIMITATION, because the headroom does not actually solve this class: a rate-derived ceiling absorbs daily noise but NOT the next bulk import, which will breach it again by design, and 216 of the 815 unlinked events arrived in 30 days precisely because imports are lumpy rather than rate-like. Both counters scale with corpus size, so the real fix is a RATIO (unlinked / total) or dropping them from the gate -- a contract change in 99991790194100, not a baseline edit. Until then a bulk import should be a deliberate re-baseline with its numbers recorded here, which is what this entry is."
     }
   ],
-  "publication_blocked": 971,
+  "publication_blocked": 1037,
   "issues": {
-    "CITY_IDENTITY_AMBIGUOUS": 381,
-    "CITY_GEO_INVALID": 2,
-    "CITY_DESCRIPTION_WRONG_SUBJECT": 2,
+    "CITY_IDENTITY_AMBIGUOUS": 416,
+    "CITY_GEO_INVALID": 1,
+    "CITY_DESCRIPTION_WRONG_SUBJECT": 0,
     "CITY_DESCRIPTION_REUSED": 29,
-    "CITY_TEXT_MOJIBAKE": 1,
+    "CITY_TEXT_MOJIBAKE": 0,
     "CITY_IMAGE_FLAGGED": 452,
-    "CITY_IMAGE_REUSED": 238,
+    "CITY_IMAGE_REUSED": 279,
     "CITY_LINK_NAMESAKE": 0,
     "CITY_LINK_COUNTRY_MISMATCH": 0,
     "CITY_DUPLICATE_UNRESOLVED": 0,
     "CITY_GHOST_EXPOSED": 0,
-    "CITY_GHOST_HAS_LIVE_CHILDREN": 8,
+    "CITY_GHOST_HAS_LIVE_CHILDREN": 2,
     "CITY_PLACEHOLDER_EXPOSED": 0
   },
   "operations": {
-    "unlinked_venues": 3584,
-    "unlinked_events": 780
+    "unlinked_venues": 6896,
+    "unlinked_events": 851
   }
 }
