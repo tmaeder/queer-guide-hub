@@ -172,8 +172,25 @@ describe('the verify block', () => {
 describe('the health-script baseline moved with a measured number', () => {
   const health = readFileSync(join(process.cwd(), 'scripts', 'check-pipeline-health.mjs'), 'utf8');
 
-  it('is 23, the value the full-stack dry run reported', () => {
-    expect(health).toMatch(/const BASELINE_UNCORROBORATED = 23\b/);
+  // 2026-09-30: 23 -> 24. This test is what caught the constant's SECOND home — moving
+  // it in the health script alone reds CI, because the baseline lives here too.
+  // The 24th pair is `Tokyo <=> Ch Ku`, merged 2026-09-29 20:30: a mangled Chūō-ku (its
+  // macrons stripped) minted by `venue-city-match` on 2026-09-28, 10.8 km from Tokyo's
+  // centroid, no QID of its own, 14 venues reparented, audit `schema:1` so reversible.
+  // Same district-into-parent class as the Hamburg and Berlin rows this file is about,
+  // which is why it is a baseline move rather than an investigation.
+  it('is 24, each increment a merge someone read', () => {
+    expect(health).toMatch(/const BASELINE_UNCORROBORATED = 24\b/);
+  });
+
+  it('records WHY the number moved, so the next increment cannot be silent', () => {
+    // A bare number is indistinguishable from one loosened to make CI pass.
+    const before = health.slice(
+      Math.max(0, health.indexOf('const BASELINE_UNCORROBORATED') - 900),
+      health.indexOf('const BASELINE_UNCORROBORATED'),
+    );
+    expect(before).toMatch(/Ch Ku/);
+    expect(before).toMatch(/district/i);
   });
 
   it('still FAILS on growth rather than merely printing', () => {
