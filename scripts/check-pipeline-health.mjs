@@ -1077,7 +1077,14 @@ if (!hygieneRes.ok) {
     // self-describing, but it means restating a shared function that the
     // `suggested_uncorroborated` ZERO-invariant depends on — and a hand-made
     // merge with stated evidence is not what that gate exists to police.
-    const BASELINE_UNCORROBORATED = 23
+    // 2026-09-30: 23 -> 24. The new pair is `Tokyo <=> Ch Ku`, merged 2026-09-29 20:30.
+    // `Ch Ku` is a mangled Japanese ward name (the macrons stripped from Chūō-ku),
+    // minted by `venue-city-match` on 2026-09-28, 10.8 km from Tokyo's centroid, no
+    // QID of its own, 14 venues reparented to Tokyo, audit `schema:1` so reversible.
+    // Same district-into-parent class as the Hamburg and Essen entries above, which is
+    // why it is a baseline move and not an investigation: a district was never a city,
+    // so unmerging would resurrect a non-place row.
+    const BASELINE_UNCORROBORATED = 24
     const unc = Number(sig?.merged_uncorroborated ?? 0)
     if (unc > BASELINE_UNCORROBORATED) {
       const ex = Array.isArray(sig?.merged_examples) ? sig.merged_examples : []
@@ -4289,6 +4296,101 @@ const DISOWNED_PROSE_CEILING = 380
             `p99 ${s.p99_km} km, none over 100 km`,
         )
       }
+    }
+  }
+}
+
+// 19. Derived event geography that outlived its input (2026-09-30).
+//
+// `run_event_geo_fill` visited a row once, ever — its selector was
+// `p_force or not (enrichment_status ? 'event_geo_fill')` — so a row whose gap re-opened
+// was never refilled. 99991790718103 added a fillable-gap arm, and this watches the two
+// quantities that arm is about.
+//
+// `stale_centroid_far` is a ZERO-INVARIANT and the reason the section exists: an event
+// carrying the centroid of a merged-away city that is a DIFFERENT place from the city it
+// is now presented on. `merge_cities` writes `events.city` text and does NOT re-derive
+// coordinates, so a merge of two far-apart rows leaves the loser's coordinates behind.
+// That producer is deliberately unchanged — restating a merge core is a large collision
+// surface for a class with one victim on record — so this is the thing that catches it.
+//
+// `stuck_fillable_coords` is ADVISORY with a growth gate, not a zero-invariant: it stood
+// at 50 when the fix shipped and drains through the nightly cron at up to 300 rows a
+// night. Gating at zero would ship red on arrival, which is the cry-wolf shape this file
+// has already removed twice.
+//
+// `stuck_nothing_fillable` is reported and NEVER gated. Those rows are correctly done —
+// their city has no coordinates to give — and re-opening them would re-select 240+ rows
+// nightly on a table whose every UPDATE fans out through `trg_search_documents_event`.
+// A reading of 0 there means the predicate widened to every visited row, which is the
+// failure this design avoids, so it is asserted as NON-zero.
+{
+  const res = await fetch(`${BASE}/rest/v1/rpc/event_geo_derivation_signals`, {
+    method: 'POST',
+    headers: { ...headers, 'Content-Type': 'application/json' },
+    body: '{}',
+  })
+  if (!res.ok) {
+    console.warn(
+      `⚠ event_geo_derivation_signals → HTTP ${res.status} (RPC missing? migration 99991790718103)`,
+    )
+    console.warn('  This check measured NOTHING — it did not pass.')
+  } else {
+    const sig = (await res.json()) ?? {}
+    let sectionOk = true
+    // A probe that cannot look must never read as "looked and found none".
+    if (sig.probe_ok !== true) {
+      console.error('✗ event_geo_derivation_signals returned no probe_ok — the probe is broken, not the corpus')
+      FAILED = true
+      sectionOk = false
+    }
+    const far = Number(sig.stale_centroid_far ?? 0)
+    if (far > 0) {
+      console.error(`✗ ${far} event(s) carry the centroid of a merged-away city that is a DIFFERENT place from the city they are shown on:`)
+      for (const ex of (Array.isArray(sig.stale_centroid_examples) ? sig.stale_centroid_examples : []).slice(0, 10)) {
+        console.error(`    ${ex.dead} → now on ${ex.city} (${ex.km} km)`)
+      }
+      console.error('  → merge_cities does not re-derive coordinates. Clear them on the affected events so the nightly fill re-derives from the surviving city.')
+      FAILED = true
+      sectionOk = false
+    }
+
+    // Advisory + growth. 50 measured when 99991790718103 shipped.
+    const BASELINE_STUCK_FILLABLE = 50
+    const stuck = Number(sig.stuck_fillable_coords ?? 0)
+    if (stuck > BASELINE_STUCK_FILLABLE) {
+      console.error(`✗ events stuck without coordinates their city could supply grew ${BASELINE_STUCK_FILLABLE} → ${stuck} — something is removing coordinates faster than the fill restores them`)
+      FAILED = true
+      sectionOk = false
+    } else if (stuck > 0) {
+      console.log(`  ${stuck} event(s) await a coordinate refill (baseline ${BASELINE_STUCK_FILLABLE}, drains at up to 300/night)`)
+    }
+
+    // Same shape for the timezone axis. 1 measured when the fix shipped; 99991790714809
+    // is why this is watched at all — clearing a timezone stamped from a wrong city
+    // leaves a NULL the visit-once cursor could never refill.
+    const BASELINE_STUCK_TZ = 1
+    const stuckTz = Number(sig.stuck_fillable_tz ?? 0)
+    if (stuckTz > BASELINE_STUCK_TZ) {
+      console.error(`✗ events stuck without a timezone their city could supply grew ${BASELINE_STUCK_TZ} → ${stuckTz}`)
+      FAILED = true
+      sectionOk = false
+    } else if (stuckTz > 0) {
+      console.log(`  ${stuckTz} event(s) await a timezone refill (baseline ${BASELINE_STUCK_TZ})`)
+    }
+
+    const done = Number(sig.stuck_nothing_fillable ?? 0)
+    if (done === 0) {
+      console.error('✗ stuck_nothing_fillable reads 0 — the fill selector has widened to every visited row, which re-selects hundreds of unfillable rows nightly')
+      FAILED = true
+      sectionOk = false
+    }
+
+    if (sectionOk) {
+      console.log(
+        `✓ event geo derivation clean (${sig.events_with_gap} gap row(s), ${sig.never_visited} never visited, ` +
+          `0 stale merged-away centroids, ${done} correctly exhausted)`,
+      )
     }
   }
 }
