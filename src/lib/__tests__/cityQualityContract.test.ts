@@ -23,6 +23,10 @@ const IMAGE_PRODUCER = readFileSync(
   'utf8',
 ).toLowerCase();
 const CI_GATE = readFileSync(join(process.cwd(), 'scripts/check-city-quality.mjs'), 'utf8');
+const DQ_WORKFLOW = readFileSync(
+  join(process.cwd(), '.github/workflows/data-quality-gates.yml'),
+  'utf8',
+);
 
 describe('city quality contract migration', () => {
   it('keeps dimensions separate from publication readiness', () => {
@@ -90,6 +94,16 @@ describe('city quality contract migration', () => {
     );
     expect(CI_GATE).toMatch(/if \(!baseUrl \|\| !serviceKey\)[\s\S]{0,180}process\.exit\(1\)/);
     expect(CI_GATE).toMatch(/if \(!response\.ok\)[\s\S]{0,180}process\.exit\(1\)/);
+  });
+
+  it('checks the live city corpus out of band rather than blocking unrelated PRs', () => {
+    const cityStep = DQ_WORKFLOW.slice(
+      DQ_WORKFLOW.indexOf('- name: City quality has not regressed'),
+      DQ_WORKFLOW.indexOf('- name: Every pipeline code has a written explanation'),
+    );
+    expect(cityStep).toContain("github.event_name != 'pull_request'");
+    expect(cityStep).toContain("github.event_name != 'merge_group'");
+    expect(cityStep).toContain('run: node scripts/check-city-quality.mjs');
   });
 
   it('routes actionable findings through stable review types', () => {
