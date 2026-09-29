@@ -58,16 +58,23 @@
 do $patch$
 declare
   v_src  text;
+  v_code text;
   v_new  text;
   v_arm  text;
   v_hits int;
 begin
   v_src := pg_get_functiondef('public.commit_venue_staging_item(uuid, text)'::regprocedure);
+  v_code := regexp_replace(
+    pg_get_functiondef('public.commit_venue_staging_item(uuid, text)'::regprocedure),
+    '--[^' || chr(10) || ']*',
+    '',
+    'g'
+  );
 
   -- Precondition 1: the arm is genuinely absent. Soft, not an abort: if another
   -- session added it first this migration has nothing to do and must not fail
   -- the whole `db push` for the repo.
-  if position('canonical_key' in v_src) > 0 then
+  if position('canonical_key' in v_code) > 0 then
     raise notice 'commit_venue_staging_item already carries a canonical_key arm; nothing to do';
     return;
   end if;
@@ -76,7 +83,7 @@ begin
   -- or multiple match means the body moved and a blind replace would either
   -- silently do nothing or patch the wrong branch.
   select count(*) into v_hits
-  from regexp_matches(v_src, E'\n    IF v_city_id IS NULL THEN\n', 'g');
+  from regexp_matches(v_code, E'\n    IF v_city_id IS NULL THEN\n', 'g');
   if v_hits <> 1 then
     raise exception 'anchor matched % times, expected 1 -- commit_venue_staging_item body has moved', v_hits;
   end if;
@@ -113,7 +120,12 @@ declare
   v_src text;
   v_i_exact int; v_i_canon int; v_i_fallback int;
 begin
-  v_src := pg_get_functiondef('public.commit_venue_staging_item(uuid, text)'::regprocedure);
+  v_src := regexp_replace(
+    pg_get_functiondef('public.commit_venue_staging_item(uuid, text)'::regprocedure),
+    '--[^' || chr(10) || ']*',
+    '',
+    'g'
+  );
 
   -- P1: the new arm exists, exactly once.
   if (select count(*) from regexp_matches(v_src, 'c\.canonical_key = public\.city_canonical_key', 'g')) <> 1 then
