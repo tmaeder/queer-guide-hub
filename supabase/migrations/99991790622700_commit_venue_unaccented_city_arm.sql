@@ -57,17 +57,26 @@
 
 do $patch$
 declare
-  v_src  text;
-  v_new  text;
-  v_arm  text;
-  v_hits int;
+  v_src   text;
+  v_probe text;
+  v_new   text;
+  v_arm   text;
+  v_hits  int;
 begin
-  v_src := pg_get_functiondef('public.commit_venue_staging_item(uuid, text)'::regprocedure);
+  -- `v_src` stays RAW because it is the text that gets rewritten and executed --
+  -- stripping it here would install a function whose own comments had been
+  -- deleted. `v_probe` is the comment-free copy, and only the preconditions read
+  -- it. The distinction is load-bearing in both directions.
+  v_src   := pg_get_functiondef('public.commit_venue_staging_item(uuid, text)'::regprocedure);
+  v_probe := regexp_replace(v_src, '--[^\n]*', '', 'g');
 
   -- Precondition 1: the arm is genuinely absent. Soft, not an abort: if another
   -- session added it first this migration has nothing to do and must not fail
-  -- the whole `db push` for the repo.
-  if position('canonical_key' in v_src) > 0 then
+  -- the whole `db push` for the repo. Reads the STRIPPED copy: a comment
+  -- somewhere in the body that merely mentions `canonical_key` would otherwise
+  -- make this skip, and a skip reports success while patching nothing -- the
+  -- false-GREEN half of the functiondef trap, which is the silent one.
+  if position('canonical_key' in v_probe) > 0 then
     raise notice 'commit_venue_staging_item already carries a canonical_key arm; nothing to do';
     return;
   end if;
@@ -113,7 +122,17 @@ declare
   v_src text;
   v_i_exact int; v_i_canon int; v_i_fallback int;
 begin
-  v_src := pg_get_functiondef('public.commit_venue_staging_item(uuid, text)'::regprocedure);
+  -- COMMENTS ARE STRIPPED BEFORE ANY ASSERTION. `pg_get_functiondef()` returns
+  -- the body INCLUDING its comments, and the arm this migration installs carries
+  -- a six-line comment naming `canonical_key` and `city_resolve_or_create`. An
+  -- unstripped P1/P4 would therefore be matching prose as well as code -- P4's
+  -- own note below claims it is "anchored on code positions", which is only true
+  -- once this strip exists. Measured on prod before and after: stripping changes
+  -- none of these counts today (p1 1->1, p2 3->3), so this buys correctness
+  -- against a future comment edit rather than fixing a current miscount.
+  v_src := regexp_replace(
+    pg_get_functiondef('public.commit_venue_staging_item(uuid, text)'::regprocedure),
+    '--[^\n]*', '', 'g');
 
   -- P1: the new arm exists, exactly once.
   if (select count(*) from regexp_matches(v_src, 'c\.canonical_key = public\.city_canonical_key', 'g')) <> 1 then
