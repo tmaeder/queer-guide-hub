@@ -15,6 +15,7 @@
 import { requireAdmin, getCorsHeaders, getServiceClient } from '../_shared/supabase-client.ts';
 import { COUNTRY_ALIASES } from '../_shared/automation-utils.ts';
 import { cityCollisionReason, proseStateContradiction } from '../_shared/city-collision-guard.ts';
+import { cityCoordContradiction, mergeRoundRobin } from '../_shared/geo-link-guards.ts';
 
 const supabase = getServiceClient();
 
@@ -27,6 +28,8 @@ interface CityRef {
   country_id: string;
   population: number | null;
   region_name: string | null;
+  latitude: number | string | null;
+  longitude: number | string | null;
 }
 
 interface GeoLinkResult {
@@ -58,6 +61,8 @@ interface BatchResult {
 
 let countriesCache: CountryRef[] = [];
 let citiesCache: CityRef[] = [];
+let proseCities: CityRef[] = [];
+const PROSE_CITY_LIMIT = 1000;
 let countryByName: Map<string, CountryRef> = new Map();
 let countryByCode: Map<string, CountryRef> = new Map();
 let countryById: Map<string, CountryRef> = new Map();
@@ -92,14 +97,44 @@ async function loadReferenceData() {
   //     merge. The tmp- filter does not cover them — `new-york-city` was a
   //     merged row with an ordinary slug, and it kept absorbing content.
   //     The SQL runner `run_event_city_link` has always filtered on this.
-  const { data: cities } = await supabase
-    .from('cities')
-    .select('id, name, country_id, population, region_name')
-    .is('duplicate_of_id', null)
-    .not('slug', 'like', 'tmp-%')
-    .order('population', { ascending: false, nullsFirst: false });
+  //
+  // PAGED, and that is the fix, not a tidy-up. This read used to have no
+  // range, so PostgREST capped it at max-rows (1000) against 3,751 eligible
+  // cities: every city below rank 1000 by population (168k people at the cut)
+  // was invisible, and a venue in one of them could never link however often
+  // the job ran. Measured 2026-09-29, all 485 gayout venues whose exact city
+  // exists in their own country pointed at a city outside the first 1000.
+  //
+  // What made the cap feel safe was that it hid same-name collisions
+  // (Charleston, Springfield are small enough to be absent). Lifting it is
+  // paired with the coordinate arm in processVenuesOrEvents, which checks the
+  // row's own coordinates against the matched city — so reaching the tail does
+  // not mean trusting a bare name there. The id tiebreak keeps pages stable
+  // when populations tie (or are NULL, which sorts last).
+  const pageSize = 1000;
+  const maxPages = 50;
+  const cities: CityRef[] = [];
+  for (let page = 0; page < maxPages; page++) {
+    const from = page * pageSize;
+    const { data, error } = await supabase
+      .from('cities')
+      .select('id, name, country_id, population, region_name, latitude, longitude')
+      .is('duplicate_of_id', null)
+      .not('slug', 'like', 'tmp-%')
+      .order('population', { ascending: false, nullsFirst: false })
+      .order('id', { ascending: true })
+      .range(from, from + pageSize - 1);
+    // Fail loudly. A silent empty or partial reference set links nothing (or
+    // links against a subset) while the run reports success.
+    if (error) throw new Error(`loading cities page ${page} failed: ${error.message}`);
+    cities.push(...(data || []));
+    if (!data || data.length < pageSize) break;
+    if (page === maxPages - 1) {
+      throw new Error(`cities exceeded ${maxPages * pageSize} rows — raise maxPages deliberately`);
+    }
+  }
 
-  citiesCache = cities || [];
+  citiesCache = cities;
   citiesByName = new Map();
 
   for (const city of citiesCache) {
@@ -110,20 +145,18 @@ async function loadReferenceData() {
     citiesByName.get(key)!.push(city);
   }
 
-  console.log(`Loaded ${countriesCache.length} countries, ${citiesCache.length} cities`);
+  // News prose matching keeps EXACTLY the reference set it had before the
+  // page loop: the 1000 most populous cities. That is deliberate, not an
+  // oversight. The full set would add 424 more cities of 100k+ people to the
+  // title/excerpt regex, and prose has no coordinates to corroborate a match —
+  // proseStateContradiction covers only a curated list of ambiguous names.
+  // Widening news tagging is its own decision with its own collision surface.
+  proseCities = citiesCache.slice(0, PROSE_CITY_LIMIT);
 
-  // The cities fetch has no explicit range, so PostgREST caps it at max-rows
-  // (1000 today, against 2,964 non-tmp cities). That truncation is why most
-  // same-name collisions never even surface here — Charleston and Springfield
-  // are simply absent from the cache. Do not lift this quietly: it would newly
-  // link a large slice of the corpus in one pass, and every events/venues write
-  // fans out through the search_documents trigger.
-  if (citiesCache.length >= 1000) {
-    console.warn(
-      `cities cache truncated at ${citiesCache.length} rows by the PostgREST ` +
-      `row cap — city matching is operating on a partial reference set`,
-    );
-  }
+  console.log(
+    `Loaded ${countriesCache.length} countries, ${citiesCache.length} cities ` +
+    `(${proseCities.length} used for news prose)`,
+  );
 }
 
 // ── Matching functions ───────────────────────────────────────────────
@@ -209,7 +242,7 @@ function extractGeoFromText(
   }
 
   // Match city names — require min 5 char, population > 100k, skip ambiguous
-  for (const city of citiesCache) {
+  for (const city of proseCities) {
     if (!city.population || city.population < 100000) continue;
     if (city.name.length < 5) continue;
     if (AMBIGUOUS_GEO_NAMES.has(city.name.toLowerCase())) continue;
@@ -258,6 +291,10 @@ async function processVenuesOrEvents(
     const existingCityId = item.city_id as string | null;
     const existingCountryId = item.country_id as string | null;
     const stateText = item.state as string | null;
+    const rowCoords = {
+      latitude: item.latitude as number | string | null,
+      longitude: item.longitude as number | string | null,
+    };
 
     // Skip if already fully linked
     if (existingCityId && existingCountryId) {
@@ -300,6 +337,7 @@ async function processVenuesOrEvents(
       // standing quarantine is the fallback (it covers rows whose evidence
       // lives somewhere this function cannot see).
       blockedReason = cityCollisionReason(city, stateText, metroSlugs.get(id), cityText || '')
+        || cityCoordContradiction(rowCoords, city)
         || (priorLink?.blocked ? `quarantined by run_event_city_link: ${priorLink.blocked}` : null);
 
       if (blockedReason) {
@@ -522,51 +560,118 @@ async function processNewsArticles(
 
 // ── Fetch unlinked items ─────────────────────────────────────────────
 
+interface WorkList {
+  items: Record<string, unknown>[];
+  /** Round-robin position to persist in geo_link_log.details.cursor. */
+  cursor: string | null;
+}
+
+/**
+ * Where the previous batch run for this type stopped. The run log carries it,
+ * so the round robin needs no table of its own. Rows logged without a cursor
+ * (single content_id calls, and every run before this change) are skipped
+ * rather than read as "start over". A failed read starts from the beginning,
+ * which is the old behaviour, not a new failure.
+ */
+async function readCursor(entityType: string): Promise<string | null> {
+  const { data, error } = await supabase
+    .from('geo_link_log')
+    .select('details')
+    .eq('entity_type', entityType)
+    .not('details->>cursor', 'is', null)
+    .order('created_at', { ascending: false })
+    .limit(1);
+  if (error) {
+    console.error(`reading ${entityType} cursor failed:`, error.message);
+    return null;
+  }
+  const details = (data?.[0]?.details || null) as Record<string, unknown> | null;
+  return typeof details?.cursor === 'string' ? details.cursor : null;
+}
+
+// deno-lint-ignore no-explicit-any
+type Filter = (q: any) => any;
+
+/**
+ * Round-robin read of the rows still missing a city or country: rows after the
+ * cursor in id order, wrapping to the start when that half runs short.
+ *
+ * This replaces an unordered `LIMIT n`, which returned roughly the same
+ * physical rows every run — so the rows that cannot be resolved (no city of
+ * that name exists) occupied the whole batch forever and everything behind
+ * them was never read. A full cycle over ~6,800 unlinked venues at 200 a run
+ * now takes ~34 hourly runs instead of never.
+ */
+async function fetchRoundRobin(
+  table: string,
+  columns: string,
+  filter: Filter,
+  batchLimit: number,
+  cursor: string | null,
+): Promise<WorkList> {
+  const base = () => filter(supabase.from(table).select(columns)).order('id', { ascending: true });
+
+  let afterCursor: { id: string }[] = [];
+  if (cursor) {
+    const { data, error } = await base().gt('id', cursor).limit(batchLimit);
+    if (error) throw new Error(`${table} work list (after cursor) failed: ${error.message}`);
+    afterCursor = data || [];
+  }
+
+  let fromStart: { id: string }[] = [];
+  if (afterCursor.length < batchLimit) {
+    const { data, error } = await base().limit(batchLimit);
+    if (error) throw new Error(`${table} work list (from start) failed: ${error.message}`);
+    fromStart = data || [];
+  }
+
+  const { rows, cursor: next } = mergeRoundRobin(afterCursor, fromStart, batchLimit);
+  return { items: rows as Record<string, unknown>[], cursor: next };
+}
+
 async function fetchUnlinkedItems(
   contentType: string,
   contentId?: string,
   batchLimit: number = 200,
-): Promise<Record<string, unknown>[]> {
+): Promise<WorkList> {
+  const missing: Filter = (q) => q.or('city_id.is.null,country_id.is.null');
+
   switch (contentType) {
     case 'venues': {
-      let query = supabase
-        .from('venues')
-        .select('id, name, city, state, country, city_id, country_id, enrichment_status');
+      const columns = 'id, name, city, state, country, city_id, country_id, latitude, longitude, enrichment_status';
       if (contentId) {
-        query = query.eq('id', contentId);
-      } else {
-        query = query.or('city_id.is.null,country_id.is.null');
+        const { data } = await supabase.from('venues').select(columns).eq('id', contentId);
+        return { items: data || [], cursor: null };
       }
-      const { data } = await query.limit(batchLimit);
-      return data || [];
+      return fetchRoundRobin('venues', columns, missing, batchLimit, await readCursor('venues'));
     }
     case 'events': {
-      let query = supabase
-        .from('events')
-        .select('id, title, city, state, country, city_id, country_id, enrichment_status');
+      const columns = 'id, title, city, state, country, city_id, country_id, latitude, longitude, enrichment_status';
       if (contentId) {
-        query = query.eq('id', contentId);
-      } else {
-        query = query.or('city_id.is.null,country_id.is.null');
+        const { data } = await supabase.from('events').select(columns).eq('id', contentId);
+        return { items: data || [], cursor: null };
       }
-      const { data } = await query.limit(batchLimit);
-      return data || [];
+      return fetchRoundRobin('events', columns, missing, batchLimit, await readCursor('events'));
     }
     case 'personalities': {
-      let query = supabase
-        .from('personalities')
-        .select('id, name, nationality, birth_place, city_id, country_id');
+      const columns = 'id, name, nationality, birth_place, city_id, country_id';
       if (contentId) {
-        query = query.eq('id', contentId);
-      } else {
-        query = query
-          .or('city_id.is.null,country_id.is.null')
-          .or('nationality.neq.,birth_place.neq.');
+        const { data } = await supabase.from('personalities').select(columns).eq('id', contentId);
+        return { items: data || [], cursor: null };
       }
-      const { data } = await query.limit(batchLimit);
-      return (data || []).filter((p: Record<string, unknown>) =>
-        p.nationality || p.birth_place || contentId
+      const list = await fetchRoundRobin(
+        'personalities',
+        columns,
+        (q) => missing(q).or('nationality.neq.,birth_place.neq.'),
+        batchLimit,
+        await readCursor('personalities'),
       );
+      // The cursor stays on the unfiltered list's last row so the round robin
+      // still advances past rows this filter drops.
+      return {
+        items: list.items.filter((p) => p.nationality || p.birth_place),
+        cursor: list.cursor,
+      };
     }
     case 'news_articles': {
       if (contentId) {
@@ -574,19 +679,19 @@ async function fetchUnlinkedItems(
           .from('news_articles')
           .select('id, title, excerpt')
           .eq('id', contentId);
-        return data || [];
+        return { items: data || [], cursor: null };
       }
       // Work-list RPC: newest-first articles with no country links and no
       // persisted "no geo signal" marker (NOT EXISTS in SQL — avoids fetching
       // the whole news_article_countries table and head-stalling on
-      // unlinkable articles).
+      // unlinkable articles). It already makes progress, so no cursor.
       const { data: articles, error } = await supabase
         .rpc('news_articles_unlinked_geo', { p_limit: batchLimit });
       if (error) console.error('news_articles_unlinked_geo failed:', error.message);
-      return articles || [];
+      return { items: articles || [], cursor: null };
     }
     default:
-      return [];
+      return { items: [], cursor: null };
   }
 }
 
@@ -663,7 +768,7 @@ Deno.serve(async (req) => {
       const allResults: Record<string, BatchResult> = {};
 
       for (const type of VALID_TYPES) {
-        const items = await fetchUnlinkedItems(type, undefined, batch_limit);
+        const { items, cursor } = await fetchUnlinkedItems(type, undefined, batch_limit);
         console.log(`[${type}] Found ${items.length} items to process`);
 
         let results: GeoLinkResult[];
@@ -694,13 +799,13 @@ Deno.serve(async (req) => {
         };
 
         // Log to geo_link_log
-        if (!dry_run && results.length > 0) {
+        if (!dry_run && (results.length > 0 || cursor)) {
           await supabase.from('geo_link_log').insert({
             entity_type: type,
             total_processed: results.length,
             total_linked: linked + partial,
             total_skipped: skipped + alreadyLinked + blocked,
-            details: { dry_run, batch_limit, linked, partial, skipped, already_linked: alreadyLinked, blocked },
+            details: { dry_run, batch_limit, linked, partial, skipped, already_linked: alreadyLinked, blocked, cursor },
           });
         }
       }
@@ -736,7 +841,7 @@ Deno.serve(async (req) => {
       });
     }
 
-    const items = await fetchUnlinkedItems(content_type, content_id, batch_limit);
+    const { items, cursor } = await fetchUnlinkedItems(content_type, content_id, batch_limit);
     console.log(`[${content_type}] Found ${items.length} items to process`);
 
     let results: GeoLinkResult[];
@@ -758,13 +863,13 @@ Deno.serve(async (req) => {
     const blocked = results.filter(r => r.status === 'blocked').length;
 
     // Log to geo_link_log
-    if (!dry_run && results.length > 0) {
+    if (!dry_run && (results.length > 0 || cursor)) {
       await supabase.from('geo_link_log').insert({
         entity_type: content_type,
         total_processed: results.length,
         total_linked: linked + partial,
         total_skipped: skipped + alreadyLinked + blocked,
-        details: { dry_run, batch_limit, content_id, linked, partial, skipped, already_linked: alreadyLinked, blocked },
+        details: { dry_run, batch_limit, content_id, linked, partial, skipped, already_linked: alreadyLinked, blocked, cursor },
       });
     }
 
