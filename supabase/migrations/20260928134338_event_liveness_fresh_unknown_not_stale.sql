@@ -20,11 +20,14 @@
 -- assertion passed against the real definition, and db push matches on version
 -- so it is never re-run. Rewriting the SQL to satisfy the guard would make the
 -- file stop matching what actually ran, and fidelity is the entire point of a
--- recovered migration. The guard's scope rule ("newly ADDED files only") does
--- not yet know about added-but-already-applied, which is what every recovery PR
--- is; teaching it to exempt versions present in schema_migrations is the real
--- fix and belongs in its own change, not on the critical path of a recovery
--- that is currently blocking every PR in the repo.
+-- recovered migration.
+--
+-- The guard has since been taught to exempt versions present in remote
+-- schema_migrations, so on any run that can reach prod this line is redundant.
+-- It stays because that lookup FAILS CLOSED: with no SUPABASE_ACCESS_TOKEN
+-- nothing is treated as applied and every added file is checked, which is the
+-- right default and would put this file straight back into the failure it
+-- documents. Belt to the braces, not a leftover.
 -- A successful attempt can be fresh even when the remote source blocks the
 -- server-side probe. Keep unknown as a freshness-score penalty, but do not
 -- label a check performed within the seven-day SLO as stale.
