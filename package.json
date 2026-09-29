@@ -130,7 +130,7 @@
     "react-dropzone": "^20.1.2",
     "react-easy-crop": "^6.2.3",
     "react-force-graph-2d": "^1.29.1",
-    "react-hook-form": "^7.88.0",
+    "react-hook-form": "^7.89.0",
     "react-i18next": "^17.0.15",
     "react-is": "^19.3.0",
     "react-router": "^8.4.0",
@@ -152,7 +152,7 @@
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
     "@vitejs/plugin-react": "^6.1.1",
-    "@vitest/coverage-v8": "5.0.1",
+    "@vitest/coverage-v8": "5.0.2",
     "esbuild": "^0.28.2",
     "eslint": "^10.11.0",
     "eslint-config-prettier": "^10.1.8",
@@ -177,8 +177,8 @@
     "typescript-eslint": "^8.70.1",
     "tz-lookup": "^6.1.25",
     "vite": "^8.3.1",
-    "vitest": "^5.0.1",
-    "wrangler": "4.138.0"
+    "vitest": "^5.0.2",
+    "wrangler": "4.141.0"
   },
   "overrides": {
     "picomatch@<2.3.2": "^2.3.2",

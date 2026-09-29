@@ -598,6 +598,24 @@ export interface ParsedLocation {
 }
 
 /**
+ * Drop a German borough suffix, keeping the city: `Berlin-Bezirk Tempelhof-
+ * Schöneberg` -> `Berlin`.
+ *
+ * Google glues the borough to the city instead of giving it its own comma
+ * segment, so segmentation alone cannot reach it. Left standing it publishes a
+ * district as the city and `cities` holds no row for it — measured, two live
+ * events landed with `city_id` NULL and a `city` text no lookup can resolve.
+ *
+ * Anchored on the literal `-Bezirk ` marker, NOT a generic hyphen rule:
+ * hyphenated city names are ordinary in German (Baden-Baden, Castrop-Rauxel)
+ * and a hyphen split would truncate every one. No city name contains the word
+ * `Bezirk`, so the narrow test is the safe one.
+ */
+function stripBorough(city: string): string {
+  return city.replace(/-Bezirk\s+.+$/i, '').trim() || city
+}
+
+/**
  * Split a Google Calendar LOCATION string into its parts.
  *
  * The format is a comma-joined postal address, most often
@@ -631,7 +649,7 @@ export function parseLocation(raw: string | undefined): ParsedLocation {
   // Deutschland` as a venue named Köln is the same place-name collision the
   // guard further down exists to prevent.
   if (out.countryCode && rest.length === 1) {
-    out.city = rest[0]
+    out.city = stripBorough(rest[0])
     return out
   }
 
@@ -662,10 +680,10 @@ export function parseLocation(raw: string | undefined): ParsedLocation {
   const postal = tail ? POSTAL_CITY.exec(tail) : null
   if (postal) {
     if (postal[1].length >= 4) out.postalCode = postal[1]
-    out.city = postal[2].trim()
+    out.city = stripBorough(postal[2].trim())
     rest.pop()
   } else if (rest.length > 1) {
-    out.city = tail
+    out.city = stripBorough(tail)
     rest.pop()
   }
 
