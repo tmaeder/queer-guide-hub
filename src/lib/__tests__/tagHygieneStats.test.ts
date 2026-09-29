@@ -599,3 +599,114 @@ describe('tag_hygiene_stats() does not use index-only scans', () => {
     ).toBe(false);
   });
 });
+
+/**
+ * 99991790719601 — one pass over `unified_tags`, and stop spilling to disk.
+ *
+ * SIXTH time this gate flaked. Measured on prod 2026-09-29 from
+ * pg_stat_statements, i.e. from REAL CI calls rather than a timing someone took:
+ * 1,983 calls mean 1,883 ms max 7,812 ms, and 1,269 calls mean 2,714 ms max
+ * 7,854 ms — against an 8,000 ms ceiling. pg_stat_statements only records calls
+ * that COMPLETED, so the real tail is past 8s and 7,854 is the largest survivor.
+ * #3784's "6x headroom, therefore contention" no longer holds, and its retry
+ * cannot help because the cause persists across both attempts.
+ *
+ * Two measured costs: `unified_tags` was scanned ELEVEN times (40,542 of 82,500
+ * blocks, 49%), and `active as (select * from unified_tags ...)` spilled 10.5 MB
+ * past work_mem = 12MB and 11 CTE Scans re-read it — ~100 MB of temp I/O per
+ * call, which no previous pass on this function had measured.
+ *
+ * THE POINT OF THIS BLOCK IS THE APPLICATION METHOD, NOT THE NUMBERS. The live
+ * body is NOT what any repo file says: live prosrc md5 is
+ * 4102ec7c7ae4e7eecf3dcf7a4e765e26 while 99991789807686 — the newest file that
+ * CONTAINS a definition — claims a7ed49bf570ac4e02b43dbf2d5936bde in its header,
+ * because 99991789930597 narrowed four counters to `publication_role = 'article'`
+ * by string surgery on pg_get_functiondef(). A `create or replace` built from the
+ * newest FILE therefore silently reverts that work. This migration's first draft
+ * did exactly that; its prod dry run caught it (four counters differed, because
+ * the stale body was WIDER than production). Hence: patch, never restate.
+ *
+ * Note the consequence for `latestDefinitionOf` above — it returns
+ * 99991789807686, which is NOT the deployed body. Every assertion in this file
+ * that reads `sql` is checking a definition production no longer has. That gap
+ * predates this migration and is recorded here rather than silently relied upon.
+ */
+describe('99991790719601 folds unified_tags without reverting the live body', () => {
+  const MIG = '99991790719601_tag_hygiene_stats_one_pass_over_unified_tags.sql';
+  const mig = (() => {
+    const i = files.indexOf(MIG);
+    expect(i, `${MIG} is missing`).toBeGreaterThan(-1);
+    return sources[i];
+  })();
+
+  it('PATCHES the live definition and never restates it', () => {
+    // The whole lesson. A restatement reverts 99991789930597's surgery.
+    expect(
+      /create\s+(or\s+replace\s+)?function\s+public\.tag_hygiene_stats\s*\(/i.test(mig),
+      'this migration restates tag_hygiene_stats; it must patch pg_get_functiondef() ' +
+        'instead, or it reverts 99991789930597 publication_role scoping',
+    ).toBe(false);
+    expect(mig).toMatch(
+      /pg_get_functiondef\s*\(\s*'public\.tag_hygiene_stats\(\)'::regprocedure\s*\)/i,
+    );
+  });
+
+  it('adds the shared `ut` CTE as a select * drop-in', () => {
+    expect(mig).toMatch(/ut as materialized \(\s*\n\s*select \* from unified_tags\s*\n\s*\),/);
+  });
+
+  it('restores the two index-served arms after the global repoint', () => {
+    // A CTE Scan has no index, so leaving these on `ut` restores the 4M-row
+    // nested loop that 20260928143000 exists to prevent.
+    for (const col of ['name', 'slug']) {
+      expect(
+        mig,
+        `the lower(u.${col}) arm is not restored to unified_tags and loses its index`,
+      ).toContain(`'from unified_tags u where lower(u.${col}) = e.s'`);
+    }
+  });
+
+  it('asserts the OUTCOME is exactly three direct reads, twice', () => {
+    // Once before installing (refuse) and once after (verify). 1 would mean the
+    // index arms lost their index; >3 that a reader was not folded.
+    const checks = mig.match(/expected 3 \(once in `ut`, twice in the index-served/g) ?? [];
+    expect(checks.length, 'the 3-read outcome must be asserted pre- AND post-install').toBe(2);
+    // COUNT, not presence. There are two `if n <> 3` — the pre-install refusal and
+    // the post-install verify — so `toMatch` alone is satisfied by whichever one
+    // survives, and loosening the other passes silently. Mutation testing caught
+    // exactly that: `if n <> 3` -> `if n <> 4` on the first occurrence survived.
+    const bounds = mig.match(/if n <> 3 then/g) ?? [];
+    expect(
+      bounds.length,
+      'both the pre-install refusal and the post-install verify must bound at 3',
+    ).toBe(2);
+  });
+
+  it('compares the answer before and after inside one transaction', () => {
+    // Two separate calls prove nothing: this corpus moves between them.
+    expect(mig).toMatch(/select public\.tag_hygiene_stats\(\) into v_before/);
+    expect(mig).toMatch(/select public\.tag_hygiene_stats\(\) into v_after/);
+    expect(mig).toMatch(/v_before is distinct from v_after/);
+  });
+
+  it('sets work_mem on the function and asserts all three settings survive', () => {
+    // `create or replace` resets proconfig wholesale, so a later restatement that
+    // forgets one SET silently reinstates the cost it removed.
+    expect(mig).toMatch(/alter function public\.tag_hygiene_stats\(\) set work_mem to '48MB'/i);
+    for (const k of ['search_path=public', 'enable_indexonlyscan=off', 'work_mem=48MB']) {
+      expect(mig, `${k} is not asserted in the verify block`).toContain(`'${k}' = any(cfg)`);
+    }
+  });
+
+  it('guards 99991789930597 publication_role scoping against a future revert', () => {
+    expect(mig).toContain("position('publication_role = ''article''' in src) = 0");
+  });
+
+  it('is soft on preconditions so a re-run cannot block the repo', () => {
+    // `db push` aborts the whole queue on a failing file. Already-folded is a
+    // NOTICE, not an exception.
+    expect(mig).toMatch(
+      /if position\('ut as materialized' in v_def\) > 0 then\s*\n\s*raise notice/,
+    );
+  });
+});

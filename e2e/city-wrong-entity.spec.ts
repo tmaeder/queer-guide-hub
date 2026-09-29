@@ -142,4 +142,40 @@ test.describe('city pages do not publish another place’s article', () => {
     expect(html).toMatch(/Bourj Hammoud|Burj Hammoud/i);
     expect(html, 'Burj Hammoud lost its correct Lebanon article').toMatch(/Lebanon|Beirut/i);
   });
+
+  // The thirteenth row of this class, found by the coordinate sweep in 99991790619179
+  // at 11,018.8 km and repaired by 99991790619764. It is Malay, Aklan — the Philippine
+  // municipality containing Boracay, proven by its own 27 venues — and it published
+  // `Malay, Saône-et-Loire`, a Burgundy commune, along with that commune's population
+  // of 225.
+  //
+  // It also corrects an earlier claim of mine: the ~156-row residue does NOT uniformly
+  // "have prose still correct for the row". A name heuristic could never have caught
+  // this one, because the row and the wrong entity are BOTH called `Malay` — the names
+  // agree perfectly and only the places differ.
+  test('/city/malay is Boracay, not a Burgundy commune of 225', async ({ request }) => {
+    const res = await request.get(`${BASE}/city/malay`, { headers: { 'User-Agent': BOT_UA } });
+    expect(res.status()).toBe(200);
+    const html = await res.text();
+    // POSITIVE: the page still renders as itself.
+    expect(html, '/city/malay did not render its own name').toMatch(/Malay/i);
+    for (const bad of [/Saône-et-Loire/i, /Saone-et-Loire/i, /commune in the/i, /Burgundy/i]) {
+      expect(html, `/city/malay still publishes the French commune: ${bad}`).not.toMatch(bad);
+    }
+  });
+
+  // NOTHING WAS AUTO-CLEARED. 155 rows still hold an identifier the sweep measured as
+  // far away, deliberately: distance cannot tell a wrong IDENTIFIER from wrong
+  // COORDINATES, so they are flagged for a human, not stripped. Denver is the largest
+  // (117 venues) and its own prose is CORRECT — if a later pass starts auto-clearing on
+  // distance alone, this page loses a good description and this test fails.
+  test('/city/denver keeps its correct article while flagged, not auto-cleared', async ({ request }) => {
+    const res = await request.get(`${BASE}/city/denver`, { headers: { 'User-Agent': BOT_UA } });
+    expect(res.status()).toBe(200);
+    const html = await res.text();
+    expect(html).toMatch(/Denver/i);
+    expect(html, 'Denver lost its correct description to an auto-clear').toMatch(
+      /Colorado|LGBTQ\+ travelers|queer/i,
+    );
+  });
 });

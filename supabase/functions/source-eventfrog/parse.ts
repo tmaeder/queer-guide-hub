@@ -1,3 +1,4 @@
+import { decodeEntitiesDeep } from '../_shared/html-entities.ts'
 // ============================================================
 // eventfrog.ch — pure parsing. Kept out of index.ts so it is testable
 // without a network or a Supabase client (precedent: source-rss-news).
@@ -62,17 +63,30 @@ const NAMED: Record<string, string> = {
   times: '×', amp: '&', lt: '<', gt: '>',
 }
 
+/**
+ * The letter+accent family (`&uuml;` `&eacute;` `&ntilde;`) expanded into the
+ * lookup the shared decoder takes, so it resolves in the SAME pass as
+ * everything else rather than in a separate replace that re-reads output.
+ */
+const ACCENTED: Record<string, string> = (() => {
+  const out: Record<string, string> = {}
+  for (const ch of 'aeiounycAEIOUNYC') {
+    for (const kind of Object.keys(COMBINING)) {
+      out[`${ch}${kind}`] = (ch + COMBINING[kind]).normalize('NFC')
+    }
+  }
+  return out
+})()
+
+/**
+ * Was a chain of replaces that deliberately ran the accent pass twice to
+ * unwind `&amp;uuml;`. That is `js/double-escaping`: the same second pass
+ * turned `&amp;lt;` into a live `<`. `decodeEntitiesDeep` keeps the recovery
+ * (its second pass still resolves `&uuml;`) and refuses the markup-producing
+ * entities, so both behaviours hold at once.
+ */
 export const decodeEntities = (s: unknown): string =>
-  String(s ?? '')
-    .replace(/&#x([0-9a-f]+);/gi, (_m, x) => String.fromCodePoint(parseInt(x, 16)))
-    .replace(/&#(\d+);/g, (_m, d) => String.fromCodePoint(Number(d)))
-    // &uuml; &eacute; &ntilde; … — letter + accent family
-    .replace(/&([a-zA-Z])(uml|acute|grave|circ|tilde|cedil|ring);/g,
-      (m, ch, kind) => COMBINING[kind] ? (ch + COMBINING[kind]).normalize('NFC') : m)
-    .replace(/&([a-zA-Z]+);/g, (m, name) => NAMED[name] ?? NAMED[name.toLowerCase()] ?? m)
-    // &amp;uuml; and friends: decode the escaped ampersand LAST, then once more.
-    .replace(/&([a-zA-Z])(uml|acute|grave|circ|tilde|cedil|ring);/g,
-      (m, ch, kind) => COMBINING[kind] ? (ch + COMBINING[kind]).normalize('NFC') : m)
+  decodeEntitiesDeep(String(s ?? ''), { ...NAMED, ...ACCENTED })
     .replace(/[ \t]+/g, ' ')
     .trim()
 

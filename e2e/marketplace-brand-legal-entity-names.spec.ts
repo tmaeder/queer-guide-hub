@@ -51,6 +51,8 @@ import { test, expect } from '@playwright/test';
  * no head to inject there.
  */
 
+const ORIGIN = process.env.E2E_BASE_URL || 'https://queer.guide';
+
 const BOT_UA = 'Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)';
 
 /**
@@ -393,17 +395,34 @@ test.describe('@smoke one brand, one advertised maker page', () => {
   });
 
   for (const { retired, survivor, title } of MERGED) {
-    test(`/${retired} merged into /${survivor} ("${title}")`, async ({ request }) => {
-      const gone = await crawlerHtml(request, `/marketplace/brands/${retired}`);
-      // Only missingBrandResult() emits this, so it proves brandDetail RAN and
-      // took the miss branch rather than the route having stopped resolving.
-      expect(titleOf(gone), `/marketplace/brands/${retired} should be a dead end`).toBe(
-        'No maker here | Queer Guide',
-      );
-      expect(gone, `${retired} must not still publish a Brand entity`).not.toContain(
-        '"@type":"Brand"',
-      );
+    test(`/${retired} redirects to /${survivor} ("${title}")`, async ({ request }) => {
+      // A 301 TO THE SURVIVOR, not a dead end — and this assertion was inverted
+      // once already, which is the point of writing it down.
+      //
+      // These tests used to require `No maker here | Queer Guide`, because when
+      // the merges shipped nothing redirected: `slug` was NULLed, so
+      // `get_marketplace_brand()` missed and the page served a 200 empty state.
+      // `99991790384358` then filled `marketplace_brand_slug_redirects` (a table
+      // that had existed since `99991790101222` holding ZERO rows, with
+      // `get_marketplace_brand()` already resolving through it) and sealed the
+      // producer. A 301 is strictly better for both readers and the index than a
+      // 200 that looks alive, so the SITE improved and this spec went stale.
+      //
+      // `maxRedirects: 0` is load-bearing: Playwright's request context follows
+      // redirects by default, so without it the fetch lands on the survivor and
+      // the old title assertion "passes" while proving nothing about the 301.
+      const res = await request.get(`/marketplace/brands/${retired}`, {
+        headers: { 'User-Agent': BOT_UA },
+        maxRedirects: 0,
+      });
+      expect(res.status(), `/marketplace/brands/${retired} should 301, not serve`).toBe(301);
+      expect(
+        res.headers()['location'],
+        `/marketplace/brands/${retired} must point at its survivor`,
+      ).toBe(`${ORIGIN}/marketplace/brands/${survivor}`);
 
+      // The paired half: the brand is still published, at ONE URL. Without this a
+      // redirect to a 404 would satisfy everything above.
       const live = await crawlerHtml(request, `/marketplace/brands/${survivor}`);
       expect(titleOf(live), `/marketplace/brands/${survivor} title`).toBe(
         `${title} — Marketplace | Queer Guide`,
