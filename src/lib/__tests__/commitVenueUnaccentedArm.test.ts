@@ -46,8 +46,15 @@ describe('commit_venue_staging_item gains the unaccented city arm', () => {
   it('is soft on the already-patched precondition and hard on a moved anchor', () => {
     // A concurrent session adding the arm first must not abort db push for the
     // whole repo; a moved body must abort rather than silently patch nothing.
-    expect(PATCH).toMatch(/if position\('canonical_key' in v_src\) > 0 then[\s\S]{0,200}?return;/);
+    expect(PATCH).toMatch(/if position\('canonical_key' in v_code\) > 0 then[\s\S]{0,200}?return;/);
     expect(PATCH).toMatch(/if v_hits <> 1 then[\s\S]{0,160}?raise exception/);
+  });
+
+  it('strips function comments before every source-code assertion', () => {
+    const strippedReads = CODE.match(/regexp_replace\(\s*pg_get_functiondef/g) ?? [];
+    expect(strippedReads.length).toBe(2);
+    expect(PATCH).toContain("from regexp_matches(v_code, E'\\n    IF v_city_id IS NULL THEN\\n', 'g')");
+    expect(VERIFY).toMatch(/v_src := regexp_replace\(\s*pg_get_functiondef/);
   });
 
   it('refuses a substitution that changed nothing', () => {
