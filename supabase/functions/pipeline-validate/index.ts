@@ -19,6 +19,7 @@ import { withErrorReporting } from '../_shared/report-api-error.ts'
 import { isLgbtiConnectionVocab } from '../_shared/lgbti-connection.ts'
 import { resolveStagingContentType } from '../_shared/content-registry.ts'
 import { validatePersonalityContract } from '../_shared/personality-contract.ts'
+import { prideScheduleWarnings } from './pride-rules.ts'
 
 // ============================================================
 // Pipeline Validate
@@ -277,17 +278,17 @@ Deno.serve(withErrorReporting('pipeline-validate', async (req) => {
           warnings.push('W_EVENT_TOO_FAR_FUTURE')
         }
 
-        // Type-specific rules (pride/protest must start 10–15:00, Saturday)
-        // Mirrors automation_rules 'pride_demo_*' rules — centralized here
+        // Type-specific rules: a pride/protest MARCH starts 10–15:00 on a
+        // Saturday. Mirrors automation_rules 'pride_demo_*' — centralized here
         // so pipeline-validate is the single enforcement point.
-        const et = String(n.event_type ?? '').toLowerCase()
-        if ((et === 'pride' || et === 'protest') && Number.isFinite(startTs)) {
-          const d = new Date(startTs)
-          const hour = d.getUTCHours()
-          const dow = d.getUTCDay() // 0=Sun, 6=Sat
-          if (hour < 10 || hour > 15) warnings.push('W_PRIDE_TIME_WINDOW')
-          if (dow !== 6) warnings.push('W_PRIDE_NOT_SATURDAY')
-        }
+        //
+        // Each rule is evaluated only where the row can answer it: the
+        // time-of-day check needs a start that carries a time of day, and the
+        // Saturday check is about a single-day march, not a twelve-day festival.
+        // See ./pride-rules.ts for the measurement behind that — the checks were
+        // firing on 578 rows whose start is a bare date, where they reported the
+        // source's date format rather than the event's schedule.
+        warnings.push(...prideScheduleWarnings({ eventType: String(n.event_type ?? ''), startStr, endStr }))
 
         // Location: need either venue_id, city, or geo
         const hasVenue = !!n.venue_id
