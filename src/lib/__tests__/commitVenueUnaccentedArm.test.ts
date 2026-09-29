@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
-const MIGRATION = '99991790622700_commit_venue_unaccented_city_arm';
+const MIGRATION = '99991790718707_commit_venue_unaccented_city_arm';
 const SQL = readFileSync(join(process.cwd(), `supabase/migrations/${MIGRATION}.sql`), 'utf8');
 
 // The header quotes the defect, the anchor and the tmp- rule verbatim, so every
