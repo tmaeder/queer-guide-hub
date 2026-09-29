@@ -598,6 +598,11 @@ async function runLinkPhase(
             // call 99991790358713 made when it repaired 11 of 167 by hand.
             if (c.wikidata_qid && c.wikidata_qid === qid) update.needs_attention = true
             qid = null
+            // Keep the stored title for human review, but do not use it below to
+            // fetch or publish Wikipedia content after geography has vetoed the
+            // entity. A cached title is not independent corroboration: it came
+            // from the same QID that just disagreed.
+            enwikiTitle = null
             coordRefused++
             bumpMiss(state, 'wikidata_link', 'coords')
             missReason ??= `refused_coords:${geo.distanceKm}km`.slice(0, 200)

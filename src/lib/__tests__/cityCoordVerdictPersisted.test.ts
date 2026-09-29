@@ -87,6 +87,15 @@ describe('the producer persists its coordinate verdict', () => {
     expect(producer).toMatch(/c\.wikidata_qid && c\.wikidata_qid === qid/);
   });
 
+  it('does not publish from the vetoed entity\'s cached Wikipedia title', () => {
+    const branch = producer.slice(
+      producer.indexOf("cls.verdict === 'settlement' && geo.verdict === 'disagree'"),
+      producer.indexOf("} else if (cls.verdict === 'settlement')"),
+    );
+    expect(branch).toMatch(/qid\s*=\s*null/);
+    expect(branch).toMatch(/enwikiTitle\s*=\s*null/);
+  });
+
   it('is shaped like capital_scope, the precedent for a probe finding', () => {
     const block = producer.slice(
       producer.indexOf('state.wikidata_coords'),
