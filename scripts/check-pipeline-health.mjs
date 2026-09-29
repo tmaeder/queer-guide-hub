@@ -4304,7 +4304,7 @@ const DISOWNED_PROSE_CEILING = 380
 //
 // `run_event_geo_fill` visited a row once, ever — its selector was
 // `p_force or not (enrichment_status ? 'event_geo_fill')` — so a row whose gap re-opened
-// was never refilled. 99991790718103 added a fillable-gap arm, and this watches the two
+// was never refilled. 99991790719660 added a fillable-gap arm, and this watches the two
 // quantities that arm is about.
 //
 // `stale_centroid_far` is a ZERO-INVARIANT and the reason the section exists: an event
@@ -4332,7 +4332,7 @@ const DISOWNED_PROSE_CEILING = 380
   })
   if (!res.ok) {
     console.warn(
-      `⚠ event_geo_derivation_signals → HTTP ${res.status} (RPC missing? migration 99991790718103)`,
+      `⚠ event_geo_derivation_signals → HTTP ${res.status} (RPC missing? migration 99991790719660)`,
     )
     console.warn('  This check measured NOTHING — it did not pass.')
   } else {
@@ -4355,7 +4355,7 @@ const DISOWNED_PROSE_CEILING = 380
       sectionOk = false
     }
 
-    // Advisory + growth. 50 measured when 99991790718103 shipped.
+    // Advisory + growth. 50 measured when 99991790719660 shipped.
     const BASELINE_STUCK_FILLABLE = 50
     const stuck = Number(sig.stuck_fillable_coords ?? 0)
     if (stuck > BASELINE_STUCK_FILLABLE) {

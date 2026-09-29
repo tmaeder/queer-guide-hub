@@ -230,6 +230,10 @@ declare
   v_sig jsonb;
   v_n int;
 begin
+  -- pg_get_functiondef() includes comments. Strip them before structural
+  -- assertions so explanatory prose cannot satisfy a missing-code check.
+  v_src := regexp_replace(v_src, '--[^' || chr(10) || ']*', '', 'g');
+
   -- P1: the re-open arm is in the DEPLOYED body, and it is the fillable-gap form
   --     rather than a blanket "legacy stamp counts as unvisited".
   if position('and c.latitude is not null and c.longitude is not null' in v_src) = 0 then

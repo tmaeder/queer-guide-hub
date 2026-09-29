@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
-// Guards 99991790718103_event_geo_fill_refills_a_reopened_gap.sql.
+// Guards 99991790719660_event_geo_fill_refills_a_reopened_gap.sql.
 //
 // `run_event_geo_fill` visited a row once, ever: its selector was
 // `p_force or not (enrichment_status ? 'event_geo_fill')`, so a row whose gap re-opened
@@ -22,7 +22,7 @@ import { join } from 'node:path';
 // header quotes the predicate, the counts and the column names in prose, so a bare
 // toContain over the whole file passes against a gutted selector.
 
-const MIGRATION = '99991790718103_event_geo_fill_refills_a_reopened_gap.sql';
+const MIGRATION = '99991790719660_event_geo_fill_refills_a_reopened_gap.sql';
 const raw = readFileSync(join(process.cwd(), 'supabase/migrations', MIGRATION), 'utf8');
 
 /** Migration text with comment lines removed, so prose cannot satisfy a guard. */

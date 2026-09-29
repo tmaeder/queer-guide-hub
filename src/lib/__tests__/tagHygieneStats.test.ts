@@ -601,7 +601,7 @@ describe('tag_hygiene_stats() does not use index-only scans', () => {
 });
 
 /**
- * 99991790718230 — one pass over `unified_tags`, and stop spilling to disk.
+ * 99991790719601 — one pass over `unified_tags`, and stop spilling to disk.
  *
  * SIXTH time this gate flaked. Measured on prod 2026-09-29 from
  * pg_stat_statements, i.e. from REAL CI calls rather than a timing someone took:
@@ -631,8 +631,8 @@ describe('tag_hygiene_stats() does not use index-only scans', () => {
  * that reads `sql` is checking a definition production no longer has. That gap
  * predates this migration and is recorded here rather than silently relied upon.
  */
-describe('99991790718230 folds unified_tags without reverting the live body', () => {
-  const MIG = '99991790718230_tag_hygiene_stats_one_pass_over_unified_tags.sql';
+describe('99991790719601 folds unified_tags without reverting the live body', () => {
+  const MIG = '99991790719601_tag_hygiene_stats_one_pass_over_unified_tags.sql';
   const mig = (() => {
     const i = files.indexOf(MIG);
     expect(i, `${MIG} is missing`).toBeGreaterThan(-1);

@@ -249,6 +249,10 @@ begin
     raise exception 'tag_hygiene_stats is not defined';
   end if;
 
+  -- pg_get_functiondef() includes comments. Strip them before structural
+  -- assertions so explanatory prose cannot satisfy a missing-code check.
+  src := regexp_replace(src, '--[^' || chr(10) || ']*', '', 'g');
+
   select p.proconfig into cfg
     from pg_proc p join pg_namespace n2 on n2.oid = p.pronamespace
    where n2.nspname = 'public' and p.proname = 'tag_hygiene_stats';

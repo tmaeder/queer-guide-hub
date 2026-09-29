@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
-// Guards 99991790713569_event_city_link_stale_stamps.sql.
+// Guards 99991790719640_event_city_link_stale_stamps.sql.
 //
 // `run_event_city_link` skips any row already carrying an `event_city_link` stamp, so a
 // row judged unresolvable stays unresolvable after the thing that blocked it is fixed.
@@ -38,7 +38,7 @@ import { join } from 'node:path';
 // `p_force` in prose, so a bare toContain over the raw file passes against a deleted
 // guard — the vacuous-assertion class CLAUDE.md records repeatedly.
 
-const MIGRATION = '99991790713569_event_city_link_stale_stamps.sql';
+const MIGRATION = '99991790719640_event_city_link_stale_stamps.sql';
 const raw = readFileSync(join(process.cwd(), 'supabase/migrations', MIGRATION), 'utf8');
 
 /** Migration text with comment lines removed, so prose cannot satisfy a guard. */

@@ -126,7 +126,7 @@ set state = 'Indiana',
     enrichment_status = jsonb_set(
       coalesce(e.enrichment_status, '{}'::jsonb), '{event_city_link}',
       jsonb_build_object(
-        'at', now(), 'linked', false, 'by', 'migration:99991790713569',
+        'at', now(), 'linked', false, 'by', 'migration:99991790719640',
         'blocked', 'same-name-city collision; gaycities hammond.* is Hammond, INDIANA '
                 || '(Crown Point IN address, Valparaiso/HJR-6 rally, Portage) and the only '
                 || 'US Hammond in cities is Hammond, LOUISIANA. Hammond, Indiana is '
@@ -143,7 +143,7 @@ set state = 'California',
     enrichment_status = jsonb_set(
       coalesce(e.enrichment_status, '{}'::jsonb), '{event_city_link}',
       jsonb_build_object(
-        'at', now(), 'linked', false, 'by', 'migration:99991790713569',
+        'at', now(), 'linked', false, 'by', 'migration:99991790719640',
         'blocked', 'same-name-city collision; the event names itself "Orange, CA" '
                 || '(1623 West Katella Ave, Orange CA 92867) and the only US Orange in '
                 || 'cities is Orange, CONNECTICUT. Orange, California is unrepresentable '
@@ -162,7 +162,7 @@ set needs_attention = true,
     enrichment_status = jsonb_set(
       coalesce(e.enrichment_status, '{}'::jsonb), '{event_city_link}',
       jsonb_build_object(
-        'at', now(), 'linked', false, 'by', 'migration:99991790713569',
+        'at', now(), 'linked', false, 'by', 'migration:99991790719640',
         'blocked', 'same-name-city collision; the Milton Theatre with Magnolia '
                 || 'Applebottom is Milton, DELAWARE (the row says so in events.state) '
                 || 'and the only US Milton in cities is Milton, PENNSYLVANIA. Milton, '
