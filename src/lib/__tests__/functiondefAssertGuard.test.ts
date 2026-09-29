@@ -1,5 +1,11 @@
 import { describe, it, expect } from 'vitest';
-import { findUnstrippedAsserts } from '../../../scripts/check-functiondef-asserts.mjs';
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
+import {
+  findUnstrippedAsserts,
+  withoutApplied,
+  versionOf,
+} from '../../../scripts/check-functiondef-asserts.mjs';
 
 /**
  * `pg_get_functiondef()` returns a function body INCLUDING its comments, so a
@@ -168,5 +174,135 @@ describe('functiondef-assert guard: what it must NOT flag', () => {
         end if;
       end $$;`;
     expect(findUnstrippedAsserts(sql).length).toBeGreaterThan(0);
+  });
+});
+
+/**
+ * ADDED IS NOT NEW.
+ *
+ * The scope rule ("newly ADDED migration files only") was a git diff against
+ * the base ref, which cannot distinguish a migration someone just wrote from
+ * one a RECOVERY PR rebuilt out of `schema_migrations`. The second kind is
+ * added to the repo and was already applied to prod — the exact condition the
+ * scope rule exists to forgive for the 17 historical files.
+ *
+ * On 2026-09-28 that blocked #3990, which recovered 13 drifted migrations: one
+ * of them (20260928134338, authored in another session) asserts on
+ * pg_get_functiondef without stripping, so the PR that existed to clear drift
+ * for every open PR in the repo could not itself merge. Rewriting recovered SQL
+ * to satisfy a lint destroys the only property a recovered file has — matching
+ * what actually ran — so the guard learns to look the version up instead.
+ */
+describe('applied-version exemption', () => {
+  const RECOVERED = 'supabase/migrations/20260928134338_event_liveness_fresh_unknown_not_stale.sql';
+  const FRESH = 'supabase/migrations/99991790606213_rheinfetisch_calendar_source.sql';
+
+  it('exempts a file whose version is already applied to prod', () => {
+    const { checked, exempt } = withoutApplied([RECOVERED], new Set(['20260928134338']));
+    expect(exempt).toEqual([RECOVERED]);
+    expect(checked).toEqual([]);
+  });
+
+  it('still checks a genuinely new file in the same PR', () => {
+    // The dangerous shape: a recovery PR must not become a way to smuggle an
+    // unchecked new migration in alongside the recovered ones.
+    const { checked, exempt } = withoutApplied([RECOVERED, FRESH], new Set(['20260928134338']));
+    expect(checked).toEqual([FRESH]);
+    expect(exempt).toEqual([RECOVERED]);
+  });
+
+  it('FAILS CLOSED: with no token (null) every file is still checked', () => {
+    // The strict branch is the fallback, so a missing secret can only make this
+    // guard noisier. Exempting everything here would silently switch it off.
+    const { checked, exempt } = withoutApplied([RECOVERED, FRESH], null);
+    expect(checked).toEqual([RECOVERED, FRESH]);
+    expect(exempt).toEqual([]);
+  });
+
+  it('keeps a file whose version cannot be parsed', () => {
+    // Unprovable is not exempt.
+    const odd = 'supabase/migrations/not-a-version.sql';
+    const { checked, exempt } = withoutApplied([odd], new Set(['20260928134338']));
+    expect(checked).toEqual([odd]);
+    expect(exempt).toEqual([]);
+  });
+
+  it('an empty applied set exempts nothing', () => {
+    const { checked, exempt } = withoutApplied([RECOVERED], new Set());
+    expect(checked).toEqual([RECOVERED]);
+    expect(exempt).toEqual([]);
+  });
+
+  it('versionOf reads the leading 14 digits, and only those', () => {
+    expect(versionOf(RECOVERED)).toBe('20260928134338');
+    expect(versionOf('supabase/migrations/20260928134338_x.sql')).toBe('20260928134338');
+    // Not 14 digits, and not leading — neither is a version.
+    expect(versionOf('supabase/migrations/2026_short.sql')).toBeNull();
+    expect(versionOf('supabase/migrations/x_20260928134338.sql')).toBeNull();
+  });
+
+  it('the recovered file really does trip the guard, so the exemption is load-bearing', () => {
+    // Verbatim from 20260928134338: position() over an unstripped functiondef.
+    const sql = `
+      do $$
+      declare v_definition text;
+      begin
+        select pg_get_functiondef('public.event_quality_findings(uuid)'::regprocedure)
+          into v_definition;
+        if position('and (last_verified_at is null)' in v_definition) = 0 then
+          raise exception 'unexpected shape';
+        end if;
+      end $$;`;
+    expect(findUnstrippedAsserts(sql).length).toBeGreaterThan(0);
+  });
+});
+
+/**
+ * The exemption can only run in CI, where the token exists — so these pin the
+ * WIRING at the source level. The dangerous mutation is not "exemption stops
+ * working" (that fails loudly on the next recovery PR); it is the guard
+ * reporting green having checked nothing.
+ */
+describe('main() is wired to the filtered list', () => {
+  const src = readFileSync(
+    join(process.cwd(), 'scripts', 'check-functiondef-asserts.mjs'),
+    'utf8',
+  );
+  // Comments quote both identifiers, so assert against code only.
+  const code = src
+    .split('\n')
+    .filter((l) => !/^\s*(\/\/|\*|\/\*)/.test(l))
+    .join('\n');
+
+  // Scoped to main(). A whole-file negative would fire on withoutApplied's own
+  // loop over its `files` PARAMETER, which is correct code — the same
+  // over-broad-negative trap this suite exists to prevent elsewhere.
+  const mainBody = code.slice(code.indexOf('async function main()'));
+
+  it('main() iterates the checked files, not the raw added list', () => {
+    expect(mainBody).toMatch(/for \(const f of checked\)/);
+    expect(mainBody).not.toMatch(/for \(const f of files\)/);
+  });
+
+  it('the slice really is main(), so the assertion above is not vacuous', () => {
+    expect(mainBody.length).toBeGreaterThan(200);
+    expect(mainBody).toContain('addedMigrations()');
+  });
+
+  it('passes the fetched applied set into withoutApplied', () => {
+    expect(code).toMatch(/withoutApplied\(files,\s*applied\)/);
+    expect(code).toMatch(/await fetchRemoteVersions\(\)/);
+  });
+
+  it('reports the count it actually checked, not the count it was given', () => {
+    // `${files.length} new migration(s)` would overstate the work on a recovery
+    // PR — 13 claimed, 0 inspected.
+    expect(code).toMatch(/\$\{checked\.length\} new migration\(s\)/);
+  });
+
+  it('a failure to determine what is applied exits non-zero', () => {
+    // "could not look" must never read as "clean".
+    expect(code).toMatch(/main\(\)\.catch\(/);
+    expect(code).toMatch(/could not run/);
   });
 });
