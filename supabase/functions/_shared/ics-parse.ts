@@ -649,7 +649,7 @@ export function parseLocation(raw: string | undefined): ParsedLocation {
   // Deutschland` as a venue named Köln is the same place-name collision the
   // guard further down exists to prevent.
   if (out.countryCode && rest.length === 1) {
-    out.city = rest[0]
+    out.city = stripBorough(rest[0])
     return out
   }
 
