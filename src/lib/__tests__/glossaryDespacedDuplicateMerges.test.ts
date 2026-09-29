@@ -1,5 +1,5 @@
 /**
- * Guards 99991790712444_glossary_despaced_duplicate_merges.sql.
+ * Guards 99991790719476_glossary_despaced_duplicate_merges.sql.
  *
  * Seven concepts each held two rows, spelled with and without a hyphen — the residue
  * of the sweep that produced the water-sports split and the teddybear repair. Unlike
@@ -19,7 +19,7 @@ import { describe, expect, it } from 'vitest';
 import { readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 
-const MIGRATION = '99991790712444_glossary_despaced_duplicate_merges';
+const MIGRATION = '99991790719476_glossary_despaced_duplicate_merges';
 const DIR = join(process.cwd(), 'supabase/migrations');
 
 const raw = (() => {

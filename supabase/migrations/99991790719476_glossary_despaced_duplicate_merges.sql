@@ -114,7 +114,7 @@ declare
   v_skipped int := 0;
 begin
   perform set_config('app.actor',
-    'migration:99991790712444_glossary_despaced_duplicate_merges', true);
+    'migration:99991790719476_glossary_despaced_duplicate_merges', true);
 
   for r in
     select * from (values
@@ -149,7 +149,7 @@ begin
 
     perform public.merge_tag_concept(
       v_keep, v_drop,
-      'migration:99991790712444', 'despaced_duplicate');
+      'migration:99991790719476', 'despaced_duplicate');
 
     -- Scoped to the loser's OWN category, so a keeper with a legitimate second
     -- membership is untouched.

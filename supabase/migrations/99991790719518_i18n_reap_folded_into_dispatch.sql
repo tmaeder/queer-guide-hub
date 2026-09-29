@@ -164,6 +164,7 @@ DECLARE
   v_src      text;
   v_percombo int;
   v_jobs     int;
+  v_registry int;
 BEGIN
   v_src := regexp_replace(
     pg_get_functiondef('public.run_i18n_translation_dispatch(integer)'::regprocedure),
@@ -180,6 +181,16 @@ BEGIN
   SELECT count(*) INTO v_jobs FROM cron.job WHERE jobname = 'i18n_translation_reap';
   IF v_jobs <> 0 THEN
     RAISE EXCEPTION 'i18n_translation_reap cron still scheduled (%)', v_jobs;
+  END IF;
+
+  -- The disabled registry row is what prevents the reconciler from recreating
+  -- the retired cron. Missing is not equivalent to disabled: a missing row
+  -- would also make any surviving job permanently "unregistered".
+  SELECT count(*) INTO v_registry
+  FROM public.admin_automations
+  WHERE slug = 'i18n_translation_reap' AND enabled = false;
+  IF v_registry <> 1 THEN
+    RAISE EXCEPTION 'expected one disabled i18n_translation_reap registry row, found %', v_registry;
   END IF;
 
   -- The dispatcher itself must survive: retiring the reap must not have
