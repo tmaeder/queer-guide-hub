@@ -540,3 +540,39 @@ Deno.test('events come back sorted by start', () => {
   ))
   assertEquals(events.map((e) => e.summary), ['A', 'B'])
 })
+
+// A German borough is glued to the city rather than being its own comma
+// segment, so segmentation alone cannot reach it. Both live rows that landed
+// with a NULL city_id had this shape.
+Deno.test('parseLocation: strips a Berlin borough suffix, with and without a postcode', () => {
+  const withPostcode = parseLocation(
+    'Dreizehn, Welserstraße 27, 10777 Berlin-Bezirk Tempelhof-Schöneberg, Deutschland',
+  )
+  assertEquals(withPostcode.city, 'Berlin')
+  assertEquals(withPostcode.postalCode, '10777')
+  assertEquals(withPostcode.venueName, 'Dreizehn')
+
+  // The no-postcode path assigns the city from a different branch, so it needs
+  // its own case — a fix applied to only one branch passes the other.
+  const noPostcode = parseLocation('Fuggerstraße, Berlin-Bezirk Tempelhof-Schöneberg, Deutschland')
+  assertEquals(noPostcode.city, 'Berlin')
+
+  // With only city + country, parseLocation returns through an earlier branch.
+  // Keep that third assignment site under the same normalization contract.
+  const cityOnly = parseLocation('Berlin-Bezirk Tempelhof-Schöneberg, Deutschland')
+  assertEquals(cityOnly.city, 'Berlin')
+})
+
+Deno.test('parseLocation: a hyphenated city name survives intact', () => {
+  // The reason the rule is anchored on the literal `-Bezirk ` marker: a generic
+  // hyphen split would truncate every one of these.
+  // Three segments, matching the real shape: a 2-segment address takes the
+  // lone-segment branch, which does not split the postcode at all.
+  assertEquals(parseLocation('Kurhaus, 76530 Baden-Baden, Deutschland').city, 'Baden-Baden')
+  assertEquals(parseLocation('Europaplatz, 44575 Castrop-Rauxel, Deutschland').city, 'Castrop-Rauxel')
+  // A district name that is itself hyphenated must not survive as the city.
+  assertEquals(
+    parseLocation('Welserstraße 27, 10777 Berlin-Bezirk Tempelhof-Schöneberg, Deutschland').city,
+    'Berlin',
+  )
+})
