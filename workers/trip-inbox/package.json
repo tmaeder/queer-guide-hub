@@ -9,13 +9,13 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "postal-mime": "^3.0.0"
+    "postal-mime": "^3.0.1"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^5.20260924.1",
     "typescript": "~7.0.2",
     "vite": "^8.3.1",
-    "vitest": "^5.0.1",
+    "vitest": "^5.0.2",
     "wrangler": "^4.138.0"
   },
   "overrides": {
