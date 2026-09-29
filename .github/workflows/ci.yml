@@ -278,7 +278,17 @@ jobs:
       # Scoped to newly ADDED migrations: 17 of the 65 existing files would
       # flag, and every one of them applied successfully, so gating the history
       # would ship red with 17 entries nobody reads.
+      #
+      # The token is what lets it tell "added" from "new". A RECOVERY PR adds
+      # files that were already applied — the same condition the scope rule
+      # forgives for those 17 — and with no way to look that up this blocked
+      # #3990, the PR clearing drift for every open PR in the repo. Without the
+      # secret it falls back to checking every added file, i.e. the old
+      # behaviour: a missing token can only make this louder, never quieter.
       - name: Migration assertions on pg_get_functiondef strip comments
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_PROJECT_REF: xqeacpakadqfxjxjcewc
         run: node scripts/check-functiondef-asserts.mjs
 
       # Remote-only versions: a migration applied to prod (MCP apply_migration or
