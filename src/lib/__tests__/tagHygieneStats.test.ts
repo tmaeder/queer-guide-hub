@@ -710,3 +710,76 @@ describe('99991790719601 folds unified_tags without reverting the live body', ()
     );
   });
 });
+
+/**
+ * The baseline FILE contract, as opposed to the SQL above.
+ *
+ * `--update` used to rebuild the baseline as `{_comment, ...metrics, _notes}`,
+ * naming two control keys and silently dropping the third. Since
+ * `ADVISORY = new Set(baseline._advisory ?? [])`, that turned all NINE advisory
+ * metrics into HARD gates in one commit with nothing in the output saying so —
+ * and the regression message tells you to run `--update`, so the trap was on the
+ * documented path. Every one of the nine is advisory precisely because an
+ * instantaneous value is not an invariant for it, so the next ordinary drift in
+ * any of them would have red every open PR for a change its author did not make.
+ *
+ * Fixed on 2026-09-30 by carrying control keys generically. These tests exist so
+ * a future rewrite of that block cannot reintroduce it by naming keys again.
+ */
+describe('tag-hygiene baseline file contract', () => {
+  const script = readFileSync(join(process.cwd(), 'scripts', 'check-tag-hygiene.mjs'), 'utf8');
+  const baseline = JSON.parse(
+    readFileSync(join(process.cwd(), 'scripts', 'tag-hygiene-baseline.json'), 'utf8'),
+  ) as Record<string, unknown>;
+
+  /** The `if (UPDATE) { ... }` block only. */
+  const updateBlock = (() => {
+    const start = script.indexOf('if (UPDATE) {');
+    expect(start, 'the --update block is gone').toBeGreaterThan(-1);
+    const end = script.indexOf('\n}', start);
+    return script.slice(start, end);
+  })();
+
+  it('carries control keys GENERICALLY, never by name', () => {
+    // The whole defect: an enumerated list drops whatever it forgets.
+    expect(updateBlock).toMatch(/Object\.keys\(baseline\)[\s\S]*startsWith\('_'\)/);
+  });
+
+  it('preserves _advisory across a re-baseline', () => {
+    // Asserted on the block, because the failure is silent: the file is written,
+    // exit code is 0, and nine gates change class with no output.
+    expect(
+      updateBlock,
+      '--update must carry _advisory, or every advisory metric becomes a hard gate',
+    ).toMatch(/_advisory|startsWith\('_'\)/);
+  });
+
+  it('reports which control keys it carried', () => {
+    // A silent carry is indistinguishable from a silent drop.
+    expect(updateBlock).toMatch(/carried/);
+  });
+
+  it('has a non-empty _advisory list whose every entry is a real metric', () => {
+    // A typo here does not error — it silently promotes that metric to a hard
+    // gate, which is the same outcome as dropping the key.
+    const advisory = baseline._advisory as string[];
+    expect(Array.isArray(advisory)).toBe(true);
+    expect(
+      advisory.length,
+      '_advisory is empty; nine metrics would become hard gates',
+    ).toBeGreaterThan(0);
+
+    const metrics = new Set(Object.keys(baseline).filter((k) => !k.startsWith('_')));
+    for (const k of advisory) {
+      expect(metrics.has(k), `_advisory names "${k}", which is not a baseline metric`).toBe(true);
+    }
+  });
+
+  // MEASURED AND NOT WRITTEN: "every metric baselined at 0 carries a note or is
+  // advisory". Five zero-invariants that predate this change have no note
+  // (alias_mojibake, assignment_to_non_active_tag, dangling_category_id,
+  // event_tag_pairs_unlinked, nonclean_entity_type — all documented in CLAUDE.md
+  // instead), so the assertion would ship RED, and a gate that is red on arrival
+  // is one people scroll past. It also invents a documentation standard nobody
+  // agreed to. Recorded rather than silently omitted.
+});
