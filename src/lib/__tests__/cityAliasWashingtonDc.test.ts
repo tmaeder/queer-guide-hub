@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
-// Guards 99991790789091_city_alias_washington_dc.sql.
+// Guards 99991790794042_city_alias_washington_dc.sql.
 //
 // The cohort of unlinked events whose city is absent from `cities` looked like accent
 // variants that a `city_aliases` row would fix. It is not: measured through
@@ -27,7 +27,7 @@ import { join } from 'node:path';
 // about: this header names every refused city, so a bare toContain over the raw file
 // would pass against a deleted guard.
 
-const MIGRATION = '99991790789091_city_alias_washington_dc.sql';
+const MIGRATION = '99991790794042_city_alias_washington_dc.sql';
 const raw = readFileSync(join(process.cwd(), 'supabase/migrations', MIGRATION), 'utf8');
 
 /** Migration text with comment lines removed, so prose cannot satisfy a guard. */
