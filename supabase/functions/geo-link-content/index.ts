@@ -15,7 +15,7 @@
 import { requireAdmin, getCorsHeaders, getServiceClient } from '../_shared/supabase-client.ts';
 import { COUNTRY_ALIASES } from '../_shared/automation-utils.ts';
 import { cityCollisionReason, proseStateContradiction } from '../_shared/city-collision-guard.ts';
-import { cityLinkContradiction, mergeRoundRobin } from '../_shared/geo-link-guards.ts';
+import { cityLinkContradiction, linkWriteStatus, mergeRoundRobin } from '../_shared/geo-link-guards.ts';
 
 const supabase = getServiceClient();
 
@@ -391,7 +391,9 @@ async function processVenuesOrEvents(
       city_resolved: city?.name || null,
       country_resolved: country?.name || null,
       city_id: newCityId, country_id: newCountryId,
-      status: blockedReason ? 'blocked' : (newCityId && newCountryId ? 'linked' : 'partial'),
+      status: blockedReason
+        ? 'blocked'
+        : linkWriteStatus({ existingCityId, existingCountryId, newCityId, newCountryId }),
       ...(blockedReason ? { blocked_reason: blockedReason } : {}),
     });
   }
@@ -477,7 +479,7 @@ async function processPersonalities(
       city_resolved: city?.name || null,
       country_resolved: country?.name || null,
       city_id: newCityId, country_id: newCountryId,
-      status: newCityId || newCountryId ? (newCityId && newCountryId ? 'linked' : 'partial') : 'skipped',
+      status: linkWriteStatus({ existingCityId, existingCountryId, newCityId, newCountryId }),
     });
   }
 
