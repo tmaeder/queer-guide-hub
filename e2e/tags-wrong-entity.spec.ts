@@ -43,7 +43,12 @@ const CASES: Case[] = [
   {
     slug: 'golden-shower',
     was: 'Cassia fistula, a flowering plant',
-    present: /urinat/i,
+    // `urine` as well as `urinat`: the body was legitimately rewritten from "the
+    // act of urinating on a partner" to "urine directed onto a partner", and the
+    // fingerprint went stale with it — reporting "lost its own definition" for a
+    // page that is entirely correct. A positive fingerprint has to survive an
+    // editorial rewrite of the prose it fingerprints, or it fails on improvement.
+    present: /urinat|urine/i,
     absent: [/cassia\s+fistula/i, /flowering\s+plant/i, /Fabaceae/i],
   },
   {
