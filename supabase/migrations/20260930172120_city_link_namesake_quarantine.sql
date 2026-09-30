@@ -1,58 +1,63 @@
--- Three events broke the two CITY_LINK_* zero-invariants and red-lit `Critical
--- data-quality gates` on every open PR in the repo. Three different importers,
--- one defect class: an event resolved onto a same-name city in the wrong country.
+-- DRIFT RECOVERY. THIS MIGRATION RAN AS A NO-OP AND THE REPO FILE EXISTS SO THE
+-- APPLIED VERSION IS NOT ORPHANED. It is not the repair its original header
+-- claimed to be, and that header is deliberately not preserved: it asserted
+-- these three events had "red-lit every PR in the repo", which is false.
 --
---   Hong Kong  gaytravel4u  country CN, city hong-kong-hk-2hvf2 (HK)
---   Burgdorf   queerde      country DE, city burgdorf (CH)
---   Cambridge  gayout       country CA, city cambridge-gb-2wpbj (GB)
+-- WHAT HAPPENED. On 2026-09-30 three events were measured on same-name cities in
+-- the wrong country and this file was written and applied direct to prod at
+-- 17:21 to repair them. The premise was never checked against the artifact the
+-- gate reads. `city_quality_scorecard` is `served_from_snapshot`, and the 04:20
+-- snapshot ALREADY read 0 for both CITY_LINK_NAMESAKE and
+-- CITY_LINK_COUNTRY_MISMATCH -- so those codes were never the gate failure, and
+-- the rows were already repaired before this ran:
 --
--- TWO DIFFERENT REMEDIES, AND THE EVIDENCE DECIDES WHICH -- they are not
--- interchangeable and applying one rule to all three would damage two rows.
+--   * run_event_city_link quarantined the three mislinked events on its own at
+--     03:05 (recorded in 99991790714809's own baseline revision), and
+--   * 99991790714809_city_link_namesake_country_repair and
+--     99991790718808_hong_kong_event_country_hk had already landed the same two
+--     corrections this file contains.
 --
--- HONG KONG: the CITY LINK IS CORRECT and is not touched. c701d52b is the real
--- Hong Kong (country HK, 23 events, 73 venues). What is wrong is the COUNTRY
--- stamp: the upstream JSON-LD says "country": "CN" and the importer took it
--- verbatim. This platform models HK as its own country and must --
--- `countries.lgbti_criminalization` and the whole safety-gating layer are
--- per-country, so an HK event filed under CN is gated on the wrong jurisdiction.
--- It became a namesake flag because a second "Hong Kong" exists under CN
--- (e4aad542, slug tmp-..., not indexable, 0 events, 0 venues) -- one of the
--- personality-birth-place shells -- giving the detector something to match.
--- That shell is deliberately left alone: it is inert, and dispositioning the
--- tmp- cohort is its own decision.
+-- Both statements below are content-guarded (`and country = 'CN'`,
+-- `and city_id is not null`), so on 2026-09-30 they matched ZERO rows, and the
+-- postconditions passed because they assert END STATE rather than rows touched.
+-- That combination is exactly why the apply looked successful and proved
+-- nothing: a no-op and a repair are indistinguishable from a green apply.
 --
--- BURGDORF AND CAMBRIDGE: the city link is WRONG and there is nothing to move it
--- to. "CSD Burgdorf" is Burgdorf, Lower Saxony, GERMANY (CSD is the German pride
--- name; the source is queer.de) and the only Burgdorf row we hold is the Swiss
--- one. "tri-Pride 2027" is the Kitchener-Waterloo-Cambridge festival in Cambridge,
--- ONTARIO and the only Cambridge rows we hold are GB and US. Measured, not
--- assumed: no Burgdorf DE row and no Cambridge CA row exists.
+-- THE STATEMENTS ARE KEPT RATHER THAN EMPTIED so a rebuild-from-zero reaches the
+-- same end state regardless of which of the three files runs first -- this one
+-- sorts BELOW both siblings, so on a rebuild it performs the repair and they
+-- no-op, which is the mirror of what happened live. They are idempotent in both
+-- directions.
 --
--- SO THEY ARE UNLINKED, NOT RELINKED, AND NO CITY ROW IS MINTED. A null city_id
--- is recoverable; a wrong one is not. Minting two city rows to hold two events
--- is a geography decision, not a repair, and `cities` holds at most one row per
--- (name, country) so it is not the trivial insert it looks like.
+-- THE TWO CORPUS-WIDE POSTCONDITIONS ARE REMOVED. The applied version asserted
+-- CITY_LINK_NAMESAKE = 0 and CITY_LINK_COUNTRY_MISMATCH = 0 across the whole
+-- corpus. That is wrong inside a migration: on a rebuild-from-zero the corpus at
+-- this point in history is not the corpus those invariants were measured
+-- against, and a RAISE here aborts `db push` for EVERY migration queued behind
+-- it -- the repo-wide blast radius 20810101100100 already caused once. The
+-- invariants belong to the gate, which measures them live; what a migration may
+-- assert is what IT changed. The three row-scoped checks below are kept.
 --
--- THE UNLINK IS NOT DURABLE ON ITS OWN -- that is the whole reason for the stamp.
--- Two linkers would re-resolve these by name within the hour. Both honour the
--- same quarantine key, verified in their live source rather than assumed:
---   * run_event_city_link selects `not (enrichment_status ? 'event_city_link')`,
---     so any stamp under that key removes the row from its work list;
---   * geo-link-content reads `enrichment_status.event_city_link.blocked` and
---     refuses ("otherwise this hourly job would undo that runner's decision one
---     row at a time"). NOTE: CLAUDE.md still says this function re-links
---     quarantined rows regardless. That was true when written and is now stale.
--- The stamp carries the evidence and names the city that would be needed, so the
--- row is a work item a human can action rather than a silent null.
+-- The version sorts below the 9999... block because MCP apply_migration stamps
+-- its own call timestamp. That is correct for an MCP-applied file and must not
+-- be "corrected": check-migration-versions.mjs:317 exempts an already-applied
+-- version from the ordering rule precisely for this recovery.
 
--- 1. Hong Kong -- correct the country, keep the link.
+-- 1. Hong Kong -- correct the country, keep the link. The city link is CORRECT
+-- (c701d52b is the real Hong Kong). What was wrong is the COUNTRY stamp: the
+-- upstream JSON-LD says "country": "CN" and the importer took it verbatim, so
+-- the event was safety-gated on mainland China's jurisdiction rather than HK's.
 update public.events
    set country = 'HK',
        country_id = (select id from public.countries where code = 'HK')
  where id = '8f5bca16-bd5b-4bef-9481-e9c53fa94537'
    and country = 'CN';
 
--- 2/3. Burgdorf + Cambridge -- detach and quarantine.
+-- 2/3. Burgdorf + Cambridge -- detach and quarantine. "CSD Burgdorf" is
+-- Burgdorf, Lower Saxony DE (CSD is the German pride name) and the only Burgdorf
+-- row we hold is the Swiss one; "tri-Pride 2027" is Cambridge, Ontario and we
+-- hold only GB and US. No city row is minted: a null city_id is recoverable, a
+-- wrong one is not, and `cities` holds at most one row per (name, country).
 update public.events e
    set city_id = null,
        needs_attention = true,
@@ -60,10 +65,6 @@ update public.events e
          || jsonb_build_object('event_city_link', jsonb_build_object(
               'blocked', v.reason,
               'at', now(),
-              -- Deliberately version-free. This repo's own rule is that a version
-              -- string lives in as few places as possible; MCP apply_migration
-              -- stamps its own timestamp, so a version baked into written DATA
-              -- is a guaranteed mismatch the moment the file is renumbered.
               'by', 'city_link_namesake_quarantine',
               'detached_city_id', e.city_id,
               'needs_city', v.needs_city))
@@ -80,15 +81,13 @@ update public.events e
 
 do $verify$
 declare
-  v_namesake int;
-  v_mismatch int;
   v_hk_city text;
   v_hk_country text;
   v_stamped int;
   v_still_linked int;
 begin
-  -- P1: Hong Kong reached the intended state AND kept its link. A "fix" that
-  -- detached it would satisfy the zero-invariants below and be wrong.
+  -- P1: Hong Kong reached the intended state AND KEPT ITS LINK. A "fix" that
+  -- detached it would satisfy P2 below and be wrong, so both halves are asserted.
   select e.country, c.slug into v_hk_country, v_hk_city
     from public.events e left join public.cities c on c.id = e.city_id
    where e.id = '8f5bca16-bd5b-4bef-9481-e9c53fa94537';
@@ -107,35 +106,15 @@ begin
     raise exception 'P2 % of 2 quarantined events still carry a city_id', v_still_linked;
   end if;
 
-  -- P3: and they are QUARANTINED, not merely detached. Without the stamp the
-  -- hourly linker re-links them and this migration silently undoes itself.
+  -- P3: and they are QUARANTINED, not merely detached. Without a stamp under
+  -- this key both linkers re-resolve them by name within the hour and the
+  -- detach silently undoes itself. Either this file or 99991790714809 may have
+  -- written the stamp -- the assertion is on the STATE, not on the writer.
   select count(*) into v_stamped from public.events
    where id in ('ca2f0b94-8b00-4955-86a3-9b33142cc3c5','e2ca4bd7-6a04-41a1-a651-245eb04d466b')
      and coalesce(enrichment_status,'{}'::jsonb) -> 'event_city_link' ? 'blocked';
   if v_stamped <> 2 then
     raise exception 'P3 % of 2 quarantined events carry a blocked stamp', v_stamped;
-  end if;
-
-  -- P4/P5: both zero-invariants, corpus-wide rather than for these rows only.
-  with base as (select id, name, country_id, seo_indexable
-                  from public.cities where duplicate_of_id is null)
-  select count(*) into v_namesake
-    from base c
-    join public.events e on e.city_id = c.id and e.duplicate_of_id is null
-     and e.status = 'active' and coalesce(e.end_date, e.start_date) >= now()
-     and e.country_id is distinct from c.country_id
-    join base alt on alt.id <> c.id and alt.country_id = e.country_id
-     and immutable_unaccent(lower(btrim(alt.name))) = immutable_unaccent(lower(btrim(e.city)))
-   where c.seo_indexable;
-  if v_namesake <> 0 then
-    raise exception 'P4 CITY_LINK_NAMESAKE is %, expected 0', v_namesake;
-  end if;
-
-  select count(*) into v_mismatch
-    from public.city_quality_profile
-   where 'CITY_LINK_COUNTRY_MISMATCH' = any(issue_codes);
-  if v_mismatch <> 0 then
-    raise exception 'P5 CITY_LINK_COUNTRY_MISMATCH is %, expected 0', v_mismatch;
   end if;
 end
 $verify$;
