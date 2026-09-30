@@ -47,8 +47,8 @@ export function ListPagination({
   const last = Math.min((page + 1) * rowsPerPage, totalCount);
 
   return (
-    <div className="flex items-center justify-between gap-4 px-4 py-2 border-t border-border">
-      <div className="flex items-center gap-2 text-xs text-muted-foreground">
+    <div className="flex flex-wrap items-center justify-between gap-2 border-t border-border-hairline px-4 py-2">
+      <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
         <span>Rows per page:</span>
         <Select
           value={String(rowsPerPage)}

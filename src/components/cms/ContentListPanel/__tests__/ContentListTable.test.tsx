@@ -12,17 +12,35 @@ describe('ContentListTable', () => {
   it('renders empty', () => {
     const { container } = render(
       <ContentListTable
-        contentTypeId="venues" config={null as never} items={[]}
-        loading={false} totalCount={0} page={1} rowsPerPage={25}
-        setPage={vi.fn()} setRowsPerPage={vi.fn()} sortField={null} sortDir="desc"
-        handleSort={vi.fn()} extraColumns={[]} selected={new Set()}
-        allSelected={false} someSelected={false}
-        toggleSelect={vi.fn()} toggleSelectAll={vi.fn()}
-        debouncedSearch="" onClearSearch={vi.fn()}
-        onEdit={vi.fn()} onCreate={vi.fn()}
+        contentTypeId="venues"
+        config={null as never}
+        items={[]}
+        loading={false}
+        totalCount={0}
+        page={1}
+        rowsPerPage={25}
+        setPage={vi.fn()}
+        setRowsPerPage={vi.fn()}
+        sortField={null}
+        sortDir="desc"
+        handleSort={vi.fn()}
+        extraColumns={[]}
+        selected={new Set()}
+        allSelected={false}
+        someSelected={false}
+        toggleSelect={vi.fn()}
+        toggleSelectAll={vi.fn()}
+        debouncedSearch=""
+        onClearSearch={vi.fn()}
+        onEdit={vi.fn()}
+        onCreate={vi.fn()}
       />,
     );
     expect(container).toBeTruthy();
+    expect(container.querySelector('[data-testid="content-data-surface"]')).toHaveClass(
+      'bg-card',
+      'shadow-soft',
+    );
   });
 
   /**
@@ -129,5 +147,4 @@ describe('ContentListTable', () => {
     expect(queryAllByText('Not a place')).toHaveLength(1);
     expect(queryAllByText('Archived')).toHaveLength(0);
   });
-
 });

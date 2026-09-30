@@ -332,11 +332,14 @@ export function ContentListTable({
   const colCount = (contentTypeId ? 5 : 6) + extraColumns.length;
 
   return (
-    <div className="overflow-hidden rounded-element bg-muted">
+    <div
+      data-testid="content-data-surface"
+      className="overflow-hidden rounded-container bg-card shadow-soft"
+    >
       <div className="overflow-x-auto">
         <Table>
-          <TableHeader>
-            <TableRow>
+          <TableHeader className="sticky top-0 z-10 bg-surface-container-high">
+            <TableRow className="bg-surface-container-high">
               <TableHead style={{ width: 42 }} className="pl-4">
                 <Checkbox
                   aria-label="Select all rows"
@@ -430,7 +433,7 @@ export function ContentListTable({
                   <TableRow
                     key={itemKey}
                     data-state={isSelected ? 'selected' : undefined}
-                    className={`cursor-pointer transition-colors hover:bg-muted/50 ${isHidden ? 'bg-muted/40' : ''}`}
+                    className={`group cursor-pointer transition-colors hover:bg-surface-container-high focus-within:bg-surface-container-high ${isHidden ? 'bg-muted/40' : ''}`}
                     style={{
                       borderLeft: isHidden
                         ? '3px solid hsl(var(--muted-foreground))'
@@ -447,9 +450,9 @@ export function ContentListTable({
                       />
                     </TableCell>
 
-                    <TableCell>
+                    <TableCell className="min-w-[280px]">
                       <p
-                        className={`text-sm font-medium leading-tight ${isHidden ? 'text-muted-foreground' : ''}`}
+                        className={`text-sm font-semibold leading-snug text-pretty ${isHidden ? 'text-muted-foreground' : ''}`}
                       >
                         {item.title}
                         {isHidden && (
@@ -476,7 +479,7 @@ export function ContentListTable({
                         )}
                       </p>
                       {item.description && (
-                        <span className="text-xs text-muted-foreground truncate block max-w-[360px] mt-0.5">
+                        <span className="mt-1 block max-w-[440px] truncate text-xs leading-relaxed text-muted-foreground">
                           {item.description}
                         </span>
                       )}
@@ -549,7 +552,7 @@ export function ContentListTable({
                     </TableCell>
 
                     <TableCell className="text-right">
-                      <div className="flex items-center justify-end gap-0.5">
+                      <div className="flex items-center justify-end gap-0.5 rounded-element bg-background/60 p-0.5">
                         {(config?.rowActions ?? [])
                           .filter((a) => !a.visible || a.visible(item.raw ?? {}))
                           .map((action) => {
