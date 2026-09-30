@@ -64,7 +64,7 @@ update public.events e
        needs_attention = false,
        enrichment_status = coalesce(e.enrichment_status, '{}'::jsonb)
          || jsonb_build_object('event_venue_link', jsonb_build_object(
-              'by', 'migration:99991790792671',
+              'by', 'migration:99991790796466',
               'linked', true,
               'reason', 'relinked_to_the_row_the_previous_pass_wrongly_said_did_not_exist',
               'detail', 'attached to Trade, 475 Santa Fe Drive, Denver (39.7239/-104.9988), 0.01 km from the event''s own coordinates, name-exact, and the venue''s city IS the denver row. 99991790537156 detached this event from the Washington DC Trade -- correctly -- but stamped "no Denver venue exists to move it to", which was false: there are three Trade rows and only one is DC''s.',

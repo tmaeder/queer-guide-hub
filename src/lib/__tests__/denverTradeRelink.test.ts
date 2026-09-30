@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
-// Guards 99991790792671_denver_trade_relink_and_false_claim.sql.
+// Guards 99991790796466_denver_trade_relink_and_false_claim.sql.
 //
 // 99991790537156 detached an event from the Washington DC "Trade" -- correctly, at
 // 2,398 km -- and stamped onto the row that "no Denver venue exists to move it to".
@@ -18,7 +18,7 @@ import { join } from 'node:path';
 //      new detail quotes it to explain it -- the first draft did and failed on correct
 //      code
 
-const MIGRATION = '99991790792671_denver_trade_relink_and_false_claim.sql';
+const MIGRATION = '99991790796466_denver_trade_relink_and_false_claim.sql';
 const raw = readFileSync(join(process.cwd(), 'supabase/migrations', MIGRATION), 'utf8');
 
 /** Comment lines removed, so the header's prose cannot satisfy a guard. */
