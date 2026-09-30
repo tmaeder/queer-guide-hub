@@ -68,7 +68,7 @@ export function ViewBar({
   };
 
   return (
-    <div className="flex items-center gap-2 mb-4 border-b border-border pb-2">
+    <div className="mb-2 flex min-w-0 items-center gap-2 border-b border-border-hairline pb-2">
       {views.length === 0 && (
         /* Outside the group: an empty-state sentence is not one of the views
            the group is labelled as holding. */
@@ -82,7 +82,11 @@ export function ViewBar({
         + aria-required-parent, reported as a pair — the pair is the tell that
         the ROLE is wrong, not that a stray control wandered in). `aria-pressed`
         states which view is applied. */}
-      <div role="group" aria-label="Views" className="flex items-center gap-1 overflow-x-auto">
+      <div
+        role="group"
+        aria-label="Saved views"
+        className="flex min-w-0 items-center gap-1 overflow-x-auto"
+      >
         {views.map((v) => {
           const isActive = v.id === activeId;
           return (

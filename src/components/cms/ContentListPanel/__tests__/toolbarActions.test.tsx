@@ -2,7 +2,7 @@
  * @vitest-environment jsdom
  */
 import { describe, it, expect, vi } from 'vitest';
-import { render as rtlRender, screen } from '@testing-library/react';
+import { fireEvent, render as rtlRender, screen } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 // ContentListPanel now loads saved views through TanStack Query.
@@ -18,6 +18,7 @@ import { MemoryRouter } from 'react-router';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { Tag } from 'lucide-react';
 import type { ContentTypeConfig } from '@/types/cms';
+import type { Filter } from '../viewSpec';
 
 /**
  * `toolbarActions` is what lets a page like AdminRedirects — which carries a
@@ -42,7 +43,7 @@ const controller = {
   sortField: 'title',
   sortDir: 'desc',
   handleSort: vi.fn(),
-  filters: [],
+  filters: [] as Filter[],
   setFilters: vi.fn(),
   filterFields: [],
   setFilter: vi.fn(),
@@ -134,5 +135,21 @@ describe('ContentListPanel toolbarActions', () => {
     const toolbarActions = vi.fn(() => <button type="button">Import</button>);
     renderPanel(baseConfig({ toolbarActions }));
     expect(toolbarActions).toHaveBeenCalled();
+  });
+
+  it('groups workspace controls and exposes applied filters as removable chips', () => {
+    controller.filters = [{ id: 'status-filter', field: 'status', op: 'eq', value: 'active' }];
+    renderPanel(
+      baseConfig({
+        fields: [{ name: 'status', label: 'Status', type: 'text', group: 'basic' }],
+      }),
+    );
+
+    expect(screen.getByRole('region', { name: 'Content workspace controls' })).toBeInTheDocument();
+    const chip = screen.getByRole('button', { name: 'Remove filter: Status is active' });
+    fireEvent.click(chip);
+    expect(controller.setFilters).toHaveBeenCalledWith([]);
+
+    controller.filters = [];
   });
 });
