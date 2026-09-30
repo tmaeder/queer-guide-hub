@@ -10,6 +10,23 @@
 -- comment header is NOT recorded, so the reasoning that accompanied this
 -- migration is lost. Verified by md5 against a server-computed digest.
 --
+-- CORRECTION TO THE LINE ABOVE, FOR THIS FILE ONLY: the reasoning was NOT lost, and
+-- everything below this recovery header is the original author's. That generic
+-- warning is true of a migration applied through MCP `apply_migration`, which stores
+-- one element per parsed statement and drops the comments between them. This one was
+-- applied as a single `execute_sql` call carrying the WHOLE FILE as one statement,
+-- together with its own `schema_migrations` row, so the header round-tripped intact.
+-- Left in place rather than deleted because the warning is correct for the common
+-- case and a future reader of the recovery script needs it -- but a comment that
+-- says the reasoning is lost, sitting directly above the reasoning, is the
+-- comment-outlived-its-truth failure this repo keeps finding, so it is answered here
+-- instead of contradicting the rest of the file in silence.
+--
+-- If you are applying a migration to prod ahead of its merge, do it that way: one
+-- transaction, whole file, plus the history row at the file's own version. It costs
+-- nothing, it adds no drift, and it is the difference between this file and a
+-- recovered body with no explanation.
+--
 -- Never re-run: `db push` matches on version and skips an applied one. The file
 -- exists so history is complete and a rebuild from zero works.
 -- The geo fill stamps the coordinates it derives and NOT the timezone, so nothing
