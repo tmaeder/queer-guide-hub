@@ -59,6 +59,16 @@ describe('LayoutShell', () => {
     },
   );
 
+  it.each(['/help', '/help/ch', '/de/help', '/de/help/ch'])(
+    'renders no public chrome on the crisis-support route %s',
+    (path) => {
+      renderAt(path);
+      for (const id of PUBLIC_CHROME) expect(screen.queryByTestId(id)).toBeNull();
+      expect(screen.getByRole('link', { name: /skip to main content/i })).toBeTruthy();
+      expect(screen.getByText('route content')).toBeTruthy();
+    },
+  );
+
   // This used to assert the opposite — "keeps analytics mounted on admin,
   // gating it would silently drop pageviews" — which encoded the consent
   // bypass as the intended behaviour. The tracker it mounted reached the

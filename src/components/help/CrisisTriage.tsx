@@ -29,8 +29,10 @@ import { Phone, MessageSquare, MessageCircle, Mail, Globe } from 'lucide-react';
 import type { Hotline, HotlineChannel } from '@/types/cms';
 import {
   channelHref,
+  emergencyContactsForCountry,
   isAlwaysOpen,
   isOpenNow,
+  hotlineSupportsLanguage,
   nonVoiceChannels,
   selectOpenAlternative,
 } from './helpData';
@@ -93,7 +95,7 @@ export function CrisisTriage({
   onCountryChange: (code: string) => void;
   savedLines: Hotline[];
 }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const alt = hero ? nonVoiceChannels(hero) : [];
   const phone = hero ? (hero.channels?.find((c) => c.kind === 'phone')?.value ?? hero.phone) : null;
 
@@ -110,11 +112,15 @@ export function CrisisTriage({
   // The phone-bill reassurance is factually scoped to three countries and
   // reads as noise anywhere else.
   const showBillNote = ['DE', 'AT', 'CH'].includes(country);
+  const emergency = emergencyContactsForCountry(country)[0];
+  const descriptionMatchesLanguage = hero
+    ? hero.languages.length === 0 || hotlineSupportsLanguage(hero, i18n.resolvedLanguage)
+    : false;
 
   return (
     <section className="rounded-panel bg-foreground p-6 text-background shadow-soft md:p-8">
-      <h1 className="font-display text-headline leading-tight md:text-display">
-        {t('help.title', 'Help & Crisis Hotlines')}
+      <h1 className="max-w-[16ch] font-display text-headline leading-tight md:text-display">
+        {t('help.subtitle', 'You are not alone. Help is available right now.')}
       </h1>
 
       <div className="mt-4">
@@ -132,10 +138,38 @@ export function CrisisTriage({
                 {t('help.hero_label', 'Recommended right now')}
               </p>
               <h2 className="mt-2 font-display text-headline leading-tight">{hero.name}</h2>
-              <p className="mt-1 text-15 leading-relaxed text-background/80">{hero.description}</p>
+              {descriptionMatchesLanguage && (
+                <p className="mt-1 max-w-prose text-15 leading-relaxed text-background/80">
+                  {hero.description}
+                </p>
+              )}
               <p className="mt-2">
                 <Availability hotline={hero} />
               </p>
+
+              <div
+                className="mt-4 flex flex-wrap gap-2"
+                aria-label={t('help.languages', 'Languages')}
+              >
+                {hero.languages.map((language) => (
+                  <span
+                    key={language}
+                    className="border rounded-badge border-background/40 px-2 py-1 text-2xs font-bold uppercase"
+                  >
+                    {language}
+                  </span>
+                ))}
+                {hero.free && (
+                  <span className="border rounded-badge border-background/40 px-2 py-1 text-2xs font-bold">
+                    {t('help.badge_free', 'Free')}
+                  </span>
+                )}
+                {hero.anonymous && (
+                  <span className="border rounded-badge border-background/40 px-2 py-1 text-2xs font-bold">
+                    {t('help.badge_anonymous', 'Anonymous')}
+                  </span>
+                )}
+              </div>
 
               {phone && (
                 <a
@@ -220,7 +254,7 @@ export function CrisisTriage({
                   rendering an empty region that reads as "not offered here". */}
               <div className="mt-6">
                 <p className="text-2xs font-bold uppercase tracking-label text-background/70">
-                  {t('help.cant_speak', 'Can’t speak?')}
+                  {t('help.cant_speak', 'Prefer not to call?')}
                 </p>
                 {alt.length > 0 ? (
                   <div className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-4">
@@ -272,15 +306,22 @@ export function CrisisTriage({
                   : t('help.no_country_title', 'We could not work out where you are')}
               </h2>
               <p className="mt-2 text-15 leading-relaxed text-background/80">
-                {hotlines.length === 0
-                  ? t(
-                      'help.no_lines_body',
-                      'If you are in danger right now, call your local emergency number: 112 (EU) or 911 (US/CA).',
-                    )
-                  : t(
-                      'help.no_country_body',
-                      'Pick a country above and we will show the best line for it. Every line we have is listed below.',
-                    )}
+                {hotlines.length === 0 ? (
+                  <>
+                    {t('help.emergency_call', 'Call now:')}{' '}
+                    <a
+                      href={`tel:${emergency.number}`}
+                      className="font-bold text-background underline underline-offset-4"
+                    >
+                      {emergency.number} ({emergency.region})
+                    </a>
+                  </>
+                ) : (
+                  t(
+                    'help.no_country_body',
+                    'Pick a country above and we will show the best line for it. Every line we have is listed below.',
+                  )
+                )}
               </p>
             </div>
           )}
@@ -366,7 +407,7 @@ export function CrisisTriage({
               )}
             </ul>
             <div className="mt-4">
-              <SelfHelpDrawer />
+              <SelfHelpDrawer country={country} />
             </div>
           </div>
         </div>
