@@ -242,6 +242,20 @@ async function existingFoursquareIds(ids: string[]): Promise<Set<string>> {
   ].filter(Boolean))
 }
 
+async function existingEditorialReviewIds(
+  sourceName: 'foursquare' | 'foursquare_os',
+  ids: string[],
+): Promise<Set<string>> {
+  if (!ids.length) return new Set()
+  const { data, error } = await getServiceClient().from('ingestion_staging')
+    .select('source_entity_id')
+    .eq('source_name', sourceName)
+    .in('source_entity_id', ids)
+    .eq('normalized_data->metadata->>requires_editorial_review', 'true')
+  if (error) throw new Error(`Foursquare editorial identity lookup: ${error.message}`)
+  return new Set((data ?? []).map((row) => row.source_entity_id as string).filter(Boolean))
+}
+
 interface PreparedOsBatch {
   rawItems: RawItem[]
   autoMatches: Map<string, { venueId: string; confidence: number; reasons: string[] }>
@@ -261,6 +275,7 @@ async function prepareOsPlaces(
     return id ? [{ id, place }] : []
   })
   const existing = await existingFoursquareIds(places.map((row) => row.id))
+  const existingReview = await existingEditorialReviewIds('foursquare_os', places.map((row) => row.id))
   const autoMatches = new Map<string, { venueId: string; confidence: number; reasons: string[] }>()
   const editorialReviewIds: string[] = []
   const rawItems: RawItem[] = []
@@ -273,7 +288,11 @@ async function prepareOsPlaces(
     const matchConfidence = Number(place._match_confidence ?? 0)
     const evidence = queerDiscoveryEvidence(place)
     let requiresEditorialReview = false
-    if (existing.has(id)) existingIdentities++
+    if (existingReview.has(id)) {
+      discoveryCandidates++
+      requiresEditorialReview = true
+      editorialReviewIds.push(id)
+    } else if (existing.has(id)) existingIdentities++
     else if (matchTarget && matchConfidence >= 0.95) {
       autoMatches.set(id, {
         venueId: matchTarget,
@@ -565,10 +584,15 @@ Deno.serve(withErrorReporting('source-foursquare', async (req) => {
     }
     const rawItems = await apiAdapter.fetch(config)
     const existing = await existingFoursquareIds(rawItems.map((item) => item.sourceId))
-    const reviewIds = rawItems.filter((item) => !existing.has(item.sourceId)).map((item) => item.sourceId)
+    const existingReview = await existingEditorialReviewIds('foursquare', rawItems.map((item) => item.sourceId))
+    const reviewIds = rawItems.filter((item) => existingReview.has(item.sourceId) || !existing.has(item.sourceId))
+      .map((item) => item.sourceId)
     const guardedItems = rawItems.map((item) => ({
       ...item,
-      data: { ...item.data, _requires_editorial_review: !existing.has(item.sourceId) },
+      data: {
+        ...item.data,
+        _requires_editorial_review: existingReview.has(item.sourceId) || !existing.has(item.sourceId),
+      },
     }))
     const written = await writeToStaging(supabase, apiAdapter, guardedItems, {
       ...config,
