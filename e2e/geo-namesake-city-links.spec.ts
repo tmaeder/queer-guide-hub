@@ -367,12 +367,33 @@ test('each swept event got the remedy its own evidence supports', async ({ reque
     expect(ev.city_id, `${ev.title} lost the city link that was correct`).not.toBeNull();
 
     if (s.remedy === 'geo') {
-      // The coordinates were the defect, not the link. Retracted, never replaced
-      // with a centroid — prefer NULL to a guess.
+      // The coordinates were the defect, not the link. 99991789886174 retracted them
+      // so the nightly fill could re-derive from the city that was always correct.
+      //
+      // THIS ASSERTS THE INVARIANT, NOT THE RETRACTION. The first version pinned
+      // `latitude === null`, which was the transient state between the retraction and
+      // the refill — `run_event_geo_fill` repopulated both rows from their own city
+      // centroids on 2026-10-01 and the spec went red for the fix having WORKED. The
+      // durable claim is that the foreign coordinates never come back: either the
+      // row still has none, or the ones it has agree with its own city.
+      if (ev.latitude === null) continue;
+      const [c] = await rest<{ name: string; latitude: string | null; longitude: string | null }>(
+        request,
+        `cities?select=name,latitude,longitude&id=eq.${ev.city_id}`,
+      );
+      expect(c?.latitude, `${ev.title}'s city has no coordinates to corroborate against`).not.toBe(
+        null,
+      );
+      const gd = km(
+        Number(ev.latitude),
+        Number(ev.longitude),
+        Number(c.latitude),
+        Number(c.longitude),
+      );
       expect(
-        ev.latitude,
-        `${ev.title} still carries ${s.was}; the link was right and the coordinates were not`,
-      ).toBeNull();
+        gd,
+        `${ev.title} carries coordinates ${gd.toFixed(0)} km from ${c.name} — ${s.was} is back`,
+      ).toBeLessThan(MAX_KM);
       continue;
     }
 
