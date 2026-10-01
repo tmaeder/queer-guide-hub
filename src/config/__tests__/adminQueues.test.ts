@@ -4,8 +4,7 @@
  * ordering rule the cockpit feed depends on.
  *
  * EXPECTED_COUNT_KEYS is transcribed from the live `triage_sources` rows plus
- * the four static gates in the RPC body (migrations
- * 20260801050000_p4_fold_quality_queues_into_triage.sql). This test cannot see
+ * the static gates in the RPC body (including glossary readiness). This test cannot see
  * SQL, so a NEW migration adding a queue will not fail it — but any refactor
  * that drops, renames or duplicates an entry here will.
  */
@@ -42,12 +41,13 @@ const EXPECTED_COUNT_KEYS = [
   // static gates computed outside the registry loop
   'review_feedback',
   'review_group_requests',
-  'quality_event',
   'quality_existence',
+  'quality_glossary',
+  'quality_event',
 ];
 
-/** The only two gates the RPC emits with no `<key>_overdue` companion. */
-const NO_OVERDUE_KEYS = ['review_group_requests', 'quality_existence'];
+/** Static gates the RPC emits with no `<key>_overdue` companion. */
+const NO_OVERDUE_KEYS = ['review_group_requests', 'quality_existence', 'quality_glossary'];
 
 describe('ADMIN_QUEUES', () => {
   it('covers exactly the keys get_admin_counts emits', () => {
@@ -59,7 +59,7 @@ describe('ADMIN_QUEUES', () => {
     expect(new Set(keys).size).toBe(keys.length);
   });
 
-  it('marks exactly the two known static gates as having no overdue companion', () => {
+  it('marks exactly the known static gates as having no overdue companion', () => {
     const without = ADMIN_QUEUES.filter((q) => !q.hasOverdue).map((q) => q.countKey);
     expect(new Set(without)).toEqual(new Set(NO_OVERDUE_KEYS));
   });
@@ -67,9 +67,7 @@ describe('ADMIN_QUEUES', () => {
   it('routes registry queues to their own inbox queue unless reviewed inline', () => {
     for (const q of ADMIN_QUEUES) {
       if (!q.queueKey || q.section) continue;
-      // Moved with the governance consolidation: triage is a MODE of one route
-      // now, and `?queue=` still partitions it.
-      expect(q.route).toBe(`/admin/governance?mode=triage&queue=${q.queueKey}`);
+      expect(q.route).toBe(`/admin/inbox?queue=${q.queueKey}`);
     }
   });
 
@@ -86,8 +84,8 @@ describe('ADMIN_QUEUES', () => {
     }
   });
 
-  it('exposes the ten quality-hub gates, all present in the registry', () => {
-    expect(QUALITY_GATES).toHaveLength(10);
+  it('exposes every quality-hub gate, all present in the registry', () => {
+    expect(QUALITY_GATES).toHaveLength(11);
     for (const gate of QUALITY_GATES) {
       expect(queueByCountKey(gate.countKey)).toBe(gate);
       expect(gate.surfaces).toContain('quality');
@@ -112,19 +110,32 @@ describe('rankQueueRows', () => {
     expect(rows.map((r) => r.def.countKey)).toEqual(['review_tags']);
   });
 
-  it('puts an overdue queue above a heavier, larger, on-time one', () => {
+  it('puts safety risk above a routine overdue queue', () => {
     const rows = rankQueueRows(
       counts({
-        // Reports: highest weight (100), biggest count, but nothing overdue.
+        // Reports protect people and public content, even when still on time.
         review_moderation: 500,
         review_moderation_overdue: 0,
-        // Automation: lowest weight (10), tiny — but late.
+        // Automation is late but routine and internal.
         review_automation: 1,
         review_automation_overdue: 1,
       }),
       'admin',
     );
-    expect(rows.map((r) => r.def.countKey)).toEqual(['review_automation', 'review_moderation']);
+    expect(rows.map((r) => r.def.countKey)).toEqual(['review_moderation', 'review_automation']);
+  });
+
+  it('puts overdue work first when risk tier is equal', () => {
+    const rows = rankQueueRows(
+      counts({
+        review_submissions: 500,
+        review_submissions_overdue: 0,
+        review_entity_links: 1,
+        review_entity_links_overdue: 1,
+      }),
+      'admin',
+    );
+    expect(rows.map((r) => r.def.countKey)).toEqual(['review_entity_links', 'review_submissions']);
   });
 
   it('is a total order — ties break alphabetically, so polls do not reshuffle', () => {
