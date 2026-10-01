@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { Link } from 'react-router';
-import { Calendar, ShieldCheck, Table2 } from 'lucide-react';
+import { ShieldCheck, Table2 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -44,31 +44,11 @@ interface QualityEngine {
 }
 
 /**
- * The one card that is not a queue: no count, no SLA, no overdue notion. It is
- * kept local rather than pushed into ADMIN_QUEUES, which would force every
- * consumer of the registry to null-check a countKey that is non-null for all
- * twenty real queues.
- */
-const UNGATED_ENGINES: QualityEngine[] = [
-  {
-    countKey: null,
-    title: 'Events',
-    description: 'Trust scores, liveness checks, and coverage gaps. No review gate.',
-    route: '/admin/content/event-quality',
-    icon: Calendar,
-  },
-];
-
-/**
  * Review actions live in the unified inbox; each gated engine deep-links to its
  * queue. Gates come from the shared registry so their title, count key and
  * destination cannot drift from the cockpit's copy of the same list.
  */
-const ENGINES: QualityEngine[] = [
-  ...QUALITY_GATES.slice(0, 2),
-  ...UNGATED_ENGINES,
-  ...QUALITY_GATES.slice(2),
-];
+const ENGINES: QualityEngine[] = [...QUALITY_GATES];
 
 /** One engine dashboard section: edit link + panels + dedup cross-link. */
 interface EngineSection {

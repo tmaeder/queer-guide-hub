@@ -12,7 +12,10 @@ import { join } from 'node:path';
  * function body deleted.
  */
 
-const MIGRATION = '99991789855974_personality_wikidata_signals';
+// 99991790384521 supersedes 99991789855974: the SKIP_ overload of wikidata_qid
+// was retired corpus-wide by 99991790059731 and the decision moved to the typed
+// wikidata_status column. This guards the CURRENT definition.
+const MIGRATION = '99991790384521_personality_sentinel_wikidata_status';
 
 const stripSql = (s: string) =>
   s
@@ -55,13 +58,16 @@ describe('personality_wikidata_signals: the three zero-invariants', () => {
     expect(regressed).toMatch(/'wrong_entity_candidate' ->> 'qid' is not null/);
   });
 
-  it('watches a disposed row losing its SKIP_ sentinel, treating NULL as a failure', () => {
-    // A NULL is not neutral: personality-refresh re-resolves by name when the
-    // column IS NULL, so the row re-enters resolution instead of recording a
-    // decision. An `!~ '^SKIP_'` check alone would miss NULL entirely.
+  it('watches a disposed row losing its recorded decision, in both directions', () => {
+    // The decision lives in `wikidata_status` since 99991790059731 retired the
+    // SKIP_ overload; `wikidata_qid` now holds a real Q-id or NULL and nothing
+    // else. Both halves are load-bearing: losing `not_found` puts the row back
+    // into name resolution, and keeping `not_found` beside a Q-id is incoherent.
     const lost = arm('into v_sentinel_lost', 'into v_text_back');
-    expect(lost).toMatch(/wikidata_qid is null/);
-    expect(lost).toMatch(/wikidata_qid !~ '\^SKIP_'/);
+    expect(lost).toMatch(/wikidata_qid is not null/);
+    expect(lost).toMatch(/wikidata_status is distinct from 'not_found'/);
+    // The retired convention must not linger in the live predicate.
+    expect(lost).not.toMatch(/SKIP_/);
   });
 
   it('watches the retracted biography returning, separately from the identifier', () => {
@@ -74,7 +80,7 @@ describe('personality_wikidata_signals: the three zero-invariants', () => {
 
   it('scopes BOTH identifier checks to state=confirmed', () => {
     // `wrong_entity_candidate` is a shared key with three producers on prod: 125
-    // rows with state=confirmed + SKIP_, 157 with no state, and 43 that are
+    // rows with state=confirmed, 157 with no state, and 43 that are
     // CANDIDATES still carrying their Q-id on purpose. Without this scope the
     // third group trips a zero-invariant and reds every PR in the repo for
     // behaving correctly. It reads 0 either way today, so the scope must be

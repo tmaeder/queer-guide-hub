@@ -1901,16 +1901,16 @@
       "celebrate": "[ZH] Celebrate {{name}}"
     },
     "map": {
-      "interchangeEyebrow": "[ZH] Interchange",
+      "interchangeEyebrow": "换乘",
       "interchange": {
-        "label": "[ZH] Search everything",
-        "subtitle": "[ZH] Every line meets here"
+        "label": "全站搜索",
+        "subtitle": "所有线路在此交会"
       }
     },
     "glossary": {
-      "eyebrow": "[ZH] Glossary",
-      "title": "[ZH] Know the words",
-      "seeAll": "[ZH] All terms"
+      "eyebrow": "术语库",
+      "title": "认识这些词",
+      "seeAll": "全部词条"
     }
   },
   "header": {
@@ -1952,10 +1952,10 @@
       "trips": "行程",
       "organizations": "组织",
       "wishlists": "心愿单",
-      "tags": "[ZH] Glossary",
-      "tagsAll": "[ZH] All terms",
-      "tagsInteractions": "[ZH] Substance safety",
-      "tagsStiGuide": "[ZH] STI guide",
+      "tags": "术语库",
+      "tagsAll": "全部词条",
+      "tagsInteractions": "物质安全",
+      "tagsStiGuide": "性传播感染指南",
       "transRights": "跨性别权利",
       "competitions": "[ZH] Drag Race"
     },
@@ -1987,8 +1987,8 @@
       "sheetHeading": "你想做什么？",
       "browseHeading": "浏览全部",
       "glossary": {
-        "label": "[ZH] Glossary",
-        "subtitle": "[ZH] What every term, flag and code means"
+        "label": "术语库",
+        "subtitle": "每个术语、旗帜和暗号的含义"
       }
     },
     "userMenu": {
@@ -4496,8 +4496,8 @@
       "open": "[ZH] Read the entry"
     },
     "fromGlossary": {
-      "title": "[ZH] From the glossary",
-      "all": "[ZH] All terms"
+      "title": "来自术语库",
+      "all": "全部词条"
     },
     "figures": {
       "eyebrow": "[ZH] Diagram",

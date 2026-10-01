@@ -357,3 +357,162 @@ describe('migration 2 consolidates the duplicate titles the rename created', () 
     expect(consolidateSql).not.toMatch(/auto-consolidate 2026\d{10}/);
   });
 });
+
+/**
+ * The rename split 6 more brands in two, and migration 2's duplicate check was
+ * structurally unable to see them. Two follow-ups closed that:
+ *
+ *   20260920083621 — 8 pairs that `marketplace_normalize_brand(display_name)`
+ *                    detects (6 differ only in CASE, which `group by
+ *                    display_name` cannot see because `=` is case-sensitive).
+ *   20260920084019 — 5 more that it CANNOT detect, because it lowercases but
+ *                    does not strip punctuation while `marketplace_brand_slug()`
+ *                    does. The identity function for this table is the SLUG BASE.
+ *
+ * These assertions exist because each is a decision a later editor could undo
+ * without noticing: the identity function used to detect a duplicate, the
+ * direction of the merge when the clean slug sits on the row being retired, and
+ * — the one with real-world stakes — that a `queer_owned` marker and a
+ * hand-written story are carried off a row before it is retired.
+ */
+const CANON = join(MIGRATIONS, '20260920083621_marketplace_brand_canonical_key_merge.sql');
+const SLUGBASE = join(MIGRATIONS, '20260920084019_marketplace_brand_slug_base_merge.sql');
+const canonSql = statementsOf(CANON);
+const baseSrc = readFileSync(SLUGBASE, 'utf8');
+const baseSql = statementsOf(SLUGBASE);
+
+const esc = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+describe('the canonical-key merge (20260920083621)', () => {
+  const PAIRS: Array<[string, string, string]> = [
+    ['autoblow', 'alura group bv', 'Autoblow'],
+    ['crazy bull', 'crazy bull hair products ltd', 'Crazy Bull'],
+    ['dorcel', '1979 sas (teil der marc dorcel group)', 'DORCEL'],
+    ['pasante', 'advena ltd.', 'Pasante'],
+    ['pjur', 'pjur group luxembourg s.a', 'pjur'],
+    ['svakom', 'svakom europe bv', 'SVAKOM'],
+    ['fort troff', 'forttroff', 'Fort Troff'],
+    ['mr. riegillio', 'mr riegillio', 'MR. Riegillio'],
+  ];
+
+  it('carries all 8 pairs with their survivor, loser and final name', () => {
+    expect(PAIRS.length).toBe(8);
+    for (const [survivor, loser, name] of PAIRS) {
+      expect(canonSql, `${loser} -> ${survivor}`).toMatch(
+        new RegExp(`'${esc(survivor)}'\\s*,\\s*'${esc(loser)}'\\s*,\\s*'${esc(name)}'`),
+      );
+    }
+  });
+
+  it('detects duplicates with the IDENTITY FUNCTION, never with string equality', () => {
+    // This is the whole lesson. `group by display_name having count(*)>1` is
+    // case-sensitive and missed 6 of these 8.
+    expect(canonSql).toMatch(/marketplace_normalize_brand\(display_name\)/);
+    expect(canonSql).toMatch(/group by 1 having count\(\*\)>1/);
+    expect(canonSql).not.toMatch(/group by display_name having/);
+  });
+
+  it('CARRIES the queer_owned marker and the story off the retiring row', () => {
+    // Both Shape-B losers are the editorially rich rows. Retiring them without
+    // this deletes a queer-owned marker from two real brands.
+    expect(canonSql).toMatch(
+      /ownership_tags = case when coalesce\(array_length\(s\.ownership_tags,1\),0\)=0/,
+    );
+    expect(canonSql).toMatch(/story\s*=\s*coalesce\(s\.story, l\.story\)/);
+    // COALESCE direction matters: fill only where the survivor is empty.
+    expect(canonSql).not.toMatch(/story\s*=\s*coalesce\(l\.story, s\.story\)/);
+    // and it is asserted BY NAME, because "the merge completed" is equally true
+    // of a merge that dropped them.
+    expect(canonSql).toMatch(/'queer_owned' = any\(ownership_tags\) and story is not null/);
+    expect(canonSql).toMatch(/raise exception 'canon-merge: queer_owned/);
+  });
+
+  it('frees the clean slug BEFORE claiming it', () => {
+    // The unique index covers every non-null slug, so claiming before freeing
+    // would abort. Step 3 (slug=NULL on the loser) must precede step 4.
+    const retire = canonSql.indexOf("set status='rejected', product_count=0, slug=NULL");
+    const claim = canonSql.indexOf('set slug = c.claim_slug');
+    expect(retire).toBeGreaterThan(-1);
+    expect(claim).toBeGreaterThan(-1);
+    expect(retire, 'the loser must be un-slugged before the survivor claims it').toBeLessThan(claim);
+  });
+
+  it('checks its own premise: the survivor is already approved AND canonical', () => {
+    expect(canonSql).toMatch(/b\.brand_key = marketplace_normalize_brand\(c\.final_name\)/);
+    expect(canonSql).toMatch(/not an approved slugged canonical row/);
+    // a claimed slug must be held by its OWN loser, not merely by somebody
+    expect(canonSql).toMatch(/b\.slug=c\.claim_slug and b\.brand_key=c\.loser_key/);
+  });
+
+  it('asserts the clean URLs stay live and the survivors are self-consistent', () => {
+    expect(canonSql).toMatch(/only % of 8 clean slugs are live/);
+    expect(canonSql).toMatch(/b\.slug is distinct from marketplace_brand_slug\(b\.brand_key\)/);
+  });
+
+  it('stamps a version-free string', () => {
+    expect(canonSql).toContain('auto-merge brand-canon');
+    expect(canonSql).not.toMatch(/auto-merge 2026\d{10}/);
+  });
+});
+
+describe('the slug-base merge (20260920084019)', () => {
+  it('carries all 5 pairs', () => {
+    for (const [survivor, loser] of [
+      ['b-vibe', 'b vibe'],
+      ['mr s leather', 'mr-s-leather'],
+      ['ouch', 'ouch!'],
+      ['rocks-off', 'rocks off'],
+      ['strap-on-me', 'strap on me'],
+    ]) {
+      expect(baseSql, `${loser} -> ${survivor}`).toMatch(
+        new RegExp(`'${esc(survivor)}'\\s*,\\s*'${esc(loser)}'`),
+      );
+    }
+  });
+
+  it('uses the SLUG BASE as the identity function, not normalize_brand', () => {
+    // normalize_brand lowercases but does not strip punctuation, so it is blind
+    // to `b-vibe` vs `b vibe`. Grouping on marketplace_brand_slug(brand_key) is
+    // what found these five.
+    expect(baseSql).toMatch(/select marketplace_brand_slug\(brand_key\) cs from marketplace_brands/);
+    expect(baseSql).toMatch(/slug-base split\(s\) remain/);
+  });
+
+  it('ALSO asserts the weaker test, so it cannot regress its predecessor', () => {
+    expect(baseSql).toMatch(/normalise-split\(s\) remain/);
+    expect(baseSql).toMatch(/marketplace_normalize_brand\(display_name\)/);
+  });
+
+  it('asserts the pair really is one brand before merging it', () => {
+    expect(baseSql).toMatch(
+      /marketplace_brand_slug\(c\.survivor_key\) is distinct from marketplace_brand_slug\(c\.loser_key\)/,
+    );
+    expect(baseSql).toMatch(/do not share a slug base/);
+  });
+
+  it('changes no display_name, and records why', () => {
+    // Title-prefix corroboration exists for only 2 of the 5; `Ouch!` and
+    // `Mr. S. Leather` are very likely right and are NOT corroborated, so they
+    // are left for a human. Under-reaching is the correct error.
+    expect(baseSrc).toMatch(/NO display_name is changed, and that is deliberate/);
+    expect(baseSrc).toMatch(/Under-reaching is the correct error/);
+    // every final_name must be a name that already sat on the surviving row,
+    // i.e. the file invents nothing
+    for (const name of ['b-Vibe', 'MR S LEATHER', 'OUCH', 'Rocks-Off', 'Strap-On-Me']) {
+      expect(baseSql).toContain(`'${name}'`);
+    }
+  });
+
+  it('records that the uniquifier-suffix regex was measured and REJECTED', () => {
+    // `-[0-9a-f]{4}$` also matches `vaux-by-cb13`, where cb13 is CellBlock 13 —
+    // part of the brand's real name — and it misses `rocks-off-2` entirely.
+    expect(baseSrc).toMatch(/vaux-by-cb13/);
+    expect(baseSrc).toMatch(/REJECTED, measured/);
+    expect(baseSrc).toMatch(/NUMERIC/);
+  });
+
+  it('releases the uniquifier slugs and keeps the clean ones live', () => {
+    expect(baseSql).toMatch(/only % of 5 clean slugs live/);
+    expect(baseSql).toMatch(/uniquifier slug\(s\) still held/);
+  });
+});

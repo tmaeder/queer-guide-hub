@@ -261,9 +261,10 @@ describe('nav and queue role agreement', () => {
    */
   it('no queue is stricter than the route it points at', () => {
     const mismatches = ADMIN_QUEUES.filter((q) => {
-      // Every inbox queue shares the /admin/inbox route; only distinct pages can
-      // disagree with their own gate.
-      if (q.route.startsWith('/admin/inbox')) return false;
+      // Every triage queue shares the /admin/governance route; only distinct
+      // pages can disagree with their own gate. (Was /admin/inbox until the
+      // three governance surfaces collapsed onto one route.)
+      if (q.route.startsWith('/admin/governance')) return false;
       return !roleAtLeast(getRouteMinRole(q.route), q.minRole);
     }).map((q) => `${q.route}: queue=${q.minRole} route=${getRouteMinRole(q.route)}`);
 
@@ -271,7 +272,11 @@ describe('nav and queue role agreement', () => {
   });
 
   it('checks a non-trivial number of queues (guards a vacuous filter)', () => {
-    const checked = ADMIN_QUEUES.filter((q) => !q.route.startsWith('/admin/inbox'));
-    expect(checked.length).toBeGreaterThanOrEqual(4);
+    const checked = ADMIN_QUEUES.filter((q) => !q.route.startsWith('/admin/governance'));
+    // 4 -> 3: org-link-review used to be a distinct page (/admin/quality) and is
+    // now a mode of the shared route, so it joins the excluded set. Lowered
+    // deliberately rather than left to fail — but it is still a floor, because a
+    // filter that matches nothing satisfies the assertion above trivially.
+    expect(checked.length).toBeGreaterThanOrEqual(3);
   });
 });

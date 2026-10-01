@@ -23,6 +23,45 @@ const taxonomyTerminalMigration = readFileSync(
   ),
   'utf8',
 );
+const imageTerminalAccountingMigration = readFileSync(
+  join(
+    process.cwd(),
+    'supabase/migrations/99991790192620_marketplace_image_terminal_accounting.sql',
+  ),
+  'utf8',
+);
+const safetyOptimizerRecurrenceMigration = readFileSync(
+  join(
+    process.cwd(),
+    'supabase/migrations/99991790273757_marketplace_safety_optimizer_recurrence.sql',
+  ),
+  'utf8',
+);
+const safetyBoundaryCorrectionMigration = readFileSync(
+  join(
+    process.cwd(),
+    'supabase/migrations/99991790274234_marketplace_safety_regex_boundary_correction.sql',
+  ),
+  'utf8',
+);
+const safetyHighConfidenceMigration = readFileSync(
+  join(
+    process.cwd(),
+    'supabase/migrations/99991790274483_marketplace_safety_high_confidence_v46.sql',
+  ),
+  'utf8',
+);
+const safetyMonitorPrecisionMigration = readFileSync(
+  join(
+    process.cwd(),
+    'supabase/migrations/99991790274669_marketplace_safety_monitor_precision_v47.sql',
+  ),
+  'utf8',
+);
+const safetyAmpersandMigration = readFileSync(
+  join(process.cwd(), 'supabase/migrations/99991790274870_marketplace_safety_ampersand_v48.sql'),
+  'utf8',
+);
 const variantWorker = readFileSync(
   join(process.cwd(), 'supabase/functions/marketplace-variant-backfill/index.ts'),
   'utf8',
@@ -117,6 +156,75 @@ describe('marketplace data-quality remediation contracts', () => {
     expect(migration).toContain("'marketplace_image_optimize'");
   });
 
+  it('counts terminal image outcomes as progress without weakening no-progress detection', () => {
+    expect(imageTerminalAccountingMigration).toContain("(v_body->>'items_terminal')::int,0)=0");
+    expect(imageTerminalAccountingMigration).not.toContain(
+      "(v_body->>'items_failed')::int,(v_body->>'failed')::int,0)>0",
+    );
+    expect(imageTerminalAccountingMigration).toContain(
+      "automation_slug='marketplace_image_optimize'",
+    );
+    expect(imageTerminalAccountingMigration).toContain("summary#>>'{worker_metrics,terminal}'");
+    expect(imageTerminalAccountingMigration).toContain('marketplace_image_failure_metrics');
+    expect(imageTerminalAccountingMigration).toContain("('image_opt_retryable_failed')");
+    expect(imageTerminalAccountingMigration).toContain(
+      "(v_stats->>'image_opt_retryable_failed')::int>0",
+    );
+  });
+
+  it('prevents cuff taxonomy and nipple-play safety recurrences', () => {
+    expect(safetyOptimizerRecurrenceMigration).toContain('marketplace-taxonomy-v4.4');
+    expect(safetyOptimizerRecurrenceMigration).toContain('marketplace-content-rating-v4.4');
+    expect(safetyOptimizerRecurrenceMigration).toContain('(socks?|stockings?)');
+    expect(safetyOptimizerRecurrenceMigration).toContain('nipple.{0,32}');
+    expect(safetyOptimizerRecurrenceMigration).toContain('spreader|restraint|bondage');
+    expect(safetyOptimizerRecurrenceMigration).toContain('DELETE FROM public.search_documents');
+  });
+
+  it('reconciles the image optimizer registry while retry assets remain', () => {
+    expect(safetyOptimizerRecurrenceMigration).toContain('v_image_retry_due');
+    expect(safetyOptimizerRecurrenceMigration).toContain('SET enabled=true,consecutive_failures=0');
+    expect(safetyOptimizerRecurrenceMigration).toContain("THEN '* * * * *' ELSE '*/2 * * * *'");
+    expect(safetyOptimizerRecurrenceMigration).toContain('marketplace_retry_failed_images(1000)');
+    expect(safetyOptimizerRecurrenceMigration).toContain('sync_automations_to_cron(true)');
+  });
+
+  it('corrects the e-stim boundary and audits the production canary rollback', () => {
+    expect(safetyBoundaryCorrectionMigration).toContain('\\me[- ]?stim\\M|');
+    expect(safetyBoundaryCorrectionMigration).toContain('marketplace-content-rating-v4.5');
+    expect(safetyBoundaryCorrectionMigration).toContain('marketplace-taxonomy-v4.5');
+    expect(safetyBoundaryCorrectionMigration).toContain('marketplace_quality_safety_version');
+    expect(safetyBoundaryCorrectionMigration).toContain('rolled_back_at=now()');
+    expect(safetyBoundaryCorrectionMigration).toContain('thumb cuffs?');
+  });
+
+  it('closes high-confidence nipple and pup-play safety gaps without generic terms', () => {
+    expect(safetyHighConfidenceMigration).toContain('marketplace-content-rating-v4.6');
+    expect(safetyHighConfidenceMigration).toContain('tit (torture|suckers?|clamps?)');
+    expect(safetyHighConfidenceMigration).toContain("slug ~ '^pup_play_'");
+    expect(safetyHighConfidenceMigration).toContain(
+      "'pup_play','impact_play','gags','hoods_masks'",
+    );
+    expect(safetyHighConfidenceMigration).not.toContain('(ring|suction|suck|pull|crush)');
+  });
+
+  it('monitors structured kink signals without trusting noisy groups wholesale', () => {
+    expect(safetyMonitorPrecisionMigration).toContain('marketplace-content-rating-v4.7');
+    expect(safetyMonitorPrecisionMigration).toContain(
+      'pup_(hoods?|masks?)|pain_(&|and)_punishment',
+    );
+    expect(safetyMonitorPrecisionMigration).toContain("subcategory_group='pup_play'");
+    expect(safetyMonitorPrecisionMigration).toContain("subcategory_group='impact_play'");
+    expect(safetyMonitorPrecisionMigration).toContain(
+      "subcategory_group IN ('dildos','vibrators','anal_toys','cock_rings','chastity','masturbators','sex_toys')",
+    );
+  });
+
+  it('handles the ampersand retained by structured source slugs', () => {
+    expect(safetyAmpersandMigration).toContain("replace(v_def,'pain_and_punishment'");
+    expect(safetyAmpersandMigration).toContain('marketplace-content-rating-v4.8');
+    expect(safetyAmpersandMigration).toContain('DELETE FROM public.search_documents');
+  });
   it('registers a bounded taxonomy drain instead of assuming a legacy row exists', () => {
     expect(migration).toContain(
       "'marketplace_taxonomy_v3_backfill','Marketplace taxonomy v4 rollout'",

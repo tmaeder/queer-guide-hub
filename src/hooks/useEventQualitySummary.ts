@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { untypedRpc } from '@/integrations/supabase/untyped';
 
 export interface CoverageGap {
   city_name: string | null;
@@ -29,6 +30,33 @@ export interface EventQualitySummary {
   avgQuality: number | null;
   avgTrust: number | null;
   total: number | null;
+  programme: EventQualityProgrammeSnapshot | null;
+  programmeError: string | null;
+}
+
+export interface EventQualityProgrammeSnapshot {
+  rollout: {
+    enforcement_enabled: boolean;
+    scoring_enabled: boolean;
+    rubric_version: number;
+  };
+  totals: {
+    canonical: number;
+    assessed: number;
+    current: number;
+    historical: number;
+    open_issues: number;
+    accepted_dispositions: number;
+    oldest_high: string | null;
+  };
+  tiers: Partial<Record<'pass' | 'warn' | 'fail', number>>;
+  scopes: Partial<Record<'current' | 'historical', { total: number; average: number }>>;
+  dimensions: Record<
+    'completeness' | 'validity' | 'linkage' | 'provenance' | 'media' | 'freshness' | 'overall',
+    number
+  >;
+  issues: Array<{ code: string; severity: 'critical' | 'high' | 'medium' | 'low'; count: number }>;
+  sources: Array<{ source: string; total: number; open_issues: number; defect_rate: number }>;
 }
 
 interface CoverageRow {
@@ -56,18 +84,33 @@ export function useEventQualitySummary() {
     queryKey: ['event-quality-summary'],
     queryFn: async () => {
       const nowIso = new Date().toISOString();
-      const [gaps, needsAttention, livenessFail, lowTrust, coverage] = await Promise.all([
-        supabase
-          .from('event_coverage_gaps')
-          .select('city_name, upcoming_count, suggested_queries')
-          .eq('status', 'open')
-          .order('upcoming_count', { ascending: true })
-          .limit(8),
-        supabase.from('events').select('id', { count: 'exact', head: true }).eq('needs_attention', true).is('duplicate_of_id', null),
-        supabase.from('events').select('id', { count: 'exact', head: true }).in('liveness_status', ['cancelled', 'dead_link']).is('duplicate_of_id', null),
-        supabase.from('events').select('id', { count: 'exact', head: true }).lt('trust_score', 40).gt('start_date', nowIso).is('duplicate_of_id', null),
-        supabase.rpc('event_field_coverage'),
-      ]);
+      const [gaps, needsAttention, livenessFail, lowTrust, coverage, programmeResult] =
+        await Promise.all([
+          supabase
+            .from('event_coverage_gaps')
+            .select('city_name, upcoming_count, suggested_queries')
+            .eq('status', 'open')
+            .order('upcoming_count', { ascending: true })
+            .limit(8),
+          supabase
+            .from('events')
+            .select('id', { count: 'exact', head: true })
+            .eq('needs_attention', true)
+            .is('duplicate_of_id', null),
+          supabase
+            .from('events')
+            .select('id', { count: 'exact', head: true })
+            .in('liveness_status', ['cancelled', 'dead_link'])
+            .is('duplicate_of_id', null),
+          supabase
+            .from('events')
+            .select('id', { count: 'exact', head: true })
+            .lt('trust_score', 40)
+            .gt('start_date', nowIso)
+            .is('duplicate_of_id', null),
+          supabase.rpc('event_field_coverage'),
+          untypedRpc<EventQualityProgrammeSnapshot>('event_quality_snapshot'),
+        ]);
 
       const rows = (coverage.data ?? []) as CoverageRow[];
       const all = rows.find((r) => r.data_source === 'ALL');
@@ -83,9 +126,16 @@ export function useEventQualitySummary() {
       const sourceGaps: SourceGap[] = rows
         .filter((r) => r.data_source !== 'ALL' && r.total >= 20)
         .map((r) => {
-          const worst = FIELDS.map((f) => ({ field: f.label, pctMissing: Number(r[f.key] ?? 0) }))
-            .sort((a, b) => b.pctMissing - a.pctMissing)[0];
-          return { source: r.data_source, total: r.total, field: worst.field, pctMissing: worst.pctMissing };
+          const worst = FIELDS.map((f) => ({
+            field: f.label,
+            pctMissing: Number(r[f.key] ?? 0),
+          })).sort((a, b) => b.pctMissing - a.pctMissing)[0];
+          return {
+            source: r.data_source,
+            total: r.total,
+            field: worst.field,
+            pctMissing: worst.pctMissing,
+          };
         })
         .filter((s) => s.pctMissing >= 50)
         .sort((a, b) => b.pctMissing - a.pctMissing || b.total - a.total)
@@ -113,6 +163,10 @@ export function useEventQualitySummary() {
         avgQuality: all?.avg_quality ?? null,
         avgTrust: all?.avg_trust ?? null,
         total: all?.total ?? null,
+        // During the migration rollout the RPC may not exist yet. The legacy
+        // summary remains available until the schema reaches the environment.
+        programme: programmeResult.error ? null : programmeResult.data,
+        programmeError: programmeResult.error?.message ?? null,
       };
     },
     staleTime: 60_000,

@@ -34,6 +34,7 @@
 import {
   Bot,
   Building,
+  Calendar,
   CopyCheck,
   FileText,
   Flag,
@@ -87,7 +88,10 @@ export interface AdminQueueDef {
   minRole: AdminRole;
 }
 
-const inbox = (queueKey: string) => `/admin/inbox?queue=${queueKey}`;
+// One helper, so the 16 queue links moved with a single edit when the three
+// governance surfaces collapsed onto `/admin/governance?mode=`. `?queue=` stays
+// orthogonal to `?mode=` — triage is still partitioned by queue.
+const inbox = (queueKey: string) => `/admin/governance?mode=triage&queue=${queueKey}`;
 
 /**
  * Every queue `get_admin_counts` reports on: the 17 active `triage_sources`
@@ -178,7 +182,7 @@ export const ADMIN_QUEUES: readonly AdminQueueDef[] = [
     icon: Link2,
     // Reviewed inline on the hub rather than in the inbox: approving picks a
     // target org, an input the generic triage panel does not model.
-    route: '/admin/quality',
+    route: '/admin/governance?mode=engines',
     section: 'business-links',
     weight: 40,
     surfaces: ['cockpit', 'quality'],
@@ -373,6 +377,21 @@ export const ADMIN_QUEUES: readonly AdminQueueDef[] = [
   },
   {
     queueKey: null,
+    countKey: 'quality_event',
+    slaKey: 'quality_event',
+    hasOverdue: true,
+    label: 'Event quality',
+    title: 'Events',
+    description:
+      'Evidence-backed validity, linkage, provenance, media, freshness, and completeness decisions.',
+    icon: Calendar,
+    route: '/admin/content/event-quality',
+    weight: 40,
+    surfaces: ['cockpit', 'quality'],
+    minRole: 'moderator',
+  },
+  {
+    queueKey: null,
     countKey: 'quality_existence',
     slaKey: null,
     hasOverdue: false,
@@ -392,6 +411,7 @@ export const QUALITY_GATES: readonly AdminQueueDef[] = [
   'quality_city',
   'quality_venue',
   'quality_personality',
+  'quality_event',
   'quality_marketplace',
   'quality_village',
   'quality_duplicates',

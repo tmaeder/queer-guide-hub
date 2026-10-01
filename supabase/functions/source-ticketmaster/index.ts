@@ -36,7 +36,9 @@ const ticketmasterAdapter: SourceAdapter = {
           return json._embedded?.events || []
         })
         for (const event of items) {
-          allItems.push({ sourceId: event.id || `tm-${Date.now()}`, data: event })
+          // A missing upstream identity must not create a new event on every run.
+          if (!event.id) continue
+          allItems.push({ sourceId: String(event.id), data: event })
         }
         await new Promise(r => setTimeout(r, 200))
       } catch (e) {

@@ -1,4 +1,5 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, type APIRequestContext } from '@playwright/test';
+import { anonHeaders } from './support/anonKey';
 
 /**
  * Geographic containment — asserted through the ANON surface, against prod.
@@ -21,25 +22,26 @@ import { test, expect } from '@playwright/test';
  */
 
 const SUPABASE_URL = process.env.VITE_SUPABASE_URL || 'https://xqeacpakadqfxjxjcewc.supabase.co';
-const ANON = process.env.VITE_SUPABASE_ANON_KEY || '';
 
 /** Continental-US bounding box. Deliberately generous — this is a hemisphere
  *  check, not a geocoder assertion. */
 const CONUS = { latMin: 24.3, latMax: 49.5, lngMin: -125.1, lngMax: -66.8 };
 
-async function rest(path: string) {
-  const res = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, {
-    headers: { apikey: ANON, Authorization: `Bearer ${ANON}` },
+// Takes Playwright's request context rather than calling global fetch, so the
+// anon key can be resolved from the deployed bundle (support/anonKey.ts) instead
+// of required from an environment variable no workflow sets.
+async function rest(request: APIRequestContext, path: string) {
+  const res = await request.get(`${SUPABASE_URL}/rest/v1/${path}`, {
+    headers: await anonHeaders(request),
   });
-  if (!res.ok) throw new Error(`${path} → HTTP ${res.status}`);
+  if (!res.ok()) throw new Error(`${path} → HTTP ${res.status()}`);
   return res.json();
 }
 
 test.describe('Geo containment (prod, anon)', () => {
-  test.skip(!ANON, 'VITE_SUPABASE_ANON_KEY not set');
-
-  test('Key West sits on land in Florida, not in the Gulf', async () => {
+  test('Key West sits on land in Florida, not in the Gulf', async ({ request }) => {
     const rows = await rest(
+      request,
       'cities?select=name,latitude,longitude,slug&name=eq.Key%20West&limit=5',
     );
     expect(rows.length, 'Key West must exist in cities').toBeGreaterThan(0);
@@ -55,24 +57,26 @@ test.describe('Geo containment (prod, anon)', () => {
     expect(lng).toBeLessThan(-81.0);
   });
 
-  test('no event is still published on the Gulf-of-Mexico point', async () => {
+  test('no event is still published on the Gulf-of-Mexico point', async ({ request }) => {
     // Positive control FIRST: if this query shape cannot see events at all, the
     // "zero bad events" assertion below would pass on an empty result set and
     // mean nothing.
-    const anyEvents = await rest('events?select=id&latitude=not.is.null&limit=1');
+    const anyEvents = await rest(request, 'events?select=id&latitude=not.is.null&limit=1');
     expect(anyEvents.length, 'control: anon must be able to read events with coordinates').toBe(1);
 
     const stranded = await rest(
+      request,
       'events?select=id,title&latitude=eq.26.59306&longitude=eq.-83.889396&limit=10',
     );
     expect(stranded, `events still on the bad Key West centroid`).toHaveLength(0);
   });
 
-  test('US cities carrying content are inside the US box', async () => {
+  test('US cities carrying content are inside the US box', async ({ request }) => {
     // A cheap corpus-wide shape check. Runs over the busiest US cities rather
     // than one row, so a future bad centroid on a major city fails here even if
     // nobody remembers to re-run the sweep.
     const us = await rest(
+      request,
       'cities?select=name,latitude,longitude,country_id,countries!inner(code)' +
         '&countries.code=eq.US&latitude=not.is.null&order=population.desc&limit=40',
     );
@@ -83,9 +87,7 @@ test.describe('Geo containment (prod, anon)', () => {
       const ln = Number(c.longitude);
       // Alaska and Hawaii are legitimately outside CONUS.
       if (la > 51 || ln < -140 || (la < 23 && ln < -150)) return false;
-      return (
-        la < CONUS.latMin || la > CONUS.latMax || ln < CONUS.lngMin || ln > CONUS.lngMax
-      );
+      return la < CONUS.latMin || la > CONUS.latMax || ln < CONUS.lngMin || ln > CONUS.lngMax;
     });
 
     expect(

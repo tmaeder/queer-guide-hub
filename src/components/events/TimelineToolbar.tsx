@@ -1,5 +1,13 @@
 import { useState } from 'react';
-import { ChevronLeft, ChevronRight, Crosshair, CalendarDays, Maximize2, ZoomIn, ZoomOut } from 'lucide-react';
+import {
+  ChevronLeft,
+  ChevronRight,
+  Crosshair,
+  CalendarDays,
+  Maximize2,
+  ZoomIn,
+  ZoomOut,
+} from 'lucide-react';
 import { format } from 'date-fns';
 import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -15,14 +23,31 @@ interface TimelineToolbarProps {
   canFit: boolean;
 }
 
-export function TimelineToolbar({ viewport, onPan, onCenter, onZoom, onFit, canFit }: TimelineToolbarProps) {
+export function TimelineToolbar({
+  viewport,
+  onPan,
+  onCenter,
+  onZoom,
+  onFit,
+  canFit,
+}: TimelineToolbarProps) {
   const [pickerOpen, setPickerOpen] = useState(false);
   const step = stepFor(viewport);
   const stepLabel =
-    step.unit === 'day' ? 'day' : step.unit === 'week' ? 'week' : step.unit === 'month' ? 'month' : 'quarter';
+    step.unit === 'day'
+      ? 'day'
+      : step.unit === 'week'
+        ? 'week'
+        : step.unit === 'month'
+          ? 'month'
+          : 'quarter';
 
   return (
-    <div className="flex flex-wrap items-center gap-1 mb-2" role="toolbar" aria-label="Timeline navigation">
+    <div
+      className="flex flex-wrap items-center gap-1 mb-2"
+      role="toolbar"
+      aria-label="Timeline navigation"
+    >
       <Button
         variant="outline"
         size="sm"
@@ -58,7 +83,12 @@ export function TimelineToolbar({ viewport, onPan, onCenter, onZoom, onFit, canF
 
       <Popover open={pickerOpen} onOpenChange={setPickerOpen}>
         <PopoverTrigger asChild>
-          <Button variant="outline" size="sm" style={{ display: 'inline-flex', gap: 6 }} aria-label="Go to date">
+          <Button
+            variant="outline"
+            size="sm"
+            style={{ display: 'inline-flex', gap: 6 }}
+            aria-label="Go to date"
+          >
             <CalendarDays className="size-4" />
             <span className="hidden sm:inline">Go to date</span>
           </Button>
@@ -100,7 +130,7 @@ export function TimelineToolbar({ viewport, onPan, onCenter, onZoom, onFit, canF
         <ZoomOut className="size-4" />
       </Button>
 
-      <span className="ml-auto text-xs2 text-foreground/50 hidden md:inline">
+      <span className="ml-auto text-xs2 text-muted-foreground hidden md:inline">
         {format(new Date(viewport.startMs), 'PP')} — {format(new Date(viewport.endMs), 'PP')}
       </span>
     </div>

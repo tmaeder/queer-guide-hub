@@ -21,6 +21,7 @@ import { useAdminFullEditRow } from '@/hooks/useAdminFullEditRow';
 import { getContentType, fieldGroupLabels } from '@/config/contentTypes';
 import type { FieldConfig, FieldGroup } from '@/types/cms';
 import { getEditorForFieldType } from './editors';
+import { PipelineInspector } from '@/components/admin/audit/PipelineInspector';
 
 interface Props {
   open: boolean;
@@ -132,6 +133,25 @@ export function AdminFullEditSheet({
                 <AccordionContent>{panel.render(contentId)}</AccordionContent>
               </AccordionItem>
             ))}
+
+            {/* Pipeline & audit, for EVERY content type rather than as an
+                `extraPanels` entry on each config. Declaring it per type would
+                mean eleven near-identical blocks that drift apart the moment
+                one is missed — and a type with no audit registry row would then
+                render nothing, which reads as "this record has no history"
+                instead of the loud error the RPC raises. Closed by default:
+                the timeline is a ten-source union and most opens of this sheet
+                are a one-field fix. */}
+            <AccordionItem value="panel:pipeline-audit">
+              <AccordionTrigger>Pipeline &amp; audit</AccordionTrigger>
+              <AccordionContent>
+                <PipelineInspector
+                  entityType={config.tableName}
+                  entityId={contentId}
+                  limit={120}
+                />
+              </AccordionContent>
+            </AccordionItem>
           </Accordion>
         )}
       </SheetContent>

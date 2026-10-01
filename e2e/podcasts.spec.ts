@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { anonHeaders, SUPABASE_REST_URL } from './support/anonKey';
 
 // The podcast surface: /podcasts, /podcasts/:slug, and what a crawler is told
 // about an episode.
@@ -24,18 +25,14 @@ import { test, expect } from '@playwright/test';
 
 const RENDER = { timeout: 20_000 };
 const BOT = {
-  'user-agent':
-    'Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)',
+  'user-agent': 'Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)',
 };
 
 test.describe('@smoke podcasts', () => {
   test('the hub lists shows and links each one to its own page', async ({ page }) => {
     await page.goto('/podcasts');
 
-    await expect(page.getByRole('heading', { level: 1 })).toContainText(
-      /podcast/i,
-      RENDER,
-    );
+    await expect(page.getByRole('heading', { level: 1 })).toContainText(/podcast/i, RENDER);
 
     const showLinks = page.locator('a[href*="/podcasts/"]');
     await expect(showLinks.first()).toBeVisible(RENDER);
@@ -96,9 +93,11 @@ test.describe('@smoke podcasts', () => {
     // not decoration.
     const episodeLocator = page.locator('a[href*="/news/"]');
     await expect(episodeLocator.first()).toBeVisible(RENDER);
-    const hrefs = (await episodeLocator.evaluateAll((els) =>
-      els.map((e) => (e as HTMLAnchorElement).getAttribute('href')),
-    )).filter((h): h is string => Boolean(h));
+    const hrefs = (
+      await episodeLocator.evaluateAll((els) =>
+        els.map((e) => (e as HTMLAnchorElement).getAttribute('href')),
+      )
+    ).filter((h): h is string => Boolean(h));
     expect(hrefs.length, 'a show page produced episode URLs').toBeGreaterThan(0);
 
     let html = '';
@@ -211,18 +210,15 @@ test.describe('@smoke podcasts', () => {
     // reliability_score, auto_paused_reason and consecutive_failures to every
     // logged-out visitor. Asserted through the ANON role, which is what a user
     // is actually served.
-    const base = process.env.VITE_SUPABASE_URL;
-    const key = process.env.VITE_SUPABASE_ANON_KEY;
-    test.skip(!base || !key, 'needs VITE_SUPABASE_URL + VITE_SUPABASE_ANON_KEY');
 
     const res = await request.get(
-      `${base}/rest/v1/news_sources?select=last_error&limit=1`,
-      { headers: { apikey: key!, Authorization: `Bearer ${key}` } },
+      `${SUPABASE_REST_URL}/rest/v1/news_sources?select=last_error&limit=1`,
+      { headers: await anonHeaders(request) },
     );
     // POSITIVE CONTROL: an allowed column must still work, or this test would
     // pass just as well against a table that is entirely unreachable.
-    const ok = await request.get(`${base}/rest/v1/news_sources?select=name&limit=1`, {
-      headers: { apikey: key!, Authorization: `Bearer ${key}` },
+    const ok = await request.get(`${SUPABASE_REST_URL}/rest/v1/news_sources?select=name&limit=1`, {
+      headers: await anonHeaders(request),
     });
     expect(ok.status(), 'anon can still read the public columns').toBe(200);
     // Measured on prod: PostgREST answers a missing COLUMN privilege with 401
@@ -244,9 +240,6 @@ test.describe('@smoke podcasts', () => {
     //
     // Asserting the SELECTS rather than the grant list is what makes this
     // survive: a future column added to any of these queries fails here.
-    const base = process.env.VITE_SUPABASE_URL;
-    const key = process.env.VITE_SUPABASE_ANON_KEY;
-    test.skip(!base || !key, 'needs VITE_SUPABASE_URL + VITE_SUPABASE_ANON_KEY');
 
     const selects = [
       // functions/sitemap-podcasts.xml.ts
@@ -262,8 +255,8 @@ test.describe('@smoke podcasts', () => {
     ];
     for (const sel of selects) {
       const r = await request.get(
-        `${base}/rest/v1/news_sources?select=${encodeURIComponent(sel)}&limit=1`,
-        { headers: { apikey: key!, Authorization: `Bearer ${key}` } },
+        `${SUPABASE_REST_URL}/rest/v1/news_sources?select=${encodeURIComponent(sel)}&limit=1`,
+        { headers: await anonHeaders(request) },
       );
       expect(r.status(), `anon cannot read: ${sel}`).toBe(200);
     }

@@ -116,6 +116,11 @@ verify_jwt = false
 [functions.get-weather-forecast]
 verify_jwt = false
 
+# Cron reaches this function with X-Internal-Secret from Vault. The function
+# self-gates with requireInternalOrAdmin before creating a service client.
+[functions.backfill-cities-images]
+verify_jwt = false
+
 [functions.categorize-tags]
 # Gateway-level JWT is the wrong gate here: the function's own
 # requireAdmin() already accepts an admin JWT, a service-role bearer OR
@@ -260,6 +265,12 @@ verify_jwt = false
 [functions.source-gaycities]
 verify_jwt = false
 
+# Reached by pg_cron through automation_http_post with X-Internal-Secret; the
+# function self-gates with requireInternalOrAdmin. Gateway JWT would reject that
+# call before the function's own gate ever runs.
+[functions.source-gayout]
+verify_jwt = false
+
 [functions.source-geonames]
 verify_jwt = false
 
@@ -273,6 +284,9 @@ verify_jwt = false
 verify_jwt = false
 
 [functions.source-rest-countries]
+verify_jwt = false
+
+[functions.source-rheinfetisch]
 verify_jwt = false
 
 [functions.source-rss-news]
@@ -493,6 +507,9 @@ verify_jwt = false
 [functions.event-image-backfill]
 verify_jwt = false
 
+[functions.event-image-quality]
+verify_jwt = false
+
 [functions.queer-imagery-backfill]
 verify_jwt = false
 
@@ -588,4 +605,26 @@ verify_jwt = false
 # gets a 401 from pg_cron, which then reads as an outage and burns the
 # auto-pause counter.
 [functions.venue-accessibility-osm]
+verify_jwt = false
+
+# Cron target (ev-fill-queerde, Mon 02:05) — self-gates on requireInternalOrAdmin.
+# Measured before adding this line: without it the platform answered
+# UNAUTHORIZED_NO_AUTH_HEADER *before* the request reached the function, while every
+# sibling event source (source-kweer, source-gaybasel, source-haz-ch) answered from
+# its own gate. It happens to work anyway while the cron sends the anon key — which
+# is precisely what would make the eventual 401 read as an upstream outage.
+[functions.source-queerde]
+verify_jwt = false
+
+# Cron targets for the 2026-09-28 event-calendar import (qcal.app,
+# queer-kalender.nl, gaytravel4u.com). Each self-gates via
+# requireInternalOrAdmin; without this line pg_cron gets a 401, which reads as
+# an outage and burns the auto-pause counter.
+[functions.source-qcal]
+verify_jwt = false
+
+[functions.source-queer-kalender]
+verify_jwt = false
+
+[functions.source-gaytravel4u]
 verify_jwt = false

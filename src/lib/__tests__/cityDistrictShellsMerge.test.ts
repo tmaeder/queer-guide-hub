@@ -172,8 +172,8 @@ describe('the verify block', () => {
 describe('the health-script baseline moved with a measured number', () => {
   const health = readFileSync(join(process.cwd(), 'scripts', 'check-pipeline-health.mjs'), 'utf8');
 
-  it('is 23, the value the full-stack dry run reported', () => {
-    expect(health).toMatch(/const BASELINE_UNCORROBORATED = 23\b/);
+  it('is 24, including the measured Tokyo ⇐ Ch Ku district merge', () => {
+    expect(health).toMatch(/const BASELINE_UNCORROBORATED = 24\b/);
   });
 
   it('still FAILS on growth rather than merely printing', () => {

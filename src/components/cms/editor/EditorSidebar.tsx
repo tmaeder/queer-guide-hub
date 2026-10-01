@@ -17,6 +17,7 @@ import { PersonalityNotesPanel } from './PersonalityNotesPanel';
 import { PersonalityAttachmentsPanel } from './PersonalityAttachmentsPanel';
 import { useContentRevisions, type ContentRevision } from '@/hooks/useContentRevisions';
 import { RevisionHistorySheet } from '@/components/admin/RevisionHistorySheet';
+import { PipelineInspector } from '@/components/admin/audit/PipelineInspector';
 import { useCMSMedia } from '@/hooks/useCMSMedia';
 import { getContentType } from '@/config/contentTypeRegistry';
 import type { CMSContentMetadata, CMSMediaAttachment } from '@/types/cms';
@@ -93,6 +94,9 @@ export function EditorSidebar({
     seo: false,
     media: false,
     revisions: false,
+    // Closed by default and lazy: the timeline is a ten-source union and there
+    // is no reason to run it for an editor who only came to fix a typo.
+    pipeline: false,
     notes: false,
     attachments: false,
   });
@@ -253,6 +257,27 @@ export function EditorSidebar({
           </div>
         )}
       </Panel>
+      {/* Pipeline & audit — what the machine did, in plain language.
+          Sits below Revisions deliberately: Revisions answers "what changed",
+          this answers "why, and on whose evidence". Rendered only when the
+          panel is open so the union does not run on every editor open.
+          `config.tableName` is the plural name audit_entity_registry keys on;
+          a type with no registry row gets a loud error from the RPC rather
+          than an empty panel that reads as "nothing ever happened". */}
+      <Panel
+        title="Pipeline & audit"
+        open={expandedPanels.pipeline}
+        onOpenChange={setPanel('pipeline')}
+      >
+        {!itemId || !config ? (
+          <p className="text-sm text-muted-foreground">
+            Save this record first — there is no history until it exists.
+          </p>
+        ) : expandedPanels.pipeline ? (
+          <PipelineInspector entityType={config.tableName} entityId={itemId} limit={120} />
+        ) : null}
+      </Panel>
+
       {itemId && config && (
         <RevisionHistorySheet
           open={historyOpen}

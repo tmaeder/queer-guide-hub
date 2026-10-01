@@ -52,6 +52,7 @@ import { CityTravelTab } from './city-detail/CityTravelTab';
 import { CityNewsTab } from './city-detail/CityNewsTab';
 import { CityMapTab } from './city-detail/CityMapTab';
 import { GlossaryLinkedText } from '@/components/tags/GlossaryLinkedText';
+import { localizedField, type I18nMap } from '@/lib/localizeContent';
 
 const OUTLINE_ON_INK =
   'border inline-flex items-center gap-2 border-background px-4 py-2 text-13 font-bold text-background no-underline transition-colors hover:bg-background hover:text-foreground';
@@ -143,12 +144,23 @@ export default function CityDetail() {
   fetchVenuesRef.current = fetchVenues;
 
   useEffect(() => {
-    fetchVenuesRef.current({ cityId: city?.id, city: city?.name, limit: 12, railQuality: true });
-  }, [city?.id, city?.name]);
+    fetchVenuesRef.current({
+      cityId: city?.id,
+      city: city?.name,
+      countryId: city?.country_id ?? city?.countries?.id,
+      limit: 12,
+      railQuality: true,
+    });
+  }, [city?.id, city?.name, city?.country_id, city?.countries?.id]);
 
   useEffect(() => {
-    fetchEvents({ city: city?.name, limit: 12 });
-  }, [city?.name, fetchEvents]);
+    fetchEvents({
+      cityId: city?.id,
+      city: city?.name,
+      countryId: city?.country_id ?? city?.countries?.id,
+      limit: 12,
+    });
+  }, [city?.id, city?.name, city?.country_id, city?.countries?.id, fetchEvents]);
 
   const { country: fullCountry, loading: countryLoading } = useOptimizedCountry(
     // Fall back to the raw FK so rights still resolve when the embed is absent.
@@ -391,7 +403,11 @@ export default function CityDetail() {
       <SinglePage
         type="city"
         eyebrow={eyebrowParts.join(' · ')}
-        title={city.name}
+        title={localizedField(
+          city.name,
+          (city as { name_i18n?: unknown }).name_i18n as I18nMap,
+          i18n.language,
+        )}
         lead={<GlossaryLinkedText text={city.editorial_hook || city.description} />}
         tags={<GeoCensus type="city" items={census} />}
         action={

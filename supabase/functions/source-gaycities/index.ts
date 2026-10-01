@@ -45,8 +45,14 @@ const gaycitiesAdapter: SourceAdapter = {
         const events = parseEventsFromHtml(html, city)
 
         for (const event of events) {
+          const stableKey = String(
+            event.url ||
+              ['gc', city, event.title || '', event.start_date || '', event.venue_name || ''].join(
+                '|',
+              ),
+          ).toLowerCase()
           allItems.push({
-            sourceId: `gc-${city}-${String(event.title || '').replace(/\W/g, '-').slice(0, 40)}-${Date.now()}`,
+            sourceId: stableKey,
             data: { ...event, _source_city: city },
           })
         }

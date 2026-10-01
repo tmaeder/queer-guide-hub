@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { readFileSync, readdirSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 /**
@@ -22,28 +22,23 @@ import { join } from 'node:path';
 
 const MIGRATIONS = join(process.cwd(), 'supabase', 'migrations');
 
-function migrationContaining(needle: RegExp): string {
-  const files = readdirSync(MIGRATIONS)
-    .filter((f) => f.endsWith('.sql'))
-    .sort();
-  for (const f of [...files].reverse()) {
-    const sql = readFileSync(join(MIGRATIONS, f), 'utf8');
-    if (needle.test(sql)) return sql;
-  }
-  throw new Error(`no migration matches ${needle}`);
-}
-
 /**
- * Anchored on the sentinel's name, which only the disposition migration defines.
+ * Read the immutable migration this contract documents. Searching backward for
+ * a SQL phrase is not stable: later scorecards can legitimately reference the
+ * same gate without redefining the disposition repair.
  *
  * This was `/parent_map\s*\(child, parent\)/` and that was wrong: the later
  * `country_rights_provenance_parent_name` migration reuses the same `parent_map` CTE, so
  * the reverse-chronological scan started returning THAT file and every sentinel assertion
  * failed. Green locally, red in CI — because the tests were run before that migration
  * existed. A "find the latest definition" helper needs a needle unique to the definition
- * it is looking for, not merely present in it.
+ * it is looking for, not merely present in it. The same failure recurred when
+ * the country quality programme referenced `country_rights_unaccounted`.
  */
-const disposition = migrationContaining(/country_rights_unaccounted/);
+const disposition = readFileSync(
+  join(MIGRATIONS, '20260830131211_country_rights_disposition.sql'),
+  'utf8',
+);
 
 /** The five inhabited territories governed by a parent state's law. */
 const INHERITED: ReadonlyArray<readonly [string, string]> = [

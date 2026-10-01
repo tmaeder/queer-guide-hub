@@ -34,6 +34,26 @@ jobs:
         if: ${{ env.SUPABASE_URL != '' && env.SUPABASE_SERVICE_ROLE_KEY != '' }}
         run: node scripts/check-data-quality-gates.mjs
 
+      - name: City quality has not regressed
+        # This reads the live corpus, which a PR has not deployed and therefore
+        # cannot change. Keep it fail-closed on scheduled/manual runs, but do not
+        # let ambient ingest backlog block every unrelated PR or merge-queue item.
+        # The job still reports its required status after running the repo-local
+        # and security gates below.
+        if: ${{ !cancelled() && github.event_name != 'pull_request' && github.event_name != 'merge_group' }}
+        run: node scripts/check-city-quality.mjs
+
+      # Every machine code the pipeline emits must have plain language written for
+      # it. Before 99991790358904 the admin UI ran codes through a regex that turned
+      # W_NO_COORDS into "W No Coords" — output that looks like content, so a code
+      # nobody had explained was indistinguishable from one that had been. This gate
+      # needs NO credentials: both halves it compares (the string literal in the edge
+      # function, the seed row in the migration) are in the repo, so it fires on the
+      # pull request that introduces the code rather than the morning after it ships.
+      - name: Every pipeline code has a written explanation
+        if: ${{ !cancelled() }}
+        run: node scripts/check-explanation-keys.mjs
+
       # Stock ALTER DEFAULT PRIVILEGES grants anon/authenticated write on every new
       # view, which silently bypasses RLS on any SECURITY DEFINER view. Runs even if
       # the gate above fails, so both reports land in a single run.

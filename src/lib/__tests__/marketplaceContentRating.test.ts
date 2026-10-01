@@ -32,12 +32,41 @@ function latestDefinition(): string {
   const files = readdirSync(MIGRATIONS)
     .filter((f) => f.endsWith('.sql'))
     .sort();
-  for (const f of [...files].reverse()) {
-    const sql = readFileSync(join(MIGRATIONS, f), 'utf8');
-    if (new RegExp(`create\\s+(or\\s+replace\\s+)?function\\s+public\\.${FN}\\s*\\(`, 'i').test(sql))
-      return sql;
+  let definition = '';
+  let definitionIndex = -1;
+  for (let index = files.length - 1; index >= 0; index--) {
+    const sql = readFileSync(join(MIGRATIONS, files[index]), 'utf8');
+    if (
+      new RegExp(`create\\s+(or\\s+replace\\s+)?function\\s+public\\.${FN}\\s*\\(`, 'i').test(sql)
+    ) {
+      definition = sql;
+      definitionIndex = index;
+      break;
+    }
   }
-  throw new Error(`no migration defines ${FN}`);
+  if (definitionIndex < 0) throw new Error(`no migration defines ${FN}`);
+
+  // Later corrective migrations patch the live function with
+  // pg_get_functiondef()+replace()+EXECUTE instead of repeating its full body.
+  // Replay those deterministic substitutions so this credential-free replica
+  // tests the final migration state, not the older literal definition.
+  for (const file of files.slice(definitionIndex + 1)) {
+    const migration = readFileSync(join(MIGRATIONS, file), 'utf8');
+    for (const match of migration.matchAll(
+      /v_next:=replace\(v_(?:def|next),\s*\$needle\$([\s\S]*?)\$needle\$,\s*\$needle\$([\s\S]*?)\$needle\$\);/g,
+    )) {
+      definition = definition.replace(match[1], match[2]);
+    }
+    for (const match of migration.matchAll(
+      /v_next:=replace\(v_(?:def|next),\s*'((?:''|[^'])*)',\s*'((?:''|[^'])*)'\);/g,
+    )) {
+      definition = definition.replace(
+        match[1].replaceAll("''", "'"),
+        match[2].replaceAll("''", "'"),
+      );
+    }
+  }
+  return definition;
 }
 
 const sql = latestDefinition();
@@ -50,15 +79,13 @@ const rankPatterns: Array<{ rank: number; source: string }> = [
 /** Postgres `\m` = start of word, `\M` = end of word. */
 function toJs(pgPattern: string): RegExp {
   return new RegExp(
-    pgPattern
-      .replaceAll('\\m', '(?<![\\p{L}\\p{N}_])')
-      .replaceAll('\\M', '(?![\\p{L}\\p{N}_])'),
+    pgPattern.replaceAll('\\m', '(?<![\\p{L}\\p{N}_])').replaceAll('\\M', '(?![\\p{L}\\p{N}_])'),
     'u',
   );
 }
 
 const SLUG_RANK: Array<[Set<string>, number]> = [
-  ...sql.matchAll(/WHEN slug IN \(([^)]+)\)[\s\n]*THEN (\d)/g),
+  ...sql.matchAll(/WHEN slug IN\s*\(([^)]+)\)[\s\S]*?THEN (\d)/g),
 ].map((m) => [new Set([...m[1].matchAll(/'([^']+)'/g)].map((x) => x[1])), Number(m[2])]);
 
 const NAME = ['', 'sfw', 'suggestive', 'adult', 'explicit'];
@@ -68,9 +95,16 @@ function rate(subcategory: string | null, title: string, description = ''): stri
   const slug = (subcategory ?? '').toLowerCase().replace(/[\s-]+/g, '_');
   const txt = `${title} ${description}`.toLowerCase();
   let rank = 1;
-  for (const [set, r] of SLUG_RANK) if (set.has(slug)) { rank = Math.max(rank, r); break; }
+  for (const [set, r] of SLUG_RANK)
+    if (set.has(slug)) {
+      rank = Math.max(rank, r);
+      break;
+    }
   for (const { rank: r, source } of rankPatterns) {
-    if (toJs(source).test(txt)) { rank = Math.max(rank, r); break; }
+    if (toJs(source).test(txt)) {
+      rank = Math.max(rank, r);
+      break;
+    }
   }
   return NAME[rank];
 }
@@ -151,7 +185,10 @@ describe('what the boundary fix unmasks stays covered', () => {
   });
 
   it('penis extenders are caught in every spelling', () => {
-    for (const t of ['Jes-Extender - Titanium - Penis-Extender', 'Alien Nation Komodo Penis Extender'])
+    for (const t of [
+      'Jes-Extender - Titanium - Penis-Extender',
+      'Alien Nation Komodo Penis Extender',
+    ])
       expect(rate(null, t)).toBe('explicit');
   });
 });

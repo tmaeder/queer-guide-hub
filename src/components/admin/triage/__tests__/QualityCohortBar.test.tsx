@@ -68,16 +68,42 @@ describe('QualityCohortBar', () => {
   it('shows each cohort with its count', () => {
     render(
       <QualityCohortBar
-        cohorts={[cohort(), cohort({ field: 'safety_notes', entity_type: 'city', n: 692 })]}
+        cohorts={[
+          cohort(),
+          cohort({ field: 'safety_notes', entity_type: 'city', n: 692, decidable: 692 }),
+        ]}
         isLoading={false}
         filters={filters}
         onFiltersChange={vi.fn()}
       />,
     );
     expect(screen.getByText('Accessibility attributes')).toBeInTheDocument();
-    expect(screen.getByText('749')).toBeInTheDocument();
     expect(screen.getByText('Safety notes')).toBeInTheDocument();
-    expect(screen.getByText('692')).toBeInTheDocument();
+    // `decidable` leads and `n` follows. The chip used to show `n` alone, while this
+    // hook's own docblock names `decidable` as the number that predicts the work —
+    // it was fetched and rendered nowhere. Both appear because the GAP is the point.
+    expect(screen.getByText('749 ready')).toBeInTheDocument();
+    expect(screen.getByText('of 749')).toBeInTheDocument();
+    expect(screen.getByText('692 ready')).toBeInTheDocument();
+    expect(screen.getByText('of 692')).toBeInTheDocument();
+  });
+
+  it('shows the GAP when most of a cohort needs a confirmation first', () => {
+    // The case the split exists for, and the one the old single number hid. This is
+    // the live shape `useReviewQueueCohorts` documents: "a cohort of 692 where 346
+    // need a confirmation is not the same work as one where none do."
+    render(
+      <QualityCohortBar
+        cohorts={[
+          cohort({ field: 'safety_notes', entity_type: 'city', n: 692, decidable: 346, risk_gated: 346 }),
+        ]}
+        isLoading={false}
+        filters={filters}
+        onFiltersChange={vi.fn()}
+      />,
+    );
+    expect(screen.getByText('346 ready')).toBeInTheDocument();
+    expect(screen.getByText('of 692')).toBeInTheDocument();
   });
 
   /**

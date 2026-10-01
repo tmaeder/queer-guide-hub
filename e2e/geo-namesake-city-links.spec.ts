@@ -1,4 +1,5 @@
 import { test, expect, type APIRequestContext } from '@playwright/test';
+import { anonHeaders } from './support/anonKey';
 
 // A place may never be presented as its namesake.
 //
@@ -24,7 +25,6 @@ import { test, expect, type APIRequestContext } from '@playwright/test';
 // SPA did not have before (`villageDetail` never selected `seo_indexable`).
 
 const SUPABASE_URL = process.env.VITE_SUPABASE_URL ?? 'https://xqeacpakadqfxjxjcewc.supabase.co';
-const ANON_KEY = process.env.VITE_SUPABASE_ANON_KEY;
 
 /** How far a city may sit from an event it is said to host. */
 const MAX_KM = 25;
@@ -154,11 +154,9 @@ const SWEPT = [
   },
 ] as const;
 
-test.skip(!ANON_KEY, 'VITE_SUPABASE_ANON_KEY not set');
-
 async function rest<T>(request: APIRequestContext, path: string): Promise<T[]> {
   const res = await request.get(`${SUPABASE_URL}/rest/v1/${path}`, {
-    headers: { apikey: ANON_KEY!, Authorization: `Bearer ${ANON_KEY!}` },
+    headers: await anonHeaders(request),
   });
   expect(res.ok(), `${path} -> HTTP ${res.status()}`).toBeTruthy();
   return res.json();
@@ -369,12 +367,33 @@ test('each swept event got the remedy its own evidence supports', async ({ reque
     expect(ev.city_id, `${ev.title} lost the city link that was correct`).not.toBeNull();
 
     if (s.remedy === 'geo') {
-      // The coordinates were the defect, not the link. Retracted, never replaced
-      // with a centroid — prefer NULL to a guess.
+      // The coordinates were the defect, not the link. 99991789886174 retracted them
+      // so the nightly fill could re-derive from the city that was always correct.
+      //
+      // THIS ASSERTS THE INVARIANT, NOT THE RETRACTION. The first version pinned
+      // `latitude === null`, which was the transient state between the retraction and
+      // the refill — `run_event_geo_fill` repopulated both rows from their own city
+      // centroids on 2026-10-01 and the spec went red for the fix having WORKED. The
+      // durable claim is that the foreign coordinates never come back: either the
+      // row still has none, or the ones it has agree with its own city.
+      if (ev.latitude === null) continue;
+      const [c] = await rest<{ name: string; latitude: string | null; longitude: string | null }>(
+        request,
+        `cities?select=name,latitude,longitude&id=eq.${ev.city_id}`,
+      );
+      expect(c?.latitude, `${ev.title}'s city has no coordinates to corroborate against`).not.toBe(
+        null,
+      );
+      const gd = km(
+        Number(ev.latitude),
+        Number(ev.longitude),
+        Number(c.latitude),
+        Number(c.longitude),
+      );
       expect(
-        ev.latitude,
-        `${ev.title} still carries ${s.was}; the link was right and the coordinates were not`,
-      ).toBeNull();
+        gd,
+        `${ev.title} carries coordinates ${gd.toFixed(0)} km from ${c.name} — ${s.was} is back`,
+      ).toBeLessThan(MAX_KM);
       continue;
     }
 
@@ -428,4 +447,259 @@ test('blocking an event never emptied the city it was taken off', async ({ reque
       `the ${slug} row is gone or merged — unlinking must not remove a city`,
     ).toBeTruthy();
   }
+});
+
+// --- venue-derived geography ---------------------------------------------------
+//
+// 99991790379818. `tg_event_venue_geography` propagated a venue's city onto its event
+// unconditionally, which put a Fort Lauderdale event on New York because it was
+// attached to "The Eagle" -- a bar name that exists in a dozen cities. The trigger now
+// refuses to propagate a venue city over 250 km from the event's own coordinates.
+//
+// Measured when the guard shipped: p50 0.0 km, p95 3.4 km, p99 6.1 km, second-largest
+// 23.1 km, largest 1,718.1 km. So this asserts the shape of that distribution through
+// the ANON role, which is what a visitor is actually served.
+
+/**
+ * PostgREST caps a response at 1000 rows, so anything set-wide must page.
+ *
+ * `maxRows` is a deliberate ceiling, not a safety net: it keeps this spec pointed at a
+ * BOUNDED set. The first draft swept every anon-visible linked event and tripped its
+ * own cap — measured, that set is 45,492 rows and 46 requests. It was also redundant:
+ * the migration's postcondition P4 asserts the same invariant as postgres over EVERY
+ * row, and the anon-visible rows are a strict subset of those (safety-gated events are
+ * hidden from anon), so the superset check already implies it. What is NOT redundant is
+ * the venue-derived slice below, which is ~1,670 rows and is the class this guard
+ * changed.
+ */
+async function restAll<T>(request: APIRequestContext, path: string, maxRows: number): Promise<T[]> {
+  const out: T[] = [];
+  for (let offset = 0; ; offset += 1000) {
+    const page = await rest<T>(request, `${path}&limit=1000&offset=${offset}`);
+    out.push(...page);
+    if (page.length < 1000) return out;
+    expect(
+      out.length,
+      `paged past ${maxRows} rows — widen maxRows deliberately or narrow the filter, ` +
+        `but do not let this spec quietly become a full-corpus sweep`,
+    ).toBeLessThanOrEqual(maxRows);
+  }
+}
+
+test('the Fort Lauderdale event is on Fort Lauderdale, with its wrong venue detached', async ({
+  request,
+}) => {
+  const [ev] = await rest<{
+    title: string;
+    city_id: string | null;
+    venue_id: string | null;
+    venue_name: string | null;
+    latitude: string | null;
+    longitude: string | null;
+  }>(
+    request,
+    'events?select=title,city_id,venue_id,venue_name,latitude,longitude' +
+      '&id=eq.e277dc22-1de3-4d55-9842-f2d49d53d459',
+  );
+  expect(ev, 'the repaired event is not anon-readable').toBeTruthy();
+  expect(ev.venue_id, 'still attached to "The Eagle" in New York City').toBeNull();
+  // the source's own venue text must survive, or the re-attach is no longer actionable
+  expect(ev.venue_name, 'the venue text was wiped along with the link').toBeTruthy();
+  expect(ev.city_id).not.toBeNull();
+
+  const [city] = await rest<{ name: string; slug: string; latitude: string; longitude: string }>(
+    request,
+    `cities?select=name,slug,latitude,longitude&id=eq.${ev.city_id}`,
+  );
+  expect(city.slug).toBe('fort-lauderdale');
+  const d = km(
+    Number(ev.latitude),
+    Number(ev.longitude),
+    Number(city.latitude),
+    Number(city.longitude),
+  );
+  expect(d, `presented on ${city.name}, ${d.toFixed(1)} km from its own coordinates`).toBeLessThan(
+    MAX_KM,
+  );
+});
+
+test('no venue-backed event is presented on a city its venue put 250 km away', async ({
+  request,
+}) => {
+  // Scoped to the slice this guard changed: events that carry a venue. The migration
+  // asserts the invariant over the WHOLE corpus as postgres (P4); this asserts the
+  // part a visitor is actually served, and does it over a bounded set.
+  const events = await restAll<{
+    id: string;
+    title: string;
+    city_id: string;
+    latitude: string;
+    longitude: string;
+  }>(
+    request,
+    'events?select=id,title,city_id,latitude,longitude&venue_id=not.is.null' +
+      '&city_id=not.is.null&latitude=not.is.null&duplicate_of_id=is.null',
+    6000,
+  );
+  // Positive control. "None of them is far away" is equally true of an empty read,
+  // a broken filter, and a role that can see nothing — and it was ~1,670 rows when
+  // the guard shipped, so a collapse to a handful is itself the signal.
+  expect(events.length, 'anon can read almost no venue-backed events').toBeGreaterThan(500);
+
+  const cityIds = [...new Set(events.map((e) => e.city_id))];
+  const cities = new Map<
+    string,
+    { name: string; latitude: string | null; longitude: string | null }
+  >();
+  for (let i = 0; i < cityIds.length; i += 200) {
+    const batch = await rest<{
+      id: string;
+      name: string;
+      latitude: string | null;
+      longitude: string | null;
+    }>(
+      request,
+      `cities?select=id,name,latitude,longitude&id=in.(${cityIds.slice(i, i + 200).join(',')})`,
+    );
+    for (const c of batch) cities.set(c.id, c);
+  }
+  expect(cities.size, 'none of the referenced cities resolved').toBeGreaterThan(0);
+
+  const far = events
+    .map((e) => {
+      const c = cities.get(e.city_id);
+      if (!c || c.latitude === null || c.longitude === null) return null; // fails open
+      const d = km(
+        Number(e.latitude),
+        Number(e.longitude),
+        Number(c.latitude),
+        Number(c.longitude),
+      );
+      return d > 250 ? `${e.title} \u2192 ${c.name} (${d.toFixed(0)} km)` : null;
+    })
+    .filter(Boolean);
+
+  expect(
+    far,
+    `venue-backed events presented on a city they are nowhere near:\n${far.join('\n')}`,
+  ).toEqual([]);
+});
+
+// --- event↔venue drift --------------------------------------------------------
+//
+// 99991790537156. A link is validated once, at link time — `link_event_venues` gates
+// at 500 m and across all 132 links it has made the worst is 430 m — and nothing
+// re-checks it when either side's coordinates later move. Two links sat at 2,398 km
+// (a Denver event on Washington DC's "Trade") and 10,381 km (a Sitges event on
+// Taipei's "Bears Bar") for over a year on that blind spot.
+//
+// 100 km is the measured bound: p99 is 10.2 km and the largest legitimate value is
+// 14.0 km, a Berlin event sitting on its city centroid with its venue out at Marina
+// Base. Asserted through the ANON role, over the bounded venue-backed slice.
+
+test('no anon-visible event is attached to a venue over 100 km away', async ({ request }) => {
+  const events = await restAll<{
+    id: string;
+    title: string;
+    venue_id: string;
+    latitude: string;
+    longitude: string;
+  }>(
+    request,
+    'events?select=id,title,venue_id,latitude,longitude&venue_id=not.is.null' +
+      '&latitude=not.is.null&duplicate_of_id=is.null',
+    6000,
+  );
+  // positive control: an empty or truncated read makes the assertion below vacuous
+  expect(events.length, 'anon can read almost no venue-backed events').toBeGreaterThan(500);
+
+  const venueIds = [...new Set(events.map((e) => e.venue_id))];
+  const venues = new Map<
+    string,
+    { name: string; latitude: string | null; longitude: string | null }
+  >();
+  for (let i = 0; i < venueIds.length; i += 200) {
+    const batch = await rest<{
+      id: string;
+      name: string;
+      latitude: string | null;
+      longitude: string | null;
+    }>(
+      request,
+      `venues?select=id,name,latitude,longitude&id=in.(${venueIds.slice(i, i + 200).join(',')})`,
+    );
+    for (const v of batch) venues.set(v.id, v);
+  }
+  expect(venues.size, 'none of the referenced venues resolved').toBeGreaterThan(0);
+
+  const far = events
+    .map((e) => {
+      const v = venues.get(e.venue_id);
+      if (!v || v.latitude === null || v.longitude === null) return null; // fails open
+      const d = km(
+        Number(e.latitude),
+        Number(e.longitude),
+        Number(v.latitude),
+        Number(v.longitude),
+      );
+      return d > 100 ? `${e.title} → ${v.name} (${d.toFixed(0)} km)` : null;
+    })
+    .filter(Boolean);
+
+  expect(far, `events attached to a venue they are nowhere near:\n${far.join('\n')}`).toEqual([]);
+});
+
+test('the Sitges event is on the Sitges Bears Bar, and Denver is on Denver’s own Trade', async ({
+  request,
+}) => {
+  const [sitges] = await rest<{ venue_id: string | null; latitude: string; longitude: string }>(
+    request,
+    'events?select=venue_id,latitude,longitude&id=eq.82e80cfa-2256-4be1-9582-ed3b0af6e9e5',
+  );
+  expect(sitges, 'the Sitges event is not anon-readable').toBeTruthy();
+  expect(sitges.venue_id, 'still detached — the relink did not land').not.toBeNull();
+  const [venue] = await rest<{ name: string; latitude: string; longitude: string }>(
+    request,
+    `venues?select=name,latitude,longitude&id=eq.${sitges.venue_id}`,
+  );
+  const d = km(
+    Number(sitges.latitude),
+    Number(sitges.longitude),
+    Number(venue.latitude),
+    Number(venue.longitude),
+  );
+  expect(d, `attached to ${venue.name}, ${d.toFixed(1)} km away`).toBeLessThan(5);
+
+  // Denver was DETACHED by 99991790537156 on the stated ground that "no Denver venue
+  // exists to move it to". That was false -- there are three Trade rows, only one is
+  // DC's -- so 99991790796466 relinked it to Denver's own Trade at 0.01 km. This
+  // assertion moved with it: pinning "detached" would now pin the defect.
+  const [denver] = await rest<{
+    venue_id: string | null;
+    venue_name: string | null;
+    latitude: string;
+    longitude: string;
+  }>(
+    request,
+    'events?select=venue_id,venue_name,latitude,longitude' +
+      '&id=eq.d5c0c33f-4186-475d-a609-91ed1603aa96',
+  );
+  expect(denver.venue_id, 'not relinked — it is still detached from Denver’s Trade').not.toBeNull();
+  // the source's own text must survive either way
+  expect(denver.venue_name).toBeTruthy();
+
+  const [dv] = await rest<{ name: string; latitude: string; longitude: string; city_id: string }>(
+    request,
+    `venues?select=name,latitude,longitude,city_id&id=eq.${denver.venue_id}`,
+  );
+  const dd = km(
+    Number(denver.latitude),
+    Number(denver.longitude),
+    Number(dv.latitude),
+    Number(dv.longitude),
+  );
+  expect(dd, `attached to ${dv.name}, ${dd.toFixed(2)} km away`).toBeLessThan(1);
+  // and it must be DENVER's Trade, not the DC row it was taken off
+  const [dvCity] = await rest<{ slug: string }>(request, `cities?select=slug&id=eq.${dv.city_id}`);
+  expect(dvCity.slug).toBe('denver');
 });

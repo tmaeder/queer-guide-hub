@@ -1,4 +1,5 @@
 import { test, expect, type APIRequestContext } from '@playwright/test';
+import { anonHeaders } from './support/anonKey';
 import { deathPenaltyRisk } from '../src/utils/equalityScore';
 
 // A published safety note must never bury a death penalty in a parenthetical.
@@ -27,7 +28,6 @@ import { deathPenaltyRisk } from '../src/utils/equalityScore';
 // Nigeria breaks), and a copy here would be a fourth implementation of it.
 
 const SUPABASE_URL = process.env.VITE_SUPABASE_URL ?? 'https://xqeacpakadqfxjxjcewc.supabase.co';
-const ANON_KEY = process.env.VITE_SUPABASE_ANON_KEY;
 
 /** The composer's own signature for the defect: a penalty naming death, inside a parenthetical. */
 const BURIED = /\(penalty:[^)]*death/i;
@@ -40,11 +40,9 @@ type Country = {
 };
 type City = { name: string; country_id: string; safety_notes: string | null };
 
-test.skip(!ANON_KEY, 'VITE_SUPABASE_ANON_KEY not set');
-
 async function rest<T>(request: APIRequestContext, path: string): Promise<T[]> {
   const res = await request.get(`${SUPABASE_URL}/rest/v1/${path}`, {
-    headers: { apikey: ANON_KEY!, Authorization: `Bearer ${ANON_KEY!}` },
+    headers: await anonHeaders(request),
   });
   expect(res.ok(), `${path} -> HTTP ${res.status()}`).toBeTruthy();
   return res.json();
@@ -135,7 +133,9 @@ test('no published safety note buries a death penalty in a parenthetical', async
   ).toEqual([]);
 });
 
-test('every note in a `possible` country mentions the death penalty at all', async ({ request }) => {
+test('every note in a `possible` country mentions the death penalty at all', async ({
+  request,
+}) => {
   // PRESENCE, not placement — deliberately. The buried form contains the string
   // too, so this test passes on the defect and the one above is what catches it.
   // It earns its place by covering the other direction: a note that drops the

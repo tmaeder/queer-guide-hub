@@ -1,4 +1,5 @@
 import { test, expect, type APIRequestContext } from '@playwright/test';
+import { anonHeaders } from './support/anonKey';
 
 /**
  * An event that has STARTED but not ENDED must still be served — end to end, on prod.
@@ -25,9 +26,6 @@ import { test, expect, type APIRequestContext } from '@playwright/test';
  */
 
 const SUPABASE_URL = process.env.VITE_SUPABASE_URL ?? 'https://xqeacpakadqfxjxjcewc.supabase.co';
-const ANON_KEY = process.env.VITE_SUPABASE_ANON_KEY;
-
-test.skip(!ANON_KEY, 'VITE_SUPABASE_ANON_KEY not set');
 
 type Row = { id: string; title: string; start_date: string; end_date: string | null };
 
@@ -37,7 +35,7 @@ const BASE = 'status=eq.active&duplicate_of_id=is.null&series_next=is.true&paren
 async function rows(request: APIRequestContext, filter: string): Promise<Row[]> {
   const res = await request.get(
     `${SUPABASE_URL}/rest/v1/events?select=id,title,start_date,end_date&${BASE}&${filter}&limit=1000`,
-    { headers: { apikey: ANON_KEY!, Authorization: `Bearer ${ANON_KEY!}` } },
+    { headers: await anonHeaders(request) },
   );
   expect(res.ok(), `events -> HTTP ${res.status()}: ${await res.text()}`).toBeTruthy();
   return (await res.json()) as Row[];
