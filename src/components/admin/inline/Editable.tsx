@@ -153,7 +153,7 @@ export function Editable({
 
   const showAffordance = requireAltClick ? editMode : adminActive;
   const affordanceClass = showAffordance
-    ? `${as === 'div' ? 'flex' : 'inline-flex'} group/editable min-h-8 items-center gap-1 rounded-element -mx-2 px-2 cursor-pointer transition-colors hover:bg-surface-container-high focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1`
+    ? `${as === 'div' ? 'flex' : 'inline-flex'} group/editable min-h-11 items-center gap-1 rounded-element -mx-2 px-2 cursor-pointer transition-colors hover:bg-surface-container-high focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 sm:min-h-8`
     : '';
 
   return (
