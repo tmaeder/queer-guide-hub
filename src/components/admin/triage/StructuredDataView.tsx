@@ -3,6 +3,13 @@ import { ExternalLink, Save } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
+import {
+  fieldControlKind,
+  GOVERNANCE_SELECT_OPTIONS,
+  GovernanceLocationField,
+  GovernanceSelectField,
+  GovernanceTagsField,
+} from './GovernanceFieldControls';
 
 const PRIORITY_FIELDS = [
   'name',
@@ -151,6 +158,7 @@ function coerceValue(original: unknown, value: string | boolean): unknown {
 
 interface StructuredFieldEditorProps {
   data: Record<string, unknown>;
+  entityType?: string;
   onSave: (changes: Record<string, unknown>) => Promise<void>;
   onDirtyChange?: (dirtyCount: number) => void;
   saving?: boolean;
@@ -158,6 +166,7 @@ interface StructuredFieldEditorProps {
 
 export function StructuredFieldEditor({
   data,
+  entityType,
   onSave,
   onDirtyChange,
   saving = false,
@@ -200,6 +209,10 @@ export function StructuredFieldEditor({
 
   function updateField(key: string, original: unknown, value: string | boolean) {
     const next = coerceValue(original, value);
+    updateTypedField(key, original, next);
+  }
+
+  function updateTypedField(key: string, original: unknown, next: unknown) {
     setDraftState((current) => {
       const values = { ...current.values };
       if (JSON.stringify(next) === JSON.stringify(original)) delete values[key];
@@ -234,18 +247,39 @@ export function StructuredFieldEditor({
       <div className="grid gap-x-4 gap-y-4 p-4 xl:grid-cols-2">
         {entries.map(([key, original]) => {
           const value = key in drafts ? drafts[key] : original;
+          const controlKind = fieldControlKind(entityType, key);
           const isLong =
             typeof original === 'string' && (original.length > 100 || original.includes('\n'));
           return (
-            <label
+            <div
               key={key}
-              className={`min-w-0 space-y-1 ${isLong || (typeof original === 'object' && !Array.isArray(original)) ? 'xl:col-span-2' : ''}`}
+              className={`min-w-0 space-y-1 ${isLong || controlKind === 'location' || (typeof original === 'object' && !Array.isArray(original)) ? 'xl:col-span-2' : ''}`}
             >
               <span className="flex items-center gap-2 text-2xs font-medium text-muted-foreground">
                 {humanizeField(key)}
                 {key in drafts && <span className="text-foreground">Edited</span>}
               </span>
-              {!editableValue(original) ? (
+              {controlKind === 'venue-category' || controlKind === 'event-type' ? (
+                <GovernanceSelectField
+                  ariaLabel={humanizeField(key)}
+                  value={String(value ?? '')}
+                  options={GOVERNANCE_SELECT_OPTIONS[controlKind]}
+                  onChange={(next) => updateTypedField(key, original, next)}
+                />
+              ) : controlKind === 'tags' && Array.isArray(value) ? (
+                <GovernanceTagsField
+                  value={value.filter((entry): entry is string => typeof entry === 'string')}
+                  onChange={(next) => updateTypedField(key, original, next)}
+                />
+              ) : controlKind === 'location' &&
+                value &&
+                typeof value === 'object' &&
+                !Array.isArray(value) ? (
+                <GovernanceLocationField
+                  value={value as Record<string, unknown>}
+                  onChange={(next) => updateTypedField(key, original, next)}
+                />
+              ) : !editableValue(original) ? (
                 <div className="rounded-element border border-border bg-muted/20 px-4 py-2 text-13">
                   <StructuredValue value={value} />
                 </div>
@@ -253,6 +287,7 @@ export function StructuredFieldEditor({
                 <span className="flex h-10 items-center gap-2 rounded-element border border-border px-4 text-13">
                   <input
                     type="checkbox"
+                    aria-label={humanizeField(key)}
                     checked={Boolean(value)}
                     onChange={(event) => updateField(key, original, event.target.checked)}
                   />
@@ -260,19 +295,31 @@ export function StructuredFieldEditor({
                 </span>
               ) : isLong ? (
                 <Textarea
+                  aria-label={humanizeField(key)}
                   value={Array.isArray(value) ? value.join(', ') : String(value ?? '')}
                   onChange={(event) => updateField(key, original, event.target.value)}
                   className="min-h-24 resize-y text-13 leading-relaxed"
                 />
               ) : (
                 <Input
-                  type={typeof original === 'number' ? 'number' : 'text'}
+                  aria-label={humanizeField(key)}
+                  type={
+                    typeof original === 'number'
+                      ? 'number'
+                      : /(?:^|_)(?:url|website)$/.test(key)
+                        ? 'url'
+                        : key === 'email'
+                          ? 'email'
+                          : key === 'phone'
+                            ? 'tel'
+                            : 'text'
+                  }
                   value={Array.isArray(value) ? value.join(', ') : String(value ?? '')}
                   onChange={(event) => updateField(key, original, event.target.value)}
                   className="h-10 text-13"
                 />
               )}
-            </label>
+            </div>
           );
         })}
       </div>
