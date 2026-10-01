@@ -3877,6 +3877,58 @@ const DISOWNED_PROSE_CEILING = 380
   }
 }
 
+// §19 — an article the quality gate PASSED must be reachable by a crawler.
+//
+//     `trg_news_enforce_seo_indexable` forces seo_indexable=false while an
+//     article is 'review' or 'rejected' and, until 99991790880121, never wrote
+//     it back. So anything judged 'review' and later judged 'passed' stayed
+//     deindexed forever: 258 articles with an EMPTY auto_publish_blocked_reasons
+//     and their own shouldPublish verdict, against 26,913 of their peers that
+//     are indexable. Live pages, HTTP 200, robots: noindex.
+//
+//     The cohort size is reported FIRST because zero deindexed rows over an
+//     empty cohort is vacuous, not clean -- and trigger_attached is separate
+//     from the count, because an absent seal and a repaired corpus otherwise
+//     give the same reassuring zero (the accessibility_contradictions lesson).
+//
+//     A human CAN deliberately deindex a passed article; those rows are
+//     identified from content_revisions and excluded rather than counted, so
+//     this gate cannot fight an editor.
+{
+  const res = await fetch(`${BASE}/rest/v1/rpc/news_index_signals`, {
+    method: 'POST',
+    headers: { ...headers, 'Content-Type': 'application/json' },
+    body: '{}',
+  })
+  if (!res.ok) {
+    const detail = (await res.text()).slice(0, 200)
+    console.error(`✗ news_index_signals → HTTP ${res.status} (migration 99991790880121 not applied? PGRST202 = the function does not exist) ${detail}`)
+    FAILED = true
+  } else {
+    const q = (await res.json()) ?? {}
+    if (q.probe_ok !== true) {
+      console.error('✗ news_index_signals did not report probe_ok — news indexability could not be measured')
+      FAILED = true
+    } else if (q.trigger_attached !== true) {
+      console.error('✗ trg_news_enforce_seo_indexable is missing or disabled — rejected/review articles can go indexable')
+      FAILED = true
+    } else if (Number(q.passed_unblocked_total ?? 0) < 1000) {
+      console.error(`✗ news_index_signals is measuring nothing: only ${q.passed_unblocked_total} passed/unblocked articles`)
+      FAILED = true
+    } else {
+      const stranded = Number(q.deindexed_despite_publish_verdict ?? 0)
+      if (stranded > 0) {
+        console.error(`✗ ${stranded} news articles the gate PASSED with no blockers are deindexed against their own shouldPublish verdict`)
+        console.error(`  (${q.passed_unblocked_indexable} of ${q.passed_unblocked_total} passed/unblocked articles are indexable; ${q.human_deindexed_excluded} excluded as deliberate human de-indexes)`)
+        console.error('  The one-way door is back: something de-indexed them and nothing writes seo_indexable=true.')
+        FAILED = true
+      } else {
+        console.log(`✓ news indexability intact (${q.passed_unblocked_indexable}/${q.passed_unblocked_total} passed+unblocked are indexable, ${q.human_deindexed_excluded} human de-indexes respected)`)
+      }
+    }
+  }
+}
+
 // The single exit. Reached whether or not anything failed, so the ✗ lines above
 // are the complete list rather than "the first one we tripped over".
 if (FAILED) {
