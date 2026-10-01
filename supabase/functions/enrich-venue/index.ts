@@ -1,4 +1,10 @@
 import { getCorsHeaders, getServiceClient, requireAdmin } from '../_shared/supabase-client.ts'
+import { reserveFoursquareApiCalls } from '../_shared/foursquare-budget.ts'
+import {
+  buildFoursquareSearchUrl,
+  FOURSQUARE_API_VERSION,
+  type FoursquarePlace,
+} from '../_shared/foursquare.ts'
 
 interface VenueData {
   name?: string;
@@ -52,35 +58,44 @@ Deno.serve(async (req) => {
     const tomtomKey = Deno.env.get('TOMTOM_API_KEY')
     const tripadvisorKey = Deno.env.get('TRIPADVISOR_API_KEY')
 
-    const enrichmentPromises = []
+    const enrichmentRequests: Array<{
+      source: string
+      promise: Promise<VenueData | null>
+    }> = []
 
     // Foursquare search
     if (foursquareKey) {
-      enrichmentPromises.push(searchFoursquare(venueName, foursquareKey))
+      enrichmentRequests.push({
+        source: 'foursquare',
+        promise: searchFoursquare(venueName, foursquareKey, serviceClient),
+      })
     }
 
     // Google Places search
     if (googleKey) {
-      enrichmentPromises.push(searchGooglePlaces(venueName, googleKey))
+      enrichmentRequests.push({ source: 'google', promise: searchGooglePlaces(venueName, googleKey) })
     }
 
     // TomTom search
     if (tomtomKey) {
-      enrichmentPromises.push(searchTomTom(venueName, tomtomKey))
+      enrichmentRequests.push({ source: 'tomtom', promise: searchTomTom(venueName, tomtomKey) })
     }
 
     // TripAdvisor search
     if (tripadvisorKey) {
-      enrichmentPromises.push(searchTripAdvisor(venueName, tripadvisorKey))
+      enrichmentRequests.push({
+        source: 'tripadvisor',
+        promise: searchTripAdvisor(venueName, tripadvisorKey),
+      })
     }
 
     // Execute all searches in parallel
-    const results = await Promise.allSettled(enrichmentPromises)
+    const results = await Promise.allSettled(enrichmentRequests.map(({ promise }) => promise))
     console.log(`Completed ${results.length} API searches`)
 
     // Return individual results for preview
     const individualResults = results.map((r, i) => ({
-      source: ['foursquare', 'google', 'tomtom', 'tripadvisor'][i],
+      source: enrichmentRequests[i].source,
       status: r.status,
       data: r.status === 'fulfilled' ? r.value : null
     })).filter(r => r.data !== null)
@@ -112,16 +127,27 @@ Deno.serve(async (req) => {
   }
 })
 
-async function searchFoursquare(venueName: string, apiKey: string): Promise<VenueData | null> {
+async function searchFoursquare(
+  venueName: string,
+  apiKey: string,
+  serviceClient: ReturnType<typeof getServiceClient>,
+): Promise<VenueData | null> {
   try {
     console.log('Searching Foursquare for:', venueName)
-    
-    const searchUrl = `https://api.foursquare.com/v3/places/search?query=${encodeURIComponent(venueName)}&limit=1`
+
+    const budget = await reserveFoursquareApiCalls(serviceClient, 'admin-enrich', 1)
+    if (!budget.allowed) {
+      console.warn('Skipping Foursquare enrichment:', budget.reason ?? 'free budget exhausted')
+      return null
+    }
+
+    const searchUrl = buildFoursquareSearchUrl({ query: venueName, limit: 1 })
     
     const response = await fetch(searchUrl, {
       headers: {
-        'Authorization': apiKey,
-        'Accept': 'application/json'
+        'Authorization': `Bearer ${apiKey}`,
+        'X-Places-Api-Version': FOURSQUARE_API_VERSION,
+        'Accept': 'application/json',
       }
     })
 
@@ -137,22 +163,25 @@ async function searchFoursquare(venueName: string, apiKey: string): Promise<Venu
       return null
     }
 
-    const venue = data.results[0]
+    const venue = data.results[0] as FoursquarePlace
     console.log('Found Foursquare venue:', venue.name)
+    const location = venue.location ?? {}
+    const stringField = (value: unknown) => typeof value === 'string' ? value : undefined
+    const rating = Number(venue.rating)
 
     return {
       name: venue.name,
-      address: venue.location?.formatted_address,
-      city: venue.location?.locality,
-      state: venue.location?.region,
-      country: venue.location?.country,
-      postal_code: venue.location?.postcode,
-      latitude: venue.geocodes?.main?.latitude,
-      longitude: venue.geocodes?.main?.longitude,
+      address: stringField(location.formatted_address),
+      city: stringField(location.locality),
+      state: stringField(location.region),
+      country: stringField(location.country),
+      postal_code: stringField(location.postcode),
+      latitude: Number(venue.latitude) || undefined,
+      longitude: Number(venue.longitude) || undefined,
       category: venue.categories?.[0]?.name,
       website: venue.website,
       phone: venue.tel,
-      rating: venue.rating
+      rating: Number.isFinite(rating) ? rating : undefined,
     }
   } catch (error) {
     console.error('Foursquare search error:', error)
@@ -337,7 +366,7 @@ function mergeVenueData(currentData: VenueData, results: PromiseSettledResult<Ve
     // Only fill empty fields, don't overwrite existing data
     Object.entries(source).forEach(([key, value]) => {
       if (value && (!merged[key as keyof VenueData] || merged[key as keyof VenueData] === '')) {
-        (merged as unknown)[key] = value
+        (merged as unknown as Record<string, unknown>)[key] = value
       }
     })
   }

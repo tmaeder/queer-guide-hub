@@ -15,8 +15,8 @@ Queer Guide already has a `source-foursquare` adapter, venue-specific source
 provenance, staging, deduplication, relevance validation, a venue truth engine, and
 fields for Foursquare identifiers and ratings. The adapter still calls the legacy
 `api.foursquare.com/v3` endpoint, which Foursquare deprecated on 2026-05-15. A second
-photo-enrichment function already uses the replacement host but has no shared usage
-budget or durable prioritization.
+photo-enrichment function reaches a Premium endpoint and must be retired under the
+zero-spend policy.
 
 The September 2026 repository audit found that FSQ OS Places was no longer available
 as an anonymous S3 download. Current Foursquare documentation now describes free
@@ -30,15 +30,15 @@ Adopt a hybrid architecture:
 
 1. FSQ OS Places is the bulk, Apache-2.0 baseline for matching, discovery, contact
    enrichment, freshness, categories, merge redirects, and quality flags.
-2. The modern Places API is a scarce rich-data source. A hard persisted allowance
-   limits it to the currently free call tier and prioritizes records where the
-   expected quality gain is highest.
+2. The modern Places API is a scarce Pro-field source. A hard persisted allowance
+   limits it to the currently free Pro-call tier and explicit field selection
+   prevents a request from becoming billable Premium usage.
 3. Every candidate and proposed change flows through Queer Guide's existing staging,
    provenance, deduplication, relevance, consensus, and review machinery.
 
 An API-only design was rejected because the free allowance cannot cover the venue
-catalog. An OS-only design was rejected because the open dataset does not include all
-rich API fields such as ratings, photos, hours, and popularity.
+catalog. Premium API enrichment was rejected because Photos and Premium fields are
+billable from the first call; zero-spend takes precedence over those fields.
 
 ## Free resource inventory
 
@@ -49,7 +49,7 @@ rich API fields such as ratings, photos, hours, and popularity.
 | OS delta dataset | Incremental `add`, `update`, `merge`, and `remove` processing |
 | OS PMTiles | Coverage and gap analysis only; never a canonical write path |
 | Placemaker URLs | Moderator-only links for inspecting or correcting questionable places |
-| Places Search and Details API | Prioritized rich enrichment within a zero-spend allowance |
+| Places Search API, Pro fields only | Bounded discovery and matching within the 500-call free allowance |
 | Place Match offline jobs | Optional accelerator only after the portal confirms they are included in free access |
 
 Primary documentation:
@@ -100,8 +100,10 @@ The API adapter uses:
 
 A persisted monthly usage ledger reserves a configurable safety margin beneath the
 free allowance. Calls are atomic and fail closed when no allowance remains. Priority
-is: ambiguous high-value matches, featured/stale venues, missing image or hours,
-missing contact data, then discovery candidates. Dry runs consume no API calls.
+is: ambiguous high-value matches, stale venues, missing contact data, then discovery
+candidates. Dry runs consume no API calls. Premium fields (`photos`, `rating`,
+`hours`, `attributes`, `description`, `popularity`, `price`, `stats`, `tastes`,
+`tips`, and `veracity_rating`) and Premium endpoints are excluded.
 
 ## Field policy
 
@@ -117,14 +119,14 @@ identity. The following rules apply:
 - `date_closed`, `remove`, and unresolved `closed`, `duplicate`, `delete`,
   `privatevenue`, `inappropriate`, or `doesnt_exist` flags create review/consensus
   signals; none may independently close, merge, hide, or delete a Queer Guide venue.
-- Rich API ratings, hours, attributes, popularity, and image metadata retain
-  Foursquare provenance and must not masquerade as community verification.
+- Pro API and OS values retain Foursquare provenance and must not masquerade as
+  community verification.
 
 ## Schema and components
 
 Implementation should add or update:
 
-- A current `source-foursquare` adapter shared by search and detail enrichment.
+- A current Pro-only `source-foursquare` adapter and a retired Premium photo caller.
 - Pure parsing, category mapping, matching, and prioritization modules with tests.
 - An FSQ OS import Edge Function accepting bounded records and staging them safely.
 - A local OS sync CLI with snapshot/delta modes, checkpointing, and dry-run reports.

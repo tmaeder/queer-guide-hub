@@ -101,6 +101,48 @@ if (missingWeekly.length > 0) {
   console.log(`✓ Weekly pipelines completed in last 7 days: ${weeklyExpected.join(', ')}`)
 }
 
+// 4a. Foursquare free-data health. The API budget is a hard zero-spend guard;
+// OS snapshot/delta state is reported separately so a bulk sync can fail
+// without being mistaken for a healthy but empty dataset.
+{
+  const res = await fetch(`${BASE}/rest/v1/rpc/foursquare_data_health`, {
+    method: 'POST',
+    headers: { ...headers, 'Content-Type': 'application/json' },
+    body: '{}',
+  })
+  if (!res.ok) {
+    console.warn(`⚠ foursquare_data_health → HTTP ${res.status} (RPC missing? migration 20261001035336)`)
+    console.warn('  This check measured NOTHING — it did not pass.')
+  } else {
+    const sig = (await res.json()) ?? {}
+    const budget = sig.api_budget ?? {}
+    const limit = Number(budget.call_limit ?? -1)
+    const margin = Number(budget.safety_margin ?? -1)
+    const spent = Number(budget.calls_used ?? -1)
+    const remaining = Number(budget.remaining ?? -1)
+    if ([limit, margin, spent, remaining].some((value) => value < 0)) {
+      console.error('✗ foursquare_data_health returned an invalid API budget — the probe is broken')
+      FAILED = true
+    } else if (spent > Math.max(limit - margin, 0)) {
+      console.error(`✗ Foursquare API free-tier guard breached: ${spent}/${limit} calls, margin ${margin}`)
+      FAILED = true
+    } else {
+      console.log(`✓ Foursquare API free budget: ${remaining} calls remain (${spent}/${limit}, margin ${margin})`)
+    }
+
+    const streams = Array.isArray(sig.sync_streams) ? sig.sync_streams : []
+    const failedStreams = streams.filter((stream) => stream.status === 'failed')
+    if (failedStreams.length > 0) {
+      console.error(`✗ Foursquare OS stream failure(s): ${failedStreams.map((stream) => stream.stream_key).join(', ')}`)
+      FAILED = true
+    } else if (streams.length === 0) {
+      console.warn('⚠ Foursquare OS has no recorded category/snapshot/delta sync yet')
+    } else {
+      console.log(`✓ Foursquare OS sync state: ${streams.map((stream) => `${stream.stream_key}=${stream.status}`).join(', ')}`)
+    }
+  }
+}
+
 // 5. Cron + staging hygiene (P0 simplification guards, 2026-07-26)
 const hygieneRes = await fetch(`${BASE}/rest/v1/rpc/pipeline_hygiene_stats`, {
   method: 'POST',
@@ -1596,12 +1638,6 @@ substanceFreshness: {
         'successor endpoint. Cron unscheduled, registry row disabled, and the events DAG node is a ' +
         'no-op skip via the RETIRED flag. Nothing calls it now, so this row should fall out of the ' +
         '24h window on its own; if it does NOT, something is still invoking source-eventbrite.',
-      foursquare:
-        'Legacy api.foursquare.com is sunset; a port to places-api.foursquare.com plus a paid ' +
-        'service key is a product decision, not a repair. No cron — the callers are the ' +
-        'venue-ingestion-unified (03:00) and hotel-ingestion-pipeline (04:00) DAG nodes. Since ' +
-        '2026-08-30 a rejected credential is an InvalidCredentialsError raised OUTSIDE the breaker ' +
-        'and records a SUCCESS, so this row should self-clear on the next venue DAG run.',
       awin:
         'RETIRED FROM THE DAG 2026-09-20 (99991789915000). AWIN_FEED_URL is set but the feed ' +
         'does not answer 2xx, so mp_fill_awin remains correctly auto-paused. The duplicate ' +

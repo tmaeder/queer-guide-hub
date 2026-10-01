@@ -18,6 +18,7 @@ export const SOURCE_WEIGHTS: Record<string, number> = {
   admin: 1.0,
   google: 0.85,
   foursquare: 0.8,
+  foursquare_os: 0.8,
   tripadvisor: 0.8,
   tomtom: 0.75,
   wikidata: 0.75,
