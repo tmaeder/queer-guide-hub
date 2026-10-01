@@ -28,10 +28,10 @@ describe('TriageItemRow', () => {
         onToggleCheck={vi.fn()}
       />,
     );
-    expect(screen.getByText('Pending venue')).toBeInTheDocument();
-    expect(screen.getByText('Staging')).toBeInTheDocument();
-    expect(screen.getByText('Venue')).toBeInTheDocument();
-    expect(screen.getByText('diff')).toBeInTheDocument();
+    expect(screen.getByText('Pending venue')).not.toBeNull();
+    expect(screen.getByText('Staging')).not.toBeNull();
+    expect(screen.getByText('Venue')).not.toBeNull();
+    expect(screen.getByText('diff')).not.toBeNull();
   });
 
   it('shows confidence + age', () => {
@@ -44,8 +44,8 @@ describe('TriageItemRow', () => {
         onToggleCheck={vi.fn()}
       />,
     );
-    expect(screen.getByText('5h')).toBeInTheDocument();
-    expect(screen.getByText('65%')).toBeInTheDocument();
+    expect(screen.getByText('5h')).not.toBeNull();
+    expect(screen.getByText('65%')).not.toBeNull();
   });
 
   it('clicking the row opens the item', () => {
@@ -61,6 +61,22 @@ describe('TriageItemRow', () => {
     );
     fireEvent.click(screen.getByRole('button', { name: 'Open Pending venue' }));
     expect(onSelect).toHaveBeenCalled();
+  });
+
+  it('marks the open item as current', () => {
+    render(
+      <TriageItemRow
+        item={item}
+        isActive
+        isSelected={false}
+        onSelect={vi.fn()}
+        onToggleCheck={vi.fn()}
+      />,
+    );
+    expect(screen.getByRole('button', { name: 'Open Pending venue' })).toHaveAttribute(
+      'aria-current',
+      'true',
+    );
   });
 
   /**
@@ -151,7 +167,7 @@ describe('TriageItemRow', () => {
         onToggleCheck={vi.fn()}
       />,
     );
-    expect(screen.getByRole('checkbox', { name: 'Select Pending venue' })).toBeInTheDocument();
+    expect(screen.getByRole('checkbox', { name: 'Select Pending venue' })).not.toBeNull();
   });
 
   it('clicking checkbox calls onToggleCheck and stops propagation', () => {
@@ -245,8 +261,8 @@ describe('TriageItemRow — quality rows', () => {
         onToggleCheck={vi.fn()}
       />,
     );
-    expect(screen.getByText('Quality')).toBeInTheDocument();
-    expect(screen.queryByText('Quality City')).not.toBeInTheDocument();
+    expect(screen.getByText('Quality')).not.toBeNull();
+    expect(screen.queryByText('Quality City')).toBeNull();
   });
 
   it('shows the entity name in the title and the field as its own badge', () => {
@@ -259,9 +275,9 @@ describe('TriageItemRow — quality rows', () => {
         onToggleCheck={vi.fn()}
       />,
     );
-    expect(screen.getByText('Kabul')).toBeInTheDocument();
-    expect(screen.getByText('safety notes')).toBeInTheDocument();
-    expect(screen.queryByText('Kabul — safety_notes')).not.toBeInTheDocument();
+    expect(screen.getByText('Kabul')).not.toBeNull();
+    expect(screen.getByText('safety notes')).not.toBeNull();
+    expect(screen.queryByText('Kabul — safety_notes')).toBeNull();
   });
 
   /**
@@ -279,7 +295,23 @@ describe('TriageItemRow — quality rows', () => {
         onToggleCheck={vi.fn()}
       />,
     );
-    expect(screen.getByText('confirm')).toBeInTheDocument();
+    expect(screen.getByText('confirm')).not.toBeNull();
+    expect(screen.getByText('Safety')).not.toBeNull();
+    expect(screen.getByText('Public')).not.toBeNull();
+  });
+
+  it('shows when an item has crossed its queue SLA', () => {
+    render(
+      <TriageItemRow
+        item={qualityItem}
+        isActive={false}
+        isSelected={false}
+        onSelect={vi.fn()}
+        onToggleCheck={vi.fn()}
+        slaHours={0.5}
+      />,
+    );
+    expect(screen.getByText('Overdue')).not.toBeNull();
   });
 
   it('does not mark a row that carries no risk flag', () => {
@@ -296,6 +328,6 @@ describe('TriageItemRow — quality rows', () => {
         onToggleCheck={vi.fn()}
       />,
     );
-    expect(screen.queryByText('confirm')).not.toBeInTheDocument();
+    expect(screen.queryByText('confirm')).toBeNull();
   });
 });

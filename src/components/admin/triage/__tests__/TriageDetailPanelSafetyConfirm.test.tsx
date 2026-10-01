@@ -17,14 +17,18 @@ import { useState } from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import type { TriageAction } from '../resolveDecision';
 
-const { useEntityDataMock, useStagingDataMock } = vi.hoisted(() => ({
-  useEntityDataMock: vi.fn(),
-  useStagingDataMock: vi.fn(),
-}));
+const { useEntityDataMock, useStagingDataMock, useUpdateStagingReviewFieldsMock } = vi.hoisted(
+  () => ({
+    useEntityDataMock: vi.fn(),
+    useStagingDataMock: vi.fn(),
+    useUpdateStagingReviewFieldsMock: vi.fn(() => ({ mutateAsync: vi.fn(), isPending: false })),
+  }),
+);
 
 vi.mock('@/hooks/useTriageDetail', () => ({
   useEntityData: useEntityDataMock,
   useStagingData: useStagingDataMock,
+  useUpdateStagingReviewFields: useUpdateStagingReviewFieldsMock,
 }));
 vi.mock('../EntityPreviewCard', () => ({
   EntityPreviewCard: () => <div data-testid="entity-preview" />,
@@ -62,7 +66,6 @@ vi.mock('../ActionBar', () => ({
     </div>
   ),
 }));
-
 
 // The registry read and the audit timeline both use TanStack Query, which needs
 // a provider these tests deliberately do not mount. Mocked at the module

@@ -1,18 +1,23 @@
+import { useCallback, useState } from 'react';
 import { Link } from 'react-router';
 import { TrackLoader } from '@/components/transit/TrackLoader';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Checkbox } from '@/components/ui/checkbox';
 import { Clock, ShieldAlert, User, Zap } from 'lucide-react';
+import { toast } from 'sonner';
 import { EntityPreviewCard } from './EntityPreviewCard';
 import { StagingPreview } from './StagingPreview';
 import { FieldDiffView, computeFieldDiffs } from './FieldDiffView';
 import { ActionBar } from './ActionBar';
 import { DedupPairCompare } from './DedupPairCompare';
-import { PipelineInspector } from '@/components/admin/audit/PipelineInspector';
-import { useTriageSourceCapabilities } from '@/hooks/useTriageSourceCapabilities';
 import type { TriageItem } from '@/hooks/useUnifiedTriageQueue';
-import { useEntityData, useStagingData } from '@/hooks/useTriageDetail';
+import {
+  useEntityData,
+  useStagingData,
+  useUpdateStagingReviewFields,
+} from '@/hooks/useTriageDetail';
+import { StructuredValue } from './StructuredDataView';
+import { getTriageDecisionGuidance } from './triageDecisionGuidance';
 import {
   needsNamesakeConfirm,
   needsSafetyConfirm,
@@ -20,15 +25,10 @@ import {
   type TriageAction,
   type TriageAnswers,
 } from './resolveDecision';
+import { useTriageSourceCapabilities } from '@/hooks/useTriageSourceCapabilities';
 
 interface TriageDetailPanelProps {
   item: TriageItem;
-  /**
-   * CONTROLLED. This panel used to own the reviewer's answers and compute
-   * `confirm` / `{keep_id}` itself, which meant the keyboard — wired one level up in
-   * `TriageView` — bypassed every gate. It now reports answers up and asks for an
-   * action; `resolveDecision` decides what that action carries.
-   */
   answers: TriageAnswers;
   onAnswersChange: (patch: Partial<TriageAnswers>) => void;
   onAction: (action: TriageAction) => void;
@@ -46,16 +46,14 @@ function formatDate(dateStr: string): string {
 }
 
 /**
- * Queues the inbox lists but cannot decide: `triage_action` has no branch for
- * them, because the decision needs inputs this generic panel does not model.
- *
- * This USED to be a hardcoded `{ 'org-link-review': '/admin/quality' }` map,
- * which duplicated `triage_sources.capabilities.external_console` instead of
- * reading it — so the registry could be repointed (it has been, twice) and this
- * panel would keep sending reviewers to the old route. It is read from the
- * registry now; `useTriageSourceCapabilities` is the one reader.
+ * Queues the inbox lists but cannot decide: triage_action has no branch for
+ * them because the decision needs inputs this generic panel does not model.
+ * Mirrors triage_sources.capabilities.external_console. Deliberately excludes
+ * dedup-review, which does have a working branch and keeps its action bar.
  */
-const EXTERNAL_CONSOLE_LABEL = 'Open the console that decides this →';
+const EXTERNAL_CONSOLE: Record<string, { route: string; label: string }> = {
+  'org-link-review': { route: '/admin/quality', label: 'Review in Quality' },
+};
 
 /** Keys to hide from meta display — internal or already shown in header */
 const META_HIDDEN_KEYS = new Set([
@@ -73,29 +71,6 @@ const META_HIDDEN_KEYS = new Set([
   'raw_data',
   'source_data',
 ]);
-
-function formatMetaValue(value: unknown): string {
-  if (value === null || value === undefined) return '—';
-  if (typeof value === 'boolean') return value ? 'Yes' : 'No';
-  if (typeof value === 'number') {
-    if (value >= 0 && value <= 1 && value !== 0 && value !== 1) {
-      return `${Math.round(value * 100)}%`;
-    }
-    return String(value);
-  }
-  if (typeof value === 'string') {
-    if (/^[A-Z][A-Z_-]+$/.test(value)) {
-      return value
-        .replace(/_/g, ' ')
-        .replace(/-/g, ' ')
-        .toLowerCase()
-        .replace(/\b\w/g, (c) => c.toUpperCase());
-    }
-    return value;
-  }
-  if (Array.isArray(value)) return value.join(', ');
-  return JSON.stringify(value);
-}
 
 function formatMetaKey(key: string): string {
   return key.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
@@ -118,28 +93,64 @@ export function TriageDetailPanel({
 }: TriageDetailPanelProps) {
   const { data: entityData, isLoading: entityLoading } = useEntityData(item);
   const { data: stagingData } = useStagingData(item);
-  // Read from `triage_sources`, not from a literal in this file. While the
-  // registry is still loading this is undefined — and the action bar is held
-  // back until it resolves, because rendering Approve for a queue that
-  // `triage_action` refuses is exactly the state this replaced.
+  const updateStagingFields = useUpdateStagingReviewFields(item);
   const { externalConsoleFor, loading: capabilitiesLoading } = useTriageSourceCapabilities();
-  const externalConsole = externalConsoleFor(item.queue_type);
+  const registryExternalConsole = externalConsoleFor(item.queue_type);
+  const externalConsole = registryExternalConsole
+    ? { route: registryExternalConsole, label: 'Open decision console' }
+    : EXTERNAL_CONSOLE[item.queue_type];
 
   const isDedup = item.queue_type === 'dedup-review';
   const meta = (item.meta ?? null) as Record<string, unknown> | null;
   const originalKeepId = queuedKeepId(item);
 
-  // Both gate predicates come from `resolveDecision`, so the CHECKBOX and the
-  // REFUSAL can never drift apart. That split is exactly what let the keyboard
-  // approve a pair whose button was disabled.
+  // Namesake: `triage_src_dedup_review` has emitted this for personalities since the
+  // queue existed and no component ever read it. Two different people with one name
+  // merged together is an outing risk, so it gets an explicit confirm.
   const namesake = needsNamesakeConfirm(item);
+
+  // Outing-safety confirm. `approve_entity_review` raises 42501 —
+  // "high-risk destination: <field> approval requires explicit confirmation" —
+  // whenever `_review_risk_blocked` holds and the caller did not pass
+  // p_confirm. `triage_action` has forwarded that flag since it was written
+  // and `useTriageAction` has always had the parameter, but NO component ever
+  // set it, so every risk-gated quality row was un-approvable from the inbox
+  // by anyone: 347 rows on prod, 346 of them criminalizing-destination safety
+  // notes, i.e. precisely the highest-stakes content in the queue.
   const requiresConfirm = needsSafetyConfirm(item);
 
-  // Reviewer answers are owned by TriageView and keyed by item id, so nothing here
-  // needs a reset-on-advance: a leak across items is impossible by construction.
+  // Per-pair state, reset when the queue advances. The panel is reused in place, so
+  // without the reset the previous pair's canonical choice and namesake confirmation
+  // would carry silently onto the next one — and on the namesake flag that means the
+  // confirm gate is already satisfied for a pair nobody looked at.
+  //
+  // Adjusted DURING RENDER rather than in an effect (react-hooks/set-state-in-effect):
+  // an effect here would render the new pair once with the old pair's answers before
+  // correcting itself.
   const keepId = answers.keepId ?? originalKeepId;
   const namesakeConfirmed = Boolean(answers.namesakeConfirmed);
   const safetyConfirmed = Boolean(answers.safetyConfirmed);
+
+  const [reviewEdits, setReviewEdits] = useState({
+    id: item.id,
+    unsavedCount: 0,
+    savedFields: [] as string[],
+  });
+  if (reviewEdits.id !== item.id) {
+    setReviewEdits({ id: item.id, unsavedCount: 0, savedFields: [] });
+  }
+  const unsavedCount = reviewEdits.id === item.id ? reviewEdits.unsavedCount : 0;
+  const savedFields = reviewEdits.id === item.id ? reviewEdits.savedFields : [];
+  const handleDirtyChange = useCallback(
+    (count: number) => {
+      setReviewEdits((current) =>
+        current.id === item.id && current.unsavedCount === count
+          ? current
+          : { ...current, id: item.id, unsavedCount: count },
+      );
+    },
+    [item.id],
+  );
 
   const diffs =
     item.has_diff && entityData && stagingData
@@ -173,11 +184,20 @@ export function TriageDetailPanel({
     { sources?: string[]; gated?: boolean; closure?: string | null } | undefined;
   const fieldConfidence = (enriched?.field_confidence as Record<string, number> | undefined) ?? {};
   const confidenceRows = Object.entries(fieldConfidence).sort((a, b) => a[1] - b[1]);
+  const decisionGuidance = getTriageDecisionGuidance(item, {
+    changedFields: savedFields,
+    proposedFieldCount: diffs.length,
+    unsavedCount,
+  });
+  const approvalBlocked =
+    unsavedCount > 0 ||
+    (isDedup && namesake && !namesakeConfirmed) ||
+    (requiresConfirm && !safetyConfirmed);
 
   return (
     <div className="flex flex-col h-full">
       {/* Header */}
-      <div className="px-4 py-4 border-b space-y-1.5">
+      <div className="space-y-1.5 border-b border-border bg-background px-4 py-2">
         <div className="flex items-center gap-2 flex-wrap">
           <Badge variant="outline" className="text-2xs normal-case">
             {humanize(item.queue_type)}
@@ -191,7 +211,7 @@ export function TriageDetailPanel({
             </span>
           )}
         </div>
-        <h2 className="text-base font-medium leading-tight">{item.title}</h2>
+        <h2 className="text-title font-semibold leading-tight tracking-tight">{item.title}</h2>
         {item.subtitle && (
           <p className="text-xs text-muted-foreground">{humanize(item.subtitle)}</p>
         )}
@@ -216,7 +236,7 @@ export function TriageDetailPanel({
       </div>
 
       {/* Content */}
-      <div className="flex-1 overflow-y-auto">
+      <div className="flex-1 overflow-y-auto overscroll-contain bg-background">
         {entityLoading ? (
           <div className="flex items-center justify-center py-12">
             <TrackLoader size={20} />
@@ -224,14 +244,35 @@ export function TriageDetailPanel({
         ) : (
           <>
             {item.queue_type === 'staging' && stagingData ? (
-              <StagingPreview item={item} staging={stagingData as Record<string, unknown>} />
+              <StagingPreview
+                item={item}
+                staging={stagingData as Record<string, unknown>}
+                isSavingFields={updateStagingFields.isPending}
+                onDirtyChange={handleDirtyChange}
+                onSaveFields={async (changes) => {
+                  try {
+                    await updateStagingFields.mutateAsync(changes);
+                    setReviewEdits((current) => ({
+                      id: item.id,
+                      unsavedCount: 0,
+                      savedFields: Array.from(
+                        new Set([...current.savedFields, ...Object.keys(changes)]),
+                      ),
+                    }));
+                    toast.success('Corrections saved');
+                  } catch (error) {
+                    toast.error(`Could not save corrections: ${(error as Error).message}`);
+                    throw error;
+                  }
+                }}
+              />
             ) : isDedup ? (
               <div className="px-4 pt-4">
                 <DedupPairCompare
                   entityType={item.content_type}
                   meta={meta}
                   keepId={keepId}
-                  onFlip={(v) => onAnswersChange({ keepId: v })}
+                  onFlip={(value) => onAnswersChange({ keepId: value })}
                   flipped={Boolean(keepId && keepId !== originalKeepId)}
                 />
               </div>
@@ -240,7 +281,7 @@ export function TriageDetailPanel({
             )}
 
             {isDedup && namesake && (
-              <div className="border-t px-4 py-4">
+              <div className="border-t border-destructive/30 bg-destructive/[0.03] px-6 py-4">
                 <div className="flex items-start gap-2">
                   <ShieldAlert className="mt-0.5 h-4 w-4 shrink-0 text-destructive" />
                   <div className="min-w-0 space-y-2">
@@ -250,22 +291,11 @@ export function TriageDetailPanel({
                       their relationship graph, which no undo can fully rebuild. Check the Wikidata
                       id and the dates before approving.
                     </p>
-                    {/* The repo's Checkbox, not a raw <input>: `index.css` gives the
-                        44px WCAG 2.5.8 target to `label:has([role='checkbox'])`, and a
-                        native input carries no role attribute, so it fell through that
-                        rule and rendered ~13px wide inside a 44px-tall box. */}
-                    {/* htmlFor + id, the pairing TagMergeReviewQueue already uses:
-                        jsx-a11y cannot see Radix's button[role=checkbox] as a
-                        control, so a bare nested Checkbox fails
-                        label-has-associated-control. */}
-                    <label
-                      htmlFor="triage-namesake-confirm"
-                      className="flex items-center gap-2 text-13"
-                    >
-                      <Checkbox
-                        id="triage-namesake-confirm"
+                    <label className="flex items-center gap-2 text-13">
+                      <input
+                        type="checkbox"
                         checked={namesakeConfirmed}
-                        onCheckedChange={(v) => onAnswersChange({ namesakeConfirmed: v === true })}
+                        onChange={(e) => onAnswersChange({ namesakeConfirmed: e.target.checked })}
                       />
                       I have confirmed these are the same person
                     </label>
@@ -275,7 +305,7 @@ export function TriageDetailPanel({
             )}
 
             {requiresConfirm && (
-              <div className="border-t px-4 py-4">
+              <div className="border-t border-destructive/30 bg-destructive/[0.03] px-6 py-4">
                 <div className="flex items-start gap-2">
                   <ShieldAlert className="mt-0.5 h-4 w-4 shrink-0 text-destructive" />
                   <div className="min-w-0 space-y-2">
@@ -286,15 +316,12 @@ export function TriageDetailPanel({
                       — read the proposed text against the country&rsquo;s actual legal status
                       before approving.
                     </p>
-                    <label
-                      htmlFor="triage-safety-confirm"
-                      className="flex items-start gap-2 text-13"
-                    >
-                      <Checkbox
-                        id="triage-safety-confirm"
+                    <label className="flex items-start gap-2 text-13">
+                      <input
+                        type="checkbox"
                         className="mt-0.5"
                         checked={safetyConfirmed}
-                        onCheckedChange={(v) => onAnswersChange({ safetyConfirmed: v === true })}
+                        onChange={(e) => onAnswersChange({ safetyConfirmed: e.target.checked })}
                       />
                       <span>I have read this note and confirm it should publish</span>
                     </label>
@@ -309,26 +336,6 @@ export function TriageDetailPanel({
                   Changes
                 </p>
                 <FieldDiffView diffs={diffs} />
-              </div>
-            )}
-
-            {/* Why the machine proposed this. Only for a row that already has a
-                committed entity: a pre-commit staging row has no entity_id, and
-                StagingPreview above is the surface for that half. `entity_table`
-                is already the plural table name, which is exactly what
-                audit_entity_registry keys on — no mapping needed. */}
-            {item.entity_id && item.entity_table && (
-              <div className="border-t">
-                <p className="px-4 py-1.5 text-2xs font-medium text-muted-foreground uppercase tracking-wider bg-muted/50">
-                  Pipeline &amp; audit
-                </p>
-                <div className="px-4 py-2">
-                  <PipelineInspector
-                    entityType={item.entity_table}
-                    entityId={item.entity_id}
-                    limit={60}
-                  />
-                </div>
               </div>
             )}
 
@@ -391,7 +398,9 @@ export function TriageDetailPanel({
                       <span className="text-muted-foreground shrink-0 w-32 text-2xs uppercase tracking-wider">
                         {formatMetaKey(key)}
                       </span>
-                      <span className="min-w-0 break-words">{formatMetaValue(value)}</span>
+                      <span className="min-w-0 break-words">
+                        <StructuredValue value={value} />
+                      </span>
                     </div>
                   ))}
                 </div>
@@ -401,34 +410,28 @@ export function TriageDetailPanel({
         )}
       </div>
 
-      {/* Action bar — or a deep link out for queues decided elsewhere.
-          `capabilitiesLoading` is checked FIRST: until the registry answers we
-          do not know whether this queue has an external console, and showing
-          Approve for one that does means offering a button `triage_action`
-          refuses with 22023. Absence of an answer is not an answer. */}
-      {capabilitiesLoading ? (
-        <div className="border-t p-4">
-          <p className="text-13 text-muted-foreground">Checking how this queue is decided…</p>
-        </div>
-      ) : externalConsole ? (
-        <div className="flex items-center justify-between gap-4 border-t p-4">
+      {/* Action bar — or a deep link out for queues decided elsewhere */}
+      {!capabilitiesLoading && externalConsole ? (
+        <div className="flex items-center justify-between gap-4 border-t border-border bg-background p-4">
           <p className="text-13 text-muted-foreground">
             Decided in its own console — approving picks a target business.
           </p>
           <Button asChild size="sm" variant="outline">
-            <Link to={externalConsole}>{EXTERNAL_CONSOLE_LABEL}</Link>
+            <Link to={externalConsole.route}>{externalConsole.label} →</Link>
           </Button>
         </div>
-      ) : (isDedup && namesake && !namesakeConfirmed) || (requiresConfirm && !safetyConfirmed) ? (
+      ) : approvalBlocked ? (
         // The gate is on APPROVE only — reject and skip must stay available, or the
         // reviewer cannot clear a pair they have decided is two different people,
         // which is the outcome this flag exists to make easy. The same holds for a
         // safety note: "this claim should not publish" must be the easy answer.
         <div className="border-t">
           <p className="px-4 pt-4 text-13 text-muted-foreground">
-            {isDedup
-              ? 'Confirm the namesake check above to enable approving this merge.'
-              : 'Confirm the safety check above to enable publishing this note.'}
+            {unsavedCount > 0
+              ? 'Save or undo the inline corrections above before approving this item.'
+              : isDedup
+                ? 'Confirm the namesake check above to enable approving this merge.'
+                : 'Confirm the safety check above to enable publishing this note.'}
           </p>
           <ActionBar
             notes={answers.notes ?? ''}
@@ -437,6 +440,7 @@ export function TriageDetailPanel({
             onAction={onAction}
             isLoading={isActionLoading}
             disabledActions={['approve']}
+            guidance={decisionGuidance}
           />
         </div>
       ) : (
@@ -446,6 +450,7 @@ export function TriageDetailPanel({
           onAnswersChange={onAnswersChange}
           onAction={onAction}
           isLoading={isActionLoading}
+          guidance={decisionGuidance}
         />
       )}
     </div>

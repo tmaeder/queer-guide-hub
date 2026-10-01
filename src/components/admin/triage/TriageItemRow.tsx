@@ -1,31 +1,11 @@
+import { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { ShieldAlert } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { cn } from '@/lib/utils';
 import { splitQualityTitle, fieldBadgeLabel } from '@/lib/qualityQueue';
+import { queueByKey, queueImpact, queueRisk } from '@/config/adminQueues';
 import type { TriageItem } from '@/hooks/useUnifiedTriageQueue';
-
-const QUEUE_LABELS: Record<string, string> = {
-  staging: 'Staging',
-  moderation: 'Report',
-  submissions: 'Submission',
-  content: 'CMS',
-  automation: 'Auto',
-  tags: 'Tag',
-  duplicates: 'Dedup',
-  'news-quality': 'News QA',
-  'entity-links': 'Link',
-  // The five quality keys were missing, so every one of the ~4,000 quality
-  // rows fell through to humanize() and rendered "Quality Personality" — the
-  // queue name repeated on every row, which is the one thing it cannot help a
-  // reviewer distinguish. The entity is already on the content badge, so the
-  // queue badge says only what kind of queue this is.
-  'quality-city': 'Quality',
-  'quality-venue': 'Quality',
-  'quality-village': 'Quality',
-  'quality-personality': 'Quality',
-  'quality-marketplace': 'Quality',
-};
 
 const CONTENT_TYPE_LABELS: Record<string, string> = {
   venues: 'Venue',
@@ -46,8 +26,8 @@ function humanize(raw: string): string {
     .replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
-function formatAge(dateStr: string): string {
-  const ms = Date.now() - new Date(dateStr).getTime();
+function formatAge(dateStr: string, nowMs: number): string {
+  const ms = nowMs - new Date(dateStr).getTime();
   const hours = Math.floor(ms / 3_600_000);
   if (hours < 1) return '<1h';
   if (hours < 24) return `${hours}h`;
@@ -56,26 +36,12 @@ function formatAge(dateStr: string): string {
   return `${Math.floor(days / 30)}mo`;
 }
 
-/**
- * Confidence, LABELLED and monotonic.
- *
- * This returned the identical `${pct}%` string in all three branches, across two
- * colours, and gave the LOWEST band `font-medium` — so 30% rendered heavier than 60%.
- * At `text-2xs` (10px) that left the foreground/muted distinction carrying the whole
- * signal, and the number sat unlabelled directly beneath `formatAge` in the same font,
- * size, colour and `tabular-nums`: two bare numbers stacked in a rail with no header.
- *
- * `StagingPreview`'s `ScoreChip` already had this right — a muted label beside the
- * value, emphasis rising WITH the score — so this is its shape, not a new one. The
- * label is rendered by the caller so it can sit in the same flex row.
- */
 function confidenceLabel(score: number | null): { text: string; className: string } | null {
   if (score === null) return null;
   const pct = Math.round(score * 100);
-  return {
-    text: `${pct}%`,
-    className: score >= 0.8 ? 'font-semibold' : 'text-muted-foreground',
-  };
+  if (score >= 0.8) return { text: `${pct}%`, className: 'text-foreground' };
+  if (score >= 0.5) return { text: `${pct}%`, className: 'text-muted-foreground' };
+  return { text: `${pct}%`, className: 'text-muted-foreground font-medium' };
 }
 
 interface TriageItemRowProps {
@@ -84,6 +50,7 @@ interface TriageItemRowProps {
   isSelected: boolean;
   onSelect: () => void;
   onToggleCheck: () => void;
+  slaHours?: number;
 }
 
 export function TriageItemRow({
@@ -92,13 +59,37 @@ export function TriageItemRow({
   isSelected,
   onSelect,
   onToggleCheck,
+  slaHours,
 }: TriageItemRowProps) {
+  const [renderedAt] = useState(Date.now);
   const conf = confidenceLabel(item.confidence_score);
   const { name, field } = splitQualityTitle(item.title, item.meta?.field);
   const requiresConfirm = Boolean(
     (item.risk_flags as { confirm_may_be_required?: boolean } | undefined)?.confirm_may_be_required,
   );
   const contentLabel = CONTENT_TYPE_LABELS[item.content_type] ?? humanize(item.content_type);
+  const queue = queueByKey(item.queue_type);
+  const queueLabel = item.queue_type.startsWith('quality-')
+    ? 'Quality'
+    : (queue?.label ?? humanize(item.queue_type));
+  const flags = item.risk_flags as
+    | {
+        confirm_may_be_required?: boolean;
+        requires_confirm?: boolean;
+        safety?: boolean;
+        namesake?: boolean;
+      }
+    | undefined;
+  const safety = Boolean(
+    flags?.confirm_may_be_required ||
+    flags?.requires_confirm ||
+    flags?.safety ||
+    flags?.namesake ||
+    (queue && queueRisk(queue) === 'safety'),
+  );
+  const publicImpact = Boolean(queue && queueImpact(queue) === 'public');
+  const ageHours = (renderedAt - new Date(item.created_at).getTime()) / 3_600_000;
+  const overdue = slaHours != null && Number.isFinite(ageHours) && ageHours > slaHours;
 
   return (
     // The row is a plain container with an overlay button as its LAST child —
@@ -110,11 +101,11 @@ export function TriageItemRow({
     // component never mounted in CI.
     <div
       className={cn(
-        'relative flex items-start gap-2.5 px-4 py-2.5 border-b cursor-pointer transition-colors',
+        'group relative flex min-h-16 items-start gap-4 border-b border-border-hairline px-4 py-4 transition-colors',
         isActive
-          ? 'bg-foreground/[0.06] border-l border-l-foreground'
-          : 'hover:bg-muted/50 border-l border-l-transparent',
-        isSelected && !isActive && 'bg-muted/30',
+          ? 'border-l-4 border-l-foreground bg-muted/80'
+          : 'border-l-4 border-l-transparent hover:bg-muted/45',
+        isSelected && !isActive && 'bg-muted/60',
       )}
     >
       {/* h-6 w-6 (24px) rather than the primitive's 16px: this checkbox stands
@@ -126,20 +117,20 @@ export function TriageItemRow({
         onCheckedChange={() => onToggleCheck()}
         onClick={(e) => e.stopPropagation()}
         aria-label={`Select ${item.title}`}
-        className="relative z-10 shrink-0 mt-0.5 h-6 w-6"
+        className="relative z-10 mt-0.5 h-6 w-6 shrink-0"
       />
 
-      <div className="min-w-0 flex-1 space-y-0.5">
+      <div className="min-w-0 flex-1 space-y-1">
         {/* Title row */}
-        <p className={cn('text-sm truncate', isActive && 'font-medium')}>{name}</p>
+        <p className="truncate text-13 font-semibold leading-snug text-foreground">{name}</p>
 
         {/* Meta row */}
-        <div className="flex items-center gap-1.5 flex-wrap">
+        <div className="flex flex-wrap items-center gap-1.5">
           <Badge
             variant="outline"
             className="shrink-0 text-2xs font-normal normal-case px-1.5 py-0 h-4"
           >
-            {QUEUE_LABELS[item.queue_type] ?? humanize(item.queue_type)}
+            {queueLabel}
           </Badge>
           <Badge
             variant="secondary"
@@ -173,6 +164,31 @@ export function TriageItemRow({
               confirm
             </Badge>
           )}
+          {safety && (
+            <Badge
+              variant="outline"
+              className="shrink-0 text-2xs font-medium normal-case px-1.5 py-0 h-4"
+            >
+              Safety
+            </Badge>
+          )}
+          {overdue && (
+            <Badge
+              variant="destructive"
+              className="shrink-0 text-2xs font-medium normal-case px-1.5 py-0 h-4"
+              title={`SLA ${slaHours}h`}
+            >
+              Overdue
+            </Badge>
+          )}
+          {publicImpact && (
+            <Badge
+              variant="secondary"
+              className="shrink-0 text-2xs font-medium normal-case px-1.5 py-0 h-4"
+            >
+              Public
+            </Badge>
+          )}
           {item.has_diff && (
             <Badge variant="outline" className="shrink-0 text-2xs px-1 py-0 h-4">
               diff
@@ -187,17 +203,17 @@ export function TriageItemRow({
       </div>
 
       {/* Right side: confidence + age */}
-      <div className="flex flex-col items-end gap-0.5 shrink-0">
-        <span className="text-2xs text-muted-foreground tabular-nums">
-          {formatAge(item.created_at)}
+      <div className="flex shrink-0 flex-col items-end gap-1 pt-0.5">
+        <span className="text-2xs font-medium tabular-nums text-muted-foreground" title="Age">
+          {formatAge(item.created_at, renderedAt)}
         </span>
-        {/* `conf` names the number. Without it this was a bare percentage sitting
-            directly under a bare age in the same font, size and colour — two
-            unlabelled figures in a rail with no header, so neither read as anything. */}
         {conf && (
-          <span className="inline-flex items-baseline gap-1 text-2xs tabular-nums">
-            <span className="text-muted-foreground">conf</span>
-            <span className={conf.className}>{conf.text}</span>
+          <span
+            className={cn('text-2xs tabular-nums', conf.className)}
+            aria-label={`${conf.text} confidence`}
+            title="Confidence"
+          >
+            {conf.text}
           </span>
         )}
       </div>
@@ -217,7 +233,8 @@ export function TriageItemRow({
         type="button"
         onClick={onSelect}
         aria-label={`Open ${item.title}`}
-        className="absolute inset-0 min-h-0 cursor-pointer"
+        aria-current={isActive ? 'true' : undefined}
+        className="absolute inset-0 min-h-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring"
       />
     </div>
   );

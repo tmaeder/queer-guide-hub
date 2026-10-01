@@ -11,6 +11,8 @@ import { TriageView } from '@/components/admin/triage/TriageView';
 import { AutomationStatusCard } from '@/components/admin/AutomationStatusCard';
 import { useRegisterAdminCommandAction } from '@/components/admin/command-palette/useAdminCommandActions';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Keyboard } from 'lucide-react';
 
 /** Legacy /admin/review?tab= vocabulary → TriageView queue types. */
 const TAB_TO_QUEUE: Record<string, string> = {
@@ -70,51 +72,31 @@ export default function AdminInbox() {
   }, []);
 
   return (
-    <div className="flex flex-col h-full">
-      <header className="shrink-0 px-4 py-4 border-b border-border bg-background">
-        {/* `Inbox`, exactly, and nothing appended: `e2e/admin-inbox-renders.spec.ts`
-            matches { name: 'Inbox', exact: true } and is the ONLY regression guard for
-            the unfiltered union, which was down for six weeks behind an error banner.
-            A count in this string breaks it.
-
-            The disable below must stay on the line IMMEDIATELY above the <h1> —
-            `eslint-disable-next-line` means the next line, so a comment inserted
-            between them silently un-suppresses the rule. */}
-        {/* eslint-disable-next-line queerguide/admin-ui-primitives --
-            The inbox is a full-height app shell, not a standard page: this
-            header is a dense sticky bar (px-4 py-4, its own border) sitting
-            above a split pane. AdminPageHeader's mb-6/pb-6 block layout would
-            push the list below the fold. */}
-        <h1 className="text-headline font-bold leading-tight">Inbox</h1>
-        {/* The keyboard legend that used to live here is GONE, and so is the one in
-            TriageView's empty state. There were three copies; the `?` dialog below is
-            the only one that works when an item is selected — i.e. when a reviewer
-            would want the reminder — so it is the one that survives. */}
-        <p className="text-13 text-muted-foreground mt-1">
-          Work across queues, sorted by priority. The card below separates what the nightly jobs
-          clear from what is yours. Press{' '}
-          <kbd className="px-1 border border-border bg-muted text-2xs">?</kbd> for shortcuts.
-        </p>
+    <div className="flex h-full min-h-0 flex-col overflow-hidden">
+      <header className="flex min-h-12 shrink-0 flex-wrap items-center justify-between gap-x-6 gap-y-2 border-b border-border bg-background px-4 py-2 md:px-6">
+        <div className="flex min-w-0 items-center gap-4">
+          {/* eslint-disable-next-line queerguide/admin-ui-primitives -- compact app-shell title */}
+          <h1 className="text-title font-bold leading-none tracking-tight">Inbox</h1>
+          <AutomationStatusCard compact />
+        </div>
+        <div className="flex items-center gap-2">
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={() => setShowHelp(true)}
+            aria-keyshortcuts="?"
+            className="shrink-0 text-muted-foreground"
+          >
+            <Keyboard className="mr-1.5 size-4" aria-hidden="true" />
+            Shortcuts
+            <kbd className="ml-2 rounded-badge border border-border bg-muted px-1.5 py-0.5 text-2xs">
+              ?
+            </kbd>
+          </Button>
+        </div>
       </header>
-      {/* <AutomationStatusCard/> STAYS, and the attempt to remove it is worth recording.
-          It was taken out as chrome above a decision surface — 110-150px on a pane whose
-          action bar was below the fold. Two things overturned that:
-
-          1. `AdminGovernance` now bounds the triage box, so this card costs pane height
-             rather than pushing the action bar off-screen. The stronger half of the
-             argument for removing it was fixed elsewhere.
-          2. The replacement — a machine/human split on `TriageView`'s header row — was
-             built and then deleted, because `needs_human` is a CROSS-QUEUE sum while
-             that header's `total` is the FILTERED queue. It rendered "4,710 need you"
-             beside a total of 3,997: two different denominators side by side, which is
-             a worse number than the bare one it replaced.
-
-          So the framing stays where both halves come from one population. Do not move
-          this into the header without solving the denominator problem first. */}
-      <div className="shrink-0 px-4 pt-4">
-        <AutomationStatusCard />
-      </div>
-      <div className="flex-1 min-h-0">
+      <div className="min-h-0 flex-1">
         <TriageView initialQueueType={initialQueue} />
       </div>
 
