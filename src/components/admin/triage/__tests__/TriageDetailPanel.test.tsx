@@ -20,7 +20,13 @@ vi.mock('@/hooks/useTriageDetail', () => ({
 }));
 vi.mock('@/hooks/useTriageSourceCapabilities', () => ({
   useTriageSourceCapabilities: () => ({
-    externalConsoleFor: (queue: string) => (queue === 'org-link-review' ? '/admin/quality' : null),
+    // This mirrors `triage_sources.capabilities.external_console`, so the value
+    // must be the one PROD holds — measured 2026-10-01, the org-link-review row
+    // carries '/admin/governance?mode=engines'. A fixture naming a different URL
+    // still passes, which is worse than failing: it asserts a registry value the
+    // database does not have, and it outlived the route fix in this same branch.
+    externalConsoleFor: (queue: string) =>
+      queue === 'org-link-review' ? '/admin/governance?mode=engines' : null,
     loading: false,
   }),
 }));
@@ -153,7 +159,7 @@ describe('TriageDetailPanel — queues decided in an external console', () => {
     expect(screen.queryByTestId('actions')).not.toBeInTheDocument();
     expect(screen.getByRole('link', { name: /Open decision console/i })).toHaveAttribute(
       'href',
-      '/admin/quality',
+      '/admin/governance?mode=engines',
     );
   });
 
