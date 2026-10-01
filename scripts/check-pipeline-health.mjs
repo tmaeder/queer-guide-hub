@@ -4584,6 +4584,56 @@ const DISOWNED_PROSE_CEILING = 380
   }
 }
 
+// Venue accessibility claims whose citation is not in the source text.
+// A wrong access claim can strand a disabled person at a door they cannot get
+// through. Warn at the measured backlog and fail on growth.
+{
+  console.log('')
+  console.log('Venue accessibility evidence')
+  const res = await fetch(`${BASE}/rest/v1/rpc/venue_accessibility_evidence_signals`, {
+    method: 'POST',
+    headers: { ...headers, 'Content-Type': 'application/json' },
+    body: '{}',
+  })
+  if (res.status === 404) {
+    console.warn('⚠ venue_accessibility_evidence_signals → HTTP 404 (not applied? migration 99991790879465)')
+    console.warn('  This check measured NOTHING — it did not pass.')
+  } else if (!res.ok) {
+    console.error(`✗ venue_accessibility_evidence_signals → HTTP ${res.status}`)
+    FAILED = true
+  } else {
+    const sig = (await res.json()) ?? {}
+    let sectionOk = true
+    if (sig.probe_ok !== true) {
+      console.error('✗ venue_accessibility_evidence_signals returned no probe_ok — the probe is broken, not the corpus')
+      FAILED = true
+      sectionOk = false
+    }
+    const cohort = Number(sig.live_machine_claims ?? 0)
+    const venues = Number(sig.live_venues ?? 0)
+    console.log(`  cohort: ${cohort} machine-approved accessibility claim(s) live on ${venues} venue(s)`)
+
+    const BASELINE_UNGROUNDED = 270
+    const ungrounded = Number(sig.ungrounded_live_claims ?? 0)
+    const ungroundedVenues = Number(sig.ungrounded_live_venues ?? 0)
+    if (ungrounded > BASELINE_UNGROUNDED) {
+      console.error(
+        `✗ live accessibility claims with no grounded citation grew ${BASELINE_UNGROUNDED} → ${ungrounded} ` +
+          `(${ungroundedVenues} venue(s)) — something is publishing access claims whose cited quote is not in the source`,
+      )
+      console.error('  → check amenity-truth-backfill run summaries for accessibility_evidence_refused; the extractor guard may have been bypassed')
+      FAILED = true
+      sectionOk = false
+    } else if (ungrounded > 0) {
+      console.log(`  ${ungrounded} ungrounded claim(s) on ${ungroundedVenues} venue(s) await a calibrated per-slug pass (baseline ${BASELINE_UNGROUNDED})`)
+    }
+    console.log(`  ${Number(sig.open_queue_claims ?? 0)} accessibility proposal(s) open for review`)
+    if (sectionOk) {
+      console.log(`✓ venue accessibility evidence within baseline (${ungrounded}/${BASELINE_UNGROUNDED} ungrounded)`)
+    }
+  }
+}
+
 if (FAILED) {
   console.error('')
   console.error('✗ Pipeline health check FAILED — every section above ran; each ✗ line is a separate problem')

@@ -186,6 +186,13 @@ Deno.serve(async (req: Request) => {
   const accessibilitySlugs = [...vocab.accessibility]
 
   let cleaned = 0, filled = 0, gated = 0, queued = 0, queueSkipped = 0, queueRejected = 0, queueErrors = 0
+  // Accessibility slugs the evidence guard dropped, by reason. Reported because
+  // a refusal nobody counts reads exactly like a model that proposed nothing.
+  const evidenceRefused: Record<string, number> = {}
+  // Only the two reasons a human can act on: `unrecognised_slug` names a gap in
+  // the evidence vocabulary, `miscited` names a claim the source DOES support
+  // that was cited to the wrong sentence and is worth re-deriving.
+  const refusedDetail: string[] = []
   const results: Array<Record<string, unknown>> = []
 
   // Fields already awaiting a human. `uq_erq_open` is a PARTIAL unique index on
@@ -262,6 +269,14 @@ Deno.serve(async (req: Request) => {
           if ((ai.confidence ?? 0) >= AUTO_APPLY_CONFIDENCE && ai.amenities?.length) {
             nextAmenities = uniqSorted(nextAmenities, ai.amenities)
             provenance.push({ field: 'amenities', source: 'llm', value: ai.amenities, confidence: ai.confidence ?? 0.8 })
+          }
+          // Only slugs the cited text actually supports survive the extractor's
+          // evidence guard; `accessibility_refused` is everything it dropped.
+          // Counted and named per reason so a gap in the evidence vocabulary
+          // shows up as a rising number here rather than as a quiet absence.
+          for (const r of ai.accessibility_refused ?? []) {
+            evidenceRefused[r.reason] = (evidenceRefused[r.reason] ?? 0) + 1
+            if (r.reason === 'unrecognised_slug' || r.reason === 'miscited') refusedDetail.push(r.detail)
           }
           if (ai.accessibility_attributes?.length) {
             gatedProposals.push({ field: 'accessibility_attributes', value: { value: ai.accessibility_attributes }, cite: citations, confidence: ai.confidence ?? 0.5 })
@@ -362,6 +377,8 @@ Deno.serve(async (req: Request) => {
     ...(queueRejected ? { queue_rejected_before: queueRejected } : {}),
     ...(queueErrors ? { queue_errors: queueErrors } : {}),
     ...(guard.precheckFailed ? { queue_precheck_failed: true } : {}),
+    ...(Object.keys(evidenceRefused).length ? { accessibility_evidence_refused: evidenceRefused } : {}),
+    ...(refusedDetail.length ? { accessibility_evidence_notes: refusedDetail.slice(0, 25) } : {}),
   }
 
   if (!dryRun && !venueIds?.length) {
