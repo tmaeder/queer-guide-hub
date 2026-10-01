@@ -200,12 +200,12 @@ describe('tag_hygiene_stats language sentinels', () => {
     const baseline = JSON.parse(
       readFileSync(join(process.cwd(), 'scripts', 'tag-hygiene-baseline.json'), 'utf8'),
     );
-    // Three are true zero-invariants again. name_mojibake is NOT: prod carries one
-    // merged row (M-FFFD-Llerian) whose NAME holds a U+FFFD, and nothing in
-    // this branch repairs it — its "corrected" slug would still be garbage, and
-    // it is merged, so nothing renders it. Baselining it at 0 would hard-fail
-    // the gate the moment the sentinel migration applied. The accepted level is
-    // the measured one; a SECOND mojibake row is the regression worth catching.
+    // All five are zero-invariants as of 2026-09-30. name_mojibake was the
+    // exception and is no longer: this said "prod carries one merged row
+    // (M-FFFD-Llerian) whose NAME holds a U+FFFD ... baselining it at 0 would
+    // hard-fail the gate", and live now measures 0 — the counter excludes
+    // status = 'merged', which is exactly where that row sits. So 0 is the
+    // accepted level and any count is a LIVE row, not the known artifact.
     //
     // slug_diacritic_lossy briefly stopped being one on 2026-09-14, when
     // 50900101100100 (#3705) demoted three mojibake person rows
@@ -214,9 +214,14 @@ describe('tag_hygiene_stats language sentinels', () => {
     // unavailable was RESTORING THE MERGE (20260914175649), not transliterating
     // -- which really would collide with the correctly-spelled twin that
     // already exists. Live reads 0, so a FOURTH row is a real defect.
+    //
+    // These are VALUES, not just key presence, so a re-baseline that moves one
+    // has to come here and justify it. That is deliberate friction: it is what
+    // turned the 2026-09-30 sweep from eleven silent "improvements" into a
+    // decision about each counter.
     const expected: Record<string, number> = {
       slug_diacritic_lossy: 0,
-      name_mojibake: 1,
+      name_mojibake: 0,
       name_contains_hashtag: 0,
       non_latin_name: 0,
       indexable_marketplace_facet: 0,

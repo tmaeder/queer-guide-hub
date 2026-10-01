@@ -119,12 +119,25 @@ describe('tag hygiene metric set', () => {
     expect(HYGIENE_METRICS.filter((m) => m.advisory && m.zero)).toEqual([]);
   });
 
-  it('marks a counter as a hard zero exactly when its committed baseline is zero', () => {
+  it('marks a counter as a hard zero exactly when its baseline is zero AND it is gated', () => {
     // Both directions matter. A `zero` flag on a counter whose accepted level is
     // non-zero renders permanently red, which trains admins to ignore red; a
     // missing flag on a counter that has since been ratcheted to 0 lets a real
     // regression render as an ordinary grey number.
-    const shouldBeZero = HYGIENE_METRICS.filter((m) => baseline[m.key] === 0).map((m) => m.key);
+    //
+    // `&& !m.advisory` is load-bearing and was added 2026-09-30, when it emerged
+    // that this test and the one directly above are UNSATISFIABLE together the
+    // moment an advisory counter reaches 0 — that one forbids `zero` on an
+    // advisory metric, this one demanded it. Eight advisory counters hit 0 in the
+    // same re-baseline, so the pair went from latently contradictory to actually
+    // failing. The sibling's reasoning wins: `zero: true` paints the figure
+    // destructive, and CI only WARNS on an advisory metric, so painting it
+    // build-breaking is a lie about what will happen. The condition encoded here
+    // is therefore "ratcheted to 0 and actually gated", which is what `zero`
+    // means on the panel.
+    const shouldBeZero = HYGIENE_METRICS.filter((m) => baseline[m.key] === 0 && !m.advisory).map(
+      (m) => m.key,
+    );
     const areZero = HYGIENE_METRICS.filter((m) => m.zero).map((m) => m.key);
     expect([...areZero].sort()).toEqual([...shouldBeZero].sort());
   });
