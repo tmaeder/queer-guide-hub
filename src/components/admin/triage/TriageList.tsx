@@ -45,7 +45,7 @@ export function TriageList({
           <CheckCircle2 className="size-5" aria-hidden="true" />
         </span>
         <div>
-          <p className="text-13 font-semibold text-foreground">No items to review</p>
+          <p className="text-13 font-semibold text-foreground">No items to review.</p>
           <p className="mt-1 max-w-64 text-xs leading-relaxed text-muted-foreground">
             This scope is clear. Choose another queue or remove filters to keep reviewing.
           </p>

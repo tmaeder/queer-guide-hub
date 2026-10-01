@@ -11,7 +11,7 @@ export interface QueueChip {
 export const inboxDefinitions = (): AdminQueueDef[] =>
   ADMIN_QUEUES.filter(
     (queue): queue is AdminQueueDef & { queueKey: string } =>
-      Boolean(queue.queueKey) && queue.route.startsWith('/admin/inbox'),
+      Boolean(queue.queueKey) && queue.route.startsWith('/admin/governance?mode=triage'),
   );
 
 /** Derive the filter vocabulary from the same registry as cockpit navigation. */
