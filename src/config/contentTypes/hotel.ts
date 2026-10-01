@@ -91,7 +91,14 @@ export const hotelFields: FieldConfig[] = [
     min: -180,
     max: 180,
   },
-  { name: 'phone', label: 'Phone', type: 'phone', group: 'details' },
+  {
+    name: 'phone',
+    label: 'Phone',
+    type: 'phone',
+    group: 'details',
+    helpText:
+      'Saved as +<country code><number> without spaces, e.g. +493012345678. A national number is converted using the country.',
+  },
   { name: 'email', label: 'Email', type: 'email', group: 'details' },
   { name: 'website', label: 'Website', type: 'url', group: 'details' },
   { name: 'booking_url', label: 'Booking URL', type: 'url', group: 'details' },
