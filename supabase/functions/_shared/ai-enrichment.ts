@@ -7,6 +7,7 @@
 
 import type { SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5'
 import { extractJsonCandidates } from './json-extract.ts'
+import { filterAccessibilityByEvidence } from './accessibility-evidence.ts'
 import { chatCompletion, isOpenAIAvailable } from './openai-client.ts'
 import { withVoice, type VoiceProfile } from './voice-style.ts'
 
@@ -730,10 +731,30 @@ Respond with JSON using these keys (null where unknown):
 
 export interface VenueAmenityExtraction {
   amenities?: string[]                // MUST be slugs from the supplied canonical list
-  accessibility_attributes?: string[] // MUST be slugs from the supplied list  [REVIEW-GATED]
+  /**
+   * Slugs from the supplied list  [REVIEW-GATED]
+   *
+   * Only slugs whose own citation survives `filterAccessibilityByEvidence` reach
+   * this array — see `accessibility_refused` for what was dropped, and
+   * `_shared/accessibility-evidence.ts` for why. Measured on the live review
+   * queue 2026-10-01, 23 of 30 proposals were not supported by the quote cited
+   * for them ("especially among Chinese men" -> `wheelchair-accessible`).
+   */
+  accessibility_attributes?: string[]
   accessibility_notes?: string        // free text  [REVIEW-GATED]
   citations?: { field: string; quote: string }[]
   confidence?: number                 // 0.0-1.0 how well the text supported the extraction
+  /**
+   * Accessibility slugs the model proposed that the evidence guard refused, each
+   * with its reason and the quotes it was cited on.
+   *
+   * REPORTED, NEVER SILENTLY DROPPED. A refusal that leaves no trace is
+   * indistinguishable from a model that returned nothing, which is the shape
+   * that hides a gap in the evidence vocabulary — so callers surface these in
+   * their run summary, and a rising count of `no_evidence` on a term the corpus
+   * plainly uses is the signal to widen it rather than to loosen the gate.
+   */
+  accessibility_refused?: Array<{ slug: string; reason: string; detail: string }>
 }
 
 const VENUE_AMENITY_KEYS = ['amenities', 'accessibility_attributes', 'accessibility_notes', 'citations', 'confidence']
@@ -795,12 +816,33 @@ Respond with JSON (empty arrays / null where unknown):
     // Defense-in-depth: clamp model output to the allowed vocabulary even if it strays.
     const amSet = new Set(input.canonicalAmenities)
     const acSet = new Set(input.canonicalAccessibility)
+    const citations = Array.isArray(parsed.citations) ? parsed.citations : []
+
+    // A slug in the vocabulary is not the same as a slug the text supports. The
+    // clamp above only proves the model did not invent a term; the guard below
+    // asks whether the quote it cited says anything about the term it chose.
+    // Grounded against the same text the prompt carried — description plus the
+    // tag line, nothing the model was not shown.
+    const shown = tagLine ? `${text}\n${tagLine}` : text
+    const evidence = filterAccessibilityByEvidence(
+      (parsed.accessibility_attributes ?? []).filter((s) => acSet.has(s)),
+      citations,
+      shown,
+    )
+    if (evidence.refused.length) {
+      console.warn(
+        `[amenity-extract] accessibility refused for ${input.name}: ` +
+          evidence.refused.map((r) => `${r.slug}=${r.reason}`).join(', '),
+      )
+    }
+
     return {
       amenities: (parsed.amenities ?? []).filter((s) => amSet.has(s)),
-      accessibility_attributes: (parsed.accessibility_attributes ?? []).filter((s) => acSet.has(s)),
+      accessibility_attributes: evidence.kept,
       accessibility_notes: parsed.accessibility_notes,
-      citations: Array.isArray(parsed.citations) ? parsed.citations : [],
+      citations,
       confidence: typeof parsed.confidence === 'number' ? parsed.confidence : 0.5,
+      accessibility_refused: evidence.refused,
     }
   } catch (err) {
     console.error('Venue amenity extraction failed:', (err as Error).message)
