@@ -37,7 +37,7 @@ describe('TriageFilterBar', () => {
   it('derives every inbox queue from the central registry', () => {
     const represented = new Set(buildInboxQueueChips(counts).flatMap((chip) => chip.keys));
     const expected = ADMIN_QUEUES.filter(
-      (queue) => queue.queueKey && queue.route.startsWith('/admin/inbox'),
+      (queue) => queue.queueKey && queue.route.startsWith('/admin/governance?mode=triage'),
     ).map((queue) => queue.queueKey);
     expect(represented).toEqual(new Set(expected));
   });
