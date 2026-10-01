@@ -4233,6 +4233,9 @@ const DISOWNED_PROSE_CEILING = 380
         console.log(`✓ i18n dispatch reaching all targets (${q.targets_enabled} enabled, locales ${locales}, ${q.unresolved} in flight)`)
       }
     }
+  }
+}
+
 // §23 — phone numbers are stored in ONE format: E.164 (+<calling code><number>).
 // phone_canonical_guard() rewrites every write on venues / organizations /
 // hotels, so a non-E.164 value means a writer bypassed it (or the trigger is
