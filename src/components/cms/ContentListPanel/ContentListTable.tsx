@@ -414,7 +414,12 @@ export function ContentListTable({
             ) : (
               items.map((item) => {
                 const itemKey = `${item.contentType}-${item.id}`;
-                const rowConfig = getContentType(item.contentType) ?? config;
+                // A type-specific list already receives its effective config,
+                // including any page-level row actions. Only the mixed "All
+                // Content" view needs to resolve configuration per row.
+                const rowConfig = contentTypeId
+                  ? config
+                  : (getContentType(item.contentType) ?? config);
                 const isSelected = selected.has(itemKey);
                 const rowColor = item.contentTypeColor;
                 const statusColor = getStatusColor(item.status);
