@@ -717,6 +717,112 @@ describe('99991790719601 folds unified_tags without reverting the live body', ()
 });
 
 /**
+ * `prose_unreviewed` matches its producer (2026-09-30, 99991790828215).
+ *
+ * 99991789930597 narrowed this counter to `publication_role = 'article'`. All
+ * 1,632 article rows are stamped, so it read 0 — and would have kept reading 0
+ * WHETHER OR NOT THE CRON RAN. Its own baseline note states the contract it
+ * could no longer honour: "a flat high number means the cron stopped."
+ *
+ * The producer is NOT role-scoped. tag-enrichment-sweep/index.ts:447 selects
+ * `status = 'active'` and `description is not null` only, walking all 8,470
+ * active prose-bearing rows, so its real queue was 4,056 (3,990 utility + 66
+ * entity_redirect) against a gauge reading 0. A gauge scoped narrower than its
+ * producer cannot report that producer stopping.
+ *
+ * Not cosmetic: 975 of those are reader-reachable, because fetchTagPreviews
+ * (src/hooks/useTagPreviews.ts:36) filters `status = 'active'` and NOTHING else
+ * — no role, no seo_indexable — so utility prose surfaces in the hover card.
+ * 131 sit at usage >= 100, max 20,353.
+ *
+ * ONLY THIS ARM MOVED. The other two were measured and their scoping is
+ * correct: uncategorized_active (458 utility rows) and
+ * sensitive_without_description (71) both describe rows with no page and no
+ * search presence, so widening them manufactures work. This file is the layer
+ * that stops a future pass "tidying" all three to match.
+ *
+ * Asserted against the MIGRATION text, not `sql`: this migration patches
+ * pg_get_functiondef() and contains no `create or replace`, so
+ * latestDefinitionOf() cannot see it and would return a stale definition.
+ */
+describe('tag_hygiene_stats() prose_unreviewed is not role-scoped', () => {
+  const MIG = '99991790828215_tag_hygiene_prose_unreviewed_matches_its_producer.sql';
+  const mig = (() => {
+    const i = files.indexOf(MIG);
+    expect(i, `${MIG} is missing`).toBeGreaterThan(-1);
+    return sources[i];
+  })();
+
+  it('PATCHES the live definition and never restates it', () => {
+    // A restatement reverts 99991789930597's surgery AND 99991790719601's ut
+    // CTE and work_mem, whichever the authoring file happened to omit.
+    expect(
+      /create\s+(or\s+replace\s+)?function\s+public\.tag_hygiene_stats\s*\(/i.test(mig),
+      'this migration restates tag_hygiene_stats; it must patch pg_get_functiondef()',
+    ).toBe(false);
+    expect(mig).toMatch(/pg_get_functiondef\s*\(\s*p\.oid\s*\)/i);
+  });
+
+  it('widens exactly the prose arm, naming both the old and new text', () => {
+    expect(mig).toContain(
+      "'where publication_role = ''article'' and description is not null and prose_reviewed_at is null)'",
+    );
+    expect(mig).toContain("'where description is not null and prose_reviewed_at is null)'");
+  });
+
+  it('counts the arm text to be sure the replace cannot widen', () => {
+    // A literal-occurrence count, not a regex: no escaping can broaden it, and
+    // two occurrences would mean the replace silently rewrites another counter.
+    expect(mig).toMatch(/length\(replace\(src, old_arm, ''\)\)\) \/ length\(old_arm\)/);
+    expect(mig).toMatch(/occurs % times, expected 1/);
+  });
+
+  it('keeps the other two counters role-scoped, asserted BY NAME', () => {
+    // Count alone is satisfied by unscoping the wrong arm and leaving 2.
+    expect(mig).toContain("publication_role = ''article'' and category_id is null");
+    expect(mig).toContain("publication_role = ''article'' and (is_sensitive or is_adult)");
+    expect(mig).toMatch(/role-scoped arms remain, expected 2/);
+  });
+
+  it('asserts 99991790719601 and 99991789930597 both survive the patch', () => {
+    expect(mig).toContain("position('ut as materialized' in src) = 0");
+    expect(mig).toMatch(/unified_tags read % times, expected 3/);
+    expect(mig).toContain("position('group by lower(btrim(name)), entity_kind' in src) = 0");
+    for (const k of ['search_path=public', 'enable_indexonlyscan=off', 'work_mem=48MB']) {
+      expect(mig, `${k} is not asserted in the verify block`).toContain(`'${k}'`);
+    }
+  });
+
+  it('compares the counter against a COMPUTED queue, never a frozen literal', () => {
+    // The corpus moves, so a hardcoded 4056 would rot into a false failure.
+    expect(mig).toMatch(/into counter_val/);
+    expect(mig).toMatch(/select count\(\*\) into expected from unified_tags/);
+    expect(mig).toMatch(/counter_val <> expected/);
+    // And it must NOT abort on zero: a rebuild-from-zero has an empty corpus,
+    // where 0 = 0 is the correct answer.
+    expect(mig).not.toMatch(/if counter_val = 0 then\s*\n\s*raise exception/);
+  });
+
+  it('is soft on preconditions so a re-run cannot block the repo', () => {
+    expect(mig).toMatch(/if position\(new_arm in src\) > 0 then\s*\n\s*raise notice/);
+  });
+
+  it('baselines the widened counter and keeps it advisory', () => {
+    const baseline = JSON.parse(
+      readFileSync(join(process.cwd(), 'scripts', 'tag-hygiene-baseline.json'), 'utf8'),
+    );
+    // 4,056 measured on prod 2026-09-30. A re-narrowing would read 0, which is
+    // an "improvement" the ratchet happily accepts — hence the lower bound.
+    expect(baseline.prose_unreviewed, 'prose_unreviewed was re-narrowed to 0').toBeGreaterThan(
+      1000,
+    );
+    // Queue depth, not an invariant: the house rule is to gate on AGE or a
+    // write-time invariant, never on a level.
+    expect(baseline._advisory ?? []).toContain('prose_unreviewed');
+  });
+});
+
+/**
  * The baseline FILE contract, as opposed to the SQL above.
  *
  * `--update` used to rebuild the baseline as `{_comment, ...metrics, _notes}`,
