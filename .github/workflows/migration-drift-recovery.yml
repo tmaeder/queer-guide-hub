@@ -57,7 +57,7 @@ jobs:
           # the PR are attributed to a real user. See the token note below.
           token: ${{ secrets.DRIFT_RECOVERY_PAT || secrets.GITHUB_TOKEN }}
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version: '20'
 
