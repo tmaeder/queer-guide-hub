@@ -112,6 +112,10 @@ begin
     from pg_proc p join pg_namespace ns on ns.oid = p.pronamespace
    where ns.nspname = 'public' and p.proname = 'tag_hygiene_stats';
 
+  -- pg_get_functiondef() includes comments. Remove them before structural
+  -- assertions so explanatory prose cannot satisfy a missing-code check.
+  src := regexp_replace(src, '--[^' || chr(10) || ']*', '', 'g');
+
   -- P1. The arm is unscoped, and ONLY it.
   if position('where description is not null and prose_reviewed_at is null)' in src) = 0 then
     raise exception 'P1: prose_unreviewed is still role-scoped';

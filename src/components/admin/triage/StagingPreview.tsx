@@ -45,15 +45,19 @@ function collectImages(
   return Array.from(new Set(urls)).slice(0, 6);
 }
 
-function sourceUrl(normalized: Record<string, unknown>): string | null {
+function sourceUrl(normalized: Record<string, unknown>): URL | null {
   const meta = (normalized.metadata ?? {}) as Record<string, unknown>;
   const candidates = [normalized.url, normalized.source_url, meta.url, meta.source_url];
-  for (const c of candidates) {
-    if (typeof c === 'string' && /^https?:\/\//.test(c)) return c;
-  }
   const urls = normalized.urls;
-  if (Array.isArray(urls) && typeof urls[0] === 'string' && /^https?:\/\//.test(urls[0])) {
-    return urls[0];
+  if (Array.isArray(urls)) candidates.push(urls[0]);
+  for (const candidate of candidates) {
+    if (typeof candidate !== 'string') continue;
+    try {
+      const parsed = new URL(candidate);
+      if (parsed.protocol === 'http:' || parsed.protocol === 'https:') return parsed;
+    } catch {
+      // A malformed source URL must not crash the entire review panel.
+    }
   }
   return null;
 }
@@ -207,12 +211,12 @@ export function StagingPreview({
         {link && (
           <p className="text-xs">
             <a
-              href={link}
+              href={link.href}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-1 text-muted-foreground hover:text-foreground"
             >
-              {new URL(link).hostname.replace(/^www\./, '')}
+              {link.hostname.replace(/^www\./, '')}
               <ExternalLink className="h-3 w-3" />
             </a>
           </p>
