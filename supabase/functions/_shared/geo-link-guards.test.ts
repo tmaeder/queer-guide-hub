@@ -4,6 +4,7 @@ import {
   cityCoordContradiction,
   cityLinkContradiction,
   distanceKm,
+  linkWriteStatus,
   mergeRoundRobin,
 } from './geo-link-guards.ts';
 
@@ -121,4 +122,32 @@ Deno.test('mergeRoundRobin: successive runs visit every row, not the same head',
     cursor = r.cursor;
   }
   assertEquals([...seen].sort(), ['a', 'b', 'c', 'd', 'e']);
+});
+
+const S = (existingCityId: string | null, existingCountryId: string | null, newCityId: string | null, newCountryId: string | null) =>
+  linkWriteStatus({ existingCityId, existingCountryId, newCityId, newCountryId });
+
+Deno.test('linkWriteStatus: a known country and no city is a no-op, not a partial link', () => {
+  // The case that inflated total_linked: country already on the row, no city found.
+  assertEquals(S(null, 'DE', null, 'DE'), 'skipped');
+});
+
+Deno.test('linkWriteStatus: writing the city onto a row with a country is a link', () => {
+  assertEquals(S(null, 'DE', 'berlin', 'DE'), 'linked');
+});
+
+Deno.test('linkWriteStatus: writing both ids is a link', () => {
+  assertEquals(S(null, null, 'berlin', 'DE'), 'linked');
+});
+
+Deno.test('linkWriteStatus: writing only a country is partial', () => {
+  assertEquals(S(null, null, null, 'DE'), 'partial');
+});
+
+Deno.test('linkWriteStatus: writing a country onto a row that has a city completes it', () => {
+  assertEquals(S('berlin', null, 'berlin', 'DE'), 'linked');
+});
+
+Deno.test('linkWriteStatus: nothing resolved is skipped', () => {
+  assertEquals(S(null, null, null, null), 'skipped');
 });

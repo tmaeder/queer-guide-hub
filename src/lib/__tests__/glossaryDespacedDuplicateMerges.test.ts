@@ -151,6 +151,20 @@ describe('postconditions assert the reached state', () => {
     expect(verify).toMatch(/if v_bad <> 7 then/);
   });
 
+  it("asserts P1's own VALUES list keeper-first, not only the work block", () => {
+    // Found by mutation, after this migration had already merged. Reversing a pair in
+    // P1's list ALONE leaves the work block correct, so the direction check above
+    // stays green and this file passed.
+    //
+    // No silent wrong outcome was reachable: P1 joins its list and requires 7, so a
+    // reversed entry yields 6 and the migration raises at apply; and a reversal
+    // applied to BOTH lists is caught by the work-block check. The guard was simply
+    // the weaker of the two layers, which it should not be.
+    for (const [keep, drop] of PAIRS) {
+      expect(verify).toMatch(new RegExp(`'${keep}'\\s*,\\s*'${drop}'`));
+    }
+  });
+
   it('proves the CONTENT survived on the three substance keepers', () => {
     // This is the half the tempting direction would have destroyed.
     expect(verify).toMatch(/slug\s*=\s*'darkroom'[\s\S]{0,80}> 2000/);
