@@ -4,6 +4,7 @@ import {
   persistState,
   relativeTime,
   extractStatus,
+  resolveStatusField,
   getStatusColor,
   getStatusLabel,
   getStatusTint,
@@ -70,6 +71,18 @@ describe('ContentListPanel/types', () => {
   it('extractStatus returns string or undefined', () => {
     const r = extractStatus({ status: 'draft' }, 'venues');
     expect(typeof r === 'string' || r === undefined).toBe(true);
+  });
+
+  it('resolves only registered status fields for inline editing', () => {
+    const config = {
+      fields: [
+        { name: 'status', label: 'Status', type: 'select', group: 'settings' },
+        { name: 'name', label: 'Name', type: 'text', group: 'basic' },
+      ],
+    } as never;
+    expect(resolveStatusField({ status: 'published' }, config)).toBe('status');
+    expect(resolveStatusField({ workflow_state: 'draft' }, config)).toBeNull();
+    expect(resolveStatusField({ status: 'published' }, null)).toBeNull();
   });
 
   it('getStatusColor returns a color', () => {
