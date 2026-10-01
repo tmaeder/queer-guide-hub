@@ -11,7 +11,8 @@
  *   - CrisisBar and CrisisTriage render OUTSIDE the loading/error branch,
  *     so first paint always carries life-safety info even before i18n resolves
  *     or the CMS returns.
- *   - QuickExit (ESC) and HideScreen are the first things in the container.
+ *   - QuickExit and HideScreen live in the dedicated safety header and never
+ *     float over the crisis content.
  *   - Call-now lines and referral directories are rendered in different shapes,
  *     not just different sections (audit H-1).
  *   - The page is animation-free: no PageHeader (`.content-enter`), no
@@ -35,14 +36,15 @@ import { useHotlineBookmarks } from '@/hooks/useHotlineBookmarks';
 import { useGeoCountry } from '@/hooks/useGeoCountry';
 import { useOrganizationsList } from '@/hooks/useOrganization';
 import { PageContainer } from '@/components/layout/PageContainer';
-import { QuickExit } from '@/components/safety/QuickExit';
 import { CrisisBar } from '@/components/help/CrisisBar';
 import { CrisisTriage } from '@/components/help/CrisisTriage';
 import { HelpFilterSpine } from '@/components/help/HelpFilterSpine';
 import { HotlineRow } from '@/components/help/HotlineRow';
 import { DirectoryList } from '@/components/help/DirectoryList';
 import { MoreSupportBand } from '@/components/help/MoreSupportBand';
+import { HelpSafetyHeader } from '@/components/help/HelpSafetyHeader';
 import {
+  channelHref,
   COUNTRY_NAMES,
   countryLabel,
   isDirectory,
@@ -71,7 +73,7 @@ function buildEmergencyJsonLd(country: string, hero: Hotline | null): Record<str
 }
 
 export default function HelpHotlines() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { user } = useAuth();
   const { bookmarkedIds, isBookmarked, toggle: toggleBookmark } = useHotlineBookmarks();
   const params = useParams<{ country?: string }>();
@@ -156,7 +158,14 @@ export default function HelpHotlines() {
 
   // The ONE ranking, over the unfiltered list. Feeds both the CTA and the
   // JSON-LD, so a search keystroke can never rewrite the structured data.
-  const hero = useMemo(() => selectPrimaryLine(hotlines, countryFilter), [hotlines, countryFilter]);
+  const hero = useMemo(
+    () => selectPrimaryLine(hotlines, countryFilter, new Date(), i18n.resolvedLanguage),
+    [hotlines, countryFilter, i18n.resolvedLanguage],
+  );
+
+  const heroPhone = hero
+    ? (hero.channels?.find((channel) => channel.kind === 'phone')?.value ?? hero.phone)
+    : null;
 
   const savedLines = useMemo(
     () => (bookmarkedIds.size === 0 ? [] : hotlines.filter((h) => bookmarkedIds.has(h.id))),
@@ -185,105 +194,126 @@ export default function HelpHotlines() {
   };
 
   return (
-    <PageContainer>
-      <QuickExit />
+    <>
+      <HelpSafetyHeader country={countryFilter} />
+      <PageContainer>
+        {/* Synchronous life-safety strip — no CMS or locale request can leave a
+          dead row above the acute-danger action. */}
+        <CrisisBar country={countryFilter} />
 
-      {/* First in the DOM, synchronous, carries HideScreen — no dead rows above
-          the life-safety strip. */}
-      <CrisisBar />
+        <div className="mt-6">
+          <CrisisTriage
+            hotlines={hotlines}
+            hero={hero}
+            country={countryFilter}
+            availableCountries={availableCountries}
+            onCountryChange={setCountryFilter}
+            savedLines={savedLines}
+          />
+        </div>
 
-      <div className="mt-6">
-        <CrisisTriage
-          hotlines={hotlines}
-          hero={hero}
-          country={countryFilter}
-          availableCountries={availableCountries}
-          onCountryChange={setCountryFilter}
-          savedLines={savedLines}
-        />
-      </div>
-
-      {/* The seam. Everything above answers "what do I do now"; everything
+        {/* The seam. Everything above answers "what do I do now"; everything
           below is for browsing, and the rule says so out loud. */}
-      <section className="mt-12 border-t border-border-hairline pt-8" aria-labelledby="help-browse">
-        <h2 id="help-browse" className="font-display text-headline leading-tight">
-          {t('help.browse_title', 'Browse every line')}
-        </h2>
+        <section
+          className="mt-12 border-t border-border-hairline pt-8"
+          aria-labelledby="help-browse"
+        >
+          <h2 id="help-browse" className="font-display text-headline leading-tight">
+            {t('help.browse_title', 'Browse every line')}
+          </h2>
 
-        <HelpFilterSpine
-          search={searchQuery}
-          onSearch={setSearchQuery}
-          topics={availableTopics}
-          topic={topicFilter}
-          onTopic={setTopicFilter}
-          resultCount={callNow.length + directories.length}
-          totalCount={inScope.length}
-          onReset={resetFilters}
-        />
+          <HelpFilterSpine
+            search={searchQuery}
+            onSearch={setSearchQuery}
+            topics={availableTopics}
+            topic={topicFilter}
+            onTopic={setTopicFilter}
+            resultCount={callNow.length + directories.length}
+            totalCount={inScope.length}
+            onReset={resetFilters}
+          />
 
-        {isLoading && hotlines.length === 0 ? (
-          <p className="mt-6 text-15 text-muted-foreground">
-            {t('help.loading', 'Loading the directory…')}
-          </p>
-        ) : callNow.length === 0 && directories.length === 0 ? (
-          <div className="mt-6 bg-muted rounded-container p-6">
-            <h3 className="text-title font-bold leading-tight">
-              {t('help.no_results_title', 'No lines match these filters')}
-            </h3>
-            <p className="mt-2 text-15 leading-relaxed text-muted-foreground">
-              {t(
-                'help.no_results',
-                'Try all countries, or check the international directories. In acute danger, call 112 (EU) or 911 (US/CA).',
-              )}
+          {isLoading && hotlines.length === 0 ? (
+            <p className="mt-6 text-15 text-muted-foreground">
+              {t('help.loading', 'Loading the directory…')}
             </p>
-            <button
-              type="button"
-              onClick={resetFilters}
-              className="mt-4 rounded-element px-4 py-2 text-13 font-bold transition-colors hover:bg-foreground hover:text-background"
+          ) : callNow.length === 0 && directories.length === 0 ? (
+            <div className="mt-6 bg-muted rounded-container p-6">
+              <h3 className="text-title font-bold leading-tight">
+                {t('help.no_results_title', 'No lines match these filters')}
+              </h3>
+              <p className="mt-2 text-15 leading-relaxed text-muted-foreground">
+                {t(
+                  'help.no_results',
+                  'Try all countries, or check the international directories. In acute danger, call 112 (EU) or 911 (US/CA).',
+                )}
+              </p>
+              <button
+                type="button"
+                onClick={resetFilters}
+                className="mt-4 rounded-element px-4 py-2 text-13 font-bold transition-colors hover:bg-foreground hover:text-background"
+              >
+                {t('help.reset_filters', 'Reset filters')}
+              </button>
+            </div>
+          ) : (
+            <>
+              {callNow.length > 0 && (
+                <ul className="m-0 mt-6 list-none bg-card p-0 rounded-container shadow-soft">
+                  {callNow.map((h) => (
+                    <li key={h.id} className="border-b border-border-hairline last:border-b-0">
+                      <HotlineRow
+                        hotline={h}
+                        isKept={isBookmarked(h.id)}
+                        toggleKeep={toggleBookmark}
+                        showCountry={countryFilter === 'ALL'}
+                      />
+                    </li>
+                  ))}
+                </ul>
+              )}
+
+              {directories.length > 0 && (
+                <div className="mt-10">
+                  <h3 className="text-title font-bold leading-tight">
+                    {t('help.directories_title', 'Directories & further support')}
+                  </h3>
+                  <p className="mb-4 mt-2 max-w-prose text-15 text-muted-foreground">
+                    {t(
+                      'help.directories_subtitle',
+                      'These are referral organisations and directories — websites rather than direct phone lines.',
+                    )}
+                  </p>
+                  <DirectoryList directories={directories} />
+                </div>
+              )}
+            </>
+          )}
+        </section>
+
+        <MoreSupportBand orgs={supportOrgs} />
+
+        <div className="mt-12 border-t border-border-hairline py-8 text-center">
+          <p className="font-display text-title leading-tight">
+            {t('help.subtitle', 'You are not alone. Help is available right now.')}
+          </p>
+          <p className="mx-auto mt-2 max-w-prose text-13 leading-relaxed text-muted-foreground">
+            {t('help.disclaimer', 'Queer Guide does not replace professional help.')}
+          </p>
+          {heroPhone && hero && (
+            <a
+              href={channelHref({ kind: 'phone', value: heroPhone })}
+              className="mt-4 inline-flex min-h-12 items-center justify-center bg-foreground px-6 text-15 font-bold text-background no-underline"
+              aria-label={t('help.call_aria', 'Call {{name}} {{phone}}', {
+                name: hero.name,
+                phone: heroPhone,
+              })}
             >
-              {t('help.reset_filters', 'Reset filters')}
-            </button>
-          </div>
-        ) : (
-          <>
-            {callNow.length > 0 && (
-              <ul className="m-0 mt-6 list-none bg-card p-0 rounded-container shadow-soft">
-                {callNow.map((h) => (
-                  <li key={h.id} className="border-b border-border-hairline last:border-b-0">
-                    <HotlineRow
-                      hotline={h}
-                      isKept={isBookmarked(h.id)}
-                      toggleKeep={toggleBookmark}
-                      showCountry={countryFilter === 'ALL'}
-                    />
-                  </li>
-                ))}
-              </ul>
-            )}
-
-            {directories.length > 0 && (
-              <div className="mt-10">
-                <h3 className="text-title font-bold leading-tight">
-                  {t('help.directories_title', 'Directories & further support')}
-                </h3>
-                <p className="mb-4 mt-2 max-w-prose text-15 text-muted-foreground">
-                  {t(
-                    'help.directories_subtitle',
-                    'These are referral organisations and directories — websites rather than direct phone lines.',
-                  )}
-                </p>
-                <DirectoryList directories={directories} />
-              </div>
-            )}
-          </>
-        )}
-      </section>
-
-      <MoreSupportBand orgs={supportOrgs} />
-
-      <p className="mt-12 border-t border-border-hairline pt-6 text-13 text-muted-foreground">
-        {t('help.disclaimer', 'Queer Guide does not replace professional help.')}
-      </p>
-    </PageContainer>
+              {t('help.call_now', 'Call now')} · {heroPhone}
+            </a>
+          )}
+        </div>
+      </PageContainer>
+    </>
   );
 }
