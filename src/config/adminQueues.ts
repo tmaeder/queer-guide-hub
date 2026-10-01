@@ -95,7 +95,7 @@ export interface AdminQueueDef {
   minRole: AdminRole;
 }
 
-const inbox = (queueKey: string) => `/admin/inbox?queue=${queueKey}`;
+const inbox = (queueKey: string) => `/admin/governance?mode=triage&queue=${queueKey}`;
 
 /**
  * Every queue `get_admin_counts` reports on: the 17 active `triage_sources`
@@ -197,7 +197,7 @@ export const ADMIN_QUEUES: readonly AdminQueueDef[] = [
     icon: Link2,
     // Reviewed inline on the hub rather than in the inbox: approving picks a
     // target org, an input the generic triage panel does not model.
-    route: '/admin/quality',
+    route: '/admin/governance?mode=engines',
     section: 'business-links',
     risk: 'integrity',
     impact: 'public',
