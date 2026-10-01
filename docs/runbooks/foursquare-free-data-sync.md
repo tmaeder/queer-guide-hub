@@ -15,7 +15,9 @@ hard zero-spend allowance. Premium fields and endpoints are disabled.
 - A missing or unreachable budget RPC blocks API calls; it never fails open.
 - Generic categories, popularity, proximity, or a search hit do not establish
   LGBTQ+ relevance. New discovery candidates require an explicit queer signal
-  and still enter the normal staging/review pipeline.
+  and are permanently held for independent editorial corroboration. Only a
+  stable existing identity or an exact local match at confidence 0.95 or above
+  may take the automatic enrichment path.
 - Foursquare `remove`, `date_closed`, merge, and unresolved flags create audit
   signals. They never directly delete, hide, merge, or close a venue.
 - Keep portal tokens, service keys, raw licensed extracts, and checkpoints out
@@ -119,6 +121,12 @@ Set `FOURSQUARE_FUNCTION_NAME` only for an intentional alternate deployment.
 The separate slug prevents legacy deploy automation from replacing the guarded
 handler while that automation is being retired.
 
+After the last batch, the CLI sends an authenticated finalization request with
+the cumulative counters. `foursquare_sync_state.stats` therefore describes the
+whole release, while individual stdout records and the checkpoint retain the
+per-batch audit trail. A finalization failure leaves the checkpoint incomplete
+and must be fixed before treating the release as successful.
+
 Review every dry-run report before repeating the identical command with
 `--write`. Dry-run and write modes use separate checkpoint files. Use an
 explicit `--checkpoint` for durable operator storage, and use
@@ -154,6 +162,11 @@ select public.foursquare_data_health();
 select * from public.foursquare_sync_state order by stream_key;
 select * from public.foursquare_api_budget order by month_start desc;
 ```
+
+The nightly health check fails if a stream has not succeeded in 45 days or if
+any provider-only discovery is publicly approved. Portal credentials are
+short-lived by design; renew them for the next explicit release run rather than
+placing them in git or silently running with an expired credential.
 
 ## Recovery
 

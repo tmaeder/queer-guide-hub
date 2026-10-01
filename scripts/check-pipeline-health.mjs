@@ -139,6 +139,25 @@ if (missingWeekly.length > 0) {
       console.warn('⚠ Foursquare OS has no recorded category/snapshot/delta sync yet')
     } else {
       console.log(`✓ Foursquare OS sync state: ${streams.map((stream) => `${stream.stream_key}=${stream.status}`).join(', ')}`)
+      const stale = streams.filter((stream) => {
+        const success = Date.parse(stream.last_success_at ?? '')
+        return !Number.isFinite(success) || Date.now() - success > 45 * 86400_000
+      })
+      if (stale.length > 0) {
+        console.error(`✗ Foursquare OS stale stream(s) (>45d): ${stale.map((stream) => stream.stream_key).join(', ')}`)
+        FAILED = true
+      }
+    }
+
+    const unsafePublished = Number(sig.unsafe_published_discoveries ?? -1)
+    if (unsafePublished < 0) {
+      console.error('✗ Foursquare health is missing unsafe_published_discoveries — closeout migration not applied')
+      FAILED = true
+    } else if (unsafePublished > 0) {
+      console.error(`✗ ${unsafePublished} Foursquare-only discoveries are published without independent review`)
+      FAILED = true
+    } else {
+      console.log(`✓ Foursquare publication gate: 0 unsafe provider-only discoveries`)
     }
   }
 }

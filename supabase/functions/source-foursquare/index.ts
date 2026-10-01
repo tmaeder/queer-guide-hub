@@ -21,6 +21,7 @@ import {
   classifyFoursquareCategories,
   foursquarePlaceId,
   normalizeFoursquarePlace,
+  normalizeFoursquareAggregateStats,
   orderFoursquareDeltas,
   queerDiscoveryEvidence,
   type FoursquareDeltaRecord,
@@ -244,6 +245,7 @@ async function existingFoursquareIds(ids: string[]): Promise<Set<string>> {
 interface PreparedOsBatch {
   rawItems: RawItem[]
   autoMatches: Map<string, { venueId: string; confidence: number; reasons: string[] }>
+  editorialReviewIds: string[]
   skippedIrrelevant: number
   discoveryCandidates: number
   existingIdentities: number
@@ -260,6 +262,7 @@ async function prepareOsPlaces(
   })
   const existing = await existingFoursquareIds(places.map((row) => row.id))
   const autoMatches = new Map<string, { venueId: string; confidence: number; reasons: string[] }>()
+  const editorialReviewIds: string[] = []
   const rawItems: RawItem[] = []
   let skippedIrrelevant = 0
   let discoveryCandidates = 0
@@ -269,6 +272,7 @@ async function prepareOsPlaces(
     const matchTarget = typeof place._match_target_id === 'string' ? place._match_target_id : ''
     const matchConfidence = Number(place._match_confidence ?? 0)
     const evidence = queerDiscoveryEvidence(place)
+    let requiresEditorialReview = false
     if (existing.has(id)) existingIdentities++
     else if (matchTarget && matchConfidence >= 0.95) {
       autoMatches.set(id, {
@@ -278,15 +282,70 @@ async function prepareOsPlaces(
           ? (place._match_reasons as unknown[]).map(String)
           : ['os_sync_cli'],
       })
-    } else if (evidence.length) discoveryCandidates++
+    } else if (evidence.length) {
+      discoveryCandidates++
+      requiresEditorialReview = true
+      editorialReviewIds.push(id)
+    }
     else {
       skippedIrrelevant++
       continue
     }
 
-    rawItems.push({ sourceId: id, data: { ...place, _source_release_id: releaseId } })
+    rawItems.push({
+      sourceId: id,
+      data: { ...place, _source_release_id: releaseId, _requires_editorial_review: requiresEditorialReview },
+    })
   }
-  return { rawItems, autoMatches, skippedIrrelevant, discoveryCandidates, existingIdentities }
+  return { rawItems, autoMatches, editorialReviewIds, skippedIrrelevant, discoveryCandidates, existingIdentities }
+}
+
+async function enforceEditorialReview(
+  sourceName: 'foursquare' | 'foursquare_os',
+  sourceIds: string[],
+): Promise<number> {
+  if (!sourceIds.length) return 0
+  const supabase = getServiceClient()
+  const { data: rows, error: loadError } = await supabase.from('ingestion_staging')
+    .select('id,source_entity_id')
+    .eq('source_name', sourceName)
+    .in('source_entity_id', sourceIds)
+    .eq('disposition', 'pending')
+  if (loadError) throw new Error(`Foursquare editorial gate lookup: ${loadError.message}`)
+  if (!rows?.length) return 0
+
+  const ids = rows.map((row) => row.id as string)
+  const { error: updateError } = await supabase.from('ingestion_staging').update({
+    ai_validation_status: 'needs_review',
+    review_status: 'pending_review',
+    review_notes: 'Foursquare-only discovery requires independent editorial corroboration',
+    updated_at: new Date().toISOString(),
+  }).in('id', ids)
+  if (updateError) throw new Error(`Foursquare editorial gate update: ${updateError.message}`)
+
+  const { data: queued, error: queueLoadError } = await supabase.from('review_queue')
+    .select('entity_id')
+    .eq('entity_type', 'ingestion_staging')
+    .eq('status', 'pending')
+    .in('entity_id', ids)
+  if (queueLoadError) throw new Error(`Foursquare editorial queue lookup: ${queueLoadError.message}`)
+  const alreadyQueued = new Set((queued ?? []).map((row) => row.entity_id as string))
+  const queueRows = rows.filter((row) => !alreadyQueued.has(row.id as string)).map((row) => ({
+    entity_type: 'ingestion_staging',
+    entity_id: row.id,
+    review_type: 'foursquare_independent_corroboration',
+    status: 'pending',
+    details: {
+      source: sourceName,
+      source_entity_id: row.source_entity_id,
+      reason: 'Provider taxonomy may seed discovery but cannot establish publication eligibility',
+    },
+  }))
+  if (queueRows.length) {
+    const { error: queueError } = await supabase.from('review_queue').insert(queueRows)
+    if (queueError) throw new Error(`Foursquare editorial queue insert: ${queueError.message}`)
+  }
+  return rows.length
 }
 
 async function markAutoMatches(
@@ -389,15 +448,18 @@ async function processPlaces(
     ...config,
     targetTable: 'venues',
     refresh: true,
+    refreshTerminalDispositions: ['committed', 'inserted', 'updated', 'rejected'],
     sourceType: 'foursquare-os',
   })
   const marked = dryRun ? 0 : await markAutoMatches(prepared.autoMatches)
+  const reviewGated = dryRun ? 0 : await enforceEditorialReview('foursquare_os', prepared.editorialReviewIds)
   return {
     records: input.length,
     eligible: prepared.rawItems.length,
     written,
     auto_matches: prepared.autoMatches.size,
     auto_matches_marked: marked,
+    review_gated: reviewGated,
     existing_identities: prepared.existingIdentities,
     discovery_candidates: prepared.discoveryCandidates,
     skipped_irrelevant: prepared.skippedIrrelevant,
@@ -414,6 +476,23 @@ async function handleOs(body: Record<string, unknown>, req: Request): Promise<Re
   }
   // Writes require an explicit false; omitted/invalid values remain previews.
   const dryRun = body.dry_run !== false
+  if (body.finalize === true) {
+    const stats = {
+      ...normalizeFoursquareAggregateStats(body.aggregate_stats),
+      release_id: String(body.release_id ?? '') || null,
+    }
+    if (!dryRun) {
+      await setSyncState(stream, {
+        status: 'succeeded',
+        source_release_id: body.release_id ?? null,
+        cursor: body.cursor ?? {},
+        stats,
+        last_success_at: new Date().toISOString(),
+        last_error: null,
+      })
+    }
+    return jsonResponse({ success: true, source: 'foursquare_os', stream, dry_run: dryRun, finalized: true, ...stats }, 200, req)
+  }
   if (!dryRun) {
     await setSyncState(stream, {
       status: 'running',
@@ -485,11 +564,20 @@ Deno.serve(withErrorReporting('source-foursquare', async (req) => {
       nodeId: typeof body.node_id === 'string' ? body.node_id : undefined,
     }
     const rawItems = await apiAdapter.fetch(config)
-    const written = await writeToStaging(supabase, apiAdapter, rawItems, {
+    const existing = await existingFoursquareIds(rawItems.map((item) => item.sourceId))
+    const reviewIds = rawItems.filter((item) => !existing.has(item.sourceId)).map((item) => item.sourceId)
+    const guardedItems = rawItems.map((item) => ({
+      ...item,
+      data: { ...item.data, _requires_editorial_review: !existing.has(item.sourceId) },
+    }))
+    const written = await writeToStaging(supabase, apiAdapter, guardedItems, {
       ...config,
       targetTable: 'venues',
+      refresh: true,
+      refreshTerminalDispositions: ['committed', 'inserted', 'updated', 'rejected'],
       sourceType: typeof body.sourceType === 'string' ? body.sourceType : undefined,
     })
+    const reviewGated = await enforceEditorialReview('foursquare', reviewIds)
     return jsonResponse({
       success: true,
       source: 'foursquare',
@@ -498,6 +586,7 @@ Deno.serve(withErrorReporting('source-foursquare', async (req) => {
       items_processed: written,
       items_succeeded: written,
       items_failed: 0,
+      review_gated: reviewGated,
     }, 200, req)
   } catch (error) {
     if (error instanceof MissingCredentialsError) {

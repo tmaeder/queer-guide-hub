@@ -77,6 +77,7 @@ export interface FoursquarePlace {
   _search_term?: string
   _is_accommodation?: boolean
   _source_release_id?: string
+  _requires_editorial_review?: boolean
   [key: string]: unknown
 }
 
@@ -204,6 +205,23 @@ export function queerDiscoveryEvidence(place: FoursquarePlace): string[] {
   return evidence
 }
 
+export function normalizeFoursquareAggregateStats(value: unknown): Record<string, number> {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) {
+    throw new Error('aggregate_stats must be an object')
+  }
+  const entries = Object.entries(value as Record<string, unknown>)
+  if (entries.length > 50) throw new Error('aggregate_stats exceeds 50 counters')
+  const normalized: Record<string, number> = {}
+  for (const [key, raw] of entries) {
+    if (!/^[a-z][a-z0-9_]{0,63}$/.test(key)) throw new Error(`invalid aggregate counter: ${key}`)
+    if (typeof raw !== 'number' || !Number.isFinite(raw) || raw < 0 || !Number.isInteger(raw)) {
+      throw new Error(`aggregate counter ${key} must be a non-negative integer`)
+    }
+    normalized[key] = raw
+  }
+  return normalized
+}
+
 export function normalizeFoursquarePlace(
   raw: RawItem,
   sourceName: FoursquareSource = 'foursquare',
@@ -267,6 +285,7 @@ export function normalizeFoursquarePlace(
       placemaker_url: place.placemaker_url,
       unresolved_flags: place.unresolved_flags ?? [],
       source_release_id: place._source_release_id,
+      requires_editorial_review: place._requires_editorial_review === true,
       discovery_evidence: evidence,
       search_term: place._search_term,
       platform_ids: { foursquare: raw.sourceId },

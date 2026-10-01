@@ -4,6 +4,7 @@ import {
   classifyFoursquareCategories,
   foursquarePhotoUrls,
   matchFoursquarePlace,
+  normalizeFoursquareAggregateStats,
   normalizeFoursquarePlace,
   orderFoursquareDeltas,
   queerDiscoveryEvidence,
@@ -63,6 +64,7 @@ Deno.test('normalizes OS Places rows and retains release/freshness metadata', ()
       fsq_category_labels: ['Community and Government > Community Center'],
       date_refreshed: '2026-09-01',
       _source_release_id: '2026-09',
+      _requires_editorial_review: true,
     },
   }, 'foursquare_os') as unknown as Record<string, unknown>
 
@@ -70,6 +72,19 @@ Deno.test('normalizes OS Places rows and retains release/freshness metadata', ()
   assertEquals(normalized.category, 'community_center')
   assertEquals((normalized.metadata as Record<string, unknown>).source_release_id, '2026-09')
   assertEquals((normalized.metadata as Record<string, unknown>).date_refreshed, '2026-09-01')
+  assertEquals((normalized.metadata as Record<string, unknown>).requires_editorial_review, true)
+})
+
+Deno.test('accepts bounded cumulative sync counters and rejects unsafe values', () => {
+  assertEquals(normalizeFoursquareAggregateStats({ records: 1_279, written: 190 }), {
+    records: 1_279,
+    written: 190,
+  })
+  for (const invalid of [null, [], { records: -1 }, { records: 1.5 }, { Records: 1 }]) {
+    let threw = false
+    try { normalizeFoursquareAggregateStats(invalid) } catch { threw = true }
+    assert(threw)
+  }
 })
 
 Deno.test('category mapping separates lodging subtypes and venue categories', () => {

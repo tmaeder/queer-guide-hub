@@ -257,6 +257,12 @@ verify_jwt = false
 [functions.source-foursquare]
 verify_jwt = false
 
+# Stable guarded Foursquare OS/API route. Authentication is enforced inside
+# the handler by requireInternalOrAdmin so operator and cron calls can pass the
+# gateway with X-Internal-Secret.
+[functions.source-foursquare-free]
+verify_jwt = false
+
 [functions.source-gaycities]
 verify_jwt = false
 

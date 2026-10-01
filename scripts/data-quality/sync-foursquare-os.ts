@@ -307,6 +307,36 @@ async function sendBatch(
   return parsed
 }
 
+async function finalizeRun(
+  baseUrl: string,
+  functionName: string,
+  serviceKey: string,
+  internalSecret: string | undefined,
+  options: Options,
+  checkpoint: Checkpoint,
+): Promise<Record<string, unknown>> {
+  const response = await fetch(`${baseUrl}/functions/v1/${functionName}`, {
+    method: 'POST',
+    headers: functionHeaders(serviceKey, internalSecret),
+    body: JSON.stringify({
+      source: 'os',
+      stream: options.stream,
+      release_id: options.releaseId,
+      dry_run: !options.write,
+      finalize: true,
+      cursor: { next_record: checkpoint.next_record },
+      aggregate_stats: checkpoint.totals,
+    }),
+  })
+  const text = await response.text()
+  let parsed: Record<string, unknown>
+  try { parsed = JSON.parse(text) } catch { throw new Error(`Invalid source-foursquare finalization response: ${text.slice(0, 500)}`) }
+  if (!response.ok || parsed.success !== true || parsed.finalized !== true) {
+    throw new Error(`source-foursquare finalization HTTP ${response.status}: ${JSON.stringify(parsed).slice(0, 1_000)}`)
+  }
+  return parsed
+}
+
 function addTotals(target: Record<string, number>, report: Record<string, unknown>): void {
   for (const [name, value] of Object.entries(report)) {
     if (typeof value === 'number' && Number.isFinite(value)) target[name] = (target[name] ?? 0) + value
@@ -355,10 +385,19 @@ async function main(): Promise<void> {
     checkpoint.next_record = recordNumber
     console.log(JSON.stringify({ cursor: recordNumber, ...report }))
   }
+  checkpoint.next_record = recordNumber
+  const finalReport = await finalizeRun(
+    baseUrl,
+    functionName,
+    serviceKey,
+    internalSecret,
+    options,
+    checkpoint,
+  )
   checkpoint.completed = true
   checkpoint.updated_at = new Date().toISOString()
   await saveCheckpoint(options.checkpoint, checkpoint)
-  console.log(JSON.stringify({ completed: true, checkpoint: options.checkpoint, totals: checkpoint.totals }))
+  console.log(JSON.stringify({ completed: true, checkpoint: options.checkpoint, totals: checkpoint.totals, finalization: finalReport }))
 }
 
 if (import.meta.main) {
