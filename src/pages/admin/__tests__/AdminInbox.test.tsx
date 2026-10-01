@@ -50,7 +50,7 @@ describe('AdminInbox', () => {
     renderAt('/admin/inbox');
     expect(screen.getByRole('heading', { name: /^Inbox$/i })).toBeTruthy();
     expect(screen.getByTestId('triage-view')).toHaveTextContent('none');
-    expect(screen.getByText(/Sorted by priority/i)).toBeTruthy();
+    expect(screen.getByRole('button', { name: /Shortcuts/i })).toBeTruthy();
   });
 
   it('maps legacy ?tab=staging (from /admin/review deep links) to the staging queue', () => {
@@ -90,6 +90,6 @@ describe('AdminInbox — automation status', () => {
       isError: false,
     });
     renderAt('/admin/inbox');
-    expect(screen.getByText('Cleared without you')).toBeInTheDocument();
+    expect(screen.getByText(/automated/)).toBeInTheDocument();
   });
 });

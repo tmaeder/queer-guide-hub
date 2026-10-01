@@ -11,12 +11,16 @@ import { ExternalLink, ChevronDown } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { FieldDiffView, computeFieldDiffs } from './FieldDiffView';
+import { StructuredFieldEditor } from './StructuredDataView';
 import { useDedupMatchData } from '@/hooks/useTriageDetail';
 import type { TriageItem } from '@/hooks/useUnifiedTriageQueue';
 
 interface StagingPreviewProps {
   item: TriageItem;
   staging: Record<string, unknown>;
+  onSaveFields: (changes: Record<string, unknown>) => Promise<void>;
+  onDirtyChange?: (dirtyCount: number) => void;
+  isSavingFields?: boolean;
 }
 
 /** Pulls every plausible image URL out of a staging payload, deduped. */
@@ -41,24 +45,21 @@ function collectImages(
   return Array.from(new Set(urls)).slice(0, 6);
 }
 
-function sourceUrl(normalized: Record<string, unknown>): string | null {
+function sourceUrl(normalized: Record<string, unknown>): URL | null {
   const meta = (normalized.metadata ?? {}) as Record<string, unknown>;
   const candidates = [normalized.url, normalized.source_url, meta.url, meta.source_url];
-  for (const c of candidates) {
-    if (typeof c === 'string' && /^https?:\/\//.test(c)) return c;
-  }
   const urls = normalized.urls;
-  if (Array.isArray(urls) && typeof urls[0] === 'string' && /^https?:\/\//.test(urls[0])) {
-    return urls[0];
+  if (Array.isArray(urls)) candidates.push(urls[0]);
+  for (const candidate of candidates) {
+    if (typeof candidate !== 'string') continue;
+    try {
+      const parsed = new URL(candidate);
+      if (parsed.protocol === 'http:' || parsed.protocol === 'https:') return parsed;
+    } catch {
+      // A malformed source URL must not crash the entire review panel.
+    }
   }
   return null;
-}
-
-function stripHtml(html: string): string {
-  return html
-    .replace(/<[^>]+>/g, ' ')
-    .replace(/\s+/g, ' ')
-    .trim();
 }
 
 function humanizeReason(raw: string): string {
@@ -84,25 +85,39 @@ function ScoreChip({ label, value }: { label: string; value: number | null | und
   );
 }
 
-function JsonSection({ label, data }: { label: string; data: unknown }) {
+function TechnicalData({ normalized, enriched }: { normalized: unknown; enriched: unknown }) {
   const [open, setOpen] = useState(false);
-  if (!data || (typeof data === 'object' && Object.keys(data as object).length === 0)) return null;
   return (
     <Collapsible open={open} onOpenChange={setOpen}>
-      <CollapsibleTrigger className="flex w-full items-center justify-between px-4 py-1.5 text-2xs font-medium text-muted-foreground uppercase tracking-wider bg-muted/50 border-t">
-        {label}
+      <CollapsibleTrigger className="flex w-full items-center justify-between border-t border-border bg-muted/30 px-4 py-2 text-2xs font-medium text-muted-foreground">
+        Technical data
         <ChevronDown className={`h-3 w-3 transition-transform ${open ? 'rotate-180' : ''}`} />
       </CollapsibleTrigger>
-      <CollapsibleContent>
-        <pre className="px-4 py-2 text-2xs overflow-x-auto max-h-64 overflow-y-auto whitespace-pre-wrap break-all bg-muted/30">
-          {JSON.stringify(data, null, 2)}
-        </pre>
+      <CollapsibleContent className="space-y-4 bg-muted/15 p-4">
+        <div>
+          <p className="mb-1 text-2xs font-medium text-muted-foreground">Normalized payload</p>
+          <pre className="max-h-56 overflow-auto whitespace-pre-wrap break-words rounded-element border border-border bg-background p-4 text-2xs">
+            {JSON.stringify(normalized, null, 2)}
+          </pre>
+        </div>
+        <div>
+          <p className="mb-1 text-2xs font-medium text-muted-foreground">Enriched payload</p>
+          <pre className="max-h-56 overflow-auto whitespace-pre-wrap break-words rounded-element border border-border bg-background p-4 text-2xs">
+            {JSON.stringify(enriched, null, 2)}
+          </pre>
+        </div>
       </CollapsibleContent>
     </Collapsible>
   );
 }
 
-export function StagingPreview({ item, staging }: StagingPreviewProps) {
+export function StagingPreview({
+  item,
+  staging,
+  onSaveFields,
+  onDirtyChange,
+  isSavingFields = false,
+}: StagingPreviewProps) {
   const normalized = useMemo(
     () => (staging.normalized_data ?? {}) as Record<string, unknown>,
     [staging.normalized_data],
@@ -122,12 +137,6 @@ export function StagingPreview({ item, staging }: StagingPreviewProps) {
   const hero = images[Math.min(heroIdx, images.length - 1)];
 
   const link = sourceUrl(normalized);
-  const description = useMemo(() => {
-    const raw = String(normalized.description ?? normalized.content ?? '');
-    const text = stripHtml(raw);
-    return text.length > 400 ? `${text.slice(0, 400)}…` : text;
-  }, [normalized]);
-
   // Score breakdown — mixed scales normalised in ScoreChip (≤1 → %, else 0-100).
   const confidence = (staging.ai_confidence_score as number | null) ?? item.confidence_score;
   const quality =
@@ -153,12 +162,12 @@ export function StagingPreview({ item, staging }: StagingPreviewProps) {
       {/* Image gallery */}
       {hero && (
         <div className="px-4 pt-4 space-y-2">
-          { }
+          {}
           <img
             src={hero}
             alt={item.title}
             loading="lazy"
-            className="w-full max-h-64 object-cover rounded-element border"
+            className="max-h-48 w-full rounded-element border object-cover"
             onError={() => setBroken((prev) => new Set(prev).add(hero))}
           />
           {images.length > 1 && (
@@ -170,7 +179,7 @@ export function StagingPreview({ item, staging }: StagingPreviewProps) {
                   onClick={() => setHeroIdx(i)}
                   className={`shrink-0 border rounded-element overflow-hidden ${i === heroIdx ? 'border border-border-hairline' : 'border-border'}`}
                 >
-                  { }
+                  {}
                   <img
                     src={url}
                     alt=""
@@ -199,21 +208,28 @@ export function StagingPreview({ item, staging }: StagingPreviewProps) {
             {humanizeReason(reviewReason)}
           </p>
         )}
-        {description && <p className="text-xs leading-relaxed">{description}</p>}
         {link && (
           <p className="text-xs">
             <a
-              href={link}
+              href={link.href}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-1 text-muted-foreground hover:text-foreground"
             >
-              {new URL(link).hostname.replace(/^www\./, '')}
+              {link.hostname.replace(/^www\./, '')}
               <ExternalLink className="h-3 w-3" />
             </a>
           </p>
         )}
       </div>
+
+      <StructuredFieldEditor
+        key={item.id}
+        data={normalized}
+        onSave={onSaveFields}
+        onDirtyChange={onDirtyChange}
+        saving={isSavingFields}
+      />
 
       {/* Dedup: side-by-side with the matched live entity */}
       {matchData && (
@@ -238,9 +254,7 @@ export function StagingPreview({ item, staging }: StagingPreviewProps) {
         </div>
       )}
 
-      {/* Raw payloads */}
-      <JsonSection label="Normalized data" data={staging.normalized_data} />
-      <JsonSection label="Enriched data" data={staging.enriched_data} />
+      <TechnicalData normalized={staging.normalized_data} enriched={staging.enriched_data} />
     </div>
   );
 }

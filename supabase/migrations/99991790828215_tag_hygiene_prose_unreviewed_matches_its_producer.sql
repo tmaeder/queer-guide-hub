@@ -28,30 +28,6 @@
 -- gauge says 0. A gauge scoped narrower than its producer cannot report that
 -- producer stopping.
 --
--- DECIDED ON THE STAMP TIMESTAMPS, NOT THE COUNTS. A concurrent session reached
--- the OPPOSITE conclusion from the same counts -- it diagnosed the scoping
--- correctly and then ran `--update`, baselining this counter at 0 with the note
--- "within that cohort nothing is unreviewed". That is true, and it says nothing
--- about cron health. What separates the two readings is WHEN each cohort was
--- last stamped:
---
---     role              newest prose_reviewed_at   last 48h   last 7d
---     utility           2026-10-01 03:35                 13        63
---     article           2026-09-20 18:22                  0         0
---     entity_redirect   2026-09-20 18:24                  0         0
---
--- `33 3 * * *` ran last night and every stamp it has written in eleven days is
--- on a `utility` row. The sweep is alive and working EXCLUSIVELY on the cohort
--- an article-scoped counter cannot see; `article` was finished on 09-20 and
--- nothing returns to it. So at 0 the counter reads 0 permanently whether or not
--- the cron runs, which is precisely what its own note forbids. At ~9 stamps/day
--- the 3,990 need ~443 days, so expect a slow fall and read a FLAT 4,056 as the
--- sweep having stopped.
---
--- This migration therefore composes with that re-baseline rather than reverting
--- it: all nine of its other tightenings are kept, and only `prose_unreviewed`
--- moves 0 -> 4,056, with both notes folded together.
---
 -- NOT MERELY COSMETIC: 975 of the 4,056 are reader-reachable. `fetchTagPreviews`
 -- (`src/hooks/useTagPreviews.ts:36`) filters `status = 'active'` and NOTHING
 -- else — no role, no `seo_indexable` — so utility prose surfaces in the
@@ -135,6 +111,10 @@ begin
   select pg_get_functiondef(p.oid) into src
     from pg_proc p join pg_namespace ns on ns.oid = p.pronamespace
    where ns.nspname = 'public' and p.proname = 'tag_hygiene_stats';
+
+  -- pg_get_functiondef() includes comments. Remove them before structural
+  -- assertions so explanatory prose cannot satisfy a missing-code check.
+  src := regexp_replace(src, '--[^' || chr(10) || ']*', '', 'g');
 
   -- P1. The arm is unscoped, and ONLY it.
   if position('where description is not null and prose_reviewed_at is null)' in src) = 0 then
