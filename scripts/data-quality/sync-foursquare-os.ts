@@ -51,7 +51,9 @@ function usage(): never {
 
 Required environment:
   SUPABASE_URL
-  SUPABASE_SERVICE_ROLE_KEY`)
+  SUPABASE_SERVICE_ROLE_KEY
+Optional environment:
+  INTERNAL_INVOKE_SECRET (recommended when the hosted function uses internal-call auth)`)
   Deno.exit(2)
 }
 
@@ -95,11 +97,18 @@ function env(name: string): string {
   return value
 }
 
-function headers(serviceKey: string): HeadersInit {
+function restHeaders(serviceKey: string): HeadersInit {
   return {
     apikey: serviceKey,
     Authorization: `Bearer ${serviceKey}`,
     'Content-Type': 'application/json',
+  }
+}
+
+function functionHeaders(serviceKey: string, internalSecret?: string): HeadersInit {
+  return {
+    ...restHeaders(serviceKey),
+    ...(internalSecret ? { 'X-Internal-Secret': internalSecret } : {}),
   }
 }
 
@@ -171,7 +180,7 @@ async function loadVenues(baseUrl: string, serviceKey: string): Promise<Matchabl
     url.searchParams.set('select', 'id,name,latitude,longitude,address,city,phone,email,website,foursquare_id,platform_ids')
     url.searchParams.set('duplicate_of_id', 'is.null')
     const response = await fetch(url, {
-      headers: { ...headers(serviceKey), Range: `${offset}-${offset + pageSize - 1}` },
+      headers: { ...restHeaders(serviceKey), Range: `${offset}-${offset + pageSize - 1}` },
     })
     if (!response.ok) throw new Error(`Load venues HTTP ${response.status}: ${(await response.text()).slice(0, 300)}`)
     const page = await response.json() as MatchableVenue[]
@@ -251,13 +260,14 @@ function annotateRecord(
 async function sendBatch(
   baseUrl: string,
   serviceKey: string,
+  internalSecret: string | undefined,
   options: Options,
   records: Record<string, unknown>[],
   cursor: number,
 ): Promise<Record<string, unknown>> {
   const response = await fetch(`${baseUrl}/functions/v1/source-foursquare`, {
     method: 'POST',
-    headers: headers(serviceKey),
+    headers: functionHeaders(serviceKey, internalSecret),
     body: JSON.stringify({
       source: 'os',
       stream: options.stream,
@@ -286,6 +296,7 @@ async function main(): Promise<void> {
   const options = parseArgs(Deno.args)
   const baseUrl = env('SUPABASE_URL').replace(/\/$/, '')
   const serviceKey = env('SUPABASE_SERVICE_ROLE_KEY')
+  const internalSecret = Deno.env.get('INTERNAL_INVOKE_SECRET')?.trim() || undefined
   const checkpoint = await loadCheckpoint(options)
   const needsMatching = options.stream !== 'categories'
   const venues = needsMatching ? await loadVenues(baseUrl, serviceKey) : []
@@ -305,7 +316,7 @@ async function main(): Promise<void> {
     if (recordNumber++ < checkpoint.next_record) continue
     batch.push(annotateRecord(raw, options.stream, venues, venueIndex))
     if (batch.length < options.batchSize) continue
-    const report = await sendBatch(baseUrl, serviceKey, options, batch, recordNumber)
+    const report = await sendBatch(baseUrl, serviceKey, internalSecret, options, batch, recordNumber)
     addTotals(checkpoint.totals, report)
     checkpoint.next_record = recordNumber
     checkpoint.updated_at = new Date().toISOString()
@@ -315,7 +326,7 @@ async function main(): Promise<void> {
   }
 
   if (batch.length) {
-    const report = await sendBatch(baseUrl, serviceKey, options, batch, recordNumber)
+    const report = await sendBatch(baseUrl, serviceKey, internalSecret, options, batch, recordNumber)
     addTotals(checkpoint.totals, report)
     checkpoint.next_record = recordNumber
     console.log(JSON.stringify({ cursor: recordNumber, ...report }))

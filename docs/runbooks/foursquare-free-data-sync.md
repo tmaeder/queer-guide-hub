@@ -93,6 +93,9 @@ each delta release in order. The Edge Function itself orders actions as
 ```bash
 export SUPABASE_URL='https://<project>.supabase.co'
 export SUPABASE_SERVICE_ROLE_KEY='<server-only-key>'
+# Recommended for hosted operator runs. This is the same secret used by
+# pg_cron/workflow-dispatcher and is sent only to the Edge Function.
+export INTERNAL_INVOKE_SECRET='<internal-invocation-secret>'
 
 npx -y deno run --allow-env --allow-net --allow-read --allow-write \
   scripts/data-quality/sync-foursquare-os.ts \
@@ -104,6 +107,12 @@ npx -y deno run --allow-env --allow-net --allow-read --allow-write \
   --stream snapshot --input /secure/fsq/places-<release>-CH.ndjson \
   --release-id <release> --dry-run
 ```
+
+The service-role key is used for read-only venue matching through REST. When
+`INTERNAL_INVOKE_SECRET` is set, the CLI uses it to authenticate Edge Function
+calls; otherwise it falls back to the service-role bearer token. This supports
+projects where the current API service key and the function runtime's legacy
+service-role value differ.
 
 Review every dry-run report before repeating the identical command with
 `--write`. Dry-run and write modes use separate checkpoint files. Use an
