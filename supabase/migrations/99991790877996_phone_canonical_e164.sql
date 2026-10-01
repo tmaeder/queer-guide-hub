@@ -322,7 +322,7 @@ create or replace function public.canonicalize_phone(p_raw text, p_country_code 
 returns jsonb
 language plpgsql
 stable
-set search_path = public
+set search_path = ''
 as $fn$
 declare
   s        text;
@@ -456,7 +456,7 @@ grant execute on function public.canonicalize_phone(text, text) to anon, authent
 create or replace function public.phone_canonical_guard()
 returns trigger
 language plpgsql
-set search_path = public
+set search_path = ''
 as $fn$
 declare
   v_cc  text;
@@ -528,7 +528,7 @@ create or replace function public.run_phone_canonical_backfill(
 returns jsonb
 language plpgsql
 security definer
-set search_path = public
+set search_path = ''
 as $fn$
 declare
   v_updated int;
@@ -581,7 +581,7 @@ returns jsonb
 language sql
 stable
 security definer
-set search_path = public
+set search_path = ''
 as $fn$
   select jsonb_build_object(
     'probe_ok', true,
