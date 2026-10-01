@@ -106,11 +106,27 @@ const baseline = JSON.parse(readFileSync(BASELINE, 'utf8'))
 const metrics = Object.keys(stats).filter((k) => k !== 'totals')
 
 if (UPDATE) {
-  const next = { _comment: baseline._comment }
+  // EVERY `_`-prefixed key is carried across, enumerated from the file rather
+  // than listed here. Listing them is how this went wrong: it named `_comment`
+  // and `_notes` and silently DROPPED `_advisory`, so running `--update` —
+  // which the regression message below tells you to run — turned all NINE
+  // advisory metrics into hard gates in one commit, with no output saying so.
+  // Every one of them is advisory because an instantaneous value is not an
+  // invariant for it, so the next ordinary drift in any of the nine would have
+  // red every open PR for a change its author did not make. A generic carry
+  // cannot rot when someone adds a tenth control key.
+  // `_comment` leads and the rest trail, which is the file's existing shape, so
+  // a re-baseline diff shows only the numbers that moved.
+  const control = Object.keys(baseline).filter((k) => k.startsWith('_'))
+  const next = {}
+  if (control.includes('_comment')) next._comment = baseline._comment
   for (const k of metrics.sort()) next[k] = stats[k]
-  if (baseline._notes) next._notes = baseline._notes
+  for (const k of control) if (k !== '_comment') next[k] = baseline[k]
   writeFileSync(BASELINE, JSON.stringify(next, null, 2) + '\n')
-  console.log(`✓ baseline updated (${metrics.length} metrics)`)
+  const carried = Object.keys(next).filter((k) => k.startsWith('_'))
+  console.log(
+    `✓ baseline updated (${metrics.length} metrics; carried ${carried.join(', ') || 'no control keys'})`,
+  )
   process.exit(0)
 }
 
