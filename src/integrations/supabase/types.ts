@@ -11897,6 +11897,10 @@ export type Database = {
           merchant_domain: string | null
           merchant_id: string | null
           media_quality_score: number | null
+          overview_eligibility_checked_at: string | null
+          overview_eligible: boolean
+          overview_exclusion_reasons: string[]
+          overview_image_asset_id: string | null
           payload_hash: string | null
           price: number | null
           price_type: string | null
@@ -11983,6 +11987,10 @@ export type Database = {
           merchant_domain?: string | null
           merchant_id?: string | null
           media_quality_score?: number | null
+          overview_eligibility_checked_at?: string | null
+          overview_eligible?: boolean
+          overview_exclusion_reasons?: string[]
+          overview_image_asset_id?: string | null
           payload_hash?: string | null
           price?: number | null
           price_type?: string | null
@@ -12069,6 +12077,10 @@ export type Database = {
           merchant_domain?: string | null
           merchant_id?: string | null
           media_quality_score?: number | null
+          overview_eligibility_checked_at?: string | null
+          overview_eligible?: boolean
+          overview_exclusion_reasons?: string[]
+          overview_image_asset_id?: string | null
           payload_hash?: string | null
           price?: number | null
           price_type?: string | null
@@ -12156,6 +12168,13 @@ export type Database = {
             columns: ["merchant_id"]
             isOneToOne: false
             referencedRelation: "affiliate_partners"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "marketplace_listings_overview_image_asset_id_fkey"
+            columns: ["overview_image_asset_id"]
+            isOneToOne: false
+            referencedRelation: "image_assets"
             referencedColumns: ["id"]
           },
           {

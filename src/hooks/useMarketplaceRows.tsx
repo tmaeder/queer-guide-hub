@@ -29,7 +29,7 @@ async function fetchRow(key: CuratedRowKey, limit = 12): Promise<MarketplaceList
     .from('marketplace_listings')
     .select(BASE_SELECT)
     .eq('status', 'active')
-    .not('images', 'is', null)
+    .eq('overview_eligible', true)
     // Landing rails render pre-opt-in → unconditionally SFW.
     .in('content_rating', SFW_RATINGS)
     .limit(limit);
@@ -92,7 +92,7 @@ async function fetchPriceDropIds(targetCount: number): Promise<string[]> {
   }
   return Array.from(byListing.entries())
     .filter(([, v]) => v.last < v.first)
-    .sort((a, b) => (a[1].last - a[1].first) - (b[1].last - b[1].first)) // biggest drop first (most negative)
+    .sort((a, b) => a[1].last - a[1].first - (b[1].last - b[1].first)) // biggest drop first (most negative)
     .slice(0, targetCount)
     .map(([id]) => id);
 }
@@ -102,7 +102,7 @@ function brandSafeQuery(limit: number, ownedOnly: boolean) {
     .from('marketplace_listings')
     .select(BASE_SELECT)
     .eq('status', 'active')
-    .not('images', 'is', null)
+    .eq('overview_eligible', true)
     // Homepage renders pre-opt-in to first-time visitors: strictly 'sfw'
     // (no 'suggestive') and only brand-safe departments.
     .eq('content_rating', 'sfw')
@@ -166,7 +166,11 @@ export function useMarketplaceRow(key: CuratedRowKey, limit = 12): RowState {
       })
       .catch((err: unknown) => {
         if (cancelled) return;
-        setState({ data: [], loading: false, error: err instanceof Error ? err.message : 'Failed to load' });
+        setState({
+          data: [],
+          loading: false,
+          error: err instanceof Error ? err.message : 'Failed to load',
+        });
       });
     return () => {
       cancelled = true;
@@ -198,8 +202,8 @@ export function useMarketplaceSpotlight(
         .from('marketplace_listings')
         .select(BASE_SELECT)
         .eq('status', 'active')
+        .eq('overview_eligible', true)
         .eq('featured', true)
-        .not('images', 'is', null)
         // Homepage-only surface: strictly sfw + brand-safe departments.
         .eq('content_rating', 'sfw')
         .in('department', BRAND_SAFE_DEPARTMENTS)

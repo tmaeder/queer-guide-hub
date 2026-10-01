@@ -6,7 +6,7 @@ type MarketplaceListing = Database['public']['Tables']['marketplace_listings']['
   venues?: { name: string; address: string; city: string } | null;
 };
 
-export function useMarketplaceListingsByIds(ids: string[]) {
+export function useMarketplaceListingsByIds(ids: string[], overviewOnly = false) {
   const [data, setData] = useState<MarketplaceListing[]>([]);
   const [loading, setLoading] = useState(true);
   const key = ids.join(',');
@@ -21,11 +21,13 @@ export function useMarketplaceListingsByIds(ids: string[]) {
     }
     setLoading(true);
     (async () => {
-      const { data: rows, error } = await supabase
+      let query = supabase
         .from('marketplace_listings')
         .select('*, venues(name, address, city)')
         .in('id', ids)
         .eq('status', 'active');
+      if (overviewOnly) query = query.eq('overview_eligible', true);
+      const { data: rows, error } = await query;
       if (cancelled) return;
       if (error || !rows) setData([]);
       else {
@@ -39,7 +41,7 @@ export function useMarketplaceListingsByIds(ids: string[]) {
       cancelled = true;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [key]);
+  }, [key, overviewOnly]);
 
   return { data, loading };
 }
