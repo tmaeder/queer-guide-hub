@@ -62,7 +62,7 @@ export default function ReviewLocationMap({
       style: getMapStyle(),
       center,
       zoom: hasCoordinates || fallbackCenter ? 13 : 5,
-      attributionControl: true,
+      attributionControl: { compact: true },
       scrollZoom: false,
     });
     map.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'top-right');
