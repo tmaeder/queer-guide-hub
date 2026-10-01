@@ -4,6 +4,7 @@ import {
   RIGHT_SECTION_ORDER,
   RIGHT_SECTION_LABEL,
   topicListLabel,
+  type RightTopic,
 } from '@/lib/rights/rightsCatalog';
 import type { RightWorldSummary } from '@/lib/rights/rightsWorldSummary';
 
@@ -20,7 +21,13 @@ import type { RightWorldSummary } from '@/lib/rights/rightsWorldSummary';
  * repeat that.
  */
 
-export function RightsLedger({ summary }: { summary: RightWorldSummary[] }) {
+export function RightsLedger({
+  summary,
+  onNewsTopicSelect,
+}: {
+  summary: RightWorldSummary[];
+  onNewsTopicSelect?: (topic: RightTopic) => void;
+}) {
   const { t } = useTranslation();
   return (
     <div className="grid gap-8 md:grid-cols-2 md:gap-x-12">
@@ -79,6 +86,16 @@ export function RightsLedger({ summary }: { summary: RightWorldSummary[] }) {
                         </span>
                       </>
                     )}
+                    {onNewsTopicSelect ? (
+                      <button
+                        type="button"
+                        onClick={() => onNewsTopicSelect(topic)}
+                        className="shrink-0 text-2xs font-medium text-muted-foreground underline-offset-4 hover:text-foreground hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        aria-label={`Latest coverage about ${topicListLabel(topic, t)}`}
+                      >
+                        Latest coverage
+                      </button>
+                    ) : null}
                   </li>
                 );
               })}

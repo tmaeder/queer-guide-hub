@@ -4,11 +4,7 @@ import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { useMeta } from '@/hooks/useMeta';
 import { IntentPageLayout } from '@/components/intent/IntentPageLayout';
 import { CoverageNote } from '@/components/intent/CoverageNote';
-import {
-  useAllCountriesRightsFull,
-  useIntentNews,
-  type RightsCountry,
-} from '@/hooks/useIntentData';
+import { useAllCountriesRightsFull, type RightsCountry } from '@/hooks/useIntentData';
 import { summariseRightsWorldwide } from '@/lib/rights/rightsWorldSummary';
 import { useIntentLocation } from '@/hooks/useIntentLocation';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
@@ -17,11 +13,12 @@ import { RightsScopeBar } from '@/components/rights/RightsScopeBar';
 import { RightsCountryTable, type CountryFilter } from '@/components/rights/RightsCountryTable';
 import { RightsLedger } from '@/components/rights/RightsLedger';
 import { RightsMapSection } from '@/components/rights/RightsMapSection';
-import { topicBySlug, type RightTopic } from '@/lib/rights/rightsCatalog';
+import { topicBySlug, topicListLabel, type RightTopic } from '@/lib/rights/rightsCatalog';
 import type { RightsLens } from '@/lib/rights/rightsClassify';
 import { summariseMapClasses, type MapClass } from '@/lib/rights/rightsMapModel';
 import type { SectionDef } from '@/components/entity/editorial';
 import { scrollToIdSettled } from '@/lib/scrollSettle';
+import { RightsNewsSection } from '@/components/rights/RightsNewsSection';
 
 /**
  * `/rights` — LGBTQ+ law and safety, country by country.
@@ -157,8 +154,6 @@ export default function RightsIntent() {
     [countries, countryCode],
   );
 
-  const { data: news } = useIntentNews(here?.id ?? null, 5);
-
   /**
    * How many rows carry a legal status at all. `lgbti_criminalization` is
    * non-null on all 250 rows, but 11 of them hold an empty shape — the same 11
@@ -193,6 +188,14 @@ export default function RightsIntent() {
   const showInTable = (filter: 'criminalising' | 'death') => {
     setTableFilter(filter);
     scrollToIdSettled('world');
+  };
+
+  const showNewsForTopic = (topic: RightTopic) => {
+    handleMapTopicChange(topic);
+    scrollToIdSettled('news');
+    window.setTimeout(() => {
+      document.getElementById('rights-news-topic')?.focus({ preventScroll: true });
+    }, 0);
   };
 
   const sections: SectionDef[] = [
@@ -274,7 +277,7 @@ export default function RightsIntent() {
       label: 'The rights themselves',
       kicker: 'Where each one stands worldwide',
       hidden: !countries || countries.length === 0,
-      content: <RightsLedger summary={rightsSummary} />,
+      content: <RightsLedger summary={rightsSummary} onNewsTopicSelect={showNewsForTopic} />,
       action: (
         <LocalizedLink to="/rights/sources" className="text-13 no-underline hover:underline">
           How we know
@@ -283,29 +286,31 @@ export default function RightsIntent() {
     },
     {
       id: 'news',
-      label: 'In the news',
-      content:
-        news && news.length > 0 ? (
-          <ul className="list-none p-0 m-0">
-            {news.map((n) => (
-              <li key={n.id} className="border-b border-border py-2">
-                {n.slug ? (
-                  <LocalizedLink to={`/news/${n.slug}`} className="no-underline hover:underline">
-                    {n.title}
-                  </LocalizedLink>
-                ) : (
-                  n.title
-                )}
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <p className="text-muted-foreground">No recent coverage.</p>
-        ),
+      label: 'Rights in the news',
+      kicker: `Current reporting on ${topicListLabel(mapTopic, t)}`,
+      content: (
+        <RightsNewsSection
+          topic={mapTopic}
+          onTopicChange={handleMapTopicChange}
+          countryId={here?.id}
+          countryName={here?.name}
+        />
+      ),
       action: (
-        <LocalizedLink to="/news" className="text-13 no-underline hover:underline">
-          All news
-        </LocalizedLink>
+        <span className="flex flex-wrap items-center gap-4">
+          <LocalizedLink
+            to={`/news/all?right=${encodeURIComponent(mapTopic.slug)}`}
+            className="text-13 no-underline hover:underline"
+          >
+            All {topicListLabel(mapTopic, t)} coverage
+          </LocalizedLink>
+          <LocalizedLink
+            to="/news/all?category=rights-legal"
+            className="text-13 text-muted-foreground no-underline hover:underline"
+          >
+            All rights news
+          </LocalizedLink>
+        </span>
       ),
     },
     {
