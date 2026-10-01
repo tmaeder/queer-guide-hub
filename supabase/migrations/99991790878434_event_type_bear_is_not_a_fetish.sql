@@ -79,7 +79,7 @@ create or replace function public.infer_event_type(p_title text, p_description t
 returns jsonb
 language sql
 immutable
-set search_path to 'public', 'pg_temp'
+set search_path to ''
 as $function$
   WITH s AS (
     SELECT lower(coalesce(p_title, '')) AS t,
