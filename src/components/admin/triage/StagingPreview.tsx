@@ -226,6 +226,7 @@ export function StagingPreview({
       <StructuredFieldEditor
         key={item.id}
         data={normalized}
+        entityType={item.content_type}
         onSave={onSaveFields}
         onDirtyChange={onDirtyChange}
         saving={isSavingFields}
