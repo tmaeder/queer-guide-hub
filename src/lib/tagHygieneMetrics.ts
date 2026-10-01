@@ -54,12 +54,20 @@ export const HYGIENE_METRICS: HygieneMetric[] = [
   {
     key: 'placeholder_description_active',
     label: 'Placeholder as definition',
+    // `zero` since 2026-09-30: ratcheted 137 -> 0, so a reappearance is a defect
+    // rather than a backlog.
+    zero: true,
     hint: 'A bulk-import stamp ("Sexual activity tag", "Toys tag") published as the lead paragraph. Invisible to "Indexable, no prose", which only sees an EMPTY description.',
   },
   {
     key: 'duplicate_active_name',
     label: 'Duplicate active names',
-    hint: 'Facet slugs (color-black, genre-history) may share a display name with a glossary tag by design.',
+    // `zero` since 2026-09-30, and STRUCTURALLY rather than drained:
+    // 99991789930597 added entity_kind to the grouping key, so the by-design
+    // facet/glossary name sharing described below no longer groups together at
+    // all. 14 -> 0.
+    zero: true,
+    hint: 'Facet slugs (color-black, genre-history) share a display name with a glossary tag by design, but differ in entity_kind, so they no longer count. Any pair here is a real twin within one kind.',
   },
   {
     key: 'alias_equals_name',
@@ -155,11 +163,13 @@ export const HYGIENE_METRICS: HygieneMetric[] = [
   {
     key: 'name_mojibake',
     label: 'Names containing U+FFFD',
-    // NOT `zero`, and its baseline is 1, not 0. One merged row (M�Llerian)
-    // carries a replacement character in its NAME; its "corrected" slug would
-    // still be garbage, and it is merged, so nothing renders it. Painting a
-    // permanently-red figure on the panel trains admins to ignore red.
-    hint: 'A replacement character in a tag name, i.e. an encoding failure upstream. One known merged row is accepted; a SECOND is a new defect.',
+    // `zero` since 2026-09-30. This read "NOT `zero`, and its baseline is 1, not
+    // 0" for the one merged row (M�Llerian) whose "corrected" slug would still
+    // be garbage. The counter excludes status = 'merged' and live now measures 0,
+    // so the accepted level IS 0 and the figure is no longer permanently red —
+    // which was the entire objection to flagging it.
+    zero: true,
+    hint: 'A replacement character in a tag name, i.e. an encoding failure upstream. Merged rows are excluded, so any count here is a live row.',
   },
   {
     key: 'name_contains_hashtag',
