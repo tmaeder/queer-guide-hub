@@ -23,6 +23,7 @@ import {
   pathOf,
   resolveEventType,
 } from './parse.ts'
+import { type PageAttempts, orderByAttempt } from './ordering.ts'
 
 // ============================================================
 // Source: gayout.com — worldwide LGBTQ+ MEGA EVENTS
@@ -301,6 +302,53 @@ async function loadSeen(supabase: ReturnType<typeof getServiceClient>): Promise<
   return seen
 }
 
+/** Per-path record of a fetch that produced NO event, kept in
+ *  `ingestion_sources.config.page_attempts` as `{ path: iso }`.
+ *
+ *  WHY THIS EXISTS. A page whose date is unannounced yields no row, so it is
+ *  never "seen" and returns to the head of `pending` on every run. The page
+ *  budget was written to absorb that and CANNOT, because the run is stopped by
+ *  the TIME budget long before the page budget: measured on prod 2026-10-01,
+ *  three consecutive runs fetched 16 pages, parsed 0, and reported success
+ *  while `already_seen` stayed at 353 and 377 urls waited. The clock allows
+ *  ~16 pages and the unparseable run at the head is longer than that, so the
+ *  drain could never reach a parseable page again.
+ *
+ *  THE MAP IS BOUNDED AND SELF-PRUNING. Only pages that failed to parse are
+ *  recorded; a page that parses is staged and leaves `pending` permanently, so
+ *  it never needs an entry. Entries for paths no longer pending are dropped on
+ *  write, which also clears a page the day its date IS announced. */
+async function loadAttempts(
+  supabase: ReturnType<typeof getServiceClient>,
+): Promise<PageAttempts> {
+  const { data, error } = await supabase
+    .from('ingestion_sources')
+    .select('config')
+    .eq('slug', 'gayout')
+    .maybeSingle()
+  // Fail OPEN: a missing or unreadable row means "no attempts recorded", which
+  // degrades to the old every-run-retry rather than aborting the drain.
+  if (error || !data) return {}
+  const m = (data.config as Record<string, unknown> | null)?.page_attempts
+  return m && typeof m === 'object' ? (m as PageAttempts) : {}
+}
+
+async function saveAttempts(
+  supabase: ReturnType<typeof getServiceClient>,
+  attempts: PageAttempts,
+): Promise<void> {
+  const { data } = await supabase
+    .from('ingestion_sources')
+    .select('config')
+    .eq('slug', 'gayout')
+    .maybeSingle()
+  const config = { ...((data?.config as Record<string, unknown>) ?? {}), page_attempts: attempts }
+  // Best effort. Losing the write costs one run of ordering, not correctness —
+  // the next run simply sees staler attempt data.
+  await supabase.from('ingestion_sources').update({ config }).eq('slug', 'gayout')
+}
+
+
 /** url -> the source's own `?type=` buckets for that event. */
 async function loadTypeMap(apiKey: string, maxAgeMs: number, pacer: Pacer): Promise<Map<string, string[]>> {
   const map = new Map<string, string[]>()
@@ -390,7 +438,13 @@ Deno.serve(withErrorReporting('source-gayout', async (req) => {
     }
 
     const seen = await loadSeen(supabase)
-    const pending = refresh ? workList : workList.filter(w => !seen.has(pathOf(w.url)))
+    const unordered = refresh ? workList : workList.filter(w => !seen.has(pathOf(w.url)))
+
+    // ORDERING IS THE WEDGE GUARD — see loadAttempts. The page budget below
+    // cannot save us on its own because the TIME budget stops the run first.
+    const attempts = await loadAttempts(supabase)
+    const pending = orderByAttempt(unordered, attempts, pathOf)
+    const neverAttempted = unordered.filter(w => !attempts[pathOf(w.url)]).length
 
     // PAGE BUDGET, NOT A SLICE — and this is a correctness guard, not a tuning
     // knob. An event whose date is unannounced yields no row, so it is never
@@ -468,11 +522,33 @@ Deno.serve(withErrorReporting('source-gayout', async (req) => {
       }
     }
 
+    // Record every fetch that produced NO event so it sorts to the back next
+    // run, and prune paths that are no longer pending — a page that has since
+    // parsed, or whose date was announced, drops out here rather than lingering.
+    if (!dryRun) {
+      const stamp = new Date().toISOString()
+      const pendingPaths = new Set(pending.map(w => pathOf(w.url)))
+      const next: PageAttempts = {}
+      for (const [p, at] of Object.entries(attempts)) if (pendingPaths.has(p)) next[p] = at
+      for (const u of [
+        ...skipped.no_event_ld, ...skipped.no_ld, ...skipped.incomplete,
+        ...fetchErrors.map(f => f.url),
+      ]) next[pathOf(u)] = stamp
+      // Keyed through pathOf, not e.path, so the attempts map, the seen-set and
+      // the ordering all derive their key the same way and cannot drift.
+      for (const e of events) delete next[pathOf(e.url)]
+      await saveAttempts(supabase, next)
+    }
+
     const typed = events.filter(e => e.eventType !== 'other').length
     const summary = {
       work_list: workList.length,
       already_seen: seen.size,
       pending_before_this_run: pending.length,
+      // The quantity whose absence hid the wedge: with every pending page
+      // already attempted, a run that parses nothing is a treadmill, not
+      // progress. A healthy backlog keeps this above zero.
+      never_attempted: neverAttempted,
       pages_fetched: pagesFetched,
       page_budget: pageBudget,
       stopped_on_time_budget: stoppedOnBudget,

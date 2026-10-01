@@ -4476,6 +4476,114 @@ const DISOWNED_PROSE_CEILING = 380
   }
 }
 
+// § A paged source that fetches pages and imports nothing — the resume-by-absence treadmill
+//
+// MEASURED INCIDENT, 2026-10-01. `source-gayout` reported SUCCESS on eight runs
+// in one 24h window with `pages_fetched 16, parsed 0` while `already_seen`
+// stayed at 352-353 and 377 urls still pended — one event imported in nine
+// hours. A gayout page whose date is unannounced carries no Event block, so it
+// yields no row, is never "seen", and returns to the HEAD of the work list on
+// every run. The run is stopped by its TIME budget long before its page budget,
+// so the ~16-page window the clock allows was permanently occupied by those
+// pages and the drain could never reach a parseable one again.
+//
+// NOTHING REPORTED IT. The automation's own status was `success`, the staged
+// count simply stopped moving, and no section in this file watched run YIELD. A
+// drain that fetches and imports nothing is indistinguishable from a drained
+// queue unless the counters are compared — which is what this section does.
+//
+// SCOPE IS STATED RATHER THAN IMPLIED. Only `source-gayout` emits these
+// counters today, so this reads that one automation by slug. A generic sweep
+// over every source would match no summary shape and report a reassuring zero —
+// the vacuous-check failure this file documents elsewhere. Widen the slug list
+// when a second source adopts the same counters.
+{
+  const SLUG = 'ev_fill_gayout'
+  const auto = await get(
+    `admin_automations?slug=eq.${SLUG}&select=id,slug,enabled,last_run_status,consecutive_failures`,
+  )
+  if (auto.length === 0) {
+    console.log(`source yield: no ${SLUG} registry row — nothing to check`)
+  } else {
+    const a = auto[0]
+    const runs = await get(
+      `admin_automation_runs?automation_id=eq.${a.id}&started_at=gte.${since24h}` +
+        `&select=started_at,status,summary&order=started_at.desc`,
+    )
+
+    // Reported FIRST: "0 runs examined" is not a clean result, and an empty
+    // window reads identically to a healthy one without this line.
+    console.log(`source yield (${SLUG}): ${runs.length} run(s) in 24h, enabled=${a.enabled}`)
+
+    // The counters live inside the recorded HTTP response body, which is a JSON
+    // STRING nested in the summary — so they are double-escaped once the summary
+    // is stringified, and the regex tolerates the escaping backslash. Verified
+    // against the real recorded rows, not a hand-written shape.
+    const counters = runs.map(r => {
+      const body = JSON.stringify(r.summary ?? {})
+      const num = k => {
+        const m = body.match(new RegExp(`\\\\?"${k}\\\\?":(-?\\d+)`))
+        return m ? Number(m[1]) : null
+      }
+      return {
+        at: r.started_at,
+        status: r.status,
+        pages: num('pages_fetched'),
+        parsed: num('parsed'),
+        pending: num('pending_before_this_run'),
+        never: num('never_attempted'),
+        credits: /Insufficient credits/.test(body),
+      }
+    })
+
+    const measured = counters.filter(c => c.status === 'success' && c.pages !== null)
+    const treadmill = measured.filter(c => c.pages > 0 && c.parsed === 0 && (c.pending ?? 0) > 0)
+
+    if (measured.length === 0) {
+      console.log('  no successful run recorded counters in the window — yield NOT asserted')
+    } else if (treadmill.length >= 3) {
+      console.error(
+        `✗ ${SLUG}: ${treadmill.length} successful run(s) fetched pages and imported NOTHING while work remained`,
+      )
+      for (const c of treadmill.slice(0, 3)) {
+        console.error(
+          `    ${c.at}  pages=${c.pages} parsed=${c.parsed} pending=${c.pending}` +
+            (c.never === null
+              ? '  (never_attempted absent — deployed function predates the ordering fix)'
+              : `  never_attempted=${c.never}`),
+        )
+      }
+      console.error('  → the work list is not advancing. Unparseable pages must sort to the BACK')
+      console.error('    (supabase/functions/source-gayout/ordering.ts + ingestion_sources.config.page_attempts),')
+      console.error('    or the time-budget window stays pinned to the same head-of-list pages forever.')
+      FAILED = true
+    } else if (treadmill.length > 0) {
+      console.log(`  ⚠ ${treadmill.length} zero-yield run(s) — not yet a pattern, worth watching`)
+    } else {
+      console.log('  ✓ every successful run that fetched pages imported at least one event')
+    }
+
+    // The treadmill's precursor: no never-attempted page left while work pends
+    // means every remaining page has already failed at least once.
+    const exhausted = measured.filter(c => c.never === 0 && (c.pending ?? 0) > 0)
+    if (exhausted.length > 0) {
+      console.log(
+        `  ⚠ ${exhausted.length} run(s) had no never-attempted page left while ${exhausted[0].pending} urls pended`,
+      )
+    }
+
+    // Auto-paused AND still failing is legitimate and only warns — the existing
+    // auto-pause section already hard-fails the paused-then-RECOVERED shape for
+    // every slug, so that rule is not restated here.
+    if (!a.enabled) {
+      const why = counters.some(c => c.credits)
+        ? 'Firecrawl credits exhausted (402) — a billing action, not a code fault'
+        : 'reason not visible in the 24h window; read admin_automation_runs.summary'
+      console.log(`  ⚠ ${SLUG} disabled after ${a.consecutive_failures} failure(s): ${why}`)
+    }
+  }
+}
+
 if (FAILED) {
   console.error('')
   console.error('✗ Pipeline health check FAILED — every section above ran; each ✗ line is a separate problem')
