@@ -133,17 +133,40 @@ const REDIRECTED = [
  * and a regression that turned every unknown maker slug into a hard 404 (losing
  * the "All makers" escape hatch a human needs) would pass unnoticed.
  *
- * The first three are feed-ID artifacts with nothing to redirect TO.
- * `mr-s-leather-77da` is the deliberate REFUSAL: three same-name candidates, two
- * of them published, so resolving it automatically is the same-name collision
- * this codebase refuses to guess at. It must stay a dead end until a human picks.
+ * All three are feed-ID artifacts with nothing to redirect TO.
+ *
+ * `mr-s-leather-77da` WAS listed here as a "deliberate REFUSAL: three same-name
+ * candidates, two of them published, so resolving it automatically is the
+ * same-name collision this codebase refuses to guess at." It was listed in
+ * `MERGED` at the same time, so the spec asserted both that it must stay a dead
+ * end and that it must 301 — it cannot do both, and it was red on main.
+ *
+ * MEASURED, AND THE PREMISE WAS ATTACHED TO THE WRONG ROW. There really are two
+ * published rows for this brand — `mr-s-leather` (134 listings) and `mrsleather`
+ * (974) — so the collision instinct found something real. But it does not make
+ * THIS redirect a guess:
+ *
+ *   * `mr-s-leather-77da` is not resolved by name. `99991790719620` reads the
+ *     survivor's `brand_key` out of the `reviewer_note` stamp that
+ *     `20260920084019` wrote when it retired the row — the recorded destination
+ *     of that row's own listings, not a candidate picked from a name match.
+ *   * Its listings went to `mr-s-leather`. Sending the dead URL to the row that
+ *     absorbed them is right whatever happens to a THIRD row later; if
+ *     `mrsleather` is merged in one day, the chain still resolves.
+ *
+ * So the entry is removed and the redirect stands, asserted in `MERGED`.
+ * The genuine finding is recorded rather than dropped: **`mrsleather` (974
+ * listings) and `mr-s-leather` (134) are the same real-world brand under two
+ * published maker pages and nothing has merged them.** They survive every
+ * split test this programme added because `marketplace_brand_slug()` collapses
+ * separator runs and there is no separator to collapse in `mrsleather` — the
+ * slug bases genuinely differ. That is a real open duplicate, larger than
+ * anything these merges touched, and it needs a human to pick the survivor.
+ *
+ * The `missingBrandResult()` coverage this cohort exists for is unaffected: the
+ * three feed-ID artifacts still exercise the miss path.
  */
-const RETIRED_NO_SURVIVOR = [
-  '12807-203758186',
-  '9781728209982',
-  '10819-50013638-8',
-  'mr-s-leather-77da',
-];
+const RETIRED_NO_SURVIVOR = ['12807-203758186', '9781728209982', '10819-50013638-8'];
 
 /**
  * Rows a human read and deliberately LEFT ALONE, one per reason. These are the
