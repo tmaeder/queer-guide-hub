@@ -44,8 +44,13 @@ function humanizeField(key: string): string {
     .replace(/^./, (letter) => letter.toUpperCase());
 }
 
-function isUrl(value: string) {
-  return /^https?:\/\//i.test(value);
+function safeHttpUrl(value: string): string | null {
+  try {
+    const parsed = new URL(value);
+    return parsed.protocol === 'http:' || parsed.protocol === 'https:' ? parsed.href : null;
+  } catch {
+    return null;
+  }
 }
 
 function displayString(value: string) {
@@ -72,10 +77,11 @@ export function StructuredValue({ value, depth = 0 }: { value: unknown; depth?: 
   if (typeof value === 'boolean') return <span>{value ? 'Yes' : 'No'}</span>;
   if (typeof value === 'number') return <span className="tabular-nums">{value}</span>;
   if (typeof value === 'string') {
-    if (isUrl(value)) {
+    const safeUrl = safeHttpUrl(value);
+    if (safeUrl) {
       return (
         <a
-          href={value}
+          href={safeUrl}
           target="_blank"
           rel="noopener noreferrer"
           className="inline-flex min-w-0 items-center gap-1 break-all underline decoration-border underline-offset-2 hover:decoration-foreground"
