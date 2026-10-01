@@ -77,7 +77,7 @@
 CREATE OR REPLACE FUNCTION public.news_enforce_seo_indexable()
 RETURNS trigger
 LANGUAGE plpgsql
-SET search_path TO 'pg_catalog', 'public', 'extensions', 'auth', 'storage'
+SET search_path TO ''
 AS $function$
 BEGIN
   IF NEW.quality_status IN ('rejected','review') AND NEW.seo_indexable IS DISTINCT FROM false THEN
@@ -146,7 +146,7 @@ RETURNS jsonb
 LANGUAGE sql
 STABLE
 SECURITY DEFINER
-SET search_path TO 'pg_catalog', 'public'
+SET search_path TO ''
 AS $fn$
 WITH cohort AS (
   SELECT count(*) AS total, count(*) FILTER (WHERE a.seo_indexable) AS indexable

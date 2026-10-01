@@ -113,12 +113,11 @@ describe('a news article the gate PASSED regains indexability', () => {
     expect(triggerFn()).toMatch(/ELSIF TG_OP = 'UPDATE'/i);
   });
 
-  it('preserves the search_path pin the live definition carries', () => {
+  it('pins an empty search_path so CREATE OR REPLACE cannot reintroduce shadowing', () => {
     // CREATE OR REPLACE drops a SET clause exactly as silently as it drops a
-    // branch — 99991789807686 recorded the same hazard for proconfig.
-    expect(triggerFn()).toMatch(
-      /SET search_path TO 'pg_catalog', 'public', 'extensions', 'auth', 'storage'/i,
-    );
+    // branch. The body needs no application-schema lookup, so an empty path is
+    // both sufficient and safer than preserving writable public.
+    expect(triggerFn()).toMatch(/SET search_path TO ''/i);
   });
 });
 

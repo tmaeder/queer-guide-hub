@@ -341,7 +341,7 @@ create or replace function public.venue_accessibility_evidence_signals()
 returns jsonb
 language plpgsql
 security definer
-set search_path to 'public', 'pg_temp'
+set search_path to ''
 stable
 as $fn$
 declare v_out jsonb;
