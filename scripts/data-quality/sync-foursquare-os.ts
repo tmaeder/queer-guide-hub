@@ -18,7 +18,12 @@
  * optional nested `place` object for add/update/merge enrichment.
  */
 
-import { matchFoursquarePlace, type FoursquarePlace, type MatchableVenue } from '../../supabase/functions/_shared/foursquare.ts'
+import {
+  matchFoursquarePlace,
+  queerDiscoveryEvidence,
+  type FoursquarePlace,
+  type MatchableVenue,
+} from '../../supabase/functions/_shared/foursquare.ts'
 import { TextLineStream } from 'jsr:@std/streams/text-line-stream'
 
 type Stream = 'categories' | 'snapshot' | 'delta'
@@ -53,7 +58,8 @@ Required environment:
   SUPABASE_URL
   SUPABASE_SERVICE_ROLE_KEY
 Optional environment:
-  INTERNAL_INVOKE_SECRET (recommended when the hosted function uses internal-call auth)`)
+  INTERNAL_INVOKE_SECRET (recommended when the hosted function uses internal-call auth)
+  FOURSQUARE_FUNCTION_NAME (defaults to source-foursquare-free)`)
   Deno.exit(2)
 }
 
@@ -238,13 +244,23 @@ function annotateRecord(
   stream: Stream,
   venues: MatchableVenue[],
   index: Map<string, Set<number>>,
-): Record<string, unknown> {
+): Record<string, unknown> | null {
   if (stream === 'categories') return record
-  const container = stream === 'delta' && record.place && typeof record.place === 'object'
+  const hasDeltaPlace = stream === 'delta' && record.place && typeof record.place === 'object'
+  const container = hasDeltaPlace
     ? record.place as FoursquarePlace
     : record as FoursquarePlace
   const candidates = placeCandidates(container, venues, index)
   const decision = matchFoursquarePlace(container, candidates)
+
+  // Removal/merge rows without a nested current-place record are useful only
+  // when their old identity already belongs to one of our venues. Never wrap
+  // these tombstones in a synthetic `place`: the Edge handler treats any
+  // nested place as an add/update payload.
+  if (stream === 'delta' && !hasDeltaPlace) {
+    return candidates.length > 0 ? record : null
+  }
+
   if (decision.disposition === 'auto_match' && decision.venueId) {
     const annotated = {
       ...container,
@@ -254,18 +270,23 @@ function annotateRecord(
     }
     return stream === 'delta' ? { ...record, place: annotated } : annotated
   }
-  return record
+
+  // The full country snapshot is intentionally scanned locally, but generic
+  // POIs with neither an exact existing-venue match nor explicit queer
+  // taxonomy evidence never need to cross the network or enter staging.
+  return queerDiscoveryEvidence(container).length > 0 ? record : null
 }
 
 async function sendBatch(
   baseUrl: string,
+  functionName: string,
   serviceKey: string,
   internalSecret: string | undefined,
   options: Options,
   records: Record<string, unknown>[],
   cursor: number,
 ): Promise<Record<string, unknown>> {
-  const response = await fetch(`${baseUrl}/functions/v1/source-foursquare`, {
+  const response = await fetch(`${baseUrl}/functions/v1/${functionName}`, {
     method: 'POST',
     headers: functionHeaders(serviceKey, internalSecret),
     body: JSON.stringify({
@@ -295,6 +316,7 @@ function addTotals(target: Record<string, number>, report: Record<string, unknow
 async function main(): Promise<void> {
   const options = parseArgs(Deno.args)
   const baseUrl = env('SUPABASE_URL').replace(/\/$/, '')
+  const functionName = Deno.env.get('FOURSQUARE_FUNCTION_NAME')?.trim() || 'source-foursquare-free'
   const serviceKey = env('SUPABASE_SERVICE_ROLE_KEY')
   const internalSecret = Deno.env.get('INTERNAL_INVOKE_SECRET')?.trim() || undefined
   const checkpoint = await loadCheckpoint(options)
@@ -314,9 +336,11 @@ async function main(): Promise<void> {
 
   for await (const raw of readRecords(options.input)) {
     if (recordNumber++ < checkpoint.next_record) continue
-    batch.push(annotateRecord(raw, options.stream, venues, venueIndex))
+    const annotated = annotateRecord(raw, options.stream, venues, venueIndex)
+    if (!annotated) continue
+    batch.push(annotated)
     if (batch.length < options.batchSize) continue
-    const report = await sendBatch(baseUrl, serviceKey, internalSecret, options, batch, recordNumber)
+    const report = await sendBatch(baseUrl, functionName, serviceKey, internalSecret, options, batch, recordNumber)
     addTotals(checkpoint.totals, report)
     checkpoint.next_record = recordNumber
     checkpoint.updated_at = new Date().toISOString()
@@ -326,7 +350,7 @@ async function main(): Promise<void> {
   }
 
   if (batch.length) {
-    const report = await sendBatch(baseUrl, serviceKey, internalSecret, options, batch, recordNumber)
+    const report = await sendBatch(baseUrl, functionName, serviceKey, internalSecret, options, batch, recordNumber)
     addTotals(checkpoint.totals, report)
     checkpoint.next_record = recordNumber
     console.log(JSON.stringify({ cursor: recordNumber, ...report }))

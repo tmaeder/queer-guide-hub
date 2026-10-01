@@ -37,7 +37,7 @@ during a partial rollout:
 
 ```bash
 npx supabase db push
-npx supabase functions deploy source-foursquare
+npx supabase functions deploy source-foursquare-free --no-verify-jwt
 # Deploys an authenticated no-op that blocks stale callers from reaching the
 # billable Premium Photos endpoint.
 npx supabase functions deploy venue-photo-foursquare
@@ -113,6 +113,11 @@ The service-role key is used for read-only venue matching through REST. When
 calls; otherwise it falls back to the service-role bearer token. This supports
 projects where the current API service key and the function runtime's legacy
 service-role value differ.
+
+The operator CLI defaults to the stable `source-foursquare-free` function slug.
+Set `FOURSQUARE_FUNCTION_NAME` only for an intentional alternate deployment.
+The separate slug prevents legacy deploy automation from replacing the guarded
+handler while that automation is being retired.
 
 Review every dry-run report before repeating the identical command with
 `--write`. Dry-run and write modes use separate checkpoint files. Use an

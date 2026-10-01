@@ -299,7 +299,7 @@ async function markAutoMatches(
       dedup_status: 'duplicate',
       dedup_match_id: match.venueId,
       dedup_match_table: 'venues',
-      dedup_score: match.confidence,
+      dedup_match_score: match.confidence,
       dedup_details: {
         source: 'foursquare_os_cli_match',
         reasons: match.reasons,
