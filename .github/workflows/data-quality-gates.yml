@@ -125,6 +125,41 @@ jobs:
         if: ${{ !cancelled() && github.event_name != 'pull_request' && github.event_name != 'merge_group' && env.SUPABASE_URL != '' && env.SUPABASE_SERVICE_ROLE_KEY != '' }}
         run: node scripts/check-legal-citation-links.mjs
 
-      - name: Skip (missing secrets)
-        if: ${{ env.SUPABASE_URL == '' || env.SUPABASE_SERVICE_ROLE_KEY == '' }}
-        run: echo "::warning::SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY not set — skipping data-quality gates. Configure repo secrets to enable."
+      # MISSING SECRETS SPLIT IN TWO, 2026-10-01. Every gate above is guarded on
+      # `env.SUPABASE_URL != '' && env.SUPABASE_SERVICE_ROLE_KEY != ''`, and a
+      # skipped step counts as SUCCESS — so one rotated or deleted secret turns
+      # all NINE data-quality gates off at once while `Critical data-quality
+      # gates`, a REQUIRED check, stays green. The only signal was the warning
+      # below, and a warning annotation on a green run is the muted-gauge failure
+      # this repo keeps re-learning: the tag-hygiene baseline sat stale-high for
+      # weeks for the same reason, reporting nothing while reading as a pass.
+      #
+      # The two cases are not the same fault and must not share an outcome:
+      #
+      #   FORK PR  — GitHub does not expose secrets to a workflow triggered from
+      #              a fork, by design. Nothing is broken, nothing can be done
+      #              about it in CI, and failing would make every outside
+      #              contribution red. Warn and pass.
+      #
+      #   ANYTHING ELSE — push, schedule, merge_group, or a PR from this repo all
+      #              DO receive secrets. Their absence means a secret was rotated,
+      #              renamed or deleted, i.e. the nine gates are off and nobody
+      #              has been told. Fail loudly.
+      #
+      # `github.event.pull_request.head.repo.fork` is null on non-PR events, which
+      # is falsy, so the second branch correctly covers push and schedule.
+      - name: Skip (missing secrets — fork PR, expected)
+        if: ${{ (env.SUPABASE_URL == '' || env.SUPABASE_SERVICE_ROLE_KEY == '') && github.event.pull_request.head.repo.fork }}
+        run: echo "::warning::SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY are not available to fork pull requests — the data-quality gates did not run. A maintainer must re-run this on a branch in this repository before merging."
+
+      - name: Fail (secrets missing where they should exist)
+        if: ${{ !cancelled() && (env.SUPABASE_URL == '' || env.SUPABASE_SERVICE_ROLE_KEY == '') && !github.event.pull_request.head.repo.fork }}
+        # EVENT_NAME goes through env rather than being interpolated into the
+        # script. It is a controlled enum here, not attacker-supplied text, so
+        # this is not a live injection — it is the house pattern, and a `run:`
+        # block is the wrong place to learn the difference by exception.
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+        run: |
+          echo "::error::SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY are unset on a ${EVENT_NAME} event, which DOES receive repository secrets. All nine data-quality gates were skipped, and a skipped step counts as success — so this check would otherwise have reported green while checking nothing. Restore the repository secrets."
+          exit 1
