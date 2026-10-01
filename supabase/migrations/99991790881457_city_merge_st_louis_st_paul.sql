@@ -190,7 +190,7 @@ SET population = CASE WHEN k.population = 108088 THEN d.population ELSE k.popula
     field_provenance = coalesce(k.field_provenance, '{}'::jsonb) || jsonb_build_object(
       'population', coalesce(k.field_provenance->'population', '{}'::jsonb) || jsonb_build_object(
         'source', 'derived:city_merge',
-        'by',     'migration:99991790827898_city_merge_st_louis_st_paul',
+        'by',     'migration:99991790881457_city_merge_st_louis_st_paul',
         'at',     now(),
         'value',  d.population,
         'note',   '2010 US census, carried column-to-column from the merged-away St. Paul row. '
@@ -202,7 +202,7 @@ SET population = CASE WHEN k.population = 108088 THEN d.population ELSE k.popula
         'better_value_known', 311527),
       'description', coalesce(k.field_provenance->'description', '{}'::jsonb) || jsonb_build_object(
         'source', 'derived:city_merge',
-        'by',     'migration:99991790827898_city_merge_st_louis_st_paul',
+        'by',     'migration:99991790881457_city_merge_st_louis_st_paul',
         'at',     now(),
         'note',   'Carried from the merged-away St. Paul row, which held the correct Minnesota '
                || 'lead while this row held none.'))

@@ -3,7 +3,7 @@ import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 /**
- * Guards 99991790827898_city_merge_st_louis_st_paul.sql.
+ * Guards 99991790881457_city_merge_st_louis_st_paul.sql.
  *
  * EVERY ASSERTION RUNS OVER COMMENT-STRIPPED SOURCE. The migration's header
  * quotes its own defect values verbatim -- 108088, 311527, every Réunion
@@ -18,7 +18,7 @@ import { describe, expect, it } from 'vitest';
  * ordering, and rewriting it to expect the aliases would break that path.
  */
 
-const MIGRATION = '99991790827898_city_merge_st_louis_st_paul.sql';
+const MIGRATION = '99991790881457_city_merge_st_louis_st_paul.sql';
 const SIBLING = '99991790797580_city_alias_washington_dc.sql';
 
 const raw = readFileSync(join(process.cwd(), 'supabase/migrations', MIGRATION), 'utf8');

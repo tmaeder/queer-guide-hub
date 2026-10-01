@@ -2,7 +2,7 @@ import { test, expect, type APIRequestContext } from '@playwright/test';
 import { anonHeaders, SUPABASE_REST_URL } from './support/anonKey';
 
 // St. Louis and St. Paul each existed twice, and in BOTH pairs the row holding
-// the content held the WORSE identity data. 99991790827898 merged them.
+// the content held the WORSE identity data. 99991790881457 merged them.
 //
 // THESE ARE INVARIANTS, NOT THE REPAIR'S TRANSIENT STATE. Nothing here is pinned
 // to a uuid surviving or to a particular population, because the follow-ups this
