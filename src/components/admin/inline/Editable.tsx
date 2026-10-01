@@ -1,4 +1,5 @@
 import { useCallback, useMemo, useState, type ReactNode } from 'react';
+import { Pencil } from 'lucide-react';
 import { useAdminEditMode } from '@/hooks/useAdminEditMode';
 import { useInlineSave } from '@/hooks/useInlineSave';
 import { getContentType } from '@/config/contentTypes';
@@ -45,6 +46,7 @@ export function Editable({
 }: EditableProps) {
   const { isAdmin, editMode } = useAdminEditMode();
   const [editing, setEditing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const { save, saving } = useInlineSave(contentType, recordId);
 
   const fieldConfig = useMemo<FieldConfig | null>(() => {
@@ -90,6 +92,19 @@ export function Editable({
       if (requireAltClick && !e.altKey && !editMode) return;
       e.preventDefault();
       e.stopPropagation();
+      setError(null);
+      setEditing(true);
+    },
+    [adminActive, requireAltClick, editMode],
+  );
+
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent) => {
+      if (!adminActive || (requireAltClick && !editMode)) return;
+      if (e.key !== 'Enter' && e.key !== ' ') return;
+      e.preventDefault();
+      e.stopPropagation();
+      setError(null);
       setEditing(true);
     },
     [adminActive, requireAltClick, editMode],
@@ -101,7 +116,10 @@ export function Editable({
       const res = await save({ field: fieldConfig, value: next });
       if (res.success) {
         setEditing(false);
+        setError(null);
         onSaved?.(next);
+      } else {
+        setError(res.error ?? `Could not save ${fieldConfig.label}`);
       }
     },
     [fieldConfig, save, onSaved],
@@ -111,7 +129,7 @@ export function Editable({
     return children as React.ReactElement;
   }
 
-  const Wrapper = (as === 'div' ? 'div' : 'span') as 'span';
+  const Wrapper = as === 'div' ? 'div' : 'span';
 
   if (editing && Editor && fieldConfig) {
     return (
@@ -124,18 +142,27 @@ export function Editable({
           onCancel={() => setEditing(false)}
           saving={saving}
         />
+        {error && (
+          <span role="alert" className="mt-1 block text-xs font-medium text-destructive">
+            {error}
+          </span>
+        )}
       </Wrapper>
     );
   }
 
   const showAffordance = requireAltClick ? editMode : adminActive;
   const affordanceClass = showAffordance
-    ? 'outline outline-1 outline-dashed outline-foreground/40 cursor-pointer rounded-element'
+    ? `${as === 'div' ? 'flex' : 'inline-flex'} group/editable min-h-8 items-center gap-1 rounded-element -mx-2 px-2 cursor-pointer transition-colors hover:bg-surface-container-high focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1`
     : '';
 
   return (
     <Wrapper
       onClick={handleClick}
+      onKeyDown={handleKeyDown}
+      role={showAffordance ? 'button' : undefined}
+      tabIndex={showAffordance ? 0 : undefined}
+      aria-label={showAffordance ? `Edit ${fieldConfig.label}` : undefined}
       title={
         showAffordance
           ? `${requireAltClick && !editMode ? 'Alt-click' : 'Click'} to edit · ${fieldConfig.label}`
@@ -145,6 +172,13 @@ export function Editable({
       data-editable-field={field}
     >
       {children}
+      {showAffordance && (
+        <Pencil
+          size={13}
+          aria-hidden="true"
+          className="shrink-0 opacity-50 transition-opacity motion-reduce:transition-none sm:opacity-0 sm:group-hover/editable:opacity-60 sm:group-focus-visible/editable:opacity-60"
+        />
+      )}
     </Wrapper>
   );
 }

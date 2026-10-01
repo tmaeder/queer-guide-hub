@@ -114,6 +114,34 @@ describe('Editable', () => {
     });
   });
 
+  it('keeps a failed save visible in the active cell', async () => {
+    saveMock.mockResolvedValue({ success: false, error: 'Name is required' });
+    useAdminEditModeMock.mockReturnValue({
+      isAdmin: true,
+      altHeld: false,
+      pinned: false,
+      editMode: false,
+    });
+    render(
+      <Editable
+        contentType="venues"
+        recordId="v1"
+        field="name"
+        value="Hello"
+        requireAltClick={false}
+      >
+        <span>Hello</span>
+      </Editable>,
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'Edit Name' }));
+    const input = await screen.findByRole('textbox', { name: 'Name' });
+    fireEvent.change(input, { target: { value: '' } });
+    fireEvent.keyDown(input, { key: 'Enter' });
+
+    expect(await screen.findByRole('alert')).toHaveTextContent('Name is required');
+    expect(screen.getByRole('textbox', { name: 'Name' })).toBeInTheDocument();
+  });
+
   // The pin is the discoverable equivalent of holding Alt: inline editing used
   // to be reachable ONLY by a key nothing on the page advertised.
   it('activates on a PLAIN click when edit mode is pinned on', async () => {
@@ -149,7 +177,7 @@ describe('Editable', () => {
     expect(await screen.findByRole('textbox', { name: 'Name' })).toBeInTheDocument();
   });
 
-  it('shows the dashed affordance whenever edit mode is on', () => {
+  it('shows a quiet, keyboard-focusable edit affordance whenever edit mode is on', () => {
     useAdminEditModeMock.mockReturnValue({
       isAdmin: true,
       altHeld: false,
@@ -161,9 +189,48 @@ describe('Editable', () => {
         <span>Hello</span>
       </Editable>,
     );
-    expect(document.querySelector('[data-editable-field="name"]')?.className).toContain(
-      'outline-dashed',
+    const editable = screen.getByRole('button', { name: 'Edit Name' });
+    expect(editable.className).toContain('hover:bg-surface-container-high');
+    expect(editable.className).not.toContain('outline-dashed');
+    expect(editable).toHaveAttribute('tabindex', '0');
+    expect(editable.querySelector('svg')).toBeTruthy();
+  });
+
+  it('opens an admin-table editor with Enter or Space', async () => {
+    useAdminEditModeMock.mockReturnValue({
+      isAdmin: true,
+      altHeld: false,
+      pinned: false,
+      editMode: false,
+    });
+    const { unmount } = render(
+      <Editable
+        contentType="venues"
+        recordId="v1"
+        field="name"
+        value="Hello"
+        requireAltClick={false}
+      >
+        <span>Hello</span>
+      </Editable>,
     );
+    fireEvent.keyDown(screen.getByRole('button', { name: 'Edit Name' }), { key: 'Enter' });
+    expect(await screen.findByRole('textbox', { name: 'Name' })).toBeInTheDocument();
+
+    unmount();
+    render(
+      <Editable
+        contentType="venues"
+        recordId="v1"
+        field="name"
+        value="Hello"
+        requireAltClick={false}
+      >
+        <span>Hello</span>
+      </Editable>,
+    );
+    fireEvent.keyDown(screen.getByRole('button', { name: 'Edit Name' }), { key: ' ' });
+    expect(await screen.findByRole('textbox', { name: 'Name' })).toBeInTheDocument();
   });
 
   it('draws no affordance and ignores a plain click when edit mode is off', () => {

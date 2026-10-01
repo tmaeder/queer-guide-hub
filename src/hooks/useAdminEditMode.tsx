@@ -45,7 +45,7 @@ const AdminEditModeContext = createContext<AdminEditModeValue>({
  * toggle on.
  *
  * sessionStorage, not localStorage: leaving every public page permanently
- * dashed-outlined across days is a worse default than re-arming per session.
+ * covered in edit markers across days is a worse default than re-arming per session.
  * Reads are wrapped because storage throws in a private window.
  */
 export function AdminEditModeProvider({ children }: { children: ReactNode }) {
