@@ -294,7 +294,7 @@ export default function HelpHotlines() {
         <MoreSupportBand orgs={supportOrgs} />
 
         <div className="mt-12 border-t border-border-hairline py-8 text-center">
-          <p className="font-display text-title leading-tight">
+          <p className="text-title font-bold leading-tight">
             {t('help.subtitle', 'You are not alone. Help is available right now.')}
           </p>
           <p className="mx-auto mt-2 max-w-prose text-13 leading-relaxed text-muted-foreground">
