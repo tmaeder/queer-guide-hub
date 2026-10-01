@@ -191,6 +191,8 @@ describe('Editable', () => {
     );
     const editable = screen.getByRole('button', { name: 'Edit Name' });
     expect(editable.className).toContain('hover:bg-surface-container-high');
+    expect(editable.className).toContain('min-h-11');
+    expect(editable.className).toContain('sm:min-h-8');
     expect(editable.className).not.toContain('outline-dashed');
     expect(editable).toHaveAttribute('tabindex', '0');
     expect(editable.querySelector('svg')).toBeTruthy();
