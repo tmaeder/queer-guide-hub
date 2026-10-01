@@ -4233,6 +4233,43 @@ const DISOWNED_PROSE_CEILING = 380
         console.log(`✓ i18n dispatch reaching all targets (${q.targets_enabled} enabled, locales ${locales}, ${q.unresolved} in flight)`)
       }
     }
+// §23 — phone numbers are stored in ONE format: E.164 (+<calling code><number>).
+// phone_canonical_guard() rewrites every write on venues / organizations /
+// hotels, so a non-E.164 value means a writer bypassed it (or the trigger is
+// gone). The guard being ATTACHED is checked separately from the count,
+// because an absent trigger and a clean table both read zero.
+{
+  const res = await fetch(`${BASE}/rest/v1/rpc/phone_format_signals`, {
+    method: 'POST', headers: { ...headers, 'Content-Type': 'application/json' }, body: '{}',
+  })
+  if (res.status === 404) {
+    console.warn('⚠ phone_format_signals → 404 (99991790877996 not applied yet?) — this check measured NOTHING')
+  } else if (!res.ok) {
+    console.error(`✗ phone_format_signals → HTTP ${res.status} — the phone-format probe is broken`)
+    FAILED = true
+  } else {
+    const sig = await res.json()
+    let sectionOk = true
+    if (sig?.probe_ok !== true || !(Number(sig?.rules) > 0)) {
+      console.error('✗ phone_format_signals did not report probe_ok / phone_country_rules is empty')
+      FAILED = true; sectionOk = false
+    }
+    for (const [table, t] of Object.entries(sig?.tables ?? {})) {
+      if (t?.trigger_attached !== true) {
+        console.error(`✗ ${table}: phone_canonical_guard is NOT attached — phone writes are unformatted`)
+        FAILED = true; sectionOk = false
+      }
+      const bad = Number(t?.non_e164 ?? 0)
+      if (bad > 0) {
+        console.error(`✗ ${table}: ${bad} phone values are not E.164 — a writer bypassed the guard,`)
+        console.error(`  or the backfill has not run: scripts/data-quality/backfill-phone-canonical.mjs`)
+        FAILED = true; sectionOk = false
+      }
+    }
+    if (sectionOk) {
+      const v = sig.tables?.venues ?? {}
+      console.log(`✓ phone numbers are E.164 (venues ${v.with_phone}, ${v.rejected} unconvertible kept in enrichment_status.phone_rejected)`)
+    }
   }
 }
 

@@ -110,7 +110,14 @@ export const venueFields: FieldConfig[] = [
     max: 180,
   },
   // Details
-  { name: 'phone', label: 'Phone', type: 'phone', group: 'details' },
+  {
+    name: 'phone',
+    label: 'Phone',
+    type: 'phone',
+    group: 'details',
+    helpText:
+      'Saved as +<country code><number> without spaces, e.g. +493012345678. A national number is converted using the country.',
+  },
   { name: 'email', label: 'Email', type: 'email', group: 'details' },
   { name: 'website', label: 'Website', type: 'url', group: 'details' },
   { name: 'instagram', label: 'Instagram', type: 'text', group: 'details', placeholder: '@handle' },

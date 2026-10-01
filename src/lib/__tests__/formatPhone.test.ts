@@ -40,13 +40,20 @@ describe('formatPhoneHref', () => {
 });
 
 describe('formatPhoneDisplay', () => {
-  // Unchanged behaviour, pinned because formatPhoneHref now sits beside it and the two
-  // must stay independent: the display string keeps its spaces, the href must not.
-  it('groups a bare E.164 number for reading', () => {
-    expect(formatPhoneDisplay('+49302134570')).toBe('+49 302 134 570');
+  // The site shows ONE format: E.164, "+<calling code><number>", no spaces. The
+  // database already stores that (phone_canonical_guard), so display must not
+  // re-group it into a second format.
+  it('shows a stored E.164 number exactly as stored', () => {
+    expect(formatPhoneDisplay('+49302134570')).toBe('+49302134570');
+    expect(formatPhoneDisplay('+14155512500')).toBe('+14155512500');
   });
 
-  it('leaves an already human-formatted number alone', () => {
+  it('compacts a legacy spaced international number to E.164', () => {
+    expect(formatPhoneDisplay('+49 30 213 4570')).toBe('+49302134570');
+    expect(formatPhoneDisplay('+1 (212) 555-1234')).toBe('+12125551234');
+  });
+
+  it('never invents a country code for a national number', () => {
     expect(formatPhoneDisplay('(212) 555-1234')).toBe('(212) 555-1234');
   });
 
