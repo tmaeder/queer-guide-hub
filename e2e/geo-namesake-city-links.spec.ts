@@ -367,12 +367,33 @@ test('each swept event got the remedy its own evidence supports', async ({ reque
     expect(ev.city_id, `${ev.title} lost the city link that was correct`).not.toBeNull();
 
     if (s.remedy === 'geo') {
-      // The coordinates were the defect, not the link. Retracted, never replaced
-      // with a centroid — prefer NULL to a guess.
+      // The coordinates were the defect, not the link. 99991789886174 retracted them
+      // so the nightly fill could re-derive from the city that was always correct.
+      //
+      // THIS ASSERTS THE INVARIANT, NOT THE RETRACTION. The first version pinned
+      // `latitude === null`, which was the transient state between the retraction and
+      // the refill — `run_event_geo_fill` repopulated both rows from their own city
+      // centroids on 2026-10-01 and the spec went red for the fix having WORKED. The
+      // durable claim is that the foreign coordinates never come back: either the
+      // row still has none, or the ones it has agree with its own city.
+      if (ev.latitude === null) continue;
+      const [c] = await rest<{ name: string; latitude: string | null; longitude: string | null }>(
+        request,
+        `cities?select=name,latitude,longitude&id=eq.${ev.city_id}`,
+      );
+      expect(c?.latitude, `${ev.title}'s city has no coordinates to corroborate against`).not.toBe(
+        null,
+      );
+      const gd = km(
+        Number(ev.latitude),
+        Number(ev.longitude),
+        Number(c.latitude),
+        Number(c.longitude),
+      );
       expect(
-        ev.latitude,
-        `${ev.title} still carries ${s.was}; the link was right and the coordinates were not`,
-      ).toBeNull();
+        gd,
+        `${ev.title} carries coordinates ${gd.toFixed(0)} km from ${c.name} — ${s.was} is back`,
+      ).toBeLessThan(MAX_KM);
       continue;
     }
 
@@ -628,7 +649,9 @@ test('no anon-visible event is attached to a venue over 100 km away', async ({ r
   expect(far, `events attached to a venue they are nowhere near:\n${far.join('\n')}`).toEqual([]);
 });
 
-test('the Sitges event is on the Sitges Bears Bar, and Denver is detached', async ({ request }) => {
+test('the Sitges event is on the Sitges Bears Bar, and Denver is on Denver’s own Trade', async ({
+  request,
+}) => {
   const [sitges] = await rest<{ venue_id: string | null; latitude: string; longitude: string }>(
     request,
     'events?select=venue_id,latitude,longitude&id=eq.82e80cfa-2256-4be1-9582-ed3b0af6e9e5',
@@ -647,11 +670,36 @@ test('the Sitges event is on the Sitges Bears Bar, and Denver is detached', asyn
   );
   expect(d, `attached to ${venue.name}, ${d.toFixed(1)} km away`).toBeLessThan(5);
 
-  const [denver] = await rest<{ venue_id: string | null; venue_name: string | null }>(
+  // Denver was DETACHED by 99991790537156 on the stated ground that "no Denver venue
+  // exists to move it to". That was false -- there are three Trade rows, only one is
+  // DC's -- so 99991790796466 relinked it to Denver's own Trade at 0.01 km. This
+  // assertion moved with it: pinning "detached" would now pin the defect.
+  const [denver] = await rest<{
+    venue_id: string | null;
+    venue_name: string | null;
+    latitude: string;
+    longitude: string;
+  }>(
     request,
-    'events?select=venue_id,venue_name&id=eq.d5c0c33f-4186-475d-a609-91ed1603aa96',
+    'events?select=venue_id,venue_name,latitude,longitude' +
+      '&id=eq.d5c0c33f-4186-475d-a609-91ed1603aa96',
   );
-  expect(denver.venue_id, 'still attached to Washington DC’s Trade').toBeNull();
-  // the source's own text must survive, or the re-attach is no longer actionable
+  expect(denver.venue_id, 'not relinked — it is still detached from Denver’s Trade').not.toBeNull();
+  // the source's own text must survive either way
   expect(denver.venue_name).toBeTruthy();
+
+  const [dv] = await rest<{ name: string; latitude: string; longitude: string; city_id: string }>(
+    request,
+    `venues?select=name,latitude,longitude,city_id&id=eq.${denver.venue_id}`,
+  );
+  const dd = km(
+    Number(denver.latitude),
+    Number(denver.longitude),
+    Number(dv.latitude),
+    Number(dv.longitude),
+  );
+  expect(dd, `attached to ${dv.name}, ${dd.toFixed(2)} km away`).toBeLessThan(1);
+  // and it must be DENVER's Trade, not the DC row it was taken off
+  const [dvCity] = await rest<{ slug: string }>(request, `cities?select=slug&id=eq.${dv.city_id}`);
+  expect(dvCity.slug).toBe('denver');
 });

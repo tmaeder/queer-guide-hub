@@ -126,3 +126,32 @@ export function mergeRoundRobin<T extends { id: string }>(
   }
   return { rows, cursor: rows.length > 0 ? rows[rows.length - 1].id : null };
 }
+
+/**
+ * The status a row's link attempt reports, from what was actually WRITTEN.
+ *
+ * The old rule reported `partial` whenever a city was not found but a country
+ * was known — including when that country was already on the row, i.e. when
+ * nothing changed. The run log then sums `linked + partial` into
+ * `total_linked`, so a venue that already had a country and found no city
+ * counted as a link every hour it was revisited. Measured 2026-09-30 over 17
+ * runs: 1,445 of 1,835 reported venue "links" were that no-op, and the log
+ * read ~100 links/run while `city_id` gained ~23/run.
+ *
+ *  - `linked`  a city was written and the row ends with both ids set;
+ *  - `partial` something was written but the row still lacks one of them;
+ *  - `skipped` nothing was written.
+ */
+export function linkWriteStatus(p: {
+  existingCityId: string | null;
+  existingCountryId: string | null;
+  newCityId: string | null;
+  newCountryId: string | null;
+}): 'linked' | 'partial' | 'skipped' {
+  const wroteCity = !!p.newCityId && !p.existingCityId;
+  const wroteCountry = !!p.newCountryId && !p.existingCountryId;
+  if (!wroteCity && !wroteCountry) return 'skipped';
+  const hasCity = !!(p.existingCityId || p.newCityId);
+  const hasCountry = !!(p.existingCountryId || p.newCountryId);
+  return hasCity && hasCountry ? 'linked' : 'partial';
+}

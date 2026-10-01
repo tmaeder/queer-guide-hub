@@ -2,10 +2,42 @@ import { test, expect, type APIRequestContext } from '@playwright/test';
 import { anonHeaders } from './support/anonKey';
 
 /**
- * No living person is published asserting a queer identity we cannot source —
- * and the two performers our own repair took offline are back.
+ * No living person is published asserting a queer identity we cannot source.
  *
- * THE INCIDENT, 2026-09-19. `#3813` correctly nulled 84 `wikidata_qid`s that
+ * THE HEADLINE CHANGED, AND THE CORRECTION IS THE POINT. This file used to end
+ * "— and the two performers our own repair took offline are back", and asserted
+ * that `bones` and `spice` are published. On 2026-09-28 14:55:35 a governance
+ * pass unpublished 226 personalities in one statement, those two among them:
+ *
+ *     update public.personalities set visibility='draft'
+ *      where visibility='public'
+ *        and 'unsupported_lgbti_claim' = any(personality_publication_failures(id));
+ *
+ * Read from `content_revisions`: `changed_fields=['visibility']` only, actor_kind
+ * `system`. Neither outing seal did it — both stamp `needs_attention=true` and
+ * clear `seo_indexable`, and both rows still read `needs_attention=false`,
+ * `seo_indexable=true`, with their identifiers intact.
+ *
+ * THE CAUSE IS A STRICTER RULE, NOT A REGRESSION, and it exposes a real gap
+ * between two gates:
+ *
+ *   person_outing_guard              is there a Wikidata QID, or any non-SKIP_
+ *                                    personality_sources row?
+ *   enforce_personality_public_gate  is the LGBTI CLAIM ITSELF backed by a
+ *                                    personality_claim_sources row at
+ *                                    pending/verified?
+ *
+ * A QID says "this is a real person". It does not say "this person's queer
+ * identity is sourced". The September repair restored the identifier and the
+ * source rows — clearing the outing gate — while the claim-level provenance was
+ * later reviewed and REJECTED (both rows, 2026-09-24 18:25:27). The stricter gate
+ * then did the right thing, and re-publishing them by hand would fight it.
+ *
+ * So publication is no longer asserted here: it is an editorial state governed by
+ * that gate, not an invariant. What is asserted is the invariant itself, plus the
+ * rule that a non-public row is never served.
+ *
+ * THE ORIGINAL INCIDENT, 2026-09-19. `#3813` correctly nulled 84 `wikidata_qid`s that
  * pointed at the wrong entity. Three of the 84 were public, living people whose
  * `lgbti_connection` asserts a positive identity label, so removing the
  * identifier left a published claim with nothing behind it and the CRITICAL
@@ -65,7 +97,7 @@ apiTest('the cohort the guard protects is non-empty and reachable by anon', asyn
   expect(
     rows.length,
     'anon can see no public living person asserting a positive LGBTI label — the filter is broken or the corpus is gone, and the invariant below is vacuous',
-  ).toBeGreaterThan(500);
+  ).toBeGreaterThan(100);
 });
 
 // --- the invariant -----------------------------------------------------------
@@ -96,35 +128,6 @@ apiTest(
 );
 
 // --- the three rows the incident ran through ---------------------------------
-
-apiTest(
-  'the two performers whose provenance came back are published again',
-  async ({ request }) => {
-    const rows = await anon<{
-      slug: string;
-      visibility: string;
-      seo_indexable: boolean;
-      wikidata_qid: string | null;
-    }>(
-      request,
-      'personalities?slug=in.(bones,spice)&select=slug,visibility,seo_indexable,wikidata_qid',
-    );
-
-    expect(rows.map((r) => r.slug).sort(), 'bones and spice are not anon-visible').toEqual([
-      'bones',
-      'spice',
-    ]);
-    for (const r of rows) {
-      expect(r.visibility, `${r.slug} is still unpublished`).toBe('public');
-      expect(r.seo_indexable, `${r.slug} is still deindexed`).toBe(true);
-      // Verified live on the two gates `_shared/tag-wiki-guard.ts` requires — the
-      // entity must be a human and its label must agree with the published name:
-      //   Q136296831 "Bones" P31=Q5 British drag performer
-      //   Q116205118 "Spice" P31=Q5 American drag queen
-      expect(r.wikidata_qid, `${r.slug} is published without an identifier`).toMatch(/^Q\d+$/);
-    }
-  },
-);
 
 apiTest(
   'the merged duplicate a human re-published is not served to anyone',
@@ -158,86 +161,83 @@ apiTest(
 
 // --- what a reader and a crawler actually get --------------------------------
 
-test("the restored pages are served to a crawler with the person's own title", async ({
-  request,
-}) => {
-  // Asserted on the CRAWLER response, not through the browser. The title a
-  // reader sees is written client-side by useMeta after the record loads, so
-  // `expect(page).toHaveTitle()` races hydration: observed failing with
-  // "Personalities | Queer Guide" — the route's generic title — on roughly one
-  // run in five, while the same URL fetched with a crawler UA returned
-  // "Spice — Drag queen | Queer Guide" every time.
+/**
+ * Personalities that are NOT public, and why each one is a useful tripwire.
+ * Anon cannot enumerate them — RLS serves only public rows — so they are named,
+ * measured with the service role on 2026-09-30.
+ *
+ *   bones, spice        their LGBTI claim source is `verification_status='rejected'`,
+ *                       so `personality_publication_failures` returns
+ *                       `unsupported_lgbti_claim` and the governance pass of
+ *                       2026-09-28 14:55:35 unpublished them (226 rows in one
+ *                       statement). Their Wikidata identifiers are intact —
+ *                       Q136296831 and Q116205118 — which is what the September
+ *                       repair fixed; publication is a separate, stricter test.
+ *   jay-johnson,        no Wikidata identifier at all: they satisfy
+ *   little-demon        `person_outing_guard` only through a `personality_sources`
+ *                       row, the arm the 99991790377689 seal protects.
+ * `alaska` is deliberately NOT in this list: it is a MERGED duplicate, so the
+ * platform 301s it to the canonical row rather than 404ing, and Playwright's
+ * `request.get` follows redirects — it returned 200 and failed this test on
+ * correct behaviour. Its redirect is asserted separately below.
+ *
+ * If any of these starts being served, this test flips red — which is the review
+ * a human should be doing, not a number to relax.
+ */
+const NOT_PUBLIC = ['bones', 'spice', 'jay-johnson', 'little-demon'] as const;
+
+test('a personality that is not public is never served to a crawler', async ({ request }) => {
+  // THIS REPLACED "the restored pages are served with the person's own title",
+  // which asserted that `bones` and `spice` are published. They are not, and they
+  // should not be — see the header. Their publication state is an editorial
+  // decision governed by `enforce_personality_public_gate`; it is not an
+  // invariant, so a spec must not demand it.
   //
-  // The crawler path is also the one that matters here: `functions/_lib/detail.ts`
-  // injects the title per request and is what Google indexes. A draft row gets
-  // the not-found shell instead, so the person's own name in the title is proof
-  // the row is published, not merely that the URL resolves.
-  for (const [slug, name] of [
-    ['bones', 'Bones'],
-    ['spice', 'Spice'],
-  ] as const) {
+  // What IS an invariant: `visibility=eq.public` is load-bearing in the personality
+  // branch of `functions/_lib/detail.ts` (its own comment says so), and the crawler
+  // path runs as the SERVICE ROLE, so RLS does not protect it. `seo_indexable` is
+  // therefore inert on a non-public row — measured 2026-09-30 across 4,875 live
+  // draft-and-indexable personalities, five sampled, 5/5 returned 404 — and this
+  // asserts that rather than trusting it.
+  for (const slug of NOT_PUBLIC) {
     const res = await request.get(`https://queer.guide/personality/${slug}`, {
       headers: {
         'User-Agent': 'Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)',
       },
     });
-    expect(res.status(), `/personality/${slug} -> HTTP ${res.status()}`).toBe(200);
-    const html = await res.text();
-    expect(html, `/personality/${slug} was served without its own title`).toMatch(
-      new RegExp(`<title>[^<]*${name}[^<]*</title>`),
-    );
-    expect(html).not.toMatch(/name="robots"[^>]*noindex/i);
-  }
-});
-
-// --- the second door: provenance that rests on source rows -------------------
-//
-// The gate accepts EITHER a well-formed `wikidata_qid` OR a non-`SKIP_`
-// `personality_sources` row, so a person can be gate-clean with no identifier at
-// all. `99991790358865` seals the deletion of that last source row, which a
-// trigger on `personalities` cannot see.
-//
-// Anon cannot verify the seal directly — `personality_sources` is not
-// anon-readable (401) and RLS hides `draft` rows — so this asserts the OUTCOME
-// on the surface that actually matters. `seo_indexable` governs the crawler path
-// in `functions/_lib/detail.ts`, which runs as the service role and does NOT go
-// through RLS, so "anon cannot see it" is not the same claim as "a crawler
-// cannot fetch it" and must be tested separately.
-
-/**
- * Living, positive-label rows whose only provenance is a source row — measured
- * with the service role on 2026-09-25, because anon cannot enumerate them.
- * Both are `visibility='draft'` with `seo_indexable=true`, which is why the
- * gate's reach clause is `public OR seo_indexable` rather than `public` alone.
- *
- * This list is a tripwire, not a permission: if one of these is ever published,
- * the crawler assertion below flips to 200 and fails, which is the review a
- * human should be doing.
- */
-const SOURCES_ARM_ONLY = ['jay-johnson', 'little-demon'] as const;
-
-test('a person whose only provenance is a source row is not served to crawlers', async ({
-  page,
-}) => {
-  for (const slug of SOURCES_ARM_ONLY) {
-    const res = await page.goto(`/personality/${slug}`, { waitUntil: 'domcontentloaded' });
     expect(
-      res?.status(),
-      `/personality/${slug} is being served (HTTP ${res?.status()}) — it carries no Wikidata identifier, so a reader has no provenance to follow`,
+      res.status(),
+      `/personality/${slug} is not public but was served HTTP ${res.status()} to a crawler`,
     ).toBe(404);
   }
+
+  // Positive control: the same fetch against a PUBLIC row must be served with its
+  // own title. Without it, "everything 404s" also passes on a dead origin.
+  const ok = await request.get('https://queer.guide/personality/alaska-thunderfuck-5000', {
+    headers: {
+      'User-Agent': 'Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)',
+    },
+  });
+  expect(
+    ok.status(),
+    'the public control row is not being served — the 404s above prove nothing',
+  ).toBe(200);
+  expect(await ok.text()).toMatch(/<title>[^<]*Alaska[^<]*<\/title>/);
 });
 
 apiTest(
   'the strict cohort is still measured against a live corpus, not a frozen number',
   async ({ request }) => {
-    // The published cohort was 1,074 when this file was written and is 632 now —
-    // six days of archival and repair passes. That is why the control above
-    // asserts a FLOOR rather than an exact count: an exact count turns every
-    // legitimate corpus change into a red spec, which is how a trust-&-safety
-    // check gets re-run until it passes.
+    // 1,074 when this file was written, 632 six days later, 435 now — archival and
+    // governance passes, not a defect. The floor was 500 and went red on a correct
+    // corpus; a floor that has to be lowered every week is measuring the wrong
+    // thing. It exists only to prove the filter matches SOMETHING, so it is set
+    // where it cannot be tripped by ordinary editorial movement.
     const rows = await anon<{ id: string }>(request, `${COHORT}&select=id&limit=2000`);
-    expect(rows.length).toBeGreaterThan(500);
+    expect(
+      rows.length,
+      'the cohort filter matches nothing — the invariant above is vacuous',
+    ).toBeGreaterThan(100);
     expect(rows.length).toBeLessThan(5000);
   },
 );
