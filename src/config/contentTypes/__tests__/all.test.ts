@@ -20,6 +20,7 @@ import {
   getFieldGroups,
   fieldGroupLabels,
 } from '../index';
+import { getEditorForFieldType } from '@/components/admin/inline/editors';
 
 describe('contentType modules', () => {
   it.each([
@@ -69,5 +70,20 @@ describe('contentTypes index', () => {
   });
   it('fieldGroupLabels is an object', () => {
     expect(typeof fieldGroupLabels).toBe('object');
+  });
+
+  it('gives every content type an inline-editable title field', () => {
+    const failures = Object.values(contentTypeRegistry).flatMap((config) => {
+      const field = config.fields.find((candidate) => candidate.name === config.titleField);
+      if (!field) return [`${config.id}: missing ${config.titleField}`];
+      if (field.readOnly) return [`${config.id}.${field.name}: read-only`];
+      if (field.virtual) return [`${config.id}.${field.name}: virtual`];
+      if (!getEditorForFieldType(field.type)) {
+        return [`${config.id}.${field.name}: unsupported ${field.type} editor`];
+      }
+      return [];
+    });
+
+    expect(failures).toEqual([]);
   });
 });
