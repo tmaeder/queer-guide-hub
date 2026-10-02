@@ -16,14 +16,22 @@ const gotoReady = async (page: Page, path: string) => {
 
 const observeRouteJourneys = (page: Page) =>
   page.evaluate(() => {
-    const windowWithProbe = window as typeof window & { __routeJourneys?: number };
-    windowWithProbe.__routeJourneys = 0;
+    const windowWithProbe = window as typeof window & {
+      __routeJourneys?: Array<{ className: string; display: string }>;
+    };
+    windowWithProbe.__routeJourneys = [];
     const record = (node: Node) => {
       if (!(node instanceof Element)) return;
-      if (node.matches('[data-testid="route-journey"]')) windowWithProbe.__routeJourneys! += 1;
-      windowWithProbe.__routeJourneys! += node.querySelectorAll(
-        '[data-testid="route-journey"]',
-      ).length;
+      const journeys = [
+        ...(node.matches('[data-testid="route-journey"]') ? [node] : []),
+        ...node.querySelectorAll('[data-testid="route-journey"]'),
+      ];
+      for (const journey of journeys) {
+        windowWithProbe.__routeJourneys!.push({
+          className: journey.className,
+          display: getComputedStyle(journey).display,
+        });
+      }
     };
     new MutationObserver((records) => {
       for (const recordEntry of records) {
@@ -67,12 +75,12 @@ test.describe('production subway design-system contract', () => {
 
     await page.locator('header nav[aria-label="Primary"] a').first().click();
     await expect(page).toHaveURL(/\/going-out$/);
-    await expect.poll(() => page.evaluate(() => window.__routeJourneys ?? 0)).toBe(1);
+    await expect.poll(() => page.evaluate(() => window.__routeJourneys?.length ?? 0)).toBe(1);
 
-    const journey = page.getByTestId('route-journey');
-    await expect(journey).toBeVisible();
-    await expect(journey).toHaveClass(/route-journey--(pink|blue|green|yellow)/);
-    await expect(journey).toHaveCount(0, { timeout: 2_000 });
+    const [journey] = await page.evaluate(() => window.__routeJourneys ?? []);
+    expect(journey.display).not.toBe('none');
+    expect(journey.className).toMatch(/route-journey--(pink|blue|green|yellow)/);
+    await expect(page.getByTestId('route-journey')).toHaveCount(0, { timeout: 2_000 });
   });
 
   test('reduced motion suppresses the route journey', async ({ page }) => {
@@ -94,7 +102,7 @@ test.describe('production subway design-system contract', () => {
     await helpLink.evaluate((element: HTMLAnchorElement) => element.click());
     await expect(page).toHaveURL(/\/help$/);
     await page.waitForTimeout(800);
-    await expect.poll(() => page.evaluate(() => window.__routeJourneys ?? 0)).toBe(0);
+    await expect.poll(() => page.evaluate(() => window.__routeJourneys?.length ?? 0)).toBe(0);
   });
 
   for (const path of [
@@ -128,6 +136,6 @@ test.describe('production subway design-system contract', () => {
 
 declare global {
   interface Window {
-    __routeJourneys?: number;
+    __routeJourneys?: Array<{ className: string; display: string }>;
   }
 }
