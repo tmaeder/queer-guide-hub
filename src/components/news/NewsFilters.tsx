@@ -733,8 +733,7 @@ export const NewsFilters = ({
                   <Badge
                     key={tag}
                     variant={selectedTags.includes(tag) ? 'default' : 'outline'}
-                    style={{ transition: 'all 0.2s' }}
-                    className="text-xs2 cursor-pointer"
+                    className="cursor-pointer text-xs2 transition-all duration-fast"
                     onClick={() => handleTagToggle(tag)}
                   >
                     {formatNewsTag(tag)}

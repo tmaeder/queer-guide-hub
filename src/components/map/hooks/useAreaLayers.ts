@@ -5,6 +5,7 @@ import { type LayerType, type MapMarker, LAYER_COLORS } from '@/hooks/useExplore
 import { AREA_LAYERS, AREA_RADIUS, AREA_STYLE } from '@/config/mapLayers';
 import { ink, paper } from '@/lib/mapTokens';
 import { MAP_FONT_BOLD } from '@/config/mapStyle';
+import { durationMs, imperativeDurationMs } from '@/lib/animation';
 
 interface UseAreaLayersParams {
   mapRef: MutableRefObject<maplibregl.Map | null>;
@@ -110,7 +111,9 @@ export function useAreaLayers({
             'circle-stroke-color': color,
             'circle-stroke-width': 1.25,
             'circle-stroke-opacity': style.strokeOpacity,
-            'circle-opacity-transition': { duration: 200 },
+            'circle-opacity-transition': {
+              duration: imperativeDurationMs(durationMs.fast),
+            },
           },
         });
 

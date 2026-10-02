@@ -264,9 +264,9 @@ export function EmailIngestionsManager() {
           {filtered.map((ing) => (
             <Collapsible key={ing.id}>
               <Card
+                className="transition-colors duration-fast"
                 style={{
                   border: `1px solid ${STATUS_BORDER_COLOR[ing.status] || 'hsl(var(--border))'}`,
-                  transition: 'border-color 0.2s',
                 }}
               >
                 <CardContent className="p-4.5">

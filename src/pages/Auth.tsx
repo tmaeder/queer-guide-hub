@@ -20,10 +20,12 @@ import { OAuthButtons } from '@/components/auth/OAuthButtons';
 import { PasskeyButton } from '@/components/auth/PasskeyButton';
 import { PageContainer } from '@/components/layout/PageContainer';
 import { sanitizeRedirect } from '@/lib/authRedirect';
+import { useMotionTokens } from '@/lib/motion';
 
 type Mode = 'signin' | 'signup' | 'forgot';
 
 export default function Auth() {
+  const { tweens } = useMotionTokens();
   const navigate = useLocalizedNavigate();
   const { signIn, resetPassword, user, passwordRecovery } = useAuth();
   const { toast } = useToast();
@@ -185,7 +187,7 @@ export default function Auth() {
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -8 }}
-              transition={{ duration: 0.2 }}
+              transition={tweens.fast}
             >
               <Signup onBack={() => setMode('signin')} redirectTo={redirectTo} />
             </motion.div>
@@ -208,7 +210,7 @@ export default function Auth() {
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -8 }}
-              transition={{ duration: 0.2 }}
+              transition={tweens.fast}
             >
               <Card>
                 <CardHeader>
