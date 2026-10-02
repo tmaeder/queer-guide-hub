@@ -12,9 +12,16 @@ export interface SectionNavProps {
   activeId: string;
   onSelect: (id: string) => void;
   className?: string;
+  variant?: 'default' | 'subway';
 }
 
-export function SectionNav({ items, activeId, onSelect, className }: SectionNavProps) {
+export function SectionNav({
+  items,
+  activeId,
+  onSelect,
+  className,
+  variant = 'default',
+}: SectionNavProps) {
   const listRef = useRef<HTMLUListElement | null>(null);
 
   useEffect(() => {
@@ -66,7 +73,10 @@ export function SectionNav({ items, activeId, onSelect, className }: SectionNavP
           one the frame uses, or it is a second frame fighting the first. */}
       <ul
         ref={listRef}
-        className="mx-auto flex h-12 max-w-page items-center gap-6 overflow-x-auto px-4 sm:px-6 md:px-8 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+        className={cn(
+          'mx-auto flex max-w-page items-center overflow-x-auto px-4 sm:px-6 md:px-8 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden',
+          variant === 'subway' ? 'h-16 gap-4 md:gap-8' : 'h-12 gap-6',
+        )}
       >
         {items.map((item) => {
           const isActive = item.id === activeId;
@@ -85,13 +95,23 @@ export function SectionNav({ items, activeId, onSelect, className }: SectionNavP
                   }
                 }}
                 className={cn(
-                  'relative inline-flex h-12 items-center whitespace-nowrap text-13 font-bold transition-colors no-underline',
-                  isActive
-                    ? // Sits ON the nav's own rule and is thicker than it, so the
-                      // active station reads as a stop on the line rather than a
-                      // tint difference.
-                      'text-foreground after:absolute after:inset-x-0 after:-bottom-0.5 after:h-1 after:bg-foreground'
-                    : 'text-muted-foreground hover:text-foreground',
+                  'relative inline-flex items-center whitespace-nowrap text-13 font-bold transition-colors no-underline',
+                  variant === 'subway'
+                    ? cn(
+                        'h-10 gap-2 rounded-element px-4 before:block before:h-4 before:w-4 before:shrink-0 before:rounded-full before:border-[4px] before:border-foreground before:transition-colors',
+                        isActive
+                          ? 'bg-foreground text-background before:bg-track-blue'
+                          : 'text-muted-foreground before:bg-background hover:bg-surface-container hover:text-foreground hover:before:bg-track-blue',
+                      )
+                    : cn(
+                        'h-12',
+                        isActive
+                          ? // Sits ON the nav's own rule and is thicker than it, so the
+                            // active station reads as a stop on the line rather than a
+                            // tint difference.
+                            'text-foreground after:absolute after:inset-x-0 after:-bottom-0.5 after:h-1 after:bg-foreground'
+                          : 'text-muted-foreground hover:text-foreground',
+                      ),
                 )}
               >
                 {item.label}
