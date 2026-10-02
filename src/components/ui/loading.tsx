@@ -81,6 +81,7 @@ export function PageLoading({ text }: PageLoadingProps) {
   return (
     <div className="flex min-h-screen items-center justify-center px-4">
       <div className="w-full max-w-reading">
+        <span className="sr-only">{label}</span>
         <PageLoadingState count={3} variant="list" label={label} />
       </div>
     </div>

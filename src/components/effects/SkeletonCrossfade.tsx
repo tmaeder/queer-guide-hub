@@ -1,5 +1,6 @@
 import { AnimatePresence, motion } from 'motion/react';
 import { useMotionTokens } from '@/lib/motion';
+import { duration } from '@/lib/animation';
 
 interface SkeletonCrossfadeProps {
   loading: boolean;
@@ -17,6 +18,14 @@ export function SkeletonCrossfade({ loading, skeleton, children }: SkeletonCross
   // #0a0a0a, a spurious 3.1:1 color-contrast failure on whichever rail happened
   // to resolve its data late.
   const { reduced, tweens } = useMotionTokens();
+  // Keep the component resilient to older consumers/tests that mocked the
+  // hook before tween presets became part of its public return value.
+  const activeTweens =
+    tweens ??
+    ({
+      fast: { duration: duration.fast },
+      normal: { duration: duration.normal },
+    } as const);
 
   if (reduced) {
     return <>{loading ? skeleton : children}</>;
@@ -28,7 +37,7 @@ export function SkeletonCrossfade({ loading, skeleton, children }: SkeletonCross
         <motion.div
           key="skeleton"
           exit={{ opacity: 0, filter: 'blur(4px)' }}
-          transition={tweens.fast}
+          transition={activeTweens.fast}
         >
           {skeleton}
         </motion.div>
@@ -37,7 +46,7 @@ export function SkeletonCrossfade({ loading, skeleton, children }: SkeletonCross
           key="content"
           initial={{ opacity: 0, filter: 'blur(4px)' }}
           animate={{ opacity: 1, filter: 'blur(0px)' }}
-          transition={tweens.normal}
+          transition={activeTweens.normal}
         >
           {children}
         </motion.div>

@@ -56,6 +56,7 @@ export const ChatGPTConnection = () => {
         {loading ? (
           <div className="flex items-center gap-2 text-muted-foreground">
             <TrackLoader size={16} label="Loading connection status" />
+            <span className="sr-only">Loading connection status</span>
           </div>
         ) : (
           <div className="flex flex-col gap-4">

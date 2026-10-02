@@ -14,6 +14,7 @@ export function IntimateTab() {
   if (isLoading) {
     return (
       <div className="flex flex-col gap-4 py-4" role="status" aria-label="Loading intimate profile">
+        <span className="sr-only">Loading intimate profile</span>
         <Skeleton className="h-5 w-40" />
         <Skeleton className="h-16 w-full rounded-element" />
       </div>
