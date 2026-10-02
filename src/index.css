@@ -38,6 +38,9 @@
 @utility duration-slow {
   transition-duration: var(--motion-slow);
 }
+@utility duration-journey {
+  transition-duration: var(--motion-journey);
+}
 
 /* Force-generate the semantic 3-tier radius + text-hierarchy utilities even
    before they appear in source files — they're the public API of the design
@@ -76,6 +79,33 @@
   --motion-fast: 200ms;
   --motion-normal: 300ms;
   --motion-slow: 500ms;
+  --motion-journey: 620ms;
+  --motion-reveal: 700ms;
+  --motion-loader-loop: 1.4s;
+  --motion-shimmer: 1.5s;
+  --motion-marquee: 40s;
+  --motion-news-ticker: 60s;
+  --motion-route-leg-delay: 90ms;
+  --motion-route-line: 280ms;
+  --motion-route-line-delay: 100ms;
+  --motion-route-rider: 200ms;
+  --motion-route-rider-delay: 220ms;
+  --motion-route-arrival: 200ms;
+  --motion-route-arrival-delay: 380ms;
+  --motion-route-content: 240ms;
+  --motion-reveal-step: 80ms;
+  --motion-tier-overlay: 400ms;
+  --motion-tier-card-delay: 150ms;
+  --motion-tier-badge: 600ms;
+  --motion-tier-badge-delay: 350ms;
+  --motion-tier-sparkle: 1.8s;
+  --motion-tier-sparkle-delay-base: 300ms;
+  --motion-tier-sparkle-stagger: 40ms;
+  --motion-tier-complete-delay: 900ms;
+  --motion-beam-glint: 1.6s;
+  --motion-header-line-delay: 50ms;
+  --motion-header-copy-delay: 120ms;
+  --motion-station-stagger: 150ms;
 
   /* ── Custom font sizes ─────────────────────────────────────────── */
   --text-3xs: 0.5625rem;
@@ -872,7 +902,7 @@ body {
   :where(a, a:link, a:visited) {
     color: inherit;
     text-decoration: none;
-    transition: opacity 0.15s ease;
+    transition: opacity var(--motion-fast) ease;
   }
 
   :where(a):hover {
@@ -977,7 +1007,7 @@ label a:not(.no-underline)::after {
   background: currentColor;
   transform: scaleX(1);
   transform-origin: center;
-  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: transform var(--motion-normal) cubic-bezier(0.4, 0, 0.2, 1);
 }
 p a:not(.no-underline):hover::after,
 li a:not(.no-underline):hover::after,
@@ -1063,30 +1093,11 @@ h2,
    and fades in. No fill-mode — if the animation never runs, content is
    simply visible. */
 .route-fade {
-  animation: fade-in 150ms cubic-bezier(0.22, 1, 0.36, 1);
+  animation: fade-in var(--motion-fast) cubic-bezier(0.22, 1, 0.36, 1);
 }
 @media (prefers-reduced-motion: reduce) {
   .route-fade {
     animation: none;
-  }
-}
-
-@keyframes spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-@keyframes pulse {
-  0%,
-  100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.5;
   }
 }
 
@@ -1115,16 +1126,13 @@ h2,
 /* ── Animation Utilities ───────────────────────────────────────────── */
 
 .animate-fade-in {
-  animation: fade-in 0.2s ease-out;
-}
-.pulse {
-  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  animation: fade-in var(--motion-fast) ease-out;
 }
 .scale-in {
-  animation: scale-in 0.2s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation: scale-in var(--motion-fast) cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 .content-enter {
-  animation: content-enter 0.3s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation: content-enter var(--motion-normal) cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 /* ── Track loader ──────────────────────────────────────────────────────
@@ -1149,7 +1157,10 @@ h2,
 }
 .track-loader path {
   stroke-dasharray: 30 90;
-  animation: track-loop 1.4s linear infinite;
+  animation: track-loop var(--motion-loader-loop) linear infinite;
+}
+.track-loader--pending {
+  visibility: hidden;
 }
 @media (prefers-reduced-motion: reduce) {
   .track-loader path {
@@ -1187,7 +1198,7 @@ h2,
 .route-draw path {
   stroke-dasharray: 100;
   animation: route-draw var(--motion-slow) cubic-bezier(0, 0, 0.2, 1) both;
-  animation-delay: calc(var(--leg, 0) * 90ms);
+  animation-delay: calc(var(--leg, 0) * var(--motion-route-leg-delay));
 }
 @media (prefers-reduced-motion: reduce) {
   .route-draw path {
@@ -1219,7 +1230,7 @@ h2,
 .station-pop {
   transform-box: fill-box;
   transform-origin: center;
-  animation: station-pop 500ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  animation: station-pop var(--motion-slow) cubic-bezier(0.34, 1.56, 0.64, 1) both;
 }
 @media (prefers-reduced-motion: reduce) {
   .station-pop {
@@ -1240,7 +1251,7 @@ h2,
   }
 }
 .text-rise {
-  animation: text-rise 700ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  animation: text-rise var(--motion-reveal) cubic-bezier(0.2, 0.7, 0.2, 1) both;
 }
 @media (prefers-reduced-motion: reduce) {
   .text-rise {
@@ -1252,7 +1263,7 @@ h2,
 .shimmer {
   background: linear-gradient(90deg, transparent 0%, hsl(var(--muted) / 0.6) 50%, transparent 100%);
   background-size: 200% 100%;
-  animation: shimmer 1.5s ease-in-out infinite;
+  animation: shimmer var(--motion-shimmer) ease-in-out infinite;
 }
 
 @keyframes shimmer {
@@ -1285,7 +1296,7 @@ h2,
   }
 }
 .step-enter {
-  animation: step-enter 0.35s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation: step-enter var(--motion-normal) cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 @media (prefers-reduced-motion: reduce) {
   .step-enter {
@@ -1296,8 +1307,8 @@ h2,
 /* Beam connector (AnimatedBeamConnector): fill draws in, glint pulses. */
 .beam-fill {
   transition:
-    width 0.6s cubic-bezier(0.22, 1, 0.36, 1),
-    height 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+    width var(--motion-journey) cubic-bezier(0.22, 1, 0.36, 1),
+    height var(--motion-journey) cubic-bezier(0.22, 1, 0.36, 1);
 }
 @keyframes beam-glint {
   0%,
@@ -1309,7 +1320,7 @@ h2,
   }
 }
 .beam-glint {
-  animation: beam-glint 1.6s ease-in-out infinite;
+  animation: beam-glint var(--motion-beam-glint) ease-in-out infinite;
 }
 @media (prefers-reduced-motion: reduce) {
   .beam-fill {
@@ -1334,7 +1345,7 @@ h2,
 }
 .tier-overlay {
   backdrop-filter: blur(12px);
-  animation: tier-overlay-in 0.4s ease-out both;
+  animation: tier-overlay-in var(--motion-tier-overlay) ease-out both;
 }
 @keyframes tier-card-in {
   from {
@@ -1351,7 +1362,8 @@ h2,
   }
 }
 .tier-card {
-  animation: tier-card-in 0.5s cubic-bezier(0.22, 1, 0.36, 1) 0.15s both;
+  animation: tier-card-in var(--motion-slow) cubic-bezier(0.22, 1, 0.36, 1)
+    var(--motion-tier-card-delay) both;
 }
 @keyframes tier-badge-in {
   0% {
@@ -1368,7 +1380,8 @@ h2,
   }
 }
 .tier-badge {
-  animation: tier-badge-in 0.6s cubic-bezier(0.22, 1, 0.36, 1) 0.35s both;
+  animation: tier-badge-in var(--motion-tier-badge) cubic-bezier(0.22, 1, 0.36, 1)
+    var(--motion-tier-badge-delay) both;
 }
 @keyframes tier-ring-ripple {
   from {
@@ -1382,7 +1395,7 @@ h2,
 }
 .tier-ring {
   opacity: 0;
-  animation: tier-ring-ripple 1.4s ease-out 0.5s 3;
+  animation: tier-ring-ripple var(--motion-loader-loop) ease-out var(--motion-slow) 3;
 }
 @keyframes tier-rise {
   from {
@@ -1395,7 +1408,7 @@ h2,
   }
 }
 .tier-rise {
-  animation: tier-rise 0.3s ease-out both;
+  animation: tier-rise var(--motion-normal) ease-out both;
 }
 @keyframes tier-sparkle-out {
   0% {
@@ -1412,7 +1425,7 @@ h2,
   }
 }
 .tier-sparkle {
-  animation: tier-sparkle-out 1.8s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation: tier-sparkle-out var(--motion-tier-sparkle) cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 @media (prefers-reduced-motion: reduce) {
   .tier-overlay,
@@ -1431,37 +1444,37 @@ h2,
 /* ── Hover Utilities ───────────────────────────────────────────────── */
 
 .hover-minimal {
-  transition: background-color 0.15s ease;
+  transition: background-color var(--motion-fast) ease;
 }
 .hover-minimal:hover {
   background-color: hsl(var(--accent));
 }
 
 .story-link {
-  transition: opacity 0.15s ease;
+  transition: opacity var(--motion-fast) ease;
 }
 .story-link:hover {
   opacity: 0.7;
 }
 
 .reveal-delay-1 {
-  animation-delay: 0.08s;
+  animation-delay: var(--motion-reveal-step);
 }
 .reveal-delay-2 {
-  animation-delay: 0.16s;
+  animation-delay: calc(var(--motion-reveal-step) * 2);
 }
 .reveal-delay-3 {
-  animation-delay: 0.24s;
+  animation-delay: calc(var(--motion-reveal-step) * 3);
 }
 .reveal-delay-4 {
-  animation-delay: 0.32s;
+  animation-delay: calc(var(--motion-reveal-step) * 4);
 }
 .reveal-delay-5 {
-  animation-delay: 0.4s;
+  animation-delay: calc(var(--motion-reveal-step) * 5);
 }
 
 .content-crossfade-enter {
-  animation: fade-in 0.25s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation: fade-in var(--motion-normal) cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 /* ── Utility helpers ───────────────────────────────────────────────── */
@@ -1732,9 +1745,162 @@ h2,
 .station-arrive {
   animation: station-arrive var(--motion-normal) cubic-bezier(0, 0, 0.2, 1);
 }
+.station-arrive--journey {
+  animation-duration: var(--motion-route-content);
+  animation-delay: var(--motion-route-arrival-delay);
+  animation-fill-mode: both;
+}
+
+/* Route navigation is a ride between two stations. The timing follows the
+   Loading Animation reference: departure, line at 100ms, rider at 220ms,
+   arrival at 380ms, line held for 200ms; the whole transition is 620ms. */
+@keyframes route-journey-shell {
+  0% {
+    opacity: 0;
+  }
+  8%,
+  92% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+@keyframes route-journey-line {
+  from {
+    stroke-dashoffset: 1;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+@keyframes route-journey-rider {
+  0% {
+    offset-distance: 0%;
+    opacity: 0;
+  }
+  12% {
+    opacity: 1;
+  }
+  88% {
+    opacity: 1;
+  }
+  100% {
+    offset-distance: 100%;
+    opacity: 0;
+  }
+}
+@keyframes route-journey-arrival {
+  0% {
+    transform: scale(0);
+  }
+  62% {
+    transform: scale(1.28);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+.route-journey {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+  background: hsl(var(--background) / 0.94);
+  animation: route-journey-shell var(--motion-journey) linear both;
+}
+.route-journey__stage {
+  position: relative;
+  width: min(88vw, 960px);
+  height: min(42vw, 360px);
+  min-height: 220px;
+  color: hsl(var(--foreground));
+}
+.route-journey__stage svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+.route-journey__line {
+  fill: none;
+  stroke: var(--route-journey-color);
+  stroke-width: 16;
+  stroke-linecap: round;
+  stroke-dasharray: 1;
+  animation: route-journey-line var(--motion-route-line) cubic-bezier(0.6, 0.02, 0.24, 1)
+    var(--motion-route-line-delay) both;
+  vector-effect: non-scaling-stroke;
+}
+.route-journey__station {
+  fill: hsl(var(--card));
+  stroke: hsl(var(--track-ring));
+  stroke-width: 8;
+  transform-box: fill-box;
+  transform-origin: center;
+  vector-effect: non-scaling-stroke;
+}
+.route-journey__station--to {
+  animation: route-journey-arrival var(--motion-route-arrival) cubic-bezier(0.34, 1.56, 0.64, 1)
+    var(--motion-route-arrival-delay) both;
+}
+.route-journey__rider {
+  position: absolute;
+  inset: 0 auto auto 0;
+  width: 18px;
+  height: 18px;
+  border-radius: 9999px;
+  background: hsl(var(--foreground));
+  offset-path: path('M 96 205 C 269 40 653 270 864 86');
+  offset-rotate: 0deg;
+  animation: route-journey-rider var(--motion-route-rider) cubic-bezier(0.55, 0.06, 0.32, 0.99)
+    var(--motion-route-rider-delay) both;
+}
+.route-journey__label {
+  position: absolute;
+  z-index: 1;
+  max-width: 40%;
+  font-family: var(--font-display);
+  font-size: var(--text-headline);
+  line-height: 1;
+  text-transform: lowercase;
+}
+.route-journey__label--from {
+  left: 0;
+  bottom: 4%;
+}
+.route-journey__label--to {
+  right: 0;
+  top: 0;
+  text-align: right;
+}
+.route-journey--pink {
+  --route-journey-color: hsl(var(--track-pink));
+}
+.route-journey--blue {
+  --route-journey-color: hsl(var(--track-blue));
+}
+.route-journey--green {
+  --route-journey-color: hsl(var(--track-green));
+}
+.route-journey--yellow {
+  --route-journey-color: hsl(var(--track-yellow));
+}
+@media (max-width: 640px) {
+  .route-journey__label {
+    font-size: var(--text-title);
+  }
+}
 @media (prefers-reduced-motion: reduce) {
-  .station-arrive {
+  .station-arrive,
+  .route-journey {
     animation: none;
+  }
+  .route-journey {
+    display: none;
   }
 }
 
@@ -1810,9 +1976,14 @@ h2,
     transform: translateX(0);
   }
 }
+.archive-marquee {
+  animation: marquee-fwd var(--motion-marquee) linear infinite;
+}
+.archive-marquee--rtl {
+  animation-name: marquee-rev;
+}
 @media (prefers-reduced-motion: reduce) {
-  [style*='marquee-fwd'],
-  [style*='marquee-rev'] {
+  .archive-marquee {
     animation: none !important;
   }
 }
@@ -1821,7 +1992,7 @@ h2,
 
 .img-lazy-fade {
   opacity: 0;
-  transition: opacity 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+  transition: opacity var(--motion-normal) cubic-bezier(0.22, 1, 0.36, 1);
 }
 .img-lazy-fade.loaded {
   opacity: 1;
@@ -1950,7 +2121,7 @@ label a:hover {
   }
 }
 .news-ticker-marquee {
-  animation: news-ticker-scroll 60s linear infinite;
+  animation: news-ticker-scroll var(--motion-news-ticker) linear infinite;
   will-change: transform;
 }
 .news-ticker-track:hover .news-ticker-marquee {

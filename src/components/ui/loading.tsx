@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { TrackLoader } from '@/components/transit/TrackLoader';
+import { PageLoadingState } from '@/components/layout/PageLoadingState';
 
 interface LoadingProps {
   size?: 'sm' | 'md' | 'lg';
@@ -30,7 +31,10 @@ export function Loading({ size = 'md', text, label }: LoadingProps) {
              which is the same event the map uses. */
           <span
             key={i}
-            style={{ animationDelay: `${i * 0.15}s`, animationIterationCount: 'infinite' }}
+            style={{
+              animationDelay: `calc(var(--motion-station-stagger) * ${i})`,
+              animationIterationCount: 'infinite',
+            }}
             className={`${dotSize[size]} station-pop rounded-full border-border-hairline bg-background`}
           />
         ))}
@@ -75,19 +79,9 @@ export function PageLoading({ text }: PageLoadingProps) {
   const label = text ?? t('common.loading');
 
   return (
-    <div role="status" aria-live="polite" className="flex min-h-screen items-center justify-center">
-      <div className="text-center flex flex-col gap-4">
-        {/* One indicator, not dots + spinner + "please wait" stacked. */}
-        <div className="flex items-center justify-center gap-2" aria-hidden="true">
-          {[0, 1, 2, 3, 4].map((i) => (
-            <div
-              key={i}
-              style={{ animationDelay: `${i * 0.1}s` }}
-              className="h-3 w-3 rounded-full bg-current animate-pulse motion-reduce:animate-none"
-            />
-          ))}
-        </div>
-        <h2 className="text-lg font-semibold m-0 text-muted-foreground">{label}</h2>
+    <div className="flex min-h-screen items-center justify-center px-4">
+      <div className="w-full max-w-reading">
+        <PageLoadingState count={3} variant="list" label={label} />
       </div>
     </div>
   );

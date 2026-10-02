@@ -77,7 +77,7 @@ export function TierUpgradeOverlay({
               {
                 '--dx': `${dx}px`,
                 '--dy': `${dy}px`,
-                animationDelay: `${300 + i * 40}ms`,
+                animationDelay: `calc(var(--motion-tier-sparkle-delay-base) + ${i} * var(--motion-tier-sparkle-stagger))`,
               } as React.CSSProperties
             }
           >
@@ -102,25 +102,25 @@ export function TierUpgradeOverlay({
 
         <p
           className="tier-rise text-xs uppercase tracking-[0.2em] text-muted-foreground mb-2"
-          style={{ animationDelay: '500ms' }}
+          style={{ animationDelay: 'var(--motion-slow)' }}
         >
           Tier unlocked
         </p>
         <h2
           className="tier-rise text-4xl font-bold tracking-tight mb-4"
-          style={{ animationDelay: '600ms' }}
+          style={{ animationDelay: 'var(--motion-tier-badge)' }}
         >
           {tierName}
         </h2>
         {tagline && (
           <p
             className="tier-rise text-sm text-muted-foreground leading-relaxed mb-8"
-            style={{ animationDelay: '700ms' }}
+            style={{ animationDelay: 'var(--motion-reveal)' }}
           >
             {tagline}
           </p>
         )}
-        <div className="tier-rise" style={{ animationDelay: '900ms' }}>
+        <div className="tier-rise" style={{ animationDelay: 'var(--motion-tier-complete-delay)' }}>
           <Button onClick={onDismiss} variant="default">
             Continue
           </Button>

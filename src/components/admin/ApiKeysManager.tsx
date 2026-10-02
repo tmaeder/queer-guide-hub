@@ -40,7 +40,6 @@ import {
   Key,
   Edit,
   Trash2,
-  RefreshCw,
   CheckCircle,
   XCircle,
   AlertTriangle,
@@ -192,15 +191,7 @@ export const ApiKeysManager = () => {
           <p className="text-muted-foreground">Securely manage API keys for external services</p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" onClick={refreshKeys} disabled={loading} size="sm">
-            <RefreshCw
-              style={{
-                height: 16,
-                width: 16,
-                marginRight: 8,
-                ...(loading ? { animation: 'spin 1s linear infinite' } : {}),
-              }}
-            />
+          <Button variant="outline" onClick={refreshKeys} loading={loading} size="sm">
             Refresh
           </Button>
           <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
@@ -313,11 +304,6 @@ export const ApiKeysManager = () => {
       {loading ? (
         <Card>
           <CardContent>
-            <RefreshCw
-              size={32}
-              style={{ animation: 'spin 1s linear infinite', margin: '0 auto 16px' }}
-              className="text-muted-foreground"
-            />
             <AdminTextSkeleton lines={2} />
           </CardContent>
         </Card>

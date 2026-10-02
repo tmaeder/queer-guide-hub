@@ -1,4 +1,5 @@
 import { cn } from '@/lib/utils';
+import { LOADER_DELAY_MS, useLoaderDelay } from './useLoaderDelay';
 
 /**
  * The working indicator. A closed loop drawn as track — the design system's
@@ -25,6 +26,7 @@ export function TrackLoader({
   track = 'pink',
   label,
   className,
+  delayMs = LOADER_DELAY_MS,
 }: {
   size?: number;
   /** Which line is working. Defaults to pink — the primary track. */
@@ -32,14 +34,20 @@ export function TrackLoader({
   /** Announced to screen readers. Omit only when an adjacent live region says it. */
   label?: string;
   className?: string;
+  /**
+   * The loading spec keeps waits under 400ms visually quiet. Set to 0 only
+   * when a parent has already observed that quiet window.
+   */
+  delayMs?: number;
 }) {
+  const { visible } = useLoaderDelay(true, { delayMs });
   const stroke = `hsl(var(--track-${track}))`;
   return (
     <svg
       viewBox="0 0 44 44"
       width={size}
       height={size}
-      className={cn('track-loader', className)}
+      className={cn('track-loader', !visible && 'track-loader--pending', className)}
       {...(label ? { role: 'status', 'aria-label': label } : { 'aria-hidden': true })}
     >
       {/* A rounded square loop in bezier, not a circle: same reason the map

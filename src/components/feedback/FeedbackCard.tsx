@@ -71,9 +71,9 @@ export function FeedbackCard({ item, voteCount, hasVoted, onVote, onClick }: Fee
             >
               <ChevronUp
                 size={18}
+                className="transition-colors duration-fast"
                 style={{
                   color: hasVoted ? 'hsl(var(--foreground))' : 'hsl(var(--muted-foreground))',
-                  transition: 'color 0.15s',
                 }}
               />
               <span

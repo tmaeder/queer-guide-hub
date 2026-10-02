@@ -5,7 +5,6 @@ import {
   ChevronRight,
   CheckCircle2,
   XCircle,
-  Loader2,
   Clock,
   SkipForward,
   Filter,
@@ -19,6 +18,7 @@ import { usePipelineRunsForPipeline } from '../hooks/usePipelineHistory';
 import RunSnapshotDialog from './RunSnapshotDialog';
 import { AdminTextSkeleton } from '@/components/admin/primitives/AdminLoading';
 import { AdminEmpty } from '@/components/admin/primitives/AdminEmpty';
+import { TrackLoader } from '@/components/transit/TrackLoader';
 
 interface RunHistorySidebarProps {
   pipelineId: string | undefined;
@@ -31,7 +31,6 @@ type StatusFilter = 'all' | 'completed' | 'failed' | 'running';
 const statusIcon: Record<string, React.ComponentType<{ className?: string }>> = {
   completed: CheckCircle2,
   failed: XCircle,
-  running: Loader2,
   pending: Clock,
   cancelled: SkipForward,
 };
@@ -39,7 +38,6 @@ const statusIcon: Record<string, React.ComponentType<{ className?: string }>> = 
 const statusClass: Record<string, string> = {
   completed: 'text-foreground',
   failed: 'text-destructive',
-  running: 'text-foreground animate-spin',
   pending: 'text-muted-foreground',
   cancelled: 'text-foreground',
 };
@@ -162,7 +160,11 @@ export default function RunHistorySidebar({
                   }`}
                 >
                   <div className="flex items-center gap-2 mb-1">
-                    <Icon className={`h-3.5 w-3.5 shrink-0 ${iconClass}`} />
+                    {run.status === 'running' ? (
+                      <TrackLoader size={14} delayMs={0} label="Run in progress" />
+                    ) : (
+                      <Icon className={`h-3.5 w-3.5 shrink-0 ${iconClass}`} />
+                    )}
                     <span className="text-xs2 font-mono font-medium truncate flex-1">
                       {run.id.slice(0, 8)}
                     </span>

@@ -15,6 +15,13 @@ export interface LoaderPhase {
   slow: boolean;
 }
 
+export interface LoaderDelayOptions {
+  /** Override only when the caller has already observed the 400ms quiet window. */
+  delayMs?: number;
+  /** Override for deterministic previews/tests; production defaults to eight seconds. */
+  slowMs?: number;
+}
+
 /**
  * Turns a raw `isLoading` boolean into the three phases the spec describes,
  * so call sites stop having to remember two thresholds.
@@ -28,14 +35,17 @@ export interface LoaderPhase {
  * lying — it claims progress it cannot see. Past that, the honest move is to
  * say which part is slow and offer a way out.
  */
-export function useLoaderDelay(isLoading: boolean): LoaderPhase {
+export function useLoaderDelay(
+  isLoading: boolean,
+  { delayMs = LOADER_DELAY_MS, slowMs = LOADER_SLOW_MS }: LoaderDelayOptions = {},
+): LoaderPhase {
   const [visible, setVisible] = useState(false);
   const [slow, setSlow] = useState(false);
 
   useEffect(() => {
     if (!isLoading) return;
-    const show = setTimeout(() => setVisible(true), LOADER_DELAY_MS);
-    const late = setTimeout(() => setSlow(true), LOADER_SLOW_MS);
+    const show = setTimeout(() => setVisible(true), delayMs);
+    const late = setTimeout(() => setSlow(true), slowMs);
     // Reset on CLEANUP rather than synchronously in the effect body. Two
     // reasons: setting state during render/effect-body is what
     // react-hooks/set-state-in-effect exists to catch, and clearing here is
@@ -48,7 +58,7 @@ export function useLoaderDelay(isLoading: boolean): LoaderPhase {
       setVisible(false);
       setSlow(false);
     };
-  }, [isLoading]);
+  }, [delayMs, isLoading, slowMs]);
 
   return { visible: isLoading && visible, slow: isLoading && slow };
 }

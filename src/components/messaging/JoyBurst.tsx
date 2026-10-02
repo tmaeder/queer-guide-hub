@@ -1,7 +1,7 @@
 import { useEffect, useMemo } from 'react';
 import { motion } from 'motion/react';
-import { useMotionTokens } from '@/lib/motion';
-import { isLowEndDevice } from '@/lib/animation';
+import { easing, useMotionTokens } from '@/lib/motion';
+import { duration, isLowEndDevice } from '@/lib/animation';
 
 interface JoyBurstProps {
   /** Called once the burst finishes so the parent can unmount it. */
@@ -12,11 +12,7 @@ const COUNT = 40;
 // Monochrome confetti — grayscale steps keep visual variety without color
 // (the former rainbow was removed in the strict-monochrome strip). The
 // celebration now reads through motion + density, not hue.
-const COLORS = [
-  'hsl(var(--foreground))',
-  'hsl(var(--muted-foreground))',
-  'hsl(var(--border))',
-];
+const COLORS = ['hsl(var(--foreground))', 'hsl(var(--muted-foreground))', 'hsl(var(--border))'];
 
 /**
  * A one-shot, full-pane confetti celebration for queer-joy milestones (a new
@@ -59,7 +55,7 @@ export function JoyBurst({ onDone }: JoyBurstProps) {
           key={i}
           initial={{ opacity: 1, y: -12, x: 0, rotate: 0 }}
           animate={{ opacity: 0, y: '110%', x: p.drift, rotate: p.rot }}
-          transition={{ duration: 1.1, delay: p.delay, ease: [0.22, 1, 0.36, 1] }}
+          transition={{ duration: duration.celebration, delay: p.delay, ease: easing.smooth }}
           className="absolute top-0 rounded-badge"
           style={{
             left: `${p.left}%`,
