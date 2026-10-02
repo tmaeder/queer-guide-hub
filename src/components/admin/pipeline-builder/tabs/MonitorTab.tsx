@@ -8,7 +8,6 @@ import {
   Database,
   Search,
   Clock,
-  Loader2,
   SkipForward,
   TrendingUp,
 } from 'lucide-react';
@@ -39,6 +38,7 @@ import {
   AdminSimpleTable,
   type AdminSimpleColumn,
 } from '@/components/admin/primitives/AdminSimpleTable';
+import { TrackLoader } from '@/components/transit/TrackLoader';
 
 type StatusFilter = 'all' | 'running' | 'completed' | 'failed';
 type TypeFilter = 'all' | 'pipeline' | 'workflow';
@@ -53,7 +53,6 @@ const statusClass: Record<string, string> = {
 };
 
 const statusIcon: Record<string, React.ComponentType<{ className?: string }>> = {
-  running: Loader2,
   completed: CheckCircle,
   failed: XCircle,
   dead_letter: XCircle,
@@ -151,7 +150,11 @@ const runColumns: AdminSimpleColumn<UnifiedRun>[] = [
         <span
           className={`inline-flex items-center gap-1 text-2xs px-2 py-0.5 rounded-full ${statusClass[run.status] || 'bg-muted'}`}
         >
-          <Icon className={`h-2.5 w-2.5 ${run.status === 'running' ? 'animate-spin' : ''}`} />
+          {run.status === 'running' ? (
+            <TrackLoader size={10} delayMs={0} label="Run in progress" />
+          ) : (
+            <Icon className="h-2.5 w-2.5" />
+          )}
           {run.status}
         </span>
       );
@@ -642,9 +645,11 @@ export default function MonitorTab() {
                             <span
                               className={`inline-flex items-center gap-1 text-2xs px-1.5 py-0 rounded-badge ${statusClass[state.status as string] || 'bg-muted'}`}
                             >
-                              <NodeIcon
-                                className={`h-2.5 w-2.5 ${state.status === 'running' ? 'animate-spin' : ''}`}
-                              />
+                              {state.status === 'running' ? (
+                                <TrackLoader size={10} delayMs={0} label="Node in progress" />
+                              ) : (
+                                <NodeIcon className="h-2.5 w-2.5" />
+                              )}
                               {state.status as string}
                             </span>
                           </div>

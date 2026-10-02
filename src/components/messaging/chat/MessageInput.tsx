@@ -4,7 +4,15 @@ import { useTranslation } from 'react-i18next';
 import DOMPurify from 'dompurify';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { ImagePlus, ScanLine, Send, Smile, Sparkles, Sticker as StickerIcon, X } from 'lucide-react';
+import {
+  ImagePlus,
+  ScanLine,
+  Send,
+  Smile,
+  Sparkles,
+  Sticker as StickerIcon,
+  X,
+} from 'lucide-react';
 import { EmojiPicker } from '@/components/messaging/EmojiPicker';
 import { StickerPicker } from '@/components/messaging/StickerPicker';
 import { pickIcebreaker } from '@/lib/icebreakers';
@@ -177,8 +185,7 @@ export const MessageInput = ({
           onKeyDown={handleKeyDown}
           placeholder={t('chat.composer.placeholder', { defaultValue: 'Type a message…' })}
           disabled={disabled}
-          className="rounded-element"
-          style={{ flex: 1, height: 44, transition: 'border-color 0.2s' }}
+          className="h-11 flex-1 rounded-element transition-colors duration-fast"
           maxLength={2000}
         />
 
@@ -284,8 +291,7 @@ export const MessageInput = ({
         <Button
           type="submit"
           disabled={disabled || uploadingImage || (!message.trim() && !canSendEmpty)}
-          className="rounded-element p-0"
-          style={{ height: 44, width: 44, transition: 'all 0.2s' }}
+          className="h-11 w-11 rounded-element p-0"
           size="sm"
         >
           <Send size={20} />

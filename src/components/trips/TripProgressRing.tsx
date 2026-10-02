@@ -45,7 +45,7 @@ export function TripProgressRing({ trip, size = 72 }: Props) {
           strokeWidth={strokeWidth}
           strokeLinecap="round"
           strokeDasharray={`${dash} ${circumference - dash}`}
-          style={{ transition: 'stroke-dasharray 0.4s cubic-bezier(0.22, 1, 0.36, 1)' }}
+          className="transition-[stroke-dasharray] duration-normal motion-reduce:transition-none"
         />
       </svg>
       <div className="absolute inset-0 flex items-center justify-center flex-col">

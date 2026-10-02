@@ -278,7 +278,8 @@ export function BookNowAccordion({ defaultOpen = false, tripContext = null }: Pr
         </span>
         <ChevronDown
           size={20}
-          style={{ transform: open ? 'rotate(180deg)' : 'none', transition: 'transform 150ms' }}
+          className="transition-transform duration-fast motion-reduce:transition-none"
+          style={{ transform: open ? 'rotate(180deg)' : 'none' }}
         />
       </button>
 

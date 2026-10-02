@@ -4,6 +4,7 @@ import { type GeoJSONSource } from 'maplibre-gl';
 import { monoHeatStops, type LayerType } from '@/hooks/useExploreMapData';
 import { CLUSTERS_LAYER, HEATMAP_LAYER, HEATMAP_SOURCE, PIN_LAYER_IDS } from '@/config/mapLayers';
 import { heatmapRenderPlan, type RenderMode } from '@/components/map/mapShellAdapters';
+import { durationMs, imperativeDurationMs } from '@/lib/animation';
 
 interface UseHeatmapLayerParams {
   mapRef: MutableRefObject<maplibregl.Map | null>;
@@ -111,7 +112,10 @@ export function useHeatmapLayer({
           'heatmap-radius': ['interpolate', ['linear'], ['zoom'], 0, 6, 9, 26, 14, 52],
           // Start transparent and cross-fade in when switching into a heat lens.
           'heatmap-opacity': prefersReducedMotion ? heatOpacityExpr : 0,
-          'heatmap-opacity-transition': { duration: 350, delay: 0 },
+          'heatmap-opacity-transition': {
+            duration: imperativeDurationMs(durationMs.normal),
+            delay: 0,
+          },
         },
       },
       beforeId,

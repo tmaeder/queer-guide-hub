@@ -11,6 +11,7 @@ import { useKinkTaxonomy } from '@/hooks/useKinkTaxonomy';
 import { kinkLabel } from '@/lib/kinks/types';
 import { SIDE_LABEL } from '@/components/kinks/kinkRatingMeta';
 import { PageContainer } from '@/components/layout/PageContainer';
+import { PageLoadingState } from '@/components/layout/PageLoadingState';
 
 /**
  * Share-code landing: shows the owner's opted-in categories to signed-in,
@@ -47,7 +48,11 @@ export default function KinkShareView() {
   }, [rows]);
 
   if (loading || meLoading) {
-    return <div className="p-8 text-sm text-muted-foreground">Loading…</div>;
+    return (
+      <PageContainer size="form">
+        <PageLoadingState count={2} variant="list" label="Checking access" />
+      </PageContainer>
+    );
   }
 
   if (!user) {
@@ -80,7 +85,11 @@ export default function KinkShareView() {
   }
 
   if (isLoading) {
-    return <div className="p-8 text-sm text-muted-foreground">Loading…</div>;
+    return (
+      <PageContainer size="form">
+        <PageLoadingState count={3} variant="list" label="Loading the shared checklist" />
+      </PageContainer>
+    );
   }
 
   if (isError || !rows?.length) {

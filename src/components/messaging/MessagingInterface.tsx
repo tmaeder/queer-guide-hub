@@ -21,6 +21,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sh
 import { ChatView } from '@/components/messaging/chat/ChatView';
 import { useInboxSearch } from '@/components/messaging/chat/useInboxSearch';
 import { useInboxSelection } from '@/components/messaging/chat/useInboxSelection';
+import { TrackLoader } from '@/components/transit/TrackLoader';
 
 export interface MessagingInterfaceProps {
   /**
@@ -111,12 +112,10 @@ export const MessagingInterface = ({ filter, className }: MessagingInterfaceProp
         <ScrollArea style={{ flex: 1 }}>
           {loading ? (
             <div className="flex items-center justify-center py-16">
-              <div className="text-center">
-                <div className="w-8 h-8 border-primary border-t-transparent rounded-full mx-auto mb-4 animate-spin" />
-                <p className="text-muted-foreground">
-                  {t('inbox.loading', { defaultValue: 'Loading…' })}
-                </p>
-              </div>
+              <TrackLoader
+                size={32}
+                label={t('inbox.loading', { defaultValue: 'Loading messages' })}
+              />
             </div>
           ) : visibleItems.length === 0 ? (
             <div className="text-center py-8">

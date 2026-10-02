@@ -293,6 +293,7 @@ export default function TripsDiscoverPage() {
               <div className="flex items-center gap-4 py-8">
                 {loaderVisible && (
                   <TrackLoader
+                    delayMs={0}
                     size={22}
                     track="pink"
                     label={t('trips.discover.loading.pool', 'Loading the station list')}

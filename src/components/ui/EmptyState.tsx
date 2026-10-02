@@ -66,8 +66,8 @@ export const EmptyState = ({
             className="text-foreground"
           />
         </div>
-        <h2 className="text-lg font-semibold mb-2">{title}</h2>
-        <p className="text-sm text-muted-foreground mb-6 max-w-md mx-auto">{description}</p>
+        <h2 className="mb-2 text-title font-bold">{title}</h2>
+        <p className="mx-auto mb-6 max-w-md text-15 text-muted-foreground">{description}</p>
         {variant === 'filtered' && activeFilters && activeFilters.length > 0 && (
           <div
             className="flex flex-wrap gap-2 justify-center mb-6"
@@ -139,7 +139,7 @@ export const LoadingTimeout = ({ message, onRetry }: LoadingTimeoutProps) => {
   return (
     <Card>
       <CardContent>
-        <p className="text-base text-muted-foreground mb-4">{text}</p>
+        <p className="mb-4 text-15 text-muted-foreground">{text}</p>
         <Button variant="outline" onClick={onRetry}>
           {t('common.tryAgain', 'Try Again')}
         </Button>
@@ -185,11 +185,11 @@ export const ErrorState = ({
     <Card>
       <CardContent>
         <div role="alert" aria-live="polite">
-          <h2 className={`text-lg font-semibold text-destructive ${description ? 'mb-2' : 'mb-4'}`}>
+          <h2 className={`text-title font-bold text-destructive ${description ? 'mb-2' : 'mb-4'}`}>
             {headline}
           </h2>
           {description && (
-            <p className="text-sm text-muted-foreground mb-4 max-w-md">{description}</p>
+            <p className="mb-4 max-w-md text-15 text-muted-foreground">{description}</p>
           )}
           <div className="flex flex-wrap gap-4">
             {primaryAction && (

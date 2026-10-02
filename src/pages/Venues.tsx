@@ -57,6 +57,7 @@ import {
   PAGE_BLEED_MOBILE,
   STICKY_UNDER_HEADER,
 } from '@/components/layout/PageContainer';
+import { useMotionTokens } from '@/lib/motion';
 
 type Venue = Database['public']['Tables']['venues']['Row'];
 
@@ -72,6 +73,7 @@ const VALID_SORTS = new Set([
 const VALID_VIEWS = new Set(['grid', 'map']);
 
 const Venues = () => {
+  const { tweens } = useMotionTokens();
   const { t } = useTranslation();
   const navigate = useLocalizedNavigate();
   const { user } = useAuth();
@@ -534,7 +536,7 @@ const Venues = () => {
               initial={{ opacity: 0, scale: 0.98 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.98 }}
-              transition={{ duration: 0.2 }}
+              transition={tweens.fast}
             >
               {error && !loading && <ErrorState message={error} onRetry={() => fetchVenues()} />}
 
@@ -667,7 +669,7 @@ const Venues = () => {
               initial={{ opacity: 0, scale: 0.98 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.98 }}
-              transition={{ duration: 0.2 }}
+              transition={tweens.fast}
             >
               <MapShell surface="venues" height={700} filtersOverride={mapFilters} />
               {!loading && filteredTotal === 0 && Object.keys(currentFilters).length > 0 && (

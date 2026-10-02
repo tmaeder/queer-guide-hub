@@ -1,9 +1,7 @@
 import { ArrowRight } from 'lucide-react';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
-import {
-  useLocalSupporterCities,
-  type LocalSupporterCity,
-} from '@/hooks/useLocalSupporter';
+import { useLocalSupporterCities, type LocalSupporterCity } from '@/hooks/useLocalSupporter';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const TIER_DESCRIPTION: Record<LocalSupporterCity['tier'], string> = {
   Visitor: 'Start saving queer-owned spots here.',
@@ -41,23 +39,28 @@ export function LocalSupporterBlock() {
   return (
     <section className="rounded-container bg-surface-container p-6 bg-card">
       <header className="flex items-center justify-between gap-4 mb-2">
-        <p className="text-13 uppercase tracking-[0.1em] text-muted-foreground">
-          Local Supporter
-        </p>
+        <p className="text-13 uppercase tracking-[0.1em] text-muted-foreground">Local Supporter</p>
         <p className="text-2xs uppercase tracking-[0.1em] text-muted-foreground">
           0 — 100 per city
         </p>
       </header>
       <p className="text-13 text-muted-foreground mb-4">
-        +5 per saved queer-owned spot · +10 per review · +2 per completed guide pick
-        in that city. Decays −1/week for inactivity.
+        +5 per saved queer-owned spot · +10 per review · +2 per completed guide pick in that city.
+        Decays −1/week for inactivity.
       </p>
       {isLoading ? (
-        <p className="text-13 text-muted-foreground">Loading…</p>
+        <div
+          className="flex flex-col gap-2"
+          role="status"
+          aria-label="Loading local supporter scores"
+        >
+          <Skeleton className="h-14 w-full rounded-element" />
+          <Skeleton className="h-14 w-full rounded-element" />
+        </div>
       ) : cities.length === 0 ? (
         <p className="text-13 text-muted-foreground">
-          No city activity yet. Save a queer-owned venue or finish a city-scoped
-          guide to start a score.
+          No city activity yet. Save a queer-owned venue or finish a city-scoped guide to start a
+          score.
         </p>
       ) : (
         <ul>

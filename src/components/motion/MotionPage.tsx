@@ -35,7 +35,7 @@ export const MotionPage = ({ children }: MotionPageProps) => {
         exit={{
           opacity: 0,
           x: -xOffset * 0.5,
-          transition: { duration: 0.15, ease: easing.accel },
+          transition: { duration: duration.fast, ease: easing.accel },
         }}
         style={{ minHeight: '100%' }}
       >

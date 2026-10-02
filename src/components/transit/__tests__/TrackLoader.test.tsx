@@ -29,6 +29,23 @@ describe('TrackLoader', () => {
     const { container } = render(<TrackLoader track="blue" />);
     expect(container.querySelector('path')).toHaveAttribute('stroke', 'hsl(var(--track-blue))');
   });
+
+  it('keeps the first 400ms visually quiet by default', () => {
+    vi.useFakeTimers();
+    const { container } = render(<TrackLoader />);
+    expect(container.querySelector('svg')).toHaveClass('track-loader--pending');
+    act(() => void vi.advanceTimersByTime(LOADER_DELAY_MS));
+    expect(container.querySelector('svg')).not.toHaveClass('track-loader--pending');
+    vi.useRealTimers();
+  });
+
+  it('can render immediately when a parent already observed the quiet window', () => {
+    vi.useFakeTimers();
+    const { container } = render(<TrackLoader delayMs={0} />);
+    act(() => void vi.advanceTimersByTime(0));
+    expect(container.querySelector('svg')).not.toHaveClass('track-loader--pending');
+    vi.useRealTimers();
+  });
 });
 
 describe('useLoaderDelay', () => {

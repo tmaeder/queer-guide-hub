@@ -21,7 +21,6 @@ import {
   TrendingUp,
   Filter,
   Download,
-  RefreshCw,
 } from 'lucide-react';
 import {
   BarChart,
@@ -39,6 +38,7 @@ import {
 } from 'recharts';
 import { supabase } from '@/integrations/supabase/client';
 import { UmamiMap } from './UmamiMap';
+import { durationMs } from '@/lib/animation';
 
 interface UmamiSession {
   session_id: string;
@@ -314,17 +314,10 @@ export const UmamiAnalyticsDashboard = () => {
                 <Button
                   variant="outline"
                   onClick={handleRefresh}
-                  disabled={refreshing}
+                  loading={refreshing}
                   style={{ alignItems: 'center' }}
                   className="flex gap-2"
                 >
-                  <RefreshCw
-                    style={{
-                      height: 16,
-                      width: 16,
-                      ...(refreshing ? { animation: 'spin 1s linear infinite' } : {}),
-                    }}
-                  />
                   Retry
                 </Button>
               </div>
@@ -347,19 +340,11 @@ export const UmamiAnalyticsDashboard = () => {
                 width: 8,
                 height: 8,
                 backgroundColor: 'green',
-                animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
               }}
             />
             {stats.liveVisitors} Live
           </Badge>
-          <Button variant="outline" size="sm" onClick={handleRefresh} disabled={refreshing}>
-            <RefreshCw
-              style={{
-                height: 12,
-                width: 12,
-                ...(refreshing ? { animation: 'spin 1s linear infinite' } : {}),
-              }}
-            />
+          <Button variant="outline" size="sm" onClick={handleRefresh} loading={refreshing}>
             Refresh
           </Button>
           <Button variant="outline" size="sm" onClick={handleExport}>
@@ -558,7 +543,7 @@ export const UmamiAnalyticsDashboard = () => {
                   <Bar
                     dataKey="views"
                     fill="hsl(var(--primary))"
-                    animationDuration={800}
+                    animationDuration={durationMs.reveal}
                     animationEasing="ease-out"
                   />
                 </BarChart>
@@ -789,7 +774,6 @@ export const UmamiAnalyticsDashboard = () => {
                       width: 8,
                       height: 8,
                       backgroundColor: 'green',
-                      animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
                     }}
                   />
                   Live Activity

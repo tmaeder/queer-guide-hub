@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { TrackLoader } from '@/components/transit/TrackLoader';
-import { Upload, X, Image as ImageIcon} from 'lucide-react';
+import { Upload, X, Image as ImageIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
@@ -198,16 +198,15 @@ export function ImageUpload({
               />
               <div
                 data-overlay=""
+                className="absolute flex transition-opacity duration-fast"
                 style={{
                   inset: 0,
                   backgroundColor: 'hsl(var(--foreground) / 0.5)',
                   opacity: 0,
-                  transition: 'opacity 0.2s',
                   borderRadius: 'var(--radius-element)',
                   alignItems: 'center',
                   justifyContent: 'center',
                 }}
-                className="absolute flex"
               >
                 <div className="flex gap-2">
                   <Button variant="secondary" size="sm" onClick={handleClick} disabled={uploading}>
@@ -225,8 +224,8 @@ export function ImageUpload({
         </Card>
       ) : (
         <Card
-          style={{ borderStyle: 'dashed', transition: 'background-color 0.2s' }}
-          className="cursor-pointer"
+          style={{ borderStyle: 'dashed' }}
+          className="cursor-pointer transition-colors duration-fast"
           onClick={handleClick}
         >
           <CardContent className="p-8 text-center">
@@ -245,10 +244,6 @@ export function ImageUpload({
           </CardContent>
         </Card>
       )}
-
-      <style>{`
-        @keyframes spin { to { transform: rotate(360deg); } }
-      `}</style>
     </div>
   );
 }

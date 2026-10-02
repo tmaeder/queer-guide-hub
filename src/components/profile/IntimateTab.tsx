@@ -1,11 +1,9 @@
 import { useNavigate } from 'react-router';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
-import {
-  useMyIntimateProfile,
-  useOptOutIntimateProfile,
-} from '@/hooks/useIntimateProfile';
+import { useMyIntimateProfile, useOptOutIntimateProfile } from '@/hooks/useIntimateProfile';
 import { FlatFieldGroup } from '@/components/ui/FlatFieldGroup';
+import { Skeleton } from '@/components/ui/skeleton';
 
 export function IntimateTab() {
   const navigate = useNavigate();
@@ -13,7 +11,14 @@ export function IntimateTab() {
   const { data: me, isLoading } = useMyIntimateProfile();
   const optOut = useOptOutIntimateProfile();
 
-  if (isLoading) return <p className="text-muted-foreground py-4">Loading…</p>;
+  if (isLoading) {
+    return (
+      <div className="flex flex-col gap-4 py-4" role="status" aria-label="Loading intimate profile">
+        <Skeleton className="h-5 w-40" />
+        <Skeleton className="h-16 w-full rounded-element" />
+      </div>
+    );
+  }
 
   const enabled = !!me?.opted_in_at;
 
@@ -37,14 +42,11 @@ export function IntimateTab() {
       {!enabled ? (
         <>
           <p className="text-sm leading-relaxed text-foreground">
-            Enable an explicit, pictogram-based profile to connect with other opted-in users
-            for travel hookups, local cruising, kink, or a privacy-preserving alternative to
-            photo-based apps.
+            Enable an explicit, pictogram-based profile to connect with other opted-in users for
+            travel hookups, local cruising, kink, or a privacy-preserving alternative to photo-based
+            apps.
           </p>
-          <Button
-            onClick={() => navigate('/intimate/onboard')}
-            className="rounded-element"
-          >
+          <Button onClick={() => navigate('/intimate/onboard')} className="rounded-element">
             Enable intimate profile
           </Button>
         </>
@@ -52,10 +54,7 @@ export function IntimateTab() {
         <>
           <p className="text-sm">Your intimate profile is active.</p>
           <div className="flex flex-wrap gap-2">
-            <Button
-              onClick={() => navigate('/intimate/onboard')}
-              className="rounded-element"
-            >
+            <Button onClick={() => navigate('/intimate/onboard')} className="rounded-element">
               Edit
             </Button>
             <Button

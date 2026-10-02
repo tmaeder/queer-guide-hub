@@ -3,6 +3,8 @@ import { useParams, useSearchParams } from 'react-router';
 import { useQuery } from '@tanstack/react-query';
 import { fetchAdminPersonalityById } from '@/hooks/usePageFetchers';
 import { personalityStatus } from '@/lib/personalityStatus';
+import { AdminTextSkeleton } from '@/components/admin/primitives/AdminLoading';
+import { ErrorState } from '@/components/ui/EmptyState';
 
 /**
  * Admin-only person data sheet ("Datenblatt"), ported from the standalone PHP
@@ -103,17 +105,30 @@ export default function PersonalityDataSheet() {
     const c = data?.birth_city;
     if (!c) return '';
     const nm = c.name_de || c.name || c.name_en || '';
-    const country = c.country?.name ? `${c.country.flag_emoji ? c.country.flag_emoji + ' ' : ''}${c.country.name}` : '';
+    const country = c.country?.name
+      ? `${c.country.flag_emoji ? c.country.flag_emoji + ' ' : ''}${c.country.name}`
+      : '';
     return [nm, country].filter(Boolean).join(', ');
   }, [data]);
 
-  if (isLoading) return <div className="p-8">Lädt…</div>;
-  if (error || !data) return <div className="p-8">Person nicht gefunden.</div>;
+  if (isLoading) return <AdminTextSkeleton lines={6} />;
+  if (error || !data) {
+    return (
+      <ErrorState
+        title="Person nicht gefunden"
+        description="Das Datenblatt konnte nicht geladen werden."
+      />
+    );
+  }
 
   const p = data;
   const st = personalityStatus(p);
-  const social = (p.social_links && typeof p.social_links === 'object' ? p.social_links : {}) as Record<string, string>;
-  const external = (p.external_ids && typeof p.external_ids === 'object' ? p.external_ids : {}) as Record<string, string>;
+  const social = (
+    p.social_links && typeof p.social_links === 'object' ? p.social_links : {}
+  ) as Record<string, string>;
+  const external = (
+    p.external_ids && typeof p.external_ids === 'object' ? p.external_ids : {}
+  ) as Record<string, string>;
   const fields = toList(p.fields);
   const achievements = toList(p.achievements);
   const tags = toList(p.tags);
@@ -128,10 +143,10 @@ export default function PersonalityDataSheet() {
           .pds { position: absolute; inset: 0; margin: 0; padding: 0; }
           .pds .no-print { display: none !important; }
         }
-        .pds { max-width: 720px; margin: 0 auto; padding: 24px; font-family: Inter, -apple-system, BlinkMacSystemFont, sans-serif; color: #111; background: #fff; }
+        .pds { max-width: 720px; margin: 0 auto; padding: 24px; font-family: "Space Grotesk", -apple-system, BlinkMacSystemFont, sans-serif; color: #111; background: #fff; }
         .pds .toolbar { display: flex; gap: 8px; margin-bottom: 20px; }
         .pds .toolbar button { padding: 6px 12px; border: 1px solid #111; background: #fff; cursor: pointer; font: inherit; font-size: 12px; border-radius: 8px; }
-        .pds h1 { font-size: 28px; margin: 0 0 2px; font-weight: 800; letter-spacing: -0.01em; }
+        .pds h1 { font-family: Anton, Impact, sans-serif; font-size: 28px; margin: 0 0 2px; font-weight: 400; letter-spacing: -0.01em; }
         .pds .sub { font-size: 13px; color: #555; margin: 0 0 10px; }
         .pds .status { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: #333; margin-bottom: 16px; }
         .pds .dot { width: 9px; height: 9px; border-radius: 9px; display: inline-block; border: 1px solid #999; }
@@ -194,8 +209,12 @@ export default function PersonalityDataSheet() {
           </>
         )}
 
-        {(p.website_url || p.profile_url || p.wikipedia_url || p.wikidata_qid ||
-          Object.keys(social).length > 0 || Object.keys(external).length > 0) && (
+        {(p.website_url ||
+          p.profile_url ||
+          p.wikipedia_url ||
+          p.wikidata_qid ||
+          Object.keys(social).length > 0 ||
+          Object.keys(external).length > 0) && (
           <>
             <h2>Links & Kennungen</h2>
             <Row label="Website" value={p.website_url} />
@@ -214,9 +233,7 @@ export default function PersonalityDataSheet() {
         {(p.description || p.bio || p.lgbti_connection_source) && (
           <>
             <h2>Beleg & Anmerkungen</h2>
-            {p.lgbti_connection_source && (
-              <Row label="Quelle" value={p.lgbti_connection_source} />
-            )}
+            {p.lgbti_connection_source && <Row label="Quelle" value={p.lgbti_connection_source} />}
             {p.description && <p className="prose">{p.description}</p>}
             {p.bio && <p className="prose">{p.bio}</p>}
           </>

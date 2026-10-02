@@ -1,5 +1,6 @@
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { Badge } from '@/components/ui/badge';
+import { Skeleton } from '@/components/ui/skeleton';
 import { Newspaper, Globe, BookOpen } from 'lucide-react';
 import { useUserNewsReadsList } from '@/hooks/useUserNewsReadsList';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
@@ -63,7 +64,17 @@ export function ReadingHistoryPanel({ open, onOpenChange }: ReadingHistoryPanelP
           </div>
         )}
 
-        {loading && <p className="text-sm text-muted-foreground mt-8 text-center">Loading…</p>}
+        {loading && (
+          <div
+            className="mt-8 flex flex-col gap-2"
+            role="status"
+            aria-label="Loading reading history"
+          >
+            <Skeleton className="h-16 w-full rounded-element" />
+            <Skeleton className="h-16 w-full rounded-element" />
+            <Skeleton className="h-16 w-full rounded-element" />
+          </div>
+        )}
 
         {!loading && reads.length === 0 && (
           <p className="text-sm text-muted-foreground mt-8 text-center">No reading history yet.</p>

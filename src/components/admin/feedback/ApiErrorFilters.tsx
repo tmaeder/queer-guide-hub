@@ -188,11 +188,10 @@ function FilterChip({
         fontWeight: active ? 700 : 500,
         letterSpacing: 0.2,
         alignItems: 'center',
-        transition: 'color 0.15s, opacity 0.15s',
         opacity: active ? 1 : 0.85,
         borderBottom: active ? '2px solid currentColor' : '2px solid transparent',
       }}
-      className="text-xs2 cursor-pointer inline-flex gap-1"
+      className="inline-flex cursor-pointer gap-1 text-xs2 transition-[color,opacity] duration-fast"
       onMouseEnter={(e) => {
         if (!active) e.currentTarget.style.color = 'hsl(var(--foreground))';
       }}

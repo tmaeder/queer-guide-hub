@@ -11,13 +11,13 @@ import {
   Filter,
   CheckCircle2,
   XCircle,
-  Loader2,
 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
 import { untypedFrom } from '@/integrations/supabase/untyped';
 import { AdminEmpty } from '@/components/admin/primitives/AdminEmpty';
+import { TrackLoader } from '@/components/transit/TrackLoader';
 
 /**
  * Unified audit trail combining:
@@ -262,7 +262,7 @@ export default function AuditTab() {
                         ? CheckCircle2
                         : e.status === 'failed'
                           ? XCircle
-                          : Loader2;
+                          : Clock;
                     const statusColorClass =
                       e.status === 'completed'
                         ? 'bg-muted text-foreground'
@@ -279,9 +279,11 @@ export default function AuditTab() {
                         <div
                           className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 ${statusColorClass}`}
                         >
-                          <StatusIcon
-                            className={`h-3.5 w-3.5 ${e.status === 'running' ? 'animate-spin' : ''}`}
-                          />
+                          {e.status === 'running' ? (
+                            <TrackLoader size={14} delayMs={0} label="Run in progress" />
+                          ) : (
+                            <StatusIcon className="h-3.5 w-3.5" />
+                          )}
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 text-sm">

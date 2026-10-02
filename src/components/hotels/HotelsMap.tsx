@@ -6,6 +6,7 @@ import { getMapStyle } from '@/config/mapStyle';
 import { isWebglSupported } from '@/lib/webglSupport';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import type { Hotel } from '@/hooks/useHotels';
+import { durationMs, imperativeDurationMs } from '@/lib/animation';
 
 interface HotelsMapProps {
   hotels: Hotel[];
@@ -190,7 +191,11 @@ export function HotelsMap({ hotels, height = 560 }: HotelsMapProps) {
         bounds.extend([lng, lat]);
       });
       if (!bounds.isEmpty()) {
-        map.fitBounds(bounds, { padding: 50, maxZoom: 11, duration: 600 });
+        map.fitBounds(bounds, {
+          padding: 50,
+          maxZoom: 11,
+          duration: imperativeDurationMs(durationMs.journey),
+        });
       }
     }
   }, [hotels, ready, navigate]);

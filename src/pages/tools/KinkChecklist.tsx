@@ -10,6 +10,7 @@ import { KinkWizard } from '@/components/kinks/KinkWizard';
 import { KinkVisibilityStep } from '@/components/kinks/KinkVisibilityStep';
 import { KinkShareManager } from '@/components/kinks/KinkShareManager';
 import { PageContainer } from '@/components/layout/PageContainer';
+import { PageLoadingState } from '@/components/layout/PageLoadingState';
 
 /**
  * The interests & boundaries checklist tool. 18+ — sits entirely behind the
@@ -22,7 +23,11 @@ export default function KinkChecklist() {
   const [tab, setTab] = useState('guided');
 
   if (loading || isLoading) {
-    return <div className="p-8 text-sm text-muted-foreground">Loading…</div>;
+    return (
+      <PageContainer size="form">
+        <PageLoadingState count={2} variant="list" label="Loading your checklist" />
+      </PageContainer>
+    );
   }
 
   if (!user) {

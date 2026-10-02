@@ -9,6 +9,7 @@ import { getMapStyle, MAP_FONT_BOLD } from '@/config/mapStyle';
 import { isWebglSupported } from '@/lib/webglSupport';
 import type { Database } from '@/integrations/supabase/types';
 import { format } from 'date-fns';
+import { durationMs, imperativeDurationMs } from '@/lib/animation';
 
 type Event = Database['public']['Tables']['events']['Row'];
 
@@ -208,7 +209,7 @@ export function EventsMapView({ events, height = 600, className }: EventsMapView
         const coords = feature.geometry.coordinates as [number, number];
         const dateLabel = props.start_date ? format(new Date(props.start_date), 'MMM d, yyyy') : '';
         const html = `
-          <div style="font-family: Inter, system-ui, sans-serif; max-width: 220px;">
+          <div style="font-family: 'Space Grotesk', system-ui, sans-serif; max-width: 220px;">
             <div style="font-weight: 600; font-size: 14px; line-height: 1.3; margin-bottom: 4px;">${escapeHtml(props.title)}</div>
             <div style="font-size: 12px; color: hsl(var(--muted-foreground)); margin-bottom: 8px;">${escapeHtml(dateLabel)}${props.city ? ' · ' + escapeHtml(props.city) : ''}</div>
             <a href="/events/${escapeHtml(props.slug)}" data-event-link style="font-size: 12px; font-weight: 500; text-decoration: underline; color: hsl(var(--foreground));">View event</a>
@@ -236,9 +237,17 @@ export function EventsMapView({ events, height = 600, className }: EventsMapView
       const bounds = new maplibregl.LngLatBounds();
       geolocated.forEach((e) => bounds.extend([e.longitude as number, e.latitude as number]));
       if (geolocated.length === 1) {
-        map.easeTo({ center: bounds.getCenter(), zoom: 11, duration: 400 });
+        map.easeTo({
+          center: bounds.getCenter(),
+          zoom: 11,
+          duration: imperativeDurationMs(durationMs.slow),
+        });
       } else {
-        map.fitBounds(bounds, { padding: 60, maxZoom: 12, duration: 400 });
+        map.fitBounds(bounds, {
+          padding: 60,
+          maxZoom: 12,
+          duration: imperativeDurationMs(durationMs.slow),
+        });
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps

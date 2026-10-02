@@ -9,6 +9,7 @@ import {
   type AdminRole,
   type EffectiveRole,
 } from '@/config/adminRoles';
+import { TrackLoader } from '@/components/transit/TrackLoader';
 
 interface AdminRouteGuardProps {
   children: React.ReactNode;
@@ -87,11 +88,8 @@ export function AdminRouteGuard({
   // eslint-disable-next-line react-hooks/refs -- see above.
   if (stillResolving && !hasValidatedRef.current) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div
-          className="animate-spin"
-          style={{ height: 128, width: 128, backgroundColor: 'hsl(var(--primary))' }}
-        />
+      <div className="flex min-h-screen items-center justify-center">
+        <TrackLoader size={44} label="Checking admin access" />
       </div>
     );
   }

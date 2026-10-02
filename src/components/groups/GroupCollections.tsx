@@ -1,10 +1,10 @@
 import { useState } from 'react';
-import { TrackLoader } from '@/components/transit/TrackLoader';
 import { FolderPlus, Plus, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { Skeleton } from '@/components/ui/skeleton';
 import {
   Dialog,
   DialogContent,
@@ -45,7 +45,16 @@ export function GroupCollections({ groupId, isMember, className }: GroupCollecti
     : (collections[0] ?? null);
 
   if (isLoading) {
-    return <div className={cn('h-40 rounded-container bg-card animate-pulse', className)} />;
+    return (
+      <div
+        className={cn('flex flex-col gap-4', className)}
+        role="status"
+        aria-label="Loading collections"
+      >
+        <Skeleton className="h-6 w-32" />
+        <Skeleton className="h-40 w-full rounded-container" />
+      </div>
+    );
   }
 
   return (
@@ -149,8 +158,7 @@ function NewCollectionDialog({ groupId }: { groupId: string }) {
             <Button type="button" variant="ghost" onClick={() => setOpen(false)}>
               Cancel
             </Button>
-            <Button type="submit" disabled={createMutation.isPending || !name.trim()}>
-              {createMutation.isPending && <TrackLoader size={16} className="mr-1" />}
+            <Button type="submit" loading={createMutation.isPending} disabled={!name.trim()}>
               Create
             </Button>
           </DialogFooter>
@@ -180,7 +188,10 @@ function CollectionItemsPanel({
       </header>
 
       {isLoading ? (
-        <p className="text-13 text-muted-foreground">Loading…</p>
+        <div className="flex flex-col gap-2" role="status" aria-label="Loading collection items">
+          <Skeleton className="h-12 w-full rounded-element" />
+          <Skeleton className="h-12 w-full rounded-element" />
+        </div>
       ) : items.length === 0 ? (
         <p className="text-13 text-muted-foreground">
           No items yet.

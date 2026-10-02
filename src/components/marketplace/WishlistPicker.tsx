@@ -2,11 +2,7 @@ import { useState } from 'react';
 import { Heart, Plus, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { useWishlists } from '@/hooks/useWishlists';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
@@ -89,11 +85,11 @@ export function WishlistPicker({ listingId, size = 'tap' }: WishlistPickerProps)
         <Button
           variant="ghost"
           size="icon"
+          className="transition-colors duration-fast"
           style={{
             height: px,
             width: px,
             color: filled ? 'hsl(var(--foreground))' : 'hsl(var(--muted-foreground))',
-            transition: 'color 0.2s',
           }}
           aria-label={filled ? 'Edit wishlists for this item' : 'Save to a wishlist'}
           onClick={(e) => {
@@ -102,26 +98,24 @@ export function WishlistPicker({ listingId, size = 'tap' }: WishlistPickerProps)
           }}
         >
           <Heart
+            className="transition-[fill] duration-fast"
             style={{
               height: iconPx,
               width: iconPx,
               fill: filled ? 'currentColor' : 'none',
-              transition: 'fill 0.2s cubic-bezier(0.22, 1, 0.36, 1)',
             }}
           />
         </Button>
       </PopoverTrigger>
-      <PopoverContent
-        align="end"
-        className="w-72 p-0"
-        onClick={(e) => e.stopPropagation()}
-      >
+      <PopoverContent align="end" className="w-72 p-0" onClick={(e) => e.stopPropagation()}>
         <div className="px-4 py-2">
           <p className="text-13 uppercase tracking-wide text-muted-foreground">Save to</p>
         </div>
         <div className="max-h-64 overflow-y-auto py-1">
           {wishlists.length === 0 && (
-            <p className="px-4 py-2 text-sm text-muted-foreground">No lists yet — create one below.</p>
+            <p className="px-4 py-2 text-sm text-muted-foreground">
+              No lists yet — create one below.
+            </p>
           )}
           {wishlists.map((w) => {
             const inList = isInWishlist(listingId, w.id);

@@ -408,8 +408,8 @@ export function NewsSourcesManager() {
               {sources.map((source) => (
                 <Collapsible key={source.id}>
                   <Card
+                    className="transition-colors duration-fast"
                     style={{
-                      transition: 'border-color 0.2s',
                       borderColor: source.is_active ? 'hsl(var(--muted))' : 'hsl(var(--muted))',
                     }}
                   >

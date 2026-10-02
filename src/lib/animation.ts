@@ -7,8 +7,27 @@ export const duration = {
   fast: 0.2,
   normal: 0.3,
   slow: 0.5,
+  journey: 0.62,
   reveal: 0.7,
+  burst: 0.65,
+  celebration: 1.1,
 } as const;
+
+/** Millisecond form for imperative animation APIs (maps and graph canvases). */
+export const durationMs = {
+  instant: duration.instant * 1000,
+  fast: duration.fast * 1000,
+  normal: duration.normal * 1000,
+  slow: duration.slow * 1000,
+  journey: duration.journey * 1000,
+  reveal: duration.reveal * 1000,
+} as const;
+
+/** Respect reduced motion when an imperative library cannot consume CSS media queries. */
+export function imperativeDurationMs(value: number): number {
+  if (typeof window === 'undefined') return value;
+  return window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : value;
+}
 
 export const ease = {
   smooth: 'cubic-bezier(0.22, 1, 0.36, 1)',

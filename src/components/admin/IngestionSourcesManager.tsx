@@ -129,15 +129,10 @@ export const IngestionSourcesManager = () => {
           size="sm"
           onClick={loadSources}
           disabled={loading}
+          loading={loading}
           className="flex gap-2"
         >
-          <RefreshCw
-            style={{
-              height: 16,
-              width: 16,
-              ...(loading ? { animation: 'spin 1s linear infinite' } : {}),
-            }}
-          />
+          <RefreshCw size={16} />
           Refresh
         </Button>
       </div>
@@ -210,14 +205,11 @@ export const IngestionSourcesManager = () => {
                       variant="outline"
                       size="sm"
                       disabled={!source.is_enabled || isTriggering}
+                      loading={isTriggering}
                       onClick={() => handleTrigger(source)}
                       style={{ display: 'flex', gap: 6 }}
                     >
-                      {isTriggering ? (
-                        <RefreshCw size={14} style={{ animation: 'spin 1s linear infinite' }} />
-                      ) : (
-                        <Play size={14} />
-                      )}
+                      <Play size={14} />
                       Run Now
                     </Button>
                   </div>

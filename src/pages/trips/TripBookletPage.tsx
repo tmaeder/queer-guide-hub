@@ -8,6 +8,8 @@ import { ErrorState } from '@/components/ui/EmptyState';
 import { classifyTripError } from '@/utils/tripError';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { resolveTripTitle } from '@/components/trips/tripTitle';
+import { PageContainer } from '@/components/layout/PageContainer';
+import { PageLoadingState } from '@/components/layout/PageLoadingState';
 
 /**
  * Print-optimized trip booklet.
@@ -74,12 +76,20 @@ export default function TripBookletPage() {
   }, [trip]);
 
   if (isLoading) {
-    return <div className="p-8">Loading…</div>;
+    return (
+      <PageContainer size="reading">
+        <PageLoadingState
+          count={4}
+          variant="list"
+          label={t('trips.booklet.loading', 'Loading your trip booklet')}
+        />
+      </PageContainer>
+    );
   }
   if (error || !trip) {
     const kind = classifyTripError(tripId, error, trip) ?? 'load-error';
     return (
-      <div className="p-8">
+      <PageContainer size="reading">
         <ErrorState
           title={t(`trips.error.${kind}.title`)}
           description={t(`trips.error.${kind}.description`)}
@@ -89,7 +99,7 @@ export default function TripBookletPage() {
             variant: 'default',
           }}
         />
-      </div>
+      </PageContainer>
     );
   }
 
@@ -107,13 +117,13 @@ export default function TripBookletPage() {
         @page { size: A4; margin: 18mm 16mm; }
         @media print {
           body { background: #fff !important; }
-          .booklet { font-family: Inter, -apple-system, BlinkMacSystemFont, sans-serif; color: #111; }
+          .booklet { font-family: 'Space Grotesk', system-ui, sans-serif; color: #111; }
           .no-print { display: none !important; }
           .page-break { page-break-after: always; }
         }
-        .booklet { max-width: 720px; margin: 0 auto; padding: 32px 24px 64px; font-family: Inter, -apple-system, BlinkMacSystemFont, sans-serif; color: #111; }
-        .booklet h1 { font-size: 32px; margin: 0 0 4px; font-weight: 800; letter-spacing: -0.01em; }
-        .booklet h2 { font-size: 18px; margin: 28px 0 8px; font-weight: 700; border-bottom: 2px solid #111; padding-bottom: 4px; }
+        .booklet { max-width: 720px; margin: 0 auto; padding: 32px 24px 64px; font-family: 'Space Grotesk', system-ui, sans-serif; color: #111; }
+        .booklet h1 { font-family: 'Anton', sans-serif; font-size: 52px; line-height: 1.02; margin: 0 0 4px; font-weight: 400; letter-spacing: -0.02em; }
+        .booklet h2 { font-family: 'Anton', sans-serif; font-size: 32px; line-height: 1.15; margin: 28px 0 8px; font-weight: 400; padding-bottom: 4px; }
         .booklet h3 { font-size: 14px; margin: 16px 0 6px; font-weight: 700; }
         .booklet p, .booklet li { font-size: 12px; line-height: 1.5; margin: 4px 0; }
         .booklet table { width: 100%; border-collapse: collapse; font-size: 12px; }
@@ -122,7 +132,7 @@ export default function TripBookletPage() {
         .booklet .cover { padding: 60px 0 24px; text-align: left; }
         .booklet .cover .meta { font-size: 14px; color: #666; margin-top: 8px; }
         .booklet .toolbar { position: sticky; top: 0; background: #fff; padding: 8px 0 16px; display: flex; gap: 8px; }
-        .booklet .toolbar button { padding: 6px 12px; border: 1px solid #111; background: #fff; cursor: pointer; font-family: inherit; font-size: 12px; }
+        .booklet .toolbar button { padding: 8px 12px; border: 0; border-radius: 12px; background: #111; color: #FAFAF5; cursor: pointer; font-family: inherit; font-size: 12px; font-weight: 700; }
       `}</style>
 
       <div className="booklet">
@@ -192,31 +202,31 @@ export default function TripBookletPage() {
         <div className="page-break" />
         <h2>{t('trips.booklet.addresses', 'Addresses')}</h2>
         <div className="overflow-x-auto">
-        <table>
-          <thead>
-            <tr>
-              <th>{t('trips.booklet.place', 'Place')}</th>
-              <th>{t('trips.booklet.address', 'Address')}</th>
-              <th>{t('trips.booklet.city', 'City')}</th>
-            </tr>
-          </thead>
-          <tbody>
-            {allPlaces.length === 0 && (
+          <table>
+            <thead>
               <tr>
-                <td colSpan={3} className="muted">
-                  {t('trips.booklet.noPlaces', 'No places yet.')}
-                </td>
+                <th>{t('trips.booklet.place', 'Place')}</th>
+                <th>{t('trips.booklet.address', 'Address')}</th>
+                <th>{t('trips.booklet.city', 'City')}</th>
               </tr>
-            )}
-            {allPlaces.map((p) => (
-              <tr key={p.id}>
-                <td>{placeName(p)}</td>
-                <td>{placeAddress(p) ?? '—'}</td>
-                <td>{p.cities?.name ?? '—'}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {allPlaces.length === 0 && (
+                <tr>
+                  <td colSpan={3} className="muted">
+                    {t('trips.booklet.noPlaces', 'No places yet.')}
+                  </td>
+                </tr>
+              )}
+              {allPlaces.map((p) => (
+                <tr key={p.id}>
+                  <td>{placeName(p)}</td>
+                  <td>{placeAddress(p) ?? '—'}</td>
+                  <td>{p.cities?.name ?? '—'}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
 
         {/* Reservations */}
@@ -226,34 +236,34 @@ export default function TripBookletPage() {
         )}
         {reservations && reservations.length > 0 && (
           <div className="overflow-x-auto">
-          <table>
-            <thead>
-              <tr>
-                <th>{t('trips.booklet.type', 'Type')}</th>
-                <th>{t('trips.booklet.title', 'Title')}</th>
-                <th>{t('trips.booklet.dates', 'When')}</th>
-                <th>{t('trips.booklet.confirmation', 'Confirmation')}</th>
-              </tr>
-            </thead>
-            <tbody>
-              {reservations.map((r) => (
-                <tr key={r.id}>
-                  <td>{r.type}</td>
-                  <td>
-                    {r.title}
-                    {r.provider && <div className="muted">{r.provider}</div>}
-                  </td>
-                  <td>
-                    {r.check_in && format(new Date(r.check_in), 'MMM d HH:mm')}
-                    {r.check_out && ` → ${format(new Date(r.check_out), 'MMM d HH:mm')}`}
-                  </td>
-                  <td>
-                    <code>{r.confirmation_code ?? '—'}</code>
-                  </td>
+            <table>
+              <thead>
+                <tr>
+                  <th>{t('trips.booklet.type', 'Type')}</th>
+                  <th>{t('trips.booklet.title', 'Title')}</th>
+                  <th>{t('trips.booklet.dates', 'When')}</th>
+                  <th>{t('trips.booklet.confirmation', 'Confirmation')}</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {reservations.map((r) => (
+                  <tr key={r.id}>
+                    <td>{r.type}</td>
+                    <td>
+                      {r.title}
+                      {r.provider && <div className="muted">{r.provider}</div>}
+                    </td>
+                    <td>
+                      {r.check_in && format(new Date(r.check_in), 'MMM d HH:mm')}
+                      {r.check_out && ` → ${format(new Date(r.check_out), 'MMM d HH:mm')}`}
+                    </td>
+                    <td>
+                      <code>{r.confirmation_code ?? '—'}</code>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         )}
 
@@ -279,31 +289,33 @@ export default function TripBookletPage() {
         {/* Emergency */}
         <h2>{t('trips.booklet.emergency', 'Emergency contacts')}</h2>
         <div className="overflow-x-auto">
-        <table>
-          <thead>
-            <tr>
-              <th>{t('trips.booklet.country', 'Country')}</th>
-              <th>{t('trips.booklet.emergencyNumber', 'Emergency')}</th>
-              <th>{t('trips.booklet.embassy', 'Your embassy')}</th>
-            </tr>
-          </thead>
-          <tbody>
-            {countries.length === 0 && (
+          <table>
+            <thead>
               <tr>
-                <td colSpan={3} className="muted">
-                  —
-                </td>
+                <th>{t('trips.booklet.country', 'Country')}</th>
+                <th>{t('trips.booklet.emergencyNumber', 'Emergency')}</th>
+                <th>{t('trips.booklet.embassy', 'Your embassy')}</th>
               </tr>
-            )}
-            {countries.map((c) => (
-              <tr key={c.id}>
-                <td>{c.name}</td>
-                <td className="muted">112 / 911</td>
-                <td className="muted">{t('trips.booklet.embassyHint', 'Look up before travel')}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {countries.length === 0 && (
+                <tr>
+                  <td colSpan={3} className="muted">
+                    —
+                  </td>
+                </tr>
+              )}
+              {countries.map((c) => (
+                <tr key={c.id}>
+                  <td>{c.name}</td>
+                  <td className="muted">112 / 911</td>
+                  <td className="muted">
+                    {t('trips.booklet.embassyHint', 'Look up before travel')}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
 
         <p className="muted mt-8" style={{ fontSize: 10 }}>

@@ -10,6 +10,7 @@ import { Switch } from '@/components/ui/switch';
 import { Trash2, ExternalLink } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useWatchedUrls } from '@/hooks/useWatchedUrls';
+import { Skeleton } from '@/components/ui/skeleton';
 
 function freqLabel(min: number): string {
   if (min % 10080 === 0) return `every ${min / 10080}w`;
@@ -30,7 +31,14 @@ export function WatchedSitesList() {
   const { toast } = useToast();
   const { watches, isLoading, toggleWatch, removeWatch } = useWatchedUrls();
 
-  if (isLoading) return <p className="text-13 text-muted-foreground">Loading…</p>;
+  if (isLoading) {
+    return (
+      <div className="flex flex-col gap-2" role="status" aria-label="Loading watched sites">
+        <Skeleton className="h-16 w-full rounded-element" />
+        <Skeleton className="h-16 w-full rounded-element" />
+      </div>
+    );
+  }
   if (watches.length === 0) {
     return (
       <p className="text-13 text-muted-foreground">

@@ -46,7 +46,7 @@ async function fetchWikipediaSummary(query: string): Promise<WikipediaInfo | nul
     const url = `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(query)}`;
     const res = await fetch(url, { headers: { Accept: 'application/json' } });
     if (!res.ok) return null;
-    const data = await res.json() as {
+    const data = (await res.json()) as {
       title?: string;
       extract?: string;
       description?: string;
@@ -56,12 +56,14 @@ async function fetchWikipediaSummary(query: string): Promise<WikipediaInfo | nul
     };
     if (!data.extract) return null;
     return {
-      title:       data.title ?? query,
-      extract:     data.extract,
+      title: data.title ?? query,
+      extract: data.extract,
       description: data.description,
-      content:     data.extract,
-      pageUrl:     data.content_urls?.desktop?.page ?? `https://en.wikipedia.org/wiki/${encodeURIComponent(query)}`,
-      thumbnail:   data.thumbnail?.source,
+      content: data.extract,
+      pageUrl:
+        data.content_urls?.desktop?.page ??
+        `https://en.wikipedia.org/wiki/${encodeURIComponent(query)}`,
+      thumbnail: data.thumbnail?.source,
       coordinates: data.coordinates,
     };
   } catch (err) {
@@ -242,8 +244,7 @@ export const LocationInfo = ({ name, type, className }: LocationInfoProps) => {
                   key={image.id}
                   role="button"
                   tabIndex={0}
-                  /* group removed */ style={{ transition: 'all 0.3s' }}
-                  className="relative cursor-pointer overflow-hidden"
+                  className="group relative cursor-pointer overflow-hidden transition-all duration-normal motion-reduce:transition-none"
                   onClick={() => openModal(index)}
                   onKeyDown={(e) => {
                     if (e.key === 'Enter' || e.key === ' ') {
@@ -256,38 +257,13 @@ export const LocationInfo = ({ name, type, className }: LocationInfoProps) => {
                     <img
                       src={image.thumbnail}
                       alt={image.alt || `Photo of ${name}`}
-                      style={{
-                        width: '100%',
-                        height: '100%',
-                        objectFit: 'cover',
-                        transition: 'all 0.5s',
-                      }}
+                      className="h-full w-full object-cover transition-transform duration-slow group-hover:scale-105 motion-reduce:transition-none"
                       loading="lazy"
                     />
-                    <div
-                      style={{
-                        inset: 0,
-                        background:
-                          'linear-gradient(to top, rgba(0,0,0,0.6), transparent, transparent)',
-                        opacity: 0,
-                        transition: 'opacity 0.3s',
-                      }}
-                      className="absolute"
-                    />
+                    <div className="absolute inset-0 bg-foreground/35 opacity-0 transition-opacity duration-normal group-hover:opacity-100 motion-reduce:transition-none" />
                   </div>
 
-                  <div
-                    style={{
-                      bottom: 0,
-                      left: 0,
-                      right: 0,
-                      padding: '0.75rem',
-                      color: 'white',
-                      transform: 'translateY(100%)',
-                      transition: 'transform 0.3s',
-                    }}
-                    className="absolute"
-                  >
+                  <div className="absolute inset-x-0 bottom-0 translate-y-full p-4 text-white transition-transform duration-normal group-hover:translate-y-0 motion-reduce:transition-none">
                     <p
                       style={{ textOverflow: 'ellipsis' }}
                       className="text-xs font-medium overflow-hidden whitespace-nowrap"
@@ -297,27 +273,8 @@ export const LocationInfo = ({ name, type, className }: LocationInfoProps) => {
                   </div>
 
                   {/* Hover overlay */}
-                  <div
-                    style={{
-                      inset: 0,
-                      backgroundColor: 'hsl(var(--primary) / 0.1)',
-                      opacity: 0,
-                      transition: 'opacity 0.3s',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                    }}
-                    className="absolute flex"
-                  >
-                    <div
-                      className="rounded-full"
-                      style={{
-                        backgroundColor: 'hsl(var(--background) / 0.9)',
-                        backdropFilter: 'blur(4px)',
-                        padding: '0.5rem',
-                        transform: 'scale(0)',
-                        transition: 'transform 0.3s',
-                      }}
-                    >
+                  <div className="absolute inset-0 flex items-center justify-center bg-primary/10 opacity-0 transition-opacity duration-normal group-hover:opacity-100 motion-reduce:transition-none">
+                    <div className="scale-0 rounded-full bg-background/90 p-2 backdrop-blur-sm transition-transform duration-normal group-hover:scale-100 motion-reduce:transition-none">
                       <ImageIcon size={20} className="text-primary" />
                     </div>
                   </div>
@@ -432,15 +389,7 @@ export const LocationInfo = ({ name, type, className }: LocationInfoProps) => {
                               href={selectedImage.photographer_url}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="rounded-element inline-flex text-sm no-underline"
-                              style={{
-                                alignItems: 'center',
-                                gap: '0.5rem',
-                                backgroundColor: 'rgba(255,255,255,0.2)',
-                                padding: '0.375rem 0.75rem',
-                                color: 'inherit',
-                                transition: 'background-color 0.2s',
-                              }}
+                              className="inline-flex items-center gap-2 rounded-element bg-white/20 px-4 py-1.5 text-sm text-inherit no-underline transition-colors duration-fast"
                             >
                               <ExternalLink size={16} />
                               View Profile

@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react';
-import { TrackLoader } from '@/components/transit/TrackLoader';
 
 import {
   Dialog,
@@ -71,9 +70,14 @@ export function VenueSafetySignalPrompt({ venueId, open, onOpenChange }: Props) 
         </DialogHeader>
 
         {isLoading && (
-          <div className="flex items-center gap-2 py-6 text-sm text-muted-foreground">
-            <TrackLoader size={16} />
-            Loading…
+          <div
+            className="flex flex-col gap-2 py-6"
+            role="status"
+            aria-label="Loading visitor-safety questions"
+          >
+            <div className="h-4 w-4/5 rounded-badge bg-muted" />
+            <div className="h-10 w-full rounded-element bg-muted" />
+            <div className="h-10 w-full rounded-element bg-muted" />
           </div>
         )}
 

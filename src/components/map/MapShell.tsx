@@ -3,7 +3,7 @@ import * as maplibregl from 'maplibre-gl';
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
 import { useTranslation } from 'react-i18next';
 import { tweens } from '@/lib/motion';
-import { distance } from '@/lib/animation';
+import { distance, durationMs, imperativeDurationMs } from '@/lib/animation';
 import { ExploreMap, type ExploreMapHandle } from './ExploreMap';
 import { MapBar } from './chrome/MapBar';
 import { MapNavControls } from './chrome/MapNavControls';
@@ -254,7 +254,11 @@ export const MapShell = ({
     if (!map || pointsInView.length === 0) return;
     const bounds = new maplibregl.LngLatBounds();
     for (const p of pointsInView) bounds.extend([p.lng, p.lat]);
-    map.fitBounds(bounds, { padding: 64, maxZoom: 15, duration: 600 });
+    map.fitBounds(bounds, {
+      padding: 64,
+      maxZoom: 15,
+      duration: imperativeDurationMs(durationMs.journey),
+    });
   }, [mapHandle, pointsInView]);
 
   // GeolocateControl errors → the same informational toasts the old

@@ -4,10 +4,15 @@ import { MessageCircle, SkipForward } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
+import { Skeleton } from '@/components/ui/skeleton';
 import { KinkRatingControl } from '@/components/kinks/KinkRatingControl';
 import { KinkVisibilityStep } from '@/components/kinks/KinkVisibilityStep';
 import { useKinkTaxonomy } from '@/hooks/useKinkTaxonomy';
-import { useMyKinkRatings, useUpsertKinkRatings, useDeleteKinkRating } from '@/hooks/useKinkRatings';
+import {
+  useMyKinkRatings,
+  useUpsertKinkRatings,
+  useDeleteKinkRating,
+} from '@/hooks/useKinkRatings';
 import {
   AXIS_SIDES,
   itemAxis,
@@ -52,7 +57,13 @@ export function KinkWizard({ onFinished }: { onFinished?: () => void }) {
   }, [taxonomy, skippedCategories]);
 
   if (!taxonomy) {
-    return <p className="py-8 text-sm text-muted-foreground">Loading…</p>;
+    return (
+      <div className="flex flex-col gap-4 py-8" role="status" aria-label="Loading checklist">
+        <Skeleton className="h-6 w-2/5" />
+        <Skeleton className="h-24 w-full rounded-container" />
+        <Skeleton className="h-10 w-32 rounded-element" />
+      </div>
+    );
   }
 
   if (visibilityStep) {

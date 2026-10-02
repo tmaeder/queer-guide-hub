@@ -1,7 +1,7 @@
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { AlertTriangle, MapPin, RefreshCw, ShieldCheck } from 'lucide-react';
+import { AlertTriangle, MapPin, ShieldCheck } from 'lucide-react';
 import { useCityQualitySummary } from '@/hooks/useCityQualitySummary';
 import { AdminStat } from '@/components/admin/primitives/AdminStat';
 
@@ -37,8 +37,13 @@ export function CityQualityPanel() {
               unavailable; this is not a zero-finding result.
             </p>
           </div>
-          <Button variant="outline" size="sm" onClick={() => void refetch()} disabled={isFetching}>
-            <RefreshCw size={14} className={isFetching ? 'animate-spin' : undefined} aria-hidden />
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => void refetch()}
+            disabled={isFetching}
+            loading={isFetching}
+          >
             Retry probe
           </Button>
         </CardContent>

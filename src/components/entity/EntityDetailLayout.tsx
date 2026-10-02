@@ -6,6 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { PageContainer } from '@/components/layout/PageContainer';
+import { useMotionTokens } from '@/lib/motion';
 
 export interface EntityDetailTab {
   id: string;
@@ -46,6 +47,7 @@ export function EntityDetailLayout({
   entityType: _entityType,
   entityId: _entityId,
 }: EntityDetailLayoutProps) {
+  const { tweens } = useMotionTokens();
   // Publish the trail to the global breadcrumb bar (rendered in LayoutShell).
   useBreadcrumbs(breadcrumbs ?? null);
 
@@ -152,7 +154,7 @@ export function EntityDetailLayout({
                           initial={{ opacity: 0, filter: 'blur(4px)' }}
                           animate={{ opacity: 1, filter: 'blur(0px)' }}
                           exit={{ opacity: 0, filter: 'blur(4px)' }}
-                          transition={{ duration: 0.2 }}
+                          transition={tweens.fast}
                         >
                           {tab.content}
                         </motion.div>

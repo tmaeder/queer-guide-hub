@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { useDynamicSitemap } from '@/hooks/useDynamicSitemap';
 import { useTranslation } from 'react-i18next';
 import { PageContainer } from '@/components/layout/PageContainer';
+import { PageLoadingState } from '@/components/layout/PageLoadingState';
 
 function setMetaTag(name: string, content: string) {
   let tag = document.querySelector(`meta[name="${name}"]`);
@@ -93,8 +94,8 @@ export default function Sitemap() {
   if (isLoading) {
     return (
       <PageContainer>
-        <h4 className="text-3xl font-bold tracking-tight mb-4">Queer Guide Sitemap</h4>
-        <p className="text-muted-foreground">Loading dynamic sitemap...</p>
+        <h1 className="mb-4 font-display text-display">Sitemap</h1>
+        <PageLoadingState count={6} variant="list" label="Loading the sitemap" />
       </PageContainer>
     );
   }

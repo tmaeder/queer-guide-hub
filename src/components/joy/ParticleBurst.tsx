@@ -1,7 +1,7 @@
 import { useEffect, useMemo } from 'react';
 import { motion } from 'motion/react';
-import { useMotionTokens } from '@/lib/motion';
-import { isLowEndDevice } from '@/lib/animation';
+import { easing, useMotionTokens } from '@/lib/motion';
+import { duration, isLowEndDevice } from '@/lib/animation';
 
 interface ParticleBurstProps {
   /** Called once the burst finishes so the parent can unmount it. */
@@ -10,11 +10,7 @@ interface ParticleBurstProps {
 
 const PARTICLES = 8;
 // Monochrome squares — celebration reads through motion + density, not hue.
-const COLORS = [
-  'hsl(var(--foreground))',
-  'hsl(var(--muted-foreground))',
-  'hsl(var(--border))',
-];
+const COLORS = ['hsl(var(--foreground))', 'hsl(var(--muted-foreground))', 'hsl(var(--border))'];
 
 /**
  * A short, one-shot radial burst of monochrome squares — the queer-joy
@@ -61,7 +57,7 @@ export function ParticleBurst({ onDone }: ParticleBurstProps) {
           key={i}
           initial={{ opacity: 1, x: 0, y: 0, scale: 0.6, rotate: 0 }}
           animate={{ opacity: 0, x: p.x, y: p.y, scale: 1.1, rotate: p.rot }}
-          transition={{ duration: 0.65, ease: [0.22, 1, 0.36, 1] }}
+          transition={{ duration: duration.burst, ease: easing.smooth }}
           className="absolute left-1/2 top-1/2 rounded-badge"
           style={{
             translateX: '-50%',

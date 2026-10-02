@@ -128,14 +128,8 @@ export function CloudflareDashboard() {
           </span>
         }
         actions={
-          <Button onClick={handleRefresh} disabled={refreshing}>
-            <RefreshCw
-              style={{
-                height: 16,
-                width: 16,
-                ...(refreshing ? { animation: 'spin 1s linear infinite' } : {}),
-              }}
-            />
+          <Button onClick={handleRefresh} disabled={refreshing} loading={refreshing}>
+            <RefreshCw size={16} />
             Refresh
           </Button>
         }
