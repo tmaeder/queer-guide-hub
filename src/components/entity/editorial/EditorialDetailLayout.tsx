@@ -37,6 +37,8 @@ export interface EditorialDetailLayoutProps {
    * otherwise animate unconditionally on every page using this layout.
    */
   disableProgress?: boolean;
+  /** Page-specific treatment for the otherwise shared anchored section strip. */
+  sectionNavVariant?: 'default' | 'subway';
 }
 
 /**
@@ -54,6 +56,7 @@ export function EditorialDetailLayout({
   entityType: _entityType,
   entityId: _entityId,
   disableProgress = false,
+  sectionNavVariant = 'default',
 }: EditorialDetailLayoutProps) {
   // Publish the trail to the global breadcrumb bar (rendered in LayoutShell).
   useBreadcrumbs(breadcrumbs ?? null);
@@ -208,6 +211,7 @@ export function EditorialDetailLayout({
           items={visibleSections.map((s) => ({ id: s.id, label: s.label }))}
           activeId={activeId}
           onSelect={selectSection}
+          variant={sectionNavVariant}
         />
 
         <div>
