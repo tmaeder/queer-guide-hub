@@ -4,12 +4,11 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import {
-  fieldControlKind,
-  GOVERNANCE_SELECT_OPTIONS,
   GovernanceLocationField,
   GovernanceSelectField,
   GovernanceTagsField,
 } from './GovernanceFieldControls';
+import { fieldControlKind, GOVERNANCE_SELECT_OPTIONS } from './governanceFieldControlUtils';
 
 const PRIORITY_FIELDS = [
   'name',
