@@ -19,7 +19,11 @@ export function HelpSafetyHeader({ country }: { country: string }) {
   return (
     <header
       data-testid="help-safety-header"
-      className="sticky top-0 z-50 border-b border-border-hairline bg-background"
+      className="island island-capped sticky z-40 bg-background"
+      style={{
+        top: 'calc(var(--island-inset) + env(safe-area-inset-top, 0px))',
+        marginTop: 'calc(var(--island-inset) + env(safe-area-inset-top, 0px))',
+      }}
     >
       <div className="mx-auto flex w-full max-w-page flex-wrap items-center gap-4 px-4 py-4 sm:px-6 md:px-8">
         <LocalizedLink

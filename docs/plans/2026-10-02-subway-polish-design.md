@@ -93,6 +93,29 @@ order even when their geometry changes.
 - Keep station rings, track strokes, image ratios, title measures, and optical
   alignment consistent across route families.
 
+## Page-template grammar
+
+The supplied Entity, Place, Travel, Marketplace, Discovery, Community,
+Messaging, Account, and Static template examples establish the reusable page
+grammar. The implementation adapts these patterns through shared components:
+
+- list and landing pages: route context, dominant Anton title, short lead,
+  primary action, then filters and results;
+- entity and place pages: route identity, title/lead, one action cluster, then
+  facts or stations in divided rows;
+- task surfaces: one large working plane with selected states in ink and track
+  colour reserved for route/status cues;
+- account and settings flows: contained panels are allowed when they establish a
+  focused task boundary, but controls inside stay flat and row-based;
+- editorial and legal pages: narrow readable measures, strong heading steps,
+  quiet metadata, and no decorative UI competing with prose;
+- mobile: the same semantic order in a vertical composition, with route lines
+  cropped or reoriented instead of shrinking a desktop canvas.
+
+The example documents' sample content and presentation-only controls are not
+product requirements. Existing data, safety behavior, permissions, routing,
+localization, and working interaction patterns remain authoritative.
+
 ## Motion
 
 - Motion is reserved for route travel, line drawing, station arrival, loading,
