@@ -69,6 +69,38 @@ test.describe('production subway design-system contract', () => {
     expect(system.yellow).not.toBe('');
   });
 
+  test('homepage renders the supplied four-line network above the fold', async ({ page }) => {
+    await gotoReady(page, '/');
+
+    const network = page.locator('.hero-network');
+    await expect(network).toBeVisible();
+    await expect(network.locator('.hero-network__tracks path')).toHaveCount(4);
+    await expect(network.locator('.hero-network__stations circle')).toHaveCount(3);
+    await expect(network.getByText('You are here')).toBeVisible();
+    await expect(page.locator('.network-backdrop')).toHaveCount(0);
+
+    const networkBox = await network.boundingBox();
+    expect(networkBox).not.toBeNull();
+    expect(networkBox!.y).toBeLessThan(900);
+  });
+
+  test('interior pages keep the route rail and active network canvas visible', async ({ page }) => {
+    await gotoReady(page, '/venues');
+
+    const rail = page.locator('.route-network-rail');
+    await expect(rail).toBeVisible();
+    await expect(rail.locator('.route-network-rail__track')).toHaveCount(4);
+    await expect(page.locator('.network-backdrop')).toBeVisible();
+
+    const activeTrack = rail.locator('.route-network-rail__track--pink');
+    const inactiveTrack = rail.locator('.route-network-rail__track--blue');
+    const weights = await Promise.all([
+      activeTrack.evaluate((element) => getComputedStyle(element).strokeWidth),
+      inactiveTrack.evaluate((element) => getComputedStyle(element).strokeWidth),
+    ]);
+    expect(Number.parseFloat(weights[0])).toBeGreaterThan(Number.parseFloat(weights[1]));
+  });
+
   test('client-side navigation plays one complete station journey', async ({ page }) => {
     await gotoReady(page, '/');
     await observeRouteJourneys(page);
@@ -125,11 +157,15 @@ test.describe('production subway design-system contract', () => {
         trackPink: getComputedStyle(document.documentElement)
           .getPropertyValue('--track-pink')
           .trim(),
+        heroNetwork: !!document.querySelector('.hero-network'),
+        routeRail: !!document.querySelector('.route-network-rail'),
       }));
 
       expect(shell.mainVisible).toBe(true);
       expect(shell.trackPink).not.toBe('');
       expect(shell.overflow, `${path} has horizontal overflow`).toBeLessThanOrEqual(1);
+      if (path === '/') expect(shell.heroNetwork).toBe(true);
+      if (path !== '/' && path !== '/help') expect(shell.routeRail).toBe(true);
     });
   }
 });

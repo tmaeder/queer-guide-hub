@@ -26,7 +26,7 @@ const queryClient = createOptimizedQueryClient();
  */
 export const AppProviders = ({ children }: { children: React.ReactNode }) => (
   <QueryClientProvider client={queryClient}>
-    <ThemeProvider defaultTheme="system" storageKey="queer-guide-theme">
+    <ThemeProvider defaultTheme="light" storageKey="queer-guide-theme">
       <PWAProvider>
         <AccessibilityProvider>
           <CookieConsentProvider>
