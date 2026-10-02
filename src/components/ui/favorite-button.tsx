@@ -1,18 +1,18 @@
-import React, { useRef, useEffect } from "react";
-import { Heart } from "lucide-react";
-import { Button } from "./button";
-import { useFavorites, FavoriteType } from "@/hooks/useFavorites";
-import { useHaptics } from "@/hooks/useHaptics";
-import { useSaveAction } from "@/hooks/useSearchActions";
+import React, { useRef, useEffect } from 'react';
+import { Heart } from 'lucide-react';
+import { Button } from './button';
+import { useFavorites, FavoriteType } from '@/hooks/useFavorites';
+import { useHaptics } from '@/hooks/useHaptics';
+import { useSaveAction } from '@/hooks/useSearchActions';
 
 interface FavoriteButtonProps {
   itemId: string;
   type: FavoriteType;
-  variant?: "default" | "ghost";
+  variant?: 'default' | 'ghost';
   // `tap` is a 44×44 hit-target variant for overlay buttons on cards.
   // Use it where touch-target is the constraint; keep `sm` for list rows
   // and compact controls where 32px is intentional.
-  size?: "sm" | "md" | "lg" | "tap";
+  size?: 'sm' | 'md' | 'lg' | 'tap';
 }
 
 const sizeStyles: Record<string, React.CSSProperties> = {
@@ -32,8 +32,8 @@ const iconPixels: Record<string, number> = {
 export const FavoriteButton = ({
   itemId,
   type,
-  variant = "ghost",
-  size = "sm"
+  variant = 'ghost',
+  size = 'sm',
 }: FavoriteButtonProps) => {
   const { isFavorited, toggleFavorite } = useFavorites(type);
   const favorited = isFavorited(itemId);
@@ -66,20 +66,19 @@ export const FavoriteButton = ({
       variant={variant}
       size="icon"
       onClick={handleClick}
+      className="transition-colors duration-fast"
       style={{
         ...sizeStyles[size],
         color: favorited ? 'hsl(var(--foreground))' : 'hsl(var(--muted-foreground))',
-        transition: 'color 0.2s',
       }}
-      aria-label={favorited ? "Remove from favorites" : "Add to favorites"}
+      aria-label={favorited ? 'Remove from favorites' : 'Add to favorites'}
     >
       <Heart
-        className={animating ? 'heart-pop' : ''}
+        className={`${animating ? 'heart-pop ' : ''}transition-[fill] duration-fast`}
         style={{
           height: iconSize,
           width: iconSize,
           fill: favorited ? 'currentColor' : 'none',
-          transition: 'fill 0.2s cubic-bezier(0.22, 1, 0.36, 1)',
         }}
       />
     </Button>

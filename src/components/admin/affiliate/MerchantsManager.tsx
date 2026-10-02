@@ -14,7 +14,7 @@
 import { useMemo, useState } from 'react';
 import { TrackLoader } from '@/components/transit/TrackLoader';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { Plus, Edit2, Trash2, RefreshCw} from 'lucide-react';
+import { Plus, Edit2, Trash2, RefreshCw } from 'lucide-react';
 import { toast } from 'sonner';
 import { untypedSupabase } from '@/integrations/supabase/untyped';
 import { useAffiliateLinks } from '@/hooks/useAffiliateLinks';
@@ -25,12 +25,27 @@ import { Switch } from '@/components/ui/switch';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import {
-  Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
 } from '@/components/ui/dialog';
 import {
-  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from '@/components/ui/select';
 import { Stat } from './Stat';
 import { MerchantDrawer } from './MerchantDrawer';
@@ -74,10 +89,16 @@ export function MerchantsManager({
   const [syncing, setSyncing] = useState<string | null>(null);
   const [drawerMerchant, setDrawerMerchant] = useState<MerchantOverviewRow | null>(null);
 
-  const { data: rows, isLoading, error } = useQuery({
+  const {
+    data: rows,
+    isLoading,
+    error,
+  } = useQuery({
     queryKey: ['merchant-overview', days],
     queryFn: async (): Promise<MerchantOverviewRow[]> => {
-      const { data, error } = await untypedSupabase.rpc('admin_merchant_overview', { p_days: Number(days) });
+      const { data, error } = await untypedSupabase.rpc('admin_merchant_overview', {
+        p_days: Number(days),
+      });
       if (error) throw error;
       return (data ?? []) as MerchantOverviewRow[];
     },
@@ -145,7 +166,8 @@ export function MerchantsManager({
         shop_domain: form.shop_domain.trim() || null,
         api_key_env: form.api_key_env.trim() || null,
         awin_advertiser_id: form.awin_advertiser_id.trim() || null,
-        affiliate_partner_id: form.affiliate_partner_id === NO_PARTNER ? null : form.affiliate_partner_id,
+        affiliate_partner_id:
+          form.affiliate_partner_id === NO_PARTNER ? null : form.affiliate_partner_id,
         organization_id: form.organization_id === NO_ORG ? null : form.organization_id,
         config,
         is_enabled: form.is_enabled,
@@ -188,7 +210,8 @@ export function MerchantsManager({
     setSyncing(m.merchant_id);
     try {
       const result = await sync.mutateAsync({ id: m.merchant_id });
-      if (result.status === 'ok') toast.success(`Synced ${m.display_name}: ${result.items ?? 0} items`);
+      if (result.status === 'ok')
+        toast.success(`Synced ${m.display_name}: ${result.items ?? 0} items`);
       else if (result.status === 'skipped') toast.info(`${m.display_name}: no public feed to sync`);
       else toast.error(`Sync failed: ${result.error ?? 'unknown'}`);
     } catch (e: unknown) {
@@ -207,7 +230,11 @@ export function MerchantsManager({
     );
   }
   if (error) {
-    return <p className="text-13 text-destructive">Failed to load merchants: {(error as Error).message}</p>;
+    return (
+      <p className="text-13 text-destructive">
+        Failed to load merchants: {(error as Error).message}
+      </p>
+    );
   }
 
   const merchants = organizationId
@@ -227,10 +254,18 @@ export function MerchantsManager({
   return (
     <div>
       <div className="mb-8 grid grid-cols-4 gap-4">
-        <Stat label="Merchants" value={`${totals.enabled}/${totals.merchants}`} hint="enabled / total" />
+        <Stat
+          label="Merchants"
+          value={`${totals.enabled}/${totals.merchants}`}
+          hint="enabled / total"
+        />
         <Stat label="Active listings" value={totals.listings.toLocaleString()} />
         <Stat label="Clicks" value={totals.clicks.toLocaleString()} hint={`last ${days} days`} />
-        <Stat label="Commission" value={`$${totals.commission.toFixed(2)}`} hint={`last ${days} days`} />
+        <Stat
+          label="Commission"
+          value={`$${totals.commission.toFixed(2)}`}
+          hint={`last ${days} days`}
+        />
       </div>
 
       <div className="mb-4 flex items-center justify-between">
@@ -269,28 +304,39 @@ export function MerchantsManager({
               >
                 <TableCell>
                   <span className="font-medium">{m.display_name}</span>
-                  <span className="ml-2 text-xs text-muted-foreground">{m.shop_domain ?? m.slug}</span>
+                  <span className="ml-2 text-xs text-muted-foreground">
+                    {m.shop_domain ?? m.slug}
+                  </span>
                 </TableCell>
                 <TableCell className="text-muted-foreground">{m.provider}</TableCell>
                 <TableCell className="text-right tabular-nums">
                   {Number(m.listings_active).toLocaleString()}
-                  <span className="text-muted-foreground">/{Number(m.listings_total).toLocaleString()}</span>
+                  <span className="text-muted-foreground">
+                    /{Number(m.listings_total).toLocaleString()}
+                  </span>
                 </TableCell>
                 <TableCell className="text-right tabular-nums">
                   {Number(m.link_broken) + Number(m.link_timeout) > 0 ? (
-                    <Badge variant="outline">{Number(m.link_broken) + Number(m.link_timeout)}</Badge>
+                    <Badge variant="outline">
+                      {Number(m.link_broken) + Number(m.link_timeout)}
+                    </Badge>
                   ) : (
                     <span className="text-muted-foreground">0</span>
                   )}
                 </TableCell>
-                <TableCell className="text-right tabular-nums">{Number(m.clicks).toLocaleString()}</TableCell>
+                <TableCell className="text-right tabular-nums">
+                  {Number(m.clicks).toLocaleString()}
+                </TableCell>
                 <TableCell className="text-right tabular-nums">
                   {Number(m.commission_usd) > 0 ? `$${Number(m.commission_usd).toFixed(2)}` : '—'}
                 </TableCell>
                 <TableCell>
                   {m.last_sync_at ? (
                     <span className="text-xs">
-                      <Badge variant="outline" className={m.last_sync_status === 'ok' ? '' : 'text-destructive'}>
+                      <Badge
+                        variant="outline"
+                        className={m.last_sync_status === 'ok' ? '' : 'text-destructive'}
+                      >
                         {m.last_sync_status === 'ok' ? `ok · ${m.last_sync_items ?? 0}` : 'error'}
                       </Badge>{' '}
                       <span className="text-muted-foreground">
@@ -318,7 +364,11 @@ export function MerchantsManager({
                       disabled={syncing === m.merchant_id}
                       aria-label="Sync now"
                     >
-                      <RefreshCw className={`w-4 h-4 ${syncing === m.merchant_id ? 'animate-spin' : ''}`} />
+                      {syncing === m.merchant_id ? (
+                        <TrackLoader size={16} delayMs={0} label="Sync in progress" />
+                      ) : (
+                        <RefreshCw className="h-4 w-4" />
+                      )}
                     </Button>
                     <Button size="sm" variant="ghost" onClick={() => openEdit(m)} aria-label="Edit">
                       <Edit2 className="w-4 h-4" />
@@ -340,7 +390,11 @@ export function MerchantsManager({
         </Table>
       )}
 
-      <MerchantDrawer merchant={drawerMerchant} days={days} onClose={() => setDrawerMerchant(null)} />
+      <MerchantDrawer
+        merchant={drawerMerchant}
+        days={days}
+        onClose={() => setDrawerMerchant(null)}
+      />
 
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
@@ -351,11 +405,19 @@ export function MerchantsManager({
             <div className="grid grid-cols-2 gap-4">
               <div className="flex flex-col gap-2">
                 <Label htmlFor="m-provider">Provider</Label>
-                <Select value={form.provider} onValueChange={(v) => setForm((f) => ({ ...f, provider: v }))} disabled={!!editId}>
-                  <SelectTrigger id="m-provider"><SelectValue /></SelectTrigger>
+                <Select
+                  value={form.provider}
+                  onValueChange={(v) => setForm((f) => ({ ...f, provider: v }))}
+                  disabled={!!editId}
+                >
+                  <SelectTrigger id="m-provider">
+                    <SelectValue />
+                  </SelectTrigger>
                   <SelectContent>
                     {PROVIDERS.map((p) => (
-                      <SelectItem key={p} value={p}>{p}</SelectItem>
+                      <SelectItem key={p} value={p}>
+                        {p}
+                      </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
@@ -414,11 +476,15 @@ export function MerchantsManager({
                 value={form.affiliate_partner_id}
                 onValueChange={(v) => setForm((f) => ({ ...f, affiliate_partner_id: v }))}
               >
-                <SelectTrigger id="m-partner"><SelectValue /></SelectTrigger>
+                <SelectTrigger id="m-partner">
+                  <SelectValue />
+                </SelectTrigger>
                 <SelectContent>
                   <SelectItem value={NO_PARTNER}>None</SelectItem>
                   {partners.map((p) => (
-                    <SelectItem key={p.id} value={p.id}>{p.partner_name}</SelectItem>
+                    <SelectItem key={p.id} value={p.id}>
+                      {p.partner_name}
+                    </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -429,11 +495,15 @@ export function MerchantsManager({
                 value={form.organization_id}
                 onValueChange={(v) => setForm((f) => ({ ...f, organization_id: v }))}
               >
-                <SelectTrigger id="m-org"><SelectValue /></SelectTrigger>
+                <SelectTrigger id="m-org">
+                  <SelectValue />
+                </SelectTrigger>
                 <SelectContent>
                   <SelectItem value={NO_ORG}>Not linked</SelectItem>
                   {(orgOptions ?? []).map((o) => (
-                    <SelectItem key={o.id} value={o.id}>{o.name}</SelectItem>
+                    <SelectItem key={o.id} value={o.id}>
+                      {o.name}
+                    </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -452,7 +522,8 @@ export function MerchantsManager({
                 placeholder='{"currency": "EUR"}'
               />
               <p className="text-xs text-muted-foreground">
-                Passed to the source function. Secrets stay in env — reference the env var name above, never a key.
+                Passed to the source function. Secrets stay in env — reference the env var name
+                above, never a key.
               </p>
             </div>
             <div className="flex items-center gap-2">
@@ -465,7 +536,9 @@ export function MerchantsManager({
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setDialogOpen(false)}>Cancel</Button>
+            <Button variant="outline" onClick={() => setDialogOpen(false)}>
+              Cancel
+            </Button>
             <Button onClick={handleSave} disabled={saving}>
               {saving ? 'Saving…' : editId ? 'Update' : 'Create'}
             </Button>

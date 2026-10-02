@@ -10,6 +10,7 @@ import {
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import EntityNode, { type EgoFlowNode } from './EntityNode';
+import { durationMs, imperativeDurationMs } from '@/lib/animation';
 
 const nodeTypes = { entityNode: EntityNode } satisfies NodeTypes;
 
@@ -23,7 +24,10 @@ function FitOnGrowth({ count }: { count: number }) {
   const { fitView } = useReactFlow();
   useEffect(() => {
     if (count === 0) return;
-    const id = window.setTimeout(() => fitView({ padding: 0.15, duration: 400 }), 60);
+    const id = window.setTimeout(
+      () => fitView({ padding: 0.15, duration: imperativeDurationMs(durationMs.slow) }),
+      60,
+    );
     return () => window.clearTimeout(id);
   }, [count, fitView]);
   return null;
@@ -34,9 +38,9 @@ function EgoGraphInner({ nodes: incoming, edges, onNodeClick }: EgoGraphProps) {
 
   // Sync graph growth from the hook while preserving positions the user dragged.
   useEffect(() => {
-    setNodes(current => {
-      const byId = new Map(current.map(n => [n.id, n]));
-      return incoming.map(n => {
+    setNodes((current) => {
+      const byId = new Map(current.map((n) => [n.id, n]));
+      return incoming.map((n) => {
         const existing = byId.get(n.id);
         return existing ? { ...n, position: existing.position } : n;
       });

@@ -1,5 +1,6 @@
 import { AnimatePresence, motion } from 'motion/react';
 import { useMotionTokens } from '@/lib/motion';
+import { duration } from '@/lib/animation';
 
 interface SkeletonCrossfadeProps {
   loading: boolean;
@@ -7,11 +8,7 @@ interface SkeletonCrossfadeProps {
   children: React.ReactNode;
 }
 
-export function SkeletonCrossfade({
-  loading,
-  skeleton,
-  children,
-}: SkeletonCrossfadeProps) {
+export function SkeletonCrossfade({ loading, skeleton, children }: SkeletonCrossfadeProps) {
   // These are JS-driven opacity tweens, so `prefers-reduced-motion` does not
   // reach them the way a CSS transition would — it has to be consulted
   // explicitly. Without this a reduced-motion user still gets the 300ms
@@ -20,7 +17,15 @@ export function SkeletonCrossfade({
   // transparent card-foreground over the dark background reads as #5f5f5f on
   // #0a0a0a, a spurious 3.1:1 color-contrast failure on whichever rail happened
   // to resolve its data late.
-  const { reduced } = useMotionTokens();
+  const { reduced, tweens } = useMotionTokens();
+  // Keep the component resilient to older consumers/tests that mocked the
+  // hook before tween presets became part of its public return value.
+  const activeTweens =
+    tweens ??
+    ({
+      fast: { duration: duration.fast },
+      normal: { duration: duration.normal },
+    } as const);
 
   if (reduced) {
     return <>{loading ? skeleton : children}</>;
@@ -32,7 +37,7 @@ export function SkeletonCrossfade({
         <motion.div
           key="skeleton"
           exit={{ opacity: 0, filter: 'blur(4px)' }}
-          transition={{ duration: 0.2 }}
+          transition={activeTweens.fast}
         >
           {skeleton}
         </motion.div>
@@ -41,7 +46,7 @@ export function SkeletonCrossfade({
           key="content"
           initial={{ opacity: 0, filter: 'blur(4px)' }}
           animate={{ opacity: 1, filter: 'blur(0px)' }}
-          transition={{ duration: 0.3 }}
+          transition={activeTweens.normal}
         >
           {children}
         </motion.div>

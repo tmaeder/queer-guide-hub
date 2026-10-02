@@ -329,9 +329,8 @@ export function AdminDataTable<TData extends { id: string }>({
               return (
                 <TableRow
                   key={row.id}
-                  className={`content-enter ${isSelected ? 'bg-muted' : ''} ${isFocused ? 'ring-1 ring-inset ring-foreground/40' : ''} ${customRowClass ?? ''}`}
+                  className={`content-enter transition-colors duration-fast ${isSelected ? 'bg-muted' : ''} ${isFocused ? 'ring-1 ring-inset ring-foreground/40' : ''} ${customRowClass ?? ''}`}
                   style={{
-                    transition: 'background-color 0.2s cubic-bezier(0.22, 1, 0.36, 1)',
                     cursor: onRowClick ? 'pointer' : undefined,
                   }}
                   onClick={onRowClick ? () => onRowClick(row.original) : undefined}

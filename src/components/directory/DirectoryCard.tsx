@@ -245,14 +245,7 @@ export const DirectoryCard = ({ type, name, data, onClick }: DirectoryCardProps)
               }}
               className="flex"
             >
-              <div
-                style={{
-                  animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-                  backgroundColor: 'hsl(var(--muted-foreground) / 0.2)',
-                  width: '100%',
-                  height: '100%',
-                }}
-              ></div>
+              <div className="shimmer h-full w-full bg-muted-foreground/20" />
             </div>
           ) : (
             <img

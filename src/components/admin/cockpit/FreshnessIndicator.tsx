@@ -8,6 +8,7 @@ import { useEffect, useState } from 'react';
 import { formatDistanceToNow } from 'date-fns';
 import { RefreshCw } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { AdminInlineSpinner } from '@/components/admin/primitives/AdminLoading';
 
 interface FreshnessIndicatorProps {
   dataUpdatedAt: number;
@@ -40,7 +41,7 @@ export function FreshnessIndicator({
       )}
       title={stale ? 'Data may be stale' : 'Auto-refreshing'}
     >
-      <RefreshCw size={9} className={cn(isFetching && 'animate-spin')} aria-hidden />
+      {isFetching ? <AdminInlineSpinner label="Updating" /> : <RefreshCw size={9} aria-hidden />}
       {isFetching ? 'updating…' : formatDistanceToNow(dataUpdatedAt, { addSuffix: true })}
     </span>
   );

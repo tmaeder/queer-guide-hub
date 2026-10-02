@@ -148,7 +148,7 @@ export const UmamiMap = ({ countryData, loading = false }: UmamiMapProps) => {
           font-size: ${Math.max(8, size / 4)}px;
           font-weight: bold;
           box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-          transition: all 0.2s ease;
+          transition: all var(--motion-fast) ease;
         `;
         markerElement.textContent = country.count.toString();
 

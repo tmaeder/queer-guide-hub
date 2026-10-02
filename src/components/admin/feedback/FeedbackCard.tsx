@@ -150,16 +150,8 @@ export function FeedbackCard({
               width: 7,
               height: 7,
               background: 'hsl(var(--foreground))',
-              animation: 'feedback-pulse 1.8s infinite',
             }}
           />
-        )}
-        {isNew && (
-          <style>{`@keyframes feedback-pulse {
-            0% { box-shadow: 0 0 0 0 hsl(var(--foreground) / 0.6); }
-            70% { box-shadow: 0 0 0 6px hsl(var(--foreground) / 0); }
-            100% { box-shadow: 0 0 0 0 hsl(var(--foreground) / 0); }
-          }`}</style>
         )}
 
         {/* Title row — category icon inline, urgent P0/P1 tag, hover checkbox */}

@@ -50,6 +50,8 @@ import {
   PAGE_GUTTER,
   STICKY_UNDER_HEADER,
 } from '@/components/layout/PageContainer';
+import { PageLoadingState } from '@/components/layout/PageLoadingState';
+import { useMotionTokens } from '@/lib/motion';
 
 const ARTICLES_PER_PAGE = 24;
 
@@ -84,6 +86,7 @@ type ViewMode = 'grid' | 'list' | 'stories';
 
 export default function NewsArchive() {
   const { t } = useTranslation();
+  const { tweens } = useMotionTokens();
   const navigate = useLocalizedNavigate();
   const {
     articles,
@@ -1028,10 +1031,10 @@ export default function NewsArchive() {
                         initial={{ opacity: 0, scale: 0.98 }}
                         animate={{ opacity: 1, scale: 1 }}
                         exit={{ opacity: 0, scale: 0.98 }}
-                        transition={{ duration: 0.2 }}
+                        transition={tweens.fast}
                       >
                         {storiesLoading ? (
-                          <p className="text-sm text-muted-foreground">Loading stories…</p>
+                          <PageLoadingState count={3} label="Loading story lines" />
                         ) : filteredStories.length === 0 ? (
                           <p className="text-sm text-muted-foreground">
                             No multi-article stories yet. Check back as more coverage accumulates.
@@ -1058,7 +1061,7 @@ export default function NewsArchive() {
                         initial={{ opacity: 0, scale: 0.98 }}
                         animate={{ opacity: 1, scale: 1 }}
                         exit={{ opacity: 0, scale: 0.98 }}
-                        transition={{ duration: 0.2 }}
+                        transition={tweens.fast}
                       >
                         <StaggerGrid
                           className={

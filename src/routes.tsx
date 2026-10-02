@@ -5,10 +5,10 @@ import { useSearchTelemetry } from '@/providers/SearchTelemetryProvider';
 import { AdminRouteGuard } from '@/components/security/AdminRouteGuard';
 import { LocaleRouter } from '@/components/routing/LocaleRouter';
 import { AuthAliasRedirect } from '@/components/routing/AuthAliasRedirect';
-import { Skeleton } from '@/components/ui/skeleton';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { RouteFade } from '@/components/layout/RouteFade';
 import { PageContainer } from '@/components/layout/PageContainer';
+import { PageLoadingState } from '@/components/layout/PageLoadingState';
 import { lazyRetry } from '@/utils/lazyRetry';
 import { submissionRegistry } from '@/config/submissionRegistry';
 import { DEFAULT_LOCALE, isSupportedLocale } from '@/i18n/languages';
@@ -358,19 +358,21 @@ export const AppRoutes = () => {
         // edge-bleed scroll strips keep working; it only trims stray X overflow.
         className="flex-1 relative z-[1] outline-none overflow-x-clip"
       >
-        {/* key={location.pathname} resets ErrorBoundary on every route change */}
-        <ErrorBoundary key={location.pathname}>
-          <Suspense
-            fallback={
-              <PageContainer>
-                <div className="grid gap-6 grid-cols-1 sm:grid-cols-2">
-                  <Skeleton />
-                  <Skeleton />
-                </div>
-              </PageContainer>
-            }
-          >
-            <RouteFade>
+        {/* RouteFade must persist across route changes so it can retain the
+            departure station. The inner keyed boundary still resets errors
+            for every destination without remounting the journey controller. */}
+        <RouteFade>
+          <ErrorBoundary key={location.pathname}>
+            <Suspense
+              fallback={
+                <PageContainer>
+                  <PageLoadingState
+                    count={2}
+                    label={t('common.loadingPage', 'Loading this station')}
+                  />
+                </PageContainer>
+              }
+            >
               <Routes>
                 {/* Auth routes — no locale prefix */}
                 <Route path="/auth" element={<Auth />} />
@@ -1087,9 +1089,9 @@ export const AppRoutes = () => {
 
                 <Route path="*" element={<NotFound />} />
               </Routes>
-            </RouteFade>
-          </Suspense>
-        </ErrorBoundary>
+            </Suspense>
+          </ErrorBoundary>
+        </RouteFade>
       </main>
     </>
   );

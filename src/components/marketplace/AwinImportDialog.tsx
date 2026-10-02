@@ -11,7 +11,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Download, RefreshCw } from 'lucide-react';
+import { Download } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -96,19 +96,8 @@ export function AwinImportDialog() {
               <Button variant="outline" onClick={() => setOpen(false)} disabled={isImporting}>
                 Cancel
               </Button>
-              <Button onClick={handleImport} disabled={isImporting}>
-                {isImporting ? (
-                  <>
-                    <RefreshCw
-                      size={14}
-                      style={{ animation: 'spin 1s linear infinite' }}
-                      className="mr-1"
-                    />
-                    Importing...
-                  </>
-                ) : (
-                  'Start Import'
-                )}
+              <Button onClick={handleImport} disabled={isImporting} loading={isImporting}>
+                Start import
               </Button>
             </div>
           </div>
