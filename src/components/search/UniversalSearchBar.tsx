@@ -1001,7 +1001,7 @@ export const UniversalSearchBar = ({
             setIsOpen(true);
             focusInput();
           }}
-          className="grid h-11 w-11 shrink-0 place-items-center rounded-container text-foreground transition-colors hover:bg-surface-container"
+          className="grid h-11 w-11 shrink-0 place-items-center rounded-element text-foreground transition-colors hover:bg-surface-container"
         >
           <TransitIcon name="search" size={20} />
         </button>
