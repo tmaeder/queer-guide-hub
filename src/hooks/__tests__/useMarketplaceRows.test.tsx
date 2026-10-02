@@ -46,7 +46,9 @@ import {
 } from '../useMarketplaceRows';
 import { TestProviders } from '@/test/test-utils';
 
-function withResults(...r: MockResult[]) { state.results.push(...r); }
+function withResults(...r: MockResult[]) {
+  state.results.push(...r);
+}
 
 /** The brand-safe row and the spotlight are react-query hooks (they feed the
  *  homepage and must survive a remount without re-fetching), so they need a
@@ -66,12 +68,12 @@ describe('useMarketplaceRow', () => {
     const { result } = renderHook(() => useMarketplaceRow('featured', 5));
     await waitFor(() => expect(result.current.loading).toBe(false));
 
-    expect(result.current.data.map(l => l.id)).toEqual(['l1']);
+    expect(result.current.data.map((l) => l.id)).toEqual(['l1']);
     const eq = state.calls[0].chain.find(
-      s => s.method === 'eq' && (s.args as [string, unknown])[0] === 'featured',
+      (s) => s.method === 'eq' && (s.args as [string, unknown])[0] === 'featured',
     );
     expect(eq?.args).toEqual(['featured', true]);
-    const limit = state.calls[0].chain.find(s => s.method === 'limit');
+    const limit = state.calls[0].chain.find((s) => s.method === 'limit');
     expect(limit?.args).toEqual([5]);
   });
 
@@ -80,7 +82,7 @@ describe('useMarketplaceRow', () => {
     renderHook(() => useMarketplaceRow('new'));
     await waitFor(() => expect(state.calls).toHaveLength(1));
 
-    const gte = state.calls[0].chain.find(s => s.method === 'gte');
+    const gte = state.calls[0].chain.find((s) => s.method === 'gte');
     expect(gte?.args[0]).toBe('created_at');
   });
 
@@ -89,7 +91,7 @@ describe('useMarketplaceRow', () => {
     renderHook(() => useMarketplaceRow('most-relevant'));
     await waitFor(() => expect(state.calls).toHaveLength(1));
 
-    const gte = state.calls[0].chain.find(s => s.method === 'gte');
+    const gte = state.calls[0].chain.find((s) => s.method === 'gte');
     expect(gte?.args).toEqual(['lgbti_relevance_score', 0.5]);
   });
 
@@ -103,7 +105,7 @@ describe('useMarketplaceRow', () => {
     expect(result.current.data).toEqual([]);
     // marketplace_listings .from() is registered eagerly (top of fetchRow)
     // but the builder is never .then()-awaited when ids is empty.
-    expect(state.calls.some(c => c.table === 'marketplace_price_history')).toBe(true);
+    expect(state.calls.some((c) => c.table === 'marketplace_price_history')).toBe(true);
   });
 
   it("'price-drops' picks listings whose last price < first price", async () => {
@@ -124,12 +126,12 @@ describe('useMarketplaceRow', () => {
     const { result } = renderHook(() => useMarketplaceRow('price-drops'));
     await waitFor(() => expect(result.current.loading).toBe(false));
 
-    expect(result.current.data.map(l => (l as { id: string }).id)).toEqual(['A']);
+    expect(result.current.data.map((l) => (l as { id: string }).id)).toEqual(['A']);
     // Second call should be marketplace_listings .in('id', ['A']). The base
     // query also applies .in('content_rating', SFW_RATINGS), so look up the
     // id-keyed .in specifically rather than the first .in in the chain.
-    const listingsCall = state.calls.find(c => c.table === 'marketplace_listings');
-    const inCall = listingsCall?.chain.find(s => s.method === 'in' && s.args?.[0] === 'id');
+    const listingsCall = state.calls.find((c) => c.table === 'marketplace_listings');
+    const inCall = listingsCall?.chain.find((s) => s.method === 'in' && s.args?.[0] === 'id');
     expect(inCall?.args).toEqual(['id', ['A']]);
   });
 
@@ -154,15 +156,15 @@ describe('useBrandSafeRow', () => {
     expect(state.calls).toHaveLength(1);
 
     const chain = state.calls[0].chain;
-    const eqRating = chain.find(s => s.method === 'eq' && s.args[0] === 'content_rating');
+    const eqRating = chain.find((s) => s.method === 'eq' && s.args[0] === 'content_rating');
     expect(eqRating?.args).toEqual(['content_rating', 'sfw']); // no 'suggestive'
-    const inDept = chain.find(s => s.method === 'in' && s.args[0] === 'department');
+    const inDept = chain.find((s) => s.method === 'in' && s.args[0] === 'department');
     expect(inDept?.args).toEqual(['department', BRAND_SAFE_DEPARTMENTS]);
     expect(BRAND_SAFE_DEPARTMENTS).not.toContain('underwear');
     expect(BRAND_SAFE_DEPARTMENTS).not.toContain('swimwear');
     expect(BRAND_SAFE_DEPARTMENTS).not.toContain('intimacy');
     expect(BRAND_SAFE_DEPARTMENTS).not.toContain('bdsm_fetish');
-    const overlaps = chain.find(s => s.method === 'overlaps');
+    const overlaps = chain.find((s) => s.method === 'overlaps');
     expect(overlaps?.args).toEqual(['community_owned_tags', ['queer_owned', 'trans_owned']]);
   });
 
@@ -176,8 +178,8 @@ describe('useBrandSafeRow', () => {
     expect(state.calls).toHaveLength(2);
     // The fallback query keeps sfw + department filters but drops ownership.
     const chain = state.calls[1].chain;
-    expect(chain.find(s => s.method === 'overlaps')).toBeUndefined();
-    expect(chain.find(s => s.method === 'eq' && s.args[0] === 'content_rating')?.args).toEqual([
+    expect(chain.find((s) => s.method === 'overlaps')).toBeUndefined();
+    expect(chain.find((s) => s.method === 'eq' && s.args[0] === 'content_rating')?.args).toEqual([
       'content_rating',
       'sfw',
     ]);
@@ -185,9 +187,12 @@ describe('useBrandSafeRow', () => {
 });
 
 describe('useMarketplaceSpotlight', () => {
-  it('returns the first row from a featured + has-images query', async () => {
+  it('returns the first row from a featured + overview-eligible query', async () => {
     withResults({
-      data: [{ id: 'l1', title: 'Hero' }, { id: 'l2', title: 'Other' }],
+      data: [
+        { id: 'l1', title: 'Hero' },
+        { id: 'l2', title: 'Other' },
+      ],
       error: null,
     });
 
@@ -197,12 +202,11 @@ describe('useMarketplaceSpotlight', () => {
     expect(result.current.listing?.id).toBe('l1');
 
     const call = state.calls[0];
-    const eqs = call.chain.filter(s => s.method === 'eq');
-    const eqMap = Object.fromEntries(eqs.map(e => e.args as [string, unknown]));
+    const eqs = call.chain.filter((s) => s.method === 'eq');
+    const eqMap = Object.fromEntries(eqs.map((e) => e.args as [string, unknown]));
     expect(eqMap.featured).toBe(true);
     expect(eqMap.status).toBe('active');
-    const notNull = call.chain.find(s => s.method === 'not');
-    expect(notNull?.args).toEqual(['images', 'is', null]);
+    expect(eqMap.overview_eligible).toBe(true);
   });
 
   it('returns null on error', async () => {

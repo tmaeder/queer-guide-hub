@@ -44,8 +44,11 @@ export function useMarketplaceCollections(mode?: 'chip' | 'hero' | 'rail') {
       setLoading(true);
       let q = supabase
         .from('marketplace_collections')
-        .select('*, marketplace_collection_items(listing_id)')
+        .select(
+          '*, marketplace_collection_items!inner(listing_id, marketplace_listings!inner(overview_eligible))',
+        )
         .eq('status', 'published')
+        .eq('marketplace_collection_items.marketplace_listings.overview_eligible', true)
         .order('sort_order', { ascending: true });
       if (mode) q = q.eq('display_mode', mode);
       const { data, error } = await q;
@@ -97,8 +100,9 @@ export function useMarketplaceCollectionListings(collectionId: string | null, li
       setLoading(true);
       const { data } = await supabase
         .from('marketplace_collection_items')
-        .select('position, marketplace_listings(*)')
+        .select('position, marketplace_listings!inner(*)')
         .eq('collection_id', collectionId)
+        .eq('marketplace_listings.overview_eligible', true)
         .order('position', { ascending: true })
         .limit(limit);
       if (cancelled) return;
@@ -135,7 +139,9 @@ export function useMarketplaceCollectionBySlug(slug: string | undefined) {
       setNotFound(false);
       const { data: col } = await supabase
         .from('marketplace_collections')
-        .select('id, slug, title, subtitle, editor_blurb, cover_image_url, display_mode, status, sort_order, published_at, pin_until')
+        .select(
+          'id, slug, title, subtitle, editor_blurb, cover_image_url, display_mode, status, sort_order, published_at, pin_until',
+        )
         .eq('slug', slug)
         .eq('status', 'published')
         .maybeSingle();
@@ -150,8 +156,9 @@ export function useMarketplaceCollectionBySlug(slug: string | undefined) {
       setCollection(col as MarketplaceCollection);
       const { data: items } = await supabase
         .from('marketplace_collection_items')
-        .select('position, marketplace_listings(*)')
+        .select('position, marketplace_listings!inner(*)')
         .eq('collection_id', (col as MarketplaceCollection).id)
+        .eq('marketplace_listings.overview_eligible', true)
         .order('position', { ascending: true });
       if (cancelled) return;
       const rows = (items ?? [])
