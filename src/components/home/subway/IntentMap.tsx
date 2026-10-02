@@ -45,7 +45,7 @@ export function IntentMap() {
   return (
     <section
       aria-labelledby="intent-map-heading"
-      className="px-4 py-12 sm:px-6 md:px-8 md:py-16 lg:px-0 lg:py-20"
+      className="intent-map-section px-4 pb-14 pt-10 sm:px-6 md:px-8 lg:px-0 lg:pb-20 lg:pt-14"
     >
       {/* The key is named for the mobile sheet it was written for; the string
           is exactly right here and is already translated in all 11 locales. */}
@@ -54,7 +54,7 @@ export function IntentMap() {
         // `max-w-page`, not `max-w-7xl`: the heading is page copy and lines up
         // with the nav above it. The map STAGE below deliberately does not —
         // it is a full-bleed illustration and takes the whole window.
-        className="mx-auto mb-8 max-w-page font-display text-headline lg:mb-24 lg:px-8"
+        className="mx-auto mb-8 max-w-page font-display text-headline lg:mb-10 lg:px-8"
       >
         {t('header.intents.sheetHeading', 'What are you here for?')}
       </h2>
@@ -174,13 +174,13 @@ function StationNode({ station, path, rtl }: { station: Station; path: string; r
           // `li a:not(.no-underline)` rule in index.css sets `display: inline`,
           // which collapses the plate and silently kills every `lg:` position
           // below it. Asserted in the unit test.
-          'card-lift flex min-w-0 flex-1 flex-col gap-1 bg-card p-4 no-underline rounded-container shadow-soft',
-          'lg:absolute lg:left-1/2 lg:w-40 lg:flex-none lg:-translate-x-1/2 xl:w-48',
+          'intent-station-link flex min-w-0 flex-1 flex-col gap-1 bg-background/95 p-4 no-underline rounded-container',
+          'lg:absolute lg:left-1/2 lg:w-36 lg:flex-none lg:-translate-x-1/2 xl:w-44',
           station.lane === 'above' ? 'lg:bottom-full lg:mb-4' : 'lg:top-full lg:mt-4',
         )}
       >
         {interchange && (
-          <span className="text-2xs uppercase tracking-wider text-muted-foreground">
+          <span className="text-2xs font-bold text-muted-foreground">
             {t('home.map.interchangeEyebrow', 'Interchange')}
           </span>
         )}
@@ -190,7 +190,7 @@ function StationNode({ station, path, rtl }: { station: Station; path: string; r
         {/* `line-clamp-2` holds the plate at the height the overflow budget
             assumes. Without it the German subtitles run to four lines and
             collide with the heading — which looks fine in English review. */}
-        <span className="line-clamp-2 text-13 text-muted-foreground">
+        <span className="line-clamp-2 text-13 text-muted-foreground lg:hidden xl:block">
           {t(station.subtitleKey, station.subtitleFallback)}
         </span>
       </LocalizedLink>

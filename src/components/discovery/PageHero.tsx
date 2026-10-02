@@ -28,10 +28,10 @@ interface PageHeroProps {
 }
 
 const PRIMARY_CLASSES =
-  'inline-flex items-center gap-2 rounded-full bg-foreground px-8 py-4 text-sm font-bold tracking-tight text-background transition-opacity duration-normal hover:opacity-90 no-underline';
+  'inline-flex items-center gap-2 rounded-container bg-foreground px-6 py-4 text-sm font-bold tracking-tight text-background transition-transform duration-normal hover:-translate-y-0.5 active:translate-y-0 no-underline';
 
 const SECONDARY_CLASSES =
-  'inline-flex items-center gap-2 rounded-full border border-border-hairline px-8 py-4 text-sm font-bold tracking-tight text-foreground hover:bg-foreground hover:text-background transition-colors no-underline';
+  'inline-flex items-center gap-2 rounded-container bg-surface-container px-6 py-4 text-sm font-bold tracking-tight text-foreground transition-colors hover:bg-foreground hover:text-background no-underline';
 
 function CtaButton({ cta, primary }: { cta: CTA; primary: boolean }) {
   const cls = primary ? PRIMARY_CLASSES : SECONDARY_CLASSES;
@@ -67,9 +67,9 @@ const PlainFrame = ({
 }) => <div className={className}>{children}</div>;
 
 const SIZE_PADDING: Record<NonNullable<PageHeroProps['size']>, string> = {
-  sm: 'py-12 md:py-16',
-  md: 'py-16 md:py-24',
-  lg: 'py-20 md:py-28 lg:py-36',
+  sm: 'py-10 md:py-12',
+  md: 'py-12 md:py-16',
+  lg: 'py-16 md:py-20 lg:py-24',
 };
 
 const SIZE_TITLE: Record<NonNullable<PageHeroProps['size']>, string> = {
@@ -107,7 +107,7 @@ export function PageHero({
         {eyebrow && <Eyebrow as="div">{eyebrow}</Eyebrow>}
         <h1
           className={cn(
-            'mt-4 font-bold tracking-tight leading-[0.95] text-foreground',
+            'mt-4 text-balance font-display leading-[0.95] tracking-tight text-foreground',
             SIZE_TITLE[size],
           )}
         >

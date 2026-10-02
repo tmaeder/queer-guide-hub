@@ -8,8 +8,9 @@ describe('RouteNetworkRail', () => {
 
     const rail = container.querySelector('.route-network-rail');
     expect(rail).toHaveClass('route-network-rail--pink');
-    expect(container.querySelectorAll('.route-network-rail__track')).toHaveLength(4);
+    expect(container.querySelectorAll('.route-network-rail__track')).toHaveLength(1);
     expect(container.querySelectorAll('.route-network-rail__station')).toHaveLength(2);
     expect(container.querySelector('.route-network-rail__interchange')).toBeInTheDocument();
+    expect(container).toHaveTextContent('venues');
   });
 });
