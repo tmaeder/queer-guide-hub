@@ -2,7 +2,7 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import { StructuredFieldEditor, StructuredValue } from '../StructuredDataView';
-import { coordinatesFromLocation, withLocationCoordinates } from '../GovernanceFieldControls';
+import { coordinatesFromLocation, withLocationCoordinates } from '../governanceFieldControlUtils';
 
 vi.mock('@/hooks/usePageFetchers', () => ({
   listFrom: vi
