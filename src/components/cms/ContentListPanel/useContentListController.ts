@@ -22,7 +22,6 @@ import { AdminShellContext } from '@/components/admin/shell/AdminShell';
 import type { ContentView } from './types';
 import type { ContentTypeConfig, FieldConfig, SelectOption } from '@/types/cms';
 import {
-  extractStatus,
   toListItem,
   loadPersistedState,
   persistState,
@@ -292,16 +291,11 @@ export function useContentListController({
       const { data, error } = await query;
       if (error) console.error(`All content: ${ct.id} failed`, error);
 
-      const mapped = (data || []).map((row: Record<string, unknown>) => ({
-        id: row[ct.primaryKey],
-        title: row[ct.titleField] || '(Untitled)',
-        description: ct.descriptionField ? row[ct.descriptionField] : undefined,
-        updatedAt: row.updated_at,
-        contentType: ct.id,
-        contentTypeLabel: ct.label.singular,
-        contentTypeColor: ct.color,
-        status: extractStatus(row, ct),
-      }));
+      // Keep the source row in the aggregate list too. Inline editors resolve
+      // their current value and writable status field from `raw`; dropping it
+      // here made a displayed fallback title open as an empty input and made
+      // aggregate-row status cells falsely read-only.
+      const mapped = (data || []).map((row: Record<string, unknown>) => toListItem(row, ct));
 
       allItems.push(...mapped);
     }
