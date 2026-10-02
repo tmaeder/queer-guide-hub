@@ -218,7 +218,7 @@ export default function RightsSources() {
                 key={row.code}
                 className="grid grid-cols-[2.5rem_1fr_auto] items-center gap-4 border-b border-border-hairline px-6 py-6 last:border-b-0 md:grid-cols-[3rem_1fr_auto] md:px-8"
               >
-                <span className="font-display text-title text-muted-foreground">{row.code}</span>
+                <span className="text-title font-bold text-muted-foreground">{row.code}</span>
                 <span className="text-15 font-bold md:text-title">{row.label}</span>
                 <span className="font-display text-headline tabular-nums md:text-display">
                   {row.value}
@@ -337,7 +337,7 @@ export default function RightsSources() {
                 key={index}
                 className="rounded-element bg-background/10 p-6 text-15 leading-relaxed"
               >
-                <span className="mb-4 block font-display text-title text-track-blue">
+                <span className="mb-4 block text-title font-bold text-track-blue">
                   {String(index + 1).padStart(2, '0')}
                 </span>
                 {limit}
