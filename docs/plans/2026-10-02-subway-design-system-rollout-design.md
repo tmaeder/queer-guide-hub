@@ -120,3 +120,35 @@ The rollout is complete only when all of the following are true:
 - Typecheck, production build, design-system tests, page-layout tests, accessibility
   checks, and the relevant existing test suite pass.
 - No unrelated user changes are overwritten or folded into this work.
+
+## Corrective visual-parity checkpoint
+
+The first rollout proved tokens, motion, loading, and route-family coverage but
+did not materially replace the rendered page grammar. That is not sufficient:
+the production page must be recognisable as the supplied reference without
+inspecting CSS variables or waiting for a route transition.
+
+The visible implementation therefore uses the following shared architecture:
+
+1. **Network canvas** — every non-safety public page sits on paper/ink with the
+   four curved CMYK tracks visibly crossing the viewport. Dark mode is the same
+   network inverted, not a separate monochrome visual language.
+2. **Transit shell** — desktop and mobile navigation use the reference wordmark,
+   four-track wayfinding marks, active station treatment, and reference footer.
+3. **Family mastheads** — each route family receives a track-coloured line,
+   station marker, route code, and Anton display hierarchy before page-local
+   content. Shared layout components provide this, so no route can opt out.
+4. **Reference surfaces** — neutral paper/wash bands, uncaged cards, single soft
+   elevation, reference radii, departure rows, station bullets, and controls
+   replace generic dark cards and editorial cages.
+5. **Front-page fidelity** — the homepage follows `Front Page.dc.html` directly:
+   paper hero, prominent live network, four selectable line cards, departure
+   board, city stations, guide band, and ink footer while keeping production data.
+6. **Motion as wayfinding** — route travel, loaders, hover lifts, active stations,
+   and scroll progress visibly move along the network geometry. Reduced motion
+   keeps the complete route visible and removes travel.
+
+The release is visually complete only when side-by-side screenshots of the
+reference and production show the same dominant paper/ink balance, track
+geometry, hierarchy, surface system, and family wayfinding at desktop and mobile
+sizes. Token presence alone is never accepted as visual evidence.

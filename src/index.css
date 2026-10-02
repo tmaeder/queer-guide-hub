@@ -106,6 +106,8 @@
   --motion-header-line-delay: 50ms;
   --motion-header-copy-delay: 120ms;
   --motion-station-stagger: 150ms;
+  --motion-network-draw: 1.2s;
+  --motion-network-float: 18s;
 
   /* ── Custom font sizes ─────────────────────────────────────────── */
   --text-3xs: 0.5625rem;
@@ -1732,6 +1734,242 @@ h2,
 
    Animates only FROM a displaced state, so if animations never run (reduced
    motion, headless, print) content renders at its natural resting position. */
+
+/* ── The network canvas ────────────────────────────────────────────────
+   This is the visible identity layer from the supplied brand guidelines,
+   not decorative wallpaper. The first subway rollout carried the colours as
+   variables but left the canvas blank, so a screenshot still looked like the
+   previous monochrome product. These tracks now sit behind every public page;
+   the current route gains weight while the other three retain the context of
+   the whole network. */
+@keyframes network-draw {
+  from {
+    stroke-dashoffset: 1;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+@keyframes network-float {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0);
+  }
+  50% {
+    transform: translate3d(0, -12px, 0);
+  }
+}
+.network-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+  opacity: 0.88;
+}
+.network-backdrop svg {
+  width: 100%;
+  height: 100%;
+  animation: network-float var(--motion-network-float) ease-in-out infinite;
+}
+.network-backdrop__track {
+  fill: none;
+  stroke-width: 14;
+  stroke-linecap: round;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 0;
+  opacity: 0.1;
+  animation: network-draw var(--motion-network-draw) cubic-bezier(0.22, 1, 0.36, 1) both;
+  vector-effect: non-scaling-stroke;
+}
+.network-track--pink {
+  stroke: hsl(var(--track-pink));
+}
+.network-track--blue {
+  stroke: hsl(var(--track-blue));
+}
+.network-track--green {
+  stroke: hsl(var(--track-green));
+}
+.network-track--yellow {
+  stroke: hsl(var(--track-yellow));
+}
+.network-backdrop--pink .network-track--pink,
+.network-backdrop--blue .network-track--blue,
+.network-backdrop--green .network-track--green,
+.network-backdrop--yellow .network-track--yellow {
+  opacity: 0.24;
+  stroke-width: 18;
+}
+.network-backdrop__stations circle {
+  fill: hsl(var(--background));
+  stroke: hsl(var(--track-ring));
+  stroke-width: 5;
+  opacity: 0.18;
+  vector-effect: non-scaling-stroke;
+}
+.network-backdrop__stations .network-backdrop__interchange {
+  stroke-width: 7;
+  opacity: 0.28;
+}
+.dark .network-backdrop__track {
+  opacity: 0.15;
+}
+.dark .network-backdrop--pink .network-track--pink,
+.dark .network-backdrop--blue .network-track--blue,
+.dark .network-backdrop--green .network-track--green,
+.dark .network-backdrop--yellow .network-track--yellow {
+  opacity: 0.32;
+}
+
+/* A compact route map between the shared chrome and every page family. It is
+   intentionally structural: no public route can silently fall back to an
+   unbranded title/card stack when this rail is owned by LayoutShell. */
+.route-network-rail {
+  position: relative;
+  height: 96px;
+  overflow: hidden;
+  background: hsl(var(--background) / 0.82);
+  border-bottom: 1px solid hsl(var(--border-hairline) / 0.18);
+}
+.route-network-rail svg {
+  width: 100%;
+  height: 100%;
+}
+.route-network-rail__track {
+  fill: none;
+  stroke-width: 4;
+  stroke-linecap: round;
+  opacity: 0.2;
+  vector-effect: non-scaling-stroke;
+}
+.route-network-rail__track--pink {
+  stroke: hsl(var(--track-pink));
+}
+.route-network-rail__track--blue {
+  stroke: hsl(var(--track-blue));
+}
+.route-network-rail__track--green {
+  stroke: hsl(var(--track-green));
+}
+.route-network-rail__track--yellow {
+  stroke: hsl(var(--track-yellow));
+}
+.route-network-rail--pink .route-network-rail__track--pink,
+.route-network-rail--blue .route-network-rail__track--blue,
+.route-network-rail--green .route-network-rail__track--green,
+.route-network-rail--yellow .route-network-rail__track--yellow {
+  stroke-width: 10;
+  opacity: 1;
+  stroke-dasharray: 1;
+  animation: network-draw var(--motion-network-draw) cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.route-network-rail__station,
+.route-network-rail__interchange {
+  fill: hsl(var(--background));
+  stroke: hsl(var(--track-ring));
+  stroke-width: 5;
+  vector-effect: non-scaling-stroke;
+}
+.route-network-rail__interchange {
+  stroke-width: 7;
+}
+
+/* Front-page hero map. This is deliberately loud and above the fold, matching
+   Front Page.dc.html: identity is carried by the network itself rather than
+   by a paragraph that merely says "mapped like a metro". */
+.hero-network {
+  position: relative;
+  height: clamp(220px, 24vw, 320px);
+  margin-top: 28px;
+}
+.hero-network svg {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+.hero-network__tracks path {
+  fill: none;
+  stroke-width: 13;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 1;
+  animation: network-draw var(--motion-network-draw) cubic-bezier(0.22, 1, 0.36, 1) both;
+  vector-effect: non-scaling-stroke;
+}
+.hero-network__stations circle {
+  fill: hsl(var(--background));
+  stroke: hsl(var(--track-ring));
+  stroke-width: 5;
+  vector-effect: non-scaling-stroke;
+}
+.hero-network__stations .hero-network__interchange {
+  stroke-width: 7;
+}
+.hero-network__label {
+  position: absolute;
+  z-index: 1;
+  padding: 4px 8px;
+  background: hsl(var(--background) / 0.9);
+  font-size: var(--text-13);
+  font-weight: 700;
+}
+.hero-network__label--start {
+  left: 23%;
+  top: 20%;
+}
+.hero-network__label--interchange {
+  left: 50%;
+  top: 43%;
+  transform: translateX(-50%);
+}
+.hero-network__label--end {
+  right: 24%;
+  top: 17%;
+}
+.subway-hero > section {
+  background: hsl(var(--surface-container) / 0.88);
+  border-top: 1px solid hsl(var(--border-hairline) / 0.18);
+}
+
+@media (max-width: 767px) {
+  .network-backdrop {
+    opacity: 0.72;
+  }
+  .network-backdrop svg {
+    width: 170%;
+    margin-inline-start: -35%;
+  }
+  .route-network-rail {
+    height: 72px;
+  }
+  .hero-network {
+    height: 190px;
+    margin-top: 20px;
+  }
+  .hero-network__tracks path {
+    stroke-width: 9;
+  }
+  .hero-network__label {
+    font-size: var(--text-2xs);
+  }
+  .hero-network__label--start {
+    left: 18%;
+  }
+  .hero-network__label--end {
+    right: 18%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .network-backdrop svg,
+  .network-backdrop__track,
+  .route-network-rail__track,
+  .hero-network__tracks path {
+    animation: none;
+  }
+}
+
 @keyframes station-arrive {
   from {
     opacity: 0;

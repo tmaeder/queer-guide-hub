@@ -4,6 +4,7 @@ import { TransitIcon } from '@/components/transit/TransitIcon';
 import { HeroSearch } from './HeroSearch';
 import { IntentMap } from './IntentMap';
 import { PageContainer } from '@/components/layout/PageContainer';
+import { HeroNetwork } from '@/components/transit/NetworkCanvas';
 
 /** Subway-map homepage hero: Anton headline, search entry with the hard
  *  shadow, and the network itself — whose stations ARE the six intents
@@ -17,7 +18,7 @@ import { PageContainer } from '@/components/layout/PageContainer';
 export function SubwayHero() {
   const { t } = useTranslation();
   return (
-    <header className="border-b border-border-hairline relative overflow-hidden">
+    <header className="subway-hero border-b border-border-hairline relative overflow-hidden">
       {/* `flush` — the hero owns an asymmetric rhythm: a tall top and no bottom
           padding, because IntentMap fills that space. Tighter above `md` than
           the desktop hero — the intent map is the primary navigation on mobile
@@ -44,6 +45,7 @@ export function SubwayHero() {
           </LocalizedLink>
         </div>
       </PageContainer>
+      <HeroNetwork />
       <IntentMap />
     </header>
   );
