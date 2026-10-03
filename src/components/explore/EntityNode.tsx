@@ -50,7 +50,7 @@ function EntityNode({ data: d, id }: NodeProps<EgoFlowNode>) {
   const { t } = useTranslation();
   return (
     <div
-      className={`w-44 rounded-element border bg-background overflow-hidden transition-all cursor-pointer hover:border-foreground/40 ${
+      className={`w-44 cursor-pointer overflow-hidden rounded-element bg-background shadow-soft transition-all hover:-translate-y-0.5 hover:shadow-soft-hover ${
         d.isCenter ? 'ring-2 ring-ring border border-border-hairline' : ''
       } ${d.expanded ? '' : 'border-dashed'}`}
       data-testid={`ego-node-${id}`}

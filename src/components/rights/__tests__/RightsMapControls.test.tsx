@@ -73,7 +73,7 @@ describe('RightsMapControls — line selector', () => {
     render(<RightsMapControls {...baseProps({ topic: employment })} />);
     const chip = screen.getByRole('button', { name: employment.labelDefault });
     expect(chip.className).toContain(`bg-track-${SECTION_TRACK[employment.section]}`);
-    expect(chip.className).toContain('border-track-ring');
+    expect(chip.className).not.toContain('border-track-ring');
   });
 
   it('clicking a station calls onTopicChange with that topic', async () => {

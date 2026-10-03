@@ -56,8 +56,8 @@ export function PackingTab({ tripId }: Props) {
   const allItems = scopedGroups.flatMap((g) => g.items);
   const checkedCount = allItems.filter((i) => i.is_checked).length;
   const totalCount = allItems.length;
-  const anyForeignItems = (grouped || []).some(
-    (g) => g.items.some((i) => i.user_id != null && i.user_id !== user?.id),
+  const anyForeignItems = (grouped || []).some((g) =>
+    g.items.some((i) => i.user_id != null && i.user_id !== user?.id),
   );
 
   const percentage = totalCount > 0 ? Math.round((checkedCount / totalCount) * 100) : 0;
@@ -323,7 +323,7 @@ export function PackingTab({ tripId }: Props) {
                               handleAddItem(group.category);
                             }
                           }}
-                          className="border-0 rounded-none focus-visible:ring-0 focus-visible:border-primary text-sm h-10"
+                          className="h-10 rounded-element border-0 bg-surface-container text-sm focus-visible:ring-2"
                         />
                       </div>
                     </div>

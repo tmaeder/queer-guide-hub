@@ -101,10 +101,10 @@ export function TriageItemRow({
     // component never mounted in CI.
     <div
       className={cn(
-        'group relative flex min-h-16 items-start gap-4 border-b border-border-hairline px-4 py-4 transition-colors',
+        'group relative flex min-h-16 items-start gap-4 rounded-element px-4 py-4 transition-colors',
         isActive
-          ? 'border-l-4 border-l-foreground bg-muted/80'
-          : 'border-l-4 border-l-transparent hover:bg-muted/45',
+          ? 'bg-surface-container-high'
+          : 'bg-surface-container hover:bg-surface-container-high',
         isSelected && !isActive && 'bg-muted/60',
       )}
     >

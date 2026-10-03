@@ -30,7 +30,7 @@ export function VibeChipsRow({ active, onChange }: VibeChipsRowProps) {
               'flex-none whitespace-nowrap px-4 py-2 text-sm border transition-colors ' +
               (isActive
                 ? 'bg-foreground text-background'
-                : 'border bg-background text-foreground border-foreground/20 hover:bg-muted')
+                : 'bg-surface-container text-foreground hover:bg-muted')
             }
           >
             {v.label}

@@ -36,6 +36,23 @@ export interface ReviewQueueGuardOptions {
   fields: readonly string[]
   /** Entity ids in this run. */
   ids: string[]
+  /**
+   * Reduce a proposal to its DECISION-BEARING part before comparing. Identity by
+   * default, so every existing caller is unaffected.
+   *
+   * Needed because value equality over the WHOLE payload is the right key only when the
+   * payload is structured. `city.lgbt_friendly_rating` embeds free LLM prose
+   * (`{value, scale, rationale}`) and the model rewrites the rationale on every run, so
+   * a rejection could never suppress a re-proposal. Measured on prod 2026-10-03: Khandwa
+   * was re-offered rating 3 two days after that exact value was rejected — same integer,
+   * reworded rationale, so a different payload by byte equality and the same decision to
+   * a human.
+   *
+   * The 126-group measurement that justified byte equality was taken on marketplace
+   * `subcategory`, whose payload carries no prose. It does not transfer to a field whose
+   * payload does.
+   */
+  normalizeValue?: (field: string, value: unknown) => unknown
 }
 
 /**
@@ -85,6 +102,12 @@ export async function loadReviewQueueGuard(
   let rejectedValues: Map<string, Set<string>> | null = new Map()
   let precheckFailed = false
 
+  // Applied on BOTH sides — when indexing the rejected rows below and when answering
+  // `blocked()`. Normalising only one side compares a reduced value against a full one,
+  // which never matches and silently suppresses nothing.
+  const norm = (field: string, value: unknown) =>
+    canonicalJson(opts.normalizeValue ? opts.normalizeValue(field, value) : value)
+
   if (opts.ids.length) {
     const fields = [...opts.fields]
 
@@ -121,7 +144,7 @@ export async function loadReviewQueueGuard(
         const k = key(String(row[opts.idColumn]), String(row.field))
         let s = m.get(k)
         if (!s) { s = new Set(); m.set(k, s) }
-        s.add(canonicalJson(row.proposed_value))
+        s.add(norm(String(row.field), row.proposed_value))
       }
       rejectedValues = m
     }
@@ -136,7 +159,7 @@ export async function loadReviewQueueGuard(
       // repeat rejection on record (126 groups, 273 rows): ALL 126 re-proposed a
       // byte-identical value and NONE differed, so this suppresses pure repeats and
       // leaves a genuinely changed proposal free to reach a human.
-      if (rejectedValues?.get(k)?.has(canonicalJson(proposedValue))) return 'rejected'
+      if (rejectedValues?.get(k)?.has(norm(field, proposedValue))) return 'rejected'
       return null
     },
     markQueued(entityId, field) {

@@ -38,13 +38,13 @@ const cmdkStyles = {
     padding: '6px 8px',
     fontSize: '0.875rem',
     outline: 'none',
-    borderRadius: 'var(--radius-none)',
+    borderRadius: 'var(--radius-element)',
   },
   separator: {
     marginLeft: -4,
     marginRight: -4,
     height: 1,
-    backgroundColor: 'hsl(var(--border))',
+    backgroundColor: 'transparent',
   },
   shortcut: {
     marginLeft: 'auto',
@@ -55,7 +55,9 @@ const cmdkStyles = {
   inputWrapper: {
     display: 'flex',
     alignItems: 'center',
-    borderBottom: '1px solid hsl(var(--border))',
+    margin: 4,
+    borderRadius: 'var(--radius-element)',
+    background: 'hsl(var(--surface-container))',
     padding: '0 12px',
   },
   inputIcon: {

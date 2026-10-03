@@ -165,7 +165,7 @@ export function EditorHeader({
               onChange={(e) => setEditTitleValue(e.target.value)}
               onBlur={handleFinishEditing}
               onKeyDown={handleTitleKeyDown}
-              className="h-7 px-0 border-0 border-b border-primary rounded-none text-base font-semibold focus-visible:ring-0"
+              className="h-10 rounded-element border-0 bg-surface-container px-4 text-base font-semibold focus-visible:ring-2"
             />
           ) : (
             <div
