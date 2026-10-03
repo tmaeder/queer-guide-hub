@@ -33,6 +33,9 @@ export default function AdminLiveness() {
     }
   };
 
+  const blindSpotsShown = (blindSpots.data ?? []).length;
+  const blindSpotsTotal = TYPES.reduce((n, t) => n + (overview.data?.[t]?.blind_spots ?? 0), 0);
+
   const sig = (r: ExistenceAuditRow) => {
     const s = r.signals ?? {};
     const parts: string[] = [];
@@ -66,11 +69,19 @@ export default function AdminLiveness() {
               <CardHeader className="pb-2">
                 <CardTitle className="text-title capitalize">{t}</CardTitle>
               </CardHeader>
+              {/* Every row here is a decision quantity drawn from one population:
+                the engine's current reading. `dead_signals_any_kind` is NOT
+                rendered — it counts kinds the engine cannot act on (43k past
+                event dates) and historical signals a later alive check has
+                already superseded, so beside these it read as a 43,258-row
+                backlog where the engine sees 3. It stays in the RPC payload. */}
               <CardContent className="flex flex-col gap-1 text-13">
                 <Row label="Flagged for review" value={o?.flagged} />
+                <Row label="Reads as dead now" value={o?.dead_signal_entities} />
+                <Row label="Archives on next run" value={o?.archive_eligible} />
                 <Row label="Auto-archived (7d)" value={o?.auto_archived_7d} />
                 <Row label="Currently archived" value={o?.open_archives} />
-                <Row label="Dead signals (120d)" value={o?.dead_signal_entities} />
+                <Row label="Blind spots" value={o?.blind_spots} />
               </CardContent>
             </Card>
           );
@@ -200,6 +211,16 @@ export default function AdminLiveness() {
             Live entities the engine cannot verify — no website, no coordinates, no source link. Add
             a reference to make them checkable.
           </p>
+          {/* The list is a per-type sample of 50 (the RPC applies its LIMIT per
+            branch), so without a denominator 100 badges read as the whole set
+            when the real figure is 4,413. Totals come from the same predicate
+            the list does — existence_blind_spot_ids — so the count and the list
+            cannot disagree. */}
+          {blindSpotsShown > 0 && blindSpotsTotal > blindSpotsShown && (
+            <p className="text-13 text-muted-foreground">
+              Showing {blindSpotsShown} of {blindSpotsTotal.toLocaleString()}.
+            </p>
+          )}
           {(blindSpots.data ?? []).length === 0 && !blindSpots.isLoading && (
             <p className="text-13 text-muted-foreground">No blind spots.</p>
           )}
