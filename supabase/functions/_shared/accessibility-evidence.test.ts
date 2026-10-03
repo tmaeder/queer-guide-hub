@@ -376,3 +376,45 @@ Deno.test('grounding is whitespace- and curly-quote-insensitive', () => {
   )
   assertEquals(v.ok, true)
 })
+
+Deno.test('a quote taken from the venue NAME is grounded — and still needs corroboration', () => {
+  // Real row: "Room+private bathr. in big flat (80sqm) in Montmartre - 3rd f.+lift".
+  // The model cited "3rd f.+lift", which is absent from the description and present
+  // in the NAME. The prompt's first line is `Venue: <name> | Category: …`, so the
+  // quote IS grounded in what the model was shown — and `extractVenueAmenitiesFromText`
+  // therefore includes the name in the haystack.
+  const name = 'Room+private bathr. in big flat (80sqm) in Montmartre - 3rd f.+lift'
+  const descr = 'Private room in Paris. Hosted by Greg. Guest rating: 4.97/5 (62 reviews).'
+  const shown = `${name}\n${descr}`
+  const cites = [{ quote: '3rd f.+lift' }]
+
+  // A lift corroborates elevator-access.
+  assertEquals(accessibilityEvidenceVerdict('elevator-access', cites, shown).ok, true)
+
+  // It does NOT corroborate wheelchair-accessible: a lift to the third floor is not
+  // a step-free entrance, and that is the distinction a disabled reader needs. This
+  // is the one live row where grounding and corroboration disagree.
+  const wc = accessibilityEvidenceVerdict('wheelchair-accessible', cites, shown)
+  assertEquals(wc.ok, false)
+  assertEquals(wc.ok === false && wc.reason, 'no_evidence')
+
+  // Without the name in the haystack both would read as `ungrounded` — the wrong
+  // reason, and it would have retracted a sound elevator claim.
+  assertEquals(
+    accessibilityEvidenceVerdict('elevator-access', cites, descr).ok === false &&
+      (accessibilityEvidenceVerdict('elevator-access', cites, descr) as { reason: string }).reason,
+    'ungrounded',
+  )
+})
+
+Deno.test('a bare slug string is never its own citation', () => {
+  // 243 of the 259 retracted claims cited the slug itself. Corroboration alone
+  // ADOPTS these, because a slug trivially contains its own vocabulary; only
+  // grounding can refuse them.
+  const src = 'Atlantis Water Park is a venue in Ljubljana, Slovenia, with clothing-optional facilities.'
+  for (const slug of ['not-wheelchair-accessible', 'not-step-free', 'wheelchair-accessible', 'gender-neutral-restroom']) {
+    const v = accessibilityEvidenceVerdict(slug, [{ quote: slug }], src)
+    assertEquals(v.ok, false, `${slug} must not cite itself`)
+    assertEquals(v.ok === false && v.reason, 'ungrounded', `${slug} reason`)
+  }
+})
