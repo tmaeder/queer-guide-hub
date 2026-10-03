@@ -27,25 +27,14 @@ import { anonHeaders, SUPABASE_REST_URL } from './support/anonKey';
 /** Saint-Paul, Réunion's population, which sat on the Minnesota row. */
 const REUNION_POPULATION = 108088;
 
-/**
- * The 11 Réunion/São Paulo alias keys the merge removed from the Minnesota row.
- * Consistently the FRENCH reading, which is what made the attribution certain:
- * `サン=ポール` (San-Pōru) not `セントポール`, `생폴` (Saeng-pol) not `세인트폴`,
- * `Сен-Поль` not `Сент-Пол`.
- */
-const REUNION_ALIAS_KEYS = [
-  'saint-paul',
-  'saint-paul de la reunion',
-  'σαιν-πωλ',
-  'сен пол',
-  'сен-поль',
-  'սեն պոլ',
-  'סן-פול',
-  'سن بول ريونيون',
-  '생폴',
-  'サン=ポール',
-  '圣保罗',
-];
+// The 11 Réunion/São Paulo alias keys the merge removed from the Minnesota row
+// are NOT listed here. They were, as a const this spec checked against a
+// `city_aliases` read — and anon cannot read that table (see the long note on the
+// events case below), so the list was dead weight behind an assertion that could
+// never run. The frozen list lives in migration 99991790881362's P5, which is the
+// only place it can be checked. Worth recording what made the attribution certain:
+// every one is the FRENCH reading — `サン=ポール` (San-Pōru) not `セントポール`,
+// `생폴` (Saeng-pol) not `세인트폴`, `Сен-Поль` not `Сент-Пол`.
 
 const CRAWLER = { 'User-Agent': 'Googlebot/2.1 (+http://www.google.com/bot.html)' };
 
@@ -130,7 +119,33 @@ test.describe('city merge: St. Louis and St. Paul', () => {
     expect(description).not.toMatch(/Réunion|Reunion/i);
   });
 
-  test("Saint-Paul, Réunion's aliases do not route to Minnesota", async ({ request }) => {
+  // The ALIAS RULE ITSELF IS NOT ASSERTABLE FROM ANON, AND THAT IS WHY THIS CASE
+  // ASSERTS ITS CONSEQUENCE INSTEAD.
+  //
+  // The first draft read `city_aliases` through `anonGet` and checked the 11
+  // REUNION_ALIAS_KEYS were gone from the Minnesota row. It had never passed:
+  // measured on prod, `city_aliases` answers anon `401 {"code":"42501"}`. The
+  // table's baseline grant is Supabase's stock default-privileges row —
+  // INSERT/UPDATE/DELETE/TRUNCATE to `anon` and *no SELECT* — so its
+  // `city_aliases read` policy (`FOR SELECT TO anon USING (true)`) is dead: RLS
+  // is never reached because the table-level privilege is missing. Nothing in
+  // `src/`, `functions/` or `workers/` reads the table as anon (only service-role
+  // edge functions do), so the grant is not widened to make a test pass.
+  // `city_by_alias` is 42501 to anon too, so the resolver is no way in either.
+  //
+  // So the rule-table form stays where it can actually be checked: migration
+  // 99991790881362's own postconditions, P5 (every Réunion alias_key is gone from
+  // the Minnesota row, by the same frozen list) and P6 (both `st louis`/`st paul`
+  // aliases exist AND `city_by_alias` resolves them — the behavioural half). That
+  // is the same split `geo-namesake-city-links.spec.ts` already documents for
+  // safety-gated events: a sweep from a role that cannot see the corpus checks a
+  // subset and reports it as the whole.
+  //
+  // What anon CAN see is what the alias would DO. An alias is a standing rule, so
+  // a Réunion key left on the Minnesota row routes Réunion and São Paulo events
+  // onto it. This asserts no such event is there, against a positive control that
+  // the row serves events at all.
+  test("Saint-Paul, Réunion's events are not presented on Minnesota", async ({ request }) => {
     const minnesota = await anonGet(
       request,
       'cities?select=id&region_name=eq.Minnesota&duplicate_of_id=is.null' +
@@ -139,27 +154,32 @@ test.describe('city merge: St. Louis and St. Paul', () => {
     expect(minnesota).toHaveLength(1);
     const cityId = minnesota[0].id as string;
 
-    const aliases = await anonGet(
+    const events = await anonGet(
       request,
-      `city_aliases?select=alias,alias_key&city_id=eq.${cityId}`,
+      `events?select=id,title,city,country&city_id=eq.${cityId}&limit=500`,
     );
-    const keys = aliases.map((a) => String(a.alias_key));
 
-    // An alias is a STANDING rule: left in place these route every future
-    // Réunion and São Paulo event to Minnesota.
-    const leftover = keys.filter((k) => REUNION_ALIAS_KEYS.includes(k));
+    // POSITIVE CONTROL: "no Réunion event here" is equally true of a city with no
+    // events, a broken filter and a revoked grant. 3 events on prod when written.
     expect(
-      leftover,
-      `Réunion alias(es) still route to St. Paul, Minnesota: ${leftover.join(', ')}`,
+      events.length,
+      'the Minnesota row serves no events at all, so the Réunion check below is vacuous',
+    ).toBeGreaterThan(0);
+
+    // RE is Réunion, BR is Brazil (São Paulo) — the two the removed aliases named.
+    const foreign = events.filter((e) => ['RE', 'BR'].includes(String(e.country)));
+    expect(
+      foreign.map((e) => `${e.title} (${e.country})`),
+      'a Réunion/Brazil event is presented on St. Paul, Minnesota — an alias is routing it',
     ).toHaveLength(0);
 
-    // POSITIVE: the row does carry aliases, so the negative is not satisfied by
-    // an empty table or a filter that matched nothing.
+    // And by the city TEXT, which is what the alias arm of `run_event_city_link`
+    // matches on, so it catches a row whose country was never filled.
+    const misnamed = events.filter((e) => /r[eé]union|s[aã]o paulo/i.test(String(e.city ?? '')));
     expect(
-      keys.length,
-      'St. Paul carries no aliases at all, so the Réunion check above is vacuous',
-    ).toBeGreaterThan(0);
-    expect(keys).toContain('st paul');
+      misnamed.map((e) => `${e.title} (${e.city})`),
+      'an event naming Réunion/São Paulo is presented on St. Paul, Minnesota',
+    ).toHaveLength(0);
   });
 
   test('the dropped St. Louis slug 301s to the survivor rather than 404ing', async ({
