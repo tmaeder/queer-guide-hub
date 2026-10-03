@@ -28,9 +28,14 @@ columns, not index names, so function bodies were the real reader test.
 
 ## Ranked candidates and why each was not dropped
 
-1. `search_documents_geog_gix` (38 MB, GiST on `geog`). Read by `search_hybrid`, `search_facets`, `events_in_window`,
-   `get_recommendations` (pg_proc scan). Zero scans only means no geo-filtered query chose it in 28 days. Search + safety-gated
-   path. **Keep.** Open question (not checked): whether `workers/search-proxy` ever sends lat/lng/radius.
+1. `search_documents_geog_gix` (38 MB, GiST on `geog`). **Keep.** Read by `search_hybrid`, `search_facets`, `events_in_window`,
+   `get_recommendations` (pg_proc scan). search-proxy does send a geo filter, end to end: `/search` accepts `?lat=&lng=&radius=`
+   (`src/pages/SearchResults.tsx:112`), `useSearch.tsx:64-94` adds them to the filters, `ActiveFilterChips.tsx:135-140` shows a
+   radius chip, the worker forwards them (`workers/search-proxy/src/index.ts` 237/486/1173-1194, `pgSearch.ts:151-177`,
+   `supabase.ts:194-196`) as `p_lat`/`p_lng`/`p_radius_km`, and both `search_hybrid` and `search_facets` filter with
+   `st_dwithin(sd.geog, origin, radius*1000)`. It is a real user-facing radius filter, not just a boost.
+   Zero scans in 28 days means no radius query used it in that window or the planner chose another plan; not determined.
+   Checking live traffic would need `search_audit_log` or worker logs (not examined).
 2. `idx_events_quality_description_fingerprint` (5 MB), `idx_venue_quality_tier_history_venue_changed` (3 MB),
    `idx_event_quality_current_issues` (2 MB, GIN), `idx_venue_quality_snapshots_stale` (1 MB). Tables are read/written by
    `run_event_quality_scan`, `event_quality_snapshot`, `recompute_venue_quality_snapshot`, `venue_quality_dashboard`,
@@ -49,8 +54,7 @@ columns, not index names, so function bodies were the real reader test.
 
 ## Conclusion
 
-Reclaimable without touching restricted areas: effectively nothing (<1 MB). The only meaningful bytes are #1 (needs a search
-usage check) and #2 (needs pipeline-owner sign-off, ~11 MB of a multi-GB DB). Tables and functions were not evaluated for drops.
+Reclaimable without touching restricted areas: effectively nothing (<1 MB). The only meaningful bytes are #1 (search geo filter confirmed live in code, so keep) and #2 (needs pipeline-owner sign-off, ~11 MB of a multi-GB DB). Tables and functions were not evaluated for drops.
 
 ## Not examined
 
