@@ -108,7 +108,7 @@ export function PersonalitiesFiltersBar({ filters, onFiltersChange }: Props) {
     !filters.profession && filters.is_living === undefined && !filters.featured_only;
 
   return (
-    <div className="flex flex-col gap-4 bg-background py-4">
+    <div className="flex flex-col gap-4 rounded-container bg-background py-4">
       {/* Row 1: search + sort */}
       <div className="flex flex-wrap items-center gap-4">
         <div className="relative min-w-[260px] flex-1">

@@ -2399,7 +2399,9 @@ label a:hover {
 /* An ink-framed block, not a side stripe — the design rules ban the
    border-left idiom outright. */
 .qg-cms-body blockquote {
-  border: 3px solid hsl(var(--foreground));
+  border: 0;
+  border-radius: var(--radius-container);
+  background: hsl(var(--muted));
   padding: 1rem;
   margin: 2rem 0;
   font-style: italic;
@@ -2412,10 +2414,13 @@ label a:hover {
   max-width: 100%;
   height: auto;
   margin: 2rem 0;
-  border: 3px solid hsl(var(--foreground));
+  border: 0;
+  border-radius: var(--radius-container);
 }
 .qg-cms-body pre {
-  border: 2px solid hsl(var(--foreground));
+  border: 0;
+  border-radius: var(--radius-container);
+  background: hsl(var(--muted));
   color: hsl(var(--foreground));
   padding: 1rem;
   overflow: auto;
@@ -2423,7 +2428,9 @@ label a:hover {
   font-size: var(--text-13);
 }
 .qg-cms-body code {
-  border: 1px solid hsl(var(--foreground));
+  border: 0;
+  border-radius: var(--radius-badge);
+  background: hsl(var(--muted));
   padding: 0 0.25rem;
   font-size: 0.875em;
 }
@@ -2433,16 +2440,26 @@ label a:hover {
 }
 
 .qg-cms-body table {
-  border-collapse: collapse;
+  border-collapse: separate;
+  border-spacing: 0 0.25rem;
   width: 100%;
   margin: 2rem 0;
   font-size: var(--text-15);
 }
 .qg-cms-body th,
 .qg-cms-body td {
-  border: 2px solid hsl(var(--foreground));
+  border: 0;
   padding: 0.5rem 0.75rem;
   text-align: left;
+}
+.qg-cms-body td {
+  background: hsl(var(--muted));
+}
+.qg-cms-body tr > :first-child {
+  border-radius: var(--radius-element) 0 0 var(--radius-element);
+}
+.qg-cms-body tr > :last-child {
+  border-radius: 0 var(--radius-element) var(--radius-element) 0;
 }
 .qg-cms-body th {
   background-color: hsl(var(--foreground));
@@ -2452,8 +2469,8 @@ label a:hover {
 
 .qg-cms-body hr {
   border: none;
-  border-top: 2px solid hsl(var(--foreground));
-  margin: 2rem 0;
+  height: 0;
+  margin: 2.5rem 0;
 }
 
 .qg-cms-body .legal-intro {
@@ -2466,7 +2483,9 @@ label a:hover {
 /* "In short —" plain-language summary. Deliberately framed and labelled so it
    can never be mistaken for the binding text it sits above. */
 .qg-cms-body .station-note {
-  border: 2px solid hsl(var(--foreground));
+  border: 0;
+  border-radius: var(--radius-container);
+  background: hsl(var(--muted));
   padding: 0.75rem 1rem;
   margin: 0 0 1.5rem;
   font-size: var(--text-15);
@@ -2529,4 +2548,85 @@ label a:hover {
    shows the document as its author wrote it; the layout renders the real one. */
 .qg-cms-body--legal h1 {
   display: none;
+}
+
+/* ── Rendered-surface radius contract ────────────────────────────────
+   A component audit that only checks buttons misses most of the square UI a
+   person actually sees: full-width bands, link-cards, media wells, alerts and
+   loading plates. The supplied design templates use 26 / 18 / 12px radii for
+   those surfaces, so this is the shared fallback for legacy call sites that
+   declare a fill or elevation but forgot the corresponding shape utility.
+
+   This does not round pure layout wrappers, scrims, progress bars, track
+   geometry, maps or charts. A straight line may still encode data or focus;
+   it may not frame a product surface. Explicit semantic radius utilities can
+   still choose a larger rank. */
+:where(
+  button,
+  input,
+  textarea,
+  select,
+  article,
+  aside,
+  section,
+  nav,
+  form,
+  fieldset,
+  [role='button'],
+  [role='tab'],
+  [role='dialog'],
+  [role='alert'],
+  [role='menu'],
+  [data-slot='card']
+):where([class*='bg-'], [class*='shadow-']) {
+  border-radius: var(--radius-container);
+}
+
+:where(a, button, input, textarea, select, [role='button'], [role='tab']):where(
+  [class*='bg-'],
+  [class*='shadow-'],
+  [class*='card-lift']
+) {
+  border-radius: var(--radius-element);
+}
+
+:where(div, li):where(
+  [class*='aspect-'][class*='bg-'],
+  [class*='card-lift'],
+  [class*='shadow-soft']
+) {
+  border-radius: var(--radius-container);
+}
+
+:where(div, li, header, footer):where(
+    [class*='bg-card'],
+    [class*='bg-muted'],
+    [class*='bg-surface-container'],
+    [class*='bg-popover'],
+    [class*='bg-destructive']
+  ):not(.fixed):not(.absolute) {
+  border-radius: var(--radius-container);
+}
+
+:where(div, li):where([class*='bg-foreground']):not(.fixed):not(.absolute) {
+  border-radius: var(--radius-container);
+}
+
+footer.bg-foreground {
+  border-radius: var(--radius-panel);
+  overflow: clip;
+}
+
+/* ── Borderless-surface contract ────────────────────────────────────
+   Hairline rules were a legacy default for cards, rows and sticky rails. The
+   subway templates separate those regions with space, tone and shape instead.
+   Keep the utility in markup for backwards-compatible layout sizing, but make
+   its stroke fully non-rendering. Strong semantic outlines, focus rings and
+   actual route geometry use different tokens and remain untouched. */
+:where([class~='border-border-hairline']) {
+  border-color: transparent !important;
+}
+
+:where([class~='divide-border-hairline']) > :not([hidden]) ~ :not([hidden]) {
+  border-color: transparent !important;
 }

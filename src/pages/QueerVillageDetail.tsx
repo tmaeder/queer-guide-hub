@@ -408,7 +408,7 @@ export default function QueerVillageDetail() {
           />
           <section
             aria-labelledby="village-end-of-line"
-            className="bg-foreground p-6 text-background md:p-8"
+            className="overflow-hidden rounded-container bg-foreground p-6 text-background md:p-8"
           >
             <p className="text-2xs font-bold uppercase tracking-label text-background/70">
               {t('village.endOfLine.eyebrow', 'End of line')}

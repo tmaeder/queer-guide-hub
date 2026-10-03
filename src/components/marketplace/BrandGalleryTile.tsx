@@ -43,7 +43,7 @@ export function BrandGalleryTile({ brand }: { brand: DirectoryBrand }) {
 
   return (
     <div className="card-lift group relative flex h-full flex-col overflow-hidden bg-card shadow-soft rounded-container">
-      <div className="bg-surface-container">
+      <div className="overflow-hidden rounded-container bg-surface-container">
         <Image
           imageUrl={brand.cover_url}
           thumbnailUrl={brand.cover_thumb}

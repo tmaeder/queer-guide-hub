@@ -144,7 +144,7 @@ export default function Cities() {
       {/* ---- Control band --------------------------------------------------- */}
       <div
         className={cn(
-          'sticky z-20 border-b border-border-hairline bg-background',
+          'sticky z-20 overflow-hidden rounded-container border-b border-border-hairline bg-background',
           STICKY_UNDER_HEADER,
         )}
       >

@@ -579,7 +579,7 @@ export default function About() {
       </PageContainer>
 
       {/* Scale board — full-bleed ink band, content row takes the cap */}
-      <div className="mt-12 bg-foreground text-background md:mt-16">
+      <div className="mt-12 overflow-hidden rounded-panel bg-foreground text-background md:mt-16">
         <PageContainer>
           <Eyebrow as="p" className="text-background/70">
             {t('about.scale.kicker', 'The network today')}
@@ -861,7 +861,7 @@ export default function About() {
       )}
 
       {/* Extend the line */}
-      <div className="bg-foreground text-background">
+      <div className="overflow-hidden rounded-panel bg-foreground text-background">
         <PageContainer className="py-16 md:py-24">
           <SectionHead
             inverted

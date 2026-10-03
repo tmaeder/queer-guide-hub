@@ -444,7 +444,7 @@ export default function TagsIndex() {
       </PageContainer>
 
       {!scope && (
-        <div className="mt-10 bg-foreground text-background">
+        <div className="mt-10 overflow-hidden rounded-panel bg-foreground text-background">
           <PageContainer>
             <Eyebrow as="p" className="text-background/70">
               {t('tags.stats.kicker', 'The corpus')}

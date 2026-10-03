@@ -550,7 +550,11 @@ export default function Personalities() {
             {view === 'timeline' ? (
               <PersonalitiesTimeline personalities={personalities} />
             ) : view === 'map' ? (
-              <Suspense fallback={<div className="h-[600px] w-full animate-pulse bg-muted" />}>
+              <Suspense
+                fallback={
+                  <div className="h-[600px] w-full animate-pulse rounded-container bg-muted" />
+                }
+              >
                 <PersonalitiesMap personalities={personalities} />
               </Suspense>
             ) : (

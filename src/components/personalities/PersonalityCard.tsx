@@ -188,7 +188,7 @@ function PersonalityCardImpl({
         />
 
         {personality.is_featured && (
-          <div className="pointer-events-none absolute right-2 top-2 flex select-none items-center gap-1 bg-foreground px-2 py-1 text-2xs font-bold text-background">
+          <div className="pointer-events-none absolute right-2 top-2 flex select-none items-center gap-1 rounded-badge bg-foreground px-2 py-1 text-2xs font-bold text-background">
             <Star size={10} fill="currentColor" color="currentColor" aria-hidden="true" />
             <span>Featured</span>
           </div>

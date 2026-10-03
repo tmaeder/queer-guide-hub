@@ -43,3 +43,19 @@ These are marks, not decorative container borders.
   focus state.
 - Subway tracks, safety semantics, and keyboard focus remain intact.
 
+## Follow-up: rendered-edge contract
+
+The first production audit was too narrow: it inspected controls, but not every
+rendered surface. The stricter contract treats the following as surfaces too:
+
+- full-width content bands and the footer
+- alert and emergency bands
+- media and illustration wells
+- cards implemented as links or generic containers
+- sticky filter/navigation rails
+- loading and empty-state plates
+
+Every visible outer edge uses the semantic radius ladder. Joined internal seams
+may remain straight only when they are fully contained by a rounded parent and
+cannot read as an exposed corner. App roots, scrims, progress bars, map/chart
+geometry, subway tracks, and focus rings are not surfaces and remain exempt.

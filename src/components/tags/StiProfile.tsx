@@ -41,8 +41,8 @@ export function StiProfile({ tagId, tagName }: Props) {
   };
 
   return (
-    <section className="border border-border-hairline">
-      <header className="border-b border-border-hairline bg-foreground px-4 py-4 text-background">
+    <section className="overflow-hidden rounded-container border border-border-hairline">
+      <header className="rounded-t-container border-b border-border-hairline bg-foreground px-4 py-4 text-background">
         <Eyebrow className="text-background/70">{t('tags.sti.eyebrow', 'Sexual health')}</Eyebrow>
         <h2 className="mt-1 text-title font-bold">
           {t('tags.sti.title', '{{name}}: spread, testing, protection', { name: tagName })}
@@ -77,7 +77,13 @@ export function StiProfile({ tagId, tagName }: Props) {
                 {/* `describedByRow`: the level is visible text at the end of
                     this row, so naming the mark too made every row announce
                     "High risk High risk". */}
-                <RiskMark risk={route.risk} blood={route.blood} size="sm" describedByRow className="shrink-0" />
+                <RiskMark
+                  risk={route.risk}
+                  blood={route.blood}
+                  size="sm"
+                  describedByRow
+                  className="shrink-0"
+                />
                 <span className="text-13 font-bold">{route.label}</span>
                 <span className="ml-auto text-2xs font-bold uppercase tracking-label text-muted-foreground">
                   {v.label}
