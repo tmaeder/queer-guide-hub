@@ -85,8 +85,8 @@ export function PrideTable({ events, selectedId, onSelect }: PrideTableProps) {
       </div>
 
       <div className="rounded-container bg-background overflow-hidden">
-        <table className="w-full text-sm">
-          <thead className="bg-muted/40">
+        <table className="w-full border-separate border-spacing-x-0 border-spacing-y-1 text-sm">
+          <thead className="[&>tr>th:first-child]:rounded-l-element [&>tr>th:last-child]:rounded-r-element [&>tr>th]:bg-muted/40">
             <tr>
               <th
                 scope="col"
@@ -125,7 +125,7 @@ export function PrideTable({ events, selectedId, onSelect }: PrideTableProps) {
                 <tr
                   key={e.id}
                   className={cn(
-                    'transition-colors',
+                    '[&>td:first-child]:rounded-l-element [&>td:last-child]:rounded-r-element [&>td]:transition-colors',
                     // Zebra PLATE, not a row rule. A dense table still needs the
                     // eye to track a row across columns, so the separator cannot
                     // just be deleted — but the rebrand's answer to "separate
@@ -136,8 +136,8 @@ export function PrideTable({ events, selectedId, onSelect }: PrideTableProps) {
                     // would otherwise out-order the plain `bg-muted` selection
                     // fill on even rows, i.e. selecting an even row would look
                     // unselected.
-                    !isSelected && 'even:bg-surface-container',
-                    isSelected ? 'bg-muted' : 'hover:bg-muted/40',
+                    !isSelected && 'even:[&>td]:bg-surface-container',
+                    isSelected ? '[&>td]:bg-muted' : 'hover:[&>td]:bg-muted/40',
                   )}
                   onClick={() => onSelect?.(isSelected ? null : e.id)}
                   aria-selected={isSelected}

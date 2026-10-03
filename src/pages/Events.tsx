@@ -125,7 +125,7 @@ const Events = () => {
        *  during a refetch and the page jumped by the bar's height each time. */}
       <div
         className={cn(
-          'sticky z-20 border-b border-border-hairline bg-background',
+          'sticky z-20 overflow-hidden rounded-container border-b border-border-hairline bg-background',
           STICKY_UNDER_HEADER,
         )}
       >
