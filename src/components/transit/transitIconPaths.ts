@@ -143,6 +143,63 @@ export const TRANSIT_ICON_PATHS = {
   // asked not to see explicit imagery.
   intimacy:
     'M 56 50 a 18 18 0 1 0 -36 0 a 18 18 0 1 0 36 0 M 80 50 a 18 18 0 1 0 -36 0 a 18 18 0 1 0 36 0',
+
+  // ── Toy-category marks (2026-10-03 glossary pass) ──────────────────────────
+  // Marks for the `intimacy` + `bdsm_fetish` GROUP tiles, which until now were
+  // bare text. The `intimacy` comment directly above says the fine buckets
+  // under it have no mark "printable on a page that is SFW by default, and
+  // this tile renders BEFORE the 18+ opt-in". That reasoning is about the HUB
+  // tile and still stands there — `DEPARTMENT_GLYPHS.intimacy` is unchanged and
+  // none of these is wired into it. These render on `/marketplace/categories`
+  // and on the department page, and BOTH drop the adult sections until
+  // `useAdultAcknowledgement().acknowledged` (MarketplaceCategories.tsx:63;
+  // `AdultContentGate` on MarketplaceCategory) — so a reader who has asked not
+  // to see explicit imagery never reaches one.
+  //
+  // They are OBJECTS, never bodies — the choice already made for `paddle`,
+  // `flogger`, `handcuffs` and `collar`, and the same reason `restroom` is a
+  // door ("the gendered pictograms are not ours to draw"). A tool is legible
+  // at 44px and implicates nobody's anatomy.
+  'toy-dildo':
+    'M 36 62 C 35 50 35 38 36 30 C 37 21 42 16 50 16 C 58 16 63 21 64 30 C 65 38 65 50 64 62 M 26 74 C 34 66 66 66 74 74 M 57 80 a 7 7 0 1 0 -14 0 a 7 7 0 1 0 14 0',
+  'toy-plug':
+    'M 50 18 C 44 26 40 35 40 44 C 40 52 44 57 50 57 C 56 57 60 52 60 44 C 60 35 56 26 50 18 Z M 50 57 C 49 62 49 66 50 69 M 32 80 C 44 75 56 75 68 80 M 56 69 a 6 6 0 1 0 -12 0 a 6 6 0 1 0 12 0',
+  'toy-stroker':
+    'M 32 28 C 44 25 56 25 68 28 C 70 44 70 60 68 76 C 56 79 44 79 32 76 C 30 60 30 44 32 28 Z M 32 28 C 44 33 56 33 68 28 M 57 52 a 7 7 0 1 0 -14 0 a 7 7 0 1 0 14 0',
+  'toy-vibrator':
+    'M 42 72 C 41 58 41 40 42 30 C 43 22 46 18 50 18 C 54 18 57 22 58 30 C 59 40 59 58 58 72 C 54 76 46 76 42 72 Z M 24 32 C 16 42 16 58 24 68 M 76 32 C 84 42 84 58 76 68 M 56 50 a 6 6 0 1 0 -12 0 a 6 6 0 1 0 12 0',
+  'toy-cockring':
+    'M 50 76 C 33 76 22 65 22 50 C 22 35 33 24 50 24 C 67 24 78 35 78 50 C 78 65 67 76 50 76 Z M 58 50 a 8 8 0 1 0 -16 0 a 8 8 0 1 0 16 0',
+  'toy-chastity':
+    'M 36 30 C 34 44 34 58 38 70 C 44 76 56 76 62 70 C 66 58 66 44 64 30 M 36 40 C 45 37 55 37 64 40 M 36 52 C 45 49 55 49 64 52 M 37 63 C 45 60 55 60 63 63 M 58 26 a 8 8 0 1 0 -16 0 a 8 8 0 1 0 16 0',
+  'toy-pump':
+    'M 36 34 C 35 48 35 62 36 74 C 44 78 56 78 64 74 C 65 62 65 48 64 34 C 56 31 44 31 36 34 Z M 50 31 C 50 26 50 22 50 18 M 50 18 C 59 18 67 22 73 29 M 57 54 a 7 7 0 1 0 -14 0 a 7 7 0 1 0 14 0',
+  'toy-lube':
+    'M 40 40 C 39 54 39 68 40 80 C 47 82 53 82 60 80 C 61 68 61 54 60 40 C 53 38 47 38 40 40 Z M 45 38 C 45 33 45 29 46 26 C 50 25 54 25 56 26 M 56 26 C 61 24 65 22 69 22 M 57 58 a 7 7 0 1 0 -14 0 a 7 7 0 1 0 14 0',
+  'toy-poppers':
+    'M 38 44 C 37 58 37 70 38 80 C 46 82 54 82 62 80 C 63 70 63 58 62 44 C 54 42 46 42 38 44 Z M 43 42 C 43 34 43 28 44 24 C 50 22 56 23 57 24 C 58 28 58 35 58 42 M 57 62 a 7 7 0 1 0 -14 0 a 7 7 0 1 0 14 0',
+  // A rolled condom in profile — reservoir tip over the ring. Drawn as a
+  // packet first, which rendered as a CAMERA: a rounded rectangle with a
+  // centred ring is a lens, and no amount of tear-edge detail beat that read.
+  'toy-condom':
+    'M 50 20 C 46 20 44 24 44 28 C 44 32 42 35 38 37 C 30 41 26 49 26 57 C 26 70 36 80 50 80 C 64 80 74 70 74 57 C 74 49 70 41 62 37 C 58 35 56 32 56 28 C 56 24 54 20 50 20 Z M 62 57 a 12 12 0 1 0 -24 0 a 12 12 0 1 0 24 0',
+  // A boot. `fetish_gear`'s fine buckets are latex / leather / rubber-neoprene
+  // / uniforms, i.e. the group is about GARMENT MATERIAL, so the mark is a
+  // garment. First drawn as a buckled strap, which at this stroke weight was
+  // an unreadable flat lozenge with a dot in it.
+  'gear-fetish':
+    'M 36 18 C 35 32 35 46 36 58 C 36 70 42 76 52 78 C 62 80 72 80 80 78 C 82 74 82 70 80 66 C 72 64 66 60 62 54 C 60 44 60 30 60 18 C 52 16 44 16 36 18 Z M 55 38 a 7 7 0 1 0 -14 0 a 7 7 0 1 0 14 0',
+  'gear-harness':
+    'M 22 22 C 32 34 40 42 44 46 M 78 22 C 68 34 60 42 56 46 M 22 78 C 32 66 40 58 44 54 M 78 78 C 68 66 60 58 56 54 M 60 50 a 10 10 0 1 0 -20 0 a 10 10 0 1 0 20 0',
+  // Ball between two straps. The strap was first drawn as a lens ENVELOPE
+  // around the ball; at stroke-width 9 the two merged into a flat eye and the
+  // ball stopped reading as a ball. Straps now stop at the ball's edge.
+  'gear-gag':
+    'M 14 44 C 14 50 14 54 14 60 M 86 44 C 86 50 86 54 86 60 M 14 50 C 22 48 28 47 34 47 M 86 50 C 78 48 72 47 66 47 M 64 50 a 14 14 0 1 0 -28 0 a 14 14 0 1 0 28 0',
+  'gear-hood':
+    'M 50 18 C 36 18 28 28 28 44 C 28 60 36 76 50 82 C 64 76 72 60 72 44 C 72 28 64 18 50 18 Z M 38 44 C 42 42 46 42 50 44 M 62 44 C 58 42 54 42 50 44 M 56 62 a 6 6 0 1 0 -12 0 a 6 6 0 1 0 12 0',
+  'gear-pup':
+    'M 31 34 C 26 24 30 18 38 20 C 42 22 44 26 46 30 M 69 34 C 74 24 70 18 62 20 C 58 22 56 26 54 30 M 50 28 C 36 28 28 38 28 50 C 28 64 38 76 50 80 C 62 76 72 64 72 50 C 72 38 64 28 50 28 Z M 57 58 a 7 7 0 1 0 -14 0 a 7 7 0 1 0 14 0',
 } as const;
 
 export type TransitIconName = keyof typeof TRANSIT_ICON_PATHS;
