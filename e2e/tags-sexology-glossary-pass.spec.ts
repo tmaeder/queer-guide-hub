@@ -67,6 +67,48 @@ const ALIASES: ReadonlyArray<readonly [alias: string, canonical: string]> = [
   ['erotic-sexual-denial', 'orgasm-control'],
 ];
 
+/**
+ * Rows the ANON role is forbidden to read, so no anon-role assertion about
+ * their contents can ever pass.
+ *
+ * The live SELECT policy on `unified_tags` is `unified_tags_public_gated_read`,
+ * whose anon arm is `NOT tag_is_anon_gated(is_sensitive, verification_status)`
+ * — read off `pg_policies`, not inferred. A row that is `is_sensitive` and not
+ * yet verified is therefore invisible to anon, and its `/tags/:slug` serves the
+ * sign-in gate to a crawler.
+ *
+ * MEASURED, because the obvious guess is wrong: the predicate is NOT
+ * `is_adult`. `play-collar` and `tng` are both `is_adult = true` and both
+ * anon-READABLE; these four are `is_sensitive = true` and are not. Deriving
+ * this set from `is_adult` would gate the wrong two rows and leave the real
+ * ones asserted through a role that cannot see them.
+ *
+ * DERIVED OVER THE WHOLE POPULATION, NOT SAMPLED — and the first draft of this
+ * set got that wrong. It listed three members, taken from the slugs that
+ * happened to appear in the queries I had already run, and `wlw`'s canonical
+ * `women-who-have-sex-with-women` was gated too, so the spec still failed on
+ * correct data one row later. The set is the answer to
+ * `tag_is_anon_gated(is_sensitive, verification_status)` asked of all 22 slugs
+ * this file asserts on (12 creations + 12 alias canonicals, 2 shared). Re-derive
+ * it that way if it ever needs changing; a sample of a predicate's population is
+ * not the predicate.
+ *
+ * This is why three assertions in this file failed on correct data: they read
+ * the anon surface for rows that surface is designed to withhold. The fix is to
+ * assert the WITHHOLDING for these — a real invariant, since a sensitive
+ * glossary row leaking to anon is a defect — and to scope the content
+ * assertions to the rows anon can see. Their prose is asserted by the
+ * migration's own postconditions and by
+ * src/lib/__tests__/sexologyGlossaryPass.test.ts, both of which read as
+ * service_role.
+ */
+const ANON_GATED = new Set([
+  'antiretroviral',
+  'men-who-have-sex-with-men',
+  'pubic-lice',
+  'women-who-have-sex-with-women',
+]);
+
 // The classes the pass refused. The -philia cohort is the one that matters:
 // creating a tag mints a page AND an auto-tagging rule, so these must never
 // exist as active rows on an LGBTQ+ community platform.
@@ -177,17 +219,63 @@ test.describe('sexology glossary pass — crawler surface', () => {
     });
     expect(res.status()).toBe(200);
     const html = await res.text();
-    const meta = metaDescription(html);
 
     // NEGATIVE: the defect was `description` reading, in full, "The term Here's
     // a breakdown of the term and some key points:" — a sentence that names no
-    // subject and breaks mid-clause.
-    expect(meta, 'the generation artifact must be gone').not.toMatch(
+    // subject and breaks mid-clause. Asserted over the WHOLE response rather
+    // than the meta tag alone, which is strictly stronger: the artifact must not
+    // reach a crawler through any element.
+    expect(html, 'the generation artifact must be gone').not.toMatch(
       /breakdown of the term/i,
     );
-    // PAIRED POSITIVE: and the replacement must be there. Without this, the
-    // negative passes on a blanked column, which is a worse outcome.
-    expect(meta.toLowerCase()).toContain('behaviour rather than identity');
+
+    // PAIRED POSITIVE — and it is deliberately NOT the replacement prose.
+    //
+    // This row is `is_sensitive`, so `/tags/:slug` serves the sign-in gate to a
+    // crawler and the description is never published to anon at all (measured:
+    // the meta description reads "This content is only available to signed-in
+    // members", and the page emits no <article>). Asserting the new wording here
+    // would be unpassable against correct data — which is exactly how this
+    // assertion failed before.
+    //
+    // So the positive fingerprint is the GATE. It proves the page rendered
+    // rather than 404'ing or blanking, which is what a bare negative cannot
+    // distinguish, and it states the behaviour that actually matters publicly.
+    // The replacement prose is asserted by the migration's postconditions and by
+    // the unit guard, both reading as service_role.
+    expect(
+      metaDescription(html).toLowerCase(),
+      'a sensitive row must serve the sign-in gate to a crawler',
+    ).toContain('only available to signed-in members');
+    expect(html, 'a gated tag page publishes no article body').not.toContain('<article');
+  });
+
+  // Deliberately unnumbered: ANON_GATED is derived from a live predicate, so a
+  // count in the title is a second place to keep in step and the first thing to
+  // go stale. It read "three" while the set held four.
+  test('every sensitive row is withheld from anon entirely', async ({ request }) => {
+    // The companion invariant to the gate above, asserted on the data surface:
+    // `unified_tags_public_gated_read` lets anon read a row only when
+    // `NOT tag_is_anon_gated(is_sensitive, verification_status)`. A sensitive
+    // glossary row — MSM, an HIV medication class, a parasitic STI — becoming
+    // anon-readable is a real defect, so it is worth a test rather than a
+    // comment.
+    for (const slug of ANON_GATED) {
+      const rows = await rest<{ slug: string }>(
+        request,
+        `unified_tags?select=slug&slug=eq.${slug}`,
+      );
+      expect(rows.length, `${slug} must NOT be readable by anon`).toBe(0);
+    }
+
+    // POSITIVE CONTROL. "Zero rows" is equally true of a broken key, a renamed
+    // table or a typo'd slug, so prove the same query shape DOES return a row
+    // for a sibling the pass created that is not gated.
+    const control = await rest<{ slug: string }>(
+      request,
+      'unified_tags?select=slug&slug=eq.gender-modality',
+    );
+    expect(control.length, 'the control row must be anon-readable').toBe(1);
   });
 
   test('an indexable tag renders a body (control for the crawler path)', async ({
@@ -281,7 +369,23 @@ test.describe('sexology glossary pass — anon data surface', () => {
     // and /tags/:slug renders the JUNCTION while the search facet renders the
     // TEXT, so such a row is uncategorised on its own page and categorised in
     // search. This is the 194-row finding of 50100101100100.
-    const slugs = CREATED.map(([s]) => s).join(',');
+    //
+    // SCOPED TO THE ROWS ANON CAN READ. One of the twelve (`antiretroviral`) is
+    // `is_sensitive`, so the anon policy withholds it and this query can never
+    // return all twelve — the shape in which this assertion previously failed
+    // against correct data. Its three representations are asserted by the
+    // migration's postconditions as service_role; ANON_GATED's own test asserts
+    // the withholding. `visible` is derived from that one set, so the expected
+    // count cannot drift from the slugs actually queried.
+    const visible = CREATED.filter(([s]) => !ANON_GATED.has(s));
+    // Exactly ONE of the twelve is gated (`antiretroviral`); the other two
+    // members of ANON_GATED are not creations of this pass. Stated as the plain
+    // number rather than arithmetic over both set sizes, which would read as
+    // 12 - 3 and be wrong for a reason the expression hides. This is also the
+    // positive control: a filter that silently emptied would fail here instead
+    // of making the loop below vacuous.
+    expect(visible.length, 'eleven of the twelve created rows are anon-visible').toBe(11);
+    const slugs = visible.map(([s]) => s).join(',');
     const rows = await rest<{
       slug: string;
       status: string;
@@ -294,7 +398,9 @@ test.describe('sexology glossary pass — anon data surface', () => {
       `unified_tags?select=slug,status,seo_indexable,human_reviewed,category,category_id&slug=in.(${slugs})`,
     );
 
-    expect(rows.length, 'all twelve created rows should exist').toBe(CREATED.length);
+    expect(rows.length, 'every anon-visible created row should exist').toBe(
+      visible.length,
+    );
 
     const categories = await rest<{ id: string; slug: string; name: string }>(
       request,
@@ -302,7 +408,7 @@ test.describe('sexology glossary pass — anon data surface', () => {
     );
     const bySlug = new Map(categories.map((c) => [c.slug, c]));
 
-    for (const [slug, categorySlug] of CREATED) {
+    for (const [slug, categorySlug] of visible) {
       const row = rows.find((r) => r.slug === slug);
       expect(row, `${slug} should exist`).toBeTruthy();
       if (!row) continue;
@@ -360,10 +466,43 @@ test.describe('sexology glossary pass — anon data surface', () => {
         request,
         `unified_tags?select=slug,status&id=eq.${row.canonical_tag_id}`,
       );
+
+      // The alias row itself is anon-readable (this table is not gated), but its
+      // CANONICAL may not be: `crabs` routes onto `pubic-lice`, which is
+      // `is_sensitive`. Asserting `length === 1` there failed against correct
+      // data — the canonical exists and is active, anon simply may not see it.
+      //
+      // Both branches still assert something load-bearing. For a gated canonical
+      // the claim is that the alias is approved (already checked above, so it
+      // routes) AND that the target is withheld from anon, which is the gate
+      // working rather than a missing row. For the rest, the full check stands.
+      if (ANON_GATED.has(canonical)) {
+        expect(
+          target.length,
+          `${alias} -> ${canonical} is sensitive, so anon must not resolve it`,
+        ).toBe(0);
+        continue;
+      }
+
       expect(target.length, `${alias} canonical should resolve`).toBe(1);
       expect(target[0].slug, `${alias} canonical slug`).toBe(canonical);
       expect(target[0].status, `${alias} canonical must be active`).toBe('active');
     }
+
+    // POSITIVE CONTROL for the branch above: most aliases must have taken the
+    // full-resolution path. Without this, a bug that put every canonical in
+    // ANON_GATED would skip every real assertion and still pass.
+    //
+    // NINE, and this control earned its keep by catching my own count. Three of
+    // the twelve canonicals are gated — `crabs` -> `pubic-lice`, `msm` ->
+    // `men-who-have-sex-with-men`, `wlw` -> `women-who-have-sex-with-women` — so
+    // nine resolve. I first wrote >= 10 from a two-gated reading that forgot
+    // `msm`, and the assertion failed rather than quietly tolerating the drift,
+    // which is the whole reason it is a hard number and not a loose bound.
+    expect(
+      ALIASES.filter(([, c]) => !ANON_GATED.has(c)).length,
+      'nine of the twelve aliases resolve fully; three canonicals are gated',
+    ).toBe(9);
   });
 
   test('the two refused aliases were not created', async ({ request }) => {
