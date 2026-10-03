@@ -373,9 +373,15 @@ test.describe('sexology glossary pass — anon data surface', () => {
 
     // CONTROL: the query shape finds aliases when they do exist, so the empty
     // result above is evidence rather than a broken filter.
+    //
+    // It deliberately names aliases that PREDATE this pass (pinkwashing ->
+    // rainbow-washing, kinbaku -> shibari). A first draft used `msm` and
+    // `crabs`, which this very migration creates — so the control could only
+    // pass once the thing it was controlling for had landed, which makes it a
+    // second assertion rather than a control.
     const control = await rest<{ alias_slug: string }>(
       request,
-      'tag_aliases?select=alias_slug&alias_slug=in.(msm,crabs)',
+      'tag_aliases?select=alias_slug&alias_slug=in.(pinkwashing,kinbaku)',
     );
     expect(control.length, 'control: the alias query shape works').toBe(2);
   });
@@ -445,9 +451,12 @@ test.describe('sexology glossary pass — anon data surface', () => {
 
     // CONTROL: the same query shape returns rows for slugs that DO exist, so
     // the empty result is a finding rather than a filter that matches nothing.
+    // Both named rows predate this pass — a first draft used `endosexism`,
+    // which this migration creates, so the control depended on the change it
+    // was meant to be independent of.
     const control = await rest<{ slug: string }>(
       request,
-      'unified_tags?select=slug&slug=in.(consent,endosexism)&status=eq.active',
+      'unified_tags?select=slug&slug=in.(consent,bdsm)&status=eq.active',
     );
     expect(control.length, 'control: the active-row query shape works').toBe(2);
   });
