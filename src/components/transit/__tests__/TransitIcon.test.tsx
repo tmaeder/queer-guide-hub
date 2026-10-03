@@ -33,9 +33,12 @@ describe('TransitIcon', () => {
   // renders" pass over an accidentally-empty set. 42 wayfinding icons from the
   // rebrand + 10 venue-category glyphs added 2026-08-10 so the map could drop
   // lucide from its pins + 7 marketplace department glyphs added 2026-08-23 so
-  // the department tiles could stop using a product photograph as category art.
-  it('has 59 icons and bumps stroke weight below 32px', () => {
-    expect(TRANSIT_ICON_NAMES).toHaveLength(59);
+  // the department tiles could stop using a product photograph as category art
+  // + 15 toy-category marks added 2026-10-03 so the `intimacy`/`bdsm_fetish`
+  // GROUP tiles could stop being bare text (these are gated behind the 18+
+  // acknowledgement; see the comment on `toy-dildo`).
+  it('has 74 icons and bumps stroke weight below 32px', () => {
+    expect(TRANSIT_ICON_NAMES).toHaveLength(74);
     const { container } = render(<TransitIcon name="search" size={24} />);
     expect(container.querySelector('path')!.getAttribute('stroke-width')).toBe('10');
     const { container: big } = render(<TransitIcon name="search" size={48} />);
