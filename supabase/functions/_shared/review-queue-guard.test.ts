@@ -167,3 +167,75 @@ Deno.test('both reads are scoped to status, the gated fields and this run', asyn
   const open = captures.find((c) => c.status === 'open')!
   assertEquals(open.select.includes('proposed_value'), false)
 })
+
+// --- normalizeValue ---------------------------------------------------------
+// Value equality over the WHOLE payload is the right key only when the payload is
+// structured. `city.lgbt_friendly_rating` is `{value, scale, rationale}` where the
+// rationale is free LLM prose rewritten on every run, so a rejection could never
+// suppress a re-proposal. Measured on prod 2026-10-03: Khandwa was re-offered rating 3
+// two days after that exact value was rejected, with a reworded rationale.
+
+const RATING_OPTS = {
+  view: 'city_review_queue',
+  idColumn: 'city_id',
+  fields: ['lgbt_friendly_rating', 'editorial_hook'] as const,
+  ids: ['c1'],
+  normalizeValue: (field: string, value: unknown) => {
+    if (field !== 'lgbt_friendly_rating') return value
+    const v = (value ?? {}) as Record<string, unknown>
+    return { value: v.value, scale: v.scale }
+  },
+}
+
+// The two payloads differ ONLY in the prose. This is the real prod pair.
+const REJECTED_RATING = {
+  city_id: 'c1',
+  field: 'lgbt_friendly_rating',
+  proposed_value: {
+    value: 3, scale: '1-5',
+    rationale: 'India has a national equality score of 77 and same-sex relations are legal, but no statewide protections exist in Madhya Pradesh.',
+  },
+}
+const REWORDED_RATING = {
+  value: 3, scale: '1-5',
+  rationale: 'India has legal same-sex relations and an equality score of 77/100, indicating moderate legal protections but ongoing social challenges.',
+}
+
+Deno.test('a rejected rating stays rejected when only the rationale is reworded', async () => {
+  const guard = await loadReviewQueueGuard(
+    fakeClient({ open: [], rejected: [REJECTED_RATING] }), RATING_OPTS,
+  )
+  assertEquals(guard.blocked('c1', 'lgbt_friendly_rating', REWORDED_RATING), 'rejected')
+})
+
+Deno.test('without the normalizer the SAME pair is NOT caught — this is the defect', async () => {
+  // The control that proves the normalizer is load-bearing rather than decoration: drop
+  // it and the identical inputs sail through, which is exactly what prod did.
+  const { normalizeValue: _drop, ...bare } = RATING_OPTS
+  const guard = await loadReviewQueueGuard(
+    fakeClient({ open: [], rejected: [REJECTED_RATING] }), bare,
+  )
+  assertEquals(guard.blocked('c1', 'lgbt_friendly_rating', REWORDED_RATING), null)
+})
+
+Deno.test('a genuinely CHANGED rating is still free to reach a human', async () => {
+  // The normalizer must not collapse 3 and 4 into "a rating was rejected once".
+  const guard = await loadReviewQueueGuard(
+    fakeClient({ open: [], rejected: [REJECTED_RATING] }), RATING_OPTS,
+  )
+  assertEquals(guard.blocked('c1', 'lgbt_friendly_rating', { ...REWORDED_RATING, value: 4 }), null)
+})
+
+Deno.test('prose fields keep byte equality — a hook IS its prose', async () => {
+  const rejectedHook = {
+    city_id: 'c1', field: 'editorial_hook',
+    proposed_value: { value: 'Railway junction with rich history' },
+  }
+  const guard = await loadReviewQueueGuard(
+    fakeClient({ open: [], rejected: [rejectedHook] }), RATING_OPTS,
+  )
+  // Identical hook: suppressed.
+  assertEquals(guard.blocked('c1', 'editorial_hook', { value: 'Railway junction with rich history' }), 'rejected')
+  // Reworded hook: a different proposal, so it must NOT be suppressed.
+  assertEquals(guard.blocked('c1', 'editorial_hook', { value: 'Khandwa, where Kishore Kumar grew up.' }), null)
+})
