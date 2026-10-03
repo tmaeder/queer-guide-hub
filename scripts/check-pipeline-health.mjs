@@ -4591,7 +4591,7 @@ const DISOWNED_PROSE_CEILING = 380
 // A wrong access claim can strand a disabled person at a door they cannot get
 // through, and an invented NEGATIVE one tells them not to bother with a place
 // they could have used. This was a warn-at-270 growth gate while that backlog
-// existed; 99991791028169 retracted it (259 claims across 150 venues) and the
+// existed; 99991791030558 retracted it (259 claims across 150 venues) and the
 // producer can no longer emit an unevidenced slug, so it is a ZERO-INVARIANT now.
 {
   console.log('')
@@ -4619,7 +4619,7 @@ const DISOWNED_PROSE_CEILING = 380
     const venues = Number(sig.live_venues ?? 0)
     console.log(`  cohort: ${cohort} machine-approved accessibility claim(s) live on ${venues} venue(s)`)
 
-    // ZERO-INVARIANT since 99991791028169 retracted the 259-claim backlog.
+    // ZERO-INVARIANT since 99991791030558 retracted the 259-claim backlog.
     //
     // It was a warn-at-270 growth gate while the backlog existed, because a gate
     // that is red on arrival is one people learn to scroll past. The backlog is
@@ -4635,7 +4635,7 @@ const DISOWNED_PROSE_CEILING = 380
           `text the model was shown — a disabled reader is being told something no source supports`,
       )
       console.error('  → check amenity-truth-backfill run summaries for accessibility_evidence_refused; the extractor guard may have been bypassed')
-      console.error('  → 99991791028169 drove this to 0. It is a zero-invariant: do not re-baseline it.')
+      console.error('  → 99991791030558 drove this to 0. It is a zero-invariant: do not re-baseline it.')
       FAILED = true
       sectionOk = false
     }
