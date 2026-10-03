@@ -2,7 +2,7 @@ import { test, expect, type APIRequestContext } from '@playwright/test';
 import { anonHeaders, SUPABASE_REST_URL } from './support/anonKey';
 
 // St. Louis and St. Paul each existed twice, and in BOTH pairs the row holding
-// the content held the WORSE identity data. 99991790827898 merged them.
+// the content held the WORSE identity data. 99991790881362 merged them.
 //
 // THESE ARE INVARIANTS, NOT THE REPAIR'S TRANSIENT STATE. Nothing here is pinned
 // to a uuid surviving or to a particular population, because the follow-ups this
@@ -27,25 +27,32 @@ import { anonHeaders, SUPABASE_REST_URL } from './support/anonKey';
 /** Saint-Paul, Réunion's population, which sat on the Minnesota row. */
 const REUNION_POPULATION = 108088;
 
-/**
- * The 11 Réunion/São Paulo alias keys the merge removed from the Minnesota row.
- * Consistently the FRENCH reading, which is what made the attribution certain:
- * `サン=ポール` (San-Pōru) not `セントポール`, `생폴` (Saeng-pol) not `세인트폴`,
- * `Сен-Поль` not `Сент-Пол`.
- */
-const REUNION_ALIAS_KEYS = [
-  'saint-paul',
-  'saint-paul de la reunion',
-  'σαιν-πωλ',
-  'сен пол',
-  'сен-поль',
-  'սեն պոլ',
-  'סן-פול',
-  'سن بول ريونيون',
-  '생폴',
-  'サン=ポール',
-  '圣保罗',
-];
+// THE RÉUNION-ALIAS INVARIANT IS DELIBERATELY NOT ASSERTED HERE, and it is worth
+// saying why rather than leaving a gap that reads like an oversight.
+//
+// The merge removed 11 Saint-Paul/Réunion alias keys from the Minnesota row --
+// consistently the FRENCH reading, which is what made the attribution certain
+// (`サン=ポール` San-Pōru not `セントポール`, `생폴` Saeng-pol not `세인트폴`,
+// `Сен-Поль` not `Сент-Пол`). An alias is a STANDING rule, so leaving them would
+// route every future Réunion and São Paulo event to Minnesota.
+//
+// That claim CANNOT be made from the anon role, measured rather than assumed:
+// `city_aliases` has no anon SELECT grant (the read returns 401), and
+// `city_by_alias` is not anon-EXECUTABLE either -- and being SECURITY INVOKER it
+// would still need the table grant even if it were. Two independent gates, both
+// by design: alias routing is internal machinery, not something a visitor reads.
+//
+// A first version of this spec asserted it anyway and failed with a 401 on prod.
+// The temptation then is to re-run the read as service_role, which would make the
+// spec green while no longer testing what a visitor can be served -- the exact
+// inversion this file's header warns about. So the corpus-wide form stays where it
+// can actually run: postcondition P5 of 99991790881362, executed as postgres over
+// every row at apply time, plus the frozen-11-key assertions in
+// src/lib/__tests__/cityMergeStLouisStPaul.test.ts.
+//
+// Same reasoning e2e/geo-namesake-city-links.spec.ts gives for keeping its own
+// corpus-wide sweep in the migration: a check run from a role that cannot see the
+// rows inspects a subset and reports it as the whole.
 
 const CRAWLER = { 'User-Agent': 'Googlebot/2.1 (+http://www.google.com/bot.html)' };
 
@@ -130,36 +137,20 @@ test.describe('city merge: St. Louis and St. Paul', () => {
     expect(description).not.toMatch(/Réunion|Reunion/i);
   });
 
-  test("Saint-Paul, Réunion's aliases do not route to Minnesota", async ({ request }) => {
-    const minnesota = await anonGet(
-      request,
-      'cities?select=id&region_name=eq.Minnesota&duplicate_of_id=is.null' +
-        '&or=(name.eq.Saint Paul,name.eq.St. Paul)',
-    );
-    expect(minnesota).toHaveLength(1);
-    const cityId = minnesota[0].id as string;
-
-    const aliases = await anonGet(
-      request,
-      `city_aliases?select=alias,alias_key&city_id=eq.${cityId}`,
-    );
-    const keys = aliases.map((a) => String(a.alias_key));
-
-    // An alias is a STANDING rule: left in place these route every future
-    // Réunion and São Paulo event to Minnesota.
-    const leftover = keys.filter((k) => REUNION_ALIAS_KEYS.includes(k));
+  test('city_aliases stays unreadable to anon, which is why the alias check is not here', async ({
+    request,
+  }) => {
+    // Pinned as a CONTROL on the reason, not as an aspiration. If `city_aliases`
+    // ever becomes anon-readable this fails and tells the next reader to restore
+    // the Réunion-alias assertion the header describes — otherwise the gap looks
+    // like something nobody got round to.
+    const res = await request.get(`${SUPABASE_REST_URL}/rest/v1/city_aliases?select=alias&limit=1`, {
+      headers: await anonHeaders(request),
+    });
     expect(
-      leftover,
-      `Réunion alias(es) still route to St. Paul, Minnesota: ${leftover.join(', ')}`,
-    ).toHaveLength(0);
-
-    // POSITIVE: the row does carry aliases, so the negative is not satisfied by
-    // an empty table or a filter that matched nothing.
-    expect(
-      keys.length,
-      'St. Paul carries no aliases at all, so the Réunion check above is vacuous',
-    ).toBeGreaterThan(0);
-    expect(keys).toContain('st paul');
+      res.status(),
+      'city_aliases is now readable by anon — restore the Réunion-alias test described above',
+    ).toBe(401);
   });
 
   test('the dropped St. Louis slug 301s to the survivor rather than 404ing', async ({
