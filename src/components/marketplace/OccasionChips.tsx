@@ -74,7 +74,7 @@ export function OccasionChips({
                   className={`inline-flex items-center gap-2 rounded-element border px-4 py-2 text-sm transition-colors ${
                     active
                       ? 'bg-foreground text-background'
-                      : 'border border-border hover:border-foreground/40'
+                      : 'bg-surface-container hover:bg-surface-container-high'
                   }`}
                 >
                   <span className="font-medium">{c.label}</span>

@@ -49,12 +49,12 @@ const CHANNEL_ICON: Record<HotlineChannel['kind'], typeof Phone> = {
 
 /** Paper-on-ink action. The panel is inverted, so the strongest fill is paper. */
 const PRIMARY =
-  'border flex w-full items-center justify-between gap-4 rounded-element border-background bg-background px-6 py-4 text-foreground no-underline transition-opacity hover:opacity-90';
+  'flex w-full items-center justify-between gap-4 rounded-element bg-background px-6 py-4 text-foreground no-underline transition-opacity hover:opacity-90';
 const SECONDARY =
-  'border flex items-center justify-center gap-2 rounded-element border-background px-4 py-2 text-13 font-bold text-background no-underline transition-colors hover:bg-background hover:text-foreground';
+  'flex items-center justify-center gap-2 rounded-element bg-background/15 px-4 py-2 text-13 font-bold text-background no-underline transition-colors hover:bg-background hover:text-foreground';
 /** Same paper-on-ink logic as SECONDARY, tightened for a row of kept lines. */
 const KEPT =
-  'border flex items-center gap-2 rounded-element border-background px-4 py-2 text-13 font-bold text-background no-underline transition-colors hover:bg-background hover:text-foreground';
+  'flex items-center gap-2 rounded-element bg-background/15 px-4 py-2 text-13 font-bold text-background no-underline transition-colors hover:bg-background hover:text-foreground';
 
 function Availability({ hotline }: { hotline: Hotline }) {
   const { t } = useTranslation();
@@ -154,18 +154,18 @@ export function CrisisTriage({
                 {hero.languages.map((language) => (
                   <span
                     key={language}
-                    className="border rounded-badge border-background/40 px-2 py-1 text-2xs font-bold uppercase"
+                    className="rounded-badge bg-background/15 px-2 py-1 text-2xs font-bold uppercase"
                   >
                     {language}
                   </span>
                 ))}
                 {hero.free && (
-                  <span className="border rounded-badge border-background/40 px-2 py-1 text-2xs font-bold">
+                  <span className="rounded-badge bg-background/15 px-2 py-1 text-2xs font-bold">
                     {t('help.badge_free', 'Free')}
                   </span>
                 )}
                 {hero.anonymous && (
-                  <span className="border rounded-badge border-background/40 px-2 py-1 text-2xs font-bold">
+                  <span className="rounded-badge bg-background/15 px-2 py-1 text-2xs font-bold">
                     {t('help.badge_anonymous', 'Anonymous')}
                   </span>
                 )}
@@ -192,7 +192,7 @@ export function CrisisTriage({
                   and something else is demonstrably open, offer it here — directly
                   beside the button that would otherwise ring out. */}
               {openAlt && (
-                <div className="border mt-6 rounded-element border-background/40 p-4">
+                <div className="mt-6 rounded-element bg-background/10 p-4">
                   <p className="text-2xs font-bold uppercase tracking-label text-background/70">
                     {t('help.open_instead', 'Open right now instead')}
                   </p>
@@ -235,7 +235,7 @@ export function CrisisTriage({
                   Naming the closure and pointing somewhere is the minimum; the
                   real remedy is more lines in the corpus. */}
               {heroClosed && !openAlt && (
-                <p className="border mt-6 rounded-element border-background/40 p-4 text-13 leading-relaxed text-background/80">
+                <p className="mt-6 rounded-element bg-background/10 p-4 text-13 leading-relaxed text-background/80">
                   {t(
                     'help.closed_no_alt',
                     'This line is closed right now and we have no other line open for this country. In acute danger, use the emergency number above.',
@@ -299,7 +299,7 @@ export function CrisisTriage({
             </div>
           ) : (
             // The geo-failure default used to render nothing at all here.
-            <div className="border rounded-element border-background/40 p-4">
+            <div className="rounded-element bg-background/10 p-4">
               <h2 className="text-title font-bold leading-tight">
                 {hotlines.length === 0
                   ? t('help.no_lines_title', 'We could not load the directory')
@@ -327,7 +327,7 @@ export function CrisisTriage({
           )}
         </div>
 
-        <div className="mt-8 flex flex-col gap-6 border-t border-background/30 pt-6 lg:mt-0 lg:border-l lg:border-t-0 lg:pl-10 lg:pt-0">
+        <div className="mt-8 flex flex-col gap-6 rounded-container bg-background/10 p-6 lg:mt-0">
           {/* You keep a line so you can reach it fast under pressure. Rendering the
               names as a joined string made the feature decorative — the one moment
               it exists for is the one moment you cannot act on it. */}

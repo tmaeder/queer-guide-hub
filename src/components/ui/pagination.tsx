@@ -60,7 +60,7 @@ const PaginationLink = ({
       display: 'inline-flex',
       alignItems: 'center',
       justifyContent: 'center',
-      borderRadius: 'var(--radius-none)',
+      borderRadius: 'var(--radius-element)',
       fontWeight: 500,
       cursor: 'pointer',
       textDecoration: 'none',

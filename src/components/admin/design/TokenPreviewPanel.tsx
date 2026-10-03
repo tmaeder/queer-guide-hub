@@ -171,7 +171,7 @@ export function TokenPreviewPanel({ draft }: { draft: BrandingDoc }) {
                 key={w}
                 variant={width === w ? 'secondary' : 'ghost'}
                 size="sm"
-                className="rounded-none capitalize"
+                className="rounded-element capitalize"
                 onClick={() => setWidth(w)}
               >
                 {w}

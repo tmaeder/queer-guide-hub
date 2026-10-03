@@ -186,7 +186,7 @@ export function HotlineRow({
           NEVER go behind the expander; `false` is an ink reassurance and lives in
           the details. Absent renders nothing at all — we do not imply either. */}
       {hotline.reports_to_police === true && (
-        <p className="border mx-4 mb-4 flex items-start gap-2 rounded-element border-destructive bg-destructive p-4 text-13 font-bold leading-relaxed text-destructive-foreground">
+        <p className="mx-4 mb-4 flex items-start gap-2 rounded-element bg-destructive p-4 text-13 font-bold leading-relaxed text-destructive-foreground">
           <ShieldAlert size={16} aria-hidden className="mt-0.5 shrink-0" />
           {t(
             'help.reports_police_warning',
@@ -251,14 +251,14 @@ export function HotlineRow({
                   <LocalizedLink
                     key={tp}
                     to={`/resources?category=${encodeURIComponent(cat)}`}
-                    className="rounded-badge border border-foreground/20 px-2 py-1 text-2xs font-bold no-underline transition-colors hover:border-border-hairline"
+                    className="rounded-badge bg-surface-container px-2 py-1 text-2xs font-bold no-underline transition-colors hover:bg-surface-container-high"
                   >
                     {label}
                   </LocalizedLink>
                 ) : (
                   <span
                     key={tp}
-                    className="rounded-badge border border-foreground/20 px-2 py-1 text-2xs font-bold"
+                    className="rounded-badge bg-surface-container px-2 py-1 text-2xs font-bold"
                   >
                     {label}
                   </span>

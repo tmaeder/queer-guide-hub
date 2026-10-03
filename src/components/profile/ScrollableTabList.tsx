@@ -2,8 +2,7 @@ import * as React from 'react';
 import { TabsList } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils';
 
-interface ScrollableTabListProps
-  extends React.ComponentPropsWithoutRef<typeof TabsList> {
+interface ScrollableTabListProps extends React.ComponentPropsWithoutRef<typeof TabsList> {
   children: React.ReactNode;
 }
 
@@ -60,7 +59,7 @@ export function ScrollableTabList({ className, children, ...props }: ScrollableT
       <TabsList
         ref={ref}
         className={cn(
-          'h-auto w-max min-w-full justify-start gap-0 rounded-none border-0 bg-transparent p-0 backdrop-blur-none',
+          'h-auto w-max min-w-full justify-start gap-1 rounded-element bg-surface-container p-1 backdrop-blur-none',
           'overflow-x-auto scroll-smooth snap-x [scrollbar-width:none] [&::-webkit-scrollbar]:hidden',
           className,
         )}

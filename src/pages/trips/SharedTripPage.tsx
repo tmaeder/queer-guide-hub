@@ -254,7 +254,7 @@ function SharedTripPage() {
     <div className="pb-6">
       {/* Branded cover band */}
       <div
-        className="relative rounded-none sm:rounded-container overflow-hidden mb-4 sm:mx-2 sm:mt-2 min-h-[180px] md:min-h-[220px] flex items-end bg-cover bg-center"
+        className="relative mx-2 mt-2 mb-4 flex min-h-[180px] items-end overflow-hidden rounded-container bg-cover bg-center md:min-h-[220px]"
         style={{
           background: hasCover ? undefined : fallbackGradient,
           backgroundImage: hasCover ? `url(${trip.cover_image_url})` : undefined,

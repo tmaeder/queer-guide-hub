@@ -40,6 +40,67 @@ const observeRouteJourneys = (page: Page) =>
     }).observe(document.body, { childList: true, subtree: true });
   });
 
+const surfaceEdgeAudit = (page: Page) =>
+  page.evaluate(() => {
+    const alpha = (color: string) => {
+      if (!color || color === 'transparent') return 0;
+      const match = color.match(/rgba?\([^)]*[, /]([\d.]+)\s*\)$/);
+      return color.startsWith('rgba') && match ? Number(match[1]) : 1;
+    };
+    const visible = (element: Element) => {
+      const rect = element.getBoundingClientRect();
+      const style = getComputedStyle(element);
+      return (
+        rect.width > 2 &&
+        rect.height > 2 &&
+        style.display !== 'none' &&
+        style.visibility !== 'hidden' &&
+        Number(style.opacity || 1) > 0
+      );
+    };
+    const label = (element: Element) =>
+      `${element.tagName.toLowerCase()}.${String((element as HTMLElement).className || '').slice(0, 120)}`;
+    const elements = [...document.querySelectorAll('body *')].filter(visible);
+    const thinBorders = elements
+      .filter((element) => {
+        if (element.closest('svg, canvas') || element.classList.contains('border-track-ring')) {
+          return false;
+        }
+        const style = getComputedStyle(element);
+        return ['Top', 'Right', 'Bottom', 'Left'].some((side) => {
+          const width = Number.parseFloat(
+            style.getPropertyValue(`border-${side.toLowerCase()}-width`),
+          );
+          const borderStyle = style.getPropertyValue(`border-${side.toLowerCase()}-style`);
+          const color = style.getPropertyValue(`border-${side.toLowerCase()}-color`);
+          return width > 0 && width <= 2 && borderStyle !== 'none' && alpha(color) > 0.03;
+        });
+      })
+      .map(label);
+    const sharpControls = elements
+      .filter((element) =>
+        element.matches(
+          'button,input,textarea,select,a[role="button"],[role="button"],[role="tab"],[role="dialog"],[data-slot="card"]',
+        ),
+      )
+      .filter((element) => {
+        const style = getComputedStyle(element);
+        const rect = element.getBoundingClientRect();
+        const radii = [
+          style.borderTopLeftRadius,
+          style.borderTopRightRadius,
+          style.borderBottomRightRadius,
+          style.borderBottomLeftRadius,
+        ].map((value) => Number.parseFloat(value) || 0);
+        const hasSurface =
+          style.backgroundColor !== 'rgba(0, 0, 0, 0)' || style.boxShadow !== 'none';
+        return Math.min(...radii) < 8 && rect.width > 20 && rect.height > 20 && hasSurface;
+      })
+      .map(label);
+
+    return { thinBorders, sharpControls };
+  });
+
 test.describe('production subway design-system contract', () => {
   test('publishes the canonical tokens and typography', async ({ page }) => {
     await gotoReady(page, '/');
@@ -134,6 +195,15 @@ test.describe('production subway design-system contract', () => {
     await page.waitForTimeout(800);
     await expect.poll(() => page.evaluate(() => window.__routeJourneys?.length ?? 0)).toBe(0);
   });
+
+  for (const path of ['/events', '/travel', '/pride', '/help', '/news']) {
+    test(`${path} has no decorative hairlines or sharp controls`, async ({ page }) => {
+      await gotoReady(page, path);
+      const audit = await surfaceEdgeAudit(page);
+      expect(audit.thinBorders, `visible thin borders on ${path}`).toEqual([]);
+      expect(audit.sharpControls, `sharp surfaced controls on ${path}`).toEqual([]);
+    });
+  }
 
   for (const path of [
     '/',
