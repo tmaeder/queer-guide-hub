@@ -21,7 +21,7 @@ function Skeleton({
     variant === 'circular'
       ? 'rounded-full'
       : variant === 'rectangular'
-        ? 'rounded-none'
+        ? 'rounded-container'
         : variant === 'text'
           ? 'rounded-badge h-4'
           : 'rounded-element';
@@ -43,7 +43,7 @@ function Skeleton({
 function SkeletonCard({ className }: { className?: string }) {
   return (
     <div className={cn('overflow-hidden rounded-container bg-surface-container', className)}>
-      <Skeleton variant="rectangular" className="aspect-[4/5] w-full rounded-none" />
+      <Skeleton variant="rectangular" className="aspect-[4/5] w-full rounded-container" />
       <div className="flex flex-col gap-2 p-4">
         <Skeleton variant="text" className="h-3 w-1/3" />
         <Skeleton variant="text" className="h-5 w-3/4" />

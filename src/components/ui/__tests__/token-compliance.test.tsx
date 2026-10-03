@@ -31,18 +31,22 @@ import { Alert, AlertTitle } from '../alert';
  * it is why this file cannot rot the same way twice.
  */
 
-/** The Tailwind soft-elevation ramp. Banned: depth is a hard offset plate. */
+/** Competing Tailwind elevation values; the system owns one semantic ramp. */
 const SOFT_SHADOW = /\bshadow-(sm|md|lg|xl|2xl)\b/;
 
 /**
  * Non-semantic radius. The contract is the trio — `rounded-container` (cards,
  * sheets, dialogs), `rounded-element` (buttons, inputs, rows),
- * `rounded-badge` (chips, pills). `rounded-full` and `rounded-none` stay legal
- * (avatars/dots, explicit flat override), so they are absent here on purpose.
+ * `rounded-badge` (chips, pills). `rounded-full` stays legal for true circles;
+ * `rounded-none` is forbidden because every product surface must stay soft.
  */
-const NON_SEMANTIC_RADIUS = /\brounded-(xs|sm|md|lg|xl|2xl|3xl|4xl)\b|(?:^|\s)rounded(?![-\w])/;
+const NON_SEMANTIC_RADIUS =
+  /\brounded-(none|xs|sm|md|lg|xl|2xl|3xl|4xl)\b|(?:^|\s)rounded(?![-\w])/;
 
-const SEMANTIC_RADIUS = /\brounded-(container|element|badge|full|none|t-container)\b/;
+const SEMANTIC_RADIUS = /\brounded-(container|element|badge|full|t-container)\b/;
+
+/** Decorative perimeter rules are not part of a shared surface primitive. */
+const VISIBLE_FRAME = /(?:^|\s)border(?=\s|$)|(?:^|\s)border-(?!0(?=\s|$)|transparent(?=\s|$))\S+/;
 
 function classOf(el: Element): string {
   return el.getAttribute('class') ?? '';
@@ -64,24 +68,26 @@ function expectTokenCompliant(el: Element, label: string) {
   );
   expect(cls, `${label}: radius must come from the semantic trio`).not.toMatch(NON_SEMANTIC_RADIUS);
   expect(cls, `${label}: no semantic radius token present`).toMatch(SEMANTIC_RADIUS);
+  expect(cls, `${label}: decorative frame classes are forbidden`).not.toMatch(VISIBLE_FRAME);
 }
 
 describe('design-system token compliance', () => {
   it('the matchers actually reject a non-compliant class string', () => {
     // Guard for the guard. If this ever passes, the matchers have gone toothless
     // and every assertion in this file is decoration.
-    const bad = 'inline-flex shadow-2xl rounded-3xl px-6';
+    const bad = 'inline-flex border border-input shadow-2xl rounded-none px-6';
     expect(bad).toMatch(SOFT_SHADOW);
     expect(bad).toMatch(NON_SEMANTIC_RADIUS);
     expect(bad).not.toMatch(SEMANTIC_RADIUS);
+    expect(bad).toMatch(VISIBLE_FRAME);
 
     // And the real primitive, wearing the same bad classes, must be rejected.
-    const { container } = render(<Button className="shadow-2xl rounded-3xl">x</Button>);
+    const { container } = render(<Button className="border shadow-2xl rounded-none">x</Button>);
     expect(() => expectTokenCompliant(container.querySelector('button')!, 'Button')).toThrow();
   });
 
   it('Button uses design tokens', () => {
-    const { container } = render(<Button>x</Button>);
+    const { container } = render(<Button variant="outline">x</Button>);
     expectTokenCompliant(container.querySelector('button')!, 'Button');
   });
 

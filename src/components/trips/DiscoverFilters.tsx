@@ -132,7 +132,7 @@ export function DiscoverFilters({ value, onChange }: Props) {
                     className={`text-xs font-semibold px-4 py-1.5 rounded-full border transition-colors ${
                       selected
                         ? 'bg-foreground text-background border-transparent'
-                        : 'border bg-background text-foreground border-border hover:border-foreground/40'
+                        : 'bg-surface-container text-foreground hover:bg-surface-container-high'
                     }`}
                   >
                     {t(`trips.discover.travelerType.${tt}`, travelerLabel(tt))}
@@ -158,7 +158,7 @@ export function DiscoverFilters({ value, onChange }: Props) {
                     className={`text-left text-sm font-medium px-4 py-2 rounded-element border transition-colors ${
                       selected
                         ? 'bg-foreground text-background border-transparent'
-                        : 'border bg-background text-foreground border-border hover:border-foreground/40'
+                        : 'bg-surface-container text-foreground hover:bg-surface-container-high'
                     }`}
                   >
                     {t(`trips.discover.duration.${d}`, durationLabel(d))}

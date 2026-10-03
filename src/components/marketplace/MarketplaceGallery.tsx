@@ -103,15 +103,11 @@ export function MarketplaceGallery({ listingId, images, title }: MarketplaceGall
               aria-current={i === safeActive}
               className={cn(
                 'h-16 w-16 flex-shrink-0 snap-start overflow-hidden rounded-element bg-muted transition-colors md:h-20 md:w-20',
-                // Selection is still expressed in border weight, because a 64px
-                // square has no room to lift — and unlike a card frame, a
-                // selected state IS something WCAG 1.4.11 covers, so this
-                // border survives the de-caging. It only thins to the soft
-                // system's weights: ink at 2px for the active thumb, a hairline
-                // for the rest.
+                // Selection uses tone, inset and opacity. No thumbnail needs a
+                // permanent perimeter; aria-current carries the semantic state.
                 i === safeActive
-                  ? 'border-2 border-foreground'
-                  : 'border border-border-hairline hover:border-foreground',
+                  ? 'bg-surface-container-high p-1 shadow-soft'
+                  : 'opacity-60 hover:opacity-100',
               )}
             >
               {failed.has(i) ? (

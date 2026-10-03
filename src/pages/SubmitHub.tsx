@@ -204,7 +204,7 @@ function SubmitTypeCard({ type, onClick, featured = false }: SubmitTypeCardProps
       className={cn(
         'group/card w-full text-left rounded-container bg-card text-card-foreground',
         'cursor-pointer transition-all duration-fast ease-[cubic-bezier(0.22,1,0.36,1)]',
-        'border hover:bg-muted/40 hover:border-foreground/30',
+        'shadow-soft hover:-translate-y-0.5 hover:bg-muted/40 hover:shadow-soft-hover',
         'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ring-offset-background',
       )}
     >

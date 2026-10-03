@@ -106,7 +106,7 @@ function ShellSkeleton() {
         <Skeleton className="w-24 h-4 mb-6" />
         {Array.from({ length: 8 }).map((_, i) => (
           <div key={i} className="flex items-center gap-4 mb-2">
-            <Skeleton className="rounded-none w-7 h-7" />
+            <Skeleton className="h-7 w-7 rounded-element" />
             {/* eslint-disable-next-line react-hooks/purity -- time-relative value (Date.now / Math.random) used to compute a label or filter cutoff; sub-second precision irrelevant for this UI. */}
             <Skeleton className="h-5" style={{ width: 80 + Math.random() * 60 }} />
           </div>
@@ -119,7 +119,7 @@ function ShellSkeleton() {
         <Skeleton className="w-[300px] h-5 mb-6" />
         <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-3">
           {Array.from({ length: 6 }).map((_, i) => (
-            <Skeleton key={i} className="h-[120px] rounded-none" />
+            <Skeleton key={i} className="h-[120px] rounded-container" />
           ))}
         </div>
       </div>

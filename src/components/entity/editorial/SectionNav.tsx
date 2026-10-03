@@ -1,5 +1,5 @@
 import { useEffect, useRef, type ReactNode } from 'react';
-import { PAGE_BLEED, STICKY_UNDER_HEADER } from '@/components/layout/PageContainer';
+import { STICKY_UNDER_HEADER } from '@/components/layout/PageContainer';
 import { cn } from '@/lib/utils';
 
 export interface SectionNavItem {
@@ -49,18 +49,9 @@ export function SectionNav({
   return (
     <nav
       aria-label="Sections"
-      /* A route strip, not a frosted iOS tab bar: solid paper with an ink rule
-         that IS the band's edge. `PAGE_BLEED` cancels the gutter so the rule
-         reaches the viewport edge at every breakpoint — at a flat `-mx-4` it
-         stopped 16px short from `sm` up. Imported rather than restated: this
-         carried its own `-mx-4 sm:-mx-6 md:-mx-8` copy, which is how it drifts
-         from the ladder it is supposed to track. */
-      className={cn(
-        'sticky z-30 mb-8 border-b border-border-hairline bg-background',
-        PAGE_BLEED,
-        STICKY_UNDER_HEADER,
-        className,
-      )}
+      /* A rounded route selector. The rail is tonal rather than ruled, and it
+         stays inside the page gutter so its soft silhouette remains visible. */
+      className={cn('sticky z-30 mb-8 bg-background py-2', STICKY_UNDER_HEADER, className)}
     >
       {/* `max-w-page`, NOT `max-w-screen-2xl`. The bleed above lands this row
           on the page container's own box, so a 1536px cap here is 64px NARROWER
@@ -74,8 +65,8 @@ export function SectionNav({
       <ul
         ref={listRef}
         className={cn(
-          'mx-auto flex max-w-page items-center overflow-x-auto px-4 sm:px-6 md:px-8 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden',
-          variant === 'subway' ? 'h-16 gap-4 md:gap-8' : 'h-12 gap-6',
+          'mx-auto flex max-w-page items-center overflow-x-auto rounded-container bg-surface-container p-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden',
+          variant === 'subway' ? 'min-h-16 gap-4 md:gap-8' : 'min-h-12 gap-1',
         )}
       >
         {items.map((item) => {
@@ -104,13 +95,10 @@ export function SectionNav({
                           : 'text-muted-foreground before:bg-background hover:bg-surface-container hover:text-foreground hover:before:bg-track-blue',
                       )
                     : cn(
-                        'h-12',
+                        'h-10 rounded-element px-4',
                         isActive
-                          ? // Sits ON the nav's own rule and is thicker than it, so the
-                            // active station reads as a stop on the line rather than a
-                            // tint difference.
-                            'text-foreground after:absolute after:inset-x-0 after:-bottom-0.5 after:h-1 after:bg-foreground'
-                          : 'text-muted-foreground hover:text-foreground',
+                          ? 'bg-foreground text-background'
+                          : 'text-muted-foreground hover:bg-surface-container-high hover:text-foreground',
                       ),
                 )}
               >
