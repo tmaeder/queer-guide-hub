@@ -337,7 +337,7 @@ export function AddPlaceDialog({
             <button
               type="button"
               onClick={() => setSelected(r)}
-              className={`w-full text-left min-h-[52px] px-4 py-2.5 rounded-container border ${isSelected ? 'border bg-muted border-foreground/40' : 'border-transparent hover:bg-muted/60 hover:border-border'}`}
+              className={`min-h-[52px] w-full rounded-container px-4 py-2.5 text-left ${isSelected ? 'bg-surface-container-high' : 'bg-surface-container hover:bg-muted/60'}`}
             >
               <div className="flex items-center gap-1.5 flex-wrap">
                 <span className="font-medium">{r.name}</span>

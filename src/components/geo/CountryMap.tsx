@@ -117,12 +117,12 @@ export function CountryMap({
               <span
                 className={cn(
                   'absolute -translate-x-1/2 -translate-y-full',
-                  'bg-track-yellow text-track-ring border border-track-ring',
+                  'bg-track-yellow text-track-ring',
                   'rounded-badge px-2 py-1 font-display text-2xs uppercase leading-none',
                   'whitespace-nowrap',
                   // The pin: a notch under the pill pointing at its own dot.
                   'after:absolute after:left-1/2 after:top-full after:-ml-1 after:border-4',
-                  'after:border-transparent after:border-t-track-ring',
+                  'after:border-transparent after:border-t-track-yellow',
                 )}
                 style={{
                   left: `${(data.label.x / data.w) * 100}%`,

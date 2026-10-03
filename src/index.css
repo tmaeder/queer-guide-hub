@@ -200,7 +200,10 @@
      branding_validate's 150-key cap, which a full override is already
      within 5 keys of. If it is ever made operator-tunable, raise that cap
      in the same migration. */
-  --radius-none: 0;
+  /* Legacy `rounded-none` call sites may still arrive from third-party or
+     infrequently visited screens. Keep the name as a compatibility alias,
+     but never let it reintroduce a sharp product surface. */
+  --radius-none: var(--radius-element);
   --radius-panel: 1.625rem; /* 26px — dialogs, sheets, page-level shells */
   --radius-container: 1.125rem; /* 18px — cards, panels, fields */
   --radius-element: 0.75rem; /* 12px — buttons, inputs, rows, chips */
@@ -213,8 +216,11 @@
   --radius-island-sm: 1.25rem; /* 20px — the same bars under 768px */
 
   /* ── Colors — CSS-variable-based monochrome ────────────────────── */
-  --color-border: hsl(var(--border));
-  --color-input: hsl(var(--input));
+  /* Decorative utility borders are deliberately invisible. Hierarchy comes
+     from the tonal surface ladder and spacing; meaningful diagram geometry
+     uses its explicit track/ink colour instead. */
+  --color-border: transparent;
+  --color-input: transparent;
   --color-ring: hsl(var(--ring));
   --color-background: hsl(var(--background));
   --color-foreground: hsl(var(--foreground));
@@ -310,16 +316,12 @@
   --color-secondary: hsl(var(--secondary));
   --color-secondary-foreground: hsl(var(--secondary-foreground));
 
-  /* ── Semantic text hierarchy + hairline border ─────────────────── */
+  /* ── Semantic text hierarchy + retired hairline compatibility ─── */
   --color-text-primary: hsl(var(--text-primary));
   --color-text-secondary: hsl(var(--text-secondary));
   --color-text-muted: hsl(var(--text-muted));
-  /* The one line allowed between surfaces (Brand Guidelines §02b: "Dense
-     tables may divide rows at 7-13% ink. That is the only line allowed
-     between surfaces."). The token keeps HSL *channels* — ink in light,
-     paper in dark — and the alpha lives in a separate scalar, because
-     branding_validate's HSL_RE forbids an alpha component in a token
-     value, so 12%-ink cannot be expressed as a channel triple. */
+  /* Kept so legacy `border-border-hairline` classes remain valid while the
+     zero alpha makes them visual no-ops. */
   --color-border-hairline: hsl(var(--border-hairline) / var(--hairline-alpha));
 
   /* ── Surface elevation ladder (monochrome depth, no shadows) ─────
@@ -339,7 +341,7 @@
   --color-sidebar-primary-foreground: hsl(var(--sidebar-primary-foreground));
   --color-sidebar-accent: hsl(var(--sidebar-accent));
   --color-sidebar-accent-foreground: hsl(var(--sidebar-accent-foreground));
-  --color-sidebar-border: hsl(var(--sidebar-border));
+  --color-sidebar-border: transparent;
   --color-sidebar-ring: hsl(var(--sidebar-ring));
 
   /* ── Box shadow — ONE soft elevation (soft re-skin 2026-08-17) ────────
@@ -358,7 +360,7 @@
      into a white glow. Shadows are black in both modes; the .dark block
      only deepens the alpha. */
   --shadow-none: none;
-  --shadow-hairline: 0 1px 0 hsl(var(--border));
+  --shadow-hairline: none;
   --shadow-soft: 0 16px 40px rgba(17, 17, 17, 0.06);
   --shadow-soft-hover: 0 12px 30px rgba(17, 17, 17, 0.13);
   /* Dialogs, sheets and the search command plate: they float over a scrim
@@ -517,20 +519,16 @@
   --track-yellow: 50.1 100% 50%;
   --track-ring: 0 0% 6.7%;
 
-  /* --border is a DIVIDER, not a component boundary (soft re-skin). Cards
-     and panels have no frame; they separate by surface tint + shadow. What
-     is left for this token is row rules inside dense lists, so it drops
-     from ink to a 12%-ink composite over the page. It has to stay a solid
-     colour: @layer base sets `border-color: hsl(var(--border))` globally
-     and that reset cannot carry an alpha channel.
-     --input is different and stays high-contrast: a form control's
-     boundary IS required to clear 3:1 (WCAG 1.4.11), against both the page
-     and the card it may sit on. */
+  /* HSL channel values stay override-compatible for charts and data graphics.
+     UI utilities no longer expose them as visible keylines: cards, lists and
+     controls separate with tonal fills, spacing and focus rings. */
   --border: 60 7.4% 81.4%;
   --input: 60 4.8% 44.9%;
   --input-bg: 60 33% 97%;
   --ring: 330 100% 56%;
-  --hairline-alpha: 0.12;
+  /* Legacy divider call sites are intentionally transparent. The supplied
+     templates separate content with spacing and tonal surfaces, not rules. */
+  --hairline-alpha: 0;
   /* Island inset. §10 rule 1, "Islands float, they never span": "Inset 14 to
      22px from every edge, so page colour shows on all four sides. The gap is
      fixed; it does not tighten on scroll." The spec draws the top of that
@@ -673,10 +671,9 @@
   --track-yellow: 50.1 100% 50%;
   --track-ring: 0 0% 6.7%;
 
-  /* Derived: 12% paper over the page — the mirror of light's 12% ink. */
+  /* Retained HSL channels for explicit data geometry; UI borders are hidden. */
   --border: 60 1.1% 17.5%;
-  /* Derived: a control boundary clears 3:1 against BOTH the page (5.2:1) and
-     a card (4.4:1), which is a tighter constraint than the light value's. */
+  /* Retained for branded overrides and explicit data geometry. */
   --input: 60 3.6% 51.2%;
   --input-bg: 60 5.7% 10.4%;
   --ring: 330 100% 56%;
@@ -693,7 +690,7 @@
   --text-primary: 60 33% 97%;
   --text-secondary: 60 8% 72%; /* derived: 10.0:1 on the page */
   --text-muted: 60 6% 62%; /* derived: 7.5:1 on the page */
-  /* Channels flip to paper; the 12% alpha lives in --hairline-alpha. */
+  /* Channels flip to paper; the compatibility alpha remains zero. */
   --border-hairline: 60 33% 97%;
 
   --surface: 60 6.1% 12.9%;
@@ -716,8 +713,9 @@
 .maplibregl-popup-content {
   background: hsl(var(--popover)) !important;
   color: hsl(var(--popover-foreground)) !important;
-  border: 1px solid hsl(var(--border)) !important;
+  border: 0 !important;
   border-radius: var(--radius-container) !important;
+  box-shadow: var(--shadow-soft) !important;
 }
 .maplibregl-popup-anchor-top .maplibregl-popup-tip,
 .maplibregl-popup-anchor-top-left .maplibregl-popup-tip,
@@ -786,16 +784,18 @@
    PersonalitiesMap and the other legacy maps that keep NavigationControl). */
 .maplibregl-ctrl-group {
   background: hsl(var(--background));
-  border: 1px solid hsl(var(--border));
+  border: 0;
   border-radius: var(--radius-element);
-  box-shadow: none !important;
+  box-shadow: var(--shadow-soft) !important;
   overflow: hidden;
 }
 .maplibregl-ctrl-group button {
   background: transparent;
+  border-radius: var(--radius-element);
 }
 .maplibregl-ctrl-group button + button {
-  border-top: 1px solid hsl(var(--border));
+  border-top: 0 !important;
+  background: hsl(var(--surface-container));
 }
 .maplibregl-ctrl-group button:focus-visible {
   outline: 2px solid hsl(var(--ring));
@@ -815,7 +815,7 @@
     box-sizing: border-box;
     border-width: 0;
     border-style: solid;
-    border-color: hsl(var(--border));
+    border-color: transparent;
   }
 }
 
@@ -1212,17 +1212,11 @@ h2,
    Spec: 500ms, overshoot to 1.28x, settles. Fires when a line reaches a
    stop — arrival confirmation, not decoration.
 
-   NOTE: this is the ONE sanctioned overshoot outside the joy zone. The
-   repo's standing rule removed spring easing (the old 1.56 overshoot)
-   because bounce read as decorative; the design system reintroduces a
-   smaller one for exactly this semantic — a train seating at a platform.
-   1.28x, not 1.56x, and only on arrival. */
+   The station settles with the shared deceleration curve. No overshoot: the
+   motion should clarify arrival, not make the interface bounce. */
 @keyframes station-pop {
   0% {
     transform: scale(0);
-  }
-  62% {
-    transform: scale(1.28);
   }
   100% {
     transform: scale(1);
@@ -1231,7 +1225,7 @@ h2,
 .station-pop {
   transform-box: fill-box;
   transform-origin: center;
-  animation: station-pop var(--motion-slow) cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  animation: station-pop var(--motion-slow) cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 @media (prefers-reduced-motion: reduce) {
   .station-pop {
@@ -1762,7 +1756,6 @@ h2,
    the page title. */
 .route-context-shell {
   background: hsl(var(--background));
-  border-bottom: 1px solid hsl(var(--border-hairline) / 0.16);
 }
 .route-network-rail {
   position: relative;
@@ -1995,7 +1988,7 @@ h2,
   vector-effect: non-scaling-stroke;
 }
 .route-journey__station--to {
-  animation: route-journey-arrival var(--motion-route-arrival) cubic-bezier(0.34, 1.56, 0.64, 1)
+  animation: route-journey-arrival var(--motion-route-arrival) cubic-bezier(0.22, 1, 0.36, 1)
     var(--motion-route-arrival-delay) both;
 }
 .route-journey__rider {
@@ -2073,12 +2066,6 @@ h2,
 /* Subtle SVG noise — turbulence-based, neutral, transparency-modulated. */
 .bg-noise {
   background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.06 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
-}
-
-/* Aceternity-style dotted grid background (monochrome). */
-.bg-grid-dots {
-  background-image: radial-gradient(hsl(var(--foreground) / 0.1) 1px, transparent 1px);
-  background-size: 24px 24px;
 }
 
 /* `.bg-grid-lines`, `.spotlight-radial` and `.scrim-bottom` were removed 2026-08-04 — both had
@@ -2296,10 +2283,10 @@ label a:hover {
   margin-top: 0.05em;
 }
 
-/* PHOTOCOPY rebrand — the 2px black rule. Rationed signature: masthead
-   tops, the homepage CTA band, the footer. Never full card outlines. */
+/* Legacy editorial hook. The subway templates use whitespace and type scale
+   for masthead hierarchy, so the former photocopy rule is intentionally gone. */
 .rule-heavy {
-  border-top: 2px solid hsl(var(--foreground));
+  border-top: 0;
 }
 
 /* Mobile search overlay: Radix renders PopoverContent inside a translated

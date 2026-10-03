@@ -204,7 +204,7 @@ function TestingWindow({ row }: { row: TestingRow }) {
 
   if (row.symptoms_only) {
     return (
-      <span className="border inline-block rounded-element border-dashed border-foreground px-2 py-1.5 text-2xs font-bold uppercase tracking-label">
+      <span className="inline-block rounded-element bg-surface-container px-2 py-1.5 text-2xs font-bold uppercase tracking-label">
         {t('stiGuide.symptomsOnly', 'Only when symptoms are present')}
       </span>
     );
@@ -714,7 +714,7 @@ export default function StiGuidePage() {
                       <li key={s.id}>
                         <LocalizedLink
                           to={`/tags/${encodeURIComponent(s.slug)}`}
-                          className="border inline-block border-foreground px-2 py-1.5 text-2xs font-bold text-foreground no-underline hover:bg-foreground hover:text-background"
+                          className="inline-block rounded-badge bg-surface-container px-2 py-1.5 text-2xs font-bold text-foreground no-underline hover:bg-foreground hover:text-background"
                         >
                           {s.name}
                         </LocalizedLink>

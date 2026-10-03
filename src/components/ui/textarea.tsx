@@ -9,10 +9,8 @@ const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
       <textarea
         className={cn(
           'flex min-h-[96px] w-full rounded-element px-4 py-2.5 text-sm transition-all duration-fast',
-          // Matches `Input` and `SelectTrigger`. Replaces the PASTE-UP inverted
-          // plate, whose two halves are coupled — overriding only the fill left
-          // near-white type on a light surface at 1.09:1.
-          'border border-input bg-muted text-foreground placeholder:text-muted-foreground',
+          // Matches Input and SelectTrigger: a tonal well with no outline.
+          'bg-surface-container text-foreground placeholder:text-muted-foreground shadow-soft',
           'focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-background',
           'disabled:cursor-not-allowed disabled:opacity-50',
           className,
