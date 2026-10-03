@@ -165,7 +165,7 @@ export function PrideTimeline({
                   i % 2 === 1 && 'bg-muted/30',
                 )}
               >
-                <div className="sticky top-0 z-10 px-2 py-1 text-xs2 font-medium tracking-wide text-foreground/70 bg-background border-b border-border-hairline">
+                <div className="sticky top-0 z-10 rounded-element border-b border-border-hairline bg-background px-2 py-1 text-xs2 font-medium tracking-wide text-foreground/70">
                   {m}
                 </div>
               </div>

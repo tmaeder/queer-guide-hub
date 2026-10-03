@@ -69,7 +69,7 @@ const auditRoundedSurfaces = (page: Page) =>
       .filter(visible)
       .filter((element) => {
         if (
-          element.closest('svg, canvas, [data-maplibre-map]') ||
+          element.closest('svg, canvas, [data-maplibre-map], .maplibregl-map') ||
           element.matches(
             'main, .min-h-screen.flex.flex-col.bg-background, .route-context-shell, ' +
               '[data-testid="route-journey"], .route-network-rail, .route-network-rail__track',
