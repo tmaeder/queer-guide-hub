@@ -49,9 +49,10 @@ import { TRACK_BG, TRACK_TEXT } from '@/components/transit/routeBulletMap';
  * be cancelled from a className (tailwind-merge does not know
  * tailwindcss-animate's `animate-in`).
  *
- * Track colours are wayfinding, never risk — only the active station takes a
- * track fill, and it always carries `border-track-ring` (WCAG 1.4.11,
- * fill-vs-ring). The legend is the one place `--destructive` may appear,
+ * Track colours are wayfinding, never risk — only the active, text-labelled
+ * control takes a track fill. Station swatches keep their ink ring; the chip
+ * needs no decorative perimeter because its label and fill carry the state.
+ * The legend is the one place `--destructive` may appear,
  * reserved for the two criminal-exposure-with-death classes.
  */
 
@@ -236,8 +237,7 @@ export function RightsMapControls({
                     // the bg/text conflict in favour of the track.
                     className={cn(
                       'whitespace-nowrap',
-                      isActive &&
-                        cn('border border-track-ring', TRACK_BG[track], TRACK_TEXT[track]),
+                      isActive && cn(TRACK_BG[track], TRACK_TEXT[track]),
                     )}
                   />
                 );

@@ -53,7 +53,7 @@ const JOIN_SPEC =
   '*, cities:city_id(id, slug, name), countries:country_id(id, slug, name, code, flag_emoji, equality_score, lgbti_criminalization)';
 
 const OUTLINE_ON_INK =
-  'border inline-flex items-center gap-2 border-background px-4 py-2 text-13 font-bold text-background no-underline transition-colors hover:bg-background hover:text-foreground';
+  'inline-flex items-center gap-2 rounded-element bg-background/15 px-4 py-2 text-13 font-bold text-background no-underline transition-colors hover:bg-background hover:text-foreground';
 
 export default function QueerVillageDetail() {
   const { t, i18n } = useTranslation();

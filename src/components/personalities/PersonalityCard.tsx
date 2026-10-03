@@ -49,7 +49,7 @@ export function PersonalityCardSkeleton() {
     // loaded.
     <div className="flex h-full flex-col bg-card rounded-container shadow-soft">
       <div className="relative aspect-[3/4] w-full border-b border-border-hairline bg-muted">
-        <Skeleton className="absolute inset-0 h-full w-full rounded-none" />
+        <Skeleton className="absolute inset-0 h-full w-full rounded-container" />
       </div>
       <div className="p-4">
         <Skeleton className="mb-2 h-4 w-3/4" />

@@ -57,7 +57,7 @@ export function EpisodeRow({ episode, showName, artwork }: EpisodeRowProps) {
               ? t('audio.pauseEpisode', 'Pause {{title}}', { title })
               : t('audio.playEpisode', 'Play {{title}}', { title })
           }
-          className="flex size-10 shrink-0 items-center justify-center rounded-full border border-track-ring bg-track-pink text-foreground transition-opacity hover:opacity-90"
+          className="flex size-10 shrink-0 items-center justify-center rounded-full bg-track-pink text-foreground transition-opacity hover:opacity-90"
         >
           {active && playing ? (
             <Pause className="size-4" aria-hidden />

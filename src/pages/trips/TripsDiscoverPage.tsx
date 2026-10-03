@@ -516,7 +516,7 @@ export default function TripsDiscoverPage() {
                 // variant carries `bg-background`, so paper fill plus the paper
                 // text this override sets rendered a white box with white text —
                 // measured 1:1 contrast, completely invisible.
-                className="border border-background bg-transparent text-background hover:bg-background hover:text-foreground"
+                className="bg-background/15 text-background hover:bg-background hover:text-foreground"
                 onClick={bump}
               >
                 {t('trips.discover.cta.secondary', 'Draw another')}

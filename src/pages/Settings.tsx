@@ -245,7 +245,7 @@ function AccordionSection({
         id={`settings-section-${id}`}
         className={cn(
           'rounded-container bg-card transition-colors scroll-mt-24',
-          active ? 'border border-foreground/30' : 'border-border',
+          active ? 'bg-surface-container-high' : 'bg-surface-container',
         )}
       >
         <CollapsibleTrigger asChild>
@@ -477,7 +477,7 @@ function ProfileSettingsContent({
 
       {/* Avatar editor — opened from the hero, inline (no pop-over) */}
       {activeSection === 'avatar' && (
-        <Card id="settings-section-avatar" className="border scroll-mt-24 border-foreground/30">
+        <Card id="settings-section-avatar" className="scroll-mt-24">
           <CardContent className="pt-6">
             <div className="flex items-center justify-between mb-4">
               <p className="font-semibold">Your avatar</p>

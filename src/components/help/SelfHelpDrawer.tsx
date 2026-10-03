@@ -28,7 +28,7 @@ export function SelfHelpDrawer({ country }: { country: string }) {
             ink-on-ink outline button would be invisible there. */}
         <button
           type="button"
-          className="border inline-flex items-center gap-2 rounded-element border-background px-4 py-2 text-13 font-bold text-background transition-colors hover:bg-background hover:text-foreground"
+          className="inline-flex items-center gap-2 rounded-element bg-background/15 px-4 py-2 text-13 font-bold text-background transition-colors hover:bg-background hover:text-foreground"
         >
           <Wind size={14} aria-hidden />
           {t('help.self_help_trigger', 'Not ready to talk?')}
@@ -42,7 +42,7 @@ export function SelfHelpDrawer({ country }: { country: string }) {
           <div className="mt-2 flex flex-wrap items-center gap-2">
             <a
               href={`tel:${emergency.number}`}
-              className="inline-flex min-h-11 items-center gap-2 bg-destructive px-4 text-13 font-bold text-destructive-foreground no-underline"
+              className="inline-flex min-h-11 items-center gap-2 rounded-element bg-destructive px-4 text-13 font-bold text-destructive-foreground no-underline"
             >
               <Phone size={16} aria-hidden />
               <span className="tabular-nums">{emergency.number}</span>

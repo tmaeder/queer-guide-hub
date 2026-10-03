@@ -214,19 +214,17 @@ describe('AdminEditButton', () => {
     }
   });
 
-  it('keeps the split control seamed rather than fusing the two halves', async () => {
-    // The first cut deleted the pencil's right border so the halves would not
-    // show a double line, which removed the only thing saying it is two
-    // controls. Both borders stay; the chevron is pulled a pixel left so they
-    // collapse into one shared seam.
+  it('separates the paired actions without a hairline seam', async () => {
+    // The subway design system groups controls through proximity and tonal
+    // fill. Both actions stay individually rounded and a small gap replaces
+    // the old one-pixel join, so the pair reads clearly without fine borders.
     useAdminRolesMock.mockReturnValue({ canManageContent: () => true, loading: false });
     renderIn(<AdminEditButton contentType="venues" contentId="v1" />);
     const pencil = screen.getByRole('button', { name: /Edit all fields/i });
     const chevron = screen.getByRole('button', { name: 'More admin actions' });
-    expect(pencil.className).not.toMatch(/\bborder-r-0\b/);
-    expect(chevron.className).toMatch(/-ml-px/);
-    // The focus ring is `ring-2 ring-offset-2`; on adjoined controls it is
-    // drawn under the neighbour unless the focused half is lifted.
+    expect(pencil.className).toMatch(/rounded-element/);
+    expect(chevron.className).toMatch(/rounded-element/);
+    expect(chevron.className).not.toMatch(/-ml-px/);
     expect(pencil.className).toMatch(/focus-visible:z-10/);
     expect(chevron.className).toMatch(/focus-visible:z-10/);
   });

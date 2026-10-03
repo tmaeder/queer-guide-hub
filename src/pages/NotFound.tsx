@@ -117,7 +117,7 @@ function StopRow({
 const SECTION_LABEL = 'text-13 font-bold uppercase tracking-label text-muted-foreground';
 
 const END_OF_LINE_LINK =
-  'border inline-flex items-center gap-2 border-background px-4 py-2 text-15 font-bold text-background no-underline transition-colors hover:bg-background hover:text-foreground';
+  'inline-flex items-center gap-2 rounded-element bg-background/15 px-4 py-2 text-15 font-bold text-background no-underline transition-colors hover:bg-background hover:text-foreground';
 
 const NotFound = () => {
   const location = useLocation();

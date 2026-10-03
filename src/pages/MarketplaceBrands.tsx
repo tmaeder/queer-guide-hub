@@ -516,7 +516,7 @@ export default function MarketplaceBrands() {
             </h2>
             <LocalizedLink
               to="/marketplace"
-              className="border mt-4 inline-flex items-center gap-2 border-background px-4 py-2 text-13 font-bold text-background no-underline transition-colors hover:bg-background hover:text-foreground"
+              className="mt-4 inline-flex items-center gap-2 rounded-element bg-background/15 px-4 py-2 text-13 font-bold text-background no-underline transition-colors hover:bg-background hover:text-foreground"
             >
               {t('marketplace.browseAll', 'Browse the marketplace')} →
             </LocalizedLink>

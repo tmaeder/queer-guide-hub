@@ -32,7 +32,7 @@ export function BrowseVisitedToolbar({ value, onChange }: Props) {
       <div
         role="radiogroup"
         aria-labelledby="travel-visited-filter-label"
-        className="inline-flex items-center gap-1 bg-muted p-1"
+        className="inline-flex items-center gap-1 rounded-element bg-muted p-1"
       >
         {options.map(({ key, icon: Icon, label }) => {
           const active = value === key;
@@ -43,7 +43,7 @@ export function BrowseVisitedToolbar({ value, onChange }: Props) {
               aria-checked={active}
               onClick={() => onChange(key)}
               className={cn(
-                'inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium transition-colors',
+                'inline-flex items-center gap-1.5 rounded-element px-2.5 py-1.5 text-xs font-medium transition-colors',
                 active
                   ? 'bg-foreground text-background'
                   : 'text-muted-foreground hover:text-foreground',
