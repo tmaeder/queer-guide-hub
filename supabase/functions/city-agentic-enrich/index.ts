@@ -185,6 +185,17 @@ Deno.serve(async (req: Request) => {
     idColumn: 'city_id',
     fields: CITY_GATED_FIELDS,
     ids: cities.map((c) => c.id),
+    // The rating's decision is the INTEGER. `rationale` is free prose this model
+    // rewrites on every run, so comparing the whole payload meant a rejected rating
+    // came straight back: measured on prod, Khandwa's rating 3 was rejected on
+    // 2026-10-01 and re-offered on 2026-10-03 as the same 3 with a reworded rationale.
+    // Only this field is normalised — a hook and a best_time_to_visit ARE their prose,
+    // so for them the whole value is the decision and byte equality is correct.
+    normalizeValue: (field, value) => {
+      if (field !== 'lgbt_friendly_rating') return value
+      const v = (value ?? {}) as Record<string, unknown>
+      return { value: v.value, scale: v.scale }
+    },
   })
   const results: Array<Record<string, unknown>> = []
 
@@ -294,17 +305,46 @@ Deno.serve(async (req: Request) => {
 
       // --- Review-gate SAFETY-SENSITIVE fields (never auto-publish) ---
       const queued: string[] = []
+      // Per-field citation sets. `citeFor` is deliberately the ONLY way a proposal
+      // gets citations: the previous code gated the rating on `citations.length > 0`
+      // — ANY citation, for any field — while attaching only the rating-scoped
+      // subset, so a rating could be queued with an EMPTY cite list while the gate
+      // read as satisfied. Measured on the 7 rows open 2026-10-01: Daegu and Khandwa
+      // were queued citing a bare Wikipedia geography sentence that says nothing
+      // about LGBTQ+ status, which is what "MUST be cited" was meant to prevent.
+      //
+      // A citation that quotes OUR OWN injected `safetyContext` is not a citation.
+      // That string is built two blocks up from `countries.equality_score` — a number
+      // computed by `_shared/equality-score.ts`, published by nobody — and the model
+      // routinely hands it back as a verbatim `quote` attributed to
+      // `https://ilga.org/maps-sexual-orientation-laws`. ILGA publishes no such score.
+      // Measured on prod 2026-10-01: 245 of 383 APPROVED rating rows quote an
+      // `equality_score=` string, 180 of them attributed to ilga.org — so the
+      // "citation-backed" requirement was being satisfied by our own derived data,
+      // laundered through the model and dressed as an external authority.
+      // We know the exact string we injected, so this is detectable rather than a
+      // judgement call. Dropping it means a rating whose ONLY support is our own
+      // number is not produced at all, which is the correct outcome: the country
+      // score is already published on the country page and needs no city row.
+      const selfQuote = (x: { quote?: unknown }) => {
+        const q = String(x?.quote ?? '').trim()
+        if (!q) return false
+        return (!!safetyContext && q === safetyContext.trim()) || /equality_score=/.test(q)
+      }
+      const citeFor = (...names: string[]) =>
+        citations.filter(x => names.includes(String(x?.field ?? '')) && !selfQuote(x))
+      const ratingCite = citeFor('lgbt_friendly_rating', 'rating')
       const ratingValid = typeof ai.lgbt_friendly_rating === 'number'
         && Number.isFinite(ai.lgbt_friendly_rating)
-        && citations.length > 0   // rating MUST be cited or it is not produced
+        && ratingCite.length > 0   // rating MUST be cited FOR THE RATING or it is not produced
       const gatedProposals: { field: string; value: unknown; cite: typeof citations }[] = []
       if (ratingValid) {
         const r = Math.max(1, Math.min(5, Math.round(ai.lgbt_friendly_rating as number)))
-        gatedProposals.push({ field: 'lgbt_friendly_rating', value: { value: r, scale: '1-5', rationale: ai.rating_rationale ?? null }, cite: citations.filter(x => x?.field === 'lgbt_friendly_rating' || x?.field === 'rating') })
+        gatedProposals.push({ field: 'lgbt_friendly_rating', value: { value: r, scale: '1-5', rationale: ai.rating_rationale ?? null }, cite: ratingCite })
       }
       // safety_notes is no longer LLM-generated — it is composed deterministically by
       // the SQL compose_safety_note() / city safety backfill (migration 20260608000001).
-      if (ai.editorial_hook) gatedProposals.push({ field: 'editorial_hook', value: { value: ai.editorial_hook }, cite: citations.filter(x => x?.field === 'editorial_hook' || x?.field === 'hook') })
+      if (ai.editorial_hook) gatedProposals.push({ field: 'editorial_hook', value: { value: ai.editorial_hook }, cite: citeFor('editorial_hook', 'hook') })
       // Still fill-if-empty: a city that already carries a best_time_to_visit keeps it,
       // and queueing a proposal against it would invite a reviewer to overwrite curated
       // text. Deliberately NOT gated on highConf, following editorial_hook — a human
@@ -313,7 +353,7 @@ Deno.serve(async (req: Request) => {
         gatedProposals.push({
           field: 'best_time_to_visit',
           value: { value: ai.best_time_to_visit },
-          cite: citations.filter(x => x?.field === 'best_time_to_visit' || x?.field === 'best_time'),
+          cite: citeFor('best_time_to_visit', 'best_time'),
         })
       }
 
@@ -373,7 +413,20 @@ Deno.serve(async (req: Request) => {
           await supabase.from('city_review_queue').delete().eq('city_id', c.id).eq('field', g.field).eq('status', 'open')
           await supabase.from('city_review_queue').insert({
             city_id: c.id, field: g.field, proposed_value: g.value,
-            citations: g.cite.length ? g.cite : citations, confidence, model: 'gpt-4o-mini', status: 'open',
+            // NO fallback to the full `citations` list. It used to read
+            // `g.cite.length ? g.cite : citations`, so a field with no citation of
+            // its own was shown ANOTHER field's evidence — and a reviewer has no way
+            // to tell that apart from a real one. Measured on prod 2026-10-01: all 6
+            // open `editorial_hook` rows and the one `best_time_to_visit` row
+            // ("January to August", Da Nang) displayed the citation
+            // `{field: lgbt_friendly_rating, url: ilga.org, quote: "Vietnam:
+            // equality_score=73, legal_status=legal"}` as their basis — an equality
+            // score offered as the source for a travel-timing claim.
+            // An empty list is the honest answer: absence of evidence must not be
+            // recorded as evidence. The rating is the only field that REQUIRES a
+            // citation (see ratingValid above); prose fields may legitimately have
+            // none and must then show none.
+            citations: g.cite, confidence, model: 'gpt-4o-mini', status: 'open',
           })
           queued.push(g.field)
         }
