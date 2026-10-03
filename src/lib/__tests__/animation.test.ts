@@ -3,7 +3,7 @@ import { duration, ease, distance, stagger, transition, isLowEndDevice } from '.
 
 describe('animation tokens', () => {
   it('should export duration values', () => {
-    expect(duration.instant).toBe(0.1);
+    expect(duration.instant).toBe(0.14);
     expect(duration.fast).toBe(0.2);
     expect(duration.normal).toBe(0.3);
     expect(duration.slow).toBe(0.5);
