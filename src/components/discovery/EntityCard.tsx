@@ -64,7 +64,7 @@ export function EntityCard({
     <div
       className={cn(
         SPAN_CLASSES[span],
-        'group relative isolate flex flex-col overflow-hidden rounded-container bg-surface-container transition-colors duration-normal hover:bg-surface-container',
+        'card-lift group relative isolate flex flex-col overflow-hidden rounded-container bg-surface-container transition-colors duration-normal',
         className,
       )}
     >
@@ -75,7 +75,7 @@ export function EntityCard({
             alt={imageAlt}
             loading="lazy"
             decoding="async"
-            className="h-full w-full object-cover transition-transform duration-slow ease-out group-hover:scale-[1.04]"
+            className="h-full w-full object-cover transition-transform duration-slow ease-out group-hover:scale-[1.04] motion-reduce:transform-none motion-reduce:transition-none"
           />
         ) : (
           <div className="h-full w-full bg-muted" />
