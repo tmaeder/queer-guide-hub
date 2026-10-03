@@ -7,7 +7,7 @@ export function BadgeRow({ badges }: { badges: Badge[] }) {
       {badges.map((b) => (
         <span
           key={b.id}
-          className="border border-foreground/20 bg-foreground/5 text-foreground text-xs px-2.5 py-1"
+          className="rounded-badge bg-foreground/5 px-2.5 py-1 text-xs text-foreground"
         >
           {b.label}
         </span>

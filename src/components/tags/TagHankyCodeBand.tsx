@@ -76,7 +76,7 @@ export function TagHankyCodeBand({ tagSlug }: { tagSlug: string }) {
           )}
         </p>
       ) : !affirmed ? (
-        <div className="mt-6 bg-foreground p-6 text-background">
+        <div className="mt-6 rounded-container bg-foreground p-6 text-background">
           <p className="text-13 leading-relaxed">
             {t(
               'tags.detail.hanky.gateBody',
@@ -85,7 +85,7 @@ export function TagHankyCodeBand({ tagSlug }: { tagSlug: string }) {
           </p>
           <Button
             variant="outline"
-            className="border mt-4 border-background bg-transparent text-background hover:bg-background hover:text-foreground"
+            className="mt-4 bg-background/15 text-background hover:bg-background hover:text-foreground"
             onClick={() => setRequested(true)}
             data-testid="hanky-code-reveal"
           >

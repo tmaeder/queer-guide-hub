@@ -47,12 +47,12 @@ export default function Community({ tab }: { tab?: CommunityTab }) {
     <>
       <PageContainer>
         <Tabs value={active} onValueChange={setTab} style={{ width: '100%' }}>
-          <TabsList className="h-auto gap-0 rounded-none border-0 bg-transparent p-0 backdrop-blur-none w-full justify-start overflow-x-auto">
+          <TabsList className="h-auto w-full justify-start gap-1 overflow-x-auto rounded-element bg-surface-container p-1 backdrop-blur-none">
             {triggers.map(([v, label, Icon]) => (
               <TabsTrigger
                 key={v}
                 value={v}
-                className="h-10 rounded-none border-b border-transparent bg-transparent px-4 shadow-none data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:border-border-hairline data-[state=active]:shadow-none flex items-center gap-2"
+                className="flex h-10 items-center gap-2 rounded-badge bg-transparent px-4 shadow-none data-[state=active]:bg-foreground data-[state=active]:text-background data-[state=active]:shadow-none"
               >
                 <Icon size={16} aria-hidden />
                 {label}

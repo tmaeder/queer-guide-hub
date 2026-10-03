@@ -42,9 +42,9 @@ export const NotificationBell = () => {
               // by the inbox rail's per-row counts. Type on it is
               // `--track-ring` for the same reason every other track fill
               // takes it (see TRACK_TEXT): the fill is identity and does not
-              // flip with the mode, so its type must not either. The 1px rim
-              // is the WCAG 1.4.11 gate every track-coloured mark carries.
-              className="border absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-badge border-track-ring bg-track-pink px-1 text-2xs font-bold leading-none text-track-ring"
+              // flip with the mode, so its type must not either. The count and
+              // compact filled silhouette make the state explicit without a rim.
+              className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-badge bg-track-pink px-1 text-2xs font-bold leading-none text-track-ring"
             >
               {unreadCount > 99 ? '99+' : unreadCount}
             </span>

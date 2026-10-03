@@ -20,7 +20,7 @@ export function QuickExit() {
     <button
       type="button"
       onClick={performQuickExit}
-      className="inline-flex min-h-11 items-center gap-2 bg-foreground px-4 text-13 font-bold text-background"
+      className="inline-flex min-h-11 items-center gap-2 rounded-element bg-foreground px-4 text-13 font-bold text-background"
       aria-label={t('help.quick_exit_aria', 'Leave this page immediately')}
     >
       <LogOut size={16} aria-hidden="true" />

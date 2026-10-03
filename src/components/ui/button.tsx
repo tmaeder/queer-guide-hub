@@ -15,13 +15,11 @@ const buttonVariants = cva(
         // flush beside `outline`. Both are now the same height and radius, so
         // they still line up in a row.
         default: 'bg-foreground text-background font-bold hover:opacity-90',
-        // Secondary. The ONE border that survives on a button: an outline
-        // button has no fill, so its edge IS the control boundary and WCAG
-        // 1.4.11 requires it — hence `border-input` (3.8:1 on the page,
-        // 4.3:1 on a card) rather than the 12%-ink divider hairline.
-        // Hover FILLS ink — a button fills or lifts, never both.
+        // Secondary. This edge is information-bearing rather than decorative:
+        // the tonal plate alone does not clear WCAG 1.4.11 against the page.
+        // Hover fills ink so the state remains unmistakable.
         outline:
-          'border border-input bg-card text-foreground font-bold hover:bg-foreground hover:text-background hover:border-foreground',
+          'border border-input bg-surface-container text-foreground font-bold hover:border-foreground hover:bg-foreground hover:text-background',
         // No chrome until hover — useful in headers / menus.
         ghost: 'bg-transparent text-foreground hover:bg-muted',
         // Inline link styling.
@@ -35,11 +33,9 @@ const buttonVariants = cva(
         // paper-on-pink at 3.43:1, which fails AA for 14px bold (large text
         // starts at 18.66px bold). Ink-on-pink is 5.22:1.
         //
-        // These two KEEP a border where `default` lost one, and it is the
-        // same rule as the badge: a track fill is not perceivable on its own
-        // (blue measures 2.25:1 against a light page) so the mark's own ink
-        // ring is what satisfies 1.4.11. It thins from 2px to 1px with the
-        // soft re-skin, but it cannot go away.
+        // Track buttons are filled, labelled controls rather than diagram
+        // marks, so their type and silhouette carry the affordance without a
+        // container frame.
         //
         // There is no press-feedback effect on these. `.ink-bleed`, the
         // PASTE-UP ripple that used to be the opt-in, had zero call sites and

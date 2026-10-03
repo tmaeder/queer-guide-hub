@@ -786,7 +786,7 @@ export default function TagDetail() {
       </p>
       <LocalizedLink
         to={`/search?tags=${encodeURIComponent(tag.slug)}`}
-        className="border mt-4 inline-flex items-center gap-2 border-background px-4 py-2 text-13 font-bold text-background no-underline transition-colors hover:bg-background hover:text-foreground"
+        className="mt-4 inline-flex items-center gap-2 rounded-element bg-background/15 px-4 py-2 text-13 font-bold text-background no-underline transition-colors hover:bg-background hover:text-foreground"
       >
         <TransitIcon name="search" size={18} />
         {t('tags.detail.searchTagged', 'Search everything tagged {{name}}', { name: tag.name })}

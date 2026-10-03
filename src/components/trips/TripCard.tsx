@@ -323,9 +323,9 @@ export function TripCard({ trip }: Props) {
             </Badge>
 
             {members.length > 1 && (
-              <div className="flex -space-x-2">
+              <div className="flex gap-1">
                 {visibleMembers.map((m) => (
-                  <Avatar key={m.id} className="border w-7 h-7 text-xs border-background">
+                  <Avatar key={m.id} className="h-7 w-7 text-xs">
                     {m.profiles?.avatar_url && (
                       <AvatarImage
                         src={m.profiles.avatar_url}
@@ -338,7 +338,7 @@ export function TripCard({ trip }: Props) {
                   </Avatar>
                 ))}
                 {overflowMembers > 0 && (
-                  <Avatar className="border w-7 h-7 text-xs border-background">
+                  <Avatar className="h-7 w-7 text-xs">
                     <AvatarFallback>+{overflowMembers}</AvatarFallback>
                   </Avatar>
                 )}
