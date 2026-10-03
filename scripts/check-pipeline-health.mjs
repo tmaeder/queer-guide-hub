@@ -920,6 +920,54 @@ if (!hygieneRes.ok) {
   }
 }
 
+// 4a-bis. Evidence-free MASS closes of the dedup queue (2026-09-25).
+//
+//     On 2026-09-20 an autonomous pass closed 676 open pairs in one burst because
+//     "confidence is below the merge threshold" -- which describes the PRODUCER'S
+//     uncertainty (0.70 is the sweep's own score for an uncorroborated candidate), not
+//     evidence about the pair. One row in that burst scored 0.97. Because
+//     `status='rejected'` is the sweep's permanent memory, roughly half that cohort --
+//     real duplicates with a mislinked city -- became permanently unfindable, and the
+//     symptom was a CLEAN QUEUE. Every other check in this file got greener.
+//
+//     Gates on VOLUME, not on note text: "was there evidence" is not mechanically
+//     decidable from a string, and a prefix allowlist is satisfied by the next pass that
+//     picks a conforming prefix. Measured over all history the legitimate closer's
+//     ceiling is 125 rejections/day, against incidents of 591 and 676.
+{
+  const res = await fetch(`${BASE}/rest/v1/rpc/dedup_close_burst_signals`, {
+    method: 'POST', headers: { ...headers, 'Content-Type': 'application/json' }, body: '{}',
+  })
+  if (!res.ok) {
+    console.warn(`⚠ dedup_close_burst_signals → HTTP ${res.status} (RPC missing? migration 99991790384573)`)
+    console.warn('  This check measured NOTHING — it did not pass.')
+  } else {
+    const d = await res.json()
+    if (!d?.probe_ok) {
+      console.error('✗ dedup_close_burst_signals did not report probe_ok — the probe is broken')
+      FAILED = true
+    } else if (Number(d.closes_total_ever ?? 0) === 0) {
+      console.error('✗ dedup_close_burst_signals sees no machine closes in all of history — it is measuring nothing')
+      FAILED = true
+    } else {
+      const bursts = Array.isArray(d.bursts) ? d.bursts : []
+      for (const b of bursts) {
+        console.error(`✗ ${b.closes} dedup pairs closed as "distinct" by machine on ${b.day} (threshold ${d.burst_threshold})`)
+        console.error(`  note: ${b.sample_note}`)
+      }
+      if (bursts.length > 0) {
+        console.error('  A close that large was not reviewed pair-by-pair, and status=rejected is')
+        console.error('  permanent: the sweep never re-suggests a rejected pair. If the pass was')
+        console.error('  right, reopen nothing; if it closed on a confidence score rather than on')
+        console.error('  evidence about each pair, restore them to open before the trail is cold.')
+        FAILED = true
+      } else {
+        console.log(`✓ Dedup close bursts: none in ${d.window_days}d (max day ${d.max_day_count}, threshold ${d.burst_threshold})`)
+      }
+    }
+  }
+}
+
 // 4b. Place dedup corroboration (2026-09-15). The requirement is that dedup of
 //     countries, cities and villages rests on real geographical sources and names,
 //     and never suggests merging two different PLACES. The engine satisfies it
@@ -1029,7 +1077,14 @@ if (!hygieneRes.ok) {
     // self-describing, but it means restating a shared function that the
     // `suggested_uncorroborated` ZERO-invariant depends on — and a hand-made
     // merge with stated evidence is not what that gate exists to police.
-    const BASELINE_UNCORROBORATED = 23
+    // 2026-09-30: 23 -> 24. The new pair is `Tokyo <=> Ch Ku`, merged 2026-09-29 20:30.
+    // `Ch Ku` is a mangled Japanese ward name (the macrons stripped from Chūō-ku),
+    // minted by `venue-city-match` on 2026-09-28, 10.8 km from Tokyo's centroid, no
+    // QID of its own, 14 venues reparented to Tokyo, audit `schema:1` so reversible.
+    // Same district-into-parent class as the Hamburg and Essen entries above, which is
+    // why it is a baseline move and not an investigation: a district was never a city,
+    // so unmerging would resurrect a non-place row.
+    const BASELINE_UNCORROBORATED = 24
     const unc = Number(sig?.merged_uncorroborated ?? 0)
     if (unc > BASELINE_UNCORROBORATED) {
       const ex = Array.isArray(sig?.merged_examples) ? sig.merged_examples : []
@@ -1092,8 +1147,15 @@ if (!hygieneRes.ok) {
 //
 //     SQL cannot call Wikidata, so this cannot tell you a NEW identifier is
 //     wrong. It watches the three things it can prove: a refuted id coming back,
-//     a disposed row losing its SKIP_ sentinel, and a retracted biography
+//     a disposed row losing its recorded decision, and a retracted biography
 //     returning. `unverified_reachable` is a work-list size and only prints.
+//
+//     That decision used to be a `SKIP_<uuid>` stuffed into `wikidata_qid`.
+//     99991790059731 retired the overload corpus-wide — `wikidata_qid` now holds
+//     a real Q-id or NULL and nothing else, and the decision moved to the typed
+//     `wikidata_status` column (`not_found`), which personality-refresh reads
+//     before deciding whether to re-resolve. 99991790384521 moved this invariant
+//     onto that column; it did not relax it.
 {
   const res = await fetch(`${BASE}/rest/v1/rpc/personality_wikidata_signals`, {
     method: 'POST',
@@ -1119,7 +1181,7 @@ if (!hygieneRes.ok) {
       }
       for (const [key, msg] of [
         ['qid_regressed', 'personalit(ies) re-acquired the refuted Wikidata id they were cleared of'],
-        ['sentinel_lost', 'disposed personalit(ies) no longer carry a SKIP_ sentinel'],
+        ['sentinel_lost', 'disposed personalit(ies) no longer record their wikidata decision'],
         ['retracted_text_back', 'retracted wrong-person biograph(ies) have returned'],
       ]) {
         if ((s[key] ?? 0) > 0) {
@@ -1132,8 +1194,9 @@ if (!hygieneRes.ok) {
             console.error('  Check resolveByNameAndProfession() still gates on isHuman() + occupation overlap.')
           }
           if (key === 'sentinel_lost') {
-            console.error('  A NULL here is not neutral: personality-refresh re-resolves by name when')
-            console.error('  wikidata_qid IS NULL, so the row re-enters resolution instead of recording its decision.')
+            console.error('  A disposed row must carry wikidata_status=not_found and no Q-id.')
+            console.error('  Losing not_found puts the row back into name resolution; keeping it')
+            console.error('  alongside a Q-id is incoherent. personality-refresh reads that column.')
           }
           FAILED = true
         }
@@ -1141,6 +1204,91 @@ if (!hygieneRes.ok) {
       console.log(
         `✓ Personality wrong-entity repairs intact (${s.dispositioned} dispositioned, ` +
           `${s.unverified_reachable} reachable rows never swept)`,
+      )
+    }
+  }
+}
+
+// 5a-ter. City wrong-entity regression. The same namesake chimera as the glossary
+//     and the personalities, on PLACES, where it makes a travel platform tell a
+//     reader that Frisco, Texas IS San Francisco. Repaired by 20261102100000
+//     (Geneva, Alabama wearing Q71, by hand) and 99991790358713 (11 rows found by
+//     sweeping all 2,959 QID-bearing cities against live Wikidata P625 -- Par in
+//     Cornwall serving Paris's article, Kos serving Koszalin's, a Kent village
+//     wearing St Petersburg's governor as its mayor). Nothing watched it after.
+//
+//     SQL cannot call Wikidata, so this cannot tell you a NEW identifier is wrong
+//     -- that sweep is an out-of-band job. It watches the three things it can
+//     prove, and the middle one is specific to cities: `city-factual-backfill`
+//     re-fetches the article by the CACHED `wikipedia_title` independently of the
+//     QID, so a title creeping back re-publishes the wrong article even while the
+//     identifier stays null.
+//
+//     `coord_disagree` is the work-list size and only prints. It REPLACED
+//     `coord_unswept` (99991790619179), which was counted from a key nothing ever
+//     wrote — 0 of 3,032 rows — so it read 3,031 forever and hid the ~156 rows that
+//     really do hold another place's identifier. The replacement is SELF-DRAINING:
+//     a row counts only while it still holds the id its verdict was about, so
+//     clearing or correcting the id removes it with no second write.
+{
+  const res = await fetch(`${BASE}/rest/v1/rpc/city_wikidata_signals`, {
+    method: 'POST',
+    headers: { ...headers, 'Content-Type': 'application/json' },
+    body: '{}',
+  })
+  if (res.status === 404) {
+    // NOT-YET-DEPLOYED is a different fact from BROKEN, and conflating them makes a
+    // required gate block the merge that would deploy it: this script runs against
+    // LIVE prod from a PR branch, so a hard fail here cannot be cleared until after
+    // the merge it prevents — the deadlock CLAUDE.md records for `Critical paths`.
+    // The absence is still NAMED, so it never reads as a clean corpus, which is the
+    // rule that matters (`accessibility_contradictions`). Same shape as
+    // `admin_automation_tracking_gaps` below. ONLY a 404 is tolerated — a 500 or a
+    // malformed body still fails, so a genuinely broken sentinel cannot hide here.
+    console.warn('⚠ city_wikidata_signals not deployed yet (404) — migration pending, not clean')
+  } else if (!res.ok) {
+    console.error(`✗ city_wikidata_signals → HTTP ${res.status}`)
+    FAILED = true
+  } else {
+    const s = await res.json()
+    if (!s || s.probe_ok !== true) {
+      console.error('✗ city_wikidata_signals returned no probe_ok — treating as broken, not clean')
+      FAILED = true
+    } else {
+      // A clean corpus and an unreadable one both return zeroes. Assert the probe
+      // is reading something before trusting its zeroes.
+      if ((s.rows_with_qid ?? 0) < 1000) {
+        console.error(
+          `✗ city_wikidata_signals sees only ${s.rows_with_qid} cities with a Q-id — the probe is not reading the corpus`,
+        )
+        FAILED = true
+      }
+      for (const [key, msg] of [
+        ['qid_regressed', 'cit(ies) re-acquired the refuted Wikidata id they were cleared of'],
+        [
+          'wrong_title_back',
+          'repaired cit(ies) carry a wikipedia_title again — the wrong article will be re-fetched',
+        ],
+        ['retracted_desc_back', 'retracted wrong-place description(s) have returned'],
+      ]) {
+        if ((s[key] ?? 0) > 0) {
+          console.error(`✗ ${s[key]} ${msg}`)
+          for (const e of (s.examples ?? []).slice(0, 5)) console.error(`    ${e}`)
+          FAILED = true
+        }
+      }
+      // `coord_checked` is reported beside the work list on purpose: a clean corpus
+      // and a stamp that never landed both give `coord_disagree: 0`, and the count
+      // of rows carrying ANY verdict is what tells them apart.
+      if ((s.coord_checked ?? 0) < 100) {
+        console.error(
+          `✗ city_wikidata_signals sees only ${s.coord_checked} coordinate verdicts — the stamp is not landing`,
+        )
+        FAILED = true
+      }
+      console.log(
+        `✓ City wrong-entity repairs intact (${s.dispositioned} dispositioned, ` +
+          `${s.coord_disagree} of ${s.coord_checked} checked still hold a far-away id)`,
       )
     }
   }
@@ -1929,6 +2077,32 @@ const GEO_BASELINE = {
       FAILED = true
     } else {
       console.log(`✓ Geo authority loaded: ${rows} boundary rows, ${cells} cells, ${geo.boundary_iso_codes} ISO codes`)
+
+      // Every country holding content must have either its own polygon or a
+      // derived sovereign parent. Without one, geo_country_at resolves nothing
+      // inside it and EVERY row under that country reports as a containment
+      // mismatch that is not one — so a regression here does not look like
+      // missing geometry, it looks like a sudden pile of correct coordinates
+      // being flagged. Measured 0 of 191 when this check was added, so it is
+      // GATED rather than baselined.
+      //
+      // The denominator is printed because `without === 0` is equally true of a
+      // corpus with no content at all; it is what separates clean from
+      // measuring-nothing. An ABSENT key is reported separately from a zero,
+      // because an undeployed sentinel must never read as a clean corpus.
+      const holding = geo.countries_holding_content
+      const withoutGeom = geo.countries_without_geometry
+      if (holding === undefined || withoutGeom === undefined) {
+        console.warn('⚠ geo_hygiene_stats has no countries_without_geometry key — migration 99991790515886 is not applied. This is absence of a check, not absence of defects.')
+      } else if (holding < 150) {
+        console.error(`✗ Only ${holding} countries hold content — countries_without_geometry=${withoutGeom} is measuring almost nothing`)
+        FAILED = true
+      } else if (withoutGeom > 0) {
+        console.error(`✗ ${withoutGeom} of ${holding} countries hold venues or events with neither their own boundary polygon nor a derived sovereign parent — every row under them will be reported as a containment mismatch that is not one`)
+        FAILED = true
+      } else {
+        console.log(`✓ Containment resolvable for all ${holding} countries holding content`)
+      }
 
       const total = geo.containment_total ?? 0
       const byClass = geo.containment ?? {}
@@ -3979,8 +4153,487 @@ const DISOWNED_PROSE_CEILING = 380
   }
 }
 
+// §20 — the i18n dispatcher must be able to REACH the locales it dispatches.
+//
+//     `run_i18n_translation_dispatch` fires net.http_post and used to discard
+//     the request id, so a target the edge function REJECTED looked exactly
+//     like one it served: last_run_at advanced, the loop counted it, pg_cron
+//     recorded `succeeded` — 5,562 times out of 5,562.
+//
+//     Measured 2026-09-19, that hid a total outage of four locales.
+//     translate-i18n-batch still held the pipeline's FIRST allowlist
+//     (de fr es it pt nl pl ru tr uk sv) while the dispatcher seeded the
+//     frontend's (de fr es it pt ru zh ja ko ar). zh/ja/ko/ar 400'd on EVERY
+//     fire — 60 of 150 targets, 40% of every slot — and coverage showed it:
+//     12k-16k rows per European locale against 250-1,100 for the four.
+//
+//     A 4xx HARD-FAILS with no threshold. It is a contract bug (bad locale,
+//     bad table, bad field) and can never be transient, so waiting for it to
+//     happen three times only delays the same answer. 5xx and network errors
+//     accumulate into `failing_targets` instead, and a pg_net timeout is
+//     PARTIAL and never counted at all.
+//
+//     A MISSING RPC HARD-FAILS: a dispatcher nobody can measure must not read
+//     as a healthy one — which is the entire defect this section exists for.
+{
+  const res = await fetch(`${BASE}/rest/v1/rpc/i18n_dispatch_signals`, {
+    method: 'POST',
+    headers: { ...headers, 'Content-Type': 'application/json' },
+    body: '{}',
+  })
+  if (!res.ok) {
+    const detail = (await res.text()).slice(0, 200)
+    console.error(`✗ i18n_dispatch_signals → HTTP ${res.status} (migration 99991790380618 not applied? PGRST202 = the function does not exist) ${detail}`)
+    FAILED = true
+  } else {
+    const q = (await res.json()) ?? {}
+    if (q.probe_ok !== true) {
+      console.error('✗ i18n_dispatch_signals did not report probe_ok — the dispatcher could not be measured')
+      FAILED = true
+    } else if (Number(q.targets_enabled ?? 0) === 0) {
+      // Zero enabled targets returns zero of everything else too. An empty
+      // registry and a healthy one must not give the same reassuring answer.
+      console.error('✗ i18n_translation_targets has no enabled rows — the translation pipeline has no work list at all')
+      FAILED = true
+    } else {
+      const clientErr = Number(q.client_error_targets ?? 0)
+      const neverOk = Number(q.never_succeeded ?? 0)
+      const failing = Number(q.failing_targets ?? 0)
+
+      if (clientErr > 0) {
+        console.error(`✗ ${clientErr} i18n translation targets are being REJECTED by translate-i18n-batch (4xx)`)
+        for (const s of q.client_error_sample ?? []) {
+          console.error(`    ${s.target} → HTTP ${s.status}: ${s.error}`)
+        }
+        console.error('  A 4xx here is a contract bug, not a blip: the dispatcher is sending something the')
+        console.error('  function refuses. Check _shared/locales.ts against the i18n_translation_targets seed.')
+        FAILED = true
+      }
+      // never_succeeded WARNS; it does not gate. It was a hard fail for the
+      // first hours after the sentinel shipped, and prod immediately showed
+      // why that is wrong: within three hours it fired on ONE target
+      // (unified_tags.name/zh) whose failure was `502 LLM returned non-JSON
+      // output` — a flake, not a contract. Measured at the same moment: 150
+      // of 150 targets resolved and 149 had succeeded, so the path plainly
+      // worked. Gating on it would have painted the board red for an LLM
+      // having a bad afternoon, which is how a check gets scrolled past.
+      //
+      // Nothing is lost by the downgrade, and that was checked rather than
+      // assumed: the incident this section exists for was 60 targets at HTTP
+      // 400, and `client_error_targets` above hard-fails on a single 4xx with
+      // no threshold. A contract break is still caught on the first fire.
+      if (neverOk > 0) {
+        console.warn(`⚠ ${neverOk} i18n targets have been answered and have never succeeded (5xx/parse — see consecutive_failures)`)
+      }
+      if (failing > 0) {
+        console.warn(`⚠ ${failing} i18n targets have 3+ consecutive failures (5xx/network — transient until it isn't)`)
+      }
+      if (clientErr === 0) {
+        const locales = Array.isArray(q.locales) ? q.locales.join(',') : '?'
+        console.log(`✓ i18n dispatch reaching all targets (${q.targets_enabled} enabled, locales ${locales}, ${q.unresolved} in flight)`)
+      }
+    }
+  }
+}
+
+// §23 — an article the quality gate PASSED must be reachable by a crawler.
+//
+// The cohort size is reported first because zero deindexed rows over an empty
+// cohort is vacuous. Trigger attachment is checked separately so a missing
+// seal cannot look like a repaired corpus. Deliberate human de-indexes are
+// identified from content_revisions and excluded.
+{
+  const res = await fetch(`${BASE}/rest/v1/rpc/news_index_signals`, {
+    method: 'POST',
+    headers: { ...headers, 'Content-Type': 'application/json' },
+    body: '{}',
+  })
+  if (!res.ok) {
+    const detail = (await res.text()).slice(0, 200)
+    console.error(`✗ news_index_signals → HTTP ${res.status} (migration 99991790880121 not applied? PGRST202 = the function does not exist) ${detail}`)
+    FAILED = true
+  } else {
+    const q = (await res.json()) ?? {}
+    if (q.probe_ok !== true) {
+      console.error('✗ news_index_signals did not report probe_ok — news indexability could not be measured')
+      FAILED = true
+    } else if (q.trigger_attached !== true) {
+      console.error('✗ trg_news_enforce_seo_indexable is missing or disabled — rejected/review articles can go indexable')
+      FAILED = true
+    } else if (Number(q.passed_unblocked_total ?? 0) < 1000) {
+      console.error(`✗ news_index_signals is measuring nothing: only ${q.passed_unblocked_total} passed/unblocked articles`)
+      FAILED = true
+    } else {
+      const stranded = Number(q.deindexed_despite_publish_verdict ?? 0)
+      if (stranded > 0) {
+        console.error(`✗ ${stranded} news articles the gate PASSED with no blockers are deindexed against their own shouldPublish verdict`)
+        console.error(`  (${q.passed_unblocked_indexable} of ${q.passed_unblocked_total} passed/unblocked articles are indexable; ${q.human_deindexed_excluded} excluded as deliberate human de-indexes)`)
+        console.error('  The one-way door is back: something de-indexed them and nothing writes seo_indexable=true.')
+        FAILED = true
+      } else {
+        console.log(`✓ news indexability intact (${q.passed_unblocked_indexable}/${q.passed_unblocked_total} passed+unblocked are indexable, ${q.human_deindexed_excluded} human de-indexes respected)`)
+      }
+    }
+  }
+}
+
+// §24 — phone numbers are stored in ONE format: E.164 (+<calling code><number>).
+// phone_canonical_guard() rewrites every write on venues / organizations /
+// hotels, so a non-E.164 value means a writer bypassed it (or the trigger is
+// gone). The guard being ATTACHED is checked separately from the count,
+// because an absent trigger and a clean table both read zero.
+{
+  const res = await fetch(`${BASE}/rest/v1/rpc/phone_format_signals`, {
+    method: 'POST', headers: { ...headers, 'Content-Type': 'application/json' }, body: '{}',
+  })
+  if (res.status === 404) {
+    console.warn('⚠ phone_format_signals → 404 (99991790877996 not applied yet?) — this check measured NOTHING')
+  } else if (!res.ok) {
+    console.error(`✗ phone_format_signals → HTTP ${res.status} — the phone-format probe is broken`)
+    FAILED = true
+  } else {
+    const sig = await res.json()
+    let sectionOk = true
+    if (sig?.probe_ok !== true || !(Number(sig?.rules) > 0)) {
+      console.error('✗ phone_format_signals did not report probe_ok / phone_country_rules is empty')
+      FAILED = true; sectionOk = false
+    }
+    for (const [table, t] of Object.entries(sig?.tables ?? {})) {
+      if (t?.trigger_attached !== true) {
+        console.error(`✗ ${table}: phone_canonical_guard is NOT attached — phone writes are unformatted`)
+        FAILED = true; sectionOk = false
+      }
+      const bad = Number(t?.non_e164 ?? 0)
+      if (bad > 0) {
+        console.error(`✗ ${table}: ${bad} phone values are not E.164 — a writer bypassed the guard,`)
+        console.error(`  or the backfill has not run: scripts/data-quality/backfill-phone-canonical.mjs`)
+        FAILED = true; sectionOk = false
+      }
+    }
+    if (sectionOk) {
+      const v = sig.tables?.venues ?? {}
+      console.log(`✓ phone numbers are E.164 (venues ${v.with_phone}, ${v.rejected} unconvertible kept in enrichment_status.phone_rejected)`)
+    }
+  }
+}
+
 // The single exit. Reached whether or not anything failed, so the ✗ lines above
 // are the complete list rather than "the first one we tripped over".
+// §22 — an event↔venue link is validated ONCE, at link time, and never re-checked.
+//
+// `link_event_venues` is not the problem and was measured before this was written: its
+// auto branch is `name_exact AND (distance_m IS NULL OR distance_m < 500)` -- five
+// hundred METRES -- and across all 132 links it has ever recorded the worst distance is
+// 430.0 m. What it cannot do is notice that a link it made correctly has since drifted,
+// because either side may acquire or correct its coordinates afterwards. Two links sat
+// at 2,398 km and 10,381 km for over a year on that blind spot (99991790537156), and
+// they were found by hand.
+//
+// 100 km is measured, not chosen: p99 is 10.2 km and the largest legitimate value is
+// 14.0 km (a Berlin event on its city centroid with its venue out at Marina Base), so
+// the bound carries ~7x headroom while catching both offenders by orders of magnitude.
+//
+// links_total and links_checkable are read BEFORE the count, because "zero links over
+// 100 km" is equally true of an empty corpus, a corpus with no coordinates at all, and
+// a clean one.
+{
+  const res = await fetch(`${BASE}/rest/v1/rpc/event_venue_link_signals`, {
+    method: 'POST',
+    headers: { ...headers, 'Content-Type': 'application/json' },
+    body: '{}',
+  })
+  if (!res.ok) {
+    console.warn(
+      `⚠ event_venue_link_signals → HTTP ${res.status} (RPC missing? migration 99991790537156)`,
+    )
+    console.warn('  This check measured NOTHING — it did not pass.')
+  } else {
+    const s = (await res.json()) ?? {}
+    // A probe that cannot look must never read as "looked and found none".
+    if (s.probe_ok !== true) {
+      console.error('✗ event_venue_link_signals returned no probe_ok — the probe is broken')
+      FAILED = true
+    } else if (Number(s.links_checkable ?? 0) < 1000) {
+      console.error(
+        `✗ only ${s.links_checkable} event↔venue link(s) carry coordinates on both sides ` +
+          `(of ${s.links_total} links) — the distance check below is measuring almost nothing`,
+      )
+      FAILED = true
+    } else {
+      const over = Number(s.over_100km ?? 0)
+      if (over > 0) {
+        console.error(`✗ ${over} event(s) are attached to a venue over 100 km away:`)
+        for (const o of s.offenders ?? []) {
+          console.error(`    ${o.title} → ${o.venue} (${o.km} km)`)
+        }
+        console.error('  → A venue name that exists in several cities was matched in the wrong one,')
+        console.error('    or a link made correctly has drifted since. Relink only onto a venue the')
+        console.error("    event's OWN coordinates corroborate; otherwise detach and flag.")
+        console.error('  → Do NOT reach for link_event_venues: its gate is 500 m and is holding.')
+        FAILED = true
+      } else {
+        console.log(
+          `✓ event↔venue links: ${s.links_checkable}/${s.links_total} checkable, ` +
+            `p99 ${s.p99_km} km, none over 100 km`,
+        )
+      }
+    }
+  }
+}
+
+// 19. Derived event geography that outlived its input (2026-09-30).
+//
+// `run_event_geo_fill` visited a row once, ever — its selector was
+// `p_force or not (enrichment_status ? 'event_geo_fill')` — so a row whose gap re-opened
+// was never refilled. 99991790719660 added a fillable-gap arm, and this watches the two
+// quantities that arm is about.
+//
+// `stale_centroid_far` is a ZERO-INVARIANT and the reason the section exists: an event
+// carrying the centroid of a merged-away city that is a DIFFERENT place from the city it
+// is now presented on. `merge_cities` writes `events.city` text and does NOT re-derive
+// coordinates, so a merge of two far-apart rows leaves the loser's coordinates behind.
+// That producer is deliberately unchanged — restating a merge core is a large collision
+// surface for a class with one victim on record — so this is the thing that catches it.
+//
+// `stuck_fillable_coords` is ADVISORY with a growth gate, not a zero-invariant: it stood
+// at 50 when the fix shipped and drains through the nightly cron at up to 300 rows a
+// night. Gating at zero would ship red on arrival, which is the cry-wolf shape this file
+// has already removed twice.
+//
+// `stuck_nothing_fillable` is reported and NEVER gated. Those rows are correctly done —
+// their city has no coordinates to give — and re-opening them would re-select 240+ rows
+// nightly on a table whose every UPDATE fans out through `trg_search_documents_event`.
+// A reading of 0 there means the predicate widened to every visited row, which is the
+// failure this design avoids, so it is asserted as NON-zero.
+{
+  const res = await fetch(`${BASE}/rest/v1/rpc/event_geo_derivation_signals`, {
+    method: 'POST',
+    headers: { ...headers, 'Content-Type': 'application/json' },
+    body: '{}',
+  })
+  if (!res.ok) {
+    console.warn(
+      `⚠ event_geo_derivation_signals → HTTP ${res.status} (RPC missing? migration 99991790719660)`,
+    )
+    console.warn('  This check measured NOTHING — it did not pass.')
+  } else {
+    const sig = (await res.json()) ?? {}
+    let sectionOk = true
+    // A probe that cannot look must never read as "looked and found none".
+    if (sig.probe_ok !== true) {
+      console.error('✗ event_geo_derivation_signals returned no probe_ok — the probe is broken, not the corpus')
+      FAILED = true
+      sectionOk = false
+    }
+    const far = Number(sig.stale_centroid_far ?? 0)
+    if (far > 0) {
+      console.error(`✗ ${far} event(s) carry the centroid of a merged-away city that is a DIFFERENT place from the city they are shown on:`)
+      for (const ex of (Array.isArray(sig.stale_centroid_examples) ? sig.stale_centroid_examples : []).slice(0, 10)) {
+        console.error(`    ${ex.dead} → now on ${ex.city} (${ex.km} km)`)
+      }
+      console.error('  → merge_cities does not re-derive coordinates. Clear them on the affected events so the nightly fill re-derives from the surviving city.')
+      FAILED = true
+      sectionOk = false
+    }
+
+    // Advisory + growth. 50 measured when 99991790719660 shipped.
+    const BASELINE_STUCK_FILLABLE = 50
+    const stuck = Number(sig.stuck_fillable_coords ?? 0)
+    if (stuck > BASELINE_STUCK_FILLABLE) {
+      console.error(`✗ events stuck without coordinates their city could supply grew ${BASELINE_STUCK_FILLABLE} → ${stuck} — something is removing coordinates faster than the fill restores them`)
+      FAILED = true
+      sectionOk = false
+    } else if (stuck > 0) {
+      console.log(`  ${stuck} event(s) await a coordinate refill (baseline ${BASELINE_STUCK_FILLABLE}, drains at up to 300/night)`)
+    }
+
+    // Same shape for the timezone axis. 1 measured when the fix shipped; 99991790714809
+    // is why this is watched at all — clearing a timezone stamped from a wrong city
+    // leaves a NULL the visit-once cursor could never refill.
+    const BASELINE_STUCK_TZ = 1
+    const stuckTz = Number(sig.stuck_fillable_tz ?? 0)
+    if (stuckTz > BASELINE_STUCK_TZ) {
+      console.error(`✗ events stuck without a timezone their city could supply grew ${BASELINE_STUCK_TZ} → ${stuckTz}`)
+      FAILED = true
+      sectionOk = false
+    } else if (stuckTz > 0) {
+      console.log(`  ${stuckTz} event(s) await a timezone refill (baseline ${BASELINE_STUCK_TZ})`)
+    }
+
+    const done = Number(sig.stuck_nothing_fillable ?? 0)
+    if (done === 0) {
+      console.error('✗ stuck_nothing_fillable reads 0 — the fill selector has widened to every visited row, which re-selects hundreds of unfillable rows nightly')
+      FAILED = true
+      sectionOk = false
+    }
+
+    if (sectionOk) {
+      console.log(
+        `✓ event geo derivation clean (${sig.events_with_gap} gap row(s), ${sig.never_visited} never visited, ` +
+          `0 stale merged-away centroids, ${done} correctly exhausted)`,
+      )
+    }
+  }
+}
+
+// § A paged source that fetches pages and imports nothing — the resume-by-absence treadmill
+//
+// MEASURED INCIDENT, 2026-10-01. `source-gayout` reported SUCCESS on eight runs
+// in one 24h window with `pages_fetched 16, parsed 0` while `already_seen`
+// stayed at 352-353 and 377 urls still pended — one event imported in nine
+// hours. A gayout page whose date is unannounced carries no Event block, so it
+// yields no row, is never "seen", and returns to the HEAD of the work list on
+// every run. The run is stopped by its TIME budget long before its page budget,
+// so the ~16-page window the clock allows was permanently occupied by those
+// pages and the drain could never reach a parseable one again.
+//
+// NOTHING REPORTED IT. The automation's own status was `success`, the staged
+// count simply stopped moving, and no section in this file watched run YIELD. A
+// drain that fetches and imports nothing is indistinguishable from a drained
+// queue unless the counters are compared — which is what this section does.
+//
+// SCOPE IS STATED RATHER THAN IMPLIED. Only `source-gayout` emits these
+// counters today, so this reads that one automation by slug. A generic sweep
+// over every source would match no summary shape and report a reassuring zero —
+// the vacuous-check failure this file documents elsewhere. Widen the slug list
+// when a second source adopts the same counters.
+{
+  const SLUG = 'ev_fill_gayout'
+  const auto = await get(
+    `admin_automations?slug=eq.${SLUG}&select=id,slug,enabled,last_run_status,consecutive_failures`,
+  )
+  if (auto.length === 0) {
+    console.log(`source yield: no ${SLUG} registry row — nothing to check`)
+  } else {
+    const a = auto[0]
+    const runs = await get(
+      `admin_automation_runs?automation_id=eq.${a.id}&started_at=gte.${since24h}` +
+        `&select=started_at,status,summary&order=started_at.desc`,
+    )
+
+    // Reported FIRST: "0 runs examined" is not a clean result, and an empty
+    // window reads identically to a healthy one without this line.
+    console.log(`source yield (${SLUG}): ${runs.length} run(s) in 24h, enabled=${a.enabled}`)
+
+    // The counters live inside the recorded HTTP response body, which is a JSON
+    // STRING nested in the summary — so they are double-escaped once the summary
+    // is stringified, and the regex tolerates the escaping backslash. Verified
+    // against the real recorded rows, not a hand-written shape.
+    const counters = runs.map(r => {
+      const body = JSON.stringify(r.summary ?? {})
+      const num = k => {
+        const m = body.match(new RegExp(`\\\\?"${k}\\\\?":(-?\\d+)`))
+        return m ? Number(m[1]) : null
+      }
+      return {
+        at: r.started_at,
+        status: r.status,
+        pages: num('pages_fetched'),
+        parsed: num('parsed'),
+        pending: num('pending_before_this_run'),
+        never: num('never_attempted'),
+        credits: /Insufficient credits/.test(body),
+      }
+    })
+
+    const measured = counters.filter(c => c.status === 'success' && c.pages !== null)
+    const treadmill = measured.filter(c => c.pages > 0 && c.parsed === 0 && (c.pending ?? 0) > 0)
+
+    if (measured.length === 0) {
+      console.log('  no successful run recorded counters in the window — yield NOT asserted')
+    } else if (treadmill.length >= 3) {
+      console.error(
+        `✗ ${SLUG}: ${treadmill.length} successful run(s) fetched pages and imported NOTHING while work remained`,
+      )
+      for (const c of treadmill.slice(0, 3)) {
+        console.error(
+          `    ${c.at}  pages=${c.pages} parsed=${c.parsed} pending=${c.pending}` +
+            (c.never === null
+              ? '  (never_attempted absent — deployed function predates the ordering fix)'
+              : `  never_attempted=${c.never}`),
+        )
+      }
+      console.error('  → the work list is not advancing. Unparseable pages must sort to the BACK')
+      console.error('    (supabase/functions/source-gayout/ordering.ts + ingestion_sources.config.page_attempts),')
+      console.error('    or the time-budget window stays pinned to the same head-of-list pages forever.')
+      FAILED = true
+    } else if (treadmill.length > 0) {
+      console.log(`  ⚠ ${treadmill.length} zero-yield run(s) — not yet a pattern, worth watching`)
+    } else {
+      console.log('  ✓ every successful run that fetched pages imported at least one event')
+    }
+
+    // The treadmill's precursor: no never-attempted page left while work pends
+    // means every remaining page has already failed at least once.
+    const exhausted = measured.filter(c => c.never === 0 && (c.pending ?? 0) > 0)
+    if (exhausted.length > 0) {
+      console.log(
+        `  ⚠ ${exhausted.length} run(s) had no never-attempted page left while ${exhausted[0].pending} urls pended`,
+      )
+    }
+
+    // Auto-paused AND still failing is legitimate and only warns — the existing
+    // auto-pause section already hard-fails the paused-then-RECOVERED shape for
+    // every slug, so that rule is not restated here.
+    if (!a.enabled) {
+      const why = counters.some(c => c.credits)
+        ? 'Firecrawl credits exhausted (402) — a billing action, not a code fault'
+        : 'reason not visible in the 24h window; read admin_automation_runs.summary'
+      console.log(`  ⚠ ${SLUG} disabled after ${a.consecutive_failures} failure(s): ${why}`)
+    }
+  }
+}
+
+// Venue accessibility claims whose citation is not in the source text.
+// A wrong access claim can strand a disabled person at a door they cannot get
+// through. Warn at the measured backlog and fail on growth.
+{
+  console.log('')
+  console.log('Venue accessibility evidence')
+  const res = await fetch(`${BASE}/rest/v1/rpc/venue_accessibility_evidence_signals`, {
+    method: 'POST',
+    headers: { ...headers, 'Content-Type': 'application/json' },
+    body: '{}',
+  })
+  if (res.status === 404) {
+    console.warn('⚠ venue_accessibility_evidence_signals → HTTP 404 (not applied? migration 99991790879465)')
+    console.warn('  This check measured NOTHING — it did not pass.')
+  } else if (!res.ok) {
+    console.error(`✗ venue_accessibility_evidence_signals → HTTP ${res.status}`)
+    FAILED = true
+  } else {
+    const sig = (await res.json()) ?? {}
+    let sectionOk = true
+    if (sig.probe_ok !== true) {
+      console.error('✗ venue_accessibility_evidence_signals returned no probe_ok — the probe is broken, not the corpus')
+      FAILED = true
+      sectionOk = false
+    }
+    const cohort = Number(sig.live_machine_claims ?? 0)
+    const venues = Number(sig.live_venues ?? 0)
+    console.log(`  cohort: ${cohort} machine-approved accessibility claim(s) live on ${venues} venue(s)`)
+
+    const BASELINE_UNGROUNDED = 270
+    const ungrounded = Number(sig.ungrounded_live_claims ?? 0)
+    const ungroundedVenues = Number(sig.ungrounded_live_venues ?? 0)
+    if (ungrounded > BASELINE_UNGROUNDED) {
+      console.error(
+        `✗ live accessibility claims with no grounded citation grew ${BASELINE_UNGROUNDED} → ${ungrounded} ` +
+          `(${ungroundedVenues} venue(s)) — something is publishing access claims whose cited quote is not in the source`,
+      )
+      console.error('  → check amenity-truth-backfill run summaries for accessibility_evidence_refused; the extractor guard may have been bypassed')
+      FAILED = true
+      sectionOk = false
+    } else if (ungrounded > 0) {
+      console.log(`  ${ungrounded} ungrounded claim(s) on ${ungroundedVenues} venue(s) await a calibrated per-slug pass (baseline ${BASELINE_UNGROUNDED})`)
+    }
+    console.log(`  ${Number(sig.open_queue_claims ?? 0)} accessibility proposal(s) open for review`)
+    if (sectionOk) {
+      console.log(`✓ venue accessibility evidence within baseline (${ungrounded}/${BASELINE_UNGROUNDED} ungrounded)`)
+    }
+  }
+}
+
 if (FAILED) {
   console.error('')
   console.error('✗ Pipeline health check FAILED — every section above ran; each ✗ line is a separate problem')

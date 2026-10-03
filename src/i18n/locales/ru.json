@@ -1933,16 +1933,16 @@
       "celebrate": "[RU] Celebrate {{name}}"
     },
     "map": {
-      "interchangeEyebrow": "[RU] Interchange",
+      "interchangeEyebrow": "Пересадка",
       "interchange": {
-        "label": "[RU] Search everything",
-        "subtitle": "[RU] Every line meets here"
+        "label": "Искать везде",
+        "subtitle": "Здесь пересекаются все линии"
       }
     },
     "glossary": {
-      "eyebrow": "[RU] Glossary",
-      "title": "[RU] Know the words",
-      "seeAll": "[RU] All terms"
+      "eyebrow": "Глоссарий",
+      "title": "Знай слова",
+      "seeAll": "Все термины"
     }
   },
   "header": {
@@ -1984,10 +1984,10 @@
       "trips": "Поездки",
       "organizations": "Организации",
       "wishlists": "Списки желаний",
-      "tags": "[RU] Glossary",
-      "tagsAll": "[RU] All terms",
-      "tagsInteractions": "[RU] Substance safety",
-      "tagsStiGuide": "[RU] STI guide",
+      "tags": "Глоссарий",
+      "tagsAll": "Все термины",
+      "tagsInteractions": "Безопасность веществ",
+      "tagsStiGuide": "Гид по ИППП",
       "transRights": "Права трансгендерных людей",
       "competitions": "[RU] Drag Race"
     },
@@ -2019,8 +2019,8 @@
       "sheetHeading": "Что вас интересует?",
       "browseHeading": "Смотреть всё",
       "glossary": {
-        "label": "[RU] Glossary",
-        "subtitle": "[RU] What every term, flag and code means"
+        "label": "Глоссарий",
+        "subtitle": "Что значит каждый термин, флаг и код"
       }
     },
     "userMenu": {
@@ -4532,8 +4532,8 @@
       "open": "[RU] Read the entry"
     },
     "fromGlossary": {
-      "title": "[RU] From the glossary",
-      "all": "[RU] All terms"
+      "title": "Из глоссария",
+      "all": "Все термины"
     },
     "figures": {
       "eyebrow": "[RU] Diagram",

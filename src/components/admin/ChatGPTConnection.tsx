@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useChatGPTConnection } from '@/hooks/useChatGPTConnection';
 import { CheckCircle, XCircle, RefreshCw, Plug, Unplug, Zap, AlertTriangle } from 'lucide-react';
+import { TrackLoader } from '@/components/transit/TrackLoader';
 
 export const ChatGPTConnection = () => {
   const { status, loading, testing, connect, disconnect, testConnection, refresh } =
@@ -28,9 +29,9 @@ export const ChatGPTConnection = () => {
   return (
     <Card>
       <CardHeader>
-        <div style={{ alignItems: 'center', justifyContent: 'space-between' }} className="flex">
+        <div className="flex items-center justify-between">
           <div>
-            <CardTitle style={{ alignItems: 'center', gap: '8px' }} className="flex">
+            <CardTitle className="flex items-center gap-2">
               <Zap size={20} />
               ChatGPT / OpenAI Connection
             </CardTitle>
@@ -45,24 +46,22 @@ export const ChatGPTConnection = () => {
             aria-label="Refresh connection status"
             onClick={refresh}
             disabled={loading}
+            loading={loading}
           >
-            <RefreshCw
-              size={16}
-              style={{ animation: loading ? 'spin 1s linear infinite' : 'none' }}
-            />
+            <RefreshCw size={16} />
           </Button>
         </div>
       </CardHeader>
       <CardContent>
         {loading ? (
-          <div style={{ alignItems: 'center', gap: '8px' }} className="flex text-muted-foreground">
-            <RefreshCw size={16} style={{ animation: 'spin 1s linear infinite' }} />
-            Loading connection status...
+          <div className="flex items-center gap-2 text-muted-foreground">
+            <TrackLoader size={16} label="Loading connection status" />
+            <span className="sr-only">Loading connection status</span>
           </div>
         ) : (
-          <div style={{ flexDirection: 'column', gap: '16px' }} className="flex">
+          <div className="flex flex-col gap-4">
             {/* Status display */}
-            <div style={{ alignItems: 'center', gap: '12px' }} className="flex">
+            <div className="flex items-center gap-4">
               {isConnected ? (
                 <>
                   <CheckCircle size={20} className="text-foreground" />
@@ -76,10 +75,8 @@ export const ChatGPTConnection = () => {
                 </>
               ) : usingFallback ? (
                 <>
-                  <AlertTriangle size={20} style={{ color: 'hsl(var(--muted-foreground))' }} />
-                  <span style={{ color: 'hsl(var(--muted-foreground))' }} className="font-medium">
-                    Using API Key Fallback
-                  </span>
+                  <AlertTriangle size={20} className="text-muted-foreground" />
+                  <span className="font-medium text-muted-foreground">Using API Key Fallback</span>
                   <Badge variant="secondary">ENV: OPENAI_API_KEY</Badge>
                 </>
               ) : (
@@ -99,27 +96,25 @@ export const ChatGPTConnection = () => {
             )}
 
             {/* Description of what AI enrichment does */}
-            <div style={{ lineHeight: '1.5' }} className="text-13 text-muted-foreground">
+            <div className="text-13 leading-relaxed text-muted-foreground">
               When connected, ChatGPT automatically enriches imported venues with LGBTQ+ contextual
               descriptions, classifies events, generates personality bios, and adds relevant tags
               during imports and scraping.
             </div>
 
             {/* Actions */}
-            <div style={{ gap: '8px', flexWrap: 'wrap' }} className="flex">
+            <div className="flex flex-wrap gap-2">
               {isConnected ? (
                 <>
-                  <Button variant="outline" size="sm" onClick={testConnection} disabled={testing}>
-                    {testing ? (
-                      <RefreshCw
-                        size={14}
-                        style={{ animation: 'spin 1s linear infinite' }}
-                        className="mr-1.5"
-                      />
-                    ) : (
-                      <Zap size={14} className="mr-1.5" />
-                    )}
-                    {testing ? 'Testing...' : 'Test Connection'}
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={testConnection}
+                    disabled={testing}
+                    loading={testing}
+                  >
+                    <Zap size={14} className="mr-1.5" />
+                    Test connection
                   </Button>
                   <Button variant="destructive" size="sm" onClick={disconnect}>
                     <Unplug size={14} className="mr-1.5" />
@@ -133,17 +128,15 @@ export const ChatGPTConnection = () => {
                     Connect ChatGPT
                   </Button>
                   {usingFallback && (
-                    <Button variant="outline" size="sm" onClick={testConnection} disabled={testing}>
-                      {testing ? (
-                        <RefreshCw
-                          size={14}
-                          style={{ animation: 'spin 1s linear infinite' }}
-                          className="mr-1.5"
-                        />
-                      ) : (
-                        <Zap size={14} className="mr-1.5" />
-                      )}
-                      {testing ? 'Testing...' : 'Test API Key'}
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={testConnection}
+                      disabled={testing}
+                      loading={testing}
+                    >
+                      <Zap size={14} className="mr-1.5" />
+                      Test API key
                     </Button>
                   )}
                 </>

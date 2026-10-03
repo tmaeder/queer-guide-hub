@@ -81,12 +81,9 @@ function getPlaceholder(
   isMobile: boolean,
   surface: 'header' | 'hero' = 'header',
 ) {
-  // The homepage carries BOTH search fields on desktop — the header's (chrome,
-  // available everywhere) and the hero's (the front door). They were shipping
-  // the SAME placeholder, so two differently-sized fields 450px apart read as
-  // one control rendered twice. The hero asks by EXAMPLE instead, which is the
-  // design's own copy and the thing that tells a first-time reader what this
-  // search can actually do.
+  // The hero asks by example, while the header opens search from a compact
+  // trigger. Keeping the copy surface-aware also protects routes that embed a
+  // full bar-sized field of their own.
   if (surface === 'hero') {
     return t('home.hero.searchPlaceholder', 'Try "sober rave berlin" or "trans healthcare"');
   }
@@ -135,6 +132,9 @@ export interface UniversalSearchBarProps {
    * the search machinery changes — only what the closed state looks like.
    */
   collapse?: boolean;
+  /** Render a compact search trigger at every desktop width. The full input
+   * moves into the existing command plate when opened. */
+  iconOnly?: boolean;
 }
 
 /**
@@ -150,6 +150,7 @@ export const UniversalSearchBar = ({
   hotkey = true,
   surface = 'header',
   collapse = false,
+  iconOnly = false,
 }: UniversalSearchBarProps = {}) => {
   const trackClickFromSearch = useTrackClick();
   const [query, setQuery] = useState('');
@@ -982,13 +983,28 @@ export const UniversalSearchBar = ({
 
   // ── Desktop: the field lifts out of the bar into a centered plate ────────
   return (
-    <div className="min-w-0 flex-1">
+    <div className={cn(iconOnly ? 'shrink-0' : 'min-w-0 flex-1')}>
       {asModal ? (
         // A spacer, not the field: the field has moved into the plate, and
         // leaving a second combobox behind would give the listbox two owners.
         // Reserving its height keeps the header row from collapsing under the
         // modal, which reads as the page jumping as the scrim comes up.
-        <div aria-hidden style={{ height: inputHeight + 4 }} />
+        <div
+          aria-hidden
+          style={{ height: iconOnly ? 44 : inputHeight + 4, width: iconOnly ? 44 : undefined }}
+        />
+      ) : iconOnly ? (
+        <button
+          type="button"
+          aria-label={t('search.open', 'Search')}
+          onClick={() => {
+            setIsOpen(true);
+            focusInput();
+          }}
+          className="grid h-11 w-11 shrink-0 place-items-center rounded-element text-foreground transition-colors hover:bg-surface-container"
+        >
+          <TransitIcon name="search" size={20} />
+        </button>
       ) : (
         searchField(false)
       )}

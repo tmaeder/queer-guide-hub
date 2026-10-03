@@ -1,24 +1,21 @@
 /**
- * Light display formatting for phone numbers. Scraped venue phones arrive as
- * unbroken E.164-ish strings ("+49302134570"); a full libphonenumber pass
- * isn't worth the bundle, but a country-code split plus 3-digit grouping
- * makes them scannable. Anything that doesn't look like a plain number
- * passes through untouched (extensions, "or", multiple numbers).
+ * Display form of a phone number: E.164, "+<calling code><number>", with no
+ * spaces or separators — one format everywhere on the site.
+ *
+ * Stored numbers on venues, organizations and hotels are already E.164: the
+ * `phone_canonical_guard` trigger rewrites every write (migration
+ * 99991790877996). This function therefore leaves an E.164 value untouched and
+ * only compacts a legacy "+49 30 213 4570"-style value that predates it.
+ * Anything else (no leading "+", prose, two numbers) passes through unchanged —
+ * guessing a country code here would invent one.
  */
 export function formatPhoneDisplay(raw?: string | null): string | null {
   if (!raw) return null;
   const trimmed = raw.trim();
-  // Already human-formatted (spaces, dashes, parens) — leave it alone.
-  if (/[\s\-()./]/.test(trimmed)) return trimmed;
-  const m = trimmed.match(/^\+(\d{7,15})$/);
-  if (!m) return trimmed;
-  const digits = m[1];
-  // Country codes are 1-3 digits; prefer the common 2-digit split, 1 for NANP.
-  const ccLen = digits.startsWith('1') || digits.startsWith('7') ? 1 : 2;
-  const cc = digits.slice(0, ccLen);
-  const rest = digits.slice(ccLen);
-  const groups = rest.match(/.{1,3}/g) ?? [rest];
-  return `+${cc} ${groups.join(' ')}`;
+  if (/^\+[1-9]\d{6,14}$/.test(trimmed)) return trimmed;
+  const compact = trimmed.replace(/[\s\-()./]/g, '');
+  if (/^\+[1-9]\d{6,14}$/.test(compact)) return compact;
+  return trimmed;
 }
 
 /**

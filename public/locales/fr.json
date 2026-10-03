@@ -1905,16 +1905,16 @@
       "celebrate": "[FR] Celebrate {{name}}"
     },
     "map": {
-      "interchangeEyebrow": "[FR] Interchange",
+      "interchangeEyebrow": "Correspondance",
       "interchange": {
-        "label": "[FR] Search everything",
-        "subtitle": "[FR] Every line meets here"
+        "label": "Tout rechercher",
+        "subtitle": "Toutes les lignes se croisent ici"
       }
     },
     "glossary": {
-      "eyebrow": "[FR] Glossary",
-      "title": "[FR] Know the words",
-      "seeAll": "[FR] All terms"
+      "eyebrow": "Glossaire",
+      "title": "Connaître les mots",
+      "seeAll": "Tous les termes"
     }
   },
   "header": {
@@ -1956,10 +1956,10 @@
       "trips": "Voyages",
       "organizations": "Organisations",
       "wishlists": "Listes de souhaits",
-      "tags": "[FR] Glossary",
-      "tagsAll": "[FR] All terms",
-      "tagsInteractions": "[FR] Substance safety",
-      "tagsStiGuide": "[FR] STI guide",
+      "tags": "Glossaire",
+      "tagsAll": "Tous les termes",
+      "tagsInteractions": "Sécurité des substances",
+      "tagsStiGuide": "Guide des IST",
       "transRights": "Droits trans",
       "competitions": "[FR] Drag Race"
     },
@@ -1991,8 +1991,8 @@
       "sheetHeading": "Que cherchez-vous ?",
       "browseHeading": "Tout parcourir",
       "glossary": {
-        "label": "[FR] Glossary",
-        "subtitle": "[FR] What every term, flag and code means"
+        "label": "Glossaire",
+        "subtitle": "Ce que signifient les termes, drapeaux et codes"
       }
     },
     "userMenu": {
@@ -4502,8 +4502,8 @@
       "open": "[FR] Read the entry"
     },
     "fromGlossary": {
-      "title": "[FR] From the glossary",
-      "all": "[FR] All terms"
+      "title": "Extrait du glossaire",
+      "all": "Tous les termes"
     },
     "figures": {
       "eyebrow": "[FR] Diagram",

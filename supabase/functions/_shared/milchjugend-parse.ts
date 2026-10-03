@@ -1,3 +1,4 @@
+import { decodeEntities } from './html-entities.ts'
 // ============================================================
 // milchjugend.ch — pure parsing for The Events Calendar REST payloads.
 //
@@ -83,14 +84,7 @@ export const stripTags = (s: unknown): string =>
     .replace(/<script\b[^>]*>[\s\S]*?<\/script\b[^>]*>/gi, ' ')
     .replace(/<style\b[^>]*>[\s\S]*?<\/style\b[^>]*>/gi, ' ')
     .replace(/<[^>]+>/g, ' ')
-    .replace(/&#x([0-9a-f]+);/gi, (_m, h) => String.fromCodePoint(parseInt(h, 16)))
-    .replace(/&#(\d+);/g, (_m, d) => String.fromCodePoint(Number(d)))
-    .replace(/&nbsp;/g, ' ')
-    .replace(/&quot;/g, '"')
-    .replace(/&apos;/g, "'")
-    .replace(/&lt;/g, '<')
-    .replace(/&gt;/g, '>')
-    .replace(/&amp;/g, '&')
+    .replace(/&[#0-9a-zA-Z]+;/g, (m) => decodeEntities(m))
     .replace(/\s+/g, ' ')
     .trim()
 

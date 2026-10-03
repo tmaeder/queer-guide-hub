@@ -15,8 +15,15 @@ vi.mock('@/components/admin/inline/Editable', () => ({
 vi.mock('@/hooks/usePersonalityRelated', () => ({
   usePersonalityRelated: () => ({ news: [], events: [], loading: false }),
 }));
+// `i18n` is half of what useTranslation returns, and PersonalityOverview reads
+// `i18n.language` to localize `description` from `description_i18n`. A double
+// that returns only `t` made the component THROW on render rather than fail an
+// assertion — which reads as a component bug instead of an incomplete mock.
 vi.mock('react-i18next', () => ({
-  useTranslation: () => ({ t: (_k: string, d?: string) => d ?? _k }),
+  useTranslation: () => ({
+    t: (_k: string, d?: string) => d ?? _k,
+    i18n: { language: 'en' },
+  }),
 }));
 
 import {

@@ -40,7 +40,9 @@ vi.mock('@/integrations/supabase/client', () => ({
 
 import { useMarketplaceListingsByIds } from '../useMarketplaceListingsByIds';
 
-function withResults(...r: MockResult[]) { state.results.push(...r); }
+function withResults(...r: MockResult[]) {
+  state.results.push(...r);
+}
 
 beforeEach(() => {
   state.results.length = 0;
@@ -68,12 +70,12 @@ describe('useMarketplaceListingsByIds', () => {
     const { result } = renderHook(() => useMarketplaceListingsByIds(['l1', 'l2', 'l3']));
     await waitFor(() => expect(result.current.loading).toBe(false));
 
-    expect(result.current.data.map(l => l.id)).toEqual(['l1', 'l2', 'l3']);
+    expect(result.current.data.map((l) => l.id)).toEqual(['l1', 'l2', 'l3']);
     const call = state.calls[0];
     expect(call.table).toBe('marketplace_listings');
-    const inCall = call.chain.find(s => s.method === 'in');
+    const inCall = call.chain.find((s) => s.method === 'in');
     expect(inCall?.args).toEqual(['id', ['l1', 'l2', 'l3']]);
-    const eq = call.chain.find(s => s.method === 'eq');
+    const eq = call.chain.find((s) => s.method === 'eq');
     expect(eq?.args).toEqual(['status', 'active']);
   });
 
@@ -83,7 +85,17 @@ describe('useMarketplaceListingsByIds', () => {
     const { result } = renderHook(() => useMarketplaceListingsByIds(['l1', 'missing']));
     await waitFor(() => expect(result.current.loading).toBe(false));
 
-    expect(result.current.data.map(l => l.id)).toEqual(['l1']);
+    expect(result.current.data.map((l) => l.id)).toEqual(['l1']);
+  });
+
+  it('adds the overview gate only when the caller opts into discovery semantics', async () => {
+    withResults({ data: [{ id: 'l1', title: 'Found' }], error: null });
+    const { result } = renderHook(() => useMarketplaceListingsByIds(['l1'], true));
+    await waitFor(() => expect(result.current.loading).toBe(false));
+    const overviewEq = state.calls[0].chain.find(
+      (s) => s.method === 'eq' && s.args[0] === 'overview_eligible',
+    );
+    expect(overviewEq?.args).toEqual(['overview_eligible', true]);
   });
 
   it('returns empty on supabase error', async () => {

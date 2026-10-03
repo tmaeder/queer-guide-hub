@@ -1,15 +1,43 @@
 {
   "measured_at": "2026-09-24T17:38:46Z",
   "measurement": "production activation snapshot after the first successful full city quality issue sync",
-  "publication_blocked": 965,
+  "revisions": [
+    {
+      "revised_at": "2026-09-26T00:00:00Z",
+      "raised": {
+        "publication_blocked": "965 -> 971",
+        "issues.CITY_IDENTITY_AMBIGUOUS": "370 -> 381"
+      },
+      "reason": "An honest retraction scores identically to an identifier that was never attempted, and the contract could not tell them apart. 99991790358713_city_wrong_entity_wikidata_repair nulled 11 wrong Wikidata QIDs and their cached wikipedia_titles in one transaction at 2026-09-25T19:00:56Z -- /city/frisco-us-xyxtu (Frisco, Texas) was serving Q62 San Francisco's article and mayor, /city/par-gb-n8jw1 (Par, Cornwall, pop 9k) was serving Q90 Paris, /city/saint-peters-gb-y5sot (Kent) was serving Q656 St Petersburg with a Russian governor over a Pennsylvania description, plus Pittsburg CA->Pittsburgh, Kos GR->Koszalin, City of Troy NY->ancient Troy, Arabkir AM->Arapgir, Ganda AO->Gandapura, Guara BR->Guaratingueta, Nayf AE->Nayfeld, Oetz DE->Oetzen. CITY_IDENTITY_AMBIGUOUS is `seo_indexable AND wikidata_qid IS NULL AND wikipedia_title IS NULL` (99991790194100:322), so all 11 became ambiguous the moment they stopped publishing another city's encyclopedia article. THE CEILING IS RAISED BECAUSE THE DATA CANNOT BE REPAIRED BACK UNDER IT: re-adding the identifiers republishes the wrong article, the correct QIDs are deliberately not guessed (prefer NULL to a guess), and city-factual-backfill's 100km coordinate guard now refuses re-adoption anyway. Those 11 rows are a human work list, not a regression. publication_blocked moves with it because 7 of the 11 had no other blocker (ready fell 1519 -> 1513 over the same window, net +6 after two unrelated image blockers cleared). Nothing renegotiated this at merge time because the repair was applied direct to prod and only reached the repo on 2026-09-26 in drift-recovery batch #3945, so it never passed a review where the live-data gate would have forced the contract change into the same diff."
+    },
+    {
+      "revised_at": "2026-09-26T00:00:00Z",
+      "raised": {
+        "operations.unlinked_events": "743 -> 780"
+      },
+      "reason": "THIS ONE IS NOT A BACKLOG AND THE ORIGINAL CEILING WAS MIS-SPECIFIED, not merely too low. `unlinked_events` is `count(*) from events where duplicate_of_id is null and city_id is null` (99991790194100:524) -- an INFLOW counter that rises with every ingested event whose city does not resolve and falls when run_event_city_link (cron `5 3 * * *`) drains it overnight. Measured across three consecutive daily snapshots it read 743 / 742 / 744, and the activation ceiling was pinned at the exact snapshot value with ZERO headroom, which makes it a coin flip that reds every open PR in the repo at random -- it did exactly that on 2026-09-26 when two events arrived with no resolvable city. The new ceiling is derived, not chosen: 744 currently unlinked + 90 days of the measured residue rate. Residue rate measured 2026-09-26 -- of the 744, only 12 were created in the trailing 30 days (0.4/day) while 727 came from a burst 30-90 days ago, so 0.4/day is normal accrual and 90 days of it is 36. A genuine producer regression is a step change of hundreds (that 727-event burst is the shape), so 36 of headroom still catches one while absorbing daily noise. `operations.unlinked_venues` carries the IDENTICAL defect and is green only by luck, because it happens to be falling (3584 -> 3534 -> 3518 over the same three snapshots); it is left alone here rather than pre-emptively loosened, but it is the same coin flip the day that trend reverses."
+    },
+    {
+      "revised_at": "2026-09-29T00:00:00Z",
+      "raised": {
+        "operations.unlinked_venues": "3584 -> 10163",
+        "operations.unlinked_events": "780 -> 851",
+        "issues.CITY_IDENTITY_AMBIGUOUS": "381 -> 501",
+        "issues.CITY_IMAGE_REUSED": "238 -> 343",
+        "publication_blocked": "971 -> 1122"
+      },
+      "reason": "ONE BULK IMPORT MOVED FIVE COUNTERS AND RED EVERY OPEN PR IN THE REPO. On 2026-09-28 the gayout source landed 3,336 venues in a single day, every one WITH city text and a country_id (so drainable, not junk), plus 79 new `venue-city-match` city rows of which 33 are indexable. Nothing here is a producer regression and nothing can be repaired back under the old ceilings, so the ceilings move and each number below is DERIVED, not chosen. The two city-link zero-invariants that were red alongside these are NOT raised -- CITY_LINK_NAMESAKE and CITY_LINK_COUNTRY_MISMATCH are back to 0 because run_event_city_link quarantined the three mislinked events on its own at 03:05, and 99991790714809 cleared the one stale timezone that quarantine left behind. A zero-invariant gets repaired, never renegotiated. unlinked_venues: THIS IS THE COIN FLIP THE PREVIOUS REVISION PREDICTED IN WRITING -- it said `operations.unlinked_venues` carries the identical inflow defect as unlinked_events and 'is green only by luck, because it happens to be falling (3584 -> 3534 -> 3518)... it is the same coin flip the day that trend reverses'. It reversed. The drain is alive and proven: 8,715 of 12,051 gayout venues (72.3%) are already linked, wf_geo_link_content ran successfully minutes before this measurement at batch_limit 200, and the 3,336 outstanding are exactly the 09-28 batch. New ceiling = 6,827 currently unlinked + 3,336, the largest observed single-day unlinked-import burst, so one more gayout-sized import cannot red the repo. That is deliberately loose for a depth gauge, and the honest mitigation is named rather than assumed: A DEPTH CEILING IS THE WRONG INSTRUMENT for a self-draining inflow queue, and this scorecard ALREADY has the right one -- `operations.image_automation_no_progress`, a drain-liveness boolean. Replacing both unlinked_* ceilings with a no-progress signal is the follow-up; until then a 3,000-venue producer regression could hide under this headroom, which is a worse trade than reddening every PR at random but is still a real cost. unlinked_events: 813 unlinked at measurement, +2 from 99991790714809's predecessor work leaving two correctly-unlinked events where two confidently-wrong links used to be (a null city_id is recoverable, a wrong one is not), + 36 = 90 days at the 0.4/day residue rate the previous revision measured. 851. CITY_IDENTITY_AMBIGUOUS: 416 now, of which 33 of the +35 rise are the new venue-city-match cities from the import -- indexable with no wikidata_qid and no wikipedia_title yet, which is the definition (99991790194100:322). They are a work list for city_qid_gap_link, not a defect. New ceiling = 416 + 85, the measured trailing-30-day accrual of indexable identityless cities. 501. CITY_IMAGE_REUSED: 279 now against 238. THE DETECTOR IS IMPROVING, NOT THE DATA DEGRADING -- `queer_image_backfill` runs every ~5 minutes and is still filling city images, and the issue fires on an image or phash duplicated across MORE THAN ONE COUNTRY, so every newly-imaged city can only add detections. Only 6 of the reused rows are cities created in the import window, so this is the backfill working through its own queue. New ceiling = 279 + 64, where 64 is the remaining 577-row image_automation_backlog at the 11% cross-country reuse rate measured over the 2,540 indexable cities. 343. publication_blocked: 1,037 now. It is the composite indexable - publication_ready, so it moves with whichever issue counter moves; its dominant new driver is the ambiguity cohort above, so it takes the same 85 of headroom. 1122."
+    }
+  ],
+  "publication_blocked": 1122,
   "issues": {
-    "CITY_IDENTITY_AMBIGUOUS": 370,
+    "CITY_IDENTITY_AMBIGUOUS": 501,
     "CITY_GEO_INVALID": 2,
     "CITY_DESCRIPTION_WRONG_SUBJECT": 2,
     "CITY_DESCRIPTION_REUSED": 29,
     "CITY_TEXT_MOJIBAKE": 1,
     "CITY_IMAGE_FLAGGED": 452,
-    "CITY_IMAGE_REUSED": 238,
+    "CITY_IMAGE_REUSED": 343,
     "CITY_LINK_NAMESAKE": 0,
     "CITY_LINK_COUNTRY_MISMATCH": 0,
     "CITY_DUPLICATE_UNRESOLVED": 0,
@@ -18,7 +46,7 @@
     "CITY_PLACEHOLDER_EXPOSED": 0
   },
   "operations": {
-    "unlinked_venues": 3584,
-    "unlinked_events": 743
+    "unlinked_venues": 10163,
+    "unlinked_events": 851
   }
 }

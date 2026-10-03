@@ -9,33 +9,72 @@ vi.mock('../CannedResponsePicker', () => ({
 }));
 
 import { ActionBar } from '../ActionBar';
+import type { TriageDecisionGuidance } from '../triageDecisionGuidance';
+
+const guidance: TriageDecisionGuidance = {
+  approveLabel: 'Approve & queue',
+  rejectLabel: 'Reject',
+  approve: 'Marks the record approved and queues it for commit.',
+  reject: 'Marks the source record rejected.',
+  defer: 'Skip leaves it pending.',
+};
 
 describe('ActionBar', () => {
+  const baseProps = {
+    notes: '',
+    cannedSlug: '',
+    onAnswersChange: vi.fn(),
+    onAction: vi.fn(),
+    isLoading: false,
+  };
+
   it('renders all four action buttons', () => {
-    render(<ActionBar onAction={vi.fn()} isLoading={false} />);
-    ['Approve', 'Reject', 'Skip', 'Flag'].forEach(l => {
+    render(<ActionBar {...baseProps} />);
+    ['Approve', 'Reject', 'Skip', 'Flag'].forEach((l) => {
       expect(screen.getByRole('button', { name: new RegExp(l) })).toBeInTheDocument();
     });
   });
 
   it('disables all buttons when loading', () => {
-    render(<ActionBar onAction={vi.fn()} isLoading />);
+    render(<ActionBar {...baseProps} isLoading />);
     expect(screen.getByRole('button', { name: /Approve/ })).toBeDisabled();
     expect(screen.getByRole('button', { name: /Reject/ })).toBeDisabled();
   });
 
   it('fires onAction with approve + notes', () => {
     const onAction = vi.fn();
-    render(<ActionBar onAction={onAction} isLoading={false} />);
+    const onAnswersChange = vi.fn();
+    render(<ActionBar {...baseProps} onAction={onAction} onAnswersChange={onAnswersChange} />);
     fireEvent.change(screen.getByPlaceholderText(/Review notes/), { target: { value: 'ok' } });
     fireEvent.click(screen.getByRole('button', { name: /Approve/ }));
-    expect(onAction).toHaveBeenCalledWith('approve', 'ok', undefined);
+    expect(onAnswersChange).toHaveBeenCalledWith({ notes: 'ok', cannedSlug: '' });
+    expect(onAction).toHaveBeenCalledWith('approve');
   });
 
   it('fires onAction with reject', () => {
     const onAction = vi.fn();
-    render(<ActionBar onAction={onAction} isLoading={false} />);
+    render(<ActionBar {...baseProps} onAction={onAction} />);
     fireEvent.click(screen.getByRole('button', { name: /Reject/ }));
-    expect(onAction).toHaveBeenCalledWith('reject', undefined, undefined);
+    expect(onAction).toHaveBeenCalledWith('reject');
+  });
+
+  it('shows both outcomes before the reviewer acts', () => {
+    render(<ActionBar {...baseProps} guidance={guidance} />);
+    expect(screen.getByRole('heading', { name: 'What happens next' })).toBeInTheDocument();
+    expect(screen.getByText(/If you approve:/)).toBeInTheDocument();
+    expect(screen.getByText(/If you don’t:/)).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Approve & queue' })).toBeInTheDocument();
+  });
+
+  it('shows why approval is blocked when edits are unsaved', () => {
+    render(
+      <ActionBar
+        {...baseProps}
+        guidance={{ ...guidance, unsavedWarning: '2 unsaved corrections will not be included.' }}
+        disabledActions={['approve']}
+      />,
+    );
+    expect(screen.getByRole('alert')).toHaveTextContent('2 unsaved corrections');
+    expect(screen.getByRole('button', { name: 'Approve & queue' })).toBeDisabled();
   });
 });

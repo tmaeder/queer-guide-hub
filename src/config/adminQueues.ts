@@ -9,7 +9,7 @@
  * the cockpit's Quality Gates widget sent all seven of its rows to a bare
  * /admin/quality).
  *
- * Three details are load-bearing and not derivable, which is most of why this
+ * Several details are load-bearing and not derivable, which is most of why this
  * file exists:
  *
  *  - `slaKey` is the UNPREFIXED `triage_sources.count_key`, while `countKey` is
@@ -33,6 +33,7 @@
 
 import {
   Bot,
+  BookOpen,
   Building,
   Calendar,
   CopyCheck,
@@ -58,6 +59,8 @@ import type { AdminCounts } from '@/hooks/useAdminCounts';
 
 /** Which admin surface renders this queue. A queue may appear on both. */
 export type QueueSurface = 'cockpit' | 'quality';
+export type QueueRisk = 'routine' | 'integrity' | 'safety';
+export type QueueImpact = 'internal' | 'public';
 
 export interface AdminQueueDef {
   /** `triage_sources.queue_key` — the `?queue=` value. Null for the three
@@ -83,19 +86,21 @@ export interface AdminQueueDef {
   section?: string;
   /** Mirrors `triage_sources.priority_weight`. Higher ranks first. */
   weight: number;
+  /** Human consequence if the queue is handled incorrectly. */
+  risk?: QueueRisk;
+  /** Whether decisions directly change or protect public content. */
+  impact?: QueueImpact;
   surfaces: readonly QueueSurface[];
   /** Role floor for seeing this queue at all. */
   minRole: AdminRole;
 }
 
-// One helper, so the 16 queue links moved with a single edit when the three
-// governance surfaces collapsed onto `/admin/governance?mode=`. `?queue=` stays
-// orthogonal to `?mode=` — triage is still partitioned by queue.
 const inbox = (queueKey: string) => `/admin/governance?mode=triage&queue=${queueKey}`;
 
 /**
  * Every queue `get_admin_counts` reports on: the 17 active `triage_sources`
- * rows plus the three static gates (feedback, group requests, existence audit).
+ * rows plus the static gates (feedback, group requests, existence audit, and
+ * glossary readiness).
  * Order here is documentation only — `rankQueueRows` sorts by urgency.
  */
 export const ADMIN_QUEUES: readonly AdminQueueDef[] = [
@@ -109,6 +114,8 @@ export const ADMIN_QUEUES: readonly AdminQueueDef[] = [
     description: 'User reports on content and profiles awaiting a moderator decision.',
     icon: Flag,
     route: inbox('moderation'),
+    risk: 'safety',
+    impact: 'public',
     weight: 100,
     surfaces: ['cockpit'],
     minRole: 'moderator',
@@ -123,6 +130,8 @@ export const ADMIN_QUEUES: readonly AdminQueueDef[] = [
     description: 'Community and extension submissions waiting on a first pass.',
     icon: UsersRound,
     route: inbox('submissions'),
+    risk: 'integrity',
+    impact: 'public',
     weight: 80,
     surfaces: ['cockpit'],
     minRole: 'editor',
@@ -137,6 +146,8 @@ export const ADMIN_QUEUES: readonly AdminQueueDef[] = [
     description: 'Ingested rows held by the review gate before commit.',
     icon: Inbox,
     route: inbox('staging'),
+    risk: 'integrity',
+    impact: 'public',
     weight: 60,
     surfaces: ['cockpit'],
     minRole: 'editor',
@@ -151,6 +162,8 @@ export const ADMIN_QUEUES: readonly AdminQueueDef[] = [
     description: 'Content edits submitted for review in the CMS.',
     icon: FileText,
     route: inbox('content'),
+    risk: 'integrity',
+    impact: 'public',
     weight: 50,
     surfaces: ['cockpit'],
     minRole: 'editor',
@@ -166,6 +179,8 @@ export const ADMIN_QUEUES: readonly AdminQueueDef[] = [
       'Nightly identity sweep. Exact-key merges are automatic; ambiguous pairs wait here.',
     icon: GitMerge,
     route: inbox('dedup-review'),
+    risk: 'safety',
+    impact: 'public',
     weight: 40,
     surfaces: ['cockpit', 'quality'],
     minRole: 'moderator',
@@ -184,6 +199,8 @@ export const ADMIN_QUEUES: readonly AdminQueueDef[] = [
     // target org, an input the generic triage panel does not model.
     route: '/admin/governance?mode=engines',
     section: 'business-links',
+    risk: 'integrity',
+    impact: 'public',
     weight: 40,
     surfaces: ['cockpit', 'quality'],
     minRole: 'moderator',
@@ -198,6 +215,8 @@ export const ADMIN_QUEUES: readonly AdminQueueDef[] = [
     description: 'LLM-proposed identity fields and adult-cohort consent publishing.',
     icon: Users,
     route: inbox('quality-personality'),
+    risk: 'safety',
+    impact: 'public',
     weight: 40,
     surfaces: ['cockpit', 'quality'],
     minRole: 'moderator',
@@ -212,6 +231,8 @@ export const ADMIN_QUEUES: readonly AdminQueueDef[] = [
     description: 'Safety notes, ratings, and hooks. Criminalizing destinations stay human-gated.',
     icon: MapPin,
     route: inbox('quality-city'),
+    risk: 'safety',
+    impact: 'public',
     weight: 35,
     surfaces: ['cockpit', 'quality'],
     minRole: 'moderator',
@@ -227,6 +248,8 @@ export const ADMIN_QUEUES: readonly AdminQueueDef[] = [
       'Amenity vocabulary and accessibility claims. Accessibility is always review-gated.',
     icon: Building,
     route: inbox('quality-venue'),
+    risk: 'safety',
+    impact: 'public',
     weight: 35,
     surfaces: ['cockpit', 'quality'],
     minRole: 'moderator',
@@ -241,6 +264,8 @@ export const ADMIN_QUEUES: readonly AdminQueueDef[] = [
     description: 'Country editorial hooks and paragraphs awaiting approval.',
     icon: PenLine,
     route: inbox('editorial'),
+    risk: 'integrity',
+    impact: 'public',
     weight: 30,
     surfaces: ['cockpit', 'quality'],
     minRole: 'moderator',
@@ -255,6 +280,8 @@ export const ADMIN_QUEUES: readonly AdminQueueDef[] = [
     description: 'Articles flagged by the news truth loop.',
     icon: Newspaper,
     route: inbox('news-quality'),
+    risk: 'integrity',
+    impact: 'public',
     weight: 30,
     surfaces: ['cockpit'],
     minRole: 'moderator',
@@ -269,6 +296,8 @@ export const ADMIN_QUEUES: readonly AdminQueueDef[] = [
     description: 'Grounded LLM rewrites of history, descriptions, and landmarks.',
     icon: Home,
     route: inbox('quality-village'),
+    risk: 'integrity',
+    impact: 'public',
     weight: 30,
     surfaces: ['cockpit', 'quality'],
     minRole: 'moderator',
@@ -283,6 +312,8 @@ export const ADMIN_QUEUES: readonly AdminQueueDef[] = [
     description: 'Proposed tag assignments awaiting a vocabulary decision.',
     icon: Tag,
     route: inbox('tags'),
+    risk: 'integrity',
+    impact: 'public',
     weight: 30,
     surfaces: ['cockpit'],
     minRole: 'editor',
@@ -297,6 +328,8 @@ export const ADMIN_QUEUES: readonly AdminQueueDef[] = [
     description: 'Content-rating downgrades. Wrong-SFW never applies without approval.',
     icon: ShoppingBag,
     route: inbox('quality-marketplace'),
+    risk: 'safety',
+    impact: 'public',
     weight: 25,
     surfaces: ['cockpit', 'quality'],
     minRole: 'moderator',
@@ -311,6 +344,8 @@ export const ADMIN_QUEUES: readonly AdminQueueDef[] = [
     description: 'Near-duplicate clusters surfaced by the triage duplicate view.',
     icon: CopyCheck,
     route: inbox('duplicates'),
+    risk: 'integrity',
+    impact: 'public',
     weight: 20,
     surfaces: ['cockpit'],
     minRole: 'moderator',
@@ -325,6 +360,8 @@ export const ADMIN_QUEUES: readonly AdminQueueDef[] = [
     description: 'Proposed cross-entity links awaiting confirmation.',
     icon: Link2,
     route: inbox('entity-links'),
+    risk: 'integrity',
+    impact: 'public',
     weight: 20,
     surfaces: ['cockpit'],
     minRole: 'moderator',
@@ -339,6 +376,8 @@ export const ADMIN_QUEUES: readonly AdminQueueDef[] = [
     description: 'Automation runs that stopped for a human decision.',
     icon: Bot,
     route: inbox('automation'),
+    risk: 'routine',
+    impact: 'internal',
     weight: 10,
     surfaces: ['cockpit'],
     minRole: 'moderator',
@@ -355,6 +394,8 @@ export const ADMIN_QUEUES: readonly AdminQueueDef[] = [
     description: 'New and under-review feedback from the in-app board.',
     icon: MessageSquare,
     route: '/admin/feedback',
+    risk: 'integrity',
+    impact: 'public',
     weight: 45,
     surfaces: ['cockpit'],
     minRole: 'editor',
@@ -371,8 +412,27 @@ export const ADMIN_QUEUES: readonly AdminQueueDef[] = [
     description: 'Pending requests to join a community group.',
     icon: UserPlus,
     route: '/admin/content/group-requests',
+    risk: 'safety',
+    impact: 'internal',
     weight: 55,
     surfaces: ['cockpit'],
+    minRole: 'moderator',
+  },
+  {
+    queueKey: null,
+    countKey: 'quality_glossary',
+    slaKey: null,
+    hasOverdue: false,
+    label: 'Glossary quality',
+    title: 'Glossary',
+    description:
+      'Publication-role, prose, source, and ontology decisions for public glossary articles.',
+    icon: BookOpen,
+    route: '/admin/settings',
+    risk: 'integrity',
+    impact: 'public',
+    weight: 40,
+    surfaces: ['cockpit', 'quality'],
     minRole: 'moderator',
   },
   {
@@ -386,6 +446,8 @@ export const ADMIN_QUEUES: readonly AdminQueueDef[] = [
       'Evidence-backed validity, linkage, provenance, media, freshness, and completeness decisions.',
     icon: Calendar,
     route: '/admin/content/event-quality',
+    risk: 'safety',
+    impact: 'public',
     weight: 40,
     surfaces: ['cockpit', 'quality'],
     minRole: 'moderator',
@@ -400,6 +462,8 @@ export const ADMIN_QUEUES: readonly AdminQueueDef[] = [
     description: 'Existence Engine: flagged dead entities awaiting archive review.',
     icon: Flag,
     route: '/admin/content/liveness',
+    risk: 'integrity',
+    impact: 'public',
     weight: 30,
     surfaces: ['cockpit', 'quality'],
     minRole: 'moderator',
@@ -412,6 +476,7 @@ export const QUALITY_GATES: readonly AdminQueueDef[] = [
   'quality_venue',
   'quality_personality',
   'quality_event',
+  'quality_glossary',
   'quality_marketplace',
   'quality_village',
   'quality_duplicates',
@@ -428,6 +493,19 @@ export function queueByCountKey(countKey: string): AdminQueueDef | undefined {
   return ADMIN_QUEUES.find((q) => q.countKey === countKey);
 }
 
+/** Resolve the queue vocabulary used by the unified inbox. */
+export function queueByKey(queueKey: string): AdminQueueDef | undefined {
+  return ADMIN_QUEUES.find((queue) => queue.queueKey === queueKey);
+}
+
+export function queueRisk(queue: AdminQueueDef): QueueRisk {
+  return queue.risk ?? 'routine';
+}
+
+export function queueImpact(queue: AdminQueueDef): QueueImpact {
+  return queue.impact ?? 'internal';
+}
+
 /** One queue resolved against a counts payload. */
 export interface QueueRow {
   def: AdminQueueDef;
@@ -438,10 +516,10 @@ export interface QueueRow {
 }
 
 /**
- * Queues with pending work that `role` may see, most urgent first:
- * overdue before on-time, then registry weight, then size, then label. The last
- * two keys make the order total, so the list does not reshuffle between polls
- * when two queues tie.
+ * Queues with pending work that `role` may see, most relevant first:
+ * safety/integrity risk, overdue state, public impact, registry weight, size,
+ * then label. The final keys make the order total, so the list does not
+ * reshuffle between polls when two queues tie.
  */
 export function rankQueueRows(
   counts: AdminCounts | undefined,
@@ -466,9 +544,15 @@ export function rankQueueRows(
     })
     .filter((row) => row.count > 0)
     .sort((a, b) => {
+      const riskRank: Record<QueueRisk, number> = { routine: 0, integrity: 1, safety: 2 };
+      const riskDiff = riskRank[queueRisk(b.def)] - riskRank[queueRisk(a.def)];
+      if (riskDiff !== 0) return riskDiff;
       const aLate = a.overdue > 0 ? 1 : 0;
       const bLate = b.overdue > 0 ? 1 : 0;
       if (aLate !== bLate) return bLate - aLate;
+      const impactDiff =
+        Number(queueImpact(b.def) === 'public') - Number(queueImpact(a.def) === 'public');
+      if (impactDiff !== 0) return impactDiff;
       if (a.def.weight !== b.def.weight) return b.def.weight - a.def.weight;
       if (a.count !== b.count) return b.count - a.count;
       return a.def.label.localeCompare(b.def.label);

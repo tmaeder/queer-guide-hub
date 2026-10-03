@@ -14,6 +14,9 @@ import { useState } from 'react';
 import { KinkVisibleList } from '@/components/kinks/KinkVisibleList';
 import { KinkPeerActions } from '@/components/kinks/KinkPeerActions';
 import { PageContainer } from '@/components/layout/PageContainer';
+import { PageLoadingState } from '@/components/layout/PageLoadingState';
+import { EmptyState } from '@/components/ui/EmptyState';
+import { UserX } from 'lucide-react';
 
 function Row({ k, v }: { k: string; v: string }) {
   return (
@@ -38,7 +41,13 @@ export default function IntimateUserDetail() {
 
   const [reportOpen, setReportOpen] = useState(false);
 
-  if (isLoading) return <div className="p-8">Loading…</div>;
+  if (isLoading) {
+    return (
+      <PageContainer size="form">
+        <PageLoadingState count={2} variant="list" label="Loading this profile" />
+      </PageContainer>
+    );
+  }
   if (!me?.opted_in_at) {
     return (
       <PageContainer size="form" className="text-center">
@@ -48,7 +57,16 @@ export default function IntimateUserDetail() {
     );
   }
   if (!profile) {
-    return <div className="p-8">Not available.</div>;
+    return (
+      <PageContainer size="form">
+        <EmptyState
+          icon={UserX}
+          title="Profile not available"
+          description="This rider is no longer visible on the intimate line."
+          primaryAction={{ label: 'Back to discovery', onClick: () => navigate('/intimate') }}
+        />
+      </PageContainer>
+    );
   }
 
   const sendRequest = async () => {

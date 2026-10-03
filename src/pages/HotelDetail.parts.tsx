@@ -41,6 +41,7 @@ export function useHotelVisibleTags(tags: string[] | null | undefined) {
 }
 import { getHotelPhotosToShow } from './hotelPhotosUtil';
 import { AFFILIATE_REL, tagKnownAffiliateUrl } from '@/lib/affiliate/links';
+import { formatPhoneDisplay, formatPhoneHref } from '@/lib/formatPhone';
 import type { Database } from '@/integrations/supabase/types';
 import { getFallbackImage } from '@/utils/fallbackImages';
 import { isValidImageUrl } from '@/lib/images/resolveEntityImage';
@@ -351,11 +352,11 @@ export function HotelSidebar({
                   <p className="text-sm">{hotel.address}</p>
                 </div>
               )}
-              {hotel.phone && (
+              {formatPhoneHref(hotel.phone) && (
                 <div className="flex items-center gap-2">
                   <Phone className="w-4 h-4 shrink-0" />
-                  <a href={`tel:${hotel.phone}`} className="text-sm">
-                    {hotel.phone}
+                  <a href={formatPhoneHref(hotel.phone) as string} className="text-sm">
+                    {formatPhoneDisplay(hotel.phone)}
                   </a>
                 </div>
               )}

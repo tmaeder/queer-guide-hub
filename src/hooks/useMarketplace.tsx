@@ -162,6 +162,7 @@ export function useMarketplace() {
               `*, marketplace_reviews(rating), marketplace_favorites(id), venues(name, address, city)`,
             )
             .eq('status', 'active')
+            .eq('overview_eligible', true)
             .in('id', constrainedIds);
           if (!filters?.includeAdult) {
             rowsQuery = rowsQuery.in('content_rating', SFW_RATINGS);
@@ -235,6 +236,7 @@ export function useMarketplace() {
           .select(
             `*, marketplace_reviews(rating), marketplace_favorites(id), venues(name, address, city)`,
           )
+          .eq('overview_eligible', true)
           .in('id', pageIds);
         if (rowsErr) throw rowsErr;
         const byId = new Map((rows ?? []).map((r) => [r.id, r] as const));
@@ -255,7 +257,8 @@ export function useMarketplace() {
         `,
           { count: 'exact' },
         )
-        .eq('status', 'active');
+        .eq('status', 'active')
+        .eq('overview_eligible', true);
 
       // Default 'boutique' ranks by the boutique_score generated column
       // (relevance + quality + queer-ownership + non-aggregator + brand).

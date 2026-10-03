@@ -1,5 +1,6 @@
 import { useEffect, useState, type ReactNode, type RefObject } from 'react';
 import { scheduleSentence, type EventSchedule } from '@/lib/eventScheduleSentence';
+import { formatPhoneHref } from '@/lib/formatPhone';
 import { useTranslation } from 'react-i18next';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { format } from 'date-fns';
@@ -51,6 +52,7 @@ import { FactGrid } from '@/components/transit/FactGrid';
 import { NestedEntityCard } from '@/components/transit/NestedEntityCard';
 import { getEventLiveState } from '@/lib/event-countdown';
 import { GlossaryLinkedText } from '@/components/tags/GlossaryLinkedText';
+import { localizedField, type I18nMap } from '@/lib/localizeContent';
 
 export type EventWithRelations = Database['public']['Tables']['events']['Row'] & {
   social_links?: Record<string, string> | null;
@@ -746,6 +748,14 @@ export function EventAbout({
   event: EventWithRelations;
   onContentUpdated?: () => void;
 }) {
+  const { i18n } = useTranslation();
+  // Display only. `<Editable value>` keeps the base column so an admin edits
+  // the English source of record rather than overwriting it with a translation.
+  const displayDescription = localizedField(
+    event.description,
+    (event as { description_i18n?: unknown }).description_i18n as I18nMap,
+    i18n.language,
+  );
   const hasAccessibility =
     (event.accessibility_attributes?.length ?? 0) > 0 || Boolean(event.accessibility_notes);
   const priceUnknown = !event.is_free && !event.price_min;
@@ -786,7 +796,7 @@ export function EventAbout({
               className="max-w-[68ch] whitespace-pre-wrap text-body-lg text-foreground/90"
               style={{ lineHeight: 1.7 }}
             >
-              <GlossaryLinkedText text={event.description} />
+              <GlossaryLinkedText text={displayDescription} />
             </p>
           </Editable>
         </section>
@@ -977,7 +987,8 @@ export function EventWhere({ event, venueRef, countryId, onOrganizerClick }: Whe
         href: `https://bsky.app/profile/${handles.bluesky.replace(/^@/, '')}`,
       });
     if (org.email) socials.push({ label: 'Email', href: `mailto:${org.email}` });
-    if (org.phone) socials.push({ label: 'Call', href: `tel:${org.phone}` });
+    const orgTel = formatPhoneHref(org.phone);
+    if (orgTel) socials.push({ label: 'Call', href: orgTel });
   }
 
   const hasOrganizer = Boolean(org || event.organizer_name);
@@ -1067,9 +1078,9 @@ export function EventWhere({ event, venueRef, countryId, onOrganizerClick }: Whe
                 </a>
               </Button>
             )}
-            {event.venues?.phone && (
+            {formatPhoneHref(event.venues?.phone) && (
               <Button variant="outline" size="sm" asChild>
-                <a href={`tel:${event.venues.phone}`}>
+                <a href={formatPhoneHref(event.venues?.phone) as string}>
                   <Phone size={14} className="mr-1.5" />
                   Call
                 </a>

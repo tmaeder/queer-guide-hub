@@ -2,7 +2,6 @@
  * ReviewBulkBar — Sticky bottom bar for bulk review actions.
  */
 
-import React from 'react';
 import { Check, X, CheckCheck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -15,6 +14,8 @@ interface ReviewBulkBarProps {
   onBulkApprove: () => void;
   onBulkReject: () => void;
   loading?: boolean;
+  decisionSummary?: string;
+  decisionsDisabled?: boolean;
 }
 
 export const ReviewBulkBar = ({
@@ -25,6 +26,8 @@ export const ReviewBulkBar = ({
   onBulkApprove,
   onBulkReject,
   loading,
+  decisionSummary,
+  decisionsDisabled = false,
 }: ReviewBulkBarProps) => {
   if (selectedCount === 0) return null;
 
@@ -35,10 +38,14 @@ export const ReviewBulkBar = ({
     >
       <Badge>{selectedCount} selected</Badge>
 
+      {decisionSummary && (
+        <p className="max-w-xl text-2xs leading-relaxed text-muted-foreground">{decisionSummary}</p>
+      )}
+
       {selectedCount < totalCount && (
         <Button size="sm" variant="ghost" onClick={onSelectAll} style={{ textTransform: 'none' }}>
           <CheckCheck size={14} className="mr-1" />
-          Select all ({totalCount})
+          Select all on this page ({totalCount})
         </Button>
       )}
 
@@ -57,7 +64,7 @@ export const ReviewBulkBar = ({
         size="sm"
         variant="outline"
         onClick={onBulkReject}
-        disabled={loading}
+        disabled={loading || decisionsDisabled}
         style={{ textTransform: 'none', borderColor: 'hsl(var(--destructive))' }}
         className="text-destructive"
       >
@@ -68,7 +75,7 @@ export const ReviewBulkBar = ({
       <Button
         size="sm"
         onClick={onBulkApprove}
-        disabled={loading}
+        disabled={loading || decisionsDisabled}
         style={{ textTransform: 'none' }}
       >
         <Check size={14} className="mr-1" />

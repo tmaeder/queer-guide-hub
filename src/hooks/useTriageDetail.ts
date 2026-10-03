@@ -1,5 +1,5 @@
-import { useQuery } from '@tanstack/react-query';
-import { untypedFrom } from '@/integrations/supabase/untyped';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { untypedFrom, untypedRpc } from '@/integrations/supabase/untyped';
 import type { TriageItem } from '@/hooks/useUnifiedTriageQueue';
 
 export function useEntityData(item: TriageItem) {
@@ -10,7 +10,15 @@ export function useEntityData(item: TriageItem) {
     queryKey: ['entity-preview', entityTable, entityId],
     queryFn: async () => {
       if (!entityId || !entityTable) return null;
-      const validTables = ['venues', 'events', 'news_articles', 'personalities', 'cities', 'countries', 'marketplace_listings'];
+      const validTables = [
+        'venues',
+        'events',
+        'news_articles',
+        'personalities',
+        'cities',
+        'countries',
+        'marketplace_listings',
+      ];
       if (!validTables.includes(entityTable)) return null;
       const { data, error } = await untypedFrom(entityTable)
         .select('*')
@@ -30,7 +38,9 @@ export function useStagingData(item: TriageItem) {
     queryFn: async () => {
       if (item.queue_type !== 'staging') return null;
       const { data, error } = await untypedFrom('ingestion_staging')
-        .select('raw_data, normalized_data, enriched_data, dedup_match_id, dedup_match_table, dedup_match_score, ai_confidence_score, source_type, target_table')
+        .select(
+          'raw_data, normalized_data, enriched_data, dedup_match_id, dedup_match_table, dedup_match_score, ai_confidence_score, source_type, target_table',
+        )
         .eq('id', item.id)
         .maybeSingle();
       if (error) return null;
@@ -41,7 +51,37 @@ export function useStagingData(item: TriageItem) {
   });
 }
 
-const DEDUP_MATCH_TABLES = ['venues', 'events', 'news_articles', 'personalities', 'cities', 'countries', 'marketplace_listings', 'organizations', 'hotels'];
+export function useUpdateStagingReviewFields(item: TriageItem) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (changes: Record<string, unknown>) => {
+      if (item.queue_type !== 'staging')
+        throw new Error('Only staging items can be corrected here.');
+      const { data, error } = await untypedRpc<Record<string, unknown>>(
+        'update_staging_review_fields',
+        { p_item_id: item.id, p_changes: changes },
+      );
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['staging-detail', item.id] });
+      queryClient.invalidateQueries({ queryKey: ['triage-queue'] });
+    },
+  });
+}
+
+const DEDUP_MATCH_TABLES = [
+  'venues',
+  'events',
+  'news_articles',
+  'personalities',
+  'cities',
+  'countries',
+  'marketplace_listings',
+  'organizations',
+  'hotels',
+];
 
 /** Fetches the live entity a staging row's dedup pass matched against, so the
  * admin can compare incoming data with what's already published. */

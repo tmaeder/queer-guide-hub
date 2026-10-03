@@ -8,6 +8,8 @@ import {
   hotlineChannels,
   nonVoiceChannels,
   channelHref,
+  emergencyContactsForCountry,
+  hotlineSupportsLanguage,
   isDirectory,
 } from '../helpData';
 import type { Hotline } from '@/types/cms';
@@ -176,6 +178,30 @@ describe('selectPrimaryLine', () => {
     const all = [line({ id: 'a', always_open: true, free: true }), line({ id: 'b' })];
     expect(selectPrimaryLine(all, 'DE')?.id).toBe('a');
     expect(selectPrimaryLine([all[0]], 'DE')?.id).toBe('a');
+  });
+
+  it('prefers an otherwise comparable line that matches the interface language', () => {
+    const german = line({ id: 'de', languages: ['DE'] });
+    const english = line({ id: 'en', languages: ['English'] });
+    expect(selectPrimaryLine([german, english], 'DE', tueBerlin1500, 'en-US')?.id).toBe('en');
+  });
+});
+
+describe('emergency contacts and language matching', () => {
+  it('uses the local Australian emergency number', () => {
+    expect(emergencyContactsForCountry('AU')).toEqual([{ number: '000', region: 'AU' }]);
+  });
+
+  it('keeps broad fallbacks when no country is known', () => {
+    expect(emergencyContactsForCountry('ALL').map((contact) => contact.number)).toEqual([
+      '112',
+      '911',
+    ]);
+  });
+
+  it('matches common language codes and names', () => {
+    expect(hotlineSupportsLanguage(line({ languages: ['English'] }), 'en-GB')).toBe(true);
+    expect(hotlineSupportsLanguage(line({ languages: ['DE'] }), 'en')).toBe(false);
   });
 });
 

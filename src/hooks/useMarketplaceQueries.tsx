@@ -301,6 +301,7 @@ export function useMarketplaceListingsRelated(limit = 4) {
         .from('marketplace_listings')
         .select('*, venues(name, address, city)')
         .eq('status', 'active')
+        .eq('overview_eligible', true)
         .in('content_rating', SFW_RATINGS)
         .order('featured', { ascending: false })
         .order('lgbti_relevance_score', { ascending: false, nullsFirst: false })
@@ -335,9 +336,9 @@ export function useMarketplaceListingsForOccasion(occasionSlug: string | undefin
         .from('marketplace_listings')
         .select('*')
         .eq('status', 'active')
+        .eq('overview_eligible', true)
         .in('id', ids)
         .in('content_rating', ['sfw', 'suggestive'])
-        .not('images', 'is', null)
         .order('boutique_score', { ascending: false, nullsFirst: false })
         .limit(limit);
       if (error || !data) return [];
@@ -388,6 +389,7 @@ export function useMarketplaceSimilarListings(listing: MarketplaceListing | null
         .from('marketplace_listings')
         .select('*, venues(name, address, city)')
         .eq('status', 'active')
+        .eq('overview_eligible', true)
         .in('content_rating', SFW_RATINGS)
         .neq('id', listing.id)
         .limit(limit);

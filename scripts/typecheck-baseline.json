@@ -1,6 +1,6 @@
 {
   "project": "tsconfig.app.json",
-  "total": 794,
+  "total": 782,
   "files": {
     "src/assets/intimate/pictograms.tsx": {
       "TS2503": 2
@@ -107,9 +107,6 @@
       "TS2365": 3,
       "TS2769": 1
     },
-    "src/components/admin/review/ReviewBulkBar.tsx": {
-      "TS6133": 1
-    },
     "src/components/admin/triage/EntityPreviewCard.tsx": {
       "TS2339": 1,
       "TS2352": 1
@@ -148,7 +145,7 @@
       "TS2345": 1
     },
     "src/components/cms/ContentListPanel/useContentListController.ts": {
-      "TS2345": 3,
+      "TS2345": 2,
       "TS2554": 1
     },
     "src/components/cms/MediaLibrary/AssetVersionSidebar.tsx": {
@@ -626,9 +623,6 @@
     },
     "src/hooks/useEventSocialSignals.ts": {
       "TS2322": 1
-    },
-    "src/hooks/useEvents.tsx": {
-      "TS2322": 10
     },
     "src/hooks/useExistenceEngine.ts": {
       "TS2322": 3

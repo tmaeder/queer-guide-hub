@@ -27,7 +27,12 @@ describe('ReviewBulkBar', () => {
 
   it('shows Select all only when selectedCount < totalCount', () => {
     render(<ReviewBulkBar {...baseProps} />);
-    expect(screen.getByRole('button', { name: /Select all \(10\)/i })).toBeInTheDocument();
+    // "on this page" is asserted rather than incidental: `totalCount` is the rendered
+    // page (50 rows) while the queue total is in the thousands, so the old
+    // "Select all (10)" claimed to select everything and did not.
+    expect(
+      screen.getByRole('button', { name: /Select all on this page \(10\)/i }),
+    ).toBeInTheDocument();
   });
 
   it('hides Select all when all selected', () => {

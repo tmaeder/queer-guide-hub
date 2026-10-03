@@ -1,6 +1,7 @@
 /* eslint-disable react-refresh/only-export-components -- intentionally co-locates helpers/constants with the primary component */
 
 import { cn } from '@/lib/utils';
+import { StructuredValue } from './StructuredDataView';
 
 interface FieldDiff {
   field: string;
@@ -10,12 +11,6 @@ interface FieldDiff {
 
 interface FieldDiffViewProps {
   diffs: FieldDiff[];
-}
-
-function formatValue(v: unknown): string {
-  if (v === null || v === undefined) return '—';
-  if (typeof v === 'object') return JSON.stringify(v, null, 2);
-  return String(v);
 }
 
 export function FieldDiffView({ diffs }: FieldDiffViewProps) {
@@ -31,13 +26,15 @@ export function FieldDiffView({ diffs }: FieldDiffViewProps) {
             {d.field}
           </p>
           {d.oldValue !== undefined && d.oldValue !== null && (
-            <p className="text-xs text-muted-foreground line-through mb-0.5">
-              {formatValue(d.oldValue)}
-            </p>
+            <div className="mb-1 border-l-2 border-border pl-2 text-xs text-muted-foreground opacity-75">
+              <span className="sr-only">Existing value: </span>
+              <StructuredValue value={d.oldValue} />
+            </div>
           )}
-          <p className={cn('text-xs font-semibold border-l border-border-hairline pl-2')}>
-            {formatValue(d.newValue)}
-          </p>
+          <div className={cn('border-l-2 border-foreground pl-2 text-xs font-medium')}>
+            <span className="sr-only">Proposed value: </span>
+            <StructuredValue value={d.newValue} />
+          </div>
         </div>
       ))}
     </div>

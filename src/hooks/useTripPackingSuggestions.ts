@@ -1,10 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useTrip } from '@/hooks/useTrips';
-import {
-  generatePackingSuggestions,
-  type PackingQuery,
-} from '@/utils/packingSuggestions';
+import { generatePackingSuggestions, type PackingQuery } from '@/utils/packingSuggestions';
 
 export interface PackingProductSuggestion {
   id: string;
@@ -87,16 +84,15 @@ export function useTripPackingSuggestions(tripId: string | undefined) {
       const results = await Promise.all(
         queries.map(async (q, idx): Promise<PackingProductSuggestion | null> => {
           try {
-            const terms = (q.query || '')
-              .split(/\s+/)
-              .filter(Boolean)
-              .slice(0, 3)
-              .join(' OR ');
+            const terms = (q.query || '').split(/\s+/).filter(Boolean).slice(0, 3).join(' OR ');
             if (!terms) return null;
             const { data, error } = await supabase
               .from('marketplace_listings')
-              .select('id, title, description, price, currency, images, external_url, business_name')
+              .select(
+                'id, title, description, price, currency, external_url, business_name, overview_image:image_assets!marketplace_listings_overview_image_asset_id_fkey(optimized_url, thumbnail_url, url)',
+              )
               .eq('status', 'active')
+              .eq('overview_eligible', true)
               .textSearch('title', terms, {
                 type: 'websearch',
                 config: 'english',
@@ -110,7 +106,14 @@ export function useTripPackingSuggestions(tripId: string | undefined) {
               listingId: row.id as string,
               title: (row.title as string) ?? q.query,
               description: (row.description as string | null) ?? null,
-              imageUrl: (row.images as string[] | null)?.[0] ?? null,
+              imageUrl: (() => {
+                const image = row.overview_image as {
+                  optimized_url?: string | null;
+                  thumbnail_url?: string | null;
+                  url?: string | null;
+                } | null;
+                return image?.optimized_url ?? image?.thumbnail_url ?? image?.url ?? null;
+              })(),
               price: (row.price as number | null) ?? null,
               currency: (row.currency as string | null) ?? null,
               externalUrl: (row.external_url as string | null) ?? null,
@@ -130,9 +133,9 @@ export function useTripPackingSuggestions(tripId: string | undefined) {
   });
 }
 
-function deriveActivities(words: Set<string>): Array<
-  'beach' | 'hiking' | 'nightlife' | 'business' | 'cultural' | 'food' | 'adventure'
-> {
+function deriveActivities(
+  words: Set<string>,
+): Array<'beach' | 'hiking' | 'nightlife' | 'business' | 'cultural' | 'food' | 'adventure'> {
   const out: Array<
     'beach' | 'hiking' | 'nightlife' | 'business' | 'cultural' | 'food' | 'adventure'
   > = [];

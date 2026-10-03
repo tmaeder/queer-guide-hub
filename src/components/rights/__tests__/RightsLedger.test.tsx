@@ -1,5 +1,5 @@
 // src/components/rights/__tests__/RightsLedger.test.tsx
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { render, screen } from '@/test/test-utils';
 import { RightsLedger } from '../RightsLedger';
 import { RIGHT_TOPICS } from '@/lib/rights/rightsCatalog';
@@ -45,5 +45,19 @@ describe('RightsLedger', () => {
     render(<RightsLedger summary={summary} />);
     const row = document.getElementById('criminalisation')!;
     expect(row.textContent).toMatch(/5 of 17 countries criminalise/);
+  });
+
+  it('connects each row to contextual coverage without expanding the ledger', () => {
+    const onNewsTopicSelect = vi.fn();
+    render(<RightsLedger summary={summary} onNewsTopicSelect={onNewsTopicSelect} />);
+
+    const button = screen.getByRole('button', {
+      name: 'Latest coverage about Conversion therapy',
+    });
+    button.click();
+
+    expect(onNewsTopicSelect).toHaveBeenCalledWith(
+      expect.objectContaining({ slug: 'conversion-therapy' }),
+    );
   });
 });

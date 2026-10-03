@@ -19,6 +19,7 @@ import { useToast } from '@/hooks/use-toast';
 import { AGE_BANDS, BODY_TYPES, INTO_TAGS, ROLES } from '@/assets/intimate/options';
 import { JoyBurst } from '@/components/messaging/JoyBurst';
 import { PageContainer } from '@/components/layout/PageContainer';
+import { PageLoadingState } from '@/components/layout/PageLoadingState';
 
 export default function IntimateDiscovery() {
   const { data: me, isLoading } = useMyIntimateProfile();
@@ -113,7 +114,13 @@ export default function IntimateDiscovery() {
     }
   });
 
-  if (isLoading) return <div className="p-8">Loading…</div>;
+  if (isLoading) {
+    return (
+      <PageContainer>
+        <PageLoadingState count={4} label="Loading your discovery line" />
+      </PageContainer>
+    );
+  }
 
   if (!me?.opted_in_at) {
     return (
@@ -194,7 +201,7 @@ export default function IntimateDiscovery() {
       </section>
 
       {loadingDisc ? (
-        <p className="text-muted-foreground">Loading…</p>
+        <PageLoadingState count={4} label="Loading nearby riders" />
       ) : !rankedCards.length ? (
         <p className="text-muted-foreground">No matches yet. Try widening filters.</p>
       ) : viewMode === 'deck' ? (

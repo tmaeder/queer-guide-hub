@@ -5,6 +5,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Check, CornerDownRight, MessageSquare } from 'lucide-react';
 import type { CMSReviewComment, CommentType } from '@/types/cms';
+import { AdminTextSkeleton } from '@/components/admin/primitives/AdminLoading';
 
 interface CommentThreadProps {
   sourceTable: string;
@@ -64,7 +65,7 @@ export function CommentThread({
         <span className="text-muted-foreground">({visible.length})</span>
       </div>
 
-      {loading && <div className="text-sm text-muted-foreground">Loading…</div>}
+      {loading && <AdminTextSkeleton lines={3} />}
 
       {!loading && visible.length === 0 && (
         <div className="text-sm text-muted-foreground py-2">{emptyHint}</div>
@@ -94,11 +95,7 @@ export function CommentThread({
             aria-label="Comment"
           />
           <div className="flex justify-end">
-            <Button
-              size="sm"
-              onClick={() => handleSubmit()}
-              disabled={submitting || !draft.trim()}
-            >
+            <Button size="sm" onClick={() => handleSubmit()} disabled={submitting || !draft.trim()}>
               {submitting ? 'Posting…' : 'Post comment'}
             </Button>
           </div>
@@ -117,7 +114,14 @@ interface CommentNodeProps {
   onUnresolve: () => void;
 }
 
-function CommentNode({ comment, depth, readOnly, onReply, onResolve, onUnresolve }: CommentNodeProps) {
+function CommentNode({
+  comment,
+  depth,
+  readOnly,
+  onReply,
+  onResolve,
+  onUnresolve,
+}: CommentNodeProps) {
   const [replyOpen, setReplyOpen] = useState(false);
   const [replyDraft, setReplyDraft] = useState('');
 

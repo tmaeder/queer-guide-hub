@@ -84,6 +84,7 @@ import { TagInfographics } from '@/components/tags/TagInfographics';
 import { figuresForSlug } from '@/components/tags/infographics/registry';
 import { useTagMedicalCodes, countMedicalCodes } from '@/hooks/useTagMedicalCodes';
 import { useStiProfile, useTagMythFacts } from '@/hooks/useStiProfile';
+import { localizedField, type I18nMap } from '@/lib/localizeContent';
 
 /** `entity_kind` is a classification, not a state — which is exactly what
  *  DetailMasthead's bordered ink status chip is for.
@@ -137,7 +138,7 @@ function extractFacts(data: Record<string, unknown> | null | undefined): Fact[] 
 }
 
 export default function TagDetail() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { tagName } = useParams<{ tagName: string }>();
   const navigate = useLocalizedNavigate();
   const safeMode = useSafeMode();
@@ -181,6 +182,15 @@ export default function TagDetail() {
     staleTime: 5 * 60 * 1000,
     queryFn: async () => ((await fetchTagWithCategories(slug)) as CentralizedTag | null) ?? null,
   });
+
+  // `description_i18n` is the only translated field on this page.
+  // `long_description` holds curated kinktionary/drgay bodies that the
+  // pipeline deliberately never touches, so it stays English.
+  const displayDescription = localizedField(
+    tag?.description,
+    (tag as { description_i18n?: unknown } | null | undefined)?.description_i18n as I18nMap,
+    i18n.language,
+  );
 
   // Same SPA-301 as the case fix above, for the case where the row we got back
   // is filed under a DIFFERENT slug than the URL asked for. Two ways that
@@ -590,7 +600,7 @@ export default function TagDetail() {
             <p className="max-w-reading text-body-lg leading-relaxed">
               {/* `currentSlug` is what stops a definition linking to itself —
                   the rule InfographicTermChip established for figures. */}
-              <GlossaryLinkedText text={tag.description} currentSlug={tag.slug} />
+              <GlossaryLinkedText text={displayDescription} currentSlug={tag.slug} />
             </p>
           )}
           {wiki ? (
@@ -803,7 +813,7 @@ export default function TagDetail() {
         status={
           ENTITY_KIND_LABELS[(tag as { entity_kind?: string }).entity_kind ?? ''] ?? undefined
         }
-        lead={<GlossaryLinkedText text={tag.description} currentSlug={tag.slug} />}
+        lead={<GlossaryLinkedText text={displayDescription} currentSlug={tag.slug} />}
         tags={<TagAliasesDisplay tagId={tag.id} />}
         action={
           <div className="flex items-center gap-2">

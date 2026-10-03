@@ -18,6 +18,11 @@ export const PUBLIC_ROUTES = [
   { path: '/venues/le-mistral', name: 'venue-detail' },
   { path: '/venues/guides', name: 'venue-guides' },
   { path: '/events', name: 'events-list' },
+  // `/events` defaults to view=grid (eventsQueryString.ts), so the sweep never
+  // mounted EventsTimelineView — which is why its pins kept the `target-size`
+  // defect after the /pride ones were fixed. A query string is fine here: the
+  // scanner builds `${BASE_URL}${route.path}` verbatim.
+  { path: '/events?view=timeline', name: 'events-timeline' },
   { path: '/events/kaohsiung-pride-2027', name: 'event-detail' },
   { path: '/events/guides', name: 'event-guides' },
   { path: '/pride', name: 'pride' },

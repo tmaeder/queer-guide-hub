@@ -61,14 +61,37 @@ let body = res.ok ? null : await res.text()
 // appears in the logs, re-measure per arm — measured per arm, not by reading the
 // plan tree, because EXPLAIN reports buffers CUMULATIVELY through nested nodes
 // and a rolled-up figure reads exactly like an independent one.
+//
+// THE RETRY IS DELAYED, AND THAT DELAY IS THE WHOLE FIX (2026-09-28). It used to
+// fire immediately, so both attempts landed inside the SAME contention window and
+// both timed out ~9s apart — measured, twice, on #3996. Contention here lasts
+// minutes, not milliseconds, so an instant retry re-samples nothing. A single
+// retry far enough away to sample a different window is the difference between a
+// gate that reports load and a gate that reports hygiene.
+//
+// RE-MEASURED THE SAME DAY, AND IT CONFIRMS THIS IS LOAD, NOT COST. On a quiet
+// instance (2 active backends) the function is **1,523 ms** against the 8s
+// ceiling — 5.3x headroom, matching the 1.3s recorded in 2026-09-14 — and
+// `uta_rollup`, its dominant CTE, is **321 ms**. Under load (76 backends, 17
+// active, a 1.7-hour query) the SAME function measured 4.2s to 19.4s and
+// `uta_rollup` 3,275 ms. Every per-arm figure taken during that window is void,
+// including three "optimisations" that looked 2-4x worse and were only contention.
+// Before trusting ANY timing here, re-run the unchanged baseline afterwards: if
+// the two baselines disagree, the measurement in between measured the instance.
+const RETRY_DELAY_MS = 30_000
 if (!res.ok && body?.includes('57014')) {
-  console.warn('⚠ tag_hygiene_stats() hit the statement timeout (57014) — no metric was evaluated. Retrying once.')
+  console.warn(
+    `⚠ tag_hygiene_stats() hit the statement timeout (57014) — no metric was evaluated. ` +
+      `Retrying ONCE in ${RETRY_DELAY_MS / 1000}s, to sample a different load window.`,
+  )
+  await new Promise((r) => setTimeout(r, RETRY_DELAY_MS))
   const t0 = Date.now()
   res = await callStats()
   body = res.ok ? null : await res.text()
   console.warn(
-    `⚠ retry ${res.ok ? 'SUCCEEDED' : 'FAILED'} after ${Date.now() - t0}ms. The RPC is near its 8s ` +
-      'ceiling — re-measure per arm rather than retrying harder.',
+    `⚠ retry ${res.ok ? 'SUCCEEDED' : 'FAILED'} after ${Date.now() - t0}ms. If it FAILED, the ` +
+      'database was busy for >30s or the function has genuinely regressed — measure it on a quiet ' +
+      'instance before concluding which.',
   )
 }
 
@@ -83,11 +106,27 @@ const baseline = JSON.parse(readFileSync(BASELINE, 'utf8'))
 const metrics = Object.keys(stats).filter((k) => k !== 'totals')
 
 if (UPDATE) {
-  const next = { _comment: baseline._comment }
+  // EVERY `_`-prefixed key is carried across, enumerated from the file rather
+  // than listed here. Listing them is how this went wrong: it named `_comment`
+  // and `_notes` and silently DROPPED `_advisory`, so running `--update` —
+  // which the regression message below tells you to run — turned all NINE
+  // advisory metrics into hard gates in one commit, with no output saying so.
+  // Every one of them is advisory because an instantaneous value is not an
+  // invariant for it, so the next ordinary drift in any of the nine would have
+  // red every open PR for a change its author did not make. A generic carry
+  // cannot rot when someone adds a tenth control key.
+  // `_comment` leads and the rest trail, which is the file's existing shape, so
+  // a re-baseline diff shows only the numbers that moved.
+  const control = Object.keys(baseline).filter((k) => k.startsWith('_'))
+  const next = {}
+  if (control.includes('_comment')) next._comment = baseline._comment
   for (const k of metrics.sort()) next[k] = stats[k]
-  if (baseline._notes) next._notes = baseline._notes
+  for (const k of control) if (k !== '_comment') next[k] = baseline[k]
   writeFileSync(BASELINE, JSON.stringify(next, null, 2) + '\n')
-  console.log(`✓ baseline updated (${metrics.length} metrics)`)
+  const carried = Object.keys(next).filter((k) => k.startsWith('_'))
+  console.log(
+    `✓ baseline updated (${metrics.length} metrics; carried ${carried.join(', ') || 'no control keys'})`,
+  )
   process.exit(0)
 }
 

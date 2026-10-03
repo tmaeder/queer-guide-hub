@@ -1,7 +1,8 @@
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo, useRef } from 'react';
+import type { PointerEvent as ReactPointerEvent } from 'react';
 import { TrackLoader } from '@/components/transit/TrackLoader';
 import { toast } from 'sonner';
-import { Maximize2, CheckCheck } from 'lucide-react';
+import { ArrowRight, CheckCheck, Inbox, Maximize2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -22,9 +23,9 @@ import {
   useHighConfCount,
   useBulkApproveHighConf,
   type TriageFilters,
-  type TriageItem,
 } from '@/hooks/useUnifiedTriageQueue';
 import { useReviewCounts } from '@/hooks/useReviewCounts';
+import { queueByKey } from '@/config/adminQueues';
 import { useReviewQueueCohorts } from '@/hooks/useReviewQueueCohorts';
 import { ReviewBulkBar } from '@/components/admin/review/ReviewBulkBar';
 import { TriageFilterBar } from './TriageFilterBar';
@@ -33,6 +34,15 @@ import { TriageList } from './TriageList';
 import { TriageDetailPanel } from './TriageDetailPanel';
 import { TriageFocusMode } from './TriageFocusMode';
 import { useTriageKeyboard } from './useTriageKeyboard';
+import { getTriageDecisionGuidance } from './triageDecisionGuidance';
+import {
+  resolveDecision,
+  isUnbatchablePerson,
+  queuedKeepId,
+  type TriageAction,
+  type TriageAnswers,
+} from './resolveDecision';
+import { useTriageSourceCapabilities } from '@/hooks/useTriageSourceCapabilities';
 
 interface TriageViewProps {
   initialQueueType?: string;
@@ -50,6 +60,7 @@ export function TriageView({ initialQueueType }: TriageViewProps) {
   });
   const [activeId, setActiveId] = useState<string | null>(null);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [answers, setAnswers] = useState<Record<string, TriageAnswers>>({});
   // Last approve/reject, for one-step undo (U) — reopens the item in its queue.
   const [lastActed, setLastActed] = useState<{
     id: string;
@@ -58,7 +69,24 @@ export function TriageView({ initialQueueType }: TriageViewProps) {
   } | null>(null);
 
   const { data, isLoading, error } = useUnifiedTriageQueue(filters);
-  const { data: counts } = useReviewCounts();
+  const { data: reviewCounts } = useReviewCounts();
+  const counts = useMemo(
+    () =>
+      reviewCounts
+        ? {
+            review_staging: reviewCounts.staging,
+            review_cms: reviewCounts.cmsReview,
+            review_moderation: reviewCounts.moderation,
+            review_submissions: reviewCounts.submissions,
+            review_automation: reviewCounts.automation,
+            review_tags: reviewCounts.tagSuggestions,
+            review_duplicates: reviewCounts.duplicates,
+            quality_editorial: reviewCounts.editorial,
+            review_feedback: reviewCounts.feedback,
+          }
+        : undefined,
+    [reviewCounts],
+  );
 
   // Quality is in scope when nothing is filtered (the whole inbox) or when at
   // least one quality key is selected. Deliberately `some`, not `every`: the
@@ -68,10 +96,35 @@ export function TriageView({ initialQueueType }: TriageViewProps) {
     !filters.queueTypes || filters.queueTypes.some((k) => k.startsWith('quality-'));
   const { data: cohorts, isLoading: cohortsLoading } = useReviewQueueCohorts(qualityInScope);
   const triageAction = useTriageAction();
+  const { externalConsoleFor } = useTriageSourceCapabilities();
 
   const items = useMemo(() => data?.items ?? [], [data]);
   const total = data?.total ?? 0;
   const activeItem = useMemo(() => items.find((i) => i.id === activeId) ?? null, [items, activeId]);
+  const selectedItems = useMemo(
+    () => items.filter((item) => selectedIds.has(item.id)),
+    [items, selectedIds],
+  );
+  const selectedQueueTypes = useMemo(
+    () => new Set(selectedItems.map((item) => item.queue_type)),
+    [selectedItems],
+  );
+  const mixedBulkWorkflows = selectedQueueTypes.size > 1;
+  const bulkDecisionSummary = useMemo(() => {
+    if (selectedItems.length === 0) return undefined;
+    if (mixedBulkWorkflows) {
+      return 'These items use different approval workflows. Filter to one queue or review them individually before making a bulk decision.';
+    }
+    const guidance = getTriageDecisionGuidance(selectedItems[0]);
+    return `Approve: ${guidance.approve} Reject: ${guidance.reject}`;
+  }, [mixedBulkWorkflows, selectedItems]);
+  const scopeLabel = useMemo(() => {
+    if (!filters.queueTypes) return 'All queues';
+    if (filters.queueTypes.length === 1) {
+      return queueByKey(filters.queueTypes[0])?.label ?? filters.queueTypes[0];
+    }
+    return `${filters.queueTypes.length} queues`;
+  }, [filters.queueTypes]);
 
   function updateFilters(partial: Partial<TriageFilters>) {
     setFilters((f) => ({ ...f, ...partial }));
@@ -102,23 +155,16 @@ export function TriageView({ initialQueueType }: TriageViewProps) {
   }, [items, activeId]);
 
   const handleAction = useCallback(
-    (
-      action: 'approve' | 'reject' | 'skip' | 'flag',
-      notes?: string,
-      cannedSlug?: string,
-      // Queue-specific extras. `triage_action` has accepted `p_payload` since
-      // 20260801050000 and `useTriageAction` has always had the parameter, but this
-      // handler dropped it — which is why dedup-review's canonical flip (`keep_id`)
-      // was reachable from SQL and from the hook and from no button anywhere.
-      payload?: Record<string, unknown>,
-      // Outing-safety confirmation, forwarded to triage_action's p_confirm.
-      // Set only by TriageDetailPanel, only on approve, and only after the
-      // reviewer ticks the box — see the gate there. Without it,
-      // approve_entity_review raises 42501 for every risk-gated row, which is
-      // what made 347 proposals un-approvable from this screen.
-      confirm?: boolean,
-    ) => {
+    (action: TriageAction) => {
       if (!activeItem) return;
+
+      const decision = resolveDecision(activeItem, action, answers[activeItem.id] ?? {}, {
+        externalConsole: externalConsoleFor(activeItem.queue_type),
+      });
+      if (!decision.ok) {
+        toast.warning(decision.reason);
+        return;
+      }
 
       if (action === 'skip') {
         advanceToNext();
@@ -130,10 +176,10 @@ export function TriageView({ initialQueueType }: TriageViewProps) {
           itemId: activeItem.id,
           queueType: activeItem.queue_type,
           action,
-          notes,
-          cannedSlug,
-          payload,
-          confirm,
+          notes: decision.notes,
+          cannedSlug: decision.cannedSlug,
+          payload: decision.payload,
+          confirm: decision.confirm,
         },
         {
           onSuccess: () => {
@@ -154,8 +200,24 @@ export function TriageView({ initialQueueType }: TriageViewProps) {
         },
       );
     },
-    [activeItem, triageAction, advanceToNext],
+    [activeItem, answers, externalConsoleFor, triageAction, advanceToNext],
   );
+
+  const updateAnswers = useCallback(
+    (patch: Partial<TriageAnswers>) => {
+      if (!activeId) return;
+      setAnswers((previous) => ({
+        ...previous,
+        [activeId]: { ...previous[activeId], ...patch },
+      }));
+    },
+    [activeId],
+  );
+
+  const activeAnswers: TriageAnswers = useMemo(() => {
+    if (!activeItem) return {};
+    return { keepId: queuedKeepId(activeItem), ...answers[activeItem.id] };
+  }, [activeItem, answers]);
 
   const handleUndo = useCallback(() => {
     if (!lastActed) {
@@ -181,6 +243,31 @@ export function TriageView({ initialQueueType }: TriageViewProps) {
   const [bulkLoading, setBulkLoading] = useState(false);
   const [focusOpen, setFocusOpen] = useState(false);
   const [confirmHighConf, setConfirmHighConf] = useState(false);
+  const splitRef = useRef<HTMLDivElement>(null);
+  const [listShare, setListShare] = useState(36);
+
+  const resizeList = useCallback((clientX: number) => {
+    const rect = splitRef.current?.getBoundingClientRect();
+    if (!rect) return;
+    const minList = Math.min(272, rect.width * 0.45);
+    const maxList = Math.min(544, Math.max(minList, rect.width - 360));
+    const width = Math.min(maxList, Math.max(minList, clientX - rect.left));
+    setListShare((width / rect.width) * 100);
+  }, []);
+
+  const startResize = useCallback(
+    (event: ReactPointerEvent<HTMLButtonElement>) => {
+      event.preventDefault();
+      const onMove = (moveEvent: PointerEvent) => resizeList(moveEvent.clientX);
+      const onEnd = () => {
+        window.removeEventListener('pointermove', onMove);
+        window.removeEventListener('pointerup', onEnd);
+      };
+      window.addEventListener('pointermove', onMove);
+      window.addEventListener('pointerup', onEnd);
+    },
+    [resizeList],
+  );
 
   /**
    * A namesake merge can never be a bulk decision.
@@ -200,15 +287,13 @@ export function TriageView({ initialQueueType }: TriageViewProps) {
    * be restated here. Reject and skip stay available — "these are two different
    * people" must remain the easy answer.
    */
-  const isNamesakePair = (i: TriageItem) =>
-    i.queue_type === 'dedup-review' && i.content_type === 'personality';
-
   const runBulk = useCallback(
     async (targets: typeof items, action: 'approve' | 'reject') => {
       if (targets.length === 0) return;
 
-      const held = action === 'approve' ? targets.filter(isNamesakePair) : [];
-      const actionable = action === 'approve' ? targets.filter((i) => !isNamesakePair(i)) : targets;
+      const held = action === 'approve' ? targets.filter(isUnbatchablePerson) : [];
+      const actionable =
+        action === 'approve' ? targets.filter((i) => !isUnbatchablePerson(i)) : targets;
 
       if (held.length > 0 && actionable.length === 0) {
         toast.warning(
@@ -330,35 +415,54 @@ export function TriageView({ initialQueueType }: TriageViewProps) {
   const detailPanel = activeItem ? (
     <TriageDetailPanel
       item={activeItem}
+      answers={activeAnswers}
+      onAnswersChange={updateAnswers}
       onAction={handleAction}
       isActionLoading={triageAction.isPending}
     />
   ) : (
-    <div className="flex flex-col items-center justify-center h-full text-sm text-muted-foreground gap-2">
-      <p>Select an item to preview</p>
-      <p className="text-2xs">
-        <kbd className="px-1 border">j</kbd>/<kbd className="px-1 border">k</kbd> navigate
-        {' · '}
-        <kbd className="px-1 border">a</kbd> approve
-        {' · '}
-        <kbd className="px-1 border">r</kbd> reject
-        {' · '}
-        <kbd className="px-1 border">s</kbd> skip
-        {' · '}
-        <kbd className="px-1 border">f</kbd> flag
-        {' · '}
-        <kbd className="px-1 border">u</kbd> undo
-        {' · '}
-        <kbd className="px-1 border">?</kbd> help
-      </p>
+    <div className="flex h-full flex-col items-center justify-center gap-6 bg-muted/15 px-8 text-center">
+      <span className="flex size-14 items-center justify-center rounded-container border border-border-hairline bg-background shadow-soft">
+        <Inbox className="size-6" aria-hidden="true" />
+      </span>
+      <div className="max-w-sm">
+        <h3 className="text-title font-semibold leading-tight">Choose a review item</h3>
+        <p className="mt-2 text-13 leading-relaxed text-muted-foreground">
+          Open an item to see its source, proposed changes, risk signals, and available decisions.
+        </p>
+      </div>
+      {items.length > 0 && (
+        <Button onClick={() => handleSelect(items[0].id)}>
+          Review first item
+          <ArrowRight className="ml-1.5 size-4" aria-hidden="true" />
+        </Button>
+      )}
+      <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-2xs text-muted-foreground">
+        <span>
+          <kbd className="rounded-badge border border-border bg-background px-1.5 py-0.5">J</kbd>
+          <span className="ml-1">next</span>
+        </span>
+        <span>
+          <kbd className="rounded-badge border border-border bg-background px-1.5 py-0.5">A</kbd>
+          <span className="ml-1">approve</span>
+        </span>
+        <span>
+          <kbd className="rounded-badge border border-border bg-background px-1.5 py-0.5">R</kbd>
+          <span className="ml-1">reject</span>
+        </span>
+        <span>
+          <kbd className="rounded-badge border border-border bg-background px-1.5 py-0.5">?</kbd>
+          <span className="ml-1">all shortcuts</span>
+        </span>
+      </div>
     </div>
   );
 
   return (
-    <div className="flex flex-col h-[calc(100vh-8rem)]">
+    <div className="flex h-full min-h-0 flex-col overflow-hidden">
       {/* Header */}
-      <div className="flex items-center justify-between px-4 py-2 border-b">
-        <div className="flex items-center gap-2">
+      <div className="flex min-h-12 shrink-0 flex-wrap items-center justify-between gap-2 border-b border-border px-4 py-2">
+        <div className="flex min-w-0 items-center gap-4">
           {/* h2, not h1. TriageView is EMBEDDED — /admin/inbox already renders
             its own <h1>Inbox</h1> above this pane, so an h1 here gave that
             route TWO page titles and a screen reader two competing answers to
@@ -368,15 +472,20 @@ export function TriageView({ initialQueueType }: TriageViewProps) {
             real admin session: "/admin/inbox has 2 h1s". The guard had been
             skipping silently since the day it landed, for want of a CI
             session — this is the defect it existed to find. */}
-          <h2 className="text-lg font-medium">Review</h2>
+          <div className="min-w-0">
+            <div className="flex items-center gap-2">
+              <h2 className="text-15 font-semibold">Review queue</h2>
+              {isLoading && <TrackLoader size={14} />}
+            </div>
+            <p className="truncate text-2xs text-muted-foreground">{scopeLabel}</p>
+          </div>
           {total > 0 && (
-            <Badge variant="secondary" className="text-xs">
-              {total}
+            <Badge variant="secondary" className="rounded-badge text-xs tabular-nums">
+              {total.toLocaleString()} open
             </Badge>
           )}
-          {isLoading && <TrackLoader size={14} />}
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           {selectedIds.size > 0 && (
             <span className="text-xs text-muted-foreground">{selectedIds.size} selected</span>
           )}
@@ -387,13 +496,13 @@ export function TriageView({ initialQueueType }: TriageViewProps) {
               onClick={() => setConfirmHighConf(true)}
               disabled={bulkLoading || bulkHighConf.isPending}
             >
-              <CheckCheck className="h-3.5 w-3.5 mr-1" />
+              <CheckCheck className="mr-1 size-3.5" />
               Approve ≥90% ({highConfCount})
             </Button>
           )}
           {items.length > 0 && (
             <Button size="sm" variant="outline" onClick={openFocusMode}>
-              <Maximize2 className="h-3.5 w-3.5 mr-1" />
+              <Maximize2 className="mr-1 size-3.5" />
               Focus mode
             </Button>
           )}
@@ -435,9 +544,35 @@ export function TriageView({ initialQueueType }: TriageViewProps) {
           </Sheet>
         </>
       ) : (
-        <div className="flex flex-1 overflow-hidden">
-          <div className="w-[40%] min-w-[300px] border-r overflow-hidden">{listPanel}</div>
-          <div className="flex-1 overflow-hidden">{detailPanel}</div>
+        <div ref={splitRef} className="flex min-h-0 flex-1 overflow-hidden">
+          <div className="min-w-0 shrink-0 overflow-hidden" style={{ flexBasis: `${listShare}%` }}>
+            {listPanel}
+          </div>
+          <button
+            type="button"
+            role="separator"
+            aria-label="Resize queue and preview"
+            aria-orientation="vertical"
+            aria-valuemin={28}
+            aria-valuemax={60}
+            aria-valuenow={Math.round(listShare)}
+            tabIndex={0}
+            onPointerDown={startResize}
+            onKeyDown={(event) => {
+              if (event.key === 'ArrowLeft') {
+                event.preventDefault();
+                setListShare((value) => Math.max(28, value - 3));
+              }
+              if (event.key === 'ArrowRight') {
+                event.preventDefault();
+                setListShare((value) => Math.min(60, value + 3));
+              }
+            }}
+            className="group relative w-1.5 shrink-0 cursor-col-resize border-x border-border bg-muted/40 outline-none transition-colors hover:bg-muted focus-visible:bg-foreground/15"
+          >
+            <span className="absolute inset-y-0 left-1/2 w-px -translate-x-1/2 bg-border group-hover:bg-foreground/40" />
+          </button>
+          <div className="min-w-0 flex-1 overflow-hidden bg-muted/15">{detailPanel}</div>
         </div>
       )}
 
@@ -449,6 +584,8 @@ export function TriageView({ initialQueueType }: TriageViewProps) {
         onBulkApprove={() => handleBulkAction('approve')}
         onBulkReject={() => handleBulkAction('reject')}
         loading={bulkLoading}
+        decisionSummary={bulkDecisionSummary}
+        decisionsDisabled={mixedBulkWorkflows}
       />
 
       <TriageFocusMode
@@ -460,6 +597,8 @@ export function TriageView({ initialQueueType }: TriageViewProps) {
         page={filters.page}
         perPage={filters.perPage}
         onNavigate={handleSelect}
+        answers={activeAnswers}
+        onAnswersChange={updateAnswers}
         onAction={handleAction}
         isActionLoading={triageAction.isPending}
       />
@@ -469,9 +608,10 @@ export function TriageView({ initialQueueType }: TriageViewProps) {
           <AlertDialogHeader>
             <AlertDialogTitle>Approve {highConfCount ?? 0} high-confidence items?</AlertDialogTitle>
             <AlertDialogDescription>
-              This approves every pending staging item with a confidence score of 90% or higher —
-              across all pages, not just the visible ones. Items the quality check rejected are
-              excluded. Approved items move on to commit and can be reopened individually.
+              If you continue, every pending staging item at 90% confidence or higher is marked
+              approved across all pages and handed to the commit pipeline. Quality-rejected items
+              are excluded; nothing becomes public until commit succeeds. If you cancel, no review
+              status or content changes.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

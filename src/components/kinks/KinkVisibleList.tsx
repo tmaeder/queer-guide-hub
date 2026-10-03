@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { MessageCircle, Star } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { Skeleton } from '@/components/ui/skeleton';
 import { useKinkVisibleList } from '@/hooks/useKinkVisibleList';
 import { useKinkTaxonomy } from '@/hooks/useKinkTaxonomy';
 import { kinkLabel, type KinkVisibleRow } from '@/lib/kinks/types';
@@ -35,7 +36,15 @@ export function KinkVisibleList({ ownerId }: { ownerId: string }) {
     return map;
   }, [rows]);
 
-  if (isLoading) return <p className="py-2 text-13 text-muted-foreground">Loading…</p>;
+  if (isLoading) {
+    return (
+      <div className="flex flex-wrap gap-2 py-2" role="status" aria-label="Loading interests">
+        <Skeleton className="h-6 w-24 rounded-badge" />
+        <Skeleton className="h-6 w-20 rounded-badge" />
+        <Skeleton className="h-6 w-28 rounded-badge" />
+      </div>
+    );
+  }
   if (!rows?.length) return null;
 
   return (

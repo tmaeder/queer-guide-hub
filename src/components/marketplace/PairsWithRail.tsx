@@ -44,7 +44,7 @@ export function PairsWithRail({ listing }: { listing: MarketplaceListing }) {
     };
   }, [listing.id]);
 
-  const { data: rows, loading } = useMarketplaceListingsByIds(ids ?? []);
+  const { data: rows, loading } = useMarketplaceListingsByIds(ids ?? [], true);
   // Default-safe: an SFW listing never suggests adult companions.
   const items = isAdultListing(listing) ? rows : rows.filter((r) => !isAdultListing(r));
 

@@ -559,10 +559,50 @@ async function runLinkPhase(
             p625 ? Number(p625.longitude) : null,
           )
 
+          // PERSIST THE VERDICT, in its OWN top-level key. It cannot live under
+          // `wikidata_link`: `bumpMiss` and `markResolved` both REPLACE
+          // `state.wikidata_link` wholesale, so a sub-key there is erased by the
+          // very next pass and the metric reads "never swept" forever. Until this
+          // landed the verdict existed only in the run report -- `coord_refused` is
+          // a per-run counter -- so `city_wikidata_signals().coord_unswept` read
+          // 3,031 of 3,032 rows, could never move, and hid the ~167 real
+          // mismatches inside a number that looked like a backlog.
+          //
+          // `unchecked` is deliberately NOT stamped: no P625 on the entity, or no
+          // coordinates on the row, is absence of evidence, and recording that as a
+          // verdict is how 6,498 venues were written off as having no logo.
+          // Shaped like `capital_scope`: the verdict is a finding about the PROBE,
+          // so it rides in `detail` and `state` records that a decision was
+          // reached. `state: 'resolved'` for BOTH verdicts on purpose -- a
+          // disagreement is a completed check, not pending work, and marking it
+          // pending would invite a selector to treat it as a retry target.
+          if (geo.verdict === 'agree' || geo.verdict === 'disagree') {
+            state.wikidata_coords = {
+              state: 'resolved',
+              source: 'wikidata',
+              at: new Date().toISOString(),
+              qid,
+              detail: { verdict: geo.verdict, km: geo.distanceKm },
+            }
+          }
+
           if (cls.verdict === 'settlement' && geo.verdict === 'disagree') {
             // A decision about the candidate, not a failure to read one, so it
             // counts toward the terminal sentinel exactly as a class refusal does.
+            //
+            // THE HELD QID IS DELIBERATELY NOT CLEARED. Distance cannot tell a wrong
+            // IDENTIFIER from wrong COORDINATES: Burj Hammoud sits at longitude
+            // exactly 0.000000, so it measures 3,264 km from an entity that is
+            // genuinely its own, and an auto-clear would have destroyed a correct
+            // answer. `needs_attention` routes it to a human instead -- the same
+            // call 99991790358713 made when it repaired 11 of 167 by hand.
+            if (c.wikidata_qid && c.wikidata_qid === qid) update.needs_attention = true
             qid = null
+            // Keep the stored title for human review, but do not use it below to
+            // fetch or publish Wikipedia content after geography has vetoed the
+            // entity. A cached title is not independent corroboration: it came
+            // from the same QID that just disagreed.
+            enwikiTitle = null
             coordRefused++
             bumpMiss(state, 'wikidata_link', 'coords')
             missReason ??= `refused_coords:${geo.distanceKm}km`.slice(0, 200)

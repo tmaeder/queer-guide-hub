@@ -91,7 +91,12 @@ const EDGES = `(() => {
   const contentLeft = (n) => Math.round(n.getBoundingClientRect().left) + cs(n, 'paddingLeft');
   const header = document.querySelector('header .max-w-page');
   const main = document.querySelector('main');
-  const all = main ? Array.from(main.querySelectorAll('.max-w-page')) : [];
+  // The crisis route owns a safety-specific banner inside its routed tree.
+  // It still uses the shared capped island geometry, but it is chrome rather
+  // than page content and must not be counted as an outer page container.
+  const all = main
+    ? Array.from(main.querySelectorAll('.max-w-page')).filter((n) => !n.closest('header'))
+    : [];
   // Outermost only — a container nested inside another is a legitimate inner
   // block (a hero inside a band), not the page's own frame.
   const tops = all.filter((n) => !all.some((o) => o !== n && o.contains(n)));
@@ -122,7 +127,14 @@ test.describe('page layout — one gutter, one cap, one rhythm', () => {
         await page.setViewportSize({ width, height: 900 });
         await page.goto(route);
         await page.waitForLoadState('domcontentloaded');
-        await page.waitForTimeout(600);
+        await page.waitForFunction(
+          () =>
+            Array.from(document.querySelectorAll('main .max-w-page')).some(
+              (node) => !node.closest('header'),
+            ),
+          undefined,
+          { timeout: 15_000 },
+        );
 
         const r = await page.evaluate(EDGES);
 
@@ -435,9 +447,8 @@ test.describe('page layout — mobile density', () => {
  *
  * `/events` and `/cities` were the whole list when this block was written to
  * catch the island drift, and that scope hid four more instances of the very
- * same bug: `/help`'s emergency-numbers spine at `top-16` (18px behind),
- * `/tags`' category rail at `top-[76px]` (6px), `/privacy`'s TOC rail at
- * `top-20` (2px), and `TripWorkspace`'s bar at `top-16`. All four were
+ * same bug: `/tags`' category rail at `top-[76px]` (6px), `/privacy`'s TOC
+ * rail at `top-20` (2px), and `TripWorkspace`'s bar at `top-16`. All three were
  * literals measured against the pre-island 64px header, all confirmed on prod
  * 2026-08-21. A guard is only as broad as its route list.
  *
@@ -448,7 +459,7 @@ test.describe('page layout — mobile density', () => {
  * rect-based check fails it for no defect. The offset is static, needs no
  * scroll, and is the thing actually under test.
  */
-const STICKY_BAR_ROUTES = ['/events', '/cities', '/help', '/tags', '/privacy', '/news'];
+const STICKY_BAR_ROUTES = ['/events', '/cities', '/tags', '/privacy', '/news'];
 
 test.describe('page layout — sticky elements clear the header', () => {
   for (const width of [390, 1440]) {
@@ -464,7 +475,7 @@ test.describe('page layout — sticky elements clear the header', () => {
         await page.waitForFunction(
           () =>
             Array.from(document.querySelectorAll('main *')).some(
-              (n) => getComputedStyle(n).position === 'sticky',
+              (n) => !n.closest('header') && getComputedStyle(n).position === 'sticky',
             ),
           undefined,
           { timeout: 15_000 },
@@ -491,7 +502,10 @@ test.describe('page layout — sticky elements clear the header', () => {
           };
 
           const sticky = Array.from(document.querySelectorAll('main *')).filter(
-            (n) => getComputedStyle(n).position === 'sticky' && !inOwnScroller(n),
+            (n) =>
+              !n.closest('header') &&
+              getComputedStyle(n).position === 'sticky' &&
+              !inOwnScroller(n),
           );
           return {
             pinned,

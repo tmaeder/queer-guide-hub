@@ -40,8 +40,35 @@ export interface ReservationSuggestions {
 }
 
 const EUROPEAN_COUNTRY_CODES = new Set([
-  'DE','FR','IT','ES','PT','NL','BE','LU','CH','AT','DK','SE','NO','FI','IS','IE','GB',
-  'PL','CZ','SK','HU','SI','HR','RO','BG','GR','EE','LV','LT',
+  'DE',
+  'FR',
+  'IT',
+  'ES',
+  'PT',
+  'NL',
+  'BE',
+  'LU',
+  'CH',
+  'AT',
+  'DK',
+  'SE',
+  'NO',
+  'FI',
+  'IS',
+  'IE',
+  'GB',
+  'PL',
+  'CZ',
+  'SK',
+  'HU',
+  'SI',
+  'HR',
+  'RO',
+  'BG',
+  'GR',
+  'EE',
+  'LV',
+  'LT',
 ]);
 
 async function lookupIataByName(cityName: string | null): Promise<string | null> {
@@ -93,8 +120,11 @@ async function fetchAccommodations(
   // 1) Live marketplace hotel listings for this city (if any)
   const { data: listings } = await supabase
     .from('marketplace_listings')
-    .select('id, title, description, price, currency, images, external_url, source_type, location, business_name')
+    .select(
+      'id, title, description, price, currency, external_url, source_type, location, business_name, overview_image:image_assets!marketplace_listings_overview_image_asset_id_fkey(optimized_url, thumbnail_url, url)',
+    )
     .eq('status', 'active')
+    .eq('overview_eligible', true)
     .in('category', ['hotel', 'accommodation', 'stay'])
     .ilike('location', `%${destination}%`)
     .order('featured', { ascending: false })
@@ -106,7 +136,14 @@ async function fetchAccommodations(
       kind: 'accommodation',
       title: (l.title as string) ?? 'Hotel',
       description: (l.description as string | null) ?? null,
-      imageUrl: (l.images as string[] | null)?.[0] ?? null,
+      imageUrl: (() => {
+        const image = l.overview_image as {
+          optimized_url?: string | null;
+          thumbnail_url?: string | null;
+          url?: string | null;
+        } | null;
+        return image?.optimized_url ?? image?.thumbnail_url ?? image?.url ?? null;
+      })(),
       priceFrom: (l.price as number | null) ?? null,
       currency: (l.currency as string | null) ?? null,
       provider: (l.business_name as string | null) ?? 'Marketplace',

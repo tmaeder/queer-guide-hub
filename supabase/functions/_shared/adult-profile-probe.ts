@@ -1,3 +1,4 @@
+import { decodeEntities as sharedDecodeEntities } from './html-entities.ts'
 // adult-profile-probe — pure helpers for resolving an adult performer's
 // profile on pornhub / xhamster / xvideos.
 //
@@ -109,14 +110,17 @@ export function normalizeName(value: string): string {
     .trim()
 }
 
-const ENTITIES: Record<string, string> = {
-  '&amp;': '&', '&lt;': '<', '&gt;': '>', '&quot;': '"', '&#39;': "'", '&#124;': '|',
-}
-
+/**
+ * Was two passes — named first, then numeric — which is `js/double-escaping`
+ * in the less obvious direction: `&amp;#60;` became `&#60;` in the named pass
+ * and then a live `<` in the numeric one. One pass, so nothing is re-read.
+ *
+ * The old bespoke table is gone rather than passed through as `extra`: it held
+ * amp/lt/gt/quot, which the shared defaults already cover, plus `&#39;` and
+ * `&#124;`, which are numeric forms the shared decoder resolves natively.
+ */
 export function decodeEntities(value: string): string {
-  return value
-    .replace(/&(?:amp|lt|gt|quot|#39|#124);/g, (m) => ENTITIES[m] ?? m)
-    .replace(/&#(\d+);/g, (_m, d) => String.fromCharCode(Number(d)))
+  return sharedDecodeEntities(value)
 }
 
 /** `<title >` (with a space) is real — xhamster emits it. Stay tolerant. */

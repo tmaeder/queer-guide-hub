@@ -1,3 +1,4 @@
+import { decodeEntities } from './html-entities.ts'
 /**
  * gay.ch category-link extraction.
  *
@@ -37,18 +38,11 @@
  * was.
  */
 
-/** Entity set matching source-gay-ch's stripTags, applied BEFORE tag removal. */
-function decodeEntities(s: string): string {
-  return s
-    .replace(/&#x([0-9a-f]+);/gi, (_m, h) => String.fromCodePoint(parseInt(h, 16)))
-    .replace(/&#(\d+);/g, (_m, d) => String.fromCodePoint(Number(d)))
-    .replace(/&nbsp;/g, ' ')
-    .replace(/&quot;/g, '"')
-    .replace(/&apos;/g, "'")
-    .replace(/&lt;/g, '<')
-    .replace(/&gt;/g, '>')
-    .replace(/&amp;/g, '&')
-}
+/* Entity decoding is shared with source-gay-ch's stripTags via
+ * _shared/html-entities.ts — see the import at the top of this file. It is
+ * still applied BEFORE tag removal here, which is deliberate for this parser:
+ * gay.ch encodes angle brackets inside category labels and they must survive
+ * as text rather than be read as markup. */
 
 /**
  * Residual markup in a finished label. A category name is a place or a festival

@@ -17,8 +17,9 @@
  *    important thing this page does for the person helping somebody else.
  */
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { Search } from 'lucide-react';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import {
   Dialog,
@@ -29,6 +30,7 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 import { countryLabel } from './helpData';
+import { Input } from '@/components/ui/input';
 
 export function CountryScope({
   country,
@@ -43,9 +45,21 @@ export function CountryScope({
   const { t } = useTranslation();
   const navigate = useLocalizedNavigate();
   const [open, setOpen] = useState(false);
+  const [query, setQuery] = useState('');
+
+  const options = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    const all = ['ALL', ...available];
+    if (!q) return all;
+    return all.filter((code) => {
+      const label = code === 'ALL' ? 'All countries' : countryLabel(code);
+      return code.toLowerCase().includes(q) || label.toLowerCase().includes(q);
+    });
+  }, [available, query]);
 
   const pick = (code: string) => {
     onChange(code);
+    setQuery('');
     setOpen(false);
     navigate(code === 'ALL' ? '/help' : `/help/${code.toLowerCase()}`);
   };
@@ -63,7 +77,13 @@ export function CountryScope({
         )}
       </p>
 
-      <Dialog open={open} onOpenChange={setOpen}>
+      <Dialog
+        open={open}
+        onOpenChange={(nextOpen) => {
+          setOpen(nextOpen);
+          if (!nextOpen) setQuery('');
+        }}
+      >
         <DialogTrigger asChild>
           <button
             type="button"
@@ -82,8 +102,26 @@ export function CountryScope({
               )}
             </DialogDescription>
           </DialogHeader>
-          <ul className="m-0 grid list-none grid-cols-2 gap-2 p-0 sm:grid-cols-3">
-            {['ALL', ...available].map((code) => {
+          <div className="relative mt-2">
+            <label htmlFor="help-country-search" className="sr-only">
+              {t('help.filter_country', 'Country')}
+            </label>
+            <Input
+              id="help-country-search"
+              value={query}
+              onChange={(event) => setQuery(event.target.value)}
+              placeholder={t('help.filter_country', 'Country')}
+              autoComplete="off"
+              className="min-h-12 pr-12"
+            />
+            <Search
+              size={16}
+              aria-hidden
+              className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground"
+            />
+          </div>
+          <ul className="m-0 grid max-h-[50vh] list-none grid-cols-2 gap-2 overflow-y-auto p-0 sm:grid-cols-3">
+            {options.map((code) => {
               const active = code === country;
               return (
                 <li key={code}>
@@ -105,6 +143,11 @@ export function CountryScope({
               );
             })}
           </ul>
+          {options.length === 0 && (
+            <p className="text-13 text-muted-foreground">
+              {t('help.no_results_title', 'No results')}
+            </p>
+          )}
         </DialogContent>
       </Dialog>
     </div>

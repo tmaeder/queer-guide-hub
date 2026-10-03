@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { ShieldCheck } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
 import { useAuth } from '@/hooks/useAuth';
 import { useVenueSafetyScore } from '@/hooks/useVenueSafetySignals';
 import { VenueSafetySignalPrompt } from './VenueSafetySignalPrompt';
@@ -29,7 +30,12 @@ export function VenueSafetySignalDisplay({ venueId, bare = false }: Props) {
 
   const body = (
     <div className="flex flex-col gap-4">
-      {isLoading && <p className="text-sm text-muted-foreground">Loading…</p>}
+      {isLoading && (
+        <div className="flex flex-col gap-2" role="status" aria-label="Loading visitor signals">
+          <Skeleton className="h-4 w-4/5" />
+          <Skeleton className="h-3 w-full rounded-badge" />
+        </div>
+      )}
 
       {!isLoading && visible.length === 0 && (
         <p className="text-sm text-muted-foreground">

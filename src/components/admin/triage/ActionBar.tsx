@@ -1,15 +1,15 @@
-import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Check, X, SkipForward, Flag } from 'lucide-react';
 import { CannedResponsePicker } from './CannedResponsePicker';
+import type { TriageDecisionGuidance } from './triageDecisionGuidance';
+import type { TriageAction, TriageAnswers } from './resolveDecision';
 
 interface ActionBarProps {
-  onAction: (
-    action: 'approve' | 'reject' | 'skip' | 'flag',
-    notes?: string,
-    cannedSlug?: string,
-  ) => void;
+  notes: string;
+  cannedSlug: string;
+  onAnswersChange: (patch: Partial<TriageAnswers>) => void;
+  onAction: (action: TriageAction) => void;
   isLoading: boolean;
   /**
    * Actions to render but refuse. Used by dedup-review's namesake gate: approve is
@@ -17,82 +17,111 @@ interface ActionBarProps {
    * whole point of the flag is that "these are two different people" should be the
    * easy answer, and disabling the entire bar would make it the hardest.
    */
-  disabledActions?: ReadonlyArray<'approve' | 'reject' | 'skip' | 'flag'>;
+  disabledActions?: ReadonlyArray<TriageAction>;
+  guidance?: TriageDecisionGuidance;
 }
 
-export function ActionBar({ onAction, isLoading, disabledActions = [] }: ActionBarProps) {
-  const blocked = (a: 'approve' | 'reject' | 'skip' | 'flag') => disabledActions.includes(a);
-  const [notes, setNotes] = useState('');
-  const [cannedSlug, setCannedSlug] = useState('');
+export function ActionBar({
+  notes,
+  cannedSlug,
+  onAnswersChange,
+  onAction,
+  isLoading,
+  disabledActions = [],
+  guidance,
+}: ActionBarProps) {
+  const blocked = (a: TriageAction) => disabledActions.includes(a);
 
   function handleCannedSelect(slug: string, template: string) {
-    setCannedSlug(slug);
-    setNotes(template);
+    onAnswersChange({ cannedSlug: slug, notes: template });
   }
 
-  function handleAction(action: 'approve' | 'reject' | 'skip' | 'flag') {
-    onAction(action, notes || undefined, cannedSlug || undefined);
-    setNotes('');
-    setCannedSlug('');
+  function handleAction(action: TriageAction) {
+    onAction(action);
   }
 
   return (
-    <div className="border-t p-4 space-y-2">
-      <div className="flex items-center gap-2">
+    <div className="flex shrink-0 flex-wrap items-center gap-2 border-t border-border bg-background px-4 py-2 shadow-soft">
+      {guidance && (
+        <section aria-labelledby="decision-outcome-heading" className="w-full pb-2">
+          <div className="flex flex-col gap-2 rounded-element bg-muted/40 px-4 py-2 lg:grid lg:grid-cols-[auto_minmax(0,1fr)_minmax(0,1fr)] lg:items-start lg:gap-4">
+            <h3 id="decision-outcome-heading" className="text-2xs font-semibold">
+              What happens next
+            </h3>
+            <p className="text-2xs leading-relaxed">
+              <span className="font-semibold">If you approve:</span> {guidance.approve}
+            </p>
+            <p className="text-2xs leading-relaxed">
+              <span className="font-semibold">If you don&rsquo;t:</span> {guidance.reject}{' '}
+              {guidance.defer}
+            </p>
+          </div>
+          {guidance.unsavedWarning && (
+            <p role="alert" className="mt-2 text-2xs font-medium text-destructive">
+              {guidance.unsavedWarning}
+            </p>
+          )}
+        </section>
+      )}
+      <div className="flex shrink-0 items-center gap-1.5">
         <Button
           size="sm"
+          data-triage-action="approve"
           onClick={() => handleAction('approve')}
           disabled={isLoading || blocked('approve')}
-          className="h-7 text-xs"
+          className="h-9 min-h-9 text-xs"
         >
-          <Check className="h-3.5 w-3.5 mr-1" />
-          Approve
+          <Check className="mr-1 size-3.5" />
+          {guidance?.approveLabel ?? 'Approve'}
         </Button>
         {/* Destructive visual treatment (inline — no modal confirm, keyboard 'r' shortcut). */}
         <Button
           size="sm"
+          data-triage-action="reject"
           variant="outline"
           onClick={() => handleAction('reject')}
           disabled={isLoading || blocked('reject')}
-          className="h-7 text-xs bg-card text-foreground hover:bg-foreground hover:text-background rounded-element shadow-soft"
+          className="h-9 min-h-9 rounded-element bg-card text-xs text-foreground shadow-soft hover:bg-foreground hover:text-background"
         >
-          <X className="h-3.5 w-3.5 mr-1" />
-          Reject
+          <X className="mr-1 size-3.5" />
+          {guidance?.rejectLabel ?? 'Reject'}
         </Button>
         <Button
           size="sm"
+          data-triage-action="skip"
           variant="outline"
           onClick={() => handleAction('skip')}
           disabled={isLoading || blocked('skip')}
-          className="h-7 text-xs"
+          className="h-9 min-h-9 text-xs"
         >
-          <SkipForward className="h-3.5 w-3.5 mr-1" />
+          <SkipForward className="mr-1 size-3.5" />
           Skip
         </Button>
         <Button
           size="sm"
+          data-triage-action="flag"
           variant="outline"
           onClick={() => handleAction('flag')}
           disabled={isLoading || blocked('flag')}
-          className="h-7 text-xs"
+          className="h-9 min-h-9 text-xs"
         >
-          <Flag className="h-3.5 w-3.5 mr-1" />
+          <Flag className="mr-1 size-3.5" />
           Flag
         </Button>
       </div>
 
-      <div className="flex items-start gap-2">
-        <div className="w-48 shrink-0">
+      <div className="flex min-w-64 flex-1 items-center gap-2">
+        <div className="w-40 shrink-0">
           <CannedResponsePicker value={cannedSlug} onSelect={handleCannedSelect} />
         </div>
         <Textarea
           value={notes}
           onChange={(e) => {
-            setNotes(e.target.value);
-            setCannedSlug('');
+            onAnswersChange({ notes: e.target.value, cannedSlug: '' });
           }}
-          placeholder="Review notes..."
-          className="text-xs min-h-[60px] resize-none"
+          placeholder="Review notes (optional)"
+          aria-label="Review notes"
+          className="h-9 min-h-9 resize-none py-2 text-xs focus:h-20"
         />
       </div>
     </div>

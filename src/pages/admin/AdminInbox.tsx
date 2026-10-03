@@ -11,6 +11,8 @@ import { TriageView } from '@/components/admin/triage/TriageView';
 import { AutomationStatusCard } from '@/components/admin/AutomationStatusCard';
 import { useRegisterAdminCommandAction } from '@/components/admin/command-palette/useAdminCommandActions';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Keyboard } from 'lucide-react';
 
 /** Legacy /admin/review?tab= vocabulary → TriageView queue types. */
 const TAB_TO_QUEUE: Record<string, string> = {
@@ -70,34 +72,31 @@ export default function AdminInbox() {
   }, []);
 
   return (
-    <div className="flex flex-col h-full">
-      <header className="px-4 py-4 border-b border-border bg-background">
-        {/* eslint-disable-next-line queerguide/admin-ui-primitives --
-            The inbox is a full-height app shell, not a standard page: this
-            header is a dense sticky bar (px-4 py-4, its own border) sitting
-            above a split pane. AdminPageHeader's mb-6/pb-6 block layout would
-            push the list below the fold. */}
-        <h1 className="text-headline font-bold leading-tight">Inbox</h1>
-        <p className="text-13 text-muted-foreground mt-1">
-          {/* This line used to read "Everything that needs you, across queues",
-              and that was the problem rather than the framing: measured on
-              prod, 575 of 1,319 staging rows had already been committed or
-              rejected by the pipeline, and 1,409 of 3,997 review rows are
-              above the auto-approval threshold. The card below splits the two
-              so the number here is not read as a backlog that never moves. */}
-          Work across queues, sorted by priority. The card below separates what the nightly jobs
-          clear from what is yours. Press{' '}
-          <kbd className="px-1 border border-border bg-muted text-2xs">J</kbd>/
-          <kbd className="px-1 border border-border bg-muted text-2xs">K</kbd> to navigate,{' '}
-          <kbd className="px-1 border border-border bg-muted text-2xs">A</kbd> approve,{' '}
-          <kbd className="px-1 border border-border bg-muted text-2xs">R</kbd> reject. Press{' '}
-          <kbd className="px-1 border border-border bg-muted text-2xs">?</kbd> for all shortcuts.
-        </p>
+    <div className="flex h-full min-h-0 flex-col overflow-hidden">
+      <header className="flex min-h-12 shrink-0 flex-wrap items-center justify-between gap-x-6 gap-y-2 border-b border-border bg-background px-4 py-2 md:px-6">
+        <div className="flex min-w-0 items-center gap-4">
+          {/* eslint-disable-next-line queerguide/admin-ui-primitives -- compact app-shell title */}
+          <h1 className="text-title font-bold leading-none tracking-tight">Inbox</h1>
+          <AutomationStatusCard compact />
+        </div>
+        <div className="flex items-center gap-2">
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={() => setShowHelp(true)}
+            aria-keyshortcuts="?"
+            className="shrink-0 text-muted-foreground"
+          >
+            <Keyboard className="mr-1.5 size-4" aria-hidden="true" />
+            Shortcuts
+            <kbd className="ml-2 rounded-badge border border-border bg-muted px-1.5 py-0.5 text-2xs">
+              ?
+            </kbd>
+          </Button>
+        </div>
       </header>
-      <div className="px-4 pt-4">
-        <AutomationStatusCard />
-      </div>
-      <div className="flex-1 min-h-0">
+      <div className="min-h-0 flex-1">
         <TriageView initialQueueType={initialQueue} />
       </div>
 
