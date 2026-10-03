@@ -111,10 +111,9 @@ describe('tag_enrichment_apply', () => {
     expect(sensitiveAt, 'no scoped sensitive guard').toBeGreaterThan(-1);
     expect(humanAt, 'no human_reviewed refusal').toBeGreaterThan(sensitiveAt);
     const linksBranch = body.search(/p_kind\s*=\s*'links'/i);
-    expect(
-      humanAt,
-      'human_reviewed must be checked BEFORE the links UPDATE branch',
-    ).toBeLessThan(linksBranch);
+    expect(humanAt, 'human_reviewed must be checked BEFORE the links UPDATE branch').toBeLessThan(
+      linksBranch,
+    );
   });
 
   it('logs an RPC refusal instead of swallowing it', () => {
@@ -154,5 +153,126 @@ describe('tag_enrichment_apply', () => {
     const catUpdate = catBranch.slice(0, catBranch.search(/elsif|else\b/i));
     expect(catUpdate).toMatch(/category_id\s*=/);
     expect(catUpdate).toMatch(/\bcategory\s*=/);
+  });
+});
+
+/**
+ * mode='prose' is REVIEW-ONLY, and the reason this needs a test rather than a
+ * comment is that it HAD two comments and they disagreed.
+ *
+ * The file header has said "REVIEW-ONLY since 2026-08-29 — it applies nothing"
+ * since that date, while the docblock over `prosePass` eighty lines below went on
+ * describing the retired design: "At >=0.9 confidence the prose is RETRACTED (all
+ * three fields) and the wiki identity cleared" and "Non-sensitive + confidence
+ * >=0.8 auto-applies". A reader asking "does this cron write to published glossary
+ * prose?" could land on either answer depending on which they opened — and
+ * CLAUDE.md, which claimed the cron was DISABLED, was wrong about that for a
+ * month partly because the code looked like it might need to be.
+ *
+ * Why it must stay review-only: the judge's first live batch (18 tags,
+ * 2026-08-29) retracted 16 and 13 of those were WRONG, destroying correct
+ * definitions of soft-limits, outing, deadnaming and anxiety among others. It
+ * answers `wrong_subject` at HIGH confidence for prose that is merely SHORT, so
+ * the confidence gate filters the broken part and bounds nothing. Only
+ * `tag_change_log.before_data` made that recoverable.
+ *
+ * The cron is deliberately LEFT ENABLED (`33 3 * * *`): it advances a cursor and
+ * fills `ai_suggestions` for a human, which is useful and cannot publish.
+ */
+describe('tag-enrichment-sweep mode=prose applies nothing', () => {
+  /** `prosePass` only, so a write elsewhere in the file cannot satisfy these. */
+  const prose = (() => {
+    const start = sweep.indexOf('async function prosePass(');
+    expect(start, 'prosePass is gone — re-point this guard').toBeGreaterThan(-1);
+    // Up to the next top-level function declaration.
+    const after = sweep.slice(start + 1);
+    const next = after.search(/\n(?:async )?function \w+\(/);
+    return next === -1 ? after : after.slice(0, next);
+  })();
+
+  /** The docblock immediately above it. */
+  const docblock = (() => {
+    const at = sweep.indexOf('async function prosePass(');
+    const open = sweep.lastIndexOf('/**', at);
+    return open === -1 ? '' : sweep.slice(open, at);
+  })();
+
+  it('writes unified_tags only through the prose_cursor kind', () => {
+    const kinds = [...prose.matchAll(/p_kind:\s*'(\w+)'/g)].map((m) => m[1]);
+    expect(kinds, 'prosePass must touch exactly one write kind').toEqual(['prose_cursor']);
+  });
+
+  it('makes no direct update and nulls no prose column', () => {
+    const flat = prose.replace(/\s+/g, ' ');
+    expect(flat).not.toMatch(/from\('unified_tags'\)\s*\.update\(/);
+    // Retraction was `description: null` + the wiki identity cleared.
+    for (const col of ['description', 'short_description', 'long_description', 'wikidata_id']) {
+      expect(flat, `prosePass nulls ${col} — that is the retired retract branch`).not.toMatch(
+        new RegExp(`${col}:\\s*null`),
+      );
+    }
+  });
+
+  it('queues the voice rewrite instead of applying it', () => {
+    expect(prose).toContain("from('ai_suggestions')");
+    expect(prose).toMatch(/status:\s*'pending'/);
+  });
+
+  it('counts the wrong-subject verdict without acting on it', () => {
+    // The branch must increment, log, and `continue` — never write.
+    const branch = prose.slice(
+      prose.search(/if \(out\.verdict === 'wrong_subject'\)/),
+      prose.search(/verdict === 'ok'/),
+    );
+    expect(branch.length, 'no wrong_subject branch found').toBeGreaterThan(0);
+    expect(branch).toMatch(/stats\.prose_flagged\+\+/);
+    expect(branch).toMatch(/\bcontinue\b/);
+    expect(branch).not.toMatch(/\.rpc\(|\.update\(|ai_suggestions/);
+  });
+
+  it('has a docblock that does not contradict the file header', () => {
+    // THE POINT OF THIS BLOCK. Both comments describe the same function; one
+    // claiming retraction or auto-apply while the other says "applies nothing"
+    // is how a reader concludes the cron is dangerous and CLAUDE.md concludes it
+    // must be off.
+    //
+    // POSITIONAL, not a flat negative, and the first draft of this assertion
+    // FAILED on correct code for exactly the documented reason: the corrected
+    // docblock QUOTES the false claim in order to explain it, so "RETRACTED must
+    // not appear" is unsatisfiable by any honest correction. A statement that
+    // quotes its own defect breaks negative assertions in both directions —
+    // scope them to the half of the structure they are about. This checks the
+    // stale vocabulary appears ONLY below the correction marker, which proves
+    // the fix AND that the history was preserved rather than deleted.
+    expect(docblock.length, 'prosePass lost its docblock').toBeGreaterThan(0);
+
+    const MARKER = 'DESCRIBED THE RETIRED DESIGN';
+    const at = docblock.indexOf(MARKER);
+    expect(
+      at,
+      'the docblock no longer records that it once described the retired design',
+    ).toBeGreaterThan(-1);
+
+    const describesNow = docblock.slice(0, at);
+    for (const claim of [/\bRETRACTED\b/, /auto-applies/]) {
+      expect(describesNow, `the docblock still claims ${claim} as CURRENT behaviour`).not.toMatch(
+        claim,
+      );
+    }
+
+    // And the historical half must still quote it — a correction that deletes
+    // the claim leaves the next reader unable to tell what was fixed.
+    expect(docblock.slice(at), 'the correction note must quote what it corrects').toMatch(
+      /\bRETRACTED\b/,
+    );
+
+    // The header is everything above the first import, not a byte count: a 2000
+    // char slice was the first draft and it FAILED on correct code, because
+    // "REVIEW-ONLY since 2026-08-29" sits at line 36 of a dense 47-line header,
+    // past 3,000 characters. A magic offset into a comment block is a guess that
+    // rots the moment anyone edits the prose above it.
+    const header = sweep.slice(0, sweep.indexOf('import '));
+    expect(header.length, 'could not locate the file header').toBeGreaterThan(0);
+    expect(header, 'the file header must still state review-only').toMatch(/REVIEW-ONLY/);
   });
 });

@@ -70,5 +70,5 @@ test('the emergency numbers survive a failed i18n load', async ({ page }) => {
   await page.waitForSelector('main h1', { timeout: 30_000 });
 
   await expect(page.getByRole('heading', { name: /in acute danger/i })).toBeVisible();
-  await expect(page.locator('a[href="tel:112"]').first()).toBeVisible();
+  await expect(page.getByTestId('help-safety-header').locator('a[href^="tel:"]')).toBeVisible();
 });

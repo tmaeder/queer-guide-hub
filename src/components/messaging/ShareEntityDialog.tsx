@@ -10,6 +10,7 @@ import {
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Skeleton } from '@/components/ui/skeleton';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Search, Send, Check } from 'lucide-react';
@@ -108,7 +109,7 @@ export function ShareEntityDialog({ open, onOpenChange, entity }: ShareEntityDia
     const url = `${window.location.origin}${entity.path}`;
     const parts = [
       `📅 ${entity.title}`,
-      ...(entity.gated ? [] : [entity.subtitle].filter(Boolean) as string[]),
+      ...(entity.gated ? [] : ([entity.subtitle].filter(Boolean) as string[])),
       url,
     ];
     if (note.trim()) parts.push('', note.trim());
@@ -233,7 +234,15 @@ export function ShareEntityDialog({ open, onOpenChange, entity }: ShareEntityDia
             </div>
             <ScrollArea style={{ height: 220 }} className="mt-2">
               {loadingMembers && members.length === 0 ? (
-                <p className="text-sm text-muted-foreground text-center py-8">Loading...</p>
+                <div
+                  className="flex flex-col gap-2 py-4"
+                  role="status"
+                  aria-label="Loading members"
+                >
+                  <Skeleton className="h-12 w-full rounded-element" />
+                  <Skeleton className="h-12 w-full rounded-element" />
+                  <Skeleton className="h-12 w-full rounded-element" />
+                </div>
               ) : members.length === 0 ? (
                 <p className="text-sm text-muted-foreground text-center py-8">No members found</p>
               ) : (
@@ -249,7 +258,11 @@ export function ShareEntityDialog({ open, onOpenChange, entity }: ShareEntityDia
           <TabsContent value="group">
             <ScrollArea style={{ height: 264 }} className="mt-2">
               {loadingGroups && groups.length === 0 ? (
-                <p className="text-sm text-muted-foreground text-center py-8">Loading...</p>
+                <div className="flex flex-col gap-2 py-4" role="status" aria-label="Loading groups">
+                  <Skeleton className="h-12 w-full rounded-element" />
+                  <Skeleton className="h-12 w-full rounded-element" />
+                  <Skeleton className="h-12 w-full rounded-element" />
+                </div>
               ) : groups.length === 0 ? (
                 <p className="text-sm text-muted-foreground text-center py-8">
                   No groups joined yet

@@ -14,6 +14,8 @@ interface ReviewBulkBarProps {
   onBulkApprove: () => void;
   onBulkReject: () => void;
   loading?: boolean;
+  decisionSummary?: string;
+  decisionsDisabled?: boolean;
 }
 
 export const ReviewBulkBar = ({
@@ -24,49 +26,58 @@ export const ReviewBulkBar = ({
   onBulkApprove,
   onBulkReject,
   loading,
+  decisionSummary,
+  decisionsDisabled = false,
 }: ReviewBulkBarProps) => {
   if (selectedCount === 0) return null;
 
   return (
-    // `shadow-soft-lg` is the system's floating-surface elevation. This carried an
-    // inline `boxShadow` literal, which evaded the hex/hsl ESLint rule only by being
-    // in a `style` prop rather than a class.
-    <div className="sticky bottom-4 mx-4 px-4 py-4 flex items-center gap-4 bg-card rounded-container shadow-soft-lg z-50">
+    <div
+      className="sticky bottom-4 mx-4 px-4 py-4 flex items-center gap-4 bg-background z-50"
+      style={{ boxShadow: '0 8px 16px hsl(var(--foreground) / 0.15)' }}
+    >
       <Badge>{selectedCount} selected</Badge>
 
+      {decisionSummary && (
+        <p className="max-w-xl text-2xs leading-relaxed text-muted-foreground">{decisionSummary}</p>
+      )}
+
       {selectedCount < totalCount && (
-        <Button size="sm" variant="ghost" onClick={onSelectAll} className="normal-case">
+        <Button size="sm" variant="ghost" onClick={onSelectAll} style={{ textTransform: 'none' }}>
           <CheckCheck size={14} className="mr-1" />
-          {/* "on this page" is load-bearing, not padding: `totalCount` is
-              `items.length` — the 50 rows currently rendered — while the queue total is
-              in the thousands. "Select all (50)" beside a header reading 3,997 claims
-              to be selecting everything and is not. */}
           Select all on this page ({totalCount})
         </Button>
       )}
 
-      <Button size="sm" variant="ghost" onClick={onClearSelection} className="normal-case">
+      <Button
+        size="sm"
+        variant="ghost"
+        onClick={onClearSelection}
+        style={{ textTransform: 'none' }}
+      >
         Clear
       </Button>
 
       <div className="flex-1" />
 
-      {/* Bulk REJECT is the asymmetry that mattered: bulk approve has always had a
-          full AlertDialog, while rejecting 50 rows was one unconfirmed click. The
-          confirmation lives in TriageView, which owns the selection and knows what is
-          in it; this stays a plain button so the bar has one job. */}
       <Button
         size="sm"
         variant="outline"
         onClick={onBulkReject}
-        disabled={loading}
-        className="normal-case border-destructive text-destructive"
+        disabled={loading || decisionsDisabled}
+        style={{ textTransform: 'none', borderColor: 'hsl(var(--destructive))' }}
+        className="text-destructive"
       >
         <X size={14} className="mr-1" />
         Reject
       </Button>
 
-      <Button size="sm" onClick={onBulkApprove} disabled={loading} className="normal-case">
+      <Button
+        size="sm"
+        onClick={onBulkApprove}
+        disabled={loading || decisionsDisabled}
+        style={{ textTransform: 'none' }}
+      >
         <Check size={14} className="mr-1" />
         Approve
       </Button>

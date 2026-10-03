@@ -11,6 +11,7 @@ import { useEffect, useState } from 'react';
 import { History, ChevronDown, ChevronRight } from 'lucide-react';
 import { useCMSAudit } from '@/hooks/useCMSAudit';
 import { formatRelativeTime, formatAction } from '@/lib/audit-format';
+import { AdminTextSkeleton } from '@/components/admin/primitives/AdminLoading';
 
 interface EntityAuditHistoryProps {
   sourceTable: string;
@@ -47,7 +48,7 @@ export function EntityAuditHistory({ sourceTable, sourceId }: EntityAuditHistory
       {open && (
         <div className="border-t border-border px-4 py-2">
           {loading ? (
-            <p className="text-2xs text-muted-foreground">Loading…</p>
+            <AdminTextSkeleton lines={2} />
           ) : entries.length === 0 ? (
             <p className="text-2xs text-muted-foreground">No history yet.</p>
           ) : (

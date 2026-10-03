@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button';
 import { Heart, Share2, Lock, Globe } from 'lucide-react';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { PageContainer } from '@/components/layout/PageContainer';
+import { PageLoadingState } from '@/components/layout/PageLoadingState';
 
 const Wishlist = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -59,7 +60,7 @@ const Wishlist = () => {
   if (loading || !wishlist) {
     return (
       <PageContainer>
-        <p className="text-muted-foreground">Loading…</p>
+        <PageLoadingState count={4} label="Loading this wishlist" />
       </PageContainer>
     );
   }

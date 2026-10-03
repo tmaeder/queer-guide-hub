@@ -245,10 +245,10 @@ export function useBrandMoreFrom(brand: string | null | undefined, excludeId: st
         .from('marketplace_listings')
         .select('*')
         .eq('status', 'active')
+        .eq('overview_eligible', true)
         .eq('brand_key', key)
         .neq('id', excludeId)
         .in('content_rating', SFW_RATINGS)
-        .not('images', 'is', null)
         .order('boutique_score', { ascending: false, nullsFirst: false })
         .limit(limit);
       return (data ?? []) as MarketplaceListing[];
@@ -266,9 +266,9 @@ export function useBrandTopListings(brandKey: string | null | undefined, limit =
         .from('marketplace_listings')
         .select('*')
         .eq('status', 'active')
+        .eq('overview_eligible', true)
         .eq('brand_key', brandKey!)
         .in('content_rating', SFW_RATINGS)
-        .not('images', 'is', null)
         .order('boutique_score', { ascending: false, nullsFirst: false })
         .limit(limit);
       return (data ?? []) as MarketplaceListing[];

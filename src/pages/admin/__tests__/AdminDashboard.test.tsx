@@ -92,7 +92,7 @@ describe('AdminDashboard — Needs you', () => {
     expect(link.getAttribute('href')).toBe('/admin/governance?mode=triage&queue=quality-city');
   });
 
-  it('ranks an overdue queue above a heavier, larger, on-time one', () => {
+  it('keeps safety work ahead of overdue routine work', () => {
     mockCounts.mockReturnValue(
       counts({
         review_moderation: 500,
@@ -106,7 +106,7 @@ describe('AdminDashboard — Needs you', () => {
       .getAllByRole('link')
       .map((a) => a.textContent ?? '')
       .filter((t) => t.includes('Automation') || t.includes('Reports'));
-    expect(links[0]).toContain('Automation');
+    expect(links[0]).toContain('Reports');
   });
 
   it('says "All clear." and lists nothing when every queue is empty', () => {

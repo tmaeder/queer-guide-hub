@@ -4,7 +4,7 @@
  */
 
 import { useTranslation } from 'react-i18next';
-import { Wind, Hand, FileText, ExternalLink } from 'lucide-react';
+import { Wind, Hand, FileText, ExternalLink, Phone } from 'lucide-react';
 import {
   Sheet,
   SheetContent,
@@ -14,9 +14,13 @@ import {
   SheetTrigger,
 } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
+import { HideScreen } from '@/components/safety/HideScreen';
+import { QuickExit } from '@/components/safety/QuickExit';
+import { emergencyContactsForCountry } from './helpData';
 
-export function SelfHelpDrawer() {
+export function SelfHelpDrawer({ country }: { country: string }) {
   const { t } = useTranslation();
+  const emergency = emergencyContactsForCountry(country)[0];
   return (
     <Sheet>
       <SheetTrigger asChild>
@@ -31,6 +35,23 @@ export function SelfHelpDrawer() {
         </button>
       </SheetTrigger>
       <SheetContent className="w-full max-w-md overflow-y-auto sm:max-w-md">
+        <div className="sticky top-0 z-10 -mx-6 -mt-6 mb-6 border-b border-border-hairline bg-background px-6 py-4">
+          <p className="text-2xs font-bold uppercase tracking-label text-muted-foreground">
+            {t('help.emergency_short', 'Emergency')}
+          </p>
+          <div className="mt-2 flex flex-wrap items-center gap-2">
+            <a
+              href={`tel:${emergency.number}`}
+              className="inline-flex min-h-11 items-center gap-2 bg-destructive px-4 text-13 font-bold text-destructive-foreground no-underline"
+            >
+              <Phone size={16} aria-hidden />
+              <span className="tabular-nums">{emergency.number}</span>
+              <span className="font-normal">({emergency.region})</span>
+            </a>
+            <HideScreen />
+            <QuickExit />
+          </div>
+        </div>
         <SheetHeader>
           <SheetTitle>{t('help.self_help_title', 'Steady yourself')}</SheetTitle>
           <SheetDescription>

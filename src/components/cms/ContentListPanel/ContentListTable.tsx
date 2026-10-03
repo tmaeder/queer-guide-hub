@@ -28,12 +28,14 @@ import {
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 
 import { Editable } from '@/components/admin/inline/Editable';
+import { getContentType } from '@/config/contentTypes';
 import type { ContentTypeConfig, FieldConfig } from '@/types/cms';
 import { ListPagination } from './ListPagination';
 import {
   getStatusColor,
   getStatusLabel,
   relativeTime,
+  resolveStatusField,
   tintOf,
   type ListItem,
   type SortDir,
@@ -332,11 +334,14 @@ export function ContentListTable({
   const colCount = (contentTypeId ? 5 : 6) + extraColumns.length;
 
   return (
-    <div className="overflow-hidden rounded-element bg-muted">
+    <div
+      data-testid="content-data-surface"
+      className="overflow-hidden rounded-container bg-card shadow-soft"
+    >
       <div className="overflow-x-auto">
         <Table>
-          <TableHeader>
-            <TableRow>
+          <TableHeader className="sticky top-0 z-10 bg-surface-container-high">
+            <TableRow className="bg-surface-container-high">
               <TableHead style={{ width: 42 }} className="pl-4">
                 <Checkbox
                   aria-label="Select all rows"
@@ -409,6 +414,12 @@ export function ContentListTable({
             ) : (
               items.map((item) => {
                 const itemKey = `${item.contentType}-${item.id}`;
+                // A type-specific list already receives its effective config,
+                // including any page-level row actions. Only the mixed "All
+                // Content" view needs to resolve configuration per row.
+                const rowConfig = contentTypeId
+                  ? config
+                  : (getContentType(item.contentType) ?? config);
                 const isSelected = selected.has(itemKey);
                 const rowColor = item.contentTypeColor;
                 const statusColor = getStatusColor(item.status);
@@ -424,22 +435,23 @@ export function ContentListTable({
                 // row is off the site entirely. Until this badge existed the
                 // only signal was the row action flipping Archive→Restore,
                 // which is invisible unless you go looking for it.
-                const archived = isArchived(item.raw ?? {}, config?.lifecycle);
+                const archived = isArchived(item.raw ?? {}, rowConfig?.lifecycle);
+                const titleField = rowConfig?.titleField;
+                const statusField = resolveStatusField(item.raw, rowConfig);
 
                 return (
                   <TableRow
                     key={itemKey}
                     data-state={isSelected ? 'selected' : undefined}
-                    className={`cursor-pointer transition-colors hover:bg-muted/50 ${isHidden ? 'bg-muted/40' : ''}`}
+                    className={`transition-colors hover:bg-surface-container-high focus-within:bg-surface-container-high ${isHidden ? 'bg-muted/40' : ''}`}
                     style={{
                       borderLeft: isHidden
                         ? '3px solid hsl(var(--muted-foreground))'
                         : '3px solid transparent',
                       ...(isSelected ? { backgroundColor: `${rowColor}0A` } : {}),
                     }}
-                    onClick={() => onEdit(item.contentType, item.id)}
                   >
-                    <TableCell className="pl-4" onClick={(e) => e.stopPropagation()}>
+                    <TableCell className="pl-4">
                       <Checkbox
                         aria-label={`Select ${item.title}`}
                         checked={isSelected}
@@ -447,13 +459,22 @@ export function ContentListTable({
                       />
                     </TableCell>
 
-                    <TableCell>
-                      <p
-                        className={`text-sm font-medium leading-tight ${isHidden ? 'text-muted-foreground' : ''}`}
-                      >
-                        {item.title}
+                    <TableCell className="min-w-[280px]">
+                      <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm font-semibold leading-snug text-pretty">
+                        <Editable
+                          contentType={item.contentType}
+                          recordId={item.id}
+                          field={titleField ?? '__title'}
+                          value={titleField ? item.raw?.[titleField] : item.title}
+                          requireAltClick={false}
+                          as="div"
+                          className={isHidden ? 'text-muted-foreground' : undefined}
+                          onSaved={onRefresh}
+                        >
+                          <span>{item.title}</span>
+                        </Editable>
                         {isHidden && (
-                          <span className="ml-2 inline-block rounded-badge bg-muted px-1.5 align-middle text-2xs uppercase tracking-wide text-muted-foreground">
+                          <span className="inline-block rounded-badge bg-muted px-1.5 align-middle text-2xs uppercase tracking-wide text-muted-foreground">
                             {rawVisibility && rawVisibility !== 'public' ? rawVisibility : 'hidden'}
                           </span>
                         )}
@@ -469,21 +490,21 @@ export function ContentListTable({
                             // the word too, so a text count can pass with zero
                             // badges actually on screen.
                             data-testid="archived-badge"
-                            className="ml-2 inline-block rounded-badge border border-border-hairline bg-background px-1.5 align-middle text-2xs uppercase tracking-wide text-foreground"
+                            className="inline-block rounded-badge border border-border-hairline bg-background px-1.5 align-middle text-2xs uppercase tracking-wide text-foreground"
                           >
-                            {config?.lifecycle?.archive?.label ?? 'Archived'}
+                            {rowConfig?.lifecycle?.archive?.label ?? 'Archived'}
                           </span>
                         )}
-                      </p>
+                      </div>
                       {item.description && (
-                        <span className="text-xs text-muted-foreground truncate block max-w-[360px] mt-0.5">
+                        <span className="mt-1 block max-w-[440px] truncate text-xs leading-relaxed text-muted-foreground">
                           {item.description}
                         </span>
                       )}
                     </TableCell>
 
                     {extraColumns.map((f) => (
-                      <TableCell key={f.name} onClick={(e) => e.stopPropagation()}>
+                      <TableCell key={f.name}>
                         {/* Editable resolves the field config from the registry and
                             owns the save. readOnly/unsupported types fall through to
                             plain display, so this is safe for every column. */}
@@ -496,7 +517,7 @@ export function ContentListTable({
                           as="div"
                           onSaved={onRefresh}
                         >
-                          {renderColumnValue(f, item.raw, config)}
+                          {renderColumnValue(f, item.raw, rowConfig)}
                         </Editable>
                       </TableCell>
                     ))}
@@ -516,19 +537,29 @@ export function ContentListTable({
                     )}
 
                     <TableCell>
-                      {item.status ? (
-                        <div className="flex items-center gap-1.5">
-                          <div
-                            className="rounded-full flex-shrink-0"
-                            style={{ width: 8, height: 8, backgroundColor: statusColor }}
-                          />
-                          <span className="text-xs font-medium" style={{ color: statusColor }}>
-                            {getStatusLabel(item.status)}
-                          </span>
-                        </div>
-                      ) : (
-                        <span className="text-xs text-muted-foreground/60">--</span>
-                      )}
+                      <Editable
+                        contentType={item.contentType}
+                        recordId={item.id}
+                        field={statusField ?? '__status'}
+                        value={statusField ? item.raw?.[statusField] : item.status}
+                        requireAltClick={false}
+                        as="div"
+                        onSaved={onRefresh}
+                      >
+                        {item.status ? (
+                          <div className="flex items-center gap-1.5">
+                            <div
+                              className="rounded-full flex-shrink-0"
+                              style={{ width: 8, height: 8, backgroundColor: statusColor }}
+                            />
+                            <span className="text-xs font-medium" style={{ color: statusColor }}>
+                              {getStatusLabel(item.status)}
+                            </span>
+                          </div>
+                        ) : (
+                          <span className="text-xs text-muted-foreground/60">--</span>
+                        )}
+                      </Editable>
                     </TableCell>
 
                     <TableCell>
@@ -549,8 +580,8 @@ export function ContentListTable({
                     </TableCell>
 
                     <TableCell className="text-right">
-                      <div className="flex items-center justify-end gap-0.5">
-                        {(config?.rowActions ?? [])
+                      <div className="flex items-center justify-end gap-0.5 rounded-element bg-background/60 p-0.5">
+                        {(rowConfig?.rowActions ?? [])
                           .filter((a) => !a.visible || a.visible(item.raw ?? {}))
                           .map((action) => {
                             const ActionIcon = action.icon;
@@ -562,12 +593,7 @@ export function ContentListTable({
                                     size="sm"
                                     className="h-7 w-7 p-0"
                                     aria-label={action.label}
-                                    onClick={(e) => {
-                                      // The row itself opens the editor, so without
-                                      // this every action would also navigate away.
-                                      e.stopPropagation();
-                                      action.onSelect(item.raw ?? {});
-                                    }}
+                                    onClick={() => action.onSelect(item.raw ?? {})}
                                   >
                                     <ActionIcon size={15} />
                                   </Button>
@@ -577,9 +603,9 @@ export function ContentListTable({
                             );
                           })}
 
-                        {config?.lifecycle && (
+                        {rowConfig?.lifecycle && (
                           <RowLifecycleActions
-                            lifecycle={config.lifecycle}
+                            lifecycle={rowConfig.lifecycle}
                             row={item.raw ?? {}}
                             id={item.id}
                             title={item.title || item.id}
@@ -603,10 +629,7 @@ export function ContentListTable({
                                   size="sm"
                                   className="h-7 w-7 p-0"
                                   aria-label="View live"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    window.open(href, '_blank', 'noopener');
-                                  }}
+                                  onClick={() => window.open(href, '_blank', 'noopener')}
                                 >
                                   <SquareArrowOutUpRight size={15} />
                                 </Button>
@@ -623,10 +646,7 @@ export function ContentListTable({
                               size="sm"
                               className="h-7 w-7 p-0"
                               aria-label="Edit"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                onEdit(item.contentType, item.id);
-                              }}
+                              onClick={() => onEdit(item.contentType, item.id)}
                               style={{ ['--tw-color' as never]: rowColor } as never}
                             >
                               <Edit size={15} />

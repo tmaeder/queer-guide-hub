@@ -2,27 +2,54 @@
  * @vitest-environment jsdom
  */
 import { describe, it, expect, vi } from 'vitest';
-import { render } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
+
+vi.mock('@/hooks/useAdminEditMode', () => ({
+  useAdminEditMode: () => ({ isAdmin: true, editMode: true }),
+}));
+
+vi.mock('@/hooks/useInlineSave', () => ({
+  useInlineSave: () => ({ save: vi.fn(), saving: false }),
+}));
 
 import { TooltipProvider } from '@/components/ui/tooltip';
 
 import { ContentListTable } from '../ContentListTable';
+import { getContentType } from '@/config/contentTypes';
 
 describe('ContentListTable', () => {
   it('renders empty', () => {
     const { container } = render(
       <ContentListTable
-        contentTypeId="venues" config={null as never} items={[]}
-        loading={false} totalCount={0} page={1} rowsPerPage={25}
-        setPage={vi.fn()} setRowsPerPage={vi.fn()} sortField={null} sortDir="desc"
-        handleSort={vi.fn()} extraColumns={[]} selected={new Set()}
-        allSelected={false} someSelected={false}
-        toggleSelect={vi.fn()} toggleSelectAll={vi.fn()}
-        debouncedSearch="" onClearSearch={vi.fn()}
-        onEdit={vi.fn()} onCreate={vi.fn()}
+        contentTypeId="venues"
+        config={null as never}
+        items={[]}
+        loading={false}
+        totalCount={0}
+        page={1}
+        rowsPerPage={25}
+        setPage={vi.fn()}
+        setRowsPerPage={vi.fn()}
+        sortField={null}
+        sortDir="desc"
+        handleSort={vi.fn()}
+        extraColumns={[]}
+        selected={new Set()}
+        allSelected={false}
+        someSelected={false}
+        toggleSelect={vi.fn()}
+        toggleSelectAll={vi.fn()}
+        debouncedSearch=""
+        onClearSearch={vi.fn()}
+        onEdit={vi.fn()}
+        onCreate={vi.fn()}
       />,
     );
     expect(container).toBeTruthy();
+    expect(container.querySelector('[data-testid="content-data-surface"]')).toHaveClass(
+      'bg-card',
+      'shadow-soft',
+    );
   });
 
   /**
@@ -130,4 +157,73 @@ describe('ContentListTable', () => {
     expect(queryAllByText('Archived')).toHaveLength(0);
   });
 
+  it('keeps rows passive and reserves the full editor for the explicit Edit action', () => {
+    const onEdit = vi.fn();
+    render(
+      <TooltipProvider>
+        <ContentListTable
+          {...baseProps}
+          onEdit={onEdit}
+          config={config}
+          items={[item('2', 'Live Bar', 'approved')]}
+        />
+      </TooltipProvider>,
+    );
+
+    fireEvent.click(screen.getByText('Live Bar'));
+    expect(onEdit).not.toHaveBeenCalled();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Edit' }));
+    expect(onEdit).toHaveBeenCalledWith('venues', '2');
+  });
+
+  it('exposes the configured title and writable status as the same inline interaction', () => {
+    const eventConfig = getContentType('events')!;
+    render(
+      <TooltipProvider>
+        <ContentListTable
+          {...baseProps}
+          contentTypeId="events"
+          config={eventConfig}
+          items={[
+            {
+              id: 'e1',
+              title: 'Community Night',
+              status: 'published',
+              contentType: 'events',
+              contentTypeLabel: 'Event',
+              contentTypeColor: '#000',
+              raw: { id: 'e1', title: 'Community Night', status: 'published' },
+            },
+          ]}
+        />
+      </TooltipProvider>,
+    );
+
+    expect(screen.getByRole('button', { name: 'Edit Title' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Edit Status' })).toBeInTheDocument();
+  });
+
+  it('renders computed properties without a false editing affordance', () => {
+    const venueConfig = getContentType('venues')!;
+    const needsAttention = venueConfig.fields.find((field) => field.name === 'needs_attention')!;
+    render(
+      <TooltipProvider>
+        <ContentListTable
+          {...baseProps}
+          config={venueConfig}
+          extraColumns={[needsAttention]}
+          items={[
+            {
+              ...item('2', 'Live Bar', 'approved'),
+              raw: { id: '2', name: 'Live Bar', review_status: 'approved', needs_attention: true },
+            },
+          ]}
+        />
+      </TooltipProvider>,
+    );
+
+    expect(screen.getByText('Yes')).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Edit Needs Attention' })).toBeNull();
+  });
 });

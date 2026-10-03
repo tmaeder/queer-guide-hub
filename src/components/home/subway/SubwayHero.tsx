@@ -17,16 +17,16 @@ import { PageContainer } from '@/components/layout/PageContainer';
 export function SubwayHero() {
   const { t } = useTranslation();
   return (
-    <header className="border-b border-border-hairline relative overflow-hidden">
+    <header className="subway-hero border-b border-border-hairline relative overflow-hidden">
       {/* `flush` — the hero owns an asymmetric rhythm: a tall top and no bottom
           padding, because IntentMap fills that space. Tighter above `md` than
           the desktop hero — the intent map is the primary navigation on mobile
           and now sits below the fold, so every reclaimed pixel above it counts. */}
-      <PageContainer flush className="relative z-1 pt-8 md:pt-20">
-        <h1 className="font-display text-hero md:text-hero-xl max-w-4xl">
+      <PageContainer flush className="relative z-1 pt-10 md:pt-14 lg:pt-16">
+        <h1 className="max-w-5xl text-balance font-display text-hero md:text-hero-xl">
           {t('home.hero.title', 'No straight lines here.')}
         </h1>
-        <p className="mt-4 line-clamp-3 max-w-xl text-body-lg sm:line-clamp-none md:mt-6 md:text-xl">
+        <p className="mt-4 max-w-[62ch] text-pretty text-body-lg md:mt-6 md:text-xl">
           {t(
             'home.hero.subtitle',
             'The queer world, mapped like a metro: venues, events, people, and history — organized the way the journey actually goes.',
@@ -37,7 +37,7 @@ export function SubwayHero() {
           <HeroSearch />
           <LocalizedLink
             to="/map"
-            className="flex items-center gap-2 px-4 py-4 text-15 font-bold no-underline hover:bg-foreground hover:text-background"
+            className="flex min-h-12 items-center gap-2 px-4 text-15 font-bold no-underline transition-colors hover:bg-foreground hover:text-background"
           >
             <TransitIcon name="map" size={20} />
             {t('home.hero.openMap', 'Open the map')}

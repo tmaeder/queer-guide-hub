@@ -611,9 +611,19 @@ const EVENT_TYPE_RULES: Array<[RegExp, string, boolean?]> = [
   // Subculture words are audience signals, not format signals, so they rank below every
   // explicit format above: a bear-community panel discussion is a conference and a
   // leather-bar fundraiser is a fundraiser. They still outrank the generic buckets below,
-  // because a leather party is meaningfully a fetish event. `bear` is word-bounded —
-  // unbounded it matched a coffee roaster ("Bear Coffee") and "beard".
-  [/\bbears?\b|\bleather\b|fetish|\bkink\b|\brubber\b|pup(py)? play|cruising/i, 'fetish'],
+  // because a leather party is meaningfully a fetish event.
+  //
+  // `bear` REMOVED 99991790878434, and the sentence above is why: this arm makes a FORMAT
+  // claim, and on this platform `bear` is a body-type community identity — an audience.
+  // A bear party is a party whose audience is bears. Measured on prod before removal: 580
+  // live events were filed `fetish` on that word with NO other fetish token anywhere in
+  // title or description, against 61 genuine crossovers that keep the label because they
+  // also say leather/fetish/Folsom. It is NOT repointed to another type — there is no
+  // subculture value in `events_event_type_check`, so a repoint would be a guess; the row
+  // falls through the rest of this ladder instead (measured: party 299, honest `other`
+  // 225, i.e. 90% of the cohort) or lands on `other`, which removes a false claim rather
+  // than making a new one. Keep in lockstep with public.infer_event_type().
+  [/\bleather\b|fetish|\bkink\b|\brubber\b|pup(py)? play|cruising/i, 'fetish'],
   // Format words beat genre words: a "Music Festival" is a festival, and a club night
   // with a DJ lineup is a party, not a concert.
   [/festival|fest\b/i, 'festival'],

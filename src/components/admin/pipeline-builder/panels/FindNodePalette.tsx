@@ -42,7 +42,7 @@ export default function FindNodePalette({ nodes, onSelect }: FindNodePaletteProp
     if (n) {
       const cx = (n.position?.x || 0) + (n.width || 200) / 2;
       const cy = (n.position?.y || 0) + (n.height || 80) / 2;
-      setCenter(cx, cy, { zoom: 1.2, duration: 400 });
+      setCenter(cx, cy, { zoom: 1.2, duration: 0 });
     }
     onSelect(nodeId);
     setOpen(false);

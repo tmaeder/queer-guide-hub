@@ -148,12 +148,27 @@ function MarketplaceCardImpl({
   // Hand <Image> the raw sources instead of pre-resolving to one URL: it walks
   // optimized → thumbnail → original on error, so a mirror-host outage falls
   // back to the merchant's own image rather than to a texture.
-  const listingSources = {
-    imageUrl: listing.images?.[0] ?? null,
-    optimizedUrl: imageAsset?.optimized_url ?? null,
-    thumbnailUrl: imageAsset?.thumbnail_url ?? null,
-  };
-  const secondImage = listing.images?.[1] ?? null;
+  const governedOverviewImage =
+    listing.overview_eligible && listing.overview_image_asset_id
+      ? imageAsset?.id === listing.overview_image_asset_id
+        ? imageAsset
+        : undefined
+      : undefined;
+  const listingSources = listing.overview_eligible
+    ? {
+        imageUrl: governedOverviewImage?.url ?? null,
+        optimizedUrl: governedOverviewImage?.optimized_url ?? null,
+        thumbnailUrl: governedOverviewImage?.thumbnail_url ?? null,
+      }
+    : {
+        imageUrl: listing.images?.[0] ?? null,
+        optimizedUrl: imageAsset?.optimized_url ?? null,
+        thumbnailUrl: imageAsset?.thumbnail_url ?? null,
+      };
+  // Secondary merchant images have not passed the overview gate. Governed
+  // cards therefore stay on the exact approved asset instead of revealing an
+  // unreviewed hover image.
+  const secondImage = listing.overview_eligible ? null : (listing.images?.[1] ?? null);
   const outbound = getOutboundLink(listing, surface);
   const isAffiliate = outbound?.isAffiliate ?? false;
   const isAdult = isAdultListing(listing);

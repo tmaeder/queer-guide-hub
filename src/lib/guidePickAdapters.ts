@@ -46,6 +46,11 @@ interface Adapter {
 const str = (v: unknown): string | null => (typeof v === 'string' && v ? v : null);
 const firstImage = (v: unknown): string | null =>
   Array.isArray(v) && typeof v[0] === 'string' ? v[0] : null;
+const approvedOverviewImage = (v: unknown): string | null => {
+  if (!v || typeof v !== 'object') return null;
+  const image = v as Record<string, unknown>;
+  return str(image.optimized_url) ?? str(image.thumbnail_url) ?? str(image.url);
+};
 
 function fmtDate(iso: unknown): string | null {
   if (typeof iso !== 'string' || !iso) return null;
@@ -104,14 +109,13 @@ const ADAPTERS: Partial<Record<GuideEntityType, Adapter>> = {
   marketplace: {
     table: 'marketplace_listings',
     select:
-      'id, slug, title, business_name, price, currency, images, category, external_url, affiliate_url, availability',
+      'id, slug, title, business_name, price, currency, category, external_url, affiliate_url, availability, overview_image:image_assets!marketplace_listings_overview_image_asset_id_fkey(optimized_url, thumbnail_url, url)',
     toDisplay: (r) => ({
       name: str(r.title) ?? 'Listing',
       href: `/marketplace/${str(r.slug) ?? r.id}`,
-      imagePath: firstImage(r.images),
-      metaLine: [fmtPrice(r.price, r.currency), str(r.business_name)]
-        .filter(Boolean)
-        .join(' · ') || null,
+      imagePath: approvedOverviewImage(r.overview_image),
+      metaLine:
+        [fmtPrice(r.price, r.currency), str(r.business_name)].filter(Boolean).join(' · ') || null,
       categoryLabel: str(r.category),
       outboundUrl: str(r.affiliate_url) ?? str(r.external_url),
       unavailable: r.availability === 'out_of_stock',
@@ -162,9 +166,7 @@ export interface PickRef {
  * Returns a map keyed `${entity_type}:${entity_id}`. Missing targets
  * (deleted, or RLS-gated for this session) are simply absent.
  */
-export async function fetchPickEntities(
-  picks: PickRef[],
-): Promise<Map<string, PickEntityDisplay>> {
+export async function fetchPickEntities(picks: PickRef[]): Promise<Map<string, PickEntityDisplay>> {
   const byType = new Map<GuideEntityType, string[]>();
   for (const p of picks) {
     if (!ADAPTERS[p.entity_type]) continue;
@@ -178,9 +180,9 @@ export async function fetchPickEntities(
     [...byType.entries()].map(async ([type, ids]) => {
       const adapter = ADAPTERS[type];
       if (!adapter) return;
-      const { data, error } = await untypedFrom(adapter.table)
-        .select(adapter.select)
-        .in('id', ids);
+      let query = untypedFrom(adapter.table).select(adapter.select).in('id', ids);
+      if (type === 'marketplace') query = query.eq('overview_eligible', true);
+      const { data, error } = await query;
       if (error) throw error;
       for (const row of (data ?? []) as AdapterRow[]) {
         out.set(`${type}:${row.id}`, adapter.toDisplay(row));

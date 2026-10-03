@@ -56,14 +56,12 @@ const TableRow = React.forwardRef<HTMLTableRowElement, React.HTMLAttributes<HTML
   ({ className, style, ...props }, ref) => (
     <tr
       ref={ref}
-      className={
+      className={cn(
         // Rows are striped plates, not ruled lines.
-        cn('odd:bg-surface-container/60', className)
-      }
-      style={{
-        transition: 'background-color 0.15s',
-        ...style,
-      }}
+        'odd:bg-surface-container/60 transition-colors duration-fast',
+        className,
+      )}
+      style={style}
       {...props}
     />
   ),

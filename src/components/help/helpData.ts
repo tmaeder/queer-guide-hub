@@ -33,6 +33,42 @@ export function countryLabel(code: string): string {
   return COUNTRY_NAMES[code] ?? code;
 }
 
+export interface EmergencyContact {
+  number: string;
+  region: string;
+}
+
+const EMERGENCY_BY_COUNTRY: Record<string, EmergencyContact> = {
+  AU: { number: '000', region: 'AU' },
+  CA: { number: '911', region: 'CA' },
+  GB: { number: '999', region: 'UK' },
+  US: { number: '911', region: 'US' },
+  DE: { number: '112', region: 'EU' },
+  AT: { number: '112', region: 'EU' },
+  CH: { number: '112', region: 'CH' },
+  FR: { number: '112', region: 'EU' },
+  IE: { number: '112', region: 'EU' },
+  NL: { number: '112', region: 'EU' },
+  ES: { number: '112', region: 'EU' },
+  IT: { number: '112', region: 'EU' },
+};
+
+/** A synchronous emergency contact for the selected country.
+ *
+ * This deliberately does not come from the CMS. The acute-danger action must
+ * survive failed data and translation requests. Unknown/global scope falls
+ * back to the two broad numbers the page historically carried.
+ */
+export function emergencyContactsForCountry(country: string): EmergencyContact[] {
+  const local = EMERGENCY_BY_COUNTRY[country];
+  return local
+    ? [local]
+    : [
+        { number: '112', region: 'EU' },
+        { number: '911', region: 'US/CA' },
+      ];
+}
+
 /** Map hotline topic slugs to resource category URL params.
  *  Names match taxonomy v3 (migration 20261006140000). */
 export const TOPIC_TO_RESOURCE: Record<string, string> = {
@@ -193,7 +229,25 @@ export function isOpenNow(h: Hotline, now: Date = new Date()): boolean | null {
 
 // ── Ranking ────────────────────────────────────────────────────────
 
-function score(h: Hotline, now: Date): number {
+export function hotlineSupportsLanguage(
+  h: Hotline,
+  preferredLanguage: string | undefined,
+): boolean {
+  if (!preferredLanguage) return false;
+  const language = preferredLanguage.split('-')[0].toLowerCase();
+  const names: Record<string, string[]> = {
+    en: ['en', 'eng', 'english'],
+    de: ['de', 'deu', 'ger', 'german', 'deutsch'],
+    fr: ['fr', 'fra', 'fre', 'french', 'français'],
+    it: ['it', 'ita', 'italian', 'italiano'],
+    es: ['es', 'spa', 'spanish', 'español'],
+    nl: ['nl', 'nld', 'dut', 'dutch', 'nederlands'],
+  };
+  const accepted = names[language] ?? [language];
+  return h.languages.some((candidate) => accepted.includes(candidate.trim().toLowerCase()));
+}
+
+function score(h: Hotline, now: Date, preferredLanguage?: string): number {
   let s = 0;
   if (isOpenNow(h, now) === true) s += 20;
   if (isAlwaysOpen(h)) s += 10;
@@ -203,6 +257,7 @@ function score(h: Hotline, now: Date): number {
   // recommendation, even when it is otherwise the strongest match.
   if (h.reports_to_police) s -= 5;
   if (nonVoiceChannels(h).length > 0) s += 3;
+  if (hotlineSupportsLanguage(h, preferredLanguage)) s += 8;
   s += Math.min(h.topics.length, 5);
   return s;
 }
@@ -219,11 +274,14 @@ export function selectPrimaryLine(
   hotlines: Hotline[],
   country: string,
   now: Date = new Date(),
+  preferredLanguage?: string,
 ): Hotline | null {
   if (country === 'ALL' || hotlines.length === 0) return null;
   const candidates = hotlines.filter((h) => h.country === country && !isDirectory(h));
   if (candidates.length === 0) return null;
-  return [...candidates].sort((a, b) => score(b, now) - score(a, now))[0];
+  return [...candidates].sort(
+    (a, b) => score(b, now, preferredLanguage) - score(a, now, preferredLanguage),
+  )[0];
 }
 
 /**

@@ -1,5 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
-import { renderWithProviders, screen } from '@/test/test-utils';
+import { renderWithProviders, screen, waitFor } from '@/test/test-utils';
+import userEvent from '@testing-library/user-event';
 
 const makeNewsReturn = (overrides = {}) => ({
   articles: [],
@@ -31,7 +32,9 @@ vi.mock('react-i18next', () => ({
 vi.mock('@/hooks/useAuth', () => ({ useAuth: () => ({ user: null }) }));
 vi.mock('@/hooks/useMeta', () => ({ useMeta: () => {} }));
 vi.mock('@/hooks/useLocalizedNavigate', () => ({ useLocalizedNavigate: () => vi.fn() }));
-vi.mock('@/hooks/useEntityImageAssets', () => ({ useEntityImageAssets: () => ({ assets: new Map() }) }));
+vi.mock('@/hooks/useEntityImageAssets', () => ({
+  useEntityImageAssets: () => ({ assets: new Map() }),
+}));
 vi.mock('@/hooks/useNewsStories', () => ({ useNewsStories: () => ({ stories: [], heroes: [] }) }));
 vi.mock('@/hooks/usePageFetchers', () => ({ fetchNamesByIds: vi.fn().mockResolvedValue({}) }));
 vi.mock('@/hooks/useNews', () => ({ useNews: useNewsMock }));
@@ -59,9 +62,7 @@ beforeEach(() => {
 describe('NewsArchive page', () => {
   it('renders without crashing and shows search input', () => {
     renderWithProviders(<NewsArchive />);
-    expect(
-      screen.getByPlaceholderText('Semantic search articles…'),
-    ).toBeInTheDocument();
+    expect(screen.getByPlaceholderText('Semantic search articles…')).toBeInTheDocument();
   });
 
   it('shows "The newsroom is quiet" empty state when no articles and no active filters', () => {
@@ -100,8 +101,49 @@ describe('NewsArchive page', () => {
     // a category filter keeps the keyword article list visible, which is what
     // the active-filters bar + "Clear all filters" button render against.
     renderWithProviders(<NewsArchive />, { route: '/news/archive?category=culture' });
-    expect(
-      screen.getByRole('button', { name: /clear all filters/i }),
-    ).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /clear all filters/i })).toBeInTheDocument();
+  });
+
+  it('hydrates a durable right filter from the URL and lets the reader clear it', async () => {
+    const fetchArticles = vi.fn();
+    useNewsMock.mockReturnValue(
+      makeNewsReturn({
+        fetchArticles,
+        articles: [
+          {
+            id: 'a1',
+            slug: 'ban-advances',
+            title: 'Ban advances',
+            content: 'Body',
+            excerpt: null,
+            url: 'https://example.com',
+            image_url: null,
+            author: null,
+            published_at: '2026-09-30T00:00:00Z',
+            source_id: 's1',
+            views_count: 0,
+            is_featured: false,
+            category: 'rights-legal',
+            country_ids: null,
+            city_ids: null,
+            tags: ['conversion-therapy'],
+            publisher_name: null,
+            created_at: '2026-09-30T00:00:00Z',
+          },
+        ],
+      }),
+    );
+
+    renderWithProviders(<NewsArchive />, { route: '/news/all?right=conversion-therapy' });
+
+    await waitFor(() =>
+      expect(fetchArticles).toHaveBeenCalledWith(
+        expect.objectContaining({ tags: ['conversion-therapy'] }),
+      ),
+    );
+    expect(screen.getByText(/Right: Conversion therapy/)).toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole('button', { name: 'Remove Conversion therapy filter' }));
+    expect(fetchArticles).toHaveBeenLastCalledWith(expect.objectContaining({ tags: undefined }));
   });
 });

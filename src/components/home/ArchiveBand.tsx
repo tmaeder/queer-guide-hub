@@ -190,10 +190,10 @@ export default function ArchiveBand() {
                 style={{ '--gap': '1rem' } as CSSProperties}
               >
                 <div
-                  className="flex w-max gap-4 group-hover/marquee:[animation-play-state:paused]"
-                  style={{
-                    animation: `${isRtl ? 'marquee-rev' : 'marquee-fwd'} 40s linear infinite`,
-                  }}
+                  className={cn(
+                    'archive-marquee flex w-max gap-4 group-hover/marquee:[animation-play-state:paused]',
+                    isRtl && 'archive-marquee--rtl',
+                  )}
                 >
                   <div className="flex gap-4 pe-4">{chips}</div>
                   {/* Seamless-loop duplicate — hidden from the a11y tree and
