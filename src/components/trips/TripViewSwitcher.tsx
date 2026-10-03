@@ -28,7 +28,7 @@ export function TripViewSwitcher({ current, className }: Props) {
       role="tablist"
       aria-label={t('trips.view.switcher', 'Trip view')}
       className={cn(
-        'inline-flex items-center gap-1 rounded-element border border-input bg-muted p-1',
+        'inline-flex items-center gap-1 rounded-container bg-surface-container p-1 shadow-soft',
         className,
       )}
     >
@@ -50,7 +50,7 @@ export function TripViewSwitcher({ current, className }: Props) {
               );
             }}
             className={cn(
-              'inline-flex items-center gap-1.5 px-4 py-1.5 text-sm transition-colors',
+              'inline-flex items-center gap-1.5 rounded-element px-4 py-1.5 text-sm transition-colors',
               active
                 ? 'bg-foreground text-background'
                 : 'text-muted-foreground hover:text-foreground',

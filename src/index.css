@@ -220,8 +220,8 @@
      from the tonal surface ladder and spacing; meaningful diagram geometry
      uses its explicit track/ink colour instead. */
   --color-border: transparent;
-  /* Unlike decorative borders, form-control boundaries carry state and hit-area
-     information, so the explicit `border-input` utility remains visible. */
+  /* Kept as a fill token for legacy controls (for example switch tracks).
+     Product boundaries are carried by tone, shape and elevation below. */
   --color-input: hsl(var(--input));
   --color-ring: hsl(var(--ring));
   --color-background: hsl(var(--background));
@@ -2685,5 +2685,30 @@ footer.bg-foreground {
 }
 
 :where([class~='divide-border-hairline']) > :not([hidden]) ~ :not([hidden]) {
+  border-color: transparent !important;
+}
+
+/* Default-width and 2px utility borders are never allowed to become product
+   chrome. This catches old, authenticated and data-dependent screens that do
+   not pass through the shared primitives. Real information geometry opts out
+   explicitly; 3px+ station rings and focus rings remain unchanged. */
+:where(
+  [class~='border'],
+  [class~='border-2'],
+  [class~='border-x'],
+  [class~='border-y'],
+  [class~='border-t'],
+  [class~='border-r'],
+  [class~='border-b'],
+  [class~='border-l'],
+  [class~='border-x-2'],
+  [class~='border-y-2'],
+  [class~='border-t-2'],
+  [class~='border-r-2'],
+  [class~='border-b-2'],
+  [class~='border-l-2']
+):not(
+  :where(.transit-marker, [data-information-geometry='true'], [data-information-geometry='true'] *)
+) {
   border-color: transparent !important;
 }

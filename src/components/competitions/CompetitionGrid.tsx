@@ -8,11 +8,8 @@ import type { CompetitionGrid as CompetitionGridData, GridCell } from '@/types/c
 /**
  * The episode-by-episode placement matrix.
  *
- * THE INK BORDER ON A FILLED CELL IS LOAD-BEARING. The placement tints are
- * deliberately quiet — a wall of saturated cells is unreadable at this density
- * — so they do NOT clear 3:1 against paper and satisfy WCAG 1.4.11 only against
- * the 1px ink edge every filled cell carries. `dragPlacement.ts` says so in its
- * own header. Never render one of these fills borderless.
+ * Cells use separated rounded plates rather than a ruled grid. The outcome
+ * glyph and short code carry the state even when the quiet tint is unavailable.
  *
  * COLOUR IS NEVER THE ONLY SIGNAL. Each cell carries the outcome's glyph, its
  * short code as visible text, and an `sr-only` sentence naming the entrant, the
@@ -47,7 +44,7 @@ function Legend() {
           return (
             <li
               key={outcome}
-              className="flex items-center gap-2 rounded-element border border-foreground/70 px-2 py-1 text-13"
+              className="flex items-center gap-2 rounded-element px-2 py-1 text-13 shadow-soft"
               style={{ backgroundColor: `hsl(${v.tint})`, color: `hsl(${v.ink})` }}
               title={v.meaning}
             >
@@ -77,7 +74,7 @@ export function CompetitionGrid({ grid }: { grid: CompetitionGridData }) {
   return (
     <div>
       <div className="overflow-x-auto">
-        <table style={{ borderCollapse: 'collapse' }}>
+        <table style={{ borderCollapse: 'separate', borderSpacing: 4 }}>
           <caption className="sr-only">
             {t(
               'competitions.grid.caption',
@@ -89,7 +86,7 @@ export function CompetitionGrid({ grid }: { grid: CompetitionGridData }) {
             <tr>
               <th
                 scope="col"
-                className="sticky left-0 z-10 border-b border-border-hairline bg-background p-2 text-left"
+                className="sticky left-0 z-10 rounded-element bg-background p-2 text-left"
               >
                 <span className="sr-only">{t('competitions.grid.entrant', 'Entrant')}</span>
               </th>
@@ -97,7 +94,7 @@ export function CompetitionGrid({ grid }: { grid: CompetitionGridData }) {
                 <th
                   key={ep.n}
                   scope="col"
-                  className="border-b border-border-hairline p-1 text-13 font-bold tabular-nums"
+                  className="rounded-badge bg-surface-container p-1 text-13 font-bold tabular-nums"
                   title={[ep.title, ep.date].filter(Boolean).join(' · ') || undefined}
                 >
                   {ep.n}
@@ -115,7 +112,7 @@ export function CompetitionGrid({ grid }: { grid: CompetitionGridData }) {
               <tr key={entrant.name}>
                 <th
                   scope="row"
-                  className="sticky left-0 z-10 whitespace-nowrap border-r border-border-hairline bg-background p-2 text-left"
+                  className="sticky left-0 z-10 whitespace-nowrap rounded-element bg-surface-container p-2 text-left"
                 >
                   {/* A null slug means this person has no public page — plain
                       text, never a synthesised link. */}
@@ -140,7 +137,7 @@ export function CompetitionGrid({ grid }: { grid: CompetitionGridData }) {
                   const cell = byCell.get(cellKey(entrant.name, ep.n));
                   if (!cell) {
                     return (
-                      <td key={ep.n} className="bg-muted p-1">
+                      <td key={ep.n} className="rounded-badge bg-muted p-1">
                         <span className="sr-only">
                           {entrant.name},{' '}
                           {t('competitions.grid.episodeN', 'Episode {{n}}', { n: ep.n })}:{' '}
@@ -154,9 +151,7 @@ export function CompetitionGrid({ grid }: { grid: CompetitionGridData }) {
                   return (
                     <td
                       key={ep.n}
-                      // The 1px ink edge is what border-gates the tint. See the
-                      // file header — a fill is never rendered without it.
-                      className="border border-foreground/70 p-1 text-center align-middle"
+                      className="rounded-badge p-1 text-center align-middle shadow-soft"
                       style={{ backgroundColor: `hsl(${v.tint})`, color: `hsl(${v.ink})` }}
                       title={cell.raw ? `${v.label} (${cell.raw})` : v.label}
                     >

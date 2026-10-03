@@ -143,11 +143,8 @@ const GROUP_LABELS: Record<string, string> = {
 };
 
 /**
- * A numbered plate. The chart this descends from is a sequence of numbered
- * panels, and the number is doing real work: it is the only thing that tells a
- * reader landing mid-page which of the four questions they are inside. The rule
- * above it is the plate edge — this page has no cards, because a wall chart is
- * one surface with divisions, not a stack of containers.
+ * A numbered plate. The number and soft tonal surface establish the hierarchy
+ * without the sharp divider rules used by the old wall-chart treatment.
  */
 function Plate({
   n,
@@ -163,7 +160,10 @@ function Plate({
   children: ReactNode;
 }) {
   return (
-    <section aria-labelledby={id} className="mt-16 border-t-2 border-foreground pt-6">
+    <section
+      aria-labelledby={id}
+      className="mt-12 rounded-panel bg-surface-container-low p-6 shadow-soft sm:p-8"
+    >
       <div className="flex items-baseline gap-4">
         <span aria-hidden="true" className="font-display text-headline">
           {n}
@@ -215,7 +215,11 @@ function TestingWindow({ row }: { row: TestingRow }) {
       <span className="block text-2xs font-bold">
         {row.test_kind} · {t('stiGuide.fromWeeks', '{{n}}w+', { n: row.earliest_weeks })}
       </span>
-      <span aria-hidden="true" className="relative mt-1.5 block h-3">
+      <span
+        aria-hidden="true"
+        data-information-geometry="true"
+        className="relative mt-1.5 block h-3 overflow-hidden rounded-full"
+      >
         {/* Ticks sit behind the bar so a value can be read off the chart
             without a trip back to the axis. */}
         {WEEK_TICKS.map((w) => (
@@ -226,7 +230,7 @@ function TestingWindow({ row }: { row: TestingRow }) {
           />
         ))}
         <span
-          className="absolute inset-y-0 right-0 bg-foreground"
+          className="absolute inset-y-0 right-0 rounded-full bg-foreground"
           style={{ left: `${barStartPercent(row.earliest_weeks ?? 0)}%` }}
         />
       </span>
@@ -244,7 +248,7 @@ function TestingWindow({ row }: { row: TestingRow }) {
 function Key() {
   const { t } = useTranslation();
   return (
-    <div className="mt-10 border-t border-border-hairline pt-4">
+    <div className="mt-10 rounded-container bg-surface-container p-4">
       <Eyebrow>{t('stiGuide.legend', 'What the marks mean')}</Eyebrow>
       <ul className="mt-4 grid list-none gap-x-8 gap-y-4 p-0 sm:grid-cols-2 xl:grid-cols-4">
         {TRANSMISSION_RISK_ORDER.map((risk) => (
@@ -534,7 +538,7 @@ export default function StiGuidePage() {
                     key={g.group}
                     scope="colgroup"
                     colSpan={g.practices.length}
-                    className="border-b-2 border-l-2 border-foreground px-2 pb-2 text-left text-2xs font-bold uppercase tracking-label"
+                    className="rounded-element bg-surface-container-high px-2 py-2 text-left text-2xs font-bold uppercase tracking-label"
                   >
                     {GROUP_LABELS[g.group] ?? g.group}
                   </th>
@@ -545,13 +549,11 @@ export default function StiGuidePage() {
                   <span className="sr-only">{t('stiGuide.sti', 'Infection')}</span>
                 </th>
                 {groups.flatMap((g) =>
-                  g.practices.map((p, i) => (
+                  g.practices.map((p) => (
                     <th
                       key={p.slug}
                       scope="col"
-                      className={`w-[7.5%] px-1.5 pb-2 pt-4 align-bottom text-2xs font-bold leading-tight ${
-                        i === 0 ? 'border-l-2 border-foreground' : ''
-                      }`}
+                      className="w-[7.5%] px-1.5 pb-2 pt-4 align-bottom text-2xs font-bold leading-tight"
                     >
                       {p.label}
                     </th>
@@ -564,7 +566,7 @@ export default function StiGuidePage() {
                 <tr key={sti.id}>
                   <th
                     scope="row"
-                    className="border-r-2 border-t border-border-hairline border-r-foreground py-1.5 pr-4 text-left align-middle"
+                    className="rounded-element bg-surface-container py-1.5 pl-4 pr-4 text-left align-middle"
                   >
                     <LocalizedLink
                       to={`/tags/${encodeURIComponent(sti.slug)}`}
@@ -577,15 +579,11 @@ export default function StiGuidePage() {
                     </span>
                   </th>
                   {groups.flatMap((g) =>
-                    g.practices.map((p, i) => {
+                    g.practices.map((p) => {
                       const cell = cellByKey.get(`${sti.id}|${p.slug}`);
-                      const edge = i === 0 ? 'border-l-2 border-l-foreground' : '';
                       if (!cell) {
                         return (
-                          <td
-                            key={p.slug}
-                            className={`border-t border-border-hairline px-0.5 py-1.5 text-center align-middle ${edge}`}
-                          >
+                          <td key={p.slug} className="px-0.5 py-1.5 text-center align-middle">
                             {/* A gap is a statement, not a void. Prints a mark
                                 so the reader can see the cell was considered. */}
                             <span aria-hidden="true" className="text-13 text-muted-foreground/50">
@@ -598,10 +596,7 @@ export default function StiGuidePage() {
                         );
                       }
                       return (
-                        <td
-                          key={p.slug}
-                          className={`border-t border-border-hairline px-0.5 py-1.5 align-middle ${edge}`}
-                        >
+                        <td key={p.slug} className="px-0.5 py-1.5 align-middle">
                           <RiskMark
                             risk={cell.risk}
                             blood={cell.blood}
@@ -623,12 +618,12 @@ export default function StiGuidePage() {
         {/* Narrow view: one block per infection, worst route first. Not a
             degraded table — a different question, asked the way someone on a
             phone asks it. */}
-        <ul className="m-0 list-none p-0 lg:hidden">
+        <ul className="m-0 list-none space-y-4 p-0 lg:hidden">
           {stis.map((sti) => {
             const routes = routesFor(sti, practices, matrix?.cells ?? []);
             const prevention = methodsBySti.get(sti.id) ?? [];
             return (
-              <li key={sti.id} className="border-t-2 border-foreground py-6 first:border-t-0">
+              <li key={sti.id} className="rounded-container bg-surface-container p-6 shadow-soft">
                 <h3 className="flex flex-wrap items-baseline gap-x-2">
                   <LocalizedLink
                     to={`/tags/${encodeURIComponent(sti.slug)}`}
@@ -646,7 +641,7 @@ export default function StiGuidePage() {
                     {routes.map((r) => (
                       <li
                         key={r.practice.slug}
-                        className="flex items-center gap-2 border-b border-border-hairline py-2 last:border-b-0"
+                        className="flex items-center gap-2 rounded-element px-2 py-2 even:bg-surface-container-high"
                       >
                         <RiskMark
                           risk={r.risk}
@@ -698,7 +693,7 @@ export default function StiGuidePage() {
           {methods.map((m) => {
             const covered = stisByMethod.get(m.slug) ?? [];
             return (
-              <li key={m.slug} className="border-t-2 border-foreground pt-4">
+              <li key={m.slug} className="rounded-container bg-surface-container p-6 shadow-soft">
                 <h3 className="text-title font-bold">{m.label}</h3>
                 <p className="mt-2 max-w-reading text-13 leading-relaxed text-muted-foreground">
                   {m.description}
@@ -753,7 +748,7 @@ export default function StiGuidePage() {
               )}
             </caption>
             <thead>
-              <tr className="border-b-2 border-foreground">
+              <tr>
                 <th scope="col" className="w-40 pb-2 text-left text-2xs uppercase tracking-label">
                   {t('stiGuide.sti', 'Infection')}
                 </th>
@@ -839,7 +834,7 @@ export default function StiGuidePage() {
               if (rows.length === 0) {
                 return (
                   <tbody key={sti.id}>
-                    <tr className="border-b border-border-hairline">
+                    <tr>
                       {nameCell}
                       <td className="py-2 pl-4 align-top text-13 text-muted-foreground" colSpan={2}>
                         {t('stiGuide.noWindow', 'No testing window recorded.')}
@@ -853,10 +848,7 @@ export default function StiGuidePage() {
               return (
                 <tbody key={sti.id}>
                   {rows.map((row, i) => (
-                    <tr
-                      key={`${sti.id}-${row.test_kind}-${row.sample}-${i}`}
-                      className="border-b border-border-hairline"
-                    >
+                    <tr key={`${sti.id}-${row.test_kind}-${row.sample}-${i}`}>
                       {i === 0 && nameCell}
                       <td className="py-2 pl-4 align-top">
                         <TestingWindow row={row} />
@@ -880,11 +872,11 @@ export default function StiGuidePage() {
             scroll unacceptable for this page and the first draft then shipped
             it one plate later — measured at 375px, this table needed 640px in a
             343px scroller and pushed "Sample" and "Vaccine?" off-screen. */}
-        <ul className="m-0 list-none p-0 lg:hidden">
+        <ul className="m-0 list-none space-y-4 p-0 lg:hidden">
           {(protection?.stis ?? []).map((sti) => {
             const rows = testingByTag.get(sti.id) ?? [];
             return (
-              <li key={sti.id} className="border-t-2 border-foreground py-6 first:border-t-0">
+              <li key={sti.id} className="rounded-container bg-surface-container p-6 shadow-soft">
                 <h3>
                   <LocalizedLink
                     to={`/tags/${encodeURIComponent(sti.slug)}`}
@@ -901,7 +893,7 @@ export default function StiGuidePage() {
                   rows.map((row, i) => (
                     <div
                       key={`${sti.id}-${row.test_kind}-${row.sample}-${i}`}
-                      className="mt-4 border-t border-border-hairline pt-4 first:border-t-0 first:pt-0"
+                      className="mt-4 rounded-element bg-surface-container-high p-4 first:mt-0"
                     >
                       <TestingWindow row={row} />
                       <p className="mt-2 text-2xs text-muted-foreground">
@@ -936,7 +928,7 @@ export default function StiGuidePage() {
       {/* ── 04 · Where to go ─────────────────────────────────────────────── */}
       <TestingSitesBand countryCode={geo.country} limit={8} plate="04" />
 
-      <p className="mt-12 border-t border-border-hairline pt-4 text-13 leading-relaxed text-muted-foreground">
+      <p className="mt-12 rounded-container bg-surface-container p-4 text-13 leading-relaxed text-muted-foreground">
         {t('stiGuide.credit', 'Based on')}{' '}
         <a
           href={matrix?.source_url ?? 'https://depistage.be/'}
