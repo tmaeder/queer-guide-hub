@@ -29,11 +29,29 @@
 -- city. NOT ONE is a namesake. The worst, 11.29 km, is Arnsberg -- a small
 -- German town whose centroid is simply far from the venue.
 --
--- AN EARLIER READING OF THIS SAID "0 auto-linked" AND THAT WAS AN ARTIFACT.
--- It was taken at `p_limit = 500`, where the candidate generator's
--- `ORDER BY start_date DESC` happened to return 47 pairs of which none passed.
--- The gate is PARTIALLY starved (334 of 540), not totally. Re-measure at a real
--- limit before quoting a yield from this function.
+-- THE PRODUCTION NUMBER IS WORSE THAN THE ONE ABOVE, AND THE ABOVE IS THE
+-- MISLEADING ONE. The hourly cron `event_venue_link` (`25 * * * *`, enabled,
+-- live in `cron.job`) calls `run_event_venue_link()`, which calls
+-- `link_event_venues(500, true, false)` -- p_limit **500**, not 2000. At that
+-- limit the candidate generator's `ORDER BY e.start_date DESC` returns the
+-- newest-dated unlinked events, and those are dominated by city-centroid rows
+-- that no 500 m test can pass. Measured from its own run log:
+--
+--   303 runs since 2026-09-22, 27,995 examined, 109 LINKED -- a 0.39% rate,
+--   and only 25 of 303 runs linked anything at all.
+--
+-- Dry run at the cron's own p_limit=500, with this patch applied in a
+-- rolled-back transaction: candidates 47, linked **0 -> 44**, 3 to review.
+--
+-- A FIRST DRAFT OF THIS HEADER SAID THE OPPOSITE and the mistake is worth
+-- keeping: an early reading observed "0 auto-linked", I re-measured at
+-- p_limit=2000, got 334 of 540, and used that to overturn the correct
+-- observation as an "artifact". Both figures are real and they answer different
+-- questions -- 62% of the whole candidate set passes, while 0.39% of what
+-- PRODUCTION examines does. The window is a moving one (a linked row leaves
+-- `venue_id IS NULL`), so rows the gate can never pass permanently occupy the
+-- head of it and starve everything behind them. Measure at the shape production
+-- actually runs, not at the shape that is convenient to query.
 --
 -- WHY THE BOUND IS NOT REPLACED BY A "SECOND SIGNAL", which was the first plan.
 -- Adding `venue.city_id = event.city_id` to the gate looks like the textbook
