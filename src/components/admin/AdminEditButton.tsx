@@ -45,25 +45,14 @@ interface AdminEditButtonProps {
  * already on eight pages. Everything else hangs off the adjacent chevron so no
  * action row grows by four buttons.
  *
- * SHAPE. This is the repo's only split button, and the first cut built it by
- * deleting the pencil's right border (`border-r-0`) so the two halves would
- * not show a double line. That removed the only thing saying it IS two
- * controls: at rest it read as one outlined pill, and the split only became
- * visible mid-hover, when one half filled ink on its own. The halves now keep
- * both borders and the chevron is pulled one pixel left, so the two collapse
- * into a single shared seam that survives either hover state.
- *
- * The seam is `border-input`, NOT the 12%-ink divider hairline the design
- * system uses between surfaces — `button.tsx`'s own comment on the `outline`
- * variant settles that: "an outline button has no fill, so its edge IS the
- * control boundary and WCAG 1.4.11 requires it — hence `border-input` ...
- * rather than the 12%-ink divider hairline." A seam between two halves of one
- * control is a control boundary, so it takes the same token as the outside.
+ * SHAPE. The actions are related but remain visually distinct without a seam:
+ * each uses the shared rounded, tonal control surface and the small group gap
+ * makes the two hit areas legible. This follows the subway system's rule that
+ * controls are grouped by proximity and fill, not boxed together by hairlines.
  *
  * `focus-visible:relative focus-visible:z-10` is load-bearing on both halves:
- * the base button style is `ring-2 ring-offset-2`, and on adjoined controls
- * that ring is drawn under the neighbour, clipping the focus indicator on
- * whichever half is not last in the DOM.
+ * the base button style is `ring-2 ring-offset-2`; lifting the focused control
+ * keeps that indicator clear even when this compact group sits in a dense row.
  */
 export function AdminEditButton({
   contentType,
