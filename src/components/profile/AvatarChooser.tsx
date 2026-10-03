@@ -507,7 +507,9 @@ export function AvatarChooser({ email, currentUrl, currentConfig, onSave }: Avat
                 aria-label={`Style ${i + 1}`}
                 className={cn(
                   'aspect-square rounded-element flex items-center justify-center transition-colors',
-                  styleIdx === i ? 'bg-accent' : 'border border-border hover:border-foreground/50',
+                  styleIdx === i
+                    ? 'bg-accent'
+                    : 'bg-surface-container hover:bg-surface-container-high',
                 )}
               >
                 <div className="w-16 h-16">

@@ -14,11 +14,8 @@ const Checkbox = React.forwardRef<
       // otherwise stretches this 16px box into a vertical pill. Tap-target size
       // must come from the surrounding label row, not the box itself.
       //
-      // Unchecked is the system's form-control treatment — `border-input` on
-      // the page, the same edge every input and outline button carries, and one
-      // of the three borders the de-caging pass deliberately kept (WCAG
-      // 1.4.11: a control with no fill has nothing else to bound it). It used
-      // to be a solid PASTE-UP ink plate, which read as an already-ticked box.
+      // Unchecked is a darker tonal well; checked prints in the pink track.
+      // Shape plus glyph makes the state legible without a 1px cage.
       //
       // Checked prints in the pink track. `--spot` / `--ink-pink` were the
       // PASTE-UP alias names for that same colour and are gone; the token is
@@ -27,7 +24,7 @@ const Checkbox = React.forwardRef<
       // not flip with the mode, so the mark on it must not either. The mark
       // reads 8.31:1 on pink. The two states differ by fill AND by the glyph,
       // so colour is never the only cue (WCAG 1.4.1).
-      'peer h-4 w-4 min-h-0 shrink-0 rounded-badge border border-input bg-card disabled:cursor-not-allowed disabled:opacity-50 data-[state=checked]:border-track-ring data-[state=checked]:bg-track-pink data-[state=checked]:text-track-ring',
+      'peer h-4 w-4 min-h-0 shrink-0 rounded-badge bg-surface-dim shadow-soft disabled:cursor-not-allowed disabled:opacity-50 data-[state=checked]:bg-track-pink data-[state=checked]:text-track-ring',
       className,
     )}
     {...props}

@@ -48,7 +48,7 @@ export function AvatarQuickPick({ value, onChange, count = 6 }: Props) {
               onClick={() => onChange(cfg)}
               aria-pressed={selected}
               className={`aspect-square rounded-element flex items-center justify-center transition-colors ${
-                selected ? 'bg-accent' : 'border border-border hover:border-foreground/50'
+                selected ? 'bg-accent' : 'bg-surface-container hover:bg-surface-container-high'
               }`}
             >
               <div className="w-20 h-20">

@@ -79,7 +79,7 @@ function StationPanel({
       }
     >
       <div
-        className={`flex items-center gap-4 px-6 py-4 md:px-8 ${ink ? 'border-b border-background/20' : 'border-b border-foreground/10'}`}
+        className={`flex items-center gap-4 rounded-element px-6 py-4 md:px-8 ${ink ? 'bg-background/10' : 'bg-surface-container-low'}`}
       >
         <span
           className={`grid h-9 w-9 place-items-center rounded-full border-[3px] text-2xs font-bold ${ink ? 'border-background bg-track-blue text-foreground' : 'border-foreground bg-track-blue'}`}
@@ -295,7 +295,7 @@ export default function RightsSources() {
                 'The score describes law on paper. It is not a safety rating, and it says nothing about enforcement, policing or how welcome you will be made to feel.',
               )}
             </p>
-            <p className="mt-6 border-t border-background/20 pt-6 text-15 leading-relaxed opacity-80">
+            <p className="mt-8 text-15 leading-relaxed opacity-80">
               {t(
                 'rights.sources.body.scoreLens',
                 'It is also a single number for very different lives. Protections are recorded separately for sexual orientation, gender identity, gender expression and sex characteristics, and those four rarely move together — a country can protect sexual orientation thoroughly and gender identity not at all. Read the per-right breakdown on a country page rather than the score alone.',
@@ -344,7 +344,7 @@ export default function RightsSources() {
               </li>
             ))}
           </ul>
-          <div className="mt-6 flex flex-wrap items-center justify-between gap-6 border-t border-background/20 pt-6">
+          <div className="mt-8 flex flex-wrap items-center justify-between gap-6">
             <p className="max-w-prose text-13 leading-relaxed opacity-70">
               {t(
                 'rights.sources.limits.corrections',

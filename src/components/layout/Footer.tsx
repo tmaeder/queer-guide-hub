@@ -200,7 +200,7 @@ export function Footer({ variant = 'full' }: FooterProps = {}) {
            as cluttered. The policy is the quiet half now and the crisis card
            is the loud one, because only one of them is something a reader
            might need in the next thirty seconds. ────────────────────────── */}
-      <div className="mt-10 border-t border-background">
+      <div className="mt-12">
         <div
           className={cn(
             'mx-auto grid w-full max-w-page items-start gap-8 py-8 md:grid-cols-2',
@@ -222,7 +222,7 @@ export function Footer({ variant = 'full' }: FooterProps = {}) {
             </p>
             <LocalizedLink
               to={REPORT_HREF}
-              className="border mt-4 inline-block border-background px-4 py-2 text-xs2 font-bold text-background no-underline transition-colors hover:bg-background hover:text-foreground"
+              className="mt-4 inline-block rounded-element bg-background/15 px-4 py-2 text-xs2 font-bold text-background no-underline transition-colors hover:bg-background hover:text-foreground"
             >
               {t('footer.reportSomething', 'Report something')}
             </LocalizedLink>
@@ -234,7 +234,7 @@ export function Footer({ variant = 'full' }: FooterProps = {}) {
               that sat above it was a third heading saying the same thing. */}
           <LocalizedLink
             to="/help"
-            className="border block border-background p-6 text-background no-underline transition-colors hover:bg-background hover:text-foreground"
+            className="block rounded-container bg-background/10 p-6 text-background no-underline transition-colors hover:bg-background hover:text-foreground"
           >
             <span className="block font-display text-headline leading-tight">
               {t('footer.emergency.title', 'Crisis lines, 24 hours')}
@@ -249,15 +249,12 @@ export function Footer({ variant = 'full' }: FooterProps = {}) {
         </div>
       </div>
 
-      {/* ── Legal. A light hairline, not another heavy rule: by here the plate
-           has been divided twice and a third 3px band reads as a fourth
-           section rather than a footnote.
-
+      {/* ── Legal. Spacing, not another rule, keeps this a footnote.
            Two tiers on purpose. Navigation and locale sit on the first line;
            the copyright drops to a quieter second line. Inline, it competed
            with the legal links at the same size and turned the last line into
            a paragraph. ────────── */}
-      <div className="border-t border-background/25">
+      <div>
         <div
           className={cn(
             'mx-auto flex w-full max-w-page flex-wrap items-center gap-x-6 gap-y-2 pt-6',

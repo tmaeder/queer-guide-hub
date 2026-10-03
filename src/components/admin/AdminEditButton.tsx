@@ -90,7 +90,7 @@ export function AdminEditButton({
   return (
     <>
       <TooltipProvider>
-        <div className="inline-flex items-center">
+        <div className="inline-flex items-center gap-1">
           <Tooltip>
             <TooltipTrigger asChild>
               <Button
@@ -103,7 +103,7 @@ export function AdminEditButton({
                 // the one piece a screen reader never got.
                 aria-label="Edit all fields (Admin)"
                 className={
-                  isStaff ? 'rounded-r-none focus-visible:relative focus-visible:z-10' : undefined
+                  isStaff ? 'rounded-element focus-visible:relative focus-visible:z-10' : undefined
                 }
               >
                 <Pencil size={16} />
@@ -124,7 +124,7 @@ export function AdminEditButton({
                       variant="outline"
                       size={size}
                       aria-label="More admin actions"
-                      className="-ml-px rounded-l-none px-2 focus-visible:relative focus-visible:z-10"
+                      className="rounded-element px-2 focus-visible:relative focus-visible:z-10"
                     >
                       <ChevronDown size={16} />
                     </Button>

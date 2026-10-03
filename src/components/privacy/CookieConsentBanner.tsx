@@ -43,7 +43,8 @@ export function CookieConsentBanner() {
    *
    * THE BANNER IS THE TOPMOST BOTTOM-FIXED LAYER: z-[var(--z-sticky)] is 100,
    * against the audio player's 30 and the FABs' 45, and it is anchored at
-   * bottom-0. So it does not merely sit beside them — it PAINTS OVER them.
+   * above the viewport edge. So it does not merely sit beside them — without
+   * the published clearance it can still paint over lower floating controls.
    * Measured on prod at 390x844 with an episode playing: the bar occupied
    * 638-844 (206px tall) and the player 674-758, i.e. the player was entirely
    * inside the bar's box and completely invisible until consent was given.
@@ -68,11 +69,14 @@ export function CookieConsentBanner() {
     }
     // Height is unaffected by the enter/exit transform — motion animates `y`,
     // not the box — so this measures the settled height from the first frame.
-    const publish = () =>
+    const publish = () => {
+      const inset =
+        Number.parseFloat(getComputedStyle(root).getPropertyValue('--island-inset')) || 14;
       root.style.setProperty(
         '--consent-bar-clearance',
-        `${Math.round(barEl.getBoundingClientRect().height)}px`,
+        `${Math.round(barEl.getBoundingClientRect().height + inset)}px`,
       );
+    };
     publish();
     const ro = new ResizeObserver(publish);
     ro.observe(barEl);
@@ -86,9 +90,9 @@ export function CookieConsentBanner() {
 
   return (
     <>
-      {/* Slim, monochrome bottom bar — flush to the viewport edge, sits at the
-          sticky layer (below toasts/modals), aligned to the overlay surface
-          tokens (hairline border + translucent bg + blur). */}
+      {/* Monochrome bottom island. Its inset, panel radius and shadow match the
+          rest of the floating chrome; tonal fill + blur replace the old
+          full-width hard edge. */}
       <AnimatePresence>
         {showBanner && (
           <motion.div
@@ -101,7 +105,7 @@ export function CookieConsentBanner() {
               reduced ? { duration: 0 } : { duration: duration.normal, ease: easing.decel }
             }
             ref={setBarEl}
-            className="fixed inset-x-0 bottom-0 z-[var(--z-sticky)] bg-surface-container-highest/95 backdrop-blur-md"
+            className="fixed bottom-[var(--island-inset)] left-[var(--island-inset)] right-[var(--island-inset)] z-[var(--z-sticky)] overflow-hidden rounded-panel bg-surface-container-highest/95 shadow-island backdrop-blur-md"
           >
             <div className="mx-auto flex max-w-6xl flex-col gap-4 p-4 md:flex-row md:items-center md:gap-6">
               <div className="flex items-start gap-2 md:items-center">

@@ -213,7 +213,7 @@ export function ChemsexWheel() {
                       key={s.slug}
                       to={`/tags/${s.slug}`}
                       tabIndex={-1}
-                      className="whitespace-nowrap border border-foreground/40 bg-background px-1.5 py-0.5 text-3xs font-bold text-foreground no-underline hover:border-border-hairline hover:bg-foreground hover:text-background"
+                      className="whitespace-nowrap rounded-badge bg-background px-1.5 py-0.5 text-3xs font-bold text-foreground no-underline shadow-soft hover:bg-foreground hover:text-background"
                     >
                       {s.name}
                     </LocalizedLink>
@@ -236,7 +236,7 @@ export function ChemsexWheel() {
                 <li key={s.slug}>
                   <LocalizedLink
                     to={`/tags/${s.slug}`}
-                    className="border border-foreground/40 px-1.5 py-0.5 text-13 font-bold text-foreground no-underline hover:border-border-hairline hover:bg-foreground hover:text-background"
+                    className="rounded-badge bg-surface-container px-1.5 py-0.5 text-13 font-bold text-foreground no-underline hover:bg-foreground hover:text-background"
                   >
                     {s.name}
                   </LocalizedLink>

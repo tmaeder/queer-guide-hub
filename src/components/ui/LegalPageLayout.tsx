@@ -167,7 +167,7 @@ export const LegalPageLayout = ({
                         <LocalizedLink
                           to={`/${s}`}
                           className={cn(
-                            'border inline-flex items-center gap-2 border-background px-2 py-1 text-13 font-bold text-background no-underline transition-colors',
+                            'inline-flex items-center gap-2 rounded-element bg-background/15 px-2 py-1 text-13 font-bold text-background no-underline transition-colors',
                             'hover:bg-background hover:text-foreground',
                           )}
                         >

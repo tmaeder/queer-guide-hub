@@ -940,7 +940,7 @@ export const UniversalSearchBar = ({
             // full page, and --popover is a slightly darker grey meant to lift
             // a small floating card off the paper. At full-bleed that grey
             // reads as a dimmed, disabled page.
-            className="qg-mobile-search-overlay w-[var(--radix-popover-trigger-width)] overflow-hidden rounded-none bg-background p-0"
+            className="qg-mobile-search-overlay w-[var(--radix-popover-trigger-width)] overflow-hidden rounded-b-panel bg-background p-0 shadow-soft-lg"
             style={{
               position: 'fixed',
               inset: 0,

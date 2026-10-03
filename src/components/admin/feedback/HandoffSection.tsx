@@ -130,9 +130,8 @@ export function HandoffSection({ handoffs, prompt, onRecord, onUpdateStatus, isR
                   key={h.id}
                   className="flex items-center gap-2 py-1.5 px-2 bg-muted"
                   style={{
-                    border: `1px solid ${statusMeta.color}`,
-                    borderRadius: 'var(--radius-badge)',
-                    borderRadius: '0 var(--radius-badge) var(--radius-badge) 0',
+                    backgroundColor: `color-mix(in srgb, ${statusMeta.color} 10%, hsl(var(--muted)))`,
+                    borderRadius: 'var(--radius-element)',
                   }}
                 >
                   <TargetIcon size={14} className="text-muted-foreground shrink-0" />
