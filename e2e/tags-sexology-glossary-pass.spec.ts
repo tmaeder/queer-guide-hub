@@ -1,6 +1,5 @@
 import { expect, test, type APIRequestContext } from '@playwright/test';
 import { anonHeaders } from './support/anonKey';
-import { GLOSSARY_LINK_ATTR, unlinkGlossary } from './support/glossaryProse';
 
 // Prod guard for the sexology / trans / BDSM glossary pass
 // (99991791039872_sexology_glossary_pass.sql).
@@ -90,7 +89,8 @@ const REFUSED_OTHER = [
   'scrotum-stretcher',
 ] as const;
 
-const REFUSED_ALIASES = ['pulling-out-alias-probe', 'warts'] as const;
+/** The two aliases the pass refused — see the test for why each. */
+const REFUSED_ALIASES = ['pulling-out', 'warts'] as const;
 
 async function rest<T>(request: APIRequestContext, path: string): Promise<T[]> {
   const res = await request.get(`${SUPABASE_URL}/rest/v1/${path}`, {
@@ -190,26 +190,33 @@ test.describe('sexology glossary pass — crawler surface', () => {
     expect(meta.toLowerCase()).toContain('behaviour rather than identity');
   });
 
-  test('a repaired page still renders its own prose (glossary-link control)', async ({
+  test('an indexable tag renders a body (control for the crawler path)', async ({
     request,
   }) => {
-    // Any phrase assertion against crawler HTML is one glossary term away from
-    // red, because the auto-linker rewrites words that are themselves tags.
-    // This control proves the stripper is still matching something; if the
-    // renderer renames the attribute, unlinkGlossary() silently becomes a
-    // no-op and every phrase assertion in this file starts rotting.
-    const res = await request.get('/tags/consent', { headers: { 'User-Agent': BOT_UA } });
+    // WHY THIS CONTROL IS SHAPED THIS WAY, measured on prod rather than assumed.
+    //
+    // The first draft of this test asserted `data-glossary-link` was present,
+    // on the strength of e2e/support/glossaryProse.ts — whose own header
+    // records three specs going red because the glossary auto-linker had
+    // rewritten words inside asserted phrases. That control FAILED on correct
+    // code: the attribute appears in ZERO crawler responses today (checked
+    // across bondage, cum, harness, pride, and the three slugs that helper
+    // names — stealthing, k-hole, doxy-pep). The auto-linker is client-side
+    // only, so it cannot touch anything this file asserts, because every
+    // phrase assertion here reads the <head> meta description rather than
+    // article prose. `unlinkGlossary` is therefore deliberately NOT used.
+    //
+    // The second thing that measurement settled: a DEINDEXED tag emits no
+    // <article> at all (/tags/consent is noindex and has none), so an
+    // article-based control has to run against an INDEXABLE row.
+    const res = await request.get('/tags/bondage', { headers: { 'User-Agent': BOT_UA } });
     expect(res.status()).toBe(200);
     const html = await res.text();
     const article = html.match(/<article[\s\S]*?<\/article>/i)?.[0] ?? '';
-    expect(article.length, '/tags/consent should render an article').toBeGreaterThan(100);
-    expect(html, 'the glossary auto-linker should still be active on prod').toContain(
-      GLOSSARY_LINK_ATTR,
-    );
     expect(
-      unlinkGlossary(article),
-      'stripping anchors must leave the prose behind',
-    ).not.toContain(GLOSSARY_LINK_ATTR);
+      article.length,
+      'an indexable tag must render a body — otherwise every crawler assertion here is vacuous',
+    ).toBeGreaterThan(100);
   });
 
   test('the refused classes are not reachable as tag pages', async ({ request }) => {
@@ -357,7 +364,7 @@ test.describe('sexology glossary pass — anon data surface', () => {
     // an approved alias is an auto-tagging RULE as well as a displayed synonym.
     const rows = await rest<{ alias_slug: string }>(
       request,
-      `tag_aliases?select=alias_slug&alias_slug=in.(pulling-out,${REFUSED_ALIASES[1]})`,
+      `tag_aliases?select=alias_slug&alias_slug=in.(${REFUSED_ALIASES.join(',')})`,
     );
     expect(
       rows.map((r) => r.alias_slug),

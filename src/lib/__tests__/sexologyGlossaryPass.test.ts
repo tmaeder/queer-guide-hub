@@ -12,10 +12,7 @@ import { describe, expect, it } from 'vitest';
 // recorded repeatedly. Every assertion below is therefore about SQL that runs.
 const MIGRATION = '99991791039872_sexology_glossary_pass.sql';
 
-const raw = readFileSync(
-  join(process.cwd(), 'supabase/migrations', MIGRATION),
-  'utf8',
-);
+const raw = readFileSync(join(process.cwd(), 'supabase/migrations', MIGRATION), 'utf8');
 
 /** The migration's executable SQL, with comment lines removed. */
 const sql = raw
@@ -149,7 +146,10 @@ describe('sexology glossary pass — TERF revive ordering', () => {
 
 describe('sexology glossary pass — live-row repairs are content-guarded', () => {
   it('binder: replaces the namesake summary, guarded on the defect', () => {
-    const stmt = sql.slice(at("set short_description = 'A compression garment"), at("= 'Family name';") + 20);
+    const stmt = sql.slice(
+      at("set short_description = 'A compression garment"),
+      at("= 'Family name';") + 20,
+    );
     expect(stmt).toContain("slug = 'binder'");
     expect(stmt).toContain("status = 'active'");
     // Guarded, so a human who fixes it first keeps their wording.
@@ -159,7 +159,10 @@ describe('sexology glossary pass — live-row repairs are content-guarded', () =
   });
 
   it('men-who-have-sex-with-men: replaces only the artifact description', () => {
-    const stmt = sql.slice(at('set description = ' + "'A public-health category"), at("breakdown of the term%';") + 30);
+    const stmt = sql.slice(
+      at('set description = ' + "'A public-health category"),
+      at("breakdown of the term%';") + 30,
+    );
     expect(stmt).toContain("slug = 'men-who-have-sex-with-men'");
     expect(stmt).toContain("description like 'The term %breakdown of the term%'");
     expect(stmt).not.toContain('short_description =');
@@ -248,14 +251,16 @@ describe('sexology glossary pass — aliases and refusals', () => {
     // An approved alias is an auto-tagging RULE as well as a displayed synonym,
     // and "warts" covers plantar and common warts.
     expect(sql).not.toMatch(/'warts'[^\n]*'genital-warts'/);
-    expect(sql).toMatch(
-      /from tag_aliases\s+where alias_slug in \('pulling-out','warts'\)/,
-    );
+    expect(sql).toMatch(/from tag_aliases\s+where alias_slug in \('pulling-out','warts'\)/);
   });
 
   it('skips an alias whose slug is held by a tag row or another alias', () => {
-    expect(sql).toMatch(/not exists \(select 1 from tag_aliases x where x\.alias_slug = a\.alias_slug\)/);
-    expect(sql).toMatch(/not exists \(select 1 from unified_tags u where u\.slug = a\.alias_slug\)/);
+    expect(sql).toMatch(
+      /not exists \(select 1 from tag_aliases x where x\.alias_slug = a\.alias_slug\)/,
+    );
+    expect(sql).toMatch(
+      /not exists \(select 1 from unified_tags u where u\.slug = a\.alias_slug\)/,
+    );
   });
 });
 
@@ -357,6 +362,21 @@ describe('sexology glossary pass — postcondition discipline', () => {
     // would fail on rows that are legitimately publishable.
     expect(sql).toContain('public.tag_has_prose(');
     expect(sql).not.toMatch(/description is not null and short_description is not null/);
+  });
+
+  it('attributes nothing to the source that could not be read', () => {
+    // The Make UK PDF sits in ~/Downloads, which macOS TCC denies to this
+    // process — the denial survived disabling the sandbox, which is what
+    // identifies it as an OS privacy control rather than a tooling gap. A
+    // source that could not be read is recorded as unread rather than quietly
+    // dropped from the list, and nothing may be credited to it. Same discipline
+    // as the canonical pass's `ucsf` assertion and the HIV/STI pass's three
+    // Internet-Archive hosts.
+    expect(raw).toContain('Make UK');
+    expect(raw.toLowerCase()).toContain('sandboxed');
+    // ...and no term may cite it as provenance.
+    expect(sql.toLowerCase()).not.toContain('make-uk');
+    expect(sql.toLowerCase()).not.toContain('make uk');
   });
 
   it('declares an attributed actor', () => {
