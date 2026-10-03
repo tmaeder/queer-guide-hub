@@ -193,22 +193,31 @@ test.describe('sexology glossary pass — crawler surface', () => {
   test('an indexable tag renders a body (control for the crawler path)', async ({
     request,
   }) => {
-    // WHY THIS CONTROL IS SHAPED THIS WAY, measured on prod rather than assumed.
+    // WHY THIS CONTROL IS SHAPED THIS WAY, and the correction is the useful part.
     //
-    // The first draft of this test asserted `data-glossary-link` was present,
-    // on the strength of e2e/support/glossaryProse.ts — whose own header
-    // records three specs going red because the glossary auto-linker had
-    // rewritten words inside asserted phrases. That control FAILED on correct
-    // code: the attribute appears in ZERO crawler responses today (checked
-    // across bondage, cum, harness, pride, and the three slugs that helper
-    // names — stealthing, k-hole, doxy-pep). The auto-linker is client-side
-    // only, so it cannot touch anything this file asserts, because every
-    // phrase assertion here reads the <head> meta description rather than
-    // article prose. `unlinkGlossary` is therefore deliberately NOT used.
+    // The first draft asserted `data-glossary-link` was present, on the
+    // strength of e2e/support/glossaryProse.ts, whose header records three
+    // specs going red because the auto-linker had rewritten words inside
+    // asserted phrases. It failed, and the conclusion drawn was WRONG: seeing
+    // the attribute in zero of seven crawler responses (bondage, cum, harness,
+    // pride, stealthing, k-hole, doxy-pep) I concluded the linker was
+    // client-side only. A decisive test refuted that —
+    // /tags/gender-affirming-care-coverage carries it, and
+    // functions/_lib/detail.ts:295 emits it. Seven pages is a sample, not a
+    // property.
     //
-    // The second thing that measurement settled: a DEINDEXED tag emits no
-    // <article> at all (/tags/consent is noindex and has none), so an
-    // article-based control has to run against an INDEXABLE row.
+    // What is actually true, and what matters for any spec here: the anchors
+    // live INSIDE <article>, and a DEINDEXED tag emits no <article> at all —
+    // /tags/doxy-pep and /tags/consent are both noindex and both have none. So
+    // a glossary-link control that fetches a deindexed slug can never see one,
+    // which is why the three specs naming `doxy-pep` cannot be read as evidence
+    // about the renderer.
+    //
+    // `unlinkGlossary` is still deliberately NOT used here, but for the narrow
+    // reason rather than the sweeping one: every phrase assertion in this file
+    // reads the <head> meta description, and <head> never carries article
+    // anchors. The control below therefore only has to prove the crawler path
+    // renders a body at all, against an INDEXABLE row.
     const res = await request.get('/tags/bondage', { headers: { 'User-Agent': BOT_UA } });
     expect(res.status()).toBe(200);
     const html = await res.text();
