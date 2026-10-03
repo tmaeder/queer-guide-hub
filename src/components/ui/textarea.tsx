@@ -9,8 +9,8 @@ const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
       <textarea
         className={cn(
           'flex min-h-[96px] w-full rounded-element px-4 py-2.5 text-sm transition-all duration-fast',
-          // Matches Input and SelectTrigger: a tonal well with no outline.
-          'bg-surface-container text-foreground placeholder:text-muted-foreground shadow-soft',
+          // Matches Input and SelectTrigger: tonal depth plus a control edge.
+          'border border-input bg-surface-container text-foreground placeholder:text-muted-foreground shadow-soft',
           'focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-background',
           'disabled:cursor-not-allowed disabled:opacity-50',
           className,
