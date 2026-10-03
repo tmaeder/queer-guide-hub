@@ -2676,7 +2676,7 @@ footer.bg-foreground {
 
 /* Data-cell plates and compact labels must share the same soft silhouette.
    Explicit endpoint radii still join composite table rows correctly. */
-:where(th, td):where([class*='bg-']) {
+:where(th, td) {
   border-radius: var(--radius-badge);
 }
 
