@@ -149,6 +149,44 @@ test.describe('production subway design-system contract', () => {
     expect(networkBox!.y).toBeLessThan(900);
   });
 
+  test('homepage network draws its lines and lands stations in sequence', async ({ page }) => {
+    await gotoReady(page, '/');
+
+    const motion = await page.locator('.intent-map').evaluate((network) => ({
+      tracks: [...network.querySelectorAll('.intent-track-draw')].map((track) => {
+        const style = getComputedStyle(track);
+        return {
+          name: style.animationName,
+          duration: style.animationDuration,
+          delay: style.animationDelay,
+        };
+      }),
+      stations: [...network.querySelectorAll('.intent-station-ring')].map((station) => {
+        const style = getComputedStyle(station);
+        return { name: style.animationName, delay: style.animationDelay };
+      }),
+    }));
+
+    expect(motion.tracks).toHaveLength(4);
+    expect(motion.tracks.every((track) => track.name === 'network-draw')).toBe(true);
+    expect(motion.tracks.every((track) => track.duration === '1.2s')).toBe(true);
+    expect(new Set(motion.tracks.map((track) => track.delay)).size).toBe(4);
+    expect(motion.stations).toHaveLength(8);
+    expect(motion.stations.every((station) => station.name === 'station-pop')).toBe(true);
+    expect(new Set(motion.stations.map((station) => station.delay)).size).toBe(8);
+  });
+
+  test('interactive cards use the authored diagonal lift', async ({ page }) => {
+    await gotoReady(page, '/');
+
+    const card = page.locator('.card-lift').first();
+    await expect(card).toBeVisible();
+    await card.hover();
+    await expect
+      .poll(() => card.evaluate((element) => getComputedStyle(element).transform))
+      .toMatch(/matrix\(1, 0, 0, 1, -3, -3\)/);
+  });
+
   test('interior pages keep one compact route line without ambient wallpaper', async ({ page }) => {
     await gotoReady(page, '/venues');
 
@@ -186,6 +224,21 @@ test.describe('production subway design-system contract', () => {
     await expect(page).toHaveURL(/\/going-out$/);
     await expect(page.getByTestId('route-journey')).toBeHidden();
     await expect(page.getByTestId('route-journey')).toHaveCount(0, { timeout: 2_000 });
+  });
+
+  test('reduced motion keeps the network and cards still', async ({ page }) => {
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await gotoReady(page, '/');
+
+    const networkMotion = await page.locator('.intent-map').evaluate((network) => ({
+      track: getComputedStyle(network.querySelector('.intent-track-draw')!).animationName,
+      station: getComputedStyle(network.querySelector('.intent-station-ring')!).animationName,
+    }));
+    expect(networkMotion).toEqual({ track: 'none', station: 'none' });
+
+    const card = page.locator('.card-lift').first();
+    await card.hover();
+    expect(await card.evaluate((element) => getComputedStyle(element).transform)).toBe('none');
   });
 
   test('safety routes remain motion-free', async ({ page }) => {

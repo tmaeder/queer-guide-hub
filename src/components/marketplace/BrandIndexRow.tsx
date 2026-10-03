@@ -42,7 +42,7 @@ export function BrandIndexRow({ brand }: { brand: DirectoryBrand }) {
         name={brand.display_name}
         logoUrl={brand.logo_url}
         onInk={brand.logo_on_ink ?? false}
-        className="h-10 w-10 rounded-element"
+        className="transit-marker h-10 w-10 rounded-element"
         monogramClassName="text-13 font-bold"
         padding="p-1"
       />

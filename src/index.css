@@ -75,7 +75,7 @@
      `duration-300` is the motion equivalent of an arbitrary text-[19px].
      Tailwind v4 has no --transition-duration-* namespace, so the matching
      utilities are declared with @utility below. */
-  --motion-instant: 100ms;
+  --motion-instant: 140ms;
   --motion-fast: 200ms;
   --motion-normal: 300ms;
   --motion-slow: 500ms;
@@ -1220,6 +1220,9 @@ h2,
   0% {
     transform: scale(0);
   }
+  62% {
+    transform: scale(1.28);
+  }
   100% {
     transform: scale(1);
   }
@@ -1227,7 +1230,7 @@ h2,
 .station-pop {
   transform-box: fill-box;
   transform-origin: center;
-  animation: station-pop var(--motion-slow) cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation: station-pop var(--motion-slow) cubic-bezier(0.34, 1.56, 0.64, 1) both;
 }
 @media (prefers-reduced-motion: reduce) {
   .station-pop {
@@ -1647,9 +1650,34 @@ h2,
 .card-lift-accent:active {
   box-shadow: var(--shadow-soft);
 }
+
+/* Station identity responds as a station, not as a generic icon. Route
+   bullets, rings and maker marks rise by the 4px used throughout the source
+   templates. The parent `group` branch covers card-wide overlay links, whose
+   focus lands on a sibling rather than on the marker itself. */
+.transit-marker {
+  transform-box: fill-box;
+  transform-origin: center;
+  transition: transform var(--motion-instant) cubic-bezier(0.22, 1, 0.36, 1);
+}
+.transit-marker:hover,
+.transit-marker:focus-visible,
+.group:hover .transit-marker,
+.group:focus-within .transit-marker {
+  transform: translateY(-4px) scale(1.04);
+}
 @media (prefers-reduced-motion: reduce) {
   .card-lift,
   .card-lift-sm {
+    transform: none !important;
+    transition: box-shadow var(--motion-fast) ease-out;
+  }
+  .transit-marker,
+  .transit-marker:hover,
+  .transit-marker:focus-visible,
+  .group:hover .transit-marker,
+  .group:focus-within .transit-marker {
+    transform: none;
     transition: none;
   }
 }
@@ -1705,6 +1733,27 @@ h2,
 .intent-map [class^='intent-track-'] {
   transition: stroke-width var(--motion-fast) ease-out;
 }
+.intent-track-draw {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 0;
+  animation: network-draw var(--motion-network-draw) cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation-delay: calc(var(--line-index, 0) * var(--motion-route-leg-delay));
+}
+.intent-station-ring {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: station-pop var(--motion-slow) cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  animation-delay: calc(
+    var(--motion-route-rider-delay) + var(--station-index, 0) * var(--motion-reveal-step)
+  );
+  transition:
+    background-color var(--motion-fast) ease-out,
+    transform var(--motion-instant) cubic-bezier(0.22, 1, 0.36, 1);
+}
+.group:hover .intent-station-ring,
+.group:focus-within .intent-station-ring {
+  transform: scale(1.18);
+}
 .intent-map:has(li[data-track='pink']:hover) .intent-track-pink,
 .intent-map:has(li[data-track='pink']:focus-within) .intent-track-pink,
 .intent-map:has(li[data-track='blue']:hover) .intent-track-blue,
@@ -1718,6 +1767,14 @@ h2,
 @media (prefers-reduced-motion: reduce) {
   .intent-map [class^='intent-track-'] {
     transition: none;
+  }
+  .intent-track-draw,
+  .intent-station-ring {
+    animation: none;
+  }
+  .group:hover .intent-station-ring,
+  .group:focus-within .intent-station-ring {
+    transform: none;
   }
 }
 

@@ -3,7 +3,7 @@
 // Import these instead of hardcoding durations/easings in components.
 
 export const duration = {
-  instant: 0.1,
+  instant: 0.14,
   fast: 0.2,
   normal: 0.3,
   slow: 0.5,

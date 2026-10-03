@@ -7,7 +7,13 @@ import { StaggerGrid } from '../StaggerGrid';
 
 describe('StaggerGrid', () => {
   it('renders children', () => {
-    const { container } = render(<StaggerGrid><div>a</div><div>b</div></StaggerGrid>);
-    expect(container).toBeTruthy();
+    const { container } = render(
+      <StaggerGrid>
+        <div>a</div>
+        <div>b</div>
+      </StaggerGrid>,
+    );
+    expect(container.firstChild).toHaveAttribute('data-motion', 'stagger');
+    expect(container.firstElementChild?.children).toHaveLength(2);
   });
 });
