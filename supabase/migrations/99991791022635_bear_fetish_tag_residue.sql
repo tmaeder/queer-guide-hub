@@ -72,7 +72,7 @@ update public.events e set
   field_provenance = coalesce(e.field_provenance, '{}'::jsonb) || jsonb_build_object(
     'tags',
     coalesce(e.field_provenance -> 'tags', '{}'::jsonb) || jsonb_build_object(
-      'by', 'migration:99991791015920',
+      'by', 'migration:99991791022635',
       'at', now(),
       'removed', jsonb_build_array('fetish'),
       'reason', 'stale duplicate of the event_type claim retracted by '
@@ -128,7 +128,7 @@ update public.events e set
     'event_type',
     coalesce(e.field_provenance -> 'event_type', '{}'::jsonb) || jsonb_build_object(
       'source', 'derived:infer_event_type',
-      'by', 'migration:99991791015920',
+      'by', 'migration:99991791022635',
       'at', now(),
       'corrected_from', jsonb_build_object(
         'value', b.type_before,
@@ -180,7 +180,7 @@ begin
   -- prior array is recoverable. A removal that records nothing is a deletion.
   select count(*) into v_stamped
   from public.events e join _bear_tag_scope s on s.id = e.id
-  where e.field_provenance -> 'tags' ->> 'by' = 'migration:99991791015920'
+  where e.field_provenance -> 'tags' ->> 'by' = 'migration:99991791022635'
     and e.field_provenance -> 'tags' -> 'previous' is not null;
   if v_stamped <> v_scope then
     raise exception 'P2 failed: % of % rows carry the provenance stamp', v_stamped, v_scope;

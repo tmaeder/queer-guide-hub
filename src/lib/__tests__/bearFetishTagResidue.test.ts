@@ -1,5 +1,5 @@
 /**
- * Guards `99991791015920_bear_fetish_tag_residue.sql`.
+ * Guards `99991791022635_bear_fetish_tag_residue.sql`.
  *
  * `99991790878434` moved 580 bear events off `event_type='fetish'` and left the
  * duplicate claim standing in `events.tags`. This file clears that residue for
@@ -16,7 +16,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
-const MIGRATION = '99991791015920_bear_fetish_tag_residue';
+const MIGRATION = '99991791022635_bear_fetish_tag_residue';
 const SRC = readFileSync(join(process.cwd(), 'supabase/migrations', `${MIGRATION}.sql`), 'utf8');
 
 /** Drop line-leading `--` comments only; a mid-line `--` is inside a string here. */
@@ -89,7 +89,7 @@ describe('bear fetish tag residue — scope', () => {
 
 describe('bear fetish tag residue — provenance', () => {
   it('stamps the removal with this migration and preserves the prior array', () => {
-    expect(updateStmt).toContain("'by', 'migration:99991791015920'");
+    expect(updateStmt).toContain("'by', 'migration:99991791022635'");
     expect(updateStmt).toContain("'previous', to_jsonb(s.tags_before)");
     expect(updateStmt).toContain("'removed', jsonb_build_array('fetish')");
   });
@@ -187,7 +187,7 @@ describe('bear fetish residue — cohort B (non-English)', () => {
   it('preserves both prior values on the row', () => {
     expect(cohortB).toContain("'value', b.type_before");
     expect(cohortB).toContain("'tags', to_jsonb(b.tags_before)");
-    expect(cohortB).toContain("'by', 'migration:99991791015920'");
+    expect(cohortB).toContain("'by', 'migration:99991791022635'");
   });
 
   it('names the migration whose scope it extends', () => {
