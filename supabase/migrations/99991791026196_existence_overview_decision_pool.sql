@@ -198,7 +198,8 @@ begin
                    where a.entity_type=et and a.action='archive' and a.reverted_at is null),
       -- The engine's current working set: latest-state, strong-kind only.
       'dead_signal_entities', (select count(*) from agg g
-                   where g.entity_type=et and g.strong_dead >= 1),
+                   where g.entity_type=et and g.strong_dead >= 1
+                     and (g.fresh_alive_at is null or g.fresh_alive_at <= g.newest_dead_at)),
       -- What auto-archives on the next run, same predicate as the decision.
       'archive_eligible', (select count(*) from agg g
                    where g.entity_type=et and g.strong_dead >= 2

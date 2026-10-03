@@ -55,7 +55,7 @@ export function useExistenceEngine() {
     queryFn: async () => {
       const { data, error } = await supabase.rpc('existence_overview');
       if (error) throw error;
-      return (data ?? {}) as ExistenceOverview;
+      return (data ?? {}) as unknown as ExistenceOverview;
     },
     staleTime: 30_000,
   });
@@ -64,7 +64,6 @@ export function useExistenceEngine() {
     queryKey: ['existence-review-queue'],
     queryFn: async () => {
       const { data, error } = await supabase.rpc('existence_review_queue', {
-        p_entity_type: null,
         p_limit: 100,
       });
       if (error) throw error;
@@ -77,7 +76,6 @@ export function useExistenceEngine() {
     queryKey: ['existence-recent-archives'],
     queryFn: async () => {
       const { data, error } = await supabase.rpc('existence_recent_archives', {
-        p_entity_type: null,
         p_limit: 100,
       });
       if (error) throw error;
@@ -90,7 +88,6 @@ export function useExistenceEngine() {
     queryKey: ['existence-blind-spots'],
     queryFn: async () => {
       const { data, error } = await supabase.rpc('existence_blind_spots', {
-        p_entity_type: null,
         p_limit: 50,
       });
       if (error) throw error;

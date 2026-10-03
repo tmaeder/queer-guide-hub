@@ -2,8 +2,8 @@ import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
-// Guards 99991791016410_existence_overview_decision_pool.sql,
-// 99991791016405_existence_review_queue_decisions.sql and the
+// Guards 99991791026196_existence_overview_decision_pool.sql,
+// 99991791026120_existence_review_queue_decisions.sql and the
 // /admin/content/liveness surface that reads them.
 //
 // The Liveness page showed four numbers per type and only three came from the same
@@ -27,8 +27,8 @@ import { join } from 'node:path';
 // they are about: both headers quote the defect, the numbers and the reason strings in
 // prose, so an unscoped `toContain` passes with the executable line deleted.
 
-const POOL = '99991791016410_existence_overview_decision_pool.sql';
-const DECISIONS = '99991791016405_existence_review_queue_decisions.sql';
+const POOL = '99991791026196_existence_overview_decision_pool.sql';
+const DECISIONS = '99991791026120_existence_review_queue_decisions.sql';
 
 const read = (f: string) => readFileSync(join(process.cwd(), 'supabase/migrations', f), 'utf8');
 const strip = (s: string) =>
@@ -185,6 +185,17 @@ describe('overview payload', () => {
     expect(overviewBody).toMatch(/distinct on \(s\.entity_type, s\.entity_id, s\.signal_kind\)/);
     expect(overviewBody).toMatch(
       /order by s\.entity_type, s\.entity_id, s\.signal_kind, s\.observed_at desc/,
+    );
+  });
+
+  it('excludes a dead signal when a fresher alive signal guards the entity', () => {
+    const currentPool = overviewBody.slice(
+      overviewBody.indexOf("'dead_signal_entities'"),
+      overviewBody.indexOf("'archive_eligible'"),
+    );
+    expect(currentPool).toMatch(/g\.strong_dead >= 1/);
+    expect(currentPool).toMatch(
+      /fresh_alive_at is null or g\.fresh_alive_at <= g\.newest_dead_at/,
     );
   });
 
