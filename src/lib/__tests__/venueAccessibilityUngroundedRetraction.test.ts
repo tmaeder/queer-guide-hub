@@ -215,6 +215,15 @@ describe('the sentinel grounds against what the model was shown', () => {
     expect(fn).toContain("coalesce(v.name, '')");
   });
 
+  it('does not let an empty quote ground-match every source string', () => {
+    const fn = sql.slice(
+      sql.indexOf('create or replace function public.venue_accessibility_evidence_signals'),
+    );
+    // PostgreSQL position('' in text) is 1, so the sentinel must reject empty
+    // strings before asking whether a quote occurs in the shown text.
+    expect(fn).toMatch(/coalesce\(e->>'quote', ''\) <> ''\s+and position/);
+  });
+
   it('does NOT ground against the prompt’s ALLOWED-slug lines', () => {
     // Those enumerate every slug, so including them would let every slug
     // ground-match itself and silently disable the arm that caught 93% of this
