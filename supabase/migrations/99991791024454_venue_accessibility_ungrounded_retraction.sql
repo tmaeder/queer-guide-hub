@@ -337,7 +337,8 @@ begin
         -- taken from the NAME is grounded in what the model was shown. Measured:
         -- 2 claims turn on this. The ALLOWED-slug lines of the prompt are
         -- deliberately NOT included — every slug would corroborate itself.
-        where position(e->>'quote' in (
+        where coalesce(e->>'quote', '') <> ''
+          and position(e->>'quote' in (
           coalesce(v.name, '') || E'\n' || coalesce(v.description, '')
           || E'\nTags: ' || coalesce(array_to_string(v.tags, ', '), ''))) > 0) as n_grounded
     from public.entity_review_queue q
