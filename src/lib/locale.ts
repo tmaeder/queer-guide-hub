@@ -47,19 +47,6 @@ export function isAdminRoute(pathname: string): boolean {
   return pathname === '/admin' || pathname.startsWith('/admin/');
 }
 
-/** Whether the path is the crisis-support surface.
- *
- * Help intentionally opts out of the public application chrome. A visitor in
- * distress should not have to visually filter navigation, commerce, feedback,
- * or account controls before finding the immediate action. Keep this helper
- * locale-aware because `/de/help` and `/help/de` are both real routes with
- * different meanings.
- */
-export function isHelpRoute(pathname: string): boolean {
-  const path = stripLocale(pathname).replace(/\/+$/, '') || '/';
-  return path === '/help' || path.startsWith('/help/');
-}
-
 /**
  * Route roots mounted at the TOP LEVEL of routes.tsx, outside the optional
  * `/:locale` parent — so they have no locale-prefixed variant and a link or

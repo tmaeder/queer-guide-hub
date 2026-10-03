@@ -70,5 +70,8 @@ test('the emergency numbers survive a failed i18n load', async ({ page }) => {
   await page.waitForSelector('main h1', { timeout: 30_000 });
 
   await expect(page.getByRole('heading', { name: /in acute danger/i })).toBeVisible();
-  await expect(page.getByTestId('help-safety-header').locator('a[href^="tel:"]')).toBeVisible();
+  // Scoped to main: the site header is back on this page and carries its own
+  // links, so an unscoped tel: lookup would no longer be evidence about
+  // CrisisBar, which is the thing this guarantee is about.
+  await expect(page.locator('main a[href^="tel:"]').first()).toBeVisible();
 });

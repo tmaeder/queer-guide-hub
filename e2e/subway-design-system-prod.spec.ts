@@ -231,17 +231,17 @@ test.describe('production subway design-system contract', () => {
           .trim(),
         intentMap: !!document.querySelector('.intent-map'),
         routeRail: !!document.querySelector('.route-network-rail'),
-        safetyHeaderIsland: document
-          .querySelector('[data-testid="help-safety-header"]')
-          ?.classList.contains('island'),
       }));
 
       expect(shell.mainVisible).toBe(true);
       expect(shell.trackPink).not.toBe('');
       expect(shell.overflow, `${path} has horizontal overflow`).toBeLessThanOrEqual(1);
       if (path === '/') expect(shell.intentMap).toBe(true);
-      if (path !== '/' && path !== '/help') expect(shell.routeRail).toBe(true);
-      if (path === '/help') expect(shell.safetyHeaderIsland).toBe(true);
+      // /help was exempt from the rail while it carried a bespoke safety
+      // header instead of the product chrome. It is an ordinary page now, so
+      // it is held to the same shell as everything else — that equivalence is
+      // the point of the change, so it is asserted rather than excused.
+      if (path !== '/') expect(shell.routeRail).toBe(true);
     });
   }
 });
