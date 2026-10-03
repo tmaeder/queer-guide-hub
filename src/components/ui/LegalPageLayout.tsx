@@ -137,7 +137,7 @@ export const LegalPageLayout = ({
           {footer}
 
           <section
-            className="mt-16 bg-foreground p-6 text-background"
+            className="mt-16 overflow-hidden rounded-container bg-foreground p-6 text-background"
             aria-labelledby="end-of-line"
           >
             <p className="text-2xs font-bold uppercase tracking-label text-background/70">

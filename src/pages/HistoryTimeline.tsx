@@ -153,7 +153,7 @@ export default function HistoryTimeline() {
 
       <section
         aria-label={t('milestones.filter.heading', 'Filter the timeline')}
-        className="border-b border-border-hairline bg-surface-container"
+        className="overflow-hidden rounded-container border-b border-border-hairline bg-surface-container"
       >
         <PageContainer flush className="flex flex-col gap-4 py-4 md:py-6">
           <div

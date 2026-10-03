@@ -243,7 +243,7 @@ export default function Contact() {
           form on purpose, because the footer's "Report something" link lands
           on this page and a person in crisis should not have to read a form
           first. */}
-      <div className="mt-10 bg-foreground text-background md:mt-16">
+      <div className="mt-10 overflow-hidden rounded-panel bg-foreground text-background md:mt-16">
         <PageContainer className="py-8 md:py-10">
           <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between md:gap-8">
             <div className="flex items-start gap-4">

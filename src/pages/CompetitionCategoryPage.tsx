@@ -221,7 +221,11 @@ export default function CompetitionCategoryPage({ category }: { category: Compet
           {view === 'charts' && (
             <>
               <CompetitionCharts competitions={competitions} entries={entries} />
-              <Suspense fallback={<div className="mt-8 h-[600px] w-full animate-pulse bg-muted" />}>
+              <Suspense
+                fallback={
+                  <div className="mt-8 h-[600px] w-full animate-pulse rounded-container bg-muted" />
+                }
+              >
                 <CompetitionMap entries={entries} />
               </Suspense>
             </>

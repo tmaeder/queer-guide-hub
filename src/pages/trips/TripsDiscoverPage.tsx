@@ -489,7 +489,7 @@ export default function TripsDiscoverPage() {
 
       {/* 4 — CTA */}
       {drawable && (
-        <section className="border-b border-border-hairline bg-foreground text-background">
+        <section className="overflow-hidden rounded-container border-b border-border-hairline bg-foreground text-background">
           <PageContainer flush className="py-8 md:py-12">
             <h2 className="font-display text-headline md:text-display">
               {t('trips.discover.cta.heading', 'Ride this line.')}

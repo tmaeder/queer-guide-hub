@@ -75,8 +75,8 @@ export function SubstanceInteractions({ tagId, tagName }: Props) {
   if (isLoading || rows.length === 0) return null;
 
   return (
-    <section className="border border-border-hairline">
-      <header className="border-b border-border-hairline bg-foreground px-4 py-4 text-background">
+    <section className="overflow-hidden rounded-container border border-border-hairline">
+      <header className="rounded-t-container border-b border-border-hairline bg-foreground px-4 py-4 text-background">
         <Eyebrow className="text-background/70">
           {t('tags.interactions.eyebrow', 'Combinations')}
         </Eyebrow>

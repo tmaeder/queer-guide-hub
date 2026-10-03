@@ -18,7 +18,7 @@ export const Eyebrow = React.forwardRef<HTMLElement, EyebrowProps>(
         className: cn(
           'inline-block uppercase',
           variant === 'kicker'
-            ? 'bg-foreground px-2 py-1 font-display text-13 normal-case text-background'
+            ? 'rounded-element bg-foreground px-2 py-1 font-display text-13 normal-case text-background'
             : 'text-2xs font-semibold tracking-label text-muted-foreground',
           className,
         ),

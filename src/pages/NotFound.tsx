@@ -324,7 +324,7 @@ const NotFound = () => {
       {/* Terminus: the lines you can pick up instead. */}
       <section
         aria-labelledby="notfound-end-of-line"
-        className="mt-12 bg-foreground p-6 text-background md:p-8"
+        className="mt-12 overflow-hidden rounded-container bg-foreground p-6 text-background md:p-8"
       >
         <p className="text-13 font-bold uppercase tracking-label text-background/70">
           {t('pages.notFound.suggestionsLabel', 'End of line')}
