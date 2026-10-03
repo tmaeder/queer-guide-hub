@@ -17,9 +17,7 @@ import {
   isHelpRoute,
   stripLocale,
 } from '@/lib/locale';
-import { NetworkBackdrop } from '@/components/transit/NetworkCanvas';
 import { RouteNetworkRail } from '@/components/layout/RouteNetworkRail';
-import { routeJourneyTrack } from '@/components/layout/routeJourney';
 
 // Peripheral chrome — banners and the feedback FAB. None of these are
 // above-the-fold or interaction-critical on first paint, so defer their
@@ -90,7 +88,6 @@ export const LayoutShell = ({ children }: { children: React.ReactNode }) => {
   const isAdmin = isAdminRoute(pathname);
   const isHelp = isHelpRoute(pathname);
   const isHome = stripLocale(pathname) === '/';
-  const routeTrack = routeJourneyTrack(pathname);
   const showRouteRail = !isHome && !isFullBleedMap && !isAdmin && !isHelp;
   // Panel 09: single-purpose flows and account screens get the one-line paper
   // footer instead of the full ink plate. See isCompactFooterRoute.
@@ -135,7 +132,6 @@ export const LayoutShell = ({ children }: { children: React.ReactNode }) => {
           swatches for judging, and texture behind a swatch defeats the one
           thing that surface exists to do. */}
       <div aria-hidden="true" className="fixed inset-0 z-0 pointer-events-none bg-background" />
-      {!isHome && !isAdmin && !isHelp && <NetworkBackdrop activeTrack={routeTrack} />}
       {/* Outside the !isAdmin branch on purpose: a recovery link can land on
           any path, including an admin one, and must still reach the reset
           page. */}
@@ -164,11 +160,13 @@ export const LayoutShell = ({ children }: { children: React.ReactNode }) => {
               <TripContextBar />
             </ErrorBoundary>
             {!isFullBleedMap && (
-              <ErrorBoundary section="breadcrumbs" fallback={null}>
-                <BreadcrumbBar />
-              </ErrorBoundary>
+              <div className={showRouteRail ? 'route-context-shell' : undefined}>
+                <ErrorBoundary section="breadcrumbs" fallback={null}>
+                  <BreadcrumbBar />
+                </ErrorBoundary>
+                {showRouteRail && <RouteNetworkRail pathname={pathname} />}
+              </div>
             )}
-            {showRouteRail && <RouteNetworkRail pathname={pathname} />}
           </div>
         </>
       )}

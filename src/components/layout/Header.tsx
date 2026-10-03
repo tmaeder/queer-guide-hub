@@ -136,24 +136,6 @@ export function Header() {
     <div className="flex items-center gap-2 flex-shrink-0">
       {contribute}
 
-      {/* "Mine" — the second axis. Intents answer WHAT I WANT TO DO; this
-          answers WHERE MY THINGS ARE (trips, saved, messages, plans). /hub was
-          reachable on desktop only by opening the avatar dropdown, so half the
-          product had no visible entry point at all. Rendered outside the
-          intent <nav> on purpose: it is not a sixth peer job, and putting it
-          in that landmark would read as one. */}
-      {user && (
-        <LocalizedLink
-          to="/hub"
-          aria-current={path === '/hub' || path.startsWith('/hub/') ? 'page' : undefined}
-          title={t('header.mobileNav.hub', 'Hub')}
-          className="hidden items-center gap-2 px-2 py-2 text-sm font-medium text-muted-foreground no-underline transition-colors hover:text-foreground aria-[current=page]:font-semibold aria-[current=page]:text-foreground md:inline-flex"
-        >
-          <TransitIcon name="home-base" size={18} />
-          <span className="sr-only lg:not-sr-only">{t('header.mobileNav.hub', 'Hub')}</span>
-        </LocalizedLink>
-      )}
-
       {user && (
         <span className="hidden md:inline-flex">
           <NotificationBell />
@@ -256,16 +238,15 @@ export function Header() {
     </div>
   );
 
-  // ── Desktop primary nav — the Intent Router row, as TRACK TABS.
+  // ── Desktop primary nav — the Intent Router as a compact track row.
   // Single-sourced from INTENT_NAV in src/config/navigation.ts. This array used
   // to be hardcoded here and had silently diverged from the config's
   // PRIMARY_NAV, leaving /venues (the largest catalog) and /people unreachable
   // from desktop chrome. Never re-inline it.
   //
-  // Design contract ("Header and Footer.dc.html", panel 01): every tab carries
-  // a 6px rule and the ACTIVE tab reverses to an ink fill. "Colour appears
-  // once: as the rule under the active section" — so inactive rules are
-  // transparent, not a muted tint.
+  // Colour appears once as the active route rule. At tablet widths the labels
+  // collapse but remain the links' accessible names and native titles; from
+  // xl upward the row has room to show all seven labels without a second bar.
   const desktopNav = (
     // Distinct landmark name — the mobile bottom bar owns "Navigation";
     // duplicate nav landmark names break rotor navigation (landmark-unique).
@@ -273,7 +254,7 @@ export function Header() {
     // md:hidden, so `hidden lg:flex` left 768–1023px with no primary nav.
     <nav
       aria-label={t('header.primaryNavigation', 'Primary')}
-      className="hidden items-stretch md:flex"
+      className="hidden h-12 min-w-0 items-center md:flex"
     >
       {INTENT_NAV.map((intent) => {
         const { to, labelKey, fallback, id, icon: Icon } = intent;
@@ -287,23 +268,22 @@ export function Header() {
             title={label}
             aria-current={active ? 'page' : undefined}
             className={cn(
-              'flex flex-col justify-end no-underline transition-colors',
+              'group relative grid h-11 w-10 shrink-0 place-items-center rounded-container no-underline transition-colors xl:w-auto xl:min-w-11 xl:px-2',
               active
-                ? 'bg-foreground text-background'
-                : 'text-foreground hover:bg-surface-container',
+                ? 'text-foreground'
+                : 'text-muted-foreground hover:bg-surface-container hover:text-foreground',
             )}
           >
-            {/* Icon + label, per the mock's nav row. The icon is a TransitIcon
-                binding (see INTENT_NAV) drawing in currentColor, so it inverts
-                with the active tab's ink fill for free — no active variant. */}
-            <span className="flex items-center gap-2 whitespace-nowrap px-2.5 pb-2 pt-4 text-15 font-bold lg:px-6">
+            {/* The icon and label are both sourced from INTENT_NAV, so the
+                compact row cannot drift from the mobile/navigation model. */}
+            <span className="flex items-center gap-1.5 whitespace-nowrap text-13 font-bold">
               <Icon size={18} className="shrink-0" />
-              {label}
+              <span className="hidden xl:inline">{label}</span>
             </span>
             <span
               aria-hidden
               className={cn(
-                'h-1.5',
+                'absolute inset-x-2 bottom-0 h-1 rounded-full',
                 active
                   ? {
                       pink: 'bg-track-pink',
@@ -355,7 +335,7 @@ export function Header() {
       // Capping the plate makes its box the page's own container box, so the
       // wordmark and the tab row still land on the page content's vertical.
       className={cn(
-        'island island-capped sticky',
+        'site-header island island-capped sticky',
         compact && !isMobile ? 'island-ink bg-foreground text-background' : 'bg-background',
       )}
       // z-40, NOT the 1100 this carried before. Every portaled overlay in the
@@ -416,11 +396,11 @@ export function Header() {
         </div>
       ) : (
         <>
-          {/* ── 01 · Primary. Search is the WIDEST thing in the bar: on a map
-               product it is the main verb. ─────────────────────────────── */}
+          {/* ── 01 · Primary. One navigation plane; search expands into its
+               command plate only when asked for. ───────────────────────── */}
           <div className={cn('mx-auto w-full max-w-page', PAGE_GUTTER)}>
             {isMobile ? (
-              <div className="flex items-center gap-2" style={{ height: 56 }}>
+              <div className="flex items-center gap-2" style={{ height: 52 }}>
                 {brand}
                 {/* `collapse`: below `sm` the search is the mock's ICON, not a
                     field (panel 06 — brand, search icon, avatar). A field
@@ -430,41 +410,16 @@ export function Header() {
                 <div className="mx-2 flex min-w-0 flex-1 justify-end sm:justify-stretch">
                   <UniversalSearchBar collapse />
                 </div>
-                {rightCluster}
               </div>
             ) : (
-              <div className="flex items-center gap-4" style={{ height: 68 }}>
+              <div className="flex items-center gap-2" style={{ height: 60 }}>
                 <div className="flex shrink-0 items-center gap-2.5">{brand}</div>
-                <div className="min-w-0 flex-1">
-                  <UniversalSearchBar />
-                </div>
+                <div className="min-w-0 flex-1 overflow-hidden">{desktopNav}</div>
+                <UniversalSearchBar iconOnly />
                 <div className="shrink-0">{rightCluster}</div>
               </div>
             )}
           </div>
-
-          {/* ── Track tabs under a 3px rule, so each tab's 6px track rule
-               lands on the bar's own bottom edge. Mobile keeps the bottom
-               bar (MobileBottomNav) as its track row. ─────────────────── */}
-          {!isMobile && (
-            /* The 3px rule spans the viewport (it is the bar's edge); the tabs
-               inside it take the page cap so tab 1 starts on the same vertical
-               as the page content below. */
-            <div className="border-t border-border-hairline">
-              {/* Seven tabs overflow 768–1023px viewports; the row scrolls
-                  (never wraps or clips) with tighter md padding on the tabs
-                  themselves. This IS the "different layout" the old six-tab
-                  ceiling comment in navigation.test.ts demanded. */}
-              <div
-                className={cn(
-                  'no-scrollbar mx-auto flex w-full max-w-page items-stretch overflow-x-auto',
-                  PAGE_GUTTER,
-                )}
-              >
-                {desktopNav}
-              </div>
-            </div>
-          )}
         </>
       )}
 

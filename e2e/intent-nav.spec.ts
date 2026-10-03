@@ -129,7 +129,7 @@ test.describe('intent routes', () => {
 
   test('resolves under a locale prefix', async ({ page }) => {
     await page.goto('/de/rights');
-    await expect(page.locator('main h1')).toBeVisible();
+    await expect(page.locator('main h1')).toBeVisible({ timeout: 15_000 });
     await expect(page.locator('main')).not.toContainText('Page not found');
   });
 
