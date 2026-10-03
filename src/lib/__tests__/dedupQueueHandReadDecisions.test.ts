@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
-// Guards 99991791024711, which decides the 14 open dedup-review pairs.
+// Guards 99991791028368, which decides the 14 open dedup-review pairs.
 //
 // EVERY ASSERTION HERE RUNS OVER COMMENT-STRIPPED SQL. That migration's header is ~120
 // lines and quotes, verbatim: every uuid it touches, the phrase "misfiled city", the
@@ -10,7 +10,7 @@ import { resolve } from 'node:path';
 // A `toContain` over the raw file is therefore satisfied by the PROSE while the statement
 // it describes is gone -- the vacuous-assertion class CLAUDE.md records repeatedly, most
 // recently on the queerness and rope passes.
-const MIGRATION = '99991791024711_dedup_review_queue_hand_read_decisions.sql';
+const MIGRATION = '99991791028368_dedup_review_queue_hand_read_decisions.sql';
 const RAW = readFileSync(resolve(__dirname, '../../../supabase/migrations', MIGRATION), 'utf8');
 
 /** Comments only at line start, matching the convention the other guards use. */
