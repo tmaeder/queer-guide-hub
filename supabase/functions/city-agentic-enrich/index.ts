@@ -53,6 +53,65 @@ const MAX_BODY_BYTES = 400_000
 const WP_UA = 'QueerGuideBot/1.0 (https://queer.guide; contact@queer.guide)'
 const _GATED_FIELDS = ['lgbt_friendly_rating', 'editorial_hook'] as const
 
+/**
+ * Advance the selector's round-robin cursor for a city this run could not process.
+ *
+ * `cities_due_for_refresh` orders by `last_refreshed_at ASC NULLS FIRST`, and the only
+ * writer of that column on the success path is the main UPDATE far below — which a
+ * `no_sources` / `no_ai` skip returns BEFORE reaching. So an unprocessable city was
+ * never stamped, stayed at the head of the work list forever, and every subsequent run
+ * re-skipped it before reaching anything new.
+ *
+ * MEASURED ON PROD, 2026-10-03, from this function's own `enrichment_log`: across the
+ * last 8 hourly runs (40 batch slots at batch_limit 5) there were 25 `skipped:
+ * no_sources` and 15 `done`, spread over just 10 DISTINCT cities. Each run burned 3-4
+ * slots re-skipping the same clog and did one unit of real work — which is why Khandwa
+ * was re-enriched at 06:24, 07:24, 08:24 and 09:24 on one morning, destroying and
+ * re-creating its open review rows each time. The head of the list has been pinned since
+ * 2026-09-06: Westmount, Del Rey Oaks, South Jordan and Federal Way were still carrying
+ * that stamp four weeks later.
+ *
+ * This is the rule CLAUDE.md already states — "`last_refreshed_at` is the selector's
+ * round-robin cursor, so it MUST be stamped on every visit" — which that entry recorded
+ * after an earlier skip-the-no-op-UPDATE optimisation dropped the sweep from 36/40 to
+ * 0/40 per batch. Same defect, re-introduced on the skip paths only.
+ *
+ * DO NOT be talked out of this by a corpus-wide throughput number. "292 cities stamped
+ * in 24h" looks healthy and is dominated by `city-factual-backfill`, a different
+ * producer writing the same column. Only this function's own log measures this function.
+ *
+ * Writes the cursor and a reason, and NOTHING else — no `needs_attention`, no quality
+ * signal. A city we could not read is not a city with a problem to flag, and the column
+ * fans out through the geo spine into `search_reindex_queue`, so the write stays minimal.
+ * At ~3 skips an hour that is ~75 writes a day.
+ */
+async function stampCursor(
+  supabase: ReturnType<typeof getServiceClient>,
+  city: { id: string; enrichment_status?: unknown },
+  reason: string,
+  dryRun: boolean,
+): Promise<void> {
+  if (dryRun) return
+  const prior = (city.enrichment_status ?? {}) as Record<string, unknown>
+  const at = new Date().toISOString()
+  try {
+    const { error } = await supabase
+      .from('cities')
+      .update({
+        last_refreshed_at: at,
+        enrichment_status: { ...prior, agentic_skip: { at, reason } },
+      })
+      .eq('id', city.id)
+    // Supabase database failures resolve with `{ error }`; they do not reject the
+    // promise. Inspect the result so a failed cursor write is observable.
+    if (error) console.warn(`[${STEP}] cursor stamp failed for ${city.id}: ${error.message}`)
+  } catch (error) {
+    // Never let a failed cursor write abort the batch: the next city is still worth
+    // trying, and the only cost of a lost stamp is one more re-skip.
+    console.warn(`[${STEP}] cursor stamp failed for ${city.id}: ${error}`)
+  }
+}
+
 const fetchCityPage = (url: string) =>
   fetchPageText(url, {
     userAgent: 'Mozilla/5.0 (compatible; QueerGuide-CityEnrich/1.0)',
@@ -185,6 +244,17 @@ Deno.serve(async (req: Request) => {
     idColumn: 'city_id',
     fields: CITY_GATED_FIELDS,
     ids: cities.map((c) => c.id),
+    // The rating's decision is the INTEGER. `rationale` is free prose this model
+    // rewrites on every run, so comparing the whole payload meant a rejected rating
+    // came straight back: measured on prod, Khandwa's rating 3 was rejected on
+    // 2026-10-01 and re-offered on 2026-10-03 as the same 3 with a reworded rationale.
+    // Only this field is normalised — a hook and a best_time_to_visit ARE their prose,
+    // so for them the whole value is the decision and byte equality is correct.
+    normalizeValue: (field, value) => {
+      if (field !== 'lgbt_friendly_rating') return value
+      const v = (value ?? {}) as Record<string, unknown>
+      return { value: v.value, scale: v.scale }
+    },
   })
   const results: Array<Record<string, unknown>> = []
 
@@ -244,7 +314,7 @@ Deno.serve(async (req: Request) => {
       // description was written from the same bad article, so re-feeding it launders
       // the wrong subject into a fresh run. Prose may not vouch for its own source.
       if (c.description && !wpExtract && !wikiRefused) sources.push({ url: 'existing', text: c.description })
-      if (!sources.length) { skipped++; results.push({ id: c.id, status: 'no_sources' }); await logStep(supabase, c.id, status, started, dryRun, 'no_sources'); continue }
+      if (!sources.length) { skipped++; results.push({ id: c.id, status: 'no_sources' }); await logStep(supabase, c.id, status, started, dryRun, 'no_sources'); await stampCursor(supabase, c, 'no_sources', dryRun); continue }
 
       // Destination safety context.
       let safetyContext: string | undefined
@@ -277,7 +347,7 @@ Deno.serve(async (req: Request) => {
         if (e instanceof CircuitOpenError) return jsonResponse({ enriched, gated, skipped, circuit_open: true, results }, 200, req)
         throw e
       }
-      if (!ai) { skipped++; results.push({ id: c.id, status: 'no_ai' }); await logStep(supabase, c.id, status, started, dryRun, 'no_ai'); continue }
+      if (!ai) { skipped++; results.push({ id: c.id, status: 'no_ai' }); await logStep(supabase, c.id, status, started, dryRun, 'no_ai'); await stampCursor(supabase, c, 'no_ai', dryRun); continue }
 
       const confidence = typeof ai.confidence === 'number' ? ai.confidence : 0.5
       const highConf = confidence >= AUTO_APPLY_CONFIDENCE
@@ -294,17 +364,46 @@ Deno.serve(async (req: Request) => {
 
       // --- Review-gate SAFETY-SENSITIVE fields (never auto-publish) ---
       const queued: string[] = []
+      // Per-field citation sets. `citeFor` is deliberately the ONLY way a proposal
+      // gets citations: the previous code gated the rating on `citations.length > 0`
+      // — ANY citation, for any field — while attaching only the rating-scoped
+      // subset, so a rating could be queued with an EMPTY cite list while the gate
+      // read as satisfied. Measured on the 7 rows open 2026-10-01: Daegu and Khandwa
+      // were queued citing a bare Wikipedia geography sentence that says nothing
+      // about LGBTQ+ status, which is what "MUST be cited" was meant to prevent.
+      //
+      // A citation that quotes OUR OWN injected `safetyContext` is not a citation.
+      // That string is built two blocks up from `countries.equality_score` — a number
+      // computed by `_shared/equality-score.ts`, published by nobody — and the model
+      // routinely hands it back as a verbatim `quote` attributed to
+      // `https://ilga.org/maps-sexual-orientation-laws`. ILGA publishes no such score.
+      // Measured on prod 2026-10-01: 245 of 383 APPROVED rating rows quote an
+      // `equality_score=` string, 180 of them attributed to ilga.org — so the
+      // "citation-backed" requirement was being satisfied by our own derived data,
+      // laundered through the model and dressed as an external authority.
+      // We know the exact string we injected, so this is detectable rather than a
+      // judgement call. Dropping it means a rating whose ONLY support is our own
+      // number is not produced at all, which is the correct outcome: the country
+      // score is already published on the country page and needs no city row.
+      const selfQuote = (x: { quote?: unknown }) => {
+        const q = String(x?.quote ?? '').trim()
+        if (!q) return false
+        return (!!safetyContext && q === safetyContext.trim()) || /equality_score=/.test(q)
+      }
+      const citeFor = (...names: string[]) =>
+        citations.filter(x => names.includes(String(x?.field ?? '')) && !selfQuote(x))
+      const ratingCite = citeFor('lgbt_friendly_rating', 'rating')
       const ratingValid = typeof ai.lgbt_friendly_rating === 'number'
         && Number.isFinite(ai.lgbt_friendly_rating)
-        && citations.length > 0   // rating MUST be cited or it is not produced
+        && ratingCite.length > 0   // rating MUST be cited FOR THE RATING or it is not produced
       const gatedProposals: { field: string; value: unknown; cite: typeof citations }[] = []
       if (ratingValid) {
         const r = Math.max(1, Math.min(5, Math.round(ai.lgbt_friendly_rating as number)))
-        gatedProposals.push({ field: 'lgbt_friendly_rating', value: { value: r, scale: '1-5', rationale: ai.rating_rationale ?? null }, cite: citations.filter(x => x?.field === 'lgbt_friendly_rating' || x?.field === 'rating') })
+        gatedProposals.push({ field: 'lgbt_friendly_rating', value: { value: r, scale: '1-5', rationale: ai.rating_rationale ?? null }, cite: ratingCite })
       }
       // safety_notes is no longer LLM-generated — it is composed deterministically by
       // the SQL compose_safety_note() / city safety backfill (migration 20260608000001).
-      if (ai.editorial_hook) gatedProposals.push({ field: 'editorial_hook', value: { value: ai.editorial_hook }, cite: citations.filter(x => x?.field === 'editorial_hook' || x?.field === 'hook') })
+      if (ai.editorial_hook) gatedProposals.push({ field: 'editorial_hook', value: { value: ai.editorial_hook }, cite: citeFor('editorial_hook', 'hook') })
       // Still fill-if-empty: a city that already carries a best_time_to_visit keeps it,
       // and queueing a proposal against it would invite a reviewer to overwrite curated
       // text. Deliberately NOT gated on highConf, following editorial_hook — a human
@@ -313,7 +412,7 @@ Deno.serve(async (req: Request) => {
         gatedProposals.push({
           field: 'best_time_to_visit',
           value: { value: ai.best_time_to_visit },
-          cite: citations.filter(x => x?.field === 'best_time_to_visit' || x?.field === 'best_time'),
+          cite: citeFor('best_time_to_visit', 'best_time'),
         })
       }
 
@@ -373,7 +472,20 @@ Deno.serve(async (req: Request) => {
           await supabase.from('city_review_queue').delete().eq('city_id', c.id).eq('field', g.field).eq('status', 'open')
           await supabase.from('city_review_queue').insert({
             city_id: c.id, field: g.field, proposed_value: g.value,
-            citations: g.cite.length ? g.cite : citations, confidence, model: 'gpt-4o-mini', status: 'open',
+            // NO fallback to the full `citations` list. It used to read
+            // `g.cite.length ? g.cite : citations`, so a field with no citation of
+            // its own was shown ANOTHER field's evidence — and a reviewer has no way
+            // to tell that apart from a real one. Measured on prod 2026-10-01: all 6
+            // open `editorial_hook` rows and the one `best_time_to_visit` row
+            // ("January to August", Da Nang) displayed the citation
+            // `{field: lgbt_friendly_rating, url: ilga.org, quote: "Vietnam:
+            // equality_score=73, legal_status=legal"}` as their basis — an equality
+            // score offered as the source for a travel-timing claim.
+            // An empty list is the honest answer: absence of evidence must not be
+            // recorded as evidence. The rating is the only field that REQUIRES a
+            // citation (see ratingValid above); prose fields may legitimately have
+            // none and must then show none.
+            citations: g.cite, confidence, model: 'gpt-4o-mini', status: 'open',
           })
           queued.push(g.field)
         }

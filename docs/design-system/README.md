@@ -37,10 +37,10 @@ document is prose; where the two disagree, the catalog is right.
   No hard offset shadows, no stacked depth — and Tailwind's own
   `shadow-md/lg/xl/2xl` ramp stays ESLint-banned as a _competing_ ladder.
 - A card fills ink on hover or lifts — never both.
-- The exceptions to "no frame" are information-bearing geometry: focus rings,
-  subway tracks and station rings, charts/maps, and explicit validation or
-  destructive states. Form controls use a contrasting tonal well plus label,
-  placeholder, hover, and focus state instead of a permanent perimeter.
+- The exceptions to "no frame" are information-bearing geometry: form-control
+  boundaries and focus rings, subway tracks and station rings, charts/maps,
+  and explicit validation or destructive states. Form controls combine a
+  tonal well with `border-input`, which clears WCAG 1.4.11 on page and card.
 
 ## Tokens (src/index.css)
 
@@ -58,7 +58,7 @@ both.
 | `--foreground`                           | `0 0% 6.7%` (#111 ink)                                    | Type, marks, station rings                     |
 | `--border`                               | `60 7.4% 81.4%`                                           | Legacy/data channel; UI utility is transparent |
 | `--border-hairline`                      | ink channels @ `--hairline-alpha` (0%)                    | Compatibility token; visually retired          |
-| `--input`                                | `60 4.8% 44.9%`                                           | Legacy channel; UI utility is transparent      |
+| `--input`                                | `60 4.8% 44.9%`                                           | Form-control boundary — 3:1 on page and card   |
 | `--track-ring`                           | `0 0% 6.7%`                                               | The ink ring a track-coloured mark wears       |
 | `--muted-foreground`                     | `0 0% 33%`                                                | Secondary text                                 |
 | `--destructive`                          | `0 70% 38%`                                               | **Danger. The only non-track semantic hue.**   |
