@@ -1,5 +1,5 @@
 /**
- * Guards `99991791024657_venue_linker_distance_gate.sql`.
+ * Guards `99991791028286_venue_linker_distance_gate.sql`.
  *
  * `link_event_venues` auto-linked on `name_exact AND distance_m < 500`. That
  * 500 m measured the gap between an event's CITY CENTROID and a venue's street
@@ -16,7 +16,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
-const MIGRATION = '99991791024657_venue_linker_distance_gate';
+const MIGRATION = '99991791028286_venue_linker_distance_gate';
 const SRC = readFileSync(join(process.cwd(), 'supabase/migrations', `${MIGRATION}.sql`), 'utf8');
 
 const code = SRC.split('\n')
