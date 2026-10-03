@@ -53,6 +53,58 @@ const MAX_BODY_BYTES = 400_000
 const WP_UA = 'QueerGuideBot/1.0 (https://queer.guide; contact@queer.guide)'
 const _GATED_FIELDS = ['lgbt_friendly_rating', 'editorial_hook'] as const
 
+/**
+ * Advance the selector's round-robin cursor for a city this run could not process.
+ *
+ * `cities_due_for_refresh` orders by `last_refreshed_at ASC NULLS FIRST`, and the only
+ * writer of that column on the success path is the main UPDATE far below — which a
+ * `no_sources` / `no_ai` skip returns BEFORE reaching. So an unprocessable city was
+ * never stamped, stayed at the head of the work list forever, and every subsequent run
+ * re-skipped it before reaching anything new.
+ *
+ * MEASURED ON PROD, 2026-10-03, from this function's own `enrichment_log`: across the
+ * last 8 hourly runs (40 batch slots at batch_limit 5) there were 25 `skipped:
+ * no_sources` and 15 `done`, spread over just 10 DISTINCT cities. Each run burned 3-4
+ * slots re-skipping the same clog and did one unit of real work — which is why Khandwa
+ * was re-enriched at 06:24, 07:24, 08:24 and 09:24 on one morning, destroying and
+ * re-creating its open review rows each time. The head of the list has been pinned since
+ * 2026-09-06: Westmount, Del Rey Oaks, South Jordan and Federal Way were still carrying
+ * that stamp four weeks later.
+ *
+ * This is the rule CLAUDE.md already states — "`last_refreshed_at` is the selector's
+ * round-robin cursor, so it MUST be stamped on every visit" — which that entry recorded
+ * after an earlier skip-the-no-op-UPDATE optimisation dropped the sweep from 36/40 to
+ * 0/40 per batch. Same defect, re-introduced on the skip paths only.
+ *
+ * DO NOT be talked out of this by a corpus-wide throughput number. "292 cities stamped
+ * in 24h" looks healthy and is dominated by `city-factual-backfill`, a different
+ * producer writing the same column. Only this function's own log measures this function.
+ *
+ * Writes the cursor and a reason, and NOTHING else — no `needs_attention`, no quality
+ * signal. A city we could not read is not a city with a problem to flag, and the column
+ * fans out through the geo spine into `search_reindex_queue`, so the write stays minimal.
+ * At ~3 skips an hour that is ~75 writes a day.
+ */
+async function stampCursor(
+  supabase: ReturnType<typeof getServiceClient>,
+  city: { id: string; enrichment_status?: unknown },
+  reason: string,
+  dryRun: boolean,
+): Promise<void> {
+  if (dryRun) return
+  const prior = (city.enrichment_status ?? {}) as Record<string, unknown>
+  await supabase
+    .from('cities')
+    .update({
+      last_refreshed_at: new Date().toISOString(),
+      enrichment_status: { ...prior, agentic_skip: { at: new Date().toISOString(), reason } },
+    })
+    .eq('id', city.id)
+    // Never let a failed cursor write abort the batch: the next city is still worth
+    // trying, and the only cost of a lost stamp is one more re-skip.
+    .then(() => {}, (e: unknown) => { console.warn(`[${STEP}] cursor stamp failed for ${city.id}: ${e}`) })
+}
+
 const fetchCityPage = (url: string) =>
   fetchPageText(url, {
     userAgent: 'Mozilla/5.0 (compatible; QueerGuide-CityEnrich/1.0)',
@@ -255,7 +307,7 @@ Deno.serve(async (req: Request) => {
       // description was written from the same bad article, so re-feeding it launders
       // the wrong subject into a fresh run. Prose may not vouch for its own source.
       if (c.description && !wpExtract && !wikiRefused) sources.push({ url: 'existing', text: c.description })
-      if (!sources.length) { skipped++; results.push({ id: c.id, status: 'no_sources' }); await logStep(supabase, c.id, status, started, dryRun, 'no_sources'); continue }
+      if (!sources.length) { skipped++; results.push({ id: c.id, status: 'no_sources' }); await logStep(supabase, c.id, status, started, dryRun, 'no_sources'); await stampCursor(supabase, c, 'no_sources', dryRun); continue }
 
       // Destination safety context.
       let safetyContext: string | undefined
@@ -288,7 +340,7 @@ Deno.serve(async (req: Request) => {
         if (e instanceof CircuitOpenError) return jsonResponse({ enriched, gated, skipped, circuit_open: true, results }, 200, req)
         throw e
       }
-      if (!ai) { skipped++; results.push({ id: c.id, status: 'no_ai' }); await logStep(supabase, c.id, status, started, dryRun, 'no_ai'); continue }
+      if (!ai) { skipped++; results.push({ id: c.id, status: 'no_ai' }); await logStep(supabase, c.id, status, started, dryRun, 'no_ai'); await stampCursor(supabase, c, 'no_ai', dryRun); continue }
 
       const confidence = typeof ai.confidence === 'number' ? ai.confidence : 0.5
       const highConf = confidence >= AUTO_APPLY_CONFIDENCE

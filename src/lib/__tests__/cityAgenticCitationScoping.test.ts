@@ -111,6 +111,40 @@ describe('city-agentic-enrich citation scoping', () => {
     expect(code).toMatch(/safetyContext = `\$\{co\.name\}: equality_score=/);
   });
 
+  // --- the selector's round-robin cursor ------------------------------------
+  // `cities_due_for_refresh` / this function's own query order by
+  // `last_refreshed_at ASC NULLS FIRST`, and the success-path UPDATE is the only writer
+  // of that column — which a `no_sources` / `no_ai` skip returned BEFORE reaching. So an
+  // unprocessable city stayed at the head of the work list forever.
+  //
+  // Measured on prod 2026-10-03 from this function's own enrichment_log: 8 hourly runs,
+  // 40 batch slots, 25 `skipped: no_sources` + 15 `done`, over just 10 DISTINCT cities.
+  it('stamps the cursor on every skip path, not only on success', () => {
+    for (const reason of ['no_sources', 'no_ai']) {
+      const line = code.split('\n').find((l) => l.includes(`status: '${reason}'`));
+      expect(line, `no skip site for ${reason}`).toBeTruthy();
+      expect(line, `${reason} must advance the cursor before continue`).toMatch(
+        /stampCursor\(supabase, c, '(no_sources|no_ai)', dryRun\)/,
+      );
+    }
+    // The helper must write the cursor column itself — a stamp that sets only a reason
+    // leaves the row at the head of the list and changes nothing.
+    const helper = code.slice(code.indexOf('async function stampCursor'));
+    expect(helper.slice(0, 900)).toContain('last_refreshed_at');
+    // ...and must preserve the existing jsonb rather than replacing it.
+    expect(helper.slice(0, 900)).toMatch(/\.\.\.prior/);
+    // A dry run must not write.
+    expect(helper.slice(0, 900)).toMatch(/if \(dryRun\) return/);
+  });
+
+  it('selects enrichment_status, which the cursor stamp merges into', () => {
+    // Without it `...prior` spreads undefined and the stamp silently DROPS every other
+    // enrichment key on the row — a destructive write dressed as a cursor bump.
+    const sel = code.split('\n').find((l) => l.includes(".select('id, name, slug"));
+    expect(sel).toBeTruthy();
+    expect(sel).toContain('enrichment_status');
+  });
+
   // --- control --------------------------------------------------------------
   it('the comment stripper is load-bearing', () => {
     // Every defect string this file bans is quoted VERBATIM in the fix's own
