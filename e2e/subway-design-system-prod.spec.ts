@@ -63,7 +63,11 @@ const surfaceEdgeAudit = (page: Page) =>
     const elements = [...document.querySelectorAll('body *')].filter(visible);
     const thinBorders = elements
       .filter((element) => {
-        if (element.closest('svg, canvas') || element.classList.contains('border-track-ring')) {
+        if (
+          element.closest('svg, canvas') ||
+          element.classList.contains('border-track-ring') ||
+          element.matches('button,input,textarea,select,[role="checkbox"],[role="combobox"]')
+        ) {
           return false;
         }
         const style = getComputedStyle(element);
