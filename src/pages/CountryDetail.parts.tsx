@@ -232,7 +232,7 @@ export function CountryTravelTab({
   // suppressed in favour of a sober pointer to the rights section.
   if (hasAnyCriminalizationSignal(country.lgbti_criminalization)) {
     return (
-      <div className="border flex gap-4 border-destructive p-4 sm:p-6">
+      <div className="flex gap-4 rounded-container bg-destructive/10 p-4 shadow-soft sm:p-6">
         <ShieldAlert size={18} aria-hidden="true" className="mt-0.5 shrink-0 text-destructive" />
         <div className="flex flex-col gap-2">
           <p className="text-body-lg font-bold">{noDealsTitle}</p>

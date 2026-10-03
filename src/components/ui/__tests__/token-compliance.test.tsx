@@ -44,6 +44,7 @@ const NON_SEMANTIC_RADIUS =
   /\brounded-(none|xs|sm|md|lg|xl|2xl|3xl|4xl)\b|(?:^|\s)rounded(?![-\w])/;
 
 const SEMANTIC_RADIUS = /\brounded-(container|element|badge|full|t-container)\b/;
+const THIN_BORDER = /(?:^|\s)border(?:-(?:x|y|t|r|b|l))?(?:\s|$)/;
 
 function classOf(el: Element): string {
   return el.getAttribute('class') ?? '';
@@ -85,8 +86,8 @@ describe('design-system token compliance', () => {
     const { container } = render(<Button variant="outline">x</Button>);
     const button = container.querySelector('button')!;
     expectTokenCompliant(button, 'Button');
-    expect(classOf(button)).toMatch(/\bborder\b/);
-    expect(classOf(button)).toMatch(/\bborder-input\b/);
+    expect(classOf(button)).not.toMatch(THIN_BORDER);
+    expect(classOf(button)).toMatch(/\bbg-surface-container-high\b/);
   });
 
   it('Card uses design tokens', () => {
@@ -103,8 +104,8 @@ describe('design-system token compliance', () => {
     const { container } = render(<Input />);
     const input = container.querySelector('input')!;
     expectTokenCompliant(input, 'Input');
-    expect(classOf(input)).toMatch(/\bborder\b/);
-    expect(classOf(input)).toMatch(/\bborder-input\b/);
+    expect(classOf(input)).not.toMatch(THIN_BORDER);
+    expect(classOf(input)).toMatch(/\bbg-surface-container-high\b/);
   });
 
   it('Alert uses design tokens', () => {

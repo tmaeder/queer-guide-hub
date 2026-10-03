@@ -27,6 +27,35 @@ const PUBLIC_SURFACES = [
   '/contact',
   '/donate',
   '/help',
+  '/rights',
+  '/rights/sources',
+  '/rights/trans',
+  '/travel/book',
+  '/map',
+  '/explore/connections',
+  '/competitions',
+  '/competitions/drag-series',
+  '/tags/interactions',
+  '/privacy',
+  '/search',
+  '/community/feed',
+  '/community/members',
+  '/community/friends',
+  '/community/groups',
+  '/people',
+  '/people/friends',
+  '/people/dating',
+  '/people/travel',
+  '/people/nearby',
+  '/settings',
+  '/sitemap',
+  '/feedback',
+  '/submit',
+  '/auth',
+  '/tools/checklist',
+  '/city/berlin',
+  '/country/germany',
+  '/villages/chueca',
 ] as const;
 
 const gotoReady = async (page: Page, path: string) => {
@@ -37,7 +66,12 @@ const gotoReady = async (page: Page, path: string) => {
     .first()
     .click({ timeout: 2_000 })
     .catch(() => {});
-  await page.waitForTimeout(250);
+  await page.waitForTimeout(150);
+};
+
+const setViewportAndSettle = async (page: Page, width: number, height: number) => {
+  await page.setViewportSize({ width, height });
+  await page.evaluate(() => new Promise<void>((resolve) => requestAnimationFrame(() => resolve())));
 };
 
 const auditRoundedSurfaces = (page: Page) =>
@@ -71,7 +105,7 @@ const auditRoundedSurfaces = (page: Page) =>
         if (
           element.closest('svg, canvas, [data-maplibre-map], .maplibregl-map') ||
           element.matches(
-            'main, .min-h-screen.flex.flex-col.bg-background, .route-context-shell, ' +
+            'main, .min-h-screen.bg-background, .route-context-shell, ' +
               '[data-testid="route-journey"], .route-network-rail, .route-network-rail__track',
           )
         ) {
@@ -130,51 +164,97 @@ const auditRoundedSurfaces = (page: Page) =>
       .slice(0, 30);
   });
 
-for (const path of PUBLIC_SURFACES) {
-  test(`${path} has no sharp rendered surfaces`, async ({ page }) => {
-    await gotoReady(page, path);
-    expect(await auditRoundedSurfaces(page), `sharp surfaces on ${path}`).toEqual([]);
+const auditThinBorders = (page: Page) =>
+  page.evaluate(() => {
+    const alpha = (color: string) => {
+      if (!color || color === 'transparent') return 0;
+      const slashAlpha = color.match(/\/\s*([\d.]+%?)\s*\)$/);
+      if (slashAlpha) {
+        return slashAlpha[1].endsWith('%')
+          ? Number.parseFloat(slashAlpha[1]) / 100
+          : Number.parseFloat(slashAlpha[1]);
+      }
+      const rgbaAlpha = color.match(/rgba\([^)]*,\s*([\d.]+)\s*\)$/);
+      return rgbaAlpha ? Number.parseFloat(rgbaAlpha[1]) : 1;
+    };
+    const visible = (element: Element) => {
+      const rect = element.getBoundingClientRect();
+      const style = getComputedStyle(element);
+      return (
+        rect.width >= 4 &&
+        rect.height >= 4 &&
+        style.display !== 'none' &&
+        style.visibility !== 'hidden' &&
+        Number(style.opacity || 1) > 0
+      );
+    };
 
-    const visibleHairlines = await page.locator('body').evaluate(() => {
-      const alpha = (value: string) => {
-        if (!value || value === 'transparent') return 0;
-        const slash = value.match(/\/\s*([\d.]+%?)\s*\)$/);
-        if (slash) {
-          return slash[1].endsWith('%')
-            ? Number.parseFloat(slash[1]) / 100
-            : Number.parseFloat(slash[1]);
+    return [...document.querySelectorAll('body *')]
+      .filter(visible)
+      .filter((element) => {
+        // Borders are legitimate only when they ARE the information geometry:
+        // maps, diagrams, route tracks, station/risk marks, charts and native
+        // media. Product surfaces and controls never need a one-pixel frame.
+        if (
+          element.closest(
+            'svg,canvas,video,[data-maplibre-map],.maplibregl-map,.maplibregl-popup-tip,' +
+              '[data-information-geometry="true"]',
+          ) ||
+          element.matches(
+            '.route-network-rail,.route-network-rail__track,.route-line,.route-station,.transit-marker,' +
+              '.station-dot,.risk-mark,[class*="station-dot"],[class*="route-line"]',
+          )
+        ) {
+          return false;
         }
-        const rgba = value.match(/rgba\([^)]*,\s*([\d.]+)\s*\)$/);
-        return rgba ? Number.parseFloat(rgba[1]) : 1;
-      };
 
-      return Array.from(
-        document.querySelectorAll<HTMLElement>(
-          '[class~="border-border-hairline"], [class~="divide-border-hairline"] > :not([hidden]) ~ :not([hidden])',
-        ),
-      )
-        .filter((element) => {
-          const style = getComputedStyle(element);
-          const rect = element.getBoundingClientRect();
-          if (rect.width < 1 || rect.height < 1 || style.visibility === 'hidden') return false;
+        const style = getComputedStyle(element);
+        const widths = [
+          style.borderTopWidth,
+          style.borderRightWidth,
+          style.borderBottomWidth,
+          style.borderLeftWidth,
+        ].map((value) => Number.parseFloat(value) || 0);
+        const colors = [
+          style.borderTopColor,
+          style.borderRightColor,
+          style.borderBottomColor,
+          style.borderLeftColor,
+        ];
+        return widths.some(
+          (width, index) => width > 0 && width <= 2 && alpha(colors[index]) > 0.03,
+        );
+      })
+      .map((element) => {
+        const html = element as HTMLElement;
+        const rect = element.getBoundingClientRect();
+        const style = getComputedStyle(element);
+        const text = (element.textContent || '').replace(/\s+/g, ' ').trim().slice(0, 48);
+        return {
+          element: `${element.tagName.toLowerCase()}.${String(html.className || '').slice(0, 120)}`,
+          size: `${Math.round(rect.width)}x${Math.round(rect.height)}`,
+          borders: [
+            `${style.borderTopWidth} ${style.borderTopColor}`,
+            `${style.borderRightWidth} ${style.borderRightColor}`,
+            `${style.borderBottomWidth} ${style.borderBottomColor}`,
+            `${style.borderLeftWidth} ${style.borderLeftColor}`,
+          ],
+          text,
+        };
+      })
+      .slice(0, 30);
+  });
 
-          return (
-            (Number.parseFloat(style.borderTopWidth) > 0 && alpha(style.borderTopColor) > 0.01) ||
-            (Number.parseFloat(style.borderRightWidth) > 0 &&
-              alpha(style.borderRightColor) > 0.01) ||
-            (Number.parseFloat(style.borderBottomWidth) > 0 &&
-              alpha(style.borderBottomColor) > 0.01) ||
-            (Number.parseFloat(style.borderLeftWidth) > 0 && alpha(style.borderLeftColor) > 0.01)
-          );
-        })
-        .slice(0, 20)
-        .map((element) => ({
-          tag: element.tagName.toLowerCase(),
-          className: element.className,
-          text: element.textContent?.trim().replace(/\s+/g, ' ').slice(0, 80),
-        }));
-    });
+for (const path of PUBLIC_SURFACES) {
+  test(`${path} has no sharp surfaces or thin UI borders`, async ({ page }) => {
+    test.setTimeout(60_000);
+    await setViewportAndSettle(page, 1280, 900);
+    await gotoReady(page, path);
+    expect(await auditRoundedSurfaces(page), `sharp desktop surfaces on ${path}`).toEqual([]);
+    expect(await auditThinBorders(page), `thin desktop UI borders on ${path}`).toEqual([]);
 
-    expect(visibleHairlines, `visible legacy hairlines on ${path}`).toEqual([]);
+    await setViewportAndSettle(page, 390, 844);
+    expect(await auditRoundedSurfaces(page), `sharp mobile surfaces on ${path}`).toEqual([]);
+    expect(await auditThinBorders(page), `thin mobile UI borders on ${path}`).toEqual([]);
   });
 }

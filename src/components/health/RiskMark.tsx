@@ -73,6 +73,7 @@ export function RiskMark({ risk, blood, label, srLabel, size = 'md', fill, class
 
   return (
     <span
+      data-information-geometry="true"
       className={cn(
         // `rounded-badge` (9px), the documented rank for swatches and micro
         // marks — NOT `rounded-element` (12px), which turned the matrix into a
