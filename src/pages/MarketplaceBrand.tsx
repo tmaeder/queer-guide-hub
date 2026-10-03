@@ -205,7 +205,7 @@ export default function MarketplaceBrand() {
         <PageContainer flush className="py-12 md:py-16">
           <section
             aria-labelledby="brand-end-of-line"
-            className="bg-foreground p-6 text-background md:p-8"
+            className="overflow-hidden rounded-container bg-foreground p-6 text-background md:p-8"
           >
             <p className="text-2xs font-bold uppercase tracking-label text-background/70">
               {t('marketplace.endOfLine', 'End of line')}

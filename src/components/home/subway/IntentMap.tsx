@@ -45,7 +45,7 @@ export function IntentMap() {
   return (
     <section
       aria-labelledby="intent-map-heading"
-      className="intent-map-section px-4 pb-14 pt-10 sm:px-6 md:px-8 lg:px-0 lg:pb-20 lg:pt-14"
+      className="intent-map-section overflow-hidden rounded-panel px-4 pb-14 pt-10 sm:px-6 md:px-8 lg:px-0 lg:pb-20 lg:pt-14"
     >
       {/* The key is named for the mobile sheet it was written for; the string
           is exactly right here and is already translated in all 11 locales. */}

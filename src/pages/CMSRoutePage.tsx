@@ -222,7 +222,7 @@ export default function CMSRoutePage({ slug }: CMSRoutePageProps) {
           </ul>
         </section>
 
-        <section className="mt-8 bg-foreground p-6 text-background">
+        <section className="mt-8 overflow-hidden rounded-container bg-foreground p-6 text-background">
           <p className="text-2xs font-bold uppercase tracking-label text-background/70">
             End of line
           </p>

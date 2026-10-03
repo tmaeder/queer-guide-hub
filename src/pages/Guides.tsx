@@ -79,7 +79,7 @@ const Guides = () => {
       <PageContainer>
         <ActiveQuestBanner />
         <div
-          className={`sticky ${STICKY_UNDER_HEADER} z-20 ${PAGE_BLEED_MOBILE} py-2 mb-8 border-b border-border-hairline bg-background`}
+          className={`sticky ${STICKY_UNDER_HEADER} z-20 ${PAGE_BLEED_MOBILE} mb-8 overflow-hidden rounded-container border-b border-border-hairline bg-background py-2`}
         >
           <GuidesFilterBar filters={filters} onChange={setFilters} />
         </div>
@@ -92,7 +92,7 @@ const Guides = () => {
                 key={i}
                 className="col-span-12 md:col-span-6 lg:col-span-4 rounded-container bg-card overflow-hidden"
               >
-                <div className="aspect-[16/9] bg-muted animate-pulse" />
+                <div className="aspect-[16/9] animate-pulse rounded-container bg-muted" />
                 <div className="p-6 space-y-2">
                   <div className="h-3 w-24 bg-muted animate-pulse rounded-badge" />
                   <div className="h-6 w-3/4 bg-muted animate-pulse rounded-element" />

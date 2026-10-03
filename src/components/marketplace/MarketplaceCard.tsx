@@ -133,8 +133,8 @@ function MarketplaceCardImpl({
     // A bordered pulse plate in the real card's shape, not a generic skeleton:
     // the grid should not change its geometry when the data lands.
     return (
-      <div className="bg-card" aria-hidden="true">
-        <div className="aspect-[3/4] animate-pulse border-b border-border-hairline bg-muted" />
+      <div className="overflow-hidden rounded-container bg-card" aria-hidden="true">
+        <div className="aspect-[3/4] animate-pulse rounded-container border-b border-border-hairline bg-muted" />
         <div className="flex flex-col gap-2 p-4">
           <div className="h-2.5 w-1/3 animate-pulse bg-muted" />
           <div className="h-4 w-5/6 animate-pulse bg-muted" />

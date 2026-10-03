@@ -114,7 +114,11 @@ export default function MarketplaceCategories() {
         {loading ? (
           <ul className="m-0 grid list-none grid-cols-2 gap-4 p-0 md:grid-cols-3 lg:grid-cols-4">
             {Array.from({ length: 12 }).map((_, i) => (
-              <li key={i} aria-hidden="true" className="h-[120px] animate-pulse bg-muted" />
+              <li
+                key={i}
+                aria-hidden="true"
+                className="h-[120px] animate-pulse rounded-container bg-muted"
+              />
             ))}
           </ul>
         ) : sections.length === 0 && orphans.length === 0 ? (
@@ -152,7 +156,7 @@ export default function MarketplaceCategories() {
                     <li key={stop.slug}>
                       <LocalizedLink
                         to={`/marketplace/category/${section.slug}?g=${stop.slug}`}
-                        className="card-lift flex h-full min-h-[120px] flex-col justify-between bg-card p-4 no-underline sm:p-6 shadow-soft"
+                        className="card-lift flex h-full min-h-[120px] flex-col justify-between overflow-hidden rounded-container bg-card p-4 no-underline shadow-soft sm:p-6"
                       >
                         <span className="text-title font-bold leading-tight text-balance">
                           {groupLabel(stop.slug)}
@@ -179,7 +183,7 @@ export default function MarketplaceCategories() {
                     <li key={stop.slug}>
                       <LocalizedLink
                         to={`/marketplace?grp=${stop.slug}`}
-                        className="card-lift flex h-full min-h-[120px] flex-col justify-between bg-card p-4 no-underline sm:p-6 shadow-soft"
+                        className="card-lift flex h-full min-h-[120px] flex-col justify-between overflow-hidden rounded-container bg-card p-4 no-underline shadow-soft sm:p-6"
                       >
                         <span className="text-title font-bold leading-tight text-balance">
                           {groupLabel(stop.slug)}

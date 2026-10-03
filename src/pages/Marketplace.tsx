@@ -148,7 +148,10 @@ function MainGridSection({
  */
 function MakersEntry() {
   return (
-    <section aria-labelledby="makers-entry" className="bg-foreground p-6 text-background md:p-8">
+    <section
+      aria-labelledby="makers-entry"
+      className="overflow-hidden rounded-container bg-foreground p-6 text-background md:p-8"
+    >
       <p className="text-2xs font-bold uppercase tracking-label text-background/70">End of line</p>
       <h2 id="makers-entry" className="mt-1 font-display text-headline leading-tight">
         Every maker on this line
@@ -481,7 +484,7 @@ const Marketplace = () => {
             bordered box inside the content column; bands are the page's
             grammar and a band cannot be scrolled past without being noticed. */}
         <section
-          className={`sticky ${STICKY_UNDER_HEADER} z-20 border-b border-border-hairline bg-surface-container-low`}
+          className={`sticky ${STICKY_UNDER_HEADER} z-20 overflow-hidden rounded-container border-b border-border-hairline bg-surface-container-low`}
         >
           {/* py-2 below md: this band is sticky, so its padding is subtracted from
               every screen of results. Measured 260px total chrome at 390x844 —

@@ -279,7 +279,7 @@ export default function MarketplaceBrands() {
       {showHighlight && (
         <section
           aria-labelledby="makers-counter"
-          className="border-b border-border-hairline bg-surface-container-low"
+          className="overflow-hidden rounded-container border-b border-border-hairline bg-surface-container-low"
         >
           <PageContainer flush className="py-8 md:py-12">
             <SectionHeader
@@ -506,7 +506,7 @@ export default function MarketplaceBrands() {
         <PageContainer flush className="py-12 md:py-16">
           <section
             aria-labelledby="makers-end-of-line"
-            className="bg-foreground p-6 text-background md:p-8"
+            className="overflow-hidden rounded-container bg-foreground p-6 text-background md:p-8"
           >
             <p className="text-2xs font-bold uppercase tracking-label text-background/70">
               {t('marketplace.endOfLine', 'End of line')}

@@ -125,7 +125,7 @@ export function CategoryTreeRail({
             </span>
             <span
               className={cn(
-                'min-w-0 flex-1 px-2 py-1 text-left text-13 leading-snug transition-colors',
+                'min-w-0 flex-1 rounded-element px-2 py-1 text-left text-13 leading-snug transition-colors',
                 !activeSlug
                   ? 'bg-foreground font-bold text-background'
                   : 'text-muted-foreground group-hover:bg-surface-container group-hover:text-foreground',
@@ -157,7 +157,7 @@ export function CategoryTreeRail({
                   </span>
                   <span
                     className={cn(
-                      'flex min-w-0 flex-1 items-center gap-2 px-2 py-1 text-left text-13 leading-snug transition-colors',
+                      'flex min-w-0 flex-1 items-center gap-2 rounded-element px-2 py-1 text-left text-13 leading-snug transition-colors',
                       isActive
                         ? 'bg-foreground font-bold text-background'
                         : 'text-muted-foreground group-hover:bg-surface-container group-hover:text-foreground',
@@ -224,7 +224,7 @@ export function CategoryTreeRail({
                           </span>
                           <span
                             className={cn(
-                              'ml-4 flex min-w-0 flex-1 items-center gap-2 px-2 py-1 text-left text-2xs leading-snug transition-colors',
+                              'ml-4 flex min-w-0 flex-1 items-center gap-2 rounded-element px-2 py-1 text-left text-2xs leading-snug transition-colors',
                               childActive
                                 ? 'bg-foreground font-bold text-background'
                                 : 'text-muted-foreground group-hover:bg-surface-container group-hover:text-foreground',

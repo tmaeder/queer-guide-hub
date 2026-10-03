@@ -73,7 +73,7 @@ export function BrandStoryBlock({ listing }: { listing: MarketplaceListing }) {
               className="h-10 w-10 bg-card object-contain p-1 rounded-container shadow-soft"
             />
           ) : (
-            <span className="flex h-10 w-10 items-center justify-center bg-surface-container text-title font-bold">
+            <span className="flex h-10 w-10 items-center justify-center rounded-element bg-surface-container text-title font-bold">
               {brand.display_name.charAt(0).toUpperCase()}
             </span>
           )}

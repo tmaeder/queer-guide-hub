@@ -22,13 +22,13 @@ export function SupportBand() {
             <>
               <LocalizedLink
                 to="/submit"
-                className="bg-foreground px-6 py-4 text-15 font-bold text-background no-underline hover:opacity-90"
+                className="rounded-element bg-foreground px-6 py-4 text-15 font-bold text-background no-underline hover:opacity-90"
               >
                 {t('home.cta.submit', 'Add a venue')}
               </LocalizedLink>
               <LocalizedLink
                 to="/friends"
-                className="px-6 py-4 text-15 font-bold no-underline hover:bg-foreground hover:text-background"
+                className="rounded-element px-6 py-4 text-15 font-bold no-underline hover:bg-foreground hover:text-background"
               >
                 {t('home.cta.invite', 'Invite friends')}
               </LocalizedLink>
@@ -37,13 +37,13 @@ export function SupportBand() {
             <>
               <LocalizedLink
                 to="/auth?mode=signup"
-                className="bg-foreground px-6 py-4 text-15 font-bold text-background no-underline hover:opacity-90"
+                className="rounded-element bg-foreground px-6 py-4 text-15 font-bold text-background no-underline hover:opacity-90"
               >
                 {t('home.cta.join', 'Join the community')}
               </LocalizedLink>
               <LocalizedLink
                 to="/about"
-                className="px-6 py-4 text-15 font-bold no-underline hover:bg-foreground hover:text-background"
+                className="rounded-element px-6 py-4 text-15 font-bold no-underline hover:bg-foreground hover:text-background"
               >
                 {t('home.cta.about', 'Read the mission')}
               </LocalizedLink>
