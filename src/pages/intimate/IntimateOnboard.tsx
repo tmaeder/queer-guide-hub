@@ -27,6 +27,8 @@ import { angleOptions, bodyPictograms, getGenitalPictogramSet } from '@/assets/i
 import type { Genitalia, IntimateProfile, WizardStep } from '@/lib/intimate/types';
 import { StepperShell, type StepperStep } from '@/components/ui/StepperShell';
 import { FlatFieldGroup, FlatField } from '@/components/ui/FlatFieldGroup';
+import { PageContainer } from '@/components/layout/PageContainer';
+import { PageLoadingState } from '@/components/layout/PageLoadingState';
 
 const STEP_ORDER: WizardStep[] = [
   'consent',
@@ -137,8 +139,24 @@ export default function IntimateOnboard() {
     [visibleSteps],
   );
 
-  if (isLoading) return <div className="p-8 text-muted-foreground">Loading…</div>;
-  if (!user) return <div className="p-8">Sign in to continue.</div>;
+  if (isLoading) {
+    return (
+      <PageContainer size="form">
+        <PageLoadingState count={2} variant="list" label="Loading your intimate profile" />
+      </PageContainer>
+    );
+  }
+  if (!user) {
+    return (
+      <PageContainer size="form" className="text-center">
+        <h1 className="font-display text-headline">Intimate profile</h1>
+        <p className="mt-4 text-muted-foreground">Sign in to continue.</p>
+        <Button className="mt-6" onClick={() => navigate('/auth')}>
+          Sign in
+        </Button>
+      </PageContainer>
+    );
+  }
 
   const visibleIdx = visibleSteps.indexOf(step);
   const isLast = visibleIdx === visibleSteps.length - 1;

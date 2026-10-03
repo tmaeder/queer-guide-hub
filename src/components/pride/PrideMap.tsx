@@ -6,6 +6,7 @@ import 'maplibre-gl/dist/maplibre-gl.css';
 import { getMapStyle } from '@/config/mapStyle';
 import { isWebglSupported } from '@/lib/webglSupport';
 import type { PrideCalendarEvent } from '@/hooks/usePrideCalendar';
+import { durationMs, imperativeDurationMs } from '@/lib/animation';
 
 interface PrideMapProps {
   events: PrideCalendarEvent[];
@@ -192,7 +193,7 @@ export function PrideMap({ events, selectedId, onSelect, height = 480 }: PrideMa
         map.easeTo({
           center: [ev.longitude, ev.latitude],
           zoom: Math.max(map.getZoom(), 4),
-          duration: 600,
+          duration: imperativeDurationMs(durationMs.journey),
         });
       }
     }

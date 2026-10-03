@@ -16,6 +16,7 @@ import {
 } from '@/config/mapLayers';
 import { CLUSTER_MAX_ZOOM, CLUSTER_RADIUS } from '@/utils/mapViewport';
 import { EMPTY_FAV, mapDebug } from '@/components/map/mapDebug';
+import { durationMs, imperativeDurationMs } from '@/lib/animation';
 import { donutIconExpression } from '@/components/map/clusterDonut';
 import { ink, paper } from '@/lib/mapTokens';
 import { MAP_FONT_BOLD } from '@/config/mapStyle';
@@ -236,7 +237,10 @@ export function usePointLayers({
         // Steady-state opacity = time-of-day expression (dims closed at night).
         'circle-opacity': pinOpacityExpr,
         // Entrance fade — opacity transitions in on first paint / data swap.
-        'circle-opacity-transition': { duration: 350, delay: 0 },
+        'circle-opacity-transition': {
+          duration: imperativeDurationMs(durationMs.normal),
+          delay: 0,
+        },
       },
     });
 

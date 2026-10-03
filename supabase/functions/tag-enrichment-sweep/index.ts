@@ -420,20 +420,25 @@ interface ProseVerdict {
  *
  *   WRONG SUBJECT — the prose describes a different specific subject or the
  *   generic sense of an ordinary word ("Vamp" = a Belgian DJ, "Bottom Bitch" =
- *   a Doja Cat song, "Vacuum Pump" = industrial physics). At >=0.9 confidence
- *   the prose is RETRACTED (all three fields) and the wiki identity cleared:
- *   the weekly medical-codes / hierarchy syncs regenerate from wikidata_id, so
- *   a wrong identifier rebuilds wrong data forever while a null one rebuilds
- *   nothing, and a blank page is deindexed by run_tag_thin_page_reindex until
- *   the fill path re-earns prose. Retraction only ever REMOVES a wrong claim;
- *   replacement prose always re-enters through the grounded/queued fill paths.
+ *   a Doja Cat song, "Vacuum Pump" = industrial physics). COUNTED AND LOGGED
+ *   ONLY: nothing is retracted and nothing is queued. See the branch itself for
+ *   the measurement that retired it (13 of 16 wrong on its first live batch).
  *
- *   VOICE REWRITE — subject is right: the model rewrites description (house
- *   voice, facts preserved, boilerplate stripped) + derives short_description.
- *   Non-sensitive + confidence >=0.8 auto-applies; sensitive/adult or lower
- *   confidence queues to ai_suggestions (two suggestions, one per field — the
- *   apply path takes {field, value}). long_description is NEVER rewritten:
- *   the curated kinktionary/drgay HTML bodies must not be LLM-mangled.
+ *   VOICE REWRITE — subject is right: the model proposes a rewritten
+ *   description + a derived short_description, and both are QUEUED to
+ *   ai_suggestions for a human. long_description is NEVER rewritten: the curated
+ *   kinktionary/drgay HTML bodies must not be LLM-mangled.
+ *
+ * THIS DOCBLOCK DESCRIBED THE RETIRED DESIGN UNTIL 2026-10-01, and said so
+ * eighty lines below where the file header already said the opposite. It read
+ * "At >=0.9 confidence the prose is RETRACTED (all three fields) and the wiki
+ * identity cleared" and "Non-sensitive + confidence >=0.8 auto-applies". Neither
+ * has been true since 2026-08-29. Two comments in one file disagreeing about
+ * whether a cron writes to published prose is worse than no comment: it is what
+ * made CLAUDE.md's claim that this cron is disabled look plausible, and a reader
+ * checking "does this thing write?" could land on either answer depending on
+ * which they opened. The ONLY write to unified_tags in this function is the
+ * `prose_cursor` stamp on prose_reviewed_at, a derived column.
  */
 async function prosePass(
   batchLimit: number,

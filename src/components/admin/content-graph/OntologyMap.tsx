@@ -1,12 +1,24 @@
 import { useEffect, useMemo } from 'react';
 import {
-  ReactFlow, ReactFlowProvider, Background, Controls, useReactFlow,
-  useNodesState, type Edge, type NodeTypes,
+  ReactFlow,
+  ReactFlowProvider,
+  Background,
+  Controls,
+  useReactFlow,
+  useNodesState,
+  type Edge,
+  type NodeTypes,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import TypeNode, { type TypeFlowNode } from './TypeNode';
 import {
-  edgeDash, edgeId, edgeWidth, GRAPH_STROKE, type GraphCategory, type GraphEdgeStat, type GraphNodeStat,
+  edgeDash,
+  edgeId,
+  edgeWidth,
+  GRAPH_STROKE,
+  type GraphCategory,
+  type GraphEdgeStat,
+  type GraphNodeStat,
 } from './contentGraphMeta';
 
 const nodeTypes = { typeNode: TypeNode } satisfies NodeTypes;
@@ -37,15 +49,24 @@ function layout(nodes: GraphNodeStat[]): TypeFlowNode[] {
       type: 'typeNode' as const,
       position: { x: Math.cos(angle) * radius, y: Math.sin(angle) * radius },
       data: {
-        type: node.type, label: node.label, category: node.category,
-        count: node.count, orphanCount: node.orphan_count, dupCount: node.dup_count,
+        type: node.type,
+        label: node.label,
+        category: node.category,
+        count: node.count,
+        orphanCount: node.orphan_count,
+        dupCount: node.dup_count,
       },
     };
   });
 }
 
 function OntologyMapInner({
-  nodes: statNodes, edges: statEdges, selectedType, selectedEdge, onSelectNode, onSelectEdge,
+  nodes: statNodes,
+  edges: statEdges,
+  selectedType,
+  selectedEdge,
+  onSelectNode,
+  onSelectEdge,
 }: OntologyMapProps) {
   const { fitView } = useReactFlow();
   const [nodes, setNodes, onNodesChange] = useNodesState<TypeFlowNode>([]);
@@ -64,35 +85,39 @@ function OntologyMapInner({
 
   // Reflect selection into node data (ring highlight).
   useEffect(() => {
-    setNodes((cur) => cur.map((n) => ({ ...n, data: { ...n.data, selected: n.id === selectedType } })));
+    setNodes((cur) =>
+      cur.map((n) => ({ ...n, data: { ...n.data, selected: n.id === selectedType } })),
+    );
   }, [selectedType, setNodes]);
 
   useEffect(() => {
-    const id = window.setTimeout(() => fitView({ padding: 0.2, duration: 300 }), 80);
+    const id = window.setTimeout(() => fitView({ padding: 0.2, duration: 0 }), 80);
     return () => window.clearTimeout(id);
   }, [statNodes.length, fitView]);
 
-  const edges = useMemo<Edge[]>(() =>
-    statEdges
-      .filter((e) => e.source !== e.target) // self-loops shown in the detail panel, not drawn
-      .map((e) => {
-        const id = edgeId(e);
-        const sel = id === selectedEdge;
-        return {
-          id,
-          source: e.source,
-          target: e.target,
-          type: 'straight',
-          data: { stat: e },
-          style: {
-            stroke: GRAPH_STROKE,
-            strokeWidth: edgeWidth(e.count) + (sel ? 1.5 : 0),
-            strokeDasharray: edgeDash(e.relation_kind),
-            opacity: sel ? 1 : 0.42,
-          },
-        } satisfies Edge;
-      }),
-    [statEdges, selectedEdge]);
+  const edges = useMemo<Edge[]>(
+    () =>
+      statEdges
+        .filter((e) => e.source !== e.target) // self-loops shown in the detail panel, not drawn
+        .map((e) => {
+          const id = edgeId(e);
+          const sel = id === selectedEdge;
+          return {
+            id,
+            source: e.source,
+            target: e.target,
+            type: 'straight',
+            data: { stat: e },
+            style: {
+              stroke: GRAPH_STROKE,
+              strokeWidth: edgeWidth(e.count) + (sel ? 1.5 : 0),
+              strokeDasharray: edgeDash(e.relation_kind),
+              opacity: sel ? 1 : 0.42,
+            },
+          } satisfies Edge;
+        }),
+    [statEdges, selectedEdge],
+  );
 
   return (
     <ReactFlow<TypeFlowNode>
@@ -102,7 +127,10 @@ function OntologyMapInner({
       onNodesChange={onNodesChange}
       onNodeClick={(_, node) => onSelectNode(node.id)}
       onEdgeClick={(_, edge) => onSelectEdge(edge.id)}
-      onPaneClick={() => { onSelectNode(null); onSelectEdge(null); }}
+      onPaneClick={() => {
+        onSelectNode(null);
+        onSelectEdge(null);
+      }}
       fitView
       nodesDraggable
       nodesConnectable={false}

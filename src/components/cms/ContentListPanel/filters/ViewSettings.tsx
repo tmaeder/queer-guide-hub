@@ -61,13 +61,21 @@ export function ViewSettings({
   const groupable = groupableFields(config);
   const dateable = dateFields(config);
   const isDateView = view === 'timeline' || view === 'calendar';
+  const currentLayout = LAYOUTS.find((layout) => layout.id === view) ?? LAYOUTS[0];
+  const CurrentLayoutIcon = currentLayout.Icon;
 
   return (
     <Popover>
       <PopoverTrigger asChild>
-        <Button size="sm" variant="outline" className="h-8">
-          <Settings2 size={14} className="mr-1" />
-          Customise
+        <Button
+          size="sm"
+          variant="outline"
+          className="h-8"
+          aria-label={`View settings, current layout: ${currentLayout.label}`}
+        >
+          <CurrentLayoutIcon size={14} className="mr-1" />
+          {currentLayout.label}
+          <Settings2 size={13} className="ml-1 opacity-50" />
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-[380px] p-4" align="end">

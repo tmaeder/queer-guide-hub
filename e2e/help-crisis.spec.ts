@@ -106,3 +106,46 @@ test('a line with unstructured hours is never labelled closed', async ({ page })
   await expect(qlife).toHaveCount(1);
   await expect(qlife).not.toContainText(/closed right now/i);
 });
+
+test('help uses dedicated safety chrome without global overlays', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await openHelp(page, '/help/ch');
+
+  await expect(page.getByTestId('help-safety-header')).toBeVisible();
+  await expect(page.getByRole('navigation', { name: /^navigation$/i })).toHaveCount(0);
+  await expect(page.locator('footer')).toHaveCount(0);
+  await expect(page.getByRole('button', { name: /leave this page immediately/i })).toBeVisible();
+
+  const collisions = await page.evaluate(() => {
+    const safety = document.querySelector('[data-testid="help-safety-header"]');
+    if (!safety) return -1;
+    const safetyRect = safety.getBoundingClientRect();
+    const obscured = Array.from(
+      document.querySelectorAll('main h1, main h2, main p, main a'),
+    ).filter((element) => {
+      if (safety.contains(element)) return false;
+      const rect = element.getBoundingClientRect();
+      if (rect.bottom <= 0 || rect.top >= window.innerHeight) return false;
+      return rect.top < safetyRect.bottom && rect.bottom > safetyRect.top;
+    });
+    return obscured.length;
+  });
+  expect(collisions).toBe(0);
+});
+
+test('Australian help shows the local emergency number', async ({ page }) => {
+  await openHelp(page, '/help/au');
+  await expect(
+    page.getByTestId('help-safety-header').getByRole('link', { name: /000/ }),
+  ).toHaveAttribute('href', 'tel:000');
+  await expect(page.locator('main a[href="tel:000"]').first()).toBeVisible();
+});
+
+test('self-help keeps emergency and privacy actions available', async ({ page }) => {
+  await openHelp(page, '/help/ch');
+  await page.getByRole('button', { name: /not ready to talk/i }).click();
+  const dialog = page.getByRole('dialog');
+  await expect(dialog.getByRole('link', { name: /112/ })).toBeVisible();
+  await expect(dialog.getByRole('button', { name: /hide screen/i })).toBeVisible();
+  await expect(dialog.getByRole('button', { name: /leave this page immediately/i })).toBeVisible();
+});

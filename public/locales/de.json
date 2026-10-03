@@ -1152,7 +1152,7 @@
     "error_title": "Hilfe-Seite nicht verfügbar",
     "error_body": "Bei akuter Gefahr wähle den Notruf: 112 (EU) oder 911 (US/CA).",
     "quick_exit": "Sofort verlassen",
-    "quick_exit_aria": "Diese Seite sofort verlassen (ESC)",
+    "quick_exit_aria": "Diese Seite sofort verlassen",
     "hide_screen": "Bildschirm verbergen",
     "reveal_aria": "Klicke irgendwo, um die Seite wieder anzuzeigen",
     "hidden_hint": "Seite verborgen. Klicke irgendwo zum Anzeigen.",

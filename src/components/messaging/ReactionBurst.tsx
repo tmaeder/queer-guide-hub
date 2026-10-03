@@ -1,7 +1,7 @@
 import { useEffect, useMemo } from 'react';
 import { motion } from 'motion/react';
-import { useMotionTokens } from '@/lib/motion';
-import { isLowEndDevice } from '@/lib/animation';
+import { easing, useMotionTokens } from '@/lib/motion';
+import { duration, isLowEndDevice } from '@/lib/animation';
 
 interface ReactionBurstProps {
   emoji: string;
@@ -25,7 +25,11 @@ export function ReactionBurst({ emoji, onDone }: ReactionBurstProps) {
       Array.from({ length: PARTICLES }, (_, i) => {
         const angle = (Math.PI * 2 * i) / PARTICLES + (i % 2 ? 0.3 : 0);
         const dist = 26 + (i % 3) * 10;
-        return { x: Math.cos(angle) * dist, y: Math.sin(angle) * dist - 10, rot: (i - PARTICLES / 2) * 20 };
+        return {
+          x: Math.cos(angle) * dist,
+          y: Math.sin(angle) * dist - 10,
+          rot: (i - PARTICLES / 2) * 20,
+        };
       }),
     [],
   );
@@ -48,7 +52,7 @@ export function ReactionBurst({ emoji, onDone }: ReactionBurstProps) {
           key={i}
           initial={{ opacity: 1, x: 0, y: 0, scale: 0.6, rotate: 0 }}
           animate={{ opacity: 0, x: p.x, y: p.y, scale: 1.1, rotate: p.rot }}
-          transition={{ duration: 0.65, ease: [0.22, 1, 0.36, 1] }}
+          transition={{ duration: duration.burst, ease: easing.smooth }}
           className="absolute left-1/2 top-1/2 text-sm"
           style={{ translateX: '-50%', translateY: '-50%' }}
         >

@@ -45,6 +45,7 @@ import {
   monoChartStroke,
 } from '@/lib/chartPalette';
 import { callSearchIntelligence, type AnalyticsSummary } from '@/hooks/useSearchIntelligence';
+import { AdminTextSkeleton } from '@/components/admin/primitives/AdminLoading';
 
 interface FunnelSummary {
   window_days: number;
@@ -235,7 +236,7 @@ export function GrowthConversionDashboard() {
       <section className="flex flex-col gap-4">
         <h2 className="text-15 font-semibold">Affiliate clicks &amp; CTR over time</h2>
         {trend.isLoading ? (
-          <p className="text-13 text-muted-foreground">Loading…</p>
+          <AdminTextSkeleton lines={3} />
         ) : (trend.data?.length ?? 0) === 0 ? (
           <p className="text-13 text-muted-foreground">No affiliate clicks in this window yet.</p>
         ) : (
@@ -282,7 +283,7 @@ export function GrowthConversionDashboard() {
           </p>
         </div>
         {cohorts.isLoading ? (
-          <p className="text-13 text-muted-foreground">Loading…</p>
+          <AdminTextSkeleton lines={3} />
         ) : cohortGrid.rows.length === 0 ? (
           <p className="text-13 text-muted-foreground">Not enough activity history yet.</p>
         ) : (

@@ -30,13 +30,13 @@ export default function CanvasControls({ pipelineName, hasSelection }: CanvasCon
   }, [getViewport]);
 
   const handleFitAll = useCallback(() => {
-    fitView({ padding: 0.15, duration: 300 });
+    fitView({ padding: 0.15, duration: 0 });
   }, [fitView]);
 
   const handleFitSelection = useCallback(() => {
     const selected = getNodes().filter((n) => n.selected);
     if (selected.length === 0) return;
-    fitView({ nodes: selected, padding: 0.3, duration: 300 });
+    fitView({ nodes: selected, padding: 0.3, duration: 0 });
   }, [fitView, getNodes]);
 
   const handleExportPNG = useCallback(async () => {
@@ -77,7 +77,7 @@ export default function CanvasControls({ pipelineName, hasSelection }: CanvasCon
             variant="ghost"
             className="h-7 w-7 p-0"
             aria-label="Zoom in"
-            onClick={() => zoomIn({ duration: 150 })}
+            onClick={() => zoomIn({ duration: 0 })}
           >
             <ZoomIn className="h-3.5 w-3.5" />
           </Button>
@@ -94,7 +94,7 @@ export default function CanvasControls({ pipelineName, hasSelection }: CanvasCon
             variant="ghost"
             className="h-7 w-7 p-0"
             aria-label="Zoom out"
-            onClick={() => zoomOut({ duration: 150 })}
+            onClick={() => zoomOut({ duration: 0 })}
           >
             <ZoomOut className="h-3.5 w-3.5" />
           </Button>

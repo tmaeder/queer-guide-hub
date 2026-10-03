@@ -34,6 +34,9 @@ import { toListItem } from './types';
 import { useContentListController } from './useContentListController';
 import { ExportExcelButton } from '@/components/admin/ExportExcelButton';
 import { exportContentType } from './exportContentList';
+import { OPERATOR_LABELS } from './filterOps';
+import type { Filter } from './viewSpec';
+import type { FieldConfig } from '@/types/cms';
 
 const BulkActionsBar = lazy(() =>
   import('../BulkActionsBar').then((m) => ({ default: m.BulkActionsBar })),
@@ -54,6 +57,27 @@ interface ContentListPanelProps {
   contentTypeId?: string;
   onEdit?: (contentType: string, itemId: string) => void;
   onCreate?: (contentType: string) => void;
+}
+
+function filterValueLabel(value: unknown): string {
+  if (value === undefined || value === null || value === '') return '';
+  if (Array.isArray(value)) return value.map(String).join(', ');
+  if (typeof value === 'object') {
+    return Object.values(value as Record<string, unknown>)
+      .filter((part) => part !== undefined && part !== null && part !== '')
+      .map(String)
+      .join(' – ');
+  }
+  if (typeof value === 'boolean') return value ? 'yes' : 'no';
+  return String(value);
+}
+
+function activeFilterLabel(filter: Filter, fields: FieldConfig[]): string {
+  const field = fields.find((candidate) => candidate.name === filter.field);
+  const value = filterValueLabel(filter.value);
+  return [field?.label ?? filter.field, OPERATOR_LABELS[filter.op], value]
+    .filter(Boolean)
+    .join(' ');
 }
 
 /**
@@ -245,103 +269,138 @@ function ContentListPanelBody(props: ContentListPanelProps) {
         />
       )}
 
-      {c.contentTypeId && (
-        <ViewBar
-          views={v.views}
-          activeId={activeViewId}
-          dirty={dirty}
-          onSelect={selectView}
-          onCreate={async (name) => {
-            const created = await v.createView(name, c.spec);
-            if (created) setActiveViewId(created.id);
-          }}
-          onRename={(id, name) => void v.updateView(id, { name })}
-          onDelete={async (id) => {
-            await v.deleteView(id);
-            if (id === activeViewId) setActiveViewId(null);
-          }}
-          onSetDefault={(id) => void v.setDefaultView(id)}
-          onSave={() => activeViewId && void v.updateView(activeViewId, { spec: c.spec })}
-          onReset={() =>
-            activeView && c.applySpec(normalizeSpec(activeView.spec, c.config ?? null))
-          }
-        />
-      )}
-
-      <div className="flex items-center gap-4 mb-4">
-        <div className="relative w-full sm:w-[320px]">
-          <Search
-            size={16}
-            className="absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground"
-          />
-          <Input
-            placeholder={
-              c.config
-                ? `Search ${c.config.label.plural.toLowerCase()}...`
-                : 'Search all content...'
+      <section
+        aria-label="Content workspace controls"
+        className="mb-4 rounded-container bg-card p-2 shadow-soft"
+      >
+        {c.contentTypeId && (
+          <ViewBar
+            views={v.views}
+            activeId={activeViewId}
+            dirty={dirty}
+            onSelect={selectView}
+            onCreate={async (name) => {
+              const created = await v.createView(name, c.spec);
+              if (created) setActiveViewId(created.id);
+            }}
+            onRename={(id, name) => void v.updateView(id, { name })}
+            onDelete={async (id) => {
+              await v.deleteView(id);
+              if (id === activeViewId) setActiveViewId(null);
+            }}
+            onSetDefault={(id) => void v.setDefaultView(id)}
+            onSave={() => activeViewId && void v.updateView(activeViewId, { spec: c.spec })}
+            onReset={() =>
+              activeView && c.applySpec(normalizeSpec(activeView.spec, c.config ?? null))
             }
-            value={c.search}
-            onChange={(e) => c.setSearch(e.target.value)}
-            className="pl-8 pr-8 h-9"
           />
-          {c.search && (
-            <Button
-              aria-label="Clear search"
-              variant="ghost"
-              size="sm"
-              className="absolute right-1 top-1/2 -translate-y-1/2 h-6 w-6 p-0"
-              onClick={() => c.setSearch('')}
+        )}
+
+        <div className="flex flex-wrap items-center gap-2">
+          <div className="relative min-w-[240px] flex-1 lg:max-w-[560px]">
+            <Search
+              size={16}
+              aria-hidden="true"
+              className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground"
+            />
+            <Input
+              placeholder={
+                c.config
+                  ? `Search ${c.config.label.plural.toLowerCase()}...`
+                  : 'Search all content...'
+              }
+              value={c.search}
+              onChange={(e) => c.setSearch(e.target.value)}
+              className="h-10 bg-background pl-10 pr-10"
+            />
+            {c.search && (
+              <Button
+                aria-label="Clear search"
+                variant="ghost"
+                size="sm"
+                className="absolute right-2 top-1/2 h-8 w-8 -translate-y-1/2 p-0"
+                onClick={() => c.setSearch('')}
+              >
+                <X size={14} />
+              </Button>
+            )}
+          </div>
+
+          {c.contentTypeId && config && (
+            <div className="flex flex-wrap items-center gap-2 lg:ml-auto">
+              <FilterBuilder
+                fields={config.fields}
+                filters={c.filters}
+                optionsFor={(f) => c.dynamicOptions[f.name] ?? f.options ?? []}
+                onChange={c.setFilters}
+              />
+
+              <SortBuilder fields={config.fields} sorts={c.sorts} onChange={c.setSorts} />
+
+              <ArchivedViewToggle
+                lifecycle={config.lifecycle}
+                value={c.archivedView}
+                onChange={c.setArchivedView}
+              />
+
+              <MergedViewToggle
+                merge={config.merge}
+                value={c.mergedView}
+                onChange={c.setMergedView}
+              />
+
+              <ViewSettings
+                config={config}
+                view={c.view}
+                columns={c.columns}
+                groupBy={c.groupBy}
+                dateField={c.dateField}
+                onViewChange={c.setView}
+                onColumnsChange={c.setColumns}
+                onGroupByChange={c.setGroupBy}
+                onDateFieldChange={c.setDateField}
+              />
+            </div>
+          )}
+
+          {c.selected.size > 0 && (
+            <p
+              role="status"
+              className="whitespace-nowrap rounded-badge bg-foreground px-2 py-1 text-xs font-bold tabular-nums text-background"
             >
-              <X size={14} />
-            </Button>
+              {c.selected.size} selected
+            </p>
           )}
         </div>
-        {c.selected.size > 0 && (
-          <p className="text-sm text-muted-foreground whitespace-nowrap">
-            {c.selected.size} selected
-          </p>
-        )}
-        {c.contentTypeId && config && (
-          <FilterBuilder
-            fields={config.fields}
-            filters={c.filters}
-            optionsFor={(f) => c.dynamicOptions[f.name] ?? f.options ?? []}
-            onChange={c.setFilters}
-          />
-        )}
 
-        {c.contentTypeId && config && (
-          <SortBuilder fields={config.fields} sorts={c.sorts} onChange={c.setSorts} />
-        )}
-
-        {c.contentTypeId && config && (
-          <ArchivedViewToggle
-            lifecycle={config.lifecycle}
-            value={c.archivedView}
-            onChange={c.setArchivedView}
-          />
-        )}
-
-        {c.contentTypeId && config && (
-          <MergedViewToggle merge={config.merge} value={c.mergedView} onChange={c.setMergedView} />
-        )}
-
-        {c.contentTypeId && config && (
-          <div className="ml-auto">
-            <ViewSettings
-              config={config}
-              view={c.view}
-              columns={c.columns}
-              groupBy={c.groupBy}
-              dateField={c.dateField}
-              onViewChange={c.setView}
-              onColumnsChange={c.setColumns}
-              onGroupByChange={c.setGroupBy}
-              onDateFieldChange={c.setDateField}
-            />
+        {c.contentTypeId && config && c.filters.length > 0 && (
+          <div className="mt-2 flex flex-wrap items-center gap-2 border-t border-border-hairline pt-2">
+            <span className="px-2 text-2xs font-bold uppercase tracking-wide text-muted-foreground">
+              Applied
+            </span>
+            {c.filters.map((filter) => (
+              <Button
+                key={filter.id}
+                variant="soft"
+                size="sm"
+                className="h-8 max-w-full justify-start px-2 font-medium"
+                aria-label={`Remove filter: ${activeFilterLabel(filter, config.fields)}`}
+                onClick={() =>
+                  c.setFilters(c.filters.filter((candidate) => candidate.id !== filter.id))
+                }
+              >
+                <span className="truncate">{activeFilterLabel(filter, config.fields)}</span>
+                <X size={14} aria-hidden="true" />
+              </Button>
+            ))}
+            {c.filters.length > 1 && (
+              <Button variant="ghost" size="sm" className="h-8" onClick={() => c.setFilters([])}>
+                Clear all
+              </Button>
+            )}
           </div>
         )}
-      </div>
+      </section>
 
       {c.view === 'gallery' ? (
         <ContentListGallery

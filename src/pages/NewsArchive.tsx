@@ -38,6 +38,8 @@ import { useNewsStories } from '@/hooks/useNewsStories';
 import { StoryCard } from '@/components/news/StoryCard';
 import { fetchNamesByIds } from '@/hooks/usePageFetchers';
 import type { Tables } from '@/integrations/supabase/types';
+import { newsTagsForRight, rightFromNewsParam } from '@/lib/rights/rightsNews';
+import { topicListLabel, type RightTopic } from '@/lib/rights/rightsCatalog';
 
 type FeaturedArticle = Tables<'news_articles'> & { news_sources?: Tables<'news_sources'> };
 import { StaggerGrid } from '@/components/animation/StaggerGrid';
@@ -48,6 +50,8 @@ import {
   PAGE_GUTTER,
   STICKY_UNDER_HEADER,
 } from '@/components/layout/PageContainer';
+import { PageLoadingState } from '@/components/layout/PageLoadingState';
+import { useMotionTokens } from '@/lib/motion';
 
 const ARTICLES_PER_PAGE = 24;
 
@@ -82,6 +86,7 @@ type ViewMode = 'grid' | 'list' | 'stories';
 
 export default function NewsArchive() {
   const { t } = useTranslation();
+  const { tweens } = useMotionTokens();
   const navigate = useLocalizedNavigate();
   const {
     articles,
@@ -115,6 +120,7 @@ export default function NewsArchive() {
   // Filter, sort, view, search and pagination are all reflected in the
   // querystring so users can copy URLs, refresh, or use back/forward.
   const [searchParams, setSearchParams] = useSearchParams();
+  const initialRight = rightFromNewsParam(searchParams.get('right'));
   const validViewModes: ViewMode[] = ['grid', 'list', 'stories'];
   const isViewMode = (v: string | null): v is ViewMode =>
     !!v && (validViewModes as string[]).includes(v);
@@ -129,6 +135,7 @@ export default function NewsArchive() {
   const initialCategory = searchParams.get('category');
   const initialSearch = searchParams.get('q') ?? '';
   const initialFilters: Record<string, unknown> = {};
+  if (initialRight) initialFilters.tags = [...newsTagsForRight(initialRight)];
   const sourceParam = searchParams.get('source');
   if (sourceParam) initialFilters.sourceId = sourceParam;
   if (searchParams.get('featured') === '1') initialFilters.featured = true;
@@ -154,6 +161,7 @@ export default function NewsArchive() {
   const [currentFilters, setCurrentFilters] = useState<Record<string, unknown>>(initialFilters);
   const [currentPage, setCurrentPage] = useState(initialPage);
   const [activeCategory, setActiveCategory] = useState<string | null>(initialCategory);
+  const [activeRight, setActiveRight] = useState<RightTopic | null>(initialRight);
 
   const {
     stories,
@@ -171,6 +179,7 @@ export default function NewsArchive() {
       if (sortBy !== 'date-desc') next.set('sort', sortBy);
       if (quickSearch) next.set('q', quickSearch);
       if (activeCategory) next.set('category', activeCategory);
+      if (activeRight) next.set('right', activeRight.slug);
       if (currentPage > 1) next.set('page', String(currentPage));
       const f = currentFilters;
       if (typeof f.sourceId === 'string' && f.sourceId) next.set('source', f.sourceId);
@@ -184,7 +193,16 @@ export default function NewsArchive() {
       if (ciIds?.length) next.set('city', ciIds[0]);
       setSearchParams(next, { replace: opts?.replace ?? false });
     },
-    [viewMode, sortBy, quickSearch, activeCategory, currentPage, currentFilters, setSearchParams],
+    [
+      viewMode,
+      sortBy,
+      quickSearch,
+      activeCategory,
+      activeRight,
+      currentPage,
+      currentFilters,
+      setSearchParams,
+    ],
   );
 
   // Push history entry for filter/sort/view/category/page changes.
@@ -241,10 +259,17 @@ export default function NewsArchive() {
   const activeCategoryName = activeCategory
     ? (categoriesMap[activeCategory]?.name ?? activeCategory)
     : null;
-  const metaTitle = activeCategoryName ? `${activeCategoryName} news archive` : 'News archive';
-  const metaDescription = activeCategoryName
-    ? `Browse and filter all ${activeCategoryName.toLowerCase()} news from the LGBTQ+ community worldwide.`
-    : 'Browse and filter all LGBTQ+ news and stories from around the world.';
+  const activeRightName = activeRight ? topicListLabel(activeRight, t) : null;
+  const metaTitle = activeRightName
+    ? `${activeRightName} news archive`
+    : activeCategoryName
+      ? `${activeCategoryName} news archive`
+      : 'News archive';
+  const metaDescription = activeRightName
+    ? `Browse current LGBTQ+ reporting about ${activeRightName.toLowerCase()} from around the world.`
+    : activeCategoryName
+      ? `Browse and filter all ${activeCategoryName.toLowerCase()} news from the LGBTQ+ community worldwide.`
+      : 'Browse and filter all LGBTQ+ news and stories from around the world.';
   const breadcrumbSchema = breadcrumbJsonLd([
     { label: 'Home', href: '/' },
     { label: 'News', href: '/news' },
@@ -260,11 +285,17 @@ export default function NewsArchive() {
       {
         '@context': 'https://schema.org',
         '@type': 'CollectionPage',
-        name: activeCategoryName ? `LGBTQ+ ${activeCategoryName} News` : 'LGBTQ+ News',
+        name: activeRightName
+          ? `${activeRightName} News`
+          : activeCategoryName
+            ? `LGBTQ+ ${activeCategoryName} News`
+            : 'LGBTQ+ News',
         description: metaDescription,
-        url: activeCategory
-          ? `https://queer.guide/news/all?category=${activeCategory}`
-          : 'https://queer.guide/news',
+        url: activeRight
+          ? `https://queer.guide/news/all?right=${activeRight.slug}`
+          : activeCategory
+            ? `https://queer.guide/news/all?category=${activeCategory}`
+            : 'https://queer.guide/news',
         isPartOf: { '@type': 'WebSite', name: 'Queer Guide', url: 'https://queer.guide' },
       },
       ...(breadcrumbSchema ? [breadcrumbSchema] : []),
@@ -340,6 +371,7 @@ export default function NewsArchive() {
     const option = sortOptions.find((opt) => opt.value === sortBy);
     const filtersWithSort = {
       ...filters,
+      ...(activeRight ? { tags: [...newsTagsForRight(activeRight)] } : {}),
       sortField: option?.field || 'published_at',
       sortOrder: option?.order || 'desc',
       ...(activeCategory ? { category: activeCategory } : {}),
@@ -483,7 +515,16 @@ export default function NewsArchive() {
     setCurrentFilters({});
     setCurrentPage(1);
     setActiveCategory(null);
+    setActiveRight(null);
     fetchArticles({});
+  };
+
+  const clearRightFilter = () => {
+    setActiveRight(null);
+    const next = { ...currentFilters, tags: undefined };
+    setCurrentFilters(next);
+    setCurrentPage(1);
+    fetchArticles(next);
   };
 
   const handleResetAndFocus = () => {
@@ -494,6 +535,7 @@ export default function NewsArchive() {
   const hasActiveFilters =
     quickSearch ||
     activeCategory ||
+    activeRight ||
     Object.keys(currentFilters).some((k) => currentFilters[k] !== undefined);
 
   const isSemanticSearch = quickSearch.trim().length >= 2;
@@ -540,7 +582,26 @@ export default function NewsArchive() {
 
   // Show featured section on first page with no active category filter
   const showFeatured =
-    currentPage === 1 && !activeCategory && !quickSearch && featuredArticles.length > 0;
+    currentPage === 1 &&
+    !activeCategory &&
+    !activeRight &&
+    !quickSearch &&
+    featuredArticles.length > 0;
+
+  const activeRightTags = activeRight ? newsTagsForRight(activeRight) : [];
+  const filteredStories = activeRight
+    ? stories.filter((story) =>
+        story.top_tags.some((tag) =>
+          activeRightTags.includes(
+            tag
+              .toLowerCase()
+              .trim()
+              .replace(/[^a-z0-9+]+/g, '-')
+              .replace(/^-|-$/g, ''),
+          ),
+        ),
+      )
+    : stories;
 
   return (
     <div className="min-h-screen relative">
@@ -658,6 +719,7 @@ export default function NewsArchive() {
                 currentQuery={quickSearch}
                 currentFilters={currentFilters}
                 onLoadSearch={(q, f) => {
+                  setActiveRight(null);
                   setQuickSearch(q);
                   setCurrentFilters(f);
                   if (q.trim().length >= 2) {
@@ -738,15 +800,15 @@ export default function NewsArchive() {
         </div>
 
         {/* Story collections link — replaces the in-grid stories view-mode toggle */}
-        {viewMode !== 'stories' && stories.length > 0 && (
+        {viewMode !== 'stories' && filteredStories.length > 0 && (
           <div className="mb-6">
             <button
               type="button"
               onClick={() => setViewMode('stories')}
               className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-element"
             >
-              <Layers size={14} /> {stories.length} multi-article story{' '}
-              {stories.length === 1 ? 'collection' : 'collections'} →
+              <Layers size={14} /> {filteredStories.length} multi-article story{' '}
+              {filteredStories.length === 1 ? 'collection' : 'collections'} →
             </button>
           </div>
         )}
@@ -774,6 +836,19 @@ export default function NewsArchive() {
               {activeCategory && (
                 <Badge variant="outline">
                   Category: {categoriesMap[activeCategory]?.name || activeCategory}
+                </Badge>
+              )}
+              {activeRight && (
+                <Badge variant="outline" className="gap-2">
+                  Right: {topicListLabel(activeRight, t)}
+                  <button
+                    type="button"
+                    onClick={clearRightFilter}
+                    className="rounded-element text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    aria-label={`Remove ${topicListLabel(activeRight, t)} filter`}
+                  >
+                    ×
+                  </button>
                 </Badge>
               )}
               {currentFilters.sourceId && (
@@ -865,6 +940,14 @@ export default function NewsArchive() {
                           },
                         ]
                       : []),
+                    ...(activeRight
+                      ? [
+                          {
+                            label: `${t('pages.news.filterRight', 'Right')}: ${topicListLabel(activeRight, t)}`,
+                            onRemove: clearRightFilter,
+                          },
+                        ]
+                      : []),
                     ...(currentFilters.sourceId
                       ? [
                           {
@@ -922,7 +1005,7 @@ export default function NewsArchive() {
                     aria-atomic="true"
                   >
                     {viewMode === 'stories'
-                      ? `${stories.length} story collection${stories.length !== 1 ? 's' : ''}`
+                      ? `${filteredStories.length} story collection${filteredStories.length !== 1 ? 's' : ''}`
                       : (() => {
                           // Prefer the active-category true total when known, then the
                           // global total. Fall back to the slice length until counts
@@ -948,17 +1031,17 @@ export default function NewsArchive() {
                         initial={{ opacity: 0, scale: 0.98 }}
                         animate={{ opacity: 1, scale: 1 }}
                         exit={{ opacity: 0, scale: 0.98 }}
-                        transition={{ duration: 0.2 }}
+                        transition={tweens.fast}
                       >
                         {storiesLoading ? (
-                          <p className="text-sm text-muted-foreground">Loading stories…</p>
-                        ) : stories.length === 0 ? (
+                          <PageLoadingState count={3} label="Loading story lines" />
+                        ) : filteredStories.length === 0 ? (
                           <p className="text-sm text-muted-foreground">
                             No multi-article stories yet. Check back as more coverage accumulates.
                           </p>
                         ) : (
                           <StaggerGrid className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                            {stories.map((s) => (
+                            {filteredStories.map((s) => (
                               <StoryCard
                                 key={s.id}
                                 story={s}
@@ -978,7 +1061,7 @@ export default function NewsArchive() {
                         initial={{ opacity: 0, scale: 0.98 }}
                         animate={{ opacity: 1, scale: 1 }}
                         exit={{ opacity: 0, scale: 0.98 }}
-                        transition={{ duration: 0.2 }}
+                        transition={tweens.fast}
                       >
                         <StaggerGrid
                           className={

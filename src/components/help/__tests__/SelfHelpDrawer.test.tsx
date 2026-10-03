@@ -7,7 +7,7 @@ import { SelfHelpDrawer } from '../SelfHelpDrawer';
 
 describe('SelfHelpDrawer', () => {
   it('renders', () => {
-    const { container } = render(<SelfHelpDrawer />);
+    const { container } = render(<SelfHelpDrawer country="CH" />);
     expect(container).toBeTruthy();
   });
 });

@@ -2,6 +2,8 @@
  * Shared types and pure helpers for ContentListPanel.
  */
 
+import type { ContentTypeConfig } from '@/types/cms';
+
 export interface ListItem {
   id: string;
   title: string;
@@ -88,8 +90,6 @@ export function relativeTime(dateStr: string): string {
   return absolute();
 }
 
-import type { ContentTypeConfig } from '@/types/cms';
-
 /**
  * One database row -> one ListItem. Shared so the list query and the
  * server-grouped board produce identical shapes; they used to diverge because
@@ -120,6 +120,30 @@ export function extractStatus(
   if ('verification_status' in row && typeof row.verification_status === 'string')
     return row.verification_status;
   return undefined;
+}
+
+const STATUS_FIELDS = ['workflow_state', 'status', 'visibility', 'verification_status'] as const;
+
+/**
+ * Resolve the real writable field behind the generic Status column.
+ *
+ * A status-like value can be present in a joined/select payload without being
+ * part of the content type's editable schema. Requiring both the row value and
+ * a registry field prevents the universal Status cell from offering an editor
+ * that has nowhere safe to save.
+ */
+export function resolveStatusField(
+  row: Record<string, unknown> | undefined,
+  config: ContentTypeConfig | null | undefined,
+): string | null {
+  if (!row || !config) return null;
+  return (
+    STATUS_FIELDS.find(
+      (name) =>
+        Object.prototype.hasOwnProperty.call(row, name) &&
+        config.fields.some((field) => field.name === name),
+    ) ?? null
+  );
 }
 
 /**

@@ -138,6 +138,63 @@ describe('MarketplaceCard', () => {
     expect(img?.getAttribute('loading')).toBe('lazy');
   });
 
+  it('uses only the pinned approved asset on governed overview cards', () => {
+    const { container } = render(
+      wrap(
+        <MarketplaceCard
+          listing={
+            {
+              id: 'approved-1',
+              title: 'Approved product',
+              slug: 'approved-product',
+              price: 5,
+              currency: 'USD',
+              overview_eligible: true,
+              overview_image_asset_id: 'asset-good',
+              images: [
+                'https://merchant.example/bad-primary.jpg',
+                'https://merchant.example/bad-hover.jpg',
+              ],
+            } as never
+          }
+          imageAsset={{
+            id: 'asset-good',
+            url: 'https://merchant.example/good-original.jpg',
+            optimized_url: 'https://img.queer.guide/good.webp',
+            thumbnail_url: 'https://img.queer.guide/good-thumb.webp',
+            optimization_status: 'optimized',
+          }}
+        />,
+      ),
+    );
+    const html = container.innerHTML;
+    expect(html).toContain('good.webp');
+    expect(html).not.toContain('bad-primary.jpg');
+    expect(html).not.toContain('bad-hover.jpg');
+  });
+
+  it('never falls back to merchant images when the pinned asset is missing', () => {
+    const { container } = render(
+      wrap(
+        <MarketplaceCard
+          listing={
+            {
+              id: 'approved-2',
+              title: 'Approved product',
+              slug: 'approved-product-2',
+              price: 5,
+              currency: 'USD',
+              overview_eligible: true,
+              overview_image_asset_id: 'asset-expected',
+              images: ['https://merchant.example/unapproved.jpg'],
+            } as never
+          }
+        />,
+      ),
+    );
+    expect(container.innerHTML).not.toContain('unapproved.jpg');
+  });
+
   it('shows ≈ in selected display currency (GBP), not USD, for a non-USD listing', () => {
     const { getByText } = render(
       wrap(

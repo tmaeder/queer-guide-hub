@@ -8,63 +8,49 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Search } from 'lucide-react';
-import type { ReviewCounts } from '@/hooks/useReviewCounts';
+import { Globe2, Search, ShieldAlert, Timer } from 'lucide-react';
+import { queueImpact, queueRisk } from '@/config/adminQueues';
+import { readCount, type AdminCounts } from '@/hooks/useAdminCounts';
 import type { TriageFilters } from '@/hooks/useUnifiedTriageQueue';
-
-const QUALITY_QUEUE_KEYS = [
-  'quality-city',
-  'quality-venue',
-  'quality-village',
-  'quality-personality',
-  'quality-marketplace',
-];
-
-const QUEUE_CHIPS = [
-  { key: 'staging', keys: ['staging'], label: 'Staging', countKey: 'staging' as const },
-  { key: 'moderation', keys: ['moderation'], label: 'Reports', countKey: 'moderation' as const },
-  {
-    key: 'submissions',
-    keys: ['submissions'],
-    label: 'Submissions',
-    countKey: 'submissions' as const,
-  },
-  { key: 'content', keys: ['content'], label: 'CMS', countKey: 'cmsReview' as const },
-  { key: 'automation', keys: ['automation'], label: 'Auto', countKey: 'automation' as const },
-  { key: 'tags', keys: ['tags'], label: 'Tags', countKey: 'tagSuggestions' as const },
-  { key: 'duplicates', keys: ['duplicates'], label: 'Dedup', countKey: 'duplicates' as const },
-  { key: 'quality', keys: QUALITY_QUEUE_KEYS, label: 'Quality', countKey: 'quality' as const },
-  { key: 'editorial', keys: ['editorial'], label: 'Editorial', countKey: 'editorial' as const },
-] as const;
+import { buildInboxQueueChips, inboxDefinitions } from './triageQueueFilters';
 
 interface TriageFilterBarProps {
   filters: TriageFilters;
-  counts: ReviewCounts | undefined;
+  counts: AdminCounts | undefined;
   onFiltersChange: (f: Partial<TriageFilters>) => void;
 }
 
 export function TriageFilterBar({ filters, counts, onFiltersChange }: TriageFilterBarProps) {
-  /**
-   * Follow the filter when something ELSE sets it.
-   *
-   * `useState(filters.search)` initialises once and never syncs, and this box is not
-   * the only writer: `QualityCohortBar.select()` sets `search: c.field` when a reviewer
-   * picks a campaign. So the list came back scoped to `editorial_hook` while this input
-   * still rendered empty — and the next Enter submitted that empty string, silently
-   * dropping the field scope while leaving the queue pinned. A state nothing on screen
-   * explained.
-   *
-   * Adjusted DURING RENDER, not in an effect: `react-hooks/set-state-in-effect` is an
-   * ESLint error here, and an effect would additionally render one frame with the
-   * stale value before correcting itself. Same pattern `TriageDetailPanel` used for its
-   * per-item answers before they moved up to `TriageView`.
-   */
   const [searchInput, setSearchInput] = useState(filters.search);
-  const [lastExternalSearch, setLastExternalSearch] = useState(filters.search);
-  if (filters.search !== lastExternalSearch) {
-    setLastExternalSearch(filters.search);
-    setSearchInput(filters.search);
-  }
+  const definitions = inboxDefinitions();
+  const queueChips = buildInboxQueueChips(counts);
+
+  const scopes = [
+    {
+      key: 'safety',
+      label: 'Safety',
+      Icon: ShieldAlert,
+      keys: definitions.flatMap((queue) =>
+        queueRisk(queue) === 'safety' && queue.queueKey ? [queue.queueKey] : [],
+      ),
+    },
+    {
+      key: 'overdue',
+      label: 'Overdue',
+      Icon: Timer,
+      keys: definitions.flatMap((queue) =>
+        queue.queueKey && readCount(counts, queue.countKey).overdue > 0 ? [queue.queueKey] : [],
+      ),
+    },
+    {
+      key: 'public',
+      label: 'Public impact',
+      Icon: Globe2,
+      keys: definitions.flatMap((queue) =>
+        queueImpact(queue) === 'public' && queue.queueKey ? [queue.queueKey] : [],
+      ),
+    },
+  ];
 
   function toggleQueue(keys: readonly string[]) {
     const current = filters.queueTypes ?? [];
@@ -79,70 +65,120 @@ export function TriageFilterBar({ filters, counts, onFiltersChange }: TriageFilt
     onFiltersChange({ search: searchInput, page: 1 });
   }
 
+  const sameKeys = (keys: readonly string[]) => {
+    const current = filters.queueTypes ?? [];
+    return current.length === keys.length && keys.every((key) => current.includes(key));
+  };
+
   return (
-    <div className="flex flex-wrap items-center gap-2 px-4 py-2 border-b">
-      <div className="flex flex-wrap gap-1">
-        {QUEUE_CHIPS.map((chip) => {
-          const active = chip.keys.every((k) => filters.queueTypes?.includes(k) ?? false);
-          const count = counts?.[chip.countKey] ?? 0;
-          return (
+    <div className="border-b border-border bg-background px-4 py-2">
+      <div className="flex min-w-0 flex-col gap-2 xl:flex-row xl:items-center">
+        <div className="flex min-w-0 flex-1 items-center gap-1.5 overflow-x-auto pb-1 xl:pb-0">
+          <div className="flex shrink-0 gap-1.5" role="group" aria-label="Quick scopes">
+            {scopes.map(({ key, label, Icon, keys }) => {
+              const active = keys.length > 0 && sameKeys(keys);
+              return (
+                <button
+                  key={key}
+                  type="button"
+                  disabled={keys.length === 0}
+                  aria-pressed={active}
+                  onClick={() => onFiltersChange({ queueTypes: active ? null : keys, page: 1 })}
+                  className={`inline-flex h-8 min-h-8 items-center gap-1.5 rounded-badge border px-2.5 text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-40 ${
+                    active
+                      ? 'border-foreground bg-foreground text-background'
+                      : 'border-border bg-background text-foreground hover:bg-muted'
+                  }`}
+                >
+                  <Icon className="size-3.5" aria-hidden="true" />
+                  {label}
+                </button>
+              );
+            })}
+          </div>
+          <span className="mx-0.5 h-5 w-px shrink-0 bg-border" aria-hidden="true" />
+          <div
+            className="flex min-w-0 flex-nowrap items-center gap-1.5"
+            role="group"
+            aria-label="Queue types"
+          >
             <button
-              key={chip.key}
               type="button"
-              onClick={() => toggleQueue(chip.keys)}
-              // `rounded-badge` is load-bearing, not cosmetic — the same opt-down
-              // QualityCohortBar documents at length. `index.css` gives every bare
-              // <button> a 44px min-height in @layer base for WCAG 2.5.8, and
-              // `button.rounded-badge` is the sanctioned 24px floor for pills.
-              // Without it the `py-0.5` here was purely decorative: nine chips
-              // rendered as 44px-tall boxes with 12px of text floating in them, and
-              // the bar wrapped to two rows above ~1280px. Do NOT add a per-chip
-              // `min-h-*` — that fights the base rule the system centralises.
-              className={`inline-flex items-center gap-1 rounded-badge px-2 py-0.5 text-xs border transition-colors ${
-                active
-                  ? 'bg-foreground text-background'
-                  : 'bg-background text-foreground border-border hover:bg-muted'
+              aria-pressed={filters.queueTypes === null}
+              onClick={() => onFiltersChange({ queueTypes: null, page: 1 })}
+              className={`inline-flex h-8 min-h-8 shrink-0 items-center rounded-badge border px-2.5 text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
+                filters.queueTypes === null
+                  ? 'border-foreground bg-foreground text-background'
+                  : 'border-border bg-background text-foreground hover:bg-muted'
               }`}
             >
-              {chip.label}
-              {count > 0 && (
-                <Badge variant="secondary" className="h-4 min-w-4 px-1 text-2xs font-normal">
-                  {count}
-                </Badge>
-              )}
+              All queues
             </button>
-          );
-        })}
+            {queueChips.map((chip) => {
+              const active = chip.keys.every((k) => filters.queueTypes?.includes(k) ?? false);
+              return (
+                <button
+                  key={chip.key}
+                  type="button"
+                  aria-pressed={active}
+                  onClick={() => toggleQueue(chip.keys)}
+                  className={`inline-flex h-8 min-h-8 shrink-0 items-center gap-1.5 rounded-badge border px-2.5 text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
+                    active
+                      ? 'border-foreground bg-foreground text-background'
+                      : 'border-border bg-background text-foreground hover:bg-muted'
+                  }`}
+                >
+                  {chip.label}
+                  {chip.count > 0 && (
+                    <Badge
+                      variant={active ? 'outline' : 'secondary'}
+                      className="h-4 min-w-4 border-current px-1 text-2xs font-normal"
+                    >
+                      {chip.count}
+                    </Badge>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        <div className="flex w-full shrink-0 items-center gap-2 xl:w-auto">
+          <label htmlFor="triage-search" className="sr-only">
+            Search review queue
+          </label>
+          <div className="relative min-w-0 flex-1 xl:w-52 xl:flex-none">
+            <Search
+              className="absolute left-3 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground"
+              aria-hidden="true"
+            />
+            <Input
+              id="triage-search"
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') handleSearchSubmit();
+              }}
+              placeholder="Search this queue"
+              className="h-10 pl-10 text-xs"
+            />
+          </div>
+
+          <Select
+            value={filters.sort}
+            onValueChange={(v) => onFiltersChange({ sort: v as TriageFilters['sort'] })}
+          >
+            <SelectTrigger className="h-10 w-32 text-xs" aria-label="Sort review queue">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="priority">Priority</SelectItem>
+              <SelectItem value="age">Oldest first</SelectItem>
+              <SelectItem value="confidence">Low confidence</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
       </div>
-
-      <div className="flex-1" />
-
-      <div className="relative w-48">
-        <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
-        <Input
-          value={searchInput}
-          onChange={(e) => setSearchInput(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter') handleSearchSubmit();
-          }}
-          placeholder="Search..."
-          className="h-7 pl-8 text-xs"
-        />
-      </div>
-
-      <Select
-        value={filters.sort}
-        onValueChange={(v) => onFiltersChange({ sort: v as TriageFilters['sort'] })}
-      >
-        <SelectTrigger className="h-7 w-32 text-xs">
-          <SelectValue />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="priority">Priority</SelectItem>
-          <SelectItem value="age">Oldest first</SelectItem>
-          <SelectItem value="confidence">Low confidence</SelectItem>
-        </SelectContent>
-      </Select>
     </div>
   );
 }

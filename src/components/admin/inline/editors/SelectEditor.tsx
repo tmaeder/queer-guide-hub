@@ -13,6 +13,10 @@ export function SelectEditor({ field, initialValue, onSave, onCancel, saving }: 
   const [value, setValue] = useState<string>(initialValue == null ? '' : String(initialValue));
   const [open, setOpen] = useState(true);
 
+  const cancel = () => {
+    if (!saving) onCancel();
+  };
+
   return (
     <span className="inline-flex items-center align-middle gap-1">
       <Select
@@ -22,10 +26,23 @@ export function SelectEditor({ field, initialValue, onSave, onCancel, saving }: 
         onValueChange={(v) => setValue(v)}
         disabled={saving}
       >
-        <SelectTrigger className="h-8 min-w-40" aria-label={field.label}>
+        <SelectTrigger
+          className="h-8 min-w-40"
+          aria-label={field.label}
+          onKeyDown={(event) => {
+            if (event.key !== 'Escape') return;
+            event.preventDefault();
+            cancel();
+          }}
+        >
           <SelectValue placeholder={field.placeholder ?? `Select ${field.label}…`} />
         </SelectTrigger>
-        <SelectContent>
+        <SelectContent
+          onEscapeKeyDown={(event) => {
+            event.preventDefault();
+            cancel();
+          }}
+        >
           {(field.options ?? []).map((opt) => (
             <SelectItem key={opt.value} value={opt.value}>
               {opt.label}

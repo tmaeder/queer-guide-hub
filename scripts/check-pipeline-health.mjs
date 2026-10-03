@@ -4236,6 +4236,87 @@ const DISOWNED_PROSE_CEILING = 380
   }
 }
 
+// §23 — an article the quality gate PASSED must be reachable by a crawler.
+//
+// The cohort size is reported first because zero deindexed rows over an empty
+// cohort is vacuous. Trigger attachment is checked separately so a missing
+// seal cannot look like a repaired corpus. Deliberate human de-indexes are
+// identified from content_revisions and excluded.
+{
+  const res = await fetch(`${BASE}/rest/v1/rpc/news_index_signals`, {
+    method: 'POST',
+    headers: { ...headers, 'Content-Type': 'application/json' },
+    body: '{}',
+  })
+  if (!res.ok) {
+    const detail = (await res.text()).slice(0, 200)
+    console.error(`✗ news_index_signals → HTTP ${res.status} (migration 99991790880121 not applied? PGRST202 = the function does not exist) ${detail}`)
+    FAILED = true
+  } else {
+    const q = (await res.json()) ?? {}
+    if (q.probe_ok !== true) {
+      console.error('✗ news_index_signals did not report probe_ok — news indexability could not be measured')
+      FAILED = true
+    } else if (q.trigger_attached !== true) {
+      console.error('✗ trg_news_enforce_seo_indexable is missing or disabled — rejected/review articles can go indexable')
+      FAILED = true
+    } else if (Number(q.passed_unblocked_total ?? 0) < 1000) {
+      console.error(`✗ news_index_signals is measuring nothing: only ${q.passed_unblocked_total} passed/unblocked articles`)
+      FAILED = true
+    } else {
+      const stranded = Number(q.deindexed_despite_publish_verdict ?? 0)
+      if (stranded > 0) {
+        console.error(`✗ ${stranded} news articles the gate PASSED with no blockers are deindexed against their own shouldPublish verdict`)
+        console.error(`  (${q.passed_unblocked_indexable} of ${q.passed_unblocked_total} passed/unblocked articles are indexable; ${q.human_deindexed_excluded} excluded as deliberate human de-indexes)`)
+        console.error('  The one-way door is back: something de-indexed them and nothing writes seo_indexable=true.')
+        FAILED = true
+      } else {
+        console.log(`✓ news indexability intact (${q.passed_unblocked_indexable}/${q.passed_unblocked_total} passed+unblocked are indexable, ${q.human_deindexed_excluded} human de-indexes respected)`)
+      }
+    }
+  }
+}
+
+// §24 — phone numbers are stored in ONE format: E.164 (+<calling code><number>).
+// phone_canonical_guard() rewrites every write on venues / organizations /
+// hotels, so a non-E.164 value means a writer bypassed it (or the trigger is
+// gone). The guard being ATTACHED is checked separately from the count,
+// because an absent trigger and a clean table both read zero.
+{
+  const res = await fetch(`${BASE}/rest/v1/rpc/phone_format_signals`, {
+    method: 'POST', headers: { ...headers, 'Content-Type': 'application/json' }, body: '{}',
+  })
+  if (res.status === 404) {
+    console.warn('⚠ phone_format_signals → 404 (99991790877996 not applied yet?) — this check measured NOTHING')
+  } else if (!res.ok) {
+    console.error(`✗ phone_format_signals → HTTP ${res.status} — the phone-format probe is broken`)
+    FAILED = true
+  } else {
+    const sig = await res.json()
+    let sectionOk = true
+    if (sig?.probe_ok !== true || !(Number(sig?.rules) > 0)) {
+      console.error('✗ phone_format_signals did not report probe_ok / phone_country_rules is empty')
+      FAILED = true; sectionOk = false
+    }
+    for (const [table, t] of Object.entries(sig?.tables ?? {})) {
+      if (t?.trigger_attached !== true) {
+        console.error(`✗ ${table}: phone_canonical_guard is NOT attached — phone writes are unformatted`)
+        FAILED = true; sectionOk = false
+      }
+      const bad = Number(t?.non_e164 ?? 0)
+      if (bad > 0) {
+        console.error(`✗ ${table}: ${bad} phone values are not E.164 — a writer bypassed the guard,`)
+        console.error(`  or the backfill has not run: scripts/data-quality/backfill-phone-canonical.mjs`)
+        FAILED = true; sectionOk = false
+      }
+    }
+    if (sectionOk) {
+      const v = sig.tables?.venues ?? {}
+      console.log(`✓ phone numbers are E.164 (venues ${v.with_phone}, ${v.rejected} unconvertible kept in enrichment_status.phone_rejected)`)
+    }
+  }
+}
+
 // The single exit. Reached whether or not anything failed, so the ✗ lines above
 // are the complete list rather than "the first one we tripped over".
 // §22 — an event↔venue link is validated ONCE, at link time, and never re-checked.
@@ -4391,6 +4472,164 @@ const DISOWNED_PROSE_CEILING = 380
         `✓ event geo derivation clean (${sig.events_with_gap} gap row(s), ${sig.never_visited} never visited, ` +
           `0 stale merged-away centroids, ${done} correctly exhausted)`,
       )
+    }
+  }
+}
+
+// § A paged source that fetches pages and imports nothing — the resume-by-absence treadmill
+//
+// MEASURED INCIDENT, 2026-10-01. `source-gayout` reported SUCCESS on eight runs
+// in one 24h window with `pages_fetched 16, parsed 0` while `already_seen`
+// stayed at 352-353 and 377 urls still pended — one event imported in nine
+// hours. A gayout page whose date is unannounced carries no Event block, so it
+// yields no row, is never "seen", and returns to the HEAD of the work list on
+// every run. The run is stopped by its TIME budget long before its page budget,
+// so the ~16-page window the clock allows was permanently occupied by those
+// pages and the drain could never reach a parseable one again.
+//
+// NOTHING REPORTED IT. The automation's own status was `success`, the staged
+// count simply stopped moving, and no section in this file watched run YIELD. A
+// drain that fetches and imports nothing is indistinguishable from a drained
+// queue unless the counters are compared — which is what this section does.
+//
+// SCOPE IS STATED RATHER THAN IMPLIED. Only `source-gayout` emits these
+// counters today, so this reads that one automation by slug. A generic sweep
+// over every source would match no summary shape and report a reassuring zero —
+// the vacuous-check failure this file documents elsewhere. Widen the slug list
+// when a second source adopts the same counters.
+{
+  const SLUG = 'ev_fill_gayout'
+  const auto = await get(
+    `admin_automations?slug=eq.${SLUG}&select=id,slug,enabled,last_run_status,consecutive_failures`,
+  )
+  if (auto.length === 0) {
+    console.log(`source yield: no ${SLUG} registry row — nothing to check`)
+  } else {
+    const a = auto[0]
+    const runs = await get(
+      `admin_automation_runs?automation_id=eq.${a.id}&started_at=gte.${since24h}` +
+        `&select=started_at,status,summary&order=started_at.desc`,
+    )
+
+    // Reported FIRST: "0 runs examined" is not a clean result, and an empty
+    // window reads identically to a healthy one without this line.
+    console.log(`source yield (${SLUG}): ${runs.length} run(s) in 24h, enabled=${a.enabled}`)
+
+    // The counters live inside the recorded HTTP response body, which is a JSON
+    // STRING nested in the summary — so they are double-escaped once the summary
+    // is stringified, and the regex tolerates the escaping backslash. Verified
+    // against the real recorded rows, not a hand-written shape.
+    const counters = runs.map(r => {
+      const body = JSON.stringify(r.summary ?? {})
+      const num = k => {
+        const m = body.match(new RegExp(`\\\\?"${k}\\\\?":(-?\\d+)`))
+        return m ? Number(m[1]) : null
+      }
+      return {
+        at: r.started_at,
+        status: r.status,
+        pages: num('pages_fetched'),
+        parsed: num('parsed'),
+        pending: num('pending_before_this_run'),
+        never: num('never_attempted'),
+        credits: /Insufficient credits/.test(body),
+      }
+    })
+
+    const measured = counters.filter(c => c.status === 'success' && c.pages !== null)
+    const treadmill = measured.filter(c => c.pages > 0 && c.parsed === 0 && (c.pending ?? 0) > 0)
+
+    if (measured.length === 0) {
+      console.log('  no successful run recorded counters in the window — yield NOT asserted')
+    } else if (treadmill.length >= 3) {
+      console.error(
+        `✗ ${SLUG}: ${treadmill.length} successful run(s) fetched pages and imported NOTHING while work remained`,
+      )
+      for (const c of treadmill.slice(0, 3)) {
+        console.error(
+          `    ${c.at}  pages=${c.pages} parsed=${c.parsed} pending=${c.pending}` +
+            (c.never === null
+              ? '  (never_attempted absent — deployed function predates the ordering fix)'
+              : `  never_attempted=${c.never}`),
+        )
+      }
+      console.error('  → the work list is not advancing. Unparseable pages must sort to the BACK')
+      console.error('    (supabase/functions/source-gayout/ordering.ts + ingestion_sources.config.page_attempts),')
+      console.error('    or the time-budget window stays pinned to the same head-of-list pages forever.')
+      FAILED = true
+    } else if (treadmill.length > 0) {
+      console.log(`  ⚠ ${treadmill.length} zero-yield run(s) — not yet a pattern, worth watching`)
+    } else {
+      console.log('  ✓ every successful run that fetched pages imported at least one event')
+    }
+
+    // The treadmill's precursor: no never-attempted page left while work pends
+    // means every remaining page has already failed at least once.
+    const exhausted = measured.filter(c => c.never === 0 && (c.pending ?? 0) > 0)
+    if (exhausted.length > 0) {
+      console.log(
+        `  ⚠ ${exhausted.length} run(s) had no never-attempted page left while ${exhausted[0].pending} urls pended`,
+      )
+    }
+
+    // Auto-paused AND still failing is legitimate and only warns — the existing
+    // auto-pause section already hard-fails the paused-then-RECOVERED shape for
+    // every slug, so that rule is not restated here.
+    if (!a.enabled) {
+      const why = counters.some(c => c.credits)
+        ? 'Firecrawl credits exhausted (402) — a billing action, not a code fault'
+        : 'reason not visible in the 24h window; read admin_automation_runs.summary'
+      console.log(`  ⚠ ${SLUG} disabled after ${a.consecutive_failures} failure(s): ${why}`)
+    }
+  }
+}
+
+// Venue accessibility claims whose citation is not in the source text.
+// A wrong access claim can strand a disabled person at a door they cannot get
+// through. Warn at the measured backlog and fail on growth.
+{
+  console.log('')
+  console.log('Venue accessibility evidence')
+  const res = await fetch(`${BASE}/rest/v1/rpc/venue_accessibility_evidence_signals`, {
+    method: 'POST',
+    headers: { ...headers, 'Content-Type': 'application/json' },
+    body: '{}',
+  })
+  if (res.status === 404) {
+    console.warn('⚠ venue_accessibility_evidence_signals → HTTP 404 (not applied? migration 99991790879465)')
+    console.warn('  This check measured NOTHING — it did not pass.')
+  } else if (!res.ok) {
+    console.error(`✗ venue_accessibility_evidence_signals → HTTP ${res.status}`)
+    FAILED = true
+  } else {
+    const sig = (await res.json()) ?? {}
+    let sectionOk = true
+    if (sig.probe_ok !== true) {
+      console.error('✗ venue_accessibility_evidence_signals returned no probe_ok — the probe is broken, not the corpus')
+      FAILED = true
+      sectionOk = false
+    }
+    const cohort = Number(sig.live_machine_claims ?? 0)
+    const venues = Number(sig.live_venues ?? 0)
+    console.log(`  cohort: ${cohort} machine-approved accessibility claim(s) live on ${venues} venue(s)`)
+
+    const BASELINE_UNGROUNDED = 270
+    const ungrounded = Number(sig.ungrounded_live_claims ?? 0)
+    const ungroundedVenues = Number(sig.ungrounded_live_venues ?? 0)
+    if (ungrounded > BASELINE_UNGROUNDED) {
+      console.error(
+        `✗ live accessibility claims with no grounded citation grew ${BASELINE_UNGROUNDED} → ${ungrounded} ` +
+          `(${ungroundedVenues} venue(s)) — something is publishing access claims whose cited quote is not in the source`,
+      )
+      console.error('  → check amenity-truth-backfill run summaries for accessibility_evidence_refused; the extractor guard may have been bypassed')
+      FAILED = true
+      sectionOk = false
+    } else if (ungrounded > 0) {
+      console.log(`  ${ungrounded} ungrounded claim(s) on ${ungroundedVenues} venue(s) await a calibrated per-slug pass (baseline ${BASELINE_UNGROUNDED})`)
+    }
+    console.log(`  ${Number(sig.open_queue_claims ?? 0)} accessibility proposal(s) open for review`)
+    if (sectionOk) {
+      console.log(`✓ venue accessibility evidence within baseline (${ungrounded}/${BASELINE_UNGROUNDED} ungrounded)`)
     }
   }
 }

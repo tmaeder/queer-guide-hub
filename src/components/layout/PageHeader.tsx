@@ -28,36 +28,35 @@ export const PageHeader = ({
   children,
 }: PageHeaderProps) => {
   return (
-    // PASTE-UP masthead. The outlined card is gone: a page title does not live
-    // in a box, it sits under a heavy rule like the head of a printed section.
-    // `.rule-heavy` is the existing rationed 2px black signature.
-    // No top padding: PageContainer owns the page's top gap now, and adding a
-    // second one here made the masthead sit lower on pages that use both.
-    <div className="content-enter rule-heavy pb-6 sm:pb-8 mb-6">
+    // Shared subway page grammar: the route context is already carried by the
+    // shell's family line, so this block gives the title one uninterrupted
+    // focal plane. Filters and actions follow it instead of competing through
+    // a second heavy rule or another framed container.
+    <header className="content-enter page-masthead mb-8">
       <div
-        className={`flex flex-col gap-4 justify-between sm:flex-row sm:items-center ${
+        className={`flex flex-col justify-between gap-4 sm:flex-row sm:items-end ${
           center ? 'sm:flex-col text-center' : 'items-start'
         }`}
       >
-        <div className="flex-1 min-w-0">
+        <div className="min-w-0 flex-1">
           <h1
-            className={`content-enter font-display text-display font-bold tracking-tight ${subtitle ? 'mb-2' : ''}`}
-            style={{ animationDelay: '50ms' }}
+            className={`content-enter max-w-5xl text-balance font-display text-display leading-[0.95] tracking-tight md:text-hero ${subtitle ? 'mb-4' : ''}`}
+            style={{ animationDelay: 'var(--motion-header-line-delay)' }}
           >
             {title}
           </h1>
           {subtitle && (
             <p
-              className="content-enter text-base text-muted-foreground max-w-2xl"
-              style={{ animationDelay: '120ms' }}
+              className="content-enter max-w-reading text-pretty text-body-lg text-muted-foreground"
+              style={{ animationDelay: 'var(--motion-header-copy-delay)' }}
             >
               {subtitle}
             </p>
           )}
         </div>
-        {actions && <div className="flex items-center gap-2 shrink-0">{actions}</div>}
+        {actions && <div className="flex shrink-0 flex-wrap items-center gap-2">{actions}</div>}
       </div>
-      {children && <div className="mt-4">{children}</div>}
-    </div>
+      {children && <div className="mt-6">{children}</div>}
+    </header>
   );
 };

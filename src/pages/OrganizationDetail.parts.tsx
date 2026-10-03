@@ -14,6 +14,7 @@ import { NearbyMapLegend } from '@/components/map/NearbyMapLegend';
 import { NewsCard } from '@/components/news/NewsCard';
 import { useNearbyMapPoints } from '@/hooks/useNearbyMapPoints';
 import { tagHref } from '@/lib/searchRoutes';
+import { formatPhoneDisplay, formatPhoneHref } from '@/lib/formatPhone';
 import { useOrganizationArticles, type Organization, type OrgRole } from '@/hooks/useOrganization';
 
 export function roleLabel(role: OrgRole, t: TFunction): string {
@@ -302,10 +303,13 @@ export function OrgSidebar({ org }: { org: Organization }) {
             <span className="truncate">{org.email}</span>
           </a>
         )}
-        {org.phone && (
-          <a href={`tel:${org.phone}`} className="flex items-center gap-2 hover:underline">
+        {formatPhoneHref(org.phone) && (
+          <a
+            href={formatPhoneHref(org.phone) as string}
+            className="flex items-center gap-2 hover:underline"
+          >
             <Phone size={16} className="text-muted-foreground" aria-hidden="true" />
-            <span>{org.phone}</span>
+            <span>{formatPhoneDisplay(org.phone)}</span>
           </a>
         )}
       </div>

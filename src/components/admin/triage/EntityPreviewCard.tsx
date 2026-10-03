@@ -3,6 +3,7 @@ import { TrackLoader } from '@/components/transit/TrackLoader';
 
 import type { TriageItem } from '@/hooks/useUnifiedTriageQueue';
 import { AdminEmpty } from '@/components/admin/primitives/AdminEmpty';
+import { StructuredValue } from './StructuredDataView';
 
 const VenueCard = lazy(() =>
   import('@/components/venues/VenueCard').then((m) => ({ default: m.VenueCard })),
@@ -47,18 +48,6 @@ const HIDDEN_KEYS = new Set([
   'priority_score',
 ]);
 
-function formatFieldValue(value: unknown): string {
-  if (value === null || value === undefined) return '—';
-  if (typeof value === 'boolean') return value ? 'Yes' : 'No';
-  if (typeof value === 'string') {
-    if (value.length > 200) return value.slice(0, 200) + '…';
-    return value;
-  }
-  if (typeof value === 'number') return String(value);
-  if (Array.isArray(value)) return value.map(String).join(', ');
-  return JSON.stringify(value);
-}
-
 function formatFieldKey(key: string): string {
   return key.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
 }
@@ -82,7 +71,9 @@ function FallbackPreview({ item }: { item: TriageItem }) {
               <span className="text-muted-foreground shrink-0 w-28 text-2xs uppercase tracking-wider">
                 {formatFieldKey(key)}
               </span>
-              <span className="min-w-0 break-words">{formatFieldValue(value)}</span>
+              <span className="min-w-0 break-words">
+                <StructuredValue value={value} />
+              </span>
             </div>
           ))}
         </div>

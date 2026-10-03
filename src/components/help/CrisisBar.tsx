@@ -17,10 +17,11 @@
 
 import { useTranslation } from 'react-i18next';
 import { AlertTriangle } from 'lucide-react';
-import { HideScreen } from '@/components/safety/HideScreen';
+import { emergencyContactsForCountry } from './helpData';
 
-export function CrisisBar() {
+export function CrisisBar({ country }: { country: string }) {
   const { t } = useTranslation();
+  const contacts = emergencyContactsForCountry(country);
 
   return (
     <aside
@@ -37,19 +38,19 @@ export function CrisisBar() {
         </h2>
         <p className="flex flex-wrap items-center gap-x-2 text-15 leading-tight">
           {t('help.emergency_call', 'Call now:')}{' '}
-          <a href="tel:112" className="font-bold tabular-nums underline underline-offset-4">
-            112
-          </a>{' '}
-          (EU)
-          <span aria-hidden>·</span>
-          <a href="tel:911" className="font-bold tabular-nums underline underline-offset-4">
-            911
-          </a>{' '}
-          (US/CA)
+          {contacts.map((contact, index) => (
+            <span key={`${contact.number}-${contact.region}`} className="inline-flex gap-1">
+              {index > 0 && <span aria-hidden>·</span>}
+              <a
+                href={`tel:${contact.number}`}
+                className="inline-flex min-h-11 items-center font-bold tabular-nums underline underline-offset-4"
+              >
+                {contact.number}
+              </a>{' '}
+              <span className="self-center">({contact.region})</span>
+            </span>
+          ))}
         </p>
-        <div className="ml-auto">
-          <HideScreen />
-        </div>
       </div>
     </aside>
   );
