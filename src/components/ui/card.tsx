@@ -50,7 +50,7 @@ const Card = React.forwardRef<HTMLDivElement, CardProps>(
       className={cn(
         'bg-card text-card-foreground rounded-container shadow-soft transition-all duration-fast ease-[cubic-bezier(0.22,1,0.36,1)]',
         hoverable === 'group' && 'group-hover:bg-surface-container-low',
-        hoverable === true && 'cursor-pointer hover:bg-surface-container-low',
+        hoverable === true && 'card-lift cursor-pointer',
         className,
       )}
       {...props}

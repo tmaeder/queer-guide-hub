@@ -85,12 +85,14 @@ export function IntentMap() {
             strokeLinejoin="round"
             transform={rtl ? `translate(${VIEWBOX.w},0) scale(-1,1)` : undefined}
           >
-            {(Object.keys(TRACK_PATHS) as Track[]).map((track) => (
+            {(Object.keys(TRACK_PATHS) as Track[]).map((track, index) => (
               <path
                 key={track}
                 d={TRACK_PATHS[track]}
                 stroke={`hsl(var(--track-${track}))`}
-                className={`intent-track-${track}`}
+                pathLength="1"
+                style={{ '--line-index': index } as CSSProperties}
+                className={`intent-track-${track} intent-track-draw`}
               />
             ))}
           </g>
@@ -107,8 +109,8 @@ export function IntentMap() {
         />
 
         <ul className="m-0 flex list-none flex-col gap-4 p-0 lg:absolute lg:inset-0 lg:block lg:gap-0">
-          {STATIONS.map((station) => (
-            <StationNode key={station.id} station={station} path={path} rtl={rtl} />
+          {STATIONS.map((station, index) => (
+            <StationNode key={station.id} station={station} path={path} rtl={rtl} index={index} />
           ))}
         </ul>
       </div>
@@ -116,7 +118,17 @@ export function IntentMap() {
   );
 }
 
-function StationNode({ station, path, rtl }: { station: Station; path: string; rtl: boolean }) {
+function StationNode({
+  station,
+  path,
+  rtl,
+  index,
+}: {
+  station: Station;
+  path: string;
+  rtl: boolean;
+  index: number;
+}) {
   const { t } = useTranslation();
   const interchange = station.id === 'interchange';
   // `findActiveIntent('/')` is undefined, so nothing is ever current on the
@@ -131,6 +143,7 @@ function StationNode({ station, path, rtl }: { station: Station; path: string; r
         {
           '--sx': pct(rtl ? VIEWBOX.w - station.x : station.x, 'x'),
           '--sy': pct(station.y, 'y'),
+          '--station-index': index,
         } as CSSProperties
       }
       className={cn(
@@ -157,7 +170,7 @@ function StationNode({ station, path, rtl }: { station: Station; path: string; r
       >
         <span
           className={cn(
-            'block rounded-full border border-border-hairline',
+            'intent-station-ring block rounded-full border border-border-hairline',
             'transition-colors group-hover:bg-foreground group-focus-within:bg-foreground',
             interchange
               ? 'intersection-gradient h-11 w-11 lg:h-12 lg:w-12'
