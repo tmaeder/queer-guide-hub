@@ -77,6 +77,18 @@ describe('dedup queue hand-read decisions', () => {
       expect(VERIFY).toContain(SEOUL_QUEUE_ROW);
     });
 
+    it('scopes the one-open assertion to this hand-read batch', () => {
+      // The producer may legitimately enqueue another pair between authoring and
+      // deployment. That must not abort db push for an unrelated new queue row.
+      const count = VERIFY.slice(
+        VERIFY.indexOf('select count(*) into v_open'),
+        VERIFY.indexOf("if v_open <> 1"),
+      );
+      expect(count).toContain('and id in (');
+      expect(count).toContain(SEOUL_QUEUE_ROW);
+      expect(count).toContain('71a525a3-b2d6-47d2-abb0-0cf73bd91d2e');
+    });
+
     it('a postcondition asserts the Seoul rows are still canonical', () => {
       // ANCHORED ON CODE, NOT ON THE "P8" LABEL. After comment-stripping, `P8` survives
       // only inside its own RAISE string, which sits AFTER the ids it is about -- so

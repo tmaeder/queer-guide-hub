@@ -219,7 +219,17 @@ begin
   -- P1: exactly ONE pair is still open, and it is the Seoul pair named in the header.
   --     Asserted positively rather than as "no bad rows", because a count of rows in a
   --     bad state also reads zero if the rows vanished from the corpus entirely.
-  select count(*) into v_open from public.dedup_review_queue where status = 'open';
+  select count(*) into v_open
+  from public.dedup_review_queue
+  where status = 'open'
+    and id in (
+      '71a525a3-b2d6-47d2-abb0-0cf73bd91d2e','b932e402-4b5d-461b-a789-594ebd597ebc',
+      '5df803ac-d494-4537-b4f0-618588508f07','f6006885-f50b-43c2-9b8e-6dfcef72645d',
+      'bf594cd4-bf13-40b8-8587-550d275e88ea','12e93a51-9f12-48b2-b4d3-6d05f5a23521',
+      '67804bd1-11b4-4aa3-a347-d1cd018ea290','8eef4396-6c87-4404-bfb7-c0a9017adfff',
+      'f5fc761c-10a3-4b5f-a475-fba8cb980d13','29f42a88-5ca1-4138-98b7-1b5be5262722',
+      '2fd904d9-e3e8-4cdb-a706-3d230324c265','70081002-5404-4fb4-9d9e-28e974c075fb',
+      '6cdba7da-fec3-498e-ab66-d7c09df82ce5','36db651b-99b6-44fa-b308-7c0c768842b0');
   if v_open <> 1 then
     raise exception 'P1: expected exactly 1 open dedup pair (the Seoul shell); found %', v_open;
   end if;
