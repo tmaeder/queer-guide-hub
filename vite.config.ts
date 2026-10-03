@@ -91,6 +91,39 @@ export default defineConfig(({ mode }) => ({
     // concurrent local suites); headroom above asyncUtilTimeout (5s)
     // set in src/test/setup.ts.
     testTimeout: 15000,
+    // Console interception is OFF because it races with worker teardown and
+    // fails the whole run: `EnvironmentTeardownError: Closing rpc while
+    // "onUserConsoleLog" was pending`, with 1569/1569 files and 14326/14326
+    // tests PASSED and an exit code of 1. Seen intermittently on `main` itself
+    // (runs 37121870320, 37120790029 on 2026-10-03) and on a PR re-run whose
+    // first run of identical code was green — so it blocks merges and silently
+    // disarms auto-merge, and retrying the 17-minute job only hides it.
+    //
+    // The race is in vitest's own intercept layer, not in a test. Writes are
+    // buffered and flushed from a QUEUED MICROTASK (`schedule()` →
+    // `sendLog()` → `rpc.onUserConsoleLog` in vitest/dist/chunks/console.*.js),
+    // so the RPC is issued strictly AFTER the console call returns. Any write
+    // near the end of a file can therefore still be in flight when the
+    // environment is torn down. The file vitest names is wherever the worker's
+    // state pointer happened to be, NOT proof that file logged —
+    // `editDeepLink.test.tsx` produces no console output at all when run alone.
+    //
+    // Nor is there one stray write to silence. `src/components/cms` alone —
+    // 59 of 1569 files — emits 8 late writes from 5 distinct sources, every
+    // one from a useEffect/async path that resolves after its test ended:
+    // React act warnings (CityAutocompleteField, TestComponent), a PostgREST
+    // 42501 on admin_content_views, and two `vi.mock` partial-mock errors.
+    // That is ~200 racing writes across a full run; chasing them one at a
+    // time leaves the next one free to re-break `main`.
+    //
+    // This removes the RPC rather than ignoring the error: with the flag,
+    // `setupConsoleLogSpy()` is never installed and console goes straight to
+    // the process streams. The alternative, `dangerouslyIgnoreUnhandledErrors`,
+    // would swallow every unhandled rejection including real ones.
+    // Cost is only presentation: logs lose their `stdout | file > test` header
+    // and the `silent` option stops applying. CI does not pass `--silent`, so
+    // the same lines were already being printed.
+    disableConsoleIntercept: true,
     coverage: {
       provider: 'v8',
       reporter: ['text', 'html', 'lcov', 'json-summary'],
