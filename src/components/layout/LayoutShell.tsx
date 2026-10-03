@@ -10,13 +10,7 @@ import { BreadcrumbBar } from '@/components/breadcrumbs/BreadcrumbBar';
 import { useGlobalPresence } from '@/hooks/useConversationPresence';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { lazyOptional } from '@/utils/lazyRetry';
-import {
-  isMapRoute,
-  isAdminRoute,
-  isCompactFooterRoute,
-  isHelpRoute,
-  stripLocale,
-} from '@/lib/locale';
+import { isMapRoute, isAdminRoute, isCompactFooterRoute, stripLocale } from '@/lib/locale';
 import { RouteNetworkRail } from '@/components/layout/RouteNetworkRail';
 
 // Peripheral chrome — banners and the feedback FAB. None of these are
@@ -58,10 +52,17 @@ const InstallBanner = lazyOptional(() =>
  * flips. CookieConsentBanner stays mounted on admin deliberately: a first-time
  * visitor landing straight on /admin must still get the consent prompt.
  *
- * /help and /help/:country opt out of the same public chrome while keeping the
- * public skip link. The page owns a compact safety header with emergency,
- * privacy, and exit actions; ordinary navigation and fixed peripheral controls
- * would compete with those actions or cover crisis content.
+ * /help and /help/:country used to opt out of this chrome too (#4062): no
+ * header, no rail, no footer, no bottom nav, no cookie banner. The reasoning
+ * was that a visitor in distress should not have to filter navigation before
+ * finding the action. In practice it made the one page a frightened visitor is
+ * most likely to land on cold the one page that does not look like the site —
+ * no way back to anything, and a layout whose unfamiliarity is its own small
+ * tax. The crisis affordances did not need the chrome removed to work: the
+ * emergency numbers live in CrisisBar, the life-safety strip at the top of the
+ * page, and Hide screen / Quick exit sit directly beneath it, above the fold
+ * and inside the content column rather than floating over it. So /help is an
+ * ordinary page again and `isHelpRoute` is gone from this file.
  *
  * There is no page-view tracker component here any more, and there must not be
  * one again. `AnalyticsTracker` used to be mounted at this level and was
@@ -86,9 +87,8 @@ export const LayoutShell = ({ children }: { children: React.ReactNode }) => {
   // Match /map and /:locale/map (locale prefix is optional in the router).
   const isFullBleedMap = isMapRoute(pathname);
   const isAdmin = isAdminRoute(pathname);
-  const isHelp = isHelpRoute(pathname);
   const isHome = stripLocale(pathname) === '/';
-  const showRouteRail = !isHome && !isFullBleedMap && !isAdmin && !isHelp;
+  const showRouteRail = !isHome && !isFullBleedMap && !isAdmin;
   // Panel 09: single-purpose flows and account screens get the one-line paper
   // footer instead of the full ink plate. See isCompactFooterRoute.
   const footerVariant = isCompactFooterRoute(pathname) ? 'compact' : 'full';
@@ -140,7 +140,7 @@ export const LayoutShell = ({ children }: { children: React.ReactNode }) => {
         in (e.g.) the avatar menu's notifications subscription cannot blank the
         whole app. The inner ErrorBoundary in routes.tsx handles route-level
         crashes; this outer boundary catches the chrome. */}
-      {!isAdmin && !isHelp && (
+      {!isAdmin && (
         <>
           {/* The header is a DIRECT child of the flex column, deliberately NOT
               inside the chrome wrapper below. `position: sticky` can only
@@ -175,14 +175,14 @@ export const LayoutShell = ({ children }: { children: React.ReactNode }) => {
           and held every incoming route's paint hostage to the exit animation,
           while chaining framer-motion onto the entry bundle. */}
       <div className="relative z-10 flex-1 flex flex-col">{children}</div>
-      {!isFullBleedMap && !isAdmin && !isHelp && (
+      {!isFullBleedMap && !isAdmin && (
         <div className="relative z-10 pb-24 md:pb-0">
           <ErrorBoundary section="footer" fallback={null}>
             <Footer variant={footerVariant} />
           </ErrorBoundary>
         </div>
       )}
-      {!isAdmin && !isHelp && (
+      {!isAdmin && (
         <ErrorBoundary section="mobile-bottom-nav" fallback={null}>
           <MobileBottomNav />
         </ErrorBoundary>
@@ -193,9 +193,9 @@ export const LayoutShell = ({ children }: { children: React.ReactNode }) => {
         whole layout. */}
       <ErrorBoundary section="peripheral-chrome" fallback={null}>
         <Suspense fallback={null}>
-          {!isHelp && <CookieConsentBanner />}
-          {!isAdmin && !isHelp && <FeedbackButton />}
-          {!isAdmin && !isHelp && <InstallBanner />}
+          <CookieConsentBanner />
+          {!isAdmin && <FeedbackButton />}
+          {!isAdmin && <InstallBanner />}
         </Suspense>
       </ErrorBoundary>
     </div>
