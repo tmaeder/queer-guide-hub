@@ -51,7 +51,7 @@ export function DetailMasthead({
         <RouteBullet type={type} size={44} letter={letter} track={track} label={bulletLabel} />
         {eyebrow && <span className="text-2xs font-bold uppercase tracking-label">{eyebrow}</span>}
         {status && (
-          <span className="rounded-element bg-surface-container-high px-3 py-2 text-2xs font-bold uppercase tracking-label shadow-soft">
+          <span className="rounded-element bg-surface-container-high px-4 py-2 text-2xs font-bold uppercase tracking-label shadow-soft">
             {status}
           </span>
         )}

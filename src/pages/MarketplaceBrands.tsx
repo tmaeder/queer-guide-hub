@@ -454,7 +454,7 @@ export default function MarketplaceBrands() {
                     <li key={b.slug}>
                       {showHeading && (
                         <h3
-                          className="mt-8 inline-flex rounded-element bg-surface-container-high px-3 py-2 font-display text-headline leading-none first:mt-0"
+                          className="mt-8 inline-flex rounded-element bg-surface-container-high px-4 py-2 font-display text-headline leading-none first:mt-0"
                           aria-label={
                             bucket === '#'
                               ? t(
