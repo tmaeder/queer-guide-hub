@@ -22,6 +22,6 @@ describe('Card', () => {
   });
   it('applies hoverable styles', () => {
     const { container } = render(<Card hoverable>X</Card>);
-    expect(container.firstChild).toHaveClass('cursor-pointer');
+    expect(container.firstChild).toHaveClass('cursor-pointer', 'card-lift');
   });
 });

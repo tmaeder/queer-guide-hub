@@ -10,4 +10,9 @@ describe('MotionCard', () => {
     render(<MotionCard>Hello</MotionCard>);
     expect(screen.getByText('Hello')).toBeInTheDocument();
   });
+
+  it('adds the shared lift only when interactive', () => {
+    const { container } = render(<MotionCard hoverable>Hello</MotionCard>);
+    expect(container.firstChild).toHaveClass('card-lift', 'cursor-pointer');
+  });
 });
