@@ -2674,6 +2674,16 @@ footer.bg-foreground {
   overflow: clip;
 }
 
+/* Data-cell plates and compact labels must share the same soft silhouette.
+   Explicit endpoint radii still join composite table rows correctly. */
+:where(th, td):where([class*='bg-']) {
+  border-radius: var(--radius-badge);
+}
+
+:where(span):where([class*='bg-foreground'], [class*='bg-track-']) {
+  border-radius: var(--radius-badge);
+}
+
 /* ── Borderless-surface contract ────────────────────────────────────
    Hairline rules were a legacy default for cards, rows and sticky rails. The
    subway templates separate those regions with space, tone and shape instead.

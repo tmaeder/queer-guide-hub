@@ -465,7 +465,7 @@ export const ExploreMap = ({
 
       {/* Loading overlay */}
       {!mapReady && (
-        <div className="absolute inset-0 flex items-center justify-center bg-background opacity-70 z-[5]">
+        <div className="absolute inset-0 flex items-center justify-center rounded-container bg-background opacity-70 z-[5]">
           <TrackLoader size={32} label="Loading" />
         </div>
       )}

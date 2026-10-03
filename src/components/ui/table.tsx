@@ -8,7 +8,13 @@ const Table = React.forwardRef<HTMLTableElement, React.HTMLAttributes<HTMLTableE
       <table
         ref={ref}
         className={cn('text-sm', className)}
-        style={{ width: '100%', captionSide: 'bottom', borderCollapse: 'collapse', ...style }}
+        style={{
+          width: '100%',
+          captionSide: 'bottom',
+          borderCollapse: 'separate',
+          borderSpacing: '0 4px',
+          ...style,
+        }}
         {...props}
       />
     </div>
@@ -58,7 +64,7 @@ const TableRow = React.forwardRef<HTMLTableRowElement, React.HTMLAttributes<HTML
       ref={ref}
       className={cn(
         // Rows are striped plates, not ruled lines.
-        'odd:bg-surface-container/60 transition-colors duration-fast',
+        'odd:[&>td]:bg-surface-container/60 odd:[&>th]:bg-surface-container/60 [&>:first-child]:rounded-l-element [&>:last-child]:rounded-r-element transition-colors duration-fast',
         className,
       )}
       style={style}
