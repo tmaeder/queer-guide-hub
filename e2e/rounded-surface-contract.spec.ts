@@ -77,6 +77,26 @@ const auditRoundedSurfaces = (page: Page) =>
         ) {
           return false;
         }
+
+        // A table row is one composite plate even though its fill lives on
+        // adjacent cells. Accept the internal square joins only when the
+        // row's exposed left and right endpoints carry the full radius.
+        if (element.matches('th, td') && element.parentElement) {
+          const visibleCells = [...element.parentElement.children].filter(visible);
+          const first = visibleCells.at(0);
+          const last = visibleCells.at(-1);
+          if (first && last) {
+            const firstStyle = getComputedStyle(first);
+            const lastStyle = getComputedStyle(last);
+            const roundedEndpoints =
+              Number.parseFloat(firstStyle.borderTopLeftRadius) >= 8 &&
+              Number.parseFloat(firstStyle.borderBottomLeftRadius) >= 8 &&
+              Number.parseFloat(lastStyle.borderTopRightRadius) >= 8 &&
+              Number.parseFloat(lastStyle.borderBottomRightRadius) >= 8;
+            if (roundedEndpoints) return false;
+          }
+        }
+
         const style = getComputedStyle(element);
         const parentStyle = element.parentElement ? getComputedStyle(element.parentElement) : null;
         const hasDistinctFill =

@@ -161,7 +161,7 @@ export function PrideTrips({ events, selectedId, onSelect }: PrideTripsProps) {
             </ol>
 
             <div className="flex gap-2 pt-1">
-              <Button asChild size="sm" variant="outline" className="flex-1">
+              <Button asChild size="sm" variant="soft" className="flex-1">
                 <Link
                   to={`/trips?seed=${c.events.map((e) => e.id).join(',')}`}
                   aria-label={
