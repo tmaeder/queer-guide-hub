@@ -135,6 +135,11 @@ describe('city-agentic-enrich citation scoping', () => {
     expect(helper.slice(0, 900)).toMatch(/\.\.\.prior/);
     // A dry run must not write.
     expect(helper.slice(0, 900)).toMatch(/if \(dryRun\) return/);
+    // Supabase query failures resolve as `{ error }` rather than rejecting. Merely
+    // attaching a rejection handler would silently lose the cursor without the
+    // diagnostic this helper promises.
+    expect(helper.slice(0, 1_400)).toContain('const { error } = await supabase');
+    expect(helper.slice(0, 1_400)).toMatch(/if \(error\) console\.warn/);
   });
 
   it('selects enrichment_status, which the cursor stamp merges into', () => {

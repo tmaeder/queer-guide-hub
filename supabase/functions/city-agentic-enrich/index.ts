@@ -93,16 +93,23 @@ async function stampCursor(
 ): Promise<void> {
   if (dryRun) return
   const prior = (city.enrichment_status ?? {}) as Record<string, unknown>
-  await supabase
-    .from('cities')
-    .update({
-      last_refreshed_at: new Date().toISOString(),
-      enrichment_status: { ...prior, agentic_skip: { at: new Date().toISOString(), reason } },
-    })
-    .eq('id', city.id)
+  const at = new Date().toISOString()
+  try {
+    const { error } = await supabase
+      .from('cities')
+      .update({
+        last_refreshed_at: at,
+        enrichment_status: { ...prior, agentic_skip: { at, reason } },
+      })
+      .eq('id', city.id)
+    // Supabase database failures resolve with `{ error }`; they do not reject the
+    // promise. Inspect the result so a failed cursor write is observable.
+    if (error) console.warn(`[${STEP}] cursor stamp failed for ${city.id}: ${error.message}`)
+  } catch (error) {
     // Never let a failed cursor write abort the batch: the next city is still worth
     // trying, and the only cost of a lost stamp is one more re-skip.
-    .then(() => {}, (e: unknown) => { console.warn(`[${STEP}] cursor stamp failed for ${city.id}: ${e}`) })
+    console.warn(`[${STEP}] cursor stamp failed for ${city.id}: ${error}`)
+  }
 }
 
 const fetchCityPage = (url: string) =>
