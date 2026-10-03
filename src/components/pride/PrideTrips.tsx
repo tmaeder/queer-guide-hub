@@ -102,9 +102,6 @@ export function PrideTrips({ events, selectedId, onSelect }: PrideTripsProps) {
         <h2 id="trips-heading" className="text-title font-medium">
           {t('pride.trips.title')}
         </h2>
-        <span className="text-xs2 text-muted-foreground">
-          Up to 4 prides · within 21 days · &lt;4000&nbsp;km
-        </span>
         <span className="text-xs2 text-muted-foreground">{t('pride.trips.subtitle')}</span>
       </div>
 
@@ -113,8 +110,6 @@ export function PrideTrips({ events, selectedId, onSelect }: PrideTripsProps) {
           <article key={c.id} className="rounded-container bg-background p-6 space-y-4">
             <div className="flex items-baseline justify-between gap-2 flex-wrap">
               <p className="text-xs2 uppercase tracking-label text-foreground/60">
-                {c.events.length} prides · {c.span} day{c.span === 1 ? '' : 's'}
-                {c.totalKm > 0 && ` · ${Math.round(c.totalKm).toLocaleString()} km`}
                 {c.totalKm > 0
                   ? t('pride.trips.metaWithKm', {
                       count: c.events.length,
@@ -161,7 +156,7 @@ export function PrideTrips({ events, selectedId, onSelect }: PrideTripsProps) {
             </ol>
 
             <div className="flex gap-2 pt-1">
-              <Button asChild size="sm" variant="outline" className="flex-1">
+              <Button asChild size="sm" variant="soft" className="flex-1">
                 <Link
                   to={`/trips?seed=${c.events.map((e) => e.id).join(',')}`}
                   aria-label={
