@@ -1,5 +1,5 @@
 /**
- * Guard for 99991791024454 — the retraction of 259 ungrounded live venue
+ * Guard for 99991791028169 — the retraction of 259 ungrounded live venue
  * accessibility claims, and the sentinel correction that goes with it.
  *
  * The repair itself is a frozen list of (venue, slug) pairs, so there is nothing
@@ -16,7 +16,7 @@ import { describe, it, expect } from 'vitest';
 import { readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 
-const MIGRATION = '99991791024454_venue_accessibility_ungrounded_retraction.sql';
+const MIGRATION = '99991791028169_venue_accessibility_ungrounded_retraction.sql';
 const MIG_DIR = join(process.cwd(), 'supabase/migrations');
 const HEALTH = join(process.cwd(), 'scripts/check-pipeline-health.mjs');
 
@@ -42,9 +42,9 @@ const RECITED_ROWS = [
   'f14ded17-a02a-4ebf-9725-ba27c4abed06',
 ];
 
-describe('99991791024454 — the migration exists and is the only copy', () => {
+describe('99991791028169 — the migration exists and is the only copy', () => {
   it('is present exactly once', () => {
-    const hits = readdirSync(MIG_DIR).filter((f) => f.startsWith('99991791024454'));
+    const hits = readdirSync(MIG_DIR).filter((f) => f.startsWith('99991791028169'));
     expect(hits).toEqual([MIGRATION]);
   });
 
@@ -52,7 +52,7 @@ describe('99991791024454 — the migration exists and is the only copy', () => {
     // Three places carry the version: the stamp `by`, the re-citation marker and
     // the postconditions that count by them. A rename that misses one reports
     // zero AFTER the rows have already been rewritten.
-    const n = (sql.match(/99991791024454/g) ?? []).length;
+    const n = (sql.match(/99991791028169/g) ?? []).length;
     expect(n).toBeGreaterThanOrEqual(5);
   });
 });
@@ -133,7 +133,7 @@ describe('the retraction records itself', () => {
     const upd = sql.slice(sql.indexOf('update public.venues v'), sql.indexOf('end $retract$'));
     expect(upd).toContain('accessibility_retracted');
     expect(upd).toContain("'slugs', to_jsonb(r.slugs)");
-    expect(upd).toContain("'by', 'migration:99991791024454'");
+    expect(upd).toContain("'by', 'migration:99991791028169'");
     expect(upd).toMatch(/'reason'/);
   });
 

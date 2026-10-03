@@ -279,7 +279,7 @@ begin
      set citations = jsonb_build_array(jsonb_build_object(
            'field','description',
            'quote', r.quote,
-           'superseded_by_migration','99991791024454',
+           'superseded_by_migration','99991791028169',
            'superseded_quote', coalesce(q.citations->0->>'quote','(none)')))
     from recite r
    where q.id = r.rid
@@ -299,7 +299,7 @@ begin
          enrichment_status = coalesce(v.enrichment_status, '{}'::jsonb) || jsonb_build_object(
            'accessibility_retracted', jsonb_build_object(
              'at', now(),
-             'by', 'migration:99991791024454',
+             'by', 'migration:99991791028169',
              'slugs', to_jsonb(r.slugs),
              'reason', 'citation absent from the text the model was shown; 93% of this cohort cited a bare slug string as its own quote'))
     from _acc_retract r
@@ -371,7 +371,7 @@ end $fn$;
 comment on function public.venue_accessibility_evidence_signals() is
   'Live venue accessibility claims whose citation is absent from the text the '
   'model was shown (description + the prompt tag line). ZERO-INVARIANT since '
-  '99991791024454 retracted the 260-claim backlog: the producer can no longer emit '
+  '99991791028169 retracted the 260-claim backlog: the producer can no longer emit '
   'an unevidenced slug, so any non-zero reading is a new regression rather than a '
   'backlog. Grounds against description AND tags — description alone over-reports '
   'by 6. Excludes rows dispositioned by migration 99991790879465, which are '
@@ -390,7 +390,7 @@ begin
     from public.venues v
     cross join lateral jsonb_array_elements_text(
       v.enrichment_status->'accessibility_retracted'->'slugs') s(slug)
-   where v.enrichment_status->'accessibility_retracted'->>'by' = 'migration:99991791024454'
+   where v.enrichment_status->'accessibility_retracted'->>'by' = 'migration:99991791028169'
      and v.accessibility_attributes @> array[s.slug];
   if v_bad <> 0 then
     raise exception 'P1 failed: % retracted slug(s) are still live', v_bad;
@@ -407,7 +407,7 @@ begin
   select count(*) into v_bad
     from _acc_retract r
     join public.venues v on v.id = r.venue_id
-   where v.enrichment_status->'accessibility_retracted'->>'by' is distinct from 'migration:99991791024454'
+   where v.enrichment_status->'accessibility_retracted'->>'by' is distinct from 'migration:99991791028169'
      and v.accessibility_attributes && r.slugs;
   if v_bad <> 0 then
     raise exception 'P2 failed: % venue(s) still publish a named slug and carry no stamp', v_bad;
@@ -416,7 +416,7 @@ begin
   -- P2b — but something must have happened. A silently empty sweep passes every
   -- "nothing is wrong" check above.
   select count(*) into v_bad from public.venues v
-   where v.enrichment_status->'accessibility_retracted'->>'by' = 'migration:99991791024454';
+   where v.enrichment_status->'accessibility_retracted'->>'by' = 'migration:99991791028169';
   if v_bad = 0 then
     raise exception 'P2b failed: the retraction stamped no venues at all';
   end if;
@@ -454,7 +454,7 @@ begin
    where q.id in ('7ba8c77f-9378-43ff-83e2-6c374b566846','8d1928bd-caef-4b66-bb4a-fa39924478f0',
                   'e99b75b9-4cec-48c2-9ce0-44ac8fcc5651','f14ded17-a02a-4ebf-9725-ba27c4abed06')
      and not exists (select 1 from jsonb_array_elements(q.citations) c
-                      where c->>'superseded_by_migration' = '99991791024454'
+                      where c->>'superseded_by_migration' = '99991791028169'
                         and coalesce(c->>'quote','') <> '');
   if v_bad <> 0 then
     raise exception 'P4 failed: % re-cited row(s) lack a positional citation', v_bad;
