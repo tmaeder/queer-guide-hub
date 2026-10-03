@@ -66,7 +66,17 @@ test.describe('gayout mega events', () => {
       // commit_event_staging_item RAISEs event_missing_start_date, so a row here
       // without one would mean the commit path changed under us.
       expect(r.start_date, `no start_date on ${r.slug}`).toBeTruthy()
-      expect(r.status, `not active: ${r.slug}`).toBe('active')
+      // ASSERT THE VOCABULARY, NOT `active`. This read `.toBe('active')` and
+      // went red two days after it was written, on CORRECT data: the nightly
+      // lifecycle job stamps `completed` once an end date passes, and the
+      // liveness checker stamps `cancelled` on a dead ticket url (measured
+      // 2026-10-03: 5 completed, 1 cancelled+deindexed). "Every event is
+      // active" is a statement about the calendar, not an invariant — the same
+      // transient-pinning trap this suite's sibling specs record.
+      expect(
+        ['active', 'cancelled', 'postponed', 'completed'],
+        `illegal status ${r.status} on ${r.slug} — outside events_status_check`,
+      ).toContain(r.status)
       // Country is what scopes commit's city lookup; a city with no country is
       // the shape that mis-linked 122 events to same-name cities.
       expect(r.country, `no country on ${r.slug}`).toBeTruthy()
