@@ -10,6 +10,8 @@ import type { MapPointSummary } from '../mapPoint';
 const point = (over: Partial<MapPointSummary> = {}): MapPointSummary => ({
   id: '1',
   type: 'venues',
+  entity: 'venue',
+  line: 'M',
   name: 'Somewhere',
   lng: 0,
   lat: 0,
