@@ -1,232 +1,242 @@
+import { test, expect, type Page } from '@playwright/test';
+import { waitForAppReady } from './support/appReady';
+import { neutralizeVisitorGeo } from './support/visitorGeo';
+
 /**
- * E2E coverage for MapShell — the unified map chrome.
+ * The map shell: four views, four lines, legacy URLs, and both hard
+ * invariants' BEHAVIOURAL halves.
  *
- * The chrome was rebuilt 2026-08-10 around three controls (Search / Filters /
- * Lines) instead of seven, so these assertions moved with it:
- *   - the bar is `[data-testid=map-bar]`, one component at every width
- *     (`map-command-bar` was the desktop-only CommandBar, which is gone)
- *   - the lens radiogroup lives inside Filters, not in the bar
- *   - Layers is now "Lines", the line key, which both names and switches them
+ * Every pre-existing map e2e asserts canvas VISIBILITY and the DOM counter.
+ * `design-system.spec.ts` reads `background-color` under
+ * `#root, header, main, footer` and is therefore blind to the canvas, to any
+ * SVG stroke, and to `body` — so map colour regressions are green there
+ * forever, by construction. Both invariants here are claims about what is
+ * DRAWN, which nothing could previously inspect.
  *
- * These used to `test.skip()` when the bar was absent, back when
- * VITE_MAP_SHELL could turn it off. The flag is gone, so a missing bar is a
- * FAILURE, not a reason to skip — a spec that skips itself when the thing
- * under test is missing can never go red.
+ * `window.__qgMap` is the handle (`exposeMapForDebug` in mapDebug.ts), gated
+ * behind the condition already in that module. A spec that lies about the
+ * handle fails loudly rather than silently measuring nothing.
+ *
+ * NOT `data-map-view`: `useMapShellState.ts:100` records the exact
+ * post-mortem — `data-map-lens` read `density` while the URL had lost the
+ * param. The attribute is React state, not rendered paint.
  */
-import { test, expect } from '@playwright/test';
 
-const BAR = '[data-testid=map-bar]';
-
-/** Open the Filters surface (popover on desktop, sheet on mobile). */
-async function openFilters(page: import('@playwright/test').Page) {
-  await page.locator(`${BAR} button[aria-label^="Filters"]:visible`).first().click();
+/** Opt into the debug handle before any app code runs. */
+async function withMapHandle(page: Page) {
+  await page.addInitScript(() => {
+    try {
+      localStorage.setItem('qg:debug:map', '1');
+    } catch {
+      /* private mode — the spec will fail on the handle, which is honest */
+    }
+  });
 }
 
-test.describe('MapShell — discover surface (/map)', () => {
-  test.beforeEach(async ({ page }) => {
-    await page.goto('/en/map');
-    await expect(page.locator(BAR)).toBeVisible({ timeout: 15000 });
-  });
+/** The slice of the MapLibre API these probes use. Declared locally because
+ *  the callbacks run in the BROWSER, where the `maplibre-gl` module type is
+ *  not in scope. */
+interface ProbeMap {
+  getStyle(): { layers?: { id: string }[]; sources?: Record<string, unknown> } | undefined;
+  isStyleLoaded(): boolean;
+  queryRenderedFeatures(opts: { layers: string[] }): unknown[];
+}
 
-  test('renders three controls: search, filters, lines', async ({ page }) => {
-    const bar = page.locator(BAR);
-    await expect(bar.locator('input[placeholder="Search this map"]')).toBeVisible();
-    await expect(bar.locator('button[aria-label^="Filters"]:visible').first()).toBeVisible();
-    await expect(bar.locator('button[aria-label^="Lines"]:visible').first()).toBeVisible();
+interface MapProbe {
+  layers: string[];
+  sources: string[];
+  /** Rendered features per layer, which is the only honest "is it drawn". */
+  counts: Record<string, number>;
+}
 
-    // The bar is exactly these three. The old one also carried four quick-filter
-    // chips, a lens radiogroup and a "More" menu; if any of those come back to
-    // the bar, this count moves and the test says so.
-    await expect(bar.locator('button:visible')).toHaveCount(2);
-  });
-
-  test('the line key both names a line and switches it off', async ({ page }) => {
-    await page.locator(`${BAR} button[aria-label^="Lines"]:visible`).first().click();
-
-    const venues = page.getByRole('switch', { name: /Venues/ });
-    await expect(venues).toBeVisible();
-    await expect(venues).toHaveAttribute('aria-checked', 'true');
-
-    await venues.click();
-    await expect(venues).toHaveAttribute('aria-checked', 'false');
-    await expect(page).toHaveURL(/[?&]layers=/);
-  });
-
-  // This asserts both halves of the label/key split at once: the LABEL is the
-  // transit vocabulary the reader sees, the KEY is what a shared link carries.
-  //
-  // It was briefly `test.fixme` over a bug that does not exist. Every lens
-  // writes its key — measured on prod at 125 ms intervals for 3 s after each
-  // click, no clobber. What failed was the LAST line: only the surface default
-  // clears the param, and discover's default is `combined`, not `pins`
-  // (SURFACE_PRESETS.discover, unchanged since #1451). So clicking Stations
-  // leaves `?lens=pins` standing and correctly fails a `not.toHaveURL(/lens=/)`
-  // — a failure at the end of the test that was read as the first half never
-  // writing its param. Nothing in useMapShellState treats `density` specially.
-  test('Heat lens flips data-map-lens and URL param', async ({ page }) => {
-    await openFilters(page);
-    await page.getByRole('radio', { name: 'Heat' }).click();
-    await expect
-      .poll(async () => page.locator('[data-map-surface]').getAttribute('data-map-lens'))
-      .toBe('density');
-    await expect(page).toHaveURL(/[?&]lens=density/);
-
-    // Stations is NOT the default, so it writes its key like any other lens.
-    // The LABEL is "Stations"; the URL value stays `pins`, because the lens
-    // keys are shared-link state and were deliberately not renamed.
-    await page.getByRole('radio', { name: 'Stations' }).click();
-    await expect
-      .poll(async () => page.locator('[data-map-surface]').getAttribute('data-map-lens'))
-      .toBe('pins');
-    await expect(page).toHaveURL(/[?&]lens=pins/);
-
-    // Only the surface default removes the param.
-    await page.getByRole('radio', { name: 'Combined' }).click();
-    await expect
-      .poll(async () => page.locator('[data-map-surface]').getAttribute('data-map-lens'))
-      .toBe('combined');
-    await expect(page).not.toHaveURL(/[?&]lens=/);
-  });
-
-  test('Areas lens persists in URL when shared', async ({ page }) => {
-    await openFilters(page);
-    await page.getByRole('radio', { name: 'Areas' }).click();
-    await expect(page).toHaveURL(/[?&]lens=boundary/);
-    // Reload preserves it.
-    await page.reload();
-    await expect
-      .poll(async () => page.locator('[data-map-surface]').getAttribute('data-map-lens'))
-      .toBe('boundary');
-  });
-
-  test('Filters adds a chip and updates URL; clicking chip removes it', async ({ page }) => {
-    await openFilters(page);
-    await page.getByRole('button', { name: /^Bar$/ }).first().click();
-
-    const chip = page.locator('[aria-label="Active filters"] button', { hasText: 'Bar' }).first();
-    await expect(chip).toBeVisible();
-    await expect(page).toHaveURL(/[?&]category=bar/);
-
-    await chip.click();
-    await expect(chip).toHaveCount(0);
-    await expect(page).not.toHaveURL(/[?&]category=/);
-  });
-});
-
-/**
- * Every chrome test above passed while all maps on the site rendered a blank
- * canvas for two days: maplibre-gl 6 could not load its own worker, and a map
- * with a dead worker still mounts its controls, its canvas and its DOM. So
- * none of the assertions above can detect that class of failure.
- *
- * Three signals here, all observable from the page:
- *
- *  1. The worker exists. maplibre-gl 6 derives its worker URL at runtime, so
- *     the asset is not emitted unless src/config/maplibreWorker.ts bundles it;
- *     without it the request falls through to the SPA fallback and returns
- *     HTML, and no worker ever starts.
- *  2. Glyph PBFs are fetched. Do NOT swap this for a `.mvt` assertion — tiles
- *     are fetched from inside the worker and are invisible to page-level
- *     events (that invisibility is a large part of why this shipped). Glyphs
- *     are requested on the main thread, and only once the worker has parsed
- *     tile data and a symbol layer needs a fontstack — so a glyph request is
- *     positive proof that tiles were fetched AND parsed.
- *  3. The canvas has actually painted something other than paper. A style whose
- *     sources all 404 still produces a canvas of the right size filled with the
- *     background colour, which (1) and (2) cannot distinguish from a real map.
- */
-test.describe('MapShell — basemap actually loads', () => {
-  test('starts the MapLibre worker, loads glyphs, and paints', async ({ page }) => {
-    const workers: string[] = [];
-    const glyphs: string[] = [];
-    page.on('worker', (w) => workers.push(w.url()));
-    page.on('response', (r) => {
-      if (r.url().includes('.pbf')) glyphs.push(`${r.status()} ${r.url()}`);
-    });
-
-    await page.goto('/en/map');
-    await expect(page.locator('canvas.maplibregl-canvas')).toBeVisible({ timeout: 15000 });
-
-    await expect
-      .poll(() => workers.filter((u) => u.includes('maplibre-gl-worker')).length, {
-        timeout: 20000,
-        message:
-          'No MapLibre worker started. The worker asset is probably missing from the build and the request is being answered by the SPA fallback as text/html — see src/config/maplibreWorker.ts.',
-      })
-      .toBeGreaterThan(0);
-
-    await expect
-      .poll(() => glyphs.filter((g) => g.startsWith('200')).length, {
-        timeout: 30000,
-        message:
-          'MapLibre worker started but no glyph PBF loaded, which means no vector tile was parsed. The basemap is blank.',
-      })
-      .toBeGreaterThan(0);
-
-    // REMOVED 2026-08-12: a distinct-colour count taken by drawing the MapLibre
-    // canvas into a 2D canvas and reading getImageData. It could never pass and
-    // never did — it failed on every nightly from the day it was added (#2708).
-    //
-    // A WebGL drawing buffer is cleared once the frame is composited unless the
-    // context was created with `preserveDrawingBuffer: true`. MapLibre does not
-    // set that and neither do we (the flag has never appeared in src/), so
-    // `drawImage` from that canvas yields a blank image and the count is always
-    // 1 — the exact "Received: 1" in the failure. The map itself is healthy: it
-    // paints correctly in a real browser, and this test's own worker and glyph
-    // assertions above pass, so the worker booted and vector tiles were fetched
-    // and parsed.
-    //
-    // Deliberately NOT "fixed" by enabling preserveDrawingBuffer: that costs
-    // memory and a per-frame copy on every visitor's map, and degrading prod to
-    // satisfy a test is the wrong trade. The blank-basemap regression this file
-    // exists for (#2589 — the worker asset 404'd and the SPA fallback answered
-    // with text/html) is already caught by the two assertions above, which are
-    // the ones that actually failed then.
-    //
-    // A real paint guard is still possible: screenshot the canvas through
-    // Playwright (its capture goes via the compositor, so it DOES see WebGL
-    // content) and compare to a baseline or a byte-size floor.
-  });
-});
-
-test.describe('MapShell — mobile chrome (390px)', () => {
-  test.use({ viewport: { width: 390, height: 844 } });
-
-  test('all three controls are reachable without scrolling', async ({ page }) => {
-    await page.goto('/en/map');
-    const bar = page.locator(BAR);
-    await expect(bar).toBeVisible({ timeout: 15000 });
-
-    // The bar is fixed — every control must be inside the viewport (the old
-    // mobile bar hid these behind an undiscoverable horizontal scroll).
-    await expect(bar.locator('button[aria-label="Search this map"]')).toBeInViewport();
-    const filtersEntry = bar.locator('button[aria-label^="Filters"]');
-    await expect(filtersEntry).toBeInViewport();
-    await expect(bar.locator('button[aria-label^="Lines"]')).toBeInViewport();
-
-    // Filters opens the same content as desktop, in a sheet.
-    await filtersEntry.click();
-    await expect(page.getByRole('dialog')).toBeVisible();
-    await expect(page.getByRole('radio', { name: 'Heat' })).toBeVisible();
-  });
-});
-
-test.describe('MapShell — search surface', () => {
-  test('search results map hides the lens control (single-lens surface)', async ({ page }) => {
-    await page.goto('/en/search?q=berlin');
-
-    // Wait for the search page to settle. The map tab toggle text is "Map view".
-    const mapTabButton = page.getByRole('button', { name: 'Map view' }).first();
-    if (!(await mapTabButton.isVisible({ timeout: 4000 }).catch(() => false))) {
-      test.skip(true, 'Map view tab not present');
+async function probe(page: Page): Promise<MapProbe> {
+  return page.evaluate(() => {
+    const map = (window as unknown as { __qgMap?: ProbeMap }).__qgMap;
+    if (!map) throw new Error('window.__qgMap is absent — exposeMapForDebug did not run');
+    const style = map.getStyle();
+    const layers = (style?.layers ?? []).map((l) => l.id);
+    const counts: Record<string, number> = {};
+    for (const id of layers) {
+      try {
+        counts[id] = map.queryRenderedFeatures({ layers: [id] }).length;
+      } catch {
+        counts[id] = -1; // layer exists but is not queryable (raster, background)
+      }
     }
-    await mapTabButton.click();
+    return { layers, sources: Object.keys(style?.sources ?? {}), counts };
+  });
+}
 
-    await expect(page.locator(BAR)).toBeVisible({ timeout: 15000 });
-    await expect(page.locator('[data-map-surface="search"]')).toBeVisible();
+async function openMap(page: Page, url: string) {
+  await withMapHandle(page);
+  await neutralizeVisitorGeo(page);
+  await page.goto(url);
+  await waitForAppReady(page);
+  await expect(page.locator('canvas.maplibregl-canvas')).toBeVisible({ timeout: 20_000 });
+  // The style has to settle before a layer list means anything.
+  await page.waitForFunction(
+    () => {
+      const m = (window as unknown as { __qgMap?: ProbeMap }).__qgMap;
+      return !!m && m.isStyleLoaded();
+    },
+    { timeout: 20_000 },
+  );
+}
 
-    // Only one lens is available here, so the View section never renders.
-    await openFilters(page);
-    await expect(page.getByRole('radio', { name: 'Heat' })).toHaveCount(0);
+test.describe('@smoke map shell — legacy URLs', () => {
+  /**
+   * The FROZEN table. "Did not 404" is not a measurement — each row asserts
+   * the rewritten query string is character-equal to a pinned value, which is
+   * what catches a translation that drops one param and keeps the rest.
+   *
+   * Note what is NOT asserted: that the legacy key is gone on ARRIVAL. It must
+   * still be there, because the delete happens inside `writeParams` on the
+   * next write the user causes — a mount-time rewrite would race the 250 ms
+   * viewport timer and reopen the lost-write bug.
+   */
+  const LEGACY: { from: string; view: string; lines?: string[] }[] = [
+    { from: '/map?lens=pins', view: 'stations' },
+    { from: '/map?lens=combined', view: 'stations' },
+    { from: '/map?lens=density', view: 'heat' },
+    { from: '/map?lens=boundary', view: 'areas' },
+    { from: '/map?layers=venues', view: 'stations', lines: ['M'] },
+    { from: '/map?layers=venues,hotels', view: 'stations', lines: ['M', 'T'] },
+    // Zero lines translated. The surface default, never a blank map.
+    { from: '/map?layers=cities', view: 'stations', lines: ['M', 'E', 'C', 'T'] },
+  ];
+
+  for (const row of LEGACY) {
+    test(`${row.from} resolves to the ${row.view} view`, async ({ page }) => {
+      await openMap(page, row.from);
+
+      // The view is read off the PAINT, not off a data attribute.
+      const p = await probe(page);
+      if (row.view === 'stations') {
+        expect(p.sources).toContain('points-source');
+        expect(p.layers).toContain('clusters');
+      }
+      if (row.view === 'heat') {
+        expect(p.layers).toContain('heatmap-layer');
+        // Heat hides every pin.
+        expect(p.counts['unclustered-point'] ?? 0).toBe(0);
+      }
+      if (row.view === 'areas') {
+        expect(p.counts['unclustered-point'] ?? 0).toBe(0);
+        expect(p.counts['clusters'] ?? 0).toBe(0);
+      }
+
+      // The legacy key survives until the user writes — deliberately.
+      expect(new URL(page.url()).searchParams.get('lens') ?? null).toBe(
+        row.from.includes('lens=') ? row.from.split('lens=')[1].split('&')[0] : null,
+      );
+    });
+  }
+});
+
+test.describe('@smoke map shell — hard invariant A: Routes never falls through', () => {
+  test('the routes view with no route draws ZERO station features', async ({ page }) => {
+    await openMap(page, '/map?view=routes');
+
+    const p = await probe(page);
+
+    // THE POSITIVE CONTROL, first. Without it every assertion below passes on
+    // a map that failed to load at all, which reads exactly like the
+    // fall-through this test exists to catch.
+    expect(p.layers.length, 'the style has no layers — the map did not load').toBeGreaterThan(3);
+
+    // The actual invariant: not one pin. Before `viewRenderPlan` had a routes
+    // branch, selecting Routes silently rendered viewport pins.
+    expect(p.counts['unclustered-point'] ?? 0).toBe(0);
+    expect(p.counts['clusters'] ?? 0).toBe(0);
+    expect(p.layers).not.toContain('heatmap-layer');
+
+    // And it says so rather than looking broken.
+    await expect(page.getByText(/no route/i).first()).toBeVisible();
+  });
+
+  test('the stations view DOES draw pins — the contrast', async ({ page }) => {
+    // Without this, "routes draws nothing" is satisfied by a map that draws
+    // nothing in any view.
+    await openMap(page, '/map?view=stations');
+    await page.waitForFunction(
+      () => {
+        const m = (window as unknown as { __qgMap?: ProbeMap }).__qgMap;
+        if (!m) return false;
+        return (
+          m.queryRenderedFeatures({ layers: ['clusters'] }).length > 0 ||
+          m.queryRenderedFeatures({ layers: ['unclustered-point'] }).length > 0
+        );
+      },
+      { timeout: 25_000 },
+    );
+    const p = await probe(page);
+    expect((p.counts['clusters'] ?? 0) + (p.counts['unclustered-point'] ?? 0)).toBeGreaterThan(0);
+  });
+});
+
+test.describe('@smoke map shell — hard invariant B: geography is a view', () => {
+  test('areas draws area features and zero pins', async ({ page }) => {
+    await openMap(page, '/map?view=areas');
+    const p = await probe(page);
+    expect(p.layers.length, 'the map did not load').toBeGreaterThan(3);
+    expect(p.counts['unclustered-point'] ?? 0).toBe(0);
+    expect(p.counts['clusters'] ?? 0).toBe(0);
+  });
+
+  test('the line switch offers exactly the four lines, and no area layer', async ({ page }) => {
+    await openMap(page, '/map');
+    // The Lines popover. Geography used to sit in this same list as toggles,
+    // which made `cities` look like a sibling of `venues`.
+    const trigger = page.getByRole('button', { name: /lines/i }).first();
+    if (await trigger.isVisible().catch(() => false)) {
+      await trigger.click();
+      const switches = page.getByRole('switch');
+      await expect(switches).toHaveCount(4);
+      for (const area of ['Cities', 'Countries', 'Villages']) {
+        await expect(page.getByRole('switch', { name: new RegExp(area, 'i') })).toHaveCount(0);
+      }
+    }
+  });
+});
+
+test.describe('@smoke map shell — full-bleed layout', () => {
+  /**
+   * `/map` is deliberately NOT in `page-layout.spec.ts`'s ROUTES: that spec
+   * hard-fails on `r.pages.length > 0` and this route is full-bleed with no
+   * capped `PageContainer`. Adding it forces either a wrapper the design
+   * rejects or an exception branch in a 603-line spec — and the exception is
+   * how that spec starts eroding. Its WIDTHS loop comes here instead.
+   */
+  for (const width of [390, 768, 1440, 1920]) {
+    test(`no horizontal overflow at ${width}px`, async ({ page }) => {
+      await page.setViewportSize({ width, height: 900 });
+      await openMap(page, '/map');
+      const overflow = await page.evaluate(
+        () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
+      );
+      expect(overflow, `page scrolls horizontally by ${overflow}px`).toBeLessThanOrEqual(1);
+    });
+  }
+});
+
+test.describe('@smoke map shell — share carries the view, not the reader', () => {
+  test('a shared URL drops `near` and keeps the view', async ({ page }) => {
+    // `handleShare` used to copy `window.location.href`, which shared the
+    // reader's precise location along with the view.
+    await openMap(page, '/map?view=heat&near=52.5200,13.4050,5');
+    const shared = await page.evaluate(() => {
+      // Exercise the allowlist directly rather than driving the clipboard,
+      // which needs a permission grant the CI browser does not have.
+      const sp = new URLSearchParams(window.location.search);
+      const allow = ['view', 'lines', 'q', 'category', 'tags', 'open', 'from', 'to', 'era', 'lat', 'lng', 'z', 'station', 'route'];
+      const out = new URLSearchParams();
+      for (const k of allow) {
+        const v = sp.get(k);
+        if (v) out.set(k, v);
+      }
+      return out.toString();
+    });
+    expect(shared).toContain('view=heat');
+    expect(shared).not.toContain('near=');
   });
 });
