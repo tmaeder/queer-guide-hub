@@ -133,6 +133,13 @@ export interface MapStation {
   /** True when `image` is a brand logo — render contained, not cropped. */
   isLogo?: boolean;
   category?: string;
+  /**
+   * Map-image id for the pin's category glyph. OPTIONAL because it is
+   * derivable (`glyphKeyFor(type, category)`) — a host assembling stations by
+   * hand should not have to know the glyph vocabulary, and
+   * `featuresFromStations` fills it in.
+   */
+  iconKey?: string;
   city?: string;
   openNow?: boolean | null;
   priceRange?: number | null;

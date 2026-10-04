@@ -2720,14 +2720,6 @@
       "thisMonth": "[FR] This month",
       "saved": "[FR] Saved"
     },
-    "lens": {
-      "groupLabel": "[FR] Map view",
-      "pins": "[FR] Pins",
-      "density": "[FR] Density",
-      "routes": "[FR] Routes",
-      "boundary": "[FR] Boundary",
-      "combined": "[FR] Combined"
-    },
     "sheet": {
       "title": "[FR] Map options",
       "view": "[FR] View",
@@ -2814,6 +2806,24 @@
       "queerOwned": "[FR] Queer-owned",
       "tags_one": "[FR] {{count}} tag",
       "tags_other": "[FR] {{count}} tags"
+    },
+    "view": {
+      "stations": "Stations",
+      "heat": "Densité",
+      "areas": "Zones",
+      "routes": "Itinéraires"
+    },
+    "lines": {
+      "M": "Lieux",
+      "E": "Événements",
+      "C": "Communauté et soutien",
+      "T": "Voyage et hébergement"
+    },
+    "key": {
+      "saved": "Badge = enregistré par vous"
+    },
+    "notice": {
+      "noRoute": "Aucun itinéraire à afficher ici pour l'instant."
     }
   },
   "cities": {

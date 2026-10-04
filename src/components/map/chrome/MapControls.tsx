@@ -8,12 +8,8 @@ import type { TransitIconName } from '@/components/transit/transitIconPaths';
 import { MapFiltersPanel } from '../MapFiltersPanel';
 import { TimeRangePicker } from '../FilterPopovers';
 import { isPresetActive, presetRange, type PresetKey } from '../mapTime';
-import {
-  LENS_LABELS,
-  type MapFilterKey,
-  type MapLens,
-  type MapShellFilters,
-} from '../MapShell.types';
+import type { MapView } from '../mapDomain';
+import { VIEW_LABELS, type MapFilterKey, type MapShellFilters } from '../MapShell.types';
 
 const PRESETS: { key: PresetKey; label: string; icon: TransitIconName }[] = [
   { key: 'tonight', label: 'Tonight', icon: 'hours' },
@@ -21,12 +17,11 @@ const PRESETS: { key: PresetKey; label: string; icon: TransitIconName }[] = [
   { key: 'month', label: 'This month', icon: 'events' },
 ];
 
-const LENS_ICONS: Record<MapLens, TransitIconName> = {
-  pins: 'near-you',
-  density: 'after-dark',
+const VIEW_ICONS: Record<MapView, TransitIconName> = {
+  stations: 'near-you',
+  heat: 'after-dark',
+  areas: 'map',
   routes: 'route',
-  boundary: 'map',
-  combined: 'compass',
 };
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
@@ -47,9 +42,9 @@ export interface MapControlsProps {
   availableFilters: MapFilterKey[];
   filters: MapShellFilters;
   onFiltersChange: (next: MapShellFilters) => void;
-  lenses: MapLens[];
-  lens: MapLens;
-  onLensChange: (lens: MapLens) => void;
+  views: MapView[];
+  view: MapView;
+  onViewChange: (view: MapView) => void;
   canSave: boolean;
   savedOnly: boolean;
   onToggleSaved: () => void;
@@ -68,18 +63,18 @@ export interface MapControlsProps {
  * mobile sheet that reimplemented all of it. One concept ("narrow what the map
  * shows") had four homes, and time in particular lived in two of them at once.
  *
- * The lens picker moved in here too. Pins / Density / Boundary / Combined are
- * rendering modes, not intents: they were four undecodable icon buttons
- * occupying prime space in the bar, next to search. They are a setting, so
- * they live with the settings, under a name that says what they do.
+ * The view picker moved in here too. Stations / Heat / Areas / Routes are
+ * rendering modes, not intents: they were undecodable icon buttons occupying
+ * prime space in the bar, next to search. They are a setting, so they live
+ * with the settings, under a name that says what they do.
  */
 export function MapControls({
   availableFilters,
   filters,
   onFiltersChange,
-  lenses,
-  lens,
-  onLensChange,
+  views,
+  view,
+  onViewChange,
   canSave,
   savedOnly,
   onToggleSaved,
@@ -202,27 +197,27 @@ export function MapControls({
         </Section>
       )}
 
-      {lenses.length > 1 && (
+      {views.length > 1 && (
         <Section title={t('map.controls.view', { defaultValue: 'View' })}>
           <div
             role="radiogroup"
             aria-label={t('map.controls.view', { defaultValue: 'View' })}
             className="flex flex-wrap gap-1.5"
           >
-            {lenses.map((l) => (
+            {views.map((v) => (
               <button
-                key={l}
+                key={v}
                 type="button"
                 role="radio"
-                aria-checked={l === lens}
+                aria-checked={v === view}
                 onClick={() => {
                   hapticTrigger('nudge');
-                  onLensChange(l);
+                  onViewChange(v);
                 }}
-                className={cn(chip, l === lens ? chipOn : chipOff)}
+                className={cn(chip, v === view ? chipOn : chipOff)}
               >
-                <TransitIcon name={LENS_ICONS[l]} size={14} />
-                {t(`map.lens.${l}`, { defaultValue: LENS_LABELS[l] })}
+                <TransitIcon name={VIEW_ICONS[v]} size={14} />
+                {t(`map.view.${v}`, { defaultValue: VIEW_LABELS[v] })}
               </button>
             ))}
           </div>

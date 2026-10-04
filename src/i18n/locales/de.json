@@ -2716,14 +2716,6 @@
       "thisMonth": "Diesen Monat",
       "saved": "Gespeichert"
     },
-    "lens": {
-      "groupLabel": "Kartenansicht",
-      "pins": "Pins",
-      "density": "Dichte",
-      "routes": "Routen",
-      "boundary": "Grenzen",
-      "combined": "Kombiniert"
-    },
     "sheet": {
       "title": "Kartenoptionen",
       "view": "Ansicht",
@@ -2810,6 +2802,24 @@
       "queerOwned": "Queer-geführt",
       "tags_one": "{{count}} Tag",
       "tags_other": "{{count}} Tags"
+    },
+    "view": {
+      "stations": "Stationen",
+      "heat": "Dichte",
+      "areas": "Gebiete",
+      "routes": "Routen"
+    },
+    "lines": {
+      "M": "Orte",
+      "E": "Events",
+      "C": "Community & Hilfe",
+      "T": "Reise & Übernachtung"
+    },
+    "key": {
+      "saved": "Abzeichen = von dir gespeichert"
+    },
+    "notice": {
+      "noRoute": "Hier gibt es noch keine Route."
     }
   },
   "cities": {

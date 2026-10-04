@@ -2724,14 +2724,6 @@
       "thisMonth": "[AR] This month",
       "saved": "[AR] Saved"
     },
-    "lens": {
-      "groupLabel": "[AR] Map view",
-      "pins": "[AR] Pins",
-      "density": "[AR] Density",
-      "routes": "[AR] Routes",
-      "boundary": "[AR] Boundary",
-      "combined": "[AR] Combined"
-    },
     "sheet": {
       "title": "[AR] Map options",
       "view": "[AR] View",
@@ -2818,6 +2810,24 @@
       "queerOwned": "[AR] Queer-owned",
       "tags_one": "[AR] {{count}} tag",
       "tags_other": "[AR] {{count}} tags"
+    },
+    "view": {
+      "stations": "المحطات",
+      "heat": "الكثافة",
+      "areas": "المناطق",
+      "routes": "المسارات"
+    },
+    "lines": {
+      "M": "الأماكن",
+      "E": "الأحداث",
+      "C": "المجتمع والرعاية",
+      "T": "السفر والإقامة"
+    },
+    "key": {
+      "saved": "الشعار = محفوظ لديك"
+    },
+    "notice": {
+      "noRoute": "لا يوجد مسار لعرضه هنا بعد."
     }
   },
   "cities": {
