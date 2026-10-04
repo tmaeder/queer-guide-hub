@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, type Page } from '@playwright/test';
 import { neutralizeVisitorGeo } from './support/visitorGeo';
 
 /**
@@ -416,6 +416,54 @@ const EXTRA_SANCTIONED: Record<string, string[]> = {
   // 30s, that is a real regression and should fail.
   const readySelector = (path: string) => (path === '/map' ? '[data-testid=map-bar]' : '#root *');
 
+  /**
+   * Wait for the page's CSS animations and transitions to SETTLE before reading
+   * a colour off it.
+   *
+   * A FIXED WAIT CANNOT DO THIS, and the 500 ms one that used to sit here is
+   * what made this guard flaky. `.intent-station-ring` (IntentMap, on `/`)
+   * carries `transition-colors` plus `group-hover:bg-foreground` and
+   * `group-focus-within:bg-foreground`, so whenever its group holds hover or
+   * focus the ring interpolates FROM its track colour TOWARD ink — and a read
+   * at a fixed offset lands part-way along that ramp.
+   *
+   * BOTH ENDPOINTS PASS; ONLY THE MIDDLE FAILS, which is what makes this a
+   * flake rather than a finding. Settled ink `rgb(17, 17, 17)` has saturation
+   * 0.000 and is skipped by the `<= 0.15` achromatic rule below; the settled
+   * track colour is sanctioned by name. The two values CI actually sampled,
+   * `rgb(39, 35, 15)` and `rgb(28, 26, 16)`, are both a hair off ink with a
+   * yellow cast — saturation 0.615 and 0.429, so both clear the threshold and
+   * neither matches a token. That they DIFFER between two runs of the same
+   * commit is the proof it is a transient: a real rogue fill is the same colour
+   * every time. It failed `/` on two unrelated PRs within a minute of each
+   * other, having passed one of those same branches fourteen minutes earlier.
+   *
+   * This guard is about the SETTLED design, so it must read the settled value.
+   *
+   * INFINITE ANIMATIONS ARE EXCLUDED, and that is load-bearing rather than
+   * tidy: `a.finished` on an `iterations: Infinity` animation never resolves,
+   * and this repo ships one on every skeleton (the sanctioned functional
+   * pulse). Awaiting those would hang here instead of failing, which is the
+   * worse outcome — a hang reads as a slow runner.
+   *
+   * The whole wait is capped, so an animation that never completes costs a
+   * slightly-early read rather than a timed-out test, and the old fixed delay
+   * survives as the floor.
+   */
+  const settleAnimations = async (page: Page) => {
+    await page.evaluate(async (capMs: number) => {
+      const finite = document.getAnimations().filter((a) => {
+        const iterations = a.effect?.getTiming().iterations;
+        return iterations !== Infinity;
+      });
+      const settled = Promise.all(finite.map((a) => a.finished.catch(() => undefined)));
+      await Promise.race([settled, new Promise((r) => setTimeout(r, capMs))]);
+    }, 4000);
+    // A transition started BY the settle above (a hover state released, a
+    // layout shift) gets one more frame-ish to land.
+    await page.waitForTimeout(500);
+  };
+
   for (const path of publicPages) {
     test(`only sanctioned brand ink on ${path}`, async ({ page }) => {
       await page.setViewportSize({ width: 1280, height: 900 });
@@ -425,7 +473,7 @@ const EXTRA_SANCTIONED: Record<string, string[]> = {
         timeout: path === '/map' ? 30_000 : 15_000,
       });
       await dismissCookieBanner(page);
-      await page.waitForTimeout(500);
+      await settleAnimations(page);
 
       const rogue = await page.evaluate(([tokens, extraHex]: [string[], string[]]) => {
         const root = document.documentElement;
