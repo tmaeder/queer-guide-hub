@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 /**
- * Guards 99991791105697 — round twenty-one, THE SEAM ROUNDS 19 AND 20 DEFERRED.
+ * Guards 99991791110086 — round twenty-one, THE SEAM ROUNDS 19 AND 20 DEFERRED.
  *
  * What this test preserves, in order of how easily a later edit breaks it:
  *
@@ -45,7 +45,7 @@ import { join } from 'node:path';
 
 const MIGRATION = join(
   process.cwd(),
-  'supabase/migrations/99991791105697_tag_prose_deferred_seam.sql',
+  'supabase/migrations/99991791110086_tag_prose_deferred_seam.sql',
 );
 const sql = readFileSync(MIGRATION, 'utf8');
 
@@ -204,7 +204,7 @@ describe('round 21 — the deferred seam', () => {
 
   it('declares the actor, which is load-bearing on two human_reviewed rows', () => {
     expect(statements).toContain(
-      `set_config('app.actor', 'migration:99991791105697_tag_prose_deferred_seam', true)`,
+      `set_config('app.actor', 'migration:99991791110086_tag_prose_deferred_seam', true)`,
     );
   });
 

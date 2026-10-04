@@ -145,7 +145,7 @@
 
 begin;
 
-select set_config('app.actor', 'migration:99991791105697_tag_prose_deferred_seam', true);
+select set_config('app.actor', 'migration:99991791110086_tag_prose_deferred_seam', true);
 
 -- Snapshot BEFORE anything is written, so "no collateral" and the controls are MEASUREMENTS
 -- rather than promises. Every control and refusal is in here, or the checks that read it go
