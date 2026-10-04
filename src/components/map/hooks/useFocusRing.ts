@@ -10,7 +10,7 @@ interface UseFocusRingParams {
   mapReady: boolean;
   selectedId?: string | null;
   highlightedId?: string | null;
-  pointsGeoJSON: GeoJSON.FeatureCollection;
+  pointsGeoJSON: GeoJSON.FeatureCollection<GeoJSON.Point, { id: string }>;
 }
 
 /**

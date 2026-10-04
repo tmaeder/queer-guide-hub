@@ -21,7 +21,23 @@ export interface MapNoticeProps {
   settled: boolean;
   /** Any point layer switched on. All-off is a different situation from empty
    *  and needs different advice — panning will not help. */
-  hasPointLayers: boolean;
+  /**
+   * Why no station is drawn, when none is — a THREE-state discriminator, not
+   * a boolean. `hasPointLayers: false` used to mean "every line is off", and
+   * passing `plan.stations` into it would make the Areas view (which draws no
+   * stations by design) claim the user had switched their lines off, and make
+   * the empty state fire on a view that has no points to count.
+   *
+   *  - `lines-off`: stations ARE this view's job and the user turned them all
+   *    off. Actionable, so it says what to do.
+   *  - `no-route`: the Routes view with nothing to draw. Routes must never
+   *    degrade into Stations, so the honest answer is to say there is no route.
+   *  - `by-design`: Heat / Areas. The view is working; say nothing, and
+   *    suppress the empty state, which would otherwise read "No spots here
+   *    yet" about a view that never looks for spots.
+   *  - `null`: stations are drawn. Normal operation.
+   */
+  stationsBlocked?: 'lines-off' | 'no-route' | 'by-design' | null;
   filters: ExploreMapFilters;
   /** Ambient "you are here" string, when the map has just located the user. */
   locationHint?: string | null;
@@ -30,7 +46,8 @@ export interface MapNoticeProps {
 /**
  * The map's one ephemeral message slot.
  *
- * Precedence, highest first: no lines on > empty > first run > location. The
+ * Precedence, highest first: no lines on > no route > empty > first run >
+ * location. The
  * empty state is the fussiest of these to get right — it is the only one that
  * makes a CLAIM about the data ("there is nothing here"), so it has to wait
  * until the map has actually looked.
@@ -52,7 +69,7 @@ export function MapNotice({
   count,
   ready,
   settled,
-  hasPointLayers,
+  stationsBlocked,
   filters,
   locationHint,
 }: MapNoticeProps) {
@@ -79,8 +96,11 @@ export function MapNotice({
     };
   }, [ready, count]);
 
-  const noLines = hasPointLayers === false;
-  const empty = !noLines && ready && settled && count === 0;
+  const noLines = stationsBlocked === 'lines-off';
+  const noRoute = stationsBlocked === 'no-route';
+  // `by-design` suppresses the empty state too: a view with no points to count
+  // must not report zero of them as a finding.
+  const empty = stationsBlocked == null && ready && settled && count === 0;
 
   const emptyMessage = filters.openNow
     ? t('map.canvas.emptyOpenNow', {
@@ -108,6 +128,12 @@ export function MapNotice({
         {t('map.canvas.noLines', {
           defaultValue: 'Every line is switched off — turn one on under Lines.',
         })}
+      </span>
+    );
+  } else if (noRoute) {
+    body = (
+      <span className="max-w-xs text-center">
+        {t('map.notice.noRoute', { defaultValue: 'No route to draw here yet.' })}
       </span>
     );
   } else if (empty) {

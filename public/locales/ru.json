@@ -2750,14 +2750,6 @@
       "thisMonth": "[RU] This month",
       "saved": "[RU] Saved"
     },
-    "lens": {
-      "groupLabel": "[RU] Map view",
-      "pins": "[RU] Pins",
-      "density": "[RU] Density",
-      "routes": "[RU] Routes",
-      "boundary": "[RU] Boundary",
-      "combined": "[RU] Combined"
-    },
     "sheet": {
       "title": "[RU] Map options",
       "view": "[RU] View",
@@ -2844,6 +2836,24 @@
       "queerOwned": "[RU] Queer-owned",
       "tags_one": "[RU] {{count}} tag",
       "tags_other": "[RU] {{count}} tags"
+    },
+    "view": {
+      "stations": "Станции",
+      "heat": "Плотность",
+      "areas": "Районы",
+      "routes": "Маршруты"
+    },
+    "lines": {
+      "M": "Места",
+      "E": "События",
+      "C": "Сообщество и помощь",
+      "T": "Поездки и жильё"
+    },
+    "key": {
+      "saved": "Значок = сохранено вами"
+    },
+    "notice": {
+      "noRoute": "Здесь пока нет маршрута."
     }
   },
   "cities": {

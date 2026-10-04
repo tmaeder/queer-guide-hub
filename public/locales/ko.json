@@ -2714,14 +2714,6 @@
       "thisMonth": "[KO] This month",
       "saved": "[KO] Saved"
     },
-    "lens": {
-      "groupLabel": "[KO] Map view",
-      "pins": "[KO] Pins",
-      "density": "[KO] Density",
-      "routes": "[KO] Routes",
-      "boundary": "[KO] Boundary",
-      "combined": "[KO] Combined"
-    },
     "sheet": {
       "title": "[KO] Map options",
       "view": "[KO] View",
@@ -2808,6 +2800,24 @@
       "queerOwned": "[KO] Queer-owned",
       "tags_one": "[KO] {{count}} tag",
       "tags_other": "[KO] {{count}} tags"
+    },
+    "view": {
+      "stations": "역",
+      "heat": "밀도",
+      "areas": "지역",
+      "routes": "경로"
+    },
+    "lines": {
+      "M": "장소",
+      "E": "이벤트",
+      "C": "커뮤니티 및 지원",
+      "T": "여행 및 숙박"
+    },
+    "key": {
+      "saved": "배지 = 저장함"
+    },
+    "notice": {
+      "noRoute": "아직 표시할 경로가 없습니다."
     }
   },
   "cities": {
