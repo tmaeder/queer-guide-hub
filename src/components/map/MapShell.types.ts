@@ -103,7 +103,19 @@ const ALL_LINES: MapLine[] = [...MAP_LINE_IDS];
 export const SURFACE_PRESETS: Record<MapSurface, MapShellConfig> = {
   discover: {
     surface: 'discover',
-    views: ['stations', 'heat', 'areas'],
+    /**
+     * `routes` is here because `/map` is the surface that resolves
+     * `?route=guide:<slug>` / `?route=trip:<id>` — a curated route is READ on
+     * the public map, not only inside the trip planner.
+     *
+     * Omitting it was a silent fall-through at the ALLOWLIST level, one layer
+     * above the renderer: `readView` dropped the unoffered view, `/map?view=routes`
+     * resolved to `stations`, and the reader got viewport pins for a route
+     * request — exactly what `viewRenderPlan`'s routes branch exists to stop.
+     * Caught by `e2e/map-shell.spec.ts`, which looked for the "no route"
+     * notice and found station pins.
+     */
+    views: ['stations', 'heat', 'areas', 'routes'],
     defaultView: 'stations',
     lines: ALL_LINES,
     areaLayers: ['cities', 'countries', 'neighbourhoods'],

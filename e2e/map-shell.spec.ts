@@ -3,6 +3,15 @@ import { waitForAppReady } from './support/appReady';
 import { neutralizeVisitorGeo } from './support/visitorGeo';
 
 /**
+ * Each case chains waitForAppReady (20s) + isStyleLoaded (20s) + the view's
+ * own evidence (30s), and a map layer is created only when its DATA arrives.
+ * The default per-test budget cannot hold that on a cold worker — two cases
+ * timed out on a run where the five later ones asserting the same thing
+ * passed, which is the signature of a budget rather than a defect.
+ */
+test.describe.configure({ timeout: 120_000 });
+
+/**
  * The map shell: four views, four lines, legacy URLs, and both hard
  * invariants' BEHAVIOURAL halves.
  *
