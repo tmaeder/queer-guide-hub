@@ -4705,6 +4705,141 @@ const DISOWNED_PROSE_CEILING = 380
   }
 }
 
+// §23 — map outcomes. Is the map ecosystem producing anything a reader did?
+//
+// THE DENOMINATOR IS READ AND PRINTED FIRST, before any per-metric number.
+// Four zeroes from a table nothing has ever written read exactly like four
+// zeroes from a healthy corpus, and `map_events_total_ever` is the only thing
+// that separates them.
+//
+// ARMED BY A DATE, not by a hand-flipped boolean — a boolean is a flag, and
+// `src/lib/featureFlags.ts` is three post-mortems about exactly that. Before
+// ARMED_AFTER this section DESCRIBES; after it, an empty corpus is a failure,
+// because by then the emitters have shipped and silence means they are not
+// firing.
+{
+  // The emitters land in a later PR than the vocabulary and the sentinel, so
+  // this is the date after which "no map events at all" stops being the
+  // expected state and becomes a defect.
+  const ARMED_AFTER = new Date('2026-11-01T00:00:00Z')
+  const armed = new Date() >= ARMED_AFTER
+
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/rpc/map_outcome_signals`, {
+    method: 'POST',
+    headers: HEADERS,
+    body: '{}',
+  })
+
+  if (res.status === 404) {
+    // The nightly run checks out `main` and calls the LIVE backend, so in any
+    // window where main carries this script and prod has not applied the
+    // migration the gate would go red for something that is not a defect.
+    console.warn('⚠ map_outcome_signals() not deployed yet (migration 99991791131717?) — skipping §23')
+  } else if (!res.ok) {
+    // An HTTP 500 here is usually the 8 s statement_timeout, which service_role
+    // inherits. Either way it measured NOTHING and must not read as a pass.
+    console.error(`✗ map_outcome_signals() returned HTTP ${res.status} — measured nothing`)
+    FAILED = true
+  } else {
+    const sig = (await res.json()) ?? {}
+    let sectionOk = true
+
+    // A MISSING key is its own failure, separate from a false one: an
+    // undeployed or silently-renamed sentinel must never read as a clean map.
+    if (!('probe_ok' in sig)) {
+      console.error('✗ map_outcome_signals() response has no probe_ok key — the sentinel was renamed or gutted')
+      FAILED = true
+      sectionOk = false
+    } else if (sig.probe_ok !== true) {
+      console.error('✗ map_outcome_signals() probe_ok is not true')
+      FAILED = true
+      sectionOk = false
+    }
+
+    const total = Number(sig.map_events_total_ever ?? 0)
+    const neverSeen = Array.isArray(sig.types_never_seen) ? sig.types_never_seen : []
+    const present = Array.isArray(sig.event_types_present_7d) ? sig.event_types_present_7d : []
+
+    // THE DENOMINATOR, printed before the six numbers.
+    console.log(
+      `  map outcomes: ${total} events ever, ${sig.map_events_7d ?? 0} in 7d, ` +
+        `${present.length} of 6 types seen`,
+    )
+
+    if (armed && total === 0) {
+      console.error(
+        '✗ no map outcome events have EVER been recorded, and the emitters were ' +
+          `due before ${ARMED_AFTER.toISOString().slice(0, 10)} — either nothing emits, or ` +
+          'the consent gate is rejecting everything',
+      )
+      FAILED = true
+      sectionOk = false
+    }
+
+    // THE BYPASS DETECTOR. `useTrackEvent` always resolves a session_id or a
+    // user_id and never neither, so both-null can only come from a writer that
+    // skipped the hook — and therefore skipped analyticsAllowed().
+    const noActor = Number(sig.map_events_no_actor_24h ?? 0)
+    if (noActor > 0) {
+      console.error(
+        `✗ ${noActor} map events in 24h have neither user_id nor session_id — a writer is ` +
+          'bypassing the consent gate',
+      )
+      FAILED = true
+      sectionOk = false
+    }
+
+    // The whole vocabulary rejected: the CHECK and the TS union have drifted and
+    // every insert is being refused. This is the signup_validation_error shape,
+    // where "zero" was read as a fact about users.
+    if (total > 0 && neverSeen.length === 6) {
+      console.error(
+        '✗ all six map event types are unseen while the table has rows — the CHECK is ' +
+          'rejecting the whole map vocabulary',
+      )
+      FAILED = true
+      sectionOk = false
+    }
+
+    // GROWTH, not depth. The missing-type set can only shrink as emitters ship,
+    // so a rising count means one stopped firing.
+    if (armed && total > 0 && neverSeen.length > 0) {
+      console.warn(`⚠ map event types never seen: ${neverSeen.join(', ')} (advisory until each emitter ships)`)
+    }
+
+    const missingSurface = Number(sig.map_detail_open_missing_surface_24h ?? 0)
+    if (missingSurface > 0) {
+      console.warn(
+        `⚠ ${missingSurface} map_detail_open events in 24h carry no metadata.surface, so they ` +
+          'cannot be read per surface',
+      )
+    }
+
+    // Routes: `guide_picks_maintain()` tombstones a deleted target nightly, so a
+    // PUBLISHED route can acquire a gap with no editor action. null means the
+    // guides route migration has not applied, which is not a defect.
+    const orphanRoutes = sig.published_routes_with_orphaned_stops
+    if (orphanRoutes === null || orphanRoutes === undefined) {
+      console.log('  (guides.is_route not present yet — route-stop check skipped)')
+    } else if (Number(orphanRoutes) > 0) {
+      console.error(
+        `✗ ${orphanRoutes} published route(s) have an orphaned stop — the nightly janitor ` +
+          'tombstoned a target and the route now has a gap',
+      )
+      FAILED = true
+      sectionOk = false
+    }
+
+    if (sectionOk) {
+      if (!armed) {
+        console.log(`✓ map outcomes sentinel live (describing only until ${ARMED_AFTER.toISOString().slice(0, 10)})`)
+      } else {
+        console.log('✓ map outcomes consistent')
+      }
+    }
+  }
+}
+
 if (FAILED) {
   console.error('')
   console.error('✗ Pipeline health check FAILED — every section above ran; each ✗ line is a separate problem')

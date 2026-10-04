@@ -27,16 +27,30 @@ import { resolve } from 'node:path';
 
 const MIGRATIONS = resolve(__dirname, '../../../supabase/migrations');
 
+/**
+ * Read the corpus ONCE.
+ *
+ * This used to `readFileSync` every migration inside `latestMigrationDefining`,
+ * which two of the four tests call twice each — so the whole directory was read
+ * EIGHT times. At 2,088 migrations that is ~16,700 file reads, and it measured
+ * **158 s** against vitest's 15 s default: the suite reported four assertion
+ * FAILURES when every assertion actually agreed, because a timeout and a
+ * disagreement are the same red.
+ *
+ * It was always going to tip on whichever migration happened to be next. Same
+ * defect as `src/components/map/__tests__/mapLazy.test.ts`, which read 600+
+ * source files three times over for the same reason.
+ */
+const CORPUS: { name: string; sql: string }[] = readdirSync(MIGRATIONS)
+  .filter((f) => f.endsWith('.sql'))
+  .sort()
+  .map((name) => ({ name, sql: readFileSync(resolve(MIGRATIONS, name), 'utf8') }));
+
 /** The most recent migration mentioning a constraint name, by version order. */
 function latestMigrationDefining(constraint: string): string {
-  const hits = readdirSync(MIGRATIONS)
-    .filter((f) => f.endsWith('.sql'))
-    .sort()
-    .filter((f) =>
-      readFileSync(resolve(MIGRATIONS, f), 'utf8').includes(`add constraint ${constraint}`),
-    );
+  const hits = CORPUS.filter((m) => m.sql.includes(`add constraint ${constraint}`));
   expect(hits.length, `no migration adds constraint ${constraint}`).toBeGreaterThan(0);
-  return readFileSync(resolve(MIGRATIONS, hits[hits.length - 1]), 'utf8');
+  return hits[hits.length - 1].sql;
 }
 
 /** Pull the quoted values out of `add constraint <name> check ( ... )`. */
