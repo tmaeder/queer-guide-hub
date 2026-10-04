@@ -61,6 +61,22 @@ export interface MapShellProps {
    * surfacePresets.test.ts.
    */
   source?: MapDataSource;
+  /**
+   * CONTROLLED selection, for a host that renders its own list beside the map.
+   *
+   * MapShell has always owned `selectedId`/`hoveredId` internally; these make
+   * that a controlled/uncontrolled split rather than new state, so a search
+   * result card or a trip stop row can drive the focus ring and the fly-to
+   * without either side holding a second copy. Omit all three and nothing
+   * changes.
+   *
+   * The map side needs nothing further: `useFocusRing` and `useSelectionFlyer`
+   * already key off the station feature id, and a host marks its own rows with
+   * `data-point-id` — the attribute `MapRail` already scrolls to.
+   */
+  selectedId?: string | null;
+  onSelectedIdChange?: (id: string | null) => void;
+  onHoveredIdChange?: (id: string | null) => void;
 }
 
 /**
@@ -83,6 +99,9 @@ export const MapShell = ({
   cooperativeGestures,
   filtersOverride,
   source,
+  selectedId: controlledSelectedId,
+  onSelectedIdChange,
+  onHoveredIdChange,
 }: MapShellProps) => {
   const config: MapShellConfig = useMemo(
     () => ({ ...SURFACE_PRESETS[surface], ...configOverride }),
@@ -96,8 +115,28 @@ export const MapShell = ({
 
   // Spotlight rail state — the in-view point feed + hover/selection sync.
   const [pointsInView, setPointsInView] = useState<MapPointSummary[]>([]);
-  const [hoveredId, setHoveredId] = useState<string | null>(null);
-  const [selectedId, setSelectedId] = useState<string | null>(null);
+  // Uncontrolled fallbacks. A host that passes `selectedId` owns the value and
+  // these are inert; `setSelectedId` still writes the internal one so an
+  // uncontrolled MapShell behaves exactly as before.
+  const [uncontrolledHoveredId, setUncontrolledHoveredId] = useState<string | null>(null);
+  const [uncontrolledSelectedId, setUncontrolledSelectedId] = useState<string | null>(null);
+  const selectedId =
+    controlledSelectedId !== undefined ? controlledSelectedId : uncontrolledSelectedId;
+  const hoveredId = uncontrolledHoveredId;
+  const setSelectedId = useCallback(
+    (id: string | null) => {
+      setUncontrolledSelectedId(id);
+      onSelectedIdChange?.(id);
+    },
+    [onSelectedIdChange],
+  );
+  const setHoveredId = useCallback(
+    (id: string | null) => {
+      setUncontrolledHoveredId(id);
+      onHoveredIdChange?.(id);
+    },
+    [onHoveredIdChange],
+  );
   const [fetching, setFetching] = useState(false);
   const [savedOnly, setSavedOnly] = useState(false);
   const [locationHint, setLocationHint] = useState<string | null>(null);
@@ -227,7 +266,8 @@ export const MapShell = ({
   /** The FETCH set. Point layers come from the lines, so toggling a line off
    *  changes no fetch key; area layers are added only by the `areas` view. */
   const exploreLayers: LayerType[] = useMemo(
-    () => (source && source.kind !== 'viewport' ? [] : fetchLayersForPlan(plan, state.lines, config)),
+    () =>
+      source && source.kind !== 'viewport' ? [] : fetchLayersForPlan(plan, state.lines, config),
     [plan, state.lines, config, source],
   );
 
@@ -258,15 +298,20 @@ export const MapShell = ({
     // (`near`) and their referrer (`back`) along with the view — and on the
     // four `enableUrlState:false` surfaces it shared none of the view at all,
     // because those pages carry no map params. `shareParams` is an allowlist.
-    const url = config.enableUrlState !== false
-      ? shareUrl(window.location.origin, window.location.pathname, new URLSearchParams(window.location.search))
-      : `${window.location.origin}/map?${shareParamsFromContext({
-          view: state.view,
-          lines: state.lines,
-          viewport: state.viewport,
-          query: state.filters.search,
-          focusedStationId: selectedId,
-        }).toString()}`;
+    const url =
+      config.enableUrlState !== false
+        ? shareUrl(
+            window.location.origin,
+            window.location.pathname,
+            new URLSearchParams(window.location.search),
+          )
+        : `${window.location.origin}/map?${shareParamsFromContext({
+            view: state.view,
+            lines: state.lines,
+            viewport: state.viewport,
+            query: state.filters.search,
+            focusedStationId: selectedId,
+          }).toString()}`;
     const payload = {
       title: t('map.share.title', { defaultValue: 'Map view' }),
       url,
@@ -292,7 +337,16 @@ export const MapShell = ({
         variant: 'destructive',
       });
     }
-  }, [t, toast, config.enableUrlState, state.view, state.lines, state.viewport, state.filters.search, selectedId]);
+  }, [
+    t,
+    toast,
+    config.enableUrlState,
+    state.view,
+    state.lines,
+    state.viewport,
+    state.filters.search,
+    selectedId,
+  ]);
 
   // Imperative map handle from ExploreMap — powers the custom nav controls
   // and the geolocate trigger (the native GeolocateControl owns the tracking
