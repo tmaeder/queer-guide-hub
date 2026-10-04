@@ -22,11 +22,12 @@ import * as Sentry from '@sentry/react';
 import { supabase } from '@/integrations/supabase/client';
 import { untypedFrom } from '@/integrations/supabase/untyped';
 import type { ExploreMapFilters, LayerType } from '@/hooks/useExploreMapData';
-import { LAYER_COLORS } from '@/hooks/useExploreMapData';
 import { isOpenNow } from '@/utils/openingHours';
 import { glyphKeyFor } from '@/components/map/mapIcons';
 import {
   ENTITY_BULLET,
+  areaColor,
+  lineColor,
   lineFor,
   type MapLine,
   type MapStationEntity,
@@ -259,7 +260,7 @@ async function fetchVenuesInBbox(
         line: lineFor('venues', v.category as string | undefined),
         name: v.name ?? 'Venue',
         subtitle: v.category ?? '',
-        color: LAYER_COLORS.venues,
+        color: lineColor(lineFor('venues', v.category as string | undefined) ?? 'M'),
         linkTo: v.slug ? `/venues/${v.slug}` : '',
         featured,
         live: openNow === true,
@@ -371,7 +372,7 @@ async function fetchEventsInBbox(
         line: lineFor('events'),
         name: e.title ?? 'Event',
         subtitle: dateStr,
-        color: LAYER_COLORS.events,
+        color: lineColor('E'),
         linkTo: e.slug ? `/events/${e.slug}` : '',
         featured,
         live: happeningNow,
@@ -413,7 +414,7 @@ async function fetchHotelsInBbox(bbox: Bbox): Promise<PointFeature[]> {
       line: lineFor('hotels'),
       name: (h.name as string) ?? 'Hotel',
       subtitle: (h.hotel_type as string) ?? '',
-      color: LAYER_COLORS.hotels,
+      color: lineColor('T'),
       linkTo: h.slug ? `/hotels/${h.slug}` : '',
       featured: Boolean(h.featured),
       live: false,
@@ -457,7 +458,7 @@ async function fetchRestroomsInBbox(bbox: Bbox): Promise<PointFeature[]> {
         line: lineFor('restrooms'),
         name: r.name || `Restroom at ${r.street || 'Unknown'}`,
         subtitle: [r.city, r.state].filter(Boolean).join(', '),
-        color: LAYER_COLORS.restrooms,
+        color: lineColor('C'),
         linkTo: '',
         featured: false,
         live: false,
@@ -583,13 +584,17 @@ export function useViewportPoints({
       // `LAYER_COLORS`, i.e. the identity.
       //
       // The remap still has to happen, for a reason that does survive:
-      // `LAYER_COLORS` reads LIVE CSS custom properties, the LRU cache is a
+      // `lineColor` reads LIVE CSS custom properties, the LRU cache is a
       // module singleton, and `/admin/design` can repaint a track at runtime.
       // A cached feature therefore holds whatever colour was resolved when it
       // was fetched, which may no longer be the current one.
+      //
+      // Keyed by LINE, not layer — this is where a community centre stops
+      // being pink and becomes green. A null line (an area entity drawn as a
+      // pin) takes ink, matching what `LAYER_COLORS` gives the area layers.
       for (const f of allFeatures) {
-        const c = LAYER_COLORS[f.properties.pointType];
-        if (c) f.properties.color = c;
+        const line = f.properties.line;
+        f.properties.color = line ? lineColor(line) : areaColor();
       }
 
       // "Near me" radius filter: applied client-side across all layers so a
