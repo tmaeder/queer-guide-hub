@@ -46,14 +46,24 @@ describe('CityMapTab', () => {
     expect(screen.getByText('Around this station')).toBeInTheDocument();
   });
 
-  it('offers a real link out to the full map rather than duplicating it', () => {
+  it('links out with a real CAMERA, not the dead ?city= param', () => {
+    // `?city=` was never in /map's param schema, so this link landed on the
+    // world view for as long as it existed. The old expectation pinned that
+    // defect; asserting the camera is what makes the fix stick.
     renderTab(
       { id: 'c1', name: 'Berlin', latitude: 52, longitude: 13 },
       { openLabel: 'Open the full map' },
     );
-    expect(screen.getByRole('link', { name: 'Open the full map' })).toHaveAttribute(
-      'href',
-      '/map?city=Berlin',
-    );
+    const href = screen
+      .getByRole('link', { name: 'Open the full map' })
+      .getAttribute('href') as string;
+
+    expect(href, 'the dead param must be gone').not.toContain('city=');
+    const sp = new URL(href, 'https://x.test').searchParams;
+    expect(sp.get('lng')).toBe('13.0000');
+    expect(sp.get('lat')).toBe('52.0000');
+    expect(sp.get('z')).toBe('11.00');
+    // and the referrer travels, so the reader can get back
+    expect(sp.get('back')).toBeTruthy();
   });
 });
