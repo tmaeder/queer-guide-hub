@@ -1,6 +1,7 @@
 import { formatDistance } from '@/lib/formatDistance';
 import { timeUntil } from '@/utils/relativeTime';
 import type { LayerType } from '@/hooks/useExploreMapData';
+import { ENTITY_BULLET } from '../mapDomain';
 import type { MapPointSummary } from '../mapPoint';
 
 /**
@@ -9,19 +10,11 @@ import type { MapPointSummary } from '../mapPoint';
  * `LayerType` is plural (`venues`) and `ROUTE_BULLET_MAP` is keyed by the
  * singular search_documents entity vocab (`venue`), so the two cannot be
  * joined by string surgery — `neighbourhoods` is `queer_village`, which no
- * amount of de-pluralising produces. This table is the join.
+ * amount of de-pluralising produces. The join is `ENTITY_BULLET` in
+ * `mapDomain`, the ONE copy; the table that used to sit here was the second of
+ * three identical ones.
  */
-const LAYER_BULLET: Record<LayerType, string> = {
-  venues: 'venue',
-  events: 'event',
-  cities: 'city',
-  countries: 'country',
-  restrooms: 'restroom',
-  hotels: 'hotel',
-  neighbourhoods: 'queer_village',
-};
-
-export const bulletTypeForLayer = (type: LayerType): string => LAYER_BULLET[type] ?? 'venue';
+export const bulletTypeForLayer = (type: LayerType): string => ENTITY_BULLET[type] ?? 'venue';
 
 /**
  * The board's second column.
