@@ -48,6 +48,7 @@ const EXTRA_ALIASES = {
   'CH-BL': ['Basel-Landschaft'], 'CH-BS': ['Basel-City'],
   'CL-AP': ['Arica and Parinacota Region'], 'CL-MA': ['Magallanes and Antartica Chilena Region'],
   'CL-RM': ['Santiago Metropolitan Region'], 'CO-DC': ['Bogota, Capital District'],
+  'CZ-10': ['Prague', 'Prag', 'Praha'],
   'CZ-20': ['Central Bohemian Region'], 'CZ-31': ['South Bohemian Region'],
   'CZ-63': ['Vysočina Region'], 'CZ-64': ['South Moravian Region'], 'CZ-80': ['Moravian-Silesian Region'],
   'DE-HB': ['Free Hanseatic City of Bremen'], 'ES-AS': ['Principality of Asturias'],
@@ -58,6 +59,10 @@ const EXTRA_ALIASES = {
   'ID-SU': ['North Sumatra'], 'ID-YO': ['Special Region of Yogyakarta'],
   'IL-M': ['Center District'], 'IT-32': ['Trentino – Alto Adige/Südtirol'],
   'MX-COA': ['Coahuila'], 'MX-MIC': ['Michoacán'], 'MX-VER': ['Veracruz'],
+  // "Mexico City" must hit MX-CMX on the NAME arm: the core arm strips "city"
+  // and lands on MX-MEX's alias "México" (99991791059373). And once "mexico"
+  // is a core key of both, "State of Mexico" needs its own name to resolve.
+  'MX-CMX': ['Mexico City', 'CDMX'], 'MX-MEX': ['State of Mexico'],
   'NG-FC': ['Federal Capital Territory'], 'PH-00': ['Metro Manila'],
   'PK-IS': ['Islamabad Capital Territory'],
   'PL-02': ['Lower Silesian Voivodeship'], 'PL-04': ['Kuyavian-Pomeranian Voivodeship'],
@@ -65,6 +70,18 @@ const EXTRA_ALIASES = {
   'PL-22': ['Pomeranian Voivodeship'], 'PL-24': ['Silesian Voivodeship'],
   'UA-46': ['Lviv Oblast'], 'UA-48': ['Mykolaiv Oblast'], 'UA-51': ['Odesa Oblast'],
 }
+// Hierarchy errors in dr5hn, each checked against the unit's real region
+// (99991791059373). Eight Tuscan provinces hang under IT-UD (Udine, in
+// Friuli) and so climbed to IT-36; Badajoz hangs under Andalusia, it is
+// Extremadura (as Cáceres already is). ES-O / ES-S / ES-LO are listed twice
+// under one code (province and community), which made each its own parent;
+// the community is the first-level unit.
+const PARENT_OVERRIDES = {
+  'ES-O': 'ES-AS', 'ES-S': 'ES-CB', 'ES-LO': 'ES-RI', 'ES-BA': 'ES-EX',
+  'IT-GR': 'IT-52', 'IT-LI': 'IT-52', 'IT-LU': 'IT-52', 'IT-MS': 'IT-52',
+  'IT-PI': 'IT-52', 'IT-PO': 'IT-52', 'IT-PT': 'IT-52', 'IT-SI': 'IT-52',
+}
+
 const q = (s) => (s == null || s === '' ? 'null' : `'${String(s).trim().replace(/'/g, "''")}'`)
 const num = (s) => (s == null || s === '' || Number.isNaN(Number(s)) ? 'null' : String(Number(s)))
 const arr = (xs) => (xs.length ? `array[${xs.map(q).join(',')}]::text[]` : `'{}'::text[]`)
@@ -82,6 +99,9 @@ for (const s of states) {
 
 for (const code of Object.keys(EXTRA_ALIASES))
   if (!byCode.has(code)) throw new Error(`EXTRA_ALIASES names ${code}, which dr5hn does not list`)
+for (const [code, parent] of Object.entries(PARENT_OVERRIDES))
+  if (!byCode.has(code) || !byCode.has(parent))
+    throw new Error(`PARENT_OVERRIDES ${code} -> ${parent}: dr5hn does not list both`)
 
 const rows = [...byCode.values()]
   .sort((a, b) => a.iso3166_2.localeCompare(b.iso3166_2))
@@ -92,7 +112,9 @@ const rows = [...byCode.values()]
       const t = (v ?? '').trim()
       if (t && t.toLowerCase() !== name.toLowerCase()) aliasSet.add(t)
     }
-    const parent = s.parent_id != null ? codeById.get(String(s.parent_id)) ?? null : null
+    const listed = s.parent_id != null ? codeById.get(String(s.parent_id)) ?? null : null
+    // A unit is never its own parent: a self-loop makes geo_subdivision_root() NULL.
+    const parent = PARENT_OVERRIDES[s.iso3166_2] ?? (listed === s.iso3166_2 ? null : listed)
     return `(${[
       q(s.iso3166_2),
       q(s.country_code),
