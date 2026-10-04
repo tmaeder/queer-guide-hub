@@ -1483,6 +1483,23 @@
     "queerOwnedBadge": "[ZH] Queer-owned"
   },
   "profile": {
+    "username": {
+      "autoAssignedBadge": "自动分配",
+      "policyAutoAssigned": "我们为你设置了一个，第一次更改不计入次数。",
+      "policyStandard": "每年可更改一次，更改后有 30 天可以修正。旧名称会被保留并重定向 90 天。",
+      "safetyNote": "因安全原因（例如旧名）需要更改？请联系支持，我们不会追问。",
+      "change": "更改用户名",
+      "changingFrom": "正在从 @{{username}} 更改。这将计为你未来 12 个月的更改，但你有 30 天可以修正；旧名称会重定向 90 天。",
+      "confirmChange": "确认更改",
+      "claim": "设置用户名",
+      "notChangedTitle": "用户名未更改",
+      "errorGeneric": "无法更改用户名，请重试。",
+      "errorUnavailable": "该用户名已被占用或已保留。",
+      "errorRateLimited": "你每年可以更改一次用户名。下次可更改时间：{{date}}",
+      "rateLimitedFallbackDate": "稍后",
+      "updatedTitle": "用户名已更新",
+      "updatedBody": "你现在是 @{{username}}。"
+    },
     "editProfile": "编辑资料",
     "pronouns": "代词",
     "location": "地点",
