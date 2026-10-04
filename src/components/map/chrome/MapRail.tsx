@@ -73,7 +73,17 @@ export function MapRail({
   const reducedMotion = useReducedMotion();
   const [collapsed, setCollapsed] = useState(false);
   const scrollRef = useRef<HTMLDivElement | null>(null);
-  const [focusIndex, setFocusIndex] = useState(0);
+  /**
+   * Roving tabindex keyed on the station ID, not on an index.
+   *
+   * This is a LIVE a11y bug independent of the line work. The feed refetches
+   * on every pan, so index 3 is a different place a moment later: a keyboard
+   * user's focus silently re-points at whatever moved into that slot, and
+   * `tabIndex` lands on an unrelated card. An id survives a refetch, and
+   * resolving it back to an index at render time is what keeps the roving
+   * tabindex honest.
+   */
+  const [focusId, setFocusId] = useState<string | null>(null);
   // Cap the rendered set — the in-view feed can be large; the ranking surfaces
   // the most relevant first and the count line is honest about the remainder.
   const ranked = useMemo(
@@ -97,14 +107,29 @@ export function MapRail({
     });
   }, [selectedId, reducedMotion]);
 
-  const focusCard = useCallback((index: number) => {
-    const cards = scrollRef.current?.querySelectorAll<HTMLElement>('[data-point-id]');
-    const el = cards?.[index];
-    if (el) {
-      setFocusIndex(index);
-      el.focus();
-    }
-  }, []);
+  /** Where the roving tabindex currently sits, resolved fresh each render. A
+   *  focused station that has panned out of view falls back to the first card
+   *  rather than leaving the rail unreachable by keyboard. */
+  const focusIndex = useMemo(() => {
+    if (!focusId) return 0;
+    const i = ranked.findIndex((p) => p.id === focusId);
+    return i >= 0 ? i : 0;
+  }, [focusId, ranked]);
+
+  const focusCard = useCallback(
+    (index: number) => {
+      const target = ranked[index];
+      if (!target) return;
+      const el = scrollRef.current?.querySelector<HTMLElement>(
+        `[data-point-id="${CSS.escape(target.id)}"]`,
+      );
+      if (el) {
+        setFocusId(target.id);
+        el.focus();
+      }
+    },
+    [ranked],
+  );
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
     let next: number | null = null;
@@ -208,7 +233,7 @@ export function MapRail({
                 onMouseEnter={() => onHover(point.id)}
                 onMouseLeave={() => onHover(null)}
                 onFocus={() => {
-                  setFocusIndex(i);
+                  setFocusId(point.id);
                   onHover(point.id);
                 }}
                 onBlur={() => onHover(null)}
