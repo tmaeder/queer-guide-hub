@@ -219,27 +219,48 @@ function paperFlavor(): Flavor {
   };
 }
 
-let styleCache: StyleSpecification | undefined;
+const styleCache: Partial<Record<'light' | 'dark', StyleSpecification>> = {};
 
 /**
  * Shared MapLibre style for every map surface in the app.
  *
- * Took a `'light' | 'dark'` flavor argument until 2026-08-10. Dark mode was
- * removed with the subway rebrand — `ThemeProvider` always reports light and
- * the `.dark` block is gone from index.css — so the dark branch had been
- * unreachable while still making ten surfaces subscribe to `resolvedTheme` and
- * tear down + rebuild their whole MapLibre instance on a "theme flip" that can
- * never happen.
+ * Took a `'light' | 'dark'` flavor argument until 2026-08-10, when it was
+ * dropped on the stated grounds that dark mode had been removed with the
+ * subway rebrand. **That premise was false and the comment stood until
+ * 2026-10-03:** `src/index.css` carries a full `.dark {}` block, `ThemeToggle`
+ * renders from `Footer.tsx` and `MobileNavSheet.tsx`, `ThemeProvider` stamps
+ * `light`/`dark` onto the root element, and `tokenCatalog.ts` carries a dark
+ * value for every token. Dark mode is a supported mode; CLAUDE.md records the
+ * same correction.
  *
  * Cached: `layers()` builds a large spec, so don't rebuild it per instance.
- * Cached LAZILY, though, and never at module scope — `paperFlavor()` reads
- * live CSS custom properties, which do not exist until the stylesheet has
- * been applied. (The old eager `export const mapStyle = getMapStyle()` is gone
- * for exactly this reason; nothing outside the tests used it.)
+ * Cached PER MODE, because `paperFlavor()` resolves live CSS custom
+ * properties — a single-slot cache was set at the first map mount and never
+ * invalidated, so a user who loaded in light and flipped to dark got a light
+ * paper basemap under dark chrome (and vice versa) on all 14 call sites.
+ * Cached LAZILY, and never at module scope — those custom properties do not
+ * exist until the stylesheet has been applied. (The old eager
+ * `export const mapStyle = getMapStyle()` is gone for exactly this reason;
+ * nothing outside the tests used it.)
+ *
+ * The mode comes off the root element rather than from `useTheme()`, so this
+ * stays a zero-argument function and the 14 callers need no change.
+ *
+ * **An already-mounted map is deliberately NOT repainted on a theme flip.**
+ * The only way to swap a live basemap is `map.setStyle()`, and this app cannot
+ * use it: it tears down every source and layer while `usePointLayers`,
+ * `useAreaLayers`, `useHeatmapLayer` and `useFocusRing` each still hold their
+ * own "already added" ref — the same constraint that made the tile fallback
+ * use `setTiles` (see the note in `basemapFallback.ts`). So a flip costs the
+ * currently-open map its basemap tone until navigation, and every map opened
+ * after it is correct. If that trade is ever revisited, the work is in the
+ * layer hooks, not here.
  */
 export function getMapStyle(): StyleSpecification {
-  if (styleCache) return styleCache;
-  styleCache = {
+  const mode = document.documentElement.classList.contains('dark') ? 'dark' : 'light';
+  const cached = styleCache[mode];
+  if (cached) return cached;
+  const style: StyleSpecification = {
     version: 8,
     glyphs: GLYPHS_URL,
     sprite: `${ASSETS_BASE}/sprites/v4/light`,
@@ -264,7 +285,8 @@ export function getMapStyle(): StyleSpecification {
     // the points of interest here, and the labels were competing with them.
     layers: layers('protomaps', paperFlavor(), { lang: 'en' }).filter((l) => l.id !== 'pois'),
   };
-  return styleCache;
+  styleCache[mode] = style;
+  return style;
 }
 
 /** The map's own label fontstacks, for overlay layers that add their own

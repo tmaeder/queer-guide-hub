@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeAll, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeAll, beforeEach, afterEach } from 'vitest';
 import { COLOR_TOKENS } from '@/components/admin/design/tokenCatalog';
 import { ROUTE_BULLET_MAP } from '@/components/transit/routeBulletMap';
 import { AREA_LAYERS, LAYER_DEFS } from '@/config/mapLayers';
@@ -88,10 +88,20 @@ const chromaOf = (hsl: string): number => {
 describe.each(['light', 'dark'] as const)('map palette (%s mode)', (m) => {
   beforeEach(() => {
     mode = m;
-    // `getMapStyle()` memoises into a module-level `styleCache` that is never
-    // invalidated (mapStyle.ts:222), so without this the dark run would
-    // re-inspect the style object built under light tokens and the basemap
-    // assertion below would be vacuous — passing while measuring nothing.
+    // `getMapStyle()` memoises, so this stops the dark run re-inspecting a
+    // style object built under light tokens.
+    //
+    // MEASURED, not load-bearing: dropping this reset leaves the suite green,
+    // because the only assertion here that reads the style ("no chromatic
+    // value") holds in BOTH modes, so it cannot tell the two apart. The reset
+    // that does bite is the one inside `builds a different basemap per mode`.
+    // Kept anyway — it costs nothing and it is what would keep a future
+    // style-COMPARING assertion in this block from being vacuous.
+    //
+    // It is also not what guards `styleCache`'s invalidation. That cache keys
+    // on `documentElement`'s `dark` class, which this fixture never moves, so
+    // both modes resolve the same slot either way; the `map style cache`
+    // block at the bottom of this file is the one that moves the class.
     vi.resetModules();
   });
 
@@ -237,7 +247,7 @@ describe('map palette across modes', () => {
   it('builds a different basemap per mode', async () => {
     // The map-level consequence of the swap, and the assertion the old
     // light-only fixture could not make at all. Needs the module reset for the
-    // same `styleCache` reason as above.
+    // same cache-slot reason as above.
     const paperOf = async (m: Mode) => {
       mode = m;
       vi.resetModules();
@@ -254,5 +264,54 @@ describe('map palette across modes', () => {
       'basemap paper is the same in both modes — tokens did not reach the style',
     ).not.toBe(light);
     mode = 'light';
+  });
+});
+
+/**
+ * The cache-invalidation half, which the per-mode suite above cannot reach.
+ *
+ * `styleCache` was ONE slot, assigned at the first map mount and never
+ * invalidated, so the basemap froze in whichever theme happened to be active
+ * then — light paper under dark chrome, on all 14 `getMapStyle()` call sites.
+ *
+ * Two things make this its own `describe` rather than another case up there.
+ * It must move `documentElement`'s `dark` class, which is what the cache keys
+ * on and what the mocked-`mode` fixture never touches. And it must run with
+ * **no `vi.resetModules()` between the two calls** — a reset drops the cache
+ * and makes the assertion pass against the defect, which is exactly how this
+ * hole stayed open while a both-modes suite sat right above it.
+ */
+describe('map style cache', () => {
+  const paperOf = (style: unknown): string => {
+    const layers = (style as { layers: Record<string, unknown>[] }).layers;
+    const bg = layers.find((l) => l.id === 'background');
+    expect(bg, 'no `background` layer — the flavor shape moved').toBeTruthy();
+    return (bg!.paint as Record<string, string>)['background-color'];
+  };
+
+  const setRootMode = (m: Mode) => {
+    mode = m;
+    document.documentElement.classList.toggle('dark', m === 'dark');
+  };
+
+  // A root left in `dark` would silently re-point every later test's cache
+  // slot, so the flip is always undone.
+  afterEach(() => setRootMode('light'));
+
+  it('re-resolves paper when the theme flips, with no module reset', async () => {
+    vi.resetModules();
+    const { getMapStyle } = await import('@/config/mapStyle');
+
+    setRootMode('light');
+    const light = paperOf(getMapStyle());
+    setRootMode('dark');
+    const dark = paperOf(getMapStyle());
+
+    expect(light).toBe(`hsl(${CHANNELS.light.get('background')})`);
+    expect(dark).toBe(`hsl(${CHANNELS.dark.get('background')})`);
+    // Stated separately: the two could agree only if the catalog stopped
+    // swapping paper, in which case the swap assertion above is the thing to
+    // re-read rather than this one.
+    expect(dark).not.toBe(light);
   });
 });
