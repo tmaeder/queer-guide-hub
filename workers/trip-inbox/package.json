@@ -9,7 +9,7 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "postal-mime": "^3.0.1"
+    "postal-mime": "^4.0.2"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^5.20260924.1",
