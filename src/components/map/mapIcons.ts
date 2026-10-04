@@ -94,10 +94,31 @@ export function glyphKeyFor(type: LayerType, category?: string | null): string {
   return `type:${type}`;
 }
 
+/**
+ * Station-state badges, drawn on a pin's upper-right by `STATE_BADGE_LAYER`.
+ *
+ * Preloaded through `GLYPH_DEFS` like every other map image, so no
+ * missing-image resolver change is needed.
+ *
+ * SAVED ONLY, deliberately. There is no visited/check mark among the 74
+ * transit icons, and inventing one is a design-system change with its own
+ * grammar (one stroke weight, bends not corners, one station ring, round
+ * terminals) rather than something to improvise here. The established
+ * treatment for visited elsewhere in the app is DIMMING, not a badge —
+ * `TripMap` drops visited markers to 0.3 opacity and `EntityMap` offers an
+ * all / only-visited / hide-visited cycle — and choosing whether a discovery
+ * map should dim a place you have been to is a product decision, not a
+ * rendering detail. `visited` is carried on the feature so it is ready.
+ */
+export const STATE_BADGE_ICONS = {
+  'state:saved': 'saved',
+} as const satisfies Record<string, TransitIconName>;
+
 /** Every (glyph-key → icon) pair the map needs to rasterize into map images. */
 export const GLYPH_DEFS: { key: string; icon: TransitIconName }[] = [
   ...Object.entries(VENUE_CATEGORY_ICONS).map(([cat, icon]) => ({ key: `cat:${cat}`, icon })),
   ...(Object.entries(LAYER_FALLBACK_ICONS) as [LayerType, TransitIconName][]).map(
     ([type, icon]) => ({ key: `type:${type}`, icon }),
   ),
+  ...Object.entries(STATE_BADGE_ICONS).map(([key, icon]) => ({ key, icon })),
 ];

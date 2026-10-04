@@ -366,6 +366,23 @@ export function fetchLayersForLines(lines: readonly MapLine[]): LayerType[] {
 }
 
 /**
+ * The lines reachable from a set of fetch layers.
+ *
+ * The INVERSE of `fetchLayersForLines`, and behaviour-preserving against the
+ * layer-toggle UI that predates the line switch: a fetched feature's line is
+ * active exactly when its own layer is enabled, because a line is listed here
+ * iff one of its fetch layers is. Enabling `venues` alone therefore activates
+ * M, C and T — which is right, since community-centre and hotel-category
+ * venues arrive in that same fetch and must still draw.
+ *
+ * Interim: once the chrome toggles lines directly, line state comes from the
+ * URL instead and this is only needed by surfaces still expressed in layers.
+ */
+export function linesForLayers(layers: readonly LayerType[]): MapLine[] {
+  return MAP_LINE_IDS.filter((line) => MAP_LINES[line].fetchLayers.some((l) => layers.includes(l)));
+}
+
+/**
  * Layer → the `ROUTE_BULLET_MAP` key for the same entity.
  *
  * THE one copy. This table existed verbatim three times — in
