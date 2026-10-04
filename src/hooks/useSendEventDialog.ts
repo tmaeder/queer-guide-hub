@@ -12,6 +12,13 @@ export interface SendEventGroupOption {
   image_url: string | null;
 }
 
+/**
+ * Members a user can send a share to. Matches display name OR username, and
+ * drops anyone in a block relationship with the caller in EITHER direction —
+ * offering a blocked person as a recipient would hand the blocked side a way
+ * back in. RLS on `user_relationships` lets the caller read rows where they
+ * are either party, which is exactly the set needed here.
+ */
 export async function fetchSendEventMembers(
   currentUserId: string,
   query: string,
@@ -22,15 +29,31 @@ export async function fetchSendEventMembers(
     .neq('user_id', currentUserId)
     .order('display_name')
     .limit(30);
-  if (query.trim()) {
-    q = q.ilike('display_name', `%${query.trim()}%`);
+  const term = query.trim().replace(/[%,()]/g, '');
+  if (term) {
+    q = q.or(`display_name.ilike.%${term}%,username.ilike.%${term}%`);
   }
-  const { data } = await q;
-  return (data || []).map((p) => ({
-    id: p.user_id,
-    display_name: p.display_name,
-    avatar_url: p.avatar_url,
-  }));
+  const [{ data }, { data: blocks, error: blocksError }] = await Promise.all([
+    q,
+    supabase
+      .from('user_relationships')
+      .select('user_id, target_user_id')
+      .eq('relationship_type', 'block')
+      .or(`user_id.eq.${currentUserId},target_user_id.eq.${currentUserId}`),
+  ]);
+  // Fail closed: if the block list cannot be read, offer nobody rather than
+  // possibly offering someone the caller blocked.
+  if (blocksError) return [];
+  const blocked = new Set(
+    (blocks || []).map((b) => (b.user_id === currentUserId ? b.target_user_id : b.user_id)),
+  );
+  return (data || [])
+    .filter((p) => !blocked.has(p.user_id))
+    .map((p) => ({
+      id: p.user_id,
+      display_name: p.display_name,
+      avatar_url: p.avatar_url,
+    }));
 }
 
 export async function fetchSendEventGroups(
