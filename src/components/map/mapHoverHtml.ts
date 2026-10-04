@@ -1,4 +1,5 @@
 import i18next from 'i18next';
+import { MAP_LINES, MAP_LINE_IDS, type MapLine } from '@/components/map/mapDomain';
 
 /**
  * Pure HTML builders for the lightweight MapLibre hover popups (cluster
@@ -14,28 +15,29 @@ export function escapeHtml(value: string): string {
   );
 }
 
-export interface ClusterCounts {
-  venues: number;
-  events: number;
-  restrooms: number;
-  hotels: number;
-  total: number;
-}
+/**
+ * Cluster composition, by LINE.
+ *
+ * Was keyed by layer (venues/events/restrooms/hotels) — the third of three
+ * literal copies of the cluster-aggregate names, alongside `clusterProperties`
+ * and `clusterDonut`. All three now read the registry, so a donut segment can
+ * no longer disagree with the number beside it.
+ */
+export type ClusterCounts = Partial<Record<MapLine, number>> & { total: number };
 
-/** "12 venues · 3 events — Click to zoom in" cluster preview. */
+/** "12 Venues · 3 Events — Click to zoom in" cluster preview. */
 export function clusterHoverHtml(counts: ClusterCounts): string {
   const t = i18next.t.bind(i18next);
   const parts: string[] = [];
-  const add = (n: number, key: string, one: string, many: string) => {
-    if (n > 0)
-      parts.push(
-        t(key, { count: n, defaultValue: n === 1 ? `{{count}} ${one}` : `{{count}} ${many}` }),
-      );
-  };
-  add(counts.venues, 'map.canvas.venueCount', 'venue', 'venues');
-  add(counts.events, 'map.canvas.eventCount', 'event', 'events');
-  add(counts.restrooms, 'map.canvas.restroomCount', 'restroom', 'restrooms');
-  add(counts.hotels, 'map.canvas.hotelCount', 'hotel', 'hotels');
+  for (const line of MAP_LINE_IDS) {
+    const n = counts[line] ?? 0;
+    if (n <= 0) continue;
+    // The line's own label, so the breakdown names the same thing the legend
+    // and the line switch do. No singular/plural pair: a line label is a
+    // proper noun for a route ("Community & care"), not a count noun.
+    const name = t(`map.lines.${line}`, { defaultValue: MAP_LINES[line].label });
+    parts.push(`${n} ${name}`);
+  }
   const label = parts.length
     ? parts.join(' · ')
     : t('map.canvas.placeCount', { count: counts.total, defaultValue: '{{count}} places' });
@@ -58,9 +60,7 @@ export function pointHoverHtml({ name, subtitle, imageUrl }: PointHoverInput): s
   const thumb = imageUrl
     ? `<img src="${encodeURI(imageUrl)}" alt="" referrerpolicy="no-referrer" onerror="this.remove()" class="qg-map-hover__thumb"/>`
     : '';
-  const sub = subtitle
-    ? `<div class="qg-map-hover__meta">${escapeHtml(subtitle)}</div>`
-    : '';
+  const sub = subtitle ? `<div class="qg-map-hover__meta">${escapeHtml(subtitle)}</div>` : '';
   return `<div class="qg-map-hover">${thumb}<div class="qg-map-hover__body"><div class="qg-map-hover__title">${escapeHtml(
     name,
   )}</div>${sub}</div></div>`;
