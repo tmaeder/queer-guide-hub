@@ -212,15 +212,39 @@ COMMENT ON FUNCTION public.marketplace_subcategory_fine(text, text) IS
 -- to NULL by the trigger and are unaffected; sampled at 1,500 rows, agreement
 -- is 97.4-99.8% per group, so that costs 1-2% of the yield.
 --
--- No `SET LOCAL statement_timeout` here: it is a NO-OP under `db push`, so it
--- would read as protection while providing none. The narrow predicate IS the
--- protection — holding the touched set near 825 rows is what makes this safe.
-UPDATE public.marketplace_listings
-SET taxonomy_v3_at = NULL
-WHERE subcategory_fine IS NULL
-  AND subcategory_group IN ('vibrators','anal_toys','cock_rings','sex_toys','safer_sex','impact_play','grooming')
-  AND btrim(regexp_replace(lower(coalesce(subcategory,'') || ' ' || coalesce(title,'')), '[^a-z0-9]+', ' ', 'g'))
-      ~ '\y(aphrodisiac\w*|libido|potenz\w*|stimulanzien|arousal|edible|body ?chocolate|essbar\w*|k rperfarben?|tongues?|zungen\w*|lick\w*|oral ?sex|blow ?jobs?|couples?|paar\w*|double penetration|dp ?toys?|dilators?|dilation|dehn\w*|anal ?hooks?|analhaken\w*|hooks?|air ?pulse|airwave|air wave|sonic|suction|druckwellen\w*|klitoris ?sauger|thrust\w*|pulsators?|g ?spots?|g ?punkt\w*|clit\w*|klitoris\w*|butterfly|pocket ?rocket|panty|panties|wearable|slipvibrator\w*|app ?control\w*|remote ?control\w*|bluetooth|smart ?toys?|fernbedienung\w*|sleeves?|sheaths?|penish lle\w*|girth|douches?|enema|intimduschen?|analduschen?|klistier\w*|cbt|humblers?|ball ?crush\w*|figging|parachutes?)\y';
+-- THE RE-DERIVE IS NOT DONE HERE, AND THE FIRST VERSION OF THIS FILE WAS WRONG
+-- ABOUT THAT. It carried the UPDATE below, and on 2026-10-03 that aborted
+-- `supabase db push` on main with
+--
+--     ERROR: canceling statement due to statement timeout (SQLSTATE 57014)
+--     At statement: 2
+--
+-- which rolled the whole migration back, took the two sibling migrations in
+-- the same push with it (`db push` stops at the first failure), and left prod
+-- running the newly-deployed frontend against the OLD schema. The blast radius
+-- of a slow statement in a migration is the deploy queue, not the migration.
+--
+--   UPDATE public.marketplace_listings SET taxonomy_v3_at = NULL
+--   WHERE subcategory_fine IS NULL AND subcategory_group IN (…7 groups…)
+--     AND <normalized subcategory||title> ~ '<combined new-rule vocabulary>';
+--
+-- The comment that replaced `SET LOCAL statement_timeout` claimed "the narrow
+-- predicate IS the protection". It is not. The predicate bounds how many rows
+-- are WRITTEN (~825), not how much work the statement does: the regex still
+-- scans every candidate row, and each of the ~825 it matches then fires a
+-- BEFORE trigger that evaluates THREE regex ladders. A row cap is not a time
+-- cap, and `SET LOCAL statement_timeout` could not have saved it either — it
+-- really is a no-op under `db push`.
+--
+-- A `DO` block looping in batches does NOT fix this: `statement_timeout`
+-- applies to the DO block as a single statement, so the total is unchanged.
+--
+-- So this migration now does ONE thing — install the classifier — which is
+-- fast, idempotent, and all that `db push` should ever be asked to carry. The
+-- ~825 existing rows are re-derived OUT OF BAND, in small batches, against the
+-- live database. New and edited listings pick the rules up immediately via the
+-- trigger regardless, so the classifier is correct from the moment this
+-- applies; only the backlog waits.
 
 -- ── Postcondition ───────────────────────────────────────────────────────────
 -- Asserts the REACHED STATE, not the number of rows this file changed: the
@@ -255,17 +279,27 @@ BEGIN
   -- Each new bucket must actually be REACHABLE, not merely present as a string
   -- in the body. A rule placed after a broader sibling is dead code, and the
   -- string check above cannot see that.
-  -- NOTE on the dilator case: the probe subcategory is 'Anal Dilators', NOT
-  -- 'Analplugs'. The first draft used the latter and this block correctly
-  -- REFUSED the migration — `butt_plugs` matches `analplugs?` and fires first,
-  -- which is the right answer for a row that calls itself a plug. The rule is
-  -- fine; the assertion was wrong. Caught by dry-running this block on prod.
+  -- PICK A PROBE BY ITS 2-ARG GROUP, NOT BY ITS SUBCATEGORY. This block
+  -- refused two drafts of itself, both because the probe was wrong and the
+  -- rule was right, and both times the mistake was reasoning from the
+  -- subcategory alone:
+  --   * ('Analplugs','Anal Dilator Set') -> butt_plugs, not dilators.
+  --     `analplugs?` fires first, which is correct for a row calling itself
+  --     a plug. Probe is 'Anal Dilators' instead.
+  --   * ('Condoms','Anal Douche') -> the 1-arg group is safer_sex but the
+  --     2-ARG group is anal_toys, because the TITLE's "anal" wins — and the
+  --     fine function scopes by the 2-arg. A rule scoped to safer_sex can
+  --     never fire for it. Probe is ('Douches','Intimate Shower') instead,
+  --     confirmed against the live function to resolve safer_sex.
+  -- Verify a candidate probe with
+  --   SELECT marketplace_subcategory_group(sub, title);
+  -- before putting it in here.
   IF public.marketplace_subcategory_fine('Vibrators', 'G-Spot Vibrator') IS DISTINCT FROM 'g_spot'
      OR public.marketplace_subcategory_fine('Vibrators', 'Air Pulse Stimulator') IS DISTINCT FROM 'air_pulse'
      OR public.marketplace_subcategory_fine('Vibrators', 'Wand Massager') IS DISTINCT FROM 'wands'
      OR public.marketplace_subcategory_fine('Anal Dilators', 'Glass Dilator Set') IS DISTINCT FROM 'dilators'
      OR public.marketplace_subcategory_fine('Anal Hooks', 'Steel Anal Hook') IS DISTINCT FROM 'anal_hooks'
-     OR public.marketplace_subcategory_fine('Condoms', 'Anal Douche') IS DISTINCT FROM 'douching_enemas'
+     OR public.marketplace_subcategory_fine('Douches', 'Intimate Shower') IS DISTINCT FROM 'douching_enemas'
   THEN
     RAISE EXCEPTION 'a new fine rule is unreachable — check ladder order';
   END IF;
@@ -278,18 +312,13 @@ BEGIN
     RAISE EXCEPTION 'an existing classification moved — regression in the ladder';
   END IF;
 
-  -- The re-derive must have LANDED, not merely run. Advisory floor, not the
-  -- measured 825: the corpus moves between authoring and apply, and a hard
-  -- equality here would abort `db push` on main — and take every migration
-  -- queued behind it — because a merchant sync added or retired listings.
-  -- Zero, though, means the UPDATE matched nothing and the whole file is
-  -- decorative, which is the failure worth refusing.
-  IF (SELECT count(*) FROM public.marketplace_listings
-      WHERE subcategory_fine IN ('g_spot','app_controlled','clit_stimulators','air_pulse',
-                                 'wearable_vibes','thrusting','penis_sleeves','douching_enemas',
-                                 'aphrodisiacs','dilators')) < 100 THEN
-    RAISE EXCEPTION 'the re-derive produced almost nothing — predicate or ladder order is wrong';
-  END IF;
+  -- DELIBERATELY NO ROW-COUNT ASSERTION. An earlier version demanded ≥100 rows
+  -- already carrying a new bucket, which was coherent only while this file also
+  -- performed the re-derive. With the backlog moved out of band it would be an
+  -- assertion about work this migration no longer does — it would have failed
+  -- on a correct apply, which is the same `db push`-aborting shape the timeout
+  -- just produced. The reachability probes above are the real check: they
+  -- exercise the installed ladder directly and need no rows at all.
 
-  RAISE NOTICE 'marketplace toy fine buckets: classifier replaced and rows re-derived';
+  RAISE NOTICE 'marketplace toy fine buckets: classifier installed (backlog re-derived out of band)';
 END $verify$;

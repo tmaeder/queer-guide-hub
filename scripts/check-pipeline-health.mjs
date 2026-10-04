@@ -4646,6 +4646,65 @@ const DISOWNED_PROSE_CEILING = 380
   }
 }
 
+// § City regions — cities.region_code is the ISO 3166-2 first-level unit.
+// The zero-invariants are defects in the vocabulary or in what was written;
+// real_without_region_code is a backlog that needs a geocoder / Wikidata P131
+// and only warns. The region_name/region_code agreement check is NOT here —
+// it costs one resolver call per city (3.9 s measured); 99991791059373
+// asserts it once and trg_cities_ab_region_code keeps it by construction.
+{
+  console.log('')
+  console.log('City regions')
+  const res = await fetch(`${BASE}/rest/v1/rpc/city_region_signals`, {
+    method: 'POST',
+    headers: { ...headers, 'Content-Type': 'application/json' },
+    body: '{}',
+  })
+  if (res.status === 404) {
+    console.warn('⚠ city_region_signals → HTTP 404 (not applied? migration 99991791059373)')
+    console.warn('  This check measured NOTHING — it did not pass.')
+  } else if (!res.ok) {
+    console.error(`✗ city_region_signals → HTTP ${res.status}`)
+    FAILED = true
+  } else {
+    const sig = (await res.json()) ?? {}
+    let sectionOk = true
+    if (sig.probe_ok !== true || !(Number(sig.cities_live) > 0) || !(Number(sig.subdivisions) > 0)) {
+      console.error('✗ city_region_signals returned no probe_ok / an empty corpus — the probe is broken, not the data')
+      FAILED = true
+      sectionOk = false
+    }
+    const zero = {
+      subdivision_root_null: 'geo_subdivisions rows that climb to no first-level unit (a parent loop) — their names resolve to NULL',
+      region_code_wrong_country: 'cities carry a region_code from another country',
+      numeric_region_name_resolvable: 'cities still show a GeoNames number as region_name although the name is known',
+    }
+    for (const [key, what] of Object.entries(zero)) {
+      if (!(key in sig)) {
+        console.error(`✗ city_region_signals has no ${key} — the probe changed shape`)
+        FAILED = true
+        sectionOk = false
+        continue
+      }
+      const n = Number(sig[key])
+      if (n > 0) {
+        console.error(`✗ ${n} ${what}`)
+        FAILED = true
+        sectionOk = false
+      }
+    }
+    const backlog = Number(sig.real_without_region_code ?? 0)
+    if (backlog > 0) {
+      console.warn(
+        `⚠ ${backlog} of ${sig.real_cities} real cities have no region_code (needs a geocoder or Wikidata P131 — advisory)`,
+      )
+    }
+    if (sectionOk) {
+      console.log(`✓ city regions consistent (${sig.cities_live} live cities, ${sig.subdivisions} subdivisions)`)
+    }
+  }
+}
+
 if (FAILED) {
   console.error('')
   console.error('✗ Pipeline health check FAILED — every section above ran; each ✗ line is a separate problem')
