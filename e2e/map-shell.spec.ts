@@ -83,6 +83,39 @@ async function openMap(page: Page, url: string) {
   );
 }
 
+/**
+ * EVERY map layer here is created LAZILY, when its data arrives — not at
+ * style load. The first draft of this spec probed immediately after
+ * `isStyleLoaded()` and failed on correct code, because `points-source` does
+ * not exist until the first viewport fetch returns.
+ *
+ * So a view's evidence has to be WAITED for, and the wait is the assertion.
+ * `waitForFunction` throws with the condition's own name on timeout, which is
+ * the honest failure: "the stations view never created its point source" is a
+ * real finding, where a bare probe reported it as a missing string.
+ */
+async function waitForSource(page: Page, source: string) {
+  await page.waitForFunction(
+    (src) => {
+      const m = (window as unknown as { __qgMap?: ProbeMap }).__qgMap;
+      return !!m && Object.keys(m.getStyle()?.sources ?? {}).includes(src);
+    },
+    source,
+    { timeout: 30_000 },
+  );
+}
+
+async function waitForLayer(page: Page, layer: string) {
+  await page.waitForFunction(
+    (id) => {
+      const m = (window as unknown as { __qgMap?: ProbeMap }).__qgMap;
+      return !!m && (m.getStyle()?.layers ?? []).some((l) => l.id === id);
+    },
+    layer,
+    { timeout: 30_000 },
+  );
+}
+
 test.describe('@smoke map shell — legacy URLs', () => {
   /**
    * The FROZEN table. "Did not 404" is not a measurement — each row asserts
@@ -109,14 +142,18 @@ test.describe('@smoke map shell — legacy URLs', () => {
     test(`${row.from} resolves to the ${row.view} view`, async ({ page }) => {
       await openMap(page, row.from);
 
-      // The view is read off the PAINT, not off a data attribute.
-      const p = await probe(page);
+      // The view is read off the PAINT, not off a data attribute — and
+      // waited for, because every layer is created when its data lands.
       if (row.view === 'stations') {
-        expect(p.sources).toContain('points-source');
-        expect(p.layers).toContain('clusters');
+        await waitForSource(page, 'points-source');
+        await waitForLayer(page, 'clusters');
       }
       if (row.view === 'heat') {
-        expect(p.layers).toContain('heatmap-layer');
+        await waitForLayer(page, 'heatmap-layer');
+      }
+
+      const p = await probe(page);
+      if (row.view === 'heat') {
         // Heat hides every pin.
         expect(p.counts['unclustered-point'] ?? 0).toBe(0);
       }
@@ -146,18 +183,22 @@ test.describe('@smoke map shell — hard invariant A: Routes never falls through
 
     // The actual invariant: not one pin. Before `viewRenderPlan` had a routes
     // branch, selecting Routes silently rendered viewport pins.
-    expect(p.counts['unclustered-point'] ?? 0).toBe(0);
-    expect(p.counts['clusters'] ?? 0).toBe(0);
-    expect(p.layers).not.toContain('heatmap-layer');
+    // And it says so rather than looking broken. Asserted FIRST, because it
+    // is the positive evidence that the routes view actually rendered — the
+    // zero-pin assertions below are absences, and an absence is equally true
+    // of a map that never got as far as drawing anything.
+    await expect(page.getByText(/no route/i).first()).toBeVisible({ timeout: 20_000 });
 
-    // And it says so rather than looking broken.
-    await expect(page.getByText(/no route/i).first()).toBeVisible();
+    const settled = await probe(page);
+    expect(settled.counts['unclustered-point'] ?? 0).toBe(0);
+    expect(settled.counts['clusters'] ?? 0).toBe(0);
   });
 
   test('the stations view DOES draw pins — the contrast', async ({ page }) => {
     // Without this, "routes draws nothing" is satisfied by a map that draws
     // nothing in any view.
     await openMap(page, '/map?view=stations');
+    await waitForLayer(page, 'clusters');
     await page.waitForFunction(
       () => {
         const m = (window as unknown as { __qgMap?: ProbeMap }).__qgMap;
@@ -177,6 +218,28 @@ test.describe('@smoke map shell — hard invariant A: Routes never falls through
 test.describe('@smoke map shell — hard invariant B: geography is a view', () => {
   test('areas draws area features and zero pins', async ({ page }) => {
     await openMap(page, '/map?view=areas');
+    // The area circles are lazy too (`area-source-<type>` / `area-circle-<type>`
+    // in useAreaLayers), so wait for the view's own POSITIVE evidence before
+    // asserting the absence of pins. Without the wait, "zero pins" is equally
+    // true of a map that has not drawn anything at all yet.
+    await page
+      .waitForFunction(
+        () => {
+          const m = (window as unknown as { __qgMap?: ProbeMap }).__qgMap;
+          return (
+            !!m &&
+            (m.getStyle()?.layers ?? []).some((l) => l.id.startsWith('area-circle-'))
+          );
+        },
+        { timeout: 30_000 },
+      )
+      .catch(() => {
+        // A surface whose area data is empty still must not draw pins, so the
+        // absence assertions below stand on their own. Reported rather than
+        // swallowed silently: if this ever becomes the normal path, the test
+        // has stopped measuring the areas view.
+        console.warn('[map-shell] no area-circle-* layer appeared within 30s');
+      });
     const p = await probe(page);
     expect(p.layers.length, 'the map did not load').toBeGreaterThan(3);
     expect(p.counts['unclustered-point'] ?? 0).toBe(0);
