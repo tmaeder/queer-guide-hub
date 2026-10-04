@@ -6,19 +6,10 @@ import { ROUTE_BULLET_MAP, TRACK_BG } from '@/components/transit/routeBulletMap'
 import { LAYER_COLORS, monoHeatStops, type LayerType } from '@/hooks/useExploreMapData';
 import { AREA_LAYERS, LAYER_DEFS } from '@/config/mapLayers';
 import { iconForMarker } from '../mapIcons';
+// The ONE layer→bullet join; this file used to carry the third identical copy,
+// with a comment admitting it mirrored the one in useExploreMapData.
+import { ENTITY_BULLET as BULLET_KEY } from '../mapDomain';
 import type { MapLens } from '../MapShell.types';
-
-/** Layer → the ROUTE_BULLET_MAP key for the same entity type. Mirrors the
- *  table in useExploreMapData so a row can show its letter. */
-const BULLET_KEY: Record<LayerType, string> = {
-  venues: 'venue',
-  events: 'event',
-  hotels: 'hotel',
-  restrooms: 'restroom',
-  cities: 'city',
-  countries: 'country',
-  neighbourhoods: 'queer_village',
-};
 
 const LABEL: Record<string, string> = Object.fromEntries(LAYER_DEFS.map((d) => [d.type, d.label]));
 

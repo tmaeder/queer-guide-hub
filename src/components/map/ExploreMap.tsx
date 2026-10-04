@@ -13,7 +13,6 @@ import {
   type LayerType,
   type MapViewport,
   type ExploreMapFilters,
-  LAYER_COLORS,
 } from '@/hooks/useExploreMapData';
 import { useViewportPoints, POINT_LAYER_TYPES } from '@/hooks/useViewportPoints';
 import { MapResultsPill } from '@/components/map/MapResultsPill';
@@ -236,7 +235,6 @@ export const ExploreMap = ({
   } = useViewportPoints({
     enabledLayers: pointEnabledLayers,
     filters,
-    palette: LAYER_COLORS,
   });
 
   // ── Data: boundary polygons ─────────────────────────────────────────────
