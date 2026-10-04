@@ -171,10 +171,25 @@ test.describe('@smoke map shell — legacy URLs', () => {
         expect(p.counts['clusters'] ?? 0).toBe(0);
       }
 
-      // The legacy key survives until the user writes — deliberately.
-      expect(new URL(page.url()).searchParams.get('lens') ?? null).toBe(
-        row.from.includes('lens=') ? row.from.split('lens=')[1].split('&')[0] : null,
-      );
+      /**
+       * The legacy key is GONE and the translation is PERSISTED.
+       *
+       * My first draft asserted the opposite — that `?lens=` survives "until
+       * the user writes" — and all four lens rows failed while all three
+       * layers rows passed. The asymmetry is the finding: on a URL-state
+       * surface the map emits a viewport on LOAD, so `writeParams` fires
+       * within 250 ms of arrival with no user action at all. The strip was
+       * therefore landing immediately, and because it only DELETED, the
+       * translated view was lost and the map reverted to the surface default.
+       */
+      const after = new URL(page.url()).searchParams;
+      expect(after.get('lens'), 'the legacy key should be migrated away').toBeNull();
+      expect(after.get('layers')).toBeNull();
+      // A default is omitted (that is what the chrome does), so only a
+      // non-default view is asserted present.
+      if (row.view !== 'stations') {
+        expect(after.get('view'), 'the translation was not persisted').toBe(row.view);
+      }
     });
   }
 });

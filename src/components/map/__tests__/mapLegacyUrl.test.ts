@@ -2,10 +2,10 @@ import { describe, expect, it } from 'vitest';
 import {
   LEGACY_LAYER_TO_LINE,
   LEGACY_LENS_TO_VIEW,
+  migrateLegacy,
   migratePrefs,
   readLines,
   readView,
-  stripLegacy,
   type LegacyLens,
 } from '@/components/map/mapLegacyUrl';
 import { MAP_LINE_IDS, MAP_VIEW_IDS, type MapLine, type MapView } from '@/components/map/mapDomain';
@@ -133,23 +133,71 @@ describe('an empty translation falls back to the surface default, never []', () 
   });
 });
 
-describe('stripLegacy', () => {
-  it('removes both legacy keys and touches nothing else', () => {
-    const sp = new URLSearchParams({
-      lens: 'density',
-      layers: 'venues',
-      view: 'heat',
-      lines: 'M',
-      lat: '52.5',
-      q: 'sauna',
-    });
-    stripLegacy(sp);
+describe('migrateLegacy', () => {
+  const OPTS = {
+    views: ALL_VIEWS,
+    defaultView: 'stations' as MapView,
+    lines: ALL_LINES,
+    defaultLines: ALL_LINES,
+  };
+
+  it('PERSISTS the translation rather than only deleting the legacy key', () => {
+    // The bug this exists for: a bare delete lost the view. On a URL-state
+    // surface the map emits a viewport on LOAD, so the write fires within
+    // 250 ms — and with `lens` gone and no `view` written, the read fell
+    // through to the surface default. `?lens=density` showed Heat for a
+    // quarter of a second and then silently jumped to Stations.
+    const sp = new URLSearchParams({ lens: 'density' });
+    migrateLegacy(sp, OPTS);
     expect(sp.get('lens')).toBeNull();
-    expect(sp.get('layers')).toBeNull();
     expect(sp.get('view')).toBe('heat');
-    expect(sp.get('lines')).toBe('M');
+  });
+
+  it('translates layers into lines and keeps them', () => {
+    const sp = new URLSearchParams({ layers: 'venues,hotels' });
+    migrateLegacy(sp, OPTS);
+    expect(sp.get('layers')).toBeNull();
+    expect(sp.get('lines')).toBe('M,T');
+  });
+
+  it('omits a value equal to the surface default, as the chrome does', () => {
+    // A migrated URL has to be byte-identical to one the new chrome would
+    // have produced, or a shared link differs by provenance.
+    const sp = new URLSearchParams({ lens: 'pins', layers: 'venues,events,restrooms,hotels' });
+    migrateLegacy(sp, OPTS);
+    expect(sp.get('view')).toBeNull();
+    expect(sp.get('lines')).toBeNull();
+    expect(sp.toString()).toBe('');
+  });
+
+  it('prefers an already-present new key over the legacy one', () => {
+    const sp = new URLSearchParams({ view: 'areas', lens: 'density' });
+    migrateLegacy(sp, OPTS);
+    expect(sp.get('view')).toBe('areas');
+    expect(sp.get('lens')).toBeNull();
+  });
+
+  it('touches nothing else', () => {
+    const sp = new URLSearchParams({ lens: 'density', lat: '52.5', q: 'sauna', near: '1,2,3' });
+    migrateLegacy(sp, OPTS);
     expect(sp.get('lat')).toBe('52.5');
     expect(sp.get('q')).toBe('sauna');
+    expect(sp.get('near')).toBe('1,2,3');
+  });
+
+  it('is a NO-OP when no legacy key is present', () => {
+    // Otherwise every viewport write would rewrite `view`/`lines` on a URL
+    // that never had a legacy key, churning the query string.
+    const sp = new URLSearchParams({ lat: '52.5' });
+    const before = sp.toString();
+    migrateLegacy(sp, OPTS);
+    expect(sp.toString()).toBe(before);
+  });
+
+  it('respects a surface that offers fewer views', () => {
+    const sp = new URLSearchParams({ lens: 'routes' });
+    migrateLegacy(sp, { ...OPTS, views: ['stations', 'heat'] });
+    expect(sp.get('view')).toBeNull(); // fell back to the default, so omitted
   });
 });
 

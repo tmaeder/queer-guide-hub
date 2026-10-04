@@ -2,7 +2,7 @@
 import { useCallback, useMemo, useRef } from 'react';
 import { useSearchParams } from 'react-router';
 import type { MapLine, MapView } from '@/components/map/mapDomain';
-import { migratePrefs, readLines, readView, stripLegacy } from '@/components/map/mapLegacyUrl';
+import { migrateLegacy, migratePrefs, readLines, readView } from '@/components/map/mapLegacyUrl';
 import type {
   MapShellConfig,
   MapShellFilters,
@@ -87,17 +87,25 @@ export function useMapShellState(config: MapShellConfig): UseMapShellStateResult
   const writeParams = useCallback(
     (mutate: (sp: URLSearchParams) => void) => {
       const sp = new URLSearchParams(paramsRef.current);
+      // Rule 3 of mapLegacyUrl: the legacy keys die HERE, on a write that was
+      // going to happen anyway — never in a mount-time effect, which would be
+      // a URL write outside this function and would race the 250 ms viewport
+      // timer.
+      //
+      // BEFORE `mutate`, deliberately. Run it after and a user who has just
+      // picked the surface default — which deletes the param, to keep URLs
+      // clean — would have the legacy view resurrected over their choice.
+      migrateLegacy(sp, {
+        views: config.views,
+        defaultView: config.defaultView,
+        lines: config.lines,
+        defaultLines: config.defaultLines ?? config.lines,
+      });
       mutate(sp);
-      // Rule 3 of mapLegacyUrl: the legacy keys die HERE, on a write the user
-      // caused anyway — never in a mount-time effect, which would be a URL
-      // write outside this function and would race the 250 ms viewport timer.
-      // Because we rebuild from `paramsRef.current`, the delete composes with
-      // whatever the caller just set instead of clobbering it.
-      stripLegacy(sp);
       paramsRef.current = sp;
       setSearchParams(sp, { replace: true });
     },
-    [setSearchParams],
+    [setSearchParams, config.views, config.defaultView, config.lines, config.defaultLines],
   );
 
   /**

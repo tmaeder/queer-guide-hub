@@ -110,9 +110,54 @@ export function readLines(
   return [...fallback];
 }
 
-/** Drop the legacy keys. Called from inside `writeParams` only (rule 3). */
-export function stripLegacy(sp: URLSearchParams): void {
+/**
+ * Translate the legacy keys into the new ones and THEN drop them. Called from
+ * inside `writeParams` only (rule 3).
+ *
+ * **It must MIGRATE, not merely delete, and that distinction is a real bug I
+ * shipped first.** A bare `delete` loses the translation: on a URL-state
+ * surface the map emits a viewport on load, so `writeParams` fires within
+ * 250 ms of arrival — and with `lens` gone and no `view` written, `readView`
+ * fell through to the surface default. `/map?lens=density` therefore showed
+ * Heat for a quarter of a second and then silently jumped to Stations.
+ *
+ * Caught by `e2e/map-shell.spec.ts`, where all four `?lens=` rows failed and
+ * all three `?layers=` rows passed — an asymmetry no unit test could see,
+ * because the thing that triggers it is the map's own load-time viewport
+ * write.
+ *
+ * It runs BEFORE the caller's own mutation, which is load-bearing: run after,
+ * and a user who has just selected the SURFACE DEFAULT (which deletes the
+ * param, to keep URLs clean) would have the legacy view resurrected over
+ * their explicit choice.
+ *
+ * A value equal to the surface default is omitted rather than written, so a
+ * migrated URL is byte-identical to one the new chrome would have produced.
+ */
+export function migrateLegacy(
+  sp: URLSearchParams,
+  opts: {
+    views: readonly MapView[];
+    defaultView: MapView;
+    lines: readonly MapLine[];
+    defaultLines: readonly MapLine[];
+  },
+): void {
+  if (!LEGACY_KEYS.some((k) => sp.has(k))) return;
+
+  const get = (k: string) => sp.get(k);
+  const view = readView(get, opts.views, opts.defaultView);
+  const lines = readLines(get, opts.lines, opts.defaultLines);
+
   for (const k of LEGACY_KEYS) sp.delete(k);
+
+  if (view !== opts.defaultView) sp.set('view', view);
+  else sp.delete('view');
+
+  const sameAsDefault =
+    lines.length === opts.defaultLines.length && lines.every((l) => opts.defaultLines.includes(l));
+  if (!sameAsDefault) sp.set('lines', lines.join(','));
+  else sp.delete('lines');
 }
 
 /** Migrate a persisted prefs blob written under the old vocabulary (rule 4). */
