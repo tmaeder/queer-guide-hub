@@ -133,6 +133,7 @@ comment on column public.guide_picks.safety_note is
 do $patch$
 declare
   v_src text;
+  v_bare text;
   v_new text;
   v_needle text := '''pick_count'', g.pick_count,';
   v_add   text := '''pick_count'', g.pick_count,'
@@ -147,19 +148,32 @@ begin
     raise exception 'search_documents_index_guides is absent — refusing to invent it';
   end if;
 
-  -- Already patched (a concurrent session, or a re-run): no-op rather than
-  -- inserting the keys twice.
-  if position('''is_route''' in v_src) > 0 then
+  -- COMMENTS STRIPPED BEFORE ANY SEARCH, and on this block it is the
+  -- dangerous direction rather than a tidy-up.
+  --
+  -- `pg_get_functiondef()` returns the body INCLUDING its own comments, so the
+  -- "already patched" test below would match a comment that merely MENTIONS
+  -- `'is_route'` — and then `return` without patching, leaving the facet
+  -- unadded while this migration reported success. A presence check that can
+  -- be satisfied by prose fails GREEN, which is worse than failing red.
+  -- Caught by `scripts/check-functiondef-asserts.mjs`, which exists because
+  -- this shape aborted `db push` on main three times in one day.
+  v_bare := regexp_replace(v_src, '--[^' || chr(10) || ']*', '', 'g');
+
+  if position('''is_route''' in v_bare) > 0 then
     raise notice 'indexer already emits is_route — leaving it alone';
     return;
   end if;
 
-  if position(v_needle in v_src) = 0 then
+  if position(v_needle in v_bare) = 0 then
     raise exception
       'the pick_count facet anchor is gone from search_documents_index_guides — '
       'the function was rewritten and this patch cannot be applied blind';
   end if;
 
+  -- The REWRITE is applied to `v_src`, never to `v_bare`: executing the
+  -- stripped copy would delete every comment from the live function body.
+  -- `v_bare` decides, `v_src` is what ships.
   v_new := replace(v_src, v_needle, v_add);
   if v_new = v_src then
     raise exception 'facet patch produced no change';
@@ -256,8 +270,12 @@ begin
       're-indexes for no index value: %', v_trgdef;
   end if;
 
-  -- The indexer emits the facet.
-  select pg_get_functiondef(p.oid) into v_src
+  -- The indexer emits the facet. COMMENTS STRIPPED: `pg_get_functiondef()`
+  -- includes them, so an unstripped presence check passes when the symbol
+  -- exists only in prose — a vacuous green on the one assertion that proves
+  -- the patch landed.
+  select regexp_replace(pg_get_functiondef(p.oid), '--[^' || chr(10) || ']*', '', 'g')
+    into v_src
   from pg_proc p join pg_namespace n on n.oid = p.pronamespace
   where n.nspname='public' and p.proname='search_documents_index_guides';
   if position('''is_route''' in v_src) = 0 or position('''route_kind''' in v_src) = 0 then

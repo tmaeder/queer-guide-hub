@@ -30,10 +30,24 @@ import type { GuideEntityType } from '@/lib/guidePickAdapters';
  *     retry after a network blip does not duplicate every stop.
  */
 
+/**
+ * A row ready for `addPlacesBulk`.
+ *
+ * `tripPlaceRowFromGeo` returns an object LITERAL, so TypeScript infers
+ * `day_id: null` and `notes: null` as the literal type `null` rather than
+ * `string | null` — and this module overrides both. Widening exactly those two
+ * is narrower than an `as` cast and keeps every other field checked against
+ * what that helper really returns.
+ */
+export type RouteTripRow = Omit<ReturnType<typeof tripPlaceRowFromGeo>, 'day_id' | 'notes'> & {
+  day_id: string | null;
+  notes: string | null;
+};
+
 /** What the caller needs to tell the reader, beside the rows. */
 export interface RouteToTripResult {
   /** Ready for `addPlacesBulk`. Ordered by the route's own stop position. */
-  rows: ReturnType<typeof tripPlaceRowFromGeo>[];
+  rows: RouteTripRow[];
   /** Stops that could not be copied, with the reason, for the toast. */
   skipped: { name: string; position: number; reason: string }[];
 }
@@ -63,7 +77,7 @@ export function routeToTripPlaces(
   geo: Map<string, EntityGeo>,
   opts: { dayId?: string | null; existingKeys?: ReadonlySet<string> } = {},
 ): RouteToTripResult {
-  const rows: ReturnType<typeof tripPlaceRowFromGeo>[] = [];
+  const rows: RouteTripRow[] = [];
   const skipped: RouteToTripResult['skipped'] = [];
   const existing = opts.existingKeys ?? new Set<string>();
   // Within one call too: a route that lists the same venue twice (a loop that
