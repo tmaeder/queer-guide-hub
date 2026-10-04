@@ -18,7 +18,7 @@ const buttonVariants = cva(
         // Secondary controls use a stronger tonal plate instead of a hairline
         // frame. Focus remains explicit through the 2px focus ring.
         outline:
-          'bg-surface-container-high text-foreground font-bold shadow-soft hover:bg-foreground hover:text-background',
+          'border border-input bg-surface-container-high text-foreground font-bold shadow-soft hover:bg-foreground hover:text-background',
         // No chrome until hover — useful in headers / menus.
         ghost: 'bg-transparent text-foreground hover:bg-muted',
         // Inline link styling.
