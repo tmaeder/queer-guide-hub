@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { useParams } from 'react-router';
+import { useLocation, useParams } from 'react-router';
 import { ExternalLink, MapPin, Accessibility } from 'lucide-react';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import {
@@ -11,6 +11,9 @@ import { landmarkKindLabel } from '@/lib/landmarkKinds';
 import { LandmarkKindIcon } from '@/components/geo/LandmarkKindIcon';
 import { useGeoBreadcrumbs, usePlaceDetail } from '@/hooks/useGeoPlaces';
 import { PageContainer } from '@/components/layout/PageContainer';
+import { MapInset } from '@/components/transit/MapInset';
+import { EntityMap } from '@/components/map/EntityMap';
+import { mapUrl } from '@/lib/mapContext';
 
 const CRUMB_HREF: Record<string, (slug: string) => string> = {
   country: (slug) => `/country/${slug}`,
@@ -22,6 +25,7 @@ const CRUMB_HREF: Record<string, (slug: string) => string> = {
 export default function PlaceDetail() {
   const { t } = useTranslation();
   const { slug } = useParams<{ slug: string }>();
+  const { pathname, search } = useLocation();
 
   const { data: place, isLoading, error } = usePlaceDetail(slug);
   const { data: crumbData } = useGeoBreadcrumbs(place?.id);
@@ -103,15 +107,50 @@ export default function PlaceDetail() {
           <p className="text-15 text-muted-foreground">{profile.accessibility_notes}</p>
         </div>
       )}
+      {/*
+        A landmark had coordinates and offered only a raw openstreetmap.org
+        link — the one geographic entity with no inset at all, while Countries,
+        Cities and Villages all have one. `MapInset` is "a frame, not a second
+        map", so this is the frame plus the shared `EntityMap`: the popup is
+        `MapEntityCard`, so Directions (the handoff this link used to be) and
+        Open-full-map arrive with it rather than being hand-rolled here.
+
+        NOT `MapShell`: the command bar is absolutely positioned for a
+        full-bleed canvas and overflows a detail rail — the measured reason
+        every other inset is an `EntityMap` too.
+      */}
       {place.latitude != null && place.longitude != null && (
-        <a
-          href={`https://www.openstreetmap.org/?mlat=${place.latitude}&mlon=${place.longitude}#map=17/${place.latitude}/${place.longitude}`}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="text-15 underline"
-        >
-          {t('geo.place.openMap', 'Open on map')}
-        </a>
+        <MapInset>
+          <EntityMap
+            center={[Number(place.longitude), Number(place.latitude)]}
+            zoom={16}
+            height={240}
+            markers={[
+              {
+                id: place.id,
+                lat: Number(place.latitude),
+                lng: Number(place.longitude),
+                name: place.name ?? 'Place',
+                // No `entityType`/`entityId`: `PlaceMarkEntity` is
+                // venue|event|village|country|city, so a LANDMARK cannot carry
+                // a visited mark without widening that CHECK. A migration and
+                // its own decision — same as hotels and organizations.
+                type: 'neighbourhoods',
+                primary: true,
+              },
+            ]}
+          />
+          <LocalizedLink
+            to={mapUrl({
+              center: [Number(place.longitude), Number(place.latitude)],
+              zoom: 16,
+              back: `${pathname}${search}`,
+            })}
+            className="mt-2 inline-block text-15 underline"
+          >
+            {t('geo.place.openMap', 'Open on map')}
+          </LocalizedLink>
+        </MapInset>
       )}
     </div>
   ) : null;
