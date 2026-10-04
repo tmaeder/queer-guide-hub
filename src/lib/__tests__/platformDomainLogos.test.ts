@@ -260,3 +260,85 @@ describe('the producer refuses a denied mark', () => {
     expect(fn2).toContain('denied_mark_skipped: deniedMarkSkipped');
   });
 });
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Third layer (99991791151175): organizations, whose logos are logo.dev monograms.
+
+const MIGRATION3 = '99991791151175_organizations_logo_reprobe';
+const flat3 = norm(
+  stripSql(
+    readFileSync(join(process.cwd(), 'supabase', 'migrations', `${MIGRATION3}.sql`), 'utf8'),
+  ),
+);
+
+describe('the organizations re-probe', () => {
+  it('adds the bookkeeping column the batch protocol needs', () => {
+    // Without it a run has no way to say "examined, answer was no", so it would
+    // re-probe the same rows forever.
+    expect(flat3).toContain('add column if not exists logo_fetched_at timestamptz');
+  });
+
+  it('CHANGES NO LOGO — the decision belongs to the probe, not to a guess', () => {
+    // Neither share count nor byte size can tell a monogram from a real logo
+    // here (547 of 783 marks are singletons; the shared ones span 834 B to
+    // 103 kB and include a genuine chain logo), so clearing in SQL would destroy
+    // the real ones.
+    expect(flat3).not.toMatch(/update\s+(public\.)?organizations\s+set\s+logo_url\s*=\s*null/i);
+    expect(flat3).toContain('organization logos were modified by this migration');
+  });
+
+  it('asserts the work list is NON-EMPTY, so a green run cannot mean nothing', () => {
+    expect(flat3).toContain('the work list is empty, so the schedule would be a no-op');
+  });
+
+  it('authenticates with the vault internal secret, not an invented bearer token', () => {
+    // enrich-logos is gated by requireInternalOrAdmin; a bearer token produces a
+    // job that fires, 401s, and still records a successful dispatch.
+    expect(flat3).toContain(
+      "'x-internal-secret', (SELECT decrypted_secret FROM vault.decrypted_secrets WHERE name = 'internal_invoke_secret')",
+    );
+    expect(flat3).not.toMatch(/'Authorization', 'Bearer/);
+  });
+
+  it('registers in admin_automations, which is the record', () => {
+    expect(flat3).toContain("'enrich_logos_organizations'");
+    expect(flat3).toContain('the enrich_logos_organizations automation was not registered');
+  });
+});
+
+describe('the organizations worker', () => {
+  const fn3 = readFileSync(
+    join(process.cwd(), 'supabase', 'functions', 'enrich-logos', 'index.ts'),
+    'utf8',
+  );
+
+  it('clears only on an affirmative not_indexed, never on a failed probe', () => {
+    expect(fn3).toContain("if (probe.outcome === 'not_indexed')");
+    expect(fn3).toContain("cleared: 'logodev_monogram'");
+  });
+
+  it('aborts on unauthorized or rate_limited instead of writing rows off', () => {
+    // A failed probe is absence of evidence about the row, not evidence about it.
+    const w = fn3.slice(fn3.indexOf('async function reprobeLegacyOrgLogos'));
+    expect(w).toMatch(
+      /if \(probe\.outcome === 'unauthorized' \|\| probe\.outcome === 'rate_limited'\)/,
+    );
+    expect(w).toContain('aborted = probe.outcome');
+  });
+
+  it('MIGRATES a real logo to R2, which is what makes the denied-mark layer reach orgs', () => {
+    const w = fn3.slice(fn3.indexOf('async function reprobeLegacyOrgLogos'));
+    expect(w).toContain('await mirrorLogoToR2(probe.logo.bytes, probe.logo.contentType)');
+    expect(w).toContain('migrated_to_r2: true');
+  });
+
+  it('leaves a mirror failure unstamped so it retries', () => {
+    const w = fn3.slice(fn3.indexOf('async function reprobeLegacyOrgLogos'));
+    expect(w).toMatch(/mirrorFailed\+\+ \/\/ left unstamped on purpose/);
+  });
+
+  it('preserves the prior url on every disposition', () => {
+    const w = fn3.slice(fn3.indexOf('async function reprobeLegacyOrgLogos'));
+    expect(w).toContain('prior_url: priorUrl');
+  });
+});
