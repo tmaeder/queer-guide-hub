@@ -26,7 +26,7 @@ describe('parseDonutKey', () => {
     const spec = parseDonutKey(`${DONUT_PREFIX}|52|6|3|0|1`);
     expect(spec).toEqual({
       diameter: 52,
-      tenths: { venues: 6, events: 3, restrooms: 0, hotels: 1 },
+      tenths: { M: 6, E: 3, C: 0, T: 1 },
     });
   });
 
@@ -40,19 +40,20 @@ describe('parseDonutKey', () => {
 
 describe('donutSegments', () => {
   it('renormalizes shares (independent rounding can exceed 10)', () => {
-    const segs = donutSegments({ venues: 6, events: 3, restrooms: 0, hotels: 2 });
+    const segs = donutSegments({ M: 6, E: 3, C: 0, T: 2 });
     const sum = segs.reduce((a, s) => a + s.share, 0);
     expect(sum).toBeCloseTo(1);
-    expect(segs.map((s) => s.layer)).toEqual(['venues', 'events', 'hotels']);
+    // Emitted in MAP_LINE_IDS order, skipping the empty line.
+    expect(segs.map((s) => s.line)).toEqual(['M', 'E', 'T']);
   });
 
   it('returns an empty list for unknown composition (renderer falls back to a full neutral ring)', () => {
-    expect(donutSegments({ venues: 0, events: 0, restrooms: 0, hotels: 0 })).toEqual([]);
+    expect(donutSegments({ M: 0, E: 0, C: 0, T: 0 })).toEqual([]);
   });
 
   it('single-type cluster is one full segment', () => {
-    const segs = donutSegments({ venues: 10, events: 0, restrooms: 0, hotels: 0 });
-    expect(segs).toEqual([{ layer: 'venues', share: 1 }]);
+    const segs = donutSegments({ M: 10, E: 0, C: 0, T: 0 });
+    expect(segs).toEqual([{ line: 'M', share: 1 }]);
   });
 });
 

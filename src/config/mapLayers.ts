@@ -91,6 +91,8 @@ export const CLUSTERS_LAYER = 'clusters';
 export const CLUSTER_COUNT_LAYER = 'cluster-count';
 export const UNCLUSTERED_LAYER = 'unclustered-point';
 export const GLYPH_LAYER = 'pin-glyph';
+/** Saved / visited badge on a pin's upper-right. */
+export const STATE_BADGE_LAYER = 'pin-state-badge';
 export const FEATURED_RING_LAYER = 'featured-ring';
 export const PULSE_LAYER = 'live-pulse';
 export const HEATMAP_SOURCE = 'heatmap-source';
@@ -107,6 +109,10 @@ export const PIN_LAYER_IDS = [
   CLUSTER_COUNT_LAYER,
   UNCLUSTERED_LAYER,
   GLYPH_LAYER,
+  // Listed here so the heat/areas visibility sweeps and the teardown loop pick
+  // it up for free — a layer absent from this list stays painted under a view
+  // that is supposed to hide every pin.
+  STATE_BADGE_LAYER,
 ];
 
 // ── Boundary configs ─────────────────────────────────────────────────────────
