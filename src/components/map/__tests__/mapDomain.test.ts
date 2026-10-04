@@ -1,4 +1,6 @@
 import { describe, it, expect } from 'vitest';
+import { readdirSync, readFileSync } from 'node:fs';
+import { join, resolve } from 'node:path';
 import {
   MAP_LINES,
   MAP_LINE_IDS,
@@ -201,5 +203,57 @@ describe('entity bullets', () => {
   it('returns undefined for an unknown key rather than guessing', () => {
     expect(layerForEntityKey('personality')).toBeUndefined();
     expect(layerForEntityKey('')).toBeUndefined();
+  });
+});
+
+describe('the bullet table is not duplicated', () => {
+  /**
+   * A static source sweep, because the thing being prevented is a SECOND
+   * declaration and no runtime assertion can see one. This table existed
+   * verbatim three times plus a fourth partial variant; two of the copies even
+   * carried comments pointing at each other, and that did not stop them.
+   */
+  const SRC = resolve(__dirname, '../../..');
+
+  /**
+   * SCOPED, deliberately — and this is a stated limitation, not total coverage.
+   *
+   * A whole-`src` content sweep is 3,684 files and **17s in plain node** on
+   * this checkout (it sits in an iCloud-synced directory), which blew the 15s
+   * test timeout intermittently. A flaky guard is worse than no guard: a
+   * timeout fails with the same test NAME as a real violation, so it cannot be
+   * told apart from the thing it watches for — and that very ambiguity made
+   * one mutation result unreadable while this was being written.
+   *
+   * These five directories held all four historical copies
+   * (`hooks/useExploreMapData`, `components/map/chrome/railDeparture`,
+   * `components/map/chrome/LineKey`, `components/search/ResultsMapView`) and
+   * are 841 files / ~2s. A copy appearing outside them — in `pages/`, say —
+   * would not be caught here.
+   */
+  const SCOPE = ['components/map', 'components/search', 'components/transit', 'hooks', 'config'];
+
+  const sources = (): string[] =>
+    SCOPE.flatMap((d) =>
+      readdirSync(join(SRC, d), { recursive: true, withFileTypes: true })
+        .filter((e) => e.isFile() && /\.tsx?$/.test(e.name))
+        .map((e) => join(e.parentPath, e.name)),
+    );
+
+  it('declares `neighbourhoods: queer_village` in exactly one place', () => {
+    // The join's fingerprint: the one pair no amount of de-pluralising
+    // produces, so any copy of the table must contain it.
+    const hits = sources()
+      .filter((f) => !f.includes('__tests__'))
+      .filter((f) => /neighbourhoods:\s*'queer_village'/.test(readFileSync(f, 'utf8')))
+      .map((f) => f.slice(SRC.length + 1));
+
+    expect(hits).toEqual(['components/map/mapDomain.ts']);
+  });
+
+  it('scanned a plausible number of source files', () => {
+    // The positive control. An empty or mis-rooted file list makes the
+    // assertion above pass while reading nothing at all.
+    expect(sources().length).toBeGreaterThan(500);
   });
 });

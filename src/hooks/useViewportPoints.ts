@@ -11,6 +11,11 @@
  *  - Returns combined GeoJSON for all enabled point layer types
  */
 
+// The gated debug logger, previously declared verbatim here as well as in
+// `components/map/mapDebug` — opt in with
+// `localStorage.setItem('qg:debug:map', '1')` to inspect the data flow in prod
+// without redeploying.
+import { mapDebug } from '@/components/map/mapDebug';
 import { calculateDistanceKm } from '@/utils/calculateDistance';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import * as Sentry from '@sentry/react';
@@ -84,22 +89,6 @@ const DEBOUNCE_MS = 200;
  */
 const VIEWPORT_POINT_LIMIT = 1000;
 const EMPTY_FC: PointCollection = { type: 'FeatureCollection', features: [] };
-
-// Gated debug logger — matches ExploreMap's mapDebug. Opt in via
-// `localStorage.setItem('qg:debug:map', '1')` in prod to inspect the
-// data flow without redeploying.
-const mapDebug = (...args: unknown[]): void => {
-  try {
-    if (
-      import.meta.env.DEV ||
-      (typeof localStorage !== 'undefined' && localStorage.getItem('qg:debug:map') === '1')
-    ) {
-      console.debug('[venues-map]', ...args);
-    }
-  } catch {
-    /* localStorage may throw in some sandboxed contexts */
-  }
-};
 
 // ── Cache ─────────────────────────────────────────────────────────────────────
 

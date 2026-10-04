@@ -2,6 +2,7 @@
 import { useMemo, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { EntityMapMarker } from '@/components/map/EntityMap';
+import { layerForEntityKey } from '@/components/map/mapDomain';
 import { MapShell } from '@/components/map/MapShell';
 import type { SearchResult } from '@/hooks/useSearch';
 
@@ -13,16 +14,11 @@ interface ResultsMapViewProps {
 /** Upper bound on markers rendered at once — protects MapLibre on huge result sets. */
 const MAX_MARKERS = 300;
 
-const TYPE_TO_MAP_KIND: Record<string, EntityMapMarker['type']> = {
-  venue: 'venues',
-  venues: 'venues',
-  event: 'events',
-  events: 'events',
-  city: 'cities',
-  cities: 'cities',
-  country: 'countries',
-  countries: 'countries',
-};
+// The singular→plural join lives in `mapDomain.layerForEntityKey`, which takes
+// either spelling. The partial table that used to sit here covered four of the
+// seven layers, so a hotel / restroom / village hit resolved to `undefined`;
+// it now resolves correctly. No render change today — `markers` is currently
+// used only for the empty-state gate and the opening centroid.
 
 /**
  * Map view for search results.
@@ -48,7 +44,7 @@ export function ResultsMapView({ results, height = 480 }: ResultsMapViewProps) {
         lng: geo.lng,
         name: r.title,
         subtitle: r.location || undefined,
-        type: TYPE_TO_MAP_KIND[r.type],
+        type: layerForEntityKey(r.type),
       });
     }
     // Cap markers to keep MapLibre geometry cheap. `results` already arrives in
