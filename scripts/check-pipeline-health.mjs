@@ -4840,6 +4840,99 @@ const DISOWNED_PROSE_CEILING = 380
   }
 }
 
+// § Logo provenance — a venue must never publish another company's mark.
+//
+// `enrich-logos` probes logo.dev with the registrable domain of a row's
+// `website`, and for much of this corpus that website is a Facebook page, a
+// shortened link, a free site-builder subdomain or a directory listing. logo.dev
+// answers those correctly, with the PLATFORM's logo: measured before the guard,
+// ONE image sat on 558 venues (fetched and read — Facebook's blue "f"), another
+// on 381 (TinyURL's wordmark), and GayCities' mark on 4,169 of the 4,306 events
+// that had a logo at all.
+//
+// TWO ARMS, deliberately gated differently.
+//   `platform_logo_rows` is a ZERO-INVARIANT. The producer refuses these before
+//   probing, so any non-zero means a writer bypassed the guard or the repair
+//   regressed.
+//   `unknown_platform_groups` is ADVISORY and must stay that way. It finds the
+//   platform the vocabulary has not learned yet — one image across four or more
+//   DIFFERENT registrable domains — and the remedy is a human reading the group
+//   and adding a vocabulary row, not a threshold change. Gating it would be
+//   wrong on its face: genuine multi-site operators exist in this corpus (Grupo
+//   Arena across three domains, the SF AIDS Foundation across three), which is
+//   why the bound is four and why a hit is a question rather than a verdict.
+{
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/rpc/logo_platform_signals`, {
+    method: 'POST',
+    headers: HEADERS,
+    body: '{}',
+  })
+
+  if (res.status === 404) {
+    // The nightly run checks out `main` and calls the LIVE backend, so a window
+    // where main carries this script and prod has not applied the migration must
+    // not read as a defect.
+    console.warn('⚠ logo_platform_signals() not deployed yet (migration 99991791144831?) — skipping')
+  } else if (!res.ok) {
+    // Usually the 8 s statement_timeout, which service_role inherits. Either
+    // way it measured NOTHING and must not read as a pass.
+    console.error(`✗ logo_platform_signals() returned HTTP ${res.status} — measured nothing`)
+    FAILED = true
+  } else {
+    const sig = (await res.json()) ?? {}
+    let sectionOk = true
+
+    if (sig.probe_ok !== true) {
+      console.error('✗ logo_platform_signals() has no probe_ok — the sentinel was renamed or gutted')
+      FAILED = true
+      sectionOk = false
+    }
+
+    // THE DENOMINATOR FIRST. Zero platform logos from an EMPTY vocabulary reads
+    // exactly like zero from a guarded corpus, and this is the only number that
+    // separates them.
+    const vocab = Number(sig.vocabulary_size ?? 0)
+    const rows = sig.platform_logo_rows ?? {}
+    const unknown = Array.isArray(sig.unknown_platform_groups) ? sig.unknown_platform_groups : []
+    const offending = Object.values(rows).reduce((a, b) => a + Number(b || 0), 0)
+    console.log(
+      `  logo provenance: ${vocab} platform domains known, ${offending} rows on a platform logo, ` +
+        `${unknown.length} unknown-platform group(s)`,
+    )
+
+    if (vocab === 0) {
+      console.error(
+        '✗ logo_platform_domains is EMPTY — the producer guard is a no-op and this section measures nothing',
+      )
+      FAILED = true
+      sectionOk = false
+    }
+
+    for (const [table, n] of Object.entries(rows)) {
+      if (Number(n) > 0) {
+        console.error(
+          `✗ ${n} ${table} rows publish a logo taken from a platform domain — ` +
+            'a writer bypassed the enrich-logos guard, or the repair regressed',
+        )
+        FAILED = true
+        sectionOk = false
+      }
+    }
+
+    // Advisory, and NAMED rather than merely counted: a bare number cannot be
+    // acted on, and the action is to read the group and decide whether it is a
+    // platform or a genuine multi-site operator.
+    if (unknown.length > 0) {
+      console.warn(`⚠ ${unknown.length} logo(s) shared across 4+ registrable domains — possible unknown platform:`)
+      for (const g of unknown.slice(0, 5)) {
+        console.warn(`    ${g.venues} venues across ${g.domains} domains, e.g. ${g.example_host}`)
+      }
+    }
+
+    if (sectionOk) console.log('✓ logo provenance clean')
+  }
+}
+
 if (FAILED) {
   console.error('')
   console.error('✗ Pipeline health check FAILED — every section above ran; each ✗ line is a separate problem')
