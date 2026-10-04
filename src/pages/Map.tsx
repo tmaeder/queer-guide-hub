@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { useSearchParams } from 'react-router';
 import { MapShell } from '@/components/map/MapShell';
 
@@ -43,6 +44,18 @@ const MapPage = () => {
    */
   const routeRef = searchParams.get('route');
 
+  /**
+   * MEMOIZED, not an inline literal. `MapShell` builds its `config` in a
+   * `useMemo` keyed on this object, so a fresh one each render changes
+   * `config`'s identity every render — and `exploreLayers`, the render plan
+   * and `writeParams` all key off it. An inline `{ defaultView: 'routes' }`
+   * is a re-render on every keystroke in the map's search field.
+   */
+  const configOverride = useMemo(
+    () => (routeRef ? ({ defaultView: 'routes' } as const) : undefined),
+    [routeRef],
+  );
+
   return (
     <div className="flex flex-col" style={{ minHeight: 'calc(100dvh - 64px)' }}>
       <MapShell
@@ -51,7 +64,7 @@ const MapPage = () => {
         initialCenter={initialCenter}
         initialZoom={z}
         skipAutoFly={initialCenter != null}
-        configOverride={routeRef ? { defaultView: 'routes' } : undefined}
+        configOverride={configOverride}
       />
     </div>
   );
