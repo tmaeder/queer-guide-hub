@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeAll } from 'vitest';
+import { describe, it, expect, vi, beforeAll, afterEach } from 'vitest';
 import { COLOR_TOKENS } from '@/components/admin/design/tokenCatalog';
 import { ROUTE_BULLET_MAP } from '@/components/transit/routeBulletMap';
 import { AREA_LAYERS, LAYER_DEFS } from '@/config/mapLayers';
@@ -20,6 +20,24 @@ import { AREA_LAYERS, LAYER_DEFS } from '@/config/mapLayers';
 
 /** Design tokens the map is allowed to paint with, as `--var: "h s% l%"`. */
 const TOKEN_CHANNELS = new Map(COLOR_TOKENS.map((t) => [t.key, t.light]));
+const DARK_CHANNELS = new Map(COLOR_TOKENS.map((t) => [t.key, t.dark]));
+
+/**
+ * Which theme the mocked stylesheet is serving.
+ *
+ * Dark mode is LIVE (`.dark {}` in index.css, `ThemeToggle` in the footer and
+ * the mobile sheet, `ThemeProvider` stamping the class onto the root), so a
+ * map colour has to be correct in BOTH modes — and `tokenCatalog` carries a
+ * dark value for every token, which is what makes that checkable here.
+ */
+let paletteMode: 'light' | 'dark' = 'light';
+
+/** Put the mocked tokens AND the root class into one mode. `getMapStyle()`
+ *  reads the class to pick its cache slot, so both halves have to move. */
+const setMode = (mode: 'light' | 'dark') => {
+  paletteMode = mode;
+  document.documentElement.classList.toggle('dark', mode === 'dark');
+};
 
 /** jsdom has no stylesheet, so `getComputedStyle` returns '' for every custom
  *  property. Serve the catalog's values instead — which also means this test
@@ -28,10 +46,16 @@ beforeAll(() => {
   vi.spyOn(window, 'getComputedStyle').mockImplementation(
     () =>
       ({
-        getPropertyValue: (name: string) => TOKEN_CHANNELS.get(name.replace(/^--/, '')) ?? '',
+        getPropertyValue: (name: string) =>
+          (paletteMode === 'dark' ? DARK_CHANNELS : TOKEN_CHANNELS).get(name.replace(/^--/, '')) ??
+          '',
       }) as unknown as CSSStyleDeclaration,
   );
 });
+
+// Leaving the root in dark would silently re-point every later test's cache
+// slot, so a flip is always undone.
+afterEach(() => setMode('light'));
 
 /**
  * Chroma as RGB channel spread (0–1).
@@ -114,30 +138,70 @@ describe('map palette', () => {
     }
   });
 
-  it('builds a basemap with no chromatic value in it', async () => {
-    const { getMapStyle } = await import('@/config/mapStyle');
-    const style = getMapStyle();
-    const layers = style.layers as unknown as Record<string, unknown>[];
-    expect(layers.length).toBeGreaterThan(20);
+  it.each(['light', 'dark'] as const)(
+    'builds a %s basemap with no chromatic value',
+    async (mode) => {
+      setMode(mode);
+      const { getMapStyle } = await import('@/config/mapStyle');
+      const style = getMapStyle();
+      const layers = style.layers as unknown as Record<string, unknown>[];
+      expect(layers.length).toBeGreaterThan(20);
 
-    // Walk every paint value the flavor produced. Stock Protomaps `light` puts
-    // blue water, green landcover and orange motorway shields under our pins;
-    // paper/ink means the four tracks are the only hues on the canvas.
-    const offenders: string[] = [];
-    const walk = (node: unknown, layerId: string) => {
-      if (typeof node === 'string') {
-        if (node.startsWith('hsl(') && chromaOf(node) > 0.1) offenders.push(`${layerId}: ${node}`);
-        if (/#[0-9a-f]{3,8}\b/i.test(node) || node.startsWith('rgb')) {
-          offenders.push(`${layerId}: ${node}`);
+      // Walk every paint value the flavor produced. Stock Protomaps `light` puts
+      // blue water, green landcover and orange motorway shields under our pins;
+      // paper/ink means the four tracks are the only hues on the canvas.
+      const offenders: string[] = [];
+      const walk = (node: unknown, layerId: string) => {
+        if (typeof node === 'string') {
+          if (node.startsWith('hsl(') && chromaOf(node) > 0.1)
+            offenders.push(`${layerId}: ${node}`);
+          if (/#[0-9a-f]{3,8}\b/i.test(node) || node.startsWith('rgb')) {
+            offenders.push(`${layerId}: ${node}`);
+          }
+          return;
         }
-        return;
-      }
-      if (Array.isArray(node)) return node.forEach((n) => walk(n, layerId));
-      if (node && typeof node === 'object') {
-        return Object.values(node).forEach((n) => walk(n, layerId));
-      }
+        if (Array.isArray(node)) return node.forEach((n) => walk(n, layerId));
+        if (node && typeof node === 'object') {
+          return Object.values(node).forEach((n) => walk(n, layerId));
+        }
+      };
+      for (const layer of layers) walk(layer.paint, String(layer.id));
+      expect(offenders).toEqual([]);
+    },
+  );
+
+  /**
+   * The regression this file was missing.
+   *
+   * `styleCache` was a single slot, set at the first map mount and never
+   * invalidated — so whichever theme happened to be active when the first map
+   * appeared froze the basemap's paper and ink for the rest of the session, on
+   * all 14 `getMapStyle()` call sites. Light basemap under dark chrome, and
+   * the reverse.
+   *
+   * Deliberately NO `vi.resetModules()` between the two calls: a reset would
+   * clear the cache and make this pass against the defect, which is exactly
+   * how this hole stayed open. The paper token inverts between modes
+   * (`60 33% 97%` ⇄ `0 0% 6.7%`), so the `background` layer's own fill is the
+   * whole assertion.
+   */
+  it('re-resolves paper when the theme flips, with no module reset', async () => {
+    const { getMapStyle } = await import('@/config/mapStyle');
+    const paperOf = (style: { layers: unknown }) => {
+      const bg = (style.layers as Record<string, unknown>[]).find((l) => l.id === 'background');
+      expect(bg, 'no `background` layer — the flavor shape moved').toBeTruthy();
+      return (bg!.paint as Record<string, string>)['background-color'];
     };
-    for (const layer of layers) walk(layer.paint, String(layer.id));
-    expect(offenders).toEqual([]);
+
+    setMode('light');
+    const light = paperOf(getMapStyle());
+    setMode('dark');
+    const dark = paperOf(getMapStyle());
+
+    expect(light).toBe(`hsl(${TOKEN_CHANNELS.get('background')})`);
+    expect(dark).toBe(`hsl(${DARK_CHANNELS.get('background')})`);
+    // Stated separately: the two could agree only if the catalog stopped
+    // inverting paper, in which case this assertion is the thing to re-read.
+    expect(dark).not.toBe(light);
   });
 });
