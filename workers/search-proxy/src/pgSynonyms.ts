@@ -73,9 +73,17 @@ export async function loadActiveSynonyms(env: Env): Promise<PgSynonym[]> {
 
 /**
  * Expand a query string by adding active-synonym replacements whose `terms[]`
- * match a substring of the query (case-insensitive). Filters by index and
- * optional locale: a synonym row applies when its `indexes` is empty (all)
- * or includes the target index, AND its `locale` is '*' or matches.
+ * match a WORD of the query (case-insensitive) — see `matchesTerm`. Filters by
+ * index and optional locale: a synonym row applies when its `indexes` is empty
+ * (all) or includes the target index, AND its `locale` is '*' or matches.
+ *
+ * `indexes` IS CURRENTLY INERT AND THAT IS NOT OBVIOUS FROM HERE. The only
+ * caller (`index.ts`) passes `{ locale }` and no `index`, so `targetIndex` is
+ * null and the index filter is skipped for every row — a row scoped to
+ * `['marketplace']` still fires on a venue query. Scoping it would also not be
+ * the safety control it looks like: the caller's `requestedIndexes` defaults to
+ * ALL_INDEXES, so an un-narrowed search intersects every scope anyway. Treat
+ * `indexes` as advisory metadata until a caller opts in deliberately.
  *
  * Returns the deduped list of terms to append. Caller decides how to splice
  * them into the search query string.
@@ -84,12 +92,50 @@ export async function loadActiveSynonyms(env: Env): Promise<PgSynonym[]> {
  * in terms triggers append of replacements; query word in replacements
  * triggers append of terms.
  *
- * Caps the output at `maxTerms` (default 40). Substring matching means a short
+ * Caps the output at `maxTerms` (default 40). Even with word matching, a short
  * query can fire many synonyms once a large active set is enabled; the cap keeps
  * the embedded query from ballooning and bounds relevance dilution regardless of
  * how many synonyms are activated.
  */
 const DEFAULT_MAX_EXPANSION_TERMS = 40;
+
+/** A term short enough that matching it inside a longer word is noise, not a compound. */
+const COMPOUND_MIN_LENGTH = 6;
+
+/**
+ * Does `lcQuery` (already space-padded) contain `term` as a word?
+ *
+ * THE OLD TEST WAS `lcQuery.includes(` ${t} `) || lcQuery.includes(t)`, and the
+ * second clause subsumed the first — it made the whole thing a BARE SUBSTRING
+ * match. The space padding on `lcQuery` only exists so the first clause can
+ * check word boundaries, so the fallback defeated the design rather than
+ * extending it. Measured false fires it produced, all live before this change:
+ *
+ *   rack  <- "bracket racing"      doc  <- "doctor appointment"
+ *   arts  <- "parts for my bike"   scat <- "scattered showers"
+ *   slam  <- "islam and lgbtq rights"
+ *   upper <- "supper club"         crack <- "cracker barrel"
+ *
+ * `slam` inside "islam" is the one that settles it: a question about Islam and
+ * LGBTQ rights had "safer injecting" appended to its embedding.
+ *
+ * A STRICT BOUNDARY ALONE IS ALSO WRONG, which is why this is not a one-line
+ * deletion. German compounds are a real part of this corpus, and the strict
+ * test breaks them: "lachgaskapseln" stops matching `lachgas`,
+ * "mischkonsumrisiken" stops matching `mischkonsum`. Measured: 3 of 4 German
+ * compound cases regress under a strict boundary.
+ *
+ * So a term may also match as a WORD PREFIX, but only when it is long enough
+ * that doing so means compounding rather than coincidence. At 6+ characters
+ * every hazard above is excluded (the longest is `crack`, 5) while every German
+ * compound is kept (the shortest stem is `lachgas`, 7). The threshold sits in
+ * that gap; it is not a round number chosen by eye.
+ */
+export function matchesTerm(lcQuery: string, term: string): boolean {
+	if (!term) return false;
+	if (lcQuery.includes(` ${term} `)) return true;
+	return term.length >= COMPOUND_MIN_LENGTH && lcQuery.includes(` ${term}`);
+}
 
 export function expandWithPgSynonyms(
 	query: string,
@@ -112,12 +158,12 @@ export function expandWithPgSynonyms(
 		}
 		const terms = row.terms.map((t) => t.toLowerCase());
 		const reps = row.replacements.map((r) => r.toLowerCase());
-		const queryHasTerm = terms.some((t) => lcQuery.includes(` ${t} `) || lcQuery.includes(t));
+		const queryHasTerm = terms.some((t) => matchesTerm(lcQuery, t));
 		if (queryHasTerm) {
 			for (const r of reps) out.add(r);
 		}
 		if (!row.is_one_way) {
-			const queryHasRep = reps.some((r) => lcQuery.includes(` ${r} `) || lcQuery.includes(r));
+			const queryHasRep = reps.some((r) => matchesTerm(lcQuery, r));
 			if (queryHasRep) {
 				for (const t of terms) out.add(t);
 			}
