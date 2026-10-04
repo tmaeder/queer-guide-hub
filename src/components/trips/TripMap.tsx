@@ -15,10 +15,45 @@ import type { TripPlace, TripDay } from '@/hooks/useTrips';
 import { useVisitedPlaceLookup } from '@/hooks/useVisitedPlaceLookup';
 import { qk } from '@/lib/queryKeys';
 
-function dayColor(index: number): string {
-  const hue = (330 + index * 47) % 360;
-  return `hsl(${hue}, 70%, 52%)`;
-}
+/**
+ * `dayColor()` IS DELETED. Days are not coloured.
+ *
+ * It was `hsl((330 + i*47) % 360, 70%, 52%)` — the only raw-HSL palette on any
+ * map in this codebase, drifting from the design system by construction, and
+ * **encoding day identity by HUE ALONE, which fails WCAG 1.4.1 as written**.
+ *
+ * The four track colours cannot replace it: tracks are IDENTITY (M venues,
+ * E events, C community, T travel) and they are already on this canvas
+ * colouring the pins, so "day 2" in track blue would be the same hue as every
+ * event pin on the map.
+ *
+ * The replacement needs no palette at all, because the day FILTER already
+ * exists — so emphasis replaces enumeration:
+ *
+ *   - every day's line draws `ink(0.55)`;
+ *   - with a day selected, that day draws full `ink()` and the others
+ *     `ink(0.15)`;
+ *   - every station carries its STOP NUMBER, which is non-negotiable and is
+ *     what satisfies 1.4.1 — the number is the cue, not the colour;
+ *   - the chip reads "Day 2".
+ *
+ * If a per-day hue ever becomes a hard product requirement, cycle the four
+ * tracks AND vary `line-dasharray` every four days, so days 1 and 5 differ by
+ * dash rather than by nothing. Hue is never the only cue either way, and the
+ * stop number stays.
+ */
+/**
+ * TWO weights, not three, and the reason is that the day filter already
+ * removes the other days entirely.
+ *
+ * The obvious design is rest / selected / muted — and `geoPlaces` is filtered
+ * by `dayFilter` BEFORE `placesByDay` is built, so with a day selected no
+ * other day's line exists to mute. A `DAY_LINE_MUTED` constant would be a dead
+ * branch that reads as working emphasis. If the filter ever becomes a
+ * highlight rather than a filter, that third weight is what to add.
+ */
+const DAY_LINE_REST = 0.55;
+const DAY_LINE_SELECTED = 1;
 
 interface PopupContentProps {
   name: string;
@@ -210,10 +245,24 @@ export function TripMap({ places, days, startDate, endDate }: Props) {
 
     const disabledColor = 'hsl(var(--muted-foreground))';
     const paperColor = 'hsl(var(--background))';
+    const inkColor = 'hsl(var(--foreground))';
+
+    // Stop numbers, per DAY, in the order the places already sort. The number
+    // is the cue that replaces the deleted hue — see the `dayColor` note.
+    const stopNumber = new Map<string, number>();
+    {
+      const perDay = new Map<string, number>();
+      for (const place of geoPlaces) {
+        const key = place.day_id ?? 'unassigned';
+        const n = (perDay.get(key) ?? 0) + 1;
+        perDay.set(key, n);
+        stopNumber.set(place.id, n);
+      }
+    }
 
     geoPlaces.forEach((place) => {
       const dayIdx = place.day_id ? dayIndexMap.get(place.day_id) : undefined;
-      const color = dayIdx != null ? dayColor(dayIdx) : disabledColor;
+      const color = dayIdx != null ? inkColor : disabledColor;
 
       const placeName =
         place.venues?.name ||
@@ -230,14 +279,22 @@ export function TripMap({ places, days, startDate, endDate }: Props) {
         (place.venue_id && visitedLookup.has('venue', place.venue_id)) ||
         (place.event_id && visitedLookup.has('event', place.event_id));
 
+      // A numbered station, not a coloured dot. 18px so a two-digit number
+      // still fits; the ink ring is what makes it legible on any basemap.
       const el = document.createElement('div');
-      el.style.width = '14px';
-      el.style.height = '14px';
+      el.style.width = '18px';
+      el.style.height = '18px';
       el.style.borderRadius = '50%';
       el.style.backgroundColor = color;
-      el.style.border = '2px solid white';
+      el.style.border = `2px solid ${paperColor}`;
       el.style.boxShadow = '0 1px 4px rgba(0,0,0,0.3)';
       el.style.cursor = 'pointer';
+      el.style.display = 'flex';
+      el.style.alignItems = 'center';
+      el.style.justifyContent = 'center';
+      el.style.font = '700 10px/1 system-ui, sans-serif';
+      el.style.color = paperColor;
+      el.textContent = String(stopNumber.get(place.id) ?? '');
       if (visited) {
         el.style.opacity = '0.3';
         el.title = '✓ Visited';
@@ -325,7 +382,12 @@ export function TripMap({ places, days, startDate, endDate }: Props) {
       placesByDay.forEach((dayPlaces, dayId) => {
         if (dayPlaces.length < 2) return;
         const dayIdx = dayIndexMap.get(dayId);
-        const color = dayIdx != null ? dayColor(dayIdx) : disabledColor;
+        const color = dayIdx != null ? inkColor : disabledColor;
+        // Emphasis, never enumeration. With nothing selected every day draws
+        // at the same weight and the STOP NUMBERS are what tell them apart;
+        // selecting a day both filters the others out and draws this one at
+        // full ink.
+        const opacity = dayFilter == null ? DAY_LINE_REST : DAY_LINE_SELECTED;
         const sourceId = `route-day-${dayId}`;
 
         const coordinates = dayPlaces.map((p) => [p.longitude!, p.latitude!]);
@@ -347,7 +409,7 @@ export function TripMap({ places, days, startDate, endDate }: Props) {
             paint: {
               'line-color': color,
               'line-width': 2,
-              'line-opacity': 0.6,
+              'line-opacity': opacity,
               'line-dasharray': [2, 4],
             },
           });
@@ -398,7 +460,10 @@ export function TripMap({ places, days, startDate, endDate }: Props) {
                 key={day.id}
                 active={dayFilter === day.id}
                 onClick={() => setDayFilter(day.id)}
-                color={dayColor(idx)}
+                // Ink, not a per-day hue. The chip's LABEL ("Day 2") is the
+                // cue; a swatch that differs only by hue would re-introduce
+                // exactly the 1.4.1 failure `dayColor` was deleted for.
+                color="hsl(var(--foreground))"
                 label={t('trips.map.dayLabel', { number: idx + 1 })}
               />
             ))}

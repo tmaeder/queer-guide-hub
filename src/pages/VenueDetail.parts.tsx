@@ -35,6 +35,7 @@ import { fetchVenueWithReviews } from '@/hooks/usePageFetchers';
 import { useTranslation } from 'react-i18next';
 import { GlossaryLinkedText } from '@/components/tags/GlossaryLinkedText';
 import { localizedField, type I18nMap } from '@/lib/localizeContent';
+import { useVisitedPlaceLookup } from '@/hooks/useVisitedPlaceLookup';
 
 type Venue = Database['public']['Tables']['venues']['Row'];
 export type VenueReview = Database['public']['Tables']['venue_reviews']['Row'] & {
@@ -664,6 +665,7 @@ export function VenueLocationContact({
   onContentUpdated,
   nearbyPoints = [],
 }: VenueSidebarProps) {
+  const visitedLookup = useVisitedPlaceLookup();
   const hasMap = typeof venue.latitude === 'number' && typeof venue.longitude === 'number';
   const hasContact = Boolean(
     venue.address || venue.phone || venue.email || venue.website || venue.instagram,
@@ -690,6 +692,7 @@ export function VenueLocationContact({
         <MapInset className="border-0 p-0">
           <EntityMap
             center={[Number(venue.longitude), Number(venue.latitude)]}
+            visitedLookup={visitedLookup}
             zoom={15}
             height={nearbyPoints.length > 0 ? 220 : 180}
             markers={[
@@ -700,6 +703,8 @@ export function VenueLocationContact({
                 name: venue.name ?? 'Venue',
                 type: 'venues',
                 primary: true,
+                entityType: 'venue' as const,
+                entityId: venue.id,
               },
               ...nearbyPoints,
             ]}
