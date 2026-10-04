@@ -17,7 +17,7 @@ import { describe, expect, it } from 'vitest';
  */
 
 const MIGRATIONS = join(process.cwd(), 'supabase', 'migrations');
-const VERSION = '99991791124793';
+const VERSION = '99991791149837';
 const FILENAME = `${VERSION}_marketplace_brand_identity_cleanup.sql`;
 
 function raw(): string {
