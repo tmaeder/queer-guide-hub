@@ -37,7 +37,18 @@ function sourceFiles(): string[] {
   return out;
 }
 
-const FILES = sourceFiles();
+/**
+ * Read every file ONCE.
+ *
+ * The first draft called `readFileSync` inside each assertion's `filter`, so
+ * 600+ files were read from disk three times over — which TIMED OUT at the
+ * 15 s default under concurrent load, and a timeout reads as a failed
+ * assertion rather than as a slow one. One pass, reused.
+ */
+const FILES: { rel: string; text: string }[] = sourceFiles().map((f) => ({
+  rel: relative(SRC, f),
+  text: readFileSync(f, 'utf8'),
+}));
 
 /**
  * The one hook allowed to construct a map, plus the worker shim, which
@@ -53,11 +64,9 @@ describe('map consolidation baselines', () => {
   });
 
   it('bespoke `new maplibregl.Map` call sites: 14 and FALLING', () => {
-    const offenders = FILES.filter((f) => {
-      const rel = relative(SRC, f);
-      if (ALLOWED_CONSTRUCTORS.includes(rel)) return false;
-      return /new maplibregl\.Map\b/.test(readFileSync(f, 'utf8'));
-    }).map((f) => relative(SRC, f));
+    const offenders = FILES.filter(
+      (f) => !ALLOWED_CONSTRUCTORS.includes(f.rel) && /new maplibregl\.Map\b/.test(f.text),
+    ).map((f) => f.rel);
 
     // Measured at the time of writing. Target 0: every one of these is a map
     // with no basemap failover and no glyph images.
@@ -78,9 +87,7 @@ describe('map consolidation baselines', () => {
   });
 
   it('static maplibre importers: 34 and FALLING', () => {
-    const importers = FILES.filter((f) => /from 'maplibre-gl'/.test(readFileSync(f, 'utf8'))).map(
-      (f) => relative(SRC, f),
-    );
+    const importers = FILES.filter((f) => /from 'maplibre-gl'/.test(f.text)).map((f) => f.rel);
     expect(
       importers.length,
       'static maplibre-gl importers changed — DOWN is the goal.\n' +
@@ -102,22 +109,34 @@ describe('the infra installs live in exactly one place', () => {
     expect(instance).toContain('exposeMapForDebug');
   });
 
-  it('nothing else installs the basemap fallback', () => {
-    // If a second file did, "only useMapInstance has failover" would stop
-    // being the argument for consolidation — and the degraded-mode e2e would
-    // stop being a proof that every surface routes through it.
-    const others = FILES.filter((f) => {
-      const rel = relative(SRC, f);
-      if (rel === 'components/map/hooks/useMapInstance.ts') return false;
-      if (rel === 'components/map/basemapFallback.ts') return false; // the definition
-      return /installBasemapFallback\s*\(/.test(readFileSync(f, 'utf8'));
-    }).map((f) => relative(SRC, f));
+  it('exactly TWO files install the basemap fallback, and both are named', () => {
+    /**
+     * This assertion was `toEqual([])` — "nothing else installs it" — and it
+     * went red the moment `EntityMap` adopted the install, which is the guard
+     * doing its job rather than an obstacle.
+     *
+     * It is widened to an exact SET rather than relaxed, because the set is
+     * the claim: `EntityMap` is a DELIBERATE specialist (MapInset is "a frame,
+     * not a second map", and MapShell's command bar overflows a 360px rail),
+     * but being a specialist was never a reason to ship seven detail insets
+     * with no tile failover. A THIRD installer still fails here, and it should
+     * — at that point "route it through useMapInstance" is the cheaper answer
+     * than a third copy.
+     */
+    const installers = FILES.filter(
+      (f) =>
+        f.rel !== 'components/map/basemapFallback.ts' && // the definition
+        /installBasemapFallback\s*\(/.test(f.text),
+    )
+      .map((f) => f.rel)
+      .sort();
 
     expect(
-      others,
-      'a second installer appeared — either consolidate it or update the ' +
-        'claim that useMapInstance is the only one',
-    ).toEqual([]);
+      installers,
+      'the set of basemap-failover installers changed. A new entry means a ' +
+        'map was built outside useMapInstance AND hand-wired; prefer routing ' +
+        'it through the hook. A missing entry means a map lost its failover.',
+    ).toEqual(['components/map/EntityMap.tsx', 'components/map/hooks/useMapInstance.ts']);
   });
 });
 
