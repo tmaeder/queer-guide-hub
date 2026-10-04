@@ -131,11 +131,27 @@ test.describe('@smoke map shell — legacy URLs', () => {
    * the rewritten query string is character-equal to a pinned value, which is
    * what catches a translation that drops one param and keeps the rest.
    *
-   * Note what is NOT asserted: that the legacy key is gone on ARRIVAL. It must
-   * still be there, because the delete happens inside `writeParams` on the
-   * next write the user causes — a mount-time rewrite would race the 250 ms
-   * viewport timer and reopen the lost-write bug.
+   * THIS PARAGRAPH USED TO SAY THE OPPOSITE OF THE ASSERTION BELOW, and both
+   * were in the same file: it claimed the legacy key "must still be there" on
+   * arrival because the delete waits for a user write, while the test at the
+   * bottom asserts the key is gone and the comment beside it explains why it
+   * is stripped immediately. Only one can be true — the map emits a viewport
+   * on LOAD, so `writeParams` runs with no user action and the key dies within
+   * ~250 ms. Corrected rather than deleted, because a reader who opens this
+   * file at the wrong end gets the wrong answer, which is worse than silence.
    */
+  /**
+   * BOTH legacy keys, because polling only ONE of them moves the race rather
+   * than closing it. My first fix polled `lens` and left `layers` as a single
+   * read: the `lens=` rows then passed, and the two `layers=` rows — which
+   * carry no `lens` at all, so the poll returned instantly — started failing
+   * instead. Measured after merge: 27 passed, 2 failed, and the 2 were exactly
+   * `layers=venues` and `layers=venues,hotels`. Each passes alone; they only
+   * fail inside the full 17-minute file. A wait that is scoped to one key is a
+   * wait the other key does not get.
+   */
+  const LEGACY_KEYS_IN_URL = ['lens', 'layers'] as const;
+
   const LEGACY: { from: string; view: string; lines?: string[] }[] = [
     { from: '/map?lens=pins', view: 'stations' },
     { from: '/map?lens=combined', view: 'stations' },
@@ -181,10 +197,28 @@ test.describe('@smoke map shell — legacy URLs', () => {
        * within 250 ms of arrival with no user action at all. The strip was
        * therefore landing immediately, and because it only DELETED, the
        * translated view was lost and the map reverted to the surface default.
+       *
+       * THE STRIP IS DEBOUNCED, SO IT MUST BE POLLED, NOT READ ONCE. `setViewport`
+       * debounces 250 ms and `writeParams` is what deletes the legacy keys, so the
+       * rewrite lands a quarter-second AFTER the paint this test already waited for.
+       * Reading `page.url()` once races it, and the race is decided by how long the
+       * preceding wait happened to take: the `stations` rows wait for a source AND a
+       * layer and always won, while `heat` and `areas` wait for one layer and were a
+       * coin flip. Measured on prod — 15/16 with `lens=density` failing locally,
+       * `density` AND `boundary` failing in CI, same commit. A flake that names a
+       * different row each run is a missing wait, not a translation defect.
        */
+      await expect
+        .poll(
+          () => {
+            const sp = new URL(page.url()).searchParams;
+            return LEGACY_KEYS_IN_URL.filter((k) => sp.get(k) !== null);
+          },
+          { message: 'the legacy keys should be migrated away', timeout: 15_000 },
+        )
+        .toEqual([]);
+
       const after = new URL(page.url()).searchParams;
-      expect(after.get('lens'), 'the legacy key should be migrated away').toBeNull();
-      expect(after.get('layers')).toBeNull();
       // A default is omitted (that is what the chrome does), so only a
       // non-default view is asserted present.
       if (row.view !== 'stations') {

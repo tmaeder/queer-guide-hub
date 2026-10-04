@@ -307,6 +307,12 @@ export function HotelOverview({
                     name: hotel.name,
                     type: 'venues',
                     primary: true,
+                    // NO visited state here, and not from oversight.
+                    // `PlaceMarkEntity` is venue|event|village|country|city —
+                    // `user_place_marks` has no 'hotel', so a hotel cannot
+                    // carry a visited mark without widening that CHECK, which
+                    // is a migration and its own decision. Same for
+                    // OrganizationDetail.
                   },
                   ...nearby,
                 ]}
