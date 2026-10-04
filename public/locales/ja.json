@@ -2714,14 +2714,6 @@
       "thisMonth": "[JA] This month",
       "saved": "[JA] Saved"
     },
-    "lens": {
-      "groupLabel": "[JA] Map view",
-      "pins": "[JA] Pins",
-      "density": "[JA] Density",
-      "routes": "[JA] Routes",
-      "boundary": "[JA] Boundary",
-      "combined": "[JA] Combined"
-    },
     "sheet": {
       "title": "[JA] Map options",
       "view": "[JA] View",
@@ -2808,6 +2800,24 @@
       "queerOwned": "[JA] Queer-owned",
       "tags_one": "[JA] {{count}} tag",
       "tags_other": "[JA] {{count}} tags"
+    },
+    "view": {
+      "stations": "駅",
+      "heat": "密度",
+      "areas": "エリア",
+      "routes": "ルート"
+    },
+    "lines": {
+      "M": "スポット",
+      "E": "イベント",
+      "C": "コミュニティとサポート",
+      "T": "旅行と宿泊"
+    },
+    "key": {
+      "saved": "バッジ = 保存済み"
+    },
+    "notice": {
+      "noRoute": "ここに表示するルートはまだありません。"
     }
   },
   "cities": {

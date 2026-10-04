@@ -2716,14 +2716,6 @@
       "thisMonth": "[IT] This month",
       "saved": "[IT] Saved"
     },
-    "lens": {
-      "groupLabel": "[IT] Map view",
-      "pins": "[IT] Pins",
-      "density": "[IT] Density",
-      "routes": "[IT] Routes",
-      "boundary": "[IT] Boundary",
-      "combined": "[IT] Combined"
-    },
     "sheet": {
       "title": "[IT] Map options",
       "view": "[IT] View",
@@ -2810,6 +2802,24 @@
       "queerOwned": "[IT] Queer-owned",
       "tags_one": "[IT] {{count}} tag",
       "tags_other": "[IT] {{count}} tags"
+    },
+    "view": {
+      "stations": "Stazioni",
+      "heat": "Densità",
+      "areas": "Aree",
+      "routes": "Percorsi"
+    },
+    "lines": {
+      "M": "Luoghi",
+      "E": "Eventi",
+      "C": "Comunità e supporto",
+      "T": "Viaggio e alloggio"
+    },
+    "key": {
+      "saved": "Badge = salvato da te"
+    },
+    "notice": {
+      "noRoute": "Nessun percorso da mostrare qui per ora."
     }
   },
   "cities": {

@@ -12,6 +12,7 @@ import { getMapStyle } from '@/config/mapStyle';
 import { isWebglSupported } from '@/lib/webglSupport';
 import { loadGlyphImages } from '@/components/map/mapGlyphs';
 import { installBasemapFallback } from '@/components/map/basemapFallback';
+import { exposeMapForDebug } from '@/components/map/mapDebug';
 import { DONUT_PREFIX, DONUT_PIXEL_RATIO, getDonutImage } from '@/components/map/clusterDonut';
 import type { ExploreMapHandle } from '@/components/map/ExploreMap';
 import type { MapViewport } from '@/hooks/useExploreMapData';
@@ -168,6 +169,13 @@ export function useMapInstance({
     // is set; installed here (not in `load`) so tile errors during the very
     // first style fetch are counted too.
     detachBasemapFallbackRef.current = installBasemapFallback(map);
+
+    // Debug handle for the e2e invariants. Gated by `exposeMapForDebug` —
+    // nothing is attached without the flag, so this is no new production
+    // surface. Installed HERE rather than in a component, because this hook
+    // is the single place every shared map instance is created, which is also
+    // what makes the degraded-mode spec a proof of consolidation.
+    exposeMapForDebug(map);
 
     // Donut cluster icons are generated on demand: the cluster layer's
     // icon-image expression produces composition-encoded ids; any id the

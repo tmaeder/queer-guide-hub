@@ -9,7 +9,7 @@ const base = {
   count: 0,
   ready: true,
   settled: true,
-  hasPointLayers: true,
+  stationsBlocked: null as 'lines-off' | 'no-route' | 'by-design' | null,
   filters: {},
   locationHint: null,
 };
@@ -41,9 +41,30 @@ describe('MapNotice — the empty state is a claim about the data', () => {
   it('never claims empty when every line is switched off', () => {
     // "pan, zoom out" is the wrong advice here — panning cannot help, and the
     // map has not established that the area is empty.
-    render(<MapNotice {...base} hasPointLayers={false} />);
+    render(<MapNotice {...base} stationsBlocked="lines-off" />);
     expect(screen.queryByText(/No spots here yet/i)).not.toBeInTheDocument();
     expect(screen.getByText(/Every line is switched off/i)).toBeInTheDocument();
+  });
+
+  it('says there is no route rather than falling back to the empty state', () => {
+    // The Routes view with nothing to draw. It must not read as "no spots
+    // here" (which invites panning) and must not read as "your lines are off"
+    // (which is not what happened) — Routes never degrades into Stations.
+    render(<MapNotice {...base} stationsBlocked="no-route" />);
+    expect(screen.getByText(/No route to draw here yet/i)).toBeInTheDocument();
+    expect(screen.queryByText(/No spots here yet/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Every line is switched off/i)).not.toBeInTheDocument();
+  });
+
+  it('says NOTHING on a view that draws no stations by design', () => {
+    // Heat and Areas. The regression this guards is passing `plan.stations`
+    // into the old boolean: Areas would have told the reader every line was
+    // switched off, and the empty state would have fired on a view that never
+    // looks for points — zero of something it does not count.
+    render(<MapNotice {...base} stationsBlocked="by-design" />);
+    expect(screen.queryByText(/No spots here yet/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Every line is switched off/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/No route to draw/i)).not.toBeInTheDocument();
   });
 
   it('blames the filter that is actually responsible', () => {

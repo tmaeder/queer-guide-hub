@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
-import { LENS_LABELS as LENS_LABELS_SNAPSHOT } from '../MapShell.types';
+import { LINE_LABELS, VIEW_LABELS } from '../MapShell.types';
 import { bulletTypeForLayer, departureStatus, departureTime } from '../chrome/railDeparture';
 import { LAYER_DEFS } from '@/config/mapLayers';
 import { ROUTE_BULLET_MAP } from '@/components/transit/routeBulletMap';
@@ -86,26 +86,43 @@ describe('departureStatus', () => {
   });
 });
 
-describe('lens labels', () => {
+describe('view and line labels', () => {
   it('the i18n value and the code fallback agree', async () => {
-    // MapControls renders t('map.lens.<key>', { defaultValue: LENS_LABELS[key] }),
-    // so en.json WINS wherever it has a value. A rename applied to only one of
-    // the two is invisible in the running app while looking done in the diff.
-    const { LENS_LABELS } = await import('../MapShell.types');
+    // Chrome renders t('map.view.<key>', { defaultValue: VIEW_LABELS[key] })
+    // and t('map.lines.<L>', { defaultValue: LINE_LABELS[L] }), so en.json
+    // WINS wherever it has a value. A rename applied to only one of the two is
+    // invisible in the running app while looking done in the diff.
     const en = JSON.parse(
       readFileSync(resolve(__dirname, '../../../../public/locales/en.json'), 'utf8'),
-    ) as { map: { lens: Record<string, string> } };
+    ) as { map: { view?: Record<string, string>; lines?: Record<string, string> } };
 
-    for (const [key, label] of Object.entries(LENS_LABELS)) {
-      const translated = en.map.lens[key];
+    let compared = 0;
+    for (const [key, label] of Object.entries(VIEW_LABELS)) {
+      const translated = en.map.view?.[key];
       if (translated === undefined) continue; // fallback is the only source
-      expect(translated, `map.lens.${key} disagrees with LENS_LABELS`).toBe(label);
+      compared++;
+      expect(translated, `map.view.${key} disagrees with VIEW_LABELS`).toBe(label);
     }
+    for (const [key, label] of Object.entries(LINE_LABELS)) {
+      const translated = en.map.lines?.[key];
+      if (translated === undefined) continue;
+      compared++;
+      expect(translated, `map.lines.${key} disagrees with LINE_LABELS`).toBe(label);
+    }
+
+    // THE POSITIVE CONTROL. Every assertion above is skipped when the key is
+    // absent, so a missing `map.view` block would make the whole test vacuous
+    // — which is precisely the state a careless rename leaves behind.
+    expect(compared, 'no label was compared — did map.view / map.lines move?').toBe(8);
   });
 
-  it('uses the transit vocabulary the design system asks for', () => {
-    expect(Object.values(LENS_LABELS_SNAPSHOT)).toEqual(
-      expect.arrayContaining(['Stations', 'Heat', 'Areas']),
-    );
+  it('the retired lens vocabulary is gone from en.json', () => {
+    // `combined` named a view that no longer exists, and `pins`/`boundary`
+    // name the old words. Leaving the block would let a stale key win over
+    // the new fallback and publish "Pins" under a view called Stations.
+    const en = JSON.parse(
+      readFileSync(resolve(__dirname, '../../../../public/locales/en.json'), 'utf8'),
+    ) as { map: Record<string, unknown> };
+    expect(en.map.lens).toBeUndefined();
   });
 });

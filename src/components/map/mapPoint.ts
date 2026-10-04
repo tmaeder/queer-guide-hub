@@ -1,5 +1,6 @@
-import type { PointFeature } from '@/hooks/useViewportPoints';
+import type { PointFeature, PointFeatureProps } from '@/hooks/useViewportPoints';
 import { ENTITY_BULLET, lineFor, type MapStation } from './mapDomain';
+import { glyphKeyFor } from './mapIcons';
 
 /**
  * Flattened, render-ready view of a map point — consumed by the rich popup
@@ -60,5 +61,59 @@ export function summaryFromFeature(f: PointFeature): MapStation {
     trustScore: typeof meta.trustScore === 'number' ? meta.trustScore : undefined,
     attendeeCount: typeof meta.attendeeCount === 'number' ? meta.attendeeCount : undefined,
     favorited: Boolean(p.favorited),
+  };
+}
+
+/**
+ * The INVERSE of `summaryFromFeature`: a host-owned station set becomes the
+ * same GeoJSON the viewport fetcher produces.
+ *
+ * This is what makes an explicit `source` work with zero downstream change —
+ * `useFocusRing`, `useSelectionFlyer`, `useInBoundsCount`, `usePointLayers`,
+ * `useSpiderfy` and `usePopupManager` all already consume `pointsGeoJSON`, so
+ * feeding it from here rather than from a bbox query is the whole mechanism.
+ *
+ * `meta` is re-serialised rather than dropped: the popup card and the hover
+ * preview read image/city/openNow/startDate back out of it, so a station that
+ * arrived from search would otherwise render a thinner card than the identical
+ * station found by panning.
+ */
+export function featuresFromStations(
+  stations: readonly MapStation[],
+): GeoJSON.FeatureCollection<GeoJSON.Point, PointFeatureProps> {
+  return {
+    type: 'FeatureCollection',
+    features: stations.map((s) => ({
+      type: 'Feature' as const,
+      geometry: { type: 'Point' as const, coordinates: [s.lng, s.lat] },
+      properties: {
+        id: s.id,
+        pointType: s.type,
+        entity: s.entity,
+        line: s.line,
+        name: s.name,
+        subtitle: s.subtitle ?? '',
+        color: s.color,
+        linkTo: s.linkTo ?? '',
+        meta: JSON.stringify({
+          category: s.category,
+          image: s.image,
+          optimizedImage: s.optimizedImage,
+          thumbImage: s.thumbImage,
+          isLogo: s.isLogo,
+          city: s.city,
+          openNow: s.openNow,
+          priceRange: s.priceRange,
+          startDate: s.startDate,
+          venueName: s.venueName,
+          trustScore: s.trustScore,
+          attendeeCount: s.attendeeCount,
+        }),
+        featured: s.featured,
+        live: s.live,
+        iconKey: s.iconKey ?? glyphKeyFor(s.type, s.category),
+        favorited: s.favorited,
+      } satisfies PointFeatureProps,
+    })),
   };
 }

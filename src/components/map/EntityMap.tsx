@@ -72,15 +72,6 @@ export interface EntityMapProps {
    * filter "only visited" / "hide visited" (persisted in localStorage).
    */
   visitedLookup?: VisitedPlaceLookup;
-  /**
-   * Fires on map `moveend` with the current bounds. Used by /search to
-   * implement "Search this area" — drives a lat/lng/radius refinement.
-   */
-  onMoveEnd?: (info: {
-    center: [number, number];
-    bounds: { north: number; south: number; east: number; west: number };
-    zoom: number;
-  }) => void;
 }
 
 const PRIMARY_MARKER_SOURCE = 'entity-primary';
@@ -98,7 +89,6 @@ export const EntityMap = ({
   className,
   scrollZoom = false,
   visitedLookup,
-  onMoveEnd,
 }: EntityMapProps) => {
   const navigate = useLocalizedNavigate();
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -235,23 +225,6 @@ export const EntityMap = ({
     map.on('error', () => {
       if (!loaded) setMapError(true);
     });
-    if (onMoveEnd) {
-      map.on('moveend', () => {
-        const c = map.getCenter();
-        const b = map.getBounds();
-        onMoveEnd({
-          center: [c.lng, c.lat],
-          bounds: {
-            north: b.getNorth(),
-            south: b.getSouth(),
-            east: b.getEast(),
-            west: b.getWest(),
-          },
-          zoom: map.getZoom(),
-        });
-      });
-    }
-
     // Defense-in-depth: if neither `load` nor `error` fires within 15 s,
     // surface the OSM fallback. The previous 5 s blanket timeout fired
     // before tiles could finish loading on heavy detail pages.

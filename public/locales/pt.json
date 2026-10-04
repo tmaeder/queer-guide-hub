@@ -2716,14 +2716,6 @@
       "thisMonth": "[PT] This month",
       "saved": "[PT] Saved"
     },
-    "lens": {
-      "groupLabel": "[PT] Map view",
-      "pins": "[PT] Pins",
-      "density": "[PT] Density",
-      "routes": "[PT] Routes",
-      "boundary": "[PT] Boundary",
-      "combined": "[PT] Combined"
-    },
     "sheet": {
       "title": "[PT] Map options",
       "view": "[PT] View",
@@ -2810,6 +2802,24 @@
       "queerOwned": "[PT] Queer-owned",
       "tags_one": "[PT] {{count}} tag",
       "tags_other": "[PT] {{count}} tags"
+    },
+    "view": {
+      "stations": "Estações",
+      "heat": "Densidade",
+      "areas": "Áreas",
+      "routes": "Rotas"
+    },
+    "lines": {
+      "M": "Locais",
+      "E": "Eventos",
+      "C": "Comunidade e apoio",
+      "T": "Viagem e estadia"
+    },
+    "key": {
+      "saved": "Selo = guardado por você"
+    },
+    "notice": {
+      "noRoute": "Ainda não há rota para mostrar aqui."
     }
   },
   "cities": {
