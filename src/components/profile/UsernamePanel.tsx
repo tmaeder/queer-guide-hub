@@ -6,7 +6,6 @@ import { UsernameSelector } from '@/components/auth/UsernameSelector';
 import { useToast } from '@/hooks/use-toast';
 import { untypedRpc } from '@/integrations/supabase/untyped';
 
-
 interface UsernamePanelProps {
   username: string | null;
   autoAssigned?: boolean;
@@ -16,8 +15,9 @@ interface UsernamePanelProps {
 /**
  * Username with the change policy made explicit: claim is free, then one
  * change per rolling 12 months (the old handle is held + redirected for
- * 90 days). Auto-assigned handles get one free change. Safety changes
- * (deadname, harassment) go through support and are never questioned.
+ * 90 days), with 30 days afterwards to correct it. Auto-assigned handles get
+ * one free change. Safety changes (deadname, harassment) go through support
+ * and are never questioned.
  */
 export function UsernamePanel({ username, autoAssigned, onChanged }: UsernamePanelProps) {
   const { toast } = useToast();
@@ -28,10 +28,11 @@ export function UsernamePanel({ username, autoAssigned, onChanged }: UsernamePan
   const commit = async () => {
     if (!pending) return;
     setSaving(true);
-    const { data, error } = await untypedRpc<{ ok?: boolean; error?: string; next_change_at?: string }>(
-      'change_username',
-      { new_username: pending },
-    );
+    const { data, error } = await untypedRpc<{
+      ok?: boolean;
+      error?: string;
+      next_change_at?: string;
+    }>('change_username', { new_username: pending });
     setSaving(false);
     const result = data;
     if (error || !result?.ok) {
@@ -39,7 +40,9 @@ export function UsernamePanel({ username, autoAssigned, onChanged }: UsernamePan
       let description = 'Could not change username. Try again.';
       if (code === 'unavailable') description = 'That username is taken or reserved.';
       if (code === 'rate_limited') {
-        const next = result?.next_change_at ? new Date(result.next_change_at).toLocaleDateString() : 'later';
+        const next = result?.next_change_at
+          ? new Date(result.next_change_at).toLocaleDateString()
+          : 'later';
         description = `You can change your username once per year. Next change: ${next}.`;
       }
       toast({ title: 'Username not changed', description, variant: 'destructive' });
@@ -57,17 +60,24 @@ export function UsernamePanel({ username, autoAssigned, onChanged }: UsernamePan
         <div className="flex items-center gap-2">
           <span className="font-mono text-sm">@{username}</span>
           {autoAssigned && (
-            <Badge variant="outline" className="rounded-badge">auto-assigned</Badge>
+            <Badge variant="outline" className="rounded-badge">
+              auto-assigned
+            </Badge>
           )}
         </div>
         <p className="text-xs text-muted-foreground">
           {autoAssigned
             ? 'We assigned this for you — your first change is free.'
-            : 'Changeable once per year. Your old name is held and redirected for 90 days.'}
-          {' '}Need a change for safety reasons (e.g. a deadname)? Contact support — no questions asked.
+            : 'Changeable once per year, with 30 days afterwards to correct it. Your old name is held and redirected for 90 days.'}{' '}
+          Need a change for safety reasons (e.g. a deadname)? Contact support — no questions asked.
         </p>
         <div>
-          <Button variant="outline" size="sm" className="rounded-element" onClick={() => setEditing(true)}>
+          <Button
+            variant="outline"
+            size="sm"
+            className="rounded-element"
+            onClick={() => setEditing(true)}
+          >
             Change username
           </Button>
         </div>
@@ -80,7 +90,8 @@ export function UsernamePanel({ username, autoAssigned, onChanged }: UsernamePan
       {username && (
         <p className="text-xs text-muted-foreground">
           Changing from <span className="font-mono">@{username}</span>. This counts as your change
-          for the next 12 months; the old name redirects for 90 days.
+          for the next 12 months, but you have 30 days to correct it; the old name redirects for 90
+          days.
         </p>
       )}
       <UsernameSelector value={pending} onChange={setPending} />
@@ -90,7 +101,14 @@ export function UsernamePanel({ username, autoAssigned, onChanged }: UsernamePan
           {username ? 'Confirm change' : 'Claim username'}
         </Button>
         {username && (
-          <Button variant="outline" className="rounded-element" onClick={() => { setEditing(false); setPending(null); }}>
+          <Button
+            variant="outline"
+            className="rounded-element"
+            onClick={() => {
+              setEditing(false);
+              setPending(null);
+            }}
+          >
             Cancel
           </Button>
         )}

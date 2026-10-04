@@ -140,6 +140,18 @@ test.describe('@smoke map shell — legacy URLs', () => {
    * ~250 ms. Corrected rather than deleted, because a reader who opens this
    * file at the wrong end gets the wrong answer, which is worse than silence.
    */
+  /**
+   * BOTH legacy keys, because polling only ONE of them moves the race rather
+   * than closing it. My first fix polled `lens` and left `layers` as a single
+   * read: the `lens=` rows then passed, and the two `layers=` rows — which
+   * carry no `lens` at all, so the poll returned instantly — started failing
+   * instead. Measured after merge: 27 passed, 2 failed, and the 2 were exactly
+   * `layers=venues` and `layers=venues,hotels`. Each passes alone; they only
+   * fail inside the full 17-minute file. A wait that is scoped to one key is a
+   * wait the other key does not get.
+   */
+  const LEGACY_KEYS_IN_URL = ['lens', 'layers'] as const;
+
   const LEGACY: { from: string; view: string; lines?: string[] }[] = [
     { from: '/map?lens=pins', view: 'stations' },
     { from: '/map?lens=combined', view: 'stations' },
@@ -197,14 +209,16 @@ test.describe('@smoke map shell — legacy URLs', () => {
        * different row each run is a missing wait, not a translation defect.
        */
       await expect
-        .poll(() => new URL(page.url()).searchParams.get('lens'), {
-          message: 'the legacy key should be migrated away',
-          timeout: 10_000,
-        })
-        .toBeNull();
+        .poll(
+          () => {
+            const sp = new URL(page.url()).searchParams;
+            return LEGACY_KEYS_IN_URL.filter((k) => sp.get(k) !== null);
+          },
+          { message: 'the legacy keys should be migrated away', timeout: 15_000 },
+        )
+        .toEqual([]);
 
       const after = new URL(page.url()).searchParams;
-      expect(after.get('layers'), 'the legacy layers key should be migrated away').toBeNull();
       // A default is omitted (that is what the chrome does), so only a
       // non-default view is asserted present.
       if (row.view !== 'stations') {
