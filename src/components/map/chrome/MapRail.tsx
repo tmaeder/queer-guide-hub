@@ -13,6 +13,13 @@ export interface MapRailProps {
   loading?: boolean;
   onHover: (id: string | null) => void;
   onSelect: (id: string) => void;
+  /**
+   * The set already arrives in the order it means — a relevance-ranked search
+   * result, or an itinerary in `position` order. Re-ranking it
+   * featured-then-live-then-nearest is wrong by construction there: it would
+   * put stop 4 above stop 1 because stop 4 happens to be featured.
+   */
+  ordered?: boolean;
 }
 
 /** Rank: featured first, then live/open-now, then nearest, then alphabetical. */
@@ -54,7 +61,14 @@ function useRailClearance(state: 'hidden' | 'collapsed' | 'expanded') {
  * (the trip map, and `/venues`, which mounts ExploreMap directly with no
  * shell). They have never both been on screen at once.
  */
-export function MapRail({ points, selectedId, loading, onHover, onSelect }: MapRailProps) {
+export function MapRail({
+  points,
+  selectedId,
+  loading,
+  onHover,
+  onSelect,
+  ordered,
+}: MapRailProps) {
   const { t } = useTranslation();
   const reducedMotion = useReducedMotion();
   const [collapsed, setCollapsed] = useState(false);
@@ -62,7 +76,10 @@ export function MapRail({ points, selectedId, loading, onHover, onSelect }: MapR
   const [focusIndex, setFocusIndex] = useState(0);
   // Cap the rendered set — the in-view feed can be large; the ranking surfaces
   // the most relevant first and the count line is honest about the remainder.
-  const ranked = useMemo(() => rankPoints(points).slice(0, 30), [points]);
+  const ranked = useMemo(
+    () => (ordered ? points.slice(0, 30) : rankPoints(points).slice(0, 30)),
+    [points, ordered],
+  );
   const total = points.length;
 
   const visible = total > 0 || !!loading;

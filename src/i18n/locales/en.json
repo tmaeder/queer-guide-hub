@@ -2791,14 +2791,6 @@
       "thisMonth": "This month",
       "saved": "Saved"
     },
-    "lens": {
-      "groupLabel": "Map view",
-      "pins": "Stations",
-      "density": "Heat",
-      "routes": "Routes",
-      "boundary": "Areas",
-      "combined": "Combined"
-    },
     "sheet": {
       "title": "Map options",
       "view": "View",
@@ -2885,6 +2877,24 @@
       "queerOwned": "Queer-owned",
       "tags_one": "{{count}} tag",
       "tags_other": "{{count}} tags"
+    },
+    "view": {
+      "stations": "Stations",
+      "heat": "Heat",
+      "areas": "Areas",
+      "routes": "Routes"
+    },
+    "lines": {
+      "M": "Venues",
+      "E": "Events",
+      "C": "Community & care",
+      "T": "Travel & stay"
+    },
+    "key": {
+      "saved": "Badge = saved by you"
+    },
+    "notice": {
+      "noRoute": "No route to draw here yet."
     }
   },
   "cities": {

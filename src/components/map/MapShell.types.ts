@@ -1,9 +1,21 @@
 import type { LayerType, ExploreMapFilters } from '@/hooks/useExploreMapData';
+import {
+  MAP_LINES,
+  MAP_LINE_IDS,
+  type MapDataSource,
+  type MapLine,
+  type MapView,
+} from './mapDomain';
 
 export type MapSurface =
-  'discover' | 'search' | 'venues' | 'city' | 'country' | 'trip' | 'travel' | 'admin';
-
-export type MapLens = 'pins' | 'density' | 'routes' | 'boundary' | 'combined';
+  | 'discover'
+  | 'search'
+  | 'venues'
+  | 'city'
+  | 'country'
+  | 'trip'
+  | 'travel'
+  | 'admin';
 
 export type MapFilterKey =
   | 'category'
@@ -23,26 +35,31 @@ export interface MapShellFilters extends ExploreMapFilters {
 
 export interface MapShellConfig {
   surface: MapSurface;
-  lenses: MapLens[];
-  defaultLens: MapLens;
-  layers: LayerType[];
-  /** Layers on at boot, overriding the global per-layer `defaultOn` seeding.
-   *  Must be a subset of `layers`. Without this, a preset of area layers only
-   *  (cities/neighbourhoods are `defaultOn: false`) would boot blank. */
-  defaultEnabledLayers?: LayerType[];
+  /** Views this surface offers. `combined` is retired — see mapLegacyUrl. */
+  views: MapView[];
+  defaultView: MapView;
+  /** Lines this surface offers. The POINT vocabulary, in full. */
+  lines: MapLine[];
+  /** Lines on at boot. Must be a subset of `lines`; defaults to all of them. */
+  defaultLines?: MapLine[];
+  /**
+   * Area layers the `areas` view draws. Geography is a VIEW, so these are
+   * deliberately NOT in `lines` — the line switch would otherwise offer a
+   * toggle for something no line renders. Defaults to `['cities']`.
+   */
+  areaLayers?: LayerType[];
   filters: MapFilterKey[];
   showCommandBar?: boolean;
   /** Show the search field inside the command bar. Default true. Set false to
-   *  keep lens/filter/layer controls but drop the on-map search (e.g. the
+   *  keep view/filter/line controls but drop the on-map search (e.g. the
    *  homepage, where the global top-bar search is the single search). */
   showSearch?: boolean;
-  enableSearchThisArea?: boolean;
   enableUrlState?: boolean;
 }
 
 export interface MapShellState {
-  lens: MapLens;
-  enabledLayers: LayerType[];
+  view: MapView;
+  lines: MapLine[];
   filters: MapShellFilters;
   viewport?: { center: [number, number]; zoom: number };
 }
@@ -60,114 +77,131 @@ export const FILTER_LABELS: Record<MapFilterKey, string> = {
 };
 
 /**
- * DISPLAY labels only. The KEYS are URL state (`?lens=…`, see
- * `useMapShellState`), so renaming them would break every shared or
- * bookmarked link — the transit vocabulary is what the reader sees, not what
- * the query string carries.
+ * DISPLAY labels only. The KEYS are URL state (`?view=…`), so renaming them
+ * breaks every shared link — the transit vocabulary is what the reader sees,
+ * not what the query string carries.
  *
- * These are only the FALLBACK: `MapControls` renders
- * `t('map.lens.<key>', { defaultValue: LENS_LABELS[key] })`, so
+ * These are the FALLBACK: chrome renders
+ * `t('map.view.<key>', { defaultValue: VIEW_LABELS[key] })`, so
  * `public/locales/en.json` wins wherever it has a value. Both must move
  * together or the rename is invisible in the running app.
  */
-export const LENS_LABELS: Record<MapLens, string> = {
-  pins: 'Stations',
-  density: 'Heat',
+export const VIEW_LABELS: Record<MapView, string> = {
+  stations: 'Stations',
+  heat: 'Heat',
+  areas: 'Areas',
   routes: 'Routes',
-  boundary: 'Areas',
-  combined: 'Combined',
 };
+
+/** Line labels, same fallback contract under `map.lines.<letter>`. */
+export const LINE_LABELS: Record<MapLine, string> = Object.fromEntries(
+  MAP_LINE_IDS.map((l) => [l, MAP_LINES[l].label]),
+) as Record<MapLine, string>;
+
+const ALL_LINES: MapLine[] = [...MAP_LINE_IDS];
 
 export const SURFACE_PRESETS: Record<MapSurface, MapShellConfig> = {
   discover: {
     surface: 'discover',
-    lenses: ['combined', 'pins', 'density', 'boundary'],
-    defaultLens: 'combined',
-    layers: ['venues', 'events', 'hotels', 'restrooms', 'neighbourhoods', 'cities', 'countries'],
-    // Only data-backed filters are exposed. accessibility_attributes (0 rows)
-    // and target_groups (~0.2% populated) would empty the map, so they're
-    // dropped until the data lands; era has no point layer to act on.
+    views: ['stations', 'heat', 'areas'],
+    defaultView: 'stations',
+    lines: ALL_LINES,
+    areaLayers: ['cities', 'countries', 'neighbourhoods'],
+    // Only data-backed filters are exposed. accessibility_attributes and
+    // target_groups would empty the map; era has no point layer to act on.
     filters: ['category', 'tags', 'near-me', 'time'],
     showCommandBar: true,
-    enableSearchThisArea: true,
     enableUrlState: true,
   },
+  /**
+   * `filters: []` is the CONTRACT, not an oversight. Search owns its result
+   * set (`source: {kind:'points'}`), so the client-side narrowing in
+   * `useViewportPoints` never runs — a filter chip here would claim to narrow
+   * and not narrow. A `points`/`route` surface supplies pre-filtered stations;
+   * that is what owning the set means. Asserted in surfacePresets.test.ts.
+   */
   search: {
     surface: 'search',
-    lenses: ['pins'],
-    defaultLens: 'pins',
-    layers: ['venues', 'events'],
-    filters: ['near-me'],
+    views: ['stations'],
+    defaultView: 'stations',
+    lines: ALL_LINES,
+    filters: [],
     showCommandBar: true,
-    enableSearchThisArea: true,
     enableUrlState: false,
   },
-  // The /venues directory map. Venues only — the page is already scoped to
-  // them — and no URL state, because the page owns its own query string.
+  // The /venues directory map. The M line only — the page is already scoped to
+  // venues — and no URL state, because the page owns its own query string.
   venues: {
     surface: 'venues',
-    lenses: ['pins', 'density'],
-    defaultLens: 'pins',
-    layers: ['venues'],
-    defaultEnabledLayers: ['venues'],
+    views: ['stations', 'heat'],
+    defaultView: 'stations',
+    lines: ['M'],
     filters: ['category', 'tags', 'near-me'],
     showCommandBar: true,
-    enableSearchThisArea: true,
     enableUrlState: false,
   },
   city: {
     surface: 'city',
-    lenses: ['combined', 'pins', 'density', 'boundary'],
-    defaultLens: 'combined',
-    layers: ['venues', 'events', 'neighbourhoods'],
+    views: ['stations', 'heat', 'areas'],
+    defaultView: 'stations',
+    lines: ALL_LINES,
+    areaLayers: ['neighbourhoods'],
     filters: ['category', 'tags', 'time'],
     showCommandBar: true,
-    enableSearchThisArea: false,
     enableUrlState: false,
   },
   country: {
     surface: 'country',
-    lenses: ['pins', 'boundary'],
-    defaultLens: 'boundary',
-    layers: ['venues', 'events', 'cities'],
+    views: ['stations', 'areas'],
+    defaultView: 'areas',
+    lines: ['M', 'E'],
+    areaLayers: ['cities'],
     filters: ['category'],
     showCommandBar: true,
-    enableSearchThisArea: false,
     enableUrlState: false,
   },
+  /**
+   * REVIVED rather than deleted: `viewRenderPlan`'s `routes` branch is what
+   * makes this preset reachable, and stage 4 is its call site.
+   */
   trip: {
     surface: 'trip',
-    lenses: ['pins', 'routes'],
-    defaultLens: 'routes',
-    layers: ['venues', 'events'],
+    views: ['routes', 'stations'],
+    defaultView: 'routes',
+    lines: ALL_LINES,
     filters: [],
     showCommandBar: false,
-    enableSearchThisArea: false,
     enableUrlState: false,
   },
-  // /travel destination-discovery embed: cities + queer villages + events at
-  // world altitude — deliberately NO venues layer (that's /map's job). All
-  // three layers are boot-enabled; two of them are `defaultOn: false` globally.
+  // /travel destination-discovery embed at world altitude — the E line plus
+  // geography. Deliberately no M line (that is /map's job).
   travel: {
     surface: 'travel',
-    lenses: ['pins'],
-    defaultLens: 'pins',
-    layers: ['cities', 'neighbourhoods', 'events'],
-    defaultEnabledLayers: ['cities', 'neighbourhoods', 'events'],
+    views: ['stations', 'areas'],
+    defaultView: 'areas',
+    lines: ['E'],
+    areaLayers: ['cities', 'neighbourhoods'],
     filters: [],
     showCommandBar: true,
     showSearch: false,
-    enableSearchThisArea: true,
     enableUrlState: false,
   },
+  /**
+   * The pinned CANARY: admin takes a preset with no `configOverride`, and
+   * `surfacePresets.test.ts` asserts it offers a superset of every view and
+   * every line any other surface exposes. A view that renders nowhere else is
+   * exercised here first.
+   */
   admin: {
     surface: 'admin',
-    lenses: ['combined', 'pins', 'density', 'boundary'],
-    defaultLens: 'combined',
-    layers: ['venues', 'events', 'hotels'],
+    views: ['stations', 'heat', 'areas', 'routes'],
+    defaultView: 'stations',
+    lines: ALL_LINES,
+    areaLayers: ['cities', 'countries', 'neighbourhoods'],
     filters: ['category', 'time'],
     showCommandBar: true,
-    enableSearchThisArea: true,
     enableUrlState: true,
   },
 };
+
+export type { MapDataSource };

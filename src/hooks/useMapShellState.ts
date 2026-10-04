@@ -1,10 +1,9 @@
 /* eslint-disable react-hooks/refs -- "latest value" ref idiom: state values are mirrored into refs so callbacks defined here read the freshest value without re-creating identity. */
 import { useCallback, useMemo, useRef } from 'react';
 import { useSearchParams } from 'react-router';
-import type { LayerType } from '@/hooks/useExploreMapData';
-import { LAYER_DEFS } from '@/config/mapLayers';
+import type { MapLine, MapView } from '@/components/map/mapDomain';
+import { migratePrefs, readLines, readView, stripLegacy } from '@/components/map/mapLegacyUrl';
 import type {
-  MapLens,
   MapShellConfig,
   MapShellFilters,
   MapShellState,
@@ -13,23 +12,18 @@ import type {
 const PREFS_KEY = 'map_shell_prefs';
 
 /**
- * Layers enabled on first load: the surface's available layers narrowed to
- * those flagged `defaultOn` (and not coming-soon). Keeps external/best-effort
- * layers like `restrooms` (Refuge API) available in the picker but OFF until
- * the user opts in, so we don't hit the external API on every pan/zoom.
+ * Prefs are MIGRATED on read, never on write: a blob saved under the old
+ * `{lens, enabledLayers}` vocabulary still answers "what did this reader
+ * last choose", and rewriting it at mount would be a second writer racing
+ * the one below. `migratePrefs` is pure and unit-tested.
  */
-function seedEnabledLayers(available: LayerType[]): LayerType[] {
-  const defaultOn = new Set(
-    LAYER_DEFS.filter((d) => d.defaultOn && !d.comingSoon).map((d) => d.type),
-  );
-  const seeded = available.filter((l) => defaultOn.has(l));
-  return seeded.length > 0 ? seeded : available;
-}
-
 function readPrefs(): Partial<MapShellState> | null {
   try {
     const raw = localStorage.getItem(PREFS_KEY);
-    return raw ? JSON.parse(raw) : null;
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    const migrated = migratePrefs(parsed);
+    return { ...parsed, ...migrated } as Partial<MapShellState>;
   } catch {
     return null;
   }
@@ -51,25 +45,10 @@ function parseNum(raw: string | null, min: number, max: number): number | undefi
   return n;
 }
 
-function parseLens(raw: string | null, allowed: MapLens[]): MapLens | undefined {
-  if (!raw) return undefined;
-  const candidate = raw as MapLens;
-  return allowed.includes(candidate) ? candidate : undefined;
-}
-
-function parseLayers(raw: string | null, allowed: LayerType[]): LayerType[] | undefined {
-  if (!raw) return undefined;
-  const parsed = raw
-    .split(',')
-    .map((s) => s.trim())
-    .filter((s): s is LayerType => (allowed as string[]).includes(s));
-  return parsed.length > 0 ? parsed : undefined;
-}
-
 export interface UseMapShellStateResult {
   state: MapShellState;
-  setLens: (lens: MapLens) => void;
-  setLayers: (layers: LayerType[]) => void;
+  setView: (view: MapView) => void;
+  setLines: (lines: MapLine[]) => void;
   setFilters: (filters: MapShellFilters) => void;
   setViewport: (vp: { center: [number, number]; zoom: number }) => void;
 }
@@ -109,6 +88,12 @@ export function useMapShellState(config: MapShellConfig): UseMapShellStateResult
     (mutate: (sp: URLSearchParams) => void) => {
       const sp = new URLSearchParams(paramsRef.current);
       mutate(sp);
+      // Rule 3 of mapLegacyUrl: the legacy keys die HERE, on a write the user
+      // caused anyway — never in a mount-time effect, which would be a URL
+      // write outside this function and would race the 250 ms viewport timer.
+      // Because we rebuild from `paramsRef.current`, the delete composes with
+      // whatever the caller just set instead of clobbering it.
+      stripLegacy(sp);
       paramsRef.current = sp;
       setSearchParams(sp, { replace: true });
     },
@@ -119,10 +104,10 @@ export function useMapShellState(config: MapShellConfig): UseMapShellStateResult
    * Saved prefs are the fallback for "no param in the URL", and this hook is
    * also what writes them — so a mount-time snapshot goes stale the moment the
    * user changes anything, and choosing the SURFACE DEFAULT became impossible:
-   * `setLens` deletes the param for the default (URLs stay clean), the read
-   * path then fell through to the snapshot, and the previous lens reinstated
-   * itself. With `pins` saved, clicking Combined removed `?lens=pins` and left
-   * the map on Pins — no error, no way out except clearing localStorage.
+   * `setView` deletes the param for the default (URLs stay clean), the read
+   * path then fell through to the snapshot, and the previous view reinstated
+   * itself. With `heat` saved, clicking Stations removed `?view=heat` and left
+   * the map on Heat — no error, no way out except clearing localStorage.
    * The ref tracks what we have actually written.
    */
   const initialPrefs = useMemo(() => readPrefs(), []);
@@ -133,31 +118,35 @@ export function useMapShellState(config: MapShellConfig): UseMapShellStateResult
     writePrefs(partial);
   }, []);
 
-  const defaultLayers = useMemo(
-    () => config.defaultEnabledLayers ?? seedEnabledLayers(config.layers),
-    [config.defaultEnabledLayers, config.layers],
+  const defaultLines = useMemo<MapLine[]>(
+    () => config.defaultLines ?? config.lines,
+    [config.defaultLines, config.lines],
   );
 
   const inMemoryRef = useRef<MapShellState>({
-    lens: config.defaultLens,
-    enabledLayers: defaultLayers,
+    view: config.defaultView,
+    lines: defaultLines,
     filters: {},
   });
 
-  const lens: MapLens = useUrl
-    ? (parseLens(searchParams.get('lens'), config.lenses) ??
-      (prefs?.lens && config.lenses.includes(prefs.lens) ? prefs.lens : config.defaultLens))
-    : inMemoryRef.current.lens;
+  // An empty saved set must fall back to the surface defaults, NOT persist as
+  // "nothing". `[] ?? config.lines` does not fall back (an empty array isn't
+  // nullish), so a once-saved `lines: []` would render a blank map on every
+  // bare /map visit. `readLines` guards on length for the same reason.
+  const savedLines = prefs?.lines?.filter((l) => config.lines.includes(l));
+  const prefLines = savedLines && savedLines.length > 0 ? savedLines : defaultLines;
+  const prefView =
+    prefs?.view && config.views.includes(prefs.view) ? prefs.view : config.defaultView;
 
-  // An empty saved layer set must fall back to the surface defaults, NOT
-  // persist as "no layers". `[] ?? config.layers` does not fall back (an empty
-  // array isn't nullish), so a once-saved `enabledLayers: []` would render zero
-  // layers — a blank map — on every bare /map visit. Guard on length.
-  const savedLayers = prefs?.enabledLayers?.filter((l) => config.layers.includes(l));
-  const enabledLayers: LayerType[] = useUrl
-    ? (parseLayers(searchParams.get('layers'), config.layers) ??
-      (savedLayers && savedLayers.length > 0 ? savedLayers : defaultLayers))
-    : inMemoryRef.current.enabledLayers;
+  const getParam = useCallback((key: string) => searchParams.get(key), [searchParams]);
+
+  const view: MapView = useUrl
+    ? readView(getParam, config.views, prefView)
+    : inMemoryRef.current.view;
+
+  const lines: MapLine[] = useUrl
+    ? readLines(getParam, config.lines, prefLines)
+    : inMemoryRef.current.lines;
 
   const filters: MapShellFilters = useMemo(() => {
     if (!useUrl) return inMemoryRef.current.filters;
@@ -201,32 +190,32 @@ export function useMapShellState(config: MapShellConfig): UseMapShellStateResult
     return undefined;
   }, [searchParams, useUrl]);
 
-  const setLens = useCallback(
-    (next: MapLens) => {
+  const setView = useCallback(
+    (next: MapView) => {
       if (useUrl) {
         writeParams((sp) => {
-          if (next === config.defaultLens) sp.delete('lens');
-          else sp.set('lens', next);
+          if (next === config.defaultView) sp.delete('view');
+          else sp.set('view', next);
         });
       } else {
-        inMemoryRef.current.lens = next;
+        inMemoryRef.current.view = next;
       }
-      savePrefs({ lens: next });
+      savePrefs({ view: next });
     },
-    [useUrl, writeParams, savePrefs, config.defaultLens],
+    [useUrl, writeParams, savePrefs, config.defaultView],
   );
 
-  const setLayers = useCallback(
-    (next: LayerType[]) => {
+  const setLines = useCallback(
+    (next: MapLine[]) => {
       if (useUrl) {
         writeParams((sp) => {
-          if (next.length === 0) sp.delete('layers');
-          else sp.set('layers', next.join(','));
+          if (next.length === 0) sp.delete('lines');
+          else sp.set('lines', next.join(','));
         });
       } else {
-        inMemoryRef.current.enabledLayers = next;
+        inMemoryRef.current.lines = next;
       }
-      savePrefs({ enabledLayers: next });
+      savePrefs({ lines: next });
     },
     [useUrl, writeParams, savePrefs],
   );
@@ -292,9 +281,9 @@ export function useMapShellState(config: MapShellConfig): UseMapShellStateResult
   );
 
   return {
-    state: { lens, enabledLayers, filters, viewport },
-    setLens,
-    setLayers,
+    state: { view, lines, filters, viewport },
+    setView,
+    setLines,
     setFilters,
     setViewport,
   };

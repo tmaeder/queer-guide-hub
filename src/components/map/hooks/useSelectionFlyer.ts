@@ -7,7 +7,7 @@ interface UseSelectionFlyerParams {
   mapRef: MutableRefObject<maplibregl.Map | null>;
   mapReady: boolean;
   selectedId?: string | null;
-  pointsGeoJSON: GeoJSON.FeatureCollection;
+  pointsGeoJSON: GeoJSON.FeatureCollection<GeoJSON.Point, { id: string }>;
   showPopup: (
     map: maplibregl.Map,
     lngLat: maplibregl.LngLat | [number, number],

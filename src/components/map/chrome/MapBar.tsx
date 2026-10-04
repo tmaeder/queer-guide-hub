@@ -10,20 +10,24 @@ import { MapSearchField } from './MapSearchField';
 import { MapControls } from './MapControls';
 import { LineKey } from './LineKey';
 import type { LayerType } from '@/hooks/useExploreMapData';
-import type { MapFilterKey, MapLens, MapShellFilters } from '../MapShell.types';
+import type { MapLine, MapView } from '../mapDomain';
+import type { MapFilterKey, MapShellFilters } from '../MapShell.types';
 
 export interface MapBarProps {
   showSearch?: boolean;
-  availableLayers: LayerType[];
-  enabledLayers: LayerType[];
-  onLayersChange: (next: LayerType[]) => void;
-  layerCounts?: Partial<Record<LayerType, number>>;
+  availableLines: MapLine[];
+  lines: MapLine[];
+  onLinesChange: (next: MapLine[]) => void;
+  lineCounts?: Partial<Record<MapLine, number>>;
+  /** Area layers the current view draws, for the areas LEGEND. Empty unless
+   *  the `areas` view is active — geography is a view, not a line. */
+  areaLayers?: LayerType[];
   availableFilters: MapFilterKey[];
   filters: MapShellFilters;
   onFiltersChange: (next: MapShellFilters) => void;
-  lenses: MapLens[];
-  lens: MapLens;
-  onLensChange: (lens: MapLens) => void;
+  views: MapView[];
+  view: MapView;
+  onViewChange: (view: MapView) => void;
   canSave: boolean;
   savedOnly: boolean;
   onToggleSaved: () => void;
@@ -72,16 +76,17 @@ const trigger =
  */
 export function MapBar({
   showSearch = true,
-  availableLayers,
-  enabledLayers,
-  onLayersChange,
-  layerCounts,
+  availableLines,
+  lines,
+  onLinesChange,
+  lineCounts,
+  areaLayers,
   availableFilters,
   filters,
   onFiltersChange,
-  lenses,
-  lens,
-  onLensChange,
+  views,
+  view,
+  onViewChange,
   canSave,
   savedOnly,
   onToggleSaved,
@@ -97,7 +102,7 @@ export function MapBar({
   const inputRef = useRef<HTMLInputElement | null>(null);
 
   const count = activeCount(filters, savedOnly);
-  const onCount = enabledLayers.length;
+  const onCount = lines.length;
 
   const filtersLabel = t('map.bar.filters', { defaultValue: 'Filters' });
   const linesLabel = t('map.bar.lines', { defaultValue: 'Lines' });
@@ -107,9 +112,9 @@ export function MapBar({
       availableFilters={availableFilters}
       filters={filters}
       onFiltersChange={onFiltersChange}
-      lenses={lenses}
-      lens={lens}
-      onLensChange={onLensChange}
+      views={views}
+      view={view}
+      onViewChange={onViewChange}
       canSave={canSave}
       savedOnly={savedOnly}
       onToggleSaved={onToggleSaved}
@@ -135,11 +140,12 @@ export function MapBar({
 
   const lineKey = (
     <LineKey
-      availableLayers={availableLayers}
-      enabledLayers={enabledLayers}
-      onLayersChange={onLayersChange}
-      counts={layerCounts}
-      lens={lens}
+      availableLines={availableLines}
+      lines={lines}
+      onLinesChange={onLinesChange}
+      counts={lineCounts}
+      areaLayers={areaLayers}
+      view={view}
     />
   );
 

@@ -22,8 +22,9 @@ import {
   type MapSurface,
 } from './MapShell.types';
 import type { LayerType } from '@/hooks/useExploreMapData';
-import { lensToRenderMode, exploreLayersFor } from './mapShellAdapters';
-import { AREA_LAYERS } from '@/config/mapLayers';
+import { fetchLayersForPlan, viewRenderPlan } from './mapShellAdapters';
+import type { MapDataSource, MapLine } from './mapDomain';
+import { shareParamsFromContext, shareUrl } from '@/lib/mapContext';
 import { PreferenceChips } from '@/components/preferences/PreferenceChips';
 import { usePreferenceChips, accessibilitySlugsFromChips } from '@/hooks/usePreferenceChips';
 
@@ -49,6 +50,17 @@ export interface MapShellProps {
    * either side fighting for the query string.
    */
   filtersOverride?: MapShellFilters;
+  /**
+   * Where stations come from. Omitted = viewport discovery (today's default).
+   * `points` / `route` mean the HOST owns the set: MapShell renders exactly
+   * these and issues no bbox fetch.
+   *
+   * Such a surface MUST declare `filters: []` — on an explicit source the
+   * client-side `nearMe`/`openNow` narrowing in `useViewportPoints` never
+   * runs, so a filter chip would claim to narrow and not narrow. Asserted in
+   * surfacePresets.test.ts.
+   */
+  source?: MapDataSource;
 }
 
 /**
@@ -70,6 +82,7 @@ export const MapShell = ({
   skipAutoFly,
   cooperativeGestures,
   filtersOverride,
+  source,
 }: MapShellProps) => {
   const config: MapShellConfig = useMemo(
     () => ({ ...SURFACE_PRESETS[surface], ...configOverride }),
@@ -77,7 +90,7 @@ export const MapShell = ({
   );
 
   const reducedMotion = useReducedMotion() ?? false;
-  const { state, setLens, setLayers, setFilters, setViewport } = useMapShellState(config);
+  const { state, setView, setLines, setFilters, setViewport } = useMapShellState(config);
   const { toast } = useToast();
   const { t } = useTranslation();
 
@@ -171,13 +184,51 @@ export const MapShell = ({
     [state.filters, setFilters],
   );
 
-  // Lens → ExploreMap config adapter. Boundary auto-enables area layers
-  // from the surface preset (otherwise the polygons users came to see
-  // wouldn't render). Density only needs point layers (the heatmap
-  // computes density from points, not boundaries).
+  /** A route is present when the host handed us one. `hasRoute` is a fact
+   *  about the DATA: the routes view with nothing to draw renders nothing and
+   *  says so, rather than degrading into stations. */
+  const hasRoute = source?.kind === 'route' && source.route.stops.length > 0;
+
+  /** The host's station set, flattened out of whichever source shape it used.
+   *  A route contributes its stops in `position` order — an itinerary ordered
+   *  featured-then-nearest is wrong by construction. */
+  const explicitStations = useMemo(() => {
+    if (!source) return undefined;
+    if (source.kind === 'points') return source.stations;
+    if (source.kind === 'route') {
+      return [...source.route.stops]
+        .sort((a, b) => a.position - b.position)
+        .map((st) => st.station);
+    }
+    return undefined;
+  }, [source]);
+
+  /** A route is ALWAYS ordered (position); a `points` host opts in. Viewport
+   *  discovery has no inherent order, so it keeps the rail's own ranking. */
+  const railOrdered =
+    source?.kind === 'route' || (source?.kind === 'points' && source.ordered === true);
+
+  const plan = useMemo(
+    () => viewRenderPlan(state.view, state.lines, hasRoute),
+    [state.view, state.lines, hasRoute],
+  );
+
+  /** See `MapNotice.stationsBlocked` — three states, because `plan.stations`
+   *  alone cannot tell "you switched your lines off" from "this view has no
+   *  stations by design". */
+  const stationsBlocked: 'lines-off' | 'no-route' | 'by-design' | null = !plan.stations
+    ? state.view === 'routes'
+      ? 'no-route'
+      : 'by-design'
+    : state.lines.length === 0
+      ? 'lines-off'
+      : null;
+
+  /** The FETCH set. Point layers come from the lines, so toggling a line off
+   *  changes no fetch key; area layers are added only by the `areas` view. */
   const exploreLayers: LayerType[] = useMemo(
-    () => exploreLayersFor(state.lens, state.enabledLayers, config.layers),
-    [state.lens, state.enabledLayers, config.layers],
+    () => (source && source.kind !== 'viewport' ? [] : fetchLayersForPlan(plan, state.lines, config)),
+    [plan, state.lines, config, source],
   );
 
   const handleViewportChange = useCallback(
@@ -187,12 +238,14 @@ export const MapShell = ({
     [setViewport],
   );
 
-  /** Per-line counts for the key, from the same in-view feed the board ranks.
+  /** Per-LINE counts for the key, from the same in-view feed the board ranks.
    *  Deliberately not a second query: the number in the key and the number on
    *  the board must be the same number. */
-  const layerCounts = useMemo(() => {
-    const out: Partial<Record<LayerType, number>> = {};
-    for (const p of pointsInView) out[p.type] = (out[p.type] ?? 0) + 1;
+  const lineCounts = useMemo(() => {
+    const out: Partial<Record<MapLine, number>> = {};
+    for (const p of pointsInView) {
+      if (p.line) out[p.line] = (out[p.line] ?? 0) + 1;
+    }
     return out;
   }, [pointsInView]);
 
@@ -201,7 +254,19 @@ export const MapShell = ({
   const containerRef = useRef<HTMLDivElement | null>(null);
 
   const handleShare = useCallback(async () => {
-    const url = window.location.href;
+    // NOT `window.location.href`. That shared the reader's precise location
+    // (`near`) and their referrer (`back`) along with the view — and on the
+    // four `enableUrlState:false` surfaces it shared none of the view at all,
+    // because those pages carry no map params. `shareParams` is an allowlist.
+    const url = config.enableUrlState !== false
+      ? shareUrl(window.location.origin, window.location.pathname, new URLSearchParams(window.location.search))
+      : `${window.location.origin}/map?${shareParamsFromContext({
+          view: state.view,
+          lines: state.lines,
+          viewport: state.viewport,
+          query: state.filters.search,
+          focusedStationId: selectedId,
+        }).toString()}`;
     const payload = {
       title: t('map.share.title', { defaultValue: 'Map view' }),
       url,
@@ -227,7 +292,7 @@ export const MapShell = ({
         variant: 'destructive',
       });
     }
-  }, [t, toast]);
+  }, [t, toast, config.enableUrlState, state.view, state.lines, state.viewport, state.filters.search, selectedId]);
 
   // Imperative map handle from ExploreMap — powers the custom nav controls
   // and the geolocate trigger (the native GeolocateControl owns the tracking
@@ -301,7 +366,7 @@ export const MapShell = ({
       className={`relative ${className ?? ''}`}
       style={{ height }}
       data-map-surface={surface}
-      data-map-lens={state.lens}
+      data-map-view={state.view}
     >
       <ExploreMap
         height={height}
@@ -311,7 +376,9 @@ export const MapShell = ({
         initialZoom={fallbackZoom}
         skipAutoFly={skipAutoFly ?? fallbackCenter != null}
         onViewportChange={handleViewportChange}
-        renderMode={lensToRenderMode(state.lens)}
+        renderPlan={plan}
+        activeLines={state.lines}
+        stations={explicitStations}
         onPointsInView={setPointsInView}
         onLocationHint={setLocationHint}
         selectedId={selectedId}
@@ -335,6 +402,7 @@ export const MapShell = ({
           loading={fetching}
           onHover={setHoveredId}
           onSelect={(id) => setSelectedId(id)}
+          ordered={railOrdered}
         />
       )}
 
@@ -342,7 +410,7 @@ export const MapShell = ({
         count={pointsInView.length}
         ready={!fetching}
         settled={settled}
-        hasPointLayers={exploreLayers.some((l) => !AREA_LAYERS.includes(l))}
+        stationsBlocked={stationsBlocked}
         filters={mapFilters}
         locationHint={locationHint}
       />
@@ -351,16 +419,17 @@ export const MapShell = ({
         <div className="absolute inset-x-3 top-3 z-20 flex flex-col items-start gap-1.5 md:right-auto md:max-w-[calc(100%-1.5rem)]">
           <MapBar
             showSearch={config.showSearch}
-            availableLayers={config.layers}
-            enabledLayers={state.enabledLayers}
-            onLayersChange={setLayers}
-            layerCounts={layerCounts}
+            availableLines={config.lines}
+            lines={state.lines}
+            onLinesChange={setLines}
+            lineCounts={lineCounts}
+            areaLayers={plan.areas ? (config.areaLayers ?? ['cities']) : []}
             availableFilters={config.filters}
             filters={state.filters}
             onFiltersChange={setFilters}
-            lenses={config.lenses}
-            lens={state.lens}
-            onLensChange={setLens}
+            views={config.views}
+            view={state.view}
+            onViewChange={setView}
             canSave={canSave}
             savedOnly={savedActive}
             onToggleSaved={() => setSavedOnly((v) => !v)}

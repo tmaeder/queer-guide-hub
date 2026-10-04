@@ -2714,14 +2714,6 @@
       "thisMonth": "[ZH] This month",
       "saved": "[ZH] Saved"
     },
-    "lens": {
-      "groupLabel": "[ZH] Map view",
-      "pins": "[ZH] Pins",
-      "density": "[ZH] Density",
-      "routes": "[ZH] Routes",
-      "boundary": "[ZH] Boundary",
-      "combined": "[ZH] Combined"
-    },
     "sheet": {
       "title": "[ZH] Map options",
       "view": "[ZH] View",
@@ -2808,6 +2800,24 @@
       "queerOwned": "[ZH] Queer-owned",
       "tags_one": "[ZH] {{count}} tag",
       "tags_other": "[ZH] {{count}} tags"
+    },
+    "view": {
+      "stations": "站点",
+      "heat": "密度",
+      "areas": "区域",
+      "routes": "路线"
+    },
+    "lines": {
+      "M": "场所",
+      "E": "活动",
+      "C": "社区与支持",
+      "T": "出行与住宿"
+    },
+    "key": {
+      "saved": "徽章 = 已收藏"
+    },
+    "notice": {
+      "noRoute": "这里暂无可显示的路线。"
     }
   },
   "cities": {
