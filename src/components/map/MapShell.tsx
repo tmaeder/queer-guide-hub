@@ -379,6 +379,7 @@ export const MapShell = ({
         renderPlan={plan}
         activeLines={state.lines}
         stations={explicitStations}
+        route={source?.kind === 'route' ? source.route : undefined}
         onPointsInView={setPointsInView}
         onLocationHint={setLocationHint}
         selectedId={selectedId}

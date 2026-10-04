@@ -8,7 +8,7 @@ import { ExternalLink } from 'lucide-react';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { useReducedMotion } from '@/hooks/useReducedMotion';
 import { featuresFromStations, type MapPointSummary } from './mapPoint';
-import { linesForLayers, type MapLine, type MapStation } from './mapDomain';
+import { linesForLayers, type MapLine, type MapRoute, type MapStation } from './mapDomain';
 import {
   useExploreMapData,
   type LayerType,
@@ -25,6 +25,7 @@ import { usePulseAnimation } from '@/components/map/hooks/usePulseAnimation';
 import { useInBoundsCount } from '@/components/map/hooks/useInBoundsCount';
 import { useAreaLayers } from '@/components/map/hooks/useAreaLayers';
 import { useHeatmapLayer } from '@/components/map/hooks/useHeatmapLayer';
+import { useRouteLines } from '@/components/map/hooks/useRouteLines';
 import { useFocusRing } from '@/components/map/hooks/useFocusRing';
 import { useSelectionFlyer } from '@/components/map/hooks/useSelectionFlyer';
 import { useMapInstance } from '@/components/map/hooks/useMapInstance';
@@ -85,6 +86,8 @@ export interface ExploreMapProps {
    * single swap at the source rather than a parallel render path.
    */
   stations?: readonly MapStation[];
+  /** The route to draw under the `routes` view. */
+  route?: MapRoute;
   /** Fired (debounced, on data/viewport change) with the point summaries
    *  currently inside the visible bounds. Powers the departure board. */
   onPointsInView?: (points: MapPointSummary[]) => void;
@@ -146,6 +149,7 @@ export const ExploreMap = ({
   renderPlan,
   activeLines: activeLinesProp,
   stations,
+  route,
   onPointsInView,
   onLocationHint,
   selectedId,
@@ -464,6 +468,10 @@ export const ExploreMap = ({
     activeLines,
     prefersReducedMotion,
   });
+
+  // ── Route line + numbered stops ──────────────────────────────────────────
+  // Declared after the heat effect so a route draws ABOVE the wash.
+  useRouteLines({ mapRef, mapReady, enabled: plan.routes, route });
 
   // ── Focus ring (rail hover / selection) ──────────────────────────────────
   useFocusRing({ mapRef, mapReady, selectedId, highlightedId, pointsGeoJSON });
