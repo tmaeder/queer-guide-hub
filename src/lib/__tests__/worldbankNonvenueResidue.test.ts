@@ -25,9 +25,9 @@ import { describe, expect, it } from 'vitest';
 const MIGRATIONS = join(process.cwd(), 'supabase', 'migrations');
 // A REFERENCE, not a citation: the test locates the migration by this string, so a renumber
 // must move it too. `next-migration-version.mjs --renumber` reports a bare version like this
-// as a citation and skips it — correct for prose, wrong here. Renumbered 99991791043227 ->
-// 99991791096760 when main's ceiling overtook the original.
-const VERSION = '99991791096760';
+// as a citation and skips it — correct for prose, wrong here. Renumbered twice as main's
+// ceiling overtook the original: 99991791043227 -> 99991791096760 -> 99991791105427.
+const VERSION = '99991791105427';
 const FILENAME = `${VERSION}_archive_worldbank_dataset_nonvenues_residue.sql`;
 
 function raw(): string {
