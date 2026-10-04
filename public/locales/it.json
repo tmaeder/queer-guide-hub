@@ -1483,6 +1483,23 @@
     "queerOwnedBadge": "[IT] Queer-owned"
   },
   "profile": {
+    "username": {
+      "autoAssignedBadge": "assegnato automaticamente",
+      "policyAutoAssigned": "L'abbiamo scelto noi per te: la prima modifica non conta.",
+      "policyStandard": "Modificabile una volta all'anno, con 30 giorni dopo per correggerlo. Il tuo vecchio nome resta riservato e reindirizza per 90 giorni.",
+      "safetyNote": "Ti serve una modifica per motivi di sicurezza (ad esempio un deadname)? Scrivi all'assistenza: nessuna domanda.",
+      "change": "Cambia nome utente",
+      "changingFrom": "Modifica da @{{username}}. Conta come la tua modifica per i prossimi 12 mesi, ma hai 30 giorni per correggerla; il vecchio nome reindirizza per 90 giorni.",
+      "confirmChange": "Conferma modifica",
+      "claim": "Scegli nome utente",
+      "notChangedTitle": "Nome utente non modificato",
+      "errorGeneric": "Non è stato possibile cambiare il nome utente. Riprova.",
+      "errorUnavailable": "Questo nome utente è occupato o riservato.",
+      "errorRateLimited": "Puoi cambiare il tuo nome utente una volta all'anno. Prossima modifica: {{date}}.",
+      "rateLimitedFallbackDate": "più tardi",
+      "updatedTitle": "Nome utente aggiornato",
+      "updatedBody": "Ora sei @{{username}}."
+    },
     "editProfile": "Modifica profilo",
     "pronouns": "Pronomi",
     "location": "Posizione",
