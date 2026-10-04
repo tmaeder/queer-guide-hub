@@ -10,6 +10,8 @@ import { pickSiteIcons, isAcceptableLogoType, imageSize } from '../_shared/site-
 import { needsInkPlate, pngInk } from '../_shared/png-luminance.ts'
 import {
   loadPlatformRules,
+  loadDeniedMarks,
+  logoMarkSha256,
   platformWebsiteClass,
   websiteHost,
   type PlatformRule,
@@ -64,13 +66,17 @@ Deno.serve(async (req) => {
     // unreadable or empty: an absent vocabulary disables the guard silently, and
     // this guard exists because an unchecked logo reaches thousands of rows.
     const platformRules = await loadPlatformRules(supabase)
+    // The second layer's vocabulary. Empty is a legitimate state here — unlike
+    // the platform list, this one is discovered incrementally from the
+    // sentinel's advisory arm rather than seeded up front.
+    const deniedMarks = await loadDeniedMarks(supabase)
 
     if (table === 'venues' || table === 'all') {
-      results.venues = await enrichTable(supabase, 'venues', 'website', batchSize, dryRun, platformRules)
+      results.venues = await enrichTable(supabase, 'venues', 'website', batchSize, dryRun, platformRules, deniedMarks)
     }
 
     if (table === 'events' || table === 'all') {
-      results.events = await enrichTable(supabase, 'events', 'website', batchSize, dryRun, platformRules)
+      results.events = await enrichTable(supabase, 'events', 'website', batchSize, dryRun, platformRules, deniedMarks)
     }
 
     if (table === 'marketplace_brands' || table === 'all') {
@@ -98,6 +104,7 @@ async function enrichTable(
   batchSize: number,
   dryRun: boolean,
   platformRules: readonly PlatformRule[],
+  deniedMarks: ReadonlySet<string>,
 ) {
   // Find records that still need a logo AND haven't been attempted yet.
   // Filtering on logo_fetched_at is what lets the batch terminate: a no-logo
@@ -134,6 +141,7 @@ async function enrichTable(
   let errors = 0
   let inkPlates = 0
   let platformSkipped = 0
+  let deniedMarkSkipped = 0
   const logodev = newTally()
   let aborted: 'unauthorized' | 'rate_limited' | null = null
 
@@ -196,9 +204,27 @@ async function enrichTable(
       }
 
       let logoUrl: string | null = null
+      let deniedMark = false
       if (logo) {
         logoUrl = await mirrorLogoToR2(logo.bytes, logo.contentType)
         if (!logoUrl) mirrorFailed++ // real logo, but upload failed → retry later
+
+        // SECOND LAYER. The domain passed the platform check — it IS this
+        // venue's own site — and the image that came back is still junk:
+        // WordPress's "W" from a self-hosted site, GoDaddy's heart from a parked
+        // one, a blank square. No domain rule can express that, so the key is
+        // the image, and R2 is content-addressed, which means the mirrored url
+        // already carries the identity of the bytes.
+        //
+        // Checked AFTER mirroring, necessarily — the hash does not exist until
+        // the bytes do. The upload is therefore spent either way; what this
+        // saves is the row, not the request.
+        const mark = logoUrl ? logoMarkSha256(logoUrl) : null
+        if (mark && deniedMarks.has(mark)) {
+          deniedMarkSkipped++
+          deniedMark = true
+          logoUrl = null
+        }
       }
 
       if (logoUrl) {
@@ -221,8 +247,15 @@ async function enrichTable(
         }
         await supabase.from(table).update(patch).eq('id', item.id)
         logosFound++
-      } else if (!logo) {
+      } else if (!logo || deniedMark) {
         // No real logo for this domain — mark attempted, keep photos.
+        //
+        // `deniedMark` joins this branch deliberately and must NOT fall through
+        // to the retry path above it: a mirror failure leaves `logo_fetched_at`
+        // null so the row is tried again, which is right for a transient upload
+        // error and wrong here. The image is junk every time it is fetched, so
+        // re-probing it nightly is the treadmill this repo has removed from
+        // three other queues.
         await supabase
           .from(table)
           .update({ logo_fetched_at: new Date().toISOString() })
@@ -254,6 +287,7 @@ async function enrichTable(
     // corpus is largely social-profile "websites", which is a data finding the
     // run should surface rather than absorb into `processed`.
     platform_skipped: platformSkipped,
+    denied_mark_skipped: deniedMarkSkipped,
     ink_plates: inkPlates,
     mirror_failed: mirrorFailed,
     errors,

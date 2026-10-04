@@ -169,3 +169,94 @@ describe('the producer refuses before it probes', () => {
     expect(fn).toContain('platform_skipped: platformSkipped');
   });
 });
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Second layer (99991791148046): the domain is the entity's own, the IMAGE is junk.
+
+const MIGRATION2 = '99991791148046_logo_denied_marks';
+const raw2 = readFileSync(
+  join(process.cwd(), 'supabase', 'migrations', `${MIGRATION2}.sql`),
+  'utf8',
+);
+const flat2 = norm(stripSql(raw2));
+
+describe('the denied-mark layer', () => {
+  it('keys on the content hash, which is the identity of the BYTES', () => {
+    // R2 is content-addressed, so two rows sharing this hash are provably
+    // showing the same picture — that is what made the defect provable and what
+    // makes a single denial cover every domain that produced it.
+    expect(flat2).toContain(
+      "select substring(coalesce(p_logo_url, '') from 'img\\.queer\\.guide/logos/([0-9a-f]{64})')",
+    );
+  });
+
+  it('constrains the key to a real sha256', () => {
+    expect(flat2).toMatch(/check \(sha256 ~ '\^\[0-9a-f\]\{64\}\$'\)/);
+  });
+
+  it('denies every mark that was read by hand, with its label', () => {
+    for (const [sha, label] of [
+      ['8bd7d2723083724e7e473263d5d3ea976e001ad3333b6c6cf2c02ae783b2bf02', 'WordPress'],
+      ['b32861f915ceff23135281d3c663e29e3d17fe316053150f27839bbcb939de17', 'HugeDomains'],
+      ['475a092f7f969a365778034744343c3942f79279e2c58ee65c41db9065a6bc94', 'Wix'],
+      ['b35d6b8246da05c8586ca6447eb677a478dad1bd0862122d3c344839e33c17e2', 'Sedo'],
+      ['03bb306a0ca821d48b99cac728a80ab9c8b04353454228d05d4ce193355b87ea', 'bare rainbow flag'],
+    ] as const) {
+      expect(flat2).toContain(`'${sha}', '${label}'`);
+    }
+  });
+
+  it('repairs venues and events, and NOT organizations', () => {
+    // Organizations store logos per-UUID in Supabase storage rather than
+    // content-addressed in R2, so their bytes have no shared identity to key on.
+    // A named gap, not an oversight.
+    expect(flat2).toContain("array['venues', 'events']");
+    expect(flat2).not.toContain("array['venues', 'events', 'organizations']");
+  });
+
+  it('keeps the mirror assertion, so a sweep that cleared everything also fails', () => {
+    expect(flat2).toContain('the repair took legitimate venue logos with it');
+    expect(flat2).toMatch(/if v_n < 5000 then/);
+  });
+
+  it('adds denied_mark_rows as a SECOND zero-invariant without losing the first', () => {
+    expect(flat2).toContain("'denied_mark_rows'");
+    expect(flat2).toContain("'platform_logo_rows'");
+    expect(flat2).toContain("'denied_mark_vocabulary_size'");
+  });
+
+  it('reports the mark hash on an advisory group, so the remedy is one INSERT', () => {
+    expect(flat2).toContain("'mark', mark");
+  });
+
+  it('keeps the restated sentinel service_role only', () => {
+    expect(flat2).toContain(
+      'revoke all on function public.logo_platform_signals() from public, anon, authenticated',
+    );
+  });
+});
+
+describe('the producer refuses a denied mark', () => {
+  const fn2 = readFileSync(
+    join(process.cwd(), 'supabase', 'functions', 'enrich-logos', 'index.ts'),
+    'utf8',
+  );
+
+  it('checks the mark AFTER mirroring — the hash does not exist before then', () => {
+    const mirror = fn2.indexOf('await mirrorLogoToR2(');
+    const check = fn2.indexOf('deniedMarks.has(mark)');
+    expect(mirror).toBeGreaterThan(-1);
+    expect(check).toBeGreaterThan(mirror);
+  });
+
+  it('stamps the row attempted instead of leaving it on the retry path', () => {
+    // A mirror failure leaves logo_fetched_at null so the row retries, which is
+    // right for a transient upload error and wrong here: the image is junk every
+    // time it is fetched.
+    expect(fn2).toContain('} else if (!logo || deniedMark) {');
+  });
+
+  it('reports the skips', () => {
+    expect(fn2).toContain('denied_mark_skipped: deniedMarkSkipped');
+  });
+});
