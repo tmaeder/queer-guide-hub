@@ -6,9 +6,11 @@ import { useEvents } from '@/hooks/useEvents';
 import { useOptimizedCities, useOptimizedCountries } from '@/hooks/usePlaces';
 import { ink, trackColor } from '@/lib/mapTokens';
 import { ROUTE_BULLET_MAP, type Track } from '@/components/transit/routeBulletMap';
-// Value import; `mapLayers` only imports TYPES back from here, so there is no
-// runtime cycle.
+// Value imports; both modules import only TYPES back from here, so there is no
+// runtime cycle. (`mapDomain` re-exports `MapViewport` with `export type`,
+// which erases — if that ever becomes a value re-export this edge is a cycle.)
 import { AREA_LAYERS as AREA_LAYER_TYPES } from '@/config/mapLayers';
+import { ENTITY_BULLET } from '@/components/map/mapDomain';
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
@@ -63,23 +65,16 @@ export interface ExploreMapFilters {
  * unrelated to the design system, one of which was the destructive red sitting
  * on a layer that carries no danger meaning.
  */
-/** Layer → the `ROUTE_BULLET_MAP` key describing the same entity type. */
-const LAYER_BULLET_KEY: Record<LayerType, string> = {
-  venues: 'venue',
-  events: 'event',
-  hotels: 'hotel',
-  restrooms: 'restroom',
-  cities: 'city',
-  countries: 'country',
-  neighbourhoods: 'queer_village',
-};
-
+/** Layer → the `ROUTE_BULLET_MAP` key describing the same entity type lives in
+ *  `@/components/map/mapDomain` as `ENTITY_BULLET` — the ONE copy. It was
+ *  declared here and then again, verbatim, in `chrome/railDeparture` and
+ *  `chrome/LineKey`. */
 const LAYER_TRACKS: Record<LayerType, Track | 'ink'> = Object.fromEntries(
-  (Object.keys(LAYER_BULLET_KEY) as LayerType[]).map((layer) => [
+  (Object.keys(ENTITY_BULLET) as LayerType[]).map((layer) => [
     layer,
     AREA_LAYER_TYPES.includes(layer)
       ? 'ink'
-      : (ROUTE_BULLET_MAP[LAYER_BULLET_KEY[layer]]?.track ?? 'pink'),
+      : (ROUTE_BULLET_MAP[ENTITY_BULLET[layer]]?.track ?? 'pink'),
   ]),
 ) as Record<LayerType, Track | 'ink'>;
 
