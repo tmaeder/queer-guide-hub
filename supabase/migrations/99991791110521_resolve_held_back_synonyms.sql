@@ -6,17 +6,28 @@
 --
 -- MOST OF THEM WERE HELD BACK FOR A REASON THE WORKER FIX REMOVES. The expander
 -- matched on a BARE SUBSTRING (`lcQuery.includes(t)`), so a short term fired
--- inside any longer word. Measured false fires, all live until the companion
--- change to workers/search-proxy/src/pgSynonyms.ts:
+-- inside any longer word. For these 36 that hazard is PROSPECTIVE rather than
+-- live, and the distinction was measured rather than assumed — every one of
+-- them sits in `approved`, so none of these could fire at all:
 --
 --     rack  <- "bracket racing"        doc   <- "doctor appointment"
 --     arts  <- "parts for my bike"     scat  <- "scattered showers"
 --     upper <- "supper club"           crack <- "cracker barrel"
 --     slam  <- "islam and lgbtq rights"
 --
--- `slam` inside "islam" is the one that settles it: a question about Islam and
--- LGBTQ rights had "safer injecting" appended to its embedding. With word
--- matching those terms are ordinary vocabulary again, so they activate here.
+-- Confirmed on prod: `slam poetry evening` expands to NOTHING today, because
+-- that row is approved. ACTIVATING these 36 under a substring matcher is what
+-- would have made a question about Islam and LGBTQ rights carry "safer
+-- injecting" into its embedding — which is the whole reason the companion
+-- change to workers/search-proxy/src/pgSynonyms.ts must land with this file.
+-- With word matching they are ordinary vocabulary again.
+--
+-- The same defect IS live for rows already active, confirmed through the search
+-- endpoint's own `debug.embedText`: "ticket office hours" -> "ketamine",
+-- "nepal travel guide" -> "nep / neh" (needle exchange), "barber shop berlin"
+-- -> "kneipe pub", "doing laundry today" -> "dom / doi / dob / doc". That is
+-- the companion change's justification, not this migration's; it is recorded
+-- here so a later reader does not conflate the two sets again.
 --
 -- A STRICT WORD BOUNDARY WOULD HAVE BEEN THE WRONG FIX and the threshold in
 -- `matchesTerm` is measured rather than chosen: German compounds are real in

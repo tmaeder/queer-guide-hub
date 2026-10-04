@@ -109,15 +109,28 @@ const COMPOUND_MIN_LENGTH = 6;
  * second clause subsumed the first — it made the whole thing a BARE SUBSTRING
  * match. The space padding on `lcQuery` only exists so the first clause can
  * check word boundaries, so the fallback defeated the design rather than
- * extending it. Measured false fires it produced, all live before this change:
+ * extending it.
  *
- *   rack  <- "bracket racing"      doc  <- "doctor appointment"
- *   arts  <- "parts for my bike"   scat <- "scattered showers"
- *   slam  <- "islam and lgbtq rights"
- *   upper <- "supper club"         crack <- "cracker barrel"
+ * MEASURED ON PRODUCTION, via the search endpoint's own `debug.embedText`
+ * (which echoes the expanded embedding query) against rows that are
+ * `status='active'`, i.e. these were served to real traffic:
  *
- * `slam` inside "islam" is the one that settles it: a question about Islam and
- * LGBTQ rights had "safer injecting" appended to its embedding.
+ *   "ticket office hours"  -> "ketamine"               (ket inside tiCKETt)
+ *   "barber shop berlin"   -> "kneipe pub"             (bar inside BARber)
+ *   "doing laundry today"  -> "dom / doi / dob / doc"  (doi inside DOIng)
+ *   "nepal travel guide"   -> "nep / neh"              (nep inside NEPal)
+ *
+ * Someone searching for a TICKET got ketamine folded into their embedding, and
+ * someone searching for NEPAL got needle exchange.
+ *
+ * A second set — rack <- "bracket racing", doc <- "doctor appointment",
+ * arts <- "parts for my bike", scat <- "scattered showers", upper <- "supper
+ * club", crack <- "cracker barrel", slam <- "islam and lgbtq rights" — is
+ * PROSPECTIVE rather than live: all of those rows sit in `approved`, so they
+ * could not fire yet. They matter because the companion migration activates
+ * them, which is why this fix has to land first. An earlier draft of this
+ * comment called that set "live"; it was not, and querying which terms are
+ * actually ACTIVE is what separated the two.
  *
  * A STRICT BOUNDARY ALONE IS ALSO WRONG, which is why this is not a one-line
  * deletion. German compounds are a real part of this corpus, and the strict
