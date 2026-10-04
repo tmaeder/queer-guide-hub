@@ -8,6 +8,12 @@ import {
 import { mirrorLogoToR2, logoMirrorConfigured } from '../_shared/logo-mirror.ts'
 import { pickSiteIcons, isAcceptableLogoType, imageSize } from '../_shared/site-icon.ts'
 import { needsInkPlate, pngInk } from '../_shared/png-luminance.ts'
+import {
+  loadPlatformRules,
+  platformWebsiteClass,
+  websiteHost,
+  type PlatformRule,
+} from '../_shared/platform-domain.ts'
 
 /**
  * enrich-logos — Batch logo enrichment, mirrored to our own R2/CDN.
@@ -54,12 +60,17 @@ Deno.serve(async (req) => {
 
     const results: Record<string, unknown> = { dry_run: dryRun }
 
+    // Loaded once per request, not per row or per table. Throws if the table is
+    // unreadable or empty: an absent vocabulary disables the guard silently, and
+    // this guard exists because an unchecked logo reaches thousands of rows.
+    const platformRules = await loadPlatformRules(supabase)
+
     if (table === 'venues' || table === 'all') {
-      results.venues = await enrichTable(supabase, 'venues', 'website', batchSize, dryRun)
+      results.venues = await enrichTable(supabase, 'venues', 'website', batchSize, dryRun, platformRules)
     }
 
     if (table === 'events' || table === 'all') {
-      results.events = await enrichTable(supabase, 'events', 'website', batchSize, dryRun)
+      results.events = await enrichTable(supabase, 'events', 'website', batchSize, dryRun, platformRules)
     }
 
     if (table === 'marketplace_brands' || table === 'all') {
@@ -86,6 +97,7 @@ async function enrichTable(
   websiteColumn: string,
   batchSize: number,
   dryRun: boolean,
+  platformRules: readonly PlatformRule[],
 ) {
   // Find records that still need a logo AND haven't been attempted yet.
   // Filtering on logo_fetched_at is what lets the batch terminate: a no-logo
@@ -93,7 +105,11 @@ async function enrichTable(
   // failure leaves logo_fetched_at null so the row retries on a later run.
   const { data: items, error } = await supabase
     .from(table)
-    .select(`id, ${websiteColumn}`)
+    // A literal list, not an interpolated one: supabase-js parses the select at
+    // the type level and a `${}` segment makes the whole row type a ParserError.
+    // Both callers pass `website`, so the literal costs nothing and the dynamic
+    // column name is still honoured when the row is read below.
+    .select('id, enrichment_status, website')
     .is('logo_url', null)
     .is('logo_fetched_at', null)
     .not(websiteColumn, 'is', null)
@@ -117,12 +133,44 @@ async function enrichTable(
   let mirrorFailed = 0
   let errors = 0
   let inkPlates = 0
+  let platformSkipped = 0
   const logodev = newTally()
   let aborted: 'unauthorized' | 'rate_limited' | null = null
 
   for (const item of items) {
     try {
-      const website = item[websiteColumn] as string
+      const website = (item as { website: string | null }).website as string
+
+      // The website is a PLATFORM, not this entity's own site — a Facebook page,
+      // a shortened link, a free site-builder subdomain, a directory listing. The
+      // domain resolves perfectly and logo.dev answers with the PLATFORM's mark,
+      // which is how one Facebook "f" ended up on 558 venues and GayCities' logo
+      // on 4,169 events. Skip BEFORE the probe: there is no logo to find here, so
+      // the request would only spend quota to fetch the wrong answer.
+      //
+      // `logo_fetched_at` is stamped so the row leaves the work list. That is a
+      // deliberate difference from the `unauthorized`/`rate_limited` abort below:
+      // there the probe failed and told us nothing ABOUT THE ROW, so writing it
+      // off would record absence of evidence as evidence of absence. Here the
+      // verdict IS about the row, and re-deciding it nightly is a treadmill.
+      const platformClass = platformWebsiteClass(website, platformRules)
+      if (platformClass) {
+        platformSkipped++
+        if (!dryRun) {
+          await supabase
+            .from(table)
+            .update({
+              logo_fetched_at: new Date().toISOString(),
+              enrichment_status: {
+                ...((item as { enrichment_status?: Record<string, unknown> }).enrichment_status ?? {}),
+                logo: { skipped: 'platform_website', class: platformClass, host: websiteHost(website) },
+              },
+            })
+            .eq('id', item.id)
+        }
+        continue
+      }
+
       const probe = await probeRealLogo(website)
       logodev[probe.outcome]++
 
@@ -202,6 +250,10 @@ async function enrichTable(
   return {
     processed: items.length,
     logos_found: logosFound,
+    // Reported, not silent: a batch that is mostly platform skips means the
+    // corpus is largely social-profile "websites", which is a data finding the
+    // run should surface rather than absorb into `processed`.
+    platform_skipped: platformSkipped,
     ink_plates: inkPlates,
     mirror_failed: mirrorFailed,
     errors,
