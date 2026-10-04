@@ -45,6 +45,50 @@ const INGEST_FUNCTIONS = new Set(['umami-analytics']);
 const HISTORY_METHODS = new Set(['pushState', 'replaceState']);
 const TEST_FILE = /(__tests__[\\/]|\.(?:test|spec)\.[jt]sx?$)/;
 
+/**
+ * ONE OWNER PER TELEMETRY TABLE, enforced by the linter instead of by habit.
+ *
+ * `insertTelemetry(table, row)` is the single write primitive, and every
+ * consent decision lives in the OWNER module, not in the primitive: the
+ * `analyticsAllowed()` call is in `useTrackEvent`, not in `telemetryInsert`.
+ * So a second writer of an already-owned table is a second gate to forget —
+ * which is exactly how `AnalyticsTracker` came to carry 98.9% of sessions past
+ * a policy promising consent, and how `signup_funnel_events` came to have a TS
+ * value its CHECK rejected (`docs/audits/2026-08-21-signup-consent-gap.md`).
+ *
+ * This makes the rule MECHANICAL rather than a thing a reviewer has to notice.
+ * Derived from the four non-test call sites that exist, so it describes the
+ * codebase rather than an aspiration — a new table needs an entry here, which
+ * is the point: the failing lint is the prompt to decide where its gate lives.
+ */
+const TABLE_OWNERS = {
+  user_events: 'src/hooks/useTrackEvent.ts',
+  signup_funnel_events: 'src/hooks/useSignupFunnel.ts',
+  trip_suggestion_impressions: 'src/utils/tripTracking.ts',
+  trip_booking_clicks: 'src/utils/tripTracking.ts',
+};
+
+/** `insertTelemetry('<table>', …)`, however the module was imported. */
+function telemetryTable(node) {
+  const callee = node.callee;
+  const name =
+    callee?.type === 'Identifier'
+      ? callee.name
+      : callee?.type === 'MemberExpression'
+        ? callee.property?.name
+        : null;
+  if (name !== 'insertTelemetry') return null;
+  const arg = node.arguments?.[0];
+  return arg?.type === 'Literal' && typeof arg.value === 'string' ? arg.value : null;
+}
+
+/** Posix-normalised, so the comparison works on Windows paths too. */
+function ownsTable(filename, owner) {
+  return String(filename ?? '')
+    .replace(/\\/g, '/')
+    .endsWith(owner);
+}
+
 /** `supabase.functions.invoke(...)` / `client.functions.invoke(...)`. */
 function isFunctionsInvoke(callee) {
   return (
@@ -78,11 +122,25 @@ const rule = {
         'Do not call the "{{fn}}" edge function from the app. Page views belong to public/umami.js, which src/utils/analyticsLoader.ts injects only after analytics consent; custom events go through window.umami.track. A direct invoke bypasses the consent gate — that is exactly what AnalyticsTracker did, and it carried 98.9% of tracking past a policy promising the opposite.',
       historyPatch:
         'Do not patch history.{{method}}. public/umami.js owns the single history patch; a second one records every navigation twice. replaceState in particular is UI state here (the editorial scroll-spy writes ?section= every 300ms), not a page view.',
+      foreignTelemetryWrite:
+        'Only {{owner}} may write the "{{table}}" telemetry table. The consent decision lives in the OWNER module, not in insertTelemetry — so a second writer is a second gate to forget, which is how AnalyticsTracker carried 98.9% of sessions past a consent policy. Call the owner module, or move the gate and update TABLE_OWNERS in this rule.',
     },
   },
   create(ctx) {
     return {
       CallExpression(node) {
+        // A telemetry write to a table somebody else owns.
+        const table = telemetryTable(node);
+        if (table && Object.hasOwn(TABLE_OWNERS, table)) {
+          const owner = TABLE_OWNERS[table];
+          // A test may legitimately drive the primitive with any table — the
+          // existing telemetryInsert suite does exactly that, and banning it
+          // would mean the one place the write path is exercised cannot be.
+          if (!TEST_FILE.test(ctx.filename ?? '') && !ownsTable(ctx.filename, owner)) {
+            ctx.report({ node, messageId: 'foreignTelemetryWrite', data: { table, owner } });
+          }
+        }
+
         if (!isFunctionsInvoke(node.callee)) return;
         const arg = node.arguments[0];
         if (arg?.type !== 'Literal' || !INGEST_FUNCTIONS.has(arg.value)) return;

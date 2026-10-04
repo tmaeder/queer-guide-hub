@@ -35,7 +35,25 @@ type EventType =
   | 'deal_view'
   | 'trip_create'
   | 'hotel_view'
-  | 'activity_view';
+  | 'activity_view'
+  // ── map outcomes ──────────────────────────────────────────────────────────
+  // What the map ecosystem is FOR, as six events rather than a new table.
+  // No new table on purpose: (a) the consent gate already lives at this one
+  // writer (`analyticsAllowed()` below), (b) `analytics_hygiene_stats()`
+  // already reports this table's liveness, and (c) a new table means a new
+  // writer and a new gate to forget — which is the 98.9%-ungated-traffic trap
+  // this file's own header records.
+  //
+  // `metadata` carries `{ surface, view, line }` so a number can be read per
+  // surface. Those are NOT columns: `user_events` has `entity_type`/`entity_id`
+  // and nothing else, and widening the table to carry a map's view name would
+  // make every other writer's rows carry three nulls.
+  | 'map_detail_open'
+  | 'map_station_save'
+  | 'map_trip_add'
+  | 'map_route_open'
+  | 'map_route_copy'
+  | 'map_handoff';
 
 type EntityType = 'city' | 'country' | 'hotel' | 'venue' | 'event' | 'flight' | 'activity';
 
