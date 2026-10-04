@@ -76,36 +76,57 @@ test.describe('RTL map chrome', () => {
   });
 });
 
-test.describe('view and line labels are translated, not fallen back', () => {
+test.describe('view labels are translated, not fallen back', () => {
   /**
-   * The keys are URL STATE (`?view=heat`), so they can never be translated;
-   * only the LABELS move. These assertions therefore read the rendered control
-   * and check it is not the English default.
+   * `map.view.*` keys are URL STATE (`?view=heat`) and can never be
+   * translated; only the LABELS move, and they are rendered with
+   * `t(key, { defaultValue })` — so a missing translation falls back to
+   * English and looks correct in English. This asserts the GERMAN strings are
+   * PRESENT, which is a positive assertion and so cannot pass vacuously the
+   * way "none of these is English" can.
    */
-  const ENGLISH_VIEW_LABELS = ['Stations', 'Heat', 'Areas', 'Routes'];
+  const DE_VIEW_LABELS = ['Stationen', 'Dichte', 'Gebiete', 'Routen'];
 
-  test('the view switcher is not showing English defaults in German', async ({ page }) => {
+  test('the view switcher renders German labels', async ({ page }) => {
     await openMap(page, '/de/map');
+
+    /**
+     * THE SWITCHER IS BEHIND A TRIGGER, and a first draft of this spec asserted
+     * on `getByRole('radiogroup')` directly — which failed against prod with
+     * "element(s) not found" and read exactly like a missing control. It lives
+     * inside `MapControls`, mounted in a Popover (desktop) or a Sheet (mobile),
+     * so it has to be OPENED first.
+     *
+     * The trigger is matched on /filter/i rather than on a translated string:
+     * `map.bar.filters` exists in NO locale file (it is a bare `defaultValue`),
+     * so it renders "Filters" in every language today — asserting a German
+     * trigger label would fail for a reason this test is not about.
+     */
+    const trigger = page.getByRole('button', { name: /filter/i }).first();
+    await expect(
+      trigger,
+      'no filters/controls trigger on /de/map — the view switcher is unreachable, ' +
+        'so nothing below was measured',
+    ).toBeVisible();
+    await trigger.click();
 
     const group = page.getByRole('radiogroup').first();
     await expect(group).toBeVisible();
 
-    // POSITIVE CONTROL: four options, so "none of them is English" cannot pass
-    // on an empty group.
+    // POSITIVE CONTROL: the group has to have options, or "the German labels
+    // are present" is being asked of an empty list.
     const options = group.getByRole('radio');
+    await expect(options.first()).toBeVisible();
     const count = await options.count();
     expect(count, 'the view switcher rendered no options — nothing was measured').toBeGreaterThan(1);
 
-    const labels: string[] = [];
-    for (let i = 0; i < count; i += 1) {
-      labels.push(((await options.nth(i).getAttribute('aria-label')) ?? '').trim());
-    }
-    const untranslated = labels.filter((l) => ENGLISH_VIEW_LABELS.includes(l));
+    const rendered = (await group.innerText()).replace(/\s+/g, ' ');
+    const missing = DE_VIEW_LABELS.filter((l) => !rendered.includes(l));
     expect(
-      untranslated,
-      `these view labels fell back to English in /de: ${untranslated.join(', ')} — ` +
-        'add map.view.* to src/i18n/locales/de.json AND public/locales/de.json ' +
-        '(the bundled and the fetched copy both have to move).',
+      missing,
+      `these view labels are not German on /de/map: ${missing.join(', ')} ` +
+        `(rendered: "${rendered}"). Add map.view.* to BOTH src/i18n/locales/de.json ` +
+        'and public/locales/de.json — the bundled and the fetched copy have to move together.',
     ).toEqual([]);
   });
 });

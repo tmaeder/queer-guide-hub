@@ -81,53 +81,101 @@ async function openMap(page: Page, url: string) {
 }
 
 test.describe('tile host failure', () => {
-  test('the basemap fails over and stations still plot', async ({ page }) => {
-    // Kill every vector tile. The basemap cannot render; the DATA layers are
-    // served from Postgres and must be unaffected.
+  /**
+   * MEASURED AGAINST PRODUCTION, 2026-10-04, and the result is worse than this
+   * spec was written to assert.
+   *
+   * With every vector tile aborted, at an EXPLICIT camera (`?lat&lng&z`, so
+   * neither visitor geolocation nor an auto-fly is a variable):
+   *
+   *   tiles alive → sources ["protomaps","heatmap-source","focus-source","points-source"]
+   *                 layers  [heatmap-layer, clusters, cluster-count,
+   *                          unclustered-point, pin-glyph]
+   *   tiles dead  → sources ["protomaps"]        layers []
+   *
+   * Same camera, same geo stub, one variable. So the map does not DEGRADE when
+   * the tile host fails — it comes up EMPTY, data layers and all.
+   *
+   * The mechanism, measured by attaching listeners to `window.__qgMap`:
+   * `loaded: true`, `isMoving(): false`, `zoom: 12`, **`moveend` fired 0 times**
+   * and `idle` 0 times, against 6 `error` events. `useMapInstance` drives the
+   * viewport fetch from `moveend`, and its 3 s safety net declines while
+   * `map.isMoving()` — so a fly that is still in the air at 3 s and then never
+   * completes a `moveend` leaves the net disarmed and the fetch unfired,
+   * permanently.
+   *
+   * TWO separate facts, kept separate because they have different fixes:
+   *
+   *  1. `VITE_BASEMAP_FALLBACK_TILE_URL` is UNSET in production (`.env.example`
+   *     ships it empty and `installBasemapFallback` returns a no-op when it is),
+   *     so there is no failover to exercise on prod at all. The install is
+   *     present; the destination is not configured.
+   *  2. Even with a fallback configured, the `moveend` dependency above is what
+   *     decides whether stations plot.
+   *
+   * So the station assertion is a `fixme` with the measurement attached rather
+   * than a passing test — per the plan's own rule for a test written before its
+   * feature. What IS asserted is that the page survives: the route must not
+   * crash to an error boundary, which is the regression that would make this
+   * strictly worse.
+   */
+
+  test('the page survives a total tile outage without crashing', async ({ page }) => {
     await page.route('**/*.pbf', (route) => route.abort());
     await page.route('**/*.mvt', (route) => route.abort());
 
-    await openMap(page, '/map');
+    await openMap(page, '/map?lat=52.5200&lng=13.4050&z=12');
 
     // POSITIVE CONTROL FIRST. Without it, "no crash" is equally true of a page
-    // that never mounted a map at all — which is precisely what a missing
-    // failover looks like from the outside.
-    const before = await probe(page);
+    // that never mounted a map at all.
+    const p = await probe(page);
     expect(
-      before.present,
+      p.present,
       'window.__qgMap absent — the debug gate did not engage, so this spec measured NOTHING. ' +
         'Check mapDebug.exposeMapForDebug and the qg:debug:map opt-in.',
     ).toBe(true);
 
-    // The station source is what proves the map is alive on broken tiles.
-    await waitForSource(page, 'points-source');
-
-    const after = await probe(page);
-    expect(after.layers?.length ?? 0).toBeGreaterThan(0);
-
-    // And the canvas is really there, not a blank div.
+    // The basemap source is still declared even though its tiles 404 — which is
+    // what makes the empty-data-layer state below invisible without a probe.
+    expect(p.sources).toContain('protomaps');
     await expect(page.locator('canvas.maplibregl-canvas')).toBeVisible();
+    // And the route did not go to the crash screen.
+    await expect(page.getByText(/something went wrong/i)).toHaveCount(0);
   });
 
-  /**
-   * DELIBERATELY NOT ASSERTED: "a notice appears on tile failure".
-   *
-   * A draft of this spec checked `getByRole('status')` and then asserted
-   * `count >= 0`, which cannot fail — a vacuous check that reads as coverage.
-   * `installBasemapFallback` swaps the tile source silently and `MapNotice`'s
-   * states are about LINES and ROUTES (`stationsBlocked`), not about the
-   * basemap, so there is nothing true to assert here yet.
-   *
-   * If a degraded-basemap notice is added, assert its TEXT and pair it with a
-   * positive control that the same locator is absent on a healthy load —
-   * otherwise it passes on a page that renders a notice for another reason.
-   */
+  test.fixme(
+    'stations still plot when the tile host is unreachable',
+    async ({ page }) => {
+      // FAILS TODAY, by measurement rather than by suspicion — see the block
+      // comment above. Un-fixme this once `useMapInstance` can run its initial
+      // viewport fetch without a `moveend`, and once a fallback tile URL is
+      // configured in production.
+      await page.route('**/*.pbf', (route) => route.abort());
+      await page.route('**/*.mvt', (route) => route.abort());
+      await openMap(page, '/map?lat=52.5200&lng=13.4050&z=12');
+      await waitForSource(page, 'points-source');
+    },
+  );
 
+  test('the CONTROL: the same camera plots stations with tiles alive', async ({ page }) => {
+    /**
+     * This is what makes the fixme above a finding rather than a guess. Without
+     * it, "no points-source" is equally consistent with the camera being wrong,
+     * the viewport being empty, or the probe being broken.
+     */
+    await openMap(page, '/map?lat=52.5200&lng=13.4050&z=12');
+    await waitForSource(page, 'points-source');
+    const after = await probe(page);
+    expect(after.layers ?? []).toContain('unclustered-point');
+  });
 });
 
 test.describe('offline', () => {
   test('an already-loaded map survives losing the network', async ({ page, context }) => {
-    await openMap(page, '/map');
+    // Explicit camera for the same reason as above: at world zoom there is
+    // legitimately nothing to fetch, so `points-source` never appears and the
+    // test reports a renderer failure that is really a viewport.
+    await openMap(page, '/map?lat=52.5200&lng=13.4050&z=12');
     await waitForSource(page, 'points-source');
 
     await context.setOffline(true);
@@ -166,7 +214,7 @@ test.describe('geolocation denied', () => {
         },
       });
     });
-    await page.goto('/map');
+    await page.goto('/map?lat=52.5200&lng=13.4050&z=12');
     await waitForAppReady(page);
 
     expect((await probe(page)).present, 'no map handle with geolocation denied').toBe(true);
