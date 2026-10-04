@@ -151,7 +151,13 @@ export function CompetitionGrid({ grid }: { grid: CompetitionGridData }) {
                   return (
                     <td
                       key={ep.n}
-                      className="rounded-badge p-1 text-center align-middle shadow-soft"
+                      // The 1px ink edge is what border-gates the tint, and it
+                      // is a WCAG 1.4.11 obligation rather than decoration: the
+                      // placement tints measure under 3:1 against the page, so
+                      // the edge is the cell's only perceivable boundary. The
+                      // rounding and the soft elevation stay; only the border
+                      // comes back. Never render one of these fills borderless.
+                      className="rounded-badge border border-foreground/70 p-1 text-center align-middle shadow-soft"
                       style={{ backgroundColor: `hsl(${v.tint})`, color: `hsl(${v.ink})` }}
                       title={cell.raw ? `${v.label} (${cell.raw})` : v.label}
                     >
