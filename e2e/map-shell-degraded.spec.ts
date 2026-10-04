@@ -98,7 +98,10 @@ async function openMap(page: Page, url: string) {
  * Matching on the HOST rather than an extension, because the extension is
  * exactly what drifted: the host is read from the same constant the app ships.
  */
-function killBasemapTiles(page: Page): { aborted: () => number } {
+function killBasemapTiles(page: Page): {
+  aborted: () => number;
+  expectOutageHappened: () => Promise<void>;
+} {
   let aborted = 0;
   const kill = async (route: Parameters<Parameters<Page['route']>[1]>[0]) => {
     aborted += 1;
@@ -109,7 +112,23 @@ function killBasemapTiles(page: Page): { aborted: () => number } {
   // move to another origin.
   void page.route('**/protomaps-tiles.*/**', kill);
   void page.route('**/*.mvt', kill);
-  return { aborted: () => aborted };
+
+  return {
+    aborted: () => aborted,
+    /**
+     * POLL, never a bare read.
+     *
+     * The first version of this asserted the count immediately after
+     * `waitForAppReady`, and that is a RACE: app-ready means `#root` has
+     * children, which happens before MapLibre has necessarily asked for a
+     * single tile. It passed standalone and failed in a serial run purely on
+     * ordering — i.e. the control that exists to stop a vacuous pass was
+     * itself flaky, which is the same defect one layer up.
+     */
+    expectOutageHappened: async () => {
+      await expect.poll(() => aborted, { timeout: 20_000, intervals: [250] }).toBeGreaterThan(0);
+    },
+  };
 }
 
 test.describe('tile host failure', () => {
@@ -160,12 +179,7 @@ test.describe('tile host failure', () => {
     // THE OUTAGE REALLY HAPPENED. Without this the whole test passes against a
     // healthy tile host — which is precisely what it did while the kill pattern
     // was `**/*.pbf`.
-    expect(
-      tiles.aborted(),
-      'no basemap tile request was aborted, so this test measured a HEALTHY map ' +
-        'and its "survives an outage" claim is vacuous. The tile host moved — ' +
-        'check src/config/mapStyle.ts against killBasemapTiles.',
-    ).toBeGreaterThan(0);
+    await tiles.expectOutageHappened();
 
     // POSITIVE CONTROL FIRST. Without it, "no crash" is equally true of a page
     // that never mounted a map at all.
@@ -198,9 +212,7 @@ test.describe('tile host failure', () => {
     // not the whole cause. Un-fixme only when a run measures it passing.
     const tiles = killBasemapTiles(page);
     await openMap(page, '/map?lat=52.5200&lng=13.4050&z=12');
-    expect(tiles.aborted(), 'no tile was aborted — this would be a no-op outage').toBeGreaterThan(
-      0,
-    );
+    await tiles.expectOutageHappened();
     await waitForSource(page, 'points-source');
   });
 
