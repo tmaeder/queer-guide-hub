@@ -13,6 +13,7 @@ import { isWebglSupported } from '@/lib/webglSupport';
 import { loadGlyphImages } from '@/components/map/mapGlyphs';
 import { installBasemapFallback } from '@/components/map/basemapFallback';
 import { exposeMapForDebug } from '@/components/map/mapDebug';
+import { armInitialFetchNet } from '@/components/map/hooks/initialFetchNet';
 import { DONUT_PREFIX, DONUT_PIXEL_RATIO, getDonutImage } from '@/components/map/clusterDonut';
 import type { ExploreMapHandle } from '@/components/map/ExploreMap';
 import type { MapViewport } from '@/hooks/useExploreMapData';
@@ -217,19 +218,20 @@ export function useMapInstance({
       };
 
       if (deferInitialFetchRef.current) {
-        // An auto-fly is coming; its moveend does the first real fetch. Arm a
-        // safety net just past the 2.5 s Berlin fallback: if no viewport fetch
-        // has happened by then (fly never fired, or flyTo was a no-op), fetch
-        // the current viewport so the map can never sit permanently empty.
-        // A stranded empty map is far worse than one duplicate fetch.
-        initialFetchTimerRef.current = setTimeout(() => {
-          if (didViewportFetchRef.current) return;
-          // A fly can still be in the air here (slow geo lookup → 2.5 s Berlin
-          // fallback, then the animation). Firing now would cause the exact
-          // double fetch this deferral removes, so leave it to its moveend.
-          if (map.isMoving()) return;
-          tryInitialFetch();
-        }, 3000);
+        // An auto-fly is coming; its moveend does the first real fetch. The net
+        // covers the case where that moveend never arrives — see
+        // `initialFetchNet.ts` for why it re-arms instead of bailing, and for
+        // the prod measurement that proved a one-shot net is not a net.
+        armInitialFetchNet({
+          didFetch: () => didViewportFetchRef.current,
+          isMoving: () => map.isMoving(),
+          fetchNow: () => {
+            tryInitialFetch();
+          },
+          setTimer: (id) => {
+            initialFetchTimerRef.current = id;
+          },
+        });
         return;
       }
       if (!tryInitialFetch()) {
