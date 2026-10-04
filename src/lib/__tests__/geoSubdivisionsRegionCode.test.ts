@@ -29,6 +29,18 @@ const statements = raw
   .filter((l) => !l.trimStart().startsWith('--'))
   .join('\n');
 
+// Aliases added after the seed was applied live in a later migration's alias
+// UPDATE, not in the seed (an applied migration is never edited).
+const LATER_ALIASES = readFileSync(
+  join(process.cwd(), 'supabase/migrations', '99991791059373_city_region_code_gaps.sql'),
+  'utf8',
+)
+  .split('\n')
+  .filter((l) => !l.trimStart().startsWith('--'))
+  .join('\n');
+const laterAliasRow = (code: string) =>
+  LATER_ALIASES.split('\n').find((l) => l.trimStart().startsWith(`('${code}',`) && l.includes('array['));
+
 const seedRows = statements.split('\n').filter((l) => /^\('[A-Z]{2}-[A-Z0-9]{1,4}', '[A-Z]{2}',/.test(l));
 const resolver = statements.slice(
   statements.indexOf('create or replace function public.resolve_region_code'),
@@ -65,7 +77,11 @@ describe('seed', () => {
     for (const [, code, names] of pairs) {
       const row = seedRows.find((r) => r.startsWith(`('${code}',`));
       expect(row, code).toBeDefined();
-      for (const n of names.match(/'([^']+)'/g) ?? []) expect(row, `${code} ${n}`).toContain(n.replace(/'/g, "''").slice(1, -1));
+      const later = laterAliasRow(code) ?? '';
+      for (const n of names.match(/'([^']+)'/g) ?? []) {
+        const want = n.replace(/'/g, "''").slice(1, -1);
+        expect(`${row}\n${later}`, `${code} ${n}`).toContain(want);
+      }
     }
   });
 
