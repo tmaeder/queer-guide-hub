@@ -90,8 +90,8 @@ export function AnchorMilestoneCard({
       )}
     >
       {imageUrl ? (
-        <span className="block aspect-[16/10] overflow-hidden border-b border-border-hairline bg-muted">
-          { }
+        <span className="block aspect-[16/10] overflow-hidden rounded-container border-b border-border-hairline bg-muted">
+          {}
           <img
             src={imageUrl}
             alt=""

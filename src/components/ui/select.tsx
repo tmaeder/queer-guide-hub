@@ -15,12 +15,8 @@ const SelectTrigger = React.forwardRef<
     ref={ref}
     className={cn(
       'flex h-10 w-full items-center justify-between rounded-element px-4 py-2 text-sm transition-all duration-fast',
-      // Subway-map: matches `Input` exactly. This REPLACES the PASTE-UP
-      // inverted plate (bg-inverse-surface + text-background), whose two
-      // halves are COUPLED — a caller overriding only the background left
-      // near-white type on a light surface at 1.09:1, which shipped and failed
-      // axe. Ink-on-paper survives a partial override.
-      'border border-input bg-muted text-foreground',
+      // Matches Input exactly: tonal depth plus an information-bearing edge.
+      'border border-input bg-surface-container text-foreground shadow-soft',
       'focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-background',
       'disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1',
       className,
@@ -71,9 +67,8 @@ const SelectContent = React.forwardRef<
     <SelectPrimitive.Content
       ref={ref}
       className={cn(
-        // The popover is a paper surface with an ink edge, like every other
-        // floating surface in the system — not a raised grey step.
-        'relative z-50 max-h-96 min-w-[8rem] overflow-hidden rounded-container border border-input bg-popover text-popover-foreground data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95',
+        // Floating surfaces separate through tone and elevation, never a frame.
+        'relative z-50 max-h-96 min-w-[8rem] overflow-hidden rounded-container bg-popover text-popover-foreground shadow-soft-lg data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95',
         position === 'popper' &&
           'data-[side=bottom]:translate-y-1 data-[side=left]:-translate-x-1 data-[side=right]:translate-x-1 data-[side=top]:-translate-y-1',
         className,

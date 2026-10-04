@@ -8,12 +8,12 @@ import { ExternalLink } from 'lucide-react';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { useReducedMotion } from '@/hooks/useReducedMotion';
 import { type MapPointSummary } from './mapPoint';
+import { linesForLayers } from './mapDomain';
 import {
   useExploreMapData,
   type LayerType,
   type MapViewport,
   type ExploreMapFilters,
-  LAYER_COLORS,
 } from '@/hooks/useExploreMapData';
 import { useViewportPoints, POINT_LAYER_TYPES } from '@/hooks/useViewportPoints';
 import { MapResultsPill } from '@/components/map/MapResultsPill';
@@ -224,7 +224,11 @@ export const ExploreMap = ({
   });
 
   // ── Data: point layers (viewport-based fetch with clustering) ──────────
+  // `pointEnabledLayers` stays the FETCH vocabulary; `activeLines` is what the
+  // renderer filters on. Derived from the layers for now because the chrome
+  // still toggles layers — task: the line switch supplies this from URL state.
   const pointEnabledLayers = enabledLayers.filter((l) => POINT_LAYER_TYPES.includes(l));
+  const activeLines = useMemo(() => linesForLayers(pointEnabledLayers), [pointEnabledLayers]);
   const {
     geojson: pointsGeoJSON,
     // totalCount from the hook is the padded-bbox count; we compute an
@@ -236,7 +240,6 @@ export const ExploreMap = ({
   } = useViewportPoints({
     enabledLayers: pointEnabledLayers,
     filters,
-    palette: LAYER_COLORS,
   });
 
   // ── Data: boundary polygons ─────────────────────────────────────────────
@@ -395,7 +398,7 @@ export const ExploreMap = ({
     mapRef,
     mapReady,
     pointsGeoJSON,
-    pointEnabledLayers,
+    activeLines,
     prefersReducedMotion,
     pinOpacityExpr,
     favoriteIds,
@@ -416,7 +419,7 @@ export const ExploreMap = ({
     mapReady,
     renderMode,
     pointsGeoJSON,
-    pointEnabledLayers,
+    activeLines,
     prefersReducedMotion,
   });
 

@@ -286,7 +286,7 @@ export default function ProfilePage({ tab: tabProp }: { tab?: string } = {}) {
               <TabsTrigger
                 key={v}
                 value={v}
-                className="h-10 shrink-0 snap-start whitespace-nowrap rounded-none border-b border-transparent bg-transparent px-4 shadow-none data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:border-border-hairline data-[state=active]:shadow-none"
+                className="h-10 shrink-0 snap-start whitespace-nowrap rounded-badge bg-transparent px-4 shadow-none data-[state=active]:bg-foreground data-[state=active]:text-background data-[state=active]:shadow-none"
               >
                 {l}
               </TabsTrigger>

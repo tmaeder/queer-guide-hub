@@ -29,7 +29,7 @@ export function CrisisBar({ country }: { country: string }) {
       // so it cancels the page gutter and re-applies it to its content row. It
       // must stay a descendant of the container — a sibling would break the
       // header-alignment contract in e2e/page-layout.spec.ts.
-      className="-mx-4 border-y border-border-hairline bg-destructive text-destructive-foreground sm:-mx-6 md:-mx-8"
+      className="-mx-4 overflow-hidden rounded-container border-y border-border-hairline bg-destructive text-destructive-foreground sm:-mx-6 md:-mx-8"
     >
       <div className="mx-auto flex max-w-page flex-wrap items-center gap-x-6 gap-y-2 px-4 py-2 sm:px-6 md:px-8">
         <h2 className="flex items-center gap-2 text-15 font-bold leading-tight">

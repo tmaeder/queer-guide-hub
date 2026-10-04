@@ -85,7 +85,7 @@ export function TagsFilterSpine({
     <>
       <div
         className={cn(
-          `sticky ${STICKY_UNDER_HEADER} z-30 border-b border-border-hairline bg-background`,
+          `sticky ${STICKY_UNDER_HEADER} z-30 overflow-hidden rounded-container border-b border-border-hairline bg-background`,
           PAGE_BLEED,
         )}
       >

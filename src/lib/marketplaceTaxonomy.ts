@@ -204,7 +204,7 @@ export const GROUP_FINE: Record<string, string[]> = {
   underwear: ['briefs', 'boxers_trunks', 'binders', 'packing_underwear', 'bras'],
   books: ['fiction', 'memoir', 'poetry', 'comics', 'zines_magazines', 'kids_ya', 'nonfiction'],
   art: ['prints_posters', 'cards_stationery', 'photography'],
-  grooming: ['fragrance', 'soap_bath', 'shave_beard', 'skincare'],
+  grooming: ['fragrance', 'soap_bath', 'shave_beard', 'skincare', 'aphrodisiacs', 'edible_massage'],
   sex_toys: [
     'strap_ons',
     'packers_stp',
@@ -214,10 +214,31 @@ export const GROUP_FINE: Record<string, string[]> = {
     'kegel',
     'sex_machines',
     'dolls',
+    'tongue_oral',
+    'couples_dp',
   ],
-  anal_toys: ['butt_plugs', 'anal_beads', 'prostate'],
+  anal_toys: ['butt_plugs', 'anal_beads', 'prostate', 'dilators', 'anal_hooks'],
   dildos: ['fantasy_dildos', 'realistic_dildos', 'double_dildos'],
-  vibrators: ['wands', 'rabbits', 'egg_vibrators', 'bullets'],
+  // Ten fine buckets is the most of any group, and the corpus asks for it:
+  // 1,837 active vibrators resolved to NO fine bucket before these six were
+  // added. Form factor first (wands/rabbits/eggs/bullets), then mechanism
+  // (air-pulse, thrusting), then target (G-spot, clitoral), then wear, and
+  // app/remote LAST — see the ordering note on the SQL ladder.
+  vibrators: [
+    'wands',
+    'rabbits',
+    'egg_vibrators',
+    'bullets',
+    'air_pulse',
+    'thrusting',
+    'g_spot',
+    'clit_stimulators',
+    'wearable_vibes',
+    'app_controlled',
+  ],
+  cock_rings: ['penis_sleeves'],
+  impact_play: ['cbt'],
+  safer_sex: ['douching_enemas'],
   bondage: ['rope', 'cuffs_restraints', 'spreader_bars', 'slings_furniture'],
   fetish_gear: ['latex', 'leather', 'rubber_neoprene', 'uniforms'],
 };
@@ -298,6 +319,27 @@ export const FINE_LABELS: Record<string, string> = {
   leather: 'Leather',
   rubber_neoprene: 'Rubber & neoprene',
   uniforms: 'Uniforms',
+  // ── Toy buckets added from the 2026-10-03 glossary pass. Every one was
+  // measured against the live corpus before it was added (counts in the PR):
+  // g_spot 257, app_controlled 165, clit_stimulators 109, aphrodisiacs 99,
+  // wearable_vibes 86, thrusting 77, penis_sleeves 76, tongue_oral 67,
+  // douching_enemas 65, air_pulse 53, edible_massage 45, dilators 39,
+  // anal_hooks 17, couples_dp 8, cbt 7.
+  air_pulse: 'Air-pulse & suction',
+  thrusting: 'Thrusting',
+  g_spot: 'G-spot',
+  clit_stimulators: 'Clitoral',
+  wearable_vibes: 'Wearable & panty',
+  app_controlled: 'App & remote',
+  dilators: 'Dilators & training',
+  anal_hooks: 'Anal hooks',
+  penis_sleeves: 'Sleeves & sheaths',
+  tongue_oral: 'Tongue & oral',
+  couples_dp: 'Couples & double',
+  cbt: 'CBT',
+  douching_enemas: 'Douching & enemas',
+  aphrodisiacs: 'Aphrodisiacs & libido',
+  edible_massage: 'Edible & massage',
 };
 
 export function fineLabel(slug: string | null | undefined): string {

@@ -489,7 +489,7 @@ export default function TripsDiscoverPage() {
 
       {/* 4 — CTA */}
       {drawable && (
-        <section className="border-b border-border-hairline bg-foreground text-background">
+        <section className="overflow-hidden rounded-container border-b border-border-hairline bg-foreground text-background">
           <PageContainer flush className="py-8 md:py-12">
             <h2 className="font-display text-headline md:text-display">
               {t('trips.discover.cta.heading', 'Ride this line.')}
@@ -516,7 +516,7 @@ export default function TripsDiscoverPage() {
                 // variant carries `bg-background`, so paper fill plus the paper
                 // text this override sets rendered a white box with white text —
                 // measured 1:1 contrast, completely invisible.
-                className="border border-background bg-transparent text-background hover:bg-background hover:text-foreground"
+                className="bg-background/15 text-background hover:bg-background hover:text-foreground"
                 onClick={bump}
               >
                 {t('trips.discover.cta.secondary', 'Draw another')}

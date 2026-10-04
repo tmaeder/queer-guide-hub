@@ -169,7 +169,7 @@ export function EventProgramme({ entries }: { entries: ProgrammeChild[] }) {
               aria-pressed={axis === option}
               className={
                 axis === option
-                  ? 'rounded-badge border border-track-ring bg-track-pink px-2 py-0.5 text-2xs font-bold uppercase tracking-wider text-foreground'
+                  ? 'rounded-badge bg-track-pink px-2 py-0.5 text-2xs font-bold uppercase tracking-wider text-foreground'
                   : 'rounded-badge px-2 py-0.5 text-2xs uppercase tracking-wider text-muted-foreground'
               }
             >

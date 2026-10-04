@@ -183,7 +183,7 @@ export function FeedbackButton() {
             // z-[45] and not `z-45`: Tailwind's default scale is
             // 0/10/20/30/40/50, so a bare `z-45` compiles to nothing and the
             // element falls back to `auto`.
-            className="fixed right-6 z-[45] flex h-12 w-12 items-center justify-center bg-foreground text-background transition-opacity hover:opacity-80 disabled:opacity-50"
+            className="fixed right-6 z-[45] flex h-12 w-12 items-center justify-center rounded-container bg-foreground text-background shadow-soft transition-all hover:-translate-y-0.5 hover:shadow-soft-hover disabled:opacity-50"
             style={{
               visibility: capturing ? 'hidden' : 'visible',
               // On mobile, clear the floating bottom-nav island (h-14 bar +

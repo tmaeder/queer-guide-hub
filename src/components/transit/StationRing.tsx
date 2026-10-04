@@ -33,7 +33,7 @@ export function StationRing({
         // COLOUR. The de-caging sweep briefly put a bare `border` in the ink
         // branch — same tailwind-merge group as `border-[3px]` — so a ring on
         // an ink band silently thinned to 1px while the paper one stayed at 3.
-        'inline-block h-4 w-4 rounded-full border-[3px]',
+        'transit-marker inline-block h-4 w-4 rounded-full border-[3px]',
         onInk ? 'border-background' : 'border-track-ring',
         state === 'open' && (onInk ? 'bg-foreground' : 'bg-background'),
         state === 'typed' && TRACK_BG[track],

@@ -821,9 +821,20 @@ Respond with JSON (empty arrays / null where unknown):
     // A slug in the vocabulary is not the same as a slug the text supports. The
     // clamp above only proves the model did not invent a term; the guard below
     // asks whether the quote it cited says anything about the term it chose.
-    // Grounded against the same text the prompt carried — description plus the
-    // tag line, nothing the model was not shown.
-    const shown = tagLine ? `${text}\n${tagLine}` : text
+    //
+    // Grounded against the same text the prompt carried: the NAME (its first
+    // line is `Venue: <name> | Category: …`), the description, and the tag line.
+    // The name matters — measured on the live corpus, a room listed as
+    // "… in Montmartre - 3rd f.+lift" cited "3rd f.+lift" for `elevator-access`,
+    // which is sound evidence and read as fabricated while only the description
+    // and tags were searched.
+    //
+    // The prompt's ALLOWED AMENITIES / ALLOWED ACCESSIBILITY lines are
+    // deliberately EXCLUDED. They enumerate every slug, so including them would
+    // let every slug grounded-match itself and silently disable this whole arm —
+    // which is precisely the failure mode it exists to catch (93% of the
+    // retracted backlog cited a bare slug string as its own quote).
+    const shown = [input.name, text, tagLine].filter(Boolean).join('\n')
     const evidence = filterAccessibilityByEvidence(
       (parsed.accessibility_attributes ?? []).filter((s) => acSet.has(s)),
       citations,

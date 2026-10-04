@@ -30,17 +30,17 @@ document is prose; where the two disagree, the catalog is right.
   fields, 12 chips and controls, 9 count marks — plus `rounded-full` for true
   circles: rings, bullets, avatars, dots.
 - **Surfaces without cages.** A container never carries a frame. It separates
-  from what surrounds it by sitting a tonal rung above (page → card → wash)
-  plus one soft shadow. The only line permitted _between_ surfaces is a
-  hairline at 7–13% ink, dividing rows in a dense list.
+  from what surrounds it by sitting a tonal rung above (page → card → wash),
+  generous spacing, and one soft shadow. Dense lists use grouping and tonal
+  rows rather than hairline rules.
 - **One elevation.** `--shadow-soft` at rest, `--shadow-soft-hover` on lift.
   No hard offset shadows, no stacked depth — and Tailwind's own
   `shadow-md/lg/xl/2xl` ramp stays ESLint-banned as a _competing_ ladder.
 - A card fills ink on hover or lifts — never both.
-- The exceptions to "no frame" are the boundaries a user has to be able to
-  find: form controls (`border-input`) and the ink ring on a track-coloured
-  mark (`border-track-ring`). Both are WCAG 1.4.11 obligations, not styling,
-  and neither is negotiable.
+- The exceptions to "no frame" are information-bearing geometry: form-control
+  boundaries and focus rings, subway tracks and station rings, charts/maps,
+  and explicit validation or destructive states. Form controls combine a
+  tonal well with `border-input`, which clears WCAG 1.4.11 on page and card.
 
 ## Tokens (src/index.css)
 
@@ -56,9 +56,9 @@ both.
 | `--muted` / `--accent`                   | `60 22.2% 92.9%` (#F1F1E9 wash)                           | Insets, chips, card hover tint                 |
 | `--surface-container-high`               | `60 13.2% 89.6%` (#E8E8E1)                                | Image wells                                    |
 | `--foreground`                           | `0 0% 6.7%` (#111 ink)                                    | Type, marks, station rings                     |
-| `--border`                               | `60 7.4% 81.4%`                                           | Row **dividers**, never a container frame      |
-| `--border-hairline`                      | ink channels @ `--hairline-alpha` (12%)                   | The one line allowed between surfaces          |
-| `--input`                                | `60 4.8% 44.9%`                                           | Form-control boundary — 3:1 on page _and_ card |
+| `--border`                               | `60 7.4% 81.4%`                                           | Legacy/data channel; UI utility is transparent |
+| `--border-hairline`                      | ink channels @ `--hairline-alpha` (0%)                    | Compatibility token; visually retired          |
+| `--input`                                | `60 4.8% 44.9%`                                           | Form-control boundary — 3:1 on page and card   |
 | `--track-ring`                           | `0 0% 6.7%`                                               | The ink ring a track-coloured mark wears       |
 | `--muted-foreground`                     | `0 0% 33%`                                                | Secondary text                                 |
 | `--destructive`                          | `0 70% 38%`                                               | **Danger. The only non-track semantic hue.**   |
@@ -93,9 +93,9 @@ Rules (gated by `tokenContrast.test.ts`):
 - **Fill-only.** A track color is never body text.
 - **Ring-gated.** Blue/green/yellow measure under 3:1 against any light
   surface, so every track-coloured _mark_ carries a 1px `--track-ring` — WCAG
-  1.4.11 is satisfied by fill-vs-ring. This is why a badge and a track-filled
-  button keep an edge when cards lost theirs: a card frame is decoration, a
-  track fill's ring is not. It is anchored to `--track-ring` rather than to
+  1.4.11 is satisfied by fill-vs-ring. A station mark keeps that edge because
+  its ring is part of the diagram; a labelled track-filled button or badge does
+  not need a decorative frame. The ring is anchored to `--track-ring` rather than to
   `--foreground` so it stays ink in both modes and cannot invert.
   A track-coloured _line_ on a diagram is a different case — it is far past
   the size at which 1.4.11 applies and reads as illustration, which is why

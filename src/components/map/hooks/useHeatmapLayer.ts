@@ -1,7 +1,8 @@
 import { useEffect, type MutableRefObject } from 'react';
 import * as maplibregl from 'maplibre-gl';
 import { type GeoJSONSource } from 'maplibre-gl';
-import { monoHeatStops, type LayerType } from '@/hooks/useExploreMapData';
+import { monoHeatStops } from '@/hooks/useExploreMapData';
+import type { MapLine } from '@/components/map/mapDomain';
 import { CLUSTERS_LAYER, HEATMAP_LAYER, HEATMAP_SOURCE, PIN_LAYER_IDS } from '@/config/mapLayers';
 import { heatmapRenderPlan, type RenderMode } from '@/components/map/mapShellAdapters';
 import { durationMs, imperativeDurationMs } from '@/lib/animation';
@@ -11,7 +12,8 @@ interface UseHeatmapLayerParams {
   mapReady: boolean;
   renderMode: RenderMode;
   pointsGeoJSON: GeoJSON.FeatureCollection;
-  pointEnabledLayers: LayerType[];
+  /** Lines currently drawn — the heat surface reflects the same set the pins do. */
+  activeLines: MapLine[];
   prefersReducedMotion: boolean;
 }
 
@@ -25,14 +27,14 @@ export function useHeatmapLayer({
   mapReady,
   renderMode,
   pointsGeoJSON,
-  pointEnabledLayers,
+  activeLines,
   prefersReducedMotion,
 }: UseHeatmapLayerParams) {
   useEffect(() => {
     const map = mapRef.current;
     if (!map || !mapReady) return;
 
-    const { wantHeatmap, hidePins } = heatmapRenderPlan(renderMode, pointEnabledLayers.length > 0);
+    const { wantHeatmap, hidePins } = heatmapRenderPlan(renderMode, activeLines.length > 0);
 
     if (!wantHeatmap) {
       if (map.getLayer(HEATMAP_LAYER)) map.removeLayer(HEATMAP_LAYER);
@@ -53,7 +55,7 @@ export function useHeatmapLayer({
     const filteredGeoJSON: GeoJSON.FeatureCollection = {
       type: 'FeatureCollection',
       features: pointsGeoJSON.features.filter((f) =>
-        pointEnabledLayers.includes(f.properties.pointType),
+        activeLines.includes(f.properties.line as MapLine),
       ),
     };
 
@@ -128,5 +130,5 @@ export function useHeatmapLayer({
           m.setPaintProperty(HEATMAP_LAYER, 'heatmap-opacity', heatOpacityExpr);
       });
     }
-  }, [renderMode, pointsGeoJSON, pointEnabledLayers, mapReady, prefersReducedMotion, mapRef]);
+  }, [renderMode, pointsGeoJSON, activeLines, mapReady, prefersReducedMotion, mapRef]);
 }

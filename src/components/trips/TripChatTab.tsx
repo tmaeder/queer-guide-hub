@@ -9,12 +9,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { Textarea } from '@/components/ui/textarea';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from '@/components/ui/tooltip';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
 
 interface Props {
@@ -78,17 +73,16 @@ export function TripChatTab({ tripId }: Props) {
     <div className="flex flex-col h-[480px] md:h-[600px]">
       {presentMembers.length > 0 && (
         <div className="flex items-center gap-2 px-2 py-1.5 mb-2">
-          <span
-            aria-hidden
-            className="w-1.5 h-1.5 rounded-full bg-foreground flex-shrink-0"
-          />
+          <span aria-hidden className="w-1.5 h-1.5 rounded-full bg-foreground flex-shrink-0" />
           <TooltipProvider>
             <div className="flex -space-x-2">
               {visibleMembers.map((m) => (
                 <Tooltip key={m.user_id}>
                   <TooltipTrigger asChild>
-                    <Avatar className="h-[22px] w-[22px] border border-background text-xs2">
-                      {m.avatar_url && <AvatarImage src={m.avatar_url} alt={m.display_name ?? ''} />}
+                    <Avatar className="h-[22px] w-[22px] text-xs2">
+                      {m.avatar_url && (
+                        <AvatarImage src={m.avatar_url} alt={m.display_name ?? ''} />
+                      )}
                       <AvatarFallback className="text-xs2">
                         {(m.display_name ?? '?').slice(0, 1).toUpperCase()}
                       </AvatarFallback>
@@ -100,7 +94,7 @@ export function TripChatTab({ tripId }: Props) {
                 </Tooltip>
               ))}
               {overflow > 0 && (
-                <Avatar className="h-[22px] w-[22px] border border-background bg-muted">
+                <Avatar className="h-[22px] w-[22px] bg-muted">
                   <AvatarFallback className="text-xs2">+{overflow}</AvatarFallback>
                 </Avatar>
               )}
@@ -114,10 +108,7 @@ export function TripChatTab({ tripId }: Props) {
           </span>
         </div>
       )}
-      <div
-        ref={scrollRef}
-        className="flex-1 overflow-y-auto flex flex-col gap-4 pr-2 mb-4"
-      >
+      <div ref={scrollRef} className="flex-1 overflow-y-auto flex flex-col gap-4 pr-2 mb-4">
         {(!messages || messages.length === 0) && (
           <EmptyState
             icon={MessageCircle}
@@ -135,10 +126,7 @@ export function TripChatTab({ tripId }: Props) {
           return (
             <div
               key={m.id}
-              className={cn(
-                'flex gap-4 items-start',
-                mine ? 'flex-row-reverse' : 'flex-row',
-              )}
+              className={cn('flex gap-4 items-start', mine ? 'flex-row-reverse' : 'flex-row')}
             >
               <Avatar className="h-8 w-8 flex-shrink-0">
                 {m.sender?.avatar_url && (

@@ -205,7 +205,7 @@ export default function MarketplaceBrand() {
         <PageContainer flush className="py-12 md:py-16">
           <section
             aria-labelledby="brand-end-of-line"
-            className="bg-foreground p-6 text-background md:p-8"
+            className="overflow-hidden rounded-container bg-foreground p-6 text-background md:p-8"
           >
             <p className="text-2xs font-bold uppercase tracking-label text-background/70">
               {t('marketplace.endOfLine', 'End of line')}
@@ -215,7 +215,7 @@ export default function MarketplaceBrand() {
             </h2>
             <LocalizedLink
               to="/marketplace/brands"
-              className="border mt-4 inline-flex items-center gap-2 border-background px-4 py-2 text-13 font-bold text-background no-underline transition-colors hover:bg-background hover:text-foreground"
+              className="mt-4 inline-flex items-center gap-2 rounded-element bg-background/15 px-4 py-2 text-13 font-bold text-background no-underline transition-colors hover:bg-background hover:text-foreground"
             >
               {t('marketplace.allMakers', 'All makers')} →
             </LocalizedLink>

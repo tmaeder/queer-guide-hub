@@ -92,8 +92,8 @@ export function MarketplaceLineIndex({ activeDepartment }: { activeDepartment?: 
           {Array.from({ length: 10 }).map((_, i) => (
             // Skeleton is the plate box plus the label block, so the grid does
             // not jump height when the counts land.
-            <div key={i} aria-hidden="true" className="bg-card">
-              <div className="aspect-[16/10] animate-pulse bg-muted" />
+            <div key={i} aria-hidden="true" className="overflow-hidden rounded-container bg-card">
+              <div className="aspect-[16/10] animate-pulse rounded-container bg-muted" />
               <div className="flex flex-col gap-2 p-4">
                 <div className="h-4 w-2/3 animate-pulse bg-muted" />
                 <div className="h-3 w-1/2 animate-pulse bg-muted" />
@@ -114,7 +114,7 @@ export function MarketplaceLineIndex({ activeDepartment }: { activeDepartment?: 
                     // A station tile FILLS ink when it is the one you are at,
                     // and lifts when it is somewhere you could go. Never both:
                     // card-lift-sm is dropped on the active tile.
-                    'group flex h-full flex-col justify-between border border-border-hairline no-underline',
+                    'group flex h-full flex-col justify-between overflow-hidden rounded-container border border-border-hairline no-underline',
                     active ? 'bg-foreground text-background' : 'bg-card card-lift-sm',
                   )}
                 >

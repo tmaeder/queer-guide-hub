@@ -209,7 +209,7 @@ export function StoryDetailDrawer({
                 onRename(titleDraft.trim(), summaryDraft);
               }
             }}
-            className="border-0 border-b rounded-none px-0 text-xl font-bold focus-visible:ring-0"
+            className="rounded-element border-0 bg-surface-container px-4 text-xl font-bold focus-visible:ring-2"
           />
 
           <Textarea
@@ -268,7 +268,7 @@ export function StoryDetailDrawer({
                     onSaveNarrative(briefDraft.trim(), narrativeDraft.trim());
                   }
                 }}
-                className="border-0 border-b rounded-none px-0 text-sm font-semibold focus-visible:ring-0"
+                className="rounded-element border-0 bg-surface-container px-4 text-sm font-semibold focus-visible:ring-2"
               />
               <Textarea
                 placeholder="As a [persona], I [want to …], so that [value]."

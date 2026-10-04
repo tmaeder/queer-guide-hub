@@ -11,6 +11,8 @@ import {
   departmentLabel,
   groupLabel,
 } from '@/lib/marketplaceTaxonomy';
+import { toyGroupMeta } from '@/lib/marketplaceCategoryMeta';
+import { TransitIcon } from '@/components/transit/TransitIcon';
 import { PageContainer } from '@/components/layout/PageContainer';
 
 /**
@@ -114,7 +116,11 @@ export default function MarketplaceCategories() {
         {loading ? (
           <ul className="m-0 grid list-none grid-cols-2 gap-4 p-0 md:grid-cols-3 lg:grid-cols-4">
             {Array.from({ length: 12 }).map((_, i) => (
-              <li key={i} aria-hidden="true" className="h-[120px] animate-pulse bg-muted" />
+              <li
+                key={i}
+                aria-hidden="true"
+                className="h-[120px] animate-pulse rounded-container bg-muted"
+              />
             ))}
           </ul>
         ) : sections.length === 0 && orphans.length === 0 ? (
@@ -148,21 +154,37 @@ export default function MarketplaceCategories() {
                 </div>
 
                 <ul className="m-0 grid list-none grid-cols-2 gap-4 p-0 md:grid-cols-3 lg:grid-cols-4">
-                  {section.stops.map((stop) => (
-                    <li key={stop.slug}>
-                      <LocalizedLink
-                        to={`/marketplace/category/${section.slug}?g=${stop.slug}`}
-                        className="card-lift flex h-full min-h-[120px] flex-col justify-between bg-card p-4 no-underline sm:p-6 shadow-soft"
-                      >
-                        <span className="text-title font-bold leading-tight text-balance">
-                          {groupLabel(stop.slug)}
-                        </span>
-                        <span className="mt-4 text-2xs uppercase tracking-label tabular-nums text-muted-foreground">
-                          {stop.count.toLocaleString()} listing{stop.count !== 1 ? 's' : ''}
-                        </span>
-                      </LocalizedLink>
-                    </li>
-                  ))}
+                  {section.stops.map((stop) => {
+                    // Only the two adult departments carry marks today — see
+                    // the scope note in marketplaceCategoryMeta.ts. A group
+                    // without one renders exactly as it did before.
+                    const meta = toyGroupMeta(stop.slug);
+                    return (
+                      <li key={stop.slug}>
+                        <LocalizedLink
+                          to={`/marketplace/category/${section.slug}?g=${stop.slug}`}
+                          className="card-lift flex h-full min-h-[120px] flex-col justify-between overflow-hidden rounded-container bg-card p-4 no-underline shadow-soft sm:p-6"
+                        >
+                          <span className="flex flex-col gap-2">
+                            {meta && (
+                              <TransitIcon name={meta.icon} size={28} className="shrink-0" />
+                            )}
+                            <span className="text-title font-bold leading-tight text-balance">
+                              {groupLabel(stop.slug)}
+                            </span>
+                            {meta && (
+                              <span className="text-13 leading-snug text-muted-foreground text-pretty">
+                                {meta.blurb}
+                              </span>
+                            )}
+                          </span>
+                          <span className="mt-4 text-2xs uppercase tracking-label tabular-nums text-muted-foreground">
+                            {stop.count.toLocaleString()} listing{stop.count !== 1 ? 's' : ''}
+                          </span>
+                        </LocalizedLink>
+                      </li>
+                    );
+                  })}
                 </ul>
               </section>
             ))}
@@ -179,7 +201,7 @@ export default function MarketplaceCategories() {
                     <li key={stop.slug}>
                       <LocalizedLink
                         to={`/marketplace?grp=${stop.slug}`}
-                        className="card-lift flex h-full min-h-[120px] flex-col justify-between bg-card p-4 no-underline sm:p-6 shadow-soft"
+                        className="card-lift flex h-full min-h-[120px] flex-col justify-between overflow-hidden rounded-container bg-card p-4 no-underline shadow-soft sm:p-6"
                       >
                         <span className="text-title font-bold leading-tight text-balance">
                           {groupLabel(stop.slug)}

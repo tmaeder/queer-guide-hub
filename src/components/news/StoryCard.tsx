@@ -24,7 +24,7 @@ export const StoryCard = ({ story, hero }: StoryCardProps) => {
     <LocalizedLink
       to={`/news/story/${story.slug}`}
       aria-label={title}
-      className="group flex flex-col gap-4 rounded-element bg-surface-container overflow-hidden transition-colors duration-normal hover:bg-surface-container-high no-underline text-inherit focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+      className="card-lift group flex flex-col gap-4 rounded-element bg-surface-container overflow-hidden no-underline text-inherit focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
     >
       <div className="relative overflow-hidden">
         <img
@@ -37,7 +37,7 @@ export const StoryCard = ({ story, hero }: StoryCardProps) => {
           width={400}
           height={200}
           style={{ width: '100%', height: 200, objectFit: 'cover' }}
-          className="transition-transform duration-slow ease-out group-hover:scale-[1.04] block"
+          className="block transition-transform duration-slow ease-out group-hover:scale-[1.04] motion-reduce:transform-none motion-reduce:transition-none"
           onError={() => setImgFailed(true)}
         />
         <Badge

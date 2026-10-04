@@ -292,7 +292,7 @@ export const Image = ({
       onError={onImgError}
       style={effectiveObjectPosition ? { objectPosition: effectiveObjectPosition } : undefined}
       className={cn(
-        'img-lazy-fade h-full w-full transition-transform duration-slow ease-[cubic-bezier(0.22,1,0.36,1)]',
+        'img-lazy-fade h-full w-full transition-transform duration-slow ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transform-none motion-reduce:transition-none',
         useContain ? 'object-contain p-4' : 'object-cover group-hover:scale-[1.04]',
         loaded && 'loaded',
         className,

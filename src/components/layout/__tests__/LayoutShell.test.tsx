@@ -59,11 +59,21 @@ describe('LayoutShell', () => {
     },
   );
 
+  // This asserted the opposite until /help was returned to the ordinary page
+  // shell. The crisis route used to drop the header, footer, breadcrumbs and
+  // bottom nav (#4062) on the reasoning that a visitor in distress should not
+  // have to filter navigation — which also left the one page someone is most
+  // likely to land on cold as the one page with no route back to anything.
+  // The safety affordances never depended on the chrome being absent: the
+  // emergency numbers live in CrisisBar and Hide screen / Quick exit sit in
+  // the content column beneath it. The locale-prefixed variants stay in the
+  // list because the old gate was locale-aware, so a half-restoration that
+  // only covered bare `/help` would otherwise read as green.
   it.each(['/help', '/help/ch', '/de/help', '/de/help/ch'])(
-    'renders no public chrome on the crisis-support route %s',
+    'renders the full public chrome on the crisis-support route %s',
     (path) => {
       renderAt(path);
-      for (const id of PUBLIC_CHROME) expect(screen.queryByTestId(id)).toBeNull();
+      for (const id of PUBLIC_CHROME) expect(screen.getByTestId(id)).toBeTruthy();
       expect(screen.getByRole('link', { name: /skip to main content/i })).toBeTruthy();
       expect(screen.getByText('route content')).toBeTruthy();
     },

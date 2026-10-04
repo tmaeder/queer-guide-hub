@@ -2,14 +2,15 @@ import { useEffect, useRef, type MutableRefObject } from 'react';
 import * as maplibregl from 'maplibre-gl';
 import { type GeoJSONSource, type MapLayerMouseEvent } from 'maplibre-gl';
 import { summaryFromFeature, type MapPointSummary } from '@/components/map/mapPoint';
-import type { PointFeature } from '@/hooks/useViewportPoints';
-import type { LayerType } from '@/hooks/useExploreMapData';
+import type { PointFeature, PointFeatureProps } from '@/hooks/useViewportPoints';
+import { MAP_LINES, MAP_LINE_IDS, type MapLine } from '@/components/map/mapDomain';
 import {
   POINTS_SOURCE,
   CLUSTERS_LAYER,
   CLUSTER_COUNT_LAYER,
   UNCLUSTERED_LAYER,
   GLYPH_LAYER,
+  STATE_BADGE_LAYER,
   FEATURED_RING_LAYER,
   PULSE_LAYER,
   PIN_LAYER_IDS,
@@ -25,11 +26,19 @@ import { clusterHoverHtml, pointHoverHtml } from '@/components/map/mapHoverHtml'
 interface UsePointLayersParams {
   mapRef: MutableRefObject<maplibregl.Map | null>;
   mapReady: boolean;
-  pointsGeoJSON: GeoJSON.FeatureCollection;
-  pointEnabledLayers: LayerType[];
+  /** Narrowed to the collection `useViewportPoints` actually returns. The old
+   *  loose `GeoJSON.FeatureCollection` made `properties` nullable, so every
+   *  read of it needed a non-null assertion or carried a TS18047. */
+  pointsGeoJSON: GeoJSON.FeatureCollection<GeoJSON.Point, PointFeatureProps>;
+  /** Lines currently drawn. Replaces `pointEnabledLayers` — the render filter
+   *  is now line-keyed, so toggling a line narrows what is drawn without
+   *  changing the fetch set (M, C and T all need `venues`). */
+  activeLines: MapLine[];
   prefersReducedMotion: boolean;
   pinOpacityExpr: maplibregl.ExpressionSpecification | number;
   favoriteIds?: Set<string>;
+  /** The viewer's own place marks. Never another person's. */
+  visitedIds?: Set<string>;
   savedOnly: boolean;
   showPopup: (
     map: maplibregl.Map,
@@ -57,10 +66,11 @@ export function usePointLayers({
   mapRef,
   mapReady,
   pointsGeoJSON,
-  pointEnabledLayers,
+  activeLines,
   prefersReducedMotion,
   pinOpacityExpr,
   favoriteIds,
+  visitedIds,
   savedOnly,
   showPopup,
   startPulse,
@@ -76,7 +86,11 @@ export function usePointLayers({
     const map = mapRef.current;
     if (!map || !mapReady) return;
 
-    if (pointEnabledLayers.length === 0) {
+    // Teardown keys off the active LINES, not the fetch list. That decoupling
+    // is load-bearing: an explicit (non-viewport) data source leaves the fetch
+    // list empty by design, and keying teardown off it would dismantle the
+    // renderer for a surface that has stations to draw.
+    if (activeLines.length === 0) {
       if (pulseRafRef.current) {
         cancelAnimationFrame(pulseRafRef.current);
         pulseRafRef.current = null;
@@ -94,8 +108,9 @@ export function usePointLayers({
     // keep only saved points. Clone properties so the hook's cached features
     // aren't mutated across map instances.
     const favSet = favoriteIds ?? EMPTY_FAV;
+    const visitedSet = visitedIds ?? EMPTY_FAV;
     const baseFeatures = pointsGeoJSON.features.filter((f) =>
-      pointEnabledLayers.includes(f.properties.pointType),
+      activeLines.includes(f.properties.line as MapLine),
     );
     const filteredGeoJSON: GeoJSON.FeatureCollection = {
       type: 'FeatureCollection',
@@ -104,7 +119,14 @@ export function usePointLayers({
         : baseFeatures
       ).map((f) => ({
         ...f,
-        properties: { ...f.properties, favorited: favSet.has(String(f.properties.id)) },
+        properties: {
+          ...f.properties,
+          favorited: favSet.has(String(f.properties.id)),
+          // Numeric, not boolean: a MapLibre `case` on a boolean property
+          // round-trips fine, but the badge layer's icon expression reads this
+          // alongside `favorited` and 0/1 keeps both arms the same shape.
+          visited: visitedSet.has(String(f.properties.id)) ? 1 : 0,
+        },
       })),
     };
 
@@ -132,12 +154,21 @@ export function usePointLayers({
       cluster: true,
       clusterMaxZoom: CLUSTER_MAX_ZOOM,
       clusterRadius: CLUSTER_RADIUS,
-      clusterProperties: {
-        venue_count: ['+', ['case', ['==', ['get', 'pointType'], 'venues'], 1, 0]],
-        event_count: ['+', ['case', ['==', ['get', 'pointType'], 'events'], 1, 0]],
-        restroom_count: ['+', ['case', ['==', ['get', 'pointType'], 'restrooms'], 1, 0]],
-        hotel_count: ['+', ['case', ['==', ['get', 'pointType'], 'hotels'], 1, 0]],
-      },
+      // Aggregated by LINE, generated from the registry. These names were
+      // previously spelled out here, again in `clusterDonut`, and a third time
+      // in the cluster hover handler below — three literal lists that had to
+      // agree or a donut segment silently vanished.
+      //
+      // Note these are fixed at SOURCE-CREATION time. `line` is a static
+      // per-feature property, so that is fine — but it does mean a
+      // reclassification needs a source rebuild, not a `setData`. `lineFor`
+      // must therefore never depend on runtime state.
+      clusterProperties: Object.fromEntries(
+        MAP_LINE_IDS.map((line) => [
+          MAP_LINES[line].countProp,
+          ['+', ['case', ['==', ['get', 'line'], line], 1, 0]],
+        ]),
+      ),
     });
 
     // Segmented donut clusters — ring segments proportional to the cluster's
@@ -259,6 +290,33 @@ export function usePointLayers({
       },
     });
 
+    // Saved badge, offset to the pin's upper-right.
+    //
+    // `favorited` has been carried on the feature since the saved layer
+    // shipped and NOTHING painted it — `savedOnly` filtered the collection
+    // but a saved pin was indistinguishable from any other.
+    //
+    // A glyph, not a colour: the four tracks are spoken for by the lines, and
+    // WCAG 1.4.1 forbids encoding a state in hue alone. The `LineKey` legend
+    // carries the matching label.
+    //
+    // Saved only — see `STATE_BADGE_ICONS` for why `visited` is carried on the
+    // feature but not painted here.
+    map.addLayer({
+      id: STATE_BADGE_LAYER,
+      type: 'symbol',
+      source: POINTS_SOURCE,
+      filter: ['all', ['!', ['has', 'point_count']], ['==', ['get', 'favorited'], true]],
+      layout: {
+        'icon-image': 'state:saved',
+        'icon-size': 0.26,
+        // Up and to the right of the dot, in icon-size units.
+        'icon-offset': [26, -26],
+        'icon-allow-overlap': true,
+        'icon-ignore-placement': true,
+      },
+    });
+
     // Cluster click → zoom to expand, OR spiderfy when zooming won't separate
     // the points (they share ~identical coordinates).
     map.on('click', CLUSTERS_LAYER, async (e) => {
@@ -308,10 +366,9 @@ export function usePointLayers({
       if (!feat) return;
       const p = feat.properties as Record<string, number>;
       const html = clusterHoverHtml({
-        venues: Number(p.venue_count) || 0,
-        events: Number(p.event_count) || 0,
-        restrooms: Number(p.restroom_count) || 0,
-        hotels: Number(p.hotel_count) || 0,
+        ...Object.fromEntries(
+          MAP_LINE_IDS.map((line) => [line, Number(p[MAP_LINES[line].countProp]) || 0]),
+        ),
         total: Number(p.point_count) || 0,
       });
       if (!hoverPopupRef.current) {
@@ -381,13 +438,14 @@ export function usePointLayers({
     pointLayersAddedRef.current = true;
   }, [
     pointsGeoJSON,
-    pointEnabledLayers,
+    activeLines,
     mapReady,
     showPopup,
     startPulse,
     prefersReducedMotion,
     pinOpacityExpr,
     favoriteIds,
+    visitedIds,
     savedOnly,
     spiderfy,
     clearSpider,
