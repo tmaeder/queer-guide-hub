@@ -30,7 +30,7 @@
 -- number again.
 
 set local statement_timeout = '10min';
-select set_config('app.actor', 'migration:99991791146021_entity_numeric_state', true);
+select set_config('app.actor', 'migration:99991791148433_entity_numeric_state', true);
 
 do $fix$
 declare
@@ -120,7 +120,7 @@ revoke all on function public.city_region_signals() from public, anon, authentic
 grant execute on function public.city_region_signals() to service_role;
 
 comment on function public.city_region_signals() is
-  'Health probe for cities.region_code (99991791059373, 99991791146021). Zero-invariants: subdivision_root_null, '
+  'Health probe for cities.region_code (99991791059373, 99991791148433). Zero-invariants: subdivision_root_null, '
   'region_code_wrong_country, numeric_region_name_resolvable, entity_numeric_state_resolvable. '
   'real_without_region_code is advisory. Read by scripts/check-pipeline-health.mjs.';
 

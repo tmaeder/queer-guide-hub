@@ -2,14 +2,14 @@ import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
-// Guards 99991791146021_entity_numeric_state.sql.
+// Guards 99991791148433_entity_numeric_state.sql.
 //
 // venues/events/hotels/organizations.state copied GeoNames numbers ("27") from
 // cities.region_name. A row may only be rewritten when TWO signals agree: the
 // number resolves to the city's region_code AND the city's region_name resolves
 // back to that same code. Measured: 3,924 agree, 0 disagree.
 
-const MIGRATION = '99991791146021_entity_numeric_state.sql';
+const MIGRATION = '99991791148433_entity_numeric_state.sql';
 const raw = readFileSync(join(process.cwd(), 'supabase/migrations', MIGRATION), 'utf8');
 const health = readFileSync(join(process.cwd(), 'scripts/check-pipeline-health.mjs'), 'utf8');
 const statements = raw

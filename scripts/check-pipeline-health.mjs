@@ -4678,7 +4678,7 @@ const DISOWNED_PROSE_CEILING = 380
       subdivision_root_null: 'geo_subdivisions rows that climb to no first-level unit (a parent loop) — their names resolve to NULL',
       region_code_wrong_country: 'cities carry a region_code from another country',
       numeric_region_name_resolvable: 'cities still show a GeoNames number as region_name although the name is known',
-      // 99991791146021: a venue/event/hotel/org copied a number its city can name
+      // 99991791148433: a venue/event/hotel/org copied a number its city can name
       entity_numeric_state_resolvable: 'venues/events/hotels/organizations carry a GeoNames number as state although their city names the region',
     }
     for (const [key, what] of Object.entries(zero)) {
