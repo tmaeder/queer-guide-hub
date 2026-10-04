@@ -19,8 +19,14 @@ on:
   pull_request:
     paths:
       - 'e2e/trips-i18n.spec.ts'
+      - 'e2e/map-shell-i18n.spec.ts'
       - 'src/i18n/**'
       - 'src/pages/trips/**'
+      # The map chrome is the other RTL surface, and its labels are rendered
+      # with `t(key, { defaultValue })` — so a missing translation falls back
+      # to English and looks correct in English. Without this path the only
+      # signal is the nightly.
+      - 'src/components/map/**'
       - 'playwright.config.ts'
       - '.github/workflows/e2e-i18n.yml'
   schedule:
@@ -66,7 +72,7 @@ jobs:
       - name: Run i18n smoke tests
         env:
           E2E_BASE_URL: ${{ inputs.base_url || 'https://queer.guide' }}
-        run: npx playwright test e2e/trips-i18n.spec.ts
+        run: npx playwright test e2e/trips-i18n.spec.ts e2e/map-shell-i18n.spec.ts
 
       - name: Upload report on failure
         if: failure()
