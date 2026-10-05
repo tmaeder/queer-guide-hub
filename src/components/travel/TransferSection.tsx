@@ -32,7 +32,7 @@ export function TransferSection({
   if (compact) {
     return (
       <div
-        className="flex items-center gap-4 p-4"
+        className="flex items-center gap-4 rounded-container p-4"
         style={{
           backgroundColor: isLowSafety ? 'hsl(var(--warning) / 0.15)' : 'hsl(var(--muted))',
         }}
@@ -77,7 +77,15 @@ export function TransferSection({
       </div>
 
       {isLowSafety && (
-        <div className="p-4 mb-4" style={{ backgroundColor: 'hsl(var(--warning) / 0.15)' }}>
+        /* Same defect as the compact tile above, and the contract test could
+           never have found it: it renders only when `isLowSafety`, and the
+           audited routes (/city/berlin, /country/germany) are all
+           high-equality. Fixed with its sibling rather than left for the first
+           low-equality city page to ship it. */
+        <div
+          className="mb-4 rounded-element p-4"
+          style={{ backgroundColor: 'hsl(var(--warning) / 0.15)' }}
+        >
           <p className="text-xs">
             This destination has a lower LGBTQ+ safety score. We recommend booking a private
             transfer for a safer, more comfortable arrival.

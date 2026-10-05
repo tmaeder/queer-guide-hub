@@ -26,12 +26,21 @@ export function LiveTicker({ articles, windowMs = DEFAULT_WINDOW }: LiveTickerPr
   const loop = [...fresh, ...fresh];
 
   return (
+    // The ticker is a surface, so the fill carries its edge and the hairlines
+    // go: `border-y` on the bar and `border-r` on the Live chip were two of the
+    // one-pixel frames §02b removes, and both plates were square.
+    //
+    // The rounded-surface contract could not have caught this: the whole
+    // component returns null unless an article was published in the last 90
+    // minutes, so on a quiet morning /news renders without it and the route
+    // passes. Found by running the spec against a build while the ticker
+    // happened to be up.
     <aside
       aria-label="Latest headlines"
-      className="border-y border-border bg-surface-container-low overflow-hidden mb-12"
+      className="mb-12 overflow-hidden rounded-container bg-surface-container-low"
     >
       <div className="flex items-center">
-        <p className="shrink-0 px-4 py-2 text-2xs uppercase tracking-[0.2em] font-semibold border-r border-border bg-foreground text-background flex items-center gap-2">
+        <p className="flex shrink-0 items-center gap-2 rounded-badge bg-foreground px-4 py-2 text-2xs font-semibold uppercase tracking-[0.2em] text-background">
           <span
             aria-hidden="true"
             className="inline-block w-1.5 h-1.5 rounded-full bg-background animate-pulse motion-reduce:animate-none"

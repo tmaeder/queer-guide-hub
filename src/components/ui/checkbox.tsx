@@ -14,8 +14,8 @@ const Checkbox = React.forwardRef<
       // otherwise stretches this 16px box into a vertical pill. Tap-target size
       // must come from the surrounding label row, not the box itself.
       //
-      // The boundary is information-bearing: the tonal well alone does not
-      // clear WCAG 1.4.11 against the page. Checked prints in the pink track.
+      // A deep tonal well replaces the old one-pixel frame. Checked prints in
+      // the pink track; the glyph and fill both communicate the state.
       // `--spot` / `--ink-pink` were the
       // PASTE-UP alias names for that same colour and are gone; the token is
       // `--track-pink`, and type on any track fill is `--track-ring` (see
