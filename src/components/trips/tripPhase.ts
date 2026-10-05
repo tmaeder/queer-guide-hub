@@ -1,4 +1,5 @@
 import type { Trip } from '@/hooks/useTrips';
+import type { TFunction } from 'i18next';
 
 export type TripPhase = 'seed' | 'plan' | 'countdown' | 'live' | 'memory';
 
@@ -15,7 +16,22 @@ function parseDate(s: string | null | undefined): Date | null {
   return Number.isNaN(d.getTime()) ? null : d;
 }
 
-function todayUtc(now: Date): Date {
+function todayUtc(now: Date, timeZone?: string | null): Date {
+  if (timeZone) {
+    try {
+      const parts = new Intl.DateTimeFormat('en-US', {
+        timeZone,
+        year: 'numeric',
+        month: 'numeric',
+        day: 'numeric',
+      }).formatToParts(now);
+      const value = (type: Intl.DateTimeFormatPartTypes) =>
+        Number(parts.find((part) => part.type === type)?.value);
+      return new Date(Date.UTC(value('year'), value('month') - 1, value('day')));
+    } catch {
+      // Invalid legacy timezone values fall back to the stable UTC behavior.
+    }
+  }
   return new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
 }
 
@@ -23,10 +39,14 @@ function todayUtc(now: Date): Date {
  * Days from `now` (UTC date floor) to `target` (UTC date floor).
  * Positive = future, 0 = today, negative = past.
  */
-export function daysFromToday(target: string | null | undefined, now: Date = new Date()): number | null {
+export function daysFromToday(
+  target: string | null | undefined,
+  now: Date = new Date(),
+  timeZone?: string | null,
+): number | null {
   const t = parseDate(target);
   if (!t) return null;
-  const diff = t.getTime() - todayUtc(now).getTime();
+  const diff = t.getTime() - todayUtc(now, timeZone).getTime();
   return Math.round(diff / MS_PER_DAY);
 }
 
@@ -43,27 +63,38 @@ export function daysFromToday(target: string | null | undefined, now: Date = new
  * archive a trip whose dates haven't passed yet.
  */
 export function getTripPhase(
-  trip: Pick<Trip, 'status' | 'start_date' | 'end_date'>,
+  trip: Pick<Trip, 'status' | 'start_date' | 'end_date'> & Partial<Pick<Trip, 'timezone'>>,
   now: Date = new Date(),
 ): TripPhase {
   if (trip.status === 'archived' || trip.status === 'completed') return 'memory';
 
-  const daysToStart = daysFromToday(trip.start_date, now);
-  const daysToEnd = daysFromToday(trip.end_date, now);
+  const daysToStart = daysFromToday(trip.start_date, now, trip.timezone);
+  const daysToEnd = daysFromToday(trip.end_date, now, trip.timezone);
 
   if (daysToEnd !== null && daysToEnd < 0) return 'memory';
   if (trip.status === 'active') return 'live';
-  if (daysToStart !== null && daysToStart <= 0 && (daysToEnd === null || daysToEnd >= 0)) return 'live';
+  if (daysToStart !== null && daysToStart <= 0 && (daysToEnd === null || daysToEnd >= 0))
+    return 'live';
   if (daysToStart !== null && daysToStart > 0 && daysToStart <= COUNTDOWN_DAYS) return 'countdown';
   if (daysToStart === null) return 'seed';
   return 'plan';
 }
 
-type TFn = (key: string, options?: Record<string, unknown> | string, fallback?: string) => string;
+type TFn = TFunction;
 
-function tr(t: TFn | undefined, key: string, fallback: string, options?: Record<string, unknown>): string {
-  if (!t) return options ? fallback.replace(/\{\{(\w+)\}\}/g, (_, k) => String(options[k] ?? '')) : fallback;
-  return options ? t(key, { defaultValue: fallback, ...options }) : t(key, fallback);
+function tr(
+  t: TFn | undefined,
+  key: string,
+  fallback: string,
+  options?: Record<string, unknown>,
+): string {
+  if (!t)
+    return options
+      ? fallback.replace(/\{\{(\w+)\}\}/g, (_, k) => String(options[k] ?? ''))
+      : fallback;
+  return options
+    ? String(t(key, { defaultValue: fallback, ...options }))
+    : String(t(key, { defaultValue: fallback }));
 }
 
 export function phaseLabel(phase: TripPhase, t?: TFn): string {
@@ -86,13 +117,13 @@ export function phaseLabel(phase: TripPhase, t?: TFn): string {
  * e.g. "in 5 days", "Day 2 of 7", "12 days ago".
  */
 export function phaseStatusText(
-  trip: Pick<Trip, 'status' | 'start_date' | 'end_date'>,
+  trip: Pick<Trip, 'status' | 'start_date' | 'end_date'> & Partial<Pick<Trip, 'timezone'>>,
   now: Date = new Date(),
   t?: TFn,
 ): string {
   const phase = getTripPhase(trip, now);
-  const daysToStart = daysFromToday(trip.start_date, now);
-  const daysToEnd = daysFromToday(trip.end_date, now);
+  const daysToStart = daysFromToday(trip.start_date, now, trip.timezone);
+  const daysToEnd = daysFromToday(trip.end_date, now, trip.timezone);
 
   switch (phase) {
     case 'seed':
@@ -111,7 +142,10 @@ export function phaseStatusText(
       const tripLength = daysToEnd !== null ? Math.abs(daysToEnd - daysToStart) + 1 : null;
       const dayNum = Math.abs(daysToStart) + 1;
       return tripLength
-        ? tr(t, 'trips.phase.status.dayOf', 'Day {{day}} of {{total}}', { day: dayNum, total: tripLength })
+        ? tr(t, 'trips.phase.status.dayOf', 'Day {{day}} of {{total}}', {
+            day: dayNum,
+            total: tripLength,
+          })
         : tr(t, 'trips.phase.status.day', 'Day {{day}}', { day: dayNum });
     }
     case 'memory': {

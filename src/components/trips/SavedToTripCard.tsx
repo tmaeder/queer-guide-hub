@@ -19,12 +19,21 @@ const MAX_GROUPS = 2;
  * appended to the active trip). Renders nothing until there's a qualifying
  * city group, so it's safe to mount unconditionally on the Saved surface.
  */
-export function SavedToTripCard() {
+export function SavedToTripCard({ eligibleItemIds }: { eligibleItemIds?: Set<string> }) {
   const { data: groups, isLoading } = useSavedItemsByCity();
   if (isLoading || !groups || groups.length === 0) return null;
+  const visibleGroups = groups
+    .map((group) => ({
+      ...group,
+      items: eligibleItemIds
+        ? group.items.filter((item) => eligibleItemIds.has(item.id))
+        : group.items,
+    }))
+    .filter((group) => group.items.length >= 2);
+  if (visibleGroups.length === 0) return null;
   return (
     <div className="flex flex-col gap-2">
-      {groups.slice(0, MAX_GROUPS).map((group) => (
+      {visibleGroups.slice(0, MAX_GROUPS).map((group) => (
         <SavedCityRow key={group.cityId} group={group} />
       ))}
     </div>
@@ -36,7 +45,7 @@ function SavedCityRow({ group }: { group: SavedCityGroup }) {
   const { toast } = useToast();
   const navigate = useLocalizedNavigate();
   const { createTrip, addPlacesBulk } = useTripMutations();
-  const { activeTrip } = useActiveTrip();
+  const { activeTrip, setActiveTripId } = useActiveTrip();
   const { data: activeTripDetails } = useTrip(activeTrip?.id);
   const [busy, setBusy] = useState<'new' | 'active' | null>(null);
 
@@ -48,9 +57,7 @@ function SavedCityRow({ group }: { group: SavedCityGroup }) {
   );
 
   const rowsFor = (excludeExisting: boolean) =>
-    group.items
-      .filter((g) => !excludeExisting || !existingIds.has(g.id))
-      .map(tripPlaceRowFromGeo);
+    group.items.filter((g) => !excludeExisting || !existingIds.has(g.id)).map(tripPlaceRowFromGeo);
 
   const canStartTrip = !!group.countryId;
   const newToActive = rowsFor(true);
@@ -65,6 +72,7 @@ function SavedCityRow({ group }: { group: SavedCityGroup }) {
         primary_country_id: group.countryId,
         primary_city_name: group.cityName,
       });
+      setActiveTripId(trip.id);
       await addPlacesBulk.mutateAsync({ tripId: trip.id, rows: rowsFor(false) });
       navigate(`/trips/${trip.id}`);
     } catch (err) {
@@ -121,6 +129,12 @@ function SavedCityRow({ group }: { group: SavedCityGroup }) {
                 count: group.items.length,
                 city: group.cityName,
               })}
+              <span className="mt-1 block text-13 text-muted-foreground">
+                {group.items
+                  .slice(0, 3)
+                  .map((item) => item.name)
+                  .join(' · ')}
+              </span>
             </p>
           </div>
           <div className="flex items-center gap-2">

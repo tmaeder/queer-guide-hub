@@ -9,16 +9,21 @@ vi.mock('react-i18next', () => ({
   useTranslation: () => ({
     t: (_k: string, vars?: Record<string, unknown> | string) => {
       if (typeof vars === 'string') return vars;
-      if (vars && typeof vars === 'object' && 'defaultValue' in vars) return String(vars.defaultValue);
+      if (vars && typeof vars === 'object' && 'defaultValue' in vars)
+        return String(vars.defaultValue);
       return _k;
     },
   }),
 }));
 vi.mock('@/hooks/useEntityTripStatus', () => ({
-  useEntityTripStatus: () => ({ data: { isInTrip: false, trips: [] }, isLoading: false, error: null }),
+  useEntityTripStatus: () => ({
+    data: { isInTrip: false, trips: [] },
+    isLoading: false,
+    error: null,
+  }),
 }));
-vi.mock('@/components/trips/AddToTripDialog', () => ({
-  AddToTripDialog: ({ open }: { open: boolean }) => (open ? <div data-testid="add-to-trip-dialog" /> : null),
+vi.mock('@/components/trips/TripAction', () => ({
+  TripAction: () => <button type="button">Save to trip</button>,
 }));
 
 import { EventHoverCard } from '../EventHoverCard';
@@ -85,7 +90,7 @@ describe('EventHoverCard', () => {
     expect(screen.queryByRole('button', { name: /Going/i })).toBeNull();
   });
 
-  it('opens AddToTripDialog when enableSaveToTrip is set and Save is clicked', async () => {
+  it('renders the shared trip action when enableSaveToTrip is set', async () => {
     render(
       <MemoryRouter>
         <EventHoverCard event={ev({ id: 'save1' })} enableSaveToTrip>
@@ -95,7 +100,6 @@ describe('EventHoverCard', () => {
     );
     fireEvent.focus(screen.getByTestId('t3'));
     const save = await screen.findByRole('button', { name: /Save to trip/i });
-    fireEvent.click(save);
-    expect(screen.getByTestId('add-to-trip-dialog')).toBeTruthy();
+    expect(save).toBeTruthy();
   });
 });

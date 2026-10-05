@@ -9,12 +9,17 @@ vi.mock('@/components/trips/TripViewSwitcher', () => ({
   TripViewSwitcher: () => null,
   getTripViewFromSearch: () => 'plan',
 }));
+vi.mock('@/hooks/useTrips', () => ({ useTrip: () => ({ data: undefined }) }));
 
 import TripWorkspace from '../TripWorkspace';
 
 describe('TripWorkspace', () => {
   it('renders', () => {
-    const { container } = render(<MemoryRouter><TripWorkspace /></MemoryRouter>);
+    const { container } = render(
+      <MemoryRouter>
+        <TripWorkspace />
+      </MemoryRouter>,
+    );
     expect(container).toBeTruthy();
   });
 });

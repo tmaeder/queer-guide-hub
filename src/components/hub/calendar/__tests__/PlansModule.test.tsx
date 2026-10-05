@@ -37,17 +37,17 @@ describe('PlansModule (unified calendar)', () => {
     expect(screen.getByText('Nothing on this day.')).toBeTruthy();
   });
 
-  it('auto-opens the trips drawer when a /travel ?cityId seed is present', () => {
+  it('keeps the trip portfolio visible when a /travel city seed is present', () => {
     renderAt('/hub/plans?cityId=c1&cityName=Berlin&countryId=x&countryName=Germany');
     expect(screen.getByTestId('trips-strip')).toBeTruthy();
   });
 
-  it('does not open the trips drawer without a seed', () => {
+  it('keeps the trip portfolio visible without a seed', () => {
     renderAt('/hub/plans');
-    expect(screen.queryByTestId('trips-strip')).toBeNull();
+    expect(screen.getByTestId('trips-strip')).toBeTruthy();
   });
 
-  it('opens the trips drawer from the toolbar button', () => {
+  it('keeps trips reachable from the calendar toolbar', () => {
     renderAt('/hub/plans');
     fireEvent.click(screen.getByRole('button', { name: 'Trips' }));
     expect(screen.getByTestId('trips-strip')).toBeTruthy();

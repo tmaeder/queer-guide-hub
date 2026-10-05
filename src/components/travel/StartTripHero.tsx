@@ -13,12 +13,14 @@ import {
   CityCountryAutocomplete,
   type GeoSelection,
 } from '@/components/trips/create/CityCountryAutocomplete';
+import { useOptionalActiveTrip } from '@/hooks/useActiveTrip';
 
 export function StartTripHero() {
   const { t } = useTranslation();
   const { user } = useAuth();
   const navigate = useLocalizedNavigate();
   const { createTrip } = useTripMutations();
+  const activeTripContext = useOptionalActiveTrip();
 
   const [geo, setGeo] = useState<GeoSelection | null>(null);
   const [startDate, setStartDate] = useState('');
@@ -58,6 +60,7 @@ export function StartTripHero() {
         start_date: startDate || undefined,
         end_date: endDate || undefined,
       });
+      activeTripContext?.setActiveTripId(trip.id);
       navigate(`/trips/${trip.id}`);
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Failed to create trip');

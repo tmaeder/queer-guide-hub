@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { useLocation } from 'react-router';
 import { TrackLoader } from '@/components/transit/TrackLoader';
 import { useTranslation } from 'react-i18next';
 import { Luggage, Check, Plus, Users, Calendar } from 'lucide-react';
@@ -26,6 +27,8 @@ import { useActiveTrip } from '@/hooks/useActiveTrip';
 import { resolveTripTitle } from '@/components/trips/tripTitle';
 import { resolveEntityGeo } from '@/lib/trips/resolveEntityGeo';
 import { cn } from '@/lib/utils';
+import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
+import { storeTripCapture } from '@/lib/trips/tripCaptureIntent';
 
 export interface AddToTripDialogProps {
   open: boolean;
@@ -41,25 +44,48 @@ export interface AddToTripDialogProps {
     address?: string | null;
     category?: string | null;
   };
+  source?: string;
 }
 
-export function AddToTripDialog({ open, onClose, entity }: AddToTripDialogProps) {
+export function AddToTripDialog({
+  open,
+  onClose,
+  entity,
+  source = 'add-to-trip-dialog',
+}: AddToTripDialogProps) {
   const { t } = useTranslation();
   const { user } = useAuth();
+  const location = useLocation();
+  const navigate = useLocalizedNavigate();
   const { toast } = useToast();
   const { data: trips, isLoading: tripsLoading } = useTrips();
   const { addPlace, createTrip } = useTripMutations();
-  const { activeTrip } = useActiveTrip();
+  const { activeTrip, setActiveTripId } = useActiveTrip();
+  const editableTrips = useMemo(
+    () =>
+      (trips ?? []).filter(
+        (trip) =>
+          trip.owner_id === user?.id ||
+          trip.membership_role === 'owner' ||
+          trip.membership_role === 'editor',
+      ),
+    [trips, user?.id],
+  );
 
   const [selectedTripId, setSelectedTripId] = useState<string | null>(null);
 
   // Pre-select active trip when dialog opens
   useEffect(() => {
-    if (open && activeTrip && !selectedTripId) {
+    if (
+      open &&
+      activeTrip &&
+      editableTrips.some((trip) => trip.id === activeTrip.id) &&
+      !selectedTripId
+    ) {
       // eslint-disable-next-line react-hooks/set-state-in-effect -- effect synchronizes state with external props/data; React Compiler can't infer the sync direction. Documented exemption from the eslint.config.js staged-ratchet plan.
       setSelectedTripId(activeTrip.id);
     }
-  }, [open, activeTrip, selectedTripId]);
+  }, [open, activeTrip, editableTrips, selectedTripId]);
   const [selectedDayId, setSelectedDayId] = useState<string>('');
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [newTripTitle, setNewTripTitle] = useState('');
@@ -197,6 +223,7 @@ export function AddToTripDialog({ open, onClose, entity }: AddToTripDialogProps)
         primary_city_id: geo.city_id,
         primary_country_id: geo.country_id,
       });
+      setActiveTripId(trip.id);
 
       await addPlace.mutateAsync({
         trip_id: trip.id,
@@ -258,13 +285,23 @@ export function AddToTripDialog({ open, onClose, entity }: AddToTripDialogProps)
                 'Create an account to save places to your travel plans.',
               )}
             </p>
+            <Button
+              className="mt-6"
+              onClick={() => {
+                const returnTo = `${location.pathname}${location.search}${location.hash}`;
+                storeTripCapture({ kind: 'add_entity', entity }, { source, returnTo });
+                navigate(`/auth?redirect=${encodeURIComponent(returnTo)}`);
+              }}
+            >
+              {t('common.signIn', 'Sign in')}
+            </Button>
           </div>
         </DialogContent>
       </Dialog>
     );
   }
 
-  const hasTrips = trips && trips.length > 0;
+  const hasTrips = editableTrips.length > 0;
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
@@ -290,7 +327,7 @@ export function AddToTripDialog({ open, onClose, entity }: AddToTripDialogProps)
           ) : hasTrips && !showCreateForm ? (
             <>
               <div className="flex flex-col gap-2 mb-4">
-                {trips.map((trip) => (
+                {editableTrips.map((trip) => (
                   <div
                     key={trip.id}
                     onClick={() => {

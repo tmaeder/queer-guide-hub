@@ -29,7 +29,7 @@ export function CalendarToolbar({
   onToday: () => void;
   enabledLayers: Set<CalendarLayerId>;
   onToggleLayer: (id: CalendarLayerId) => void;
-  onOpenTrips: () => void;
+  onOpenTrips?: () => void;
 }) {
   const { t } = useTranslation();
   const { copyCalendarFeedUrl, loading: feedLoading } = useCalendarFeed();
@@ -87,10 +87,12 @@ export function CalendarToolbar({
             </TabsList>
           </Tabs>
           <CalendarLayersMenu enabled={enabledLayers} onToggle={onToggleLayer} />
-          <Button variant="outline" size="sm" onClick={onOpenTrips}>
-            <Plane className="mr-1.5 h-3.5 w-3.5" aria-hidden />
-            {t('hub.calendar.tripsButton', { defaultValue: 'Trips' })}
-          </Button>
+          {onOpenTrips ? (
+            <Button variant="outline" size="sm" onClick={onOpenTrips}>
+              <Plane className="mr-1.5 h-3.5 w-3.5" aria-hidden />
+              {t('hub.calendar.tripsButton', { defaultValue: 'Trips' })}
+            </Button>
+          ) : null}
           <Button variant="outline" size="sm" onClick={copyCalendarFeedUrl} disabled={feedLoading}>
             <CalendarPlus className="mr-1.5 h-3.5 w-3.5" aria-hidden />
             {t('hub.calendar.subscribe', { defaultValue: 'Subscribe' })}

@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/hover-card';
 import { formatEventTime } from '@/lib/event-time';
 import { useTranslation } from 'react-i18next';
-import { AddToTripDialog } from '@/components/trips/AddToTripDialog';
+import { TripAction } from '@/components/trips/TripAction';
 import { useEntityTripStatus } from '@/hooks/useEntityTripStatus';
 
 type Event = Database['public']['Tables']['events']['Row'];
@@ -17,7 +17,7 @@ interface EventHoverCardProps {
   event: Event;
   children: ReactNode;
   onRsvp?: (eventId: string, status: 'going' | 'interested' | 'not_going') => void | Promise<void>;
-  /** When true, the Save button opens AddToTripDialog inline. */
+  /** When true, render the shared contextual trip action inline. */
   enableSaveToTrip?: boolean;
   /** Optional custom save handler — takes precedence over the built-in dialog. */
   onSaveToTrip?: (event: Event) => void | Promise<void>;
@@ -68,7 +68,6 @@ export function EventHoverCard({
   const { t } = useTranslation();
   const [rsvpLoading, setRsvpLoading] = useState<string | null>(null);
   const [saveLoading, setSaveLoading] = useState(false);
-  const [addToTripOpen, setAddToTripOpen] = useState(false);
   const tripStatus = useEntityTripStatus('event', enableSaveToTrip ? event.id : undefined);
   const isInTrip = isInTripProp ?? tripStatus.data.isInTrip;
   const showSaveBtn = !!onSaveToTrip || !!enableSaveToTrip;
@@ -103,9 +102,6 @@ export function EventHoverCard({
         setSaveLoading(false);
       }
       return;
-    }
-    if (enableSaveToTrip) {
-      setAddToTripOpen(true);
     }
   };
 
@@ -213,7 +209,7 @@ export function EventHoverCard({
                 </Button>
               </>
             )}
-            {showSaveBtn && (
+            {onSaveToTrip && (
               <Button
                 type="button"
                 size="sm"
@@ -231,25 +227,28 @@ export function EventHoverCard({
                 {isInTrip ? <Check className="size-3" /> : <Plus className="size-3" />}
               </Button>
             )}
+            {enableSaveToTrip && !onSaveToTrip ? (
+              <TripAction
+                intent={{
+                  kind: 'add_entity',
+                  entity: {
+                    type: 'event',
+                    id: event.id,
+                    name: event.title,
+                    city_id: event.city_id ?? null,
+                    country_id: event.country_id ?? null,
+                    address: event.address ?? null,
+                    category: event.event_type ?? null,
+                  },
+                }}
+                source="event-hover-card"
+                variant="compact"
+                stopPropagation
+              />
+            ) : null}
           </div>
         )}
       </HoverCardContent>
-
-      {enableSaveToTrip && !onSaveToTrip && (
-        <AddToTripDialog
-          open={addToTripOpen}
-          onClose={() => setAddToTripOpen(false)}
-          entity={{
-            type: 'event',
-            id: event.id,
-            name: event.title,
-            city_id: event.city_id ?? null,
-            country_id: event.country_id ?? null,
-            address: event.address ?? null,
-            category: event.event_type ?? null,
-          }}
-        />
-      )}
     </HoverCard>
   );
 }

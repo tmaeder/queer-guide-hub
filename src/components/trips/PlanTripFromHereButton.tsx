@@ -1,10 +1,8 @@
-import { useState } from 'react';
 import { Plane } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
-import { CreateTripDialog } from '@/components/trips/CreateTripDialog';
 import type { GeoSelection } from '@/components/trips/create/CityCountryAutocomplete';
-import { useAuth } from '@/hooks/useAuth';
+import { TripAction } from '@/components/trips/TripAction';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 
 export interface PlanTripFromHereButtonProps {
@@ -35,31 +33,22 @@ export function PlanTripFromHereButton({
   label,
 }: PlanTripFromHereButtonProps) {
   const { t } = useTranslation();
-  const { user } = useAuth();
   const navigate = useLocalizedNavigate();
-  const [open, setOpen] = useState(false);
-
-  const handleClick = () => {
-    if (!user) {
-      navigate(`/auth?redirect=${encodeURIComponent('/travel')}`);
-      return;
-    }
-    setOpen(true);
-  };
-
-  return (
-    <>
-      <Button onClick={handleClick} className={className} variant="default" size="sm">
-        <Plane size={14} className="mr-1.5" aria-hidden="true" />
+  if (!initialGeo) {
+    return (
+      <Button type="button" size="sm" className={className} onClick={() => navigate('/travel')}>
+        <Plane className="mr-1.5 h-3.5 w-3.5" aria-hidden />
         {label ?? t('trips.planFromHere.cta', 'Plan a trip from here')}
       </Button>
-      {open ? (
-        <CreateTripDialog
-          open={open}
-          onClose={() => setOpen(false)}
-          initialGeo={initialGeo ?? null}
-        />
-      ) : null}
-    </>
+    );
+  }
+
+  return (
+    <TripAction
+      intent={{ kind: 'start_destination', destination: initialGeo }}
+      source="destination-detail"
+      label={label ?? t('trips.planFromHere.cta', 'Plan a trip from here')}
+      className={className}
+    />
   );
 }

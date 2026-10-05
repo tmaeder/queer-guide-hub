@@ -18,6 +18,9 @@ vi.mock('@/hooks/useProfile', () => ({ useProfile: () => ({ profile: null }) }))
 // HotelOverview's nearby-map block uses a react-query hook; stub it to an empty
 // marker list so these renders stay provider-free (matches the pattern above).
 vi.mock('@/hooks/useNearbyMapPoints', () => ({ useNearbyMapPoints: () => [] }));
+vi.mock('@/components/trips/TripAction', () => ({
+  TripAction: () => <button>Add to trip</button>,
+}));
 
 import {
   HotelHero,
@@ -45,7 +48,6 @@ describe('HotelDetail.parts', () => {
           countryName="Germany"
           tripCount={0}
           isInTrip={false}
-          onAddToTrip={vi.fn()}
         />
       </MemoryRouter>,
     );

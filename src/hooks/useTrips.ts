@@ -207,6 +207,8 @@ type UpdateTripInput = Partial<CreateTripInput> & {
 };
 
 export type TripListItem = Trip & {
+  /** Current user's accepted membership role, used to keep write actions off viewer-only trips. */
+  membership_role?: TripMember['role'];
   member_count: number;
   place_count: number;
   day_count: number;
@@ -228,12 +230,13 @@ export function useTrips() {
       // Get trips where user is a member
       const { data: memberRows, error: memberErr } = await supabase
         .from('trip_members')
-        .select('trip_id')
+        .select('trip_id, role')
         .eq('user_id', user!.id)
         .not('accepted_at', 'is', null);
 
       if (memberErr) throw memberErr;
       const tripIds = memberRows?.map((m) => m.trip_id) || [];
+      const roleByTrip = new Map(memberRows?.map((member) => [member.trip_id, member.role]) ?? []);
       if (tripIds.length === 0) return [];
 
       const { data, error } = await supabase
@@ -253,6 +256,7 @@ export function useTrips() {
         const min_equality_score = scores.length ? Math.min(...scores) : null;
         return {
           ...t,
+          membership_role: roleByTrip.get(String(t.id)),
           member_count: t.trip_members?.length || 0,
           place_count: t.trip_places?.length || 0,
           day_count: t.trip_days?.length || 0,
@@ -388,6 +392,8 @@ export function useTripMutations() {
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: qk.trip.detail(data.trip_id) });
+      queryClient.invalidateQueries({ queryKey: qk.trip.lists() });
+      queryClient.invalidateQueries({ queryKey: ['user-trip-places'] });
       trackPlaceAdded(data, user?.id ?? null, 'trip_add');
     },
   });
@@ -469,6 +475,8 @@ export function useTripMutations() {
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: qk.trip.detail(data.tripId) });
+      queryClient.invalidateQueries({ queryKey: qk.trip.lists() });
+      queryClient.invalidateQueries({ queryKey: ['user-trip-places'] });
     },
   });
 

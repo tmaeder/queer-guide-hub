@@ -26,6 +26,7 @@ import { SaveTripButton } from '@/components/trips/SaveTripButton';
 import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
 import { qk } from '@/lib/queryKeys';
+import { useActiveTrip } from '@/hooks/useActiveTrip';
 
 interface Props {
   trip: DiscoverableTrip;
@@ -54,6 +55,7 @@ export function PublicTripCard({ trip }: Props) {
   const navigate = useLocalizedNavigate();
   const { user } = useAuth();
   const { createTrip } = useTripMutations();
+  const { setActiveTripId } = useActiveTrip();
   const queryClient = useQueryClient();
   const { toast } = useToast();
   const [forking, setForking] = useState(false);
@@ -105,6 +107,7 @@ export function PublicTripCard({ trip }: Props) {
         });
         queryClient.invalidateQueries({ queryKey: qk.trip.lists() });
         queryClient.invalidateQueries({ queryKey: ['discoverable-trips'] });
+        setActiveTripId(rpcData);
         navigate(`/trips/${rpcData}`);
         return;
       }
@@ -129,6 +132,7 @@ export function PublicTripCard({ trip }: Props) {
         primary_country_id: trip.primary_country_id,
         primary_city_name: trip.cities[0],
       });
+      setActiveTripId(created.id);
       toast({
         title: t('trips.discover.forked', 'Trip created'),
         description: t(
