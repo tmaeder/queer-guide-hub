@@ -7,17 +7,9 @@ import { PodcastPlayer } from '@/components/news/PodcastPlayer';
 import { podcastEpisodeJsonLd } from '@/lib/podcastJsonLd';
 import { MilestonesForEntity } from '@/components/discovery/MilestonesForEntity';
 import { useEffect, useMemo, useState } from 'react';
-import {
-  ArrowLeft,
-  ExternalLink,
-  Clock,
-  Eye,
-  Share2,
-  Calendar,
-  User,
-  BookOpen,
-} from 'lucide-react';
+import { ArrowLeft, ExternalLink, Clock, Eye, Calendar, User, BookOpen } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { ShareMenu } from '@/components/share/ShareMenu';
 import { Badge } from '@/components/ui/badge';
 import { Eyebrow } from '@/components/ui/Eyebrow';
 import { Image } from '@/components/ui/Image';
@@ -214,19 +206,6 @@ export default function NewsDetail() {
   useEffect(() => {
     if (redirectNewsSlug) navigate(`/news/${redirectNewsSlug}`, { replace: true });
   }, [redirectNewsSlug, navigate]);
-
-  const handleShare = async () => {
-    const url = window.location.href;
-    if (typeof navigator !== 'undefined' && navigator.share) {
-      try {
-        await navigator.share({ title: article?.title, url });
-      } catch {
-        /* cancelled */
-      }
-    } else {
-      await navigator.clipboard.writeText(url);
-    }
-  };
 
   const getCategoryLabel = (category: string) => {
     const dbCat = dbCategories.find(
@@ -473,10 +452,19 @@ export default function NewsDetail() {
             currentData={article as unknown as Record<string, unknown>}
             onSaved={() => window.location.reload()}
           />
-          <Button variant="outline" size="sm" onClick={handleShare}>
-            <Share2 size={16} className="mr-1.5" />
-            {t('newsDetail.share', 'Share')}
-          </Button>
+          <ShareMenu
+            url={window.location.href}
+            title={articleTitle}
+            label={t('newsDetail.share', 'Share')}
+            entity={{
+              entity_table: 'news_articles',
+              entity_id: article.id,
+              title: articleTitle ?? article.title,
+              subtitle: sourceName ?? null,
+              image_url: article.image_url ?? null,
+              path: `/news/${slug ?? article.id}`,
+            }}
+          />
           <Button
             variant="accent"
             size="sm"
