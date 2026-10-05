@@ -91,6 +91,21 @@
 -- "has one provider category" and start being counted as honest absence, which is more
 -- truthful and applies nothing.
 --
+-- THE SENTINEL IS PROVEN NON-VACUOUS, which a zero-invariant otherwise cannot be. Asked
+-- on prod immediately BEFORE and AFTER this migration's own apply block, in a transaction
+-- forced to roll back:
+--
+--   BEFORE: mappable_still_other 44, stamped_total 134, other_live 5,447
+--   AFTER : mappable_still_other  0, stamped_total 178, other_live 5,403
+--   last_reclassify_at 2026-10-05T03:35:00Z in both
+--
+-- So the invariant goes NON-ZERO on a genuinely unreached cohort and back to 0 once the
+-- tier drains it. A zero that has never been anything else is indistinguishable from a
+-- query that cannot count — this one has been 44.
+--
+-- Note the 44 are all older than that 03:35 run, so the age gate does not mask them: it
+-- excludes only rows created AFTER the last run, which is exactly the fresh-ingest case.
+--
 -- SOFT ON PRECONDITIONS: every insert is `on conflict do nothing`, and a venue a
 -- concurrent session already categorised simply stops being selected. Nothing aborts on
 -- a count — the cohort moved 202 -> 205 between measuring and validating last time.
@@ -141,13 +156,30 @@ begin
    where provider_tag in ('restaurants','theaters','spas','ice cream',
                           'social service organizations','gay & lesbian bars');
 
-  -- THE INVARIANT. A venue still at `other` whose SOLE provider category (after noise
-  -- removal) is one the mapping can resolve. Zero while the cursor works; climbs the
-  -- moment it regresses, because new rows arrive and are never picked up.
+  -- THE INVARIANT, AND IT IS AGE-GATED RATHER THAN LEVEL-GATED, which is this repo's own
+  -- house rule ("gate on AGE or on a write-time invariant, never on a level") and is
+  -- load-bearing here rather than stylistic. A venue still at `other` whose SOLE provider
+  -- category the mapping can resolve is the right quantity — but a freshly ingested row is
+  -- legitimately in that state until the nightly cron runs, and **venue creation does NOT
+  -- happen at the 03:00 ingest cron**: measured over 7 days, 12,228 of 12,275 new venues
+  -- were created between 17:00 and 20:00 UTC. The 06:00 health check is safe only because
+  -- 03:35 precedes it; a `workflow_dispatch` at 19:00 would go red on rows that are
+  -- minutes old and perfectly healthy, which is the cry-wolf shape.
+  --
+  -- So the anchor is the RUN, not a hand-picked interval: a row created BEFORE the last
+  -- recorded reclassify run and still mappable-and-stuck is a row that run failed to
+  -- reach. No arbitrary window, and no false positive from ingest.
+  --
+  -- `last_run_at` NULL means the registry has no run recorded — which was true of 142 of
+  -- 144 cron rows before 20260910163700 added run tracking. Then nothing is PROVABLY
+  -- unreached, so the count is 0 and `last_reclassify_at` is reported so the absence is
+  -- visible rather than read as a clean corpus.
   select count(*) into v_stuck
     from public.venues v
    where v.duplicate_of_id is null
      and v.category = 'other'
+     and v.created_at < (select a.last_run_at from public.admin_automations a
+                          where a.slug = 'venue_category_reclassify')
      and coalesce((
            select count(distinct btrim(lower(raw)))
              from public.venue_sources s,
@@ -175,6 +207,11 @@ begin
     'mapping_rows', v_mapping,
     'noise_rows', v_noise,
     'rejected_tag_in_mapping', v_rejected,
+    -- The age anchor, reported so a NULL is visible: with no recorded run nothing can be
+    -- proven unreached and `mappable_still_other` is 0 for that reason, not because the
+    -- corpus is clean.
+    'last_reclassify_at', (select a.last_run_at from public.admin_automations a
+                            where a.slug = 'venue_category_reclassify'),
     'mappable_still_other', v_stuck,
     -- Descriptive, never gated.
     'stamped_total', (select count(*) from public.venues
@@ -193,8 +230,11 @@ comment on function public.venue_category_signals() is
   'the engine returns examined:0 when healthy, the same value it returned when a '
   'visit-once cursor made it examine nothing for months, so no monitor on `examined` can '
   'separate them. `mappable_still_other` can: it is 0 while the cursor works and climbs '
-  'as soon as it regresses. Denominators are reported before counts because zero stuck '
-  'rows over an emptied mapping is not a clean corpus.';
+  'as soon as it regresses. It is AGE-GATED on the last recorded reclassify run rather '
+  'than on a level, because 12,228 of 12,275 venues created in a measured week arrived '
+  'between 17:00 and 20:00 UTC and are legitimately uncategorised until 03:35, so a '
+  'level would go red on rows that are minutes old. Denominators are reported before '
+  'counts because zero stuck rows over an emptied mapping is not a clean corpus.';
 
 revoke all on function public.venue_category_signals() from public, anon, authenticated;
 grant execute on function public.venue_category_signals() to service_role;

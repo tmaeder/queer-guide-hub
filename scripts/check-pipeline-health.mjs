@@ -4946,8 +4946,17 @@ const DISOWNED_PROSE_CEILING = 380
 //
 // `mappable_still_other` is the quantity that CAN: venues sitting at `other` whose sole
 // provider category the mapping could resolve. 0 while the cursor works, climbing as soon
-// as it regresses because new tripadvisor listings keep arriving. Measured 0 on prod, so
-// it is a real zero-invariant rather than a baseline nobody re-reads.
+// as it regresses. Measured 0 on prod, so it is a real zero-invariant rather than a
+// baseline nobody re-reads.
+//
+// IT IS AGE-GATED, NOT LEVEL-GATED, and that is load-bearing rather than stylistic.
+// Venue creation does NOT happen at the 03:00 ingest cron: measured over 7 days, 12,228 of
+// 12,275 new venues were created between 17:00 and 20:00 UTC, and such a row is
+// legitimately uncategorised until the 03:35 reclassify. This scheduled run is safe only
+// because 03:35 precedes 06:00 — a `workflow_dispatch` at 19:00 on a level-gated count
+// would go red on rows minutes old. So the sentinel anchors on the last RECORDED
+// reclassify run rather than on any interval, and `last_reclassify_at` is printed: a NULL
+// there means nothing can be proven unreached, so the 0 is an absence of evidence.
 //
 // THE DENOMINATORS GATE TOO. Zero stuck rows over an emptied mapping is not a clean
 // corpus — it is a disabled tier with every count reading fine.
@@ -4981,8 +4990,19 @@ const DISOWNED_PROSE_CEILING = 380
       console.log(
         `  venue categories: ${sig.mapping_rows} provider tag(s) mapped, ${sig.noise_rows} noise token(s), ` +
           `${sig.stamped_total} venue(s) categorised from a source tag, ` +
-          `${sig.other_live} live still 'other' (${sig.other_total} incl. archived)`,
+          `${sig.other_live} live still 'other' (${sig.other_total} incl. archived), ` +
+          `last reclassify ${sig.last_reclassify_at ?? 'NEVER RECORDED'}`,
       )
+
+      if (!sig.last_reclassify_at) {
+        // Not a defect in the tier, but the age anchor is missing, so mappable_still_other
+        // is 0 because nothing can be proven unreached — absence of evidence. Warn rather
+        // than fail: the registry not recording a run is its own subsystem's problem.
+        console.warn(
+          "⚠ venue_category_reclassify has no recorded last_run_at — mappable_still_other reads 0 because " +
+            'nothing can be proven unreached, not because the corpus is clean',
+        )
+      }
 
       if (!(sig.mapping_rows > 0)) {
         console.error(

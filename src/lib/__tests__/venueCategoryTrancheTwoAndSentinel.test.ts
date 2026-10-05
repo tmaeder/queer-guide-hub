@@ -133,6 +133,32 @@ describe('the sentinel separates DRAINED from BLIND', () => {
     expect(stuck).toContain('venue_category_source_tag_noise');
   });
 
+  it('is AGE-gated on the last recorded run, not level-gated', () => {
+    // 12,228 of 12,275 venues created in a measured week arrived 17:00-20:00 UTC and are
+    // legitimately uncategorised until 03:35, so a bare count > 0 reds the gate on rows
+    // minutes old whenever someone dispatches the check manually. The anchor is the RUN,
+    // which needs no arbitrary interval.
+    const stuck = sentinel().slice(sentinel().indexOf('select count(*) into v_stuck'));
+    expect(stuck).toContain('v.created_at <');
+    expect(stuck).toContain("a.slug = 'venue_category_reclassify'");
+    expect(stuck).toContain('last_run_at');
+    // An interval literal here would be the hand-picked window the run anchor replaces.
+    expect(stuck).not.toMatch(/interval\s+'\d+\s*(hour|day)/i);
+  });
+
+  it('reports the age anchor so a NULL is visible rather than read as clean', () => {
+    const s = sentinel();
+    expect(s).toContain("'last_reclassify_at'");
+    const sec = health.slice(
+      health.indexOf('rest/v1/rpc/venue_category_signals'),
+      health.lastIndexOf('if (FAILED) {'),
+    );
+    expect(sec).toContain('last_reclassify_at');
+    expect(sec).toMatch(/NEVER RECORDED/);
+    // Absence of the anchor WARNS; it is the registry's problem, not the tier's.
+    expect(sec).toMatch(/if \(!sig\.last_reclassify_at\) \{[\s\S]{0,500}?console\.warn/);
+  });
+
   it('reports the denominators BEFORE the counts', () => {
     // Zero stuck rows over an emptied mapping is a disabled tier, not a clean corpus.
     const s = sentinel();
