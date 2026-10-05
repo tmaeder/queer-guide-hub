@@ -3,6 +3,7 @@ import { logPipelineError } from '../_shared/pipeline-error-log.ts'
 import { reportApiError } from '../_shared/report-api-error.ts'
 import { rpcWithBreaker } from '../_shared/circuit-breaker.ts'
 import { buildRecord } from './build-record.ts'
+import { mergeSocialLinks } from './social-merge.ts'
 import {
   commitConfigForTable,
   socialColumnForTable,
@@ -27,7 +28,8 @@ type SimpleCommitRow = { staging_id: string; action: string } & Record<string, s
  * rows (the batch RPCs don't write the social column). Only touches rows that
  * actually carry social links — usually a handful — so the per-row search
  * trigger fires a bounded number of times, never a storm. Merges with any
- * existing value so re-ingests don't drop previously known links.
+ * existing value (existing non-empty links win per key, see social-merge.ts)
+ * so re-ingests neither drop nor overwrite previously known links.
  */
 async function persistSocialLinks(
   supabase: ReturnType<typeof getServiceClient>,
@@ -51,8 +53,8 @@ async function persistSocialLinks(
     if (!entityId) continue
     const { data: cur } = await supabase.from(target).select(col).eq('id', entityId).maybeSingle()
     const existing = (cur?.[col as keyof typeof cur] as Record<string, unknown>) ?? {}
-    const merged = { ...existing, ...links }
-    if (Object.keys(merged).length === Object.keys(existing).length) continue // no change
+    const merged = mergeSocialLinks(existing, links)
+    if (!merged) continue // no change
     await supabase.from(target).update({ [col]: merged }).eq('id', entityId)
   }
 }

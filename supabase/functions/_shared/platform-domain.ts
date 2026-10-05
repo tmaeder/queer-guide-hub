@@ -92,3 +92,36 @@ export async function loadPlatformRules(
   if (rules.length === 0) throw new Error('logo_platform_domains is empty — the platform guard would be a no-op')
   return rules
 }
+
+/**
+ * The SECOND layer: the domain is the entity's own and the IMAGE is still junk.
+ *
+ * `alibi-sauna.de` is Alibi Sauna's real website; it runs WordPress, and
+ * logo.dev answered with WordPress's logo. No domain rule can express that — the
+ * thing that is wrong is the ANSWER, not the question — so the key is the image,
+ * which already has a stable identity: logos are mirrored into R2
+ * content-addressed by SHA-256, so the hash in the url IS the bytes.
+ *
+ * Measured: 230 venues across 18 marks, every one read by hand — WordPress,
+ * Wix, GoDaddy, Sedo, HugeDomains, a bare rainbow flag, two blank squares.
+ */
+export function logoMarkSha256(logoUrl: string | null | undefined): string | null {
+  // Anchored on the mirror path, not on "64 hex characters anywhere": a bare hex
+  // match would also fire on a query parameter or a token.
+  const m = /img\.queer\.guide\/logos\/([0-9a-f]{64})/.exec(logoUrl ?? '')
+  return m ? m[1] : null
+}
+
+/** Mirrors {@link loadPlatformRules}: an unreadable table throws rather than waving everything through. */
+export async function loadDeniedMarks(
+  supabase: {
+    from: (t: string) => { select: (c: string) => PromiseLike<{ data: unknown; error: unknown }> }
+  },
+): Promise<Set<string>> {
+  const { data, error } = await supabase.from('logo_denied_marks').select('sha256')
+  if (error) throw new Error(`logo_denied_marks: ${(error as { message?: string }).message ?? error}`)
+  // An EMPTY set is legitimate here, unlike the platform vocabulary: a corpus
+  // with no junk marks yet is a real state, and this layer is discovered
+  // incrementally from the sentinel's advisory arm rather than seeded up front.
+  return new Set(((data ?? []) as { sha256: string }[]).map((r) => r.sha256))
+}

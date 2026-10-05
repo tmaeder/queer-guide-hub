@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
+import { ShareMenu } from '@/components/share/ShareMenu';
 import { SinglePage } from '@/components/transit/SinglePage';
 import { ProvenanceLine } from '@/components/transit/ProvenanceLine';
 import { DeadEndTrack } from '@/components/transit/DeadEndTrack';
@@ -256,27 +257,6 @@ export default function MarketplaceItemDetail() {
     }
   };
 
-  const handleShare = async () => {
-    if (!listing) return;
-    const shareUrl = window.location.href;
-    if (navigator.share) {
-      try {
-        await navigator.share({ title: listing.title, url: shareUrl });
-      } catch {
-        /* cancelled */
-      }
-    } else {
-      await navigator.clipboard.writeText(shareUrl);
-      toast({
-        title: t('pages.marketplaceDetail.linkCopied', 'Link copied'),
-        description: t(
-          'pages.marketplaceDetail.linkCopiedDesc',
-          'Listing link copied to clipboard',
-        ),
-      });
-    }
-  };
-
   if (isLoading) {
     return (
       <PageContainer className="flex justify-center">
@@ -396,9 +376,23 @@ export default function MarketplaceItemDetail() {
           <Button variant="outline" onClick={handleToggleFavorite}>
             {isFavorited ? t('common.saved', 'Saved') : t('common.save', 'Save')}
           </Button>
-          <Button variant="outline" onClick={handleShare}>
-            {t('common.share', 'Share')}
-          </Button>
+          <ShareMenu
+            url={window.location.href}
+            title={listing.title}
+            size="default"
+            label={t('common.share', 'Share')}
+            entity={{
+              entity_table: 'marketplace_listings',
+              entity_id: listing.id,
+              title: listing.title,
+              subtitle: listing.brand ?? null,
+              image_url: listing.images?.[0] ?? null,
+              path: `/marketplace/${listing.slug ?? listing.id}`,
+              // Adult/explicit listings travel as a title-only card: no product
+              // photo in a chat thread the recipient may open in public.
+              gated: listing.content_rating === 'adult' || listing.content_rating === 'explicit',
+            }}
+          />
         </>
       }
       body={body}

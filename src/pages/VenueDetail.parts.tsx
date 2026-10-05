@@ -2,6 +2,7 @@ import { Star, MapPin, Phone, Globe, Mail, Luggage, Navigation2, Sparkles } from
 import { Instagram } from '@/components/icons/brand';
 import { Card, CardContent } from '@/components/ui/card';
 import { EntitySocialLinks } from '@/components/entity/EntitySocialLinks';
+import { normalizeHandle, normalizeSocialLinks } from '@/lib/social/registry';
 import { ShareMenu } from '@/components/share/ShareMenu';
 import { TagChipRow } from '@/components/tags/TagChipRow';
 import { Button } from '@/components/ui/button';
@@ -104,6 +105,30 @@ export function buildVenueBreadcrumbs(
     }).map((c) => ({ label: c.label as string, href: c.href })),
     { label: venue.name },
   ];
+}
+
+/**
+ * True when `social_links` holds at least one usable profile URL. Exported so
+ * the descriptor's section guard and `VenueLocationContact`'s own null-return
+ * agree: a venue whose only contact data is Facebook/Instagram/X used to get no
+ * "Location & contact" section at all, because neither check read this column.
+ */
+export function hasSocialLinks(links: unknown): boolean {
+  if (!links || typeof links !== 'object' || Array.isArray(links)) return false;
+  return Object.keys(normalizeSocialLinks(links as Record<string, unknown>)).length > 0;
+}
+
+/**
+ * The bare Instagram handle behind `venues.instagram`, or null.
+ *
+ * The column is NOT a handle in practice: `sync_venue_instagram_from_social`
+ * copies `social_links.instagram` into it verbatim, and that is a URL. Measured
+ * 2026-10-04, all 110 non-empty values were full URLs, so the page linked
+ * `https://instagram.com/https://www.instagram.com/x` and printed "@https://…".
+ * `normalizeHandle` accepts a URL, an "@handle" or a bare handle.
+ */
+export function instagramHandle(raw: string | null | undefined): string | null {
+  return normalizeHandle('instagram', raw ?? '');
 }
 
 // venue.tags is uncontrolled scraper data — some rows carry 40+ noisy terms.
@@ -291,6 +316,15 @@ export function VenueActions({
             : `https://queer.guide/venues/${venue.slug ?? venue.id}`
         }
         title={venue.name}
+        entity={{
+          entity_table: 'venues',
+          entity_id: venue.id,
+          title: venue.name,
+          subtitle: [venue.cities?.name, venue.countries?.name].filter(Boolean).join(', ') || null,
+          image_url: venue.images?.[0] ?? venue.logo_url ?? null,
+          path: `/venues/${venue.slug ?? venue.id}`,
+          gated: Boolean(venue.safety_gated),
+        }}
       />
       <button type="button" onClick={onShare} className="sr-only">
         {t('pages.venueDetail.share', 'Share')}
@@ -667,8 +701,14 @@ export function VenueLocationContact({
 }: VenueSidebarProps) {
   const visitedLookup = useVisitedPlaceLookup();
   const hasMap = typeof venue.latitude === 'number' && typeof venue.longitude === 'number';
+  const igHandle = instagramHandle(venue.instagram);
   const hasContact = Boolean(
-    venue.address || venue.phone || venue.email || venue.website || venue.instagram,
+    venue.address ||
+    venue.phone ||
+    venue.email ||
+    venue.website ||
+    igHandle ||
+    hasSocialLinks(venue.social_links),
   );
 
   if (!hasMap && !hasContact) return null;
@@ -827,7 +867,7 @@ export function VenueLocationContact({
           </div>
         )}
 
-        {venue.instagram && (
+        {igHandle && (
           <div className="flex items-center gap-2">
             <Instagram size={16} className="shrink-0 text-muted-foreground" />
             <span className="text-sm">
@@ -839,19 +879,26 @@ export function VenueLocationContact({
                 onSaved={onContentUpdated}
               >
                 <a
-                  href={`https://instagram.com/${venue.instagram}`}
+                  href={`https://instagram.com/${igHandle}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-primary hover:underline"
                 >
-                  @{venue.instagram}
+                  @{igHandle}
                 </a>
               </Editable>
             </span>
           </div>
         )}
 
-        <EntitySocialLinks links={venue.social_links} exclude={['instagram']} size="sm" />
+        {/* Instagram is excluded only when the dedicated @handle line above already
+            shows it — otherwise a venue whose Instagram lives solely in
+            social_links rendered no Instagram at all. */}
+        <EntitySocialLinks
+          links={venue.social_links}
+          exclude={igHandle ? ['instagram'] : []}
+          size="sm"
+        />
 
         {hasMap && (
           <Button variant="outline" size="sm" asChild className="self-start">
