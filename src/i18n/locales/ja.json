@@ -701,7 +701,32 @@
     "contextBar": {
       "openTrip": "旅行を開く",
       "ariaLabel": "アクティブな旅行",
-      "dismissAria": "アクティブな旅行バナーを閉じる"
+      "dismissAria": "アクティブな旅行バナーを閉じる",
+      "readiness": "旅行の準備状況",
+      "nextUp": "確認が必要",
+      "loadError": "旅行の詳細を読み込めませんでした"
+    },
+    "capture": {
+      "planDestination": "{{city}}への旅行を計画",
+      "inTrip": "{{trip}}に追加済み",
+      "addToActive": "{{trip}}に追加",
+      "offlineTitle": "接続して追加",
+      "offlineDescription": "旅行はオフラインでも表示できますが、新しい場所の追加には接続が必要です。",
+      "addedTitle": "{{trip}}に追加しました",
+      "addedDescription": "{{name}}は未定リストに入っています。",
+      "unscheduled": "予定への追加待ち",
+      "undoFailed": "追加を元に戻せませんでした"
+    },
+    "workspace": {
+      "sections": "旅行ワークスペース",
+      "plan": "計画",
+      "prepare": "準備",
+      "together": "共同",
+      "planTools": "旅程を組み立てる",
+      "prepareTools": "出発の準備をする",
+      "togetherTools": "一緒に計画する",
+      "keepPlanning": "計画を続ける",
+      "memories": "思い出を追加"
     },
     "phase": {
       "label": {
@@ -716,9 +741,12 @@
         "inDays": "あと {{count}} 日",
         "tomorrow": "明日",
         "soon": "まもなく",
-        "dayOf": "本日",
+        "dayOf": "全{{total}}日中の{{day}}日目",
         "daysAgo": "{{count}} 日前",
-        "yesterday": "昨日"
+        "yesterday": "昨日",
+        "day": "{{day}}日目",
+        "pastTrip": "過去の旅行",
+        "justEnded": "終了したばかり"
       }
     },
     "discover": {
@@ -2301,6 +2329,7 @@
     },
     "travel": {
       "title": "旅行",
+      "activeTitle": "{{city}}旅行を計画中",
       "subtitle": "LGBTQ+フレンドリーな目的地のフライト、ホテル、アクティビティを検索",
       "activitiesComingSoon": "アクティビティは近日公開。",
       "browseDestinations": "目的地を見る",
@@ -2369,6 +2398,7 @@
         "switchTrip": "アクティブな旅行を切り替え"
       },
       "lede": "[JA] Pick a place, build the trip, book the pieces — with the legal picture built in.",
+      "activeLede": "{{city}}をさらに探して、場所やイベントをアクティブな旅行に直接追加できます。",
       "sections": {
         "plan": "[JA] Plan your trip",
         "planKicker": "[JA] The planner",
@@ -3863,7 +3893,11 @@
       "law-criminalization": "犯罪化",
       "depathologization": "脱病理化",
       "persecution-destruction": "迫害・破壊",
-      "other": "その他"
+      "other": "その他",
+      "culture-media": "Culture / Media",
+      "politics-representation": "Politics / Representation",
+      "health-aids": "Health / AIDS",
+      "community-institution": "Community / Institution"
     },
     "impact": {
       "positive": "前進",

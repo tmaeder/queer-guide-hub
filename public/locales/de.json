@@ -701,7 +701,32 @@
     "contextBar": {
       "openTrip": "Reise öffnen",
       "ariaLabel": "Aktive Reise",
-      "dismissAria": "Banner der aktiven Reise schließen"
+      "dismissAria": "Banner der aktiven Reise schließen",
+      "readiness": "Reisebereitschaft",
+      "nextUp": "Aufmerksamkeit nötig",
+      "loadError": "Reisedetails konnten nicht geladen werden"
+    },
+    "capture": {
+      "planDestination": "Reise nach {{city}} planen",
+      "inTrip": "In {{trip}}",
+      "addToActive": "Zu {{trip}} hinzufügen",
+      "offlineTitle": "Zum Hinzufügen verbinden",
+      "offlineDescription": "Deine Reise ist offline verfügbar, neue Orte benötigen jedoch eine Verbindung.",
+      "addedTitle": "Zu {{trip}} hinzugefügt",
+      "addedDescription": "{{name}} wartet unter Nicht eingeplant.",
+      "unscheduled": "Wartet auf Einplanung",
+      "undoFailed": "Hinzufügen konnte nicht rückgängig gemacht werden"
+    },
+    "workspace": {
+      "sections": "Reise-Arbeitsbereich",
+      "plan": "Planen",
+      "prepare": "Vorbereiten",
+      "together": "Gemeinsam",
+      "planTools": "Reiseplan gestalten",
+      "prepareTools": "Abreise vorbereiten",
+      "togetherTools": "Gemeinsam planen",
+      "keepPlanning": "Weiterplanen",
+      "memories": "Erinnerungen hinzufügen"
     },
     "phase": {
       "label": {
@@ -716,9 +741,12 @@
         "inDays": "In {{count}} Tagen",
         "tomorrow": "Morgen",
         "soon": "Bald",
-        "dayOf": "Heute",
+        "dayOf": "Tag {{day}} von {{total}}",
         "daysAgo": "Vor {{count}} Tagen",
-        "yesterday": "Gestern"
+        "yesterday": "Gestern",
+        "day": "Tag {{day}}",
+        "pastTrip": "Vergangene Reise",
+        "justEnded": "Gerade beendet"
       }
     },
     "discover": {
@@ -2301,6 +2329,7 @@
     },
     "travel": {
       "title": "Reise",
+      "activeTitle": "Planung für {{city}}",
       "subtitle": "Finde Flüge, Hotels und Aktivitäten für LGBTQ+-freundliche Reiseziele",
       "activitiesComingSoon": "Aktivitäten folgen bald.",
       "browseDestinations": "Reiseziele entdecken",
@@ -2371,6 +2400,7 @@
         "switchTrip": "Aktive Reise wechseln"
       },
       "lede": "[DE] Pick a place, build the trip, book the pieces — with the legal picture built in.",
+      "activeLede": "Entdecke weiter in {{city}} und füge Orte und Events direkt zu deiner aktiven Reise hinzu.",
       "sections": {
         "plan": "[DE] Plan your trip",
         "planKicker": "[DE] The planner",
@@ -3865,7 +3895,11 @@
       "law-criminalization": "Kriminalisierung",
       "depathologization": "Entpathologisierung",
       "persecution-destruction": "Verfolgung / Zerstörung",
-      "other": "Sonstiges"
+      "other": "Sonstiges",
+      "culture-media": "Culture / Media",
+      "politics-representation": "Politics / Representation",
+      "health-aids": "Health / AIDS",
+      "community-institution": "Community / Institution"
     },
     "impact": {
       "positive": "Fortschritt",

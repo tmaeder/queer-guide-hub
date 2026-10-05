@@ -5,6 +5,7 @@ import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
 import { MobileBottomNav } from '@/components/layout/MobileBottomNav';
 import { TripContextBar } from '@/components/trips/TripContextBar';
+import { TripIntentResume } from '@/components/trips/TripIntentResume';
 import { RecoveryRedirect } from '@/components/auth/RecoveryRedirect';
 import { BreadcrumbBar } from '@/components/breadcrumbs/BreadcrumbBar';
 import { useGlobalPresence } from '@/hooks/useConversationPresence';
@@ -156,6 +157,7 @@ export const LayoutShell = ({ children }: { children: React.ReactNode }) => {
             <Header />
           </ErrorBoundary>
           <div className="relative z-10">
+            <TripIntentResume />
             <ErrorBoundary section="banners" fallback={null}>
               <TripContextBar />
             </ErrorBoundary>

@@ -729,7 +729,32 @@
     "contextBar": {
       "openTrip": "Открыть поездку",
       "ariaLabel": "Активная поездка",
-      "dismissAria": "Закрыть баннер активной поездки"
+      "dismissAria": "Закрыть баннер активной поездки",
+      "readiness": "Готовность к поездке",
+      "nextUp": "Требует внимания",
+      "loadError": "Не удалось загрузить детали поездки"
+    },
+    "capture": {
+      "planDestination": "Спланировать поездку в {{city}}",
+      "inTrip": "В {{trip}}",
+      "addToActive": "Добавить в {{trip}}",
+      "offlineTitle": "Подключитесь, чтобы добавить",
+      "offlineDescription": "Поездка доступна офлайн, но для добавления мест нужно подключение.",
+      "addedTitle": "Добавлено в {{trip}}",
+      "addedDescription": "{{name}} ожидает в разделе «Без расписания».",
+      "unscheduled": "Ожидает планирования",
+      "undoFailed": "Не удалось отменить добавление"
+    },
+    "workspace": {
+      "sections": "Рабочее пространство поездки",
+      "plan": "План",
+      "prepare": "Подготовка",
+      "together": "Вместе",
+      "planTools": "Составить маршрут",
+      "prepareTools": "Подготовиться к поездке",
+      "togetherTools": "Планировать вместе",
+      "keepPlanning": "Продолжить планирование",
+      "memories": "Добавить воспоминания"
     },
     "phase": {
       "label": {
@@ -744,9 +769,12 @@
         "inDays": "Через {{count}} дн.",
         "tomorrow": "Завтра",
         "soon": "Скоро",
-        "dayOf": "Сегодня",
+        "dayOf": "День {{day}} из {{total}}",
         "daysAgo": "{{count}} дн. назад",
-        "yesterday": "Вчера"
+        "yesterday": "Вчера",
+        "day": "День {{day}}",
+        "pastTrip": "Прошлая поездка",
+        "justEnded": "Только что завершилась"
       }
     },
     "discover": {
@@ -2337,6 +2365,7 @@
     },
     "travel": {
       "title": "Путешествия",
+      "activeTitle": "Планируем поездку в {{city}}",
       "subtitle": "Находи авиабилеты, отели и активности в ЛГБТК+-дружественных направлениях",
       "activitiesComingSoon": "Активности скоро.",
       "browseDestinations": "Смотреть направления",
@@ -2405,6 +2434,7 @@
         "switchTrip": "Переключить активное путешествие"
       },
       "lede": "[RU] Pick a place, build the trip, book the pieces — with the legal picture built in.",
+      "activeLede": "Продолжайте открывать {{city}} и добавляйте места и события прямо в активную поездку.",
       "sections": {
         "plan": "[RU] Plan your trip",
         "planKicker": "[RU] The planner",
@@ -3899,7 +3929,11 @@
       "law-criminalization": "Криминализация",
       "depathologization": "Депатологизация",
       "persecution-destruction": "Преследование / Разрушение",
-      "other": "Другое"
+      "other": "Другое",
+      "culture-media": "Culture / Media",
+      "politics-representation": "Politics / Representation",
+      "health-aids": "Health / AIDS",
+      "community-institution": "Community / Institution"
     },
     "impact": {
       "positive": "Прогресс",

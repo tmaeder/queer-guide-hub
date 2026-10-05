@@ -701,7 +701,32 @@
     "contextBar": {
       "openTrip": "Apri viaggio",
       "ariaLabel": "Viaggio attivo",
-      "dismissAria": "Chiudi banner del viaggio attivo"
+      "dismissAria": "Chiudi banner del viaggio attivo",
+      "readiness": "Preparazione del viaggio",
+      "nextUp": "Richiede attenzione",
+      "loadError": "Impossibile caricare i dettagli del viaggio"
+    },
+    "capture": {
+      "planDestination": "Pianifica un viaggio a {{city}}",
+      "inTrip": "In {{trip}}",
+      "addToActive": "Aggiungi a {{trip}}",
+      "offlineTitle": "Connettiti per aggiungere",
+      "offlineDescription": "Il viaggio resta disponibile offline, ma per aggiungere luoghi serve una connessione.",
+      "addedTitle": "Aggiunto a {{trip}}",
+      "addedDescription": "{{name}} è in attesa in Non programmato.",
+      "unscheduled": "In attesa di programmazione",
+      "undoFailed": "Impossibile annullare l’aggiunta"
+    },
+    "workspace": {
+      "sections": "Spazio del viaggio",
+      "plan": "Pianifica",
+      "prepare": "Prepara",
+      "together": "Insieme",
+      "planTools": "Definisci l’itinerario",
+      "prepareTools": "Preparati a partire",
+      "togetherTools": "Pianifica insieme",
+      "keepPlanning": "Continua a pianificare",
+      "memories": "Aggiungi ricordi"
     },
     "phase": {
       "label": {
@@ -716,9 +741,12 @@
         "inDays": "Tra {{count}} giorni",
         "tomorrow": "Domani",
         "soon": "Presto",
-        "dayOf": "Oggi",
+        "dayOf": "Giorno {{day}} di {{total}}",
         "daysAgo": "{{count}} giorni fa",
-        "yesterday": "Ieri"
+        "yesterday": "Ieri",
+        "day": "Giorno {{day}}",
+        "pastTrip": "Viaggio passato",
+        "justEnded": "Appena terminato"
       }
     },
     "discover": {
@@ -2301,6 +2329,7 @@
     },
     "travel": {
       "title": "Viaggi",
+      "activeTitle": "Pianificazione di {{city}}",
       "subtitle": "Trova voli, hotel e attività per destinazioni LGBTQ+ friendly",
       "activitiesComingSoon": "Attività in arrivo.",
       "browseDestinations": "Esplora destinazioni",
@@ -2371,6 +2400,7 @@
         "switchTrip": "Cambia viaggio attivo"
       },
       "lede": "[IT] Pick a place, build the trip, book the pieces — with the legal picture built in.",
+      "activeLede": "Continua a scoprire {{city}} e aggiungi luoghi ed eventi direttamente al viaggio attivo.",
       "sections": {
         "plan": "[IT] Plan your trip",
         "planKicker": "[IT] The planner",
@@ -3865,7 +3895,11 @@
       "law-criminalization": "Criminalizzazione",
       "depathologization": "Depatologizzazione",
       "persecution-destruction": "Persecuzione / Distruzione",
-      "other": "Altro"
+      "other": "Altro",
+      "culture-media": "Culture / Media",
+      "politics-representation": "Politics / Representation",
+      "health-aids": "Health / AIDS",
+      "community-institution": "Community / Institution"
     },
     "impact": {
       "positive": "Progresso",
