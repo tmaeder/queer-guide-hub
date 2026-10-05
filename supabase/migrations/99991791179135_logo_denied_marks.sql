@@ -171,7 +171,7 @@ begin
                         'url', t.logo_url,
                         'reason', 'denied_mark',
                         'mark', public.logo_mark_sha256(t.logo_url),
-                        'by', 'migration:99991791148046',
+                        'by', 'migration:99991791179135',
                         'at', now()
                       )))
         from target

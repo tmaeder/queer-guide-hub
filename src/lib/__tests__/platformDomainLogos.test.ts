@@ -171,9 +171,9 @@ describe('the producer refuses before it probes', () => {
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Second layer (99991791148046): the domain is the entity's own, the IMAGE is junk.
+// Second layer (99991791179135): the domain is the entity's own, the IMAGE is junk.
 
-const MIGRATION2 = '99991791148046_logo_denied_marks';
+const MIGRATION2 = '99991791179135_logo_denied_marks';
 const raw2 = readFileSync(
   join(process.cwd(), 'supabase', 'migrations', `${MIGRATION2}.sql`),
   'utf8',
@@ -262,9 +262,9 @@ describe('the producer refuses a denied mark', () => {
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Third layer (99991791151175): organizations, whose logos are logo.dev monograms.
+// Third layer (99991791179157): organizations, whose logos are logo.dev monograms.
 
-const MIGRATION3 = '99991791151175_organizations_logo_reprobe';
+const MIGRATION3 = '99991791179157_organizations_logo_reprobe';
 const flat3 = norm(
   stripSql(
     readFileSync(join(process.cwd(), 'supabase', 'migrations', `${MIGRATION3}.sql`), 'utf8'),
