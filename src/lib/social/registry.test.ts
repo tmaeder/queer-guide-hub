@@ -9,6 +9,9 @@ import {
   isAdultPlatform,
   displayHandle,
   isShareOrWidgetUrl,
+  orderedSocialLinks,
+  SOCIAL_DISPLAY_ORDER,
+  PLATFORMS,
 } from './registry';
 
 describe('detectPlatform', () => {
@@ -154,7 +157,19 @@ describe('displayHandle', () => {
 
 describe('isAdultPlatform', () => {
   it('flags 18+ platforms and not SFW ones', () => {
-    for (const k of ['onlyfans', 'fansly', 'fetlife', 'joyclub', 'romeo', 'grindr', 'scruff', 'recon', 'pornhub', 'xhamster', 'xtube']) {
+    for (const k of [
+      'onlyfans',
+      'fansly',
+      'fetlife',
+      'joyclub',
+      'romeo',
+      'grindr',
+      'scruff',
+      'recon',
+      'pornhub',
+      'xhamster',
+      'xtube',
+    ]) {
       expect(isAdultPlatform(k)).toBe(true);
     }
     for (const k of ['instagram', 'youtube', 'bluesky', 'kofi', 'patreon', 'website']) {
@@ -208,7 +223,9 @@ describe('extractSocialUrlsFromText', () => {
     expect(out.website).toBeUndefined();
   });
   it('keeps the first URL per platform', () => {
-    const out = extractSocialUrlsFromText('https://instagram.com/first https://instagram.com/second');
+    const out = extractSocialUrlsFromText(
+      'https://instagram.com/first https://instagram.com/second',
+    );
     expect(out.instagram).toBe('https://instagram.com/first');
   });
 });
@@ -224,5 +241,33 @@ describe('normalizeSocialLinks', () => {
     });
     expect(out.instagram).toBe('https://instagram.com/venue');
     expect(out.twitter).toBe('https://x.com/venue');
+  });
+});
+
+describe('orderedSocialLinks', () => {
+  it('returns platforms in SOCIAL_DISPLAY_ORDER regardless of stored key order', () => {
+    // jsonb returns keys sorted by length, which is how CLUB CITTA' rendered
+    // YouTube before Facebook before Instagram.
+    const keys = orderedSocialLinks({
+      website: 'https://clubcitta.it',
+      youtube: 'https://youtube.com/@clubcitta',
+      instagram: 'https://instagram.com/clubcitta',
+      facebook: 'https://facebook.com/clubcitta',
+    }).map(([k]) => k);
+    expect(keys).toEqual(['instagram', 'facebook', 'youtube', 'website']);
+  });
+
+  it('detects unknown keys and still orders them', () => {
+    const keys = orderedSocialLinks({
+      x: 'https://tiktok.com/@someone',
+      y: 'https://instagram.com/someone',
+    }).map(([k]) => k);
+    expect(keys).toEqual(['instagram', 'tiktok']);
+  });
+
+  it('lists every registry platform exactly once, website last', () => {
+    expect(new Set(SOCIAL_DISPLAY_ORDER).size).toBe(SOCIAL_DISPLAY_ORDER.length);
+    expect([...SOCIAL_DISPLAY_ORDER].sort()).toEqual(PLATFORMS.map((p) => p.key).sort());
+    expect(SOCIAL_DISPLAY_ORDER[SOCIAL_DISPLAY_ORDER.length - 1]).toBe('website');
   });
 });
