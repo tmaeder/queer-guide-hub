@@ -11,6 +11,7 @@ import { render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router';
 import { cityContentType, cityFields } from '../city';
 import { venueContentType } from '../venue';
+import { eventContentType } from '../event';
 
 const venueCount = cityFields.find((f) => f.name === 'venue_count')!;
 
@@ -35,9 +36,26 @@ describe('cities venue_count cell', () => {
 });
 
 describe('cities venue count scope', () => {
-  it('counts the venues the linked list shows, using the venues config itself', () => {
+  it('counts what the linked lists show, using the venues/events configs themselves', () => {
     // Prod, Berlin: raw embed 1,242 vs 869 unmerged+unarchived. Passing the
     // venues config (not a restated predicate) keeps the two from drifting.
-    expect(cityContentType.listEmbedScopes).toEqual([{ embed: 'venues', type: venueContentType }]);
+    expect(cityContentType.listEmbedScopes).toEqual([
+      { embed: 'venues', type: venueContentType },
+      { embed: 'events', type: eventContentType },
+    ]);
+  });
+});
+
+describe('cities event_count cell', () => {
+  const eventCount = cityFields.find((f) => f.name === 'event_count')!;
+  it('links a non-zero count to the city-filtered Events list', () => {
+    render(
+      <MemoryRouter>
+        {eventCount.listRender!({ id: 'c-1', name: 'Berlin', events: [{ count: 3 }] })}
+      </MemoryRouter>,
+    );
+    expect(screen.getByRole('link').getAttribute('href')).toBe(
+      '/admin/content/events?city_id=c-1&city_id_label=Berlin',
+    );
   });
 });

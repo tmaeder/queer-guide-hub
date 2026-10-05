@@ -3,9 +3,37 @@ import { Link } from 'react-router';
 import { filteredListHref } from '@/lib/cmsFilterHref';
 import type { ContentTypeConfig, FieldConfig } from '@/types/cms';
 import { venueContentType } from './venue';
+import { eventContentType } from './event';
 
 const fmtNum = (n: unknown): string =>
   typeof n === 'number' && Number.isFinite(n) ? new Intl.NumberFormat().format(n) : '-';
+
+/**
+ * A per-city count that links to that type's admin list filtered to the city.
+ * Filters on `city_id` — the same key the `<embed>(count)` counts through —
+ * not on the `city` text column, which can disagree with the number. The count
+ * itself is scoped to the linked list's default slice by `listEmbedScopes`
+ * below, so the number and the list agree. Built without the registry check
+ * (`cmsFilteredListPath`) on purpose: see the import-cycle note in
+ * cmsFilterHref.ts. A zero count stays text — a link to an empty list is a
+ * dead end.
+ */
+function countLink(row: Record<string, unknown>, embed: string, registryKey: string) {
+  const rows = row[embed] as Array<{ count?: number }> | null | undefined;
+  const count = rows?.[0]?.count ?? 0;
+  const name = typeof row.name === 'string' ? row.name : null;
+  if (count <= 0 || typeof row.id !== 'string' || !row.id) return fmtNum(count);
+  return (
+    <Link
+      to={filteredListHref(registryKey, 'city_id', row.id, name)}
+      className="font-medium underline underline-offset-2"
+      aria-label={`Show ${fmtNum(count)} ${embed} in ${name ?? 'this city'}`}
+      onClick={(e) => e.stopPropagation()}
+    >
+      {fmtNum(count)}
+    </Link>
+  );
+}
 
 export const cityFields: FieldConfig[] = [
   {
@@ -122,27 +150,7 @@ export const cityFields: FieldConfig[] = [
     hidden: true,
     virtual: true,
     listColumn: true,
-    // The count links to the Venues list filtered to this city. It filters on
-    // `city_id` — the same key `venues(count)` counts through — not on the
-    // `city` text column, which can disagree with the number. Built without
-    // the registry check (`cmsFilteredListPath`) on purpose: see the
-    // import-cycle note in cmsFilterHref.ts.
-    listRender: (row) => {
-      const venues = row.venues as Array<{ count?: number }> | null | undefined;
-      const count = venues?.[0]?.count ?? 0;
-      const name = typeof row.name === 'string' ? row.name : null;
-      if (count <= 0 || typeof row.id !== 'string' || !row.id) return fmtNum(count);
-      return (
-        <Link
-          to={filteredListHref('venues', 'city_id', row.id, name)}
-          className="font-medium underline underline-offset-2"
-          aria-label={`Show ${fmtNum(count)} venues in ${name ?? 'this city'}`}
-          onClick={(e) => e.stopPropagation()}
-        >
-          {fmtNum(count)}
-        </Link>
-      );
-    },
+    listRender: (row) => countLink(row, 'venues', 'venues'),
   },
   {
     name: 'event_count',
@@ -152,10 +160,7 @@ export const cityFields: FieldConfig[] = [
     hidden: true,
     virtual: true,
     listColumn: true,
-    listRender: (row) => {
-      const events = row.events as Array<{ count?: number }> | null | undefined;
-      return fmtNum(events?.[0]?.count ?? 0);
-    },
+    listRender: (row) => countLink(row, 'events', 'events'),
   },
 ];
 
@@ -199,8 +204,11 @@ export const cityContentType: ContentTypeConfig = {
     }),
   },
   listSelect: '*,countries(name,equality_score),venues(count),events(count)',
-  // The Venues count links to the Venues list; count what that list shows.
-  listEmbedScopes: [{ embed: 'venues', type: venueContentType }],
+  // The Venues/Events counts link to those lists; count what the lists show.
+  listEmbedScopes: [
+    { embed: 'venues', type: venueContentType },
+    { embed: 'events', type: eventContentType },
+  ],
   fieldGroupOrder: ['basic', 'location', 'details', 'lgbtq', 'media', 'external'],
   translatableFields: ['name', 'description'],
   commentable: true,
