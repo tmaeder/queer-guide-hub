@@ -118,26 +118,6 @@ export default function PersonalityDetail() {
     }
   }, [personality?.id, incrementViews]);
 
-  const handleShare = async () => {
-    if (navigator.share) {
-      try {
-        await navigator.share({
-          title: personality?.name,
-          text: personality?.description || `Learn about ${personality?.name}`,
-          url: window.location.href,
-        });
-      } catch {
-        // share dismissed
-      }
-    } else {
-      navigator.clipboard.writeText(window.location.href);
-      toast({
-        title: 'Link Copied',
-        description: 'Profile link copied to clipboard',
-      });
-    }
-  };
-
   if (!isLoading && !error && !personality) {
     return (
       <div className="min-h-[60vh] flex items-center justify-center px-4 py-8">
@@ -179,7 +159,6 @@ export default function PersonalityDetail() {
             <PersonalityHero
               personality={personality}
               countryId={countryId}
-              onShare={handleShare}
               onProfessionClick={(profession) =>
                 navigate(`/personalities?profession=${encodeURIComponent(profession)}`)
               }

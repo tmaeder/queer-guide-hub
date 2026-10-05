@@ -8,7 +8,6 @@ import {
   MapPin,
   Briefcase,
   Star,
-  Share2,
   Heart,
   Verified,
   Tag,
@@ -21,6 +20,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { RouteBullet } from '@/components/transit/RouteBullet';
 import { ReportButton } from '@/components/moderation/ReportButton';
 import { AdminEditButton } from '@/components/admin/AdminEditButton';
+import { ShareMenu } from '@/components/share/ShareMenu';
 import { Editable } from '@/components/admin/inline/Editable';
 import { SocialCards } from '@/components/social/SocialCard';
 import type { Personality } from '@/hooks/usePersonalities';
@@ -154,7 +154,6 @@ function VerificationBadge({ status }: { status: Personality['verification_statu
 interface PersonalityHeroProps {
   personality: Personality;
   countryId: string | null;
-  onShare: () => void;
   onProfessionClick: (profession: string) => void;
   onContentUpdated?: () => void;
 }
@@ -162,7 +161,6 @@ interface PersonalityHeroProps {
 export function PersonalityHero({
   personality,
   countryId,
-  onShare,
   onProfessionClick,
   onContentUpdated,
 }: PersonalityHeroProps) {
@@ -313,10 +311,19 @@ export function PersonalityHero({
           currentData={personality as unknown as Record<string, unknown>}
           onSaved={() => window.location.reload()}
         />
-        <Button variant="outline" size="sm" onClick={onShare}>
-          <Share2 size={16} className="mr-2" />
-          Share
-        </Button>
+        <ShareMenu
+          url={window.location.href}
+          title={personality.name}
+          text={personality.description || `Learn about ${personality.name}`}
+          entity={{
+            entity_table: 'personalities',
+            entity_id: personality.id,
+            title: personality.name,
+            subtitle: personality.profession ? formatProfession(personality.profession) : null,
+            image_url: personality.image_url ?? null,
+            path: `/personalities/${personality.slug ?? personality.id}`,
+          }}
+        />
         {personality.website_url && (
           <Button variant="outline" size="sm" asChild>
             <a href={personality.website_url} target="_blank" rel="noopener noreferrer">
