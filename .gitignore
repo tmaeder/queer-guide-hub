@@ -119,6 +119,7 @@ out-aids-ch/
 # header so a re-run can prove it read the same bytes.
 out-gays-cruising/
 out-gayout/
+out-planet-randy/
 # Kinktionary scrape cache + the browser profile whose cf_clearance cookie is
 # what gets the run past Cloudflare. The fetcher is committed; the fetch is not.
 scripts/data-quality/out-kinktionary/
