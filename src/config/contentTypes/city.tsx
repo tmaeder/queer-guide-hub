@@ -1,5 +1,8 @@
 import { MapPin } from 'lucide-react';
+import { Link } from 'react-router';
+import { filteredListHref } from '@/lib/cmsFilterHref';
 import type { ContentTypeConfig, FieldConfig } from '@/types/cms';
+import { venueContentType } from './venue';
 
 const fmtNum = (n: unknown): string =>
   typeof n === 'number' && Number.isFinite(n) ? new Intl.NumberFormat().format(n) : '-';
@@ -119,9 +122,26 @@ export const cityFields: FieldConfig[] = [
     hidden: true,
     virtual: true,
     listColumn: true,
+    // The count links to the Venues list filtered to this city. It filters on
+    // `city_id` — the same key `venues(count)` counts through — not on the
+    // `city` text column, which can disagree with the number. Built without
+    // the registry check (`cmsFilteredListPath`) on purpose: see the
+    // import-cycle note in cmsFilterHref.ts.
     listRender: (row) => {
       const venues = row.venues as Array<{ count?: number }> | null | undefined;
-      return fmtNum(venues?.[0]?.count ?? 0);
+      const count = venues?.[0]?.count ?? 0;
+      const name = typeof row.name === 'string' ? row.name : null;
+      if (count <= 0 || typeof row.id !== 'string' || !row.id) return fmtNum(count);
+      return (
+        <Link
+          to={filteredListHref('venues', 'city_id', row.id, name)}
+          className="font-medium underline underline-offset-2"
+          aria-label={`Show ${fmtNum(count)} venues in ${name ?? 'this city'}`}
+          onClick={(e) => e.stopPropagation()}
+        >
+          {fmtNum(count)}
+        </Link>
+      );
     },
   },
   {
@@ -179,6 +199,8 @@ export const cityContentType: ContentTypeConfig = {
     }),
   },
   listSelect: '*,countries(name,equality_score),venues(count),events(count)',
+  // The Venues count links to the Venues list; count what that list shows.
+  listEmbedScopes: [{ embed: 'venues', type: venueContentType }],
   fieldGroupOrder: ['basic', 'location', 'details', 'lgbtq', 'media', 'external'],
   translatableFields: ['name', 'description'],
   commentable: true,
