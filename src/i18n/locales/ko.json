@@ -1483,6 +1483,23 @@
     "queerOwnedBadge": "[KO] Queer-owned"
   },
   "profile": {
+    "username": {
+      "autoAssignedBadge": "자동 지정",
+      "policyAutoAssigned": "저희가 지정했습니다. 첫 변경은 횟수에 포함되지 않습니다.",
+      "policyStandard": "1년에 한 번 변경할 수 있고, 변경 후 30일 동안 수정할 수 있습니다. 이전 이름은 보관되며 90일간 리디렉션됩니다.",
+      "safetyNote": "안전상의 이유(예: 데드네임)로 변경이 필요하신가요? 지원팀에 문의하세요. 이유는 묻지 않습니다.",
+      "change": "사용자 이름 변경",
+      "changingFrom": "@{{username}}에서 변경합니다. 앞으로 12개월간의 변경으로 집계되지만 30일 동안 수정할 수 있습니다. 이전 이름은 90일간 리디렉션됩니다.",
+      "confirmChange": "변경 확인",
+      "claim": "사용자 이름 설정",
+      "notChangedTitle": "사용자 이름이 변경되지 않았습니다",
+      "errorGeneric": "사용자 이름을 변경할 수 없습니다. 다시 시도해 주세요.",
+      "errorUnavailable": "이미 사용 중이거나 예약된 사용자 이름입니다.",
+      "errorRateLimited": "사용자 이름은 1년에 한 번 변경할 수 있습니다. 다음 변경: {{date}}",
+      "rateLimitedFallbackDate": "나중에",
+      "updatedTitle": "사용자 이름이 업데이트되었습니다",
+      "updatedBody": "이제 @{{username}}입니다."
+    },
     "editProfile": "프로필 수정",
     "pronouns": "대명사",
     "location": "위치",
