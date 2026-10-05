@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
-// Guards 99991791148325_atlanta_eagle_relocation.sql.
+// Guards 99991791188290_atlanta_eagle_relocation.sql.
 //
 // The Atlanta Eagle moved from 306 Ponce De Leon to 1492 Piedmont Ave NE, and we
 // kept publishing the old address, phone and hours with no social links. What
@@ -16,7 +16,7 @@ import { join } from 'node:path';
 //      needs_attention (that would demote ~590 venues to draft)
 //   6. the health-script section runs BEFORE the final process.exit(1)
 
-const MIGRATION = '99991791148325_atlanta_eagle_relocation.sql';
+const MIGRATION = '99991791188290_atlanta_eagle_relocation.sql';
 const raw = readFileSync(join(process.cwd(), 'supabase/migrations', MIGRATION), 'utf8');
 const statements = raw
   .split('\n')

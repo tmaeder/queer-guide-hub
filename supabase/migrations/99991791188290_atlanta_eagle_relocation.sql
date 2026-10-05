@@ -33,7 +33,7 @@
 -- postcondition asserts both are unchanged. Events from atlantaeagle.com/events
 -- are out of scope (no source exists for them).
 
-select set_config('app.actor', 'migration:99991791148325_atlanta_eagle_relocation', true);
+select set_config('app.actor', 'migration:99991791188290_atlanta_eagle_relocation', true);
 
 -- 1. The row. Content-guarded on the stale address, so a later human fix is
 --    left alone and a re-run is a no-op. Prior values are preserved on the row.
@@ -42,7 +42,7 @@ set
   enrichment_status = coalesce(v.enrichment_status, '{}'::jsonb) || jsonb_build_object(
     'relocation_repair', jsonb_build_object(
       'at', now(),
-      'by', 'migration:99991791148325',
+      'by', 'migration:99991791188290',
       'source', 'https://www.atlantaeagle.com (read 2026-10-04)',
       'from', jsonb_build_object(
         'address', v.address, 'postal_code', v.postal_code,

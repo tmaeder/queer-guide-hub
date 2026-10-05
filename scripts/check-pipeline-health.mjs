@@ -4952,7 +4952,7 @@ const DISOWNED_PROSE_CEILING = 380
     body: '{}',
   })
   if (res.status === 404) {
-    console.warn('⚠ venue_source_location_signals() not deployed yet (migration 99991791148325?) — skipping')
+    console.warn('⚠ venue_source_location_signals() not deployed yet (migration 99991791188290?) — skipping')
   } else if (!res.ok) {
     console.error(`✗ venue_source_location_signals() returned HTTP ${res.status} — measured nothing`)
     FAILED = true
