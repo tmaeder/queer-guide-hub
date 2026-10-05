@@ -34,6 +34,7 @@ import {
   buildVenueBreadcrumbs,
   type VenueReview,
   type VenueWithRelations,
+  hasSocialLinks,
 } from '@/pages/VenueDetail.parts';
 import { buildVenueJsonLd, buildVenueMeta } from '@/pages/VenueDetail.meta';
 import type {
@@ -186,6 +187,7 @@ export function useVenueDescriptor(slug: string | undefined): EntityDescriptorRe
             venue.email ||
             venue.website ||
             venue.instagram ||
+            hasSocialLinks(venue.social_links) ||
             (typeof venue.latitude === 'number' && typeof venue.longitude === 'number'),
           ),
           render: () => (

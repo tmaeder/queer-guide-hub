@@ -4935,6 +4935,49 @@ const DISOWNED_PROSE_CEILING = 380
   }
 }
 
+// § Venue location vs its own sources — a moved venue keeps its old address.
+//
+// commit_venue_staging_item is fill-if-empty, so a newer source carrying a
+// venue's NEW address can never replace the stale one, and nothing records the
+// disagreement. Found on the Atlanta Eagle (2026-10-04): gayout had the new
+// address for a week while the page served the old bar. ADVISORY ONLY — a
+// >1 km disagreement is as often a centroid fallback or a bad merge as a real
+// move, so the remedy is a human reading the sample, and flagging rows
+// needs_attention would demote them to draft. Hard-fails only when the probe
+// measured nothing.
+{
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/rpc/venue_source_location_signals`, {
+    method: 'POST',
+    headers: HEADERS,
+    body: '{}',
+  })
+  if (res.status === 404) {
+    console.warn('⚠ venue_source_location_signals() not deployed yet (migration 99991791188290?) — skipping')
+  } else if (!res.ok) {
+    console.error(`✗ venue_source_location_signals() returned HTTP ${res.status} — measured nothing`)
+    FAILED = true
+  } else {
+    const sig = (await res.json()) ?? {}
+    const checkable = Number(sig.venues_checkable ?? 0)
+    if (sig.probe_ok !== true || checkable === 0) {
+      console.error('✗ venue_source_location_signals() measured nothing (no probe_ok or 0 checkable venues)')
+      FAILED = true
+    } else {
+      const n = Number(sig.venues_disagreeing_1km ?? 0)
+      console.log(
+        `  venue location vs sources: ${checkable} checkable, ${n} with a source >1 km away ` +
+          `(${sig.venues_disagreeing_1_20km ?? '?'} within 1-20 km, ${sig.venues_disagreeing_newer_source ?? '?'} from a newer source)`,
+      )
+      if (n > 0) {
+        console.warn('⚠ venues whose own sources disagree on location (possible moves) — read before acting:')
+        for (const x of (Array.isArray(sig.sample) ? sig.sample : []).slice(0, 5)) {
+          console.warn(`    ${x.slug}: "${x.stored_address}" vs ${x.source_slug} "${x.source_address}" (${x.distance_m} m)`)
+        }
+      }
+    }
+  }
+}
+
 // §25 — the venue category reclassifier: is it DRAINED, or BLIND?
 //
 // AFTER 99991791179763 THOSE TWO STATES RETURN THE SAME NUMBER. That migration fixed a
