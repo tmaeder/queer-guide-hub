@@ -51,7 +51,7 @@ export function RouteBullet({
       aria-label={label ?? def?.label ?? type}
       style={{ width: size, height: size, fontSize: Math.round(size * 0.45) }}
       className={cn(
-        'grid shrink-0 place-items-center rounded-full border-2 font-bold',
+        'transit-marker grid shrink-0 place-items-center rounded-full border-2 font-bold',
         onInk ? 'border border-background' : 'border-track-ring',
         bg,
         text,

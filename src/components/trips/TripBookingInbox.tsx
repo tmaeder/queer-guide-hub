@@ -44,7 +44,10 @@ export function TripBookingInbox({ tripId }: Props) {
   // Empty state — no forwarded/pasted items yet.
   if (!inboxLoading && !inbox && parsedItems.length === 0 && failedItems.length === 0) {
     return (
-      <section aria-label={t('trips.inbox.label', 'Booking inbox')} className="bg-muted p-4 mb-4">
+      <section
+        aria-label={t('trips.inbox.label', 'Booking inbox')}
+        className="mb-4 rounded-container bg-muted p-4"
+      >
         <div className="flex items-start gap-4">
           <Inbox className="h-5 w-5 mt-0.5 text-muted-foreground" aria-hidden />
           <div className="flex-1">
@@ -78,7 +81,10 @@ export function TripBookingInbox({ tripId }: Props) {
   }
 
   return (
-    <section aria-label={t('trips.inbox.label', 'Booking inbox')} className="bg-muted p-4 mb-4">
+    <section
+      aria-label={t('trips.inbox.label', 'Booking inbox')}
+      className="mb-4 rounded-container bg-muted p-4"
+    >
       <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
         <h3 className="text-sm font-bold uppercase tracking-wide flex items-center gap-2">
           <Inbox className="h-4 w-4" aria-hidden />

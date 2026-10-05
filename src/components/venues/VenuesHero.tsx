@@ -26,7 +26,7 @@ export function VenuesHero() {
       <div className="grid md:grid-cols-2">
         {visual.src && (
           <div
-            className={`relative h-56 md:h-full min-h-[240px] bg-center bg-no-repeat ${
+            className={`relative h-56 min-h-[240px] overflow-hidden rounded-container bg-center bg-no-repeat md:h-full ${
               visual.isLogo
                 ? `bg-origin-content bg-contain p-6 ${
                     // Same rule as the card tile: a logo's ground must not flip

@@ -428,7 +428,7 @@ export function platformLabel(platform: string): string {
  * `in/`, `company/`, `c/`, `user/`, `profile/` so cards don't show
  * "@company/acme" or "@channel/UC-3gHl…".
  */
-export function displayHandle(platform: SocialPlatformKey, handle: string): string | null {
+export function displayHandle(_platform: SocialPlatformKey, handle: string): string | null {
   if (!handle) return null;
   let h = handle.replace(/^@/, '');
   // Strip a leading namespace segment. The adult video hosts keep the

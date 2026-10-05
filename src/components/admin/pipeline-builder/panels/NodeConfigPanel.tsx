@@ -70,7 +70,7 @@ export default function NodeConfigPanel({
   const requiredFields = schema?.required || [];
 
   return (
-    <Card className="w-80 border-l rounded-none h-full">
+    <Card className="h-full w-80 rounded-container shadow-soft">
       <CardHeader className="pb-4 flex flex-row items-center justify-between">
         <div>
           <CardTitle className="text-sm font-medium">

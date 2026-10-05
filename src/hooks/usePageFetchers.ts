@@ -1172,14 +1172,26 @@ export async function fetchAllUserFavorites(userId: string) {
     venueIds.length
       ? supabase
           .from('venues')
-          .select('id, slug, name, description, image_url, location, rating, category')
+          // `latitude, longitude` are what make a saved collection MAPPABLE.
+          // MapShell's `savedOnly` filter is a narrowing of pins already
+          // fetched by viewport, so it structurally cannot show a saved venue
+          // outside the current bbox — and this fetcher selected id columns
+          // only, so there were no coordinates to map either way.
+          .select(
+            'id, slug, name, description, image_url, location, rating, category, latitude, longitude',
+          )
           .in('id', venueIds)
       : Promise.resolve({ data: [] as unknown[] }),
     eventIds.length
       ? supabase
           .from('events')
           .select(
-            'id, slug, title, description, images, city, state, country, start_date, price_min, event_type',
+            // The venue embed is the EVENT TRAP, same as in guidePickAdapters:
+            // an event's coordinates live on the row OR on its joined venue,
+            // which is why `useViewportPoints` has no server-side bbox filter.
+            // Without the fallback, a saved event anchored to a venue has no
+            // location at all.
+            'id, slug, title, description, images, city, state, country, start_date, price_min, event_type, latitude, longitude, venues(latitude, longitude)',
           )
           .in('id', eventIds)
       : Promise.resolve({ data: [] as unknown[] }),

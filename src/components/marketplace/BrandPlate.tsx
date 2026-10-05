@@ -43,7 +43,10 @@ export function BrandPlate({ brand }: { brand: BrandWithCovers }) {
   return (
     <div className="card-lift group relative flex h-full flex-col overflow-hidden bg-card shadow-soft rounded-container">
       {covers.length > 0 && (
-        <div aria-hidden="true" className="grid grid-cols-3 gap-0.5 bg-surface-container">
+        <div
+          aria-hidden="true"
+          className="grid grid-cols-3 gap-0.5 overflow-hidden rounded-container bg-surface-container"
+        >
           {covers.map((cover, i) => (
             <Image
               key={`${cover.url}-${i}`}

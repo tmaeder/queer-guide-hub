@@ -133,10 +133,10 @@ function SiteCard({ site }: { site: TestingSite }) {
   const chips = CHIP_ORDER.filter((slug) => site.tags?.includes(slug));
 
   return (
-    <li className="relative border-b border-border-hairline last:border-b-0">
-      <div className="flex flex-col gap-2 py-4">
+    <li className="relative rounded-container bg-surface-container p-4">
+      <div className="flex flex-col gap-2">
         <div className="flex items-start gap-2">
-          <span className="flex h-8 w-8 shrink-0 items-center justify-center border border-border-hairline rounded-element text-muted-foreground">
+          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-element bg-surface-container-high text-muted-foreground">
             <Building2 size={14} aria-hidden />
           </span>
           <div className="min-w-0 flex-1">
@@ -266,11 +266,7 @@ export function TestingSitesBand({
   // renders and always links out.
   return (
     <section
-      className={
-        plate
-          ? 'mt-16 border-t-2 border-foreground pt-6'
-          : 'mt-12 border-t border-border-hairline pt-8'
-      }
+      className="mt-12 rounded-panel bg-surface-container-low p-6 shadow-soft sm:p-8"
       aria-labelledby={headingId}
     >
       {plate ? (
@@ -299,7 +295,7 @@ export function TestingSitesBand({
           {t('testing.none_here', 'No testing locations on record for this area yet.')}
         </p>
       ) : (
-        <ul className="m-0 mt-4 list-none border-t border-border-hairline p-0">
+        <ul className="m-0 mt-4 grid list-none gap-4 p-0 md:grid-cols-2">
           {sites.map((site) => (
             <SiteCard key={site.id} site={site} />
           ))}
@@ -334,7 +330,7 @@ export function TestingSitesBand({
 
       <LocalizedLink
         to="/organizations?role=support"
-        className="mt-4 inline-flex items-center gap-1 px-4 py-2 text-13 font-bold no-underline transition-colors hover:bg-foreground hover:text-background"
+        className="mt-4 inline-flex items-center gap-1 rounded-element bg-surface-container-high px-4 py-2 text-13 font-bold no-underline transition-colors hover:bg-foreground hover:text-background"
       >
         {t('testing.browse_all', 'Browse all support organizations')}
         <ChevronRight size={14} aria-hidden />

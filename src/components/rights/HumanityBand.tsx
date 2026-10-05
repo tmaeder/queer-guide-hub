@@ -60,8 +60,14 @@ export function HumanityBand({ world, unit }: { world: RecognitionWorld; unit: L
 
   return (
     <figure className="m-0">
+      {/* A segmented statistics bar is a CHART, not a product surface: its
+          slices are square because they are quantities laid end to end, and
+          rounding each one would read as separate pills rather than one
+          distribution. Same marker RiskMark and the STI guide already use, and
+          the same reason the thin-border audit exempts it. */}
       <div
         role="group"
+        data-information-geometry="true"
         aria-label={t(
           'rights.trans.band.label',
           'Share of the world by legal gender recognition regime',

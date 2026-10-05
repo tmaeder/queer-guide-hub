@@ -4,6 +4,7 @@ import { QueryClientProvider, useQueryClient } from '@tanstack/react-query';
 import i18next from 'i18next';
 import * as maplibregl from 'maplibre-gl';
 import { MapEntityCard } from '@/components/map/MapEntityCard';
+import { ENTITY_BULLET, lineFor } from '@/components/map/mapDomain';
 import type { MapPointSummary } from '@/components/map/mapPoint';
 import type { MapMarker } from '@/hooks/useExploreMapData';
 import { hapticTrigger } from '@/hooks/useHaptics';
@@ -21,7 +22,12 @@ interface UsePopupManagerParams {
  * verbatim from ExploreMap — behavior-preserving. `popupRef`/`popupRootRef`
  * stay component-owned because the init-effect teardown also unmounts the root.
  */
-export function usePopupManager({ navigate, toast, popupRef, popupRootRef }: UsePopupManagerParams) {
+export function usePopupManager({
+  navigate,
+  toast,
+  popupRef,
+  popupRootRef,
+}: UsePopupManagerParams) {
   // The popup renders into its own React root (MapLibre owns the DOM node),
   // which is OUTSIDE the app's provider tree — so bridge the contexts the
   // card actually needs (auth + react-query for QuietAddToTripButton /
@@ -124,9 +130,14 @@ export function usePopupManager({ navigate, toast, popupRef, popupRootRef }: Use
   const showPopupFromMarker = useCallback(
     (map: maplibregl.Map, lngLat: maplibregl.LngLat, marker: MapMarker) => {
       const meta = (marker.meta ?? {}) as Record<string, unknown>;
+      const category = typeof meta.category === 'string' ? meta.category : undefined;
       showPopup(map, lngLat, {
         id: String(marker.id),
         type: marker.type,
+        entity: ENTITY_BULLET[marker.type],
+        // `null` for every area type, which is the whole point of this adapter:
+        // a boundary polygon is not on a line and must not paint like one.
+        line: lineFor(marker.type, category),
         name: marker.name,
         subtitle: marker.subtitle,
         lng: marker.lng,

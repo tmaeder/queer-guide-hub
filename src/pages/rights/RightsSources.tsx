@@ -79,7 +79,7 @@ function StationPanel({
       }
     >
       <div
-        className={`flex items-center gap-4 px-6 py-4 md:px-8 ${ink ? 'border-b border-background/20' : 'border-b border-foreground/10'}`}
+        className={`flex items-center gap-4 rounded-element px-6 py-4 md:px-8 ${ink ? 'bg-background/10' : 'bg-surface-container-low'}`}
       >
         <span
           className={`grid h-9 w-9 place-items-center rounded-full border-[3px] text-2xs font-bold ${ink ? 'border-background bg-track-blue text-foreground' : 'border-foreground bg-track-blue'}`}
@@ -226,7 +226,7 @@ export default function RightsSources() {
               </li>
             ))}
           </ul>
-          <p className="bg-surface-container px-6 py-6 text-13 leading-relaxed text-muted-foreground md:px-8">
+          <p className="rounded-container bg-surface-container px-6 py-6 text-13 leading-relaxed text-muted-foreground md:px-8">
             {t(
               'rights.sources.body.unscored',
               'The unscored rows are uninhabited or near-uninhabited territories with no ILGA entry. We list them as "not scored" rather than giving them a default, because a default would read as a measurement.',
@@ -283,7 +283,7 @@ export default function RightsSources() {
             </div>
           </StationPanel>
           <div className="flex flex-col overflow-hidden rounded-container bg-foreground p-6 text-background shadow-soft-lg md:p-8">
-            <span className="self-start bg-track-yellow px-4 py-2 text-2xs font-bold uppercase tracking-label text-foreground">
+            <span className="self-start rounded-badge bg-track-yellow px-4 py-2 text-2xs font-bold uppercase tracking-label text-foreground">
               {t('rights.sources.score.caution', 'Read before using')}
             </span>
             <p className="mt-6 font-display text-headline md:text-display">
@@ -295,7 +295,7 @@ export default function RightsSources() {
                 'The score describes law on paper. It is not a safety rating, and it says nothing about enforcement, policing or how welcome you will be made to feel.',
               )}
             </p>
-            <p className="mt-6 border-t border-background/20 pt-6 text-15 leading-relaxed opacity-80">
+            <p className="mt-8 text-15 leading-relaxed opacity-80">
               {t(
                 'rights.sources.body.scoreLens',
                 'It is also a single number for very different lives. Protections are recorded separately for sexual orientation, gender identity, gender expression and sex characteristics, and those four rarely move together — a country can protect sexual orientation thoroughly and gender identity not at all. Read the per-right breakdown on a country page rather than the score alone.',
@@ -344,7 +344,7 @@ export default function RightsSources() {
               </li>
             ))}
           </ul>
-          <div className="mt-6 flex flex-wrap items-center justify-between gap-6 border-t border-background/20 pt-6">
+          <div className="mt-8 flex flex-wrap items-center justify-between gap-6">
             <p className="max-w-prose text-13 leading-relaxed opacity-70">
               {t(
                 'rights.sources.limits.corrections',

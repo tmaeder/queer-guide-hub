@@ -300,9 +300,29 @@ Deno.serve(withErrorReporting('pipeline-validate', async (req) => {
         if (hasGeo && (lat < -90 || lat > 90 || lng < -180 || lng > 180)) errors.push('E_GEO_OUT_OF_RANGE')
         if (!hasGeo && !hasVenue) warnings.push('W_NO_GEO')
 
-        // Description length (optional but penalized)
+        // Description length (optional but penalized).
+        //
+        // The source contract (`_shared/event-source-contract.ts`) already
+        // warned about a thin description at <20 chars, and that warning rode
+        // in on `metadata.source_contract` and was merged into this same array
+        // above. Its condition is a strict SUBSET of this one (<20 implies
+        // <30), so a description under 20 characters produced TWO codes for ONE
+        // defect and contributed 2 of the `warnReview` warnings needed to park
+        // the row in front of a human. The `new Set()` below cannot see it:
+        // the codes are different strings, not a repeated one.
+        //
+        // Measured on prod 2026-10-04 over `ingestion_staging`: 814 event rows
+        // carry both codes and ZERO carry the contract code alone, which is the
+        // subset relation showing up in the data rather than being argued from
+        // the source. 18 of those rows were parked at `pending_review`.
+        //
+        // The dedup is here and not at the threshold: `warnReview` is correct
+        // and is caller-supplied anyway (the gaycities drain scripts pass 6),
+        // so lowering it would be both wrong and unreliable. One thin
+        // description now costs one warning, whatever the threshold is.
         const desc = String(n.description ?? '').trim()
-        if (desc.length < 30) warnings.push('W_DESCRIPTION_THIN')
+        const contractFlaggedThinDescription = contractWarnings.includes('W_DESCRIPTION_MISSING_OR_THIN')
+        if (desc.length < 30 && !contractFlaggedThinDescription) warnings.push('W_DESCRIPTION_THIN')
 
         // URLs
         const urls = (n.urls ?? []) as string[]

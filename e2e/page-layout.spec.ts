@@ -91,9 +91,11 @@ const EDGES = `(() => {
   const contentLeft = (n) => Math.round(n.getBoundingClientRect().left) + cs(n, 'paddingLeft');
   const header = document.querySelector('header .max-w-page');
   const main = document.querySelector('main');
-  // The crisis route owns a safety-specific banner inside its routed tree.
-  // It still uses the shared capped island geometry, but it is chrome rather
-  // than page content and must not be counted as an outer page container.
+  // Any capped row belonging to a <header> is chrome, not page content, and
+  // must not be counted as an outer page container. This was written for
+  // /help's bespoke HelpSafetyHeader, which has since been removed in favour
+  // of the ordinary site header — the filter stays because it is the general
+  // rule, not a special case for one route.
   const all = main
     ? Array.from(main.querySelectorAll('.max-w-page')).filter((n) => !n.closest('header'))
     : [];

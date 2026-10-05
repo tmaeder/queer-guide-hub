@@ -4584,9 +4584,15 @@ const DISOWNED_PROSE_CEILING = 380
   }
 }
 
-// Venue accessibility claims whose citation is not in the source text.
+// Venue accessibility claims whose citation is not in the text the model was
+// shown — description PLUS the prompt's tag line (description alone over-reports
+// by 6, measured).
+//
 // A wrong access claim can strand a disabled person at a door they cannot get
-// through. Warn at the measured backlog and fail on growth.
+// through, and an invented NEGATIVE one tells them not to bother with a place
+// they could have used. This was a warn-at-270 growth gate while that backlog
+// existed; 99991791030558 retracted it (259 claims across 150 venues) and the
+// producer can no longer emit an unevidenced slug, so it is a ZERO-INVARIANT now.
 {
   console.log('')
   console.log('Venue accessibility evidence')
@@ -4613,24 +4619,466 @@ const DISOWNED_PROSE_CEILING = 380
     const venues = Number(sig.live_venues ?? 0)
     console.log(`  cohort: ${cohort} machine-approved accessibility claim(s) live on ${venues} venue(s)`)
 
-    const BASELINE_UNGROUNDED = 270
+    // ZERO-INVARIANT since 99991791030558 retracted the 259-claim backlog.
+    //
+    // It was a warn-at-270 growth gate while the backlog existed, because a gate
+    // that is red on arrival is one people learn to scroll past. The backlog is
+    // now gone and the producer cannot emit an unevidenced slug, so zero is both
+    // reachable and the only correct reading — any non-zero value is a NEW
+    // regression, not a queue to work down. Do not re-baseline this to make CI
+    // pass; find the writer.
     const ungrounded = Number(sig.ungrounded_live_claims ?? 0)
     const ungroundedVenues = Number(sig.ungrounded_live_venues ?? 0)
-    if (ungrounded > BASELINE_UNGROUNDED) {
+    if (ungrounded > 0) {
       console.error(
-        `✗ live accessibility claims with no grounded citation grew ${BASELINE_UNGROUNDED} → ${ungrounded} ` +
-          `(${ungroundedVenues} venue(s)) — something is publishing access claims whose cited quote is not in the source`,
+        `✗ ${ungrounded} live accessibility claim(s) on ${ungroundedVenues} venue(s) cite a quote that is NOT in the ` +
+          `text the model was shown — a disabled reader is being told something no source supports`,
       )
       console.error('  → check amenity-truth-backfill run summaries for accessibility_evidence_refused; the extractor guard may have been bypassed')
+      console.error('  → 99991791030558 drove this to 0. It is a zero-invariant: do not re-baseline it.')
       FAILED = true
       sectionOk = false
-    } else if (ungrounded > 0) {
-      console.log(`  ${ungrounded} ungrounded claim(s) on ${ungroundedVenues} venue(s) await a calibrated per-slug pass (baseline ${BASELINE_UNGROUNDED})`)
     }
     console.log(`  ${Number(sig.open_queue_claims ?? 0)} accessibility proposal(s) open for review`)
     if (sectionOk) {
-      console.log(`✓ venue accessibility evidence within baseline (${ungrounded}/${BASELINE_UNGROUNDED} ungrounded)`)
+      console.log(`✓ venue accessibility evidence clean (0 ungrounded across ${cohort} live claim(s))`)
     }
+  }
+}
+
+// § City regions — cities.region_code is the ISO 3166-2 first-level unit.
+// The zero-invariants are defects in the vocabulary or in what was written;
+// real_without_region_code is a backlog that needs a geocoder / Wikidata P131
+// and only warns. The region_name/region_code agreement check is NOT here —
+// it costs one resolver call per city (3.9 s measured); 99991791059373
+// asserts it once and trg_cities_ab_region_code keeps it by construction.
+{
+  console.log('')
+  console.log('City regions')
+  const res = await fetch(`${BASE}/rest/v1/rpc/city_region_signals`, {
+    method: 'POST',
+    headers: { ...headers, 'Content-Type': 'application/json' },
+    body: '{}',
+  })
+  if (res.status === 404) {
+    console.warn('⚠ city_region_signals → HTTP 404 (not applied? migration 99991791059373)')
+    console.warn('  This check measured NOTHING — it did not pass.')
+  } else if (!res.ok) {
+    console.error(`✗ city_region_signals → HTTP ${res.status}`)
+    FAILED = true
+  } else {
+    const sig = (await res.json()) ?? {}
+    let sectionOk = true
+    if (sig.probe_ok !== true || !(Number(sig.cities_live) > 0) || !(Number(sig.subdivisions) > 0)) {
+      console.error('✗ city_region_signals returned no probe_ok / an empty corpus — the probe is broken, not the data')
+      FAILED = true
+      sectionOk = false
+    }
+    const zero = {
+      subdivision_root_null: 'geo_subdivisions rows that climb to no first-level unit (a parent loop) — their names resolve to NULL',
+      region_code_wrong_country: 'cities carry a region_code from another country',
+      numeric_region_name_resolvable: 'cities still show a GeoNames number as region_name although the name is known',
+      // 99991791148433: a venue/event/hotel/org copied a number its city can name
+      entity_numeric_state_resolvable: 'venues/events/hotels/organizations carry a GeoNames number as state although their city names the region',
+    }
+    for (const [key, what] of Object.entries(zero)) {
+      if (!(key in sig)) {
+        console.error(`✗ city_region_signals has no ${key} — the probe changed shape`)
+        FAILED = true
+        sectionOk = false
+        continue
+      }
+      const n = Number(sig[key])
+      if (n > 0) {
+        console.error(`✗ ${n} ${what}`)
+        FAILED = true
+        sectionOk = false
+      }
+    }
+    const backlog = Number(sig.real_without_region_code ?? 0)
+    if (backlog > 0) {
+      console.warn(
+        `⚠ ${backlog} of ${sig.real_cities} real cities have no region_code (needs a geocoder or Wikidata P131 — advisory)`,
+      )
+    }
+    if (sectionOk) {
+      console.log(`✓ city regions consistent (${sig.cities_live} live cities, ${sig.subdivisions} subdivisions)`)
+    }
+  }
+}
+
+// §23 — map outcomes. Is the map ecosystem producing anything a reader did?
+//
+// THE DENOMINATOR IS READ AND PRINTED FIRST, before any per-metric number.
+// Four zeroes from a table nothing has ever written read exactly like four
+// zeroes from a healthy corpus, and `map_events_total_ever` is the only thing
+// that separates them.
+//
+// ARMED BY A DATE, not by a hand-flipped boolean — a boolean is a flag, and
+// `src/lib/featureFlags.ts` is three post-mortems about exactly that. Before
+// ARMED_AFTER this section DESCRIBES; after it, an empty corpus is a failure,
+// because by then the emitters have shipped and silence means they are not
+// firing.
+{
+  // The emitters land in a later PR than the vocabulary and the sentinel, so
+  // this is the date after which "no map events at all" stops being the
+  // expected state and becomes a defect.
+  const ARMED_AFTER = new Date('2026-11-01T00:00:00Z')
+  const armed = new Date() >= ARMED_AFTER
+
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/rpc/map_outcome_signals`, {
+    method: 'POST',
+    headers: HEADERS,
+    body: '{}',
+  })
+
+  if (res.status === 404) {
+    // The nightly run checks out `main` and calls the LIVE backend, so in any
+    // window where main carries this script and prod has not applied the
+    // migration the gate would go red for something that is not a defect.
+    console.warn('⚠ map_outcome_signals() not deployed yet (migration 99991791131717?) — skipping §23')
+  } else if (!res.ok) {
+    // An HTTP 500 here is usually the 8 s statement_timeout, which service_role
+    // inherits. Either way it measured NOTHING and must not read as a pass.
+    console.error(`✗ map_outcome_signals() returned HTTP ${res.status} — measured nothing`)
+    FAILED = true
+  } else {
+    const sig = (await res.json()) ?? {}
+    let sectionOk = true
+
+    // A MISSING key is its own failure, separate from a false one: an
+    // undeployed or silently-renamed sentinel must never read as a clean map.
+    if (!('probe_ok' in sig)) {
+      console.error('✗ map_outcome_signals() response has no probe_ok key — the sentinel was renamed or gutted')
+      FAILED = true
+      sectionOk = false
+    } else if (sig.probe_ok !== true) {
+      console.error('✗ map_outcome_signals() probe_ok is not true')
+      FAILED = true
+      sectionOk = false
+    }
+
+    const total = Number(sig.map_events_total_ever ?? 0)
+    const neverSeen = Array.isArray(sig.types_never_seen) ? sig.types_never_seen : []
+    const present = Array.isArray(sig.event_types_present_7d) ? sig.event_types_present_7d : []
+
+    // THE DENOMINATOR, printed before the six numbers.
+    console.log(
+      `  map outcomes: ${total} events ever, ${sig.map_events_7d ?? 0} in 7d, ` +
+        `${present.length} of 6 types seen`,
+    )
+
+    if (armed && total === 0) {
+      console.error(
+        '✗ no map outcome events have EVER been recorded, and the emitters were ' +
+          `due before ${ARMED_AFTER.toISOString().slice(0, 10)} — either nothing emits, or ` +
+          'the consent gate is rejecting everything',
+      )
+      FAILED = true
+      sectionOk = false
+    }
+
+    // THE BYPASS DETECTOR. `useTrackEvent` always resolves a session_id or a
+    // user_id and never neither, so both-null can only come from a writer that
+    // skipped the hook — and therefore skipped analyticsAllowed().
+    const noActor = Number(sig.map_events_no_actor_24h ?? 0)
+    if (noActor > 0) {
+      console.error(
+        `✗ ${noActor} map events in 24h have neither user_id nor session_id — a writer is ` +
+          'bypassing the consent gate',
+      )
+      FAILED = true
+      sectionOk = false
+    }
+
+    // The whole vocabulary rejected: the CHECK and the TS union have drifted and
+    // every insert is being refused. This is the signup_validation_error shape,
+    // where "zero" was read as a fact about users.
+    if (total > 0 && neverSeen.length === 6) {
+      console.error(
+        '✗ all six map event types are unseen while the table has rows — the CHECK is ' +
+          'rejecting the whole map vocabulary',
+      )
+      FAILED = true
+      sectionOk = false
+    }
+
+    // GROWTH, not depth. The missing-type set can only shrink as emitters ship,
+    // so a rising count means one stopped firing.
+    if (armed && total > 0 && neverSeen.length > 0) {
+      console.warn(`⚠ map event types never seen: ${neverSeen.join(', ')} (advisory until each emitter ships)`)
+    }
+
+    const missingSurface = Number(sig.map_detail_open_missing_surface_24h ?? 0)
+    if (missingSurface > 0) {
+      console.warn(
+        `⚠ ${missingSurface} map_detail_open events in 24h carry no metadata.surface, so they ` +
+          'cannot be read per surface',
+      )
+    }
+
+    // Routes: `guide_picks_maintain()` tombstones a deleted target nightly, so a
+    // PUBLISHED route can acquire a gap with no editor action. null means the
+    // guides route migration has not applied, which is not a defect.
+    const orphanRoutes = sig.published_routes_with_orphaned_stops
+    if (orphanRoutes === null || orphanRoutes === undefined) {
+      console.log('  (guides.is_route not present yet — route-stop check skipped)')
+    } else if (Number(orphanRoutes) > 0) {
+      console.error(
+        `✗ ${orphanRoutes} published route(s) have an orphaned stop — the nightly janitor ` +
+          'tombstoned a target and the route now has a gap',
+      )
+      FAILED = true
+      sectionOk = false
+    }
+
+    if (sectionOk) {
+      if (!armed) {
+        console.log(`✓ map outcomes sentinel live (describing only until ${ARMED_AFTER.toISOString().slice(0, 10)})`)
+      } else {
+        console.log('✓ map outcomes consistent')
+      }
+    }
+  }
+}
+
+// § Logo provenance — a venue must never publish another company's mark.
+//
+// `enrich-logos` probes logo.dev with the registrable domain of a row's
+// `website`, and for much of this corpus that website is a Facebook page, a
+// shortened link, a free site-builder subdomain or a directory listing. logo.dev
+// answers those correctly, with the PLATFORM's logo: measured before the guard,
+// ONE image sat on 558 venues (fetched and read — Facebook's blue "f"), another
+// on 381 (TinyURL's wordmark), and GayCities' mark on 4,169 of the 4,306 events
+// that had a logo at all.
+//
+// TWO ARMS, deliberately gated differently.
+//   `platform_logo_rows` is a ZERO-INVARIANT. The producer refuses these before
+//   probing, so any non-zero means a writer bypassed the guard or the repair
+//   regressed.
+//   `unknown_platform_groups` is ADVISORY and must stay that way. It finds the
+//   platform the vocabulary has not learned yet — one image across four or more
+//   DIFFERENT registrable domains — and the remedy is a human reading the group
+//   and adding a vocabulary row, not a threshold change. Gating it would be
+//   wrong on its face: genuine multi-site operators exist in this corpus (Grupo
+//   Arena across three domains, the SF AIDS Foundation across three), which is
+//   why the bound is four and why a hit is a question rather than a verdict.
+{
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/rpc/logo_platform_signals`, {
+    method: 'POST',
+    headers: HEADERS,
+    body: '{}',
+  })
+
+  if (res.status === 404) {
+    // The nightly run checks out `main` and calls the LIVE backend, so a window
+    // where main carries this script and prod has not applied the migration must
+    // not read as a defect.
+    console.warn('⚠ logo_platform_signals() not deployed yet (migration 99991791144831?) — skipping')
+  } else if (!res.ok) {
+    // Usually the 8 s statement_timeout, which service_role inherits. Either
+    // way it measured NOTHING and must not read as a pass.
+    console.error(`✗ logo_platform_signals() returned HTTP ${res.status} — measured nothing`)
+    FAILED = true
+  } else {
+    const sig = (await res.json()) ?? {}
+    let sectionOk = true
+
+    if (sig.probe_ok !== true) {
+      console.error('✗ logo_platform_signals() has no probe_ok — the sentinel was renamed or gutted')
+      FAILED = true
+      sectionOk = false
+    }
+
+    // THE DENOMINATOR FIRST. Zero platform logos from an EMPTY vocabulary reads
+    // exactly like zero from a guarded corpus, and this is the only number that
+    // separates them.
+    const vocab = Number(sig.vocabulary_size ?? 0)
+    const rows = sig.platform_logo_rows ?? {}
+    const unknown = Array.isArray(sig.unknown_platform_groups) ? sig.unknown_platform_groups : []
+    const offending = Object.values(rows).reduce((a, b) => a + Number(b || 0), 0)
+    console.log(
+      `  logo provenance: ${vocab} platform domains known, ${offending} rows on a platform logo, ` +
+        `${unknown.length} unknown-platform group(s)`,
+    )
+
+    if (vocab === 0) {
+      console.error(
+        '✗ logo_platform_domains is EMPTY — the producer guard is a no-op and this section measures nothing',
+      )
+      FAILED = true
+      sectionOk = false
+    }
+
+    for (const [table, n] of Object.entries(rows)) {
+      if (Number(n) > 0) {
+        console.error(
+          `✗ ${n} ${table} rows publish a logo taken from a platform domain — ` +
+            'a writer bypassed the enrich-logos guard, or the repair regressed',
+        )
+        FAILED = true
+        sectionOk = false
+      }
+    }
+
+    // Advisory, and NAMED rather than merely counted: a bare number cannot be
+    // acted on, and the action is to read the group and decide whether it is a
+    // platform or a genuine multi-site operator.
+    if (unknown.length > 0) {
+      console.warn(`⚠ ${unknown.length} logo(s) shared across 4+ registrable domains — possible unknown platform:`)
+      for (const g of unknown.slice(0, 5)) {
+        console.warn(`    ${g.venues} venues across ${g.domains} domains, e.g. ${g.example_host}`)
+      }
+    }
+
+    if (sectionOk) console.log('✓ logo provenance clean')
+  }
+}
+
+// § Venue location vs its own sources — a moved venue keeps its old address.
+//
+// commit_venue_staging_item is fill-if-empty, so a newer source carrying a
+// venue's NEW address can never replace the stale one, and nothing records the
+// disagreement. Found on the Atlanta Eagle (2026-10-04): gayout had the new
+// address for a week while the page served the old bar. ADVISORY ONLY — a
+// >1 km disagreement is as often a centroid fallback or a bad merge as a real
+// move, so the remedy is a human reading the sample, and flagging rows
+// needs_attention would demote them to draft. Hard-fails only when the probe
+// measured nothing.
+{
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/rpc/venue_source_location_signals`, {
+    method: 'POST',
+    headers: HEADERS,
+    body: '{}',
+  })
+  if (res.status === 404) {
+    console.warn('⚠ venue_source_location_signals() not deployed yet (migration 99991791188290?) — skipping')
+  } else if (!res.ok) {
+    console.error(`✗ venue_source_location_signals() returned HTTP ${res.status} — measured nothing`)
+    FAILED = true
+  } else {
+    const sig = (await res.json()) ?? {}
+    const checkable = Number(sig.venues_checkable ?? 0)
+    if (sig.probe_ok !== true || checkable === 0) {
+      console.error('✗ venue_source_location_signals() measured nothing (no probe_ok or 0 checkable venues)')
+      FAILED = true
+    } else {
+      const n = Number(sig.venues_disagreeing_1km ?? 0)
+      console.log(
+        `  venue location vs sources: ${checkable} checkable, ${n} with a source >1 km away ` +
+          `(${sig.venues_disagreeing_1_20km ?? '?'} within 1-20 km, ${sig.venues_disagreeing_newer_source ?? '?'} from a newer source)`,
+      )
+      if (n > 0) {
+        console.warn('⚠ venues whose own sources disagree on location (possible moves) — read before acting:')
+        for (const x of (Array.isArray(sig.sample) ? sig.sample : []).slice(0, 5)) {
+          console.warn(`    ${x.slug}: "${x.stored_address}" vs ${x.source_slug} "${x.source_address}" (${x.distance_m} m)`)
+        }
+      }
+    }
+  }
+}
+
+// §25 — the venue category reclassifier: is it DRAINED, or BLIND?
+//
+// AFTER 99991791179763 THOSE TWO STATES RETURN THE SAME NUMBER. That migration fixed a
+// visit-once cursor which made the engine examine ZERO rows for months while its cron
+// reported success nightly. Verified on prod right after it applied, the healthy engine
+// now ALSO returns `examined: 0` — because the work is done. So the symptom and the
+// healthy reading are byte-identical, no check on `examined` can tell them apart, and
+// that is exactly how the defect survived unnoticed.
+//
+// `mappable_still_other` is the quantity that CAN: venues sitting at `other` whose sole
+// provider category the mapping could resolve. 0 while the cursor works, climbing as soon
+// as it regresses. Measured 0 on prod, so it is a real zero-invariant rather than a
+// baseline nobody re-reads.
+//
+// IT IS AGE-GATED, NOT LEVEL-GATED, and that is load-bearing rather than stylistic.
+// Venue creation does NOT happen at the 03:00 ingest cron: measured over 7 days, 12,228 of
+// 12,275 new venues were created between 17:00 and 20:00 UTC, and such a row is
+// legitimately uncategorised until the 03:35 reclassify. This scheduled run is safe only
+// because 03:35 precedes 06:00 — a `workflow_dispatch` at 19:00 on a level-gated count
+// would go red on rows minutes old. So the sentinel anchors on the last RECORDED
+// reclassify run rather than on any interval, and `last_reclassify_at` is printed: a NULL
+// there means nothing can be proven unreached, so the 0 is an absence of evidence.
+//
+// THE DENOMINATORS GATE TOO. Zero stuck rows over an emptied mapping is not a clean
+// corpus — it is a disabled tier with every count reading fine.
+{
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/rpc/venue_category_signals`, {
+    method: 'POST',
+    headers: HEADERS,
+    body: '{}',
+  })
+
+  if (res.status === 404) {
+    // The nightly run checks out `main` and calls the LIVE backend, so in any window
+    // where main carries this script and prod has not applied the migration the gate
+    // would go red for something that is not a defect.
+    console.warn('⚠ venue_category_signals() not deployed yet (migration 99991791183126?) — skipping §25')
+  } else if (!res.ok) {
+    // An HTTP 500 here is usually the 8 s statement_timeout, which service_role inherits.
+    // Either way it measured NOTHING and must not read as a pass.
+    console.error(`✗ venue_category_signals() returned HTTP ${res.status} — measured nothing`)
+    FAILED = true
+  } else {
+    const sig = await res.json()
+    let sectionOk = true
+
+    if (sig?.probe_ok !== true) {
+      console.error('✗ venue_category_signals() did not report probe_ok — it measured nothing')
+      FAILED = true
+      sectionOk = false
+    } else {
+      // Denominators FIRST, printed whether or not anything is wrong.
+      console.log(
+        `  venue categories: ${sig.mapping_rows} provider tag(s) mapped, ${sig.noise_rows} noise token(s), ` +
+          `${sig.stamped_total} venue(s) categorised from a source tag, ` +
+          `${sig.other_live} live still 'other' (${sig.other_total} incl. archived), ` +
+          `last reclassify ${sig.last_reclassify_at ?? 'NEVER RECORDED'}`,
+      )
+
+      if (!sig.last_reclassify_at) {
+        // Not a defect in the tier, but the age anchor is missing, so mappable_still_other
+        // is 0 because nothing can be proven unreached — absence of evidence. Warn rather
+        // than fail: the registry not recording a run is its own subsystem's problem.
+        console.warn(
+          "⚠ venue_category_reclassify has no recorded last_run_at — mappable_still_other reads 0 because " +
+            'nothing can be proven unreached, not because the corpus is clean',
+        )
+      }
+
+      if (!(sig.mapping_rows > 0)) {
+        console.error(
+          '✗ the venue category mapping is EMPTY — the source-beats-name tier is disabled, and ' +
+            'mappable_still_other reads 0 for that reason rather than because the corpus is clean',
+        )
+        FAILED = true
+        sectionOk = false
+      }
+
+      if (sig.rejected_tag_in_mapping > 0) {
+        console.error(
+          `✗ ${sig.rejected_tag_in_mapping} REFUSED provider tag(s) are in the venue category mapping. ` +
+            'restaurants / theaters / spas / ice cream / social service organizations / gay & lesbian bars ' +
+            'were each rejected on a measured error rate — read 99991791183126 before re-adding one.',
+        )
+        FAILED = true
+        sectionOk = false
+      }
+
+      if (sig.mappable_still_other > 0) {
+        console.error(
+          `✗ ${sig.mappable_still_other} venue(s) sit at category='other' while the mapping can resolve ` +
+            'their sole provider category — run_venue_category_reclassify is not reaching them. ' +
+            'Do NOT baseline this number: it is the only thing separating a DRAINED engine ' +
+            '(examined:0, healthy) from a BLIND one (examined:0, the 99991791179763 defect).',
+        )
+        FAILED = true
+        sectionOk = false
+      }
+    }
+
+    if (sectionOk) console.log('✓ venue category tier reaching every mappable row')
   }
 }
 

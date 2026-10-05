@@ -7,13 +7,13 @@ import { Button } from '@/components/ui/button';
 import { ExternalLink } from 'lucide-react';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { useReducedMotion } from '@/hooks/useReducedMotion';
-import { type MapPointSummary } from './mapPoint';
+import { featuresFromStations, type MapPointSummary } from './mapPoint';
+import { linesForLayers, type MapLine, type MapRoute, type MapStation } from './mapDomain';
 import {
   useExploreMapData,
   type LayerType,
   type MapViewport,
   type ExploreMapFilters,
-  LAYER_COLORS,
 } from '@/hooks/useExploreMapData';
 import { useViewportPoints, POINT_LAYER_TYPES } from '@/hooks/useViewportPoints';
 import { MapResultsPill } from '@/components/map/MapResultsPill';
@@ -25,6 +25,7 @@ import { usePulseAnimation } from '@/components/map/hooks/usePulseAnimation';
 import { useInBoundsCount } from '@/components/map/hooks/useInBoundsCount';
 import { useAreaLayers } from '@/components/map/hooks/useAreaLayers';
 import { useHeatmapLayer } from '@/components/map/hooks/useHeatmapLayer';
+import { useRouteLines } from '@/components/map/hooks/useRouteLines';
 import { useFocusRing } from '@/components/map/hooks/useFocusRing';
 import { useSelectionFlyer } from '@/components/map/hooks/useSelectionFlyer';
 import { useMapInstance } from '@/components/map/hooks/useMapInstance';
@@ -37,7 +38,7 @@ import {
   useNeighbourhoodBoundaries,
 } from '@/hooks/useBoundaryData';
 import { useMapBoundaryLayers } from '@/hooks/useMapBoundaryLayers';
-import { type RenderMode } from './mapShellAdapters';
+import { viewRenderPlan, type ViewRenderPlan } from './mapShellAdapters';
 import {
   AREA_LAYERS,
   LAYER_DEFS,
@@ -63,10 +64,30 @@ export interface ExploreMapProps {
   /** Fired on map idle / moveend with the new viewport. Use to encode
    *  state in the URL or persist preferences. */
   onViewportChange?: (viewport: { center: [number, number]; zoom: number }) => void;
-  /** Rendering style for point data. `'pins'` (default) shows clusters + markers.
-   *  `'heatmap'` swaps clusters/markers for the density layer. `'combined'`
-   *  draws the heatmap beneath the pins (both visible). */
-  renderMode?: RenderMode;
+  /**
+   * What this view draws — see `viewRenderPlan`. Defaults to the `stations`
+   * plan, which is pins + clusters over a low-zoom heat wash.
+   */
+  renderPlan?: ViewRenderPlan;
+  /**
+   * Lines currently DRAWN. Separate from `defaultLayers`, which is the FETCH
+   * vocabulary, and that separation is the no-refetch property: switching M
+   * off leaves `venues` in the fetch set (C and T need it), so `layersKey`
+   * does not change and no network call fires. Omitted => derived from the
+   * fetch set, which is what a standalone ExploreMap wants.
+   */
+  activeLines?: MapLine[];
+  /**
+   * An EXPLICIT station set. When given, no bbox fetch is issued and the
+   * renderer draws exactly these — the one gap that simultaneously blocked
+   * search, trips, saved collections and curated routes.
+   *
+   * Every downstream hook already consumes `pointsGeoJSON`, so this is a
+   * single swap at the source rather than a parallel render path.
+   */
+  stations?: readonly MapStation[];
+  /** The route to draw under the `routes` view. */
+  route?: MapRoute;
   /** Fired (debounced, on data/viewport change) with the point summaries
    *  currently inside the visible bounds. Powers the departure board. */
   onPointsInView?: (points: MapPointSummary[]) => void;
@@ -125,7 +146,10 @@ export const ExploreMap = ({
   initialZoom,
   skipAutoFly = false,
   onViewportChange: onViewportChangeProp,
-  renderMode = 'pins',
+  renderPlan,
+  activeLines: activeLinesProp,
+  stations,
+  route,
   onPointsInView,
   onLocationHint,
   selectedId,
@@ -224,9 +248,21 @@ export const ExploreMap = ({
   });
 
   // ── Data: point layers (viewport-based fetch with clustering) ──────────
+  // `pointEnabledLayers` stays the FETCH vocabulary; `activeLines` is what the
+  // renderer filters on. A host that owns its line set passes it; a bare
+  // ExploreMap derives it from the fetch set.
   const pointEnabledLayers = enabledLayers.filter((l) => POINT_LAYER_TYPES.includes(l));
+  const derivedLines = useMemo(() => linesForLayers(pointEnabledLayers), [pointEnabledLayers]);
+  const activeLines = activeLinesProp ?? derivedLines;
+
+  /** The view's render plan. Defaults to `stations` so a bare ExploreMap (the
+   *  embeds that predate MapShell) behaves exactly as it did. */
+  const plan = useMemo(
+    () => renderPlan ?? viewRenderPlan('stations', activeLines, false),
+    [renderPlan, activeLines],
+  );
   const {
-    geojson: pointsGeoJSON,
+    geojson: fetchedGeoJSON,
     // totalCount from the hook is the padded-bbox count; we compute an
     // in-bounds count locally instead. Keep destructure stable for the
     // hook's interface — discard via underscore.
@@ -236,8 +272,17 @@ export const ExploreMap = ({
   } = useViewportPoints({
     enabledLayers: pointEnabledLayers,
     filters,
-    palette: LAYER_COLORS,
   });
+
+  /**
+   * The ONE branch an explicit source costs. `pointEnabledLayers` is already
+   * empty when the host owns the set (MapShell passes no fetch layers), so the
+   * hook above issues nothing and this simply replaces its empty result.
+   */
+  const pointsGeoJSON = useMemo(
+    () => (stations ? featuresFromStations(stations) : fetchedGeoJSON),
+    [stations, fetchedGeoJSON],
+  );
 
   // ── Data: boundary polygons ─────────────────────────────────────────────
   const countriesEnabled = enabledLayers.includes('countries');
@@ -395,7 +440,7 @@ export const ExploreMap = ({
     mapRef,
     mapReady,
     pointsGeoJSON,
-    pointEnabledLayers,
+    activeLines,
     prefersReducedMotion,
     pinOpacityExpr,
     favoriteIds,
@@ -409,16 +454,24 @@ export const ExploreMap = ({
     pulseRafRef,
   });
 
-  // ── Heatmap layer (Density lens): monochrome black-alpha ramp ─────────
+  // ── Heatmap layer: monochrome black-alpha ramp ────────────────────────
   // MUST stay declared after the pins effect (load-bearing `beforeId` z-order).
+  // `stations` mounts the source at WASH opacity, so this now runs on nearly
+  // every load rather than only when someone picks Heat — which makes the
+  // cold-start window those comments describe the normal path, not an edge.
   useHeatmapLayer({
     mapRef,
     mapReady,
-    renderMode,
+    heat: plan.heat,
+    stations: plan.stations,
     pointsGeoJSON,
-    pointEnabledLayers,
+    activeLines,
     prefersReducedMotion,
   });
+
+  // ── Route line + numbered stops ──────────────────────────────────────────
+  // Declared after the heat effect so a route draws ABOVE the wash.
+  useRouteLines({ mapRef, mapReady, enabled: plan.routes, route });
 
   // ── Focus ring (rail hover / selection) ──────────────────────────────────
   useFocusRing({ mapRef, mapReady, selectedId, highlightedId, pointsGeoJSON });
@@ -465,7 +518,7 @@ export const ExploreMap = ({
 
       {/* Loading overlay */}
       {!mapReady && (
-        <div className="absolute inset-0 flex items-center justify-center bg-background opacity-70 z-[5]">
+        <div className="absolute inset-0 flex items-center justify-center rounded-container bg-background opacity-70 z-[5]">
           <TrackLoader size={32} label="Loading" />
         </div>
       )}

@@ -59,7 +59,7 @@ export function Band({
     <section
       aria-labelledby={headingId}
       className={cn(
-        'border-b border-border-hairline',
+        'overflow-hidden rounded-panel border-b border-border-hairline',
         surface === 'tint' && 'bg-surface-container',
       )}
     >

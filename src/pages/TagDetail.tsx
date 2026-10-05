@@ -772,7 +772,10 @@ export default function TagDetail() {
   );
 
   const footer = (
-    <section aria-labelledby="tag-end-of-line" className="bg-foreground p-6 text-background md:p-8">
+    <section
+      aria-labelledby="tag-end-of-line"
+      className="overflow-hidden rounded-container bg-foreground p-6 text-background md:p-8"
+    >
       <p className="text-2xs font-bold uppercase tracking-label text-background/70">
         {t('tags.endOfLine.eyebrow', 'End of line')}
       </p>
@@ -786,7 +789,7 @@ export default function TagDetail() {
       </p>
       <LocalizedLink
         to={`/search?tags=${encodeURIComponent(tag.slug)}`}
-        className="border mt-4 inline-flex items-center gap-2 border-background px-4 py-2 text-13 font-bold text-background no-underline transition-colors hover:bg-background hover:text-foreground"
+        className="mt-4 inline-flex items-center gap-2 rounded-element bg-background/15 px-4 py-2 text-13 font-bold text-background no-underline transition-colors hover:bg-background hover:text-foreground"
       >
         <TransitIcon name="search" size={18} />
         {t('tags.detail.searchTagged', 'Search everything tagged {{name}}', { name: tag.name })}

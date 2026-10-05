@@ -16,11 +16,16 @@ import { getMapStyle, MAP_FONT_BOLD } from '@/config/mapStyle';
 import { ink, paper } from '@/lib/mapTokens';
 import { isWebglSupported } from '@/lib/webglSupport';
 import { LAYER_COLORS, type MapMarker } from '@/hooks/useExploreMapData';
-import { renderPopupHTML } from '@/components/map/ExploreMapPopup';
+import { usePopupManager } from '@/components/map/hooks/usePopupManager';
 import { applyWhenStyleReady } from '@/components/map/mapStyleReady';
+import { installBasemapFallback } from '@/components/map/basemapFallback';
+import { loadGlyphImages } from '@/components/map/mapGlyphs';
+import { exposeMapForDebug } from '@/components/map/mapDebug';
 import { useMapBoundaryLayers, type BoundaryLayerConfig } from '@/hooks/useMapBoundaryLayers';
+import type { Root } from 'react-dom/client';
 import type { VisitedPlaceLookup } from '@/hooks/useVisitedPlaceLookup';
 import type { PlaceMarkEntity } from '@/hooks/usePlaceMarks';
+import { useToast } from '@/hooks/use-toast';
 
 export interface EntityMapMarker {
   id: string;
@@ -72,15 +77,6 @@ export interface EntityMapProps {
    * filter "only visited" / "hide visited" (persisted in localStorage).
    */
   visitedLookup?: VisitedPlaceLookup;
-  /**
-   * Fires on map `moveend` with the current bounds. Used by /search to
-   * implement "Search this area" — drives a lat/lng/radius refinement.
-   */
-  onMoveEnd?: (info: {
-    center: [number, number];
-    bounds: { north: number; south: number; east: number; west: number };
-    zoom: number;
-  }) => void;
 }
 
 const PRIMARY_MARKER_SOURCE = 'entity-primary';
@@ -98,12 +94,20 @@ export const EntityMap = ({
   className,
   scrollZoom = false,
   visitedLookup,
-  onMoveEnd,
 }: EntityMapProps) => {
   const navigate = useLocalizedNavigate();
+  const { toast } = useToast();
   const containerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<maplibregl.Map | null>(null);
+  /** `installBasemapFallback`'s teardown. Held in a ref because the install
+   *  happens in the construction effect and must be undone by its cleanup —
+   *  a theme toggle recreates the map, so a leaked listener would accumulate
+   *  one failover handler per toggle. */
+  const detachFallbackRef = useRef<(() => void) | null>(null);
   const popupRef = useRef<maplibregl.Popup | null>(null);
+  // The popup card renders into its OWN React root (MapLibre owns the node), so
+  // the root has to be torn down alongside the popup — see the cleanup effect.
+  const popupRootRef = useRef<Root | null>(null);
   const tooltipRef = useRef<HTMLDivElement | null>(null);
   const [mapReady, setMapReady] = useState(false);
   const [mapError, setMapError] = useState(false);
@@ -149,28 +153,27 @@ export const EntityMap = ({
   const primary = visibleMarkers.filter((m) => m.primary);
   const nearby = visibleMarkers.filter((m) => !m.primary);
 
-  const showPopup = useCallback(
-    (map: maplibregl.Map, lngLat: maplibregl.LngLat, marker: MapMarker) => {
-      popupRef.current?.remove();
-      const popup = new maplibregl.Popup({ offset: 15, closeButton: true, maxWidth: '240px' })
-        .setLngLat(lngLat)
-        .setHTML(renderPopupHTML(marker))
-        .addTo(map);
-
-      popup.on('open', () => {
-        const link = popup.getElement()?.querySelector('a[href^="/"]');
-        if (link) {
-          link.addEventListener('click', (e) => {
-            e.preventDefault();
-            const href = (e.currentTarget as HTMLAnchorElement).getAttribute('href');
-            if (href) navigate(href);
-          });
-        }
-      });
-      popupRef.current = popup;
-    },
-    [navigate],
-  );
+  /**
+   * ONE popup renderer across every surface.
+   *
+   * This used to be a bespoke `setHTML(renderPopupHTML(marker))` plus a
+   * click-interception hack on the rendered `<a>` — the third popup
+   * implementation in the codebase, and the only consumer `ExploreMapPopup.ts`
+   * ever had. `usePopupManager.showPopupFromMarker` takes the identical
+   * `(map, lngLat, MapMarker)` signature and renders `<MapEntityCard>`, so all
+   * seven detail insets gain save, add-to-trip, share and directions at once.
+   *
+   * It is the ADAPTER overload, not `showPopup`: a `MapMarker` carries
+   * `meta` rather than the `MapStation` fields, and `showPopupFromMarker`
+   * already resolves `entity`/`line` from the layer type — including `null`
+   * for every area layer, which is invariant B and must not be re-derived here.
+   */
+  const { showPopupFromMarker: showPopup } = usePopupManager({
+    navigate,
+    toast,
+    popupRef,
+    popupRootRef,
+  });
 
   // Boundary layer
   useMapBoundaryLayers({
@@ -217,6 +220,24 @@ export const EntityMap = ({
     // hit the replacement map while its style is still loading (stale
     // mapReady=true in the same commit) and addSource would throw.
 
+    /**
+     * The three infra installs this map has never had.
+     *
+     * `EntityMap` is a DELIBERATE specialist — `MapInset` is documented as "a
+     * frame, not a second map", and MapShell's absolutely-positioned command
+     * bar overflows a 360px rail — but being a specialist was never a reason
+     * to go without basemap failover. It backs SEVEN detail insets (venue,
+     * event, hotel, city, country, village, organization), and until now a
+     * tile-host failure white-screened every one of them with no fallback and
+     * no glyph images.
+     *
+     * `installBasemapFallback` goes here rather than inside `load`, so tile
+     * errors during the very first style fetch are counted too — the same
+     * reasoning `useMapInstance` records.
+     */
+    detachFallbackRef.current = installBasemapFallback(map);
+    exposeMapForDebug(map);
+
     map.addControl(new maplibregl.AttributionControl({ compact: true }), 'bottom-right');
     map.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'top-right');
 
@@ -224,6 +245,10 @@ export const EntityMap = ({
     map.on('load', () => {
       loaded = true;
       mapRef.current = map;
+      // Category glyphs. Fire-and-forget: a missing glyph degrades the pin to
+      // its bare disc, which is a cosmetic loss, where awaiting it would gate
+      // `mapReady` on a network round trip and delay every marker.
+      void loadGlyphImages(map);
       setMapReady(true);
     });
     // Only treat an error as fatal before the map has loaded. MapLibre emits
@@ -235,23 +260,6 @@ export const EntityMap = ({
     map.on('error', () => {
       if (!loaded) setMapError(true);
     });
-    if (onMoveEnd) {
-      map.on('moveend', () => {
-        const c = map.getCenter();
-        const b = map.getBounds();
-        onMoveEnd({
-          center: [c.lng, c.lat],
-          bounds: {
-            north: b.getNorth(),
-            south: b.getSouth(),
-            east: b.getEast(),
-            west: b.getWest(),
-          },
-          zoom: map.getZoom(),
-        });
-      });
-    }
-
     // Defense-in-depth: if neither `load` nor `error` fires within 15 s,
     // surface the OSM fallback. The previous 5 s blanket timeout fired
     // before tiles could finish loading on heavy detail pages.
@@ -261,6 +269,14 @@ export const EntityMap = ({
 
     return () => {
       window.clearTimeout(timeoutId);
+      detachFallbackRef.current?.();
+      detachFallbackRef.current = null;
+      // `map.remove()` destroys the popup's DOM node without telling React, so
+      // the popup's own React root has to be unmounted here or it leaks and
+      // logs "unmounting during render". `usePopupManager` owns the per-popup
+      // teardown; this covers the map going away underneath an open popup.
+      popupRootRef.current?.unmount();
+      popupRootRef.current = null;
       mapRef.current = null;
       // Recreate path (theme toggle): gate the marker effect until the new
       // map's `load` flips this back — it re-adds all sources/layers.
@@ -480,7 +496,7 @@ export const EntityMap = ({
 
       {!mapReady && !mapError && (
         <div
-          className="absolute inset-0 flex items-center justify-center"
+          className="absolute inset-0 flex items-center justify-center rounded-container"
           style={{ backgroundColor: paper(0.7), zIndex: 5 }}
         >
           <TrackLoader size={24} label="Loading" />
@@ -489,7 +505,7 @@ export const EntityMap = ({
 
       {mapError && (
         <div
-          className="absolute inset-0 flex flex-col items-center justify-center gap-2 p-4 text-center"
+          className="absolute inset-0 flex flex-col items-center justify-center gap-2 rounded-container p-4 text-center"
           style={{ backgroundColor: 'hsl(var(--muted))', zIndex: 5 }}
           role="status"
         >

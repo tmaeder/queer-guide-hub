@@ -107,38 +107,92 @@ test('a line with unstructured hours is never labelled closed', async ({ page })
   await expect(qlife).not.toContainText(/closed right now/i);
 });
 
-test('help uses dedicated safety chrome without global overlays', async ({ page }) => {
+test('help carries the ordinary site chrome and keeps the safety actions clear', async ({
+  page,
+}) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await openHelp(page, '/help/ch');
 
-  await expect(page.getByTestId('help-safety-header')).toBeVisible();
-  await expect(page.getByRole('navigation', { name: /^navigation$/i })).toHaveCount(0);
-  await expect(page.locator('footer')).toHaveCount(0);
-  await expect(page.getByRole('button', { name: /leave this page immediately/i })).toBeVisible();
+  // /help used to replace the product header with a bespoke crisis bar and
+  // drop the footer and bottom nav entirely (#4062). It is an ordinary page
+  // again: a visitor who lands here cold must be able to reach the rest of the
+  // site. The bespoke header is asserted ABSENT as well as the real one
+  // present, so the old shape cannot quietly return alongside the new one.
+  await expect(page.locator('[data-testid="help-safety-header"]')).toHaveCount(0);
+  await expect(page.locator('header')).toHaveCount(1);
+  await expect(page.locator('footer')).not.toHaveCount(0);
+  await expect(page.getByRole('navigation', { name: /^navigation$/i })).toHaveCount(1);
 
-  const collisions = await page.evaluate(() => {
-    const safety = document.querySelector('[data-testid="help-safety-header"]');
-    if (!safety) return -1;
-    const safetyRect = safety.getBoundingClientRect();
-    const obscured = Array.from(
-      document.querySelectorAll('main h1, main h2, main p, main a'),
+  // The safety actions survived the restoration, in the content column rather
+  // than in a fixed overlay — a floating control is the one thing that can
+  // cover crisis content.
+  await expect(
+    page.locator('main').getByRole('button', { name: /leave this page immediately/i }),
+  ).toBeVisible();
+  await expect(page.locator('main').getByRole('button', { name: /hide screen/i })).toBeVisible();
+
+  // ...and the sticky site header must not sit on top of them, nor on the
+  // acute-danger strip, at first paint.
+  const covered = await page.evaluate(() => {
+    const header = document.querySelector('header');
+    if (!header) return -1;
+    const bar = header.getBoundingClientRect();
+    return Array.from(
+      document.querySelectorAll('main h1, main h2, main a[href^="tel:"], main button'),
     ).filter((element) => {
-      if (safety.contains(element)) return false;
       const rect = element.getBoundingClientRect();
       if (rect.bottom <= 0 || rect.top >= window.innerHeight) return false;
-      return rect.top < safetyRect.bottom && rect.bottom > safetyRect.top;
-    });
-    return obscured.length;
+      return rect.top < bar.bottom && rect.bottom > bar.top;
+    }).length;
   });
-  expect(collisions).toBe(0);
+  expect(covered).toBe(0);
 });
 
 test('Australian help shows the local emergency number', async ({ page }) => {
   await openHelp(page, '/help/au');
-  await expect(
-    page.getByTestId('help-safety-header').getByRole('link', { name: /000/ }),
-  ).toHaveAttribute('href', 'tel:000');
+  // The number moved out of the bespoke safety header and into CrisisBar, the
+  // life-safety strip at the top of the page — still above the fold, still
+  // country-aware, now inside the ordinary content column.
   await expect(page.locator('main a[href="tel:000"]').first()).toBeVisible();
+});
+
+test('the hide-screen cover hides everything, chrome included', async ({ page }) => {
+  // Restoring the ordinary page chrome put three new fixed layers on /help —
+  // the site header, the bottom nav and the cookie consent banner. The banner
+  // sits at --z-sticky (100), which is exactly where this cover used to sit,
+  // and it renders after the route content, so at equal z-index it painted
+  // over the cover: "Queer Guide uses cookies", still on screen, after someone
+  // pressed the button whose whole job is leaving nothing on screen.
+  await openHelp(page, '/help/ch');
+  await page
+    .locator('main')
+    .getByRole('button', { name: /hide screen/i })
+    .click();
+
+  const cover = page.getByRole('button', { name: /click anywhere to show the page again/i });
+  await expect(cover).toBeVisible();
+
+  // Sample the real compositing result rather than the class list: ask what is
+  // actually painted at a grid of points. A z-index assertion passes against a
+  // cover that some other stacking context has trapped.
+  const leaks = await page.evaluate(() => {
+    const cover = document.querySelector('[aria-label*="show the page again" i]');
+    if (!cover) return ['no cover'];
+    const found = new Set<string>();
+    for (let x = 0.1; x < 1; x += 0.2) {
+      for (let y = 0.05; y < 1; y += 0.15) {
+        const hit = document.elementFromPoint(
+          Math.round(window.innerWidth * x),
+          Math.round(window.innerHeight * y),
+        );
+        if (hit && !cover.contains(hit) && hit !== cover) {
+          found.add(hit.tagName + (hit.className ? `.${String(hit.className).slice(0, 40)}` : ''));
+        }
+      }
+    }
+    return [...found];
+  });
+  expect(leaks, 'elements painting over the privacy cover').toEqual([]);
 });
 
 test('self-help keeps emergency and privacy actions available', async ({ page }) => {

@@ -111,9 +111,10 @@ export const COLOR_TOKENS: ColorTokenDef[] = [
   { key: 'muted-foreground', group: 'core', light: '0 0% 33%', dark: '60 6% 66%' },
   { key: 'accent', group: 'core', light: '60 22.2% 89.4%', dark: '60 5.6% 14.1%' },
   { key: 'accent-foreground', group: 'core', light: '0 0% 6.7%', dark: '60 33% 97%' },
-  // A divider, not a component boundary — cards separate by tint + shadow.
+  // Legacy/data channel. UI `border-border` utilities resolve transparently;
+  // cards and rows separate by tone, spacing and semantic soft elevation.
   { key: 'border', group: 'core', light: '60 7.4% 81.4%', dark: '60 1.1% 17.5%' },
-  // A form control's boundary IS required to clear 3:1 (WCAG 1.4.11).
+  // Legacy override channel. Shared form controls use a contrasting tonal well.
   { key: 'input', group: 'core', light: '60 4.8% 44.9%', dark: '60 3.6% 51.2%' },
   { key: 'input-bg', group: 'core', light: '60 33% 97%', dark: '60 5.7% 10.4%' },
   { key: 'ring', group: 'core', light: '330 100% 56%', dark: '330 100% 56%' },
@@ -140,8 +141,8 @@ export const COLOR_TOKENS: ColorTokenDef[] = [
   { key: 'text-primary', group: 'text', light: '0 0% 6.7%', dark: '60 33% 97%' },
   { key: 'text-secondary', group: 'text', light: '0 0% 30%', dark: '60 8% 72%' },
   { key: 'text-muted', group: 'text', light: '0 0% 40%', dark: '60 6% 62%' },
-  // Channels only — the 12% alpha lives in `--hairline-alpha`, because
-  // branding_validate's HSL_RE forbids an alpha component in a token value.
+  // Compatibility channels only — `--hairline-alpha` is zero, so old divider
+  // classes remain valid but invisible while call sites are retired.
   { key: 'border-hairline', group: 'text', light: '0 0% 6.7%', dark: '60 33% 97%' },
   // Surface elevation ladder — paper-tinted neutral steps
   { key: 'surface', group: 'surface', light: '60 33% 97%', dark: '60 6.1% 12.9%' },

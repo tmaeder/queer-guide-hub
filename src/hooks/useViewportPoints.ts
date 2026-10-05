@@ -11,15 +11,27 @@
  *  - Returns combined GeoJSON for all enabled point layer types
  */
 
+// The gated debug logger, previously declared verbatim here as well as in
+// `components/map/mapDebug` — opt in with
+// `localStorage.setItem('qg:debug:map', '1')` to inspect the data flow in prod
+// without redeploying.
+import { mapDebug } from '@/components/map/mapDebug';
 import { calculateDistanceKm } from '@/utils/calculateDistance';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import * as Sentry from '@sentry/react';
 import { supabase } from '@/integrations/supabase/client';
 import { untypedFrom } from '@/integrations/supabase/untyped';
 import type { ExploreMapFilters, LayerType } from '@/hooks/useExploreMapData';
-import { LAYER_COLORS } from '@/hooks/useExploreMapData';
 import { isOpenNow } from '@/utils/openingHours';
 import { glyphKeyFor } from '@/components/map/mapIcons';
+import {
+  ENTITY_BULLET,
+  areaColor,
+  lineColor,
+  lineFor,
+  type MapLine,
+  type MapStationEntity,
+} from '@/components/map/mapDomain';
 import {
   type Bbox,
   LRUCache,
@@ -41,6 +53,23 @@ export const POINT_LAYER_TYPES: LayerType[] = ['venues', 'events', 'restrooms', 
 export interface PointFeatureProps {
   id: string;
   pointType: LayerType;
+  /**
+   * The `ROUTE_BULLET_MAP` key for this entity — station identity (V/E/H/R).
+   * Distinct from `line`: a community centre is bullet `V` on line `C`.
+   */
+  entity: MapStationEntity;
+  /**
+   * The map LINE this point rides.
+   *
+   * On the feature rather than derived, because the consumers that need it are
+   * MapLibre EXPRESSIONS — the render filter and the cluster aggregates — and
+   * an expression cannot call into JS. `summaryFromFeature` derives the same
+   * value for the JS-side consumers (popup, hover card, departures board).
+   *
+   * `null` is reserved for an area entity rendered as a pin; this producer
+   * fetches point layers only, so in practice it is always set.
+   */
+  line: MapLine | null;
   name: string;
   subtitle: string;
   color: string;
@@ -69,8 +98,6 @@ export interface ViewportPointsResult {
 interface UseViewportPointsOptions {
   enabledLayers: LayerType[];
   filters?: ExploreMapFilters;
-  /** Override marker colours per layer (e.g. the MapShell pride palette). */
-  palette?: Partial<Record<LayerType, string>>;
 }
 
 // ── Constants ─────────────────────────────────────────────────────────────────
@@ -84,22 +111,6 @@ const DEBOUNCE_MS = 200;
  */
 const VIEWPORT_POINT_LIMIT = 1000;
 const EMPTY_FC: PointCollection = { type: 'FeatureCollection', features: [] };
-
-// Gated debug logger — matches ExploreMap's mapDebug. Opt in via
-// `localStorage.setItem('qg:debug:map', '1')` in prod to inspect the
-// data flow without redeploying.
-const mapDebug = (...args: unknown[]): void => {
-  try {
-    if (
-      import.meta.env.DEV ||
-      (typeof localStorage !== 'undefined' && localStorage.getItem('qg:debug:map') === '1')
-    ) {
-      console.debug('[venues-map]', ...args);
-    }
-  } catch {
-    /* localStorage may throw in some sandboxed contexts */
-  }
-};
 
 // ── Cache ─────────────────────────────────────────────────────────────────────
 
@@ -243,9 +254,13 @@ async function fetchVenuesInBbox(
       properties: {
         id: `venue-${v.id}`,
         pointType: 'venues' as const,
+        entity: ENTITY_BULLET.venues,
+        // The only fetcher whose line is not static: `venues` splits across
+        // M / C / T by category (community_center + toilet → C, hotel → T).
+        line: lineFor('venues', v.category as string | undefined),
         name: v.name ?? 'Venue',
         subtitle: v.category ?? '',
-        color: LAYER_COLORS.venues,
+        color: lineColor(lineFor('venues', v.category as string | undefined) ?? 'M'),
         linkTo: v.slug ? `/venues/${v.slug}` : '',
         featured,
         live: openNow === true,
@@ -353,9 +368,11 @@ async function fetchEventsInBbox(
       properties: {
         id: `event-${e.id}`,
         pointType: 'events' as const,
+        entity: ENTITY_BULLET.events,
+        line: lineFor('events'),
         name: e.title ?? 'Event',
         subtitle: dateStr,
-        color: LAYER_COLORS.events,
+        color: lineColor('E'),
         linkTo: e.slug ? `/events/${e.slug}` : '',
         featured,
         live: happeningNow,
@@ -393,9 +410,11 @@ async function fetchHotelsInBbox(bbox: Bbox): Promise<PointFeature[]> {
     properties: {
       id: `hotel-${h.id}`,
       pointType: 'hotels' as const,
+      entity: ENTITY_BULLET.hotels,
+      line: lineFor('hotels'),
       name: (h.name as string) ?? 'Hotel',
       subtitle: (h.hotel_type as string) ?? '',
-      color: LAYER_COLORS.hotels,
+      color: lineColor('T'),
       linkTo: h.slug ? `/hotels/${h.slug}` : '',
       featured: Boolean(h.featured),
       live: false,
@@ -435,9 +454,11 @@ async function fetchRestroomsInBbox(bbox: Bbox): Promise<PointFeature[]> {
       properties: {
         id: `restroom-${r.id}`,
         pointType: 'restrooms' as const,
+        entity: ENTITY_BULLET.restrooms,
+        line: lineFor('restrooms'),
         name: r.name || `Restroom at ${r.street || 'Unknown'}`,
         subtitle: [r.city, r.state].filter(Boolean).join(', '),
-        color: LAYER_COLORS.restrooms,
+        color: lineColor('C'),
         linkTo: '',
         featured: false,
         live: false,
@@ -452,7 +473,6 @@ async function fetchRestroomsInBbox(bbox: Bbox): Promise<PointFeature[]> {
 export function useViewportPoints({
   enabledLayers,
   filters,
-  palette,
 }: UseViewportPointsOptions): ViewportPointsResult & {
   onViewportChange: (bbox: Bbox, zoom: number) => void;
 } {
@@ -472,9 +492,6 @@ export function useViewportPoints({
   const filtersRef = useRef(filters);
   // eslint-disable-next-line react-hooks/refs -- "latest value" ref pattern; doFetch (defined below) reads .current.
   filtersRef.current = filters;
-  const paletteRef = useRef(palette);
-  // eslint-disable-next-line react-hooks/refs -- "latest value" ref pattern; doFetch (defined below) reads .current.
-  paletteRef.current = palette;
 
   const doFetch = useCallback(async (rawBbox: Bbox, zoom: number) => {
     const enabled = enabledRef.current.filter((l) => POINT_LAYER_TYPES.includes(l));
@@ -558,15 +575,26 @@ export function useViewportPoints({
         return;
       }
 
-      // Apply the active palette to every feature. The LRU cache is a shared
-      // module singleton, so a MapShell instance (pride palette) and a legacy
-      // ExploreMap (base palette) can read the same cached feature objects.
-      // Remap unconditionally — defaulting to LAYER_COLORS — so neither
-      // instance inherits the other's colours.
-      const pal = paletteRef.current ?? LAYER_COLORS;
+      // Re-resolve every feature's colour, unconditionally.
+      //
+      // The `palette` override this used to read is gone: its stated purpose
+      // was to keep a MapShell instance (pride palette) from inheriting a
+      // legacy ExploreMap's base palette, and the pride palette was deleted in
+      // the 2026-06-25 monochrome refactor — the only caller passed
+      // `LAYER_COLORS`, i.e. the identity.
+      //
+      // The remap still has to happen, for a reason that does survive:
+      // `lineColor` reads LIVE CSS custom properties, the LRU cache is a
+      // module singleton, and `/admin/design` can repaint a track at runtime.
+      // A cached feature therefore holds whatever colour was resolved when it
+      // was fetched, which may no longer be the current one.
+      //
+      // Keyed by LINE, not layer — this is where a community centre stops
+      // being pink and becomes green. A null line (an area entity drawn as a
+      // pin) takes ink, matching what `LAYER_COLORS` gives the area layers.
       for (const f of allFeatures) {
-        const c = pal[f.properties.pointType];
-        if (c) f.properties.color = c;
+        const line = f.properties.line;
+        f.properties.color = line ? lineColor(line) : areaColor();
       }
 
       // "Near me" radius filter: applied client-side across all layers so a

@@ -1489,6 +1489,23 @@
     "queerOwnedBadge": "[AR] Queer-owned"
   },
   "profile": {
+    "username": {
+      "autoAssignedBadge": "مُعيَّن تلقائيًا",
+      "policyAutoAssigned": "اخترناه لك. تغييرك الأول لا يُحتسب.",
+      "policyStandard": "يمكن تغييره مرة واحدة سنويًا، ولديك 30 يومًا بعد ذلك لتصحيحه. يبقى اسمك القديم محفوظًا ويُحوِّل لمدة 90 يومًا.",
+      "safetyNote": "تحتاج إلى تغيير لأسباب تتعلق بالسلامة (مثل اسم سابق)؟ راسل الدعم، دون أي أسئلة.",
+      "change": "تغيير اسم المستخدم",
+      "changingFrom": "التغيير من @{{username}}. يُحتسب هذا كتغييرك خلال الـ 12 شهرًا القادمة، لكن لديك 30 يومًا لتصحيحه؛ ويُحوِّل الاسم القديم لمدة 90 يومًا.",
+      "confirmChange": "تأكيد التغيير",
+      "claim": "اختيار اسم المستخدم",
+      "notChangedTitle": "لم يتغيّر اسم المستخدم",
+      "errorGeneric": "تعذّر تغيير اسم المستخدم. حاول مرة أخرى.",
+      "errorUnavailable": "اسم المستخدم هذا مستخدم أو محجوز.",
+      "errorRateLimited": "يمكنك تغيير اسم المستخدم مرة واحدة سنويًا. التغيير التالي: {{date}}",
+      "rateLimitedFallbackDate": "لاحقًا",
+      "updatedTitle": "تم تحديث اسم المستخدم",
+      "updatedBody": "أنت الآن @{{username}}."
+    },
     "editProfile": "تعديل الملف الشخصي",
     "pronouns": "الضمائر",
     "location": "الموقع",
@@ -2724,14 +2741,6 @@
       "thisMonth": "[AR] This month",
       "saved": "[AR] Saved"
     },
-    "lens": {
-      "groupLabel": "[AR] Map view",
-      "pins": "[AR] Pins",
-      "density": "[AR] Density",
-      "routes": "[AR] Routes",
-      "boundary": "[AR] Boundary",
-      "combined": "[AR] Combined"
-    },
     "sheet": {
       "title": "[AR] Map options",
       "view": "[AR] View",
@@ -2818,6 +2827,24 @@
       "queerOwned": "[AR] Queer-owned",
       "tags_one": "[AR] {{count}} tag",
       "tags_other": "[AR] {{count}} tags"
+    },
+    "view": {
+      "stations": "المحطات",
+      "heat": "الكثافة",
+      "areas": "المناطق",
+      "routes": "المسارات"
+    },
+    "lines": {
+      "M": "الأماكن",
+      "E": "الأحداث",
+      "C": "المجتمع والرعاية",
+      "T": "السفر والإقامة"
+    },
+    "key": {
+      "saved": "الشعار = محفوظ لديك"
+    },
+    "notice": {
+      "noRoute": "لا يوجد مسار لعرضه هنا بعد."
     }
   },
   "cities": {

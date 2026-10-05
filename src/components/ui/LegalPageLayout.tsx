@@ -137,7 +137,7 @@ export const LegalPageLayout = ({
           {footer}
 
           <section
-            className="mt-16 bg-foreground p-6 text-background"
+            className="mt-16 overflow-hidden rounded-container bg-foreground p-6 text-background"
             aria-labelledby="end-of-line"
           >
             <p className="text-2xs font-bold uppercase tracking-label text-background/70">
@@ -167,7 +167,7 @@ export const LegalPageLayout = ({
                         <LocalizedLink
                           to={`/${s}`}
                           className={cn(
-                            'border inline-flex items-center gap-2 border-background px-2 py-1 text-13 font-bold text-background no-underline transition-colors',
+                            'inline-flex items-center gap-2 rounded-element bg-background/15 px-2 py-1 text-13 font-bold text-background no-underline transition-colors',
                             'hover:bg-background hover:text-foreground',
                           )}
                         >

@@ -87,7 +87,7 @@ export function CountryScope({
         <DialogTrigger asChild>
           <button
             type="button"
-            className="border rounded-element border-background bg-transparent px-4 py-1 text-13 font-bold text-background transition-colors hover:bg-background hover:text-foreground"
+            className="rounded-element bg-background/15 px-4 py-1 text-13 font-bold text-background transition-colors hover:bg-background hover:text-foreground"
           >
             {t('help.scope_change', 'Change')}
           </button>

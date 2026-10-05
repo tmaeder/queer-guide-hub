@@ -117,7 +117,7 @@ function StopRow({
 const SECTION_LABEL = 'text-13 font-bold uppercase tracking-label text-muted-foreground';
 
 const END_OF_LINE_LINK =
-  'border inline-flex items-center gap-2 border-background px-4 py-2 text-15 font-bold text-background no-underline transition-colors hover:bg-background hover:text-foreground';
+  'inline-flex items-center gap-2 rounded-element bg-background/15 px-4 py-2 text-15 font-bold text-background no-underline transition-colors hover:bg-background hover:text-foreground';
 
 const NotFound = () => {
   const location = useLocation();
@@ -324,7 +324,7 @@ const NotFound = () => {
       {/* Terminus: the lines you can pick up instead. */}
       <section
         aria-labelledby="notfound-end-of-line"
-        className="mt-12 bg-foreground p-6 text-background md:p-8"
+        className="mt-12 overflow-hidden rounded-container bg-foreground p-6 text-background md:p-8"
       >
         <p className="text-13 font-bold uppercase tracking-label text-background/70">
           {t('pages.notFound.suggestionsLabel', 'End of line')}

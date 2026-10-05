@@ -676,6 +676,23 @@
     "queerOwnedBadge": "Queer-owned"
   },
   "profile": {
+    "username": {
+      "autoAssignedBadge": "auto-assigned",
+      "policyAutoAssigned": "We assigned this for you. Your first change is free.",
+      "policyStandard": "Changeable once per year, with 30 days afterwards to correct it. Your old name is held and redirected for 90 days.",
+      "safetyNote": "Need a change for safety reasons (e.g. a deadname)? Contact support, no questions asked.",
+      "change": "Change username",
+      "changingFrom": "Changing from @{{username}}. This counts as your change for the next 12 months, but you have 30 days to correct it; the old name redirects for 90 days.",
+      "confirmChange": "Confirm change",
+      "claim": "Claim username",
+      "notChangedTitle": "Username not changed",
+      "errorGeneric": "Could not change username. Try again.",
+      "errorUnavailable": "That username is taken or reserved.",
+      "errorRateLimited": "You can change your username once per year. Next change: {{date}}.",
+      "rateLimitedFallbackDate": "later",
+      "updatedTitle": "Username updated",
+      "updatedBody": "You are now @{{username}}."
+    },
     "editProfile": "Edit Profile",
     "pronouns": "Pronouns",
     "location": "Location",
@@ -2791,14 +2808,6 @@
       "thisMonth": "This month",
       "saved": "Saved"
     },
-    "lens": {
-      "groupLabel": "Map view",
-      "pins": "Stations",
-      "density": "Heat",
-      "routes": "Routes",
-      "boundary": "Areas",
-      "combined": "Combined"
-    },
     "sheet": {
       "title": "Map options",
       "view": "View",
@@ -2885,6 +2894,24 @@
       "queerOwned": "Queer-owned",
       "tags_one": "{{count}} tag",
       "tags_other": "{{count}} tags"
+    },
+    "view": {
+      "stations": "Stations",
+      "heat": "Heat",
+      "areas": "Areas",
+      "routes": "Routes"
+    },
+    "lines": {
+      "M": "Venues",
+      "E": "Events",
+      "C": "Community & care",
+      "T": "Travel & stay"
+    },
+    "key": {
+      "saved": "Badge = saved by you"
+    },
+    "notice": {
+      "noRoute": "No route to draw here yet."
     }
   },
   "cities": {

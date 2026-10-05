@@ -91,6 +91,8 @@ export const CLUSTERS_LAYER = 'clusters';
 export const CLUSTER_COUNT_LAYER = 'cluster-count';
 export const UNCLUSTERED_LAYER = 'unclustered-point';
 export const GLYPH_LAYER = 'pin-glyph';
+/** Saved / visited badge on a pin's upper-right. */
+export const STATE_BADGE_LAYER = 'pin-state-badge';
 export const FEATURED_RING_LAYER = 'featured-ring';
 export const PULSE_LAYER = 'live-pulse';
 export const HEATMAP_SOURCE = 'heatmap-source';
@@ -107,6 +109,47 @@ export const PIN_LAYER_IDS = [
   CLUSTER_COUNT_LAYER,
   UNCLUSTERED_LAYER,
   GLYPH_LAYER,
+  // Listed here so the heat/areas visibility sweeps and the teardown loop pick
+  // it up for free — a layer absent from this list stays painted under a view
+  // that is supposed to hide every pin.
+  STATE_BADGE_LAYER,
+];
+
+// ── Route (itinerary / curated trail) layer IDs ──────────────────────────────
+
+export const ROUTE_SOURCE = 'route-source';
+export const ROUTE_LINE_LAYER = 'route-line';
+export const ROUTE_STOP_LAYER = 'route-stop';
+export const ROUTE_STOP_LABEL_LAYER = 'route-stop-number';
+
+/** Every layer the `routes` view mounts. Kept SEPARATE from `PIN_LAYER_IDS` so
+ *  `viewRenderPlan` can assert that Routes draws something Stations does not —
+ *  the hard invariant a silent fall-through to pins used to violate. */
+export const ROUTE_LAYER_IDS = [ROUTE_LINE_LAYER, ROUTE_STOP_LAYER, ROUTE_STOP_LABEL_LAYER];
+
+// ── Heat ramps ───────────────────────────────────────────────────────────────
+
+/**
+ * Both ramps are `[zoom, opacity]` interpolation stops, i.e. MapLibre PAINT
+ * DATA rather than React state. Branching on zoom in a prop would re-render
+ * `MapShell` on every wheel tick; an expression is evaluated on the GPU.
+ *
+ * FULL is the dedicated `heat` view. WASH is the quiet underglow the
+ * `stations` view carries at low zoom — gone by z10, i.e. before individual
+ * stations become legible, so the two never compete for the same ground.
+ */
+export const HEAT_OPACITY_FULL: [number, number][] = [
+  [0, 0.5],
+  [9, 0.4],
+  [14, 0.32],
+  [16, 0],
+];
+
+export const HEAT_OPACITY_WASH: [number, number][] = [
+  [0, 0.26],
+  [6, 0.16],
+  [9, 0.05],
+  [10, 0],
 ];
 
 // ── Boundary configs ─────────────────────────────────────────────────────────

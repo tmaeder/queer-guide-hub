@@ -1,7 +1,7 @@
 import { Star, MapPin, Phone, Globe, Mail, Luggage, Navigation2, Sparkles } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { EntitySocialLinks } from '@/components/entity/EntitySocialLinks';
-import { buildProfileUrl, normalizeSocialLinks } from '@/lib/social/registry';
+import { buildProfileUrl, normalizeHandle, normalizeSocialLinks } from '@/lib/social/registry';
 import { ShareMenu } from '@/components/share/ShareMenu';
 import { TagChipRow } from '@/components/tags/TagChipRow';
 import { Button } from '@/components/ui/button';
@@ -35,6 +35,7 @@ import { fetchVenueWithReviews } from '@/hooks/usePageFetchers';
 import { useTranslation } from 'react-i18next';
 import { GlossaryLinkedText } from '@/components/tags/GlossaryLinkedText';
 import { localizedField, type I18nMap } from '@/lib/localizeContent';
+import { useVisitedPlaceLookup } from '@/hooks/useVisitedPlaceLookup';
 
 type Venue = Database['public']['Tables']['venues']['Row'];
 export type VenueReview = Database['public']['Tables']['venue_reviews']['Row'] & {
@@ -103,6 +104,30 @@ export function buildVenueBreadcrumbs(
     }).map((c) => ({ label: c.label as string, href: c.href })),
     { label: venue.name },
   ];
+}
+
+/**
+ * True when `social_links` holds at least one usable profile URL. Exported so
+ * the descriptor's section guard and `VenueLocationContact`'s own null-return
+ * agree: a venue whose only contact data is Facebook/Instagram/X used to get no
+ * "Location & contact" section at all, because neither check read this column.
+ */
+export function hasSocialLinks(links: unknown): boolean {
+  if (!links || typeof links !== 'object' || Array.isArray(links)) return false;
+  return Object.keys(normalizeSocialLinks(links as Record<string, unknown>)).length > 0;
+}
+
+/**
+ * The bare Instagram handle behind `venues.instagram`, or null.
+ *
+ * The column is NOT a handle in practice: `sync_venue_instagram_from_social`
+ * copies `social_links.instagram` into it verbatim, and that is a URL. Measured
+ * 2026-10-04, all 110 non-empty values were full URLs, so the page linked
+ * `https://instagram.com/https://www.instagram.com/x` and printed "@https://…".
+ * `normalizeHandle` accepts a URL, an "@handle" or a bare handle.
+ */
+export function instagramHandle(raw: string | null | undefined): string | null {
+  return normalizeHandle('instagram', raw ?? '');
 }
 
 // venue.tags is uncontrolled scraper data — some rows carry 40+ noisy terms.
@@ -290,6 +315,15 @@ export function VenueActions({
             : `https://queer.guide/venues/${venue.slug ?? venue.id}`
         }
         title={venue.name}
+        entity={{
+          entity_table: 'venues',
+          entity_id: venue.id,
+          title: venue.name,
+          subtitle: [venue.cities?.name, venue.countries?.name].filter(Boolean).join(', ') || null,
+          image_url: venue.images?.[0] ?? venue.logo_url ?? null,
+          path: `/venues/${venue.slug ?? venue.id}`,
+          gated: Boolean(venue.safety_gated),
+        }}
       />
       <button type="button" onClick={onShare} className="sr-only">
         {t('pages.venueDetail.share', 'Share')}
@@ -664,7 +698,9 @@ export function VenueLocationContact({
   onContentUpdated,
   nearbyPoints = [],
 }: VenueSidebarProps) {
+  const visitedLookup = useVisitedPlaceLookup();
   const hasMap = typeof venue.latitude === 'number' && typeof venue.longitude === 'number';
+  const igHandle = instagramHandle(venue.instagram);
   // social_links is jsonb (Json on the generated row type), so narrow it to a
   // plain object before merging the dedicated `instagram` column into it.
   const storedLinks =
@@ -673,12 +709,11 @@ export function VenueLocationContact({
     !Array.isArray(venue.social_links)
       ? (venue.social_links as Record<string, unknown>)
       : {};
-  const socialLinks = venue.instagram
-    ? { ...storedLinks, instagram: buildProfileUrl('instagram', venue.instagram) }
+  const socialLinks = igHandle
+    ? { ...storedLinks, instagram: buildProfileUrl('instagram', igHandle) }
     : storedLinks;
-  const hasSocials = Object.keys(normalizeSocialLinks(socialLinks)).length > 0;
   const hasContact = Boolean(
-    venue.address || venue.phone || venue.email || venue.website || hasSocials,
+    venue.address || venue.phone || venue.email || venue.website || hasSocialLinks(socialLinks),
   );
 
   if (!hasMap && !hasContact) return null;
@@ -702,6 +737,7 @@ export function VenueLocationContact({
         <MapInset className="border-0 p-0">
           <EntityMap
             center={[Number(venue.longitude), Number(venue.latitude)]}
+            visitedLookup={visitedLookup}
             zoom={15}
             height={nearbyPoints.length > 0 ? 220 : 180}
             markers={[
@@ -712,6 +748,8 @@ export function VenueLocationContact({
                 name: venue.name ?? 'Venue',
                 type: 'venues',
                 primary: true,
+                entityType: 'venue' as const,
+                entityId: venue.id,
               },
               ...nearbyPoints,
             ]}

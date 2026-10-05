@@ -54,6 +54,7 @@ import { NestedEntityCard } from '@/components/transit/NestedEntityCard';
 import { getEventLiveState } from '@/lib/event-countdown';
 import { GlossaryLinkedText } from '@/components/tags/GlossaryLinkedText';
 import { localizedField, type I18nMap } from '@/lib/localizeContent';
+import { useVisitedPlaceLookup } from '@/hooks/useVisitedPlaceLookup';
 
 export type EventWithRelations = Database['public']['Tables']['events']['Row'] & {
   social_links?: Record<string, string> | null;
@@ -960,6 +961,7 @@ interface WhereProps {
 }
 
 export function EventWhere({ event, venueRef, countryId, onOrganizerClick }: WhereProps) {
+  const visitedLookup = useVisitedPlaceLookup();
   const lat = event.latitude ?? event.venues?.latitude;
   const lng = event.longitude ?? event.venues?.longitude;
   const hasNamedVenue = Boolean(event.venues?.name || event.venue_name);
@@ -1004,6 +1006,7 @@ export function EventWhere({ event, venueRef, countryId, onOrganizerClick }: Whe
           {hasMap && (
             <EntityMap
               center={[Number(lng), Number(lat)]}
+              visitedLookup={visitedLookup}
               zoom={15}
               height={220}
               markers={[
@@ -1015,6 +1018,8 @@ export function EventWhere({ event, venueRef, countryId, onOrganizerClick }: Whe
                   subtitle: event.venues?.name,
                   type: 'events',
                   primary: true,
+                  entityType: 'event' as const,
+                  entityId: event.id,
                 },
                 ...nearby,
               ]}

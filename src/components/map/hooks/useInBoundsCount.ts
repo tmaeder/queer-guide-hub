@@ -1,15 +1,13 @@
 /* eslint-disable react-hooks/refs -- receives the component-owned map + latest-value refs read inside the debounced recompute; documented MapLibre integration pattern. */
 import { useCallback, useEffect, useRef, useState, type MutableRefObject } from 'react';
 import * as maplibregl from 'maplibre-gl';
+import { EMPTY_FAV } from '@/components/map/mapDebug';
 import { summaryFromFeature, type MapPointSummary } from '@/components/map/mapPoint';
 import type { PointFeature } from '@/hooks/useViewportPoints';
 import type { useVisitorLocation } from '@/hooks/useVisitorLocation';
 import { calculateDistanceKm } from '@/utils/calculateDistance';
 
 type VisitorGeo = ReturnType<typeof useVisitorLocation>['location'];
-
-// Stable empty favorites set so effects don't churn when none are passed.
-const EMPTY_FAV: ReadonlySet<string> = new Set<string>();
 
 interface UseInBoundsCountParams {
   mapRef: MutableRefObject<maplibregl.Map | null>;
@@ -81,7 +79,8 @@ export function useInBoundsCount({
         const summaries = feats.slice(0, 80).map((f) => {
           const sum = summaryFromFeature(f);
           sum.favorited = favSet.has(sum.id);
-          if (geo) sum.distanceKm = calculateDistanceKm(geo.latitude, geo.longitude, sum.lat, sum.lng);
+          if (geo)
+            sum.distanceKm = calculateDistanceKm(geo.latitude, geo.longitude, sum.lat, sum.lng);
           return sum;
         });
         cb(summaries);

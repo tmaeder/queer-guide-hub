@@ -1483,6 +1483,23 @@
     "queerOwnedBadge": "[ES] Queer-owned"
   },
   "profile": {
+    "username": {
+      "autoAssignedBadge": "asignado automáticamente",
+      "policyAutoAssigned": "Lo asignamos por ti: tu primer cambio no cuenta.",
+      "policyStandard": "Se puede cambiar una vez al año, con 30 días después para corregirlo. Tu nombre anterior queda reservado y redirige durante 90 días.",
+      "safetyNote": "¿Necesitas un cambio por motivos de seguridad (por ejemplo, un deadname)? Escribe al soporte: sin preguntas.",
+      "change": "Cambiar nombre de usuario",
+      "changingFrom": "Cambiando de @{{username}}. Esto cuenta como tu cambio para los próximos 12 meses, pero tienes 30 días para corregirlo; el nombre anterior redirige durante 90 días.",
+      "confirmChange": "Confirmar cambio",
+      "claim": "Elegir nombre de usuario",
+      "notChangedTitle": "Nombre de usuario sin cambiar",
+      "errorGeneric": "No se pudo cambiar el nombre de usuario. Inténtalo de nuevo.",
+      "errorUnavailable": "Ese nombre de usuario está ocupado o reservado.",
+      "errorRateLimited": "Puedes cambiar tu nombre de usuario una vez al año. Próximo cambio: {{date}}.",
+      "rateLimitedFallbackDate": "más adelante",
+      "updatedTitle": "Nombre de usuario actualizado",
+      "updatedBody": "Ahora eres @{{username}}."
+    },
     "editProfile": "Editar perfil",
     "pronouns": "Pronombres",
     "location": "Ubicación",
@@ -2716,14 +2733,6 @@
       "thisMonth": "[ES] This month",
       "saved": "[ES] Saved"
     },
-    "lens": {
-      "groupLabel": "[ES] Map view",
-      "pins": "[ES] Pins",
-      "density": "[ES] Density",
-      "routes": "[ES] Routes",
-      "boundary": "[ES] Boundary",
-      "combined": "[ES] Combined"
-    },
     "sheet": {
       "title": "[ES] Map options",
       "view": "[ES] View",
@@ -2810,6 +2819,24 @@
       "queerOwned": "[ES] Queer-owned",
       "tags_one": "[ES] {{count}} tag",
       "tags_other": "[ES] {{count}} tags"
+    },
+    "view": {
+      "stations": "Estaciones",
+      "heat": "Densidad",
+      "areas": "Zonas",
+      "routes": "Rutas"
+    },
+    "lines": {
+      "M": "Lugares",
+      "E": "Eventos",
+      "C": "Comunidad y apoyo",
+      "T": "Viaje y alojamiento"
+    },
+    "key": {
+      "saved": "Insignia = guardado por ti"
+    },
+    "notice": {
+      "noRoute": "Aún no hay ninguna ruta que mostrar aquí."
     }
   },
   "cities": {

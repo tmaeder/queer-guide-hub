@@ -1666,6 +1666,23 @@
     "queerOwnedBadge": "[DE] Queer-owned"
   },
   "profile": {
+    "username": {
+      "autoAssignedBadge": "automatisch vergeben",
+      "policyAutoAssigned": "Wir haben ihn für dich vergeben. Deine erste Änderung zählt nicht.",
+      "policyStandard": "Einmal pro Jahr änderbar, danach 30 Tage Zeit für eine Korrektur. Dein alter Name bleibt reserviert und leitet 90 Tage weiter.",
+      "safetyNote": "Du brauchst eine Änderung aus Sicherheitsgründen (z. B. ein Deadname)? Melde dich beim Support, ohne Rückfragen.",
+      "change": "Benutzernamen ändern",
+      "changingFrom": "Änderung von @{{username}}. Das zählt als deine Änderung für die nächsten 12 Monate, du hast aber 30 Tage für eine Korrektur; der alte Name leitet 90 Tage weiter.",
+      "confirmChange": "Änderung bestätigen",
+      "claim": "Benutzernamen wählen",
+      "notChangedTitle": "Benutzername nicht geändert",
+      "errorGeneric": "Benutzername konnte nicht geändert werden. Versuch es erneut.",
+      "errorUnavailable": "Dieser Benutzername ist belegt oder reserviert.",
+      "errorRateLimited": "Du kannst deinen Benutzernamen einmal pro Jahr ändern. Nächste Änderung: {{date}}.",
+      "rateLimitedFallbackDate": "später",
+      "updatedTitle": "Benutzername aktualisiert",
+      "updatedBody": "Du bist jetzt @{{username}}."
+    },
     "editProfile": "Profil bearbeiten",
     "pronouns": "Pronomen",
     "location": "Standort",
@@ -2716,14 +2733,6 @@
       "thisMonth": "Diesen Monat",
       "saved": "Gespeichert"
     },
-    "lens": {
-      "groupLabel": "Kartenansicht",
-      "pins": "Pins",
-      "density": "Dichte",
-      "routes": "Routen",
-      "boundary": "Grenzen",
-      "combined": "Kombiniert"
-    },
     "sheet": {
       "title": "Kartenoptionen",
       "view": "Ansicht",
@@ -2810,6 +2819,24 @@
       "queerOwned": "Queer-geführt",
       "tags_one": "{{count}} Tag",
       "tags_other": "{{count}} Tags"
+    },
+    "view": {
+      "stations": "Stationen",
+      "heat": "Dichte",
+      "areas": "Gebiete",
+      "routes": "Routen"
+    },
+    "lines": {
+      "M": "Orte",
+      "E": "Events",
+      "C": "Community & Hilfe",
+      "T": "Reise & Übernachtung"
+    },
+    "key": {
+      "saved": "Abzeichen = von dir gespeichert"
+    },
+    "notice": {
+      "noRoute": "Hier gibt es noch keine Route."
     }
   },
   "cities": {

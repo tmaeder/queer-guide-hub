@@ -1487,6 +1487,23 @@
     "queerOwnedBadge": "[FR] Queer-owned"
   },
   "profile": {
+    "username": {
+      "autoAssignedBadge": "attribué automatiquement",
+      "policyAutoAssigned": "Nous l'avons choisi pour toi. Ton premier changement ne compte pas.",
+      "policyStandard": "Modifiable une fois par an, avec 30 jours ensuite pour le corriger. Ton ancien nom reste réservé et redirige pendant 90 jours.",
+      "safetyNote": "Besoin d'un changement pour des raisons de sécurité (par exemple un deadname) ? Contacte le support, sans questions.",
+      "change": "Changer de nom d'utilisateur",
+      "changingFrom": "Changement depuis @{{username}}. Cela compte comme ton changement pour les 12 prochains mois, mais tu as 30 jours pour le corriger ; l'ancien nom redirige pendant 90 jours.",
+      "confirmChange": "Confirmer le changement",
+      "claim": "Choisir un nom d'utilisateur",
+      "notChangedTitle": "Nom d'utilisateur non modifié",
+      "errorGeneric": "Impossible de changer le nom d'utilisateur. Réessaie.",
+      "errorUnavailable": "Ce nom d'utilisateur est pris ou réservé.",
+      "errorRateLimited": "Tu peux changer ton nom d'utilisateur une fois par an. Prochain changement : {{date}}.",
+      "rateLimitedFallbackDate": "plus tard",
+      "updatedTitle": "Nom d'utilisateur mis à jour",
+      "updatedBody": "Tu es maintenant @{{username}}."
+    },
     "editProfile": "Modifier le profil",
     "pronouns": "Pronoms",
     "location": "Localisation",
@@ -2720,14 +2737,6 @@
       "thisMonth": "[FR] This month",
       "saved": "[FR] Saved"
     },
-    "lens": {
-      "groupLabel": "[FR] Map view",
-      "pins": "[FR] Pins",
-      "density": "[FR] Density",
-      "routes": "[FR] Routes",
-      "boundary": "[FR] Boundary",
-      "combined": "[FR] Combined"
-    },
     "sheet": {
       "title": "[FR] Map options",
       "view": "[FR] View",
@@ -2814,6 +2823,24 @@
       "queerOwned": "[FR] Queer-owned",
       "tags_one": "[FR] {{count}} tag",
       "tags_other": "[FR] {{count}} tags"
+    },
+    "view": {
+      "stations": "Stations",
+      "heat": "Densité",
+      "areas": "Zones",
+      "routes": "Itinéraires"
+    },
+    "lines": {
+      "M": "Lieux",
+      "E": "Événements",
+      "C": "Communauté et soutien",
+      "T": "Voyage et hébergement"
+    },
+    "key": {
+      "saved": "Badge = enregistré par vous"
+    },
+    "notice": {
+      "noRoute": "Aucun itinéraire à afficher ici pour l'instant."
     }
   },
   "cities": {

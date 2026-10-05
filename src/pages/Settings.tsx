@@ -245,7 +245,7 @@ function AccordionSection({
         id={`settings-section-${id}`}
         className={cn(
           'rounded-container bg-card transition-colors scroll-mt-24',
-          active ? 'border border-foreground/30' : 'border-border',
+          active ? 'bg-surface-container-high' : 'bg-surface-container',
         )}
       >
         <CollapsibleTrigger asChild>
@@ -477,7 +477,7 @@ function ProfileSettingsContent({
 
       {/* Avatar editor — opened from the hero, inline (no pop-over) */}
       {activeSection === 'avatar' && (
-        <Card id="settings-section-avatar" className="border scroll-mt-24 border-foreground/30">
+        <Card id="settings-section-avatar" className="scroll-mt-24">
           <CardContent className="pt-6">
             <div className="flex items-center justify-between mb-4">
               <p className="font-semibold">Your avatar</p>
@@ -665,15 +665,26 @@ function ProfileSettingsContent({
         </CardContent>
       </Card>
 
-      {/* Sticky auto-save status bar */}
-      <div className="fixed inset-x-0 bottom-0 z-30 bg-background/95">
-        <PageContainer flush className="py-4">
+      {/* Sticky auto-save status bar, as a floating island rather than an
+          edge-to-edge bar. The fill moved OFF this wrapper and onto the plate
+          inside it: a full-bleed element cannot satisfy the rounded-surface
+          contract, because its bottom corners are the viewport's own and the
+          audit reads all four radii. Same shape as AudioMiniBar and
+          CookieConsentBanner — the wrapper positions, the plate carries the
+          surface.
+
+          The bottom offset clears the mobile dock below `md` (MobileBottomNav
+          is `md:hidden` and sits at `--island-inset`, so without the 4.5rem the
+          island covers the only navigation a phone has); above `md` there is no
+          dock and the plain inset is enough. */}
+      <div className="fixed inset-x-[var(--island-inset)] bottom-[calc(var(--island-inset)+env(safe-area-inset-bottom,0px)+4.5rem)] z-30 md:bottom-[calc(var(--island-inset)+env(safe-area-inset-bottom,0px))]">
+        <div className="rounded-container bg-card px-4 py-4 shadow-soft-lg">
           <SaveStatusLine
             status={saveStatus}
             onRetry={() => handleSave(false)}
             onSignIn={() => navigate('/auth')}
           />
-        </PageContainer>
+        </div>
       </div>
     </PageContainer>
   );

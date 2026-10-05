@@ -44,7 +44,7 @@ function Calendar({ showOutsideDays = true, style, ...props }: CalendarProps) {
         }
         .rdp-day { padding: 0; }
         .rdp-day_button {
-          border-radius: 0;
+          border-radius: var(--radius-element);
           font-size: 0.875rem;
           width: 100%;
           margin: 0 auto;

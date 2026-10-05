@@ -1,7 +1,15 @@
 /* eslint-disable react-hooks/refs -- this component threads the initial-center ref through props during render; MapShell subscribes to .current itself. */
 import { useMemo, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import type { EntityMapMarker } from '@/components/map/EntityMap';
+import {
+  ENTITY_BULLET,
+  areaColor,
+  lineColor,
+  lineFor,
+  layerForEntityKey,
+  type MapStation,
+} from '@/components/map/mapDomain';
+import { glyphKeyFor } from '@/components/map/mapIcons';
 import { MapShell } from '@/components/map/MapShell';
 import type { SearchResult } from '@/hooks/useSearch';
 
@@ -13,42 +21,64 @@ interface ResultsMapViewProps {
 /** Upper bound on markers rendered at once — protects MapLibre on huge result sets. */
 const MAX_MARKERS = 300;
 
-const TYPE_TO_MAP_KIND: Record<string, EntityMapMarker['type']> = {
-  venue: 'venues',
-  venues: 'venues',
-  event: 'events',
-  events: 'events',
-  city: 'cities',
-  cities: 'cities',
-  country: 'countries',
-  countries: 'countries',
-};
+// The singular→plural join lives in `mapDomain.layerForEntityKey`, which takes
+// either spelling. The partial table that used to sit here covered four of the
+// seven layers, so a hotel / restroom / village hit resolved to `undefined`.
 
 /**
  * Map view for search results.
  *
- * `results` sets the opening camera and decides whether there is anything to
- * show at all; the pins themselves come from MapShell, which fetches by
- * viewport. Selection and "search this area" are MapShell's too (the `search`
- * preset sets `enableSearchThisArea`) — the old `onSelect` / `onAreaSearch`
- * props were dropped 2026-08-10 because the MapShell branch had never called
- * them, so SearchResults was passing two callbacks into a void.
+ * **The results are now what the map DRAWS.** Until this change the memo below
+ * built the markers correctly and then threw them away: `MapShell` had no data
+ * prop, so it always fetched by viewport and `/search?q=sauna&view=map`
+ * rendered generic unfiltered venues — a map that looked like it was answering
+ * the query and was not.
+ *
+ * `ordered: true` is load-bearing. `results` arrives in RELEVANCE order, and
+ * the rail's default ranking (featured → live → nearest → alphabetical) is
+ * wrong for that set: it would put a featured bar above the thing the reader
+ * actually searched for.
+ *
+ * `SURFACE_PRESETS.search` declares `filters: []` for the same reason — on an
+ * explicit source the client-side narrowing in `useViewportPoints` never runs,
+ * so a filter chip would claim to narrow and not narrow. These stations are
+ * already filtered; that is what owning the set means.
  */
 export function ResultsMapView({ results, height = 480 }: ResultsMapViewProps) {
   const { t } = useTranslation();
   const initialCenterRef = useRef<[number, number] | null>(null);
-  const markers: EntityMapMarker[] = useMemo(() => {
-    const out: EntityMapMarker[] = [];
+  const stations: MapStation[] = useMemo(() => {
+    const out: MapStation[] = [];
     for (const r of results) {
       const geo = r._geoloc;
       if (!geo || typeof geo.lat !== 'number' || typeof geo.lng !== 'number') continue;
+      const layer = layerForEntityKey(r.type);
+      // A hit whose type has no map layer (a tag, a personality) cannot be a
+      // station. Dropped rather than drawn at [0,0], which is the Atlantic.
+      if (!layer) continue;
+      const line = lineFor(layer, r.category);
       out.push({
-        id: r.objectID,
+        // The feature-id convention every hover / selection / saved lookup is
+        // built on. `objectID` is the bare uuid, so it has to be prefixed or
+        // nothing matches.
+        id: `${r.type}-${r.objectID}`,
+        type: layer,
+        entity: ENTITY_BULLET[layer],
+        line,
         lat: geo.lat,
         lng: geo.lng,
         name: r.title,
         subtitle: r.location || undefined,
-        type: TYPE_TO_MAP_KIND[r.type],
+        linkTo: r.slug ? `/${r.type}/${r.slug}` : undefined,
+        color: line ? lineColor(line) : areaColor(),
+        iconKey: glyphKeyFor(layer, r.category),
+        category: r.category,
+        image: r.imageUrl,
+        // Search does not report either, and a default of `true` would ring
+        // every pin as featured or pulse it as live.
+        featured: false,
+        live: false,
+        distanceKm: r._distance_m != null ? r._distance_m / 1000 : undefined,
       });
     }
     // Cap markers to keep MapLibre geometry cheap. `results` already arrives in
@@ -65,17 +95,17 @@ export function ResultsMapView({ results, height = 480 }: ResultsMapViewProps) {
   }, [results]);
 
   const center: [number, number] = useMemo(() => {
-    if (markers.length === 0) return [0, 20];
+    if (stations.length === 0) return [0, 20];
     let lat = 0;
     let lng = 0;
-    for (const m of markers) {
+    for (const m of stations) {
       lat += m.lat;
       lng += m.lng;
     }
-    return [lng / markers.length, lat / markers.length];
-  }, [markers]);
+    return [lng / stations.length, lat / stations.length];
+  }, [stations]);
 
-  if (markers.length === 0) {
+  if (stations.length === 0) {
     return (
       <div
         className="flex items-center justify-center bg-muted text-muted-foreground text-sm"
@@ -93,8 +123,9 @@ export function ResultsMapView({ results, height = 480 }: ResultsMapViewProps) {
       surface="search"
       height={height}
       initialCenter={initialCenterRef.current}
-      initialZoom={markers.length === 1 ? 12 : 5}
+      initialZoom={stations.length === 1 ? 12 : 5}
       skipAutoFly
+      source={{ kind: 'points', stations, ordered: true }}
     />
   );
 }

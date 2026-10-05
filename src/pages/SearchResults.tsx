@@ -441,8 +441,8 @@ export default function SearchResults() {
               </div>
 
               <div className="flex items-center gap-2">
-                <div className="flex items-center">
-                  {availableViews.map((v, i) => {
+                <div className="flex items-center gap-1 rounded-element bg-surface-container p-1">
+                  {availableViews.map((v) => {
                     const meta = VIEW_META[v];
                     const Icon = meta.Icon;
                     return (
@@ -453,11 +453,7 @@ export default function SearchResults() {
                         onClick={() => setViewMode(v)}
                         aria-label={t(meta.labelKey, meta.label)}
                         aria-pressed={effectiveView === v}
-                        className={cn(
-                          i === 0 && 'rounded-r-none',
-                          i === availableViews.length - 1 && 'rounded-l-none',
-                          i > 0 && i < availableViews.length - 1 && 'rounded-none',
-                        )}
+                        className="rounded-badge"
                       >
                         <Icon className="h-4 w-4" />
                       </Button>

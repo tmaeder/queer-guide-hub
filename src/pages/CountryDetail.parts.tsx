@@ -8,12 +8,14 @@ import { venueStops, newsRows } from '@/components/transit/entityRows';
 import { LegalLine } from '@/components/rights/CountryLegalLine';
 import type { LegalStation } from '@/lib/rights/legalLine';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
+import { mapUrl } from '@/lib/mapContext';
 import LGBTJurisdictionInfo from '@/components/country/LGBTJurisdictionInfo';
 import { ReportButton } from '@/components/moderation/ReportButton';
 import { AdminEditButton } from '@/components/admin/AdminEditButton';
 import { TravelDealsSection } from '@/components/travel/TravelDealsSection';
 import { ActivitiesWidget } from '@/components/activities/ActivitiesWidget';
 import { supabase } from '@/integrations/supabase/client';
+import { useVisitedPlaceLookup } from '@/hooks/useVisitedPlaceLookup';
 
 // CountryDetail accesses joined fields (continents, regions) on a row that doesn't
 // declare them in the generated types. Mirror the page's existing loose typing.
@@ -232,7 +234,7 @@ export function CountryTravelTab({
   // suppressed in favour of a sober pointer to the rights section.
   if (hasAnyCriminalizationSignal(country.lgbti_criminalization)) {
     return (
-      <div className="border flex gap-4 border-destructive p-4 sm:p-6">
+      <div className="flex gap-4 rounded-container bg-destructive/10 p-4 shadow-soft sm:p-6">
         <ShieldAlert size={18} aria-hidden="true" className="mt-0.5 shrink-0 text-destructive" />
         <div className="flex flex-col gap-2">
           <p className="text-body-lg font-bold">{noDealsTitle}</p>
@@ -310,6 +312,7 @@ export function CountryMapTab({
   caption?: string;
   openLabel?: string;
 }) {
+  const visitedLookup = useVisitedPlaceLookup();
   if (typeof country.latitude !== 'number' || typeof country.longitude !== 'number') return null;
   const center: [number, number] = [Number(country.longitude), Number(country.latitude)];
 
@@ -318,6 +321,7 @@ export function CountryMapTab({
       <EntityMap
         center={center}
         zoom={4}
+        visitedLookup={visitedLookup}
         height={280}
         markers={[
           {
@@ -327,12 +331,26 @@ export function CountryMapTab({
             name: country.name ?? 'Country',
             type: 'countries',
             primary: true,
+            // `type` is the map LAYER ('countries'); `entityType` is the
+            // place-mark vocabulary ('country'). Two different namespaces
+            // that differ by one letter, which is exactly how a visited
+            // lookup silently never matches.
+            entityType: 'country' as const,
+            entityId: country.id,
           },
         ]}
       />
       {openLabel && (
         <LocalizedLink
-          to={`/map?country=${encodeURIComponent(country.name)}`}
+          /** Same dead param as the city link — `?country=` was never in the
+           *  schema. The country centroid is already here; zoom 4 is country
+           *  scale, where the city rail reads as a set of places rather than
+           *  one street. */
+          to={mapUrl({
+            center: [Number(country.longitude), Number(country.latitude)],
+            zoom: 4,
+            lines: ['M', 'E'],
+          })}
           className="block border-t border-border-hairline px-2 py-2 text-2xs font-bold uppercase tracking-label no-underline transition-colors hover:bg-foreground hover:text-background"
         >
           {openLabel}

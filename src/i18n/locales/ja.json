@@ -1483,6 +1483,23 @@
     "queerOwnedBadge": "[JA] Queer-owned"
   },
   "profile": {
+    "username": {
+      "autoAssignedBadge": "自動割り当て",
+      "policyAutoAssigned": "こちらで設定しました。最初の変更は回数に含まれません。",
+      "policyStandard": "変更は年に1回です。変更後30日間は修正できます。以前の名前は確保され、90日間リダイレクトされます。",
+      "safetyNote": "安全上の理由（デッドネームなど）で変更が必要ですか？サポートにご連絡ください。理由はお尋ねしません。",
+      "change": "ユーザー名を変更",
+      "changingFrom": "@{{username}} から変更します。今後12か月間の変更としてカウントされますが、30日間は修正できます。以前の名前は90日間リダイレクトされます。",
+      "confirmChange": "変更を確定",
+      "claim": "ユーザー名を設定",
+      "notChangedTitle": "ユーザー名は変更されていません",
+      "errorGeneric": "ユーザー名を変更できませんでした。もう一度お試しください。",
+      "errorUnavailable": "そのユーザー名は使用中または予約済みです。",
+      "errorRateLimited": "ユーザー名は年に1回変更できます。次回の変更: {{date}}",
+      "rateLimitedFallbackDate": "後ほど",
+      "updatedTitle": "ユーザー名を更新しました",
+      "updatedBody": "現在のユーザー名は @{{username}} です。"
+    },
     "editProfile": "プロフィールを編集",
     "pronouns": "代名詞",
     "location": "場所",
@@ -2714,14 +2731,6 @@
       "thisMonth": "[JA] This month",
       "saved": "[JA] Saved"
     },
-    "lens": {
-      "groupLabel": "[JA] Map view",
-      "pins": "[JA] Pins",
-      "density": "[JA] Density",
-      "routes": "[JA] Routes",
-      "boundary": "[JA] Boundary",
-      "combined": "[JA] Combined"
-    },
     "sheet": {
       "title": "[JA] Map options",
       "view": "[JA] View",
@@ -2808,6 +2817,24 @@
       "queerOwned": "[JA] Queer-owned",
       "tags_one": "[JA] {{count}} tag",
       "tags_other": "[JA] {{count}} tags"
+    },
+    "view": {
+      "stations": "駅",
+      "heat": "密度",
+      "areas": "エリア",
+      "routes": "ルート"
+    },
+    "lines": {
+      "M": "スポット",
+      "E": "イベント",
+      "C": "コミュニティとサポート",
+      "T": "旅行と宿泊"
+    },
+    "key": {
+      "saved": "バッジ = 保存済み"
+    },
+    "notice": {
+      "noRoute": "ここに表示するルートはまだありません。"
     }
   },
   "cities": {

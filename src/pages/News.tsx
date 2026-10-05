@@ -210,7 +210,7 @@ export default function News() {
               </div>
               {/* asChild, not a Link wrapping a Button — that nests a <button>
                   inside an <a>, which is invalid HTML. */}
-              <Button asChild variant="outline" className="gap-2">
+              <Button asChild variant="default" className="gap-2">
                 <LocalizedLink to="/news/all" className="no-underline">
                   {t('pages.news.openArchive', 'Open archive')}
                   <ArrowRight size={16} />
