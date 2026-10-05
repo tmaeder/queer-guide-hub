@@ -108,7 +108,7 @@ export function ShareEntityDialog({ open, onOpenChange, entity }: ShareEntityDia
   const buildTextMessage = () => {
     const url = `${window.location.origin}${entity.path}`;
     const parts = [
-      `📅 ${entity.title}`,
+      entity.entity_table === 'events' ? `📅 ${entity.title}` : entity.title,
       ...(entity.gated ? [] : ([entity.subtitle].filter(Boolean) as string[])),
       url,
     ];

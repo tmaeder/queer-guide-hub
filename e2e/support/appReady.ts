@@ -26,11 +26,81 @@ import type { Page } from '@playwright/test';
  * `networkidle`, which could fire before the stylesheet had applied at all.
  */
 export async function waitForAppReady(page: Page, timeout = 30_000): Promise<void> {
-  await page.waitForFunction(
-    () => (document.getElementById('root')?.children.length ?? 0) > 0,
-    undefined,
-    { timeout },
-  );
+  try {
+    await page.waitForFunction(
+      () => (document.getElementById('root')?.children.length ?? 0) > 0,
+      undefined,
+      { timeout },
+    );
+  } catch (err) {
+    // An empty `#root` is the least self-explanatory failure in this suite. The
+    // bare timeout says only "React never mounted", which is equally consistent
+    // with a slow lazy chunk, a module that threw, and a deploy window serving
+    // the SPA shell under a hashed `/assets/js/*.js` URL.
+    //
+    // That last one is REAL here and is the reason this branch exists: a
+    // nonexistent asset path on Pages returns `200 text/html` (measured), so a
+    // chunk the document references can resolve to HTML and the import fails
+    // with no 404 anywhere to point at. A status code alone is not the evidence
+    // — the CONTENT-TYPE is.
+    //
+    // Fetch what the document actually asked for and report the answer. Runs
+    // only on the failing branch, so the happy path pays nothing.
+    const probe = () =>
+      page.evaluate(async () => {
+        const srcs = [...document.querySelectorAll<HTMLScriptElement>('script[src]')].map(
+          (s) => s.src,
+        );
+        const probed = await Promise.all(
+          srcs.map(async (src) => {
+            try {
+              const r = await fetch(src, { cache: 'no-store' });
+              return `${r.status} ${r.headers.get('content-type') ?? '?'} ${src}`;
+            } catch (e) {
+              return `FETCH-FAILED ${String(e)} ${src}`;
+            }
+          }),
+        );
+        return {
+          url: location.href,
+          rootHtml: document.getElementById('root')?.innerHTML ?? '(no #root element at all)',
+          probed,
+        };
+      });
+
+    // The boot guard reloads through `?__fresh=` the moment it sees a failed
+    // chunk, which destroys the execution context underneath this evaluate —
+    // measured, verbatim: "Execution context was destroyed, most likely because
+    // of a navigation". That reload IS the symptom this branch exists to
+    // explain, so losing the report to it is the worst available outcome: the
+    // listing degrades to `(none found)` and the message then reads as a
+    // narrowed selector rather than as a guard that fired.
+    //
+    // So retry once after the navigation settles. A `?__fresh=` in the reported
+    // URL is itself a finding — it says the guard ran — which is why the URL is
+    // printed rather than swallowed.
+    let diag = await probe().catch(() => null);
+    if (!diag) {
+      await page.waitForLoadState('domcontentloaded', { timeout: 5_000 }).catch(() => {});
+      diag = await probe().catch((e) => ({
+        url: 'unknown',
+        rootHtml: `(diagnostic evaluate failed twice, incl. after settle: ${String(e)})`,
+        probed: [] as string[],
+      }));
+    }
+
+    throw new Error(
+      `#root never gained children at ${diag.url}\n` +
+        `  #root innerHTML: ${diag.rootHtml.slice(0, 200) || '(empty)'}\n` +
+        `  scripts the document referenced — status / content-type / url:\n` +
+        (diag.probed.length ? diag.probed.map((l) => `    ${l}`).join('\n') : '    (none found)') +
+        `\n  A JS chunk answering text/html is the deploy-window SPA shell, not a slow mount.\n` +
+        `  original: ${String(err)}`,
+      // The message already quotes the original, but Playwright prints the cause's
+      // stack too, which is where the real timeout frame lives.
+      { cause: err },
+    );
+  }
 
   // Non-fatal: a font that never resolves should not fail an a11y assertion.
   await page.evaluate(() => document.fonts.ready).catch(() => {});

@@ -169,3 +169,214 @@ describe('the producer refuses before it probes', () => {
     expect(fn).toContain('platform_skipped: platformSkipped');
   });
 });
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Second layer (99991791179135): the domain is the entity's own, the IMAGE is junk.
+
+const MIGRATION2 = '99991791179135_logo_denied_marks';
+const raw2 = readFileSync(
+  join(process.cwd(), 'supabase', 'migrations', `${MIGRATION2}.sql`),
+  'utf8',
+);
+const flat2 = norm(stripSql(raw2));
+
+describe('the denied-mark layer', () => {
+  it('keys on the content hash, which is the identity of the BYTES', () => {
+    // R2 is content-addressed, so two rows sharing this hash are provably
+    // showing the same picture — that is what made the defect provable and what
+    // makes a single denial cover every domain that produced it.
+    expect(flat2).toContain(
+      "select substring(coalesce(p_logo_url, '') from 'img\\.queer\\.guide/logos/([0-9a-f]{64})')",
+    );
+  });
+
+  it('constrains the key to a real sha256', () => {
+    expect(flat2).toMatch(/check \(sha256 ~ '\^\[0-9a-f\]\{64\}\$'\)/);
+  });
+
+  it('denies every mark that was read by hand, with its label', () => {
+    for (const [sha, label] of [
+      ['8bd7d2723083724e7e473263d5d3ea976e001ad3333b6c6cf2c02ae783b2bf02', 'WordPress'],
+      ['b32861f915ceff23135281d3c663e29e3d17fe316053150f27839bbcb939de17', 'HugeDomains'],
+      ['475a092f7f969a365778034744343c3942f79279e2c58ee65c41db9065a6bc94', 'Wix'],
+      ['b35d6b8246da05c8586ca6447eb677a478dad1bd0862122d3c344839e33c17e2', 'Sedo'],
+      ['03bb306a0ca821d48b99cac728a80ab9c8b04353454228d05d4ce193355b87ea', 'bare rainbow flag'],
+    ] as const) {
+      expect(flat2).toContain(`'${sha}', '${label}'`);
+    }
+  });
+
+  it('repairs venues and events, and NOT organizations', () => {
+    // Organizations store logos per-UUID in Supabase storage rather than
+    // content-addressed in R2, so their bytes have no shared identity to key on.
+    // A named gap, not an oversight.
+    expect(flat2).toContain("array['venues', 'events']");
+    expect(flat2).not.toContain("array['venues', 'events', 'organizations']");
+  });
+
+  it('keeps the mirror assertion, so a sweep that cleared everything also fails', () => {
+    expect(flat2).toContain('the repair took legitimate venue logos with it');
+    expect(flat2).toMatch(/if v_n < 5000 then/);
+  });
+
+  it('adds denied_mark_rows as a SECOND zero-invariant without losing the first', () => {
+    expect(flat2).toContain("'denied_mark_rows'");
+    expect(flat2).toContain("'platform_logo_rows'");
+    expect(flat2).toContain("'denied_mark_vocabulary_size'");
+  });
+
+  it('reports the mark hash on an advisory group, so the remedy is one INSERT', () => {
+    expect(flat2).toContain("'mark', mark");
+  });
+
+  it('keeps the restated sentinel service_role only', () => {
+    expect(flat2).toContain(
+      'revoke all on function public.logo_platform_signals() from public, anon, authenticated',
+    );
+  });
+});
+
+describe('the producer refuses a denied mark', () => {
+  const fn2 = readFileSync(
+    join(process.cwd(), 'supabase', 'functions', 'enrich-logos', 'index.ts'),
+    'utf8',
+  );
+
+  it('checks the mark AFTER mirroring — the hash does not exist before then', () => {
+    const mirror = fn2.indexOf('await mirrorLogoToR2(');
+    const check = fn2.indexOf('deniedMarks.has(mark)');
+    expect(mirror).toBeGreaterThan(-1);
+    expect(check).toBeGreaterThan(mirror);
+  });
+
+  it('stamps the row attempted instead of leaving it on the retry path', () => {
+    // A mirror failure leaves logo_fetched_at null so the row retries, which is
+    // right for a transient upload error and wrong here: the image is junk every
+    // time it is fetched.
+    expect(fn2).toContain('} else if (!logo || deniedMark) {');
+  });
+
+  it('reports the skips', () => {
+    expect(fn2).toContain('denied_mark_skipped: deniedMarkSkipped');
+  });
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Third layer (99991791179157): organizations, whose logos are logo.dev monograms.
+
+const MIGRATION3 = '99991791179157_organizations_logo_reprobe';
+const flat3 = norm(
+  stripSql(
+    readFileSync(join(process.cwd(), 'supabase', 'migrations', `${MIGRATION3}.sql`), 'utf8'),
+  ),
+);
+
+describe('the organizations re-probe', () => {
+  it('adds the bookkeeping column the batch protocol needs', () => {
+    // Without it a run has no way to say "examined, answer was no", so it would
+    // re-probe the same rows forever.
+    expect(flat3).toContain('add column if not exists logo_fetched_at timestamptz');
+  });
+
+  it('CHANGES NO LOGO — the decision belongs to the probe, not to a guess', () => {
+    // Neither share count nor byte size can tell a monogram from a real logo
+    // here (547 of 783 marks are singletons; the shared ones span 834 B to
+    // 103 kB and include a genuine chain logo), so clearing in SQL would destroy
+    // the real ones.
+    expect(flat3).not.toMatch(/update\s+(public\.)?organizations\s+set\s+logo_url\s*=\s*null/i);
+    expect(flat3).toContain('organization logos were modified by this migration');
+  });
+
+  it('asserts the work list is NON-EMPTY, so a green run cannot mean nothing', () => {
+    expect(flat3).toContain('the work list is empty, so the schedule would be a no-op');
+  });
+
+  it('authenticates with the vault internal secret, not an invented bearer token', () => {
+    // enrich-logos is gated by requireInternalOrAdmin; a bearer token produces a
+    // job that fires, 401s, and still records a successful dispatch.
+    expect(flat3).toContain(
+      "'x-internal-secret', (SELECT decrypted_secret FROM vault.decrypted_secrets WHERE name = 'internal_invoke_secret')",
+    );
+    expect(flat3).not.toMatch(/'Authorization', 'Bearer/);
+  });
+
+  it('registers in admin_automations, which is the record', () => {
+    expect(flat3).toContain("'enrich_logos_organizations'");
+    expect(flat3).toContain('the enrich_logos_organizations automation was not registered');
+  });
+});
+
+describe('the organizations worker', () => {
+  const fn3 = readFileSync(
+    join(process.cwd(), 'supabase', 'functions', 'enrich-logos', 'index.ts'),
+    'utf8',
+  );
+
+  it('clears only on an affirmative not_indexed, never on a failed probe', () => {
+    expect(fn3).toContain("if (probe.outcome === 'not_indexed')");
+    expect(fn3).toContain("cleared: 'logodev_monogram'");
+  });
+
+  it('aborts on unauthorized or rate_limited instead of writing rows off', () => {
+    // A failed probe is absence of evidence about the row, not evidence about it.
+    const w = fn3.slice(fn3.indexOf('async function reprobeLegacyOrgLogos'));
+    expect(w).toMatch(
+      /if \(probe\.outcome === 'unauthorized' \|\| probe\.outcome === 'rate_limited'\)/,
+    );
+    expect(w).toContain('aborted = probe.outcome');
+  });
+
+  it('MIGRATES a real logo to R2, which is what makes the denied-mark layer reach orgs', () => {
+    const w = fn3.slice(fn3.indexOf('async function reprobeLegacyOrgLogos'));
+    expect(w).toContain('await mirrorLogoToR2(probe.logo.bytes, probe.logo.contentType)');
+    expect(w).toContain('migrated_to_r2: true');
+  });
+
+  it('leaves a mirror failure unstamped so it retries', () => {
+    const w = fn3.slice(fn3.indexOf('async function reprobeLegacyOrgLogos'));
+    expect(w).toMatch(/mirrorFailed\+\+ \/\/ left unstamped on purpose/);
+  });
+
+  it('preserves the prior url on every disposition', () => {
+    const w = fn3.slice(fn3.indexOf('async function reprobeLegacyOrgLogos'));
+    expect(w).toContain('prior_url: priorUrl');
+  });
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 99991791182256 — the automation was registered, enabled, and wired to nothing.
+
+const flat4 = norm(
+  stripSql(
+    readFileSync(
+      join(
+        process.cwd(),
+        'supabase',
+        'migrations',
+        '99991791182256_organizations_logo_cron_schedule.sql',
+      ),
+      'utf8',
+    ),
+  ),
+);
+
+describe('the organizations cron is actually schedulable', () => {
+  it('sets the top-level schedule COLUMN, which is what the reconciler reads', () => {
+    // sync_automations_to_cron() branch (d) gates on `a.schedule IS NOT NULL`,
+    // not on action->>'schedule'. The original row set only the latter, so the
+    // job would never have been created while every surface showed it enabled.
+    expect(flat4).toContain("set schedule = '25 4 * * *'");
+  });
+
+  it('removes the duplicate cadence from action, leaving one source', () => {
+    expect(flat4).toContain("action = (action - 'schedule')");
+  });
+
+  it('asserts the RECONCILER INTENDS to create the job, not merely that a column is set', () => {
+    // Checking the column is a restatement of the UPDATE. The only check that
+    // would have caught the original defect is asking the reconciler, because
+    // every other property of the row was already correct.
+    expect(flat4).toContain('select public.sync_automations_to_cron(false) into v_plan');
+    expect(flat4).toContain("if not (v_plan -> 'recreated') ? 'enrich-logos-organizations' then");
+  });
+});

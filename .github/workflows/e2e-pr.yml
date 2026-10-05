@@ -209,6 +209,7 @@ jobs:
           # otherwise block PRs on any intentional visual change.
           npx playwright test \
             e2e/design-system.spec.ts \
+            e2e/rounded-surface-contract.spec.ts \
             --grep-invert "visual snapshots" \
             --reporter=line
       - name: Upload report

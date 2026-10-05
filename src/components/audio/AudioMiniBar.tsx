@@ -87,7 +87,7 @@ export function AudioMiniBar() {
             <button
               type="button"
               onClick={() => current && player.play(current)}
-              className="shrink-0 rounded-element border border-input px-4 py-2 text-13 font-bold"
+              className="shrink-0 rounded-element bg-surface-container-high px-4 py-2 text-13 font-bold shadow-soft"
             >
               {t('audio.retry', 'Retry')}
             </button>

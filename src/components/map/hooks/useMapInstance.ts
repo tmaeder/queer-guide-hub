@@ -12,6 +12,7 @@ import { getMapStyle } from '@/config/mapStyle';
 import { isWebglSupported } from '@/lib/webglSupport';
 import { loadGlyphImages } from '@/components/map/mapGlyphs';
 import { installBasemapFallback } from '@/components/map/basemapFallback';
+import { applyWhenStyleReady } from '@/components/map/mapStyleReady';
 import { exposeMapForDebug } from '@/components/map/mapDebug';
 import { armInitialFetchNet } from '@/components/map/hooks/initialFetchNet';
 import { DONUT_PREFIX, DONUT_PIXEL_RATIO, getDonutImage } from '@/components/map/clusterDonut';
@@ -58,11 +59,14 @@ interface UseMapInstanceParams {
 }
 
 /**
- * Map lifecycle: constructs the MapLibre instance + controls, wires the
- * load/movestart/moveend handlers, flies to the initial viewport, and tears the
- * whole thing down (cancelling rAF, unmounting the popup root, clearing spider
+ * Map lifecycle: constructs the MapLibre instance + controls, initialises the
+ * data layer as soon as the style is mutable, wires the movestart/moveend
+ * handlers, flies to the initial viewport, and tears the whole thing down (cancelling rAF, unmounting the popup root, clearing spider
  * markers, resetting coordination refs). The shared coordination refs stay
  * component-owned and are threaded in.
+ *
+ * There is deliberately NO `load` listener. It never fires when the visible
+ * tiles fail, and everything below used to hang off it — see `initialiseMap`.
  *
  * The init effect runs exactly once per mount. It used to re-run on
  * `basemapMode` (theme toggle → rebuild with the matching Protomaps flavor,
@@ -114,6 +118,8 @@ export function useMapInstance({
   }, [deferInitialFetch]);
   const didViewportFetchRef = useRef(false);
   const initialFetchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // Disposer for the style-readiness gate that drives initialisation (below).
+  const styleReadyRef = useRef<(() => void) | null>(null);
   // Detach fn for the basemap failover listener, cleared on teardown so it
   // cannot leak onto a dead map.
   const detachBasemapFallbackRef = useRef<(() => void) | null>(null);
@@ -141,9 +147,12 @@ export function useMapInstance({
       // dereference.
       scrollZoom: !linkToFullMap,
     });
-    // mapRef is published inside `load` (below), NOT here. Layer effects gate
-    // on `!mapRef.current`, and publishing early would let them call
+    // mapRef is published by `initialiseMap` (below), NOT here. Layer effects
+    // gate on `!mapRef.current`, and publishing early would let them call
     // addSource/addLayer against a style that is still loading, which throws.
+    // That publication used to hang off `map.on('load')`; it is gated on the
+    // style being MUTABLE now, because `load` never fires when the tiles fail
+    // — see the block comment on `initialiseMap`.
 
     map.addControl(new maplibregl.AttributionControl({ compact: true }), 'bottom-right');
     if (showNativeNav) {
@@ -202,7 +211,57 @@ export function useMapInstance({
       }
     });
 
-    map.on('load', () => {
+    /**
+     * Everything the data layer is gated on, driven by the style being MUTABLE
+     * rather than by MapLibre's `load` event.
+     *
+     * ── Why not `load` ──────────────────────────────────────────────────────
+     * MEASURED AGAINST PRODUCTION, 2026-10-04, at an explicit camera with a
+     * stubbed `/api/geo`, one variable (every `.pbf`/`.mvt` aborted), COUNTING
+     * events rather than sampling state:
+     *
+     *   tiles alive → load 1 (t≈22.9s), idle 1, moveend 0
+     *   tiles dead  → load 0, idle 0, moveend 0, error 9
+     *
+     * **`load` never fires when the visible tiles fail**, so a `/map` with a
+     * dead tile host came up with `sources: ["protomaps"]` and NOT ONE data
+     * layer — no pins, no clusters, no heatmap. MapLibre latches `load` on a
+     * render frame and an errored tile schedules no repaint, so the condition
+     * goes true and nothing re-evaluates it. Everything below used to live in
+     * `map.on('load')`, which made a tile outage withhold the one event the
+     * whole data layer was gated on.
+     *
+     * `moveend` fires ZERO times in BOTH arms — `Map.tsx` passes `skipAutoFly`
+     * for an explicit camera, so `deferInitialFetch` is false and nothing
+     * flies. A number identical on both sides of the one variable cannot be
+     * the cause, so this is NOT the `initialFetchNet` defect; that one is real
+     * and lives on the auto-fly path, which this URL never takes.
+     *
+     * ── Why `isStyleMutable` and NOT `isStyleLoaded()` ──────────────────────
+     * `mapStyleReady.ts`'s header forbids the public method by name: it also
+     * requires every tile manager to be loaded, so it "can sit false while a
+     * basemap source retries… trade a crash for a permanently blank map".
+     * Measured here with tiles dead: `style._loaded` is **true at 4.7 s while
+     * `isStyleLoaded()` is still false** (that flips at ~9.7 s, with NO event
+     * announcing it). So the public method is both later and tiles-dependent —
+     * a fix built on it is one hung-rather-than-aborted tile from being inert,
+     * which is the `basemapFallback` lesson. `isStyleMutable` reads the exact
+     * flag `Style._checkLoaded()` throws on, so it needs no poll and is
+     * independent of tiles by construction.
+     *
+     * ── Consequence, stated rather than hidden ──────────────────────────────
+     * On the HEALTHY path this now runs at `_loaded` (~4.7 s) instead of at
+     * `load` (~22.9 s), for every map surface. Safe by the same rule: the only
+     * thing `addSource`/`addLayer` throw on is `style._loaded === false`, which
+     * this gate excludes — and the layer hooks (usePointLayers / useAreaLayers
+     * / useHeatmapLayer) are UNGATED, so they already depend on that guarantee
+     * rather than on `load`. Both arms were checked for the absence of "Style
+     * is not done loading"; 0 occurrences.
+     *
+     * This needs no `VITE_BASEMAP_FALLBACK_TILE_URL`: stations come from the
+     * data API, not the tile host, so they plot with no basemap at all.
+     */
+    const initialiseMap = () => {
       mapRef.current = map;
       setMapReady(true);
       // Rasterize category glyphs into map images (safe no-op on failure).
@@ -238,7 +297,13 @@ export function useMapInstance({
         // Canvas may not be laid out yet — retry after paint
         requestAnimationFrame(() => tryInitialFetch());
       }
-    });
+    };
+
+    // Applies synchronously when the style is already mutable, else on the
+    // `styledata` MapLibre fires right after `Style._load` sets the flag. Runs
+    // exactly once: `applyWhenStyleReady` settles after a successful apply and
+    // detaches itself.
+    styleReadyRef.current = applyWhenStyleReady(map, initialiseMap);
 
     map.on('movestart', () => {
       setIsCounterStale(true);
@@ -280,6 +345,8 @@ export function useMapInstance({
         clearTimeout(initialFetchTimerRef.current);
         initialFetchTimerRef.current = null;
       }
+      styleReadyRef.current?.();
+      styleReadyRef.current = null;
       detachBasemapFallbackRef.current?.();
       detachBasemapFallbackRef.current = null;
       const r = popupRootRef.current;
