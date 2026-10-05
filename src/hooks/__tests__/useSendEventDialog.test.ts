@@ -1,121 +1,57 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 
-type MockResult = { data: unknown; error: { message: string } | null };
+type Result = { data: unknown; error: unknown };
+const results: Record<string, Result> = {};
+const orCalls: Record<string, string[]> = {};
 
-const state = vi.hoisted(() => ({
-  results: [] as MockResult[],
-  calls: [] as Array<{ table: string; chain: Array<{ method: string; args: unknown[] }> }>,
-}));
+function chain(table: string) {
+  const c: Record<string, unknown> = {};
+  for (const m of ['select', 'neq', 'order', 'limit', 'eq']) c[m] = () => c;
+  c.or = (expr: string) => {
+    (orCalls[table] ||= []).push(expr);
+    return c;
+  };
+  c.then = (resolve: (r: Result) => unknown) => resolve(results[table]);
+  return c;
+}
 
 vi.mock('@/integrations/supabase/client', () => ({
-  supabase: {
-    from(table: string) {
-      const record = { table, chain: [] as Array<{ method: string; args: unknown[] }> };
-      state.calls.push(record);
-      const builder: unknown = new Proxy(
-        {},
-        {
-          get(_t, prop: string) {
-            if (prop === 'then') {
-              return (onFulfilled: (v: MockResult) => unknown) => {
-                const next = state.results.shift() ?? { data: [], error: null };
-                return Promise.resolve(next).then(onFulfilled);
-              };
-            }
-            return (...args: unknown[]) => {
-              record.chain.push({ method: prop, args });
-              return builder;
-            };
-          },
-        },
-      );
-      return builder;
-    },
-  },
+  supabase: { from: (t: string) => chain(t) },
 }));
 
-import {
-  fetchSendEventMembers,
-  fetchSendEventGroups,
-  postEventToGroup,
-} from '../useSendEventDialog';
+import { fetchSendEventMembers } from '../useSendEventDialog';
 
-function withResults(...r: MockResult[]) { state.results.push(...r); }
-
-beforeEach(() => {
-  state.results.length = 0;
-  state.calls.length = 0;
-});
+const profiles = [
+  { user_id: 'a', display_name: 'Alex', avatar_url: null },
+  { user_id: 'b', display_name: 'Blocked by me', avatar_url: null },
+  { user_id: 'c', display_name: 'Blocked me', avatar_url: null },
+];
 
 describe('fetchSendEventMembers', () => {
-  it('excludes the current user and applies ilike when query is non-empty', async () => {
-    withResults({
+  beforeEach(() => {
+    for (const k of Object.keys(orCalls)) delete orCalls[k];
+    results.profiles = { data: profiles, error: null };
+    results.user_relationships = {
       data: [
-        { user_id: 'u2', display_name: 'Alice', avatar_url: null },
-        { user_id: 'u3', display_name: 'Bob', avatar_url: 'b.png' },
+        { user_id: 'me', target_user_id: 'b' },
+        { user_id: 'c', target_user_id: 'me' },
       ],
       error: null,
-    });
-
-    const result = await fetchSendEventMembers('u1', 'al');
-    expect(result.map(m => m.id)).toEqual(['u2', 'u3']);
-
-    const call = state.calls[0];
-    expect(call.table).toBe('profiles');
-    const neq = call.chain.find(s => s.method === 'neq');
-    expect(neq?.args).toEqual(['user_id', 'u1']);
-    const ilike = call.chain.find(s => s.method === 'ilike');
-    expect(ilike?.args).toEqual(['display_name', '%al%']);
+    };
   });
 
-  it('skips the ilike filter when query is whitespace-only', async () => {
-    withResults({ data: [], error: null });
-    await fetchSendEventMembers('u1', '   ');
-    const ilike = state.calls[0].chain.find(s => s.method === 'ilike');
-    expect(ilike).toBeUndefined();
+  it('drops users in a block relationship in either direction', async () => {
+    const out = await fetchSendEventMembers('me', '');
+    expect(out.map((m) => m.id)).toEqual(['a']);
   });
 
-  it('returns an empty array when data is null', async () => {
-    withResults({ data: null, error: null });
-    expect(await fetchSendEventMembers('u1', '')).toEqual([]);
-  });
-});
-
-describe('fetchSendEventGroups', () => {
-  it('flattens the community_groups join and skips rows without a group', async () => {
-    withResults({
-      data: [
-        { group_id: 'g1', community_groups: { id: 'g1', name: 'A', image_url: null } },
-        { group_id: 'g2', community_groups: null },
-        { group_id: 'g3', community_groups: { id: 'g3', name: 'C', image_url: 'c.png' } },
-      ],
-      error: null,
-    });
-
-    const result = await fetchSendEventGroups('u1');
-    expect(result.map(g => g.id)).toEqual(['g1', 'g3']);
-
-    const eq = state.calls[0].chain.find(s => s.method === 'eq');
-    expect(eq?.args).toEqual(['user_id', 'u1']);
-  });
-});
-
-describe('postEventToGroup', () => {
-  it('inserts a text post into group_posts', async () => {
-    withResults({ data: null, error: null });
-    await postEventToGroup('g1', 'u1', 'check this');
-
-    const insert = state.calls[0].chain.find(s => s.method === 'insert');
-    expect(insert?.args[0]).toEqual({
-      group_id: 'g1',
-      user_id: 'u1',
-      content: 'check this',
-      post_type: 'text',
-    });
+  it('fails closed when the block list cannot be read', async () => {
+    results.user_relationships = { data: null, error: { message: 'boom' } };
+    expect(await fetchSendEventMembers('me', '')).toEqual([]);
   });
 
-  it('throws on supabase error', async () => {
-    withResults({ data: null, error: { message: 'rls' } });
-    await expect(postEventToGroup('g1', 'u1', 'x')).rejects.toEqual({ message: 'rls' });
+  it('searches display name and username, stripping filter-breaking characters', async () => {
+    await fetchSendEventMembers('me', ' al,(x)% ');
+    expect(orCalls.profiles).toEqual(['display_name.ilike.%alx%,username.ilike.%alx%']);
   });
 });

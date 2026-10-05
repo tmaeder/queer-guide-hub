@@ -4978,6 +4978,110 @@ const DISOWNED_PROSE_CEILING = 380
   }
 }
 
+// §25 — the venue category reclassifier: is it DRAINED, or BLIND?
+//
+// AFTER 99991791179763 THOSE TWO STATES RETURN THE SAME NUMBER. That migration fixed a
+// visit-once cursor which made the engine examine ZERO rows for months while its cron
+// reported success nightly. Verified on prod right after it applied, the healthy engine
+// now ALSO returns `examined: 0` — because the work is done. So the symptom and the
+// healthy reading are byte-identical, no check on `examined` can tell them apart, and
+// that is exactly how the defect survived unnoticed.
+//
+// `mappable_still_other` is the quantity that CAN: venues sitting at `other` whose sole
+// provider category the mapping could resolve. 0 while the cursor works, climbing as soon
+// as it regresses. Measured 0 on prod, so it is a real zero-invariant rather than a
+// baseline nobody re-reads.
+//
+// IT IS AGE-GATED, NOT LEVEL-GATED, and that is load-bearing rather than stylistic.
+// Venue creation does NOT happen at the 03:00 ingest cron: measured over 7 days, 12,228 of
+// 12,275 new venues were created between 17:00 and 20:00 UTC, and such a row is
+// legitimately uncategorised until the 03:35 reclassify. This scheduled run is safe only
+// because 03:35 precedes 06:00 — a `workflow_dispatch` at 19:00 on a level-gated count
+// would go red on rows minutes old. So the sentinel anchors on the last RECORDED
+// reclassify run rather than on any interval, and `last_reclassify_at` is printed: a NULL
+// there means nothing can be proven unreached, so the 0 is an absence of evidence.
+//
+// THE DENOMINATORS GATE TOO. Zero stuck rows over an emptied mapping is not a clean
+// corpus — it is a disabled tier with every count reading fine.
+{
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/rpc/venue_category_signals`, {
+    method: 'POST',
+    headers: HEADERS,
+    body: '{}',
+  })
+
+  if (res.status === 404) {
+    // The nightly run checks out `main` and calls the LIVE backend, so in any window
+    // where main carries this script and prod has not applied the migration the gate
+    // would go red for something that is not a defect.
+    console.warn('⚠ venue_category_signals() not deployed yet (migration 99991791183126?) — skipping §25')
+  } else if (!res.ok) {
+    // An HTTP 500 here is usually the 8 s statement_timeout, which service_role inherits.
+    // Either way it measured NOTHING and must not read as a pass.
+    console.error(`✗ venue_category_signals() returned HTTP ${res.status} — measured nothing`)
+    FAILED = true
+  } else {
+    const sig = await res.json()
+    let sectionOk = true
+
+    if (sig?.probe_ok !== true) {
+      console.error('✗ venue_category_signals() did not report probe_ok — it measured nothing')
+      FAILED = true
+      sectionOk = false
+    } else {
+      // Denominators FIRST, printed whether or not anything is wrong.
+      console.log(
+        `  venue categories: ${sig.mapping_rows} provider tag(s) mapped, ${sig.noise_rows} noise token(s), ` +
+          `${sig.stamped_total} venue(s) categorised from a source tag, ` +
+          `${sig.other_live} live still 'other' (${sig.other_total} incl. archived), ` +
+          `last reclassify ${sig.last_reclassify_at ?? 'NEVER RECORDED'}`,
+      )
+
+      if (!sig.last_reclassify_at) {
+        // Not a defect in the tier, but the age anchor is missing, so mappable_still_other
+        // is 0 because nothing can be proven unreached — absence of evidence. Warn rather
+        // than fail: the registry not recording a run is its own subsystem's problem.
+        console.warn(
+          "⚠ venue_category_reclassify has no recorded last_run_at — mappable_still_other reads 0 because " +
+            'nothing can be proven unreached, not because the corpus is clean',
+        )
+      }
+
+      if (!(sig.mapping_rows > 0)) {
+        console.error(
+          '✗ the venue category mapping is EMPTY — the source-beats-name tier is disabled, and ' +
+            'mappable_still_other reads 0 for that reason rather than because the corpus is clean',
+        )
+        FAILED = true
+        sectionOk = false
+      }
+
+      if (sig.rejected_tag_in_mapping > 0) {
+        console.error(
+          `✗ ${sig.rejected_tag_in_mapping} REFUSED provider tag(s) are in the venue category mapping. ` +
+            'restaurants / theaters / spas / ice cream / social service organizations / gay & lesbian bars ' +
+            'were each rejected on a measured error rate — read 99991791183126 before re-adding one.',
+        )
+        FAILED = true
+        sectionOk = false
+      }
+
+      if (sig.mappable_still_other > 0) {
+        console.error(
+          `✗ ${sig.mappable_still_other} venue(s) sit at category='other' while the mapping can resolve ` +
+            'their sole provider category — run_venue_category_reclassify is not reaching them. ' +
+            'Do NOT baseline this number: it is the only thing separating a DRAINED engine ' +
+            '(examined:0, healthy) from a BLIND one (examined:0, the 99991791179763 defect).',
+        )
+        FAILED = true
+        sectionOk = false
+      }
+    }
+
+    if (sectionOk) console.log('✓ venue category tier reaching every mappable row')
+  }
+}
+
 if (FAILED) {
   console.error('')
   console.error('✗ Pipeline health check FAILED — every section above ran; each ✗ line is a separate problem')

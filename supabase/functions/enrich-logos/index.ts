@@ -10,6 +10,8 @@ import { pickSiteIcons, isAcceptableLogoType, imageSize } from '../_shared/site-
 import { needsInkPlate, pngInk } from '../_shared/png-luminance.ts'
 import {
   loadPlatformRules,
+  loadDeniedMarks,
+  logoMarkSha256,
   platformWebsiteClass,
   websiteHost,
   type PlatformRule,
@@ -18,7 +20,7 @@ import {
 /**
  * enrich-logos — Batch logo enrichment, mirrored to our own R2/CDN.
  *
- * POST { table?: "venues"|"events"|"marketplace_brands"|"all", batch_size?: number, dry_run?: boolean }
+ * POST { table?: "venues"|"events"|"organizations"|"marketplace_brands"|"all", batch_size?: number, dry_run?: boolean }
  *
  * Finds records with a website but no logo_url. For each, fetches the REAL logo
  * from logo.dev (probed with `fallback=404`, so generic monograms are rejected),
@@ -64,13 +66,21 @@ Deno.serve(async (req) => {
     // unreadable or empty: an absent vocabulary disables the guard silently, and
     // this guard exists because an unchecked logo reaches thousands of rows.
     const platformRules = await loadPlatformRules(supabase)
+    // The second layer's vocabulary. Empty is a legitimate state here — unlike
+    // the platform list, this one is discovered incrementally from the
+    // sentinel's advisory arm rather than seeded up front.
+    const deniedMarks = await loadDeniedMarks(supabase)
 
     if (table === 'venues' || table === 'all') {
-      results.venues = await enrichTable(supabase, 'venues', 'website', batchSize, dryRun, platformRules)
+      results.venues = await enrichTable(supabase, 'venues', 'website', batchSize, dryRun, platformRules, deniedMarks)
     }
 
     if (table === 'events' || table === 'all') {
-      results.events = await enrichTable(supabase, 'events', 'website', batchSize, dryRun, platformRules)
+      results.events = await enrichTable(supabase, 'events', 'website', batchSize, dryRun, platformRules, deniedMarks)
+    }
+
+    if (table === 'organizations' || table === 'all') {
+      results.organizations = await reprobeLegacyOrgLogos(supabase, batchSize, dryRun, platformRules, deniedMarks)
     }
 
     if (table === 'marketplace_brands' || table === 'all') {
@@ -98,6 +108,7 @@ async function enrichTable(
   batchSize: number,
   dryRun: boolean,
   platformRules: readonly PlatformRule[],
+  deniedMarks: ReadonlySet<string>,
 ) {
   // Find records that still need a logo AND haven't been attempted yet.
   // Filtering on logo_fetched_at is what lets the batch terminate: a no-logo
@@ -134,6 +145,7 @@ async function enrichTable(
   let errors = 0
   let inkPlates = 0
   let platformSkipped = 0
+  let deniedMarkSkipped = 0
   const logodev = newTally()
   let aborted: 'unauthorized' | 'rate_limited' | null = null
 
@@ -196,9 +208,27 @@ async function enrichTable(
       }
 
       let logoUrl: string | null = null
+      let deniedMark = false
       if (logo) {
         logoUrl = await mirrorLogoToR2(logo.bytes, logo.contentType)
         if (!logoUrl) mirrorFailed++ // real logo, but upload failed → retry later
+
+        // SECOND LAYER. The domain passed the platform check — it IS this
+        // venue's own site — and the image that came back is still junk:
+        // WordPress's "W" from a self-hosted site, GoDaddy's heart from a parked
+        // one, a blank square. No domain rule can express that, so the key is
+        // the image, and R2 is content-addressed, which means the mirrored url
+        // already carries the identity of the bytes.
+        //
+        // Checked AFTER mirroring, necessarily — the hash does not exist until
+        // the bytes do. The upload is therefore spent either way; what this
+        // saves is the row, not the request.
+        const mark = logoUrl ? logoMarkSha256(logoUrl) : null
+        if (mark && deniedMarks.has(mark)) {
+          deniedMarkSkipped++
+          deniedMark = true
+          logoUrl = null
+        }
       }
 
       if (logoUrl) {
@@ -221,8 +251,15 @@ async function enrichTable(
         }
         await supabase.from(table).update(patch).eq('id', item.id)
         logosFound++
-      } else if (!logo) {
+      } else if (!logo || deniedMark) {
         // No real logo for this domain — mark attempted, keep photos.
+        //
+        // `deniedMark` joins this branch deliberately and must NOT fall through
+        // to the retry path above it: a mirror failure leaves `logo_fetched_at`
+        // null so the row is tried again, which is right for a transient upload
+        // error and wrong here. The image is junk every time it is fetched, so
+        // re-probing it nightly is the treadmill this repo has removed from
+        // three other queues.
         await supabase
           .from(table)
           .update({ logo_fetched_at: new Date().toISOString() })
@@ -254,7 +291,173 @@ async function enrichTable(
     // corpus is largely social-profile "websites", which is a data finding the
     // run should surface rather than absorb into `processed`.
     platform_skipped: platformSkipped,
+    denied_mark_skipped: deniedMarkSkipped,
     ink_plates: inkPlates,
+    mirror_failed: mirrorFailed,
+    errors,
+    logodev,
+    aborted,
+    remaining: (count || 0) - (dryRun ? items.length : 0),
+  }
+}
+
+
+/**
+ * organizations — re-probe the 2026-04-07 batch, which stored logo.dev's
+ * MONOGRAM as if it were a brand mark.
+ *
+ * Every organization logo was written in one batch to Supabase storage at
+ * `logos/venues/<uuid>.png`, one file per entity rather than content-addressed.
+ * Fetched and looked at, the biggest shared groups are a single dark letter on
+ * white — "T" on 28 unrelated organizations, "B" on 21, "C" on 18. That is
+ * logo.dev's first-letter fallback, which `probeRealLogo` already refuses for
+ * venues and events via `fallback=404`, because under the logo-first display
+ * rule a monogram MASKS the entity's own photographs.
+ *
+ * This is a separate function from `enrichTable` rather than a flag on it,
+ * because the work list is the inverse: `enrichTable` looks for rows with NO
+ * logo, and every row here HAS one. Folding the two together would mean a
+ * selector that means opposite things depending on a parameter.
+ *
+ * Neither the share count nor the byte size can tell a monogram from a real
+ * logo here — measured, 547 of 783 marks are singletons, and the shared ones
+ * span 834 B to 103 kB with a genuine chain logo among them. So the source is
+ * asked instead, which is the same evidence the venue path already trusts.
+ *
+ * A `found` row is MIRRORED TO R2 and its url replaced. That is the half that
+ * closes the gap rather than papering over it: organizations only become
+ * reachable by `logo_denied_marks` once their images are content-addressed.
+ */
+async function reprobeLegacyOrgLogos(
+  supabase: ReturnType<typeof getServiceClient>,
+  batchSize: number,
+  dryRun: boolean,
+  platformRules: readonly PlatformRule[],
+  deniedMarks: ReadonlySet<string>,
+) {
+  const { data: items, error } = await supabase
+    .from('organizations')
+    .select('id, enrichment_status, website, logo_url')
+    .is('logo_fetched_at', null)
+    .like('logo_url', '%/storage/v1/object/public/logos/%')
+    .order('created_at', { ascending: true })
+    .limit(batchSize)
+
+  if (error) throw new Error(`Query organizations: ${error.message}`)
+  if (!items || items.length === 0) return { processed: 0, cleared: 0, migrated: 0, remaining: 0 }
+
+  let cleared = 0
+  let migrated = 0
+  let platformSkipped = 0
+  let deniedMarkSkipped = 0
+  let mirrorFailed = 0
+  let errors = 0
+  const logodev = newTally()
+  let aborted: 'unauthorized' | 'rate_limited' | null = null
+
+  for (const item of items) {
+    try {
+      const row = item as {
+        id: string
+        website: string | null
+        logo_url: string | null
+        enrichment_status?: Record<string, unknown>
+      }
+      const priorUrl = row.logo_url
+      const stamp = (patch: Record<string, unknown>, logo: Record<string, unknown>) =>
+        supabase
+          .from('organizations')
+          .update({
+            ...patch,
+            logo_fetched_at: new Date().toISOString(),
+            enrichment_status: {
+              ...(row.enrichment_status ?? {}),
+              logo: { ...logo, prior_url: priorUrl, at: new Date().toISOString() },
+            },
+          })
+          .eq('id', row.id)
+
+      // Defensive: measured zero today, because the domain layer already cleared
+      // every organization whose website is a platform. Kept so this path cannot
+      // become the one place that forgets.
+      const platformClass = platformWebsiteClass(row.website, platformRules)
+      if (platformClass) {
+        platformSkipped++
+        cleared++
+        if (!dryRun) await stamp({ logo_url: null }, { skipped: 'platform_website', class: platformClass })
+        continue
+      }
+
+      const probe = await probeRealLogo(row.website)
+      logodev[probe.outcome]++
+
+      // The probe failed and told us NOTHING about this row. Stamping here would
+      // write it off for a reason that has nothing to do with it — the exact
+      // mistake that recorded 6,498 venues as having no logo while the token was
+      // dead. Abort and leave every remaining row untouched.
+      if (probe.outcome === 'unauthorized' || probe.outcome === 'rate_limited') {
+        aborted = probe.outcome
+        break
+      }
+
+      if (probe.outcome === 'not_indexed') {
+        // logo.dev has no real mark for this domain, so the stored image is the
+        // monogram it served before `fallback=404` was used. Clear it; the
+        // organization keeps its own photographs.
+        cleared++
+        if (!dryRun) await stamp({ logo_url: null }, { cleared: 'logodev_monogram', reason: 'not_indexed' })
+        await delay(100)
+        continue
+      }
+
+      if (probe.outcome !== 'found' || !probe.logo) {
+        // A transient error: no stamp, so the row is retried on a later run.
+        errors++
+        await delay(100)
+        continue
+      }
+
+      // A real logo. Move it onto the content-addressed path so the denied-mark
+      // layer can see it — that is what makes organizations reachable at all.
+      if (!dryRun) {
+        const mirrored = await mirrorLogoToR2(probe.logo.bytes, probe.logo.contentType)
+        if (!mirrored) {
+          mirrorFailed++ // left unstamped on purpose: retried on a later run
+        } else {
+          const mark = logoMarkSha256(mirrored)
+          if (mark && deniedMarks.has(mark)) {
+            // Real to logo.dev, junk to us — WordPress, a parking badge, a blank
+            // square. Same disposition as a monogram.
+            deniedMarkSkipped++
+            cleared++
+            await stamp({ logo_url: null }, { cleared: 'denied_mark', mark })
+          } else {
+            migrated++
+            await stamp({ logo_url: mirrored }, { migrated_to_r2: true, mark })
+          }
+        }
+      } else {
+        migrated++
+      }
+      await delay(100)
+    } catch (e) {
+      console.error(`Org logo re-probe error for ${(item as { id: string }).id}:`, (e as Error).message)
+      errors++
+    }
+  }
+
+  const { count } = await supabase
+    .from('organizations')
+    .select('id', { count: 'exact', head: true })
+    .is('logo_fetched_at', null)
+    .like('logo_url', '%/storage/v1/object/public/logos/%')
+
+  return {
+    processed: items.length,
+    cleared,
+    migrated,
+    platform_skipped: platformSkipped,
+    denied_mark_skipped: deniedMarkSkipped,
     mirror_failed: mirrorFailed,
     errors,
     logodev,

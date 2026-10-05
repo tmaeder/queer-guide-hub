@@ -316,6 +316,15 @@ export function VenueActions({
             : `https://queer.guide/venues/${venue.slug ?? venue.id}`
         }
         title={venue.name}
+        entity={{
+          entity_table: 'venues',
+          entity_id: venue.id,
+          title: venue.name,
+          subtitle: [venue.cities?.name, venue.countries?.name].filter(Boolean).join(', ') || null,
+          image_url: venue.images?.[0] ?? venue.logo_url ?? null,
+          path: `/venues/${venue.slug ?? venue.id}`,
+          gated: Boolean(venue.safety_gated),
+        }}
       />
       <button type="button" onClick={onShare} className="sr-only">
         {t('pages.venueDetail.share', 'Share')}
