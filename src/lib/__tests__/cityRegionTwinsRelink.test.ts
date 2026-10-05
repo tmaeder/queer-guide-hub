@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 /**
- * 99991791233139 creates 17 same-name twins and moves the events and venues
+ * 99991791233856 creates 17 same-name twins and moves the events and venues
  * that belong to them. Properties a later edit could quietly undo:
  *  - twins are created through city_resolve_or_create (the only writer),
  *    each with a live-resolved QID and the expected region;
@@ -14,7 +14,7 @@ import { join } from 'node:path';
  * Asserts run over comment-stripped SQL.
  */
 const raw = readFileSync(
-  join(process.cwd(), 'supabase', 'migrations', '99991791233139_city_region_twins_relink.sql'),
+  join(process.cwd(), 'supabase', 'migrations', '99991791233856_city_region_twins_relink.sql'),
   'utf8',
 );
 const sql = raw

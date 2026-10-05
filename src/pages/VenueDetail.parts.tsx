@@ -401,7 +401,7 @@ export function VenueBodyLead({ venue }: { venue: VenueWithRelations }) {
  */
 export function VenueFacts({ venue, t }: { venue: VenueWithRelations; t: TFunction }) {
   // Region in the label since same-name cities can coexist in one country
-  // (Portland, ME vs Portland, OR — 99991791231955).
+  // (Portland, ME vs Portland, OR — 99991791233840).
   const cityLabel = formatPlaceLabel({
     city: venue.cities?.name,
     regionCode: venue.cities?.region_code,

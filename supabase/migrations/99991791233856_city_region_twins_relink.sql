@@ -1,5 +1,5 @@
 -- cities: create the same-name twins that could not exist before
--- 99991791231955, and move the events and venues that belong to them.
+-- 99991791233840, and move the events and venues that belong to them.
 --
 -- WHY
 -- Until region_code entered the unique keys, cities held one row per
@@ -105,7 +105,7 @@ declare
   t record;
   r record;
 begin
-  perform set_config('app.actor', 'migration:99991791233139', true);
+  perform set_config('app.actor', 'migration:99991791233856', true);
   for t in select * from _twin loop
     select * into r from public.city_resolve_or_create(
       t.name,
@@ -114,7 +114,7 @@ begin
       p_lat          => t.lat,
       p_lng          => t.lng,
       p_wikidata_qid => t.qid,
-      p_source_slug  => 'migration:99991791233139',
+      p_source_slug  => 'migration:99991791233856',
       p_actor        => 'admin');
     insert into _twin_result values (t.name, t.code, r.city_id, r.action, r.match_type, r.reason);
   end loop;
@@ -186,7 +186,7 @@ update public.events e
        enrichment_status = coalesce(e.enrichment_status, '{}'::jsonb)
          || jsonb_build_object('event_city_link', jsonb_build_object(
               'linked', true,
-              'by', 'migration:99991791233139',
+              'by', 'migration:99991791233856',
               'at', now(),
               'evidence', v.evidence,
               'region_code', v.code,
@@ -219,7 +219,7 @@ update public.venues v
    set city_id = n.city_id,
        enrichment_status = coalesce(v.enrichment_status, '{}'::jsonb)
          || jsonb_build_object('city_relink', jsonb_build_object(
-              'by', 'migration:99991791233139',
+              'by', 'migration:99991791233856',
               'at', now(),
               'from_city_id', n.from_city_id,
               'evidence', format('city text + state %s + %s m from twin', n.code, n.distance_m)))
@@ -318,7 +318,7 @@ begin
   -- P4: no linked event sits on a city of another region than its evidence.
   select count(*) into v_n
     from public.events e join public.cities c on c.id = e.city_id
-   where e.enrichment_status->'event_city_link'->>'by' = 'migration:99991791233139'
+   where e.enrichment_status->'event_city_link'->>'by' = 'migration:99991791233856'
      and c.region_code is distinct from e.enrichment_status->'event_city_link'->>'region_code';
   if v_n <> 0 then
     raise exception 'P4 failed: % relinked events on a city of another region', v_n;

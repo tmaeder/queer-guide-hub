@@ -1,7 +1,7 @@
 /**
  * "Portland, ME · United States".
  *
- * Since 99991791231955 a country may hold two cities of the same name in
+ * Since 99991791233840 a country may hold two cities of the same name in
  * different regions (Portland, Maine and Portland, Oregon), so "Portland,
  * United States" no longer identifies a place. The region is shown where a
  * reader expects it — countries whose addresses carry a state or province

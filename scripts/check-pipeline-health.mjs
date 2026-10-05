@@ -4712,7 +4712,7 @@ const DISOWNED_PROSE_CEILING = 380
 // points elsewhere: the Burbank-filed-under-Los-Angeles shape
 // (99991790978994). Baseline 399 measured 2026-10-05, mostly suburb-vs-metro
 // and worked by hand, so it warns at the baseline and fails only on growth.
-// same_name_cities_without_region is a zero-invariant: since 99991791231955 two
+// same_name_cities_without_region is a zero-invariant: since 99991791233840 two
 // same-name cities in one country are told apart by region_code alone, and an
 // uncoded member of such a pair is matched by every region hint.
 {
@@ -4725,7 +4725,7 @@ const DISOWNED_PROSE_CEILING = 380
     body: '{}',
   })
   if (res.status === 404) {
-    console.warn('⚠ venue_city_text_signals → HTTP 404 (not applied? migration 99991791233139)')
+    console.warn('⚠ venue_city_text_signals → HTTP 404 (not applied? migration 99991791233856)')
     console.warn('  This check measured NOTHING — it did not pass.')
   } else if (!res.ok) {
     console.error(`✗ venue_city_text_signals → HTTP ${res.status}`)
