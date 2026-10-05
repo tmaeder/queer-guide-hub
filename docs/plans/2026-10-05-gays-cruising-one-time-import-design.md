@@ -37,9 +37,21 @@ region, country, and backlink. User-authored descriptions remain excluded.
 - Quarantine records that name third-party businesses for editorial review.
 - Keep descriptions off.
 - Run a limited dry-run before staging the full eligible corpus.
-- Drain validation, deduplication, and commit serially through the existing
-  pipeline. Stop on the importer's validation, deduplication, or safety-gate
-  checks.
+- Drain validation through disjoint run-scoped partitions, use the audited
+  deterministic batch deduplication path for this large cohort, and commit in
+  run-scoped partitions with a serial recovery pass. Stop on the importer's
+  validation, deduplication, or safety-gate checks.
+
+## Execution result
+
+The fresh crawl completed on 2026-10-05 with 58,618 source IDs: 58,578 usable
+factual records and 40 stale source-side IDs. The imported JSONL checksum is
+`6913bad729744d1f22ec8ebcae987c45cfbe257ef0b5c36e2d7f0e775ff7fec9`.
+
+After exclusions and quarantine, 56,165 records entered the production staging
+pipeline. The final live audit found 55,934 inserted records, 175 records linked
+to existing venues, and 56 merge candidates retained for review. All 56,109
+committed source links are category `cruising` and safety-gated.
 
 ## Alternatives considered
 
@@ -48,4 +60,3 @@ region, country, and backlink. User-authored descriptions remain excluded.
 - Enabling the edge source would require many batches, produce lower-quality
   records, and blur the boundary between this one-time import and a recurring
   crawler.
-

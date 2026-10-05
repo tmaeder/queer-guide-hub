@@ -94,8 +94,51 @@ describe('gays-cruising importer', () => {
     // `ungated:0, miscategorised:0` is also what zero rows returns. Measured
     // against the real table while writing this: the first version printed a
     // clean gate check having verified nothing.
-    expect(code).toMatch(/committed\s*>\s*0\s*&&\s*gTotal\s*===\s*0/);
-    expect(code).toMatch(/PROBE BROKEN/);
+    expect(code).toMatch(/\(committed\s*>\s*0\s*\|\|\s*requireExisting\)\s*&&\s*gTotal\s*===\s*0/);
+    expect(code).toMatch(/gate probe found no venue_sources rows/);
+  });
+
+  it('recategorizes source-linked duplicates so the cruising safety gate is durable', () => {
+    expect(code).toMatch(/v\.category<>['"]cruising['"]/);
+    expect(code).toMatch(/set category=['"]cruising['"]/);
+    expect(code).toMatch(/deduplicated venue linked to dedicated cruising source/);
+  });
+
+  it('replays commit deadlocks and slug races serially', () => {
+    expect(code).toMatch(/phaseRecoverCommitFailures/);
+    expect(code).toMatch(/error_message like 'commit_fn:%'/);
+    expect(code).toMatch(/gays_cruising_recover_commit/);
+    expect(code).toMatch(/limit 100 for update skip locked/);
+  });
+
+  it('serialises pipeline batches by their exact pg_net response id', () => {
+    expect(code).toMatch(/as request_id/);
+    expect(code).toMatch(/where id = \$\{requestId\}/);
+    expect(code).toMatch(/await waitForPipelineStage\(requestId, fn\)/);
+    expect(code).not.toMatch(/await sleep\(35_000\)/);
+  });
+
+  it('scopes every pipeline stage and commit to this import cohort', () => {
+    expect(code).toMatch(/pipeline_run_id','\$\{pipelineRunId\}'/);
+    expect(code).toMatch(/pipelineRunIds\.map/);
+    expect(code).toMatch(/source_name='\$\{SOURCE_NAME\}'[\s\S]*commit_venue_staging_item/);
+    expect(code).toMatch(/commit_venue_staging_item\(r\.id,'gays-cruising-import'\)/);
+    expect(code).not.toMatch(/commit_venue_staging_batch\(/);
+  });
+
+  it('uses disjoint pipeline-run partitions for parallel stage drains', () => {
+    expect(code).toMatch(/while \(pipelineRunIds\.length < 4\)/);
+    expect(code).toMatch(/md5\(source_entity_id\)/);
+    expect(code).toMatch(/Promise\.all\([\s\S]*firePipelineStage/);
+    expect(code).toMatch(/pipelineRunIds\.map\(\(pipelineRunId\)[\s\S]*gays_cruising_commit/);
+  });
+
+  it('uses the audited deterministic batch path for large-cohort venue dedup', () => {
+    expect(code).toMatch(/async function dedupVenueBatch/);
+    expect(code).toMatch(/address_exact/);
+    expect(code).toMatch(/name_proximity/);
+    expect(code).toMatch(/despaced_city_text/);
+    expect(code).toMatch(/scraper_dedupe_decisions/);
   });
 
   it('keeps prose off unless BOTH the flag and the acknowledgement are set', () => {

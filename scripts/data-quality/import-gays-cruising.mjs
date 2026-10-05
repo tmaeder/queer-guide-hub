@@ -3,12 +3,12 @@
  * Import gays-cruising.com cruising zones into `venues` via ingestion_staging.
  *
  * ── PROVENANCE: THIS IS OUR OWN CRAWL, NOT A SUPPLIED EXPORT ────────────────
- * The input is NOT a dataset handed over by the rightsholder. On 2026-09-18/19
- * this machine ran `enrichment_server.mjs`, a local server driving a browser
- * that issued **58,618 JSONP calls** to
+ * The input is NOT a dataset handed over by the rightsholder. On 2026-10-05
+ * this machine ran `crawl-gays-cruising.mjs`, a one-time browser crawler that
+ * issued **58,618 JSONP calls** to
  *   https://www.gays-cruising.com/api/?op=obtenerZonaInfoWidget&id=<n>&idioma=en
- * at concurrency 16, over spot ids harvested from three approved-spot sitemaps.
- * `enrich_workbook.mjs` folded the results into gays_cruising_all_spots.xlsx.
+ * at concurrency 16, over spot ids harvested from the three Spanish
+ * approved-spot sitemaps. Descriptions were discarded before persistence.
  *
  * Say "crawled by us under consent ref X", never "supplied by Keyup Studio".
  * The one artifact whose entire job is provenance must not misstate it. This is
@@ -22,19 +22,19 @@
  * and its ref must be present in GAYS_CRUISING_CONSENT_REF or this script exits.
  *
  * ── INPUT ──────────────────────────────────────────────────────────────────
- * out-gays-cruising/enriched_spots.jsonl  (gitignored; 23 MB, 58,658 lines)
- *   sha256 58feeb82486166ea538b8644debab888013b0af9ac3c00e00230951472325090
- * One JSON object per line: {id,title,description,latitude,longitude,locality,
- * region,country,url} or {id,error}. 58,578 usable, 80 errors (ids the API no
+ * out-gays-cruising/enriched_spots.jsonl  (gitignored; 14 MB, 58,618 lines)
+ *   sha256 6913bad729744d1f22ec8ebcae987c45cfbe257ef0b5c36e2d7f0e775ff7fec9
+ * One JSON object per line: {id,title,latitude,longitude,locality,region,country,
+ * url} or {id,error}. 58,578 usable, 40 errors (ids the API no
  * longer serves).
  *
- * Measured over that file, 2026-09-19:
+ * Measured over that file, 2026-10-05:
  *   lat+lng present ......... 58,578 / 58,578  (100%)
  *   locality ................ 100%
  *   region .................. 100%   <- the page parser cannot get this at all
  *   country (as a NAME) ..... 100%, 129 distinct
  *   duplicate source ids .... 0
- *   distinct coord points ... 58,513  (only 122 rows share a point)
+ *   distinct coord points ... 58,538
  * That last number is why the documented venue-coordinate rot (2,665 venues on
  * 908 shared points from city-centroid fallback) does NOT describe this cohort.
  *
@@ -63,6 +63,7 @@
  */
 
 import { execFileSync } from 'node:child_process';
+import { randomUUID } from 'node:crypto';
 import { createReadStream, mkdirSync, writeFileSync, existsSync, createWriteStream } from 'node:fs';
 import { createInterface } from 'node:readline';
 import { join } from 'node:path';
@@ -90,7 +91,7 @@ const LIMIT = flag('limit') ? Number(flag('limit')) : Infinity;
  * The source's spot write-ups are its USERS' authored text. Keyup Studio can
  * license what Keyup owns; it cannot sublicense thousands of third parties'
  * copyright, and no clause granting that has been read. Separately, measured
- * over this file, 1,826 records (3.1%) name a real retail chain — publishing
+ * over this file, 1,439 records name a recognised retail or venue brand — publishing
  * "the toilets in <named business> are a cruising spot" is an assertion about
  * an uninvolved third party that cannot opt out, which is the concern
  * 20261110100000's own header raises and which safety_gated does not address.
@@ -122,14 +123,50 @@ const COUNTRY_NAME_FIXUPS = Object.freeze({
  * "Parque Ecológico de Foo", which is a real name.
  */
 const GENERIC_NAMES = new Set([
-  'parque', 'park', 'parc', 'parkplatz', 'parking', 'aparcamiento', 'estacionamento',
-  'bosque', 'bosc', 'wald', 'floresta', 'mato', 'matorral', 'descampado',
-  'wc', 'banheiro', 'banheiros', 'banos', 'baños', 'aseos', 'toilette', 'toiletten',
-  'public toilet', 'public toilets', 'servicios', 'sanitarios',
-  'playa', 'praia', 'beach', 'strand', 'plage',
-  'rio', 'río', 'lago', 'lake', 'see',
-  'cruising', 'zona cruising', 'area de descanso', 'área de descanso', 'rest area',
-  'centro comercial', 'shopping', 'mall',
+  'parque',
+  'park',
+  'parc',
+  'parkplatz',
+  'parking',
+  'aparcamiento',
+  'estacionamento',
+  'bosque',
+  'bosc',
+  'wald',
+  'floresta',
+  'mato',
+  'matorral',
+  'descampado',
+  'wc',
+  'banheiro',
+  'banheiros',
+  'banos',
+  'baños',
+  'aseos',
+  'toilette',
+  'toiletten',
+  'public toilet',
+  'public toilets',
+  'servicios',
+  'sanitarios',
+  'playa',
+  'praia',
+  'beach',
+  'strand',
+  'plage',
+  'rio',
+  'río',
+  'lago',
+  'lake',
+  'see',
+  'cruising',
+  'zona cruising',
+  'area de descanso',
+  'área de descanso',
+  'rest area',
+  'centro comercial',
+  'shopping',
+  'mall',
 ]);
 
 /** A floor, not a ceiling: ~35 international chains. Local businesses are not caught. */
@@ -137,8 +174,14 @@ const BRAND_RE =
   /\b(walmart|carrefour|mcdonald|burger king|lidl|aldi|ikea|decathlon|home depot|basic.?fit|planet fitness|smart fit|mercadona|tesco|auchan|kaufland|rewe|edeka|migros|shell|repsol|cepsa|starbucks|subway|kfc|zara|primark|el corte ingl|assai|pao de a|renner|americanas|target|costco|walgreens)/i;
 
 const ENTITIES = {
-  '&amp;': '&', '&#039;': "'", '&#39;': "'", '&apos;': "'",
-  '&quot;': '"', '&lt;': '<', '&gt;': '>', '&nbsp;': ' ',
+  '&amp;': '&',
+  '&#039;': "'",
+  '&#39;': "'",
+  '&apos;': "'",
+  '&quot;': '"',
+  '&lt;': '<',
+  '&gt;': '>',
+  '&nbsp;': ' ',
 };
 const decodeEntities = (s) =>
   String(s ?? '').replace(/&(?:amp|#0?39|apos|quot|lt|gt|nbsp);/g, (m) => ENTITIES[m] ?? m);
@@ -312,8 +355,15 @@ function normalize(rec, countryCode) {
 
 async function readAndFilter(countries) {
   const stats = {
-    lines: 0, error_rows: 0, bad_id: 0, unresolved_country: 0,
-    generic_name: 0, short_title: 0, no_coords: 0, brand_quarantined: 0, kept: 0,
+    lines: 0,
+    error_rows: 0,
+    bad_id: 0,
+    unresolved_country: 0,
+    generic_name: 0,
+    short_title: 0,
+    no_coords: 0,
+    brand_quarantined: 0,
+    kept: 0,
   };
   const byCountry = {};
   const criminalizing = {};
@@ -407,7 +457,9 @@ async function phaseReport() {
   console.log(`[report] ${names.length} distinct country names in the file`);
   const countries = await resolveCountries(names);
   if (countries.unresolved.length) {
-    console.warn(`[report] UNRESOLVED countries (rows dropped): ${countries.unresolved.join(', ')}`);
+    console.warn(
+      `[report] UNRESOLVED countries (rows dropped): ${countries.unresolved.join(', ')}`,
+    );
   }
 
   const r = await readAndFilter(countries);
@@ -566,8 +618,8 @@ const ANON_KEY =
  * Fired through pg_net so the internal-invoke secret is read from the vault
  * inside the database and never leaves it.
  */
-async function firePipelineStage(fn, batchSize) {
-  await sql(`
+async function firePipelineStage(fn, batchSize, pipelineRunId) {
+  const rows = await sql(`
 select net.http_post(
   url := 'https://${PROJECT}.supabase.co/functions/v1/${fn}',
   headers := jsonb_build_object(
@@ -575,9 +627,49 @@ select net.http_post(
     'Authorization','Bearer ${ANON_KEY}',
     'x-internal-secret', (select decrypted_secret from vault.decrypted_secrets where name='internal_invoke_secret')
   ),
-  body := '{"entityType":"venue","batch_size":${batchSize}}'::jsonb,
+  body := jsonb_build_object(
+    'entityType','venue',
+    'targetTable','venues',
+    'batch_size',${batchSize},
+    'pipeline_run_id','${pipelineRunId}'
+  ),
   timeout_milliseconds := 150000
-);`);
+) as request_id;`);
+  const requestId = Number(rows[0]?.request_id);
+  if (!Number.isInteger(requestId) || requestId <= 0) {
+    throw new Error(`${fn} did not return a pg_net request id`);
+  }
+  return requestId;
+}
+
+/**
+ * Wait for this exact pg_net response before launching the next batch. Matching
+ * by request id is load-bearing: the response table is shared by every caller
+ * on the instance, and matching by URL or recency can consume another job's
+ * response. This keeps the drain serial without a fixed 35-second idle delay.
+ */
+async function waitForPipelineStage(requestId, fn) {
+  const deadline = Date.now() + 180_000;
+  while (Date.now() < deadline) {
+    const rows = await sql(`
+select status_code, timed_out, error_msg, left(content::text, 500) as content
+from net._http_response
+where id = ${requestId};`);
+    if (rows.length) {
+      const response = rows[0];
+      if (response.timed_out) throw new Error(`${fn} request ${requestId} timed out`);
+      if (response.error_msg) {
+        throw new Error(`${fn} request ${requestId}: ${response.error_msg}`);
+      }
+      const status = Number(response.status_code);
+      if (status < 200 || status >= 300) {
+        throw new Error(`${fn} request ${requestId} returned ${status}: ${response.content ?? ''}`);
+      }
+      return response;
+    }
+    await sleep(2_000);
+  }
+  throw new Error(`${fn} request ${requestId} produced no pg_net response within 180s`);
 }
 
 async function countActionable(predicate) {
@@ -588,16 +680,130 @@ where source_name='${SOURCE_NAME}' and target_table='venues'
   return Number(res[0].n);
 }
 
-async function drainStage(label, fn, predicate, batchSize) {
+/**
+ * Large venue imports use the deterministic SQL path: exact normalized address
+ * and name, name plus <=250m proximity, or despaced name/city. The generic edge
+ * deduplicator performs semantic work per row and cannot finish a 500-row batch
+ * inside pg_net's 150-second response window for a cohort of this size.
+ */
+async function dedupVenueBatch(batchSize = 5000) {
+  const rows = await sql(`
+with incoming as materialized (
+  select s.id,s.pipeline_run_id,s.dedup_details,
+    s.normalized_data->>'name' name,
+    public.normalize_name(s.normalized_data->>'name') name_norm,
+    public.dedup_despace(s.normalized_data->>'name') name_key,
+    s.normalized_data->'location'->>'city' city,
+    upper(s.normalized_data->'location'->>'country') country_code,
+    nullif(s.normalized_data->'location'->>'lat','')::numeric lat,
+    nullif(s.normalized_data->'location'->>'lng','')::numeric lng,
+    public.normalize_address(s.normalized_data->'location'->>'address') address_norm
+  from public.ingestion_staging s
+  where s.source_name='${SOURCE_NAME}' and s.target_table='venues'
+    and s.disposition='pending' and s.ai_validation_status='approved'
+    and s.dedup_status='pending'
+  order by s.created_at,s.id limit ${batchSize} for update skip locked
+), candidates as materialized (
+  select i.id,v.id match_id,'address_exact'::text match_type,.97::numeric score,
+    public.haversine_m(i.lat,i.lng,v.latitude,v.longitude) distance_m
+  from incoming i join public.venues v
+    on v.address_normalized=i.address_norm and public.dedup_despace(v.name)=i.name_key
+  left join public.countries co on co.id=v.country_id
+  where v.duplicate_of_id is null and (co.code is null or upper(co.code)=i.country_code)
+  union all
+  select i.id,v.id,'name_proximity',extensions.similarity(v.name_normalized,i.name_norm)::numeric,
+    public.haversine_m(i.lat,i.lng,v.latitude,v.longitude)
+  from incoming i join public.venues v
+    on v.latitude between i.lat-.003 and i.lat+.003
+   and v.longitude between i.lng-.003 and i.lng+.003 and v.name_normalized % i.name_norm
+  left join public.countries co on co.id=v.country_id
+  where v.duplicate_of_id is null and (co.code is null or upper(co.code)=i.country_code)
+    and public.haversine_m(i.lat,i.lng,v.latitude,v.longitude)<=250
+  union all
+  select i.id,v.id,'despaced_city_text',.88::numeric,
+    public.haversine_m(i.lat,i.lng,v.latitude,v.longitude)
+  from incoming i join public.venues v
+    on public.dedup_despace(v.name)=i.name_key
+   and public.dedup_despace(v.city)=public.dedup_despace(i.city)
+  left join public.countries co on co.id=v.country_id
+  where v.duplicate_of_id is null and (co.code is null or upper(co.code)=i.country_code)
+    and (i.lat is null or v.latitude is null or public.haversine_m(i.lat,i.lng,v.latitude,v.longitude)<=250)
+), best as materialized (
+  select distinct on(id) * from candidates order by id,score desc,distance_m asc nulls last
+), classified as materialized (
+  select i.*,
+    case when coalesce(b.score,0)>=.90 then 'duplicate'
+         when coalesce(b.score,0)>=.75 then 'merge_candidate'
+         else 'unique' end decision,
+    case when coalesce(b.score,0)>=.90 then 'auto_merge'
+         when coalesce(b.score,0)>=.75 then 'flag_review'
+         else 'no_match' end action,
+    case when coalesce(b.score,0)>=.75 then b.match_id else null end match_id,
+    coalesce(b.match_type,'none') match_type,coalesce(b.score,0) score,b.distance_m
+  from incoming i left join best b using(id)
+), audited as (
+  insert into public.scraper_dedupe_decisions
+    (entity_type,entity_a_id,entity_b_id,staging_id,pipeline_run_id,match_method,
+     confidence,decision,action,rules_fired,decided_by)
+  select 'venue',id,match_id,id,pipeline_run_id,match_type,score,decision,action,
+    jsonb_build_object(
+      'signals',case when match_id is null then '[]'::jsonb
+        else jsonb_build_array(jsonb_build_object('match_type',match_type,'score',score)) end,
+      'guards_fired','[]'::jsonb,'semantic_cosine',0),
+    'pipeline-deduplicate'
+  from classified returning staging_id
+), updated as (
+  update public.ingestion_staging s set
+    dedup_status=a.decision,dedup_match_id=a.match_id,dedup_match_table='venues',
+    dedup_match_score=a.score,
+    dedup_details=coalesce(s.dedup_details,'{}'::jsonb)||jsonb_build_object(
+      'match_type',a.match_type,'fused_score',a.score,
+      'semantic_cosine',0,'distance_m',a.distance_m),
+    review_status=case when a.decision='merge_candidate' then 'pending_review' else 'auto' end,
+    updated_at=now()
+  from classified a join audited d on d.staging_id=a.id where s.id=a.id
+  returning s.id,a.decision,a.match_id,a.match_type,a.score
+), queued as (
+  insert into public.review_queue(entity_type,entity_id,review_type,status,details)
+  select 'ingestion_staging',u.id,'merge_candidate','pending',
+    jsonb_build_object('target_table','venues','match_id',u.match_id,
+      'match_type',u.match_type,'score',u.score)
+  from updated u where u.decision='merge_candidate' returning entity_id
+), events as (
+  insert into public.ingestion_events(staging_id,venue_id,stage,new_status,actor,payload)
+  select u.id,u.match_id,'deduplicate',u.decision,'pipeline-deduplicate',
+    jsonb_build_object('target_table','venues','match_id',u.match_id,
+      'match_score',u.score,'match_type',u.match_type)
+  from updated u returning 1
+)
+select count(*)::int n from updated;`);
+  return Number(rows[0]?.n ?? 0);
+}
+
+async function drainStage(label, fn, predicate, batchSize, pipelineRunIds) {
   let stallRounds = 0;
   let prev = await countActionable(predicate);
   console.log(`[drain] ${label}: ${prev} pending`);
 
   while (prev > 0) {
-    await firePipelineStage(fn, batchSize);
-    await sleep(35_000);
+    const requests = await Promise.all(
+      pipelineRunIds.map(async (pipelineRunId) => ({
+        requestId: await firePipelineStage(fn, batchSize, pipelineRunId),
+      })),
+    );
+    const responses = await Promise.all(
+      requests.map(async ({ requestId }) => ({
+        requestId,
+        response: await waitForPipelineStage(requestId, fn),
+      })),
+    );
     const now = await countActionable(predicate);
     if (now >= prev) {
+      console.warn(
+        `[drain] ${label}: no progress: ${responses
+          .map(({ requestId, response }) => `${requestId}=${response.content ?? ''}`)
+          .join(' | ')}`,
+      );
       // Not a retry loop: two rounds of no progress means something upstream is
       // wrong, and hammering it makes the diagnosis harder, not the drain faster.
       if (++stallRounds >= 2) {
@@ -613,10 +819,170 @@ async function drainStage(label, fn, predicate, batchSize) {
   return true;
 }
 
+/**
+ * A high-confidence duplicate keeps the existing venue row, including its old
+ * category. For this source that is unsafe: the cruising category is what arms
+ * the durable anonymous-access gate. A listing in a dedicated cruising
+ * directory is direct source evidence, unlike the name-only inference that the
+ * general category review queue deliberately refuses to bulk-accept.
+ */
+async function repairAndVerifyCruisingGate(committed = 0, requireExisting = false) {
+  const repaired = await sql(`
+with candidates as materialized (
+  select distinct on (v.id)
+    v.id venue_id,v.category old_category,s.id staging_id
+  from public.venues v
+  join public.venue_sources vs on vs.venue_id=v.id
+  left join public.ingestion_staging s
+    on s.source_name='${SOURCE_NAME}' and s.source_entity_id=vs.source_entity_id
+  where vs.source_slug='${SOURCE_NAME}' and v.category<>'cruising'
+  order by v.id,s.updated_at desc nulls last
+), changed as materialized (
+  update public.venues v set category='cruising',updated_at=now()
+  from candidates c where v.id=c.venue_id
+  returning v.id venue_id,c.staging_id,c.old_category
+), events as (
+  insert into public.ingestion_events
+    (staging_id,venue_id,stage,old_status,new_status,actor,payload)
+  select staging_id,venue_id,'safety-gate',old_category,'cruising',
+    'gays-cruising-import',
+    jsonb_build_object('reason','deduplicated venue linked to dedicated cruising source')
+  from changed where staging_id is not null
+  returning 1
+)
+select count(*)::int n from changed;`);
+  console.log(`[drain] recategorized ${Number(repaired[0]?.n ?? 0)} source-linked duplicates`);
+
+  const g = await sql(`
+select count(*) filter (where not v.safety_gated)        as ungated,
+       count(*) filter (where v.category <> 'cruising')  as miscategorised,
+       count(*)                                          as total
+  from public.venues v
+  join public.venue_sources vs on vs.venue_id = v.id
+ where vs.source_slug = '${SOURCE_NAME}';`);
+  console.log('[drain] gate check:', JSON.stringify(g[0]));
+
+  const gTotal = Number(g[0].total);
+  if ((committed > 0 || requireExisting) && gTotal === 0) {
+    throw new Error(
+      `gate probe found no venue_sources rows for source_slug='${SOURCE_NAME}' after import`,
+    );
+  }
+  if (Number(g[0].ungated) > 0 || Number(g[0].miscategorised) > 0) {
+    throw new Error('gate check found source-linked venues that are ungated or miscategorised');
+  }
+  if (gTotal > 0) console.log(`[drain] gate verified on ${gTotal} rows`);
+  return gTotal;
+}
+
+async function phaseGate() {
+  requireConsent();
+  await repairAndVerifyCruisingGate(0, true);
+}
+
+async function phaseRecoverCommitFailures() {
+  requireConsent();
+  const reopened = await sql(`
+with reopened as (
+  update public.ingestion_staging
+  set disposition='pending',error_message=null,processed_at=null,updated_at=now()
+  where source_name='${SOURCE_NAME}' and target_table='venues'
+    and disposition='rejected' and error_message like 'commit_fn:%'
+    and ai_validation_status='approved'
+    and dedup_status in ('unique','duplicate','merge_candidate')
+    and review_status in ('auto','approved')
+  returning id
+)
+select count(*)::int n from reopened;`);
+  console.log(`[recover-commit] reopened ${Number(reopened[0]?.n ?? 0)} rows`);
+
+  let recovered = 0;
+  for (;;) {
+    const eligible = await countActionable(
+      "ai_validation_status = 'approved' and dedup_status in ('unique','duplicate','merge_candidate') and review_status in ('auto','approved')",
+    );
+    if (!eligible) break;
+    await sql(`
+do $gays_cruising_recover_commit$
+declare r record; ignored record;
+begin
+  for r in
+    select id from public.ingestion_staging
+    where source_name='${SOURCE_NAME}' and target_table='venues'
+      and disposition='pending' and ai_validation_status='approved'
+      and dedup_status in ('unique','duplicate','merge_candidate')
+      and review_status in ('auto','approved')
+    order by created_at asc limit 100 for update skip locked
+  loop
+    begin
+      select * into ignored
+      from public.commit_venue_staging_item(r.id,'gays-cruising-import-recovery');
+    exception when others then
+      update public.ingestion_staging
+      set disposition='rejected',error_message='commit_fn: '||sqlerrm,updated_at=now()
+      where id=r.id;
+      insert into public.ingestion_events(staging_id,stage,new_status,actor,payload)
+      values(r.id,'commit','rejected','gays-cruising-import-recovery',
+        jsonb_build_object('error',sqlerrm));
+    end;
+  end loop;
+end
+$gays_cruising_recover_commit$;`);
+    const after = await countActionable(
+      "ai_validation_status = 'approved' and dedup_status in ('unique','duplicate','merge_candidate') and review_status in ('auto','approved')",
+    );
+    const progressed = eligible - after;
+    if (progressed <= 0) throw new Error(`serial commit recovery stalled with ${eligible} rows`);
+    recovered += progressed;
+    console.log(`[recover-commit] recovered_or_rejected=${recovered} remaining=${after}`);
+  }
+  await repairAndVerifyCruisingGate(recovered, true);
+}
+
 async function phaseDrain() {
   requireConsent();
 
-  if (!(await drainStage('validate', 'pipeline-validate', "ai_validation_status = 'pending'", 500)))
+  const existingRuns = await sql(`
+select id from public.pipeline_runs
+where pipeline_name='gays-cruising-one-time-import' and status='running'
+order by created_at asc limit 4;`);
+  const pipelineRunIds = existingRuns.map((run) => run.id);
+  while (pipelineRunIds.length < 4) pipelineRunIds.push(randomUUID());
+  const missingRunIds = pipelineRunIds.filter((id) => !existingRuns.some((run) => run.id === id));
+  if (missingRunIds.length) {
+    await sql(`
+insert into public.pipeline_runs
+  (id,pipeline_name,status,context,started_at,triggered_by)
+select id,'gays-cruising-one-time-import','running',
+       jsonb_build_object(
+         'source_name','${SOURCE_NAME}',
+         'target_table','venues',
+         'partition',partition
+       ),
+       now(),'gays-cruising-import'
+from unnest(array[${missingRunIds.map((id) => `'${id}'::uuid`).join(',')}])
+with ordinality as runs(id,partition);`);
+  }
+  await sql(`
+update public.ingestion_staging
+set pipeline_run_id=(array[${pipelineRunIds.map((id) => `'${id}'::uuid`).join(',')}])[
+      mod(get_byte(decode(md5(source_entity_id),'hex'),0),${pipelineRunIds.length}) + 1
+    ],
+    node_id='gays-cruising-one-time-import',
+    updated_at=now()
+where source_name='${SOURCE_NAME}' and target_table='venues'
+  and disposition='pending';`);
+  console.log(`[drain] pipeline_run_ids=${pipelineRunIds.join(',')}`);
+
+  if (
+    !(await drainStage(
+      'validate',
+      'pipeline-validate',
+      "ai_validation_status = 'pending'",
+      500,
+      pipelineRunIds,
+    ))
+  )
     return;
 
   // Deliberate checkpoint. A cohort this shaped should come out almost entirely
@@ -639,15 +1005,15 @@ group by 1 order by 2 desc;`);
     return;
   }
 
-  if (
-    !(await drainStage(
-      'dedup',
-      'pipeline-deduplicate',
+  for (;;) {
+    const pending = await countActionable(
       "ai_validation_status = 'approved' and dedup_status = 'pending'",
-      500,
-    ))
-  )
-    return;
+    );
+    if (!pending) break;
+    const progressed = await dedupVenueBatch();
+    if (!progressed) throw new Error(`venue dedup made no progress with ${pending} pending`);
+    console.log(`[drain] dedup: ${Math.max(0, pending - progressed)} pending`);
+  }
 
   // This number decides whether the full corpus is viable. A few hundred
   // merge_candidates is workable; a few thousand is a rubber-stamp factory and
@@ -660,48 +1026,74 @@ group by 1 order by 2 desc;`);
 
   let committed = 0;
   for (;;) {
-    const res = await sql(`select count(*)::int as n from public.commit_venue_staging_batch(200);`);
-    const n = Number(res[0].n);
-    if (!n) break;
-    committed += n;
-    console.log(`[drain] committed ${committed}`);
+    const eligible = await countActionable(
+      "ai_validation_status = 'approved' and dedup_status in ('unique','duplicate','merge_candidate') and review_status in ('auto','approved')",
+    );
+    if (!eligible) break;
+    await Promise.all(
+      pipelineRunIds.map((pipelineRunId) =>
+        sql(`
+do $gays_cruising_commit$
+declare r record; ignored record;
+begin
+  for r in
+    select id from public.ingestion_staging
+    where source_name='${SOURCE_NAME}' and target_table='venues'
+      and pipeline_run_id='${pipelineRunId}'::uuid
+      and disposition='pending' and ai_validation_status='approved'
+      and dedup_status in ('unique','duplicate','merge_candidate')
+      and review_status in ('auto','approved')
+    order by created_at asc limit 500 for update skip locked
+  loop
+    begin
+      select * into ignored
+      from public.commit_venue_staging_item(r.id,'gays-cruising-import');
+    exception when others then
+      update public.ingestion_staging
+      set disposition='rejected',error_message='commit_fn: '||sqlerrm,updated_at=now()
+      where id=r.id;
+      insert into public.ingestion_events(staging_id,stage,new_status,actor,payload)
+      values(r.id,'commit','rejected','gays-cruising-import',jsonb_build_object('error',sqlerrm));
+    end;
+  end loop;
+end
+$gays_cruising_commit$;`),
+      ),
+    );
+    const after = await countActionable(
+      "ai_validation_status = 'approved' and dedup_status in ('unique','duplicate','merge_candidate') and review_status in ('auto','approved')",
+    );
+    const progressed = eligible - after;
+    if (progressed <= 0) throw new Error(`venue commit made no progress with ${eligible} eligible`);
+    committed += progressed;
+    console.log(`[drain] committed_or_rejected=${committed} remaining=${after}`);
   }
   console.log(`[drain] done — ${committed} committed this pass`);
 
-  // The gate is the only thing standing behind the decision to import
-  // criminalizing countries, so it is verified every run, not once at the end.
-  const g = await sql(`
-select count(*) filter (where not v.safety_gated)        as ungated,
-       count(*) filter (where v.category <> 'cruising')  as miscategorised,
-       count(*)                                          as total
-  from public.venues v
-  join public.venue_sources vs on vs.venue_id = v.id
- where vs.source_slug = '${SOURCE_NAME}';`);
-  console.log('[drain] gate check:', JSON.stringify(g[0]));
+  await sql(`
+update public.pipeline_runs
+set status='completed',completed_at=now(),
+    duration_ms=(extract(epoch from (now()-started_at))*1000)::int,
+    items_total=(select count(*) from public.ingestion_staging where pipeline_run_id=pipeline_runs.id),
+    items_processed=(select count(*) from public.ingestion_staging where pipeline_run_id=pipeline_runs.id and disposition<>'pending'),
+    items_succeeded=(select count(*) from public.ingestion_staging where pipeline_run_id=pipeline_runs.id and disposition in ('inserted','updated','committed')),
+    items_failed=(select count(*) from public.ingestion_staging where pipeline_run_id=pipeline_runs.id and disposition in ('rejected','error'))
+where id in (${pipelineRunIds.map((id) => `'${id}'::uuid`).join(',')});`);
 
-  // `ungated:0, miscategorised:0` is ALSO what an empty result set returns, so
-  // the count is reported first and a zero-row corpus after a non-zero commit
-  // is a FAILURE, not a pass. Measured while writing this: against an empty
-  // table the check read "0 ungated" and would have printed success having
-  // verified nothing.
-  const gTotal = Number(g[0].total);
-  if (committed > 0 && gTotal === 0) {
-    console.error(
-      `[drain] PROBE BROKEN — committed ${committed} rows but venue_sources has 0 for` +
-        ` source_slug='${SOURCE_NAME}'. The gate was NOT verified. Do not read this as clean.`,
-    );
-    process.exitCode = 1;
-  } else if (Number(g[0].ungated) > 0 || Number(g[0].miscategorised) > 0) {
-    console.error('[drain] GATE FAILED — rows are ungated or miscategorised. Investigate now.');
-    process.exitCode = 1;
-  } else if (gTotal > 0) {
-    console.log(`[drain] gate verified on ${gTotal} rows`);
-  }
+  // The category is the only durable gate for cruising venues, including rows
+  // that deduplicated onto an older venue with another category.
+  await repairAndVerifyCruisingGate(committed);
 }
 
 // ---------------------------------------------------------------- main
 
-const PHASES = { report: phaseReport, stage: phaseStage, drain: phaseDrain };
+const PHASES = {
+  report: phaseReport,
+  stage: phaseStage,
+  drain: phaseDrain,
+  gate: phaseGate,
+  'recover-commit': phaseRecoverCommitFailures,
+};
 
 if (!existsSync(INPUT)) {
   console.error(`missing input: ${INPUT}\nSee the header — copy it out of the crawl directory.`);
