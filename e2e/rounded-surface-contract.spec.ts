@@ -103,7 +103,13 @@ const auditRoundedSurfaces = (page: Page) =>
       .filter(visible)
       .filter((element) => {
         if (
-          element.closest('svg, canvas, [data-maplibre-map], .maplibregl-map') ||
+          // `[data-information-geometry]` is exempt here for the same reason the
+          // thin-border audit below exempts it: a chart's marks are geometry
+          // carrying a quantity, not product surfaces. A segmented bar's slices
+          // are square because they are a distribution laid end to end.
+          element.closest(
+            'svg, canvas, [data-maplibre-map], .maplibregl-map, [data-information-geometry="true"]',
+          ) ||
           element.matches(
             'main, .min-h-screen.bg-background, .route-context-shell, ' +
               '[data-testid="route-journey"], .route-network-rail, .route-network-rail__track',
