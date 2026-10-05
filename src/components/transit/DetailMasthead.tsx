@@ -31,15 +31,17 @@ interface DetailMastheadProps {
  * ("Singles Venue Event Tag.dc.html"): route bullet, uppercase eyebrow, a
  * bordered status chip, then the Anton title and the lead.
  *
- * The status chip is an OUTLINE rather than a filled track colour: "Open now"
- * and "Sold out" are STATES, and the design system reserves colour for
- * wayfinding — a filled chip here would read as a line, not a status.
+ * Status remains neutral so it cannot be mistaken for a route colour.
  *
- * It keeps a border through the soft re-skin, when card frames were deleted,
- * because the outline is the entire chip: with no fill and no edge there is no
- * chip left. It draws in `border-input` (the control-boundary token, 3.8:1 on
- * the page) rather than the 12%-ink divider hairline, which at chip scale is
- * invisible.
+ * THE CHIP KEEPS ITS OUTLINE, and a stronger surface tone is not a substitute
+ * for it. `--surface-container-high` measures 1.31:1 against the page in light
+ * and 1.35:1 in dark, against the 3:1 WCAG 1.4.11 floor — and a tonal fill
+ * cannot be made to clear that bar on near-white paper: the lightest neutral
+ * that would is about #919191, i.e. a mid-grey chip. So the edge is the entire
+ * chip: with no fill contrast and no border there is nothing to see. It draws
+ * in `border-input`, the control-boundary token, which measures 4.26:1 against
+ * the page and still 3.26:1 against this chip's own fill (3.87:1 in dark), so
+ * the boundary holds on both sides in both modes.
  */
 export function DetailMasthead({
   type,
@@ -58,7 +60,7 @@ export function DetailMasthead({
         <RouteBullet type={type} size={44} letter={letter} track={track} label={bulletLabel} />
         {eyebrow && <span className="text-2xs font-bold uppercase tracking-label">{eyebrow}</span>}
         {status && (
-          <span className="rounded-element border border-input px-2 py-2 text-2xs font-bold uppercase tracking-label">
+          <span className="rounded-element border border-input bg-surface-container-high px-4 py-2 text-2xs font-bold uppercase tracking-label shadow-soft">
             {status}
           </span>
         )}

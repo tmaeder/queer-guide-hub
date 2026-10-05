@@ -15,11 +15,10 @@ const buttonVariants = cva(
         // flush beside `outline`. Both are now the same height and radius, so
         // they still line up in a row.
         default: 'bg-foreground text-background font-bold hover:opacity-90',
-        // Secondary. This edge is information-bearing rather than decorative:
-        // the tonal plate alone does not clear WCAG 1.4.11 against the page.
-        // Hover fills ink so the state remains unmistakable.
+        // Secondary controls use a stronger tonal plate instead of a hairline
+        // frame. Focus remains explicit through the 2px focus ring.
         outline:
-          'border border-input bg-surface-container text-foreground font-bold hover:border-foreground hover:bg-foreground hover:text-background',
+          'border border-input bg-surface-container-high text-foreground font-bold shadow-soft hover:bg-foreground hover:text-background',
         // No chrome until hover — useful in headers / menus.
         ghost: 'bg-transparent text-foreground hover:bg-muted',
         // Inline link styling.
@@ -41,9 +40,9 @@ const buttonVariants = cva(
         // PASTE-UP ripple that used to be the opt-in, had zero call sites and
         // went with the rest of that layer; travel content stays motion-free
         // anyway because it is safety-adjacent.
-        accent: 'border border-track-ring bg-track-pink text-track-ring font-bold hover:opacity-90',
+        accent: 'bg-track-pink text-track-ring font-bold shadow-soft hover:opacity-90',
         // Blue track. Ink type (paper-on-blue fails 3:1 — see tokenContrast).
-        brand: 'border border-track-ring bg-track-blue text-track-ring font-bold hover:opacity-90',
+        brand: 'bg-track-blue text-track-ring font-bold shadow-soft hover:opacity-90',
         // Legacy alias retained for compat (2026-05-19) — collapses to
         // `default`. Use variant="default".
         secondary: 'bg-foreground text-background font-bold hover:opacity-85',

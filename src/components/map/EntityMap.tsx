@@ -496,7 +496,7 @@ export const EntityMap = ({
 
       {!mapReady && !mapError && (
         <div
-          className="absolute inset-0 flex items-center justify-center"
+          className="absolute inset-0 flex items-center justify-center rounded-container"
           style={{ backgroundColor: paper(0.7), zIndex: 5 }}
         >
           <TrackLoader size={24} label="Loading" />
@@ -505,7 +505,7 @@ export const EntityMap = ({
 
       {mapError && (
         <div
-          className="absolute inset-0 flex flex-col items-center justify-center gap-2 p-4 text-center"
+          className="absolute inset-0 flex flex-col items-center justify-center gap-2 rounded-container p-4 text-center"
           style={{ backgroundColor: 'hsl(var(--muted))', zIndex: 5 }}
           role="status"
         >

@@ -349,7 +349,7 @@ function GridView({
       </label>
       <select
         id="competition-edition"
-        className="mt-2 w-full max-w-form rounded-element border border-input bg-card px-4 py-2 text-15"
+        className="mt-2 w-full max-w-form rounded-element bg-surface-container-high px-4 py-2 text-15 shadow-soft focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
         value={editionSlug ?? ''}
         onChange={(e) => onSelect(e.target.value)}
       >

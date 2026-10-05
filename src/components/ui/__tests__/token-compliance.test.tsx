@@ -85,8 +85,15 @@ describe('design-system token compliance', () => {
     const { container } = render(<Button variant="outline">x</Button>);
     const button = container.querySelector('button')!;
     expectTokenCompliant(button, 'Button');
+    // WCAG 1.4.11: the control boundary is an obligation, not chrome.
+    // `--surface-container-high` is 1.31:1 against the page in light and
+    // 1.35:1 in dark, so the tonal fill alone cannot carry it — and no tonal
+    // value can on near-white paper (the lightest neutral that reaches 3:1 is
+    // about #919191). `border-input` measures 4.26:1 against the page and
+    // 3.26:1 against this fill, so both sides of the edge hold in both modes.
     expect(classOf(button)).toMatch(/\bborder\b/);
     expect(classOf(button)).toMatch(/\bborder-input\b/);
+    expect(classOf(button)).toMatch(/\bbg-surface-container-high\b/);
   });
 
   it('Card uses design tokens', () => {
@@ -103,8 +110,15 @@ describe('design-system token compliance', () => {
     const { container } = render(<Input />);
     const input = container.querySelector('input')!;
     expectTokenCompliant(input, 'Input');
+    // WCAG 1.4.11: the control boundary is an obligation, not chrome.
+    // `--surface-container-high` is 1.31:1 against the page in light and
+    // 1.35:1 in dark, so the tonal fill alone cannot carry it — and no tonal
+    // value can on near-white paper (the lightest neutral that reaches 3:1 is
+    // about #919191). `border-input` measures 4.26:1 against the page and
+    // 3.26:1 against this fill, so both sides of the edge hold in both modes.
     expect(classOf(input)).toMatch(/\bborder\b/);
     expect(classOf(input)).toMatch(/\bborder-input\b/);
+    expect(classOf(input)).toMatch(/\bbg-surface-container-high\b/);
   });
 
   it('Alert uses design tokens', () => {
