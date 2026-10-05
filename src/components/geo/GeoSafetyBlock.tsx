@@ -107,7 +107,10 @@ export function GeoSafetyVerdict({
       </Eyebrow>
       <span
         className={cn(
-          'inline-flex items-center gap-1.5 px-2 py-1 text-13 font-semibold transition-colors',
+          // The chip carries a fill, so it carries the badge radius: once the
+          // hairline went, the fill IS the edge, and a square filled chip is
+          // the one shape §02b rules out. `rounded-badge`, matching EqualityChip.
+          'inline-flex items-center gap-1.5 rounded-badge px-2 py-1 text-13 font-semibold transition-colors',
           danger
             ? 'bg-destructive/10 text-destructive'
             : 'bg-surface-container-high text-foreground',

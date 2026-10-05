@@ -226,7 +226,7 @@ export default function RightsSources() {
               </li>
             ))}
           </ul>
-          <p className="bg-surface-container px-6 py-6 text-13 leading-relaxed text-muted-foreground md:px-8">
+          <p className="rounded-container bg-surface-container px-6 py-6 text-13 leading-relaxed text-muted-foreground md:px-8">
             {t(
               'rights.sources.body.unscored',
               'The unscored rows are uninhabited or near-uninhabited territories with no ILGA entry. We list them as "not scored" rather than giving them a default, because a default would read as a measurement.',
@@ -283,7 +283,7 @@ export default function RightsSources() {
             </div>
           </StationPanel>
           <div className="flex flex-col overflow-hidden rounded-container bg-foreground p-6 text-background shadow-soft-lg md:p-8">
-            <span className="self-start bg-track-yellow px-4 py-2 text-2xs font-bold uppercase tracking-label text-foreground">
+            <span className="self-start rounded-badge bg-track-yellow px-4 py-2 text-2xs font-bold uppercase tracking-label text-foreground">
               {t('rights.sources.score.caution', 'Read before using')}
             </span>
             <p className="mt-6 font-display text-headline md:text-display">

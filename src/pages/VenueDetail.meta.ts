@@ -1,5 +1,5 @@
 import type { VenueWithRelations } from './VenueDetail.parts';
-import { socialSameAs } from '@/lib/social/registry';
+import { buildProfileUrl, normalizeHandle, socialSameAs } from '@/lib/social/registry';
 
 const MAX_DESC = 155;
 const PLACE_CATEGORIES = new Set(['park', 'beach', 'monument', 'landmark', 'museum']);
@@ -66,8 +66,11 @@ export function buildVenueJsonLd(
   if (venue.postal_code) address.postalCode = venue.postal_code;
 
   const sameAs = [...new Set(socialSameAs(venue.social_links))];
-  if (venue.instagram && !sameAs.some((u) => /instagram\.com/i.test(u))) {
-    sameAs.push(`https://instagram.com/${venue.instagram.replace(/^@/, '')}`);
+  // `venues.instagram` usually holds a full URL, not a handle — see
+  // instagramHandle() in VenueDetail.parts.tsx.
+  const igHandle = venue.instagram ? normalizeHandle('instagram', venue.instagram) : null;
+  if (igHandle && !sameAs.some((u) => /instagram\.com/i.test(u))) {
+    sameAs.push(buildProfileUrl('instagram', igHandle));
   }
 
   const openingHoursSpec = buildOpeningHoursSpec(

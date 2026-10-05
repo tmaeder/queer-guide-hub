@@ -501,10 +501,9 @@ function SubmitFormInner({ config }: SubmitFormInnerProps) {
                   <div
                     role="alert"
                     aria-live="polite"
-                    className="mb-4 p-4 rounded-element"
+                    className="mb-4 rounded-container p-4 shadow-soft"
                     style={{
                       backgroundColor: 'hsl(var(--destructive) / 0.08)',
-                      border: '1px solid hsl(var(--destructive) / 0.35)',
                     }}
                   >
                     <p className="text-sm font-semibold mb-1 text-destructive">

@@ -19,6 +19,7 @@ import { getGlossaryVocabulary } from './glossaryVocabulary';
 import { SITE_ORIGIN, DEFAULT_OG_IMAGE, type RouteMeta } from './routeMeta';
 import { safeOgImage } from './safeOgImage';
 import { categoryLabel, categoryLabelTitle } from './categoryLabels';
+import { buildProfileUrl, normalizeHandle, socialSameAs } from '../../src/lib/social/registry';
 
 export type DetailResult = {
   meta: RouteMeta;
@@ -522,7 +523,7 @@ async function venueDetail(env: Env, slug: string, pathname: string): Promise<De
     // every venue in Victoria, BC pointed at Victoria, SEYCHELLES, and Grad Hvar
     // (Croatia) at a French commune. That is the same-name-city collision class
     // recorded in CLAUDE.md, reached through a link rather than a resolver.
-    'name,slug,description,address,city,state,country,postal_code,latitude,longitude,phone,website,images,category,venue_subtype,foursquare_rating,tripadvisor_rating,tomtom_rating,hours,updated_at,safety_gated,review_status,seo_indexable,cities(slug,seo_indexable,duplicate_of_id,shell_status)',
+    'name,slug,description,address,city,state,country,postal_code,latitude,longitude,phone,website,social_links,instagram,images,category,venue_subtype,foursquare_rating,tripadvisor_rating,tomtom_rating,hours,updated_at,safety_gated,review_status,seo_indexable,cities(slug,seo_indexable,duplicate_of_id,shell_status)',
     // review_status=neq.archived: fetchRows runs with the service role, so the
     // SPA's own archived filter (usePageFetchers → notFound) never applies here;
     // without it every soft-archived venue kept serving full meta + JSON-LD to
@@ -638,7 +639,7 @@ async function venueDetail(env: Env, slug: string, pathname: string): Promise<De
         : undefined,
     telephone: stringField(row, 'phone'),
     image: arrayField(row, 'images')?.[0],
-    sameAs: stringField(row, 'website') ? [stringField(row, 'website')] : undefined,
+    sameAs: venueSameAs(row),
     aggregateRating: aggregate
       ? {
           '@type': 'AggregateRating',
@@ -649,6 +650,34 @@ async function venueDetail(env: Env, slug: string, pathname: string): Promise<De
   };
 
   return { meta, body, jsonLd: renderLd(prune(localBusiness)), indexable: row.seo_indexable !== false };
+}
+
+/**
+ * schema.org `sameAs` for a venue: its website plus its social profiles.
+ *
+ * Until 2026-10-04 this was `[website]` alone and the select list did not even
+ * fetch `social_links`/`instagram`, so a venue's Facebook, Instagram and X
+ * profiles never reached the crawler markup — which is the markup crawlers
+ * actually see (the client builder in `VenueDetail.meta.ts` only renders when
+ * this middleware did not inject). Same normalisation as the client:
+ * `socialSameAs` from the shared registry, then the bare `instagram` handle
+ * when no Instagram URL is already present.
+ */
+export function venueSameAs(row: Record<string, unknown>): string[] | undefined {
+  const out: string[] = [];
+  const website = stringField(row, 'website');
+  if (website) out.push(website);
+  const links = row.social_links;
+  if (links && typeof links === 'object' && !Array.isArray(links)) {
+    out.push(...socialSameAs(links as Record<string, unknown>));
+  }
+  // `instagram` usually holds a full URL rather than a handle (the
+  // sync_venue_instagram_from_social trigger copies social_links.instagram
+  // verbatim), so it is normalised rather than appended to a profile prefix.
+  const ig = normalizeHandle('instagram', stringField(row, 'instagram') ?? '');
+  if (ig && !out.some((u) => /instagram\.com/i.test(u))) out.push(buildProfileUrl('instagram', ig));
+  const unique = [...new Set(out)];
+  return unique.length ? unique : undefined;
 }
 
 function mapVenueType(subtype: string): string {

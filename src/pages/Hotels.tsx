@@ -244,13 +244,13 @@ export default function Hotels() {
             <h3 className="text-lg font-semibold">
               {hasActiveFilters ? 'Matching hotels' : 'All hotels'}
             </h3>
-            <div className="inline-flex rounded-element border border-input">
+            <div className="inline-flex gap-1 rounded-container bg-surface-container p-1">
               <button
                 type="button"
                 onClick={() => setView('grid')}
                 aria-pressed={view === 'grid'}
                 className={
-                  'px-4 py-2 text-sm inline-flex items-center gap-1.5 ' +
+                  'inline-flex items-center gap-1.5 rounded-element px-4 py-2 text-sm ' +
                   (view === 'grid'
                     ? 'bg-foreground text-background'
                     : 'bg-background hover:bg-muted')
@@ -263,7 +263,7 @@ export default function Hotels() {
                 onClick={() => setView('map')}
                 aria-pressed={view === 'map'}
                 className={
-                  'px-4 py-2 text-sm inline-flex items-center gap-1.5 border-l border-border-hairline ' +
+                  'inline-flex items-center gap-1.5 rounded-element px-4 py-2 text-sm ' +
                   (view === 'map'
                     ? 'bg-foreground text-background'
                     : 'bg-background hover:bg-muted')

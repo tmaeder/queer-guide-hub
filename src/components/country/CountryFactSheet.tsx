@@ -105,7 +105,7 @@ export function CountryFactSheet({
   return (
     <dl className="grid grid-cols-2 gap-px overflow-hidden rounded-container bg-border">
       {items.map((item) => (
-        <div key={item.label} className="min-w-0 bg-background p-2.5">
+        <div key={item.label} className="min-w-0 rounded-element bg-background p-2.5">
           <dt className="text-2xs uppercase tracking-label text-muted-foreground">{item.label}</dt>
           <dd className="mt-0.5 break-words text-13 font-semibold text-foreground">{item.value}</dd>
         </div>
