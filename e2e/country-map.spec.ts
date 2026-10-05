@@ -42,6 +42,51 @@ test.use(REDUCED_MOTION);
 const DESKTOP = { width: 1280, height: 900 };
 const SUBJECT = { slug: 'switzerland', iso: 'ch', name: 'Switzerland', capital: 'Bern' };
 
+/**
+ * Pre-consent so the banner never mounts, rather than racing it.
+ *
+ * The click-to-dismiss version of this helper returned early whenever the
+ * banner was not visible YET — and the banner is a lazy chunk `LayoutShell`
+ * mounts after first paint (see `support/appReady.ts`, which documents the same
+ * hole in its own step 4). Under load the mount lands after the dismissal has
+ * already given up, the banner then arrives `position: fixed` at the bottom,
+ * and it intercepts the footer's theme toggle: measured on prod, 47 retried
+ * clicks all blocked by `region[aria-label="Cookie settings"]`, a 30s timeout
+ * reported as "locator.click" on a page that was rendering perfectly.
+ *
+ * Writing consent before first paint is deterministic — there is no mount to
+ * lose a race against. `CookieConsentProvider` reads this key once on mount and
+ * only accepts `JSON.parse`-able data whose `version` matches, so the shape
+ * here is the hook's own (checked against `useCookieConsent.tsx`, not copied
+ * from another spec: `e2e/tag-discovery.spec.ts` writes the bare string
+ * `'accepted'`, which throws in that `JSON.parse` and leaves the banner shown —
+ * a suppression that has never worked, left for its own change).
+ *
+ * Necessary-only, per the repo's decline-non-essential default.
+ */
+const CONSENT_KEY = 'queer-guide-cookie-consent';
+
+async function preConsent(page: Page) {
+  await page.addInitScript(
+    ([key, payload]) => {
+      try {
+        window.localStorage.setItem(key, payload);
+      } catch {
+        /* storage denied is survivable — the click fallback still runs */
+      }
+    },
+    [
+      CONSENT_KEY,
+      JSON.stringify({
+        preferences: { necessary: true, functional: false, analytics: false, marketing: false },
+        version: '1.0',
+        timestamp: new Date().toISOString(),
+      }),
+    ] as const,
+  );
+}
+
+/** Fallback for a build that ignores the stored key, so this cannot silently rot. */
 async function dismissCookieBanner(page: Page) {
   const banner = page.getByRole('region', { name: /cookie settings/i });
   if (!(await banner.isVisible().catch(() => false))) return;
@@ -56,6 +101,7 @@ async function dismissCookieBanner(page: Page) {
 
 async function gotoCountry(page: Page) {
   await page.setViewportSize(DESKTOP);
+  await preConsent(page);
   await page.goto(`/country/${SUBJECT.slug}`, { waitUntil: 'domcontentloaded' });
   await dismissCookieBanner(page);
   const map = page.getByTestId('country-map');
