@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 /**
- * 99991791231955 makes region_code part of a city's identity, so Portland,
+ * 99991791233840 makes region_code part of a city's identity, so Portland,
  * Maine and Portland, Oregon can both exist. Every property below is one a
  * later CREATE OR REPLACE could quietly undo:
  *
@@ -23,7 +23,7 @@ const FILE = join(
   process.cwd(),
   'supabase',
   'migrations',
-  '99991791231955_city_region_identity_key.sql',
+  '99991791233840_city_region_identity_key.sql',
 );
 const raw = readFileSync(FILE, 'utf8');
 const sql = raw

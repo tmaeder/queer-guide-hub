@@ -165,7 +165,7 @@ revoke all on function public.city_region_pick(uuid[], text, numeric, numeric, b
 grant execute on function public.city_region_pick(uuid[], text, numeric, numeric, boolean) to service_role;
 
 comment on function public.city_region_pick(uuid[], text, numeric, numeric, boolean) is
-  'Chooses among same-name cities in one country by region_code. Never breaks a tie by population. outcome: match | none | ambiguous | twin (a new city in another region may be created). See 99991791231955.';
+  'Chooses among same-name cities in one country by region_code. Never breaks a tie by population. outcome: match | none | ambiguous | twin (a new city in another region may be created). See 99991791233840.';
 
 -- ---------------------------------------------------------------------------
 -- 4a. Lookup-only helper
@@ -220,7 +220,7 @@ revoke all on function public.city_pick_in_country(uuid, text, text, boolean) fr
 grant execute on function public.city_pick_in_country(uuid, text, text, boolean) to service_role;
 
 comment on function public.city_pick_in_country(uuid, text, text, boolean) is
-  'Same-country city lookup by name (lower(name) or canonical_key), disambiguated by region hint via city_region_pick. NULL when ambiguous. Replaces ORDER BY population DESC tie-breaks. See 99991791231955.';
+  'Same-country city lookup by name (lower(name) or canonical_key), disambiguated by region hint via city_region_pick. NULL when ambiguous. Replaces ORDER BY population DESC tie-breaks. See 99991791233840.';
 
 -- ---------------------------------------------------------------------------
 -- 3. city_resolve_or_create — name arms go through city_region_pick
@@ -543,7 +543,7 @@ $o1$      SELECT c.id INTO v_city_id FROM public.cities c
       ORDER BY c.population DESC NULLS LAST
       LIMIT 1;$o1$,
 $n1$      -- Same-name cities in one country are disambiguated by region, never
-      -- by population (99991791231955). Covers lower(name) and canonical_key.
+      -- by population (99991791233840). Covers lower(name) and canonical_key.
       v_city_id := public.city_pick_in_country(v_country_id, btrim(v_loc->>'city'), v_state, true);$n1$),
       -- commit_venue_staging_item, arm (b): folded into (a)
       ('public.commit_venue_staging_item(uuid,text)',
@@ -553,7 +553,7 @@ $o2$      SELECT c.id INTO v_city_id FROM public.cities c
         AND c.duplicate_of_id IS NULL
         AND (c.slug IS NULL OR c.slug NOT LIKE 'tmp-%')
       LIMIT 1;$o2$,
-$n2$      NULL; -- canonical_key arm folded into city_pick_in_country (99991791231955)$n2$),
+$n2$      NULL; -- canonical_key arm folded into city_pick_in_country (99991791233840)$n2$),
       -- commit_event_staging_item, same-country arm
       ('public.commit_event_staging_item(uuid,text)',
 $o3$      SELECT c.id INTO v_city_id FROM public.cities c
@@ -563,7 +563,7 @@ $o3$      SELECT c.id INTO v_city_id FROM public.cities c
         AND (c.slug IS NULL OR c.slug NOT LIKE 'tmp-%')
       ORDER BY c.population DESC NULLS LAST
       LIMIT 1;$o3$,
-$n3$      -- Region-disambiguated, never population (99991791231955).
+$n3$      -- Region-disambiguated, never population (99991791233840).
       v_city_id := public.city_pick_in_country(v_country_id, v_city, v_state, true);$n3$),
       -- resolve_city_and_country, same-country arm
       ('public.resolve_city_and_country(text,text)',
@@ -574,7 +574,7 @@ $o4$      SELECT ci.id, ci.name INTO v_city_id, v_city_name
         AND ci.duplicate_of_id IS NULL
       ORDER BY ci.population DESC NULLS LAST
       LIMIT 1;$o4$,
-$n4$      -- Region-disambiguated, never population (99991791231955).
+$n4$      -- Region-disambiguated, never population (99991791233840).
       SELECT ci.id, ci.name INTO v_city_id, v_city_name
       FROM cities ci
       WHERE ci.id = public.city_pick_in_country(v_country_id, p_city_name, NULL, false);$n4$)
