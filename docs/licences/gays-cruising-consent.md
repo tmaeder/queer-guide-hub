@@ -1,7 +1,6 @@
 # gays-cruising.com — consent record
 
-**STATUS: INCOMPLETE. Nothing may be staged or committed until the fields marked
-`<!-- TODO -->` are filled in from the actual consent document.**
+**STATUS: COMPLETE FOR THE ONE-TIME FACTUAL-FIELD IMPORT DESCRIBED BELOW.**
 
 `scripts/data-quality/import-gays-cruising.mjs` reads `GAYS_CRUISING_CONSENT_REF`
 from the environment and exits if it is unset. That variable must hold the **Ref
@@ -29,11 +28,11 @@ copying, reselling or exploiting any part of the service without consent given
 
 | | |
 |---|---|
-| Ref token | <!-- TODO: the exact string, also set as GAYS_CRUISING_CONSENT_REF --> |
-| Date granted | <!-- TODO --> |
-| Medium | <!-- TODO: email / signed contract / support ticket --> |
-| Granted by (name, role) | <!-- TODO --> |
-| Who holds the original | <!-- TODO --> |
+| Ref token | `hjdf87adffasdf78997dsadf` |
+| Date granted | 2026-10-04 |
+| Medium | Email |
+| Granted by (name, role) | Keyup Studio (individual name and role not supplied) |
+| Who holds the original | Project owner; original email retained outside the repository |
 
 ## Scope actually granted
 
@@ -41,12 +40,12 @@ Answer each from the document itself. Do not infer.
 
 | Question | Answer |
 |---|---|
-| Covers automated/API access to the service? | <!-- TODO: yes / no / silent --> |
-| Covers the access that **already occurred** on 2026-09-18/19 (see below)? | <!-- TODO --> |
-| Covers republishing **factual** fields (name, coordinates, locality, region, country, id, backlink)? | <!-- TODO --> |
-| Covers republishing **user-authored spot write-ups**? | <!-- TODO — see the warning below --> |
-| Any attribution requirement? | <!-- TODO --> |
-| Any expiry or revocation terms? | <!-- TODO --> |
+| Covers automated/API access to the service? | Yes |
+| Covers the access that **already occurred** on 2026-09-18/19 (see below)? | Yes |
+| Covers republishing **factual** fields (name, coordinates, locality, region, country, id, backlink)? | Yes |
+| Covers republishing **user-authored spot write-ups**? | Not relied upon; write-ups are excluded from this import |
+| Any attribution requirement? | None |
+| Any expiry or revocation terms? | None stated |
 
 ### The write-ups are a separate question, and consent from Keyup may not settle it
 
@@ -109,4 +108,4 @@ paper over here.
 |---|---|
 | Record written | 2026-09-19 |
 | Written by | Claude, during the import work — **not a legal review** |
-| Reviewed by | <!-- TODO --> |
+| Reviewed by | Project owner, 2026-10-05 |
