@@ -1,0 +1,115 @@
+{
+  "count": 2,
+  "items": [
+    {
+      "updatedOn": "2026-08-24T15:48:37+02:00",
+      "name": "101 Club",
+      "slug": "101-club",
+      "assets": [
+        ["main", "/assets/businesses/101-club/main.jpg?S0MbmmDw", "image/jpeg", 400, 400, 0]
+      ],
+      "locations": [
+        {
+          "id": 6364,
+          "label": "101, Via Panisperna, Rome, 00184",
+          "lat": 41.8971765,
+          "lon": 12.494553,
+          "cc": "IT",
+          "addr": {
+            "pc": "00184",
+            "sn": "101",
+            "city": "Rome",
+            "region": "Latium",
+            "street": "Via Panisperna"
+          }
+        }
+      ],
+      "data": {
+        "url": "https://101roma.club/",
+        "open": [["dow", 1, "23:00", "04:00"]],
+        "email": "hello@example.com",
+        "phone": "390000",
+        "socials": [
+          { "socialId": "https://www.instagram.com/101romaclub", "socialPlatform": "instagram" }
+        ],
+        "descShort": "Inclusive club in central Rome"
+      },
+      "taxons": [72, 189, 178, 180, 186, 182],
+      "events": [
+        {
+          "updatedOn": "2026-08-24T15:48:27+02:00",
+          "name": "Clubbing",
+          "slug": "clubbing-66",
+          "assets": [
+            ["bonus", "/assets/events/clubbing-66/bonus.png?q5sS9wbB", "image/png", 400, 400, 0]
+          ],
+          "businesses": [{ "id": "101-club", "name": "101 Club", "tx": [72, 178] }],
+          "dates": [
+            [
+              "cal",
+              {
+                "tz": "Europe/Rome",
+                "end": "2027-06-30",
+                "w.0": true,
+                "w.1": true,
+                "w.2": true,
+                "w.3": true,
+                "w.4": true,
+                "w.5": false,
+                "w.6": false,
+                "endH": "04:00",
+                "every": 1,
+                "start": "2025-07-01",
+                "startH": "23:00",
+                "recurring": "w"
+              }
+            ]
+          ],
+          "end": "2027-07-01T05:00:00+02:00",
+          "locations": [
+            {
+              "label": "101, Via Panisperna, Rome, 00184",
+              "lat": 41.8971765,
+              "lon": 12.494553,
+              "cc": "IT",
+              "addr": { "pc": "00184", "city": "Rome", "region": "Latium" }
+            }
+          ],
+          "start": "2025-07-01T23:00:00+02:00",
+          "data": { "url": null, "socials": [] },
+          "taxons": [110, 186, 178],
+          "tags": [207]
+        }
+      ]
+    },
+    {
+      "name": "Locationless association",
+      "slug": "locationless-association",
+      "locations": [],
+      "data": { "desc": "<p>Community support and mutual aid.</p>" },
+      "taxons": [64, 185],
+      "events": [
+        {
+          "name": "Community gathering",
+          "slug": "community-gathering",
+          "businesses": [{ "id": "locationless-association", "name": "Locationless association" }],
+          "dates": [
+            [
+              "cal",
+              {
+                "tz": "Europe/Paris",
+                "start": "2026-11-10",
+                "end": "2026-11-10",
+                "startH": "19:00",
+                "endH": "21:00",
+                "recurring": ""
+              }
+            ]
+          ],
+          "data": {},
+          "taxons": [122, 185]
+        }
+      ]
+    }
+  ]
+}

@@ -17,6 +17,7 @@ describe('SourceName enum', () => {
     expect(SourceName.parse('travelgay')).toBe('travelgay');
     expect(SourceName.parse('patroc')).toBe('patroc');
     expect(SourceName.parse('misterbnb')).toBe('misterbnb');
+    expect(SourceName.parse('agendaq')).toBe('agendaq');
   });
 
   it('rejects invalid source names', () => {

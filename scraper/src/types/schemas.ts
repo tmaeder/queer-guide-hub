@@ -9,6 +9,7 @@ export const SourceName = z.enum([
   'misterbnb',
   'wikipedia',
   'gaycities',
+  'agendaq',
 ]);
 export type SourceName = z.infer<typeof SourceName>;
 
