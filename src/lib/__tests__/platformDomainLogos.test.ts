@@ -342,3 +342,41 @@ describe('the organizations worker', () => {
     expect(w).toContain('prior_url: priorUrl');
   });
 });
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 99991791182256 — the automation was registered, enabled, and wired to nothing.
+
+const flat4 = norm(
+  stripSql(
+    readFileSync(
+      join(
+        process.cwd(),
+        'supabase',
+        'migrations',
+        '99991791182256_organizations_logo_cron_schedule.sql',
+      ),
+      'utf8',
+    ),
+  ),
+);
+
+describe('the organizations cron is actually schedulable', () => {
+  it('sets the top-level schedule COLUMN, which is what the reconciler reads', () => {
+    // sync_automations_to_cron() branch (d) gates on `a.schedule IS NOT NULL`,
+    // not on action->>'schedule'. The original row set only the latter, so the
+    // job would never have been created while every surface showed it enabled.
+    expect(flat4).toContain("set schedule = '25 4 * * *'");
+  });
+
+  it('removes the duplicate cadence from action, leaving one source', () => {
+    expect(flat4).toContain("action = (action - 'schedule')");
+  });
+
+  it('asserts the RECONCILER INTENDS to create the job, not merely that a column is set', () => {
+    // Checking the column is a restatement of the UPDATE. The only check that
+    // would have caught the original defect is asking the reconciler, because
+    // every other property of the row was already correct.
+    expect(flat4).toContain('select public.sync_automations_to_cron(false) into v_plan');
+    expect(flat4).toContain("if not (v_plan -> 'recreated') ? 'enrich-logos-organizations' then");
+  });
+});
