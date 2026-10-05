@@ -58,7 +58,9 @@ async function anonRows(
   request: APIRequestContext,
   path: string,
 ): Promise<Record<string, unknown>[]> {
-  const res = await request.get(`${SUPABASE_URL}/rest/v1/${path}`, { headers: await anonHeaders(request) });
+  const res = await request.get(`${SUPABASE_URL}/rest/v1/${path}`, {
+    headers: await anonHeaders(request),
+  });
   expect(res.ok(), `anon read failed for ${path}: ${res.status()} ${await res.text()}`).toBe(true);
   return (await res.json()) as Record<string, unknown>[];
 }
@@ -148,17 +150,50 @@ test.describe('city editorial_hook publishes whole', () => {
   test('a rejected rating never reaches the city page', async ({ request }) => {
     // The other half of the triage pass: 13 lgbt_friendly_rating proposals were rejected
     // across both batches. None of those cities may carry a rating.
+    //
+    // THE SLUG LIST IS NO LONGER THE ASSERTION, and khandwa is why. It was rejected
+    // SEVEN times (2026-10-01 x3, 10-02 x2, 10-03, by humans and by auto-triage) and then
+    // a human APPROVED rating 3 on 2026-10-04 17:28. The city carries it because someone
+    // decided it should. A frozen "these must all be null" list turns that decision into
+    // a nightly failure, and "fixing" the data to match would be reverting a human review
+    // to satisfy a test.
+    //
+    // The invariant is the one that actually matters and is stronger than the old one: a
+    // published rating must be HUMAN-APPROVED. `approve_city_review` stamps
+    // field_provenance.lgbt_friendly_rating.source = 'llm+human', so a rating written
+    // past a rejection — the regression this guards — carries no such stamp and still
+    // fails. The review queue itself is not readable as anon, correctly, which is why
+    // this is asked of the row the reader is served.
     const slugs = [
-      'chongqing', 'clarkefield', 'cremorne-point', 'da-nang', 'daegu', 'djibouti-city',
-      'khandwa', 'burbank', 'culver-city', 'huntington-park', 'sierra-madre', 'badalona',
+      'chongqing',
+      'clarkefield',
+      'cremorne-point',
+      'da-nang',
+      'daegu',
+      'djibouti-city',
+      'khandwa',
+      'burbank',
+      'culver-city',
+      'huntington-park',
+      'sierra-madre',
+      'badalona',
     ];
     const rows = await anonRows(
       request,
-      `cities?select=slug,lgbt_friendly_rating,best_time_to_visit&slug=in.(${slugs.join(',')})`,
+      `cities?select=slug,lgbt_friendly_rating,best_time_to_visit,field_provenance` +
+        `&slug=in.(${slugs.join(',')})`,
     );
     expect(rows.length).toBeGreaterThan(8); // control: the slugs resolve
+
     for (const r of rows) {
-      expect(r.lgbt_friendly_rating, `/city/${r.slug} must carry no rating`).toBeNull();
+      if (r.lgbt_friendly_rating == null) continue;
+      const prov = (r.field_provenance as Record<string, { source?: string }> | null)
+        ?.lgbt_friendly_rating;
+      expect(
+        prov?.source,
+        `/city/${r.slug} publishes rating ${r.lgbt_friendly_rating} with no human approval ` +
+          `on the row (provenance source: ${prov?.source ?? 'none'})`,
+      ).toBe('llm+human');
     }
     // Da Nang's "January to August" and Sierra Madre's three-month bloom window were both
     // rejected, so neither city may carry a best_time_to_visit from this producer.
