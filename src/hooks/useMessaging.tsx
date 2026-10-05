@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useId } from 'react';
+import { isMessagingBlockedError, BLOCKED_MESSAGE } from '@/lib/messagingBlocked';
 import { supabase } from '@/integrations/supabase/client';
 import type { Json } from '@/integrations/supabase/types';
 import { useAuth } from '@/hooks/useAuth';
@@ -337,7 +338,7 @@ export const useMessaging = () => {
 
         toast({
           title: 'Error',
-          description: 'Failed to send message',
+          description: isMessagingBlockedError(error) ? BLOCKED_MESSAGE : 'Failed to send message',
           variant: 'destructive',
         });
       } finally {
@@ -366,7 +367,9 @@ export const useMessaging = () => {
         console.error('Error starting conversation:', error);
         toast({
           title: 'Error',
-          description: 'Failed to start conversation',
+          description: isMessagingBlockedError(error)
+            ? BLOCKED_MESSAGE
+            : 'Failed to start conversation',
           variant: 'destructive',
         });
       }
@@ -379,7 +382,9 @@ export const useMessaging = () => {
   const refreshReactions = useCallback(async (messageId: string) => {
     const { data } = await supabase
       .from('message_reactions')
-      .select('*, user:profiles!message_reactions_user_id_profiles_user_id_fkey(display_name, avatar_url)')
+      .select(
+        '*, user:profiles!message_reactions_user_id_profiles_user_id_fkey(display_name, avatar_url)',
+      )
       .eq('message_id', messageId);
     const reactions = (data as MessageReaction[]) ?? [];
     setMessages((prev) => {
@@ -441,7 +446,9 @@ export const useMessaging = () => {
           const next: Record<string, Message[]> = {};
           for (const [convId, list] of Object.entries(prev)) {
             next[convId] = list.map((m) =>
-              m.id === messageId ? { ...m, content: clean, edited_at: new Date().toISOString() } : m,
+              m.id === messageId
+                ? { ...m, content: clean, edited_at: new Date().toISOString() }
+                : m,
             );
           }
           return next;
@@ -619,7 +626,12 @@ export const useMessaging = () => {
               ...prev,
               [upd.conversation_id]: list.map((m) =>
                 m.id === upd.id
-                  ? { ...m, content: upd.content, edited_at: upd.edited_at, deleted_at: upd.deleted_at }
+                  ? {
+                      ...m,
+                      content: upd.content,
+                      edited_at: upd.edited_at,
+                      deleted_at: upd.deleted_at,
+                    }
                   : m,
               ),
             };
