@@ -65,6 +65,7 @@ import { GatedDetailFallback } from '@/components/safety/GatedDetailFallback';
 import { useGatedEntityExists } from '@/hooks/useGatedEntityExists';
 import { FollowTagButton } from '@/components/tags/FollowTagButton';
 import { AdminEditButton } from '@/components/admin/AdminEditButton';
+import { ShareMenu } from '@/components/share/ShareMenu';
 import { TagAliasesDisplay } from '@/components/tags/TagAliasesDisplay';
 import { TagSafetyCallout } from '@/components/tags/TagSafetyCallout';
 import { TagWikiContent } from '@/components/tags/TagWikiContent';
@@ -821,6 +822,20 @@ export default function TagDetail() {
         action={
           <div className="flex items-center gap-2">
             <FollowTagButton tagId={tag.id} tagName={tag.name} tagSlug={tag.slug} />
+            <ShareMenu
+              url={window.location.href}
+              title={tag.name}
+              entity={{
+                entity_table: 'unified_tags',
+                entity_id: tag.id,
+                title: tag.name,
+                subtitle: t('tags.hero.eyebrow', 'Glossary'),
+                path: `/tags/${tag.slug}`,
+                // Adult or sensitive glossary terms travel as a title-only
+                // card; the tag page enforces its own age/sign-in gate.
+                gated: isAdult || Boolean(tag.is_sensitive),
+              }}
+            />
             <AdminEditButton
               contentType="unified_tags"
               contentId={tag.id}

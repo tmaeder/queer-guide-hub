@@ -13,6 +13,7 @@ import { EmptyState } from '@/components/ui/EmptyState';
 import { PageContainer } from '@/components/layout/PageContainer';
 import { GlossaryLinkedProse } from '@/components/tags/GlossaryLinkedText';
 import { AdminEditButton } from '@/components/admin/AdminEditButton';
+import { ShareMenu } from '@/components/share/ShareMenu';
 
 function SectionBlock({ section }: { section: GuideSection }) {
   if (!section.body_md) return null;
@@ -148,7 +149,20 @@ const GuideDetail = () => {
         {guide.dek && (
           <p className="italic text-body-lg text-muted-foreground max-w-2xl">{guide.dek}</p>
         )}
-        <div className="mt-6 flex justify-end">
+        <div className="mt-6 flex justify-end gap-2">
+          <ShareMenu
+            url={window.location.href}
+            title={guide.title}
+            text={guide.dek ?? undefined}
+            entity={{
+              entity_table: 'guides',
+              entity_id: guide.id,
+              title: guide.title,
+              subtitle: guide.dek ?? null,
+              image_url: hero ?? null,
+              path: `/guides/${guide.slug}`,
+            }}
+          />
           <AdminEditButton
             contentType="guides"
             contentId={guide.id}
