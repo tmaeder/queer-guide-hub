@@ -5,6 +5,7 @@ import {
   applySorts,
   applyArchivedView,
   applyMergedView,
+  applyEmbeddedLiveScope,
   type QueryBuilderLike,
 } from '../filterOps';
 import type { Filter } from '../viewSpec';
@@ -313,5 +314,34 @@ describe('applyMergedView', () => {
       ['or', 'shell_status.is.null,shell_status.neq.ghost'],
       ['is', 'duplicate_of_id', null],
     ]);
+  });
+});
+
+describe('applyEmbeddedLiveScope', () => {
+  it('scopes the embed to unmerged, NULL-safe unarchived rows', () => {
+    // The venues config shape: merge on duplicate_of_id, archive by status.
+    const { q, calls } = stub();
+    applyEmbeddedLiveScope(q, 'venues', {
+      merge: { column: 'duplicate_of_id' },
+      lifecycle: { archive: { column: 'review_status', value: 'archived' } },
+    });
+    expect(calls).toEqual([
+      ['is', 'venues.duplicate_of_id', null],
+      ['or', 'review_status.is.null,review_status.neq.archived', { referencedTable: 'venues' }],
+    ]);
+  });
+
+  it('present archive: NULL check on the embedded column', () => {
+    const { q, calls } = stub();
+    applyEmbeddedLiveScope(q, 'hotels', {
+      lifecycle: { archive: { column: 'archived_at', predicate: 'present' } },
+    });
+    expect(calls).toEqual([['is', 'hotels.archived_at', null]]);
+  });
+
+  it('emits nothing for a type with neither capability', () => {
+    const { q, calls } = stub();
+    applyEmbeddedLiveScope(q, 'tags', {});
+    expect(calls).toEqual([]);
   });
 });
