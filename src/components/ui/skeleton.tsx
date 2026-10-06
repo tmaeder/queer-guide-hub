@@ -28,6 +28,7 @@ function Skeleton({
   const animClass = animation === false ? '' : 'motion-safe:animate-pulse';
   return (
     <div
+      data-slot="skeleton"
       className={cn('bg-muted', variantClass, animClass, className)}
       style={{ width, height, ...style }}
       {...props}
