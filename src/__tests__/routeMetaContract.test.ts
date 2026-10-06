@@ -250,6 +250,7 @@ describe('isIndexable', () => {
       '/favorites',
       '/search',
       '/hub/plans',
+      '/cruising',
     ]) {
       expect(isIndexable(path), `${path} should be noindex`).toBe(false);
     }
