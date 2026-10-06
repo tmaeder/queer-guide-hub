@@ -1,6 +1,8 @@
 import { ReportButton } from '@/components/moderation/ReportButton';
 import { AdminEditButton } from '@/components/admin/AdminEditButton';
 import { EntitySocialLinks } from '@/components/entity/EntitySocialLinks';
+import { ShareMenu } from '@/components/share/ShareMenu';
+import { resolveEntityImage } from '@/lib/images/resolveEntityImage';
 import type { TFunction } from 'i18next';
 import type { CityRelation } from './types';
 
@@ -43,6 +45,18 @@ export function CityActions({ city, refetchCity, t }: CityActionsProps) {
         </a>
       )}
       <EntitySocialLinks links={city.social_links} size="sm" />
+      <ShareMenu
+        url={window.location.href}
+        title={city.name}
+        entity={{
+          entity_table: 'cities',
+          entity_id: city.id,
+          title: city.name,
+          subtitle: city.countries?.name ?? null,
+          image_url: resolveEntityImage('city', city).url ?? null,
+          path: `/city/${city.slug ?? city.id}`,
+        }}
+      />
       <ReportButton contentType="cities" contentId={city.id} contentName={city.name} />
       <AdminEditButton
         contentType="cities"
