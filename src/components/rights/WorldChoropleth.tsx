@@ -389,7 +389,7 @@ export function WorldChoropleth({
           </p>
         </div>
       ) : loading ? (
-        <div className="absolute inset-0 flex items-center justify-center bg-background/40">
+        <div className="absolute inset-0 flex items-center justify-center rounded-container bg-background/40">
           <TrackLoader size={24} label="Loading map" />
         </div>
       ) : null}
