@@ -147,7 +147,7 @@ export function AtlasMap() {
       <div className="relative h-[320px] md:h-[420px] rounded-container overflow-hidden bg-surface-container">
         <div ref={mapContainer} className="absolute inset-0" />
         {(isLoading || !boundaries) && (
-          <div className="absolute inset-0 flex items-center justify-center bg-background/40">
+          <div className="absolute inset-0 flex items-center justify-center rounded-container bg-background/40">
             <TrackLoader size={20} label={t('common.loading', 'Loading')} />
           </div>
         )}

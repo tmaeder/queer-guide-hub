@@ -185,11 +185,51 @@ export function getOpenNow(hours: unknown): boolean | null {
   return null;
 }
 
+// Google-sourced `regular` arrays split an overnight shift at midnight: a bar
+// open Tue 22:00–04:00 arrives as {day:2, 2200, +0000} plus {day:3, 0000, 0400}.
+// Rendered verbatim that reads "Wed 00:00–04:00, 22:00–00:00 (next day)", which
+// misattributes Tuesday night to Wednesday. Rejoin each pair into one window
+// on the day the shift STARTS; the after-midnight half is dropped from the
+// following day. Only an exact midnight seam is joined, so a real early-morning
+// opening (e.g. 00:30) is never swallowed.
+const endsAtMidnight = (close: unknown) =>
+  close === '+0000' || close === '2400' || close === '+2400';
+const isoDay = (day: number) => (day >= 1 && day <= 7 ? day : ((day + 6) % 7) + 1);
+
+function mergeMidnightSplits(regular: HoursPeriod[]): HoursPeriod[] {
+  const periods = regular.map((p) => ({ ...p, day: isoDay(p.day) }));
+  // Pass 1: pair every midnight-ending window with the next day's 00:00 one.
+  const partnerOf = new Map<number, number>();
+  const consumed = new Set<number>();
+  periods.forEach((p, i) => {
+    if (!endsAtMidnight(p.close)) return;
+    const nextDay = (p.day % 7) + 1;
+    const j = periods.findIndex(
+      (q, k) =>
+        k !== i &&
+        !consumed.has(k) &&
+        q.day === nextDay &&
+        q.open === '0000' &&
+        // A 24h day (00:00–+0000) is its own window, not a continuation.
+        !endsAtMidnight(q.close),
+    );
+    if (j === -1) return;
+    partnerOf.set(i, j);
+    consumed.add(j);
+  });
+  // Pass 2: emit merged windows; drop the after-midnight halves.
+  return periods.flatMap((p, i) => {
+    if (consumed.has(i)) return [];
+    const j = partnerOf.get(i);
+    return j === undefined ? [p] : [{ day: p.day, open: p.open, close: periods[j].close }];
+  });
+}
+
 // Collapse the `regular` array into a record keyed by day-name. Multiple
 // open windows per day (e.g. lunch + dinner) are joined with ", ".
 function regularToDayMap(regular: HoursPeriod[]): Record<string, string> {
   const out: Record<string, string> = {};
-  for (const p of regular) {
+  for (const p of mergeMidnightSplits(regular)) {
     // day 1..7 = Mon..Sun (ISO). Some sources use 0..6 = Sun..Sat;
     // accept both gracefully.
     const idx = p.day >= 1 && p.day <= 7 ? p.day - 1 : (p.day + 6) % 7;
@@ -221,18 +261,9 @@ export function formatHours(hours: unknown) {
   const shape = asHoursShape(hours);
   if (!shape) return <p className="text-sm text-muted-foreground">Hours not available</p>;
 
-  // Prefer the human-readable display string when the scraper produced
-  // one — it's already localised and handles split shifts naturally.
-  if (typeof shape.display === 'string' && shape.display.trim()) {
-    return (
-      <p className="text-sm text-muted-foreground" style={{ lineHeight: 1.6 }}>
-        {shape.display}
-      </p>
-    );
-  }
-
-  // Build day rows from `regular` if present, else fall back to the
-  // legacy {monday: …} shape.
+  // Structured hours win over the scraper's `display` string: the table puts
+  // one day per line, and `display` is not reliable — for Eagle NYC it listed
+  // Wed–Sun as 00:00–04:00 only, dropping the 22:00 opening `regular` carries.
   const dayMap: Record<string, string> = Array.isArray(shape.regular)
     ? regularToDayMap(shape.regular)
     : HOURS_DAYS.reduce<Record<string, string>>((acc, day) => {
@@ -241,20 +272,51 @@ export function formatHours(hours: unknown) {
         return acc;
       }, {});
 
-  if (Object.keys(dayMap).length === 0)
-    return <p className="text-sm text-muted-foreground">Hours not available</p>;
+  if (Object.keys(dayMap).length > 0) {
+    const rows: HoursRow[] = HOURS_DAYS.map((day, index) => ({
+      day: HOURS_DAY_NAMES[index],
+      open: dayMap[day] ?? 'Closed',
+    }));
+    // `todayIndex` is deliberately NOT passed. HOURS_DAYS is Monday-first, and
+    // the reader's weekday is not the venue's — a bar in Auckland is already on
+    // tomorrow. Highlighting the wrong row is worse than highlighting none, so
+    // the table stays neutral until the venue's local day is available (it
+    // needs `venue.timezone`, which this helper does not receive).
+    return <HoursTable rows={rows} />;
+  }
 
-  const rows: HoursRow[] = HOURS_DAYS.map((day, index) => ({
-    day: HOURS_DAY_NAMES[index],
-    open: dayMap[day] ?? 'Closed',
-  }));
+  if (typeof shape.display === 'string' && shape.display.trim()) {
+    const displayRows = displayToRows(shape.display);
+    if (displayRows) return <HoursTable rows={displayRows} />;
+    return (
+      <p className="text-sm text-muted-foreground" style={{ lineHeight: 1.6 }}>
+        {shape.display}
+      </p>
+    );
+  }
 
-  // `todayIndex` is deliberately NOT passed. HOURS_DAYS is Monday-first, and
-  // the reader's weekday is not the venue's — a bar in Auckland is already on
-  // tomorrow. Highlighting the wrong row is worse than highlighting none, so
-  // the table stays neutral until the venue's local day is available (it needs
-  // `venue.timezone`, which this helper does not receive).
-  return <HoursTable rows={rows} />;
+  return <p className="text-sm text-muted-foreground">Hours not available</p>;
+}
+
+// "Mon 12:00 AM-4:00 AM; Wed-Sun 10 PM-4 AM" → one table row per segment.
+// Only split when EVERY segment opens with a day or day span, so free text
+// such as Spartacus's "22-4, Sun 16-4h" stays a paragraph rather than being
+// cut into rows with nonsense day labels.
+const DISPLAY_SEGMENT =
+  /^((?:Mon|Tue|Wed|Thu|Fri|Sat|Sun)[a-z]*\.?(?:\s*[-–]\s*(?:Mon|Tue|Wed|Thu|Fri|Sat|Sun)[a-z]*\.?)?)\s+(.+)$/i;
+function displayToRows(display: string): HoursRow[] | null {
+  const segments = display
+    .split(';')
+    .map((s) => s.trim())
+    .filter(Boolean);
+  if (segments.length < 2) return null;
+  const rows: HoursRow[] = [];
+  for (const seg of segments) {
+    const m = seg.match(DISPLAY_SEGMENT);
+    if (!m) return null;
+    rows.push({ day: m[1], open: m[2] });
+  }
+  return rows;
 }
 
 /* ───────────────────────────── Hero ───────────────────────────── */
