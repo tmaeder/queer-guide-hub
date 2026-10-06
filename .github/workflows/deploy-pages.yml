@@ -89,6 +89,9 @@ jobs:
         run: npm run build
         env:
           NODE_OPTIONS: --max-old-space-size=4096
+          # The ambient trip layer is promoted independently of the code deploy.
+          # Fail closed to release 1 when the repository variable is absent.
+          VITE_AMBIENT_TRIP_RELEASE: ${{ vars.VITE_AMBIENT_TRIP_RELEASE || '1' }}
 
       - name: Deploy to Cloudflare Pages
         uses: cloudflare/wrangler-action@v4
