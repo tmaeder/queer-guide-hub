@@ -50,7 +50,7 @@ export function TripSectionSwitcher() {
                 );
               }}
               className={cn(
-                'inline-flex h-10 shrink-0 items-center gap-1.5 px-4 text-sm transition-colors',
+                'inline-flex h-10 min-h-11 shrink-0 items-center gap-1.5 px-4 text-sm transition-colors',
                 active
                   ? 'bg-foreground font-medium text-background'
                   : 'text-muted-foreground hover:bg-muted hover:text-foreground',

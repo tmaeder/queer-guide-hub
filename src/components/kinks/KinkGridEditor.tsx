@@ -8,14 +8,14 @@ import {
   AccordionTrigger,
 } from '@/components/ui/accordion';
 import { Badge } from '@/components/ui/badge';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from '@/components/ui/tooltip';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { KinkRatingControl } from '@/components/kinks/KinkRatingControl';
 import { useKinkTaxonomy } from '@/hooks/useKinkTaxonomy';
-import { useMyKinkRatings, useUpsertKinkRatings, useDeleteKinkRating } from '@/hooks/useKinkRatings';
+import {
+  useMyKinkRatings,
+  useUpsertKinkRatings,
+  useDeleteKinkRating,
+} from '@/hooks/useKinkRatings';
 import {
   AXIS_SIDES,
   itemAxis,
@@ -68,9 +68,7 @@ export function KinkGridEditor() {
   const handleDiscussion = (itemId: string, side: KinkSide, flag: boolean) => {
     const existing = ratings?.get(`${itemId}:${side}`);
     if (!existing) return;
-    upsert.mutate([
-      { item_id: itemId, side, rating: existing.rating, needs_discussion: flag },
-    ]);
+    upsert.mutate([{ item_id: itemId, side, rating: existing.rating, needs_discussion: flag }]);
   };
 
   return (
@@ -104,7 +102,11 @@ export function KinkGridEditor() {
                         {item.description && (
                           <Tooltip>
                             <TooltipTrigger asChild>
-                              <button type="button" aria-label="About this item" className="min-h-0">
+                              <button
+                                type="button"
+                                aria-label="About this item"
+                                className="min-h-11 min-w-11"
+                              >
                                 <Info className="h-3.5 w-3.5 text-muted-foreground" />
                               </button>
                             </TooltipTrigger>

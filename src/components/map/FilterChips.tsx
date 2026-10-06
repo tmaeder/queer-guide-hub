@@ -114,7 +114,7 @@ export const FilterChips = ({ filters, onRemove, onClearAll, className }: Filter
         <button
           type="button"
           onClick={onClearAll}
-          className="h-8 inline-flex items-center px-2 text-xs text-muted-foreground underline hover:text-foreground focus:outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+          className="h-8 min-h-11 inline-flex items-center px-2 text-xs text-muted-foreground underline hover:text-foreground focus:outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
         >
           {t('map.filterChips.clearAll', { defaultValue: 'Clear all' })}
         </button>

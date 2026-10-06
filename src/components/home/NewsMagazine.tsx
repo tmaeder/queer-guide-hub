@@ -4,6 +4,7 @@ import { Plus } from 'lucide-react';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { Eyebrow } from '@/components/ui/Eyebrow';
 import { Band } from './Band';
+import { HomeSectionError } from './HomeSectionError';
 import { Skeleton } from '@/components/ui/skeleton';
 import { FilterChip } from '@/components/transit/FilterChip';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -379,13 +380,29 @@ const NewsMagazine = React.memo(() => {
   const { assets } = useEntityImageAssets('news_article', ids);
   const storyCounts = useStoryCountsForArticles(ids);
 
-  if (front.error || (!front.loading && shown.length === 0)) return null;
-
   const head = {
     title: t('home.news.title', 'Latest News'),
     seeAllHref: '/news',
     seeAllLabel: t('common.allStories', 'All stories'),
   };
+
+  if (front.error) {
+    return (
+      <Band {...head}>
+        <HomeSectionError onRetry={() => void front.refetch()} />
+      </Band>
+    );
+  }
+
+  if (!front.loading && shown.length === 0) {
+    return (
+      <Band {...head}>
+        <p className="py-8 text-15 text-muted-foreground">
+          {t('home.news.empty', 'No current stories are available right now.')}
+        </p>
+      </Band>
+    );
+  }
 
   if (front.loading && shown.length === 0) {
     return (
@@ -447,7 +464,7 @@ const NewsMagazine = React.memo(() => {
                   storeTopic(id);
                 }}
                 className={[
-                  'inline-flex h-8 shrink-0 snap-start items-center gap-1.5 rounded-element px-2.5 text-13 font-bold',
+                  'inline-flex h-8 min-h-11 shrink-0 snap-start items-center gap-1.5 rounded-element px-2.5 text-13 font-bold',
                   'transition-colors duration-fast',
                   'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background',
                   topic === id

@@ -5,6 +5,9 @@ import type { Personality } from '@/hooks/usePersonalities';
 interface State {
   items: Personality[];
   loading: boolean;
+  error: boolean;
+  retrying: boolean;
+  refetch: () => void;
 }
 
 /** Day-of-year (1-366) so the +/- 3 day window wraps cleanly across year boundaries. */
@@ -72,11 +75,10 @@ export function useBornThisWeek(limit = 6, mode: 'born' | 'died' = 'born') {
       const inWindow = (iso: string) => {
         const d = new Date(iso);
         if (Number.isNaN(d.getTime())) return false;
-        const doy = dayOfYear(new Date(Date.UTC(today.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate())));
-        const diff = Math.min(
-          Math.abs(doy - todayDoy),
-          365 - Math.abs(doy - todayDoy),
+        const doy = dayOfYear(
+          new Date(Date.UTC(today.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate())),
         );
+        const diff = Math.min(Math.abs(doy - todayDoy), 365 - Math.abs(doy - todayDoy));
         return diff <= 3;
       };
 
@@ -105,8 +107,11 @@ export function useBornThisWeek(limit = 6, mode: 'born' | 'died' = 'born') {
     },
   });
 
-  // Same `{ items, loading }` shape the callers already destructure. A failed
-  // query reads as "nothing this week", which is the correct render for a
-  // self-hiding rail.
-  return { items: query.data ?? [], loading: query.isLoading } satisfies State;
+  return {
+    items: query.data ?? [],
+    loading: query.isLoading,
+    error: query.isError,
+    retrying: query.isFetching,
+    refetch: () => void query.refetch(),
+  } satisfies State;
 }

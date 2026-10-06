@@ -99,7 +99,7 @@ export function RegionChip({ region }: { region: HomeRegionApi }) {
                   region.setRegion(null);
                   setOpen(false);
                 }}
-                className="w-full px-4 py-2 text-start text-13 font-bold hover:bg-foreground hover:text-background"
+                className="min-h-11 w-full px-4 py-2 text-start text-13 font-bold hover:bg-foreground hover:text-background"
               >
                 {t('home.region.useMyArea', 'Use my area')}
               </button>
@@ -110,7 +110,7 @@ export function RegionChip({ region }: { region: HomeRegionApi }) {
               <button
                 type="button"
                 onClick={() => pick(c.slug)}
-                className="w-full truncate px-4 py-2 text-start text-13 hover:bg-foreground hover:text-background"
+                className="min-h-11 w-full truncate px-4 py-2 text-start text-13 hover:bg-foreground hover:text-background"
               >
                 {c.name}
               </button>

@@ -56,8 +56,8 @@ export function PackingTab({ tripId }: Props) {
   const allItems = scopedGroups.flatMap((g) => g.items);
   const checkedCount = allItems.filter((i) => i.is_checked).length;
   const totalCount = allItems.length;
-  const anyForeignItems = (grouped || []).some(
-    (g) => g.items.some((i) => i.user_id != null && i.user_id !== user?.id),
+  const anyForeignItems = (grouped || []).some((g) =>
+    g.items.some((i) => i.user_id != null && i.user_id !== user?.id),
   );
 
   const percentage = totalCount > 0 ? Math.round((checkedCount / totalCount) * 100) : 0;
@@ -247,7 +247,7 @@ export function PackingTab({ tripId }: Props) {
                   type="button"
                   onClick={() => toggleCollapse(group.category)}
                   aria-expanded={!isCollapsed}
-                  className="flex items-center gap-2 w-full border-none bg-transparent cursor-pointer text-left p-0 min-h-9"
+                  className="flex min-h-11 items-center gap-2 w-full border-none bg-transparent cursor-pointer text-left p-0"
                   style={{ color: 'inherit', fontFamily: 'inherit' }}
                 >
                   {isCollapsed ? <ChevronRight size={16} /> : <ChevronDown size={16} />}

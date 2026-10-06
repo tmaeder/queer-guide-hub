@@ -76,7 +76,11 @@ export function Header() {
 
   // ── Brand + right action cluster (shared by mobile row & desktop grid) ───
   const brand = (
-    <Link to="/" aria-label={siteName} className="flex items-center gap-2.5 shrink-0 no-underline">
+    <Link
+      to="/"
+      aria-label={siteName}
+      className="flex min-h-11 items-center gap-2.5 shrink-0 no-underline"
+    >
       {branding.logoUrl ? (
         // /admin/design custom-logo escape hatch keeps the img branch.
         <>
@@ -125,7 +129,7 @@ export function Header() {
       onClick={() => (user ? navigate(submitCta.route) : setAuthDialogOpen(true))}
       aria-label={contributeLabel}
       title={contributeLabel}
-      className="h-10 w-10 shrink-0 gap-2 p-0 lg:w-auto lg:px-4"
+      className="h-11 w-11 shrink-0 gap-2 p-0 lg:w-auto lg:px-4"
     >
       <TransitIcon name="add-station" size={20} />
       <span className="hidden lg:inline">{contributeLabel}</span>
@@ -147,7 +151,7 @@ export function Header() {
           to="/hub"
           aria-current={path === '/hub' || path.startsWith('/hub/') ? 'page' : undefined}
           title={t('header.mobileNav.hub', 'Hub')}
-          className="hidden items-center gap-2 px-2 py-2 text-sm font-medium text-muted-foreground no-underline transition-colors hover:text-foreground aria-[current=page]:font-semibold aria-[current=page]:text-foreground md:inline-flex"
+          className="hidden min-h-11 min-w-11 items-center justify-center gap-2 px-2 py-2 text-sm font-medium text-muted-foreground no-underline transition-colors hover:text-foreground aria-[current=page]:font-semibold aria-[current=page]:text-foreground md:inline-flex"
         >
           <TransitIcon name="home-base" size={18} />
           <span className="sr-only lg:not-sr-only">{t('header.mobileNav.hub', 'Hub')}</span>
@@ -166,7 +170,7 @@ export function Header() {
             <Button
               variant="ghost"
               size="sm"
-              style={{ height: 40, width: 40 }}
+              style={{ height: 44, width: 44 }}
               className="p-0"
               aria-label={t('header.openUserMenu', 'Open user menu')}
             >

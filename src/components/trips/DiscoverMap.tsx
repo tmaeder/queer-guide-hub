@@ -158,7 +158,7 @@ export function DiscoverMap({ trips, height = 480 }: Props) {
               type="button"
               onClick={() => setSelectedId(null)}
               aria-label="Close trip preview"
-              className="absolute -top-2 -right-2 z-10 inline-flex items-center justify-center w-7 h-7 rounded-full bg-foreground text-background"
+              className="absolute -top-2 -right-2 z-10 inline-flex min-h-11 min-w-11 items-center justify-center w-7 h-7 rounded-full bg-foreground text-background"
             >
               ×
             </button>

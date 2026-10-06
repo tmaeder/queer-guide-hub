@@ -5,6 +5,7 @@ import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { fetchTrendingCities, fetchPersonalizedCitiesByIds } from '@/hooks/usePersonalizedCities';
 import { Band } from '@/components/home/Band';
 import { useHomeRegionContext } from '@/components/home/homeRegionContext';
+import { HomeSectionError } from '@/components/home/HomeSectionError';
 import { CityNetwork } from './CityNetwork';
 import { NETWORK_VIEWBOX } from './cityNetworkGeometry';
 import { tierForScore, EQUALITY_TIER_LABEL } from '@/utils/equalityScore';
@@ -82,7 +83,13 @@ export function CityCards() {
   const { t } = useTranslation();
   const region = useHomeRegionContext();
 
-  const { data: cities = [], isLoading } = useQuery({
+  const {
+    data: cities = [],
+    isLoading,
+    isError,
+    isFetching,
+    refetch,
+  } = useQuery({
     queryKey: ['home-destinations', region.cityId],
     enabled: !region.loading,
     queryFn: async () => {
@@ -105,46 +112,58 @@ export function CityCards() {
       seeAllLabel={t('home.cities.seeAll', 'All cities')}
     >
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {isLoading
-          ? Array.from({ length: 8 }).map((_, i) => (
-              // Same shell + an empty diagram box, so the skeleton is exactly
-              // as tall as the loaded card at every breakpoint instead of a
-              // fixed height that only matches at one.
-              <div key={i} className="animate-pulse bg-muted p-4">
-                <div className="h-8 w-2/3 bg-muted" />
-                <svg
-                  viewBox={`0 0 ${NETWORK_VIEWBOX.w} ${NETWORK_VIEWBOX.h}`}
-                  className="my-2 w-full"
-                  aria-hidden
-                />
-                <div className="h-4 w-1/2 bg-muted" />
-              </div>
-            ))
-          : cities.map((city, i) => (
-              <div
-                key={city.id}
-                className="card-lift group relative bg-card p-4 rounded-container shadow-soft"
-              >
-                {/* The name owns the row now. The score used to sit here as a
+        {isLoading ? (
+          Array.from({ length: 8 }).map((_, i) => (
+            // Same shell + an empty diagram box, so the skeleton is exactly
+            // as tall as the loaded card at every breakpoint instead of a
+            // fixed height that only matches at one.
+            <div key={i} className="motion-safe:animate-pulse bg-muted p-4">
+              <div className="h-8 w-2/3 bg-muted" />
+              <svg
+                viewBox={`0 0 ${NETWORK_VIEWBOX.w} ${NETWORK_VIEWBOX.h}`}
+                className="my-2 w-full"
+                aria-hidden
+              />
+              <div className="h-4 w-1/2 bg-muted" />
+            </div>
+          ))
+        ) : isError ? (
+          <HomeSectionError
+            className="sm:col-span-2 lg:col-span-4"
+            retrying={isFetching}
+            onRetry={() => void refetch()}
+          />
+        ) : cities.length === 0 ? (
+          <p className="py-8 text-15 text-muted-foreground sm:col-span-2 lg:col-span-4">
+            {t('home.cities.empty', 'No city guides are available right now.')}
+          </p>
+        ) : (
+          cities.map((city, i) => (
+            <div
+              key={city.id}
+              className="card-lift group relative bg-card p-4 rounded-container shadow-soft"
+            >
+              {/* The name owns the row now. The score used to sit here as a
                       bare "90" with only a hover title — a number a reader
                       cannot calibrate, on a metric that is safety-adjacent.
                       EqualityScoreBadge learned the same lesson in 2026-07
                       ("every size now carries its meaning"); it is a 48-88px
                       ring, too big for this card, so the meaning moves to the
                       footer line instead. */}
-                <span className="block truncate font-display text-headline">{city.name}</span>
-                <CityNetwork slug={city.slug} index={i} />
-                <div className="truncate text-13 text-muted-foreground">
-                  {city.editorial_hook || city.countries?.name || ''}
-                </div>
-                <EqualityLine score={city.countries?.equality_score} />
-                <LocalizedLink
-                  to={`/city/${city.slug || city.id}`}
-                  className="absolute inset-0 no-underline"
-                  aria-label={equalityAriaLabel(city.name, city.countries?.equality_score, t)}
-                />
+              <span className="block truncate font-display text-headline">{city.name}</span>
+              <CityNetwork slug={city.slug} index={i} />
+              <div className="truncate text-13 text-muted-foreground">
+                {city.editorial_hook || city.countries?.name || ''}
               </div>
-            ))}
+              <EqualityLine score={city.countries?.equality_score} />
+              <LocalizedLink
+                to={`/city/${city.slug || city.id}`}
+                className="absolute inset-0 no-underline"
+                aria-label={equalityAriaLabel(city.name, city.countries?.equality_score, t)}
+              />
+            </div>
+          ))
+        )}
       </div>
     </Band>
   );

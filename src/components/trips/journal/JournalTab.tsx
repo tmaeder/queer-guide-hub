@@ -93,7 +93,7 @@ export function JournalTab({ tripId, members }: Props) {
                   aria-label={t(labelKey, label)}
                   title={t(labelKey, label)}
                   onClick={() => setMood(mood === key ? null : key)}
-                  className={`flex items-center justify-center w-9 h-9 rounded-element border transition-colors ${
+                  className={`flex min-h-11 min-w-11 items-center justify-center w-9 h-9 rounded-element border transition-colors ${
                     mood === key
                       ? 'bg-foreground text-background'
                       : 'border-border text-muted-foreground hover:bg-muted'

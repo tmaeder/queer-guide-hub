@@ -163,7 +163,7 @@ export const MessageInput = ({
                 type="button"
                 onClick={onClearImage}
                 aria-label={t('chat.image.remove', { defaultValue: 'Remove image' })}
-                className="absolute right-0.5 top-0.5 flex h-5 w-5 items-center justify-center rounded-full bg-foreground text-background"
+                className="absolute right-0.5 top-0.5 flex h-5 w-5 min-h-11 min-w-11 items-center justify-center rounded-full bg-foreground text-background"
               >
                 <X size={12} />
               </button>

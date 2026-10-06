@@ -79,7 +79,7 @@ export function PrideUpNext({ events, selectedId, onSelect, limit = 8 }: PrideUp
               onClick={() => onSelect?.(isSelected ? null : e.id)}
               aria-pressed={isSelected}
               className={cn(
-                'snap-start shrink-0 w-[240px] min-h-0 p-4 text-left rounded-container bg-background transition-colors',
+                'snap-start min-h-11 shrink-0 w-[240px] p-4 text-left rounded-container bg-background transition-colors',
                 isSelected
                   ? 'border border-border-hairline'
                   : 'border border-foreground/15 hover:border-border-hairline',

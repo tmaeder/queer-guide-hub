@@ -135,7 +135,7 @@ export function AddDayNoteDialog({ open, onClose, tripId, dayId, nextSortOrder }
                     aria-checked={selected}
                     aria-label={slug}
                     onClick={() => setIcon(slug)}
-                    className={`flex items-center justify-center w-9 h-9 rounded-element border transition-colors ${
+                    className={`flex min-h-11 min-w-11 items-center justify-center w-9 h-9 rounded-element border transition-colors ${
                       selected
                         ? 'bg-foreground text-background'
                         : 'border-border text-muted-foreground hover:bg-muted'

@@ -57,7 +57,7 @@ export function DayNoteRow({ place, onDelete, readOnly = false }: Props) {
           size="sm"
           onClick={() => onDelete(place.id)}
           aria-label={t('trips.dayNotes.delete', 'Delete note')}
-          className="opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity p-0.5 h-7 w-7 min-h-0 flex items-center justify-center"
+          className="opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity p-0.5 h-7 w-7 flex items-center justify-center"
         >
           <X className="w-3 h-3" />
         </Button>

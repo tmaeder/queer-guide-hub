@@ -119,7 +119,7 @@ export function AudioMiniBar() {
               type="button"
               onClick={() => skip(-SKIP_SECONDS)}
               aria-label={t('audio.back15', 'Back {{n}} seconds', { n: SKIP_SECONDS })}
-              className="hidden size-9 shrink-0 items-center justify-center rounded-full hover:bg-muted sm:flex"
+              className="hidden size-9 min-h-11 min-w-11 shrink-0 items-center justify-center rounded-full hover:bg-muted sm:flex"
             >
               <RotateCcw className="size-4" aria-hidden />
             </button>
@@ -127,7 +127,7 @@ export function AudioMiniBar() {
               type="button"
               onClick={() => skip(SKIP_SECONDS)}
               aria-label={t('audio.forward15', 'Forward {{n}} seconds', { n: SKIP_SECONDS })}
-              className="hidden size-9 shrink-0 items-center justify-center rounded-full hover:bg-muted sm:flex"
+              className="hidden size-9 min-h-11 min-w-11 shrink-0 items-center justify-center rounded-full hover:bg-muted sm:flex"
             >
               <RotateCw className="size-4" aria-hidden />
             </button>

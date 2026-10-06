@@ -65,7 +65,7 @@ export function StickyLetterBar({ letter, onChange }: Props) {
               aria-pressed={active}
               aria-label={value ? `Filter by ${label}` : 'Show all letters'}
               className={cn(
-                'inline-flex h-9 min-w-9 cursor-pointer items-center justify-center bg-muted rounded-element px-2 text-13 transition-colors',
+                'inline-flex h-9 min-h-11 min-w-11 cursor-pointer items-center justify-center bg-muted rounded-element px-2 text-13 transition-colors',
                 'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2',
                 active
                   ? 'bg-foreground font-bold text-background'

@@ -89,7 +89,10 @@ export function Band({
             <div className="flex flex-wrap items-center gap-4">
               {action}
               {seeAllHref && (
-                <LocalizedLink to={seeAllHref} className="text-15 font-bold no-underline">
+                <LocalizedLink
+                  to={seeAllHref}
+                  className="inline-flex min-h-11 items-center text-15 font-bold no-underline"
+                >
                   {seeAllLabel} →
                 </LocalizedLink>
               )}

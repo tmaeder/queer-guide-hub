@@ -51,7 +51,7 @@ export function KinkRatingControl({
                   aria-label={label}
                   onClick={() => onRate(selected ? null : value)}
                   className={cn(
-                    'inline-flex min-h-0 items-center justify-center rounded-element transition-colors bg-surface-container',
+                    'inline-flex min-h-11 items-center justify-center rounded-element transition-colors bg-surface-container',
                     btn,
                     selected
                       ? 'bg-foreground text-background'
@@ -75,7 +75,7 @@ export function KinkRatingControl({
               aria-label="Talk about it first"
               onClick={() => onToggleDiscussion(!needsDiscussion)}
               className={cn(
-                'ml-1 inline-flex min-h-0 items-center justify-center rounded-element transition-colors bg-surface-container',
+                'ml-1 inline-flex min-h-11 items-center justify-center rounded-element transition-colors bg-surface-container',
                 btn,
                 needsDiscussion
                   ? 'bg-muted text-foreground'

@@ -4,6 +4,7 @@ import { RouteBullet } from '@/components/transit/RouteBullet';
 import { Eyebrow } from '@/components/ui/Eyebrow';
 import { Band } from '@/components/home/Band';
 import { RegionChip } from '@/components/home/RegionChip';
+import { HomeSectionError } from '@/components/home/HomeSectionError';
 import { useHomeRegionContext } from '@/components/home/homeRegionContext';
 import { useHomeNearYou, type NearYouRow } from '@/hooks/useHomeNearYou';
 
@@ -71,7 +72,7 @@ function BoardRow({ row, locale }: { row: NearYouRow; locale: string }) {
 export function DeparturesBoard() {
   const { t, i18n } = useTranslation();
   const region = useHomeRegionContext();
-  const { data, isLoading } = useHomeNearYou(region, ROWS);
+  const { data, isLoading, isError, isFetching, refetch } = useHomeNearYou(region, ROWS);
 
   const rows = data?.rows ?? [];
   const local = rows.filter((r) => r.rung === 'local');
@@ -102,9 +103,15 @@ export function DeparturesBoard() {
           Array.from({ length: ROWS }).map((_, i) => (
             <div
               key={i}
-              className="h-[74px] animate-pulse border-b border-border-hairline last:border-b-0"
+              className="h-[74px] motion-safe:animate-pulse border-b border-border-hairline last:border-b-0"
             />
           ))
+        ) : isError ? (
+          <HomeSectionError
+            className="shadow-none"
+            retrying={isFetching}
+            onRetry={() => void refetch()}
+          />
         ) : rows.length === 0 ? (
           <p className="px-4 py-8 text-15 text-muted-foreground md:px-6">
             {t('home.departures.empty', 'Nothing on the board we can see right now.')}

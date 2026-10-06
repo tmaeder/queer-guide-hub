@@ -5,10 +5,13 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { screen } from '@testing-library/react';
 import { renderWithProviders, expectNoNestedInteractive } from '@/test/test-utils';
 
-const state = vi.hoisted(() => ({ cities: [] as unknown[] }));
+const state = vi.hoisted(() => ({ cities: [] as unknown[], error: null as Error | null }));
 
 vi.mock('@/hooks/usePersonalizedCities', () => ({
-  fetchTrendingCities: async () => state.cities,
+  fetchTrendingCities: async () => {
+    if (state.error) throw state.error;
+    return state.cities;
+  },
   fetchPersonalizedCitiesByIds: async () => [],
 }));
 vi.mock('@/components/home/homeRegionContext', () => ({
@@ -42,6 +45,7 @@ const city = (name: string, equality_score: number | null) => ({
 
 beforeEach(() => {
   state.cities = [];
+  state.error = null;
 });
 
 describe('CityCards — equality score', () => {
@@ -128,5 +132,12 @@ describe('CityCards — equality score', () => {
     const { container } = renderWithProviders(<CityCards />);
     await screen.findByText('Zürich');
     expectNoNestedInteractive(container);
+  });
+
+  it('shows a recoverable state when the city query fails', async () => {
+    state.error = new Error('offline');
+    renderWithProviders(<CityCards />);
+    expect(await screen.findByRole('status')).toHaveTextContent('This section could not load');
+    expect(screen.getByRole('button', { name: 'Try again' })).toBeInTheDocument();
   });
 });
