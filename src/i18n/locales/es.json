@@ -1807,15 +1807,6 @@
     "error": "No se pudo enviar la alerta. Inténtalo de nuevo."
   },
   "home": {
-    "yourLines": {
-      "title": "Tus líneas",
-      "description": "Un recorrido por los lugares que has visto, con recomendaciones cercanas adaptadas a tus intereses y ubicación.",
-      "reasonRecent": "Lo has visto",
-      "reasonInterest": "Coincide con tus intereses",
-      "reasonCity": "Cerca de ti",
-      "reasonFeatured": "Merece una visita",
-      "reasonIn": "En {{city}}"
-    },
     "heroLine1": "Lugares queer,",
     "heroLine2": "eventos y personas.",
     "heroLine3": "En todo el mundo.",

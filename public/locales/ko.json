@@ -1807,15 +1807,6 @@
     "error": "알림 전송에 실패했습니다. 다시 시도해 주세요."
   },
   "home": {
-    "yourLines": {
-      "title": "나의 라인",
-      "description": "내가 본 장소의 흐름과 관심사 및 위치에 맞춘 주변 추천을 확인하세요.",
-      "reasonRecent": "내가 본 곳",
-      "reasonInterest": "관심사와 일치",
-      "reasonCity": "내 근처",
-      "reasonFeatured": "둘러볼 만한 곳",
-      "reasonIn": "{{city}}에 있음"
-    },
     "heroLine1": "퀴어 장소,",
     "heroLine2": "이벤트, 그리고 사람들.",
     "heroLine3": "전 세계.",

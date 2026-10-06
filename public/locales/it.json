@@ -1807,15 +1807,6 @@
     "error": "Impossibile inviare l'allarme. Riprova."
   },
   "home": {
-    "yourLines": {
-      "title": "Le tue linee",
-      "description": "Un percorso tra i luoghi che hai visto, con suggerimenti nelle vicinanze adatti ai tuoi interessi e alla tua posizione.",
-      "reasonRecent": "Hai visto questo luogo",
-      "reasonInterest": "In linea con i tuoi interessi",
-      "reasonCity": "Vicino a te",
-      "reasonFeatured": "Da vedere",
-      "reasonIn": "A {{city}}"
-    },
     "heroLine1": "Locali queer,",
     "heroLine2": "eventi e persone.",
     "heroLine3": "In tutto il mondo.",
