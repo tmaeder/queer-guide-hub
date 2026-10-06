@@ -86,22 +86,26 @@ create policy "Blocked users cannot send direct messages"
 --    the current body is survives intact. Each step is idempotent.
 do $patch$
 declare
+  -- Every presence test below runs on v_code, the body with `--` comments
+  -- stripped: a comment that merely MENTIONS the directive or the filter must
+  -- not make a step look already applied (scripts/check-functiondef-asserts.mjs).
+  v_code text := regexp_replace(pg_get_functiondef('public.suggest_message_recipients(uuid,integer)'::regprocedure), '--[^\n]*', '', 'g');
   v_def text := pg_get_functiondef('public.suggest_message_recipients(uuid,integer)'::regprocedure);
   v_new text := v_def;
 begin
-  if position('#variable_conflict use_column' in v_new) = 0 then
+  if position('#variable_conflict use_column' in v_code) = 0 then
     v_new := regexp_replace(v_new, 'AS \$function\$\n', E'AS $function$\n#variable_conflict use_column\n');
-    if position('#variable_conflict use_column' in v_new) = 0 then
+    if position('#variable_conflict use_column' in regexp_replace(v_new, '--[^\n]*', '', 'g')) = 0 then
       raise exception 'suggest_message_recipients: body opener not found; conflict directive not applied';
     end if;
   end if;
-  if position('is_blocked(p_user, m.user_id)' in v_new) = 0 then
+  if position('is_blocked(p_user, m.user_id)' in v_code) = 0 then
     v_new := replace(
       v_new,
       E'  FROM merged m\n  ORDER BY',
       E'  FROM merged m\n  WHERE NOT public.is_blocked(p_user, m.user_id)\n  ORDER BY'
     );
-    if position('is_blocked(p_user, m.user_id)' in v_new) = 0 then
+    if position('is_blocked(p_user, m.user_id)' in regexp_replace(v_new, '--[^\n]*', '', 'g')) = 0 then
       raise exception 'suggest_message_recipients: anchor "FROM merged m / ORDER BY" not found; block filter not applied';
     end if;
   end if;
@@ -115,11 +119,11 @@ $patch$;
 do $verify$
 begin
   if position('is_blocked(user1_id, user2_id)' in
-       pg_get_functiondef('public.get_or_create_direct_conversation(uuid,uuid)'::regprocedure)) = 0 then
+       regexp_replace(pg_get_functiondef('public.get_or_create_direct_conversation(uuid,uuid)'::regprocedure), '--[^\n]*', '', 'g')) = 0 then
     raise exception 'get_or_create_direct_conversation lacks the block check';
   end if;
   if position('is_blocked(p_user, m.user_id)' in
-       pg_get_functiondef('public.suggest_message_recipients(uuid,integer)'::regprocedure)) = 0 then
+       regexp_replace(pg_get_functiondef('public.suggest_message_recipients(uuid,integer)'::regprocedure), '--[^\n]*', '', 'g')) = 0 then
     raise exception 'suggest_message_recipients lacks the block filter';
   end if;
   if not exists (
