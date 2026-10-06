@@ -25,6 +25,7 @@ vi.mock('@/components/breadcrumbs/BreadcrumbBar', () => ({
   BreadcrumbBar: () => <div data-testid="public-breadcrumbs" />,
 }));
 vi.mock('@/components/trips/TripContextBar', () => ({ TripContextBar: () => null }));
+vi.mock('@/components/trips/TripIntentResume', () => ({ TripIntentResume: () => null }));
 vi.mock('@/components/auth/EmailVerifyBanner', () => ({ EmailVerifyBanner: () => null }));
 
 import { LayoutShell } from '@/components/layout/LayoutShell';

@@ -701,7 +701,32 @@
     "contextBar": {
       "openTrip": "여행 열기",
       "ariaLabel": "진행 중인 여행",
-      "dismissAria": "진행 중인 여행 배너 닫기"
+      "dismissAria": "진행 중인 여행 배너 닫기",
+      "readiness": "여행 준비도",
+      "nextUp": "확인이 필요해요",
+      "loadError": "여행 세부 정보를 불러올 수 없습니다"
+    },
+    "capture": {
+      "planDestination": "{{city}} 여행 계획하기",
+      "inTrip": "{{trip}}에 있음",
+      "addToActive": "{{trip}}에 추가",
+      "offlineTitle": "연결 후 추가하세요",
+      "offlineDescription": "여행은 오프라인에서도 볼 수 있지만 새 장소를 추가하려면 연결이 필요합니다.",
+      "addedTitle": "{{trip}}에 추가됨",
+      "addedDescription": "{{name}}이(가) 미정 목록에 있습니다.",
+      "unscheduled": "일정 배정 대기 중",
+      "undoFailed": "추가를 취소할 수 없습니다"
+    },
+    "workspace": {
+      "sections": "여행 작업 공간",
+      "plan": "계획",
+      "prepare": "준비",
+      "together": "함께",
+      "planTools": "일정 구성하기",
+      "prepareTools": "출발 준비하기",
+      "togetherTools": "함께 계획하기",
+      "keepPlanning": "계속 계획하기",
+      "memories": "추억 추가"
     },
     "phase": {
       "label": {
@@ -716,9 +741,12 @@
         "inDays": "{{count}}일 후",
         "tomorrow": "내일",
         "soon": "곧",
-        "dayOf": "오늘",
+        "dayOf": "총 {{total}}일 중 {{day}}일차",
         "daysAgo": "{{count}}일 전",
-        "yesterday": "어제"
+        "yesterday": "어제",
+        "day": "{{day}}일차",
+        "pastTrip": "지난 여행",
+        "justEnded": "방금 종료됨"
       }
     },
     "discover": {
@@ -2301,6 +2329,7 @@
     },
     "travel": {
       "title": "여행",
+      "activeTitle": "{{city}} 여행 계획 중",
       "subtitle": "LGBTQ+ 친화적 여행지의 항공편, 호텔, 활동 찾기",
       "activitiesComingSoon": "액티비티 곧 공개.",
       "browseDestinations": "여행지 보기",
@@ -2369,6 +2398,7 @@
         "switchTrip": "활성 여행 전환"
       },
       "lede": "[KO] Pick a place, build the trip, book the pieces — with the legal picture built in.",
+      "activeLede": "{{city}}을(를) 계속 둘러보고 장소와 이벤트를 현재 여행에 바로 추가하세요.",
       "sections": {
         "plan": "[KO] Plan your trip",
         "planKicker": "[KO] The planner",
