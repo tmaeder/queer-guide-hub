@@ -96,7 +96,7 @@ test.describe('Travel hub (/travel)', () => {
   test.describe('anonymous', () => {
     test.use({ storageState: { cookies: [], origins: [] } });
 
-    test('travel → plan trip flow routes anonymous user to /trips with city seeded', async ({
+    test('travel → plan trip preserves an anonymous destination through sign-in', async ({
       page,
     }) => {
       await page.goto('/travel');
@@ -116,9 +116,18 @@ test.describe('Travel hub (/travel)', () => {
 
       await page.getByTestId('travel-plan-trip').click();
 
-      // Anonymous: routed to /trips with cityId param (signed-in flow lives in trip-creation.spec.ts).
-      await page.waitForURL(/\/trips(?:\?|$)/, { timeout: 10000 });
-      expect(page.url()).toContain('cityId=');
+      await page.waitForURL(/\/auth\?redirect=/, { timeout: 10000 });
+      const pending = await page.evaluate(() =>
+        JSON.parse(sessionStorage.getItem('qg.pendingTripCapture') ?? 'null'),
+      );
+      expect(pending).toMatchObject({
+        source: 'travel-hero',
+        returnTo: '/travel',
+        intent: {
+          kind: 'start_destination',
+          destination: { cityName: 'Berlin' },
+        },
+      });
     });
   });
 });

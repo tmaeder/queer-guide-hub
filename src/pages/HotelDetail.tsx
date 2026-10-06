@@ -2,11 +2,10 @@ import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { NotFoundMeta } from '@/components/seo/NotFoundMeta';
 import { useParams } from 'react-router';
 import { useTrackView } from '@/hooks/useTrackView';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { useHotelByIdFallback } from '@/hooks/usePageFetchers';
-import { AddToTripDialog } from '@/components/trips/AddToTripDialog';
 import { useEntityTripStatus } from '@/hooks/useEntityTripStatus';
 import { useTranslation } from 'react-i18next';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
@@ -35,7 +34,6 @@ export default function HotelDetail() {
   const { t } = useTranslation();
   const { toast } = useToast();
   const navigate = useLocalizedNavigate();
-  const [addToTripOpen, setAddToTripOpen] = useState(false);
 
   const {
     data: primary,
@@ -141,7 +139,6 @@ export default function HotelDetail() {
               countryName={countryName}
               tripCount={tripStatus?.count}
               isInTrip={tripStatus?.isInTrip}
-              onAddToTrip={() => setAddToTripOpen(true)}
               onContentUpdated={refetch}
             />
           ) : null
@@ -152,23 +149,6 @@ export default function HotelDetail() {
         entityType="hotel"
         entityId={hotel?.id}
       />
-      {hotel && (
-        <AddToTripDialog
-          open={addToTripOpen}
-          onClose={() => setAddToTripOpen(false)}
-          entity={{
-            type: 'hotel',
-            id: hotel.id,
-            name: hotel.name,
-            latitude: hotel.latitude,
-            longitude: hotel.longitude,
-            city_id: hotel.city_id,
-            country_id: hotel.country_id,
-            address: hotel.address,
-            category: hotel.hotel_type,
-          }}
-        />
-      )}
     </>
   );
 }

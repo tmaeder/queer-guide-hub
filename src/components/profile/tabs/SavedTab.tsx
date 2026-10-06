@@ -27,12 +27,11 @@ import {
   Download,
   Link as LinkIcon,
   CalendarDays,
-  Luggage,
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { fetchAllUserFavorites } from '@/hooks/usePageFetchers';
 import { FavoriteButton } from '@/components/ui/favorite-button';
-import { AddToTripDialog } from '@/components/trips/AddToTripDialog';
+import { TripAction } from '@/components/trips/TripAction';
 import { SavedToTripCard } from '@/components/trips/SavedToTripCard';
 import { useCalendarFeed } from '@/hooks/useCalendarFeed';
 import { PageLoadingState } from '@/components/layout/PageLoadingState';
@@ -58,28 +57,21 @@ interface FavoriteItem {
  * self-guards and renders nothing for them.
  */
 function AddSavedToTripButton({ item }: { item: FavoriteItem }) {
-  const { t } = useTranslation();
-  const [open, setOpen] = useState(false);
   if (item.type !== 'venue' && item.type !== 'event') return null;
   return (
-    <>
-      <Button variant="outline" size="sm" onClick={() => setOpen(true)}>
-        <Luggage size={12} className="mr-1" />
-        {t('trips.quietAdd.add', 'Add to a trip')}
-      </Button>
-      {open && (
-        <AddToTripDialog
-          open={open}
-          onClose={() => setOpen(false)}
-          entity={{
-            type: item.type,
-            id: item.id,
-            name: item.title,
-            category: item.category ?? null,
-          }}
-        />
-      )}
-    </>
+    <TripAction
+      intent={{
+        kind: 'add_entity',
+        entity: {
+          type: item.type,
+          id: item.id,
+          name: item.title,
+          category: item.category ?? null,
+        },
+      }}
+      source="saved-item"
+      variant="card"
+    />
   );
 }
 

@@ -1,16 +1,6 @@
 import { ScrollReveal } from '@/components/animation/ScrollReveal';
 import { ParallaxHero } from '@/components/effects/ParallaxHero';
-import {
-  Star,
-  MapPin,
-  Phone,
-  Globe,
-  Mail,
-  DollarSign,
-  ExternalLink,
-  Shield,
-  Luggage,
-} from 'lucide-react';
+import { Star, MapPin, Phone, Globe, Mail, DollarSign, ExternalLink, Shield } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -49,6 +39,7 @@ import { buildPlaceChain } from '@/config/breadcrumbs';
 import type { TFunction } from 'i18next';
 import type { ReactNode } from 'react';
 import { GlossaryLinkedText } from '@/components/tags/GlossaryLinkedText';
+import { TripAction } from '@/components/trips/TripAction';
 
 type Hotel = Database['public']['Tables']['hotels']['Row'];
 export type HotelWithRelations = Hotel & {
@@ -100,7 +91,6 @@ interface HeroProps {
   countryName: string;
   tripCount?: number;
   isInTrip?: boolean;
-  onAddToTrip: () => void;
   onContentUpdated?: () => void;
 }
 
@@ -110,7 +100,6 @@ export function HotelHero({
   countryName,
   tripCount,
   isInTrip,
-  onAddToTrip,
   onContentUpdated,
 }: HeroProps) {
   const heroImage = hotel.images && hotel.images.length > 0 ? hotel.images[0] : null;
@@ -158,10 +147,24 @@ export function HotelHero({
           </p>
         </div>
         <div className="flex items-center gap-2 shrink-0">
-          <Button variant="outline" size="sm" onClick={onAddToTrip}>
-            <Luggage className="w-3.5 h-3.5 mr-1.5" />
-            Add to Trip
-          </Button>
+          <TripAction
+            intent={{
+              kind: 'add_entity',
+              entity: {
+                type: 'hotel',
+                id: hotel.id,
+                name: hotel.name,
+                latitude: hotel.latitude,
+                longitude: hotel.longitude,
+                city_id: hotel.city_id,
+                country_id: hotel.country_id,
+                address: hotel.address,
+                category: hotel.hotel_type,
+              },
+            }}
+            source="hotel-detail"
+            variant="card"
+          />
           {isInTrip && (
             <Badge variant="secondary">
               In {tripCount} trip{tripCount !== 1 ? 's' : ''}

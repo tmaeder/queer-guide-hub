@@ -10,7 +10,6 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { Skeleton } from '@/components/ui/skeleton';
 import { GatedDetailFallback } from '@/components/safety/GatedDetailFallback';
-import { AddToTripDialog } from '@/components/trips/AddToTripDialog';
 import { ShareEntityDialog } from '@/components/messaging/ShareEntityDialog';
 import { EventMoreEvents } from '@/components/events/EventMoreEvents';
 import { useBreadcrumbs } from '@/contexts/BreadcrumbContext';
@@ -70,7 +69,6 @@ export default function EventDetail() {
   const { user } = useAuth();
   const [userAttendance, setUserAttendance] = useState<string | null>(null);
   const [showEventTz, setShowEventTz] = useState(true);
-  const [addToTripOpen, setAddToTripOpen] = useState(false);
   const [sendEventOpen, setSendEventOpen] = useState(false);
   const venueRef = useRef<HTMLDivElement>(null);
 
@@ -410,7 +408,6 @@ export default function EventDetail() {
       isPast={isPast}
       userAttendance={userAttendance}
       onAttendanceUpdate={handleAttendanceUpdate}
-      onAddToTrip={() => setAddToTripOpen(true)}
       onExportToCalendar={handleExportToCalendar}
       onSendEvent={() => setSendEventOpen(true)}
     />
@@ -544,21 +541,6 @@ export default function EventDetail() {
         }
       />
 
-      <AddToTripDialog
-        open={addToTripOpen}
-        onClose={() => setAddToTripOpen(false)}
-        entity={{
-          type: 'event',
-          id: event.id,
-          name: event.title,
-          latitude: event.latitude,
-          longitude: event.longitude,
-          city_id: event.city_id,
-          country_id: event.country_id,
-          category: event.event_type,
-        }}
-      />
-
       <ShareEntityDialog
         open={sendEventOpen}
         onOpenChange={setSendEventOpen}
@@ -580,7 +562,6 @@ export default function EventDetail() {
         isPast={isPast}
         user={user}
         userAttendance={userAttendance}
-        onAddToTrip={() => setAddToTripOpen(true)}
         onAttendanceUpdate={handleAttendanceUpdate}
       />
     </>

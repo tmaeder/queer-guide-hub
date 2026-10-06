@@ -18,6 +18,16 @@ type TripEventName =
   | 'trip_created'
   | 'trip_geo_set'
   | 'trip_geo_fallback_used'
+  | 'trip_intent_started'
+  | 'trip_intent_resumed'
+  | 'trip_item_add_attempt'
+  | 'trip_item_add_success'
+  | 'trip_item_add_failure'
+  | 'trip_item_add_undo'
+  | 'trip_item_add_undo_failed'
+  | 'trip_dock_open'
+  | 'trip_dock_load_failure'
+  | 'trip_workspace_section_view'
   // Reservation suggestions
   | 'reservation_suggestion_impression'
   | 'reservation_suggestion_click'
@@ -41,7 +51,20 @@ function trackUmami(event: string, data?: EventData): void {
     const umami = (window as unknown as Record<string, unknown>).umami as UmamiTracker | undefined;
     if (!umami?.track) return;
 
-    const safe: Record<string, string> = {};
+    const safe: Record<string, string> = {
+      device:
+        typeof window !== 'undefined' &&
+        typeof window.matchMedia === 'function' &&
+        window.matchMedia('(max-width: 767px)').matches
+          ? 'mobile'
+          : 'desktop',
+      locale:
+        typeof document !== 'undefined' ? document.documentElement.lang || 'unknown' : 'unknown',
+      online:
+        typeof navigator === 'undefined' || navigator.onLine === undefined
+          ? 'unknown'
+          : String(navigator.onLine),
+    };
     if (data) {
       for (const [k, v] of Object.entries(data)) {
         if (v !== undefined && v !== null) safe[k] = String(v);
