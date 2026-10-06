@@ -1,6 +1,6 @@
-import { useMemo, useState, lazy, Suspense } from 'react';
+import { useEffect, useMemo, useState, lazy, Suspense } from 'react';
 import { TrackLoader } from '@/components/transit/TrackLoader';
-import { useParams } from 'react-router';
+import { useParams, useSearchParams } from 'react-router';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import {
   MapPin,
@@ -12,7 +12,6 @@ import {
   Share2,
   ArrowLeft,
   Plus,
-  Hotel,
   Sparkles,
   MessagesSquare,
   FileText,
@@ -49,6 +48,10 @@ import { MemoryRecapCard } from '@/components/trips/MemoryRecapCard';
 import { PostTripMemoryPrompt } from '@/components/trips/PostTripMemoryPrompt';
 import { TripLocalContext } from '@/components/trips/TripLocalContext';
 import { getTripPhase } from '@/components/trips/tripPhase';
+import {
+  getTripWorkspaceSection,
+  type TripWorkspaceSection,
+} from '@/components/trips/tripWorkspaceSection';
 import { TravelBuddiesSection } from '@/components/trips/TravelBuddiesSection';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -58,12 +61,13 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion';
-import { Sheet, SheetContent } from '@/components/ui/sheet';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { ErrorState } from '@/components/ui/EmptyState';
 import { classifyTripError } from '@/utils/tripError';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { PageContainer } from '@/components/layout/PageContainer';
+import { trackTripEvent } from '@/utils/tripTracking';
+import { AMBIENT_TRIP_WORKSPACE_ENABLED } from '@/lib/trips/ambientTripFlags';
 
 const BudgetTab = lazy(() =>
   import('@/components/trips/BudgetTab').then((m) => ({ default: m.BudgetTab })),
@@ -123,11 +127,11 @@ export default function TripPlannerPage() {
   const navigate = useLocalizedNavigate();
   const { tripId } = useParams<{ tripId: string }>();
   const { data: trip, isLoading, error } = useTrip(tripId);
+  const [searchParams] = useSearchParams();
   const [addPlaceDay, setAddPlaceDay] = useState<string | undefined>();
   const [addPlaceOpen, setAddPlaceOpen] = useState(false);
   const [importOpen, setImportOpen] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
-  const [mobileBookingOpen, setMobileBookingOpen] = useState(false);
   const [offlineSaved, setOfflineSaved] = useState(false);
   const { data: reservations } = useTripReservations(tripId);
   const { toast } = useToast();
@@ -150,6 +154,19 @@ export default function TripPlannerPage() {
   };
 
   const safetyAlert = useMemo(() => (trip ? hasSafetyWarnings(trip) : false), [trip]);
+  const phase = trip ? getTripPhase(trip) : 'plan';
+  const section: TripWorkspaceSection | 'all' = AMBIENT_TRIP_WORKSPACE_ENABLED
+    ? getTripWorkspaceSection(searchParams, phase)
+    : 'all';
+
+  useEffect(() => {
+    if (!trip) return;
+    trackTripEvent('trip_workspace_section_view', {
+      trip_id: trip.id,
+      section,
+      phase,
+    });
+  }, [phase, section, trip]);
 
   if (isLoading) {
     return (
@@ -193,8 +210,6 @@ export default function TripPlannerPage() {
         : null;
 
   const statusLabel = t(`trips.status.${trip.status}`);
-  const phase = getTripPhase(trip);
-
   const overlayBtnStyle: React.CSSProperties = {
     backgroundColor: 'rgba(255,255,255,0.12)',
     borderColor: 'rgba(255,255,255,0.3)',
@@ -288,314 +303,103 @@ export default function TripPlannerPage() {
         </div>
       )}
 
-      {/* Pre-trip: docs, countdown + gaps */}
+      {/* Cross-section alerts stay visible; detailed readiness belongs to Prepare. */}
       <TripDocExpiryBanner trip={trip} />
-      <TripPreTripBlock trip={trip} />
+      {section === 'prepare' || section === 'all' ? <TripPreTripBlock trip={trip} /> : null}
       <TripNudgesBanner tripId={trip.id} />
 
-      <TripTravelBuddiesCTA
-        tripId={trip.id}
-        cityId={trip.primary_city_id}
-        cityName={trip.primary_city_name}
-        endDate={trip.end_date}
+      {section === 'together' || section === 'all' ? (
+        <TripTravelBuddiesCTA
+          tripId={trip.id}
+          cityId={trip.primary_city_id}
+          cityName={trip.primary_city_name}
+          endDate={trip.end_date}
+        />
+      ) : null}
+
+      {section === 'plan' || section === 'all' ? (
+        <>
+          <div className="flex items-center justify-between mb-6 gap-4 mt-2">
+            <span className="inline-flex items-center gap-2 rounded-full bg-background/60 px-4 py-1 text-xs2 font-semibold uppercase tracking-[0.18em] text-muted-foreground backdrop-blur-sm">
+              <span className="w-1.5 h-1.5 rounded-full bg-foreground" aria-hidden="true" />
+              {t('trips.planner.placesCount', { count: trip.trip_places.length })}
+              {trip.trip_days.length > 0 && (
+                <>
+                  <span className="opacity-40">·</span>
+                  {t('trips.planner.daysPlanned', { count: trip.trip_days.length })}
+                </>
+              )}
+            </span>
+            {canEdit && (
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setImportOpen(true)}
+                  className="rounded-full"
+                >
+                  <Download size={14} className="mr-1.5" />
+                  {t('trips.import.button', 'Import')}
+                </Button>
+                <Button
+                  variant="brand"
+                  size="sm"
+                  onClick={() => {
+                    setAddPlaceDay(undefined);
+                    setAddPlaceOpen(true);
+                  }}
+                  className="rounded-full"
+                >
+                  <Plus size={16} className="mr-1.5" />
+                  {t('trips.itinerary.addPlace')}
+                </Button>
+              </div>
+            )}
+          </div>
+
+          {/* === TIMELINE SPINE === */}
+          <div className="flex gap-6">
+            <div className="flex-1 min-w-0">
+              <DraggableItinerary
+                trip={trip}
+                onAddPlace={(dayId) => {
+                  setAddPlaceDay(dayId);
+                  setAddPlaceOpen(true);
+                }}
+                readOnly={!canEdit}
+              />
+            </div>
+          </div>
+
+          {phase !== 'memory' && (
+            <div className="mt-6">
+              <TripLocalContext trip={trip} />
+            </div>
+          )}
+        </>
+      ) : null}
+
+      {section === 'prepare' || section === 'all' ? (
+        <div className="mb-8">
+          <TripBookingAssistant
+            tripId={trip.id}
+            places={trip.trip_places}
+            days={trip.trip_days}
+            startDate={trip.start_date ?? undefined}
+            endDate={trip.end_date ?? undefined}
+          />
+        </div>
+      ) : null}
+
+      <TripWorkspaceTools
+        section={section}
+        trip={trip}
+        canEdit={canEdit}
+        safetyAlert={safetyAlert}
       />
 
-      {/* Quick action row */}
-      <div className="flex items-center justify-between mb-6 gap-4 mt-2">
-        <span className="inline-flex items-center gap-2 rounded-full bg-background/60 px-4 py-1 text-xs2 font-semibold uppercase tracking-[0.18em] text-muted-foreground backdrop-blur-sm">
-          <span className="w-1.5 h-1.5 rounded-full bg-foreground" aria-hidden="true" />
-          {t('trips.planner.placesCount', { count: trip.trip_places.length })}
-          {trip.trip_days.length > 0 && (
-            <>
-              <span className="opacity-40">·</span>
-              {t('trips.planner.daysPlanned', { count: trip.trip_days.length })}
-            </>
-          )}
-        </span>
-        {canEdit && (
-          <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setImportOpen(true)}
-              className="rounded-full"
-            >
-              <Download size={14} className="mr-1.5" />
-              {t('trips.import.button', 'Import')}
-            </Button>
-            <Button
-              variant="brand"
-              size="sm"
-              onClick={() => {
-                setAddPlaceDay(undefined);
-                setAddPlaceOpen(true);
-              }}
-              className="rounded-full"
-            >
-              <Plus size={16} className="mr-1.5" />
-              {t('trips.itinerary.addPlace')}
-            </Button>
-          </div>
-        )}
-      </div>
-
-      {/* === TIMELINE SPINE === */}
-      <div className="flex gap-6">
-        <div className="flex-1 min-w-0">
-          <DraggableItinerary
-            trip={trip}
-            onAddPlace={(dayId) => {
-              setAddPlaceDay(dayId);
-              setAddPlaceOpen(true);
-            }}
-            readOnly={!canEdit}
-          />
-        </div>
-        <aside className="hidden lg:block w-72 flex-shrink-0">
-          <TripBookingAssistant
-            tripId={trip.id}
-            places={trip.trip_places}
-            days={trip.trip_days}
-            startDate={trip.start_date ?? undefined}
-            endDate={trip.end_date ?? undefined}
-          />
-        </aside>
-      </div>
-
-      {/* Mobile booking FAB + sheet */}
-      <div className="block lg:hidden fixed bottom-20 right-4 z-[1200]">
-        <Button
-          size="sm"
-          onClick={() => setMobileBookingOpen(true)}
-          className="rounded-element"
-          style={{ width: 48, height: 48, padding: 0 }}
-        >
-          <Hotel size={20} />
-        </Button>
-      </div>
-      <Sheet open={mobileBookingOpen} onOpenChange={setMobileBookingOpen}>
-        <SheetContent side="bottom" className="max-h-[70vh] rounded-t-container p-4">
-          <div className="w-10 h-1 bg-border rounded-badge mx-auto mb-4" />
-          <TripBookingAssistant
-            tripId={trip.id}
-            places={trip.trip_places}
-            days={trip.trip_days}
-            startDate={trip.start_date ?? undefined}
-            endDate={trip.end_date ?? undefined}
-          />
-        </SheetContent>
-      </Sheet>
-
-      {phase !== 'memory' && (
-        <div className="mt-6">
-          <TripLocalContext trip={trip} />
-        </div>
-      )}
-
-      {/* === MORE PANEL (secondary tools) === */}
-      <section className="mt-8 pt-6" aria-label={t('trips.timeline.more', 'More tools')}>
-        <h2 className="text-sm font-bold uppercase tracking-wide text-muted-foreground mb-4">
-          {t('trips.timeline.more', 'More tools')}
-        </h2>
-        <Accordion type="multiple" className="w-full">
-          {/* Deterministic planner FIRST, the conversational one below it.
-              This one is free, reproducible and shows its gaps; the concierge
-              is the escape hatch for a request no picker can express. */}
-          <AccordionItem value="build-days">
-            <AccordionTrigger>
-              <span className="inline-flex items-center gap-2">
-                <CalendarRange size={16} /> {t('trips.tabs.buildDays', 'Build the days')}
-              </span>
-            </AccordionTrigger>
-            <AccordionContent>
-              <Suspense fallback={<SuspenseLoader />}>
-                <ItineraryGenerator trip={trip} canEdit={canEdit} />
-              </Suspense>
-            </AccordionContent>
-          </AccordionItem>
-
-          <AccordionItem value="suggestions">
-            <AccordionTrigger>
-              <span className="inline-flex items-center gap-2">
-                <Lightbulb size={16} /> {t('trips.tabs.suggestions', 'Suggestions')}
-              </span>
-            </AccordionTrigger>
-            <AccordionContent>
-              <TripSuggestions
-                tripId={trip.id}
-                places={trip.trip_places}
-                days={trip.trip_days}
-                startDate={trip.start_date ?? undefined}
-                endDate={trip.end_date ?? undefined}
-              />
-            </AccordionContent>
-          </AccordionItem>
-
-          <AccordionItem value="map">
-            <AccordionTrigger>
-              <span className="inline-flex items-center gap-2">
-                <MapPin size={16} /> {t('trips.tabs.map')}
-              </span>
-            </AccordionTrigger>
-            <AccordionContent>
-              <div className="h-[400px] md:h-[560px]">
-                <TripMap
-                  places={trip.trip_places}
-                  days={trip.trip_days}
-                  startDate={trip.start_date ?? undefined}
-                  endDate={trip.end_date ?? undefined}
-                />
-              </div>
-            </AccordionContent>
-          </AccordionItem>
-
-          <AccordionItem value="safety">
-            <AccordionTrigger>
-              <span className="inline-flex items-center gap-2">
-                <span className="relative inline-flex" aria-hidden={!safetyAlert}>
-                  <Shield size={16} />
-                  {safetyAlert && (
-                    <span
-                      className="border-2 absolute rounded-full border-background"
-                      style={{
-                        top: -3,
-                        right: -4,
-                        width: 8,
-                        height: 8,
-                        backgroundColor: 'hsl(var(--warning, 38 92% 50%))',
-                      }}
-                    />
-                  )}
-                </span>
-                {t('trips.tabs.safety')}
-              </span>
-            </AccordionTrigger>
-            <AccordionContent>
-              <TripSafetyBriefing
-                tripPlaces={trip.trip_places}
-                tripDays={trip.trip_days}
-                tripId={trip.id}
-              />
-            </AccordionContent>
-          </AccordionItem>
-
-          <AccordionItem value="budget">
-            <AccordionTrigger>
-              <span className="inline-flex items-center gap-2">
-                <Wallet size={16} /> {t('trips.tabs.budget')}
-              </span>
-            </AccordionTrigger>
-            <AccordionContent>
-              <Suspense fallback={<SuspenseLoader />}>
-                <BudgetTab
-                  tripId={trip.id}
-                  members={trip.trip_members}
-                  defaultCurrency={trip.currency}
-                />
-              </Suspense>
-            </AccordionContent>
-          </AccordionItem>
-
-          <AccordionItem value="reservations">
-            <AccordionTrigger>
-              <span className="inline-flex items-center gap-2">
-                <Ticket size={16} /> {t('trips.tabs.reservations')}
-              </span>
-            </AccordionTrigger>
-            <AccordionContent>
-              <Suspense fallback={<SuspenseLoader />}>
-                <ReservationsTab tripId={trip.id} />
-              </Suspense>
-            </AccordionContent>
-          </AccordionItem>
-
-          <AccordionItem value="packing">
-            <AccordionTrigger>
-              <span className="inline-flex items-center gap-2">
-                <CheckSquare size={16} /> {t('trips.tabs.packing')}
-              </span>
-            </AccordionTrigger>
-            <AccordionContent>
-              <ErrorBoundary section="packing">
-                <Suspense fallback={<SuspenseLoader />}>
-                  <PackingTab tripId={trip.id} />
-                </Suspense>
-              </ErrorBoundary>
-              <ErrorBoundary section="trip-gear" fallback={null}>
-                <MarketplaceForTrip cityName={trip.primary_city_name} places={trip.trip_places} />
-              </ErrorBoundary>
-            </AccordionContent>
-          </AccordionItem>
-
-          <AccordionItem value="collaborate">
-            <AccordionTrigger>
-              <span className="inline-flex items-center gap-2">
-                <MessageCircle size={16} /> {t('trips.tabs.collaborate')}
-              </span>
-            </AccordionTrigger>
-            <AccordionContent>
-              <Suspense fallback={<SuspenseLoader />}>
-                <CollaborationTab tripId={trip.id} />
-              </Suspense>
-            </AccordionContent>
-          </AccordionItem>
-
-          <AccordionItem value="ai">
-            <AccordionTrigger>
-              <span className="inline-flex items-center gap-2">
-                <Sparkles size={16} /> {t('trips.tabs.ai', 'AI plan')}
-              </span>
-            </AccordionTrigger>
-            <AccordionContent>
-              <Suspense fallback={<SuspenseLoader />}>
-                <AiPlanTab trip={trip} />
-              </Suspense>
-            </AccordionContent>
-          </AccordionItem>
-
-          <AccordionItem value="chat">
-            <AccordionTrigger>
-              <span className="inline-flex items-center gap-2">
-                <MessagesSquare size={16} /> {t('trips.tabs.chat', 'Chat')}
-              </span>
-            </AccordionTrigger>
-            <AccordionContent>
-              <Suspense fallback={<SuspenseLoader />}>
-                <TripChatTab tripId={trip.id} />
-              </Suspense>
-            </AccordionContent>
-          </AccordionItem>
-
-          <AccordionItem value="documents">
-            <AccordionTrigger>
-              <span className="inline-flex items-center gap-2">
-                <FileText size={16} /> {t('trips.tabs.documents', 'Documents')}
-              </span>
-            </AccordionTrigger>
-            <AccordionContent>
-              <Suspense fallback={<SuspenseLoader />}>
-                <DocumentsList tripId={trip.id} />
-              </Suspense>
-            </AccordionContent>
-          </AccordionItem>
-
-          <AccordionItem value="journal">
-            <AccordionTrigger>
-              <span className="inline-flex items-center gap-2">
-                <NotebookPen size={16} /> {t('trips.tabs.journal', 'Journal')}
-              </span>
-            </AccordionTrigger>
-            <AccordionContent>
-              <Suspense fallback={<SuspenseLoader />}>
-                <JournalTab tripId={trip.id} members={trip.trip_members} />
-              </Suspense>
-            </AccordionContent>
-          </AccordionItem>
-        </Accordion>
-      </section>
-
       {/* === POST-TRIP MEMORY === */}
-      {phase === 'memory' && (
+      {(section === 'together' || section === 'all') && phase === 'memory' && (
         <div className="mt-8 space-y-4">
           <MemoryRecapCard tripId={trip.id} />
           <PostTripMemoryPrompt trip={trip} />
@@ -604,7 +408,7 @@ export default function TripPlannerPage() {
 
       {/* Travel buddies — people heading to this trip's city around these dates.
           Suppressed for criminalizing/death-penalty destinations (outing safety). */}
-      <TravelBuddiesSection trip={trip} />
+      {section === 'together' || section === 'all' ? <TravelBuddiesSection trip={trip} /> : null}
 
       <AddPlaceDialog
         open={addPlaceOpen}
@@ -624,5 +428,221 @@ export default function TripPlannerPage() {
 
       <ShareTripDialog open={shareOpen} onClose={() => setShareOpen(false)} tripId={trip.id} />
     </PageContainer>
+  );
+}
+
+function TripWorkspaceTools({
+  section,
+  trip,
+  canEdit,
+  safetyAlert,
+}: {
+  section: TripWorkspaceSection | 'all';
+  trip: TripWithDetails;
+  canEdit: boolean;
+  safetyAlert: boolean;
+}) {
+  const { t } = useTranslation();
+  const heading =
+    section === 'all'
+      ? t('trips.timeline.more', 'More tools')
+      : section === 'plan'
+        ? t('trips.workspace.planTools', 'Shape the itinerary')
+        : section === 'prepare'
+          ? t('trips.workspace.prepareTools', 'Get ready to go')
+          : t('trips.workspace.togetherTools', 'Plan it together');
+
+  return (
+    <section className="mt-10" aria-labelledby={`trip-${section}-tools`}>
+      <h2 id={`trip-${section}-tools`} className="mb-4 text-title font-bold">
+        {heading}
+      </h2>
+      <Accordion type="multiple" className="w-full">
+        {section === 'plan' || section === 'all' ? (
+          <>
+            <AccordionItem value="build-days">
+              <AccordionTrigger>
+                <span className="inline-flex items-center gap-2">
+                  <CalendarRange size={16} /> {t('trips.tabs.buildDays', 'Build the days')}
+                </span>
+              </AccordionTrigger>
+              <AccordionContent>
+                <Suspense fallback={<SuspenseLoader />}>
+                  <ItineraryGenerator trip={trip} canEdit={canEdit} />
+                </Suspense>
+              </AccordionContent>
+            </AccordionItem>
+            <AccordionItem value="suggestions">
+              <AccordionTrigger>
+                <span className="inline-flex items-center gap-2">
+                  <Lightbulb size={16} /> {t('trips.tabs.suggestions', 'Suggestions')}
+                </span>
+              </AccordionTrigger>
+              <AccordionContent>
+                <TripSuggestions
+                  tripId={trip.id}
+                  places={trip.trip_places}
+                  days={trip.trip_days}
+                  startDate={trip.start_date ?? undefined}
+                  endDate={trip.end_date ?? undefined}
+                />
+              </AccordionContent>
+            </AccordionItem>
+            <AccordionItem value="map">
+              <AccordionTrigger>
+                <span className="inline-flex items-center gap-2">
+                  <MapPin size={16} /> {t('trips.tabs.map')}
+                </span>
+              </AccordionTrigger>
+              <AccordionContent>
+                <div className="h-[400px] md:h-[560px]">
+                  <TripMap
+                    places={trip.trip_places}
+                    days={trip.trip_days}
+                    startDate={trip.start_date ?? undefined}
+                    endDate={trip.end_date ?? undefined}
+                  />
+                </div>
+              </AccordionContent>
+            </AccordionItem>
+            <AccordionItem value="ai">
+              <AccordionTrigger>
+                <span className="inline-flex items-center gap-2">
+                  <Sparkles size={16} /> {t('trips.tabs.ai', 'AI plan')}
+                </span>
+              </AccordionTrigger>
+              <AccordionContent>
+                <Suspense fallback={<SuspenseLoader />}>
+                  <AiPlanTab trip={trip} />
+                </Suspense>
+              </AccordionContent>
+            </AccordionItem>
+          </>
+        ) : null}
+
+        {section === 'prepare' || section === 'all' ? (
+          <>
+            <AccordionItem value="safety">
+              <AccordionTrigger>
+                <span className="inline-flex items-center gap-2">
+                  <span className="relative inline-flex" aria-hidden={!safetyAlert}>
+                    <Shield size={16} />
+                    {safetyAlert ? (
+                      <span className="absolute -right-1 -top-1 h-2 w-2 rounded-full bg-foreground" />
+                    ) : null}
+                  </span>
+                  {t('trips.tabs.safety')}
+                </span>
+              </AccordionTrigger>
+              <AccordionContent>
+                <TripSafetyBriefing
+                  tripPlaces={trip.trip_places}
+                  tripDays={trip.trip_days}
+                  tripId={trip.id}
+                />
+              </AccordionContent>
+            </AccordionItem>
+            <AccordionItem value="reservations">
+              <AccordionTrigger>
+                <span className="inline-flex items-center gap-2">
+                  <Ticket size={16} /> {t('trips.tabs.reservations')}
+                </span>
+              </AccordionTrigger>
+              <AccordionContent>
+                <Suspense fallback={<SuspenseLoader />}>
+                  <ReservationsTab tripId={trip.id} />
+                </Suspense>
+              </AccordionContent>
+            </AccordionItem>
+            <AccordionItem value="budget">
+              <AccordionTrigger>
+                <span className="inline-flex items-center gap-2">
+                  <Wallet size={16} /> {t('trips.tabs.budget')}
+                </span>
+              </AccordionTrigger>
+              <AccordionContent>
+                <Suspense fallback={<SuspenseLoader />}>
+                  <BudgetTab
+                    tripId={trip.id}
+                    members={trip.trip_members}
+                    defaultCurrency={trip.currency}
+                  />
+                </Suspense>
+              </AccordionContent>
+            </AccordionItem>
+            <AccordionItem value="documents">
+              <AccordionTrigger>
+                <span className="inline-flex items-center gap-2">
+                  <FileText size={16} /> {t('trips.tabs.documents', 'Documents')}
+                </span>
+              </AccordionTrigger>
+              <AccordionContent>
+                <Suspense fallback={<SuspenseLoader />}>
+                  <DocumentsList tripId={trip.id} />
+                </Suspense>
+              </AccordionContent>
+            </AccordionItem>
+            <AccordionItem value="packing">
+              <AccordionTrigger>
+                <span className="inline-flex items-center gap-2">
+                  <CheckSquare size={16} /> {t('trips.tabs.packing')}
+                </span>
+              </AccordionTrigger>
+              <AccordionContent>
+                <ErrorBoundary section="packing">
+                  <Suspense fallback={<SuspenseLoader />}>
+                    <PackingTab tripId={trip.id} />
+                  </Suspense>
+                </ErrorBoundary>
+                <ErrorBoundary section="trip-gear" fallback={null}>
+                  <MarketplaceForTrip cityName={trip.primary_city_name} places={trip.trip_places} />
+                </ErrorBoundary>
+              </AccordionContent>
+            </AccordionItem>
+          </>
+        ) : null}
+
+        {section === 'together' || section === 'all' ? (
+          <>
+            <AccordionItem value="collaborate">
+              <AccordionTrigger>
+                <span className="inline-flex items-center gap-2">
+                  <MessageCircle size={16} /> {t('trips.tabs.collaborate')}
+                </span>
+              </AccordionTrigger>
+              <AccordionContent>
+                <Suspense fallback={<SuspenseLoader />}>
+                  <CollaborationTab tripId={trip.id} />
+                </Suspense>
+              </AccordionContent>
+            </AccordionItem>
+            <AccordionItem value="chat">
+              <AccordionTrigger>
+                <span className="inline-flex items-center gap-2">
+                  <MessagesSquare size={16} /> {t('trips.tabs.chat', 'Chat')}
+                </span>
+              </AccordionTrigger>
+              <AccordionContent>
+                <Suspense fallback={<SuspenseLoader />}>
+                  <TripChatTab tripId={trip.id} />
+                </Suspense>
+              </AccordionContent>
+            </AccordionItem>
+            <AccordionItem value="journal">
+              <AccordionTrigger>
+                <span className="inline-flex items-center gap-2">
+                  <NotebookPen size={16} /> {t('trips.tabs.journal', 'Journal')}
+                </span>
+              </AccordionTrigger>
+              <AccordionContent>
+                <Suspense fallback={<SuspenseLoader />}>
+                  <JournalTab tripId={trip.id} members={trip.trip_members} />
+                </Suspense>
+              </AccordionContent>
+            </AccordionItem>
+          </>
+        ) : null}
+      </Accordion>
+    </section>
   );
 }

@@ -20,6 +20,8 @@ import { GuidesRail } from '@/components/guides/GuidesRail';
 import { TrendingStrip } from '@/components/discovery/TrendingStrip';
 import { TripTemplates } from '@/components/trips/TripTemplates';
 import { useAuth } from '@/hooks/useAuth';
+import { useOptionalActiveTrip } from '@/hooks/useActiveTrip';
+import { AMBIENT_TRIP_CONTEXT_ENABLED } from '@/lib/trips/ambientTripFlags';
 import { useTripBookingContext } from '@/hooks/useTripBookingContext';
 import { useTrackEvent } from '@/hooks/useTrackEvent';
 import { useIntentLocation } from '@/hooks/useIntentLocation';
@@ -48,6 +50,8 @@ import type { SectionDef } from '@/components/entity/editorial';
 export default function Travel() {
   const { t } = useTranslation();
   const { user } = useAuth();
+  const ambientTrip = useOptionalActiveTrip()?.activeTrip ?? null;
+  const activeTrip = AMBIENT_TRIP_CONTEXT_ENABLED ? ambientTrip : null;
   const { track } = useTrackEvent();
   const [params] = useSearchParams();
   // Any booking deep link (?intent=book from nav CTAs, ?tab/?city from
@@ -218,11 +222,25 @@ export default function Travel() {
       breadcrumbLabel={t('header.intents.travelling.label', 'Travelling')}
       breadcrumbHref="/travel"
       eyebrow="Travelling"
-      title={t('pages.travel.title', 'Where are you going?')}
-      lede={t(
-        'pages.travel.lede',
-        'Pick a place, build the trip, book the pieces — with the legal picture built in.',
-      )}
+      title={
+        activeTrip?.primary_city_name
+          ? t('pages.travel.activeTitle', 'Planning {{city}}', {
+              city: activeTrip.primary_city_name,
+            })
+          : t('pages.travel.title', 'Where are you going?')
+      }
+      lede={
+        activeTrip?.primary_city_name
+          ? t(
+              'pages.travel.activeLede',
+              'Add places and events for {{city}} directly to your active trip.',
+              { city: activeTrip.primary_city_name },
+            )
+          : t(
+              'pages.travel.lede',
+              'Pick a place, build the trip, book the pieces — with the legal picture built in.',
+            )
+      }
       sections={sections}
     />
   );
