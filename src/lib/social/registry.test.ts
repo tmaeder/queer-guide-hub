@@ -12,6 +12,8 @@ import {
   orderedSocialLinks,
   SOCIAL_DISPLAY_ORDER,
   PLATFORMS,
+  isLoginWallUrl,
+  unwrapLoginWall,
 } from './registry';
 
 describe('detectPlatform', () => {
@@ -269,5 +271,72 @@ describe('orderedSocialLinks', () => {
     expect(new Set(SOCIAL_DISPLAY_ORDER).size).toBe(SOCIAL_DISPLAY_ORDER.length);
     expect([...SOCIAL_DISPLAY_ORDER].sort()).toEqual(PLATFORMS.map((p) => p.key).sort());
     expect(SOCIAL_DISPLAY_ORDER[SOCIAL_DISPLAY_ORDER.length - 1]).toBe('website');
+  });
+});
+
+describe('login-wall URLs', () => {
+  // Real values from prod (patroc import 2026-03, cleaned 2026-10-05).
+  const FLUID =
+    'https://www.instagram.com/accounts/login/?next=https%3A%2F%2Fwww.instagram.com%2Ffluidbcn%2F&is_from_rle';
+  const BOXER =
+    'https://www.instagram.com/accounts/login/?next=https%3A%2F%2Fwww.instagram.com%2FBoxerCafeBar%2F&is_from_rle';
+
+  it('recognises an Instagram login wall and unwraps it to the guarded profile', () => {
+    expect(isLoginWallUrl(FLUID)).toBe(true);
+    expect(unwrapLoginWall(FLUID)).toBe('https://www.instagram.com/fluidbcn/');
+    expect(unwrapLoginWall(BOXER)).toBe('https://www.instagram.com/BoxerCafeBar/');
+  });
+
+  it('resolves a relative next and a Facebook login.php', () => {
+    expect(unwrapLoginWall('https://www.instagram.com/accounts/login/?next=%2Ffluidbcn%2F')).toBe(
+      'https://www.instagram.com/fluidbcn/',
+    );
+    expect(
+      unwrapLoginWall(
+        'https://www.facebook.com/login.php?next=https%3A%2F%2Fwww.facebook.com%2Fclubcitta.official%2F',
+      ),
+    ).toBe('https://www.facebook.com/clubcitta.official/');
+  });
+
+  it('never treats a login wall as a profile with the handle "accounts"', () => {
+    // The harvested value: the login page with its query stripped.
+    expect(detectPlatform('https://www.instagram.com/accounts/login/')).toBeNull();
+    expect(isShareOrWidgetUrl('https://www.instagram.com/accounts/login/')).toBe(true);
+    expect(normalizeHandle('instagram', 'https://www.instagram.com/accounts/login/')).toBeNull();
+  });
+
+  it('detects, canonicalizes and normalizes through the wall', () => {
+    expect(detectPlatform(FLUID)).toBe('instagram');
+    expect(normalizeHandle('instagram', FLUID)).toBe('fluidbcn');
+    expect(canonicalizeUrl('instagram', FLUID)).toBe('https://instagram.com/fluidbcn');
+    expect(normalizeSocialLinks({ instagram: FLUID })).toEqual({
+      instagram: 'https://instagram.com/fluidbcn',
+    });
+    expect(
+      normalizeSocialLinks({ instagram: 'https://www.instagram.com/accounts/login/' }),
+    ).toEqual({});
+    expect(extractSocialUrlsFromText(`<a href="${FLUID}">IG</a>`)).toEqual({
+      instagram: 'https://instagram.com/fluidbcn',
+    });
+  });
+
+  it('rejects a next that leaves the platform or loops back to a wall', () => {
+    expect(
+      unwrapLoginWall(
+        'https://www.instagram.com/accounts/login/?next=https%3A%2F%2Fevil.example%2Fx',
+      ),
+    ).toBeNull();
+    expect(
+      unwrapLoginWall(
+        'https://www.instagram.com/accounts/login/?next=https%3A%2F%2Fwww.instagram.com%2Faccounts%2Flogin%2F',
+      ),
+    ).toBeNull();
+    expect(unwrapLoginWall('https://www.instagram.com/accounts/login/')).toBeNull();
+  });
+
+  it('leaves /login and /accounts on ordinary websites alone', () => {
+    expect(isLoginWallUrl('https://example.com/login')).toBe(false);
+    expect(isShareOrWidgetUrl('https://example.com/accounts/login/')).toBe(false);
+    expect(detectPlatform('https://example.com/login')).toBe('website');
   });
 });
