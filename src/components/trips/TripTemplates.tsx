@@ -11,6 +11,7 @@ import { useTripMutations } from '@/hooks/useTrips';
 import { useAuth } from '@/hooks/useAuth';
 import { useTripTemplates, type TripTemplate } from '@/hooks/useTripTemplates';
 import { useTranslation } from 'react-i18next';
+import { useOptionalActiveTrip } from '@/hooks/useActiveTrip';
 
 export function TripTemplates() {
   const { t } = useTranslation();
@@ -19,6 +20,7 @@ export function TripTemplates() {
   const { createTrip, addPlacesBulk } = useTripMutations();
   const { toast } = useToast();
   const { data: templates, isLoading } = useTripTemplates();
+  const activeTripContext = useOptionalActiveTrip();
 
   const handleUseTemplate = (template: TripTemplate) => {
     // Rendered on public pages (/travel) — createTrip would RLS-fail for anon.
@@ -48,6 +50,7 @@ export function TripTemplates() {
       },
       {
         onSuccess: async (trip) => {
+          activeTripContext?.setActiveTripId(trip.id);
           if (template.cityIds.length) {
             try {
               // addPlacesBulk, not the raw insertRows this used to call: the

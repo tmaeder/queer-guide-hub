@@ -28,6 +28,7 @@ vi.mock('@tanstack/react-query', async (orig) => {
 vi.mock('@/hooks/useLocalizedNavigate', () => ({ useLocalizedNavigate: () => navigateFn }));
 vi.mock('@/hooks/useAuth', () => ({ useAuth: useAuthMock }));
 vi.mock('@/hooks/useTrips', () => ({ useTripMutations: useTripMutationsMock }));
+vi.mock('@/hooks/useActiveTrip', () => ({ useActiveTrip: () => ({ setActiveTripId: vi.fn() }) }));
 vi.mock('@/hooks/use-toast', () => ({ useToast: useToastMock }));
 vi.mock('@/components/trips/tripTitle', () => ({ resolveTripTitle: (t: { title: string }) => t.title }));
 vi.mock('@/components/trips/SaveTripButton', () => ({ SaveTripButton: () => <div data-testid="save" /> }));

@@ -1,4 +1,4 @@
-import { Star, MapPin, Phone, Globe, Mail, Luggage, Navigation2, Sparkles } from 'lucide-react';
+import { Star, MapPin, Phone, Globe, Mail, Navigation2, Sparkles } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { EntitySocialLinks } from '@/components/entity/EntitySocialLinks';
 import { buildProfileUrl, normalizeHandle, normalizeSocialLinks } from '@/lib/social/registry';
@@ -11,6 +11,7 @@ import { HoursTable, type HoursRow } from '@/components/transit/HoursTable';
 import { NestedEntityCard } from '@/components/transit/NestedEntityCard';
 import { MapInset } from '@/components/transit/MapInset';
 import { PhotoInset } from '@/components/transit/PhotoInset';
+import { TripAction } from '@/components/trips/TripAction';
 import { FavoriteButton } from '@/components/ui/favorite-button';
 import { ReportButton } from '@/components/moderation/ReportButton';
 import { AdminEditButton } from '@/components/admin/AdminEditButton';
@@ -331,12 +332,10 @@ function displayToRows(display: string): HoursRow[] | null {
  */
 export function VenueActions({
   venue,
-  onAddToTrip,
   onShare,
   t,
 }: {
   venue: VenueWithRelations;
-  onAddToTrip: () => void;
   onShare: () => void;
   t: TFunction;
 }) {
@@ -344,10 +343,23 @@ export function VenueActions({
   return (
     <>
       {!isClosed && (
-        <Button onClick={onAddToTrip}>
-          <Luggage size={16} className="mr-2" />
-          {t('pages.venueDetail.addToTrip', 'Add to trip')}
-        </Button>
+        <TripAction
+          intent={{
+            kind: 'add_entity',
+            entity: {
+              type: 'venue',
+              id: venue.id,
+              name: venue.name,
+              latitude: venue.latitude,
+              longitude: venue.longitude,
+              city_id: venue.city_id,
+              country_id: venue.country_id,
+              address: venue.address,
+              category: venue.category,
+            },
+          }}
+          source="venue-detail"
+        />
       )}
       <FavoriteButton itemId={venue.id} type="venue" size="md" />
       {!isClosed && (

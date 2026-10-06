@@ -4,7 +4,9 @@ import type { Trip } from '@/hooks/useTrips';
 
 const NOW = new Date('2026-04-18T12:00:00Z');
 
-function trip(partial: Partial<Trip>): Pick<Trip, 'status' | 'start_date' | 'end_date'> {
+function trip(
+  partial: Partial<Trip>,
+): Pick<Trip, 'status' | 'start_date' | 'end_date'> & Partial<Pick<Trip, 'timezone'>> {
   return {
     status: 'planning',
     start_date: null,
@@ -34,32 +36,32 @@ describe('getTripPhase', () => {
     expect(getTripPhase(trip({}), NOW)).toBe('seed');
   });
   it('plan: dates set, > 14 days out', () => {
-    expect(
-      getTripPhase(trip({ start_date: '2026-06-01', end_date: '2026-06-08' }), NOW),
-    ).toBe('plan');
+    expect(getTripPhase(trip({ start_date: '2026-06-01', end_date: '2026-06-08' }), NOW)).toBe(
+      'plan',
+    );
   });
   it('countdown: within 14 days but not started', () => {
-    expect(
-      getTripPhase(trip({ start_date: '2026-04-25', end_date: '2026-04-30' }), NOW),
-    ).toBe('countdown');
+    expect(getTripPhase(trip({ start_date: '2026-04-25', end_date: '2026-04-30' }), NOW)).toBe(
+      'countdown',
+    );
   });
   it('live: today is within trip range', () => {
-    expect(
-      getTripPhase(trip({ start_date: '2026-04-15', end_date: '2026-04-22' }), NOW),
-    ).toBe('live');
+    expect(getTripPhase(trip({ start_date: '2026-04-15', end_date: '2026-04-22' }), NOW)).toBe(
+      'live',
+    );
   });
   it('live: status === active overrides date check', () => {
     expect(getTripPhase(trip({ status: 'active' }), NOW)).toBe('live');
   });
   it('memory: end_date in past', () => {
-    expect(
-      getTripPhase(trip({ start_date: '2026-04-01', end_date: '2026-04-10' }), NOW),
-    ).toBe('memory');
+    expect(getTripPhase(trip({ start_date: '2026-04-01', end_date: '2026-04-10' }), NOW)).toBe(
+      'memory',
+    );
   });
   it('memory: status archived even with future dates', () => {
-    expect(
-      getTripPhase(trip({ status: 'archived', start_date: '2026-12-01' }), NOW),
-    ).toBe('memory');
+    expect(getTripPhase(trip({ status: 'archived', start_date: '2026-12-01' }), NOW)).toBe(
+      'memory',
+    );
   });
   it('memory: status completed', () => {
     expect(getTripPhase(trip({ status: 'completed' }), NOW)).toBe('memory');
@@ -72,6 +74,21 @@ describe('getTripPhase', () => {
   });
   it('plan: 15 days out is past countdown', () => {
     expect(getTripPhase(trip({ start_date: '2026-05-03' }), NOW)).toBe('plan');
+  });
+  it('uses the destination timezone at the local start-date boundary', () => {
+    const boundary = new Date('2026-04-17T22:30:00Z');
+    expect(
+      getTripPhase(
+        trip({ start_date: '2026-04-18', end_date: '2026-04-20', timezone: 'Europe/Zurich' }),
+        boundary,
+      ),
+    ).toBe('live');
+    expect(
+      getTripPhase(
+        trip({ start_date: '2026-04-18', end_date: '2026-04-20', timezone: 'America/Los_Angeles' }),
+        boundary,
+      ),
+    ).toBe('countdown');
   });
 });
 
@@ -96,18 +113,18 @@ describe('phaseStatusText', () => {
     expect(phaseStatusText(trip({ start_date: '2026-04-19' }), NOW)).toBe('Tomorrow');
   });
   it('live: Day N of M', () => {
-    expect(
-      phaseStatusText(trip({ start_date: '2026-04-15', end_date: '2026-04-22' }), NOW),
-    ).toBe('Day 4 of 8');
+    expect(phaseStatusText(trip({ start_date: '2026-04-15', end_date: '2026-04-22' }), NOW)).toBe(
+      'Day 4 of 8',
+    );
   });
   it('memory: N days ago', () => {
-    expect(
-      phaseStatusText(trip({ start_date: '2026-04-01', end_date: '2026-04-10' }), NOW),
-    ).toBe('8 days ago');
+    expect(phaseStatusText(trip({ start_date: '2026-04-01', end_date: '2026-04-10' }), NOW)).toBe(
+      '8 days ago',
+    );
   });
   it('memory: yesterday', () => {
-    expect(
-      phaseStatusText(trip({ start_date: '2026-04-10', end_date: '2026-04-17' }), NOW),
-    ).toBe('Yesterday');
+    expect(phaseStatusText(trip({ start_date: '2026-04-10', end_date: '2026-04-17' }), NOW)).toBe(
+      'Yesterday',
+    );
   });
 });
