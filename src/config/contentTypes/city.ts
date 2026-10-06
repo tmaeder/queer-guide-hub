@@ -1,39 +1,8 @@
 import { MapPin } from 'lucide-react';
-import { Link } from 'react-router';
-import { filteredListHref } from '@/lib/cmsFilterHref';
+import { countLink } from './countLink';
 import type { ContentTypeConfig, FieldConfig } from '@/types/cms';
 import { venueContentType } from './venue';
 import { eventContentType } from './event';
-
-const fmtNum = (n: unknown): string =>
-  typeof n === 'number' && Number.isFinite(n) ? new Intl.NumberFormat().format(n) : '-';
-
-/**
- * A per-city count that links to that type's admin list filtered to the city.
- * Filters on `city_id` — the same key the `<embed>(count)` counts through —
- * not on the `city` text column, which can disagree with the number. The count
- * itself is scoped to the linked list's default slice by `listEmbedScopes`
- * below, so the number and the list agree. Built without the registry check
- * (`cmsFilteredListPath`) on purpose: see the import-cycle note in
- * cmsFilterHref.ts. A zero count stays text — a link to an empty list is a
- * dead end.
- */
-function countLink(row: Record<string, unknown>, embed: string, registryKey: string) {
-  const rows = row[embed] as Array<{ count?: number }> | null | undefined;
-  const count = rows?.[0]?.count ?? 0;
-  const name = typeof row.name === 'string' ? row.name : null;
-  if (count <= 0 || typeof row.id !== 'string' || !row.id) return fmtNum(count);
-  return (
-    <Link
-      to={filteredListHref(registryKey, 'city_id', row.id, name)}
-      className="font-medium underline underline-offset-2"
-      aria-label={`Show ${fmtNum(count)} ${embed} in ${name ?? 'this city'}`}
-      onClick={(e) => e.stopPropagation()}
-    >
-      {fmtNum(count)}
-    </Link>
-  );
-}
 
 export const cityFields: FieldConfig[] = [
   {
@@ -150,7 +119,7 @@ export const cityFields: FieldConfig[] = [
     hidden: true,
     virtual: true,
     listColumn: true,
-    listRender: (row) => countLink(row, 'venues', 'venues'),
+    listRender: (row) => countLink(row, 'venues', 'venues', 'city_id'),
   },
   {
     name: 'event_count',
@@ -160,7 +129,7 @@ export const cityFields: FieldConfig[] = [
     hidden: true,
     virtual: true,
     listColumn: true,
-    listRender: (row) => countLink(row, 'events', 'events'),
+    listRender: (row) => countLink(row, 'events', 'events', 'city_id'),
   },
 ];
 

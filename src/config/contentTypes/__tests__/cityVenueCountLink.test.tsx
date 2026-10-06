@@ -11,6 +11,7 @@ import { render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router';
 import { cityContentType, cityFields } from '../city';
 import { venueContentType } from '../venue';
+import { queerVillageContentType, queerVillageFields } from '../village';
 import { eventContentType } from '../event';
 
 const venueCount = cityFields.find((f) => f.name === 'venue_count')!;
@@ -57,5 +58,25 @@ describe('cities event_count cell', () => {
     expect(screen.getByRole('link').getAttribute('href')).toBe(
       '/admin/content/events?city_id=c-1&city_id_label=Berlin',
     );
+  });
+});
+
+describe('queer village venues_count cell', () => {
+  const cell = queerVillageFields.find((f) => f.name === 'venues_count')!;
+  it('links to the Venues list filtered on queer_village_id', () => {
+    render(
+      <MemoryRouter>
+        {cell.listRender!({ id: 'v-1', name: 'Chueca', venues: [{ count: 7 }] })}
+      </MemoryRouter>,
+    );
+    expect(screen.getByRole('link').getAttribute('href')).toBe(
+      '/admin/content/venues?queer_village_id=v-1&queer_village_id_label=Chueca',
+    );
+  });
+
+  it('counts what the Venues list shows', () => {
+    expect(queerVillageContentType.listEmbedScopes).toEqual([
+      { embed: 'venues', type: venueContentType },
+    ]);
   });
 });
