@@ -159,6 +159,7 @@ const NewsStoryDetail = lazyRetry(() => import('./pages/NewsStoryDetail'));
 
 const Settings = lazyRetry(() => import('./pages/Settings'));
 const IntimateOnboard = lazyRetry(() => import('./pages/intimate/IntimateOnboard'));
+const Cruising = lazyRetry(() => import('./pages/Cruising'));
 const IntimateUserDetail = lazyRetry(() => import('./pages/intimate/IntimateUserDetail'));
 const KinkChecklist = lazyRetry(() => import('./pages/tools/KinkChecklist'));
 const KinkShareView = lazyRetry(() => import('./pages/tools/KinkShareView'));
@@ -1029,16 +1030,24 @@ export const AppRoutes = () => {
                   unknown locale and 404 — same reason /community/* is spelled out. */}
                   <Route path="people" element={<People />} />
                   {/* The hub is place-led; each matching mode is its own page with
-                  its own meta. Kept as real routes because /intimate, /discover,
-                  /cruising and TripTravelBuddiesCTA all deep-link into them. */}
+                  its own meta. Dating now lives inside the private cruising map. */}
                   <Route path="people/friends" element={<PeopleMode tab="friends" />} />
-                  <Route path="people/dating" element={<PeopleMode tab="dating" />} />
+                  <Route
+                    path="people/dating"
+                    element={<LocalizedRedirect to="/cruising?panel=people" />}
+                  />
                   <Route path="people/travel" element={<PeopleMode tab="travel" />} />
                   <Route path="people/nearby" element={<PeopleMode tab="nearby" />} />
-                  {/* Dating folded into the People hub; legacy entry points redirect. */}
-                  <Route path="intimate" element={<LocalizedRedirect to="/people/dating" />} />
-                  <Route path="discover" element={<LocalizedRedirect to="/people/dating" />} />
-                  <Route path="cruising" element={<LocalizedRedirect to="/people/dating" />} />
+                  {/* Dating and the spot directory share one authenticated map. */}
+                  <Route
+                    path="intimate"
+                    element={<LocalizedRedirect to="/cruising?panel=people" />}
+                  />
+                  <Route
+                    path="discover"
+                    element={<LocalizedRedirect to="/cruising?panel=people" />}
+                  />
+                  <Route path="cruising" element={<Cruising />} />
                   <Route path="intimate/onboard" element={<IntimateOnboard />} />
                   <Route path="intimate/u/:userId" element={<IntimateUserDetail />} />
                   {/* Kink checklist tool — static paths (see people/* locale note). */}
