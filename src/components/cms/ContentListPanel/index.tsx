@@ -35,6 +35,7 @@ import { useContentListController } from './useContentListController';
 import { ExportExcelButton } from '@/components/admin/ExportExcelButton';
 import { exportContentType } from './exportContentList';
 import { OPERATOR_LABELS } from './filterOps';
+import { FILTER_LABEL_SUFFIX } from '@/lib/cmsFilterHref';
 import type { Filter } from './viewSpec';
 import type { FieldConfig } from '@/types/cms';
 
@@ -72,9 +73,12 @@ function filterValueLabel(value: unknown): string {
   return String(value);
 }
 
+/** Query params that are not field filters. */
+const RESERVED_PARAMS = new Set(['view', 'edit']);
+
 function activeFilterLabel(filter: Filter, fields: FieldConfig[]): string {
   const field = fields.find((candidate) => candidate.name === filter.field);
-  const value = filterValueLabel(filter.value);
+  const value = filter.label || filterValueLabel(filter.value);
   return [field?.label ?? filter.field, OPERATOR_LABELS[filter.op], value]
     .filter(Boolean)
     .join(' ');
@@ -151,6 +155,34 @@ function ContentListPanelBody(props: ContentListPanelProps) {
     // the server, and the ref above makes this strictly one-shot per type.
     // eslint-disable-next-line react-hooks/set-state-in-effect
     if (target) selectView(target);
+    // Deep link: any query param naming a field of this type becomes an `eq`
+    // filter (e.g. `?city_id=<uuid>` from the Cities list's venue count — see
+    // `cmsFilteredListPath`). Applied AFTER the view so a default view cannot
+    // overwrite it, and REPLACING the filters restored from sessionStorage:
+    // the link's intent is "exactly these rows". `normalizeSpec` drops unknown
+    // fields and disallowed operators, so a stray param is ignored rather than
+    // queried. The params are stripped so refresh/back does not re-apply them.
+    if (c.config) {
+      const urlFilters: Filter[] = [];
+      const consumed: string[] = [];
+      searchParams.forEach((value, key) => {
+        if (RESERVED_PARAMS.has(key) || key.endsWith(FILTER_LABEL_SUFFIX) || !value) return;
+        const label = searchParams.get(`${key}${FILTER_LABEL_SUFFIX}`) || undefined;
+        urlFilters.push({ id: `url-${key}`, field: key, op: 'eq', value, label });
+        consumed.push(key, `${key}${FILTER_LABEL_SUFFIX}`);
+      });
+      const valid = normalizeSpec({ filters: urlFilters }, c.config).filters;
+      if (valid.length) c.setFilters(valid);
+      if (consumed.length) {
+        setSearchParams(
+          (p) => {
+            consumed.forEach((k) => p.delete(k));
+            return p;
+          },
+          { replace: true },
+        );
+      }
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [v.loading, v.views, props.contentTypeId]);
 

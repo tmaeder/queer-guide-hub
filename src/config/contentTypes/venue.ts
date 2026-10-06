@@ -245,7 +245,7 @@ export const venueFields: FieldConfig[] = [
     filterable: true,
     listColumn: true,
   },
-  { name: 'city_id', label: 'City Reference', type: 'text', group: 'external', hidden: true },
+  { name: 'city_id', label: 'City', type: 'text', group: 'external', hidden: true },
   { name: 'country_id', label: 'Country Reference', type: 'text', group: 'external', hidden: true },
   {
     name: 'queer_village_id',
