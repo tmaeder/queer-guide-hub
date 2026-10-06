@@ -1,11 +1,12 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
+import type { ReactElement } from 'react';
 
 vi.mock('@sentry/react', () => ({ captureException: vi.fn() }));
 
 import { ErrorBoundary } from '../ErrorBoundary';
 
-function ThrowingComponent() {
+function ThrowingComponent(): ReactElement {
   throw new Error('Test error');
 }
 
