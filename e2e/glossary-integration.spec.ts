@@ -106,13 +106,25 @@ test.describe('homepage glossary band', () => {
     await expect(band).toBeVisible();
     const section = page.locator('section', { has: band });
     const entryLinks = section.getByRole('link', { name: 'Read the entry' });
+    const errorState = section.getByText(/this section could not load/i);
+    const emptyState = section.getByText(/no glossary terms are available right now/i);
+    await expect
+      .poll(
+        async () => {
+          if ((await entryLinks.count()) > 0) return 'entries';
+          if (await errorState.isVisible().catch(() => false)) return 'error';
+          if (await emptyState.isVisible().catch(() => false)) return 'empty';
+          return 'loading';
+        },
+        { timeout: 15_000 },
+      )
+      .not.toBe('loading');
+
     if ((await entryLinks.count()) > 0) {
       await expect(entryLinks.first()).toHaveAttribute('href', /\/tags\/.+/);
       return;
     }
 
-    const errorState = section.getByText(/this section could not load/i);
-    const emptyState = section.getByText(/no glossary terms are available right now/i);
     const hasError = await errorState.isVisible().catch(() => false);
     const hasEmpty = await emptyState.isVisible().catch(() => false);
 
