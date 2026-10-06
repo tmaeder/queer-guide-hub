@@ -33,7 +33,7 @@ describe('AgendaQ normalization', () => {
   it('keeps an incomplete venue and labels its quality warning', () => {
     const normalized = normalizeAgendaqVenue(association);
     expect(normalized.description).toBe('Community support and mutual aid.');
-    expect(normalized.category).toBe('organization');
+    expect(normalized.category).toBe('community_center');
     expect(normalized.metadata.quality_warnings).toContain('missing_location');
   });
 
@@ -70,6 +70,19 @@ describe('AgendaQ normalization', () => {
     const normalized = normalizeAgendaqEvent(event);
     expect(normalized.end_date).toBe('2025-04-13T00:00:00.000Z');
     expect(Date.parse(normalized.end_date!)).toBeGreaterThan(Date.parse(normalized.start_date!));
+  });
+
+  it('inherits a location only from an explicitly linked AgendaQ venue', () => {
+    const event = structuredClone(club.events![0]);
+    event.locations = [];
+    const venues = new Map([[club.slug, club]]);
+    const normalized = normalizeAgendaqEvent(event, venues);
+    expect(normalized.location).toMatchObject({ city: 'Rome', country: 'IT' });
+    expect(normalized.metadata).toMatchObject({
+      location_source: 'linked_venue',
+      location_source_venue: '101-club',
+    });
+    expect(normalized.metadata.quality_warnings).not.toContain('missing_location');
   });
 
   it('creates stable source entities', () => {

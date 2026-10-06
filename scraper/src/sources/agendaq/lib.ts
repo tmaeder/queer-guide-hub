@@ -109,7 +109,7 @@ export interface AgendaqFetchOptions {
 
 const BUSINESS_CATEGORY_BY_TAXON: Record<number, string> = {
   63: 'event-venue',
-  64: 'organization',
+  64: 'community_center',
   65: 'bar',
   66: 'cruising',
   67: 'bar',
@@ -122,8 +122,8 @@ const BUSINESS_CATEGORY_BY_TAXON: Record<number, string> = {
   76: 'shop',
   77: 'shop',
   99: 'cruising',
-  100: 'organization',
-  101: 'organization',
+  100: 'community_center',
+  101: 'community_center',
   102: 'other',
   104: 'hotel',
   116: 'outdoor',
@@ -571,9 +571,16 @@ export interface NormalizedAgendaqEvent {
   metadata: Record<string, unknown>;
 }
 
-export function normalizeAgendaqEvent(event: AgendaqEvent): NormalizedAgendaqEvent {
+export function normalizeAgendaqEvent(
+  event: AgendaqEvent,
+  venuesBySlug?: ReadonlyMap<string, AgendaqVenue>,
+): NormalizedAgendaqEvent {
   const data = asRecord(event.data);
-  const location = preferredLocation(event.locations);
+  const linkedVenue = (event.businesses ?? [])
+    .map((business) => (business.id ? venuesBySlug?.get(business.id) : undefined))
+    .find((venue): venue is AgendaqVenue => !!venue?.locations?.length);
+  const ownLocation = preferredLocation(event.locations);
+  const location = ownLocation ?? preferredLocation(linkedVenue?.locations);
   const bounds = eventBounds(event);
   const slug = cleanString(event.slug) ?? 'unknown-event';
   const title = cleanString(event.name) ?? slug;
@@ -626,6 +633,8 @@ export function normalizeAgendaqEvent(event: AgendaqEvent): NormalizedAgendaqEve
       price: typeof event.price === 'number' ? event.price : null,
       social_links: socialLinks(data),
       venue_name: cleanString(business?.name),
+      location_source: ownLocation ? 'event' : linkedVenue ? 'linked_venue' : null,
+      location_source_venue: linkedVenue?.slug ?? null,
       quality_warnings: sourceWarnings(cleanString(event.name), location, bounds.start),
     },
   };
@@ -645,7 +654,11 @@ export function agendaqVenueEntity(venue: AgendaqVenue, fetchedAt = new Date()):
   };
 }
 
-export function agendaqEventEntity(event: AgendaqEvent, fetchedAt = new Date()): PublishableEntity {
+export function agendaqEventEntity(
+  event: AgendaqEvent,
+  fetchedAt = new Date(),
+  venuesBySlug?: ReadonlyMap<string, AgendaqVenue>,
+): PublishableEntity {
   const slug = cleanString(event.slug);
   if (!slug) throw new Error('AgendaQ event is missing a slug');
   return {
@@ -655,6 +668,6 @@ export function agendaqEventEntity(event: AgendaqEvent, fetchedAt = new Date()):
     url: agendaqEventUrl(slug),
     raw_data: event as unknown as Record<string, unknown>,
     fetched_at: fetchedAt,
-    normalized_data: normalizeAgendaqEvent(event),
+    normalized_data: normalizeAgendaqEvent(event, venuesBySlug),
   };
 }

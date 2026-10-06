@@ -27,7 +27,6 @@ import {
   collectUniqueAgendaqEvents,
   fetchAllAgendaq,
   normalizeAgendaqEvent,
-  normalizeAgendaqVenue,
 } from '../src/sources/agendaq/lib.js';
 
 interface CliOptions {
@@ -205,6 +204,9 @@ async function main(): Promise<void> {
   });
 
   const venues = fetched.venues;
+  const venuesBySlug = new Map(
+    venues.flatMap((venue) => (venue.slug ? [[venue.slug, venue] as const] : [])),
+  );
   const events = collectUniqueAgendaqEvents(venues);
   const venueIds = new Set(venues.map((venue) => venue.slug).filter(Boolean));
   const eventIds = new Set(events.keys());
@@ -212,10 +214,10 @@ async function main(): Promise<void> {
   const eventValues = [...events.values()];
   const eventMissingLocation = eventValues.filter((event) => !event.locations?.length).length;
   const eventMissingStart = eventValues.filter(
-    (event) => normalizeAgendaqEvent(event).start_date == null,
+    (event) => normalizeAgendaqEvent(event, venuesBySlug).start_date == null,
   ).length;
   const scheduledEvents = eventValues.filter(
-    (event) => normalizeAgendaqEvent(event).schedule != null,
+    (event) => normalizeAgendaqEvent(event, venuesBySlug).schedule != null,
   ).length;
   const recurringEvents = eventValues.filter((event) =>
     (event.dates ?? []).some(([, rule]) => Boolean(rule.recurring?.trim())),
@@ -252,7 +254,9 @@ async function main(): Promise<void> {
       );
     }
     if (!options.venuesOnly) {
-      const eventEntities = eventValues.map((event) => agendaqEventEntity(event, fetchedAt));
+      const eventEntities = eventValues.map((event) =>
+        agendaqEventEntity(event, fetchedAt, venuesBySlug),
+      );
       results.events = await publishBatches(
         eventEntities,
         'events',
