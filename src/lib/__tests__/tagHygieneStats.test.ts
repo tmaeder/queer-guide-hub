@@ -464,9 +464,17 @@ describe('tag_hygiene_stats() reads each hot table once', () => {
 
 // The gate script, not the function. A 57014 is the 8s statement_timeout on
 // `authenticator` — no metric was evaluated, so the PR goes red for a reason
-// unrelated to its diff. Measured 2026-09-14: the function is 1.3s warm against
-// that ceiling (6x headroom) and the one recorded failure passed on re-run while
+// unrelated to its diff. Measured 2026-09-14: the function was 1.3s warm against
+// that ceiling (6x headroom) and the one failure on record passed on re-run while
 // three other PRs hit the same database and passed. Contention, not cost.
+//
+// THAT WAS TRUE OF OCCURRENCE #6 AND IS NOT A PROPERTY OF THIS FUNCTION.
+// On 2026-10-06 the gate failed AND its single retry failed, and the function
+// did not complete in 55s — cost, not contention, from corpus growth flipping
+// the `event_tag_pairs_unlinked` join (99991791303353). The retry still earns
+// its place for the contention case; it is simply not a diagnosis. When this
+// flakes, measure before re-running: a retry that quietly succeeds is how the
+// function creeps back toward the ceiling unnoticed.
 //
 // Guards against the retry being tidied away. check-data-quality-gates.mjs and
 // check-search-facets-parity.mjs carry the same handling and neither is guarded;
@@ -892,5 +900,116 @@ describe('tag_hygiene_stats() prose_unreviewed is not role-scoped', () => {
     // Queue depth, not an invariant: the house rule is to gate on AGE or a
     // write-time invariant, never on a level.
     expect(baseline._advisory ?? []).toContain('prose_unreviewed');
+  });
+});
+
+/**
+ * Occurrence #7, 2026-10-06 (99991791303353).
+ *
+ * `Critical data-quality gates` failed with 57014 AND the retry failed — the
+ * function did not complete in 55s. Not the recorded causes: the visibility
+ * maps were healthy (events 18922/18922 pages all-visible,
+ * unified_tag_assignments 6120/6120) so it was not the stale-VM index-only
+ * thrash of #4/#5, and both SET clauses from 99991790719601 were still on the
+ * function.
+ *
+ * It was CORPUS GROWTH flipping a plan. `unambiguous` ends in
+ * `having count(distinct tag_id) = 1`, which the planner cannot estimate
+ * through, so it guessed ONE ROW against a real 12,939 — four orders of
+ * magnitude — and chose a Nested Loop with a join filter that rescanned the
+ * whole vocabulary for every unnested event tag (~10^9 lower() comparisons).
+ * `as materialized` puts it on the BUILD side of a hash join instead:
+ * that arm 2,402 ms, the whole function 1,629 ms against the 8,000 ms ceiling.
+ *
+ * Asserted against the MIGRATION text, because this migration PATCHES the live
+ * body via pg_get_functiondef() rather than restating it — the live body is not
+ * what any repo file says (99991789930597 and 99991790719601 both patched by
+ * string surgery), so a `create or replace` built from the newest file silently
+ * reverts both. Same pattern as the prose_unreviewed block above.
+ */
+describe('99991791303353 materializes the unambiguous CTE', () => {
+  const MIGRATION = '99991791303353_tag_hygiene_unambiguous_materialized.sql';
+  const mig = (() => {
+    const i = files.indexOf(MIGRATION);
+    expect(i, `${MIGRATION} is missing`).toBeGreaterThan(-1);
+    return sources[i];
+  })();
+
+  /** Statements only. The header quotes every phrase asserted below, including
+   *  the OLD un-materialized form, so an unstripped scan passes with the
+   *  statement deleted. */
+  const statements = mig.replace(/^\s*--.*$/gm, '');
+
+  it('patches the live definition instead of restating it', () => {
+    expect(statements).toContain("pg_get_functiondef('public.tag_hygiene_stats()'::regprocedure)");
+    // A full restate would revert 99991789930597 and 99991790719601 silently.
+    expect(statements).not.toMatch(/create\s+(or\s+replace\s+)?function\s+public\.tag_hygiene_stats/i);
+  });
+
+  it('replaces the anchor with the materialized form', () => {
+    expect(statements).toContain(
+      "replace(v_src, '), unambiguous as (', '), unambiguous as materialized (')",
+    );
+  });
+
+  it('requires the anchor to be UNIQUE before replacing', () => {
+    // A blind replace could otherwise hit a second CTE added later.
+    expect(statements).toMatch(/regexp_matches\(v_src, '\\\), unambiguous as \\\(', 'g'\)/);
+    expect(statements).toMatch(/if v_hits <> 1 then\s*\n\s*raise exception/);
+  });
+
+  it('is soft on preconditions so a sibling fix cannot block the repo', () => {
+    // Already materialized => NOTICE and return, never an abort: `db push`
+    // stops at the first failing file and takes every migration behind it.
+    expect(statements).toMatch(
+      /if position\('unambiguous as materialized' in v_src\) > 0 then\s*\n\s*raise notice/,
+    );
+  });
+
+  it('asserts the directive landed', () => {
+    expect(statements).toMatch(
+      /if position\('unambiguous as materialized' in v_src\) = 0 then\s*\n\s*raise exception/,
+    );
+  });
+
+  it('asserts 99991790719601 survives the patch', () => {
+    // Each shared CTE by name: a restate drops them as silently as a counter,
+    // and without them the function re-reads unified_tags eleven times.
+    for (const cte of ['ut as materialized', 'uta_rollup as materialized',
+                       'ev_assign as materialized', 'ev as materialized']) {
+      expect(statements, `${cte} is not asserted`).toContain(`'${cte}'`);
+    }
+  });
+
+  it('asserts all three SET clauses survive', () => {
+    // proconfig is dropped by a restate with no error; 99991789807686 is the
+    // entire reason enable_indexonlyscan=off is there.
+    for (const k of ['search_path=public', 'enable_indexonlyscan=off', 'work_mem=48MB']) {
+      expect(statements, `${k} is not asserted`).toContain(`'${k}'`);
+    }
+    expect(statements).toMatch(/raise exception\s*\n?\s*'P3 failed/);
+  });
+
+  it('EXECUTES the function rather than only asserting its source', () => {
+    // `create or replace function` only parses a plpgsql body — the queries
+    // inside are planned at call time, so applying cleanly is not evidence the
+    // function works (the 42702 lesson).
+    expect(statements).toContain('v_j  := public.tag_hygiene_stats();');
+    expect(statements).toMatch(/if v_j is null[\s\S]{0,200}raise exception\s*'P4 failed/);
+  });
+
+  it('does not pin an exact key count or a counter VALUE', () => {
+    // A sibling adding a counter must not abort `db push` for the repo, and the
+    // corpus moves, so a frozen count rots into a false failure.
+    expect(statements).not.toMatch(/jsonb_object_keys/);
+    expect(statements).not.toMatch(/event_tag_pairs_unlinked'\)\s*::int\s*<>/);
+  });
+
+  it('reports timing as a NOTICE, never as an abort', () => {
+    // 99991791233588 is the live example of a postcondition on something the
+    // file does not own taking the whole repo down. Timing on a shared instance
+    // under unknown load is evidence, not an invariant.
+    expect(statements).toMatch(/if v_ms > 6000 then\s*\n\s*raise notice/);
+    expect(statements).not.toMatch(/v_ms[^\n]*then\s*\n\s*raise exception/);
   });
 });
