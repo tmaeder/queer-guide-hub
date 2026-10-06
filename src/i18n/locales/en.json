@@ -24,6 +24,92 @@
     "people": "Meet people",
     "showCollapsed": "Show the levels above"
   },
+  "cruising": {
+    "meta": {
+      "title": "Cruising map",
+      "description": "A private map of cruising spots and opted-in adult dating profiles."
+    },
+    "loading": "Opening the private cruising guide",
+    "eyebrow": "Private · signed-in adults",
+    "title": "Queer cruising map",
+    "intro": "See all listed cruising places and opted-in dating profiles in one view. People appear only as approximate city areas; spots use their listed coordinates.",
+    "layers": {
+      "label": "Map layers",
+      "both": "Both",
+      "people": "People",
+      "spots": "Spots"
+    },
+    "safety": {
+      "body": "Mutual consent is required. Shared places still belong to non-participants. Check local law, protect your privacy, and keep an exit plan.",
+      "guide": "Read the cruising guide",
+      "healthLead": "or review the",
+      "health": "sexual-health guide"
+    },
+    "tabs": {
+      "label": "Cruising results",
+      "people": "Nearby people",
+      "spots": "All spots"
+    },
+    "selectedArea_one": "Showing dating profiles around {{city}}. The bubble represents {{count}} active person without revealing exact positions.",
+    "selectedArea_other": "Showing dating profiles around {{city}}. The bubble represents {{count}} active people without revealing exact positions.",
+    "search": {
+      "label": "Search all cruising spots",
+      "placeholder": "Search spots, cities or countries"
+    },
+    "count": {
+      "spots_one": "{{count}} spot",
+      "spots_other": "{{count}} spots",
+      "map": "Map: {{count}} in current search"
+    },
+    "results": {
+      "loading": "Loading cruising spots",
+      "error": "The cruising guide could not be loaded. Please try again.",
+      "empty": "No spots match this search."
+    },
+    "pagination": {
+      "previous": "Previous",
+      "page": "Page {{page}} of {{totalPages}}",
+      "next": "Next"
+    },
+    "spot": {
+      "locationIncomplete": "Location details incomplete",
+      "verified": "Verified",
+      "showOnMap": "Show on map",
+      "noCoordinates": "Listed without coordinates",
+      "details": "Place details"
+    },
+    "map": {
+      "unavailable": "The interactive map is unavailable in this browser. Every cruising spot is still listed.",
+      "ariaLabel": "Interactive cruising map",
+      "nearMe": "Near me",
+      "searchArea": "Search this area",
+      "legend": "Pink: spots · Blue: approximate active areas"
+    },
+    "presence": {
+      "peopleOffTitle": "People layer is off",
+      "peopleOffBody": "Create an intimate profile to see dating profiles and optionally appear in an approximate city area.",
+      "createProfile": "Create intimate profile",
+      "toastDisabled": "You are no longer visible on the cruising map",
+      "toastError": "Could not update visibility",
+      "toastEnabled": "Visible for one hour",
+      "toastEnabledBody": "Only an approximate city bubble is shown.",
+      "visibleTitle": "Visible in an approximate area",
+      "hiddenTitle": "Not visible on the map",
+      "expires": "Automatically turns off at {{time}}.",
+      "preciseNeverPublished": "Your precise position is never published.",
+      "turnOff": "Turn off",
+      "goVisible": "Go visible",
+      "dialogTitle": "Go visible for one hour",
+      "dialogDescription": "Other opted-in adults see only a city-level bubble and count. They never receive your device location.",
+      "cityLabel": "City or area",
+      "cityPlaceholder": "Search cities",
+      "cityLoading": "Finding cities…",
+      "acknowledgement": "I understand that visibility is approximate, expires after one hour, and does not replace checking consent, surroundings, or local law.",
+      "cancel": "Cancel",
+      "enabling": "Enabling…",
+      "enable": "Visible for one hour"
+    }
+  },
   "inbox": {
     "title": "Inbox",
     "filter": {

@@ -514,6 +514,8 @@ export function isIndexable(pathname: string): boolean {
     // is the one that carries the content. Per the note above, none of these
     // may be added to ROUTES in scripts/seo-check.mjs (verified: they are not).
     /^\/people\/(friends|dating|travel|nearby)(\/|$)/,
+    // Private adult map, spot directory and opt-in dating discovery.
+    /^\/cruising(\/|$)/,
     // The signed-in friends list. Nothing public to render, same class as /hub.
     /^\/community\/friends(\/|$)/,
     // /shop folded into /marketplace. public/_redirects 301s the whole subtree

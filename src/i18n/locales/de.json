@@ -4953,5 +4953,91 @@
     "pauseEpisode": "{{title}} pausieren",
     "error": "Diese Folge konnte nicht abgespielt werden. Der Server der Sendung ist womöglich nicht erreichbar.",
     "retry": "Erneut versuchen"
+  },
+  "cruising": {
+    "layers": {
+      "both": "Beide",
+      "label": "Kartenebenen",
+      "people": "Menschen",
+      "spots": "Flecken"
+    },
+    "title": "Queere Cruising-Karte",
+    "meta": {
+      "title": "Cruising-Karte",
+      "description": "Eine private Karte mit Cruising-Spots und aktivierten Dating-Profilen für Erwachsene."
+    },
+    "loading": "Öffnen des privaten Cruising-Leitfadens",
+    "eyebrow": "Privat · Angemeldete Erwachsene",
+    "intro": "Finden Sie alle aufgelisteten Cruising-Orte und angemeldeten Dating-Profile in einer Ansicht. Menschen erscheinen nur als ungefähre Stadtgebiete; Spots verwenden ihre aufgelisteten Koordinaten.",
+    "safety": {
+      "body": "Es ist eine gegenseitige Zustimmung erforderlich. Geteilte Plätze gehören weiterhin Nichtteilnehmern. Informieren Sie sich über die örtlichen Gesetze, schützen Sie Ihre Privatsphäre und erstellen Sie einen Ausstiegsplan.",
+      "guide": "Lesen Sie den Cruising-Leitfaden",
+      "health": "Leitfaden zur sexuellen Gesundheit",
+      "healthLead": "oder überprüfen Sie die"
+    },
+    "tabs": {
+      "spots": "Alle Spots",
+      "label": "Cruising Ergebnisse",
+      "people": "Menschen in der Nähe"
+    },
+    "count": {
+      "spots_other": "{{count}}-Spots",
+      "spots_one": "{{count}}-Spot",
+      "map": "Karte: {{count}} in der aktuellen Suche"
+    },
+    "results": {
+      "loading": "Laden von Cruising-Spots",
+      "error": "Der Leitfaden Cruising konnte nicht geladen werden. Bitte versuchen Sie es erneut.",
+      "empty": "Zu dieser Suche passen keine Spots."
+    },
+    "search": {
+      "label": "Durchsuchen Sie alle Cruising-Spots",
+      "placeholder": "Suchen Sie nach Orten, Städten oder Ländern"
+    },
+    "pagination": {
+      "previous": "Vorherige",
+      "next": "Nächste",
+      "page": "Seite {{page}} von {{totalPages}}"
+    },
+    "selectedArea_one": "Es werden Dating-Profile rund um {{city}} angezeigt. Die Blase stellt die aktive Person {{count}} dar, ohne genaue Positionen preiszugeben.",
+    "selectedArea_other": "Es werden Dating-Profile rund um {{city}} angezeigt. Die Blase repräsentiert {{count}} aktive Personen, ohne genaue Positionen preiszugeben.",
+    "spot": {
+      "showOnMap": "Auf der Karte anzeigen",
+      "verified": "Verifiziert",
+      "details": "Ortsangaben",
+      "locationIncomplete": "Standortangaben unvollständig",
+      "noCoordinates": "Ohne Koordinaten aufgeführt"
+    },
+    "map": {
+      "nearMe": "In meiner Nähe",
+      "ariaLabel": "Interaktive Cruising-Karte",
+      "unavailable": "Die interaktive Karte ist in diesem Browser nicht verfügbar. Jeder Cruising-Spot ist weiterhin gelistet.",
+      "searchArea": "Durchsuchen Sie diesen Bereich",
+      "legend": "Rosa: Flecken · Blau: ungefähre aktive Bereiche"
+    },
+    "presence": {
+      "toastDisabled": "Sie sind auf der Cruising-Karte nicht mehr sichtbar",
+      "peopleOffBody": "Erstellen Sie ein intimes Profil, um Dating-Profile anzuzeigen und optional in einem ungefähren Stadtgebiet aufzutreten.",
+      "peopleOffTitle": "Die Personenebene ist deaktiviert",
+      "createProfile": "Erstellen Sie ein intimes Profil",
+      "toastEnabled": "Eine Stunde lang sichtbar",
+      "turnOff": "Ausschalten",
+      "toastEnabledBody": "Es wird nur eine ungefähre Stadtblase dargestellt.",
+      "expires": "Wird bei {{time}} automatisch ausgeschaltet.",
+      "toastError": "Die Sichtbarkeit konnte nicht aktualisiert werden",
+      "visibleTitle": "Sichtbar in einem ungefähren Bereich",
+      "preciseNeverPublished": "Ihre genaue Position wird niemals veröffentlicht.",
+      "goVisible": "Werden Sie sichtbar",
+      "hiddenTitle": "Auf der Karte nicht sichtbar",
+      "cityPlaceholder": "Städte suchen",
+      "dialogTitle": "Bleiben Sie eine Stunde lang sichtbar",
+      "cityLoading": "Städte finden…",
+      "acknowledgement": "Mir ist bewusst, dass die Sichtbarkeit ungefähr ist, nach einer Stunde abläuft und keine Überprüfung der Einwilligung, der Umgebung oder der örtlichen Gesetze ersetzt.",
+      "enable": "Eine Stunde lang sichtbar",
+      "cancel": "Stornieren",
+      "cityLabel": "Stadt oder Gegend",
+      "dialogDescription": "Andere angemeldete Erwachsene sehen nur eine Blase auf Stadtebene und zählen. Sie erhalten niemals den Standort Ihres Geräts.",
+      "enabling": "Aktivieren…"
+    }
   }
 }
