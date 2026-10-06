@@ -25,7 +25,7 @@ function Skeleton({
         : variant === 'text'
           ? 'rounded-badge h-4'
           : 'rounded-element';
-  const animClass = animation === false ? '' : 'animate-pulse';
+  const animClass = animation === false ? '' : 'motion-safe:animate-pulse';
   return (
     <div
       className={cn('bg-muted', variantClass, animClass, className)}

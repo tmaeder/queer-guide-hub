@@ -423,7 +423,7 @@ export function EventsTimelineView({
                 );
                 el?.scrollIntoView({ behavior: 'smooth', inline: 'start', block: 'nearest' });
               }}
-              className="px-2 py-1 text-xs2 rounded-badge hover:bg-muted transition-colors min-h-0 whitespace-nowrap"
+              className="min-h-11 px-2 py-1 text-xs2 rounded-badge hover:bg-muted transition-colors whitespace-nowrap"
             >
               {b.label} <span className="text-muted-foreground">{count}</span>
             </button>

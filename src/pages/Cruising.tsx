@@ -230,7 +230,7 @@ export default function Cruising() {
                     setRouteState({ panel: 'people', layers: layer === 'spots' ? 'both' : layer })
                   }
                   className={cn(
-                    'min-h-10 px-4 text-sm font-semibold',
+                    'min-h-11 px-4 text-sm font-semibold',
                     panel === 'people' && 'bg-background',
                   )}
                 >
@@ -242,7 +242,7 @@ export default function Cruising() {
                   aria-selected={panel === 'spots'}
                   onClick={() => setRouteState({ panel: 'spots' })}
                   className={cn(
-                    'min-h-10 px-4 text-sm font-semibold',
+                    'min-h-11 px-4 text-sm font-semibold',
                     panel === 'spots' && 'bg-background',
                   )}
                 >

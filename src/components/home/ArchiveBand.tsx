@@ -3,7 +3,9 @@ import { useTranslation } from 'react-i18next';
 import { PartyPopper } from 'lucide-react';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { Eyebrow } from '@/components/ui/Eyebrow';
+import { Skeleton } from '@/components/ui/skeleton';
 import { Band } from './Band';
+import { HomeSectionError } from './HomeSectionError';
 import { MilestoneImpactMarker } from '@/components/milestones/MilestoneImpactMarker';
 import { ParticleBurst } from '@/components/joy/ParticleBurst';
 import { useMilestonesOnThisDay } from '@/hooks/useMilestones';
@@ -71,7 +73,7 @@ function PersonChip({ person, img }: { person: Person; img: string | null }) {
       <button
         type="button"
         aria-label={t('home.bornThisWeek.celebrate', 'Celebrate {{name}}', { name: person.name })}
-        className="relative inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground disabled:opacity-50"
+        className="relative inline-flex h-8 w-8 min-h-11 min-w-11 shrink-0 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground disabled:opacity-50"
         disabled={celebrated}
         onClick={() => {
           setBurst(true);
@@ -104,8 +106,15 @@ function PersonChip({ person, img }: { person: Person; img: string | null }) {
  */
 export default function ArchiveBand() {
   const { t, i18n } = useTranslation();
-  const { data: milestones } = useMilestonesOnThisDay(3);
-  const { items, loading: peopleLoading } = useBornThisWeek(8, 'born');
+  const milestonesQuery = useMilestonesOnThisDay(3);
+  const { data: milestones } = milestonesQuery;
+  const {
+    items,
+    loading: peopleLoading,
+    error: peopleError,
+    retrying: peopleRetrying,
+    refetch: refetchPeople,
+  } = useBornThisWeek(8, 'born');
   const { reduced } = useMotionTokens();
 
   const people = items as unknown as Person[];
@@ -117,7 +126,48 @@ export default function ArchiveBand() {
 
   const hasMilestones = !!milestones?.length;
   const hasPeople = !peopleLoading && people.length > 0;
-  if (!hasMilestones && !hasPeople) return null;
+
+  const bandProps = {
+    eyebrow: t('home.archive.eyebrow', 'Queer history'),
+    title: t('home.archive.title', 'From the archive'),
+    seeAllHref: '/history',
+    seeAllLabel: t('milestones.home.seeAll', 'Full timeline'),
+  };
+
+  if ((milestonesQuery.isLoading || peopleLoading) && !hasMilestones && !hasPeople) {
+    return (
+      <Band {...bandProps}>
+        <div className="grid gap-10 lg:grid-cols-2">
+          <Skeleton className="h-40 w-full rounded-container" />
+          <Skeleton className="h-40 w-full rounded-container" />
+        </div>
+      </Band>
+    );
+  }
+
+  if (milestonesQuery.isError || peopleError) {
+    return (
+      <Band {...bandProps}>
+        <HomeSectionError
+          retrying={milestonesQuery.isFetching || peopleRetrying}
+          onRetry={() => {
+            void milestonesQuery.refetch();
+            refetchPeople();
+          }}
+        />
+      </Band>
+    );
+  }
+
+  if (!hasMilestones && !hasPeople) {
+    return (
+      <Band {...bandProps}>
+        <p className="py-8 text-15 text-muted-foreground">
+          {t('home.archive.empty', 'The archive has no anniversaries for this week yet.')}
+        </p>
+      </Band>
+    );
+  }
 
   const imgFor = (p: Person) =>
     resolveImageUrl({
@@ -130,12 +180,7 @@ export default function ArchiveBand() {
   const chips = people.map((p) => <PersonChip key={p.id} person={p} img={imgFor(p)} />);
 
   return (
-    <Band
-      eyebrow={t('home.archive.eyebrow', 'Queer history')}
-      title={t('home.archive.title', 'From the archive')}
-      seeAllHref="/history"
-      seeAllLabel={t('milestones.home.seeAll', 'Full timeline')}
-    >
+    <Band {...bandProps}>
       {/* Two columns only when there ARE two. With ~110 curated milestones,
           most days have none, and a fixed 2-col grid left the birthdays strip
           in the left half under a full-width Anton heading with the right half
