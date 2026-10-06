@@ -208,7 +208,15 @@ export default function Cruising() {
           </div>
 
           <aside className="min-h-[30rem] border-t border-border-hairline bg-background lg:max-h-[calc(100dvh-13rem)] lg:overflow-y-auto lg:border-l lg:border-t-0">
-            <div className="sticky top-0 z-10 bg-background/95 px-4 pb-4 pt-4 backdrop-blur md:px-6">
+            {/* Opaque `bg-background`, matching every other sticky panel header
+                in this codebase (AdminShell, DraftStatusBar, SelfHelpDrawer,
+                CoverageTab, EventsTimelineView) — the translucent `/95` + blur
+                was the outlier. It also reads to the rounded-surface contract as
+                a DISTINCT fill against the aside's own `bg-background`, which
+                then requires a radius; and a radius on a band spanning the panel
+                edge to edge is wrong. Identical to the parent fill it is a
+                scroll affordance rather than a surface, and occludes as well. */}
+            <div className="sticky top-0 z-10 bg-background px-4 pb-4 pt-4 md:px-6">
               <div
                 className="grid grid-cols-2 gap-1 bg-surface-container p-1"
                 role="tablist"
