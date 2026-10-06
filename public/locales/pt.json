@@ -1807,6 +1807,15 @@
     "error": "Falha ao enviar alerta. Tente novamente."
   },
   "home": {
+    "yourLines": {
+      "title": "As tuas linhas",
+      "description": "Um percurso pelos locais que viste, com sugestões próximas adaptadas aos teus interesses e localização.",
+      "reasonRecent": "Viste isto",
+      "reasonInterest": "Corresponde aos teus interesses",
+      "reasonCity": "Perto de ti",
+      "reasonFeatured": "Vale a pena ver",
+      "reasonIn": "Em {{city}}"
+    },
     "heroLine1": "Locais queer,",
     "heroLine2": "eventos e pessoas.",
     "heroLine3": "No mundo todo.",

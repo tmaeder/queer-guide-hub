@@ -1807,6 +1807,15 @@
     "error": "アラートの送信に失敗しました。もう一度お試しください。"
   },
   "home": {
+    "yourLines": {
+      "title": "あなたのライン",
+      "description": "閲覧したスポットの履歴と、興味や現在地に合った近くのおすすめをまとめました。",
+      "reasonRecent": "閲覧済み",
+      "reasonInterest": "興味に合っています",
+      "reasonCity": "近く",
+      "reasonFeatured": "注目のスポット",
+      "reasonIn": "{{city}}にあります"
+    },
     "heroLine1": "クィアな場所、",
     "heroLine2": "イベント、人々。",
     "heroLine3": "世界中で。",

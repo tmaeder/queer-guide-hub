@@ -1807,6 +1807,15 @@
     "error": "发送求助失败，请重试。"
   },
   "home": {
+    "yourLines": {
+      "title": "你的路线",
+      "description": "串联你浏览过的地点，并根据你的兴趣和位置推荐附近去处。",
+      "reasonRecent": "你看过这里",
+      "reasonInterest": "符合你的兴趣",
+      "reasonCity": "在你附近",
+      "reasonFeatured": "值得看看",
+      "reasonIn": "位于{{city}}"
+    },
     "heroLine1": "酷儿场所、",
     "heroLine2": "活动和人物。",
     "heroLine3": "遍布全球。",

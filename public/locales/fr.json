@@ -1811,6 +1811,15 @@
     "error": "Échec de l'envoi de l'alerte. Réessaie."
   },
   "home": {
+    "yourLines": {
+      "title": "Tes lignes",
+      "description": "Un parcours parmi les lieux que tu as consultés, avec des suggestions à proximité adaptées à tes centres d’intérêt et à ta position.",
+      "reasonRecent": "Tu as consulté ceci",
+      "reasonInterest": "Correspond à tes centres d’intérêt",
+      "reasonCity": "Près de toi",
+      "reasonFeatured": "À découvrir",
+      "reasonIn": "À {{city}}"
+    },
     "heroLine1": "Lieux queer,",
     "heroLine2": "événements et personnes.",
     "heroLine3": "Partout dans le monde.",
