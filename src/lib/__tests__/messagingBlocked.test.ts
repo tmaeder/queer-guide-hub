@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { isMessagingBlockedError } from '../messagingBlocked';
 
-const MIGRATION = 'supabase/migrations/99991791228478_dm_block_enforcement.sql';
+const MIGRATION = 'supabase/migrations/99991791260404_dm_block_enforcement.sql';
 const sql = readFileSync(MIGRATION, 'utf8')
   .split('\n')
   .filter((l) => !/^\s*--/.test(l))

@@ -1,6 +1,6 @@
 /**
  * Recognises the database refusing a DM because the two members are in a block
- * relationship (migration 99991791228478_dm_block_enforcement): either the
+ * relationship (migration 99991791260404_dm_block_enforcement): either the
  * `get_or_create_direct_conversation` RPC ("cannot message this user") or the
  * restrictive `messages` INSERT policy. Both raise SQLSTATE 42501.
  *
