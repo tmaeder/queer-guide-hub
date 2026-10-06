@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
-import { GLOSSARY_LINK_ATTR, unlinkGlossary } from './support/glossaryProse';
+import { GLOSSARY_LINK_ATTR, unlinkGlossary, glossaryEntry } from './support/glossaryProse';
+import { anonHeaders, SUPABASE_REST_URL } from './support/anonKey';
 
 // Trans gear must not be published as another entity, or as fetish content.
 //
@@ -170,10 +171,7 @@ test.describe('@smoke trans health vocabulary is published and sourced', () => {
     // Each page must exist, say its own thing, and point away from the other —
     // sending someone who searched for the assault to a page about trans privacy,
     // or the reverse, is a harm in both directions.
-    const res = await request.get('/tags/stealthing', { headers: { 'User-Agent': BOT_UA } });
-    expect(res.status(), '/tags/stealthing should resolve').toBe(200);
-    const article = articleOf(await res.text());
-    expect(article, '/tags/stealthing rendered no <article>').not.toBe('');
+    const { prose: article } = await glossaryEntry(request, 'stealthing');
     expect(article, 'stealthing lost the consent principle').toMatch(
       /consent to protected sex is not consent to unprotected sex/i,
     );
@@ -205,10 +203,7 @@ test.describe('@smoke trans health vocabulary is published and sourced', () => {
     // `nonbinary` and `non-binary` were both live on Q48270 — two pages for one
     // identity. After the merge there is one page, and the loser's URL still has
     // to resolve, because ~131 entities referenced it.
-    const canonical = await request.get('/tags/non-binary', { headers: { 'User-Agent': BOT_UA } });
-    expect(canonical.status(), '/tags/non-binary should resolve').toBe(200);
-    const article = articleOf(await canonical.text());
-    expect(article, 'non-binary rendered no <article>').not.toBe('');
+    const { prose: article } = await glossaryEntry(request, 'non-binary');
     expect(article).toMatch(/binary/i);
 
     // The merged spelling must not 404 — a redirect or a 200 are both fine, a
@@ -237,9 +232,7 @@ test.describe('@smoke trans health vocabulary is published and sourced', () => {
     expect(ld, 'no JSON-LD on the page').toBeTruthy();
     const doc = JSON.parse((ld as RegExpMatchArray)[1]);
     const citations = Array.isArray(doc.citation) ? doc.citation : [doc.citation].filter(Boolean);
-    const ucsf = citations.find((c: { url?: string }) =>
-      /transcare\.ucsf\.edu/.test(c?.url ?? ''),
-    );
+    const ucsf = citations.find((c: { url?: string }) => /transcare\.ucsf\.edu/.test(c?.url ?? ''));
     expect(ucsf, 'the UCSF citation is absent from JSON-LD').toBeTruthy();
     expect(ucsf['@type'], 'clinical guidance must not be emitted as Legislation').toBe(
       'CreativeWork',
@@ -253,17 +246,34 @@ test.describe('@smoke trans health vocabulary is published and sourced', () => {
 // the next word inside one of them became a glossary term, then go red for a
 // content defect that is not there. So assert the strip had something to do.
 test.describe('@smoke glossary-link strip control', () => {
-  test('trans-health: the crawler HTML carries glossary links, and the strip removes them', async ({
+  test('trans-health: the link vocabulary is live, and the strip removes its anchors', async ({
     request,
   }) => {
-    const res = await request.get('/tags/stealthing', { headers: { 'user-agent': BOT_UA } });
-    expect(res.status(), '/tags/stealthing must be reachable').toBeLessThan(400);
-    const raw = await res.text();
-    expect(raw, 'the renderer no longer emits ' + GLOSSARY_LINK_ATTR + ' — unlinkGlossary is now a silent no-op').toContain(
+    // Rebased off a single slug: the link vocabulary (`glossary_link_terms_public`)
+    // gates on `seo_indexable`, and the correctness-first demotion took it to 36
+    // terms, so whether any one page carries a link is luck. See
+    // e2e/support/glossaryProse.ts.
+    const headers = await anonHeaders(request);
+    const res = await request.get(
+      `${SUPABASE_REST_URL}/rest/v1/glossary_link_terms_public?select=slug,surface_form&limit=1`,
+      { headers },
+    );
+    expect(res.ok(), 'could not read the glossary link vocabulary').toBe(true);
+    const terms = (await res.json()) as Array<{ slug: string; surface_form: string }>;
+    expect(
+      terms.length,
+      'the glossary link vocabulary is EMPTY — no inline link can render anywhere, ' +
+        'and unlinkGlossary is a silent no-op',
+    ).toBeGreaterThan(0);
+    const anchor =
+      `<p>see <a href="/tags/${terms[0].slug}" ${GLOSSARY_LINK_ATTR}="${terms[0].slug}">` +
+      `${terms[0].surface_form}</a> for more</p>`;
+    const stripped = unlinkGlossary(anchor);
+    expect(stripped, 'unlinkGlossary left a glossary anchor behind').not.toContain(
       GLOSSARY_LINK_ATTR,
     );
-    expect(unlinkGlossary(raw), 'unlinkGlossary left a glossary anchor behind').not.toContain(
-      GLOSSARY_LINK_ATTR,
+    expect(stripped, 'unlinkGlossary ate the linked text as well as the anchor').toContain(
+      terms[0].surface_form,
     );
   });
 });

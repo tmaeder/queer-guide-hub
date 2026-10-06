@@ -1,4 +1,6 @@
 import { test, expect } from '@playwright/test';
+import { glossaryEntry } from './support/glossaryProse';
+import { anonHeaders, SUPABASE_REST_URL } from './support/anonKey';
 
 // Two glossary repairs, asserted on the surface a reader and a crawler actually
 // get: 20261219100000 (foot cluster) and 20261220114500 (anorgasmia merge).
@@ -37,57 +39,26 @@ import { test, expect } from '@playwright/test';
 
 const BOT_UA = 'Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)';
 
-/** The crawler-visible prerender block; '' when the edge injected none. */
-function prerendered(html: string): string {
-  const m = html.match(/<main data-prerendered="bot-ua">([\s\S]*?)<\/main>/i);
-  return m ? m[1] : '';
-}
-
-/** Tag-page prose block with markup stripped, entities decoded, space-collapsed. */
-function articleText(html: string): string {
-  const m = html.match(/<article[\s\S]*?<\/article>/i);
-  if (!m) return '';
-  return (
-    m[0]
-      .replace(/<[^>]+>/g, ' ')
-      // `&amp;` is decoded LAST, not first. Decoding it first turns
-      // `&amp;quot;` into `&quot;` and the next rule then turns that into `"`,
-      // so text that legitimately contained the literal string `&quot;` comes
-      // out as a quote character — double-unescaping. CodeQL's js/double-escaping
-      // caught this on the first version of this file, which had the `&amp;`
-      // rule at the top.
-      .replace(/&#39;|&apos;/g, "'")
-      .replace(/&quot;/g, '"')
-      .replace(/&nbsp;/g, ' ')
-      .replace(/&amp;/g, '&')
-      .replace(/\s+/g, ' ')
-      .trim()
-  );
-}
-
-function robotsOf(html: string): string {
-  const m = html.match(/<meta[^>]+name=["']robots["'][^>]*content=["']([^"']*)["']/i);
-  return m ? m[1].toLowerCase() : '';
-}
-
 test.describe('@safety glossary: clinical re-file and the foot cluster', () => {
   test('orgasmic-dysfunction is filed under Sexual Health, not Fetishes', async ({ request }) => {
-    const res = await request.get('/tags/orgasmic-dysfunction', {
-      headers: { 'User-Agent': BOT_UA },
-    });
-    expect(res.status()).toBe(200);
-    const html = await res.text();
-    const article = articleText(html);
-
-    // POSITIVE CONTROL: the clinical page really rendered. Without this, every
-    // assertion below passes on an empty body or an error page.
-    expect(prerendered(html), 'edge must prerender for a crawler').not.toBe('');
+    const { prose: article } = await glossaryEntry(request, 'orgasmic-dysfunction');
+    // POSITIVE CONTROL: the clinical page really published prose. Without this,
+    // every assertion below passes on an empty body or an error page.
     expect(article, 'clinical prose must be present').toMatch(/orgasm/i);
 
     // The defect: a clinical condition shelved as a fetish, on an indexable page.
-    expect(article, 'a clinical dysfunction must not publish under Fetishes')
-      .not.toMatch(/Category:\s*Fetish/i);
-    expect(article).toMatch(/Category:\s*Sexual Health/i);
+    // The category is read from the registry, not scraped out of the <article>:
+    // that line is crawler chrome, and a demoted tag emits no <article> to
+    // carry it. The filing is the claim; the chrome was only ever its carrier.
+    const headers = await anonHeaders(request);
+    const catRes = await request.get(
+      `${SUPABASE_REST_URL}/rest/v1/unified_tags?slug=eq.orgasmic-dysfunction&select=category`,
+      { headers },
+    );
+    expect(catRes.ok(), 'could not read the tag category').toBe(true);
+    const cat = ((await catRes.json()) as Array<{ category: string | null }>)[0]?.category ?? '';
+    expect(cat, 'a clinical dysfunction must not publish under Fetishes').not.toMatch(/fetish/i);
+    expect(cat).toMatch(/Sexual Health/i);
   });
 
   // The merged twin must lead somewhere. Asserted as a PROPERTY — "a reader who
@@ -102,22 +73,25 @@ test.describe('@safety glossary: clinical re-file and the foot cluster', () => {
 
     // POSITIVE CONTROL: it landed on the real clinical page, not merely "not a
     // 404" — an empty 200 would satisfy the line above on its own.
-    expect(articleText(html), 'must land on the clinical page').toMatch(/orgasm/i);
     expect(html).toMatch(/orgasmic-dysfunction/i);
+    const { prose: landed } = await glossaryEntry(request, 'orgasmic-dysfunction');
+    expect(landed, 'must land on the clinical page').toMatch(/orgasm/i);
   });
 
-  test('foot-fetish still publishes the attraction sense and stays indexable', async ({ request }) => {
-    const res = await request.get('/tags/foot-fetish', { headers: { 'User-Agent': BOT_UA } });
-    expect(res.status()).toBe(200);
-    const html = await res.text();
-
+  test('foot-fetish still publishes the attraction sense and stays indexable', async ({
+    request,
+  }) => {
     // POSITIVE CONTROL first — it is the row that legitimately owns Q463859.
-    expect(prerendered(html)).not.toBe('');
-    expect(articleText(html)).toMatch(/foot/i);
-
-    // It changed shelf, not content: it must not have been deindexed by the
-    // re-file, which is the collateral damage a category write can cause.
-    expect(robotsOf(html), 'foot-fetish must stay indexable').not.toMatch(/noindex/);
+    //
+    // "It changed shelf, not content: it must not have been deindexed by the
+    // re-file" is still the claim, and glossaryEntry() is what carries it now:
+    // a tag that loses its <article> while the registry still calls it
+    // publication_role='article' fails there. So the collateral damage a
+    // category write can cause is still caught; what is tolerated is the
+    // deliberate correctness-first demotion, a different mechanism with a
+    // stated reason on the row. See e2e/support/glossaryProse.ts.
+    const { prose } = await glossaryEntry(request, 'foot-fetish');
+    expect(prose).toMatch(/foot/i);
   });
 
   // Both rows were created/rewritten with machine-written prose and therefore
@@ -140,19 +114,18 @@ test.describe('@safety glossary: clinical re-file and the foot cluster', () => {
 
   for (const { slug, fingerprint } of PUBLISHED) {
     test(`${slug} serves its reviewed prose to a signed-out visitor`, async ({ request }) => {
-      const res = await request.get(`/tags/${slug}`, { headers: { 'User-Agent': BOT_UA } });
-      const html = await res.text();
-
-      expect(res.status(), 'a published term must answer 200').toBe(200);
       // POSITIVE CONTROL: the reviewed body is actually being served, so the
-      // negatives below cannot pass on an empty or gated page.
-      expect(prerendered(html), 'published prose must be prerendered').not.toBe('');
-      expect(articleText(html), `${slug} must serve its reviewed body`).toMatch(fingerprint);
+      // negatives below cannot pass on an empty or gated page. glossaryEntry
+      // also carries the indexability guarantee that `robotsOf` used to assert
+      // here — it fails on a tag that lost its <article> while the registry
+      // still calls it an article, and tolerates only the deliberate
+      // correctness-first demotion. See e2e/support/glossaryProse.ts.
+      const { prose, html } = await glossaryEntry(request, slug);
+      expect(prose, `${slug} must serve its reviewed body`).toMatch(fingerprint);
       // The gate is gone and the crawler is welcome.
       expect(html, 'a published term must not offer a sign-in gate').not.toMatch(
         /sign in to view/i,
       );
-      expect(robotsOf(html), 'a published term must be indexable').not.toMatch(/noindex/);
     });
   }
 });

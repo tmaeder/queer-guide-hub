@@ -95,7 +95,8 @@ export const PLATFORMS: PlatformDef[] = [
   {
     key: 'youtube',
     label: 'YouTube',
-    detect: /^https?:\/\/(?:www\.)?youtube\.com\/(@[a-z0-9._-]{3,30}|channel\/[a-z0-9_-]+|c\/[a-z0-9._-]+|user\/[a-z0-9._-]+)\/?/i,
+    detect:
+      /^https?:\/\/(?:www\.)?youtube\.com\/(@[a-z0-9._-]{3,30}|channel\/[a-z0-9_-]+|c\/[a-z0-9._-]+|user\/[a-z0-9._-]+)\/?/i,
     build: (h) => `https://youtube.com/${h.startsWith('@') || h.includes('/') ? h : '@' + h}`,
   },
   {
@@ -125,7 +126,8 @@ export const PLATFORMS: PlatformDef[] = [
   {
     key: 'linkedin',
     label: 'LinkedIn',
-    detect: /^https?:\/\/(?:www\.)?linkedin\.com\/(in\/[a-z0-9-]{3,100}|company\/[a-z0-9-]{2,100})\/?/i,
+    detect:
+      /^https?:\/\/(?:www\.)?linkedin\.com\/(in\/[a-z0-9-]{3,100}|company\/[a-z0-9-]{2,100})\/?/i,
     build: (h) => `https://linkedin.com/${h.includes('/') ? h : 'in/' + h}`,
   },
   {
@@ -180,7 +182,8 @@ export const PLATFORMS: PlatformDef[] = [
     key: 'discord',
     label: 'Discord',
     detect: /^https?:\/\/(?:discord\.(?:gg|com\/invite)|discord\.com\/users)\/([a-z0-9-]+)\/?/i,
-    build: (h) => (/^\d{16,20}$/.test(h) ? `https://discord.com/users/${h}` : `https://discord.gg/${h}`),
+    build: (h) =>
+      /^\d{16,20}$/.test(h) ? `https://discord.com/users/${h}` : `https://discord.gg/${h}`,
   },
   {
     key: 'medium',
@@ -333,8 +336,17 @@ const SHARE_WIDGET_RE =
 
 /** First path segments that are platform features/permalinks, never handles. */
 const RESERVED_HANDLES = new Set([
-  'reels', 'reel', 'p', 'share', 'intent', 'sharer', 'watch',
-  'hashtag', 'explore', 'stories', 'dialog',
+  'reels',
+  'reel',
+  'p',
+  'share',
+  'intent',
+  'sharer',
+  'watch',
+  'hashtag',
+  'explore',
+  'stories',
+  'dialog',
 ]);
 
 function isReservedHandle(handle: string): boolean {
@@ -392,7 +404,8 @@ export function unwrapLoginWall(rawUrl: string): string | null {
     const next = login.searchParams.get('next');
     if (!next) return null;
     const target = new URL(next, login.origin);
-    const sameHost = target.hostname.replace(/^(?:www|m|web)\./, '') ===
+    const sameHost =
+      target.hostname.replace(/^(?:www|m|web)\./, '') ===
       login.hostname.replace(/^(?:www|m|web)\./, '');
     if (!sameHost || !/^https?:$/.test(target.protocol)) return null;
     const url = `https://${target.hostname}${target.pathname}`;
@@ -493,7 +506,9 @@ export function displayHandle(_platform: SocialPlatformKey, handle: string): str
  * ingestion pipeline and backfill. `website` matches are ignored here to
  * avoid capturing every link on a page.
  */
-export function extractSocialUrlsFromText(text: string): Partial<Record<SocialPlatformKey, string>> {
+export function extractSocialUrlsFromText(
+  text: string,
+): Partial<Record<SocialPlatformKey, string>> {
   const out: Partial<Record<SocialPlatformKey, string>> = {};
   if (!text) return out;
   const urls = text.match(/https?:\/\/[^\s"'<>)\]]+/gi) ?? [];
@@ -540,4 +555,62 @@ export function normalizeSocialLinks(
     if (!out[key]) out[key] = canonicalizeUrl(key, url);
   }
   return out;
+}
+
+/**
+ * Fixed display order for social icon rows. Every surface renders platforms
+ * in this sequence, independent of the key order stored in the jsonb (which
+ * Postgres sorts by key LENGTH, so the raw order is arbitrary to a reader).
+ * Deliberately separate from PLATFORMS, whose order is a DETECTION order
+ * (most-specific first, mastodon late because its host is dynamic).
+ * Unlisted keys sort after every listed one; `website` is always last.
+ */
+export const SOCIAL_DISPLAY_ORDER: readonly SocialPlatformKey[] = [
+  'instagram',
+  'facebook',
+  'tiktok',
+  'youtube',
+  'twitter',
+  'threads',
+  'bluesky',
+  'mastodon',
+  'linkedin',
+  'telegram',
+  'discord',
+  'spotify',
+  'soundcloud',
+  'twitch',
+  'reddit',
+  'pinterest',
+  'snapchat',
+  'github',
+  'medium',
+  'patreon',
+  'kofi',
+  'onlyfans',
+  'fansly',
+  'fetlife',
+  'joyclub',
+  'romeo',
+  'grindr',
+  'scruff',
+  'recon',
+  'pornhub',
+  'xhamster',
+  'xvideos',
+  'xtube',
+  'shop',
+  'website',
+];
+
+const DISPLAY_RANK = new Map(SOCIAL_DISPLAY_ORDER.map((k, i) => [k, i]));
+
+/** Normalized social links as [key, url] pairs in SOCIAL_DISPLAY_ORDER. */
+export function orderedSocialLinks(
+  input: Record<string, unknown> | null | undefined,
+): Array<[SocialPlatformKey, string]> {
+  const rank = (k: SocialPlatformKey) => DISPLAY_RANK.get(k) ?? SOCIAL_DISPLAY_ORDER.length - 1.5;
+  return (Object.entries(normalizeSocialLinks(input)) as Array<[SocialPlatformKey, string]>).sort(
+    ([a], [b]) => rank(a) - rank(b),
+  );
 }

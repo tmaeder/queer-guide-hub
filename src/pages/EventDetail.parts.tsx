@@ -26,6 +26,7 @@ import {
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { EntitySocialLinks } from '@/components/entity/EntitySocialLinks';
+import { buildProfileUrl } from '@/lib/social/registry';
 import { ShareMenu } from '@/components/share/ShareMenu';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -968,30 +969,22 @@ export function EventWhere({ event, venueRef, countryId, onOrganizerClick }: Whe
   const org = event.organizer;
   const handles = org?.organizer_handles ?? {};
 
-  const socials: Array<{ label: string; href: string }> = [];
+  // Social platforms render as icons through EntitySocialLinks (one
+  // presentation and one order site-wide); only email/phone stay text buttons.
+  const orgSocialLinks: Record<string, string> = {};
+  const contacts: Array<{ label: string; href: string }> = [];
   if (org) {
     const website = org.website || handles.website;
-    if (website) socials.push({ label: 'Website', href: website });
+    if (website) orgSocialLinks.website = website;
     const insta = org.instagram || handles.instagram;
-    if (insta)
-      socials.push({
-        label: 'Instagram',
-        href: `https://instagram.com/${insta.replace(/^@/, '')}`,
-      });
-    if (handles.telegram)
-      socials.push({
-        label: 'Telegram',
-        href: `https://t.me/${handles.telegram.replace(/^@/, '')}`,
-      });
-    if (handles.bluesky)
-      socials.push({
-        label: 'Bluesky',
-        href: `https://bsky.app/profile/${handles.bluesky.replace(/^@/, '')}`,
-      });
-    if (org.email) socials.push({ label: 'Email', href: `mailto:${org.email}` });
+    if (insta) orgSocialLinks.instagram = buildProfileUrl('instagram', insta);
+    if (handles.telegram) orgSocialLinks.telegram = buildProfileUrl('telegram', handles.telegram);
+    if (handles.bluesky) orgSocialLinks.bluesky = buildProfileUrl('bluesky', handles.bluesky);
+    if (org.email) contacts.push({ label: 'Email', href: `mailto:${org.email}` });
     const orgTel = formatPhoneHref(org.phone);
-    if (orgTel) socials.push({ label: 'Call', href: orgTel });
+    if (orgTel) contacts.push({ label: 'Call', href: orgTel });
   }
+  const hasOrgLinks = Object.keys(orgSocialLinks).length > 0 || contacts.length > 0;
 
   const hasOrganizer = Boolean(org || event.organizer_name);
 
@@ -1128,17 +1121,12 @@ export function EventWhere({ event, venueRef, countryId, onOrganizerClick }: Whe
                 >
                   {org.name}
                 </LocalizedLink>
-                {socials.length > 0 && (
+                {hasOrgLinks && (
                   <div className="mt-4 flex flex-wrap gap-2">
-                    {socials.map((s) => (
+                    <EntitySocialLinks links={orgSocialLinks} size="sm" />
+                    {contacts.map((s) => (
                       <Button key={s.label} variant="outline" size="sm" asChild>
-                        <a
-                          href={s.href}
-                          target={s.href.startsWith('http') ? '_blank' : undefined}
-                          rel={s.href.startsWith('http') ? 'noopener noreferrer' : undefined}
-                        >
-                          {s.label}
-                        </a>
+                        <a href={s.href}>{s.label}</a>
                       </Button>
                     ))}
                   </div>
