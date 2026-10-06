@@ -952,23 +952,44 @@ describe('99991791303353 materializes the unambiguous CTE', () => {
     );
   });
 
-  it('requires the anchor to be UNIQUE before replacing', () => {
-    // A blind replace could otherwise hit a second CTE added later.
+  it('requires the anchor to be UNIQUE in BOTH the code and the raw body', () => {
+    // Code: a blind replace could otherwise hit a second CTE added later.
+    // Raw: `replace()` rewrites EVERY occurrence, so a second hit inside a
+    // comment would silently edit the prose explaining the CTE.
+    expect(statements).toMatch(/regexp_matches\(v_code, '\\\), unambiguous as \\\(', 'g'\)/);
     expect(statements).toMatch(/regexp_matches\(v_src, '\\\), unambiguous as \\\(', 'g'\)/);
     expect(statements).toMatch(/if v_hits <> 1 then\s*\n\s*raise exception/);
+    expect(statements).toMatch(/if v_raw <> 1 then\s*\n\s*raise exception/);
+  });
+
+  it('strips comments before EVERY pg_get_functiondef assertion', () => {
+    // pg_get_functiondef() returns the body INCLUDING its comments, so a raw
+    // position() is satisfied by the prose explaining a symbol rather than the
+    // symbol. It aborted `db push` on main three times on 2026-09-20;
+    // scripts/check-functiondef-asserts.mjs is the gate written after it and it
+    // caught the first draft of this migration.
+    const strips = statements.match(/regexp_replace\(\s*(v_src|pg_get_functiondef)/g) ?? [];
+    expect(strips.length, 'both blocks must strip').toBe(2);
+    expect(statements).toContain("'--[^' || chr(10) || ']*'");
+
+    // No assertion may read the raw definition. The two legitimate raw uses are
+    // the replace() input and the raw-anchor count, both guarded above.
+    expect(statements).not.toMatch(/position\('[^']*' in v_src\)/);
   });
 
   it('is soft on preconditions so a sibling fix cannot block the repo', () => {
     // Already materialized => NOTICE and return, never an abort: `db push`
     // stops at the first failing file and takes every migration behind it.
+    // This is also the path that runs at merge time, because the repair was
+    // applied to prod first to break the live-data-gate deadlock.
     expect(statements).toMatch(
-      /if position\('unambiguous as materialized' in v_src\) > 0 then\s*\n\s*raise notice/,
+      /if position\('unambiguous as materialized' in v_code\) > 0 then\s*\n\s*raise notice/,
     );
   });
 
   it('asserts the directive landed', () => {
     expect(statements).toMatch(
-      /if position\('unambiguous as materialized' in v_src\) = 0 then\s*\n\s*raise exception/,
+      /if position\('unambiguous as materialized' in v_code\) = 0 then\s*\n\s*raise exception/,
     );
   });
 
@@ -977,7 +998,7 @@ describe('99991791303353 materializes the unambiguous CTE', () => {
     // and without them the function re-reads unified_tags eleven times.
     for (const cte of ['ut as materialized', 'uta_rollup as materialized',
                        'ev_assign as materialized', 'ev as materialized']) {
-      expect(statements, `${cte} is not asserted`).toContain(`'${cte}'`);
+      expect(statements, `${cte} is not asserted`).toContain(`position('${cte}' in v_code)`);
     }
   });
 

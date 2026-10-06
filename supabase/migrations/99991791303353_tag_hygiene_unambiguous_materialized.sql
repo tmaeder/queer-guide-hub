@@ -58,29 +58,65 @@
 -- already materialized this CTE the file no-ops rather than aborting `db push`
 -- for the whole repo; it raises only when it cannot do its job at all.
 
+-- EVERY ASSERTION BELOW READS THE COMMENT-STRIPPED BODY, NEVER THE RAW ONE.
+-- pg_get_functiondef() returns the body INCLUDING its comments, so a raw
+-- `position()` can be satisfied by the prose explaining a symbol rather than
+-- the symbol, and the check silently stops checking. That aborted `db push` on
+-- main three times on 2026-09-20 and stranded the whole queue;
+-- scripts/check-functiondef-asserts.mjs is the gate written after it, and it
+-- caught the first draft of this file.
+--
+-- MEASURED, rather than asserted: today the risk here is LATENT, not active —
+-- `ut as materialized` and `unambiguous as materialized` each occur ZERO times
+-- in the live body's comments. What makes the strip worth having anyway is that
+-- the body carries 4,229 bytes of prose that explicitly discusses these CTEs
+-- and the work_mem/index-only-scan reasoning behind them, so one future
+-- sentence naming a symbol turns a real check into a vacuous one with nothing
+-- reporting it. Do not "simplify" this back to the raw body on the grounds that
+-- the counts are zero; zero is the state the strip exists to preserve.
+--
+-- The RAW body is still what gets replaced and executed: stripping is for
+-- deciding, never for writing, or the patch would publish a function with its
+-- reasoning deleted.
+
 do $patch$
 declare
-  v_src  text;
+  v_src  text;   -- raw: what we replace and execute
+  v_code text;   -- comment-stripped: what we assert on
   v_new  text;
   v_hits int;
+  v_raw  int;
 begin
-  v_src := pg_get_functiondef('public.tag_hygiene_stats()'::regprocedure);
+  v_src  := pg_get_functiondef('public.tag_hygiene_stats()'::regprocedure);
+  v_code := regexp_replace(v_src, '--[^' || chr(10) || ']*', '', 'g');
 
   -- Already done by someone else: nothing to do, and NOT an error.
-  if position('unambiguous as materialized' in v_src) > 0 then
+  if position('unambiguous as materialized' in v_code) > 0 then
     raise notice 'tag_hygiene_stats: unambiguous CTE already materialized — no-op';
     return;
   end if;
 
-  -- The anchor must be unique, or a blind replace could hit the wrong CTE.
+  -- The anchor must be unique IN THE CODE, or a blind replace hits the wrong CTE.
   select count(*) into v_hits
-    from regexp_matches(v_src, '\), unambiguous as \(', 'g');
+    from regexp_matches(v_code, '\), unambiguous as \(', 'g');
 
   if v_hits <> 1 then
     raise exception
-      'tag_hygiene_stats: expected exactly 1 "), unambiguous as (" anchor, found % — '
+      'tag_hygiene_stats: expected exactly 1 "), unambiguous as (" anchor in the code, found % — '
       'the function was restructured; re-derive the patch from pg_get_functiondef()',
       v_hits;
+  end if;
+
+  -- And exactly once in the RAW body too, because `replace()` rewrites every
+  -- occurrence: a second hit would be inside a comment, and silently editing
+  -- the prose that explains the CTE is not this file's job.
+  select count(*) into v_raw
+    from regexp_matches(v_src, '\), unambiguous as \(', 'g');
+
+  if v_raw <> 1 then
+    raise exception
+      'tag_hygiene_stats: the anchor appears % times in the raw body (comments included) — '
+      'replace() would rewrite a comment; re-derive the patch by hand', v_raw;
   end if;
 
   v_new := replace(v_src, '), unambiguous as (', '), unambiguous as materialized (');
@@ -95,26 +131,30 @@ $patch$;
 
 do $verify$
 declare
-  v_src  text;
+  v_code text;   -- comment-stripped, for the same reason as the patch block
   v_cfg  text[];
   v_j    jsonb;
   v_t0   timestamptz;
   v_ms   int;
 begin
-  v_src := pg_get_functiondef('public.tag_hygiene_stats()'::regprocedure);
+  v_code := regexp_replace(
+              pg_get_functiondef('public.tag_hygiene_stats()'::regprocedure),
+              '--[^' || chr(10) || ']*', '', 'g');
 
   -- P1: the directive is on the function.
-  if position('unambiguous as materialized' in v_src) = 0 then
+  if position('unambiguous as materialized' in v_code) = 0 then
     raise exception 'P1 failed: unambiguous CTE is not materialized';
   end if;
 
   -- P2: the shared CTEs 99991790719601 added survive. A `create or replace`
   -- drops them exactly as silently as it drops a counter, and without them
-  -- the function re-reads unified_tags eleven times.
-  if position('ut as materialized' in v_src) = 0
-     or position('uta_rollup as materialized' in v_src) = 0
-     or position('ev_assign as materialized' in v_src) = 0
-     or position('ev as materialized' in v_src) = 0 then
+  -- the function re-reads unified_tags eleven times. Asserted on the stripped
+  -- body so that a comment naming one of these CTEs can never stand in for the
+  -- CTE itself.
+  if position('ut as materialized' in v_code) = 0
+     or position('uta_rollup as materialized' in v_code) = 0
+     or position('ev_assign as materialized' in v_code) = 0
+     or position('ev as materialized' in v_code) = 0 then
     raise exception 'P2 failed: a shared materialized CTE was lost';
   end if;
 
