@@ -37,6 +37,7 @@ import { useTranslation } from 'react-i18next';
 import { GlossaryLinkedText } from '@/components/tags/GlossaryLinkedText';
 import { localizedField, type I18nMap } from '@/lib/localizeContent';
 import { useVisitedPlaceLookup } from '@/hooks/useVisitedPlaceLookup';
+import { formatPlaceLabel } from '@/lib/formatPlaceLabel';
 
 type Venue = Database['public']['Tables']['venues']['Row'];
 export type VenueReview = Database['public']['Tables']['venue_reviews']['Row'] & {
@@ -45,7 +46,7 @@ export type VenueReview = Database['public']['Tables']['venue_reviews']['Row'] &
 
 export type VenueWithRelations = Venue & {
   social_links?: Record<string, string> | null;
-  cities?: { id: string; slug?: string; name: string } | null;
+  cities?: { id: string; slug?: string; name: string; region_code?: string | null } | null;
   countries?: {
     id: string;
     slug?: string;
@@ -64,7 +65,7 @@ export type SocialSignals = ReturnType<typeof useVenueSocialSignals>['data'];
 // Geo embeds are BARE (no :city_id column hints): after the P2 FK re-point they
 // resolve via PostgREST computed relationships, which column hints bypass.
 export const VENUE_SELECT_FIELDS =
-  '*, cities(id, slug, name), countries(id, slug, name, equality_score, lgbti_criminalization), organizations:organization_id(slug, name, roles)';
+  '*, cities(id, slug, name, region_code), countries(id, slug, name, equality_score, lgbti_criminalization), organizations:organization_id(slug, name, roles)';
 
 export interface FetchVenueResult {
   venue: VenueWithRelations | null;
@@ -461,7 +462,13 @@ export function VenueBodyLead({ venue }: { venue: VenueWithRelations }) {
  * was mis-mapped — the grid was re-flowing.
  */
 export function VenueFacts({ venue, t }: { venue: VenueWithRelations; t: TFunction }) {
-  const cityLabel = [venue.cities?.name, venue.countries?.name].filter(Boolean).join(', ');
+  // Region in the label since same-name cities can coexist in one country
+  // (Portland, ME vs Portland, OR — 99991791233840).
+  const cityLabel = formatPlaceLabel({
+    city: venue.cities?.name,
+    regionCode: venue.cities?.region_code,
+    country: venue.countries?.name,
+  });
   return (
     <FactGrid
       facts={[
