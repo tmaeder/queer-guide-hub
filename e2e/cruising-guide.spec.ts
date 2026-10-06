@@ -34,7 +34,9 @@ test.describe('cruising guide', () => {
 
     await expect(page).not.toHaveURL(/\/auth(?:[/?#]|$)/);
     await expect(page.getByRole('heading', { name: 'Queer cruising map' })).toBeVisible();
-    await expect(page.getByLabel('Interactive cruising map')).toBeVisible();
+    await expect(page.getByLabel('Interactive cruising map')).toHaveCount(1);
+    await expect(page.getByRole('region', { name: 'Map' })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Zoom in' })).toBeVisible();
 
     const layers = page.getByRole('group', { name: 'Map layers' });
     await expect(layers.getByRole('button', { name: 'Both' })).toBeVisible();
