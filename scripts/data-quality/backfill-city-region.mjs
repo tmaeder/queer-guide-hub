@@ -75,18 +75,40 @@ if (!SUPABASE_URL || !READ_KEY) {
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const sqlQuote = (s) => `'${String(s).replace(/'/g, "''")}'`;
 
-/** Cities with coordinates but no region. tmp- slugs are placeholder stubs. */
+/**
+ * Cities with coordinates but no region_code that no earlier run has already
+ * dispositioned.
+ *
+ * Keyed on region_code, not region_name. Until 2026-10-05 this read
+ * `region_name=is.null`, which selected city-states that already carry a code
+ * from the name arm of 99991791059373 (Berlin, Hamburg, Prague …): measured on
+ * the 2026-09-30 run, 201 of 285 came back "region-less" and were re-asked
+ * every Wednesday, while 1,300 coordinate-bearing rows with no code were never
+ * selected at all.
+ *
+ * tmp- placeholder stubs are INCLUDED since 2026-10-05. They are 1,508 of the
+ * 1,616 rows with no region, and region_code is about to become part of the
+ * city's identity key (one row per country + region + name): a stub with no
+ * region cannot be told apart from a same-named city in another state. The
+ * country gate below is what keeps a stub with bad coordinates from being
+ * filed under a neighbouring country's subdivision.
+ *
+ * A row Photon cannot place is stamped `enrichment_status.region_reverse` and
+ * never re-selected; reset the key to retry.
+ */
 async function loadCities() {
   const url =
     `${SUPABASE_URL}/rest/v1/cities` +
-    `?select=id,name,latitude,longitude` +
-    `&region_name=is.null&duplicate_of_id=is.null` +
+    `?select=id,name,latitude,longitude,region_name,enrichment_status,countries(code)` +
+    `&region_code=is.null&duplicate_of_id=is.null` +
     `&latitude=not.is.null&longitude=not.is.null` +
-    `&slug=not.like.tmp-*` +
+    `&enrichment_status->region_reverse=is.null` +
     `&order=id.asc&limit=${LIMIT}`;
   const res = await fetch(url, { headers: { apikey: READ_KEY, Authorization: `Bearer ${READ_KEY}` } });
   if (!res.ok) throw new Error(`load cities ${res.status}: ${await res.text()}`);
-  return res.json();
+  // region_name already set but unresolvable is a vocabulary gap, not a
+  // geocoding one; leave it to the alias work rather than overwrite it.
+  return (await res.json()).filter((c) => !c.region_name);
 }
 
 async function reverseGeocode(lat, lon) {
@@ -122,6 +144,12 @@ function buildSql(rows) {
   }
   return out.join('\n\n');
 }
+
+const RUN_AT = new Date().toISOString();
+const stamp = (es, v) => ({
+  ...(es && typeof es === 'object' ? es : {}),
+  region_reverse: { ...v, source: 'photon-reverse', at: RUN_AT },
+});
 
 const svcHeaders = {
   apikey: SERVICE_KEY,
@@ -159,7 +187,7 @@ async function writeDirect(rows, batchId) {
       const res = await fetch(`${SUPABASE_URL}/rest/v1/cities?id=eq.${r.id}&region_name=is.null`, {
         method: 'PATCH',
         headers: { ...svcHeaders, Prefer: 'return=minimal' },
-        body: JSON.stringify({ region_name: r.state }),
+        body: JSON.stringify({ region_name: r.state, enrichment_status: stamp(r.es, { state: 'resolved' }) }),
       });
       if (!res.ok) console.warn(`  write ${r.id} failed ${res.status}`);
     }
@@ -167,11 +195,27 @@ async function writeDirect(rows, batchId) {
   }
 }
 
+/** Record cities Photon could not place, so the next run does not ask again. */
+async function stampUnplaced(rows) {
+  for (const r of rows) {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/cities?id=eq.${r.id}&region_code=is.null`, {
+      method: 'PATCH',
+      headers: { ...svcHeaders, Prefer: 'return=minimal' },
+      body: JSON.stringify({
+        enrichment_status: stamp(r.es, { state: 'data_unavailable', reason: r.reason, photon_country: r.photon_country }),
+      }),
+    });
+    if (!res.ok) console.warn(`  stamp ${r.id} failed ${res.status}`);
+  }
+  console.error(`  stamped ${rows.length} unplaced`);
+}
+
 const cities = await loadCities();
-console.error(`${cities.length} cities need a region (coords present, not a tmp- stub)`);
+console.error(`${cities.length} cities need a region (coords present, no region_code, not yet dispositioned)`);
 if (!cities.length) process.exit(0);
 
 const resolved = [];
+const unplaced = [];
 let misses = 0;
 let rateLimits = 0;
 
@@ -185,8 +229,22 @@ for (let i = 0; i < cities.length; i++) {
     i--; // retry this city
     continue;
   }
-  if (r.state) resolved.push({ id: c.id, state: r.state });
-  else misses++;
+  const cc = c.countries?.code?.toUpperCase() ?? null;
+  const pc = r.countrycode?.toUpperCase() ?? null;
+  if (r.state && cc && pc === cc) {
+    resolved.push({ id: c.id, state: r.state, es: c.enrichment_status });
+  } else {
+    misses++;
+    // Only a real Photon answer is a disposition. A timeout or a 5xx returns
+    // {} and must stay eligible for the next run: absence of evidence is not
+    // evidence the city has no region.
+    if (r.state !== undefined) {
+      // An answer about another country is not an answer about this city: the
+      // coordinates are the defect, and a neighbour's state must not be written.
+      const reason = !r.state ? 'no_state' : !cc ? 'no_country' : 'country_mismatch';
+      unplaced.push({ id: c.id, reason, photon_country: pc, es: c.enrichment_status });
+    }
+  }
 
   if ((i + 1) % 100 === 0) {
     console.error(`  ${i + 1}/${cities.length} — ${resolved.length} resolved, ${misses} region-less`);
@@ -198,10 +256,12 @@ console.error(`done: ${resolved.length} resolved, ${misses} legitimately region-
 
 if (DRY_RUN) {
   console.error('--dry-run: no writes');
-  console.error(resolved.slice(0, 10));
+  console.error(resolved.slice(0, 10).map(({ es, ...r }) => r));
+  console.error(`unplaced: ${JSON.stringify(unplaced.reduce((a, u) => ((a[u.reason] = (a[u.reason] || 0) + 1), a), {}))}`);
 } else if (SERVICE_KEY) {
   const batchId = randomUUID();
   await writeDirect(resolved, batchId);
+  await stampUnplaced(unplaced);
   console.error(`\nrevert this run:  select rollback_external_correction_batch('${batchId}');`);
 } else {
   const sql = buildSql(resolved);
