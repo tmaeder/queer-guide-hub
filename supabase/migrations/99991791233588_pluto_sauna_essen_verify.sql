@@ -126,8 +126,13 @@ begin
   if not ('men-only' = any(v.tags)) or coalesce(cardinality(v.amenities), 0) = 0 then
     raise exception 'P6 failed: tags/amenities not filled';
   end if;
+  -- P7 is a NOTICE, not a raise: this migration never writes category or
+  -- safety_gated, and a system writer moved the row to `cruising` (gated) on
+  -- 2026-10-05 22:08, after this file was authored. As a raise it asserted a
+  -- state the file does not own and aborted db push for every queued
+  -- migration repo-wide (four failed deploys, 2026-10-06).
   if v.category <> 'sauna' or v.safety_gated then
-    raise exception 'P7 failed: category/safety_gated changed (%, %)', v.category, v.safety_gated;
+    raise notice 'P7: category/safety_gated is (%, %), set outside this migration', v.category, v.safety_gated;
   end if;
   if exists (select 1 from public.venues where id = '42e58d57-77f4-4684-b3be-8f06dfd57174'
                and duplicate_of_id is distinct from '75d95d20-4047-45ac-b7ea-fd0fc2b0c53b') then
