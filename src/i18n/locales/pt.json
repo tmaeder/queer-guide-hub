@@ -4953,5 +4953,91 @@
     "pauseEpisode": "Pausar {{title}}",
     "error": "Não foi possível reproduzir este episódio. O servidor do programa pode estar fora do ar.",
     "retry": "Tentar de novo"
+  },
+  "cruising": {
+    "layers": {
+      "both": "Ambos",
+      "people": "Pessoas",
+      "label": "Camadas do mapa",
+      "spots": "Pontos"
+    },
+    "meta": {
+      "title": "Mapa cruising",
+      "description": "Um mapa privado de locais cruising e perfis de namoro adulto ativados."
+    },
+    "title": "Mapa de cruising queer",
+    "loading": "Abrindo o guia cruising privado",
+    "eyebrow": "Privado · adultos conectados",
+    "intro": "Encontre todos os locais cruising listados e perfis de namoro ativados em uma única visualização. As pessoas aparecem apenas como áreas aproximadas da cidade; os pontos usam suas coordenadas listadas.",
+    "tabs": {
+      "spots": "Todos os locais",
+      "people": "Pessoas próximas",
+      "label": "Resultados cruising"
+    },
+    "safety": {
+      "healthLead": "ou revise o",
+      "health": "guia de saúde sexual",
+      "guide": "Leia o guia cruising",
+      "body": "É necessário consentimento mútuo. Os lugares partilhados continuam a pertencer a não participantes. Verifique a legislação local, proteja sua privacidade e mantenha um plano de saída."
+    },
+    "selectedArea_one": "Mostrando perfis de namoro em torno de {{city}}. A bolha representa a pessoa ativa {{count}} sem revelar as posições exatas.",
+    "search": {
+      "label": "Pesquise todos os pontos cruising",
+      "placeholder": "Pesquise pontos, cidades ou países"
+    },
+    "selectedArea_other": "Mostrando perfis de namoro em torno de {{city}}. A bolha representa pessoas ativas {{count}} sem revelar as posições exatas.",
+    "pagination": {
+      "previous": "Anterior",
+      "next": "Próximo",
+      "page": "Página {{page}} de {{totalPages}}"
+    },
+    "count": {
+      "spots_one": "Ponto {{count}}",
+      "spots_other": "Pontos {{count}}",
+      "map": "Mapa: {{count}} na pesquisa atual"
+    },
+    "results": {
+      "empty": "Nenhum local corresponde a esta pesquisa.",
+      "loading": "Carregando pontos cruising",
+      "error": "O guia cruising não pôde ser carregado. Por favor, tente novamente."
+    },
+    "spot": {
+      "verified": "Verificado",
+      "locationIncomplete": "Detalhes do local incompletos",
+      "noCoordinates": "Listado sem coordenadas",
+      "details": "Detalhes do lugar",
+      "showOnMap": "Mostrar no mapa"
+    },
+    "map": {
+      "unavailable": "O mapa interativo não está disponível neste navegador. Cada local cruising ainda está listado.",
+      "ariaLabel": "Mapa cruising interativo",
+      "nearMe": "Perto de mim",
+      "searchArea": "Pesquisar esta área",
+      "legend": "Rosa: manchas · Azul: áreas ativas aproximadas"
+    },
+    "presence": {
+      "peopleOffBody": "Crie um perfil íntimo para ver perfis de namoro e, opcionalmente, apareça em uma área aproximada da cidade.",
+      "toastDisabled": "Você não está mais visível no mapa cruising",
+      "createProfile": "Crie um perfil íntimo",
+      "hiddenTitle": "Não visível no mapa",
+      "toastEnabled": "Visível por uma hora",
+      "peopleOffTitle": "A camada de pessoas está desativada",
+      "turnOff": "Desligar",
+      "toastEnabledBody": "Apenas uma bolha aproximada da cidade é mostrada.",
+      "expires": "Desliga automaticamente em {{time}}.",
+      "visibleTitle": "Visível em uma área aproximada",
+      "toastError": "Não foi possível atualizar a visibilidade",
+      "cityPlaceholder": "Pesquisar cidades",
+      "dialogTitle": "Fique visível por uma hora",
+      "goVisible": "Fique visível",
+      "cityLabel": "Cidade ou área",
+      "cityLoading": "Encontrando cidades…",
+      "cancel": "Cancelar",
+      "enable": "Visível por uma hora",
+      "preciseNeverPublished": "Sua posição precisa nunca é publicada.",
+      "acknowledgement": "Entendo que a visibilidade é aproximada, expira após uma hora e não substitui a verificação do consentimento, do ambiente ou da legislação local.",
+      "dialogDescription": "Outros adultos que optaram por participar veem apenas uma bolha no nível da cidade e contam. Eles nunca recebem a localização do seu dispositivo.",
+      "enabling": "Habilitando…"
+    }
   }
 }
