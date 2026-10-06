@@ -155,6 +155,7 @@ export function useActiveTrip(): ActiveTripContextValue {
  * stories/tests. The application still mounts ActiveTripProvider globally;
  * outside it, setting active context simply becomes a no-op.
  */
+// eslint-disable-next-line react-refresh/only-export-components
 export function useOptionalActiveTrip(): ActiveTripContextValue | null {
   return useContext(ActiveTripContext) ?? null;
 }

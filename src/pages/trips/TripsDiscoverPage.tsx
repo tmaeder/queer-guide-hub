@@ -243,6 +243,7 @@ export default function TripsDiscoverPage() {
     now,
     createTrip,
     addPlacesBulk,
+    activeTripContext,
     t,
     toast,
   ]);
