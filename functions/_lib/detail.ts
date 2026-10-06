@@ -1254,6 +1254,25 @@ async function personalityDetail(
   };
 }
 
+/**
+ * "Portland, Maine" when the city has a same-name sibling in its country,
+ * otherwise just "Portland". Prefers the region's name; falls back to the
+ * ISO 3166-2 suffix ("US-ME" -> "ME") when region_name is empty or numeric.
+ */
+export function cityTitleLabel(
+  name: string,
+  regionName: string | undefined | null,
+  regionCode: string | undefined | null,
+  hasSameNameSibling: boolean,
+): string {
+  if (!hasSameNameSibling) return name;
+  const rn = regionName?.trim();
+  if (rn && !/^[0-9]+$/.test(rn) && rn.toLowerCase() !== name.toLowerCase()) return `${name}, ${rn}`;
+  const m = /^[A-Z]{2}-([A-Z0-9]{1,3})$/.exec(regionCode?.trim() ?? '');
+  if (m && !/^[0-9]+$/.test(m[1])) return `${name}, ${m[1]}`;
+  return name;
+}
+
 // City — programmatic SEO surface for /city/:slug
 
 async function cityDetail(env: Env, slug: string, pathname: string): Promise<DetailResult | null> {
@@ -1266,7 +1285,7 @@ async function cityDetail(env: Env, slug: string, pathname: string): Promise<Det
     'cities',
     'slug',
     slug,
-    'id,name,slug,description,image_url,latitude,longitude,country_id,is_capital,is_major_city,population,lgbt_friendly_rating,shell_status,seo_indexable,updated_at',
+    'id,name,slug,description,image_url,latitude,longitude,country_id,is_capital,is_major_city,population,lgbt_friendly_rating,shell_status,seo_indexable,updated_at,region_name,region_code',
   );
   if (!cityRow) return null;
 
@@ -1294,6 +1313,28 @@ async function cityDetail(env: Env, slug: string, pathname: string): Promise<Det
   const image = stringField(cityRow, 'image_url');
   const cityId = stringField(cityRow, 'id');
 
+  // Since 99991791233840 one country may hold two cities of the same name
+  // (Portland, Maine and Portland, Oregon). Their pages must not share a
+  // title, so the region is added exactly when a live same-name sibling
+  // exists — never otherwise, so the other ~5,600 titles do not move.
+  const countryId = stringField(cityRow, 'country_id');
+  const siblings =
+    cityId && countryId
+      ? await fetchRows(
+          env,
+          'cities',
+          'id',
+          `country_id=eq.${countryId}&name=eq.${encodeURIComponent(name)}&duplicate_of_id=is.null&id=neq.${cityId}`,
+          1,
+        ).catch(() => [])
+      : [];
+  const label = cityTitleLabel(
+    name,
+    stringField(cityRow, 'region_name'),
+    stringField(cityRow, 'region_code'),
+    siblings.length > 0,
+  );
+
   // Aggregate venues + events for this city. Best-effort — if either fails the
   // page still renders with whatever we have.
   const [venues, events] = await Promise.all([
@@ -1320,10 +1361,10 @@ async function cityDetail(env: Env, slug: string, pathname: string): Promise<Det
   ]);
 
   const meta: RouteMeta = {
-    title: truncate(`LGBTQ+ guide to ${name}${TITLE_SUFFIX}`, MAX_TITLE),
+    title: truncate(`LGBTQ+ guide to ${label}${TITLE_SUFFIX}`, MAX_TITLE),
     description: truncate(
       description ||
-        `Queer venues, events, hotels and travel tips for ${name}. ${venues.length} venues, ${events.length} upcoming events on Queer Guide.`,
+        `Queer venues, events, hotels and travel tips for ${label}. ${venues.length} venues, ${events.length} upcoming events on Queer Guide.`,
       MAX_DESC,
     ),
     ogImage: safeOgImage(image ?? DEFAULT_OG_IMAGE),
@@ -1352,10 +1393,10 @@ async function cityDetail(env: Env, slug: string, pathname: string): Promise<Det
   const glossary = await getGlossaryVocabulary(env);
   const body = `<main data-prerendered="bot-ua">
     <article>
-      <h1>LGBTQ+ guide to ${escape(name)}</h1>
+      <h1>LGBTQ+ guide to ${escape(label)}</h1>
       ${description ? paragraphsHtmlLinked(description, glossary) : `<p>${escape(name)} is part of the global queer life Queer Guide tracks. Below are the venues, events and travel tips we have on file for ${escape(name)}.</p>`}
-      ${venues.length ? `<section><h2>Top LGBTQ+ venues in ${escape(name)}</h2><ul>\n        ${venuesList}\n      </ul></section>` : ''}
-      ${events.length ? `<section><h2>Upcoming LGBTQ+ events in ${escape(name)}</h2><ul>\n        ${eventsList}\n      </ul></section>` : ''}
+      ${venues.length ? `<section><h2>Top LGBTQ+ venues in ${escape(label)}</h2><ul>\n        ${venuesList}\n      </ul></section>` : ''}
+      ${events.length ? `<section><h2>Upcoming LGBTQ+ events in ${escape(label)}</h2><ul>\n        ${eventsList}\n      </ul></section>` : ''}
       <section><h2>Plan your trip</h2><p>Check the <a href="/travel">country safety guide</a> before you go, and browse <a href="/hotels">queer-friendly hotels</a> and <a href="/villages">queer villages</a> for a place to stay.</p></section>
     </article>
     <nav aria-label="Site sections">
@@ -1372,7 +1413,7 @@ async function cityDetail(env: Env, slug: string, pathname: string): Promise<Det
     '@context': 'https://schema.org',
     '@type': 'Place',
     name,
-    description: description || `LGBTQ+ guide to ${name} on Queer Guide.`,
+    description: description || `LGBTQ+ guide to ${label} on Queer Guide.`,
     url: `${SITE_ORIGIN}${pathname}`,
     image,
     geo:
