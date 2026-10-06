@@ -4718,7 +4718,13 @@ const DISOWNED_PROSE_CEILING = 380
 {
   console.log('')
   console.log('Venue city text')
-  const VENUE_CITY_TEXT_BASELINE = 399
+  // 399 -> 403 on 2026-10-06, measured cause rather than to pass: creating the
+  // Charleston SC and Arlington TX twins (99991791233856) made three venues
+  // that were ALREADY filed under a neighbour (Dudley's on Ann, Republic Lounge
+  // -> North Charleston; Condom Sense -> Mansfield TX) countable for the first
+  // time. The fourth is a real new misfiling: Me Nightclub, city text
+  // Trondheim, linked to Oslo (written 2026-10-06), left for review.
+  const VENUE_CITY_TEXT_BASELINE = 403
   const res = await fetch(`${BASE}/rest/v1/rpc/venue_city_text_signals`, {
     method: 'POST',
     headers: { ...headers, 'Content-Type': 'application/json' },
