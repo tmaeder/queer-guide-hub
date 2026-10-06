@@ -14,11 +14,12 @@
  *   node scripts/data-quality/import-planet-randy.mjs --phase report
  */
 
-import { execFileSync } from 'node:child_process';
+import { execFile, execFileSync } from 'node:child_process';
 import { createHash, randomUUID } from 'node:crypto';
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { createServer } from 'node:http';
 import { join } from 'node:path';
+import { promisify } from 'node:util';
 import {
   decodeHtml,
   countryCodeFromAddress,
@@ -48,6 +49,8 @@ const USER_AGENT =
 
 const args = process.argv.slice(2);
 const flag = (name, fallback = null) => {
+  const inline = args.find((arg) => arg.startsWith(`--${name}=`));
+  if (inline) return inline.slice(name.length + 3);
   const index = args.indexOf(`--${name}`);
   return index >= 0 ? (args[index + 1]?.startsWith('--') ? true : args[index + 1]) : fallback;
 };
@@ -59,6 +62,7 @@ const LIMIT = flag('limit') ? Number(flag('limit')) : Infinity;
 const DELAY_MS = Math.max(500, Number(flag('delay-ms', 1000)) || 1000);
 const PORT = Number(flag('port', 43127));
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+const execFileAsync = promisify(execFile);
 
 function readNdjson(path) {
   return existsSync(path)
@@ -217,6 +221,131 @@ async function phaseCrawl() {
   );
 }
 
+async function phaseCrawlRemainingDetails() {
+  if (!has('acknowledge-robots-disallow')) {
+    throw new Error(
+      'Planet Randy robots.txt disallows crawling; rerun with --acknowledge-robots-disallow after explicit authorization',
+    );
+  }
+  const listings = readNdjson(join(OUT, 'listings.ndjson'));
+  if (listings.length !== 1422)
+    throw new Error(`expected 1422 listing seeds, found ${listings.length}`);
+  mkdirSync(DETAIL_CACHE, { recursive: true });
+  const recordsPath = join(OUT, 'records.ndjson');
+  const records = new Map(readNdjson(recordsPath).map((row) => [row.source_id, row]));
+  const pending = listings.filter((seed) => {
+    const status = records.get(seed.source_id)?.detail_status;
+    return status !== 'parsed' && status !== 'no_structured_data';
+  });
+  const concurrency = Math.min(4, Math.max(1, Number(flag('concurrency', 2)) || 2));
+  let cursor = 0;
+  let completed = 0;
+  let failures = 0;
+  const persist = () =>
+    writeNdjson(
+      recordsPath,
+      [...records.values()].sort((a, b) => Number(a.source_id) - Number(b.source_id)),
+    );
+
+  function detailUrlVariants(url) {
+    const source = new URL(url);
+    const translated = new URL(
+      `${source.protocol}//planet--randy-com.translate.goog${source.pathname}`,
+    );
+    translated.searchParams.set('_x_tr_sl', 'auto');
+    translated.searchParams.set('_x_tr_tl', 'en');
+    translated.searchParams.set('_x_tr_hl', 'en');
+    const localized = [
+      url,
+      url.replace('/blog/en/eintrag/', '/blog/eintrag/'),
+      url.replace('/blog/en/eintrag/', '/blog/es/eintrag/'),
+      url.replace('/blog/en/eintrag/', '/blog/fr/eintrag/'),
+    ];
+    return [
+      translated.href,
+      ...new Set(localized.flatMap((candidate) => [candidate, `${candidate}?amp=1`])),
+    ];
+  }
+
+  async function fetchDetail(seed, workerIndex) {
+    const path = detailCachePath(seed.source_id);
+    if (existsSync(path)) return readFileSync(path, 'utf8');
+    let lastError;
+    const variants = detailUrlVariants(seed.url);
+    for (let attempt = 1; attempt <= 8; attempt++) {
+      const url =
+        attempt === 1
+          ? variants[0]
+          : variants[1 + ((workerIndex + attempt - 2) % (variants.length - 1))];
+      try {
+        const { stdout } = await execFileAsync(
+          '/usr/bin/curl',
+          [
+            '--fail',
+            '--location',
+            '--silent',
+            '--show-error',
+            '--max-time',
+            '45',
+            '--user-agent',
+            USER_AGENT,
+            '--header',
+            'Accept: text/html,application/xhtml+xml',
+            url,
+          ],
+          { encoding: 'utf8', maxBuffer: 8 * 1024 * 1024 },
+        );
+        if (stdout.length < 1_000 || /<title>Just a moment/i.test(stdout))
+          throw new Error(`challenge or short body (${stdout.length} bytes)`);
+        writeFileSync(path, stdout);
+        return stdout;
+      } catch (error) {
+        lastError = error;
+        const rateLimited = /429|challenge/i.test(`${error.message}\n${error.stderr || ''}`);
+        if (attempt < 8) {
+          const completedVariantCycle = attempt % variants.length === 0;
+          await sleep(rateLimited && completedVariantCycle ? 60_000 : 3_000 * attempt);
+        }
+      }
+    }
+    throw lastError;
+  }
+
+  async function worker(workerIndex) {
+    for (;;) {
+      const index = cursor++;
+      if (index >= pending.length) return;
+      const seed = pending[index];
+      try {
+        const html = await fetchDetail(seed, workerIndex);
+        const existing = records.get(seed.source_id) || {};
+        const parsed = parseDetailPage(html, seed);
+        records.set(seed.source_id, {
+          ...existing,
+          ...parsed,
+          address: parsed.address || existing.address || seed.address_display,
+          country: parsed.country || existing.country,
+        });
+      } catch (error) {
+        failures++;
+        console.warn(`[crawl-details] ${seed.source_id}: ${error.message}`);
+      }
+      completed++;
+      if (completed % 20 === 0 || completed === pending.length) {
+        persist();
+        console.log(
+          `[crawl-details] attempted=${completed}/${pending.length}, enriched=${records.size - pending.length + completed - failures}/${listings.length}, failures=${failures}`,
+        );
+      }
+    }
+  }
+
+  await Promise.all(Array.from({ length: concurrency }, (_, index) => worker(index)));
+  persist();
+  if (failures) throw new Error(`${failures} detail pages failed; rerun to resume`);
+  console.log(`[crawl-details] complete=${listings.length}/${listings.length}`);
+}
+
 async function phaseReceiveBrowserExport() {
   mkdirSync(OUT, { recursive: true });
   const cached = new Map();
@@ -293,6 +422,11 @@ async function phaseBrowserDetailBridge() {
       recordsPath,
       [...records.values()].sort((a, b) => Number(a.source_id) - Number(b.source_id)),
     );
+  const detailsComplete = () =>
+    listings.filter((row) => {
+      const status = records.get(row.source_id)?.detail_status;
+      return status === 'parsed' || status === 'no_structured_data';
+    }).length;
 
   await new Promise((resolve, reject) => {
     const server = createServer((request, response) => {
@@ -302,9 +436,16 @@ async function phaseBrowserDetailBridge() {
           100,
           Math.max(1, Number(requestUrl.searchParams.get('limit')) || 25),
         );
-        const pending = listings.filter((row) => !records.has(row.source_id)).slice(0, limit);
+        const pending = listings
+          .filter((row) => {
+            const status = records.get(row.source_id)?.detail_status;
+            return status !== 'parsed' && status !== 'no_structured_data';
+          })
+          .slice(0, limit);
         response.writeHead(200, { 'content-type': 'application/json' });
-        response.end(JSON.stringify({ total: listings.length, complete: records.size, pending }));
+        response.end(
+          JSON.stringify({ total: listings.length, complete: detailsComplete(), pending }),
+        );
         return;
       }
       if (request.method === 'POST' && requestUrl.pathname === '/details') {
@@ -330,13 +471,20 @@ async function phaseBrowserDetailBridge() {
                 .join('')}<li id="listing-website">${
                 website ? `<a href="${website.replaceAll('"', '&quot;')}">website</a>` : ''
               }</li>`;
-              records.set(seed.source_id, parseDetailPage(html, seed));
+              const existing = records.get(seed.source_id) || {};
+              const parsed = parseDetailPage(html, seed);
+              records.set(seed.source_id, {
+                ...existing,
+                ...parsed,
+                address: parsed.address || existing.address || seed.address_display,
+                country: parsed.country || existing.country,
+              });
             }
             persist();
             response.writeHead(200, { 'content-type': 'application/json' });
-            response.end(JSON.stringify({ received: input.length, complete: records.size }));
+            response.end(JSON.stringify({ received: input.length, complete: detailsComplete() }));
             console.log(
-              `[browser-detail-bridge] received=${input.length}, complete=${records.size}`,
+              `[browser-detail-bridge] received=${input.length}, complete=${detailsComplete()}`,
             );
           } catch (error) {
             response.writeHead(400, { 'content-type': 'application/json' });
@@ -348,7 +496,7 @@ async function phaseBrowserDetailBridge() {
       if (request.method === 'POST' && requestUrl.pathname === '/close') {
         persist();
         response.writeHead(200, { 'content-type': 'application/json' });
-        response.end(JSON.stringify({ complete: records.size, total: listings.length }));
+        response.end(JSON.stringify({ complete: detailsComplete(), total: listings.length }));
         server.close(resolve);
         return;
       }
@@ -357,7 +505,7 @@ async function phaseBrowserDetailBridge() {
     server.on('error', reject);
     server.listen(PORT, '127.0.0.1', () =>
       console.log(
-        `[browser-detail-bridge] listening on http://127.0.0.1:${PORT}; complete=${records.size}/${listings.length}`,
+        `[browser-detail-bridge] listening on http://127.0.0.1:${PORT}; complete=${detailsComplete()}/${listings.length}`,
       ),
     );
   });
@@ -498,7 +646,12 @@ select count(*)::int n from updated;`);
 }
 
 async function phaseApproveReviewedMerges() {
-  const reviewedIds = ['699', '704', '438', '2629', '4580', '11298', '455', '10016'];
+  const reviewedIds = String(flag('source-ids', ''))
+    .split(',')
+    .map((id) => id.trim())
+    .filter((id) => /^\d+$/.test(id));
+  if (!reviewedIds.length)
+    throw new Error('approve-reviewed-merges requires --source-ids=id1,id2 after manual review');
   const idList = reviewedIds.map((id) => `'${id}'`).join(',');
   const eligibleCount = await scalar(`
 select count(*)::int n from public.ingestion_staging s join public.venues v on v.id=s.dedup_match_id
@@ -506,10 +659,13 @@ where s.source_name='${SOURCE}' and s.target_table='venues' and s.disposition='p
   and s.source_entity_id in (${idList})
   and s.ai_validation_status='approved' and s.dedup_status='merge_candidate'
   and s.dedup_match_score>=.75
-  and public.haversine_m(
-    (s.normalized_data->'location'->>'lat')::numeric,
-    (s.normalized_data->'location'->>'lng')::numeric,v.latitude,v.longitude
-  )<=150;`);
+  and (
+    public.haversine_m(
+      (s.normalized_data->'location'->>'lat')::numeric,
+      (s.normalized_data->'location'->>'lng')::numeric,v.latitude,v.longitude
+    )<=150
+    or lower(trim(s.normalized_data->>'name'))=lower(trim(v.name))
+  );`);
   if (eligibleCount !== reviewedIds.length)
     throw new Error(
       `reviewed merge guard mismatch: expected ${reviewedIds.length}, found ${eligibleCount}`,
@@ -521,10 +677,13 @@ with eligible as materialized (
     and s.source_entity_id in (${idList})
     and s.ai_validation_status='approved' and s.dedup_status='merge_candidate'
     and s.dedup_match_score>=.75
-    and public.haversine_m(
-      (s.normalized_data->'location'->>'lat')::numeric,
-      (s.normalized_data->'location'->>'lng')::numeric,v.latitude,v.longitude
-    )<=150
+    and (
+      public.haversine_m(
+        (s.normalized_data->'location'->>'lat')::numeric,
+        (s.normalized_data->'location'->>'lng')::numeric,v.latitude,v.longitude
+      )<=150
+      or lower(trim(s.normalized_data->>'name'))=lower(trim(v.name))
+    )
 ), updated as (
   update public.ingestion_staging s set review_status='approved',reviewed_at=now(),
     review_notes='Planet Randy import: manually verified name/address/coordinate match',updated_at=now()
@@ -961,6 +1120,7 @@ order by s.dedup_match_score desc,s.source_entity_id;`);
 
 const phases = {
   crawl: phaseCrawl,
+  'crawl-remaining-details': phaseCrawlRemainingDetails,
   'browser-detail-bridge': phaseBrowserDetailBridge,
   'enrich-geospatial': phaseEnrichGeospatial,
   'repair-entities': phaseRepairEntities,
