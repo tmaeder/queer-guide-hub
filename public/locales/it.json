@@ -4923,5 +4923,91 @@
     "pauseEpisode": "Metti in pausa {{title}}",
     "error": "Impossibile riprodurre questo episodio. Il server del programma potrebbe non essere raggiungibile.",
     "retry": "Riprova"
+  },
+  "cruising": {
+    "layers": {
+      "both": "Entrambi",
+      "label": "Livelli della mappa",
+      "people": "Persone",
+      "spots": "Macchie"
+    },
+    "meta": {
+      "title": "Mappa cruising",
+      "description": "Una mappa privata dei luoghi cruising e dei profili di incontri per adulti attivati."
+    },
+    "loading": "Apertura della guida privata cruising",
+    "eyebrow": "Privato · adulti registrati",
+    "safety": {
+      "guide": "Leggi la guida cruising",
+      "body": "È richiesto il consenso reciproco. I luoghi condivisi appartengono ancora ai non partecipanti. Controlla la legge locale, proteggi la tua privacy e mantieni un piano di uscita.",
+      "healthLead": "o rivedi il",
+      "health": "guida alla salute sessuale"
+    },
+    "title": "Mappa del cruising queer",
+    "intro": "Trova tutti i luoghi cruising elencati e i profili di incontri attivati ​​in un'unica visualizzazione. Le persone appaiono solo come aree approssimative della città; gli spot utilizzano le coordinate elencate.",
+    "tabs": {
+      "label": "Risultati cruising",
+      "people": "Persone vicine",
+      "spots": "Tutti i punti"
+    },
+    "search": {
+      "label": "Cerca tutti gli spot cruising",
+      "placeholder": "Cerca luoghi, città o paesi"
+    },
+    "count": {
+      "spots_one": "Punto {{count}}",
+      "spots_other": "Punti {{count}}",
+      "map": "Mappa: {{count}} nella ricerca corrente"
+    },
+    "pagination": {
+      "previous": "Precedente",
+      "next": "Prossimo",
+      "page": "Pagina {{page}} di {{totalPages}}"
+    },
+    "selectedArea_other": "Visualizzazione dei profili di incontri intorno a {{city}}. La bolla rappresenta le persone attive {{count}} senza rivelare le posizioni esatte.",
+    "selectedArea_one": "Visualizzazione dei profili di incontri intorno a {{city}}. La bolla rappresenta la persona attiva {{count}} senza rivelare le posizioni esatte.",
+    "spot": {
+      "verified": "Verificato",
+      "details": "Dettagli del luogo",
+      "showOnMap": "Mostra sulla mappa",
+      "locationIncomplete": "Dettagli sulla posizione incompleti",
+      "noCoordinates": "Elencato senza coordinate"
+    },
+    "results": {
+      "loading": "Caricamento spot cruising",
+      "empty": "Nessuno spot corrisponde a questa ricerca.",
+      "error": "Impossibile caricare la guida cruising. Per favore riprova."
+    },
+    "map": {
+      "searchArea": "Cerca in quest'area",
+      "nearMe": "Vicino a me",
+      "unavailable": "La mappa interattiva non è disponibile in questo browser. Ogni posto cruising è ancora elencato.",
+      "legend": "Rosa: macchie · Blu: aree attive approssimative",
+      "ariaLabel": "Mappa interattiva cruising"
+    },
+    "presence": {
+      "peopleOffBody": "Crea un profilo intimo per vedere i profili di incontri e, facoltativamente, apparire in un'area approssimativa della città.",
+      "peopleOffTitle": "Il livello delle persone è disattivato",
+      "hiddenTitle": "Non visibile sulla mappa",
+      "toastEnabled": "Visibile per un'ora",
+      "createProfile": "Crea un profilo intimo",
+      "turnOff": "Spegnere",
+      "toastDisabled": "Non sei più visibile sulla mappa cruising",
+      "toastEnabledBody": "Viene mostrata solo una bolla approssimativa della città.",
+      "visibleTitle": "Visibile in zona approssimativa",
+      "toastError": "Impossibile aggiornare la visibilità",
+      "preciseNeverPublished": "La tua posizione precisa non viene mai pubblicata.",
+      "expires": "Si spegne automaticamente a {{time}}.",
+      "cancel": "Cancellare",
+      "dialogTitle": "Rendi visibile per un'ora",
+      "cityLabel": "Città o zona",
+      "cityLoading": "Trovare città...",
+      "cityPlaceholder": "Cerca città",
+      "goVisible": "Diventa visibile",
+      "enabling": "Abilitazione...",
+      "enable": "Visibile per un'ora",
+      "acknowledgement": "Comprendo che la visibilità è approssimativa, scade dopo un'ora e non sostituisce la verifica del consenso, dell'ambiente circostante o della legge locale.",
+      "dialogDescription": "Gli altri adulti che hanno aderito vedono solo una bolla a livello di città e contano. Non ricevono mai la posizione del tuo dispositivo."
+    }
   }
 }

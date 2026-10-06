@@ -4927,5 +4927,91 @@
     "pauseEpisode": "Mettre {{title}} en pause",
     "error": "Impossible de lire cet épisode. Le serveur de l'émission est peut-être indisponible.",
     "retry": "Réessayer"
+  },
+  "cruising": {
+    "layers": {
+      "both": "Les deux",
+      "people": "Personnes",
+      "label": "Couches de carte",
+      "spots": "Taches"
+    },
+    "meta": {
+      "title": "Carte cruising",
+      "description": "Une carte privée des spots cruising et des profils de rencontres pour adultes activés."
+    },
+    "title": "Carte du cruising queer",
+    "loading": "Ouverture du guide privé cruising",
+    "safety": {
+      "guide": "Lire le guide cruising",
+      "health": "guide de santé sexuelle",
+      "healthLead": "ou consulter le",
+      "body": "Un consentement mutuel est requis. Les places partagées appartiennent toujours aux non-participants. Vérifiez la législation locale, protégez votre vie privée et conservez un plan de sortie."
+    },
+    "intro": "Trouvez tous les lieux cruising répertoriés et les profils de rencontres activés dans une seule vue. Les gens n'apparaissent que sous forme de zones urbaines approximatives ; les spots utilisent leurs coordonnées répertoriées.",
+    "eyebrow": "Privé · adultes connectés",
+    "tabs": {
+      "spots": "Tous les spots",
+      "people": "Personnes à proximité",
+      "label": "Résultats cruising"
+    },
+    "count": {
+      "map": "Carte : {{count}} dans la recherche en cours",
+      "spots_one": "Spot {{count}}",
+      "spots_other": "Points {{count}}"
+    },
+    "search": {
+      "label": "Rechercher tous les spots cruising",
+      "placeholder": "Rechercher des lieux, des villes ou des pays"
+    },
+    "selectedArea_other": "Affichage des profils de rencontres autour de {{city}}. La bulle représente les personnes actives de {{count}} sans révéler les positions exactes.",
+    "selectedArea_one": "Affichage des profils de rencontres autour de {{city}}. La bulle représente la personne active {{count}} sans révéler les positions exactes.",
+    "pagination": {
+      "previous": "Précédent",
+      "next": "Suivant",
+      "page": "Page {{page}} de {{totalPages}}"
+    },
+    "spot": {
+      "locationIncomplete": "Détails de localisation incomplets",
+      "verified": "Vérifié",
+      "details": "Détails du lieu",
+      "showOnMap": "Afficher sur la carte",
+      "noCoordinates": "Répertorié sans coordonnées"
+    },
+    "results": {
+      "loading": "Chargement des spots cruising",
+      "empty": "Aucun spot ne correspond à cette recherche.",
+      "error": "Le guide cruising n'a pas pu être chargé. Veuillez réessayer."
+    },
+    "map": {
+      "searchArea": "Rechercher dans cette zone",
+      "nearMe": "Près de moi",
+      "ariaLabel": "Carte interactive cruising",
+      "legend": "Rose : taches · Bleu : zones actives approximatives",
+      "unavailable": "La carte interactive n'est pas disponible dans ce navigateur. Chaque spot cruising est toujours répertorié."
+    },
+    "presence": {
+      "toastEnabled": "Visible pendant une heure",
+      "peopleOffTitle": "La couche Personnes est désactivée",
+      "createProfile": "Créer un profil intime",
+      "peopleOffBody": "Créez un profil intime pour voir les profils de rencontres et apparaissez éventuellement dans une zone urbaine approximative.",
+      "toastDisabled": "Vous n'êtes plus visible sur la carte cruising",
+      "turnOff": "Éteindre",
+      "preciseNeverPublished": "Votre position précise n’est jamais publiée.",
+      "visibleTitle": "Visible dans une zone approximative",
+      "expires": "S'éteint automatiquement à {{time}}.",
+      "toastError": "Impossible de mettre à jour la visibilité",
+      "toastEnabledBody": "Seule une bulle de ville approximative est affichée.",
+      "goVisible": "Devenez visible",
+      "dialogTitle": "Devenez visible pendant une heure",
+      "hiddenTitle": "Non visible sur la carte",
+      "enable": "Visible pendant une heure",
+      "cancel": "Annuler",
+      "acknowledgement": "Je comprends que la visibilité est approximative, expire après une heure et ne remplace pas la vérification du consentement, de l'environnement ou de la loi locale.",
+      "dialogDescription": "D’autres adultes inscrits ne voient qu’une bulle au niveau de la ville et comptent. Ils ne reçoivent jamais la position de votre appareil.",
+      "cityLoading": "Trouver des villes…",
+      "enabling": "Activation…",
+      "cityLabel": "Ville ou région",
+      "cityPlaceholder": "Rechercher des villes"
+    }
   }
 }

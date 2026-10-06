@@ -4923,5 +4923,91 @@
     "pauseEpisode": "Pausar {{title}}",
     "error": "No se pudo reproducir este episodio. Puede que el servidor del programa esté caído.",
     "retry": "Reintentar"
+  },
+  "cruising": {
+    "layers": {
+      "both": "Ambos",
+      "label": "Capas de mapa",
+      "people": "Gente",
+      "spots": "Manchas"
+    },
+    "loading": "Abriendo la guía privada cruising",
+    "intro": "Encuentre todos los lugares de cruising enumerados y los perfiles de citas habilitados en una sola vista. Las personas aparecen sólo como áreas aproximadas de la ciudad; Los puntos utilizan sus coordenadas enumeradas.",
+    "eyebrow": "Privado · adultos registrados",
+    "meta": {
+      "title": "mapa de cruising",
+      "description": "Un mapa privado de lugares de cruising y perfiles de citas para adultos habilitados."
+    },
+    "title": "Mapa queer de cruising",
+    "safety": {
+      "health": "guía de salud sexual",
+      "body": "Se requiere consentimiento mutuo. Los lugares compartidos siguen perteneciendo a los no participantes. Consulte las leyes locales, proteja su privacidad y mantenga un plan de salida.",
+      "healthLead": "o revisar el",
+      "guide": "Lea la guía cruising"
+    },
+    "search": {
+      "placeholder": "Buscar lugares, ciudades o países",
+      "label": "Buscar todos los lugares de cruising"
+    },
+    "tabs": {
+      "people": "gente cercana",
+      "label": "Resultados de cruising",
+      "spots": "Todos los lugares"
+    },
+    "results": {
+      "empty": "No hay lugares que coincidan con esta búsqueda.",
+      "error": "No se pudo cargar la guía cruising. Por favor inténtalo de nuevo.",
+      "loading": "Cargando anuncios de cruising"
+    },
+    "count": {
+      "map": "Mapa: {{count}} en la búsqueda actual",
+      "spots_other": "Lugares {{count}}",
+      "spots_one": "Lugar {{count}}"
+    },
+    "pagination": {
+      "next": "Próximo",
+      "previous": "Anterior",
+      "page": "Página {{page}} de {{totalPages}}"
+    },
+    "selectedArea_one": "Mostrando perfiles de citas alrededor de {{city}}. La burbuja representa a la persona activa {{count}} sin revelar posiciones exactas.",
+    "selectedArea_other": "Mostrando perfiles de citas alrededor de {{city}}. La burbuja representa personas activas {{count}} sin revelar posiciones exactas.",
+    "spot": {
+      "verified": "Verificado",
+      "showOnMap": "Mostrar en el mapa",
+      "details": "Detalles del lugar",
+      "noCoordinates": "Listado sin coordenadas",
+      "locationIncomplete": "Detalles de la ubicación incompletos"
+    },
+    "map": {
+      "nearMe": "cerca de mi",
+      "legend": "Rosa: manchas · Azul: áreas activas aproximadas",
+      "unavailable": "El mapa interactivo no está disponible en este navegador. Todos los lugares de cruising todavía aparecen en la lista.",
+      "ariaLabel": "Mapa interactivo cruising",
+      "searchArea": "Buscar en esta área"
+    },
+    "presence": {
+      "toastDisabled": "Ya no eres visible en el mapa cruising",
+      "peopleOffBody": "Crea un perfil íntimo para ver perfiles de citas y, opcionalmente, aparecer en un área aproximada de la ciudad.",
+      "toastError": "No se pudo actualizar la visibilidad",
+      "toastEnabledBody": "Sólo se muestra una burbuja de ciudad aproximada.",
+      "createProfile": "Crear perfil íntimo",
+      "peopleOffTitle": "La capa de personas está desactivada",
+      "toastEnabled": "Visible durante una hora",
+      "turnOff": "Apagar",
+      "visibleTitle": "Visible en un área aproximada",
+      "dialogDescription": "Otros adultos que optaron por participar solo ven una burbuja a nivel de ciudad y cuentan. Nunca reciben la ubicación de su dispositivo.",
+      "preciseNeverPublished": "Su posición precisa nunca se publica.",
+      "expires": "Se apaga automáticamente en {{time}}.",
+      "cancel": "Cancelar",
+      "cityLoading": "Buscando ciudades...",
+      "cityPlaceholder": "Buscar ciudades",
+      "cityLabel": "ciudad o zona",
+      "dialogTitle": "Hazte visible durante una hora.",
+      "enabling": "Habilitando…",
+      "hiddenTitle": "No visible en el mapa.",
+      "goVisible": "Hazte visible",
+      "enable": "Visible durante una hora",
+      "acknowledgement": "Entiendo que la visibilidad es aproximada, caduca después de una hora y no reemplaza la verificación del consentimiento, el entorno o las leyes locales."
+    }
   }
 }

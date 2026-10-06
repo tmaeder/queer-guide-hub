@@ -27,12 +27,12 @@
   "cruising": {
     "meta": {
       "title": "Cruising map",
-      "description": "A private map of cruising spots and opted-in adult dating discovery."
+      "description": "A private map of cruising spots and opted-in adult dating profiles."
     },
     "loading": "Opening the private cruising guide",
     "eyebrow": "Private · signed-in adults",
-    "title": "Cruise the queer map",
-    "intro": "Browse the complete cruising-place guide alongside opted-in dating discovery. People appear only as approximate city areas; spots use their listed coordinates.",
+    "title": "Queer cruising map",
+    "intro": "See all listed cruising places and opted-in dating profiles in one view. People appear only as approximate city areas; spots use their listed coordinates.",
     "layers": {
       "label": "Map layers",
       "both": "Both",
