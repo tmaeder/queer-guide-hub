@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { glossaryEntry } from './support/glossaryProse';
 
 // A glossary entry must not publish an English Wikipedia SURNAME STUB, and a
 // summary must not name a different subject than the entry.
@@ -90,13 +91,12 @@ test.describe('@smoke glossary entries do not publish a surname stub', () => {
   // POSITIVE CONTROL for the whole describe block. Without it, every
   // assertion above is satisfied by a site that stopped serving tag prose.
   test('a good row from the same cohort still renders and stays indexable', async ({ request }) => {
-    const res = await request.get('/tags/safe-call', {
-      headers: { 'User-Agent': BOT_UA },
-    });
-    expect(res.status()).toBe(200);
-    const html = await res.text();
-    expect(isNoindex(html), '/tags/safe-call was deindexed — the repair over-reached').toBe(false);
-    expect(articleOf(html), '/tags/safe-call renders no prose').toMatch(/safe call|check[- ]in/i);
+    // Indexability is carried by glossaryEntry() rather than asserted here: it
+    // fails when a tag serves no crawler <article> while the registry still
+    // calls it an article, and tolerates only the deliberate correctness-first
+    // demotion. See e2e/support/glossaryProse.ts.
+    const { prose } = await glossaryEntry(request, 'safe-call');
+    expect(prose, '/tags/safe-call renders no prose').toMatch(/safe call|check[- ]in/i);
   });
 });
 

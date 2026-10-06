@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { Button } from '@/components/ui/button';
-import { normalizeSocialLinks, platformLabel, isAdultPlatform } from '@/lib/social/registry';
+import { orderedSocialLinks, platformLabel, isAdultPlatform } from '@/lib/social/registry';
 import { platformIcon } from '@/lib/social/icons';
 
 interface EntitySocialLinksProps {
@@ -18,12 +18,19 @@ const ICON_SIZE = { sm: 16, md: 18, lg: 22 } as const;
 /**
  * Shared, monochrome social-link row for entity detail pages. Reads the
  * normalized social_links jsonb convention and renders brand icons via the
- * shared registry. Outbound links use rel="noopener nofollow".
+ * shared registry, always in SOCIAL_DISPLAY_ORDER. Outbound links use
+ * rel="noopener nofollow".
  */
-export function EntitySocialLinks({ links, size = 'md', showLabels = false, exclude, className }: EntitySocialLinksProps) {
+export function EntitySocialLinks({
+  links,
+  size = 'md',
+  showLabels = false,
+  exclude,
+  className,
+}: EntitySocialLinksProps) {
   const entries = useMemo(() => {
     const skip = new Set(exclude ?? []);
-    return Object.entries(normalizeSocialLinks(links as Record<string, unknown> | null)).filter(
+    return orderedSocialLinks(links as Record<string, unknown> | null).filter(
       ([key]) => !skip.has(key),
     );
   }, [links, exclude]);
@@ -32,7 +39,9 @@ export function EntitySocialLinks({ links, size = 'md', showLabels = false, excl
   const iconSize = ICON_SIZE[size];
 
   return (
-    <div className={`flex flex-wrap gap-2 ${showLabels ? 'flex-col items-start' : ''} ${className ?? ''}`}>
+    <div
+      className={`flex flex-wrap gap-2 ${showLabels ? 'flex-col items-start' : ''} ${className ?? ''}`}
+    >
       {entries.map(([key, url]) => {
         const Icon = platformIcon(key);
         const adult = isAdultPlatform(key);
