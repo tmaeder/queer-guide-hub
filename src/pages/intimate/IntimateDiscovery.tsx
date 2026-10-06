@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import { Link, useNavigate } from 'react-router';
 import { useMyIntimateProfile, useIntimateDiscovery } from '@/hooks/useIntimateProfile';
 import { usePeopleDiscovery } from '@/hooks/usePeopleDiscovery';
@@ -21,7 +21,13 @@ import { JoyBurst } from '@/components/messaging/JoyBurst';
 import { PageContainer } from '@/components/layout/PageContainer';
 import { PageLoadingState } from '@/components/layout/PageLoadingState';
 
-export default function IntimateDiscovery() {
+export default function IntimateDiscovery({
+  embedded = false,
+  cityIdOverride,
+}: {
+  embedded?: boolean;
+  cityIdOverride?: string;
+}) {
   const { data: me, isLoading } = useMyIntimateProfile();
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -45,7 +51,7 @@ export default function IntimateDiscovery() {
     }
   }, [viewMode]);
 
-  const cityId = me?.discovery_city_id ?? null;
+  const cityId = cityIdOverride ?? me?.discovery_city_id ?? null;
   const { data: cards, isLoading: loadingDisc } = useIntimateDiscovery({
     cityId,
     roles,
@@ -116,26 +122,26 @@ export default function IntimateDiscovery() {
 
   if (isLoading) {
     return (
-      <PageContainer>
+      <DiscoveryShell embedded={embedded}>
         <PageLoadingState count={4} label="Loading your discovery line" />
-      </PageContainer>
+      </DiscoveryShell>
     );
   }
 
   if (!me?.opted_in_at) {
     return (
-      <PageContainer size="form" className="text-center">
+      <DiscoveryShell embedded={embedded} form className="text-center">
         <h1 className="mb-4 text-2xl">Intimate</h1>
         <p className="mb-6 text-muted-foreground">
           You haven&apos;t opted into the intimate profile yet.
         </p>
         <Button onClick={() => navigate('/intimate/onboard')}>Get started</Button>
-      </PageContainer>
+      </DiscoveryShell>
     );
   }
 
   return (
-    <PageContainer className="relative">
+    <DiscoveryShell embedded={embedded} className="relative">
       {matchJoy && <JoyBurst onDone={() => setMatchJoy(false)} />}
       <header className="mb-6 flex items-baseline justify-between">
         <h1 className="text-2xl">Intimate</h1>
@@ -278,6 +284,25 @@ export default function IntimateDiscovery() {
           })}
         </ul>
       )}
+    </DiscoveryShell>
+  );
+}
+
+function DiscoveryShell({
+  embedded,
+  form,
+  className,
+  children,
+}: {
+  embedded: boolean;
+  form?: boolean;
+  className?: string;
+  children: ReactNode;
+}) {
+  if (embedded) return <div className={className}>{children}</div>;
+  return (
+    <PageContainer size={form ? 'form' : undefined} className={className}>
+      {children}
     </PageContainer>
   );
 }

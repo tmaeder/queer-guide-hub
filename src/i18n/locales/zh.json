@@ -4951,5 +4951,91 @@
     "pauseEpisode": "暂停 {{title}}",
     "error": "无法播放该单集。节目服务器可能已停止服务。",
     "retry": "重试"
+  },
+  "cruising": {
+    "layers": {
+      "both": "两个都",
+      "people": "人们",
+      "label": "地图图层",
+      "spots": "景点"
+    },
+    "eyebrow": "私人·登录成人",
+    "loading": "打开私人 寻欢 指南",
+    "title": "酷儿寻欢地图",
+    "meta": {
+      "title": "寻欢 地图",
+      "description": "寻欢 地点和选择加入的成人约会资料的私人地图。"
+    },
+    "intro": "在一个视图中查找所有列出的 寻欢 地点和选择加入的约会资料。人们仅以大致的城市区域出现；点使用其列出的坐标。",
+    "safety": {
+      "body": "需要双方同意。共享位置仍然属于非参与者。检查当地法律，保护您的隐私，并制定退出计划。",
+      "guide": "阅读 寻欢 指南",
+      "health": "性健康指南",
+      "healthLead": "或查看"
+    },
+    "tabs": {
+      "label": "寻欢 结果",
+      "spots": "所有景点",
+      "people": "附近的人"
+    },
+    "selectedArea_one": "显示 {{city}} 周围的约会资料。气泡代表 {{count}} 活跃人物，但未透露具体位置。",
+    "count": {
+      "map": "地图：当前搜索中的{{count}}",
+      "spots_other": "{{count}} 现货",
+      "spots_one": "{{count}} 现货"
+    },
+    "selectedArea_other": "显示 {{city}} 周围的约会资料。气泡代表 {{count}} 活跃人士，但未透露具体位置。",
+    "search": {
+      "placeholder": "搜索地点、城市或国家",
+      "label": "搜索所有 寻欢 景点"
+    },
+    "results": {
+      "loading": "正在加载 寻欢 景点",
+      "empty": "没有与此搜索匹配的地点。",
+      "error": "无法加载 寻欢 指南。请再试一次。"
+    },
+    "pagination": {
+      "next": "下一个",
+      "previous": "以前的",
+      "page": "{{totalPages}} 的页面 {{page}}"
+    },
+    "spot": {
+      "verified": "已验证",
+      "showOnMap": "在地图上显示",
+      "locationIncomplete": "地点详情不完整",
+      "noCoordinates": "列出没有坐标",
+      "details": "地点详情"
+    },
+    "map": {
+      "ariaLabel": "互动寻欢地图",
+      "nearMe": "在我附近",
+      "searchArea": "搜索该区域",
+      "unavailable": "交互式地图在此浏览器中不可用。每个 寻欢 现货仍然列出。",
+      "legend": "粉色：斑点·蓝色：大致活动区域"
+    },
+    "presence": {
+      "createProfile": "创建亲密的个人资料",
+      "peopleOffTitle": "人员层已关闭",
+      "peopleOffBody": "创建亲密的个人资料以查看约会资料，并可选择出现在大致的城市区域。",
+      "toastEnabledBody": "仅显示了近似的城市气泡。",
+      "toastError": "无法更新可见性",
+      "expires": "在 {{time}} 处自动关闭。",
+      "visibleTitle": "在大致区域内可见",
+      "turnOff": "关",
+      "dialogTitle": "可见一小时",
+      "hiddenTitle": "在地图上不可见",
+      "goVisible": "变得可见",
+      "cityLabel": "城市或地区",
+      "toastEnabled": "可见一小时",
+      "cancel": "取消",
+      "enable": "可见一小时",
+      "toastDisabled": "您在 寻欢 地图上不再可见",
+      "preciseNeverPublished": "您的确切位置永远不会被公开。",
+      "dialogDescription": "其他选择加入的成年人只看到城市级别的泡沫和计数。他们永远不会收到您的设备位置。",
+      "cityPlaceholder": "搜索城市",
+      "cityLoading": "寻找城市...",
+      "enabling": "启用...",
+      "acknowledgement": "我了解可见性是近似值，一小时后过期，并且不能取代检查同意、环境或当地法律。"
+    }
   }
 }

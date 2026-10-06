@@ -4951,5 +4951,91 @@
     "pauseEpisode": "{{title}} 일시정지",
     "error": "이 에피소드를 재생할 수 없습니다. 프로그램 서버가 중단되었을 수 있습니다.",
     "retry": "다시 시도"
+  },
+  "cruising": {
+    "layers": {
+      "both": "둘 다",
+      "label": "지도 레이어",
+      "people": "사람들",
+      "spots": "스팟"
+    },
+    "meta": {
+      "description": "크루징 장소의 비공개 지도와 선택한 성인 데이트 프로필.",
+      "title": "크루징 지도"
+    },
+    "title": "퀴어 크루징 지도",
+    "eyebrow": "비공개 · 로그인한 성인",
+    "intro": "나열된 모든 크루징 장소와 선택한 데이트 프로필을 한 번에 찾아보세요. 사람들은 대략적인 도시 지역으로만 나타납니다. 지점은 나열된 좌표를 사용합니다.",
+    "safety": {
+      "guide": "크루징 가이드 읽기",
+      "health": "성 건강 가이드",
+      "healthLead": "또는",
+      "body": "상호 동의가 필요합니다. 공유 장소는 여전히 비참가자의 소유입니다. 현지 법률을 확인하고, 개인 정보를 보호하고, 출구 계획을 유지하세요."
+    },
+    "loading": "개인 크루징 가이드 열기",
+    "tabs": {
+      "label": "크루징 결과",
+      "spots": "모든 명소",
+      "people": "주변 사람들"
+    },
+    "count": {
+      "map": "현재 검색 중인 지도: {{count}}",
+      "spots_one": "{{count}} 스팟",
+      "spots_other": "{{count}} 명소"
+    },
+    "search": {
+      "placeholder": "장소, 도시, 국가 검색",
+      "label": "모든 크루징 지점 검색"
+    },
+    "selectedArea_other": "{{city}} 주변의 데이트 프로필을 표시합니다. 거품은 정확한 위치를 공개하지 않고 {{count}} 활동적인 사람들을 나타냅니다.",
+    "selectedArea_one": "{{city}} 주변의 데이트 프로필을 표시합니다. 거품은 정확한 위치를 공개하지 않고 {{count}} 활동적인 사람을 나타냅니다.",
+    "pagination": {
+      "previous": "이전의",
+      "next": "다음",
+      "page": "{{totalPages}}의 페이지 {{page}}"
+    },
+    "spot": {
+      "verified": "확인됨",
+      "showOnMap": "지도에 표시",
+      "locationIncomplete": "위치 세부정보가 불완전합니다.",
+      "noCoordinates": "좌표 없이 나열됨",
+      "details": "장소 세부정보"
+    },
+    "results": {
+      "error": "크루징 가이드를 로드할 수 없습니다. 다시 시도해 주세요.",
+      "loading": "크루징 지점 로드 중",
+      "empty": "이 검색과 일치하는 장소가 없습니다."
+    },
+    "map": {
+      "searchArea": "이 지역 검색",
+      "nearMe": "내 근처",
+      "ariaLabel": "대화형 크루징 지도",
+      "legend": "분홍색: 반점 · 파란색: 대략적인 활성 영역",
+      "unavailable": "이 브라우저에서는 대화형 지도를 사용할 수 없습니다. 모든 크루징 지점이 여전히 나열되어 있습니다."
+    },
+    "presence": {
+      "peopleOffTitle": "인물 레이어가 꺼져 있습니다",
+      "peopleOffBody": "친밀한 프로필을 만들어 데이트 프로필을 확인하고 선택적으로 대략적인 도시 지역에 나타나세요.",
+      "hiddenTitle": "지도에 표시되지 않음",
+      "toastEnabled": "1시간 동안 볼 수 있음",
+      "createProfile": "친밀한 프로필 만들기",
+      "toastError": "공개 상태를 업데이트할 수 없습니다.",
+      "toastEnabledBody": "대략적인 도시 거품만 표시됩니다.",
+      "visibleTitle": "대략적인 지역에서 볼 수 있음",
+      "expires": "{{time}}에서 자동으로 꺼집니다.",
+      "toastDisabled": "더 이상 크루징 지도에 표시되지 않습니다.",
+      "goVisible": "공개 상태로 전환",
+      "cityLoading": "도시를 찾는 중…",
+      "turnOff": "끄다",
+      "cityPlaceholder": "도시 검색",
+      "dialogTitle": "한 시간 동안 표시됩니다.",
+      "cityLabel": "도시 또는 지역",
+      "enable": "1시간 동안 볼 수 있음",
+      "cancel": "취소",
+      "preciseNeverPublished": "귀하의 정확한 위치는 공개되지 않습니다.",
+      "dialogDescription": "선택한 다른 성인은 도시 수준 풍선과 개수만 볼 수 있습니다. 그들은 귀하의 장치 위치를 결코 수신하지 않습니다.",
+      "acknowledgement": "나는 가시성은 대략적인 것이며 1시간 후에 만료되며 동의, 주변 환경 또는 현지 법률 확인을 대체하지 않는다는 점을 이해합니다.",
+      "enabling": "활성화 중…"
+    }
   }
 }
