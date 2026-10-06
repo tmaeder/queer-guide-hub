@@ -126,7 +126,7 @@ export function useHomeNearYou(region: HomeRegion, limit = 6) {
 
       // Rung 1 — events in the visitor's own city. Rare, so they always lead.
       if (cityId) {
-        const { data } = await supabase
+        const { data, error } = await supabase
           .from('events')
           .select(EVENT_SELECT)
           .eq('city_id', cityId)
@@ -135,12 +135,13 @@ export function useHomeNearYou(region: HomeRegion, limit = 6) {
           .not('liveness_status', 'in', `(${DEAD_LIVENESS.join(',')})`)
           .order('start_date', { ascending: true })
           .limit(limit);
+        if (error) throw error;
         for (const e of (data ?? []) as unknown as EventRow[]) rows.push(toEventRow(e, 'local'));
       }
 
       // Rung 2 — places in the visitor's city, then their country.
       if (rows.length < limit && cityId) {
-        const { data } = await supabase
+        const { data, error } = await supabase
           .from('venues')
           .select(VENUE_SELECT)
           .eq('city_id', cityId)
@@ -155,19 +156,24 @@ export function useHomeNearYou(region: HomeRegion, limit = 6) {
           .order('is_featured', { ascending: false })
           .order('updated_at', { ascending: false })
           .limit(limit - rows.length);
+        if (error) throw error;
         for (const v of (data ?? []) as unknown as VenueRow[]) rows.push(toVenueRow(v, 'local'));
       }
 
       const cityRows = rows.length;
 
       if (rows.length < limit && countryId) {
-        const { data } = await supabase
+        const { data, error } = await supabase
           .from('venues')
           .select(VENUE_SELECT)
           .eq('country_id', countryId)
           .is('duplicate_of_id', null)
           .is('closed_at', null)
-          .not('id', 'in', `(${rows.map((r) => r.id).join(',') || '00000000-0000-0000-0000-000000000000'})`)
+          .not(
+            'id',
+            'in',
+            `(${rows.map((r) => r.id).join(',') || '00000000-0000-0000-0000-000000000000'})`,
+          )
           .not('category', 'in', `(${NOT_A_DESTINATION.join(',')})`)
           // quality_score alone is not an order: 654 rows share the top value
           // of 95, so ties came back in whatever order Postgres felt like and
@@ -177,6 +183,7 @@ export function useHomeNearYou(region: HomeRegion, limit = 6) {
           .order('is_featured', { ascending: false })
           .order('updated_at', { ascending: false })
           .limit(limit - rows.length);
+        if (error) throw error;
         for (const v of (data ?? []) as unknown as VenueRow[]) rows.push(toVenueRow(v, 'local'));
       }
 
@@ -185,7 +192,7 @@ export function useHomeNearYou(region: HomeRegion, limit = 6) {
       // Rung 3 — nothing (or not enough) in the region. Fill with content that
       // is explicitly framed as somewhere else, never silently mixed in.
       if (rows.length < limit) {
-        const { data } = await supabase
+        const { data, error } = await supabase
           .from('events')
           .select(EVENT_SELECT)
           .gte('start_date', nowIso)
@@ -193,6 +200,7 @@ export function useHomeNearYou(region: HomeRegion, limit = 6) {
           .not('liveness_status', 'in', `(${DEAD_LIVENESS.join(',')})`)
           .order('start_date', { ascending: true })
           .limit(limit - rows.length);
+        if (error) throw error;
         for (const e of (data ?? []) as unknown as EventRow[]) {
           if (rows.some((r) => r.id === e.id)) continue;
           rows.push(toEventRow(e, 'trip'));

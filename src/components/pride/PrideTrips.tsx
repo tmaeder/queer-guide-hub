@@ -135,7 +135,7 @@ export function PrideTrips({ events, selectedId, onSelect }: PrideTripsProps) {
                       onClick={() => onSelect?.(isSelected ? null : e.id)}
                       aria-pressed={isSelected}
                       className={cn(
-                        'group flex w-full items-center gap-2 text-left min-h-0 p-2 rounded-element transition-colors',
+                        'group flex min-h-11 w-full items-center gap-2 text-left p-2 rounded-element transition-colors',
                         isSelected ? 'bg-muted' : 'hover:bg-muted/60',
                       )}
                     >

@@ -1,11 +1,12 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
+import type { ReactElement } from 'react';
 
 vi.mock('@sentry/react', () => ({ captureException: vi.fn() }));
 
 import { ErrorBoundary } from '../ErrorBoundary';
 
-function ThrowingComponent() {
+function ThrowingComponent(): ReactElement {
   throw new Error('Test error');
 }
 
@@ -14,27 +15,61 @@ function GoodComponent() {
 }
 
 describe('ErrorBoundary', () => {
-  beforeEach(() => { vi.spyOn(console, 'error').mockImplementation(() => {}); });
+  beforeEach(() => {
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+  });
 
   it('should render children when no error', () => {
-    render(<ErrorBoundary><GoodComponent /></ErrorBoundary>);
+    render(
+      <ErrorBoundary>
+        <GoodComponent />
+      </ErrorBoundary>,
+    );
     expect(screen.getByText('All good')).toBeInTheDocument();
   });
 
   it('should show error UI when child throws', () => {
-    render(<ErrorBoundary><ThrowingComponent /></ErrorBoundary>);
+    render(
+      <ErrorBoundary>
+        <ThrowingComponent />
+      </ErrorBoundary>,
+    );
     expect(screen.getByText('Something went wrong')).toBeInTheDocument();
     expect(screen.getByText('Try Again')).toBeInTheDocument();
     expect(screen.getByText('Go Home')).toBeInTheDocument();
   });
 
   it('should render custom fallback when provided', () => {
-    render(<ErrorBoundary fallback={<div>Custom Error</div>}><ThrowingComponent /></ErrorBoundary>);
+    render(
+      <ErrorBoundary fallback={<div>Custom Error</div>}>
+        <ThrowingComponent />
+      </ErrorBoundary>,
+    );
     expect(screen.getByText('Custom Error')).toBeInTheDocument();
   });
 
+  it('provides retry controls to a render fallback', () => {
+    const fallback = vi.fn(({ onRetry }: { onRetry: () => void }) => (
+      <button type="button" onClick={onRetry}>
+        Retry section
+      </button>
+    ));
+    render(
+      <ErrorBoundary fallback={fallback}>
+        <ThrowingComponent />
+      </ErrorBoundary>,
+    );
+    expect(fallback).toHaveBeenCalled();
+    fireEvent.click(screen.getByRole('button', { name: 'Retry section' }));
+    expect(screen.getByRole('button', { name: 'Retry section' })).toBeInTheDocument();
+  });
+
   it('should recover when Try Again is clicked', () => {
-    const { rerender: _rerender } = render(<ErrorBoundary><ThrowingComponent /></ErrorBoundary>);
+    const { rerender: _rerender } = render(
+      <ErrorBoundary>
+        <ThrowingComponent />
+      </ErrorBoundary>,
+    );
     expect(screen.getByText('Something went wrong')).toBeInTheDocument();
     fireEvent.click(screen.getByText('Try Again'));
     // After retry, the throwing component throws again
