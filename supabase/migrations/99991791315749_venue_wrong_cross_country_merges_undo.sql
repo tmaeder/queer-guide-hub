@@ -11,6 +11,9 @@
 --     WARSAW (0ded6843). Its own source says Zürich. Simply un-merging would
 --     publish an empty shell beside the existing "Heaven Club", Spitalgasse 5,
 --     Zürich (6bada896), so it is re-pointed there instead.
+--   * "Heaven" heaven-19 (32862d33), Zürich, no address, website heavenclub.ch,
+--     11 events, 8 m from Heaven Club: the same club under a third row, missed
+--     by the address audit because it has no address. Merged into Heaven Club.
 --
 -- Neither merge has a venue_merge_audit row (both came from the April 2026
 -- import path), so unmerge_venues() cannot reverse them. Checked before writing:
@@ -34,6 +37,7 @@ declare
   v_heaven_shell constant uuid := 'bcb1e4cd-8469-4891-97a7-2b43016c030a';
   v_heaven_waw   constant uuid := '0ded6843-8fe6-4587-9cd6-7b88ca551af7';
   v_heaven_club  constant uuid := '6bada896-6e57-4ca6-9c5b-5d819c8f540f';
+  v_heaven_19    constant uuid := '32862d33-65ed-499d-bc09-a6215f65bfbb';
 begin
   -- 1. Apollo Tel Aviv: restore as its own venue.
   update public.venues
@@ -53,6 +57,28 @@ begin
     perform public._venue_merge_core(v_heaven_club, v_heaven_shell, null);
   else
     raise notice 'skip heaven-3: not merged into Warsaw anymore, or Heaven Club not live';
+  end if;
+
+  -- 3. "Heaven" heaven-19 (32862d33): the same club, 8 m from Heaven Club,
+  --    website heavenclub.ch, 11 events, no address (which is why the
+  --    address audit missed it). Take its own-domain website first (the merge
+  --    core copies no fields), replacing an empty one or a display-magazin.ch
+  --    listing page, which is a directory entry rather than the club's site.
+  if exists (select 1 from public.venues where id = v_heaven_19
+               and duplicate_of_id is null and closed_at is null
+               and city_id = '35d1d772-8ce7-4c05-92a5-95ea7053b4bf')
+     and exists (select 1 from public.venues where id = v_heaven_club
+                   and duplicate_of_id is null and closed_at is null) then
+    update public.venues k
+       set website = d.website, updated_at = now()
+      from public.venues d
+     where k.id = v_heaven_club and d.id = v_heaven_19
+       and (nullif(btrim(k.website), '') is null or k.website ilike '%display-magazin.ch%')
+       and nullif(btrim(d.website), '') is not null
+       and d.website not ilike '%display-magazin.ch%';
+    perform public._venue_merge_core(v_heaven_club, v_heaven_19, null);
+  else
+    raise notice 'skip heaven-19: already merged, closed, moved, or Heaven Club not live';
   end if;
 end
 $undo$;
@@ -83,6 +109,33 @@ begin
           and a.details ->> 'schema' = '1');
   if v_bad <> 0 then
     raise exception 'P2 failed: heaven-3 merged into Heaven Club without a reversible audit row';
+  end if;
+
+  -- P3: heaven-19 and Heaven Club are not both live side by side, and if
+  --     merged, the merge is reversible and its events moved.
+  select count(*) into v_bad
+    from public.venues a, public.venues b
+   where a.id = '32862d33-65ed-499d-bc09-a6215f65bfbb'
+     and b.id = '6bada896-6e57-4ca6-9c5b-5d819c8f540f'
+     and a.duplicate_of_id is null and b.duplicate_of_id is null
+     and a.closed_at is null and b.closed_at is null
+     and a.city_id = b.city_id;
+  if v_bad <> 0 then
+    raise exception 'P3 failed: heaven-19 still live beside Heaven Club';
+  end if;
+
+  select count(*) into v_bad
+    from public.venues d
+   where d.id = '32862d33-65ed-499d-bc09-a6215f65bfbb'
+     and d.duplicate_of_id = '6bada896-6e57-4ca6-9c5b-5d819c8f540f'
+     and (   exists (select 1 from public.events e where e.venue_id = d.id)
+          or not exists (
+               select 1 from public.venue_merge_audit a
+                where a.keep_id = '6bada896-6e57-4ca6-9c5b-5d819c8f540f'
+                  and a.drop_id = d.id and a.undone_at is null
+                  and a.details ->> 'schema' = '1'));
+  if v_bad <> 0 then
+    raise exception 'P4 failed: heaven-19 merge left events behind or has no reversible audit row';
   end if;
 end
 $verify$;
