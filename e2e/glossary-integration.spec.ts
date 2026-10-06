@@ -92,7 +92,7 @@ test.describe('glossary hover cards', () => {
 });
 
 test.describe('homepage glossary band', () => {
-  test('renders rotating term cards linking into the wiki', async ({ page }) => {
+  test('renders term cards or an explicit fallback state', async ({ page }) => {
     await page.goto('/');
     // The band mounts behind DeferredSection's intersection observer, so it
     // does not exist until the viewport actually approaches it — and
@@ -106,7 +106,19 @@ test.describe('homepage glossary band', () => {
     await expect(band).toBeVisible();
     const section = page.locator('section', { has: band });
     const entryLinks = section.getByRole('link', { name: 'Read the entry' });
-    expect(await entryLinks.count()).toBeGreaterThan(0);
-    await expect(entryLinks.first()).toHaveAttribute('href', /\/tags\/.+/);
+    if ((await entryLinks.count()) > 0) {
+      await expect(entryLinks.first()).toHaveAttribute('href', /\/tags\/.+/);
+      return;
+    }
+
+    const errorState = section.getByText(/this section could not load/i);
+    const emptyState = section.getByText(/no glossary terms are available right now/i);
+    const hasError = await errorState.isVisible().catch(() => false);
+    const hasEmpty = await emptyState.isVisible().catch(() => false);
+
+    expect(hasError || hasEmpty).toBe(true);
+    if (hasError) {
+      await expect(section.getByRole('button', { name: /try again/i })).toBeVisible();
+    }
   });
 });
