@@ -1,8 +1,7 @@
 import { Star, MapPin, Phone, Globe, Mail, Luggage, Navigation2, Sparkles } from 'lucide-react';
-import { Instagram } from '@/components/icons/brand';
 import { Card, CardContent } from '@/components/ui/card';
 import { EntitySocialLinks } from '@/components/entity/EntitySocialLinks';
-import { normalizeHandle, normalizeSocialLinks } from '@/lib/social/registry';
+import { buildProfileUrl, normalizeHandle, normalizeSocialLinks } from '@/lib/social/registry';
 import { ShareMenu } from '@/components/share/ShareMenu';
 import { TagChipRow } from '@/components/tags/TagChipRow';
 import { Button } from '@/components/ui/button';
@@ -771,13 +770,19 @@ export function VenueLocationContact({
   const visitedLookup = useVisitedPlaceLookup();
   const hasMap = typeof venue.latitude === 'number' && typeof venue.longitude === 'number';
   const igHandle = instagramHandle(venue.instagram);
+  // social_links is jsonb (Json on the generated row type), so narrow it to a
+  // plain object before merging the dedicated `instagram` column into it.
+  const storedLinks =
+    venue.social_links &&
+    typeof venue.social_links === 'object' &&
+    !Array.isArray(venue.social_links)
+      ? (venue.social_links as Record<string, unknown>)
+      : {};
+  const socialLinks = igHandle
+    ? { ...storedLinks, instagram: buildProfileUrl('instagram', igHandle) }
+    : storedLinks;
   const hasContact = Boolean(
-    venue.address ||
-    venue.phone ||
-    venue.email ||
-    venue.website ||
-    igHandle ||
-    hasSocialLinks(venue.social_links),
+    venue.address || venue.phone || venue.email || venue.website || hasSocialLinks(socialLinks),
   );
 
   if (!hasMap && !hasContact) return null;
@@ -936,38 +941,12 @@ export function VenueLocationContact({
           </div>
         )}
 
-        {igHandle && (
-          <div className="flex items-center gap-2">
-            <Instagram size={16} className="shrink-0 text-muted-foreground" />
-            <span className="text-sm">
-              <Editable
-                contentType="venues"
-                recordId={venue.id}
-                field="instagram"
-                value={venue.instagram}
-                onSaved={onContentUpdated}
-              >
-                <a
-                  href={`https://instagram.com/${igHandle}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-primary hover:underline"
-                >
-                  @{igHandle}
-                </a>
-              </Editable>
-            </span>
-          </div>
-        )}
-
-        {/* Instagram is excluded only when the dedicated @handle line above already
-            shows it — otherwise a venue whose Instagram lives solely in
-            social_links rendered no Instagram at all. */}
-        <EntitySocialLinks
-          links={venue.social_links}
-          exclude={igHandle ? ['instagram'] : []}
-          size="sm"
-        />
+        {/* Instagram used to render as a separate text row (`@handle`) while
+            every other platform was an icon. The `instagram` column is merged
+            into the icon row instead, so all platforms share one presentation
+            and one order (SOCIAL_DISPLAY_ORDER). The column wins over a
+            `social_links.instagram` entry, as before. */}
+        <EntitySocialLinks links={socialLinks} size="sm" />
 
         {hasMap && (
           <Button variant="outline" size="sm" asChild className="self-start">
