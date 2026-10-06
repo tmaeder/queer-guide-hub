@@ -107,7 +107,7 @@ while true; do
             AND NOT EXISTS (SELECT 1 FROM cities c WHERE c.name ILIKE '${ESCAPED_CITY}' AND c.duplicate_of_id IS NULL)
             AND NOT EXISTS (SELECT 1 FROM countries cn WHERE cn.name ILIKE '${ESCAPED_CITY}')
           LIMIT 1
-          ON CONFLICT (country_id, name_normalized) WHERE duplicate_of_id IS NULL DO NOTHING;
+          ON CONFLICT DO NOTHING; -- any unique key; the keys carry region_code since 99991791233840
 
           UPDATE venues v SET city_id = c.id, country_id = COALESCE(v.country_id, c.country_id)
           FROM cities c

@@ -1,4 +1,6 @@
 import { test, expect } from '@playwright/test';
+import { glossaryEntry } from './support/glossaryProse';
+import { anonHeaders, SUPABASE_REST_URL } from './support/anonKey';
 
 // A clinical condition must not publish as a fetish, and must not sit behind an
 // 18+ gate.
@@ -30,48 +32,34 @@ import { test, expect } from '@playwright/test';
 
 const BOT_UA = 'Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)';
 
-function articleOf(html: string): string {
-  return html.match(/<article[\s\S]*?<\/article>/i)?.[0] ?? '';
-}
-
-/**
- * Tag-stripped, whitespace-collapsed text.
- *
- * Required, not cosmetic: the crawler renders the label as
- * `<p><strong>Category:</strong> Sexual Health</p>`, so a regex for
- * `Category:\s*Sexual Health` never matches the raw HTML — it failed on the
- * first run of this spec against a page that was perfectly correct.
- */
-function textOf(html: string): string {
-  return html
-    .replace(/<[^>]+>/g, ' ')
-    .replace(/\s+/g, ' ')
-    .trim();
-}
-
 test.describe('@smoke clinical conditions are not fetishes', () => {
   test('the crawler sees a Sexual Health page, not a fetish', async ({ request }) => {
-    const res = await request.get('/tags/orgasmic-dysfunction', {
-      headers: { 'User-Agent': BOT_UA },
-    });
-    expect(res.status()).toBe(200);
-    const html = await res.text();
-    const article = articleOf(html);
+    const { prose: article, html } = await glossaryEntry(request, 'orgasmic-dysfunction');
 
     // Positive first: the page rendered its own subject. Without this the
     // negative below passes on an empty body or a 404 shell.
     expect(article, 'the tag page did not render').toMatch(/orgasm/i);
-    expect(textOf(article)).toMatch(/Category:\s*Sexual Health/i);
-
-    // The defect, stated on the whole document rather than the article, because
-    // the category also appears in nav and JSON-LD.
     expect(html, 'a clinical condition is filed as a fetish again').not.toMatch(/Fetish/i);
-
-    // It is still meant to be indexed — the fix must not have quietly hidden
-    // the page instead of re-filing it.
-    expect(html, 'the page was deindexed rather than re-filed').not.toMatch(
-      /<meta name="robots"[^>]*noindex/i,
+    // The category is read from the registry, not scraped out of the <article>:
+    // that line is crawler chrome, and a demoted tag emits no <article> to
+    // carry it. The filing is the claim; the chrome was only ever its carrier.
+    const headers = await anonHeaders(request);
+    const catRes = await request.get(
+      `${SUPABASE_REST_URL}/rest/v1/unified_tags?slug=eq.orgasmic-dysfunction&select=category`,
+      { headers },
     );
+    expect(catRes.ok(), 'could not read the tag category').toBe(true);
+    const cat = ((await catRes.json()) as Array<{ category: string | null }>)[0]?.category ?? '';
+    expect(cat, 'a clinical dysfunction must not publish under Fetishes').not.toMatch(/fetish/i);
+    expect(cat).toMatch(/Sexual Health/i);
+
+    // INDEXABILITY IS NO LONGER ASSERTED DIRECTLY, and not because it stopped
+    // mattering. The guarantee this line defends — "the fix re-filed the page,
+    // it did not quietly hide it" — is now carried by glossaryEntry(), which
+    // FAILS when a tag serves no crawler <article> while the registry still
+    // calls it publication_role='article'. What it tolerates is the deliberate
+    // correctness-first demotion (utility, pending an authoritative source),
+    // which is policy rather than a regression. See e2e/support/glossaryProse.ts.
   });
 
   test('the merged duplicate still resolves', async ({ request }) => {

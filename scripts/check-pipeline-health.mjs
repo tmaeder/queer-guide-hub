@@ -4707,6 +4707,58 @@ const DISOWNED_PROSE_CEILING = 380
   }
 }
 
+// § Venue city text — a venue whose own `city` text names ANOTHER existing city
+// of its country, and which lies within 15 km of that city, while city_id
+// points elsewhere: the Burbank-filed-under-Los-Angeles shape
+// (99991790978994). Baseline 399 measured 2026-10-05, mostly suburb-vs-metro
+// and worked by hand, so it warns at the baseline and fails only on growth.
+// same_name_cities_without_region is a zero-invariant: since 99991791233840 two
+// same-name cities in one country are told apart by region_code alone, and an
+// uncoded member of such a pair is matched by every region hint.
+{
+  console.log('')
+  console.log('Venue city text')
+  const VENUE_CITY_TEXT_BASELINE = 399
+  const res = await fetch(`${BASE}/rest/v1/rpc/venue_city_text_signals`, {
+    method: 'POST',
+    headers: { ...headers, 'Content-Type': 'application/json' },
+    body: '{}',
+  })
+  if (res.status === 404) {
+    console.warn('⚠ venue_city_text_signals → HTTP 404 (not applied? migration 99991791233856)')
+    console.warn('  This check measured NOTHING — it did not pass.')
+  } else if (!res.ok) {
+    console.error(`✗ venue_city_text_signals → HTTP ${res.status}`)
+    FAILED = true
+  } else {
+    const sig = (await res.json()) ?? {}
+    if (sig.probe_ok !== true || !(Number(sig.venues_linked) > 0)) {
+      console.error('✗ venue_city_text_signals returned no probe_ok / no linked venues — the probe is broken, not the data')
+      FAILED = true
+    } else {
+      const n = Number(sig.city_text_names_nearby_other_city)
+      const uncoded = Number(sig.same_name_cities_without_region)
+      if (!Number.isFinite(n) || !Number.isFinite(uncoded)) {
+        console.error('✗ venue_city_text_signals changed shape')
+        FAILED = true
+      } else {
+        if (n > VENUE_CITY_TEXT_BASELINE) {
+          console.error(`✗ ${n} venues name a nearby other city in their own city text (baseline ${VENUE_CITY_TEXT_BASELINE}) — a producer is filing venues under the wrong same-country city`)
+          FAILED = true
+        } else if (n > 0) {
+          console.warn(`⚠ ${n} venues name a nearby other city in their own city text (baseline ${VENUE_CITY_TEXT_BASELINE}, advisory — do not raise the baseline to pass)`)
+        }
+        if (uncoded > 0) {
+          console.error(`✗ ${uncoded} same-name city group(s) in one country include a member with no region_code`)
+          FAILED = true
+        } else {
+          console.log(`✓ every same-name city group carries region codes (${sig.venues_linked} linked venues scanned)`)
+        }
+      }
+    }
+  }
+}
+
 // §23 — map outcomes. Is the map ecosystem producing anything a reader did?
 //
 // THE DENOMINATOR IS READ AND PRINTED FIRST, before any per-metric number.
