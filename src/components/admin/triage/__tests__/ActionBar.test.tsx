@@ -28,11 +28,22 @@ describe('ActionBar', () => {
     isLoading: false,
   };
 
-  it('renders all four action buttons', () => {
+  it('renders the three real action buttons', () => {
     render(<ActionBar {...baseProps} />);
-    ['Approve', 'Reject', 'Skip', 'Flag'].forEach((l) => {
+    ['Approve', 'Reject', 'Skip'].forEach((l) => {
       expect(screen.getByRole('button', { name: new RegExp(l) })).toBeInTheDocument();
     });
+  });
+
+  it('does NOT render Flag — it wrote nothing on any queue', () => {
+    // `triage_action` accepted 'flag' in its allowed-action list and implemented
+    // it in none of its 17 queue branches, so it fell through to that
+    // function's unconditional success object: the button wrote nothing,
+    // anywhere, and the inbox toasted success and advanced to the next row.
+    // 99991791310870 makes the RPC refuse the string. Asserted as an ABSENCE so
+    // re-adding the button without a handler fails here.
+    render(<ActionBar {...baseProps} />);
+    expect(screen.queryByRole('button', { name: /Flag/ })).not.toBeInTheDocument();
   });
 
   it('disables all buttons when loading', () => {

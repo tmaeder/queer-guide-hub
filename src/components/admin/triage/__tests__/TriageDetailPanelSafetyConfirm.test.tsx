@@ -45,7 +45,7 @@ vi.mock('../ActionBar', () => ({
     onAction,
     disabledActions = [],
   }: {
-    onAction: (a: 'approve' | 'reject' | 'skip' | 'flag') => void;
+    onAction: (a: 'approve' | 'reject' | 'skip') => void;
     disabledActions?: ReadonlyArray<string>;
   }) => (
     <div>
