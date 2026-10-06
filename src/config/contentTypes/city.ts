@@ -1,8 +1,8 @@
 import { MapPin } from 'lucide-react';
+import { countLink } from './countLink';
 import type { ContentTypeConfig, FieldConfig } from '@/types/cms';
-
-const fmtNum = (n: unknown): string =>
-  typeof n === 'number' && Number.isFinite(n) ? new Intl.NumberFormat().format(n) : '-';
+import { venueContentType } from './venue';
+import { eventContentType } from './event';
 
 export const cityFields: FieldConfig[] = [
   {
@@ -119,10 +119,7 @@ export const cityFields: FieldConfig[] = [
     hidden: true,
     virtual: true,
     listColumn: true,
-    listRender: (row) => {
-      const venues = row.venues as Array<{ count?: number }> | null | undefined;
-      return fmtNum(venues?.[0]?.count ?? 0);
-    },
+    listRender: (row) => countLink(row, 'venues', 'venues', 'city_id'),
   },
   {
     name: 'event_count',
@@ -132,10 +129,7 @@ export const cityFields: FieldConfig[] = [
     hidden: true,
     virtual: true,
     listColumn: true,
-    listRender: (row) => {
-      const events = row.events as Array<{ count?: number }> | null | undefined;
-      return fmtNum(events?.[0]?.count ?? 0);
-    },
+    listRender: (row) => countLink(row, 'events', 'events', 'city_id'),
   },
 ];
 
@@ -179,6 +173,11 @@ export const cityContentType: ContentTypeConfig = {
     }),
   },
   listSelect: '*,countries(name,equality_score),venues(count),events(count)',
+  // The Venues/Events counts link to those lists; count what the lists show.
+  listEmbedScopes: [
+    { embed: 'venues', type: venueContentType },
+    { embed: 'events', type: eventContentType },
+  ],
   fieldGroupOrder: ['basic', 'location', 'details', 'lgbtq', 'media', 'external'],
   translatableFields: ['name', 'description'],
   commentable: true,

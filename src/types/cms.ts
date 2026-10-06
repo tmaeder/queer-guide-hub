@@ -317,6 +317,16 @@ export interface ContentTypeConfig {
    * `'*,countries(name,equality_score),venues(count)'`.
    */
   listSelect?: string;
+  /**
+   * Embedded resources in `listSelect` to scope to the embedded type's default
+   * list slice (unmerged, unarchived), so a count column agrees with the list
+   * it links to. `type` is the embedded type's config, passed directly rather
+   * than looked up by key — configs cannot import the registry (cycle).
+   */
+  listEmbedScopes?: Array<{
+    embed: string;
+    type: Pick<ContentTypeConfig, 'merge' | 'lifecycle'>;
+  }>;
   /** Default values for new items */
   defaults?: Record<string, unknown>;
   /** Custom validator function */
