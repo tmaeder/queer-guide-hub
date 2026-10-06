@@ -701,7 +701,32 @@
     "contextBar": {
       "openTrip": "فتح الرحلة",
       "ariaLabel": "الرحلة النشطة",
-      "dismissAria": "إغلاق شريط الرحلة النشطة"
+      "dismissAria": "إغلاق شريط الرحلة النشطة",
+      "readiness": "جاهزية الرحلة",
+      "nextUp": "يحتاج إلى انتباه",
+      "loadError": "تعذر تحميل تفاصيل الرحلة"
+    },
+    "capture": {
+      "planDestination": "خطط لرحلة إلى {{city}}",
+      "inTrip": "ضمن {{trip}}",
+      "addToActive": "أضف إلى {{trip}}",
+      "offlineTitle": "اتصل بالإنترنت للإضافة",
+      "offlineDescription": "تبقى رحلتك متاحة دون اتصال، لكن إضافة أماكن جديدة تتطلب اتصالاً.",
+      "addedTitle": "تمت الإضافة إلى {{trip}}",
+      "addedDescription": "{{name}} بانتظار الجدولة.",
+      "unscheduled": "بانتظار الجدولة",
+      "undoFailed": "تعذر التراجع عن الإضافة"
+    },
+    "workspace": {
+      "sections": "مساحة عمل الرحلة",
+      "plan": "التخطيط",
+      "prepare": "الاستعداد",
+      "together": "معًا",
+      "planTools": "شكّل برنامج الرحلة",
+      "prepareTools": "استعد للانطلاق",
+      "togetherTools": "خططوا معًا",
+      "keepPlanning": "تابع التخطيط",
+      "memories": "أضف ذكريات"
     },
     "phase": {
       "label": {
@@ -716,9 +741,12 @@
         "inDays": "خلال {{count}} أيام",
         "tomorrow": "غداً",
         "soon": "قريباً",
-        "dayOf": "اليوم",
+        "dayOf": "اليوم {{day}} من {{total}}",
         "daysAgo": "قبل {{count}} أيام",
-        "yesterday": "أمس"
+        "yesterday": "أمس",
+        "day": "اليوم {{day}}",
+        "pastTrip": "رحلة سابقة",
+        "justEnded": "انتهت للتو"
       }
     },
     "discover": {
@@ -2311,6 +2339,7 @@
     },
     "travel": {
       "title": "سفر",
+      "activeTitle": "التخطيط لرحلة إلى {{city}}",
       "subtitle": "ابحث عن رحلات وفنادق وأنشطة في وجهات صديقة لمجتمع LGBTQ+",
       "activitiesComingSoon": "الأنشطة قريباً.",
       "browseDestinations": "تصفح الوجهات",
@@ -2379,6 +2408,7 @@
         "switchTrip": "تبديل الرحلة النشطة"
       },
       "lede": "[AR] Pick a place, build the trip, book the pieces — with the legal picture built in.",
+      "activeLede": "واصل استكشاف {{city}} وأضف الأماكن والفعاليات مباشرة إلى رحلتك النشطة.",
       "sections": {
         "plan": "[AR] Plan your trip",
         "planKicker": "[AR] The planner",

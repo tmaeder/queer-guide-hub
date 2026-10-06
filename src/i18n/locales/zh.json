@@ -701,7 +701,32 @@
     "contextBar": {
       "openTrip": "打开行程",
       "ariaLabel": "当前行程",
-      "dismissAria": "关闭当前行程横幅"
+      "dismissAria": "关闭当前行程横幅",
+      "readiness": "行程准备度",
+      "nextUp": "需要注意",
+      "loadError": "无法加载行程详情"
+    },
+    "capture": {
+      "planDestination": "规划前往{{city}}的行程",
+      "inTrip": "已在{{trip}}中",
+      "addToActive": "添加到{{trip}}",
+      "offlineTitle": "连接网络后添加",
+      "offlineDescription": "你仍可离线查看行程，但添加新地点需要网络连接。",
+      "addedTitle": "已添加到{{trip}}",
+      "addedDescription": "{{name}}正在“未安排”中等待。",
+      "unscheduled": "等待安排",
+      "undoFailed": "无法撤销添加"
+    },
+    "workspace": {
+      "sections": "行程工作区",
+      "plan": "规划",
+      "prepare": "准备",
+      "together": "协作",
+      "planTools": "编排行程",
+      "prepareTools": "做好出发准备",
+      "togetherTools": "一起规划",
+      "keepPlanning": "继续规划",
+      "memories": "添加回忆"
     },
     "phase": {
       "label": {
@@ -716,9 +741,12 @@
         "inDays": "{{count}} 天后",
         "tomorrow": "明天",
         "soon": "即将",
-        "dayOf": "今天",
+        "dayOf": "第 {{day}} 天，共 {{total}} 天",
         "daysAgo": "{{count}} 天前",
-        "yesterday": "昨天"
+        "yesterday": "昨天",
+        "day": "第 {{day}} 天",
+        "pastTrip": "过往行程",
+        "justEnded": "刚刚结束"
       }
     },
     "discover": {
@@ -2301,6 +2329,7 @@
     },
     "travel": {
       "title": "旅行",
+      "activeTitle": "正在规划{{city}}",
       "subtitle": "查找LGBTQ+友好目的地的航班、酒店和活动",
       "activitiesComingSoon": "活动即将推出。",
       "browseDestinations": "浏览目的地",
@@ -2369,6 +2398,7 @@
         "switchTrip": "切换活动旅行"
       },
       "lede": "[ZH] Pick a place, build the trip, book the pieces — with the legal picture built in.",
+      "activeLede": "继续探索{{city}}，并将地点和活动直接添加到当前行程。",
       "sections": {
         "plan": "[ZH] Plan your trip",
         "planKicker": "[ZH] The planner",

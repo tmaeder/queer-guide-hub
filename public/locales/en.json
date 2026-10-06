@@ -1362,7 +1362,32 @@
     "contextBar": {
       "openTrip": "Open trip",
       "ariaLabel": "Active trip",
-      "dismissAria": "Dismiss active trip banner"
+      "dismissAria": "Dismiss active trip banner",
+      "readiness": "Trip readiness",
+      "nextUp": "Needs attention",
+      "loadError": "Trip details could not be loaded"
+    },
+    "capture": {
+      "planDestination": "Plan a trip to {{city}}",
+      "inTrip": "In {{trip}}",
+      "addToActive": "Add to {{trip}}",
+      "offlineTitle": "Connect to add this",
+      "offlineDescription": "Your trip is still available offline, but new places need a connection.",
+      "addedTitle": "Added to {{trip}}",
+      "addedDescription": "{{name}} is waiting in Unscheduled.",
+      "unscheduled": "Waiting to be scheduled",
+      "undoFailed": "Could not undo the addition"
+    },
+    "workspace": {
+      "sections": "Trip workspace",
+      "plan": "Plan",
+      "prepare": "Prepare",
+      "together": "Together",
+      "planTools": "Shape the itinerary",
+      "prepareTools": "Get ready to go",
+      "togetherTools": "Plan it together",
+      "keepPlanning": "Keep planning",
+      "memories": "Add memories"
     },
     "phase": {
       "label": {
@@ -1377,9 +1402,12 @@
         "inDays": "In {{count}} days",
         "tomorrow": "Tomorrow",
         "soon": "Soon",
-        "dayOf": "Day of",
+        "dayOf": "Day {{day}} of {{total}}",
+        "day": "Day {{day}}",
         "daysAgo": "{{count}} days ago",
-        "yesterday": "Yesterday"
+        "yesterday": "Yesterday",
+        "pastTrip": "Past trip",
+        "justEnded": "Just ended"
       }
     },
     "discover": {
@@ -2464,8 +2492,10 @@
     },
     "travel": {
       "title": "Where are you going?",
+      "activeTitle": "Planning {{city}}",
       "subtitle": "Find flights, hotels, and activities for LGBTQ+ friendly destinations",
       "lede": "Pick a place, build the trip, book the pieces, with the legal picture built in.",
+      "activeLede": "Add places and events for {{city}} directly to your active trip.",
       "sections": {
         "plan": "Plan your trip",
         "planKicker": "The planner",

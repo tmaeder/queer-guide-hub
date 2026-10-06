@@ -705,7 +705,32 @@
     "contextBar": {
       "openTrip": "Ouvrir le voyage",
       "ariaLabel": "Voyage actif",
-      "dismissAria": "Fermer la bannière du voyage actif"
+      "dismissAria": "Fermer la bannière du voyage actif",
+      "readiness": "Préparation du voyage",
+      "nextUp": "À vérifier",
+      "loadError": "Impossible de charger les détails du voyage"
+    },
+    "capture": {
+      "planDestination": "Planifier un voyage à {{city}}",
+      "inTrip": "Dans {{trip}}",
+      "addToActive": "Ajouter à {{trip}}",
+      "offlineTitle": "Connectez-vous pour ajouter",
+      "offlineDescription": "Votre voyage reste disponible hors ligne, mais l’ajout de lieux nécessite une connexion.",
+      "addedTitle": "Ajouté à {{trip}}",
+      "addedDescription": "{{name}} attend dans Non planifié.",
+      "unscheduled": "En attente de planification",
+      "undoFailed": "Impossible d’annuler l’ajout"
+    },
+    "workspace": {
+      "sections": "Espace du voyage",
+      "plan": "Planifier",
+      "prepare": "Préparer",
+      "together": "Ensemble",
+      "planTools": "Construire l’itinéraire",
+      "prepareTools": "Préparer le départ",
+      "togetherTools": "Planifier ensemble",
+      "keepPlanning": "Continuer à planifier",
+      "memories": "Ajouter des souvenirs"
     },
     "phase": {
       "label": {
@@ -720,9 +745,12 @@
         "inDays": "Dans {{count}} jours",
         "tomorrow": "Demain",
         "soon": "Bientôt",
-        "dayOf": "Aujourd hui",
+        "dayOf": "Jour {{day}} sur {{total}}",
         "daysAgo": "Il y a {{count}} jours",
-        "yesterday": "Hier"
+        "yesterday": "Hier",
+        "day": "Jour {{day}}",
+        "pastTrip": "Voyage passé",
+        "justEnded": "Tout juste terminé"
       }
     },
     "discover": {
@@ -2305,6 +2333,7 @@
     },
     "travel": {
       "title": "Voyage",
+      "activeTitle": "Préparation de {{city}}",
       "subtitle": "Trouve des vols, hôtels et activités dans des destinations LGBTQ+ friendly",
       "activitiesComingSoon": "Activités bientôt disponibles.",
       "browseDestinations": "Parcourir les destinations",
@@ -2375,6 +2404,7 @@
         "switchTrip": "Changer de voyage actif"
       },
       "lede": "[FR] Pick a place, build the trip, book the pieces — with the legal picture built in.",
+      "activeLede": "Continuez à découvrir {{city}} et ajoutez directement des lieux et événements à votre voyage actif.",
       "sections": {
         "plan": "[FR] Plan your trip",
         "planKicker": "[FR] The planner",

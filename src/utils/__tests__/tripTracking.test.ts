@@ -5,9 +5,7 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 
 const { insertMock, getUserMock } = vi.hoisted(() => ({
   insertMock: vi.fn(() => Promise.resolve({ data: null, error: null })),
-  getUserMock: vi.fn(() =>
-    Promise.resolve({ data: { user: { id: 'user-1' } }, error: null }),
-  ),
+  getUserMock: vi.fn(() => Promise.resolve({ data: { user: { id: 'user-1' } }, error: null })),
 }));
 
 vi.mock('@/integrations/supabase/client', () => ({
@@ -17,11 +15,7 @@ vi.mock('@/integrations/supabase/client', () => ({
   },
 }));
 
-import {
-  trackTripEvent,
-  recordSuggestionImpression,
-  recordSuggestionClick,
-} from '../tripTracking';
+import { trackTripEvent, recordSuggestionImpression, recordSuggestionClick } from '../tripTracking';
 
 interface UmamiWindow extends Window {
   umami?: { track: (event: string, data: Record<string, string>) => void };
@@ -37,21 +31,25 @@ describe('trackTripEvent', () => {
 
   it('forwards event name to window.umami.track', () => {
     trackTripEvent('trip_created');
-    expect(trackSpy).toHaveBeenCalledWith('trip_created', {});
+    expect(trackSpy).toHaveBeenCalledWith(
+      'trip_created',
+      expect.objectContaining({ device: expect.any(String), locale: expect.any(String) }),
+    );
   });
 
   it('stringifies data values', () => {
     trackTripEvent('trip_geo_set', { lat: 52.5, count: 3, ok: true });
-    expect(trackSpy).toHaveBeenCalledWith('trip_geo_set', {
-      lat: '52.5',
-      count: '3',
-      ok: 'true',
-    });
+    expect(trackSpy).toHaveBeenCalledWith(
+      'trip_geo_set',
+      expect.objectContaining({ lat: '52.5', count: '3', ok: 'true' }),
+    );
   });
 
   it('drops null/undefined values', () => {
     trackTripEvent('trip_geo_set', { a: 'x', b: null, c: undefined });
-    expect(trackSpy).toHaveBeenCalledWith('trip_geo_set', { a: 'x' });
+    expect(trackSpy).toHaveBeenCalledWith('trip_geo_set', expect.objectContaining({ a: 'x' }));
+    expect(trackSpy.mock.calls[0][1]).not.toHaveProperty('b');
+    expect(trackSpy.mock.calls[0][1]).not.toHaveProperty('c');
   });
 
   it('is a no-op when window.umami is missing', () => {
