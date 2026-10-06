@@ -112,10 +112,36 @@ const RESERVED_HANDLES = new Set([
   'hashtag', 'explore', 'stories', 'dialog',
 ])
 
+// Login wall served to an anonymous client in place of a profile. Instagram
+// redirects `instagram.com/<handle>/` to `/accounts/login/?next=…`; this script
+// follows redirects and used to harvest the login page as a "profile" with the
+// handle `accounts` (11 venues, cleaned 2026-10-05). Mirrors LOGIN_WALL_RE in
+// src/lib/social/registry.ts.
+const LOGIN_WALL_RE =
+  /^https?:\/\/(?:[a-z]+\.)?(?:instagram|facebook)\.com\/(?:accounts\/login|login(?:\.php)?|challenge|checkpoint)(?:[/?#]|$)/i
+
+// The profile a login wall guards, from its own `next=` param, or null.
+function unwrapLoginWall(rawUrl) {
+  if (!LOGIN_WALL_RE.test(rawUrl)) return null
+  try {
+    const login = new URL(rawUrl.replace(/&amp;/g, '&'))
+    const next = login.searchParams.get('next')
+    if (!next) return null
+    const target = new URL(next, login.origin)
+    const bare = (h) => h.replace(/^(?:www|m|web)\./, '')
+    if (bare(target.hostname) !== bare(login.hostname)) return null
+    const url = `https://${target.hostname}${target.pathname}`
+    if (LOGIN_WALL_RE.test(url) || isShareOrWidget(url)) return null
+    return target.pathname.split('/').filter(Boolean).length ? url : null
+  } catch {
+    return null
+  }
+}
+
 function isShareOrWidget(rawUrl) {
   if (!rawUrl || typeof rawUrl !== 'string') return false
   const url = /^https?:\/\//i.test(rawUrl) ? rawUrl : `https://${rawUrl}`
-  if (SHARE_WIDGET_RE.test(url)) return true
+  if (SHARE_WIDGET_RE.test(url) || LOGIN_WALL_RE.test(url)) return true
   try {
     const seg = new URL(url).pathname.split('/').filter(Boolean)[0]
     return seg ? RESERVED_HANDLES.has(seg.toLowerCase().replace(/^@/, '')) : false
@@ -135,7 +161,9 @@ function harvest(html) {
   // schema.org sameAs in JSON-LD + any social URL in the markup.
   const urls = html.match(/https?:\/\/[^\s"'<>)\\]+/gi) ?? []
   for (const raw of urls) {
-    const url = raw.replace(/[.,);]+$/, '').split('?')[0]
+    // Unwrap a login wall BEFORE dropping the query: its target lives in `next=`.
+    const trimmed = raw.replace(/[.,);]+$/, '')
+    const url = (unwrapLoginWall(trimmed) ?? trimmed).split('?')[0]
     const key = detectPlatform(url)
     if (key && !out[key]) out[key] = url
   }
