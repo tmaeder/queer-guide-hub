@@ -32,7 +32,9 @@ const BOT_UA = 'Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/b
 
 /** The `<p>` bodies of the crawler `<article>`, in document order. */
 async function articleParagraphs(
-  request: { get: (url: string, opts: object) => Promise<{ status(): number; text(): Promise<string> }> },
+  request: {
+    get: (url: string, opts: object) => Promise<{ status(): number; text(): Promise<string> }>;
+  },
   path: string,
 ): Promise<string[]> {
   const res = await request.get(path, { headers: { 'User-Agent': BOT_UA } });
@@ -66,10 +68,15 @@ const SPLIT_CASES = [
     second: 'Friday-Saturday 9am-5pm',
   },
   {
-    path: '/tags/prep',
+    // Was /tags/prep. That tag is now publication_role='utility' — demoted by
+    // the correctness-first gate for want of an authoritative source — so it
+    // serves no crawler <article> at all and there are no paragraphs to split.
+    // The case needs a tag that is still PUBLISHED; the splitter is what is
+    // under test, not which slug carries it. See e2e/support/glossaryProse.ts.
+    path: '/tags/silicone-injection',
     why: 'blank line — the plain case, and the one with the most rows behind it',
-    first: 'Pre-exposure prophylaxis is HIV medication',
-    second: 'PrEP prevents HIV and no other sexually transmitted infection',
+    first: 'in a trans context rarely means medical silicone',
+    second: 'Scale is the core problem',
   },
   {
     path: '/city/key-west',

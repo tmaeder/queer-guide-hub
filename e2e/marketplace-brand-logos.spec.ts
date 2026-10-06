@@ -54,8 +54,27 @@ async function readPlate(
   slug: string,
   colorScheme: 'light' | 'dark',
 ): Promise<PlateReading> {
+  // THE THEME IS SET EXPLICITLY, NOT EMULATED. `colorScheme` only drives
+  // `prefers-color-scheme`, and since #4070 (2026-10-02) AppProviders mounts
+  // ThemeProvider with `defaultTheme="light"` instead of `"system"` — so a
+  // visitor whose OS is dark gets the light theme until they use the toggle,
+  // and OS emulation can no longer flip anything. Measured on prod: with
+  // `colorScheme: 'dark'` the html class stays `light` and `--foreground` does
+  // not move.
+  //
+  // That is a live product question (reported separately), and it is NOT what
+  // this spec is about: the invariant here is that the LOGO PLATE does not
+  // follow the theme. So the theme is driven the way a reader drives it — the
+  // stored preference the toggle writes — which tests the plate in both themes
+  // whatever the default becomes. `colorScheme` is kept so the two agree.
   const ctx = await browser.newContext({ colorScheme });
   try {
+    // Before newPage(): an init script registered after the page exists is not
+    // guaranteed to have run for that page's first navigation.
+    await ctx.addInitScript(
+      ([key, value]) => window.localStorage.setItem(key, value),
+      ['queer-guide-theme', colorScheme],
+    );
     const page = await ctx.newPage();
     await page.goto(`/marketplace/brands/${slug}`);
     const logo = page.locator('img[src*="/logos/"]').first();
@@ -158,6 +177,12 @@ test.describe('marketplace brand logos', () => {
     const read = async (colorScheme: 'light' | 'dark') => {
       const ctx = await browser.newContext({ colorScheme });
       try {
+        // Same reason as readPlate above: since #4070 the theme no longer
+        // follows prefers-color-scheme, so it is set the way the toggle does.
+        await ctx.addInitScript(
+          ([key, value]) => window.localStorage.setItem(key, value),
+          ['queer-guide-theme', colorScheme],
+        );
         const page = await ctx.newPage();
         await page.goto('/venues?q=sauna');
         await expect(page.locator('img[src*="/logos/"]').first()).toBeVisible({ timeout: 20_000 });

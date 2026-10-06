@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
-import { GLOSSARY_LINK_ATTR, unlinkGlossary } from './support/glossaryProse';
+import { GLOSSARY_LINK_ATTR, glossaryEntry, unlinkGlossary } from './support/glossaryProse';
+import { anonHeaders, SUPABASE_REST_URL } from './support/anonKey';
 
 // The chemsex / harm-reduction corner of the glossary, verified on the surface a
 // non-JS crawler actually indexes.
@@ -23,13 +24,9 @@ import { GLOSSARY_LINK_ATTR, unlinkGlossary } from './support/glossaryProse';
 
 const BOT_UA = 'Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)';
 
-/** The tag's own prose block, excluding the rails and nav that follow it. */
-function articleOf(html: string): string {
-  const m = html.match(/<article[\s\S]*?<\/article>/i);
-  // Glossary auto-links are removed before any phrase assertion runs — see
-  // e2e/support/glossaryProse.ts for why a linked word is not a content defect.
-  return m ? unlinkGlossary(m[0]) : '';
-}
+// `articleOf` moved to e2e/support/glossaryProse.ts, which `glossaryEntry`
+// wraps: the prose a slug publishes now comes from the crawler <article> only
+// while the tag is publication_role='article'.
 
 interface Case {
   slug: string;
@@ -100,23 +97,17 @@ const NEW_OR_REVIVED: Case[] = [
 test.describe('chemsex glossary — crawler surface', () => {
   for (const c of NEW_OR_REVIVED) {
     test(`/tags/${c.slug} exists and defines itself`, async ({ request }) => {
-      const res = await request.get(`/tags/${c.slug}`, { headers: { 'User-Agent': BOT_UA } });
-      expect(res.status(), `/tags/${c.slug} should resolve — ${c.why}`).toBe(200);
-
-      const article = articleOf(await res.text());
-      expect(article, `/tags/${c.slug} rendered no <article>`).not.toBe('');
-      expect(article, `/tags/${c.slug} has no definition — ${c.why}`).toMatch(c.present);
+      const { prose } = await glossaryEntry(request, c.slug);
+      expect(prose, `/tags/${c.slug} has no definition — ${c.why}`).toMatch(c.present);
     });
   }
 
   test('/tags/ghb states that GBL is not dose-interchangeable', async ({ request }) => {
     // The single most repeated warning in both sources, and the one the page did not
     // carry: it introduced GBL only as a precursor "which the body converts into it".
-    const res = await request.get('/tags/ghb', { headers: { 'User-Agent': BOT_UA } });
-    expect(res.status()).toBe(200);
-    const article = articleOf(await res.text());
-    expect(article, 'the GHB page lost its own definition').toMatch(/depressant/i);
-    expect(article, 'the GBL potency warning is missing from the crawler-visible body').toMatch(
+    const { prose } = await glossaryEntry(request, 'ghb');
+    expect(prose, 'the GHB page lost its own definition').toMatch(/depressant/i);
+    expect(prose, 'the GBL potency warning is missing from the published body').toMatch(
       /not interchangeable/i,
     );
   });
@@ -124,11 +115,9 @@ test.describe('chemsex glossary — crawler surface', () => {
   test('/tags/mephedrone carries the cathinone cardiac warning', async ({ request }) => {
     // The long body was a Wikipedia stub ending "It is a group of stereoisomers" —
     // accurate, and containing no harm-reduction content at all.
-    const res = await request.get('/tags/mephedrone', { headers: { 'User-Agent': BOT_UA } });
-    expect(res.status()).toBe(200);
-    const article = articleOf(await res.text());
-    expect(article).toMatch(/cathinone/i);
-    expect(article, 'the cardiac warning never reached the crawler-visible body').toMatch(
+    const { prose } = await glossaryEntry(request, 'mephedrone');
+    expect(prose).toMatch(/cathinone/i);
+    expect(prose, 'the cardiac warning never reached the published body').toMatch(
       /constrict blood vessels|heart attack/i,
     );
   });
@@ -149,8 +138,8 @@ test.describe('chemsex glossary — crawler surface', () => {
     // Asserted over the <article>, never the raw HTML: a bare /404|not found/ scan of a
     // whole SPA document hits asset names and inline boot-guard script, which is exactly
     // how the first version of this test failed against a perfectly healthy page.
-    const article = articleOf(await res.text());
-    expect(article, 'the merged slug does not serve the chemsex entry').toMatch(
+    const { prose } = await glossaryEntry(request, 'chemsex');
+    expect(prose, 'the merged slug does not serve the chemsex entry').toMatch(
       /chemsex|sex with drugs|sex on drugs/i,
     );
   });
@@ -158,13 +147,11 @@ test.describe('chemsex glossary — crawler surface', () => {
   test('a tag untouched by this pass still renders', async ({ request }) => {
     // Control. Without it, every "200 + matches /x/" above would also pass if the
     // crawler template had started serving one generic body for every slug.
-    const res = await request.get('/tags/poppers', { headers: { 'User-Agent': BOT_UA } });
-    expect(res.status()).toBe(200);
-    const article = articleOf(await res.text());
-    expect(article).toMatch(/nitrite|inhal/i);
-    // And it must NOT match the fingerprints of the pages above — proof the crawler
-    // is serving per-slug content rather than one shared body.
-    expect(article).not.toMatch(/not interchangeable/i);
+    const { prose } = await glossaryEntry(request, 'poppers');
+    expect(prose).toMatch(/nitrite|inhal/i);
+    // And it must NOT match the fingerprints of the pages above — proof the
+    // publisher serves per-slug content rather than one shared body.
+    expect(prose).not.toMatch(/not interchangeable/i);
   });
 });
 
@@ -208,18 +195,44 @@ test.describe('chemsex glossary — reader surface', () => {
 // no-op here is invisible: the phrase assertions above would keep passing until
 // the next word inside one of them became a glossary term, then go red for a
 // content defect that is not there. So assert the strip had something to do.
+//
+// IT NO LONGER PICKS A PAGE. It used to assert against /tags/k-hole, and that
+// stopped working for a reason that is not a renderer bug: the link vocabulary
+// is the view `glossary_link_terms_public`, which gates on `seo_indexable`, and
+// the correctness-first demotion took it from thousands of terms to **36**
+// (measured on prod 2026-10-05). With a vocabulary that small, whether any
+// given page happens to contain a linkable term is luck, so an assertion tied
+// to one slug reports the vocabulary's size as a renderer failure.
+//
+// The two things actually worth catching are asserted directly instead: the
+// vocabulary going empty (links off entirely), and unlinkGlossary failing to
+// strip an anchor built from a term the vocabulary really contains.
 test.describe('@smoke glossary-link strip control', () => {
-  test('chemsex: the crawler HTML carries glossary links, and the strip removes them', async ({
+  test('chemsex: the link vocabulary is live, and the strip removes its anchors', async ({
     request,
   }) => {
-    const res = await request.get('/tags/k-hole', { headers: { 'user-agent': BOT_UA } });
-    expect(res.status(), '/tags/k-hole must be reachable').toBeLessThan(400);
-    const raw = await res.text();
-    expect(raw, 'the renderer no longer emits ' + GLOSSARY_LINK_ATTR + ' — unlinkGlossary is now a silent no-op').toContain(
+    const headers = await anonHeaders(request);
+    const res = await request.get(
+      `${SUPABASE_REST_URL}/rest/v1/glossary_link_terms_public?select=slug,surface_form&limit=1`,
+      { headers },
+    );
+    expect(res.ok(), 'could not read the glossary link vocabulary').toBe(true);
+    const terms = (await res.json()) as Array<{ slug: string; surface_form: string }>;
+    expect(
+      terms.length,
+      'the glossary link vocabulary is EMPTY — no inline link can render anywhere, ' +
+        'and unlinkGlossary is a silent no-op',
+    ).toBeGreaterThan(0);
+
+    const anchor =
+      `<p>see <a href="/tags/${terms[0].slug}" ${GLOSSARY_LINK_ATTR}="${terms[0].slug}">` +
+      `${terms[0].surface_form}</a> for more</p>`;
+    const stripped = unlinkGlossary(anchor);
+    expect(stripped, 'unlinkGlossary left a glossary anchor behind').not.toContain(
       GLOSSARY_LINK_ATTR,
     );
-    expect(unlinkGlossary(raw), 'unlinkGlossary left a glossary anchor behind').not.toContain(
-      GLOSSARY_LINK_ATTR,
+    expect(stripped, 'unlinkGlossary ate the linked text as well as the anchor').toContain(
+      terms[0].surface_form,
     );
   });
 });

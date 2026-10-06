@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
-import { GLOSSARY_LINK_ATTR, unlinkGlossary } from './support/glossaryProse';
+import { GLOSSARY_LINK_ATTR, unlinkGlossary, glossaryEntry } from './support/glossaryProse';
+import { anonHeaders, SUPABASE_REST_URL } from './support/anonKey';
 
 // The health and drug fact-check (PRs #3066 #3067 #3070 #3071 #3078 #3082
 // #3096; audit at docs/audits/2026-08-28-health-drug-tag-facts.md).
@@ -26,20 +27,24 @@ import { GLOSSARY_LINK_ATTR, unlinkGlossary } from './support/glossaryProse';
 // under load while every one passed in isolation — a suite that only goes green
 // on an idle machine is not a guard.
 
-const CRAWLER = { 'user-agent': 'Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)' };
+const CRAWLER = {
+  'user-agent': 'Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)',
+};
 const RENDER = { timeout: 20_000 };
 
 /** The crawler HTML for a tag page, asserted reachable before it is searched. */
 async function tagHtml(request: import('@playwright/test').APIRequestContext, slug: string) {
-  const res = await request.get(`/tags/${slug}`, { headers: CRAWLER });
-  expect(res.status(), `/tags/${slug} must be reachable`).toBeLessThan(400);
-  const html = await res.text();
+  // A demoted tag (publication_role='utility') serves no crawler <article>, so
+  // its prose is read from the registry instead and appended to the document —
+  // both polarities below still search real published content. See
+  // e2e/support/glossaryProse.ts.
+  const { prose, html, published } = await glossaryEntry(request, slug);
   // Guards every negative assertion below from passing on an empty or error
   // body: the tag's own name must be in what we are about to search.
   expect(html.length, `/tags/${slug} returned an empty document`).toBeGreaterThan(1000);
   // Glossary auto-links are removed before any phrase assertion runs — see
   // e2e/support/glossaryProse.ts for why a linked word is not a content defect.
-  return unlinkGlossary(html);
+  return published ? unlinkGlossary(html) : `${unlinkGlossary(html)}\n${prose}`;
 }
 
 test.describe('@smoke glossary health & drug facts', () => {
@@ -193,17 +198,34 @@ test.describe('@smoke glossary health & drug facts', () => {
 // the next word inside one of them became a glossary term, then go red for a
 // content defect that is not there. So assert the strip had something to do.
 test.describe('@smoke glossary-link strip control', () => {
-  test('health-facts: the crawler HTML carries glossary links, and the strip removes them', async ({
+  test('health-facts: the link vocabulary is live, and the strip removes its anchors', async ({
     request,
   }) => {
-    const res = await request.get('/tags/doxy-pep', { headers: { 'user-agent': CRAWLER['user-agent'] } });
-    expect(res.status(), '/tags/doxy-pep must be reachable').toBeLessThan(400);
-    const raw = await res.text();
-    expect(raw, 'the renderer no longer emits ' + GLOSSARY_LINK_ATTR + ' — unlinkGlossary is now a silent no-op').toContain(
+    // Rebased off a single slug: the link vocabulary (`glossary_link_terms_public`)
+    // gates on `seo_indexable`, and the correctness-first demotion took it to 36
+    // terms, so whether any one page carries a link is luck. See
+    // e2e/support/glossaryProse.ts.
+    const headers = await anonHeaders(request);
+    const res = await request.get(
+      `${SUPABASE_REST_URL}/rest/v1/glossary_link_terms_public?select=slug,surface_form&limit=1`,
+      { headers },
+    );
+    expect(res.ok(), 'could not read the glossary link vocabulary').toBe(true);
+    const terms = (await res.json()) as Array<{ slug: string; surface_form: string }>;
+    expect(
+      terms.length,
+      'the glossary link vocabulary is EMPTY — no inline link can render anywhere, ' +
+        'and unlinkGlossary is a silent no-op',
+    ).toBeGreaterThan(0);
+    const anchor =
+      `<p>see <a href="/tags/${terms[0].slug}" ${GLOSSARY_LINK_ATTR}="${terms[0].slug}">` +
+      `${terms[0].surface_form}</a> for more</p>`;
+    const stripped = unlinkGlossary(anchor);
+    expect(stripped, 'unlinkGlossary left a glossary anchor behind').not.toContain(
       GLOSSARY_LINK_ATTR,
     );
-    expect(unlinkGlossary(raw), 'unlinkGlossary left a glossary anchor behind').not.toContain(
-      GLOSSARY_LINK_ATTR,
+    expect(stripped, 'unlinkGlossary ate the linked text as well as the anchor').toContain(
+      terms[0].surface_form,
     );
   });
 });

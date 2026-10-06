@@ -16,6 +16,9 @@
  */
 
 import { contentTypeRegistry, getContentType } from '@/config/contentTypes';
+import { filteredListHref } from './cmsFilterHref';
+
+export { FILTER_LABEL_SUFFIX } from './cmsFilterHref';
 
 /**
  * Admin CMS path for one record: the type's list route plus `?edit=<id>`,
@@ -39,6 +42,26 @@ export function cmsEditPath(registryKey: string, id: string): string | null {
 export function cmsListPath(registryKey: string): string | null {
   if (!getContentType(registryKey)) return null;
   return `/admin/content/${registryKey}`;
+}
+
+/**
+ * Admin CMS list path pre-filtered to `field = value`, e.g. the venues of one
+ * city: `/admin/content/venues?city_id=<uuid>&city_id_label=Berlin`.
+ *
+ * `ContentListPanel` turns every query param that names a field of the type
+ * into an `eq` filter (validated by `normalizeSpec`, so an unknown field is
+ * dropped rather than queried) and strips it from the URL. `<field>_label` is
+ * display-only: it lets the applied-filter chip read "City is Berlin" instead
+ * of a uuid. Null for an unknown registry key or an empty value.
+ */
+export function cmsFilteredListPath(
+  registryKey: string,
+  field: string,
+  value: string,
+  label?: string | null,
+): string | null {
+  if (!value || !cmsListPath(registryKey)) return null;
+  return filteredListHref(registryKey, field, value, label);
 }
 
 /**
