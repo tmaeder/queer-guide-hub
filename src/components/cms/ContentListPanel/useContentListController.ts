@@ -11,6 +11,7 @@ import {
   applySorts,
   applyArchivedView,
   applyMergedView,
+  applyEmbeddedLiveScope,
   type ArchivedView,
   type MergedView,
 } from './filterOps';
@@ -250,6 +251,11 @@ export function useContentListController({
     // Orthogonal to the archive slice, so it composes rather than replaces:
     // a row can be archived AND merged away.
     query = applyMergedView(query as never, ct.merge, mergedView) as typeof query;
+    // Scope count embeds (e.g. a city's `venues(count)`) to the embedded
+    // type's default slice, so the number matches the list it links to.
+    for (const { embed, type } of ct.listEmbedScopes ?? []) {
+      query = applyEmbeddedLiveScope(query as never, embed, type) as typeof query;
+    }
 
     const { data, error, count } = await query;
     if (error) throw error;

@@ -30,8 +30,9 @@ export interface QueryBuilderLike<T = unknown> {
   contains(col: string, v: readonly unknown[]): T;
   overlaps(col: string, v: readonly unknown[]): T;
   order(col: string, opts: { ascending: boolean }): T;
-  /** Needed for NULL-safe negation — see applyArchivedView. */
-  or(filters: string): T;
+  /** Needed for NULL-safe negation — see applyArchivedView. `referencedTable`
+   *  scopes the OR to an embedded resource — see applyEmbeddedLiveScope. */
+  or(filters: string, opts?: { referencedTable?: string }): T;
 }
 
 /** PostgREST treats `%` and `_` as wildcards; a user typing them means them literally. */
@@ -250,4 +251,47 @@ export function applyMergedView<T extends QueryBuilderLike<T>>(
   return view === 'merged'
     ? query.not(merge.column, 'is', null)
     : query.is(merge.column, null);
+}
+
+// ── Embedded live scope ────────────────────────────────────────────
+
+/**
+ * Scope an embedded resource in a list select (e.g. the `venues(count)` on the
+ * Cities list) to the rows the embedded type's OWN list shows by default:
+ * not archived, not merged away.
+ *
+ * Without it the count and the list it links to disagree — measured on prod,
+ * Berlin read 1,242 venues while the Venues list filtered to Berlin showed 869,
+ * because the raw embed counts every merged duplicate and archived row.
+ *
+ * The predicates are DERIVED from the embedded type's `merge` and
+ * `lifecycle.archive` config rather than restated here, so the count follows
+ * the list if either definition changes. Same NULL-safety as
+ * `applyArchivedView`: the `equals` arm is `col.is.null,col.neq.v`, scoped to
+ * the embed through `referencedTable`, because a top-level `.or()` cannot see
+ * an embedded column.
+ */
+export function applyEmbeddedLiveScope<T extends QueryBuilderLike<T>>(
+  query: T,
+  embed: string,
+  type: {
+    merge?: { column: string };
+    lifecycle?: {
+      archive?: { column: string; value?: string; predicate?: 'equals' | 'present' };
+    };
+  },
+): T {
+  let q = query;
+  if (type.merge) q = q.is(`${embed}.${type.merge.column}`, null);
+  const archive = type.lifecycle?.archive;
+  if (archive) {
+    if (archive.predicate === 'present') {
+      q = q.is(`${embed}.${archive.column}`, null);
+    } else if (archive.value) {
+      q = q.or(`${archive.column}.is.null,${archive.column}.neq.${archive.value}`, {
+        referencedTable: embed,
+      });
+    }
+  }
+  return q;
 }
