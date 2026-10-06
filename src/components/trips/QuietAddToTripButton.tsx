@@ -1,8 +1,5 @@
-import { useState, type MouseEvent } from 'react';
-import { Luggage, Check } from 'lucide-react';
-import { useTranslation } from 'react-i18next';
-import { AddToTripDialog, type AddToTripDialogProps } from './AddToTripDialog';
-import { useEntityTripStatus } from '@/hooks/useEntityTripStatus';
+import type { AddToTripDialogProps } from './AddToTripDialog';
+import { TripAction } from './TripAction';
 import { cn } from '@/lib/utils';
 
 export interface QuietAddToTripButtonProps {
@@ -18,52 +15,26 @@ export interface QuietAddToTripButtonProps {
 }
 
 /**
- * Icon-only "add to trip" affordance for cards. Quiet by default (hidden until
- * hover/focus or always at 60% on touch). Stops event propagation so the parent
- * card link doesn't navigate. Wraps the existing AddToTripDialog.
+ * Compact, labelled trip affordance for cards and result rows. The active trip
+ * is the one-click path; TripAction owns auth resumption, duplicate state and
+ * the fallback trip picker.
  */
 export function QuietAddToTripButton({
   entity,
   variant = 'overlay',
   className,
 }: QuietAddToTripButtonProps) {
-  const { t } = useTranslation();
-  const [open, setOpen] = useState(false);
-  const { data: status } = useEntityTripStatus(entity.type, entity.id);
-  const inTrip = status?.isInTrip ?? false;
-  const Icon = inTrip ? Check : Luggage;
-  const label = inTrip
-    ? t('trips.quietAdd.inTrip', 'In a trip')
-    : t('trips.quietAdd.add', 'Add to a trip');
-
-  const handleClick = (e: MouseEvent<HTMLButtonElement>) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setOpen(true);
-  };
-
   return (
-    <>
-      <button
-        type="button"
-        onClick={handleClick}
-        aria-label={label}
-        title={label}
-        className={cn(
-          'inline-flex h-8 w-8 items-center justify-center rounded-element bg-background/85 backdrop-blur transition-opacity duration-fast hover:bg-background',
-          variant === 'overlay' && [
-            'absolute right-3 top-3',
-            'opacity-0 group-hover:opacity-100 focus-visible:opacity-100',
-            // Touch: keep visible at 60% so it's reachable without hover.
-            'opacity-60 sm:opacity-0',
-            inTrip && 'opacity-100 sm:opacity-100',
-          ],
-          className,
-        )}
-      >
-        <Icon size={14} aria-hidden="true" />
-      </button>
-      {open ? <AddToTripDialog open={open} onClose={() => setOpen(false)} entity={entity} /> : null}
-    </>
+    <TripAction
+      intent={{ kind: 'add_entity', entity }}
+      source={variant === 'overlay' ? 'entity-card' : 'entity-row'}
+      variant="compact"
+      stopPropagation
+      className={cn(
+        'bg-background/90',
+        variant === 'overlay' && 'absolute right-3 top-3 max-w-[calc(100%-1.5rem)]',
+        className,
+      )}
+    />
   );
 }

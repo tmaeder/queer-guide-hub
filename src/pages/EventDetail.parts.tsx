@@ -55,6 +55,7 @@ import { getEventLiveState } from '@/lib/event-countdown';
 import { GlossaryLinkedText } from '@/components/tags/GlossaryLinkedText';
 import { localizedField, type I18nMap } from '@/lib/localizeContent';
 import { useVisitedPlaceLookup } from '@/hooks/useVisitedPlaceLookup';
+import { TripAction } from '@/components/trips/TripAction';
 
 export type EventWithRelations = Database['public']['Tables']['events']['Row'] & {
   social_links?: Record<string, string> | null;
@@ -577,7 +578,6 @@ interface DecisionCardProps {
   isPast: boolean;
   userAttendance: string | null;
   onAttendanceUpdate: (status: 'going' | 'interested' | 'not_going') => void;
-  onAddToTrip: () => void;
   onExportToCalendar: () => void;
   onSendEvent: () => void;
 }
@@ -588,7 +588,6 @@ export function EventDecisionCard({
   isPast,
   userAttendance,
   onAttendanceUpdate,
-  onAddToTrip,
   onExportToCalendar,
   onSendEvent,
 }: DecisionCardProps) {
@@ -631,10 +630,11 @@ export function EventDecisionCard({
           </Button>
         ) : (
           !isPast && (
-            <Button className="w-full" onClick={onAddToTrip}>
-              <Luggage size={16} className="mr-2" />
-              Add to Trip
-            </Button>
+            <TripAction
+              intent={{ kind: 'add_entity', entity: eventTripEntity(event) }}
+              source="event-detail-decision"
+              className="w-full"
+            />
           )
         )}
 
@@ -664,10 +664,12 @@ export function EventDecisionCard({
         )}
 
         {ticketHref && !isPast && (
-          <Button variant="outline" className="w-full" onClick={onAddToTrip}>
-            <Luggage size={16} className="mr-2" />
-            Add to Trip
-          </Button>
+          <TripAction
+            intent={{ kind: 'add_entity', entity: eventTripEntity(event) }}
+            source="event-detail-decision"
+            variant="card"
+            className="w-full"
+          />
         )}
 
         <div className="flex flex-wrap items-center gap-2">
@@ -1170,14 +1172,12 @@ export function EventMobileBar({
   isPast,
   user,
   userAttendance,
-  onAddToTrip,
   onAttendanceUpdate,
 }: {
   event: EventWithRelations;
   isPast: boolean;
   user: { id: string } | null;
   userAttendance: string | null;
-  onAddToTrip: () => void;
   onAttendanceUpdate: (status: 'going' | 'interested' | 'not_going') => void;
 }) {
   if (isPast) return null;
@@ -1200,12 +1200,27 @@ export function EventMobileBar({
           {userAttendance === 'going' ? 'Going' : "I'm going"}
         </Button>
       ) : (
-        <Button className="flex-1" onClick={onAddToTrip}>
-          <Luggage size={16} className="mr-2" />
-          Add to Trip
-        </Button>
+        <TripAction
+          intent={{ kind: 'add_entity', entity: eventTripEntity(event) }}
+          source="event-detail-mobile"
+          className="flex-1"
+        />
       )}
       <FavoriteButton itemId={event.id} type="event" size="md" />
     </div>
   );
+}
+
+function eventTripEntity(event: EventWithRelations) {
+  return {
+    type: 'event' as const,
+    id: event.id,
+    name: event.title,
+    latitude: event.latitude ?? event.venues?.latitude ?? null,
+    longitude: event.longitude ?? event.venues?.longitude ?? null,
+    city_id: event.city_id,
+    country_id: event.country_id,
+    address: event.address ?? event.venues?.address ?? null,
+    category: event.event_type,
+  };
 }

@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { TrackLoader } from '@/components/transit/TrackLoader';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
-import {CalendarDays, Sparkles } from 'lucide-react';
+import { CalendarDays, Sparkles } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import {
   Dialog,
@@ -29,6 +29,7 @@ import {
   type GeoSelection,
 } from '@/components/trips/create/CityCountryAutocomplete';
 import { trackTripEvent } from '@/utils/tripTracking';
+import { useOptionalActiveTrip } from '@/hooks/useActiveTrip';
 
 const currencies = [
   { value: 'EUR', label: 'EUR – Euro' },
@@ -50,12 +51,22 @@ interface Props {
   initialStart?: string;
   /** Optional pre-seeded end date (YYYY-MM-DD). */
   initialEnd?: string;
+  /** Discovery surface that initiated creation, for consented funnel analysis. */
+  source?: string;
 }
 
-export function CreateTripDialog({ open, onClose, initialGeo, initialStart, initialEnd }: Props) {
+export function CreateTripDialog({
+  open,
+  onClose,
+  initialGeo,
+  initialStart,
+  initialEnd,
+  source = 'create-dialog',
+}: Props) {
   const { t, ready } = useTranslation();
   const navigate = useLocalizedNavigate();
   const { createTrip } = useTripMutations();
+  const activeTripContext = useOptionalActiveTrip();
   const { toast } = useToast();
   const [geo, setGeo] = useState<GeoSelection | null>(initialGeo ?? null);
   const [title, setTitle] = useState('');
@@ -92,8 +103,7 @@ export function CreateTripDialog({ open, onClose, initialGeo, initialStart, init
     if (!geo || dateError) return;
 
     const resolvedTitle =
-      title.trim() ||
-      t('trips.dialog.create.defaultTitle', { city: geo.cityName });
+      title.trim() || t('trips.dialog.create.defaultTitle', { city: geo.cityName });
 
     try {
       const trip = await createTrip.mutateAsync({
@@ -108,16 +118,20 @@ export function CreateTripDialog({ open, onClose, initialGeo, initialStart, init
         primary_country_code: geo.countryCode ?? undefined,
         timezone: geo.timezone ?? undefined,
       });
+      activeTripContext?.setActiveTripId(trip.id);
       trackTripEvent('trip_created', {
         trip_id: trip.id,
         city_id: geo.cityId,
         country_code: geo.countryCode,
         has_dates: Boolean(startDate && endDate),
+        source,
+        auth_state: 'signed_in',
       });
       trackTripEvent('trip_geo_set', {
         trip_id: trip.id,
         city_id: geo.cityId,
         country_code: geo.countryCode,
+        source,
       });
       toast({
         title: t('trips.toast.created'),
@@ -126,8 +140,7 @@ export function CreateTripDialog({ open, onClose, initialGeo, initialStart, init
       handleClose();
       navigate(`/trips/${trip.id}`);
     } catch (err) {
-      const message =
-        err instanceof Error ? err.message : t('trips.dialog.create.failed');
+      const message = err instanceof Error ? err.message : t('trips.dialog.create.failed');
       toast({
         title: t('trips.toast.error'),
         description: message,
@@ -140,9 +153,7 @@ export function CreateTripDialog({ open, onClose, initialGeo, initialStart, init
 
   return (
     <Dialog open={open} onOpenChange={(o) => !o && handleClose()}>
-      <DialogContent
-        data-testid="create-trip-dialog"
-      >
+      <DialogContent data-testid="create-trip-dialog">
         {open && !ready ? (
           <div className="flex items-center justify-center min-h-80">
             <TrackLoader size={24} />
@@ -151,9 +162,7 @@ export function CreateTripDialog({ open, onClose, initialGeo, initialStart, init
           <form onSubmit={handleSubmit}>
             <DialogHeader>
               <DialogTitle>{t('trips.dialog.create.title')}</DialogTitle>
-              <DialogDescription>
-                {t('trips.dialog.create.description')}
-              </DialogDescription>
+              <DialogDescription>{t('trips.dialog.create.description')}</DialogDescription>
             </DialogHeader>
 
             <div className="flex flex-col gap-6 mt-6">
@@ -170,9 +179,7 @@ export function CreateTripDialog({ open, onClose, initialGeo, initialStart, init
               <div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-1.5">
-                    <Label htmlFor="trip-start-date">
-                      {t('trips.dialog.create.startDate')}
-                    </Label>
+                    <Label htmlFor="trip-start-date">{t('trips.dialog.create.startDate')}</Label>
                     <Input
                       id="trip-start-date"
                       type="date"
@@ -181,9 +188,7 @@ export function CreateTripDialog({ open, onClose, initialGeo, initialStart, init
                     />
                   </div>
                   <div className="space-y-1.5">
-                    <Label htmlFor="trip-end-date">
-                      {t('trips.dialog.create.endDate')}
-                    </Label>
+                    <Label htmlFor="trip-end-date">{t('trips.dialog.create.endDate')}</Label>
                     <Input
                       id="trip-end-date"
                       type="date"
@@ -192,26 +197,20 @@ export function CreateTripDialog({ open, onClose, initialGeo, initialStart, init
                       min={startDate || undefined}
                       aria-invalid={Boolean(dateError)}
                     />
-                    {dateError && (
-                      <p className="text-xs text-destructive">{dateError}</p>
-                    )}
+                    {dateError && <p className="text-xs text-destructive">{dateError}</p>}
                   </div>
                 </div>
                 {!hasDates && (
                   <div className="mt-2 flex items-center gap-1.5 text-muted-foreground text-xs">
                     <Sparkles size={13} />
-                    <span className="leading-snug">
-                      {t('trips.dialog.create.datesUnlockHint')}
-                    </span>
+                    <span className="leading-snug">{t('trips.dialog.create.datesUnlockHint')}</span>
                   </div>
                 )}
               </div>
 
               {/* 3) Title — optional, defaults to "Trip to {city}" */}
               <div className="space-y-1.5">
-                <Label htmlFor="trip-title">
-                  {t('trips.dialog.create.titleField')}
-                </Label>
+                <Label htmlFor="trip-title">{t('trips.dialog.create.titleField')}</Label>
                 <div className="relative">
                   <CalendarDays
                     size={16}
@@ -247,9 +246,7 @@ export function CreateTripDialog({ open, onClose, initialGeo, initialStart, init
 
               {/* 5) Currency */}
               <div className="space-y-1.5">
-                <Label htmlFor="trip-currency">
-                  {t('trips.dialog.create.currency')}
-                </Label>
+                <Label htmlFor="trip-currency">{t('trips.dialog.create.currency')}</Label>
                 <Select value={currency} onValueChange={setCurrency}>
                   <SelectTrigger id="trip-currency">
                     <SelectValue />
@@ -270,9 +267,7 @@ export function CreateTripDialog({ open, onClose, initialGeo, initialStart, init
                 {t('trips.dialog.create.cancel')}
               </Button>
               <Button type="submit" variant="brand" disabled={!canSubmit}>
-                {createTrip.isPending && (
-                  <TrackLoader size={16} className="mr-1" />
-                )}
+                {createTrip.isPending && <TrackLoader size={16} className="mr-1" />}
                 {t('trips.dialog.create.submit')}
               </Button>
             </DialogFooter>

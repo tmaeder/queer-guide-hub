@@ -4,6 +4,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, waitFor, fireEvent } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { MemoryRouter } from 'react-router';
 
 const toastSpy = vi.fn();
 const createTripMutate = vi.fn();
@@ -28,7 +29,7 @@ vi.mock('@/hooks/useTrips', () => ({
   }),
 }));
 vi.mock('@/hooks/useActiveTrip', () => ({
-  useActiveTrip: () => ({ activeTrip: null, setActiveTrip: vi.fn() }),
+  useActiveTrip: () => ({ activeTrip: null, setActiveTripId: vi.fn() }),
 }));
 // No-geo entities trigger an on-demand geo resolve; mock it to "not found" so
 // the missing-geo path is exercised deterministically (no real client call).
@@ -54,9 +55,11 @@ function renderDialog(entityOverrides: Record<string, unknown> = {}) {
     ...entityOverrides,
   };
   return render(
-    <QueryClientProvider client={qc}>
-      <AddToTripDialog open onClose={vi.fn()} entity={entity} />
-    </QueryClientProvider>,
+    <MemoryRouter>
+      <QueryClientProvider client={qc}>
+        <AddToTripDialog open onClose={vi.fn()} entity={entity} />
+      </QueryClientProvider>
+    </MemoryRouter>,
   );
 }
 
@@ -70,13 +73,15 @@ describe('AddToTripDialog', () => {
   it('renders closed without crashing', () => {
     const qc = new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: 0 } } });
     const { container } = render(
-      <QueryClientProvider client={qc}>
-        <AddToTripDialog
-          open={false}
-          onClose={vi.fn()}
-          entity={{ id: 'v1', type: 'venue', name: 'X' }}
-        />
-      </QueryClientProvider>,
+      <MemoryRouter>
+        <QueryClientProvider client={qc}>
+          <AddToTripDialog
+            open={false}
+            onClose={vi.fn()}
+            entity={{ id: 'v1', type: 'venue', name: 'X' }}
+          />
+        </QueryClientProvider>
+      </MemoryRouter>,
     );
     expect(container).toBeTruthy();
   });

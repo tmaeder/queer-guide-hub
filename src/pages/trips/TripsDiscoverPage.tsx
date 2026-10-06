@@ -28,6 +28,7 @@ import {
   type VibeId,
 } from '@/lib/lines/generateLine';
 import { seasonWindows, type SeasonId } from '@/lib/lines/seasons';
+import { useOptionalActiveTrip } from '@/hooks/useActiveTrip';
 
 /**
  * /trips/discover — the line generator.
@@ -62,6 +63,7 @@ export default function TripsDiscoverPage() {
   const { toast } = useToast();
   const navigate = useLocalizedNavigate();
   const { createTrip, addPlacesBulk } = useTripMutations();
+  const activeTripContext = useOptionalActiveTrip();
 
   useMeta({
     title: t('trips.discover.meta.title', 'Build a route | Queer Guide'),
@@ -219,6 +221,7 @@ export default function TripsDiscoverPage() {
           arrive_mode: null,
         })),
       });
+      activeTripContext?.setActiveTripId(trip.id);
       navigate(`/trips/${trip.id}`);
     } catch (err) {
       toast({
@@ -240,6 +243,7 @@ export default function TripsDiscoverPage() {
     now,
     createTrip,
     addPlacesBulk,
+    activeTripContext,
     t,
     toast,
   ]);
