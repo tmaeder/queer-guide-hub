@@ -80,10 +80,12 @@ import { flagByTagSlug, HANKY_CODE_TAG_SLUG } from '@/lib/flags';
 import { TagLinkedContent } from '@/components/tags/TagLinkedContent';
 import { StiProfile } from '@/components/tags/StiProfile';
 import { TagMythFacts } from '@/components/tags/TagMythFacts';
+import { TagWorkbooks } from '@/components/tags/TagWorkbooks';
 import { TAG_DIAGRAMS } from '@/components/tags/tagDiagrams';
 import { TagInfographics } from '@/components/tags/TagInfographics';
 import { figuresForSlug } from '@/components/tags/infographics/registry';
 import { useTagMedicalCodes, countMedicalCodes } from '@/hooks/useTagMedicalCodes';
+import { useTagWorkbooks, countWorkbooks } from '@/hooks/useTagWorkbooks';
 import { useStiProfile, useTagMythFacts } from '@/hooks/useStiProfile';
 import { localizedField, type I18nMap } from '@/lib/localizeContent';
 
@@ -275,6 +277,10 @@ export default function TagDetail() {
   const hasStiProfile = !!stiProfile;
   const { data: mythFacts } = useTagMythFacts(tag?.id ?? null);
   const mythFactCount = mythFacts?.length ?? 0;
+  // Count-fetch again, same reason: the strip and the rail need to know whether
+  // this term carries an exercise before the band has rendered.
+  const { data: tagWorkbooks } = useTagWorkbooks(tag?.id ?? null);
+  const workbookCount = countWorkbooks(tagWorkbooks);
   const diagrams = useMemo(
     () => (tag ? (TAG_DIAGRAMS[tag.slug] ?? EMPTY_DIAGRAMS) : EMPTY_DIAGRAMS),
     [tag],
@@ -336,6 +342,12 @@ export default function TagDetail() {
     if (mythFactCount > 0) {
       s.push({ id: 'myths', title: t('tags.myths.eyebrow', 'Check the facts') });
     }
+    // Pushed HERE because the band renders here. useActiveStation derives the
+    // active stop from document geometry, so this array's order must match the
+    // JSX order below or the strip highlights the wrong stop while scrolling.
+    if (workbookCount > 0) {
+      s.push({ id: 'workbooks', title: t('tags.detail.workbooks.title', 'Exercises') });
+    }
     // Immediately above the taxonomy, for the same reason as `combinations`:
     // a reader who can see the thing drawn does not need the ontology first.
     // Sub-stations only when there is more than one figure to disambiguate.
@@ -362,8 +374,8 @@ export default function TagDetail() {
     return s;
     // medicalCodeCount belongs here: the codes RPC resolves AFTER the first
     // render, so omitting it would pin the strip to the pre-fetch value of 0
-    // and the stop would never appear. interactionCount, hasStiProfile and
-    // mythFactCount are the same shape.
+    // and the stop would never appear. interactionCount, hasStiProfile,
+    // mythFactCount and workbookCount are the same shape.
   }, [
     tag,
     wiki,
@@ -372,6 +384,7 @@ export default function TagDetail() {
     interactionCount,
     hasStiProfile,
     mythFactCount,
+    workbookCount,
     diagrams,
     figures,
     t,
@@ -648,6 +661,11 @@ export default function TagDetail() {
         </div>
       )}
 
+      {/* Owns its own `#workbooks` id, like TagDiagnosticCodes, and renders
+          null when the term carries no exercise. Its position here must match
+          the `workbooks` push in `stations` above. */}
+      <TagWorkbooks tagId={tag.id} />
+
       {/* Directly above <TagInterchange>, which IS the #taxonomy section. This
           pairing is load-bearing: the `figure` station is pushed immediately
           before `taxonomy` in `stations` above, and useActiveStation derives
@@ -700,7 +718,11 @@ export default function TagDetail() {
           flag gets the full band in the body instead — never both. */}
       <TagFlagRailCard tagSlug={tag.slug} />
 
-      {(tag.wikipedia_url || tag.wikidata_id || medicalCodeCount > 0 || references.length > 0) && (
+      {(tag.wikipedia_url ||
+        tag.wikidata_id ||
+        medicalCodeCount > 0 ||
+        workbookCount > 0 ||
+        references.length > 0) && (
         <SidebarCard eyebrow={t('tags.detail.elsewhere', 'Elsewhere')}>
           {/* An in-page anchor rather than the codes themselves: the rail is
               240px and the band has four groups. This row is a pointer, not a
@@ -709,6 +731,14 @@ export default function TagDetail() {
             <SidebarRow
               label={t('tags.detail.codes.title', 'Diagnostic codes')}
               value={<a href="#codes">{medicalCodeCount}</a>}
+            />
+          )}
+          {/* Same pointer convention — the band is in the body, this is a
+              count that jumps to it. */}
+          {workbookCount > 0 && (
+            <SidebarRow
+              label={t('tags.detail.workbooks.title', 'Exercises')}
+              value={<a href="#workbooks">{workbookCount}</a>}
             />
           )}
           {tag.wikipedia_url && (
