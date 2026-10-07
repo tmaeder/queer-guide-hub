@@ -480,6 +480,40 @@ async function processForwardRepair(
 // The old loop selected `city_id is null order by id` with no visit record and
 // re-asked every unplaceable venue on every run, and linked whatever city the
 // resolver returned without comparing it to the coordinates that asked.
+//
+// It asks PHOTON, not Nominatim. Measured 2026-10-07: public Nominatim answers
+// 403 to every request from the edge-function egress (since 2026-09-24 — the
+// forward cron has been 100% 403 for 13 days while booking `success`), while the
+// same request from the database egress answers 200. Photon (OSM data, same
+// place hierarchy) is reachable from the edge and already serves the postal
+// queue. A 403/429/5xx is still a transport error: it ends the batch unstamped.
+
+interface PhotonPlace { city: string | null; countryCode: string | null }
+
+// Photon names the municipality in `city`; for a feature that IS a settlement
+// it is `name` with type city/town/village. `district`/`locality` are parts of a
+// city and are never used — they are what turns a Recoleta venue into "Balvanera".
+async function photonReverseCity(lat: number, lon: number): Promise<PhotonPlace> {
+  const url = `${PHOTON_REVERSE}?lat=${lat}&lon=${lon}&lang=en`
+  const controller = new AbortController()
+  const timer = setTimeout(() => controller.abort(), 8000)
+  try {
+    const res = await fetch(url, {
+      signal: controller.signal,
+      headers: { 'User-Agent': 'QueerGuide/1.0 (https://queer.guide)' },
+    })
+    if (!res.ok) throw new Error(`photon_${res.status}`)
+    const j = await res.json() as { features?: Array<{ properties?: Record<string, string> }> }
+    const p = j.features?.[0]?.properties ?? {}
+    const settlement = ['city', 'town', 'village'].includes(p.type ?? '') ? p.name : undefined
+    return {
+      city: (p.city || settlement || null)?.trim() || null,
+      countryCode: p.countrycode ? p.countrycode.toUpperCase() : null,
+    }
+  } finally {
+    clearTimeout(timer)
+  }
+}
 
 async function processReverse(
   supabase: ReturnType<typeof getServiceClient>,
@@ -497,26 +531,18 @@ async function processReverse(
     if (Date.now() - startedAt > MAX_RUN_MS) break
     let transportError: string | null = null
     try {
-      const url = `${NOMINATIM_BASE}/reverse?format=json&lat=${venue.latitude}&lon=${venue.longitude}&zoom=10&addressdetails=1`
-      const res = await fetch(url, { headers: nominatimHeaders() })
-      if (!res.ok) {
-        transportError = `nominatim_error_${res.status}`
-      } else {
-        const data = await res.json() as NominatimResult
-        const cityName = data.address ? extractCity(data.address) : null
-        const countryCode = data.address?.country_code?.toUpperCase() || null
-        const cityMatch = cityName
-          ? await matchCity(supabase, cityName, countryCode, { lat: Number(venue.latitude), lon: Number(venue.longitude) })
-          : null
-        const { data: status, error: applyErr } = await supabase.rpc('venue_apply_reverse_city', {
-          p_venue_id: venue.id,
-          p_city_name: cityName,
-          p_city_id: cityMatch?.id ?? null,
-          p_country_code: countryCode,
-        })
-        if (applyErr) throw applyErr
-        results.push({ id: venue.id, status: String(status), city_name: cityName || undefined, city_id: cityMatch?.id })
-      }
+      const { city: cityName, countryCode } = await photonReverseCity(Number(venue.latitude), Number(venue.longitude))
+      const cityMatch = cityName
+        ? await matchCity(supabase, cityName, countryCode, { lat: Number(venue.latitude), lon: Number(venue.longitude) })
+        : null
+      const { data: status, error: applyErr } = await supabase.rpc('venue_apply_reverse_city', {
+        p_venue_id: venue.id,
+        p_city_name: cityName,
+        p_city_id: cityMatch?.id ?? null,
+        p_country_code: countryCode,
+      })
+      if (applyErr) throw applyErr
+      results.push({ id: venue.id, status: String(status), city_name: cityName || undefined, city_id: cityMatch?.id })
     } catch (err) {
       transportError = `error: ${(err as Error).message}`
     }
@@ -524,7 +550,7 @@ async function processReverse(
       results.push({ id: venue.id, status: transportError })
       break
     }
-    await sleep(SLEEP_MS)
+    await sleep(PHOTON_INTERVAL_MS)
   }
 
   const { count } = await supabase
