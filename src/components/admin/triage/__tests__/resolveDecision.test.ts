@@ -15,11 +15,7 @@
  * exactly the state this replaced.
  */
 import { describe, it, expect } from 'vitest';
-import {
-  resolveDecision,
-  needsNamesakeConfirm,
-  isUnbatchablePerson,
-} from '../resolveDecision';
+import { resolveDecision, needsNamesakeConfirm, isUnbatchablePerson } from '../resolveDecision';
 import type { TriageItem } from '@/hooks/useUnifiedTriageQueue';
 
 function item(over: Partial<TriageItem> = {}): TriageItem {
@@ -85,7 +81,6 @@ describe('namesake — merging two different people is an outing risk', () => {
     // pushes reviewers toward approving just to clear the queue.
     expect(resolveDecision(namesakePair(), 'reject', {}).ok).toBe(true);
     expect(resolveDecision(namesakePair(), 'skip', {}).ok).toBe(true);
-    expect(resolveDecision(namesakePair(), 'flag', {}).ok).toBe(true);
   });
 
   it('does not gate a dedup pair that carries no namesake flag', () => {
@@ -157,10 +152,15 @@ describe('queues decided in another console', () => {
   it('refuses every action rather than offering one triage_action raises on', () => {
     // `triage_action` has no branch for these; it ends in
     // `ELSE RAISE 'unknown queue_type'`.
-    for (const a of ['approve', 'reject', 'skip', 'flag'] as const) {
-      const r = resolveDecision(item({ queue_type: 'org-link-review' }), a, {}, {
-        externalConsole: '/admin/governance?mode=engines',
-      });
+    for (const a of ['approve', 'reject', 'skip'] as const) {
+      const r = resolveDecision(
+        item({ queue_type: 'org-link-review' }),
+        a,
+        {},
+        {
+          externalConsole: '/admin/governance?mode=engines',
+        },
+      );
       expect(r.ok).toBe(false);
       if (!r.ok) expect(r.reason).toMatch(/console/i);
     }
@@ -196,19 +196,22 @@ describe('the two person predicates are deliberately different', () => {
    * path would refuse an approval with no checkbox on screen to satisfy it.
    */
   it('bulk holds back every personality dedup pair, flagged or not', () => {
-    expect(isUnbatchablePerson(item({ queue_type: 'dedup-review', content_type: 'personality' })))
-      .toBe(true);
+    expect(
+      isUnbatchablePerson(item({ queue_type: 'dedup-review', content_type: 'personality' })),
+    ).toBe(true);
     expect(isUnbatchablePerson(namesakePair())).toBe(true);
   });
 
   it('bulk does not hold back other entity types', () => {
-    expect(isUnbatchablePerson(item({ queue_type: 'dedup-review', content_type: 'venue' })))
-      .toBe(false);
+    expect(isUnbatchablePerson(item({ queue_type: 'dedup-review', content_type: 'venue' }))).toBe(
+      false,
+    );
   });
 
   it('bulk does not hold back personalities outside the dedup queue', () => {
-    expect(isUnbatchablePerson(item({ queue_type: 'quality-personality', content_type: 'personality' })))
-      .toBe(false);
+    expect(
+      isUnbatchablePerson(item({ queue_type: 'quality-personality', content_type: 'personality' })),
+    ).toBe(false);
   });
 
   it('the narrow predicate is strictly inside the broad one', () => {

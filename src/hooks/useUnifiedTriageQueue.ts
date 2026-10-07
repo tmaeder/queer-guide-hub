@@ -57,19 +57,44 @@ export function useUnifiedTriageQueue(filters: TriageFilters) {
   });
 }
 
+/**
+ * The confidence at or above which this platform decides without a human.
+ *
+ * ONE constant because it was two hardcoded literals in this file plus three
+ * strings in `TriageView.tsx`, and a threshold spelled in five places drifts.
+ * It must stay equal to the bar the engines use — `run_review_queue_autoapprove`
+ * (cron `2-59/5`), `run_dedup_review_autoapprove` (cron `30 6 * * *`) and
+ * `triage_bulk_approve_high_conf`'s own default — all set to 0.80 by
+ * 99991791361288. A UI that offers a different bar than the cron applies is
+ * two policies wearing one number.
+ *
+ * Note what the bar does NOT override: `review_field_registry.batchable` still
+ * holds the per-field exclusions (`city.lgbt_friendly_rating`,
+ * `city.best_time_to_visit`, `venue.accessibility_*` and the adult-link
+ * fields), and personality dedup pairs stay out of auto-merge. Those are data,
+ * one UPDATE each — see that migration's header.
+ */
+export const AUTO_DECISION_MIN_CONFIDENCE = 0.8;
+
 /** Server-side count of ALL staging rows eligible for high-confidence bulk
- * approve (≥90%, LLM-rejected excluded) — not limited to the current page. */
+ * approve (at or above the bar, LLM-rejected excluded) — not limited to the
+ * current page. Measured when the bar moved to 0.80: staging's highest
+ * confidence is 0.500, so this reads 0 and the lowered bar drains nothing
+ * there. */
 export function useHighConfCount(contentTypes: string[] | null, enabled: boolean) {
   const { user } = useAuth();
   return useQuery({
     queryKey: ['triage-high-conf-count', contentTypes],
     queryFn: async (): Promise<number> => {
-      const { data, error } = await untypedRpc<{ eligible: number }>('triage_bulk_approve_high_conf', {
-        p_min_confidence: 0.9,
-        p_content_types: contentTypes,
-        p_user_id: user?.id,
-        p_dry_run: true,
-      });
+      const { data, error } = await untypedRpc<{ eligible: number }>(
+        'triage_bulk_approve_high_conf',
+        {
+          p_min_confidence: AUTO_DECISION_MIN_CONFIDENCE,
+          p_content_types: contentTypes,
+          p_user_id: user?.id,
+          p_dry_run: true,
+        },
+      );
       if (error) throw error;
       return (data as { eligible: number })?.eligible ?? 0;
     },
@@ -84,13 +109,18 @@ export function useBulkApproveHighConf() {
   const qc = useQueryClient();
   const { user } = useAuth();
   return useMutation({
-    mutationFn: async (params: { contentTypes: string[] | null }): Promise<{ approved: number }> => {
-      const { data, error } = await untypedRpc<{ approved: number }>('triage_bulk_approve_high_conf', {
-        p_min_confidence: 0.9,
-        p_content_types: params.contentTypes,
-        p_user_id: user?.id,
-        p_dry_run: false,
-      });
+    mutationFn: async (params: {
+      contentTypes: string[] | null;
+    }): Promise<{ approved: number }> => {
+      const { data, error } = await untypedRpc<{ approved: number }>(
+        'triage_bulk_approve_high_conf',
+        {
+          p_min_confidence: AUTO_DECISION_MIN_CONFIDENCE,
+          p_content_types: params.contentTypes,
+          p_user_id: user?.id,
+          p_dry_run: false,
+        },
+      );
       if (error) throw error;
       return (data as { approved: number }) ?? { approved: 0 };
     },
@@ -102,7 +132,7 @@ export function useBulkApproveHighConf() {
   });
 }
 
-export type TriageActionType = 'approve' | 'reject' | 'skip' | 'flag' | 'reopen';
+export type TriageActionType = 'approve' | 'reject' | 'skip' | 'reopen';
 
 export function useTriageAction() {
   const qc = useQueryClient();
