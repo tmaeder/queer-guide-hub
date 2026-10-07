@@ -200,7 +200,7 @@ $fn$;
 comment on function public.commit_news_staging_batch(integer) is
   'Hourly drain for approved news staging rows. NOT news_commit_staging_batch, '
   'which is scoped to one DAG run via p_job_id and cannot revisit a row after '
-  'that run ends. Added 99991791316555 after 4,248 eligible rows — 360 of them '
+  'that run ends. Added 99991791361255 after 4,248 eligible rows — 360 of them '
   'human-approved, oldest 2026-05-12 — were found never published because the '
   'inbox had no drain to hand them to.';
 

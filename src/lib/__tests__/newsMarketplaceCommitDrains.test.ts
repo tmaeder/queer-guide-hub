@@ -1,5 +1,5 @@
 /**
- * Guards 99991791316555 — news and marketplace staging approvals now publish.
+ * Guards 99991791361255 — news and marketplace staging approvals now publish.
  *
  * A human approve in the staging inbox wrote `review_status='approved'` and
  * nothing else; publishing is a separate hourly drain cron per entity family,
@@ -16,7 +16,7 @@ import { describe, it, expect } from 'vitest';
 import { readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 
-const MIGRATION = '99991791316555_news_marketplace_commit_drains.sql';
+const MIGRATION = '99991791361255_news_marketplace_commit_drains.sql';
 const DIR = join(process.cwd(), 'supabase', 'migrations');
 
 const raw = readFileSync(join(DIR, MIGRATION), 'utf8');
@@ -43,7 +43,7 @@ const newsFn = sql.slice(
 
 describe('the file is what it claims', () => {
   it('exists exactly once', () => {
-    expect(readdirSync(DIR).filter((f) => f.startsWith('99991791316555_'))).toEqual([MIGRATION]);
+    expect(readdirSync(DIR).filter((f) => f.startsWith('99991791361255_'))).toEqual([MIGRATION]);
   });
 
   it('strips to a non-trivial body — control for every negative below', () => {
