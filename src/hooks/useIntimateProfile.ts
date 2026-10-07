@@ -1,9 +1,11 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { untypedRpc } from '@/integrations/supabase/untyped';
 import { useAuth } from '@/hooks/useAuth';
 import type { IntimateProfile, IntimateDiscoveryCard } from '@/lib/intimate/types';
 
-const SELECT = 'id, opted_in_at, consent_18plus_at, genitalia, genital_pictogram_key, size_cm, erection_angle_deg, body_pictogram_key, body_type, height_cm, age_band, role, into_tags, limits, safer_sex_prefs, discovery_city_id, discovery_active_until, moderation_status, last_active_at';
+const SELECT =
+  'id, opted_in_at, consent_18plus_at, genitalia, genital_pictogram_key, size_cm, erection_angle_deg, body_pictogram_key, body_type, height_cm, age_band, role, into_tags, limits, safer_sex_prefs, discovery_city_id, discovery_active_until, moderation_status, last_active_at';
 
 export function useMyIntimateProfile() {
   const { user } = useAuth();
@@ -46,12 +48,25 @@ export interface DiscoveryFilters {
   intoTags?: string[];
   ageBands?: string[];
   bodyTypes?: string[];
+  kinkItemSlugs?: string[];
 }
 
 export function useIntimateDiscovery(filters: DiscoveryFilters) {
   return useQuery({
     queryKey: ['intimate-discovery', filters],
     queryFn: async (): Promise<IntimateDiscoveryCard[]> => {
+      if (filters.kinkItemSlugs?.length) {
+        const { data, error } = await untypedRpc<IntimateDiscoveryCard[]>('intimate_discover', {
+          p_city_id: filters.cityId || null,
+          p_roles: filters.roles?.length ? filters.roles : null,
+          p_kink_item_slugs: filters.kinkItemSlugs,
+          p_age_bands: filters.ageBands?.length ? filters.ageBands : null,
+          p_body_types: filters.bodyTypes?.length ? filters.bodyTypes : null,
+          p_limit: 200,
+        });
+        if (error) throw error;
+        return data ?? [];
+      }
       let q = supabase.from('intimate_discovery_v').select('*').limit(200);
       if (filters.cityId) q = q.eq('discovery_city_id', filters.cityId);
       if (filters.roles?.length) q = q.overlaps('role', filters.roles);
@@ -92,10 +107,7 @@ export function useOptOutIntimateProfile() {
     mutationFn: async (opts: { hardDelete?: boolean } = {}) => {
       if (!user) throw new Error('not signed in');
       if (opts.hardDelete) {
-        const { error } = await supabase
-          .from('intimate_profiles')
-          .delete()
-          .eq('id', user.id);
+        const { error } = await supabase.from('intimate_profiles').delete().eq('id', user.id);
         if (error) throw error;
       } else {
         const { error } = await supabase
@@ -136,7 +148,8 @@ export function useMyIntimateText() {
     queryFn: async () => {
       const { data, error } = await supabase.rpc('intimate_get_my_text');
       if (error) throw error;
-      const row = (data ?? [])[0] as { about_intimate: string | null; looking_for: string | null } | undefined;
+      const row = (data ?? [])[0] as
+        { about_intimate: string | null; looking_for: string | null } | undefined;
       return row ?? { about_intimate: null, looking_for: null };
     },
   });
@@ -157,13 +170,15 @@ export function useSetIntimateText() {
       if (combined.trim()) {
         const { data: u } = await supabase.auth.getUser();
         if (u.user) {
-          supabase.functions.invoke('intimate-moderation', {
-            body: {
-              user_id: u.user.id,
-              about_intimate: args.aboutIntimate ?? '',
-              looking_for: args.lookingFor ?? '',
-            },
-          }).catch(() => undefined);
+          supabase.functions
+            .invoke('intimate-moderation', {
+              body: {
+                user_id: u.user.id,
+                about_intimate: args.aboutIntimate ?? '',
+                looking_for: args.lookingFor ?? '',
+              },
+            })
+            .catch(() => undefined);
         }
       }
     },

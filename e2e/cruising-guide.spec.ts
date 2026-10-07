@@ -99,6 +99,39 @@ test.describe('cruising guide', () => {
       'aria-selected',
       'true',
     );
+    const filters = page.getByRole('region', { name: 'Discovery filters' });
+    await expect(filters).toBeVisible();
+    await expect(filters.getByRole('button', { name: 'Role', exact: true })).toBeVisible();
+    await expect(filters.getByRole('button', { name: 'Into', exact: true })).toBeVisible();
+    await expect(filters.getByRole('button', { name: 'Age', exact: true })).toBeVisible();
+    await expect(filters.getByRole('button', { name: 'Body', exact: true })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Top', exact: true })).toHaveCount(0);
+
+    await filters.getByRole('button', { name: 'Role', exact: true }).click();
+    await page.getByRole('button', { name: 'Top', exact: true }).click();
+    await page.keyboard.press('Escape');
+    await expect(filters.getByRole('button', { name: 'Remove Top filter' })).toBeVisible();
+    await filters.getByRole('button', { name: 'Remove Top filter' }).click();
+
+    await filters.getByRole('button', { name: 'Into', exact: true }).click();
+    const interestSearch = page.getByRole('combobox', { name: 'Search interests' });
+    await expect(interestSearch).toBeVisible();
+    await interestSearch.fill('rope');
+    await page.getByRole('option', { name: 'Rope bondage / shibari', exact: true }).click();
+    await page.keyboard.press('Escape');
+    await expect(
+      filters.getByRole('button', { name: 'Remove Rope bondage / shibari filter' }),
+    ).toBeVisible();
+    await filters.getByRole('button', { name: 'Remove Rope bondage / shibari filter' }).click();
+
+    await filters.getByRole('button', { name: 'Age', exact: true }).click();
+    await expect(page.getByRole('slider', { name: 'Minimum age band' })).toBeVisible();
+    await expect(page.getByRole('slider', { name: 'Maximum age band' })).toBeVisible();
+    await page.getByRole('button', { name: 'Any age' }).click();
+
+    await filters.getByRole('button', { name: 'Body', exact: true }).click();
+    await expect(page.getByRole('button', { name: 'Bear', exact: true })).toBeVisible();
+    await page.keyboard.press('Escape');
     await expect(page.getByText('Something went wrong')).toHaveCount(0);
   });
 });
