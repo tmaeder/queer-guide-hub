@@ -12,8 +12,13 @@ vi.mock('@/hooks/useAuth', () => ({ useAuth: () => ({ user: mockUser, signOut: v
 vi.mock('@/hooks/useProfile', () => ({ useProfile: () => ({ profile: null }) }));
 vi.mock('@/hooks/useAdminRoles', () => ({ useAdminRoles: () => mockRoles }));
 vi.mock('@/hooks/useInboxBadge', () => ({ useInboxBadge: () => 0 }));
+let mockFriendsOnline: number | null = null;
+vi.mock('@/hooks/useFriendIds', () => ({ useFriendsOnlineCount: () => mockFriendsOnline }));
 vi.mock('react-i18next', () => ({
-  useTranslation: () => ({ t: (k: string, fallback?: string) => fallback ?? k }),
+  useTranslation: () => ({
+    t: (k: string, fallback?: string, opts?: { count?: number }) =>
+      (fallback ?? k).replace('{{count}}', String(opts?.count ?? '')),
+  }),
 }));
 // Leaf controls pull on react-query / theme / currency providers — stub them.
 vi.mock('@/components/i18n/LanguageSwitcher', () => ({
@@ -44,6 +49,7 @@ describe('MobileNavSheet', () => {
   beforeEach(() => {
     mockUser = null;
     mockRoles = { isAdmin: false, isModerator: false };
+    mockFriendsOnline = null;
   });
 
   it('renders nothing when closed', () => {
@@ -92,5 +98,18 @@ describe('MobileNavSheet', () => {
     const link = document.querySelector('a[href="/venues"]') as HTMLAnchorElement;
     fireEvent.click(link);
     expect(onOpenChange).toHaveBeenCalledWith(false);
+  });
+
+  it('shows a friends row with the online count for signed-in users only', () => {
+    renderSheet(true);
+    expect(document.querySelector('a[href="/community/friends"]')).toBeNull();
+
+    mockUser = { id: 'u-1', email: 'a@b.co' };
+    mockFriendsOnline = 3;
+    renderSheet(true);
+    const row = document.querySelector('a[href="/community/friends"]');
+    expect(row).not.toBeNull();
+    expect(row!.textContent).toContain('Friends');
+    expect(row!.textContent).toContain('3 online');
   });
 });
