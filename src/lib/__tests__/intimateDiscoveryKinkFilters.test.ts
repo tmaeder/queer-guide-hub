@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
 const migration = readFileSync(
-  resolve('supabase/migrations/99991791350000_intimate_discovery_kink_filters.sql'),
+  resolve('supabase/migrations/99991791359767_intimate_discovery_kink_filters.sql'),
   'utf8',
 );
 
