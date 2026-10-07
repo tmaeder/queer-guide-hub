@@ -469,80 +469,74 @@ async function processForwardRepair(
 }
 
 // ── Reverse geocode: coords → city ──────────────────────────────────────────
+//
+// The work list and the write both live in SQL (99991791394382):
+//   venues_due_for_reverse_city — visit-once: a venue leaves the list only when
+//     it carries enrichment_status.reverse_city, written on a DEFINITIVE outcome.
+//   venue_apply_reverse_city    — links the city only if it is live, within
+//     100 km of the venue and in the venue's own country; records why otherwise.
+// A transport error (429, 5xx, network) writes nothing and ends the batch, so
+// "the geocoder was unreachable" is never stamped as "the geocoder had no city".
+// The old loop selected `city_id is null order by id` with no visit record and
+// re-asked every unplaceable venue on every run, and linked whatever city the
+// resolver returned without comparing it to the coordinates that asked.
 
 async function processReverse(
   supabase: ReturnType<typeof getServiceClient>,
   batchSize: number,
 ): Promise<{ results: VenueResult[]; remaining: number }> {
-  const { data: venues, error } = await supabase
-    .from('venues')
-    .select('id, latitude, longitude, city, country, country_id')
-    .is('city_id', null)
-    .is('duplicate_of_id', null)
-    .not('latitude', 'is', null)
-    .not('longitude', 'is', null)
-    .order('id')
-    .limit(batchSize)
-
+  const startedAt = Date.now()
+  const { data: venues, error } = await supabase.rpc('venues_due_for_reverse_city', { p_limit: batchSize })
   if (error) throw error
-  if (!venues?.length) return { results: [], remaining: 0 }
+  const rows = (venues ?? []) as Array<{ id: string; latitude: number; longitude: number }>
+  if (!rows.length) return { results: [], remaining: 0 }
+
+  const results: VenueResult[] = []
+
+  for (const venue of rows) {
+    if (Date.now() - startedAt > MAX_RUN_MS) break
+    let transportError: string | null = null
+    try {
+      const url = `${NOMINATIM_BASE}/reverse?format=json&lat=${venue.latitude}&lon=${venue.longitude}&zoom=10&addressdetails=1`
+      const res = await fetch(url, { headers: nominatimHeaders() })
+      if (!res.ok) {
+        transportError = `nominatim_error_${res.status}`
+      } else {
+        const data = await res.json() as NominatimResult
+        const cityName = data.address ? extractCity(data.address) : null
+        const countryCode = data.address?.country_code?.toUpperCase() || null
+        const cityMatch = cityName
+          ? await matchCity(supabase, cityName, countryCode, { lat: Number(venue.latitude), lon: Number(venue.longitude) })
+          : null
+        const { data: status, error: applyErr } = await supabase.rpc('venue_apply_reverse_city', {
+          p_venue_id: venue.id,
+          p_city_name: cityName,
+          p_city_id: cityMatch?.id ?? null,
+          p_country_code: countryCode,
+        })
+        if (applyErr) throw applyErr
+        results.push({ id: venue.id, status: String(status), city_name: cityName || undefined, city_id: cityMatch?.id })
+      }
+    } catch (err) {
+      transportError = `error: ${(err as Error).message}`
+    }
+    if (transportError) {
+      results.push({ id: venue.id, status: transportError })
+      break
+    }
+    await sleep(SLEEP_MS)
+  }
 
   const { count } = await supabase
     .from('venues')
     .select('id', { count: 'exact', head: true })
     .is('city_id', null)
     .is('duplicate_of_id', null)
+    .is('closed_at', null)
     .not('latitude', 'is', null)
-    .not('longitude', 'is', null)
+    .is('enrichment_status->reverse_city', null)
 
-  const results: VenueResult[] = []
-
-  for (const venue of venues) {
-    try {
-      const url = `${NOMINATIM_BASE}/reverse?format=json&lat=${venue.latitude}&lon=${venue.longitude}&zoom=10&addressdetails=1`
-      const res = await fetch(url, { headers: nominatimHeaders() })
-      if (!res.ok) {
-        results.push({ id: venue.id, status: `nominatim_error_${res.status}` })
-        await sleep(SLEEP_MS)
-        continue
-      }
-
-      const data = await res.json() as NominatimResult
-      if (!data.address) {
-        results.push({ id: venue.id, status: 'no_address' })
-        await sleep(SLEEP_MS)
-        continue
-      }
-
-      const cityName = extractCity(data.address)
-      const countryCode = data.address.country_code?.toUpperCase() || null
-
-      const update: Record<string, unknown> = { updated_at: new Date().toISOString() }
-
-      if (cityName) {
-        if (!venue.city) update.city = cityName
-        const cityMatch = await matchCity(supabase, cityName, countryCode, { lat: Number(venue.latitude), lon: Number(venue.longitude) })
-        if (cityMatch) {
-          update.city_id = cityMatch.id
-          if (!venue.country_id) update.country_id = cityMatch.country_id
-        }
-      }
-
-      if (!venue.country_id && countryCode) {
-        const cid = await resolveCountryId(supabase, countryCode)
-        if (cid) update.country_id = cid
-      }
-      if (!venue.country && countryCode) update.country = countryCode
-
-      await supabase.from('venues').update(update).eq('id', venue.id)
-      results.push({ id: venue.id, status: update.city_id ? 'matched' : cityName ? 'city_text_only' : 'no_city_in_response', city_name: cityName || undefined })
-    } catch (err) {
-      results.push({ id: venue.id, status: `error: ${(err as Error).message}` })
-    }
-    await sleep(SLEEP_MS)
-  }
-
-  return { results, remaining: (count || 0) - results.length }
+  return { results, remaining: count ?? 0 }
 }
 
 // ── Forward geocode: address → coords + city ────────────────────────────────
@@ -1273,13 +1267,14 @@ Deno.serve(async (req) => {
 
     switch (mode) {
       case 'reverse':
+      case 'reverse_city':
         result = await processReverse(supabase, batchSize)
         break
       case 'forward':
         result = await processForward(supabase, batchSize)
         break
       default:
-        return errorResponse(`Unknown mode: ${mode}. Use "reverse", "forward", "forward_audit", "forward_repair" or "postal".`, 400, req)
+        return errorResponse(`Unknown mode: ${mode}. Use "reverse", "reverse_city", "forward", "forward_audit", "forward_repair" or "postal".`, 400, req)
     }
 
     if (!result.results.length) {
@@ -1294,7 +1289,7 @@ Deno.serve(async (req) => {
     // first live run: processed 25, matched 0, geocoded 0, skipped 12, which
     // leaves 13 rows unaccounted for and reads as "this job does nothing".
     const geocoded = result.results.filter(r => ['geocoded_no_city_match', 'coords_only', 'city_text_only', 'coords_filled'].includes(r.status)).length
-    const skipped = result.results.filter(r => ['no_results', 'no_address', 'no_city_in_response'].includes(r.status)).length
+    const skipped = result.results.filter(r => ['no_results', 'no_address', 'no_city_in_response', 'no_city_match', 'already_linked'].includes(r.status)).length
     const errors = result.results.filter(r => r.status.startsWith('error') || r.status.startsWith('nominatim_error')).length
     // Refusals are their OWN number, never folded into `skipped`. A row the
     // geocoder contradicted and a row the geocoder never heard of are different
