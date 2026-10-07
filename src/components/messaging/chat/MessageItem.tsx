@@ -299,7 +299,7 @@ export const MessageItem = ({
                   key={emoji}
                   type="button"
                   onClick={() => react(emoji)}
-                  className="flex h-7 w-7 items-center justify-center rounded-badge text-sm transition-colors hover:bg-muted"
+                  className="flex h-7 w-7 min-h-11 min-w-11 items-center justify-center rounded-badge text-sm transition-colors hover:bg-muted"
                 >
                   {emoji}
                 </button>

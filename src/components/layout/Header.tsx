@@ -79,7 +79,11 @@ export function Header() {
 
   // ── Brand + right action cluster (shared by mobile row & desktop grid) ───
   const brand = (
-    <Link to="/" aria-label={siteName} className="flex items-center gap-2.5 shrink-0 no-underline">
+    <Link
+      to="/"
+      aria-label={siteName}
+      className="flex min-h-11 items-center gap-2.5 shrink-0 no-underline"
+    >
       {branding.logoUrl ? (
         // /admin/design custom-logo escape hatch keeps the img branch.
         <>
@@ -128,7 +132,7 @@ export function Header() {
       onClick={() => (user ? navigate(submitCta.route) : setAuthDialogOpen(true))}
       aria-label={contributeLabel}
       title={contributeLabel}
-      className="h-10 w-10 shrink-0 gap-2 p-0 lg:w-auto lg:px-4"
+      className="h-11 w-11 shrink-0 gap-2 p-0 lg:w-auto lg:px-4"
     >
       <TransitIcon name="add-station" size={20} />
       <span className="hidden lg:inline">{contributeLabel}</span>
@@ -151,7 +155,7 @@ export function Header() {
             <Button
               variant="ghost"
               size="sm"
-              style={{ height: 40, width: 40 }}
+              style={{ height: 44, width: 44 }}
               className="p-0"
               aria-label={t('header.openUserMenu', 'Open user menu')}
             >

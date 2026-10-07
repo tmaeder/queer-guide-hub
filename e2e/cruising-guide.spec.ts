@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test';
+import sharp from 'sharp';
 
 const hasAuth = Boolean(process.env.E2E_ADMIN_EMAIL && process.env.E2E_ADMIN_PASSWORD);
 
@@ -30,13 +31,46 @@ test.describe('cruising guide', () => {
       );
     });
 
+    const mapErrors: string[] = [];
+    page.on('console', (message) => {
+      if (message.type() === 'error' && /map|webgl|worker|tile/i.test(message.text())) {
+        mapErrors.push(message.text());
+      }
+    });
+
+    const firstTile = page.waitForResponse(
+      (response) => response.url().includes('/planet/') && response.url().endsWith('.mvt'),
+    );
     await page.goto('/cruising');
 
     await expect(page).not.toHaveURL(/\/auth(?:[/?#]|$)/);
     await expect(page.getByRole('heading', { name: 'Queer cruising map' })).toBeVisible();
-    await expect(page.getByLabel('Interactive cruising map')).toHaveCount(1);
+    const interactiveMap = page.getByLabel('Interactive cruising map');
+    await expect(interactiveMap).toHaveCount(1);
     await expect(page.getByRole('region', { name: 'Map' })).toBeVisible();
     await expect(page.getByRole('button', { name: 'Zoom in' })).toBeVisible();
+    await expect(interactiveMap).toHaveAttribute('data-map-state', 'ready', { timeout: 20_000 });
+    await expect
+      .poll(async () => Number((await interactiveMap.getAttribute('data-map-spots')) ?? 0), {
+        message: 'Cruising map did not receive any viewport spots',
+        timeout: 30_000,
+      })
+      .toBeGreaterThan(0);
+
+    const tileResponse = await firstTile;
+    expect(tileResponse.status(), await tileResponse.text()).toBe(200);
+    const canvas = page.locator('canvas.maplibregl-canvas');
+    await expect(canvas).toBeVisible();
+    await expect
+      .poll(
+        async () => {
+          const stats = await sharp(await canvas.screenshot()).stats();
+          return Math.max(...stats.channels.slice(0, 3).map((channel) => channel.stdev));
+        },
+        { message: 'Map canvas stayed visually blank', timeout: 20_000 },
+      )
+      .toBeGreaterThan(4);
+    expect(mapErrors).toEqual([]);
 
     const layers = page.getByRole('group', { name: 'Map layers' });
     await expect(layers.getByRole('button', { name: 'Both' })).toBeVisible();
