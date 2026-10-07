@@ -10,6 +10,11 @@ import {
   postalContradicts,
   postalJobOutcome,
   stampGeocode,
+  houseNumberContradicts,
+  normPlace,
+  photonToNominatim,
+  placeContradicts,
+  rowHouseNumber,
   type GeoVenue,
 } from './geocode-guard.ts'
 
@@ -190,4 +195,53 @@ Deno.test('postalJobOutcome: an empty answer parks rather than deleting', () => 
     assertEquals(out.disposition, 'park')
     assertEquals(out.filled, false)
   }
+})
+
+
+// ── Photon guards — fixtures are the live answers of 2026-10-07 ──────────────
+
+Deno.test('rowHouseNumber reads the street number from the first clause that has one', () => {
+  assertEquals(rowHouseNumber('2496 Riva Road, Annapolis'), 2496)
+  assertEquals(rowHouseNumber('Möhnestraße 59, 59755 Arnsberg'), 59)
+  assertEquals(rowHouseNumber('Club X, 12 Main St'), 12)
+  assertEquals(rowHouseNumber('Rue Alberti, Nice'), null)
+})
+
+Deno.test('houseNumberContradicts refuses the fuzzy neighbour (2525 for 2496)', () => {
+  assert(houseNumberContradicts('2496 Riva Road, Annapolis', '2525'))
+  assertFalse(houseNumberContradicts('Storegade 11, Vordingborg', '11B'))
+  // A street-level hit when the row names a number is refused too.
+  assert(houseNumberContradicts('2496 Riva Road, Annapolis', undefined))
+  // No number in the row: nothing to contradict.
+  assertFalse(houseNumberContradicts('Rue Alberti, Nice', undefined))
+})
+
+Deno.test('placeContradicts refuses a hit in another town (Stege for Vordingborg)', () => {
+  const v = venue({ address: 'Storegade 11', city: 'Vordingborg' })
+  assert(placeContradicts(v, ['Stege', 'Nymark']))
+  const a = venue({ address: '2496 Riva Road', city: 'Annapolis' })
+  assertFalse(placeContradicts(a, ['Annapolis', 'Anne Arundel', 'Oak Court']))
+  // Diacritics do not decide: Zürich/Zurich agree.
+  assertFalse(placeContradicts(venue({ address: 'Sihlquai 240', city: 'Zürich' }), ['Zurich']))
+  // A hit that names no place cannot be corroborated.
+  assert(placeContradicts(v, []))
+  // Word boundaries: "Stege" must not match inside "Storegade".
+  assert(placeContradicts(venue({ address: 'Storegade 11', city: 'Vordingborg' }), ['Store']))
+})
+
+Deno.test('photonToNominatim maps Photon onto the shape the guards read', () => {
+  const hit = photonToNominatim({
+    geometry: { coordinates: [12.284003, 54.983458] },
+    properties: { city: 'Stege', type: 'house', osm_key: 'place', osm_value: 'house', countrycode: 'DK', postcode: '4780', housenumber: '11B', locality: 'Nymark' },
+  })
+  assertEquals(hit.lat, '54.983458')
+  assertEquals(hit.lon, '12.284003')
+  assertEquals(hit.address.country_code, 'dk')
+  assertEquals(hit.address.city, 'Stege')
+  assertEquals(hit.housenumber, '11B')
+  assertEquals(hit.place_names, ['Stege', 'Nymark'])
+  // Photon's settlement layer is a locality fallback, exactly like Nominatim's.
+  assert(isLocalityFallback(photonToNominatim({ properties: { type: 'city', name: 'Puerto Vallarta', osm_key: 'place', osm_value: 'city' } })))
+  assert(isLocalityFallback(photonToNominatim({ properties: { type: 'county', osm_key: 'boundary', osm_value: 'administrative' } })))
+  assertEquals(normPlace('Zürich-Altstadt'), 'zurich altstadt')
 })
