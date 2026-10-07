@@ -30,12 +30,12 @@ import { join } from 'node:path';
 const DIR = join(process.cwd(), 'supabase', 'migrations');
 const SRC = process.cwd();
 
-const DEFINITION = '99991791361414_tag_workbook_definition.sql';
-const ANSWERS = '99991791361449_tag_workbook_answers.sql';
-const COMPARE = '99991791361479_workbook_compare_rpcs.sql';
-const EXPORT = '99991791361504_workbook_gdpr_export.sql';
-const TAXONOMY = '99991791362914_cnc_negotiation_taxonomy.sql';
-const SEED = '99991791362936_workbook_content_seed.sql';
+const DEFINITION = '99991791395842_tag_workbook_definition.sql';
+const ANSWERS = '99991791395932_tag_workbook_answers.sql';
+const COMPARE = '99991791395975_workbook_compare_rpcs.sql';
+const EXPORT = '99991791396229_workbook_gdpr_export.sql';
+const TAXONOMY = '99991791396273_cnc_negotiation_taxonomy.sql';
+const SEED = '99991791396295_workbook_content_seed.sql';
 
 const strip = (raw: string) =>
   raw
@@ -418,7 +418,7 @@ describe('the content seed', () => {
     // Without it the junction trigger's follow-on UPDATE of is_adult hits
     // log_unified_tag_change's refusal on a human_reviewed row.
     expect(sql).toContain("set_config('app.actor', 'migration:");
-    expect(sql).toContain('99991791362936_workbook_content_seed');
+    expect(sql).toContain('99991791396295_workbook_content_seed');
   });
 
   it('stamps human_reviewed so deprecate_unused_tags cannot take the new term', () => {

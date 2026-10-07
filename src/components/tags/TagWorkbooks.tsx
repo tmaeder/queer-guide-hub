@@ -55,9 +55,12 @@ function WorkbookRow({ wb, locked }: { wb: TagWorkbook; locked: boolean }) {
 
   const inner = (
     <>
-      {/* text-title is RANK 4 and is Space Grotesk 700, not Anton — `font-display`
-          carries hero / display / headline only (docs/design-system/README.md,
-          enforced by src/test/__tests__/rankFourFace.test.ts). */}
+      {/* Rank 4 is Space Grotesk 700, never Anton: the display face carries
+          hero / display / headline only (docs/design-system/README.md, enforced
+          by src/test/__tests__/rankFourFace.test.ts).
+          That guard is a line-wise regex over raw source, so this note
+          deliberately does not put the two class names next to each other —
+          a reflow that made them adjacent would false-positive on a comment. */}
       <h3 className="text-title font-bold leading-tight">{wb.title ?? wb.slug}</h3>
       {wb.dek && <p className="mt-2 text-sm text-muted-foreground">{wb.dek}</p>}
       {meta}

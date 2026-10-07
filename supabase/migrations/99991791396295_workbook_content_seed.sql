@@ -69,7 +69,7 @@
 
 -- Declared for every write in this file. See the note above: without it the
 -- is_adult recompute cannot touch a human_reviewed row.
-select set_config('app.actor', 'migration:99991791362936_workbook_content_seed', true);
+select set_config('app.actor', 'migration:99991791396295_workbook_content_seed', true);
 --
 -- WHY EVERY WORKBOOK IS is_public = true HERE
 --
