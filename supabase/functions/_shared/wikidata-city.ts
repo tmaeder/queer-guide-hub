@@ -693,3 +693,75 @@ export function parseCityNames(
 
   return out.slice(0, MAX_CITY_ALIASES)
 }
+
+// ---------------------------------------------------------------- native name
+//
+// cities.name_local: the city's name in the official language of ITS OWN
+// country, in the original script (München, Warszawa, 東京). English stays in
+// cities.name.
+//
+// Source order, and why:
+//   1. P1705 "native label". Monolingual text whose own language tag says what
+//      language it is in, so there is nothing to infer. Read through the same
+//      rank/end-time discipline as every other statement here (a deprecated or
+//      ended P1705 is how Wikidata retracts a former name). Only values whose
+//      tag is an official language of the row's country are eligible -- a
+//      P1705 in a minority or historic language is not "the local name" for
+//      this platform's purpose. Preferred rank first, then statement order:
+//      Brussels carries fr and nl and both are Belgian languages, so the order
+//      Wikidata gives is kept rather than re-sorted by countries.languages.
+//   2. Exactly ONE eligible-or-not P1705 when the country list matched none.
+//      `countries.languages` is coarse (India lists Hindi and English; Mumbai's
+//      P1705 is Marathi), and a single native label is still the place's own
+//      name. Two or more unmatched values are ambiguous and fall through.
+//   3. The entity's LABEL in the country's languages, in the country's order.
+//   4. null. A missing endonym is honest; a guessed one is a wrong fact.
+
+export interface CityNativeName {
+  name: string
+  lang: string
+  source: 'P1705' | 'label'
+}
+
+function primarySubtag(tag: string): string {
+  return tag.toLowerCase().split('-')[0]
+}
+
+function cleanNative(raw: unknown): string | null {
+  if (typeof raw !== 'string') return null
+  const s = raw.replace(/\s+/g, ' ').trim()
+  if (!s || s.length > 200) return null
+  if (/https?:\/\//i.test(s)) return null
+  return s
+}
+
+export function parseCityNativeName(
+  claims: Claims,
+  labels: WdLabels | undefined,
+  countryLangCodes: readonly string[],
+): CityNativeName | null {
+  const wanted = countryLangCodes.map(primarySubtag)
+
+  const live = currentStatements(claims.P1705)
+  const ordered = [
+    ...live.filter(s => s.rank === 'preferred'),
+    ...live.filter(s => s.rank !== 'preferred'),
+  ]
+  const natives: Array<{ name: string; lang: string }> = []
+  for (const st of ordered) {
+    const v = valueOf(st.mainsnak) as { text?: string; language?: string } | undefined
+    const name = cleanNative(v?.text)
+    const lang = typeof v?.language === 'string' ? v.language.toLowerCase() : ''
+    if (name && lang) natives.push({ name, lang })
+  }
+
+  const matched = natives.find(n => wanted.includes(primarySubtag(n.lang)))
+  if (matched) return { ...matched, source: 'P1705' }
+  if (natives.length === 1) return { ...natives[0], source: 'P1705' }
+
+  for (const code of countryLangCodes) {
+    const name = cleanNative(labels?.[code]?.value)
+    if (name) return { name, lang: code.toLowerCase(), source: 'label' }
+  }
+  return null
+}
