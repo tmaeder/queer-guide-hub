@@ -18,7 +18,8 @@ import {
   type CruisingPresenceArea,
   type CruisingSpot,
 } from '@/hooks/useCruisingGuide';
-import { CruisingMap, type CruisingLayer } from '@/components/cruising/CruisingMap';
+import type { CruisingLayer } from '@/components/cruising/CruisingMap';
+import { CruisingMapPanel } from '@/components/cruising/CruisingMapPanel';
 import { CruisingPresenceControl } from '@/components/cruising/CruisingPresenceControl';
 import IntimateDiscovery from '@/pages/intimate/IntimateDiscovery';
 import { cn } from '@/lib/utils';
@@ -61,7 +62,11 @@ export default function Cruising() {
 
   const enabled = !!user;
   const listQuery = useCruisingSpotsList(enabled, deferredSearch, page, PAGE_SIZE);
-  const mapQuery = useCruisingMapSpots(enabled && layer !== 'people', deferredSearch, mapBounds);
+  const mapQuery = useCruisingMapSpots(
+    enabled && layer !== 'people' && mapBounds !== null,
+    deferredSearch,
+    mapBounds,
+  );
   const presenceQuery = useCruisingPresenceAreas(
     enabled && !!intimateProfile?.opted_in_at && layer !== 'spots',
   );
@@ -196,7 +201,7 @@ export default function Cruising() {
       <PageContainer className="pt-0">
         <div className="overflow-hidden border-y border-border-hairline lg:grid lg:min-h-[42rem] lg:grid-cols-[minmax(0,1.6fr)_minmax(22rem,.8fr)]">
           <div className="h-[56dvh] min-h-[28rem] lg:h-[calc(100dvh-13rem)] lg:min-h-[42rem]">
-            <CruisingMap
+            <CruisingMapPanel
               spots={mappedSpots}
               presenceAreas={presenceAreas}
               layer={layer}
