@@ -71,7 +71,7 @@ export function PrideSpotlight({ event, onDismiss, onOpenMap }: PrideSpotlightPr
           type="button"
           onClick={onDismiss}
           aria-label={t('pride.spotlight.dismiss')}
-          className="absolute right-3 top-3 z-10 inline-flex items-center justify-center size-8 min-h-0 min-w-0 rounded-element hover:bg-muted"
+          className="absolute right-3 top-3 z-10 inline-flex size-11 items-center justify-center rounded-element hover:bg-muted"
         >
           <X className="size-4" />
         </button>

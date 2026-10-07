@@ -8,6 +8,8 @@ import { renderWithProviders } from '@/test/test-utils';
 const state = vi.hoisted(() => ({
   front: [] as unknown[],
   loading: false,
+  error: null as string | null,
+  refetch: vi.fn(),
   storyCounts: new Map<string, { slug: string; count: number }>(),
   user: null as { id: string } | null,
   frontCalls: 0,
@@ -18,7 +20,12 @@ const state = vi.hoisted(() => ({
 vi.mock('@/hooks/useNewsFront', () => ({
   useNewsFront: () => {
     state.frontCalls += 1;
-    return { articles: state.front, loading: state.loading, error: null };
+    return {
+      articles: state.front,
+      loading: state.loading,
+      error: state.error,
+      refetch: state.refetch,
+    };
   },
   useForYouNews: () => ({ articles: [], loading: false, error: null }),
 }));
@@ -61,6 +68,8 @@ const article = (i: number, over: Record<string, unknown> = {}) => ({
 beforeEach(() => {
   state.front = [];
   state.loading = false;
+  state.error = null;
+  state.refetch.mockReset();
   state.storyCounts = new Map();
   state.user = null;
   state.frontCalls = 0;
@@ -68,9 +77,17 @@ beforeEach(() => {
 });
 
 describe('NewsMagazine', () => {
-  it('self-hides when there is nothing to show', () => {
-    const { container } = renderWithProviders(<NewsMagazine />);
-    expect(container.querySelector('h2')).toBeNull();
+  it('shows an explicit empty state when there is nothing to show', () => {
+    renderWithProviders(<NewsMagazine />);
+    expect(screen.getByRole('heading', { name: 'Latest News' })).toBeInTheDocument();
+    expect(screen.getByText('No current stories are available right now.')).toBeInTheDocument();
+  });
+
+  it('shows a retry action when the news query fails', () => {
+    state.error = 'offline';
+    renderWithProviders(<NewsMagazine />);
+    fireEvent.click(screen.getByRole('button', { name: 'Try again' }));
+    expect(state.refetch).toHaveBeenCalledTimes(1);
   });
 
   it('renders the band when the front has stories', () => {

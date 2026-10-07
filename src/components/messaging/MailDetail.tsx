@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { TrackLoader } from '@/components/transit/TrackLoader';
 import { useTranslation } from 'react-i18next';
-import {Reply, Send, X } from 'lucide-react';
+import { Reply, Send, X } from 'lucide-react';
 import { useMailbox, type MailboxEmail } from '@/hooks/useMailbox';
 import { EmailView } from '@/components/inbox/EmailView';
 import { Button } from '@/components/ui/button';
@@ -88,7 +88,7 @@ export function MailDetail({ emailId }: { emailId: string }) {
               <Button
                 variant="ghost"
                 size="sm"
-                className="min-h-0 p-2"
+                className="p-2"
                 onClick={() => setReplyOpen(false)}
                 aria-label={t('common.close', { defaultValue: 'Close' })}
               >

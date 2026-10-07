@@ -24,7 +24,7 @@ declare global {
 interface Props {
   children: ReactNode;
   /** Optional custom fallback UI */
-  fallback?: ReactNode;
+  fallback?: ReactNode | ((state: { error: Error | null; onRetry: () => void }) => ReactNode);
   /** Identifier for which section this boundary protects (for logging) */
   section?: string;
 }
@@ -89,7 +89,9 @@ export class ErrorBoundary extends Component<Props, State> {
     if (this.state.hasError) {
       // Respect an explicitly-provided fallback, including null (render nothing).
       if ('fallback' in this.props) {
-        return this.props.fallback;
+        return typeof this.props.fallback === 'function'
+          ? this.props.fallback({ error: this.state.error, onRetry: this.handleRetry })
+          : this.props.fallback;
       }
 
       return <ErrorFallback error={this.state.error} onRetry={this.handleRetry} />;

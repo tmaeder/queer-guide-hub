@@ -117,7 +117,7 @@ export function MobileNavSheet({ open, onOpenChange }: MobileNavSheetProps) {
                   to={`/user/${user.id}`}
                   onClick={close}
                   aria-label={t('header.userMenu.viewProfile', 'View public profile')}
-                  className="flex h-10 w-10 items-center justify-center rounded-element text-muted-foreground no-underline hover:bg-muted hover:text-foreground"
+                  className="flex h-11 w-11 items-center justify-center rounded-element text-muted-foreground no-underline hover:bg-muted hover:text-foreground"
                 >
                   <UserRound size={18} />
                 </LocalizedLink>
