@@ -1,6 +1,6 @@
 -- English name in cities.name: 22 renames + 2 merges, each verified against
 -- Wikidata. The local-language name goes to cities.name_local
--- (99991791356589), which the link-phase backfill fills; this file only fixes
+-- (99991791360464), which the link-phase backfill fills; this file only fixes
 -- `name`.
 --
 -- HOW THE LIST WAS BUILT (2026-10-06/07). Every live city was checked against
@@ -55,7 +55,7 @@ DECLARE
   v_renamed int := 0;
   v_skipped text[] := '{}';
 BEGIN
-  PERFORM set_config('app.actor', 'migration:99991791356591_cities_anglicize_names', true);
+  PERFORM set_config('app.actor', 'migration:99991791360483_cities_anglicize_names', true);
 
   CREATE TEMP TABLE _anglicize (
     id uuid PRIMARY KEY, old_name text NOT NULL, new_name text NOT NULL, qid text NOT NULL
@@ -112,7 +112,7 @@ BEGIN
                   || jsonb_build_object('anglicized', jsonb_build_object(
                        'from', r.old_name, 'to', r.new_name, 'qid', r.qid,
                        'source', 'wikidata:label_en=enwiki_title',
-                       'by', 'migration:99991791356591', 'at', now()))),
+                       'by', 'migration:99991791360483', 'at', now()))),
            updated_at = now()
      WHERE id = r.id;
 

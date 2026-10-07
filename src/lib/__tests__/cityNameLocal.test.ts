@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 /**
- * Guards `99991791356589_cities_name_local.sql` and the link-phase writer.
+ * Guards `99991791360464_cities_name_local.sql` and the link-phase writer.
  *
  * cities.name_local holds the city's name in its country's own language
  * (München for Munich). The column has to exist in SIX objects at once —
@@ -19,7 +19,7 @@ import { join } from 'node:path';
 
 const ROOT = process.cwd();
 const raw = readFileSync(
-  join(ROOT, 'supabase', 'migrations', '99991791356589_cities_name_local.sql'),
+  join(ROOT, 'supabase', 'migrations', '99991791360464_cities_name_local.sql'),
   'utf8',
 );
 const sql = raw

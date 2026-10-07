@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // One-shot driver: fill cities.name_local / name_local_lang for every city that
 // already carries a wikidata_qid, by posting explicit city_ids to the
-// city-factual-backfill link phase (migration 99991791356589_cities_name_local).
+// city-factual-backfill link phase (migration 99991791360464_cities_name_local).
 //
 // The link phase reads P1705 / the label in the country's official language
 // from the entity it already fetches, inside the class + coordinate gated
