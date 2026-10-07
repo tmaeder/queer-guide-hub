@@ -71,4 +71,12 @@ describe('venue reverse-city backfill', () => {
     expect(loop).toContain('if (Date.now() - startedAt > MAX_RUN_MS) break');
     expect(fn).toMatch(/case 'reverse':\s+case 'reverse_city':/);
   });
+
+  it('asks Photon, not Nominatim (edge egress gets 403 from Nominatim since 2026-09-24)', () => {
+    expect(loop).toContain('await photonReverseCity(');
+    expect(loop).not.toContain('NOMINATIM_BASE');
+    const photon = fn.slice(fn.indexOf('async function photonReverseCity'), fn.indexOf('async function processReverse'));
+    expect(photon).toContain("if (!res.ok) throw new Error(`photon_${res.status}`)");
+    expect(photon).not.toMatch(/p\.(district|locality)/);
+  });
 });
