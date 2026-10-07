@@ -255,9 +255,28 @@ export function CruisingMap({
 
   return (
     <div className="relative h-full min-h-[26rem] overflow-hidden bg-surface-container">
+      {/* `h-full w-full` is LOAD-BEARING, not belt-and-braces alongside
+          `inset-0`. MapLibre adds `.maplibregl-map` to this element, and
+          `maplibre-gl.css` sets `.maplibregl-map { position: relative }`
+          UNLAYERED — Tailwind v4 emits its utilities inside
+          `@layer utilities`, and an unlayered rule beats a layered one at any
+          specificity. So `absolute` loses, `inset-0` stops applying to a
+          `position: relative` box, and the element computes to height 0: the
+          map mounts, the canvas exists at MapLibre's 300px fallback, and the
+          page shows an empty grey panel with no basemap and no pins.
+
+          Measured on prod at both 390px and 1440px: `.maplibregl-map` resolved
+          to `position: relative`, `height: 0px` inside a 692px parent.
+
+          Every other map in this codebase already survives that rule by
+          carrying its own height — `ExploreMap` ships `absolute inset-0 w-full
+          h-full`, `EntityMap` and `PersonalitiesMap` use inline
+          `style={{ height }}`, which beats an unlayered rule outright. This
+          was the one container with no height of its own. Matching
+          ExploreMap's class list rather than inventing a third spelling. */}
       <div
         ref={containerRef}
-        className="absolute inset-0"
+        className="absolute inset-0 h-full w-full"
         aria-label={t('cruising.map.ariaLabel')}
         data-map-state={mapReady ? 'ready' : 'loading'}
         data-map-spots={spotGeoJson.features.length}
