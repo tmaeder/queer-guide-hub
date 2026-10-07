@@ -1,5 +1,5 @@
 /**
- * Guards 99991791310870 — an action a triage queue does not implement must
+ * Guards 99991791347035 — an action a triage queue does not implement must
  * RAISE, not return {"ok": true}.
  *
  * `triage_action` builds its success object UNCONDITIONALLY after a 17-queue
@@ -20,7 +20,7 @@ import { describe, it, expect } from 'vitest';
 import { readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 
-const MIGRATION = '99991791310870_triage_action_unhandled_action_refusal.sql';
+const MIGRATION = '99991791347035_triage_action_unhandled_action_refusal.sql';
 const MIGRATIONS_DIR = join(process.cwd(), 'supabase', 'migrations');
 const SRC = join(process.cwd(), 'src');
 
@@ -37,9 +37,9 @@ const sql = stripComments(raw);
 
 const read = (p: string) => readFileSync(join(SRC, p), 'utf8');
 
-describe('99991791310870 is the file it claims to be', () => {
+describe('99991791347035 is the file it claims to be', () => {
   it('exists exactly once in the migrations directory', () => {
-    const hits = readdirSync(MIGRATIONS_DIR).filter((f) => f.startsWith('99991791310870_'));
+    const hits = readdirSync(MIGRATIONS_DIR).filter((f) => f.startsWith('99991791347035_'));
     expect(hits).toEqual([MIGRATION]);
   });
 

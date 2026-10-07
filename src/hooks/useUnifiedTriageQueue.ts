@@ -65,7 +65,7 @@ export function useUnifiedTriageQueue(filters: TriageFilters) {
  * It must stay equal to the bar the engines use — `run_review_queue_autoapprove`
  * (cron `2-59/5`), `run_dedup_review_autoapprove` (cron `30 6 * * *`) and
  * `triage_bulk_approve_high_conf`'s own default — all set to 0.80 by
- * 99991791313293. A UI that offers a different bar than the cron applies is
+ * 99991791347050. A UI that offers a different bar than the cron applies is
  * two policies wearing one number.
  *
  * Note what the bar does NOT override: `review_field_registry.batchable` still

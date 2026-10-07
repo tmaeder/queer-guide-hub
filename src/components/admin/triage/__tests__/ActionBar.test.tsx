@@ -40,7 +40,7 @@ describe('ActionBar', () => {
     // it in none of its 17 queue branches, so it fell through to that
     // function's unconditional success object: the button wrote nothing,
     // anywhere, and the inbox toasted success and advanced to the next row.
-    // 99991791310870 makes the RPC refuse the string. Asserted as an ABSENCE so
+    // 99991791347035 makes the RPC refuse the string. Asserted as an ABSENCE so
     // re-adding the button without a handler fails here.
     render(<ActionBar {...baseProps} />);
     expect(screen.queryByRole('button', { name: /Flag/ })).not.toBeInTheDocument();

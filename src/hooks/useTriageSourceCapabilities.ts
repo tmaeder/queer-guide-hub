@@ -20,7 +20,7 @@
  * unconditional success object and returned `{"ok": true}` having written
  * nothing, while the inbox toasted "Reopened". Worst on dedup-review, whose
  * approve performs a merge: measured before the fix, 0 rows had ever returned
- * to open. 99991791310870 makes the RPC refuse it; `canReopenFor` is what
+ * to open. 99991791347035 makes the RPC refuse it; `canReopenFor` is what
  * stops the UI offering it in the first place, so a reviewer meets a greyed
  * control rather than an error.
  */
