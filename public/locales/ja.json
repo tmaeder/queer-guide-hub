@@ -2042,6 +2042,7 @@
       "settings": "設定",
       "inbox": "受信トレイ",
       "friends": "友だち",
+      "friendsOnline": "{{count}} 人オンライン",
       "myGroups": "マイグループ",
       "accessibility": "アクセシビリティ",
       "bookings": "予約",
