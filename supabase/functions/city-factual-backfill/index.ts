@@ -41,7 +41,7 @@ import {
 // runtime keeps serving an older bundle (seen 2026-10-07: v214 held the
 // name_local code and answered in the old shape), so the only proof a change
 // is live is the response itself. Bump this when the link/sparql output changes.
-const FN_REVISION = '2026-10-07.name-local'
+const FN_REVISION = '2026-10-07.name-local-label-first'
 
 const DEFAULT_BATCH_LIMIT = 40
 // 300 is the repo-wide ceiling for city writes: one cities UPDATE fans out
