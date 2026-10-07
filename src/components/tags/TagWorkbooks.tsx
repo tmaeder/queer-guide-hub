@@ -55,7 +55,10 @@ function WorkbookRow({ wb, locked }: { wb: TagWorkbook; locked: boolean }) {
 
   const inner = (
     <>
-      <h3 className="font-display text-title leading-tight">{wb.title ?? wb.slug}</h3>
+      {/* text-title is RANK 4 and is Space Grotesk 700, not Anton — `font-display`
+          carries hero / display / headline only (docs/design-system/README.md,
+          enforced by src/test/__tests__/rankFourFace.test.ts). */}
+      <h3 className="text-title font-bold leading-tight">{wb.title ?? wb.slug}</h3>
       {wb.dek && <p className="mt-2 text-sm text-muted-foreground">{wb.dek}</p>}
       {meta}
     </>

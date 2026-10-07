@@ -4542,7 +4542,19 @@
       "seeAllRights": "查看各国的 18 项权利",
       "seeAllInSearch": "[ZH] See all in search",
       "shopAll": "查看全部",
-      "figure": "[ZH] Diagram"
+      "figure": "[ZH] Diagram",
+      "workbooks": {
+        "eyebrow": "动手做",
+        "title": "练习",
+        "steps": "{{count}} 步",
+        "days": "{{count}} 天",
+        "withPartner": "与伴侣一起",
+        "onYourOwn": "独自进行",
+        "start": "开始",
+        "startLabel": "开始「{{title}}」",
+        "locked": "登录并启用亲密档案后即可进行这项练习。",
+        "privacy": "你写下的内容始终只属于你。除非你把某个答案标记为可分享，并且对方也这样做了，否则不会分享给任何伴侣。"
+      }
     },
     "flagWall": {
       "eyebrow": "符号",
@@ -5036,6 +5048,56 @@
       "cityLoading": "寻找城市...",
       "enabling": "启用...",
       "acknowledgement": "我了解可见性是近似值，一小时后过期，并且不能取代检查同意、环境或当地法律。"
+    }
+  },
+  "workbooks": {
+    "answerPlaceholder": "你的答案，输入时自动保存",
+    "answer": "你的答案",
+    "privateNote": "在你决定分享之前，仅你可见",
+    "notFound": "找不到该练习",
+    "backToGlossary": "返回术语表",
+    "signInGate": "一项面向自愿成年人的私密练习。登录后即可进行。",
+    "signIn": "登录",
+    "optInGate": "这属于亲密层：18+、需主动启用、需验证邮箱。你写下的内容默认私密，除非你选择分享且对方也分享，否则不会传给任何伴侣。",
+    "enableIntimate": "启用亲密档案",
+    "stepN": "第 {{n}} 步",
+    "back": "返回",
+    "next": "下一步",
+    "finish": "完成",
+    "sharing": "分享",
+    "noStepsYet": "目前还没有内容。明天再来。",
+    "lockedCount": "还有 {{count}} 项未解锁",
+    "inOneDay": "明天",
+    "inNDays": "{{count}} 天后",
+    "backToSteps": "返回问题",
+    "discussFirst": "先沟通",
+    "menuUnavailable": "此列表暂时不可用。",
+    "menuSharedWithChecklist": "这些评分构成你的兴趣与界限清单，也会出现在 /tools/checklist 中",
+    "menuVetoNote": "你的「不」和你的硬性界限永远不会展示给任何人。它们只会把该项目从任何对比中静默移除。",
+    "share": {
+      "title": "你分享的内容",
+      "intro": "选择你愿意展示的答案。在伴侣也向你分享之前不会显示任何内容，而且你可以随时关闭其中任何一项。",
+      "yourAnswers": "你的答案",
+      "nOfM": "已分享 {{shared}} / {{total}}",
+      "nothingWritten": "你还没有写任何内容，没有可分享的。",
+      "toggleLabel": "分享「{{prompt}}」",
+      "partner": "你的伴侣",
+      "noPartnerYet": "从对话中打开这项练习即可与他人对比。无论如何，上面的分享选择都会被保存。",
+      "statusActive": "你们都已分享，对比已开启。",
+      "statusWaiting": "你已分享，等待对方分享。",
+      "statusTheirs": "对方已向你分享。回赠分享即可查看对比。",
+      "statusNone": "你们还没有互相分享。",
+      "revoke": "停止分享",
+      "grant": "向对方分享"
+    },
+    "compare": {
+      "empty": "暂时没有可对比的内容。",
+      "title": "并排查看",
+      "menuRow": "已评分列表",
+      "menuNote": "已评分列表的重合内容位于你的兴趣与界限对比中，该对比需单独分享。",
+      "openChecklist": "打开清单",
+      "you": "你",
+      "them": "对方"
     }
   }
 }

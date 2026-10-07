@@ -4544,7 +4544,19 @@
       "seeAllRights": "Ver los 18 derechos por país",
       "seeAllInSearch": "[ES] See all in search",
       "shopAll": "Ver todo",
-      "figure": "[ES] Diagram"
+      "figure": "[ES] Diagram",
+      "workbooks": {
+        "eyebrow": "Para trabajarlo",
+        "title": "Ejercicios",
+        "steps": "{{count}} pasos",
+        "days": "{{count}} días",
+        "withPartner": "Con pareja",
+        "onYourOwn": "En solitario",
+        "start": "Empezar",
+        "startLabel": "Empezar {{title}}",
+        "locked": "Inicia sesión y activa tu perfil íntimo para trabajar este ejercicio.",
+        "privacy": "Todo lo que escribas permanece privado. No se comparte nada con una pareja a menos que marques esa respuesta como compartible y la otra persona haya hecho lo mismo."
+      }
     },
     "flagWall": {
       "eyebrow": "Símbolos",
@@ -5038,6 +5050,56 @@
       "goVisible": "Hazte visible",
       "enable": "Visible durante una hora",
       "acknowledgement": "Entiendo que la visibilidad es aproximada, caduca después de una hora y no reemplaza la verificación del consentimiento, el entorno o las leyes locales."
+    }
+  },
+  "workbooks": {
+    "answerPlaceholder": "Tu respuesta, se guarda mientras escribes",
+    "answer": "Tu respuesta",
+    "privateNote": "Privado hasta que decidas compartirlo",
+    "notFound": "Ejercicio no encontrado",
+    "backToGlossary": "Volver al glosario",
+    "signInGate": "Un ejercicio privado para adultos que consienten. Inicia sesión para trabajarlo.",
+    "signIn": "Iniciar sesión",
+    "optInGate": "Esto forma parte de la capa íntima: 18+, con activación, correo verificado. Todo lo que escribas es privado por defecto, y nada llega a una pareja a menos que lo compartas y la otra persona comparta a su vez.",
+    "enableIntimate": "Activar perfil íntimo",
+    "stepN": "Paso {{n}}",
+    "back": "Atrás",
+    "next": "Siguiente",
+    "finish": "Terminar",
+    "sharing": "Compartir",
+    "noStepsYet": "Todavía no hay nada disponible. Vuelve mañana.",
+    "lockedCount": "Quedan {{count}} por venir",
+    "inOneDay": "mañana",
+    "inNDays": "en {{count}} días",
+    "backToSteps": "Volver a las preguntas",
+    "discussFirst": "Hablarlo primero",
+    "menuUnavailable": "Esta lista no está disponible ahora mismo.",
+    "menuSharedWithChecklist": "Estas valoraciones son tu lista de intereses y límites. También aparecen en /tools/checklist",
+    "menuVetoNote": "Tu no y tu límite absoluto nunca se muestran a nadie. Simplemente retiran el elemento de cualquier comparación, en silencio.",
+    "share": {
+      "title": "Lo que compartes",
+      "intro": "Elige las respuestas que estés dispuesto a mostrar. No se revela nada hasta que tu pareja también haya compartido las suyas contigo, y puedes desactivar cualquiera de ellas en cualquier momento.",
+      "yourAnswers": "Tus respuestas",
+      "nOfM": "{{shared}} de {{total}} compartidas",
+      "nothingWritten": "Todavía no has escrito nada. No hay nada que compartir.",
+      "toggleLabel": "Compartir «{{prompt}}»",
+      "partner": "Tu pareja",
+      "noPartnerYet": "Abre este ejercicio desde una conversación para comparar con alguien. Tus decisiones de arriba se guardan en cualquier caso.",
+      "statusActive": "Los dos habéis compartido. La comparación está activa.",
+      "statusWaiting": "Has compartido. Esperando a que la otra persona comparta.",
+      "statusTheirs": "La otra persona ha compartido contigo. Comparte a tu vez para ver la comparación.",
+      "statusNone": "Todavía no habéis compartido mutuamente.",
+      "revoke": "Dejar de compartir",
+      "grant": "Compartir con esta persona"
+    },
+    "compare": {
+      "empty": "Todavía no hay nada que comparar.",
+      "title": "Lado a lado",
+      "menuRow": "Lista valorada",
+      "menuNote": "Las coincidencias en listas valoradas están en tu comparación de intereses y límites, que se comparte por separado.",
+      "openChecklist": "Abrir la checklist",
+      "you": "Tú",
+      "them": "La otra persona"
     }
   }
 }

@@ -4542,7 +4542,19 @@
       "seeAllRights": "18の権利を国別に見る",
       "seeAllInSearch": "[JA] See all in search",
       "shopAll": "すべて見る",
-      "figure": "[JA] Diagram"
+      "figure": "[JA] Diagram",
+      "workbooks": {
+        "eyebrow": "取り組む",
+        "title": "ワーク",
+        "steps": "{{count}} ステップ",
+        "days": "{{count}} 日間",
+        "withPartner": "パートナーと",
+        "onYourOwn": "ひとりで",
+        "start": "はじめる",
+        "startLabel": "「{{title}}」をはじめる",
+        "locked": "ログインしてインティメイトプロフィールを有効にすると取り組めます。",
+        "privacy": "書いた内容はすべてあなただけのものです。その回答を共有可に設定し、相手も同じようにするまで、パートナーには何も共有されません。"
+      }
     },
     "flagWall": {
       "eyebrow": "シンボル",
@@ -5036,6 +5048,56 @@
       "enable": "1時間見える",
       "cancel": "キャンセル",
       "enabling": "有効化中…"
+    }
+  },
+  "workbooks": {
+    "answerPlaceholder": "あなたの回答。入力しながら保存されます",
+    "answer": "あなたの回答",
+    "privateNote": "共有を選ぶまであなただけのもの",
+    "notFound": "ワークが見つかりません",
+    "backToGlossary": "用語集に戻る",
+    "signInGate": "同意した成人のための非公開のワークです。ログインすると取り組めます。",
+    "signIn": "ログイン",
+    "optInGate": "これはインティメイト領域の一部です。18歳以上、本人の有効化、メール認証が必要です。書いた内容は既定で非公開で、あなたが共有し相手も共有するまでパートナーには届きません。",
+    "enableIntimate": "インティメイトプロフィールを有効にする",
+    "stepN": "ステップ {{n}}",
+    "back": "戻る",
+    "next": "次へ",
+    "finish": "完了",
+    "sharing": "共有",
+    "noStepsYet": "まだ利用できるものはありません。明日またどうぞ。",
+    "lockedCount": "あと {{count}} 件",
+    "inOneDay": "明日",
+    "inNDays": "{{count}} 日後",
+    "backToSteps": "質問に戻る",
+    "discussFirst": "先に話し合う",
+    "menuUnavailable": "このリストは現在利用できません。",
+    "menuSharedWithChecklist": "これらの評価はあなたの興味と境界のリストです。/tools/checklist にも表示されます",
+    "menuVetoNote": "あなたの「ノー」とハードリミットは誰にも表示されません。該当項目をすべての比較から静かに外すだけです。",
+    "share": {
+      "title": "共有する内容",
+      "intro": "見せてもよい回答を選んでください。パートナーも自分の回答をあなたに共有するまで何も表示されず、どれでもいつでも解除できます。",
+      "yourAnswers": "あなたの回答",
+      "nOfM": "{{total}} 件中 {{shared}} 件を共有",
+      "nothingWritten": "まだ何も書かれていません。共有するものがありません。",
+      "toggleLabel": "「{{prompt}}」を共有",
+      "partner": "あなたのパートナー",
+      "noPartnerYet": "会話からこのワークを開くと相手と比較できます。上の共有設定はいずれの場合も保存されます。",
+      "statusActive": "お互いに共有済みです。比較が有効になりました。",
+      "statusWaiting": "あなたは共有しました。相手の共有を待っています。",
+      "statusTheirs": "相手があなたに共有しました。共有を返すと比較が見られます。",
+      "statusNone": "まだお互いに共有していません。",
+      "revoke": "共有をやめる",
+      "grant": "相手に共有する"
+    },
+    "compare": {
+      "empty": "まだ比較できるものはありません。",
+      "title": "並べて表示",
+      "menuRow": "評価済みリスト",
+      "menuNote": "評価済みリストの重なりは、別途共有する興味と境界の比較に表示されます。",
+      "openChecklist": "チェックリストを開く",
+      "you": "あなた",
+      "them": "相手"
     }
   }
 }

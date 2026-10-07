@@ -4544,7 +4544,19 @@
       "seeAllRights": "Ver os 18 direitos por país",
       "seeAllInSearch": "[PT] See all in search",
       "shopAll": "Ver tudo",
-      "figure": "[PT] Diagram"
+      "figure": "[PT] Diagram",
+      "workbooks": {
+        "eyebrow": "Para trabalhar",
+        "title": "Exercícios",
+        "steps": "{{count}} passos",
+        "days": "{{count}} dias",
+        "withPartner": "Com parceiro",
+        "onYourOwn": "Sozinho",
+        "start": "Começar",
+        "startLabel": "Começar {{title}}",
+        "locked": "Inicia sessão e ativa o teu perfil íntimo para trabalhares este exercício.",
+        "privacy": "Tudo o que escreves permanece privado. Nada é partilhado com um parceiro a não ser que marques essa resposta como partilhável e a outra pessoa tenha feito o mesmo."
+      }
     },
     "flagWall": {
       "eyebrow": "Símbolos",
@@ -5038,6 +5050,56 @@
       "acknowledgement": "Entendo que a visibilidade é aproximada, expira após uma hora e não substitui a verificação do consentimento, do ambiente ou da legislação local.",
       "dialogDescription": "Outros adultos que optaram por participar veem apenas uma bolha no nível da cidade e contam. Eles nunca recebem a localização do seu dispositivo.",
       "enabling": "Habilitando…"
+    }
+  },
+  "workbooks": {
+    "answerPlaceholder": "A tua resposta, guardada enquanto escreves",
+    "answer": "A tua resposta",
+    "privateNote": "Privado até decidires partilhar",
+    "notFound": "Exercício não encontrado",
+    "backToGlossary": "Voltar ao glossário",
+    "signInGate": "Um exercício privado para adultos que consentem. Inicia sessão para o trabalhares.",
+    "signIn": "Iniciar sessão",
+    "optInGate": "Isto faz parte da camada íntima: 18+, por ativação, email verificado. Tudo o que escreves é privado por omissão, e nada chega a um parceiro a não ser que o partilhes e a outra pessoa partilhe também.",
+    "enableIntimate": "Ativar perfil íntimo",
+    "stepN": "Passo {{n}}",
+    "back": "Voltar",
+    "next": "Seguinte",
+    "finish": "Concluir",
+    "sharing": "Partilha",
+    "noStepsYet": "Ainda não há nada disponível. Volta amanhã.",
+    "lockedCount": "Faltam {{count}}",
+    "inOneDay": "amanhã",
+    "inNDays": "em {{count}} dias",
+    "backToSteps": "Voltar às perguntas",
+    "discussFirst": "Falar primeiro",
+    "menuUnavailable": "Esta lista não está disponível neste momento.",
+    "menuSharedWithChecklist": "Estas classificações são a tua lista de interesses e limites. Também aparecem em /tools/checklist",
+    "menuVetoNote": "O teu não e o teu limite absoluto nunca são mostrados a ninguém. Apenas retiram o item de qualquer comparação, em silêncio.",
+    "share": {
+      "title": "O que partilhas",
+      "intro": "Escolhe as respostas que estás disposto a mostrar. Nada é revelado até o teu parceiro também ter partilhado as dele contigo, e podes desligar qualquer uma destas em qualquer momento.",
+      "yourAnswers": "As tuas respostas",
+      "nOfM": "{{shared}} de {{total}} partilhadas",
+      "nothingWritten": "Ainda não escreveste nada. Não há nada para partilhar.",
+      "toggleLabel": "Partilhar «{{prompt}}»",
+      "partner": "O teu parceiro",
+      "noPartnerYet": "Abre este exercício a partir de uma conversa para comparares com alguém. As tuas escolhas acima são guardadas de qualquer forma.",
+      "statusActive": "Partilharam os dois. A comparação está ativa.",
+      "statusWaiting": "Partilhaste. À espera que a outra pessoa partilhe.",
+      "statusTheirs": "A outra pessoa partilhou contigo. Partilha também para ver a comparação.",
+      "statusNone": "Ainda não partilharam um com o outro.",
+      "revoke": "Parar de partilhar",
+      "grant": "Partilhar com esta pessoa"
+    },
+    "compare": {
+      "empty": "Ainda não há nada para comparar.",
+      "title": "Lado a lado",
+      "menuRow": "Lista classificada",
+      "menuNote": "As coincidências em listas classificadas estão na tua comparação de interesses e limites, que é partilhada separadamente.",
+      "openChecklist": "Abrir a checklist",
+      "you": "Tu",
+      "them": "A outra pessoa"
     }
   }
 }
