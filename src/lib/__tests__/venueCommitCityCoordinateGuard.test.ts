@@ -34,7 +34,7 @@ describe('venue commit city coordinate guard', () => {
   });
 
   it('refuses to patch silently when the live body has moved', () => {
-    expect(sql).toMatch(/if position\(c_old_fallback in v_def\) = 0 then\s+raise exception/);
+    expect(sql).toMatch(/if position\(c_old_fallback in v_code\) = 0 then\s+raise exception/);
   });
 
   it('never crosses a known country, and needs coordinates', () => {

@@ -47,6 +47,7 @@
 do $patch$
 declare
   v_def  text;
+  v_code text;
   v_new  text;
   c_old_fallback constant text :=
 $old$    IF v_city_id IS NULL THEN
@@ -87,14 +88,20 @@ $new$    -- Name-only fallback: NEVER across a known country, and only where the
   END IF;
 $new$;
 begin
-  select pg_get_functiondef('public.commit_venue_staging_item(uuid,text)'::regprocedure) into v_def;
+  -- Raw definition: the replace() below must keep the function's own comments.
+  select pg_get_functiondef('public.commit_venue_staging_item(uuid,text)'::regprocedure)
+    into v_def;
 
-  if position('99991791356737' in v_def) > 0 then
+  -- Every ASSERTION reads a comment-stripped copy, so a symbol that survives
+  -- only in prose can never satisfy or fail a check (check-functiondef-asserts).
+  v_code := regexp_replace(pg_get_functiondef('public.commit_venue_staging_item(uuid,text)'::regprocedure), '--[^\n]*', '', 'g');
+
+  if position('v_city_id IS NULL AND v_country_id IS NULL AND v_lat IS NOT NULL' in v_code) > 0 then
     raise notice 'commit_venue_staging_item already carries the coordinate guard; nothing to do';
     return;
   end if;
 
-  if position(c_old_fallback in v_def) = 0 then
+  if position(c_old_fallback in v_code) = 0 then
     raise exception 'commit_venue_staging_item: the population-ordered cross-country fallback was not found verbatim; the live body has changed — re-read it before patching';
   end if;
 
@@ -142,7 +149,7 @@ declare
   v_def text;
   v_sig jsonb;
 begin
-  select pg_get_functiondef('public.commit_venue_staging_item(uuid,text)'::regprocedure) into v_def;
+  v_def := regexp_replace(pg_get_functiondef('public.commit_venue_staging_item(uuid,text)'::regprocedure), '--[^\n]*', '', 'g');
 
   -- P1: the population-ordered fallback is gone.
   if position('ORDER BY c.population DESC NULLS LAST' in v_def) > 0 then
