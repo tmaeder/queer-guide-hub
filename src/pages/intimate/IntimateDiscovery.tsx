@@ -16,10 +16,12 @@ import type { PeopleMatchShared } from '@/hooks/usePeopleDiscovery';
 import { LikePassActions } from '@/components/intimate/LikePassActions';
 import { SwipeDeck, type SwipeableCard } from '@/components/intimate/SwipeDeck';
 import { useToast } from '@/hooks/use-toast';
-import { AGE_BANDS, BODY_TYPES, INTO_TAGS, ROLES } from '@/assets/intimate/options';
 import { JoyBurst } from '@/components/messaging/JoyBurst';
 import { PageContainer } from '@/components/layout/PageContainer';
 import { PageLoadingState } from '@/components/layout/PageLoadingState';
+import { useKinkTaxonomy } from '@/hooks/useKinkTaxonomy';
+import { IntimateDiscoveryFilters } from '@/components/intimate/IntimateDiscoveryFilters';
+import { buildInterestOptions } from '@/lib/intimate/discoveryFilters';
 
 export default function IntimateDiscovery({
   embedded = false,
@@ -39,6 +41,45 @@ export default function IntimateDiscovery({
   const [into, setInto] = useState<string[]>([]);
   const [ages, setAges] = useState<string[]>([]);
   const [bodies, setBodies] = useState<string[]>([]);
+  const {
+    data: kinkTaxonomy,
+    isLoading: kinkTaxonomyLoading,
+    isError: kinkTaxonomyError,
+  } = useKinkTaxonomy(!!me?.opted_in_at);
+  const interestOptions = useMemo(
+    () =>
+      kinkTaxonomy
+        ? buildInterestOptions(kinkTaxonomy)
+        : kinkTaxonomyError
+          ? buildInterestOptions()
+          : [],
+    [kinkTaxonomy, kinkTaxonomyError],
+  );
+  const selectedKinkItemSlugs = useMemo(
+    () => into.filter((value) => !value.startsWith('legacy:')),
+    [into],
+  );
+  const selectedLegacyIntoTags = useMemo(
+    () => into.filter((value) => value.startsWith('legacy:')).map((value) => value.slice(7)),
+    [into],
+  );
+
+  useEffect(() => {
+    if (!kinkTaxonomy || !into.some((value) => value.startsWith('legacy:'))) return;
+    const byLegacyTag = new Map(
+      interestOptions
+        .filter((option) => option.legacyTag)
+        .map((option) => [option.legacyTag as string, option.id]),
+    );
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- normalizes a temporary fallback selection after the richer remote vocabulary becomes available.
+    setInto((current) => [
+      ...new Set(
+        current.map((value) =>
+          value.startsWith('legacy:') ? (byLegacyTag.get(value.slice(7)) ?? value) : value,
+        ),
+      ),
+    ]);
+  }, [interestOptions, into, kinkTaxonomy]);
   const [viewMode, setViewMode] = useState<'grid' | 'deck'>(() => {
     if (typeof window === 'undefined') return 'grid';
     return (localStorage.getItem('discoverViewMode') as 'grid' | 'deck') || 'grid';
@@ -52,10 +93,16 @@ export default function IntimateDiscovery({
   }, [viewMode]);
 
   const cityId = cityIdOverride ?? me?.discovery_city_id ?? null;
-  const { data: cards, isLoading: loadingDisc } = useIntimateDiscovery({
+  const {
+    data: cards,
+    isLoading: loadingDisc,
+    isError: discoveryError,
+    refetch: retryDiscovery,
+  } = useIntimateDiscovery({
     cityId,
     roles,
-    intoTags: into,
+    intoTags: selectedLegacyIntoTags,
+    kinkItemSlugs: selectedKinkItemSlugs,
     ageBands: ages,
     bodyTypes: bodies,
   });
@@ -143,9 +190,17 @@ export default function IntimateDiscovery({
   return (
     <DiscoveryShell embedded={embedded} className="relative">
       {matchJoy && <JoyBurst onDone={() => setMatchJoy(false)} />}
-      <header className="mb-6 flex items-baseline justify-between">
-        <h1 className="text-2xl">Intimate</h1>
-        <div className="flex items-center gap-4">
+      <header className="mb-4 flex flex-wrap items-center justify-between gap-4">
+        {embedded ? (
+          <p className="text-sm text-muted-foreground" aria-live="polite">
+            {loadingDisc
+              ? 'Finding people…'
+              : `${rankedCards.length} nearby ${rankedCards.length === 1 ? 'person' : 'people'}`}
+          </p>
+        ) : (
+          <h1 className="text-2xl">Intimate</h1>
+        )}
+        <div className="flex flex-wrap items-center gap-4">
           {matches.length > 0 && (
             <Link to="/hub" className="text-sm underline">
               {matches.length} match{matches.length === 1 ? '' : 'es'}
@@ -179,35 +234,30 @@ export default function IntimateDiscovery({
         </div>
       </header>
 
-      <section className="mb-6 space-y-4 pb-4">
-        <FilterRow
-          label="Role"
-          options={ROLES as readonly string[]}
-          selected={roles}
-          onToggle={(v) => setRoles(toggle(roles, v))}
-        />
-        <FilterRow
-          label="Into"
-          options={INTO_TAGS as readonly string[]}
-          selected={into}
-          onToggle={(v) => setInto(toggle(into, v))}
-        />
-        <FilterRow
-          label="Age"
-          options={AGE_BANDS as readonly string[]}
-          selected={ages}
-          onToggle={(v) => setAges(toggle(ages, v))}
-        />
-        <FilterRow
-          label="Body"
-          options={BODY_TYPES as readonly string[]}
-          selected={bodies}
-          onToggle={(v) => setBodies(toggle(bodies, v))}
-        />
-      </section>
+      <IntimateDiscoveryFilters
+        roles={roles}
+        onRolesChange={setRoles}
+        interestOptions={interestOptions}
+        interestsLoading={kinkTaxonomyLoading}
+        interests={into}
+        onInterestsChange={setInto}
+        ages={ages}
+        onAgesChange={setAges}
+        bodies={bodies}
+        onBodiesChange={setBodies}
+      />
 
       {loadingDisc ? (
         <PageLoadingState count={4} label="Loading nearby riders" />
+      ) : discoveryError ? (
+        <div className="flex flex-wrap items-center gap-4 py-6" role="alert">
+          <p className="text-sm text-muted-foreground">
+            Nearby people could not be loaded. Your filters are still selected.
+          </p>
+          <Button variant="outline" size="sm" onClick={() => retryDiscovery()}>
+            Try again
+          </Button>
+        </div>
       ) : !rankedCards.length ? (
         <p className="text-muted-foreground">No matches yet. Try widening filters.</p>
       ) : viewMode === 'deck' ? (
@@ -304,43 +354,5 @@ function DiscoveryShell({
     <PageContainer size={form ? 'form' : undefined} className={className}>
       {children}
     </PageContainer>
-  );
-}
-
-function toggle(arr: string[], v: string) {
-  return arr.includes(v) ? arr.filter((x) => x !== v) : [...arr, v];
-}
-
-function FilterRow({
-  label,
-  options,
-  selected,
-  onToggle,
-}: {
-  label: string;
-  options: readonly string[];
-  selected: string[];
-  onToggle: (v: string) => void;
-}) {
-  return (
-    <div>
-      <div className="mb-1 text-xs uppercase text-muted-foreground">{label}</div>
-      <div className="flex flex-wrap gap-1">
-        {options.map((o) => {
-          const on = selected.includes(o);
-          return (
-            <Button
-              key={o}
-              size="sm"
-              variant={on ? 'default' : 'outline'}
-              onClick={() => onToggle(o)}
-              className="rounded-element"
-            >
-              {o.replace(/_/g, ' ')}
-            </Button>
-          );
-        })}
-      </div>
-    </div>
   );
 }
