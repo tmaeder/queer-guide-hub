@@ -123,7 +123,7 @@ describe('Cruising', () => {
     expect(screen.getByText('Old Bridge')).toBeInTheDocument();
     expect(screen.getByText('Listed without coordinates')).toBeInTheDocument();
     expect(listMock).toHaveBeenCalledWith(true, '', 1, 40);
-    expect(mapMock).toHaveBeenCalledWith(false, '', null);
+    expect(mapMock).toHaveBeenCalledWith(true, '', null);
 
     fireEvent.click(screen.getByTestId('cruising-map'));
     expect(mapMock).toHaveBeenLastCalledWith(true, '', {
