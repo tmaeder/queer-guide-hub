@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router';
 import { Button } from '@/components/ui/button';
-import { LogOut, Shield, UserRound } from 'lucide-react';
+import { LogOut, Shield, UserRound, Users } from 'lucide-react';
 import { TransitIcon } from '@/components/transit/TransitIcon';
 import { TrackSwatch } from '@/components/transit/TrackSwatch';
 import { useTranslation } from 'react-i18next';
@@ -24,6 +24,7 @@ import { generateAvatarUrl } from '@/lib/avatar';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { NotificationBell } from '@/components/notifications/NotificationBell';
 import { useAdminRoles } from '@/hooks/useAdminRoles';
+import { useFriendsOnlineCount } from '@/hooks/useFriendIds';
 import {
   USER_MENU_ITEMS as userMenuItems,
   INTENT_NAV,
@@ -50,6 +51,8 @@ export function Header() {
   const { user, signOut } = useAuth();
   const { profile } = useProfile();
   const { isAdmin, isModerator } = useAdminRoles();
+
+  const friendsOnline = useFriendsOnlineCount(user?.id);
 
   const avatarSrc =
     profile?.avatar_url ||
@@ -196,6 +199,24 @@ export function Header() {
 
             {/* Theme switch removed 2026-08: dark mode dropped with the
                 subway-map rebrand (fixed paper/ink poster identity). */}
+
+            <DropdownMenuItem asChild>
+              <LocalizedLink to="/community/friends" className="flex gap-2 no-underline">
+                <Users size={16} />
+                <span>{t('header.userMenu.friends', 'Friends')}</span>
+                {friendsOnline !== null && (
+                  <span className="ml-auto flex items-center gap-1.5 text-xs tabular-nums text-muted-foreground">
+                    <span aria-hidden className="h-2 w-2 rounded-full bg-foreground" />
+                    <span aria-hidden>{friendsOnline}</span>
+                    <span className="sr-only">
+                      {t('header.userMenu.friendsOnline', '{{count}} online', {
+                        count: friendsOnline,
+                      })}
+                    </span>
+                  </span>
+                )}
+              </LocalizedLink>
+            </DropdownMenuItem>
 
             {userMenuItems.map((item) => (
               <DropdownMenuItem asChild key={item.to}>
