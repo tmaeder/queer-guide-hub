@@ -37,6 +37,12 @@ import {
   type Json, type SparqlBinding, type WdAliases, type WdLabels, type WdSitelinks,
 } from '../_shared/wikidata-city.ts'
 
+// Reported in every response. A deploy can store new source while the
+// runtime keeps serving an older bundle (seen 2026-10-07: v214 held the
+// name_local code and answered in the old shape), so the only proof a change
+// is live is the response itself. Bump this when the link/sparql output changes.
+const FN_REVISION = '2026-10-07.name-local'
+
 const DEFAULT_BATCH_LIMIT = 40
 // 300 is the repo-wide ceiling for city writes: one cities UPDATE fans out
 // through trg_sync_geo_spine into geo_places + a ~40-column geo_city_profiles
@@ -919,7 +925,7 @@ async function runLinkPhase(
   }
 
   return jsonResponse({
-    phase: 'link', processed, updated, skipped, failed,
+    phase: 'link', revision: FN_REVISION, processed, updated, skipped, failed,
     scope,
     aliases_written: aliasesWritten,
     name_local_filled: nativeFilled,
@@ -1119,6 +1125,6 @@ async function runSparqlPhase(
   }
 
   return jsonResponse(
-    { phase: 'sparql', processed: byQid.size, updated, skipped, dry_run: dryRun, results }, 200, req,
+    { phase: 'sparql', revision: FN_REVISION, processed: byQid.size, updated, skipped, dry_run: dryRun, results }, 200, req,
   )
 }
