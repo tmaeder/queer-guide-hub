@@ -11,7 +11,13 @@ type MockResult = { data: unknown; error: { message: string } | null };
 const { state, useAuthMock } = vi.hoisted(() => ({
   state: {
     results: [] as MockResult[],
-    calls: [] as Array<{ table?: string; rpc?: string; invoke?: string; auth?: string; chain: Array<{ method: string; args: unknown[] }> }>,
+    calls: [] as Array<{
+      table?: string;
+      rpc?: string;
+      invoke?: string;
+      auth?: string;
+      chain: Array<{ method: string; args: unknown[] }>;
+    }>,
   },
   useAuthMock: vi.fn(),
 }));
@@ -73,7 +79,9 @@ import {
   useReportIntimateProfile,
 } from '../useIntimateProfile';
 
-function withResults(...r: MockResult[]) { state.results.push(...r); }
+function withResults(...r: MockResult[]) {
+  state.results.push(...r);
+}
 function wrapper({ children }: { children: ReactNode }) {
   const qc = new QueryClient({
     defaultOptions: { queries: { retry: false, gcTime: 0 }, mutations: { retry: false } },
@@ -102,7 +110,7 @@ describe('useMyIntimateProfile', () => {
 
     const call = state.calls[0];
     expect(call.table).toBe('intimate_profiles');
-    const eq = call.chain.find(s => s.method === 'eq');
+    const eq = call.chain.find((s) => s.method === 'eq');
     expect(eq?.args).toEqual(['id', 'u1']);
   });
 });
@@ -118,7 +126,7 @@ describe('useIntimateProfile', () => {
     renderHook(() => useIntimateProfile('u2'), { wrapper });
     await waitFor(() => expect(state.calls).toHaveLength(1));
 
-    const eq = state.calls[0].chain.find(s => s.method === 'eq');
+    const eq = state.calls[0].chain.find((s) => s.method === 'eq');
     expect(eq?.args).toEqual(['id', 'u2']);
   });
 });
@@ -127,13 +135,14 @@ describe('useIntimateDiscovery', () => {
   it('applies all filter dimensions when provided', async () => {
     withResults({ data: [], error: null });
     renderHook(
-      () => useIntimateDiscovery({
-        cityId: 'c1',
-        roles: ['top', 'bottom'],
-        intoTags: ['leather'],
-        ageBands: ['25-34'],
-        bodyTypes: ['lean'],
-      }),
+      () =>
+        useIntimateDiscovery({
+          cityId: 'c1',
+          roles: ['top', 'bottom'],
+          intoTags: ['leather'],
+          ageBands: ['25-34'],
+          bodyTypes: ['lean'],
+        }),
       { wrapper },
     );
     await waitFor(() => expect(state.calls).toHaveLength(1));
@@ -141,12 +150,14 @@ describe('useIntimateDiscovery', () => {
     const call = state.calls[0];
     expect(call.table).toBe('intimate_discovery_v');
 
-    const eq = call.chain.find(s => s.method === 'eq' && (s.args as [string, unknown])[0] === 'discovery_city_id');
+    const eq = call.chain.find(
+      (s) => s.method === 'eq' && (s.args as [string, unknown])[0] === 'discovery_city_id',
+    );
     expect(eq?.args).toEqual(['discovery_city_id', 'c1']);
-    const overlaps = call.chain.filter(s => s.method === 'overlaps');
-    expect(overlaps.map(o => o.args[0])).toEqual(['role', 'into_tags']);
-    const ins = call.chain.filter(s => s.method === 'in');
-    expect(ins.map(i => i.args[0])).toEqual(['age_band', 'body_type']);
+    const overlaps = call.chain.filter((s) => s.method === 'overlaps');
+    expect(overlaps.map((o) => o.args[0])).toEqual(['role', 'into_tags']);
+    const ins = call.chain.filter((s) => s.method === 'in');
+    expect(ins.map((i) => i.args[0])).toEqual(['age_band', 'body_type']);
   });
 
   it('skips filters when their arrays are empty', async () => {
@@ -154,8 +165,34 @@ describe('useIntimateDiscovery', () => {
     renderHook(() => useIntimateDiscovery({ roles: [] }), { wrapper });
     await waitFor(() => expect(state.calls).toHaveLength(1));
 
-    const overlaps = state.calls[0].chain.find(s => s.method === 'overlaps');
+    const overlaps = state.calls[0].chain.find((s) => s.method === 'overlaps');
     expect(overlaps).toBeUndefined();
+  });
+
+  it('uses the visibility-aware discovery RPC for full-taxonomy kink filters', async () => {
+    withResults({ data: [], error: null });
+    renderHook(
+      () =>
+        useIntimateDiscovery({
+          cityId: 'c1',
+          roles: ['switch'],
+          kinkItemSlugs: ['rope-shibari', 'chastity'],
+          ageBands: ['30-34', '35-39'],
+          bodyTypes: ['bear'],
+        }),
+      { wrapper },
+    );
+    await waitFor(() => expect(state.calls).toHaveLength(1));
+
+    expect(state.calls[0].rpc).toBe('intimate_discover');
+    expect(state.calls[0].chain[0].args[1]).toEqual({
+      p_city_id: 'c1',
+      p_roles: ['switch'],
+      p_kink_item_slugs: ['rope-shibari', 'chastity'],
+      p_age_bands: ['30-34', '35-39'],
+      p_body_types: ['bear'],
+      p_limit: 200,
+    });
   });
 });
 
@@ -163,7 +200,9 @@ describe('useUpsertIntimateProfile', () => {
   it('rejects when not signed in', async () => {
     useAuthMock.mockReturnValue({ user: null });
     const { result } = renderHook(() => useUpsertIntimateProfile(), { wrapper });
-    await expect(result.current.mutateAsync({ height_cm: 180 } as never)).rejects.toThrow('not signed in');
+    await expect(result.current.mutateAsync({ height_cm: 180 } as never)).rejects.toThrow(
+      'not signed in',
+    );
   });
 
   it('upserts with id=user.id + onConflict=id', async () => {
@@ -171,7 +210,7 @@ describe('useUpsertIntimateProfile', () => {
     const { result } = renderHook(() => useUpsertIntimateProfile(), { wrapper });
     await result.current.mutateAsync({ height_cm: 180 } as never);
 
-    const upsert = state.calls[0].chain.find(s => s.method === 'upsert');
+    const upsert = state.calls[0].chain.find((s) => s.method === 'upsert');
     expect(upsert?.args[0]).toMatchObject({ id: 'u1', height_cm: 180 });
     expect(upsert?.args[1]).toEqual({ onConflict: 'id' });
   });
@@ -189,7 +228,7 @@ describe('useOptOutIntimateProfile', () => {
     const { result } = renderHook(() => useOptOutIntimateProfile(), { wrapper });
     await result.current.mutateAsync({});
 
-    const update = state.calls[0].chain.find(s => s.method === 'update');
+    const update = state.calls[0].chain.find((s) => s.method === 'update');
     expect(update?.args[0]).toEqual({ opted_in_at: null });
   });
 
@@ -198,7 +237,7 @@ describe('useOptOutIntimateProfile', () => {
     const { result } = renderHook(() => useOptOutIntimateProfile(), { wrapper });
     await result.current.mutateAsync({ hardDelete: true });
 
-    expect(state.calls[0].chain.some(s => s.method === 'delete')).toBe(true);
+    expect(state.calls[0].chain.some((s) => s.method === 'delete')).toBe(true);
   });
 });
 
@@ -208,8 +247,8 @@ describe('useIntimateKinkTags', () => {
     const { result } = renderHook(() => useIntimateKinkTags(), { wrapper });
     await waitFor(() => expect(result.current.data).toBeDefined());
 
-    const eqs = state.calls[0].chain.filter(s => s.method === 'eq');
-    const eqMap = Object.fromEntries(eqs.map(e => e.args as [string, unknown]));
+    const eqs = state.calls[0].chain.filter((s) => s.method === 'eq');
+    const eqMap = Object.fromEntries(eqs.map((e) => e.args as [string, unknown]));
     expect(eqMap.category).toBe('intimate_kink');
     expect(eqMap.status).toBe('active');
   });
@@ -241,8 +280,8 @@ describe('useSetIntimateText', () => {
 
     expect(state.calls[0].rpc).toBe('intimate_set_text');
     // Should subsequently call auth.getUser + functions.invoke('intimate-moderation').
-    expect(state.calls.some(c => c.auth === 'getUser')).toBe(true);
-    expect(state.calls.some(c => c.invoke === 'intimate-moderation')).toBe(true);
+    expect(state.calls.some((c) => c.auth === 'getUser')).toBe(true);
+    expect(state.calls.some((c) => c.invoke === 'intimate-moderation')).toBe(true);
   });
 
   it('skips moderation when both fields are empty', async () => {
@@ -250,7 +289,7 @@ describe('useSetIntimateText', () => {
     const { result } = renderHook(() => useSetIntimateText(), { wrapper });
     await result.current.mutateAsync({ aboutIntimate: null, lookingFor: null });
 
-    expect(state.calls.some(c => c.invoke === 'intimate-moderation')).toBe(false);
+    expect(state.calls.some((c) => c.invoke === 'intimate-moderation')).toBe(false);
   });
 });
 
@@ -270,7 +309,7 @@ describe('useReportIntimateProfile', () => {
 
     const call = state.calls[0];
     expect(call.table).toBe('intimate_reports');
-    const insert = call.chain.find(s => s.method === 'insert');
+    const insert = call.chain.find((s) => s.method === 'insert');
     expect(insert?.args[0]).toEqual({
       reporter_id: 'u1',
       target_id: 'u2',
