@@ -2046,6 +2046,7 @@
       "settings": "Paramètres",
       "inbox": "Boîte de réception",
       "friends": "Ami·es",
+      "friendsOnline": "{{count}} en ligne",
       "myGroups": "Mes groupes",
       "accessibility": "Accessibilité",
       "bookings": "Réservations",
