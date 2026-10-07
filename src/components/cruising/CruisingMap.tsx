@@ -47,9 +47,11 @@ export function CruisingMap({
   const mapRef = useRef<MaplibreMap | null>(null);
   const spotsRef = useRef(spots);
   const areasRef = useRef(presenceAreas);
+  const fittedInitialSpotsRef = useRef(false);
   const [pendingBounds, setPendingBounds] = useState<CruisingBounds | null>(null);
   const [mapReady, setMapReady] = useState(false);
   const [mapFailed, setMapFailed] = useState(false);
+  const [renderedSpotCount, setRenderedSpotCount] = useState(0);
   const [webgl] = useState(() => isWebglSupported());
 
   useEffect(() => {
@@ -115,6 +117,12 @@ export function CruisingMap({
     const handleMoveEnd = () => setPendingBounds(currentBounds(map));
     map.on('moveend', handleMoveEnd);
 
+    const updateRenderedSpotCount = () => {
+      if (!map.getLayer('cruising-spots-circle')) return;
+      setRenderedSpotCount(map.queryRenderedFeatures({ layers: ['cruising-spots-circle'] }).length);
+    };
+    map.on('idle', updateRenderedSpotCount);
+
     const selectSpot = (event: maplibregl.MapLayerMouseEvent) => {
       const id = String(event.features?.[0]?.properties?.id ?? '');
       const spot = spotsRef.current.find((item) => item.id === id);
@@ -141,12 +149,12 @@ export function CruisingMap({
 
     const stopReadyWait = applyWhenStyleReady(map, () => {
       setMapReady(true);
-      onSearchArea(currentBounds(map));
     });
 
     return () => {
       stopReadyWait();
       map.off('moveend', handleMoveEnd);
+      map.off('idle', updateRenderedSpotCount);
       map.remove();
       mapRef.current = null;
     };
@@ -173,6 +181,19 @@ export function CruisingMap({
             'circle-opacity': 0.94,
           },
         });
+      }
+
+      if (!fittedInitialSpotsRef.current && spotGeoJson.features.length > 0) {
+        const bounds = new maplibregl.LngLatBounds();
+        for (const feature of spotGeoJson.features) {
+          if (feature.geometry.type === 'Point') {
+            bounds.extend(feature.geometry.coordinates as [number, number]);
+          }
+        }
+        if (!bounds.isEmpty()) {
+          fittedInitialSpotsRef.current = true;
+          map.fitBounds(bounds, { padding: 64, maxZoom: 12, duration: 0 });
+        }
       }
 
       const presenceSource = map.getSource('cruising-presence') as
@@ -220,7 +241,7 @@ export function CruisingMap({
     if (map.getLayer('cruising-presence-count')) {
       map.setLayoutProperty('cruising-presence-count', 'visibility', peopleVisible);
     }
-  }, [layer, spotGeoJson, presenceGeoJson]);
+  }, [layer, mapReady, spotGeoJson, presenceGeoJson]);
 
   useEffect(() => {
     const map = mapRef.current;
@@ -280,6 +301,7 @@ export function CruisingMap({
         aria-label={t('cruising.map.ariaLabel')}
         data-map-state={mapReady ? 'ready' : 'loading'}
         data-map-spots={spotGeoJson.features.length}
+        data-map-rendered-spots={renderedSpotCount}
       />
       {!mapReady ? (
         <div className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center bg-surface-container text-sm text-muted-foreground">

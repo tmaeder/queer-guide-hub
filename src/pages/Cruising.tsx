@@ -62,11 +62,7 @@ export default function Cruising() {
 
   const enabled = !!user;
   const listQuery = useCruisingSpotsList(enabled, deferredSearch, page, PAGE_SIZE);
-  const mapQuery = useCruisingMapSpots(
-    enabled && layer !== 'people' && mapBounds !== null,
-    deferredSearch,
-    mapBounds,
-  );
+  const mapQuery = useCruisingMapSpots(enabled && layer !== 'people', deferredSearch, mapBounds);
   const presenceQuery = useCruisingPresenceAreas(
     enabled && !!intimateProfile?.opted_in_at && layer !== 'spots',
   );
@@ -200,7 +196,7 @@ export default function Cruising() {
 
       <PageContainer className="pt-0">
         <div className="overflow-hidden border-y border-border-hairline lg:grid lg:min-h-[42rem] lg:grid-cols-[minmax(0,1.6fr)_minmax(22rem,.8fr)]">
-          <div className="h-[56dvh] min-h-[28rem] lg:h-[calc(100dvh-13rem)] lg:min-h-[42rem]">
+          <div className="relative h-[56dvh] min-h-[28rem] lg:h-[calc(100dvh-13rem)] lg:min-h-[42rem]">
             <CruisingMapPanel
               spots={mappedSpots}
               presenceAreas={presenceAreas}
@@ -210,6 +206,14 @@ export default function Cruising() {
               onSelectArea={selectArea}
               onSearchArea={setMapBounds}
             />
+            {mapQuery.isError ? (
+              <div
+                role="alert"
+                className="pointer-events-none absolute inset-x-4 bottom-14 z-20 bg-destructive px-4 py-4 text-sm text-destructive-foreground shadow-sm"
+              >
+                {t('cruising.results.error')}
+              </div>
+            ) : null}
           </div>
 
           <aside className="min-h-[30rem] border-t border-border-hairline bg-background lg:max-h-[calc(100dvh-13rem)] lg:overflow-y-auto lg:border-l lg:border-t-0">
