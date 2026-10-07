@@ -30,7 +30,7 @@ function humanize(value: string) {
 }
 
 function ageRangeLabel(bands: string[]) {
-  if (!bands.length) return 'Any age';
+  if (!bands.length || bands.length === AGE_BANDS.length) return 'Any age';
   if (bands.length === 1) return bands[0];
   const first = bands[0].split('-')[0];
   const last = bands[bands.length - 1].split('-').at(-1);
@@ -96,24 +96,16 @@ export function IntimateDiscoveryFilters({
   };
 
   return (
-    <section aria-label="Discovery filters" className="mb-6 space-y-2">
+    <section aria-label="Discovery filters" className="mb-6 space-y-4">
       <div className="flex flex-wrap items-center gap-2">
         <span className="mr-1 text-13 font-medium text-muted-foreground">
           Filters{activeCount ? ` · ${activeCount}` : ''}
         </span>
-        <MultiSelectFilter label="Role" values={ROLES} selected={roles} onChange={onRolesChange} />
         <InterestFilter
           options={interestOptions}
           loading={interestsLoading}
           selected={interests}
           onChange={onInterestsChange}
-        />
-        <AgeFilter selected={ages} onChange={onAgesChange} />
-        <MultiSelectFilter
-          label="Body"
-          values={BODY_TYPES}
-          selected={bodies}
-          onChange={onBodiesChange}
         />
         {activeCount > 0 && (
           <Button variant="ghost" size="sm" className="h-9 px-2.5" onClick={clearAll}>
@@ -121,6 +113,15 @@ export function IntimateDiscoveryFilters({
           </Button>
         )}
       </div>
+
+      <InlineMultiSelect label="Role" values={ROLES} selected={roles} onChange={onRolesChange} />
+      <AgeFilter selected={ages} onChange={onAgesChange} />
+      <InlineMultiSelect
+        label="Body"
+        values={BODY_TYPES}
+        selected={bodies}
+        onChange={onBodiesChange}
+      />
 
       {chips.length > 0 && (
         <div className="flex gap-1.5 overflow-x-auto pb-1" aria-label="Active filters">
@@ -171,7 +172,7 @@ const FilterTrigger = forwardRef<HTMLButtonElement, FilterTriggerProps>(function
   );
 });
 
-function MultiSelectFilter({
+function InlineMultiSelect({
   label,
   values,
   selected,
@@ -190,39 +191,28 @@ function MultiSelectFilter({
     );
 
   return (
-    <Popover>
-      <PopoverTrigger asChild>
-        <FilterTrigger label={label} count={selected.length} />
-      </PopoverTrigger>
-      <PopoverContent align="start" className="w-60 p-2">
-        <div className="px-2 pb-1 pt-1 text-xs font-medium text-muted-foreground">{label}</div>
-        <div className="space-y-0.5">
-          {values.map((value) => {
-            const checked = selected.includes(value);
-            return (
-              <button
-                key={value}
-                type="button"
-                onClick={() => toggleValue(value)}
-                className="flex min-h-10 w-full items-center gap-2 rounded-element px-2 text-left text-sm transition-colors hover:bg-muted/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                aria-pressed={checked}
-              >
-                <span
-                  className={cn(
-                    'flex h-4 w-4 shrink-0 items-center justify-center rounded-badge bg-surface-dim',
-                    checked && 'bg-foreground text-background',
-                  )}
-                  aria-hidden
-                >
-                  {checked && <Check className="h-3 w-3" />}
-                </span>
-                <span>{humanize(value)}</span>
-              </button>
-            );
-          })}
-        </div>
-      </PopoverContent>
-    </Popover>
+    <div role="group" aria-label={label} className="grid gap-1.5 sm:grid-cols-[3.5rem_1fr]">
+      <span className="pt-1.5 text-xs font-medium text-muted-foreground">{label}</span>
+      <div className="flex gap-1.5 overflow-x-auto pb-1">
+        {values.map((value) => {
+          const checked = selected.includes(value);
+          return (
+            <button
+              key={value}
+              type="button"
+              onClick={() => toggleValue(value)}
+              className={cn(
+                'min-h-8 shrink-0 rounded-element bg-surface-container px-2.5 text-xs font-medium text-foreground transition-colors hover:bg-surface-container-high focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                checked && 'bg-foreground text-background hover:bg-foreground/90',
+              )}
+              aria-pressed={checked}
+            >
+              {humanize(value)}
+            </button>
+          );
+        })}
+      </div>
+    </div>
   );
 }
 
@@ -317,37 +307,32 @@ function AgeFilter({
   selected: string[];
   onChange: (values: string[]) => void;
 }) {
-  const [open, setOpen] = useState(false);
-  const [draft, setDraft] = useState<[number, number]>(() => ageRangeFromBands(selected));
-  const selectedLabel = ageRangeLabel(selected);
-  const draftBands = ageBandsFromRange(draft);
+  const [draft, setDraft] = useState<[number, number] | null>(null);
+  const range = draft ?? ageRangeFromBands(selected);
+  const draftBands = ageBandsFromRange(range);
 
-  const handleOpen = (nextOpen: boolean) => {
-    if (nextOpen) setDraft(ageRangeFromBands(selected));
-    setOpen(nextOpen);
+  const commit = (value: number[]) => {
+    const range: [number, number] = [value[0], value[1]];
+    onChange(range[0] === 0 && range[1] === AGE_BANDS.length - 1 ? [] : ageBandsFromRange(range));
+    setDraft(null);
   };
 
   return (
-    <Popover open={open} onOpenChange={handleOpen}>
-      <PopoverTrigger asChild>
-        <FilterTrigger
-          label="Age"
-          count={selected.length ? 1 : 0}
-          summary={selected.length ? selectedLabel : undefined}
-        />
-      </PopoverTrigger>
-      <PopoverContent align="start" className="w-72 p-4">
-        <div className="mb-6 flex items-baseline justify-between gap-4">
-          <span className="text-xs font-medium text-muted-foreground">Age range</span>
-          <span className="text-sm font-medium tabular-nums">{ageRangeLabel(draftBands)}</span>
-        </div>
+    <div
+      role="group"
+      aria-label="Age"
+      className="grid gap-2 sm:grid-cols-[3.5rem_minmax(10rem,1fr)_auto] sm:items-center"
+    >
+      <span className="text-xs font-medium text-muted-foreground">Age</span>
+      <div className="flex min-w-0 items-center gap-4">
         <SliderPrimitive.Root
-          className="relative flex h-6 w-full touch-none select-none items-center"
+          className="relative flex h-8 min-w-36 flex-1 touch-none select-none items-center"
           min={0}
           max={AGE_BANDS.length - 1}
           step={1}
-          value={draft}
+          value={range}
           onValueChange={(value) => setDraft([value[0], value[1]])}
+          onValueCommit={commit}
           minStepsBetweenThumbs={0}
         >
           <SliderPrimitive.Track className="relative h-1.5 w-full grow overflow-hidden rounded-full bg-surface-dim">
@@ -355,41 +340,24 @@ function AgeFilter({
           </SliderPrimitive.Track>
           <SliderPrimitive.Thumb
             aria-label="Minimum age band"
-            aria-valuetext={AGE_BANDS[draft[0]]}
+            aria-valuetext={AGE_BANDS[range[0]]}
             className="block h-5 w-5 rounded-full bg-foreground shadow-soft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
           />
           <SliderPrimitive.Thumb
             aria-label="Maximum age band"
-            aria-valuetext={AGE_BANDS[draft[1]]}
+            aria-valuetext={AGE_BANDS[range[1]]}
             className="block h-5 w-5 rounded-full bg-foreground shadow-soft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
           />
         </SliderPrimitive.Root>
-        <div className="mt-1 flex justify-between text-xs tabular-nums text-muted-foreground">
-          <span>18</span>
-          <span>70+</span>
-        </div>
-        <div className="mt-4 flex items-center justify-between gap-2">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => {
-              onChange([]);
-              setOpen(false);
-            }}
-          >
-            Any age
-          </Button>
-          <Button
-            size="sm"
-            onClick={() => {
-              onChange(draft[0] === 0 && draft[1] === AGE_BANDS.length - 1 ? [] : draftBands);
-              setOpen(false);
-            }}
-          >
-            Apply
-          </Button>
-        </div>
-      </PopoverContent>
-    </Popover>
+        <span className="w-16 shrink-0 text-right text-xs font-medium tabular-nums">
+          {ageRangeLabel(draftBands)}
+        </span>
+      </div>
+      {selected.length ? (
+        <Button variant="ghost" size="sm" className="h-8 px-2" onClick={() => onChange([])}>
+          Reset
+        </Button>
+      ) : null}
+    </div>
   );
 }
