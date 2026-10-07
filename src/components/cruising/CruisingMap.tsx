@@ -6,13 +6,14 @@ import { LocateFixed, Search } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { getMapStyle } from '@/config/mapStyle';
+import { applyWhenStyleReady } from '@/components/map/mapStyleReady';
 import { isWebglSupported } from '@/lib/webglSupport';
 import { paper, trackColor } from '@/lib/mapTokens';
 import type { CruisingBounds, CruisingPresenceArea, CruisingSpot } from '@/hooks/useCruisingGuide';
 
 export type CruisingLayer = 'both' | 'people' | 'spots';
 
-interface CruisingMapProps {
+export interface CruisingMapProps {
   spots: CruisingSpot[];
   presenceAreas: CruisingPresenceArea[];
   layer: CruisingLayer;
@@ -47,6 +48,8 @@ export function CruisingMap({
   const spotsRef = useRef(spots);
   const areasRef = useRef(presenceAreas);
   const [pendingBounds, setPendingBounds] = useState<CruisingBounds | null>(null);
+  const [mapReady, setMapReady] = useState(false);
+  const [mapFailed, setMapFailed] = useState(false);
   const [webgl] = useState(() => isWebglSupported());
 
   useEffect(() => {
@@ -91,14 +94,21 @@ export function CruisingMap({
 
   useEffect(() => {
     if (!containerRef.current || mapRef.current || !webgl) return;
-    const map = new maplibregl.Map({
-      container: containerRef.current,
-      style: getMapStyle(),
-      center: [8.5, 47.2],
-      zoom: 3,
-      attributionControl: { compact: true },
-      cooperativeGestures: true,
-    });
+    let map: MaplibreMap;
+    try {
+      map = new maplibregl.Map({
+        container: containerRef.current,
+        style: getMapStyle(),
+        center: [8.5, 47.2],
+        zoom: 3,
+        attributionControl: { compact: true },
+        cooperativeGestures: true,
+      });
+    } catch (error) {
+      console.error('[cruising-map] renderer initialization failed', error);
+      const failureFrame = window.requestAnimationFrame(() => setMapFailed(true));
+      return () => window.cancelAnimationFrame(failureFrame);
+    }
     mapRef.current = map;
     map.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'top-right');
 
@@ -129,12 +139,18 @@ export function CruisingMap({
     map.on('mouseenter', 'cruising-presence-circle', pointerOn);
     map.on('mouseleave', 'cruising-presence-circle', pointerOff);
 
+    const stopReadyWait = applyWhenStyleReady(map, () => {
+      setMapReady(true);
+      onSearchArea(currentBounds(map));
+    });
+
     return () => {
+      stopReadyWait();
       map.off('moveend', handleMoveEnd);
       map.remove();
       mapRef.current = null;
     };
-  }, [onSelectArea, onSelectSpot, webgl]);
+  }, [onSearchArea, onSelectArea, onSelectSpot, webgl]);
 
   useEffect(() => {
     const map = mapRef.current;
@@ -189,8 +205,7 @@ export function CruisingMap({
         });
       }
     };
-    if (map.isStyleLoaded()) apply();
-    else map.once('load', apply);
+    return applyWhenStyleReady(map, apply);
   }, [presenceGeoJson, spotGeoJson]);
 
   useEffect(() => {
@@ -230,7 +245,7 @@ export function CruisingMap({
     });
   };
 
-  if (!webgl) {
+  if (!webgl || mapFailed) {
     return (
       <div className="flex h-full min-h-80 items-center justify-center bg-surface-container px-6 text-center text-sm text-muted-foreground">
         {t('cruising.map.unavailable')}
@@ -244,7 +259,14 @@ export function CruisingMap({
         ref={containerRef}
         className="absolute inset-0"
         aria-label={t('cruising.map.ariaLabel')}
+        data-map-state={mapReady ? 'ready' : 'loading'}
+        data-map-spots={spotGeoJson.features.length}
       />
+      {!mapReady ? (
+        <div className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center bg-surface-container text-sm text-muted-foreground">
+          {t('cruising.map.loading', 'Loading interactive map…')}
+        </div>
+      ) : null}
       <div className="absolute left-4 top-4 z-10 flex flex-wrap gap-2">
         <Button size="sm" variant="secondary" className="gap-2 shadow-sm" onClick={locate}>
           <LocateFixed size={14} aria-hidden />
