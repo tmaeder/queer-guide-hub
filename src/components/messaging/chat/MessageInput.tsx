@@ -103,9 +103,17 @@ export const MessageInput = ({
     e.target.value = ''; // allow re-picking the same file
   };
 
+  // NEVER sanitize on change. `sanitizeMessage` ends in `.trim()` and this input
+  // is CONTROLLED, so a space typed at the end of the value was stripped before
+  // it could ever render — and every space is trailing at the moment you type it,
+  // which makes a space impossible ANYWHERE in a message, not just at the edges.
+  // Reported from /hub/messages on 2026-10-06: "wenn ich versuche eine Nachricht
+  // zu schreiben, kann ich kein Leerzeichen eingeben". DOMPurify-per-keystroke ate
+  // a mid-typing `<` for the same reason. Sanitizing in handleSubmit alone is
+  // sufficient: that is the only path to onSend, and the composer's own value is
+  // React-escaped text inside an <input>, never interpreted as markup.
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = sanitizeMessage(e.target.value);
-    setMessage(value);
+    setMessage(e.target.value);
 
     // Send typing indicator
     onTyping();
@@ -163,7 +171,7 @@ export const MessageInput = ({
                 type="button"
                 onClick={onClearImage}
                 aria-label={t('chat.image.remove', { defaultValue: 'Remove image' })}
-                className="absolute right-0.5 top-0.5 flex h-5 w-5 items-center justify-center rounded-full bg-foreground text-background"
+                className="absolute right-0.5 top-0.5 flex h-5 w-5 min-h-11 min-w-11 items-center justify-center rounded-full bg-foreground text-background"
               >
                 <X size={12} />
               </button>

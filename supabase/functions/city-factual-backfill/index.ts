@@ -28,13 +28,20 @@ import { withCircuitBreaker, CircuitOpenError } from '../_shared/circuit-breaker
 import { cityNameCandidates } from '../_shared/city-name-normalize.ts'
 import { plausibleCityScalar } from '../_shared/city-scalar-bounds.ts'
 import { cityClassVerdict, cityCoordVerdict, isCityRefreshScope } from '../_shared/city-class-guard.ts'
+import { countryLanguageCodes } from '../_shared/language-codes.ts'
 import {
-  airportQuery, applyLabels, capitalQuery, parseCityFacts, parseCityNames, pickAirports,
+  airportQuery, applyLabels, capitalQuery, parseCityFacts, parseCityNames, parseCityNativeName, pickAirports,
   pickCapitals, pickUniversities, resolveLabels, sparqlUrl, universityQuery,
   CITY_NAME_LANGS, CITY_NAME_SITES,
   type AirportPick, type CapitalPick, type Claims, type CityNameAlias, type CityWdFacts,
   type Json, type SparqlBinding, type WdAliases, type WdLabels, type WdSitelinks,
 } from '../_shared/wikidata-city.ts'
+
+// Reported in every response. A deploy can store new source while the
+// runtime keeps serving an older bundle (seen 2026-10-07: v214 held the
+// name_local code and answered in the old shape), so the only proof a change
+// is live is the response itself. Bump this when the link/sparql output changes.
+const FN_REVISION = '2026-10-07.name-local-label-first'
 
 const DEFAULT_BATCH_LIMIT = 40
 // 300 is the repo-wide ceiling for city writes: one cities UPDATE fans out
@@ -143,13 +150,17 @@ async function searchQid(query: string, country?: string | null): Promise<string
  * `city_aliases` is what lets `city_resolve_or_create` know that Kapstadt is
  * Cape Town before a second row gets created.
  */
-async function fetchEntity(qid: string): Promise<
-  { claims: Claims; enwikiTitle?: string; names: CityNameAlias[] } | null
+async function fetchEntity(qid: string, extraLangs: readonly string[] = []): Promise<
+  { claims: Claims; enwikiTitle?: string; names: CityNameAlias[]; labels?: WdLabels } | null
 > {
+  // extraLangs: the row's country languages, so the label fallback of
+  // parseCityNativeName can read e.g. a Czech or Swedish label. Same request,
+  // longer query string.
+  const langs = [...new Set([...CITY_NAME_LANGS, ...extraLangs])]
   const d = await fetchJson(
     `https://www.wikidata.org/w/api.php?action=wbgetentities&ids=${encodeURIComponent(qid)}` +
     `&props=claims|sitelinks|labels|aliases` +
-    `&languages=${CITY_NAME_LANGS.join('|')}` +
+    `&languages=${langs.join('|')}` +
     `&sitefilter=${['enwiki', ...CITY_NAME_SITES].join('|')}&format=json`,
   )
   const ent = (d?.entities as Record<string, {
@@ -163,6 +174,7 @@ async function fetchEntity(qid: string): Promise<
     claims: ent.claims ?? {},
     enwikiTitle: ent.sitelinks?.enwiki?.title,
     names: parseCityNames(ent.claims ?? {}, ent.labels, ent.aliases, ent.sitelinks),
+    labels: ent.labels,
   }
 }
 
@@ -344,7 +356,8 @@ interface CityRow {
   is_regional_capital: boolean | null; capital_of_region: string | null
   field_provenance: Prov | null; enrichment_status: Status | null
   wikidata_qid: string | null; wikipedia_title: string | null
-  country_id: string | null; countries: { name?: string } | null
+  country_id: string | null; countries: { name?: string; languages?: string[] | null } | null
+  name_local: string | null; name_local_lang: string | null
 }
 
 const CITY_COLUMNS =
@@ -353,7 +366,8 @@ const CITY_COLUMNS =
   'sister_cities, economy_sectors, universities, local_language, mayor, climate_type, ' +
   'airport_codes, major_airport_code, transportation_info, ' +
   'is_regional_capital, capital_of_region, ' +
-  'field_provenance, enrichment_status, wikidata_qid, wikipedia_title, country_id, countries(name)'
+  'field_provenance, enrichment_status, wikidata_qid, wikipedia_title, country_id, ' +
+  'name_local, name_local_lang, countries(name, languages)'
 
 /**
  * An array counts as empty when it holds nothing usable, not merely when it has
@@ -449,6 +463,10 @@ async function runLinkPhase(
   // could say nothing, so a corpus drifting toward coordless rows is visible
   // rather than silently unguarded.
   let coordRefused = 0, coordUnchecked = 0
+  // cities.name_local fills, and country language names with no code mapping
+  // (reported verbatim so a gap in language-codes.ts is visible, not silent).
+  let nativeFilled = 0
+  const nativeUnmapped = new Set<string>()
   // Distinct P31 labels the whitelist did not recognise, reported verbatim so a
   // systematic gap in the vocabulary shows up as a rising, namable number.
   const unrecognisedClasses = new Set<string>()
@@ -506,7 +524,9 @@ async function runLinkPhase(
       // --- 2. Claims + sitelink (ONE request when the QID is cached) ------
       let facts: CityWdFacts | null = null
       if (qid) {
-        const ent = await withCircuitBreaker(supabase, 'wikidata.api', () => fetchEntity(qid!))
+        const langInfo = countryLanguageCodes(c.countries?.languages)
+        for (const u of langInfo.unmapped) nativeUnmapped.add(u)
+        const ent = await withCircuitBreaker(supabase, 'wikidata.api', () => fetchEntity(qid!, langInfo.codes))
         if (!ent) {
           bumpMiss(state, 'wikidata_link', 'wikidata')
           missReason ??= 'wikidata_entity_missing'
@@ -620,6 +640,21 @@ async function runLinkPhase(
             // created, not to this row.
             if (!dryRun && ent.names.length > 0) {
               aliasesWritten += await writeCityAliases(supabase, c.id, c.name, ent.names)
+            }
+            // Native name, from the SAME adopted entity -- only inside the
+            // settlement branch, so a refused namesake or a non-place can never
+            // contribute one. Fill-if-empty: a curated value is never replaced.
+            const native = parseCityNativeName(ent.claims, ent.labels, langInfo.codes)
+            if (native) {
+              addCandidate(prov, 'name_local', 'wikidata', native.name, {
+                language: native.lang,
+                source_identity: `${qid}#${native.source}`,
+              })
+              if (!c.name_local) {
+                update.name_local = native.name
+                update.name_local_lang = native.lang
+                nativeFilled++
+              }
             }
           } else if (cls.verdict === 'refused') {
             // A decision about the entity, so it counts toward the terminal
@@ -860,7 +895,11 @@ async function runLinkPhase(
         status = 'skipped'; skipped++
         missReason ??= qid ? 'no_empty_fields' : 'unresolved'
       }
-      results.push({ id: c.id, name: c.name, qid, filled, rank_fixed: rankFixed, reason: missReason })
+      results.push({
+        id: c.id, name: c.name, qid, filled, rank_fixed: rankFixed, reason: missReason,
+        // Carried so a dry run can be READ: an endonym is checked by eye.
+        ...(update.name_local ? { name_local: update.name_local, name_local_lang: update.name_local_lang } : {}),
+      })
     } catch (e) {
       if (e instanceof CircuitOpenError) {
         return jsonResponse({ processed, updated, skipped, failed, circuit_open: e.apiName, results }, 200, req)
@@ -886,9 +925,11 @@ async function runLinkPhase(
   }
 
   return jsonResponse({
-    phase: 'link', processed, updated, skipped, failed,
+    phase: 'link', revision: FN_REVISION, processed, updated, skipped, failed,
     scope,
     aliases_written: aliasesWritten,
+    name_local_filled: nativeFilled,
+    ...(nativeUnmapped.size ? { name_local_unmapped_languages: [...nativeUnmapped].sort() } : {}),
     class_refused: classRefused,
     class_undetermined: classUndetermined,
     coord_refused: coordRefused,
@@ -1084,6 +1125,6 @@ async function runSparqlPhase(
   }
 
   return jsonResponse(
-    { phase: 'sparql', processed: byQid.size, updated, skipped, dry_run: dryRun, results }, 200, req,
+    { phase: 'sparql', revision: FN_REVISION, processed: byQid.size, updated, skipped, dry_run: dryRun, results }, 200, req,
   )
 }

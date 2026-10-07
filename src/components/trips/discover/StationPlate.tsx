@@ -132,7 +132,7 @@ export function StationPlate({
                 city: station.name,
               })}
               className={cn(
-                'relative z-10 -mt-1 inline-flex h-8 w-8 shrink-0 items-center justify-center',
+                'relative z-10 -mt-1 inline-flex h-8 w-8 min-h-11 min-w-11 shrink-0 items-center justify-center',
                 'border border-border-hairline transition-colors duration-fast',
                 'hover:bg-foreground hover:text-background',
                 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',

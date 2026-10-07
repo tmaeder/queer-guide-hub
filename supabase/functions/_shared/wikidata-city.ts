@@ -693,3 +693,79 @@ export function parseCityNames(
 
   return out.slice(0, MAX_CITY_ALIASES)
 }
+
+// ---------------------------------------------------------------- native name
+//
+// cities.name_local: the city's name in the official language of ITS OWN
+// country, in the original script (München, Warszawa, 東京). English stays in
+// cities.name.
+//
+// Source order, and why (re-ordered 2026-10-07 after the first live sample):
+//   1. The entity's LABEL in the country's languages, in the country's order.
+//      A label in the country's own language IS the endonym, in its everyday
+//      form. P1705 was first and lost on two measured rows: Toronto's en P1705
+//      is the corporate "City of Toronto", and Ho Chi Minh City carries a lone
+//      Khmer P1705 (Prey Nokor) that rule 3 accepted although the vi label
+//      exists. Label-first fixes both without a per-row exception.
+//   2. P1705 "native label" whose tag is an official language of the country.
+//      Monolingual text, so the language needs no inference; read through the
+//      same rank/end-time discipline as every other statement here (a
+//      deprecated or ended P1705 is how Wikidata retracts a former name).
+//      Preferred rank first, then statement order (Brussels: nl before fr).
+//   3. Exactly ONE P1705 when nothing above matched. `countries.languages` is
+//      coarse, and a single native label with no competing label is still the
+//      place's own name. Two or more unmatched values are ambiguous.
+//   4. null. A missing endonym is honest; a guessed one is a wrong fact.
+//
+// Values are stripped of Unicode bidi controls (U+200E/F, U+202A-E,
+// U+2066-9): Casablanca's label arrived as U+202B + Arabic, an invisible
+// character that would make two equal names compare unequal forever.
+
+export interface CityNativeName {
+  name: string
+  lang: string
+  source: 'P1705' | 'label'
+}
+
+function primarySubtag(tag: string): string {
+  return tag.toLowerCase().split('-')[0]
+}
+
+function cleanNative(raw: unknown): string | null {
+  if (typeof raw !== 'string') return null
+  const s = raw.replace(/[\u200e\u200f\u202a-\u202e\u2066-\u2069]/g, '').replace(/\s+/g, ' ').trim()
+  if (!s || s.length > 200) return null
+  if (/https?:\/\//i.test(s)) return null
+  return s
+}
+
+export function parseCityNativeName(
+  claims: Claims,
+  labels: WdLabels | undefined,
+  countryLangCodes: readonly string[],
+): CityNativeName | null {
+  const wanted = countryLangCodes.map(primarySubtag)
+
+  const live = currentStatements(claims.P1705)
+  const ordered = [
+    ...live.filter(s => s.rank === 'preferred'),
+    ...live.filter(s => s.rank !== 'preferred'),
+  ]
+  const natives: Array<{ name: string; lang: string }> = []
+  for (const st of ordered) {
+    const v = valueOf(st.mainsnak) as { text?: string; language?: string } | undefined
+    const name = cleanNative(v?.text)
+    const lang = typeof v?.language === 'string' ? v.language.toLowerCase() : ''
+    if (name && lang) natives.push({ name, lang })
+  }
+
+  for (const code of countryLangCodes) {
+    const name = cleanNative(labels?.[code]?.value)
+    if (name) return { name, lang: code.toLowerCase(), source: 'label' }
+  }
+
+  const matched = natives.find(n => wanted.includes(primarySubtag(n.lang)))
+  if (matched) return { ...matched, source: 'P1705' }
+  if (natives.length === 1) return { ...natives[0], source: 'P1705' }
+  return null
+}

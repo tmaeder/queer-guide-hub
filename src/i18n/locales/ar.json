@@ -2052,6 +2052,7 @@
       "settings": "الإعدادات",
       "inbox": "البريد الوارد",
       "friends": "الأصدقاء",
+      "friendsOnline": "{{count}} متصل",
       "myGroups": "مجموعاتي",
       "accessibility": "إمكانية الوصول",
       "bookings": "الحجوزات",

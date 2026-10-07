@@ -118,6 +118,7 @@ interface BrandSafeRowState extends RowState {
   /** False when the queer-owned filter returned too few items and the rail
    *  fell back to the wider community pool (callers retitle accordingly). */
   ownedOnly: boolean;
+  refetch: () => void;
 }
 
 /**
@@ -150,6 +151,7 @@ export function useBrandSafeRow(limit = 12): BrandSafeRowState {
     loading: query.isLoading,
     error: query.error ? ((query.error as Error).message ?? 'Failed to load') : null,
     ownedOnly: query.data?.ownedOnly ?? true,
+    refetch: () => void query.refetch(),
   };
 }
 
@@ -193,7 +195,12 @@ export function useMarketplaceRow(key: CuratedRowKey, limit = 12): RowState {
 export function useMarketplaceSpotlight(
   pick = 0,
   poolSize = 12,
-): { listing: MarketplaceListing | null; loading: boolean } {
+): {
+  listing: MarketplaceListing | null;
+  loading: boolean;
+  error: string | null;
+  refetch: () => void;
+} {
   const query = useQuery({
     queryKey: ['marketplace-spotlight', poolSize],
     staleTime: 30 * 60 * 1000,
@@ -216,5 +223,10 @@ export function useMarketplaceSpotlight(
 
   const pool = query.data ?? [];
   const listing = pool.length ? pool[((pick % pool.length) + pool.length) % pool.length] : null;
-  return { listing, loading: query.isLoading };
+  return {
+    listing,
+    loading: query.isLoading,
+    error: query.error ? ((query.error as Error).message ?? 'Failed to load') : null,
+    refetch: () => void query.refetch(),
+  };
 }

@@ -2042,6 +2042,7 @@
       "settings": "设置",
       "inbox": "收件箱",
       "friends": "朋友",
+      "friendsOnline": "{{count}} 人在线",
       "myGroups": "我的群组",
       "accessibility": "无障碍",
       "bookings": "预订",

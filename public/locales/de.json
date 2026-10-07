@@ -2042,6 +2042,7 @@
       "settings": "Einstellungen",
       "inbox": "Posteingang",
       "friends": "Freund*innen",
+      "friendsOnline": "{{count}} online",
       "myGroups": "Meine Gruppen",
       "accessibility": "Barrierefreiheit",
       "bookings": "Buchungen",

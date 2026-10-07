@@ -38,7 +38,7 @@ export function TagAlphabetRail({ letter, counts, onChange, className }: TagAlph
           onClick={() => onChange(null)}
           aria-pressed={letter === null}
           className={cn(
-            'inline-flex h-9 items-center justify-center bg-muted rounded-element px-4 text-13 transition-colors',
+            'inline-flex h-9 min-h-11 items-center justify-center bg-muted rounded-element px-4 text-13 transition-colors',
             letter === null
               ? 'bg-foreground font-bold text-background'
               : 'bg-background font-medium hover:bg-surface-container',
@@ -62,7 +62,7 @@ export function TagAlphabetRail({ letter, counts, onChange, className }: TagAlph
                   : t('tags.letters.jump', 'Terms starting with {{letter}}', { letter: l })
               }
               className={cn(
-                'inline-flex h-9 min-w-9 items-center justify-center bg-muted rounded-element px-2 text-13 transition-colors',
+                'inline-flex h-9 min-h-11 min-w-11 items-center justify-center bg-muted rounded-element px-2 text-13 transition-colors',
                 active
                   ? 'bg-foreground font-bold text-background'
                   : 'bg-background font-medium hover:bg-surface-container',

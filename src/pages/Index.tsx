@@ -4,21 +4,22 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { YourLines } from '@/components/home/YourLines';
 import { DeferredSection } from '@/components/home/DeferredSection';
 import { FadeIn } from '@/components/motion';
-import { lazyOptional } from '@/utils/lazyRetry';
+import { lazyRetry } from '@/utils/lazyRetry';
 import { SubwayHero } from '@/components/home/subway/SubwayHero';
 import { DeparturesBoard } from '@/components/home/subway/DeparturesBoard';
 import { CityCards } from '@/components/home/subway/CityCards';
 import { SupportBand } from '@/components/home/subway/SupportBand';
 import { HomeRegionProvider } from '@/components/home/HomeRegionProvider';
+import { HomeSectionError } from '@/components/home/HomeSectionError';
 import { PageContainer } from '@/components/layout/PageContainer';
 
-// Plain React.lazy reads `.default` off whatever the dynamic import resolves
-// to; lazyOptional degrades to null when a stale deploy no longer serves the
-// chunk instead of crashing the homepage.
-const NewsMagazine = lazyOptional(() => import('@/components/home/NewsMagazine'));
-const HomeShoppingSection = lazyOptional(() => import('@/components/home/HomeShoppingSection'));
-const ArchiveBand = lazyOptional(() => import('@/components/home/ArchiveBand'));
-const GlossaryBand = lazyOptional(() => import('@/components/home/GlossaryBand'));
+// Homepage bands are content, not optional chrome. A final chunk failure must
+// surface through the section boundary so the visitor receives a recovery
+// action instead of an unexplained gap in the page.
+const NewsMagazine = lazyRetry(() => import('@/components/home/NewsMagazine'));
+const HomeShoppingSection = lazyRetry(() => import('@/components/home/HomeShoppingSection'));
+const ArchiveBand = lazyRetry(() => import('@/components/home/ArchiveBand'));
+const GlossaryBand = lazyRetry(() => import('@/components/home/GlossaryBand'));
 
 // ── Section shells ───────────────────────────────────────────────────────────
 
@@ -57,6 +58,14 @@ const railSkeleton = (
   </PageContainer>
 );
 
+function HomeBoundaryError({ onRetry }: { onRetry: () => void }) {
+  return (
+    <PageContainer>
+      <HomeSectionError onRetry={onRetry} />
+    </PageContainer>
+  );
+}
+
 /** Shared wrapper: error isolation + near-viewport deferral (code AND data)
  *  + scroll-in reveal for every below-fold homepage section. */
 function HomeDeferred({
@@ -69,7 +78,10 @@ function HomeDeferred({
   children: React.ReactNode;
 }) {
   return (
-    <ErrorBoundary section={section} fallback={null}>
+    <ErrorBoundary
+      section={section}
+      fallback={({ onRetry }) => <HomeBoundaryError onRetry={onRetry} />}
+    >
       <DeferredSection fallback={skeleton}>
         <React.Suspense fallback={skeleton}>
           <FadeIn>{children}</FadeIn>
@@ -101,20 +113,32 @@ const Index = React.memo(() => {
            two bands can disagree about where the visitor is and the geo call
            is paid for once. Its own boundary: a geo failure degrades to the
            global page (the provider's neutral value), never a blank one. */}
-      <ErrorBoundary section="home-region" fallback={null}>
+      <ErrorBoundary
+        section="home-region"
+        fallback={({ onRetry }) => <HomeBoundaryError onRetry={onRetry} />}
+      >
         <HomeRegionProvider>
           {/* ── Near you — region-scoped places, local events promoted ───── */}
-          <ErrorBoundary section="departures" fallback={null}>
+          <ErrorBoundary
+            section="departures"
+            fallback={({ onRetry }) => <HomeBoundaryError onRetry={onRetry} />}
+          >
             <DeparturesBoard />
           </ErrorBoundary>
 
           {/* ── Your lines — the visitor's own thread (self-hides) ───────── */}
-          <ErrorBoundary section="your-lines" fallback={null}>
+          <ErrorBoundary
+            section="your-lines"
+            fallback={({ onRetry }) => <HomeBoundaryError onRetry={onRetry} />}
+          >
             <YourLines />
           </ErrorBoundary>
 
           {/* ── Cities — bordered cards with bending track lines ─────────── */}
-          <ErrorBoundary section="cities" fallback={null}>
+          <ErrorBoundary
+            section="cities"
+            fallback={({ onRetry }) => <HomeBoundaryError onRetry={onRetry} />}
+          >
             <CityCards />
           </ErrorBoundary>
 
@@ -125,7 +149,7 @@ const Index = React.memo(() => {
         </HomeRegionProvider>
       </ErrorBoundary>
 
-      {/* ── Marketplace — brand-safe spotlight + rail (self-hides) ───── */}
+      {/* ── Marketplace — brand-safe spotlight + rail with explicit states ── */}
       <HomeDeferred section="home-shopping" skeleton={railSkeleton}>
         <HomeShoppingSection />
       </HomeDeferred>
@@ -136,7 +160,7 @@ const Index = React.memo(() => {
         <ArchiveBand />
       </HomeDeferred>
 
-      {/* ── Glossary — rotating terms from the tags wiki (self-hides) ── */}
+      {/* ── Glossary — rotating terms from the tags wiki ─────── */}
       <HomeDeferred section="glossary" skeleton={null}>
         <GlossaryBand />
       </HomeDeferred>

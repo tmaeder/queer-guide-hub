@@ -81,8 +81,8 @@ test.describe('Header mobile a11y', () => {
     await expect(trigger).toBeVisible();
     // A field at this width squeezed to 14.7px and failed axe `target-size`.
     const box = await trigger.boundingBox();
-    expect(box!.width).toBeGreaterThanOrEqual(24);
-    expect(box!.height).toBeGreaterThanOrEqual(24);
+    expect(box!.width).toBeGreaterThanOrEqual(44);
+    expect(box!.height).toBeGreaterThanOrEqual(44);
     // React hydration / Suspense boundaries can lag before handlers bind.
     await page.waitForTimeout(500);
 

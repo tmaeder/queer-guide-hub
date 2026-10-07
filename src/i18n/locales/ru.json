@@ -2074,6 +2074,7 @@
       "settings": "Настройки",
       "inbox": "Входящие",
       "friends": "Друзья",
+      "friendsOnline": "{{count}} в сети",
       "myGroups": "Мои группы",
       "accessibility": "Доступность",
       "bookings": "Бронирования",

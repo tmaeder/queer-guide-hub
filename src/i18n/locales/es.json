@@ -2042,6 +2042,7 @@
       "settings": "Ajustes",
       "inbox": "Bandeja de entrada",
       "friends": "Amistades",
+      "friendsOnline": "{{count}} en línea",
       "myGroups": "Mis grupos",
       "accessibility": "Accesibilidad",
       "bookings": "Reservas",

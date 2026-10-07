@@ -6,13 +6,14 @@ import { LocateFixed, Search } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { getMapStyle } from '@/config/mapStyle';
+import { applyWhenStyleReady } from '@/components/map/mapStyleReady';
 import { isWebglSupported } from '@/lib/webglSupport';
 import { paper, trackColor } from '@/lib/mapTokens';
 import type { CruisingBounds, CruisingPresenceArea, CruisingSpot } from '@/hooks/useCruisingGuide';
 
 export type CruisingLayer = 'both' | 'people' | 'spots';
 
-interface CruisingMapProps {
+export interface CruisingMapProps {
   spots: CruisingSpot[];
   presenceAreas: CruisingPresenceArea[];
   layer: CruisingLayer;
@@ -47,6 +48,8 @@ export function CruisingMap({
   const spotsRef = useRef(spots);
   const areasRef = useRef(presenceAreas);
   const [pendingBounds, setPendingBounds] = useState<CruisingBounds | null>(null);
+  const [mapReady, setMapReady] = useState(false);
+  const [mapFailed, setMapFailed] = useState(false);
   const [webgl] = useState(() => isWebglSupported());
 
   useEffect(() => {
@@ -91,14 +94,21 @@ export function CruisingMap({
 
   useEffect(() => {
     if (!containerRef.current || mapRef.current || !webgl) return;
-    const map = new maplibregl.Map({
-      container: containerRef.current,
-      style: getMapStyle(),
-      center: [8.5, 47.2],
-      zoom: 3,
-      attributionControl: { compact: true },
-      cooperativeGestures: true,
-    });
+    let map: MaplibreMap;
+    try {
+      map = new maplibregl.Map({
+        container: containerRef.current,
+        style: getMapStyle(),
+        center: [8.5, 47.2],
+        zoom: 3,
+        attributionControl: { compact: true },
+        cooperativeGestures: true,
+      });
+    } catch (error) {
+      console.error('[cruising-map] renderer initialization failed', error);
+      const failureFrame = window.requestAnimationFrame(() => setMapFailed(true));
+      return () => window.cancelAnimationFrame(failureFrame);
+    }
     mapRef.current = map;
     map.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'top-right');
 
@@ -129,12 +139,18 @@ export function CruisingMap({
     map.on('mouseenter', 'cruising-presence-circle', pointerOn);
     map.on('mouseleave', 'cruising-presence-circle', pointerOff);
 
+    const stopReadyWait = applyWhenStyleReady(map, () => {
+      setMapReady(true);
+      onSearchArea(currentBounds(map));
+    });
+
     return () => {
+      stopReadyWait();
       map.off('moveend', handleMoveEnd);
       map.remove();
       mapRef.current = null;
     };
-  }, [onSelectArea, onSelectSpot, webgl]);
+  }, [onSearchArea, onSelectArea, onSelectSpot, webgl]);
 
   useEffect(() => {
     const map = mapRef.current;
@@ -189,8 +205,7 @@ export function CruisingMap({
         });
       }
     };
-    if (map.isStyleLoaded()) apply();
-    else map.once('load', apply);
+    return applyWhenStyleReady(map, apply);
   }, [presenceGeoJson, spotGeoJson]);
 
   useEffect(() => {
@@ -230,7 +245,7 @@ export function CruisingMap({
     });
   };
 
-  if (!webgl) {
+  if (!webgl || mapFailed) {
     return (
       <div className="flex h-full min-h-80 items-center justify-center bg-surface-container px-6 text-center text-sm text-muted-foreground">
         {t('cruising.map.unavailable')}
@@ -240,11 +255,37 @@ export function CruisingMap({
 
   return (
     <div className="relative h-full min-h-[26rem] overflow-hidden bg-surface-container">
+      {/* `h-full w-full` is LOAD-BEARING, not belt-and-braces alongside
+          `inset-0`. MapLibre adds `.maplibregl-map` to this element, and
+          `maplibre-gl.css` sets `.maplibregl-map { position: relative }`
+          UNLAYERED — Tailwind v4 emits its utilities inside
+          `@layer utilities`, and an unlayered rule beats a layered one at any
+          specificity. So `absolute` loses, `inset-0` stops applying to a
+          `position: relative` box, and the element computes to height 0: the
+          map mounts, the canvas exists at MapLibre's 300px fallback, and the
+          page shows an empty grey panel with no basemap and no pins.
+
+          Measured on prod at both 390px and 1440px: `.maplibregl-map` resolved
+          to `position: relative`, `height: 0px` inside a 692px parent.
+
+          Every other map in this codebase already survives that rule by
+          carrying its own height — `ExploreMap` ships `absolute inset-0 w-full
+          h-full`, `EntityMap` and `PersonalitiesMap` use inline
+          `style={{ height }}`, which beats an unlayered rule outright. This
+          was the one container with no height of its own. Matching
+          ExploreMap's class list rather than inventing a third spelling. */}
       <div
         ref={containerRef}
-        className="absolute inset-0"
+        className="absolute inset-0 h-full w-full"
         aria-label={t('cruising.map.ariaLabel')}
+        data-map-state={mapReady ? 'ready' : 'loading'}
+        data-map-spots={spotGeoJson.features.length}
       />
+      {!mapReady ? (
+        <div className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center bg-surface-container text-sm text-muted-foreground">
+          {t('cruising.map.loading', 'Loading interactive map…')}
+        </div>
+      ) : null}
       <div className="absolute left-4 top-4 z-10 flex flex-wrap gap-2">
         <Button size="sm" variant="secondary" className="gap-2 shadow-sm" onClick={locate}>
           <LocateFixed size={14} aria-hidden />
