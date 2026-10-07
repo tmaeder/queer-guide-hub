@@ -6,8 +6,8 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router';
 
-let mockFriendIds: Set<string> | undefined = new Set(['f-1', 'f-2', 'f-3']);
-const mockOnline = new Set(['f-1', 'f-3', 'stranger']);
+// The intersection itself is covered in useFriendIds.test.tsx.
+let mockCount: number | null = 2;
 
 vi.mock('@/hooks/useAuth', () => ({
   useAuth: () => ({ user: { id: 'me', email: 'me@x.co' }, signOut: vi.fn() }),
@@ -16,8 +16,7 @@ vi.mock('@/hooks/useProfile', () => ({ useProfile: () => ({ profile: null }) }))
 vi.mock('@/hooks/useAdminRoles', () => ({
   useAdminRoles: () => ({ isAdmin: false, isModerator: false }),
 }));
-vi.mock('@/hooks/useFriendIds', () => ({ useFriendIds: () => ({ data: mockFriendIds }) }));
-vi.mock('@/hooks/useConversationPresence', () => ({ useGlobalPresence: () => mockOnline }));
+vi.mock('@/hooks/useFriendIds', () => ({ useFriendsOnlineCount: () => mockCount }));
 vi.mock('@/hooks/useSiteBranding', () => ({ useSiteBranding: () => ({}) }));
 vi.mock('@/hooks/useCompactHeader', () => ({ useCompactHeader: () => false }));
 vi.mock('@/hooks/use-mobile', () => ({ useIsMobile: () => false }));
@@ -45,8 +44,8 @@ async function openMenu() {
 }
 
 describe('Header user menu — friends online', () => {
-  it('counts only friends who are online, above Settings, linking to the friends list', async () => {
-    mockFriendIds = new Set(['f-1', 'f-2', 'f-3']);
+  it('shows the online count above Settings, linking to the friends list', async () => {
+    mockCount = 2;
     await openMenu();
     const items = screen.getAllByRole('menuitem');
     const friendsIdx = items.findIndex((el) => el.textContent?.includes('Friends'));
@@ -57,12 +56,11 @@ describe('Header user menu — friends online', () => {
     expect(friendsIdx).toBe(settingsIdx - 1);
     const row = items[friendsIdx];
     expect(row.getAttribute('href')).toBe('/community/friends');
-    // f-1 and f-3 are friends and online; "stranger" is online but not a friend.
     expect(row.textContent).toContain('2 online');
   });
 
   it('shows no number while the friend list is loading', async () => {
-    mockFriendIds = undefined;
+    mockCount = null;
     await openMenu();
     const row = screen.getAllByRole('menuitem').find((el) => el.textContent?.includes('Friends'));
     expect(row).toBeDefined();

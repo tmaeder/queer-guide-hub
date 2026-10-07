@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { useGlobalPresence } from '@/hooks/useConversationPresence';
 
 /**
  * The user ids of the signed-in user's accepted friends.
@@ -30,4 +31,19 @@ export function useFriendIds(userId: string | null | undefined) {
       );
     },
   });
+}
+
+/**
+ * How many of the caller's friends are online now, or null while the friend
+ * list loads. Presence only carries users who opted into the global online
+ * dot (presence_visibility.global_dot), so this counts the friends who chose
+ * to be visible, never everyone who is connected.
+ */
+export function useFriendsOnlineCount(userId: string | null | undefined): number | null {
+  const { data: friendIds } = useFriendIds(userId);
+  const onlineUsers = useGlobalPresence();
+  if (!friendIds) return null;
+  let n = 0;
+  for (const id of friendIds) if (onlineUsers.has(id)) n++;
+  return n;
 }

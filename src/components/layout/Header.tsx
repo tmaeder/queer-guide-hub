@@ -24,8 +24,7 @@ import { generateAvatarUrl } from '@/lib/avatar';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { NotificationBell } from '@/components/notifications/NotificationBell';
 import { useAdminRoles } from '@/hooks/useAdminRoles';
-import { useFriendIds } from '@/hooks/useFriendIds';
-import { useGlobalPresence } from '@/hooks/useConversationPresence';
+import { useFriendsOnlineCount } from '@/hooks/useFriendIds';
 import {
   USER_MENU_ITEMS as userMenuItems,
   INTENT_NAV,
@@ -53,14 +52,7 @@ export function Header() {
   const { profile } = useProfile();
   const { isAdmin, isModerator } = useAdminRoles();
 
-  // Friends currently online. Presence only carries users who opted into the
-  // global online dot (presence_visibility.global_dot), so this counts the
-  // friends who chose to be visible, never everyone who is connected.
-  const { data: friendIds } = useFriendIds(user?.id);
-  const onlineUsers = useGlobalPresence();
-  const friendsOnline = friendIds
-    ? [...friendIds].filter((id) => onlineUsers.has(id)).length
-    : null;
+  const friendsOnline = useFriendsOnlineCount(user?.id);
 
   const avatarSrc =
     profile?.avatar_url ||
