@@ -47,6 +47,19 @@ test.describe('cruising guide', () => {
     await expect(page.getByRole('heading', { name: 'Queer cruising map' })).toBeVisible();
     const interactiveMap = page.getByLabel('Interactive cruising map');
     await expect(interactiveMap).toHaveCount(1);
+    // The container must have REAL height, asserted separately from the
+    // canvas-blankness poll below so a failure names its cause. MapLibre adds
+    // `.maplibregl-map` to this element and `maplibre-gl.css` sets
+    // `position: relative` on it UNLAYERED, which beats Tailwind v4's layered
+    // `absolute`; `inset-0` then stops applying and the element collapses to
+    // 0px unless it carries its own `h-full`. That shipped, and the page
+    // served an empty grey panel — measured 0px inside a 692px parent. The
+    // canvas poll does catch it, but only as "canvas stayed visually blank",
+    // which reads like a tile or style fault rather than a layout one.
+    const mapBox = await interactiveMap.boundingBox();
+    expect(mapBox?.height ?? 0, 'Cruising map container collapsed to zero height').toBeGreaterThan(
+      200,
+    );
     await expect(page.getByRole('region', { name: 'Map' })).toBeVisible();
     await expect(page.getByRole('button', { name: 'Zoom in' })).toBeVisible();
     await expect(interactiveMap).toHaveAttribute('data-map-state', 'ready', { timeout: 20_000 });
