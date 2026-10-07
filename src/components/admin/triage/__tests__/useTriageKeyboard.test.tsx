@@ -15,7 +15,6 @@ describe('useTriageKeyboard', () => {
         onApprove: vi.fn(),
         onReject: vi.fn(),
         onSkip: vi.fn(),
-        onFlag: vi.fn(),
         onToggleCheck: vi.fn(),
       } as never),
     );
@@ -33,7 +32,6 @@ describe('useTriageKeyboard', () => {
         onApprove,
         onReject: vi.fn(),
         onSkip: vi.fn(),
-        onFlag: vi.fn(),
         onToggleCheck: vi.fn(),
         onUndo,
         enabled: true,

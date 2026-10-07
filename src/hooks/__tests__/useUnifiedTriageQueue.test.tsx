@@ -28,7 +28,9 @@ vi.mock('@/hooks/useAuth', () => ({ useAuth: useAuthMock }));
 
 import { useUnifiedTriageQueue, useTriageAction } from '../useUnifiedTriageQueue';
 
-function withResults(...r: MockResult[]) { state.results.push(...r); }
+function withResults(...r: MockResult[]) {
+  state.results.push(...r);
+}
 function wrapper({ children }: { children: ReactNode }) {
   const qc = new QueryClient({
     defaultOptions: { queries: { retry: false, gcTime: 0 }, mutations: { retry: false } },
@@ -77,7 +79,12 @@ describe('useUnifiedTriageQueue', () => {
     renderHook(
       () =>
         useUnifiedTriageQueue({
-          queueTypes: null, contentTypes: null, search: '', sort: 'age', page: 1, perPage: 25,
+          queueTypes: null,
+          contentTypes: null,
+          search: '',
+          sort: 'age',
+          page: 1,
+          perPage: 25,
         }),
       { wrapper },
     );
@@ -110,7 +117,11 @@ describe('useTriageAction', () => {
     withResults({ data: null, error: null });
     const { result } = renderHook(() => useTriageAction(), { wrapper });
     await result.current.mutateAsync({
-      itemId: 'i1', queueType: 'staging', action: 'flag', notes: 'x', notify: false,
+      itemId: 'i1',
+      queueType: 'staging',
+      action: 'reject',
+      notes: 'x',
+      notify: false,
     });
 
     const [, args] = state.calls[0].chain[0].args as [string, Record<string, unknown>];

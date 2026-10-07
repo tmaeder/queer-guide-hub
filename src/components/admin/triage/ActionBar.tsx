@@ -1,6 +1,6 @@
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { Check, X, SkipForward, Flag } from 'lucide-react';
+import { Check, X, SkipForward } from 'lucide-react';
 import { CannedResponsePicker } from './CannedResponsePicker';
 import type { TriageDecisionGuidance } from './triageDecisionGuidance';
 import type { TriageAction, TriageAnswers } from './resolveDecision';
@@ -97,17 +97,12 @@ export function ActionBar({
           <SkipForward className="mr-1 size-3.5" />
           Skip
         </Button>
-        <Button
-          size="sm"
-          data-triage-action="flag"
-          variant="outline"
-          onClick={() => handleAction('flag')}
-          disabled={isLoading || blocked('flag')}
-          className="h-9 min-h-9 text-xs"
-        >
-          <Flag className="mr-1 size-3.5" />
-          Flag
-        </Button>
+        {/* No Flag button. `triage_action` accepted 'flag' in its allowed-action
+          list and implemented it in none of its 17 queue branches, so it fell
+          through to that function's unconditional success object: the button
+          wrote nothing, anywhere, and the inbox toasted success and advanced.
+          No backing table has a column for a flag, so a handler is a feature
+          rather than a fix. 99991791361273 makes the RPC refuse the string. */}
       </div>
 
       <div className="flex min-w-64 flex-1 items-center gap-2">
