@@ -60,12 +60,15 @@ COMMENT ON COLUMN public.cities.name_local_lang IS
 DO $patch$
 DECLARE
   v_def text := pg_get_functiondef('public.sync_geo_spine_city()'::regprocedure);
+  -- Comment-stripped copy for the already-patched check, so a comment that
+  -- names name_local cannot make an unpatched function read as done.
+  v_code text := regexp_replace(pg_get_functiondef('public.sync_geo_spine_city()'::regprocedure), '--[^' || chr(10) || ']*', '', 'g');
   v_new text := v_def;
   a1 text := E'wikidata_qid, wikipedia_title)\n  values (new.id';
   a2 text := 'new.wikidata_qid, new.wikipedia_title)';
   a3 text := 'wikipedia_title = excluded.wikipedia_title;';
 BEGIN
-  IF position('name_local' in v_def) > 0 THEN
+  IF position('name_local' in v_code) > 0 THEN
     RAISE NOTICE 'sync_geo_spine_city already carries name_local; skipping';
     RETURN;
   END IF;
@@ -118,9 +121,12 @@ $view$;
 DO $patch$
 DECLARE
   v_def text := pg_get_functiondef('public.cities_directory()'::regprocedure);
+  -- Comment-stripped copy for the already-patched check, so a comment that
+  -- names name_local cannot make an unpatched function read as done.
+  v_code text := regexp_replace(pg_get_functiondef('public.cities_directory()'::regprocedure), '--[^' || chr(10) || ']*', '', 'g');
   a1 text := E'c.capital_of_region,\n      c.editorial_hook,';
 BEGIN
-  IF position('name_local' in v_def) > 0 THEN
+  IF position('name_local' in v_code) > 0 THEN
     RAISE NOTICE 'cities_directory already carries name_local; skipping';
     RETURN;
   END IF;
@@ -140,9 +146,12 @@ $patch$;
 DO $patch$
 DECLARE
   v_def text := pg_get_functiondef('public.commit_city_staging_item(uuid, text)'::regprocedure);
+  -- Comment-stripped copy for the already-patched check, so a comment that
+  -- names name_local cannot make an unpatched function read as done.
+  v_code text := regexp_replace(pg_get_functiondef('public.commit_city_staging_item(uuid, text)'::regprocedure), '--[^' || chr(10) || ']*', '', 'g');
   a1 text := E'capital_of_region = CASE WHEN v_has_capital_of THEN v_capital_of_region ELSE capital_of_region END,\n';
 BEGIN
-  IF position('name_local' in v_def) > 0 THEN
+  IF position('name_local' in v_code) > 0 THEN
     RAISE NOTICE 'commit_city_staging_item already carries name_local; skipping';
     RETURN;
   END IF;
