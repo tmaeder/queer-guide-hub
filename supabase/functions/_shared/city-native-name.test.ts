@@ -15,11 +15,42 @@ const mono = (text: string, language: string, rank: Statement['rank'] = 'normal'
 const labels = (o: Record<string, string>): WdLabels =>
   Object.fromEntries(Object.entries(o).map(([k, v]) => [k, { language: k, value: v }]))
 
-Deno.test('Munich: P1705 in the country language', () => {
+Deno.test('Munich: the label in the country language wins', () => {
   const claims: Claims = { P1705: [mono('München', 'de')] }
   assertEquals(
     parseCityNativeName(claims, labels({ en: 'Munich', de: 'München' }), ['de']),
+    { name: 'München', lang: 'de', source: 'label' },
+  )
+})
+
+Deno.test('Munich without labels: P1705 in the country language', () => {
+  const claims: Claims = { P1705: [mono('München', 'de')] }
+  assertEquals(
+    parseCityNativeName(claims, undefined, ['de']),
     { name: 'München', lang: 'de', source: 'P1705' },
+  )
+})
+
+Deno.test('Toronto: the label beats the corporate P1705 form (live 2026-10-07)', () => {
+  const claims: Claims = { P1705: [mono('City of Toronto', 'en')] }
+  assertEquals(
+    parseCityNativeName(claims, labels({ en: 'Toronto', fr: 'Toronto' }), ['en', 'fr']),
+    { name: 'Toronto', lang: 'en', source: 'label' },
+  )
+})
+
+Deno.test('Ho Chi Minh City: a lone Khmer P1705 never beats the Vietnamese label (live 2026-10-07)', () => {
+  const claims: Claims = { P1705: [mono('ក្រុងព្រៃនគរ', 'km')] }
+  assertEquals(
+    parseCityNativeName(claims, labels({ en: 'Ho Chi Minh City', vi: 'Thành phố Hồ Chí Minh' }), ['vi']),
+    { name: 'Thành phố Hồ Chí Minh', lang: 'vi', source: 'label' },
+  )
+})
+
+Deno.test('Casablanca: bidi control characters are stripped (live 2026-10-07)', () => {
+  assertEquals(
+    parseCityNativeName({}, labels({ ar: '\u202bالدار البيضاء' }), ['ar'])?.name,
+    'الدار البيضاء',
   )
 })
 
@@ -51,11 +82,19 @@ Deno.test('preferred rank beats statement order', () => {
   assertEquals(parseCityNativeName(claims, undefined, ['nl', 'fr'])?.name, 'Bruxelles')
 })
 
-Deno.test('Mumbai: a single P1705 outside the coarse country list is still accepted', () => {
+Deno.test('Mumbai: a country-language label beats an off-list P1705', () => {
   // countries.languages for India is [Hindi, English]; Mumbai's native label is Marathi.
   const claims: Claims = { P1705: [mono('मुंबई', 'mr')] }
   assertEquals(
     parseCityNativeName(claims, labels({ en: 'Mumbai', hi: 'मुम्बई' }), ['hi', 'en']),
+    { name: 'मुम्बई', lang: 'hi', source: 'label' },
+  )
+})
+
+Deno.test('a single off-list P1705 is accepted only when no country-language label exists', () => {
+  const claims: Claims = { P1705: [mono('मुंबई', 'mr')] }
+  assertEquals(
+    parseCityNativeName(claims, labels({ de: 'Mumbai' }), ['hi']),
     { name: 'मुंबई', lang: 'mr', source: 'P1705' },
   )
 })
