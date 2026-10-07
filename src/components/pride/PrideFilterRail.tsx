@@ -164,7 +164,7 @@ export function PrideFilterRail({ filters, setFilters, events }: PrideFilterRail
 
   const chip = (active: boolean) =>
     cn(
-      'px-2 py-1 text-xs rounded-badge transition-colors min-h-0 bg-surface-container',
+      'min-h-11 px-2 py-1 text-xs rounded-badge transition-colors bg-surface-container',
       active ? 'bg-foreground text-background' : 'hover:bg-muted',
     );
 
@@ -220,7 +220,7 @@ export function PrideFilterRail({ filters, setFilters, events }: PrideFilterRail
                 query: '',
               })
             }
-            className="ml-auto min-h-0"
+            className="ml-auto"
           >
             <X className="size-3.5 mr-1" />
             {t('pride.filters.clearAll')}
@@ -285,7 +285,7 @@ export function PrideFilterRail({ filters, setFilters, events }: PrideFilterRail
                     onClick={() => toggleCountry(cc)}
                     aria-pressed={on}
                     className={cn(
-                      'px-1.5 py-0.5 text-2xs rounded-badge transition-colors min-h-0 bg-surface-container',
+                      'min-h-11 px-1.5 py-0.5 text-2xs rounded-badge transition-colors bg-surface-container',
                       on ? 'bg-foreground text-background' : 'hover:bg-muted',
                     )}
                   >
