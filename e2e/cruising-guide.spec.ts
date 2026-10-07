@@ -45,9 +45,17 @@ test.describe('cruising guide', () => {
 
     await expect(page).not.toHaveURL(/\/auth(?:[/?#]|$)/);
     await expect(page.getByRole('heading', { name: 'Queer cruising map' })).toBeVisible();
-    await expect(page.getByLabel('Interactive cruising map')).toHaveCount(1);
+    const interactiveMap = page.getByLabel('Interactive cruising map');
+    await expect(interactiveMap).toHaveCount(1);
     await expect(page.getByRole('region', { name: 'Map' })).toBeVisible();
     await expect(page.getByRole('button', { name: 'Zoom in' })).toBeVisible();
+    await expect(interactiveMap).toHaveAttribute('data-map-state', 'ready', { timeout: 20_000 });
+    await expect
+      .poll(async () => Number((await interactiveMap.getAttribute('data-map-spots')) ?? 0), {
+        message: 'Cruising map did not receive any viewport spots',
+        timeout: 30_000,
+      })
+      .toBeGreaterThan(0);
 
     const tileResponse = await firstTile;
     expect(tileResponse.status(), await tileResponse.text()).toBe(200);

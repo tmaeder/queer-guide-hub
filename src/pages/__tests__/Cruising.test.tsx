@@ -37,8 +37,20 @@ vi.mock('@/hooks/useCruisingGuide', () => ({
   useCruisingMapSpots: mapMock,
   useCruisingPresenceAreas: presenceMock,
 }));
-vi.mock('@/components/cruising/CruisingMap', () => ({
-  CruisingMap: () => <div data-testid="cruising-map">interactive map</div>,
+vi.mock('@/components/cruising/CruisingMapPanel', () => ({
+  CruisingMapPanel: ({
+    onSearchArea,
+  }: {
+    onSearchArea: (bounds: { west: number; south: number; east: number; north: number }) => void;
+  }) => (
+    <button
+      type="button"
+      data-testid="cruising-map"
+      onClick={() => onSearchArea({ west: 5, south: 45, east: 11, north: 48 })}
+    >
+      interactive map
+    </button>
+  ),
 }));
 vi.mock('@/components/cruising/CruisingPresenceControl', () => ({
   CruisingPresenceControl: () => <div>presence control</div>,
@@ -111,6 +123,15 @@ describe('Cruising', () => {
     expect(screen.getByText('Old Bridge')).toBeInTheDocument();
     expect(screen.getByText('Listed without coordinates')).toBeInTheDocument();
     expect(listMock).toHaveBeenCalledWith(true, '', 1, 40);
+    expect(mapMock).toHaveBeenCalledWith(false, '', null);
+
+    fireEvent.click(screen.getByTestId('cruising-map'));
+    expect(mapMock).toHaveBeenLastCalledWith(true, '', {
+      west: 5,
+      south: 45,
+      east: 11,
+      north: 48,
+    });
   });
 
   it('opens dating discovery inside the people panel', () => {
