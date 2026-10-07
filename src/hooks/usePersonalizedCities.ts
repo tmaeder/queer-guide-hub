@@ -15,12 +15,15 @@ export async function fetchPersonalizedCitiesByIds(
   cityIds: string[],
 ): Promise<PersonalizedCityRow[]> {
   if (cityIds.length === 0) return [];
-  const { data } = await supabase
+  const { data, error } = await supabase
     .from('cities')
-    .select('id, name, slug, image_url, population, editorial_hook, best_time_to_visit, countries:country_id(name, equality_score)')
+    .select(
+      'id, name, slug, image_url, population, editorial_hook, best_time_to_visit, countries:country_id(name, equality_score)',
+    )
     .is('duplicate_of_id', null)
     .in('id', cityIds);
-  return ((data ?? []) as unknown) as PersonalizedCityRow[];
+  if (error) throw error;
+  return (data ?? []) as unknown as PersonalizedCityRow[];
 }
 
 // Editorial whitelist — the cities actual queer travelers care about. Order
@@ -29,10 +32,30 @@ export async function fetchPersonalizedCitiesByIds(
 // `ORDER BY population DESC` race (e.g. Norfolk slipping in ahead of NYC
 // because NYC isn't in the cities table at that population grade).
 const FEATURED_CITY_WHITELIST = [
-  'Berlin', 'Madrid', 'Barcelona', 'Amsterdam', 'Mexico City', 'Bangkok',
-  'Tel Aviv', 'Lisbon', 'Buenos Aires', 'Toronto', 'Montreal', 'San Francisco',
-  'New York', 'Los Angeles', 'London', 'Paris', 'Cape Town', 'Sydney',
-  'Melbourne', 'Reykjavik', 'Copenhagen', 'Stockholm', 'Brussels', 'Vienna',
+  'Berlin',
+  'Madrid',
+  'Barcelona',
+  'Amsterdam',
+  'Mexico City',
+  'Bangkok',
+  'Tel Aviv',
+  'Lisbon',
+  'Buenos Aires',
+  'Toronto',
+  'Montreal',
+  'San Francisco',
+  'New York',
+  'Los Angeles',
+  'London',
+  'Paris',
+  'Cape Town',
+  'Sydney',
+  'Melbourne',
+  'Reykjavik',
+  'Copenhagen',
+  'Stockholm',
+  'Brussels',
+  'Vienna',
 ];
 
 export async function fetchTrendingCities(
@@ -40,12 +63,15 @@ export async function fetchTrendingCities(
   limit = 6,
 ): Promise<PersonalizedCityRow[]> {
   // 1. Editorial whitelist by name, preserving curated order.
-  const { data: whitelisted } = await supabase
+  const { data: whitelisted, error: whitelistError } = await supabase
     .from('cities')
-    .select('id, name, slug, image_url, population, editorial_hook, best_time_to_visit, countries:country_id(name, equality_score)')
+    .select(
+      'id, name, slug, image_url, population, editorial_hook, best_time_to_visit, countries:country_id(name, equality_score)',
+    )
     .in('name', FEATURED_CITY_WHITELIST)
     .is('duplicate_of_id', null)
     .not('slug', 'like', 'tmp-%');
+  if (whitelistError) throw whitelistError;
 
   // Several DB cities can share a whitelist name (Berlin DE vs Berlin US) —
   // keep the most populous match so the famous one wins.
@@ -63,16 +89,19 @@ export async function fetchTrendingCities(
   if (ordered.length >= limit) return ordered;
 
   // 2. Fallback — large cities in equality-friendly countries (>= 60).
-  const { data: filtered } = await supabase
+  const { data: filtered, error: filteredError } = await supabase
     .from('cities')
-    .select('id, name, slug, image_url, population, editorial_hook, best_time_to_visit, countries:country_id!inner(name, equality_score)')
+    .select(
+      'id, name, slug, image_url, population, editorial_hook, best_time_to_visit, countries:country_id!inner(name, equality_score)',
+    )
     .is('duplicate_of_id', null)
     .not('slug', 'like', 'tmp-%')
     .gte('population', minPopulation)
     .gte('countries.equality_score', 60)
     .order('population', { ascending: false })
     .limit(limit);
-  const seenIds = new Set(ordered.map(r => r.id));
+  if (filteredError) throw filteredError;
+  const seenIds = new Set(ordered.map((r) => r.id));
   for (const row of (filtered ?? []) as unknown as PersonalizedCityRow[]) {
     if (!seenIds.has(row.id)) ordered.push(row);
     if (ordered.length >= limit) break;

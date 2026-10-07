@@ -11,6 +11,18 @@
  *
  * `capabilities` is also where `can_reopen`, `can_bulk` and `confirm_gate`
  * live, so a later consumer has one place to read them from.
+ *
+ * `can_reopen` now HAS that consumer. It was declared on all 17 rows, agreed
+ * exactly with `triage_action`'s real branches — true on the seven queues with
+ * a reopen arm, false on the ten without — and was read by nothing, so the U
+ * key fired `reopen` at every queue regardless. On the ten it matched the
+ * queue branch, matched no IF arm, fell through to that function's
+ * unconditional success object and returned `{"ok": true}` having written
+ * nothing, while the inbox toasted "Reopened". Worst on dedup-review, whose
+ * approve performs a merge: measured before the fix, 0 rows had ever returned
+ * to open. 99991791361273 makes the RPC refuse it; `canReopenFor` is what
+ * stops the UI offering it in the first place, so a reviewer meets a greyed
+ * control rather than an error.
  */
 
 import { useQuery } from '@tanstack/react-query';
@@ -58,5 +70,17 @@ export function useTriageSourceCapabilities() {
      */
     externalConsoleFor: (queueKey: string): string | undefined =>
       query.data?.[queueKey]?.external_console,
+    /**
+     * Whether this queue's approve/reject can be undone from the inbox.
+     *
+     * Defaults to FALSE while loading and for an unknown queue, deliberately:
+     * the two failure directions are not symmetric. Offering undo where it
+     * does not work tells a reviewer an irreversible merge was reversed;
+     * withholding it where it would have worked costs one trip to the queue
+     * to re-open the row by hand. `triage_action` applies the same
+     * `coalesce(..., false)` to the same column, so UI and RPC refuse the
+     * same set rather than agreeing by convention.
+     */
+    canReopenFor: (queueKey: string): boolean => query.data?.[queueKey]?.can_reopen === true,
   };
 }

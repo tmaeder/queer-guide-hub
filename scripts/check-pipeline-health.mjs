@@ -4718,7 +4718,13 @@ const DISOWNED_PROSE_CEILING = 380
 {
   console.log('')
   console.log('Venue city text')
-  const VENUE_CITY_TEXT_BASELINE = 399
+  // 399 -> 403 on 2026-10-06, measured cause rather than to pass: creating the
+  // Charleston SC and Arlington TX twins (99991791233856) made three venues
+  // that were ALREADY filed under a neighbour (Dudley's on Ann, Republic Lounge
+  // -> North Charleston; Condom Sense -> Mansfield TX) countable for the first
+  // time. The fourth is a real new misfiling: Me Nightclub, city text
+  // Trondheim, linked to Oslo (written 2026-10-06), left for review.
+  const VENUE_CITY_TEXT_BASELINE = 403
   const res = await fetch(`${BASE}/rest/v1/rpc/venue_city_text_signals`, {
     method: 'POST',
     headers: { ...headers, 'Content-Type': 'application/json' },
@@ -5131,6 +5137,50 @@ const DISOWNED_PROSE_CEILING = 380
     }
 
     if (sectionOk) console.log('✓ venue category tier reaching every mappable row')
+  }
+}
+
+// § Venue city vs its own coordinates (2026-10-07, 99991791356737).
+//
+// commit_venue_staging_item resolved a city by NAME, falling back to the largest
+// same-name city anywhere on earth when the source's own country held none —
+// "Parc Jules Descampe, Waterloo" (Belgium) landed on Waterloo, USA. The fallback
+// is now corroborated by the venue's coordinates and a city more than 100 km away
+// is refused. This section watches the outcome.
+//
+// The historical backlog (2,308 measured, half of it the 2026-10-05 gays-cruising
+// import) is a WARNING, not a gate: it can only be worked down by a repair, and a
+// red that ships red gets scrolled past. A broken probe is a hard fail, because
+// "zero over 100 km" from a probe that cannot look must never read as clean.
+{
+  const res = await fetch(`${BASE}/rest/v1/rpc/venue_city_coord_signals`, {
+    method: 'POST',
+    headers: { ...headers, 'Content-Type': 'application/json' },
+    body: '{}',
+  })
+  if (!res.ok) {
+    console.warn(`⚠ venue_city_coord_signals → HTTP ${res.status} (RPC missing? migration 99991791356737)`)
+    console.warn('  This check measured NOTHING — it did not pass.')
+  } else {
+    const s = (await res.json()) ?? {}
+    if (s.probe_ok !== true) {
+      console.error('✗ venue_city_coord_signals returned no probe_ok — the probe is broken')
+      FAILED = true
+    } else if (Number(s.links_checkable ?? 0) < 1000) {
+      console.error(`✗ only ${s.links_checkable} venue→city link(s) carry coordinates on both sides — the check is measuring almost nothing`)
+      FAILED = true
+    } else {
+      const over = Number(s.over_100km ?? 0)
+      const recent = Number(s.over_100km_created_last_7d ?? 0)
+      if (over > 0) {
+        console.warn(
+          `⚠ ${over} venue(s) sit over 100 km from their linked city (${recent} created in the last 7 days) ` +
+            `of ${s.links_checkable} checkable — the coordinates are usually right and the city is a same-name namesake`,
+        )
+      } else {
+        console.log(`✓ venue→city links: ${s.links_checkable} checkable, none over 100 km`)
+      }
+    }
   }
 }
 

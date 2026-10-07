@@ -63,7 +63,7 @@ export function PrideTable({ events, selectedId, onSelect }: PrideTableProps) {
       type="button"
       onClick={() => toggleSort(key)}
       className={cn(
-        'inline-flex items-center gap-1 text-xs2 uppercase tracking-label text-foreground/60 hover:text-foreground min-h-0',
+        'inline-flex min-h-11 items-center gap-1 text-xs2 uppercase tracking-label text-foreground/60 hover:text-foreground',
         align === 'right' && 'flex-row-reverse',
       )}
     >

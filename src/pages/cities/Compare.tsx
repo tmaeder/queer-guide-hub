@@ -106,7 +106,7 @@ export default function CitiesCompare() {
           type="button"
           aria-label={t('cities.compare.swap', 'Swap')}
           onClick={swap}
-          className="mx-auto inline-flex h-10 w-10 items-center justify-center rounded-element bg-background text-muted-foreground transition-colors hover:text-foreground"
+          className="mx-auto inline-flex h-11 w-11 items-center justify-center rounded-element bg-background text-muted-foreground transition-colors hover:text-foreground"
         >
           <ArrowLeftRight size={16} />
         </button>

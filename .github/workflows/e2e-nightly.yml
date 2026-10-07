@@ -9,6 +9,10 @@ on:
         description: 'Base URL to test against'
         required: false
         default: 'https://queer.guide'
+      test_file:
+        description: 'Optional e2e/*.spec.ts file for a focused production run'
+        required: false
+        default: ''
 
 concurrency:
   group: e2e-nightly
@@ -48,7 +52,17 @@ jobs:
           E2E_BASE_URL: ${{ env.BASE_URL_INPUT || 'https://queer.guide' }}
           E2E_ADMIN_EMAIL: ${{ secrets.E2E_ADMIN_EMAIL }}
           E2E_ADMIN_PASSWORD: ${{ secrets.E2E_ADMIN_PASSWORD }}
-        run: npm run test:e2e
+          E2E_TEST_FILE: ${{ inputs.test_file }}
+        run: |
+          if [[ -n "$E2E_TEST_FILE" ]]; then
+            if [[ ! "$E2E_TEST_FILE" =~ ^e2e/[A-Za-z0-9._/-]+\.spec\.ts$ ]]; then
+              echo "::error::test_file must be an e2e/*.spec.ts path"
+              exit 1
+            fi
+            npx playwright test e2e/auth.setup.ts "$E2E_TEST_FILE"
+          else
+            npm run test:e2e
+          fi
       - name: Upload report
         if: always()
         uses: actions/upload-artifact@v7

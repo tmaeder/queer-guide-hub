@@ -2042,6 +2042,7 @@
       "settings": "설정",
       "inbox": "받은편지함",
       "friends": "친구",
+      "friendsOnline": "{{count}}명 온라인",
       "myGroups": "내 그룹",
       "accessibility": "접근성",
       "bookings": "예약",

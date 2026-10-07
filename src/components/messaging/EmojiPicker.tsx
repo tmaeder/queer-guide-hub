@@ -21,7 +21,7 @@ function EmojiGrid({ items, onPick }: { items: { e: string }[]; onPick: (e: stri
           key={`${e}-${i}`}
           type="button"
           onClick={() => onPick(e)}
-          className="flex h-8 w-8 items-center justify-center rounded-element text-lg transition-colors hover:bg-muted"
+          className="flex h-8 w-8 min-h-11 min-w-11 items-center justify-center rounded-element text-lg transition-colors hover:bg-muted"
         >
           {e}
         </button>

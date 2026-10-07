@@ -22,6 +22,7 @@ import {
   useTriageAction,
   useHighConfCount,
   useBulkApproveHighConf,
+  AUTO_DECISION_MIN_CONFIDENCE,
   type TriageFilters,
 } from '@/hooks/useUnifiedTriageQueue';
 import { useReviewCounts } from '@/hooks/useReviewCounts';
@@ -37,12 +38,23 @@ import { useTriageKeyboard } from './useTriageKeyboard';
 import { getTriageDecisionGuidance } from './triageDecisionGuidance';
 import {
   resolveDecision,
-  isUnbatchablePerson,
+  bulkHoldReason,
+  buildBulkGovernance,
   queuedKeepId,
   type TriageAction,
   type TriageAnswers,
 } from './resolveDecision';
 import { useTriageSourceCapabilities } from '@/hooks/useTriageSourceCapabilities';
+
+/**
+ * The success toast used to be `${action}d`, which is correct for `approve`
+ * and gave "rejectd" and "skipd" for the rest.
+ */
+const ACTION_PAST_TENSE: Record<TriageAction, string> = {
+  approve: 'Approved',
+  reject: 'Rejected',
+  skip: 'Skipped',
+};
 
 interface TriageViewProps {
   initialQueueType?: string;
@@ -95,8 +107,16 @@ export function TriageView({ initialQueueType }: TriageViewProps) {
   const qualityInScope =
     !filters.queueTypes || filters.queueTypes.some((k) => k.startsWith('quality-'));
   const { data: cohorts, isLoading: cohortsLoading } = useReviewQueueCohorts(qualityInScope);
+  // Bulk approve consults the review registry through this. `loaded` is false
+  // while the query is in flight, and `bulkHoldReason` fails CLOSED on that —
+  // a bulk approve that raced the cohort fetch would otherwise publish fields
+  // the registry marks not-batchable.
+  const bulkGovernance = useMemo(
+    () => buildBulkGovernance(cohorts, !cohortsLoading),
+    [cohorts, cohortsLoading],
+  );
   const triageAction = useTriageAction();
-  const { externalConsoleFor } = useTriageSourceCapabilities();
+  const { externalConsoleFor, canReopenFor } = useTriageSourceCapabilities();
 
   const items = useMemo(() => data?.items ?? [], [data]);
   const total = data?.total ?? 0;
@@ -183,9 +203,15 @@ export function TriageView({ initialQueueType }: TriageViewProps) {
         },
         {
           onSuccess: () => {
-            toast.success(`${action}d: ${activeItem.title.slice(0, 40)}`);
-            // Only approve/reject remove the item from the queue → undoable.
-            if (action === 'approve' || action === 'reject') {
+            toast.success(`${ACTION_PAST_TENSE[action]}: ${activeItem.title.slice(0, 40)}`);
+            // Only approve/reject remove the item from the queue → undoable,
+            // and only on a queue whose approve the registry says is
+            // reversible. Arming undo on the other ten is what let a reviewer
+            // press U after an irreversible merge and read "Reopened".
+            if (
+              (action === 'approve' || action === 'reject') &&
+              canReopenFor(activeItem.queue_type)
+            ) {
               setLastActed({
                 id: activeItem.id,
                 queueType: activeItem.queue_type,
@@ -200,7 +226,7 @@ export function TriageView({ initialQueueType }: TriageViewProps) {
         },
       );
     },
-    [activeItem, answers, externalConsoleFor, triageAction, advanceToNext],
+    [activeItem, answers, externalConsoleFor, canReopenFor, triageAction, advanceToNext],
   );
 
   const updateAnswers = useCallback(
@@ -225,6 +251,15 @@ export function TriageView({ initialQueueType }: TriageViewProps) {
       return;
     }
     const target = lastActed;
+    // `lastActed` is only armed for a reopenable queue, so this is a backstop
+    // rather than the gate — but it is the one that survives a future caller
+    // that arms it differently, and it refuses locally instead of sending a
+    // write the RPC will reject.
+    if (!canReopenFor(target.queueType)) {
+      toast.warning(`${target.queueType} cannot be undone from the inbox — its approve is final.`);
+      setLastActed(null);
+      return;
+    }
     triageAction.mutate(
       { itemId: target.id, queueType: target.queueType, action: 'reopen' },
       {
@@ -238,7 +273,7 @@ export function TriageView({ initialQueueType }: TriageViewProps) {
         },
       },
     );
-  }, [lastActed, triageAction]);
+  }, [lastActed, canReopenFor, triageAction]);
 
   const [bulkLoading, setBulkLoading] = useState(false);
   const [focusOpen, setFocusOpen] = useState(false);
@@ -270,38 +305,63 @@ export function TriageView({ initialQueueType }: TriageViewProps) {
   );
 
   /**
-   * A namesake merge can never be a bulk decision.
+   * Bulk approve routes through the SAME resolver as the single-item path, and
+   * consults the review registry before touching anything.
    *
-   * `TriageDetailPanel` gates approving a personality dedup pair behind an explicit
-   * "these are the same person" confirmation, because two different people merged
-   * into one profile is an outing risk and `_personality_merge_core` repoints the
-   * relationship graph — which no undo fully rebuilds, since it DROPS self-loops and
+   * TWO GATES EXISTED IN SQL AND NEITHER WAS REACHABLE FROM THIS BUTTON.
+   *
+   * (1) `approve_dedup_review_batch` refuses every personality pair in its own
+   * WHERE, because two different people merged into one profile is an outing
+   * risk and `_personality_merge_core` repoints the relationship graph —
+   * which no undo fully rebuilds, since it DROPS self-loops and
    * already-existing edges rather than moving them.
    *
-   * That gate protected the one-at-a-time path and nothing else: select-all →
-   * Approve went straight to `triage_action`, which has no such check, so the button
-   * beside the gate bypassed it for all 46 open personality pairs at once.
+   * (2) `approve_entity_review_batch` honours
+   * `review_field_registry.batchable AND active`, the fix 99991789843323
+   * landed after a confidence-threshold-only auto-approve published 723
+   * `venue.accessibility_*` and 285 `city.lgbt_friendly_rating` rows — both
+   * fields this repo documents as never-auto-published.
    *
-   * `approve_dedup_review_batch` already refuses personalities in its own WHERE for
-   * exactly this reason; the bulk path does not route through it, so the rule has to
-   * be restated here. Reject and skip stay available — "these are two different
-   * people" must remain the easy answer.
+   * Select-all → Approve looped `triage_action` directly, so it reached
+   * neither, AND it dropped `p_confirm` and the canonical flip on the floor:
+   * `resolveDecision` — whose own header says one resolver for both callers
+   * "is the only shape under which the rule cannot drift apart again" — was
+   * not on this path at all. Measured when this was written: 12 of 23 open
+   * quality-city rows were `batchable=false` and one click from publishing.
+   *
+   * Reject is never held back. "This should not publish" must stay the easy
+   * answer, or every gate here pushes reviewers toward approving to clear the
+   * queue.
    */
   const runBulk = useCallback(
     async (targets: typeof items, action: 'approve' | 'reject') => {
       if (targets.length === 0) return;
 
-      const held = action === 'approve' ? targets.filter(isUnbatchablePerson) : [];
-      const actionable =
-        action === 'approve' ? targets.filter((i) => !isUnbatchablePerson(i)) : targets;
+      // Every hold-back reason, from the registry rather than from a list
+      // restated here. Reject is never held: "this should not publish" has to
+      // stay the easy answer or the gates push reviewers toward approving.
+      const holds =
+        action === 'approve'
+          ? targets.map((i) => [i, bulkHoldReason(i, bulkGovernance)] as const)
+          : targets.map((i) => [i, null] as const);
+      const held = holds.filter(([, r]) => r !== null);
+      const actionable = holds.filter(([, r]) => r === null).map(([i]) => i);
+
+      // One line per distinct reason, so "9 held back" says WHY rather than
+      // leaving the reviewer to guess which rule fired.
+      const heldSummary = Object.entries(
+        held.reduce<Record<string, number>>((acc, [, r]) => {
+          acc[r as string] = (acc[r as string] ?? 0) + 1;
+          return acc;
+        }, {}),
+      )
+        .map(([reason, n]) => `${n} × ${reason}`)
+        .join('; ');
 
       if (held.length > 0 && actionable.length === 0) {
         toast.warning(
-          `${held.length} namesake pair${held.length === 1 ? '' : 's'} held back — approve these one at a time.`,
-          {
-            description:
-              'Merging two different people is an outing risk and the relationship graph cannot be fully rebuilt.',
-          },
+          `${held.length} item${held.length === 1 ? '' : 's'} held back — approve these one at a time.`,
+          { description: heldSummary },
         );
         return;
       }
@@ -309,31 +369,61 @@ export function TriageView({ initialQueueType }: TriageViewProps) {
       setBulkLoading(true);
       let ok = 0;
       let fail = 0;
+      let blocked = 0;
+      let firstError: string | null = null;
       for (const item of actionable) {
+        // Route through the SAME resolver the single-item path and the keyboard
+        // use. Bypassing it is what dropped `p_confirm` and the canonical flip
+        // from every bulk decision, and what let a per-item gate be walked
+        // past by the button beside it.
+        const decision = resolveDecision(item, action, answers[item.id] ?? {}, {
+          externalConsole: externalConsoleFor(item.queue_type),
+        });
+        if (!decision.ok) {
+          blocked++;
+          firstError ??= decision.reason;
+          continue;
+        }
         try {
           await triageAction.mutateAsync({
             itemId: item.id,
             queueType: item.queue_type,
             action,
+            notes: decision.notes,
+            cannedSlug: decision.cannedSlug,
+            payload: decision.payload,
+            confirm: decision.confirm,
           });
           ok++;
-        } catch {
+        } catch (err) {
           fail++;
+          // `catch { fail++ }` reported "1 failed" with no reason, so a
+          // 42501 from the outing-safety gate looked like a network blip.
+          firstError ??= (err as Error).message;
         }
       }
       setBulkLoading(false);
       setSelectedIds(new Set());
       setActiveId(null);
-      toast.success(
-        `${action}d ${ok} item${ok !== 1 ? 's' : ''}${fail ? `, ${fail} failed` : ''}`,
-        held.length > 0
-          ? {
-              description: `${held.length} namesake pair${held.length === 1 ? '' : 's'} held back — approve those individually.`,
-            }
-          : undefined,
-      );
+
+      const parts = [`${ACTION_PAST_TENSE[action]} ${ok} item${ok !== 1 ? 's' : ''}`];
+      if (blocked) parts.push(`${blocked} needs a confirmation`);
+      if (fail) parts.push(`${fail} failed`);
+      const description = [heldSummary, firstError].filter(Boolean).join(' — ') || undefined;
+      const body = parts.join(', ');
+      // A HOLD IS NOT A FAILURE, and `warning` here would cry wolf. Now that
+      // the registry holds back whole fields, a partial bulk is the COMMON
+      // outcome on the quality queues — so routing every hold to `warning`
+      // makes the channel permanently on, which is the shape this repo keeps
+      // having to remove (the median-vs-oldest backlog rule, the zero-invariant
+      // that ships red). Holds are reported in the description instead, which
+      // is what `TriageViewBulkNamesake` asserts and was right to.
+      // `warning` is kept for the two cases where something actually went
+      // wrong: an RPC error, or a row a per-item gate refused.
+      if (fail || blocked) toast.warning(body, { description });
+      else toast.success(body, description ? { description } : undefined);
     },
-    [triageAction],
+    [answers, bulkGovernance, externalConsoleFor, triageAction],
   );
 
   const handleBulkAction = useCallback(
@@ -345,8 +435,13 @@ export function TriageView({ initialQueueType }: TriageViewProps) {
     [items, selectedIds, runBulk],
   );
 
-  // High-confidence bulk approve: server-side, ALL eligible staging rows at
-  // ≥90% (not just the current page). Count comes from the RPC's dry-run.
+  // High-confidence bulk approve: server-side, ALL eligible staging rows at or
+  // above AUTO_DECISION_MIN_CONFIDENCE (not just the current page). Count comes
+  // from the RPC's dry-run, so the button and the count share one predicate.
+  // The threshold is NOT spelled here: it was `≥90%` in three strings on this
+  // screen plus two literals in the hook, and the cron moved to 0.80 without
+  // them. Interpolate the constant.
+  const confPct = Math.round(AUTO_DECISION_MIN_CONFIDENCE * 100);
   const stagingSelected = !filters.queueTypes || filters.queueTypes.includes('staging');
   const { data: highConfCount, refetch: refetchHighConf } = useHighConfCount(
     stagingSelected ? filters.contentTypes : null,
@@ -382,7 +477,6 @@ export function TriageView({ initialQueueType }: TriageViewProps) {
     onApprove: () => handleAction('approve'),
     onReject: () => handleAction('reject'),
     onSkip: () => handleAction('skip'),
-    onFlag: () => handleAction('flag'),
     onToggleCheck: () => {
       if (activeId) handleToggleCheck(activeId);
     },
@@ -497,7 +591,7 @@ export function TriageView({ initialQueueType }: TriageViewProps) {
               disabled={bulkLoading || bulkHighConf.isPending}
             >
               <CheckCheck className="mr-1 size-3.5" />
-              Approve ≥90% ({highConfCount})
+              Approve ≥{confPct}% ({highConfCount})
             </Button>
           )}
           {items.length > 0 && (
@@ -608,10 +702,10 @@ export function TriageView({ initialQueueType }: TriageViewProps) {
           <AlertDialogHeader>
             <AlertDialogTitle>Approve {highConfCount ?? 0} high-confidence items?</AlertDialogTitle>
             <AlertDialogDescription>
-              If you continue, every pending staging item at 90% confidence or higher is marked
-              approved across all pages and handed to the commit pipeline. Quality-rejected items
-              are excluded; nothing becomes public until commit succeeds. If you cancel, no review
-              status or content changes.
+              If you continue, every pending staging item at {confPct}% confidence or higher is
+              marked approved across all pages and handed to the commit pipeline. Quality-rejected
+              items are excluded; nothing becomes public until commit succeeds. If you cancel, no
+              review status or content changes.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

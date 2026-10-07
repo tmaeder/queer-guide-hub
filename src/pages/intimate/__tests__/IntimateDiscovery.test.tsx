@@ -27,11 +27,19 @@ vi.mock('@/hooks/usePeopleDiscovery', () => ({
   usePeopleDiscovery: () => ({ data: [] }),
 }));
 
+vi.mock('@/hooks/useKinkTaxonomy', () => ({
+  useKinkTaxonomy: () => ({ data: undefined, isLoading: false, isError: false }),
+}));
+
 import IntimateDiscovery from '../IntimateDiscovery';
 
 describe('IntimateDiscovery', () => {
   it('renders without crashing', () => {
-    const { container } = render(<MemoryRouter><IntimateDiscovery /></MemoryRouter>);
+    const { container } = render(
+      <MemoryRouter>
+        <IntimateDiscovery />
+      </MemoryRouter>,
+    );
     expect(container).toBeTruthy();
   });
 });
