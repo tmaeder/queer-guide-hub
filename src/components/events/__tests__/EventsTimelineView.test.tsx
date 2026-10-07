@@ -4,9 +4,20 @@
 import { describe, it, expect, vi } from 'vitest';
 
 vi.mock('@/hooks/useAuth', () => ({
-  useAuth: () => ({ user: null, session: null, loading: false, hasPasskey: false,
-    signUp: vi.fn(), signIn: vi.fn(), signInWithOAuth: vi.fn(), resendVerification: vi.fn(),
-    resetPassword: vi.fn(), signOut: vi.fn(), enrollPasskey: vi.fn(), signInWithPasskey: vi.fn() }),
+  useAuth: () => ({
+    user: null,
+    session: null,
+    loading: false,
+    hasPasskey: false,
+    signUp: vi.fn(),
+    signIn: vi.fn(),
+    signInWithOAuth: vi.fn(),
+    resendVerification: vi.fn(),
+    resetPassword: vi.fn(),
+    signOut: vi.fn(),
+    enrollPasskey: vi.fn(),
+    signInWithPasskey: vi.fn(),
+  }),
 }));
 vi.mock('@/hooks/useEntityTripStatus', () => ({
   useEntityTripStatus: () => ({
@@ -41,12 +52,23 @@ function ev(overrides: Partial<Event>): Event {
 describe('EventsTimelineView', () => {
   it('renders toolbar + track even with no events', () => {
     renderWithProviders(<EventsTimelineView events={[]} />);
-    expect(screen.getByRole('region', { name: /Events timeline/i })).toBeTruthy();
+    expect(screen.getByRole('region', { name: /Events timeline/i }).getAttribute('tabindex')).toBe(
+      '0',
+    );
     expect(screen.getByRole('toolbar', { name: /Timeline navigation/i })).toBeTruthy();
   });
 
+  it('announces its loading state', () => {
+    renderWithProviders(<EventsTimelineView events={[]} loading />);
+    expect(screen.getByRole('status', { name: /Loading events/i })).toBeTruthy();
+  });
+
   it('renders a single event with a link to its slug', () => {
-    renderWithProviders(<EventsTimelineView events={[ev({ id: 'e1', slug: 'pride-berlin', title: 'Pride Berlin' })]} />);
+    renderWithProviders(
+      <EventsTimelineView
+        events={[ev({ id: 'e1', slug: 'pride-berlin', title: 'Pride Berlin' })]}
+      />,
+    );
     const link = screen.getByRole('link', { name: /Pride Berlin/i }) as HTMLAnchorElement;
     expect(link.getAttribute('href')).toContain('/events/pride-berlin');
   });

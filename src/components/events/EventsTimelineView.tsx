@@ -432,7 +432,11 @@ export function EventsTimelineView({
       </div>
 
       {loading && (
-        <div className="h-0.5 bg-foreground/10 overflow-hidden mb-1" aria-label="Loading events">
+        <div
+          className="h-0.5 bg-foreground/10 overflow-hidden mb-1"
+          role="status"
+          aria-label="Loading events"
+        >
           <div className="h-full w-1/3 bg-foreground/60 animate-pulse" />
         </div>
       )}
@@ -442,6 +446,7 @@ export function EventsTimelineView({
         className="relative overflow-x-auto rounded-container bg-background"
         role="region"
         aria-label="Events timeline"
+        tabIndex={0}
       >
         <div
           ref={trackRef}

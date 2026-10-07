@@ -21,7 +21,7 @@ export function useKinkTaxonomy(enabled = true) {
           .order('sort_order'),
         untypedFrom('kink_items')
           .select(
-            'id, category_id, slug, label, label_i18n, description, description_i18n, axis_override, discussion_recommended, sort_order',
+            'id, category_id, slug, label, label_i18n, description, description_i18n, axis_override, discussion_recommended, sort_order, unified_tag_slug',
           )
           .order('sort_order'),
       ]);
