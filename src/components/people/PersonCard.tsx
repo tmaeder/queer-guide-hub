@@ -67,7 +67,7 @@ export const PersonCard = memo(function PersonCard({
               src={person.avatarUrl}
               alt=""
               loading="lazy"
-              className="h-16 w-16 rounded-full border border-border-hairline object-cover object-top"
+              className="h-16 w-16 rounded-full bg-muted object-cover object-top"
             />
           ) : (
             <div
@@ -80,7 +80,7 @@ export const PersonCard = memo(function PersonCard({
           <div className="min-w-0">
             <div className="truncate text-title font-bold leading-tight">{name}</div>
             {typeof person.score === 'number' && person.score > 0 ? (
-              <div className="mt-1 inline-block border border-border-hairline bg-background px-1.5 py-0.5 text-2xs font-bold uppercase tracking-label">
+              <div className="mt-1 inline-block bg-muted px-1.5 py-0.5 text-2xs font-bold uppercase tracking-label">
                 {t('people.card.match', {
                   defaultValue: '{{score}}% match',
                   score: person.score,

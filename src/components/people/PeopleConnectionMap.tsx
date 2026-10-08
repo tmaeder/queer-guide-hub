@@ -21,9 +21,9 @@ export function PeopleConnectionMap() {
   return (
     <div
       data-testid="people-connection-map"
-      className="overflow-hidden rounded-container border border-border-hairline bg-surface-container"
+      className="overflow-hidden rounded-container bg-surface-container"
     >
-      <div className="flex flex-col gap-4 border-b border-border-hairline bg-background px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6">
+      <div className="flex flex-col gap-4 bg-surface-container px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6">
         <div
           className="inline-flex w-fit bg-surface-container p-1"
           role="tablist"
@@ -59,6 +59,7 @@ export function PeopleConnectionMap() {
         surface="city"
         configOverride={PEOPLE_MAP_CONFIG}
         height="clamp(22rem, 58vh, 32rem)"
+        className="[&_.border-border-hairline]:!border-0"
         cooperativeGestures
       />
     </div>
