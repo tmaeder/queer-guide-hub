@@ -44,7 +44,7 @@ export function LikePassActions({
     <div className={cn('inline-flex items-center gap-2', className)}>
       <Button
         type="button"
-        variant="outline"
+        variant="soft"
         size="sm"
         onClick={(e) => {
           e.preventDefault();

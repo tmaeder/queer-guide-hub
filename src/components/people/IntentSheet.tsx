@@ -110,7 +110,7 @@ export function IntentSheet({
                     city: travel?.city_name ?? t('people.intent.yourCity', 'your destination'),
                   })}
                 </span>
-                <Button variant="outline" size="sm" onClick={() => setTravel(null)}>
+                <Button variant="soft" size="sm" onClick={() => setTravel(null)}>
                   {t('common.clear', 'Clear')}
                 </Button>
               </div>

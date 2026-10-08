@@ -151,7 +151,7 @@ export function SwipeDeck({ cards, onLike, onPass, className }: SwipeDeckProps) 
       <div className="flex items-center gap-4">
         <Button
           type="button"
-          variant="outline"
+          variant="soft"
           size="lg"
           onClick={() => topId && onPass(topId)}
           aria-label="Pass"

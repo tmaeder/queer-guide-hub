@@ -48,7 +48,7 @@ export function NearbyView() {
             'Your location is approximate (snapped to ~750m), shared only while you’re live, and clears on its own.',
           )}
         </p>
-        <Button variant="accent" onClick={handleGoLive} disabled={busy || loading} className="mt-6">
+        <Button onClick={handleGoLive} disabled={busy || loading} className="mt-6">
           {busy || loading
             ? t('people.nearby.locating', 'Locating…')
             : t('people.nearby.goLive', 'Go live')}
@@ -85,7 +85,7 @@ export function NearbyView() {
             </span>
           )}
         </span>
-        <Button variant="outline" size="sm" onClick={goInvisible} className="gap-2">
+        <Button variant="soft" size="sm" onClick={goInvisible} className="gap-2">
           <EyeOff className="h-3.5 w-3.5" aria-hidden />
           {t('people.nearby.goInvisible', 'Go invisible')}
         </Button>

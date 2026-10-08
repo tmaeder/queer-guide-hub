@@ -296,7 +296,7 @@ export default function People() {
               'Meeting strangers carries different risk in different countries. Check the legal position for where you are before you arrange to meet someone.',
             )}
           </p>
-          <Button variant="outline" asChild>
+          <Button variant="soft" asChild>
             <LocalizedLink to="/rights" className="no-underline">
               {t('people.safetyCta', 'LGBTQ+ rights by country')}
             </LocalizedLink>
@@ -353,7 +353,7 @@ export default function People() {
         scopeBar={
           <div className="flex flex-wrap items-center gap-2">
             <Button
-              variant="outline"
+              variant="soft"
               size="sm"
               className="gap-2"
               onClick={() => setIntentOpen(true)}

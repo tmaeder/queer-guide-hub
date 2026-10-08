@@ -94,7 +94,7 @@ export default function PeopleMode({ tab }: { tab: PeopleTab }) {
           subtitle={meta.description}
           actions={
             <Button
-              variant="outline"
+              variant="soft"
               size="sm"
               className="shrink-0 gap-2"
               onClick={() => setIntentOpen(true)}
