@@ -123,15 +123,15 @@ export const DESTINATIONS: NavDestination[] = [
     searchType: 'news',
   },
   { to: '/map', icon: Map, labelKey: 'header.nav.map', cluster: 'places' },
-  { to: '/community/feed', icon: Rss, labelKey: 'header.nav.feed', cluster: 'community' },
+  { to: '/people/feed', icon: Rss, labelKey: 'header.nav.feed', cluster: 'community' },
   {
-    to: '/community/groups',
+    to: '/people/groups',
     icon: UsersRound,
     labelKey: 'header.nav.groups',
     cluster: 'community',
   },
   {
-    to: '/community/members',
+    to: '/people/members',
     icon: UserCheck,
     labelKey: 'header.nav.members',
     cluster: 'community',
@@ -271,11 +271,11 @@ export const INTENT_NAV: IntentDestination[] = [
     fallback: 'Meet people',
     subtitleKey: 'header.intents.meet.subtitle',
     subtitleFallback: 'Friends, dates, travel buddies and groups',
-    activePrefixes: ['/people', '/community', '/groups', '/friends', '/dating'],
+    activePrefixes: ['/people', '/community', '/groups', '/friends', '/dating', '/cruising'],
     children: [
       { to: '/people', labelKey: 'header.nav.people', fallback: 'People' },
-      { to: '/community/groups', labelKey: 'header.nav.groups', fallback: 'Groups' },
-      { to: '/community/feed', labelKey: 'header.nav.feed', fallback: 'Feed' },
+      { to: '/people/groups', labelKey: 'header.nav.groups', fallback: 'Groups' },
+      { to: '/people/feed', labelKey: 'header.nav.feed', fallback: 'Feed' },
     ],
   },
   {

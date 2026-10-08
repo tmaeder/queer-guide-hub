@@ -374,9 +374,9 @@ export const STATIC_ROUTE_BODY: Record<string, RouteBody> = {
       'Member profiles sit alongside all of that rather than in front of it. Everyone listed chose to be, profiles are shown to signed-in members only, and dating is a separate opt-in deck behind its own age gate.',
     ],
     links: [
-      { href: '/community/groups', label: 'Groups to join' },
-      { href: '/community/feed', label: 'What the community is posting' },
-      { href: '/community/members', label: 'Browse members' },
+      { href: '/people/groups', label: 'Groups to join' },
+      { href: '/people/feed', label: 'What the community is posting' },
+      { href: '/people/members', label: 'Browse members' },
       { href: '/going-out', label: 'Where people are going tonight' },
     ],
   },
