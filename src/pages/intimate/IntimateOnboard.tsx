@@ -268,7 +268,7 @@ export default function IntimateOnboard() {
           )}
 
           {step === 'angle' && (
-            <div className="grid grid-cols-2 sm:grid-cols-4 border-y border-border divide-x divide-border">
+            <div className="grid grid-cols-2 gap-2 bg-surface-container p-2 sm:grid-cols-4">
               {angleOptions.map(({ key, label, deg, Picto }) => {
                 const selected = merged.erection_angle_deg === deg;
                 return (
@@ -435,26 +435,19 @@ function PictogramGrid({
 }) {
   const entries = Object.entries(picks);
   return (
-    <div className="grid grid-cols-3 sm:grid-cols-4 border-y border-border">
-      {entries.map(([key, Picto], i) => {
+    <div className="grid grid-cols-3 gap-2 bg-surface-container p-2 sm:grid-cols-4">
+      {entries.map(([key, Picto]) => {
         const isSelected = selected === key;
-        const row = Math.floor(i / 4);
         return (
           <button
             key={key}
             onClick={() => onSelect(key)}
             aria-pressed={isSelected}
-            className={`relative p-4 flex items-center justify-center border-border transition-colors ${
-              (i + 1) % 4 !== 0 ? 'border-r' : ''
-            } ${row > 0 ? '' : ''} ${isSelected ? 'bg-foreground/5' : 'hover:bg-muted/40'}`}
+            className={`relative flex items-center justify-center p-4 transition-colors ${
+              isSelected ? 'bg-background' : 'hover:bg-muted/40'
+            }`}
           >
             <Picto width={64} height={64} />
-            {isSelected && (
-              <span
-                aria-hidden
-                className="absolute inset-0 border border-border-hairline pointer-events-none"
-              />
-            )}
           </button>
         );
       })}

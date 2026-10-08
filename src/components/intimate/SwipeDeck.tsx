@@ -73,7 +73,7 @@ export function SwipeDeck({ cards, onLike, onPass, className }: SwipeDeckProps) 
     return (
       <div
         className={cn(
-          'flex h-96 items-center justify-center rounded-container border border-dashed border-border p-6 text-center text-sm text-muted-foreground',
+          'flex h-96 items-center justify-center rounded-container bg-surface-container p-6 text-center text-sm text-muted-foreground',
           className,
         )}
       >

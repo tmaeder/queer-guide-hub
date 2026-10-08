@@ -192,7 +192,7 @@ export default function Cruising() {
       </PageContainer>
 
       <PageContainer className="pt-0">
-        <div className="overflow-hidden border-y border-border-hairline lg:grid lg:min-h-[42rem] lg:grid-cols-[minmax(0,1.6fr)_minmax(22rem,.8fr)]">
+        <div className="grid gap-4 overflow-hidden bg-surface-container p-2 lg:min-h-[42rem] lg:grid-cols-[minmax(0,1.6fr)_minmax(22rem,.8fr)] lg:p-4">
           <div className="h-[56dvh] min-h-[28rem] lg:h-[calc(100dvh-13rem)] lg:min-h-[42rem]">
             <CruisingMap
               spots={mappedSpots}
@@ -205,7 +205,7 @@ export default function Cruising() {
             />
           </div>
 
-          <aside className="min-h-[30rem] border-t border-border-hairline bg-background lg:max-h-[calc(100dvh-13rem)] lg:overflow-y-auto lg:border-l lg:border-t-0">
+          <aside className="min-h-[30rem] bg-background lg:max-h-[calc(100dvh-13rem)] lg:overflow-y-auto">
             <div className="sticky top-0 z-10 bg-background/95 px-4 pb-4 pt-4 backdrop-blur md:px-6">
               <div
                 className="grid grid-cols-2 gap-1 bg-surface-container p-1"
@@ -304,7 +304,7 @@ export default function Cruising() {
                       {t('cruising.results.empty')}
                     </p>
                   ) : (
-                    <div className="border-t border-border-hairline">
+                    <div className="space-y-2">
                       {selectedSpotInPanel ? (
                         <SpotRow spot={selectedSpotInPanel} selected onFocusMap={setSelectedSpot} />
                       ) : null}
@@ -365,8 +365,8 @@ function SpotRow({
   return (
     <article
       className={cn(
-        'border-b border-border-hairline py-4',
-        selected && 'bg-surface-container px-4',
+        'bg-surface-container px-4 py-4',
+        selected && 'bg-muted',
       )}
     >
       <div className="flex items-start justify-between gap-4">
