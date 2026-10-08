@@ -35,7 +35,6 @@ export function PWAProvider({ children }: { children: ReactNode }) {
     typeof navigator !== 'undefined' ? navigator.onLine : true,
   );
   const deferredPrompt = useRef<BeforeInstallPromptEvent | null>(null);
-  const updateToastId = useRef<string | number | undefined>(undefined);
 
   const isInstalled =
     typeof window !== 'undefined' &&
@@ -89,32 +88,37 @@ export function PWAProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (!('serviceWorker' in navigator) || !import.meta.env.PROD) return;
 
+    let updateInterval: ReturnType<typeof setInterval> | undefined;
+    let hadController = Boolean(navigator.serviceWorker.controller);
+    let refreshing = false;
+
+    // Listen before registration so an already-installed waiting worker cannot
+    // activate in the small gap between register() resolving and handler setup.
+    // A new worker taking over an existing client gets exactly one reload; the
+    // first-ever controller on a fresh visit does not interrupt the session.
+    const onControllerChange = () => {
+      if (!hadController) {
+        hadController = true;
+        return;
+      }
+      if (refreshing) return;
+      refreshing = true;
+      window.location.reload();
+    };
+    navigator.serviceWorker.addEventListener('controllerchange', onControllerChange);
+
     const registerSW = async () => {
       try {
         const registration = await navigator.serviceWorker.register('/sw.js', {
           scope: '/',
         });
 
-        const showUpdateToast = () => {
-          // Dismiss any previous update toast
-          if (updateToastId.current !== undefined) {
-            toast.dismiss(updateToastId.current);
-          }
-          updateToastId.current = toast.info(i18n.t('pwa.updateAvailable.title'), {
-            description: i18n.t('pwa.updateAvailable.description'),
-            duration: Infinity,
-            action: {
-              label: i18n.t('pwa.updateAvailable.action'),
-              onClick: () => {
-                registration.waiting?.postMessage('SKIP_WAITING');
-              },
-            },
-          });
-        };
-
-        // Check if a waiting SW already exists (e.g. user refreshed before accepting update)
+        // Router changes must not remain behind a manual toast indefinitely:
+        // an old controlled client would otherwise render its own 404 for a
+        // route that already exists at the origin. Activate both workers that
+        // were already waiting and updates discovered during this session.
         if (registration.waiting) {
-          showUpdateToast();
+          registration.waiting.postMessage('SKIP_WAITING');
         }
 
         registration.addEventListener('updatefound', () => {
@@ -126,34 +130,19 @@ export function PWAProvider({ children }: { children: ReactNode }) {
               newWorker.state === 'installed' &&
               navigator.serviceWorker.controller
             ) {
-              showUpdateToast();
+              newWorker.postMessage('SKIP_WAITING');
             }
           });
         });
 
-        // When a new SW takes over an already-controlled page, reload to pick
-        // up the new assets. On the very first visit the SW's clients.claim()
-        // also fires controllerchange (controller goes null → SW) — reloading
-        // there reloads every fresh visitor mid-session, so skip it.
-        let hadController = Boolean(navigator.serviceWorker.controller);
-        let refreshing = false;
-        navigator.serviceWorker.addEventListener('controllerchange', () => {
-          if (!hadController) {
-            hadController = true;
-            return;
-          }
-          if (refreshing) return;
-          refreshing = true;
-          window.location.reload();
-        });
+        // Do not wait for the browser's implementation-defined update check.
+        // This is especially important for installed PWAs and long-lived tabs.
+        registration.update().catch(() => {});
 
         // Periodically check for SW updates (every 60 min) for long-lived tabs
-        const updateInterval = setInterval(() => {
+        updateInterval = setInterval(() => {
           registration.update().catch(() => {});
         }, 60 * 60 * 1000);
-
-        // Clean up interval if the page is about to unload
-        window.addEventListener('beforeunload', () => clearInterval(updateInterval), { once: true });
       } catch (error) {
         console.debug('[SW] Registration failed:', error);
       }
@@ -165,6 +154,12 @@ export function PWAProvider({ children }: { children: ReactNode }) {
     } else {
       window.addEventListener('load', registerSW, { once: true });
     }
+
+    return () => {
+      window.removeEventListener('load', registerSW);
+      navigator.serviceWorker.removeEventListener('controllerchange', onControllerChange);
+      if (updateInterval !== undefined) clearInterval(updateInterval);
+    };
   }, []);
 
   const promptInstall = useCallback(async () => {
