@@ -82,7 +82,7 @@ export default function Feed() {
               )}
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button variant="outline" onClick={() => refetch()} className="inline-flex gap-2">
+              <Button variant="soft" onClick={() => refetch()} className="inline-flex gap-2">
                 <RefreshCw className="h-4 w-4" aria-hidden="true" />
                 {t('common.tryAgain', 'Try Again')}
               </Button>
@@ -102,7 +102,7 @@ export default function Feed() {
             <CardContent className="p-4">
               {user ? (
                 <CreatePostDialog>
-                  <Button variant="outline" className="w-full justify-start h-14 text-left">
+                  <Button variant="soft" className="w-full justify-start h-14 text-left">
                     <PenSquare className="h-5 w-5 mr-4 text-muted-foreground" />
                     <span className="text-muted-foreground">
                       {t(
@@ -224,7 +224,7 @@ export default function Feed() {
                 {hasNextPage && !searchTerm.trim() && (
                   <div className="flex justify-center pt-2">
                     <Button
-                      variant="outline"
+                      variant="soft"
                       onClick={() => fetchNextPage()}
                       disabled={isFetchingNextPage}
                       className="inline-flex gap-2"

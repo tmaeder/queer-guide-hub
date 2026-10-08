@@ -215,7 +215,7 @@ export default function People() {
       id: 'whats-on',
       label: t('people.sections.whatsOn', "What's on"),
       kicker: t('people.sections.whatsOnKicker', 'Turning up somewhere beats messaging'),
-      content: <UpcomingEvents eventsResult={eventsResult} cityName={cityName} />,
+      content: <UpcomingEvents eventsResult={eventsResult} cityName={cityName} borderless />,
       action: (
         <LocalizedLink to="/events" className="text-13 no-underline hover:underline">
           {t('people.allEvents', 'All events')}

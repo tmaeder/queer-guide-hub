@@ -179,7 +179,7 @@ const UserDirectory = () => {
             <p className="text-sm text-muted-foreground max-w-md">
               Something went wrong while fetching the directory. Try again in a moment.
             </p>
-            <Button variant="outline" onClick={() => refetch()}>
+            <Button variant="soft" onClick={() => refetch()}>
               Retry
             </Button>
           </CardContent>

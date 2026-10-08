@@ -57,7 +57,7 @@ export function GroupEventCard({
               </p>
             </div>
           </div>
-          <Badge variant="secondary" className="font-medium">
+          <Badge variant="secondary" className="border-0 font-medium">
             {event.event_type}
           </Badge>
         </div>
@@ -127,7 +127,7 @@ export function GroupEventCard({
             <div className="flex items-center gap-2">
               {event.user_attending ? (
                 <Button
-                  variant="outline"
+                  variant="soft"
                   size="sm"
                   onClick={() => onLeaveEvent(event.id)}
                   disabled={isLeaving}
@@ -150,7 +150,7 @@ export function GroupEventCard({
               )}
 
               {(event.ticket_url || event.website) && (
-                <Button variant="outline" size="sm" asChild>
+                <Button variant="soft" size="sm" asChild>
                   <a
                     href={event.ticket_url || event.website}
                     target="_blank"
@@ -165,7 +165,7 @@ export function GroupEventCard({
 
             {canManage && onDeleteEvent && (
               <Button
-                variant="outline"
+                variant="soft"
                 size="sm"
                 onClick={() => onDeleteEvent(event.id)}
                 disabled={isDeleting}

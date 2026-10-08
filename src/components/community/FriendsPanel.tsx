@@ -113,7 +113,7 @@ export function FriendsPanel() {
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
-        <Badge variant="secondary">
+        <Badge variant="secondary" className="border-0">
           <div className="flex items-center gap-2">
             <Users size={16} />
             {friends.length} {t('pages.friends.title', 'Friends')}
@@ -191,11 +191,11 @@ export function FriendsPanel() {
                             <StartConversationButton
                               userId={friendId}
                               userName={profile?.display_name || 'User'}
-                              variant="outline"
+                              variant="soft"
                               size="sm"
                             />
                             <Button
-                              variant="outline"
+                              variant="soft"
                               size="sm"
                               onClick={() => removeRelationship(friendId)}
                               disabled={loading}
@@ -268,7 +268,7 @@ export function FriendsPanel() {
                               </div>
                             </Button>
                             <Button
-                              variant="outline"
+                              variant="soft"
                               size="sm"
                               onClick={() => rejectFriendRequest(request.id)}
                               disabled={loading}

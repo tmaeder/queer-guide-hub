@@ -106,3 +106,39 @@ test('the People navigation stays inside a mobile viewport', async ({ page }) =>
   const overflow = await page.evaluate(() => document.documentElement.scrollWidth - innerWidth);
   expect(overflow).toBeLessThanOrEqual(1);
 });
+
+test('public People surfaces keep decorative chrome borderless', async ({ page }) => {
+  const routes = ['/people', '/people/feed', '/people/members', '/people/groups'] as const;
+
+  for (const path of routes) {
+    await page.goto(path);
+    const nav = page.getByRole('navigation', { name: 'People sections' });
+    await expect(nav).toBeVisible({ timeout: ROUTE_READY_TIMEOUT });
+
+    const visibleHairlines = await page.locator('main .border-border-hairline').evaluateAll((nodes) =>
+      nodes.filter((node) => {
+        const style = getComputedStyle(node);
+        const rect = node.getBoundingClientRect();
+        return (
+          rect.width > 0 &&
+          rect.height > 0 &&
+          [style.borderTopWidth, style.borderRightWidth, style.borderBottomWidth, style.borderLeftWidth]
+            .some((width) => width !== '0px')
+        );
+      }).length,
+    );
+    expect(visibleHairlines, `${path} should not render hairline rules`).toBe(0);
+
+    const outlinedButtons = await page.locator('main button.border-input').count();
+    expect(outlinedButtons, `${path} should use filled secondary actions`).toBe(0);
+
+    const borderedBadges = await page.locator('main .border-track-ring.border').evaluateAll(
+      (nodes) =>
+        nodes.filter((node) => {
+          const style = getComputedStyle(node);
+          return style.borderTopWidth !== '0px';
+        }).length,
+    );
+    expect(borderedBadges, `${path} should use borderless badges`).toBe(0);
+  }
+});

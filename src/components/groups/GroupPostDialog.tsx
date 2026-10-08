@@ -245,7 +245,7 @@ export const GroupPostDialog = ({
 
                   {pollOptions.length < 6 && (
                     <Button
-                      variant="outline"
+                      variant="soft"
                       size="sm"
                       onClick={addPollOption}
                     >
@@ -278,7 +278,7 @@ export const GroupPostDialog = ({
 
               <Popover open={showMentions} onOpenChange={setShowMentions}>
                 <PopoverTrigger asChild>
-                  <Button variant="outline" size="sm">
+                  <Button variant="soft" size="sm">
                     <AtSign size={16} className="mr-2" />
                     Mention Someone
                   </Button>
@@ -314,7 +314,7 @@ export const GroupPostDialog = ({
             {mentions.length > 0 && (
               <div className="flex flex-wrap gap-2">
                 {mentions.map((mention) => (
-                  <Badge key={mention.user_id} variant="secondary">
+                  <Badge key={mention.user_id} variant="secondary" className="border-0">
                     <div className="flex items-center gap-1">
                       @{mention.username}
                       <button
@@ -350,7 +350,7 @@ export const GroupPostDialog = ({
           )}
 
           <div className="flex justify-end gap-2 pt-4">
-            <Button variant="outline" onClick={() => setOpen(false)}>
+            <Button variant="soft" onClick={() => setOpen(false)}>
               Cancel
             </Button>
             <Button

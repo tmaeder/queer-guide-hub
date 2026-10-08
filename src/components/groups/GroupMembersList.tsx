@@ -56,7 +56,10 @@ export function GroupMembersList({ members, canManage, groupId, onStartConversat
               <div className="flex flex-col gap-1">
                 <p className="text-sm font-medium">{member.profiles.display_name}</p>
                 <div className="flex items-center gap-2">
-                  <Badge variant={getRoleColor(member.role) as 'default' | 'secondary' | 'destructive' | 'outline'}>
+                  <Badge
+                    variant={getRoleColor(member.role) as 'default' | 'secondary' | 'destructive' | 'outline'}
+                    className="border-0"
+                  >
                     <span className="flex items-center gap-1">{getRoleIcon(member.role)}{member.role}</span>
                   </Badge>
                   <span className="text-xs text-muted-foreground">Joined {new Date(member.joined_at).toLocaleDateString()}</span>
@@ -68,13 +71,13 @@ export function GroupMembersList({ members, canManage, groupId, onStartConversat
             </div>
             <div className="flex items-center gap-2">
               {member.user_id !== user?.id && onStartConversation && (
-                <Button variant="outline" size="sm" onClick={() => onStartConversation(member.user_id)}>
+                <Button variant="soft" size="sm" onClick={() => onStartConversation(member.user_id)}>
                   <MessageSquare size={16} className="mr-2" />Message
                 </Button>
               )}
               {canManage && groupId && member.role !== 'admin' && member.user_id !== user?.id && (
                 <DropdownMenu>
-                  <DropdownMenuTrigger asChild><Button variant="outline" size="sm"><MoreVertical size={16} /></Button></DropdownMenuTrigger>
+                  <DropdownMenuTrigger asChild><Button variant="soft" size="sm"><MoreVertical size={16} /></Button></DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
                     <DropdownMenuItem onClick={() => handleRoleChange(member)}>
                       <ArrowUpDown size={16} className="mr-2" />{member.role === 'moderator' ? 'Demote to Member' : 'Promote to Moderator'}

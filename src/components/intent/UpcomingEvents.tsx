@@ -2,6 +2,7 @@ import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { CoverageNote } from '@/components/intent/CoverageNote';
 import { RouteBullet } from '@/components/transit/RouteBullet';
 import type { EventWindow, EventsWithFallback } from '@/hooks/useIntentData';
+import { cn } from '@/lib/utils';
 
 /**
  * The "What's on" body, shared by /going-out and /people.
@@ -31,9 +32,11 @@ const WINDOW_LABEL: Record<EventWindow, string> = {
 export function UpcomingEvents({
   eventsResult,
   cityName,
+  borderless = false,
 }: {
   eventsResult: EventsWithFallback | undefined;
   cityName?: string | null;
+  borderless?: boolean;
 }) {
   const events = eventsResult?.events ?? [];
 
@@ -55,11 +58,21 @@ export function UpcomingEvents({
           than the standalone `DepartureRow` primitive, whose own 2px border
           would double against its neighbour's in a stack. */}
       {events.length > 0 ? (
-        <ul className="m-0 list-none bg-card p-0 rounded-container shadow-soft">
+        <ul
+          className={cn(
+            'm-0 list-none p-0',
+            borderless ? 'space-y-2' : 'rounded-container bg-card shadow-soft',
+          )}
+        >
           {events.map((e) => (
             <li
               key={e.id}
-              className="group relative border-b border-border-hairline last:border-b-0"
+              className={cn(
+                'group relative',
+                borderless
+                  ? 'rounded-element bg-card shadow-soft'
+                  : 'border-b border-border-hairline last:border-b-0',
+              )}
             >
               <div className="flex items-center gap-4 px-4 py-4 transition-colors group-hover:bg-surface-container">
                 <RouteBullet type="event" size={34} />
