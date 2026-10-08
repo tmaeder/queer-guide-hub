@@ -6,6 +6,7 @@ import { cn } from '@/lib/utils';
 export interface IntentPageLayoutProps {
   /** Optional page-specific hero. Defaults to the shared PageHero treatment. */
   header?: ReactNode;
+  topNav?: ReactNode;
   eyebrow?: ReactNode;
   title: ReactNode;
   lede?: ReactNode;
@@ -21,6 +22,7 @@ export interface IntentPageLayoutProps {
   breadcrumbHref: string;
   sectionNavVariant?: 'default' | 'subway';
   className?: string;
+  heroSize?: 'sm' | 'md' | 'lg';
 }
 
 /**
@@ -40,6 +42,7 @@ export interface IntentPageLayoutProps {
  */
 export function IntentPageLayout({
   header,
+  topNav,
   eyebrow,
   title,
   lede,
@@ -53,6 +56,7 @@ export function IntentPageLayout({
   breadcrumbHref,
   sectionNavVariant = 'default',
   className,
+  heroSize = 'md',
 }: IntentPageLayoutProps) {
   return (
     <div className={cn(className)}>
@@ -65,10 +69,11 @@ export function IntentPageLayout({
         sectionNavVariant={sectionNavVariant}
         header={
           <>
+            {topNav}
             {header ?? (
               /* `bare` — EditorialDetailLayout already puts this inside a
                  PageContainer, and two nested containers double the gutter. */
-              <PageHero bare eyebrow={eyebrow} title={title} lede={lede} size="md" />
+              <PageHero bare eyebrow={eyebrow} title={title} lede={lede} size={heroSize} />
             )}
             {scopeBar ? <div className="mt-6">{scopeBar}</div> : null}
           </>
