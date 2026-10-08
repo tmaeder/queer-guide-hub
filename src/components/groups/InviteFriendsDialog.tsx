@@ -76,7 +76,7 @@ export function InviteFriendsDialog({ groupId }: { groupId: string }) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline">
+        <Button variant="soft">
           <UserPlus size={16} className="mr-2" />
           {t('groups.invite.cta', 'Invite friends')}
         </Button>
@@ -131,12 +131,12 @@ export function InviteFriendsDialog({ groupId }: { groupId: string }) {
           {link ? (
             <div className="flex gap-2">
               <Input readOnly value={link} onFocus={(e) => e.currentTarget.select()} />
-              <Button variant="outline" onClick={handleCopy} aria-label={t('common.copy', 'Copy')}>
+              <Button variant="soft" onClick={handleCopy} aria-label={t('common.copy', 'Copy')}>
                 {copied ? <Check size={16} /> : <Copy size={16} />}
               </Button>
             </div>
           ) : (
-            <Button variant="outline" onClick={handleCreateLink}>
+            <Button variant="soft" onClick={handleCreateLink}>
               {t('groups.invite.createLink', 'Create invite link')}
             </Button>
           )}

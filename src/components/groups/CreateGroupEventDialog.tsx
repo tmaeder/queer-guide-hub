@@ -149,7 +149,7 @@ export function CreateGroupEventDialog({ onCreateEvent, isCreating }: CreateGrou
               <Label>Start Date *</Label>
               <Popover>
                 <PopoverTrigger asChild>
-                  <Button variant="outline">
+                  <Button variant="soft">
                     <CalendarIcon size={16} className="mr-2" />
                     {startDate ? format(startDate, 'PPP') : 'Select start date'}
                   </Button>
@@ -170,7 +170,7 @@ export function CreateGroupEventDialog({ onCreateEvent, isCreating }: CreateGrou
               <Label>End Date</Label>
               <Popover>
                 <PopoverTrigger asChild>
-                  <Button variant="outline">
+                  <Button variant="soft">
                     <CalendarIcon size={16} className="mr-2" />
                     {endDate ? format(endDate, 'PPP') : 'Select end date'}
                   </Button>
@@ -359,7 +359,7 @@ export function CreateGroupEventDialog({ onCreateEvent, isCreating }: CreateGrou
           <div className="flex justify-end gap-2 pt-4">
             <Button
               type="button"
-              variant="outline"
+              variant="soft"
               onClick={() => setOpen(false)}
               disabled={isCreating}
             >

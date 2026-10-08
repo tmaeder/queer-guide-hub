@@ -17,6 +17,7 @@ interface TagSelectorProps {
   allowCustomTags?: boolean;
   categories?: string[];
   className?: string;
+  borderless?: boolean;
 }
 export const TagSelector = ({
   selectedTags,
@@ -26,6 +27,7 @@ export const TagSelector = ({
   allowCustomTags = false,
   _categories,
   className,
+  borderless = false,
 }: TagSelectorProps) => {
   const { allTags, tagsByCategory, searchTags } = useCentralizedTags();
   const [open, setOpen] = useState(false);
@@ -79,6 +81,7 @@ export const TagSelector = ({
               <Badge
                 key={tagName}
                 variant="secondary"
+                className={borderless ? 'border-0' : undefined}
                 style={{
                   display: 'flex',
                   alignItems: 'center',
@@ -113,7 +116,7 @@ export const TagSelector = ({
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
           <Button
-            variant="outline"
+            variant={borderless ? 'soft' : 'outline'}
             role="combobox"
             aria-expanded={open}
             style={{ width: '100%', justifyContent: 'space-between' }}
@@ -141,6 +144,7 @@ export const TagSelector = ({
                 className="absolute text-muted-foreground"
               />
               <Input
+                className={borderless ? 'border-0 bg-surface-container' : undefined}
                 placeholder="Search tags..."
                 value={searchQuery}
                 onChange={(e) => handleSearch(e.target.value)}
