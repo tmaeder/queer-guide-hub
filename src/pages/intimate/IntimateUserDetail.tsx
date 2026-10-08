@@ -188,13 +188,13 @@ export default function IntimateUserDetail() {
             Send friend request
           </Button>
           <Button
-            variant="outline"
+            variant="soft"
             onClick={() => setReportOpen((v) => !v)}
             className="rounded-element"
           >
             Report
           </Button>
-          <Button variant="outline" onClick={block} className="rounded-element">
+          <Button variant="soft" onClick={block} className="rounded-element">
             Block
           </Button>
         </div>
@@ -207,7 +207,7 @@ export default function IntimateUserDetail() {
                 <Button
                   key={r}
                   size="sm"
-                  variant="outline"
+                  variant="soft"
                   onClick={() => submitReport(r)}
                   className="rounded-element"
                 >

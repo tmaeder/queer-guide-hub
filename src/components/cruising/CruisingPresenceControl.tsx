@@ -115,7 +115,7 @@ export function CruisingPresenceControl() {
           </p>
         </div>
         {active ? (
-          <Button variant="outline" size="sm" onClick={disable} disabled={setPresence.isPending}>
+          <Button variant="soft" size="sm" onClick={disable} disabled={setPresence.isPending}>
             {t('cruising.presence.turnOff')}
           </Button>
         ) : (
@@ -189,7 +189,7 @@ export function CruisingPresenceControl() {
           </div>
 
           <DialogFooter>
-            <Button variant="outline" onClick={() => setOpen(false)}>
+            <Button variant="soft" onClick={() => setOpen(false)}>
               {t('cruising.presence.cancel')}
             </Button>
             <Button
