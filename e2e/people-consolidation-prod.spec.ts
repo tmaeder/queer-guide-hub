@@ -31,6 +31,8 @@ const peopleLinks = [
   '/people/nearby',
 ] as const;
 
+const hubLinks = ['/hub', '/hub/feed', '/hub/messages', '/hub/plans', '/hub/saved'] as const;
+
 test('the People hub exposes every community and connection destination', async ({ page }) => {
   const response = await page.goto('/people');
   expect(response?.ok()).toBe(true);
@@ -42,6 +44,7 @@ test('the People hub exposes every community and connection destination', async 
     'page',
   );
   for (const href of peopleLinks) await expect(nav.locator(`a[href$="${href}"]`)).toHaveCount(1);
+  await expect(nav.locator('a[href$="/hub/feed"]')).toHaveCount(0);
   await expect(page.getByTestId('people-connection-map')).toBeVisible({
     timeout: ROUTE_READY_TIMEOUT,
   });
@@ -103,8 +106,32 @@ test('the public community feed lives inside the Hub shell', async ({ page }) =>
 
   const nav = page.getByRole('navigation', { name: 'Hub modules' }).first();
   await expect(nav).toBeVisible();
+  for (const href of hubLinks) await expect(nav.locator(`a[href$="${href}"]`)).toHaveCount(1);
   await expect(nav.getByRole('link', { name: 'Feed' })).toHaveAttribute('aria-current', 'page');
   await expect(page.getByRole('heading', { level: 1, name: 'Feed' })).toBeVisible();
+  await expect(page).toHaveTitle('Community Feed — What Queer People Are Posting');
+  await expect(page.locator('link[rel="canonical"]')).toHaveAttribute(
+    'href',
+    'https://queer.guide/hub/feed',
+  );
+  await expect(page.locator('meta[name="robots"]')).not.toHaveAttribute('content', /noindex/);
+});
+
+test('private Hub modules keep their signed-out gate inside the shared shell', async ({ page }) => {
+  for (const path of hubLinks.filter((path) => path !== '/hub/feed')) {
+    const response = await page.goto(path);
+    expect(response?.ok(), `${path} should return a successful document`).toBe(true);
+
+    const nav = page.getByRole('navigation', { name: 'Hub modules' }).first();
+    await expect(nav).toBeVisible({ timeout: ROUTE_READY_TIMEOUT });
+    await expect(nav.locator(`a[href$="${path}"]`)).toHaveAttribute('aria-current', 'page');
+    await expect(page.getByRole('heading', { name: 'Your hub' })).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Sign In', exact: true })).toHaveAttribute(
+      'href',
+      /\/auth$/,
+    );
+    await expect(page.locator('meta[name="robots"]')).toHaveAttribute('content', /noindex/);
+  }
 });
 
 test('the People navigation stays inside a mobile viewport', async ({ page }) => {
@@ -116,6 +143,18 @@ test('the People navigation stays inside a mobile viewport', async ({ page }) =>
   await expect(page.getByTestId('people-connection-map')).toBeVisible({
     timeout: ROUTE_READY_TIMEOUT,
   });
+  const overflow = await page.evaluate(() => document.documentElement.scrollWidth - innerWidth);
+  expect(overflow).toBeLessThanOrEqual(1);
+});
+
+test('the public Feed and Hub navigation stay inside a mobile viewport', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('/hub/feed');
+
+  const nav = page.getByRole('navigation', { name: 'Hub modules' });
+  await expect(nav).toBeVisible({ timeout: ROUTE_READY_TIMEOUT });
+  await expect(nav.getByRole('link', { name: 'Feed' })).toHaveAttribute('aria-current', 'page');
+  await expect(page.getByRole('heading', { level: 1, name: 'Feed' })).toBeVisible();
   const overflow = await page.evaluate(() => document.documentElement.scrollWidth - innerWidth);
   expect(overflow).toBeLessThanOrEqual(1);
 });
