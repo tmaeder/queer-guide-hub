@@ -5,14 +5,13 @@ import { PageContainer } from '@/components/layout/PageContainer';
 import { PeopleNav } from '@/components/people/PeopleNav';
 import { useMeta } from '@/hooks/useMeta';
 
-// Each tab renders the existing standalone surface. Radix mounts only the active
-// tab's content, so a surface's data hooks fire only when its tab is open.
-const Feed = lazyRetry(() => import('./Feed'));
+// Each route renders one existing standalone surface. Suspense mounts only the
+// active page, so its data hooks fire only when that page is open.
 const UserDirectory = lazyRetry(() => import('./UserDirectory'));
 const Friends = lazyRetry(() => import('./Friends'));
 const Groups = lazyRetry(() => import('./Groups'));
 
-const TABS = ['feed', 'members', 'friends', 'groups'] as const;
+const TABS = ['members', 'friends', 'groups'] as const;
 type CommunityTab = (typeof TABS)[number];
 
 /**
@@ -23,13 +22,9 @@ type CommunityTab = (typeof TABS)[number];
 export default function Community({ tab }: { tab?: CommunityTab }) {
   const active: CommunityTab = (TABS as readonly string[]).includes(tab ?? '')
     ? (tab as CommunityTab)
-    : 'feed';
+    : 'members';
 
   const meta = {
-    feed: {
-      title: 'Community feed',
-      description: 'Recommendations, questions, meet-ups and news shared by Queer Guide members.',
-    },
     members: {
       title: 'Browse LGBTQ+ community members',
       description: 'Browse members by their shared interests, pronouns and cities.',
@@ -64,7 +59,6 @@ export default function Community({ tab }: { tab?: CommunityTab }) {
           </PageContainer>
         }
       >
-        {active === 'feed' && <Feed />}
         {active === 'members' && <UserDirectory />}
         {active === 'friends' && <Friends />}
         {active === 'groups' && <Groups />}

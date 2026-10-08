@@ -1,5 +1,6 @@
 import {
   LayoutDashboard,
+  Rss,
   MessageCircle,
   CalendarClock,
   Bookmark,
@@ -14,14 +15,12 @@ import {
  * can't mis-capture a segment (see the /me and /community comments in
  * routes.tsx).
  *
- * Consolidated 2026-07 from six modules to four: Overview (new landing),
- * Messages (former Inbox + Contacts), Plans (former Calendar + Trips) and
- * Saved (favorites + former News's saved searches). The News discovery feed
- * moved to the public /news "For You" section; the retired module paths
- * redirect in routes.tsx.
+ * Consolidated 2026-07 from six private modules to four, then expanded with
+ * the public community Feed in 2026-10. Feed is the one public module; the
+ * other four remain the signed-in personal office.
  */
 
-export type HubModuleId = 'overview' | 'messages' | 'plans' | 'saved';
+export type HubModuleId = 'overview' | 'feed' | 'messages' | 'plans' | 'saved';
 
 export interface HubModule {
   id: HubModuleId;
@@ -41,6 +40,13 @@ export const HUB_MODULES: HubModule[] = [
     icon: LayoutDashboard,
     labelKey: 'hub.modules.overview',
     defaultLabel: 'Overview',
+  },
+  {
+    id: 'feed',
+    path: '/hub/feed',
+    icon: Rss,
+    labelKey: 'header.nav.feed',
+    defaultLabel: 'Feed',
   },
   {
     id: 'messages',

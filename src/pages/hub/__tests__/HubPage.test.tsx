@@ -1,12 +1,16 @@
 /**
  * @vitest-environment jsdom
  */
-import { describe, it, expect, vi } from 'vitest';
+import { beforeEach, describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router';
 
+const authState = vi.hoisted(() => ({
+  user: null as { id: string; email: string } | null,
+}));
+
 vi.mock('@/hooks/useAuth', () => ({
-  useAuth: () => ({ user: { id: 'u1', email: 'u@example.com' }, loading: false }),
+  useAuth: () => ({ user: authState.user, loading: false }),
 }));
 vi.mock('@/hooks/useProfile', () => ({
   useProfile: () => ({
@@ -29,10 +33,15 @@ vi.mock('@/components/hub/modules/PlansModule', () => ({
 vi.mock('@/components/hub/modules/SavedModule', () => ({
   SavedModule: () => <div data-testid="module-saved" />,
 }));
+vi.mock('@/pages/Feed', () => ({
+  default: ({ embedded }: { embedded?: boolean }) => (
+    <div data-testid="module-feed" data-embedded={String(Boolean(embedded))} />
+  ),
+}));
 
 import HubPage from '../HubPage';
 
-const renderPage = (module?: 'overview' | 'messages' | 'plans' | 'saved') =>
+const renderPage = (module?: 'overview' | 'feed' | 'messages' | 'plans' | 'saved') =>
   render(
     <MemoryRouter>
       <HubPage module={module} />
@@ -40,11 +49,16 @@ const renderPage = (module?: 'overview' | 'messages' | 'plans' | 'saved') =>
   );
 
 describe('HubPage', () => {
+  beforeEach(() => {
+    authState.user = { id: 'u1', email: 'u@example.com' };
+  });
+
   it('renders the shell nav from the registry with overview as default', () => {
     renderPage();
     expect(screen.getByTestId('module-overview')).toBeTruthy();
-    // Desktop + mobile nav both render each of the four module links.
+    // Desktop + mobile nav both render each of the five module links.
     expect(screen.getAllByRole('link', { name: /Overview/ }).length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByRole('link', { name: /Feed/ }).length).toBeGreaterThanOrEqual(1);
     expect(screen.getAllByRole('link', { name: /Messages/ }).length).toBeGreaterThanOrEqual(1);
     expect(screen.getAllByRole('link', { name: /Plans/ }).length).toBeGreaterThanOrEqual(1);
     expect(screen.getAllByRole('link', { name: /Saved/ }).length).toBeGreaterThanOrEqual(1);
@@ -60,6 +74,25 @@ describe('HubPage', () => {
     renderPage('messages');
     expect(screen.getByTestId('module-messages')).toBeTruthy();
     expect(screen.queryByTestId('module-overview')).toBeNull();
+  });
+
+  it('keeps the feed public while preserving the Hub shell', () => {
+    authState.user = null;
+    renderPage('feed');
+
+    expect(screen.getByTestId('module-feed')).toHaveAttribute('data-embedded', 'true');
+    expect(
+      screen.getAllByRole('navigation', { name: 'Hub modules' }).length,
+    ).toBeGreaterThanOrEqual(1);
+    expect(screen.queryByRole('link', { name: 'Sign In' })).toBeNull();
+  });
+
+  it('keeps private modules behind authentication', () => {
+    authState.user = null;
+    renderPage('messages');
+
+    expect(screen.getByRole('link', { name: 'Sign In' })).toBeTruthy();
+    expect(screen.queryByTestId('module-messages')).toBeNull();
   });
 
   it('renders the plans module when module="plans"', () => {

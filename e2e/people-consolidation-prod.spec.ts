@@ -21,7 +21,6 @@ test.beforeEach(async ({ page }) => {
 });
 
 const peopleLinks = [
-  '/people/feed',
   '/people/members',
   '/people/friends',
   '/people/groups',
@@ -63,9 +62,12 @@ test('dating is canonical under People and preserves the anonymous auth wall', a
   await expect(page).toHaveURL(/\/auth\/?$/);
 });
 
-test('legacy community URLs resolve to their canonical People destinations', async ({ page }) => {
+test('legacy community URLs resolve to their canonical destinations', async ({ page }) => {
   const redirects = {
-    '/community': '/people/feed',
+    '/community': '/hub/feed',
+    '/community/feed': '/hub/feed',
+    '/feed': '/hub/feed',
+    '/people/feed': '/hub/feed',
     '/community/members': '/people/members',
     '/friends': '/people/friends',
     '/groups': '/people/groups',
@@ -78,6 +80,17 @@ test('legacy community URLs resolve to their canonical People destinations', asy
     if (canonical === '/people/dating') await expect(page).toHaveURL(/\/auth\/?$/);
     else await expect(page).toHaveURL(new RegExp(`${canonical.replaceAll('/', '\\/')}/?$`));
   }
+});
+
+test('the public community feed lives inside the Hub shell', async ({ page }) => {
+  const response = await page.goto('/hub/feed');
+  expect(response?.ok()).toBe(true);
+  await expect(page).toHaveURL(/\/hub\/feed\/?$/);
+
+  const nav = page.getByRole('navigation', { name: 'Hub modules' }).first();
+  await expect(nav).toBeVisible();
+  await expect(nav.getByRole('link', { name: 'Feed' })).toHaveAttribute('aria-current', 'page');
+  await expect(page.getByRole('heading', { level: 1, name: 'Feed' })).toBeVisible();
 });
 
 test('the People navigation stays inside a mobile viewport', async ({ page }) => {

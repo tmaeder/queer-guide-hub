@@ -26,7 +26,7 @@ export function useDynamicSitemap() {
         { label: 'News', to: '/news' },
         { label: 'Groups', to: '/people/groups' },
         { label: 'My Groups', to: '/people/groups?tab=mine' },
-        { label: 'Feed', to: '/people/feed' },
+        { label: 'Feed', to: '/hub/feed' },
         { label: 'Saved', to: '/hub/saved' },
         { label: 'Search', to: '/search' },
         { label: 'Personalities', to: '/personalities' },

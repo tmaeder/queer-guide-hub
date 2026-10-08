@@ -375,7 +375,7 @@ export const STATIC_ROUTE_BODY: Record<string, RouteBody> = {
     ],
     links: [
       { href: '/people/groups', label: 'Groups to join' },
-      { href: '/people/feed', label: 'What the community is posting' },
+      { href: '/hub/feed', label: 'What the community is posting' },
       { href: '/people/members', label: 'Browse members' },
       { href: '/going-out', label: 'Where people are going tonight' },
     ],

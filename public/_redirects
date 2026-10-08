@@ -11,14 +11,16 @@
 /resources  /tags  301
 /resources/*  /tags/:splat  301
 
-# Community and connection features now share one canonical People hub.
-# Dynamic detail routes are preserved by the locale-aware client router.
-/community          /people/feed     301
-/community/feed     /people/feed     301
+# The community feed now lives in the unified Hub. People discovery and dating
+# remain under /people. Dynamic detail routes are preserved by the locale-aware
+# client router.
+/community          /hub/feed        301
+/community/feed     /hub/feed        301
 /community/members  /people/members  301
 /community/friends  /people/friends  301
 /community/groups   /people/groups   301
-/feed               /people/feed     301
+/feed               /hub/feed        301
+/people/feed        /hub/feed        301
 /friends            /people/friends  301
 /groups             /people/groups   301
 /cruising           /people/dating   301
