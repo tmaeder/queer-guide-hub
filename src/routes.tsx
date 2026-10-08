@@ -163,6 +163,7 @@ const Cruising = lazyRetry(() => import('./pages/Cruising'));
 const IntimateUserDetail = lazyRetry(() => import('./pages/intimate/IntimateUserDetail'));
 const KinkChecklist = lazyRetry(() => import('./pages/tools/KinkChecklist'));
 const KinkShareView = lazyRetry(() => import('./pages/tools/KinkShareView'));
+const WorkbookRunner = lazyRetry(() => import('./pages/tools/WorkbookRunner'));
 
 const People = lazyRetry(() => import('./pages/people/People'));
 const PeopleMode = lazyRetry(() => import('./pages/people/PeopleMode'));
@@ -196,7 +197,9 @@ function SettingsRedirect() {
 /** /admin/review merged into governance triage — preserve ?tab=/?queue= deep links. */
 function ReviewRedirect() {
   const location = useLocation();
-  return <Navigate to={`/admin/governance?mode=triage&${location.search.replace(/^\?/, '')}`} replace />;
+  return (
+    <Navigate to={`/admin/governance?mode=triage&${location.search.replace(/^\?/, '')}`} replace />
+  );
 }
 
 /**
@@ -1053,6 +1056,11 @@ export const AppRoutes = () => {
                   {/* Kink checklist tool — static paths (see people/* locale note). */}
                   <Route path="tools/checklist" element={<KinkChecklist />} />
                   <Route path="tools/checklist/s/:code" element={<KinkShareView />} />
+                  {/* Workbook runner. Lives beside the checklist so it inherits
+                      the same posture: sign-in + intimate opt-in gated, absent
+                      from every sitemap, no search_documents row. Discovery is
+                      the TagWorkbooks band on /tags/:slug. */}
+                  <Route path="tools/workbook/:slug" element={<WorkbookRunner />} />
                   {/* Hand-typed shortcut (404 reports) → the checklist tool. */}
                   <Route path="kink" element={<LocalizedRedirect to="/tools/checklist" />} />
                   <Route path="profile/tiers" element={<Navigate to="/me/progress" replace />} />

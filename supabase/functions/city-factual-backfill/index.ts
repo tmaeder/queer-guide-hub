@@ -41,7 +41,7 @@ import {
 // runtime keeps serving an older bundle (seen 2026-10-07: v214 held the
 // name_local code and answered in the old shape), so the only proof a change
 // is live is the response itself. Bump this when the link/sparql output changes.
-const FN_REVISION = '2026-10-07.name-local-label-first'
+const FN_REVISION = '2026-10-07.wd-transient-not-a-miss'
 
 const DEFAULT_BATCH_LIMIT = 40
 // 300 is the repo-wide ceiling for city writes: one cities UPDATE fans out
@@ -150,26 +150,58 @@ async function searchQid(query: string, country?: string | null): Promise<string
  * `city_aliases` is what lets `city_resolve_or_create` know that Kapstadt is
  * Cape Town before a second row gets created.
  */
+// A failed wbgetentities request is NOT evidence the entity is missing. Before
+// 2026-10-07 fetchEntity returned null for a 429 exactly as for a deleted item,
+// and the caller then called bumpMiss: three throttled requests were enough to
+// stamp a city `data_unavailable` and drop it from every future sweep. A
+// parallel name_local backfill measured the rate at ~1 in 3 requests (12-14 of
+// 40 per batch reported "entity missing" for Zagreb, Winterthur, Bamako). The
+// damage was contained only because bumpMiss is a no-op on already-resolved
+// rows. So: retry 429/5xx/network with backoff, and report what is left as
+// 'transient', which the caller must never count as an attempt.
+const WD_RETRIES = 3
+
+async function fetchWbEntities(url: string): Promise<{ ok: true; data: Json } | { ok: false }> {
+  for (let i = 0; i < WD_RETRIES; i++) {
+    const ctl = new AbortController()
+    const t = setTimeout(() => ctl.abort(), FETCH_TIMEOUT)
+    try {
+      const r = await fetch(url, { headers: { 'User-Agent': WP_UA, Accept: 'application/json' }, signal: ctl.signal })
+      if (r.ok) return { ok: true, data: await r.json() as Json }
+      if (r.status !== 429 && r.status < 500) return { ok: false }
+      const ra = Number(r.headers.get('retry-after'))
+      await new Promise(res => setTimeout(res, Number.isFinite(ra) && ra > 0 ? Math.min(ra, 5) * 1000 : 1000 * 2 ** i))
+    } catch {
+      await new Promise(res => setTimeout(res, 1000 * 2 ** i))
+    } finally { clearTimeout(t) }
+  }
+  return { ok: false }
+}
+
 async function fetchEntity(qid: string, extraLangs: readonly string[] = []): Promise<
-  { claims: Claims; enwikiTitle?: string; names: CityNameAlias[]; labels?: WdLabels } | null
+  { claims: Claims; enwikiTitle?: string; names: CityNameAlias[]; labels?: WdLabels } | null | 'transient'
 > {
   // extraLangs: the row's country languages, so the label fallback of
   // parseCityNativeName can read e.g. a Czech or Swedish label. Same request,
   // longer query string.
   const langs = [...new Set([...CITY_NAME_LANGS, ...extraLangs])]
-  const d = await fetchJson(
+  const res = await fetchWbEntities(
     `https://www.wikidata.org/w/api.php?action=wbgetentities&ids=${encodeURIComponent(qid)}` +
     `&props=claims|sitelinks|labels|aliases` +
     `&languages=${langs.join('|')}` +
     `&sitefilter=${['enwiki', ...CITY_NAME_SITES].join('|')}&format=json`,
   )
-  const ent = (d?.entities as Record<string, {
+  if (!res.ok) return 'transient'
+  const ent = ((res.data as { entities?: unknown })?.entities as Record<string, {
     claims?: Claims
     labels?: WdLabels
     aliases?: WdAliases
     sitelinks?: WdSitelinks
+    missing?: string
   }> | undefined)?.[qid]
-  if (!ent) return null
+  // A 200 with no entity block at all is a malformed answer, not a verdict.
+  if (!ent) return 'transient'
+  if ('missing' in ent) return null
   return {
     claims: ent.claims ?? {},
     enwikiTitle: ent.sitelinks?.enwiki?.title,
@@ -458,6 +490,7 @@ async function runLinkPhase(
   // `classUndetermined` is a failure to read one, and the two must stay apart:
   // only the former counts an attempt toward the terminal sentinel.
   let classRefused = 0, classUndetermined = 0
+  let wdTransient = 0
   // Coordinate corroboration. `coordRefused` is a decision about the CANDIDATE
   // (a namesake in the wrong place); `coordUnchecked` records that this arm
   // could say nothing, so a corpus drifting toward coordless rows is visible
@@ -527,7 +560,11 @@ async function runLinkPhase(
         const langInfo = countryLanguageCodes(c.countries?.languages)
         for (const u of langInfo.unmapped) nativeUnmapped.add(u)
         const ent = await withCircuitBreaker(supabase, 'wikidata.api', () => fetchEntity(qid!, langInfo.codes))
-        if (!ent) {
+        if (ent === 'transient') {
+          // Never bumpMiss: a throttled request says nothing about the entity.
+          wdTransient++
+          missReason ??= 'wikidata_fetch_failed'
+        } else if (!ent) {
           bumpMiss(state, 'wikidata_link', 'wikidata')
           missReason ??= 'wikidata_entity_missing'
         } else {
@@ -932,6 +969,7 @@ async function runLinkPhase(
     ...(nativeUnmapped.size ? { name_local_unmapped_languages: [...nativeUnmapped].sort() } : {}),
     class_refused: classRefused,
     class_undetermined: classUndetermined,
+    wikidata_fetch_failed: wdTransient,
     coord_refused: coordRefused,
     coord_unchecked: coordUnchecked,
     unrecognised_classes: [...unrecognisedClasses].slice(0, 20),

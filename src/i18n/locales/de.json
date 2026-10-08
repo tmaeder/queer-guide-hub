@@ -4545,7 +4545,19 @@
       "seeAllRights": "Alle 18 Rechte nach Land ansehen",
       "seeAllInSearch": "[DE] See all in search",
       "shopAll": "Alle ansehen",
-      "figure": "[DE] Diagram"
+      "figure": "[DE] Diagram",
+      "workbooks": {
+        "eyebrow": "Zum Durcharbeiten",
+        "title": "Übungen",
+        "steps": "{{count}} Schritte",
+        "days": "{{count}} Tage",
+        "withPartner": "Mit Partner",
+        "onYourOwn": "Alleine",
+        "start": "Starten",
+        "startLabel": "{{title}} starten",
+        "locked": "Melde dich an und aktiviere dein Intim-Profil, um das durchzuarbeiten.",
+        "privacy": "Alles, was du schreibst, bleibt privat. Nichts wird mit einem Partner geteilt, solange du die jeweilige Antwort nicht zum Teilen markierst und die andere Person dasselbe getan hat."
+      }
     },
     "flagWall": {
       "eyebrow": "Symbole",
@@ -5039,6 +5051,56 @@
       "cityLabel": "Stadt oder Gegend",
       "dialogDescription": "Andere angemeldete Erwachsene sehen nur eine Blase auf Stadtebene und zählen. Sie erhalten niemals den Standort Ihres Geräts.",
       "enabling": "Aktivieren…"
+    }
+  },
+  "workbooks": {
+    "answerPlaceholder": "Deine Antwort, wird beim Tippen gespeichert",
+    "answer": "Deine Antwort",
+    "privateNote": "Privat, bis du sie teilen willst",
+    "notFound": "Workbook nicht gefunden",
+    "backToGlossary": "Zurück zum Glossar",
+    "signInGate": "Eine private Übung für einvernehmlich handelnde Erwachsene. Melde dich an, um sie durchzuarbeiten.",
+    "signIn": "Anmelden",
+    "optInGate": "Das gehört zur Intim-Ebene: 18+, Opt-in, bestätigte E-Mail. Alles, was du schreibst, ist standardmässig privat, und nichts erreicht einen Partner, solange du es nicht teilst und die andere Person ebenfalls teilt.",
+    "enableIntimate": "Intim-Profil aktivieren",
+    "stepN": "Schritt {{n}}",
+    "back": "Zurück",
+    "next": "Weiter",
+    "finish": "Fertig",
+    "sharing": "Teilen",
+    "noStepsYet": "Noch nichts verfügbar. Komm morgen wieder.",
+    "lockedCount": "Noch {{count}} offen",
+    "inOneDay": "morgen",
+    "inNDays": "in {{count}} Tagen",
+    "backToSteps": "Zurück zu den Fragen",
+    "discussFirst": "Vorher besprechen",
+    "menuUnavailable": "Diese Liste ist gerade nicht verfügbar.",
+    "menuSharedWithChecklist": "Diese Bewertungen sind deine Interessen- und Grenzen-Liste. Sie erscheinen auch unter /tools/checklist",
+    "menuVetoNote": "Dein Nein und dein Hard Limit werden niemandem gezeigt. Sie entfernen den Punkt still aus jedem Vergleich.",
+    "share": {
+      "title": "Was du teilst",
+      "intro": "Wähle die Antworten, die du zeigen willst. Nichts wird sichtbar, bevor dein Partner seine ebenfalls mit dir geteilt hat, und du kannst jede davon jederzeit wieder abschalten.",
+      "yourAnswers": "Deine Antworten",
+      "nOfM": "{{shared}} von {{total}} geteilt",
+      "nothingWritten": "Du hast noch nichts geschrieben. Es gibt nichts zu teilen.",
+      "toggleLabel": "„{{prompt}}“ teilen",
+      "partner": "Dein Partner",
+      "noPartnerYet": "Öffne dieses Workbook aus einem Gespräch, um mit jemandem zu vergleichen. Deine Auswahl oben wird so oder so gespeichert.",
+      "statusActive": "Ihr habt beide geteilt. Der Vergleich ist aktiv.",
+      "statusWaiting": "Du hast geteilt. Warten darauf, dass die andere Person teilt.",
+      "statusTheirs": "Die andere Person hat mit dir geteilt. Teile zurück, um den Vergleich zu sehen.",
+      "statusNone": "Noch nicht gegenseitig geteilt.",
+      "revoke": "Teilen beenden",
+      "grant": "Mit ihnen teilen"
+    },
+    "compare": {
+      "empty": "Noch nichts zu vergleichen.",
+      "title": "Nebeneinander",
+      "menuRow": "Bewertete Liste",
+      "menuNote": "Übereinstimmungen bei bewerteten Listen stehen in deinem Interessen- und Grenzen-Vergleich, der separat geteilt wird.",
+      "openChecklist": "Checkliste öffnen",
+      "you": "Du",
+      "them": "Die andere Person"
     }
   }
 }

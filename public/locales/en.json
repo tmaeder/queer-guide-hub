@@ -4596,7 +4596,19 @@
       "seeAllRights": "See all 18 rights by country",
       "seeAllInSearch": "See all in search",
       "shopAll": "Shop all",
-      "figure": "Diagram"
+      "figure": "Diagram",
+      "workbooks": {
+        "eyebrow": "Work through it",
+        "title": "Exercises",
+        "steps": "{{count}} steps",
+        "days": "{{count}} days",
+        "withPartner": "With a partner",
+        "onYourOwn": "On your own",
+        "start": "Start",
+        "startLabel": "Start {{title}}",
+        "locked": "Sign in and enable your intimate profile to work through this.",
+        "privacy": "Everything you write stays private to you. Nothing is shared with a partner unless you mark that specific answer shareable and they have done the same."
+      }
     },
     "flagWall": {
       "eyebrow": "Symbols",
@@ -5003,5 +5015,55 @@
     "pauseEpisode": "Pause {{title}}",
     "error": "This episode could not be played. The show's server may be down.",
     "retry": "Retry"
+  },
+  "workbooks": {
+    "answerPlaceholder": "Your answer, saved as you type",
+    "answer": "Your answer",
+    "privateNote": "Private to you until you choose to share it",
+    "notFound": "Workbook not found",
+    "backToGlossary": "Back to the glossary",
+    "signInGate": "A private exercise for consenting adults. Sign in to work through it.",
+    "signIn": "Sign in",
+    "optInGate": "This is part of the intimate layer: 18+, opt-in, verified email. Everything you write is private by default, and nothing reaches a partner unless you share it and they reciprocate.",
+    "enableIntimate": "Enable intimate profile",
+    "stepN": "Step {{n}}",
+    "back": "Back",
+    "next": "Next",
+    "finish": "Finish",
+    "sharing": "Sharing",
+    "noStepsYet": "Nothing is available yet. Come back tomorrow.",
+    "lockedCount": "{{count}} still to come",
+    "inOneDay": "tomorrow",
+    "inNDays": "in {{count}} days",
+    "backToSteps": "Back to the questions",
+    "discussFirst": "Discuss first",
+    "menuUnavailable": "This menu is not available right now.",
+    "menuSharedWithChecklist": "These ratings are your interests & boundaries list. They also appear in /tools/checklist",
+    "menuVetoNote": "Your no and your hard limit are never shown to anyone. They silently remove an item from any comparison instead.",
+    "share": {
+      "title": "What you share",
+      "intro": "Pick the answers you are willing to show. Nothing is revealed until your partner has also shared theirs with you, and you can switch any of these back off at any time.",
+      "yourAnswers": "Your answers",
+      "nOfM": "{{shared}} of {{total}} shared",
+      "nothingWritten": "You have not written anything yet. There is nothing to share.",
+      "toggleLabel": "Share \"{{prompt}}\"",
+      "partner": "Your partner",
+      "noPartnerYet": "Open this workbook from a conversation to compare with someone. Your share choices above are saved either way.",
+      "statusActive": "You have both shared. Comparison is live.",
+      "statusWaiting": "You have shared. Waiting for them to share back.",
+      "statusTheirs": "They have shared with you. Share back to see the comparison.",
+      "statusNone": "Not shared with each other yet.",
+      "revoke": "Stop sharing",
+      "grant": "Share with them"
+    },
+    "compare": {
+      "empty": "Nothing to compare yet.",
+      "title": "Side by side",
+      "menuRow": "Rated menu",
+      "menuNote": "Overlap on rated menus lives in your interests & boundaries comparison, which is shared separately.",
+      "openChecklist": "Open the checklist",
+      "you": "You",
+      "them": "Them"
+    }
   }
 }
