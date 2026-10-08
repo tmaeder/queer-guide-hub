@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { untypedRpc } from '@/integrations/supabase/untyped';
 
-/** One row of `public.city_nearest_airports` (migration 99991791495267). */
+/** One row of `public.city_nearest_airports` (migration 99991791496278). */
 export interface CityNearestAirport {
   iata_code: string;
   /** OurAirports municipality — the place the airport sits in. */
