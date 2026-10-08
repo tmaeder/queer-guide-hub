@@ -112,7 +112,7 @@ export function useCalendarItems(from: Date, to: Date, enabledLayers: Set<Calend
           ends_at: null,
           all_day: true,
           status: null,
-          open_target: `/users/${b.user_id}`,
+          open_target: `/user/${b.user_id}`,
         });
       }
     }
@@ -157,11 +157,23 @@ export function useCalendarItems(from: Date, to: Date, enabledLayers: Set<Calend
     }
 
     return { items: out, byDay };
-  }, [agendaOn, agendaItems, history, milestoneHistory, birthdays, news, enabledLayers, from, to, t]);
+  }, [
+    agendaOn,
+    agendaItems,
+    history,
+    milestoneHistory,
+    birthdays,
+    news,
+    enabledLayers,
+    from,
+    to,
+    t,
+  ]);
 
   return {
     items,
     byDay,
-    loading: agendaLoading || historyLoading || milestonesLoading || birthdaysLoading || newsLoading,
+    loading:
+      agendaLoading || historyLoading || milestonesLoading || birthdaysLoading || newsLoading,
   };
 }

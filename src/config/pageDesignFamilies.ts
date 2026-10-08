@@ -172,7 +172,7 @@ export function pageDesignFamilyForModule(modulePath: string): PageDesignFamily 
   if (['Auth', 'AuthCallback', 'ClaimUsername', 'ResetPassword', 'Settings'].includes(name)) {
     return 'account';
   }
-  if (['Community', 'GroupDetail', 'GroupInviteAccept', 'Groups'].includes(name)) {
+  if (['Community', 'Cruising', 'GroupDetail', 'GroupInviteAccept', 'Groups'].includes(name)) {
     return 'community';
   }
   if (['Map', 'Pride', 'Travel'].includes(name)) return 'travel';

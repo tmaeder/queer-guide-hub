@@ -57,5 +57,5 @@ export const communityGroupsContentType: ContentTypeConfig = {
   },
   // `/groups/:groupId` is id-keyed, not slug-keyed. An archived group still
   // resolves, so only the id is required.
-  publicPath: (row) => (row.id ? `/groups/${row.id}` : null),
+  publicPath: (row) => (row.id ? `/people/groups/${row.id}` : null),
 };

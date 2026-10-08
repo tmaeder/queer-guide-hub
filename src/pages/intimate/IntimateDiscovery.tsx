@@ -135,7 +135,7 @@ export default function IntimateDiscovery({
         <p className="mb-6 text-muted-foreground">
           You haven&apos;t opted into the intimate profile yet.
         </p>
-        <Button onClick={() => navigate('/intimate/onboard')}>Get started</Button>
+        <Button onClick={() => navigate('/people/dating/onboarding')}>Get started</Button>
       </DiscoveryShell>
     );
   }
@@ -237,7 +237,7 @@ export default function IntimateDiscovery({
               <li key={c.user_id} className="">
                 <div className="flex items-center gap-4 py-4">
                   <Link
-                    to={`/intimate/u/${c.user_id}`}
+                    to={`/people/dating/${c.user_id}`}
                     className="flex flex-1 min-w-0 items-center gap-4 transition-colors hover:bg-muted/40"
                   >
                     {c.avatar_url ? (

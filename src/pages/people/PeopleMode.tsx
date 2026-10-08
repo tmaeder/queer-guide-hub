@@ -1,8 +1,7 @@
 import { Suspense, useState } from 'react';
 import { useSearchParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
-import { ArrowLeft, SlidersHorizontal } from 'lucide-react';
-import { LocalizedLink } from '@/components/routing/LocalizedLink';
+import { SlidersHorizontal } from 'lucide-react';
 import { useMeta } from '@/hooks/useMeta';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -12,6 +11,7 @@ import { MeetMembersNotice } from '@/components/people/MeetMembersNotice';
 import { PeopleModeView } from './PeopleModeView';
 import { NearbyView } from './NearbyView';
 import { PageContainer } from '@/components/layout/PageContainer';
+import { PeopleNav } from '@/components/people/PeopleNav';
 
 // Dating keeps its own opt-in/age-walled deck; it self-gates when not opted in.
 const IntimateDiscovery = lazyRetry(() => import('@/pages/intimate/IntimateDiscovery'));
@@ -85,14 +85,7 @@ export default function PeopleMode({ tab }: { tab: PeopleTab }) {
           `py-8 md:py-12` twice and opened with a doubled gap between the title
           block and its content that no other page on the site has. */}
       <PageContainer>
-        <LocalizedLink
-          to="/people"
-          className="mb-4 inline-flex items-center gap-2 text-13 font-bold text-muted-foreground no-underline hover:text-foreground"
-        >
-          <ArrowLeft size={14} aria-hidden />
-          {t('people.backToHub', 'Meet people')}
-        </LocalizedLink>
-
+        <PeopleNav className="mb-6" />
         {/* Was a bare `text-headline` h1 with no rule under it — the one place
             in the hub's subtree that read as an unstyled page. */}
         <div className="mb-8 flex flex-wrap items-end justify-between gap-4 border-b border-border-hairline pb-4">

@@ -72,7 +72,7 @@ export const STATIC_ROUTE_META: Record<string, RouteMeta> = {
     description:
       'An interactive world map of queer venues, events, communities, and country-level safety information.',
   },
-  '/users': {
+  '/people/members': {
     title: 'Community Directory | Queer Guide',
     description:
       'Browse community members, organizations and creators in the global queer directory.',
@@ -345,32 +345,22 @@ export const STATIC_ROUTE_META: Record<string, RouteMeta> = {
     description:
       'Pride marches, parades and festivals around the world, listed by year with dates, host cities and what to expect.',
   },
-  '/community': {
-    title: 'Queer Community — Feed, Groups, Members',
-    description:
-      'Connect with the Queer Guide community: the shared feed, local groups, and members near you or at your destination.',
-  },
   // The three community tabs are the outbound links in /people's own crawler
   // body (routeBody.ts), and all three fell through to DEFAULT_META — so the
   // /people fix pointed Googlebot at three URLs that each served the homepage
   // title. `resolveMeta` is an exact match; a parent entry does not cover
   // children.
-  '/community/groups': {
+  '/people/groups': {
     title: 'LGBTQ+ Groups to Join — Local and Interest',
     description:
       'Local and interest-based LGBTQ+ groups you can join, from book clubs and hiking to professional networks and peer support.',
   },
-  '/community/feed': {
+  '/people/feed': {
     title: 'Community Feed — What Queer People Are Posting',
     description:
       'What the Queer Guide community is posting right now: recommendations, questions, meet-ups and news from members worldwide.',
   },
-  '/community/members': {
-    title: 'Browse LGBTQ+ Community Members',
-    description:
-      'Browse the members who have chosen to be listed on Queer Guide, with the interests, pronouns and cities they have shared.',
-  },
-  // /community/friends is the signed-in friends list. Same class as /hub — a
+  // /people/friends is the signed-in friends list. Same class as /hub — a
   // personal surface with nothing public to render — so it is noindexed in
   // isIndexable() below rather than given meta.
   '/travel/book': {

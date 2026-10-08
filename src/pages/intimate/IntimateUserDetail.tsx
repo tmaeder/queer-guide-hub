@@ -52,7 +52,7 @@ export default function IntimateUserDetail() {
     return (
       <PageContainer size="form" className="text-center">
         <p className="mb-6">Opt in to view intimate profiles.</p>
-        <Button onClick={() => navigate('/intimate/onboard')}>Get started</Button>
+        <Button onClick={() => navigate('/people/dating/onboarding')}>Get started</Button>
       </PageContainer>
     );
   }
@@ -63,7 +63,10 @@ export default function IntimateUserDetail() {
           icon={UserX}
           title="Profile not available"
           description="This rider is no longer visible on the intimate line."
-          primaryAction={{ label: 'Back to discovery', onClick: () => navigate('/intimate') }}
+          primaryAction={{
+            label: 'Back to discovery',
+            onClick: () => navigate('/people/dating'),
+          }}
         />
       </PageContainer>
     );
@@ -84,7 +87,7 @@ export default function IntimateUserDetail() {
     try {
       await blockMut.mutateAsync(userId);
       toast({ title: 'Blocked.' });
-      navigate('/intimate');
+      navigate('/people/dating');
     } catch (e) {
       toast({ title: 'Could not block', description: String(e), variant: 'destructive' });
     }
