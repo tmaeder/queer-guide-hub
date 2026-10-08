@@ -114,7 +114,7 @@ test('the public community feed lives inside the Hub shell', async ({ page }) =>
   for (const href of hubLinks) await expect(nav.locator(`a[href$="${href}"]`)).toHaveCount(1);
   await expect(nav.getByRole('link', { name: 'Feed' })).toHaveAttribute('aria-current', 'page');
   await expect(page.getByRole('heading', { level: 1, name: 'Feed' })).toBeVisible();
-  await expect(page).toHaveTitle('Community Feed — What Queer People Are Posting');
+  await expect(page).toHaveTitle('Community Feed — What Queer People Are Posting | Queer Guide');
   await expect(page.locator('link[rel="canonical"]')).toHaveAttribute(
     'href',
     'https://queer.guide/hub/feed',
