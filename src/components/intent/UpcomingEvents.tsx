@@ -31,14 +31,17 @@ const WINDOW_LABEL: Record<EventWindow, string> = {
 export function UpcomingEvents({
   eventsResult,
   cityName,
+  variant = 'default',
 }: {
   eventsResult: EventsWithFallback | undefined;
   cityName?: string | null;
+  variant?: 'default' | 'night-shift';
 }) {
   const events = eventsResult?.events ?? [];
+  const nightShift = variant === 'night-shift';
 
   return (
-    <div>
+    <div className={nightShift ? 'night-shift-events' : undefined}>
       <CoverageNote>
         {events.length > 0
           ? `Showing events ${WINDOW_LABEL[eventsResult!.window]}${
@@ -54,7 +57,36 @@ export function UpcomingEvents({
           event bullet leading each. Follows the homepage DeparturesBoard rather
           than the standalone `DepartureRow` primitive, whose own 2px border
           would double against its neighbour's in a stack. */}
-      {events.length > 0 ? (
+      {nightShift && events.length > 0 ? (
+        <ul className="night-shift-departures m-0 list-none p-0">
+          {events.map((event, index) => {
+            const startsAt = new Date(event.start_date);
+            return (
+              <li key={event.id} className="night-shift-departure group relative">
+                <span className="night-shift-departure-index" aria-hidden="true">
+                  {String(index + 1).padStart(2, '0')}
+                </span>
+                <span className="night-shift-departure-date tabular-nums">
+                  <strong>{startsAt.toLocaleDateString(undefined, { day: '2-digit' })}</strong>
+                  <span>{startsAt.toLocaleDateString(undefined, { month: 'short' })}</span>
+                </span>
+                <span className="night-shift-departure-title">{event.title}</span>
+                <span className="night-shift-departure-city">
+                  {event.city ?? 'Destination to be confirmed'}
+                </span>
+                <span className="night-shift-departure-stop" aria-hidden="true" />
+                {event.slug ? (
+                  <LocalizedLink
+                    to={`/events/${event.slug}`}
+                    aria-label={event.title}
+                    className="absolute inset-0 no-underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-track-pink"
+                  />
+                ) : null}
+              </li>
+            );
+          })}
+        </ul>
+      ) : events.length > 0 ? (
         <ul className="m-0 list-none bg-card p-0 rounded-container shadow-soft">
           {events.map((e) => (
             <li
