@@ -380,12 +380,7 @@ function SpotRow({
   const location = [spot.city, spot.state, spot.country].filter(Boolean).join(', ');
   const mapped = typeof spot.latitude === 'number' && typeof spot.longitude === 'number';
   return (
-    <article
-      className={cn(
-        'bg-surface-container px-4 py-4',
-        selected && 'bg-muted',
-      )}
-    >
+    <article className={cn('bg-surface-container px-4 py-4', selected && 'bg-muted')}>
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0">
           <h2 className="text-sm font-bold leading-snug">{spot.name}</h2>
