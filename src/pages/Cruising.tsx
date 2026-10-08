@@ -338,7 +338,7 @@ export default function Cruising() {
 
                   <div className="mt-6 flex items-center justify-between gap-4">
                     <Button
-                      variant="outline"
+                      variant="soft"
                       size="sm"
                       disabled={page <= 1}
                       onClick={() => setPage((value) => Math.max(1, value - 1))}
@@ -349,7 +349,7 @@ export default function Cruising() {
                       {t('cruising.pagination.page', { page, totalPages })}
                     </span>
                     <Button
-                      variant="outline"
+                      variant="soft"
                       size="sm"
                       disabled={page >= totalPages}
                       onClick={() => setPage((value) => Math.min(totalPages, value + 1))}
@@ -404,7 +404,7 @@ function SpotRow({
       ) : null}
       <div className="mt-4 flex flex-wrap gap-2">
         {mapped ? (
-          <Button variant="outline" size="sm" onClick={() => onFocusMap(spot)}>
+          <Button variant="soft" size="sm" onClick={() => onFocusMap(spot)}>
             <MapPin size={14} aria-hidden />
             {t('cruising.spot.showOnMap')}
           </Button>
