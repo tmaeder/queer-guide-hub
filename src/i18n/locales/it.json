@@ -4545,7 +4545,19 @@
       "seeAllRights": "Vedi i 18 diritti per paese",
       "seeAllInSearch": "[IT] See all in search",
       "shopAll": "Vedi tutto",
-      "figure": "[IT] Diagram"
+      "figure": "[IT] Diagram",
+      "workbooks": {
+        "eyebrow": "Da lavorare",
+        "title": "Esercizi",
+        "steps": "{{count}} passaggi",
+        "days": "{{count}} giorni",
+        "withPartner": "Con un partner",
+        "onYourOwn": "Da solo",
+        "start": "Inizia",
+        "startLabel": "Inizia {{title}}",
+        "locked": "Accedi e attiva il tuo profilo intimo per lavorare su questo esercizio.",
+        "privacy": "Tutto ciò che scrivi resta privato. Niente viene condiviso con un partner se non contrassegni quella risposta come condivisibile e l’altra persona non fa lo stesso."
+      }
     },
     "flagWall": {
       "eyebrow": "Simboli",
@@ -5039,6 +5051,56 @@
       "enable": "Visibile per un'ora",
       "acknowledgement": "Comprendo che la visibilità è approssimativa, scade dopo un'ora e non sostituisce la verifica del consenso, dell'ambiente circostante o della legge locale.",
       "dialogDescription": "Gli altri adulti che hanno aderito vedono solo una bolla a livello di città e contano. Non ricevono mai la posizione del tuo dispositivo."
+    }
+  },
+  "workbooks": {
+    "answerPlaceholder": "La tua risposta, salvata mentre scrivi",
+    "answer": "La tua risposta",
+    "privateNote": "Privato finché non scegli di condividerlo",
+    "notFound": "Esercizio non trovato",
+    "backToGlossary": "Torna al glossario",
+    "signInGate": "Un esercizio privato per adulti consenzienti. Accedi per lavorarci.",
+    "signIn": "Accedi",
+    "optInGate": "Questo fa parte del livello intimo: 18+, su attivazione, email verificata. Tutto ciò che scrivi è privato per impostazione predefinita, e niente raggiunge un partner se non lo condividi e l’altra persona non condivide a sua volta.",
+    "enableIntimate": "Attiva profilo intimo",
+    "stepN": "Passaggio {{n}}",
+    "back": "Indietro",
+    "next": "Avanti",
+    "finish": "Concludi",
+    "sharing": "Condivisione",
+    "noStepsYet": "Non c’è ancora nulla di disponibile. Torna domani.",
+    "lockedCount": "Ancora {{count}} da arrivare",
+    "inOneDay": "domani",
+    "inNDays": "tra {{count}} giorni",
+    "backToSteps": "Torna alle domande",
+    "discussFirst": "Da discutere prima",
+    "menuUnavailable": "Questa lista non è disponibile in questo momento.",
+    "menuSharedWithChecklist": "Queste valutazioni sono la tua lista di interessi e limiti. Compaiono anche in /tools/checklist",
+    "menuVetoNote": "Il tuo no e il tuo limite assoluto non vengono mai mostrati a nessuno. Rimuovono semplicemente l’elemento da qualsiasi confronto, in silenzio.",
+    "share": {
+      "title": "Cosa condividi",
+      "intro": "Scegli le risposte che sei disposto a mostrare. Niente viene rivelato finché il tuo partner non ha condiviso le sue con te, e puoi disattivarne una qualsiasi in qualsiasi momento.",
+      "yourAnswers": "Le tue risposte",
+      "nOfM": "{{shared}} di {{total}} condivise",
+      "nothingWritten": "Non hai ancora scritto nulla. Non c’è niente da condividere.",
+      "toggleLabel": "Condividi «{{prompt}}»",
+      "partner": "Il tuo partner",
+      "noPartnerYet": "Apri questo esercizio da una conversazione per confrontarti con qualcuno. Le tue scelte di condivisione sopra vengono salvate in ogni caso.",
+      "statusActive": "Avete condiviso entrambi. Il confronto è attivo.",
+      "statusWaiting": "Hai condiviso. In attesa che l’altra persona condivida.",
+      "statusTheirs": "L’altra persona ha condiviso con te. Condividi a tua volta per vedere il confronto.",
+      "statusNone": "Non ancora condiviso reciprocamente.",
+      "revoke": "Smetti di condividere",
+      "grant": "Condividi con questa persona"
+    },
+    "compare": {
+      "empty": "Non c’è ancora nulla da confrontare.",
+      "title": "Fianco a fianco",
+      "menuRow": "Lista valutata",
+      "menuNote": "Le corrispondenze sulle liste valutate si trovano nel tuo confronto di interessi e limiti, che si condivide separatamente.",
+      "openChecklist": "Apri la checklist",
+      "you": "Tu",
+      "them": "L’altra persona"
     }
   }
 }

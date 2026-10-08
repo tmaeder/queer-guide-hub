@@ -4549,7 +4549,19 @@
       "seeAllRights": "Voir les 18 droits par pays",
       "seeAllInSearch": "[FR] See all in search",
       "shopAll": "Tout voir",
-      "figure": "[FR] Diagram"
+      "figure": "[FR] Diagram",
+      "workbooks": {
+        "eyebrow": "À travailler",
+        "title": "Exercices",
+        "steps": "{{count}} étapes",
+        "days": "{{count}} jours",
+        "withPartner": "Avec un partenaire",
+        "onYourOwn": "Seul",
+        "start": "Commencer",
+        "startLabel": "Commencer {{title}}",
+        "locked": "Connecte-toi et active ton profil intime pour travailler cet exercice.",
+        "privacy": "Tout ce que tu écris reste privé. Rien n’est partagé avec un partenaire tant que tu n’as pas marqué cette réponse comme partageable et que l’autre personne n’a pas fait de même."
+      }
     },
     "flagWall": {
       "eyebrow": "Symboles",
@@ -5043,6 +5055,56 @@
       "enabling": "Activation…",
       "cityLabel": "Ville ou région",
       "cityPlaceholder": "Rechercher des villes"
+    }
+  },
+  "workbooks": {
+    "answerPlaceholder": "Ta réponse, enregistrée au fil de la saisie",
+    "answer": "Ta réponse",
+    "privateNote": "Privé jusqu’à ce que tu choisisses de le partager",
+    "notFound": "Exercice introuvable",
+    "backToGlossary": "Retour au glossaire",
+    "signInGate": "Un exercice privé pour adultes consentants. Connecte-toi pour le travailler.",
+    "signIn": "Se connecter",
+    "optInGate": "Cela fait partie de la couche intime : 18+, sur activation, e-mail vérifié. Tout ce que tu écris est privé par défaut, et rien n’atteint un partenaire tant que tu ne le partages pas et que l’autre personne ne partage pas en retour.",
+    "enableIntimate": "Activer le profil intime",
+    "stepN": "Étape {{n}}",
+    "back": "Retour",
+    "next": "Suivant",
+    "finish": "Terminer",
+    "sharing": "Partage",
+    "noStepsYet": "Rien n’est encore disponible. Reviens demain.",
+    "lockedCount": "Encore {{count}} à venir",
+    "inOneDay": "demain",
+    "inNDays": "dans {{count}} jours",
+    "backToSteps": "Retour aux questions",
+    "discussFirst": "À discuter d’abord",
+    "menuUnavailable": "Cette liste n’est pas disponible pour le moment.",
+    "menuSharedWithChecklist": "Ces évaluations constituent ta liste d’intérêts et de limites. Elles apparaissent aussi dans /tools/checklist",
+    "menuVetoNote": "Ton non et ta limite absolue ne sont jamais montrés à personne. Ils retirent simplement l’élément de toute comparaison, en silence.",
+    "share": {
+      "title": "Ce que tu partages",
+      "intro": "Choisis les réponses que tu acceptes de montrer. Rien n’est révélé avant que ton partenaire ait aussi partagé les siennes avec toi, et tu peux désactiver chacune de ces réponses à tout moment.",
+      "yourAnswers": "Tes réponses",
+      "nOfM": "{{shared}} sur {{total}} partagées",
+      "nothingWritten": "Tu n’as encore rien écrit. Il n’y a rien à partager.",
+      "toggleLabel": "Partager « {{prompt}} »",
+      "partner": "Ton partenaire",
+      "noPartnerYet": "Ouvre cet exercice depuis une conversation pour comparer avec quelqu’un. Tes choix de partage ci-dessus sont enregistrés dans tous les cas.",
+      "statusActive": "Vous avez tous les deux partagé. La comparaison est active.",
+      "statusWaiting": "Tu as partagé. En attente du partage de l’autre personne.",
+      "statusTheirs": "L’autre personne a partagé avec toi. Partage en retour pour voir la comparaison.",
+      "statusNone": "Pas encore partagé mutuellement.",
+      "revoke": "Arrêter de partager",
+      "grant": "Partager avec cette personne"
+    },
+    "compare": {
+      "empty": "Rien à comparer pour l’instant.",
+      "title": "Côte à côte",
+      "menuRow": "Liste évaluée",
+      "menuNote": "Les correspondances sur les listes évaluées se trouvent dans ta comparaison d’intérêts et de limites, qui se partage séparément.",
+      "openChecklist": "Ouvrir la checklist",
+      "you": "Toi",
+      "them": "L’autre personne"
     }
   }
 }

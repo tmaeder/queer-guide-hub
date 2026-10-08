@@ -4543,7 +4543,19 @@
       "seeAllRights": "18개 권리를 국가별로 보기",
       "seeAllInSearch": "[KO] See all in search",
       "shopAll": "전체 보기",
-      "figure": "[KO] Diagram"
+      "figure": "[KO] Diagram",
+      "workbooks": {
+        "eyebrow": "직접 해보기",
+        "title": "연습",
+        "steps": "{{count}}단계",
+        "days": "{{count}}일",
+        "withPartner": "파트너와 함께",
+        "onYourOwn": "혼자서",
+        "start": "시작",
+        "startLabel": "‘{{title}}’ 시작",
+        "locked": "로그인하고 친밀 프로필을 켜면 진행할 수 있습니다.",
+        "privacy": "작성한 내용은 모두 나만 볼 수 있습니다. 해당 답변을 공유 가능으로 표시하고 상대도 같이 표시하지 않는 한 파트너에게 아무것도 공유되지 않습니다."
+      }
     },
     "flagWall": {
       "eyebrow": "상징",
@@ -5037,6 +5049,56 @@
       "dialogDescription": "선택한 다른 성인은 도시 수준 풍선과 개수만 볼 수 있습니다. 그들은 귀하의 장치 위치를 결코 수신하지 않습니다.",
       "acknowledgement": "나는 가시성은 대략적인 것이며 1시간 후에 만료되며 동의, 주변 환경 또는 현지 법률 확인을 대체하지 않는다는 점을 이해합니다.",
       "enabling": "활성화 중…"
+    }
+  },
+  "workbooks": {
+    "answerPlaceholder": "내 답변, 입력하는 동안 저장됩니다",
+    "answer": "내 답변",
+    "privateNote": "공유를 선택할 때까지 나만 볼 수 있음",
+    "notFound": "연습을 찾을 수 없습니다",
+    "backToGlossary": "용어집으로 돌아가기",
+    "signInGate": "동의한 성인을 위한 비공개 연습입니다. 로그인하면 진행할 수 있습니다.",
+    "signIn": "로그인",
+    "optInGate": "친밀 영역의 일부입니다. 18세 이상, 직접 활성화, 이메일 인증이 필요합니다. 작성한 내용은 기본적으로 비공개이며, 내가 공유하고 상대도 공유하지 않는 한 파트너에게 전달되지 않습니다.",
+    "enableIntimate": "친밀 프로필 켜기",
+    "stepN": "{{n}}단계",
+    "back": "뒤로",
+    "next": "다음",
+    "finish": "완료",
+    "sharing": "공유",
+    "noStepsYet": "아직 이용할 수 있는 내용이 없습니다. 내일 다시 오세요.",
+    "lockedCount": "{{count}}개 남음",
+    "inOneDay": "내일",
+    "inNDays": "{{count}}일 후",
+    "backToSteps": "질문으로 돌아가기",
+    "discussFirst": "먼저 이야기하기",
+    "menuUnavailable": "이 목록은 지금 이용할 수 없습니다.",
+    "menuSharedWithChecklist": "이 평가는 내 관심사와 한계 목록입니다. /tools/checklist 에도 표시됩니다",
+    "menuVetoNote": "내 ‘아니오’와 하드 리밋은 누구에게도 표시되지 않습니다. 해당 항목을 모든 비교에서 조용히 제외할 뿐입니다.",
+    "share": {
+      "title": "공유하는 내용",
+      "intro": "보여줄 답변을 고르세요. 파트너도 자기 답변을 공유할 때까지 아무것도 공개되지 않으며, 언제든 다시 끌 수 있습니다.",
+      "yourAnswers": "내 답변",
+      "nOfM": "{{total}}개 중 {{shared}}개 공유",
+      "nothingWritten": "아직 아무것도 작성하지 않았습니다. 공유할 내용이 없습니다.",
+      "toggleLabel": "‘{{prompt}}’ 공유",
+      "partner": "내 파트너",
+      "noPartnerYet": "대화에서 이 연습을 열면 상대와 비교할 수 있습니다. 위의 공유 선택은 어느 경우든 저장됩니다.",
+      "statusActive": "서로 공유했습니다. 비교가 활성화되었습니다.",
+      "statusWaiting": "공유했습니다. 상대의 공유를 기다리고 있습니다.",
+      "statusTheirs": "상대가 공유했습니다. 함께 공유하면 비교를 볼 수 있습니다.",
+      "statusNone": "아직 서로 공유하지 않았습니다.",
+      "revoke": "공유 중단",
+      "grant": "상대에게 공유"
+    },
+    "compare": {
+      "empty": "아직 비교할 내용이 없습니다.",
+      "title": "나란히 보기",
+      "menuRow": "평가한 목록",
+      "menuNote": "평가한 목록의 겹치는 부분은 따로 공유하는 관심사와 한계 비교에 표시됩니다.",
+      "openChecklist": "체크리스트 열기",
+      "you": "나",
+      "them": "상대"
     }
   }
 }
