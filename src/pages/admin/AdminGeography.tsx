@@ -16,6 +16,7 @@ import {
   Trash2,
 } from 'lucide-react';
 import { AdminArchetypeHeader } from '@/components/admin/frames/AdminArchetypeHeader';
+import { CityCodeBadges } from '@/components/admin/CityCodeBadges';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -130,6 +131,9 @@ function NodeRow({
         >
           <Icon className="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden />
           <span className="truncate">{node.name}</span>
+          {node.place_type === 'city' && (
+            <CityCodeBadges countryCode={node.country_code} regionCode={node.region_code} />
+          )}
           {node.safety_gated && <Lock className="h-3 w-3 shrink-0" aria-label="Safety-gated" />}
           {node.duplicate_of_id && (
             <Badge variant="outline" className="shrink-0">
@@ -246,6 +250,13 @@ function MoveDialog({
                 {c.place_type}
               </span>
               {c.name}
+              {c.place_type === 'city' && (
+                <CityCodeBadges
+                  className="ml-2"
+                  countryCode={c.country_code}
+                  regionCode={c.region_code}
+                />
+              )}
             </Button>
           ))}
           {search.length >= 2 && candidates?.length === 0 && (
@@ -431,6 +442,13 @@ function DetailPanel({
           {node.place_type}
         </div>
         <h2 className="text-title font-semibold">{node.name}</h2>
+        {node.place_type === 'city' && (
+          <CityCodeBadges
+            className="mt-1"
+            countryCode={node.country_code}
+            regionCode={node.region_code}
+          />
+        )}
         {node.slug && <div className="text-13 text-muted-foreground">/{node.slug}</div>}
       </div>
       <dl className="grid grid-cols-2 gap-2 text-15">

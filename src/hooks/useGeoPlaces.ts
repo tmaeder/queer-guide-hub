@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { cityCodesFromRow } from '@/lib/cityCodes';
 
 // ── Shared row shapes ──────────────────────────────────────────────────────────
 
@@ -14,6 +15,40 @@ export interface GeoNode {
   venue_count: number;
   event_count: number;
   hotel_count: number;
+  /** City nodes only: ISO codes, merged in by attachCityCodes. */
+  country_code?: string | null;
+  region_code?: string | null;
+}
+
+/**
+ * Adds ISO country/region codes to the city rows of a geo list. Since
+ * 99991791233840 two cities in one country can share a name, so the admin
+ * tree needs the region to tell them apart. get_geo_children is not widened
+ * for this — changing a RETURNS TABLE needs DROP + CREATE — one follow-up
+ * select by id is cheaper. A failed lookup leaves the rows without codes
+ * rather than failing the tree.
+ */
+export async function attachCityCodes<T extends { id: string; place_type: string }>(
+  rows: T[],
+): Promise<(T & { country_code?: string | null; region_code?: string | null })[]> {
+  const ids = rows.filter((r) => r.place_type === 'city').map((r) => r.id);
+  if (ids.length === 0) return rows;
+  // region_code is missing from the generated types (stale), hence the cast.
+  const { data, error } = await supabase
+    .from('cities')
+    .select('id, region_code, countries(code)' as 'id')
+    .in('id', ids);
+  if (error || !data) return rows;
+  const byId = new Map(
+    (data as unknown as Record<string, unknown>[]).map((r) => [
+      r.id as string,
+      cityCodesFromRow(r),
+    ]),
+  );
+  return rows.map((r) => {
+    const codes = byId.get(r.id);
+    return codes ? { ...r, country_code: codes.countryCode, region_code: codes.regionCode } : r;
+  });
 }
 
 export interface GeoBreadcrumbEntry {
@@ -87,7 +122,9 @@ export function useCityLandmarks(cityId: string | undefined) {
     queryFn: async (): Promise<LandmarkListItem[]> => {
       const { data, error } = await supabase
         .from('geo_places')
-        .select('id, name, slug, description, image_url, geo_landmark_profiles!inner(landmark_kind)')
+        .select(
+          'id, name, slug, description, image_url, geo_landmark_profiles!inner(landmark_kind)',
+        )
         .eq('place_type', 'landmark')
         .eq('city_id', cityId!)
         .eq('geo_landmark_profiles.needs_review', false)
@@ -144,7 +181,7 @@ export function useGeoChildren(parentId: string | null) {
         p_parent_id: parentId ?? undefined,
       });
       if (error) throw error;
-      return (data ?? []) as GeoNode[];
+      return attachCityCodes((data ?? []) as GeoNode[]);
     },
   });
 }
@@ -163,7 +200,7 @@ export function useGeoMoveCandidates(legalTypes: string[], search: string, enabl
         .is('duplicate_of_id', null)
         .limit(10);
       if (error) throw error;
-      return data ?? [];
+      return attachCityCodes(data ?? []);
     },
   });
 }
