@@ -13,10 +13,8 @@
  * line, call CTA, non-voice channels), STEADY on the right (kept lines,
  * what-to-expect, self-help drawer). Mobile stacks in the original order.
  *
- * This is the ONE ink-flooded surface on /help, matching the `tone="ink"`
- * variant the design system reserves for report and safety blocks. It is also
- * the only weight tool available: track colours are banned here, so emphasis
- * comes from inversion and rules, never from hue.
+ * The surface stays on the page's calm paper field. Weight comes from scale,
+ * whitespace, rules and one ink call action; red remains reserved for danger.
  *
  * The <h1> lives in here rather than in a PageHeader above it — partly to buy
  * back ~140px of the first screen, and partly because PageHeader hardcodes
@@ -47,14 +45,13 @@ const CHANNEL_ICON: Record<HotlineChannel['kind'], typeof Phone> = {
   email: Mail,
 };
 
-/** Paper-on-ink action. The panel is inverted, so the strongest fill is paper. */
+/** Ink action on the calm paper field. */
 const PRIMARY =
-  'flex w-full items-center justify-between gap-4 rounded-element bg-background px-6 py-4 text-foreground no-underline transition-opacity hover:opacity-90';
+  'flex w-full items-center justify-between gap-4 rounded-element bg-foreground px-4 py-4 text-background no-underline transition-opacity hover:opacity-90 active:opacity-80 sm:px-6';
 const SECONDARY =
-  'flex items-center justify-center gap-2 rounded-element bg-background/15 px-4 py-2 text-13 font-bold text-background no-underline transition-colors hover:bg-background hover:text-foreground';
-/** Same paper-on-ink logic as SECONDARY, tightened for a row of kept lines. */
+  'flex min-h-11 items-center justify-center gap-2 rounded-element border border-input px-4 py-2 text-13 font-bold text-foreground no-underline transition-colors hover:bg-foreground hover:text-background active:opacity-80';
 const KEPT =
-  'flex items-center gap-2 rounded-element bg-background/15 px-4 py-2 text-13 font-bold text-background no-underline transition-colors hover:bg-background hover:text-foreground';
+  'flex items-center gap-2 rounded-element border border-input px-4 py-2 text-13 font-bold text-foreground no-underline transition-colors hover:bg-foreground hover:text-background';
 
 function Availability({ hotline }: { hotline: Hotline }) {
   const { t } = useTranslation();
@@ -62,7 +59,7 @@ function Availability({ hotline }: { hotline: Hotline }) {
 
   // Unknown renders as silence. Labelling a line "Closed" when we simply could
   // not structure its hours is the harmful direction — someone would not call.
-  if (open === null) return <span className="text-13 opacity-70">{hotline.hours}</span>;
+  if (open === null) return <span className="text-13 text-muted-foreground">{hotline.hours}</span>;
 
   if (isAlwaysOpen(hotline)) {
     return <span className="text-13 font-bold">{t('help.open_always', 'Open 24/7')}</span>;
@@ -72,7 +69,7 @@ function Availability({ hotline }: { hotline: Hotline }) {
       {t('help.open_now', 'Open now')} · {hotline.hours}
     </span>
   ) : (
-    <span className="text-13 opacity-70">
+    <span className="text-13 text-muted-foreground">
       {t('help.closed_now', 'Closed right now')} · {hotline.hours}
     </span>
   );
@@ -118,28 +115,30 @@ export function CrisisTriage({
     : false;
 
   return (
-    <section className="rounded-panel bg-foreground p-6 text-background shadow-soft md:p-8">
-      <h1 className="max-w-[16ch] font-display text-headline leading-tight md:text-display">
+    <section className="py-8 md:py-12">
+      <h1 className="max-w-[18ch] text-balance font-display text-display leading-none md:text-hero">
         {t('help.subtitle', 'You are not alone. Help is available right now.')}
       </h1>
 
-      <div className="mt-4">
+      <div className="mt-6">
         <CountryScope country={country} available={availableCountries} onChange={onCountryChange} />
       </div>
 
       {/* lg+: ACT on the left, STEADY on the right — one decision per column
           instead of a ~2x taller single stack. Mobile keeps the original order;
           the grid only exists at lg. */}
-      <div className="mt-8 lg:grid lg:grid-cols-[3fr_2fr] lg:gap-10">
-        <div>
+      <div className="mt-10 border-y border-border-hairline lg:grid lg:grid-cols-[minmax(0,3fr)_minmax(18rem,2fr)]">
+        <div className="py-8 lg:pr-12">
           {hero ? (
             <div>
-              <p className="text-2xs font-bold uppercase tracking-label text-background/70">
+              <p className="text-13 font-bold text-muted-foreground">
                 {t('help.hero_label', 'Recommended right now')}
               </p>
-              <h2 className="mt-2 font-display text-headline leading-tight">{hero.name}</h2>
+              <h2 className="mt-2 max-w-[22ch] text-balance font-display text-headline leading-tight md:text-display">
+                {hero.name}
+              </h2>
               {descriptionMatchesLanguage && (
-                <p className="mt-1 max-w-prose text-15 leading-relaxed text-background/80">
+                <p className="mt-4 max-w-prose text-15 leading-relaxed text-muted-foreground">
                   {hero.description}
                 </p>
               )}
@@ -154,18 +153,18 @@ export function CrisisTriage({
                 {hero.languages.map((language) => (
                   <span
                     key={language}
-                    className="rounded-badge bg-background/15 px-2 py-1 text-2xs font-bold uppercase"
+                    className="rounded-badge bg-muted px-2 py-1 text-2xs font-bold uppercase"
                   >
                     {language}
                   </span>
                 ))}
                 {hero.free && (
-                  <span className="rounded-badge bg-background/15 px-2 py-1 text-2xs font-bold">
+                  <span className="rounded-badge bg-muted px-2 py-1 text-2xs font-bold">
                     {t('help.badge_free', 'Free')}
                   </span>
                 )}
                 {hero.anonymous && (
-                  <span className="rounded-badge bg-background/15 px-2 py-1 text-2xs font-bold">
+                  <span className="rounded-badge bg-muted px-2 py-1 text-2xs font-bold">
                     {t('help.badge_anonymous', 'Anonymous')}
                   </span>
                 )}
@@ -192,8 +191,8 @@ export function CrisisTriage({
                   and something else is demonstrably open, offer it here — directly
                   beside the button that would otherwise ring out. */}
               {openAlt && (
-                <div className="mt-6 rounded-element bg-background/10 p-4">
-                  <p className="text-2xs font-bold uppercase tracking-label text-background/70">
+                <div className="mt-6 rounded-container bg-muted p-6">
+                  <p className="text-13 font-bold text-muted-foreground">
                     {t('help.open_instead', 'Open right now instead')}
                   </p>
                   <p className="mt-2 text-15 font-bold">{openAlt.name}</p>
@@ -235,14 +234,14 @@ export function CrisisTriage({
                   Naming the closure and pointing somewhere is the minimum; the
                   real remedy is more lines in the corpus. */}
               {heroClosed && !openAlt && (
-                <p className="mt-6 rounded-element bg-background/10 p-4 text-13 leading-relaxed text-background/80">
+                <p className="mt-6 rounded-container bg-muted p-6 text-13 leading-relaxed text-muted-foreground">
                   {t(
                     'help.closed_no_alt',
                     'This line is closed right now and we have no other line open for this country. In acute danger, use the emergency number above.',
                   )}{' '}
                   <a
                     href="#help-browse"
-                    className="font-bold text-background underline underline-offset-4"
+                    className="font-bold text-foreground underline underline-offset-4"
                   >
                     {t('help.see_all_lines', 'See every line we have')}
                   </a>
@@ -253,7 +252,7 @@ export function CrisisTriage({
                   a voice call. When a line publishes none, say so rather than
                   rendering an empty region that reads as "not offered here". */}
               <div className="mt-6">
-                <p className="text-2xs font-bold uppercase tracking-label text-background/70">
+                <p className="text-13 font-bold text-muted-foreground">
                   {t('help.cant_speak', 'Prefer not to call?')}
                 </p>
                 {alt.length > 0 ? (
@@ -276,7 +275,7 @@ export function CrisisTriage({
                     })}
                   </div>
                 ) : (
-                  <p className="mt-2 text-13 text-background/80">
+                  <p className="mt-2 text-13 text-muted-foreground">
                     {hero.url
                       ? t(
                           'help.phone_only_with_site',
@@ -288,7 +287,7 @@ export function CrisisTriage({
                         href={hero.url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="font-bold text-background underline underline-offset-4"
+                        className="font-bold text-foreground underline underline-offset-4"
                       >
                         {t('help.visit_site', 'Open their website')}
                       </a>
@@ -299,19 +298,19 @@ export function CrisisTriage({
             </div>
           ) : (
             // The geo-failure default used to render nothing at all here.
-            <div className="rounded-element bg-background/10 p-4">
+            <div className="rounded-container bg-muted p-6">
               <h2 className="text-title font-bold leading-tight">
                 {hotlines.length === 0
                   ? t('help.no_lines_title', 'We could not load the directory')
                   : t('help.no_country_title', 'We could not work out where you are')}
               </h2>
-              <p className="mt-2 text-15 leading-relaxed text-background/80">
+              <p className="mt-2 text-15 leading-relaxed text-muted-foreground">
                 {hotlines.length === 0 ? (
                   <>
                     {t('help.emergency_call', 'Call now:')}{' '}
                     <a
                       href={`tel:${emergency.number}`}
-                      className="font-bold text-background underline underline-offset-4"
+                      className="font-bold text-foreground underline underline-offset-4"
                     >
                       {emergency.number} ({emergency.region})
                     </a>
@@ -327,13 +326,13 @@ export function CrisisTriage({
           )}
         </div>
 
-        <div className="mt-8 flex flex-col gap-6 rounded-container bg-background/10 p-6 lg:mt-0">
+        <div className="flex flex-col gap-8 border-t border-border-hairline py-8 lg:border-l lg:border-t-0 lg:pl-10">
           {/* You keep a line so you can reach it fast under pressure. Rendering the
               names as a joined string made the feature decorative — the one moment
               it exists for is the one moment you cannot act on it. */}
           {savedLines.length > 0 && (
             <div>
-              <p className="text-2xs font-bold uppercase tracking-label text-background/70">
+              <p className="text-13 font-bold text-muted-foreground">
                 {t('help.saved_lines', 'Kept lines')}
               </p>
               <ul className="m-0 mt-2 flex list-none flex-wrap gap-2 p-0">
@@ -375,10 +374,10 @@ export function CrisisTriage({
           )}
 
           <div>
-            <p className="text-2xs font-bold uppercase tracking-label text-background/70">
+            <p className="text-13 font-bold text-muted-foreground">
               {t('help.expect_title', 'What happens when you call')}
             </p>
-            <ul className="m-0 mt-2 list-none space-y-1 p-0 text-13 leading-relaxed text-background/80">
+            <ul className="m-0 mt-4 list-none space-y-4 p-0 text-13 leading-relaxed text-muted-foreground">
               <li>
                 {t(
                   'help.expect_1',

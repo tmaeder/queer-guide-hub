@@ -16,7 +16,7 @@
  */
 
 import { useTranslation } from 'react-i18next';
-import { Building2, ChevronDown, ChevronRight } from 'lucide-react';
+import { Building2, ChevronRight } from 'lucide-react';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { CoverageNote } from '@/components/intent/CoverageNote';
 
@@ -40,88 +40,85 @@ export function MoreSupportBand({ orgs }: { orgs: SupportOrg[] }) {
         {t('help.more_support', 'More support')}
       </h2>
 
-      <div className="mt-6 divide-y divide-border-hairline border-y border-border-hairline">
-        <details className="group py-2">
-          <summary className="flex min-h-14 cursor-pointer list-none items-center justify-between gap-4 py-4 text-title font-bold marker:hidden">
+      <div className="mt-8 grid border-y border-border-hairline md:grid-cols-3 md:divide-x md:divide-border-hairline">
+        <div className="py-8 md:pr-8">
+          <h3 className="text-title font-bold leading-tight">
             {t('help.support_orgs', 'Support organizations')}
-            <ChevronDown size={18} aria-hidden className="shrink-0 group-open:rotate-180" />
-          </summary>
-          <div className="pb-6">
-            <p className="max-w-prose text-13 leading-relaxed text-muted-foreground">
-              {t(
-                'help.support_orgs_body',
-                'Community centres and advocacy groups that offer in-person support.',
-              )}
-            </p>
-            {orgs.length > 0 && (
-              <ul className="m-0 mt-4 max-w-reading list-none border-t border-border-hairline p-0">
-                {orgs.slice(0, 4).map((org) => (
-                  <li key={org.id} className="border-b border-border-hairline last:border-b-0">
-                    <LocalizedLink
-                      to={`/organizations/${org.slug}`}
-                      className="card-lift-sm flex items-center gap-2 py-2 text-inherit no-underline"
-                    >
-                      {org.logo_url ? (
+          </h3>
+          <p className="mt-4 max-w-prose text-13 leading-relaxed text-muted-foreground">
+            {t(
+              'help.support_orgs_body',
+              'Community centres and advocacy groups that offer in-person support.',
+            )}
+          </p>
+          {orgs.length > 0 && (
+            <ul className="m-0 mt-6 list-none border-t border-border-hairline p-0">
+              {orgs.slice(0, 3).map((org) => (
+                <li key={org.id} className="border-b border-border-hairline last:border-b-0">
+                  <LocalizedLink
+                    to={`/organizations/${org.slug}`}
+                    className="flex min-h-12 items-center gap-4 py-2 text-inherit no-underline hover:underline"
+                  >
+                    {org.logo_url ? (
+                      <span className="relative flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-badge bg-muted">
+                        <Building2 size={14} aria-hidden />
                         <img
                           src={org.logo_url}
                           alt=""
-                          className="h-8 w-8 shrink-0 border border-border-hairline object-contain"
+                          className="absolute inset-0 h-full w-full bg-background object-contain"
+                          onError={(event) => {
+                            event.currentTarget.hidden = true;
+                          }}
                         />
-                      ) : (
-                        <span className="flex h-8 w-8 shrink-0 items-center justify-center border border-border-hairline">
-                          <Building2 size={14} aria-hidden />
-                        </span>
-                      )}
-                      <span className="min-w-0 truncate text-13 font-bold">{org.name}</span>
-                    </LocalizedLink>
-                  </li>
-                ))}
-              </ul>
-            )}
-            <LocalizedLink to="/organizations?role=support" className={ACTION}>
-              {t('help.browse_support_orgs', 'Browse all support organizations')}
-              <ChevronRight size={14} aria-hidden />
-            </LocalizedLink>
-          </div>
-        </details>
+                      </span>
+                    ) : (
+                      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-badge bg-muted">
+                        <Building2 size={14} aria-hidden />
+                      </span>
+                    )}
+                    <span className="min-w-0 text-13 font-bold">{org.name}</span>
+                  </LocalizedLink>
+                </li>
+              ))}
+            </ul>
+          )}
+          <LocalizedLink to="/organizations?role=support" className={ACTION}>
+            {t('help.browse_support_orgs', 'Browse all support organizations')}
+            <ChevronRight size={14} aria-hidden />
+          </LocalizedLink>
+        </div>
 
-        <details className="group py-2">
-          <summary className="flex min-h-14 cursor-pointer list-none items-center justify-between gap-4 py-4 text-title font-bold marker:hidden">
+        <div className="border-t border-border-hairline py-8 md:border-t-0 md:px-8">
+          <h3 className="text-title font-bold leading-tight">
             {t('help.know_the_law', 'Know the law')}
-            <ChevronDown size={18} aria-hidden className="shrink-0 group-open:rotate-180" />
-          </summary>
-          <div className="pb-6">
-            <p className="max-w-prose text-13 leading-relaxed text-muted-foreground">
-              {t(
-                'help.know_the_law_body',
-                'Whether it is safe to be out, to seek healthcare, or to report a crime depends on where you are. Check the legal position before you act on it.',
-              )}
-            </p>
-            <LocalizedLink to="/rights" className={ACTION}>
-              {t('help.rights_by_country', 'LGBTQ+ rights by country')}
-              <ChevronRight size={14} aria-hidden />
-            </LocalizedLink>
-          </div>
-        </details>
+          </h3>
+          <p className="mt-4 max-w-prose text-13 leading-relaxed text-muted-foreground">
+            {t(
+              'help.know_the_law_body',
+              'Whether it is safe to be out, to seek healthcare, or to report a crime depends on where you are. Check the legal position before you act on it.',
+            )}
+          </p>
+          <LocalizedLink to="/rights" className={ACTION}>
+            {t('help.rights_by_country', 'LGBTQ+ rights by country')}
+            <ChevronRight size={14} aria-hidden />
+          </LocalizedLink>
+        </div>
 
-        <details className="group py-2">
-          <summary className="flex min-h-14 cursor-pointer list-none items-center justify-between gap-4 py-4 text-title font-bold marker:hidden">
+        <div className="border-t border-border-hairline py-8 md:border-t-0 md:pl-8">
+          <h3 className="text-title font-bold leading-tight">
             {t('help.helping_title', 'Helping someone else')}
-            <ChevronDown size={18} aria-hidden className="shrink-0 group-open:rotate-180" />
-          </summary>
-          <div className="pb-6">
-            <p className="max-w-prose text-13 leading-relaxed text-muted-foreground">
-              {t(
-                'help.helping_body',
-                'If you are listening to someone in crisis: stay with them, take what they say seriously, and do not leave them alone. You do not have to have the answers. Call a line together, or call one yourself to ask what to do next.',
-              )}
-            </p>
-            <LocalizedLink to="/resources?category=Mental+Health" className={ACTION}>
-              {t('help.browse_resources', 'Browse all resources')}
-              <ChevronRight size={14} aria-hidden />
-            </LocalizedLink>
-          </div>
-        </details>
+          </h3>
+          <p className="mt-4 max-w-prose text-13 leading-relaxed text-muted-foreground">
+            {t(
+              'help.helping_body',
+              'If you are listening to someone in crisis: stay with them, take what they say seriously, and do not leave them alone. You do not have to have the answers. Call a line together, or call one yourself to ask what to do next.',
+            )}
+          </p>
+          <LocalizedLink to="/resources?category=Mental+Health" className={ACTION}>
+            {t('help.browse_resources', 'Browse all resources')}
+            <ChevronRight size={14} aria-hidden />
+          </LocalizedLink>
+        </div>
       </div>
 
       {/* Ungated. This used to sit inside `orgs.length > 0`, so the note that

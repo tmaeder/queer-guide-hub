@@ -65,14 +65,14 @@ export function CountryScope({
   };
 
   return (
-    <div className="flex flex-wrap items-baseline gap-x-4 gap-y-2">
-      <p className="text-15">
+    <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+      <p className="text-15 text-muted-foreground">
         {country === 'ALL' ? (
           t('help.scope_all', 'Showing lines from every country we have.')
         ) : (
           <>
             {t('help.scope_prefix', 'Showing lines for')}{' '}
-            <strong className="font-bold">{countryLabel(country)}</strong>
+            <strong className="font-bold text-foreground">{countryLabel(country)}</strong>
           </>
         )}
       </p>
@@ -87,7 +87,7 @@ export function CountryScope({
         <DialogTrigger asChild>
           <button
             type="button"
-            className="rounded-element bg-background/15 px-4 py-1 text-13 font-bold text-background transition-colors hover:bg-background hover:text-foreground"
+            className="min-h-10 rounded-element border border-input bg-transparent px-4 py-1 text-13 font-bold text-foreground transition-colors hover:bg-foreground hover:text-background active:opacity-80"
           >
             {t('help.scope_change', 'Change')}
           </button>
