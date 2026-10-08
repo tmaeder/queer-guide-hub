@@ -228,8 +228,14 @@ export default function HelpHotlines() {
 
       {/* The seam. Everything above answers "what do I do now"; everything
           below is for browsing, and the rule says so out loud. */}
-      <section className="mt-12 border-t border-border-hairline pt-8" aria-labelledby="help-browse">
-        <h2 id="help-browse" className="font-display text-headline leading-tight">
+      <section
+        className="mt-8 border-t border-border-hairline pt-10 md:mt-12 md:pt-12"
+        aria-labelledby="help-browse"
+      >
+        <h2
+          id="help-browse"
+          className="text-balance font-display text-headline leading-tight md:text-display"
+        >
           {t('help.browse_title', 'Browse every line')}
         </h2>
 
@@ -270,7 +276,7 @@ export default function HelpHotlines() {
         ) : (
           <>
             {callNow.length > 0 && (
-              <ul className="m-0 mt-6 list-none bg-card p-0 rounded-container shadow-soft">
+              <ul className="m-0 mt-6 list-none border-y border-border-hairline p-0">
                 {callNow.map((h) => (
                   <li key={h.id} className="border-b border-border-hairline last:border-b-0">
                     <HotlineRow
@@ -304,17 +310,19 @@ export default function HelpHotlines() {
 
       <MoreSupportBand orgs={supportOrgs} />
 
-      <div className="mt-12 border-t border-border-hairline py-8 text-center">
-        <p className="text-title font-bold leading-tight">
-          {t('help.subtitle', 'You are not alone. Help is available right now.')}
-        </p>
-        <p className="mx-auto mt-2 max-w-prose text-13 leading-relaxed text-muted-foreground">
-          {t('help.disclaimer', 'Queer Guide does not replace professional help.')}
-        </p>
+      <div className="mt-14 border-t border-border-hairline py-10 text-left md:flex md:items-center md:justify-between md:gap-8">
+        <div>
+          <p className="text-title font-bold leading-tight">
+            {t('help.subtitle', 'You are not alone. Help is available right now.')}
+          </p>
+          <p className="mt-2 max-w-prose text-13 leading-relaxed text-muted-foreground">
+            {t('help.disclaimer', 'Queer Guide does not replace professional help.')}
+          </p>
+        </div>
         {heroPhone && hero && (
           <a
             href={channelHref({ kind: 'phone', value: heroPhone })}
-            className="mt-4 inline-flex min-h-12 items-center justify-center bg-foreground px-6 text-15 font-bold text-background no-underline"
+            className="mt-6 inline-flex min-h-12 items-center justify-center rounded-element bg-foreground px-6 text-15 font-bold text-background no-underline transition-opacity hover:opacity-90 active:opacity-80 md:mt-0"
             aria-label={t('help.call_aria', 'Call {{name}} {{phone}}', {
               name: hero.name,
               phone: heroPhone,

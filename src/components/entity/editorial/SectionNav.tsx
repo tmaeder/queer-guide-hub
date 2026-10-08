@@ -1,5 +1,5 @@
 import { useEffect, useRef, type ReactNode } from 'react';
-import { STICKY_UNDER_HEADER } from '@/components/layout/PageContainer';
+import { PAGE_BLEED, PAGE_GUTTER, STICKY_UNDER_HEADER } from '@/components/layout/PageContainer';
 import { cn } from '@/lib/utils';
 
 export interface SectionNavItem {
@@ -51,7 +51,13 @@ export function SectionNav({
       aria-label="Sections"
       /* A rounded route selector. The rail is tonal rather than ruled, and it
          stays inside the page gutter so its soft silhouette remains visible. */
-      className={cn('sticky z-30 mb-8 bg-background py-2', STICKY_UNDER_HEADER, className)}
+      className={cn(
+        'sticky z-30 mb-8 bg-background py-2',
+        PAGE_BLEED,
+        PAGE_GUTTER,
+        STICKY_UNDER_HEADER,
+        className,
+      )}
     >
       {/* `max-w-page`, NOT `max-w-screen-2xl`. The bleed above lands this row
           on the page container's own box, so a 1536px cap here is 64px NARROWER
@@ -65,7 +71,7 @@ export function SectionNav({
       <ul
         ref={listRef}
         className={cn(
-          'mx-auto flex max-w-page items-center overflow-x-auto rounded-container bg-surface-container p-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden',
+          'mx-auto flex max-w-page items-center overflow-x-auto rounded-container bg-surface-container [scrollbar-width:none] [&::-webkit-scrollbar]:hidden',
           variant === 'subway' ? 'min-h-16 gap-4 md:gap-8' : 'min-h-12 gap-1',
         )}
       >
