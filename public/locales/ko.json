@@ -5139,6 +5139,7 @@
   "contribute": {
     "trigger": "Queer Guide에 기여하기",
     "title": "Queer Guide에 기여하기",
+    "subtitle": "발견한 내용을 알려 주거나, 등록 정보를 수정하거나, 가이드가 성장하도록 도와주세요.",
     "eyebrow": "기여하기",
     "common": {
       "failed": "제출하지 못했습니다",

@@ -5139,6 +5139,7 @@
   "contribute": {
     "trigger": "Queer Guideに情報を提供",
     "title": "Queer Guideに情報を提供",
+    "subtitle": "気づいたことを共有したり、掲載情報を修正したり、ガイドの充実にご協力ください。",
     "eyebrow": "情報提供",
     "common": {
       "failed": "送信できませんでした",

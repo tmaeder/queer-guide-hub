@@ -5141,6 +5141,7 @@
   "contribute": {
     "trigger": "Contribuir a Queer Guide",
     "title": "Contribuir a Queer Guide",
+    "subtitle": "Cuéntanos qué has observado, corrige una ficha o ayuda a ampliar la guía.",
     "eyebrow": "Contribuir",
     "common": {
       "failed": "No se pudo enviar",

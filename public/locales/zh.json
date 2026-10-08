@@ -5139,6 +5139,7 @@
   "contribute": {
     "trigger": "为 Queer Guide 贡献内容",
     "title": "为 Queer Guide 贡献内容",
+    "subtitle": "分享你的发现、修正条目信息，或帮助指南不断完善。",
     "eyebrow": "贡献内容",
     "common": {
       "failed": "提交失败",

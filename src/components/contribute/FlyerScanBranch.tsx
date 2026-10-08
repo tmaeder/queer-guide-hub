@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, LockKeyhole } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { useAuth } from '@/hooks/useAuth';
@@ -16,21 +16,27 @@ export default function FlyerScanBranch({ onBack }: { onBack: () => void }) {
 
   if (!user) {
     return (
-      <Card>
-        <CardContent className="pt-6">
-          <p className="font-semibold">{t('contribute.auth.title', 'Sign in to contribute')}</p>
-          <p className="mt-2 text-sm text-muted-foreground">
+      <Card className="overflow-hidden">
+        <div className="h-1 bg-track-pink" aria-hidden="true" />
+        <CardContent className="pt-6 sm:p-8">
+          <div className="flex h-12 w-12 items-center justify-center rounded-full border-[3px] border-track-ring bg-background">
+            <LockKeyhole size={18} aria-hidden="true" />
+          </div>
+          <p className="mt-6 text-title font-bold">
+            {t('contribute.auth.title', 'Sign in to contribute')}
+          </p>
+          <p className="mt-2 max-w-xl text-sm leading-relaxed text-muted-foreground">
             {t(
               'contribute.auth.scanBody',
               'An account is required before you can scan and submit items.',
             )}
           </p>
-          <div className="mt-6 flex gap-4">
-            <Button variant="outline" onClick={onBack}>
+          <div className="mt-8 flex gap-4 max-sm:flex-col-reverse">
+            <Button variant="outline" onClick={onBack} className="max-sm:w-full">
               <ArrowLeft size={16} />
               {t('contribute.common.back', 'Back')}
             </Button>
-            <Button onClick={() => navigate('/auth')}>
+            <Button onClick={() => navigate('/auth')} className="max-sm:w-full">
               {t('contribute.auth.cta', 'Sign in or create an account')}
             </Button>
           </div>

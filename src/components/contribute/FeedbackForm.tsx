@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Camera, Check } from 'lucide-react';
+import { Camera, Check, Info } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -91,12 +91,12 @@ export default function FeedbackForm({ screenshotBlob, onCancel, onDone }: Feedb
 
   if (status === 'submitted') {
     return (
-      <div className="py-8 text-center">
-        <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-foreground text-background">
+      <div className="rounded-container bg-card px-6 py-10 text-center shadow-soft">
+        <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full border-[3px] border-track-ring bg-track-pink text-track-ring">
           <Check size={24} />
         </div>
-        <h2 className="text-lg font-semibold">{t('contribute.feedback.thanks', 'Thank you!')}</h2>
-        <p className="mt-2 text-sm text-muted-foreground">
+        <h2 className="text-title font-bold">{t('contribute.feedback.thanks', 'Thank you!')}</h2>
+        <p className="mx-auto mt-2 max-w-md text-sm leading-relaxed text-muted-foreground">
           {t('contribute.feedback.successBody', 'Your feedback helps improve Queer Guide.')}
         </p>
         <Button className="mt-6" onClick={onDone}>
@@ -113,11 +113,11 @@ export default function FeedbackForm({ screenshotBlob, onCancel, onDone }: Feedb
         void submit();
       }}
     >
-      <fieldset className="mb-4 border-0 p-0">
-        <legend className="text-sm font-medium">
+      <fieldset className="mb-6 border-0 p-0">
+        <legend className="text-sm font-semibold">
           {t('contribute.feedback.category', 'What type of feedback?')}
         </legend>
-        <div className="mt-2 grid grid-cols-2 gap-2">
+        <div className="mt-4 grid grid-cols-2 gap-4">
           {feedbackCategories.map((category) => {
             const Icon = category.icon;
             const selected = form.category === category.value;
@@ -128,10 +128,10 @@ export default function FeedbackForm({ screenshotBlob, onCancel, onDone }: Feedb
                 role="radio"
                 aria-checked={selected}
                 onClick={() => setForm((current) => ({ ...current, category: category.value }))}
-                className={`flex items-center gap-2 rounded-element border-2 p-3 text-left text-sm transition-colors ${
+                className={`flex min-h-12 items-center gap-2 rounded-element px-3 py-2.5 text-left text-sm font-medium shadow-soft transition-all duration-fast focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
                   selected
-                    ? 'border-foreground bg-muted font-semibold'
-                    : 'border-border hover:border-foreground/50'
+                    ? 'bg-foreground text-background'
+                    : 'bg-card text-foreground hover:-translate-y-0.5 hover:bg-surface-container-low hover:shadow-soft-hover'
                 }`}
               >
                 <Icon size={16} aria-hidden="true" />
@@ -142,7 +142,7 @@ export default function FeedbackForm({ screenshotBlob, onCancel, onDone }: Feedb
         </div>
       </fieldset>
 
-      <div className="mb-4">
+      <div className="mb-6">
         <Label htmlFor="feedback-title">{t('contribute.feedback.title', 'Title')} *</Label>
         <Input
           id="feedback-title"
@@ -154,7 +154,7 @@ export default function FeedbackForm({ screenshotBlob, onCancel, onDone }: Feedb
         />
       </div>
 
-      <div className="mb-4">
+      <div className="mb-6">
         <Label htmlFor="feedback-description">
           {t('contribute.feedback.description', 'Description')} *
         </Label>
@@ -170,7 +170,7 @@ export default function FeedbackForm({ screenshotBlob, onCancel, onDone }: Feedb
       </div>
 
       {!user && (
-        <div className="mb-4">
+        <div className="mb-6">
           <Label htmlFor="feedback-email">
             {t('contribute.common.emailOptional', 'Email (optional)')}
           </Label>
@@ -186,7 +186,7 @@ export default function FeedbackForm({ screenshotBlob, onCancel, onDone }: Feedb
       )}
 
       {user && screenshotBlob && (
-        <div className="mb-4">
+        <div className="mb-6 rounded-container bg-card p-4 shadow-soft">
           <div className="flex items-center gap-2">
             <Checkbox
               id="feedback-screenshot"
@@ -211,11 +211,14 @@ export default function FeedbackForm({ screenshotBlob, onCancel, onDone }: Feedb
         </div>
       )}
 
-      <div className="mb-4 rounded-element bg-muted p-2.5 text-xs text-muted-foreground">
-        {t(
-          'contribute.feedback.contextNote',
-          'Automatically included: current page URL, browser information and recent errors.',
-        )}
+      <div className="mb-6 flex items-start gap-4 rounded-container bg-surface-container-high p-4 text-xs leading-relaxed text-muted-foreground">
+        <Info size={16} className="mt-0.5 shrink-0 text-foreground" aria-hidden="true" />
+        <span>
+          {t(
+            'contribute.feedback.contextNote',
+            'Automatically included: current page URL, browser information and recent errors.',
+          )}
+        </span>
       </div>
 
       <input
@@ -229,14 +232,15 @@ export default function FeedbackForm({ screenshotBlob, onCancel, onDone }: Feedb
         aria-hidden="true"
       />
 
-      <div className="flex justify-end gap-4">
+      <div className="sticky bottom-0 -mx-1 flex justify-end gap-4 bg-surface-container-low/95 px-1 pt-4 max-sm:flex-col-reverse sm:items-center">
         {onCancel && (
-          <Button type="button" variant="outline" onClick={onCancel}>
+          <Button type="button" variant="outline" onClick={onCancel} className="max-sm:w-full">
             {t('contribute.common.back', 'Back')}
           </Button>
         )}
         <Button
           type="submit"
+          className="max-sm:w-full"
           disabled={
             status === 'submitting' ||
             !form.category ||

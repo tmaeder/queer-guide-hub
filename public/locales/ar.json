@@ -5149,6 +5149,7 @@
   "contribute": {
     "trigger": "المساهمة في Queer Guide",
     "title": "المساهمة في Queer Guide",
+    "subtitle": "شارك ما لاحظته، أو صحّح إدراجًا، أو ساعد الدليل على النمو.",
     "eyebrow": "ساهم",
     "common": {
       "failed": "تعذّر الإرسال",

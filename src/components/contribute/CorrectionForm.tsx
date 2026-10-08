@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Check } from 'lucide-react';
+import { Check, MapPin } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -72,12 +72,12 @@ export default function CorrectionForm({ onCancel, onDone }: CorrectionFormProps
 
   if (status === 'submitted') {
     return (
-      <div className="py-8 text-center">
-        <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-foreground text-background">
+      <div className="rounded-container bg-card px-6 py-10 text-center shadow-soft">
+        <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full border-[3px] border-track-ring bg-track-pink text-track-ring">
           <Check size={24} />
         </div>
-        <h2 className="text-lg font-semibold">{t('contribute.correction.thanks', 'Thank you!')}</h2>
-        <p className="mt-2 text-sm text-muted-foreground">
+        <h2 className="text-title font-bold">{t('contribute.correction.thanks', 'Thank you!')}</h2>
+        <p className="mx-auto mt-2 max-w-md text-sm leading-relaxed text-muted-foreground">
           {t('contribute.correction.successBody', 'Our editors will review your correction.')}
         </p>
         <Button className="mt-6" onClick={onDone}>
@@ -94,14 +94,21 @@ export default function CorrectionForm({ onCancel, onDone }: CorrectionFormProps
         void submit();
       }}
     >
-      <div className="mb-4 rounded-element bg-muted p-4 text-sm">
-        <p className="font-medium">
-          {entity?.contentName ?? t('contribute.correction.thisPage', 'This page')}
-        </p>
-        <p className="mt-1 truncate text-xs text-muted-foreground">{window.location.href}</p>
+      <div className="mb-6 flex items-start gap-4 rounded-container bg-card p-4 shadow-soft">
+        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border-[3px] border-track-ring bg-background">
+          <MapPin size={16} aria-hidden="true" />
+        </span>
+        <span className="min-w-0 pt-0.5">
+          <span className="block text-sm font-bold">
+            {entity?.contentName ?? t('contribute.correction.thisPage', 'This page')}
+          </span>
+          <span className="mt-1 block truncate text-xs text-muted-foreground">
+            {window.location.href}
+          </span>
+        </span>
       </div>
 
-      <div className="mb-4">
+      <div className="mb-6">
         <Label htmlFor="correction-wrong">
           {t('contribute.correction.wrong', 'What is wrong?')} *
         </Label>
@@ -113,7 +120,7 @@ export default function CorrectionForm({ onCancel, onDone }: CorrectionFormProps
         />
       </div>
 
-      <div className="mb-4">
+      <div className="mb-6">
         <Label htmlFor="correction-replacement">
           {t('contribute.correction.replacement', 'What should it say instead?')} *
         </Label>
@@ -126,7 +133,7 @@ export default function CorrectionForm({ onCancel, onDone }: CorrectionFormProps
       </div>
 
       {!user && (
-        <div className="mb-4">
+        <div className="mb-6">
           <Label htmlFor="correction-email">
             {t('contribute.common.emailOptional', 'Email (optional)')}
           </Label>
@@ -152,14 +159,15 @@ export default function CorrectionForm({ onCancel, onDone }: CorrectionFormProps
         aria-hidden="true"
       />
 
-      <div className="flex justify-end gap-4">
+      <div className="sticky bottom-0 -mx-1 flex justify-end gap-4 bg-surface-container-low/95 px-1 pt-4 max-sm:flex-col-reverse sm:items-center">
         {onCancel && (
-          <Button type="button" variant="outline" onClick={onCancel}>
+          <Button type="button" variant="outline" onClick={onCancel} className="max-sm:w-full">
             {t('contribute.common.back', 'Back')}
           </Button>
         )}
         <Button
           type="submit"
+          className="max-sm:w-full"
           disabled={status === 'submitting' || !wrong.trim() || !replacement.trim()}
         >
           {status === 'submitting'

@@ -5141,6 +5141,7 @@
   "contribute": {
     "trigger": "Zu Queer Guide beitragen",
     "title": "Zu Queer Guide beitragen",
+    "subtitle": "Teile uns mit, was dir aufgefallen ist, korrigiere einen Eintrag oder hilf dem Guide zu wachsen.",
     "eyebrow": "Mitmachen",
     "common": {
       "failed": "Einreichung fehlgeschlagen",

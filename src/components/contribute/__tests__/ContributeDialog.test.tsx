@@ -15,6 +15,7 @@ vi.mock('@/components/contribute/AddSomethingBranch', () => ({
 vi.mock('@/components/contribute/FlyerScanBranch', () => ({
   default: () => <div>scan branch</div>,
 }));
+vi.mock('@/hooks/useAuth', () => ({ useAuth: () => ({ user: null }) }));
 
 import { ContributeDialog } from '../ContributeDialog';
 
