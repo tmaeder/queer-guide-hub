@@ -20,7 +20,7 @@ export function DirectoryList({ directories }: { directories: Hotline[] }) {
   if (directories.length === 0) return null;
 
   return (
-    <ul className="m-0 list-none bg-card p-0 rounded-container shadow-soft">
+    <ul className="m-0 list-none border-y border-border-hairline p-0">
       {directories.map((d) => {
         const live = d.url && d.link_status !== 'broken';
         return (
@@ -30,7 +30,7 @@ export function DirectoryList({ directories }: { directories: Hotline[] }) {
                 href={d.url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-start gap-4 p-4 text-inherit no-underline transition-colors hover:bg-foreground hover:text-background"
+                className="flex items-start gap-4 px-4 py-6 text-inherit no-underline transition-colors hover:bg-foreground hover:text-background"
               >
                 <span className="min-w-0 flex-1">
                   <span className="block text-title font-bold leading-tight">{d.name}</span>
@@ -44,7 +44,7 @@ export function DirectoryList({ directories }: { directories: Hotline[] }) {
                 </span>
               </a>
             ) : (
-              <div className="flex items-start gap-4 p-4">
+              <div className="flex items-start gap-4 px-2 py-6">
                 <span className="min-w-0 flex-1">
                   <span className="block text-title font-bold leading-tight">{d.name}</span>
                   <span className="mt-1 block text-13 leading-relaxed text-muted-foreground">
