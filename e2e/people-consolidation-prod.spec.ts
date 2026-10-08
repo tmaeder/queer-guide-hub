@@ -165,12 +165,20 @@ test('the public Feed and Hub navigation stay inside a mobile viewport', async (
 });
 
 test('public People surfaces keep decorative chrome borderless', async ({ page }) => {
-  const routes = ['/people', '/people/members', '/people/groups'] as const;
+  const routes = {
+    '/people': 'Meet people',
+    '/people/members': 'Members',
+    '/people/groups': 'Community Groups',
+  } as const;
 
-  for (const path of routes) {
+  for (const [path, heading] of Object.entries(routes)) {
     await page.goto(path);
     const nav = page.getByRole('navigation', { name: 'People sections' });
     await expect(nav).toBeVisible({ timeout: ROUTE_READY_TIMEOUT });
+    await expect(nav.locator(`a[href$="${path}"]`)).toHaveAttribute('aria-current', 'page');
+    await expect(page.getByRole('heading', { name: heading, exact: true })).toBeVisible({
+      timeout: ROUTE_READY_TIMEOUT,
+    });
 
     const visibleHairlines = await page.locator('main .border-border-hairline').evaluateAll(
       (nodes) =>
@@ -191,7 +199,7 @@ test('public People surfaces keep decorative chrome borderless', async ({ page }
     );
     expect(visibleHairlines, `${path} should not render hairline rules`).toBe(0);
 
-    const outlinedButtons = await page.locator('main button.border-input').count();
+    const outlinedButtons = await page.locator('main button.border-input:visible').count();
     expect(outlinedButtons, `${path} should use filled secondary actions`).toBe(0);
 
     const borderedBadges = await page.locator('main .border-track-ring.border').evaluateAll(
