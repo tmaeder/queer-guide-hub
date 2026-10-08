@@ -20,8 +20,7 @@ async function withCityCodes(gaps: CityCoverageGap[]): Promise<CityCoverageGap[]
   if (ids.length === 0) return gaps;
   const { data, error } = await supabase
     .from('cities')
-    // region_code is missing from the generated types (stale), hence the cast.
-    .select('id, region_code, countries(code)' as 'id')
+    .select('id, region_code, countries(code)')
     .in('id', ids);
   if (error || !data) return gaps;
   const byId = new Map(

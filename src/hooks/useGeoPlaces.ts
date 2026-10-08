@@ -33,10 +33,9 @@ export async function attachCityCodes<T extends { id: string; place_type: string
 ): Promise<(T & { country_code?: string | null; region_code?: string | null })[]> {
   const ids = rows.filter((r) => r.place_type === 'city').map((r) => r.id);
   if (ids.length === 0) return rows;
-  // region_code is missing from the generated types (stale), hence the cast.
   const { data, error } = await supabase
     .from('cities')
-    .select('id, region_code, countries(code)' as 'id')
+    .select('id, region_code, countries(code)')
     .in('id', ids);
   if (error || !data) return rows;
   const byId = new Map(
