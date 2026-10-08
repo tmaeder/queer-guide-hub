@@ -40,6 +40,8 @@
   background:
     radial-gradient(circle at 82% 8%, hsl(var(--track-pink) / 0.12), transparent 20rem),
     hsl(var(--background));
+  border-radius: var(--radius-panel);
+  overflow: clip;
   position: relative;
   isolation: isolate;
 }
@@ -66,7 +68,6 @@
   display: grid;
   align-items: end;
   padding: clamp(2.5rem, 7vw, 7rem) 0 clamp(3rem, 7vw, 6.5rem);
-  border-bottom: 1px solid hsl(var(--foreground) / 0.16);
 }
 
 .night-shift-hero__copy {
@@ -218,7 +219,7 @@
 }
 
 .night-shift-page section[id] {
-  border-bottom: 1px solid hsl(var(--foreground) / 0.12);
+  position: relative;
 }
 
 .night-shift-page section[id] > header h2 {
@@ -242,6 +243,7 @@
   overflow: hidden;
   grid-template-columns: minmax(0, 1.4fr) minmax(16rem, 0.6fr);
   background: hsl(var(--surface-container-lowest));
+  border-radius: var(--radius-container);
 }
 
 .night-shift-empty__copy {
@@ -288,6 +290,7 @@
     linear-gradient(transparent 49.5%, hsl(var(--foreground) / 0.08) 50%, transparent 50.5%),
     hsl(var(--surface-container));
   background-size: 3rem 3rem;
+  border-radius: var(--radius-container);
 }
 
 .night-shift-empty__map::before,
@@ -320,7 +323,8 @@
 }
 
 .night-shift-departures {
-  border-top: 1px solid hsl(var(--foreground) / 0.16);
+  display: grid;
+  gap: 0.25rem;
 }
 
 .night-shift-departure {
@@ -329,7 +333,8 @@
   grid-template-columns: 3rem 4.5rem minmax(0, 1fr) minmax(8rem, 0.25fr) 2rem;
   align-items: center;
   gap: clamp(0.75rem, 2vw, 2rem);
-  border-bottom: 1px solid hsl(var(--foreground) / 0.16);
+  border-radius: var(--radius-element);
+  background: hsl(var(--surface-container-lowest));
   transition:
     color 180ms ease,
     background-color 180ms ease,
@@ -403,6 +408,7 @@
   padding: clamp(2rem, 5vw, 4rem);
   color: hsl(var(--track-ring));
   background: hsl(var(--foreground));
+  border-radius: var(--radius-container);
 }
 
 .night-shift-safety__copy > div:first-child {
@@ -437,6 +443,8 @@
   min-height: 16rem;
   grid-column: span 3;
   background: hsl(var(--surface-container-lowest));
+  border-radius: var(--radius-container);
+  overflow: hidden;
   transition:
     transform 180ms ease,
     background-color 180ms ease;
