@@ -58,6 +58,13 @@ function firstCode(codes: string[] | null | undefined): string | null {
   return codes.find((code) => typeof code === 'string' && code.length > 0) ?? null;
 }
 
+/** Every usable code the city has of its OWN, in rank order. */
+export function localAirportCodes(city: unknown): string[] {
+  const codes = ((city ?? {}) as CityAirportColumns).local_airport_codes;
+  if (!Array.isArray(codes)) return [];
+  return codes.filter((code): code is string => typeof code === 'string' && code.length > 0);
+}
+
 export function readCityAirports(city: unknown): CityAirportColumnsView {
   const row = (city ?? {}) as CityAirportColumns;
   const km = row.nearest_airport_km;

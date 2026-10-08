@@ -54,7 +54,9 @@ export const cityFields: FieldConfig[] = [
   { name: 'area_km2', label: 'Area (km²)', type: 'number', group: 'details' },
   { name: 'local_language', label: 'Local Language', type: 'text', group: 'details' },
   { name: 'official_website', label: 'Official Website', type: 'url', group: 'details' },
-  { name: 'major_airport_code', label: 'Airport Code', type: 'text', group: 'details' },
+  // Flight-search target (Aviasales destinationIata), NOT "the city's airport":
+  // Aachen's is DUS. The public page states local_airport_codes or "No".
+  { name: 'major_airport_code', label: 'Booking airport (flight search)', type: 'text', group: 'details' },
   { name: 'best_time_to_visit', label: 'Best Time to Visit', type: 'text', group: 'details' },
   { name: 'local_customs', label: 'Local Customs', type: 'textarea', group: 'details' },
   { name: 'mayor', label: 'Mayor', type: 'text', group: 'details' },
@@ -63,13 +65,14 @@ export const cityFields: FieldConfig[] = [
   { name: 'demographics', label: 'Demographics', type: 'json', group: 'details', helpText: 'City demographics' },
   { name: 'postal_codes', label: 'Postal Codes', type: 'tags', group: 'details' },
   { name: 'area_codes', label: 'Area Codes', type: 'tags', group: 'details' },
-  { name: 'airport_codes', label: 'Airport Codes', type: 'tags', group: 'details' },
+  { name: 'airport_codes', label: 'Linked airports (same country)', type: 'tags', group: 'details' },
   // Derived by run_city_airport_link: the same set as airport_codes, split by
   // whether the airport sits IN the city. Read-only — editing them here would be
-  // overwritten by the nightly sweep.
+  // overwritten by the nightly sweep. The public "Nearest airports" list is NOT
+  // these: it is computed live, across borders, by city_nearest_airports().
   { name: 'local_airport_codes', label: 'Airports in this city', type: 'tags', group: 'details', readOnly: true },
-  { name: 'nearest_airport_codes', label: 'Nearest airports', type: 'tags', group: 'details', readOnly: true },
-  { name: 'nearest_airport_km', label: 'Nearest airport (km)', type: 'number', group: 'details', readOnly: true },
+  { name: 'nearest_airport_codes', label: 'Linked airports outside city', type: 'tags', group: 'details', readOnly: true },
+  { name: 'nearest_airport_km', label: 'Linked airport distance (km)', type: 'number', group: 'details', readOnly: true },
   { name: 'sister_cities', label: 'Sister Cities', type: 'tags', group: 'details' },
   { name: 'notable_landmarks', label: 'Notable Landmarks', type: 'tags', group: 'details' },
   { name: 'economy_sectors', label: 'Economy Sectors', type: 'tags', group: 'details' },

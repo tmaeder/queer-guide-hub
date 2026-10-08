@@ -130,12 +130,11 @@ export default function CityDetail() {
     // cities the linker resolved neither a local nor a nearby airport for.
     hasAirport: localIata != null || dbNearestIata != null,
   });
-  const {
-    hasAirport,
-    displayIata,
-    bookingIata: effectiveIata,
-    nearestAirport,
-  } = resolveCityAirports(city, hookNearestAirport, city?.major_airport_code);
+  const { bookingIata: effectiveIata } = resolveCityAirports(
+    city,
+    hookNearestAirport,
+    city?.major_airport_code,
+  );
 
   const { venues, loading: venuesLoading, fetchVenues } = useVenues(false);
   const { events, fetchEvents } = useEvents(false);
@@ -296,14 +295,7 @@ export default function CityDetail() {
         {
           id: 'travel',
           title: t('cities.detail.section.travel', 'Getting there'),
-          content: (
-            <CityTravelTab
-              city={city}
-              effectiveIata={effectiveIata}
-              hasAirport={hasAirport}
-              nearestAirport={nearestAirport}
-            />
-          ),
+          content: <CityTravelTab city={city} effectiveIata={effectiveIata} />,
         },
         {
           id: 'news',
@@ -476,10 +468,10 @@ export default function CityDetail() {
                   : 'contents'
               }
             >
-              {/* The strip states what the city HAS, so it takes the display
-                  code (own airport, else the nearby one, marked "~"). The
-                  booking code stays on the travel tab. */}
-              <CityAtAGlance city={city} hasAirport={hasAirport} effectiveIata={displayIata} />
+              {/* The strip states what the city HAS: its own airport, or
+                  "No". Nearby airports and the booking code live on the
+                  travel tab. */}
+              <CityAtAGlance city={city} />
               <GeoPhotoInset
                 src={imageUrl}
                 alt={city.name}
