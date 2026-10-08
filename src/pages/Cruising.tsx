@@ -24,6 +24,7 @@ import { CruisingPresenceControl } from '@/components/cruising/CruisingPresenceC
 import IntimateDiscovery from '@/pages/intimate/IntimateDiscovery';
 import { cn } from '@/lib/utils';
 import { PeopleNav } from '@/components/people/PeopleNav';
+import { PageHeader } from '@/components/layout/PageHeader';
 
 type Panel = 'people' | 'spots';
 
@@ -138,43 +139,38 @@ export default function Cruising() {
     <div className="pb-12">
       <PageContainer className="pb-6 pt-6 md:pt-8">
         <PeopleNav className="mb-6" />
-        <div className="grid gap-6 border-b border-border-hairline pb-6 lg:grid-cols-[minmax(0,1fr)_minmax(18rem,28rem)] lg:items-end">
-          <div>
-            <p className="mb-2 text-xs font-bold uppercase tracking-[0.16em] text-muted-foreground">
-              {t('cruising.eyebrow')}
-            </p>
-            <h1 className="font-display text-display">{t('cruising.title')}</h1>
-            <p className="mt-4 max-w-2xl text-body-lg text-muted-foreground">
-              {t('cruising.intro')}
-            </p>
-          </div>
-          <div
-            className="flex flex-wrap gap-2 lg:justify-end"
-            role="group"
-            aria-label={t('cruising.layers.label')}
-          >
-            {(['both', 'people', 'spots'] as const).map((option) => (
-              <Button
-                key={option}
-                size="sm"
-                variant={layer === option ? 'default' : 'outline'}
-                onClick={() => setRouteState({ layers: option })}
-                className="capitalize"
-              >
-                {option === 'both' ? (
-                  <Compass size={14} aria-hidden />
-                ) : option === 'people' ? (
-                  <Users size={14} aria-hidden />
-                ) : (
-                  <MapPin size={14} aria-hidden />
-                )}
-                {t(`cruising.layers.${option}`)}
-              </Button>
-            ))}
-          </div>
-        </div>
+        <PageHeader
+          title={t('cruising.title')}
+          subtitle={t('cruising.intro')}
+          actions={
+            <div
+              className="flex flex-wrap gap-2"
+              role="group"
+              aria-label={t('cruising.layers.label')}
+            >
+              {(['both', 'people', 'spots'] as const).map((option) => (
+                <Button
+                  key={option}
+                  size="sm"
+                  variant={layer === option ? 'default' : 'outline'}
+                  onClick={() => setRouteState({ layers: option })}
+                  className="capitalize"
+                >
+                  {option === 'both' ? (
+                    <Compass size={14} aria-hidden />
+                  ) : option === 'people' ? (
+                    <Users size={14} aria-hidden />
+                  ) : (
+                    <MapPin size={14} aria-hidden />
+                  )}
+                  {t(`cruising.layers.${option}`)}
+                </Button>
+              ))}
+            </div>
+          }
+        />
 
-        <div className="mt-6 flex items-start gap-4 bg-surface-container px-4 py-4 text-13">
+        <div className="flex items-start gap-4 bg-surface-container px-4 py-4 text-13">
           <ShieldCheck className="mt-0.5 shrink-0" size={17} aria-hidden />
           <p>
             {t('cruising.safety.body')}{' '}

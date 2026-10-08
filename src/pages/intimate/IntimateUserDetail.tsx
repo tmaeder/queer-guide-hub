@@ -17,6 +17,7 @@ import { PageContainer } from '@/components/layout/PageContainer';
 import { PageLoadingState } from '@/components/layout/PageLoadingState';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { UserX } from 'lucide-react';
+import { PeopleSubpageNav } from '@/components/people/PeopleSubpageNav';
 
 function Row({ k, v }: { k: string; v: string }) {
   return (
@@ -43,32 +44,41 @@ export default function IntimateUserDetail() {
 
   if (isLoading) {
     return (
-      <PageContainer size="form">
-        <PageLoadingState count={2} variant="list" label="Loading this profile" />
-      </PageContainer>
+      <>
+        <PeopleSubpageNav />
+        <PageContainer size="form">
+          <PageLoadingState count={2} variant="list" label="Loading this profile" />
+        </PageContainer>
+      </>
     );
   }
   if (!me?.opted_in_at) {
     return (
-      <PageContainer size="form" className="text-center">
-        <p className="mb-6">Opt in to view intimate profiles.</p>
-        <Button onClick={() => navigate('/people/dating/onboarding')}>Get started</Button>
-      </PageContainer>
+      <>
+        <PeopleSubpageNav />
+        <PageContainer size="form" className="text-center">
+          <p className="mb-6">Opt in to view intimate profiles.</p>
+          <Button onClick={() => navigate('/people/dating/onboarding')}>Get started</Button>
+        </PageContainer>
+      </>
     );
   }
   if (!profile) {
     return (
-      <PageContainer size="form">
-        <EmptyState
-          icon={UserX}
-          title="Profile not available"
-          description="This rider is no longer visible on the intimate line."
-          primaryAction={{
-            label: 'Back to discovery',
-            onClick: () => navigate('/people/dating'),
-          }}
-        />
-      </PageContainer>
+      <>
+        <PeopleSubpageNav />
+        <PageContainer size="form">
+          <EmptyState
+            icon={UserX}
+            title="Profile not available"
+            description="This rider is no longer visible on the intimate line."
+            primaryAction={{
+              label: 'Back to discovery',
+              onClick: () => navigate('/people/dating'),
+            }}
+          />
+        </PageContainer>
+      </>
     );
   }
 
@@ -114,97 +124,100 @@ export default function IntimateUserDetail() {
       : null;
 
   return (
-    <PageContainer size="form">
-      <header className="flex items-center gap-4 pb-6">
-        {displayProfile?.avatar_url ? (
-          <img
-            src={displayProfile.avatar_url}
-            alt=""
-            className="h-16 w-16 object-cover rounded-element"
-          />
-        ) : (
-          <div className="h-16 w-16 bg-muted rounded-element" />
-        )}
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">
-            {displayProfile?.display_name ?? 'Anon'}
-          </h1>
-          <p className="text-sm text-muted-foreground">
-            {[
-              profile.age_band,
-              profile.body_type,
-              profile.height_cm ? `${profile.height_cm}cm` : null,
-            ]
-              .filter(Boolean)
-              .join(' · ')}
-          </p>
-        </div>
-      </header>
-
-      <FlatFieldGroup title="Body & anatomy">
-        <div className="flex flex-wrap gap-4">
-          {GPicto && <GPicto width={80} height={80} />}
-          {BPicto && <BPicto width={80} height={80} />}
-          {Angle && <Angle width={80} height={80} />}
-        </div>
-        {profile.size_cm && (
-          <p className="text-sm text-muted-foreground">
-            Size: {profile.size_cm} cm
-            {profile.erection_angle_deg !== null ? ` · ${profile.erection_angle_deg}°` : ''}
-          </p>
-        )}
-      </FlatFieldGroup>
-
-      <FlatFieldGroup title="Profile">
-        <dl className="space-y-4 text-sm">
-          {profile.role?.length ? <Row k="Role" v={profile.role.join(', ')} /> : null}
-          {profile.into_tags?.length ? <Row k="Into" v={profile.into_tags.join(', ')} /> : null}
-          {profile.limits?.length ? <Row k="Limits" v={profile.limits.join(', ')} /> : null}
-          {profile.safer_sex_prefs?.length ? (
-            <Row k="Safer sex" v={profile.safer_sex_prefs.join(', ')} />
-          ) : null}
-        </dl>
-      </FlatFieldGroup>
-
-      <FlatFieldGroup title="Interests & boundaries">
-        {userId && <KinkVisibleList ownerId={userId} />}
-        {userId && <KinkPeerActions otherId={userId} otherName={displayProfile?.display_name} />}
-      </FlatFieldGroup>
-
-      <div className="pt-6 flex flex-wrap gap-2">
-        <Button onClick={sendRequest} className="rounded-element">
-          Send friend request
-        </Button>
-        <Button
-          variant="outline"
-          onClick={() => setReportOpen((v) => !v)}
-          className="rounded-element"
-        >
-          Report
-        </Button>
-        <Button variant="outline" onClick={block} className="rounded-element">
-          Block
-        </Button>
-      </div>
-
-      {reportOpen && (
-        <div className="mt-6 pt-6">
-          <p className="text-sm font-medium mb-4">Reason for report</p>
-          <div className="flex flex-wrap gap-2">
-            {['underage', 'spam', 'impersonation', 'hateful', 'illegal', 'other'].map((r) => (
-              <Button
-                key={r}
-                size="sm"
-                variant="outline"
-                onClick={() => submitReport(r)}
-                className="rounded-element"
-              >
-                {r}
-              </Button>
-            ))}
+    <>
+      <PeopleSubpageNav />
+      <PageContainer size="form">
+        <header className="flex items-center gap-4 pb-6">
+          {displayProfile?.avatar_url ? (
+            <img
+              src={displayProfile.avatar_url}
+              alt=""
+              className="h-16 w-16 object-cover rounded-element"
+            />
+          ) : (
+            <div className="h-16 w-16 bg-muted rounded-element" />
+          )}
+          <div>
+            <h1 className="text-2xl font-semibold tracking-tight">
+              {displayProfile?.display_name ?? 'Anon'}
+            </h1>
+            <p className="text-sm text-muted-foreground">
+              {[
+                profile.age_band,
+                profile.body_type,
+                profile.height_cm ? `${profile.height_cm}cm` : null,
+              ]
+                .filter(Boolean)
+                .join(' · ')}
+            </p>
           </div>
+        </header>
+
+        <FlatFieldGroup title="Body & anatomy">
+          <div className="flex flex-wrap gap-4">
+            {GPicto && <GPicto width={80} height={80} />}
+            {BPicto && <BPicto width={80} height={80} />}
+            {Angle && <Angle width={80} height={80} />}
+          </div>
+          {profile.size_cm && (
+            <p className="text-sm text-muted-foreground">
+              Size: {profile.size_cm} cm
+              {profile.erection_angle_deg !== null ? ` · ${profile.erection_angle_deg}°` : ''}
+            </p>
+          )}
+        </FlatFieldGroup>
+
+        <FlatFieldGroup title="Profile">
+          <dl className="space-y-4 text-sm">
+            {profile.role?.length ? <Row k="Role" v={profile.role.join(', ')} /> : null}
+            {profile.into_tags?.length ? <Row k="Into" v={profile.into_tags.join(', ')} /> : null}
+            {profile.limits?.length ? <Row k="Limits" v={profile.limits.join(', ')} /> : null}
+            {profile.safer_sex_prefs?.length ? (
+              <Row k="Safer sex" v={profile.safer_sex_prefs.join(', ')} />
+            ) : null}
+          </dl>
+        </FlatFieldGroup>
+
+        <FlatFieldGroup title="Interests & boundaries">
+          {userId && <KinkVisibleList ownerId={userId} />}
+          {userId && <KinkPeerActions otherId={userId} otherName={displayProfile?.display_name} />}
+        </FlatFieldGroup>
+
+        <div className="pt-6 flex flex-wrap gap-2">
+          <Button onClick={sendRequest} className="rounded-element">
+            Send friend request
+          </Button>
+          <Button
+            variant="outline"
+            onClick={() => setReportOpen((v) => !v)}
+            className="rounded-element"
+          >
+            Report
+          </Button>
+          <Button variant="outline" onClick={block} className="rounded-element">
+            Block
+          </Button>
         </div>
-      )}
-    </PageContainer>
+
+        {reportOpen && (
+          <div className="mt-6 pt-6">
+            <p className="text-sm font-medium mb-4">Reason for report</p>
+            <div className="flex flex-wrap gap-2">
+              {['underage', 'spam', 'impersonation', 'hateful', 'illegal', 'other'].map((r) => (
+                <Button
+                  key={r}
+                  size="sm"
+                  variant="outline"
+                  onClick={() => submitReport(r)}
+                  className="rounded-element"
+                >
+                  {r}
+                </Button>
+              ))}
+            </div>
+          </div>
+        )}
+      </PageContainer>
+    </>
   );
 }

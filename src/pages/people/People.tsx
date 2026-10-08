@@ -114,32 +114,6 @@ export default function People() {
   // null and the layout removes their heading and nav entry along with them.
   const sections: SectionDef[] = [
     {
-      id: 'map',
-      label: t('people.sections.map', 'Connection map'),
-      kicker: t(
-        'people.sections.mapKicker',
-        'Find the places where community, dates and shared journeys begin',
-      ),
-      content: (
-        <div className="space-y-4">
-          <p className="max-w-prose text-muted-foreground">
-            {t(
-              'people.sections.mapDescription',
-              'Explore public gathering places, queer neighbourhoods and events near you. Member locations stay private unless someone explicitly opts into Nearby.',
-            )}
-          </p>
-          <Suspense fallback={<Skeleton className="h-[clamp(22rem,58vh,32rem)] w-full" />}>
-            <PeopleConnectionMap />
-          </Suspense>
-        </div>
-      ),
-      action: (
-        <LocalizedLink to="/map" className="text-13 no-underline hover:underline">
-          {t('people.fullMap', 'Open full map')}
-        </LocalizedLink>
-      ),
-    },
-    {
       id: 'spaces',
       label: t('people.sections.spaces', 'Community spaces'),
       kicker: cityName
@@ -359,6 +333,7 @@ export default function People() {
       <IntentPageLayout
         topNav={<PeopleNav />}
         heroSize="sm"
+        heroClassName="py-4 md:py-6"
         breadcrumbLabel={t('header.intents.meet.label', 'Meet people')}
         breadcrumbHref="/people"
         eyebrow={cityName ? `In ${cityName}` : undefined}
@@ -394,6 +369,32 @@ export default function People() {
               </span>
             ) : null}
           </div>
+        }
+        featured={
+          <section aria-labelledby="people-map-heading">
+            <div className="mb-4 flex flex-wrap items-end justify-between gap-4">
+              <div>
+                <h2 id="people-map-heading" className="font-display text-headline font-bold">
+                  {t('people.sections.map', 'Connection map')}
+                </h2>
+                <p className="mt-2 max-w-2xl text-muted-foreground">
+                  {t(
+                    'people.sections.mapDescription',
+                    'Explore public gathering places, queer neighbourhoods and events—or switch to the protected cruising map.',
+                  )}
+                </p>
+              </div>
+              <LocalizedLink
+                to="/map"
+                className="text-13 font-semibold no-underline hover:underline"
+              >
+                {t('people.fullMap', 'Open full map')}
+              </LocalizedLink>
+            </div>
+            <Suspense fallback={<Skeleton className="h-[clamp(22rem,58vh,32rem)] w-full" />}>
+              <PeopleConnectionMap />
+            </Suspense>
+          </section>
         }
         sections={sections}
         footer={

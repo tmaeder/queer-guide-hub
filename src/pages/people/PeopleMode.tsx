@@ -12,6 +12,7 @@ import { PeopleModeView } from './PeopleModeView';
 import { NearbyView } from './NearbyView';
 import { PageContainer } from '@/components/layout/PageContainer';
 import { PeopleNav } from '@/components/people/PeopleNav';
+import { PageHeader } from '@/components/layout/PageHeader';
 
 // Dating keeps its own opt-in/age-walled deck; it self-gates when not opted in.
 const IntimateDiscovery = lazyRetry(() => import('@/pages/intimate/IntimateDiscovery'));
@@ -88,18 +89,21 @@ export default function PeopleMode({ tab }: { tab: PeopleTab }) {
         <PeopleNav className="mb-6" />
         {/* Was a bare `text-headline` h1 with no rule under it — the one place
             in the hub's subtree that read as an unstyled page. */}
-        <div className="mb-8 flex flex-wrap items-end justify-between gap-4 border-b border-border-hairline pb-4">
-          <h1 className="font-display text-display">{t(meta.labelKey, meta.label)}</h1>
-          <Button
-            variant="outline"
-            size="sm"
-            className="shrink-0 gap-2"
-            onClick={() => setIntentOpen(true)}
-          >
-            <SlidersHorizontal size={14} aria-hidden />
-            {t('people.intent.button', "I'm here for…")}
-          </Button>
-        </div>
+        <PageHeader
+          title={t(meta.labelKey, meta.label)}
+          subtitle={meta.description}
+          actions={
+            <Button
+              variant="outline"
+              size="sm"
+              className="shrink-0 gap-2"
+              onClick={() => setIntentOpen(true)}
+            >
+              <SlidersHorizontal size={14} aria-hidden />
+              {t('people.intent.button', "I'm here for…")}
+            </Button>
+          }
+        />
 
         <Suspense
           fallback={
