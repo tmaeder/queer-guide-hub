@@ -64,10 +64,7 @@ export default function Feed() {
           'pages.feed.subtitle',
           "Posts, stories, and conversations from the LGBTQ+ community. Share your thoughts and see what's happening around you.",
         )}
-        center
       />
-
-      <FollowedTagsFeed className="mb-8" />
 
       {isLoading ? (
         <PageLoadingState count={3} variant="list" />
@@ -131,9 +128,11 @@ export default function Feed() {
             </CardContent>
           </Card>
 
+          <FollowedTagsFeed className="mb-6" />
+
           {/* Search & Tabs */}
-          <div className="p-4 mb-6 bg-surface-container rounded-element">
-            <div className="flex flex-col sm:flex-row gap-4 mb-4">
+          <div className="mb-6 bg-surface-container p-4">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
               <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
@@ -144,14 +143,16 @@ export default function Feed() {
                   aria-label={t('pages.feed.searchPlaceholder', 'Search posts or users...')}
                 />
               </div>
+              <Tabs
+                value={activeTab}
+                onValueChange={(v) => setActiveTab(v as 'recent' | 'popular')}
+              >
+                <TabsList className="w-full sm:w-auto">
+                  <TabsTrigger value="recent">{t('pages.feed.recent', 'Recent')}</TabsTrigger>
+                  <TabsTrigger value="popular">{t('pages.feed.popular', 'Popular')}</TabsTrigger>
+                </TabsList>
+              </Tabs>
             </div>
-
-            <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'recent' | 'popular')}>
-              <TabsList>
-                <TabsTrigger value="recent">{t('pages.feed.recent', 'Recent')}</TabsTrigger>
-                <TabsTrigger value="popular">{t('pages.feed.popular', 'Popular')}</TabsTrigger>
-              </TabsList>
-            </Tabs>
           </div>
 
           {/* Posts */}
@@ -228,9 +229,7 @@ export default function Feed() {
                       disabled={isFetchingNextPage}
                       className="inline-flex gap-2"
                     >
-                      {isFetchingNextPage && (
-                        <TrackLoader size={16} />
-                      )}
+                      {isFetchingNextPage && <TrackLoader size={16} />}
                       {t('pages.feed.loadMore', 'Load more')}
                     </Button>
                   </div>

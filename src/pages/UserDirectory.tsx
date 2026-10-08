@@ -14,6 +14,7 @@ import {
 import { UserDirectoryFilters } from '@/components/user-directory/UserDirectoryFilters';
 import { UserDirectoryGrid } from '@/components/user-directory/UserDirectoryGrid';
 import { PageContainer } from '@/components/layout/PageContainer';
+import { PageHeader } from '@/components/layout/PageHeader';
 
 const UserDirectory = () => {
   const { t } = useTranslation();
@@ -113,19 +114,16 @@ const UserDirectory = () => {
 
   return (
     <PageContainer className="flex flex-col gap-8">
-      <header className="rounded-container p-8 text-center flex flex-col gap-4 bg-surface-container">
-        <h1 className="text-display font-bold text-foreground">
-          {t('pages.members.title', 'Members')}
-        </h1>
-        <p className="text-body-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-          {t(
-            'pages.members.subtitle',
-            'People, connections, and networks within the inclusive LGBTQ+ community.',
-          )}
-        </p>
+      <PageHeader
+        title={t('pages.members.title', 'Members')}
+        subtitle={t(
+          'pages.members.subtitle',
+          'Find people by place, interests, identity, and the communities you share.',
+        )}
+      >
         {!isLoading && !isError && (
-          <div className="flex flex-wrap justify-center gap-2 text-13">
-            <span className="inline-flex items-center gap-2 px-4 py-2 bg-muted rounded-badge font-medium">
+          <div className="flex flex-wrap gap-2 text-13">
+            <span className="inline-flex items-center gap-2 bg-muted px-4 py-2 font-medium">
               <Users className="h-4 w-4" />
               {memberCount}{' '}
               {memberCount === 1
@@ -135,7 +133,7 @@ const UserDirectory = () => {
             </span>
           </div>
         )}
-      </header>
+      </PageHeader>
 
       {!user && (
         <Card>

@@ -132,7 +132,6 @@ export default function Groups() {
           'pages.groups.subtitle',
           'Connect with like-minded people, share experiences, and build meaningful relationships in safe and inclusive spaces.',
         )}
-        center
         actions={
           user ? (
             <CreateGroupDialog

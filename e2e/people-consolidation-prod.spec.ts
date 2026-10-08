@@ -1,5 +1,7 @@
 import { expect, test } from '@playwright/test';
 
+const ROUTE_READY_TIMEOUT = 15_000;
+
 /** Read-only production contract for the unified People area. */
 test.beforeEach(async ({ page }) => {
   await page.addInitScript(() => {
@@ -35,13 +37,24 @@ test('the People hub exposes every community and connection destination', async 
   expect(response?.ok()).toBe(true);
 
   const nav = page.getByRole('navigation', { name: 'People sections' });
-  await expect(nav).toBeVisible();
+  await expect(nav).toBeVisible({ timeout: ROUTE_READY_TIMEOUT });
   await expect(nav.getByRole('link', { name: 'Meet people' })).toHaveAttribute(
     'aria-current',
     'page',
   );
   for (const href of peopleLinks) await expect(nav.locator(`a[href$="${href}"]`)).toHaveCount(1);
-  await expect(page.getByTestId('people-connection-map')).toBeVisible();
+  await expect(page.getByTestId('people-connection-map')).toBeVisible({
+    timeout: ROUTE_READY_TIMEOUT,
+  });
+  const mapModes = page.getByRole('tablist', { name: 'Map mode' });
+  await expect(mapModes.getByRole('tab', { name: 'Community' })).toHaveAttribute(
+    'aria-selected',
+    'true',
+  );
+  await expect(mapModes.getByRole('tab', { name: /Cruising/ })).toHaveAttribute(
+    'href',
+    /\/people\/dating\?panel=spots&layers=spots$/,
+  );
   await expect(page.getByRole('link', { name: 'Open full map' })).toHaveAttribute('href', /\/map$/);
 });
 
@@ -52,7 +65,7 @@ test('community and connection routes keep the shared People wayfinding', async 
     expect(response?.ok(), `${path} should return a successful document`).toBe(true);
     await expect(page).toHaveURL(new RegExp(`${path.replaceAll('/', '\\/')}/?$`));
     const nav = page.getByRole('navigation', { name: 'People sections' });
-    await expect(nav).toBeVisible();
+    await expect(nav).toBeVisible({ timeout: ROUTE_READY_TIMEOUT });
     await expect(nav.locator(`a[href$="${path}"]`)).toHaveAttribute('aria-current', 'page');
   }
 });
@@ -60,7 +73,7 @@ test('community and connection routes keep the shared People wayfinding', async 
 test('dating is canonical under People and preserves the anonymous auth wall', async ({ page }) => {
   const response = await page.goto('/people/dating');
   expect(response?.ok()).toBe(true);
-  await expect(page).toHaveURL(/\/auth\/?$/);
+  await expect(page).toHaveURL(/\/auth\/?$/, { timeout: ROUTE_READY_TIMEOUT });
 });
 
 test('legacy community URLs resolve to their canonical People destinations', async ({ page }) => {
@@ -75,7 +88,8 @@ test('legacy community URLs resolve to their canonical People destinations', asy
   for (const [legacy, canonical] of Object.entries(redirects)) {
     const response = await page.goto(legacy);
     expect(response?.ok(), `${legacy} should resolve successfully`).toBe(true);
-    if (canonical === '/people/dating') await expect(page).toHaveURL(/\/auth\/?$/);
+    if (canonical === '/people/dating')
+      await expect(page).toHaveURL(/\/auth\/?$/, { timeout: ROUTE_READY_TIMEOUT });
     else await expect(page).toHaveURL(new RegExp(`${canonical.replaceAll('/', '\\/')}/?$`));
   }
 });
@@ -83,8 +97,12 @@ test('legacy community URLs resolve to their canonical People destinations', asy
 test('the People navigation stays inside a mobile viewport', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('/people');
-  await expect(page.getByRole('navigation', { name: 'People sections' })).toBeVisible();
-  await expect(page.getByTestId('people-connection-map')).toBeVisible();
+  await expect(page.getByRole('navigation', { name: 'People sections' })).toBeVisible({
+    timeout: ROUTE_READY_TIMEOUT,
+  });
+  await expect(page.getByTestId('people-connection-map')).toBeVisible({
+    timeout: ROUTE_READY_TIMEOUT,
+  });
   const overflow = await page.evaluate(() => document.documentElement.scrollWidth - innerWidth);
   expect(overflow).toBeLessThanOrEqual(1);
 });

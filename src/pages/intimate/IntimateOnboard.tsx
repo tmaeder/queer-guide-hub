@@ -29,6 +29,7 @@ import { StepperShell, type StepperStep } from '@/components/ui/StepperShell';
 import { FlatFieldGroup, FlatField } from '@/components/ui/FlatFieldGroup';
 import { PageContainer } from '@/components/layout/PageContainer';
 import { PageLoadingState } from '@/components/layout/PageLoadingState';
+import { PeopleSubpageNav } from '@/components/people/PeopleSubpageNav';
 
 const STEP_ORDER: WizardStep[] = [
   'consent',
@@ -141,20 +142,26 @@ export default function IntimateOnboard() {
 
   if (isLoading) {
     return (
-      <PageContainer size="form">
-        <PageLoadingState count={2} variant="list" label="Loading your intimate profile" />
-      </PageContainer>
+      <>
+        <PeopleSubpageNav />
+        <PageContainer size="form">
+          <PageLoadingState count={2} variant="list" label="Loading your intimate profile" />
+        </PageContainer>
+      </>
     );
   }
   if (!user) {
     return (
-      <PageContainer size="form" className="text-center">
-        <h1 className="font-display text-headline">Intimate profile</h1>
-        <p className="mt-4 text-muted-foreground">Sign in to continue.</p>
-        <Button className="mt-6" onClick={() => navigate('/auth')}>
-          Sign in
-        </Button>
-      </PageContainer>
+      <>
+        <PeopleSubpageNav />
+        <PageContainer size="form" className="text-center">
+          <h1 className="font-display text-headline">Intimate profile</h1>
+          <p className="mt-4 text-muted-foreground">Sign in to continue.</p>
+          <Button className="mt-6" onClick={() => navigate('/auth')}>
+            Sign in
+          </Button>
+        </PageContainer>
+      </>
     );
   }
 
@@ -197,207 +204,210 @@ export default function IntimateOnboard() {
   const canGoNext = step === 'consent' ? consent : true;
 
   return (
-    <StepperShell
-      steps={stepperSteps}
-      current={visibleIdx}
-      onPrev={back}
-      onNext={next}
-      canGoPrev={visibleIdx > 0}
-      canGoNext={canGoNext}
-      nextLabel={isLast ? (upsert.isPending ? 'Activating…' : 'Activate') : 'Next'}
-      variant="discreet"
-    >
-      <FlatFieldGroup title={STEP_LABELS[step]} description={STEP_DESCRIPTIONS[step]} noTopBorder>
-        {step === 'consent' && (
-          <FlatField>
-            <label htmlFor="intimate-consent" className="flex items-start gap-4 cursor-pointer">
-              <Checkbox
-                id="intimate-consent"
-                checked={consent}
-                onCheckedChange={(v) => setConsent(v === true)}
-                className="rounded-element mt-0.5"
-              />
-              <span className="text-sm leading-relaxed">
-                I confirm I am at least 18 years old and consent to seeing explicit content.
-              </span>
-            </label>
-          </FlatField>
-        )}
+    <>
+      <PeopleSubpageNav />
+      <StepperShell
+        steps={stepperSteps}
+        current={visibleIdx}
+        onPrev={back}
+        onNext={next}
+        canGoPrev={visibleIdx > 0}
+        canGoNext={canGoNext}
+        nextLabel={isLast ? (upsert.isPending ? 'Activating…' : 'Activate') : 'Next'}
+        variant="discreet"
+      >
+        <FlatFieldGroup title={STEP_LABELS[step]} description={STEP_DESCRIPTIONS[step]} noTopBorder>
+          {step === 'consent' && (
+            <FlatField>
+              <label htmlFor="intimate-consent" className="flex items-start gap-4 cursor-pointer">
+                <Checkbox
+                  id="intimate-consent"
+                  checked={consent}
+                  onCheckedChange={(v) => setConsent(v === true)}
+                  className="rounded-element mt-0.5"
+                />
+                <span className="text-sm leading-relaxed">
+                  I confirm I am at least 18 years old and consent to seeing explicit content.
+                </span>
+              </label>
+            </FlatField>
+          )}
 
-        {step === 'genitalia' && (
-          <FlatField>
-            <div className="flex flex-wrap gap-2">
-              {GENITALIA_OPTIONS.map((o) => (
-                <Button
-                  key={o.value}
-                  variant={merged.genitalia === o.value ? 'default' : 'outline'}
-                  onClick={() => update({ genitalia: o.value as Genitalia })}
-                  className="rounded-element"
-                >
-                  {o.label}
-                </Button>
-              ))}
-            </div>
-          </FlatField>
-        )}
+          {step === 'genitalia' && (
+            <FlatField>
+              <div className="flex flex-wrap gap-2">
+                {GENITALIA_OPTIONS.map((o) => (
+                  <Button
+                    key={o.value}
+                    variant={merged.genitalia === o.value ? 'default' : 'outline'}
+                    onClick={() => update({ genitalia: o.value as Genitalia })}
+                    className="rounded-element"
+                  >
+                    {o.label}
+                  </Button>
+                ))}
+              </div>
+            </FlatField>
+          )}
 
-        {step === 'genital-pictogram' && (
-          <PictogramGrid
-            picks={getGenitalPictogramSet(merged.genitalia ?? null)}
-            selected={merged.genital_pictogram_key ?? null}
-            onSelect={(k) => update({ genital_pictogram_key: k })}
-          />
-        )}
-
-        {step === 'size' && (
-          <NumberPicker
-            label="Size (cm)"
-            options={SIZE_CM_OPTIONS}
-            value={merged.size_cm ?? null}
-            onSelect={(v) => update({ size_cm: v })}
-          />
-        )}
-
-        {step === 'angle' && (
-          <div className="grid grid-cols-2 sm:grid-cols-4 border-y border-border divide-x divide-border">
-            {angleOptions.map(({ key, label, deg, Picto }) => {
-              const selected = merged.erection_angle_deg === deg;
-              return (
-                <button
-                  key={key}
-                  onClick={() => update({ erection_angle_deg: deg })}
-                  className={`p-4 flex flex-col items-center gap-2 transition-colors ${
-                    selected ? 'bg-foreground/5' : 'hover:bg-muted/40'
-                  }`}
-                  aria-label={`Angle ${label}`}
-                  aria-pressed={selected}
-                >
-                  <Picto width={56} height={56} />
-                  <div className="text-xs text-muted-foreground">{label}</div>
-                </button>
-              );
-            })}
-          </div>
-        )}
-
-        {step === 'body-pictogram' && (
-          <PictogramGrid
-            picks={bodyPictograms}
-            selected={merged.body_pictogram_key ?? null}
-            onSelect={(k) => update({ body_pictogram_key: k })}
-          />
-        )}
-
-        {step === 'body-type' && (
-          <ChipPicker
-            options={BODY_TYPES as readonly string[]}
-            selected={merged.body_type ? [merged.body_type] : []}
-            onToggle={(v) => update({ body_type: v })}
-            single
-          />
-        )}
-
-        {step === 'age' && (
-          <ChipPicker
-            options={AGE_BANDS as readonly string[]}
-            selected={merged.age_band ? [merged.age_band] : []}
-            onToggle={(v) => update({ age_band: v })}
-            single
-          />
-        )}
-
-        {step === 'height' && (
-          <FlatField label="Height (cm)" htmlFor="h">
-            <Input
-              id="h"
-              type="number"
-              min={100}
-              max={250}
-              value={merged.height_cm ?? ''}
-              onChange={(e) =>
-                update({ height_cm: e.target.value ? Number(e.target.value) : null })
-              }
-              className="rounded-element max-w-xs"
+          {step === 'genital-pictogram' && (
+            <PictogramGrid
+              picks={getGenitalPictogramSet(merged.genitalia ?? null)}
+              selected={merged.genital_pictogram_key ?? null}
+              onSelect={(k) => update({ genital_pictogram_key: k })}
             />
-          </FlatField>
-        )}
+          )}
 
-        {step === 'role' && (
-          <ChipPicker
-            options={ROLES as readonly string[]}
-            selected={merged.role ?? []}
-            onToggle={(v) => update({ role: toggleIn(merged.role ?? [], v) })}
-          />
-        )}
+          {step === 'size' && (
+            <NumberPicker
+              label="Size (cm)"
+              options={SIZE_CM_OPTIONS}
+              value={merged.size_cm ?? null}
+              onSelect={(v) => update({ size_cm: v })}
+            />
+          )}
 
-        {step === 'into' && (
-          <ChipPicker
-            options={kinkVocab}
-            selected={merged.into_tags ?? []}
-            onToggle={(v) => update({ into_tags: toggleIn(merged.into_tags ?? [], v) })}
-          />
-        )}
+          {step === 'angle' && (
+            <div className="grid grid-cols-2 sm:grid-cols-4 border-y border-border divide-x divide-border">
+              {angleOptions.map(({ key, label, deg, Picto }) => {
+                const selected = merged.erection_angle_deg === deg;
+                return (
+                  <button
+                    key={key}
+                    onClick={() => update({ erection_angle_deg: deg })}
+                    className={`p-4 flex flex-col items-center gap-2 transition-colors ${
+                      selected ? 'bg-foreground/5' : 'hover:bg-muted/40'
+                    }`}
+                    aria-label={`Angle ${label}`}
+                    aria-pressed={selected}
+                  >
+                    <Picto width={56} height={56} />
+                    <div className="text-xs text-muted-foreground">{label}</div>
+                  </button>
+                );
+              })}
+            </div>
+          )}
 
-        {step === 'limits' && (
-          <ChipPicker
-            options={kinkTags?.length ? kinkVocab : (FALLBACK_LIMITS as readonly string[])}
-            selected={merged.limits ?? []}
-            onToggle={(v) => update({ limits: toggleIn(merged.limits ?? [], v) })}
-          />
-        )}
+          {step === 'body-pictogram' && (
+            <PictogramGrid
+              picks={bodyPictograms}
+              selected={merged.body_pictogram_key ?? null}
+              onSelect={(k) => update({ body_pictogram_key: k })}
+            />
+          )}
 
-        {step === 'safer-sex' && (
-          <ChipPicker
-            options={SAFER_SEX_PREFS as readonly string[]}
-            selected={merged.safer_sex_prefs ?? []}
-            onToggle={(v) =>
-              update({
-                safer_sex_prefs: toggleIn(merged.safer_sex_prefs ?? [], v),
-              })
-            }
-          />
-        )}
+          {step === 'body-type' && (
+            <ChipPicker
+              options={BODY_TYPES as readonly string[]}
+              selected={merged.body_type ? [merged.body_type] : []}
+              onToggle={(v) => update({ body_type: v })}
+              single
+            />
+          )}
 
-        {step === 'text' && (
-          <>
-            <FlatField label="About me (optional)" htmlFor="about">
-              <Textarea
-                id="about"
-                maxLength={1000}
-                placeholder="A few lines about you."
-                value={aboutText}
-                onChange={(e) => setAboutText(e.target.value)}
-                className="rounded-element"
+          {step === 'age' && (
+            <ChipPicker
+              options={AGE_BANDS as readonly string[]}
+              selected={merged.age_band ? [merged.age_band] : []}
+              onToggle={(v) => update({ age_band: v })}
+              single
+            />
+          )}
+
+          {step === 'height' && (
+            <FlatField label="Height (cm)" htmlFor="h">
+              <Input
+                id="h"
+                type="number"
+                min={100}
+                max={250}
+                value={merged.height_cm ?? ''}
+                onChange={(e) =>
+                  update({ height_cm: e.target.value ? Number(e.target.value) : null })
+                }
+                className="rounded-element max-w-xs"
               />
             </FlatField>
-            <FlatField label="Looking for (optional)" htmlFor="looking">
-              <Textarea
-                id="looking"
-                maxLength={500}
-                placeholder="What are you into right now?"
-                value={lookingText}
-                onChange={(e) => setLookingText(e.target.value)}
-                className="rounded-element"
-              />
-            </FlatField>
-          </>
-        )}
+          )}
 
-        {step === 'review' && (
-          <dl className="space-y-4 text-sm">
-            {merged.genitalia && <Row k="Genitalia" v={merged.genitalia} />}
-            {merged.size_cm && <Row k="Size" v={`${merged.size_cm} cm`} />}
-            {merged.erection_angle_deg !== undefined && merged.erection_angle_deg !== null && (
-              <Row k="Angle" v={`${merged.erection_angle_deg}°`} />
-            )}
-            {merged.body_type && <Row k="Body" v={merged.body_type} />}
-            {merged.age_band && <Row k="Age" v={merged.age_band} />}
-            {merged.height_cm && <Row k="Height" v={`${merged.height_cm} cm`} />}
-            {merged.role?.length ? <Row k="Role" v={merged.role.join(', ')} /> : null}
-          </dl>
-        )}
-      </FlatFieldGroup>
-    </StepperShell>
+          {step === 'role' && (
+            <ChipPicker
+              options={ROLES as readonly string[]}
+              selected={merged.role ?? []}
+              onToggle={(v) => update({ role: toggleIn(merged.role ?? [], v) })}
+            />
+          )}
+
+          {step === 'into' && (
+            <ChipPicker
+              options={kinkVocab}
+              selected={merged.into_tags ?? []}
+              onToggle={(v) => update({ into_tags: toggleIn(merged.into_tags ?? [], v) })}
+            />
+          )}
+
+          {step === 'limits' && (
+            <ChipPicker
+              options={kinkTags?.length ? kinkVocab : (FALLBACK_LIMITS as readonly string[])}
+              selected={merged.limits ?? []}
+              onToggle={(v) => update({ limits: toggleIn(merged.limits ?? [], v) })}
+            />
+          )}
+
+          {step === 'safer-sex' && (
+            <ChipPicker
+              options={SAFER_SEX_PREFS as readonly string[]}
+              selected={merged.safer_sex_prefs ?? []}
+              onToggle={(v) =>
+                update({
+                  safer_sex_prefs: toggleIn(merged.safer_sex_prefs ?? [], v),
+                })
+              }
+            />
+          )}
+
+          {step === 'text' && (
+            <>
+              <FlatField label="About me (optional)" htmlFor="about">
+                <Textarea
+                  id="about"
+                  maxLength={1000}
+                  placeholder="A few lines about you."
+                  value={aboutText}
+                  onChange={(e) => setAboutText(e.target.value)}
+                  className="rounded-element"
+                />
+              </FlatField>
+              <FlatField label="Looking for (optional)" htmlFor="looking">
+                <Textarea
+                  id="looking"
+                  maxLength={500}
+                  placeholder="What are you into right now?"
+                  value={lookingText}
+                  onChange={(e) => setLookingText(e.target.value)}
+                  className="rounded-element"
+                />
+              </FlatField>
+            </>
+          )}
+
+          {step === 'review' && (
+            <dl className="space-y-4 text-sm">
+              {merged.genitalia && <Row k="Genitalia" v={merged.genitalia} />}
+              {merged.size_cm && <Row k="Size" v={`${merged.size_cm} cm`} />}
+              {merged.erection_angle_deg !== undefined && merged.erection_angle_deg !== null && (
+                <Row k="Angle" v={`${merged.erection_angle_deg}°`} />
+              )}
+              {merged.body_type && <Row k="Body" v={merged.body_type} />}
+              {merged.age_band && <Row k="Age" v={merged.age_band} />}
+              {merged.height_cm && <Row k="Height" v={`${merged.height_cm} cm`} />}
+              {merged.role?.length ? <Row k="Role" v={merged.role.join(', ')} /> : null}
+            </dl>
+          )}
+        </FlatFieldGroup>
+      </StepperShell>
+    </>
   );
 }
 

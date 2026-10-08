@@ -9,6 +9,8 @@ export interface IntentPageLayoutProps {
   lede?: ReactNode;
   /** Scope controls (city picker, date presets) rendered under the hero. */
   scopeBar?: ReactNode;
+  /** Primary interactive surface rendered before the long-page section index. */
+  featured?: ReactNode;
   sections: SectionDef[];
   footer?: ReactNode;
   loading?: boolean;
@@ -18,6 +20,7 @@ export interface IntentPageLayoutProps {
   breadcrumbLabel: string;
   breadcrumbHref: string;
   heroSize?: 'sm' | 'md' | 'lg';
+  heroClassName?: string;
 }
 
 /**
@@ -41,6 +44,7 @@ export function IntentPageLayout({
   title,
   lede,
   scopeBar,
+  featured,
   sections,
   footer,
   loading = false,
@@ -49,6 +53,7 @@ export function IntentPageLayout({
   breadcrumbLabel,
   breadcrumbHref,
   heroSize = 'md',
+  heroClassName,
 }: IntentPageLayoutProps) {
   return (
     <EditorialDetailLayout
@@ -62,8 +67,16 @@ export function IntentPageLayout({
           {topNav}
           {/* `bare` — EditorialDetailLayout already puts this inside a
               PageContainer, and two nested containers double the gutter. */}
-          <PageHero bare eyebrow={eyebrow} title={title} lede={lede} size={heroSize} />
+          <PageHero
+            bare
+            eyebrow={eyebrow}
+            title={title}
+            lede={lede}
+            size={heroSize}
+            className={heroClassName}
+          />
           {scopeBar ? <div className="mt-6">{scopeBar}</div> : null}
+          {featured ? <div className="mt-8">{featured}</div> : null}
         </>
       }
       sections={sections}
