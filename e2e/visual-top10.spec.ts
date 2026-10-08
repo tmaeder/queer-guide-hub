@@ -58,6 +58,13 @@ const READY_SELECTOR: Record<string, string> = {
 };
 
 test.describe('Top-10 desktop visual baselines', () => {
+  // This suite owns public-page baselines. The chromium project inherits the
+  // admin storage state whenever E2E_ADMIN_* is available (as it is in the
+  // production nightly), which otherwise turns /trips into the signed-in
+  // workspace and compares its full-page height with the signed-out baseline.
+  // Keep the visual contract deterministic and avoid exercising account data.
+  test.use({ storageState: { cookies: [], origins: [] } });
+
   test.setTimeout(60_000);
 
   for (const route of ROUTES) {
