@@ -215,3 +215,101 @@ export function postalJobOutcome(
   if (geo?.postcode) return { disposition: 'done', filled: wrotePostal }
   return { disposition: 'park', filled: false }
 }
+
+// ── Photon (forward) ─────────────────────────────────────────────────────────
+//
+// Since 2026-09-24 public Nominatim answers 403 to every request from the
+// edge-function egress, so the forward pass asks Photon (komoot, OSM data).
+// Photon is NOT a drop-in replacement, and the difference is the reason the two
+// guards below exist. Measured live 2026-10-07:
+//
+//   "2496 Riva Road, Annapolis"   -> 2525, 2553, 2521 Riva Road (no 2496 at all)
+//   "Storegade 11, Vordingborg"   -> Storegade 11B, STEGE (a different town)
+//
+// Nominatim returns ZERO for an address it cannot find; Photon is a fuzzy
+// search engine and returns its nearest-looking neighbour. Both answers above
+// pass the country, postal (the row had none) and locality guards, so without
+// these two they would be written as the venue's coordinates.
+
+export interface PhotonFeature {
+  geometry?: { coordinates?: [number, number] }
+  properties?: Record<string, unknown>
+}
+
+/** Map a Photon feature onto the Nominatim shape every guard here already reads. */
+export function photonToNominatim(f: PhotonFeature): {
+  lat?: string; lon?: string; class?: string; type?: string; addresstype?: string
+  housenumber?: string; place_names: string[]
+  address: { city?: string; postcode?: string; country_code?: string }
+} {
+  const p = (f.properties ?? {}) as Record<string, string | undefined>
+  const [lon, lat] = f.geometry?.coordinates ?? []
+  const isSettlement = ['city', 'town', 'village'].includes(String(p.type ?? ''))
+  return {
+    lat: Number.isFinite(lat) ? String(lat) : undefined,
+    lon: Number.isFinite(lon) ? String(lon) : undefined,
+    class: p.osm_key,
+    type: p.osm_value,
+    // Photon's `type` is its layer (house, street, city, district, county…);
+    // the settlement/area layers are exactly the ones isLocalityFallback refuses.
+    addresstype: p.type,
+    housenumber: p.housenumber,
+    place_names: [p.city, isSettlement ? p.name : undefined, p.county, p.district, p.locality]
+      .filter((s): s is string => typeof s === 'string' && s.trim().length > 0),
+    address: {
+      city: p.city ?? (isSettlement ? p.name : undefined),
+      postcode: p.postcode,
+      country_code: p.countrycode ? String(p.countrycode).toLowerCase() : undefined,
+    },
+  }
+}
+
+/** Lowercase, strip diacritics and punctuation — "Zürich" and "Zurich" agree. */
+export function normPlace(s?: string | null): string {
+  return (s || '')
+    .normalize('NFD')
+    .replace(/[̀-ͯ]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, ' ')
+    .trim()
+}
+
+/**
+ * The street number the row asks for: the first number in the first comma
+ * clause that has one ("2496 Riva Road" → 2496, "Möhnestraße 59" → 59,
+ * "8/6-8 Si Lom 2" → 8). Null when the address carries no number.
+ */
+export function rowHouseNumber(address?: string | null): number | null {
+  for (const clause of (address || '').split(',')) {
+    const m = clause.match(/\d+/)
+    if (m) return parseInt(m[0], 10)
+  }
+  return null
+}
+
+/**
+ * True when the row names a street number and the hit is not that number. A hit
+ * with NO number when the row has one is a contradiction too: it is a street or
+ * area feature, and Photon reaching for one is how 2496 became 2525.
+ */
+export function houseNumberContradicts(address?: string | null, hitHouse?: string | null): boolean {
+  const want = rowHouseNumber(address)
+  if (want === null) return false
+  const m = (hitHouse || '').match(/\d+/)
+  if (!m) return true
+  return parseInt(m[0], 10) !== want
+}
+
+/**
+ * True when none of the hit's place names (city, county, district, locality)
+ * appears in what the row says about where it is. Stege is not in
+ * "Storegade 11, Vordingborg"; Annapolis is in "2496 Riva Road, Annapolis".
+ * A hit naming no place at all cannot be corroborated and is refused.
+ */
+export function placeContradicts(v: GeoVenue, placeNames: string[]): boolean {
+  const rowText = ` ${normPlace([v.address, v.city, v.postal_code].filter(Boolean).join(' '))} `
+  if (!rowText.trim()) return false
+  const names = placeNames.map(normPlace).filter((n) => n.length >= 3)
+  if (!names.length) return true
+  return !names.some((n) => rowText.includes(` ${n} `))
+}

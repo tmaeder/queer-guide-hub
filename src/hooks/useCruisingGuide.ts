@@ -60,7 +60,11 @@ async function searchSpots(args: {
     p_offset: args.offset,
   });
   if (error) throw error;
-  return data ?? [];
+  return (data ?? []).map((spot) => ({
+    ...spot,
+    latitude: spot.latitude == null ? null : Number(spot.latitude),
+    longitude: spot.longitude == null ? null : Number(spot.longitude),
+  }));
 }
 
 export function useCruisingSpotsList(
@@ -100,7 +104,7 @@ export function useCruisingMapSpots(
         search,
         bounds,
         mappedOnly: true,
-        limit: bounds ? 1200 : 500,
+        limit: 1200,
         offset: 0,
       });
       return rows.map(({ total_count: _totalCount, ...spot }) => spot);

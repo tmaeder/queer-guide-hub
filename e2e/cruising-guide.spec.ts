@@ -65,9 +65,18 @@ test.describe('cruising guide', () => {
     await expect(interactiveMap).toHaveAttribute('data-map-state', 'ready', { timeout: 20_000 });
     await expect
       .poll(async () => Number((await interactiveMap.getAttribute('data-map-spots')) ?? 0), {
-        message: 'Cruising map did not receive any viewport spots',
+        message: 'Cruising map did not receive any mapped spots',
         timeout: 30_000,
       })
+      .toBeGreaterThan(0);
+    await expect
+      .poll(
+        async () => Number((await interactiveMap.getAttribute('data-map-rendered-spots')) ?? 0),
+        {
+          message: 'Cruising map received spot data but did not render a visible spot feature',
+          timeout: 30_000,
+        },
+      )
       .toBeGreaterThan(0);
 
     const tileResponse = await firstTile;
@@ -114,15 +123,13 @@ test.describe('cruising guide', () => {
     );
     const filters = page.getByRole('region', { name: 'Discovery filters' });
     await expect(filters).toBeVisible();
-    await expect(filters.getByRole('button', { name: 'Role', exact: true })).toBeVisible();
+    await expect(filters.getByRole('group', { name: 'Role', exact: true })).toBeVisible();
     await expect(filters.getByRole('button', { name: 'Into', exact: true })).toBeVisible();
-    await expect(filters.getByRole('button', { name: 'Age', exact: true })).toBeVisible();
-    await expect(filters.getByRole('button', { name: 'Body', exact: true })).toBeVisible();
-    await expect(page.getByRole('button', { name: 'Top', exact: true })).toHaveCount(0);
+    await expect(filters.getByRole('group', { name: 'Age', exact: true })).toBeVisible();
+    await expect(filters.getByRole('group', { name: 'Body', exact: true })).toBeVisible();
+    await expect(filters.getByRole('button', { name: 'Top', exact: true })).toBeVisible();
 
-    await filters.getByRole('button', { name: 'Role', exact: true }).click();
-    await page.getByRole('button', { name: 'Top', exact: true }).click();
-    await page.keyboard.press('Escape');
+    await filters.getByRole('button', { name: 'Top', exact: true }).click();
     await expect(filters.getByRole('button', { name: 'Remove Top filter' })).toBeVisible();
     await filters.getByRole('button', { name: 'Remove Top filter' }).click();
 
@@ -137,14 +144,10 @@ test.describe('cruising guide', () => {
     ).toBeVisible();
     await filters.getByRole('button', { name: 'Remove Rope bondage / shibari filter' }).click();
 
-    await filters.getByRole('button', { name: 'Age', exact: true }).click();
-    await expect(page.getByRole('slider', { name: 'Minimum age band' })).toBeVisible();
-    await expect(page.getByRole('slider', { name: 'Maximum age band' })).toBeVisible();
-    await page.getByRole('button', { name: 'Any age' }).click();
+    await expect(filters.getByRole('slider', { name: 'Minimum age band' })).toBeVisible();
+    await expect(filters.getByRole('slider', { name: 'Maximum age band' })).toBeVisible();
 
-    await filters.getByRole('button', { name: 'Body', exact: true }).click();
-    await expect(page.getByRole('button', { name: 'Bear', exact: true })).toBeVisible();
-    await page.keyboard.press('Escape');
+    await expect(filters.getByRole('button', { name: 'Bear', exact: true })).toBeVisible();
     await expect(page.getByText('Something went wrong')).toHaveCount(0);
   });
 });

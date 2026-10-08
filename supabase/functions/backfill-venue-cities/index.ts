@@ -11,7 +11,11 @@ import {
   postalContradicts,
   postalJobOutcome,
   stampGeocode,
+  houseNumberContradicts,
+  photonToNominatim,
+  placeContradicts,
   type CountryRef,
+  type PhotonFeature,
   type GeoVenue,
 } from './geocode-guard.ts'
 
@@ -232,6 +236,30 @@ interface ForwardOutcome {
   country?: CountryRef | null
 }
 
+// A geocoder that could not be reached has not answered. These rows are retried,
+// never stamped as refused — burning a venue on a 403 or a timeout is how the
+// forward cron spent 13 days "succeeding" against a blocked Nominatim.
+function isTransportFailure(reason?: string | null): reason is string {
+  return !!reason && (reason.startsWith('nominatim_error') || reason.startsWith('photon_error'))
+}
+
+async function photonSearch(q: string): Promise<PhotonFeature[]> {
+  const url = `${PHOTON_SEARCH}?q=${encodeURIComponent(q)}&limit=10`
+  const controller = new AbortController()
+  const timer = setTimeout(() => controller.abort(), 8000)
+  try {
+    const res = await fetch(url, {
+      signal: controller.signal,
+      headers: { 'User-Agent': 'QueerGuide/1.0 (https://queer.guide)' },
+    })
+    if (!res.ok) throw new Error(`photon_error_${res.status}`)
+    const j = await res.json() as { features?: PhotonFeature[] }
+    return j.features ?? []
+  } finally {
+    clearTimeout(timer)
+  }
+}
+
 async function forwardGeocode(
   supabase: ReturnType<typeof getServiceClient>,
   v: GeoVenue,
@@ -253,18 +281,22 @@ async function forwardGeocode(
   for (const q of queries) {
     if (sent > 0) await sleep(SLEEP_MS)
     sent++
-    // limit=5 + countrycodes: the top hit is not privileged, it is the first
-    // CANDIDATE. A lower-ranked hit whose postcode matches the row is better
-    // evidence than a higher-ranked one that contradicts it.
-    const url = `${NOMINATIM_BASE}/search?format=json&q=${encodeURIComponent(q)}&limit=5&addressdetails=1`
-      + (country?.code ? `&countrycodes=${country.code.toLowerCase()}` : '')
-    const res = await fetch(url, { headers: nominatimHeaders() })
-    if (!res.ok) return { ok: false, reason: `nominatim_error_${res.status}`, query: q, country }
+    // Photon, not Nominatim: public Nominatim has answered 403 to the edge
+    // egress since 2026-09-24. Photon has no country filter, so limit=10 and
+    // the country guard below does the filtering. The top hit is not
+    // privileged, it is the first CANDIDATE. No `lang`: local names, because
+    // the row's own address is written in the local language.
+    let features: PhotonFeature[]
+    try {
+      features = await photonSearch(q)
+    } catch (e) {
+      const msg = (e as Error).message
+      return { ok: false, reason: msg.startsWith('photon_error') ? msg : `photon_error_${msg}`, query: q, country }
+    }
+    if (!features.length) continue
 
-    const arr = (await res.json()) as NominatimResult[]
-    if (!arr?.length) continue
-
-    for (const hit of arr) {
+    for (const f of features) {
+      const hit = photonToNominatim(f)
       const lat = hit.lat ? parseFloat(hit.lat) : NaN
       const lon = hit.lon ? parseFloat(hit.lon) : NaN
       if (!Number.isFinite(lat) || !Number.isFinite(lon) || (lat === 0 && lon === 0)) continue
@@ -283,7 +315,17 @@ async function forwardGeocode(
         lastReason = `locality_fallback:${hit.addresstype || hit.class || '?'}`
         continue
       }
-      return { ok: true, hit, lat, lon, query: q, country }
+      // Photon is fuzzy where Nominatim was exact: these two refuse the
+      // "nearest-looking neighbour" answers (2525 for 2496; Stege for Vordingborg).
+      if (houseNumberContradicts(v.address, hit.housenumber)) {
+        lastReason = `housenumber_mismatch:${hit.housenumber || 'none'}`
+        continue
+      }
+      if (placeContradicts(v, hit.place_names)) {
+        lastReason = `place_mismatch:${hit.place_names[0] || '?'}`
+        continue
+      }
+      return { ok: true, hit: hit as NominatimResult, lat, lon, query: q, country }
     }
   }
 
@@ -480,6 +522,40 @@ async function processForwardRepair(
 // The old loop selected `city_id is null order by id` with no visit record and
 // re-asked every unplaceable venue on every run, and linked whatever city the
 // resolver returned without comparing it to the coordinates that asked.
+//
+// It asks PHOTON, not Nominatim. Measured 2026-10-07: public Nominatim answers
+// 403 to every request from the edge-function egress (since 2026-09-24 — the
+// forward cron has been 100% 403 for 13 days while booking `success`), while the
+// same request from the database egress answers 200. Photon (OSM data, same
+// place hierarchy) is reachable from the edge and already serves the postal
+// queue. A 403/429/5xx is still a transport error: it ends the batch unstamped.
+
+interface PhotonPlace { city: string | null; countryCode: string | null }
+
+// Photon names the municipality in `city`; for a feature that IS a settlement
+// it is `name` with type city/town/village. `district`/`locality` are parts of a
+// city and are never used — they are what turns a Recoleta venue into "Balvanera".
+async function photonReverseCity(lat: number, lon: number): Promise<PhotonPlace> {
+  const url = `${PHOTON_REVERSE}?lat=${lat}&lon=${lon}&lang=en`
+  const controller = new AbortController()
+  const timer = setTimeout(() => controller.abort(), 8000)
+  try {
+    const res = await fetch(url, {
+      signal: controller.signal,
+      headers: { 'User-Agent': 'QueerGuide/1.0 (https://queer.guide)' },
+    })
+    if (!res.ok) throw new Error(`photon_${res.status}`)
+    const j = await res.json() as { features?: Array<{ properties?: Record<string, string> }> }
+    const p = j.features?.[0]?.properties ?? {}
+    const settlement = ['city', 'town', 'village'].includes(p.type ?? '') ? p.name : undefined
+    return {
+      city: (p.city || settlement || null)?.trim() || null,
+      countryCode: p.countrycode ? p.countrycode.toUpperCase() : null,
+    }
+  } finally {
+    clearTimeout(timer)
+  }
+}
 
 async function processReverse(
   supabase: ReturnType<typeof getServiceClient>,
@@ -497,26 +573,18 @@ async function processReverse(
     if (Date.now() - startedAt > MAX_RUN_MS) break
     let transportError: string | null = null
     try {
-      const url = `${NOMINATIM_BASE}/reverse?format=json&lat=${venue.latitude}&lon=${venue.longitude}&zoom=10&addressdetails=1`
-      const res = await fetch(url, { headers: nominatimHeaders() })
-      if (!res.ok) {
-        transportError = `nominatim_error_${res.status}`
-      } else {
-        const data = await res.json() as NominatimResult
-        const cityName = data.address ? extractCity(data.address) : null
-        const countryCode = data.address?.country_code?.toUpperCase() || null
-        const cityMatch = cityName
-          ? await matchCity(supabase, cityName, countryCode, { lat: Number(venue.latitude), lon: Number(venue.longitude) })
-          : null
-        const { data: status, error: applyErr } = await supabase.rpc('venue_apply_reverse_city', {
-          p_venue_id: venue.id,
-          p_city_name: cityName,
-          p_city_id: cityMatch?.id ?? null,
-          p_country_code: countryCode,
-        })
-        if (applyErr) throw applyErr
-        results.push({ id: venue.id, status: String(status), city_name: cityName || undefined, city_id: cityMatch?.id })
-      }
+      const { city: cityName, countryCode } = await photonReverseCity(Number(venue.latitude), Number(venue.longitude))
+      const cityMatch = cityName
+        ? await matchCity(supabase, cityName, countryCode, { lat: Number(venue.latitude), lon: Number(venue.longitude) })
+        : null
+      const { data: status, error: applyErr } = await supabase.rpc('venue_apply_reverse_city', {
+        p_venue_id: venue.id,
+        p_city_name: cityName,
+        p_city_id: cityMatch?.id ?? null,
+        p_country_code: countryCode,
+      })
+      if (applyErr) throw applyErr
+      results.push({ id: venue.id, status: String(status), city_name: cityName || undefined, city_id: cityMatch?.id })
     } catch (err) {
       transportError = `error: ${(err as Error).message}`
     }
@@ -524,7 +592,7 @@ async function processReverse(
       results.push({ id: venue.id, status: transportError })
       break
     }
-    await sleep(SLEEP_MS)
+    await sleep(PHOTON_INTERVAL_MS)
   }
 
   const { count } = await supabase
@@ -624,7 +692,7 @@ async function processForward(
     try {
       const outcome = await forwardGeocode(supabase, venue as GeoVenue)
 
-      if (!outcome.ok && outcome.reason?.startsWith('nominatim_error')) {
+      if (!outcome.ok && isTransportFailure(outcome.reason)) {
         // Transport failure, not an answer. Leave geocode_attempted alone so
         // the row is retried — marking it would burn a venue on a 503.
         results.push({ id: venue.id, status: outcome.reason })
@@ -859,7 +927,7 @@ async function processSingleVenue(
       const outcome = await forwardGeocode(supabase, venue as GeoVenue)
       if (outcome.ok) {
         nominatimData = outcome.hit!
-      } else if (outcome.reason?.startsWith('nominatim_error')) {
+      } else if (isTransportFailure(outcome.reason)) {
         return { venue_id: venueId, status: outcome.reason }
       } else {
         await supabase.from('venues').update({
@@ -1017,6 +1085,7 @@ async function processSingleEvent(
 // residue: rows whose city has no region, or which have no city link at all.
 
 const PHOTON_REVERSE = Deno.env.get('PHOTON_REVERSE_URL') || 'https://photon.komoot.io/reverse'
+const PHOTON_SEARCH = Deno.env.get('PHOTON_SEARCH_URL') || 'https://photon.komoot.io/api'
 const PHOTON_INTERVAL_MS = Number(Deno.env.get('PHOTON_INTERVAL_MS') || 1100)
 
 // The attempt ceiling at which a row is "parked": the drain stops selecting it
@@ -1290,7 +1359,7 @@ Deno.serve(async (req) => {
     // leaves 13 rows unaccounted for and reads as "this job does nothing".
     const geocoded = result.results.filter(r => ['geocoded_no_city_match', 'coords_only', 'city_text_only', 'coords_filled'].includes(r.status)).length
     const skipped = result.results.filter(r => ['no_results', 'no_address', 'no_city_in_response', 'no_city_match', 'already_linked'].includes(r.status)).length
-    const errors = result.results.filter(r => r.status.startsWith('error') || r.status.startsWith('nominatim_error')).length
+    const errors = result.results.filter(r => r.status.startsWith('error') || isTransportFailure(r.status)).length
     // Refusals are their OWN number, never folded into `skipped`. A row the
     // geocoder contradicted and a row the geocoder never heard of are different
     // findings: the first says our data disagrees with the world, and a rising
