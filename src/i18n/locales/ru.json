@@ -2953,8 +2953,7 @@
         "language": "Язык",
         "currency": "Валюта",
         "bestTime": "Лучшее время",
-        "airport": "Аэропорт",
-        "nearestAirport": "[RU] Nearest airport"
+        "airport": "Аэропорт"
       },
       "eyebrow": "[RU] City",
       "sections": "[RU] Sections",
@@ -3005,15 +3004,14 @@
         "sisterCities": "[RU] Sister cities"
       },
       "travel": {
-        "majorAirport": "[RU] Major airport",
-        "nearestAirport": "[RU] Nearest airport",
-        "allCodes": "[RU] All airport codes",
         "lines": "[RU] Lines",
         "networkCaption": "[RU] Rapid-transit lines, drawn from OpenStreetMap. Schematic, not to scale.",
         "gettingAround": "[RU] Getting around",
         "noDealsTitle": "[RU] We don't promote travel deals for destinations where LGBTQ+ people face criminal penalties.",
         "noDealsBody": "[RU] If you need to travel to {{city}}, read the safety and rights section first and use the trip planner — it includes a safety briefing for high-risk destinations.",
-        "otherNearby": "[RU] Other airports nearby"
+        "airport": "Аэропорт",
+        "noAirport": "Нет",
+        "nearestAirports": "Ближайшие аэропорты"
       },
       "endOfLine": {
         "eyebrow": "[RU] End of line",
