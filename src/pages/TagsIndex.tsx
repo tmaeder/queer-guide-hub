@@ -13,7 +13,7 @@
  * /organizations own it as they already did.
  *
  * Structure:
- *   masthead → ink scale-board → [taxonomy rail | spine + A–Z + results]
+ *   compact masthead → [taxonomy rail | spine + A–Z + definitions]
  *   → end of line
  *
  * Two things worth knowing before editing:
@@ -39,7 +39,6 @@ import { useSafeMode } from '@/providers/SafeModeProvider';
 import { useMeta } from '@/hooks/useMeta';
 import { PageContainer, STICKY_RAIL_UNDER_HEADER } from '@/components/layout/PageContainer';
 import { cn } from '@/lib/utils';
-import { Eyebrow } from '@/components/ui/Eyebrow';
 import { RouteBullet } from '@/components/transit/RouteBullet';
 import { TrackLoader } from '@/components/transit/TrackLoader';
 import { getCategoryShortName, parentOrder } from '@/components/resources/categoryMeta';
@@ -381,10 +380,7 @@ export default function TagsIndex() {
     // until the real one loads — honest, and it stops the heading moving.
     return (
       <PageContainer as="header">
-        <Eyebrow variant="kicker" as="div">
-          {t('tags.hero.eyebrow', 'Glossary')}
-        </Eyebrow>
-        <h1 className="mt-6 text-hero leading-[0.95]">{title}</h1>
+        <h1 className="text-display leading-tight md:text-hero">{title}</h1>
         <div className="mt-10">
           <TrackLoader label={t('tags.loading', 'Loading the glossary')} />
         </div>
@@ -421,11 +417,8 @@ export default function TagsIndex() {
   return (
     <>
       <PageContainer as="header" className="pb-0">
-        <Eyebrow variant="kicker" as="div">
-          {t('tags.hero.eyebrow', 'Glossary')}
-        </Eyebrow>
-        <h1 className="mt-6 text-hero leading-[0.95]">{title}</h1>
-        <p className="mt-6 max-w-reading text-body-lg leading-relaxed text-muted-foreground">
+        <h1 className="text-display leading-tight md:text-hero">{title}</h1>
+        <p className="mt-4 max-w-reading text-body-lg leading-relaxed text-muted-foreground">
           {scope
             ? t('tags.category.lede', 'Every term filed under {{name}}.', { name: scope.name })
             : t(
@@ -433,51 +426,29 @@ export default function TagsIndex() {
                 'Every word the guide uses, defined — and everything tagged with it.',
               )}
         </p>
-        <p className="mt-6 flex items-center gap-2 text-13 tabular-nums text-muted-foreground">
-          <RouteBullet type="tag" size={30} />
-          {t('tags.hero.legend', '{{terms}} terms · {{lines}} lines · {{stops}} stops', {
-            terms: entries.length,
-            lines: parentOrder.length,
-            stops: stopCount,
-          })}
-        </p>
+        {!scope && (
+          <p className="mt-4 flex items-center gap-2 text-13 tabular-nums text-muted-foreground">
+            <RouteBullet type="tag" size={30} />
+            {t('tags.hero.legend', '{{terms}} terms · {{lines}} lines · {{stops}} stops', {
+              terms: entries.length,
+              lines: parentOrder.length,
+              stops: stopCount,
+            })}
+          </p>
+        )}
       </PageContainer>
 
-      {!scope && (
-        <div className="mt-10 overflow-hidden rounded-panel bg-foreground text-background">
-          <PageContainer>
-            <Eyebrow as="p" className="text-background/70">
-              {t('tags.stats.kicker', 'The corpus')}
-            </Eyebrow>
-            <dl className="mt-6 grid grid-cols-3 gap-x-6 gap-y-8">
-              {[
-                { value: entries.length, label: t('tags.stats.terms', 'Terms') },
-                { value: parentOrder.length, label: t('tags.stats.lines', 'Lines') },
-                { value: stopCount, label: t('tags.stats.stops', 'Stops') },
-              ].map((s) => (
-                <div key={s.label}>
-                  <dd className="font-display text-display leading-none tabular-nums md:text-hero">
-                    {s.value}
-                  </dd>
-                  <dt className="mt-2 text-2xs uppercase tracking-label text-background/70">
-                    {s.label}
-                  </dt>
-                </div>
-              ))}
-            </dl>
-          </PageContainer>
-        </div>
-      )}
-
       <PageContainer as="section" flush className="pb-16 md:pb-24">
-        <div className="mt-12 grid grid-cols-1 gap-8 lg:grid-cols-[224px_minmax(0,1fr)]">
+        <div className="mt-8 grid grid-cols-1 gap-6 lg:grid-cols-[256px_minmax(0,1fr)] lg:gap-8">
           <CategoryTreeRail
+            key={`desktop-${categorySlug ?? 'all'}`}
             tree={categoriesTree}
             activeSlug={categorySlug ?? null}
             paramsSuffix={paramsSuffix}
             className={cn('sticky hidden self-start lg:block', STICKY_RAIL_UNDER_HEADER)}
           />
           <CategoryTreeRail
+            key={`mobile-${categorySlug ?? 'all'}`}
             tree={categoriesTree}
             activeSlug={categorySlug ?? null}
             paramsSuffix={paramsSuffix}
@@ -510,7 +481,7 @@ export default function TagsIndex() {
                 letter={state.letter}
                 counts={letterCounts}
                 onChange={(letter) => patch({ letter })}
-                className="mt-6"
+                className="mt-4"
               />
             )}
 
@@ -551,6 +522,13 @@ export default function TagsIndex() {
                   <p className="mt-2 text-13 text-muted-foreground">
                     {t('tags.empty.description', 'Try a broader letter, line, or search.')}
                   </p>
+                  <button
+                    type="button"
+                    onClick={() => patch({ ...DEFAULT_TAGS_STATE, view: state.view })}
+                    className="mt-4 min-h-11 rounded-element bg-foreground px-4 py-2 text-13 font-medium text-background focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+                  >
+                    {t('tags.filter.reset', 'Reset filters')}
+                  </button>
                 </div>
               ) : (
                 <TagResults

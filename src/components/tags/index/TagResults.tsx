@@ -11,8 +11,8 @@
  * honest version — and with a line or a letter selected the set is almost
  * always under the cap anyway.
  *
- * Four columns, not five: the 224px taxonomy rail takes the width the fifth
- * would have needed.
+ * One to three columns leave readable space for definitions alongside the
+ * desktop taxonomy rail.
  */
 
 import { useState, Suspense, lazy } from 'react';
@@ -29,11 +29,11 @@ import type { CentralizedTag } from '@/hooks/useCentralizedTags';
 const TagRelationshipGraph = lazy(() => import('@/components/tags/TagRelationshipGraph'));
 
 const GRID_CLASS =
-  'grid grid-cols-2 gap-4 pb-4 sm:grid-cols-3 md:grid-cols-4 md:pb-6 [&>*]:min-w-0';
+  'grid grid-cols-1 gap-4 pb-4 sm:grid-cols-2 xl:grid-cols-3 md:pb-6 [&>*]:min-w-0';
 const GRID_BREAKPOINTS = [
-  { minWidth: 0, columns: 2 },
-  { minWidth: 640, columns: 3 },
-  { minWidth: 768, columns: 4 },
+  { minWidth: 0, columns: 1 },
+  { minWidth: 640, columns: 2 },
+  { minWidth: 1280, columns: 3 },
 ];
 const LIST_CLASS = 'grid grid-cols-1 gap-2 pb-4';
 const LIST_BREAKPOINTS = [{ minWidth: 0, columns: 1 }];
@@ -153,14 +153,13 @@ export function TagResults({
       rowClassName={GRID_CLASS}
       estimateRowHeight={268}
       itemKey={(tag) => tag.id}
-      renderItem={(tag, i) => (
+      renderItem={(tag) => (
         <TagIndexCard
           tag={tag}
           uses={usageCounts[tag.name] || 0}
           line={lineFor(tag)}
           categoryLabel={categoryLabelFor(tag)}
           aliasMatch={aliasIds?.has(tag.id)}
-          index={i}
         />
       )}
     />

@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, within } from '@testing-library/react';
+import { fireEvent, render, screen, within } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { MemoryRouter, Routes, Route } from 'react-router';
 import { SafeModeProvider } from '@/providers/SafeModeProvider';
@@ -181,6 +181,17 @@ describe('TagsIndex', () => {
     expect(screen.queryByRole('link', { name: /Bear/ })).not.toBeInTheDocument();
     // The ink scale-board is site-wide; restating it on a category is a lie.
     expect(screen.queryByText(/the corpus/i)).not.toBeInTheDocument();
+  });
+
+  it('opens the active category stops after navigating from the glossary', () => {
+    renderAt('/tags');
+    const desktopRail = () => within(screen.getAllByRole('navigation', { name: 'Topic lines' })[0]);
+    fireEvent.click(desktopRail().getByRole('link', { name: /^Identity/ }));
+    expect(desktopRail().getByRole('button', { name: /Hide stops on/ })).toHaveAttribute(
+      'aria-expanded',
+      'true',
+    );
+    expect(desktopRail().getByRole('link', { name: /^Expression/ })).toBeInTheDocument();
   });
 
   it('puts ONLY the count in the live region, never the grid itself', () => {
