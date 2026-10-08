@@ -332,6 +332,7 @@ export default function People() {
     <>
       <IntentPageLayout
         topNav={<PeopleNav />}
+        sectionNavClassName="border-b-0"
         heroSize="sm"
         heroClassName="py-4 md:py-6"
         breadcrumbLabel={t('header.intents.meet.label', 'Meet people')}
