@@ -5100,5 +5100,112 @@
       "you": "あなた",
       "them": "相手"
     }
+  },
+  "contributeForm": {
+    "unknownType": "不明な投稿タイプ",
+    "unknownBody": "投稿タイプ「{{type}}」には対応していません。",
+    "backHub": "情報提供に戻る",
+    "signInRequired": "ログインが必要です",
+    "authBody": "ディレクトリ情報を追加する前にログインしてください。ゲストはフォームを利用できません。",
+    "submittedBody": "{{type}}を送信しました。公開前に確認されます。",
+    "submitMore": "続けて投稿",
+    "submitAnother": "別の{{type}}を投稿",
+    "allSubmissions": "すべての投稿",
+    "submitType": "{{type}}を投稿",
+    "returnStep": "手順{{step}}に戻る",
+    "step": "手順{{step}}：{{label}}",
+    "fixErrors": "続行するには次の項目を修正してください：",
+    "cancel": "キャンセル",
+    "next": "次へ",
+    "types": {
+      "venue": "会場",
+      "event": "イベント",
+      "product": "商品",
+      "personality": "人物",
+      "hotel": "ホテル / BnB",
+      "tag": "タグ",
+      "news": "ニュース記事",
+      "place": "場所"
+    },
+    "steps": {
+      "basics": "基本情報",
+      "location": "場所",
+      "contact": "連絡先",
+      "when-where": "日時と場所",
+      "details": "詳細",
+      "suggest": "提案"
+    }
+  },
+  "contribute": {
+    "trigger": "Queer Guideに情報を提供",
+    "title": "Queer Guideに情報を提供",
+    "subtitle": "気づいたことを共有したり、掲載情報を修正したり、ガイドの充実にご協力ください。",
+    "eyebrow": "情報提供",
+    "common": {
+      "failed": "送信できませんでした",
+      "tryAgain": "もう一度お試しください。",
+      "done": "完了",
+      "emailOptional": "メール（任意）",
+      "emailPlaceholder": "確認のためご連絡する場合があります",
+      "back": "戻る",
+      "submitting": "送信中…",
+      "submit": "送信"
+    },
+    "chooser": {
+      "feedbackTitle": "問題やアイデアを報告",
+      "feedbackBody": "サイトや利用体験についてご意見をお寄せください。",
+      "correctionTitle": "このページを修正",
+      "correctionBody": "古い情報、閉店、誤りをお知らせください。",
+      "addTitle": "新しい情報を追加",
+      "addBody": "会場、イベント、商品、人物、記事を投稿できます。",
+      "scanTitle": "フライヤーやリンクをスキャン",
+      "scanBody": "ファイルやウェブページから複数の投稿を抽出します。",
+      "contactTitle": "チームに連絡",
+      "contactBody": "アカウントのサポート、モデレーション、提携、取材、その他の非公開メッセージ。"
+    },
+    "feedback": {
+      "heading": "問題を報告、またはアイデアを共有",
+      "successToast": "フィードバックを送信しました。ありがとうございます。",
+      "thanks": "ありがとうございます。",
+      "successBody": "ご意見はQueer Guideの改善に役立ちます。",
+      "category": "フィードバックの種類",
+      "categories": {
+        "bug": "不具合",
+        "idea": "アイデア",
+        "improvement": "改善",
+        "content-idea": "コンテンツ案"
+      },
+      "title": "タイトル",
+      "titlePlaceholder": "簡単な要約",
+      "description": "詳細",
+      "descriptionPlaceholder": "詳しく教えてください…",
+      "includeScreenshot": "このページのスクリーンショットを添付",
+      "screenshotPreview": "スクリーンショットのプレビュー",
+      "contextNote": "現在のURL、ブラウザ情報、最近のエラーが自動で含まれます。"
+    },
+    "correction": {
+      "heading": "このページを修正",
+      "successToast": "修正案を送信しました。ありがとうございます。",
+      "thanks": "ありがとうございます。",
+      "successBody": "編集チームが修正内容を確認します。",
+      "thisPage": "このページ",
+      "wrong": "どこが間違っていますか？",
+      "replacement": "正しくはどのような内容ですか？"
+    },
+    "auth": {
+      "title": "ログインして情報を提供",
+      "body": "ディレクトリ情報の追加にはアカウントが必要です。",
+      "scanBody": "スキャンと投稿にはアカウントが必要です。",
+      "cta": "ログインまたはアカウント作成"
+    },
+    "add": {
+      "heading": "新しい情報を追加"
+    },
+    "scan": {
+      "heading": "フライヤーやリンクをスキャン",
+      "submitted": "{{count}}件を送信しました",
+      "linked": "{{count}}件を既存の項目に関連付けました",
+      "reviewNote": "投稿は公開前に確認されます。"
+    }
   }
 }

@@ -5102,5 +5102,112 @@
       "you": "Du",
       "them": "Die andere Person"
     }
+  },
+  "contributeForm": {
+    "unknownType": "Unbekannte Einreichungsart",
+    "unknownBody": "Die Einreichungsart „{{type}}“ wird nicht unterstützt.",
+    "backHub": "Zurück zu den Beiträgen",
+    "signInRequired": "Anmeldung erforderlich",
+    "authBody": "Melde dich an, bevor du Verzeichnisinhalte hinzufügst. Das Formular ist für Gäste nicht verfügbar.",
+    "submittedBody": "Dein Beitrag „{{type}}“ wurde gesendet und wird vor der Veröffentlichung geprüft.",
+    "submitMore": "Weitere Beiträge",
+    "submitAnother": "Weitere Einreichung: {{type}}",
+    "allSubmissions": "Alle Einreichungen",
+    "submitType": "{{type}} einreichen",
+    "returnStep": "Zurück zu Schritt {{step}}",
+    "step": "Schritt {{step}}: {{label}}",
+    "fixErrors": "Bitte korrigiere Folgendes:",
+    "cancel": "Abbrechen",
+    "next": "Weiter",
+    "types": {
+      "venue": "Ort",
+      "event": "Veranstaltung",
+      "product": "Produkt",
+      "personality": "Person",
+      "hotel": "Hotel / BnB",
+      "tag": "Tag",
+      "news": "Nachrichtenartikel",
+      "place": "Örtlichkeit"
+    },
+    "steps": {
+      "basics": "Grundlagen",
+      "location": "Standort",
+      "contact": "Kontakt",
+      "when-where": "Wann und wo",
+      "details": "Details",
+      "suggest": "Vorschlag"
+    }
+  },
+  "contribute": {
+    "trigger": "Zu Queer Guide beitragen",
+    "title": "Zu Queer Guide beitragen",
+    "subtitle": "Teile uns mit, was dir aufgefallen ist, korrigiere einen Eintrag oder hilf dem Guide zu wachsen.",
+    "eyebrow": "Mitmachen",
+    "common": {
+      "failed": "Einreichung fehlgeschlagen",
+      "tryAgain": "Bitte versuche es erneut.",
+      "done": "Fertig",
+      "emailOptional": "E-Mail (optional)",
+      "emailPlaceholder": "Damit wir nachfragen können",
+      "back": "Zurück",
+      "submitting": "Wird gesendet…",
+      "submit": "Senden"
+    },
+    "chooser": {
+      "feedbackTitle": "Problem oder Idee melden",
+      "feedbackBody": "Teile Feedback zur Website oder zu deiner Erfahrung.",
+      "correctionTitle": "Etwas auf dieser Seite korrigieren",
+      "correctionBody": "Sag uns, was veraltet, geschlossen oder falsch ist.",
+      "addTitle": "Etwas Neues hinzufügen",
+      "addBody": "Reiche einen Ort, ein Event, ein Produkt, eine Person oder einen Artikel ein.",
+      "scanTitle": "Flyer oder Link scannen",
+      "scanBody": "Extrahiere mehrere Einreichungen aus Dateien oder einer Webseite.",
+      "contactTitle": "Team kontaktieren",
+      "contactBody": "Kontohilfe, Moderation, Partnerschaften, Presse oder eine andere private Nachricht."
+    },
+    "feedback": {
+      "heading": "Problem melden oder Idee teilen",
+      "successToast": "Feedback gesendet. Danke!",
+      "thanks": "Danke!",
+      "successBody": "Dein Feedback hilft, Queer Guide zu verbessern.",
+      "category": "Welche Art von Feedback?",
+      "categories": {
+        "bug": "Fehler",
+        "idea": "Idee",
+        "improvement": "Verbesserung",
+        "content-idea": "Inhaltsidee"
+      },
+      "title": "Titel",
+      "titlePlaceholder": "Kurze Zusammenfassung",
+      "description": "Beschreibung",
+      "descriptionPlaceholder": "Erzähl uns mehr…",
+      "includeScreenshot": "Screenshot dieser Seite mitsenden",
+      "screenshotPreview": "Screenshot-Vorschau",
+      "contextNote": "Automatisch enthalten: aktuelle Seiten-URL, Browserinformationen und letzte Fehler."
+    },
+    "correction": {
+      "heading": "Etwas auf dieser Seite korrigieren",
+      "successToast": "Korrektur gesendet. Danke!",
+      "thanks": "Danke!",
+      "successBody": "Unsere Redaktion prüft deine Korrektur.",
+      "thisPage": "Diese Seite",
+      "wrong": "Was ist falsch?",
+      "replacement": "Was sollte stattdessen dort stehen?"
+    },
+    "auth": {
+      "title": "Zum Mitmachen anmelden",
+      "body": "Zum Hinzufügen von Verzeichnisinhalten ist ein Konto erforderlich.",
+      "scanBody": "Zum Scannen und Einreichen ist ein Konto erforderlich.",
+      "cta": "Anmelden oder Konto erstellen"
+    },
+    "add": {
+      "heading": "Etwas Neues hinzufügen"
+    },
+    "scan": {
+      "heading": "Flyer oder Link scannen",
+      "submitted": "{{count}} Eintrag gesendet",
+      "linked": "{{count}} mit einem bestehenden Eintrag verknüpft",
+      "reviewNote": "Einreichungen werden vor der Veröffentlichung geprüft."
+    }
   }
 }
