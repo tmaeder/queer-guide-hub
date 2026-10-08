@@ -28,9 +28,12 @@ export default function FeedbackForm({ screenshotBlob, onCancel, onDone }: Feedb
   const [form, setForm] = useState(EMPTY_FORM);
   const [status, setStatus] = useState<'idle' | 'submitting' | 'submitted'>('idle');
   const [includeScreenshot, setIncludeScreenshot] = useState(Boolean(user && screenshotBlob));
+  // The preview only renders for signed-in users (anonymous feedback never
+  // uploads a screenshot), so an anonymous visitor gets no object URL at all.
+  const canAttachScreenshot = Boolean(user && screenshotBlob);
   const screenshotUrl = useMemo(
-    () => (screenshotBlob ? URL.createObjectURL(screenshotBlob) : null),
-    [screenshotBlob],
+    () => (canAttachScreenshot && screenshotBlob ? URL.createObjectURL(screenshotBlob) : null),
+    [canAttachScreenshot, screenshotBlob],
   );
 
   useEffect(
