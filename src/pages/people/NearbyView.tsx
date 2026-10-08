@@ -37,7 +37,7 @@ export function NearbyView() {
 
   if (!isLive) {
     return (
-      <div className="mx-auto max-w-xl border border-border-hairline bg-card p-6 sm:p-8">
+      <div className="mx-auto max-w-xl bg-surface-container p-6 sm:p-8">
         <MapPin className="mb-4 h-7 w-7 text-muted-foreground" aria-hidden />
         <h2 className="mb-2 font-display text-headline">
           {t('people.nearby.goLiveTitle', 'Go live to see who’s nearby')}
@@ -74,7 +74,7 @@ export function NearbyView() {
           carries the high-risk-country warning), and a lift on a container
           that is not itself a click target promises an interaction that does
           not exist. */}
-      <div className="flex flex-wrap items-center justify-between gap-4 border border-border-hairline bg-card px-4 py-4">
+      <div className="flex flex-wrap items-center justify-between gap-4 bg-surface-container px-4 py-4">
         <span className="flex items-center gap-2 text-13 font-bold">
           <span className="h-3 w-3 rounded-full bg-foreground" aria-hidden />
           {t('people.nearby.live', 'You’re visible nearby')}

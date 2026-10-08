@@ -46,7 +46,7 @@ export function PeopleNav({ className }: { className?: string }) {
   return (
     <nav
       aria-label={t('people.nav.label', 'People sections')}
-      className={cn('border-b border-border-hairline pb-2', className)}
+      className={cn('pb-2', className)}
     >
       <div className="flex items-end gap-6 overflow-x-auto pb-2">
         <LocalizedLink

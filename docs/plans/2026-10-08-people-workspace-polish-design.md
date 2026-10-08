@@ -13,8 +13,15 @@ Use a shared People workspace rather than restyling each page independently or m
 - Use one compact People header and grouped Community/Connect navigation across all `/people` routes.
 - Give each route a concise title, supporting sentence, and one contextual primary action where useful.
 - Remove duplicated headings, nested page containers, and competing tab systems.
-- Use consistent cards, borders, spacing, filters, skeletons, empty states, errors, authentication gates, focus states, and touch targets.
+- Use consistent cards, spacing, tonal surfaces, filters, skeletons, empty states, errors, authentication gates, focus states, and touch targets.
 - Keep canonical route URLs and active navigation visible on desktop and mobile without horizontal overflow.
+
+## Borderless visual language
+
+- Never use hairline borders, divider rules, or outlined containers in the People workspace.
+- Create hierarchy with generous spacing, tonal surface changes, grouped backgrounds, and clear typography.
+- Reserve strong two-pixel accents for active navigation and visible focus rings for keyboard accessibility.
+- Selected states use filled surfaces rather than inset outlines; repeated rows use gaps rather than separators.
 
 ## Overview and map
 
@@ -56,4 +63,3 @@ Use a shared People workspace rather than restyling each page independently or m
 - Production build and focused lint pass.
 - Browser tests cover every canonical `/people` route, legacy redirects, Community/Cruising map modes, authentication gates, and mobile overflow.
 - After deployment, repeat the read-only E2E contract against `https://queer.guide` and visually inspect the desktop and mobile People overview.
-
