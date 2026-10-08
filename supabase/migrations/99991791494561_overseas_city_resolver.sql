@@ -72,7 +72,7 @@ declare
   v_cc_anchor   text := '  SELECT c.code INTO v_country_cc FROM public.countries c WHERE c.id = v_country_id;';
   v_new text;
 begin
-  if v_def like '%french_overseas_country_code%' then
+  if regexp_replace(v_def, '--[^' || chr(10) || ']*', '', 'g') like '%french_overseas_country_code%' then
     raise notice 'city_resolve_or_create already patched; skipping';
     return;
   end if;
@@ -160,7 +160,9 @@ begin
     raise exception 'postcondition: % FR city rows still sit in an overseas territory', v_bad;
   end if;
 
-  if pg_get_functiondef('public.city_resolve_or_create(text,uuid,text,text,numeric,numeric,text,text,text,boolean,text,text,uuid,text)'::regprocedure)
+  if regexp_replace(
+       pg_get_functiondef('public.city_resolve_or_create(text,uuid,text,text,numeric,numeric,text,text,text,boolean,text,text,uuid,text)'::regprocedure),
+       '--[^' || chr(10) || ']*', '', 'g')
        not like '%french_overseas_country_code(p_lat, p_lng)%' then
     raise exception 'postcondition: city_resolve_or_create is not patched';
   end if;
