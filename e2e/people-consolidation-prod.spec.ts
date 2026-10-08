@@ -119,7 +119,7 @@ test('the public community feed lives inside the Hub shell', async ({ page }) =>
     'href',
     'https://queer.guide/hub/feed',
   );
-  await expect(page.locator('meta[name="robots"]')).not.toHaveAttribute('content', /noindex/);
+  await expect(page.locator('meta[name="robots"][content*="noindex"]')).toHaveCount(0);
 });
 
 test('private Hub modules keep their signed-out gate inside the shared shell', async ({ page }) => {
