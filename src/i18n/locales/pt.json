@@ -5161,7 +5161,9 @@
       "addTitle": "Adicionar algo novo",
       "addBody": "Envia um espaço, evento, produto, pessoa ou artigo.",
       "scanTitle": "Digitalizar um folheto ou ligação",
-      "scanBody": "Extrai vários envios de ficheiros ou de uma página web."
+      "scanBody": "Extrai vários envios de ficheiros ou de uma página web.",
+      "contactTitle": "Contactar a equipa",
+      "contactBody": "Ajuda com a conta, moderação, parcerias, imprensa ou outra mensagem privada."
     },
     "feedback": {
       "heading": "Comunicar um problema ou partilhar uma ideia",

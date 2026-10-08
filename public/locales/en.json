@@ -5124,7 +5124,9 @@
       "addTitle": "Add something new",
       "addBody": "Submit a venue, event, product, person or article.",
       "scanTitle": "Scan a flyer or link",
-      "scanBody": "Extract several submissions from files or a web page."
+      "scanBody": "Extract several submissions from files or a web page.",
+      "contactTitle": "Contact the team",
+      "contactBody": "Account help, moderation, partnerships, press or another private message."
     },
     "feedback": {
       "heading": "Report a problem or share an idea",

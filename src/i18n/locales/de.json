@@ -5161,7 +5161,9 @@
       "addTitle": "Etwas Neues hinzufügen",
       "addBody": "Reiche einen Ort, ein Event, ein Produkt, eine Person oder einen Artikel ein.",
       "scanTitle": "Flyer oder Link scannen",
-      "scanBody": "Extrahiere mehrere Einreichungen aus Dateien oder einer Webseite."
+      "scanBody": "Extrahiere mehrere Einreichungen aus Dateien oder einer Webseite.",
+      "contactTitle": "Team kontaktieren",
+      "contactBody": "Kontohilfe, Moderation, Partnerschaften, Presse oder eine andere private Nachricht."
     },
     "feedback": {
       "heading": "Problem melden oder Idee teilen",

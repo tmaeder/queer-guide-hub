@@ -5165,7 +5165,9 @@
       "addTitle": "Ajouter quelque chose",
       "addBody": "Proposez un lieu, un événement, un produit, une personne ou un article.",
       "scanTitle": "Scanner un flyer ou un lien",
-      "scanBody": "Extrayez plusieurs propositions depuis des fichiers ou une page web."
+      "scanBody": "Extrayez plusieurs propositions depuis des fichiers ou une page web.",
+      "contactTitle": "Contacter l’équipe",
+      "contactBody": "Aide au compte, modération, partenariats, presse ou autre message privé."
     },
     "feedback": {
       "heading": "Signaler un problème ou partager une idée",

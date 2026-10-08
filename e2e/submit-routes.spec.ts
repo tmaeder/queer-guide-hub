@@ -16,7 +16,7 @@ test.describe('submission type routes render their form', () => {
       await expect(page.getByRole('heading', { name: /Add something new/i })).toBeVisible({
         timeout: 15_000,
       });
-      await expect(page.getByText('Sign in to contribute')).toBeVisible();
+      await expect(page.locator('#main-content').getByText('Sign in to contribute')).toBeVisible();
       await expect(page.getByRole('heading', { name: 'Page not found' })).toHaveCount(0);
       await expect(page.getByText('Unknown submission type')).toHaveCount(0);
     });
@@ -45,7 +45,7 @@ test.describe('submission type routes render their form', () => {
     // Guests are stopped before the form. Authenticated coverage separately
     // asserts the repaired field contract so either branch fails if the guard
     // is removed or the registry regresses to zero fields.
-    const signInGate = page.getByText('Sign in to contribute');
+    const signInGate = page.locator('#main-content').getByText('Sign in to contribute');
     const nameField = page.getByLabel('Name');
     await expect(signInGate.or(nameField)).toBeVisible({ timeout: 15_000 });
     if (await nameField.isVisible().catch(() => false)) {

@@ -5159,7 +5159,9 @@
       "addTitle": "添加新内容",
       "addBody": "提交场所、活动、商品、人物或文章。",
       "scanTitle": "扫描传单或链接",
-      "scanBody": "从文件或网页中提取多个提交项目。"
+      "scanBody": "从文件或网页中提取多个提交项目。",
+      "contactTitle": "联系团队",
+      "contactBody": "账户帮助、内容审核、合作、媒体或其他私密消息。"
     },
     "feedback": {
       "heading": "报告问题或分享想法",

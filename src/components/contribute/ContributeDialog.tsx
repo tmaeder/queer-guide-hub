@@ -1,10 +1,11 @@
-import { lazy, Suspense, useState } from 'react';
+import { lazy, Suspense, useEffect, useRef, useState } from 'react';
 import {
   ArrowRight,
   Camera,
   Lightbulb,
   ListPlus,
   LockKeyhole,
+  MessagesSquare,
   PencilLine,
   type LucideIcon,
 } from 'lucide-react';
@@ -18,8 +19,9 @@ const FeedbackForm = lazy(() => import('./FeedbackForm'));
 const CorrectionForm = lazy(() => import('./CorrectionForm'));
 const AddSomethingBranch = lazy(() => import('./AddSomethingBranch'));
 const FlyerScanBranch = lazy(() => import('./FlyerScanBranch'));
+const ContactBranch = lazy(() => import('./ContactBranch'));
 
-export type ContributeBranch = 'chooser' | 'feedback' | 'correction' | 'add' | 'scan';
+export type ContributeBranch = 'chooser' | 'feedback' | 'correction' | 'add' | 'scan' | 'contact';
 
 interface ContributeDialogProps {
   mode?: 'dialog' | 'page';
@@ -41,6 +43,13 @@ export function ContributeDialog({
   const { t } = useTranslation();
   const [branch, setBranch] = useState<ContributeBranch>(initialBranch);
   const [activeType, setActiveType] = useState(initialType);
+  const dialogContentRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (mode === 'dialog' && dialogContentRef.current) {
+      dialogContentRef.current.scrollTop = 0;
+    }
+  }, [branch, mode]);
 
   const title =
     branch === 'feedback'
@@ -51,7 +60,9 @@ export function ContributeDialog({
           ? t('contribute.add.heading', 'Add something new')
           : branch === 'scan'
             ? t('contribute.scan.heading', 'Scan a flyer or link')
-            : t('contribute.title', 'Contribute to Queer Guide');
+            : branch === 'contact'
+              ? t('contribute.chooser.contactTitle', 'Contact the team')
+              : t('contribute.title', 'Contribute to Queer Guide');
 
   const description =
     branch === 'chooser'
@@ -65,10 +76,15 @@ export function ContributeDialog({
           ? t('contribute.chooser.correctionBody', 'Tell us what is outdated, closed or incorrect.')
           : branch === 'add'
             ? t('contribute.chooser.addBody', 'Submit a venue, event, product, person or article.')
-            : t(
-                'contribute.chooser.scanBody',
-                'Extract several submissions from files or a web page.',
-              );
+            : branch === 'scan'
+              ? t(
+                  'contribute.chooser.scanBody',
+                  'Extract several submissions from files or a web page.',
+                )
+              : t(
+                  'contribute.chooser.contactBody',
+                  'Account help, moderation, partnerships, press or another private message.',
+                );
 
   const close = () => {
     if (mode === 'page') setBranch('chooser');
@@ -101,6 +117,9 @@ export function ContributeDialog({
           />
         )}
         {branch === 'scan' && <FlyerScanBranch onBack={() => setBranch('chooser')} />}
+        {branch === 'contact' && (
+          <ContactBranch onBack={() => setBranch('chooser')} onDone={close} />
+        )}
       </div>
     </Suspense>
   );
@@ -108,7 +127,7 @@ export function ContributeDialog({
   if (mode === 'page') {
     return (
       <PageContainer
-        size={branch === 'scan' || branch === 'add' ? 'page' : 'reading'}
+        size={branch === 'scan' || branch === 'add' || branch === 'contact' ? 'page' : 'reading'}
         className="md:py-16"
       >
         <section className="relative overflow-hidden rounded-panel bg-surface-container-low p-6 shadow-soft sm:p-8 md:p-10">
@@ -123,7 +142,7 @@ export function ContributeDialog({
     );
   }
 
-  const roomy = branch === 'scan' || branch === 'add';
+  const roomy = branch === 'scan' || branch === 'add' || branch === 'contact';
   return (
     <Dialog
       open={open}
@@ -136,6 +155,7 @@ export function ContributeDialog({
       }}
     >
       <DialogContent
+        ref={dialogContentRef}
         className="max-h-[92vh] overflow-y-auto p-6 sm:p-8 max-sm:bottom-2 max-sm:left-2 max-sm:right-2 max-sm:top-auto max-sm:w-[calc(100%-1rem)] max-sm:translate-x-0 max-sm:translate-y-0"
         style={{ maxWidth: roomy ? 'min(1120px, calc(100vw - 2rem))' : 680 }}
       >
@@ -164,6 +184,7 @@ function Chooser({ onChoose }: { onChoose: (branch: ContributeBranch) => void })
     icon: LucideIcon;
     title: string;
     description: string;
+    wide?: boolean;
   }> = [
     {
       branch: 'feedback',
@@ -201,6 +222,16 @@ function Chooser({ onChoose }: { onChoose: (branch: ContributeBranch) => void })
         'Extract several submissions from files or a web page.',
       ),
     },
+    {
+      branch: 'contact',
+      icon: MessagesSquare,
+      title: t('contribute.chooser.contactTitle', 'Contact the team'),
+      description: t(
+        'contribute.chooser.contactBody',
+        'Account help, moderation, partnerships, press or another private message.',
+      ),
+      wide: true,
+    },
   ];
 
   return (
@@ -213,7 +244,7 @@ function Chooser({ onChoose }: { onChoose: (branch: ContributeBranch) => void })
             key={choice.branch}
             type="button"
             onClick={() => onChoose(choice.branch)}
-            className="group relative min-h-40 overflow-hidden rounded-container bg-card p-6 text-left shadow-soft transition-all duration-fast ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5 hover:bg-surface-container-low hover:shadow-soft-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background active:translate-y-0 sm:min-h-44"
+            className={`group relative min-h-40 overflow-hidden rounded-container bg-card p-6 text-left shadow-soft transition-all duration-fast ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5 hover:bg-surface-container-low hover:shadow-soft-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background active:translate-y-0 sm:min-h-44 ${choice.wide ? 'sm:col-span-2 sm:min-h-36' : ''}`}
           >
             <span
               className="absolute inset-x-0 top-0 h-1 bg-track-pink transition-[height] duration-fast group-hover:h-1.5"
