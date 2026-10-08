@@ -1,4 +1,4 @@
-import { Heart, MapPinned, Plane, Rss, UserCheck, Users, UsersRound } from 'lucide-react';
+import { Heart, MapPinned, Plane, UserCheck, Users, UsersRound } from 'lucide-react';
 import { useLocation } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
@@ -10,7 +10,6 @@ const SECTIONS = [
     labelKey: 'header.clusters.community',
     label: 'Community',
     links: [
-      { to: '/people/feed', labelKey: 'header.nav.feed', label: 'Feed', icon: Rss },
       { to: '/people/members', labelKey: 'header.nav.members', label: 'Members', icon: UserCheck },
       { to: '/people/friends', labelKey: 'header.userMenu.friends', label: 'Friends', icon: Users },
       { to: '/people/groups', labelKey: 'header.nav.groups', label: 'Groups', icon: UsersRound },

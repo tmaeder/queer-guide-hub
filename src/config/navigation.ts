@@ -123,7 +123,7 @@ export const DESTINATIONS: NavDestination[] = [
     searchType: 'news',
   },
   { to: '/map', icon: Map, labelKey: 'header.nav.map', cluster: 'places' },
-  { to: '/people/feed', icon: Rss, labelKey: 'header.nav.feed', cluster: 'community' },
+  { to: '/hub/feed', icon: Rss, labelKey: 'header.nav.feed', cluster: 'community' },
   {
     to: '/people/groups',
     icon: UsersRound,
@@ -275,7 +275,7 @@ export const INTENT_NAV: IntentDestination[] = [
     children: [
       { to: '/people', labelKey: 'header.nav.people', fallback: 'People' },
       { to: '/people/groups', labelKey: 'header.nav.groups', fallback: 'Groups' },
-      { to: '/people/feed', labelKey: 'header.nav.feed', fallback: 'Feed' },
+      { to: '/hub/feed', labelKey: 'header.nav.feed', fallback: 'Feed' },
     ],
   },
   {

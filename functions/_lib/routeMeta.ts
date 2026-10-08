@@ -355,7 +355,7 @@ export const STATIC_ROUTE_META: Record<string, RouteMeta> = {
     description:
       'Local and interest-based LGBTQ+ groups you can join, from book clubs and hiking to professional networks and peer support.',
   },
-  '/people/feed': {
+  '/hub/feed': {
     title: 'Community Feed — What Queer People Are Posting',
     description:
       'What the Queer Guide community is posting right now: recommendations, questions, meet-ups and news from members worldwide.',
@@ -479,6 +479,10 @@ export function canonicalUrl(pathname: string): string {
 }
 
 export function isIndexable(pathname: string): boolean {
+  // The community feed is the public module inside an otherwise private Hub.
+  // Keep the exact route indexable without opening any personal sub-route.
+  if (pathname.replace(/\/+$/, '') === '/hub/feed') return true;
+
   const noindex = [
     /^\/auth(\/|$)/,
     /^\/my-/,
@@ -487,7 +491,7 @@ export function isIndexable(pathname: string): boolean {
     /^\/profile(\/|$)/,
     /^\/settings(\/|$)/,
     // Query-shaped and personal surfaces: /search is an infinite parameter
-    // space and /hub is the signed-in personal area. Note this also suppresses
+    // space and every Hub module except the public /hub/feed is personal. This suppresses
     // the crawler body injection for them (functions/_middleware.ts gates the
     // bot body on `indexable`), which is intended — there is nothing static to
     // serve — but it means neither may be added to ROUTES in
@@ -504,6 +508,9 @@ export function isIndexable(pathname: string): boolean {
     // is the one that carries the content. Per the note above, none of these
     // may be added to ROUTES in scripts/seo-check.mjs (verified: they are not).
     /^\/people\/(friends|dating|travel|nearby)(\/|$)/,
+    // Legacy sources remain suppressed if middleware handles them before the
+    // edge or client-side redirect runs. The feed itself is public at /hub/feed.
+    /^\/people\/feed(\/|$)/,
     // Private adult map, spot directory and opt-in dating discovery.
     /^\/cruising(\/|$)/,
     // The signed-in friends list. Nothing public to render, same class as /hub.

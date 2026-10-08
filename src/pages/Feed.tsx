@@ -18,7 +18,7 @@ import { useTranslation } from 'react-i18next';
 import { VirtualizedGrid } from '@/components/ui/VirtualizedGrid';
 import { PageContainer } from '@/components/layout/PageContainer';
 
-export default function Feed() {
+export default function Feed({ embedded = false }: { embedded?: boolean }) {
   const { t } = useTranslation();
   const { user } = useAuth();
   const [searchTerm, setSearchTerm] = useState('');
@@ -56,15 +56,24 @@ export default function Feed() {
     return filteredPosts;
   }, [filteredPosts, activeTab]);
 
-  return (
-    <PageContainer>
-      <PageHeader
-        title={t('pages.nav.feed', 'Feed')}
-        subtitle={t(
-          'pages.feed.subtitle',
-          "Posts, stories, and conversations from the LGBTQ+ community. Share your thoughts and see what's happening around you.",
-        )}
-      />
+  const title = t('pages.nav.feed', 'Feed');
+  const description = t(
+    'pages.feed.subtitle',
+    "Posts, stories, and conversations from the LGBTQ+ community. Share your thoughts and see what's happening around you.",
+  );
+
+  const content = (
+    <>
+      {embedded ? (
+        <header className="pb-4">
+          <h1 className="text-headline font-display text-balance">{title}</h1>
+          <p className="mt-1 max-w-[65ch] text-sm text-muted-foreground text-pretty">
+            {description}
+          </p>
+        </header>
+      ) : (
+        <PageHeader title={title} subtitle={description} />
+      )}
 
       {isLoading ? (
         <PageLoadingState count={3} variant="list" />
@@ -239,6 +248,14 @@ export default function Feed() {
           </div>
         </>
       )}
-    </PageContainer>
+    </>
+  );
+
+  return embedded ? (
+    <div className="flex flex-col gap-6" data-feed-layout="embedded">
+      {content}
+    </div>
+  ) : (
+    <PageContainer data-feed-layout="standalone">{content}</PageContainer>
   );
 }

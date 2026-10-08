@@ -996,10 +996,10 @@ export const AppRoutes = () => {
                   <Route path="messages" element={<LocalizedRedirect to="/hub/messages" />} />
                   {/* /favorites folded into /hub (Saved module). */}
                   <Route path="favorites" element={<LocalizedRedirect to="/hub/saved" />} />
-                  <Route path="feed" element={<LocalizedRedirect to="/people/feed" />} />
+                  <Route path="feed" element={<LocalizedRedirect to="/hub/feed" />} />
                   <Route path="friends" element={<LocalizedRedirect to="/people/friends" />} />
-                  <Route path="community" element={<LocalizedRedirect to="/people/feed" />} />
-                  <Route path="community/feed" element={<LocalizedRedirect to="/people/feed" />} />
+                  <Route path="community" element={<LocalizedRedirect to="/hub/feed" />} />
+                  <Route path="community/feed" element={<LocalizedRedirect to="/hub/feed" />} />
                   <Route
                     path="community/members"
                     element={<LocalizedRedirect to="/people/members" />}
@@ -1012,13 +1012,12 @@ export const AppRoutes = () => {
                     path="community/groups"
                     element={<LocalizedRedirect to="/people/groups" />}
                   />
-                  {/* /hub — the personal office (replaces /messages + the private
-                  /me hub). Consolidated 2026-07 to four surfaces: Overview
-                  (landing), Messages (inbox + people), Plans (calendar agenda +
-                  trips) and Saved. Static per-module routes so the optional
-                  /:locale? parent can't capture "hub" as an unknown locale —
-                  same fix as the /community hub above. */}
+                  {/* /hub — one shell for the public Feed and the personal office
+                  (Overview, Messages, Plans and Saved). Static per-module routes
+                  prevent the optional /:locale? parent from capturing "hub" as
+                  an unknown locale. */}
                   <Route path="hub" element={<HubPage module="overview" />} />
+                  <Route path="hub/feed" element={<HubPage module="feed" />} />
                   <Route path="hub/messages" element={<HubPage module="messages" />} />
                   <Route path="hub/plans" element={<HubPage module="plans" />} />
                   <Route path="hub/saved" element={<HubPage module="saved" />} />
@@ -1054,7 +1053,7 @@ export const AppRoutes = () => {
                   so the optional :locale? parent can't capture "people" as an
                   unknown locale and 404 — same reason /community/* is spelled out. */}
                   <Route path="people" element={<People />} />
-                  <Route path="people/feed" element={<Community tab="feed" />} />
+                  <Route path="people/feed" element={<LocalizedRedirect to="/hub/feed" />} />
                   <Route path="people/members" element={<Community tab="members" />} />
                   <Route path="people/friends" element={<Community tab="friends" />} />
                   <Route path="people/groups" element={<Community tab="groups" />} />
