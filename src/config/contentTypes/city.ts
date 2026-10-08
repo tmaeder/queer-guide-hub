@@ -50,7 +50,6 @@ export const cityFields: FieldConfig[] = [
   { name: 'timezone', label: 'Timezone', type: 'text', group: 'location' },
   { name: 'elevation_m', label: 'Elevation (m)', type: 'number', group: 'details' },
   { name: 'climate_type', label: 'Climate', type: 'text', group: 'details' },
-  { name: 'founded_year', label: 'Founded Year', type: 'number', group: 'details' },
   { name: 'area_km2', label: 'Area (km²)', type: 'number', group: 'details' },
   { name: 'local_language', label: 'Local Language', type: 'text', group: 'details' },
   { name: 'official_website', label: 'Official Website', type: 'url', group: 'details' },
