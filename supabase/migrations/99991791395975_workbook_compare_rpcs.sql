@@ -294,16 +294,32 @@ begin
 
   -- P6: the reveal reads `shared`. Without it the function would return every
   -- answer the moment a handshake completed, which is the defect the per-answer
-  -- flag exists to prevent — and no row-count test can see that on empty data.
-  select pg_get_functiondef(p.oid) into v_def
+  -- flag exists to prevent, and no row-count test can see that on empty data.
+  --
+  -- COMMENTS ARE STRIPPED FIRST, and that is the whole reason this assertion
+  -- works. pg_get_functiondef() returns the body INCLUDING its comments, and
+  -- the comment directly above the filter inside workbook_compare names
+  -- `a.shared` in prose — so an unstripped position() matches the explanation
+  -- and passes with the filter deleted. check-functiondef-asserts.mjs refuses
+  -- this shape because it aborted `db push` on main three times on 2026-09-20
+  -- and stranded the whole queue.
+  --
+  -- A global strip is safe on these two bodies specifically: neither contains
+  -- a `--` inside a string literal (their literals are 'active', 'workbook',
+  -- 'menu', 'none', 'discuss' and the four status words).
+  select regexp_replace(pg_get_functiondef(p.oid), '--[^' || chr(10) || ']*', '', 'g')
+    into v_def
   from pg_proc p join pg_namespace n on n.oid = p.pronamespace
   where n.nspname = 'public' and p.proname = 'workbook_compare';
   if position('a.shared' in v_def) = 0 then
     raise exception 'P6 failed: workbook_compare does not filter on shared';
   end if;
-  if position('is_intimate_eligible' in pg_get_functiondef(
-       (select p.oid from pg_proc p join pg_namespace n on n.oid = p.pronamespace
-        where n.nspname='public' and p.proname='workbook_compare_status'))) = 0 then
+
+  select regexp_replace(pg_get_functiondef(p.oid), '--[^' || chr(10) || ']*', '', 'g')
+    into v_def
+  from pg_proc p join pg_namespace n on n.oid = p.pronamespace
+  where n.nspname = 'public' and p.proname = 'workbook_compare_status';
+  if position('is_intimate_eligible' in v_def) = 0 then
     raise exception 'P6b failed: workbook_compare_status does not check eligibility';
   end if;
 
