@@ -2,6 +2,8 @@ import { expect, test } from '@playwright/test';
 
 const ROUTE_READY_TIMEOUT = 15_000;
 
+test.use({ serviceWorkers: 'block' });
+
 /** Read-only production contract for the unified People area. */
 test.beforeEach(async ({ page }) => {
   await page.addInitScript(() => {
@@ -95,7 +97,10 @@ test('legacy community URLs resolve to their canonical destinations', async ({ p
     expect(response?.ok(), `${legacy} should resolve successfully`).toBe(true);
     if (canonical === '/people/dating')
       await expect(page).toHaveURL(/\/auth\/?$/, { timeout: ROUTE_READY_TIMEOUT });
-    else await expect(page).toHaveURL(new RegExp(`${canonical.replaceAll('/', '\\/')}/?$`));
+    else
+      await expect(page).toHaveURL(new RegExp(`${canonical.replaceAll('/', '\\/')}/?$`), {
+        timeout: ROUTE_READY_TIMEOUT,
+      });
   }
 });
 
@@ -105,7 +110,7 @@ test('the public community feed lives inside the Hub shell', async ({ page }) =>
   await expect(page).toHaveURL(/\/hub\/feed\/?$/);
 
   const nav = page.getByRole('navigation', { name: 'Hub modules' }).first();
-  await expect(nav).toBeVisible();
+  await expect(nav).toBeVisible({ timeout: ROUTE_READY_TIMEOUT });
   for (const href of hubLinks) await expect(nav.locator(`a[href$="${href}"]`)).toHaveCount(1);
   await expect(nav.getByRole('link', { name: 'Feed' })).toHaveAttribute('aria-current', 'page');
   await expect(page.getByRole('heading', { level: 1, name: 'Feed' })).toBeVisible();
@@ -157,4 +162,45 @@ test('the public Feed and Hub navigation stay inside a mobile viewport', async (
   await expect(page.getByRole('heading', { level: 1, name: 'Feed' })).toBeVisible();
   const overflow = await page.evaluate(() => document.documentElement.scrollWidth - innerWidth);
   expect(overflow).toBeLessThanOrEqual(1);
+});
+
+test('public People surfaces keep decorative chrome borderless', async ({ page }) => {
+  const routes = ['/people', '/people/members', '/people/groups'] as const;
+
+  for (const path of routes) {
+    await page.goto(path);
+    const nav = page.getByRole('navigation', { name: 'People sections' });
+    await expect(nav).toBeVisible({ timeout: ROUTE_READY_TIMEOUT });
+
+    const visibleHairlines = await page.locator('main .border-border-hairline').evaluateAll(
+      (nodes) =>
+        nodes.filter((node) => {
+          const style = getComputedStyle(node);
+          const rect = node.getBoundingClientRect();
+          return (
+            rect.width > 0 &&
+            rect.height > 0 &&
+            [
+              style.borderTopWidth,
+              style.borderRightWidth,
+              style.borderBottomWidth,
+              style.borderLeftWidth,
+            ].some((width) => width !== '0px')
+          );
+        }).length,
+    );
+    expect(visibleHairlines, `${path} should not render hairline rules`).toBe(0);
+
+    const outlinedButtons = await page.locator('main button.border-input').count();
+    expect(outlinedButtons, `${path} should use filled secondary actions`).toBe(0);
+
+    const borderedBadges = await page.locator('main .border-track-ring.border').evaluateAll(
+      (nodes) =>
+        nodes.filter((node) => {
+          const style = getComputedStyle(node);
+          return style.borderTopWidth !== '0px';
+        }).length,
+    );
+    expect(borderedBadges, `${path} should use borderless badges`).toBe(0);
+  }
 });

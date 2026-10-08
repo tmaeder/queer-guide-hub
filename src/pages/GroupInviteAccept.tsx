@@ -100,7 +100,7 @@ export default function GroupInviteAccept() {
               )}
 
               {user ? (
-                <Button variant="accent" onClick={handleAccept} disabled={isAccepting}>
+                <Button onClick={handleAccept} disabled={isAccepting}>
                   <UserPlus size={16} className="mr-2" />
                   {isAccepting
                     ? t('groups.inviteAccept.joining', 'Joining...')
@@ -108,7 +108,7 @@ export default function GroupInviteAccept() {
                 </Button>
               ) : (
                 <Button
-                  variant="accent"
+                  variant="default"
                   onClick={() => navigate(`/auth?redirect=/people/groups/invite/${token}`)}
                 >
                   {t('groups.inviteAccept.signIn', 'Sign in to join')}

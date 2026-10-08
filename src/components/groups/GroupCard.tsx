@@ -32,10 +32,10 @@ const GroupCardFixture = () => (
     <CardContent>
       <p className="text-sm text-muted-foreground mb-4">A sample group description.</p>
       <div className="flex flex-wrap gap-1 mb-4">
-        <Badge variant="outline">
+        <Badge variant="outline" className="border-0">
           <span className="text-xs">Tag 1</span>
         </Badge>
-        <Badge variant="outline">
+        <Badge variant="outline" className="border-0">
           <span className="text-xs">Tag 2</span>
         </Badge>
       </div>
@@ -143,12 +143,12 @@ export const GroupCard = ({
                   </div>
                 )}
                 {group.user_role && (
-                  <Badge variant="secondary">
+                  <Badge variant="secondary" className="border-0">
                     <span className="text-xs">{group.user_role}</span>
                   </Badge>
                 )}
                 {!group.is_member && group.has_pending_request && (
-                  <Badge variant="outline">
+                  <Badge variant="outline" className="border-0">
                     <span className="text-xs">Pending</span>
                   </Badge>
                 )}
@@ -182,12 +182,12 @@ export const GroupCard = ({
         {group.tags && group.tags.length > 0 && (
           <div className="flex flex-wrap gap-1 mb-4">
             {group.tags.slice(0, 3).map((tag) => (
-              <Badge key={tag} variant="outline">
+              <Badge key={tag} variant="outline" className="border-0">
                 <span className="text-xs">{tag}</span>
               </Badge>
             ))}
             {group.tags.length > 3 && (
-              <Badge variant="outline">
+              <Badge variant="outline" className="border-0">
                 <span className="text-xs">+{group.tags.length - 3} more</span>
               </Badge>
             )}
@@ -216,7 +216,7 @@ export const GroupCard = ({
           ) : !group.is_member ? (
             group.is_private ? (
               group.has_pending_request ? (
-                <Button disabled variant="outline" size="sm">
+                <Button disabled variant="soft" size="sm">
                   <Lock size={16} className="mr-2" />
                   Requested
                 </Button>
@@ -236,7 +236,7 @@ export const GroupCard = ({
             <Button
               onClick={() => onLeave?.(group.id)}
               disabled={isLeaving}
-              variant="outline"
+              variant="soft"
               size="sm"
             >
               <UserMinus size={16} className="mr-2" />
