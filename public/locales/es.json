@@ -5102,5 +5102,112 @@
       "you": "Tú",
       "them": "La otra persona"
     }
+  },
+  "contributeForm": {
+    "unknownType": "Tipo de envío desconocido",
+    "unknownBody": "El tipo de envío «{{type}}» no es compatible.",
+    "backHub": "Volver a contribuciones",
+    "signInRequired": "Debes iniciar sesión",
+    "authBody": "Inicia sesión antes de añadir contenido al directorio. El formulario no está disponible para visitantes.",
+    "submittedBody": "Tu envío de {{type}} se ha recibido y se revisará antes de publicarse.",
+    "submitMore": "Enviar más",
+    "submitAnother": "Enviar otro elemento: {{type}}",
+    "allSubmissions": "Todos los envíos",
+    "submitType": "Enviar {{type}}",
+    "returnStep": "Volver al paso {{step}}",
+    "step": "Paso {{step}}: {{label}}",
+    "fixErrors": "Corrige lo siguiente para continuar:",
+    "cancel": "Cancelar",
+    "next": "Siguiente",
+    "types": {
+      "venue": "Local",
+      "event": "Evento",
+      "product": "Producto",
+      "personality": "Persona",
+      "hotel": "Hotel / BnB",
+      "tag": "Etiqueta",
+      "news": "Artículo de noticias",
+      "place": "Lugar"
+    },
+    "steps": {
+      "basics": "Datos básicos",
+      "location": "Ubicación",
+      "contact": "Contacto",
+      "when-where": "Cuándo y dónde",
+      "details": "Detalles",
+      "suggest": "Sugerencia"
+    }
+  },
+  "contribute": {
+    "trigger": "Contribuir a Queer Guide",
+    "title": "Contribuir a Queer Guide",
+    "subtitle": "Cuéntanos qué has observado, corrige una ficha o ayuda a ampliar la guía.",
+    "eyebrow": "Contribuir",
+    "common": {
+      "failed": "No se pudo enviar",
+      "tryAgain": "Inténtalo de nuevo.",
+      "done": "Listo",
+      "emailOptional": "Correo electrónico (opcional)",
+      "emailPlaceholder": "Para que podamos contactarte",
+      "back": "Atrás",
+      "submitting": "Enviando…",
+      "submit": "Enviar"
+    },
+    "chooser": {
+      "feedbackTitle": "Informar de un problema o idea",
+      "feedbackBody": "Comparte comentarios sobre el sitio o tu experiencia.",
+      "correctionTitle": "Corregir algo en esta página",
+      "correctionBody": "Dinos qué está desactualizado, cerrado o incorrecto.",
+      "addTitle": "Añadir algo nuevo",
+      "addBody": "Envía un local, evento, producto, persona o artículo.",
+      "scanTitle": "Escanear un folleto o enlace",
+      "scanBody": "Extrae varios envíos desde archivos o una página web.",
+      "contactTitle": "Contactar al equipo",
+      "contactBody": "Ayuda con la cuenta, moderación, colaboraciones, prensa u otro mensaje privado."
+    },
+    "feedback": {
+      "heading": "Informar de un problema o compartir una idea",
+      "successToast": "Comentarios enviados. ¡Gracias!",
+      "thanks": "¡Gracias!",
+      "successBody": "Tus comentarios ayudan a mejorar Queer Guide.",
+      "category": "¿Qué tipo de comentario?",
+      "categories": {
+        "bug": "Error",
+        "idea": "Idea",
+        "improvement": "Mejora",
+        "content-idea": "Idea de contenido"
+      },
+      "title": "Título",
+      "titlePlaceholder": "Resumen breve",
+      "description": "Descripción",
+      "descriptionPlaceholder": "Cuéntanos más…",
+      "includeScreenshot": "Incluir una captura de esta página",
+      "screenshotPreview": "Vista previa de la captura",
+      "contextNote": "Se incluye automáticamente: URL actual, información del navegador y errores recientes."
+    },
+    "correction": {
+      "heading": "Corregir algo en esta página",
+      "successToast": "Corrección enviada. ¡Gracias!",
+      "thanks": "¡Gracias!",
+      "successBody": "Nuestro equipo editorial revisará tu corrección.",
+      "thisPage": "Esta página",
+      "wrong": "¿Qué está mal?",
+      "replacement": "¿Qué debería decir en su lugar?"
+    },
+    "auth": {
+      "title": "Inicia sesión para contribuir",
+      "body": "Necesitas una cuenta para añadir contenido al directorio.",
+      "scanBody": "Necesitas una cuenta para escanear y enviar elementos.",
+      "cta": "Iniciar sesión o crear una cuenta"
+    },
+    "add": {
+      "heading": "Añadir algo nuevo"
+    },
+    "scan": {
+      "heading": "Escanear un folleto o enlace",
+      "submitted": "{{count}} elemento enviado",
+      "linked": "{{count}} vinculado a una entrada existente",
+      "reviewNote": "Los envíos se revisan antes de publicarse."
+    }
   }
 }

@@ -37,7 +37,7 @@ describe("hub registry drift", () => {
   it("HUB_REGISTRY in supabase.test.ts matches the hub's submissionRegistry keys", () => {
     const fromHub = readHubRegistryKeys();
     // The list duplicated inside supabase.test.ts. Update both if you change one.
-    const HUB_REGISTRY_DUPLICATE = ["venue", "event", "product", "personality", "hotel", "tag", "feedback", "news", "place"].sort();
+    const HUB_REGISTRY_DUPLICATE = ["venue", "event", "product", "personality", "hotel", "tag", "news", "place"].sort();
     expect(HUB_REGISTRY_DUPLICATE).toEqual(fromHub);
   });
 

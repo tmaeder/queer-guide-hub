@@ -181,7 +181,7 @@ export function pageDesignFamilyForModule(modulePath: string): PageDesignFamily 
   // redirect into, so it takes the Discovery template alongside SearchResults
   // and ./pages/explore/ rather than the Travel one Map uses.
   if (['SearchResults', 'Cruising'].includes(name)) return 'discovery';
-  if (['SubmitForm', 'SubmitHub'].includes(name)) return 'submission';
+  if (['SubmitForm', 'ContributePage'].includes(name)) return 'submission';
 
   return null;
 }

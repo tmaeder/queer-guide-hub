@@ -13,7 +13,6 @@ import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { fetchFeedbackBoardItems, toggleFeedbackVote } from '@/hooks/usePageFetchers';
 import { Bug, Lightbulb, Sparkles, BookOpen, ChevronUp, Clock } from 'lucide-react';
-import { useTranslation } from 'react-i18next';
 import { PageContainer } from '@/components/layout/PageContainer';
 
 const columns = [
@@ -33,7 +32,6 @@ const categoryConfig: Record<string, { label: string; icon: typeof Bug; color: s
 
 export default function FeedbackBoard() {
   const { user } = useAuth();
-  const { _t } = useTranslation();
   const { toast } = useToast();
   const queryClient = useQueryClient();
 

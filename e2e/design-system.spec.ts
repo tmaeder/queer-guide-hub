@@ -362,46 +362,68 @@ test.describe('design system: sanctioned ink only', () => {
     '/events/capital-pride-ottawa-2026',
   ];
 
-/**
- * Per-route additions to the allowlist above, as raw hex.
- *
- * The comment on SANCTIONED_TOKENS says the locked functional palettes are
- * excluded "because none of them render on these four routes; if one ever
- * does, add it here explicitly rather than widening the tolerance." Adding the
- * geo singles made that day arrive: a country page states a legal risk
- * verdict, so it renders the trip-safety TRAFFIC LIGHT — a user-locked
- * exception whose only source of truth is `src/hooks/useRiskVisual.ts`, the one
- * module ESLint allows raw hex in — and the equality tier scale from
- * `src/utils/equalityScore.ts`.
- *
- * Scoped per route on purpose. These hues mean "danger" and "how equal is this
- * place"; letting them through globally would allow an amber tint onto
- * /marketplace, where it would mean nothing at all. A city or village page can
- * show the same verdict tile, so all three geo routes get the same allowance.
- *
- * Light-mode values only — the site has no dark mode.
- */
-const RISK_PALETTE = [
-  // useRiskVisual: bg / fg / border for low | moderate | high | critical
-  '#ecfdf5', '#fffbeb', '#fef2f2',
-  '#047857', '#92400e', '#b91c1c', '#7f1d1d',
-  '#a7f3d0', '#fcd34d', '#fca5a5', '#dc2626',
-];
-const EQUALITY_PALETTE = [
-  // equalityScore: TIER_LABEL_COLOR + TIER_RING_COLOR
-  '#15803d', '#22c55e', '#65a30d', '#84cc16', '#ca8a04', '#eab308',
-  '#ea580c', '#f97316', '#ef4444', '#dc2626',
-  '#dcfce7', '#ecfccb', '#fef9c3', '#fff7ed', '#fef2f2',
-  '#6b7280', '#d1d5db', '#f3f4f6',
-];
-const EXTRA_SANCTIONED: Record<string, string[]> = {
-  '/city/berlin': [...RISK_PALETTE, ...EQUALITY_PALETTE],
-  '/country/germany': [...RISK_PALETTE, ...EQUALITY_PALETTE],
-  '/villages/chueca': [...RISK_PALETTE, ...EQUALITY_PALETTE],
-  // Venue and event both render `SafetyAlertBanner` from their country.
-  '/venues/scum-and-villainy-cantina': [...RISK_PALETTE, ...EQUALITY_PALETTE],
-  '/events/capital-pride-ottawa-2026': [...RISK_PALETTE, ...EQUALITY_PALETTE],
-};
+  /**
+   * Per-route additions to the allowlist above, as raw hex.
+   *
+   * The comment on SANCTIONED_TOKENS says the locked functional palettes are
+   * excluded "because none of them render on these four routes; if one ever
+   * does, add it here explicitly rather than widening the tolerance." Adding the
+   * geo singles made that day arrive: a country page states a legal risk
+   * verdict, so it renders the trip-safety TRAFFIC LIGHT — a user-locked
+   * exception whose only source of truth is `src/hooks/useRiskVisual.ts`, the one
+   * module ESLint allows raw hex in — and the equality tier scale from
+   * `src/utils/equalityScore.ts`.
+   *
+   * Scoped per route on purpose. These hues mean "danger" and "how equal is this
+   * place"; letting them through globally would allow an amber tint onto
+   * /marketplace, where it would mean nothing at all. A city or village page can
+   * show the same verdict tile, so all three geo routes get the same allowance.
+   *
+   * Light-mode values only — the site has no dark mode.
+   */
+  const RISK_PALETTE = [
+    // useRiskVisual: bg / fg / border for low | moderate | high | critical
+    '#ecfdf5',
+    '#fffbeb',
+    '#fef2f2',
+    '#047857',
+    '#92400e',
+    '#b91c1c',
+    '#7f1d1d',
+    '#a7f3d0',
+    '#fcd34d',
+    '#fca5a5',
+    '#dc2626',
+  ];
+  const EQUALITY_PALETTE = [
+    // equalityScore: TIER_LABEL_COLOR + TIER_RING_COLOR
+    '#15803d',
+    '#22c55e',
+    '#65a30d',
+    '#84cc16',
+    '#ca8a04',
+    '#eab308',
+    '#ea580c',
+    '#f97316',
+    '#ef4444',
+    '#dc2626',
+    '#dcfce7',
+    '#ecfccb',
+    '#fef9c3',
+    '#fff7ed',
+    '#fef2f2',
+    '#6b7280',
+    '#d1d5db',
+    '#f3f4f6',
+  ];
+  const EXTRA_SANCTIONED: Record<string, string[]> = {
+    '/city/berlin': [...RISK_PALETTE, ...EQUALITY_PALETTE],
+    '/country/germany': [...RISK_PALETTE, ...EQUALITY_PALETTE],
+    '/villages/chueca': [...RISK_PALETTE, ...EQUALITY_PALETTE],
+    // Venue and event both render `SafetyAlertBanner` from their country.
+    '/venues/scum-and-villainy-cantina': [...RISK_PALETTE, ...EQUALITY_PALETTE],
+    '/events/capital-pride-ottawa-2026': [...RISK_PALETTE, ...EQUALITY_PALETTE],
+  };
 
   // What counts as "this page has rendered its chrome".
   //
@@ -475,107 +497,117 @@ const EXTRA_SANCTIONED: Record<string, string[]> = {
       await dismissCookieBanner(page);
       await settleAnimations(page);
 
-      const rogue = await page.evaluate(([tokens, extraHex]: [string[], string[]]) => {
-        const root = document.documentElement;
+      const rogue = await page.evaluate(
+        ([tokens, extraHex]: [string[], string[]]) => {
+          const root = document.documentElement;
 
-        // Resolve each token's HSL triple to rgb the way the browser does,
-        // by letting the browser do it. Reading the raw "330 95% 55%" and
-        // converting by hand would re-implement (and could disagree with)
-        // the engine's own rounding.
-        // Normalise ANY computed background to [r,g,b,a] by painting it on a
-        // canvas and reading the pixel back.
-        //
-        // Regex-parsing the serialisation looks simpler and is a trap. A real
-        // page returns at least three forms: plain `rgb(…)`, `color(srgb … / a)`
-        // from a Tailwind v4 opacity modifier, and `oklab(… / a)` from the same
-        // modifier on a different token — and the browser is free to add more.
-        // An earlier draft of this guard matched only `rgb(…)` and silently
-        // SKIPPED everything else, which meant a rogue hue behind `/50` sailed
-        // through a green test. Handing the string to the engine that produced
-        // it converts every colour space correctly, needs no maintenance, and
-        // cannot drift.
-        const canvas = document.createElement('canvas');
-        canvas.width = 1;
-        canvas.height = 1;
-        const ctx = canvas.getContext('2d', { willReadFrequently: true })!;
-        const parse = (css: string): [number, number, number, number] | null => {
-          ctx.clearRect(0, 0, 1, 1);
-          // An unparseable value leaves fillStyle at its previous setting, so
-          // set a known sentinel first and detect "nothing happened".
-          ctx.fillStyle = '#000000';
-          ctx.fillStyle = css;
-          if (ctx.fillStyle === '#000000' && !/^(#000000|black|rgb\(0, 0, 0\))$/.test(css.trim())) {
-            return null;
-          }
-          ctx.fillRect(0, 0, 1, 1);
-          const d = ctx.getImageData(0, 0, 1, 1).data;
-          return [d[0], d[1], d[2], d[3] / 255];
-        };
-
-        const probe = document.createElement('div');
-        probe.style.position = 'absolute';
-        probe.style.visibility = 'hidden';
-        root.appendChild(probe);
-        const sanctioned = new Set<string>();
-        for (const t of tokens) {
-          const raw = getComputedStyle(root).getPropertyValue(`--${t}`).trim();
-          if (!raw) continue;
-          probe.style.backgroundColor = `hsl(${raw})`;
-          const resolved = parse(getComputedStyle(probe).backgroundColor);
-          if (resolved) sanctioned.add(`${resolved[0]},${resolved[1]},${resolved[2]}`);
-        }
-        probe.remove();
-
-        const saturation = (r: number, g: number, b: number) => {
-          const max = Math.max(r, g, b);
-          const min = Math.min(r, g, b);
-          return max === 0 ? 0 : (max - min) / max;
-        };
-
-        // Per-route additions (locked functional palettes) arrive as raw hex
-        // rather than as tokens: they are not CSS variables, and their source
-        // of truth is the TS module that owns them.
-        for (const hex of extraHex) {
-          const m = /^#(..)(..)(..)$/.exec(hex);
-          if (m) sanctioned.add([1, 2, 3].map((i) => parseInt(m[i], 16)).join(','));
-        }
-
-        // A few channels of slack: an ink can arrive through a Tailwind opacity
-        // modifier or a color-mix, both of which can shift the last bit.
-        const NEAR = 4;
-        const isSanctioned = (r: number, g: number, b: number) => {
-          for (const s of sanctioned) {
-            const [sr, sg, sb] = s.split(',').map(Number);
-            if (Math.abs(r - sr) <= NEAR && Math.abs(g - sg) <= NEAR && Math.abs(b - sb) <= NEAR) {
-              return true;
+          // Resolve each token's HSL triple to rgb the way the browser does,
+          // by letting the browser do it. Reading the raw "330 95% 55%" and
+          // converting by hand would re-implement (and could disagree with)
+          // the engine's own rounding.
+          // Normalise ANY computed background to [r,g,b,a] by painting it on a
+          // canvas and reading the pixel back.
+          //
+          // Regex-parsing the serialisation looks simpler and is a trap. A real
+          // page returns at least three forms: plain `rgb(…)`, `color(srgb … / a)`
+          // from a Tailwind v4 opacity modifier, and `oklab(… / a)` from the same
+          // modifier on a different token — and the browser is free to add more.
+          // An earlier draft of this guard matched only `rgb(…)` and silently
+          // SKIPPED everything else, which meant a rogue hue behind `/50` sailed
+          // through a green test. Handing the string to the engine that produced
+          // it converts every colour space correctly, needs no maintenance, and
+          // cannot drift.
+          const canvas = document.createElement('canvas');
+          canvas.width = 1;
+          canvas.height = 1;
+          const ctx = canvas.getContext('2d', { willReadFrequently: true })!;
+          const parse = (css: string): [number, number, number, number] | null => {
+            ctx.clearRect(0, 0, 1, 1);
+            // An unparseable value leaves fillStyle at its previous setting, so
+            // set a known sentinel first and detect "nothing happened".
+            ctx.fillStyle = '#000000';
+            ctx.fillStyle = css;
+            if (
+              ctx.fillStyle === '#000000' &&
+              !/^(#000000|black|rgb\(0, 0, 0\))$/.test(css.trim())
+            ) {
+              return null;
             }
-          }
-          return false;
-        };
+            ctx.fillRect(0, 0, 1, 1);
+            const d = ctx.getImageData(0, 0, 1, 1).data;
+            return [d[0], d[1], d[2], d[3] / 255];
+          };
 
-        const offenders: string[] = [];
-        let unparsed = 0;
-        const els = document.querySelectorAll('#root *, header *, main *, footer *');
-        for (const el of els) {
-          const bg = getComputedStyle(el).backgroundColor;
-          if (bg === 'transparent' || bg === 'rgba(0, 0, 0, 0)') continue;
-          const parsed = parse(bg);
-          // A colour space this guard cannot read is a hole, not a pass —
-          // surface it instead of skipping silently.
-          if (!parsed) {
-            unparsed++;
-            continue;
+          const probe = document.createElement('div');
+          probe.style.position = 'absolute';
+          probe.style.visibility = 'hidden';
+          root.appendChild(probe);
+          const sanctioned = new Set<string>();
+          for (const t of tokens) {
+            const raw = getComputedStyle(root).getPropertyValue(`--${t}`).trim();
+            if (!raw) continue;
+            probe.style.backgroundColor = `hsl(${raw})`;
+            const resolved = parse(getComputedStyle(probe).backgroundColor);
+            if (resolved) sanctioned.add(`${resolved[0]},${resolved[1]},${resolved[2]}`);
           }
-          const [r, g, b, a] = parsed;
-          if (a === 0) continue;
-          if (saturation(r, g, b) <= 0.15) continue;
-          if (isSanctioned(r, g, b)) continue;
-          const tag = el.tagName.toLowerCase();
-          const cls = (el.getAttribute('class') ?? '').slice(0, 80);
-          offenders.push(`${bg} on <${tag} class="${cls}">`);
-        }
-        return { offenders: [...new Set(offenders)], sanctioned: [...sanctioned], unparsed };
-      }, [SANCTIONED_TOKENS, EXTRA_SANCTIONED[path] ?? []] as [string[], string[]]);
+          probe.remove();
+
+          const saturation = (r: number, g: number, b: number) => {
+            const max = Math.max(r, g, b);
+            const min = Math.min(r, g, b);
+            return max === 0 ? 0 : (max - min) / max;
+          };
+
+          // Per-route additions (locked functional palettes) arrive as raw hex
+          // rather than as tokens: they are not CSS variables, and their source
+          // of truth is the TS module that owns them.
+          for (const hex of extraHex) {
+            const m = /^#(..)(..)(..)$/.exec(hex);
+            if (m) sanctioned.add([1, 2, 3].map((i) => parseInt(m[i], 16)).join(','));
+          }
+
+          // A few channels of slack: an ink can arrive through a Tailwind opacity
+          // modifier or a color-mix, both of which can shift the last bit.
+          const NEAR = 4;
+          const isSanctioned = (r: number, g: number, b: number) => {
+            for (const s of sanctioned) {
+              const [sr, sg, sb] = s.split(',').map(Number);
+              if (
+                Math.abs(r - sr) <= NEAR &&
+                Math.abs(g - sg) <= NEAR &&
+                Math.abs(b - sb) <= NEAR
+              ) {
+                return true;
+              }
+            }
+            return false;
+          };
+
+          const offenders: string[] = [];
+          let unparsed = 0;
+          const els = document.querySelectorAll('#root *, header *, main *, footer *');
+          for (const el of els) {
+            const bg = getComputedStyle(el).backgroundColor;
+            if (bg === 'transparent' || bg === 'rgba(0, 0, 0, 0)') continue;
+            const parsed = parse(bg);
+            // A colour space this guard cannot read is a hole, not a pass —
+            // surface it instead of skipping silently.
+            if (!parsed) {
+              unparsed++;
+              continue;
+            }
+            const [r, g, b, a] = parsed;
+            if (a === 0) continue;
+            if (saturation(r, g, b) <= 0.15) continue;
+            if (isSanctioned(r, g, b)) continue;
+            const tag = el.tagName.toLowerCase();
+            const cls = (el.getAttribute('class') ?? '').slice(0, 80);
+            offenders.push(`${bg} on <${tag} class="${cls}">`);
+          }
+          return { offenders: [...new Set(offenders)], sanctioned: [...sanctioned], unparsed };
+        },
+        [SANCTIONED_TOKENS, EXTRA_SANCTIONED[path] ?? []] as [string[], string[]],
+      );
 
       expect(
         rogue.sanctioned.length,
@@ -616,7 +648,7 @@ test.describe('design system: visual snapshots', () => {
     await expect(page).toHaveScreenshot('home-desktop.png', {
       mask: [
         page.locator('[aria-label="Cookie settings"]'),
-        page.locator('[aria-label="Share feedback"]'),
+        page.locator('[aria-label="Contribute to Queer Guide"]'),
         page.locator('main section:first-of-type'),
         page.locator('main section:nth-of-type(2)'),
         page.locator('main section:nth-of-type(3)'),

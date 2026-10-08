@@ -151,7 +151,7 @@ export async function waitForAppReady(page: Page, timeout = 30_000): Promise<voi
     .waitForFunction(
       () => {
         const overlays = document.querySelectorAll<HTMLElement>(
-          '[aria-label="Cookie settings"], [aria-label="Share feedback"]',
+          '[aria-label="Cookie settings"], [aria-label="Contribute to Queer Guide"]',
         );
         return [...overlays].every((el) => {
           const o = Number(getComputedStyle(el).opacity);

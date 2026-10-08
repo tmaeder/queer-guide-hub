@@ -5100,5 +5100,112 @@
       "you": "나",
       "them": "상대"
     }
+  },
+  "contributeForm": {
+    "unknownType": "알 수 없는 제출 유형",
+    "unknownBody": "제출 유형 ‘{{type}}’은 지원되지 않습니다.",
+    "backHub": "기여 화면으로 돌아가기",
+    "signInRequired": "로그인이 필요합니다",
+    "authBody": "디렉터리 콘텐츠를 추가하기 전에 로그인하세요. 게스트는 이 양식을 사용할 수 없습니다.",
+    "submittedBody": "{{type}} 제출을 완료했습니다. 공개 전에 검토됩니다.",
+    "submitMore": "더 제출하기",
+    "submitAnother": "다른 {{type}} 제출하기",
+    "allSubmissions": "모든 제출 유형",
+    "submitType": "{{type}} 제출",
+    "returnStep": "{{step}}단계로 돌아가기",
+    "step": "{{step}}단계: {{label}}",
+    "fixErrors": "계속하려면 다음 항목을 수정하세요:",
+    "cancel": "취소",
+    "next": "다음",
+    "types": {
+      "venue": "장소",
+      "event": "이벤트",
+      "product": "상품",
+      "personality": "인물",
+      "hotel": "호텔 / BnB",
+      "tag": "태그",
+      "news": "뉴스 기사",
+      "place": "지역"
+    },
+    "steps": {
+      "basics": "기본 정보",
+      "location": "위치",
+      "contact": "연락처",
+      "when-where": "일시와 장소",
+      "details": "세부 정보",
+      "suggest": "제안"
+    }
+  },
+  "contribute": {
+    "trigger": "Queer Guide에 기여하기",
+    "title": "Queer Guide에 기여하기",
+    "subtitle": "발견한 내용을 알려 주거나, 등록 정보를 수정하거나, 가이드가 성장하도록 도와주세요.",
+    "eyebrow": "기여하기",
+    "common": {
+      "failed": "제출하지 못했습니다",
+      "tryAgain": "다시 시도해 주세요.",
+      "done": "완료",
+      "emailOptional": "이메일(선택)",
+      "emailPlaceholder": "후속 연락을 위해 사용됩니다",
+      "back": "뒤로",
+      "submitting": "제출 중…",
+      "submit": "제출"
+    },
+    "chooser": {
+      "feedbackTitle": "문제 또는 아이디어 알리기",
+      "feedbackBody": "사이트나 이용 경험에 대한 의견을 알려 주세요.",
+      "correctionTitle": "이 페이지 정보 수정하기",
+      "correctionBody": "오래되었거나 폐업했거나 잘못된 정보를 알려 주세요.",
+      "addTitle": "새 정보 추가하기",
+      "addBody": "장소, 이벤트, 상품, 인물 또는 기사를 제출하세요.",
+      "scanTitle": "전단지 또는 링크 스캔",
+      "scanBody": "파일이나 웹페이지에서 여러 제출 항목을 추출합니다.",
+      "contactTitle": "팀에 문의하기",
+      "contactBody": "계정 도움, 운영, 파트너십, 언론 또는 기타 비공개 메시지."
+    },
+    "feedback": {
+      "heading": "문제를 알리거나 아이디어 공유하기",
+      "successToast": "의견을 제출했습니다. 감사합니다!",
+      "thanks": "감사합니다!",
+      "successBody": "여러분의 의견은 Queer Guide 개선에 도움이 됩니다.",
+      "category": "어떤 종류의 의견인가요?",
+      "categories": {
+        "bug": "버그",
+        "idea": "아이디어",
+        "improvement": "개선",
+        "content-idea": "콘텐츠 아이디어"
+      },
+      "title": "제목",
+      "titlePlaceholder": "간단한 요약",
+      "description": "설명",
+      "descriptionPlaceholder": "자세히 알려 주세요…",
+      "includeScreenshot": "이 페이지의 스크린샷 포함",
+      "screenshotPreview": "스크린샷 미리보기",
+      "contextNote": "현재 페이지 URL, 브라우저 정보, 최근 오류가 자동으로 포함됩니다."
+    },
+    "correction": {
+      "heading": "이 페이지 정보 수정하기",
+      "successToast": "수정 내용을 제출했습니다. 감사합니다!",
+      "thanks": "감사합니다!",
+      "successBody": "편집팀이 수정 내용을 검토합니다.",
+      "thisPage": "이 페이지",
+      "wrong": "무엇이 잘못되었나요?",
+      "replacement": "대신 어떤 내용이어야 하나요?"
+    },
+    "auth": {
+      "title": "로그인하여 기여하기",
+      "body": "디렉터리 콘텐츠를 추가하려면 계정이 필요합니다.",
+      "scanBody": "항목을 스캔하고 제출하려면 계정이 필요합니다.",
+      "cta": "로그인 또는 계정 만들기"
+    },
+    "add": {
+      "heading": "새 정보 추가하기"
+    },
+    "scan": {
+      "heading": "전단지 또는 링크 스캔",
+      "submitted": "{{count}}개 항목을 제출했습니다",
+      "linked": "{{count}}개를 기존 항목에 연결했습니다",
+      "reviewNote": "제출 내용은 공개 전에 검토됩니다."
+    }
   }
 }

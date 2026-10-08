@@ -7,7 +7,7 @@
  * the optional segment, so for a URL like /submit/news two branches match and
  * score identically:
  *   - /:locale/news          (locale="submit" → News page)
- *   - /submit/:contentType   (contentType="news" → SubmitForm)
+ *   - /submit/:contentType   (contentType="news" → ContributePage)
  * The tie breaks toward the earlier-defined sibling (news / feedback), so
  * LocaleRouter sees "submit" as an unknown locale and renders NotFound.
  *
@@ -15,7 +15,7 @@
  * (news, feedback). The fix adds a fully-static `submit/<slug>` route per
  * registry entry, which outranks the locale branch deterministically.
  *
- * The pre-existing SubmitForm.test.tsx missed this because it mounted SubmitForm
+ * The pre-existing form test missed this because it mounted the form
  * under a hand-built `/submit/:type` route with no :locale? parent — no collision.
  * This test mounts the REAL AppRoutes so the live route tree is what's exercised.
  */
@@ -43,17 +43,16 @@ vi.mock('@/components/motion', () => ({
   MotionPage: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }));
 
-// Mirror the real SubmitForm's type resolution (prop ?? :contentType param)
+// Mirror ContributePage's type resolution (prop ?? :contentType param)
 // so the test catches not just "form renders" but "the right type reaches it".
-vi.mock('@/pages/SubmitForm', async () => {
+vi.mock('@/pages/ContributePage', async () => {
   const { useParams } = await import('react-router');
-  const SubmitFormMock = ({ contentType }: { contentType?: string }) => {
+  const ContributePageMock = ({ type }: { type?: string }) => {
     const { contentType: param } = useParams<{ contentType: string }>();
-    return <div>SUBMIT_FORM_SENTINEL:{contentType ?? param ?? 'NONE'}</div>;
+    return <div>CONTRIBUTE_PAGE_SENTINEL:{type ?? param ?? 'ROOT'}</div>;
   };
-  return { default: SubmitFormMock };
+  return { default: ContributePageMock };
 });
-vi.mock('@/pages/SubmitHub', () => ({ default: () => <div>SUBMIT_HUB_SENTINEL</div> }));
 vi.mock('@/pages/NotFound', () => ({ default: () => <div>NOT_FOUND_SENTINEL</div> }));
 vi.mock('@/pages/News', () => ({ default: () => <div>NEWS_SENTINEL</div> }));
 vi.mock('@/pages/FeedbackBoard', () => ({ default: () => <div>FEEDBACK_SENTINEL</div> }));
@@ -69,12 +68,12 @@ function renderAt(path: string) {
 }
 
 describe('submit route resolution', () => {
-  it('renders the submit form with the correct type for every registered submission type', async () => {
-    for (const slug of Object.keys(submissionRegistry)) {
+  it('renders the shared contribution page with the correct type for every deep link', async () => {
+    for (const slug of [...Object.keys(submissionRegistry), 'feedback']) {
       const { unmount } = renderAt(`/submit/${slug}`);
       expect(
-        await screen.findByText(`SUBMIT_FORM_SENTINEL:${slug}`),
-        `/submit/${slug} should render SubmitForm with type "${slug}", not NotFound or an empty type`,
+        await screen.findByText(`CONTRIBUTE_PAGE_SENTINEL:${slug}`),
+        `/submit/${slug} should render ContributePage with type "${slug}", not NotFound or an empty type`,
       ).toBeTruthy();
       unmount();
     }
@@ -83,7 +82,7 @@ describe('submit route resolution', () => {
   it('renders the submit form for the two slugs that collide with top-level routes', async () => {
     for (const slug of ['news', 'feedback']) {
       const { unmount } = renderAt(`/submit/${slug}`);
-      expect(await screen.findByText(`SUBMIT_FORM_SENTINEL:${slug}`)).toBeTruthy();
+      expect(await screen.findByText(`CONTRIBUTE_PAGE_SENTINEL:${slug}`)).toBeTruthy();
       expect(screen.queryByText('NOT_FOUND_SENTINEL')).toBeNull();
       expect(screen.queryByText('NEWS_SENTINEL')).toBeNull();
       expect(screen.queryByText('FEEDBACK_SENTINEL')).toBeNull();
