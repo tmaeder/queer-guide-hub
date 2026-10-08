@@ -1,164 +1,43 @@
-/* eslint-disable react-hooks/refs -- screenshotUrlRef is set inside the screenshot capture handler and read during render to show the preview; reading a ref during render is acceptable here because it's a one-way data flow gated by the includeScreenshot toggle. */
-import { useState, useCallback, useEffect, useRef } from 'react';
-import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
-import { MessageSquarePlus, Check, Camera } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Label } from '@/components/ui/label';
-import { Checkbox } from '@/components/ui/checkbox';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from '@/components/ui/dialog';
+import { useCallback, useState } from 'react';
+import { MessageSquarePlus } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
-import { useToast } from '@/hooks/use-toast';
-import { uploadImageToR2 } from '@/lib/uploadImageToR2';
-import { insertRow } from '@/hooks/usePageFetchers';
+import { ContributeDialog } from '@/components/contribute/ContributeDialog';
 import { useAuth } from '@/hooks/useAuth';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { captureContext, captureScreenshot } from '@/utils/feedbackContext';
-import { feedbackCategories } from '@/config/feedbackCategories';
 
+/** Global contribution trigger. All form implementations live in ContributeDialog branches. */
 export function FeedbackButton() {
+  const { t } = useTranslation();
   const { user } = useAuth();
-  const { toast } = useToast();
-  const navigate = useLocalizedNavigate();
   const isMobile = useIsMobile();
-
   const [open, setOpen] = useState(false);
-  const [form, setForm] = useState({
-    category: '',
-    title: '',
-    description: '',
-    email: '',
-    honeypot: '',
-  });
-  const [status, setStatus] = useState<'idle' | 'submitting' | 'submitted'>('idle');
-  const [includeScreenshot, setIncludeScreenshot] = useState(true);
   const [capturing, setCapturing] = useState(false);
-  const [pageUrl, setPageUrl] = useState('');
-  const screenshotBlobRef = useRef<Blob | null>(null);
-  const screenshotUrlRef = useRef<string | null>(null);
+  const [screenshotBlob, setScreenshotBlob] = useState<Blob | null>(null);
 
-  // Capture current URL when dialog opens so user sees what will be sent
-
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- effect synchronizes state with external props/data; React Compiler can't infer the sync direction. Documented exemption from the eslint.config.js staged-ratchet plan.
-    if (open) setPageUrl(window.location.href);
-  }, [open]);
-
-  // Auto-dismiss the success state after a short delay
-  useEffect(() => {
-    if (status !== 'submitted' || !open) return;
-    const timer = window.setTimeout(() => {
-      setOpen(false);
-      window.setTimeout(() => {
-        setForm({ category: '', title: '', description: '', email: '', honeypot: '' });
-        setStatus('idle');
-        setIncludeScreenshot(true);
-        if (screenshotUrlRef.current) {
-          URL.revokeObjectURL(screenshotUrlRef.current);
-          screenshotUrlRef.current = null;
-        }
-        screenshotBlobRef.current = null;
-      }, 200);
-    }, 2500);
-    return () => window.clearTimeout(timer);
-  }, [status, open]);
-
-  const reset = useCallback(() => {
-    setForm({ category: '', title: '', description: '', email: '', honeypot: '' });
-    setStatus('idle');
-    setIncludeScreenshot(true);
-    if (screenshotUrlRef.current) {
-      URL.revokeObjectURL(screenshotUrlRef.current);
-      screenshotUrlRef.current = null;
+  // Capture before the portal mounts so the contribution window is not part
+  // of the image. Anonymous users skip this entirely because upload-image-r2
+  // requires a JWT and the form intentionally hides the screenshot control.
+  const handleOpen = useCallback(async () => {
+    if (!user) {
+      setOpen(true);
+      return;
     }
-    screenshotBlobRef.current = null;
-  }, []);
 
-  const handleClose = useCallback(() => {
-    setOpen(false);
-    // Reset after close animation
-    setTimeout(reset, 200);
-  }, [reset]);
-
-  // Capture screenshot BEFORE the dialog mounts so the feedback window isn't
-  // in the shot. The FAB is briefly hidden via `capturing` state.
-  const handleOpenClick = useCallback(async () => {
     setCapturing(true);
-    // Wait two animation frames so React commits the FAB hide before html2canvas reads the DOM.
     await new Promise<void>((resolve) =>
       requestAnimationFrame(() => requestAnimationFrame(() => resolve())),
     );
     try {
-      const blob = await captureScreenshot();
-      if (blob) {
-        screenshotBlobRef.current = blob;
-        if (screenshotUrlRef.current) URL.revokeObjectURL(screenshotUrlRef.current);
-        screenshotUrlRef.current = URL.createObjectURL(blob);
-      }
+      const { captureScreenshot } = await import('@/utils/feedbackContext');
+      setScreenshotBlob(await captureScreenshot());
     } finally {
       setCapturing(false);
       setOpen(true);
     }
-  }, []);
+  }, [user]);
 
-  const handleSubmit = useCallback(async () => {
-    if (form.honeypot) return;
-    if (!form.category || !form.title.trim() || !form.description.trim()) {
-      toast({ title: 'Please fill in all required fields', variant: 'destructive' });
-      return;
-    }
-
-    setStatus('submitting');
-    try {
-      const context = captureContext();
-
-      let screenshotUrl: string | null = null;
-      // Use the blob captured when the dialog was opened — not a new shot —
-      // so the feedback window doesn't end up in the image.
-      const blob = includeScreenshot ? screenshotBlobRef.current : null;
-      if (blob) {
-        // Upload to Cloudflare R2 (img.queer.guide) — no Supabase image hosting.
-        // Best-effort: the endpoint needs a signed-in user, so anon feedback
-        // still submits, just without the screenshot.
-        try {
-          screenshotUrl = await uploadImageToR2(blob, 'feedback-screenshots');
-        } catch {
-          screenshotUrl = null;
-        }
-      }
-
-      const { error } = await insertRow('community_submissions', {
-        content_type: 'feedback',
-        data: {
-          title: form.title.trim(),
-          description: form.description.trim(),
-          category: form.category,
-          contact_email: form.email.trim() || null,
-          context,
-          screenshot_url: screenshotUrl,
-        },
-        submitted_by: user?.id || null,
-      });
-      if (error) throw error;
-
-      setStatus('submitted');
-      toast({ title: 'Feedback submitted! Thank you.' });
-    } catch (err: unknown) {
-      toast({
-        title: 'Submission failed',
-        description: err instanceof Error ? err.message : 'Please try again.',
-        variant: 'destructive',
-      });
-      setStatus('idle');
-    }
-  }, [form, includeScreenshot, user, toast]);
+  const label = t('contribute.trigger', 'Contribute to Queer Guide');
 
   return (
     <>
@@ -166,30 +45,15 @@ export function FeedbackButton() {
         <TooltipTrigger asChild>
           <button
             type="button"
-            aria-label="Share feedback"
-            onClick={handleOpenClick}
+            aria-label={label}
+            onClick={() => void handleOpen()}
             disabled={capturing}
-            // z-45: ABOVE the chrome layer (header and MobileBottomNav are
-            // both z-40) and BELOW the portal layer (every Radix overlay —
-            // dialog, sheet, popover, and the search sheet — renders at z-50
-            // on document.body).
-            //
-            // This carried z-[1200], which is the exact bug Header.tsx
-            // documents having had at z-1100: it painted over every z-50
-            // portal. Measured on the mobile search sheet — overlay z-50, FAB
-            // z-1200, elementFromPoint at the FAB's centre returned the FAB,
-            // i.e. it floated on top of the full-screen sheet and covered the
-            // mode chips. A page-chrome affordance must not sit above a modal.
-            // z-[45] and not `z-45`: Tailwind's default scale is
-            // 0/10/20/30/40/50, so a bare `z-45` compiles to nothing and the
-            // element falls back to `auto`.
+            // z-[45]: above page chrome (z-40) and below every portal (z-50).
+            // A prior z-[1200] value painted over the mobile search sheet
+            // (#2814). Do not promote this page affordance above modal layers.
             className="fixed right-6 z-[45] flex h-12 w-12 items-center justify-center rounded-container bg-foreground text-background shadow-soft transition-all hover:-translate-y-0.5 hover:shadow-soft-hover disabled:opacity-50"
             style={{
               visibility: capturing ? 'hidden' : 'visible',
-              // On mobile, clear the floating bottom-nav island (h-14 bar +
-              // mb-2 margin + safe-area) so the FAB doesn't sit on the tabs.
-              // --map-rail-clearance is published by the map's spotlight rail
-              // while one is on screen, so the FAB also clears the rail.
               bottom: isMobile
                 ? 'calc(max(6rem, var(--map-rail-clearance, 0rem) + 1rem) + env(safe-area-inset-bottom, 0px) + var(--audio-bar-clearance, 0rem) + var(--consent-bar-clearance, 0px))'
                 : 'calc(1.5rem + var(--audio-bar-clearance, 0rem) + var(--consent-bar-clearance, 0px))',
@@ -198,211 +62,10 @@ export function FeedbackButton() {
             <MessageSquarePlus size={22} />
           </button>
         </TooltipTrigger>
-        <TooltipContent side="left">Share Feedback</TooltipContent>
+        <TooltipContent side="left">{label}</TooltipContent>
       </Tooltip>
 
-      <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent style={{ maxWidth: 480 }}>
-          {status === 'submitted' ? (
-            <div className="text-center py-8">
-              <div className="w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4 bg-foreground">
-                <Check size={24} className="text-background" />
-              </div>
-              <h6 className="text-base font-semibold mb-2">Thank you!</h6>
-              <p className="text-sm text-muted-foreground mb-6">
-                Your feedback helps make Queer Guide better for everyone.
-              </p>
-              <div className="flex gap-4 justify-center">
-                <Button variant="outline" onClick={handleClose}>
-                  Close
-                </Button>
-                <Button
-                  onClick={() => {
-                    handleClose();
-                    navigate('/feedback');
-                  }}
-                >
-                  View Feedback Board
-                </Button>
-              </div>
-            </div>
-          ) : (
-            <>
-              <DialogHeader>
-                <DialogTitle>Share Feedback</DialogTitle>
-              </DialogHeader>
-
-              {/* Category selector */}
-              <div className="mb-4">
-                <Label>What type of feedback?</Label>
-                <div className="grid grid-cols-2 gap-2 mt-2">
-                  {feedbackCategories.map((cat) => {
-                    const Icon = cat.icon;
-                    const selected = form.category === cat.value;
-                    return (
-                      <div
-                        key={cat.value}
-                        onClick={() => setForm((f) => ({ ...f, category: cat.value }))}
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter' || e.key === ' ') {
-                            e.preventDefault();
-                            setForm((f) => ({ ...f, category: cat.value }));
-                          }
-                        }}
-                        role="radio"
-                        tabIndex={0}
-                        aria-checked={selected}
-                        className="flex items-center gap-2 cursor-pointer rounded-element transition-all"
-                        style={{
-                          padding: 12,
-                          borderWidth: 2,
-                          borderStyle: 'solid',
-                          borderColor: selected ? cat.color : 'hsl(var(--border))',
-                          backgroundColor: selected ? `${cat.color}10` : 'transparent',
-                        }}
-                        onMouseEnter={(e) => {
-                          (e.currentTarget as HTMLDivElement).style.borderColor = cat.color;
-                        }}
-                        onMouseLeave={(e) => {
-                          (e.currentTarget as HTMLDivElement).style.borderColor = selected
-                            ? cat.color
-                            : 'hsl(var(--border))';
-                        }}
-                      >
-                        <Icon
-                          style={{ width: 16, height: 16, color: cat.color }}
-                          className="shrink-0"
-                        />
-                        <p className="text-sm" style={{ fontWeight: selected ? 600 : 400 }}>
-                          {cat.label}
-                        </p>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-
-              {/* Title */}
-              <div className="mb-4">
-                <Label htmlFor="feedback-title">Title *</Label>
-                <Input
-                  id="feedback-title"
-                  placeholder="Brief summary of your feedback"
-                  value={form.title}
-                  onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
-                  maxLength={200}
-                  style={{ marginTop: 4 }}
-                />
-              </div>
-
-              {/* Description */}
-              <div className="mb-4">
-                <Label htmlFor="feedback-desc">Description *</Label>
-                <Textarea
-                  id="feedback-desc"
-                  placeholder="Tell us more..."
-                  value={form.description}
-                  onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
-                    setForm((f) => ({ ...f, description: e.target.value }))
-                  }
-                  style={{ marginTop: 4, minHeight: 100 }}
-                />
-              </div>
-
-              {/* Optional email for anonymous users */}
-              {!user && (
-                <div className="mb-4">
-                  <Label htmlFor="feedback-email">Email (optional)</Label>
-                  <Input
-                    id="feedback-email"
-                    type="email"
-                    placeholder="So we can follow up"
-                    value={form.email}
-                    onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
-                    style={{ marginTop: 4 }}
-                  />
-                </div>
-              )}
-
-              {/* Screenshot toggle + thumbnail preview */}
-              <div className="mb-4">
-                <div className="flex items-center gap-2">
-                  <Checkbox
-                    id="feedback-screenshot"
-                    checked={includeScreenshot}
-                    onCheckedChange={(checked) => setIncludeScreenshot(checked === true)}
-                  />
-                  <Label
-                    htmlFor="feedback-screenshot"
-                    style={{ alignItems: 'center' }}
-                    className="flex gap-1.5 cursor-pointer"
-                  >
-                    <Camera size={14} />
-                    Include screenshot of this page
-                  </Label>
-                </div>
-                {includeScreenshot && screenshotUrlRef.current && (
-                  <div
-                    className="mt-2 rounded-element overflow-hidden ml-8 bg-surface-container"
-                    style={{ maxWidth: 220 }}
-                  >
-                    <img
-                      src={screenshotUrlRef.current}
-                      alt="Screenshot preview"
-                      style={{ width: '100%', height: 'auto' }}
-                      className="block"
-                    />
-                  </div>
-                )}
-              </div>
-
-              {/* Context preview */}
-              <div className="text-xs2 mb-4 rounded-element bg-muted p-2.5">
-                <p className="block text-xs text-muted-foreground">
-                  Automatically included: current page URL, browser info, recent errors
-                </p>
-                <p
-                  className="text-2xs block text-muted-foreground overflow-hidden whitespace-nowrap mt-0.5"
-                  style={{ fontFamily: 'monospace', textOverflow: 'ellipsis' }}
-                >
-                  {pageUrl}
-                </p>
-              </div>
-
-              {/* Honeypot */}
-              <input
-                type="text"
-                name="website"
-                value={form.honeypot}
-                onChange={(e) => setForm((f) => ({ ...f, honeypot: e.target.value }))}
-                style={{ position: 'absolute', left: -9999, opacity: 0, height: 0 }}
-                tabIndex={-1}
-                autoComplete="off"
-                aria-hidden="true"
-              />
-
-              <DialogFooter>
-                <div className="flex gap-4 w-full justify-end">
-                  <Button variant="outline" onClick={handleClose}>
-                    Cancel
-                  </Button>
-                  <Button
-                    onClick={handleSubmit}
-                    disabled={
-                      status === 'submitting' ||
-                      !form.category ||
-                      !form.title.trim() ||
-                      !form.description.trim()
-                    }
-                  >
-                    {status === 'submitting' ? 'Submitting...' : 'Submit'}
-                  </Button>
-                </div>
-              </DialogFooter>
-            </>
-          )}
-        </DialogContent>
-      </Dialog>
+      <ContributeDialog open={open} onOpenChange={setOpen} screenshotBlob={screenshotBlob} />
     </>
   );
 }

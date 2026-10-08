@@ -11,7 +11,6 @@ describe('submissionRegistry', () => {
   it('exposes every supported content type', () => {
     expect(Object.keys(submissionRegistry).sort()).toEqual([
       'event',
-      'feedback',
       'hotel',
       'news',
       'personality',
@@ -20,6 +19,10 @@ describe('submissionRegistry', () => {
       'tag',
       'venue',
     ]);
+  });
+
+  it('keeps feedback out of the entity registry', () => {
+    expect(submissionRegistry.feedback).toBeUndefined();
   });
 
   it.each(Object.entries(submissionRegistry))(

@@ -5065,5 +5065,109 @@
       "you": "You",
       "them": "Them"
     }
+  },
+  "contributeForm": {
+    "unknownType": "Unknown submission type",
+    "unknownBody": "The submission type “{{type}}” is not supported.",
+    "backHub": "Back to contributions",
+    "signInRequired": "Sign in required",
+    "authBody": "Sign in before adding directory content. The form is unavailable to guests.",
+    "submittedBody": "Your {{type}} has been submitted and will be reviewed before publishing.",
+    "submitMore": "Submit more",
+    "submitAnother": "Submit another {{type}}",
+    "allSubmissions": "All submissions",
+    "submitType": "Submit {{type}}",
+    "returnStep": "Return to step {{step}}",
+    "step": "Step {{step}}: {{label}}",
+    "fixErrors": "Please fix the following to continue:",
+    "cancel": "Cancel",
+    "next": "Next",
+    "types": {
+      "venue": "Venue",
+      "event": "Event",
+      "product": "Product",
+      "personality": "Personality",
+      "hotel": "Hotel / BnB",
+      "tag": "Tag",
+      "news": "News article",
+      "place": "Place"
+    },
+    "steps": {
+      "basics": "Basics",
+      "location": "Location",
+      "contact": "Contact",
+      "when-where": "When & where",
+      "details": "Details",
+      "suggest": "Suggestion"
+    }
+  },
+  "contribute": {
+    "trigger": "Contribute to Queer Guide",
+    "title": "Contribute to Queer Guide",
+    "eyebrow": "Contribute",
+    "common": {
+      "failed": "Submission failed",
+      "tryAgain": "Please try again.",
+      "done": "Done",
+      "emailOptional": "Email (optional)",
+      "emailPlaceholder": "So we can follow up",
+      "back": "Back",
+      "submitting": "Submitting…",
+      "submit": "Submit"
+    },
+    "chooser": {
+      "feedbackTitle": "Report a problem or idea",
+      "feedbackBody": "Share feedback about the site or your experience.",
+      "correctionTitle": "Fix something on this page",
+      "correctionBody": "Tell us what is outdated, closed or incorrect.",
+      "addTitle": "Add something new",
+      "addBody": "Submit a venue, event, product, person or article.",
+      "scanTitle": "Scan a flyer or link",
+      "scanBody": "Extract several submissions from files or a web page."
+    },
+    "feedback": {
+      "heading": "Report a problem or share an idea",
+      "successToast": "Feedback submitted. Thank you!",
+      "thanks": "Thank you!",
+      "successBody": "Your feedback helps improve Queer Guide.",
+      "category": "What type of feedback?",
+      "categories": {
+        "bug": "Bug",
+        "idea": "Idea",
+        "improvement": "Improvement",
+        "content-idea": "Content idea"
+      },
+      "title": "Title",
+      "titlePlaceholder": "Brief summary",
+      "description": "Description",
+      "descriptionPlaceholder": "Tell us more…",
+      "includeScreenshot": "Include screenshot of this page",
+      "screenshotPreview": "Screenshot preview",
+      "contextNote": "Automatically included: current page URL, browser information and recent errors."
+    },
+    "correction": {
+      "heading": "Fix something on this page",
+      "successToast": "Correction submitted. Thank you!",
+      "thanks": "Thank you!",
+      "successBody": "Our editors will review your correction.",
+      "thisPage": "This page",
+      "wrong": "What is wrong?",
+      "replacement": "What should it say instead?"
+    },
+    "auth": {
+      "title": "Sign in to contribute",
+      "body": "An account is required before you can add directory content.",
+      "scanBody": "An account is required before you can scan and submit items.",
+      "cta": "Sign in or create an account"
+    },
+    "add": {
+      "heading": "Add something new"
+    },
+    "scan": {
+      "heading": "Scan a flyer or link",
+      "submitted": "{{count}} item submitted",
+      "linked": "{{count}} linked to an existing entry",
+      "reviewNote": "Submissions are reviewed before publishing."
+    }
   }
 }

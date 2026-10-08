@@ -5106,5 +5106,109 @@
       "you": "Toi",
       "them": "L’autre personne"
     }
+  },
+  "contributeForm": {
+    "unknownType": "Type de proposition inconnu",
+    "unknownBody": "Le type de proposition « {{type}} » n’est pas pris en charge.",
+    "backHub": "Retour aux contributions",
+    "signInRequired": "Connexion requise",
+    "authBody": "Connectez-vous avant d’ajouter du contenu à l’annuaire. Le formulaire n’est pas accessible aux visiteurs.",
+    "submittedBody": "Votre proposition « {{type}} » a été envoyée et sera vérifiée avant publication.",
+    "submitMore": "Faire une autre proposition",
+    "submitAnother": "Proposer un autre élément : {{type}}",
+    "allSubmissions": "Toutes les propositions",
+    "submitType": "Proposer : {{type}}",
+    "returnStep": "Revenir à l’étape {{step}}",
+    "step": "Étape {{step}} : {{label}}",
+    "fixErrors": "Veuillez corriger les éléments suivants :",
+    "cancel": "Annuler",
+    "next": "Suivant",
+    "types": {
+      "venue": "Lieu",
+      "event": "Événement",
+      "product": "Produit",
+      "personality": "Personnalité",
+      "hotel": "Hôtel / chambre d’hôtes",
+      "tag": "Tag",
+      "news": "Article d’actualité",
+      "place": "Endroit"
+    },
+    "steps": {
+      "basics": "Informations de base",
+      "location": "Lieu",
+      "contact": "Contact",
+      "when-where": "Date et lieu",
+      "details": "Détails",
+      "suggest": "Suggestion"
+    }
+  },
+  "contribute": {
+    "trigger": "Contribuer à Queer Guide",
+    "title": "Contribuer à Queer Guide",
+    "eyebrow": "Contribuer",
+    "common": {
+      "failed": "Échec de l’envoi",
+      "tryAgain": "Veuillez réessayer.",
+      "done": "Terminé",
+      "emailOptional": "E-mail (facultatif)",
+      "emailPlaceholder": "Pour que nous puissions vous recontacter",
+      "back": "Retour",
+      "submitting": "Envoi…",
+      "submit": "Envoyer"
+    },
+    "chooser": {
+      "feedbackTitle": "Signaler un problème ou une idée",
+      "feedbackBody": "Donnez votre avis sur le site ou votre expérience.",
+      "correctionTitle": "Corriger cette page",
+      "correctionBody": "Dites-nous ce qui est obsolète, fermé ou incorrect.",
+      "addTitle": "Ajouter quelque chose",
+      "addBody": "Proposez un lieu, un événement, un produit, une personne ou un article.",
+      "scanTitle": "Scanner un flyer ou un lien",
+      "scanBody": "Extrayez plusieurs propositions depuis des fichiers ou une page web."
+    },
+    "feedback": {
+      "heading": "Signaler un problème ou partager une idée",
+      "successToast": "Avis envoyé. Merci !",
+      "thanks": "Merci !",
+      "successBody": "Votre avis nous aide à améliorer Queer Guide.",
+      "category": "Quel type d’avis ?",
+      "categories": {
+        "bug": "Bug",
+        "idea": "Idée",
+        "improvement": "Amélioration",
+        "content-idea": "Idée de contenu"
+      },
+      "title": "Titre",
+      "titlePlaceholder": "Bref résumé",
+      "description": "Description",
+      "descriptionPlaceholder": "Dites-nous-en plus…",
+      "includeScreenshot": "Inclure une capture de cette page",
+      "screenshotPreview": "Aperçu de la capture",
+      "contextNote": "Inclus automatiquement : URL actuelle, informations du navigateur et erreurs récentes."
+    },
+    "correction": {
+      "heading": "Corriger cette page",
+      "successToast": "Correction envoyée. Merci !",
+      "thanks": "Merci !",
+      "successBody": "Notre équipe éditoriale examinera votre correction.",
+      "thisPage": "Cette page",
+      "wrong": "Qu’est-ce qui est incorrect ?",
+      "replacement": "Que devrait-il être indiqué à la place ?"
+    },
+    "auth": {
+      "title": "Connectez-vous pour contribuer",
+      "body": "Un compte est requis pour ajouter du contenu à l’annuaire.",
+      "scanBody": "Un compte est requis pour scanner et envoyer des éléments.",
+      "cta": "Se connecter ou créer un compte"
+    },
+    "add": {
+      "heading": "Ajouter quelque chose"
+    },
+    "scan": {
+      "heading": "Scanner un flyer ou un lien",
+      "submitted": "{{count}} élément envoyé",
+      "linked": "{{count}} lié à une entrée existante",
+      "reviewNote": "Les propositions sont vérifiées avant publication."
+    }
   }
 }

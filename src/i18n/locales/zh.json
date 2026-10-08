@@ -5100,5 +5100,109 @@
       "you": "你",
       "them": "对方"
     }
+  },
+  "contributeForm": {
+    "unknownType": "未知的提交类型",
+    "unknownBody": "不支持提交类型“{{type}}”。",
+    "backHub": "返回贡献页面",
+    "signInRequired": "需要登录",
+    "authBody": "请先登录再添加目录内容。访客无法使用此表单。",
+    "submittedBody": "你的{{type}}提交已收到，将在发布前接受审核。",
+    "submitMore": "继续提交",
+    "submitAnother": "再提交一个{{type}}",
+    "allSubmissions": "所有提交类型",
+    "submitType": "提交{{type}}",
+    "returnStep": "返回第 {{step}} 步",
+    "step": "第 {{step}} 步：{{label}}",
+    "fixErrors": "请修正以下内容后继续：",
+    "cancel": "取消",
+    "next": "下一步",
+    "types": {
+      "venue": "场所",
+      "event": "活动",
+      "product": "商品",
+      "personality": "人物",
+      "hotel": "酒店 / 民宿",
+      "tag": "标签",
+      "news": "新闻文章",
+      "place": "地点"
+    },
+    "steps": {
+      "basics": "基本信息",
+      "location": "位置",
+      "contact": "联系方式",
+      "when-where": "时间与地点",
+      "details": "详细信息",
+      "suggest": "建议"
+    }
+  },
+  "contribute": {
+    "trigger": "为 Queer Guide 贡献内容",
+    "title": "为 Queer Guide 贡献内容",
+    "eyebrow": "贡献内容",
+    "common": {
+      "failed": "提交失败",
+      "tryAgain": "请重试。",
+      "done": "完成",
+      "emailOptional": "电子邮箱（可选）",
+      "emailPlaceholder": "便于我们后续联系",
+      "back": "返回",
+      "submitting": "正在提交…",
+      "submit": "提交"
+    },
+    "chooser": {
+      "feedbackTitle": "报告问题或提出想法",
+      "feedbackBody": "分享你对网站或使用体验的反馈。",
+      "correctionTitle": "更正此页面的信息",
+      "correctionBody": "告诉我们哪些信息已过时、场所已关闭或内容不正确。",
+      "addTitle": "添加新内容",
+      "addBody": "提交场所、活动、商品、人物或文章。",
+      "scanTitle": "扫描传单或链接",
+      "scanBody": "从文件或网页中提取多个提交项目。"
+    },
+    "feedback": {
+      "heading": "报告问题或分享想法",
+      "successToast": "反馈已提交，谢谢！",
+      "thanks": "谢谢！",
+      "successBody": "你的反馈将帮助我们改进 Queer Guide。",
+      "category": "反馈类型",
+      "categories": {
+        "bug": "错误",
+        "idea": "想法",
+        "improvement": "改进建议",
+        "content-idea": "内容建议"
+      },
+      "title": "标题",
+      "titlePlaceholder": "简要概述",
+      "description": "详细说明",
+      "descriptionPlaceholder": "请告诉我们更多信息…",
+      "includeScreenshot": "附上此页面的截图",
+      "screenshotPreview": "截图预览",
+      "contextNote": "将自动附上当前页面网址、浏览器信息和近期错误。"
+    },
+    "correction": {
+      "heading": "更正此页面的信息",
+      "successToast": "更正已提交，谢谢！",
+      "thanks": "谢谢！",
+      "successBody": "编辑团队将审核你的更正。",
+      "thisPage": "此页面",
+      "wrong": "哪里不正确？",
+      "replacement": "正确内容应该是什么？"
+    },
+    "auth": {
+      "title": "登录后贡献内容",
+      "body": "添加目录内容需要账户。",
+      "scanBody": "扫描并提交内容需要账户。",
+      "cta": "登录或创建账户"
+    },
+    "add": {
+      "heading": "添加新内容"
+    },
+    "scan": {
+      "heading": "扫描传单或链接",
+      "submitted": "已提交 {{count}} 个项目",
+      "linked": "已将 {{count}} 个项目关联到现有条目",
+      "reviewNote": "提交内容会在发布前接受审核。"
+    }
   }
 }

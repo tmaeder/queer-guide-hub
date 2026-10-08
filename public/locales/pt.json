@@ -5102,5 +5102,109 @@
       "you": "Tu",
       "them": "A outra pessoa"
     }
+  },
+  "contributeForm": {
+    "unknownType": "Tipo de envio desconhecido",
+    "unknownBody": "O tipo de envio «{{type}}» não é suportado.",
+    "backHub": "Voltar às contribuições",
+    "signInRequired": "É necessário iniciar sessão",
+    "authBody": "Inicia sessão antes de adicionar conteúdo ao diretório. O formulário não está disponível para visitantes.",
+    "submittedBody": "O teu envio de {{type}} foi recebido e será revisto antes da publicação.",
+    "submitMore": "Enviar mais",
+    "submitAnother": "Enviar outro item: {{type}}",
+    "allSubmissions": "Todos os envios",
+    "submitType": "Enviar {{type}}",
+    "returnStep": "Voltar ao passo {{step}}",
+    "step": "Passo {{step}}: {{label}}",
+    "fixErrors": "Corrige o seguinte para continuar:",
+    "cancel": "Cancelar",
+    "next": "Seguinte",
+    "types": {
+      "venue": "Espaço",
+      "event": "Evento",
+      "product": "Produto",
+      "personality": "Pessoa",
+      "hotel": "Hotel / alojamento",
+      "tag": "Etiqueta",
+      "news": "Artigo de notícias",
+      "place": "Local"
+    },
+    "steps": {
+      "basics": "Informações básicas",
+      "location": "Localização",
+      "contact": "Contacto",
+      "when-where": "Quando e onde",
+      "details": "Detalhes",
+      "suggest": "Sugestão"
+    }
+  },
+  "contribute": {
+    "trigger": "Contribuir para o Queer Guide",
+    "title": "Contribuir para o Queer Guide",
+    "eyebrow": "Contribuir",
+    "common": {
+      "failed": "Falha no envio",
+      "tryAgain": "Tenta novamente.",
+      "done": "Concluído",
+      "emailOptional": "E-mail (opcional)",
+      "emailPlaceholder": "Para podermos entrar em contacto",
+      "back": "Voltar",
+      "submitting": "A enviar…",
+      "submit": "Enviar"
+    },
+    "chooser": {
+      "feedbackTitle": "Comunicar um problema ou ideia",
+      "feedbackBody": "Partilha comentários sobre o site ou a tua experiência.",
+      "correctionTitle": "Corrigir algo nesta página",
+      "correctionBody": "Diz-nos o que está desatualizado, encerrado ou incorreto.",
+      "addTitle": "Adicionar algo novo",
+      "addBody": "Envia um espaço, evento, produto, pessoa ou artigo.",
+      "scanTitle": "Digitalizar um folheto ou ligação",
+      "scanBody": "Extrai vários envios de ficheiros ou de uma página web."
+    },
+    "feedback": {
+      "heading": "Comunicar um problema ou partilhar uma ideia",
+      "successToast": "Comentário enviado. Obrigado!",
+      "thanks": "Obrigado!",
+      "successBody": "O teu comentário ajuda a melhorar o Queer Guide.",
+      "category": "Que tipo de comentário?",
+      "categories": {
+        "bug": "Erro",
+        "idea": "Ideia",
+        "improvement": "Melhoria",
+        "content-idea": "Ideia de conteúdo"
+      },
+      "title": "Título",
+      "titlePlaceholder": "Resumo breve",
+      "description": "Descrição",
+      "descriptionPlaceholder": "Conta-nos mais…",
+      "includeScreenshot": "Incluir uma captura desta página",
+      "screenshotPreview": "Pré-visualização da captura",
+      "contextNote": "Incluído automaticamente: URL atual, informações do navegador e erros recentes."
+    },
+    "correction": {
+      "heading": "Corrigir algo nesta página",
+      "successToast": "Correção enviada. Obrigado!",
+      "thanks": "Obrigado!",
+      "successBody": "A nossa equipa editorial irá rever a tua correção.",
+      "thisPage": "Esta página",
+      "wrong": "O que está errado?",
+      "replacement": "O que deveria dizer em vez disso?"
+    },
+    "auth": {
+      "title": "Inicia sessão para contribuir",
+      "body": "É necessária uma conta para adicionar conteúdo ao diretório.",
+      "scanBody": "É necessária uma conta para digitalizar e enviar itens.",
+      "cta": "Iniciar sessão ou criar conta"
+    },
+    "add": {
+      "heading": "Adicionar algo novo"
+    },
+    "scan": {
+      "heading": "Digitalizar um folheto ou ligação",
+      "submitted": "{{count}} item enviado",
+      "linked": "{{count}} associado a uma entrada existente",
+      "reviewNote": "Os envios são revistos antes da publicação."
+    }
   }
 }

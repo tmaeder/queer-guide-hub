@@ -6,6 +6,7 @@
 import { z, type ZodTypeAny } from 'zod';
 import type { SubmissionTypeConfig } from '@/config/submissionRegistry';
 import { contentTypeRegistry } from '@/config/contentTypeRegistry';
+import { placeSubmissionContentType } from '@/config/contentTypes/place';
 import type { FieldConfig } from '@/types/cms';
 import { ensureProtocol, isValidHttpUrl } from '@/utils/url';
 
@@ -89,9 +90,7 @@ function schemaForField(field: FieldConfig): ZodTypeAny {
     case 'unified_tag':
     case 'roles_autocomplete':
     case 'images':
-      return required
-        ? z.array(z.any()).min(1, requiredMsg)
-        : z.array(z.any()).optional();
+      return required ? z.array(z.any()).min(1, requiredMsg) : z.array(z.any()).optional();
 
     case 'image':
     case 'json':
@@ -101,7 +100,10 @@ function schemaForField(field: FieldConfig): ZodTypeAny {
 }
 
 function fieldsFor(config: SubmissionTypeConfig): FieldConfig[] {
-  return contentTypeRegistry[config.contentType]?.fields ?? [];
+  return (
+    contentTypeRegistry[config.contentType]?.fields ??
+    (config.id === 'place' ? placeSubmissionContentType.fields : [])
+  );
 }
 
 function shapeForFields(stepFieldNames: string[], fields: FieldConfig[]) {

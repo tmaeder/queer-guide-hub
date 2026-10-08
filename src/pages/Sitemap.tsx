@@ -5,7 +5,6 @@ import { Search, Link2, Hash } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { useDynamicSitemap } from '@/hooks/useDynamicSitemap';
-import { useTranslation } from 'react-i18next';
 import { PageContainer } from '@/components/layout/PageContainer';
 import { PageLoadingState } from '@/components/layout/PageLoadingState';
 
@@ -31,7 +30,6 @@ function setCanonical(href: string) {
 
 export default function Sitemap() {
   const [query, setQuery] = useState('');
-  const { _t } = useTranslation();
   const [copied, setCopied] = useState<string | null>(null);
   const { data: routes = [], isLoading, error } = useDynamicSitemap();
 

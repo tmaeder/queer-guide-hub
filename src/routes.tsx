@@ -180,8 +180,7 @@ const SharedTripPage = lazyRetry(() => import('./pages/trips/SharedTripPage'));
 const TripSubrouteRedirect = lazyRetry(() => import('./pages/trips/TripSubrouteRedirect'));
 const Donate = lazyRetry(() => import('./pages/Donate'));
 const Sitemap = lazyRetry(() => import('./pages/Sitemap'));
-const SubmitHub = lazyRetry(() => import('./pages/SubmitHub'));
-const SubmitForm = lazyRetry(() => import('./pages/SubmitForm'));
+const ContributePage = lazyRetry(() => import('./pages/ContributePage'));
 const FeedbackBoard = lazyRetry(() => import('./pages/FeedbackBoard'));
 const HelpHotlines = lazyRetry(() => import('./pages/HelpHotlines'));
 const CMSPage = lazyRetry(() => import('./pages/Page'));
@@ -1076,7 +1075,7 @@ export const AppRoutes = () => {
                   dev, `vite preview`, the PR e2e run) — so the route exists
                   too. A dead crisis link must not depend on the host layer. */}
                   <Route path="help-hotlines" element={<LocalizedRedirect to="/help" />} />
-                  <Route path="submit" element={<SubmitHub />} />
+                  <Route path="submit" element={<ContributePage />} />
                   {/* Explicit static route per submission type. The locale
                   layout parent is `/:locale?`; React Router expands the
                   optional segment, so /submit/news scores `/:locale/news`
@@ -1088,14 +1087,14 @@ export const AppRoutes = () => {
                   the form. Generated from the registry so future colliding
                   slugs stay covered. The `:contentType` route below still
                   handles unknown types ("Unknown submission type"). */}
-                  {Object.keys(submissionRegistry).map((slug) => (
+                  {[...Object.keys(submissionRegistry), 'feedback'].map((slug) => (
                     <Route
                       key={slug}
                       path={`submit/${slug}`}
-                      element={<SubmitForm contentType={slug} />}
+                      element={<ContributePage type={slug} />}
                     />
                   ))}
-                  <Route path="submit/:contentType" element={<SubmitForm />} />
+                  <Route path="submit/:contentType" element={<ContributePage />} />
                   {/* `p/:slug` moved to the top of this list — see note there. */}
                   <Route path="share-target" element={<ShareTarget />} />
                   {/* Inner catch-all: paths like /de/unknown or /en/typo

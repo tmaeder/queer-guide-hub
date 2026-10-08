@@ -5102,5 +5102,109 @@
       "you": "Tu",
       "them": "L’altra persona"
     }
+  },
+  "contributeForm": {
+    "unknownType": "Tipo di proposta sconosciuto",
+    "unknownBody": "Il tipo di proposta «{{type}}» non è supportato.",
+    "backHub": "Torna ai contributi",
+    "signInRequired": "Accesso richiesto",
+    "authBody": "Accedi prima di aggiungere contenuti alla directory. Il modulo non è disponibile agli ospiti.",
+    "submittedBody": "La proposta «{{type}}» è stata inviata e sarà verificata prima della pubblicazione.",
+    "submitMore": "Invia altro",
+    "submitAnother": "Invia un altro elemento: {{type}}",
+    "allSubmissions": "Tutte le proposte",
+    "submitType": "Invia {{type}}",
+    "returnStep": "Torna al passaggio {{step}}",
+    "step": "Passaggio {{step}}: {{label}}",
+    "fixErrors": "Correggi quanto segue per continuare:",
+    "cancel": "Annulla",
+    "next": "Avanti",
+    "types": {
+      "venue": "Locale",
+      "event": "Evento",
+      "product": "Prodotto",
+      "personality": "Persona",
+      "hotel": "Hotel / BnB",
+      "tag": "Tag",
+      "news": "Articolo di notizie",
+      "place": "Luogo"
+    },
+    "steps": {
+      "basics": "Informazioni di base",
+      "location": "Posizione",
+      "contact": "Contatti",
+      "when-where": "Quando e dove",
+      "details": "Dettagli",
+      "suggest": "Suggerimento"
+    }
+  },
+  "contribute": {
+    "trigger": "Contribuisci a Queer Guide",
+    "title": "Contribuisci a Queer Guide",
+    "eyebrow": "Contribuisci",
+    "common": {
+      "failed": "Invio non riuscito",
+      "tryAgain": "Riprova.",
+      "done": "Fatto",
+      "emailOptional": "Email (facoltativa)",
+      "emailPlaceholder": "Per poterti ricontattare",
+      "back": "Indietro",
+      "submitting": "Invio…",
+      "submit": "Invia"
+    },
+    "chooser": {
+      "feedbackTitle": "Segnala un problema o un’idea",
+      "feedbackBody": "Condividi un commento sul sito o sulla tua esperienza.",
+      "correctionTitle": "Correggi questa pagina",
+      "correctionBody": "Dicci cosa è obsoleto, chiuso o errato.",
+      "addTitle": "Aggiungi qualcosa di nuovo",
+      "addBody": "Invia un locale, un evento, un prodotto, una persona o un articolo.",
+      "scanTitle": "Scansiona un volantino o un link",
+      "scanBody": "Estrai più proposte da file o da una pagina web."
+    },
+    "feedback": {
+      "heading": "Segnala un problema o condividi un’idea",
+      "successToast": "Feedback inviato. Grazie!",
+      "thanks": "Grazie!",
+      "successBody": "Il tuo feedback aiuta a migliorare Queer Guide.",
+      "category": "Che tipo di feedback?",
+      "categories": {
+        "bug": "Errore",
+        "idea": "Idea",
+        "improvement": "Miglioramento",
+        "content-idea": "Idea per i contenuti"
+      },
+      "title": "Titolo",
+      "titlePlaceholder": "Breve riepilogo",
+      "description": "Descrizione",
+      "descriptionPlaceholder": "Raccontaci di più…",
+      "includeScreenshot": "Includi uno screenshot di questa pagina",
+      "screenshotPreview": "Anteprima screenshot",
+      "contextNote": "Inclusi automaticamente: URL corrente, informazioni sul browser ed errori recenti."
+    },
+    "correction": {
+      "heading": "Correggi questa pagina",
+      "successToast": "Correzione inviata. Grazie!",
+      "thanks": "Grazie!",
+      "successBody": "La redazione esaminerà la tua correzione.",
+      "thisPage": "Questa pagina",
+      "wrong": "Cosa non va?",
+      "replacement": "Cosa dovrebbe esserci al suo posto?"
+    },
+    "auth": {
+      "title": "Accedi per contribuire",
+      "body": "È necessario un account per aggiungere contenuti alla directory.",
+      "scanBody": "È necessario un account per scansionare e inviare elementi.",
+      "cta": "Accedi o crea un account"
+    },
+    "add": {
+      "heading": "Aggiungi qualcosa di nuovo"
+    },
+    "scan": {
+      "heading": "Scansiona un volantino o un link",
+      "submitted": "{{count}} elemento inviato",
+      "linked": "{{count}} collegato a una voce esistente",
+      "reviewNote": "Le proposte vengono controllate prima della pubblicazione."
+    }
   }
 }
