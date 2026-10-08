@@ -99,7 +99,7 @@ export function HotlineRow({
 
   return (
     <article>
-      <div className="flex flex-wrap items-center gap-x-4 gap-y-2 p-4">
+      <div className="grid gap-6 p-6 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
         <div className="min-w-0 flex-1 basis-56">
           <h3 className="text-title font-bold leading-tight">{hotline.name}</h3>
           <p className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-13">
@@ -130,11 +130,11 @@ export function HotlineRow({
           </p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2 sm:justify-end">
           {primaryPhone && (
             <a
               href={channelHref(primaryPhone)}
-              className="flex items-center gap-2 rounded-element bg-foreground px-4 py-2 text-background no-underline transition-opacity hover:opacity-90"
+              className="flex min-h-11 basis-full items-center justify-center gap-2 rounded-element bg-foreground px-4 py-2 text-background no-underline transition-opacity hover:opacity-90 active:opacity-80 sm:basis-auto"
               aria-label={t('help.call_aria', 'Call {{name}} {{phone}}', {
                 name: hotline.name,
                 phone: primaryPhone.value,
@@ -150,7 +150,7 @@ export function HotlineRow({
               href={channelHref(quickAlt)}
               target={quickAlt.kind === 'chat' ? '_blank' : undefined}
               rel={quickAlt.kind === 'chat' ? 'noopener noreferrer' : undefined}
-              className={CHANNEL_BTN}
+              className={`${CHANNEL_BTN} min-h-11 flex-1 sm:flex-none`}
               aria-label={`${hotline.name} — ${quickAlt.label ?? quickAlt.kind}`}
             >
               <QuickAltIcon size={14} aria-hidden />
@@ -164,9 +164,14 @@ export function HotlineRow({
             aria-label={
               isKept ? t('help.unkeep', 'Stop keeping this line') : t('help.keep', 'Keep this line')
             }
-            className="rounded-element p-2 transition-colors hover:bg-foreground hover:text-background"
+            className="inline-flex min-h-11 items-center gap-2 rounded-element px-4 py-2 text-13 font-bold transition-colors hover:bg-foreground hover:text-background sm:px-2"
           >
             <Bookmark size={14} fill={isKept ? 'currentColor' : 'none'} aria-hidden />
+            <span className="sm:sr-only">
+              {isKept
+                ? t('help.unkeep', 'Stop keeping this line')
+                : t('help.keep', 'Keep this line')}
+            </span>
           </button>
           <button
             type="button"
@@ -174,10 +179,11 @@ export function HotlineRow({
             aria-expanded={expanded}
             aria-controls={detailsId}
             aria-label={t('help.details_aria', 'Details for {{name}}', { name: hotline.name })}
-            className="rounded-element p-2 transition-colors hover:bg-foreground hover:text-background"
+            className="inline-flex min-h-11 items-center gap-2 rounded-element px-4 py-2 text-13 font-bold transition-colors hover:bg-foreground hover:text-background sm:px-2"
           >
             {/* Static flip, no transition — the crisis pages are animation-free. */}
             <ChevronDown size={16} aria-hidden className={expanded ? 'rotate-180' : undefined} />
+            <span className="sm:sr-only">{t('common.more', 'More')}</span>
           </button>
         </div>
       </div>

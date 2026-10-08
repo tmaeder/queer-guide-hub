@@ -31,12 +31,12 @@ export function CrisisBar({ country }: { country: string }) {
       // header-alignment contract in e2e/page-layout.spec.ts.
       className="-mx-4 overflow-hidden rounded-container border-y border-border-hairline bg-destructive text-destructive-foreground sm:-mx-6 md:-mx-8"
     >
-      <div className="mx-auto flex max-w-page flex-wrap items-center gap-x-6 gap-y-2 px-4 py-2 sm:px-6 md:px-8">
-        <h2 className="flex items-center gap-2 text-15 font-bold leading-tight">
+      <div className="mx-auto grid max-w-page gap-2 px-4 py-4 sm:px-6 md:grid-cols-[auto_1fr] md:items-center md:gap-6 md:px-8">
+        <h2 className="flex items-center gap-2 font-sans text-15 font-bold leading-tight tracking-normal">
           <AlertTriangle size={18} aria-hidden className="shrink-0" />
           {t('help.emergency_title', 'In acute danger?')}
         </h2>
-        <p className="flex flex-wrap items-center gap-x-2 text-15 leading-tight">
+        <p className="flex flex-wrap items-center gap-x-2 text-15 leading-tight md:justify-end">
           {t('help.emergency_call', 'Call now:')}{' '}
           {contacts.map((contact, index) => (
             <span key={`${contact.number}-${contact.region}`} className="inline-flex gap-1">
