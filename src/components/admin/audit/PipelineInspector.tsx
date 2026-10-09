@@ -46,6 +46,8 @@ import {
   type AuditEvent,
   type AuditEventKind,
 } from '@/hooks/useEntityAuditTimeline';
+import { StructuredValueView } from '@/components/cms/fields/structured/StructuredValueView';
+import { summarizeStructured } from '@/components/cms/fields/structured/structuredValue';
 
 interface PipelineInspectorProps {
   /** audit_entity_registry.entity_key — the plural table name, e.g. 'venues'. */
@@ -114,8 +116,8 @@ function shortValue(v: unknown): string | null {
   if (v === null || v === undefined) return null;
   if (typeof v === 'string') return v.length > 140 ? `${v.slice(0, 140)}…` : v;
   if (typeof v === 'number' || typeof v === 'boolean') return String(v);
-  const json = JSON.stringify(v);
-  return json.length > 140 ? `${json.slice(0, 140)}…` : json;
+  const text = summarizeStructured(v);
+  return text.length > 140 ? `${text.slice(0, 140)}…` : text;
 }
 
 function EventRow({ event }: { event: AuditEvent }) {
@@ -204,9 +206,12 @@ function EventRow({ event }: { event: AuditEvent }) {
               </button>
             </CollapsibleTrigger>
             <CollapsibleContent>
-              <pre className="mt-1 text-2xs bg-muted p-2 rounded-element overflow-x-auto">
-                {JSON.stringify({ source_ref: event.source_ref, raw: event.raw }, null, 2)}
-              </pre>
+              <div className="mt-1 bg-muted p-2 rounded-element overflow-x-auto">
+                <StructuredValueView
+                  value={{ source_ref: event.source_ref, raw: event.raw }}
+                  className="text-2xs"
+                />
+              </div>
             </CollapsibleContent>
           </Collapsible>
         </div>

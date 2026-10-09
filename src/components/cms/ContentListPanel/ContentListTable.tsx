@@ -267,6 +267,14 @@ function renderColumnValue(
       </div>
     );
   }
+  if (typeof v === 'object' || field.type === 'json') {
+    const summary = summarizeStructured(v);
+    return (
+      <span className="text-13 truncate block" title={summary}>
+        {summary}
+      </span>
+    );
+  }
   return <span className="text-13 truncate block">{String(v)}</span>;
 }
 
@@ -275,6 +283,7 @@ function renderColumnValue(
 import { RowLifecycleActions } from './RowLifecycleActions';
 import { livePath } from '@/lib/cmsLinks';
 import { isArchived } from '@/hooks/useEntityLifecycle';
+import { summarizeStructured } from '@/components/cms/fields/structured/structuredValue';
 
 export interface ContentListTableProps {
   contentTypeId?: string;

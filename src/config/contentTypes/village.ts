@@ -25,7 +25,7 @@ export const queerVillageFields: FieldConfig[] = [
   { name: 'history', label: 'History', type: 'richtext', group: 'details', colSpan: 2 },
   { name: 'website', label: 'Website', type: 'url', group: 'details' },
   { name: 'notable_landmarks', label: 'Notable Landmarks', type: 'tags', group: 'details' },
-  { name: 'boundaries', label: 'Boundaries', type: 'json', group: 'details', helpText: 'GeoJSON boundary data' },
+  { name: 'boundaries', label: 'Boundaries', type: 'json', group: 'details', helpText: 'District boundary shape' },
   // Location
   // `queer_villages` stores only the FKs — it has no city/country text columns, so
   // those targets wrote nothing. The autocompletes display via the FK.

@@ -36,6 +36,7 @@ import { useCentralizedTags, useTagUsageCounts } from '@/hooks/useCentralizedTag
 import type { CategoryTreeNode, CentralizedTag } from '@/hooks/useCentralizedTags';
 import { useTagAliasSearch } from '@/hooks/useTagAliasSearch';
 import { useSafeMode } from '@/providers/SafeModeProvider';
+import { useAgeAffirmation } from '@/hooks/useAgeAffirmation';
 import { useMeta } from '@/hooks/useMeta';
 import { PageContainer, STICKY_RAIL_UNDER_HEADER } from '@/components/layout/PageContainer';
 import { cn } from '@/lib/utils';
@@ -85,6 +86,7 @@ export default function TagsIndex() {
   const { allTags, categoriesTree, loading, error } = useCentralizedTags();
   const { data: usageCounts = {} } = useTagUsageCounts();
   const safeMode = useSafeMode();
+  const { affirm } = useAgeAffirmation();
 
   // ── URL state ───────────────────────────────────────────────────────────
   const resolveCategorySlug = useCallback(
@@ -504,7 +506,10 @@ export default function TagsIndex() {
               {hideAdult && (
                 <button
                   type="button"
-                  onClick={() => patch({ adult: true })}
+                  onClick={() => {
+                    void affirm();
+                    patch({ adult: true });
+                  }}
                   className="text-13 underline underline-offset-4"
                 >
                   {t('tags.filter.includeAdult', 'Include 18+ terms')}

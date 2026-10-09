@@ -27,6 +27,7 @@ import {
   type BusinessBrandEntityType,
   type QualityFindingState,
 } from '@/hooks/useBusinessSpine';
+import { summarizeStructured } from '@/components/cms/fields/structured/structuredValue';
 
 const DIMENSIONS = [
   'identity',
@@ -264,9 +265,9 @@ export function BusinessBrandQualityPanel() {
               </TableCell>
               <TableCell
                 className="max-w-sm truncate text-12 text-muted-foreground"
-                title={JSON.stringify(finding.evidence)}
+                title={summarizeStructured(finding.evidence, 20)}
               >
-                {JSON.stringify(finding.evidence)}
+                {summarizeStructured(finding.evidence)}
               </TableCell>
             </TableRow>
           ))}

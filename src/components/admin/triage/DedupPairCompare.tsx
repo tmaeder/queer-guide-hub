@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { AdminCompareFrame, type CompareRow } from '@/components/admin/frames/AdminCompareFrame';
+import { summarizeStructured } from '@/components/cms/fields/structured/structuredValue';
 
 /**
  * A queued duplicate pair, side by side, with the fields that decide it.
@@ -66,7 +67,7 @@ function fmt(v: unknown): string {
   if (v === null || v === undefined || v === '') return '—';
   if (typeof v === 'boolean') return v ? 'yes' : 'no';
   if (Array.isArray(v)) return v.length ? v.join(', ') : '—';
-  if (typeof v === 'object') return JSON.stringify(v);
+  if (typeof v === 'object') return summarizeStructured(v, 6);
   return String(v);
 }
 
