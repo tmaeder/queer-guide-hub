@@ -29,7 +29,7 @@ declare
   v_person  record;
   v_res     jsonb;
 begin
-  perform set_config('app.actor', 'migration:99991791573919_city_eidelstedt_district_shell', true);
+  perform set_config('app.actor', 'migration:99991791574887_city_eidelstedt_district_shell', true);
 
   select id into v_hamburg
     from public.cities
@@ -58,7 +58,7 @@ begin
     v_shell,
     'district_of_hamburg',
     jsonb_build_object('district', 'Eidelstedt', 'parent_city', 'Hamburg',
-                       'by', 'migration:99991791573919'));
+                       'by', 'migration:99991791574887'));
   if coalesce((v_res->>'ok')::boolean, false) is not true then
     raise exception 'archive_city_as_nonplace refused: %', v_res;
   end if;

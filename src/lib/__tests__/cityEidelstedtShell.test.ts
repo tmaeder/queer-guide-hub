@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 /**
- * Guards `99991791573919_city_eidelstedt_district_shell.sql`.
+ * Guards `99991791574887_city_eidelstedt_district_shell.sql`.
  *
  * "Eidelstedt, Altona" is a Hamburg district minted as a city from one
  * personality's birth-place text. The repair repoints that personality at
@@ -15,7 +15,7 @@ import { join } from 'node:path';
  * Assertions run on comment-stripped SQL so the header prose cannot satisfy them.
  */
 const raw = readFileSync(
-  join(process.cwd(), 'supabase', 'migrations', '99991791573919_city_eidelstedt_district_shell.sql'),
+  join(process.cwd(), 'supabase', 'migrations', '99991791574887_city_eidelstedt_district_shell.sql'),
   'utf8',
 );
 const sql = raw
@@ -27,7 +27,7 @@ const verify = sql.slice(sql.indexOf('do $verify$'));
 
 describe('Eidelstedt district shell repair', () => {
   it('declares an attributed actor', () => {
-    expect(fix).toMatch(/set_config\('app\.actor',\s*'migration:99991791573919_city_eidelstedt_district_shell'/);
+    expect(fix).toMatch(/set_config\('app\.actor',\s*'migration:99991791574887_city_eidelstedt_district_shell'/);
   });
 
   it('archives the shell instead of merging it', () => {
