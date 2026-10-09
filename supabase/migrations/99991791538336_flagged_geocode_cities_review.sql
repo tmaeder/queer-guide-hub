@@ -130,6 +130,29 @@ begin
     v_renamed := v_renamed + 1;
   end loop;
 
+  -- The eight left for a human keep their review flag. Two of them LOST it
+  -- between this file's dry run and its first apply: backfill-city-region
+  -- read enrichment_status at run start and wrote the whole object back ~35
+  -- minutes later, dropping the key 99991791528780 had added meanwhile
+  -- (Tinet ward 09:34, Causeway Coast and Glens 09:35 — needs_attention
+  -- survived because the script does not write it). Re-stamp, then assert.
+  update public.cities c
+     set enrichment_status = coalesce(c.enrichment_status, '{}'::jsonb)
+           || jsonb_build_object('admin_unit_review', jsonb_build_object(
+                'reason', 'subdivision',
+                'detail', 'minted by backfill-venue-cities from a geocoder label that is a city subdivision or not in English; decide the parent city by hand',
+                'by', 'migration:99991791538336', 'restored_after', 'backfill-city-region lost update',
+                'at', now())),
+         needs_attention = true,
+         updated_at = now()
+   where c.id in ('83dff157-c426-41da-907b-4dd7a50425fc', 'b4cf316e-aabe-4223-a0d7-1d604f71a328',
+                  'ffa7d7e9-d0ba-47c4-8c4b-f74d43dc471a', 'e834061a-f4d4-4ea3-ba6c-9b5ff7a9d3a4',
+                  'd7ba5296-ad39-462e-bd31-71aa3e09a9bc', 'b836b562-59e1-4464-a3de-3ddcf8374586',
+                  '70aa5a4d-eeb7-46ec-bf66-a72e45e7ce1d', 'c696ede4-bded-453c-ba3c-de5c4184dcb2')
+     and c.duplicate_of_id is null
+     and not (coalesce(c.enrichment_status, '{}'::jsonb) ? 'admin_unit_review')
+     and not (coalesce(c.enrichment_status, '{}'::jsonb) ? 'admin_unit_reviewed');
+
   raise notice 'flagged review: merged %, renamed %, skipped %: %',
     v_merged, v_renamed, coalesce(array_length(v_skipped, 1), 0), v_skipped;
 
@@ -158,13 +181,16 @@ begin
     raise exception 'P4 failed: a rename moved a slug';
   end if;
 
-  -- P5: the eight deliberately left rows are still flagged for a human.
+  -- P5: the eight deliberately left rows are still flagged for a human —
+  -- every one that is still live and was not resolved by someone else.
   if (select count(*) from public.cities
        where id in ('83dff157-c426-41da-907b-4dd7a50425fc', 'b4cf316e-aabe-4223-a0d7-1d604f71a328',
                     'ffa7d7e9-d0ba-47c4-8c4b-f74d43dc471a', 'e834061a-f4d4-4ea3-ba6c-9b5ff7a9d3a4',
                     'd7ba5296-ad39-462e-bd31-71aa3e09a9bc', 'b836b562-59e1-4464-a3de-3ddcf8374586',
                     '70aa5a4d-eeb7-46ec-bf66-a72e45e7ce1d', 'c696ede4-bded-453c-ba3c-de5c4184dcb2')
-         and duplicate_of_id is null and enrichment_status ? 'admin_unit_review') <> 8 then
+         and duplicate_of_id is null
+         and not (enrichment_status ? 'admin_unit_reviewed')
+         and not (enrichment_status ? 'admin_unit_review')) > 0 then
     raise exception 'P5 failed: a deliberately unresolved row lost its review flag';
   end if;
 end
