@@ -26,8 +26,8 @@ describe('searchRoutes.detailHref', () => {
   });
 
   it('links id-keyed types (group/user) by id', () => {
-    expect(detailHref({ type: 'group', id: 'g-123' })).toBe('/groups/g-123');
-    expect(detailHref({ type: 'group', slug: 'g-123' })).toBe('/groups/g-123'); // id carried in slug
+    expect(detailHref({ type: 'group', id: 'g-123' })).toBe('/hub/groups/g-123');
+    expect(detailHref({ type: 'group', slug: 'g-123' })).toBe('/hub/groups/g-123'); // id carried in slug
     // `user` is a legacy taxonomy alias of `personality`; it must still reach /user/:id.
     expect(detailHref({ type: 'user', id: 'u-9' })).toBe('/user/u-9');
     expect(detailHref({ type: 'group', id: '' })).toBeNull();

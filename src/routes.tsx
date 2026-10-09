@@ -271,6 +271,19 @@ function LocalizedRedirect({ to }: { to: string }) {
   return <Navigate to={`${prefix}${to}${search}`} replace />;
 }
 
+/** Locale-preserving redirect for a dynamic legacy route segment. */
+function LocalizedParamRedirect({ toBase, param }: { toBase: string; param: string }) {
+  const params = useParams<Record<string, string | undefined>>();
+  const location = useLocation();
+  const locale = params.locale;
+  const prefix =
+    locale && isSupportedLocale(locale) && locale !== DEFAULT_LOCALE ? `/${locale}` : '';
+  const value = params[param] ?? '';
+  return (
+    <Navigate to={`${prefix}${toBase}/${encodeURIComponent(value)}${location.search}`} replace />
+  );
+}
+
 /**
  * Locale-preserving slug alias: legacy/misspelled URL schemes still indexed by
  * crawlers (/personality/x, /geography/x) redirect to the canonical detail
@@ -680,7 +693,7 @@ export const AppRoutes = () => {
                     element={<Navigate to="/marketplace" replace />}
                   />
                   <Route path="venues/travel" element={<Navigate to="/travel" replace />} />
-                  <Route path="venues/groups" element={<Navigate to="/groups" replace />} />
+                  <Route path="venues/groups" element={<Navigate to="/hub/groups" replace />} />
                   <Route path="venues/resources" element={<Navigate to="/tags" replace />} />
                   {/* Legacy routes — canonical lives under /me/*. Keep one release. */}
                   <Route
@@ -838,7 +851,7 @@ export const AppRoutes = () => {
                   <Route path="city/:slug" element={<CityDetail />} />
                   <Route path="country/:slug" element={<CountryDetail />} />
                   {/* /users folded into the /community hub (Members tab). */}
-                  <Route path="users" element={<LocalizedRedirect to="/community/members" />} />
+                  <Route path="users" element={<LocalizedRedirect to="/hub/members" />} />
                   <Route path="personalities" element={<Personalities />} />
                   <Route path="personalities/:slug" element={<PersonalityDetail />} />
                   {/* /competitions is a HUB; each comparable type has its own
@@ -895,7 +908,7 @@ export const AppRoutes = () => {
                   <Route path="login" element={<AuthAliasRedirect />} />
                   <Route path="signin" element={<AuthAliasRedirect />} />
                   <Route path="dashboard" element={<LocalizedRedirect to="/hub" />} />
-                  <Route path="directory" element={<LocalizedRedirect to="/community" />} />
+                  <Route path="directory" element={<LocalizedRedirect to="/hub/people" />} />
                   <Route path="users/:slug" element={<SlugAliasRedirect toBase="user" />} />
                   <Route path="wiki/:slug" element={<SlugAliasRedirect toBase="tags" />} />
                   <Route path="europe" element={<LocalizedRedirect to="/cities" />} />
@@ -957,13 +970,19 @@ export const AppRoutes = () => {
                   <Route path="news/story/:slug" element={<NewsStoryDetail />} />
                   <Route path="news/:slug" element={<NewsDetail />} />
                   <Route path="search" element={<SearchResults />} />
-                  {/* /groups + /my-groups folded into the /community hub (Groups tab). */}
-                  <Route path="groups" element={<LocalizedRedirect to="/community/groups" />} />
-                  <Route path="groups/invite/:token" element={<GroupInviteAccept />} />
-                  <Route path="groups/:groupId" element={<GroupDetail />} />
+                  {/* Legacy group URLs resolve into the unified People area. */}
+                  <Route path="groups" element={<LocalizedRedirect to="/hub/groups" />} />
+                  <Route
+                    path="groups/invite/:token"
+                    element={<LocalizedParamRedirect toBase="/hub/groups/invite" param="token" />}
+                  />
+                  <Route
+                    path="groups/:groupId"
+                    element={<LocalizedParamRedirect toBase="/hub/groups" param="groupId" />}
+                  />
                   <Route
                     path="my-groups"
-                    element={<LocalizedRedirect to="/community/groups?tab=mine" />}
+                    element={<LocalizedRedirect to="/hub/groups?tab=mine" />}
                   />
                   <Route path="accessibility" element={<CMSRoutePage slug="accessibility" />} />
                   {/* "Inbox" was email + notifications, never messages. Notifications now
@@ -978,24 +997,35 @@ export const AppRoutes = () => {
                   <Route path="messages" element={<LocalizedRedirect to="/hub/messages" />} />
                   {/* /favorites folded into /hub (Saved module). */}
                   <Route path="favorites" element={<LocalizedRedirect to="/hub/saved" />} />
-                  {/* Feed, Members, Friends, Groups now live under the /community hub. */}
-                  <Route path="feed" element={<LocalizedRedirect to="/community/feed" />} />
-                  <Route path="friends" element={<LocalizedRedirect to="/community/friends" />} />
-                  {/* Static per-tab routes (not community/:tab?) so the optional
-                  /:locale? parent can't capture "community" as an unknown locale
-                  and 404 — same reason /trips/discover is spelled out statically. */}
-                  <Route path="community" element={<Community />} />
-                  <Route path="community/feed" element={<Community tab="feed" />} />
-                  <Route path="community/members" element={<Community tab="members" />} />
-                  <Route path="community/friends" element={<Community tab="friends" />} />
-                  <Route path="community/groups" element={<Community tab="groups" />} />
-                  {/* /hub — the personal office (replaces /messages + the private
-                  /me hub). Consolidated 2026-07 to four surfaces: Overview
-                  (landing), Messages (inbox + people), Plans (calendar agenda +
-                  trips) and Saved. Static per-module routes so the optional
-                  /:locale? parent can't capture "hub" as an unknown locale —
-                  same fix as the /community hub above. */}
+                  <Route path="feed" element={<LocalizedRedirect to="/hub/feed" />} />
+                  <Route path="friends" element={<LocalizedRedirect to="/hub/friends" />} />
+                  <Route path="community" element={<LocalizedRedirect to="/hub/feed" />} />
+                  <Route path="community/feed" element={<LocalizedRedirect to="/hub/feed" />} />
+                  <Route
+                    path="community/members"
+                    element={<LocalizedRedirect to="/hub/members" />}
+                  />
+                  <Route
+                    path="community/friends"
+                    element={<LocalizedRedirect to="/hub/friends" />}
+                  />
+                  <Route path="community/groups" element={<LocalizedRedirect to="/hub/groups" />} />
+                  {/* /hub — one home for community, connection, and the personal
+                  workspace. Static routes prevent the optional /:locale? parent
+                  from capturing "hub" as an unknown locale. */}
                   <Route path="hub" element={<HubPage module="overview" />} />
+                  <Route path="hub/feed" element={<HubPage module="feed" />} />
+                  <Route path="hub/members" element={<Community tab="members" />} />
+                  <Route path="hub/friends" element={<Community tab="friends" />} />
+                  <Route path="hub/groups" element={<Community tab="groups" />} />
+                  <Route path="hub/groups/invite/:token" element={<GroupInviteAccept />} />
+                  <Route path="hub/groups/:groupId" element={<GroupDetail />} />
+                  <Route path="hub/people" element={<People />} />
+                  <Route path="hub/dating" element={<Cruising />} />
+                  <Route path="hub/dating/onboarding" element={<IntimateOnboard />} />
+                  <Route path="hub/dating/:userId" element={<IntimateUserDetail />} />
+                  <Route path="hub/travel" element={<PeopleMode tab="travel" />} />
+                  <Route path="hub/nearby" element={<PeopleMode tab="nearby" />} />
                   <Route path="hub/messages" element={<HubPage module="messages" />} />
                   <Route path="hub/plans" element={<HubPage module="plans" />} />
                   <Route path="hub/saved" element={<HubPage module="saved" />} />
@@ -1027,31 +1057,49 @@ export const AppRoutes = () => {
                     element={<Navigate to="/settings?section=privacy" replace />}
                   />
                   <Route path="profile/settings" element={<SettingsRedirect />} />
-                  {/* Unified People surface. Static per-tab routes (not people/:tab?)
-                  so the optional :locale? parent can't capture "people" as an
-                  unknown locale and 404 — same reason /community/* is spelled out. */}
-                  <Route path="people" element={<People />} />
-                  {/* The hub is place-led; each matching mode is its own page with
-                  its own meta. Dating now lives inside the private cruising map. */}
-                  <Route path="people/friends" element={<PeopleMode tab="friends" />} />
+                  {/* Legacy People routes preserve inbound links while Hub remains
+                  the single canonical shell. */}
+                  <Route path="people" element={<LocalizedRedirect to="/hub/people" />} />
+                  <Route path="people/feed" element={<LocalizedRedirect to="/hub/feed" />} />
+                  <Route path="people/members" element={<LocalizedRedirect to="/hub/members" />} />
+                  <Route path="people/friends" element={<LocalizedRedirect to="/hub/friends" />} />
+                  <Route path="people/groups" element={<LocalizedRedirect to="/hub/groups" />} />
                   <Route
-                    path="people/dating"
-                    element={<LocalizedRedirect to="/cruising?panel=people" />}
+                    path="people/groups/invite/:token"
+                    element={<LocalizedParamRedirect toBase="/hub/groups/invite" param="token" />}
                   />
-                  <Route path="people/travel" element={<PeopleMode tab="travel" />} />
-                  <Route path="people/nearby" element={<PeopleMode tab="nearby" />} />
-                  {/* Dating and the spot directory share one authenticated map. */}
+                  <Route
+                    path="people/groups/:groupId"
+                    element={<LocalizedParamRedirect toBase="/hub/groups" param="groupId" />}
+                  />
+                  <Route path="people/dating" element={<LocalizedRedirect to="/hub/dating" />} />
+                  <Route
+                    path="people/dating/onboarding"
+                    element={<LocalizedRedirect to="/hub/dating/onboarding" />}
+                  />
+                  <Route
+                    path="people/dating/:userId"
+                    element={<LocalizedParamRedirect toBase="/hub/dating" param="userId" />}
+                  />
+                  <Route path="people/travel" element={<LocalizedRedirect to="/hub/travel" />} />
+                  <Route path="people/nearby" element={<LocalizedRedirect to="/hub/nearby" />} />
                   <Route
                     path="intimate"
-                    element={<LocalizedRedirect to="/cruising?panel=people" />}
+                    element={<LocalizedRedirect to="/hub/dating?panel=people" />}
                   />
                   <Route
                     path="discover"
-                    element={<LocalizedRedirect to="/cruising?panel=people" />}
+                    element={<LocalizedRedirect to="/hub/dating?panel=people" />}
                   />
-                  <Route path="cruising" element={<Cruising />} />
-                  <Route path="intimate/onboard" element={<IntimateOnboard />} />
-                  <Route path="intimate/u/:userId" element={<IntimateUserDetail />} />
+                  <Route path="cruising" element={<LocalizedRedirect to="/hub/dating" />} />
+                  <Route
+                    path="intimate/onboard"
+                    element={<LocalizedRedirect to="/hub/dating/onboarding" />}
+                  />
+                  <Route
+                    path="intimate/u/:userId"
+                    element={<LocalizedParamRedirect toBase="/hub/dating" param="userId" />}
+                  />
                   {/* Kink checklist tool — static paths (see people/* locale note). */}
                   <Route path="tools/checklist" element={<KinkChecklist />} />
                   <Route path="tools/checklist/s/:code" element={<KinkShareView />} />

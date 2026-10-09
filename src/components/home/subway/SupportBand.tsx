@@ -27,7 +27,7 @@ export function SupportBand() {
                 {t('home.cta.submit', 'Add a venue')}
               </LocalizedLink>
               <LocalizedLink
-                to="/friends"
+                to="/hub/friends"
                 className="rounded-element px-6 py-4 text-15 font-bold no-underline hover:bg-foreground hover:text-background"
               >
                 {t('home.cta.invite', 'Invite friends')}

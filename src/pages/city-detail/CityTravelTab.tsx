@@ -4,13 +4,19 @@ import { hasAnyCriminalizationSignal } from '@/utils/equalityScore';
 import { FactGrid, type Fact } from '@/components/transit/FactGrid';
 import { CityTravelHub } from '@/components/travel/CityTravelHub';
 import { CityNetworkPanel } from '@/components/geo/CityNetworkPanel';
-import type { CityRelation, NearestAirportType } from './types';
+import type { CityRelation } from './types';
+import { useCityNearestAirports } from '@/hooks/useCityNearestAirports';
 
 export interface CityTravelTabProps {
   city: CityRelation;
+  /** Flight-search target (`major_airport_code` or fallback). Booking only. */
   effectiveIata: string | null;
-  hasAirport: boolean;
-  nearestAirport: NearestAirportType;
+}
+
+/** PostgREST serialises `numeric` as a string; "26.6" is not a number. */
+function formatKm(km: number | string | null | undefined): string | null {
+  const n = Number(km);
+  return km != null && km !== '' && Number.isFinite(n) ? `${Math.round(n)} km` : null;
 }
 
 /**
@@ -27,62 +33,40 @@ export interface CityTravelTabProps {
  * lives at the top of the rail, so the diagram lives well below the fold, in
  * the one section where a transit map is information rather than ornament.
  */
-export function CityTravelTab({
-  city,
-  effectiveIata,
-  hasAirport,
-  nearestAirport,
-}: CityTravelTabProps) {
+export function CityTravelTab({ city, effectiveIata }: CityTravelTabProps) {
   const { t } = useTranslation();
   const highRisk = hasAnyCriminalizationSignal(city.countries?.lgbti_criminalization);
 
-  // The head fact strip (`CityAtAGlance`) already states the airport code, so
-  // this grid only carries what the strip cannot: the distance to a nearby
-  // airport when the city has none of its own, and the full code list when
-  // there is genuinely more than one. Repeating "Major airport: BER" one
-  // section below "Airport: BER" was noise, not information.
+  // Only "Nearest airports" lives here: up to three, code · city · km,
+  // measured from this city and across borders (`city_nearest_airports`).
+  // Whether the city has an airport of its OWN ("Airport: CGN" / "No") is
+  // stated once, in the head fact strip (`CityAtAGlance`). The page used to
+  // repeat the airport up to five times — the head strip, "Nearest airport",
+  // "Other airports nearby", "All airport codes", and the `airports` line of
+  // transportation_info under "Getting around".
+  const hasCoords = city.latitude != null && city.longitude != null;
+  const { data: nearest = [] } = useCityNearestAirports(hasCoords ? city.id : null);
+
   const airportFacts: Fact[] = [];
-  // `nearest_airport_codes` holds the airports that serve this city from
-  // OUTSIDE it (Essen: DUS, DTM, NRN — it has none of its own), partitioned off
-  // `airport_codes` by run_city_airport_link. It is more trustworthy than the
-  // `useNearestAirport` fallback below, which scans the unfiltered `airports`
-  // table and will happily return a bush strip, so it wins when present.
-  // PostgREST serialises `numeric` as a string; "25.2" is not a number.
-  const nearestCodes: string[] = Array.isArray(city.nearest_airport_codes)
-    ? city.nearest_airport_codes
-    : [];
-  const parsedKm = Number(city.nearest_airport_km);
-  const nearestKm = Number.isFinite(parsedKm) ? Math.round(parsedKm) : null;
-
-  if (nearestCodes.length)
+  if (nearest.length > 0)
     airportFacts.push({
-      label: t('cities.detail.travel.nearestAirport', 'Nearest airport'),
-      value: nearestKm != null ? `${nearestCodes[0]} · ${nearestKm} km` : nearestCodes[0],
-    });
-  else if (!hasAirport && nearestAirport?.iata_code)
-    airportFacts.push({
-      label: t('cities.detail.travel.nearestAirport', 'Nearest airport'),
-      // The distance can be absent when the code came from the client-side
-      // fallback rather than `cities.nearest_airport_km`; show the code alone
-      // rather than "LGW · null km".
-      value:
-        nearestAirport.distanceKm != null
-          ? `${nearestAirport.iata_code} · ${nearestAirport.distanceKm} km`
-          : nearestAirport.iata_code,
-    });
-  if (nearestCodes.length > 1)
-    airportFacts.push({
-      label: t('cities.detail.travel.otherNearby', 'Other airports nearby'),
-      value: nearestCodes.slice(1).join(', '),
-    });
-  if (city.airport_codes && city.airport_codes.length > 1)
-    airportFacts.push({
-      label: t('cities.detail.travel.allCodes', 'All airport codes'),
-      value: city.airport_codes.join(', '),
+      label: t('cities.detail.travel.nearestAirports', 'Nearest airports'),
+      value: (
+        <ul className="m-0 flex list-none flex-col gap-1 p-0">
+          {nearest.map((ap) => (
+            <li key={ap.iata_code} title={ap.airport_name}>
+              {[ap.iata_code, ap.city, formatKm(ap.distance_km)].filter(Boolean).join(' · ')}
+            </li>
+          ))}
+        </ul>
+      ),
     });
 
+  // `airports` is written into transportation_info by the airport linker for
+  // the booking context; the head strip and the nearest list already state it, so it is not
+  // repeated under "Getting around".
   const transport: [string, unknown][] = city.transportation_info
-    ? Object.entries(city.transportation_info)
+    ? Object.entries(city.transportation_info).filter(([key]) => key !== 'airports')
     : [];
 
   return (

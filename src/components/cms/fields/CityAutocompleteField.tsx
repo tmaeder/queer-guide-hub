@@ -17,12 +17,16 @@ import { cn } from '@/lib/utils';
 import { listFromWhere } from '@/hooks/usePageFetchers';
 import { useAddressResolver } from '@/hooks/useAddressResolver';
 import { toast } from 'sonner';
+import { CityCodeBadges } from '@/components/admin/CityCodeBadges';
+import { cityCodesFromRow, cityCodesText } from '@/lib/cityCodes';
 
 interface CityOption {
   id: string;
   name: string;
   country_id: string;
   country_name: string;
+  country_code: string | null;
+  region_code: string | null;
 }
 
 /**
@@ -64,7 +68,7 @@ export function CityAutocompleteField({
         if (currentCountryId) filters.push({ col: 'country_id', val: currentCountryId });
         const data = await listFromWhere<Record<string, unknown>>(
           'cities',
-          'id, name, country_id, countries!inner(name)',
+          'id, name, country_id, region_code, countries!inner(name, code)',
           filters,
           { order: { col: 'name', ascending: true } },
         );
@@ -75,6 +79,8 @@ export function CityAutocompleteField({
             name: c.name as string,
             country_id: c.country_id as string,
             country_name: (c.countries as { name: string })?.name ?? '',
+            country_code: cityCodesFromRow(c).countryCode ?? null,
+            region_code: cityCodesFromRow(c).regionCode ?? null,
           })),
         );
       } catch (err) {
@@ -94,9 +100,14 @@ export function CityAutocompleteField({
   // country-scoped, so the linked city is in it and this costs no extra query.
   const cityIdField = field.relatedFields?.city_id;
   const currentCityId = cityIdField && allValues ? String(allValues[cityIdField] ?? '') : '';
+  // The linked id wins over the name: since 99991791233840 two cities in one
+  // country can share a name (Portland US-ME / US-OR), so a name match may be
+  // the twin. The id is trusted only while it still agrees with the name —
+  // a failed create leaves the typed name with the old id.
+  const cityById = currentCityId ? cities.find((c) => c.id === currentCityId) : undefined;
   const selectedCity =
+    (cityById && (!value || cityById.name === value) ? cityById : null) ||
     cities.find((c) => c.name === value) ||
-    (currentCityId ? cities.find((c) => c.id === currentCityId) : null) ||
     null;
   const currentValueLabel = String(value ?? '') || selectedCity?.name || '';
 
@@ -177,8 +188,16 @@ export function CityAutocompleteField({
               error && 'border border-destructive',
             )}
           >
-            <span className="truncate">
-              {currentValueLabel || field.placeholder || 'Search or create a city...'}
+            <span className="flex min-w-0 items-center gap-2">
+              <span className="truncate">
+                {currentValueLabel || field.placeholder || 'Search or create a city...'}
+              </span>
+              {selectedCity && selectedCity.name === currentValueLabel && (
+                <CityCodeBadges
+                  countryCode={selectedCity.country_code}
+                  regionCode={selectedCity.region_code}
+                />
+              )}
             </span>
             {loading || creating ? (
               <TrackLoader size={16} label="Loading" className="ml-2 shrink-0 opacity-50" />
@@ -200,7 +219,19 @@ export function CityAutocompleteField({
                 {cities.map((city) => (
                   <CommandItem
                     key={city.id}
-                    value={city.country_name ? `${city.name} ${city.country_name}` : city.name}
+                    // Codes make "US-ME" searchable; the id keeps same-name
+                    // twins from sharing one cmdk value.
+                    value={[
+                      city.name,
+                      city.country_name,
+                      cityCodesText({
+                        countryCode: city.country_code,
+                        regionCode: city.region_code,
+                      }),
+                      city.id,
+                    ]
+                      .filter(Boolean)
+                      .join(' ')}
                     onSelect={() => {
                       selectExisting(city);
                       setOpen(false);
@@ -224,6 +255,11 @@ export function CityAutocompleteField({
                         </span>
                       )}
                     </span>
+                    <CityCodeBadges
+                      className="ml-auto pl-2"
+                      countryCode={city.country_code}
+                      regionCode={city.region_code}
+                    />
                   </CommandItem>
                 ))}
                 {showCreate && (

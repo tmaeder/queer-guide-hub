@@ -2,6 +2,7 @@ import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { CoverageNote } from '@/components/intent/CoverageNote';
 import { RouteBullet } from '@/components/transit/RouteBullet';
 import type { EventWindow, EventsWithFallback } from '@/hooks/useIntentData';
+import { cn } from '@/lib/utils';
 
 /**
  * The "What's on" body, shared by /going-out and /people.
@@ -32,16 +33,18 @@ export function UpcomingEvents({
   eventsResult,
   cityName,
   variant = 'default',
+  borderless = false,
 }: {
   eventsResult: EventsWithFallback | undefined;
   cityName?: string | null;
-  variant?: 'default' | 'night-shift';
+  variant?: 'default' | 'going-out';
+  borderless?: boolean;
 }) {
   const events = eventsResult?.events ?? [];
-  const nightShift = variant === 'night-shift';
+  const departuresBoard = variant === 'going-out';
 
   return (
-    <div className={nightShift ? 'night-shift-events' : undefined}>
+    <div className={departuresBoard ? 'going-out-events' : undefined}>
       <CoverageNote>
         {events.length > 0
           ? `Showing events ${WINDOW_LABEL[eventsResult!.window]}${
@@ -53,28 +56,25 @@ export function UpcomingEvents({
         Our events coverage is thin: listings come from organisers and submissions, so an empty week
         here means we have no record, not that nothing is happening.
       </CoverageNote>
-      {/* A departures board: one ink frame, hairline rules between rows, the
-          event bullet leading each. Follows the homepage DeparturesBoard rather
-          than the standalone `DepartureRow` primitive, whose own 2px border
-          would double against its neighbour's in a stack. */}
-      {nightShift && events.length > 0 ? (
-        <ul className="night-shift-departures m-0 list-none p-0">
-          {events.map((event, index) => {
+      {/* The event route bullet identifies each stop; dates and city labels
+          remain visible at mobile widths, and tonal rows separate entries. */}
+      {departuresBoard && events.length > 0 ? (
+        <ul className="going-out-departures m-0 list-none p-0">
+          {events.map((event) => {
             const startsAt = new Date(event.start_date);
             return (
-              <li key={event.id} className="night-shift-departure group relative">
-                <span className="night-shift-departure-index" aria-hidden="true">
-                  {String(index + 1).padStart(2, '0')}
+              <li key={event.id} className="going-out-departure group relative">
+                <span className="going-out-departure-bullet">
+                  <RouteBullet type="event" size={34} />
                 </span>
-                <span className="night-shift-departure-date tabular-nums">
+                <span className="going-out-departure-date tabular-nums">
                   <strong>{startsAt.toLocaleDateString(undefined, { day: '2-digit' })}</strong>
                   <span>{startsAt.toLocaleDateString(undefined, { month: 'short' })}</span>
                 </span>
-                <span className="night-shift-departure-title">{event.title}</span>
-                <span className="night-shift-departure-city">
+                <span className="going-out-departure-title">{event.title}</span>
+                <span className="going-out-departure-city">
                   {event.city ?? 'Destination to be confirmed'}
                 </span>
-                <span className="night-shift-departure-stop" aria-hidden="true" />
                 {event.slug ? (
                   <LocalizedLink
                     to={`/events/${event.slug}`}
@@ -87,11 +87,21 @@ export function UpcomingEvents({
           })}
         </ul>
       ) : events.length > 0 ? (
-        <ul className="m-0 list-none bg-card p-0 rounded-container shadow-soft">
+        <ul
+          className={cn(
+            'm-0 list-none p-0',
+            borderless ? 'space-y-2' : 'rounded-container bg-card shadow-soft',
+          )}
+        >
           {events.map((e) => (
             <li
               key={e.id}
-              className="group relative border-b border-border-hairline last:border-b-0"
+              className={cn(
+                'group relative',
+                borderless
+                  ? 'rounded-element bg-card shadow-soft'
+                  : 'border-b border-border-hairline last:border-b-0',
+              )}
             >
               <div className="flex items-center gap-4 px-4 py-4 transition-colors group-hover:bg-surface-container">
                 <RouteBullet type="event" size={34} />

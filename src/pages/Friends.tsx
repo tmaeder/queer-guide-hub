@@ -2,9 +2,10 @@ import { useTranslation } from 'react-i18next';
 import { AuthGate } from '@/components/layout/AuthGate';
 import { FriendsPanel } from '@/components/community/FriendsPanel';
 import { PageContainer } from '@/components/layout/PageContainer';
+import { PageHeader } from '@/components/layout/PageHeader';
 
 /**
- * /community/friends — own-only page around the shared FriendsPanel (also
+ * /hub/friends — own-only page around the shared FriendsPanel (also
  * embedded in the /hub Contacts module).
  */
 export default function Friends() {
@@ -16,14 +17,13 @@ export default function Friends() {
     >
       <PageContainer>
         <div className="flex flex-col gap-6">
-          <div className="flex flex-col gap-2">
-            <h1 className="text-display font-bold text-foreground">
-              {t('pages.friends.title', 'Friends')}
-            </h1>
-            <p className="text-muted-foreground">
-              {t('pages.friends.subtitle', 'Manage your connections')}
-            </p>
-          </div>
+          <PageHeader
+            title={t('pages.friends.title', 'Friends')}
+            subtitle={t(
+              'pages.friends.subtitle',
+              'Review requests, keep up with your connections, and start a conversation.',
+            )}
+          />
           <FriendsPanel />
         </div>
       </PageContainer>

@@ -27,7 +27,9 @@ const rules = redirects
   .map((l) => l.trim())
   .filter((l) => l && !l.startsWith('#'))
   .map((l) => l.split(/\s+/))
-  .filter((r) => /^\/tags\/[a-z0-9-]+$/.test(r[0]));
+  .filter((r) => /^\/tags\/[a-z0-9-]+$/.test(r[0]))
+  // `travel` is a product-surface redirect, not a place-name redirect.
+  .filter((r) => r[0] !== '/tags/travel');
 
 describe('place tag redirects', () => {
   it('has one 301 in public/_redirects per mapped tag', () => {

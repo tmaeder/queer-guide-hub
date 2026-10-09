@@ -6,11 +6,14 @@ import { cn } from '@/lib/utils';
 export interface IntentPageLayoutProps {
   /** Optional page-specific hero. Defaults to the shared PageHero treatment. */
   header?: ReactNode;
+  topNav?: ReactNode;
   eyebrow?: ReactNode;
   title: ReactNode;
   lede?: ReactNode;
   /** Scope controls (city picker, date presets) rendered under the hero. */
   scopeBar?: ReactNode;
+  /** Primary interactive surface rendered before the long-page section index. */
+  featured?: ReactNode;
   sections: SectionDef[];
   footer?: ReactNode;
   loading?: boolean;
@@ -21,6 +24,9 @@ export interface IntentPageLayoutProps {
   breadcrumbHref: string;
   sectionNavVariant?: 'default' | 'subway';
   className?: string;
+  heroSize?: 'sm' | 'md' | 'lg';
+  heroClassName?: string;
+  sectionNavClassName?: string;
 }
 
 /**
@@ -40,10 +46,12 @@ export interface IntentPageLayoutProps {
  */
 export function IntentPageLayout({
   header,
+  topNav,
   eyebrow,
   title,
   lede,
   scopeBar,
+  featured,
   sections,
   footer,
   loading = false,
@@ -53,6 +61,9 @@ export function IntentPageLayout({
   breadcrumbHref,
   sectionNavVariant = 'default',
   className,
+  heroSize = 'md',
+  heroClassName,
+  sectionNavClassName,
 }: IntentPageLayoutProps) {
   return (
     <div className={cn(className)}>
@@ -61,16 +72,26 @@ export function IntentPageLayout({
         error={error}
         entityType="intent"
         disableProgress={disableProgress}
+        sectionNavClassName={sectionNavClassName}
         breadcrumbs={[{ label: breadcrumbLabel, href: breadcrumbHref }]}
         sectionNavVariant={sectionNavVariant}
         header={
           <>
+            {topNav}
             {header ?? (
               /* `bare` — EditorialDetailLayout already puts this inside a
                  PageContainer, and two nested containers double the gutter. */
-              <PageHero bare eyebrow={eyebrow} title={title} lede={lede} size="md" />
+              <PageHero
+                bare
+                eyebrow={eyebrow}
+                title={title}
+                lede={lede}
+                size={heroSize}
+                className={heroClassName}
+              />
             )}
             {scopeBar ? <div className="mt-6">{scopeBar}</div> : null}
+            {featured ? <div className="mt-8">{featured}</div> : null}
           </>
         }
         sections={sections}

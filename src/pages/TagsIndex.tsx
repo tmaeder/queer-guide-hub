@@ -144,20 +144,23 @@ export default function TagsIndex() {
   // each time and cannot be a dependency without making `patch` unstable (and
   // `JSON.stringify(state)` is not a dependency expression the lint rule
   // accepts). A ref is the honest version: the callback identity never changes,
-  // and it always reads the current state at call time.
+  // and it always reads the current state at call time. Event handlers also
+  // advance the ref immediately: URL navigation may not commit before the
+  // next input event, and a rapid search must keep the kind just selected.
   // Written in an effect, never during render: a render-phase ref write makes
   // the React Compiler bail out of optimizing this whole component (it reported
   // both `react-hooks/refs` and, downstream, `preserve-manual-memoization` on
-  // the `scope` memo below). `patch` only ever runs from an event handler, by
-  // which point every effect for the render the reader is looking at has
-  // flushed — so the value it reads is the same one it read before.
+  // the `scope` memo below). The effect reconciles navigation and Back/Forward;
+  // event-phase writes retain pending changes between router commits.
   const stateRef = useRef(state);
   useEffect(() => {
     stateRef.current = state;
   });
   const patch = useCallback(
     (next: Partial<TagsIndexState>) => {
-      setSearchParams((prev) => applyTagsParams(prev, { ...stateRef.current, ...next }), {
+      const merged = { ...stateRef.current, ...next };
+      stateRef.current = merged;
+      setSearchParams((prev) => applyTagsParams(prev, merged), {
         replace: true,
       });
     },
@@ -165,7 +168,7 @@ export default function TagsIndex() {
   );
 
   // ── The single indexing pass ────────────────────────────────────────────
-  const { entries, byId } = useMemo(() => {
+  const { entries, byId, termCount } = useMemo(() => {
     const list: TagIndexEntry[] = (allTags ?? []).map((tag) => {
       const categoryNames = [
         ...(tag.categories?.map((c) => c.name) ?? []),
@@ -180,7 +183,12 @@ export default function TagsIndex() {
         categoryNames,
       };
     });
-    return { entries: list, byId: new Map(list.map((e) => [e.tag.id, e])) };
+    return {
+      entries: list,
+      byId: new Map(list.map((e) => [e.tag.id, e])),
+      termCount: list.filter((e) => KIND_FILTER_MATCHES.concept.has(e.tag.entity_kind ?? 'concept'))
+        .length,
+    };
   }, [allTags]);
 
   // ── Category scope, from the path ───────────────────────────────────────
@@ -220,7 +228,7 @@ export default function TagsIndex() {
     [scope],
   );
 
-  const base = useMemo(
+  const browseEntries = useMemo(
     () =>
       entries.filter((e) => {
         const entityKind = e.tag.entity_kind ?? 'concept';
@@ -230,28 +238,26 @@ export default function TagsIndex() {
           return false;
         }
         if (hideAdult && safeMode.shouldHide(e.categoryNames)) return false;
-        if (!inScope(e)) return false;
-        // Default curation: the unscoped index shows every dictionary term
-        // (unused kink vocabulary included — it ranks last under the usage
-        // sort) but hides UNUSED descriptors/labels — an unused descriptor is
-        // pure noise, not a definition. Any explicit filter or search widens
-        // back to everything, and category pages always show their whole stop.
-        if (
-          !scope &&
-          state.usage === 'all' &&
-          state.kind === 'all' &&
-          !state.q.trim() &&
-          entityKind !== 'concept' &&
-          entityKind !== 'practice' &&
-          entityKind !== 'aesthetic' &&
-          (usageCounts[e.tag.name] || 0) === 0
-        ) {
-          return false;
-        }
         return true;
       }),
-    [entries, hideAdult, safeMode, inScope, scope, state.kind, state.usage, state.q, usageCounts],
+    [entries, hideAdult, safeMode, state.kind],
   );
+
+  const base = useMemo(() => browseEntries.filter(inScope), [browseEntries, inScope]);
+
+  const categoryCounts = useMemo(() => {
+    const counts: Record<string, number> = {};
+    for (const parent of categoriesTree) {
+      counts[parent.name] = 0;
+      for (const child of parent.children ?? []) counts[child.name] = 0;
+    }
+    for (const entry of browseEntries) {
+      for (const name of new Set(entry.categoryNames)) {
+        if (name) counts[name] = (counts[name] ?? 0) + 1;
+      }
+    }
+    return counts;
+  }, [browseEntries, categoriesTree]);
 
   /** Letter counts reflect every filter EXCEPT the letter itself — otherwise
    *  picking B would grey out every other letter and strand the reader. */
@@ -354,7 +360,7 @@ export default function TagsIndex() {
     description: t(
       'tags.meta.description',
       'Browse and search {{count}} LGBTQ+ terms — identities, practices, history and community language, each linked to the venues, events, people and news that use it.',
-      { count: entries.length },
+      { count: termCount },
     ),
     canonicalPath: categorySlug ? `/tags/c/${categorySlug}` : '/tags',
   });
@@ -430,7 +436,7 @@ export default function TagsIndex() {
           <p className="mt-4 flex items-center gap-2 text-13 tabular-nums text-muted-foreground">
             <RouteBullet type="tag" size={30} />
             {t('tags.hero.legend', '{{terms}} terms · {{lines}} lines · {{stops}} stops', {
-              terms: entries.length,
+              terms: termCount,
               lines: parentOrder.length,
               stops: stopCount,
             })}
@@ -445,6 +451,7 @@ export default function TagsIndex() {
             tree={categoriesTree}
             activeSlug={categorySlug ?? null}
             paramsSuffix={paramsSuffix}
+            counts={categoryCounts}
             className={cn('sticky hidden self-start lg:block', STICKY_RAIL_UNDER_HEADER)}
           />
           <CategoryTreeRail
@@ -452,6 +459,7 @@ export default function TagsIndex() {
             tree={categoriesTree}
             activeSlug={categorySlug ?? null}
             paramsSuffix={paramsSuffix}
+            counts={categoryCounts}
             orientation="horizontal"
             className="lg:hidden"
           />

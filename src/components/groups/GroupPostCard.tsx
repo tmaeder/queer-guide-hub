@@ -148,7 +148,7 @@ export const GroupPostCard = ({
 
                   <div className="flex items-center gap-1">
                     {post.post_type === 'announcement' && (
-                      <Badge variant="secondary">
+                      <Badge variant="secondary" className="border-0">
                         <span className="flex items-center gap-1 text-xs">
                           <Megaphone size={12} />
                           Announcement

@@ -17,14 +17,26 @@ interface GroupsTabProps {
 }
 
 /** Groups this user belongs to — also a discovery surface (viewers can join). */
-export function GroupsTab({ userId, isOwnProfile, lens = 'you', privacySettings = {} }: GroupsTabProps) {
+export function GroupsTab({
+  userId,
+  isOwnProfile,
+  lens = 'you',
+  privacySettings = {},
+}: GroupsTabProps) {
   const { t } = useTranslation();
   const { user } = useAuth();
   const navigate = useLocalizedNavigate();
   const { groups: userGroups, isLoading } = useUserGroups(userId);
   // Hydrate against the viewer's own group list so join/leave state is accurate.
-  const { groups: viewerGroups, joinGroup, requestJoin, leaveGroup, isJoining, isRequesting, isLeaving } =
-    useGroups();
+  const {
+    groups: viewerGroups,
+    joinGroup,
+    requestJoin,
+    leaveGroup,
+    isJoining,
+    isRequesting,
+    isLeaving,
+  } = useGroups();
 
   const visible = sectionVisible(
     privacySettings.groups_visibility as string | undefined,
@@ -73,7 +85,7 @@ export function GroupsTab({ userId, isOwnProfile, lens = 'you', privacySettings 
           isOwnProfile
             ? {
                 label: t('profile.groups.find', 'Find groups'),
-                onClick: () => navigate('/community/groups'),
+                onClick: () => navigate('/hub/groups'),
               }
             : undefined
         }
@@ -86,13 +98,15 @@ export function GroupsTab({ userId, isOwnProfile, lens = 'you', privacySettings 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       {userGroups.map((ug) => {
-        const hydrated = viewerById.get(ug.id) ?? ({
-          ...ug,
-          rules: null,
-          created_by: '',
-          created_at: ug.joinedAt ?? '',
-          updated_at: '',
-        } as Group);
+        const hydrated =
+          viewerById.get(ug.id) ??
+          ({
+            ...ug,
+            rules: null,
+            created_by: '',
+            created_at: ug.joinedAt ?? '',
+            updated_at: '',
+          } as Group);
         return (
           <GroupCard
             key={ug.id}
