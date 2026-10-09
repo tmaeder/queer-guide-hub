@@ -1645,6 +1645,7 @@ export type Database = {
           population: number | null
           postal_codes: string[] | null
           region_name: string | null
+          region_code: string | null
           safety_notes: string | null
           seo_indexable: boolean
           shell_status: string
@@ -1715,6 +1716,7 @@ export type Database = {
           population?: number | null
           postal_codes?: string[] | null
           region_name?: string | null
+          region_code?: string | null
           safety_notes?: string | null
           seo_indexable?: boolean
           shell_status?: string
@@ -1785,6 +1787,7 @@ export type Database = {
           population?: number | null
           postal_codes?: string[] | null
           region_name?: string | null
+          region_code?: string | null
           safety_notes?: string | null
           seo_indexable?: boolean
           shell_status?: string

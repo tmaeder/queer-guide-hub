@@ -27,7 +27,7 @@ const filterOptions = [
 
 function FilterChip({ label, onDelete }: { label: string; onDelete: () => void }) {
   return (
-    <Badge variant="secondary" className="gap-1 pr-1">
+    <Badge variant="secondary" className="gap-1 border-0 pr-1">
       {label}
       <button
         type="button"
@@ -80,6 +80,7 @@ export const GroupFilters = ({
               color="hsl(var(--muted-foreground))"
             />
             <Input
+              className="border-0 bg-surface-container text-foreground placeholder:text-muted-foreground"
               placeholder="Search groups..."
               value={searchQuery}
               onChange={(e) => onSearchChange(e.target.value)}
@@ -87,7 +88,7 @@ export const GroupFilters = ({
             />
           </div>
           {hasActiveFilters && (
-            <Button variant="outline" size="sm" onClick={clearAllFilters}>
+            <Button variant="soft" size="sm" onClick={clearAllFilters}>
               <span className="flex items-center gap-1">
                 <X size={12} />
                 Clear
@@ -98,7 +99,7 @@ export const GroupFilters = ({
 
         <div className="flex flex-wrap gap-2">
           <Button
-            variant={showMyGroups ? 'default' : 'outline'}
+            variant={showMyGroups ? 'default' : 'soft'}
             size="sm"
             onClick={() => onShowMyGroupsChange(!showMyGroups)}
           >
@@ -112,7 +113,7 @@ export const GroupFilters = ({
             return (
               <Button
                 key={option.id}
-                variant={isActive ? 'default' : 'outline'}
+                variant={isActive ? 'default' : 'soft'}
                 size="sm"
                 onClick={() => toggleFilter(option.id)}
               >
@@ -128,6 +129,7 @@ export const GroupFilters = ({
         <div className="flex flex-col gap-2">
           <Label htmlFor="tags">Filter by Tags</Label>
           <TagSelector
+            borderless
             selectedTags={selectedTags}
             onTagsChange={onTagsChange}
             placeholder="Filter groups by tags..."

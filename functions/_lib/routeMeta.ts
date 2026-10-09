@@ -72,7 +72,7 @@ export const STATIC_ROUTE_META: Record<string, RouteMeta> = {
     description:
       'An interactive world map of queer venues, events, communities, and country-level safety information.',
   },
-  '/users': {
+  '/people/members': {
     title: 'Community Directory | Queer Guide',
     description:
       'Browse community members, organizations and creators in the global queer directory.',
@@ -345,32 +345,22 @@ export const STATIC_ROUTE_META: Record<string, RouteMeta> = {
     description:
       'Pride marches, parades and festivals around the world, listed by year with dates, host cities and what to expect.',
   },
-  '/community': {
-    title: 'Queer Community — Feed, Groups, Members',
-    description:
-      'Connect with the Queer Guide community: the shared feed, local groups, and members near you or at your destination.',
-  },
   // The three community tabs are the outbound links in /people's own crawler
   // body (routeBody.ts), and all three fell through to DEFAULT_META — so the
   // /people fix pointed Googlebot at three URLs that each served the homepage
   // title. `resolveMeta` is an exact match; a parent entry does not cover
   // children.
-  '/community/groups': {
+  '/people/groups': {
     title: 'LGBTQ+ Groups to Join — Local and Interest',
     description:
       'Local and interest-based LGBTQ+ groups you can join, from book clubs and hiking to professional networks and peer support.',
   },
-  '/community/feed': {
+  '/hub/feed': {
     title: 'Community Feed — What Queer People Are Posting',
     description:
       'What the Queer Guide community is posting right now: recommendations, questions, meet-ups and news from members worldwide.',
   },
-  '/community/members': {
-    title: 'Browse LGBTQ+ Community Members',
-    description:
-      'Browse the members who have chosen to be listed on Queer Guide, with the interests, pronouns and cities they have shared.',
-  },
-  // /community/friends is the signed-in friends list. Same class as /hub — a
+  // /people/friends is the signed-in friends list. Same class as /hub — a
   // personal surface with nothing public to render — so it is noindexed in
   // isIndexable() below rather than given meta.
   '/travel/book': {
@@ -489,6 +479,10 @@ export function canonicalUrl(pathname: string): string {
 }
 
 export function isIndexable(pathname: string): boolean {
+  // The community feed is the public module inside an otherwise private Hub.
+  // Keep the exact route indexable without opening any personal sub-route.
+  if (pathname.replace(/\/+$/, '') === '/hub/feed') return true;
+
   const noindex = [
     /^\/auth(\/|$)/,
     /^\/my-/,
@@ -497,7 +491,7 @@ export function isIndexable(pathname: string): boolean {
     /^\/profile(\/|$)/,
     /^\/settings(\/|$)/,
     // Query-shaped and personal surfaces: /search is an infinite parameter
-    // space and /hub is the signed-in personal area. Note this also suppresses
+    // space and every Hub module except the public /hub/feed is personal. This suppresses
     // the crawler body injection for them (functions/_middleware.ts gates the
     // bot body on `indexable`), which is intended — there is nothing static to
     // serve — but it means neither may be added to ROUTES in
@@ -514,6 +508,9 @@ export function isIndexable(pathname: string): boolean {
     // is the one that carries the content. Per the note above, none of these
     // may be added to ROUTES in scripts/seo-check.mjs (verified: they are not).
     /^\/people\/(friends|dating|travel|nearby)(\/|$)/,
+    // Legacy sources remain suppressed if middleware handles them before the
+    // edge or client-side redirect runs. The feed itself is public at /hub/feed.
+    /^\/people\/feed(\/|$)/,
     // Private adult map, spot directory and opt-in dating discovery.
     /^\/cruising(\/|$)/,
     // The signed-in friends list. Nothing public to render, same class as /hub.

@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Users, Clock, Check, X, Siren } from 'lucide-react';
+import { Users, Clock, Check, X, Siren, UserPlus } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useQuery } from '@tanstack/react-query';
 import { fetchProfilesByUserIds } from '@/hooks/usePageFetchers';
@@ -25,10 +25,19 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
+import { PeopleModeView } from '@/pages/people/PeopleModeView';
+import { MeetMembersNotice } from '@/components/people/MeetMembersNotice';
+
+interface FriendProfile {
+  user_id: string;
+  display_name: string | null;
+  avatar_url: string | null;
+  location: string | null;
+}
 
 /**
  * Friends + pending-requests management (accept/reject/remove), SOS, and
- * start-conversation — the reusable body of the /community/friends page,
+ * start-conversation — the reusable body of the /people/friends page,
  * also embedded in the /hub Contacts module. Assumes a signed-in user
  * (callers wrap in AuthGate). No page chrome — the container supplies it.
  */
@@ -61,7 +70,7 @@ export function FriendsPanel() {
     queryFn: async () => {
       if (!user || friends.length === 0) return [];
       const ids = friends.map((f) => (f.user_id === user.id ? f.target_user_id : f.user_id));
-      return fetchProfilesByUserIds(ids);
+      return fetchProfilesByUserIds<FriendProfile>(ids);
     },
     enabled: !!user && friends.length > 0,
   });
@@ -70,7 +79,7 @@ export function FriendsPanel() {
     queryKey: ['request-profiles', pendingRequests.map((r) => r.user_id)],
     queryFn: async () => {
       if (!user || pendingRequests.length === 0) return [];
-      return fetchProfilesByUserIds(pendingRequests.map((r) => r.user_id));
+      return fetchProfilesByUserIds<FriendProfile>(pendingRequests.map((r) => r.user_id));
     },
     enabled: !!user && pendingRequests.length > 0,
   });
@@ -80,7 +89,12 @@ export function FriendsPanel() {
       <div className="flex items-center justify-end gap-2">
         <AlertDialog>
           <AlertDialogTrigger asChild>
-            <Button variant="destructive" size="sm" disabled={!canSend || sosLoading} className="gap-1.5">
+            <Button
+              variant="destructive"
+              size="sm"
+              disabled={!canSend || sosLoading}
+              className="gap-1.5"
+            >
               <Siren size={16} />
               {cooldownSeconds > 0
                 ? `${Math.floor(cooldownSeconds / 60)}:${String(cooldownSeconds % 60).padStart(2, '0')}`
@@ -96,14 +110,17 @@ export function FriendsPanel() {
             </AlertDialogHeader>
             <AlertDialogFooter>
               <AlertDialogCancel>{t('common.cancel', 'Cancel')}</AlertDialogCancel>
-              <AlertDialogAction onClick={sendSOS} className="bg-destructive text-destructive-foreground">
+              <AlertDialogAction
+                onClick={sendSOS}
+                className="bg-destructive text-destructive-foreground"
+              >
                 <Siren size={16} className="mr-1.5" />
                 {sosLoading ? t('sos.sending') : t('sos.send')}
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
-        <Badge variant="secondary">
+        <Badge variant="secondary" className="border-0">
           <div className="flex items-center gap-2">
             <Users size={16} />
             {friends.length} {t('pages.friends.title', 'Friends')}
@@ -112,7 +129,7 @@ export function FriendsPanel() {
       </div>
 
       <Tabs defaultValue="friends" style={{ width: '100%' }}>
-        <TabsList style={{ width: '100%', gridTemplateColumns: '1fr 1fr' }} className="grid">
+        <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="friends">
             <div className="flex items-center gap-2">
               <Users size={16} />
@@ -125,6 +142,12 @@ export function FriendsPanel() {
               {t('pages.friends.requests', 'Requests')} ({pendingRequests.length})
             </div>
           </TabsTrigger>
+          <TabsTrigger value="discover">
+            <div className="flex items-center gap-2">
+              <UserPlus size={16} />
+              {t('people.friends.discover', 'Find people')}
+            </div>
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="friends">
@@ -135,7 +158,10 @@ export function FriendsPanel() {
                 title="Your circle is just getting started"
                 description="Find people to connect with."
                 mood="encouraging"
-                primaryAction={{ label: 'Find People', onClick: () => navigate('/users') }}
+                primaryAction={{
+                  label: 'Find People',
+                  onClick: () => navigate('/people/members'),
+                }}
               />
             ) : (
               <div className="grid gap-4">
@@ -160,7 +186,7 @@ export function FriendsPanel() {
                               </AvatarFallback>
                             </Avatar>
                             <div>
-                              <LocalizedLink to={`/users/${friendId}`} className="font-medium">
+                              <LocalizedLink to={`/user/${friendId}`} className="font-medium">
                                 {profile?.display_name || 'Unknown User'}
                               </LocalizedLink>
                               {profile?.location && (
@@ -172,11 +198,11 @@ export function FriendsPanel() {
                             <StartConversationButton
                               userId={friendId}
                               userName={profile?.display_name || 'User'}
-                              variant="outline"
+                              variant="soft"
                               size="sm"
                             />
                             <Button
-                              variant="outline"
+                              variant="soft"
                               size="sm"
                               onClick={() => removeRelationship(friendId)}
                               disabled={loading}
@@ -222,7 +248,10 @@ export function FriendsPanel() {
                               </AvatarFallback>
                             </Avatar>
                             <div>
-                              <LocalizedLink to={`/users/${request.user_id}`} className="font-medium">
+                              <LocalizedLink
+                                to={`/user/${request.user_id}`}
+                                className="font-medium"
+                              >
                                 {profile?.display_name || 'Unknown User'}
                               </LocalizedLink>
                               <p className="text-sm text-muted-foreground">
@@ -246,7 +275,7 @@ export function FriendsPanel() {
                               </div>
                             </Button>
                             <Button
-                              variant="outline"
+                              variant="soft"
                               size="sm"
                               onClick={() => rejectFriendRequest(request.id)}
                               disabled={loading}
@@ -265,6 +294,10 @@ export function FriendsPanel() {
               </div>
             )}
           </div>
+        </TabsContent>
+
+        <TabsContent value="discover">
+          <PeopleModeView mode="friends" emptyState={<MeetMembersNotice />} />
         </TabsContent>
       </Tabs>
     </div>

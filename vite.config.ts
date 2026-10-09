@@ -268,7 +268,7 @@ export default defineConfig(({ mode }) => ({
             // React core MUST be in its own chunk to avoid circular deps
             { name: 'vendor', test: /node_modules\/react(-dom)?\// },
             { name: 'router', test: /node_modules\/react-router\// },
-            // Styling micro-deps (clsx + tailwind-merge + cva) → utils, which
+            // Styling micro-deps (clsx + tailwind-merge + cva) → shared-utils-v2, which
             // is already on every page's preload list. Without this rolldown
             // homes the canonical clsx inside the RECHARTS chunk (its biggest
             // sharer), so the entry statically imports recharts — which chains
@@ -277,10 +277,13 @@ export default defineConfig(({ mode }) => ({
             // ordered-group variant, NOT the priority-100 group that failed in
             // #1122 — measured entry sizes below before merging.
             {
-              name: 'utils',
+              // The v2 suffix deliberately rotates the public asset URL. A
+              // Cloudflare edge cached the prior chunk as HTML, and Pages
+              // deployments cannot purge that response without a zone token.
+              name: 'shared-utils-v2',
               test: /node_modules\/(clsx|tailwind-merge|class-variance-authority|use-sync-external-store)\//,
             },
-            { name: 'utils', test: /node_modules\/date-fns\// },
+            { name: 'shared-utils-v2', test: /node_modules\/date-fns\// },
             { name: 'graph', test: /node_modules\/(react-force-graph|force-graph|d3-)/ },
             { name: 'exceljs', test: /node_modules\/exceljs\// },
             { name: 'maplibre', test: /node_modules\/(maplibre-gl|@protomaps)\// },

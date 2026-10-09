@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery } from '@tanstack/react-query';
 
 interface SitemapLink {
   label: string;
@@ -14,60 +14,60 @@ interface SitemapSection {
 
 export function useDynamicSitemap() {
   return useQuery({
-    queryKey: ["dynamic-sitemap"],
+    queryKey: ['dynamic-sitemap'],
     queryFn: async (): Promise<SitemapSection[]> => {
       // Static routes - using actual working routes from the app
       const staticExploreLinks: SitemapLink[] = [
-        { label: "Home", to: "/" },
-        { label: "Venues", to: "/venues" },
-        { label: "Events", to: "/events" },
-        { label: "Marketplace", to: "/marketplace" },
-        { label: "Members", to: "/community/members" },
-        { label: "News", to: "/news" },
-        { label: "Groups", to: "/community/groups" },
-        { label: "My Groups", to: "/community/groups?tab=mine" },
-        { label: "Feed", to: "/community/feed" },
-        { label: "Saved", to: "/hub/saved" },
-        { label: "Search", to: "/search" },
-        { label: "Personalities", to: "/personalities" },
-        { label: "Cities", to: "/cities" },
-        { label: "Tags", to: "/tags" },
-        { label: "Hub", to: "/hub" },
-        { label: "Friends", to: "/community/friends" },
+        { label: 'Home', to: '/' },
+        { label: 'Venues', to: '/venues' },
+        { label: 'Events', to: '/events' },
+        { label: 'Marketplace', to: '/marketplace' },
+        { label: 'Members', to: '/people/members' },
+        { label: 'News', to: '/news' },
+        { label: 'Groups', to: '/people/groups' },
+        { label: 'My Groups', to: '/people/groups?tab=mine' },
+        { label: 'Feed', to: '/hub/feed' },
+        { label: 'Saved', to: '/hub/saved' },
+        { label: 'Search', to: '/search' },
+        { label: 'Personalities', to: '/personalities' },
+        { label: 'Cities', to: '/cities' },
+        { label: 'Tags', to: '/tags' },
+        { label: 'Hub', to: '/hub' },
+        { label: 'Friends', to: '/people/friends' },
       ];
 
       const staticAboutLinks: SitemapLink[] = [
-        { label: "About Hub", to: "/about-hub" },
-        { label: "About", to: "/about" },
-        { label: "Contact", to: "/contact" },
-        { label: "Press", to: "/press" },
-        { label: "Blog", to: "/blog" },
-        { label: "Sustainability", to: "/sustainability" },
-        { label: "Our Vision", to: "/vision" },
-        { label: "Our Values", to: "/values" },
-        { label: "Legal Hub", to: "/legal" },
-        { label: "Terms of Service", to: "/terms" },
-        { label: "Privacy Policy", to: "/privacy" },
-        { label: "Cookie Policy", to: "/cookies" },
-        { label: "DMCA", to: "/dmca" },
-        { label: "Accessibility", to: "/accessibility" },
+        { label: 'About Hub', to: '/about-hub' },
+        { label: 'About', to: '/about' },
+        { label: 'Contact', to: '/contact' },
+        { label: 'Press', to: '/press' },
+        { label: 'Blog', to: '/blog' },
+        { label: 'Sustainability', to: '/sustainability' },
+        { label: 'Our Vision', to: '/vision' },
+        { label: 'Our Values', to: '/values' },
+        { label: 'Legal Hub', to: '/legal' },
+        { label: 'Terms of Service', to: '/terms' },
+        { label: 'Privacy Policy', to: '/privacy' },
+        { label: 'Cookie Policy', to: '/cookies' },
+        { label: 'DMCA', to: '/dmca' },
+        { label: 'Accessibility', to: '/accessibility' },
       ];
 
       const sections: SitemapSection[] = [
         {
-          title: "Explore",
-          links: staticExploreLinks
+          title: 'Explore',
+          links: staticExploreLinks,
         },
         {
-          title: "About & Legal",
-          links: staticAboutLinks
-        }
+          title: 'About & Legal',
+          links: staticAboutLinks,
+        },
       ];
 
       try {
         // Use native fetch to avoid Supabase type issues
         const baseUrl = window.location.origin;
-        
+
         // Fetch from the sitemap API endpoint to get dynamic content
         const response = await fetch(`${baseUrl}/api/sitemap`);
         if (!response.ok) {
@@ -78,7 +78,6 @@ export function useDynamicSitemap() {
         // For now, return static sections since we've fixed the route URLs
         // TODO: Parse XML sitemap response and extract dynamic URLs when needed
         return sections;
-        
       } catch (error) {
         console.error('Error fetching dynamic sitemap data:', error);
         return sections;

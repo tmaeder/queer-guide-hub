@@ -44,6 +44,7 @@ import { Editable } from '@/components/admin/inline/Editable';
 import { GroupCollections } from '@/components/groups/GroupCollections';
 import { PageContainer } from '@/components/layout/PageContainer';
 import { AdminEditButton } from '@/components/admin/AdminEditButton';
+import { PeopleNav } from '@/components/people/PeopleNav';
 
 export default function GroupDetail() {
   const { groupId } = useParams<{ groupId: string }>();
@@ -113,6 +114,7 @@ export default function GroupDetail() {
   if (!user) {
     return (
       <PageContainer>
+        <PeopleNav className="mb-6" />
         <Alert>
           <AlertDescription>
             {t('pages.groupDetail.signInRequired', 'Please sign in to view group details.')}
@@ -125,6 +127,7 @@ export default function GroupDetail() {
   if (isLoading) {
     return (
       <PageContainer>
+        <PeopleNav className="mb-6" />
         <div className="animate-pulse flex flex-col gap-6">
           <div className="h-8 bg-muted rounded-element w-1/3" />
           <div className="h-32 bg-muted rounded-element" />
@@ -137,13 +140,14 @@ export default function GroupDetail() {
   if (!group) {
     return (
       <PageContainer>
+        <PeopleNav className="mb-6" />
         <div className="text-center flex flex-col gap-4">
           <h1 className="text-2xl font-bold">Group not found</h1>
           <p className="text-muted-foreground">
             The group you're looking for doesn't exist or you don't have access to it.
           </p>
           <Button asChild>
-            <LocalizedLink to="/groups">
+            <LocalizedLink to="/people/groups">
               <ArrowLeft size={16} className="mr-2" />
               Back to Groups
             </LocalizedLink>
@@ -157,9 +161,10 @@ export default function GroupDetail() {
 
   return (
     <PageContainer className="flex flex-col gap-6">
+      <PeopleNav />
       {/* Header */}
       <div className="flex items-center gap-4 mb-6">
-        <Button variant="outline" onClick={() => navigate(-1)}>
+        <Button variant="soft" onClick={() => navigate(-1)}>
           <ArrowLeft size={16} className="mr-2" />
           Back
         </Button>
@@ -197,7 +202,7 @@ export default function GroupDetail() {
                       lock vs globe at 20px carries the whole meaning. The wording is
                       lifted from the About tab's copy of this same fact, which this
                       change removes. */}
-                  <Badge variant="outline" className="flex items-center gap-1">
+                  <Badge variant="outline" className="flex items-center gap-1 border-0">
                     {group.is_private ? <Lock size={12} /> : <Globe size={12} />}
                     {group.is_private ? 'Private group' : 'Public group'}
                   </Badge>
@@ -219,7 +224,7 @@ export default function GroupDetail() {
                     <Badge
                       variant="secondary"
                       style={{ alignItems: 'center', gap: '4px' }}
-                      className="flex"
+                      className="flex border-0"
                     >
                       {group.user_role === 'admin' && <Crown size={12} />}
                       {group.user_role === 'moderator' && <Shield size={12} />}
@@ -254,7 +259,7 @@ export default function GroupDetail() {
                       <Badge
                         key={tag}
                         variant="outline"
-                        className="text-xs cursor-pointer"
+                        className="border-0 text-xs cursor-pointer"
                         onClick={() => navigate(`/tags/${encodeURIComponent(tag)}`)}
                       >
                         {tag}
@@ -271,7 +276,7 @@ export default function GroupDetail() {
                     {isJoining ? 'Joining...' : 'Join Group'}
                   </Button>
                 ) : (
-                  <Button onClick={handleLeave} disabled={isLeaving} variant="outline">
+                  <Button onClick={handleLeave} disabled={isLeaving} variant="soft">
                     <UserMinus size={16} className="mr-2" />
                     {isLeaving ? 'Leaving...' : 'Leave Group'}
                   </Button>
@@ -280,7 +285,7 @@ export default function GroupDetail() {
                 {group.is_member && <InviteFriendsDialog groupId={group.id} />}
 
                 {canManage && (
-                  <Button variant="outline" onClick={() => setActiveTab('members')}>
+                  <Button variant="soft" onClick={() => setActiveTab('members')}>
                     <Settings size={16} className="mr-2" />
                     Manage Group
                   </Button>

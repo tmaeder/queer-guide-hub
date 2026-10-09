@@ -9,8 +9,14 @@ describe('hubModules registry', () => {
     expect(new Set(paths).size).toBe(paths.length);
   });
 
-  it('exposes exactly the four consolidated modules', () => {
-    expect(HUB_MODULES.map((m) => m.id)).toEqual(['overview', 'messages', 'plans', 'saved']);
+  it('exposes the public feed alongside the four personal modules', () => {
+    expect(HUB_MODULES.map((m) => m.id)).toEqual([
+      'overview',
+      'feed',
+      'messages',
+      'plans',
+      'saved',
+    ]);
   });
 
   it('paths are static /hub routes (locale-collision-safe)', () => {
@@ -24,6 +30,11 @@ describe('hubModules registry', () => {
   it('overview is the default module at /hub', () => {
     const overview = HUB_MODULES.find((m) => m.id === 'overview');
     expect(overview?.path).toBe('/hub');
+  });
+
+  it('puts the community feed at /hub/feed', () => {
+    const feed = HUB_MODULES.find((m) => m.id === 'feed');
+    expect(feed?.path).toBe('/hub/feed');
   });
 
   it('messages carries the unread badge', () => {

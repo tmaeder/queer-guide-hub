@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { untypedRpc } from '@/integrations/supabase/untyped';
+import { cityCodesFromRow } from '@/lib/cityCodes';
 
 export interface CityCoverageGap {
   city_id: string;
@@ -8,6 +9,30 @@ export interface CityCoverageGap {
   gap_score: number;
   missing_fields: string[] | null;
   resolution: string;
+  /** ISO codes looked up from `cities` — city_coverage_gaps has no FK to embed through. */
+  country_code?: string | null;
+  region_code?: string | null;
+}
+
+/** Best-effort: a failed lookup leaves the gaps without codes instead of failing the panel. */
+async function withCityCodes(gaps: CityCoverageGap[]): Promise<CityCoverageGap[]> {
+  const ids = gaps.map((g) => g.city_id).filter(Boolean);
+  if (ids.length === 0) return gaps;
+  const { data, error } = await supabase
+    .from('cities')
+    .select('id, region_code, countries(code)')
+    .in('id', ids);
+  if (error || !data) return gaps;
+  const byId = new Map(
+    (data as unknown as Record<string, unknown>[]).map((r) => [
+      r.id as string,
+      cityCodesFromRow(r),
+    ]),
+  );
+  return gaps.map((g) => {
+    const codes = byId.get(g.city_id);
+    return codes ? { ...g, country_code: codes.countryCode, region_code: codes.regionCode } : g;
+  });
 }
 
 export interface CityQualitySummary {
@@ -100,7 +125,7 @@ export function useCityQualitySummary() {
       }
 
       return {
-        gaps: (gapsResult.data ?? []) as CityCoverageGap[],
+        gaps: await withCityCodes((gapsResult.data ?? []) as CityCoverageGap[]),
         needsAttention: attentionResult.count ?? 0,
         reviewOpen: reviewResult.count ?? 0,
         lowCompleteness: completenessResult.count ?? 0,

@@ -20,7 +20,7 @@ export interface ResolvedInvite {
 
 export function inviteUrl(token: string): string {
   const origin = typeof window !== 'undefined' ? window.location.origin : 'https://queer.guide';
-  return `${origin}/groups/invite/${token}`;
+  return `${origin}/people/groups/invite/${token}`;
 }
 
 /** Invite friends to a group + create shareable links + accept by token. */
@@ -74,7 +74,11 @@ export function useGroupInvites() {
       queryClient.invalidateQueries({ queryKey: ['user-groups'] });
     },
     onError: (error) => {
-      toast({ title: 'Could not accept invite', description: error.message, variant: 'destructive' });
+      toast({
+        title: 'Could not accept invite',
+        description: error.message,
+        variant: 'destructive',
+      });
     },
   });
 

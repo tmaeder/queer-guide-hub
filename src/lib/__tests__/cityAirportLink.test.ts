@@ -40,7 +40,9 @@ function latestDefinitionOf(fn: string): string {
     .sort();
   for (const f of [...files].reverse()) {
     const sql = readFileSync(join(MIGRATIONS, f), 'utf8');
-    if (new RegExp(`create\\s+(or\\s+replace\\s+)?function\\s+public\\.${fn}\\s*\\(`, 'i').test(sql))
+    if (
+      new RegExp(`create\\s+(or\\s+replace\\s+)?function\\s+public\\.${fn}\\s*\\(`, 'i').test(sql)
+    )
       return sql;
   }
   throw new Error(`no migration defines ${fn}`);
@@ -58,11 +60,16 @@ describe('run_city_airport_link keeps its measured candidate rule', () => {
 
   it('caps candidates at an absolute 65 km, widening only where nothing is that close', () => {
     expect(sql).toMatch(/dist_km\s*<=\s*100(\.0)?/i);
-    expect(sql).toMatch(/dist_km\s*<=\s*greatest\(\s*65(\.0)?\s*,\s*\w+\.min_d\s*\+\s*10(\.0)?\s*\)/i);
+    expect(sql).toMatch(
+      /dist_km\s*<=\s*greatest\(\s*65(\.0)?\s*,\s*\w+\.min_d\s*\+\s*10(\.0)?\s*\)/i,
+    );
     expect(sql).toMatch(/min\(\s*\w+\.dist_km\s*\)\s*OVER\s*\(\s*\)/i);
   });
 
-  it('ranks by sitelinks, then passengers, then size, then distance', () => {
+  // The v1 body. 99991791495998 patches it in place (size moves ahead of
+  // sitelinks, open-border countries are admitted); that patch is guarded in
+  // cityAirportOpenBorders.test.ts.
+  it('ranks by sitelinks, then passengers, then size, then distance (v1 body)', () => {
     const w = sql.match(/WINDOW\s+w\s+AS\s*\(([\s\S]*?)\)\s*\n/i)?.[1] ?? '';
     expect(w).toMatch(/sitelinks\s+DESC\s+NULLS\s+LAST/i);
     expect(w).toMatch(/pax_per_year\s+DESC\s+NULLS\s+LAST/i);
@@ -79,7 +86,7 @@ describe('run_city_airport_link keeps its measured candidate rule', () => {
     expect(sql).toMatch(/'not_scheduled_passenger_service'/);
   });
 
-  it('requires the airport to be in the same country as the city', () => {
+  it('requires the airport to be in the same country as the city (v1 body)', () => {
     expect(sql).toMatch(/s\.country_code\s*=\s*r\.country_code/i);
   });
 
@@ -123,7 +130,9 @@ describe('run_city_airport_link keeps its measured candidate rule', () => {
     // London's four airports are all municipality "London", so LTN falls out of
     // the top 4; without the rk bound the column reported 44 km with an empty
     // nearest_airport_codes next to it.
-    expect(sql).toMatch(/min\(b\.dist_km\) FILTER \(WHERE NOT b\.is_local[\s\S]{0,80}b\.rk <= 4\)/i);
+    expect(sql).toMatch(
+      /min\(b\.dist_km\) FILTER \(WHERE NOT b\.is_local[\s\S]{0,80}b\.rk <= 4\)/i,
+    );
   });
 
   it('refuses to run against an unseeded gate', () => {
@@ -136,7 +145,9 @@ describe('run_city_airport_link keeps its measured candidate rule', () => {
 
   it('stamps every row it examines so the sweep terminates', () => {
     expect(sql).toMatch(/'\{city_airport_link\}'/);
-    expect(sql).toMatch(/NOT\s*\(coalesce\(c\.enrichment_status,\s*'\{\}'::jsonb\)\s*\?\s*'city_airport_link'\)/i);
+    expect(sql).toMatch(
+      /NOT\s*\(coalesce\(c\.enrichment_status,\s*'\{\}'::jsonb\)\s*\?\s*'city_airport_link'\)/i,
+    );
   });
 
   it('re-selects any row still holding a code the gate does not know', () => {
