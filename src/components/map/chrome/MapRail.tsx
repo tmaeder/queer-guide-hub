@@ -61,14 +61,7 @@ function useRailClearance(state: 'hidden' | 'collapsed' | 'expanded') {
  * (the trip map, and `/venues`, which mounts ExploreMap directly with no
  * shell). They have never both been on screen at once.
  */
-export function MapRail({
-  points,
-  selectedId,
-  loading,
-  onHover,
-  onSelect,
-  ordered,
-}: MapRailProps) {
+export function MapRail({ points, selectedId, loading, onHover, onSelect, ordered }: MapRailProps) {
   const { t } = useTranslation();
   const reducedMotion = useReducedMotion();
   const [collapsed, setCollapsed] = useState(false);
@@ -150,8 +143,8 @@ export function MapRail({
     return (
       <div className="pointer-events-none absolute inset-x-0 bottom-4 z-20 flex justify-center px-4">
         <div className={shell}>
-          <div className="bg-foreground px-4 py-1.5">
-            <span className="inline-block h-3 w-28 animate-pulse bg-background/40" />
+          <div className="rounded-container bg-logo-plate-ink px-4 py-1.5">
+            <span className="inline-block h-3 w-28 animate-pulse bg-logo-plate/40" />
           </div>
           <div className="flex gap-2 overflow-hidden p-2">
             {Array.from({ length: 6 }).map((_, i) => (
@@ -174,9 +167,12 @@ export function MapRail({
     <div className="pointer-events-none absolute inset-x-0 bottom-4 z-20 flex justify-center px-4">
       <div className={shell}>
         {/* Board header — reversed plate, the way a station board names itself. */}
-        <div className="flex items-center justify-between gap-2 bg-foreground px-4 py-1.5">
+        {/* This is a physical ink plate, so its polarity must not invert with
+            the page theme. The fixed logo-plate tokens keep the label at
+            18.1:1 in both modes and avoid a mixed-theme hydration frame. */}
+        <div className="flex items-center justify-between gap-2 rounded-container bg-logo-plate-ink px-4 py-1.5">
           <span
-            className="truncate text-2xs uppercase tracking-wider text-background"
+            className="truncate text-2xs uppercase tracking-wider text-logo-plate"
             role="status"
             aria-live="polite"
           >
@@ -191,7 +187,7 @@ export function MapRail({
                 ? t('map.rail.show', { defaultValue: 'Show nearby places' })
                 : t('map.rail.hide', { defaultValue: 'Hide nearby places' })
             }
-            className="shrink-0 text-background hover:opacity-70 focus:outline-none focus-visible:ring-2 focus-visible:ring-background focus-visible:ring-inset"
+            className="shrink-0 text-logo-plate hover:opacity-70 focus:outline-none focus-visible:ring-2 focus-visible:ring-logo-plate focus-visible:ring-inset"
           >
             {collapsed ? (
               <ChevronUp className="h-4 w-4" aria-hidden />
