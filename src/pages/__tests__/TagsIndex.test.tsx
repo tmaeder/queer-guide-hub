@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { fireEvent, render, screen, within } from '@testing-library/react';
+import { act, fireEvent, render, screen, within } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { MemoryRouter, Routes, Route } from 'react-router';
 import { SafeModeProvider } from '@/providers/SafeModeProvider';
@@ -172,10 +172,7 @@ describe('TagsIndex', () => {
       tag({ id: 'city', name: 'Zurich', slug: 'zurich', entity_kind: 'place' }),
     ];
     const { container } = renderAt('/tags');
-    expect(screen.getByRole('button', { name: 'Terms' })).toHaveAttribute(
-      'aria-pressed',
-      'true',
-    );
+    expect(screen.getByRole('button', { name: 'Terms' })).toHaveAttribute('aria-pressed', 'true');
     expect(screen.getByRole('link', { name: /Gay/ })).toBeInTheDocument();
     expect(container.querySelector('a[href="/tags/size-m"]')).not.toBeInTheDocument();
     expect(screen.queryByRole('link', { name: /Zurich/ })).not.toBeInTheDocument();
@@ -191,6 +188,20 @@ describe('TagsIndex', () => {
     );
     expect(container.querySelector('a[href="/tags/size-m"]')).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /Bear/ })).toBeInTheDocument();
+  });
+
+  it('keeps a kind selection when search changes before the router commits it', () => {
+    corpus = [...PLAIN, tag({ id: 'size', name: 'M', slug: 'size-m', entity_kind: 'attribute' })];
+    const { container } = renderAt('/tags');
+    const labels = screen.getByRole('button', { name: 'Labels' });
+    const search = screen.getByRole('searchbox');
+    act(() => {
+      fireEvent.click(labels);
+      fireEvent.change(search, { target: { value: 'size-m' } });
+    });
+    expect(labels).toHaveAttribute('aria-pressed', 'true');
+    expect(search).toHaveValue('size-m');
+    expect(container.querySelector('a[href="/tags/size-m"]')).toBeInTheDocument();
   });
 
   it.each(['grid', 'list'])(
