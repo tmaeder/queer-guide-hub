@@ -5121,7 +5121,7 @@
       "scanTitle": "Scan a flyer or link",
       "scanBody": "Extract several submissions from files or a web page.",
       "contactTitle": "Contact the team",
-      "contactBody": "Account help, moderation, partnerships, press or another private message."
+      "contactBody": "Account help, partnerships, press or another private message."
     },
     "feedback": {
       "heading": "Report a problem or share an idea",
@@ -5130,7 +5130,8 @@
       "successBody": "Your feedback helps improve Queer Guide.",
       "category": "What type of feedback?",
       "categories": {
-        "bug": "Bug",
+        "safety": "Safety and moderation",
+        "bug": "Bug reports",
         "idea": "Idea",
         "improvement": "Improvement",
         "content-idea": "Content idea"
@@ -5141,7 +5142,7 @@
       "descriptionPlaceholder": "Tell us more…",
       "includeScreenshot": "Include screenshot of this page",
       "screenshotPreview": "Screenshot preview",
-      "contextNote": "Automatically included: current page URL, browser information and recent errors."
+      "contextNote": "Automatically included: current page URL, browser information, recent errors and network failures."
     },
     "correction": {
       "heading": "Fix something on this page",

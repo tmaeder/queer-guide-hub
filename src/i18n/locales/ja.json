@@ -5156,7 +5156,7 @@
       "scanTitle": "フライヤーやリンクをスキャン",
       "scanBody": "ファイルやウェブページから複数の投稿を抽出します。",
       "contactTitle": "チームに連絡",
-      "contactBody": "アカウントのサポート、モデレーション、提携、取材、その他の非公開メッセージ。"
+      "contactBody": "アカウントのサポート、提携、取材、その他の非公開メッセージ。"
     },
     "feedback": {
       "heading": "問題を報告、またはアイデアを共有",
@@ -5165,7 +5165,8 @@
       "successBody": "ご意見はQueer Guideの改善に役立ちます。",
       "category": "フィードバックの種類",
       "categories": {
-        "bug": "不具合",
+        "safety": "安全とモデレーション",
+        "bug": "不具合の報告",
         "idea": "アイデア",
         "improvement": "改善",
         "content-idea": "コンテンツ案"
@@ -5176,7 +5177,7 @@
       "descriptionPlaceholder": "詳しく教えてください…",
       "includeScreenshot": "このページのスクリーンショットを添付",
       "screenshotPreview": "スクリーンショットのプレビュー",
-      "contextNote": "現在のURL、ブラウザ情報、最近のエラーが自動で含まれます。"
+      "contextNote": "現在のURL、ブラウザ情報、最近のエラー、ネットワーク障害が自動で含まれます。"
     },
     "correction": {
       "heading": "このページを修正",

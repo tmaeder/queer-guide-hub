@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { ArrowLeft, ArrowRight, LockKeyhole } from 'lucide-react';
+import { lazy, useState } from 'react';
+import { ArrowLeft, ArrowRight, Camera, LockKeyhole } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -7,6 +7,9 @@ import { useAuth } from '@/hooks/useAuth';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { submissionTypes } from '@/config/submissionRegistry';
 import SubmitForm from '@/pages/SubmitForm';
+
+const FlyerScanBranch = lazy(() => import('./FlyerScanBranch'));
+const SCAN = '__scan__';
 
 interface AddSomethingBranchProps {
   initialType?: string;
@@ -51,6 +54,9 @@ export default function AddSomethingBranch({ initialType, onBack }: AddSomething
   }
 
   if (selectedType) {
+    if (selectedType === SCAN) {
+      return <FlyerScanBranch onBack={() => setSelectedType(undefined)} />;
+    }
     return (
       <SubmitForm contentType={selectedType} embedded onBack={() => setSelectedType(undefined)} />
     );
@@ -63,6 +69,27 @@ export default function AddSomethingBranch({ initialType, onBack }: AddSomething
         {t('contribute.common.back', 'Back')}
       </Button>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <button
+          type="button"
+          onClick={() => setSelectedType(SCAN)}
+          className="group flex min-h-28 items-center gap-4 rounded-container bg-foreground p-6 text-left text-background shadow-soft transition-all duration-fast hover:-translate-y-0.5 hover:shadow-soft-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 sm:col-span-2 lg:col-span-3"
+        >
+          <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border-[3px] border-background/70 bg-background text-foreground">
+            <Camera size={20} aria-hidden="true" />
+          </span>
+          <span className="min-w-0 flex-1">
+            <span className="block font-bold">
+              {t('contribute.chooser.scanTitle', 'Scan a flyer or link')}
+            </span>
+            <span className="mt-1 block text-sm leading-relaxed text-background/75">
+              {t(
+                'contribute.chooser.scanBody',
+                'Extract several submissions from files or a web page.',
+              )}
+            </span>
+          </span>
+          <ArrowRight size={18} className="shrink-0" aria-hidden="true" />
+        </button>
         {submissionTypes.map((type) => {
           const Icon = type.icon;
           return (

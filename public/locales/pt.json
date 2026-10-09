@@ -5158,7 +5158,7 @@
       "scanTitle": "Digitalizar um folheto ou ligação",
       "scanBody": "Extrai vários envios de ficheiros ou de uma página web.",
       "contactTitle": "Contactar a equipa",
-      "contactBody": "Ajuda com a conta, moderação, parcerias, imprensa ou outra mensagem privada."
+      "contactBody": "Ajuda com a conta, parcerias, imprensa ou outra mensagem privada."
     },
     "feedback": {
       "heading": "Comunicar um problema ou partilhar uma ideia",
@@ -5167,7 +5167,8 @@
       "successBody": "O teu comentário ajuda a melhorar o Queer Guide.",
       "category": "Que tipo de comentário?",
       "categories": {
-        "bug": "Erro",
+        "safety": "Segurança e moderação",
+        "bug": "Relatórios de erros",
         "idea": "Ideia",
         "improvement": "Melhoria",
         "content-idea": "Ideia de conteúdo"
@@ -5178,7 +5179,7 @@
       "descriptionPlaceholder": "Conta-nos mais…",
       "includeScreenshot": "Incluir uma captura desta página",
       "screenshotPreview": "Pré-visualização da captura",
-      "contextNote": "Incluído automaticamente: URL atual, informações do navegador e erros recentes."
+      "contextNote": "Incluído automaticamente: URL atual, informações do navegador, erros recentes e falhas de rede."
     },
     "correction": {
       "heading": "Corrigir algo nesta página",

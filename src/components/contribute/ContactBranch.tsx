@@ -3,13 +3,11 @@ import { useSearchParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import {
   ArrowRight,
-  Bug,
   Check,
   CircleHelp,
   Handshake,
   MessageCircle,
   Scale,
-  ShieldAlert,
   ShieldCheck,
   type LucideIcon,
 } from 'lucide-react';
@@ -40,13 +38,7 @@ const LINES: ContactLine[] = [
     value: 'support',
     icon: CircleHelp,
     label: 'Support',
-    goes: 'Your account, a listing, or something on the site you cannot find.',
-  },
-  {
-    value: 'safety',
-    icon: ShieldAlert,
-    label: 'Safety and moderation',
-    goes: 'Harassment, a dangerous listing, or someone’s behaviour.',
+    goes: 'Your account or something on the site you cannot find.',
   },
   {
     value: 'partnerships',
@@ -55,16 +47,10 @@ const LINES: ContactLine[] = [
     goes: 'Press, venues, organisations, or sponsorship.',
   },
   {
-    value: 'bugs',
-    icon: Bug,
-    label: 'Bug reports',
-    goes: 'Something is broken or a page shows the wrong thing.',
-  },
-  {
     value: 'other',
     icon: MessageCircle,
     label: 'Something else',
-    goes: 'Anything the four lines above do not cover.',
+    goes: 'Anything the two lines above do not cover.',
   },
 ];
 
@@ -161,7 +147,7 @@ export default function ContactBranch({ onBack, onDone }: ContactBranchProps) {
     <form onSubmit={handleSubmit} noValidate>
       <div className="mb-8 flex flex-col gap-4 rounded-container bg-foreground p-6 text-background shadow-soft sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-start gap-4">
-          <ShieldAlert size={24} className="mt-0.5 shrink-0" aria-hidden="true" />
+          <CircleHelp size={24} className="mt-0.5 shrink-0" aria-hidden="true" />
           <div>
             <p className="font-bold leading-tight">
               {t('contact.crisis.title', 'In a crisis, do not use this form.')}
@@ -200,7 +186,7 @@ export default function ContactBranch({ onBack, onDone }: ContactBranchProps) {
           aria-labelledby={linesLabelId}
           className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3"
         >
-          {LINES.map((line, index) => {
+          {LINES.map((line) => {
             const Icon = line.icon;
             const active = form.category === line.value;
             return (
@@ -212,7 +198,6 @@ export default function ContactBranch({ onBack, onDone }: ContactBranchProps) {
                 onClick={() => setForm((current) => ({ ...current, category: line.value }))}
                 className={cn(
                   'relative min-h-32 rounded-container p-6 text-left shadow-soft transition-all duration-fast focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
-                  index === LINES.length - 1 && 'sm:col-span-2 lg:col-span-2',
                   active
                     ? 'bg-foreground text-background'
                     : 'bg-card hover:-translate-y-0.5 hover:bg-surface-container-low hover:shadow-soft-hover',
@@ -254,19 +239,6 @@ export default function ContactBranch({ onBack, onDone }: ContactBranchProps) {
               : t('contact.form.linePending', 'No line picked yet')}
           </p>
         </div>
-
-        {form.category === 'safety' && (
-          <p className="mt-4 rounded-element bg-surface-container-high p-4 text-sm leading-relaxed">
-            {t(
-              'contact.form.safetyNote',
-              'If you are in danger right now, this is the slow route.',
-            )}{' '}
-            <LocalizedLink to="/help">
-              {t('contact.form.safetyLink', 'Crisis lines by country')}
-            </LocalizedLink>
-            .
-          </p>
-        )}
 
         <div className="mt-6 grid gap-6 sm:grid-cols-2">
           <div>

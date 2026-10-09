@@ -91,7 +91,7 @@ describe('Footer', () => {
   it('sends "Report something" to a route that exists', () => {
     renderFooter();
     const report = screen.getByRole('link', { name: 'Report something' });
-    expect(report).toHaveAttribute('href', '/contact?category=safety');
+    expect(report).toHaveAttribute('href', '/submit/feedback?category=safety');
   });
 });
 
@@ -108,7 +108,7 @@ describe('Footer, compact (panel 09)', () => {
     renderCompact();
     expect(screen.getByRole('link', { name: 'Report' })).toHaveAttribute(
       'href',
-      '/contact?category=safety',
+      '/submit/feedback?category=safety',
     );
     expect(screen.getByRole('link', { name: 'Hotlines' })).toHaveAttribute('href', '/help');
   });
