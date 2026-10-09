@@ -123,7 +123,7 @@ const UserDirectory = () => {
       >
         {!isLoading && !isError && (
           <div className="flex flex-wrap gap-2 text-13">
-            <span className="inline-flex items-center gap-2 bg-muted px-4 py-2 font-medium">
+            <span className="inline-flex items-center gap-2 rounded-badge bg-muted px-4 py-2 font-medium">
               <Users className="h-4 w-4" />
               {memberCount}{' '}
               {memberCount === 1
