@@ -71,7 +71,6 @@ export function CityOverviewTab({ city, showDescription = true }: CityOverviewTa
       label: t('cities.detail.about.elevation', 'Elevation'),
       value: `${city.elevation_m} m`,
     });
-  if (city.mayor) facts.push({ label: t('cities.detail.about.mayor', 'Mayor'), value: city.mayor });
   if (city.postal_codes?.length)
     facts.push({
       label: t('cities.detail.about.postalCodes', 'Postal codes'),
