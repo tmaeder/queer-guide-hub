@@ -56,7 +56,7 @@ export const UserDirectoryGrid = ({
               {profiles.length} {profiles.length === 1 ? 'member' : 'members'}
             </span>
             {activeFiltersCount > 0 && (
-              <Badge variant="outline" className="text-xs">
+              <Badge variant="secondary" className="border-0 text-xs">
                 Filtered
               </Badge>
             )}
@@ -130,7 +130,7 @@ export const UserDirectoryGrid = ({
                       <div className="flex flex-wrap gap-1.5 mt-2">
                         {mode && <UserModeBadge mode={mode} size="sm" />}
                         {profile.is_business && (
-                          <Badge variant="outline" className="text-xs gap-1">
+                          <Badge variant="secondary" className="gap-1 border-0 text-xs">
                             <Briefcase size={12} />
                             Business
                           </Badge>
@@ -229,7 +229,7 @@ export const UserDirectoryGrid = ({
                         <StartConversationButton
                           userId={profile.user_id}
                           userName={profile.display_name || 'Anonymous member'}
-                          variant="outline"
+                          variant="soft"
                           size="sm"
                         />
                       </div>
@@ -269,7 +269,7 @@ export const UserDirectoryGrid = ({
               </p>
             </div>
             {(filters.searchQuery || activeFiltersCount > 0) && (
-              <Button variant="outline" onClick={clearAllFilters} className="gap-2">
+              <Button variant="soft" onClick={clearAllFilters} className="gap-2">
                 <X size={16} />
                 Clear all filters
               </Button>

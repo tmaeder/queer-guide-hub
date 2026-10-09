@@ -22,7 +22,23 @@ import {
 } from '@/components/ui/command';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
-import { Search, MapPin, Calendar, Users, Filter, X, ChevronDown, Check, Heart, Briefcase, GraduationCap, Navigation, Sparkles, TrendingUp, Star } from 'lucide-react';
+import {
+  Search,
+  MapPin,
+  Calendar,
+  Users,
+  Filter,
+  X,
+  ChevronDown,
+  Check,
+  Heart,
+  Briefcase,
+  GraduationCap,
+  Navigation,
+  Sparkles,
+  TrendingUp,
+  Star,
+} from 'lucide-react';
 import {
   UserFilters,
   ageRanges,
@@ -85,7 +101,7 @@ export const UserDirectoryFilters = ({
             </div>
             <div className="flex gap-2">
               <Button
-                variant={nearMe ? 'default' : 'outline'}
+                variant={nearMe ? 'default' : 'soft'}
                 onClick={handleNearMeToggle}
                 disabled={isDetectingLocation}
                 size="icon"
@@ -93,14 +109,10 @@ export const UserDirectoryFilters = ({
                 aria-label={nearMe ? 'Disable near-me filter' : 'Find members near me'}
                 aria-pressed={nearMe}
               >
-                {isDetectingLocation ? (
-                  <TrackLoader size={16} />
-                ) : (
-                  <Navigation size={16} />
-                )}
+                {isDetectingLocation ? <TrackLoader size={16} /> : <Navigation size={16} />}
               </Button>
               <Button
-                variant="outline"
+                variant="soft"
                 onClick={() => setShowFilters(!showFilters)}
                 size="icon"
                 className="relative h-12 w-12"
@@ -275,7 +287,7 @@ export const UserDirectoryFilters = ({
                     <Popover open={interestsOpen} onOpenChange={setInterestsOpen}>
                       <PopoverTrigger asChild>
                         <Button
-                          variant="outline"
+                          variant="soft"
                           role="combobox"
                           aria-expanded={interestsOpen}
                           className="w-full justify-between font-normal"
