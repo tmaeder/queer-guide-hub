@@ -177,7 +177,7 @@ export function pageDesignFamilyForModule(modulePath: string): PageDesignFamily 
   }
   if (['Map', 'Pride', 'Travel'].includes(name)) return 'travel';
   // `Cruising` is map-led but is NOT travel: it is the authenticated people +
-  // spots discovery surface that /people/dating, /intimate and /discover all
+  // spots discovery surface that /hub/dating, /intimate and /discover all
   // redirect into, so it takes the Discovery template alongside SearchResults
   // and ./pages/explore/ rather than the Travel one Map uses.
   if (['SearchResults', 'Cruising'].includes(name)) return 'discovery';

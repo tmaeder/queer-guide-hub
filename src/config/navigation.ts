@@ -90,7 +90,7 @@ export const DESTINATIONS: NavDestination[] = [
     cluster: 'places',
     searchType: 'venue',
   },
-  { to: '/people', icon: UserCheck, labelKey: 'header.nav.people', cluster: 'community' },
+  { to: '/hub/people', icon: UserCheck, labelKey: 'header.nav.people', cluster: 'community' },
   {
     to: '/events',
     icon: Calendar,
@@ -125,13 +125,13 @@ export const DESTINATIONS: NavDestination[] = [
   { to: '/map', icon: Map, labelKey: 'header.nav.map', cluster: 'places' },
   { to: '/hub/feed', icon: Rss, labelKey: 'header.nav.feed', cluster: 'community' },
   {
-    to: '/people/groups',
+    to: '/hub/groups',
     icon: UsersRound,
     labelKey: 'header.nav.groups',
     cluster: 'community',
   },
   {
-    to: '/people/members',
+    to: '/hub/members',
     icon: UserCheck,
     labelKey: 'header.nav.members',
     cluster: 'community',
@@ -256,25 +256,33 @@ export const INTENT_NAV: IntentDestination[] = [
     ],
   },
   {
-    // The one job the Intent Router shipped without. /people, /community and
-    // /groups are roughly half the product and had NO desktop nav entry at
-    // all — reachable only from the mobile sheet's browse grid. Rebuilt in
-    // place at /people (as /travel was) rather than minting a competing path.
-    // Deliberately NOT a merge of /people and /community: both are already
-    // thin tab shells over two genuinely different jobs — find a person vs
-    // join a group — and folding them yields a seven-tab row. /people is the
-    // intent's home and links across to the community surfaces.
+    // Meet people remains a primary intent, while its community and connection
+    // destinations now share the Hub shell and canonical route family.
     id: 'meet',
-    to: '/people',
+    to: '/hub/people',
     icon: transitIcon('community'),
     labelKey: 'header.intents.meet.label',
     fallback: 'Meet people',
     subtitleKey: 'header.intents.meet.subtitle',
     subtitleFallback: 'Friends, dates, travel buddies and groups',
-    activePrefixes: ['/people', '/community', '/groups', '/friends', '/dating', '/cruising'],
+    activePrefixes: [
+      '/hub/people',
+      '/hub/members',
+      '/hub/friends',
+      '/hub/groups',
+      '/hub/dating',
+      '/hub/travel',
+      '/hub/nearby',
+      '/people',
+      '/community',
+      '/groups',
+      '/friends',
+      '/dating',
+      '/cruising',
+    ],
     children: [
-      { to: '/people', labelKey: 'header.nav.people', fallback: 'People' },
-      { to: '/people/groups', labelKey: 'header.nav.groups', fallback: 'Groups' },
+      { to: '/hub/people', labelKey: 'header.nav.people', fallback: 'People' },
+      { to: '/hub/groups', labelKey: 'header.nav.groups', fallback: 'Groups' },
       { to: '/hub/feed', labelKey: 'header.nav.feed', fallback: 'Feed' },
     ],
   },
@@ -466,6 +474,7 @@ export const BOTTOM_NAV_TABS: BottomNavTab[] = [
       '/guides',
       '/news',
       '/map',
+      '/hub/people',
       '/people',
       '/hotels',
       '/travel',

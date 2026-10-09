@@ -37,7 +37,7 @@ interface FriendProfile {
 
 /**
  * Friends + pending-requests management (accept/reject/remove), SOS, and
- * start-conversation — the reusable body of the /people/friends page,
+ * start-conversation — the reusable body of the /hub/friends page,
  * also embedded in the /hub Contacts module. Assumes a signed-in user
  * (callers wrap in AuthGate). No page chrome — the container supplies it.
  */
@@ -160,7 +160,7 @@ export function FriendsPanel() {
                 mood="encouraging"
                 primaryAction={{
                   label: 'Find People',
-                  onClick: () => navigate('/people/members'),
+                  onClick: () => navigate('/hub/members'),
                 }}
               />
             ) : (

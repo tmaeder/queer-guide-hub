@@ -119,7 +119,7 @@ export default function About() {
     {
       key: 'community',
       type: 'group',
-      to: '/people/groups',
+      to: '/hub/groups',
       name: t('about.lines.community.name', 'Community'),
       description: t(
         'about.lines.community.description',

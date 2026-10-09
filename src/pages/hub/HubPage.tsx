@@ -13,6 +13,13 @@ import { PageContainer } from '@/components/layout/PageContainer';
 const MODULE_TITLES: Record<HubModuleId, string> = {
   overview: 'Overview',
   feed: 'Community Feed',
+  members: 'Members',
+  friends: 'Friends',
+  groups: 'Groups',
+  people: 'Discover people',
+  dating: 'Dating',
+  travel: 'Travel buddies',
+  nearby: 'Nearby',
   messages: 'Messages',
   plans: 'Plans',
   saved: 'Saved',

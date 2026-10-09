@@ -5,7 +5,7 @@ import { PageContainer } from '@/components/layout/PageContainer';
 import { PageHeader } from '@/components/layout/PageHeader';
 
 /**
- * /people/friends — own-only page around the shared FriendsPanel (also
+ * /hub/friends — own-only page around the shared FriendsPanel (also
  * embedded in the /hub Contacts module).
  */
 export default function Friends() {
