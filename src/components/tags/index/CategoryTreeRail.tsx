@@ -32,6 +32,8 @@ interface CategoryTreeRailProps {
   activeSlug: string | null;
   /** Serialized non-category params, already prefixed with `?` when non-empty. */
   paramsSuffix: string;
+  /** Counts of readable entries under the current kind and safe-mode settings. */
+  counts?: Record<string, number>;
   orientation?: 'vertical' | 'horizontal';
   className?: string;
 }
@@ -47,6 +49,7 @@ export function CategoryTreeRail({
   tree,
   activeSlug,
   paramsSuffix,
+  counts,
   orientation = 'vertical',
   className,
 }: CategoryTreeRailProps) {
@@ -193,7 +196,7 @@ export function CategoryTreeRail({
                         isActive ? 'text-background/70' : 'text-muted-foreground',
                       )}
                     >
-                      {p.total_tag_count || p.tag_count}
+                      {counts?.[p.name] ?? (p.total_tag_count || p.tag_count)}
                     </span>
                   </span>
                 </LocalizedLink>
@@ -257,7 +260,7 @@ export function CategoryTreeRail({
                                 childActive ? 'text-background/70' : 'text-muted-foreground',
                               )}
                             >
-                              {child.tag_count}
+                              {counts?.[child.name] ?? child.tag_count}
                             </span>
                           </span>
                         </LocalizedLink>

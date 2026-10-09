@@ -10,7 +10,7 @@ import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { useResolveGroupInvite, useGroupInvites } from '@/hooks/useGroupInvites';
 import { useTranslation } from 'react-i18next';
 import { PageContainer } from '@/components/layout/PageContainer';
-import { PeopleNav } from '@/components/people/PeopleNav';
+import { HubNav } from '@/components/hub/HubNav';
 
 export default function GroupInviteAccept() {
   const { t } = useTranslation();
@@ -24,7 +24,7 @@ export default function GroupInviteAccept() {
     if (!token || !invite) return;
     try {
       await acceptInvite(token);
-      navigate(`/people/groups/${invite.group.id}`);
+      navigate(`/hub/groups/${invite.group.id}`);
     } catch {
       /* toast handled in hook */
     }
@@ -32,7 +32,7 @@ export default function GroupInviteAccept() {
 
   return (
     <PageContainer>
-      <PeopleNav className="mb-6" />
+      <HubNav className="mb-6" />
       <div className="mx-auto max-w-xl">
         {isLoading ? (
           <Card>
@@ -58,7 +58,7 @@ export default function GroupInviteAccept() {
             mood="neutral"
             primaryAction={{
               label: t('groups.inviteAccept.browse', 'Browse groups'),
-              onClick: () => navigate('/people/groups'),
+              onClick: () => navigate('/hub/groups'),
             }}
           />
         ) : invite.alreadyMember ? (
@@ -69,7 +69,7 @@ export default function GroupInviteAccept() {
             mood="neutral"
             primaryAction={{
               label: t('groups.inviteAccept.openGroup', 'Open group'),
-              onClick: () => navigate(`/people/groups/${invite.group.id}`),
+              onClick: () => navigate(`/hub/groups/${invite.group.id}`),
             }}
           />
         ) : (
@@ -109,7 +109,7 @@ export default function GroupInviteAccept() {
               ) : (
                 <Button
                   variant="default"
-                  onClick={() => navigate(`/auth?redirect=/people/groups/invite/${token}`)}
+                  onClick={() => navigate(`/auth?redirect=/hub/groups/invite/${token}`)}
                 >
                   {t('groups.inviteAccept.signIn', 'Sign in to join')}
                 </Button>

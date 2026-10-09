@@ -19,6 +19,12 @@ describe('parseTagsParams', () => {
     expect(state).toEqual(DEFAULT_TAGS_STATE);
     expect(changed).toBe(false);
     expect(redirectTo).toBeUndefined();
+    expect(state.kind).toBe('concept');
+  });
+
+  it('preserves an explicit all-kinds choice while omitting the default term kind', () => {
+    expect(serializeTagsParams(parseTagsParams(sp('kind=all')).state).toString()).toBe('kind=all');
+    expect(serializeTagsParams(parseTagsParams(sp('kind=concept')).state).toString()).toBe('');
   });
 
   it('reports drift when every key is present at its default', () => {

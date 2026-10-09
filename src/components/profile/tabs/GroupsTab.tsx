@@ -85,7 +85,7 @@ export function GroupsTab({
           isOwnProfile
             ? {
                 label: t('profile.groups.find', 'Find groups'),
-                onClick: () => navigate('/people/groups'),
+                onClick: () => navigate('/hub/groups'),
               }
             : undefined
         }

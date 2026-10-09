@@ -27,13 +27,13 @@ import {
 import type { SectionDef } from '@/components/entity/editorial';
 import { CityNetwork } from '@/components/home/subway/CityNetwork';
 import { hasCityNetwork } from '@/components/home/subway/cityNetworkGeometry';
-import { PeopleNav } from '@/components/people/PeopleNav';
+import { HubNav } from '@/components/hub/HubNav';
 import { lazyRetry } from '@/utils/lazyRetry';
 
 const PeopleConnectionMap = lazyRetry(() => import('@/components/people/PeopleConnectionMap'));
 
 /**
- * `/people` — the "Meet people" intent.
+ * `/hub/people` — the "Meet people" intent inside the unified Hub.
  *
  * **Place-led, and that is the whole design.** This page used to open on four
  * person-matching tabs (friends / dating / travel / nearby), every one of which
@@ -56,9 +56,9 @@ const PeopleConnectionMap = lazyRetry(() => import('@/components/people/PeopleCo
  * index in search, so this deliberately does not pretend to surface people."
  * The page was the one surface still pretending.
  *
- * The four `/people/<mode>` child routes are untouched and still render the
- * matching views — `/intimate`, `/discover` and `/cruising` redirect into
- * `/people/dating`, and TripTravelBuddiesCTA deep-links to `/people/travel`.
+ * The focused `/hub/<mode>` routes still render the matching views — legacy
+ * `/intimate`, `/discover` and `/cruising` URLs redirect into
+ * `/hub/dating`, and TripTravelBuddiesCTA deep-links to `/hub/travel`.
  * Retiring the tab row from the hub also fixes the mobile defect where the
  * row's horizontal overflow pushed "Nearby" and the intent button off-screen
  * at 375px.
@@ -88,7 +88,7 @@ export default function People() {
   const showNudge = profile != null && !profile.user_mode;
   const where = cityName ?? t('people.yourArea', 'your area');
 
-  // Must match STATIC_ROUTE_META['/people'].title in functions/_lib/routeMeta.ts.
+  // Must match STATIC_ROUTE_META['/hub/people'].title in functions/_lib/routeMeta.ts.
   // The edge fix landed without this line, so a crawler saw the new title while
   // a human's browser tab still read "Meet people — LGBTQ+ friends, dates and
   // travel buddies" — the page's old promise, and exactly the crawler/user
@@ -104,7 +104,7 @@ export default function People() {
     title: 'Meet LGBTQ+ People — Groups, Spaces and Events',
     description:
       'Where queer people actually gather: community spaces, groups, events and bars near you, plus the members and travel buddies you can meet.',
-    canonicalPath: '/people',
+    canonicalPath: '/hub/people',
   });
 
   // Dropping empty sections now lives in EditorialDetailLayout, so all six
@@ -195,7 +195,7 @@ export default function People() {
                   })}
                   name={g.name}
                   description={g.description}
-                  href={`/people/groups/${g.id}`}
+                  href={`/hub/groups/${g.id}`}
                 />
               </li>
             ))}
@@ -206,7 +206,7 @@ export default function People() {
           </p>
         ),
       action: (
-        <LocalizedLink to="/people/groups" className="text-13 no-underline hover:underline">
+        <LocalizedLink to="/hub/groups" className="text-13 no-underline hover:underline">
           {t('people.allGroups', 'All groups')}
         </LocalizedLink>
       ),
@@ -270,7 +270,7 @@ export default function People() {
                   })
                 : t('people.rail.title', 'Members to meet')
             }
-            seeAllHref="/people/members"
+            seeAllHref="/hub/members"
             emptyState={<MeetMembersNotice cityId={cityId ?? undefined} cityName={cityName} />}
           />
 
@@ -331,12 +331,12 @@ export default function People() {
   return (
     <>
       <IntentPageLayout
-        topNav={<PeopleNav />}
+        topNav={<HubNav />}
         sectionNavClassName="border-b-0"
         heroSize="sm"
         heroClassName="py-4 md:py-6"
         breadcrumbLabel={t('header.intents.meet.label', 'Meet people')}
-        breadcrumbHref="/people"
+        breadcrumbHref="/hub/people"
         eyebrow={cityName ? `In ${cityName}` : undefined}
         title={
           cityName
@@ -352,12 +352,7 @@ export default function People() {
         )}
         scopeBar={
           <div className="flex flex-wrap items-center gap-2">
-            <Button
-              variant="soft"
-              size="sm"
-              className="gap-2"
-              onClick={() => setIntentOpen(true)}
-            >
+            <Button variant="soft" size="sm" className="gap-2" onClick={() => setIntentOpen(true)}>
               <SlidersHorizontal size={14} aria-hidden />
               {t('people.intent.button', "I'm here for…")}
             </Button>

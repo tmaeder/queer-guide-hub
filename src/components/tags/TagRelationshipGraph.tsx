@@ -36,6 +36,8 @@ interface TagRelationshipGraphProps {
   /** `{ id, name }` — the Select shows the name and filters by the id, for the
    *  same reason. */
   categories?: { id: string; name: string }[];
+  /** Optional index result set, including its kind, search, and safety filters. */
+  allowedTagIds?: ReadonlySet<string>;
 }
 
 interface ForceNode extends NodeObject {
@@ -99,6 +101,7 @@ export default function TagRelationshipGraph({
   onTagClick,
   categoryFilter: externalCategoryFilter,
   categories = [],
+  allowedTagIds,
 }: TagRelationshipGraphProps) {
   const isMobile = useIsMobile();
   const navigate = useLocalizedNavigate();
@@ -160,10 +163,11 @@ export default function TagRelationshipGraph({
 
     // Category filtering can leave edges pointing at tags that were filtered
     // out of `nodes`; react-force-graph throws "node not found: <id>" on those.
-    const nodeIds = new Set(graphData.nodes.map((n) => n.id));
+    const nodes = graphData.nodes.filter((n) => !allowedTagIds || allowedTagIds.has(n.id));
+    const nodeIds = new Set(nodes.map((n) => n.id));
 
     return {
-      nodes: graphData.nodes.map((n) => ({
+      nodes: nodes.map((n) => ({
         ...n,
         id: n.id,
         val: Math.log((n.usage_count || 0) + 2) * 2,
@@ -177,7 +181,7 @@ export default function TagRelationshipGraph({
           type: e.type,
         })),
     };
-  }, [graphData]);
+  }, [graphData, allowedTagIds]);
 
   const goToTag = useCallback(
     (n: { id: string; name: string; slug: string }) => {
@@ -288,14 +292,14 @@ export default function TagRelationshipGraph({
   }
 
   if (isMobile) {
-    const topNodes = [...(graphData?.nodes || [])]
+    const topNodes = [...forceData.nodes]
       .sort((a, b) => b.usage_count - a.usage_count)
       .slice(0, 20);
 
     return (
       <div className="flex flex-col gap-4">
         <p className="text-sm text-muted-foreground">
-          {graphData?.nodes.length || 0} tags, {graphData?.edges.length || 0} relationships
+          {forceData.nodes.length} tags, {forceData.links.length} relationships
         </p>
         <div className="grid grid-cols-2 gap-4">
           {topNodes.map((node) => (

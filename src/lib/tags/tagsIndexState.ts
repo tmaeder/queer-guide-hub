@@ -70,7 +70,7 @@ export const DEFAULT_TAGS_STATE: TagsIndexState = {
   dir: 'desc',
   letter: null,
   usage: 'all',
-  kind: 'all',
+  kind: 'concept',
   adult: false,
 };
 

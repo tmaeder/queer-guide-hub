@@ -72,7 +72,7 @@ export const STATIC_ROUTE_META: Record<string, RouteMeta> = {
     description:
       'An interactive world map of queer venues, events, communities, and country-level safety information.',
   },
-  '/people/members': {
+  '/hub/members': {
     title: 'Community Directory | Queer Guide',
     description:
       'Browse community members, organizations and creators in the global queer directory.',
@@ -270,8 +270,8 @@ export const STATIC_ROUTE_META: Record<string, RouteMeta> = {
     description:
       'Where to go out tonight: queer bars, clubs, cafes and saunas, plus what is actually on, wherever you are.',
   },
-  // /people is linked from the mobile sheet and the search popover, and is now
-  // the sixth intent, but had NO entry here — so resolveMeta fell through to
+  // /hub/people is linked from the mobile sheet and the search popover as the
+  // Meet intent. It needs an explicit entry here so resolveMeta does not fall through to
   // DEFAULT_META, whose title is byte-identical to the homepage's, and
   // sitemap-static.xml (Object.keys(STATIC_ROUTE_META)) omitted it entirely.
   // The description tracks the page, which is now place-led: it opens on the
@@ -280,7 +280,7 @@ export const STATIC_ROUTE_META: Record<string, RouteMeta> = {
   // every visitor. Promising "find friends, dates and travel buddies" here
   // while the page leads with venues is exactly the crawler/user divergence
   // this entry was originally added to fix.
-  '/people': {
+  '/hub/people': {
     title: 'Meet LGBTQ+ People — Groups, Spaces and Events',
     description:
       'Where queer people actually gather: community spaces, groups, events and bars near you, plus the members and travel buddies you can meet.',
@@ -345,12 +345,12 @@ export const STATIC_ROUTE_META: Record<string, RouteMeta> = {
     description:
       'Pride marches, parades and festivals around the world, listed by year with dates, host cities and what to expect.',
   },
-  // The three community tabs are the outbound links in /people's own crawler
+  // The public community modules are outbound links in /hub/people's crawler
   // body (routeBody.ts), and all three fell through to DEFAULT_META — so the
-  // /people fix pointed Googlebot at three URLs that each served the homepage
+  // body; without explicit metadata they each served the homepage
   // title. `resolveMeta` is an exact match; a parent entry does not cover
   // children.
-  '/people/groups': {
+  '/hub/groups': {
     title: 'LGBTQ+ Groups to Join — Local and Interest',
     description:
       'Local and interest-based LGBTQ+ groups you can join, from book clubs and hiking to professional networks and peer support.',
@@ -360,7 +360,7 @@ export const STATIC_ROUTE_META: Record<string, RouteMeta> = {
     description:
       'What the Queer Guide community is posting right now: recommendations, questions, meet-ups and news from members worldwide.',
   },
-  // /people/friends is the signed-in friends list. Same class as /hub — a
+  // /hub/friends is the signed-in friends list. Same class as the Hub's other private modules — a
   // personal surface with nothing public to render — so it is noindexed in
   // isIndexable() below rather than given meta.
   '/travel/book': {
@@ -479,9 +479,12 @@ export function canonicalUrl(pathname: string): string {
 }
 
 export function isIndexable(pathname: string): boolean {
-  // The community feed is the public module inside an otherwise private Hub.
-  // Keep the exact route indexable without opening any personal sub-route.
-  if (pathname.replace(/\/+$/, '') === '/hub/feed') return true;
+  // These Hub modules have useful anonymous content. The remaining modules are
+  // personal, consent-gated, or signed-in workspaces.
+  const clean = pathname.replace(/\/+$/, '') || '/';
+  if (new Set(['/hub/feed', '/hub/members', '/hub/groups', '/hub/people']).has(clean)) {
+    return true;
+  }
 
   const noindex = [
     /^\/auth(\/|$)/,
@@ -491,26 +494,16 @@ export function isIndexable(pathname: string): boolean {
     /^\/profile(\/|$)/,
     /^\/settings(\/|$)/,
     // Query-shaped and personal surfaces: /search is an infinite parameter
-    // space and every Hub module except the public /hub/feed is personal. This suppresses
+    // space and private Hub modules contain no anonymous content. This suppresses
     // the crawler body injection for them (functions/_middleware.ts gates the
     // bot body on `indexable`), which is intended — there is nothing static to
     // serve — but it means neither may be added to ROUTES in
     // scripts/seo-check.mjs, whose botH1/botBodySize assertions would fail.
     /^\/search(\/|$)/,
     /^\/hub(\/|$)/,
-    // The four /people matching modes. resolveMeta is an exact match, so these
-    // had no entry and served DEFAULT_META — the homepage title, on four
-    // separate URLs. They are also signed-in surfaces with nothing public to
-    // show: friends/travel/nearby render a sign-in notice to anon, and dating
-    // is an age-walled opt-in deck. Same class as /search and /hub above, so
-    // they are suppressed rather than given four near-duplicate titles that
-    // would compete with /people itself. The hub at /people stays indexable and
-    // is the one that carries the content. Per the note above, none of these
-    // may be added to ROUTES in scripts/seo-check.mjs (verified: they are not).
-    /^\/people\/(friends|dating|travel|nearby)(\/|$)/,
-    // Legacy sources remain suppressed if middleware handles them before the
-    // edge or client-side redirect runs. The feed itself is public at /hub/feed.
-    /^\/people\/feed(\/|$)/,
+    // Legacy People sources remain suppressed if middleware sees them before
+    // their edge or client-side redirect runs.
+    /^\/people(\/|$)/,
     // Private adult map, spot directory and opt-in dating discovery.
     /^\/cruising(\/|$)/,
     // The signed-in friends list. Nothing public to render, same class as /hub.

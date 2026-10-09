@@ -56,9 +56,12 @@ describe('HubPage', () => {
   it('renders the shell nav from the registry with overview as default', () => {
     renderPage();
     expect(screen.getByTestId('module-overview')).toBeTruthy();
-    // Desktop + mobile nav both render each of the five module links.
+    // The shared Hub nav exposes community, connection, and personal work.
     expect(screen.getAllByRole('link', { name: /Overview/ }).length).toBeGreaterThanOrEqual(1);
     expect(screen.getAllByRole('link', { name: /Feed/ }).length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByRole('link', { name: /Members/ }).length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByRole('link', { name: /Groups/ }).length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByRole('link', { name: /Dating/ }).length).toBeGreaterThanOrEqual(1);
     expect(screen.getAllByRole('link', { name: /Messages/ }).length).toBeGreaterThanOrEqual(1);
     expect(screen.getAllByRole('link', { name: /Plans/ }).length).toBeGreaterThanOrEqual(1);
     expect(screen.getAllByRole('link', { name: /Saved/ }).length).toBeGreaterThanOrEqual(1);
@@ -82,7 +85,7 @@ describe('HubPage', () => {
 
     expect(screen.getByTestId('module-feed')).toHaveAttribute('data-embedded', 'true');
     expect(
-      screen.getAllByRole('navigation', { name: 'Hub modules' }).length,
+      screen.getAllByRole('navigation', { name: 'Hub sections' }).length,
     ).toBeGreaterThanOrEqual(1);
     expect(screen.queryByRole('link', { name: 'Sign In' })).toBeNull();
   });

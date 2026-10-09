@@ -263,7 +263,7 @@ export function TagLinkedContent({
                 type="group"
                 name={g.name}
                 description={g.description}
-                href={`/people/groups/${g.id}`}
+                href={`/hub/groups/${g.id}`}
               />
             ))}
           </div>

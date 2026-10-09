@@ -23,7 +23,7 @@ import { CruisingMapPanel } from '@/components/cruising/CruisingMapPanel';
 import { CruisingPresenceControl } from '@/components/cruising/CruisingPresenceControl';
 import IntimateDiscovery from '@/pages/intimate/IntimateDiscovery';
 import { cn } from '@/lib/utils';
-import { PeopleNav } from '@/components/people/PeopleNav';
+import { HubNav } from '@/components/hub/HubNav';
 import { PageHeader } from '@/components/layout/PageHeader';
 
 type Panel = 'people' | 'spots';
@@ -58,7 +58,7 @@ export default function Cruising() {
   useMeta({
     title: t('people.tabs.dating', 'Dating'),
     description: t('cruising.meta.description'),
-    canonicalPath: '/people/dating',
+    canonicalPath: '/hub/dating',
     noIndex: true,
   });
 
@@ -138,7 +138,7 @@ export default function Cruising() {
   return (
     <div className="pb-12">
       <PageContainer className="pb-6 pt-6 md:pt-8">
-        <PeopleNav className="mb-6" />
+        <HubNav className="mb-6" />
         <PageHeader
           title={t('cruising.title')}
           subtitle={t('cruising.intro')}
