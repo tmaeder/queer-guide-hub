@@ -34,6 +34,17 @@ export const personalityFields: FieldConfig[] = [
   { name: 'bio', label: 'Biography', type: 'richtext', group: 'basic', colSpan: 2 },
   { name: 'birth_date', label: 'Birth Date', type: 'date', group: 'details' },
   { name: 'death_date', label: 'Death Date', type: 'date', group: 'details' },
+  // The details tab is a two-column grid filled row by row, so this order puts
+  // Birth Place directly under Birth Date and Death Place under Death Date.
+  {
+    name: 'birth_place',
+    label: 'Birth Place',
+    type: 'text',
+    group: 'details',
+    resolverType: 'birthplace',
+    relatedFields: { city_id: 'city_id', country_id: 'country_id' },
+    placeholder: 'City, Country',
+  },
   {
     name: 'death_place',
     label: 'Death Place',
@@ -67,15 +78,6 @@ export const personalityFields: FieldConfig[] = [
     group: 'details',
     resolverType: 'nationality',
     relatedFields: { country_id: 'country_id' },
-  },
-  {
-    name: 'birth_place',
-    label: 'Birth Place',
-    type: 'text',
-    group: 'details',
-    resolverType: 'birthplace',
-    relatedFields: { city_id: 'city_id', country_id: 'country_id' },
-    placeholder: 'City, Country',
   },
   { name: 'website_url', label: 'Website', type: 'url', group: 'details' },
   { name: 'social_links', label: 'Social Links', type: 'social_links', group: 'details', colSpan: 2 },
