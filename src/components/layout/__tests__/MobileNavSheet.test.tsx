@@ -102,12 +102,12 @@ describe('MobileNavSheet', () => {
 
   it('shows a friends row with the online count for signed-in users only', () => {
     renderSheet(true);
-    expect(document.querySelector('a[href="/community/friends"]')).toBeNull();
+    expect(document.querySelector('a[href="/hub/friends"]')).toBeNull();
 
     mockUser = { id: 'u-1', email: 'a@b.co' };
     mockFriendsOnline = 3;
     renderSheet(true);
-    const row = document.querySelector('a[href="/community/friends"]');
+    const row = document.querySelector('a[href="/hub/friends"]');
     expect(row).not.toBeNull();
     expect(row!.textContent).toContain('Friends');
     expect(row!.textContent).toContain('3 online');

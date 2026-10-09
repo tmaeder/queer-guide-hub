@@ -148,7 +148,7 @@ export const CreateGroupDialog = ({
           </div>
 
           <div className="flex gap-4 pt-4">
-            <Button type="button" variant="outline" onClick={() => setOpen(false)}>
+            <Button type="button" variant="soft" onClick={() => setOpen(false)}>
               Cancel
             </Button>
             <Button type="submit" disabled={!formData.name.trim() || isCreating}>

@@ -23,7 +23,7 @@ test.describe('Groups — QA fixtures', () => {
     'Requires a signed-in session (E2E_ADMIN_EMAIL / E2E_STORAGE_STATE) — private groups are RLS-hidden from anon.',
   );
 
-  // `/groups` redirects to `/community/groups`, where <Community> lazy-loads the
+  // `/groups` redirects to `/hub/groups`, where <Community> lazy-loads the
   // Groups surface. Under `domcontentloaded` that chunk has not mounted yet, so
   // the groups filter input does not exist for the first moment of the test.
   //

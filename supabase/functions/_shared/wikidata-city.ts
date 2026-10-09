@@ -153,10 +153,9 @@ export function bestStatement(sts?: Statement[]): Statement | null {
  * whose date is still in the future.
  *
  * Conservative on purpose: a P582 that is present but unparseable (novalue /
- * somevalue — "ended, date unknown") counts as ENDED. Publishing a former mayor
- * as the current one is a factual error users would notice, so an empty result
- * and a NULL column is the correct outcome. Cape Town, Paris and NYC all carry
- * P580+P582 on every P6 statement.
+ * somevalue — "ended, date unknown") counts as ENDED. Publishing an ended
+ * statement as current is a factual error users would notice, so an empty
+ * result and a NULL column is the correct outcome.
  */
 export function currentStatements(sts?: Statement[]): Statement[] {
   const now = Date.now()
@@ -177,7 +176,6 @@ export function currentStatements(sts?: Statement[]): Statement[] {
 export interface CityQidRefs {
   sister_cities: string[]
   local_language: string[]
-  mayor: string[]
   climate_type: string[]
   economy_sectors: string[]
 }
@@ -186,7 +184,6 @@ export interface CityWdFacts {
   population?: number
   area_km2?: number
   elevation_m?: number
-  founded_year?: number
   official_website?: string
   postal_codes?: string[]
   area_codes?: string[]
@@ -237,7 +234,7 @@ export function parseCityFacts(claims: Claims): CityWdFacts {
   const num = (p: string): number | undefined => asNumber(valueOf(bestStatement(claims[p])?.mainsnak))
 
   const out: CityWdFacts = {
-    refs: { sister_cities: [], local_language: [], mayor: [], climate_type: [], economy_sectors: [] },
+    refs: { sister_cities: [], local_language: [], climate_type: [], economy_sectors: [] },
   }
 
   // P1082 is a count, not a measurement — it carries no unit and stays on `num`.
@@ -249,17 +246,6 @@ export function parseCityFacts(claims: Claims): CityWdFacts {
   if (area != null) out.area_km2 = Math.round(area * 100) / 100
   const elev = convertQuantity(valueOf(bestStatement(claims.P2044)?.mainsnak), ELEVATION_TO_M)
   if (elev != null) out.elevation_m = Math.round(elev)
-
-  const inception = asTime(valueOf(bestStatement(claims.P571)?.mainsnak))
-  if (inception) {
-    const m = /^([+-])(\d{4})/.exec(inception)
-    // BCE foundation years cannot be stored in a positive int column; skip them
-    // rather than writing a wrong positive year.
-    if (m && m[1] === '+') {
-      const y = parseInt(m[2], 10)
-      if (Number.isFinite(y) && y > 0) out.founded_year = y
-    }
-  }
 
   const site = asString(valueOf(bestStatement(claims.P856)?.mainsnak))
   if (site && /^https?:\/\//i.test(site)) out.official_website = site
@@ -288,10 +274,6 @@ export function parseCityFacts(claims: Claims): CityWdFacts {
     const used = qidsOf(currentStatements(claims.P2936), MAX_LANGUAGES)
     out.refs.local_language = used.length <= P2936_MAX_FALLBACK ? used : []
   }
-  // Only a mayor who has not left office. Usually empty — that is correct.
-  const mayor = bestStatement(currentStatements(claims.P6))
-  const mayorQid = asQid(valueOf(mayor?.mainsnak))
-  out.refs.mayor = mayorQid ? [mayorQid] : []
   // P2564 = Köppen climate classification. Present on NYC/Tokyo, absent on
   // Paris/Cape Town — partial by nature, with no free per-city fallback.
   const climate = bestStatement(claims.P2564)
@@ -347,7 +329,6 @@ export async function resolveLabels(
 export function applyLabels(refs: CityQidRefs, labels: Map<string, string>): {
   sister_cities?: string[]
   local_language?: string
-  mayor?: string
   climate_type?: string
   economy_sectors?: string[]
 } {
@@ -358,8 +339,6 @@ export function applyLabels(refs: CityQidRefs, labels: Map<string, string>): {
   // Column is singular text; join the official languages for display.
   const langs = lbl(refs.local_language)
   if (langs.length) out.local_language = uniq(langs).join(', ')
-  const mayor = lbl(refs.mayor)[0]
-  if (mayor) out.mayor = mayor
   const climate = lbl(refs.climate_type)[0]
   if (climate) out.climate_type = climate
   const sectors = lbl(refs.economy_sectors)

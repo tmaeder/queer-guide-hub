@@ -15,7 +15,7 @@ import { REDUCED_MOTION } from './support/reducedMotion';
  * <main> scrolls it into view, which moved the document ~127px with no user
  * input. `useCompactHeader` latches at >40px and only releases below 4px, so
  * the header collapsed to its one-line state and the entire desktop Intent
- * Router row disappeared — /venues and /people unreachable from desktop chrome
+ * Router row disappeared — /venues and /hub/people unreachable from desktop chrome
  * on every fresh load, the exact defect the Intent Router work was done to
  * prevent.
  *

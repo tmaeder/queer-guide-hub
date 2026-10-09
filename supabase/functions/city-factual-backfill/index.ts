@@ -5,7 +5,7 @@
 //   'link' (default) — per city: resolve/reuse a Wikidata QID, then read every
 //     group-A field out of the ONE wbgetentities response (population, area,
 //     elevation, inception, website, postal codes, area codes, sister cities,
-//     official language, current mayor, Köppen climate, industry) plus the
+//     official language, Köppen climate, industry) plus the
 //     English Wikipedia extract/image/coords via the cached sitelink title.
 //
 //   'sparql' — batched reverse lookups a claim read cannot answer: airports
@@ -379,10 +379,10 @@ interface CityRow {
   latitude: number | null; longitude: number | null
   description: string | null; image_url: string | null; curated_image_url: string | null
   population: number | null; area_km2: number | null; elevation_m: number | null
-  founded_year: number | null; official_website: string | null
+  official_website: string | null
   postal_codes: string[] | null; area_codes: string[] | null; sister_cities: string[] | null
   economy_sectors: string[] | null; universities: string[] | null
-  local_language: string | null; mayor: string | null; climate_type: string | null
+  local_language: string | null; climate_type: string | null
   airport_codes: string[] | null; major_airport_code: string | null
   transportation_info: Record<string, unknown> | null
   is_regional_capital: boolean | null; capital_of_region: string | null
@@ -394,8 +394,8 @@ interface CityRow {
 
 const CITY_COLUMNS =
   'id, name, slug, latitude, longitude, description, image_url, curated_image_url, ' +
-  'population, area_km2, elevation_m, founded_year, official_website, postal_codes, area_codes, ' +
-  'sister_cities, economy_sectors, universities, local_language, mayor, climate_type, ' +
+  'population, area_km2, elevation_m, official_website, postal_codes, area_codes, ' +
+  'sister_cities, economy_sectors, universities, local_language, climate_type, ' +
   'airport_codes, major_airport_code, transportation_info, ' +
   'is_regional_capital, capital_of_region, ' +
   'field_provenance, enrichment_status, wikidata_qid, wikipedia_title, country_id, ' +
@@ -814,10 +814,6 @@ async function runLinkPhase(
           if (c.elevation_m == null || stale('elevation_m', c.elevation_m)) update.elevation_m = facts.elevation_m
           else if (applyRankFix('elevation_m', c.elevation_m, facts.elevation_m, provBefore, update)) rankFixed.push('elevation_m')
         }
-        if (facts.founded_year != null) {
-          addCandidate(prov, 'founded_year', 'wikidata', facts.founded_year)
-          if (c.founded_year == null || stale('founded_year', c.founded_year)) update.founded_year = facts.founded_year
-        }
         if (facts.official_website) {
           addCandidate(prov, 'official_website', 'wikidata', facts.official_website)
           if (!c.official_website || stale('official_website', c.official_website)) update.official_website = facts.official_website
@@ -838,7 +834,7 @@ async function runLinkPhase(
 
         // QID-valued fields resolve their labels in one batched call.
         const refQids = [
-          ...facts.refs.sister_cities, ...facts.refs.local_language, ...facts.refs.mayor,
+          ...facts.refs.sister_cities, ...facts.refs.local_language,
           ...facts.refs.climate_type, ...facts.refs.economy_sectors,
         ]
         const labels = refQids.length
@@ -857,17 +853,6 @@ async function runLinkPhase(
           if (!c.local_language || stale('local_language', c.local_language)) update.local_language = named.local_language
           markResolved(state, 'local_language', 'wikidata')
         } else { clearIfStale('local_language', c.local_language, undefined); bumpMiss(state, 'local_language', 'wikidata') }
-
-        if (named.mayor) {
-          addCandidate(prov, 'mayor', 'wikidata', named.mayor)
-          if (!c.mayor || stale('mayor', c.mayor)) update.mayor = named.mayor
-          markResolved(state, 'mayor', 'wikidata')
-        } else {
-          // Expected for most cities: every P6 statement carries an end date, and
-          // an ended term must never be published as the current mayor.
-          clearIfStale('mayor', c.mayor, undefined)
-          bumpMiss(state, 'mayor', 'wikidata')
-        }
 
         if (named.climate_type) {
           addCandidate(prov, 'climate_type', 'wikidata', named.climate_type)

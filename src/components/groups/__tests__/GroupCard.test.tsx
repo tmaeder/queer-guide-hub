@@ -104,7 +104,7 @@ describe('GroupCard', () => {
       </MemoryRouter>,
     );
     const links = screen.getAllByRole('link');
-    expect(links.some(l => l.getAttribute('href') === '/groups/g-1')).toBe(true);
+    expect(links.some((l) => l.getAttribute('href') === '/hub/groups/g-1')).toBe(true);
   });
 
   it('should show Request to Join for private non-member without pending request', () => {

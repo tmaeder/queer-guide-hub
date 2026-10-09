@@ -22,8 +22,11 @@
 // and a cache-busting query reaches the correct build (proven: bare /venues
 // served the dead chunk while /venues?cb=… served the current one). So when we
 // detect the stale-chunk condition we re-navigate the client once.
-const STATIC_CACHE = 'static-v14';
-const DYNAMIC_CACHE = 'dynamic-v14';
+// v15: activate upgrades immediately. Requiring a toast click left existing
+// clients on an old React Router indefinitely, so newly shipped routes could
+// render the old app's 404 even while the origin already served the new page.
+const STATIC_CACHE = 'static-v15';
+const DYNAMIC_CACHE = 'dynamic-v15';
 const DYNAMIC_CACHE_LIMIT = 50;
 
 // Clients we have already re-navigated. Loop safety is layered: this Set, the
@@ -131,7 +134,7 @@ self.addEventListener('install', event => {
   event.waitUntil(
     caches.open(STATIC_CACHE)
       .then(cache => cache.addAll(PRECACHE_ASSETS))
-    // Do NOT call skipWaiting() — let the app control activation via message
+      .then(() => self.skipWaiting())
   );
 });
 

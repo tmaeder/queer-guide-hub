@@ -8,7 +8,7 @@ import { REDUCED_MOTION } from './support/reducedMotion';
  *
  *  1. The desktop row is single-sourced from INTENT_NAV. It used to be a
  *     hardcoded array in Header.tsx that had silently diverged from the config,
- *     leaving /venues and /people unreachable from desktop chrome.
+ *     leaving /venues and /hub/people unreachable from desktop chrome.
  *  2. Every intent route resolves — unprefixed and locale-prefixed. A route
  *     declared outside the `/:locale?` parent renders NotFound under /de/.
  *  3. /shop redirects to /marketplace — bare, deep, and locale-prefixed. The
@@ -25,7 +25,7 @@ test.use(REDUCED_MOTION);
 const INTENTS = [
   { label: 'Going out', href: '/going-out' },
   { label: 'Travelling', href: '/travel' },
-  { label: 'Meet people', href: '/people' },
+  { label: 'Meet people', href: '/hub/people' },
   { label: 'Rights', href: '/rights' },
   // /help, not /support: the Support intent was repointed in #2692 because the
   // two pages had the same source and /help is the superset (CMS hotline
@@ -84,7 +84,7 @@ test.describe('homepage intent map', () => {
   const STATION_HREFS = [
     '/going-out',
     '/travel',
-    '/people',
+    '/hub/people',
     '/search', // the interchange, where all four lines meet
     '/tags', // glossary — the 7th intent
     '/rights',

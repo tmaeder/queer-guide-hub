@@ -23,6 +23,8 @@ import { CruisingMapPanel } from '@/components/cruising/CruisingMapPanel';
 import { CruisingPresenceControl } from '@/components/cruising/CruisingPresenceControl';
 import IntimateDiscovery from '@/pages/intimate/IntimateDiscovery';
 import { cn } from '@/lib/utils';
+import { HubNav } from '@/components/hub/HubNav';
+import { PageHeader } from '@/components/layout/PageHeader';
 
 type Panel = 'people' | 'spots';
 
@@ -54,9 +56,9 @@ export default function Cruising() {
       : 'spots';
 
   useMeta({
-    title: t('cruising.meta.title'),
+    title: t('people.tabs.dating', 'Dating'),
     description: t('cruising.meta.description'),
-    canonicalPath: '/cruising',
+    canonicalPath: '/hub/dating',
     noIndex: true,
   });
 
@@ -136,43 +138,39 @@ export default function Cruising() {
   return (
     <div className="pb-12">
       <PageContainer className="pb-6 pt-6 md:pt-8">
-        <div className="grid gap-6 border-b border-border-hairline pb-6 lg:grid-cols-[minmax(0,1fr)_minmax(18rem,28rem)] lg:items-end">
-          <div>
-            <p className="mb-2 text-xs font-bold uppercase tracking-[0.16em] text-muted-foreground">
-              {t('cruising.eyebrow')}
-            </p>
-            <h1 className="font-display text-display">{t('cruising.title')}</h1>
-            <p className="mt-4 max-w-2xl text-body-lg text-muted-foreground">
-              {t('cruising.intro')}
-            </p>
-          </div>
-          <div
-            className="flex flex-wrap gap-2 lg:justify-end"
-            role="group"
-            aria-label={t('cruising.layers.label')}
-          >
-            {(['both', 'people', 'spots'] as const).map((option) => (
-              <Button
-                key={option}
-                size="sm"
-                variant={layer === option ? 'default' : 'outline'}
-                onClick={() => setRouteState({ layers: option })}
-                className="capitalize"
-              >
-                {option === 'both' ? (
-                  <Compass size={14} aria-hidden />
-                ) : option === 'people' ? (
-                  <Users size={14} aria-hidden />
-                ) : (
-                  <MapPin size={14} aria-hidden />
-                )}
-                {t(`cruising.layers.${option}`)}
-              </Button>
-            ))}
-          </div>
-        </div>
+        <HubNav className="mb-6" />
+        <PageHeader
+          title={t('cruising.title')}
+          subtitle={t('cruising.intro')}
+          actions={
+            <div
+              className="flex flex-wrap gap-2"
+              role="group"
+              aria-label={t('cruising.layers.label')}
+            >
+              {(['both', 'people', 'spots'] as const).map((option) => (
+                <Button
+                  key={option}
+                  size="sm"
+                  variant={layer === option ? 'default' : 'outline'}
+                  onClick={() => setRouteState({ layers: option })}
+                  className="capitalize"
+                >
+                  {option === 'both' ? (
+                    <Compass size={14} aria-hidden />
+                  ) : option === 'people' ? (
+                    <Users size={14} aria-hidden />
+                  ) : (
+                    <MapPin size={14} aria-hidden />
+                  )}
+                  {t(`cruising.layers.${option}`)}
+                </Button>
+              ))}
+            </div>
+          }
+        />
 
-        <div className="mt-6 flex items-start gap-4 bg-surface-container px-4 py-4 text-13">
+        <div className="flex items-start gap-4 bg-surface-container px-4 py-4 text-13">
           <ShieldCheck className="mt-0.5 shrink-0" size={17} aria-hidden />
           <p>
             {t('cruising.safety.body')}{' '}
@@ -195,7 +193,7 @@ export default function Cruising() {
       </PageContainer>
 
       <PageContainer className="pt-0">
-        <div className="overflow-hidden border-y border-border-hairline lg:grid lg:min-h-[42rem] lg:grid-cols-[minmax(0,1.6fr)_minmax(22rem,.8fr)]">
+        <div className="grid gap-4 overflow-hidden bg-surface-container p-2 lg:min-h-[42rem] lg:grid-cols-[minmax(0,1.6fr)_minmax(22rem,.8fr)] lg:p-4">
           <div className="relative h-[56dvh] min-h-[28rem] lg:h-[calc(100dvh-13rem)] lg:min-h-[42rem]">
             <CruisingMapPanel
               spots={mappedSpots}
@@ -216,7 +214,7 @@ export default function Cruising() {
             ) : null}
           </div>
 
-          <aside className="min-h-[30rem] border-t border-border-hairline bg-background lg:max-h-[calc(100dvh-13rem)] lg:overflow-y-auto lg:border-l lg:border-t-0">
+          <aside className="min-h-[30rem] bg-background lg:max-h-[calc(100dvh-13rem)] lg:overflow-y-auto">
             {/* Opaque `bg-background`, matching every other sticky panel header
                 in this codebase (AdminShell, DraftStatusBar, SelfHelpDrawer,
                 CoverageTab, EventsTimelineView) — the translucent `/95` + blur
@@ -323,7 +321,7 @@ export default function Cruising() {
                       {t('cruising.results.empty')}
                     </p>
                   ) : (
-                    <div className="border-t border-border-hairline">
+                    <div className="space-y-2">
                       {selectedSpotInPanel ? (
                         <SpotRow spot={selectedSpotInPanel} selected onFocusMap={setSelectedSpot} />
                       ) : null}
@@ -340,7 +338,7 @@ export default function Cruising() {
 
                   <div className="mt-6 flex items-center justify-between gap-4">
                     <Button
-                      variant="outline"
+                      variant="soft"
                       size="sm"
                       disabled={page <= 1}
                       onClick={() => setPage((value) => Math.max(1, value - 1))}
@@ -351,7 +349,7 @@ export default function Cruising() {
                       {t('cruising.pagination.page', { page, totalPages })}
                     </span>
                     <Button
-                      variant="outline"
+                      variant="soft"
                       size="sm"
                       disabled={page >= totalPages}
                       onClick={() => setPage((value) => Math.min(totalPages, value + 1))}
@@ -382,12 +380,7 @@ function SpotRow({
   const location = [spot.city, spot.state, spot.country].filter(Boolean).join(', ');
   const mapped = typeof spot.latitude === 'number' && typeof spot.longitude === 'number';
   return (
-    <article
-      className={cn(
-        'border-b border-border-hairline py-4',
-        selected && 'bg-surface-container px-4',
-      )}
-    >
+    <article className={cn('bg-surface-container px-4 py-4', selected && 'bg-muted')}>
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0">
           <h2 className="text-sm font-bold leading-snug">{spot.name}</h2>
@@ -406,7 +399,7 @@ function SpotRow({
       ) : null}
       <div className="mt-4 flex flex-wrap gap-2">
         {mapped ? (
-          <Button variant="outline" size="sm" onClick={() => onFocusMap(spot)}>
+          <Button variant="soft" size="sm" onClick={() => onFocusMap(spot)}>
             <MapPin size={14} aria-hidden />
             {t('cruising.spot.showOnMap')}
           </Button>

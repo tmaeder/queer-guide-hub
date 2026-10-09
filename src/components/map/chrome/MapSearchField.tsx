@@ -26,7 +26,7 @@ const TYPE_PATH: Record<string, (slug: string) => string> = {
   marketplace: (slug) => `/marketplace/${slug}`,
   personality: (slug) => `/personality/${slug}`,
   queer_village: (slug) => `/villages/${slug}`,
-  group: (slug) => `/groups/${slug}`,
+  group: (slug) => `/hub/groups/${slug}`,
   news: (slug) => `/news/${slug}`,
   tag: (slug) => `/tags/${slug}`,
   user: (slug) => `/profile/${slug}`,

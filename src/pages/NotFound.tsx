@@ -30,7 +30,7 @@ const SUGGESTIONS: ReadonlyArray<{
   { to: '/venues', icon: 'near-you', labelKey: 'nav.venues', fallback: 'Venues' },
   { to: '/events', icon: 'events', labelKey: 'nav.events', fallback: 'Events' },
   { to: '/map', icon: 'map', labelKey: 'nav.map', fallback: 'Map' },
-  { to: '/community', icon: 'community', labelKey: 'nav.community', fallback: 'Community' },
+  { to: '/hub/people', icon: 'community', labelKey: 'nav.community', fallback: 'Community' },
 ];
 
 /** First path segment → entity type + i18n key for type-aware copy. Mirrors

@@ -66,12 +66,12 @@ const LENGTH_ENFORCED = [
   '/cities',
   '/organizations',
   '/pride',
-  '/community',
+  '/hub/feed',
   // Intent Router landing pages. (Shop's is /marketplace, already above.)
   '/going-out',
   '/rights',
   '/support',
-  '/people',
+  '/hub/people',
 ];
 
 /**
@@ -125,7 +125,7 @@ describe('STATIC_ROUTE_META', () => {
   it('makes intent pages link downward into the browse routes', () => {
     // Intent pages are hubs. If they stopped linking out to the canonical
     // browse/detail routes they would compete with them instead of feeding them.
-    for (const path of ['/going-out', '/rights', '/support', '/marketplace', '/people']) {
+    for (const path of ['/going-out', '/rights', '/support', '/marketplace', '/hub/people']) {
       const links = STATIC_ROUTE_BODY[path]?.links ?? [];
       expect(links.length, `${path} should link out`).toBeGreaterThanOrEqual(3);
     }
@@ -214,7 +214,7 @@ describe('intent child routes', () => {
   // replaced with 'marketplace': that would pull in /marketplace/share,
   // /marketplace/missions and /marketplace/guides, three pre-existing meta gaps
   // unrelated to this merge. They are worth fixing — in their own change.
-  const INTENTS = ['going-out', 'travel', 'rights', 'support', 'people'];
+  const INTENTS = ['going-out', 'travel', 'rights', 'support', 'hub'];
 
   // path="<intent>/<static-segment>" — params and splats are dynamicMeta's job.
   const children = [
@@ -227,7 +227,7 @@ describe('intent child routes', () => {
 
   it('finds the known children (guards the regex itself)', () => {
     expect(children).toEqual(
-      expect.arrayContaining(['/people/dating', '/people/friends', '/travel/book']),
+      expect.arrayContaining(['/hub/dating', '/hub/friends', '/travel/book']),
     );
   });
 
@@ -261,30 +261,48 @@ describe('isIndexable', () => {
   // signed-in matching surfaces with nothing public to render, so they are
   // suppressed rather than given four near-duplicate titles competing with the
   // /people hub.
-  it('excludes the /people matching modes', () => {
-    for (const path of ['/people/friends', '/people/dating', '/people/travel', '/people/nearby']) {
+  it('excludes private and consent-gated Hub connection modes', () => {
+    for (const path of ['/hub/friends', '/hub/dating', '/hub/travel', '/hub/nearby']) {
       expect(isIndexable(path), `${path} should be noindex`).toBe(false);
     }
   });
 
   it('keeps public content routes indexable', () => {
-    for (const path of ['/', '/venues', '/city/berlin', '/guides', '/organizations', '/help']) {
+    for (const path of [
+      '/',
+      '/venues',
+      '/city/berlin',
+      '/guides',
+      '/organizations',
+      '/help',
+      '/hub/feed',
+      '/hub/members',
+      '/hub/groups',
+      '/hub/people',
+    ]) {
       expect(isIndexable(path), `${path} should be indexable`).toBe(true);
     }
   });
 
-  // The noindex rule is a prefix regex; it must not swallow the hub itself or
-  // any neighbouring path that merely starts with the same characters.
-  it('does not over-match beyond the four modes', () => {
-    for (const path of ['/people', '/peopleish', '/people/x']) {
-      expect(isIndexable(path), `${path} should stay indexable`).toBe(true);
-    }
+  it('suppresses legacy People URLs without matching neighbouring paths', () => {
+    expect(isIndexable('/people')).toBe(false);
+    expect(isIndexable('/people/x')).toBe(false);
+    expect(isIndexable('/peopleish')).toBe(true);
   });
 });
 
 describe('resolveMeta', () => {
   it('returns the exact entry for a backfilled route rather than the default', () => {
-    for (const path of ['/guides', '/cities', '/organizations', '/pride', '/community']) {
+    for (const path of [
+      '/guides',
+      '/cities',
+      '/organizations',
+      '/pride',
+      '/hub/feed',
+      '/hub/members',
+      '/hub/groups',
+      '/hub/people',
+    ]) {
       const meta = resolveMeta(path);
       expect(meta.title, `${path} still resolves to the generic default`).not.toBe(
         DEFAULT_META.title,

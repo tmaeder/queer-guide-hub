@@ -2923,8 +2923,7 @@
         "language": "Langue",
         "currency": "Devise",
         "bestTime": "Meilleure période",
-        "airport": "Aéroport",
-        "nearestAirport": "[FR] Nearest airport"
+        "airport": "Aéroport"
       },
       "eyebrow": "[FR] City",
       "sections": "[FR] Sections",
@@ -2965,25 +2964,21 @@
         "majorCity": "[FR] Major city",
         "region": "[FR] Region",
         "timezone": "[FR] Timezone",
-        "founded": "[FR] Founded",
         "area": "[FR] Area",
         "elevation": "[FR] Elevation",
-        "mayor": "[FR] Mayor",
         "postalCodes": "[FR] Postal codes",
         "costOfLiving": "[FR] Cost of living",
         "universities": "[FR] Universities",
         "sisterCities": "[FR] Sister cities"
       },
       "travel": {
-        "majorAirport": "[FR] Major airport",
-        "nearestAirport": "[FR] Nearest airport",
-        "allCodes": "[FR] All airport codes",
         "lines": "[FR] Lines",
         "networkCaption": "[FR] Rapid-transit lines, drawn from OpenStreetMap. Schematic, not to scale.",
         "gettingAround": "[FR] Getting around",
         "noDealsTitle": "[FR] We don't promote travel deals for destinations where LGBTQ+ people face criminal penalties.",
         "noDealsBody": "[FR] If you need to travel to {{city}}, read the safety and rights section first and use the trip planner — it includes a safety briefing for high-risk destinations.",
-        "otherNearby": "[FR] Other airports nearby"
+        "noAirport": "Non",
+        "nearestAirports": "Aéroports les plus proches"
       },
       "endOfLine": {
         "eyebrow": "[FR] End of line",
