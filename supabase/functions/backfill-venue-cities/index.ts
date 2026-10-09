@@ -1,5 +1,6 @@
 import { getServiceClient, requireAdmin, jsonResponse, errorResponse, corsResponse } from '../_shared/supabase-client.ts'
 import { hasValidWebhookSecret } from '../_shared/webhook-auth.ts'
+import { classifyGeocodedCityName } from '../_shared/admin-unit-name.ts'
 import {
   buildForwardQuery,
   countryContradicts,
@@ -97,18 +98,26 @@ function nominatimHeaders(): Record<string, string> {
 // Coordinates are passed through and matter twice: they clear the RPC's
 // evidence bar for a create, and they are what a later duplicate sweep would
 // need to reunite the row if this one ever is a duplicate after all.
+//
+// The geocoder's label is cleaned first (_shared/admin-unit-name.ts): wrapper
+// words like "Municipal Unit" are stripped so "Heraklion Municipal Unit" can
+// match Heraklion instead of minting a second one, and a city SUBDIVISION
+// ("Botanica Sector") or a local-script name may only link to an existing city
+// — p_allow_create=false makes the resolver refuse, and the refusal is queued.
 async function matchCity(
   supabase: ReturnType<typeof getServiceClient>,
-  cityName: string,
+  rawCityName: string,
   countryCode: string | null,
   coords?: { lat: number; lon: number } | null,
 ): Promise<{ id: string; country_id: string } | null> {
+  const { name: cityName, allowCreate, reason: createBlock } = classifyGeocodedCityName(rawCityName)
   const { data, error } = await supabase.rpc('city_resolve_or_create', {
     p_name: cityName,
     p_country_code: countryCode,
     p_lat: coords?.lat ?? null,
     p_lng: coords?.lon ?? null,
     p_source_slug: 'nominatim-geocode',
+    p_allow_create: allowCreate,
     p_actor: 'venue-geocode',
   })
 
@@ -134,7 +143,8 @@ async function matchCity(
         p_name: cityName,
         p_lat: coords?.lat ?? null,
         p_lng: coords?.lon ?? null,
-        p_reason: row.reason,
+        // A create we blocked reads better in the queue under its real cause.
+        p_reason: createBlock && !allowCreate ? `${row.reason}:${createBlock}` : row.reason,
         p_requester: 'venue-geocode',
       })
       if (qErr) console.warn(`matchCity: enqueue failed for "${cityName}": ${qErr.message}`)
@@ -548,8 +558,11 @@ async function photonReverseCity(lat: number, lon: number): Promise<PhotonPlace>
     const j = await res.json() as { features?: Array<{ properties?: Record<string, string> }> }
     const p = j.features?.[0]?.properties ?? {}
     const settlement = ['city', 'town', 'village'].includes(p.type ?? '') ? p.name : undefined
+    const label = (p.city || settlement || '').trim()
     return {
-      city: (p.city || settlement || null)?.trim() || null,
+      // Wrapper-free, so the venue's text `city` reads "Heraklion", not
+      // "Heraklion Municipal Unit". matchCity classifies again; that is idempotent.
+      city: label ? classifyGeocodedCityName(label).name : null,
       countryCode: p.countrycode ? p.countrycode.toUpperCase() : null,
     }
   } finally {
