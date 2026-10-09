@@ -1,7 +1,6 @@
 import { lazy, Suspense, useEffect, useRef, useState } from 'react';
 import {
   ArrowRight,
-  Camera,
   Lightbulb,
   ListPlus,
   LockKeyhole,
@@ -18,10 +17,9 @@ import { useAuth } from '@/hooks/useAuth';
 const FeedbackForm = lazy(() => import('./FeedbackForm'));
 const CorrectionForm = lazy(() => import('./CorrectionForm'));
 const AddSomethingBranch = lazy(() => import('./AddSomethingBranch'));
-const FlyerScanBranch = lazy(() => import('./FlyerScanBranch'));
 const ContactBranch = lazy(() => import('./ContactBranch'));
 
-export type ContributeBranch = 'chooser' | 'feedback' | 'correction' | 'add' | 'scan' | 'contact';
+export type ContributeBranch = 'chooser' | 'feedback' | 'correction' | 'add' | 'contact';
 
 interface ContributeDialogProps {
   mode?: 'dialog' | 'page';
@@ -29,6 +27,7 @@ interface ContributeDialogProps {
   onOpenChange?: (open: boolean) => void;
   initialBranch?: ContributeBranch;
   initialType?: string;
+  initialFeedbackCategory?: string;
   screenshotBlob?: Blob | null;
 }
 
@@ -38,6 +37,7 @@ export function ContributeDialog({
   onOpenChange,
   initialBranch = 'chooser',
   initialType,
+  initialFeedbackCategory,
   screenshotBlob,
 }: ContributeDialogProps) {
   const { t } = useTranslation();
@@ -58,11 +58,9 @@ export function ContributeDialog({
         ? t('contribute.correction.heading', 'Fix something on this page')
         : branch === 'add'
           ? t('contribute.add.heading', 'Add something new')
-          : branch === 'scan'
-            ? t('contribute.scan.heading', 'Scan a flyer or link')
-            : branch === 'contact'
-              ? t('contribute.chooser.contactTitle', 'Contact the team')
-              : t('contribute.title', 'Contribute to Queer Guide');
+          : branch === 'contact'
+            ? t('contribute.chooser.contactTitle', 'Contact the team')
+            : t('contribute.title', 'Contribute to Queer Guide');
 
   const description =
     branch === 'chooser'
@@ -76,15 +74,10 @@ export function ContributeDialog({
           ? t('contribute.chooser.correctionBody', 'Tell us what is outdated, closed or incorrect.')
           : branch === 'add'
             ? t('contribute.chooser.addBody', 'Submit a venue, event, product, person or article.')
-            : branch === 'scan'
-              ? t(
-                  'contribute.chooser.scanBody',
-                  'Extract several submissions from files or a web page.',
-                )
-              : t(
-                  'contribute.chooser.contactBody',
-                  'Account help, moderation, partnerships, press or another private message.',
-                );
+            : t(
+                'contribute.chooser.contactBody',
+                'Account help, partnerships, press or another private message.',
+              );
 
   const close = () => {
     if (mode === 'page') setBranch('chooser');
@@ -99,13 +92,18 @@ export function ContributeDialog({
         {branch === 'chooser' && <Chooser onChoose={setBranch} />}
         {branch === 'feedback' && (
           <FeedbackForm
+            initialCategory={initialFeedbackCategory}
             screenshotBlob={screenshotBlob}
             onCancel={() => setBranch('chooser')}
             onDone={close}
           />
         )}
         {branch === 'correction' && (
-          <CorrectionForm onCancel={() => setBranch('chooser')} onDone={close} />
+          <CorrectionForm
+            screenshotBlob={screenshotBlob}
+            onCancel={() => setBranch('chooser')}
+            onDone={close}
+          />
         )}
         {branch === 'add' && (
           <AddSomethingBranch
@@ -116,7 +114,6 @@ export function ContributeDialog({
             }}
           />
         )}
-        {branch === 'scan' && <FlyerScanBranch onBack={() => setBranch('chooser')} />}
         {branch === 'contact' && (
           <ContactBranch onBack={() => setBranch('chooser')} onDone={close} />
         )}
@@ -127,7 +124,7 @@ export function ContributeDialog({
   if (mode === 'page') {
     return (
       <PageContainer
-        size={branch === 'scan' || branch === 'add' || branch === 'contact' ? 'page' : 'reading'}
+        size={branch === 'add' || branch === 'contact' ? 'page' : 'reading'}
         className="md:py-16"
       >
         <section className="relative overflow-hidden rounded-panel bg-surface-container-low p-6 shadow-soft sm:p-8 md:p-10">
@@ -142,7 +139,7 @@ export function ContributeDialog({
     );
   }
 
-  const roomy = branch === 'scan' || branch === 'add' || branch === 'contact';
+  const roomy = branch === 'add' || branch === 'contact';
   return (
     <Dialog
       open={open}
@@ -184,7 +181,6 @@ function Chooser({ onChoose }: { onChoose: (branch: ContributeBranch) => void })
     icon: LucideIcon;
     title: string;
     description: string;
-    wide?: boolean;
   }> = [
     {
       branch: 'feedback',
@@ -214,23 +210,13 @@ function Chooser({ onChoose }: { onChoose: (branch: ContributeBranch) => void })
       ),
     },
     {
-      branch: 'scan',
-      icon: Camera,
-      title: t('contribute.chooser.scanTitle', 'Scan a flyer or link'),
-      description: t(
-        'contribute.chooser.scanBody',
-        'Extract several submissions from files or a web page.',
-      ),
-    },
-    {
       branch: 'contact',
       icon: MessagesSquare,
       title: t('contribute.chooser.contactTitle', 'Contact the team'),
       description: t(
         'contribute.chooser.contactBody',
-        'Account help, moderation, partnerships, press or another private message.',
+        'Account help, partnerships, press or another private message.',
       ),
-      wide: true,
     },
   ];
 
@@ -238,13 +224,13 @@ function Chooser({ onChoose }: { onChoose: (branch: ContributeBranch) => void })
     <div className="grid gap-4 sm:grid-cols-2">
       {choices.map((choice) => {
         const Icon = choice.icon;
-        const requiresAuth = choice.branch === 'add' || choice.branch === 'scan';
+        const requiresAuth = choice.branch === 'add';
         return (
           <button
             key={choice.branch}
             type="button"
             onClick={() => onChoose(choice.branch)}
-            className={`group relative min-h-40 overflow-hidden rounded-container bg-card p-6 text-left shadow-soft transition-all duration-fast ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5 hover:bg-surface-container-low hover:shadow-soft-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background active:translate-y-0 sm:min-h-44 ${choice.wide ? 'sm:col-span-2 sm:min-h-36' : ''}`}
+            className="group relative min-h-40 overflow-hidden rounded-container bg-card p-6 text-left shadow-soft transition-all duration-fast ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5 hover:bg-surface-container-low hover:shadow-soft-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background active:translate-y-0 sm:min-h-44"
           >
             <span
               className="absolute inset-x-0 top-0 h-1 bg-track-pink transition-[height] duration-fast group-hover:h-1.5"

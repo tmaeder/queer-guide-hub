@@ -5156,7 +5156,7 @@
       "scanTitle": "전단지 또는 링크 스캔",
       "scanBody": "파일이나 웹페이지에서 여러 제출 항목을 추출합니다.",
       "contactTitle": "팀에 문의하기",
-      "contactBody": "계정 도움, 운영, 파트너십, 언론 또는 기타 비공개 메시지."
+      "contactBody": "계정 도움, 파트너십, 언론 또는 기타 비공개 메시지."
     },
     "feedback": {
       "heading": "문제를 알리거나 아이디어 공유하기",
@@ -5165,7 +5165,8 @@
       "successBody": "여러분의 의견은 Queer Guide 개선에 도움이 됩니다.",
       "category": "어떤 종류의 의견인가요?",
       "categories": {
-        "bug": "버그",
+        "safety": "안전 및 운영",
+        "bug": "버그 신고",
         "idea": "아이디어",
         "improvement": "개선",
         "content-idea": "콘텐츠 아이디어"
@@ -5176,7 +5177,7 @@
       "descriptionPlaceholder": "자세히 알려 주세요…",
       "includeScreenshot": "이 페이지의 스크린샷 포함",
       "screenshotPreview": "스크린샷 미리보기",
-      "contextNote": "현재 페이지 URL, 브라우저 정보, 최근 오류가 자동으로 포함됩니다."
+      "contextNote": "현재 페이지 URL, 브라우저 정보, 최근 오류 및 네트워크 실패가 자동으로 포함됩니다."
     },
     "correction": {
       "heading": "이 페이지 정보 수정하기",
