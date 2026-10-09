@@ -144,20 +144,23 @@ export default function TagsIndex() {
   // each time and cannot be a dependency without making `patch` unstable (and
   // `JSON.stringify(state)` is not a dependency expression the lint rule
   // accepts). A ref is the honest version: the callback identity never changes,
-  // and it always reads the current state at call time.
+  // and it always reads the current state at call time. Event handlers also
+  // advance the ref immediately: URL navigation may not commit before the
+  // next input event, and a rapid search must keep the kind just selected.
   // Written in an effect, never during render: a render-phase ref write makes
   // the React Compiler bail out of optimizing this whole component (it reported
   // both `react-hooks/refs` and, downstream, `preserve-manual-memoization` on
-  // the `scope` memo below). `patch` only ever runs from an event handler, by
-  // which point every effect for the render the reader is looking at has
-  // flushed — so the value it reads is the same one it read before.
+  // the `scope` memo below). The effect reconciles navigation and Back/Forward;
+  // event-phase writes retain pending changes between router commits.
   const stateRef = useRef(state);
   useEffect(() => {
     stateRef.current = state;
   });
   const patch = useCallback(
     (next: Partial<TagsIndexState>) => {
-      setSearchParams((prev) => applyTagsParams(prev, { ...stateRef.current, ...next }), {
+      const merged = { ...stateRef.current, ...next };
+      stateRef.current = merged;
+      setSearchParams((prev) => applyTagsParams(prev, merged), {
         replace: true,
       });
     },
