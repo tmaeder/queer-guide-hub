@@ -16,7 +16,7 @@ Data queries, the sparse-event coverage explanation, location resolution, safety
 
 ## Final verification
 
-- All 17 focused Playwright tests pass in `e2e/going-out-subway.spec.ts`, covering light/dark theme inheritance, supporting-text contrast, Axe accessibility, overflow, route focus, rounded surfaces, bleed and page alignment.
+- All 17 focused Playwright checks pass across `e2e/going-out-subway.spec.ts` and the existing route, layout, surface and focus suites, covering light/dark theme inheritance, supporting-text contrast, Axe accessibility, overflow, route focus, rounded surfaces, bleed and page alignment.
 - All 16 component tests pass. Build, lint and format checks pass.
 - Typecheck reports the existing 735 baseline errors, with no new errors.
 - The mechanical detector returns `[]`. The independent finish review recommends ship, with no material findings.
