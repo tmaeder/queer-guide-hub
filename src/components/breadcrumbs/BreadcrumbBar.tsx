@@ -16,12 +16,14 @@ import {
   BreadcrumbLink,
   BreadcrumbList,
   BreadcrumbPage,
-  BreadcrumbSeparator,
 } from '@/components/ui/breadcrumb';
 import { useBreadcrumbState, type BreadcrumbItem as Crumb } from '@/contexts/BreadcrumbContext';
 import { getRouteBreadcrumbs, homeCrumb } from '@/config/breadcrumbs';
 import { breadcrumbJsonLd } from '@/lib/breadcrumbJsonLd';
 import { PAGE_GUTTER } from '@/components/layout/PageContainer';
+import { routeJourneyTrack } from '@/components/layout/routeJourney';
+import { StationRing } from '@/components/transit/StationRing';
+import { TRACK_BG } from '@/components/transit/routeBulletMap';
 
 /**
  * Global breadcrumb bar rendered below the header (in LayoutShell).
@@ -73,6 +75,7 @@ export function BreadcrumbBar() {
   if (!trail || trail.length <= 1) return null;
 
   const lastIndex = trail.length - 1;
+  const track = routeJourneyTrack(pathname);
   // Collapse the middle of long trails on small screens to a single ellipsis.
   const collapse = trail.length > 3;
 
@@ -82,57 +85,93 @@ export function BreadcrumbBar() {
           first crumb starts on the same vertical as the page heading below it
           and the nav above it. */}
       <div
-        className={`mx-auto flex w-full max-w-page min-h-11 items-center overflow-hidden py-2.5 ${PAGE_GUTTER}`}
+        className={`mx-auto flex w-full max-w-page min-h-16 items-center overflow-hidden ${PAGE_GUTTER}`}
       >
-        <Breadcrumb className="min-w-0 max-w-full">
-          {/* Locked to a single line: every crumb but the last keeps its width
-              (shrink-0); the last crumb absorbs the remaining space and
-              truncates with an ellipsis so the row never wraps or overflows. */}
-          <BreadcrumbList className="min-w-0 flex-nowrap overflow-hidden">
+        <Breadcrumb className="min-w-0 w-full max-w-full">
+          {/* The hierarchy is the route: the rule starts and stops at the
+              centres of the endpoint rings, while labels sit below it like a
+              transit map. The list remains the semantic breadcrumb; only the
+              chevron vocabulary has gone away. */}
+          <BreadcrumbList
+            data-testid="breadcrumb-route"
+            className="relative min-w-0 w-full flex-nowrap gap-0 overflow-hidden pt-2"
+          >
+            <span
+              aria-hidden="true"
+              data-testid="breadcrumb-track"
+              className={`absolute left-2 right-2 top-4 h-1 -translate-y-1/2 rounded-full ${TRACK_BG[track]}`}
+            />
             {trail.map((crumb, i) => {
               const isLast = i === lastIndex;
               const isFirst = i === 0;
               const isMiddle = !isFirst && !isLast;
-              // On mobile, hide middle crumbs. Their leading separators hide too,
-              // except the very first one (Home → ellipsis), which stays.
+              // On mobile, hide middle crumbs behind one reachable station.
               const hideOnMobile = collapse && isMiddle;
-              const mobileClass = hideOnMobile ? 'hidden md:inline-flex' : '';
-              const hideSep = collapse && isMiddle && i !== 1;
+              const mobileClass = hideOnMobile ? 'hidden md:flex' : '';
+              const alignment = isFirst
+                ? 'items-start text-left'
+                : isLast
+                  ? 'items-end text-right'
+                  : 'items-center text-center';
+              const justification = isFirst
+                ? 'justify-start'
+                : isLast
+                  ? 'justify-end'
+                  : 'justify-center';
 
               return (
                 <Fragment key={i}>
-                  {i > 0 && (
-                    <BreadcrumbSeparator
-                      className={`shrink-0 ${hideSep ? 'hidden md:inline-flex' : ''}`}
-                    />
-                  )}
                   {/* Mobile-only overflow control, rendered once after the first
-                      crumb. It carries the crumbs the row has no width for, so
-                      collapsing the trail hides them from VIEW without putting
-                      them out of REACH. */}
+                      crumb. It is a station in its own right, so collapsing
+                      the trail hides levels from VIEW without taking them out
+                      of REACH or breaking the route line. */}
                   {collapse && i === 1 && (
                     <BreadcrumbItem
                       data-testid="breadcrumb-overflow"
-                      className="shrink-0 md:hidden"
+                      className="relative z-10 flex min-w-0 flex-1 justify-center md:hidden"
                     >
-                      <CollapsedCrumbsMenu crumbs={trail.slice(1, lastIndex)} t={t} />
+                      <CollapsedCrumbsMenu crumbs={trail.slice(1, lastIndex)} track={track} t={t} />
                     </BreadcrumbItem>
                   )}
                   <BreadcrumbItem
-                    className={
-                      isLast
-                        ? 'min-w-0 flex-1 whitespace-nowrap'
-                        : `shrink-0 whitespace-nowrap ${mobileClass}`
-                    }
+                    data-breadcrumb-stop=""
+                    data-current={isLast ? 'true' : undefined}
+                    className={`relative z-10 min-w-0 flex-1 whitespace-nowrap ${justification} ${mobileClass}`}
                   >
                     {isLast ? (
-                      <BreadcrumbPage className="block truncate">{crumb.label}</BreadcrumbPage>
+                      <BreadcrumbPage
+                        className={`flex min-w-0 max-w-full flex-col gap-1 ${alignment}`}
+                      >
+                        <StationRing state="typed" track={track} />
+                        <span className="block max-w-full truncate bg-background px-1 text-13 font-bold">
+                          {crumb.label}
+                        </span>
+                      </BreadcrumbPage>
                     ) : crumb.href ? (
-                      <BreadcrumbLink asChild>
-                        <LocalizedLink to={crumb.href}>{crumb.label}</LocalizedLink>
+                      <BreadcrumbLink asChild className="min-w-0 max-w-full">
+                        <LocalizedLink
+                          to={crumb.href}
+                          className={`group flex min-w-0 max-w-full flex-col gap-1 ${alignment}`}
+                        >
+                          <StationRing
+                            state="open"
+                            track={track}
+                            className="transition-colors group-hover:bg-surface-container"
+                          />
+                          <span className="block max-w-full truncate bg-background px-1 text-13 font-semibold text-foreground group-hover:underline">
+                            {crumb.label}
+                          </span>
+                        </LocalizedLink>
                       </BreadcrumbLink>
                     ) : (
-                      <span>{crumb.label}</span>
+                      <span
+                        className={`flex min-w-0 max-w-full flex-col gap-1 text-muted-foreground ${alignment}`}
+                      >
+                        <StationRing state="open" track={track} />
+                        <span className="block max-w-full truncate bg-background px-1 text-13">
+                          {crumb.label}
+                        </span>
+                      </span>
                     )}
                   </BreadcrumbItem>
                 </Fragment>
@@ -164,17 +203,32 @@ export function BreadcrumbBar() {
  * city we hold no record for). It is rendered as a disabled item rather than
  * dropped, so the menu still describes the full path.
  */
-function CollapsedCrumbsMenu({ crumbs, t }: { crumbs: Crumb[]; t: TFunction }) {
+function CollapsedCrumbsMenu({
+  crumbs,
+  track,
+  t,
+}: {
+  crumbs: Crumb[];
+  track: ReturnType<typeof routeJourneyTrack>;
+  t: TFunction;
+}) {
   if (crumbs.length === 0) return null;
   return (
     <DropdownMenu>
       {/* The glyph is decorative and stays aria-hidden; the BUTTON carries the
           accessible name. `min-height: 44px` comes from the base layer. */}
       <DropdownMenuTrigger
-        className="inline-flex items-center justify-center px-1 text-muted-foreground transition-colors hover:text-foreground"
+        className="group inline-flex min-w-0 flex-col items-center justify-center gap-1 text-muted-foreground transition-colors hover:text-foreground"
         aria-label={t('breadcrumb.showCollapsed', 'Show the levels above')}
       >
-        <BreadcrumbEllipsis />
+        <StationRing
+          state="open"
+          track={track}
+          className="transition-colors group-hover:bg-surface-container"
+        />
+        <span className="bg-background px-1">
+          <BreadcrumbEllipsis />
+        </span>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start">
         {crumbs.map((crumb, i) =>
