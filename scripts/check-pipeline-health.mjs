@@ -4784,9 +4784,9 @@ const DISOWNED_PROSE_CEILING = 380
   const ARMED_AFTER = new Date('2026-11-01T00:00:00Z')
   const armed = new Date() >= ARMED_AFTER
 
-  const res = await fetch(`${SUPABASE_URL}/rest/v1/rpc/map_outcome_signals`, {
+  const res = await fetch(`${BASE}/rest/v1/rpc/map_outcome_signals`, {
     method: 'POST',
-    headers: HEADERS,
+    headers: { ...headers, 'Content-Type': 'application/json' },
     body: '{}',
   })
 
@@ -4922,9 +4922,9 @@ const DISOWNED_PROSE_CEILING = 380
 //   Arena across three domains, the SF AIDS Foundation across three), which is
 //   why the bound is four and why a hit is a question rather than a verdict.
 {
-  const res = await fetch(`${SUPABASE_URL}/rest/v1/rpc/logo_platform_signals`, {
+  const res = await fetch(`${BASE}/rest/v1/rpc/logo_platform_signals`, {
     method: 'POST',
-    headers: HEADERS,
+    headers: { ...headers, 'Content-Type': 'application/json' },
     body: '{}',
   })
 
@@ -5004,9 +5004,9 @@ const DISOWNED_PROSE_CEILING = 380
 // needs_attention would demote them to draft. Hard-fails only when the probe
 // measured nothing.
 {
-  const res = await fetch(`${SUPABASE_URL}/rest/v1/rpc/venue_source_location_signals`, {
+  const res = await fetch(`${BASE}/rest/v1/rpc/venue_source_location_signals`, {
     method: 'POST',
-    headers: HEADERS,
+    headers: { ...headers, 'Content-Type': 'application/json' },
     body: '{}',
   })
   if (res.status === 404) {
@@ -5062,9 +5062,9 @@ const DISOWNED_PROSE_CEILING = 380
 // THE DENOMINATORS GATE TOO. Zero stuck rows over an emptied mapping is not a clean
 // corpus — it is a disabled tier with every count reading fine.
 {
-  const res = await fetch(`${SUPABASE_URL}/rest/v1/rpc/venue_category_signals`, {
+  const res = await fetch(`${BASE}/rest/v1/rpc/venue_category_signals`, {
     method: 'POST',
-    headers: HEADERS,
+    headers: { ...headers, 'Content-Type': 'application/json' },
     body: '{}',
   })
 
