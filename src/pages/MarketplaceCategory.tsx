@@ -7,6 +7,7 @@ import { MarketplaceMasthead } from '@/components/marketplace/MarketplaceMasthea
 import { FilterChip } from '@/components/transit/FilterChip';
 import { DeadEndTrack } from '@/components/transit/DeadEndTrack';
 import { MarketplaceFilteredView } from '@/components/marketplace/MarketplaceFilteredView';
+import { AttributeFacetGroups } from '@/components/marketplace/AttributeFacetGroups';
 import { GuidesRail } from '@/components/guides/GuidesRail';
 import { AdultContentGate } from '@/components/marketplace/AdultContentGate';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
@@ -260,16 +261,13 @@ export default function MarketplaceCategory() {
         )}
 
         {isDepartment && tagFacets.length > 0 && (
-          <div className="mb-8 flex flex-wrap gap-2" aria-label="Refine by tag">
-            {tagFacets.map((tag) => (
-              <FilterChip
-                key={tag.slug}
-                active={selectedTags.includes(tag.slug)}
-                label={chipLabel(tag.name, tag.count, selectedTags.includes(tag.slug))}
-                onClick={() => toggleTag(tag.slug)}
-              />
-            ))}
-          </div>
+          <AttributeFacetGroups
+            className="mb-8"
+            department={subcategory}
+            facets={tagFacets}
+            selected={selectedTags}
+            onToggle={toggleTag}
+          />
         )}
 
         <MarketplaceFilteredView
