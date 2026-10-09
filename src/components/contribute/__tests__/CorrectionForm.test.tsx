@@ -4,8 +4,8 @@ import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { PageEntityProvider, usePageEntity } from '@/contexts/PageEntityContext';
 
-const insertRow = vi.hoisted(() => vi.fn());
-vi.mock('@/hooks/usePageFetchers', () => ({ insertRow }));
+const submitCommunityReport = vi.hoisted(() => vi.fn());
+vi.mock('@/lib/submitCommunityReport', () => ({ submitCommunityReport }));
 vi.mock('@/utils/feedbackContext', () => ({ captureContext: () => ({ viewport: 'test' }) }));
 vi.mock('@/hooks/useAuth', () => ({ useAuth: () => ({ user: null }) }));
 vi.mock('@/hooks/use-toast', () => ({ useToast: () => ({ toast: vi.fn() }) }));
@@ -19,8 +19,13 @@ function EntityPublisher() {
 
 describe('CorrectionForm', () => {
   beforeEach(() => {
-    insertRow.mockReset();
-    insertRow.mockResolvedValue({ error: null });
+    submitCommunityReport.mockReset();
+    submitCommunityReport.mockResolvedValue({ id: 'correction-1', screenshotStored: true });
+    Object.defineProperty(URL, 'createObjectURL', {
+      configurable: true,
+      value: vi.fn(() => 'blob:screenshot'),
+    });
+    Object.defineProperty(URL, 'revokeObjectURL', { configurable: true, value: vi.fn() });
     window.history.replaceState({}, '', '/venues/example-bar');
   });
 
@@ -29,22 +34,22 @@ describe('CorrectionForm', () => {
     render(
       <PageEntityProvider>
         <EntityPublisher />
-        <CorrectionForm />
+        <CorrectionForm screenshotBlob={new Blob(['image'])} />
       </PageEntityProvider>,
     );
 
+    expect(screen.getByLabelText(/Include screenshot/i)).toBeChecked();
     await user.type(screen.getByLabelText(/What is wrong/i), 'The address is outdated.');
     await user.type(screen.getByLabelText(/What should it say instead/i), 'Use 12 New Street.');
     await user.type(screen.getByLabelText(/Email/i), 'reader@example.com');
     await user.click(screen.getByRole('button', { name: /^Submit$/i }));
 
-    expect(insertRow).toHaveBeenCalledWith(
-      'community_submissions',
+    expect(submitCommunityReport).toHaveBeenCalledWith(
       expect.objectContaining({
-        content_type: 'correction',
-        submitted_by: null,
-        source_url: expect.stringContaining('/venues/example-bar'),
-        data: expect.objectContaining({
+        kind: 'correction',
+        includeScreenshot: true,
+        context: { viewport: 'test' },
+        payload: expect.objectContaining({
           description: 'The address is outdated.',
           proposed_correction: 'Use 12 New Street.',
           contact_email: 'reader@example.com',

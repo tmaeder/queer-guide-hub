@@ -5158,7 +5158,7 @@
       "scanTitle": "Scansiona un volantino o un link",
       "scanBody": "Estrai più proposte da file o da una pagina web.",
       "contactTitle": "Contatta il team",
-      "contactBody": "Assistenza account, moderazione, collaborazioni, stampa o un altro messaggio privato."
+      "contactBody": "Assistenza account, collaborazioni, stampa o un altro messaggio privato."
     },
     "feedback": {
       "heading": "Segnala un problema o condividi un’idea",
@@ -5167,7 +5167,8 @@
       "successBody": "Il tuo feedback aiuta a migliorare Queer Guide.",
       "category": "Che tipo di feedback?",
       "categories": {
-        "bug": "Errore",
+        "safety": "Sicurezza e moderazione",
+        "bug": "Segnalazioni di errori",
         "idea": "Idea",
         "improvement": "Miglioramento",
         "content-idea": "Idea per i contenuti"
@@ -5178,7 +5179,7 @@
       "descriptionPlaceholder": "Raccontaci di più…",
       "includeScreenshot": "Includi uno screenshot di questa pagina",
       "screenshotPreview": "Anteprima screenshot",
-      "contextNote": "Inclusi automaticamente: URL corrente, informazioni sul browser ed errori recenti."
+      "contextNote": "Inclusi automaticamente: URL corrente, informazioni sul browser, errori recenti e problemi di rete."
     },
     "correction": {
       "heading": "Correggi questa pagina",

@@ -3,27 +3,20 @@ import { MessageSquarePlus } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { ContributeDialog } from '@/components/contribute/ContributeDialog';
-import { useAuth } from '@/hooks/useAuth';
 import { useIsMobile } from '@/hooks/use-mobile';
 
 /** Global contribution trigger. All form implementations live in ContributeDialog branches. */
 export function FeedbackButton() {
   const { t } = useTranslation();
-  const { user } = useAuth();
   const isMobile = useIsMobile();
   const [open, setOpen] = useState(false);
   const [capturing, setCapturing] = useState(false);
   const [screenshotBlob, setScreenshotBlob] = useState<Blob | null>(null);
 
   // Capture before the portal mounts so the contribution window is not part
-  // of the image. Anonymous users skip this entirely because upload-image-r2
-  // requires a JWT and the form intentionally hides the screenshot control.
+  // of the image. The dedicated community-report endpoint accepts anonymous
+  // screenshots without exposing the general-purpose image uploader.
   const handleOpen = useCallback(async () => {
-    if (!user) {
-      setOpen(true);
-      return;
-    }
-
     setCapturing(true);
     await new Promise<void>((resolve) =>
       requestAnimationFrame(() => requestAnimationFrame(() => resolve())),
@@ -35,7 +28,7 @@ export function FeedbackButton() {
       setCapturing(false);
       setOpen(true);
     }
-  }, [user]);
+  }, []);
 
   const label = t('contribute.trigger', 'Contribute to Queer Guide');
 

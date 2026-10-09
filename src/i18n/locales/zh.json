@@ -5156,7 +5156,7 @@
       "scanTitle": "扫描传单或链接",
       "scanBody": "从文件或网页中提取多个提交项目。",
       "contactTitle": "联系团队",
-      "contactBody": "账户帮助、内容审核、合作、媒体或其他私密消息。"
+      "contactBody": "账户帮助、合作、媒体或其他私密消息。"
     },
     "feedback": {
       "heading": "报告问题或分享想法",
@@ -5165,7 +5165,8 @@
       "successBody": "你的反馈将帮助我们改进 Queer Guide。",
       "category": "反馈类型",
       "categories": {
-        "bug": "错误",
+        "safety": "安全与内容审核",
+        "bug": "错误报告",
         "idea": "想法",
         "improvement": "改进建议",
         "content-idea": "内容建议"
@@ -5176,7 +5177,7 @@
       "descriptionPlaceholder": "请告诉我们更多信息…",
       "includeScreenshot": "附上此页面的截图",
       "screenshotPreview": "截图预览",
-      "contextNote": "将自动附上当前页面网址、浏览器信息和近期错误。"
+      "contextNote": "将自动附上当前页面网址、浏览器信息、近期错误和网络故障。"
     },
     "correction": {
       "heading": "更正此页面的信息",
