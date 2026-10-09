@@ -50,11 +50,16 @@ describe('captureContext', () => {
 
 describe('captureScreenshot', () => {
   it('retries without remote media when the full page capture fails', async () => {
-    const screenshot = new Blob(['screenshot'], { type: 'image/jpeg' });
-    toJpeg.mockRejectedValueOnce(new Error('cross-origin image')).mockResolvedValueOnce('data:ok');
-    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ blob: () => Promise.resolve(screenshot) }));
+    const fetchDataUrl = vi.fn().mockRejectedValue(new Error('data URLs blocked'));
+    vi.stubGlobal('fetch', fetchDataUrl);
+    toJpeg
+      .mockRejectedValueOnce(new Error('cross-origin image'))
+      .mockResolvedValueOnce('data:image/jpeg;base64,c2NyZWVuc2hvdA==');
 
-    await expect(captureScreenshot()).resolves.toBe(screenshot);
+    const screenshot = await captureScreenshot();
+    expect(screenshot).toBeInstanceOf(Blob);
+    expect(screenshot?.type).toBe('image/jpeg');
+    expect(screenshot?.size).toBe(10);
     expect(toJpeg).toHaveBeenCalledTimes(2);
 
     const fallback = toJpeg.mock.calls[1]?.[1];
@@ -62,5 +67,6 @@ describe('captureScreenshot', () => {
     expect(fallback.skipFonts).toBe(true);
     expect(fallback.filter(document.createElement('img'))).toBe(false);
     expect(fallback.filter(document.createElement('div'))).toBe(true);
+    expect(fetchDataUrl).not.toHaveBeenCalled();
   });
 });
