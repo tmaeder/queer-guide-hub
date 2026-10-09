@@ -76,7 +76,9 @@ describe('CityTravelTab', () => {
     };
     render(<CityTravelTab city={aachen as never} effectiveIata="DUS" />, { wrapper });
     expect(nearestMock).toHaveBeenCalledWith('aachen');
-    expect(screen.getByText('No')).toBeInTheDocument();
+    // "Airport: No" is stated once, in the head fact strip, not repeated here.
+    expect(screen.queryByText('No')).not.toBeInTheDocument();
+    expect(screen.queryByText('Airport')).not.toBeInTheDocument();
     expect(screen.getByText('Nearest airports')).toBeInTheDocument();
     expect(screen.getByText('MST · Maastricht · 27 km')).toBeInTheDocument();
     expect(screen.getByText('LGG · Grâce-Hollogne · 48 km')).toBeInTheDocument();
@@ -89,7 +91,7 @@ describe('CityTravelTab', () => {
     expect(screen.getByText('Aachen Hbf')).toBeInTheDocument();
   });
 
-  it("names the city's own airport and asks no nearest list for a city without coordinates", () => {
+  it('asks no nearest list for a city without coordinates, and names no own airport here', () => {
     render(
       <CityTravelTab
         city={{ ...base, local_airport_codes: ['BER'] } as never}
@@ -97,7 +99,7 @@ describe('CityTravelTab', () => {
       />,
       { wrapper },
     );
-    expect(screen.getByText('BER')).toBeInTheDocument();
+    expect(screen.queryByText('BER')).not.toBeInTheDocument();
     expect(nearestMock).toHaveBeenCalledWith(null);
     expect(screen.queryByText('No')).not.toBeInTheDocument();
   });
