@@ -27,6 +27,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { useDebounce } from '@/hooks/useDebounce';
 import { untypedRpc } from '@/integrations/supabase/untyped';
 import { cmsEditPath } from '@/lib/cmsLinks';
+import { summarizeStructured } from '@/components/cms/fields/structured/structuredValue';
 
 interface EventQualityIssueRow {
   id: string;
@@ -70,7 +71,7 @@ const displayEvidenceValue = (value: unknown) => {
   if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') {
     return String(value);
   }
-  return JSON.stringify(value);
+  return summarizeStructured(value, 6);
 };
 
 export function EventQualityIssuesPanel({ query, onQueryChange }: EventQualityIssuesPanelProps) {
@@ -422,12 +423,6 @@ function Evidence({ issue }: { issue: EventQualityIssueRow }) {
         ))}
         {entries.length === 0 && <div>No structured evidence was recorded.</div>}
       </dl>
-      <details className="mt-2">
-        <summary className="cursor-pointer">Raw JSON</summary>
-        <pre className="mt-1 max-h-40 overflow-auto whitespace-pre-wrap rounded-element bg-muted p-2">
-          {JSON.stringify(issue.evidence, null, 2)}
-        </pre>
-      </details>
     </details>
   );
 }

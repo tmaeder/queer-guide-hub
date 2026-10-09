@@ -140,7 +140,7 @@ export const venueFields: FieldConfig[] = [
     label: 'Opening Hours',
     type: 'json',
     group: 'details',
-    helpText: 'JSON with day names as keys',
+    helpText: 'Opening and closing time per day',
   },
   { name: 'amenities', label: 'Amenities', type: 'tags', group: 'details' },
   { name: 'services', label: 'Services', type: 'tags', group: 'details' },

@@ -35,6 +35,7 @@ import { formatNextFire } from '@/lib/nextCronFire';
 import { toast } from 'sonner';
 import { AdminRegistryFrame } from '@/components/admin/frames/AdminRegistryFrame';
 import { AdminSimpleTable } from '@/components/admin/primitives/AdminSimpleTable';
+import { StructuredValueView } from '@/components/cms/fields/structured/StructuredValueView';
 
 interface Automation {
   id: string;
@@ -595,19 +596,19 @@ export default function AdminAutomation() {
               </dl>
 
               <h3 className="text-title font-semibold mb-2">Trigger</h3>
-              <pre className="p-4 bg-muted border border-border text-2xs font-mono mb-4 overflow-auto">
-                {JSON.stringify(detailRow.trigger, null, 2)}
-              </pre>
+              <div className="p-4 bg-muted border border-border mb-4 overflow-auto">
+                <StructuredValueView value={detailRow.trigger} className="text-xs" />
+              </div>
 
               <h3 className="text-title font-semibold mb-2">Conditions</h3>
-              <pre className="p-4 bg-muted border border-border text-2xs font-mono mb-4 overflow-auto">
-                {JSON.stringify(detailRow.conditions, null, 2)}
-              </pre>
+              <div className="p-4 bg-muted border border-border mb-4 overflow-auto">
+                <StructuredValueView value={detailRow.conditions} className="text-xs" />
+              </div>
 
               <h3 className="text-title font-semibold mb-2">Action</h3>
-              <pre className="p-4 bg-muted border border-border text-2xs font-mono mb-4 overflow-auto">
-                {JSON.stringify(detailRow.action, null, 2)}
-              </pre>
+              <div className="p-4 bg-muted border border-border mb-4 overflow-auto">
+                <StructuredValueView value={detailRow.action} className="text-xs" />
+              </div>
 
               <div className="flex gap-2 pt-2 border-t border-border">
                 <Button
