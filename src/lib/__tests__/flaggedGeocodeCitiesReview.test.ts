@@ -31,9 +31,13 @@ describe('flagged geocode cities review migration', () => {
     expect(code).toMatch(/raise exception 'P3 failed/);
   });
 
-  it('the eight unresolved rows must stay flagged', () => {
+  it('the eight unresolved rows are re-stamped if a concurrent writer dropped the flag, then asserted', () => {
+    const restore = code.indexOf("'restored_after', 'backfill-city-region lost update'");
+    const p5 = code.indexOf("raise exception 'P5 failed");
+    expect(restore).toBeGreaterThan(-1);
+    expect(p5).toBeGreaterThan(restore);
     expect(code).toMatch(
-      /enrichment_status \? 'admin_unit_review'\) <> 8 then\s+raise exception 'P5 failed/,
+      /and not \(enrichment_status \? 'admin_unit_review'\)\) > 0 then\s+raise exception 'P5 failed/,
     );
   });
 });
