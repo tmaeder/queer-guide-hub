@@ -172,7 +172,7 @@ describe('TagsIndex', () => {
       tag({ id: 'city', name: 'Zurich', slug: 'zurich', entity_kind: 'place' }),
     ];
     const { container } = renderAt('/tags');
-    expect(screen.getByRole('button', { name: 'Terms', exact: true })).toHaveAttribute(
+    expect(screen.getByRole('button', { name: 'Terms' })).toHaveAttribute(
       'aria-pressed',
       'true',
     );
@@ -187,7 +187,6 @@ describe('TagsIndex', () => {
     fireEvent.click(
       within(screen.getByRole('group', { name: 'Filters' })).getByRole('button', {
         name: 'All',
-        exact: true,
       }),
     );
     expect(container.querySelector('a[href="/tags/size-m"]')).toBeInTheDocument();
@@ -239,7 +238,7 @@ describe('TagsIndex', () => {
     renderAt('/tags');
     const rail = () => within(screen.getAllByRole('navigation', { name: 'Topic lines' })[0]);
     expect(rail().getByRole('link', { name: /Identity\s*0/ })).toBeInTheDocument();
-    fireEvent.click(screen.getByRole('button', { name: 'Labels', exact: true }));
+    fireEvent.click(screen.getByRole('button', { name: 'Labels' }));
     expect(rail().getByRole('link', { name: /Identity\s*1/ })).toBeInTheDocument();
   });
 
