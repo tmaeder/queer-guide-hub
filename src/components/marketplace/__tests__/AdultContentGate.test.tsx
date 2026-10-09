@@ -8,11 +8,11 @@ import { MemoryRouter } from 'react-router';
 import { AdultContentGate } from '../AdultContentGate';
 import { isAdultListing, isAdultCategorySlug } from '@/hooks/useAdultContent';
 
-const KEY = 'qg.marketplace.ageAck';
+const KEY = 'qg_age_affirmation';
 
 describe('AdultContentGate', () => {
   beforeEach(() => {
-    localStorage.removeItem(KEY);
+    localStorage.clear();
   });
 
   it('renders nothing when not active', () => {
@@ -46,7 +46,7 @@ describe('AdultContentGate', () => {
   });
 
   it('stays closed across remount once acknowledged', () => {
-    localStorage.setItem(KEY, new Date().toISOString());
+    localStorage.setItem(KEY, JSON.stringify({ affirmedAt: Date.now() }));
     const { queryByRole } = render(
       <MemoryRouter>
         <AdultContentGate active />
