@@ -52,7 +52,7 @@ export function CruisingPresenceControl() {
 
   if (!profile?.opted_in_at) {
     return (
-      <div className="border-y border-border-hairline py-4">
+      <div className="bg-surface-container p-4">
         <p className="text-sm font-semibold">{t('cruising.presence.peopleOffTitle')}</p>
         <p className="mt-1 text-13 text-muted-foreground">{t('cruising.presence.peopleOffBody')}</p>
         <Button asChild size="sm" className="mt-4">
@@ -101,7 +101,7 @@ export function CruisingPresenceControl() {
   };
 
   return (
-    <div className="border-y border-border-hairline py-4">
+    <div className="bg-surface-container p-4">
       <div className="flex items-start justify-between gap-4">
         <div>
           <p className="flex items-center gap-2 text-sm font-semibold">
@@ -115,7 +115,7 @@ export function CruisingPresenceControl() {
           </p>
         </div>
         {active ? (
-          <Button variant="outline" size="sm" onClick={disable} disabled={setPresence.isPending}>
+          <Button variant="soft" size="sm" onClick={disable} disabled={setPresence.isPending}>
             {t('cruising.presence.turnOff')}
           </Button>
         ) : (
@@ -144,7 +144,7 @@ export function CruisingPresenceControl() {
                 onChange={(event) => setCitySearch(event.target.value)}
                 placeholder={t('cruising.presence.cityPlaceholder')}
               />
-              <div className="mt-2 max-h-40 overflow-y-auto border-y border-border-hairline">
+              <div className="mt-2 max-h-40 space-y-1 overflow-y-auto bg-surface-container p-1">
                 {citiesLoading ? (
                   <p className="py-4 text-13 text-muted-foreground">
                     {t('cruising.presence.cityLoading')}
@@ -155,8 +155,10 @@ export function CruisingPresenceControl() {
                       type="button"
                       key={city.id}
                       onClick={() => setCityId(city.id)}
-                      className={`flex w-full items-center gap-2 border-b border-border-hairline px-1 py-4 text-left text-sm last:border-b-0 ${
-                        effectiveCityId === city.id ? 'font-bold' : ''
+                      className={`flex w-full items-center gap-2 px-3 py-4 text-left text-sm transition-colors ${
+                        effectiveCityId === city.id
+                          ? 'bg-background font-bold'
+                          : 'hover:bg-muted'
                       }`}
                     >
                       <MapPin size={14} aria-hidden />
@@ -187,7 +189,7 @@ export function CruisingPresenceControl() {
           </div>
 
           <DialogFooter>
-            <Button variant="outline" onClick={() => setOpen(false)}>
+            <Button variant="soft" onClick={() => setOpen(false)}>
               {t('cruising.presence.cancel')}
             </Button>
             <Button
