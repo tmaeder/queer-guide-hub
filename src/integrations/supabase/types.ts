@@ -1631,7 +1631,6 @@ export type Database = {
           local_language: string | null
           longitude: number | null
           major_airport_code: string | null
-          mayor: string | null
           name: string
           name_de: string | null
           name_en: string | null
@@ -1702,7 +1701,6 @@ export type Database = {
           local_language?: string | null
           longitude?: number | null
           major_airport_code?: string | null
-          mayor?: string | null
           name: string
           name_de?: string | null
           name_en?: string | null
@@ -1773,7 +1771,6 @@ export type Database = {
           local_language?: string | null
           longitude?: number | null
           major_airport_code?: string | null
-          mayor?: string | null
           name?: string
           name_de?: string | null
           name_en?: string | null
@@ -7355,7 +7352,6 @@ export type Database = {
           local_customs: string | null
           local_language: string | null
           major_airport_code: string | null
-          mayor: string | null
           needs_attention: boolean
           notable_landmarks: string[] | null
           official_website: string | null
@@ -7401,7 +7397,6 @@ export type Database = {
           local_customs?: string | null
           local_language?: string | null
           major_airport_code?: string | null
-          mayor?: string | null
           needs_attention?: boolean
           notable_landmarks?: string[] | null
           official_website?: string | null
@@ -7447,7 +7442,6 @@ export type Database = {
           local_customs?: string | null
           local_language?: string | null
           major_airport_code?: string | null
-          mayor?: string | null
           needs_attention?: boolean
           notable_landmarks?: string[] | null
           official_website?: string | null
@@ -30561,7 +30555,6 @@ export type Database = {
           local_language: string | null
           longitude: number | null
           major_airport_code: string | null
-          mayor: string | null
           name: string
           name_de: string | null
           name_en: string | null
@@ -30793,7 +30786,6 @@ export type Database = {
               local_language: string | null
               longitude: number | null
               major_airport_code: string | null
-              mayor: string | null
               name: string
               name_de: string | null
               name_en: string | null
@@ -30872,7 +30864,6 @@ export type Database = {
               local_language: string | null
               longitude: number | null
               major_airport_code: string | null
-              mayor: string | null
               name: string
               name_de: string | null
               name_en: string | null
@@ -30951,7 +30942,6 @@ export type Database = {
               local_language: string | null
               longitude: number | null
               major_airport_code: string | null
-              mayor: string | null
               name: string
               name_de: string | null
               name_en: string | null
@@ -31030,7 +31020,6 @@ export type Database = {
               local_language: string | null
               longitude: number | null
               major_airport_code: string | null
-              mayor: string | null
               name: string
               name_de: string | null
               name_en: string | null
@@ -31109,7 +31098,6 @@ export type Database = {
               local_language: string | null
               longitude: number | null
               major_airport_code: string | null
-              mayor: string | null
               name: string
               name_de: string | null
               name_en: string | null
@@ -31190,7 +31178,6 @@ export type Database = {
               local_language: string | null
               longitude: number | null
               major_airport_code: string | null
-              mayor: string | null
               name: string
               name_de: string | null
               name_en: string | null
@@ -31269,7 +31256,6 @@ export type Database = {
               local_language: string | null
               longitude: number | null
               major_airport_code: string | null
-              mayor: string | null
               name: string
               name_de: string | null
               name_en: string | null
@@ -31348,7 +31334,6 @@ export type Database = {
               local_language: string | null
               longitude: number | null
               major_airport_code: string | null
-              mayor: string | null
               name: string
               name_de: string | null
               name_en: string | null
@@ -36149,7 +36134,6 @@ export type Database = {
           local_language: string | null
           longitude: number | null
           major_airport_code: string | null
-          mayor: string | null
           name: string
           name_de: string | null
           name_en: string | null

@@ -157,24 +157,23 @@ Deno.test('bestStatement never returns a deprecated statement', () => {
   assertEquals(bestStatement(undefined), null)
 })
 
-// --- mayor: no dead mayors -------------------------------------------------
+// --- currentStatements: no ended statements --------------------------------
 
 Deno.test('currentStatements excludes anything with a past end date', () => {
-  // Every P6 on Cape Town / Paris / NYC carries P580+P582.
   const sts = [ent('Q445654', endedAt('+2018-10-31T00:00:00Z')), ent('Q379122', endedAt('+2011-06-01T00:00:00Z'))]
   assertEquals(currentStatements(sts).length, 0)
-  assertEquals(parseCityFacts({ P6: sts }).refs.mayor, [])
+  assertEquals(parseCityFacts({ P37: sts }).refs.local_language, [])
 })
 
 Deno.test('currentStatements keeps a statement with no end date', () => {
-  assertEquals(parseCityFacts({ P6: [ent('Q123')] }).refs.mayor, ['Q123'])
+  assertEquals(parseCityFacts({ P37: [ent('Q123')] }).refs.local_language, ['Q123'])
 })
 
 Deno.test('currentStatements keeps a future end date', () => {
-  assertEquals(parseCityFacts({ P6: [ent('Q123', endedAt('+2099-01-01T00:00:00Z'))] }).refs.mayor, ['Q123'])
+  assertEquals(parseCityFacts({ P37: [ent('Q123', endedAt('+2099-01-01T00:00:00Z'))] }).refs.local_language, ['Q123'])
 })
 
-Deno.test('an unparseable end date counts as ENDED (never publish a maybe-former mayor)', () => {
+Deno.test('an unparseable end date counts as ENDED (never publish a maybe-ended statement)', () => {
   // snaktype 'somevalue' = "ended, date unknown".
   const sts = [ent('Q379122', { P582: [{ snaktype: 'somevalue' }] })]
   assertEquals(currentStatements(sts).length, 0)
@@ -244,13 +243,12 @@ Deno.test('applyLabels shapes each column correctly', () => {
   const labels = new Map([
     ['Q14196', 'Afrikaans'], ['Q1860', 'English'],
     ['Q1017', 'Aachen'], ['Q41621', 'Nantes'],
-    ['Q864320', 'humid subtropical climate'], ['Q7', 'Alice Mayor'],
+    ['Q864320', 'humid subtropical climate'],
   ])
   const out = applyLabels(
     {
       sister_cities: ['Q41621', 'Q1017'],
       local_language: ['Q14196', 'Q1860'],
-      mayor: ['Q7'],
       climate_type: ['Q864320'],
       economy_sectors: [],
     },
@@ -258,7 +256,6 @@ Deno.test('applyLabels shapes each column correctly', () => {
   )
   assertEquals(out.sister_cities, ['Aachen', 'Nantes'])   // sorted
   assertEquals(out.local_language, 'Afrikaans, English')  // singular text column
-  assertEquals(out.mayor, 'Alice Mayor')
   assertEquals(out.climate_type, 'humid subtropical climate')
   assertEquals(out.economy_sectors, undefined)            // gaps stay empty
 })
