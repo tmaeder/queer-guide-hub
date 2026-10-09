@@ -5,9 +5,11 @@ import { REDUCED_MOTION, assertReducedMotion } from './support/reducedMotion';
 
 test.use(REDUCED_MOTION);
 
-const openGoingOut = async (page: Page) => {
+const openGoingOut = async (page: Page, theme: 'light' | 'dark' = 'light') => {
+  await page.addInitScript((mode) => localStorage.setItem('queer-guide-theme', mode), theme);
   await page.goto('/going-out', { waitUntil: 'domcontentloaded', timeout: 60_000 });
   await waitForAppReady(page);
+  await expect(page.locator('html')).toHaveClass(theme === 'dark' ? /dark/ : /light/);
   await page.locator('.going-out-hero').waitFor({ state: 'visible', timeout: 30_000 });
   await page.locator('.going-out-city').first().waitFor({ state: 'visible', timeout: 30_000 });
   const necessaryOnly = page.getByRole('button', { name: 'Necessary Only', exact: true });
@@ -16,9 +18,6 @@ const openGoingOut = async (page: Page) => {
 
 test.describe('Going out — shared subway system', () => {
   test.describe.configure({ mode: 'serial', timeout: 120_000 });
-  test.beforeEach(async ({ page }) => {
-    await page.addInitScript(() => localStorage.setItem('queer-guide-theme', 'light'));
-  });
 
   test('renders the shared hero and complete route', async ({ page }, testInfo) => {
     await openGoingOut(page);
@@ -69,8 +68,7 @@ test.describe('Going out — shared subway system', () => {
 
   for (const theme of ['light', 'dark'] as const) {
     test(`inherits the ${theme} theme with readable supporting copy`, async ({ page }) => {
-      await page.addInitScript((mode) => localStorage.setItem('queer-guide-theme', mode), theme);
-      await openGoingOut(page);
+      await openGoingOut(page, theme);
 
       const surfaces = await page.locator('.going-out-hero').evaluate((hero) => ({
         hero: getComputedStyle(hero).backgroundColor,
@@ -148,8 +146,7 @@ test.describe('Going out — shared subway system', () => {
     test(`has no serious or critical accessibility violations in ${theme} mode`, async ({
       page,
     }) => {
-      await page.addInitScript((mode) => localStorage.setItem('queer-guide-theme', mode), theme);
-      await openGoingOut(page);
+      await openGoingOut(page, theme);
       await assertReducedMotion(page);
 
       const results = await new AxeBuilder({ page })
