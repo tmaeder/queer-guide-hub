@@ -80,7 +80,7 @@ export const GroupFilters = ({
               color="hsl(var(--muted-foreground))"
             />
             <Input
-              className="border-0 bg-surface-container"
+              className="border-0 bg-surface-container text-foreground placeholder:text-muted-foreground"
               placeholder="Search groups..."
               value={searchQuery}
               onChange={(e) => onSearchChange(e.target.value)}
