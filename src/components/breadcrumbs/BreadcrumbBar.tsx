@@ -1,4 +1,4 @@
-import { Fragment, useEffect } from 'react';
+import { Fragment, useEffect, type CSSProperties } from 'react';
 import { useLocation } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import type { TFunction } from 'i18next';
@@ -16,12 +16,14 @@ import {
   BreadcrumbLink,
   BreadcrumbList,
   BreadcrumbPage,
-  BreadcrumbSeparator,
 } from '@/components/ui/breadcrumb';
 import { useBreadcrumbState, type BreadcrumbItem as Crumb } from '@/contexts/BreadcrumbContext';
 import { getRouteBreadcrumbs, homeCrumb } from '@/config/breadcrumbs';
 import { breadcrumbJsonLd } from '@/lib/breadcrumbJsonLd';
 import { PAGE_GUTTER } from '@/components/layout/PageContainer';
+import { routeJourneyTrack } from '@/components/layout/routeJourney';
+import { RouteNetworkRail } from '@/components/layout/RouteNetworkRail';
+import { StationRing } from '@/components/transit/StationRing';
 
 /**
  * Global breadcrumb bar rendered below the header (in LayoutShell).
@@ -70,79 +72,142 @@ export function BreadcrumbBar() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pathname, JSON.stringify(published?.map((c) => [c.label, c.href]) ?? null)]);
 
-  if (!trail || trail.length <= 1) return null;
+  // Routes that deliberately publish no breadcrumb still retain the ambient
+  // family rail. When a hierarchy exists, the breadcrumb stops replace that
+  // decoration below — never stack a second route above it.
+  if (!trail || trail.length <= 1) return <RouteNetworkRail pathname={pathname} />;
 
   const lastIndex = trail.length - 1;
+  const track = routeJourneyTrack(pathname);
   // Collapse the middle of long trails on small screens to a single ellipsis.
   const collapse = trail.length > 3;
 
   return (
-    <div className="bg-background">
-      {/* Bar is full-bleed; its CONTENT takes the page gutter + cap so the
-          first crumb starts on the same vertical as the page heading below it
-          and the nav above it. */}
+    <div
+      className={`route-network-rail route-network-rail--breadcrumbs route-network-rail--${track}`}
+    >
       <div
-        className={`mx-auto flex w-full max-w-page min-h-11 items-center overflow-hidden py-2.5 ${PAGE_GUTTER}`}
+        className={`route-network-rail__inner route-network-rail__inner--breadcrumbs ${PAGE_GUTTER}`}
       >
-        <Breadcrumb className="min-w-0 max-w-full">
-          {/* Locked to a single line: every crumb but the last keeps its width
-              (shrink-0); the last crumb absorbs the remaining space and
-              truncates with an ellipsis so the row never wraps or overflows. */}
-          <BreadcrumbList className="min-w-0 flex-nowrap overflow-hidden">
-            {trail.map((crumb, i) => {
-              const isLast = i === lastIndex;
-              const isFirst = i === 0;
-              const isMiddle = !isFirst && !isLast;
-              // On mobile, hide middle crumbs. Their leading separators hide too,
-              // except the very first one (Home → ellipsis), which stays.
-              const hideOnMobile = collapse && isMiddle;
-              const mobileClass = hideOnMobile ? 'hidden md:inline-flex' : '';
-              const hideSep = collapse && isMiddle && i !== 1;
+        <div className="route-network-rail__canvas">
+          <svg
+            className="route-network-rail__breadcrumb-map"
+            viewBox="0 0 900 52"
+            preserveAspectRatio="none"
+            role="presentation"
+            aria-hidden="true"
+          >
+            <path
+              data-testid="breadcrumb-track"
+              className={`route-network-rail__track route-network-rail__track--${track}`}
+              d="M -20 28 C 170 10 320 42 470 27 C 620 12 740 40 920 22"
+              pathLength="1"
+            />
+          </svg>
+          <Breadcrumb className="route-network-rail__breadcrumb">
+            {/* The semantic breadcrumb and the visible network are one thing:
+                every crumb owns the station placed on the shared curve. */}
+            <BreadcrumbList
+              data-testid="breadcrumb-route"
+              className="route-network-rail__crumb-list min-w-0 w-full flex-nowrap gap-0 overflow-visible"
+            >
+              {trail.map((crumb, i) => {
+                const isLast = i === lastIndex;
+                const isFirst = i === 0;
+                const isMiddle = !isFirst && !isLast;
+                // On mobile, hide middle crumbs behind one reachable station.
+                const hideOnMobile = collapse && isMiddle;
+                const mobileClass = hideOnMobile ? 'hidden md:flex' : '';
+                const alignment = isFirst
+                  ? 'items-start text-left'
+                  : isLast
+                    ? 'items-end text-right'
+                    : 'items-center text-center';
+                const justification = isFirst
+                  ? 'justify-start'
+                  : isLast
+                    ? 'justify-end'
+                    : 'justify-center';
 
-              return (
-                <Fragment key={i}>
-                  {i > 0 && (
-                    <BreadcrumbSeparator
-                      className={`shrink-0 ${hideSep ? 'hidden md:inline-flex' : ''}`}
-                    />
-                  )}
-                  {/* Mobile-only overflow control, rendered once after the first
-                      crumb. It carries the crumbs the row has no width for, so
-                      collapsing the trail hides them from VIEW without putting
-                      them out of REACH. */}
-                  {collapse && i === 1 && (
-                    <BreadcrumbItem
-                      data-testid="breadcrumb-overflow"
-                      className="shrink-0 md:hidden"
-                    >
-                      <CollapsedCrumbsMenu crumbs={trail.slice(1, lastIndex)} t={t} />
-                    </BreadcrumbItem>
-                  )}
-                  <BreadcrumbItem
-                    className={
-                      isLast
-                        ? 'min-w-0 flex-1 whitespace-nowrap'
-                        : `shrink-0 whitespace-nowrap ${mobileClass}`
-                    }
-                  >
-                    {isLast ? (
-                      <BreadcrumbPage className="block truncate">{crumb.label}</BreadcrumbPage>
-                    ) : crumb.href ? (
-                      <BreadcrumbLink asChild>
-                        <LocalizedLink to={crumb.href}>{crumb.label}</LocalizedLink>
-                      </BreadcrumbLink>
-                    ) : (
-                      <span>{crumb.label}</span>
+                return (
+                  <Fragment key={i}>
+                    {/* Mobile-only overflow control, rendered once after the first
+                      crumb. It is a station in its own right, so collapsing
+                      the trail hides levels from VIEW without taking them out
+                      of REACH or breaking the route line. */}
+                    {collapse && i === 1 && (
+                      <BreadcrumbItem
+                        data-testid="breadcrumb-overflow"
+                        className="route-network-rail__crumb-stop relative z-10 flex min-w-0 flex-1 justify-center md:hidden"
+                        style={routeStopStyle(1, 3)}
+                      >
+                        <CollapsedCrumbsMenu
+                          crumbs={trail.slice(1, lastIndex)}
+                          track={track}
+                          t={t}
+                        />
+                      </BreadcrumbItem>
                     )}
-                  </BreadcrumbItem>
-                </Fragment>
-              );
-            })}
-          </BreadcrumbList>
-        </Breadcrumb>
+                    <BreadcrumbItem
+                      data-breadcrumb-stop=""
+                      data-current={isLast ? 'true' : undefined}
+                      className={`route-network-rail__crumb-stop relative z-10 min-w-0 flex-1 whitespace-nowrap ${justification} ${mobileClass}`}
+                      style={routeStopStyle(i, trail.length)}
+                    >
+                      {isLast ? (
+                        <BreadcrumbPage
+                          className={`flex min-w-0 max-w-full flex-col gap-1 ${alignment}`}
+                        >
+                          <StationRing state="typed" track={track} />
+                          <span className="block max-w-full truncate bg-background px-1 text-13 font-bold">
+                            {crumb.label}
+                          </span>
+                        </BreadcrumbPage>
+                      ) : crumb.href ? (
+                        <BreadcrumbLink asChild className="min-w-0 max-w-full">
+                          <LocalizedLink
+                            to={crumb.href}
+                            className={`group flex min-w-0 max-w-full flex-col gap-1 ${alignment}`}
+                          >
+                            <StationRing
+                              state="open"
+                              track={track}
+                              className="transition-colors group-hover:bg-surface-container"
+                            />
+                            <span className="block max-w-full truncate bg-background px-1 text-13 font-semibold text-foreground group-hover:underline">
+                              {crumb.label}
+                            </span>
+                          </LocalizedLink>
+                        </BreadcrumbLink>
+                      ) : (
+                        <span
+                          className={`flex min-w-0 max-w-full flex-col gap-1 text-muted-foreground ${alignment}`}
+                        >
+                          <StationRing state="open" track={track} />
+                          <span className="block max-w-full truncate bg-background px-1 text-13">
+                            {crumb.label}
+                          </span>
+                        </span>
+                      )}
+                    </BreadcrumbItem>
+                  </Fragment>
+                );
+              })}
+            </BreadcrumbList>
+          </Breadcrumb>
+        </div>
       </div>
     </div>
   );
+}
+
+/** Approximate the shared cubic at evenly-spaced breadcrumb positions. The
+ * endpoints land at the path's y=28/y=22 and the sine term follows its two
+ * bends closely enough that every HTML station sits visually on the SVG rail. */
+function routeStopStyle(index: number, count: number): CSSProperties {
+  const t = count <= 1 ? 0 : index / (count - 1);
+  const y = 28 - 8 * Math.sin(t * Math.PI * 2) - 6 * t;
+  return { '--route-stop-y': `${Math.round(y)}px` } as CSSProperties;
 }
 
 /**
@@ -164,17 +229,32 @@ export function BreadcrumbBar() {
  * city we hold no record for). It is rendered as a disabled item rather than
  * dropped, so the menu still describes the full path.
  */
-function CollapsedCrumbsMenu({ crumbs, t }: { crumbs: Crumb[]; t: TFunction }) {
+function CollapsedCrumbsMenu({
+  crumbs,
+  track,
+  t,
+}: {
+  crumbs: Crumb[];
+  track: ReturnType<typeof routeJourneyTrack>;
+  t: TFunction;
+}) {
   if (crumbs.length === 0) return null;
   return (
     <DropdownMenu>
       {/* The glyph is decorative and stays aria-hidden; the BUTTON carries the
           accessible name. `min-height: 44px` comes from the base layer. */}
       <DropdownMenuTrigger
-        className="inline-flex items-center justify-center px-1 text-muted-foreground transition-colors hover:text-foreground"
+        className="group inline-flex min-w-0 flex-col items-center justify-center gap-1 text-muted-foreground transition-colors hover:text-foreground"
         aria-label={t('breadcrumb.showCollapsed', 'Show the levels above')}
       >
-        <BreadcrumbEllipsis />
+        <StationRing
+          state="open"
+          track={track}
+          className="transition-colors group-hover:bg-surface-container"
+        />
+        <span className="bg-background px-1">
+          <BreadcrumbEllipsis />
+        </span>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start">
         {crumbs.map((crumb, i) =>

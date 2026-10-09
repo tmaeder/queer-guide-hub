@@ -5,7 +5,7 @@ import { TextareaEditor } from './TextareaEditor';
 import { SelectEditor } from './SelectEditor';
 import { BooleanEditor } from './BooleanEditor';
 import { TagsEditor } from './TagsEditor';
-import { HoursEditor } from './HoursEditor';
+import { StructuredEditor } from './StructuredEditor';
 import { ImageEditor } from './ImageEditor';
 import { ImageArrayEditor } from './ImageArrayEditor';
 import { RichTextInlineEditor } from './RichTextInlineEditor';
@@ -24,7 +24,7 @@ const REGISTRY: Partial<Record<FieldType, ComponentType<EditorProps>>> = {
   select: SelectEditor,
   boolean: BooleanEditor,
   tags: TagsEditor,
-  json: HoursEditor,
+  json: StructuredEditor,
   image: ImageEditor,
   images: ImageArrayEditor,
   richtext: RichTextInlineEditor,

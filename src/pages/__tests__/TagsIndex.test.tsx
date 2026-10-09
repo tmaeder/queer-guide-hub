@@ -341,4 +341,11 @@ describe('TagsIndex', () => {
     renderAt('/tags?adult=1');
     expect(screen.getByRole('link', { name: /Puppy play/ })).toBeInTheDocument();
   });
+
+  it('records shared 18+ confirmation when adult terms are included', () => {
+    corpus = [...PLAIN, ADULT];
+    renderAt('/tags');
+    fireEvent.click(screen.getByRole('button', { name: /include 18\+/i }));
+    expect(localStorage.getItem('qg_age_affirmation')).toBeTruthy();
+  });
 });

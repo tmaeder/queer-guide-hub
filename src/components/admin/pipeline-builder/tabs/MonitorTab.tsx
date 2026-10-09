@@ -39,6 +39,7 @@ import {
   type AdminSimpleColumn,
 } from '@/components/admin/primitives/AdminSimpleTable';
 import { TrackLoader } from '@/components/transit/TrackLoader';
+import { StructuredValueView } from '@/components/cms/fields/structured/StructuredValueView';
 
 type StatusFilter = 'all' | 'running' | 'completed' | 'failed';
 type TypeFilter = 'all' | 'pipeline' | 'workflow';
@@ -679,11 +680,11 @@ export default function MonitorTab() {
                   {selectedRun.output_result && (
                     <details className="text-xs">
                       <summary className="cursor-pointer text-muted-foreground hover:text-foreground py-1">
-                        Raw output
+                        Full output
                       </summary>
-                      <pre className="text-2xs bg-muted/40 p-2 rounded-element overflow-auto max-h-56 mt-1">
-                        {JSON.stringify(selectedRun.output_result, null, 2)}
-                      </pre>
+                      <div className="bg-muted/40 p-2 rounded-element overflow-auto max-h-56 mt-1">
+                        <StructuredValueView value={selectedRun.output_result} className="text-2xs" />
+                      </div>
                     </details>
                   )}
                 </div>
