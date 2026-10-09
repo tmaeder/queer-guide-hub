@@ -16,6 +16,8 @@ import {
 } from '@/components/ui/select';
 import { callSearchIntelligence, createTagFromProposal } from '@/hooks/useSearchIntelligence';
 import { parseTagProposal, type TagProposalCollision, type NewTagProposal } from './tagProposal';
+import { StructuredValueView } from '@/components/cms/fields/structured/StructuredValueView';
+import { StructuredValueEditor } from '@/components/cms/fields/structured/StructuredValueEditor';
 
 type SuggestionStatus = 'pending' | 'approved' | 'applied' | 'rejected' | 'superseded' | 'expired';
 
@@ -74,12 +76,9 @@ function PrettyJson({ value, label }: { value: unknown; label: string }) {
   return (
     <div>
       <span className="text-xs text-muted-foreground">{label}</span>
-      <pre
-        style={{ fontSize: 12, background: 'hsl(var(--foreground) / 0.04)', maxHeight: 200 }}
-        className="m-0 p-2 overflow-auto"
-      >
-        {JSON.stringify(value, null, 2)}
-      </pre>
+      <div className="m-0 max-h-52 overflow-auto bg-muted p-2">
+        <StructuredValueView value={value} className="text-xs" />
+      </div>
     </div>
   );
 }
@@ -207,8 +206,10 @@ export function SuggestionsTab() {
   const [info, setInfo] = useState<string | null>(null);
   const [editing, setEditing] = useState<{
     id: string;
+    /** Translation suggestions edit a plain string. */
     draft: string;
-    parseError: string | null;
+    /** Every other suggestion edits its proposed value as structured data. */
+    value: unknown;
   } | null>(null);
 
   const refresh = useCallback(async () => {
@@ -461,42 +462,22 @@ export function SuggestionsTab() {
                                 className="p-2"
                                 value={editing.draft}
                                 onChange={(e) =>
-                                  setEditing({ id: s.id, draft: e.target.value, parseError: null })
+                                  setEditing({ id: s.id, draft: e.target.value, value: null })
                                 }
                               />
                             </>
                           ) : (
                             <>
                               <span className="text-xs text-muted-foreground">
-                                Edit proposed_value (JSON):
+                                Edit proposed value:
                               </span>
-                              <textarea
-                                style={{
-                                  width: '100%',
-                                  minHeight: 140,
-                                  fontFamily: 'monospace',
-                                  fontSize: 12,
-                                  background: 'hsl(var(--foreground) / 0.04)',
-                                  border: '1px solid hsl(var(--foreground) / 0.2)',
-                                }}
-                                className="p-2"
-                                value={editing.draft}
-                                onChange={(e) => {
-                                  const val = e.target.value;
-                                  let parseError: string | null = null;
-                                  try {
-                                    JSON.parse(val);
-                                  } catch (err) {
-                                    parseError = (err as Error).message;
-                                  }
-                                  setEditing({ id: s.id, draft: val, parseError });
-                                }}
-                              />
-                              {editing.parseError && (
-                                <span className="text-xs text-destructive">
-                                  JSON parse error: {editing.parseError}
-                                </span>
-                              )}
+                              <div className="rounded-element border border-input bg-background p-2">
+                                <StructuredValueEditor
+                                  value={editing.value}
+                                  onChange={(v) => setEditing({ id: s.id, draft: '', value: v })}
+                                  label="Proposed value"
+                                />
+                              </div>
                             </>
                           )}
                         </div>
@@ -527,13 +508,13 @@ export function SuggestionsTab() {
                               setEditing({
                                 id: s.id,
                                 draft: proposed.value ?? '',
-                                parseError: null,
+                                value: null,
                               });
                             } else {
                               setEditing({
                                 id: s.id,
-                                draft: JSON.stringify(s.proposed_value, null, 2),
-                                parseError: null,
+                                draft: '',
+                                value: s.proposed_value,
                               });
                             }
                           }}
@@ -566,17 +547,7 @@ export function SuggestionsTab() {
                               setEditing(null);
                               return;
                             }
-                            if (editing.parseError) return;
-                            let parsed: unknown;
-                            try {
-                              parsed = JSON.parse(editing.draft);
-                            } catch (err) {
-                              setEditing({
-                                ...editing,
-                                parseError: (err as Error).message,
-                              });
-                              return;
-                            }
+                            const parsed = editing.value;
                             if (tagProposal) {
                               await approveNewTag(s, parsed);
                             } else {
@@ -584,7 +555,7 @@ export function SuggestionsTab() {
                             }
                             setEditing(null);
                           }}
-                          disabled={busy === s.id || !!editing.parseError}
+                          disabled={busy === s.id}
                         >
                           Save &amp; Approve
                         </Button>

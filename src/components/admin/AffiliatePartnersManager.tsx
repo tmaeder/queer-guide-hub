@@ -17,6 +17,7 @@ import { Badge } from '@/components/ui/badge';
 import { AdminEmpty } from '@/components/admin/primitives/AdminEmpty';
 import { useAffiliateLinks } from '@/hooks/useAffiliateLinks';
 import { toast } from 'sonner';
+import { StructuredValueEditor } from '@/components/cms/fields/structured/StructuredValueEditor';
 
 const SUB_FIELDS = ['sub_id', 'booking_label', 'gyg_placement'] as const;
 
@@ -24,7 +25,7 @@ const emptyForm = {
   partner_name: '',
   domains: '',
   url_patterns: '',
-  parameters: '{}',
+  parameters: {} as Record<string, unknown>,
   redirect_template: '',
   notes: '',
   enabled: true,
@@ -74,7 +75,7 @@ export function AffiliatePartnersManager({
       partner_name: p.partner_name,
       domains: p.domains.join(', '),
       url_patterns: (p.url_patterns ?? []).join(', '),
-      parameters: JSON.stringify(p.parameters, null, 2),
+      parameters: { ...(p.parameters ?? {}) },
       redirect_template: p.redirect_template ?? '',
       notes: ((p as unknown as Record<string, unknown>).notes as string) ?? '',
       enabled: p.enabled,
@@ -89,13 +90,12 @@ export function AffiliatePartnersManager({
       toast.error('Name is required');
       return;
     }
-    let params: Record<string, string>;
-    try {
-      params = JSON.parse(form.parameters);
-    } catch {
-      toast.error('Parameters must be valid JSON');
-      return;
-    }
+    // URL query parameters are strings; drop blank names/values.
+    const params: Record<string, string> = Object.fromEntries(
+      Object.entries(form.parameters)
+        .filter(([k, v]) => k.trim() && v !== null && v !== undefined && String(v).trim())
+        .map(([k, v]) => [k.trim(), String(v).trim()]),
+    );
     setSaving(true);
     try {
       const payload = {
@@ -277,13 +277,16 @@ export function AffiliatePartnersManager({
               />
             </div>
             <div className="flex flex-col gap-2">
-              <Label htmlFor="parameters">Parameters (JSON)</Label>
-              <Textarea
-                id="parameters"
+              <Label>Parameters</Label>
+              <StructuredValueEditor
                 value={form.parameters}
-                onChange={(e) => setForm((f) => ({ ...f, parameters: e.target.value }))}
-                rows={3}
-                placeholder='{"marker": "452012"}'
+                onChange={(v) =>
+                  setForm((f) => ({
+                    ...f,
+                    parameters: v && typeof v === 'object' && !Array.isArray(v) ? (v as Record<string, unknown>) : {},
+                  }))
+                }
+                label="Parameters"
               />
               <p className="text-xs text-muted-foreground">
                 Key-value pairs appended to matching URLs

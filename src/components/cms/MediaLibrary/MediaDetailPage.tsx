@@ -59,6 +59,7 @@ import { AssetVersionSidebar } from './AssetVersionSidebar';
 import { SimilarImagesPanel } from './SimilarImagesPanel';
 import { useSignedMediaUrl } from '@/hooks/useSignedMediaUrl';
 import type { UnifiedMediaItem } from './types';
+import { StructuredValueView } from '@/components/cms/fields/structured/StructuredValueView';
 
 export function MediaDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -568,10 +569,10 @@ function ExifDataSection({ metadata }: { metadata: Record<string, unknown> }) {
   if (!hasExif) {
     return (
       <details>
-        <summary className="text-muted-foreground cursor-pointer">Raw Metadata</summary>
-        <pre className="mt-2 p-4 bg-muted text-xs overflow-auto max-h-48">
-          {JSON.stringify(metadata, null, 2)}
-        </pre>
+        <summary className="text-muted-foreground cursor-pointer">All metadata</summary>
+        <div className="mt-2 p-4 bg-muted overflow-auto max-h-48">
+          <StructuredValueView value={metadata} />
+        </div>
       </details>
     );
   }
@@ -635,10 +636,10 @@ function ExifDataSection({ metadata }: { metadata: Record<string, unknown> }) {
         ))}
       </div>
       <details className="mt-1">
-        <summary className="text-xs text-muted-foreground cursor-pointer">Raw EXIF JSON</summary>
-        <pre className="mt-1 p-2 bg-muted text-xs overflow-auto max-h-36">
-          {JSON.stringify(exif, null, 2)}
-        </pre>
+        <summary className="text-xs text-muted-foreground cursor-pointer">All EXIF fields</summary>
+        <div className="mt-2 p-2 bg-muted overflow-auto max-h-36">
+          <StructuredValueView value={exif} />
+        </div>
       </details>
     </div>
   );
