@@ -25,6 +25,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { supabase } from '@/integrations/supabase/client';
 import { applyAIResult } from '@/lib/cms/applyAIResult';
 import type { ContentTypeConfig, AIAssistOp } from '@/types/cms';
+import { StructuredValueView } from '@/components/cms/fields/structured/StructuredValueView';
 
 const OP_META: Record<
   AIAssistOp,
@@ -189,11 +190,9 @@ export function AIAssistDrawer({
                 </div>
                 <p className="block text-xs text-muted-foreground mb-2">{meta.description}</p>
                 {result && (
-                  <pre className="m-0 mb-2 p-2 bg-muted border border-border rounded-element text-xs whitespace-pre-wrap break-words max-h-40 overflow-auto">
-                    {typeof result.output === 'string'
-                      ? result.output
-                      : JSON.stringify(result.output, null, 2)}
-                  </pre>
+                  <div className="m-0 mb-2 p-2 bg-muted border border-border rounded-element max-h-40 overflow-auto">
+                    <StructuredValueView value={result.output} className="text-xs" />
+                  </div>
                 )}
                 <div className="flex gap-1.5">
                   <Button

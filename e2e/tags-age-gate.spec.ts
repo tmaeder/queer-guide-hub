@@ -44,7 +44,7 @@ test.describe('@p0-3 /tags age gate', () => {
     expect(robots).toContain('noindex');
   });
 
-  test('Affirming the gate reveals the tag content', async ({ page, context }) => {
+  test('Affirming the gate reveals the tag content and survives reloads', async ({ page, context }) => {
     await context.clearCookies();
     await page.addInitScript(() => {
       try {
@@ -57,6 +57,14 @@ test.describe('@p0-3 /tags age gate', () => {
     await page.goto(ADULT_TAG_PATH);
     await page.getByTestId('age-affirmation-confirm').click({ timeout: 15_000 });
 
+    await expect(page.getByTestId('age-gate-placeholder')).toHaveCount(0);
+    await expect(page.getByTestId('age-affirmation-modal')).toHaveCount(0);
+
+    await expect
+      .poll(() => page.evaluate(() => window.localStorage.getItem('qg_age_affirmation')))
+      .not.toBeNull();
+
+    await page.reload();
     await expect(page.getByTestId('age-gate-placeholder')).toHaveCount(0);
     await expect(page.getByTestId('age-affirmation-modal')).toHaveCount(0);
   });
@@ -77,5 +85,13 @@ test.describe('@p0-3 /tags age gate', () => {
     await expect(page.locator('a[href*="/tags/age-play"]').first()).toBeVisible({
       timeout: 15_000,
     });
+
+    await expect
+      .poll(() => page.evaluate(() => window.localStorage.getItem('qg_age_affirmation')))
+      .not.toBeNull();
+
+    await page.locator('a[href*="/tags/age-play"]').first().click();
+    await expect(page).toHaveURL(/\/tags\/age-play/);
+    await expect(page.getByTestId('age-affirmation-modal')).toHaveCount(0);
   });
 });

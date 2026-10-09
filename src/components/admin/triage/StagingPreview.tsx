@@ -14,6 +14,7 @@ import { FieldDiffView, computeFieldDiffs } from './FieldDiffView';
 import { StructuredFieldEditor } from './StructuredDataView';
 import { useDedupMatchData } from '@/hooks/useTriageDetail';
 import type { TriageItem } from '@/hooks/useUnifiedTriageQueue';
+import { StructuredValueView } from '@/components/cms/fields/structured/StructuredValueView';
 
 interface StagingPreviewProps {
   item: TriageItem;
@@ -96,15 +97,15 @@ function TechnicalData({ normalized, enriched }: { normalized: unknown; enriched
       <CollapsibleContent className="space-y-4 bg-muted/15 p-4">
         <div>
           <p className="mb-1 text-2xs font-medium text-muted-foreground">Normalized payload</p>
-          <pre className="max-h-56 overflow-auto whitespace-pre-wrap break-words rounded-element border border-border bg-background p-4 text-2xs">
-            {JSON.stringify(normalized, null, 2)}
-          </pre>
+          <div className="max-h-56 overflow-auto rounded-element border border-border bg-background p-4">
+            <StructuredValueView value={normalized} className="text-2xs" />
+          </div>
         </div>
         <div>
           <p className="mb-1 text-2xs font-medium text-muted-foreground">Enriched payload</p>
-          <pre className="max-h-56 overflow-auto whitespace-pre-wrap break-words rounded-element border border-border bg-background p-4 text-2xs">
-            {JSON.stringify(enriched, null, 2)}
-          </pre>
+          <div className="max-h-56 overflow-auto rounded-element border border-border bg-background p-4">
+            <StructuredValueView value={enriched} className="text-2xs" />
+          </div>
         </div>
       </CollapsibleContent>
     </Collapsible>
