@@ -9,7 +9,7 @@ import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 interface StartConversationButtonProps {
   userId: string;
   userName?: string;
-  variant?: 'default' | 'outline' | 'ghost';
+  variant?: 'default' | 'outline' | 'ghost' | 'soft';
   size?: 'default' | 'sm' | 'lg';
 }
 
@@ -42,7 +42,11 @@ export const StartConversationButton = ({
         navigate(`/messages?conversation=${conversationId}`);
       }
     } catch (_error) {
-      toast({ title: 'Error', description: 'Failed to start conversation. Please try again.', variant: 'destructive' });
+      toast({
+        title: 'Error',
+        description: 'Failed to start conversation. Please try again.',
+        variant: 'destructive',
+      });
     } finally {
       setLoading(false);
     }

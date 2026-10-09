@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 
 const PEOPLE_MAP_CONFIG = {
-  defaultEnabledLayers: ['venues', 'events', 'neighbourhoods'],
+  defaultLines: ['M', 'E', 'C', 'T'],
   enableUrlState: false,
 } satisfies Partial<MapShellConfig>;
 

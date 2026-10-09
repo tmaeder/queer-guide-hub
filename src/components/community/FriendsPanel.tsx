@@ -28,6 +28,13 @@ import {
 import { PeopleModeView } from '@/pages/people/PeopleModeView';
 import { MeetMembersNotice } from '@/components/people/MeetMembersNotice';
 
+interface FriendProfile {
+  user_id: string;
+  display_name: string | null;
+  avatar_url: string | null;
+  location: string | null;
+}
+
 /**
  * Friends + pending-requests management (accept/reject/remove), SOS, and
  * start-conversation — the reusable body of the /people/friends page,
@@ -63,7 +70,7 @@ export function FriendsPanel() {
     queryFn: async () => {
       if (!user || friends.length === 0) return [];
       const ids = friends.map((f) => (f.user_id === user.id ? f.target_user_id : f.user_id));
-      return fetchProfilesByUserIds(ids);
+      return fetchProfilesByUserIds<FriendProfile>(ids);
     },
     enabled: !!user && friends.length > 0,
   });
@@ -72,7 +79,7 @@ export function FriendsPanel() {
     queryKey: ['request-profiles', pendingRequests.map((r) => r.user_id)],
     queryFn: async () => {
       if (!user || pendingRequests.length === 0) return [];
-      return fetchProfilesByUserIds(pendingRequests.map((r) => r.user_id));
+      return fetchProfilesByUserIds<FriendProfile>(pendingRequests.map((r) => r.user_id));
     },
     enabled: !!user && pendingRequests.length > 0,
   });
