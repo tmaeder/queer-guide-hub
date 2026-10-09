@@ -8,6 +8,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { callSearchIntelligence } from '@/hooks/useSearchIntelligence';
 import { fetchTagNames } from '@/hooks/useTagNames';
 import { AdminTextSkeleton } from '@/components/admin/primitives/AdminLoading';
+import { summarizeStructured } from '@/components/cms/fields/structured/structuredValue';
 
 interface TagSuggestion {
   id: string;
@@ -26,7 +27,7 @@ function proposedText(v: unknown): string {
   const p = (v ?? {}) as Record<string, unknown>;
   if (typeof p.value === 'string') return p.value;
   if (typeof p.image_url === 'string') return p.image_url;
-  return JSON.stringify(v);
+  return summarizeStructured(v);
 }
 
 /**

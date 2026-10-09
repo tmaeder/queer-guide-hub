@@ -5,6 +5,7 @@ import { fetchAdminPersonalityById } from '@/hooks/usePageFetchers';
 import { personalityStatus } from '@/lib/personalityStatus';
 import { AdminTextSkeleton } from '@/components/admin/primitives/AdminLoading';
 import { ErrorState } from '@/components/ui/EmptyState';
+import { summarizeStructured } from '@/components/cms/fields/structured/structuredValue';
 
 /**
  * Admin-only person data sheet ("Datenblatt"), ported from the standalone PHP
@@ -62,8 +63,11 @@ interface AdminPersonality {
 }
 
 const toList = (v: unknown): string[] => {
-  if (Array.isArray(v)) return v.map((x) => (typeof x === 'string' ? x : JSON.stringify(x)));
-  if (v && typeof v === 'object') return Object.values(v as Record<string, unknown>).map(String);
+  if (Array.isArray(v)) return v.map((x) => (typeof x === 'string' ? x : summarizeStructured(x)));
+  if (v && typeof v === 'object')
+    return Object.values(v as Record<string, unknown>).map((x) =>
+      typeof x === 'string' ? x : summarizeStructured(x),
+    );
   if (typeof v === 'string' && v.trim() !== '') return [v];
   return [];
 };
