@@ -6,6 +6,7 @@ import { Label } from '@/components/ui/label';
 import { callSearchIntelligence, AuditEntry } from '@/hooks/useSearchIntelligence';
 import { AdminTextSkeleton } from '@/components/admin/primitives/AdminLoading';
 import { AdminEmpty } from '@/components/admin/primitives/AdminEmpty';
+import { StructuredValueView } from '@/components/cms/fields/structured/StructuredValueView';
 
 export function AuditTab() {
   const [entries, setEntries] = useState<AuditEntry[]>([]);
@@ -80,9 +81,9 @@ export function AuditTab() {
                   </span>
                 </div>
                 {e.metadata && Object.keys(e.metadata).length > 0 && (
-                  <pre className="text-xs2 mt-2 bg-muted p-2 overflow-auto rounded-element">
-                    {JSON.stringify(e.metadata, null, 2)}
-                  </pre>
+                  <div className="mt-2 bg-muted p-2 overflow-auto rounded-element">
+                    <StructuredValueView value={e.metadata} className="text-xs2" />
+                  </div>
                 )}
               </CardContent>
             </Card>

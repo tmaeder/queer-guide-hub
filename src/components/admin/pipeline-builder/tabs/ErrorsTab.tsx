@@ -9,6 +9,7 @@ import {
   AdminSimpleTable,
   type AdminSimpleColumn,
 } from '@/components/admin/primitives/AdminSimpleTable';
+import { StructuredValueView } from '@/components/cms/fields/structured/StructuredValueView';
 
 interface ErrorRow {
   id: number;
@@ -274,9 +275,9 @@ export default function ErrorsTab() {
                     <div className="text-2xs text-muted-foreground uppercase tracking-wider font-medium mb-1">
                       Context
                     </div>
-                    <pre className="text-xs2 bg-muted/40 p-2 rounded-element overflow-auto">
-                      {JSON.stringify(selected.context, null, 2)}
-                    </pre>
+                    <div className="bg-muted/40 p-2 rounded-element overflow-auto">
+                      <StructuredValueView value={selected.context} className="text-xs2" />
+                    </div>
                   </div>
                 )}
                 {selected.stack && (
