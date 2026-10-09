@@ -113,7 +113,7 @@ describe('People hub', () => {
     expect(screen.queryByRole('tab')).not.toBeInTheDocument();
     expect(screen.getByRole('link', { name: /Travel buddies/i })).toHaveAttribute(
       'href',
-      '/people/travel',
+      '/hub/travel',
     );
   });
 
@@ -138,7 +138,7 @@ describe('People hub', () => {
     renderWithProviders(<People />);
     expect(screen.getByRole('link', { name: 'Queer Hiking' })).toHaveAttribute(
       'href',
-      '/people/groups/g1',
+      '/hub/groups/g1',
     );
   });
 

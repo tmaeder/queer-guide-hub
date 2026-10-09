@@ -15,7 +15,7 @@
  * desktop taxonomy rail.
  */
 
-import { useState, Suspense, lazy } from 'react';
+import { useState, useMemo, Suspense, lazy } from 'react';
 import { useTranslation } from 'react-i18next';
 import { VirtualizedGrid } from '@/components/ui/VirtualizedGrid';
 import { useGridColumns } from '@/components/ui/useGridColumns';
@@ -71,6 +71,7 @@ export function TagResults({
   const gridColumns = useGridColumns(GRID_BREAKPOINTS);
   const listColumns = useGridColumns(LIST_BREAKPOINTS);
   const [chipLimit, setChipLimit] = useState(CHIP_PAGE);
+  const allowedTagIds = useMemo(() => new Set(tags.map((tag) => tag.id)), [tags]);
 
   // A new result set starts from the top of the chip cloud; keeping the old
   // limit means a narrower search silently renders "show 400 more" over 12 tags.
@@ -90,7 +91,11 @@ export function TagResults({
     return (
       <Suspense fallback={<TrackLoader label={t('tags.loading', 'Loading the glossary')} />}>
         <div className="h-[520px] w-full border border-border-hairline md:h-[640px]">
-          <TagRelationshipGraph categoryFilter={graphCategory} categories={graphCategories} />
+          <TagRelationshipGraph
+            categoryFilter={graphCategory}
+            categories={graphCategories}
+            allowedTagIds={allowedTagIds}
+          />
         </div>
       </Suspense>
     );

@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { fireEvent, render, screen, within } from '@testing-library/react';
+import { act, fireEvent, render, screen, within } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { MemoryRouter, Routes, Route } from 'react-router';
 import { SafeModeProvider } from '@/providers/SafeModeProvider';
@@ -156,6 +156,101 @@ describe('TagsIndex', () => {
     renderAt('/tags');
     expect(screen.getByRole('link', { name: /Bear/ })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /Drag/ })).toBeInTheDocument();
+  });
+
+  it('defaults to dictionary terms and keeps utility-labelled concepts readable', () => {
+    corpus = [
+      ...PLAIN,
+      tag({
+        id: 'gay',
+        name: 'Gay',
+        slug: 'gay',
+        entity_kind: 'concept',
+        publication_role: 'utility',
+      }),
+      tag({ id: 'size', name: 'M', slug: 'size-m', entity_kind: 'attribute' }),
+      tag({ id: 'city', name: 'Zurich', slug: 'zurich', entity_kind: 'place' }),
+    ];
+    const { container } = renderAt('/tags');
+    expect(screen.getByRole('button', { name: 'Terms' })).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.getByRole('link', { name: /Gay/ })).toBeInTheDocument();
+    expect(container.querySelector('a[href="/tags/size-m"]')).not.toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: /Zurich/ })).not.toBeInTheDocument();
+  });
+
+  it('offers all kinds explicitly, including unused labels', () => {
+    corpus = [...PLAIN, tag({ id: 'size', name: 'M', slug: 'size-m', entity_kind: 'attribute' })];
+    const { container } = renderAt('/tags');
+    fireEvent.click(
+      within(screen.getByRole('group', { name: 'Filters' })).getByRole('button', {
+        name: 'All',
+      }),
+    );
+    expect(container.querySelector('a[href="/tags/size-m"]')).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /Bear/ })).toBeInTheDocument();
+  });
+
+  it('keeps a kind selection when search changes before the router commits it', () => {
+    corpus = [...PLAIN, tag({ id: 'size', name: 'M', slug: 'size-m', entity_kind: 'attribute' })];
+    const { container } = renderAt('/tags');
+    const labels = screen.getByRole('button', { name: 'Labels' });
+    const search = screen.getByRole('searchbox');
+    act(() => {
+      fireEvent.click(labels);
+      fireEvent.change(search, { target: { value: 'size-m' } });
+    });
+    expect(labels).toHaveAttribute('aria-pressed', 'true');
+    expect(search).toHaveValue('size-m');
+    expect(container.querySelector('a[href="/tags/size-m"]')).toBeInTheDocument();
+  });
+
+  it.each(['grid', 'list'])(
+    'keeps curated previews but suppresses imported attribute prose in %s view',
+    (view) => {
+      corpus = [
+        tag({
+          id: 'size',
+          name: 'M',
+          slug: 'size-m',
+          entity_kind: 'attribute',
+          description: 'M is the thirteenth letter of the alphabet.',
+        }),
+        tag({
+          id: 'large',
+          name: 'L',
+          slug: 'size-l',
+          entity_kind: 'attribute',
+          short_description: 'Large clothing size',
+          description: 'An unrelated encyclopedia entry.',
+        }),
+        tag({ description: 'An identity in gay bear culture.' }),
+      ];
+      renderAt(`/tags?kind=all&view=${view}`);
+      expect(
+        screen.queryByText('M is the thirteenth letter of the alphabet.'),
+      ).not.toBeInTheDocument();
+      expect(screen.queryByText('An unrelated encyclopedia entry.')).not.toBeInTheDocument();
+      expect(screen.getByText('Large clothing size')).toBeInTheDocument();
+      expect(screen.getByText('An identity in gay bear culture.')).toBeInTheDocument();
+    },
+  );
+
+  it('counts the selected kind on the category rail rather than using whole-table totals', () => {
+    corpus = [
+      PLAIN[0],
+      tag({
+        id: 'size',
+        name: 'M',
+        slug: 'size-m',
+        entity_kind: 'attribute',
+        categories: cat('c2', 'Expression & Style', 'Identity'),
+      }),
+    ];
+    renderAt('/tags');
+    const rail = () => within(screen.getAllByRole('navigation', { name: 'Topic lines' })[0]);
+    expect(rail().getByRole('link', { name: /Identity\s*0/ })).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Labels' }));
+    expect(rail().getByRole('link', { name: /Identity\s*1/ })).toBeInTheDocument();
   });
 
   it('carries no crisis strip, topic hubs or org directory', () => {

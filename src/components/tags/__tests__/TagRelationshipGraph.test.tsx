@@ -12,7 +12,7 @@ const d3Force = vi.fn((name: string) => (name === 'center' ? centerForce : undef
 
 vi.mock('react-force-graph-2d', () => {
   const Stub = forwardRef(function Stub(
-    props: { width: number; height: number },
+    props: { width: number; height: number; graphData: { nodes: unknown[]; links: unknown[] } },
     ref: Ref<unknown>,
   ) {
     forceGraphRenders.push({ width: props.width, height: props.height });
@@ -22,7 +22,13 @@ vi.mock('react-force-graph-2d', () => {
       d3ReheatSimulation,
     }));
     return (
-      <div data-testid="force-graph-stub" data-width={props.width} data-height={props.height} />
+      <div
+        data-testid="force-graph-stub"
+        data-width={props.width}
+        data-height={props.height}
+        data-node-count={props.graphData.nodes.length}
+        data-link-count={props.graphData.links.length}
+      />
     );
   });
   return { default: Stub };
@@ -161,6 +167,17 @@ describe('TagRelationshipGraph — left-alignment regression', () => {
     expect(stub?.getAttribute('data-height')).toBe('600');
     // Never with the old 800 default.
     expect(forceGraphRenders.every((r) => r.width === 1200 && r.height === 600)).toBe(true);
+  });
+
+  it('restricts nodes to the index result set and removes dangling edges', () => {
+    boundingRect = { width: 1200, height: 600 };
+    const { getByTestId, getByText } = render(
+      <TagRelationshipGraph allowedTagIds={new Set(['1'])} />,
+      { wrapper: wrap },
+    );
+    expect(getByTestId('force-graph-stub')).toHaveAttribute('data-node-count', '1');
+    expect(getByTestId('force-graph-stub')).toHaveAttribute('data-link-count', '0');
+    expect(getByText('1 tags, 0 links')).toBeInTheDocument();
   });
 
   it('mounts ForceGraph2D after ResizeObserver reports real dimensions (post-layout)', () => {

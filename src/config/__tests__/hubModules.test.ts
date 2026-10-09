@@ -9,10 +9,17 @@ describe('hubModules registry', () => {
     expect(new Set(paths).size).toBe(paths.length);
   });
 
-  it('exposes the public feed alongside the four personal modules', () => {
+  it('exposes community, connection, and personal modules in one registry', () => {
     expect(HUB_MODULES.map((m) => m.id)).toEqual([
       'overview',
       'feed',
+      'members',
+      'friends',
+      'groups',
+      'people',
+      'dating',
+      'travel',
+      'nearby',
       'messages',
       'plans',
       'saved',

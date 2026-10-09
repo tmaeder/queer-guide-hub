@@ -99,7 +99,7 @@ describe('livePath', () => {
     // the lookup lowercases; groups are id-keyed, not slug-keyed.
     expect(livePath('unified_tags', { slug: 'Bear-Bar', status: 'active' })).toBe('/tags/bear-bar');
     expect(livePath('community_groups', { id: 'g-1', slug: 'ignored' })).toBe(
-      '/people/groups/g-1',
+      '/hub/groups/g-1',
     );
   });
 

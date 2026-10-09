@@ -2,7 +2,7 @@ import { Suspense } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { lazyRetry } from '@/utils/lazyRetry';
 import { PageContainer } from '@/components/layout/PageContainer';
-import { PeopleNav } from '@/components/people/PeopleNav';
+import { HubNav } from '@/components/hub/HubNav';
 import { useMeta } from '@/hooks/useMeta';
 
 // Each route renders one existing standalone surface. Suspense mounts only the
@@ -15,9 +15,9 @@ const TABS = ['members', 'friends', 'groups'] as const;
 type CommunityTab = (typeof TABS)[number];
 
 /**
- * Community views inside the canonical /people area. The child pages retain
- * their established data and state handling; this wrapper supplies one shared
- * wayfinding system instead of a second, competing Community tab bar.
+ * Community views inside the canonical Hub. The child pages retain their
+ * established data and state handling while the wrapper supplies shared Hub
+ * wayfinding.
  */
 export default function Community({ tab }: { tab?: CommunityTab }) {
   const active: CommunityTab = (TABS as readonly string[]).includes(tab ?? '')
@@ -41,14 +41,14 @@ export default function Community({ tab }: { tab?: CommunityTab }) {
 
   useMeta({
     ...meta,
-    canonicalPath: `/people/${active}`,
+    canonicalPath: `/hub/${active}`,
     noIndex: active === 'friends',
   });
 
   return (
     <>
       <PageContainer className="pb-0 pt-6 md:pt-8">
-        <PeopleNav />
+        <HubNav />
       </PageContainer>
 
       <Suspense

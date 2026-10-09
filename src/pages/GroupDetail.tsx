@@ -44,7 +44,7 @@ import { Editable } from '@/components/admin/inline/Editable';
 import { GroupCollections } from '@/components/groups/GroupCollections';
 import { PageContainer } from '@/components/layout/PageContainer';
 import { AdminEditButton } from '@/components/admin/AdminEditButton';
-import { PeopleNav } from '@/components/people/PeopleNav';
+import { HubNav } from '@/components/hub/HubNav';
 
 export default function GroupDetail() {
   const { groupId } = useParams<{ groupId: string }>();
@@ -114,7 +114,7 @@ export default function GroupDetail() {
   if (!user) {
     return (
       <PageContainer>
-        <PeopleNav className="mb-6" />
+        <HubNav className="mb-6" />
         <Alert>
           <AlertDescription>
             {t('pages.groupDetail.signInRequired', 'Please sign in to view group details.')}
@@ -127,7 +127,7 @@ export default function GroupDetail() {
   if (isLoading) {
     return (
       <PageContainer>
-        <PeopleNav className="mb-6" />
+        <HubNav className="mb-6" />
         <div className="animate-pulse flex flex-col gap-6">
           <div className="h-8 bg-muted rounded-element w-1/3" />
           <div className="h-32 bg-muted rounded-element" />
@@ -140,14 +140,14 @@ export default function GroupDetail() {
   if (!group) {
     return (
       <PageContainer>
-        <PeopleNav className="mb-6" />
+        <HubNav className="mb-6" />
         <div className="text-center flex flex-col gap-4">
           <h1 className="text-2xl font-bold">Group not found</h1>
           <p className="text-muted-foreground">
             The group you're looking for doesn't exist or you don't have access to it.
           </p>
           <Button asChild>
-            <LocalizedLink to="/people/groups">
+            <LocalizedLink to="/hub/groups">
               <ArrowLeft size={16} className="mr-2" />
               Back to Groups
             </LocalizedLink>
@@ -161,7 +161,7 @@ export default function GroupDetail() {
 
   return (
     <PageContainer className="flex flex-col gap-6">
-      <PeopleNav />
+      <HubNav />
       {/* Header */}
       <div className="flex items-center gap-4 mb-6">
         <Button variant="soft" onClick={() => navigate(-1)}>

@@ -54,16 +54,19 @@ describe('PeopleMode', () => {
     expect(await screen.findByTestId('dating-deck')).toBeInTheDocument();
   });
 
-  // All four modes previously shared the hub's meta, so /people/dating and
-  // /people/nearby were indistinguishable to a crawler and in a browser tab.
+  // All four modes previously shared the hub's meta, so /hub/dating and
+  // /hub/nearby were indistinguishable to a crawler and in a browser tab.
   it('gives each mode its own title and canonical path', () => {
     renderWithProviders(<PeopleMode tab="nearby" />);
-    expect(metaCalls[0]?.canonicalPath).toBe('/people/nearby');
+    expect(metaCalls[0]?.canonicalPath).toBe('/hub/nearby');
     expect(metaCalls[0]?.title).toMatch(/nearby/i);
   });
 
   it('offers a way back to the hub', () => {
     renderWithProviders(<PeopleMode tab="friends" />);
-    expect(screen.getByRole('link', { name: /Meet people/i })).toHaveAttribute('href', '/people');
+    expect(screen.getByRole('link', { name: /people/i })).toHaveAttribute(
+      'href',
+      '/hub/people',
+    );
   });
 });

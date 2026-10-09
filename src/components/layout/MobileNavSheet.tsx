@@ -155,7 +155,7 @@ export function MobileNavSheet({ open, onOpenChange }: MobileNavSheetProps) {
             {/* Friends, with how many are online now (mirrors the header menu) */}
             {user && (
               <LocalizedLink
-                to="/community/friends"
+                to="/hub/friends"
                 onClick={close}
                 className="flex items-center gap-2 rounded-element p-4 no-underline hover:bg-muted"
               >

@@ -40,7 +40,7 @@ export function TripTravelBuddiesCTA({
         until: endDate ?? undefined,
       },
     });
-    navigate(`/people/travel?tripId=${tripId}`);
+    navigate(`/hub/travel?tripId=${tripId}`);
   };
 
   return (
