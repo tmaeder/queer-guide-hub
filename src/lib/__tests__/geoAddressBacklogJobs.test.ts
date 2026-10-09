@@ -152,8 +152,11 @@ describe('backfill-city-region.mjs', () => {
     // every run this job ever had. The property asserted here is unchanged:
     // the audit row is written BEFORE the entity is mutated.
     const auditAt = src.indexOf('record_external_corrections');
-    const patchAt = src.indexOf("method: 'PATCH'");
+    // The entity write is the stampCity() call inside writeDirect (it merges
+    // the stamp server-side since 2026-10-09; a whole-object PATCH lost keys).
+    const patchAt = src.indexOf('await stampCity(r.id, r.state');
     expect(auditAt).toBeGreaterThan(-1);
+    expect(patchAt).toBeGreaterThan(-1);
     expect(auditAt).toBeLessThan(patchAt);
     expect(src).toMatch(/rollback_external_correction_batch/);
   });
