@@ -5,7 +5,6 @@ import { FactGrid, type Fact } from '@/components/transit/FactGrid';
 import { CityTravelHub } from '@/components/travel/CityTravelHub';
 import { CityNetworkPanel } from '@/components/geo/CityNetworkPanel';
 import type { CityRelation } from './types';
-import { localAirportCodes } from './cityAirports';
 import { useCityNearestAirports } from '@/hooks/useCityNearestAirports';
 
 export interface CityTravelTabProps {
@@ -38,27 +37,17 @@ export function CityTravelTab({ city, effectiveIata }: CityTravelTabProps) {
   const { t } = useTranslation();
   const highRisk = hasAnyCriminalizationSignal(city.countries?.lgbti_criminalization);
 
-  // Two airport facts, and only two:
-  //   Airport           the city's OWN airports (`local_airport_codes`), or "No"
-  //   Nearest airports  up to three, code · city · km, measured from this city
-  //                     and across borders (`city_nearest_airports`)
-  // The page used to repeat the airport up to five times — the head strip,
-  // "Nearest airport", "Other airports nearby", "All airport codes", and the
-  // `airports` line of transportation_info under "Getting around" — and the
-  // nearest list still named the wrong airports for a border city, because the
-  // stored partition only looks inside the city's own country (Aachen read
-  // DUS 74 km while Maastricht is 27 km away).
-  const localCodes = localAirportCodes(city);
+  // Only "Nearest airports" lives here: up to three, code · city · km,
+  // measured from this city and across borders (`city_nearest_airports`).
+  // Whether the city has an airport of its OWN ("Airport: CGN" / "No") is
+  // stated once, in the head fact strip (`CityAtAGlance`). The page used to
+  // repeat the airport up to five times — the head strip, "Nearest airport",
+  // "Other airports nearby", "All airport codes", and the `airports` line of
+  // transportation_info under "Getting around".
   const hasCoords = city.latitude != null && city.longitude != null;
   const { data: nearest = [] } = useCityNearestAirports(hasCoords ? city.id : null);
 
   const airportFacts: Fact[] = [];
-  if (localCodes.length > 0 || hasCoords)
-    airportFacts.push({
-      label: t('cities.detail.travel.airport', 'Airport'),
-      value:
-        localCodes.length > 0 ? localCodes.join(', ') : t('cities.detail.travel.noAirport', 'No'),
-    });
   if (nearest.length > 0)
     airportFacts.push({
       label: t('cities.detail.travel.nearestAirports', 'Nearest airports'),
@@ -74,7 +63,7 @@ export function CityTravelTab({ city, effectiveIata }: CityTravelTabProps) {
     });
 
   // `airports` is written into transportation_info by the airport linker for
-  // the booking context; the facts above already state it, so it is not
+  // the booking context; the head strip and the nearest list already state it, so it is not
   // repeated under "Getting around".
   const transport: [string, unknown][] = city.transportation_info
     ? Object.entries(city.transportation_info).filter(([key]) => key !== 'airports')
