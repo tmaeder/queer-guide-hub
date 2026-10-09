@@ -66,7 +66,7 @@ export function HubNav({
                           to={module.path}
                           aria-current={active ? 'page' : undefined}
                           className={cn(
-                            'flex min-h-10 items-center gap-2 whitespace-nowrap rounded-element px-3 text-sm font-medium no-underline transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                            'flex min-h-10 items-center gap-2 whitespace-nowrap rounded-element px-4 text-sm font-medium no-underline transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
                             active
                               ? 'bg-foreground text-background'
                               : 'bg-surface-container text-foreground hover:bg-muted',
