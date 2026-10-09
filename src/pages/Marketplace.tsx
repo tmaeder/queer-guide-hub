@@ -240,7 +240,7 @@ const Marketplace = () => {
   const filters = useMemo(() => parseFiltersFromParams(searchParams), [searchParams]);
 
   // Default-SFW browse: adult/explicit hidden until an explicit 18+ opt-in.
-  // Persisted per-device; turning it on also records the age acknowledgement
+  // Persisted for the browser/account; turning it on records the shared acknowledgement
   // so the route-level AdultContentGate stays consistent.
   const { acknowledge } = useAdultAcknowledgement();
   const [includeAdult, setIncludeAdult] = useState<boolean>(() => {
@@ -252,7 +252,7 @@ const Marketplace = () => {
     if (typeof window !== 'undefined') {
       window.localStorage.setItem(SHOW_ADULT_KEY, next ? '1' : '0');
     }
-    if (next) acknowledge();
+    if (next) void acknowledge();
     setUrlParams({ page: undefined });
   };
 

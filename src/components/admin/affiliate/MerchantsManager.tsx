@@ -24,7 +24,6 @@ import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import {
   Table,
   TableBody,
@@ -51,6 +50,7 @@ import { Stat } from './Stat';
 import { MerchantDrawer } from './MerchantDrawer';
 import type { MerchantOverviewRow } from './merchantTypes';
 import { AdminEmpty } from '@/components/admin/primitives/AdminEmpty';
+import { StructuredValueEditor } from '@/components/cms/fields/structured/StructuredValueEditor';
 
 // Whitelist enforced by admin_upsert_marketplace_merchant.
 const PROVIDERS = ['shopify-public', 'woocommerce-public', 'etsy', 'crawl'];
@@ -66,7 +66,7 @@ const emptyForm = {
   awin_advertiser_id: '',
   affiliate_partner_id: NO_PARTNER,
   organization_id: NO_ORG,
-  config: '{}',
+  config: {} as Record<string, unknown>,
   is_enabled: true,
 };
 
@@ -139,7 +139,10 @@ export function MerchantsManager({
           awin_advertiser_id: m.awin_advertiser_id ?? '',
           affiliate_partner_id: m.affiliate_partner_id ?? NO_PARTNER,
           organization_id: orgByMerchant.get(m.merchant_id) ?? NO_ORG,
-          config: JSON.stringify(data?.config ?? {}, null, 2),
+          config:
+            data?.config && typeof data.config === 'object' && !Array.isArray(data.config)
+              ? (data.config as Record<string, unknown>)
+              : {},
           is_enabled: m.is_enabled,
         });
         setDialogOpen(true);
@@ -151,13 +154,7 @@ export function MerchantsManager({
       toast.error('Slug and display name are required');
       return;
     }
-    let config: Record<string, unknown>;
-    try {
-      config = JSON.parse(form.config || '{}');
-    } catch {
-      toast.error('Config must be valid JSON');
-      return;
-    }
+    const config = form.config;
     setSaving(true);
     try {
       await upsert.mutateAsync({
@@ -513,13 +510,16 @@ export function MerchantsManager({
               </p>
             </div>
             <div className="flex flex-col gap-2">
-              <Label htmlFor="m-config">Config (JSON)</Label>
-              <Textarea
-                id="m-config"
+              <Label>Config</Label>
+              <StructuredValueEditor
                 value={form.config}
-                onChange={(e) => setForm((f) => ({ ...f, config: e.target.value }))}
-                rows={4}
-                placeholder='{"currency": "EUR"}'
+                onChange={(v) =>
+                  setForm((f) => ({
+                    ...f,
+                    config: v && typeof v === 'object' && !Array.isArray(v) ? (v as Record<string, unknown>) : {},
+                  }))
+                }
+                label="Config"
               />
               <p className="text-xs text-muted-foreground">
                 Passed to the source function. Secrets stay in env — reference the env var name

@@ -22,6 +22,7 @@ import { getContentType, fieldGroupLabels } from '@/config/contentTypes';
 import type { FieldConfig, FieldGroup } from '@/types/cms';
 import { getEditorForFieldType } from './editors';
 import { PipelineInspector } from '@/components/admin/audit/PipelineInspector';
+import { StructuredValueView } from '@/components/cms/fields/structured/StructuredValueView';
 
 interface Props {
   open: boolean;
@@ -265,11 +266,7 @@ function FieldDisplay({ field, value }: { field: FieldConfig; value: unknown }) 
     );
   }
   if (typeof value === 'object') {
-    return (
-      <pre className="text-xs text-muted-foreground bg-muted p-2 rounded-element overflow-x-auto">
-        {JSON.stringify(value, null, 2).slice(0, 280)}
-      </pre>
-    );
+    return <StructuredValueView value={value} />;
   }
   return <span className="text-sm break-all">{String(value)}</span>;
 }

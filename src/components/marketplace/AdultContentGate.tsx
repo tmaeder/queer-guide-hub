@@ -41,7 +41,7 @@ export function AdultContentGate({ active, fallbackPath = '/' }: AdultContentGat
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel onClick={() => navigate(fallbackPath)}>Take me back</AlertDialogCancel>
-          <AlertDialogAction onClick={() => acknowledge()}>I am 18 or older</AlertDialogAction>
+          <AlertDialogAction onClick={() => void acknowledge()}>I am 18 or older</AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>

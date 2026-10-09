@@ -4,6 +4,7 @@ import { ChevronDown, ChevronRight, History } from 'lucide-react';
 import { timeAgo } from '@/utils/timezone';
 import { kanbanColumns, priorityFor } from './constants';
 import type { AdminProfile, FeedbackAuditEntry } from './types';
+import { summarizeStructured } from '@/components/cms/fields/structured/structuredValue';
 
 interface Props {
   entries: FeedbackAuditEntry[];
@@ -19,7 +20,7 @@ function jsonStr(v: unknown, map?: Record<string, AdminProfile>): string {
   if (typeof v === 'number') return String(v);
   if (typeof v === 'boolean') return v ? 'yes' : 'no';
   if (Array.isArray(v)) return v.length ? v.join(', ') : '—';
-  return JSON.stringify(v);
+  return summarizeStructured(v, 6);
 }
 
 function renderChange(
