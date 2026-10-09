@@ -1,4 +1,4 @@
-import { Bug, Lightbulb, Sparkles, BookOpen } from 'lucide-react';
+import { Bug, Lightbulb, Sparkles, BookOpen, ShieldAlert } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 
 export interface FeedbackCategory {
@@ -12,7 +12,13 @@ export interface FeedbackCategory {
 // `color` field kept on the contract so consumers don't need refactoring; visual
 // differentiation now comes from the icon (Bug / Lightbulb / Sparkles / BookOpen).
 export const feedbackCategories: FeedbackCategory[] = [
-  { value: 'bug', label: 'Bug', icon: Bug, color: 'hsl(var(--foreground))' },
+  {
+    value: 'safety',
+    label: 'Safety and moderation',
+    icon: ShieldAlert,
+    color: 'hsl(var(--foreground))',
+  },
+  { value: 'bug', label: 'Bug reports', icon: Bug, color: 'hsl(var(--foreground))' },
   { value: 'idea', label: 'Idea', icon: Lightbulb, color: 'hsl(var(--muted-foreground))' },
   {
     value: 'improvement',

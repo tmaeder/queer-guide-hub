@@ -1,19 +1,20 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Camera, Check, Info } from 'lucide-react';
+import { useCallback, useState } from 'react';
+import { Check } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
-import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
-import { insertRow } from '@/hooks/usePageFetchers';
-import { uploadImageToR2 } from '@/lib/uploadImageToR2';
 import { captureContext } from '@/utils/feedbackContext';
 import { feedbackCategories } from '@/config/feedbackCategories';
+import { submitCommunityReport } from '@/lib/submitCommunityReport';
+import { ReportContextPanel } from './ReportContextPanel';
 
 interface FeedbackFormProps {
+  initialCategory?: string;
   screenshotBlob?: Blob | null;
   onCancel?: () => void;
   onDone?: () => void;
@@ -21,24 +22,25 @@ interface FeedbackFormProps {
 
 const EMPTY_FORM = { category: '', title: '', description: '', email: '', honeypot: '' };
 
-export default function FeedbackForm({ screenshotBlob, onCancel, onDone }: FeedbackFormProps) {
+export default function FeedbackForm({
+  initialCategory,
+  screenshotBlob,
+  onCancel,
+  onDone,
+}: FeedbackFormProps) {
   const { t } = useTranslation();
   const { user } = useAuth();
   const { toast } = useToast();
-  const [form, setForm] = useState(EMPTY_FORM);
+  const requestedCategory =
+    initialCategory ?? new URLSearchParams(window.location.search).get('category') ?? '';
+  const [form, setForm] = useState(() => ({
+    ...EMPTY_FORM,
+    category: feedbackCategories.some((category) => category.value === requestedCategory)
+      ? requestedCategory
+      : '',
+  }));
   const [status, setStatus] = useState<'idle' | 'submitting' | 'submitted'>('idle');
-  const [includeScreenshot, setIncludeScreenshot] = useState(Boolean(user && screenshotBlob));
-  const screenshotUrl = useMemo(
-    () => (screenshotBlob ? URL.createObjectURL(screenshotBlob) : null),
-    [screenshotBlob],
-  );
-
-  useEffect(
-    () => () => {
-      if (screenshotUrl) URL.revokeObjectURL(screenshotUrl);
-    },
-    [screenshotUrl],
-  );
+  const [includeScreenshot, setIncludeScreenshot] = useState(Boolean(screenshotBlob));
 
   const submit = useCallback(async () => {
     if (form.honeypot) return;
@@ -46,32 +48,19 @@ export default function FeedbackForm({ screenshotBlob, onCancel, onDone }: Feedb
 
     setStatus('submitting');
     try {
-      let uploadedScreenshot: string | null = null;
-      if (user && includeScreenshot && screenshotBlob) {
-        // A screenshot is useful context, never a reason to lose the feedback.
-        // The upload endpoint can fail independently of the anonymous-friendly
-        // community_submissions insert, so preserve the previous best-effort
-        // behaviour for signed-in users.
-        try {
-          uploadedScreenshot = await uploadImageToR2(screenshotBlob, 'feedback-screenshots');
-        } catch {
-          uploadedScreenshot = null;
-        }
-      }
-
-      const { error } = await insertRow('community_submissions', {
-        content_type: 'feedback',
-        data: {
+      await submitCommunityReport({
+        kind: 'feedback',
+        payload: {
           title: form.title.trim(),
           description: form.description.trim(),
           category: form.category,
           contact_email: form.email.trim() || null,
-          context: captureContext(),
-          screenshot_url: uploadedScreenshot,
         },
-        submitted_by: user?.id ?? null,
+        context: captureContext(),
+        screenshotBlob,
+        includeScreenshot,
+        honeypot: form.honeypot,
       });
-      if (error) throw error;
 
       setStatus('submitted');
       setForm(EMPTY_FORM);
@@ -87,7 +76,7 @@ export default function FeedbackForm({ screenshotBlob, onCancel, onDone }: Feedb
         variant: 'destructive',
       });
     }
-  }, [form, includeScreenshot, screenshotBlob, t, toast, user]);
+  }, [form, includeScreenshot, screenshotBlob, t, toast]);
 
   if (status === 'submitted') {
     return (
@@ -142,6 +131,16 @@ export default function FeedbackForm({ screenshotBlob, onCancel, onDone }: Feedb
         </div>
       </fieldset>
 
+      {form.category === 'safety' && (
+        <p className="mb-6 rounded-element bg-surface-container-high p-4 text-sm leading-relaxed">
+          {t('contact.form.safetyNote', 'If you are in danger right now, this is the slow route.')}{' '}
+          <LocalizedLink to="/help">
+            {t('contact.form.safetyLink', 'Crisis lines by country')}
+          </LocalizedLink>
+          .
+        </p>
+      )}
+
       <div className="mb-6">
         <Label htmlFor="feedback-title">{t('contribute.feedback.title', 'Title')} *</Label>
         <Input
@@ -185,41 +184,12 @@ export default function FeedbackForm({ screenshotBlob, onCancel, onDone }: Feedb
         </div>
       )}
 
-      {user && screenshotBlob && (
-        <div className="mb-6 rounded-container bg-card p-4 shadow-soft">
-          <div className="flex items-center gap-2">
-            <Checkbox
-              id="feedback-screenshot"
-              checked={includeScreenshot}
-              onCheckedChange={(checked) => setIncludeScreenshot(checked === true)}
-            />
-            <Label
-              htmlFor="feedback-screenshot"
-              className="flex cursor-pointer items-center gap-1.5"
-            >
-              <Camera size={14} />
-              {t('contribute.feedback.includeScreenshot', 'Include screenshot of this page')}
-            </Label>
-          </div>
-          {includeScreenshot && screenshotUrl && (
-            <img
-              src={screenshotUrl}
-              alt={t('contribute.feedback.screenshotPreview', 'Screenshot preview')}
-              className="ml-8 mt-2 max-w-56 rounded-element bg-muted"
-            />
-          )}
-        </div>
-      )}
-
-      <div className="mb-6 flex items-start gap-4 rounded-container bg-surface-container-high p-4 text-xs leading-relaxed text-muted-foreground">
-        <Info size={16} className="mt-0.5 shrink-0 text-foreground" aria-hidden="true" />
-        <span>
-          {t(
-            'contribute.feedback.contextNote',
-            'Automatically included: current page URL, browser information and recent errors.',
-          )}
-        </span>
-      </div>
+      <ReportContextPanel
+        id="feedback-screenshot"
+        screenshotBlob={screenshotBlob}
+        includeScreenshot={includeScreenshot}
+        onIncludeScreenshotChange={setIncludeScreenshot}
+      />
 
       <input
         type="text"
@@ -232,7 +202,7 @@ export default function FeedbackForm({ screenshotBlob, onCancel, onDone }: Feedb
         aria-hidden="true"
       />
 
-      <div className="sticky bottom-0 -mx-1 flex justify-end gap-4 bg-surface-container-low/95 px-1 pt-4 max-sm:flex-col-reverse sm:items-center">
+      <div className="mt-6 flex justify-end gap-4 border-t border-border-hairline pt-6 max-sm:flex-col-reverse sm:items-center">
         {onCancel && (
           <Button type="button" variant="outline" onClick={onCancel} className="max-sm:w-full">
             {t('contribute.common.back', 'Back')}

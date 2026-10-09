@@ -628,3 +628,9 @@ verify_jwt = false
 
 [functions.source-gaytravel4u]
 verify_jwt = false
+
+# Public feedback/correction intake. The function validates the only two
+# accepted content types, rate-limits by IP and owns its narrow screenshot
+# namespace; it never accepts directory entities or arbitrary upload prefixes.
+[functions.submit-community-report]
+verify_jwt = false
