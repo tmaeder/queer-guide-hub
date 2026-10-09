@@ -200,32 +200,44 @@ export function TagsFilterSpine({
 
           <span aria-hidden className="mx-1 h-5 w-[2px] bg-foreground" />
 
-          {/* Kind axis (2026-08-29 program): dictionary terms vs the tags
-            content wears vs geography. Toggle chips, same grammar as usage. */}
-          <button
-            type="button"
-            onClick={() => onKind(kind === 'concept' ? 'all' : 'concept')}
-            aria-pressed={kind === 'concept'}
-            className={cn(CHIP, kind === 'concept' ? CHIP_ON : CHIP_OFF)}
+          <div
+            role="group"
+            aria-label={t('search.filters', 'Filters')}
+            className="flex items-center gap-1"
           >
-            {t('tags.filter.kindConcept', 'Terms')}
-          </button>
-          <button
-            type="button"
-            onClick={() => onKind(kind === 'descriptor' ? 'all' : 'descriptor')}
-            aria-pressed={kind === 'descriptor'}
-            className={cn(CHIP, kind === 'descriptor' ? CHIP_ON : CHIP_OFF)}
-          >
-            {t('tags.filter.kindDescriptor', 'Labels')}
-          </button>
-          <button
-            type="button"
-            onClick={() => onKind(kind === 'place' ? 'all' : 'place')}
-            aria-pressed={kind === 'place'}
-            className={cn(CHIP, kind === 'place' ? CHIP_ON : CHIP_OFF)}
-          >
-            {t('tags.filter.kindPlace', 'Places')}
-          </button>
+            <button
+              type="button"
+              onClick={() => onKind('all')}
+              aria-pressed={kind === 'all'}
+              className={cn(CHIP, kind === 'all' ? CHIP_ON : CHIP_OFF)}
+            >
+              {t('search.all', 'All')}
+            </button>
+            <button
+              type="button"
+              onClick={() => onKind('concept')}
+              aria-pressed={kind === 'concept'}
+              className={cn(CHIP, kind === 'concept' ? CHIP_ON : CHIP_OFF)}
+            >
+              {t('tags.filter.kindConcept', 'Terms')}
+            </button>
+            <button
+              type="button"
+              onClick={() => onKind('descriptor')}
+              aria-pressed={kind === 'descriptor'}
+              className={cn(CHIP, kind === 'descriptor' ? CHIP_ON : CHIP_OFF)}
+            >
+              {t('tags.filter.kindDescriptor', 'Labels')}
+            </button>
+            <button
+              type="button"
+              onClick={() => onKind('place')}
+              aria-pressed={kind === 'place'}
+              className={cn(CHIP, kind === 'place' ? CHIP_ON : CHIP_OFF)}
+            >
+              {t('tags.filter.kindPlace', 'Places')}
+            </button>
+          </div>
         </div>
       </div>
     </>

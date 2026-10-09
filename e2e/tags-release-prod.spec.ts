@@ -32,6 +32,31 @@ test('search opens a definition and Back restores the search', async ({ page }) 
   await expect(page).toHaveURL(/\/tags\?q=bisexual$/);
 });
 
+test('dictionary terms are the default and explicit All survives reload', async ({ page }) => {
+  const kinds = page.getByRole('group', { name: 'Filters', exact: true });
+  await expect(kinds.getByRole('button', { name: 'Terms', exact: true })).toHaveAttribute(
+    'aria-pressed',
+    'true',
+  );
+  await expect(page.locator('main a[href="/tags/size-m"]')).toHaveCount(0);
+  await kinds.getByRole('button', { name: 'All', exact: true }).click();
+  await expect(page).toHaveURL(/kind=all/);
+  await expect(page.locator('main a[href="/tags/size-m"]')).toBeVisible();
+  await page.reload();
+  await expect(kinds.getByRole('button', { name: 'All', exact: true })).toHaveAttribute(
+    'aria-pressed',
+    'true',
+    { timeout: 45_000 },
+  );
+});
+
+test('labels remain searchable without unrelated encyclopedia previews', async ({ page }) => {
+  await page.getByRole('button', { name: 'Labels', exact: true }).click();
+  await page.getByRole('searchbox', { name: 'Search the glossary', exact: true }).fill('size-m');
+  await expect(page.locator('main a[href="/tags/size-m"]')).toBeVisible();
+  await expect(page.locator('main')).not.toContainText('thirteenth letter');
+});
+
 test('category changes expose the correct subcategories', async ({ page }) => {
   const rail = page.getByRole('navigation', { name: 'Topic lines', exact: true });
   await rail.getByRole('link', { name: /^Identity/ }).click();
