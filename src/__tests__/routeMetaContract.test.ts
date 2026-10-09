@@ -66,7 +66,7 @@ const LENGTH_ENFORCED = [
   '/cities',
   '/organizations',
   '/pride',
-  '/community',
+  '/hub/feed',
   // Intent Router landing pages. (Shop's is /marketplace, already above.)
   '/going-out',
   '/rights',
@@ -268,7 +268,15 @@ describe('isIndexable', () => {
   });
 
   it('keeps public content routes indexable', () => {
-    for (const path of ['/', '/venues', '/city/berlin', '/guides', '/organizations', '/help']) {
+    for (const path of [
+      '/',
+      '/venues',
+      '/city/berlin',
+      '/guides',
+      '/organizations',
+      '/help',
+      '/hub/feed',
+    ]) {
       expect(isIndexable(path), `${path} should be indexable`).toBe(true);
     }
   });
@@ -284,7 +292,7 @@ describe('isIndexable', () => {
 
 describe('resolveMeta', () => {
   it('returns the exact entry for a backfilled route rather than the default', () => {
-    for (const path of ['/guides', '/cities', '/organizations', '/pride', '/community']) {
+    for (const path of ['/guides', '/cities', '/organizations', '/pride', '/hub/feed']) {
       const meta = resolveMeta(path);
       expect(meta.title, `${path} still resolves to the generic default`).not.toBe(
         DEFAULT_META.title,

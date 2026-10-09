@@ -74,7 +74,7 @@ describe('PeopleModeView', () => {
     const { container } = renderView();
     expect(screen.queryByText('Nobody yet.')).not.toBeInTheDocument();
     expect(
-      container.querySelectorAll('[data-slot="skeleton"], .animate-pulse').length,
+      container.querySelectorAll('[data-slot="skeleton"], [class*="animate-pulse"]').length,
     ).toBeGreaterThan(0);
   });
 

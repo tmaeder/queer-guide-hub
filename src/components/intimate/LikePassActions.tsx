@@ -30,7 +30,7 @@ export function LikePassActions({
     return (
       <span
         className={cn(
-          'inline-flex items-center gap-1.5 rounded-badge border border-border-hairline bg-foreground px-2.5 py-1 text-13 text-background',
+          'inline-flex items-center gap-1.5 rounded-badge bg-foreground px-2.5 py-1 text-13 text-background',
           className,
         )}
       >
@@ -44,7 +44,7 @@ export function LikePassActions({
     <div className={cn('inline-flex items-center gap-2', className)}>
       <Button
         type="button"
-        variant="outline"
+        variant="soft"
         size="sm"
         onClick={(e) => {
           e.preventDefault();

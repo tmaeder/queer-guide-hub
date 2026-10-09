@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Button } from '@/components/ui/button';
+import { Button, type ButtonProps } from '@/components/ui/button';
 import { MessageCircle } from 'lucide-react';
 import { useMessaging } from '@/hooks/useMessaging';
 import { useAuth } from '@/hooks/useAuth';
@@ -9,8 +9,8 @@ import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 interface StartConversationButtonProps {
   userId: string;
   userName?: string;
-  variant?: 'default' | 'outline' | 'ghost';
-  size?: 'default' | 'sm' | 'lg';
+  variant?: ButtonProps['variant'];
+  size?: ButtonProps['size'];
 }
 
 export const StartConversationButton = ({
@@ -42,7 +42,11 @@ export const StartConversationButton = ({
         navigate(`/messages?conversation=${conversationId}`);
       }
     } catch (_error) {
-      toast({ title: 'Error', description: 'Failed to start conversation. Please try again.', variant: 'destructive' });
+      toast({
+        title: 'Error',
+        description: 'Failed to start conversation. Please try again.',
+        variant: 'destructive',
+      });
     } finally {
       setLoading(false);
     }
