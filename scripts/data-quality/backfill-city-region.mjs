@@ -42,8 +42,7 @@ const SUPABASE_URL = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL;
 const ANON_KEY = process.env.VITE_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY;
 // SUPABASE_SERVICE_ROLE_KEY is the name the scheduled workflows use; the
 // singular form is kept for the hand-run path and for search-eval's precedent.
-const SERVICE_KEY =
-  process.env.SUPABASE_SERVICE_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY || '';
+const SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY || '';
 // Reads are world-readable, so the anon key is preferred — but CI has no anon
 // secret, and the service key reads fine. Without this fallback the scheduled
 // job cannot start.
@@ -104,7 +103,9 @@ async function loadCities() {
     `&latitude=not.is.null&longitude=not.is.null` +
     `&enrichment_status->region_reverse=is.null` +
     `&order=id.asc&limit=${LIMIT}`;
-  const res = await fetch(url, { headers: { apikey: READ_KEY, Authorization: `Bearer ${READ_KEY}` } });
+  const res = await fetch(url, {
+    headers: { apikey: READ_KEY, Authorization: `Bearer ${READ_KEY}` },
+  });
   if (!res.ok) throw new Error(`load cities ${res.status}: ${await res.text()}`);
   // region_name already set but unresolvable is a vocabulary gap, not a
   // geocoding one; leave it to the alias work rather than overwrite it.
@@ -116,7 +117,10 @@ async function reverseGeocode(lat, lon) {
   const ctrl = new AbortController();
   const timer = setTimeout(() => ctrl.abort(), 8000);
   try {
-    const res = await fetch(url, { signal: ctrl.signal, headers: { 'User-Agent': 'QueerGuide/1.0 (https://queer.guide)' } });
+    const res = await fetch(url, {
+      signal: ctrl.signal,
+      headers: { 'User-Agent': 'QueerGuide/1.0 (https://queer.guide)' },
+    });
     if (res.status === 429) return { rateLimited: true };
     if (!res.ok) return {};
     const j = await res.json();
@@ -134,7 +138,9 @@ function buildSql(rows) {
   const out = [];
   for (let i = 0; i < rows.length; i += WRITE_BATCH) {
     const chunk = rows.slice(i, i + WRITE_BATCH);
-    const values = chunk.map((r) => `(${sqlQuote(r.id)}::uuid, ${sqlQuote(r.state)})`).join(',\n    ');
+    const values = chunk
+      .map((r) => `(${sqlQuote(r.id)}::uuid, ${sqlQuote(r.state)})`)
+      .join(',\n    ');
     out.push(
       `update public.cities c\n` +
         `   set region_name = v.region\n` +
@@ -146,10 +152,29 @@ function buildSql(rows) {
 }
 
 const RUN_AT = new Date().toISOString();
-const stamp = (es, v) => ({
-  ...(es && typeof es === 'object' ? es : {}),
-  region_reverse: { ...v, source: 'photon-reverse', at: RUN_AT },
-});
+const stamp = (v) => ({ ...v, source: 'photon-reverse', at: RUN_AT });
+
+/**
+ * Writes go through `city_stamp_region_reverse`, which merges the ONE
+ * `region_reverse` key into enrichment_status with `||` inside the UPDATE.
+ *
+ * Until 2026-10-09 this PATCHed the whole enrichment_status object, built
+ * client-side from the snapshot read when the run STARTED. A run lasts ~35
+ * minutes, so every key another writer added in between was deleted: in the
+ * five runs of that day it dropped two admin_unit_review flags (which aborted
+ * a migration and blocked db push), two merge_flags that unmerge relies on,
+ * and an agentic_skip stamp. Never send enrichment_status as a whole object.
+ */
+async function stampCity(id, regionName, value) {
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/rpc/city_stamp_region_reverse`, {
+    method: 'POST',
+    headers: { ...svcHeaders, Prefer: 'return=representation' },
+    // Named arguments: PostgREST resolves overloads BY ARGUMENT NAME.
+    body: JSON.stringify({ p_id: id, p_region_name: regionName, p_stamp: stamp(value) }),
+  });
+  if (!res.ok) throw new Error(`${res.status}: ${await res.text()}`);
+  return res.json();
+}
 
 const svcHeaders = {
   apikey: SERVICE_KEY,
@@ -184,12 +209,11 @@ async function writeDirect(rows, batchId) {
     if (!aRes.ok) throw new Error(`audit insert ${aRes.status}: ${await aRes.text()}`);
 
     for (const r of chunk) {
-      const res = await fetch(`${SUPABASE_URL}/rest/v1/cities?id=eq.${r.id}&region_name=is.null`, {
-        method: 'PATCH',
-        headers: { ...svcHeaders, Prefer: 'return=minimal' },
-        body: JSON.stringify({ region_name: r.state, enrichment_status: stamp(r.es, { state: 'resolved' }) }),
-      });
-      if (!res.ok) console.warn(`  write ${r.id} failed ${res.status}`);
+      try {
+        await stampCity(r.id, r.state, { state: 'resolved' });
+      } catch (err) {
+        console.warn(`  write ${r.id} failed ${err.message}`);
+      }
     }
     console.error(`  wrote ${Math.min(i + WRITE_BATCH, rows.length)}/${rows.length}`);
   }
@@ -198,20 +222,23 @@ async function writeDirect(rows, batchId) {
 /** Record cities Photon could not place, so the next run does not ask again. */
 async function stampUnplaced(rows) {
   for (const r of rows) {
-    const res = await fetch(`${SUPABASE_URL}/rest/v1/cities?id=eq.${r.id}&region_code=is.null`, {
-      method: 'PATCH',
-      headers: { ...svcHeaders, Prefer: 'return=minimal' },
-      body: JSON.stringify({
-        enrichment_status: stamp(r.es, { state: 'data_unavailable', reason: r.reason, photon_country: r.photon_country }),
-      }),
-    });
-    if (!res.ok) console.warn(`  stamp ${r.id} failed ${res.status}`);
+    try {
+      await stampCity(r.id, null, {
+        state: 'data_unavailable',
+        reason: r.reason,
+        photon_country: r.photon_country,
+      });
+    } catch (err) {
+      console.warn(`  stamp ${r.id} failed ${err.message}`);
+    }
   }
   console.error(`  stamped ${rows.length} unplaced`);
 }
 
 const cities = await loadCities();
-console.error(`${cities.length} cities need a region (coords present, no region_code, not yet dispositioned)`);
+console.error(
+  `${cities.length} cities need a region (coords present, no region_code, not yet dispositioned)`,
+);
 if (!cities.length) process.exit(0);
 
 const resolved = [];
@@ -232,7 +259,7 @@ for (let i = 0; i < cities.length; i++) {
   const cc = c.countries?.code?.toUpperCase() ?? null;
   const pc = r.countrycode?.toUpperCase() ?? null;
   if (r.state && cc && pc === cc) {
-    resolved.push({ id: c.id, state: r.state, es: c.enrichment_status });
+    resolved.push({ id: c.id, state: r.state });
   } else {
     misses++;
     // Only a real Photon answer is a disposition. A timeout or a 5xx returns
@@ -242,22 +269,28 @@ for (let i = 0; i < cities.length; i++) {
       // An answer about another country is not an answer about this city: the
       // coordinates are the defect, and a neighbour's state must not be written.
       const reason = !r.state ? 'no_state' : !cc ? 'no_country' : 'country_mismatch';
-      unplaced.push({ id: c.id, reason, photon_country: pc, es: c.enrichment_status });
+      unplaced.push({ id: c.id, reason, photon_country: pc });
     }
   }
 
   if ((i + 1) % 100 === 0) {
-    console.error(`  ${i + 1}/${cities.length} — ${resolved.length} resolved, ${misses} region-less`);
+    console.error(
+      `  ${i + 1}/${cities.length} — ${resolved.length} resolved, ${misses} region-less`,
+    );
   }
   if (i < cities.length - 1) await sleep(INTERVAL_MS);
 }
 
-console.error(`done: ${resolved.length} resolved, ${misses} legitimately region-less, ${rateLimits} rate-limit pauses`);
+console.error(
+  `done: ${resolved.length} resolved, ${misses} legitimately region-less, ${rateLimits} rate-limit pauses`,
+);
 
 if (DRY_RUN) {
   console.error('--dry-run: no writes');
   console.error(resolved.slice(0, 10).map(({ es, ...r }) => r));
-  console.error(`unplaced: ${JSON.stringify(unplaced.reduce((a, u) => ((a[u.reason] = (a[u.reason] || 0) + 1), a), {}))}`);
+  console.error(
+    `unplaced: ${JSON.stringify(unplaced.reduce((a, u) => ((a[u.reason] = (a[u.reason] || 0) + 1), a), {}))}`,
+  );
 } else if (SERVICE_KEY) {
   const batchId = randomUUID();
   await writeDirect(resolved, batchId);
