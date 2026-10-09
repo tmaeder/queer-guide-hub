@@ -16,13 +16,12 @@
 --      city link. Nothing is guessed; birth_place text still says where, the
 --      archived row keeps its name and unarchive_city() reverses it.
 --
--- Deliberately left (6): "Saint-Denis, Île-de-France", "Dearborn, Michigan",
+-- Not in this list (6): "Saint-Denis, Île-de-France", "Dearborn, Michigan",
 -- "Hudson, Wisconsin", "Norwalk, California", "Sandusky, Ohio" and
--- "Hickory, North Carolina". Each is a real, correctly located city whose bare
--- name is held in the same country by a DIFFERENT place (Saint-Denis on
--- Réunion, Dearborn 1,019 km away, ...). cities allows one row per
--- (name, country), so the qualifier is the only way to represent them;
--- Hickory additionally carries venues/events.
+-- "Hickory, North Carolina". They are real, correctly located cities whose
+-- bare name is held in the same country by a different place; they are
+-- renamed by 99991791576204, which relies on region_code being part of the
+-- name-uniqueness indexes.
 
 do $fix$
 declare
