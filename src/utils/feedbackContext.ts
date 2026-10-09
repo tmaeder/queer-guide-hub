@@ -51,6 +51,15 @@ function pushNetworkFailure(entry: NetworkFailureEntry) {
   if (networkBuffer.length > MAX_NETWORK_FAILURES) networkBuffer.shift();
 }
 
+function screenshotDataUrlToBlob(dataUrl: string): Blob {
+  const match = /^data:([^;,]+);base64,(.+)$/s.exec(dataUrl);
+  if (!match) throw new Error('Invalid screenshot data URL');
+  const [, contentType, payload] = match;
+  const binary = atob(payload);
+  const bytes = Uint8Array.from(binary, (character) => character.charCodeAt(0));
+  return new Blob([bytes], { type: contentType });
+}
+
 export function installErrorBuffer() {
   if (errorBufferInstalled || typeof window === 'undefined') return;
   errorBufferInstalled = true;
@@ -172,8 +181,10 @@ export async function captureScreenshot(): Promise<Blob | null> {
         filter: (node) => !['IMG', 'PICTURE', 'VIDEO', 'CANVAS', 'IFRAME'].includes(node.tagName),
       });
     }
-    const res = await fetch(dataUrl);
-    return await res.blob();
+    // Decode locally. Fetching a large data: URL is unnecessary and is
+    // rejected by some embedded browsers, which made an otherwise successful
+    // capture silently disappear from the report form.
+    return screenshotDataUrlToBlob(dataUrl);
   } catch {
     return null;
   }
