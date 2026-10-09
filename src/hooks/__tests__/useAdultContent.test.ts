@@ -6,14 +6,14 @@ import { renderHook, act } from '@testing-library/react';
 
 import { useAdultAcknowledgement } from '@/hooks/useAdultContent';
 
-const KEY = 'qg.marketplace.ageAck';
+const KEY = 'qg_age_affirmation';
 
 describe('useAdultAcknowledgement same-tab sync', () => {
   beforeEach(() => {
-    localStorage.removeItem(KEY);
+    localStorage.clear();
   });
 
-  it('propagates acknowledge() to a separate hook instance in the same tab', () => {
+  it('propagates acknowledge() to a separate hook instance in the same tab', async () => {
     // Mirrors AdultContentGate + a sibling component (e.g. DepartmentBento,
     // MarketplaceCategory) each calling the hook independently — a storage
     // event alone never fires for the tab that made the change, so without
@@ -25,8 +25,8 @@ describe('useAdultAcknowledgement same-tab sync', () => {
     expect(gate.result.current.acknowledged).toBe(false);
     expect(sibling.result.current.acknowledged).toBe(false);
 
-    act(() => {
-      gate.result.current.acknowledge();
+    await act(async () => {
+      await gate.result.current.acknowledge();
     });
 
     expect(gate.result.current.acknowledged).toBe(true);
@@ -34,7 +34,7 @@ describe('useAdultAcknowledgement same-tab sync', () => {
   });
 
   it('propagates reset() to a separate hook instance in the same tab', () => {
-    localStorage.setItem(KEY, new Date().toISOString());
+    localStorage.setItem(KEY, JSON.stringify({ affirmedAt: Date.now() }));
     const a = renderHook(() => useAdultAcknowledgement());
     const b = renderHook(() => useAdultAcknowledgement());
 

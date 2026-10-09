@@ -21,7 +21,7 @@ interface Props {
 /**
  * Renders the 18+ age-affirmation modal when `active` is true and the
  * visitor has not yet affirmed. Persists affirmation via useAgeAffirmation
- * (30-day localStorage TTL). Until affirmed, gated children must NOT be
+ * (durable browser/account confirmation). Until affirmed, gated children must NOT be
  * rendered by callers — this modal does not unmount the page itself.
  *
  * P0-3.
@@ -61,7 +61,7 @@ export function AgeAffirmationModal({ active, onDecline }: Props) {
           <Button variant="outline" onClick={onDecline} data-testid="age-affirmation-decline">
             {t('age_gate.decline', 'Take me back')}
           </Button>
-          <Button onClick={affirm} data-testid="age-affirmation-confirm">
+          <Button onClick={() => void affirm()} data-testid="age-affirmation-confirm">
             {t('age_gate.confirm', 'I am 18 or older')}
           </Button>
         </DialogFooter>

@@ -29,6 +29,7 @@ import { StepperShell, type StepperStep } from '@/components/ui/StepperShell';
 import { FlatFieldGroup, FlatField } from '@/components/ui/FlatFieldGroup';
 import { PageContainer } from '@/components/layout/PageContainer';
 import { PageLoadingState } from '@/components/layout/PageLoadingState';
+import { useAgeAffirmation } from '@/hooks/useAgeAffirmation';
 import { PeopleSubpageNav } from '@/components/people/PeopleSubpageNav';
 
 const STEP_ORDER: WizardStep[] = [
@@ -98,6 +99,7 @@ export default function IntimateOnboard() {
     : (FALLBACK_INTO as readonly string[]);
   const { toast } = useToast();
   const navigate = useNavigate();
+  const { affirmed, affirm } = useAgeAffirmation();
 
   const [stepIdx, setStepIdx] = useState(0);
   const [draft, setDraft] = useState<Draft>({});
@@ -113,22 +115,26 @@ export default function IntimateOnboard() {
     }
   }, [existingText]);
 
-  const step = STEP_ORDER[stepIdx];
   const draftG = draft.genitalia ?? existing?.genitalia;
   const showAngle = draftG === 'penis';
   // The anatomy-pictogram step only exists when the chosen genitalia has a
   // pictogram set (none for "prefer not to say" / nothing selected) — otherwise
   // it renders an empty grid.
   const hasPictograms = Object.keys(getGenitalPictogramSet(draftG ?? null)).length > 0;
+  const hasAgeConsent = affirmed || !!existing?.consent_18plus_at;
   const visibleSteps = useMemo(
     () =>
       STEP_ORDER.filter((s) => {
+        if (s === 'consent') return !hasAgeConsent;
         if (s === 'angle' || s === 'size') return showAngle;
         if (s === 'genital-pictogram') return hasPictograms;
         return true;
       }),
-    [showAngle, hasPictograms],
+    [showAngle, hasPictograms, hasAgeConsent],
   );
+  const step =
+    visibleSteps.find((candidate) => STEP_ORDER.indexOf(candidate) >= stepIdx) ??
+    visibleSteps[visibleSteps.length - 1];
 
   const stepperSteps: StepperStep[] = useMemo(
     () =>
@@ -223,7 +229,11 @@ export default function IntimateOnboard() {
                 <Checkbox
                   id="intimate-consent"
                   checked={consent}
-                  onCheckedChange={(v) => setConsent(v === true)}
+                  onCheckedChange={(v) => {
+                    const next = v === true;
+                    setConsent(next);
+                    if (next) void affirm();
+                  }}
                   className="rounded-element mt-0.5"
                 />
                 <span className="text-sm leading-relaxed">
