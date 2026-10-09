@@ -20,6 +20,7 @@ import {
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { AdminTextSkeleton } from '@/components/admin/primitives/AdminLoading';
 import { AdminEmpty } from '@/components/admin/primitives/AdminEmpty';
+import { StructuredValueView } from '@/components/cms/fields/structured/StructuredValueView';
 
 interface EmailIngestion {
   id: string;
@@ -458,7 +459,7 @@ export function EmailIngestionsManager() {
                             onClick={() => toggleJson(ing.id)}
                             style={{ padding: '4px 8px' }}
                           >
-                            {expandedJson.has(ing.id) ? 'Hide' : 'Show'} Raw AI Response
+                            {expandedJson.has(ing.id) ? 'Hide' : 'Show'} AI extraction details
                             {expandedJson.has(ing.id) ? (
                               <ChevronUp size={12} className="ml-1" />
                             ) : (
@@ -466,16 +467,9 @@ export function EmailIngestionsManager() {
                             )}
                           </Button>
                           {expandedJson.has(ing.id) && (
-                            <pre
-                              className="mt-2 p-4 rounded-element overflow-auto text-xs"
-                              style={{
-                                backgroundColor: 'hsl(var(--foreground) / 0.05)',
-                                maxHeight: 400,
-                                lineHeight: 1.4,
-                              }}
-                            >
-                              {JSON.stringify(ing.ai_extraction, null, 2)}
-                            </pre>
+                            <div className="mt-2 max-h-96 overflow-auto rounded-element bg-muted p-4">
+                              <StructuredValueView value={ing.ai_extraction} className="text-xs" />
+                            </div>
                           )}
                         </div>
                       )}
