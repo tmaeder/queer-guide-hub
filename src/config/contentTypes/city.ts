@@ -77,7 +77,6 @@ export const cityFields: FieldConfig[] = [
   },
   { name: 'best_time_to_visit', label: 'Best Time to Visit', type: 'text', group: 'details' },
   { name: 'local_customs', label: 'Local Customs', type: 'textarea', group: 'details' },
-  { name: 'mayor', label: 'Mayor', type: 'text', group: 'details' },
   {
     name: 'cost_of_living',
     label: 'Cost of Living',
