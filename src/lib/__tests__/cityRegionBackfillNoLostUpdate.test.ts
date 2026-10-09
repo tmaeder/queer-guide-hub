@@ -17,7 +17,7 @@ const code = script
   .filter((l) => !l.trimStart().startsWith('//'))
   .join('\n');
 const sql = readFileSync(
-  join(root, 'supabase/migrations/99991791553902_city_region_stamp_rpc_and_lost_update_repair.sql'),
+  join(root, 'supabase/migrations/99991791569736_city_region_stamp_rpc_and_lost_update_repair.sql'),
   'utf8',
 );
 

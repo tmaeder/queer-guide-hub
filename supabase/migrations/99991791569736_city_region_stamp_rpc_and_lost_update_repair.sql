@@ -69,7 +69,7 @@ do $repair$
 declare
   v_restored int;
 begin
-  perform set_config('app.actor', 'migration:99991791553902_city_region_stamp_rpc_and_lost_update_repair', true);
+  perform set_config('app.actor', 'migration:99991791569736_city_region_stamp_rpc_and_lost_update_repair', true);
 
   with lost as (
     select distinct on (r.source_id, k)
