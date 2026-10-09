@@ -195,7 +195,7 @@ export default function IntimateOnboard() {
         lookingFor: lookingText.trim() || null,
       });
       toast({ title: 'Intimate profile activated' });
-      navigate('/people/dating');
+      navigate('/hub/dating');
     } catch (e) {
       toast({ title: 'Could not save', description: String(e), variant: 'destructive' });
     }

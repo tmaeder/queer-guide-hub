@@ -10,6 +10,7 @@ describe('isCompactFooterRoute', () => {
       '/onboarding/welcome',
       '/hub',
       '/hub/messages',
+      '/hub/people',
       '/settings',
     ]) {
       expect(isCompactFooterRoute(path), path).toBe(true);
@@ -17,7 +18,7 @@ describe('isCompactFooterRoute', () => {
   });
 
   it('leaves the full footer on public content', () => {
-    for (const path of ['/', '/events', '/cities/berlin', '/help', '/guides', '/people']) {
+    for (const path of ['/', '/events', '/cities/berlin', '/help', '/guides']) {
       expect(isCompactFooterRoute(path), path).toBe(false);
     }
   });

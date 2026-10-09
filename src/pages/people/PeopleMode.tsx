@@ -11,7 +11,7 @@ import { MeetMembersNotice } from '@/components/people/MeetMembersNotice';
 import { PeopleModeView } from './PeopleModeView';
 import { NearbyView } from './NearbyView';
 import { PageContainer } from '@/components/layout/PageContainer';
-import { PeopleNav } from '@/components/people/PeopleNav';
+import { HubNav } from '@/components/hub/HubNav';
 import { PageHeader } from '@/components/layout/PageHeader';
 
 // Dating keeps its own opt-in/age-walled deck; it self-gates when not opted in.
@@ -55,12 +55,12 @@ const META: Record<
  * Split out of `People.tsx` when the hub became place-led. These stay real
  * routes rather than folding into `?section=` because they are deep-linked from
  * outside: `/intimate`, `/discover` and `/cruising` redirect to
- * `/people/dating`, TripTravelBuddiesCTA sends people to `/people/travel`, and
+ * `/hub/dating`, TripTravelBuddiesCTA sends people to `/hub/travel`, and
  * TravelBuddiesSection's "See all" points at the same. Turning them into query
  * params would 404 every one of those.
  *
  * Each mode carries its own title and description. Previously all four shared
- * the hub's meta, so `/people/dating` and `/people/nearby` were indistinguishable
+ * the hub's meta, so `/hub/dating` and `/hub/nearby` were indistinguishable
  * to a crawler and to anyone reading a browser tab.
  */
 export default function PeopleMode({ tab }: { tab: PeopleTab }) {
@@ -77,7 +77,7 @@ export default function PeopleMode({ tab }: { tab: PeopleTab }) {
   useMeta({
     title: meta.title,
     description: meta.description,
-    canonicalPath: `/people/${tab}`,
+    canonicalPath: `/hub/${tab}`,
   });
 
   return (
@@ -86,7 +86,7 @@ export default function PeopleMode({ tab }: { tab: PeopleTab }) {
           `py-8 md:py-12` twice and opened with a doubled gap between the title
           block and its content that no other page on the site has. */}
       <PageContainer>
-        <PeopleNav className="mb-6" />
+        <HubNav className="mb-6" />
         {/* Was a bare `text-headline` h1 with no rule under it — the one place
             in the hub's subtree that read as an unstyled page. */}
         <PageHeader

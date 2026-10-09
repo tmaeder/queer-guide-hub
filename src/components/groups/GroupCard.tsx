@@ -109,7 +109,7 @@ export const GroupCard = ({
 
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 mb-1">
-                <LocalizedLink to={`/people/groups/${group.id}`} style={{ flex: 1 }}>
+                <LocalizedLink to={`/hub/groups/${group.id}`} style={{ flex: 1 }}>
                   <p
                     className="font-semibold overflow-hidden hover:underline"
                     style={{
@@ -196,7 +196,7 @@ export const GroupCard = ({
 
         <div className="flex gap-2">
           <Button asChild variant="ghost" size="sm">
-            <LocalizedLink to={`/people/groups/${group.id}`}>
+            <LocalizedLink to={`/hub/groups/${group.id}`}>
               <span className="flex items-center">
                 <ExternalLink size={16} className="mr-2" />
                 View Group

@@ -201,7 +201,7 @@ export function Header() {
                 subway-map rebrand (fixed paper/ink poster identity). */}
 
             <DropdownMenuItem asChild>
-              <LocalizedLink to="/community/friends" className="flex gap-2 no-underline">
+              <LocalizedLink to="/hub/friends" className="flex gap-2 no-underline">
                 <Users size={16} />
                 <span>{t('header.userMenu.friends', 'Friends')}</span>
                 {friendsOnline !== null && (
