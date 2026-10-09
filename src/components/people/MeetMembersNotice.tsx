@@ -83,14 +83,14 @@ export function MeetMembersNotice({
             </p>
             {/* Position-independent wording: this notice renders both inside
                 the hub's Members section (where places sit above it) and alone
-                on /people/friends (where nothing does), so it cannot say
+                on /hub/friends (where nothing does), so it cannot say
                 "above". It links to the hub instead. */}
             <p className="text-15 text-muted-foreground">
               {t(
                 'people.members.emptyBody',
                 'Member profiles are new. Community spaces, groups and events are where people are meeting in the meantime.',
               )}{' '}
-              <LocalizedLink to="/people" className="underline underline-offset-4">
+              <LocalizedLink to="/hub/people" className="underline underline-offset-4">
                 {t('people.members.emptyBodyLink', 'See where to go')}
               </LocalizedLink>
               .

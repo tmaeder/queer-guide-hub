@@ -11,21 +11,27 @@
 /resources  /tags  301
 /resources/*  /tags/:splat  301
 
-# The community feed now lives in the unified Hub. People discovery and dating
-# remain under /people. Dynamic detail routes are preserved by the locale-aware
-# client router.
+# Community, connection, and personal work now share the unified Hub. Dynamic
+# detail routes are preserved by the locale-aware client router.
 /community          /hub/feed        301
 /community/feed     /hub/feed        301
-/community/members  /people/members  301
-/community/friends  /people/friends  301
-/community/groups   /people/groups   301
+/community/members  /hub/members     301
+/community/friends  /hub/friends     301
+/community/groups   /hub/groups      301
 /feed               /hub/feed        301
 /people/feed        /hub/feed        301
-/friends            /people/friends  301
-/groups             /people/groups   301
-/cruising           /people/dating   301
-/intimate           /people/dating   301
-/discover           /people/dating   301
+/people             /hub/people      301
+/people/members     /hub/members     301
+/people/friends     /hub/friends     301
+/people/groups      /hub/groups      301
+/people/dating      /hub/dating      301
+/people/travel      /hub/travel      301
+/people/nearby      /hub/nearby      301
+/friends            /hub/friends     301
+/groups             /hub/groups      301
+/cruising           /hub/dating      301
+/intimate           /hub/dating      301
+/discover           /hub/dating      301
 
 # `travel` is a first-class product surface, not a glossary article. Keep this
 # above the 100-rule Pages cutoff; the dynamic tag fallback must never publish

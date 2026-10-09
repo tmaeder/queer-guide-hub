@@ -1613,7 +1613,6 @@ export type Database = {
           elevation_m: number | null
           enrichment_status: Json
           field_provenance: Json
-          founded_year: number | null
           historical_names: Json
           id: string
           image_flagged: boolean
@@ -1685,7 +1684,6 @@ export type Database = {
           elevation_m?: number | null
           enrichment_status?: Json
           field_provenance?: Json
-          founded_year?: number | null
           historical_names?: Json
           id?: string
           image_flagged?: boolean
@@ -1757,7 +1755,6 @@ export type Database = {
           elevation_m?: number | null
           enrichment_status?: Json
           field_provenance?: Json
-          founded_year?: number | null
           historical_names?: Json
           id?: string
           image_flagged?: boolean
@@ -7348,7 +7345,6 @@ export type Database = {
           elevation_m: number | null
           enrichment_status: Json
           field_provenance: Json
-          founded_year: number | null
           historical_names: Json
           is_capital: boolean | null
           is_major_city: boolean | null
@@ -7395,7 +7391,6 @@ export type Database = {
           elevation_m?: number | null
           enrichment_status?: Json
           field_provenance?: Json
-          founded_year?: number | null
           historical_names?: Json
           is_capital?: boolean | null
           is_major_city?: boolean | null
@@ -7442,7 +7437,6 @@ export type Database = {
           elevation_m?: number | null
           enrichment_status?: Json
           field_provenance?: Json
-          founded_year?: number | null
           historical_names?: Json
           is_capital?: boolean | null
           is_major_city?: boolean | null
@@ -30549,7 +30543,6 @@ export type Database = {
           elevation_m: number | null
           enrichment_status: Json
           field_provenance: Json
-          founded_year: number | null
           historical_names: Json
           id: string
           image_flagged: boolean
@@ -30782,7 +30775,6 @@ export type Database = {
               elevation_m: number | null
               enrichment_status: Json
               field_provenance: Json
-              founded_year: number | null
               historical_names: Json
               id: string
               image_flagged: boolean
@@ -30862,7 +30854,6 @@ export type Database = {
               elevation_m: number | null
               enrichment_status: Json
               field_provenance: Json
-              founded_year: number | null
               historical_names: Json
               id: string
               image_flagged: boolean
@@ -30942,7 +30933,6 @@ export type Database = {
               elevation_m: number | null
               enrichment_status: Json
               field_provenance: Json
-              founded_year: number | null
               historical_names: Json
               id: string
               image_flagged: boolean
@@ -31022,7 +31012,6 @@ export type Database = {
               elevation_m: number | null
               enrichment_status: Json
               field_provenance: Json
-              founded_year: number | null
               historical_names: Json
               id: string
               image_flagged: boolean
@@ -31102,7 +31091,6 @@ export type Database = {
               elevation_m: number | null
               enrichment_status: Json
               field_provenance: Json
-              founded_year: number | null
               historical_names: Json
               id: string
               image_flagged: boolean
@@ -31184,7 +31172,6 @@ export type Database = {
               elevation_m: number | null
               enrichment_status: Json
               field_provenance: Json
-              founded_year: number | null
               historical_names: Json
               id: string
               image_flagged: boolean
@@ -31264,7 +31251,6 @@ export type Database = {
               elevation_m: number | null
               enrichment_status: Json
               field_provenance: Json
-              founded_year: number | null
               historical_names: Json
               id: string
               image_flagged: boolean
@@ -31344,7 +31330,6 @@ export type Database = {
               elevation_m: number | null
               enrichment_status: Json
               field_provenance: Json
-              founded_year: number | null
               historical_names: Json
               id: string
               image_flagged: boolean
@@ -36146,7 +36131,6 @@ export type Database = {
           elevation_m: number | null
           enrichment_status: Json
           field_provenance: Json
-          founded_year: number | null
           historical_names: Json
           id: string
           image_flagged: boolean

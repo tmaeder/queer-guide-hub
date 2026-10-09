@@ -55,7 +55,7 @@ describe('Header user menu — friends online', () => {
     expect(friendsIdx).toBeGreaterThanOrEqual(0);
     expect(friendsIdx).toBe(settingsIdx - 1);
     const row = items[friendsIdx];
-    expect(row.getAttribute('href')).toBe('/community/friends');
+    expect(row.getAttribute('href')).toBe('/hub/friends');
     expect(row.textContent).toContain('2 online');
   });
 

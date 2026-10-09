@@ -186,7 +186,6 @@ export interface CityWdFacts {
   population?: number
   area_km2?: number
   elevation_m?: number
-  founded_year?: number
   official_website?: string
   postal_codes?: string[]
   area_codes?: string[]
@@ -249,17 +248,6 @@ export function parseCityFacts(claims: Claims): CityWdFacts {
   if (area != null) out.area_km2 = Math.round(area * 100) / 100
   const elev = convertQuantity(valueOf(bestStatement(claims.P2044)?.mainsnak), ELEVATION_TO_M)
   if (elev != null) out.elevation_m = Math.round(elev)
-
-  const inception = asTime(valueOf(bestStatement(claims.P571)?.mainsnak))
-  if (inception) {
-    const m = /^([+-])(\d{4})/.exec(inception)
-    // BCE foundation years cannot be stored in a positive int column; skip them
-    // rather than writing a wrong positive year.
-    if (m && m[1] === '+') {
-      const y = parseInt(m[2], 10)
-      if (Number.isFinite(y) && y > 0) out.founded_year = y
-    }
-  }
 
   const site = asString(valueOf(bestStatement(claims.P856)?.mainsnak))
   if (site && /^https?:\/\//i.test(site)) out.official_website = site

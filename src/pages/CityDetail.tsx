@@ -570,7 +570,7 @@ export default function CityDetail() {
                 defaultValue: 'Locals and travellers to meet in {{city}}',
                 city: city.name,
               })}
-              seeAllHref="/people/members"
+              seeAllHref="/hub/members"
             />
             <NearbyTriptych
               cityId={city.id}

@@ -2960,7 +2960,6 @@
         "majorCity": "[PT] Major city",
         "region": "[PT] Region",
         "timezone": "[PT] Timezone",
-        "founded": "[PT] Founded",
         "area": "[PT] Area",
         "elevation": "[PT] Elevation",
         "mayor": "[PT] Mayor",
@@ -2975,7 +2974,6 @@
         "gettingAround": "[PT] Getting around",
         "noDealsTitle": "[PT] We don't promote travel deals for destinations where LGBTQ+ people face criminal penalties.",
         "noDealsBody": "[PT] If you need to travel to {{city}}, read the safety and rights section first and use the trip planner — it includes a safety briefing for high-risk destinations.",
-        "airport": "Aeroporto",
         "noAirport": "Não",
         "nearestAirports": "Aeroportos mais próximos"
       },

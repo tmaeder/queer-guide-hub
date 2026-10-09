@@ -38,7 +38,7 @@ export function TravelBuddiesSection({ trip }: Props) {
         mode="travel"
         tripId={trip.id}
         title={t('trips.travelBuddies.title', 'Travel buddies for this trip')}
-        seeAllHref="/people/travel"
+        seeAllHref="/hub/travel"
       />
     </div>
   );

@@ -2958,7 +2958,6 @@
         "majorCity": "[JA] Major city",
         "region": "[JA] Region",
         "timezone": "[JA] Timezone",
-        "founded": "[JA] Founded",
         "area": "[JA] Area",
         "elevation": "[JA] Elevation",
         "mayor": "[JA] Mayor",
@@ -2973,7 +2972,6 @@
         "gettingAround": "[JA] Getting around",
         "noDealsTitle": "[JA] We don't promote travel deals for destinations where LGBTQ+ people face criminal penalties.",
         "noDealsBody": "[JA] If you need to travel to {{city}}, read the safety and rights section first and use the trip planner — it includes a safety briefing for high-risk destinations.",
-        "airport": "空港",
         "noAirport": "なし",
         "nearestAirports": "最寄りの空港"
       },

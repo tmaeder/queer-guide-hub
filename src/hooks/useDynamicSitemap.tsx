@@ -22,10 +22,10 @@ export function useDynamicSitemap() {
         { label: 'Venues', to: '/venues' },
         { label: 'Events', to: '/events' },
         { label: 'Marketplace', to: '/marketplace' },
-        { label: 'Members', to: '/people/members' },
+        { label: 'Members', to: '/hub/members' },
         { label: 'News', to: '/news' },
-        { label: 'Groups', to: '/people/groups' },
-        { label: 'My Groups', to: '/people/groups?tab=mine' },
+        { label: 'Groups', to: '/hub/groups' },
+        { label: 'My Groups', to: '/hub/groups?tab=mine' },
         { label: 'Feed', to: '/hub/feed' },
         { label: 'Saved', to: '/hub/saved' },
         { label: 'Search', to: '/search' },
@@ -33,7 +33,7 @@ export function useDynamicSitemap() {
         { label: 'Cities', to: '/cities' },
         { label: 'Tags', to: '/tags' },
         { label: 'Hub', to: '/hub' },
-        { label: 'Friends', to: '/people/friends' },
+        { label: 'Friends', to: '/hub/friends' },
       ];
 
       const staticAboutLinks: SitemapLink[] = [

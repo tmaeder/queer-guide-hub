@@ -64,11 +64,6 @@ export function CityOverviewTab({ city, showDescription = true }: CityOverviewTa
     facts.push({ label: t('cities.detail.about.region', 'Region'), value: city.region_name });
   // Timezone is NOT repeated here — the head fact strip (`CityAtAGlance`)
   // already carries it, and a headline fact lives once.
-  if (city.founded_year)
-    facts.push({
-      label: t('cities.detail.about.founded', 'Founded'),
-      value: String(city.founded_year),
-    });
   if (city.area_km2)
     facts.push({ label: t('cities.detail.about.area', 'Area'), value: `${city.area_km2} km²` });
   if (city.elevation_m)

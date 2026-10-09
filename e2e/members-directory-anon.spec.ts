@@ -1,7 +1,7 @@
 import { test, expect, type Page } from '@playwright/test';
 
 /**
- * Signed-out coverage for /community/members.
+ * Signed-out coverage for /hub/members.
  *
  * This route was the live exposure: `useUserDirectoryQuery` issued `select('*')` against
  * `profiles`, whose RLS filters rows only, so an anonymous visitor received all 173
@@ -116,7 +116,7 @@ test.describe('members directory — signed out', () => {
     const page = await ctx.newPage();
     const capture = captureProfileReads(page);
 
-    await page.goto('/community/members');
+    await page.goto('/hub/members');
     await expect(page.getByRole('heading', { name: /members/i }).first()).toBeVisible();
     // The anon upsell card is the tell that we are genuinely signed out.
     await expect(page.getByText(/see the full community/i)).toBeVisible();
@@ -154,7 +154,7 @@ test.describe('members directory — signed out', () => {
     const page = await ctx.newPage();
     const capture = captureProfileReads(page);
 
-    await page.goto('/community/members');
+    await page.goto('/hub/members');
     await expect(page.getByRole('heading', { name: /members/i }).first()).toBeVisible();
 
     // `bio` and `location` are granted to anon solely to back this `.or(... ilike ...)`.
@@ -174,7 +174,7 @@ test.describe('members directory — signed out', () => {
     const page = await ctx.newPage();
     const capture = captureProfileReads(page);
 
-    await page.goto('/community/members');
+    await page.goto('/hub/members');
     await expect(page.getByRole('heading', { name: /members/i }).first()).toBeVisible();
     await expect.poll(() => capture.statuses.length).toBeGreaterThan(0);
 

@@ -153,10 +153,10 @@ test.describe('Mobile bottom navigation', () => {
     // product stopped rendering). What this case is actually named for is the
     // route list below, so assert that and let the copy team own the copy.
     // Intents lead; the browse layer stays reachable beneath them.
-    // /people appears TWICE by design — once as the "Meet people" intent and
+    // /hub/people appears TWICE by design — once as the "Meet people" intent and
     // once in the browse grid beneath it — so these must not be strict.
     await expect(sheet.locator('a[href$="/going-out"]').first()).toBeVisible();
-    await expect(sheet.locator('a[href$="/people"]').first()).toBeVisible();
+    await expect(sheet.locator('a[href$="/hub/people"]').first()).toBeVisible();
     await expect(sheet.locator('a[href$="/venues"]').first()).toBeVisible();
     await expect(sheet.locator('a[href$="/events"]').first()).toBeVisible();
   });

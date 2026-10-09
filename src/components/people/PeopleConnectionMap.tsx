@@ -14,7 +14,7 @@ const PEOPLE_MAP_CONFIG = {
  * Public, place-based map for the People hub.
  *
  * It deliberately excludes member/profile locations. Approximate presence is
- * opt-in and belongs to /people/nearby; dating keeps its own consent gate.
+ * opt-in and belongs to /hub/nearby; dating keeps its own consent gate.
  */
 export function PeopleConnectionMap() {
   const { t } = useTranslation();
@@ -39,7 +39,7 @@ export function PeopleConnectionMap() {
             {t('people.map.communityMode', 'Community')}
           </span>
           <LocalizedLink
-            to="/people/dating?panel=spots&layers=spots"
+            to="/hub/dating?panel=spots&layers=spots"
             role="tab"
             aria-selected="false"
             className="inline-flex min-h-10 items-center gap-2 px-4 text-sm font-semibold text-foreground no-underline hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"

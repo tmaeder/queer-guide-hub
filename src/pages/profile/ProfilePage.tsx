@@ -138,7 +138,7 @@ export default function ProfilePage({ tab: tabProp }: { tab?: string } = {}) {
           <p className="text-muted-foreground mb-4">
             This user profile doesn't exist or has been removed.
           </p>
-          <Button onClick={() => navigate('/people/members')}>
+          <Button onClick={() => navigate('/hub/members')}>
             <ArrowLeft size={16} className="mr-2" />
             Back to directory
           </Button>
@@ -176,7 +176,7 @@ export default function ProfilePage({ tab: tabProp }: { tab?: string } = {}) {
           <Shield size={48} style={{ margin: '0 auto 16px' }} className="text-muted-foreground" />
           <p className="text-base font-medium mb-2">Private profile</p>
           <p className="text-muted-foreground mb-4">This user has set their profile to private.</p>
-          <Button onClick={() => navigate('/people/members')}>
+          <Button onClick={() => navigate('/hub/members')}>
             <ArrowLeft size={16} className="mr-2" />
             Back to directory
           </Button>

@@ -204,22 +204,6 @@ Deno.test('area codes split on separators and dedupe (NYC)', () => {
   assertEquals(parseCityFacts(claims).area_codes, ['212', '347', '646'])
 })
 
-// --- founded year ----------------------------------------------------------
-
-Deno.test('founded_year reads a positive inception year', () => {
-  const claims: Claims = {
-    P571: [{ rank: 'normal', mainsnak: { snaktype: 'value', datavalue: { value: { time: '+1652-01-01T00:00:00Z' } } } }],
-  }
-  assertEquals(parseCityFacts(claims).founded_year, 1652)
-})
-
-Deno.test('BCE foundation dates are skipped, not written as positive years', () => {
-  const claims: Claims = {
-    P571: [{ rank: 'normal', mainsnak: { snaktype: 'value', datavalue: { value: { time: '-0753-01-01T00:00:00Z' } } } }],
-  }
-  assertEquals(parseCityFacts(claims).founded_year, undefined)
-})
-
 // --- website ---------------------------------------------------------------
 
 Deno.test('official_website must be an http(s) url', () => {
