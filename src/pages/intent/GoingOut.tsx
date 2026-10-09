@@ -17,6 +17,8 @@ import {
 import type { SectionDef } from '@/components/entity/editorial';
 import { CityNetwork } from '@/components/home/subway/CityNetwork';
 import { hasCityNetwork } from '@/components/home/subway/cityNetworkGeometry';
+import { PageHero } from '@/components/discovery';
+import { NoStationTrack } from '@/components/transit/NoStationTrack';
 import './going-out.css';
 
 /**
@@ -73,7 +75,7 @@ export default function GoingOut() {
           // hours, tags and verification — this page fetched them and rendered
           // none of them, which is why "going out" read as a directory listing
           // instead of somewhere you might actually go tonight.
-          <ul className="night-shift-venues list-none p-0 m-0 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <ul className="going-out-venues list-none p-0 m-0 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {venues.map((v) => (
               <li key={v.id}>
                 <VenueCard venue={v as unknown as Parameters<typeof VenueCard>[0]['venue']} />
@@ -81,23 +83,24 @@ export default function GoingOut() {
             ))}
           </ul>
         ) : (
-          <div className="night-shift-empty">
-            <div className="night-shift-empty__copy">
+          <div className="going-out-empty">
+            <div className="going-out-empty__copy">
               <div>
-                <span className="night-shift-hero__status">Start somewhere</span>
                 <strong>No nightlife listed for {where} yet.</strong>
                 <p>
                   Take the full directory or map route, or put a place the community should know
                   about on the guide.
                 </p>
               </div>
-              <div className="night-shift-empty__links">
+              <div className="going-out-empty__links">
                 <LocalizedLink to="/venues">Browse every venue</LocalizedLink>
                 <LocalizedLink to="/map">Open the map</LocalizedLink>
                 <LocalizedLink to="/submit">Add a place</LocalizedLink>
               </div>
             </div>
-            <div className="night-shift-empty__map" aria-hidden="true" />
+            <div className="going-out-empty__map" aria-hidden="true">
+              <NoStationTrack />
+            </div>
           </div>
         ),
       action: (
@@ -113,7 +116,7 @@ export default function GoingOut() {
       id: 'whats-on',
       label: "What's on",
       content: (
-        <UpcomingEvents eventsResult={eventsResult} cityName={cityName} variant="night-shift" />
+        <UpcomingEvents eventsResult={eventsResult} cityName={cityName} variant="going-out" />
       ),
       action: (
         <LocalizedLink to="/events" className="text-13 no-underline hover:underline">
@@ -138,8 +141,8 @@ export default function GoingOut() {
       id: 'safety',
       label: 'Before you go',
       content: (
-        <div className="night-shift-safety">
-          <div className="night-shift-safety__copy">
+        <div className="going-out-safety">
+          <div className="going-out-safety__copy">
             {/* Anon-safe: gated_count_for_location returns COUNTS only, never rows,
                 so this can tell a signed-out reader that content exists in a
                 criminalising country without exposing any of it. */}
@@ -149,7 +152,7 @@ export default function GoingOut() {
               position before the night starts, not after.
             </p>
           </div>
-          <LocalizedLink to="/rights" className="night-shift-safety__link">
+          <LocalizedLink to="/rights" className="going-out-safety__link">
             LGBTQ+ rights by country
           </LocalizedLink>
         </div>
@@ -160,18 +163,18 @@ export default function GoingOut() {
       label: 'Elsewhere',
       kicker: 'Cities worth the trip',
       content: (
-        <ul className="night-shift-cities list-none p-0 m-0">
+        <ul className="going-out-cities list-none p-0 m-0">
           {(cities ?? []).map((c) => (
-            <li key={c.id} className="night-shift-city">
+            <li key={c.id} className="going-out-city">
               {c.slug ? (
                 <LocalizedLink to={`/city/${c.slug}`}>
                   <div>
                     <h3>{c.name}</h3>
                     {c.countries?.name ? <p>{c.countries.name}</p> : null}
                   </div>
-                  {hasCityNetwork(c.slug) && (
+                  {hasCityNetwork(c.slug) ? (
                     <CityNetwork slug={c.slug} variant="thumb" className="h-24" />
-                  )}
+                  ) : null}
                 </LocalizedLink>
               ) : (
                 <div className="flex h-full flex-col p-6">
@@ -188,37 +191,27 @@ export default function GoingOut() {
 
   return (
     <IntentPageLayout
-      className="night-shift-page"
+      className="going-out-page"
       breadcrumbLabel={t('header.intents.goingOut.label', 'Going out')}
       breadcrumbHref="/going-out"
       sectionNavVariant="subway"
       header={
-        <section className="night-shift-hero" aria-labelledby="going-out-title">
-          <div className="night-shift-hero__copy">
-            <div className="night-shift-hero__status">
-              {cityName ? `Night shift · ${cityName}` : 'Night shift · community listed'}
-            </div>
-            <h1 id="going-out-title">{cityName ? `Going out in ${cityName}` : 'Going out'}</h1>
-            <p className="night-shift-hero__lede">
-              Bars, clubs, cafés and saunas from the community, plus whatever is actually on while
-              you are there.
-            </p>
-            <div className="night-shift-hero__actions">
-              <a className="night-shift-hero__primary" href="#plan">
-                Find your next stop
-              </a>
-              <a className="night-shift-hero__secondary" href="#whats-on">
-                See what’s on
-              </a>
-            </div>
+        <PageHero
+          bare
+          size="md"
+          className="going-out-hero"
+          title={cityName ? `Going out in ${cityName}` : 'Going out'}
+          lede="Bars, clubs, cafés and saunas from the community, plus whatever is actually on while you are there."
+        >
+          <div className="going-out-hero__actions">
+            <a className="going-out-hero__primary" href="#plan">
+              Find your next stop
+            </a>
+            <a className="going-out-hero__secondary" href="#whats-on">
+              See what’s on
+            </a>
           </div>
-          <div className="night-shift-hero__route" aria-hidden="true">
-            <span className="night-shift-hero__route-line" />
-            <span className="night-shift-hero__station night-shift-hero__station--one" />
-            <span className="night-shift-hero__station night-shift-hero__station--two" />
-            <span className="night-shift-hero__station night-shift-hero__station--three" />
-          </div>
-        </section>
+        </PageHero>
       }
       eyebrow={cityName ? `In ${cityName}` : 'Tonight'}
       title={cityName ? `Going out in ${cityName}` : 'Going out'}
