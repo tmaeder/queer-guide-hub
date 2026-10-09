@@ -36,7 +36,7 @@ describe('BreadcrumbBar route stops', () => {
     const { container } = renderBar('/going-out');
 
     expect(screen.getByTestId('breadcrumb-route')).toBeInTheDocument();
-    expect(screen.getByTestId('breadcrumb-track')).toHaveClass('bg-track-pink');
+    expect(screen.getByTestId('breadcrumb-track')).toHaveClass('route-network-rail__track--pink');
     expect(screen.getByRole('link', { name: 'Home' })).toHaveAttribute('href', '/');
     expect(screen.getByText('Going out').closest('[aria-current]')).toHaveAttribute(
       'aria-current',
