@@ -215,3 +215,31 @@ Deno.test('scope list matches the selector and rejects anything else', () => {
   assertEquals(isCityRefreshScope('qid-gap'), false)
   assertEquals(isCityRefreshScope(''), false)
 })
+
+// Ortsteil vs Gemeinde. Labels are the ones Wikidata actually uses, measured
+// 2026-10-09 over entities located in Baden-Wuerttemberg municipalities.
+Deno.test('a part of a municipality is a locality, never adopted as a city', () => {
+  // Hinterzarten's Zinken Oberzarten (Q130278913).
+  const zinken = cityClassVerdict(['dwelling place'])
+  assertEquals(zinken.verdict, 'locality')
+  assertEquals(zinken.label, 'dwelling place')
+  assertEquals(cityClassVerdict(['Ortsteil']).verdict, 'locality')
+  assertEquals(cityClassVerdict(['village', 'Ortsteil']).verdict, 'locality')
+  assertEquals(cityClassVerdict(['quarter']).verdict, 'locality')
+  // `municipality seat` contains "municipality" and is still the part.
+  assertEquals(cityClassVerdict(['municipality seat']).verdict, 'locality')
+})
+
+Deno.test('the municipality itself stays a settlement, even beside a locality label', () => {
+  // Hinterzarten (Q515356) as Wikidata classes it.
+  assertEquals(
+    cityClassVerdict(['climatic health resort', 'municipality without town privileges in Germany']).verdict,
+    'settlement',
+  )
+  assertEquals(cityClassVerdict(['town', 'quarter']).verdict, 'settlement')
+  assertEquals(cityClassVerdict(['urban municipality in Germany', 'Ortsteil']).verdict, 'settlement')
+  // Bare village / hamlet / locality say nothing about level and stay settlements.
+  assertEquals(cityClassVerdict(['village of Wisconsin']).verdict, 'settlement')
+  assertEquals(cityClassVerdict(['hamlet']).verdict, 'settlement')
+  assertEquals(cityClassVerdict(['locality']).verdict, 'settlement')
+})

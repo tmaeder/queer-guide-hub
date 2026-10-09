@@ -104,9 +104,61 @@ const OVERRIDE_REFUSE_PATTERNS: readonly RegExp[] = [
   /\bfirst-level administrative\b/i,
 ]
 
+/**
+ * Labels that mark a PART of a municipality — an Ortsteil, Zinken, Wohnplatz,
+ * quarter — rather than a municipality.
+ *
+ * MEASURED, not guessed (2026-10-09): over every entity located in a
+ * Baden-Wuerttemberg municipality, the sub-municipal settlement classes
+ * Wikidata uses are `Ortsteil` (177), `quarter` (38), `dwelling place` (18) and
+ * `municipality seat` (3) — the last being the separate item for the core
+ * village of a Gemeinde, which is exactly the Hinterzarten shape (Q515356 is
+ * the municipality; its Zinken `Oberzarten` is a `dwelling place`).
+ *
+ * A locality must NOT become its own city row: on a travel platform it
+ * publishes a second "city" inside the municipality and splits that place's
+ * venues and events across two pages. The caller records the P131 parent and
+ * routes the row to a human instead.
+ *
+ * Bare `locality`, `village` and `hamlet` are deliberately absent: worldwide
+ * they label real municipalities (`village of Wisconsin`), so they say nothing
+ * about level. Only labels that are unambiguous about being a PART qualify.
+ */
+const LOCALITY_PATTERNS: readonly RegExp[] = [
+  /\bortsteil\b/i,
+  /\bgemeindeteil\b/i,
+  /\bdwelling place\b/i,
+  /\bmunicipality seat\b/i,
+  /\bquarter\b/i,
+  /\bpart of a municipality\b/i,
+]
+
+/**
+ * Labels that make an entity a MUNICIPALITY in its own right. A locality label
+ * is only decisive when no label of this grade is present: Hinterzarten itself
+ * carries `municipality without town privileges in Germany`, and a town that
+ * ALSO carries some quarter-like class must stay a settlement.
+ */
+const MUNICIPALITY_GRADE_PATTERNS: readonly RegExp[] = [
+  /\bcity\b/i,
+  /\btown\b/i,
+  /\bmunicipalit/i,
+  /\bcommune\b/i,
+  /\bborough\b/i,
+  /\bmetropolis\b/i,
+  /\bmegacity\b/i,
+]
+
 export type CityClassVerdict =
   /** A recognised settlement class. The QID may be adopted. */
   | 'settlement'
+  /**
+   * A part of a municipality (Ortsteil, Wohnplatz, quarter). Read
+   * successfully, and a decision about the entity — but not "not a place":
+   * the caller must not adopt the QID as a city, and should record the P131
+   * parent so the row can be resolved onto its municipality.
+   */
+  | 'locality'
   /** Read successfully and is not a settlement, or is a class we do not know. */
   | 'refused'
   /**
@@ -148,6 +200,20 @@ export function cityClassVerdict(
   }
   if (p31Labels.length === 0) {
     return { verdict: 'refused', reason: 'no_class', label: null }
+  }
+  // Level before kind. A label naming a PART of a municipality decides only
+  // when no label is municipality-grade; a label counts as municipality-grade
+  // only if it is not itself a locality label (`municipality seat` contains
+  // "municipality" and is precisely the part, not the whole).
+  const localityLabel = p31Labels.find((l) => LOCALITY_PATTERNS.some((re) => re.test(l)))
+  if (localityLabel) {
+    const municipal = p31Labels.some((l) =>
+      !LOCALITY_PATTERNS.some((re) => re.test(l)) &&
+      MUNICIPALITY_GRADE_PATTERNS.some((re) => re.test(l)) &&
+      !OVERRIDE_REFUSE_PATTERNS.some((re) => re.test(l)))
+    if (!municipal) {
+      return { verdict: 'locality', reason: 'part_of_municipality', label: localityLabel }
+    }
   }
   // The override is evaluated PER LABEL, and a label that carries both a
   // settlement word and a disqualifier is merely not EVIDENCE — it does not
