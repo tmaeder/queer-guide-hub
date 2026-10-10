@@ -1355,7 +1355,8 @@
       "moreOptions": "더 보기",
       "send": "다른 사람에게 보내기",
       "getTickets": "티켓 구매",
-      "going": "참석"
+      "going": "참석",
+      "viewImage": "이미지 보기"
     }
   },
   "venues": {

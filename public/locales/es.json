@@ -1355,7 +1355,8 @@
       "moreOptions": "Más opciones",
       "send": "Enviar a alguien",
       "getTickets": "Comprar entradas",
-      "going": "Voy"
+      "going": "Voy",
+      "viewImage": "Ver imagen"
     }
   },
   "venues": {

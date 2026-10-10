@@ -1355,7 +1355,8 @@
       "moreOptions": "Altre opzioni",
       "send": "Invia a qualcuno",
       "getTickets": "Acquista biglietti",
-      "going": "Partecipo"
+      "going": "Partecipo",
+      "viewImage": "Visualizza immagine"
     }
   },
   "venues": {

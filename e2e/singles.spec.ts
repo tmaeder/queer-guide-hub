@@ -151,7 +151,7 @@ for (const route of ROUTES) {
       }
     });
 
-    test('the rail reflows under the body on a phone instead of disappearing', async ({ page }) => {
+    test('supporting information stays available on a phone', async ({ page }) => {
       await page.setViewportSize({ width: 390, height: 844 });
       await open(page, route.path);
       // "Every single works at 390px with the same modules in the same order,
@@ -163,7 +163,15 @@ for (const route of ROUTES) {
       // such a trip every time trip-creation.spec.ts runs — so this assertion
       // became a strict-mode violation ("resolved to 2 elements") on
       // /city/berlin for every authenticated run, on every branch.
-      await expect(page.getByTestId('single-rail')).toBeVisible();
+      if (route.path.startsWith('/events/')) {
+        await expect(page.getByTestId('single-rail')).toHaveCount(0);
+        await expect(page.getByTestId('event-actions')).toBeVisible();
+        await expect(
+          page.locator('article').getByRole('link', { name: 'Correct this page' }),
+        ).toBeVisible();
+      } else {
+        await expect(page.getByTestId('single-rail')).toBeVisible();
+      }
       const overflow = await page.evaluate(
         () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
       );

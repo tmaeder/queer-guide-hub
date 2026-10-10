@@ -1355,7 +1355,8 @@
       "moreOptions": "その他の操作",
       "send": "誰かに送る",
       "getTickets": "チケットを購入",
-      "going": "参加する"
+      "going": "参加する",
+      "viewImage": "画像を見る"
     }
   },
   "venues": {
