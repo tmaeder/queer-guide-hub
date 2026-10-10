@@ -5184,6 +5184,114 @@ const DISOWNED_PROSE_CEILING = 380
   }
 }
 
+// ---------------------------------------------------------------------------
+// §  Glossary photography: licensed, unique, and gated (2026-10-10)
+// ---------------------------------------------------------------------------
+//
+//     Glossary photos were retired on 2026-08-28 (20261003100000) and
+//     re-introduced on 2026-10-10 under a write-time contract. The retirement's
+//     own header explains what went wrong: the photos were sourced by "taking
+//     the TOP-1 Pexels/Unsplash hit for a keyword-mapped tag name — no scoring,
+//     no content-match check — and 1,262 of them with no recoverable license".
+//
+//     `active_tags_with_image_url` used to be a zero-gate in
+//     scripts/tag-hygiene-baseline.json and is now ADVISORY there, because the
+//     count is coverage and is meant to grow. That is only safe because the
+//     invariants it stood in for became structural, which is exactly what that
+//     file's own note prescribes — "gate on AGE or on a write-time invariant,
+//     never on a level". This section is the other half of that trade: it
+//     watches the invariants rather than the level.
+//
+//     EVERY COUNT HERE IS A ZERO-INVARIANT WITH NO BASELINE, deliberately
+//     unlike the disowned-prose ratchet above. There is no backlog to work
+//     down: `zz_enforce_tag_image_contract` refuses an unlicensed, unattributed,
+//     alt-less, data:-URI, unknown-source, stock-on-adult or
+//     explicit-on-non-adult image at write time, and `tag_cover_one_tag_uniq`
+//     refuses one asset on two tags. A non-zero therefore does not mean "work to
+//     do", it means the enforcement was BYPASSED — a dropped trigger, a disabled
+//     index, or a superuser write around both.
+//
+//     WHICH IS WHY `trigger_attached` AND `uniq_index_present` ARE REPORTED
+//     SEPARATELY FROM THE COUNTS. An undeployed enforcement layer and a clean
+//     corpus both produce zeroes, and conflating them is the
+//     `accessibility_contradictions` lesson: a sentinel that cannot tell "no
+//     defects" from "not installed" reports the wrong one on the day it matters.
+{
+  const res = await fetch(`${BASE}/rest/v1/rpc/tag_image_signals`, {
+    method: 'POST',
+    headers: { ...headers, 'Content-Type': 'application/json' },
+    body: '{}',
+  })
+  if (!res.ok) {
+    const detail = (await res.text()).slice(0, 200)
+    console.error(
+      `✗ tag_image_signals → HTTP ${res.status} (migration 99991791616269 not applied? ` +
+        `PGRST202 = the function does not exist) ${detail}`,
+    )
+    FAILED = true
+  } else {
+    const ti = (await res.json()) ?? {}
+    if (ti.probe_ok !== true) {
+      console.error(
+        `✗ tag_image_signals did not report probe_ok — the sentinel itself is broken${ti.error ? `: ${ti.error}` : ''}`,
+      )
+      FAILED = true
+    } else if (ti.trigger_attached !== true || ti.uniq_index_present !== true) {
+      // Checked BEFORE the counts, because without these the zeroes below are
+      // not a measurement of anything.
+      console.error(
+        `✗ glossary photography enforcement is not installed: ` +
+          `trigger_attached=${ti.trigger_attached}, uniq_index_present=${ti.uniq_index_present}`,
+      )
+      console.error('  Every count below is meaningless while this is false. Check 99991791616269.')
+      FAILED = true
+    } else {
+      const invariants = [
+        ['unlicensed', 'published images with no licence/attribution/source'],
+        ['missing_alt', 'published images with no alt text'],
+        ['not_https', 'published images that are not https (the retired data: URI shape)'],
+        ['unknown_source', 'published images from an unknown source'],
+        ['stock_on_adult', 'stock photographs on an adult or sensitive tag (a licence breach)'],
+        ['explicit_ungated', 'explicit images on a tag with no adult flag'],
+        ['cover_asset_reused', 'assets illustrating more than one glossary entry'],
+        ['legacy_tag_links', 'orphaned pre-retirement tag asset links'],
+      ]
+      let clean = true
+      for (const [key, label] of invariants) {
+        const n = Number(ti[key] ?? 0)
+        if (n > 0) {
+          console.error(`✗ tag_image_signals.${key} = ${n} — ${label}`)
+          console.error(
+            '  This is structurally impossible while the contract trigger and unique index are live, ' +
+              'so a non-zero means one of them was bypassed, not that there is a backlog.',
+          )
+          FAILED = true
+          clean = false
+        }
+      }
+      if (clean) {
+        const pub = Number(ti.published_active ?? 0)
+        const exp = Number(ti.explicit_published ?? 0)
+        const open = Number(ti.review_open ?? 0)
+        console.log(
+          `✓ glossary photography: ${pub} published (${exp} explicit, gated), ` +
+            `${open} awaiting review, every invariant clean`,
+        )
+        // Coverage and queue depth WARN at most. Depth cannot distinguish a
+        // queue being worked from one being abandoned, which is why the rule
+        // that matters is the human decision RATE in review_queue_signals —
+        // reported there, not re-derived here.
+        if (open > 400) {
+          console.warn(
+            `⚠ ${open} glossary photo proposals are open. Review at /admin/inbox?queue=quality; ` +
+              'the producer skips a tag that already has an open row, so this is depth, not churn.',
+          )
+        }
+      }
+    }
+  }
+}
+
 if (FAILED) {
   console.error('')
   console.error('✗ Pipeline health check FAILED — every section above ran; each ✗ line is a separate problem')
