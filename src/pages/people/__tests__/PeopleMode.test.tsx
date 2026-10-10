@@ -9,6 +9,11 @@ const metaCalls: { title?: string; canonicalPath?: string }[] = [];
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({ t: (k: string, d?: string) => d ?? k }),
 }));
+// HubNav (via HubNavBar) is real page chrome here, and it reads the signed-in
+// user for the identity block and the Messages unread badge. These specs render
+// without an AuthProvider, so stub the hook rather than drop the bar — the bar
+// is part of what the nested-anchor assertion below is checking.
+vi.mock('@/hooks/useAuth', () => ({ useAuth: () => ({ user: null, loading: false }) }));
 vi.mock('@/hooks/useMeta', () => ({
   useMeta: (opts: { title?: string; canonicalPath?: string }) => {
     metaCalls.push(opts);
@@ -64,9 +69,6 @@ describe('PeopleMode', () => {
 
   it('offers a way back to the hub', () => {
     renderWithProviders(<PeopleMode tab="friends" />);
-    expect(screen.getByRole('link', { name: /people/i })).toHaveAttribute(
-      'href',
-      '/hub/people',
-    );
+    expect(screen.getByRole('link', { name: /people/i })).toHaveAttribute('href', '/hub/people');
   });
 });

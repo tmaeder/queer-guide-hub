@@ -44,7 +44,7 @@ import { Editable } from '@/components/admin/inline/Editable';
 import { GroupCollections } from '@/components/groups/GroupCollections';
 import { PageContainer } from '@/components/layout/PageContainer';
 import { AdminEditButton } from '@/components/admin/AdminEditButton';
-import { HubNav } from '@/components/hub/HubNav';
+import { HubNavBar } from '@/components/hub/HubNavBar';
 
 export default function GroupDetail() {
   const { groupId } = useParams<{ groupId: string }>();
@@ -113,244 +113,268 @@ export default function GroupDetail() {
 
   if (!user) {
     return (
-      <PageContainer>
-        <HubNav className="mb-6" />
-        <Alert>
-          <AlertDescription>
-            {t('pages.groupDetail.signInRequired', 'Please sign in to view group details.')}
-          </AlertDescription>
-        </Alert>
-      </PageContainer>
+      <>
+        <HubNavBar />
+        <PageContainer>
+          <Alert>
+            <AlertDescription>
+              {t('pages.groupDetail.signInRequired', 'Please sign in to view group details.')}
+            </AlertDescription>
+          </Alert>
+        </PageContainer>
+      </>
     );
   }
 
   if (isLoading) {
     return (
-      <PageContainer>
-        <HubNav className="mb-6" />
-        <div className="animate-pulse flex flex-col gap-6">
-          <div className="h-8 bg-muted rounded-element w-1/3" />
-          <div className="h-32 bg-muted rounded-element" />
-          <div className="h-64 bg-muted rounded-element" />
-        </div>
-      </PageContainer>
+      <>
+        <HubNavBar />
+        <PageContainer>
+          <div className="animate-pulse flex flex-col gap-6">
+            <div className="h-8 bg-muted rounded-element w-1/3" />
+            <div className="h-32 bg-muted rounded-element" />
+            <div className="h-64 bg-muted rounded-element" />
+          </div>
+        </PageContainer>
+      </>
     );
   }
 
   if (!group) {
     return (
-      <PageContainer>
-        <HubNav className="mb-6" />
-        <div className="text-center flex flex-col gap-4">
-          <h1 className="text-2xl font-bold">Group not found</h1>
-          <p className="text-muted-foreground">
-            The group you're looking for doesn't exist or you don't have access to it.
-          </p>
-          <Button asChild>
-            <LocalizedLink to="/hub/groups">
-              <ArrowLeft size={16} className="mr-2" />
-              Back to Groups
-            </LocalizedLink>
-          </Button>
-        </div>
-      </PageContainer>
+      <>
+        <HubNavBar />
+        <PageContainer>
+          <div className="text-center flex flex-col gap-4">
+            <h1 className="text-2xl font-bold">Group not found</h1>
+            <p className="text-muted-foreground">
+              The group you're looking for doesn't exist or you don't have access to it.
+            </p>
+            <Button asChild>
+              <LocalizedLink to="/hub/groups">
+                <ArrowLeft size={16} className="mr-2" />
+                Back to Groups
+              </LocalizedLink>
+            </Button>
+          </div>
+        </PageContainer>
+      </>
     );
   }
 
   const canManage = group.user_role === 'admin' || group.user_role === 'moderator';
 
   return (
-    <PageContainer className="flex flex-col gap-6">
-      <HubNav />
-      {/* Header */}
-      <div className="flex items-center gap-4 mb-6">
-        <Button variant="soft" onClick={() => navigate(-1)}>
-          <ArrowLeft size={16} className="mr-2" />
-          Back
-        </Button>
-      </div>
+    <>
+      <HubNavBar />
+      <PageContainer className="flex flex-col gap-6">
+        {/* Header */}
+        <div className="flex items-center gap-4 mb-6">
+          <Button variant="soft" onClick={() => navigate(-1)}>
+            <ArrowLeft size={16} className="mr-2" />
+            Back
+          </Button>
+        </div>
 
-      {/* Group Hero */}
-      <Card>
-        <CardContent style={{ padding: '32px' }}>
-          <div className="flex flex-col md:flex-row gap-6">
-            <Avatar style={{ height: 96, width: 96 }}>
-              <AvatarImage src={group.image_url || undefined} alt={group.name} />
-              <AvatarFallback className="bg-foreground text-background text-2xl">
-                {group.name.charAt(0).toUpperCase()}
-              </AvatarFallback>
-            </Avatar>
+        {/* Group Hero */}
+        <Card>
+          <CardContent style={{ padding: '32px' }}>
+            <div className="flex flex-col md:flex-row gap-6">
+              <Avatar style={{ height: 96, width: 96 }}>
+                <AvatarImage src={group.image_url || undefined} alt={group.name} />
+                <AvatarFallback className="bg-foreground text-background text-2xl">
+                  {group.name.charAt(0).toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
 
-            <div className="flex-1 text-center md:text-left flex flex-col gap-4">
-              <div>
-                <div className="flex items-center gap-4 justify-center md:justify-start mb-2">
-                  <h1 className="text-3xl font-bold">
-                    <Editable
-                      contentType="community_groups"
-                      recordId={group.id}
-                      field="name"
-                      value={group.name}
-                      onSaved={(next) =>
-                        setGroup((prev) => (prev ? { ...prev, name: String(next ?? '') } : prev))
-                      }
-                    >
-                      {group.name}
-                    </Editable>
-                  </h1>
-                  {/* Labelled, not a bare icon. A reader asked to see that a group is
+              <div className="flex-1 text-center md:text-left flex flex-col gap-4">
+                <div>
+                  <div className="flex items-center gap-4 justify-center md:justify-start mb-2">
+                    <h1 className="text-3xl font-bold">
+                      <Editable
+                        contentType="community_groups"
+                        recordId={group.id}
+                        field="name"
+                        value={group.name}
+                        onSaved={(next) =>
+                          setGroup((prev) => (prev ? { ...prev, name: String(next ?? '') } : prev))
+                        }
+                      >
+                        {group.name}
+                      </Editable>
+                    </h1>
+                    {/* Labelled, not a bare icon. A reader asked to see that a group is
                       public up here, and an icon-only cue is also a WCAG 1.4.1 failure —
                       lock vs globe at 20px carries the whole meaning. The wording is
                       lifted from the About tab's copy of this same fact, which this
                       change removes. */}
-                  <Badge variant="outline" className="flex items-center gap-1 border-0">
-                    {group.is_private ? <Lock size={12} /> : <Globe size={12} />}
-                    {group.is_private ? 'Private group' : 'Public group'}
-                  </Badge>
-                </div>
-
-                <div className="flex items-center gap-4 justify-center md:justify-start text-muted-foreground">
-                  <div className="flex items-center gap-1">
-                    <Users size={16} />
-                    <span>{group.member_count} members</span>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <Clock size={16} />
-                    <span>Created {new Date(group.created_at).toLocaleDateString()}</span>
-                  </div>
-                </div>
-
-                {group.user_role && (
-                  <div className="flex justify-center md:justify-start mt-2">
-                    <Badge
-                      variant="secondary"
-                      style={{ alignItems: 'center', gap: '4px' }}
-                      className="flex border-0"
-                    >
-                      {group.user_role === 'admin' && <Crown size={12} />}
-                      {group.user_role === 'moderator' && <Shield size={12} />}
-                      {group.user_role === 'member' && <User size={12} />}
-                      {group.user_role}
+                    <Badge variant="outline" className="flex items-center gap-1 border-0">
+                      {group.is_private ? <Lock size={12} /> : <Globe size={12} />}
+                      {group.is_private ? 'Private group' : 'Public group'}
                     </Badge>
                   </div>
-                )}
-              </div>
 
-              {group.description && (
-                <Editable
-                  contentType="community_groups"
-                  recordId={group.id}
-                  field="description"
-                  value={group.description}
-                  onSaved={(next) =>
-                    setGroup((prev) => (prev ? { ...prev, description: String(next ?? '') } : prev))
-                  }
-                  fieldOverride={{ type: 'textarea' }}
-                  as="div"
-                >
-                  <p className="text-muted-foreground">{group.description}</p>
-                </Editable>
-              )}
-
-              {group.tags && group.tags.length > 0 && (
-                <div className="flex flex-col gap-2">
-                  <span className="text-sm font-medium text-muted-foreground">Tags:</span>
-                  <div className="flex flex-wrap gap-2">
-                    {group.tags.map((tag) => (
-                      <Badge
-                        key={tag}
-                        variant="outline"
-                        className="border-0 text-xs cursor-pointer"
-                        onClick={() => navigate(`/tags/${encodeURIComponent(tag)}`)}
-                      >
-                        {tag}
-                      </Badge>
-                    ))}
+                  <div className="flex items-center gap-4 justify-center md:justify-start text-muted-foreground">
+                    <div className="flex items-center gap-1">
+                      <Users size={16} />
+                      <span>{group.member_count} members</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <Clock size={16} />
+                      <span>Created {new Date(group.created_at).toLocaleDateString()}</span>
+                    </div>
                   </div>
+
+                  {group.user_role && (
+                    <div className="flex justify-center md:justify-start mt-2">
+                      <Badge
+                        variant="secondary"
+                        style={{ alignItems: 'center', gap: '4px' }}
+                        className="flex border-0"
+                      >
+                        {group.user_role === 'admin' && <Crown size={12} />}
+                        {group.user_role === 'moderator' && <Shield size={12} />}
+                        {group.user_role === 'member' && <User size={12} />}
+                        {group.user_role}
+                      </Badge>
+                    </div>
+                  )}
                 </div>
-              )}
 
-              <div className="flex gap-2 justify-center md:justify-start">
-                {!group.is_member ? (
-                  <Button onClick={handleJoin} disabled={isJoining}>
-                    <UserPlus size={16} className="mr-2" />
-                    {isJoining ? 'Joining...' : 'Join Group'}
-                  </Button>
-                ) : (
-                  <Button onClick={handleLeave} disabled={isLeaving} variant="soft">
-                    <UserMinus size={16} className="mr-2" />
-                    {isLeaving ? 'Leaving...' : 'Leave Group'}
-                  </Button>
+                {group.description && (
+                  <Editable
+                    contentType="community_groups"
+                    recordId={group.id}
+                    field="description"
+                    value={group.description}
+                    onSaved={(next) =>
+                      setGroup((prev) =>
+                        prev ? { ...prev, description: String(next ?? '') } : prev,
+                      )
+                    }
+                    fieldOverride={{ type: 'textarea' }}
+                    as="div"
+                  >
+                    <p className="text-muted-foreground">{group.description}</p>
+                  </Editable>
                 )}
 
-                {group.is_member && <InviteFriendsDialog groupId={group.id} />}
-
-                {canManage && (
-                  <Button variant="soft" onClick={() => setActiveTab('members')}>
-                    <Settings size={16} className="mr-2" />
-                    Manage Group
-                  </Button>
+                {group.tags && group.tags.length > 0 && (
+                  <div className="flex flex-col gap-2">
+                    <span className="text-sm font-medium text-muted-foreground">Tags:</span>
+                    <div className="flex flex-wrap gap-2">
+                      {group.tags.map((tag) => (
+                        <Badge
+                          key={tag}
+                          variant="outline"
+                          className="border-0 text-xs cursor-pointer"
+                          onClick={() => navigate(`/tags/${encodeURIComponent(tag)}`)}
+                        >
+                          {tag}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
                 )}
 
-                <AdminEditButton
-                  contentType="community_groups"
-                  contentId={group.id}
-                  contentName={group.name}
-                  currentData={group as unknown as Record<string, unknown>}
-                  size="default"
-                />
+                <div className="flex gap-2 justify-center md:justify-start">
+                  {!group.is_member ? (
+                    <Button onClick={handleJoin} disabled={isJoining}>
+                      <UserPlus size={16} className="mr-2" />
+                      {isJoining ? 'Joining...' : 'Join Group'}
+                    </Button>
+                  ) : (
+                    <Button onClick={handleLeave} disabled={isLeaving} variant="soft">
+                      <UserMinus size={16} className="mr-2" />
+                      {isLeaving ? 'Leaving...' : 'Leave Group'}
+                    </Button>
+                  )}
+
+                  {group.is_member && <InviteFriendsDialog groupId={group.id} />}
+
+                  {canManage && (
+                    <Button variant="soft" onClick={() => setActiveTab('members')}>
+                      <Settings size={16} className="mr-2" />
+                      Manage Group
+                    </Button>
+                  )}
+
+                  <AdminEditButton
+                    contentType="community_groups"
+                    contentId={group.id}
+                    contentName={group.name}
+                    currentData={group as unknown as Record<string, unknown>}
+                    size="default"
+                  />
+                </div>
               </div>
             </div>
-          </div>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
 
-      {/* Content Tabs */}
-      <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList style={{ width: '100%', gridTemplateColumns: 'repeat(6, 1fr)' }} className="grid">
-          {/* "Rules", not "About": the About content moved into the hero (see the tab
+        {/* Content Tabs */}
+        <Tabs value={activeTab} onValueChange={setActiveTab}>
+          <TabsList
+            style={{ width: '100%', gridTemplateColumns: 'repeat(6, 1fr)' }}
+            className="grid"
+          >
+            {/* "Rules", not "About": the About content moved into the hero (see the tab
               body), so the label has to say what the tab now actually holds. The `value`
               stays "about" — it is the default tab and is referenced elsewhere; renaming
               the key would be a behaviour change dressed up as a label fix. */}
-          <TabsTrigger value="about" style={{ alignItems: 'center', gap: '8px' }} className="flex">
-            <Scale size={16} />
-            Rules
-          </TabsTrigger>
-          <TabsTrigger
-            value="members"
-            style={{ alignItems: 'center', gap: '8px' }}
-            className="flex"
-          >
-            <Users size={16} />
-            Members
-          </TabsTrigger>
-          <TabsTrigger value="chat" style={{ alignItems: 'center', gap: '8px' }} className="flex">
-            <MessageSquare size={16} />
-            Chat
-          </TabsTrigger>
-          <TabsTrigger value="posts" style={{ alignItems: 'center', gap: '8px' }} className="flex">
-            <MessageSquare size={16} />
-            Posts
-          </TabsTrigger>
-          <TabsTrigger value="events" style={{ alignItems: 'center', gap: '8px' }} className="flex">
-            <Calendar size={16} />
-            Events
-          </TabsTrigger>
-          <TabsTrigger
-            value="collections"
-            style={{ alignItems: 'center', gap: '8px' }}
-            className="flex"
-          >
-            <Folder size={16} />
-            Collections
-          </TabsTrigger>
-        </TabsList>
+            <TabsTrigger
+              value="about"
+              style={{ alignItems: 'center', gap: '8px' }}
+              className="flex"
+            >
+              <Scale size={16} />
+              Rules
+            </TabsTrigger>
+            <TabsTrigger
+              value="members"
+              style={{ alignItems: 'center', gap: '8px' }}
+              className="flex"
+            >
+              <Users size={16} />
+              Members
+            </TabsTrigger>
+            <TabsTrigger value="chat" style={{ alignItems: 'center', gap: '8px' }} className="flex">
+              <MessageSquare size={16} />
+              Chat
+            </TabsTrigger>
+            <TabsTrigger
+              value="posts"
+              style={{ alignItems: 'center', gap: '8px' }}
+              className="flex"
+            >
+              <MessageSquare size={16} />
+              Posts
+            </TabsTrigger>
+            <TabsTrigger
+              value="events"
+              style={{ alignItems: 'center', gap: '8px' }}
+              className="flex"
+            >
+              <Calendar size={16} />
+              Events
+            </TabsTrigger>
+            <TabsTrigger
+              value="collections"
+              style={{ alignItems: 'center', gap: '8px' }}
+              className="flex"
+            >
+              <Folder size={16} />
+              Collections
+            </TabsTrigger>
+          </TabsList>
 
-        <TabsContent
-          value="about"
-          style={{ flexDirection: 'column', gap: '24px' }}
-          className="flex"
-        >
-          {/* Rules only.
+          <TabsContent
+            value="about"
+            style={{ flexDirection: 'column', gap: '24px' }}
+            className="flex"
+          >
+            {/* Rules only.
               This card used to restate the hero verbatim — description, member count,
               visibility, created date and tags all render above under a "Group Details"
               sub-heading, which is what a reader meant by "the group details are shown
@@ -358,233 +382,238 @@ export default function GroupDetail() {
               that survives: it is the one wired to `Editable` for admin inline editing,
               and up-top is where the reader asked for it. Rules were the only thing this
               card held that the hero does not. */}
-          {group.rules ? (
+            {group.rules ? (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Group rules</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-sm text-muted-foreground whitespace-pre-wrap">{group.rules}</p>
+                </CardContent>
+              </Card>
+            ) : (
+              <Card>
+                <CardContent className="py-8 text-center text-muted-foreground">
+                  This group has not set any rules.
+                </CardContent>
+              </Card>
+            )}
+          </TabsContent>
+
+          <TabsContent
+            value="members"
+            style={{ flexDirection: 'column', gap: '24px' }}
+            className="flex"
+          >
             <Card>
               <CardHeader>
-                <CardTitle>Group rules</CardTitle>
+                <div className="flex items-center justify-between">
+                  <CardTitle>Members ({group.member_count})</CardTitle>
+                  {canManage && groupId && (
+                    <AddMemberDialog
+                      groupId={groupId}
+                      existingMemberIds={groupMembers.map((m) => m.user_id)}
+                      onMemberAdded={() =>
+                        queryClient.invalidateQueries({ queryKey: ['group-members', groupId] })
+                      }
+                    />
+                  )}
+                </div>
               </CardHeader>
               <CardContent>
-                <p className="text-sm text-muted-foreground whitespace-pre-wrap">{group.rules}</p>
-              </CardContent>
-            </Card>
-          ) : (
-            <Card>
-              <CardContent className="py-8 text-center text-muted-foreground">
-                This group has not set any rules.
-              </CardContent>
-            </Card>
-          )}
-        </TabsContent>
-
-        <TabsContent
-          value="members"
-          style={{ flexDirection: 'column', gap: '24px' }}
-          className="flex"
-        >
-          <Card>
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <CardTitle>Members ({group.member_count})</CardTitle>
-                {canManage && groupId && (
-                  <AddMemberDialog
+                {groupMembers.length === 0 ? (
+                  <p className="text-muted-foreground text-center py-8">No members yet.</p>
+                ) : (
+                  <GroupMembersList
+                    members={groupMembers}
+                    canManage={canManage}
                     groupId={groupId}
-                    existingMemberIds={groupMembers.map((m) => m.user_id)}
-                    onMemberAdded={() =>
+                    onStartConversation={(_userId) => {
+                      toast({
+                        title: 'Not yet available',
+                        description: 'Direct messaging is not yet available.',
+                      });
+                    }}
+                    onMembersChanged={() =>
                       queryClient.invalidateQueries({ queryKey: ['group-members', groupId] })
                     }
                   />
                 )}
-              </div>
-            </CardHeader>
-            <CardContent>
-              {groupMembers.length === 0 ? (
-                <p className="text-muted-foreground text-center py-8">No members yet.</p>
-              ) : (
-                <GroupMembersList
-                  members={groupMembers}
-                  canManage={canManage}
-                  groupId={groupId}
-                  onStartConversation={(_userId) => {
-                    toast({
-                      title: 'Not yet available',
-                      description: 'Direct messaging is not yet available.',
-                    });
-                  }}
-                  onMembersChanged={() =>
-                    queryClient.invalidateQueries({ queryKey: ['group-members', groupId] })
-                  }
-                />
-              )}
-            </CardContent>
-          </Card>
-        </TabsContent>
+              </CardContent>
+            </Card>
+          </TabsContent>
 
-        <TabsContent value="chat" style={{ flexDirection: 'column', gap: '24px' }} className="flex">
-          <Card>
-            <CardContent
-              style={{ padding: '32px' }}
-              className="flex flex-col items-center gap-4 text-center"
-            >
-              <MessageSquare size={48} className="text-muted-foreground" />
-              <div className="flex flex-col gap-2">
-                <h3 className="text-lg font-semibold">Group chat lives in Messages</h3>
-                <p className="text-muted-foreground">
-                  {group.is_member
-                    ? 'This group has a shared conversation in your inbox.'
-                    : 'Join the group to read and post in its chat.'}
-                </p>
-              </div>
-              {group.is_member && group.chat_conversation_id && (
-                <Button asChild>
-                  <LocalizedLink
-                    to={`/hub/messages?filter=groups&conversation=${group.chat_conversation_id}`}
-                  >
-                    Open group chat
-                    <ArrowRight size={16} className="ml-2" aria-hidden />
-                  </LocalizedLink>
-                </Button>
-              )}
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent
-          value="posts"
-          style={{ flexDirection: 'column', gap: '24px' }}
-          className="flex"
-        >
-          <div className="flex items-center justify-between">
-            <h3 className="text-lg font-semibold">Group Posts</h3>
-            {group.is_member && (
-              <GroupPostDialog
-                onCreatePost={createPost}
-                isCreating={isCreatingPost}
-                groupMembers={groupMembers}
-                canCreateAnnouncement={canManage}
-                canPin={canManage}
-              />
-            )}
-          </div>
-
-          {postsLoading ? (
-            <div className="flex flex-col gap-4">
-              {[1, 2, 3].map((i) => (
-                <div key={i} className="animate-pulse">
-                  <div className="h-32 bg-muted rounded-element" />
-                </div>
-              ))}
-            </div>
-          ) : posts.length === 0 ? (
+          <TabsContent
+            value="chat"
+            style={{ flexDirection: 'column', gap: '24px' }}
+            className="flex"
+          >
             <Card>
-              <CardContent style={{ padding: '32px' }} className="text-center">
-                <MessageSquare
-                  size={48}
-                  style={{ margin: '0 auto 16px' }}
-                  className="text-muted-foreground"
-                />
-                <h3 className="text-lg font-semibold mb-2">No posts yet</h3>
-                <p className="text-muted-foreground mb-4">
-                  {group.is_member
-                    ? 'Be the first to start a conversation in this group!'
-                    : 'Join the group to see and participate in discussions.'}
-                </p>
-                {group.is_member && (
-                  <GroupPostDialog
-                    onCreatePost={createPost}
-                    isCreating={isCreatingPost}
-                    groupMembers={groupMembers}
-                    canCreateAnnouncement={canManage}
-                    canPin={canManage}
-                  />
+              <CardContent
+                style={{ padding: '32px' }}
+                className="flex flex-col items-center gap-4 text-center"
+              >
+                <MessageSquare size={48} className="text-muted-foreground" />
+                <div className="flex flex-col gap-2">
+                  <h3 className="text-lg font-semibold">Group chat lives in Messages</h3>
+                  <p className="text-muted-foreground">
+                    {group.is_member
+                      ? 'This group has a shared conversation in your inbox.'
+                      : 'Join the group to read and post in its chat.'}
+                  </p>
+                </div>
+                {group.is_member && group.chat_conversation_id && (
+                  <Button asChild>
+                    <LocalizedLink
+                      to={`/hub/messages?filter=groups&conversation=${group.chat_conversation_id}`}
+                    >
+                      Open group chat
+                      <ArrowRight size={16} className="ml-2" aria-hidden />
+                    </LocalizedLink>
+                  </Button>
                 )}
               </CardContent>
             </Card>
-          ) : (
-            <div className="flex flex-col gap-4">
-              {posts.map((post) => (
-                <GroupPostCard
-                  key={post.id}
-                  post={post}
-                  onLike={likePost}
-                  onUnlike={unlikePost}
-                  onVote={voteOnPoll}
-                  onTogglePin={canManage ? togglePin : undefined}
-                  canManage={canManage}
-                />
-              ))}
-            </div>
-          )}
-        </TabsContent>
+          </TabsContent>
 
-        <TabsContent
-          value="events"
-          style={{ flexDirection: 'column', gap: '24px' }}
-          className="flex"
-        >
-          <div className="flex items-center justify-between">
-            <h3 className="text-lg font-semibold">Group Events</h3>
-            {group.is_member && (
-              <CreateGroupEventDialog onCreateEvent={createEvent} isCreating={isCreatingEvent} />
-            )}
-          </div>
-
-          {eventsLoading ? (
-            <div className="flex flex-col gap-4">
-              {[1, 2, 3].map((i) => (
-                <div key={i} className="animate-pulse">
-                  <div className="h-48 bg-muted rounded-element" />
-                </div>
-              ))}
-            </div>
-          ) : events.length === 0 ? (
-            <Card>
-              <CardContent style={{ padding: '32px' }} className="text-center">
-                <Calendar
-                  size={48}
-                  style={{ margin: '0 auto 16px' }}
-                  className="text-muted-foreground"
+          <TabsContent
+            value="posts"
+            style={{ flexDirection: 'column', gap: '24px' }}
+            className="flex"
+          >
+            <div className="flex items-center justify-between">
+              <h3 className="text-lg font-semibold">Group Posts</h3>
+              {group.is_member && (
+                <GroupPostDialog
+                  onCreatePost={createPost}
+                  isCreating={isCreatingPost}
+                  groupMembers={groupMembers}
+                  canCreateAnnouncement={canManage}
+                  canPin={canManage}
                 />
-                <h3 className="text-lg font-semibold mb-2">No events yet</h3>
-                <p className="text-muted-foreground mb-4">
-                  {group.is_member
-                    ? 'Be the first to create an event for this group!'
-                    : 'Join the group to see and participate in events.'}
-                </p>
-                {group.is_member && (
-                  <CreateGroupEventDialog
-                    onCreateEvent={createEvent}
-                    isCreating={isCreatingEvent}
+              )}
+            </div>
+
+            {postsLoading ? (
+              <div className="flex flex-col gap-4">
+                {[1, 2, 3].map((i) => (
+                  <div key={i} className="animate-pulse">
+                    <div className="h-32 bg-muted rounded-element" />
+                  </div>
+                ))}
+              </div>
+            ) : posts.length === 0 ? (
+              <Card>
+                <CardContent style={{ padding: '32px' }} className="text-center">
+                  <MessageSquare
+                    size={48}
+                    style={{ margin: '0 auto 16px' }}
+                    className="text-muted-foreground"
                   />
-                )}
-              </CardContent>
-            </Card>
-          ) : (
-            <div className="flex flex-col gap-4">
-              {events.map((event) => (
-                <GroupEventCard
-                  key={event.id}
-                  event={event}
-                  onJoinEvent={joinEvent}
-                  onLeaveEvent={leaveEvent}
-                  onDeleteEvent={canManage ? deleteEvent : undefined}
-                  isJoining={isJoiningEvent}
-                  isLeaving={isLeavingEvent}
-                  isDeleting={isDeletingEvent}
-                  canManage={canManage}
-                />
-              ))}
-            </div>
-          )}
-        </TabsContent>
+                  <h3 className="text-lg font-semibold mb-2">No posts yet</h3>
+                  <p className="text-muted-foreground mb-4">
+                    {group.is_member
+                      ? 'Be the first to start a conversation in this group!'
+                      : 'Join the group to see and participate in discussions.'}
+                  </p>
+                  {group.is_member && (
+                    <GroupPostDialog
+                      onCreatePost={createPost}
+                      isCreating={isCreatingPost}
+                      groupMembers={groupMembers}
+                      canCreateAnnouncement={canManage}
+                      canPin={canManage}
+                    />
+                  )}
+                </CardContent>
+              </Card>
+            ) : (
+              <div className="flex flex-col gap-4">
+                {posts.map((post) => (
+                  <GroupPostCard
+                    key={post.id}
+                    post={post}
+                    onLike={likePost}
+                    onUnlike={unlikePost}
+                    onVote={voteOnPoll}
+                    onTogglePin={canManage ? togglePin : undefined}
+                    canManage={canManage}
+                  />
+                ))}
+              </div>
+            )}
+          </TabsContent>
 
-        <TabsContent
-          value="collections"
-          style={{ flexDirection: 'column', gap: '24px' }}
-          className="flex"
-        >
-          <GroupCollections groupId={groupId!} isMember={Boolean(group.is_member)} />
-        </TabsContent>
-      </Tabs>
-    </PageContainer>
+          <TabsContent
+            value="events"
+            style={{ flexDirection: 'column', gap: '24px' }}
+            className="flex"
+          >
+            <div className="flex items-center justify-between">
+              <h3 className="text-lg font-semibold">Group Events</h3>
+              {group.is_member && (
+                <CreateGroupEventDialog onCreateEvent={createEvent} isCreating={isCreatingEvent} />
+              )}
+            </div>
+
+            {eventsLoading ? (
+              <div className="flex flex-col gap-4">
+                {[1, 2, 3].map((i) => (
+                  <div key={i} className="animate-pulse">
+                    <div className="h-48 bg-muted rounded-element" />
+                  </div>
+                ))}
+              </div>
+            ) : events.length === 0 ? (
+              <Card>
+                <CardContent style={{ padding: '32px' }} className="text-center">
+                  <Calendar
+                    size={48}
+                    style={{ margin: '0 auto 16px' }}
+                    className="text-muted-foreground"
+                  />
+                  <h3 className="text-lg font-semibold mb-2">No events yet</h3>
+                  <p className="text-muted-foreground mb-4">
+                    {group.is_member
+                      ? 'Be the first to create an event for this group!'
+                      : 'Join the group to see and participate in events.'}
+                  </p>
+                  {group.is_member && (
+                    <CreateGroupEventDialog
+                      onCreateEvent={createEvent}
+                      isCreating={isCreatingEvent}
+                    />
+                  )}
+                </CardContent>
+              </Card>
+            ) : (
+              <div className="flex flex-col gap-4">
+                {events.map((event) => (
+                  <GroupEventCard
+                    key={event.id}
+                    event={event}
+                    onJoinEvent={joinEvent}
+                    onLeaveEvent={leaveEvent}
+                    onDeleteEvent={canManage ? deleteEvent : undefined}
+                    isJoining={isJoiningEvent}
+                    isLeaving={isLeavingEvent}
+                    isDeleting={isDeletingEvent}
+                    canManage={canManage}
+                  />
+                ))}
+              </div>
+            )}
+          </TabsContent>
+
+          <TabsContent
+            value="collections"
+            style={{ flexDirection: 'column', gap: '24px' }}
+            className="flex"
+          >
+            <GroupCollections groupId={groupId!} isMember={Boolean(group.is_member)} />
+          </TabsContent>
+        </Tabs>
+      </PageContainer>
+    </>
   );
 }
