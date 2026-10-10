@@ -123,7 +123,7 @@
 --      postcondition narrower than the work list cannot report the work list being incomplete,
 --      and one wider than it reports exactly that.
 
-select set_config('app.actor', 'migration:99991791609848_tag_prose_self_citation_sweep', true);
+select set_config('app.actor', 'migration:99991791628948_tag_prose_self_citation_sweep', true);
 
 -- ONE pattern. The work list, P1 and P5 all read it, so they cannot drift apart.
 create temporary table _sc_rx (p text) on commit drop;
