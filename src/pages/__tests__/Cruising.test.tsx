@@ -13,6 +13,11 @@ const { authState, listMock, mapMock, presenceMock, profileMock } = vi.hoisted((
   profileMock: vi.fn(),
 }));
 
+// HubNavBar is page chrome here, and it now reads the inbox count and the
+// viewer's profile through react-query. These specs render without a
+// QueryClientProvider and are about the page's own content, so stub it —
+// hubNavConsistency.test.ts is what asserts the bar is actually present.
+vi.mock('@/components/hub/HubNavBar', () => ({ HubNavBar: () => null }));
 vi.mock('@/hooks/useAuth', () => ({ useAuth: () => authState }));
 vi.mock('@/hooks/useMeta', () => ({ useMeta: () => {} }));
 vi.mock('react-i18next', () => ({
