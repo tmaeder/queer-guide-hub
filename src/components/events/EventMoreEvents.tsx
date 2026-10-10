@@ -5,8 +5,10 @@
  * reason it surfaced. Replaces the three separate rails the page used to stack.
  */
 
+import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
+import { RouteBullet } from '@/components/transit/RouteBullet';
 import { Badge } from '@/components/ui/badge';
 import { Image } from '@/components/ui/Image';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -112,9 +114,11 @@ interface Props {
   city?: string | null;
   limit?: number;
   className?: string;
+  compact?: boolean;
 }
 
-export function EventMoreEvents({ eventId, city, limit = 8, className }: Props) {
+export function EventMoreEvents({ eventId, city, limit = 8, className, compact = false }: Props) {
+  const { t } = useTranslation();
   const trackClick = useTrackClick();
   const { data, isLoading } = useQuery({
     queryKey: ['event-more-events', eventId, city ?? null, limit],
@@ -129,7 +133,10 @@ export function EventMoreEvents({ eventId, city, limit = 8, className }: Props) 
         <h2 className="mb-4 text-title font-bold">More events</h2>
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
           {Array.from({ length: limit }).map((_, i) => (
-            <Skeleton key={i} className="h-48 rounded-element" />
+            <Skeleton
+              key={i}
+              className={compact ? 'h-16 rounded-element' : 'h-48 rounded-element'}
+            />
           ))}
         </div>
       </section>
@@ -137,6 +144,44 @@ export function EventMoreEvents({ eventId, city, limit = 8, className }: Props) 
   }
 
   if (!data || data.length === 0) return null;
+
+  if (compact) {
+    return (
+      <section className={className} aria-label="More events">
+        <h2 className="mb-2 text-body-lg font-bold">
+          {t('events.detail.moreStops', 'Where to next?')}
+        </h2>
+        <div className="grid gap-2 sm:grid-cols-3">
+          {data.map((event) => (
+            <LocalizedLink
+              key={event.id}
+              to={`/events/${event.slug}`}
+              onClick={() =>
+                trackClick({ type: 'event', id: event.id }, 'similar', { reason: event.reason })
+              }
+              className="flex min-w-0 items-center gap-2 rounded-element p-2 text-inherit no-underline hover:bg-muted"
+            >
+              <RouteBullet type="event" size={28} />
+              <div className="min-w-0">
+                <p className="line-clamp-2 text-13 font-bold leading-snug">{event.title}</p>
+                <p className="truncate text-2xs text-muted-foreground">
+                  {[
+                    event.city,
+                    t(
+                      `events.detail.relatedReason.${event.reason === 'Same city' ? 'city' : event.reason === 'Similar vibe' ? 'similar' : 'tags'}`,
+                      event.reason,
+                    ),
+                  ]
+                    .filter(Boolean)
+                    .join(' · ')}
+                </p>
+              </div>
+            </LocalizedLink>
+          ))}
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section className={className} aria-label="More events">
