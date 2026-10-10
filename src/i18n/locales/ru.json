@@ -1382,7 +1382,12 @@
         "about": "[RU] About this event",
         "where": "[RU] Getting there",
         "going": "[RU] Who's going"
-      }
+      },
+      "calendar": "Календарь",
+      "moreOptions": "Другие действия",
+      "send": "Отправить кому-нибудь",
+      "getTickets": "Купить билеты",
+      "going": "Пойду"
     }
   },
   "venues": {

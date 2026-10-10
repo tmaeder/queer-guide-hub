@@ -1356,7 +1356,12 @@
         "about": "[AR] About this event",
         "where": "[AR] Getting there",
         "going": "[AR] Who's going"
-      }
+      },
+      "calendar": "التقويم",
+      "moreOptions": "خيارات إضافية",
+      "send": "إرسال إلى شخص",
+      "getTickets": "شراء التذاكر",
+      "going": "سأحضر"
     }
   },
   "venues": {

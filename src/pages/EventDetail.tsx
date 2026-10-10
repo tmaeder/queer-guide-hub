@@ -28,18 +28,18 @@ import { MilestonesForEntity } from '@/components/discovery/MilestonesForEntity'
 import {
   type EventWithRelations,
   EventMasthead,
-  EventActions,
   eventStatusLabel,
   EventFactStrip,
   EventForYou,
   EventDecisionCard,
   EventAbout,
+  hasEventAboutContent,
+  hasEventWhereContent,
   EventWhoIsGoing,
   hasWhoIsGoingContent,
   EventPeopleRail,
   isEventPast,
   EventWhere,
-  EventMobileBar,
   fetchEvent,
   exportEventToCalendar,
   formatEventDate,
@@ -59,6 +59,7 @@ import {
 } from '@/components/transit/singleSectionModel';
 import { TagChipRow } from '@/components/tags/TagChipRow';
 import { FromTheGlossary } from '@/components/tags/FromTheGlossary';
+import { DestinationSafetyCard } from '@/components/safety/DestinationSafetyCard';
 import SafetyAlertBanner from '@/components/country/SafetyAlertBanner';
 import { localizedField, type I18nMap } from '@/lib/localizeContent';
 
@@ -313,7 +314,9 @@ export default function EventDetail() {
         {
           id: 'about',
           title: t('events.detail.section.about', 'About this event'),
-          content: <EventAbout event={event} onContentUpdated={refetch} />,
+          content: hasEventAboutContent(event) ? (
+            <EventAbout event={event} onContentUpdated={refetch} />
+          ) : null,
         },
         {
           // Renders only when the umbrella actually has children (or the child
@@ -328,16 +331,15 @@ export default function EventDetail() {
         {
           id: 'where',
           title: t('events.detail.section.where', 'Getting there'),
-          content: (
+          content: hasEventWhereContent(event) ? (
             <EventWhere
               event={event}
               venueRef={venueRef}
-              countryId={effectiveCountry?.id ?? event.country_id}
               onOrganizerClick={(organizer) =>
                 navigate(`/events?organizer=${encodeURIComponent(organizer)}`)
               }
             />
-          ),
+          ) : null,
         },
         {
           // Guarded, like every other section on every other single. Without
@@ -436,11 +438,10 @@ export default function EventDetail() {
                 39,899) and was rendered NOWHERE — the single biggest piece of
                 already-collected data missing from this page. */}
             {event.tags && event.tags.length > 0 && (
-              <TagChipRow tags={event.tags} max={16} more="expand" />
+              <TagChipRow tags={event.tags} max={6} more="expand" />
             )}
           </div>
         }
-        action={<EventActions event={event} onShare={() => setSendEventOpen(true)} />}
         body={
           <>
             {/* The city-resolved country, not `event.countries`. The page has
@@ -455,13 +456,19 @@ export default function EventDetail() {
                 countryName={effectiveCountry.name}
               />
             )}
-            <ErrorBoundary section="event-fact-strip" fallback={null}>
-              <EventFactStrip
-                event={event}
-                showEventTz={showEventTz}
-                setShowEventTz={setShowEventTz}
-              />
-            </ErrorBoundary>
+            <DestinationSafetyCard countryIds={[effectiveCountry?.id ?? event.country_id]} />
+            <div className="flex flex-col gap-4">
+              <ErrorBoundary section="event-fact-strip" fallback={null}>
+                <EventFactStrip
+                  event={event}
+                  showEventTz={showEventTz}
+                  setShowEventTz={setShowEventTz}
+                />
+              </ErrorBoundary>
+              <ErrorBoundary section="event-decision-card" fallback={null}>
+                {decisionCard}
+              </ErrorBoundary>
+            </div>
             <PhotoInset
               src={heroImage}
               alt={event.title}
@@ -491,14 +498,6 @@ export default function EventDetail() {
         }
         rail={
           <>
-            {/* ONE copy. This was `hidden md:block` in the rail with a
-                duplicate `md:hidden` copy inside the body — so a phone got the
-                inline one and the rail's contents were dropped outright.
-                `SinglePage`'s rail is a sibling that reflows under the body,
-                which is the whole reason the duplication existed. */}
-            <ErrorBoundary section="event-decision-card" fallback={null}>
-              {decisionCard}
-            </ErrorBoundary>
             <StickyRailGroup>
               <SingleRouteRail
                 sections={sections}
@@ -518,7 +517,7 @@ export default function EventDetail() {
           </>
         }
         footer={
-          <div className="flex flex-col gap-12 pb-28 md:pb-12">
+          <div className="flex flex-col gap-12 pb-12">
             {/* Self-hiding composite rail: it belongs here, not in the
                 "Who's going" section, where its internal decision to render
                 nothing was invisible to the section filter. */}
@@ -555,14 +554,6 @@ export default function EventDetail() {
           path: `/events/${event.slug || event.id}`,
           gated: Boolean((event as { safety_gated?: boolean }).safety_gated),
         }}
-      />
-
-      <EventMobileBar
-        event={event}
-        isPast={isPast}
-        user={user}
-        userAttendance={userAttendance}
-        onAttendanceUpdate={handleAttendanceUpdate}
       />
     </>
   );

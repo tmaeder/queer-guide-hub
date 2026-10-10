@@ -1350,7 +1350,12 @@
         "about": "[ZH] About this event",
         "where": "[ZH] Getting there",
         "going": "[ZH] Who's going"
-      }
+      },
+      "calendar": "日历",
+      "moreOptions": "更多选项",
+      "send": "发送给他人",
+      "getTickets": "购买门票",
+      "going": "参加"
     }
   },
   "venues": {
