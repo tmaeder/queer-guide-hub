@@ -33751,6 +33751,7 @@ export type Database = {
       get_marketplace_tag_facets: {
         Args: {
           p_department?: string
+          p_in_stock?: boolean
           p_include_adult?: boolean
           p_subcategory_group?: string
         }
