@@ -3099,6 +3099,7 @@
     }
   },
   "country": {
+    "overview": "概览",
     "loading": "正在加载国家…",
     "planTrip": "规划前往{{country}}的行程",
     "similar": "更多目的地",
@@ -3131,6 +3132,7 @@
       "cities": "城市"
     },
     "section": {
+      "about": "关于{{country}}",
       "rights": "权利与安全",
       "cities": "城市",
       "venues": "场所",

@@ -3099,6 +3099,7 @@
     }
   },
   "country": {
+    "overview": "概要",
     "loading": "国を読み込み中…",
     "planTrip": "{{country}}への旅行を計画",
     "similar": "その他の旅行先",
@@ -3131,6 +3132,7 @@
       "cities": "都市"
     },
     "section": {
+      "about": "{{country}}について",
       "rights": "権利と安全",
       "cities": "都市",
       "venues": "施設",

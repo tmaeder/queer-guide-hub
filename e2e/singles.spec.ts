@@ -24,7 +24,7 @@ const dismissCookieBanner = async (page: Page) => {
 
 const ROUTES = [
   { path: '/city/berlin', name: 'Berlin', eyebrow: /City/ },
-  { path: '/country/germany', name: 'Germany', eyebrow: /Country/ },
+  { path: '/country/germany', name: 'Germany', eyebrow: /Country/, taskFirst: true },
   { path: '/villages/chueca', name: 'Chueca', eyebrow: /District/ },
   // Venue and event joined the singles after the geo three. The venue is one
   // of the 626 (2.7%) that actually have opening hours, so its OWNER module
@@ -163,7 +163,19 @@ for (const route of ROUTES) {
       // such a trip every time trip-creation.spec.ts runs — so this assertion
       // became a strict-mode violation ("resolved to 2 elements") on
       // /city/berlin for every authenticated run, on every branch.
-      await expect(page.getByTestId('single-rail')).toBeVisible();
+      if ('taskFirst' in route && route.taskFirst) {
+        await expect(page.getByTestId('single-rail')).toHaveCount(0);
+        await expect(page.getByTestId('country-map')).toBeVisible();
+        await expect(page.locator('#cities')).toBeVisible();
+        await expect(page.locator('#travel')).toBeVisible();
+        expect(
+          await page
+            .locator('article section[id]')
+            .evaluateAll((els) => els.map((el) => el.id).slice(0, 3)),
+        ).toEqual(['cities', 'travel', 'rights']);
+      } else {
+        await expect(page.getByTestId('single-rail')).toBeVisible();
+      }
       const overflow = await page.evaluate(
         () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
       );
@@ -273,4 +285,15 @@ test.describe('city network diagram', () => {
       await expect(page.getByText(mode, { exact: true })).toHaveCount(0);
     }
   });
+});
+
+test('country section navigation opens travel options', async ({ page }) => {
+  await open(page, '/country/germany');
+  await expect(page.locator('#travel-detail')).toBeHidden();
+  await page.locator('article nav a[href="#travel"]').click();
+  await expect(page.locator('#travel-detail')).toBeVisible();
+  await expect(page.locator('button[aria-controls="travel-detail"]')).toHaveAttribute(
+    'aria-expanded',
+    'true',
+  );
 });

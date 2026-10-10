@@ -3099,6 +3099,7 @@
     }
   },
   "country": {
+    "overview": "개요",
     "loading": "국가 불러오는 중…",
     "planTrip": "{{country}} 여행 계획",
     "similar": "더 많은 여행지",
@@ -3131,6 +3132,7 @@
       "cities": "도시"
     },
     "section": {
+      "about": "{{country}} 소개",
       "rights": "권리 및 안전",
       "cities": "도시",
       "venues": "장소",

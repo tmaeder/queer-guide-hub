@@ -3109,6 +3109,7 @@
     }
   },
   "country": {
+    "overview": "نظرة عامة",
     "loading": "جارٍ تحميل الدولة…",
     "planTrip": "خطّط لرحلة إلى {{country}}",
     "similar": "وجهات أخرى",
@@ -3141,6 +3142,7 @@
       "cities": "المدن"
     },
     "section": {
+      "about": "عن {{country}}",
       "rights": "الحقوق والأمان",
       "cities": "المدن",
       "venues": "الأماكن",

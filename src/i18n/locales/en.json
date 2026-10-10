@@ -3257,6 +3257,7 @@
     }
   },
   "country": {
+    "overview": "Overview",
     "loading": "Loading country…",
     "planTrip": "Plan a trip to {{country}}",
     "similar": "More destinations",
@@ -3289,6 +3290,7 @@
       "cities": "Cities"
     },
     "section": {
+      "about": "About {{country}}",
       "rights": "Rights & safety",
       "cities": "Cities",
       "venues": "Venues",

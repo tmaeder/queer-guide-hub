@@ -59,7 +59,7 @@ export async function fetchCountryWeather(country: CountryRelation): Promise<Wea
 // whole section when there is nothing in it. ─────────────────────────────────
 
 export function CountryRightsTab({ country }: { country: CountryRelation }) {
-  return <LGBTJurisdictionInfo country={country} style={{ borderColor: 'inherit' }} />;
+  return <LGBTJurisdictionInfo country={country} embedded />;
 }
 
 /**
@@ -150,7 +150,7 @@ export function countryCityStops(cities: CityRelation[]): Stop[] {
 
 export function CountryCitiesTab({ cities }: { cities: CityRelation[] }) {
   if (cities.length === 0) return null;
-  return <StopList stops={countryCityStops(cities)} />;
+  return <StopList stops={countryCityStops(cities)} className="grid sm:grid-cols-2" />;
 }
 
 /**

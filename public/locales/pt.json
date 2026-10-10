@@ -3101,6 +3101,7 @@
     }
   },
   "country": {
+    "overview": "Visão geral",
     "loading": "A carregar país…",
     "planTrip": "Planear uma viagem para {{country}}",
     "similar": "Mais destinos",
@@ -3133,6 +3134,7 @@
       "cities": "Cidades"
     },
     "section": {
+      "about": "Sobre {{country}}",
       "rights": "Direitos e segurança",
       "cities": "Cidades",
       "venues": "Locais",

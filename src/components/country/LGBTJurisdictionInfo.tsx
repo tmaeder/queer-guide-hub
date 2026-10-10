@@ -27,6 +27,8 @@ interface LGBTJurisdictionInfoProps {
   countryName?: string;
   countryCode?: string;
   style?: React.CSSProperties;
+  /** The country section supplies the heading and surrounding surface. */
+  embedded?: boolean;
 }
 
 /**
@@ -59,6 +61,7 @@ export default function LGBTJurisdictionInfo({
   country,
   className = '',
   style,
+  embedded = false,
 }: LGBTJurisdictionInfoProps) {
   const { t } = useTranslation();
   if (!country) return null;
@@ -291,38 +294,45 @@ export default function LGBTJurisdictionInfo({
     );
   };
 
+  const body = (
+    <>
+      <LensVerdictSummary country={country} className="mb-2" />
+      {RIGHT_SECTION_ORDER.map(renderSection)}
+      <div className="pt-2">
+        <SourceLine className="text-xs2" provenance={rightsProvenance} />
+      </div>
+    </>
+  );
+
+  if (embedded) {
+    return (
+      <div className={className} style={style}>
+        <div className="mb-4">
+          <SourceLine
+            updatedAt={country.lgbti_data_last_updated}
+            showLink={false}
+            provenance={rightsProvenance}
+          />
+        </div>
+        {body}
+      </div>
+    );
+  }
+
   return (
     <Card className={className} style={style}>
       <CardHeader>
-        <div className="flex items-center justify-between gap-4">
-          <CardTitle>
-            <Shield size={20} aria-hidden="true" />
-            {t('country.rights.title', 'LGBTI rights overview')}
-          </CardTitle>
-        </div>
+        <CardTitle>
+          <Shield size={20} aria-hidden="true" />
+          {t('country.rights.title', 'LGBTI rights overview')}
+        </CardTitle>
         <SourceLine
           updatedAt={country.lgbti_data_last_updated}
           showLink={false}
           provenance={rightsProvenance}
         />
       </CardHeader>
-      <CardContent>
-        {/*
-          Leads the card. It is also the only verdict here now: the composite
-          equality score used to sit in the header, and one number could not
-          state three very different situations — 82 countries have LGB and
-          trans verdicts that disagree.
-        */}
-        <LensVerdictSummary country={country} className="mb-2" />
-
-        {RIGHT_SECTION_ORDER.map(renderSection)}
-
-        <div className="pt-2">
-          {/* Footer citation takes the same provenance: a country ILGA does not
-              cover must not carry an ILGA link at either end of the card. */}
-          <SourceLine className="text-xs2" provenance={rightsProvenance} />
-        </div>
-      </CardContent>
+      <CardContent>{body}</CardContent>
     </Card>
   );
 }
