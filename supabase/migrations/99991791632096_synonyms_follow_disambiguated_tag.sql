@@ -87,7 +87,7 @@ begin
   update search_synonyms s
      set replacements = array[f.new_replacement],
          notes = coalesce(s.notes || ' | ', '')
-               || format('re-pointed %s -> %s on 99991791618696: the tag was disambiguated to %L while this synonym still rewrote to %L, which is another live tag',
+               || format('re-pointed %s -> %s on 99991791632096: the tag was disambiguated to %L while this synonym still rewrote to %L, which is another live tag',
                          f.old_replacement, f.new_replacement, f.own_name, f.old_replacement)
     from _syn_fix f
    where s.id = f.id;
