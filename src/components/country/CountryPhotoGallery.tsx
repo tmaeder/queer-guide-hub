@@ -12,7 +12,13 @@ export function CountryPhotoGallery({ photos }: { photos: { src: string; caption
               type="button"
               className="group min-w-0 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-4 rounded-element"
             >
-              <Image src={photo.src} alt="" aspect="card" imageRole="cover" />
+              <Image
+                src={photo.src}
+                alt=""
+                aspect="card"
+                imageRole="cover"
+                referrerPolicy="no-referrer"
+              />
               <span className="mt-2 block text-13 font-bold">{photo.caption}</span>
             </button>
           </DialogTrigger>
@@ -25,6 +31,7 @@ export function CountryPhotoGallery({ photos }: { photos: { src: string; caption
               fit="contain"
               className="max-h-[70vh]"
               priority
+              referrerPolicy="no-referrer"
             />
           </DialogContent>
         </Dialog>
