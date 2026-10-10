@@ -371,6 +371,7 @@
     }
   ],
   "unsafe_slug": 0,
-  "search_synonyms": 41,
-  "synonyms": null
+  "synonyms": [],
+  "observed_search_synonyms_before_snapshot": 41,
+  "note": "The initial count saw 41 linked search synonyms. The subsequent before-image query found none, indicating concurrent cleanup before this repair. The migration guards removal of any still-linked synonyms together with the self-alias rows."
 }
