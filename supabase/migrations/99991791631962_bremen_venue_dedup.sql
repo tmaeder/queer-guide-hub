@@ -96,7 +96,7 @@ $merge$;
 update public.dedup_review_queue q
    set status = 'approved',
        reviewed_at = now(),
-       reviewer_note = 'manual Bremen dedup 99991791576009'
+       reviewer_note = 'manual Bremen dedup 99991791631962'
   from _bremen_pairs p
  where q.status = 'open'
    and q.entity_type = 'venue'
