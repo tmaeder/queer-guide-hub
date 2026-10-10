@@ -154,6 +154,12 @@ for (const route of ROUTES) {
     test('supporting information stays available on a phone', async ({ page }) => {
       await page.setViewportSize({ width: 390, height: 844 });
       await open(page, route.path);
+      if (route.path.startsWith('/city/')) {
+        // Cities put the map and safety in the opening on every viewport.
+        await expect(page.getByTestId('single-rail')).toHaveCount(0);
+        await expect(page.locator('article section[aria-label="Overview"]')).toBeVisible();
+        return;
+      }
       // "Every single works at 390px with the same modules in the same order,
       // stacked. No mobile-only cuts." A `hidden lg:block` rail would drop
       // the map, the facts and the provenance line on a phone.
@@ -244,7 +250,11 @@ test.describe('safety layer', () => {
 
 test.describe('city network diagram', () => {
   test('renders for a city that has real geometry', async ({ page }) => {
-    await open(page, '/city/berlin');
+    await open(page, '/city/berlin#travel');
+    await expect(page.locator('button[aria-controls="travel-detail"]')).toHaveAttribute(
+      'aria-expanded',
+      'true',
+    );
     await page.locator('#travel').scrollIntoViewIfNeeded();
     // The line legend is what makes the diagram information rather than
     // ornament — the homepage card renders the same geometry `aria-hidden`.
@@ -271,7 +281,7 @@ test.describe('city network diagram', () => {
     // this page renders a travel section, and nothing checked it. Without that
     // control the test also passes on a page with no travel section at all,
     // which is exactly how the Kansas village satisfied it for months.
-    await open(page, '/city/edinburgh');
+    await open(page, '/city/edinburgh#travel');
     await expect(
       page.locator('#travel'),
       'no travel section — the network gate is not being exercised at all',

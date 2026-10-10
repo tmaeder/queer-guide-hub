@@ -94,7 +94,7 @@ export function CityOverviewTab({ city, showDescription = true }: CityOverviewTa
         </p>
       )}
 
-      <FactGrid facts={facts} />
+      <FactGrid facts={facts} variant="strip" />
 
       {costOfLiving.length > 0 && (
         <div>

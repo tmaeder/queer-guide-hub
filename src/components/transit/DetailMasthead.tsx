@@ -1,5 +1,5 @@
-import { cn } from '@/lib/utils';
 import { RouteBullet } from './RouteBullet';
+import { cn } from '@/lib/utils';
 import type { Track } from './routeBulletMap';
 
 interface DetailMastheadProps {
@@ -26,6 +26,7 @@ interface DetailMastheadProps {
   lead?: React.ReactNode;
   className?: string;
   compact?: boolean;
+  size?: 'default' | 'compact';
 }
 
 /**
@@ -56,13 +57,14 @@ export function DetailMasthead({
   lead,
   className,
   compact = false,
+  size = 'default',
 }: DetailMastheadProps) {
   return (
     <header className={className}>
       <div className={cn('flex flex-wrap items-center gap-2', compact ? 'mb-2' : 'mb-4')}>
         <RouteBullet
           type={type}
-          size={compact ? 32 : 44}
+          size={size === 'compact' ? 32 : 44}
           letter={letter}
           track={track}
           label={bulletLabel}
@@ -77,12 +79,23 @@ export function DetailMasthead({
       <h1
         className={cn(
           'm-0 break-words font-display leading-none tracking-tight',
-          compact ? 'text-headline md:text-display' : 'text-display md:text-hero',
+          size === 'compact' ? 'text-headline md:text-display' : 'text-display md:text-hero',
         )}
       >
         {title}
       </h1>
-      {lead && <p className="mt-4 max-w-2xl text-body-lg leading-relaxed md:text-xl">{lead}</p>}
+      {lead && (
+        <p
+          className={cn(
+            'max-w-2xl leading-relaxed',
+            compact
+              ? 'mt-2 text-body md:text-body-lg'
+              : 'mt-4 text-body-lg leading-relaxed md:text-xl',
+          )}
+        >
+          {lead}
+        </p>
+      )}
     </header>
   );
 }

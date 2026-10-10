@@ -19,9 +19,37 @@ export interface Fact {
  * detail page that leaves half its columns null should collapse to a shorter
  * grid, not render blank cells.
  */
-export function FactGrid({ facts, className }: { facts: Fact[]; className?: string }) {
+export function FactGrid({
+  facts,
+  className,
+  variant = 'grid',
+}: {
+  facts: Fact[];
+  className?: string;
+  variant?: 'grid' | 'strip';
+}) {
   const shown = facts.filter((f) => f.value !== null && f.value !== undefined && f.value !== '');
   if (shown.length === 0) return null;
+
+  if (variant === 'strip') {
+    return (
+      <dl
+        className={cn(
+          'grid grid-cols-2 gap-x-6 gap-y-4 rounded-container bg-surface-container p-4',
+          className,
+        )}
+      >
+        {shown.map((fact) => (
+          <div key={fact.label} className="min-w-0">
+            <dt className="text-2xs font-bold uppercase tracking-label text-muted-foreground">
+              {fact.label}
+            </dt>
+            <dd className="mt-1 break-words text-15 font-bold leading-snug">{fact.value}</dd>
+          </div>
+        ))}
+      </dl>
+    );
+  }
 
   return (
     <dl

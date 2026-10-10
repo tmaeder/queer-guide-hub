@@ -414,7 +414,7 @@ export default function EventDetail() {
     <>
       <SinglePage
         type="event"
-        compact
+        density="dense"
         eyebrow={[
           t('events.detail.eyebrow', 'Event'),
           event.event_type && event.event_type !== 'other'
