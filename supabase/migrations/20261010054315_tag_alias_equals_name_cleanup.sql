@@ -1,17 +1,3 @@
--- RECOVERED FROM PROD BY scripts/recover-migration-drift.mjs.
---
--- Applied to prod as version 20261010054315 with no repo file — the signature of
--- MCP `apply_migration`, which stamps a version and commits nothing. An applied
--- version with no file fails migration-versions on every PR in the repo and
--- makes `db push` refuse to run.
---
--- Reconstructed from `schema_migrations.statements`, which holds the PARSED
--- statements: trailing semicolons are stripped (re-added here) and any original
--- comment header is NOT recorded, so the reasoning that accompanied this
--- migration is lost. Verified by md5 against a server-computed digest.
---
--- Never re-run: `db push` matches on version and skips an applied one. The file
--- exists so history is complete and a rebuild from zero works.
 -- Follow-up to 20261010053810. That migration reverted 40 colliding tag names
 -- to the German originals the campaign migrations had recorded as aliases —
 -- which made each of those aliases equal to its tag's own name, taking the
@@ -59,4 +45,4 @@ begin
 
   raise notice 'alias_equals_name=0, duplicate_active_name=0, % aliases remain', v_tot;
 end
-$verify$;;
+$verify$;

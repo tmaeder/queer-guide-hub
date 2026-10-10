@@ -1,34 +1,3 @@
--- RECOVERED FROM PROD BY scripts/recover-migration-drift.mjs.
---
--- Applied to prod as version 20261010045306 with no repo file — the signature of
--- MCP `apply_migration`, which stamps a version and commits nothing. An applied
--- version with no file fails migration-versions on every PR in the repo and
--- makes `db push` refuse to run.
---
--- Reconstructed from `schema_migrations.statements`, which holds the PARSED
--- statements: trailing semicolons are stripped (re-added here) and any original
--- comment header is NOT recorded, so the reasoning that accompanied this
--- migration is lost. Verified by md5 against a server-computed digest.
---
--- Never re-run: `db push` matches on version and skips an applied one. The file
--- exists so history is complete and a rebuild from zero works.
---
--- RECOVERER'S NOTE, correcting the generic paragraph above for THIS file: the
--- author's own four-line header DID survive. `statements` holds parsed
--- statements, and leading comments attach to the statement that follows, so a
--- single-statement migration whose text opens with comments keeps them. The
--- lost-reasoning warning is accurate for the general case and wrong here —
--- everything below this line is the author's, byte-identical to prod (md5
--- 69cd2fa8c5592f61ef9e909029eaa6e3 over the ';\n\n' join, checked against a
--- digest Postgres computed over the same join).
---
--- Recovered by a different session than the one that applied it, to clear the
--- repo-wide drift failure. The 29 `duplicate_active_name` rows this migration
--- produced are a SEPARATE failure and are deliberately NOT touched here —
--- renaming German tags to their English labels collided them with the English
--- rows that already existed (saenger/sangerin/singer -> "Singer",
--- schauspieler/schauspieler-in/actor -> "Actor"), and deciding whether those
--- are merges, re-namings or an intended baseline move belongs to the author.
 -- Curated English labels for the English unified_tags.name column.
 -- Keep slugs, IDs, content assignments and counts intact. Proper names,
 -- software titles and established cultural terms are deliberately excluded.
@@ -213,4 +182,3 @@ UPDATE public.unified_tags
    SET description = 'Regular meet-ups, support groups and peer counseling sessions that fill much of the queer community calendar.'
  WHERE slug = 'gruppen' AND name = 'Groups'
    AND description = 'German for groups: the regular meet-ups, support groups and peer counseling sessions that fill much of the queer community calendar.';
-;
