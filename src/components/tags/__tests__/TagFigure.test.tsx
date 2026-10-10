@@ -18,17 +18,28 @@
  */
 import { describe, expect, it, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
-import { shouldShowTagFigure, TagFigure } from '../TagFigure';
-import { formatImageCredit } from '@/components/ui/ImageCredit';
+import { TagFigure } from '../TagFigure';
+import { shouldShowTagFigure } from '@/lib/tags/tagFigureVisibility';
+import { formatImageCredit } from '@/lib/imageCredit';
+import { figuresForSlug } from '../infographics/registry';
 
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({ t: (_k: string, d?: string) => d ?? _k, i18n: { language: 'en' } }),
 }));
 
+/** The predicate's own inputs — exactly five, no component props. */
+const vis = {
+  imageUrl: 'https://img.queer.guide/tag-images/abc.jpg',
+  imageExplicit: false,
+  pageAlreadyGated: false,
+  safeMode: false,
+  hasFigure: false,
+};
+
 const base = {
   slug: 'leather',
   name: 'Leather',
-  imageUrl: 'https://img.queer.guide/tag-images/abc.jpg',
+  imageUrl: vis.imageUrl,
   imageAlt: 'A set of leather working tools.',
   imageSource: 'wikimedia',
   imageLicense: 'CC BY-SA 4.0',
@@ -40,24 +51,22 @@ const base = {
 
 describe('shouldShowTagFigure', () => {
   it('shows a licensed non-explicit photograph', () => {
-    expect(shouldShowTagFigure(base)).toBe(true);
+    expect(shouldShowTagFigure(vis)).toBe(true);
   });
 
   it('shows nothing when there is no image — coverage is an outcome, not a target', () => {
-    expect(shouldShowTagFigure({ ...base, imageUrl: null })).toBe(false);
-    expect(shouldShowTagFigure({ ...base, imageUrl: undefined })).toBe(false);
+    expect(shouldShowTagFigure({ ...vis, imageUrl: null })).toBe(false);
+    expect(shouldShowTagFigure({ ...vis, imageUrl: undefined })).toBe(false);
   });
 
   it('HIDES an explicit photograph from an un-affirmed reader', () => {
-    expect(shouldShowTagFigure({ ...base, imageExplicit: true, pageAlreadyGated: false })).toBe(
+    expect(shouldShowTagFigure({ ...vis, imageExplicit: true, pageAlreadyGated: false })).toBe(
       false,
     );
   });
 
   it('shows an explicit photograph only once the page is gated', () => {
-    expect(shouldShowTagFigure({ ...base, imageExplicit: true, pageAlreadyGated: true })).toBe(
-      true,
-    );
+    expect(shouldShowTagFigure({ ...vis, imageExplicit: true, pageAlreadyGated: true })).toBe(true);
   });
 
   it('HIDES an explicit photograph under safe mode even on a gated page', () => {
@@ -65,7 +74,7 @@ describe('shouldShowTagFigure', () => {
     // affirmation: an affirmed adult may still have safe mode on.
     expect(
       shouldShowTagFigure({
-        ...base,
+        ...vis,
         imageExplicit: true,
         pageAlreadyGated: true,
         safeMode: true,
@@ -76,19 +85,11 @@ describe('shouldShowTagFigure', () => {
   it('leaves a NON-explicit photograph alone under safe mode', () => {
     // Safe mode is not a photography switch. Over-hiding here would make the
     // band read as broken on a perfectly ordinary term.
-    expect(shouldShowTagFigure({ ...base, safeMode: true })).toBe(true);
+    expect(shouldShowTagFigure({ ...vis, safeMode: true })).toBe(true);
   });
 
   it('stands down for a term that already carries a diagram', () => {
-    // `consent` is a figure subject in the live registry. Asserted through the
-    // real registry rather than a mock, so retiring that figure surfaces here
-    // instead of silently changing behaviour.
-    const withFigure = shouldShowTagFigure({ ...base, slug: 'consent' });
-    const withoutFigure = shouldShowTagFigure({ ...base, slug: 'leather' });
-    expect(withoutFigure).toBe(true);
-    // If this fails, check whether `consent` is still a figure subject before
-    // changing the expectation — the point is the yielding, not this slug.
-    expect(withFigure).toBe(false);
+    expect(shouldShowTagFigure({ ...vis, hasFigure: true })).toBe(false);
   });
 });
 
@@ -110,6 +111,18 @@ describe('TagFigure', () => {
   it('falls back to the tag name for alt rather than rendering an empty alt', () => {
     render(<TagFigure {...base} imageAlt={null} />);
     expect(screen.getByAltText('Leather')).toBeInTheDocument();
+  });
+
+  it('stands down for a term that already carries a diagram', () => {
+    // The registry lookup lives in the component (the predicate takes a plain
+    // boolean so `src/lib` need not import out of `src/components`), so the
+    // yielding is asserted HERE and against the REAL registry rather than a
+    // mock — retiring that figure surfaces as a failure instead of silently
+    // changing what readers see.
+    const subject = figuresForSlug('consent');
+    expect(subject.length).toBeGreaterThan(0); // control: the fixture is real
+    const { container } = render(<TagFigure {...base} slug="consent" />);
+    expect(container).toBeEmptyDOMElement();
   });
 });
 

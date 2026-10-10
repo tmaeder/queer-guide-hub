@@ -27,9 +27,9 @@
 
 import { useTranslation } from 'react-i18next';
 import { Eyebrow } from '@/components/ui/Eyebrow';
-import { Image } from '@/components/ui/image';
+import { Image } from '@/components/ui/Image';
 import { ImageCredit } from '@/components/ui/ImageCredit';
-
+import { shouldShowTagFigure } from '@/lib/tags/tagFigureVisibility';
 import { figuresForSlug } from './infographics/registry';
 
 export interface TagFigureProps {
@@ -49,42 +49,6 @@ export interface TagFigureProps {
   safeMode: boolean;
 }
 
-/**
- * Whether the band renders — ONE implementation, two readers.
- *
- * `TagDetail` needs this to decide whether to push a `photo` stop onto the
- * route strip, and that file's own comment is explicit that the station array's
- * order must match the JSX order "or the strip highlights the wrong stop while
- * scrolling". A component that decides for itself while the page guesses
- * separately is exactly how that drifts, so the rule lives here and both ask it.
- */
-export function shouldShowTagFigure(input: {
-  slug: string;
-  imageUrl: string | null | undefined;
-  imageExplicit: boolean | null | undefined;
-  pageAlreadyGated: boolean;
-  safeMode: boolean;
-}): boolean {
-  if (!input.imageUrl) return false;
-
-  // Safe mode hides explicit imagery outright — the same rule the figure
-  // registry, `rankSimilarTags` and `TagInterchange` already apply.
-  if (input.imageExplicit && input.safeMode) return false;
-
-  // An explicit photograph may only render where the reader has affirmed their
-  // age. `zz_enforce_tag_image_contract` guarantees such a row carries
-  // `is_adult`, and an `is_adult` tag's whole page is wrapped in
-  // `TagDetailWithGate` — so in practice `pageAlreadyGated` is true here. The
-  // check is kept because "in practice" is not an invariant, and the cost of
-  // being wrong is explicit material shown to someone who did not opt in.
-  if (input.imageExplicit && !input.pageAlreadyGated) return false;
-
-  // Stand down for a diagram. See the header.
-  if (figuresForSlug(input.slug).length > 0) return false;
-
-  return true;
-}
-
 export function TagFigure({
   slug,
   name,
@@ -99,9 +63,16 @@ export function TagFigure({
 }: TagFigureProps) {
   const { t } = useTranslation();
 
-  if (!shouldShowTagFigure({ slug, imageUrl, imageExplicit, pageAlreadyGated, safeMode })) {
-    return null;
-  }
+  // `hasFigure` is looked up here and again in `TagDetail` for its own station.
+  // The lookup may happen twice; the RULE lives in one place.
+  const visible = shouldShowTagFigure({
+    imageUrl,
+    imageExplicit,
+    pageAlreadyGated,
+    safeMode,
+    hasFigure: figuresForSlug(slug).length > 0,
+  });
+  if (!visible) return null;
 
   const alt = imageAlt?.trim() || name;
 

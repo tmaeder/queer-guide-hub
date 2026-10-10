@@ -16,48 +16,7 @@
  *     glossary figure wants.
  */
 import { cn } from '@/lib/utils';
-
-export interface ImageCreditParts {
-  /** Photographer or author, as the upstream gave it. */
-  attribution?: string | null;
-  /** Licence short name, e.g. "CC BY-SA 4.0". */
-  license?: string | null;
-  /** Where it came from, e.g. "wikimedia". */
-  source?: string | null;
-}
-
-/**
- * Compose the credit line. Pure, so it can be asserted without a renderer.
- *
- * Returns null when there is nothing to say — NOT an empty string, so a caller
- * cannot accidentally render an empty credit bar and read it as "credited".
- *
- * `source` is included only when it adds something the other two do not: a
- * licence like "CC BY-SA 4.0" already implies Commons to anyone who would check,
- * but "Pexels License" plus "pexels" is a tautology, so the source is dropped
- * when the licence text already names it.
- */
-export function formatImageCredit(parts: ImageCreditParts): string | null {
-  const attribution = parts.attribution?.trim();
-  const license = parts.license?.trim();
-  const source = parts.source?.trim();
-
-  const bits: string[] = [];
-  if (attribution) bits.push(attribution);
-  if (license) bits.push(license);
-  if (source && !(license && license.toLowerCase().includes(source.toLowerCase()))) {
-    bits.push(SOURCE_LABELS[source] ?? source);
-  }
-  return bits.length > 0 ? bits.join(' · ') : null;
-}
-
-/** Human labels for the stored `image_source` vocabulary. */
-const SOURCE_LABELS: Record<string, string> = {
-  'wikidata:p18': 'via Wikimedia Commons',
-  wikimedia: 'via Wikimedia Commons',
-  pexels: 'via Pexels',
-  unsplash: 'via Unsplash',
-};
+import { formatImageCredit, type ImageCreditParts } from '@/lib/imageCredit';
 
 export interface ImageCreditProps extends ImageCreditParts {
   /** A pre-composed line, for callers whose data already carries one. */

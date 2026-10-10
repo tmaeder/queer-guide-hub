@@ -74,7 +74,8 @@ import { TagInterchange } from '@/components/tags/TagInterchange';
 import { SubstanceInteractions } from '@/components/tags/SubstanceInteractions';
 import { TagDiagnosticCodes } from '@/components/tags/TagDiagnosticCodes';
 import { TagFlagBand } from '@/components/tags/TagFlagBand';
-import { TagFigure, shouldShowTagFigure } from '@/components/tags/TagFigure';
+import { TagFigure } from '@/components/tags/TagFigure';
+import { shouldShowTagFigure } from '@/lib/tags/tagFigureVisibility';
 import { TagFlagRailCard } from '@/components/tags/TagFlagRailCard';
 import { TagHankyCodeBand } from '@/components/tags/TagHankyCodeBand';
 import { flagByTagSlug, HANKY_CODE_TAG_SLUG } from '@/lib/flags';
@@ -323,13 +324,14 @@ export default function TagDetail() {
     () =>
       Boolean(tag) &&
       shouldShowTagFigure({
-        slug: tag!.slug,
         imageUrl: tag!.image_url,
         imageExplicit: tag!.image_explicit,
         pageAlreadyGated: isAdult,
         safeMode: safeMode.enabled,
+        // Reuses the memo this page already keeps for its `figure` station.
+        hasFigure: figures.length > 0,
       }),
-    [tag, isAdult, safeMode.enabled],
+    [tag, isAdult, safeMode.enabled, figures],
   );
 
   /** The stations are the page's BANDS, with the wiki's own `<h2>`s as
