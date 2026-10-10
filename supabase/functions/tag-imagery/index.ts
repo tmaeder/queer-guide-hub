@@ -83,8 +83,24 @@ interface RowResult {
   url?: string
 }
 
+/**
+ * Commons Artist / ImageDescription values are HTML. Strip tags to a FIXPOINT:
+ * one pass is bypassable, because removing the inner tag of `<scr<script>ipt>`
+ * splices the outer one back into a live tag (CodeQL
+ * js/incomplete-multi-character-sanitization). Then drop stray angle brackets.
+ *
+ * Byte-identical to `queer-imagery-backfill`'s stripHtml, which already carried
+ * this fix — same input (Commons `extmetadata` HTML), so same shape rather than
+ * a second one.
+ */
 function stripHtml(value: string | undefined | null): string {
-  return (value ?? '').replace(/<[^>]*>/g, '').trim()
+  let s = value ?? ''
+  let prev: string
+  do {
+    prev = s
+    s = s.replace(/<[^>]*>/g, '')
+  } while (s !== prev)
+  return s.replace(/[<>]/g, '').trim()
 }
 
 /** One Commons imageinfo call: canonical URL, dimensions, artist, licence. */
