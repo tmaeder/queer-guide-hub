@@ -79,8 +79,3 @@ export async function getGlossaryVocabulary(env: Env): Promise<GlossaryLinkTerm[
     return remember(lastKnown, FAILURE_TTL_MS);
   }
 }
-
-/** Test seam — resets the in-isolate memo. */
-export function __resetGlossaryVocabularyMemo(): void {
-  memo = null;
-}

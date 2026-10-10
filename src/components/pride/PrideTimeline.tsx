@@ -114,7 +114,12 @@ export function PrideTimeline({
   return (
     <div className="w-full">
       {/* Month chips — quick scroll */}
-      <div className="flex gap-2 overflow-x-auto pb-2 mb-2 scrollbar-thin">
+      <div
+        className="flex gap-2 overflow-x-auto pb-2 mb-2 scrollbar-thin"
+        role="region"
+        aria-label="Timeline months"
+        tabIndex={0}
+      >
         {MONTHS.map((m, i) => {
           const count = placed.filter((p) => p.monthIndex === i).length;
           if (count === 0) {

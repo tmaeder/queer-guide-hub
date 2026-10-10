@@ -5,5 +5,13 @@ import { ContributeDialog } from '@/components/contribute/ContributeDialog';
  * in ContactBranch so the global launcher and /contact cannot drift apart.
  */
 export default function Contact() {
-  return <ContributeDialog mode="page" initialBranch="contact" />;
+  const category = new URLSearchParams(window.location.search).get('category');
+  const isLegacyReportLink = category === 'safety' || category === 'bugs' || category === 'bug';
+  return (
+    <ContributeDialog
+      mode="page"
+      initialBranch={isLegacyReportLink ? 'feedback' : 'contact'}
+      initialFeedbackCategory={category === 'bugs' ? 'bug' : (category ?? undefined)}
+    />
+  );
 }

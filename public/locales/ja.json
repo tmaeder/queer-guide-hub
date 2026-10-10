@@ -3004,7 +3004,28 @@
     "venueCount_one": "[JA] {{count}} place",
     "venueCount_other": "[JA] {{count}} places",
     "villageCount_one": "[JA] {{count}} district",
-    "villageCount_other": "[JA] {{count}} districts"
+    "villageCount_other": "[JA] {{count}} districts",
+    "discovery": {
+      "noMatches": "該当する結果がありません。別のフィルターをお試しください。",
+      "showing": "{{count}}件中{{shown}}件を表示",
+      "reset": "フィルターをリセット",
+      "searchPlaces": "スポットを検索",
+      "placeType": "スポットの種類",
+      "allPlaces": "すべてのスポット",
+      "morePlaces": "もっと見る",
+      "district": "クィア地区",
+      "when": "日程",
+      "upcoming": "開催予定",
+      "today": "今日",
+      "weekend": "今週末",
+      "week": "今後7日間",
+      "eventType": "イベントの種類",
+      "allTypes": "すべての種類",
+      "freeOnly": "無料のみ",
+      "moreEvents": "もっと見る",
+      "moreTypes": "他のイベントの種類",
+      "until": "終了"
+    }
   },
   "pride": {
     "eyebrow": "Pride Calendar",
@@ -5156,7 +5177,7 @@
       "scanTitle": "フライヤーやリンクをスキャン",
       "scanBody": "ファイルやウェブページから複数の投稿を抽出します。",
       "contactTitle": "チームに連絡",
-      "contactBody": "アカウントのサポート、モデレーション、提携、取材、その他の非公開メッセージ。"
+      "contactBody": "アカウントのサポート、提携、取材、その他の非公開メッセージ。"
     },
     "feedback": {
       "heading": "問題を報告、またはアイデアを共有",
@@ -5165,7 +5186,8 @@
       "successBody": "ご意見はQueer Guideの改善に役立ちます。",
       "category": "フィードバックの種類",
       "categories": {
-        "bug": "不具合",
+        "safety": "安全とモデレーション",
+        "bug": "不具合の報告",
         "idea": "アイデア",
         "improvement": "改善",
         "content-idea": "コンテンツ案"
@@ -5176,7 +5198,7 @@
       "descriptionPlaceholder": "詳しく教えてください…",
       "includeScreenshot": "このページのスクリーンショットを添付",
       "screenshotPreview": "スクリーンショットのプレビュー",
-      "contextNote": "現在のURL、ブラウザ情報、最近のエラーが自動で含まれます。"
+      "contextNote": "現在のURL、ブラウザ情報、最近のエラー、ネットワーク障害が自動で含まれます。"
     },
     "correction": {
       "heading": "このページを修正",

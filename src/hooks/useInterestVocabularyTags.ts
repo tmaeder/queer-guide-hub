@@ -25,6 +25,7 @@ export function useInterestVocabularyTags() {
       const { data, error } = await supabase
         .from('unified_tags')
         .select('id, name, slug')
+        .eq('status', 'active')
         .in('slug', INTEREST_SLUGS as unknown as string[]);
       if (error) throw error;
       return (data ?? []) as InterestTag[];

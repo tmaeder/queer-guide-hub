@@ -33,6 +33,7 @@ export interface FeedbackContext {
 
 const MAX_ERRORS = 20;
 const MAX_NETWORK_FAILURES = 10;
+const TRANSPARENT_IMAGE_PLACEHOLDER = 'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=';
 
 const errorBuffer: ErrorEntry[] = [];
 const networkBuffer: NetworkFailureEntry[] = [];
@@ -48,6 +49,15 @@ function pushError(entry: ErrorEntry) {
 function pushNetworkFailure(entry: NetworkFailureEntry) {
   networkBuffer.push(entry);
   if (networkBuffer.length > MAX_NETWORK_FAILURES) networkBuffer.shift();
+}
+
+function screenshotDataUrlToBlob(dataUrl: string): Blob {
+  const match = /^data:([^;,]+);base64,(.+)$/s.exec(dataUrl);
+  if (!match) throw new Error('Invalid screenshot data URL');
+  const [, contentType, payload] = match;
+  const binary = atob(payload);
+  const bytes = Uint8Array.from(binary, (character) => character.charCodeAt(0));
+  return new Blob([bytes], { type: contentType });
 }
 
 export function installErrorBuffer() {
@@ -76,7 +86,9 @@ export function installErrorBuffer() {
   console.error = (...args: unknown[]) => {
     try {
       const message = args
-        .map((a) => (a instanceof Error ? a.message : typeof a === 'string' ? a : JSON.stringify(a)))
+        .map((a) =>
+          a instanceof Error ? a.message : typeof a === 'string' ? a : JSON.stringify(a),
+        )
         .join(' ')
         .slice(0, 500);
       const firstError = args.find((a): a is Error => a instanceof Error);
@@ -99,8 +111,13 @@ export function installNetworkBuffer() {
   const originalFetch = window.fetch;
   window.fetch = async function patchedFetch(...args: Parameters<typeof fetch>) {
     const [input, init] = args;
-    const method = (init?.method || (typeof input === 'object' && 'method' in input ? input.method : 'GET') || 'GET').toUpperCase();
-    const url = typeof input === 'string' ? input : input instanceof URL ? input.toString() : input.url;
+    const method = (
+      init?.method ||
+      (typeof input === 'object' && 'method' in input ? input.method : 'GET') ||
+      'GET'
+    ).toUpperCase();
+    const url =
+      typeof input === 'string' ? input : input instanceof URL ? input.toString() : input.url;
 
     try {
       const response = await originalFetch.apply(this, args);
@@ -126,7 +143,9 @@ export function installNetworkBuffer() {
 }
 
 export function captureContext(): FeedbackContext {
-  const colorScheme = window.matchMedia?.('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  const colorScheme = window.matchMedia?.('(prefers-color-scheme: dark)').matches
+    ? 'dark'
+    : 'light';
   return {
     url: window.location.href,
     viewport: { width: window.innerWidth, height: window.innerHeight },
@@ -141,14 +160,31 @@ export function captureContext(): FeedbackContext {
 export async function captureScreenshot(): Promise<Blob | null> {
   try {
     const { toJpeg } = await import('html-to-image');
-    const dataUrl = await toJpeg(document.body, {
+    const options = {
       quality: 0.7,
       pixelRatio: Math.min(window.devicePixelRatio || 1, 2),
       width: Math.min(window.innerWidth, 1280),
       height: window.innerHeight,
-    });
-    const res = await fetch(dataUrl);
-    return await res.blob();
+      // Reporting must not depend on third-party images or web fonts opting
+      // into canvas capture. Failed media is replaced in the first pass; if a
+      // browser still rejects the clone, retry with media elements omitted.
+      imagePlaceholder: TRANSPARENT_IMAGE_PLACEHOLDER,
+      skipFonts: true,
+    };
+
+    let dataUrl: string;
+    try {
+      dataUrl = await toJpeg(document.body, options);
+    } catch {
+      dataUrl = await toJpeg(document.body, {
+        ...options,
+        filter: (node) => !['IMG', 'PICTURE', 'VIDEO', 'CANVAS', 'IFRAME'].includes(node.tagName),
+      });
+    }
+    // Decode locally. Fetching a large data: URL is unnecessary and is
+    // rejected by some embedded browsers, which made an otherwise successful
+    // capture silently disappear from the report form.
+    return screenshotDataUrlToBlob(dataUrl);
   } catch {
     return null;
   }

@@ -17,6 +17,7 @@ import {
 } from '../_shared/entity-classifier.ts'
 import { withErrorReporting } from '../_shared/report-api-error.ts'
 import { isLgbtiConnectionVocab } from '../_shared/lgbti-connection.ts'
+import { isJunkTokenTagName } from '../_shared/tag-name-quality.ts'
 import { resolveStagingContentType } from '../_shared/content-registry.ts'
 import { validatePersonalityContract } from '../_shared/personality-contract.ts'
 import { prideScheduleWarnings } from './pride-rules.ts'
@@ -340,6 +341,24 @@ Deno.serve(withErrorReporting('pipeline-validate', async (req) => {
         // Minimal generic validation for remaining legacy entities
         const name = String(n.name ?? '').trim()
         if (name.length < 2) errors.push('E_MISSING_NAME')
+
+        // `unified_tags` has no validator of its own, so a glossary term lands
+        // in this generic branch and `name.length >= 2` was the ONLY rule it
+        // had to pass. The entity-type cross-check below cannot help either —
+        // `expectedKindForTargetTable` has no `unified_tags` case, so it
+        // short-circuits. Zero warnings means confidence 1.0, which clears the
+        // DAG's review gate, which is how `Us`, `No`, `Gb` and `All` were
+        // committed as concepts. The shape rule (and why `TV`/`DJ` must pass)
+        // is in `_shared/tag-name-quality.ts`, shared with
+        // `tag_hygiene_stats().junk_token_name_active` through a parity test.
+        //
+        // An error means `status='rejected'` + `disposition='rejected'` with
+        // the code recorded in `ai_validation_result.errors`, so the decision
+        // is legible on the staging row. Note it does NOT reach `review_queue`
+        // — only `needs_review` does, despite what the comment below it says.
+        if (item.target_table === 'unified_tags' && isJunkTokenTagName(name)) {
+          errors.push('E_JUNK_TOKEN_NAME')
+        }
         const urls = (n.urls ?? []) as string[]
         for (const u of urls) {
           try { new URL(u) } catch { warnings.push('W_INVALID_URL') }

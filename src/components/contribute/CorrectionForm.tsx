@@ -7,16 +7,18 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
-import { insertRow } from '@/hooks/usePageFetchers';
 import { captureContext } from '@/utils/feedbackContext';
 import { usePageEntityState } from '@/contexts/PageEntityContext';
+import { submitCommunityReport } from '@/lib/submitCommunityReport';
+import { ReportContextPanel } from './ReportContextPanel';
 
 interface CorrectionFormProps {
+  screenshotBlob?: Blob | null;
   onCancel?: () => void;
   onDone?: () => void;
 }
 
-export default function CorrectionForm({ onCancel, onDone }: CorrectionFormProps) {
+export default function CorrectionForm({ screenshotBlob, onCancel, onDone }: CorrectionFormProps) {
   const { t } = useTranslation();
   const { user } = useAuth();
   const { toast } = useToast();
@@ -25,6 +27,7 @@ export default function CorrectionForm({ onCancel, onDone }: CorrectionFormProps
   const [replacement, setReplacement] = useState('');
   const [email, setEmail] = useState('');
   const [honeypot, setHoneypot] = useState('');
+  const [includeScreenshot, setIncludeScreenshot] = useState(Boolean(screenshotBlob));
   const [status, setStatus] = useState<'idle' | 'submitting' | 'submitted'>('idle');
 
   const submit = async () => {
@@ -32,9 +35,9 @@ export default function CorrectionForm({ onCancel, onDone }: CorrectionFormProps
     setStatus('submitting');
     try {
       const pageUrl = window.location.href;
-      const { error } = await insertRow('community_submissions', {
-        content_type: 'correction',
-        data: {
+      await submitCommunityReport({
+        kind: 'correction',
+        payload: {
           title: entity?.contentName
             ? `Correction: ${entity.contentName}`
             : `Correction for ${window.location.pathname}`,
@@ -49,12 +52,12 @@ export default function CorrectionForm({ onCancel, onDone }: CorrectionFormProps
                 content_name: entity.contentName ?? null,
               }
             : null,
-          context: captureContext(),
         },
-        source_url: pageUrl,
-        submitted_by: user?.id ?? null,
+        context: captureContext(),
+        screenshotBlob,
+        includeScreenshot,
+        honeypot,
       });
-      if (error) throw error;
       setStatus('submitted');
       toast({ title: t('contribute.correction.successToast', 'Correction submitted. Thank you!') });
     } catch (error) {
@@ -148,6 +151,13 @@ export default function CorrectionForm({ onCancel, onDone }: CorrectionFormProps
         </div>
       )}
 
+      <ReportContextPanel
+        id="correction-screenshot"
+        screenshotBlob={screenshotBlob}
+        includeScreenshot={includeScreenshot}
+        onIncludeScreenshotChange={setIncludeScreenshot}
+      />
+
       <input
         type="text"
         name="website"
@@ -159,7 +169,7 @@ export default function CorrectionForm({ onCancel, onDone }: CorrectionFormProps
         aria-hidden="true"
       />
 
-      <div className="sticky bottom-0 -mx-1 flex justify-end gap-4 bg-surface-container-low/95 px-1 pt-4 max-sm:flex-col-reverse sm:items-center">
+      <div className="mt-6 flex justify-end gap-4 border-t border-border-hairline pt-6 max-sm:flex-col-reverse sm:items-center">
         {onCancel && (
           <Button type="button" variant="outline" onClick={onCancel} className="max-sm:w-full">
             {t('contribute.common.back', 'Back')}

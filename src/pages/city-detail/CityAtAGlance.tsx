@@ -68,5 +68,5 @@ export function CityAtAGlance({ city }: CityAtAGlanceProps) {
       value: t('cities.detail.travel.noAirport', 'No'),
     });
 
-  return <FactGrid facts={facts} />;
+  return <FactGrid facts={facts} variant="strip" />;
 }

@@ -12,9 +12,6 @@ vi.mock('@/components/contribute/CorrectionForm', () => ({
 vi.mock('@/components/contribute/AddSomethingBranch', () => ({
   default: () => <div>add branch</div>,
 }));
-vi.mock('@/components/contribute/FlyerScanBranch', () => ({
-  default: () => <div>scan branch</div>,
-}));
 vi.mock('@/components/contribute/ContactBranch', () => ({
   default: () => <div>contact branch</div>,
 }));
@@ -27,7 +24,6 @@ describe('ContributeDialog branch routing', () => {
     ['Report a problem or idea', 'feedback branch'],
     ['Fix something on this page', 'correction branch'],
     ['Add something new', 'add branch'],
-    ['Scan a flyer or link', 'scan branch'],
     ['Contact the team', 'contact branch'],
   ])('opens %s from the chooser', async (buttonName, branchText) => {
     const user = userEvent.setup();
@@ -35,6 +31,11 @@ describe('ContributeDialog branch routing', () => {
 
     await user.click(screen.getByRole('button', { name: new RegExp(buttonName, 'i') }));
     expect(await screen.findByText(branchText)).toBeTruthy();
+  });
+
+  it('keeps flyer scanning out of the root chooser', () => {
+    render(<ContributeDialog mode="page" />);
+    expect(screen.queryByRole('button', { name: /Scan a flyer or link/i })).toBeNull();
   });
 
   it('opens the contact branch directly for the durable /contact wrapper', async () => {

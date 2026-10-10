@@ -19,6 +19,8 @@ vi.mock('@/hooks/useProfile', () => ({
 }));
 vi.mock('@/hooks/useInboxFeed', () => ({
   useInboxFeed: () => ({ items: [], loading: false, unreadCount: 3 }),
+  // HubNav reads the badge through this now, not through the feed.
+  useInboxUnreadCount: () => 3,
 }));
 vi.mock('@/hooks/useMeta', () => ({ useMeta: () => {} }));
 vi.mock('@/components/hub/modules/OverviewModule', () => ({
@@ -41,9 +43,13 @@ vi.mock('@/pages/Feed', () => ({
 
 import HubPage from '../HubPage';
 
+// Render at the module's real URL. HubNav derives the highlighted pill from the
+// pathname rather than from a prop, so a bare MemoryRouter (pathname "/")
+// correctly highlights nothing — the old `activeModule` prop let the nav claim
+// an active module the address bar did not agree with.
 const renderPage = (module?: 'overview' | 'feed' | 'messages' | 'plans' | 'saved') =>
   render(
-    <MemoryRouter>
+    <MemoryRouter initialEntries={[!module || module === 'overview' ? '/hub' : `/hub/${module}`]}>
       <HubPage module={module} />
     </MemoryRouter>,
   );

@@ -3162,7 +3162,28 @@
     "venueCount_other": "{{count}} places",
     "viewList": "List",
     "villageCount_one": "{{count}} district",
-    "villageCount_other": "{{count}} districts"
+    "villageCount_other": "{{count}} districts",
+    "discovery": {
+      "noMatches": "No matches. Try another filter.",
+      "showing": "Showing {{shown}} of {{count}}",
+      "reset": "Reset filters",
+      "searchPlaces": "Search places",
+      "placeType": "Place type",
+      "allPlaces": "All places",
+      "morePlaces": "More places",
+      "district": "Queer district",
+      "when": "When",
+      "upcoming": "Upcoming",
+      "today": "Today",
+      "weekend": "This weekend",
+      "week": "Next 7 days",
+      "eventType": "Event type",
+      "allTypes": "All types",
+      "freeOnly": "Free only",
+      "moreEvents": "More departures",
+      "moreTypes": "More event types",
+      "until": "Until"
+    }
   },
   "pride": {
     "eyebrow": "Pride Calendar",
@@ -5121,7 +5142,7 @@
       "scanTitle": "Scan a flyer or link",
       "scanBody": "Extract several submissions from files or a web page.",
       "contactTitle": "Contact the team",
-      "contactBody": "Account help, moderation, partnerships, press or another private message."
+      "contactBody": "Account help, partnerships, press or another private message."
     },
     "feedback": {
       "heading": "Report a problem or share an idea",
@@ -5130,7 +5151,8 @@
       "successBody": "Your feedback helps improve Queer Guide.",
       "category": "What type of feedback?",
       "categories": {
-        "bug": "Bug",
+        "safety": "Safety and moderation",
+        "bug": "Bug reports",
         "idea": "Idea",
         "improvement": "Improvement",
         "content-idea": "Content idea"
@@ -5141,7 +5163,7 @@
       "descriptionPlaceholder": "Tell us more…",
       "includeScreenshot": "Include screenshot of this page",
       "screenshotPreview": "Screenshot preview",
-      "contextNote": "Automatically included: current page URL, browser information and recent errors."
+      "contextNote": "Automatically included: current page URL, browser information, recent errors and network failures."
     },
     "correction": {
       "heading": "Fix something on this page",

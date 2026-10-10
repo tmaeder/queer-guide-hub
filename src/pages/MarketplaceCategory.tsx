@@ -7,6 +7,7 @@ import { MarketplaceMasthead } from '@/components/marketplace/MarketplaceMasthea
 import { FilterChip } from '@/components/transit/FilterChip';
 import { DeadEndTrack } from '@/components/transit/DeadEndTrack';
 import { MarketplaceFilteredView } from '@/components/marketplace/MarketplaceFilteredView';
+import { AttributeFacetGroups } from '@/components/marketplace/AttributeFacetGroups';
 import { GuidesRail } from '@/components/guides/GuidesRail';
 import { AdultContentGate } from '@/components/marketplace/AdultContentGate';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
@@ -232,7 +233,7 @@ export default function MarketplaceCategory() {
 
       <PageContainer>
         {isDepartment && groupTiles.length > 1 && (
-          <div className="mb-6 flex flex-wrap gap-2" aria-label="Filter by subcategory">
+          <div className="mb-2 flex flex-wrap gap-1.5" aria-label="Filter by subcategory">
             <FilterChip active={!activeGroup} label="All" onClick={() => setGroup('')} />
             {groupTiles.map((g) => (
               <FilterChip
@@ -246,7 +247,7 @@ export default function MarketplaceCategory() {
         )}
 
         {isDepartment && activeGroup && fineTiles.length > 1 && (
-          <div className="mb-6 flex flex-wrap gap-2" aria-label="Filter by fine category">
+          <div className="mb-2 flex flex-wrap gap-1.5" aria-label="Filter by fine category">
             <FilterChip active={!activeFine} label="All" onClick={() => setFine('')} />
             {fineTiles.map((f) => (
               <FilterChip
@@ -260,16 +261,13 @@ export default function MarketplaceCategory() {
         )}
 
         {isDepartment && tagFacets.length > 0 && (
-          <div className="mb-8 flex flex-wrap gap-2" aria-label="Refine by tag">
-            {tagFacets.map((tag) => (
-              <FilterChip
-                key={tag.slug}
-                active={selectedTags.includes(tag.slug)}
-                label={chipLabel(tag.name, tag.count, selectedTags.includes(tag.slug))}
-                onClick={() => toggleTag(tag.slug)}
-              />
-            ))}
-          </div>
+          <AttributeFacetGroups
+            className="mb-4"
+            department={subcategory}
+            facets={tagFacets}
+            selected={selectedTags}
+            onToggle={toggleTag}
+          />
         )}
 
         <MarketplaceFilteredView

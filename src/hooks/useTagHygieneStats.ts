@@ -91,6 +91,13 @@ export interface TagHygieneStats {
    *  heuristic measures ~5% precision on this corpus, flagging Party, Film,
    *  Pride and Transgender, which are English words German borrowed. */
   non_latin_name: number;
+  /** A single letter, a title-cased two-letter locale code (`gb` -> `Gb`) or a
+   *  filter-UI stopword published as a glossary term — the cohort
+   *  99991791619649 deprecated. Zero-invariant. Excludes
+   *  entity_kind=attribute, because the marketplace size facets ARE the
+   *  letters L, M and S; an all-caps two-letter name is accepted so real
+   *  acronyms (TV, DJ) pass. */
+  junk_token_name_active: number;
 }
 
 /**

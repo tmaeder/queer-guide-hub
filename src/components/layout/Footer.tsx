@@ -49,7 +49,7 @@ const legalLinks = [
  *  target entity), so there is nothing target-less to open from here; the real
  *  target-less surface is the contact form's Safety & Moderation lane, which
  *  now accepts `?category=` so the link arrives with that lane already picked. */
-const REPORT_HREF = '/contact?category=safety';
+const REPORT_HREF = '/submit/feedback?category=safety';
 
 export interface FooterProps {
   /**

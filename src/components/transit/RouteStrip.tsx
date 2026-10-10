@@ -82,6 +82,7 @@ export function RouteStrip({
     // Preserve history.state — react-router keeps its own key in there, and
     // dropping it desyncs the router's idea of where it is.
     window.history.pushState(window.history.state, '', `#${id}`);
+    window.dispatchEvent(new CustomEvent('single-section-navigate', { detail: { id } }));
     // `pushState` deliberately fires no `hashchange`, so a listener on that
     // event never learns about this. Without telling the owner directly, the
     // scroll-spy would keep answering with whatever the geometry says — and a

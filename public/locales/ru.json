@@ -3040,7 +3040,28 @@
     "venueCount_one": "[RU] {{count}} place",
     "venueCount_other": "[RU] {{count}} places",
     "villageCount_one": "[RU] {{count}} district",
-    "villageCount_other": "[RU] {{count}} districts"
+    "villageCount_other": "[RU] {{count}} districts",
+    "discovery": {
+      "noMatches": "Нет результатов. Попробуйте другой фильтр.",
+      "showing": "Показано {{shown}} из {{count}}",
+      "reset": "Сбросить фильтры",
+      "searchPlaces": "Поиск мест",
+      "placeType": "Тип места",
+      "allPlaces": "Все места",
+      "morePlaces": "Больше мест",
+      "district": "Квир-район",
+      "when": "Когда",
+      "upcoming": "Предстоящие",
+      "today": "Сегодня",
+      "weekend": "В эти выходные",
+      "week": "Следующие 7 дней",
+      "eventType": "Тип события",
+      "allTypes": "Все типы",
+      "freeOnly": "Только бесплатные",
+      "moreEvents": "Больше отправлений",
+      "moreTypes": "Больше типов событий",
+      "until": "До"
+    }
   },
   "pride": {
     "eyebrow": "Pride Calendar",
@@ -5192,7 +5213,7 @@
       "scanTitle": "Сканировать флаер или ссылку",
       "scanBody": "Извлеките несколько заявок из файлов или веб-страницы.",
       "contactTitle": "Связаться с командой",
-      "contactBody": "Помощь с аккаунтом, модерация, партнёрства, пресса или другое личное сообщение."
+      "contactBody": "Помощь с аккаунтом, партнёрства, пресса или другое личное сообщение."
     },
     "feedback": {
       "heading": "Сообщить о проблеме или поделиться идеей",
@@ -5201,7 +5222,8 @@
       "successBody": "Ваш отзыв помогает улучшать Queer Guide.",
       "category": "Какой это отзыв?",
       "categories": {
-        "bug": "Ошибка",
+        "safety": "Безопасность и модерация",
+        "bug": "Сообщения об ошибках",
         "idea": "Идея",
         "improvement": "Улучшение",
         "content-idea": "Идея для контента"
@@ -5212,7 +5234,7 @@
       "descriptionPlaceholder": "Расскажите подробнее…",
       "includeScreenshot": "Добавить снимок этой страницы",
       "screenshotPreview": "Предпросмотр снимка",
-      "contextNote": "Автоматически добавляются: текущий URL, сведения о браузере и недавние ошибки."
+      "contextNote": "Автоматически добавляются: текущий URL, сведения о браузере, недавние ошибки и сетевые сбои."
     },
     "correction": {
       "heading": "Исправить что-то на этой странице",

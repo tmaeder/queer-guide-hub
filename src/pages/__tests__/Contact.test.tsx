@@ -14,8 +14,7 @@ vi.mock('@/hooks/useAuth', () => ({ useAuth: () => ({ user: null }) }));
 
 import Contact from '@/components/contribute/ContactBranch';
 
-// Contact is a ROUTE, so it renders inside a router — it reads `?category=`
-// to preselect the safety line for the footer's "Report something" link.
+// Contact is a ROUTE, so it renders inside a router.
 const renderAt = (path: string) =>
   render(
     <MemoryRouter initialEntries={[path]}>
@@ -47,14 +46,9 @@ describe('Contact', () => {
   it('exposes the lines as a radiogroup rather than hiding them in a select', () => {
     renderAt('/contact');
     expect(screen.getByRole('radiogroup')).toBeTruthy();
-    expect(screen.getAllByRole('radio')).toHaveLength(5);
+    expect(screen.getAllByRole('radio')).toHaveLength(3);
     // The dropdown this replaced made the routing model invisible until opened.
     expect(screen.queryByRole('combobox')).toBeNull();
-  });
-
-  it('preselects a known category from the query string', () => {
-    renderAt('/contact?category=safety');
-    expect(line(/safety and moderation/i).getAttribute('aria-checked')).toBe('true');
   });
 
   it('ignores an unknown category rather than selecting a line that does not exist', () => {
@@ -62,18 +56,6 @@ describe('Contact', () => {
     for (const radio of screen.getAllByRole('radio')) {
       expect(radio.getAttribute('aria-checked')).toBe('false');
     }
-  });
-
-  // The footer sends reporters here with ?category=safety. A person in danger
-  // must be handed the crisis route at the point they are already looking,
-  // not only in the band above the fold they may have scrolled past.
-  it('shows the crisis route on the safety line, and only there', () => {
-    const { unmount } = renderAt('/contact?category=safety');
-    expect(screen.getByRole('link', { name: /crisis lines by country/i })).toBeTruthy();
-    unmount();
-
-    renderAt('/contact?category=partnerships');
-    expect(screen.queryByRole('link', { name: /crisis lines by country/i })).toBeNull();
   });
 
   // The band is not gated on a line, a fetch or a loading branch: it is the

@@ -3006,7 +3006,28 @@
     "venueCount_one": "[ES] {{count}} place",
     "venueCount_other": "[ES] {{count}} places",
     "villageCount_one": "[ES] {{count}} district",
-    "villageCount_other": "[ES] {{count}} districts"
+    "villageCount_other": "[ES] {{count}} districts",
+    "discovery": {
+      "noMatches": "Sin resultados. Prueba otro filtro.",
+      "showing": "Mostrando {{shown}} de {{count}}",
+      "reset": "Restablecer filtros",
+      "searchPlaces": "Buscar lugares",
+      "placeType": "Tipo de lugar",
+      "allPlaces": "Todos los lugares",
+      "morePlaces": "Más lugares",
+      "district": "Barrio queer",
+      "when": "Cuándo",
+      "upcoming": "Próximamente",
+      "today": "Hoy",
+      "weekend": "Este fin de semana",
+      "week": "Próximos 7 días",
+      "eventType": "Tipo de evento",
+      "allTypes": "Todos los tipos",
+      "freeOnly": "Solo gratuitos",
+      "moreEvents": "Más salidas",
+      "moreTypes": "Más tipos de eventos",
+      "until": "Hasta"
+    }
   },
   "pride": {
     "eyebrow": "Pride Calendar",
@@ -5158,7 +5179,7 @@
       "scanTitle": "Escanear un folleto o enlace",
       "scanBody": "Extrae varios envíos desde archivos o una página web.",
       "contactTitle": "Contactar al equipo",
-      "contactBody": "Ayuda con la cuenta, moderación, colaboraciones, prensa u otro mensaje privado."
+      "contactBody": "Ayuda con la cuenta, colaboraciones, prensa u otro mensaje privado."
     },
     "feedback": {
       "heading": "Informar de un problema o compartir una idea",
@@ -5167,7 +5188,8 @@
       "successBody": "Tus comentarios ayudan a mejorar Queer Guide.",
       "category": "¿Qué tipo de comentario?",
       "categories": {
-        "bug": "Error",
+        "safety": "Seguridad y moderación",
+        "bug": "Informes de errores",
         "idea": "Idea",
         "improvement": "Mejora",
         "content-idea": "Idea de contenido"
@@ -5178,7 +5200,7 @@
       "descriptionPlaceholder": "Cuéntanos más…",
       "includeScreenshot": "Incluir una captura de esta página",
       "screenshotPreview": "Vista previa de la captura",
-      "contextNote": "Se incluye automáticamente: URL actual, información del navegador y errores recientes."
+      "contextNote": "Se incluye automáticamente: URL actual, información del navegador, errores recientes y fallos de red."
     },
     "correction": {
       "heading": "Corregir algo en esta página",

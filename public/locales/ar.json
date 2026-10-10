@@ -3014,7 +3014,28 @@
     "venueCount_one": "[AR] {{count}} place",
     "venueCount_other": "[AR] {{count}} places",
     "villageCount_one": "[AR] {{count}} district",
-    "villageCount_other": "[AR] {{count}} districts"
+    "villageCount_other": "[AR] {{count}} districts",
+    "discovery": {
+      "noMatches": "لا توجد نتائج. جرّب مرشحًا آخر.",
+      "showing": "عرض {{shown}} من {{count}}",
+      "reset": "إعادة ضبط المرشحات",
+      "searchPlaces": "البحث عن أماكن",
+      "placeType": "نوع المكان",
+      "allPlaces": "كل الأماكن",
+      "morePlaces": "المزيد من الأماكن",
+      "district": "حي كوير",
+      "when": "متى",
+      "upcoming": "القادمة",
+      "today": "اليوم",
+      "weekend": "نهاية هذا الأسبوع",
+      "week": "الأيام السبعة القادمة",
+      "eventType": "نوع الفعالية",
+      "allTypes": "كل الأنواع",
+      "freeOnly": "المجانية فقط",
+      "moreEvents": "المزيد من المغادرات",
+      "moreTypes": "المزيد من أنواع الفعاليات",
+      "until": "حتى"
+    }
   },
   "pride": {
     "eyebrow": "Pride Calendar",
@@ -5166,7 +5187,7 @@
       "scanTitle": "مسح منشور أو رابط",
       "scanBody": "استخرج عدة مساهمات من ملفات أو صفحة ويب.",
       "contactTitle": "تواصل مع الفريق",
-      "contactBody": "مساعدة الحساب أو الإشراف أو الشراكات أو الصحافة أو رسالة خاصة أخرى."
+      "contactBody": "مساعدة الحساب أو الشراكات أو الصحافة أو رسالة خاصة أخرى."
     },
     "feedback": {
       "heading": "الإبلاغ عن مشكلة أو مشاركة فكرة",
@@ -5175,7 +5196,8 @@
       "successBody": "تساعد ملاحظاتك في تحسين Queer Guide.",
       "category": "ما نوع الملاحظات؟",
       "categories": {
-        "bug": "خطأ",
+        "safety": "السلامة والإشراف",
+        "bug": "بلاغات الأخطاء",
         "idea": "فكرة",
         "improvement": "تحسين",
         "content-idea": "فكرة محتوى"
@@ -5186,7 +5208,7 @@
       "descriptionPlaceholder": "أخبرنا بالمزيد…",
       "includeScreenshot": "إرفاق لقطة شاشة لهذه الصفحة",
       "screenshotPreview": "معاينة لقطة الشاشة",
-      "contextNote": "يُرفق تلقائيًا: رابط الصفحة الحالي ومعلومات المتصفح والأخطاء الأخيرة."
+      "contextNote": "يُرفق تلقائيًا: رابط الصفحة الحالي ومعلومات المتصفح والأخطاء الأخيرة وإخفاقات الشبكة."
     },
     "correction": {
       "heading": "تصحيح شيء في هذه الصفحة",

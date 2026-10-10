@@ -400,7 +400,12 @@ export function EventsTimelineView({
         canFit={events.length > 0}
       />
 
-      <div className="flex gap-2 overflow-x-auto pb-2 mb-2 scrollbar-thin">
+      <div
+        className="flex gap-2 overflow-x-auto pb-2 mb-2 scrollbar-thin"
+        role="region"
+        aria-label="Timeline periods"
+        tabIndex={0}
+      >
         {buckets.map((b, i) => {
           const count = bucketCounts[i];
           if (count === 0) {
