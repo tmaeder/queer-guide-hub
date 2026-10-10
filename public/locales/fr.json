@@ -1359,7 +1359,8 @@
       "moreOptions": "Plus d’options",
       "send": "Envoyer à quelqu’un",
       "getTickets": "Acheter des billets",
-      "going": "Je participe"
+      "going": "Je participe",
+      "viewImage": "Voir l’image"
     }
   },
   "venues": {

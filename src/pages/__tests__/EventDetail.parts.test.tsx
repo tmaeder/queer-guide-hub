@@ -162,9 +162,9 @@ describe('Event action consolidation', () => {
     expect(screen.queryByRole('link', { name: /tickets/i })).toBeNull();
     expect(screen.queryByRole('button', { name: 'Add to a trip' })).toBeNull();
     expect(screen.queryByRole('button', { name: 'Going' })).toBeNull();
+    fireEvent.click(screen.getByText('More options'));
     fireEvent.click(screen.getByRole('button', { name: 'Calendar' }));
     expect(props.onExportToCalendar).toHaveBeenCalled();
-    fireEvent.click(screen.getByText('More options'));
     expect(screen.getByRole('link', { name: 'Website' })).toHaveAttribute(
       'href',
       'https://example.org/pride',
@@ -190,6 +190,20 @@ describe('Event action consolidation', () => {
     expect(onAttendanceUpdate).toHaveBeenCalledWith('interested');
   });
 
+  it('keeps the event image accessible through the secondary tools', () => {
+    renderWithProviders(
+      <EventActions
+        event={{ ...upcoming, images: ['https://example.org/event.jpg'] } as never}
+        onShare={() => {}}
+      />,
+    );
+    fireEvent.click(screen.getByText('More options'));
+    expect(screen.getByRole('link', { name: 'View image' })).toHaveAttribute(
+      'href',
+      'https://example.org/event.jpg',
+    );
+  });
+
   it('groups utilities without introducing another ticket link', () => {
     renderWithProviders(<EventActions event={upcoming as never} onShare={() => {}} />);
     expect(screen.queryByRole('link', { name: /tickets/i })).toBeNull();
@@ -202,11 +216,11 @@ describe('Event section content guards', () => {
     expect(hasEventAboutContent(event)).toBe(false);
     expect(hasEventWhereContent(event)).toBe(false);
   });
-  it('keeps description, source guidance and actual venue content', () => {
+  it('keeps actual description and venue content without an empty source-only section', () => {
     expect(hasEventAboutContent({ ...event, description: 'A community gathering.' } as never)).toBe(
       true,
     );
-    expect(hasEventAboutContent({ ...event, website: 'https://example.org' } as never)).toBe(true);
+    expect(hasEventAboutContent({ ...event, website: 'https://example.org' } as never)).toBe(false);
     expect(hasEventWhereContent({ ...event, venue_name: 'Community Hall' } as never)).toBe(true);
     expect(hasEventWhereContent({ ...event, organizer_name: 'Local collective' } as never)).toBe(
       true,

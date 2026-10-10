@@ -42,3 +42,27 @@ Validate event component tests, type checking, lint and desktop/mobile rendering
 - Full repository typecheck passes its existing regression ratchet: 768 existing
   diagnostics against a baseline of 794, with no new errors. The shared baseline
   was not rewritten as part of this UI change.
+
+
+## Compact refinement requested after deployment
+
+The user requested better use of space and removal of unnecessary content.
+The event single now opts into a compact shared shell: smaller title/bullet,
+half the outer spacing, no reserved navigation sidebar, and a single section
+route on every viewport. Available sections use two desktop columns and stack
+on mobile. Facts and actions are compact and the action toolbar has no enclosing
+panel. Calendar and the image remain available through More options; the large
+inline image is removed. Provenance is an inline footer row.
+
+Remove glossary, marketplace, historical milestones and the extra people rail
+from event singles. The tags and existing entity pages still provide those paths.
+Keep only three related events as compact station rows. Safety information,
+programme, venue/map/contacts, RSVP, ticketing, saving and sharing stay available.
+Other entity singles retain their default shell size.
+
+Compact verification: on Capital Pride Ottawa 2026, the About section begins at
+465px instead of 1302px on desktop, and 537px instead of 1098px on mobile.
+Past and upcoming-fixture pages pass axe checks at 1440px and 390px with no
+serious/critical violations or overflow. Image and calendar access through More
+options works with keyboard interaction. A redundant missing-info/source panel
+is removed; a website alone no longer creates an About section.

@@ -613,7 +613,8 @@
       "moreOptions": "More options",
       "send": "Send to someone",
       "getTickets": "Get tickets",
-      "going": "Going"
+      "going": "Going",
+      "viewImage": "View image"
     }
   },
   "venues": {
