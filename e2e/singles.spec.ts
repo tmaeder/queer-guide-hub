@@ -154,6 +154,12 @@ for (const route of ROUTES) {
     test('the rail reflows under the body on a phone instead of disappearing', async ({ page }) => {
       await page.setViewportSize({ width: 390, height: 844 });
       await open(page, route.path);
+      if (route.path.startsWith('/city/')) {
+        // Cities put the map and safety in the opening on every viewport.
+        await expect(page.getByTestId('single-rail')).toHaveCount(0);
+        await expect(page.locator('article section[aria-label="Overview"]')).toBeVisible();
+        return;
+      }
       // "Every single works at 390px with the same modules in the same order,
       // stacked. No mobile-only cuts." A `hidden lg:block` rail would drop
       // the map, the facts and the provenance line on a phone.
