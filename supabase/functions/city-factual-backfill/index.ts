@@ -41,7 +41,7 @@ import {
 // runtime keeps serving an older bundle (seen 2026-10-07: v214 held the
 // name_local code and answered in the old shape), so the only proof a change
 // is live is the response itself. Bump this when the link/sparql output changes.
-const FN_REVISION = '2026-10-07.wd-transient-not-a-miss'
+const FN_REVISION = '2026-10-09.locality-not-a-city'
 
 const DEFAULT_BATCH_LIMIT = 40
 // 300 is the repo-wide ceiling for city writes: one cities UPDATE fans out
@@ -490,6 +490,10 @@ async function runLinkPhase(
   // `classUndetermined` is a failure to read one, and the two must stay apart:
   // only the former counts an attempt toward the terminal sentinel.
   let classRefused = 0, classUndetermined = 0
+  // Entities that are a PART of a municipality (Ortsteil / Wohnplatz /
+  // quarter). Never adopted as a city's identity; recorded with their P131
+  // parent so the resolver can map the name onto the municipality.
+  let classLocality = 0, localitiesRegistered = 0
   let wdTransient = 0
   // Coordinate corroboration. `coordRefused` is a decision about the CANDIDATE
   // (a namesake in the wrong place); `coordUnchecked` records that this arm
@@ -693,6 +697,59 @@ async function runLinkPhase(
                 nativeFilled++
               }
             }
+          } else if (cls.verdict === 'locality') {
+            // An Ortsteil is not a city. Do NOT adopt the QID (parseCityFacts
+            // would copy the hamlet's facts onto the row and enwikiTitle would
+            // publish its article as a city description). It IS a decision about
+            // the entity, so it counts toward the terminal sentinel; the row
+            // itself goes to a human to be merged into its municipality.
+            const parentQid = (ent.claims.P131 ?? [])
+              .filter((st) => st.rank !== 'deprecated' && st.mainsnak?.snaktype === 'value')
+              .map((st) => (st.mainsnak?.datavalue?.value as { id?: string } | undefined)?.id)
+              .find((q): q is string => Boolean(q)) ?? null
+            classLocality++
+            update.needs_attention = true
+            state.wikidata_locality = {
+              state: 'resolved',
+              source: 'wikidata',
+              at: new Date().toISOString(),
+              qid,
+              detail: { label: cls.label, parent_qid: parentQid },
+            }
+            // Teach the resolver: the next writer asking for this name near
+            // here gets the municipality, never a fresh Ortsteil row. Needs the
+            // entity's own coordinates (the anchor) and the parent's label;
+            // without either, nothing is registered rather than something
+            // guessed. A duplicate is a 23505 and is fine.
+            if (!dryRun && parentQid && p625 && c.country_id) {
+              let parentName: string | null = null
+              try {
+                const m = await withCircuitBreaker(
+                  supabase, 'wikidata.api', () => resolveLabels(wdFetch, [parentQid], labelCache),
+                )
+                parentName = m.get(parentQid) ?? null
+              } catch { parentName = null }
+              if (parentName) {
+                const { error } = await supabase.from('city_localities').insert({
+                  country_id: c.country_id,
+                  locality_name: c.name,
+                  locality_qid: qid,
+                  kind: 'locality',
+                  municipality_name: parentName,
+                  municipality_qid: parentQid,
+                  anchor_lat: Number(p625.latitude),
+                  anchor_lng: Number(p625.longitude),
+                  radius_m: 3000,
+                  source: 'city-factual-backfill',
+                  note: cls.label,
+                })
+                if (!error) localitiesRegistered++
+              }
+            }
+            qid = null
+            enwikiTitle = null
+            bumpMiss(state, 'wikidata_link', 'locality')
+            missReason ??= `locality_of:${parentQid ?? 'unknown'}:${cls.label ?? ''}`.slice(0, 200)
           } else if (cls.verdict === 'refused') {
             // A decision about the entity, so it counts toward the terminal
             // sentinel: three of these and the row leaves the work list instead
@@ -954,6 +1011,8 @@ async function runLinkPhase(
     ...(nativeUnmapped.size ? { name_local_unmapped_languages: [...nativeUnmapped].sort() } : {}),
     class_refused: classRefused,
     class_undetermined: classUndetermined,
+    class_locality: classLocality,
+    localities_registered: localitiesRegistered,
     wikidata_fetch_failed: wdTransient,
     coord_refused: coordRefused,
     coord_unchecked: coordUnchecked,
