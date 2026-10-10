@@ -56,6 +56,7 @@
 do $patch$
 declare
   src text;
+  bare text;
   newsrc text;
   n int;
   anchor constant text := E'\n  ) into v;';
@@ -73,7 +74,26 @@ declare
             or (name ~ '^[A-Za-z]{2}$' and name <> upper(name))
             or lower(btrim(name)) in ('all','other','none','various','misc') ))$frag$;
 begin
-  select pg_get_functiondef(p.oid) into src
+  -- TWO COPIES, AND THE SPLIT IS LOAD-BEARING IN BOTH DIRECTIONS.
+  --
+  -- `src` is RAW because it is the string `replace()` rewrites and `execute`
+  -- runs: stripping comments before re-executing would silently delete every
+  -- comment from the LIVE function body, including the measurements
+  -- 99991789930597 and 99991790719601 recorded in it. A patch is not a place to
+  -- lose the reasoning the next reader needs.
+  --
+  -- `bare` is the comment-stripped copy every structural assertion below reads,
+  -- so explanatory prose can never satisfy a missing-code check — the rule
+  -- scripts/check-functiondef-asserts.mjs enforces, after an unstripped assert
+  -- aborted `db push` on main three times on 2026-09-20 and stranded the whole
+  -- queue. It is not hypothetical here: the fragment this file INSERTS carries a
+  -- comment, so the body acquires prose in exactly the region these checks read.
+  --
+  -- Fetched in ONE statement so no window exists in which `src` is read without
+  -- its stripped sibling.
+  select pg_get_functiondef(p.oid),
+         regexp_replace(pg_get_functiondef(p.oid), '--[^' || chr(10) || ']*', '', 'g')
+    into src, bare
     from pg_proc p join pg_namespace ns on ns.oid = p.pronamespace
    where ns.nspname = 'public' and p.proname = 'tag_hygiene_stats';
 
@@ -81,7 +101,7 @@ begin
     raise exception 'public.tag_hygiene_stats() does not exist';
   end if;
 
-  if position('junk_token_name_active' in src) > 0 then
+  if position('junk_token_name_active' in bare) > 0 then
     raise notice 'junk_token_name_active is already present; nothing to do';
     return;
   end if;
@@ -89,13 +109,20 @@ begin
   -- The shared CTE this counter reads must exist, or the inserted arm would
   -- reference a name that is not in scope and the `execute` would fail with a
   -- less legible error than this one.
-  if position(E'  active as (\n    select * from ut' in src) = 0 then
+  if position(E'  active as (\n    select * from ut' in bare) = 0 then
     raise exception
       'tag_hygiene_stats() has no shared `active` CTE reading `ut`; the body was reshaped, so re-derive this patch from the live definition rather than forcing it';
   end if;
 
   -- Counted on the literal rather than a regex so no escaping can widen it.
   -- Two occurrences would mean the tail is shared and this would insert twice.
+  --
+  -- ON `src`, NOT `bare`, and that is the one place the split inverts: this
+  -- counts occurrences in the string `replace()` is about to modify, so a count
+  -- taken over a different string would describe a different edit. Stripping
+  -- cannot destroy this anchor (it carries no `--`); it could only ever CREATE
+  -- one inside a comment, which raises here and aborts rather than inserting
+  -- twice — loud, not a false green.
   n := (length(src) - length(replace(src, anchor, ''))) / length(anchor);
   if n <> 1 then
     raise exception 'the `) into v;` anchor occurs % times, expected 1', n;
