@@ -165,3 +165,37 @@ test.describe('location detail accessibility', () => {
     });
   }
 });
+
+test('city discovery filters recover from empty results and expand event-type groups', async ({
+  page,
+}) => {
+  await openLocation(page, '/city/berlin');
+  const places = page.locator('#venues');
+  await expect(places.getByTestId('city-place-gallery')).toBeVisible({ timeout: 30_000 });
+  const initialCount = await places.getByTestId('city-place-gallery').getByRole('link').count();
+  expect(initialCount).toBeGreaterThan(0);
+  await places.getByRole('searchbox', { name: 'Search places' }).fill('__no_matching_city_stop__');
+  await expect(places.getByRole('status')).toContainText('No matches');
+  await places.getByRole('button', { name: 'Reset filters' }).click();
+  await expect(places.getByTestId('city-place-gallery').getByRole('link')).toHaveCount(
+    initialCount,
+  );
+  const departures = page.locator('#events');
+  await expect(departures.getByTestId('city-departure-groups')).toBeVisible();
+  const typeFilter = departures.getByRole('combobox', { name: 'Event type' });
+  const value = await typeFilter.locator('option').nth(1).getAttribute('value');
+  expect(value).toBeTruthy();
+  await typeFilter.selectOption(value!);
+  await expect(departures.getByTestId('city-departure-groups').getByRole('region')).toHaveCount(1);
+  await departures.getByRole('button', { name: 'Free only' }).click();
+  await expect(departures.getByRole('button', { name: 'Free only' })).toHaveAttribute(
+    'aria-pressed',
+    'true',
+  );
+  await departures.getByRole('button', { name: 'Reset filters' }).click();
+  await expect(typeFilter).toHaveValue('all');
+  await expect(departures.getByRole('button', { name: 'Free only' })).toHaveAttribute(
+    'aria-pressed',
+    'false',
+  );
+});
