@@ -7,6 +7,14 @@ export interface SingleSectionDef {
   note?: string;
   /** `compact` tightens `SingleSection`'s internal spacing for context modules. */
   variant?: 'default' | 'compact';
+  /** Additive presentation hint. Existing singles remain expanded by default. */
+  presentation?: 'expanded' | 'disclosure';
+  /** Disclosure sections can show a useful summary before the full body is opened. */
+  preview?: React.ReactNode;
+  /** Safety-critical or otherwise essential disclosures may start open. */
+  defaultOpen?: boolean;
+  /** Mount size-sensitive content only while its disclosure is visible. */
+  mountWhenOpen?: boolean;
   /** Rendered inside `SingleSection`. A section with no content is dropped. */
   content: React.ReactNode;
 }

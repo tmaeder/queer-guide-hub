@@ -1,16 +1,25 @@
 /**
  * @vitest-environment jsdom
  */
-import { describe, it, expect, vi } from 'vitest';
+import { afterEach, describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { MemoryRouter, Route, Routes } from 'react-router';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
-const state = vi.hoisted(() => ({ city: null as unknown }));
+const state = vi.hoisted(() => ({
+  city: null as unknown,
+  user: null as null | { id: string },
+  fetchVenues: vi.fn(),
+  fetchEvents: vi.fn(),
+}));
 
 vi.mock('@/hooks/use-toast', () => ({ useToast: () => ({ toast: vi.fn() }) }));
 vi.mock('@/hooks/useAuth', () => ({
-  useAuth: () => ({ user: null, session: null, loading: false }),
+  useAuth: () => ({
+    user: state.user,
+    session: state.user ? { user: state.user } : null,
+    loading: false,
+  }),
 }));
 vi.mock('@/hooks/useFavorites', () => ({
   useFavorites: () => ({ toggleFavorite: vi.fn(), isFavorited: () => false }),
@@ -22,10 +31,10 @@ vi.mock('@/hooks/useNews', () => ({
   useNews: () => ({ articles: [], loading: false, fetchArticles: vi.fn() }),
 }));
 vi.mock('@/hooks/useVenues', () => ({
-  useVenues: () => ({ venues: [], loading: false, fetchVenues: vi.fn() }),
+  useVenues: () => ({ venues: [], loading: false, fetchVenues: state.fetchVenues }),
 }));
 vi.mock('@/hooks/useEvents', () => ({
-  useEvents: () => ({ events: [], loading: false, fetchEvents: vi.fn() }),
+  useEvents: () => ({ events: [], loading: false, fetchEvents: state.fetchEvents }),
 }));
 vi.mock('@/hooks/usePlaces', () => ({
   useOptimizedCity: () => ({ city: state.city, loading: false, refetch: vi.fn() }),
@@ -75,6 +84,11 @@ vi.mock('@/components/weather/WeatherForecast', () => ({ WeatherForecast: () => 
 
 import CityDetail from '../CityDetail';
 
+afterEach(() => {
+  state.user = null;
+  vi.clearAllMocks();
+});
+
 function renderPage() {
   const qc = new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: 0 } } });
   return render(
@@ -93,6 +107,8 @@ describe('CityDetail', () => {
     state.city = null;
     renderPage();
     expect(screen.getByText('City not found')).toBeInTheDocument();
+    expect(state.fetchVenues).not.toHaveBeenCalled();
+    expect(state.fetchEvents).not.toHaveBeenCalled();
   });
 
   it('leads with a typographic masthead, not a photo hero', () => {
@@ -107,6 +123,12 @@ describe('CityDetail', () => {
     renderPage();
     const h1 = screen.getByRole('heading', { level: 1, name: 'Berlin' });
     expect(h1).toBeInTheDocument();
+    expect(state.fetchVenues).toHaveBeenCalledWith(
+      expect.objectContaining({ cityId: 'c1', countryId: 'co1' }),
+    );
+    expect(state.fetchEvents).toHaveBeenCalledWith(
+      expect.objectContaining({ cityId: 'c1', countryId: 'co1' }),
+    );
     // The 58vh photo bed is gone: the title is real text, not an overlay on an
     // <img>. 96.5% of cities had no editorial_hook to put under it and ~6% had
     // no usable photograph at all.
@@ -176,5 +198,49 @@ describe('CityDetail', () => {
     // The tier, not the raw composite — the 0-100 number was retired.
     expect(screen.getByText(/equality/i)).toBeInTheDocument();
     expect(screen.queryByText('83/100')).not.toBeInTheDocument();
+  });
+
+  it('keeps the task-first layout intact for an authenticated reader', () => {
+    state.user = { id: 'user-1' };
+    state.city = {
+      id: 'c1',
+      name: 'Berlin',
+      slug: 'berlin',
+      description: 'Capital of Germany.',
+      latitude: 52.52,
+      longitude: 13.405,
+      created_at: '2024-01-01',
+      countries: { id: 'co1', slug: 'germany', name: 'Germany', equality_score: 83 },
+    };
+
+    renderPage();
+
+    expect(screen.getByRole('heading', { level: 1, name: 'Berlin' })).toBeInTheDocument();
+    expect(screen.getAllByRole('button', { name: 'Save to favorites' })).toHaveLength(1);
+    expect(screen.getByRole('region', { name: 'Overview' })).toBeInTheDocument();
+  });
+
+  it('keeps full long copy accessible in About while the opening stays short', () => {
+    const description = `A short introduction. ${'Detailed local context. '.repeat(30)}`;
+    state.city = {
+      id: 'c1',
+      name: 'Berlin',
+      slug: 'berlin',
+      description,
+      created_at: '2024-01-01',
+      countries: { id: 'co1', slug: 'germany', name: 'Germany', equality_score: 83 },
+    };
+    const { container } = renderPage();
+    expect(container.querySelector('article header')).toHaveTextContent('A short introduction.');
+    expect(container.querySelector('article header')).not.toHaveTextContent(
+      'Detailed local context.',
+    );
+    expect(container.querySelector('#overview-detail')).toHaveTextContent(description.trim());
+    expect(screen.getByRole('link', { name: 'All cities' })).toHaveAttribute('href', '/cities');
+    expect(screen.getByRole('link', { name: /More in/ })).toHaveAttribute(
+      'href',
+      '/country/germany',
+    );
+    expect(screen.queryByText('Riding on?')).not.toBeInTheDocument();
   });
 });
