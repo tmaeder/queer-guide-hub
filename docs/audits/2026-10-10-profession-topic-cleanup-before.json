@@ -1,0 +1,231 @@
+{
+  "removed_catalogue_rows": [
+    {
+      "id": "55cb8533-bdc8-49fd-ab9f-98eee9800263",
+      "icon": null,
+      "name": "Comedy",
+      "slug": "nonprofession-comedy",
+      "color": "#6366f1",
+      "aliases": [
+        "comedy"
+      ],
+      "category": "Non-profession",
+      "icon_name": null,
+      "is_active": false,
+      "created_at": "2026-08-22T22:22:00.292294+00:00",
+      "sort_order": 900,
+      "updated_at": "2026-08-22T22:22:00.292294+00:00",
+      "description": null
+    },
+    {
+      "id": "1480ecc2-ade6-47aa-956c-6ac833a7281c",
+      "icon": null,
+      "name": "Community",
+      "slug": "nonprofession-community",
+      "color": "#6366f1",
+      "aliases": [
+        "community"
+      ],
+      "category": "Non-profession",
+      "icon_name": null,
+      "is_active": false,
+      "created_at": "2026-08-22T22:22:00.292294+00:00",
+      "sort_order": 900,
+      "updated_at": "2026-08-22T22:22:00.292294+00:00",
+      "description": null
+    },
+    {
+      "id": "70c8b0db-c8e3-4c6c-9aaa-84c999d035c0",
+      "icon": null,
+      "name": "Services",
+      "slug": "nonprofession-dienstleistung",
+      "color": "#6366f1",
+      "aliases": [
+        "dienstleistung"
+      ],
+      "category": "Non-profession",
+      "icon_name": null,
+      "is_active": false,
+      "created_at": "2026-08-22T22:22:00.292294+00:00",
+      "sort_order": 900,
+      "updated_at": "2026-08-22T22:22:00.292294+00:00",
+      "description": null
+    },
+    {
+      "id": "150f58cf-52a0-4a0e-93c0-e82e37e9caa7",
+      "icon": null,
+      "name": "Film",
+      "slug": "nonprofession-film",
+      "color": "#6366f1",
+      "aliases": [
+        "film",
+        "fernsehen",
+        "film & fernsehen"
+      ],
+      "category": "Non-profession",
+      "icon_name": null,
+      "is_active": false,
+      "created_at": "2026-08-22T22:22:00.292294+00:00",
+      "sort_order": 900,
+      "updated_at": "2026-08-22T22:22:00.292294+00:00",
+      "description": null
+    },
+    {
+      "id": "4caeee34-7333-4e43-9c4a-ee642ee48a3f",
+      "icon": null,
+      "name": "Art",
+      "slug": "nonprofession-kunst",
+      "color": "#6366f1",
+      "aliases": [
+        "kunst",
+        "bildende kunst"
+      ],
+      "category": "Non-profession",
+      "icon_name": null,
+      "is_active": false,
+      "created_at": "2026-08-22T22:22:00.292294+00:00",
+      "sort_order": 900,
+      "updated_at": "2026-08-22T22:22:00.292294+00:00",
+      "description": null
+    },
+    {
+      "id": "5d7ccc1d-4e1f-4516-88ea-420421c49521",
+      "icon": null,
+      "name": "Literature",
+      "slug": "nonprofession-literatur",
+      "color": "#6366f1",
+      "aliases": [
+        "literatur",
+        "lyrik"
+      ],
+      "category": "Non-profession",
+      "icon_name": null,
+      "is_active": false,
+      "created_at": "2026-08-22T22:22:00.292294+00:00",
+      "sort_order": 900,
+      "updated_at": "2026-08-22T22:22:00.292294+00:00",
+      "description": null
+    },
+    {
+      "id": "afd8f77c-ba46-4da0-9d83-91d2dbee3a7d",
+      "icon": null,
+      "name": "Fashion",
+      "slug": "nonprofession-mode",
+      "color": "#6366f1",
+      "aliases": [
+        "mode"
+      ],
+      "category": "Non-profession",
+      "icon_name": null,
+      "is_active": false,
+      "created_at": "2026-08-22T22:22:00.292294+00:00",
+      "sort_order": 900,
+      "updated_at": "2026-08-22T22:22:00.292294+00:00",
+      "description": null
+    },
+    {
+      "id": "e796b6cb-9ac4-4170-8b45-5bc993021dec",
+      "icon": null,
+      "name": "Music",
+      "slug": "nonprofession-musik",
+      "color": "#6366f1",
+      "aliases": [
+        "musik"
+      ],
+      "category": "Non-profession",
+      "icon_name": null,
+      "is_active": false,
+      "created_at": "2026-08-22T22:22:00.292294+00:00",
+      "sort_order": 900,
+      "updated_at": "2026-08-22T22:22:00.292294+00:00",
+      "description": null
+    },
+    {
+      "id": "28554b80-13fe-4733-8f09-996e0264002f",
+      "icon": null,
+      "name": "Performance",
+      "slug": "nonprofession-performance",
+      "color": "#6366f1",
+      "aliases": [
+        "performance"
+      ],
+      "category": "Non-profession",
+      "icon_name": null,
+      "is_active": false,
+      "created_at": "2026-08-22T22:22:00.292294+00:00",
+      "sort_order": 900,
+      "updated_at": "2026-08-22T22:22:00.292294+00:00",
+      "description": null
+    },
+    {
+      "id": "2124b457-e3ab-46ed-a610-d23c9c45c4ff",
+      "icon": null,
+      "name": "Politics",
+      "slug": "nonprofession-politik",
+      "color": "#6366f1",
+      "aliases": [
+        "politik"
+      ],
+      "category": "Non-profession",
+      "icon_name": null,
+      "is_active": false,
+      "created_at": "2026-08-22T22:22:00.292294+00:00",
+      "sort_order": 900,
+      "updated_at": "2026-08-22T22:22:00.292294+00:00",
+      "description": null
+    },
+    {
+      "id": "b4c32313-c8b4-46d1-88bb-5d5cf3854e65",
+      "icon": null,
+      "name": "Acting",
+      "slug": "nonprofession-schauspiel",
+      "color": "#6366f1",
+      "aliases": [
+        "schauspiel"
+      ],
+      "category": "Non-profession",
+      "icon_name": null,
+      "is_active": false,
+      "created_at": "2026-08-22T22:22:00.292294+00:00",
+      "sort_order": 900,
+      "updated_at": "2026-08-22T22:22:00.292294+00:00",
+      "description": null
+    },
+    {
+      "id": "8d8ac250-31a9-43ed-a332-5590cc82ef3c",
+      "icon": null,
+      "name": "Dance",
+      "slug": "nonprofession-tanz",
+      "color": "#6366f1",
+      "aliases": [
+        "tanz"
+      ],
+      "category": "Non-profession",
+      "icon_name": null,
+      "is_active": false,
+      "created_at": "2026-08-22T22:22:00.292294+00:00",
+      "sort_order": 900,
+      "updated_at": "2026-08-22T22:22:00.292294+00:00",
+      "description": null
+    },
+    {
+      "id": "16936230-a4f1-4f61-a941-3f156f7a2525",
+      "icon": null,
+      "name": "Science",
+      "slug": "nonprofession-wissenschaft",
+      "color": "#6366f1",
+      "aliases": [
+        "wissenschaft"
+      ],
+      "category": "Non-profession",
+      "icon_name": null,
+      "is_active": false,
+      "created_at": "2026-08-22T22:22:00.292294+00:00",
+      "sort_order": 900,
+      "updated_at": "2026-08-22T22:22:00.292294+00:00",
+      "description": null
+    }
+  ],
+  "prior_dictionary_rows": null,
+  "purpose": "Before-images for removal of 13 non-occupation topic entries. Import rejection rules were transferred to profession_translations; active professions were preserved."
+}
