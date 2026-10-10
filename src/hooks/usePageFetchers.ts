@@ -815,14 +815,36 @@ export async function toggleMarketplaceFavorite(
   return { error };
 }
 
-/** FeedbackBoard.tsx — list non-spam feedback submissions. */
+/**
+ * FeedbackBoard.tsx — list publishable feedback for the public board.
+ *
+ * Reads `feedback_board_v`, NOT `community_submissions`. Two reasons, and the
+ * second is why a column allowlist could not do this job:
+ *
+ *  1. `anon` has no SELECT on the base table (`anon=a/postgres`, INSERT only),
+ *     so this used to 42501 for every anonymous visitor and the board rendered
+ *     five empty columns. The view carries its own SELECT grant.
+ *  2. The payload lives in ONE `data` jsonb column that mixes publishable fields
+ *     (title/description/category) with `contact_email`, the captured `context`
+ *     (url, user agent, viewport, console errors, network failures) and the
+ *     staff-only `handoffs` / `replies` / `review_notes`. A column grant cannot
+ *     split a jsonb, so the view rebuilds `data` from a three-key ALLOWLIST.
+ *
+ * `content_type` / `is_spam` / `duplicate_of` are no longer filtered here: they
+ * are in the view's own WHERE, which is load-bearing because the view bypasses
+ * RLS. Do not re-add them here and do not remove them there.
+ *
+ * `vote_count` is aggregated by the view so anon gets real counts without being
+ * granted SELECT on `feedback_votes`, which carries `user_id` (who voted for
+ * what). Migration 99991791633461_feedback_board_projection.sql.
+ */
 export async function fetchFeedbackBoardItems<T = unknown>(): Promise<T[]> {
   const { data, error } = await supabase
-    .from('community_submissions' as const)
-    .select('id,data,submitted_at,feedback_status')
-    .eq('content_type', 'feedback')
-    .or('is_spam.is.null,is_spam.eq.false')
-    .is('duplicate_of', null)
+    // `as 'venues'`: the view is not in the generated types (same escape hatch
+    // this file already uses for `feedback_votes`). The row shape is asserted by
+    // the caller's FeedbackItem, and by the migration's column postcondition.
+    .from('feedback_board_v' as 'venues')
+    .select('id,data,submitted_at,feedback_status,vote_count')
     .order('submitted_at', { ascending: false });
   if (error) throw error;
   return (data ?? []) as T[];

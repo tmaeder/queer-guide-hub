@@ -6,16 +6,25 @@ import { useAuth } from '@/hooks/useAuth';
 import { feedbackCategoryMap } from '@/config/feedbackCategories';
 import { timeAgo } from '@/utils/timezone';
 
+/**
+ * One row of `feedback_board_v`. `data` holds exactly the three keys that view
+ * publishes. `contact_email` was declared here and is deliberately gone: the
+ * view never returns it — nor `context`, `screenshot_url`, `handoffs`, `replies`
+ * or `review_notes` — so the field would be permanently undefined while reading
+ * as "the public board may show a submitter's email". The admin surface keeps
+ * its own type for the full row (components/admin/feedback/types.ts).
+ */
 export interface FeedbackItem {
   id: string;
   data: {
     title: string;
     description: string;
     category: string;
-    contact_email?: string;
   };
   submitted_at: string;
   feedback_status: string;
+  /** Aggregated by the view, so anon gets counts without reading feedback_votes. */
+  vote_count?: number;
 }
 
 interface FeedbackCardProps {
