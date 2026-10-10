@@ -1,6 +1,3 @@
--- Recovered from production schema_migrations.statements.
--- Already applied as 20261010071033; this records the existing production history.
-
 -- Remove the 13 non-occupation topic rows from the professions catalogue.
 -- Preserve their exact rejection tokens in the existing import dictionary.
 -- Original rows are retained by content_revisions and the operator's JSON backup.
@@ -256,4 +253,3 @@ BEGIN
   RAISE EXCEPTION 'Missing before-images for deleted topic rows';
  END IF;
 END $verify$;
-
