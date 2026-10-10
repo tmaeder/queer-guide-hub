@@ -11,8 +11,13 @@ const f = (
   count: number,
 ): MarketplaceTagFacet => ({ slug, name, kind, count });
 
+/** Mirrors COLLAPSE_AT in the component. Deliberately restated rather than
+ *  exported: if someone changes the threshold, these assertions SHOULD fail
+ *  loudly and be re-read, not silently follow it. */
+const COLLAPSE_AT = 6;
+
 /** The live apparel shape: count-sorted, kinds interleaved, 11 colours so the
- *  collapse threshold is crossed in exactly one group. */
+ *  collapse threshold is crossed in exactly one group (size has 4, under it). */
 const APPAREL: MarketplaceTagFacet[] = [
   f('size-s', 'S', 'size', 2660),
   f('size-xl', 'XL', 'size', 2585),
@@ -69,15 +74,15 @@ describe('AttributeFacetGroups', () => {
         onToggle={vi.fn()}
       />,
     );
-    // 11 colours, threshold 10 → 10 chips + one "+1". Asserting the COUNT
-    // alone is vacuous here (10 chips + expander is also 11); the 11th
-    // colour by name is what separates collapsed from expanded.
-    expect(groupChips('Color')).toHaveLength(11);
-    expect(screen.getByText('+1')).toBeInTheDocument();
+    // 11 colours at threshold 6 → 6 chips + one "+5". Asserting the COUNT
+    // alone is not enough (chips + expander is a count either way); the
+    // hidden colour BY NAME is what separates collapsed from expanded.
+    expect(groupChips('Color')).toHaveLength(COLLAPSE_AT + 1);
+    expect(screen.getByText('+5')).toBeInTheDocument();
     expect(screen.queryByText(/^C9/)).not.toBeInTheDocument();
 
-    await userEvent.click(screen.getByText('+1'));
-    expect(screen.queryByText('+1')).not.toBeInTheDocument();
+    await userEvent.click(screen.getByText('+5'));
+    expect(screen.queryByText('+5')).not.toBeInTheDocument();
     expect(screen.getByText(/^C9/)).toBeInTheDocument();
     expect(groupChips('Color')).toHaveLength(11);
   });
@@ -91,11 +96,14 @@ describe('AttributeFacetGroups', () => {
         onToggle={vi.fn()}
       />,
     );
-    // c9 ranks 11th. Hiding an applied filter moves the result count with
-    // nothing on screen explaining why.
+    // c9 ranks 11th, well past the cut of 6. Hiding an applied filter moves
+    // the result count with nothing on screen explaining why.
     const chip = screen.getByText(/^C9/).closest('button');
     expect(chip).toBeInTheDocument();
     expect(chip).toHaveAttribute('aria-pressed', 'true');
+    // The expander must EXCLUDE the surfaced chip, or it over-reports what is
+    // still hidden: 11 colours, 6 by rank + 1 surfaced = 4 left, not 5.
+    expect(screen.getByText('+4')).toBeInTheDocument();
   });
 
   it('renders a kind the department order does not list rather than dropping it', () => {

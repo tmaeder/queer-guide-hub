@@ -231,6 +231,10 @@ export function MarketplaceControlBar({
     filters.department,
     filters.subcategoryGroup,
     includeAdult,
+    // This surface DOES expose the in-stock toggle (MarketplaceFilterSheet
+    // writes `availability`), so the facets must follow it rather than take
+    // the default — the same spelling useMarketplace gives the browse RPC.
+    filters.availability !== 'any',
   );
   const facetChips = tagFacetData
     .filter((f) => f.kind === 'occasion' || f.kind === 'vibe')

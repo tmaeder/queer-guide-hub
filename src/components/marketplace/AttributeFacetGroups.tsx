@@ -8,8 +8,17 @@ import {
   type MarketplaceAttributeKind,
 } from '@/lib/marketplaceTaxonomy';
 
-/** Chips shown per group before the expander; the rest hide behind "+N". */
-const COLLAPSE_AT = 10;
+/**
+ * Chips shown per group before the expander; the rest hide behind "+N".
+ *
+ * 6 rather than 10, measured on apparel at 375px: 10 renders the block at
+ * 864px, 8 at 814px, 6 at 664px — the drop from 8 to 6 is where a 44px wrap
+ * line disappears from several groups at once. On desktop every group already
+ * fits one line, so the cost there is horizontal only. Safe to lower because
+ * the facets arrive count-descending (the 6 shown are the 6 biggest) and a
+ * SELECTED chip is surfaced regardless of rank.
+ */
+const COLLAPSE_AT = 6;
 
 const sizeRank = (slug: string) => {
   const i = (SIZE_ORDER as readonly string[]).indexOf(slug.replace(/^size-/, ''));
@@ -37,11 +46,23 @@ function GroupRow({
   const hidden = facets.length - visible.length;
 
   return (
-    <div className="grid gap-2 sm:grid-cols-[7rem_1fr] sm:items-baseline sm:gap-4">
-      <span className="text-2xs uppercase tracking-wide text-muted-foreground sm:pt-2.5">
+    // The label sits INSIDE the same wrapping flex row as the chips rather
+    // than in its own grid column. A column costs a full stacked line per
+    // group on mobile (six groups, six wasted lines) and a fixed 7rem of
+    // gutter on desktop; inline it rides along the 44px line the first chip
+    // already occupies and costs no height at all. `items-center` puts it on
+    // the chip's optical centre, and the fixed `w-16` keeps the six labels
+    // aligned with each other so the rows still read as a column.
+    <div className="flex flex-wrap items-center gap-x-2 gap-y-1.5">
+      {/* `w-full` below sm, so the label takes its own 14px line and the chips
+          get the whole 375px back. Measured: inline on mobile costs 64px of a
+          375px row and pushes chips into extra 44px wrap lines — 944px against
+          864px for the same six groups, i.e. the inline label is a net LOSS
+          there and a clear win from sm up. */}
+      <span className="w-full shrink-0 text-2xs uppercase tracking-wide text-muted-foreground sm:w-16">
         {ATTRIBUTE_KIND_LABELS[kind]}
       </span>
-      <div className="flex flex-wrap gap-2">
+      <div className="flex min-w-0 flex-1 flex-wrap gap-1.5">
         {visible.map((f) => {
           const active = selected.includes(f.slug);
           return (
@@ -126,7 +147,7 @@ export function AttributeFacetGroups({
 
   return (
     <div className={className} aria-label="Refine by attribute">
-      <div className="flex flex-col gap-4">
+      <div className="flex flex-col gap-1.5">
         {groups.map((g) => (
           <GroupRow
             key={g.kind}
