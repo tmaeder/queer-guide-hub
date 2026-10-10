@@ -52,7 +52,7 @@ let tagReferences: { source_type: string; source_url: string }[] = [];
 let substanceInteractions: Record<string, unknown>[] = [];
 vi.mock('@/hooks/useTagRelationships', () => ({
   useSimilarTags: () => ({ data: [] }),
-  useTagOntology: () => ({ data: { broader: [], narrower: [], related: [] } }),
+  useTagOntologyNetwork: () => ({ data: { lines: [], narrower: [], related: [] } }),
   useTagReferenceLinks: () => ({ data: tagReferences }),
   // Added when the interaction band landed. A partial mock of this module is
   // why the whole suite broke last time an export was added here — every hook

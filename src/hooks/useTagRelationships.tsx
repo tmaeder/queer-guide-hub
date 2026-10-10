@@ -150,12 +150,26 @@ export interface OntologyTag {
   slug: string;
   name: string;
   category: string | null;
-  confidence: number;
+  confidence?: number;
   is_adult: boolean;
 }
 
-export interface TagOntology {
-  broader: OntologyTag[];
+/**
+ * One parent, drawn as a transit line: its own parents are the line's upstream
+ * terminus, and the parent's OTHER children are the line's other stops.
+ *
+ * `stop_total` is the count BEFORE the RPC's 8-stop cap, so the UI can tell a
+ * short line from a truncated one. Without it a 31-child parent and a 3-child
+ * parent render identically and the overflow is silently dropped.
+ */
+export interface OntologyLine extends OntologyTag {
+  upstream: OntologyTag[];
+  stops: OntologyTag[];
+  stop_total: number;
+}
+
+export interface TagOntologyNetwork {
+  lines: OntologyLine[];
   narrower: OntologyTag[];
   related: OntologyTag[];
 }
@@ -223,26 +237,48 @@ export function useTagReferenceLinks(tagId: string | null) {
 }
 
 /**
- * Fetch the governed ontology graph (curated tag_relations: broader parents,
- * narrower children, curated related) for a tag. Distinct from useSimilarTags,
- * which reads the raw embedding/co-occurrence similarity pool.
+ * The governed ontology as a two-hop NETWORK, from `get_tag_ontology_network`.
+ *
+ * Distinct from useSimilarTags, which reads the raw embedding/co-occurrence
+ * pool — that pool was measured display-unclean (~25% precision at its 0.80
+ * floor) and is a candidate signal for this ontology, never a display source.
+ *
+ * It replaced `useTagOntology`, whose flat `broader` list let the renderer draw
+ * two parallel parents as consecutive stops on one line. Measured on prod,
+ * 184 of the 1,000 tags with a parent have two or more and were publishing
+ * that false chain.
  */
-export function useTagOntology(tagId: string | null) {
+export function useTagOntologyNetwork(tagId: string | null) {
   return useQuery({
-    queryKey: ['tag-ontology', tagId],
+    queryKey: ['tag-ontology-network', tagId],
     enabled: !!tagId,
     staleTime: 5 * 60 * 1000,
-    queryFn: async (): Promise<TagOntology> => {
-      if (!tagId) return { broader: [], narrower: [], related: [] };
-      const { data, error } = await supabase.rpc('get_tag_ontology', { p_tag_id: tagId });
+    queryFn: async (): Promise<TagOntologyNetwork> => {
+      if (!tagId) return { lines: [], narrower: [], related: [] };
+      // `as never` until the next `supabase gen types` run picks the function
+      // up — it is created by 99991791570412 and is not in types.ts yet. Same
+      // escape hatch as useGeoHygiene's `geo_hygiene_stats`.
+      const { data, error } = await supabase.rpc(
+        'get_tag_ontology_network' as never,
+        {
+          p_tag_id: tagId,
+        } as never,
+      );
       if (error) throw error;
-      const o = (data ?? {}) as Partial<TagOntology>;
-      // Normalize is_adult: the jsonb key is absent on responses served before
-      // the RPC gained the field, and Safe mode must not read undefined there.
+      const o = (data ?? {}) as Partial<TagOntologyNetwork>;
+      // Normalise is_adult rather than trusting the key: a response served
+      // before the RPC deploys lands here with it absent, and `undefined` reads
+      // as "not adult" in Safe mode, i.e. silently unsafe.
       const norm = (list: OntologyTag[] | undefined): OntologyTag[] =>
         (list ?? []).map((t) => ({ ...t, is_adult: t.is_adult === true }));
       return {
-        broader: norm(o.broader),
+        lines: (o.lines ?? []).map((l) => ({
+          ...l,
+          is_adult: l.is_adult === true,
+          upstream: norm(l.upstream),
+          stops: norm(l.stops),
+          stop_total: Number(l.stop_total ?? 0),
+        })),
         narrower: norm(o.narrower),
         related: norm(o.related),
       };
