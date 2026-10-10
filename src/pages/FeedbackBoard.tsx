@@ -44,9 +44,21 @@ export default function FeedbackBoard() {
     queryFn: () => fetchFeedbackBoardItems<FeedbackItem>(),
   });
 
-  // Batch vote counts
-  const submissionIds = useMemo(() => items.map((i) => i.id), [items]);
+  // Batch vote counts — SIGNED-IN ONLY, and the gate is not an optimisation.
+  // `feedback_votes` is `anon=a/postgres` with no SELECT, so for an anonymous
+  // visitor this hook threw 42501 on every board load; the only thing it adds
+  // over the view's own `vote_count` is `hasVoted`, which is meaningless without
+  // a user. Passing [] disables the query (`enabled: ids.length > 0`), so anon
+  // now makes exactly one request instead of one plus a 401.
+  const submissionIds = useMemo(() => (user ? items.map((i) => i.id) : []), [items, user]);
   const { data: votesMap = {} } = useFeedbackVoteCounts(submissionIds);
+
+  // The view's aggregate is the baseline; the signed-in hook wins when present
+  // so an optimistic toggle still moves the number it just changed.
+  const voteCountFor = useCallback(
+    (item: FeedbackItem) => votesMap[item.id]?.count ?? item.vote_count ?? 0,
+    [votesMap],
+  );
 
   // Group items by column, sort by votes (desc)
   const grouped = useMemo(() => {
@@ -58,10 +70,10 @@ export default function FeedbackBoard() {
       else map.new.push(item);
     }
     for (const col of columns) {
-      map[col.id].sort((a, b) => (votesMap[b.id]?.count ?? 0) - (votesMap[a.id]?.count ?? 0));
+      map[col.id].sort((a, b) => voteCountFor(b) - voteCountFor(a));
     }
     return map;
-  }, [items, votesMap]);
+  }, [items, voteCountFor]);
 
   const voteMutation = useMutation({
     mutationFn: async (submissionId: string) => {
@@ -139,7 +151,7 @@ export default function FeedbackBoard() {
                   <FeedbackCard
                     key={item.id}
                     item={item}
-                    voteCount={votesMap[item.id]?.count ?? 0}
+                    voteCount={voteCountFor(item)}
                     hasVoted={votesMap[item.id]?.hasVoted ?? false}
                     onVote={() => handleVote(item.id)}
                     onClick={() => handleCardClick(item)}
@@ -210,8 +222,8 @@ export default function FeedbackBoard() {
                   }}
                 >
                   <ChevronUp size={14} />
-                  {votesMap[selectedItem.id]?.count ?? 0} vote
-                  {(votesMap[selectedItem.id]?.count ?? 0) !== 1 ? 's' : ''}
+                  {voteCountFor(selectedItem)} vote
+                  {voteCountFor(selectedItem) !== 1 ? 's' : ''}
                 </Button>
                 <div className="flex items-center gap-1">
                   <Clock size={12} className="text-muted-foreground" />
