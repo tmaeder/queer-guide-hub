@@ -141,19 +141,30 @@ export interface MarketplaceTagFacet {
   count: number;
 }
 
-/** Namespaced attribute-tag counts scoped to a department / group, content-rating gated. */
+/**
+ * Namespaced attribute-tag counts scoped to a department / group, content-rating gated.
+ *
+ * `inStock` defaults TRUE to match `marketplace_browse_page`'s own `in_stock`
+ * default — the count printed on a chip must come from the same gates as the
+ * grid that clicking it produces, or the chip advertises listings it cannot
+ * deliver. Measured before the fix: `color-black` on apparel read 1,156 while
+ * the grid returned 1,119, the difference being exactly the 37 out-of-stock
+ * rows. Pass the caller's real availability wherever that is user-toggleable.
+ */
 export function useMarketplaceTagFacets(
   department: string | null | undefined,
   group: string | null | undefined,
   includeAdult = false,
+  inStock = true,
 ) {
   return useAsync<MarketplaceTagFacet[]>(
-    [department, group, includeAdult],
+    [department, group, includeAdult, inStock],
     async () => {
       const { data, error } = await supabase.rpc('get_marketplace_tag_facets', {
         p_department: department ?? null,
         p_subcategory_group: group ?? null,
         p_include_adult: includeAdult,
+        p_in_stock: inStock,
       });
       if (error || !data) return [];
       type Row = {
