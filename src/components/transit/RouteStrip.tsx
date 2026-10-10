@@ -147,7 +147,9 @@ export function RouteStrip({
                   )}
                 >
                   <StationRing state={active ? 'typed' : 'open'} track={track || 'blue'} />
-                  <span className="py-1">{station.title}</span>
+                  <span className={cn('py-1', active && 'underline underline-offset-4')}>
+                    {station.title}
+                  </span>
                 </a>
               </li>
             );

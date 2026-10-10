@@ -631,9 +631,16 @@ export function EventFactStrip({
 
 export function EventPlanHint({ event, isPast }: { event: EventWithRelations; isPast: boolean }) {
   const { t } = useTranslation();
-  const hasVenue = Boolean(
-    event.venues?.name || event.venue_name || event.venues?.address || event.address,
-  );
+  const delivery = (event.liveness_status || event.status || '').toLowerCase();
+  const online = delivery === 'online' || delivery.includes('moved_online');
+  const hasVenue =
+    online ||
+    Boolean(
+      event.venues?.name?.trim() ||
+      event.venue_name?.trim() ||
+      event.venues?.address?.trim() ||
+      event.address?.trim(),
+    );
   const source = event.website || event.ticket_url;
   const message = isPast
     ? t('events.detail.archiveHint', 'This stop has passed.')
