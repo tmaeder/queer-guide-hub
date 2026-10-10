@@ -46,8 +46,6 @@ import {
   CountryActions,
   CountryLegalRecord,
   CountryCitiesTab,
-  CountryVenuesTab,
-  CountryEventsTab,
   CountryTravelTab,
   CountryNewsTab,
   CountryMapTab,
@@ -60,6 +58,7 @@ import { publishedCountryEditorial } from '@/lib/countryEditorial';
 import { useMeta } from '@/hooks/useMeta';
 import { LocationActionMenu, LocationExploreMore } from '@/components/geo/LocationDetail';
 import { CountryPhotoGallery } from '@/components/country/CountryPhotoGallery';
+import { CountryDiscoveryGallery } from '@/components/country/CountryDiscoveryGallery';
 
 const FOOTER_LINK =
   'inline-flex min-h-12 items-center gap-2 rounded-element bg-surface-container px-4 py-2 text-13 font-bold no-underline transition-colors hover:bg-foreground hover:text-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring';
@@ -346,20 +345,17 @@ export default function CountryDetail() {
         {
           id: 'venues',
           title: t('country.section.venues', 'Venues'),
-          presentation: 'disclosure',
-          content: venues.length > 0 ? <CountryVenuesTab venues={venues} /> : null,
+          content:
+            venues.length > 0 ? (
+              <CountryDiscoveryGallery countryId={country.id} kind="venue" cities={cities} />
+            ) : null,
         },
         {
           id: 'events',
-          title: t('country.section.events', 'Next departures'),
-          presentation: 'disclosure',
+          title: t('breadcrumb.events', 'Events'),
           content:
             events.length > 0 ? (
-              <CountryEventsTab
-                events={events}
-                locale={i18n.language}
-                openLabel={t('cities.detail.openEvent', 'Open')}
-              />
+              <CountryDiscoveryGallery countryId={country.id} kind="event" cities={cities} />
             ) : null,
         },
         {

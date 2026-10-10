@@ -3254,6 +3254,17 @@
       "title": "[JA] Compare the law elsewhere",
       "body": "[JA] Every country page carries the same legal breakdown, from the same sources, with the date it was checked.",
       "rights": "[JA] Rights across the world"
+    },
+    "gallery": {
+      "allTypes": "すべての種類",
+      "verifiedOnly": "確認済みの施設のみ",
+      "freeOnly": "無料イベントのみ",
+      "invalidDates": "開始日より後の終了日を選んでください。",
+      "error": "このコレクションを読み込めませんでした。",
+      "results_one": "{{count}}件",
+      "results_other": "{{count}}件",
+      "empty": "該当なし。別の都市を試すか、フィルターをリセットしてください。",
+      "pagination": "ギャラリーのページ"
     }
   },
   "inbox": {

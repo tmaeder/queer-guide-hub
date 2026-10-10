@@ -3254,6 +3254,17 @@
       "title": "[ZH] Compare the law elsewhere",
       "body": "[ZH] Every country page carries the same legal breakdown, from the same sources, with the date it was checked.",
       "rights": "[ZH] Rights across the world"
+    },
+    "gallery": {
+      "allTypes": "所有类型",
+      "verifiedOnly": "仅已验证场所",
+      "freeOnly": "仅免费活动",
+      "invalidDates": "请选择晚于开始日期的结束日期。",
+      "error": "无法加载此合集。",
+      "results_one": "{{count}} 个结果",
+      "results_other": "{{count}} 个结果",
+      "empty": "没有匹配结果。请尝试其他城市或重置筛选条件。",
+      "pagination": "图库分页"
     }
   },
   "inbox": {

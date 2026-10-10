@@ -3290,6 +3290,17 @@
       "title": "[RU] Compare the law elsewhere",
       "body": "[RU] Every country page carries the same legal breakdown, from the same sources, with the date it was checked.",
       "rights": "[RU] Rights across the world"
+    },
+    "gallery": {
+      "allTypes": "Все категории",
+      "verifiedOnly": "Только проверенные места",
+      "freeOnly": "Только бесплатные события",
+      "invalidDates": "Выберите дату окончания после даты начала.",
+      "error": "Не удалось загрузить эту подборку.",
+      "results_one": "{{count}} результат",
+      "results_other": "{{count}} результатов",
+      "empty": "Ничего не найдено. Попробуйте другой город или сбросьте фильтры.",
+      "pagination": "Страницы галереи"
     }
   },
   "inbox": {

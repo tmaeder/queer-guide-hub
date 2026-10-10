@@ -3254,6 +3254,17 @@
       "title": "[KO] Compare the law elsewhere",
       "body": "[KO] Every country page carries the same legal breakdown, from the same sources, with the date it was checked.",
       "rights": "[KO] Rights across the world"
+    },
+    "gallery": {
+      "allTypes": "모든 유형",
+      "verifiedOnly": "확인된 장소만",
+      "freeOnly": "무료 이벤트만",
+      "invalidDates": "시작일 이후의 종료일을 선택하세요.",
+      "error": "이 컬렉션을 불러오지 못했습니다.",
+      "results_one": "결과 {{count}}개",
+      "results_other": "결과 {{count}}개",
+      "empty": "결과가 없습니다. 다른 도시를 선택하거나 필터를 초기화하세요.",
+      "pagination": "갤러리 페이지"
     }
   },
   "inbox": {

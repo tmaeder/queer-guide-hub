@@ -3412,6 +3412,17 @@
       "title": "Compare the law elsewhere",
       "body": "Every country page carries the same legal breakdown, from the same sources, with the date it was checked.",
       "rights": "Rights across the world"
+    },
+    "gallery": {
+      "allTypes": "All types",
+      "verifiedOnly": "Verified venues only",
+      "freeOnly": "Free events only",
+      "invalidDates": "Choose an end date after the start date.",
+      "error": "This collection could not be loaded.",
+      "results_one": "{{count}} result",
+      "results_other": "{{count}} results",
+      "empty": "No matches. Try another city or reset your filters.",
+      "pagination": "Gallery pages"
     }
   },
   "extension": {

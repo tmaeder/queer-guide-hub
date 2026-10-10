@@ -16,6 +16,8 @@ import { TravelDealsSection } from '@/components/travel/TravelDealsSection';
 import { ActivitiesWidget } from '@/components/activities/ActivitiesWidget';
 import { supabase } from '@/integrations/supabase/client';
 import { useVisitedPlaceLookup } from '@/hooks/useVisitedPlaceLookup';
+import { DiscoveryPhotoCard } from '@/components/country/CountryDiscoveryGallery';
+import { resolveEntityImage } from '@/lib/images/resolveEntityImage';
 
 // CountryDetail accesses joined fields (continents, regions) on a row that doesn't
 // declare them in the generated types. Mirror the page's existing loose typing.
@@ -150,7 +152,24 @@ export function countryCityStops(cities: CityRelation[]): Stop[] {
 
 export function CountryCitiesTab({ cities }: { cities: CityRelation[] }) {
   if (cities.length === 0) return null;
-  return <StopList stops={countryCityStops(cities)} className="grid sm:grid-cols-2" />;
+  return (
+    <div className="grid gap-4 sm:grid-cols-2">
+      {cities.slice(0, 6).map((city) => (
+        <DiscoveryPhotoCard
+          key={city.id}
+          kind="city"
+          item={{
+            id: city.id,
+            name: city.name,
+            href: `/city/${city.slug || city.id}`,
+            city: city.region_name ?? null,
+            category: 'city',
+            image: resolveEntityImage('city', city).url,
+          }}
+        />
+      ))}
+    </div>
+  );
 }
 
 /**

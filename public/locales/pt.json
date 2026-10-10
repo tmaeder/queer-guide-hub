@@ -3256,6 +3256,17 @@
       "title": "[PT] Compare the law elsewhere",
       "body": "[PT] Every country page carries the same legal breakdown, from the same sources, with the date it was checked.",
       "rights": "[PT] Rights across the world"
+    },
+    "gallery": {
+      "allTypes": "Todos os tipos",
+      "verifiedOnly": "Apenas locais verificados",
+      "freeOnly": "Apenas eventos gratuitos",
+      "invalidDates": "Escolhe uma data de fim posterior à data de início.",
+      "error": "Não foi possível carregar esta coleção.",
+      "results_one": "{{count}} resultado",
+      "results_other": "{{count}} resultados",
+      "empty": "Sem resultados. Experimenta outra cidade ou repõe os filtros.",
+      "pagination": "Páginas da galeria"
     }
   },
   "inbox": {
