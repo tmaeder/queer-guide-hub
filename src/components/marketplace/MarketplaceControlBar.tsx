@@ -6,7 +6,7 @@ import { useSearchParams } from 'react-router';
 // icons and the reason no icon gap had to be filled.
 import { TransitIcon } from '@/components/transit/TransitIcon';
 import { FilterChip } from '@/components/transit/FilterChip';
-import { StationRing } from '@/components/transit/StationRing';
+import { PickerRow } from '@/components/transit/PickerRow';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -62,35 +62,6 @@ interface MarketplaceControlBarProps {
 // `@/components/transit/FilterChip`. It existed only because the shared chip
 // did not forward refs or rest props, so `<PopoverTrigger asChild>` could not
 // use it; FilterChip now does both.
-
-/** One row of a popover list — shared by the department and price pickers. */
-function PickerRow({
-  selected,
-  onClick,
-  children,
-}: {
-  selected: boolean;
-  onClick: () => void;
-  children: React.ReactNode;
-}) {
-  return (
-    <button
-      type="button"
-      className="group flex w-full items-center justify-between gap-2 px-2 py-1.5 text-left text-sm hover:bg-foreground hover:text-background"
-      onClick={onClick}
-    >
-      {children}
-      {/* The row fills ink on hover, so a `done` ring (which is also ink) would
-          vanish into it — it flips to paper for the hovered row. */}
-      {selected && (
-        <StationRing
-          state="done"
-          className="border shrink-0 group-hover:border-background group-hover:bg-background"
-        />
-      )}
-    </button>
-  );
-}
 
 /**
  * The single sticky control row for /marketplace: dominant search field,
