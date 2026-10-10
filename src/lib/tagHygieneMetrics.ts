@@ -178,6 +178,12 @@ export const HYGIENE_METRICS: HygieneMetric[] = [
     hint: 'A scraped hashtag concatenation promoted into vocabulary, e.g. "Pulse #Mordopfer #Hassverbrechen". Zero-invariant: authored tags do not carry hashtags.',
   },
   {
+    key: 'junk_token_name_active',
+    label: 'Junk token names',
+    zero: true,
+    hint: 'A single letter, a title-cased two-letter locale code (`gb` → `Gb`) or a filter-UI stopword published as a glossary term — the cohort 99991791619649 deprecated (All on 2,643 rows, Us, No, Gb, A, R, B). Zero-invariant: this class has no legitimate source, so unlike uncategorized_active it does not oscillate. Excludes entity_kind=attribute, because the marketplace size facets ARE the letters L, M and S at ~20,000 uses each; an all-caps two-letter name is accepted so real acronyms (TV, DJ) pass. Deliberately NOT conditioned on missing prose — A, R and B all carry prose about the alphabet, so that condition would have read zero while all three were live.',
+  },
+  {
     key: 'non_latin_name',
     label: 'Non-Latin script names',
     zero: true,
