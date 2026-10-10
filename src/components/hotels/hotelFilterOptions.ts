@@ -5,6 +5,7 @@ export const HOTEL_TYPE_OPTIONS: ReadonlyArray<{ value: string; label: string }>
   { value: 'guesthouse', label: 'Guesthouse' },
   { value: 'apartment', label: 'Apartment' },
   { value: 'resort', label: 'Resort' },
+  { value: 'other', label: 'Other' },
 ];
 
 export const HOTEL_TYPE_LABEL: Record<string, string> = Object.fromEntries(
