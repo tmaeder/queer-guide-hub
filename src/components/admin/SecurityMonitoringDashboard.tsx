@@ -7,6 +7,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Shield, AlertTriangle, Activity, Users } from 'lucide-react';
 import { AdminCardSkeleton } from '@/components/admin/primitives/AdminLoading';
 import { formatDistanceToNow } from 'date-fns';
+import { StructuredValueView } from '@/components/cms/fields/structured/StructuredValueView';
 
 interface SecurityEvent {
   id: string;
@@ -199,9 +200,9 @@ export function SecurityMonitoringDashboard() {
                           <summary className="cursor-pointer text-muted-foreground">
                             View details
                           </summary>
-                          <pre className="mt-1 text-xs bg-muted p-2 rounded-element overflow-x-auto">
-                            {JSON.stringify(event.details, null, 2)}
-                          </pre>
+                          <div className="mt-1 bg-muted p-2 rounded-element overflow-x-auto">
+                            <StructuredValueView value={event.details} className="text-xs" />
+                          </div>
                         </details>
                       )}
                     </div>

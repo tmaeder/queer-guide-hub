@@ -1613,7 +1613,6 @@ export type Database = {
           elevation_m: number | null
           enrichment_status: Json
           field_provenance: Json
-          founded_year: number | null
           historical_names: Json
           id: string
           image_flagged: boolean
@@ -1632,7 +1631,6 @@ export type Database = {
           local_language: string | null
           longitude: number | null
           major_airport_code: string | null
-          mayor: string | null
           name: string
           name_de: string | null
           name_en: string | null
@@ -1646,6 +1644,7 @@ export type Database = {
           population: number | null
           postal_codes: string[] | null
           region_name: string | null
+          region_code: string | null
           safety_notes: string | null
           seo_indexable: boolean
           shell_status: string
@@ -1684,7 +1683,6 @@ export type Database = {
           elevation_m?: number | null
           enrichment_status?: Json
           field_provenance?: Json
-          founded_year?: number | null
           historical_names?: Json
           id?: string
           image_flagged?: boolean
@@ -1703,7 +1701,6 @@ export type Database = {
           local_language?: string | null
           longitude?: number | null
           major_airport_code?: string | null
-          mayor?: string | null
           name: string
           name_de?: string | null
           name_en?: string | null
@@ -1717,6 +1714,7 @@ export type Database = {
           population?: number | null
           postal_codes?: string[] | null
           region_name?: string | null
+          region_code?: string | null
           safety_notes?: string | null
           seo_indexable?: boolean
           shell_status?: string
@@ -1755,7 +1753,6 @@ export type Database = {
           elevation_m?: number | null
           enrichment_status?: Json
           field_provenance?: Json
-          founded_year?: number | null
           historical_names?: Json
           id?: string
           image_flagged?: boolean
@@ -1774,7 +1771,6 @@ export type Database = {
           local_language?: string | null
           longitude?: number | null
           major_airport_code?: string | null
-          mayor?: string | null
           name?: string
           name_de?: string | null
           name_en?: string | null
@@ -1788,6 +1784,7 @@ export type Database = {
           population?: number | null
           postal_codes?: string[] | null
           region_name?: string | null
+          region_code?: string | null
           safety_notes?: string | null
           seo_indexable?: boolean
           shell_status?: string
@@ -7345,7 +7342,6 @@ export type Database = {
           elevation_m: number | null
           enrichment_status: Json
           field_provenance: Json
-          founded_year: number | null
           historical_names: Json
           is_capital: boolean | null
           is_major_city: boolean | null
@@ -7356,7 +7352,6 @@ export type Database = {
           local_customs: string | null
           local_language: string | null
           major_airport_code: string | null
-          mayor: string | null
           needs_attention: boolean
           notable_landmarks: string[] | null
           official_website: string | null
@@ -7392,7 +7387,6 @@ export type Database = {
           elevation_m?: number | null
           enrichment_status?: Json
           field_provenance?: Json
-          founded_year?: number | null
           historical_names?: Json
           is_capital?: boolean | null
           is_major_city?: boolean | null
@@ -7403,7 +7397,6 @@ export type Database = {
           local_customs?: string | null
           local_language?: string | null
           major_airport_code?: string | null
-          mayor?: string | null
           needs_attention?: boolean
           notable_landmarks?: string[] | null
           official_website?: string | null
@@ -7439,7 +7432,6 @@ export type Database = {
           elevation_m?: number | null
           enrichment_status?: Json
           field_provenance?: Json
-          founded_year?: number | null
           historical_names?: Json
           is_capital?: boolean | null
           is_major_city?: boolean | null
@@ -7450,7 +7442,6 @@ export type Database = {
           local_customs?: string | null
           local_language?: string | null
           major_airport_code?: string | null
-          mayor?: string | null
           needs_attention?: boolean
           notable_landmarks?: string[] | null
           official_website?: string | null
@@ -30546,7 +30537,6 @@ export type Database = {
           elevation_m: number | null
           enrichment_status: Json
           field_provenance: Json
-          founded_year: number | null
           historical_names: Json
           id: string
           image_flagged: boolean
@@ -30565,7 +30555,6 @@ export type Database = {
           local_language: string | null
           longitude: number | null
           major_airport_code: string | null
-          mayor: string | null
           name: string
           name_de: string | null
           name_en: string | null
@@ -30779,7 +30768,6 @@ export type Database = {
               elevation_m: number | null
               enrichment_status: Json
               field_provenance: Json
-              founded_year: number | null
               historical_names: Json
               id: string
               image_flagged: boolean
@@ -30798,7 +30786,6 @@ export type Database = {
               local_language: string | null
               longitude: number | null
               major_airport_code: string | null
-              mayor: string | null
               name: string
               name_de: string | null
               name_en: string | null
@@ -30859,7 +30846,6 @@ export type Database = {
               elevation_m: number | null
               enrichment_status: Json
               field_provenance: Json
-              founded_year: number | null
               historical_names: Json
               id: string
               image_flagged: boolean
@@ -30878,7 +30864,6 @@ export type Database = {
               local_language: string | null
               longitude: number | null
               major_airport_code: string | null
-              mayor: string | null
               name: string
               name_de: string | null
               name_en: string | null
@@ -30939,7 +30924,6 @@ export type Database = {
               elevation_m: number | null
               enrichment_status: Json
               field_provenance: Json
-              founded_year: number | null
               historical_names: Json
               id: string
               image_flagged: boolean
@@ -30958,7 +30942,6 @@ export type Database = {
               local_language: string | null
               longitude: number | null
               major_airport_code: string | null
-              mayor: string | null
               name: string
               name_de: string | null
               name_en: string | null
@@ -31019,7 +31002,6 @@ export type Database = {
               elevation_m: number | null
               enrichment_status: Json
               field_provenance: Json
-              founded_year: number | null
               historical_names: Json
               id: string
               image_flagged: boolean
@@ -31038,7 +31020,6 @@ export type Database = {
               local_language: string | null
               longitude: number | null
               major_airport_code: string | null
-              mayor: string | null
               name: string
               name_de: string | null
               name_en: string | null
@@ -31099,7 +31080,6 @@ export type Database = {
               elevation_m: number | null
               enrichment_status: Json
               field_provenance: Json
-              founded_year: number | null
               historical_names: Json
               id: string
               image_flagged: boolean
@@ -31118,7 +31098,6 @@ export type Database = {
               local_language: string | null
               longitude: number | null
               major_airport_code: string | null
-              mayor: string | null
               name: string
               name_de: string | null
               name_en: string | null
@@ -31181,7 +31160,6 @@ export type Database = {
               elevation_m: number | null
               enrichment_status: Json
               field_provenance: Json
-              founded_year: number | null
               historical_names: Json
               id: string
               image_flagged: boolean
@@ -31200,7 +31178,6 @@ export type Database = {
               local_language: string | null
               longitude: number | null
               major_airport_code: string | null
-              mayor: string | null
               name: string
               name_de: string | null
               name_en: string | null
@@ -31261,7 +31238,6 @@ export type Database = {
               elevation_m: number | null
               enrichment_status: Json
               field_provenance: Json
-              founded_year: number | null
               historical_names: Json
               id: string
               image_flagged: boolean
@@ -31280,7 +31256,6 @@ export type Database = {
               local_language: string | null
               longitude: number | null
               major_airport_code: string | null
-              mayor: string | null
               name: string
               name_de: string | null
               name_en: string | null
@@ -31341,7 +31316,6 @@ export type Database = {
               elevation_m: number | null
               enrichment_status: Json
               field_provenance: Json
-              founded_year: number | null
               historical_names: Json
               id: string
               image_flagged: boolean
@@ -31360,7 +31334,6 @@ export type Database = {
               local_language: string | null
               longitude: number | null
               major_airport_code: string | null
-              mayor: string | null
               name: string
               name_de: string | null
               name_en: string | null
@@ -33778,6 +33751,7 @@ export type Database = {
       get_marketplace_tag_facets: {
         Args: {
           p_department?: string
+          p_in_stock?: boolean
           p_include_adult?: boolean
           p_subcategory_group?: string
         }
@@ -36143,7 +36117,6 @@ export type Database = {
           elevation_m: number | null
           enrichment_status: Json
           field_provenance: Json
-          founded_year: number | null
           historical_names: Json
           id: string
           image_flagged: boolean
@@ -36162,7 +36135,6 @@ export type Database = {
           local_language: string | null
           longitude: number | null
           major_airport_code: string | null
-          mayor: string | null
           name: string
           name_de: string | null
           name_en: string | null

@@ -65,6 +65,7 @@ import { GatedDetailFallback } from '@/components/safety/GatedDetailFallback';
 import { useGatedEntityExists } from '@/hooks/useGatedEntityExists';
 import { FollowTagButton } from '@/components/tags/FollowTagButton';
 import { AdminEditButton } from '@/components/admin/AdminEditButton';
+import { ShareMenu } from '@/components/share/ShareMenu';
 import { TagAliasesDisplay } from '@/components/tags/TagAliasesDisplay';
 import { TagSafetyCallout } from '@/components/tags/TagSafetyCallout';
 import { TagWikiContent } from '@/components/tags/TagWikiContent';
@@ -73,16 +74,20 @@ import { TagInterchange } from '@/components/tags/TagInterchange';
 import { SubstanceInteractions } from '@/components/tags/SubstanceInteractions';
 import { TagDiagnosticCodes } from '@/components/tags/TagDiagnosticCodes';
 import { TagFlagBand } from '@/components/tags/TagFlagBand';
+import { TagFigure } from '@/components/tags/TagFigure';
+import { shouldShowTagFigure } from '@/lib/tags/tagFigureVisibility';
 import { TagFlagRailCard } from '@/components/tags/TagFlagRailCard';
 import { TagHankyCodeBand } from '@/components/tags/TagHankyCodeBand';
 import { flagByTagSlug, HANKY_CODE_TAG_SLUG } from '@/lib/flags';
 import { TagLinkedContent } from '@/components/tags/TagLinkedContent';
 import { StiProfile } from '@/components/tags/StiProfile';
 import { TagMythFacts } from '@/components/tags/TagMythFacts';
+import { TagWorkbooks } from '@/components/tags/TagWorkbooks';
 import { TAG_DIAGRAMS } from '@/components/tags/tagDiagrams';
 import { TagInfographics } from '@/components/tags/TagInfographics';
 import { figuresForSlug } from '@/components/tags/infographics/registry';
 import { useTagMedicalCodes, countMedicalCodes } from '@/hooks/useTagMedicalCodes';
+import { useTagWorkbooks, countWorkbooks } from '@/hooks/useTagWorkbooks';
 import { useStiProfile, useTagMythFacts } from '@/hooks/useStiProfile';
 import { localizedField, type I18nMap } from '@/lib/localizeContent';
 
@@ -274,6 +279,10 @@ export default function TagDetail() {
   const hasStiProfile = !!stiProfile;
   const { data: mythFacts } = useTagMythFacts(tag?.id ?? null);
   const mythFactCount = mythFacts?.length ?? 0;
+  // Count-fetch again, same reason: the strip and the rail need to know whether
+  // this term carries an exercise before the band has rendered.
+  const { data: tagWorkbooks } = useTagWorkbooks(tag?.id ?? null);
+  const workbookCount = countWorkbooks(tagWorkbooks);
   const diagrams = useMemo(
     () => (tag ? (TAG_DIAGRAMS[tag.slug] ?? EMPTY_DIAGRAMS) : EMPTY_DIAGRAMS),
     [tag],
@@ -298,6 +307,33 @@ export default function TagDetail() {
    *  resolves points at nothing in the meantime. */
   const figures = useMemo(() => figuresForSlug(tag?.slug), [tag?.slug]);
 
+  // Declared HERE rather than beside `meta` below, where it used to live,
+  // because `stations` needs it and that memo runs first. Nothing between the
+  // two positions reads it.
+  const isAdult = useMemo(() => {
+    const names = [
+      ...(tag?.categories?.map((c) => c.name) ?? []),
+      ...(tag?.categories?.map((c) => c.parent_name ?? null) ?? []),
+    ];
+    return names.some((n) => safeMode.isAdultCategory(n));
+  }, [tag, safeMode]);
+
+  /** Whether the photograph band renders, asked of the band's OWN predicate so
+   *  the route-strip stop and the band cannot disagree. */
+  const showPhoto = useMemo(
+    () =>
+      Boolean(tag) &&
+      shouldShowTagFigure({
+        imageUrl: tag!.image_url,
+        imageExplicit: tag!.image_explicit,
+        pageAlreadyGated: isAdult,
+        safeMode: safeMode.enabled,
+        // Reuses the memo this page already keeps for its `figure` station.
+        hasFigure: figures.length > 0,
+      }),
+    [tag, isAdult, safeMode.enabled, figures],
+  );
+
   /** The stations are the page's BANDS, with the wiki's own `<h2>`s as
    *  sub-stations under "About". A prose-only table of contents renders nothing
    *  on most terms — only a minority carry a `long_description` with headings —
@@ -309,6 +345,13 @@ export default function TagDetail() {
     if (tag.description || tag.long_description) {
       s.push({ id: 'about', title: t('tags.detail.about', 'About') });
       s.push(...(wiki?.sections ?? []).map((x) => ({ ...x, depth: 2 as const })));
+    }
+    // Right after About, matching where the band renders below. The condition
+    // is `shouldShowTagFigure` rather than a re-derivation here, so the stop
+    // cannot appear for a band that stands down (explicit under safe mode, or a
+    // term that already carries a diagram).
+    if (showPhoto) {
+      s.push({ id: 'photo', title: t('tags.photo.eyebrow', 'Photograph') });
     }
     // Both flag presence and the hanky slug are synchronous TS data, so unlike
     // the async counts below they need no extra memo deps beyond `tag`.
@@ -334,6 +377,12 @@ export default function TagDetail() {
     }
     if (mythFactCount > 0) {
       s.push({ id: 'myths', title: t('tags.myths.eyebrow', 'Check the facts') });
+    }
+    // Pushed HERE because the band renders here. useActiveStation derives the
+    // active stop from document geometry, so this array's order must match the
+    // JSX order below or the strip highlights the wrong stop while scrolling.
+    if (workbookCount > 0) {
+      s.push({ id: 'workbooks', title: t('tags.detail.workbooks.title', 'Exercises') });
     }
     // Immediately above the taxonomy, for the same reason as `combinations`:
     // a reader who can see the thing drawn does not need the ontology first.
@@ -361,8 +410,8 @@ export default function TagDetail() {
     return s;
     // medicalCodeCount belongs here: the codes RPC resolves AFTER the first
     // render, so omitting it would pin the strip to the pre-fetch value of 0
-    // and the stop would never appear. interactionCount, hasStiProfile and
-    // mythFactCount are the same shape.
+    // and the stop would never appear. interactionCount, hasStiProfile,
+    // mythFactCount and workbookCount are the same shape.
   }, [
     tag,
     wiki,
@@ -371,8 +420,10 @@ export default function TagDetail() {
     interactionCount,
     hasStiProfile,
     mythFactCount,
+    workbookCount,
     diagrams,
     figures,
+    showPhoto,
     t,
   ]);
 
@@ -403,13 +454,8 @@ export default function TagDetail() {
   useBreadcrumbs(breadcrumbs);
 
   // ── Meta ────────────────────────────────────────────────────────────────
-  const isAdult = useMemo(() => {
-    const names = [
-      ...(tag?.categories?.map((c) => c.name) ?? []),
-      ...(tag?.categories?.map((c) => c.parent_name ?? null) ?? []),
-    ];
-    return names.some((n) => safeMode.isAdultCategory(n));
-  }, [tag, safeMode]);
+  // `isAdult` is declared above, next to `showPhoto`, because `stations` needs
+  // both and that memo runs before this point.
 
   const meta = useMemo(() => {
     // Mirror the render's three branches below. A single `!tag` test conflated
@@ -617,6 +663,23 @@ export default function TagDetail() {
         </section>
       )}
 
+      {/* Immediately after the definition, which still leads: someone arriving
+          from search needs the sentence before the picture. Its station is
+          pushed in the same position in `stations` above, and useActiveStation
+          derives the active stop from document geometry. */}
+      <TagFigure
+        slug={tag.slug}
+        name={tag.name}
+        imageUrl={tag.image_url}
+        imageAlt={tag.image_alt}
+        imageSource={tag.image_source}
+        imageLicense={tag.image_license}
+        imageAttribution={tag.image_attribution}
+        imageExplicit={tag.image_explicit}
+        pageAlreadyGated={isAdult}
+        safeMode={safeMode.enabled}
+      />
+
       <TagFlagBand tagSlug={tag.slug} />
 
       <TagHankyCodeBand tagSlug={tag.slug} />
@@ -646,6 +709,11 @@ export default function TagDetail() {
           <TagMythFacts tagId={tag.id} tagName={tag.name} />
         </div>
       )}
+
+      {/* Owns its own `#workbooks` id, like TagDiagnosticCodes, and renders
+          null when the term carries no exercise. Its position here must match
+          the `workbooks` push in `stations` above. */}
+      <TagWorkbooks tagId={tag.id} />
 
       {/* Directly above <TagInterchange>, which IS the #taxonomy section. This
           pairing is load-bearing: the `figure` station is pushed immediately
@@ -699,7 +767,11 @@ export default function TagDetail() {
           flag gets the full band in the body instead — never both. */}
       <TagFlagRailCard tagSlug={tag.slug} />
 
-      {(tag.wikipedia_url || tag.wikidata_id || medicalCodeCount > 0 || references.length > 0) && (
+      {(tag.wikipedia_url ||
+        tag.wikidata_id ||
+        medicalCodeCount > 0 ||
+        workbookCount > 0 ||
+        references.length > 0) && (
         <SidebarCard eyebrow={t('tags.detail.elsewhere', 'Elsewhere')}>
           {/* An in-page anchor rather than the codes themselves: the rail is
               240px and the band has four groups. This row is a pointer, not a
@@ -708,6 +780,14 @@ export default function TagDetail() {
             <SidebarRow
               label={t('tags.detail.codes.title', 'Diagnostic codes')}
               value={<a href="#codes">{medicalCodeCount}</a>}
+            />
+          )}
+          {/* Same pointer convention — the band is in the body, this is a
+              count that jumps to it. */}
+          {workbookCount > 0 && (
+            <SidebarRow
+              label={t('tags.detail.workbooks.title', 'Exercises')}
+              value={<a href="#workbooks">{workbookCount}</a>}
             />
           )}
           {tag.wikipedia_url && (
@@ -821,6 +901,20 @@ export default function TagDetail() {
         action={
           <div className="flex items-center gap-2">
             <FollowTagButton tagId={tag.id} tagName={tag.name} tagSlug={tag.slug} />
+            <ShareMenu
+              url={window.location.href}
+              title={tag.name}
+              entity={{
+                entity_table: 'unified_tags',
+                entity_id: tag.id,
+                title: tag.name,
+                subtitle: t('tags.hero.eyebrow', 'Glossary'),
+                path: `/tags/${tag.slug}`,
+                // Adult or sensitive glossary terms travel as a title-only
+                // card; the tag page enforces its own age/sign-in gate.
+                gated: isAdult || Boolean(tag.is_sensitive),
+              }}
+            />
             <AdminEditButton
               contentType="unified_tags"
               contentId={tag.id}

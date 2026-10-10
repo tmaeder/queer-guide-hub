@@ -1,13 +1,18 @@
 import type { ReactNode } from 'react';
 import { EditorialDetailLayout, type SectionDef } from '@/components/entity/editorial';
 import { PageHero } from '@/components/discovery';
+import { cn } from '@/lib/utils';
 
 export interface IntentPageLayoutProps {
+  /** Optional page-specific hero. Defaults to the shared PageHero treatment. */
+  header?: ReactNode;
   eyebrow?: ReactNode;
   title: ReactNode;
   lede?: ReactNode;
   /** Scope controls (city picker, date presets) rendered under the hero. */
   scopeBar?: ReactNode;
+  /** Primary interactive surface rendered before the long-page section index. */
+  featured?: ReactNode;
   sections: SectionDef[];
   footer?: ReactNode;
   loading?: boolean;
@@ -16,6 +21,11 @@ export interface IntentPageLayoutProps {
   disableProgress?: boolean;
   breadcrumbLabel: string;
   breadcrumbHref: string;
+  sectionNavVariant?: 'default' | 'subway';
+  className?: string;
+  heroSize?: 'sm' | 'md' | 'lg';
+  heroClassName?: string;
+  sectionNavClassName?: string;
 }
 
 /**
@@ -34,10 +44,12 @@ export interface IntentPageLayoutProps {
  * detail page does not.
  */
 export function IntentPageLayout({
+  header,
   eyebrow,
   title,
   lede,
   scopeBar,
+  featured,
   sections,
   footer,
   loading = false,
@@ -45,25 +57,44 @@ export function IntentPageLayout({
   disableProgress = false,
   breadcrumbLabel,
   breadcrumbHref,
+  sectionNavVariant = 'default',
+  className,
+  heroSize = 'md',
+  heroClassName,
+  sectionNavClassName,
 }: IntentPageLayoutProps) {
   return (
-    <EditorialDetailLayout
-      loading={loading}
-      error={error}
-      entityType="intent"
-      disableProgress={disableProgress}
-      breadcrumbs={[{ label: breadcrumbLabel, href: breadcrumbHref }]}
-      header={
-        <>
-          {/* `bare` — EditorialDetailLayout already puts this inside a
-              PageContainer, and two nested containers double the gutter. */}
-          <PageHero bare eyebrow={eyebrow} title={title} lede={lede} size="md" />
-          {scopeBar ? <div className="mt-6">{scopeBar}</div> : null}
-        </>
-      }
-      sections={sections}
-      footer={footer}
-    />
+    <div className={cn(className)}>
+      <EditorialDetailLayout
+        loading={loading}
+        error={error}
+        entityType="intent"
+        disableProgress={disableProgress}
+        sectionNavClassName={sectionNavClassName}
+        breadcrumbs={[{ label: breadcrumbLabel, href: breadcrumbHref }]}
+        sectionNavVariant={sectionNavVariant}
+        header={
+          <>
+            {header ?? (
+              /* `bare` — EditorialDetailLayout already puts this inside a
+                 PageContainer, and two nested containers double the gutter. */
+              <PageHero
+                bare
+                eyebrow={eyebrow}
+                title={title}
+                lede={lede}
+                size={heroSize}
+                className={heroClassName}
+              />
+            )}
+            {scopeBar ? <div className="mt-6">{scopeBar}</div> : null}
+            {featured ? <div className="mt-8">{featured}</div> : null}
+          </>
+        }
+        sections={sections}
+        footer={footer}
+      />
+    </div>
   );
 }
 

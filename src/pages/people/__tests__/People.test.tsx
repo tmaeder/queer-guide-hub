@@ -48,6 +48,11 @@ vi.mock('@/hooks/useIntentData', () => ({
   useNightlifeVenues: () => ({ data: [] }),
   useDestinationCities: () => ({ data: [] }),
 }));
+// HubNav (via HubNavBar) is real page chrome here, and it reads the signed-in
+// user for the identity block and the Messages unread badge. These specs render
+// without an AuthProvider, so stub the hook rather than drop the bar — the bar
+// is part of what the nested-anchor assertion below is checking.
+vi.mock('@/hooks/useAuth', () => ({ useAuth: () => ({ user: null, loading: false }) }));
 vi.mock('@/hooks/useMeta', () => ({ useMeta: () => undefined }));
 vi.mock('@/components/people/IntentSheet', () => ({ IntentSheet: () => null }));
 vi.mock('@/components/safety/GatedContentNotice', () => ({ GatedContentNotice: () => null }));
@@ -65,6 +70,9 @@ vi.mock('@/components/people/MeetMembersNotice', () => ({
 // test — see components/people/__tests__/InterestPicker.test.tsx.
 vi.mock('@/components/people/InterestPicker', () => ({
   InterestPicker: () => <div data-testid="interest-picker">interests</div>,
+}));
+vi.mock('@/components/people/PeopleConnectionMap', () => ({
+  default: () => <div data-testid="people-connection-map">connection map</div>,
 }));
 
 import People from '../People';
@@ -88,6 +96,13 @@ beforeEach(() => {
 });
 
 describe('People hub', () => {
+  it('puts a privacy-safe connection map before the content rails', async () => {
+    renderWithProviders(<People />);
+    expect(await screen.findByTestId('people-connection-map')).toBeInTheDocument();
+    expect(screen.getAllByText('Connection map').length).toBeGreaterThan(0);
+    expect(screen.getByRole('link', { name: 'Open full map' })).toHaveAttribute('href', '/map');
+  });
+
   // EditorialDetailLayout prints each section label twice — once in the sticky
   // section nav, once as the heading — so these are getAllByText by necessity.
   it('leads with places and groups, not with a member grid', () => {
@@ -98,13 +113,13 @@ describe('People hub', () => {
     expect(screen.getByText('Queer Hiking')).toBeInTheDocument();
   });
 
-  // The hub used to open on one of four person-matching tabs, every one of
-  // which needs a populated member pool that does not exist. They are now their
-  // own routes (/people/friends etc.) and must not reappear on the hub.
-  it('does not render the retired mode tabs', () => {
+  it('uses route links instead of the retired mode tab strip', () => {
     renderWithProviders(<People />);
     expect(screen.queryByRole('tab')).not.toBeInTheDocument();
-    expect(screen.queryByText('Travel buddies')).not.toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /Travel buddies/i })).toHaveAttribute(
+      'href',
+      '/hub/travel',
+    );
   });
 
   it('shows the honest member notice instead of an empty rail', () => {
@@ -124,15 +139,11 @@ describe('People hub', () => {
     expect(screen.getByRole('link', { name: 'Kreis 4' })).toHaveAttribute('href', '/place/kreis-4');
   });
 
-  // `/community/groups` is the LIST page; the detail route is `/groups/:groupId`.
-  // This card pointed at `/community/groups/:id`, which matches no route and so
-  // 404'd every group on the hub — 14 reports on the admin error board, all of
-  // them real, public, otherwise-reachable groups.
-  it('links a group to the group detail route, not under the community list', () => {
+  it('links a group to its canonical detail route under People', () => {
     renderWithProviders(<People />);
     expect(screen.getByRole('link', { name: 'Queer Hiking' })).toHaveAttribute(
       'href',
-      '/groups/g1',
+      '/hub/groups/g1',
     );
   });
 

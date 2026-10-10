@@ -140,7 +140,7 @@ export const venueFields: FieldConfig[] = [
     label: 'Opening Hours',
     type: 'json',
     group: 'details',
-    helpText: 'JSON with day names as keys',
+    helpText: 'Opening and closing time per day',
   },
   { name: 'amenities', label: 'Amenities', type: 'tags', group: 'details' },
   { name: 'services', label: 'Services', type: 'tags', group: 'details' },
@@ -245,7 +245,7 @@ export const venueFields: FieldConfig[] = [
     filterable: true,
     listColumn: true,
   },
-  { name: 'city_id', label: 'City Reference', type: 'text', group: 'external', hidden: true },
+  { name: 'city_id', label: 'City', type: 'text', group: 'external', hidden: true },
   { name: 'country_id', label: 'Country Reference', type: 'text', group: 'external', hidden: true },
   {
     name: 'queer_village_id',

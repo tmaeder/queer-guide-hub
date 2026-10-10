@@ -247,7 +247,7 @@ export function PackingTab({ tripId }: Props) {
                   type="button"
                   onClick={() => toggleCollapse(group.category)}
                   aria-expanded={!isCollapsed}
-                  className="flex items-center gap-2 w-full border-none bg-transparent cursor-pointer text-left p-0 min-h-9"
+                  className="flex min-h-11 items-center gap-2 w-full border-none bg-transparent cursor-pointer text-left p-0"
                   style={{ color: 'inherit', fontFamily: 'inherit' }}
                 >
                   {isCollapsed ? <ChevronRight size={16} /> : <ChevronDown size={16} />}

@@ -26,7 +26,7 @@ const TYPE_PATH: Record<string, (slug: string) => string> = {
   marketplace: (slug) => `/marketplace/${slug}`,
   personality: (slug) => `/personality/${slug}`,
   queer_village: (slug) => `/villages/${slug}`,
-  group: (slug) => `/groups/${slug}`,
+  group: (slug) => `/hub/groups/${slug}`,
   news: (slug) => `/news/${slug}`,
   tag: (slug) => `/tags/${slug}`,
   user: (slug) => `/profile/${slug}`,
@@ -159,7 +159,7 @@ export const MapSearchField = ({
                 setPopoverOpen(false);
                 onCollapse?.();
               }}
-              className="absolute right-1 top-1/2 -translate-y-1/2 h-6 w-6 inline-flex items-center justify-center text-muted-foreground hover:text-foreground focus:outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+              className="absolute right-1 top-1/2 -translate-y-1/2 h-6 w-6 min-h-11 min-w-11 inline-flex items-center justify-center text-muted-foreground hover:text-foreground focus:outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
             >
               <X size={12} aria-hidden="true" />
             </button>

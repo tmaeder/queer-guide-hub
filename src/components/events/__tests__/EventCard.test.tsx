@@ -9,6 +9,7 @@ vi.mock('@/hooks/useEntityTripStatus', () => ({ useEntityTripStatus: () => ({ da
 vi.mock('@/hooks/useVisitedPlaceLookup', () => ({ useVisitedPlaceLookup: () => ({ has: () => false, mark: vi.fn() }) }));
 vi.mock('@/hooks/useActiveTrip', () => ({ useActiveTrip: () => ({ trip: null, addToTrip: vi.fn(), removeFromTrip: vi.fn(), isInTrip: () => false }) }));
 vi.mock('@/hooks/useAuth', () => ({ useAuth: () => ({ user: { id: 'u1' } }) }));
+vi.mock('@/components/trips/QuietAddToTripButton', () => ({ QuietAddToTripButton: () => null }));
 
 import { expectNoNestedInteractive } from '@/test/test-utils';
 import { EventCard } from '../EventCard';

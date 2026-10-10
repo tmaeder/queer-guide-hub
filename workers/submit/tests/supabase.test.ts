@@ -72,7 +72,7 @@ describe("buildSubmissionRow", () => {
   it("emits content_type values that the hub's submissionRegistry knows about", () => {
     // Mirrors keys in src/config/submissionRegistry.ts. Kept manually in sync;
     // if a key is added/removed in the hub, update both.
-    const HUB_REGISTRY = ["venue", "event", "product", "personality", "hotel", "tag", "feedback", "news", "place"];
+    const HUB_REGISTRY = ["venue", "event", "product", "personality", "hotel", "tag", "news", "place"];
     const entityTypes = ["venue", "event", "stay", "marketplace_item", "news_article", "organization", "place"] as const;
     for (const e of entityTypes) {
       const row = buildSubmissionRow({ userId: "u-1", body: { ...venueBody, entity_type: e } });

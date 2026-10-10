@@ -383,7 +383,7 @@ test.describe('/messages — unified inbox (signed in)', () => {
     const item = await requireRailItem(page, SEED.notification);
     await item.click();
     // Detail pane shows the notification + a mobile Back control.
-    // Exact match avoids colliding with the "Share feedback" FAB (…back).
+    // Exact match avoids colliding with the global "Contribute to Queer Guide" FAB (…back).
     const back = page.getByRole('button', { name: 'Back', exact: true });
     await expect(back).toBeVisible({ timeout: 15_000 });
     await back.click();

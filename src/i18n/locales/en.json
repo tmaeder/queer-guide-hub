@@ -24,6 +24,92 @@
     "people": "Meet people",
     "showCollapsed": "Show the levels above"
   },
+  "cruising": {
+    "meta": {
+      "title": "Cruising map",
+      "description": "A private map of cruising spots and opted-in adult dating profiles."
+    },
+    "loading": "Opening the private cruising guide",
+    "eyebrow": "Private · signed-in adults",
+    "title": "Queer cruising map",
+    "intro": "See all listed cruising places and opted-in dating profiles in one view. People appear only as approximate city areas; spots use their listed coordinates.",
+    "layers": {
+      "label": "Map layers",
+      "both": "Both",
+      "people": "People",
+      "spots": "Spots"
+    },
+    "safety": {
+      "body": "Mutual consent is required. Shared places still belong to non-participants. Check local law, protect your privacy, and keep an exit plan.",
+      "guide": "Read the cruising guide",
+      "healthLead": "or review the",
+      "health": "sexual-health guide"
+    },
+    "tabs": {
+      "label": "Cruising results",
+      "people": "Nearby people",
+      "spots": "All spots"
+    },
+    "selectedArea_one": "Showing dating profiles around {{city}}. The bubble represents {{count}} active person without revealing exact positions.",
+    "selectedArea_other": "Showing dating profiles around {{city}}. The bubble represents {{count}} active people without revealing exact positions.",
+    "search": {
+      "label": "Search all cruising spots",
+      "placeholder": "Search spots, cities or countries"
+    },
+    "count": {
+      "spots_one": "{{count}} spot",
+      "spots_other": "{{count}} spots",
+      "map": "Map: {{count}} in current search"
+    },
+    "results": {
+      "loading": "Loading cruising spots",
+      "error": "The cruising guide could not be loaded. Please try again.",
+      "empty": "No spots match this search."
+    },
+    "pagination": {
+      "previous": "Previous",
+      "page": "Page {{page}} of {{totalPages}}",
+      "next": "Next"
+    },
+    "spot": {
+      "locationIncomplete": "Location details incomplete",
+      "verified": "Verified",
+      "showOnMap": "Show on map",
+      "noCoordinates": "Listed without coordinates",
+      "details": "Place details"
+    },
+    "map": {
+      "unavailable": "The interactive map is unavailable in this browser. Every cruising spot is still listed.",
+      "ariaLabel": "Interactive cruising map",
+      "nearMe": "Near me",
+      "searchArea": "Search this area",
+      "legend": "Pink: spots · Blue: approximate active areas"
+    },
+    "presence": {
+      "peopleOffTitle": "People layer is off",
+      "peopleOffBody": "Create an intimate profile to see dating profiles and optionally appear in an approximate city area.",
+      "createProfile": "Create intimate profile",
+      "toastDisabled": "You are no longer visible on the cruising map",
+      "toastError": "Could not update visibility",
+      "toastEnabled": "Visible for one hour",
+      "toastEnabledBody": "Only an approximate city bubble is shown.",
+      "visibleTitle": "Visible in an approximate area",
+      "hiddenTitle": "Not visible on the map",
+      "expires": "Automatically turns off at {{time}}.",
+      "preciseNeverPublished": "Your precise position is never published.",
+      "turnOff": "Turn off",
+      "goVisible": "Go visible",
+      "dialogTitle": "Go visible for one hour",
+      "dialogDescription": "Other opted-in adults see only a city-level bubble and count. They never receive your device location.",
+      "cityLabel": "City or area",
+      "cityPlaceholder": "Search cities",
+      "cityLoading": "Finding cities…",
+      "acknowledgement": "I understand that visibility is approximate, expires after one hour, and does not replace checking consent, surroundings, or local law.",
+      "cancel": "Cancel",
+      "enabling": "Enabling…",
+      "enable": "Visible for one hour"
+    }
+  },
   "inbox": {
     "title": "Inbox",
     "filter": {
@@ -1276,7 +1362,32 @@
     "contextBar": {
       "openTrip": "Open trip",
       "ariaLabel": "Active trip",
-      "dismissAria": "Dismiss active trip banner"
+      "dismissAria": "Dismiss active trip banner",
+      "readiness": "Trip readiness",
+      "nextUp": "Needs attention",
+      "loadError": "Trip details could not be loaded"
+    },
+    "capture": {
+      "planDestination": "Plan a trip to {{city}}",
+      "inTrip": "In {{trip}}",
+      "addToActive": "Add to {{trip}}",
+      "offlineTitle": "Connect to add this",
+      "offlineDescription": "Your trip is still available offline, but new places need a connection.",
+      "addedTitle": "Added to {{trip}}",
+      "addedDescription": "{{name}} is waiting in Unscheduled.",
+      "unscheduled": "Waiting to be scheduled",
+      "undoFailed": "Could not undo the addition"
+    },
+    "workspace": {
+      "sections": "Trip workspace",
+      "plan": "Plan",
+      "prepare": "Prepare",
+      "together": "Together",
+      "planTools": "Shape the itinerary",
+      "prepareTools": "Get ready to go",
+      "togetherTools": "Plan it together",
+      "keepPlanning": "Keep planning",
+      "memories": "Add memories"
     },
     "phase": {
       "label": {
@@ -1291,9 +1402,12 @@
         "inDays": "In {{count}} days",
         "tomorrow": "Tomorrow",
         "soon": "Soon",
-        "dayOf": "Day of",
+        "dayOf": "Day {{day}} of {{total}}",
+        "day": "Day {{day}}",
         "daysAgo": "{{count}} days ago",
-        "yesterday": "Yesterday"
+        "yesterday": "Yesterday",
+        "pastTrip": "Past trip",
+        "justEnded": "Just ended"
       }
     },
     "discover": {
@@ -2102,6 +2216,7 @@
       "messages": "Messages",
       "mailbox": "Mailbox",
       "friends": "Friends",
+      "friendsOnline": "{{count}} online",
       "myGroups": "My Groups",
       "accessibility": "Accessibility",
       "extension": "Browser Extension",
@@ -2378,8 +2493,10 @@
     },
     "travel": {
       "title": "Where are you going?",
+      "activeTitle": "Planning {{city}}",
       "subtitle": "Find flights, hotels, and activities for LGBTQ+ friendly destinations",
       "lede": "Pick a place, build the trip, book the pieces, with the legal picture built in.",
+      "activeLede": "Add places and events for {{city}} directly to your active trip.",
       "sections": {
         "plan": "Plan your trip",
         "planKicker": "The planner",
@@ -2938,8 +3055,7 @@
         "language": "Language",
         "currency": "Currency",
         "bestTime": "Best time",
-        "airport": "Airport",
-        "nearestAirport": "Nearest airport"
+        "airport": "Airport"
       },
       "eyebrow": "City",
       "sections": "Sections",
@@ -2980,25 +3096,21 @@
         "majorCity": "Major city",
         "region": "Region",
         "timezone": "Timezone",
-        "founded": "Founded",
         "area": "Area",
         "elevation": "Elevation",
-        "mayor": "Mayor",
         "postalCodes": "Postal codes",
         "costOfLiving": "Cost of living",
         "universities": "Universities",
         "sisterCities": "Sister cities"
       },
       "travel": {
-        "majorAirport": "Major airport",
-        "nearestAirport": "Nearest airport",
-        "otherNearby": "Other airports nearby",
-        "allCodes": "All airport codes",
         "lines": "Lines",
         "networkCaption": "Rapid-transit lines, drawn from OpenStreetMap. Schematic, not to scale.",
         "gettingAround": "Getting around",
         "noDealsTitle": "We don't promote travel deals for destinations where LGBTQ+ people face criminal penalties.",
-        "noDealsBody": "If you need to travel to {{city}}, read the safety and rights section first and use the trip planner. It includes a safety briefing for high-risk destinations."
+        "noDealsBody": "If you need to travel to {{city}}, read the safety and rights section first and use the trip planner. It includes a safety briefing for high-risk destinations.",
+        "noAirport": "No",
+        "nearestAirports": "Nearest airports"
       },
       "endOfLine": {
         "eyebrow": "End of line",
@@ -3050,7 +3162,28 @@
     "venueCount_other": "{{count}} places",
     "viewList": "List",
     "villageCount_one": "{{count}} district",
-    "villageCount_other": "{{count}} districts"
+    "villageCount_other": "{{count}} districts",
+    "discovery": {
+      "noMatches": "No matches. Try another filter.",
+      "showing": "Showing {{shown}} of {{count}}",
+      "reset": "Reset filters",
+      "searchPlaces": "Search places",
+      "placeType": "Place type",
+      "allPlaces": "All places",
+      "morePlaces": "More places",
+      "district": "Queer district",
+      "when": "When",
+      "upcoming": "Upcoming",
+      "today": "Today",
+      "weekend": "This weekend",
+      "week": "Next 7 days",
+      "eventType": "Event type",
+      "allTypes": "All types",
+      "freeOnly": "Free only",
+      "moreEvents": "More departures",
+      "moreTypes": "More event types",
+      "until": "Until"
+    }
   },
   "pride": {
     "eyebrow": "Pride Calendar",
@@ -4479,7 +4612,19 @@
       "seeAllRights": "See all 18 rights by country",
       "seeAllInSearch": "See all in search",
       "shopAll": "Shop all",
-      "figure": "Diagram"
+      "figure": "Diagram",
+      "workbooks": {
+        "eyebrow": "Work through it",
+        "title": "Exercises",
+        "steps": "{{count}} steps",
+        "days": "{{count}} days",
+        "withPartner": "With a partner",
+        "onYourOwn": "On your own",
+        "start": "Start",
+        "startLabel": "Start {{title}}",
+        "locked": "Sign in and enable your intimate profile to work through this.",
+        "privacy": "Everything you write stays private to you. Nothing is shared with a partner unless you mark that specific answer shareable and they have done the same."
+      }
     },
     "flagWall": {
       "eyebrow": "Symbols",
@@ -4886,5 +5031,163 @@
     "pauseEpisode": "Pause {{title}}",
     "error": "This episode could not be played. The show's server may be down.",
     "retry": "Retry"
+  },
+  "workbooks": {
+    "answerPlaceholder": "Your answer, saved as you type",
+    "answer": "Your answer",
+    "privateNote": "Private to you until you choose to share it",
+    "notFound": "Workbook not found",
+    "backToGlossary": "Back to the glossary",
+    "signInGate": "A private exercise for consenting adults. Sign in to work through it.",
+    "signIn": "Sign in",
+    "optInGate": "This is part of the intimate layer: 18+, opt-in, verified email. Everything you write is private by default, and nothing reaches a partner unless you share it and they reciprocate.",
+    "enableIntimate": "Enable intimate profile",
+    "stepN": "Step {{n}}",
+    "back": "Back",
+    "next": "Next",
+    "finish": "Finish",
+    "sharing": "Sharing",
+    "noStepsYet": "Nothing is available yet. Come back tomorrow.",
+    "lockedCount": "{{count}} still to come",
+    "inOneDay": "tomorrow",
+    "inNDays": "in {{count}} days",
+    "backToSteps": "Back to the questions",
+    "discussFirst": "Discuss first",
+    "menuUnavailable": "This menu is not available right now.",
+    "menuSharedWithChecklist": "These ratings are your interests & boundaries list. They also appear in /tools/checklist",
+    "menuVetoNote": "Your no and your hard limit are never shown to anyone. They silently remove an item from any comparison instead.",
+    "share": {
+      "title": "What you share",
+      "intro": "Pick the answers you are willing to show. Nothing is revealed until your partner has also shared theirs with you, and you can switch any of these back off at any time.",
+      "yourAnswers": "Your answers",
+      "nOfM": "{{shared}} of {{total}} shared",
+      "nothingWritten": "You have not written anything yet. There is nothing to share.",
+      "toggleLabel": "Share \"{{prompt}}\"",
+      "partner": "Your partner",
+      "noPartnerYet": "Open this workbook from a conversation to compare with someone. Your share choices above are saved either way.",
+      "statusActive": "You have both shared. Comparison is live.",
+      "statusWaiting": "You have shared. Waiting for them to share back.",
+      "statusTheirs": "They have shared with you. Share back to see the comparison.",
+      "statusNone": "Not shared with each other yet.",
+      "revoke": "Stop sharing",
+      "grant": "Share with them"
+    },
+    "compare": {
+      "empty": "Nothing to compare yet.",
+      "title": "Side by side",
+      "menuRow": "Rated menu",
+      "menuNote": "Overlap on rated menus lives in your interests & boundaries comparison, which is shared separately.",
+      "openChecklist": "Open the checklist",
+      "you": "You",
+      "them": "Them"
+    }
+  },
+  "contributeForm": {
+    "unknownType": "Unknown submission type",
+    "unknownBody": "The submission type “{{type}}” is not supported.",
+    "backHub": "Back to contributions",
+    "signInRequired": "Sign in required",
+    "authBody": "Sign in before adding directory content. The form is unavailable to guests.",
+    "submittedBody": "Your {{type}} has been submitted and will be reviewed before publishing.",
+    "submitMore": "Submit more",
+    "submitAnother": "Submit another {{type}}",
+    "allSubmissions": "All submissions",
+    "submitType": "Submit {{type}}",
+    "returnStep": "Return to step {{step}}",
+    "step": "Step {{step}}: {{label}}",
+    "fixErrors": "Please fix the following to continue:",
+    "cancel": "Cancel",
+    "next": "Next",
+    "types": {
+      "venue": "Venue",
+      "event": "Event",
+      "product": "Product",
+      "personality": "Personality",
+      "hotel": "Hotel / BnB",
+      "tag": "Tag",
+      "news": "News article",
+      "place": "Place"
+    },
+    "steps": {
+      "basics": "Basics",
+      "location": "Location",
+      "contact": "Contact",
+      "when-where": "When & where",
+      "details": "Details",
+      "suggest": "Suggestion"
+    }
+  },
+  "contribute": {
+    "trigger": "Contribute to Queer Guide",
+    "title": "Contribute to Queer Guide",
+    "subtitle": "Share what you noticed, correct a listing or help the guide grow.",
+    "eyebrow": "Contribute",
+    "common": {
+      "failed": "Submission failed",
+      "tryAgain": "Please try again.",
+      "done": "Done",
+      "emailOptional": "Email (optional)",
+      "emailPlaceholder": "So we can follow up",
+      "back": "Back",
+      "submitting": "Submitting…",
+      "submit": "Submit"
+    },
+    "chooser": {
+      "feedbackTitle": "Report a problem or idea",
+      "feedbackBody": "Share feedback about the site or your experience.",
+      "correctionTitle": "Fix something on this page",
+      "correctionBody": "Tell us what is outdated, closed or incorrect.",
+      "addTitle": "Add something new",
+      "addBody": "Submit a venue, event, product, person or article.",
+      "scanTitle": "Scan a flyer or link",
+      "scanBody": "Extract several submissions from files or a web page.",
+      "contactTitle": "Contact the team",
+      "contactBody": "Account help, partnerships, press or another private message."
+    },
+    "feedback": {
+      "heading": "Report a problem or share an idea",
+      "successToast": "Feedback submitted. Thank you!",
+      "thanks": "Thank you!",
+      "successBody": "Your feedback helps improve Queer Guide.",
+      "category": "What type of feedback?",
+      "categories": {
+        "safety": "Safety and moderation",
+        "bug": "Bug reports",
+        "idea": "Idea",
+        "improvement": "Improvement",
+        "content-idea": "Content idea"
+      },
+      "title": "Title",
+      "titlePlaceholder": "Brief summary",
+      "description": "Description",
+      "descriptionPlaceholder": "Tell us more…",
+      "includeScreenshot": "Include screenshot of this page",
+      "screenshotPreview": "Screenshot preview",
+      "contextNote": "Automatically included: current page URL, browser information, recent errors and network failures."
+    },
+    "correction": {
+      "heading": "Fix something on this page",
+      "successToast": "Correction submitted. Thank you!",
+      "thanks": "Thank you!",
+      "successBody": "Our editors will review your correction.",
+      "thisPage": "This page",
+      "wrong": "What is wrong?",
+      "replacement": "What should it say instead?"
+    },
+    "auth": {
+      "title": "Sign in to contribute",
+      "body": "An account is required before you can add directory content.",
+      "scanBody": "An account is required before you can scan and submit items.",
+      "cta": "Sign in or create an account"
+    },
+    "add": {
+      "heading": "Add something new"
+    },
+    "scan": {
+      "heading": "Scan a flyer or link",
+      "submitted": "{{count}} item submitted",
+      "linked": "{{count}} linked to an existing entry",
+      "reviewNote": "Submissions are reviewed before publishing."
+    }
   }
 }

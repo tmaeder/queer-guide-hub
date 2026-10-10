@@ -25,6 +25,38 @@ A distressed visitor must be able to answer four questions immediately:
 - Reduce the lower page to the hotline directory plus three intent-led secondary support paths. End with reassurance and a repeated route to immediate help; omit the global footer.
 - Keep the route animation-free and preserve the incumbent black, cream, and red visual language.
 
+## Approved polish pass and production reconciliation
+
+The follow-up uses a care-first editorial direction with a small amount of
+Queer Guide's poster character. Production keeps the ordinary site header,
+breadcrumb, route navigation, footer, and mobile dock introduced by `#4097`:
+that later decision gives cold arrivals an obvious way back into the site and
+keeps the portaled privacy cover above every global layer. The polish applies
+inside the help route and does not restore the retired `HelpSafetyHeader`.
+
+- Make reassurance the emotional anchor and acute danger the unmistakable
+  exception, rather than giving every part of the page equal visual volume.
+- Replace the stacked-card feeling with one calm primary support composition:
+  the recommended service and its call/write actions on one side, and practical
+  call expectations on the other at wide breakpoints.
+- Keep Hide Screen and Quick Exit directly below the emergency strip, within
+  the ordinary content column and above the fold at supported breakpoints.
+- Give call and non-voice contact routes equal clarity without presenting a
+  distressed visitor with a menu of low-level channel metadata.
+- Turn directory controls into a compact toolbar and align hotline rows around
+  name, availability, essential metadata, and one obvious primary action.
+- Reduce lower-page support into three intent-led routes: local support, rights
+  and safety, and helping someone else.
+- Use cream as the page field, near-black for editorial structure, and reserve
+  red for acute danger and concrete warnings. Use whitespace and rules before
+  adding more bordered containers or shadows.
+- Preserve the condensed display face selectively for character; use the body
+  face for instructions and high-stress actions where rapid reading matters.
+- Give 320–430px layouts a dedicated pass: no clipped labels, overlapping fixed
+  controls, horizontal overflow, or action rows that depend on icon recognition.
+- Add no decorative motion. Hover, pressed, and focus-visible states may change
+  color or opacity immediately and must remain legible in reduced-motion mode.
+
 ## Accessibility and safety constraints
 
 - Escape closes an active dialog or sheet first; it must not unexpectedly navigate away. Quick Exit remains an explicit, large labeled action.

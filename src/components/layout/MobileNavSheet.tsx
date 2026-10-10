@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { LogOut, Plane, Shield, UserRound } from 'lucide-react';
+import { LogOut, Plane, Shield, UserRound, Users } from 'lucide-react';
 import {
   Sheet,
   SheetContent,
@@ -27,6 +27,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
 import { useAdminRoles } from '@/hooks/useAdminRoles';
 import { useInboxBadge } from '@/hooks/useInboxBadge';
+import { useFriendsOnlineCount } from '@/hooks/useFriendIds';
 import { generateAvatarUrl } from '@/lib/avatar';
 import { cn } from '@/lib/utils';
 
@@ -58,6 +59,7 @@ export function MobileNavSheet({ open, onOpenChange }: MobileNavSheetProps) {
   const { user, signOut } = useAuth();
   const { profile } = useProfile();
   const { isAdmin, isModerator } = useAdminRoles();
+  const friendsOnline = useFriendsOnlineCount(user?.id);
   const tripCount = useInboxBadge();
   const [authOpen, setAuthOpen] = useState(false);
 
@@ -117,7 +119,7 @@ export function MobileNavSheet({ open, onOpenChange }: MobileNavSheetProps) {
                   to={`/user/${user.id}`}
                   onClick={close}
                   aria-label={t('header.userMenu.viewProfile', 'View public profile')}
-                  className="flex h-10 w-10 items-center justify-center rounded-element text-muted-foreground no-underline hover:bg-muted hover:text-foreground"
+                  className="flex h-11 w-11 items-center justify-center rounded-element text-muted-foreground no-underline hover:bg-muted hover:text-foreground"
                 >
                   <UserRound size={18} />
                 </LocalizedLink>
@@ -147,6 +149,31 @@ export function MobileNavSheet({ open, onOpenChange }: MobileNavSheetProps) {
                   {t('header.mobileNav.trips', 'My Trips')}
                 </span>
                 <CountBadge count={tripCount} label={`${tripCount} trip items need attention`} />
+              </LocalizedLink>
+            )}
+
+            {/* Friends, with how many are online now (mirrors the header menu) */}
+            {user && (
+              <LocalizedLink
+                to="/hub/friends"
+                onClick={close}
+                className="flex items-center gap-2 rounded-element p-4 no-underline hover:bg-muted"
+              >
+                <Users size={18} className="text-muted-foreground" />
+                <span className="text-sm font-medium">
+                  {t('header.userMenu.friends', 'Friends')}
+                </span>
+                {friendsOnline !== null && (
+                  <span className="ml-auto flex items-center gap-1.5 text-xs tabular-nums text-muted-foreground">
+                    <span aria-hidden className="h-2 w-2 rounded-full bg-foreground" />
+                    <span aria-hidden>{friendsOnline}</span>
+                    <span className="sr-only">
+                      {t('header.userMenu.friendsOnline', '{{count}} online', {
+                        count: friendsOnline,
+                      })}
+                    </span>
+                  </span>
+                )}
               </LocalizedLink>
             )}
 

@@ -1,3 +1,4 @@
+import { cityCodesText } from '@/lib/cityCodes';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -171,7 +172,11 @@ export function CityQualityPanel() {
                   className="font-normal"
                   title={(g.missing_fields ?? []).join(', ')}
                 >
-                  {g.city_name ?? 'Unknown'} · {g.gap_score}
+                  {g.city_name ?? 'Unknown'}
+                  <span className="ml-1 font-mono text-muted-foreground">
+                    {cityCodesText({ countryCode: g.country_code, regionCode: g.region_code })}
+                  </span>
+                  &nbsp;· {g.gap_score}
                 </Badge>
               ))}
             </div>

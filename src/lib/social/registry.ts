@@ -95,7 +95,8 @@ export const PLATFORMS: PlatformDef[] = [
   {
     key: 'youtube',
     label: 'YouTube',
-    detect: /^https?:\/\/(?:www\.)?youtube\.com\/(@[a-z0-9._-]{3,30}|channel\/[a-z0-9_-]+|c\/[a-z0-9._-]+|user\/[a-z0-9._-]+)\/?/i,
+    detect:
+      /^https?:\/\/(?:www\.)?youtube\.com\/(@[a-z0-9._-]{3,30}|channel\/[a-z0-9_-]+|c\/[a-z0-9._-]+|user\/[a-z0-9._-]+)\/?/i,
     build: (h) => `https://youtube.com/${h.startsWith('@') || h.includes('/') ? h : '@' + h}`,
   },
   {
@@ -125,7 +126,8 @@ export const PLATFORMS: PlatformDef[] = [
   {
     key: 'linkedin',
     label: 'LinkedIn',
-    detect: /^https?:\/\/(?:www\.)?linkedin\.com\/(in\/[a-z0-9-]{3,100}|company\/[a-z0-9-]{2,100})\/?/i,
+    detect:
+      /^https?:\/\/(?:www\.)?linkedin\.com\/(in\/[a-z0-9-]{3,100}|company\/[a-z0-9-]{2,100})\/?/i,
     build: (h) => `https://linkedin.com/${h.includes('/') ? h : 'in/' + h}`,
   },
   {
@@ -180,7 +182,8 @@ export const PLATFORMS: PlatformDef[] = [
     key: 'discord',
     label: 'Discord',
     detect: /^https?:\/\/(?:discord\.(?:gg|com\/invite)|discord\.com\/users)\/([a-z0-9-]+)\/?/i,
-    build: (h) => (/^\d{16,20}$/.test(h) ? `https://discord.com/users/${h}` : `https://discord.gg/${h}`),
+    build: (h) =>
+      /^\d{16,20}$/.test(h) ? `https://discord.com/users/${h}` : `https://discord.gg/${h}`,
   },
   {
     key: 'medium',
@@ -333,8 +336,17 @@ const SHARE_WIDGET_RE =
 
 /** First path segments that are platform features/permalinks, never handles. */
 const RESERVED_HANDLES = new Set([
-  'reels', 'reel', 'p', 'share', 'intent', 'sharer', 'watch',
-  'hashtag', 'explore', 'stories', 'dialog',
+  'reels',
+  'reel',
+  'p',
+  'share',
+  'intent',
+  'sharer',
+  'watch',
+  'hashtag',
+  'explore',
+  'stories',
+  'dialog',
 ]);
 
 function isReservedHandle(handle: string): boolean {
@@ -345,13 +357,68 @@ function isReservedHandle(handle: string): boolean {
 export function isShareOrWidgetUrl(rawUrl: string): boolean {
   if (!rawUrl || typeof rawUrl !== 'string') return false;
   const url = ensureHttp(rawUrl.trim());
-  if (SHARE_WIDGET_RE.test(url)) return true;
+  if (SHARE_WIDGET_RE.test(url) || LOGIN_WALL_RE.test(url)) return true;
   try {
     const seg = new URL(url).pathname.split('/').filter(Boolean)[0];
     return seg ? isReservedHandle(seg) : false;
   } catch {
     return false;
   }
+}
+
+/**
+ * Login-wall pages that a platform serves to an anonymous client in place of
+ * a profile. Instagram answers an unauthenticated GET for
+ * `instagram.com/fluidbcn/` with a redirect to
+ * `instagram.com/accounts/login/?next=https%3A%2F%2Fwww.instagram.com%2Ffluidbcn%2F`,
+ * so anything that follows redirects and keeps the final URL stores the login
+ * page instead of the profile. The path then parses as an Instagram "profile"
+ * with the handle `accounts`. 2026-03 patroc imports stored 35 venue websites
+ * this way, and `backfill-social-links.mjs` turned them into 11 venue
+ * Instagram links pointing at `instagram.com/accounts/login/`.
+ *
+ * Scoped to the platform hosts on purpose: `isShareOrWidgetUrl` applies to
+ * every URL, including plain venue websites, where `/login` or `/accounts`
+ * is an ordinary page and must not be dropped.
+ */
+const LOGIN_WALL_RE =
+  /^https?:\/\/(?:[a-z]+\.)?(?:instagram|facebook)\.com\/(?:accounts\/login|login(?:\.php)?|challenge|checkpoint)(?:[/?#]|$)/i;
+
+/** True for a platform login/challenge page served in place of a profile. */
+export function isLoginWallUrl(rawUrl: string): boolean {
+  if (!rawUrl || typeof rawUrl !== 'string') return false;
+  return LOGIN_WALL_RE.test(ensureHttp(rawUrl.trim()));
+}
+
+/**
+ * The profile URL a login wall was guarding, recovered from its own `next=`
+ * parameter, or null when the URL is not a login wall or carries no usable
+ * same-platform target. A relative `next` (`/fluidbcn/`) resolves against the
+ * login page's host. A target that is itself a login wall or a share/post
+ * permalink is rejected rather than trusted.
+ */
+export function unwrapLoginWall(rawUrl: string): string | null {
+  if (!isLoginWallUrl(rawUrl)) return null;
+  try {
+    const login = new URL(ensureHttp(rawUrl.trim()));
+    const next = login.searchParams.get('next');
+    if (!next) return null;
+    const target = new URL(next, login.origin);
+    const sameHost =
+      target.hostname.replace(/^(?:www|m|web)\./, '') ===
+      login.hostname.replace(/^(?:www|m|web)\./, '');
+    if (!sameHost || !/^https?:$/.test(target.protocol)) return null;
+    const url = `https://${target.hostname}${target.pathname}`;
+    if (LOGIN_WALL_RE.test(url) || isShareOrWidgetUrl(url)) return null;
+    return target.pathname.split('/').filter(Boolean).length ? url : null;
+  } catch {
+    return null;
+  }
+}
+
+/** `rawUrl` with a login wall replaced by the profile it guards, else unchanged. */
+function resolveLoginWall(rawUrl: string): string {
+  return unwrapLoginWall(rawUrl) ?? rawUrl;
 }
 
 /** True for 18+/NSFW platforms (OnlyFans, Fansly, FetLife, ROMEO, Pornhub, …). */
@@ -366,7 +433,7 @@ function ensureHttp(url: string): string {
 /** Returns the platform key for a URL, or null. `website` is returned for any other http(s) URL. */
 export function detectPlatform(rawUrl: string): SocialPlatformKey | null {
   if (!rawUrl || typeof rawUrl !== 'string') return null;
-  const url = ensureHttp(rawUrl.trim());
+  const url = ensureHttp(resolveLoginWall(rawUrl.trim()));
   if (isShareOrWidgetUrl(url)) return null;
   for (const p of PLATFORMS) {
     if (p.key === 'website') continue;
@@ -381,7 +448,7 @@ export function normalizeHandle(platform: SocialPlatformKey, urlOrHandle: string
   if (!urlOrHandle) return null;
   const def = BY_KEY.get(platform);
   if (!def) return null;
-  const value = urlOrHandle.trim();
+  const value = resolveLoginWall(urlOrHandle.trim());
   // Already a bare handle (no protocol, no dots-as-host) — strip a leading @.
   if (!/^https?:\/\//i.test(value) && !value.includes('/')) {
     const bare = value.replace(/^@/, '');
@@ -439,7 +506,9 @@ export function displayHandle(_platform: SocialPlatformKey, handle: string): str
  * ingestion pipeline and backfill. `website` matches are ignored here to
  * avoid capturing every link on a page.
  */
-export function extractSocialUrlsFromText(text: string): Partial<Record<SocialPlatformKey, string>> {
+export function extractSocialUrlsFromText(
+  text: string,
+): Partial<Record<SocialPlatformKey, string>> {
   const out: Partial<Record<SocialPlatformKey, string>> = {};
   if (!text) return out;
   const urls = text.match(/https?:\/\/[^\s"'<>)\]]+/gi) ?? [];
@@ -454,8 +523,9 @@ export function extractSocialUrlsFromText(text: string): Partial<Record<SocialPl
 
 /** Normalizes a detected URL to its canonical handle-based form. */
 export function canonicalizeUrl(platform: SocialPlatformKey, url: string): string {
-  const handle = normalizeHandle(platform, url);
-  return handle ? buildProfileUrl(platform, handle) : ensureHttp(url);
+  const resolved = resolveLoginWall(url);
+  const handle = normalizeHandle(platform, resolved);
+  return handle ? buildProfileUrl(platform, handle) : ensureHttp(resolved);
 }
 
 /** Returns canonical social profile URLs as a schema.org `sameAs` array. */
@@ -474,7 +544,9 @@ export function normalizeSocialLinks(
   if (!input || typeof input !== 'object') return out;
   for (const [k, v] of Object.entries(input)) {
     if (!v || typeof v !== 'string') continue;
-    const url = ensureHttp(v.trim());
+    // A login wall stored under a known key is unwrapped to the profile it
+    // guards; one with no recoverable target is dropped below like a share widget.
+    const url = ensureHttp(resolveLoginWall(v.trim()));
     // Drop share-widget/post-permalink junk even when stored under a known key.
     if (isShareOrWidgetUrl(url)) continue;
     const known = BY_KEY.has(k as SocialPlatformKey) ? (k as SocialPlatformKey) : null;
@@ -483,4 +555,62 @@ export function normalizeSocialLinks(
     if (!out[key]) out[key] = canonicalizeUrl(key, url);
   }
   return out;
+}
+
+/**
+ * Fixed display order for social icon rows. Every surface renders platforms
+ * in this sequence, independent of the key order stored in the jsonb (which
+ * Postgres sorts by key LENGTH, so the raw order is arbitrary to a reader).
+ * Deliberately separate from PLATFORMS, whose order is a DETECTION order
+ * (most-specific first, mastodon late because its host is dynamic).
+ * Unlisted keys sort after every listed one; `website` is always last.
+ */
+export const SOCIAL_DISPLAY_ORDER: readonly SocialPlatformKey[] = [
+  'instagram',
+  'facebook',
+  'tiktok',
+  'youtube',
+  'twitter',
+  'threads',
+  'bluesky',
+  'mastodon',
+  'linkedin',
+  'telegram',
+  'discord',
+  'spotify',
+  'soundcloud',
+  'twitch',
+  'reddit',
+  'pinterest',
+  'snapchat',
+  'github',
+  'medium',
+  'patreon',
+  'kofi',
+  'onlyfans',
+  'fansly',
+  'fetlife',
+  'joyclub',
+  'romeo',
+  'grindr',
+  'scruff',
+  'recon',
+  'pornhub',
+  'xhamster',
+  'xvideos',
+  'xtube',
+  'shop',
+  'website',
+];
+
+const DISPLAY_RANK = new Map(SOCIAL_DISPLAY_ORDER.map((k, i) => [k, i]));
+
+/** Normalized social links as [key, url] pairs in SOCIAL_DISPLAY_ORDER. */
+export function orderedSocialLinks(
+  input: Record<string, unknown> | null | undefined,
+): Array<[SocialPlatformKey, string]> {
+  const rank = (k: SocialPlatformKey) => DISPLAY_RANK.get(k) ?? SOCIAL_DISPLAY_ORDER.length - 1.5;
+  return (Object.entries(normalizeSocialLinks(input)) as Array<[SocialPlatformKey, string]>).sort(
+    ([a], [b]) => rank(a) - rank(b),
+  );
 }

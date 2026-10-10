@@ -7,17 +7,16 @@
  *
  * `card-lift` and NO ink-flood hover — a card lifts or fills, never both.
  *
- * Every card carries a drawn `TagPlate`, never a photograph — see TagPlate's
- * header for why glossary photography was retired. `index` is the plate's
- * window onto the shared line; pass the position in the RENDERED list so a
- * filtered grid still reads as one continuous route.
+ * Compact taxonomy glyphs leave room for the definition. The glossary's
+ * text is the useful preview; abstract terms do not need stock photography.
  */
 
 import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { RouteBullet } from '@/components/transit/RouteBullet';
-import { TagPlate } from '@/components/tags/TagPlate';
+import { TransitIcon } from '@/components/transit/TransitIcon';
+import { tagPreviewText } from '@/lib/tags/tagsIndexState';
 import type { CategoryLine } from '@/lib/tags/categoryIdentity';
 import type { CentralizedTag } from '@/hooks/useCentralizedTags';
 
@@ -29,8 +28,6 @@ export interface TagIndexItemProps {
   categoryLabel?: string;
   /** The query reached this term through one of its synonyms. */
   aliasMatch?: boolean;
-  /** Position in the rendered list — the plate's window onto the shared line. */
-  index?: number;
 }
 
 function AliasPip({ label }: { label: string }) {
@@ -41,33 +38,33 @@ function AliasPip({ label }: { label: string }) {
   );
 }
 
-export function TagIndexCard({
-  tag,
-  uses,
-  line,
-  categoryLabel,
-  aliasMatch,
-  index,
-}: TagIndexItemProps) {
+export function TagIndexCard({ tag, uses, line, categoryLabel, aliasMatch }: TagIndexItemProps) {
   const { t } = useTranslation();
+  const blurb = tagPreviewText(tag);
 
   return (
     <LocalizedLink
       to={`/tags/${encodeURIComponent(tag.slug)}`}
-      className="card-lift group flex h-full flex-col bg-card text-inherit no-underline rounded-container shadow-soft"
+      className="card-lift group flex h-full min-h-56 flex-col gap-4 rounded-container bg-card p-4 text-inherit no-underline shadow-soft focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ring"
     >
-      <div className="w-full border-b border-border-hairline">
-        <TagPlate line={line} index={index} />
-      </div>
-
-      <div className="flex flex-1 flex-col gap-1 p-4">
-        <span className="text-title font-bold leading-tight">{tag.name}</span>
+      <div className="flex items-center justify-between gap-4">
+        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-element bg-muted">
+          <TransitIcon name={line?.icon ?? 'library'} size={22} />
+        </span>
         {categoryLabel && (
-          <span className="text-2xs uppercase tracking-label text-muted-foreground">
+          <span className="text-right text-2xs font-medium text-muted-foreground">
             {categoryLabel}
           </span>
         )}
-        <span className="mt-auto flex items-center gap-2 pt-2 text-13 tabular-nums text-muted-foreground">
+      </div>
+      <div className="flex flex-1 flex-col gap-2">
+        <span className="break-words text-title font-bold leading-tight text-pretty">
+          {tag.name}
+        </span>
+        {blurb && (
+          <p className="line-clamp-3 text-13 leading-relaxed text-muted-foreground">{blurb}</p>
+        )}
+        <span className="mt-auto flex items-center gap-2 pt-4 text-2xs tabular-nums text-muted-foreground">
           {t('tags.card.uses', '{{count}} uses', { count: uses })}
           {aliasMatch && <AliasPip label={t('tags.alias.badge', 'alias')} />}
         </span>
@@ -78,17 +75,17 @@ export function TagIndexCard({
 
 export function TagIndexRow({ tag, uses, categoryLabel, aliasMatch }: TagIndexItemProps) {
   const { t } = useTranslation();
-  const blurb = tag.short_description || tag.description;
+  const blurb = tagPreviewText(tag);
 
   return (
     <LocalizedLink
       to={`/tags/${encodeURIComponent(tag.slug)}`}
-      className="card-lift-sm flex items-center gap-4 bg-card p-4 text-inherit no-underline rounded-container shadow-soft"
+      className="card-lift-sm flex items-center gap-4 bg-card p-4 text-inherit no-underline rounded-container shadow-soft focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ring"
     >
       <RouteBullet type="tag" size={30} />
       <div className="min-w-0 flex-1">
         <p className="flex items-center gap-2 text-title font-bold leading-tight">
-          <span className="truncate">{tag.name}</span>
+          <span className="break-words">{tag.name}</span>
           {aliasMatch && <AliasPip label={t('tags.alias.badge', 'alias')} />}
         </p>
         {blurb && <p className="truncate text-13 text-muted-foreground">{blurb}</p>}

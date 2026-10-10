@@ -701,7 +701,32 @@
     "contextBar": {
       "openTrip": "فتح الرحلة",
       "ariaLabel": "الرحلة النشطة",
-      "dismissAria": "إغلاق شريط الرحلة النشطة"
+      "dismissAria": "إغلاق شريط الرحلة النشطة",
+      "readiness": "جاهزية الرحلة",
+      "nextUp": "يحتاج إلى انتباه",
+      "loadError": "تعذر تحميل تفاصيل الرحلة"
+    },
+    "capture": {
+      "planDestination": "خطط لرحلة إلى {{city}}",
+      "inTrip": "ضمن {{trip}}",
+      "addToActive": "أضف إلى {{trip}}",
+      "offlineTitle": "اتصل بالإنترنت للإضافة",
+      "offlineDescription": "تبقى رحلتك متاحة دون اتصال، لكن إضافة أماكن جديدة تتطلب اتصالاً.",
+      "addedTitle": "تمت الإضافة إلى {{trip}}",
+      "addedDescription": "{{name}} بانتظار الجدولة.",
+      "unscheduled": "بانتظار الجدولة",
+      "undoFailed": "تعذر التراجع عن الإضافة"
+    },
+    "workspace": {
+      "sections": "مساحة عمل الرحلة",
+      "plan": "التخطيط",
+      "prepare": "الاستعداد",
+      "together": "معًا",
+      "planTools": "شكّل برنامج الرحلة",
+      "prepareTools": "استعد للانطلاق",
+      "togetherTools": "خططوا معًا",
+      "keepPlanning": "تابع التخطيط",
+      "memories": "أضف ذكريات"
     },
     "phase": {
       "label": {
@@ -716,9 +741,12 @@
         "inDays": "خلال {{count}} أيام",
         "tomorrow": "غداً",
         "soon": "قريباً",
-        "dayOf": "اليوم",
+        "dayOf": "اليوم {{day}} من {{total}}",
         "daysAgo": "قبل {{count}} أيام",
-        "yesterday": "أمس"
+        "yesterday": "أمس",
+        "day": "اليوم {{day}}",
+        "pastTrip": "رحلة سابقة",
+        "justEnded": "انتهت للتو"
       }
     },
     "discover": {
@@ -2024,6 +2052,7 @@
       "settings": "الإعدادات",
       "inbox": "البريد الوارد",
       "friends": "الأصدقاء",
+      "friendsOnline": "{{count}} متصل",
       "myGroups": "مجموعاتي",
       "accessibility": "إمكانية الوصول",
       "bookings": "الحجوزات",
@@ -2311,6 +2340,7 @@
     },
     "travel": {
       "title": "سفر",
+      "activeTitle": "التخطيط لرحلة إلى {{city}}",
       "subtitle": "ابحث عن رحلات وفنادق وأنشطة في وجهات صديقة لمجتمع LGBTQ+",
       "activitiesComingSoon": "الأنشطة قريباً.",
       "browseDestinations": "تصفح الوجهات",
@@ -2379,6 +2409,7 @@
         "switchTrip": "تبديل الرحلة النشطة"
       },
       "lede": "[AR] Pick a place, build the trip, book the pieces — with the legal picture built in.",
+      "activeLede": "واصل استكشاف {{city}} وأضف الأماكن والفعاليات مباشرة إلى رحلتك النشطة.",
       "sections": {
         "plan": "[AR] Plan your trip",
         "planKicker": "[AR] The planner",
@@ -2896,8 +2927,7 @@
         "language": "اللغة",
         "currency": "العملة",
         "bestTime": "أفضل وقت",
-        "airport": "المطار",
-        "nearestAirport": "[AR] Nearest airport"
+        "airport": "المطار"
       },
       "eyebrow": "[AR] City",
       "sections": "[AR] Sections",
@@ -2938,25 +2968,21 @@
         "majorCity": "[AR] Major city",
         "region": "[AR] Region",
         "timezone": "[AR] Timezone",
-        "founded": "[AR] Founded",
         "area": "[AR] Area",
         "elevation": "[AR] Elevation",
-        "mayor": "[AR] Mayor",
         "postalCodes": "[AR] Postal codes",
         "costOfLiving": "[AR] Cost of living",
         "universities": "[AR] Universities",
         "sisterCities": "[AR] Sister cities"
       },
       "travel": {
-        "majorAirport": "[AR] Major airport",
-        "nearestAirport": "[AR] Nearest airport",
-        "allCodes": "[AR] All airport codes",
         "lines": "[AR] Lines",
         "networkCaption": "[AR] Rapid-transit lines, drawn from OpenStreetMap. Schematic, not to scale.",
         "gettingAround": "[AR] Getting around",
         "noDealsTitle": "[AR] We don't promote travel deals for destinations where LGBTQ+ people face criminal penalties.",
         "noDealsBody": "[AR] If you need to travel to {{city}}, read the safety and rights section first and use the trip planner — it includes a safety briefing for high-risk destinations.",
-        "otherNearby": "[AR] Other airports nearby"
+        "noAirport": "لا",
+        "nearestAirports": "أقرب المطارات"
       },
       "endOfLine": {
         "eyebrow": "[AR] End of line",
@@ -2988,7 +3014,28 @@
     "venueCount_one": "[AR] {{count}} place",
     "venueCount_other": "[AR] {{count}} places",
     "villageCount_one": "[AR] {{count}} district",
-    "villageCount_other": "[AR] {{count}} districts"
+    "villageCount_other": "[AR] {{count}} districts",
+    "discovery": {
+      "noMatches": "لا توجد نتائج. جرّب مرشحًا آخر.",
+      "showing": "عرض {{shown}} من {{count}}",
+      "reset": "إعادة ضبط المرشحات",
+      "searchPlaces": "البحث عن أماكن",
+      "placeType": "نوع المكان",
+      "allPlaces": "كل الأماكن",
+      "morePlaces": "المزيد من الأماكن",
+      "district": "حي كوير",
+      "when": "متى",
+      "upcoming": "القادمة",
+      "today": "اليوم",
+      "weekend": "نهاية هذا الأسبوع",
+      "week": "الأيام السبعة القادمة",
+      "eventType": "نوع الفعالية",
+      "allTypes": "كل الأنواع",
+      "freeOnly": "المجانية فقط",
+      "moreEvents": "المزيد من المغادرات",
+      "moreTypes": "المزيد من أنواع الفعاليات",
+      "until": "حتى"
+    }
   },
   "pride": {
     "eyebrow": "Pride Calendar",
@@ -4522,7 +4569,19 @@
       "seeAllRights": "اطّلع على الحقوق الـ18 حسب الدولة",
       "seeAllInSearch": "[AR] See all in search",
       "shopAll": "تسوق الكل",
-      "figure": "[AR] Diagram"
+      "figure": "[AR] Diagram",
+      "workbooks": {
+        "eyebrow": "للعمل عليه",
+        "title": "تمارين",
+        "steps": "{{count}} خطوات",
+        "days": "{{count}} أيام",
+        "withPartner": "مع شريك",
+        "onYourOwn": "بمفردك",
+        "start": "ابدأ",
+        "startLabel": "ابدأ {{title}}",
+        "locked": "سجّل الدخول وفعّل ملفك الحميم للعمل على هذا التمرين.",
+        "privacy": "كل ما تكتبه يبقى خاصًا بك. لا يُشارك أي شيء مع شريك إلا إذا حدّدت تلك الإجابة بعينها كقابلة للمشاركة وفعل الطرف الآخر الشيء نفسه."
+      }
     },
     "flagWall": {
       "eyebrow": "رموز",
@@ -4931,5 +4990,249 @@
     "pauseEpisode": "إيقاف {{title}} مؤقتًا",
     "error": "تعذّر تشغيل هذه الحلقة. قد يكون خادم البرنامج متوقفًا.",
     "retry": "إعادة المحاولة"
+  },
+  "cruising": {
+    "layers": {
+      "both": "كلاهما",
+      "people": "الناس",
+      "spots": "البقع",
+      "label": "طبقات الخريطة"
+    },
+    "loading": "فتح دليل التعارف الحميمي الخاص",
+    "eyebrow": "خاص · تسجيل الدخول للبالغين",
+    "safety": {
+      "guide": "اقرأ دليل التعارف الحميمي",
+      "healthLead": "أو مراجعة",
+      "health": "دليل الصحة الجنسية",
+      "body": "الموافقة المتبادلة مطلوبة. الأماكن المشتركة لا تزال مملوكة لغير المشاركين. تحقق من القانون المحلي، واحمِ خصوصيتك، واحتفظ بخطة الخروج."
+    },
+    "intro": "ابحث عن كل مكان من أماكن التعارف الحميمي المدرجة وملفات تعريف المواعدة التي تم الاشتراك فيها في عرض واحد. يظهر الأشخاص فقط كمناطق مدينة تقريبية؛ تستخدم البقع إحداثياتها المدرجة.",
+    "meta": {
+      "title": "خريطة التعارف الحميمي",
+      "description": "خريطة خاصة لمواقع التعارف الحميمي وملفات تعريف المواعدة المخصصة للبالغين."
+    },
+    "title": "خريطة التعارف الحميمي للكويريين",
+    "tabs": {
+      "people": "الناس القريبة",
+      "label": "نتائج التعارف الحميمي",
+      "spots": "جميع البقع"
+    },
+    "selectedArea_other": "عرض ملفات تعريف المواعدة حول {{city}}. تمثل الفقاعة الأشخاص النشطين {{count}} دون الكشف عن المواضع الدقيقة.",
+    "selectedArea_one": "عرض ملفات تعريف المواعدة حول {{city}}. تمثل الفقاعة الشخص النشط {{count}} دون الكشف عن مواقعه الدقيقة.",
+    "search": {
+      "label": "ابحث في جميع مواقع التعارف الحميمي",
+      "placeholder": "بحث المواقع والمدن أو البلدان"
+    },
+    "count": {
+      "map": "الخريطة: {{count}} في البحث الحالي",
+      "spots_one": "بقعة {{count}}",
+      "spots_other": "نقاط {{count}}"
+    },
+    "results": {
+      "empty": "لا توجد مواقع تطابق هذا البحث.",
+      "loading": "جارٍ تحميل مواقع التعارف الحميمي",
+      "error": "تعذر تحميل دليل التعارف الحميمي. يرجى المحاولة مرة أخرى."
+    },
+    "pagination": {
+      "previous": "سابق",
+      "next": "التالي",
+      "page": "صفحة {{page}} من {{totalPages}}"
+    },
+    "spot": {
+      "showOnMap": "عرض على الخريطة",
+      "verified": "تم التحقق منه",
+      "details": "تفاصيل المكان",
+      "noCoordinates": "مدرجة بدون إحداثيات",
+      "locationIncomplete": "تفاصيل الموقع غير مكتملة"
+    },
+    "map": {
+      "nearMe": "بالقرب مني",
+      "searchArea": "ابحث في هذه المنطقة",
+      "unavailable": "الخريطة التفاعلية غير متوفرة في هذا المتصفح. لا تزال كل بقعة التعارف الحميمي مدرجة.",
+      "ariaLabel": "خريطة التعارف الحميمي التفاعلية",
+      "legend": "الوردي: البقع · الأزرق: المناطق النشطة التقريبية"
+    },
+    "presence": {
+      "peopleOffTitle": "طبقة الأشخاص معطلة",
+      "peopleOffBody": "أنشئ ملفًا شخصيًا حميمًا لرؤية ملفات تعريف المواعدة والظهور اختياريًا في منطقة تقريبية بالمدينة.",
+      "toastDisabled": "لم تعد مرئيًا على خريطة التعارف الحميمي",
+      "toastEnabled": "مرئية لمدة ساعة واحدة",
+      "hiddenTitle": "غير مرئية على الخريطة",
+      "createProfile": "إنشاء ملف تعريف حميم",
+      "toastEnabledBody": "يتم عرض فقاعة المدينة التقريبية فقط.",
+      "preciseNeverPublished": "لم يتم نشر موقفك الدقيق أبدًا.",
+      "turnOff": "إيقاف",
+      "toastError": "لا يمكن تحديث الرؤية",
+      "expires": "يتم إيقاف التشغيل تلقائيًا عند {{time}}.",
+      "visibleTitle": "مرئية في منطقة تقريبية",
+      "cancel": "يلغي",
+      "cityLoading": "البحث عن مدن...",
+      "enabling": "جارٍ التمكين…",
+      "goVisible": "الذهاب مرئية",
+      "cityLabel": "المدينة أو المنطقة",
+      "cityPlaceholder": "بحث المدن",
+      "dialogTitle": "كن مرئيًا لمدة ساعة واحدة",
+      "enable": "مرئية لمدة ساعة واحدة",
+      "acknowledgement": "أدرك أن الرؤية تقريبية، وتنتهي بعد ساعة واحدة، ولا تحل محل التحقق من الموافقة، أو البيئة المحيطة، أو القانون المحلي.",
+      "dialogDescription": "لا يرى البالغون الآخرون الذين اختاروا الاشتراك سوى فقاعة على مستوى المدينة ويقومون بالعد. لن يتلقوا موقع جهازك أبدًا."
+    }
+  },
+  "workbooks": {
+    "answerPlaceholder": "إجابتك، تُحفظ أثناء الكتابة",
+    "answer": "إجابتك",
+    "privateNote": "خاصة بك حتى تختار مشاركتها",
+    "notFound": "لم يُعثر على التمرين",
+    "backToGlossary": "العودة إلى المعجم",
+    "signInGate": "تمرين خاص لراشدين متوافقين. سجّل الدخول للعمل عليه.",
+    "signIn": "تسجيل الدخول",
+    "optInGate": "هذا جزء من الطبقة الحميمة: 18+، بتفعيل منك، وبريد مُوثّق. كل ما تكتبه خاص تلقائيًا، ولا يصل أي شيء إلى شريك إلا إذا شاركته وشارك الطرف الآخر بدوره.",
+    "enableIntimate": "تفعيل الملف الحميم",
+    "stepN": "الخطوة {{n}}",
+    "back": "رجوع",
+    "next": "التالي",
+    "finish": "إنهاء",
+    "sharing": "المشاركة",
+    "noStepsYet": "لا يوجد شيء متاح بعد. عُد غدًا.",
+    "lockedCount": "بقي {{count}}",
+    "inOneDay": "غدًا",
+    "inNDays": "بعد {{count}} أيام",
+    "backToSteps": "العودة إلى الأسئلة",
+    "discussFirst": "تحدّثوا عنه أولًا",
+    "menuUnavailable": "هذه القائمة غير متاحة حاليًا.",
+    "menuSharedWithChecklist": "هذه التقييمات هي قائمة اهتماماتك وحدودك. تظهر أيضًا في /tools/checklist",
+    "menuVetoNote": "لا يُعرض رفضك ولا حدّك المطلق على أي شخص أبدًا. هما فقط يزيلان البند من أي مقارنة بهدوء.",
+    "share": {
+      "title": "ما تشاركه",
+      "intro": "اختر الإجابات التي ترضى بعرضها. لا يُكشف أي شيء قبل أن يشارك شريكك إجاباته معك أيضًا، ويمكنك إيقاف أي منها في أي وقت.",
+      "yourAnswers": "إجاباتك",
+      "nOfM": "تمت مشاركة {{shared}} من {{total}}",
+      "nothingWritten": "لم تكتب أي شيء بعد. لا يوجد ما تشاركه.",
+      "toggleLabel": "مشاركة «{{prompt}}»",
+      "partner": "شريكك",
+      "noPartnerYet": "افتح هذا التمرين من محادثة لتقارن مع شخص ما. تُحفظ اختيارات المشاركة أعلاه في كل الأحوال.",
+      "statusActive": "شاركتما كلاكما. المقارنة مُفعّلة.",
+      "statusWaiting": "شاركت. في انتظار مشاركة الطرف الآخر.",
+      "statusTheirs": "شارك الطرف الآخر معك. شارك بدورك لرؤية المقارنة.",
+      "statusNone": "لم تتشاركا بعد.",
+      "revoke": "إيقاف المشاركة",
+      "grant": "المشاركة معه"
+    },
+    "compare": {
+      "empty": "لا يوجد ما يُقارَن بعد.",
+      "title": "جنبًا إلى جنب",
+      "menuRow": "قائمة مُقيَّمة",
+      "menuNote": "التقاطع في القوائم المُقيَّمة موجود في مقارنة اهتماماتك وحدودك، وهي تُشارك على حدة.",
+      "openChecklist": "افتح قائمة التحقق",
+      "you": "أنت",
+      "them": "الطرف الآخر"
+    }
+  },
+  "contributeForm": {
+    "unknownType": "نوع مساهمة غير معروف",
+    "unknownBody": "نوع المساهمة «{{type}}» غير مدعوم.",
+    "backHub": "العودة إلى المساهمات",
+    "signInRequired": "تسجيل الدخول مطلوب",
+    "authBody": "سجّل الدخول قبل إضافة محتوى إلى الدليل. النموذج غير متاح للزوار.",
+    "submittedBody": "تم إرسال {{type}} وستُراجع قبل النشر.",
+    "submitMore": "إرسال المزيد",
+    "submitAnother": "إرسال عنصر آخر: {{type}}",
+    "allSubmissions": "كل المساهمات",
+    "submitType": "إرسال {{type}}",
+    "returnStep": "العودة إلى الخطوة {{step}}",
+    "step": "الخطوة {{step}}: {{label}}",
+    "fixErrors": "يرجى تصحيح ما يلي للمتابعة:",
+    "cancel": "إلغاء",
+    "next": "التالي",
+    "types": {
+      "venue": "مكان",
+      "event": "فعالية",
+      "product": "منتج",
+      "personality": "شخصية",
+      "hotel": "فندق / مبيت",
+      "tag": "وسم",
+      "news": "مقال إخباري",
+      "place": "موقع"
+    },
+    "steps": {
+      "basics": "المعلومات الأساسية",
+      "location": "الموقع",
+      "contact": "التواصل",
+      "when-where": "الزمان والمكان",
+      "details": "التفاصيل",
+      "suggest": "اقتراح"
+    }
+  },
+  "contribute": {
+    "trigger": "المساهمة في Queer Guide",
+    "title": "المساهمة في Queer Guide",
+    "subtitle": "شارك ما لاحظته، أو صحّح إدراجًا، أو ساعد الدليل على النمو.",
+    "eyebrow": "ساهم",
+    "common": {
+      "failed": "تعذّر الإرسال",
+      "tryAgain": "يرجى المحاولة مرة أخرى.",
+      "done": "تم",
+      "emailOptional": "البريد الإلكتروني (اختياري)",
+      "emailPlaceholder": "لكي نتمكن من التواصل معك",
+      "back": "رجوع",
+      "submitting": "جارٍ الإرسال…",
+      "submit": "إرسال"
+    },
+    "chooser": {
+      "feedbackTitle": "الإبلاغ عن مشكلة أو فكرة",
+      "feedbackBody": "شارك ملاحظاتك حول الموقع أو تجربتك.",
+      "correctionTitle": "تصحيح شيء في هذه الصفحة",
+      "correctionBody": "أخبرنا بما هو قديم أو مغلق أو غير صحيح.",
+      "addTitle": "إضافة شيء جديد",
+      "addBody": "أرسل مكانًا أو فعالية أو منتجًا أو شخصًا أو مقالًا.",
+      "scanTitle": "مسح منشور أو رابط",
+      "scanBody": "استخرج عدة مساهمات من ملفات أو صفحة ويب.",
+      "contactTitle": "تواصل مع الفريق",
+      "contactBody": "مساعدة الحساب أو الشراكات أو الصحافة أو رسالة خاصة أخرى."
+    },
+    "feedback": {
+      "heading": "الإبلاغ عن مشكلة أو مشاركة فكرة",
+      "successToast": "تم إرسال الملاحظات. شكرًا لك!",
+      "thanks": "شكرًا لك!",
+      "successBody": "تساعد ملاحظاتك في تحسين Queer Guide.",
+      "category": "ما نوع الملاحظات؟",
+      "categories": {
+        "safety": "السلامة والإشراف",
+        "bug": "بلاغات الأخطاء",
+        "idea": "فكرة",
+        "improvement": "تحسين",
+        "content-idea": "فكرة محتوى"
+      },
+      "title": "العنوان",
+      "titlePlaceholder": "ملخص قصير",
+      "description": "الوصف",
+      "descriptionPlaceholder": "أخبرنا بالمزيد…",
+      "includeScreenshot": "إرفاق لقطة شاشة لهذه الصفحة",
+      "screenshotPreview": "معاينة لقطة الشاشة",
+      "contextNote": "يُرفق تلقائيًا: رابط الصفحة الحالي ومعلومات المتصفح والأخطاء الأخيرة وإخفاقات الشبكة."
+    },
+    "correction": {
+      "heading": "تصحيح شيء في هذه الصفحة",
+      "successToast": "تم إرسال التصحيح. شكرًا لك!",
+      "thanks": "شكرًا لك!",
+      "successBody": "سيراجع فريق التحرير التصحيح.",
+      "thisPage": "هذه الصفحة",
+      "wrong": "ما الخطأ؟",
+      "replacement": "ماذا يجب أن يُكتب بدلًا من ذلك؟"
+    },
+    "auth": {
+      "title": "سجّل الدخول للمساهمة",
+      "body": "يلزم حساب لإضافة محتوى إلى الدليل.",
+      "scanBody": "يلزم حساب لمسح العناصر وإرسالها.",
+      "cta": "تسجيل الدخول أو إنشاء حساب"
+    },
+    "add": {
+      "heading": "إضافة شيء جديد"
+    },
+    "scan": {
+      "heading": "مسح منشور أو رابط",
+      "submitted": "تم إرسال {{count}} عنصر",
+      "linked": "تم ربط {{count}} بإدخال موجود",
+      "reviewNote": "تُراجع المساهمات قبل النشر."
+    }
   }
 }

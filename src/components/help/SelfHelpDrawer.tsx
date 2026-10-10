@@ -24,11 +24,10 @@ export function SelfHelpDrawer({ country }: { country: string }) {
   return (
     <Sheet>
       <SheetTrigger asChild>
-        {/* Styled for the ink-flooded triage panel, its only home — an
-            ink-on-ink outline button would be invisible there. */}
+        {/* This is an equal route beside calling and writing, not a quiet text link. */}
         <button
           type="button"
-          className="inline-flex items-center gap-2 rounded-element bg-background/15 px-4 py-2 text-13 font-bold text-background transition-colors hover:bg-background hover:text-foreground"
+          className="inline-flex min-h-11 items-center gap-2 rounded-element border border-input px-4 py-2 text-13 font-bold text-foreground transition-colors hover:bg-foreground hover:text-background active:opacity-80"
         >
           <Wind size={14} aria-hidden />
           {t('help.self_help_trigger', 'Not ready to talk?')}

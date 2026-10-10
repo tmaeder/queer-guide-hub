@@ -14,6 +14,7 @@ import { describe, it, expect } from 'vitest';
 import {
   cmsEditPath,
   cmsListPath,
+  cmsFilteredListPath,
   livePath,
   hasPublicPage,
   typesWithPublicPath,
@@ -97,12 +98,33 @@ describe('livePath', () => {
     // Tags are slug-keyed despite the route param being named `tagName`, and
     // the lookup lowercases; groups are id-keyed, not slug-keyed.
     expect(livePath('unified_tags', { slug: 'Bear-Bar', status: 'active' })).toBe('/tags/bear-bar');
-    expect(livePath('community_groups', { id: 'g-1', slug: 'ignored' })).toBe('/groups/g-1');
+    expect(livePath('community_groups', { id: 'g-1', slug: 'ignored' })).toBe(
+      '/hub/groups/g-1',
+    );
   });
 
   it('typesWithPublicPath and PAGELESS partition the registry', () => {
     const all = getContentTypeIds().sort();
     const partitioned = [...typesWithPublicPath(), ...PAGELESS].sort();
     expect(partitioned).toEqual(all);
+  });
+});
+
+describe('cmsFilteredListPath', () => {
+  it('builds a filtered list path with an encoded display label', () => {
+    expect(cmsFilteredListPath('venues', 'city_id', 'c-1', 'São Paulo')).toBe(
+      '/admin/content/venues?city_id=c-1&city_id_label=S%C3%A3o+Paulo',
+    );
+  });
+
+  it('omits the label when none is given', () => {
+    expect(cmsFilteredListPath('venues', 'city_id', 'c-1')).toBe(
+      '/admin/content/venues?city_id=c-1',
+    );
+  });
+
+  it('returns null for an unknown type or an empty value', () => {
+    expect(cmsFilteredListPath('nope', 'city_id', 'c-1')).toBeNull();
+    expect(cmsFilteredListPath('venues', 'city_id', '')).toBeNull();
   });
 });

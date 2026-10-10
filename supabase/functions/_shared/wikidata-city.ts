@@ -153,10 +153,9 @@ export function bestStatement(sts?: Statement[]): Statement | null {
  * whose date is still in the future.
  *
  * Conservative on purpose: a P582 that is present but unparseable (novalue /
- * somevalue — "ended, date unknown") counts as ENDED. Publishing a former mayor
- * as the current one is a factual error users would notice, so an empty result
- * and a NULL column is the correct outcome. Cape Town, Paris and NYC all carry
- * P580+P582 on every P6 statement.
+ * somevalue — "ended, date unknown") counts as ENDED. Publishing an ended
+ * statement as current is a factual error users would notice, so an empty
+ * result and a NULL column is the correct outcome.
  */
 export function currentStatements(sts?: Statement[]): Statement[] {
   const now = Date.now()
@@ -177,7 +176,6 @@ export function currentStatements(sts?: Statement[]): Statement[] {
 export interface CityQidRefs {
   sister_cities: string[]
   local_language: string[]
-  mayor: string[]
   climate_type: string[]
   economy_sectors: string[]
 }
@@ -186,7 +184,6 @@ export interface CityWdFacts {
   population?: number
   area_km2?: number
   elevation_m?: number
-  founded_year?: number
   official_website?: string
   postal_codes?: string[]
   area_codes?: string[]
@@ -237,7 +234,7 @@ export function parseCityFacts(claims: Claims): CityWdFacts {
   const num = (p: string): number | undefined => asNumber(valueOf(bestStatement(claims[p])?.mainsnak))
 
   const out: CityWdFacts = {
-    refs: { sister_cities: [], local_language: [], mayor: [], climate_type: [], economy_sectors: [] },
+    refs: { sister_cities: [], local_language: [], climate_type: [], economy_sectors: [] },
   }
 
   // P1082 is a count, not a measurement — it carries no unit and stays on `num`.
@@ -249,17 +246,6 @@ export function parseCityFacts(claims: Claims): CityWdFacts {
   if (area != null) out.area_km2 = Math.round(area * 100) / 100
   const elev = convertQuantity(valueOf(bestStatement(claims.P2044)?.mainsnak), ELEVATION_TO_M)
   if (elev != null) out.elevation_m = Math.round(elev)
-
-  const inception = asTime(valueOf(bestStatement(claims.P571)?.mainsnak))
-  if (inception) {
-    const m = /^([+-])(\d{4})/.exec(inception)
-    // BCE foundation years cannot be stored in a positive int column; skip them
-    // rather than writing a wrong positive year.
-    if (m && m[1] === '+') {
-      const y = parseInt(m[2], 10)
-      if (Number.isFinite(y) && y > 0) out.founded_year = y
-    }
-  }
 
   const site = asString(valueOf(bestStatement(claims.P856)?.mainsnak))
   if (site && /^https?:\/\//i.test(site)) out.official_website = site
@@ -288,10 +274,6 @@ export function parseCityFacts(claims: Claims): CityWdFacts {
     const used = qidsOf(currentStatements(claims.P2936), MAX_LANGUAGES)
     out.refs.local_language = used.length <= P2936_MAX_FALLBACK ? used : []
   }
-  // Only a mayor who has not left office. Usually empty — that is correct.
-  const mayor = bestStatement(currentStatements(claims.P6))
-  const mayorQid = asQid(valueOf(mayor?.mainsnak))
-  out.refs.mayor = mayorQid ? [mayorQid] : []
   // P2564 = Köppen climate classification. Present on NYC/Tokyo, absent on
   // Paris/Cape Town — partial by nature, with no free per-city fallback.
   const climate = bestStatement(claims.P2564)
@@ -347,7 +329,6 @@ export async function resolveLabels(
 export function applyLabels(refs: CityQidRefs, labels: Map<string, string>): {
   sister_cities?: string[]
   local_language?: string
-  mayor?: string
   climate_type?: string
   economy_sectors?: string[]
 } {
@@ -358,8 +339,6 @@ export function applyLabels(refs: CityQidRefs, labels: Map<string, string>): {
   // Column is singular text; join the official languages for display.
   const langs = lbl(refs.local_language)
   if (langs.length) out.local_language = uniq(langs).join(', ')
-  const mayor = lbl(refs.mayor)[0]
-  if (mayor) out.mayor = mayor
   const climate = lbl(refs.climate_type)[0]
   if (climate) out.climate_type = climate
   const sectors = lbl(refs.economy_sectors)
@@ -692,4 +671,80 @@ export function parseCityNames(
   }
 
   return out.slice(0, MAX_CITY_ALIASES)
+}
+
+// ---------------------------------------------------------------- native name
+//
+// cities.name_local: the city's name in the official language of ITS OWN
+// country, in the original script (München, Warszawa, 東京). English stays in
+// cities.name.
+//
+// Source order, and why (re-ordered 2026-10-07 after the first live sample):
+//   1. The entity's LABEL in the country's languages, in the country's order.
+//      A label in the country's own language IS the endonym, in its everyday
+//      form. P1705 was first and lost on two measured rows: Toronto's en P1705
+//      is the corporate "City of Toronto", and Ho Chi Minh City carries a lone
+//      Khmer P1705 (Prey Nokor) that rule 3 accepted although the vi label
+//      exists. Label-first fixes both without a per-row exception.
+//   2. P1705 "native label" whose tag is an official language of the country.
+//      Monolingual text, so the language needs no inference; read through the
+//      same rank/end-time discipline as every other statement here (a
+//      deprecated or ended P1705 is how Wikidata retracts a former name).
+//      Preferred rank first, then statement order (Brussels: nl before fr).
+//   3. Exactly ONE P1705 when nothing above matched. `countries.languages` is
+//      coarse, and a single native label with no competing label is still the
+//      place's own name. Two or more unmatched values are ambiguous.
+//   4. null. A missing endonym is honest; a guessed one is a wrong fact.
+//
+// Values are stripped of Unicode bidi controls (U+200E/F, U+202A-E,
+// U+2066-9): Casablanca's label arrived as U+202B + Arabic, an invisible
+// character that would make two equal names compare unequal forever.
+
+export interface CityNativeName {
+  name: string
+  lang: string
+  source: 'P1705' | 'label'
+}
+
+function primarySubtag(tag: string): string {
+  return tag.toLowerCase().split('-')[0]
+}
+
+function cleanNative(raw: unknown): string | null {
+  if (typeof raw !== 'string') return null
+  const s = raw.replace(/[\u200e\u200f\u202a-\u202e\u2066-\u2069]/g, '').replace(/\s+/g, ' ').trim()
+  if (!s || s.length > 200) return null
+  if (/https?:\/\//i.test(s)) return null
+  return s
+}
+
+export function parseCityNativeName(
+  claims: Claims,
+  labels: WdLabels | undefined,
+  countryLangCodes: readonly string[],
+): CityNativeName | null {
+  const wanted = countryLangCodes.map(primarySubtag)
+
+  const live = currentStatements(claims.P1705)
+  const ordered = [
+    ...live.filter(s => s.rank === 'preferred'),
+    ...live.filter(s => s.rank !== 'preferred'),
+  ]
+  const natives: Array<{ name: string; lang: string }> = []
+  for (const st of ordered) {
+    const v = valueOf(st.mainsnak) as { text?: string; language?: string } | undefined
+    const name = cleanNative(v?.text)
+    const lang = typeof v?.language === 'string' ? v.language.toLowerCase() : ''
+    if (name && lang) natives.push({ name, lang })
+  }
+
+  for (const code of countryLangCodes) {
+    const name = cleanNative(labels?.[code]?.value)
+    if (name) return { name, lang: code.toLowerCase(), source: 'label' }
+  }
+
+  const matched = natives.find(n => wanted.includes(primarySubtag(n.lang)))
+  if (matched) return { ...matched, source: 'P1705' }
+  if (natives.length === 1) return { ...natives[0], source: 'P1705' }
+  return null
 }

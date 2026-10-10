@@ -1,66 +1,53 @@
 import { Suspense } from 'react';
-import { useTranslation } from 'react-i18next';
-import { Rss, UserCheck, Users, UsersRound, type LucideIcon } from 'lucide-react';
-import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
-import { useAuth } from '@/hooks/useAuth';
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Skeleton } from '@/components/ui/skeleton';
 import { lazyRetry } from '@/utils/lazyRetry';
 import { PageContainer } from '@/components/layout/PageContainer';
+import { HubNavBar } from '@/components/hub/HubNavBar';
+import { useMeta } from '@/hooks/useMeta';
 
-// Each tab renders the existing standalone surface. Radix mounts only the active
-// tab's content, so a surface's data hooks fire only when its tab is open.
-const Feed = lazyRetry(() => import('./Feed'));
+// Each route renders one existing standalone surface. Suspense mounts only the
+// active page, so its data hooks fire only when that page is open.
 const UserDirectory = lazyRetry(() => import('./UserDirectory'));
 const Friends = lazyRetry(() => import('./Friends'));
 const Groups = lazyRetry(() => import('./Groups'));
 
-const TABS = ['feed', 'members', 'friends', 'groups'] as const;
+const TABS = ['members', 'friends', 'groups'] as const;
 type CommunityTab = (typeof TABS)[number];
 
 /**
- * Community hub. Folds the four scattered community surfaces — Feed, Members
- * (user directory), Friends, and Groups — under one /community/:tab? home so
- * they stop living as separate top-level routes. Friends is own-only (it holds
- * the friend graph + SOS) and only shows as a tab when signed in; it still
- * self-gates if deep-linked.
+ * Community views inside the canonical Hub. The child pages retain their
+ * established data and state handling while the wrapper supplies shared Hub
+ * wayfinding.
  */
 export default function Community({ tab }: { tab?: CommunityTab }) {
-  const { t } = useTranslation();
-  const navigate = useLocalizedNavigate();
-  const { user } = useAuth();
-
   const active: CommunityTab = (TABS as readonly string[]).includes(tab ?? '')
     ? (tab as CommunityTab)
-    : 'feed';
+    : 'members';
 
-  const setTab = (v: string) => navigate(v === 'feed' ? '/community' : `/community/${v}`);
+  const meta = {
+    members: {
+      title: 'Browse LGBTQ+ community members',
+      description: 'Browse members by their shared interests, pronouns and cities.',
+    },
+    friends: {
+      title: 'Friends',
+      description: 'Manage friends, requests and new connections.',
+    },
+    groups: {
+      title: 'LGBTQ+ groups to join',
+      description: 'Find local and interest-based queer groups and manage the groups you joined.',
+    },
+  }[active];
 
-  const triggers: ReadonlyArray<readonly [CommunityTab, string, LucideIcon]> = [
-    ['feed', t('header.nav.feed', 'Feed'), Rss],
-    ['members', t('header.nav.members', 'Members'), UserCheck],
-    ...(user ? ([['friends', t('header.userMenu.friends', 'Friends'), Users]] as const) : []),
-    ['groups', t('header.nav.groups', 'Groups'), UsersRound],
-  ];
+  useMeta({
+    ...meta,
+    canonicalPath: `/hub/${active}`,
+    noIndex: active === 'friends',
+  });
 
   return (
     <>
-      <PageContainer>
-        <Tabs value={active} onValueChange={setTab} style={{ width: '100%' }}>
-          <TabsList className="h-auto w-full justify-start gap-1 overflow-x-auto rounded-element bg-surface-container p-1 backdrop-blur-none">
-            {triggers.map(([v, label, Icon]) => (
-              <TabsTrigger
-                key={v}
-                value={v}
-                className="flex h-10 items-center gap-2 rounded-badge bg-transparent px-4 shadow-none data-[state=active]:bg-foreground data-[state=active]:text-background data-[state=active]:shadow-none"
-              >
-                <Icon size={16} aria-hidden />
-                {label}
-              </TabsTrigger>
-            ))}
-          </TabsList>
-        </Tabs>
-      </PageContainer>
+      <HubNavBar />
 
       <Suspense
         fallback={
@@ -70,7 +57,6 @@ export default function Community({ tab }: { tab?: CommunityTab }) {
           </PageContainer>
         }
       >
-        {active === 'feed' && <Feed />}
         {active === 'members' && <UserDirectory />}
         {active === 'friends' && <Friends />}
         {active === 'groups' && <Groups />}

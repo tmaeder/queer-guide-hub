@@ -49,7 +49,7 @@ const legalLinks = [
  *  target entity), so there is nothing target-less to open from here; the real
  *  target-less surface is the contact form's Safety & Moderation lane, which
  *  now accepts `?category=` so the link arrives with that lane already picked. */
-const REPORT_HREF = '/contact?category=safety';
+const REPORT_HREF = '/submit/feedback?category=safety';
 
 export interface FooterProps {
   /**
@@ -87,7 +87,11 @@ export function Footer({ variant = 'full' }: FooterProps = {}) {
               separated by its shadow and the gap around it" (panel 11). */}
           <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-4 rounded-panel bg-card px-6 py-6 shadow-soft">
             <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
-              <LocalizedLink to="/" className="no-underline" aria-label="Queer Guide">
+              <LocalizedLink
+                to="/"
+                className="inline-flex min-h-11 items-center no-underline"
+                aria-label="Queer Guide"
+              >
                 <Wordmark className="text-title text-foreground" />
               </LocalizedLink>
               <p className="text-13 text-muted-foreground">
@@ -99,16 +103,28 @@ export function Footer({ variant = 'full' }: FooterProps = {}) {
               className="flex flex-wrap items-center gap-x-6 gap-y-2 text-13 font-bold"
             >
               {/* Order is the priority order, not the conventional one. */}
-              <LocalizedLink to={REPORT_HREF} className="no-underline hover:underline">
+              <LocalizedLink
+                to={REPORT_HREF}
+                className="inline-flex min-h-11 items-center no-underline hover:underline"
+              >
                 {t('footer.report', 'Report')}
               </LocalizedLink>
-              <LocalizedLink to="/help" className="no-underline hover:underline">
+              <LocalizedLink
+                to="/help"
+                className="inline-flex min-h-11 items-center no-underline hover:underline"
+              >
                 {t('footer.hotlines', 'Hotlines')}
               </LocalizedLink>
-              <LocalizedLink to="/privacy" className="no-underline hover:underline">
+              <LocalizedLink
+                to="/privacy"
+                className="inline-flex min-h-11 items-center no-underline hover:underline"
+              >
                 {t('footer.privacy', 'Privacy')}
               </LocalizedLink>
-              <LocalizedLink to="/terms" className="no-underline hover:underline">
+              <LocalizedLink
+                to="/terms"
+                className="inline-flex min-h-11 items-center no-underline hover:underline"
+              >
                 {t('footer.terms', 'Terms')}
               </LocalizedLink>
             </nav>
@@ -167,7 +183,7 @@ export function Footer({ variant = 'full' }: FooterProps = {}) {
                   <LocalizedLink
                     to={intent.to}
                     aria-current={active ? 'page' : undefined}
-                    className="text-15 font-bold text-background no-underline underline-offset-4 hover:underline"
+                    className="inline-flex min-h-11 items-center text-15 font-bold text-background no-underline underline-offset-4 hover:underline"
                   >
                     {t(intent.labelKey, intent.fallback)}
                   </LocalizedLink>
@@ -178,7 +194,7 @@ export function Footer({ variant = 'full' }: FooterProps = {}) {
                       <LocalizedLink
                         to={child.to}
                         aria-current={localePath === child.to ? 'page' : undefined}
-                        className="block py-1 text-13 text-background/70 no-underline underline-offset-4 hover:text-background hover:underline"
+                        className="flex min-h-11 items-center text-13 text-background/70 no-underline underline-offset-4 hover:text-background hover:underline"
                       >
                         {t(child.labelKey, child.fallback)}
                       </LocalizedLink>
@@ -222,7 +238,7 @@ export function Footer({ variant = 'full' }: FooterProps = {}) {
             </p>
             <LocalizedLink
               to={REPORT_HREF}
-              className="mt-4 inline-block rounded-element bg-background/15 px-4 py-2 text-xs2 font-bold text-background no-underline transition-colors hover:bg-background hover:text-foreground"
+              className="mt-4 inline-flex min-h-11 items-center rounded-element bg-background/15 px-4 py-2 text-xs2 font-bold text-background no-underline transition-colors hover:bg-background hover:text-foreground"
             >
               {t('footer.reportSomething', 'Report something')}
             </LocalizedLink>
@@ -266,7 +282,7 @@ export function Footer({ variant = 'full' }: FooterProps = {}) {
               key={link.href}
               to={link.href}
               aria-current={localePath === link.href ? 'page' : undefined}
-              className="text-13 text-background/70 no-underline underline-offset-4 hover:text-background hover:underline"
+              className="inline-flex min-h-11 items-center text-13 text-background/70 no-underline underline-offset-4 hover:text-background hover:underline"
             >
               {t(link.labelKey, link.fallback)}
             </LocalizedLink>
@@ -279,7 +295,7 @@ export function Footer({ variant = 'full' }: FooterProps = {}) {
           <button
             type="button"
             onClick={() => window.dispatchEvent(new CustomEvent(OPEN_COOKIE_PREFERENCES_EVENT))}
-            className="text-13 text-background/70 underline-offset-4 hover:text-background hover:underline"
+            className="inline-flex min-h-11 items-center text-13 text-background/70 underline-offset-4 hover:text-background hover:underline"
           >
             {t('footer.cookiePreferences', 'Cookie preferences')}
           </button>

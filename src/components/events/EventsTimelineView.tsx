@@ -400,7 +400,12 @@ export function EventsTimelineView({
         canFit={events.length > 0}
       />
 
-      <div className="flex gap-2 overflow-x-auto pb-2 mb-2 scrollbar-thin">
+      <div
+        className="flex gap-2 overflow-x-auto pb-2 mb-2 scrollbar-thin"
+        role="region"
+        aria-label="Timeline periods"
+        tabIndex={0}
+      >
         {buckets.map((b, i) => {
           const count = bucketCounts[i];
           if (count === 0) {
@@ -423,7 +428,7 @@ export function EventsTimelineView({
                 );
                 el?.scrollIntoView({ behavior: 'smooth', inline: 'start', block: 'nearest' });
               }}
-              className="px-2 py-1 text-xs2 rounded-badge hover:bg-muted transition-colors min-h-0 whitespace-nowrap"
+              className="min-h-11 px-2 py-1 text-xs2 rounded-badge hover:bg-muted transition-colors whitespace-nowrap"
             >
               {b.label} <span className="text-muted-foreground">{count}</span>
             </button>
@@ -432,7 +437,11 @@ export function EventsTimelineView({
       </div>
 
       {loading && (
-        <div className="h-0.5 bg-foreground/10 overflow-hidden mb-1" aria-label="Loading events">
+        <div
+          className="h-0.5 bg-foreground/10 overflow-hidden mb-1"
+          role="status"
+          aria-label="Loading events"
+        >
           <div className="h-full w-1/3 bg-foreground/60 animate-pulse" />
         </div>
       )}
@@ -442,6 +451,7 @@ export function EventsTimelineView({
         className="relative overflow-x-auto rounded-container bg-background"
         role="region"
         aria-label="Events timeline"
+        tabIndex={0}
       >
         <div
           ref={trackRef}

@@ -194,14 +194,6 @@ const stringField = (row: Record<string, unknown>, key: string): string | null =
   return typeof v === 'string' && v.length > 0 ? v : null;
 };
 
-/** True if this path has a data-driven link block. */
-export function isHubPath(pathname: string): boolean {
-  return Object.prototype.hasOwnProperty.call(HUBS, pathname);
-}
-
-/** The hub paths, for tests and for the seo-check content-link assertion. */
-export const HUB_PATHS = Object.keys(HUBS);
-
 /**
  * Build the crawler link block for a hub path. Returns '' for a non-hub path,
  * and '' if every query came back empty — never a heading with nothing under

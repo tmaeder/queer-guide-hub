@@ -3,13 +3,7 @@
 export type KinkAxis = 'general' | 'give_receive' | 'self_partner' | 'dom_sub';
 
 export type KinkSide =
-  | 'general'
-  | 'giving'
-  | 'receiving'
-  | 'self'
-  | 'partner'
-  | 'dominant'
-  | 'submissive';
+  'general' | 'giving' | 'receiving' | 'self' | 'partner' | 'dominant' | 'submissive';
 
 export type KinkRatingValue = 'favorite' | 'like' | 'curious' | 'maybe' | 'no' | 'hard_limit';
 
@@ -37,6 +31,8 @@ export interface KinkItem {
   axis_override: KinkAxis | null;
   discussion_recommended: boolean;
   sort_order: number;
+  /** Bridge to the original intimate-profile vocabulary, when one exists. */
+  unified_tag_slug?: string | null;
 }
 
 export interface KinkRating {

@@ -15,7 +15,9 @@ const GroupCardFixture = () => (
     <CardHeader>
       <div className="pb-4">
         <div className="flex items-start gap-4">
-          <Avatar><AvatarFallback>S</AvatarFallback></Avatar>
+          <Avatar>
+            <AvatarFallback>S</AvatarFallback>
+          </Avatar>
           <div className="flex-1">
             <p className="font-semibold">Sample Group</p>
             <div className="flex items-center gap-1">
@@ -30,11 +32,17 @@ const GroupCardFixture = () => (
     <CardContent>
       <p className="text-sm text-muted-foreground mb-4">A sample group description.</p>
       <div className="flex flex-wrap gap-1 mb-4">
-        <Badge variant="outline"><span className="text-xs">Tag 1</span></Badge>
-        <Badge variant="outline"><span className="text-xs">Tag 2</span></Badge>
+        <Badge variant="outline" className="border-0">
+          <span className="text-xs">Tag 1</span>
+        </Badge>
+        <Badge variant="outline" className="border-0">
+          <span className="text-xs">Tag 2</span>
+        </Badge>
       </div>
       <div className="flex gap-2">
-        <Button variant="ghost" size="sm">View</Button>
+        <Button variant="ghost" size="sm">
+          View
+        </Button>
         <Button size="sm">Join</Button>
       </div>
     </CardContent>
@@ -75,7 +83,12 @@ export const GroupCard = ({
 
   if (loading || !group) {
     return (
-      <Skeleton name="group-card" loading={true} fixture={<GroupCardFixture />} fallback={<PageLoadingState count={1} />}>
+      <Skeleton
+        name="group-card"
+        loading={true}
+        fixture={<GroupCardFixture />}
+        fallback={<PageLoadingState count={1} />}
+      >
         <div />
       </Skeleton>
     );
@@ -96,10 +109,14 @@ export const GroupCard = ({
 
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 mb-1">
-                <LocalizedLink to={`/groups/${group.id}`} style={{ flex: 1 }}>
+                <LocalizedLink to={`/hub/groups/${group.id}`} style={{ flex: 1 }}>
                   <p
                     className="font-semibold overflow-hidden hover:underline"
-                    style={{ display: '-webkit-box', WebkitLineClamp: 1, WebkitBoxOrient: 'vertical' }}
+                    style={{
+                      display: '-webkit-box',
+                      WebkitLineClamp: 1,
+                      WebkitBoxOrient: 'vertical',
+                    }}
                   >
                     {group.name}
                   </p>
@@ -126,12 +143,12 @@ export const GroupCard = ({
                   </div>
                 )}
                 {group.user_role && (
-                  <Badge variant="secondary">
+                  <Badge variant="secondary" className="border-0">
                     <span className="text-xs">{group.user_role}</span>
                   </Badge>
                 )}
                 {!group.is_member && group.has_pending_request && (
-                  <Badge variant="outline">
+                  <Badge variant="outline" className="border-0">
                     <span className="text-xs">Pending</span>
                   </Badge>
                 )}
@@ -165,12 +182,12 @@ export const GroupCard = ({
         {group.tags && group.tags.length > 0 && (
           <div className="flex flex-wrap gap-1 mb-4">
             {group.tags.slice(0, 3).map((tag) => (
-              <Badge key={tag} variant="outline">
+              <Badge key={tag} variant="outline" className="border-0">
                 <span className="text-xs">{tag}</span>
               </Badge>
             ))}
             {group.tags.length > 3 && (
-              <Badge variant="outline">
+              <Badge variant="outline" className="border-0">
                 <span className="text-xs">+{group.tags.length - 3} more</span>
               </Badge>
             )}
@@ -179,7 +196,7 @@ export const GroupCard = ({
 
         <div className="flex gap-2">
           <Button asChild variant="ghost" size="sm">
-            <LocalizedLink to={`/groups/${group.id}`}>
+            <LocalizedLink to={`/hub/groups/${group.id}`}>
               <span className="flex items-center">
                 <ExternalLink size={16} className="mr-2" />
                 View Group
@@ -199,26 +216,18 @@ export const GroupCard = ({
           ) : !group.is_member ? (
             group.is_private ? (
               group.has_pending_request ? (
-                <Button disabled variant="outline" size="sm">
+                <Button disabled variant="soft" size="sm">
                   <Lock size={16} className="mr-2" />
                   Requested
                 </Button>
               ) : (
-                <Button
-                  onClick={() => onRequestJoin?.(group.id)}
-                  disabled={isRequesting}
-                  size="sm"
-                >
+                <Button onClick={() => onRequestJoin?.(group.id)} disabled={isRequesting} size="sm">
                   <UserPlus size={16} className="mr-2" />
                   {isRequesting ? 'Requesting...' : 'Request to Join'}
                 </Button>
               )
             ) : (
-              <Button
-                onClick={() => onJoin?.(group.id)}
-                disabled={isJoining}
-                size="sm"
-              >
+              <Button onClick={() => onJoin?.(group.id)} disabled={isJoining} size="sm">
                 <UserPlus size={16} className="mr-2" />
                 {isJoining ? 'Joining...' : 'Join'}
               </Button>
@@ -227,7 +236,7 @@ export const GroupCard = ({
             <Button
               onClick={() => onLeave?.(group.id)}
               disabled={isLeaving}
-              variant="outline"
+              variant="soft"
               size="sm"
             >
               <UserMinus size={16} className="mr-2" />

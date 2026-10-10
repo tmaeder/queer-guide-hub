@@ -11,11 +11,11 @@
  * honest version — and with a line or a letter selected the set is almost
  * always under the cap anyway.
  *
- * Four columns, not five: the 224px taxonomy rail takes the width the fifth
- * would have needed.
+ * One to three columns leave readable space for definitions alongside the
+ * desktop taxonomy rail.
  */
 
-import { useState, Suspense, lazy } from 'react';
+import { useState, useMemo, Suspense, lazy } from 'react';
 import { useTranslation } from 'react-i18next';
 import { VirtualizedGrid } from '@/components/ui/VirtualizedGrid';
 import { useGridColumns } from '@/components/ui/useGridColumns';
@@ -29,11 +29,11 @@ import type { CentralizedTag } from '@/hooks/useCentralizedTags';
 const TagRelationshipGraph = lazy(() => import('@/components/tags/TagRelationshipGraph'));
 
 const GRID_CLASS =
-  'grid grid-cols-2 gap-4 pb-4 sm:grid-cols-3 md:grid-cols-4 md:pb-6 [&>*]:min-w-0';
+  'grid grid-cols-1 gap-4 pb-4 sm:grid-cols-2 xl:grid-cols-3 md:pb-6 [&>*]:min-w-0';
 const GRID_BREAKPOINTS = [
-  { minWidth: 0, columns: 2 },
-  { minWidth: 640, columns: 3 },
-  { minWidth: 768, columns: 4 },
+  { minWidth: 0, columns: 1 },
+  { minWidth: 640, columns: 2 },
+  { minWidth: 1280, columns: 3 },
 ];
 const LIST_CLASS = 'grid grid-cols-1 gap-2 pb-4';
 const LIST_BREAKPOINTS = [{ minWidth: 0, columns: 1 }];
@@ -71,6 +71,7 @@ export function TagResults({
   const gridColumns = useGridColumns(GRID_BREAKPOINTS);
   const listColumns = useGridColumns(LIST_BREAKPOINTS);
   const [chipLimit, setChipLimit] = useState(CHIP_PAGE);
+  const allowedTagIds = useMemo(() => new Set(tags.map((tag) => tag.id)), [tags]);
 
   // A new result set starts from the top of the chip cloud; keeping the old
   // limit means a narrower search silently renders "show 400 more" over 12 tags.
@@ -90,7 +91,11 @@ export function TagResults({
     return (
       <Suspense fallback={<TrackLoader label={t('tags.loading', 'Loading the glossary')} />}>
         <div className="h-[520px] w-full border border-border-hairline md:h-[640px]">
-          <TagRelationshipGraph categoryFilter={graphCategory} categories={graphCategories} />
+          <TagRelationshipGraph
+            categoryFilter={graphCategory}
+            categories={graphCategories}
+            allowedTagIds={allowedTagIds}
+          />
         </div>
       </Suspense>
     );
@@ -153,14 +158,13 @@ export function TagResults({
       rowClassName={GRID_CLASS}
       estimateRowHeight={268}
       itemKey={(tag) => tag.id}
-      renderItem={(tag, i) => (
+      renderItem={(tag) => (
         <TagIndexCard
           tag={tag}
           uses={usageCounts[tag.name] || 0}
           line={lineFor(tag)}
           categoryLabel={categoryLabelFor(tag)}
           aliasMatch={aliasIds?.has(tag.id)}
-          index={i}
         />
       )}
     />

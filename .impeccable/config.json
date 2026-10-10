@@ -1,0 +1,14 @@
+{
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "broken-image",
+        "value": "<img>",
+        "createdAt": "2026-10-08T17:00:16.240Z",
+        "reason": "False positive: src/index.css documents that the ground-layer SVG is a CSS data URI rather than an img element; there is no image tag or placeholder source."
+      }
+    ]
+  }
+}

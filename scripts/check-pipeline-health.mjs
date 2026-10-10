@@ -4707,6 +4707,64 @@ const DISOWNED_PROSE_CEILING = 380
   }
 }
 
+// § Venue city text — a venue whose own `city` text names ANOTHER existing city
+// of its country, and which lies within 15 km of that city, while city_id
+// points elsewhere: the Burbank-filed-under-Los-Angeles shape
+// (99991790978994). Baseline 399 measured 2026-10-05, mostly suburb-vs-metro
+// and worked by hand, so it warns at the baseline and fails only on growth.
+// same_name_cities_without_region is a zero-invariant: since 99991791233840 two
+// same-name cities in one country are told apart by region_code alone, and an
+// uncoded member of such a pair is matched by every region hint.
+{
+  console.log('')
+  console.log('Venue city text')
+  // 399 -> 403 on 2026-10-06, measured cause rather than to pass: creating the
+  // Charleston SC and Arlington TX twins (99991791233856) made three venues
+  // that were ALREADY filed under a neighbour (Dudley's on Ann, Republic Lounge
+  // -> North Charleston; Condom Sense -> Mansfield TX) countable for the first
+  // time. The fourth is a real new misfiling: Me Nightclub, city text
+  // Trondheim, linked to Oslo (written 2026-10-06), left for review.
+  const VENUE_CITY_TEXT_BASELINE = 403
+  const res = await fetch(`${BASE}/rest/v1/rpc/venue_city_text_signals`, {
+    method: 'POST',
+    headers: { ...headers, 'Content-Type': 'application/json' },
+    body: '{}',
+  })
+  if (res.status === 404) {
+    console.warn('⚠ venue_city_text_signals → HTTP 404 (not applied? migration 99991791233856)')
+    console.warn('  This check measured NOTHING — it did not pass.')
+  } else if (!res.ok) {
+    console.error(`✗ venue_city_text_signals → HTTP ${res.status}`)
+    FAILED = true
+  } else {
+    const sig = (await res.json()) ?? {}
+    if (sig.probe_ok !== true || !(Number(sig.venues_linked) > 0)) {
+      console.error('✗ venue_city_text_signals returned no probe_ok / no linked venues — the probe is broken, not the data')
+      FAILED = true
+    } else {
+      const n = Number(sig.city_text_names_nearby_other_city)
+      const uncoded = Number(sig.same_name_cities_without_region)
+      if (!Number.isFinite(n) || !Number.isFinite(uncoded)) {
+        console.error('✗ venue_city_text_signals changed shape')
+        FAILED = true
+      } else {
+        if (n > VENUE_CITY_TEXT_BASELINE) {
+          console.error(`✗ ${n} venues name a nearby other city in their own city text (baseline ${VENUE_CITY_TEXT_BASELINE}) — a producer is filing venues under the wrong same-country city`)
+          FAILED = true
+        } else if (n > 0) {
+          console.warn(`⚠ ${n} venues name a nearby other city in their own city text (baseline ${VENUE_CITY_TEXT_BASELINE}, advisory — do not raise the baseline to pass)`)
+        }
+        if (uncoded > 0) {
+          console.error(`✗ ${uncoded} same-name city group(s) in one country include a member with no region_code`)
+          FAILED = true
+        } else {
+          console.log(`✓ every same-name city group carries region codes (${sig.venues_linked} linked venues scanned)`)
+        }
+      }
+    }
+  }
+}
+
 // §23 — map outcomes. Is the map ecosystem producing anything a reader did?
 //
 // THE DENOMINATOR IS READ AND PRINTED FIRST, before any per-metric number.
@@ -4726,9 +4784,9 @@ const DISOWNED_PROSE_CEILING = 380
   const ARMED_AFTER = new Date('2026-11-01T00:00:00Z')
   const armed = new Date() >= ARMED_AFTER
 
-  const res = await fetch(`${SUPABASE_URL}/rest/v1/rpc/map_outcome_signals`, {
+  const res = await fetch(`${BASE}/rest/v1/rpc/map_outcome_signals`, {
     method: 'POST',
-    headers: HEADERS,
+    headers: { ...headers, 'Content-Type': 'application/json' },
     body: '{}',
   })
 
@@ -4864,9 +4922,9 @@ const DISOWNED_PROSE_CEILING = 380
 //   Arena across three domains, the SF AIDS Foundation across three), which is
 //   why the bound is four and why a hit is a question rather than a verdict.
 {
-  const res = await fetch(`${SUPABASE_URL}/rest/v1/rpc/logo_platform_signals`, {
+  const res = await fetch(`${BASE}/rest/v1/rpc/logo_platform_signals`, {
     method: 'POST',
-    headers: HEADERS,
+    headers: { ...headers, 'Content-Type': 'application/json' },
     body: '{}',
   })
 
@@ -4946,9 +5004,9 @@ const DISOWNED_PROSE_CEILING = 380
 // needs_attention would demote them to draft. Hard-fails only when the probe
 // measured nothing.
 {
-  const res = await fetch(`${SUPABASE_URL}/rest/v1/rpc/venue_source_location_signals`, {
+  const res = await fetch(`${BASE}/rest/v1/rpc/venue_source_location_signals`, {
     method: 'POST',
-    headers: HEADERS,
+    headers: { ...headers, 'Content-Type': 'application/json' },
     body: '{}',
   })
   if (res.status === 404) {
@@ -5004,9 +5062,9 @@ const DISOWNED_PROSE_CEILING = 380
 // THE DENOMINATORS GATE TOO. Zero stuck rows over an emptied mapping is not a clean
 // corpus — it is a disabled tier with every count reading fine.
 {
-  const res = await fetch(`${SUPABASE_URL}/rest/v1/rpc/venue_category_signals`, {
+  const res = await fetch(`${BASE}/rest/v1/rpc/venue_category_signals`, {
     method: 'POST',
-    headers: HEADERS,
+    headers: { ...headers, 'Content-Type': 'application/json' },
     body: '{}',
   })
 
@@ -5079,6 +5137,158 @@ const DISOWNED_PROSE_CEILING = 380
     }
 
     if (sectionOk) console.log('✓ venue category tier reaching every mappable row')
+  }
+}
+
+// § Venue city vs its own coordinates (2026-10-07, 99991791356737).
+//
+// commit_venue_staging_item resolved a city by NAME, falling back to the largest
+// same-name city anywhere on earth when the source's own country held none —
+// "Parc Jules Descampe, Waterloo" (Belgium) landed on Waterloo, USA. The fallback
+// is now corroborated by the venue's coordinates and a city more than 100 km away
+// is refused. This section watches the outcome.
+//
+// The historical backlog (2,308 measured, half of it the 2026-10-05 gays-cruising
+// import) is a WARNING, not a gate: it can only be worked down by a repair, and a
+// red that ships red gets scrolled past. A broken probe is a hard fail, because
+// "zero over 100 km" from a probe that cannot look must never read as clean.
+{
+  const res = await fetch(`${BASE}/rest/v1/rpc/venue_city_coord_signals`, {
+    method: 'POST',
+    headers: { ...headers, 'Content-Type': 'application/json' },
+    body: '{}',
+  })
+  if (!res.ok) {
+    console.warn(`⚠ venue_city_coord_signals → HTTP ${res.status} (RPC missing? migration 99991791356737)`)
+    console.warn('  This check measured NOTHING — it did not pass.')
+  } else {
+    const s = (await res.json()) ?? {}
+    if (s.probe_ok !== true) {
+      console.error('✗ venue_city_coord_signals returned no probe_ok — the probe is broken')
+      FAILED = true
+    } else if (Number(s.links_checkable ?? 0) < 1000) {
+      console.error(`✗ only ${s.links_checkable} venue→city link(s) carry coordinates on both sides — the check is measuring almost nothing`)
+      FAILED = true
+    } else {
+      const over = Number(s.over_100km ?? 0)
+      const recent = Number(s.over_100km_created_last_7d ?? 0)
+      if (over > 0) {
+        console.warn(
+          `⚠ ${over} venue(s) sit over 100 km from their linked city (${recent} created in the last 7 days) ` +
+            `of ${s.links_checkable} checkable — the coordinates are usually right and the city is a same-name namesake`,
+        )
+      } else {
+        console.log(`✓ venue→city links: ${s.links_checkable} checkable, none over 100 km`)
+      }
+    }
+  }
+}
+
+// ---------------------------------------------------------------------------
+// §  Glossary photography: licensed, unique, and gated (2026-10-10)
+// ---------------------------------------------------------------------------
+//
+//     Glossary photos were retired on 2026-08-28 (20261003100000) and
+//     re-introduced on 2026-10-10 under a write-time contract. The retirement's
+//     own header explains what went wrong: the photos were sourced by "taking
+//     the TOP-1 Pexels/Unsplash hit for a keyword-mapped tag name — no scoring,
+//     no content-match check — and 1,262 of them with no recoverable license".
+//
+//     `active_tags_with_image_url` used to be a zero-gate in
+//     scripts/tag-hygiene-baseline.json and is now ADVISORY there, because the
+//     count is coverage and is meant to grow. That is only safe because the
+//     invariants it stood in for became structural, which is exactly what that
+//     file's own note prescribes — "gate on AGE or on a write-time invariant,
+//     never on a level". This section is the other half of that trade: it
+//     watches the invariants rather than the level.
+//
+//     EVERY COUNT HERE IS A ZERO-INVARIANT WITH NO BASELINE, deliberately
+//     unlike the disowned-prose ratchet above. There is no backlog to work
+//     down: `zz_enforce_tag_image_contract` refuses an unlicensed, unattributed,
+//     alt-less, data:-URI, unknown-source, stock-on-adult or
+//     explicit-on-non-adult image at write time, and `tag_cover_one_tag_uniq`
+//     refuses one asset on two tags. A non-zero therefore does not mean "work to
+//     do", it means the enforcement was BYPASSED — a dropped trigger, a disabled
+//     index, or a superuser write around both.
+//
+//     WHICH IS WHY `trigger_attached` AND `uniq_index_present` ARE REPORTED
+//     SEPARATELY FROM THE COUNTS. An undeployed enforcement layer and a clean
+//     corpus both produce zeroes, and conflating them is the
+//     `accessibility_contradictions` lesson: a sentinel that cannot tell "no
+//     defects" from "not installed" reports the wrong one on the day it matters.
+{
+  const res = await fetch(`${BASE}/rest/v1/rpc/tag_image_signals`, {
+    method: 'POST',
+    headers: { ...headers, 'Content-Type': 'application/json' },
+    body: '{}',
+  })
+  if (!res.ok) {
+    const detail = (await res.text()).slice(0, 200)
+    console.error(
+      `✗ tag_image_signals → HTTP ${res.status} (migration 99991791616269 not applied? ` +
+        `PGRST202 = the function does not exist) ${detail}`,
+    )
+    FAILED = true
+  } else {
+    const ti = (await res.json()) ?? {}
+    if (ti.probe_ok !== true) {
+      console.error(
+        `✗ tag_image_signals did not report probe_ok — the sentinel itself is broken${ti.error ? `: ${ti.error}` : ''}`,
+      )
+      FAILED = true
+    } else if (ti.trigger_attached !== true || ti.uniq_index_present !== true) {
+      // Checked BEFORE the counts, because without these the zeroes below are
+      // not a measurement of anything.
+      console.error(
+        `✗ glossary photography enforcement is not installed: ` +
+          `trigger_attached=${ti.trigger_attached}, uniq_index_present=${ti.uniq_index_present}`,
+      )
+      console.error('  Every count below is meaningless while this is false. Check 99991791616269.')
+      FAILED = true
+    } else {
+      const invariants = [
+        ['unlicensed', 'published images with no licence/attribution/source'],
+        ['missing_alt', 'published images with no alt text'],
+        ['not_https', 'published images that are not https (the retired data: URI shape)'],
+        ['unknown_source', 'published images from an unknown source'],
+        ['stock_on_adult', 'stock photographs on an adult or sensitive tag (a licence breach)'],
+        ['explicit_ungated', 'explicit images on a tag with no adult flag'],
+        ['cover_asset_reused', 'assets illustrating more than one glossary entry'],
+        ['legacy_tag_links', 'orphaned pre-retirement tag asset links'],
+      ]
+      let clean = true
+      for (const [key, label] of invariants) {
+        const n = Number(ti[key] ?? 0)
+        if (n > 0) {
+          console.error(`✗ tag_image_signals.${key} = ${n} — ${label}`)
+          console.error(
+            '  This is structurally impossible while the contract trigger and unique index are live, ' +
+              'so a non-zero means one of them was bypassed, not that there is a backlog.',
+          )
+          FAILED = true
+          clean = false
+        }
+      }
+      if (clean) {
+        const pub = Number(ti.published_active ?? 0)
+        const exp = Number(ti.explicit_published ?? 0)
+        const open = Number(ti.review_open ?? 0)
+        console.log(
+          `✓ glossary photography: ${pub} published (${exp} explicit, gated), ` +
+            `${open} awaiting review, every invariant clean`,
+        )
+        // Coverage and queue depth WARN at most. Depth cannot distinguish a
+        // queue being worked from one being abandoned, which is why the rule
+        // that matters is the human decision RATE in review_queue_signals —
+        // reported there, not re-derived here.
+        if (open > 400) {
+          console.warn(
+            `⚠ ${open} glossary photo proposals are open. Review at /admin/inbox?queue=quality; ` +
+              'the producer skips a tag that already has an open row, so this is depth, not churn.',
+          )
+        }
+      }
+    }
   }
 }
 

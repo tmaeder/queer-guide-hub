@@ -701,7 +701,32 @@
     "contextBar": {
       "openTrip": "旅行を開く",
       "ariaLabel": "アクティブな旅行",
-      "dismissAria": "アクティブな旅行バナーを閉じる"
+      "dismissAria": "アクティブな旅行バナーを閉じる",
+      "readiness": "旅行の準備状況",
+      "nextUp": "確認が必要",
+      "loadError": "旅行の詳細を読み込めませんでした"
+    },
+    "capture": {
+      "planDestination": "{{city}}への旅行を計画",
+      "inTrip": "{{trip}}に追加済み",
+      "addToActive": "{{trip}}に追加",
+      "offlineTitle": "接続して追加",
+      "offlineDescription": "旅行はオフラインでも表示できますが、新しい場所の追加には接続が必要です。",
+      "addedTitle": "{{trip}}に追加しました",
+      "addedDescription": "{{name}}は未定リストに入っています。",
+      "unscheduled": "予定への追加待ち",
+      "undoFailed": "追加を元に戻せませんでした"
+    },
+    "workspace": {
+      "sections": "旅行ワークスペース",
+      "plan": "計画",
+      "prepare": "準備",
+      "together": "共同",
+      "planTools": "旅程を組み立てる",
+      "prepareTools": "出発の準備をする",
+      "togetherTools": "一緒に計画する",
+      "keepPlanning": "計画を続ける",
+      "memories": "思い出を追加"
     },
     "phase": {
       "label": {
@@ -716,9 +741,12 @@
         "inDays": "あと {{count}} 日",
         "tomorrow": "明日",
         "soon": "まもなく",
-        "dayOf": "本日",
+        "dayOf": "全{{total}}日中の{{day}}日目",
         "daysAgo": "{{count}} 日前",
-        "yesterday": "昨日"
+        "yesterday": "昨日",
+        "day": "{{day}}日目",
+        "pastTrip": "過去の旅行",
+        "justEnded": "終了したばかり"
       }
     },
     "discover": {
@@ -2014,6 +2042,7 @@
       "settings": "設定",
       "inbox": "受信トレイ",
       "friends": "友だち",
+      "friendsOnline": "{{count}} 人オンライン",
       "myGroups": "マイグループ",
       "accessibility": "アクセシビリティ",
       "bookings": "予約",
@@ -2301,6 +2330,7 @@
     },
     "travel": {
       "title": "旅行",
+      "activeTitle": "{{city}}旅行を計画中",
       "subtitle": "LGBTQ+フレンドリーな目的地のフライト、ホテル、アクティビティを検索",
       "activitiesComingSoon": "アクティビティは近日公開。",
       "browseDestinations": "目的地を見る",
@@ -2369,6 +2399,7 @@
         "switchTrip": "アクティブな旅行を切り替え"
       },
       "lede": "[JA] Pick a place, build the trip, book the pieces — with the legal picture built in.",
+      "activeLede": "{{city}}をさらに探して、場所やイベントをアクティブな旅行に直接追加できます。",
       "sections": {
         "plan": "[JA] Plan your trip",
         "planKicker": "[JA] The planner",
@@ -2886,8 +2917,7 @@
         "language": "言語",
         "currency": "通貨",
         "bestTime": "ベストシーズン",
-        "airport": "空港",
-        "nearestAirport": "[JA] Nearest airport"
+        "airport": "空港"
       },
       "eyebrow": "[JA] City",
       "sections": "[JA] Sections",
@@ -2928,25 +2958,21 @@
         "majorCity": "[JA] Major city",
         "region": "[JA] Region",
         "timezone": "[JA] Timezone",
-        "founded": "[JA] Founded",
         "area": "[JA] Area",
         "elevation": "[JA] Elevation",
-        "mayor": "[JA] Mayor",
         "postalCodes": "[JA] Postal codes",
         "costOfLiving": "[JA] Cost of living",
         "universities": "[JA] Universities",
         "sisterCities": "[JA] Sister cities"
       },
       "travel": {
-        "majorAirport": "[JA] Major airport",
-        "nearestAirport": "[JA] Nearest airport",
-        "allCodes": "[JA] All airport codes",
         "lines": "[JA] Lines",
         "networkCaption": "[JA] Rapid-transit lines, drawn from OpenStreetMap. Schematic, not to scale.",
         "gettingAround": "[JA] Getting around",
         "noDealsTitle": "[JA] We don't promote travel deals for destinations where LGBTQ+ people face criminal penalties.",
         "noDealsBody": "[JA] If you need to travel to {{city}}, read the safety and rights section first and use the trip planner — it includes a safety briefing for high-risk destinations.",
-        "otherNearby": "[JA] Other airports nearby"
+        "noAirport": "なし",
+        "nearestAirports": "最寄りの空港"
       },
       "endOfLine": {
         "eyebrow": "[JA] End of line",
@@ -2978,7 +3004,28 @@
     "venueCount_one": "[JA] {{count}} place",
     "venueCount_other": "[JA] {{count}} places",
     "villageCount_one": "[JA] {{count}} district",
-    "villageCount_other": "[JA] {{count}} districts"
+    "villageCount_other": "[JA] {{count}} districts",
+    "discovery": {
+      "noMatches": "該当する結果がありません。別のフィルターをお試しください。",
+      "showing": "{{count}}件中{{shown}}件を表示",
+      "reset": "フィルターをリセット",
+      "searchPlaces": "スポットを検索",
+      "placeType": "スポットの種類",
+      "allPlaces": "すべてのスポット",
+      "morePlaces": "もっと見る",
+      "district": "クィア地区",
+      "when": "日程",
+      "upcoming": "開催予定",
+      "today": "今日",
+      "weekend": "今週末",
+      "week": "今後7日間",
+      "eventType": "イベントの種類",
+      "allTypes": "すべての種類",
+      "freeOnly": "無料のみ",
+      "moreEvents": "もっと見る",
+      "moreTypes": "他のイベントの種類",
+      "until": "終了"
+    }
   },
   "pride": {
     "eyebrow": "Pride Calendar",
@@ -4512,7 +4559,19 @@
       "seeAllRights": "18の権利を国別に見る",
       "seeAllInSearch": "[JA] See all in search",
       "shopAll": "すべて見る",
-      "figure": "[JA] Diagram"
+      "figure": "[JA] Diagram",
+      "workbooks": {
+        "eyebrow": "取り組む",
+        "title": "ワーク",
+        "steps": "{{count}} ステップ",
+        "days": "{{count}} 日間",
+        "withPartner": "パートナーと",
+        "onYourOwn": "ひとりで",
+        "start": "はじめる",
+        "startLabel": "「{{title}}」をはじめる",
+        "locked": "ログインしてインティメイトプロフィールを有効にすると取り組めます。",
+        "privacy": "書いた内容はすべてあなただけのものです。その回答を共有可に設定し、相手も同じようにするまで、パートナーには何も共有されません。"
+      }
     },
     "flagWall": {
       "eyebrow": "シンボル",
@@ -4921,5 +4980,249 @@
     "pauseEpisode": "{{title}} を一時停止",
     "error": "このエピソードを再生できませんでした。番組のサーバーが停止している可能性があります。",
     "retry": "再試行"
+  },
+  "cruising": {
+    "layers": {
+      "both": "両方",
+      "people": "人々",
+      "label": "マップレイヤー",
+      "spots": "スポット"
+    },
+    "title": "クィア クルージング マップ",
+    "meta": {
+      "title": "クルージングマップ",
+      "description": "クルージング スポットのプライベート マップと、オプトインされたアダルト デート プロフィール。"
+    },
+    "safety": {
+      "guide": "クルージング ガイドを読む",
+      "body": "双方の同意が必要です。共有場所は依然として非参加者のものです。現地の法律を確認し、プライバシーを保護し、撤退計画を立ててください。",
+      "health": "性的健康ガイド",
+      "healthLead": "またはレビューしてください"
+    },
+    "loading": "プライベート クルージング ガイドを開く",
+    "eyebrow": "プライベート · サインインした大人",
+    "intro": "リストされているすべての クルージング の場所と、オプトインされたデート プロフィールを 1 つのビューで見つけます。人物はおおよその市街地としてのみ表示されます。スポットはリストされた座標を使用します。",
+    "tabs": {
+      "spots": "すべてのスポット",
+      "people": "近くの人",
+      "label": "クルージングの結果"
+    },
+    "results": {
+      "loading": "クルージング スポットを読み込み中",
+      "empty": "この検索に一致するスポットはありません。",
+      "error": "クルージング ガイドをロードできませんでした。もう一度試してください。"
+    },
+    "search": {
+      "label": "クルージング スポットをすべて検索",
+      "placeholder": "スポット、都市、国を検索する"
+    },
+    "count": {
+      "map": "地図: 現在検索中の {{count}}",
+      "spots_other": "{{count}} スポット",
+      "spots_one": "{{count}} スポット"
+    },
+    "pagination": {
+      "previous": "前の",
+      "next": "次",
+      "page": "ページ {{page}} / {{totalPages}}"
+    },
+    "selectedArea_one": "{{city}} 周辺の出会い系プロフィールを表示しています。バブルは、正確な位置を明らかにせずに、{{count}} のアクティブな人を表します。",
+    "selectedArea_other": "{{city}} 周辺の出会い系プロフィールを表示しています。バブルは、正確な位置を明らかにせずに、{{count}} のアクティブな人々を表します。",
+    "spot": {
+      "verified": "確認済み",
+      "showOnMap": "地図上に表示",
+      "noCoordinates": "座標なしでリストされています",
+      "locationIncomplete": "場所の詳細が不完全",
+      "details": "場所の詳細"
+    },
+    "map": {
+      "searchArea": "このエリアを検索",
+      "nearMe": "私の近くで",
+      "legend": "ピンク：スポット・ブルー：おおよその活性領域",
+      "ariaLabel": "インタラクティブな クルージング マップ",
+      "unavailable": "このブラウザではインタラクティブ マップを利用できません。すべての クルージング スポットは引き続きリストに表示されます。"
+    },
+    "presence": {
+      "peopleOffTitle": "人物レイヤーがオフになっています",
+      "peopleOffBody": "親密なプロフィールを作成してデートのプロフィールを表示し、オプションでおおよその都市エリアに表示されます。",
+      "hiddenTitle": "地図には表示されません",
+      "createProfile": "親密なプロフィールを作成する",
+      "toastEnabled": "1時間見える",
+      "turnOff": "消す",
+      "toastDisabled": "あなたは クルージング マップに表示されなくなりました",
+      "visibleTitle": "おおよその範囲で見える",
+      "toastError": "可視性を更新できませんでした",
+      "toastEnabledBody": "おおよその都市のバブルのみが表示されます。",
+      "expires": "{{time}} で自動的にオフになります。",
+      "cityLoading": "都市を検索中…",
+      "goVisible": "可視化する",
+      "cityLabel": "都市または地域",
+      "dialogTitle": "1時間可視化する",
+      "cityPlaceholder": "都市を検索",
+      "acknowledgement": "可視性はおおよそのものであり、1 時間後に期限切れになり、同意、周囲の環境、または現地の法律の確認に代わるものではないことを理解しています。",
+      "preciseNeverPublished": "あなたの正確な位置は決して公開されません。",
+      "dialogDescription": "他のオプトインした大人には都市レベルのバブルのみが表示され、カウントされます。彼らはあなたのデバイスの位置情報を受信することはありません。",
+      "enable": "1時間見える",
+      "cancel": "キャンセル",
+      "enabling": "有効化中…"
+    }
+  },
+  "workbooks": {
+    "answerPlaceholder": "あなたの回答。入力しながら保存されます",
+    "answer": "あなたの回答",
+    "privateNote": "共有を選ぶまであなただけのもの",
+    "notFound": "ワークが見つかりません",
+    "backToGlossary": "用語集に戻る",
+    "signInGate": "同意した成人のための非公開のワークです。ログインすると取り組めます。",
+    "signIn": "ログイン",
+    "optInGate": "これはインティメイト領域の一部です。18歳以上、本人の有効化、メール認証が必要です。書いた内容は既定で非公開で、あなたが共有し相手も共有するまでパートナーには届きません。",
+    "enableIntimate": "インティメイトプロフィールを有効にする",
+    "stepN": "ステップ {{n}}",
+    "back": "戻る",
+    "next": "次へ",
+    "finish": "完了",
+    "sharing": "共有",
+    "noStepsYet": "まだ利用できるものはありません。明日またどうぞ。",
+    "lockedCount": "あと {{count}} 件",
+    "inOneDay": "明日",
+    "inNDays": "{{count}} 日後",
+    "backToSteps": "質問に戻る",
+    "discussFirst": "先に話し合う",
+    "menuUnavailable": "このリストは現在利用できません。",
+    "menuSharedWithChecklist": "これらの評価はあなたの興味と境界のリストです。/tools/checklist にも表示されます",
+    "menuVetoNote": "あなたの「ノー」とハードリミットは誰にも表示されません。該当項目をすべての比較から静かに外すだけです。",
+    "share": {
+      "title": "共有する内容",
+      "intro": "見せてもよい回答を選んでください。パートナーも自分の回答をあなたに共有するまで何も表示されず、どれでもいつでも解除できます。",
+      "yourAnswers": "あなたの回答",
+      "nOfM": "{{total}} 件中 {{shared}} 件を共有",
+      "nothingWritten": "まだ何も書かれていません。共有するものがありません。",
+      "toggleLabel": "「{{prompt}}」を共有",
+      "partner": "あなたのパートナー",
+      "noPartnerYet": "会話からこのワークを開くと相手と比較できます。上の共有設定はいずれの場合も保存されます。",
+      "statusActive": "お互いに共有済みです。比較が有効になりました。",
+      "statusWaiting": "あなたは共有しました。相手の共有を待っています。",
+      "statusTheirs": "相手があなたに共有しました。共有を返すと比較が見られます。",
+      "statusNone": "まだお互いに共有していません。",
+      "revoke": "共有をやめる",
+      "grant": "相手に共有する"
+    },
+    "compare": {
+      "empty": "まだ比較できるものはありません。",
+      "title": "並べて表示",
+      "menuRow": "評価済みリスト",
+      "menuNote": "評価済みリストの重なりは、別途共有する興味と境界の比較に表示されます。",
+      "openChecklist": "チェックリストを開く",
+      "you": "あなた",
+      "them": "相手"
+    }
+  },
+  "contributeForm": {
+    "unknownType": "不明な投稿タイプ",
+    "unknownBody": "投稿タイプ「{{type}}」には対応していません。",
+    "backHub": "情報提供に戻る",
+    "signInRequired": "ログインが必要です",
+    "authBody": "ディレクトリ情報を追加する前にログインしてください。ゲストはフォームを利用できません。",
+    "submittedBody": "{{type}}を送信しました。公開前に確認されます。",
+    "submitMore": "続けて投稿",
+    "submitAnother": "別の{{type}}を投稿",
+    "allSubmissions": "すべての投稿",
+    "submitType": "{{type}}を投稿",
+    "returnStep": "手順{{step}}に戻る",
+    "step": "手順{{step}}：{{label}}",
+    "fixErrors": "続行するには次の項目を修正してください：",
+    "cancel": "キャンセル",
+    "next": "次へ",
+    "types": {
+      "venue": "会場",
+      "event": "イベント",
+      "product": "商品",
+      "personality": "人物",
+      "hotel": "ホテル / BnB",
+      "tag": "タグ",
+      "news": "ニュース記事",
+      "place": "場所"
+    },
+    "steps": {
+      "basics": "基本情報",
+      "location": "場所",
+      "contact": "連絡先",
+      "when-where": "日時と場所",
+      "details": "詳細",
+      "suggest": "提案"
+    }
+  },
+  "contribute": {
+    "trigger": "Queer Guideに情報を提供",
+    "title": "Queer Guideに情報を提供",
+    "subtitle": "気づいたことを共有したり、掲載情報を修正したり、ガイドの充実にご協力ください。",
+    "eyebrow": "情報提供",
+    "common": {
+      "failed": "送信できませんでした",
+      "tryAgain": "もう一度お試しください。",
+      "done": "完了",
+      "emailOptional": "メール（任意）",
+      "emailPlaceholder": "確認のためご連絡する場合があります",
+      "back": "戻る",
+      "submitting": "送信中…",
+      "submit": "送信"
+    },
+    "chooser": {
+      "feedbackTitle": "問題やアイデアを報告",
+      "feedbackBody": "サイトや利用体験についてご意見をお寄せください。",
+      "correctionTitle": "このページを修正",
+      "correctionBody": "古い情報、閉店、誤りをお知らせください。",
+      "addTitle": "新しい情報を追加",
+      "addBody": "会場、イベント、商品、人物、記事を投稿できます。",
+      "scanTitle": "フライヤーやリンクをスキャン",
+      "scanBody": "ファイルやウェブページから複数の投稿を抽出します。",
+      "contactTitle": "チームに連絡",
+      "contactBody": "アカウントのサポート、提携、取材、その他の非公開メッセージ。"
+    },
+    "feedback": {
+      "heading": "問題を報告、またはアイデアを共有",
+      "successToast": "フィードバックを送信しました。ありがとうございます。",
+      "thanks": "ありがとうございます。",
+      "successBody": "ご意見はQueer Guideの改善に役立ちます。",
+      "category": "フィードバックの種類",
+      "categories": {
+        "safety": "安全とモデレーション",
+        "bug": "不具合の報告",
+        "idea": "アイデア",
+        "improvement": "改善",
+        "content-idea": "コンテンツ案"
+      },
+      "title": "タイトル",
+      "titlePlaceholder": "簡単な要約",
+      "description": "詳細",
+      "descriptionPlaceholder": "詳しく教えてください…",
+      "includeScreenshot": "このページのスクリーンショットを添付",
+      "screenshotPreview": "スクリーンショットのプレビュー",
+      "contextNote": "現在のURL、ブラウザ情報、最近のエラー、ネットワーク障害が自動で含まれます。"
+    },
+    "correction": {
+      "heading": "このページを修正",
+      "successToast": "修正案を送信しました。ありがとうございます。",
+      "thanks": "ありがとうございます。",
+      "successBody": "編集チームが修正内容を確認します。",
+      "thisPage": "このページ",
+      "wrong": "どこが間違っていますか？",
+      "replacement": "正しくはどのような内容ですか？"
+    },
+    "auth": {
+      "title": "ログインして情報を提供",
+      "body": "ディレクトリ情報の追加にはアカウントが必要です。",
+      "scanBody": "スキャンと投稿にはアカウントが必要です。",
+      "cta": "ログインまたはアカウント作成"
+    },
+    "add": {
+      "heading": "新しい情報を追加"
+    },
+    "scan": {
+      "heading": "フライヤーやリンクをスキャン",
+      "submitted": "{{count}}件を送信しました",
+      "linked": "{{count}}件を既存の項目に関連付けました",
+      "reviewNote": "投稿は公開前に確認されます。"
+    }
   }
 }

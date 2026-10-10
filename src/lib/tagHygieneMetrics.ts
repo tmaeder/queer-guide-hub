@@ -37,12 +37,6 @@ export const HYGIENE_METRICS: HygieneMetric[] = [
   { key: 'assignment_to_non_active_tag', label: 'Assignments to dead tags', zero: true },
   { key: 'dangling_category_id', label: 'Dangling category id', zero: true },
   { key: 'nonclean_entity_type', label: 'Unnormalized entity_type', zero: true },
-  {
-    key: 'active_tags_with_image_url',
-    label: 'Photos on active tags',
-    zero: true,
-    hint: 'Glossary photography retired 2026-08-28 (tags render drawn TagPlates). Non-zero means a writer is reintroducing photos.',
-  },
   { key: 'indexable_without_description', label: 'Indexable, no prose', zero: true },
   {
     key: 'indexable_marketplace_facet',
@@ -89,6 +83,19 @@ export const HYGIENE_METRICS: HygieneMetric[] = [
   },
 
   // Advisory: CI warns, never fails. This panel is their only human surface.
+  {
+    key: 'active_tags_with_image_url',
+    label: 'Photos on active tags',
+    advisory: true,
+    // The one entry here that is NOT a defect count. Glossary photography was
+    // retired 2026-08-28 and re-introduced 2026-10-10 under a write-time
+    // contract, so this is COVERAGE and is meant to grow; read it as progress,
+    // not as a backlog. It is advisory for the class-(b) reason — publishing and
+    // retracting a figure both move it — and because the invariants the old
+    // zero-gate stood in for are structural now, which is exactly the lever
+    // `_advisory`'s own note prescribes instead of gating on a level.
+    hint: 'Coverage, not a defect count — glossary photography returned 2026-10-10 and this figure is meant to grow. The real invariants are enforced at write time by zz_enforce_tag_image_contract (licensed, attributed, alt-texted, https, known source, no stock on adult/sensitive tags, explicit implies is_adult) and by tag_cover_one_tag_uniq (one asset, one page). Residue is hard-gated via tag_image_signals() in check-pipeline-health.mjs.',
+  },
   {
     key: 'redirect_to_non_canonical',
     label: 'Redirects to non-canonical',
@@ -176,6 +183,12 @@ export const HYGIENE_METRICS: HygieneMetric[] = [
     label: 'Active names containing #',
     zero: true,
     hint: 'A scraped hashtag concatenation promoted into vocabulary, e.g. "Pulse #Mordopfer #Hassverbrechen". Zero-invariant: authored tags do not carry hashtags.',
+  },
+  {
+    key: 'junk_token_name_active',
+    label: 'Junk token names',
+    zero: true,
+    hint: 'A single letter, a title-cased two-letter locale code (`gb` → `Gb`) or a filter-UI stopword published as a glossary term — the cohort 99991791619649 deprecated (All on 2,643 rows, Us, No, Gb, A, R, B). Zero-invariant: this class has no legitimate source, so unlike uncategorized_active it does not oscillate. Excludes entity_kind=attribute, because the marketplace size facets ARE the letters L, M and S at ~20,000 uses each; an all-caps two-letter name is accepted so real acronyms (TV, DJ) pass. Deliberately NOT conditioned on missing prose — A, R and B all carry prose about the alphabet, so that condition would have read zero while all three were live.',
   },
   {
     key: 'non_latin_name',

@@ -2,9 +2,7 @@ import { Link } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { X, MapPin, Calendar, Star, Luggage, Map as MapIcon, ExternalLink } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { useState } from 'react';
-import { useAuth } from '@/hooks/useAuth';
-import { AddToTripDialog } from '@/components/trips/AddToTripDialog';
+import { TripAction } from '@/components/trips/TripAction';
 import { rangesOverlap } from '@/components/trips/tripOverlap';
 import { useActiveTrip } from '@/hooks/useActiveTrip';
 import { useEventProgramme } from '@/hooks/useEventProgramme';
@@ -39,9 +37,7 @@ function daysFromNow(iso: string): number {
 
 export function PrideSpotlight({ event, onDismiss, onOpenMap }: PrideSpotlightProps) {
   const { t } = useTranslation();
-  const { user } = useAuth();
   const { activeTrip } = useActiveTrip();
-  const [dialogOpen, setDialogOpen] = useState(false);
   const { data: programme } = useEventProgramme(event.id);
   const programmeChildren = programme?.children ?? [];
 
@@ -75,7 +71,7 @@ export function PrideSpotlight({ event, onDismiss, onOpenMap }: PrideSpotlightPr
           type="button"
           onClick={onDismiss}
           aria-label={t('pride.spotlight.dismiss')}
-          className="absolute right-3 top-3 z-10 inline-flex items-center justify-center size-8 min-h-0 min-w-0 rounded-element hover:bg-muted"
+          className="absolute right-3 top-3 z-10 inline-flex size-11 items-center justify-center rounded-element hover:bg-muted"
         >
           <X className="size-4" />
         </button>
@@ -132,7 +128,10 @@ export function PrideSpotlight({ event, onDismiss, onOpenMap }: PrideSpotlightPr
           </span>
         </div>
 
-        <ProgrammeSummary entries={programmeChildren} className="block text-13 text-foreground/70" />
+        <ProgrammeSummary
+          entries={programmeChildren}
+          className="block text-13 text-foreground/70"
+        />
 
         {event.description && (
           <p className="text-body-lg text-foreground/80 max-w-prose">{event.description}</p>
@@ -154,10 +153,21 @@ export function PrideSpotlight({ event, onDismiss, onOpenMap }: PrideSpotlightPr
               <ExternalLink className="size-3.5 ml-1.5" />
             </Link>
           </Button>
-          <Button variant="outline" disabled={!user} onClick={() => setDialogOpen(true)}>
-            <Luggage className="size-3.5 mr-1.5" />
-            {user ? t('pride.spotlight.addToTrip') : t('pride.spotlight.signInToAdd')}
-          </Button>
+          <TripAction
+            intent={{
+              kind: 'add_entity',
+              entity: {
+                type: 'event',
+                id: event.id,
+                name: event.title,
+                city_id: event.city_id ?? null,
+                country_id: event.country_id ?? null,
+                category: 'pride',
+              },
+            }}
+            source="pride-spotlight"
+            variant="card"
+          />
           {onOpenMap && (
             <Button variant="outline" onClick={onOpenMap}>
               <MapIcon className="size-3.5 mr-1.5" />
@@ -173,12 +183,6 @@ export function PrideSpotlight({ event, onDismiss, onOpenMap }: PrideSpotlightPr
           )}
         </div>
       </div>
-
-      <AddToTripDialog
-        open={dialogOpen}
-        onClose={() => setDialogOpen(false)}
-        entity={{ type: 'event', id: event.id, name: event.title }}
-      />
     </article>
   );
 }

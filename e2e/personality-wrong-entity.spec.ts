@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { anonHeaders, SUPABASE_REST_URL } from './support/anonKey';
 
 // A personality page must not publish a different named person's biography.
 //
@@ -97,9 +98,29 @@ test.describe('personality pages do not publish another person as an adult perfo
   test('CONTROL: an untouched personality is still served with its description', async ({
     request,
   }) => {
-    const { status, html, meta } = await crawl(request, 'jack-wrangler');
-    expect(status, 'the crawler path must be alive').toBe(200);
-    expect(html, 'control page must render its subject').toMatch(/Jack Wrangler/i);
+    // THE SUBJECT IS DERIVED, NOT NAMED. It used to be `jack-wrangler`, which is now
+    // `visibility='draft'` — so the crawler 404s it, correctly: a draft personality must
+    // not reach a bot (that is its own guarded invariant). The control was reporting that
+    // correct behaviour as a dead crawler path.
+    //
+    // Only 2,141 of 16,592 personalities are `public`, and which ones is editorial and
+    // moves. So ask the registry for one that is public, indexable and has prose, and
+    // control on that. The control's job — "every assertion below is satisfied by a dead
+    // site; this one is not" — is unchanged and now cannot rot.
+    const headers = await anonHeaders(request);
+    const pick = await request.get(
+      `${SUPABASE_REST_URL}/rest/v1/personalities` +
+        `?visibility=eq.public&seo_indexable=is.true&duplicate_of_id=is.null` +
+        `&description=not.is.null&select=slug,name&limit=1`,
+      { headers },
+    );
+    expect(pick.ok(), 'could not read a published personality from the registry').toBe(true);
+    const live = (await pick.json()) as Array<{ slug: string; name: string }>;
+    expect(live.length, 'NO personality is public and indexable at all').toBe(1);
+
+    const { status, html, meta } = await crawl(request, live[0].slug);
+    expect(status, `the crawler path must be alive (/${live[0].slug})`).toBe(200);
+    expect(html, 'control page must render its subject').toContain(live[0].name);
     expect(
       meta.trim().length,
       'control still needs a description — a repair that blanked the whole table must fail here',

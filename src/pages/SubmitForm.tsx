@@ -5,13 +5,14 @@
 
 import { useParams, useLocation } from 'react-router';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
-import { useMemo, useState, useEffect, useRef, useCallback } from 'react';
+import { useMemo, useEffect, useRef, useCallback, type ReactNode } from 'react';
 import { Controller } from 'react-hook-form';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { submissionRegistry } from '@/config/submissionRegistry';
 import { contentTypeRegistry } from '@/config/contentTypeRegistry';
+import { placeSubmissionContentType } from '@/config/contentTypes/place';
 import { useSubmission } from '@/hooks/useSubmission';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
@@ -23,15 +24,26 @@ import { SeriesCarryover } from '@/components/submission/SeriesCarryover';
 import { useEventSeries, cloneFieldsFromEdition } from '@/hooks/submission/useEventSeries';
 import { EventSeriesFields } from '@/components/submission/EventSeriesFields';
 import { ArrowLeft, ArrowRight, CheckCircle, Send } from 'lucide-react';
-import { useTranslation } from 'react-i18next';
 import { useEventTypeOptions } from '@/lib/eventTypes';
 import { PageContainer } from '@/components/layout/PageContainer';
+import { useTranslation } from 'react-i18next';
 
-const SubmitForm = ({ contentType: contentTypeProp }: { contentType?: string } = {}) => {
-  const { _t } = useTranslation();
+interface SubmitFormProps {
+  contentType?: string;
+  embedded?: boolean;
+  onBack?: () => void;
+}
+
+const SubmitForm = ({
+  contentType: contentTypeProp,
+  embedded = false,
+  onBack,
+}: SubmitFormProps = {}) => {
   const { contentType: paramContentType } = useParams<{ contentType: string }>();
   const location = useLocation();
   const navigate = useLocalizedNavigate();
+  const { user } = useAuth();
+  const { t } = useTranslation();
   // Resolve the submission type. Static `submit/<slug>` routes pass it as a
   // prop and carry no :contentType param; the dynamic `submit/:contentType`
   // route supplies it via useParams. Prefer the explicit prop, then the URL
@@ -46,30 +58,67 @@ const SubmitForm = ({ contentType: contentTypeProp }: { contentType?: string } =
   // Unknown type fallback
   if (!config) {
     return (
-      <PageContainer className="text-center">
-        <h5 className="text-xl font-semibold mb-2">Unknown submission type</h5>
+      <SubmitFormLayout embedded={embedded} className="text-center">
+        <h5 className="text-xl font-semibold mb-2">
+          {t('contributeForm.unknownType', 'Unknown submission type')}
+        </h5>
         <p className="text-muted-foreground mb-4">
-          The submission type "{contentType}" is not supported.
+          {t('contributeForm.unknownBody', 'The submission type "{{type}}" is not supported.', {
+            type: contentType,
+          })}
         </p>
-        <Button onClick={() => navigate('/submit')}>Back to Hub</Button>
-      </PageContainer>
+        <Button onClick={() => navigate('/submit')}>
+          {t('contributeForm.backHub', 'Back to contributions')}
+        </Button>
+      </SubmitFormLayout>
     );
   }
 
-  return <SubmitFormInner config={config} />;
+  if (!user) {
+    return (
+      <SubmitFormLayout embedded={embedded}>
+        <Card role="status">
+          <CardContent className="pt-6">
+            <p className="font-semibold">
+              {t('contributeForm.signInRequired', 'Sign in required')}
+            </p>
+            <p className="mt-2 text-sm text-muted-foreground">
+              {t(
+                'contributeForm.authBody',
+                'Sign in before adding directory content. The form is unavailable to guests.',
+              )}
+            </p>
+            <div className="mt-6 flex gap-4">
+              <Button variant="outline" onClick={onBack ?? (() => navigate('/submit'))}>
+                <ArrowLeft className="h-4 w-4" /> {t('contribute.common.back', 'Back')}
+              </Button>
+              <Button onClick={() => navigate('/auth')}>
+                {t('contribute.auth.cta', 'Sign in or create an account')}
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </SubmitFormLayout>
+    );
+  }
+
+  return <SubmitFormInner config={config} embedded={embedded} onBack={onBack} />;
 };
 
 // ── Inner form component (only renders when config is valid) ──────
 
 interface SubmitFormInnerProps {
   config: NonNullable<(typeof submissionRegistry)[string]>;
+  embedded: boolean;
+  onBack?: () => void;
 }
 
-function SubmitFormInner({ config }: SubmitFormInnerProps) {
+function SubmitFormInner({ config, embedded, onBack }: SubmitFormInnerProps) {
   const navigate = useLocalizedNavigate();
-  const location = useLocation();
-  const { user } = useAuth();
-  const contentConfig = contentTypeRegistry[config.contentType];
+  const { t } = useTranslation();
+  const contentConfig =
+    contentTypeRegistry[config.contentType] ??
+    (config.id === 'place' ? placeSubmissionContentType : undefined);
 
   const {
     data,
@@ -89,22 +138,6 @@ function SubmitFormInner({ config }: SubmitFormInnerProps) {
     setHoneypot,
     control,
   } = useSubmission(config);
-
-  // Arriving with prefill (e.g. from a hub scan) → render a single review screen instead
-  // of walking the multi-step wizard. Captured once on mount before the state is cleared.
-  const [reviewMode] = useState(
-    () => !!(location.state as { prefill?: Record<string, unknown> } | null)?.prefill,
-  );
-
-  // Apply prefill data from navigation state (scan results from the hub)
-  useEffect(() => {
-    const state = location.state as { prefill?: Record<string, unknown> } | null;
-    if (state?.prefill) {
-      setFields(state.prefill);
-      // Clear the state so it doesn't re-apply on re-renders
-      window.history.replaceState({}, '');
-    }
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Auto-detect city from title — when title contains a known city name, pre-fill city field
   const titleField = config.titleField; // 'title' for events, 'name' for venues
@@ -180,76 +213,67 @@ function SubmitFormInner({ config }: SubmitFormInnerProps) {
     [currentStepConfig, resolveFields],
   );
 
-  // All fields grouped by step (review mode)
-  const reviewSections = useMemo(
-    () => config.steps.map((step) => ({ label: step.label, fields: resolveFields(step.fields) })),
-    [config.steps, resolveFields],
-  );
-
   // ── Success screen ─────────────────────────────────────────────
 
   if (isSubmitted) {
+    const typeLabel = t(`contributeForm.types.${config.id}`, config.label);
     return (
-      <PageContainer>
+      <SubmitFormLayout embedded={embedded}>
         <Card>
           <CardContent>
             <CheckCircle size={48} style={{ margin: '0 auto 16px' }} className="text-foreground" />
-            <h5 className="text-xl font-semibold mb-2">Thank you!</h5>
+            <h5 className="text-xl font-semibold mb-2">
+              {t('contribute.feedback.thanks', 'Thank you!')}
+            </h5>
             <p className="text-muted-foreground mb-6">
-              Your {config.label.toLowerCase()} has been submitted and will be reviewed by our team.
-              It will appear on the site once approved.
+              {t(
+                'contributeForm.submittedBody',
+                'Your {{type}} has been submitted and will be reviewed before publishing.',
+                { type: typeLabel.toLocaleLowerCase() },
+              )}
             </p>
             <div className="flex justify-center gap-4">
-              <Button onClick={() => navigate('/submit')}>Submit More</Button>
+              <Button onClick={onBack ?? (() => navigate('/submit'))}>
+                {t('contributeForm.submitMore', 'Submit more')}
+              </Button>
               <Button variant="outline" onClick={reset}>
-                Submit Another {config.label}
+                {t('contributeForm.submitAnother', 'Submit another {{type}}', {
+                  type: typeLabel,
+                })}
               </Button>
             </div>
           </CardContent>
         </Card>
-      </PageContainer>
+      </SubmitFormLayout>
     );
   }
 
   const Icon = config.icon;
+  const typeLabel = t(`contributeForm.types.${config.id}`, config.label);
 
   return (
-    <PageContainer>
+    <SubmitFormLayout embedded={embedded}>
       {/* Back button */}
       <Button
         variant="ghost"
         size="sm"
-        onClick={() => navigate('/submit')}
+        onClick={onBack ?? (() => navigate('/submit'))}
         className="mb-4 flex items-center gap-2"
       >
         <ArrowLeft className="w-4 h-4" />
-        All Submissions
+        {t('contributeForm.allSubmissions', 'All submissions')}
       </Button>
 
       {/* Header */}
       <div className="flex items-center gap-4 mb-2">
         <Icon className="text-foreground" style={{ width: 28, height: 28 }} />
-        <h4 className="text-3xl font-bold">Submit {config.label}</h4>
+        <h4 className="text-3xl font-bold">
+          {t('contributeForm.submitType', 'Submit {{type}}', { type: typeLabel })}
+        </h4>
       </div>
-      <p className="text-muted-foreground mb-6">{config.description}</p>
-
-      {/* Auth gate */}
-      {!user && (
-        <Card id="submit-auth-hint" role="status">
-          <CardContent>
-            <p className="text-sm mb-2">
-              <strong>Sign in required.</strong> You can fill out the form now, but you'll need an
-              account to submit.
-            </p>
-            <Button size="sm" onClick={() => navigate('/auth')}>
-              Sign in or create an account
-            </Button>
-          </CardContent>
-        </Card>
-      )}
 
       {/* Series carry-over (events) + non-blocking duplicate warning on the first step */}
-      {!reviewMode && currentStep === 0 && (
+      {currentStep === 0 && (
         <>
           <SeriesCarryover
             editions={previousEditions}
@@ -263,8 +287,8 @@ function SubmitFormInner({ config }: SubmitFormInnerProps) {
         </>
       )}
 
-      {/* Step indicator (only for multi-step forms, hidden in review mode) */}
-      {!reviewMode && totalSteps > 1 && (
+      {/* Step indicator */}
+      {totalSteps > 1 && (
         <div className="flex items-center gap-2 mb-6">
           {config.steps.map((step, i) => (
             <div
@@ -288,7 +312,11 @@ function SubmitFormInner({ config }: SubmitFormInnerProps) {
                 }
                 role={i < currentStep ? 'button' : undefined}
                 tabIndex={i < currentStep ? 0 : undefined}
-                aria-label={i < currentStep ? `Return to step ${i + 1}` : undefined}
+                aria-label={
+                  i < currentStep
+                    ? t('contributeForm.returnStep', 'Return to step {{step}}', { step: i + 1 })
+                    : undefined
+                }
                 className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-semibold transition-all flex-shrink-0"
                 style={{
                   cursor: i < currentStep ? 'pointer' : 'default',
@@ -316,7 +344,7 @@ function SubmitFormInner({ config }: SubmitFormInnerProps) {
                     : 'font-normal text-muted-foreground'
                 }`}
               >
-                {step.label}
+                {t(`contributeForm.steps.${step.id}`, step.label)}
               </span>
 
               {/* Connector line */}
@@ -345,267 +373,177 @@ function SubmitFormInner({ config }: SubmitFormInnerProps) {
         {stepAnnouncement}
       </div>
 
-      {/* Review mode — single screen, all sections, one Submit (arrives prefilled from scan) */}
-      {reviewMode && (
-        <>
-          <DuplicateWarning
-            submissionTypeId={config.id}
-            typeLabel={config.label}
-            matches={duplicateMatches}
-          />
-          <Card>
-            <CardContent>
-              <p className="text-sm text-muted-foreground mb-6">
-                We pre-filled this from your scan. Check the details, fix anything that looks off,
-                then submit.
+      <Card>
+        <CardContent>
+          <form
+            noValidate
+            onSubmit={async (e) => {
+              e.preventDefault();
+              if (isLastStep) {
+                submit();
+                return;
+              }
+              const result = await nextStep();
+              if (!result.ok && result.firstInvalid) {
+                requestAnimationFrame(() => {
+                  const el = document.getElementById(result.firstInvalid as string);
+                  if (el) {
+                    (el as HTMLElement).focus();
+                    el.scrollIntoView({ block: 'center', behavior: 'smooth' });
+                  }
+                });
+              }
+            }}
+          >
+            {/* Honeypot — hidden from real users */}
+            <div className="absolute -left-[9999px] opacity-0 h-0 overflow-hidden">
+              <Input
+                tabIndex={-1}
+                autoComplete="off"
+                value={honeypot}
+                onChange={(e) => setHoneypot(e.target.value)}
+              />
+            </div>
+
+            {/* Step label */}
+            {totalSteps > 1 && (
+              <p className="text-sm font-semibold mb-4 text-foreground">
+                {t('contributeForm.step', 'Step {{step}}: {{label}}', {
+                  step: currentStep + 1,
+                  label: currentStepConfig
+                    ? t(`contributeForm.steps.${currentStepConfig.id}`, currentStepConfig.label)
+                    : '',
+                })}
               </p>
-              <form
-                noValidate
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  submit();
-                }}
-              >
-                {/* Honeypot — hidden from real users */}
-                <div className="absolute -left-[9999px] opacity-0 h-0 overflow-hidden">
-                  <Input
-                    tabIndex={-1}
-                    autoComplete="off"
-                    value={honeypot}
-                    onChange={(e) => setHoneypot(e.target.value)}
+            )}
+
+            {/* Error summary — lists fields that need fixing on this step */}
+            {(() => {
+              const stepErrors = stepFields
+                .map((f) => ({ name: f.name, label: f.label, message: errors[f.name] }))
+                .filter((e) => !!e.message);
+              if (stepErrors.length === 0) return null;
+              return (
+                <div
+                  role="alert"
+                  aria-live="polite"
+                  className="mb-4 rounded-container p-4 shadow-soft"
+                  style={{
+                    backgroundColor: 'hsl(var(--destructive) / 0.08)',
+                  }}
+                >
+                  <p className="text-sm font-semibold mb-1 text-destructive">
+                    {t('contributeForm.fixErrors', 'Please fix the following to continue:')}
+                  </p>
+                  <ul className="m-0 pl-4">
+                    {stepErrors.map((e) => (
+                      <li key={e.name}>
+                        <a
+                          href={`#${e.name}`}
+                          onClick={(ev: React.MouseEvent) => {
+                            ev.preventDefault();
+                            const el = document.getElementById(e.name);
+                            if (el) {
+                              (el as HTMLElement).focus();
+                              el.scrollIntoView({ block: 'center', behavior: 'smooth' });
+                            }
+                          }}
+                          className="text-destructive underline cursor-pointer"
+                        >
+                          {e.label}: {e.message}
+                        </a>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              );
+            })()}
+
+            {/* Live region for step announcements (a11y) */}
+            <div role="status" aria-live="polite" className="sr-only">
+              {stepAnnouncement}
+            </div>
+
+            {/* Fields */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+              {stepFields.map((fieldConfig) => (
+                <div
+                  key={fieldConfig.name}
+                  style={{ gridColumn: fieldConfig.colSpan === 2 ? '1 / -1' : undefined }}
+                >
+                  <Controller
+                    control={control}
+                    name={fieldConfig.name}
+                    render={({ field, fieldState }) => (
+                      <FieldRenderer
+                        field={fieldConfig}
+                        value={field.value ?? ''}
+                        onChange={(val) => field.onChange(val)}
+                        error={fieldState.error?.message ?? errors[fieldConfig.name]}
+                        setFields={setFields}
+                        allValues={data}
+                      />
+                    )}
                   />
                 </div>
+              ))}
+            </div>
 
-                {reviewSections.map((section) =>
-                  section.fields.length === 0 ? null : (
-                    <fieldset key={section.label} className="mb-8 border-0 p-0 m-0">
-                      <legend className="text-sm font-semibold mb-4 text-foreground">
-                        {section.label}
-                      </legend>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                        {section.fields.map((fieldConfig) => (
-                          <div
-                            key={fieldConfig.name}
-                            style={{ gridColumn: fieldConfig.colSpan === 2 ? '1 / -1' : undefined }}
-                          >
-                            <Controller
-                              control={control}
-                              name={fieldConfig.name}
-                              render={({ field, fieldState }) => (
-                                <FieldRenderer
-                                  field={fieldConfig}
-                                  value={field.value ?? ''}
-                                  onChange={(val) => field.onChange(val)}
-                                  error={fieldState.error?.message ?? errors[fieldConfig.name]}
-                                  setFields={setFields}
-                                  allValues={data}
-                                />
-                              )}
-                            />
-                          </div>
-                        ))}
-                      </div>
-                    </fieldset>
-                  ),
+            {/* Event recurrence + festival grouping (on the When & Where step) */}
+            {config.id === 'event' && currentStepConfig?.id === 'when-where' && (
+              <div className="mt-8 pt-6">
+                <EventSeriesFields data={data} setFields={setFields} />
+              </div>
+            )}
+
+            {/* Navigation buttons */}
+            <div className="flex justify-between mt-6 gap-4">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={currentStep === 0 ? (onBack ?? (() => navigate('/submit'))) : prevStep}
+                className="flex items-center gap-1.5"
+              >
+                <ArrowLeft className="w-4 h-4" />
+                {currentStep === 0
+                  ? t('contributeForm.cancel', 'Cancel')
+                  : t('contribute.common.back', 'Back')}
+              </Button>
+
+              <Button type="submit" disabled={isSubmitting} className="flex items-center gap-1.5">
+                {isSubmitting ? (
+                  t('contribute.common.submitting', 'Submitting…')
+                ) : isLastStep ? (
+                  <>
+                    {t('contribute.common.submit', 'Submit')} <Send className="w-3.5 h-3.5" />
+                  </>
+                ) : (
+                  <>
+                    {t('contributeForm.next', 'Next')} <ArrowRight className="w-3.5 h-3.5" />
+                  </>
                 )}
+              </Button>
+            </div>
+          </form>
+        </CardContent>
+      </Card>
+    </SubmitFormLayout>
+  );
+}
 
-                {/* Event recurrence + festival grouping */}
-                {config.id === 'event' && (
-                  <fieldset className="mb-8 border-0 p-0 m-0">
-                    <legend className="text-sm font-semibold mb-4 text-foreground">
-                      Series & recurrence
-                    </legend>
-                    <EventSeriesFields data={data} setFields={setFields} />
-                  </fieldset>
-                )}
-
-                <div className="flex justify-between mt-6 gap-4">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => navigate('/submit')}
-                    className="flex items-center gap-1.5"
-                  >
-                    <ArrowLeft className="w-4 h-4" />
-                    Cancel
-                  </Button>
-                  <Button
-                    type="submit"
-                    disabled={isSubmitting}
-                    aria-describedby={!user ? 'submit-auth-hint' : undefined}
-                    className="flex items-center gap-1.5"
-                  >
-                    {isSubmitting ? (
-                      'Submitting...'
-                    ) : (
-                      <>
-                        Submit <Send className="w-3.5 h-3.5" />
-                      </>
-                    )}
-                  </Button>
-                </div>
-              </form>
-            </CardContent>
-          </Card>
-        </>
-      )}
-
-      {/* Form card (wizard mode) */}
-      {!reviewMode && (
-        <Card>
-          <CardContent>
-            <form
-              noValidate
-              onSubmit={async (e) => {
-                e.preventDefault();
-                if (isLastStep) {
-                  submit();
-                  return;
-                }
-                const result = await nextStep();
-                if (!result.ok && result.firstInvalid) {
-                  requestAnimationFrame(() => {
-                    const el = document.getElementById(result.firstInvalid as string);
-                    if (el) {
-                      (el as HTMLElement).focus();
-                      el.scrollIntoView({ block: 'center', behavior: 'smooth' });
-                    }
-                  });
-                }
-              }}
-            >
-              {/* Honeypot — hidden from real users */}
-              <div className="absolute -left-[9999px] opacity-0 h-0 overflow-hidden">
-                <Input
-                  tabIndex={-1}
-                  autoComplete="off"
-                  value={honeypot}
-                  onChange={(e) => setHoneypot(e.target.value)}
-                />
-              </div>
-
-              {/* Step label */}
-              {totalSteps > 1 && (
-                <p className="text-sm font-semibold mb-4 text-foreground">
-                  Step {currentStep + 1}: {currentStepConfig?.label}
-                </p>
-              )}
-
-              {/* Error summary — lists fields that need fixing on this step */}
-              {(() => {
-                const stepErrors = stepFields
-                  .map((f) => ({ name: f.name, label: f.label, message: errors[f.name] }))
-                  .filter((e) => !!e.message);
-                if (stepErrors.length === 0) return null;
-                return (
-                  <div
-                    role="alert"
-                    aria-live="polite"
-                    className="mb-4 rounded-container p-4 shadow-soft"
-                    style={{
-                      backgroundColor: 'hsl(var(--destructive) / 0.08)',
-                    }}
-                  >
-                    <p className="text-sm font-semibold mb-1 text-destructive">
-                      Please fix the following to continue:
-                    </p>
-                    <ul className="m-0 pl-4">
-                      {stepErrors.map((e) => (
-                        <li key={e.name}>
-                          <a
-                            href={`#${e.name}`}
-                            onClick={(ev: React.MouseEvent) => {
-                              ev.preventDefault();
-                              const el = document.getElementById(e.name);
-                              if (el) {
-                                (el as HTMLElement).focus();
-                                el.scrollIntoView({ block: 'center', behavior: 'smooth' });
-                              }
-                            }}
-                            className="text-destructive underline cursor-pointer"
-                          >
-                            {e.label}: {e.message}
-                          </a>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                );
-              })()}
-
-              {/* Live region for step announcements (a11y) */}
-              <div role="status" aria-live="polite" className="sr-only">
-                {stepAnnouncement}
-              </div>
-
-              {/* Fields */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                {stepFields.map((fieldConfig) => (
-                  <div
-                    key={fieldConfig.name}
-                    style={{ gridColumn: fieldConfig.colSpan === 2 ? '1 / -1' : undefined }}
-                  >
-                    <Controller
-                      control={control}
-                      name={fieldConfig.name}
-                      render={({ field, fieldState }) => (
-                        <FieldRenderer
-                          field={fieldConfig}
-                          value={field.value ?? ''}
-                          onChange={(val) => field.onChange(val)}
-                          error={fieldState.error?.message ?? errors[fieldConfig.name]}
-                          setFields={setFields}
-                          allValues={data}
-                        />
-                      )}
-                    />
-                  </div>
-                ))}
-              </div>
-
-              {/* Event recurrence + festival grouping (on the When & Where step) */}
-              {config.id === 'event' && currentStepConfig?.id === 'when-where' && (
-                <div className="mt-8 pt-6">
-                  <EventSeriesFields data={data} setFields={setFields} />
-                </div>
-              )}
-
-              {/* Navigation buttons */}
-              <div className="flex justify-between mt-6 gap-4">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={currentStep === 0 ? () => navigate('/submit') : prevStep}
-                  className="flex items-center gap-1.5"
-                >
-                  <ArrowLeft className="w-4 h-4" />
-                  {currentStep === 0 ? 'Cancel' : 'Back'}
-                </Button>
-
-                <Button
-                  type="submit"
-                  disabled={isSubmitting}
-                  aria-describedby={!user && isLastStep ? 'submit-auth-hint' : undefined}
-                  className="flex items-center gap-1.5"
-                >
-                  {isSubmitting ? (
-                    'Submitting...'
-                  ) : isLastStep ? (
-                    <>
-                      Submit <Send className="w-3.5 h-3.5" />
-                    </>
-                  ) : (
-                    <>
-                      Next <ArrowRight className="w-3.5 h-3.5" />
-                    </>
-                  )}
-                </Button>
-              </div>
-            </form>
-          </CardContent>
-        </Card>
-      )}
-    </PageContainer>
+function SubmitFormLayout({
+  embedded,
+  className,
+  children,
+}: {
+  embedded: boolean;
+  className?: string;
+  children: ReactNode;
+}) {
+  return embedded ? (
+    <div className={className}>{children}</div>
+  ) : (
+    <PageContainer className={className}>{children}</PageContainer>
   );
 }
 

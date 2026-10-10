@@ -174,7 +174,7 @@ export function MapNotice({
             type="button"
             aria-label={t('map.firstRun.dismiss', { defaultValue: 'Dismiss' })}
             onClick={dismiss}
-            className="inline-flex h-6 w-6 items-center justify-center text-muted-foreground hover:bg-muted hover:text-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset"
+            className="inline-flex h-6 w-6 min-h-11 min-w-11 items-center justify-center text-muted-foreground hover:bg-muted hover:text-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset"
           >
             <X className="h-3.5 w-3.5" aria-hidden />
           </button>

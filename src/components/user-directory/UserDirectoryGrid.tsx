@@ -229,7 +229,7 @@ export const UserDirectoryGrid = ({
                         <StartConversationButton
                           userId={profile.user_id}
                           userName={profile.display_name || 'Anonymous member'}
-                          variant="outline"
+                          variant="soft"
                           size="sm"
                         />
                       </div>
@@ -269,7 +269,7 @@ export const UserDirectoryGrid = ({
               </p>
             </div>
             {(filters.searchQuery || activeFiltersCount > 0) && (
-              <Button variant="outline" onClick={clearAllFilters} className="gap-2">
+              <Button variant="soft" onClick={clearAllFilters} className="gap-2">
                 <X size={16} />
                 Clear all filters
               </Button>

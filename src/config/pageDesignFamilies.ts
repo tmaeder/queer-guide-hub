@@ -172,12 +172,16 @@ export function pageDesignFamilyForModule(modulePath: string): PageDesignFamily 
   if (['Auth', 'AuthCallback', 'ClaimUsername', 'ResetPassword', 'Settings'].includes(name)) {
     return 'account';
   }
-  if (['Community', 'GroupDetail', 'GroupInviteAccept', 'Groups'].includes(name)) {
+  if (['Community', 'Cruising', 'GroupDetail', 'GroupInviteAccept', 'Groups'].includes(name)) {
     return 'community';
   }
   if (['Map', 'Pride', 'Travel'].includes(name)) return 'travel';
-  if (['SearchResults'].includes(name)) return 'discovery';
-  if (['SubmitForm', 'SubmitHub'].includes(name)) return 'submission';
+  // `Cruising` is map-led but is NOT travel: it is the authenticated people +
+  // spots discovery surface that /hub/dating, /intimate and /discover all
+  // redirect into, so it takes the Discovery template alongside SearchResults
+  // and ./pages/explore/ rather than the Travel one Map uses.
+  if (['SearchResults', 'Cruising'].includes(name)) return 'discovery';
+  if (['SubmitForm', 'ContributePage'].includes(name)) return 'submission';
 
   return null;
 }

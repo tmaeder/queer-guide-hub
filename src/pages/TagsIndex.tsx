@@ -13,7 +13,7 @@
  * /organizations own it as they already did.
  *
  * Structure:
- *   masthead → ink scale-board → [taxonomy rail | spine + A–Z + results]
+ *   compact masthead → [taxonomy rail | spine + A–Z + definitions]
  *   → end of line
  *
  * Two things worth knowing before editing:
@@ -36,10 +36,10 @@ import { useCentralizedTags, useTagUsageCounts } from '@/hooks/useCentralizedTag
 import type { CategoryTreeNode, CentralizedTag } from '@/hooks/useCentralizedTags';
 import { useTagAliasSearch } from '@/hooks/useTagAliasSearch';
 import { useSafeMode } from '@/providers/SafeModeProvider';
+import { useAgeAffirmation } from '@/hooks/useAgeAffirmation';
 import { useMeta } from '@/hooks/useMeta';
 import { PageContainer, STICKY_RAIL_UNDER_HEADER } from '@/components/layout/PageContainer';
 import { cn } from '@/lib/utils';
-import { Eyebrow } from '@/components/ui/Eyebrow';
 import { RouteBullet } from '@/components/transit/RouteBullet';
 import { TrackLoader } from '@/components/transit/TrackLoader';
 import { getCategoryShortName, parentOrder } from '@/components/resources/categoryMeta';
@@ -86,6 +86,7 @@ export default function TagsIndex() {
   const { allTags, categoriesTree, loading, error } = useCentralizedTags();
   const { data: usageCounts = {} } = useTagUsageCounts();
   const safeMode = useSafeMode();
+  const { affirm } = useAgeAffirmation();
 
   // ── URL state ───────────────────────────────────────────────────────────
   const resolveCategorySlug = useCallback(
@@ -145,20 +146,23 @@ export default function TagsIndex() {
   // each time and cannot be a dependency without making `patch` unstable (and
   // `JSON.stringify(state)` is not a dependency expression the lint rule
   // accepts). A ref is the honest version: the callback identity never changes,
-  // and it always reads the current state at call time.
+  // and it always reads the current state at call time. Event handlers also
+  // advance the ref immediately: URL navigation may not commit before the
+  // next input event, and a rapid search must keep the kind just selected.
   // Written in an effect, never during render: a render-phase ref write makes
   // the React Compiler bail out of optimizing this whole component (it reported
   // both `react-hooks/refs` and, downstream, `preserve-manual-memoization` on
-  // the `scope` memo below). `patch` only ever runs from an event handler, by
-  // which point every effect for the render the reader is looking at has
-  // flushed — so the value it reads is the same one it read before.
+  // the `scope` memo below). The effect reconciles navigation and Back/Forward;
+  // event-phase writes retain pending changes between router commits.
   const stateRef = useRef(state);
   useEffect(() => {
     stateRef.current = state;
   });
   const patch = useCallback(
     (next: Partial<TagsIndexState>) => {
-      setSearchParams((prev) => applyTagsParams(prev, { ...stateRef.current, ...next }), {
+      const merged = { ...stateRef.current, ...next };
+      stateRef.current = merged;
+      setSearchParams((prev) => applyTagsParams(prev, merged), {
         replace: true,
       });
     },
@@ -166,7 +170,7 @@ export default function TagsIndex() {
   );
 
   // ── The single indexing pass ────────────────────────────────────────────
-  const { entries, byId } = useMemo(() => {
+  const { entries, byId, termCount } = useMemo(() => {
     const list: TagIndexEntry[] = (allTags ?? []).map((tag) => {
       const categoryNames = [
         ...(tag.categories?.map((c) => c.name) ?? []),
@@ -181,7 +185,12 @@ export default function TagsIndex() {
         categoryNames,
       };
     });
-    return { entries: list, byId: new Map(list.map((e) => [e.tag.id, e])) };
+    return {
+      entries: list,
+      byId: new Map(list.map((e) => [e.tag.id, e])),
+      termCount: list.filter((e) => KIND_FILTER_MATCHES.concept.has(e.tag.entity_kind ?? 'concept'))
+        .length,
+    };
   }, [allTags]);
 
   // ── Category scope, from the path ───────────────────────────────────────
@@ -221,7 +230,7 @@ export default function TagsIndex() {
     [scope],
   );
 
-  const base = useMemo(
+  const browseEntries = useMemo(
     () =>
       entries.filter((e) => {
         const entityKind = e.tag.entity_kind ?? 'concept';
@@ -231,28 +240,26 @@ export default function TagsIndex() {
           return false;
         }
         if (hideAdult && safeMode.shouldHide(e.categoryNames)) return false;
-        if (!inScope(e)) return false;
-        // Default curation: the unscoped index shows every dictionary term
-        // (unused kink vocabulary included — it ranks last under the usage
-        // sort) but hides UNUSED descriptors/labels — an unused descriptor is
-        // pure noise, not a definition. Any explicit filter or search widens
-        // back to everything, and category pages always show their whole stop.
-        if (
-          !scope &&
-          state.usage === 'all' &&
-          state.kind === 'all' &&
-          !state.q.trim() &&
-          entityKind !== 'concept' &&
-          entityKind !== 'practice' &&
-          entityKind !== 'aesthetic' &&
-          (usageCounts[e.tag.name] || 0) === 0
-        ) {
-          return false;
-        }
         return true;
       }),
-    [entries, hideAdult, safeMode, inScope, scope, state.kind, state.usage, state.q, usageCounts],
+    [entries, hideAdult, safeMode, state.kind],
   );
+
+  const base = useMemo(() => browseEntries.filter(inScope), [browseEntries, inScope]);
+
+  const categoryCounts = useMemo(() => {
+    const counts: Record<string, number> = {};
+    for (const parent of categoriesTree) {
+      counts[parent.name] = 0;
+      for (const child of parent.children ?? []) counts[child.name] = 0;
+    }
+    for (const entry of browseEntries) {
+      for (const name of new Set(entry.categoryNames)) {
+        if (name) counts[name] = (counts[name] ?? 0) + 1;
+      }
+    }
+    return counts;
+  }, [browseEntries, categoriesTree]);
 
   /** Letter counts reflect every filter EXCEPT the letter itself — otherwise
    *  picking B would grey out every other letter and strand the reader. */
@@ -355,7 +362,7 @@ export default function TagsIndex() {
     description: t(
       'tags.meta.description',
       'Browse and search {{count}} LGBTQ+ terms — identities, practices, history and community language, each linked to the venues, events, people and news that use it.',
-      { count: entries.length },
+      { count: termCount },
     ),
     canonicalPath: categorySlug ? `/tags/c/${categorySlug}` : '/tags',
   });
@@ -381,10 +388,7 @@ export default function TagsIndex() {
     // until the real one loads — honest, and it stops the heading moving.
     return (
       <PageContainer as="header">
-        <Eyebrow variant="kicker" as="div">
-          {t('tags.hero.eyebrow', 'Glossary')}
-        </Eyebrow>
-        <h1 className="mt-6 text-hero leading-[0.95]">{title}</h1>
+        <h1 className="text-display leading-tight md:text-hero">{title}</h1>
         <div className="mt-10">
           <TrackLoader label={t('tags.loading', 'Loading the glossary')} />
         </div>
@@ -421,11 +425,8 @@ export default function TagsIndex() {
   return (
     <>
       <PageContainer as="header" className="pb-0">
-        <Eyebrow variant="kicker" as="div">
-          {t('tags.hero.eyebrow', 'Glossary')}
-        </Eyebrow>
-        <h1 className="mt-6 text-hero leading-[0.95]">{title}</h1>
-        <p className="mt-6 max-w-reading text-body-lg leading-relaxed text-muted-foreground">
+        <h1 className="text-display leading-tight md:text-hero">{title}</h1>
+        <p className="mt-4 max-w-reading text-body-lg leading-relaxed text-muted-foreground">
           {scope
             ? t('tags.category.lede', 'Every term filed under {{name}}.', { name: scope.name })
             : t(
@@ -433,54 +434,34 @@ export default function TagsIndex() {
                 'Every word the guide uses, defined — and everything tagged with it.',
               )}
         </p>
-        <p className="mt-6 flex items-center gap-2 text-13 tabular-nums text-muted-foreground">
-          <RouteBullet type="tag" size={30} />
-          {t('tags.hero.legend', '{{terms}} terms · {{lines}} lines · {{stops}} stops', {
-            terms: entries.length,
-            lines: parentOrder.length,
-            stops: stopCount,
-          })}
-        </p>
+        {!scope && (
+          <p className="mt-4 flex items-center gap-2 text-13 tabular-nums text-muted-foreground">
+            <RouteBullet type="tag" size={30} />
+            {t('tags.hero.legend', '{{terms}} terms · {{lines}} lines · {{stops}} stops', {
+              terms: termCount,
+              lines: parentOrder.length,
+              stops: stopCount,
+            })}
+          </p>
+        )}
       </PageContainer>
 
-      {!scope && (
-        <div className="mt-10 overflow-hidden rounded-panel bg-foreground text-background">
-          <PageContainer>
-            <Eyebrow as="p" className="text-background/70">
-              {t('tags.stats.kicker', 'The corpus')}
-            </Eyebrow>
-            <dl className="mt-6 grid grid-cols-3 gap-x-6 gap-y-8">
-              {[
-                { value: entries.length, label: t('tags.stats.terms', 'Terms') },
-                { value: parentOrder.length, label: t('tags.stats.lines', 'Lines') },
-                { value: stopCount, label: t('tags.stats.stops', 'Stops') },
-              ].map((s) => (
-                <div key={s.label}>
-                  <dd className="font-display text-display leading-none tabular-nums md:text-hero">
-                    {s.value}
-                  </dd>
-                  <dt className="mt-2 text-2xs uppercase tracking-label text-background/70">
-                    {s.label}
-                  </dt>
-                </div>
-              ))}
-            </dl>
-          </PageContainer>
-        </div>
-      )}
-
       <PageContainer as="section" flush className="pb-16 md:pb-24">
-        <div className="mt-12 grid grid-cols-1 gap-8 lg:grid-cols-[224px_minmax(0,1fr)]">
+        <div className="mt-8 grid grid-cols-1 gap-6 lg:grid-cols-[256px_minmax(0,1fr)] lg:gap-8">
           <CategoryTreeRail
+            key={`desktop-${categorySlug ?? 'all'}`}
             tree={categoriesTree}
             activeSlug={categorySlug ?? null}
             paramsSuffix={paramsSuffix}
+            counts={categoryCounts}
             className={cn('sticky hidden self-start lg:block', STICKY_RAIL_UNDER_HEADER)}
           />
           <CategoryTreeRail
+            key={`mobile-${categorySlug ?? 'all'}`}
             tree={categoriesTree}
             activeSlug={categorySlug ?? null}
             paramsSuffix={paramsSuffix}
+            counts={categoryCounts}
             orientation="horizontal"
             className="lg:hidden"
           />
@@ -510,7 +491,7 @@ export default function TagsIndex() {
                 letter={state.letter}
                 counts={letterCounts}
                 onChange={(letter) => patch({ letter })}
-                className="mt-6"
+                className="mt-4"
               />
             )}
 
@@ -525,7 +506,10 @@ export default function TagsIndex() {
               {hideAdult && (
                 <button
                   type="button"
-                  onClick={() => patch({ adult: true })}
+                  onClick={() => {
+                    void affirm();
+                    patch({ adult: true });
+                  }}
                   className="text-13 underline underline-offset-4"
                 >
                   {t('tags.filter.includeAdult', 'Include 18+ terms')}
@@ -551,6 +535,13 @@ export default function TagsIndex() {
                   <p className="mt-2 text-13 text-muted-foreground">
                     {t('tags.empty.description', 'Try a broader letter, line, or search.')}
                   </p>
+                  <button
+                    type="button"
+                    onClick={() => patch({ ...DEFAULT_TAGS_STATE, view: state.view })}
+                    className="mt-4 min-h-11 rounded-element bg-foreground px-4 py-2 text-13 font-medium text-background focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+                  >
+                    {t('tags.filter.reset', 'Reset filters')}
+                  </button>
                 </div>
               ) : (
                 <TagResults

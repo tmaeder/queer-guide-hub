@@ -65,7 +65,7 @@ export function GroupCollections({ groupId, isMember, className }: GroupCollecti
       </div>
 
       {collections.length === 0 ? (
-        <div className="rounded-container border border-dashed border-border p-6 text-center text-sm text-muted-foreground">
+        <div className="rounded-container bg-surface-container p-6 text-center text-sm text-muted-foreground">
           No collections yet.
           {isMember && ' Create one to start saving venues, events, listings, and trips together.'}
         </div>

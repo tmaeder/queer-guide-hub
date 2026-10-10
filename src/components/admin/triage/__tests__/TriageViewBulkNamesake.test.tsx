@@ -86,6 +86,7 @@ vi.mock('@/hooks/useUnifiedTriageQueue', () => ({
   useTriageAction: () => ({ mutate: vi.fn(), mutateAsync, isPending: false }),
   useHighConfCount: () => ({ data: 0, refetch: vi.fn() }),
   useBulkApproveHighConf: () => ({ mutate: vi.fn(), isPending: false }),
+  AUTO_DECISION_MIN_CONFIDENCE: 0.8,
 }));
 vi.mock('@/hooks/useAdminCounts', () => ({ useAdminCounts: () => ({ data: {} }) }));
 // The cohort bar's own data source. Mocked to empty so these suites keep
@@ -95,7 +96,11 @@ vi.mock('@/hooks/useReviewQueueCohorts', () => ({
   useReviewQueueCohorts: () => ({ data: [], isLoading: false }),
 }));
 vi.mock('@/hooks/useTriageSourceCapabilities', () => ({
-  useTriageSourceCapabilities: () => ({ externalConsoleFor: () => null, loading: false }),
+  useTriageSourceCapabilities: () => ({
+    externalConsoleFor: () => null,
+    canReopenFor: () => true,
+    loading: false,
+  }),
 }));
 vi.mock('../TriageFilterBar', () => ({ TriageFilterBar: () => null }));
 vi.mock('../TriageList', () => ({ TriageList: () => null }));

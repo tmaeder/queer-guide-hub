@@ -26,6 +26,7 @@ import {
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { EntitySocialLinks } from '@/components/entity/EntitySocialLinks';
+import { buildProfileUrl } from '@/lib/social/registry';
 import { ShareMenu } from '@/components/share/ShareMenu';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -54,6 +55,7 @@ import { getEventLiveState } from '@/lib/event-countdown';
 import { GlossaryLinkedText } from '@/components/tags/GlossaryLinkedText';
 import { localizedField, type I18nMap } from '@/lib/localizeContent';
 import { useVisitedPlaceLookup } from '@/hooks/useVisitedPlaceLookup';
+import { TripAction } from '@/components/trips/TripAction';
 
 export type EventWithRelations = Database['public']['Tables']['events']['Row'] & {
   social_links?: Record<string, string> | null;
@@ -576,7 +578,6 @@ interface DecisionCardProps {
   isPast: boolean;
   userAttendance: string | null;
   onAttendanceUpdate: (status: 'going' | 'interested' | 'not_going') => void;
-  onAddToTrip: () => void;
   onExportToCalendar: () => void;
   onSendEvent: () => void;
 }
@@ -587,7 +588,6 @@ export function EventDecisionCard({
   isPast,
   userAttendance,
   onAttendanceUpdate,
-  onAddToTrip,
   onExportToCalendar,
   onSendEvent,
 }: DecisionCardProps) {
@@ -630,10 +630,11 @@ export function EventDecisionCard({
           </Button>
         ) : (
           !isPast && (
-            <Button className="w-full" onClick={onAddToTrip}>
-              <Luggage size={16} className="mr-2" />
-              Add to Trip
-            </Button>
+            <TripAction
+              intent={{ kind: 'add_entity', entity: eventTripEntity(event) }}
+              source="event-detail-decision"
+              className="w-full"
+            />
           )
         )}
 
@@ -663,10 +664,12 @@ export function EventDecisionCard({
         )}
 
         {ticketHref && !isPast && (
-          <Button variant="outline" className="w-full" onClick={onAddToTrip}>
-            <Luggage size={16} className="mr-2" />
-            Add to Trip
-          </Button>
+          <TripAction
+            intent={{ kind: 'add_entity', entity: eventTripEntity(event) }}
+            source="event-detail-decision"
+            variant="card"
+            className="w-full"
+          />
         )}
 
         <div className="flex flex-wrap items-center gap-2">
@@ -968,30 +971,22 @@ export function EventWhere({ event, venueRef, countryId, onOrganizerClick }: Whe
   const org = event.organizer;
   const handles = org?.organizer_handles ?? {};
 
-  const socials: Array<{ label: string; href: string }> = [];
+  // Social platforms render as icons through EntitySocialLinks (one
+  // presentation and one order site-wide); only email/phone stay text buttons.
+  const orgSocialLinks: Record<string, string> = {};
+  const contacts: Array<{ label: string; href: string }> = [];
   if (org) {
     const website = org.website || handles.website;
-    if (website) socials.push({ label: 'Website', href: website });
+    if (website) orgSocialLinks.website = website;
     const insta = org.instagram || handles.instagram;
-    if (insta)
-      socials.push({
-        label: 'Instagram',
-        href: `https://instagram.com/${insta.replace(/^@/, '')}`,
-      });
-    if (handles.telegram)
-      socials.push({
-        label: 'Telegram',
-        href: `https://t.me/${handles.telegram.replace(/^@/, '')}`,
-      });
-    if (handles.bluesky)
-      socials.push({
-        label: 'Bluesky',
-        href: `https://bsky.app/profile/${handles.bluesky.replace(/^@/, '')}`,
-      });
-    if (org.email) socials.push({ label: 'Email', href: `mailto:${org.email}` });
+    if (insta) orgSocialLinks.instagram = buildProfileUrl('instagram', insta);
+    if (handles.telegram) orgSocialLinks.telegram = buildProfileUrl('telegram', handles.telegram);
+    if (handles.bluesky) orgSocialLinks.bluesky = buildProfileUrl('bluesky', handles.bluesky);
+    if (org.email) contacts.push({ label: 'Email', href: `mailto:${org.email}` });
     const orgTel = formatPhoneHref(org.phone);
-    if (orgTel) socials.push({ label: 'Call', href: orgTel });
+    if (orgTel) contacts.push({ label: 'Call', href: orgTel });
   }
+  const hasOrgLinks = Object.keys(orgSocialLinks).length > 0 || contacts.length > 0;
 
   const hasOrganizer = Boolean(org || event.organizer_name);
 
@@ -1128,17 +1123,12 @@ export function EventWhere({ event, venueRef, countryId, onOrganizerClick }: Whe
                 >
                   {org.name}
                 </LocalizedLink>
-                {socials.length > 0 && (
+                {hasOrgLinks && (
                   <div className="mt-4 flex flex-wrap gap-2">
-                    {socials.map((s) => (
+                    <EntitySocialLinks links={orgSocialLinks} size="sm" />
+                    {contacts.map((s) => (
                       <Button key={s.label} variant="outline" size="sm" asChild>
-                        <a
-                          href={s.href}
-                          target={s.href.startsWith('http') ? '_blank' : undefined}
-                          rel={s.href.startsWith('http') ? 'noopener noreferrer' : undefined}
-                        >
-                          {s.label}
-                        </a>
+                        <a href={s.href}>{s.label}</a>
                       </Button>
                     ))}
                   </div>
@@ -1182,14 +1172,12 @@ export function EventMobileBar({
   isPast,
   user,
   userAttendance,
-  onAddToTrip,
   onAttendanceUpdate,
 }: {
   event: EventWithRelations;
   isPast: boolean;
   user: { id: string } | null;
   userAttendance: string | null;
-  onAddToTrip: () => void;
   onAttendanceUpdate: (status: 'going' | 'interested' | 'not_going') => void;
 }) {
   if (isPast) return null;
@@ -1212,12 +1200,27 @@ export function EventMobileBar({
           {userAttendance === 'going' ? 'Going' : "I'm going"}
         </Button>
       ) : (
-        <Button className="flex-1" onClick={onAddToTrip}>
-          <Luggage size={16} className="mr-2" />
-          Add to Trip
-        </Button>
+        <TripAction
+          intent={{ kind: 'add_entity', entity: eventTripEntity(event) }}
+          source="event-detail-mobile"
+          className="flex-1"
+        />
       )}
       <FavoriteButton itemId={event.id} type="event" size="md" />
     </div>
   );
+}
+
+function eventTripEntity(event: EventWithRelations) {
+  return {
+    type: 'event' as const,
+    id: event.id,
+    name: event.title,
+    latitude: event.latitude ?? event.venues?.latitude ?? null,
+    longitude: event.longitude ?? event.venues?.longitude ?? null,
+    city_id: event.city_id,
+    country_id: event.country_id,
+    address: event.address ?? event.venues?.address ?? null,
+    category: event.event_type,
+  };
 }

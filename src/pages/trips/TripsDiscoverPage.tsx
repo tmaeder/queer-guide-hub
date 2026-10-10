@@ -28,6 +28,7 @@ import {
   type VibeId,
 } from '@/lib/lines/generateLine';
 import { seasonWindows, type SeasonId } from '@/lib/lines/seasons';
+import { useOptionalActiveTrip } from '@/hooks/useActiveTrip';
 
 /**
  * /trips/discover — the line generator.
@@ -62,6 +63,7 @@ export default function TripsDiscoverPage() {
   const { toast } = useToast();
   const navigate = useLocalizedNavigate();
   const { createTrip, addPlacesBulk } = useTripMutations();
+  const activeTripContext = useOptionalActiveTrip();
 
   useMeta({
     title: t('trips.discover.meta.title', 'Build a route | Queer Guide'),
@@ -219,6 +221,7 @@ export default function TripsDiscoverPage() {
           arrive_mode: null,
         })),
       });
+      activeTripContext?.setActiveTripId(trip.id);
       navigate(`/trips/${trip.id}`);
     } catch (err) {
       toast({
@@ -240,6 +243,7 @@ export default function TripsDiscoverPage() {
     now,
     createTrip,
     addPlacesBulk,
+    activeTripContext,
     t,
     toast,
   ]);
@@ -350,7 +354,7 @@ export default function TripsDiscoverPage() {
                 // static aria-controls would point at nothing (axe
                 // aria-valid-attr-value, critical). Reroll still works there.
                 aria-controls={drawable ? 'route-stations' : undefined}
-                className="inline-flex h-10 items-center gap-2 px-4 text-15 font-bold transition-colors duration-fast hover:bg-foreground hover:text-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+                className="inline-flex h-10 min-h-11 items-center gap-2 px-4 text-15 font-bold transition-colors duration-fast hover:bg-foreground hover:text-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
               >
                 <TransitIcon name="route" size={18} />
                 {t('trips.discover.route.reroll', 'Draw another')}

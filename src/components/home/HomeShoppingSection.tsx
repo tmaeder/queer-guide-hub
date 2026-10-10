@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Band } from './Band';
+import { HomeSectionError } from './HomeSectionError';
 import { MarketplaceCard } from '@/components/marketplace/MarketplaceCard';
 import { useBrandSafeRow, useMarketplaceSpotlight } from '@/hooks/useMarketplaceRows';
 import { useEntityImageAssets } from '@/hooks/useEntityImageAssets';
@@ -31,11 +32,27 @@ export default function HomeShoppingSection() {
   const { t } = useTranslation();
   // Once on mount — a bucket read per render could swap the rail mid-scroll.
   const [bucket] = useState(() => timeBucket(Date.now(), SHOP_ROTATION_HOURS));
-  const { listing: spotlight, loading: spotlightLoading } = useMarketplaceSpotlight(bucket);
-  const { data: rowItems, loading: rowLoading, ownedOnly } = useBrandSafeRow(POOL);
+  const {
+    listing: spotlight,
+    loading: spotlightLoading,
+    error: spotlightError,
+    refetch: refetchSpotlight,
+  } = useMarketplaceSpotlight(bucket);
+  const {
+    data: rowItems,
+    loading: rowLoading,
+    error: rowError,
+    ownedOnly,
+    refetch: refetchRow,
+  } = useBrandSafeRow(POOL);
 
   const items = useMemo(
-    () => rotateWindow(rowItems.filter((l) => l.id !== spotlight?.id), SHOWN, bucket),
+    () =>
+      rotateWindow(
+        rowItems.filter((l) => l.id !== spotlight?.id),
+        SHOWN,
+        bucket,
+      ),
     [rowItems, spotlight?.id, bucket],
   );
   const assetIds = useMemo(
@@ -45,7 +62,7 @@ export default function HomeShoppingSection() {
   const { assets } = useEntityImageAssets('marketplace_listing', assetIds);
 
   const loading = spotlightLoading || rowLoading;
-  if (!loading && !spotlight && items.length === 0) return null;
+  const error = spotlightError || rowError;
 
   return (
     <Band
@@ -58,46 +75,62 @@ export default function HomeShoppingSection() {
       }
       description={
         ownedOnly
-          ? t('home.shop.description', 'Products and services from queer- and trans-owned businesses.')
+          ? t(
+              'home.shop.description',
+              'Products and services from queer- and trans-owned businesses.',
+            )
           : undefined
       }
       seeAllHref="/marketplace"
       seeAllLabel={t('home.shop.seeAll', 'Marketplace')}
     >
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-12 lg:gap-8">
-        {spotlight && (
-          <div className="lg:col-span-4">
-            <MarketplaceCard
-              listing={spotlight}
-              imageAsset={assets.get(spotlight.id)}
-              surface="home_spotlight"
-              priority
-            />
-          </div>
-        )}
-        <div className={spotlight ? 'min-w-0 lg:col-span-8' : 'min-w-0 lg:col-span-12'}>
-          <div className="flex gap-4 overflow-x-auto pb-2 snap-x snap-mandatory scrollbar-thin">
-            {(loading && items.length === 0
-              ? Array.from({ length: 4 }).map(() => null)
-              : items
-            ).map((listing, i) =>
-              listing ? (
-                <div key={listing.id} className="snap-start shrink-0 w-[240px] sm:w-[280px]">
-                  <MarketplaceCard
-                    listing={listing}
-                    imageAsset={assets.get(listing.id)}
-                    surface="home_rail"
-                  />
-                </div>
-              ) : (
-                <div key={i} className="snap-start shrink-0 w-[240px] sm:w-[280px]">
-                  <MarketplaceCard loading />
-                </div>
-              ),
-            )}
+      {error ? (
+        <HomeSectionError
+          onRetry={() => {
+            refetchSpotlight();
+            refetchRow();
+          }}
+        />
+      ) : !loading && !spotlight && items.length === 0 ? (
+        <p className="py-8 text-15 text-muted-foreground">
+          {t('home.shop.empty', 'No marketplace picks are available right now.')}
+        </p>
+      ) : (
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-12 lg:gap-8">
+          {spotlight && (
+            <div className="lg:col-span-4">
+              <MarketplaceCard
+                listing={spotlight}
+                imageAsset={assets.get(spotlight.id)}
+                surface="home_spotlight"
+                priority
+              />
+            </div>
+          )}
+          <div className={spotlight ? 'min-w-0 lg:col-span-8' : 'min-w-0 lg:col-span-12'}>
+            <div className="flex gap-4 overflow-x-auto pb-2 snap-x snap-mandatory scrollbar-thin">
+              {(loading && items.length === 0
+                ? Array.from({ length: 4 }).map(() => null)
+                : items
+              ).map((listing, i) =>
+                listing ? (
+                  <div key={listing.id} className="snap-start shrink-0 w-[240px] sm:w-[280px]">
+                    <MarketplaceCard
+                      listing={listing}
+                      imageAsset={assets.get(listing.id)}
+                      surface="home_rail"
+                    />
+                  </div>
+                ) : (
+                  <div key={i} className="snap-start shrink-0 w-[240px] sm:w-[280px]">
+                    <MarketplaceCard loading />
+                  </div>
+                ),
+              )}
+            </div>
           </div>
         </div>
-      </div>
+      )}
     </Band>
   );
 }

@@ -19,8 +19,9 @@ import { useAdminEditMode } from '@/hooks/useAdminEditMode';
 import { useAuth } from '@/hooks/useAuth';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { cmsEditPath } from '@/lib/cmsLinks';
+import { usePageEntity } from '@/contexts/PageEntityContext';
 
-interface AdminEditButtonProps {
+export interface AdminEditButtonProps {
   contentType: string;
   contentId: string;
   contentName?: string;
@@ -63,6 +64,11 @@ export function AdminEditButton({
   size = 'sm',
   onSaved,
 }: AdminEditButtonProps) {
+  // Detail pages already pass their canonical identity here. Publishing it
+  // before the permission guard makes the same identity available to the
+  // global correction form for every visitor, without duplicating plumbing in
+  // each detail page.
+  usePageEntity({ contentType, contentId, contentName });
   const { canManageContent, loading } = useAdminRoles();
   const { pinned, setPinned } = useAdminEditMode();
   const { user } = useAuth();

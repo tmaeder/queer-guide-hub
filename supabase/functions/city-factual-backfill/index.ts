@@ -5,7 +5,7 @@
 //   'link' (default) — per city: resolve/reuse a Wikidata QID, then read every
 //     group-A field out of the ONE wbgetentities response (population, area,
 //     elevation, inception, website, postal codes, area codes, sister cities,
-//     official language, current mayor, Köppen climate, industry) plus the
+//     official language, Köppen climate, industry) plus the
 //     English Wikipedia extract/image/coords via the cached sitelink title.
 //
 //   'sparql' — batched reverse lookups a claim read cannot answer: airports
@@ -28,13 +28,20 @@ import { withCircuitBreaker, CircuitOpenError } from '../_shared/circuit-breaker
 import { cityNameCandidates } from '../_shared/city-name-normalize.ts'
 import { plausibleCityScalar } from '../_shared/city-scalar-bounds.ts'
 import { cityClassVerdict, cityCoordVerdict, isCityRefreshScope } from '../_shared/city-class-guard.ts'
+import { countryLanguageCodes } from '../_shared/language-codes.ts'
 import {
-  airportQuery, applyLabels, capitalQuery, parseCityFacts, parseCityNames, pickAirports,
+  airportQuery, applyLabels, capitalQuery, parseCityFacts, parseCityNames, parseCityNativeName, pickAirports,
   pickCapitals, pickUniversities, resolveLabels, sparqlUrl, universityQuery,
   CITY_NAME_LANGS, CITY_NAME_SITES,
   type AirportPick, type CapitalPick, type Claims, type CityNameAlias, type CityWdFacts,
   type Json, type SparqlBinding, type WdAliases, type WdLabels, type WdSitelinks,
 } from '../_shared/wikidata-city.ts'
+
+// Reported in every response. A deploy can store new source while the
+// runtime keeps serving an older bundle (seen 2026-10-07: v214 held the
+// name_local code and answered in the old shape), so the only proof a change
+// is live is the response itself. Bump this when the link/sparql output changes.
+const FN_REVISION = '2026-10-07.wd-transient-not-a-miss'
 
 const DEFAULT_BATCH_LIMIT = 40
 // 300 is the repo-wide ceiling for city writes: one cities UPDATE fans out
@@ -143,26 +150,63 @@ async function searchQid(query: string, country?: string | null): Promise<string
  * `city_aliases` is what lets `city_resolve_or_create` know that Kapstadt is
  * Cape Town before a second row gets created.
  */
-async function fetchEntity(qid: string): Promise<
-  { claims: Claims; enwikiTitle?: string; names: CityNameAlias[] } | null
+// A failed wbgetentities request is NOT evidence the entity is missing. Before
+// 2026-10-07 fetchEntity returned null for a 429 exactly as for a deleted item,
+// and the caller then called bumpMiss: three throttled requests were enough to
+// stamp a city `data_unavailable` and drop it from every future sweep. A
+// parallel name_local backfill measured the rate at ~1 in 3 requests (12-14 of
+// 40 per batch reported "entity missing" for Zagreb, Winterthur, Bamako). The
+// damage was contained only because bumpMiss is a no-op on already-resolved
+// rows. So: retry 429/5xx/network with backoff, and report what is left as
+// 'transient', which the caller must never count as an attempt.
+const WD_RETRIES = 3
+
+async function fetchWbEntities(url: string): Promise<{ ok: true; data: Json } | { ok: false }> {
+  for (let i = 0; i < WD_RETRIES; i++) {
+    const ctl = new AbortController()
+    const t = setTimeout(() => ctl.abort(), FETCH_TIMEOUT)
+    try {
+      const r = await fetch(url, { headers: { 'User-Agent': WP_UA, Accept: 'application/json' }, signal: ctl.signal })
+      if (r.ok) return { ok: true, data: await r.json() as Json }
+      if (r.status !== 429 && r.status < 500) return { ok: false }
+      const ra = Number(r.headers.get('retry-after'))
+      await new Promise(res => setTimeout(res, Number.isFinite(ra) && ra > 0 ? Math.min(ra, 5) * 1000 : 1000 * 2 ** i))
+    } catch {
+      await new Promise(res => setTimeout(res, 1000 * 2 ** i))
+    } finally { clearTimeout(t) }
+  }
+  return { ok: false }
+}
+
+async function fetchEntity(qid: string, extraLangs: readonly string[] = []): Promise<
+  { claims: Claims; enwikiTitle?: string; names: CityNameAlias[]; labels?: WdLabels } | null | 'transient'
 > {
-  const d = await fetchJson(
+  // extraLangs: the row's country languages, so the label fallback of
+  // parseCityNativeName can read e.g. a Czech or Swedish label. Same request,
+  // longer query string.
+  const langs = [...new Set([...CITY_NAME_LANGS, ...extraLangs])]
+  const res = await fetchWbEntities(
     `https://www.wikidata.org/w/api.php?action=wbgetentities&ids=${encodeURIComponent(qid)}` +
     `&props=claims|sitelinks|labels|aliases` +
-    `&languages=${CITY_NAME_LANGS.join('|')}` +
+    `&languages=${langs.join('|')}` +
     `&sitefilter=${['enwiki', ...CITY_NAME_SITES].join('|')}&format=json`,
   )
-  const ent = (d?.entities as Record<string, {
+  if (!res.ok) return 'transient'
+  const ent = ((res.data as { entities?: unknown })?.entities as Record<string, {
     claims?: Claims
     labels?: WdLabels
     aliases?: WdAliases
     sitelinks?: WdSitelinks
+    missing?: string
   }> | undefined)?.[qid]
-  if (!ent) return null
+  // A 200 with no entity block at all is a malformed answer, not a verdict.
+  if (!ent) return 'transient'
+  if ('missing' in ent) return null
   return {
     claims: ent.claims ?? {},
     enwikiTitle: ent.sitelinks?.enwiki?.title,
     names: parseCityNames(ent.claims ?? {}, ent.labels, ent.aliases, ent.sitelinks),
+    labels: ent.labels,
   }
 }
 
@@ -335,25 +379,27 @@ interface CityRow {
   latitude: number | null; longitude: number | null
   description: string | null; image_url: string | null; curated_image_url: string | null
   population: number | null; area_km2: number | null; elevation_m: number | null
-  founded_year: number | null; official_website: string | null
+  official_website: string | null
   postal_codes: string[] | null; area_codes: string[] | null; sister_cities: string[] | null
   economy_sectors: string[] | null; universities: string[] | null
-  local_language: string | null; mayor: string | null; climate_type: string | null
+  local_language: string | null; climate_type: string | null
   airport_codes: string[] | null; major_airport_code: string | null
   transportation_info: Record<string, unknown> | null
   is_regional_capital: boolean | null; capital_of_region: string | null
   field_provenance: Prov | null; enrichment_status: Status | null
   wikidata_qid: string | null; wikipedia_title: string | null
-  country_id: string | null; countries: { name?: string } | null
+  country_id: string | null; countries: { name?: string; languages?: string[] | null } | null
+  name_local: string | null; name_local_lang: string | null
 }
 
 const CITY_COLUMNS =
   'id, name, slug, latitude, longitude, description, image_url, curated_image_url, ' +
-  'population, area_km2, elevation_m, founded_year, official_website, postal_codes, area_codes, ' +
-  'sister_cities, economy_sectors, universities, local_language, mayor, climate_type, ' +
+  'population, area_km2, elevation_m, official_website, postal_codes, area_codes, ' +
+  'sister_cities, economy_sectors, universities, local_language, climate_type, ' +
   'airport_codes, major_airport_code, transportation_info, ' +
   'is_regional_capital, capital_of_region, ' +
-  'field_provenance, enrichment_status, wikidata_qid, wikipedia_title, country_id, countries(name)'
+  'field_provenance, enrichment_status, wikidata_qid, wikipedia_title, country_id, ' +
+  'name_local, name_local_lang, countries(name, languages)'
 
 /**
  * An array counts as empty when it holds nothing usable, not merely when it has
@@ -444,11 +490,16 @@ async function runLinkPhase(
   // `classUndetermined` is a failure to read one, and the two must stay apart:
   // only the former counts an attempt toward the terminal sentinel.
   let classRefused = 0, classUndetermined = 0
+  let wdTransient = 0
   // Coordinate corroboration. `coordRefused` is a decision about the CANDIDATE
   // (a namesake in the wrong place); `coordUnchecked` records that this arm
   // could say nothing, so a corpus drifting toward coordless rows is visible
   // rather than silently unguarded.
   let coordRefused = 0, coordUnchecked = 0
+  // cities.name_local fills, and country language names with no code mapping
+  // (reported verbatim so a gap in language-codes.ts is visible, not silent).
+  let nativeFilled = 0
+  const nativeUnmapped = new Set<string>()
   // Distinct P31 labels the whitelist did not recognise, reported verbatim so a
   // systematic gap in the vocabulary shows up as a rising, namable number.
   const unrecognisedClasses = new Set<string>()
@@ -506,8 +557,14 @@ async function runLinkPhase(
       // --- 2. Claims + sitelink (ONE request when the QID is cached) ------
       let facts: CityWdFacts | null = null
       if (qid) {
-        const ent = await withCircuitBreaker(supabase, 'wikidata.api', () => fetchEntity(qid!))
-        if (!ent) {
+        const langInfo = countryLanguageCodes(c.countries?.languages)
+        for (const u of langInfo.unmapped) nativeUnmapped.add(u)
+        const ent = await withCircuitBreaker(supabase, 'wikidata.api', () => fetchEntity(qid!, langInfo.codes))
+        if (ent === 'transient') {
+          // Never bumpMiss: a throttled request says nothing about the entity.
+          wdTransient++
+          missReason ??= 'wikidata_fetch_failed'
+        } else if (!ent) {
           bumpMiss(state, 'wikidata_link', 'wikidata')
           missReason ??= 'wikidata_entity_missing'
         } else {
@@ -620,6 +677,21 @@ async function runLinkPhase(
             // created, not to this row.
             if (!dryRun && ent.names.length > 0) {
               aliasesWritten += await writeCityAliases(supabase, c.id, c.name, ent.names)
+            }
+            // Native name, from the SAME adopted entity -- only inside the
+            // settlement branch, so a refused namesake or a non-place can never
+            // contribute one. Fill-if-empty: a curated value is never replaced.
+            const native = parseCityNativeName(ent.claims, ent.labels, langInfo.codes)
+            if (native) {
+              addCandidate(prov, 'name_local', 'wikidata', native.name, {
+                language: native.lang,
+                source_identity: `${qid}#${native.source}`,
+              })
+              if (!c.name_local) {
+                update.name_local = native.name
+                update.name_local_lang = native.lang
+                nativeFilled++
+              }
             }
           } else if (cls.verdict === 'refused') {
             // A decision about the entity, so it counts toward the terminal
@@ -742,10 +814,6 @@ async function runLinkPhase(
           if (c.elevation_m == null || stale('elevation_m', c.elevation_m)) update.elevation_m = facts.elevation_m
           else if (applyRankFix('elevation_m', c.elevation_m, facts.elevation_m, provBefore, update)) rankFixed.push('elevation_m')
         }
-        if (facts.founded_year != null) {
-          addCandidate(prov, 'founded_year', 'wikidata', facts.founded_year)
-          if (c.founded_year == null || stale('founded_year', c.founded_year)) update.founded_year = facts.founded_year
-        }
         if (facts.official_website) {
           addCandidate(prov, 'official_website', 'wikidata', facts.official_website)
           if (!c.official_website || stale('official_website', c.official_website)) update.official_website = facts.official_website
@@ -766,7 +834,7 @@ async function runLinkPhase(
 
         // QID-valued fields resolve their labels in one batched call.
         const refQids = [
-          ...facts.refs.sister_cities, ...facts.refs.local_language, ...facts.refs.mayor,
+          ...facts.refs.sister_cities, ...facts.refs.local_language,
           ...facts.refs.climate_type, ...facts.refs.economy_sectors,
         ]
         const labels = refQids.length
@@ -785,17 +853,6 @@ async function runLinkPhase(
           if (!c.local_language || stale('local_language', c.local_language)) update.local_language = named.local_language
           markResolved(state, 'local_language', 'wikidata')
         } else { clearIfStale('local_language', c.local_language, undefined); bumpMiss(state, 'local_language', 'wikidata') }
-
-        if (named.mayor) {
-          addCandidate(prov, 'mayor', 'wikidata', named.mayor)
-          if (!c.mayor || stale('mayor', c.mayor)) update.mayor = named.mayor
-          markResolved(state, 'mayor', 'wikidata')
-        } else {
-          // Expected for most cities: every P6 statement carries an end date, and
-          // an ended term must never be published as the current mayor.
-          clearIfStale('mayor', c.mayor, undefined)
-          bumpMiss(state, 'mayor', 'wikidata')
-        }
 
         if (named.climate_type) {
           addCandidate(prov, 'climate_type', 'wikidata', named.climate_type)
@@ -860,7 +917,11 @@ async function runLinkPhase(
         status = 'skipped'; skipped++
         missReason ??= qid ? 'no_empty_fields' : 'unresolved'
       }
-      results.push({ id: c.id, name: c.name, qid, filled, rank_fixed: rankFixed, reason: missReason })
+      results.push({
+        id: c.id, name: c.name, qid, filled, rank_fixed: rankFixed, reason: missReason,
+        // Carried so a dry run can be READ: an endonym is checked by eye.
+        ...(update.name_local ? { name_local: update.name_local, name_local_lang: update.name_local_lang } : {}),
+      })
     } catch (e) {
       if (e instanceof CircuitOpenError) {
         return jsonResponse({ processed, updated, skipped, failed, circuit_open: e.apiName, results }, 200, req)
@@ -886,11 +947,14 @@ async function runLinkPhase(
   }
 
   return jsonResponse({
-    phase: 'link', processed, updated, skipped, failed,
+    phase: 'link', revision: FN_REVISION, processed, updated, skipped, failed,
     scope,
     aliases_written: aliasesWritten,
+    name_local_filled: nativeFilled,
+    ...(nativeUnmapped.size ? { name_local_unmapped_languages: [...nativeUnmapped].sort() } : {}),
     class_refused: classRefused,
     class_undetermined: classUndetermined,
+    wikidata_fetch_failed: wdTransient,
     coord_refused: coordRefused,
     coord_unchecked: coordUnchecked,
     unrecognised_classes: [...unrecognisedClasses].slice(0, 20),
@@ -1084,6 +1148,6 @@ async function runSparqlPhase(
   }
 
   return jsonResponse(
-    { phase: 'sparql', processed: byQid.size, updated, skipped, dry_run: dryRun, results }, 200, req,
+    { phase: 'sparql', revision: FN_REVISION, processed: byQid.size, updated, skipped, dry_run: dryRun, results }, 200, req,
   )
 }

@@ -46,8 +46,8 @@ export function HelpFilterSpine({
 
   return (
     <>
-      <div className="mt-6 border-y border-border-hairline py-4">
-        <div className="relative">
+      <div className="mt-6 grid gap-4 border-y border-border-hairline py-4 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
+        <div className="relative max-w-form">
           <label htmlFor="help-search" className="sr-only">
             {t('help.search_placeholder', 'Search hotlines')}
           </label>
@@ -64,6 +64,9 @@ export function HelpFilterSpine({
             className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground"
           />
         </div>
+        <p role="status" className="text-13 font-bold tabular-nums text-muted-foreground">
+          {t('help.result_count', '{{count}} lines', { count: resultCount })}
+        </p>
       </div>
 
       {(showChips || filtered) && (
@@ -110,12 +113,6 @@ export function HelpFilterSpine({
           )}
         </div>
       )}
-
-      {/* A count, never the grid itself — announcing a whole list of cards on
-          every keystroke is what makes a live region hostile with a reader. */}
-      <p role="status" className="mt-4 text-13 text-muted-foreground">
-        {t('help.result_count', '{{count}} lines', { count: resultCount })}
-      </p>
     </>
   );
 }

@@ -1,0 +1,333 @@
+/* Inherit the shared paper/ink theme. The intent track and station navigation
+   own wayfinding; content uses the system's type, radii and soft elevation. */
+.going-out-page {
+  color: hsl(var(--foreground));
+}
+
+.going-out-hero h1 {
+  max-width: 20ch;
+}
+
+.going-out-hero__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.going-out-hero__primary,
+.going-out-hero__secondary {
+  display: inline-flex;
+  min-height: 3rem;
+  align-items: center;
+  justify-content: center;
+  padding: 0.75rem 1.5rem;
+  border-radius: var(--radius-element);
+  font-size: var(--text-13);
+  font-weight: 700;
+  text-decoration: none;
+  transition:
+    background-color var(--motion-normal),
+    color var(--motion-normal);
+}
+
+.going-out-hero__primary {
+  color: hsl(var(--background));
+  background: hsl(var(--foreground));
+}
+
+.going-out-hero__primary:hover {
+  background: hsl(var(--foreground) / 0.85);
+}
+
+.going-out-hero__secondary {
+  color: hsl(var(--foreground));
+  background: hsl(var(--muted));
+}
+
+.going-out-hero__secondary:hover {
+  background: hsl(var(--surface-container));
+}
+
+.going-out-page nav[aria-label='Sections'] a[aria-current='true']::before {
+  background: hsl(var(--track-pink));
+}
+
+.going-out-page section[id] > header h2 {
+  font-weight: 400;
+}
+
+.going-out-empty {
+  display: grid;
+  overflow: hidden;
+  grid-template-columns: minmax(0, 1fr) minmax(12rem, 0.4fr);
+  background: hsl(var(--card));
+  border-radius: var(--radius-container);
+  box-shadow: var(--shadow-soft);
+}
+
+.going-out-empty__copy {
+  padding: 2rem;
+}
+
+.going-out-empty__copy strong {
+  display: block;
+  max-width: 26ch;
+  font-family: var(--font-display);
+  font-size: var(--text-headline);
+  font-weight: 400;
+  line-height: 1.15;
+  text-wrap: balance;
+}
+
+.going-out-empty__copy p {
+  max-width: 60ch;
+  margin-top: 1rem;
+  color: hsl(var(--muted-foreground));
+  line-height: 1.6;
+}
+
+.going-out-empty__links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem 1.5rem;
+  margin-top: 1.5rem;
+}
+
+.going-out-empty__links a {
+  display: inline-flex;
+  min-height: 2.75rem;
+  align-items: center;
+  color: hsl(var(--foreground));
+  font-size: var(--text-13);
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 0.25rem;
+}
+
+.going-out-empty__map {
+  display: grid;
+  place-items: center;
+  padding: 2rem;
+  background: hsl(var(--muted));
+  border-radius: var(--radius-container);
+}
+
+.going-out-events > p:first-child {
+  max-width: 72ch;
+  margin-bottom: 1.5rem;
+}
+
+.going-out-departures {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.going-out-departure {
+  display: grid;
+  min-height: 5.5rem;
+  grid-template-columns: 2.25rem 5.5rem minmax(0, 1fr) minmax(7rem, 0.2fr);
+  align-items: center;
+  gap: 1.5rem;
+  padding: 1rem 1.5rem;
+  border-radius: var(--radius-element);
+  background: hsl(var(--card));
+  transition: background-color var(--motion-normal);
+}
+
+.going-out-departure:has(a):hover,
+.going-out-departure:focus-within {
+  background: hsl(var(--muted));
+}
+
+.going-out-departure-bullet {
+  display: flex;
+  align-items: center;
+}
+
+.going-out-departure-date {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+}
+
+.going-out-departure-date strong {
+  font-family: var(--font-display);
+  font-size: var(--text-headline);
+  font-weight: 400;
+}
+
+.going-out-departure-date span,
+.going-out-departure-city {
+  color: hsl(var(--muted-foreground));
+  font-size: var(--text-13);
+  font-weight: 700;
+}
+
+.going-out-departure-title {
+  overflow-wrap: anywhere;
+  font-size: var(--text-title);
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.going-out-departure-city {
+  text-align: right;
+}
+
+.going-out-safety {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 2rem;
+  align-items: center;
+  padding: 2rem;
+  color: hsl(var(--foreground));
+  background: hsl(var(--muted));
+  border-radius: var(--radius-container);
+}
+
+.going-out-safety p {
+  max-width: 65ch;
+  font-size: var(--text-body-lg);
+  line-height: 1.6;
+}
+
+.going-out-safety__link {
+  display: inline-flex;
+  min-height: 3rem;
+  align-items: center;
+  padding: 0.75rem 1.5rem;
+  border-radius: var(--radius-element);
+  color: hsl(var(--foreground));
+  background: hsl(var(--card));
+  font-size: var(--text-13);
+  font-weight: 700;
+  text-decoration: none;
+  transition: background-color var(--motion-normal);
+}
+
+.going-out-safety__link:hover {
+  background: hsl(var(--surface-container));
+}
+
+.going-out-cities {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.going-out-city {
+  min-width: 0;
+  min-height: 13rem;
+  background: hsl(var(--card));
+  border-radius: var(--radius-container);
+  box-shadow: var(--shadow-soft);
+  overflow: hidden;
+  transition: background-color var(--motion-normal);
+}
+
+.going-out-city:has(a):hover,
+.going-out-city:focus-within {
+  background: hsl(var(--muted));
+}
+
+.going-out-city a {
+  display: flex;
+  height: 100%;
+  flex-direction: column;
+  padding: 1.5rem;
+  color: hsl(var(--foreground));
+  text-decoration: none;
+}
+
+.going-out-city h3 {
+  font-family: var(--font-display);
+  font-size: var(--text-headline);
+  font-weight: 400;
+  line-height: 1.1;
+  text-wrap: balance;
+}
+
+.going-out-city p {
+  margin-top: 0.5rem;
+  color: hsl(var(--muted-foreground));
+  font-size: var(--text-13);
+}
+
+.going-out-city svg {
+  margin-top: auto;
+}
+
+@media (max-width: 1023px) {
+  .going-out-cities {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 767px) {
+  .going-out-empty {
+    grid-template-columns: 1fr;
+  }
+
+  .going-out-empty__copy,
+  .going-out-safety {
+    padding: 1.5rem;
+  }
+
+  .going-out-empty__map {
+    padding: 1rem;
+  }
+
+  .going-out-departure {
+    grid-template-columns: 2.25rem minmax(0, 1fr);
+    gap: 0.5rem 1rem;
+    padding: 1rem;
+  }
+
+  .going-out-departure-bullet {
+    grid-column: 1;
+    grid-row: 1 / span 3;
+    align-self: start;
+  }
+
+  .going-out-departure-date,
+  .going-out-departure-title,
+  .going-out-departure-city {
+    grid-column: 2;
+  }
+
+  .going-out-departure-city {
+    text-align: left;
+  }
+
+  .going-out-safety {
+    grid-template-columns: 1fr;
+    justify-items: start;
+  }
+
+  .going-out-cities {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .going-out-city {
+    min-height: 11rem;
+  }
+
+  .going-out-city a {
+    padding: 1rem;
+  }
+
+  .going-out-city h3 {
+    font-family: var(--font-sans);
+    font-size: var(--text-title);
+    font-weight: 700;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .going-out-page *,
+  .going-out-page *::before,
+  .going-out-page *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
+}

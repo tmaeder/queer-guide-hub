@@ -2,7 +2,7 @@
  * @vitest-environment jsdom
  */
 import { describe, it, expect, vi } from 'vitest';
-import { render } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router';
 
 vi.mock('@/components/posts/PostCard', () => ({ PostCard: () => null }));
@@ -39,5 +39,17 @@ describe('Feed', () => {
       </MemoryRouter>,
     );
     expect(container).toBeTruthy();
+    expect(container.querySelector('[data-feed-layout="standalone"]')).toBeTruthy();
+  });
+
+  it('renders a compact heading when embedded in the Hub shell', () => {
+    const { container } = render(
+      <MemoryRouter>
+        <Feed embedded />
+      </MemoryRouter>,
+    );
+
+    expect(container.querySelector('[data-feed-layout="embedded"]')).toBeTruthy();
+    expect(screen.getByRole('heading', { level: 1, name: 'Feed' })).toBeTruthy();
   });
 });

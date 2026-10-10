@@ -78,7 +78,7 @@ export function OverviewModule() {
   const { t } = useTranslation();
   const { user } = useAuth();
   // Dating peek is self-gated: only opted-in users see it (privacy parity
-  // with /people/dating). Matches are conversations → deep-link to Messages.
+  // with /hub/dating). Matches are conversations → deep-link to Messages.
   const { data: intimateProfile } = useMyIntimateProfile();
   const { data: matches } = useIntimateMatches();
   const matchCount = matches?.length ?? 0;
@@ -173,7 +173,7 @@ export function OverviewModule() {
             <OverviewSection
               icon={Users}
               title={t('hub.overview.requests', { defaultValue: 'Friend requests' })}
-              to="/people/friends"
+              to="/hub/friends"
               seeAllLabel={t('hub.overview.allPeople', { defaultValue: 'All people' })}
             >
               <div className="flex flex-col gap-2">

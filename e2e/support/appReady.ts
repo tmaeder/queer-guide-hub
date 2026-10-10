@@ -46,8 +46,8 @@ export async function waitForAppReady(page: Page, timeout = 30_000): Promise<voi
     //
     // Fetch what the document actually asked for and report the answer. Runs
     // only on the failing branch, so the happy path pays nothing.
-    const diag = await page
-      .evaluate(async () => {
+    const probe = () =>
+      page.evaluate(async () => {
         const srcs = [...document.querySelectorAll<HTMLScriptElement>('script[src]')].map(
           (s) => s.src,
         );
@@ -66,12 +66,28 @@ export async function waitForAppReady(page: Page, timeout = 30_000): Promise<voi
           rootHtml: document.getElementById('root')?.innerHTML ?? '(no #root element at all)',
           probed,
         };
-      })
-      .catch((e) => ({
+      });
+
+    // The boot guard reloads through `?__fresh=` the moment it sees a failed
+    // chunk, which destroys the execution context underneath this evaluate —
+    // measured, verbatim: "Execution context was destroyed, most likely because
+    // of a navigation". That reload IS the symptom this branch exists to
+    // explain, so losing the report to it is the worst available outcome: the
+    // listing degrades to `(none found)` and the message then reads as a
+    // narrowed selector rather than as a guard that fired.
+    //
+    // So retry once after the navigation settles. A `?__fresh=` in the reported
+    // URL is itself a finding — it says the guard ran — which is why the URL is
+    // printed rather than swallowed.
+    let diag = await probe().catch(() => null);
+    if (!diag) {
+      await page.waitForLoadState('domcontentloaded', { timeout: 5_000 }).catch(() => {});
+      diag = await probe().catch((e) => ({
         url: 'unknown',
-        rootHtml: `(diagnostic evaluate failed: ${String(e)})`,
+        rootHtml: `(diagnostic evaluate failed twice, incl. after settle: ${String(e)})`,
         probed: [] as string[],
       }));
+    }
 
     throw new Error(
       `#root never gained children at ${diag.url}\n` +
@@ -135,7 +151,7 @@ export async function waitForAppReady(page: Page, timeout = 30_000): Promise<voi
     .waitForFunction(
       () => {
         const overlays = document.querySelectorAll<HTMLElement>(
-          '[aria-label="Cookie settings"], [aria-label="Share feedback"]',
+          '[aria-label="Cookie settings"], [aria-label="Contribute to Queer Guide"]',
         );
         return [...overlays].every((el) => {
           const o = Number(getComputedStyle(el).opacity);

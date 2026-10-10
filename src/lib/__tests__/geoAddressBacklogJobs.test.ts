@@ -152,14 +152,36 @@ describe('backfill-city-region.mjs', () => {
     // every run this job ever had. The property asserted here is unchanged:
     // the audit row is written BEFORE the entity is mutated.
     const auditAt = src.indexOf('record_external_corrections');
-    const patchAt = src.indexOf("method: 'PATCH'");
+    // The entity write is the stampCity() call inside writeDirect (it merges
+    // the stamp server-side since 2026-10-09; a whole-object PATCH lost keys).
+    const patchAt = src.indexOf('await stampCity(r.id, r.state');
     expect(auditAt).toBeGreaterThan(-1);
+    expect(patchAt).toBeGreaterThan(-1);
     expect(auditAt).toBeLessThan(patchAt);
     expect(src).toMatch(/rollback_external_correction_batch/);
   });
 
-  it('still excludes the tmp- placeholder stubs', () => {
-    // 1,373 of the 2,097 region-less cities are personality-birth-place stubs.
-    expect(src).toMatch(/slug=not\.like\.tmp-\*/);
+  it('selects on region_code, not region_name, and includes tmp- stubs', () => {
+    // `region_name=is.null` re-selected city-states that already carry a code
+    // (201 of 285 on the 2026-09-30 run) and skipped the 1,508 stubs, which
+    // need a region once it is part of the city identity key.
+    // Scoped to the loader: the write PATCH legitimately guards on
+    // region_name=is.null so it never overwrites a value set meanwhile.
+    const loader = src.slice(src.indexOf('async function loadCities'), src.indexOf('async function reverseGeocode'));
+    expect(loader.length).toBeGreaterThan(100);
+    expect(loader).toMatch(/&region_code=is\.null/);
+    expect(loader).not.toMatch(/&region_name=is\.null/);
+    expect(loader).not.toMatch(/slug=not\.like\.tmp-\*/);
+  });
+
+  it('never writes a state Photon reports for another country', () => {
+    expect(src).toMatch(/r\.state && cc && pc === cc/);
+  });
+
+  it('stamps a real Photon answer, but not a transport failure', () => {
+    // A timeout returns {} — leaving it unstamped keeps the city eligible.
+    expect(src).toMatch(/if \(r\.state !== undefined\) \{/);
+    expect(src).toMatch(/&enrichment_status->region_reverse=is\.null/);
+    expect(src).toMatch(/state: 'data_unavailable'/);
   });
 });

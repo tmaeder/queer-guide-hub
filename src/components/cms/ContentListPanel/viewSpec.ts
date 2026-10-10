@@ -14,6 +14,9 @@ export interface Filter {
   field: string;
   op: FilterOperator;
   value?: unknown;
+  /** Display-only text for the applied-filter chip, e.g. a city name where
+   *  `value` is its uuid. Never reaches the query. */
+  label?: string;
 }
 
 export interface SortSpec {

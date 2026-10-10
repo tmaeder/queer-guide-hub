@@ -1,8 +1,11 @@
+import { createElement } from 'react';
 import { MapPin } from 'lucide-react';
+import { CityCodeBadges } from '@/components/admin/CityCodeBadges';
+import { cityCodesFromRow } from '@/lib/cityCodes';
+import { countLink } from './countLink';
 import type { ContentTypeConfig, FieldConfig } from '@/types/cms';
-
-const fmtNum = (n: unknown): string =>
-  typeof n === 'number' && Number.isFinite(n) ? new Intl.NumberFormat().format(n) : '-';
+import { venueContentType } from './venue';
+import { eventContentType } from './event';
 
 export const cityFields: FieldConfig[] = [
   {
@@ -17,6 +20,17 @@ export const cityFields: FieldConfig[] = [
   { name: 'slug', label: 'Slug', type: 'text', group: 'basic' },
   { name: 'description', label: 'Description', type: 'richtext', group: 'basic', colSpan: 2 },
   { name: 'region_name', label: 'Region', type: 'text', group: 'basic' },
+  // Part of the city's identity key (99991791233840), so it is not editable
+  // here: changing it can collide with a same-name twin. The region backfill
+  // owns it.
+  {
+    name: 'region_code',
+    label: 'Region Code',
+    type: 'text',
+    group: 'basic',
+    readOnly: true,
+    helpText: 'ISO 3166-2, e.g. US-ME. Set by the region backfill; empty means not resolved yet.',
+  },
   // Picker, not a stored value: `cities` has `country_id` only, no `country`
   // text column. See the `virtual` note on queer_villages.city.
   {
@@ -50,26 +64,73 @@ export const cityFields: FieldConfig[] = [
   { name: 'timezone', label: 'Timezone', type: 'text', group: 'location' },
   { name: 'elevation_m', label: 'Elevation (m)', type: 'number', group: 'details' },
   { name: 'climate_type', label: 'Climate', type: 'text', group: 'details' },
-  { name: 'founded_year', label: 'Founded Year', type: 'number', group: 'details' },
   { name: 'area_km2', label: 'Area (km²)', type: 'number', group: 'details' },
   { name: 'local_language', label: 'Local Language', type: 'text', group: 'details' },
   { name: 'official_website', label: 'Official Website', type: 'url', group: 'details' },
-  { name: 'major_airport_code', label: 'Airport Code', type: 'text', group: 'details' },
+  // Flight-search target (Aviasales destinationIata), NOT "the city's airport":
+  // Aachen's is DUS. The public page states local_airport_codes or "No".
+  {
+    name: 'major_airport_code',
+    label: 'Booking airport (flight search)',
+    type: 'text',
+    group: 'details',
+  },
   { name: 'best_time_to_visit', label: 'Best Time to Visit', type: 'text', group: 'details' },
   { name: 'local_customs', label: 'Local Customs', type: 'textarea', group: 'details' },
-  { name: 'mayor', label: 'Mayor', type: 'text', group: 'details' },
-  { name: 'cost_of_living', label: 'Cost of Living', type: 'json', group: 'details', helpText: 'Cost of living data' },
-  { name: 'transportation_info', label: 'Transportation', type: 'json', group: 'details', helpText: 'Transportation details' },
-  { name: 'demographics', label: 'Demographics', type: 'json', group: 'details', helpText: 'City demographics' },
+  {
+    name: 'cost_of_living',
+    label: 'Cost of Living',
+    type: 'json',
+    group: 'details',
+    helpText: 'Cost of living data',
+  },
+  {
+    name: 'transportation_info',
+    label: 'Transportation',
+    type: 'json',
+    group: 'details',
+    helpText: 'Transportation details',
+  },
+  {
+    name: 'demographics',
+    label: 'Demographics',
+    type: 'json',
+    group: 'details',
+    helpText: 'City demographics',
+  },
   { name: 'postal_codes', label: 'Postal Codes', type: 'tags', group: 'details' },
   { name: 'area_codes', label: 'Area Codes', type: 'tags', group: 'details' },
-  { name: 'airport_codes', label: 'Airport Codes', type: 'tags', group: 'details' },
+  {
+    name: 'airport_codes',
+    label: 'Linked airports (same country)',
+    type: 'tags',
+    group: 'details',
+  },
   // Derived by run_city_airport_link: the same set as airport_codes, split by
   // whether the airport sits IN the city. Read-only — editing them here would be
-  // overwritten by the nightly sweep.
-  { name: 'local_airport_codes', label: 'Airports in this city', type: 'tags', group: 'details', readOnly: true },
-  { name: 'nearest_airport_codes', label: 'Nearest airports', type: 'tags', group: 'details', readOnly: true },
-  { name: 'nearest_airport_km', label: 'Nearest airport (km)', type: 'number', group: 'details', readOnly: true },
+  // overwritten by the nightly sweep. The public "Nearest airports" list is NOT
+  // these: it is computed live, across borders, by city_nearest_airports().
+  {
+    name: 'local_airport_codes',
+    label: 'Airports in this city',
+    type: 'tags',
+    group: 'details',
+    readOnly: true,
+  },
+  {
+    name: 'nearest_airport_codes',
+    label: 'Linked airports outside city',
+    type: 'tags',
+    group: 'details',
+    readOnly: true,
+  },
+  {
+    name: 'nearest_airport_km',
+    label: 'Linked airport distance (km)',
+    type: 'number',
+    group: 'details',
+    readOnly: true,
+  },
   { name: 'sister_cities', label: 'Sister Cities', type: 'tags', group: 'details' },
   { name: 'notable_landmarks', label: 'Notable Landmarks', type: 'tags', group: 'details' },
   { name: 'economy_sectors', label: 'Economy Sectors', type: 'tags', group: 'details' },
@@ -85,6 +146,18 @@ export const cityFields: FieldConfig[] = [
   { name: 'image_url', label: 'City Image', type: 'image', group: 'media' },
   { name: 'curated_image_url', label: 'Curated Image', type: 'image', group: 'media' },
   { name: 'country_id', label: 'Country Reference', type: 'text', group: 'external', hidden: true },
+  // ISO codes beside the name: since 99991791233840 a country can hold two
+  // same-name cities in different regions, so the name alone is ambiguous.
+  {
+    name: 'city_codes',
+    label: 'Country / Region',
+    type: 'text',
+    group: 'external',
+    hidden: true,
+    virtual: true,
+    listColumn: true,
+    listRender: (row) => createElement(CityCodeBadges, cityCodesFromRow(row)),
+  },
   {
     name: 'country_name',
     label: 'Country',
@@ -119,10 +192,7 @@ export const cityFields: FieldConfig[] = [
     hidden: true,
     virtual: true,
     listColumn: true,
-    listRender: (row) => {
-      const venues = row.venues as Array<{ count?: number }> | null | undefined;
-      return fmtNum(venues?.[0]?.count ?? 0);
-    },
+    listRender: (row) => countLink(row, 'venues', 'venues', 'city_id'),
   },
   {
     name: 'event_count',
@@ -132,10 +202,7 @@ export const cityFields: FieldConfig[] = [
     hidden: true,
     virtual: true,
     listColumn: true,
-    listRender: (row) => {
-      const events = row.events as Array<{ count?: number }> | null | undefined;
-      return fmtNum(events?.[0]?.count ?? 0);
-    },
+    listRender: (row) => countLink(row, 'events', 'events', 'city_id'),
   },
 ];
 
@@ -178,7 +245,12 @@ export const cityContentType: ContentTypeConfig = {
       p_actor: 'admin',
     }),
   },
-  listSelect: '*,countries(name,equality_score),venues(count),events(count)',
+  listSelect: '*,countries(name,code,equality_score),venues(count),events(count)',
+  // The Venues/Events counts link to those lists; count what the lists show.
+  listEmbedScopes: [
+    { embed: 'venues', type: venueContentType },
+    { embed: 'events', type: eventContentType },
+  ],
   fieldGroupOrder: ['basic', 'location', 'details', 'lgbtq', 'media', 'external'],
   translatableFields: ['name', 'description'],
   commentable: true,
@@ -193,6 +265,9 @@ export const cityContentType: ContentTypeConfig = {
     },
   },
   merge: { column: 'duplicate_of_id', label: 'Merged' },
-  lifecycle: { type: 'city', archive: { column: 'shell_status', value: 'ghost', label: 'Not a place' } },
+  lifecycle: {
+    type: 'city',
+    archive: { column: 'shell_status', value: 'ghost', label: 'Not a place' },
+  },
   publicPath: (row) => (row.slug ? `/city/${row.slug}` : null),
 };

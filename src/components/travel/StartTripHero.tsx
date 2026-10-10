@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useLocation } from 'react-router';
 import { TrackLoader } from '@/components/transit/TrackLoader';
 import { useTranslation } from 'react-i18next';
 
@@ -13,12 +14,17 @@ import {
   CityCountryAutocomplete,
   type GeoSelection,
 } from '@/components/trips/create/CityCountryAutocomplete';
+import { useOptionalActiveTrip } from '@/hooks/useActiveTrip';
+import { storeTripCapture, type TripCaptureIntent } from '@/lib/trips/tripCaptureIntent';
+import { trackTripEvent } from '@/utils/tripTracking';
 
 export function StartTripHero() {
   const { t } = useTranslation();
   const { user } = useAuth();
   const navigate = useLocalizedNavigate();
+  const location = useLocation();
   const { createTrip } = useTripMutations();
+  const activeTripContext = useOptionalActiveTrip();
 
   const [geo, setGeo] = useState<GeoSelection | null>(null);
   const [startDate, setStartDate] = useState('');
@@ -32,19 +38,24 @@ export function StartTripHero() {
       setError(t('pages.travel.hero.errors.city', 'Pick a city to plan a trip.'));
       return;
     }
+    const intent: TripCaptureIntent = {
+      kind: 'start_destination',
+      destination: geo,
+      ...(startDate ? { startDate } : {}),
+      ...(endDate ? { endDate } : {}),
+    };
+    trackTripEvent('trip_intent_started', {
+      kind: intent.kind,
+      source: 'travel-hero',
+      auth_state: user ? 'signed_in' : 'signed_out',
+    });
     if (!user) {
-      // Park selection on /trips so user can sign in then build
-      const params = new URLSearchParams({
-        cityId: geo.cityId,
-        cityName: geo.cityName,
-        countryId: geo.countryId,
-        countryName: geo.countryName,
+      const returnTo = `${location.pathname}${location.search}${location.hash}`;
+      storeTripCapture(intent, {
+        source: 'travel-hero',
+        returnTo,
       });
-      if (geo.countryCode) params.set('countryCode', geo.countryCode);
-      if (geo.timezone) params.set('timezone', geo.timezone);
-      if (startDate) params.set('start', startDate);
-      if (endDate) params.set('end', endDate);
-      navigate(`/trips?${params.toString()}`);
+      navigate(`/auth?redirect=${encodeURIComponent(returnTo)}`);
       return;
     }
     try {
@@ -58,6 +69,7 @@ export function StartTripHero() {
         start_date: startDate || undefined,
         end_date: endDate || undefined,
       });
+      activeTripContext?.setActiveTripId(trip.id);
       navigate(`/trips/${trip.id}`);
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Failed to create trip');

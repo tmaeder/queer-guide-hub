@@ -5,13 +5,13 @@ import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
 import { MobileBottomNav } from '@/components/layout/MobileBottomNav';
 import { TripContextBar } from '@/components/trips/TripContextBar';
+import { TripIntentResume } from '@/components/trips/TripIntentResume';
 import { RecoveryRedirect } from '@/components/auth/RecoveryRedirect';
 import { BreadcrumbBar } from '@/components/breadcrumbs/BreadcrumbBar';
 import { useGlobalPresence } from '@/hooks/useConversationPresence';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { lazyOptional } from '@/utils/lazyRetry';
 import { isMapRoute, isAdminRoute, isCompactFooterRoute, stripLocale } from '@/lib/locale';
-import { RouteNetworkRail } from '@/components/layout/RouteNetworkRail';
 
 // Peripheral chrome — banners and the feedback FAB. None of these are
 // above-the-fold or interaction-critical on first paint, so defer their
@@ -88,7 +88,6 @@ export const LayoutShell = ({ children }: { children: React.ReactNode }) => {
   const isFullBleedMap = isMapRoute(pathname);
   const isAdmin = isAdminRoute(pathname);
   const isHome = stripLocale(pathname) === '/';
-  const showRouteRail = !isHome && !isFullBleedMap && !isAdmin;
   // Panel 09: single-purpose flows and account screens get the one-line paper
   // footer instead of the full ink plate. See isCompactFooterRoute.
   const footerVariant = isCompactFooterRoute(pathname) ? 'compact' : 'full';
@@ -156,16 +155,14 @@ export const LayoutShell = ({ children }: { children: React.ReactNode }) => {
             <Header />
           </ErrorBoundary>
           <div className="relative z-10">
+            <TripIntentResume />
             <ErrorBoundary section="banners" fallback={null}>
               <TripContextBar />
             </ErrorBoundary>
-            {!isFullBleedMap && (
-              <div className={showRouteRail ? 'route-context-shell' : undefined}>
-                <ErrorBoundary section="breadcrumbs" fallback={null}>
-                  <BreadcrumbBar />
-                </ErrorBoundary>
-                {showRouteRail && <RouteNetworkRail pathname={pathname} />}
-              </div>
+            {!isFullBleedMap && !isHome && (
+              <ErrorBoundary section="breadcrumbs" fallback={null}>
+                <BreadcrumbBar />
+              </ErrorBoundary>
             )}
           </div>
         </>

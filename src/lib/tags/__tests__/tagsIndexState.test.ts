@@ -9,6 +9,9 @@ import {
   compareTagsBy,
   DEFAULT_TAGS_STATE,
   TAG_SORTS,
+  tagHasDefinition,
+  tagPreviewText,
+  type TagSortSubject,
 } from '../tagsIndexState';
 
 const sp = (s: string) => new URLSearchParams(s);
@@ -19,6 +22,12 @@ describe('parseTagsParams', () => {
     expect(state).toEqual(DEFAULT_TAGS_STATE);
     expect(changed).toBe(false);
     expect(redirectTo).toBeUndefined();
+    expect(state.kind).toBe('concept');
+  });
+
+  it('preserves an explicit all-kinds choice while omitting the default term kind', () => {
+    expect(serializeTagsParams(parseTagsParams(sp('kind=all')).state).toString()).toBe('kind=all');
+    expect(serializeTagsParams(parseTagsParams(sp('kind=concept')).state).toString()).toBe('');
   });
 
   it('reports drift when every key is present at its default', () => {
@@ -211,6 +220,12 @@ describe('compareTagsBy', () => {
   // The defect was one branch disagreeing with another about what `dir` means,
   // so assert the relationship across ALL sorts rather than three literals: asc
   // is the exact reverse of desc, whatever the branch computes.
+  //
+  // This corpus carries no descriptions, so `usage`'s definition tier is a
+  // uniform tie here and the pure reversal property holds. It does NOT hold for
+  // `usage` on a mixed corpus, and must not — see "ranks a definition ahead of
+  // a blank entry" below, which asserts the tier survives `asc` rather than
+  // flipping with it.
   it.each(TAG_SORTS)('makes asc the exact reverse of desc for sort=%s', (sort) => {
     expect(order(sort, 'asc')).toEqual([...order(sort, 'desc')].reverse());
   });
@@ -218,5 +233,86 @@ describe('compareTagsBy', () => {
   it('treats a missing created_at as the oldest, not the newest', () => {
     const withNull = [{ name: 'Zed', created_at: null }, ...corpus];
     expect([...withNull].sort(compareTagsBy('recent', 'desc', usage)).at(-1)?.name).toBe('Zed');
+  });
+});
+
+/**
+ * The definition tier.
+ *
+ * Usage counts how often something was TAGGED, which is a property of the
+ * ingest corpus and not of the entry. Locale codes and filter facets scraped
+ * onto thousands of rows therefore outscored most of the real vocabulary, and
+ * the default view led on entries that render a name and nothing else — `All`
+ * (2,643 uses, no definition) sat at position 15, above `Identity` and `HIV`.
+ */
+describe('compareTagsBy — definition tier', () => {
+  // Annotated, not inferred: `tagPreviewText` takes a TagPreviewSubject, which
+  // has no `name`, so a bare `{ name: 'Blank' }` literal is rejected outright
+  // (TS2559 — no properties in common) and `{ ...facet }` trips the
+  // excess-property check. TagSortSubject extends TagPreviewSubject, which is
+  // exactly the relationship the comparator relies on.
+  const defined: TagSortSubject = { name: 'Defined', short_description: 'A real definition.' };
+  const blank: TagSortSubject = { name: 'Blank' };
+  const usage = { Defined: 1, Blank: 9000 };
+  const names = (dir: 'asc' | 'desc', sort: 'usage' | 'alphabetical' = 'usage') =>
+    [blank, defined].sort(compareTagsBy(sort, dir, usage)).map((e) => e.name);
+
+  it('ranks a definition ahead of a blank entry even at 1 use against 9,000', () => {
+    expect(names('desc')).toEqual(['Defined', 'Blank']);
+  });
+
+  it('keeps the tier under asc — "least used first" is a direction, "blanks first" is not', () => {
+    // The tier sits OUTSIDE the single `asc` negation on purpose. Folding it
+    // inside would make ascending usage lead on the entries with nothing to
+    // read, which is the defect this tier exists to remove.
+    expect(names('asc')).toEqual(['Defined', 'Blank']);
+  });
+
+  it('leaves alphabetical alone, or the A–Z letter rail stops being alphabetical', () => {
+    expect(names('desc', 'alphabetical')).toEqual(['Defined', 'Blank']); // Z→A
+    expect(names('asc', 'alphabetical')).toEqual(['Blank', 'Defined']); // A→Z
+  });
+
+  it('still orders by usage WITHIN each tier', () => {
+    const corpus = [
+      { name: 'LowDef', short_description: 'x' },
+      { name: 'HighDef', short_description: 'y' },
+      { name: 'LowBlank' },
+      { name: 'HighBlank' },
+    ];
+    const counts = { LowDef: 2, HighDef: 500, LowBlank: 3, HighBlank: 7000 };
+    expect([...corpus].sort(compareTagsBy('usage', 'desc', counts)).map((e) => e.name)).toEqual([
+      'HighDef',
+      'LowDef',
+      'HighBlank',
+      'LowBlank',
+    ]);
+  });
+
+  it('reads the same fact the card renders', () => {
+    // tagPreviewText is the single source; if the comparator judged on raw
+    // columns instead, an attribute would sort as defined while its card
+    // renders no blurb.
+    expect(tagPreviewText(defined)).toBe('A real definition.');
+    expect(tagHasDefinition(defined)).toBe(true);
+    expect(tagHasDefinition(blank)).toBe(false);
+  });
+
+  it('does not count an attribute’s imported encyclopedia prose as a definition', () => {
+    // "M" the letter, "3XL" the TV channel — the marketplace size facets carry
+    // Wikipedia imports for a different sense of their name.
+    const facet: TagSortSubject = {
+      name: 'M',
+      description: 'M is the thirteenth letter.',
+      entity_kind: 'attribute',
+    };
+    expect(tagHasDefinition(facet)).toBe(false);
+    // A curated short description on the same row IS shown, and does count.
+    expect(tagHasDefinition({ ...facet, short_description: 'Medium.' })).toBe(true);
+  });
+
+  it('treats prose that cleans away to nothing as no definition', () => {
+    const whitespaceOnly: TagSortSubject = { name: 'X', short_description: '   ' };
+    expect(tagHasDefinition(whitespaceOnly)).toBe(false);
   });
 });

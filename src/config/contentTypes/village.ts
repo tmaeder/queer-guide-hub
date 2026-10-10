@@ -1,5 +1,7 @@
 import { Home } from 'lucide-react';
 import type { ContentTypeConfig, FieldConfig } from '@/types/cms';
+import { countLink } from './countLink';
+import { venueContentType } from './venue';
 
 const fmtNum = (n: unknown): string =>
   typeof n === 'number' && Number.isFinite(n) ? new Intl.NumberFormat().format(n) : '-';
@@ -23,7 +25,7 @@ export const queerVillageFields: FieldConfig[] = [
   { name: 'history', label: 'History', type: 'richtext', group: 'details', colSpan: 2 },
   { name: 'website', label: 'Website', type: 'url', group: 'details' },
   { name: 'notable_landmarks', label: 'Notable Landmarks', type: 'tags', group: 'details' },
-  { name: 'boundaries', label: 'Boundaries', type: 'json', group: 'details', helpText: 'GeoJSON boundary data' },
+  { name: 'boundaries', label: 'Boundaries', type: 'json', group: 'details', helpText: 'District boundary shape' },
   // Location
   // `queer_villages` stores only the FKs — it has no city/country text columns, so
   // those targets wrote nothing. The autocompletes display via the FK.
@@ -159,10 +161,9 @@ export const queerVillageFields: FieldConfig[] = [
     hidden: true,
     virtual: true,
     listColumn: true,
-    listRender: (row) => {
-      const venues = row.venues as Array<{ count?: number }> | null | undefined;
-      return fmtNum(venues?.[0]?.count ?? 0);
-    },
+    // Links to the Venues list filtered on `queer_village_id`, the key
+    // `venues(count)` counts through; scoped by `listEmbedScopes` below.
+    listRender: (row) => countLink(row, 'venues', 'venues', 'queer_village_id'),
   },
   {
     name: 'events_count',
@@ -192,6 +193,8 @@ export const queerVillageContentType: ContentTypeConfig = {
   fields: queerVillageFields,
   listSelect:
     '*,cities(name,population),countries(name,population),venues(count),events(count)',
+  // The Venues count links to the Venues list; count what that list shows.
+  listEmbedScopes: [{ embed: 'venues', type: venueContentType }],
   defaults: { featured: false },
   fieldGroupOrder: ['basic', 'details', 'location', 'media', 'settings'],
   admin: {

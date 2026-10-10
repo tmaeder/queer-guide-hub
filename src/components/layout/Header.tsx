@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router';
 import { Button } from '@/components/ui/button';
-import { LogOut, Shield, UserRound } from 'lucide-react';
+import { LogOut, Shield, UserRound, Users } from 'lucide-react';
 import { TransitIcon } from '@/components/transit/TransitIcon';
 import { TrackSwatch } from '@/components/transit/TrackSwatch';
 import { useTranslation } from 'react-i18next';
@@ -24,6 +24,7 @@ import { generateAvatarUrl } from '@/lib/avatar';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { NotificationBell } from '@/components/notifications/NotificationBell';
 import { useAdminRoles } from '@/hooks/useAdminRoles';
+import { useFriendsOnlineCount } from '@/hooks/useFriendIds';
 import {
   USER_MENU_ITEMS as userMenuItems,
   INTENT_NAV,
@@ -51,6 +52,8 @@ export function Header() {
   const { profile } = useProfile();
   const { isAdmin, isModerator } = useAdminRoles();
 
+  const friendsOnline = useFriendsOnlineCount(user?.id);
+
   const avatarSrc =
     profile?.avatar_url ||
     (user?.email ? generateAvatarUrl(user.email, 96) || undefined : undefined);
@@ -76,7 +79,11 @@ export function Header() {
 
   // ── Brand + right action cluster (shared by mobile row & desktop grid) ───
   const brand = (
-    <Link to="/" aria-label={siteName} className="flex items-center gap-2.5 shrink-0 no-underline">
+    <Link
+      to="/"
+      aria-label={siteName}
+      className="flex min-h-11 items-center gap-2.5 shrink-0 no-underline"
+    >
       {branding.logoUrl ? (
         // /admin/design custom-logo escape hatch keeps the img branch.
         <>
@@ -125,7 +132,7 @@ export function Header() {
       onClick={() => (user ? navigate(submitCta.route) : setAuthDialogOpen(true))}
       aria-label={contributeLabel}
       title={contributeLabel}
-      className="h-10 w-10 shrink-0 gap-2 p-0 lg:w-auto lg:px-4"
+      className="h-11 w-11 shrink-0 gap-2 p-0 lg:w-auto lg:px-4"
     >
       <TransitIcon name="add-station" size={20} />
       <span className="hidden lg:inline">{contributeLabel}</span>
@@ -148,7 +155,7 @@ export function Header() {
             <Button
               variant="ghost"
               size="sm"
-              style={{ height: 40, width: 40 }}
+              style={{ height: 44, width: 44 }}
               className="p-0"
               aria-label={t('header.openUserMenu', 'Open user menu')}
             >
@@ -192,6 +199,24 @@ export function Header() {
 
             {/* Theme switch removed 2026-08: dark mode dropped with the
                 subway-map rebrand (fixed paper/ink poster identity). */}
+
+            <DropdownMenuItem asChild>
+              <LocalizedLink to="/hub/friends" className="flex gap-2 no-underline">
+                <Users size={16} />
+                <span>{t('header.userMenu.friends', 'Friends')}</span>
+                {friendsOnline !== null && (
+                  <span className="ml-auto flex items-center gap-1.5 text-xs tabular-nums text-muted-foreground">
+                    <span aria-hidden className="h-2 w-2 rounded-full bg-foreground" />
+                    <span aria-hidden>{friendsOnline}</span>
+                    <span className="sr-only">
+                      {t('header.userMenu.friendsOnline', '{{count}} online', {
+                        count: friendsOnline,
+                      })}
+                    </span>
+                  </span>
+                )}
+              </LocalizedLink>
+            </DropdownMenuItem>
 
             {userMenuItems.map((item) => (
               <DropdownMenuItem asChild key={item.to}>

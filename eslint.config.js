@@ -767,4 +767,36 @@ export default tseslint.config(
       'queerguide/no-hand-rolled-page-wrapper': 'error',
     },
   },
+
+  // Operator scripts were matched by NO config block — every `files:` above is
+  // `.ts`/`.tsx`, so `npx eslint scripts/foo.mjs` printed nothing and that read
+  // exactly like a clean file. Measured 2026-10-09: four sections of
+  // `check-pipeline-health.mjs` referenced an undeclared `SUPABASE_URL` and
+  // `HEADERS` (the other 51 use `BASE`/`headers`), so the script died with a
+  // ReferenceError at the FIRST of them and the five sections after it — plus
+  // its own terminal `process.exit(1)` summary — never ran. It had been failing
+  // every night for five days, and because the crash comes AFTER a long list of
+  // real `✗` findings, the run reads as "the corpus has problems" rather than
+  // "the checker stopped checking". A crash mid-script is the one failure mode a
+  // health script must not have: it silently converts every later section into
+  // an unchecked one, including documented zero-invariants.
+  //
+  // `no-undef` is the whole class in one rule and it needs no type information.
+  // Scoped to scripts/** rather than enabled globally because the `.ts` tree is
+  // already covered by typescript-eslint, where `no-undef` is redundant and
+  // known to misfire on type-only identifiers.
+  {
+    files: ['scripts/**/*.mjs', 'scripts/**/*.js'],
+    languageOptions: {
+      ecmaVersion: 2023,
+      sourceType: 'module',
+      // Node for process/fetch, browser for the few scripts that drive a DOM
+      // (generate-brand-assets.mjs, seo-check.mjs) or use timer/AbortSignal
+      // globals that live in the browser set.
+      globals: { ...globals.node, ...globals.browser },
+    },
+    rules: {
+      'no-undef': 'error',
+    },
+  },
 );

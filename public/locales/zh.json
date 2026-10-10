@@ -701,7 +701,32 @@
     "contextBar": {
       "openTrip": "打开行程",
       "ariaLabel": "当前行程",
-      "dismissAria": "关闭当前行程横幅"
+      "dismissAria": "关闭当前行程横幅",
+      "readiness": "行程准备度",
+      "nextUp": "需要注意",
+      "loadError": "无法加载行程详情"
+    },
+    "capture": {
+      "planDestination": "规划前往{{city}}的行程",
+      "inTrip": "已在{{trip}}中",
+      "addToActive": "添加到{{trip}}",
+      "offlineTitle": "连接网络后添加",
+      "offlineDescription": "你仍可离线查看行程，但添加新地点需要网络连接。",
+      "addedTitle": "已添加到{{trip}}",
+      "addedDescription": "{{name}}正在“未安排”中等待。",
+      "unscheduled": "等待安排",
+      "undoFailed": "无法撤销添加"
+    },
+    "workspace": {
+      "sections": "行程工作区",
+      "plan": "规划",
+      "prepare": "准备",
+      "together": "协作",
+      "planTools": "编排行程",
+      "prepareTools": "做好出发准备",
+      "togetherTools": "一起规划",
+      "keepPlanning": "继续规划",
+      "memories": "添加回忆"
     },
     "phase": {
       "label": {
@@ -716,9 +741,12 @@
         "inDays": "{{count}} 天后",
         "tomorrow": "明天",
         "soon": "即将",
-        "dayOf": "今天",
+        "dayOf": "第 {{day}} 天，共 {{total}} 天",
         "daysAgo": "{{count}} 天前",
-        "yesterday": "昨天"
+        "yesterday": "昨天",
+        "day": "第 {{day}} 天",
+        "pastTrip": "过往行程",
+        "justEnded": "刚刚结束"
       }
     },
     "discover": {
@@ -2014,6 +2042,7 @@
       "settings": "设置",
       "inbox": "收件箱",
       "friends": "朋友",
+      "friendsOnline": "{{count}} 人在线",
       "myGroups": "我的群组",
       "accessibility": "无障碍",
       "bookings": "预订",
@@ -2301,6 +2330,7 @@
     },
     "travel": {
       "title": "旅行",
+      "activeTitle": "正在规划{{city}}",
       "subtitle": "查找LGBTQ+友好目的地的航班、酒店和活动",
       "activitiesComingSoon": "活动即将推出。",
       "browseDestinations": "浏览目的地",
@@ -2369,6 +2399,7 @@
         "switchTrip": "切换活动旅行"
       },
       "lede": "[ZH] Pick a place, build the trip, book the pieces — with the legal picture built in.",
+      "activeLede": "继续探索{{city}}，并将地点和活动直接添加到当前行程。",
       "sections": {
         "plan": "[ZH] Plan your trip",
         "planKicker": "[ZH] The planner",
@@ -2886,8 +2917,7 @@
         "language": "语言",
         "currency": "货币",
         "bestTime": "最佳时间",
-        "airport": "机场",
-        "nearestAirport": "[ZH] Nearest airport"
+        "airport": "机场"
       },
       "eyebrow": "[ZH] City",
       "sections": "[ZH] Sections",
@@ -2928,25 +2958,21 @@
         "majorCity": "[ZH] Major city",
         "region": "[ZH] Region",
         "timezone": "[ZH] Timezone",
-        "founded": "[ZH] Founded",
         "area": "[ZH] Area",
         "elevation": "[ZH] Elevation",
-        "mayor": "[ZH] Mayor",
         "postalCodes": "[ZH] Postal codes",
         "costOfLiving": "[ZH] Cost of living",
         "universities": "[ZH] Universities",
         "sisterCities": "[ZH] Sister cities"
       },
       "travel": {
-        "majorAirport": "[ZH] Major airport",
-        "nearestAirport": "[ZH] Nearest airport",
-        "allCodes": "[ZH] All airport codes",
         "lines": "[ZH] Lines",
         "networkCaption": "[ZH] Rapid-transit lines, drawn from OpenStreetMap. Schematic, not to scale.",
         "gettingAround": "[ZH] Getting around",
         "noDealsTitle": "[ZH] We don't promote travel deals for destinations where LGBTQ+ people face criminal penalties.",
         "noDealsBody": "[ZH] If you need to travel to {{city}}, read the safety and rights section first and use the trip planner — it includes a safety briefing for high-risk destinations.",
-        "otherNearby": "[ZH] Other airports nearby"
+        "noAirport": "无",
+        "nearestAirports": "最近的机场"
       },
       "endOfLine": {
         "eyebrow": "[ZH] End of line",
@@ -2978,7 +3004,28 @@
     "venueCount_one": "[ZH] {{count}} place",
     "venueCount_other": "[ZH] {{count}} places",
     "villageCount_one": "[ZH] {{count}} district",
-    "villageCount_other": "[ZH] {{count}} districts"
+    "villageCount_other": "[ZH] {{count}} districts",
+    "discovery": {
+      "noMatches": "没有匹配结果，请尝试其他筛选条件。",
+      "showing": "显示 {{count}} 项中的 {{shown}} 项",
+      "reset": "重置筛选",
+      "searchPlaces": "搜索地点",
+      "placeType": "地点类型",
+      "allPlaces": "所有地点",
+      "morePlaces": "更多地点",
+      "district": "酷儿街区",
+      "when": "时间",
+      "upcoming": "即将举行",
+      "today": "今天",
+      "weekend": "本周末",
+      "week": "未来7天",
+      "eventType": "活动类型",
+      "allTypes": "所有类型",
+      "freeOnly": "仅免费",
+      "moreEvents": "更多班次",
+      "moreTypes": "更多活动类型",
+      "until": "截至"
+    }
   },
   "pride": {
     "eyebrow": "Pride Calendar",
@@ -4512,7 +4559,19 @@
       "seeAllRights": "查看各国的 18 项权利",
       "seeAllInSearch": "[ZH] See all in search",
       "shopAll": "查看全部",
-      "figure": "[ZH] Diagram"
+      "figure": "[ZH] Diagram",
+      "workbooks": {
+        "eyebrow": "动手做",
+        "title": "练习",
+        "steps": "{{count}} 步",
+        "days": "{{count}} 天",
+        "withPartner": "与伴侣一起",
+        "onYourOwn": "独自进行",
+        "start": "开始",
+        "startLabel": "开始「{{title}}」",
+        "locked": "登录并启用亲密档案后即可进行这项练习。",
+        "privacy": "你写下的内容始终只属于你。除非你把某个答案标记为可分享，并且对方也这样做了，否则不会分享给任何伴侣。"
+      }
     },
     "flagWall": {
       "eyebrow": "符号",
@@ -4921,5 +4980,249 @@
     "pauseEpisode": "暂停 {{title}}",
     "error": "无法播放该单集。节目服务器可能已停止服务。",
     "retry": "重试"
+  },
+  "cruising": {
+    "layers": {
+      "both": "两个都",
+      "people": "人们",
+      "label": "地图图层",
+      "spots": "景点"
+    },
+    "eyebrow": "私人·登录成人",
+    "loading": "打开私人 寻欢 指南",
+    "title": "酷儿寻欢地图",
+    "meta": {
+      "title": "寻欢 地图",
+      "description": "寻欢 地点和选择加入的成人约会资料的私人地图。"
+    },
+    "intro": "在一个视图中查找所有列出的 寻欢 地点和选择加入的约会资料。人们仅以大致的城市区域出现；点使用其列出的坐标。",
+    "safety": {
+      "body": "需要双方同意。共享位置仍然属于非参与者。检查当地法律，保护您的隐私，并制定退出计划。",
+      "guide": "阅读 寻欢 指南",
+      "health": "性健康指南",
+      "healthLead": "或查看"
+    },
+    "tabs": {
+      "label": "寻欢 结果",
+      "spots": "所有景点",
+      "people": "附近的人"
+    },
+    "selectedArea_one": "显示 {{city}} 周围的约会资料。气泡代表 {{count}} 活跃人物，但未透露具体位置。",
+    "count": {
+      "map": "地图：当前搜索中的{{count}}",
+      "spots_other": "{{count}} 现货",
+      "spots_one": "{{count}} 现货"
+    },
+    "selectedArea_other": "显示 {{city}} 周围的约会资料。气泡代表 {{count}} 活跃人士，但未透露具体位置。",
+    "search": {
+      "placeholder": "搜索地点、城市或国家",
+      "label": "搜索所有 寻欢 景点"
+    },
+    "results": {
+      "loading": "正在加载 寻欢 景点",
+      "empty": "没有与此搜索匹配的地点。",
+      "error": "无法加载 寻欢 指南。请再试一次。"
+    },
+    "pagination": {
+      "next": "下一个",
+      "previous": "以前的",
+      "page": "{{totalPages}} 的页面 {{page}}"
+    },
+    "spot": {
+      "verified": "已验证",
+      "showOnMap": "在地图上显示",
+      "locationIncomplete": "地点详情不完整",
+      "noCoordinates": "列出没有坐标",
+      "details": "地点详情"
+    },
+    "map": {
+      "ariaLabel": "互动寻欢地图",
+      "nearMe": "在我附近",
+      "searchArea": "搜索该区域",
+      "unavailable": "交互式地图在此浏览器中不可用。每个 寻欢 现货仍然列出。",
+      "legend": "粉色：斑点·蓝色：大致活动区域"
+    },
+    "presence": {
+      "createProfile": "创建亲密的个人资料",
+      "peopleOffTitle": "人员层已关闭",
+      "peopleOffBody": "创建亲密的个人资料以查看约会资料，并可选择出现在大致的城市区域。",
+      "toastEnabledBody": "仅显示了近似的城市气泡。",
+      "toastError": "无法更新可见性",
+      "expires": "在 {{time}} 处自动关闭。",
+      "visibleTitle": "在大致区域内可见",
+      "turnOff": "关",
+      "dialogTitle": "可见一小时",
+      "hiddenTitle": "在地图上不可见",
+      "goVisible": "变得可见",
+      "cityLabel": "城市或地区",
+      "toastEnabled": "可见一小时",
+      "cancel": "取消",
+      "enable": "可见一小时",
+      "toastDisabled": "您在 寻欢 地图上不再可见",
+      "preciseNeverPublished": "您的确切位置永远不会被公开。",
+      "dialogDescription": "其他选择加入的成年人只看到城市级别的泡沫和计数。他们永远不会收到您的设备位置。",
+      "cityPlaceholder": "搜索城市",
+      "cityLoading": "寻找城市...",
+      "enabling": "启用...",
+      "acknowledgement": "我了解可见性是近似值，一小时后过期，并且不能取代检查同意、环境或当地法律。"
+    }
+  },
+  "workbooks": {
+    "answerPlaceholder": "你的答案，输入时自动保存",
+    "answer": "你的答案",
+    "privateNote": "在你决定分享之前，仅你可见",
+    "notFound": "找不到该练习",
+    "backToGlossary": "返回术语表",
+    "signInGate": "一项面向自愿成年人的私密练习。登录后即可进行。",
+    "signIn": "登录",
+    "optInGate": "这属于亲密层：18+、需主动启用、需验证邮箱。你写下的内容默认私密，除非你选择分享且对方也分享，否则不会传给任何伴侣。",
+    "enableIntimate": "启用亲密档案",
+    "stepN": "第 {{n}} 步",
+    "back": "返回",
+    "next": "下一步",
+    "finish": "完成",
+    "sharing": "分享",
+    "noStepsYet": "目前还没有内容。明天再来。",
+    "lockedCount": "还有 {{count}} 项未解锁",
+    "inOneDay": "明天",
+    "inNDays": "{{count}} 天后",
+    "backToSteps": "返回问题",
+    "discussFirst": "先沟通",
+    "menuUnavailable": "此列表暂时不可用。",
+    "menuSharedWithChecklist": "这些评分构成你的兴趣与界限清单，也会出现在 /tools/checklist 中",
+    "menuVetoNote": "你的「不」和你的硬性界限永远不会展示给任何人。它们只会把该项目从任何对比中静默移除。",
+    "share": {
+      "title": "你分享的内容",
+      "intro": "选择你愿意展示的答案。在伴侣也向你分享之前不会显示任何内容，而且你可以随时关闭其中任何一项。",
+      "yourAnswers": "你的答案",
+      "nOfM": "已分享 {{shared}} / {{total}}",
+      "nothingWritten": "你还没有写任何内容，没有可分享的。",
+      "toggleLabel": "分享「{{prompt}}」",
+      "partner": "你的伴侣",
+      "noPartnerYet": "从对话中打开这项练习即可与他人对比。无论如何，上面的分享选择都会被保存。",
+      "statusActive": "你们都已分享，对比已开启。",
+      "statusWaiting": "你已分享，等待对方分享。",
+      "statusTheirs": "对方已向你分享。回赠分享即可查看对比。",
+      "statusNone": "你们还没有互相分享。",
+      "revoke": "停止分享",
+      "grant": "向对方分享"
+    },
+    "compare": {
+      "empty": "暂时没有可对比的内容。",
+      "title": "并排查看",
+      "menuRow": "已评分列表",
+      "menuNote": "已评分列表的重合内容位于你的兴趣与界限对比中，该对比需单独分享。",
+      "openChecklist": "打开清单",
+      "you": "你",
+      "them": "对方"
+    }
+  },
+  "contributeForm": {
+    "unknownType": "未知的提交类型",
+    "unknownBody": "不支持提交类型“{{type}}”。",
+    "backHub": "返回贡献页面",
+    "signInRequired": "需要登录",
+    "authBody": "请先登录再添加目录内容。访客无法使用此表单。",
+    "submittedBody": "你的{{type}}提交已收到，将在发布前接受审核。",
+    "submitMore": "继续提交",
+    "submitAnother": "再提交一个{{type}}",
+    "allSubmissions": "所有提交类型",
+    "submitType": "提交{{type}}",
+    "returnStep": "返回第 {{step}} 步",
+    "step": "第 {{step}} 步：{{label}}",
+    "fixErrors": "请修正以下内容后继续：",
+    "cancel": "取消",
+    "next": "下一步",
+    "types": {
+      "venue": "场所",
+      "event": "活动",
+      "product": "商品",
+      "personality": "人物",
+      "hotel": "酒店 / 民宿",
+      "tag": "标签",
+      "news": "新闻文章",
+      "place": "地点"
+    },
+    "steps": {
+      "basics": "基本信息",
+      "location": "位置",
+      "contact": "联系方式",
+      "when-where": "时间与地点",
+      "details": "详细信息",
+      "suggest": "建议"
+    }
+  },
+  "contribute": {
+    "trigger": "为 Queer Guide 贡献内容",
+    "title": "为 Queer Guide 贡献内容",
+    "subtitle": "分享你的发现、修正条目信息，或帮助指南不断完善。",
+    "eyebrow": "贡献内容",
+    "common": {
+      "failed": "提交失败",
+      "tryAgain": "请重试。",
+      "done": "完成",
+      "emailOptional": "电子邮箱（可选）",
+      "emailPlaceholder": "便于我们后续联系",
+      "back": "返回",
+      "submitting": "正在提交…",
+      "submit": "提交"
+    },
+    "chooser": {
+      "feedbackTitle": "报告问题或提出想法",
+      "feedbackBody": "分享你对网站或使用体验的反馈。",
+      "correctionTitle": "更正此页面的信息",
+      "correctionBody": "告诉我们哪些信息已过时、场所已关闭或内容不正确。",
+      "addTitle": "添加新内容",
+      "addBody": "提交场所、活动、商品、人物或文章。",
+      "scanTitle": "扫描传单或链接",
+      "scanBody": "从文件或网页中提取多个提交项目。",
+      "contactTitle": "联系团队",
+      "contactBody": "账户帮助、合作、媒体或其他私密消息。"
+    },
+    "feedback": {
+      "heading": "报告问题或分享想法",
+      "successToast": "反馈已提交，谢谢！",
+      "thanks": "谢谢！",
+      "successBody": "你的反馈将帮助我们改进 Queer Guide。",
+      "category": "反馈类型",
+      "categories": {
+        "safety": "安全与内容审核",
+        "bug": "错误报告",
+        "idea": "想法",
+        "improvement": "改进建议",
+        "content-idea": "内容建议"
+      },
+      "title": "标题",
+      "titlePlaceholder": "简要概述",
+      "description": "详细说明",
+      "descriptionPlaceholder": "请告诉我们更多信息…",
+      "includeScreenshot": "附上此页面的截图",
+      "screenshotPreview": "截图预览",
+      "contextNote": "将自动附上当前页面网址、浏览器信息、近期错误和网络故障。"
+    },
+    "correction": {
+      "heading": "更正此页面的信息",
+      "successToast": "更正已提交，谢谢！",
+      "thanks": "谢谢！",
+      "successBody": "编辑团队将审核你的更正。",
+      "thisPage": "此页面",
+      "wrong": "哪里不正确？",
+      "replacement": "正确内容应该是什么？"
+    },
+    "auth": {
+      "title": "登录后贡献内容",
+      "body": "添加目录内容需要账户。",
+      "scanBody": "扫描并提交内容需要账户。",
+      "cta": "登录或创建账户"
+    },
+    "add": {
+      "heading": "添加新内容"
+    },
+    "scan": {
+      "heading": "扫描传单或链接",
+      "submitted": "已提交 {{count}} 个项目",
+      "linked": "已将 {{count}} 个项目关联到现有条目",
+      "reviewNote": "提交内容会在发布前接受审核。"
+    }
   }
 }

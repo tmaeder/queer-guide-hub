@@ -20,6 +20,8 @@
  * collapses to `/tags`.
  */
 
+import { cleanTitle } from '@/utils/htmlDecode';
+
 export const TAG_VIEWS = ['grid', 'list', 'chips', 'graph'] as const;
 export type TagView = (typeof TAG_VIEWS)[number];
 
@@ -70,7 +72,7 @@ export const DEFAULT_TAGS_STATE: TagsIndexState = {
   dir: 'desc',
   letter: null,
   usage: 'all',
-  kind: 'all',
+  kind: 'concept',
   adult: false,
 };
 
@@ -201,8 +203,38 @@ export function letterFor(name: string): string {
   return first >= 'A' && first <= 'Z' ? first : LETTER_OTHER;
 }
 
+/** The fields the preview and the definition tier read. */
+export interface TagPreviewSubject {
+  description?: string | null;
+  short_description?: string | null;
+  entity_kind?: string | null;
+}
+
+/**
+ * The blurb the index shows for a term — and the SINGLE source for whether a
+ * term has a definition at all.
+ *
+ * Product attributes can carry encyclopedia imports for a different sense of
+ * their name ("M" the letter, "3XL" the TV channel). Show a curated short
+ * description when present; generic imported prose is not a label definition.
+ *
+ * This lives here, next to `compareTagsBy`, because the card and the sort MUST
+ * agree. If the comparator re-implemented the rule, a card would render a blurb
+ * the sort believes does not exist (or the reverse), and the definition tier
+ * below would silently rank on a different fact than the reader sees.
+ */
+export function tagPreviewText(tag: TagPreviewSubject): string {
+  const fallback = tag.entity_kind === 'attribute' ? '' : tag.description;
+  return cleanTitle(tag.short_description || fallback || '');
+}
+
+/** A term the reader can actually learn something from. */
+export function tagHasDefinition(tag: TagPreviewSubject): boolean {
+  return tagPreviewText(tag).trim().length > 0;
+}
+
 /** The fields a sort reads. The page's richer entry type carries the rest. */
-export interface TagSortSubject {
+export interface TagSortSubject extends TagPreviewSubject {
   name: string;
   created_at?: string | null;
 }
@@ -217,6 +249,16 @@ export interface TagSortSubject {
  * `alphabetical` (which handled direction separately, and correctly) did not.
  * Since the default state is `sort: 'usage', dir: 'desc'`, the glossary index
  * opened on the least-used terms.
+ *
+ * `usage` additionally ranks terms WITH a definition ahead of terms without
+ * one. Usage counts how often something was tagged, which is a property of the
+ * ingest corpus and not of the entry: locale codes and filter facets scraped
+ * onto thousands of rows outscore most of the real vocabulary, so the default
+ * view led on terms that render a name and nothing else. The tier sits OUTSIDE
+ * the `asc` negation on purpose — "least used first" is a direction, "show me
+ * the blank entries first" is not — and applies to `usage` ONLY: inside
+ * `alphabetical` it would break the A–Z letter rail, which must stay a pure
+ * alphabetical ordering.
  */
 export function compareTagsBy(
   sort: TagSort,
@@ -233,7 +275,11 @@ export function compareTagsBy(
         return b.name.localeCompare(a.name);
     }
   };
-  return dir === 'asc' ? (a, b) => -descending(a, b) : descending;
+  const directional =
+    dir === 'asc' ? (a: TagSortSubject, b: TagSortSubject) => -descending(a, b) : descending;
+  if (sort !== 'usage') return directional;
+  return (a, b) =>
+    (tagHasDefinition(b) ? 1 : 0) - (tagHasDefinition(a) ? 1 : 0) || directional(a, b);
 }
 
 export function hasActiveFilters(state: TagsIndexState): boolean {

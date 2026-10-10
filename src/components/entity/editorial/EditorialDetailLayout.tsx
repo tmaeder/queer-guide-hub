@@ -39,6 +39,8 @@ export interface EditorialDetailLayoutProps {
   disableProgress?: boolean;
   /** Page-specific treatment for the otherwise shared anchored section strip. */
   sectionNavVariant?: 'default' | 'subway';
+  /** Page-specific spacing or surface treatment for the anchored section strip. */
+  sectionNavClassName?: string;
 }
 
 /**
@@ -57,6 +59,7 @@ export function EditorialDetailLayout({
   entityId: _entityId,
   disableProgress = false,
   sectionNavVariant = 'default',
+  sectionNavClassName,
 }: EditorialDetailLayoutProps) {
   // Publish the trail to the global breadcrumb bar (rendered in LayoutShell).
   useBreadcrumbs(breadcrumbs ?? null);
@@ -212,6 +215,7 @@ export function EditorialDetailLayout({
           activeId={activeId}
           onSelect={selectSection}
           variant={sectionNavVariant}
+          className={sectionNavClassName}
         />
 
         <div>

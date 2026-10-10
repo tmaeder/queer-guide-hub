@@ -701,7 +701,32 @@
     "contextBar": {
       "openTrip": "여행 열기",
       "ariaLabel": "진행 중인 여행",
-      "dismissAria": "진행 중인 여행 배너 닫기"
+      "dismissAria": "진행 중인 여행 배너 닫기",
+      "readiness": "여행 준비도",
+      "nextUp": "확인이 필요해요",
+      "loadError": "여행 세부 정보를 불러올 수 없습니다"
+    },
+    "capture": {
+      "planDestination": "{{city}} 여행 계획하기",
+      "inTrip": "{{trip}}에 있음",
+      "addToActive": "{{trip}}에 추가",
+      "offlineTitle": "연결 후 추가하세요",
+      "offlineDescription": "여행은 오프라인에서도 볼 수 있지만 새 장소를 추가하려면 연결이 필요합니다.",
+      "addedTitle": "{{trip}}에 추가됨",
+      "addedDescription": "{{name}}이(가) 미정 목록에 있습니다.",
+      "unscheduled": "일정 배정 대기 중",
+      "undoFailed": "추가를 취소할 수 없습니다"
+    },
+    "workspace": {
+      "sections": "여행 작업 공간",
+      "plan": "계획",
+      "prepare": "준비",
+      "together": "함께",
+      "planTools": "일정 구성하기",
+      "prepareTools": "출발 준비하기",
+      "togetherTools": "함께 계획하기",
+      "keepPlanning": "계속 계획하기",
+      "memories": "추억 추가"
     },
     "phase": {
       "label": {
@@ -716,9 +741,12 @@
         "inDays": "{{count}}일 후",
         "tomorrow": "내일",
         "soon": "곧",
-        "dayOf": "오늘",
+        "dayOf": "총 {{total}}일 중 {{day}}일차",
         "daysAgo": "{{count}}일 전",
-        "yesterday": "어제"
+        "yesterday": "어제",
+        "day": "{{day}}일차",
+        "pastTrip": "지난 여행",
+        "justEnded": "방금 종료됨"
       }
     },
     "discover": {
@@ -2014,6 +2042,7 @@
       "settings": "설정",
       "inbox": "받은편지함",
       "friends": "친구",
+      "friendsOnline": "{{count}}명 온라인",
       "myGroups": "내 그룹",
       "accessibility": "접근성",
       "bookings": "예약",
@@ -2301,6 +2330,7 @@
     },
     "travel": {
       "title": "여행",
+      "activeTitle": "{{city}} 여행 계획 중",
       "subtitle": "LGBTQ+ 친화적 여행지의 항공편, 호텔, 활동 찾기",
       "activitiesComingSoon": "액티비티 곧 공개.",
       "browseDestinations": "여행지 보기",
@@ -2369,6 +2399,7 @@
         "switchTrip": "활성 여행 전환"
       },
       "lede": "[KO] Pick a place, build the trip, book the pieces — with the legal picture built in.",
+      "activeLede": "{{city}}을(를) 계속 둘러보고 장소와 이벤트를 현재 여행에 바로 추가하세요.",
       "sections": {
         "plan": "[KO] Plan your trip",
         "planKicker": "[KO] The planner",
@@ -2886,8 +2917,7 @@
         "language": "언어",
         "currency": "통화",
         "bestTime": "가기 좋은 시기",
-        "airport": "공항",
-        "nearestAirport": "[KO] Nearest airport"
+        "airport": "공항"
       },
       "eyebrow": "[KO] City",
       "sections": "[KO] Sections",
@@ -2928,25 +2958,21 @@
         "majorCity": "[KO] Major city",
         "region": "[KO] Region",
         "timezone": "[KO] Timezone",
-        "founded": "[KO] Founded",
         "area": "[KO] Area",
         "elevation": "[KO] Elevation",
-        "mayor": "[KO] Mayor",
         "postalCodes": "[KO] Postal codes",
         "costOfLiving": "[KO] Cost of living",
         "universities": "[KO] Universities",
         "sisterCities": "[KO] Sister cities"
       },
       "travel": {
-        "majorAirport": "[KO] Major airport",
-        "nearestAirport": "[KO] Nearest airport",
-        "allCodes": "[KO] All airport codes",
         "lines": "[KO] Lines",
         "networkCaption": "[KO] Rapid-transit lines, drawn from OpenStreetMap. Schematic, not to scale.",
         "gettingAround": "[KO] Getting around",
         "noDealsTitle": "[KO] We don't promote travel deals for destinations where LGBTQ+ people face criminal penalties.",
         "noDealsBody": "[KO] If you need to travel to {{city}}, read the safety and rights section first and use the trip planner — it includes a safety briefing for high-risk destinations.",
-        "otherNearby": "[KO] Other airports nearby"
+        "noAirport": "없음",
+        "nearestAirports": "가장 가까운 공항"
       },
       "endOfLine": {
         "eyebrow": "[KO] End of line",
@@ -2978,7 +3004,28 @@
     "venueCount_one": "[KO] {{count}} place",
     "venueCount_other": "[KO] {{count}} places",
     "villageCount_one": "[KO] {{count}} district",
-    "villageCount_other": "[KO] {{count}} districts"
+    "villageCount_other": "[KO] {{count}} districts",
+    "discovery": {
+      "noMatches": "검색 결과가 없습니다. 다른 필터를 사용해 보세요.",
+      "showing": "{{count}}개 중 {{shown}}개 표시",
+      "reset": "필터 초기화",
+      "searchPlaces": "장소 검색",
+      "placeType": "장소 유형",
+      "allPlaces": "모든 장소",
+      "morePlaces": "장소 더 보기",
+      "district": "퀴어 지구",
+      "when": "일정",
+      "upcoming": "예정",
+      "today": "오늘",
+      "weekend": "이번 주말",
+      "week": "다음 7일",
+      "eventType": "이벤트 유형",
+      "allTypes": "모든 유형",
+      "freeOnly": "무료만",
+      "moreEvents": "더 보기",
+      "moreTypes": "더 많은 이벤트 유형",
+      "until": "종료"
+    }
   },
   "pride": {
     "eyebrow": "Pride Calendar",
@@ -4512,7 +4559,19 @@
       "seeAllRights": "18개 권리를 국가별로 보기",
       "seeAllInSearch": "[KO] See all in search",
       "shopAll": "전체 보기",
-      "figure": "[KO] Diagram"
+      "figure": "[KO] Diagram",
+      "workbooks": {
+        "eyebrow": "직접 해보기",
+        "title": "연습",
+        "steps": "{{count}}단계",
+        "days": "{{count}}일",
+        "withPartner": "파트너와 함께",
+        "onYourOwn": "혼자서",
+        "start": "시작",
+        "startLabel": "‘{{title}}’ 시작",
+        "locked": "로그인하고 친밀 프로필을 켜면 진행할 수 있습니다.",
+        "privacy": "작성한 내용은 모두 나만 볼 수 있습니다. 해당 답변을 공유 가능으로 표시하고 상대도 같이 표시하지 않는 한 파트너에게 아무것도 공유되지 않습니다."
+      }
     },
     "flagWall": {
       "eyebrow": "상징",
@@ -4921,5 +4980,249 @@
     "pauseEpisode": "{{title}} 일시정지",
     "error": "이 에피소드를 재생할 수 없습니다. 프로그램 서버가 중단되었을 수 있습니다.",
     "retry": "다시 시도"
+  },
+  "cruising": {
+    "layers": {
+      "both": "둘 다",
+      "label": "지도 레이어",
+      "people": "사람들",
+      "spots": "스팟"
+    },
+    "meta": {
+      "description": "크루징 장소의 비공개 지도와 선택한 성인 데이트 프로필.",
+      "title": "크루징 지도"
+    },
+    "title": "퀴어 크루징 지도",
+    "eyebrow": "비공개 · 로그인한 성인",
+    "intro": "나열된 모든 크루징 장소와 선택한 데이트 프로필을 한 번에 찾아보세요. 사람들은 대략적인 도시 지역으로만 나타납니다. 지점은 나열된 좌표를 사용합니다.",
+    "safety": {
+      "guide": "크루징 가이드 읽기",
+      "health": "성 건강 가이드",
+      "healthLead": "또는",
+      "body": "상호 동의가 필요합니다. 공유 장소는 여전히 비참가자의 소유입니다. 현지 법률을 확인하고, 개인 정보를 보호하고, 출구 계획을 유지하세요."
+    },
+    "loading": "개인 크루징 가이드 열기",
+    "tabs": {
+      "label": "크루징 결과",
+      "spots": "모든 명소",
+      "people": "주변 사람들"
+    },
+    "count": {
+      "map": "현재 검색 중인 지도: {{count}}",
+      "spots_one": "{{count}} 스팟",
+      "spots_other": "{{count}} 명소"
+    },
+    "search": {
+      "placeholder": "장소, 도시, 국가 검색",
+      "label": "모든 크루징 지점 검색"
+    },
+    "selectedArea_other": "{{city}} 주변의 데이트 프로필을 표시합니다. 거품은 정확한 위치를 공개하지 않고 {{count}} 활동적인 사람들을 나타냅니다.",
+    "selectedArea_one": "{{city}} 주변의 데이트 프로필을 표시합니다. 거품은 정확한 위치를 공개하지 않고 {{count}} 활동적인 사람을 나타냅니다.",
+    "pagination": {
+      "previous": "이전의",
+      "next": "다음",
+      "page": "{{totalPages}}의 페이지 {{page}}"
+    },
+    "spot": {
+      "verified": "확인됨",
+      "showOnMap": "지도에 표시",
+      "locationIncomplete": "위치 세부정보가 불완전합니다.",
+      "noCoordinates": "좌표 없이 나열됨",
+      "details": "장소 세부정보"
+    },
+    "results": {
+      "error": "크루징 가이드를 로드할 수 없습니다. 다시 시도해 주세요.",
+      "loading": "크루징 지점 로드 중",
+      "empty": "이 검색과 일치하는 장소가 없습니다."
+    },
+    "map": {
+      "searchArea": "이 지역 검색",
+      "nearMe": "내 근처",
+      "ariaLabel": "대화형 크루징 지도",
+      "legend": "분홍색: 반점 · 파란색: 대략적인 활성 영역",
+      "unavailable": "이 브라우저에서는 대화형 지도를 사용할 수 없습니다. 모든 크루징 지점이 여전히 나열되어 있습니다."
+    },
+    "presence": {
+      "peopleOffTitle": "인물 레이어가 꺼져 있습니다",
+      "peopleOffBody": "친밀한 프로필을 만들어 데이트 프로필을 확인하고 선택적으로 대략적인 도시 지역에 나타나세요.",
+      "hiddenTitle": "지도에 표시되지 않음",
+      "toastEnabled": "1시간 동안 볼 수 있음",
+      "createProfile": "친밀한 프로필 만들기",
+      "toastError": "공개 상태를 업데이트할 수 없습니다.",
+      "toastEnabledBody": "대략적인 도시 거품만 표시됩니다.",
+      "visibleTitle": "대략적인 지역에서 볼 수 있음",
+      "expires": "{{time}}에서 자동으로 꺼집니다.",
+      "toastDisabled": "더 이상 크루징 지도에 표시되지 않습니다.",
+      "goVisible": "공개 상태로 전환",
+      "cityLoading": "도시를 찾는 중…",
+      "turnOff": "끄다",
+      "cityPlaceholder": "도시 검색",
+      "dialogTitle": "한 시간 동안 표시됩니다.",
+      "cityLabel": "도시 또는 지역",
+      "enable": "1시간 동안 볼 수 있음",
+      "cancel": "취소",
+      "preciseNeverPublished": "귀하의 정확한 위치는 공개되지 않습니다.",
+      "dialogDescription": "선택한 다른 성인은 도시 수준 풍선과 개수만 볼 수 있습니다. 그들은 귀하의 장치 위치를 결코 수신하지 않습니다.",
+      "acknowledgement": "나는 가시성은 대략적인 것이며 1시간 후에 만료되며 동의, 주변 환경 또는 현지 법률 확인을 대체하지 않는다는 점을 이해합니다.",
+      "enabling": "활성화 중…"
+    }
+  },
+  "workbooks": {
+    "answerPlaceholder": "내 답변, 입력하는 동안 저장됩니다",
+    "answer": "내 답변",
+    "privateNote": "공유를 선택할 때까지 나만 볼 수 있음",
+    "notFound": "연습을 찾을 수 없습니다",
+    "backToGlossary": "용어집으로 돌아가기",
+    "signInGate": "동의한 성인을 위한 비공개 연습입니다. 로그인하면 진행할 수 있습니다.",
+    "signIn": "로그인",
+    "optInGate": "친밀 영역의 일부입니다. 18세 이상, 직접 활성화, 이메일 인증이 필요합니다. 작성한 내용은 기본적으로 비공개이며, 내가 공유하고 상대도 공유하지 않는 한 파트너에게 전달되지 않습니다.",
+    "enableIntimate": "친밀 프로필 켜기",
+    "stepN": "{{n}}단계",
+    "back": "뒤로",
+    "next": "다음",
+    "finish": "완료",
+    "sharing": "공유",
+    "noStepsYet": "아직 이용할 수 있는 내용이 없습니다. 내일 다시 오세요.",
+    "lockedCount": "{{count}}개 남음",
+    "inOneDay": "내일",
+    "inNDays": "{{count}}일 후",
+    "backToSteps": "질문으로 돌아가기",
+    "discussFirst": "먼저 이야기하기",
+    "menuUnavailable": "이 목록은 지금 이용할 수 없습니다.",
+    "menuSharedWithChecklist": "이 평가는 내 관심사와 한계 목록입니다. /tools/checklist 에도 표시됩니다",
+    "menuVetoNote": "내 ‘아니오’와 하드 리밋은 누구에게도 표시되지 않습니다. 해당 항목을 모든 비교에서 조용히 제외할 뿐입니다.",
+    "share": {
+      "title": "공유하는 내용",
+      "intro": "보여줄 답변을 고르세요. 파트너도 자기 답변을 공유할 때까지 아무것도 공개되지 않으며, 언제든 다시 끌 수 있습니다.",
+      "yourAnswers": "내 답변",
+      "nOfM": "{{total}}개 중 {{shared}}개 공유",
+      "nothingWritten": "아직 아무것도 작성하지 않았습니다. 공유할 내용이 없습니다.",
+      "toggleLabel": "‘{{prompt}}’ 공유",
+      "partner": "내 파트너",
+      "noPartnerYet": "대화에서 이 연습을 열면 상대와 비교할 수 있습니다. 위의 공유 선택은 어느 경우든 저장됩니다.",
+      "statusActive": "서로 공유했습니다. 비교가 활성화되었습니다.",
+      "statusWaiting": "공유했습니다. 상대의 공유를 기다리고 있습니다.",
+      "statusTheirs": "상대가 공유했습니다. 함께 공유하면 비교를 볼 수 있습니다.",
+      "statusNone": "아직 서로 공유하지 않았습니다.",
+      "revoke": "공유 중단",
+      "grant": "상대에게 공유"
+    },
+    "compare": {
+      "empty": "아직 비교할 내용이 없습니다.",
+      "title": "나란히 보기",
+      "menuRow": "평가한 목록",
+      "menuNote": "평가한 목록의 겹치는 부분은 따로 공유하는 관심사와 한계 비교에 표시됩니다.",
+      "openChecklist": "체크리스트 열기",
+      "you": "나",
+      "them": "상대"
+    }
+  },
+  "contributeForm": {
+    "unknownType": "알 수 없는 제출 유형",
+    "unknownBody": "제출 유형 ‘{{type}}’은 지원되지 않습니다.",
+    "backHub": "기여 화면으로 돌아가기",
+    "signInRequired": "로그인이 필요합니다",
+    "authBody": "디렉터리 콘텐츠를 추가하기 전에 로그인하세요. 게스트는 이 양식을 사용할 수 없습니다.",
+    "submittedBody": "{{type}} 제출을 완료했습니다. 공개 전에 검토됩니다.",
+    "submitMore": "더 제출하기",
+    "submitAnother": "다른 {{type}} 제출하기",
+    "allSubmissions": "모든 제출 유형",
+    "submitType": "{{type}} 제출",
+    "returnStep": "{{step}}단계로 돌아가기",
+    "step": "{{step}}단계: {{label}}",
+    "fixErrors": "계속하려면 다음 항목을 수정하세요:",
+    "cancel": "취소",
+    "next": "다음",
+    "types": {
+      "venue": "장소",
+      "event": "이벤트",
+      "product": "상품",
+      "personality": "인물",
+      "hotel": "호텔 / BnB",
+      "tag": "태그",
+      "news": "뉴스 기사",
+      "place": "지역"
+    },
+    "steps": {
+      "basics": "기본 정보",
+      "location": "위치",
+      "contact": "연락처",
+      "when-where": "일시와 장소",
+      "details": "세부 정보",
+      "suggest": "제안"
+    }
+  },
+  "contribute": {
+    "trigger": "Queer Guide에 기여하기",
+    "title": "Queer Guide에 기여하기",
+    "subtitle": "발견한 내용을 알려 주거나, 등록 정보를 수정하거나, 가이드가 성장하도록 도와주세요.",
+    "eyebrow": "기여하기",
+    "common": {
+      "failed": "제출하지 못했습니다",
+      "tryAgain": "다시 시도해 주세요.",
+      "done": "완료",
+      "emailOptional": "이메일(선택)",
+      "emailPlaceholder": "후속 연락을 위해 사용됩니다",
+      "back": "뒤로",
+      "submitting": "제출 중…",
+      "submit": "제출"
+    },
+    "chooser": {
+      "feedbackTitle": "문제 또는 아이디어 알리기",
+      "feedbackBody": "사이트나 이용 경험에 대한 의견을 알려 주세요.",
+      "correctionTitle": "이 페이지 정보 수정하기",
+      "correctionBody": "오래되었거나 폐업했거나 잘못된 정보를 알려 주세요.",
+      "addTitle": "새 정보 추가하기",
+      "addBody": "장소, 이벤트, 상품, 인물 또는 기사를 제출하세요.",
+      "scanTitle": "전단지 또는 링크 스캔",
+      "scanBody": "파일이나 웹페이지에서 여러 제출 항목을 추출합니다.",
+      "contactTitle": "팀에 문의하기",
+      "contactBody": "계정 도움, 파트너십, 언론 또는 기타 비공개 메시지."
+    },
+    "feedback": {
+      "heading": "문제를 알리거나 아이디어 공유하기",
+      "successToast": "의견을 제출했습니다. 감사합니다!",
+      "thanks": "감사합니다!",
+      "successBody": "여러분의 의견은 Queer Guide 개선에 도움이 됩니다.",
+      "category": "어떤 종류의 의견인가요?",
+      "categories": {
+        "safety": "안전 및 운영",
+        "bug": "버그 신고",
+        "idea": "아이디어",
+        "improvement": "개선",
+        "content-idea": "콘텐츠 아이디어"
+      },
+      "title": "제목",
+      "titlePlaceholder": "간단한 요약",
+      "description": "설명",
+      "descriptionPlaceholder": "자세히 알려 주세요…",
+      "includeScreenshot": "이 페이지의 스크린샷 포함",
+      "screenshotPreview": "스크린샷 미리보기",
+      "contextNote": "현재 페이지 URL, 브라우저 정보, 최근 오류 및 네트워크 실패가 자동으로 포함됩니다."
+    },
+    "correction": {
+      "heading": "이 페이지 정보 수정하기",
+      "successToast": "수정 내용을 제출했습니다. 감사합니다!",
+      "thanks": "감사합니다!",
+      "successBody": "편집팀이 수정 내용을 검토합니다.",
+      "thisPage": "이 페이지",
+      "wrong": "무엇이 잘못되었나요?",
+      "replacement": "대신 어떤 내용이어야 하나요?"
+    },
+    "auth": {
+      "title": "로그인하여 기여하기",
+      "body": "디렉터리 콘텐츠를 추가하려면 계정이 필요합니다.",
+      "scanBody": "항목을 스캔하고 제출하려면 계정이 필요합니다.",
+      "cta": "로그인 또는 계정 만들기"
+    },
+    "add": {
+      "heading": "새 정보 추가하기"
+    },
+    "scan": {
+      "heading": "전단지 또는 링크 스캔",
+      "submitted": "{{count}}개 항목을 제출했습니다",
+      "linked": "{{count}}개를 기존 항목에 연결했습니다",
+      "reviewNote": "제출 내용은 공개 전에 검토됩니다."
+    }
   }
 }

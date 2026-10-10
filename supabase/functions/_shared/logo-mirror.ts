@@ -31,10 +31,20 @@ const EXT_BY_TYPE: Record<string, string> = {
 }
 
 async function sha256Hex(bytes: Uint8Array): Promise<string> {
-  const digest = await crypto.subtle.digest('SHA-256', bytes)
+  const digest = await crypto.subtle.digest('SHA-256', ownedBuffer(bytes))
   return Array.from(new Uint8Array(digest))
     .map((b) => b.toString(16).padStart(2, '0'))
     .join('')
+}
+
+// Deno 2.9 correctly distinguishes ArrayBuffer from SharedArrayBuffer in the
+// Web Crypto/fetch overloads. Uploaded bytes are ordinary Uint8Arrays, but the
+// generic library type is ArrayBufferLike; make ownership explicit once at the
+// platform boundary instead of scattering unsafe casts through upload callers.
+function ownedBuffer(bytes: Uint8Array): ArrayBuffer {
+  const copy = new Uint8Array(bytes.byteLength)
+  copy.set(bytes)
+  return copy.buffer
 }
 
 /** True when an R2 upload target is configured (the secret is present). */
@@ -67,7 +77,7 @@ export async function mirrorImageToR2(
     const res = await fetch(`${CDN_BASE}/upload/${key}`, {
       method: 'PUT',
       headers: { 'Content-Type': type || 'image/jpeg', 'X-Admin-Secret': CDN_SECRET },
-      body: bytes,
+      body: ownedBuffer(bytes),
     })
     if (!res.ok) {
       console.error(`[logo-mirror] upload failed: PUT ${CDN_BASE}/upload/${key} -> ${res.status} ${(await res.text()).slice(0, 200)}`)
@@ -103,7 +113,7 @@ export async function mirrorLogoToR2(
     const res = await fetch(`${CDN_BASE}/upload/${key}`, {
       method: 'PUT',
       headers: { 'Content-Type': type || 'image/png', 'X-Admin-Secret': CDN_SECRET },
-      body: bytes,
+      body: ownedBuffer(bytes),
     })
     if (!res.ok) {
       console.error(`[logo-mirror] upload failed: PUT ${CDN_BASE}/upload/${key} -> ${res.status} ${(await res.text()).slice(0, 200)}`)

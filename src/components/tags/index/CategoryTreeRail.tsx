@@ -32,6 +32,8 @@ interface CategoryTreeRailProps {
   activeSlug: string | null;
   /** Serialized non-category params, already prefixed with `?` when non-empty. */
   paramsSuffix: string;
+  /** Counts of readable entries under the current kind and safe-mode settings. */
+  counts?: Record<string, number>;
   orientation?: 'vertical' | 'horizontal';
   className?: string;
 }
@@ -47,6 +49,7 @@ export function CategoryTreeRail({
   tree,
   activeSlug,
   paramsSuffix,
+  counts,
   orientation = 'vertical',
   className,
 }: CategoryTreeRailProps) {
@@ -97,6 +100,24 @@ export function CategoryTreeRail({
             );
           })}
         </div>
+        {activeParent && activeParent.children?.length > 0 && (
+          <div className="flex items-center gap-2 overflow-x-auto px-4 pb-4 sm:px-6 md:px-8 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+            {activeParent.children.map((child) => (
+              <LocalizedLink
+                key={child.id}
+                to={href(child.slug)}
+                aria-current={child.slug === activeSlug ? 'page' : undefined}
+                className={cn(
+                  CHIP,
+                  'whitespace-nowrap no-underline',
+                  child.slug === activeSlug ? CHIP_ON : CHIP_OFF,
+                )}
+              >
+                {getCategoryShortName(child.name)}
+              </LocalizedLink>
+            ))}
+          </div>
+        )}
       </nav>
     );
   }
@@ -115,7 +136,7 @@ export function CategoryTreeRail({
           <LocalizedLink
             to={href(null)}
             aria-current={!activeSlug ? 'page' : undefined}
-            className="group flex items-start gap-2 no-underline"
+            className="group flex min-h-11 items-center gap-2 rounded-element no-underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
           >
             <span className="flex w-4 shrink-0 justify-center pt-1.5">
               <StationRing
@@ -143,11 +164,11 @@ export function CategoryTreeRail({
           const onLine = isActive || activeParent?.slug === p.slug;
           return (
             <li key={p.id}>
-              <div className="flex items-start gap-2">
+              <div className="flex items-center gap-2">
                 <LocalizedLink
                   to={href(p.slug)}
                   aria-current={isActive ? 'page' : undefined}
-                  className="group flex min-w-0 flex-1 items-start gap-2 no-underline"
+                  className="group flex min-h-11 min-w-0 flex-1 items-center gap-2 rounded-element no-underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
                 >
                   <span className="flex w-4 shrink-0 justify-center pt-1.5">
                     <StationRing
@@ -175,7 +196,7 @@ export function CategoryTreeRail({
                         isActive ? 'text-background/70' : 'text-muted-foreground',
                       )}
                     >
-                      {p.total_tag_count || p.tag_count}
+                      {counts?.[p.name] ?? (p.total_tag_count || p.tag_count)}
                     </span>
                   </span>
                 </LocalizedLink>
@@ -193,7 +214,7 @@ export function CategoryTreeRail({
                             line: getCategoryShortName(p.name),
                           })
                     }
-                    className="mt-0.5 shrink-0 px-1.5 py-0.5 text-2xs font-bold leading-none transition-colors hover:bg-foreground hover:text-background"
+                    className="flex min-h-11 min-w-11 shrink-0 items-center justify-center rounded-element text-title font-medium transition-colors hover:bg-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
                   >
                     {isOpen ? '–' : '+'}
                   </button>
@@ -239,7 +260,7 @@ export function CategoryTreeRail({
                                 childActive ? 'text-background/70' : 'text-muted-foreground',
                               )}
                             >
-                              {child.tag_count}
+                              {counts?.[child.name] ?? child.tag_count}
                             </span>
                           </span>
                         </LocalizedLink>

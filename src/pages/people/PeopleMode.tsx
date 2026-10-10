@@ -1,8 +1,7 @@
 import { Suspense, useState } from 'react';
 import { useSearchParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
-import { ArrowLeft, SlidersHorizontal } from 'lucide-react';
-import { LocalizedLink } from '@/components/routing/LocalizedLink';
+import { SlidersHorizontal } from 'lucide-react';
 import { useMeta } from '@/hooks/useMeta';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -12,6 +11,8 @@ import { MeetMembersNotice } from '@/components/people/MeetMembersNotice';
 import { PeopleModeView } from './PeopleModeView';
 import { NearbyView } from './NearbyView';
 import { PageContainer } from '@/components/layout/PageContainer';
+import { HubNavBar } from '@/components/hub/HubNavBar';
+import { PageHeader } from '@/components/layout/PageHeader';
 
 // Dating keeps its own opt-in/age-walled deck; it self-gates when not opted in.
 const IntimateDiscovery = lazyRetry(() => import('@/pages/intimate/IntimateDiscovery'));
@@ -54,12 +55,12 @@ const META: Record<
  * Split out of `People.tsx` when the hub became place-led. These stay real
  * routes rather than folding into `?section=` because they are deep-linked from
  * outside: `/intimate`, `/discover` and `/cruising` redirect to
- * `/people/dating`, TripTravelBuddiesCTA sends people to `/people/travel`, and
+ * `/hub/dating`, TripTravelBuddiesCTA sends people to `/hub/travel`, and
  * TravelBuddiesSection's "See all" points at the same. Turning them into query
  * params would 404 every one of those.
  *
  * Each mode carries its own title and description. Previously all four shared
- * the hub's meta, so `/people/dating` and `/people/nearby` were indistinguishable
+ * the hub's meta, so `/hub/dating` and `/hub/nearby` were indistinguishable
  * to a crawler and to anyone reading a browser tab.
  */
 export default function PeopleMode({ tab }: { tab: PeopleTab }) {
@@ -76,37 +77,33 @@ export default function PeopleMode({ tab }: { tab: PeopleTab }) {
   useMeta({
     title: meta.title,
     description: meta.description,
-    canonicalPath: `/people/${tab}`,
+    canonicalPath: `/hub/${tab}`,
   });
 
   return (
     <>
-      {/* ONE container. This was two siblings, so the page paid
-          `py-8 md:py-12` twice and opened with a doubled gap between the title
-          block and its content that no other page on the site has. */}
+      {/* The nav bar is a sibling, not a child: HubNavBar carries `pb-0`, so the
+          two containers cannot stack their vertical padding the way this page's
+          original two siblings did (`py-8 md:py-12` paid twice). */}
+      <HubNavBar />
       <PageContainer>
-        <LocalizedLink
-          to="/people"
-          className="mb-4 inline-flex items-center gap-2 text-13 font-bold text-muted-foreground no-underline hover:text-foreground"
-        >
-          <ArrowLeft size={14} aria-hidden />
-          {t('people.backToHub', 'Meet people')}
-        </LocalizedLink>
-
         {/* Was a bare `text-headline` h1 with no rule under it — the one place
             in the hub's subtree that read as an unstyled page. */}
-        <div className="mb-8 flex flex-wrap items-end justify-between gap-4 border-b border-border-hairline pb-4">
-          <h1 className="font-display text-display">{t(meta.labelKey, meta.label)}</h1>
-          <Button
-            variant="outline"
-            size="sm"
-            className="shrink-0 gap-2"
-            onClick={() => setIntentOpen(true)}
-          >
-            <SlidersHorizontal size={14} aria-hidden />
-            {t('people.intent.button', "I'm here for…")}
-          </Button>
-        </div>
+        <PageHeader
+          title={t(meta.labelKey, meta.label)}
+          subtitle={meta.description}
+          actions={
+            <Button
+              variant="soft"
+              size="sm"
+              className="shrink-0 gap-2"
+              onClick={() => setIntentOpen(true)}
+            >
+              <SlidersHorizontal size={14} aria-hidden />
+              {t('people.intent.button', "I'm here for…")}
+            </Button>
+          }
+        />
 
         <Suspense
           fallback={

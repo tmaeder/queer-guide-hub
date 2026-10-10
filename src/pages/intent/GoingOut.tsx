@@ -17,6 +17,9 @@ import {
 import type { SectionDef } from '@/components/entity/editorial';
 import { CityNetwork } from '@/components/home/subway/CityNetwork';
 import { hasCityNetwork } from '@/components/home/subway/cityNetworkGeometry';
+import { PageHero } from '@/components/discovery';
+import { NoStationTrack } from '@/components/transit/NoStationTrack';
+import './going-out.css';
 
 /**
  * `/going-out` — bars, clubs and what is actually on.
@@ -72,7 +75,7 @@ export default function GoingOut() {
           // hours, tags and verification — this page fetched them and rendered
           // none of them, which is why "going out" read as a directory listing
           // instead of somewhere you might actually go tonight.
-          <ul className="list-none p-0 m-0 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <ul className="going-out-venues list-none p-0 m-0 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {venues.map((v) => (
               <li key={v.id}>
                 <VenueCard venue={v as unknown as Parameters<typeof VenueCard>[0]['venue']} />
@@ -80,13 +83,25 @@ export default function GoingOut() {
             ))}
           </ul>
         ) : (
-          <p className="text-muted-foreground">
-            No nightlife listed for {where} yet.{' '}
-            <LocalizedLink to="/submit" className="underline underline-offset-4">
-              Add a place
-            </LocalizedLink>
-            .
-          </p>
+          <div className="going-out-empty">
+            <div className="going-out-empty__copy">
+              <div>
+                <strong>No nightlife listed for {where} yet.</strong>
+                <p>
+                  Take the full directory or map route, or put a place the community should know
+                  about on the guide.
+                </p>
+              </div>
+              <div className="going-out-empty__links">
+                <LocalizedLink to="/venues">Browse every venue</LocalizedLink>
+                <LocalizedLink to="/map">Open the map</LocalizedLink>
+                <LocalizedLink to="/submit">Add a place</LocalizedLink>
+              </div>
+            </div>
+            <div className="going-out-empty__map" aria-hidden="true">
+              <NoStationTrack />
+            </div>
+          </div>
         ),
       action: (
         <LocalizedLink
@@ -100,7 +115,9 @@ export default function GoingOut() {
     {
       id: 'whats-on',
       label: "What's on",
-      content: <UpcomingEvents eventsResult={eventsResult} cityName={cityName} />,
+      content: (
+        <UpcomingEvents eventsResult={eventsResult} cityName={cityName} variant="going-out" />
+      ),
       action: (
         <LocalizedLink to="/events" className="text-13 no-underline hover:underline">
           All events
@@ -124,19 +141,18 @@ export default function GoingOut() {
       id: 'safety',
       label: 'Before you go',
       content: (
-        <div>
-          {/* Anon-safe: gated_count_for_location returns COUNTS only, never rows,
-              so this can tell a signed-out reader that content exists in a
-              criminalising country without exposing any of it. */}
-          <GatedContentNotice cityId={cityId ?? undefined} />
-          <p className="max-w-prose mb-4">
-            Laws differ sharply by country, and going out is where that bites. Check the legal
-            position before the night starts, not after.
-          </p>
-          <LocalizedLink
-            to="/rights"
-            className="bg-muted px-6 py-2 font-medium no-underline rounded-element inline-block"
-          >
+        <div className="going-out-safety">
+          <div className="going-out-safety__copy">
+            {/* Anon-safe: gated_count_for_location returns COUNTS only, never rows,
+                so this can tell a signed-out reader that content exists in a
+                criminalising country without exposing any of it. */}
+            <GatedContentNotice cityId={cityId ?? undefined} />
+            <p>
+              Laws differ sharply by country, and going out is where that bites. Check the legal
+              position before the night starts, not after.
+            </p>
+          </div>
+          <LocalizedLink to="/rights" className="going-out-safety__link">
             LGBTQ+ rights by country
           </LocalizedLink>
         </div>
@@ -147,23 +163,24 @@ export default function GoingOut() {
       label: 'Elsewhere',
       kicker: 'Cities worth the trip',
       content: (
-        <ul className="list-none p-0 m-0 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <ul className="going-out-cities list-none p-0 m-0">
           {(cities ?? []).map((c) => (
-            <li key={c.id} className="bg-muted p-4 rounded-container">
-              <h3 className="text-title font-bold">
-                {c.slug ? (
-                  <LocalizedLink to={`/city/${c.slug}`} className="no-underline hover:underline">
-                    {c.name}
-                  </LocalizedLink>
-                ) : (
-                  c.name
-                )}
-              </h3>
-              {c.countries?.name ? (
-                <p className="text-13 text-muted-foreground">{c.countries.name}</p>
-              ) : null}
-              {hasCityNetwork(c.slug) && (
-                <CityNetwork slug={c.slug} variant="thumb" className="mt-4 h-16" />
+            <li key={c.id} className="going-out-city">
+              {c.slug ? (
+                <LocalizedLink to={`/city/${c.slug}`}>
+                  <div>
+                    <h3>{c.name}</h3>
+                    {c.countries?.name ? <p>{c.countries.name}</p> : null}
+                  </div>
+                  {hasCityNetwork(c.slug) ? (
+                    <CityNetwork slug={c.slug} variant="thumb" className="h-24" />
+                  ) : null}
+                </LocalizedLink>
+              ) : (
+                <div className="flex h-full flex-col p-6">
+                  <h3>{c.name}</h3>
+                  {c.countries?.name ? <p>{c.countries.name}</p> : null}
+                </div>
               )}
             </li>
           ))}
@@ -174,8 +191,28 @@ export default function GoingOut() {
 
   return (
     <IntentPageLayout
+      className="going-out-page"
       breadcrumbLabel={t('header.intents.goingOut.label', 'Going out')}
       breadcrumbHref="/going-out"
+      sectionNavVariant="subway"
+      header={
+        <PageHero
+          bare
+          size="md"
+          className="going-out-hero"
+          title={cityName ? `Going out in ${cityName}` : 'Going out'}
+          lede="Bars, clubs, cafés and saunas from the community, plus whatever is actually on while you are there."
+        >
+          <div className="going-out-hero__actions">
+            <a className="going-out-hero__primary" href="#plan">
+              Find your next stop
+            </a>
+            <a className="going-out-hero__secondary" href="#whats-on">
+              See what’s on
+            </a>
+          </div>
+        </PageHero>
+      }
       eyebrow={cityName ? `In ${cityName}` : 'Tonight'}
       title={cityName ? `Going out in ${cityName}` : 'Going out'}
       lede="Bars, clubs, cafés and saunas from the community, plus whatever is actually on while you are there."

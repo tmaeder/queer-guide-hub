@@ -1,12 +1,16 @@
 /**
  * @vitest-environment jsdom
  */
-import { describe, it, expect, vi } from 'vitest';
+import { beforeEach, describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router';
 
+const authState = vi.hoisted(() => ({
+  user: null as { id: string; email: string } | null,
+}));
+
 vi.mock('@/hooks/useAuth', () => ({
-  useAuth: () => ({ user: { id: 'u1', email: 'u@example.com' }, loading: false }),
+  useAuth: () => ({ user: authState.user, loading: false }),
 }));
 vi.mock('@/hooks/useProfile', () => ({
   useProfile: () => ({
@@ -15,6 +19,8 @@ vi.mock('@/hooks/useProfile', () => ({
 }));
 vi.mock('@/hooks/useInboxFeed', () => ({
   useInboxFeed: () => ({ items: [], loading: false, unreadCount: 3 }),
+  // HubNav reads the badge through this now, not through the feed.
+  useInboxUnreadCount: () => 3,
 }));
 vi.mock('@/hooks/useMeta', () => ({ useMeta: () => {} }));
 vi.mock('@/components/hub/modules/OverviewModule', () => ({
@@ -29,22 +35,39 @@ vi.mock('@/components/hub/modules/PlansModule', () => ({
 vi.mock('@/components/hub/modules/SavedModule', () => ({
   SavedModule: () => <div data-testid="module-saved" />,
 }));
+vi.mock('@/pages/Feed', () => ({
+  default: ({ embedded }: { embedded?: boolean }) => (
+    <div data-testid="module-feed" data-embedded={String(Boolean(embedded))} />
+  ),
+}));
 
 import HubPage from '../HubPage';
 
-const renderPage = (module?: 'overview' | 'messages' | 'plans' | 'saved') =>
+// Render at the module's real URL. HubNav derives the highlighted pill from the
+// pathname rather than from a prop, so a bare MemoryRouter (pathname "/")
+// correctly highlights nothing — the old `activeModule` prop let the nav claim
+// an active module the address bar did not agree with.
+const renderPage = (module?: 'overview' | 'feed' | 'messages' | 'plans' | 'saved') =>
   render(
-    <MemoryRouter>
+    <MemoryRouter initialEntries={[!module || module === 'overview' ? '/hub' : `/hub/${module}`]}>
       <HubPage module={module} />
     </MemoryRouter>,
   );
 
 describe('HubPage', () => {
+  beforeEach(() => {
+    authState.user = { id: 'u1', email: 'u@example.com' };
+  });
+
   it('renders the shell nav from the registry with overview as default', () => {
     renderPage();
     expect(screen.getByTestId('module-overview')).toBeTruthy();
-    // Desktop + mobile nav both render each of the four module links.
+    // The shared Hub nav exposes community, connection, and personal work.
     expect(screen.getAllByRole('link', { name: /Overview/ }).length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByRole('link', { name: /Feed/ }).length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByRole('link', { name: /Members/ }).length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByRole('link', { name: /Groups/ }).length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByRole('link', { name: /Dating/ }).length).toBeGreaterThanOrEqual(1);
     expect(screen.getAllByRole('link', { name: /Messages/ }).length).toBeGreaterThanOrEqual(1);
     expect(screen.getAllByRole('link', { name: /Plans/ }).length).toBeGreaterThanOrEqual(1);
     expect(screen.getAllByRole('link', { name: /Saved/ }).length).toBeGreaterThanOrEqual(1);
@@ -60,6 +83,25 @@ describe('HubPage', () => {
     renderPage('messages');
     expect(screen.getByTestId('module-messages')).toBeTruthy();
     expect(screen.queryByTestId('module-overview')).toBeNull();
+  });
+
+  it('keeps the feed public while preserving the Hub shell', () => {
+    authState.user = null;
+    renderPage('feed');
+
+    expect(screen.getByTestId('module-feed')).toHaveAttribute('data-embedded', 'true');
+    expect(
+      screen.getAllByRole('navigation', { name: 'Hub sections' }).length,
+    ).toBeGreaterThanOrEqual(1);
+    expect(screen.queryByRole('link', { name: 'Sign In' })).toBeNull();
+  });
+
+  it('keeps private modules behind authentication', () => {
+    authState.user = null;
+    renderPage('messages');
+
+    expect(screen.getByRole('link', { name: 'Sign In' })).toBeTruthy();
+    expect(screen.queryByTestId('module-messages')).toBeNull();
   });
 
   it('renders the plans module when module="plans"', () => {

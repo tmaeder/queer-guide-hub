@@ -1,14 +1,13 @@
-import { useState } from 'react';
+import { Suspense, useState } from 'react';
 import { useSearchParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { SlidersHorizontal } from 'lucide-react';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { NestedEntityCard } from '@/components/transit/NestedEntityCard';
-import { TransitIcon } from '@/components/transit/TransitIcon';
-import type { TransitIconName } from '@/components/transit/transitIconPaths';
 import { useMeta } from '@/hooks/useMeta';
 import { useProfile } from '@/hooks/useProfile';
 import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
 import { IntentPageLayout } from '@/components/intent/IntentPageLayout';
 import { CoverageNote } from '@/components/intent/CoverageNote';
 import { UpcomingEvents } from '@/components/intent/UpcomingEvents';
@@ -28,9 +27,13 @@ import {
 import type { SectionDef } from '@/components/entity/editorial';
 import { CityNetwork } from '@/components/home/subway/CityNetwork';
 import { hasCityNetwork } from '@/components/home/subway/cityNetworkGeometry';
+import { HubNavBar } from '@/components/hub/HubNavBar';
+import { lazyRetry } from '@/utils/lazyRetry';
+
+const PeopleConnectionMap = lazyRetry(() => import('@/components/people/PeopleConnectionMap'));
 
 /**
- * `/people` — the "Meet people" intent.
+ * `/hub/people` — the "Meet people" intent inside the unified Hub.
  *
  * **Place-led, and that is the whole design.** This page used to open on four
  * person-matching tabs (friends / dating / travel / nearby), every one of which
@@ -53,41 +56,13 @@ import { hasCityNetwork } from '@/components/home/subway/cityNetworkGeometry';
  * index in search, so this deliberately does not pretend to surface people."
  * The page was the one surface still pretending.
  *
- * The four `/people/<mode>` child routes are untouched and still render the
- * matching views — `/intimate`, `/discover` and `/cruising` redirect into
- * `/people/dating`, and TripTravelBuddiesCTA deep-links to `/people/travel`.
+ * The focused `/hub/<mode>` routes still render the matching views — legacy
+ * `/intimate`, `/discover` and `/cruising` URLs redirect into
+ * `/hub/dating`, and TripTravelBuddiesCTA deep-links to `/hub/travel`.
  * Retiring the tab row from the hub also fixes the mobile defect where the
  * row's horizontal overflow pushed "Nearby" and the intent button off-screen
  * at 375px.
  */
-
-/** The community surfaces this intent also covers. Links, not tabs. */
-const COMMUNITY_BRIDGE = [
-  {
-    to: '/community/groups',
-    icon: 'meetups',
-    key: 'header.nav.groups',
-    fallback: 'Groups',
-    blurbKey: 'people.community.groups',
-    blurb: 'Local and interest groups you can join',
-  },
-  {
-    to: '/community/feed',
-    icon: 'chat',
-    key: 'header.nav.feed',
-    fallback: 'Feed',
-    blurbKey: 'people.community.feed',
-    blurb: 'What the community is posting',
-  },
-  {
-    to: '/community/members',
-    icon: 'community',
-    key: 'header.nav.members',
-    fallback: 'Members',
-    blurbKey: 'people.community.members',
-    blurb: 'Browse everyone who is listed',
-  },
-] as const satisfies ReadonlyArray<{ icon: TransitIconName; [k: string]: unknown }>;
 
 export default function People() {
   const { t } = useTranslation();
@@ -113,7 +88,7 @@ export default function People() {
   const showNudge = profile != null && !profile.user_mode;
   const where = cityName ?? t('people.yourArea', 'your area');
 
-  // Must match STATIC_ROUTE_META['/people'].title in functions/_lib/routeMeta.ts.
+  // Must match STATIC_ROUTE_META['/hub/people'].title in functions/_lib/routeMeta.ts.
   // The edge fix landed without this line, so a crawler saw the new title while
   // a human's browser tab still read "Meet people — LGBTQ+ friends, dates and
   // travel buddies" — the page's old promise, and exactly the crawler/user
@@ -129,7 +104,7 @@ export default function People() {
     title: 'Meet LGBTQ+ People — Groups, Spaces and Events',
     description:
       'Where queer people actually gather: community spaces, groups, events and bars near you, plus the members and travel buddies you can meet.',
-    canonicalPath: '/people',
+    canonicalPath: '/hub/people',
   });
 
   // Dropping empty sections now lives in EditorialDetailLayout, so all six
@@ -220,10 +195,7 @@ export default function People() {
                   })}
                   name={g.name}
                   description={g.description}
-                  // `/community/groups` is the LIST; the detail route is
-                  // `/groups/:groupId` (routes.tsx). This pointed at
-                  // `/community/groups/:id`, which matches nothing and 404'd.
-                  href={`/groups/${g.id}`}
+                  href={`/hub/groups/${g.id}`}
                 />
               </li>
             ))}
@@ -234,7 +206,7 @@ export default function People() {
           </p>
         ),
       action: (
-        <LocalizedLink to="/community/groups" className="text-13 no-underline hover:underline">
+        <LocalizedLink to="/hub/groups" className="text-13 no-underline hover:underline">
           {t('people.allGroups', 'All groups')}
         </LocalizedLink>
       ),
@@ -243,7 +215,7 @@ export default function People() {
       id: 'whats-on',
       label: t('people.sections.whatsOn', "What's on"),
       kicker: t('people.sections.whatsOnKicker', 'Turning up somewhere beats messaging'),
-      content: <UpcomingEvents eventsResult={eventsResult} cityName={cityName} />,
+      content: <UpcomingEvents eventsResult={eventsResult} cityName={cityName} borderless />,
       action: (
         <LocalizedLink to="/events" className="text-13 no-underline hover:underline">
           {t('people.allEvents', 'All events')}
@@ -298,7 +270,7 @@ export default function People() {
                   })
                 : t('people.rail.title', 'Members to meet')
             }
-            seeAllHref="/community/members"
+            seeAllHref="/hub/members"
             emptyState={<MeetMembersNotice cityId={cityId ?? undefined} cityName={cityName} />}
           />
 
@@ -308,25 +280,6 @@ export default function People() {
               declare an interest was one tag-detail page at a time. This is the
               input, placed where its effect shows up. */}
           <InterestPicker className="mt-4" />
-          {/* Station plates, not hairline rows. These were `border border-border`
-              — a 1px grey rule whose only hover affordance was going darker. */}
-          <div className="grid gap-4 sm:grid-cols-3">
-            {COMMUNITY_BRIDGE.map(({ to, icon, key, fallback, blurbKey, blurb }) => (
-              <LocalizedLink
-                key={to}
-                to={to}
-                className="card-lift flex items-center gap-4 bg-card p-4 no-underline rounded-container shadow-soft"
-              >
-                <TransitIcon name={icon} size={28} className="shrink-0 text-foreground" />
-                <span className="flex min-w-0 flex-col">
-                  <span className="text-title font-bold text-foreground">{t(key, fallback)}</span>
-                  <span className="text-2xs leading-tight text-muted-foreground">
-                    {t(blurbKey, blurb)}
-                  </span>
-                </span>
-              </LocalizedLink>
-            ))}
-          </div>
         </div>
       ),
     },
@@ -343,7 +296,7 @@ export default function People() {
               'Meeting strangers carries different risk in different countries. Check the legal position for where you are before you arrange to meet someone.',
             )}
           </p>
-          <Button variant="outline" asChild>
+          <Button variant="soft" asChild>
             <LocalizedLink to="/rights" className="no-underline">
               {t('people.safetyCta', 'LGBTQ+ rights by country')}
             </LocalizedLink>
@@ -377,9 +330,16 @@ export default function People() {
 
   return (
     <>
+      {/* Above IntentPageLayout, not inside it via `topNav`: the layout nests
+          its header in its own PageContainer, which put the bar at a different
+          offset from every other hub route. */}
+      <HubNavBar />
       <IntentPageLayout
+        sectionNavClassName="border-b-0"
+        heroSize="sm"
+        heroClassName="py-4 md:py-6"
         breadcrumbLabel={t('header.intents.meet.label', 'Meet people')}
-        breadcrumbHref="/people"
+        breadcrumbHref="/hub/people"
         eyebrow={cityName ? `In ${cityName}` : undefined}
         title={
           cityName
@@ -395,12 +355,7 @@ export default function People() {
         )}
         scopeBar={
           <div className="flex flex-wrap items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              className="gap-2"
-              onClick={() => setIntentOpen(true)}
-            >
+            <Button variant="soft" size="sm" className="gap-2" onClick={() => setIntentOpen(true)}>
               <SlidersHorizontal size={14} aria-hidden />
               {t('people.intent.button', "I'm here for…")}
             </Button>
@@ -413,6 +368,32 @@ export default function People() {
               </span>
             ) : null}
           </div>
+        }
+        featured={
+          <section aria-labelledby="people-map-heading">
+            <div className="mb-4 flex flex-wrap items-end justify-between gap-4">
+              <div>
+                <h2 id="people-map-heading" className="font-display text-headline font-bold">
+                  {t('people.sections.map', 'Connection map')}
+                </h2>
+                <p className="mt-2 max-w-2xl text-muted-foreground">
+                  {t(
+                    'people.sections.mapDescription',
+                    'Explore public gathering places, queer neighbourhoods and events—or switch to the protected cruising map.',
+                  )}
+                </p>
+              </div>
+              <LocalizedLink
+                to="/map"
+                className="text-13 font-semibold no-underline hover:underline"
+              >
+                {t('people.fullMap', 'Open full map')}
+              </LocalizedLink>
+            </div>
+            <Suspense fallback={<Skeleton className="h-[clamp(22rem,58vh,32rem)] w-full" />}>
+              <PeopleConnectionMap />
+            </Suspense>
+          </section>
         }
         sections={sections}
         footer={

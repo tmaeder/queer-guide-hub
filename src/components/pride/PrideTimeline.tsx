@@ -114,7 +114,12 @@ export function PrideTimeline({
   return (
     <div className="w-full">
       {/* Month chips — quick scroll */}
-      <div className="flex gap-2 overflow-x-auto pb-2 mb-2 scrollbar-thin">
+      <div
+        className="flex gap-2 overflow-x-auto pb-2 mb-2 scrollbar-thin"
+        role="region"
+        aria-label="Timeline months"
+        tabIndex={0}
+      >
         {MONTHS.map((m, i) => {
           const count = placed.filter((p) => p.monthIndex === i).length;
           if (count === 0) {
@@ -135,7 +140,7 @@ export function PrideTimeline({
                 const el = scrollRef.current?.querySelector<HTMLDivElement>(`[data-month="${i}"]`);
                 el?.scrollIntoView({ behavior: 'smooth', inline: 'start', block: 'nearest' });
               }}
-              className="px-2 py-1 text-xs2 rounded-badge hover:bg-muted transition-colors min-h-0"
+              className="min-h-11 px-2 py-1 text-xs2 rounded-badge hover:bg-muted transition-colors"
             >
               {m} <span className="text-muted-foreground">{count}</span>
             </button>

@@ -9,7 +9,7 @@ import type { InboxFilter } from '@/hooks/useInboxFeed';
  * Hub Messages module — the unified inbox (2026-07 declutter). One surface:
  * filter chips + the self-contained rail+detail MessagingInterface. The
  * former "People" sub-tab (friends / groups / dating address book) is gone —
- * people are single-homed at /people and /community/groups; legacy
+ * people and groups are single-homed at /hub/people and /hub/groups; legacy
  * ?tab=people deep links redirect there.
  */
 export function MessagesModule() {
@@ -27,7 +27,7 @@ export function MessagesModule() {
   // Legacy ?tab=people deep links (pre-declutter) → the People page.
   const wantsPeople = searchParams.get('tab') === 'people';
   useEffect(() => {
-    if (wantsPeople) navigate('/people', { replace: true });
+    if (wantsPeople) navigate('/hub/people', { replace: true });
   }, [wantsPeople, navigate]);
 
   return (

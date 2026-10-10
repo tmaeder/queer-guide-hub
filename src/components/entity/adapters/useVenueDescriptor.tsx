@@ -1,8 +1,6 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
-import { Luggage } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import { FavoriteButton } from '@/components/ui/favorite-button';
 import { useToast } from '@/hooks/use-toast';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
@@ -11,7 +9,7 @@ import { useVenueSocialSignals } from '@/hooks/useVenueSocialSignals';
 import { useEvents } from '@/hooks/useEvents';
 import { useNearbyMapPoints } from '@/hooks/useNearbyMapPoints';
 import { useVenueSafetyScore } from '@/hooks/useVenueSafetySignals';
-import { AddToTripDialog } from '@/components/trips/AddToTripDialog';
+import { TripAction } from '@/components/trips/TripAction';
 import { FromTheGlossary } from '@/components/tags/FromTheGlossary';
 import {
   fetchVenue,
@@ -50,7 +48,6 @@ export function useVenueDescriptor(slug: string | undefined): EntityDescriptorRe
   const navigate = useLocalizedNavigate();
   const { t } = useTranslation();
   const { toast } = useToast();
-  const [addToTripOpen, setAddToTripOpen] = useState(false);
   const { events } = useEvents();
 
   const { data, isLoading, error, refetch } = useQuery({
@@ -276,14 +273,7 @@ export function useVenueDescriptor(slug: string | undefined): EntityDescriptorRe
             <VenueTags venue={venue} onContentUpdated={refetch} />
           </div>
         ),
-        action: (
-          <VenueActions
-            venue={venue}
-            onAddToTrip={() => setAddToTripOpen(true)}
-            onShare={handleShare}
-            t={t}
-          />
-        ),
+        action: <VenueActions venue={venue} onShare={handleShare} t={t} />,
         // The rail keeps what is genuinely rail-shaped — safety card, the
         // correction footnote — now that location/contact/map has moved to the
         // body as a section. Keeping the two-column frame matters: it is what
@@ -298,30 +288,28 @@ export function useVenueDescriptor(slug: string | undefined): EntityDescriptorRe
       },
       mobileBar: isClosed ? null : (
         <div className="fixed inset-x-0 bottom-0 z-[1100] flex items-center gap-2 bg-background/95 p-4 backdrop-blur md:hidden">
-          <Button className="flex-1" onClick={() => setAddToTripOpen(true)}>
-            <Luggage size={16} className="mr-2" />
-            {t('pages.venueDetail.addToTrip', 'Add to trip')}
-          </Button>
+          <TripAction
+            intent={{
+              kind: 'add_entity',
+              entity: {
+                type: 'venue',
+                id: venue.id,
+                name: venue.name,
+                latitude: venue.latitude,
+                longitude: venue.longitude,
+                city_id: venue.city_id,
+                country_id: venue.country_id,
+                address: venue.address,
+                category: venue.category,
+              },
+            }}
+            source="venue-detail-mobile"
+            className="flex-1"
+          />
           <FavoriteButton itemId={venue.id} type="venue" size="md" />
         </div>
       ),
-      overlays: (
-        <AddToTripDialog
-          open={addToTripOpen}
-          onClose={() => setAddToTripOpen(false)}
-          entity={{
-            type: 'venue',
-            id: venue.id,
-            name: venue.name,
-            latitude: venue.latitude,
-            longitude: venue.longitude,
-            city_id: venue.city_id,
-            country_id: venue.country_id,
-            address: venue.address,
-            category: venue.category,
-          }}
-        />
-      ),
+      overlays: null,
       breadcrumbs: buildVenueBreadcrumbs(venue, t) ?? [],
       meta: { ...meta, jsonLd },
       personalization: {
@@ -349,7 +337,6 @@ export function useVenueDescriptor(slug: string | undefined): EntityDescriptorRe
     reviews,
     averageRating,
     nearbyPoints,
-    addToTripOpen,
     // Unlike the warmed-only hooks above, this one is READ (the `signals`
     // section's `when`), so it has to be a dependency — otherwise the section
     // stays hidden when the score resolves after the first render.

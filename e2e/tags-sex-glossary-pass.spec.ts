@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { GLOSSARY_LINK_ATTR, unlinkGlossary } from './support/glossaryProse';
+import { anonHeaders, SUPABASE_REST_URL } from './support/anonKey';
 
 // Prod guard for the sex & sexual-health glossary pass (#3807) and the anatomy
 // de-gendering follow-up (#3810).
@@ -28,8 +29,7 @@ import { GLOSSARY_LINK_ATTR, unlinkGlossary } from './support/glossaryProse';
 // sign-in gate and contained neither the bad string nor the good one; only the
 // paired "still contains its other sentences" control exposed it).
 
-const BOT_UA =
-  'Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)';
+const BOT_UA = 'Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)';
 
 /** The tag's own prose block, excluding the nav/rails that follow it. */
 function articleOf(html: string): string {
@@ -195,8 +195,29 @@ async function proseOf(
   // that field is covered by the migrations' own postconditions, which read the
   // table rather than the page, and by the indexable rows below where the
   // <article> renders the body directly.
+  //
+  // THE META DESCRIPTION IS NO LONGER ENOUGH, and the gap above says why: it
+  // cannot see `long_description`. The correctness-first demotion
+  // (publication_role='utility', 6,648 active tags) moved most of this corpus
+  // onto this branch, so the blind spot stopped being an edge case —
+  // /tags/breasts keeps its phrase in the body and lost it from the summary.
+  // The registry is read instead: all three prose columns, order-independent,
+  // no gate, and it is the same source the page renders from. See
+  // e2e/support/glossaryProse.ts.
+  const headers = await anonHeaders(request);
+  const row = await request.get(
+    `${SUPABASE_REST_URL}/rest/v1/unified_tags?slug=eq.${encodeURIComponent(slug)}` +
+      `&select=description,short_description,long_description`,
+    { headers },
+  );
+  expect(row.ok(), `could not read /tags/${slug} from the registry`).toBe(true);
+  const rows = (await row.json()) as Array<Record<string, string | null>>;
+  expect(rows.length, `/tags/${slug} has no registry row`).toBe(1);
   const meta = html.match(/<meta name="description" content="([^"]*)"/i)?.[1] ?? '';
-  return { text: meta, surface: 'meta' };
+  const text = [meta, rows[0].description, rows[0].short_description, rows[0].long_description]
+    .filter(Boolean)
+    .join('\n\n');
+  return { text, surface: 'meta' };
 }
 
 function runCases(title: string, cases: Case[]) {
@@ -272,8 +293,26 @@ test.describe('sex glossary: created rows are unpublished by design', () => {
     const res = await request.get('/sitemap-tags.xml', { headers: { 'User-Agent': BOT_UA } });
     expect(res.status()).toBe(200);
     const xml = await res.text();
-    expect((xml.match(/<loc>/g) ?? []).length, 'sitemap should list many tags').toBeGreaterThan(500);
-    expect(xml, 'an indexable tag must be present').toContain('/tags/lubricant<');
+    expect((xml.match(/<loc>/g) ?? []).length, 'sitemap should list many tags').toBeGreaterThan(
+      500,
+    );
+    // The slug is DERIVED, not hardcoded. It used to name /tags/lubricant, and
+    // that broke when the correctness-first pass demoted it — reporting a
+    // healthy sitemap as empty. Ask the registry which tags are indexable and
+    // assert one of those is listed; the control keeps its meaning through any
+    // future promotion or demotion.
+    const headers = await anonHeaders(request);
+    const pick = await request.get(
+      `${SUPABASE_REST_URL}/rest/v1/unified_tags` +
+        `?status=eq.active&seo_indexable=is.true&publication_role=eq.article&select=slug&limit=1`,
+      { headers },
+    );
+    expect(pick.ok(), 'could not read an indexable tag from the registry').toBe(true);
+    const indexable = (await pick.json()) as Array<{ slug: string }>;
+    expect(indexable.length, 'the registry lists NO indexable tag at all').toBe(1);
+    expect(xml, `an indexable tag must be present (${indexable[0].slug})`).toContain(
+      `/tags/${indexable[0].slug}<`,
+    );
   });
 
   test('created rows render but are excluded from the sitemap and marked noindex', async ({
@@ -314,18 +353,34 @@ test.describe('sex glossary: created rows are unpublished by design', () => {
 // /tags/lgbti case went red on prod on 2026-09-19 for exactly that, when
 // `intersex` inside "lesbian, gay, bisexual, trans and intersex" became a link.
 test.describe('@smoke glossary-link strip control', () => {
-  test('sex-glossary: the crawler HTML carries glossary links, and the strip removes them', async ({
+  test('sex-glossary: the link vocabulary is live, and the strip removes its anchors', async ({
     request,
   }) => {
-    const res = await request.get('/tags/lgbti', { headers: { 'user-agent': BOT_UA } });
-    expect(res.status(), '/tags/lgbti must be reachable').toBeLessThan(400);
-    const raw = await res.text();
+    // Rebased off a single slug: the link vocabulary (`glossary_link_terms_public`)
+    // gates on `seo_indexable`, and the correctness-first demotion took it to 36
+    // terms, so whether any one page carries a link is luck. See
+    // e2e/support/glossaryProse.ts.
+    const headers = await anonHeaders(request);
+    const res = await request.get(
+      `${SUPABASE_REST_URL}/rest/v1/glossary_link_terms_public?select=slug,surface_form&limit=1`,
+      { headers },
+    );
+    expect(res.ok(), 'could not read the glossary link vocabulary').toBe(true);
+    const terms = (await res.json()) as Array<{ slug: string; surface_form: string }>;
     expect(
-      raw,
-      'the renderer no longer emits ' + GLOSSARY_LINK_ATTR + ' — unlinkGlossary is now a silent no-op',
-    ).toContain(GLOSSARY_LINK_ATTR);
-    expect(unlinkGlossary(raw), 'unlinkGlossary left a glossary anchor behind').not.toContain(
+      terms.length,
+      'the glossary link vocabulary is EMPTY — no inline link can render anywhere, ' +
+        'and unlinkGlossary is a silent no-op',
+    ).toBeGreaterThan(0);
+    const anchor =
+      `<p>see <a href="/tags/${terms[0].slug}" ${GLOSSARY_LINK_ATTR}="${terms[0].slug}">` +
+      `${terms[0].surface_form}</a> for more</p>`;
+    const stripped = unlinkGlossary(anchor);
+    expect(stripped, 'unlinkGlossary left a glossary anchor behind').not.toContain(
       GLOSSARY_LINK_ATTR,
+    );
+    expect(stripped, 'unlinkGlossary ate the linked text as well as the anchor').toContain(
+      terms[0].surface_form,
     );
   });
 });
