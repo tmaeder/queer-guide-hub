@@ -2,7 +2,8 @@
  * @vitest-environment jsdom
  */
 import { describe, it, expect } from 'vitest';
-import { screen } from '@testing-library/react';
+import { screen, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { renderWithProviders } from '@/test/test-utils';
 import { geoSections, geoStations } from '../geoSectionModel';
 import { GeoSectionList, GeoRouteRail } from '../GeoSections';
@@ -65,6 +66,88 @@ describe('the station/section invariant', () => {
       expect(document.getElementById(station.id)).not.toBeNull();
     }
     expect(document.getElementById('events')).toBeNull();
+  });
+});
+
+describe('disclosure sections', () => {
+  it('stay collapsed until the reader asks for the detail', async () => {
+    const user = userEvent.setup();
+    renderWithProviders(
+      <GeoSectionList
+        sections={geoSections([
+          {
+            id: 'travel',
+            title: 'Travel',
+            presentation: 'disclosure',
+            preview: <p>Quick travel summary</p>,
+            content: <p>Full travel detail</p>,
+          },
+        ])}
+      />,
+    );
+
+    expect(screen.getByText('Quick travel summary')).toBeVisible();
+    expect(screen.getByText('Full travel detail')).not.toBeVisible();
+    await user.click(screen.getByRole('button', { name: /show more/i }));
+    expect(screen.getByText('Full travel detail')).toBeVisible();
+    expect(screen.getByRole('button', { name: /show less/i })).toHaveAttribute(
+      'aria-expanded',
+      'true',
+    );
+  });
+
+  it('opens a collapsed section selected from the route navigation', async () => {
+    const user = userEvent.setup();
+    const sections = geoSections([
+      { id: 'rights', title: 'Rights', content: <p>Rights detail</p> },
+      {
+        id: 'travel',
+        title: 'Travel',
+        presentation: 'disclosure',
+        content: <p>Full travel detail</p>,
+      },
+    ]);
+    renderWithProviders(
+      <>
+        <GeoRouteRail
+          sections={sections}
+          activeId="rights"
+          onNavigate={() => {}}
+          orientation="horizontal"
+          label="Sections"
+        />
+        <GeoSectionList sections={sections} />
+      </>,
+    );
+
+    expect(screen.getByText('Full travel detail')).not.toBeVisible();
+    await user.click(screen.getByRole('link', { name: /travel/i }));
+    expect(screen.getByText('Full travel detail')).toBeVisible();
+    expect(window.location.hash).toBe('#travel');
+  });
+
+  it('opens and focuses a disclosure targeted by the initial URL hash', async () => {
+    window.history.replaceState(window.history.state, '', '#travel');
+    renderWithProviders(
+      <GeoSectionList
+        sections={geoSections([
+          {
+            id: 'travel',
+            title: 'Travel',
+            presentation: 'disclosure',
+            content: <p>Full travel detail</p>,
+          },
+        ])}
+      />,
+    );
+
+    expect(screen.getByText('Full travel detail')).toBeVisible();
+    expect(screen.getByRole('button', { name: /show less/i })).toHaveAttribute(
+      'aria-expanded',
+      'true',
+    );
+    await waitFor(() => expect(screen.getByRole('heading', { name: 'Travel' })).toHaveFocus());
+    window.history.replaceState(window.history.state, '', window.location.pathname);
   });
 });
 
