@@ -3012,7 +3012,28 @@
     "venueCount_one": "[ES] {{count}} place",
     "venueCount_other": "[ES] {{count}} places",
     "villageCount_one": "[ES] {{count}} district",
-    "villageCount_other": "[ES] {{count}} districts"
+    "villageCount_other": "[ES] {{count}} districts",
+    "discovery": {
+      "noMatches": "Sin resultados. Prueba otro filtro.",
+      "showing": "Mostrando {{shown}} de {{count}}",
+      "reset": "Restablecer filtros",
+      "searchPlaces": "Buscar lugares",
+      "placeType": "Tipo de lugar",
+      "allPlaces": "Todos los lugares",
+      "morePlaces": "Más lugares",
+      "district": "Barrio queer",
+      "when": "Cuándo",
+      "upcoming": "Próximamente",
+      "today": "Hoy",
+      "weekend": "Este fin de semana",
+      "week": "Próximos 7 días",
+      "eventType": "Tipo de evento",
+      "allTypes": "Todos los tipos",
+      "freeOnly": "Solo gratuitos",
+      "moreEvents": "Más salidas",
+      "moreTypes": "Más tipos de eventos",
+      "until": "Hasta"
+    }
   },
   "pride": {
     "eyebrow": "Pride Calendar",

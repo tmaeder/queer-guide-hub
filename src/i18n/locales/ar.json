@@ -3020,7 +3020,28 @@
     "venueCount_one": "[AR] {{count}} place",
     "venueCount_other": "[AR] {{count}} places",
     "villageCount_one": "[AR] {{count}} district",
-    "villageCount_other": "[AR] {{count}} districts"
+    "villageCount_other": "[AR] {{count}} districts",
+    "discovery": {
+      "noMatches": "لا توجد نتائج. جرّب مرشحًا آخر.",
+      "showing": "عرض {{shown}} من {{count}}",
+      "reset": "إعادة ضبط المرشحات",
+      "searchPlaces": "البحث عن أماكن",
+      "placeType": "نوع المكان",
+      "allPlaces": "كل الأماكن",
+      "morePlaces": "المزيد من الأماكن",
+      "district": "حي كوير",
+      "when": "متى",
+      "upcoming": "القادمة",
+      "today": "اليوم",
+      "weekend": "نهاية هذا الأسبوع",
+      "week": "الأيام السبعة القادمة",
+      "eventType": "نوع الفعالية",
+      "allTypes": "كل الأنواع",
+      "freeOnly": "المجانية فقط",
+      "moreEvents": "المزيد من المغادرات",
+      "moreTypes": "المزيد من أنواع الفعاليات",
+      "until": "حتى"
+    }
   },
   "pride": {
     "eyebrow": "Pride Calendar",
