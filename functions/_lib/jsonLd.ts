@@ -16,7 +16,7 @@ export type OrgOverrides = {
   org_sameas?: string[];
 };
 
-export function organizationLd(overrides?: OrgOverrides) {
+function organizationLd(overrides?: OrgOverrides) {
   return {
     '@context': 'https://schema.org',
     '@type': 'Organization',
@@ -30,7 +30,7 @@ export function organizationLd(overrides?: OrgOverrides) {
   };
 }
 
-export function websiteLd(overrides?: OrgOverrides) {
+function websiteLd(overrides?: OrgOverrides) {
   return {
     '@context': 'https://schema.org',
     '@type': 'WebSite',
