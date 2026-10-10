@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { HubIdentityBlock } from '@/components/hub/HubIdentityBlock';
 import { HUB_MODULES, HUB_SECTIONS, type HubModule } from '@/config/hubModules';
+import { useInboxUnreadCount } from '@/hooks/useInboxFeed';
 import { stripLocale } from '@/lib/locale';
 import { cn } from '@/lib/utils';
 
@@ -11,31 +12,30 @@ function isCurrent(pathname: string, module: HubModule) {
   return pathname === module.path || pathname.startsWith(`${module.path}/`);
 }
 
-/** One navigation system for community, connection, and personal Hub surfaces. */
-export function HubNav({
-  className,
-  activeModule,
-  unreadCount = 0,
-  showUnread = false,
-  showIdentity = false,
-}: {
-  className?: string;
-  activeModule?: HubModule['id'];
-  unreadCount?: number;
-  showUnread?: boolean;
-  showIdentity?: boolean;
-}) {
+/**
+ * One navigation system for community, connection, and personal Hub surfaces.
+ *
+ * Takes no props but `className`, deliberately. It used to take `activeModule`,
+ * `showIdentity`, `showUnread` and `unreadCount`, and only HubShell (5 of the 17
+ * hub routes) passed them — so the identity block and the Messages unread badge
+ * appeared on Overview/Feed/Messages/Plans/Saved and silently vanished on
+ * Groups, Dating, Travel buddies and the rest, and the whole bar jumped
+ * horizontally as you moved between them. Active state is derived from the
+ * pathname, which every route already agrees with; the badge and the identity
+ * block are now the component's own business. Place it with `HubNavBar`.
+ */
+export function HubNav({ className }: { className?: string }) {
   const { t } = useTranslation();
   const location = useLocation();
   const pathname = stripLocale(location.pathname).replace(/\/+$/, '') || '/';
+  const unreadCount = useInboxUnreadCount();
 
   return (
     <div className={cn('flex min-w-0 items-end gap-4', className)}>
-      {showIdentity ? (
-        <div className="hidden shrink-0 md:block">
-          <HubIdentityBlock />
-        </div>
-      ) : null}
+      {/* HubIdentityBlock renders null when signed out, so no auth check here. */}
+      <div className="hidden shrink-0 md:block">
+        <HubIdentityBlock />
+      </div>
       <nav
         aria-label={t('hub.nav', 'Hub sections')}
         className="min-w-0 flex-1 overflow-x-auto pb-2 md:overflow-visible"
@@ -55,11 +55,8 @@ export function HubNav({
                 <ul className="m-0 flex list-none gap-1 p-0">
                   {modules.map((module) => {
                     const Icon = module.icon;
-                    const active = activeModule
-                      ? module.id === activeModule
-                      : isCurrent(pathname, module);
-                    const showModuleUnread =
-                      module.badge === 'unread' && showUnread && unreadCount > 0;
+                    const active = isCurrent(pathname, module);
+                    const showModuleUnread = module.badge === 'unread' && unreadCount > 0;
                     return (
                       <li key={module.id}>
                         <LocalizedLink
