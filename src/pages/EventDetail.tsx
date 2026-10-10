@@ -461,14 +461,16 @@ export default function EventDetail() {
               />
             )}
             <DestinationSafetyCard countryIds={[effectiveCountry?.id ?? event.country_id]} />
-            <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_auto] xl:items-center">
-              <ErrorBoundary section="event-fact-strip" fallback={null}>
-                <EventFactStrip
-                  event={event}
-                  showEventTz={showEventTz}
-                  setShowEventTz={setShowEventTz}
-                />
-              </ErrorBoundary>
+            <div className="flex flex-wrap items-start gap-x-8 gap-y-4 border-b border-border-hairline pb-4">
+              <div className="min-w-0 flex-[1_1_36rem]">
+                <ErrorBoundary section="event-fact-strip" fallback={null}>
+                  <EventFactStrip
+                    event={event}
+                    showEventTz={showEventTz}
+                    setShowEventTz={setShowEventTz}
+                  />
+                </ErrorBoundary>
+              </div>
               <ErrorBoundary section="event-decision-card" fallback={null}>
                 {decisionCard}
               </ErrorBoundary>

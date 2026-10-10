@@ -6,9 +6,9 @@ import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { format } from 'date-fns';
 import {
   Calendar,
+  ChevronDown,
   ArrowLeftRight,
   MapPin,
-  Users,
   Clock,
   Phone,
   Globe,
@@ -49,7 +49,6 @@ import { useProfile } from '@/hooks/useProfile';
 import { matchNeeds, needLabel } from '@/lib/accessibilityNeeds';
 import { formatDateInZone, getTimezoneAbbr, isValidTimezone } from '@/utils/timezone';
 import { StationRing } from '@/components/transit/StationRing';
-import { FactGrid } from '@/components/transit/FactGrid';
 import { NestedEntityCard } from '@/components/transit/NestedEntityCard';
 import { getEventLiveState } from '@/lib/event-countdown';
 import { GlossaryLinkedText } from '@/components/tags/GlossaryLinkedText';
@@ -325,8 +324,8 @@ export function EventActions({
 }) {
   const { t } = useTranslation();
   return (
-    <div className="flex flex-wrap items-center gap-2">
-      <FavoriteButton itemId={event.id} type="event" size="md" />
+    <div className="relative flex flex-wrap items-center gap-1">
+      <FavoriteButton itemId={event.id} type="event" size="tap" />
       <ShareMenu
         url={
           typeof window !== 'undefined'
@@ -338,10 +337,11 @@ export function EventActions({
         variant="ghost"
       />
       <details className="max-w-full">
-        <summary className="w-fit cursor-pointer rounded-element py-2 text-13 font-semibold underline-offset-4 hover:underline">
+        <summary className="flex min-h-11 cursor-pointer list-none items-center gap-1.5 rounded-element px-4 text-13 font-medium text-muted-foreground hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring [&::-webkit-details-marker]:hidden">
           {t('events.detail.moreOptions', 'More options')}
+          <ChevronDown size={14} aria-hidden="true" />
         </summary>
-        <div className="flex flex-wrap items-center gap-4 py-4">
+        <div className="absolute right-0 top-full z-20 mt-1 flex w-72 max-w-full flex-wrap items-center gap-2 rounded-container border border-border-hairline bg-background p-4 shadow-soft">
           {onExportToCalendar && (
             <Button variant="ghost" size="sm" onClick={onExportToCalendar}>
               <Download size={14} className="mr-1.5" aria-hidden="true" />
@@ -522,110 +522,83 @@ export function EventFactStrip({
     (event as unknown as { schedule?: EventSchedule | null }).schedule,
   );
 
-  // Spec module 01 — the bordered fact strip, shared with every other single.
-  // The timezone toggle survives the move as a node in the Time cell: an event
-  // read from another country is ambiguous without it, and dropping an
-  // interactive affordance to gain a border would be a bad trade.
   const price = getPriceDisplay(event);
+  const facts = [
+    {
+      label: t('events.detail.time', 'Time'),
+      value: (
+        <>
+          <span>{formatEventTime(event.start_date, event.end_date, zone)}</span>
+          {!dateOnly &&
+            (eventZone ? (
+              <button
+                type="button"
+                onClick={() => setShowEventTz((prev) => !prev)}
+                aria-label={
+                  showEventTz
+                    ? t('events.detail.showMyTime', 'Show my time')
+                    : t('events.detail.showEventTime', 'Show event time')
+                }
+                className="flex min-h-11 items-center gap-1.5 text-2xs font-medium text-muted-foreground underline decoration-dotted underline-offset-4 hover:text-foreground"
+              >
+                {showEventTz
+                  ? t('events.detail.eventTime', 'Event time')
+                  : t('events.detail.yourTime', 'Your time')}
+                {zoneName && ` · ${zoneName}`}
+                <ArrowLeftRight size={12} aria-hidden="true" />
+              </button>
+            ) : (
+              <span className="mt-1 block text-2xs font-medium text-muted-foreground">
+                {t('events.detail.yourTime', 'Your time')}
+                {zoneName && ` · ${zoneName}`}
+              </span>
+            ))}
+        </>
+      ),
+    },
+    {
+      label: t('events.detail.price', 'Entry'),
+      value: event.is_free
+        ? t('events.free', 'Free')
+        : price === 'Price TBA'
+          ? t('events.detail.notListed', 'Not listed')
+          : price,
+    },
+    { label: t('events.detail.ages', 'Age'), value: ageRestriction },
+    {
+      label: t('events.detail.capacity', 'Capacity'),
+      value: event.max_attendees && event.max_attendees > 0 ? event.max_attendees : null,
+    },
+    ...(schedule
+      ? [
+          {
+            label: t('events.detail.schedule', 'Schedule'),
+            value: schedule.inferred ? `${schedule.text} (from past dates)` : schedule.text,
+          },
+        ]
+      : []),
+  ].filter((fact) => fact.value !== null && fact.value !== undefined && fact.value !== '');
+
   return (
-    <div className="rounded-container bg-track-blue/10 px-2 py-2">
-      <div className="flex items-center justify-between gap-2 px-2 pb-2">
-        <span className="text-13 font-bold">{t('events.detail.board', 'Departure board')}</span>
-        <svg viewBox="0 0 96 20" className="h-6 w-24 text-track-blue" aria-hidden="true">
-          <path
-            d="M4 16 H30 Q38 16 38 8 Q38 4 46 4 H92"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="3"
-          />
-          <circle
-            cx="4"
-            cy="16"
-            r="3"
-            className="fill-background stroke-foreground"
-            strokeWidth="2"
-          />
-          <circle
-            cx="92"
-            cy="4"
-            r="3"
-            className="fill-background stroke-foreground"
-            strokeWidth="2"
-          />
-        </svg>
+    <dl className="grid grid-cols-2 items-start gap-x-6 gap-y-4 sm:flex sm:flex-wrap sm:gap-x-8">
+      <div className="col-span-2 min-w-0 sm:basis-72 lg:basis-80">
+        <dt className="mb-1 flex items-center gap-1.5 text-2xs font-bold uppercase tracking-label text-muted-foreground">
+          <Calendar size={14} className="text-foreground" aria-hidden="true" />
+          {t('events.detail.date', 'Date')}
+        </dt>
+        <dd className="max-w-xl text-xl font-bold leading-tight tracking-tight text-pretty">
+          {formatEventDate(event.start_date, event.end_date, zone)}
+        </dd>
       </div>
-      <FactGrid
-        className="grid-cols-2 border-0 [&>div]:border-0 [&>div]:px-2 [&>div]:py-2 [&>div]:min-w-0 [&_dt]:text-foreground/80"
-        facts={[
-          {
-            label: t('events.detail.date', 'Date'),
-            icon: <Calendar size={13} aria-hidden="true" />,
-            value: formatEventDate(event.start_date, event.end_date, zone),
-          },
-          ...(schedule
-            ? [
-                {
-                  label: t('events.detail.schedule', 'Schedule'),
-                  icon: <Repeat size={13} aria-hidden="true" />,
-                  value: schedule.inferred ? `${schedule.text} (from past dates)` : schedule.text,
-                },
-              ]
-            : []),
-          {
-            label: t('events.detail.time', 'Time'),
-            icon: <Clock size={13} aria-hidden="true" />,
-            value: (
-              <div>
-                <span>{formatEventTime(event.start_date, event.end_date, zone)}</span>
-                {!dateOnly &&
-                  (eventZone ? (
-                    <button
-                      type="button"
-                      onClick={() => setShowEventTz((prev) => !prev)}
-                      aria-label={
-                        showEventTz
-                          ? t('events.detail.showMyTime', 'Show my time')
-                          : t('events.detail.showEventTime', 'Show event time')
-                      }
-                      className="mt-1 flex min-h-6 items-center gap-1.5 text-2xs font-medium underline decoration-dotted underline-offset-4"
-                    >
-                      {showEventTz
-                        ? t('events.detail.eventTime', 'Event time')
-                        : t('events.detail.yourTime', 'Your time')}
-                      {zoneName && ` · ${zoneName}`}
-                      <ArrowLeftRight size={12} aria-hidden="true" />
-                    </button>
-                  ) : (
-                    <span className="mt-1 block text-2xs font-medium">
-                      {t('events.detail.yourTime', 'Your time')}
-                      {zoneName && ` · ${zoneName}`}
-                    </span>
-                  ))}
-              </div>
-            ),
-          },
-          {
-            label: t('events.detail.price', 'Entry'),
-            icon: <Ticket size={13} aria-hidden="true" />,
-            value: event.is_free
-              ? t('events.free', 'Free')
-              : price === 'Price TBA'
-                ? t('events.detail.notListed', 'Not listed')
-                : price,
-          },
-          {
-            label: t('events.detail.ages', 'Age'),
-            icon: <Users size={13} aria-hidden="true" />,
-            value: ageRestriction,
-          },
-          {
-            label: t('events.detail.capacity', 'Capacity'),
-            icon: <Users size={13} aria-hidden="true" />,
-            value: event.max_attendees && event.max_attendees > 0 ? event.max_attendees : null,
-          },
-        ]}
-      />
-    </div>
+      {facts.map((fact) => (
+        <div key={fact.label} className="min-w-0 sm:max-w-xs sm:basis-auto">
+          <dt className="mb-1 text-2xs font-bold uppercase tracking-label text-muted-foreground">
+            {fact.label}
+          </dt>
+          <dd className="break-words text-15 font-medium leading-snug">{fact.value}</dd>
+        </div>
+      ))}
+    </dl>
   );
 }
 
