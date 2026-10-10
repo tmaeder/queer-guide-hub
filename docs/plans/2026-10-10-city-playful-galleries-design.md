@@ -13,3 +13,13 @@ City discovery should feel like choosing stops on a colourful subway line: invit
 Alternatives considered: masonry makes comparisons harder; carousels hide choices. Compact grids retain scanability and the decluttering goal.
 
 Validation: filtering/reset and grouping unit tests, scoped CityDetail regression tests, lint/typecheck/build, desktop/mobile browser interaction and accessibility checks. Inspect visuals in one batched pass with at most one corrective confirmation pass.
+
+## Implemented and verified
+
+Gallery tiles share the existing image primitive and retain uncropped logo treatment when a photo is unavailable. Districts show curated/source photos with station placeholders for missing imagery. Venue discovery starts at six tiles and can reveal more; the overview map remains bounded to twelve markers.
+
+Departures preview four event types with up to three rows each. Readers can expand a type or reveal more types. Expired records are excluded; ongoing date ranges display their end date with an explicit “Until” label. Date filters use destination calendar days and retain overlapping multi-day events.
+
+New copy is translated in all eleven locales and synced to public locale assets. Filters reset on city navigation.
+
+Validation: 21 focused unit/component tests and six city browser tests passed. Desktop/mobile filter interactions and axe checks passed with no serious/critical findings and no horizontal overflow. Scoped ESLint passed. Typecheck reported no new errors against the repository baseline. Production build passed. Some district source photos are absent; placeholders intentionally make that absence visible.
