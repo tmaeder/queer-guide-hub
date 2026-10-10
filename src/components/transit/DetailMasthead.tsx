@@ -1,5 +1,7 @@
 import { RouteBullet } from './RouteBullet';
+import { TransitIcon } from './TransitIcon';
 import { cn } from '@/lib/utils';
+import type { TransitIconName } from './transitIconPaths';
 import type { Track } from './routeBulletMap';
 
 interface DetailMastheadProps {
@@ -19,6 +21,16 @@ interface DetailMastheadProps {
   bulletLabel?: string;
   /** Uppercase line above the title, e.g. "Venue · Nightlife track". */
   eyebrow?: string;
+  /**
+   * A subject glyph shown at the head of the eyebrow. Added for the glossary,
+   * whose single showed no per-term mark at all — only the generic pink `#`.
+   * It rides the eyebrow rather than replacing the bullet, because the bullet
+   * is the station mark the whole site promises for the type and the eyebrow is
+   * already the line that says WHICH corner of the taxonomy this is
+   * ("Identity › Gender"). Omitted = every other single renders byte-identical,
+   * the same contract the `letter`/`track` overrides above already document.
+   */
+  glyph?: TransitIconName;
   title: string;
   /** Bordered status chip, e.g. "Open now" / "Runs monthly". */
   status?: string;
@@ -51,6 +63,7 @@ export function DetailMasthead({
   track,
   bulletLabel,
   eyebrow,
+  glyph,
   title,
   status,
   lead,
@@ -61,7 +74,12 @@ export function DetailMasthead({
     <header className={className}>
       <div className={cn('flex flex-wrap items-center gap-2', compact ? 'mb-2' : 'mb-4')}>
         <RouteBullet type={type} size={44} letter={letter} track={track} label={bulletLabel} />
-        {eyebrow && <span className="text-2xs font-bold uppercase tracking-label">{eyebrow}</span>}
+        {(eyebrow || glyph) && (
+          <span className="inline-flex items-center gap-1.5 text-2xs font-bold uppercase tracking-label">
+            {glyph && <TransitIcon name={glyph} size={18} />}
+            {eyebrow}
+          </span>
+        )}
         {status && (
           <span className="rounded-element border border-input bg-surface-container-high px-4 py-2 text-2xs font-bold uppercase tracking-label shadow-soft">
             {status}
