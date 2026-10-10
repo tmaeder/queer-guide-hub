@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { render, screen, within } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { AttributeFacetGroups } from '../AttributeFacetGroups';
 import type { MarketplaceTagFacet } from '@/hooks/useMarketplaceQueries';
@@ -11,8 +11,7 @@ const f = (
   count: number,
 ): MarketplaceTagFacet => ({ slug, name, kind, count });
 
-/** The live apparel shape: count-sorted, kinds interleaved, 11 colours so the
- *  collapse threshold is crossed in exactly one group. */
+/** The live apparel shape: count-sorted, kinds interleaved. */
 const APPAREL: MarketplaceTagFacet[] = [
   f('size-s', 'S', 'size', 2660),
   f('size-xl', 'XL', 'size', 2585),
@@ -24,16 +23,8 @@ const APPAREL: MarketplaceTagFacet[] = [
   f('vibe-bold', 'Bold', 'vibe', 158),
 ];
 
-const groupChips = (kind: string) => {
-  const label = screen.getByText(kind);
-  const row = label.parentElement as HTMLElement;
-  return within(row)
-    .getAllByRole('button')
-    .map((b) => b.textContent ?? '');
-};
-
 describe('AttributeFacetGroups', () => {
-  it('splits one flat wall into labelled groups in the department order', () => {
+  it('renders ONE trigger per kind, in the department order', () => {
     render(
       <AttributeFacetGroups
         department="apparel"
@@ -42,12 +33,13 @@ describe('AttributeFacetGroups', () => {
         onToggle={vi.fn()}
       />,
     );
-    // attributeFacetsForDepartment('apparel') leads with size, then colour.
-    const labels = screen.getAllByText(/^(Size|Color|Material|Vibe)$/).map((n) => n.textContent);
-    expect(labels).toEqual(['Size', 'Color', 'Material', 'Vibe']);
+    // The whole point of the dropdowns: six kinds cost six triggers on one
+    // row, not six stacked rows of chips.
+    const triggers = screen.getAllByRole('button').map((b) => b.textContent);
+    expect(triggers).toEqual(['Size', 'Color', 'Material', 'Vibe']);
   });
 
-  it('orders sizes by the ladder, never by count', () => {
+  it('keeps every option reachable — no expander, nothing hidden', async () => {
     render(
       <AttributeFacetGroups
         department="apparel"
@@ -56,33 +48,57 @@ describe('AttributeFacetGroups', () => {
         onToggle={vi.fn()}
       />,
     );
+    await userEvent.click(screen.getByRole('button', { name: /filter by color/i }));
+    // 11 colours, all present. The old inline version hid 5 behind "+5"; a
+    // scrolling popover costs the page no height, so nothing needs hiding.
+    for (const n of ['Black', 'C0', 'C9']) {
+      expect(screen.getByText(n)).toBeInTheDocument();
+    }
+    expect(screen.queryByText(/^\+\d+$/)).not.toBeInTheDocument();
+  });
+
+  it('orders sizes by the ladder, never by count', async () => {
+    render(
+      <AttributeFacetGroups
+        department="apparel"
+        facets={APPAREL}
+        selected={[]}
+        onToggle={vi.fn()}
+      />,
+    );
+    await userEvent.click(screen.getByRole('button', { name: /filter by size/i }));
+    const opts = screen
+      .getAllByRole('button')
+      .map((b) => b.textContent ?? '')
+      .filter((t) => /^(XXS|XS|S|M|L|XL|\dXL)\d/.test(t))
+      .map((t) => t.replace(/[\d,]+$/, ''));
     // Count order would be S, XL, XS, 5XL — the ordering a reader reads as broken.
-    expect(groupChips('Size').map((t) => t.split(' ')[0])).toEqual(['XS', 'S', 'XL', '5XL']);
+    expect(opts).toEqual(['XS', 'S', 'XL', '5XL']);
   });
 
-  it('collapses a long group behind an expander and reveals the rest on click', async () => {
+  it('shows how many filters a collapsed kind is holding', () => {
     render(
       <AttributeFacetGroups
         department="apparel"
         facets={APPAREL}
-        selected={[]}
+        selected={['color-black', 'color-c9']}
         onToggle={vi.fn()}
       />,
     );
-    // 11 colours, threshold 10 → 10 chips + one "+1". Asserting the COUNT
-    // alone is vacuous here (10 chips + expander is also 11); the 11th
-    // colour by name is what separates collapsed from expanded.
-    expect(groupChips('Color')).toHaveLength(11);
-    expect(screen.getByText('+1')).toBeInTheDocument();
-    expect(screen.queryByText(/^C9/)).not.toBeInTheDocument();
-
-    await userEvent.click(screen.getByText('+1'));
-    expect(screen.queryByText('+1')).not.toBeInTheDocument();
-    expect(screen.getByText(/^C9/)).toBeInTheDocument();
-    expect(groupChips('Color')).toHaveLength(11);
+    // A dropdown hides its applied state, so the count on the trigger is the
+    // only thing telling a reader the grid is filtered. Without it the result
+    // count moves with nothing on screen explaining why.
+    const trigger = screen.getByRole('button', { name: /filter by color/i });
+    expect(trigger).toHaveTextContent('Color · 2');
+    expect(trigger).toHaveAttribute('aria-pressed', 'true');
+    // An untouched kind must NOT claim to be filtering.
+    expect(screen.getByRole('button', { name: /filter by size/i })).toHaveAttribute(
+      'aria-pressed',
+      'false',
+    );
   });
 
-  it('keeps a SELECTED chip visible even when its rank is past the cut', () => {
+  it('marks the selected options inside the dropdown', async () => {
     render(
       <AttributeFacetGroups
         department="apparel"
@@ -91,11 +107,10 @@ describe('AttributeFacetGroups', () => {
         onToggle={vi.fn()}
       />,
     );
-    // c9 ranks 11th. Hiding an applied filter moves the result count with
-    // nothing on screen explaining why.
-    const chip = screen.getByText(/^C9/).closest('button');
-    expect(chip).toBeInTheDocument();
-    expect(chip).toHaveAttribute('aria-pressed', 'true');
+    await userEvent.click(screen.getByRole('button', { name: /filter by color/i }));
+    const row = screen.getByText('C9').closest('button');
+    expect(row).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.getByText('Black').closest('button')).toHaveAttribute('aria-pressed', 'false');
   });
 
   it('renders a kind the department order does not list rather than dropping it', () => {
@@ -109,8 +124,7 @@ describe('AttributeFacetGroups', () => {
     );
     // 'genre' is absent from ATTRIBUTE_FACETS_BY_DEPARTMENT.apparel — a
     // vocabulary gap must not silently delete a working filter.
-    expect(screen.getByText('Genre')).toBeInTheDocument();
-    expect(screen.getByText(/^Poetry/)).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /filter by genre/i })).toBeInTheDocument();
   });
 
   it('toggles by slug', async () => {
@@ -123,7 +137,8 @@ describe('AttributeFacetGroups', () => {
         onToggle={onToggle}
       />,
     );
-    await userEvent.click(screen.getByText(/^Cotton/));
+    await userEvent.click(screen.getByRole('button', { name: /filter by material/i }));
+    await userEvent.click(screen.getByText('Cotton'));
     expect(onToggle).toHaveBeenCalledWith('mat-cotton');
   });
 });
