@@ -246,8 +246,12 @@ export default function CountryDetail() {
     const seen = new Set<string>();
     return candidates
       .filter((photo): photo is { src: string; caption: string } => {
-        if (!photo.src || seen.has(photo.src)) return false;
-        seen.add(photo.src);
+        if (!photo.src) return false;
+        // The same stored asset can be copied into both country and city buckets.
+        const url = new URL(photo.src);
+        const key = url.hostname === 'img.queer.guide' ? url.pathname.split('/').pop()! : photo.src;
+        if (seen.has(key)) return false;
+        seen.add(key);
         return true;
       })
       .slice(0, 6);
