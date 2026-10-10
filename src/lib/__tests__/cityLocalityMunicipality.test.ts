@@ -5,11 +5,11 @@ import { join } from 'node:path';
 /**
  * Two migrations, one rule: an Ortsteil is not a city.
  *
- *   - `99991791576384_city_locality_resolves_to_municipality.sql` patches
+ *   - `99991791631994_city_locality_resolves_to_municipality.sql` patches
  *     `city_resolve_or_create` (every city creator's only door) with a locality
  *     arm, and `commit_city_staging_item` so GeoNames PPLX may match but never
  *     create.
- *   - `99991791575994_delete_hinterzarten_placeholder_city.sql` removes the
+ *   - `99991791631989_delete_hinterzarten_placeholder_city.sql` removes the
  *     placeholder that prompted it, in the same order the 2026-10-01 non-place
  *     delete established.
  *
@@ -26,9 +26,9 @@ const strip = (sql: string) =>
     .map((l) => l.replace(/--.*$/, ''))
     .join('\n');
 
-const LOCALITY_RAW = read('99991791576384_city_locality_resolves_to_municipality.sql');
+const LOCALITY_RAW = read('99991791631994_city_locality_resolves_to_municipality.sql');
 const LOCALITY = strip(LOCALITY_RAW);
-const DELETE = strip(read('99991791575994_delete_hinterzarten_placeholder_city.sql'));
+const DELETE = strip(read('99991791631989_delete_hinterzarten_placeholder_city.sql'));
 
 describe('locality arm in city_resolve_or_create', () => {
   const arm = LOCALITY.slice(LOCALITY.indexOf('$ins$'), LOCALITY.lastIndexOf('$ins$'));
@@ -65,7 +65,9 @@ describe('locality arm in city_resolve_or_create', () => {
     expect(verify).toMatch(/p_name => 'Alpersbach'[\s\S]*?p_allow_create => false/);
     expect(verify).toMatch(/is distinct from 'locality_of_municipality'[\s\S]*?raise exception/);
     expect(verify).toMatch(/p_name => 'Windeck'[\s\S]*?p_lat => 50\.77/);
-    expect(verify).toMatch(/if v_r\.match_type = 'locality_of_municipality' then\s+raise exception/);
+    expect(verify).toMatch(
+      /if v_r\.match_type = 'locality_of_municipality' then\s+raise exception/,
+    );
   });
 
   it('seeds Hinterzarten against its Wikidata municipality, coordinate-gated', () => {

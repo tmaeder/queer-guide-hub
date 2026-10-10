@@ -1,6 +1,6 @@
 -- An Ortsteil is not a city: resolve localities onto their municipality.
 --
--- Prompted by `Hinterzarten` (deleted by 99991791575994): a Gemeinde whose
+-- Prompted by `Hinterzarten` (deleted by 99991791631989): a Gemeinde whose
 -- territory is a village plus a dozen Zinken and Wohnplaetze — Alpersbach,
 -- Am Feldberg, Bisten, Bruderhalde, Erlenbruck, Loeffeltal, Oberzarten,
 -- Rinken, Rotwasser, Windeck, Winterhalde, Altenvogtshuette, Ramselegut,
@@ -80,7 +80,7 @@ insert into public.city_localities
   (country_id, locality_name, locality_qid, kind, municipality_name, municipality_qid,
    anchor_lat, anchor_lng, radius_m, source, note)
 select c.id, v.name, v.qid, v.kind, 'Hinterzarten', 'Q515356', 47.907778, 8.100833, 9000,
-       'migration:99991791576384', v.note
+       'migration:99991791631994', v.note
   from public.countries c
   cross join (values
     ('Alpersbach',       null,          'zinken',    null),
