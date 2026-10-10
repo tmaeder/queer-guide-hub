@@ -2711,7 +2711,21 @@
       "subtitle": "Gérez vos connexions",
       "gate": "Connectez-vous pour voir vos amis.",
       "requests": "Demandes",
-      "sentRequest": "T’a envoyé une demande d’ami"
+      "sentRequest": "T’a envoyé une demande d’ami",
+      "loadError": "Impossible de charger tes ami·es.",
+      "empty": {
+        "title": "Pas encore d'ami·es.",
+        "description": "Trouve des personnes avec qui te connecter.",
+        "cta": "Trouver des personnes",
+        "pendingSent_one": "Tu as {{count}} demande envoyée en attente de réponse. Voir l'onglet Demandes.",
+        "pendingSent_other": "Tu as {{count}} demandes envoyées en attente de réponse. Voir l'onglet Demandes."
+      },
+      "requestsEmpty": "Aucune demande d'ami·e en attente.",
+      "received": "Reçues",
+      "sent": "Envoyées",
+      "waitingForAnswer": "En attente de réponse",
+      "pendingBadge": "En attente",
+      "cancelRequest": "Retirer"
     },
     "entityDetail": {
       "milestoneNotFoundTitle": "Jalon introuvable",
@@ -3730,6 +3744,9 @@
       "blurb": "[FR] Pick a few. They shape what we suggest, and they are how other members find people with something in common.",
       "blurbSignedOut": "[FR] Sign in to pick a few. They shape what we suggest, and they are how other members find people with something in common.",
       "count": "[FR] {{count}} selected"
+    },
+    "friends": {
+      "discover": "Trouver des personnes"
     }
   },
   "hub": {

@@ -13,7 +13,8 @@ import { fetchProfilesByUserIds } from '@/hooks/usePageFetchers';
 import { StartConversationButton } from '@/components/messaging/StartConversationButton';
 import { useSOS } from '@/hooks/useSOS';
 import { useTranslation } from 'react-i18next';
-import { EmptyState } from '@/components/ui/EmptyState';
+import { EmptyState, ErrorState } from '@/components/ui/EmptyState';
+import { Skeleton } from '@/components/ui/skeleton';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -51,11 +52,16 @@ export function FriendsPanel() {
     removeRelationship,
     getFriends,
     getPendingRequests,
+    getSentRequests,
     loading,
+    hasLoaded,
+    error,
+    refetch,
   } = useUserRelationships();
 
   const friends = getFriends();
   const pendingRequests = getPendingRequests();
+  const sentRequests = getSentRequests();
 
   const friendIds = user
     ? friends.map((f) => (f.user_id === user.id ? f.target_user_id : f.user_id))
@@ -83,6 +89,34 @@ export function FriendsPanel() {
     },
     enabled: !!user && pendingRequests.length > 0,
   });
+
+  const { data: sentProfiles } = useQuery({
+    queryKey: ['sent-request-profiles', sentRequests.map((r) => r.target_user_id)],
+    queryFn: async () => {
+      if (!user || sentRequests.length === 0) return [];
+      return fetchProfilesByUserIds<FriendProfile>(sentRequests.map((r) => r.target_user_id));
+    },
+    enabled: !!user && sentRequests.length > 0,
+  });
+
+  // Before the first fetch settles, and after a failed one, the lists are
+  // empty for reasons that have nothing to do with the user's circle — so
+  // neither state may render the "no friends yet" empty state.
+  const status: 'loading' | 'error' | 'ready' = error ? 'error' : hasLoaded ? 'ready' : 'loading';
+
+  const loadingState = (
+    <div className="grid gap-4" aria-busy="true">
+      <Skeleton height={80} />
+      <Skeleton height={80} />
+    </div>
+  );
+  const errorState = (
+    <ErrorState
+      title={t('pages.friends.loadError', 'Could not load your friends.')}
+      onRetry={() => void refetch()}
+    />
+  );
+  const requestCount = pendingRequests.length + sentRequests.length;
 
   return (
     <div className="flex flex-col gap-6">
@@ -139,7 +173,7 @@ export function FriendsPanel() {
           <TabsTrigger value="requests">
             <div className="flex items-center gap-2">
               <Clock size={16} />
-              {t('pages.friends.requests', 'Requests')} ({pendingRequests.length})
+              {t('pages.friends.requests', 'Requests')} ({requestCount})
             </div>
           </TabsTrigger>
           <TabsTrigger value="discover">
@@ -152,14 +186,26 @@ export function FriendsPanel() {
 
         <TabsContent value="friends">
           <div className="flex flex-col gap-4">
-            {friends.length === 0 ? (
+            {status === 'loading' ? (
+              loadingState
+            ) : status === 'error' ? (
+              errorState
+            ) : friends.length === 0 ? (
               <EmptyState
                 icon={Users}
-                title="Your circle is just getting started"
-                description="Find people to connect with."
+                title={t('pages.friends.empty.title', 'No friends yet.')}
+                description={
+                  sentRequests.length > 0
+                    ? t('pages.friends.empty.pendingSent', {
+                        count: sentRequests.length,
+                        defaultValue:
+                          'You have {{count}} sent requests waiting for an answer. See the Requests tab.',
+                      })
+                    : t('pages.friends.empty.description', 'Find people to connect with.')
+                }
                 mood="encouraging"
                 primaryAction={{
-                  label: 'Find People',
+                  label: t('pages.friends.empty.cta', 'Find people'),
                   onClick: () => navigate('/hub/members'),
                 }}
               />
@@ -222,15 +268,23 @@ export function FriendsPanel() {
 
         <TabsContent value="requests">
           <div className="flex flex-col gap-4">
-            {pendingRequests.length === 0 ? (
+            {status === 'loading' ? (
+              loadingState
+            ) : status === 'error' ? (
+              errorState
+            ) : requestCount === 0 ? (
               <EmptyState
                 icon={Clock}
-                title="Your circle is just getting started"
-                description="Find people to connect with."
-                mood="encouraging"
+                title={t('pages.friends.requestsEmpty', 'No open friend requests.')}
+                description={t('pages.friends.empty.description', 'Find people to connect with.')}
               />
             ) : (
               <div className="grid gap-4">
+                {pendingRequests.length > 0 && sentRequests.length > 0 && (
+                  <h3 className="text-2xs font-bold uppercase tracking-wide text-muted-foreground">
+                    {t('pages.friends.received', 'Received')}
+                  </h3>
+                )}
                 {pendingRequests.map((request) => {
                   const profile = requestProfiles?.find((p) => p.user_id === request.user_id);
                   return (
@@ -284,6 +338,57 @@ export function FriendsPanel() {
                                 <X size={16} />
                                 {t('common.decline', 'Decline')}
                               </div>
+                            </Button>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  );
+                })}
+                {sentRequests.length > 0 && (
+                  <h3 className="text-2xs font-bold uppercase tracking-wide text-muted-foreground">
+                    {t('pages.friends.sent', 'Sent')}
+                  </h3>
+                )}
+                {sentRequests.map((request) => {
+                  const profile = sentProfiles?.find((p) => p.user_id === request.target_user_id);
+                  return (
+                    <Card key={request.id}>
+                      <CardContent>
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-4">
+                            <Avatar style={{ width: 48, height: 48 }}>
+                              <AvatarImage
+                                src={profile?.avatar_url || undefined}
+                                alt={profile?.display_name || ''}
+                              />
+                              <AvatarFallback>
+                                {profile?.display_name?.charAt(0)?.toUpperCase() || 'U'}
+                              </AvatarFallback>
+                            </Avatar>
+                            <div>
+                              <LocalizedLink
+                                to={`/user/${request.target_user_id}`}
+                                className="font-medium"
+                              >
+                                {profile?.display_name || 'Unknown User'}
+                              </LocalizedLink>
+                              <p className="text-sm text-muted-foreground">
+                                {t('pages.friends.waitingForAnswer', 'Waiting for an answer')}
+                              </p>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Badge variant="secondary">
+                              {t('pages.friends.pendingBadge', 'Pending')}
+                            </Badge>
+                            <Button
+                              variant="soft"
+                              size="sm"
+                              onClick={() => removeRelationship(request.target_user_id)}
+                              disabled={loading}
+                            >
+                              {t('pages.friends.cancelRequest', 'Withdraw')}
                             </Button>
                           </div>
                         </div>

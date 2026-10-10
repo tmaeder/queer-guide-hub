@@ -2705,7 +2705,21 @@
       "subtitle": "つながりを管理",
       "gate": "友達を見るにはサインインしてください。",
       "requests": "リクエスト",
-      "sentRequest": "友達リクエストを送信しました"
+      "sentRequest": "友達リクエストを送信しました",
+      "loadError": "友達を読み込めませんでした。",
+      "empty": {
+        "title": "まだ友達はいません。",
+        "description": "つながる人を見つけましょう。",
+        "cta": "人を探す",
+        "pendingSent_one": "返事待ちの送信済みリクエストが{{count}}件あります。「リクエスト」タブを確認してください。",
+        "pendingSent_other": "返事待ちの送信済みリクエストが{{count}}件あります。「リクエスト」タブを確認してください。"
+      },
+      "requestsEmpty": "未対応の友達リクエストはありません。",
+      "received": "受信",
+      "sent": "送信済み",
+      "waitingForAnswer": "返事待ち",
+      "pendingBadge": "保留中",
+      "cancelRequest": "取り消す"
     },
     "entityDetail": {
       "milestoneNotFoundTitle": "マイルストーンが見つかりません",
@@ -3724,6 +3738,9 @@
       "blurb": "[JA] Pick a few. They shape what we suggest, and they are how other members find people with something in common.",
       "blurbSignedOut": "[JA] Sign in to pick a few. They shape what we suggest, and they are how other members find people with something in common.",
       "count": "[JA] {{count}} selected"
+    },
+    "friends": {
+      "discover": "人を探す"
     }
   },
   "hub": {

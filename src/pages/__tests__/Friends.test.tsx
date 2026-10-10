@@ -15,7 +15,11 @@ vi.mock('@/hooks/useUserRelationships', () => ({
     removeRelationship: vi.fn(),
     getFriends: () => [],
     getPendingRequests: () => [],
+    getSentRequests: () => [],
     loading: false,
+    hasLoaded: true,
+    error: null,
+    refetch: vi.fn(),
   }),
 }));
 vi.mock('@/hooks/useAuth', () => ({ useAuth: () => ({ user: { id: 'u1' } }) }));

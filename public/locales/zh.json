@@ -2705,7 +2705,21 @@
       "subtitle": "管理你的联系人",
       "gate": "请登录以查看你的好友。",
       "requests": "请求",
-      "sentRequest": "向你发送了好友请求"
+      "sentRequest": "向你发送了好友请求",
+      "loadError": "无法加载你的好友。",
+      "empty": {
+        "title": "还没有好友。",
+        "description": "寻找可以联系的人。",
+        "cta": "寻找用户",
+        "pendingSent_one": "你有 {{count}} 个已发送的请求正在等待回复。请查看“请求”标签页。",
+        "pendingSent_other": "你有 {{count}} 个已发送的请求正在等待回复。请查看“请求”标签页。"
+      },
+      "requestsEmpty": "没有待处理的好友请求。",
+      "received": "已收到",
+      "sent": "已发送",
+      "waitingForAnswer": "等待回复",
+      "pendingBadge": "待处理",
+      "cancelRequest": "撤回"
     },
     "entityDetail": {
       "milestoneNotFoundTitle": "未找到里程碑",
@@ -3724,6 +3738,9 @@
       "blurb": "[ZH] Pick a few. They shape what we suggest, and they are how other members find people with something in common.",
       "blurbSignedOut": "[ZH] Sign in to pick a few. They shape what we suggest, and they are how other members find people with something in common.",
       "count": "[ZH] {{count}} selected"
+    },
+    "friends": {
+      "discover": "寻找用户"
     }
   },
   "hub": {

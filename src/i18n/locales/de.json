@@ -2707,7 +2707,21 @@
       "subtitle": "Verwalte deine Kontakte",
       "gate": "Bitte melde dich an, um deine Freunde zu sehen.",
       "requests": "Anfragen",
-      "sentRequest": "Hat dir eine Freundschaftsanfrage geschickt"
+      "sentRequest": "Hat dir eine Freundschaftsanfrage geschickt",
+      "loadError": "Deine Freund*innen konnten nicht geladen werden.",
+      "empty": {
+        "title": "Noch keine Freund*innen.",
+        "description": "Finde Leute, mit denen du dich verbinden kannst.",
+        "cta": "Leute finden",
+        "pendingSent_one": "Du hast {{count}} gesendete Anfrage, die noch offen ist. Siehe Tab „Anfragen“.",
+        "pendingSent_other": "Du hast {{count}} gesendete Anfragen, die noch offen sind. Siehe Tab „Anfragen“."
+      },
+      "requestsEmpty": "Keine offenen Freundschaftsanfragen.",
+      "received": "Erhalten",
+      "sent": "Gesendet",
+      "waitingForAnswer": "Wartet auf Antwort",
+      "pendingBadge": "Offen",
+      "cancelRequest": "Zurückziehen"
     },
     "entityDetail": {
       "milestoneNotFoundTitle": "Meilenstein nicht gefunden",
@@ -3726,6 +3740,9 @@
       "blurb": "[DE] Pick a few. They shape what we suggest, and they are how other members find people with something in common.",
       "blurbSignedOut": "[DE] Sign in to pick a few. They shape what we suggest, and they are how other members find people with something in common.",
       "count": "[DE] {{count}} selected"
+    },
+    "friends": {
+      "discover": "Leute finden"
     }
   },
   "hub": {
