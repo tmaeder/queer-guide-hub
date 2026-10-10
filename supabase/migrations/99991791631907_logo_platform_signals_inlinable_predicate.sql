@@ -304,8 +304,13 @@ begin
     raise exception 'P2 failed: no before-snapshot was captured';
   end if;
   if v_before is distinct from v_after then
-    raise exception 'P2 failed: rewrite changed the output.%  before: %%  after: %',
-      chr(10), v_before, chr(10) || '  ' || v_after::text;
+    -- `%%` is a LITERAL percent in a RAISE format, not two placeholders, so the
+    -- original had 2 slots against 3 arguments and failed to COMPILE (42601,
+    -- "too many parameters specified for RAISE") — which aborted `db push` on
+    -- main and blocked every migration behind it. Newlines come from an
+    -- E-string now, so the slot count is impossible to miscount.
+    raise exception E'P2 failed: rewrite changed the output.\n  before: %\n  after: %',
+      v_before, v_after::text;
   end if;
   -- Guard against the snapshot itself being a degenerate document.
   if not (v_after ? 'probe_ok' and v_after ? 'platform_logo_rows'
