@@ -1347,9 +1347,40 @@
       "eyebrow": "[IT] Event",
       "sections": "[IT] Sections",
       "section": {
-        "about": "[IT] About this event",
-        "where": "[IT] Getting there",
-        "going": "[IT] Who's going"
+        "about": "Da sapere",
+        "where": "Trova la strada",
+        "going": "In viaggio con te"
+      },
+      "calendar": "Calendario",
+      "moreOptions": "Altre opzioni",
+      "send": "Invia a qualcuno",
+      "getTickets": "Acquista biglietti",
+      "going": "Partecipo",
+      "viewImage": "Visualizza immagine",
+      "board": "Tabellone partenze",
+      "date": "Data",
+      "time": "Ora",
+      "price": "Ingresso",
+      "ages": "Età",
+      "capacity": "Capienza",
+      "schedule": "Cadenza",
+      "eventTime": "Ora dell’evento",
+      "yourTime": "La tua ora",
+      "showMyTime": "Mostra la mia ora",
+      "showEventTime": "Mostra l’ora dell’evento",
+      "notListed": "Non indicato",
+      "archiveHint": "Questa fermata è già passata.",
+      "nextOuting": "Trova la tua prossima uscita",
+      "venueMissing": "Il luogo non è indicato qui.",
+      "checkDetails": "Verifica i dettagli",
+      "freeBooking": "Ingresso gratuito. Consulta il link dei biglietti per prenotare.",
+      "noBookingLink": "Qui non è indicato un link per prenotare.",
+      "reportHint": "Qualcosa è fuori rotta? Segnalalo in Altre opzioni.",
+      "moreStops": "Dove si va adesso?",
+      "relatedReason": {
+        "city": "Stessa città",
+        "similar": "Atmosfera simile",
+        "tags": "Tag in comune"
       }
     }
   },

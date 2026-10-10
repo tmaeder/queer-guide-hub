@@ -1353,9 +1353,40 @@
       "eyebrow": "[AR] Event",
       "sections": "[AR] Sections",
       "section": {
-        "about": "[AR] About this event",
-        "where": "[AR] Getting there",
-        "going": "[AR] Who's going"
+        "about": "المهم",
+        "where": "اعثر على طريقك",
+        "going": "من يرافقك"
+      },
+      "calendar": "التقويم",
+      "moreOptions": "خيارات إضافية",
+      "send": "إرسال إلى شخص",
+      "getTickets": "شراء التذاكر",
+      "going": "سأحضر",
+      "viewImage": "عرض الصورة",
+      "board": "لوحة المغادرة",
+      "date": "التاريخ",
+      "time": "الوقت",
+      "price": "الدخول",
+      "ages": "العمر",
+      "capacity": "السعة",
+      "schedule": "الجدول",
+      "eventTime": "وقت الفعالية",
+      "yourTime": "وقتك المحلي",
+      "showMyTime": "عرض وقتي المحلي",
+      "showEventTime": "عرض وقت الفعالية",
+      "notListed": "غير مذكور",
+      "archiveHint": "هذه المحطة أصبحت خلفنا.",
+      "nextOuting": "ابحث عن فعاليتك التالية",
+      "venueMissing": "مكان الفعالية غير مذكور هنا.",
+      "checkDetails": "تحقق من التفاصيل",
+      "freeBooking": "الدخول مجاني. تحقق من رابط التذاكر لمعرفة تفاصيل الحجز.",
+      "noBookingLink": "لا يوجد رابط حجز هنا.",
+      "reportHint": "هل هناك شيء خارج المسار؟ أبلغ عنه عبر خيارات إضافية.",
+      "moreStops": "إلى أين بعد ذلك؟",
+      "relatedReason": {
+        "city": "نفس المدينة",
+        "similar": "أجواء مشابهة",
+        "tags": "وسوم مشتركة"
       }
     }
   },
