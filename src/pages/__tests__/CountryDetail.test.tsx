@@ -122,6 +122,37 @@ describe('CountryDetail', () => {
     expect(screen.getByText('Capital')).toBeVisible();
   });
 
+  it('keeps a visible photo album after travel, excluding duplicate and flagged photos', async () => {
+    state.country = { ...germany, image_url: 'https://img.queer.guide/germany.jpg' };
+    state.cities = [
+      { id: 'c1', name: 'Berlin', slug: 'berlin', image_url: 'https://img.queer.guide/berlin.jpg' },
+      {
+        id: 'c2',
+        name: 'Duplicate',
+        slug: 'duplicate',
+        image_url: 'https://img.queer.guide/germany.jpg',
+      },
+      {
+        id: 'c3',
+        name: 'Flagged',
+        slug: 'flagged',
+        image_url: 'https://img.queer.guide/flagged.jpg',
+        image_flagged: true,
+      },
+    ];
+    const { container } = renderPage();
+    const album = container.querySelector('#photos')!;
+    expect(album).toBeVisible();
+    expect(album.querySelectorAll('button')).toHaveLength(2);
+    expect(
+      [...container.querySelectorAll('article section[id]')].map((el) => el.id).slice(0, 4),
+    ).toEqual(['cities', 'travel', 'photos', 'rights']);
+    await userEvent.click(album.querySelector('button')!);
+    expect(screen.getByRole('dialog', { name: 'Germany' })).toBeVisible();
+    await userEvent.keyboard('{Escape}');
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+  });
+
   it('keeps warnings before city discovery for a criminalising destination', () => {
     state.country = {
       ...germany,

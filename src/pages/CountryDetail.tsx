@@ -59,6 +59,7 @@ import { GlossaryLinkedText } from '@/components/tags/GlossaryLinkedText';
 import { publishedCountryEditorial } from '@/lib/countryEditorial';
 import { useMeta } from '@/hooks/useMeta';
 import { LocationActionMenu, LocationExploreMore } from '@/components/geo/LocationDetail';
+import { CountryPhotoGallery } from '@/components/country/CountryPhotoGallery';
 
 const FOOTER_LINK =
   'inline-flex min-h-12 items-center gap-2 rounded-element bg-surface-container px-4 py-2 text-13 font-bold no-underline transition-colors hover:bg-foreground hover:text-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring';
@@ -234,6 +235,23 @@ export default function CountryDetail() {
       )
     ) : null;
   const weatherNow = weatherData?.current?.temperature ?? weatherData?.temperature ?? null;
+  const photos = useMemo(() => {
+    const candidates = [
+      {
+        src: resolveEntityImage('country', country).url,
+        caption: editorial?.name ?? country?.name ?? '',
+      },
+      ...cities.map((city) => ({ src: resolveEntityImage('city', city).url, caption: city.name })),
+    ];
+    const seen = new Set<string>();
+    return candidates
+      .filter((photo): photo is { src: string; caption: string } => {
+        if (!photo.src || seen.has(photo.src)) return false;
+        seen.add(photo.src);
+        return true;
+      })
+      .slice(0, 6);
+  }, [country, cities, editorial?.name]);
 
   const sections: GeoSection[] = country
     ? geoSections([
@@ -286,6 +304,12 @@ export default function CountryDetail() {
               />
             </div>
           ),
+        },
+        {
+          id: 'photos',
+          title: t('venues.photos', 'Photos'),
+          variant: 'compact',
+          content: photos.length ? <CountryPhotoGallery photos={photos} /> : null,
         },
         {
           id: 'rights',
