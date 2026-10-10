@@ -40,7 +40,7 @@ describe('city galleries and filters', () => {
         ]}
       />,
     );
-    fireEvent.click(screen.getByRole('button', { name: 'Bar', exact: true }));
+    fireEvent.click(screen.getByRole('button', { name: 'Bar' }));
     fireEvent.change(screen.getByRole('searchbox', { name: 'Search places' }), {
       target: { value: 'Rainbow' },
     });
