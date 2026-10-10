@@ -1350,7 +1350,12 @@
         "about": "[KO] About this event",
         "where": "[KO] Getting there",
         "going": "[KO] Who's going"
-      }
+      },
+      "calendar": "캘린더",
+      "moreOptions": "더 보기",
+      "send": "다른 사람에게 보내기",
+      "getTickets": "티켓 구매",
+      "going": "참석"
     }
   },
   "venues": {

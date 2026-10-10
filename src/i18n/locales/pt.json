@@ -1350,7 +1350,12 @@
         "about": "[PT] About this event",
         "where": "[PT] Getting there",
         "going": "[PT] Who's going"
-      }
+      },
+      "calendar": "Calendário",
+      "moreOptions": "Mais opções",
+      "send": "Enviar a alguém",
+      "getTickets": "Comprar bilhetes",
+      "going": "Vou"
     }
   },
   "venues": {

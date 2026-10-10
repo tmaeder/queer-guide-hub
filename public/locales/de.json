@@ -1533,7 +1533,12 @@
         "about": "[DE] About this event",
         "where": "[DE] Getting there",
         "going": "[DE] Who's going"
-      }
+      },
+      "calendar": "Kalender",
+      "moreOptions": "Weitere Optionen",
+      "send": "An jemanden senden",
+      "getTickets": "Tickets kaufen",
+      "going": "Dabei"
     }
   },
   "venues": {

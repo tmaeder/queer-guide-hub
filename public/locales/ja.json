@@ -1350,7 +1350,12 @@
         "about": "[JA] About this event",
         "where": "[JA] Getting there",
         "going": "[JA] Who's going"
-      }
+      },
+      "calendar": "カレンダー",
+      "moreOptions": "その他の操作",
+      "send": "誰かに送る",
+      "getTickets": "チケットを購入",
+      "going": "参加する"
     }
   },
   "venues": {

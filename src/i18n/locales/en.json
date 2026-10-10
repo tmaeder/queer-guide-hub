@@ -608,7 +608,12 @@
         "about": "About this event",
         "where": "Getting there",
         "going": "Who's going"
-      }
+      },
+      "calendar": "Calendar",
+      "moreOptions": "More options",
+      "send": "Send to someone",
+      "getTickets": "Get tickets",
+      "going": "Going"
     }
   },
   "venues": {
