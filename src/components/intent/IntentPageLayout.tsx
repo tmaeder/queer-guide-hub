@@ -6,7 +6,6 @@ import { cn } from '@/lib/utils';
 export interface IntentPageLayoutProps {
   /** Optional page-specific hero. Defaults to the shared PageHero treatment. */
   header?: ReactNode;
-  topNav?: ReactNode;
   eyebrow?: ReactNode;
   title: ReactNode;
   lede?: ReactNode;
@@ -46,7 +45,6 @@ export interface IntentPageLayoutProps {
  */
 export function IntentPageLayout({
   header,
-  topNav,
   eyebrow,
   title,
   lede,
@@ -77,7 +75,6 @@ export function IntentPageLayout({
         sectionNavVariant={sectionNavVariant}
         header={
           <>
-            {topNav}
             {header ?? (
               /* `bare` — EditorialDetailLayout already puts this inside a
                  PageContainer, and two nested containers double the gutter. */
