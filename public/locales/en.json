@@ -3193,7 +3193,28 @@
     "venueCount_other": "{{count}} places",
     "viewList": "List",
     "villageCount_one": "{{count}} district",
-    "villageCount_other": "{{count}} districts"
+    "villageCount_other": "{{count}} districts",
+    "discovery": {
+      "noMatches": "No matches. Try another filter.",
+      "showing": "Showing {{shown}} of {{count}}",
+      "reset": "Reset filters",
+      "searchPlaces": "Search places",
+      "placeType": "Place type",
+      "allPlaces": "All places",
+      "morePlaces": "More places",
+      "district": "Queer district",
+      "when": "When",
+      "upcoming": "Upcoming",
+      "today": "Today",
+      "weekend": "This weekend",
+      "week": "Next 7 days",
+      "eventType": "Event type",
+      "allTypes": "All types",
+      "freeOnly": "Free only",
+      "moreEvents": "More departures",
+      "moreTypes": "More event types",
+      "until": "Until"
+    }
   },
   "pride": {
     "eyebrow": "Pride Calendar",

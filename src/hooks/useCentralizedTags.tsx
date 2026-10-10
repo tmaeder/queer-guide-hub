@@ -66,10 +66,23 @@ export interface CentralizedTag {
   /* ── Not fetched by useCentralizedTags — detail-page / CMS only. ────── */
   /** Long-form editorial body shown on the tag detail page (wiki/guide voice). */
   long_description?: string | null;
+  /* The photograph on the detail page's `#photo` band. Glossary photography was
+     retired 2026-08-28 and re-introduced 2026-10-10 under a write-time contract
+     (`zz_enforce_tag_image_contract`), which guarantees that whenever
+     `image_url` is set the licence, attribution, source and alt are set too —
+     so `TagFigure` can render the credit unconditionally rather than defending
+     against a half-populated row. */
   image_url?: string;
-  /** Attribution / source for the hero image (license compliance caption). */
+  /** Alt text. Required alongside `image_url` by the contract trigger. */
+  image_alt?: string | null;
+  /** Attribution / licence / source — the credit line, a licence obligation for
+   *  the CC BY-SA material this mostly carries. */
   image_attribution?: string | null;
+  image_license?: string | null;
   image_source?: string | null;
+  /** Depicts explicit sexual activity. The contract trigger makes this imply
+   *  `is_adult`, and `shouldShowTagFigure` keeps it behind age affirmation. */
+  image_explicit?: boolean | null;
   /** External knowledge links surfaced as "Learn more" / facts. */
   wikipedia_url?: string | null;
   wikidata_id?: string | null;

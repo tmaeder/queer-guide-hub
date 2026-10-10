@@ -3037,7 +3037,28 @@
     "venueCount_one": "[IT] {{count}} place",
     "venueCount_other": "[IT] {{count}} places",
     "villageCount_one": "[IT] {{count}} district",
-    "villageCount_other": "[IT] {{count}} districts"
+    "villageCount_other": "[IT] {{count}} districts",
+    "discovery": {
+      "noMatches": "Nessun risultato. Prova un altro filtro.",
+      "showing": "{{shown}} di {{count}} visualizzati",
+      "reset": "Reimposta filtri",
+      "searchPlaces": "Cerca luoghi",
+      "placeType": "Tipo di luogo",
+      "allPlaces": "Tutti i luoghi",
+      "morePlaces": "Altri luoghi",
+      "district": "Quartiere queer",
+      "when": "Quando",
+      "upcoming": "In programma",
+      "today": "Oggi",
+      "weekend": "Questo fine settimana",
+      "week": "Prossimi 7 giorni",
+      "eventType": "Tipo di evento",
+      "allTypes": "Tutti i tipi",
+      "freeOnly": "Solo gratuiti",
+      "moreEvents": "Altre partenze",
+      "moreTypes": "Altri tipi di eventi",
+      "until": "Fino al"
+    }
   },
   "pride": {
     "eyebrow": "Pride Calendar",

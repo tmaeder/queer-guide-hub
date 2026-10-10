@@ -3035,7 +3035,28 @@
     "venueCount_one": "[KO] {{count}} place",
     "venueCount_other": "[KO] {{count}} places",
     "villageCount_one": "[KO] {{count}} district",
-    "villageCount_other": "[KO] {{count}} districts"
+    "villageCount_other": "[KO] {{count}} districts",
+    "discovery": {
+      "noMatches": "검색 결과가 없습니다. 다른 필터를 사용해 보세요.",
+      "showing": "{{count}}개 중 {{shown}}개 표시",
+      "reset": "필터 초기화",
+      "searchPlaces": "장소 검색",
+      "placeType": "장소 유형",
+      "allPlaces": "모든 장소",
+      "morePlaces": "장소 더 보기",
+      "district": "퀴어 지구",
+      "when": "일정",
+      "upcoming": "예정",
+      "today": "오늘",
+      "weekend": "이번 주말",
+      "week": "다음 7일",
+      "eventType": "이벤트 유형",
+      "allTypes": "모든 유형",
+      "freeOnly": "무료만",
+      "moreEvents": "더 보기",
+      "moreTypes": "더 많은 이벤트 유형",
+      "until": "종료"
+    }
   },
   "pride": {
     "eyebrow": "Pride Calendar",

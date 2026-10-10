@@ -27,7 +27,7 @@ import {
 import type { SectionDef } from '@/components/entity/editorial';
 import { CityNetwork } from '@/components/home/subway/CityNetwork';
 import { hasCityNetwork } from '@/components/home/subway/cityNetworkGeometry';
-import { HubNav } from '@/components/hub/HubNav';
+import { HubNavBar } from '@/components/hub/HubNavBar';
 import { lazyRetry } from '@/utils/lazyRetry';
 
 const PeopleConnectionMap = lazyRetry(() => import('@/components/people/PeopleConnectionMap'));
@@ -330,8 +330,11 @@ export default function People() {
 
   return (
     <>
+      {/* Above IntentPageLayout, not inside it via `topNav`: the layout nests
+          its header in its own PageContainer, which put the bar at a different
+          offset from every other hub route. */}
+      <HubNavBar />
       <IntentPageLayout
-        topNav={<HubNav />}
         sectionNavClassName="border-b-0"
         heroSize="sm"
         heroClassName="py-4 md:py-6"
