@@ -23,7 +23,7 @@ import { CruisingMapPanel } from '@/components/cruising/CruisingMapPanel';
 import { CruisingPresenceControl } from '@/components/cruising/CruisingPresenceControl';
 import IntimateDiscovery from '@/pages/intimate/IntimateDiscovery';
 import { cn } from '@/lib/utils';
-import { HubNav } from '@/components/hub/HubNav';
+import { HubNavBar } from '@/components/hub/HubNavBar';
 import { PageHeader } from '@/components/layout/PageHeader';
 
 type Panel = 'people' | 'spots';
@@ -124,9 +124,12 @@ export default function Cruising() {
 
   if (authLoading) {
     return (
-      <PageContainer>
-        <PageLoadingState count={4} label={t('cruising.loading')} />
-      </PageContainer>
+      <>
+        <HubNavBar />
+        <PageContainer>
+          <PageLoadingState count={4} label={t('cruising.loading')} />
+        </PageContainer>
+      </>
     );
   }
   if (!user) {
@@ -137,8 +140,8 @@ export default function Cruising() {
 
   return (
     <div className="pb-12">
+      <HubNavBar />
       <PageContainer className="pb-6 pt-6 md:pt-8">
-        <HubNav className="mb-6" />
         <PageHeader
           title={t('cruising.title')}
           subtitle={t('cruising.intro')}
