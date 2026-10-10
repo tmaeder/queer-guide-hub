@@ -8,7 +8,6 @@ import {
   MapPin,
   Users,
   Clock,
-  ExternalLink,
   Phone,
   Globe,
   Download,
@@ -41,6 +40,7 @@ import type { Database } from '@/integrations/supabase/types';
 import { supabase } from '@/integrations/supabase/client';
 import { fetchEventBySlugOrId } from '@/hooks/usePageFetchers';
 import { formatEventTime } from '@/lib/event-time';
+import { resolveEntityImage } from '@/lib/images/resolveEntityImage';
 import { formatCurrency } from '@/lib/currency';
 import { useReducedMotion } from '@/hooks/useReducedMotion';
 import { useProfile } from '@/hooks/useProfile';
@@ -321,17 +321,27 @@ export function EventActions({
         label={t('events.share', 'Share')}
         variant="ghost"
       />
-      {onExportToCalendar && (
-        <Button variant="ghost" size="sm" onClick={onExportToCalendar}>
-          <Download size={14} className="mr-1.5" aria-hidden="true" />
-          {t('events.detail.calendar', 'Calendar')}
-        </Button>
-      )}
-      <details className="basis-full pt-2">
+      <details className="max-w-full">
         <summary className="w-fit cursor-pointer rounded-element py-2 text-13 font-semibold underline-offset-4 hover:underline">
           {t('events.detail.moreOptions', 'More options')}
         </summary>
         <div className="flex flex-wrap items-center gap-4 py-4">
+          {onExportToCalendar && (
+            <Button variant="ghost" size="sm" onClick={onExportToCalendar}>
+              <Download size={14} className="mr-1.5" aria-hidden="true" />
+              {t('events.detail.calendar', 'Calendar')}
+            </Button>
+          )}
+          {resolveEntityImage('event', event).url && (
+            <a
+              href={resolveEntityImage('event', event).url!}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="py-2 text-13 font-semibold hover:underline"
+            >
+              {t('events.detail.viewImage', 'View image')}
+            </a>
+          )}
           {event.website && (
             <a
               href={event.website}
@@ -496,7 +506,7 @@ export function EventFactStrip({
   // interactive affordance to gain a border would be a bad trade.
   return (
     <FactGrid
-      className="grid-cols-2 [&>*:nth-child(-n+2)]:border-t-0"
+      className="grid-cols-2 [&>*:nth-child(-n+2)]:border-t-0 [&>div]:py-2 [&>div]:min-w-0"
       facts={[
         {
           label: 'Date',
@@ -608,14 +618,11 @@ export function EventDecisionCard({
   const { t } = useTranslation();
   const ticketHref = event.ticket_url;
   return (
-    <div
-      data-testid="event-actions"
-      className="flex flex-col gap-4 rounded-container bg-muted p-4 sm:p-6"
-    >
+    <div data-testid="event-actions" className="flex flex-wrap items-center gap-2">
       {!isPast && (
-        <div className="flex flex-wrap items-center gap-4">
+        <div className="flex flex-wrap items-center gap-2">
           {ticketHref && (
-            <Button asChild className="w-full sm:w-auto">
+            <Button asChild>
               <a href={ticketHref} target="_blank" rel="noopener noreferrer">
                 <Ticket size={16} className="mr-2" aria-hidden="true" />
                 {t('events.detail.getTickets', 'Get tickets')}
@@ -626,10 +633,10 @@ export function EventDecisionCard({
             intent={{ kind: 'add_entity', entity: eventTripEntity(event) }}
             source="event-detail-decision"
             variant={ticketHref ? 'card' : undefined}
-            className="w-full sm:w-auto"
+            className="max-w-full"
           />
           {user && (
-            <div className="flex w-full gap-2 sm:w-auto">
+            <div className="flex gap-2">
               <Button
                 variant={userAttendance === 'going' ? 'default' : 'outline'}
                 onClick={() =>
@@ -670,15 +677,12 @@ export function EventDecisionCard({
 /* ------------------------------------------------------------------ */
 
 export function hasEventAboutContent(event: EventWithRelations): boolean {
-  const missingInfo =
-    (!event.is_free && !event.price_min) || !(event.venues?.name || event.venue_name);
   return Boolean(
     event.description ||
     event.is_recurring ||
     event.festivals?.id ||
     event.accessibility_attributes?.length ||
-    event.accessibility_notes ||
-    (missingInfo && (event.website || event.ticket_url)),
+    event.accessibility_notes,
   );
 }
 
@@ -699,23 +703,7 @@ export function EventAbout({
   );
   const hasAccessibility =
     (event.accessibility_attributes?.length ?? 0) > 0 || Boolean(event.accessibility_notes);
-  const priceUnknown = !event.is_free && !event.price_min;
-  const locationUnknown = !(event.venues?.name || event.venue_name);
-  const sourceUrl = event.website || event.ticket_url;
-  const showSource = (priceUnknown || locationUnknown) && Boolean(sourceUrl);
-  const missing = [priceUnknown && 'price', locationUnknown && 'location']
-    .filter(Boolean)
-    .join(' and ');
-
-  if (
-    !event.description &&
-    !event.is_recurring &&
-    !event.festivals?.id &&
-    !hasAccessibility &&
-    !showSource
-  ) {
-    return null;
-  }
+  if (!hasEventAboutContent(event)) return null;
 
   return (
     <div className="flex flex-col gap-8">
@@ -769,21 +757,6 @@ export function EventAbout({
             accessibilityNotes={event.accessibility_notes}
           />
         </section>
-      )}
-
-      {showSource && (
-        <div className="flex flex-wrap items-center gap-4 rounded-element bg-muted p-4">
-          <p className="text-sm text-muted-foreground">
-            {missing.charAt(0).toUpperCase() + missing.slice(1)} not listed yet — check the source
-            for the latest info.
-          </p>
-          <Button size="sm" variant="outline" asChild>
-            <a href={sourceUrl!} target="_blank" rel="noopener noreferrer">
-              <ExternalLink size={14} className="mr-1.5" />
-              Visit source
-            </a>
-          </Button>
-        </div>
       )}
     </div>
   );

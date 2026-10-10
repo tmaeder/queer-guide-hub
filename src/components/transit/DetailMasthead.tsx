@@ -1,3 +1,4 @@
+import { cn } from '@/lib/utils';
 import { RouteBullet } from './RouteBullet';
 import type { Track } from './routeBulletMap';
 
@@ -24,6 +25,7 @@ interface DetailMastheadProps {
   /** Lead paragraph under the title. */
   lead?: React.ReactNode;
   className?: string;
+  compact?: boolean;
 }
 
 /**
@@ -53,11 +55,18 @@ export function DetailMasthead({
   status,
   lead,
   className,
+  compact = false,
 }: DetailMastheadProps) {
   return (
     <header className={className}>
-      <div className="mb-4 flex flex-wrap items-center gap-2">
-        <RouteBullet type={type} size={44} letter={letter} track={track} label={bulletLabel} />
+      <div className={cn('flex flex-wrap items-center gap-2', compact ? 'mb-2' : 'mb-4')}>
+        <RouteBullet
+          type={type}
+          size={compact ? 32 : 44}
+          letter={letter}
+          track={track}
+          label={bulletLabel}
+        />
         {eyebrow && <span className="text-2xs font-bold uppercase tracking-label">{eyebrow}</span>}
         {status && (
           <span className="rounded-element border border-input bg-surface-container-high px-4 py-2 text-2xs font-bold uppercase tracking-label shadow-soft">
@@ -65,7 +74,12 @@ export function DetailMasthead({
           </span>
         )}
       </div>
-      <h1 className="m-0 font-display text-display leading-none tracking-tight md:text-hero">
+      <h1
+        className={cn(
+          'm-0 break-words font-display leading-none tracking-tight',
+          compact ? 'text-headline md:text-display' : 'text-display md:text-hero',
+        )}
+      >
         {title}
       </h1>
       {lead && <p className="mt-4 max-w-2xl text-body-lg leading-relaxed md:text-xl">{lead}</p>}

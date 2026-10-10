@@ -1355,7 +1355,8 @@
       "moreOptions": "更多选项",
       "send": "发送给他人",
       "getTickets": "购买门票",
-      "going": "参加"
+      "going": "参加",
+      "viewImage": "查看图片"
     }
   },
   "venues": {

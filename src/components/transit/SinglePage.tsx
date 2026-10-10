@@ -28,6 +28,7 @@ export function SinglePage({
   rail,
   footer,
   className,
+  compact = false,
 }: {
   type: string;
   eyebrow?: string;
@@ -43,6 +44,7 @@ export function SinglePage({
   /** S8 — safety footer. */
   footer?: React.ReactNode;
   className?: string;
+  compact?: boolean;
 }) {
   return (
     /* `flush` — the single owns its own vertical rhythm: each of the three
@@ -50,9 +52,16 @@ export function SinglePage({
        on those edges, so a container-level `py-*` would double the first and
        last gap. */
     <PageContainer as="article" flush className={className}>
-      <div className="border-b border-border-hairline py-8">
-        <DetailMasthead type={type} eyebrow={eyebrow} title={title} status={status} lead={lead} />
-        {tags && <div className="mt-6">{tags}</div>}
+      <div className={cn('border-b border-border-hairline', compact ? 'py-4' : 'py-8')}>
+        <DetailMasthead
+          type={type}
+          eyebrow={eyebrow}
+          title={title}
+          status={status}
+          lead={lead}
+          compact={compact}
+        />
+        {tags && <div className={compact ? 'mt-2' : 'mt-6'}>{tags}</div>}
         {action && <div className="mt-6 flex flex-wrap gap-2">{action}</div>}
       </div>
 
@@ -60,8 +69,14 @@ export function SinglePage({
           unconditionally reserved the column for a rail that never came, so a
           single with no rail (the venue) rendered its content at 984px of a
           1440px viewport with 360px of nothing beside it. */}
-      <div className={cn('grid grid-cols-1 gap-8 py-8', rail && 'lg:grid-cols-[1fr_360px]')}>
-        <div className="flex min-w-0 flex-col gap-10">{body}</div>
+      <div
+        className={cn(
+          'grid grid-cols-1',
+          compact ? 'gap-4 py-4' : 'gap-8 py-8',
+          rail && 'lg:grid-cols-[1fr_360px]',
+        )}
+      >
+        <div className={cn('flex min-w-0 flex-col', compact ? 'gap-4' : 'gap-10')}>{body}</div>
         {/* The testid exists because `article aside` is NOT unique: a signed-in
             visitor whose trip covers this destination also gets
             TripCoveringBanner, which is an <aside> inside the same <article>.
@@ -77,7 +92,11 @@ export function SinglePage({
         )}
       </div>
 
-      {footer && <div className="border-t border-border-hairline py-8">{footer}</div>}
+      {footer && (
+        <div className={cn('border-t border-border-hairline', compact ? 'py-4' : 'py-8')}>
+          {footer}
+        </div>
+      )}
     </PageContainer>
   );
 }

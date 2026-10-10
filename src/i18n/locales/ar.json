@@ -1361,7 +1361,8 @@
       "moreOptions": "خيارات إضافية",
       "send": "إرسال إلى شخص",
       "getTickets": "شراء التذاكر",
-      "going": "سأحضر"
+      "going": "سأحضر",
+      "viewImage": "عرض الصورة"
     }
   },
   "venues": {
