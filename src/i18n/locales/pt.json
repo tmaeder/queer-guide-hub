@@ -1347,9 +1347,40 @@
       "eyebrow": "[PT] Event",
       "sections": "[PT] Sections",
       "section": {
-        "about": "[PT] About this event",
-        "where": "[PT] Getting there",
-        "going": "[PT] Who's going"
+        "about": "O essencial",
+        "where": "Encontre o caminho",
+        "going": "Quem vai consigo"
+      },
+      "calendar": "Calendário",
+      "moreOptions": "Mais opções",
+      "send": "Enviar a alguém",
+      "getTickets": "Comprar bilhetes",
+      "going": "Vou",
+      "viewImage": "Ver imagem",
+      "board": "Painel de partidas",
+      "date": "Data",
+      "time": "Hora",
+      "price": "Entrada",
+      "ages": "Idade",
+      "capacity": "Lotação",
+      "schedule": "Frequência",
+      "eventTime": "Hora do evento",
+      "yourTime": "A sua hora",
+      "showMyTime": "Mostrar a minha hora",
+      "showEventTime": "Mostrar a hora do evento",
+      "notListed": "Não indicado",
+      "archiveHint": "Esta paragem já passou.",
+      "nextOuting": "Encontre a sua próxima saída",
+      "venueMissing": "O local não está indicado aqui.",
+      "checkDetails": "Consultar os detalhes",
+      "freeBooking": "Entrada gratuita. Consulte o link dos bilhetes para reservar.",
+      "noBookingLink": "Não está indicado um link de reserva.",
+      "reportHint": "Algo saiu dos carris? Denuncie em Mais opções.",
+      "moreStops": "Para onde a seguir?",
+      "relatedReason": {
+        "city": "Mesma cidade",
+        "similar": "Ambiente semelhante",
+        "tags": "Etiquetas em comum"
       }
     }
   },
