@@ -337,7 +337,7 @@ export function CountryDiscoveryGallery({
             {total > DISCOVERY_PAGE_SIZE && (
               <nav
                 className="mt-6 flex items-center justify-between gap-4"
-                aria-label={t('country.gallery.pagination', 'Gallery pages')}
+                aria-label={`${t(kind === 'venue' ? 'breadcrumb.venues' : 'breadcrumb.events')} — ${t('country.gallery.pagination', 'Gallery pages')}`}
               >
                 <Button
                   variant="outline"
