@@ -62,6 +62,15 @@ function sqlMetricKeys(): string[] {
   // added. A scan that can read the wrong file must not fail quietly elsewhere.
   const DEFINES = /create\s+or\s+replace\s+function\s+public\.tag_hygiene_stats/i;
 
+  // Bodies NEWER than the defining migration, collected during the same
+  // descent. Since 99991790828215 the house rule for this function is "PATCHED
+  // VIA pg_get_functiondef(), NEVER RESTATED", so a counter ADDED by a patch is
+  // invisible to a scan that only reads the last `create or replace` — it would
+  // report the panel and the baseline as having an extra key the SQL does not
+  // return, blaming them for a counter that is in fact live. These files are
+  // read by the loop below in any case, so unioning their keys costs nothing.
+  const newerBodies: string[] = [];
+
   let sql: string | null = null;
   for (let i = files.length - 1; i >= 0; i -= 1) {
     const body = readFileSync(join(MIGRATIONS, files[i]), 'utf8');
@@ -69,6 +78,7 @@ function sqlMetricKeys(): string[] {
       sql = body;
       break;
     }
+    newerBodies.push(body);
   }
   expect(sql, 'no migration defines tag_hygiene_stats').not.toBeNull();
   const at = sql!.search(new RegExp(DEFINES.source, 'gi'));
@@ -81,7 +91,44 @@ function sqlMetricKeys(): string[] {
   expect(keys, 'indentation-based key scan found nothing — the SQL was reformatted').toContain(
     'totals',
   );
-  cachedKeys = keys.filter((k) => k !== 'totals');
+
+  // Keys a later patch inserted.
+  //
+  // Comments are stripped FIRST, for both the filter and the extraction. A
+  // prose mention of this function must not qualify a file: `tag_hygiene_stats`
+  // appears in the header of migrations that have nothing to do with it, and
+  // two of them (99991791396229, 99991790172641) build jsonb objects of their
+  // own — a mention-based filter attributed `functions_scanned`,
+  // `marketplace_reviews` and two more to this function.
+  //
+  // The signature of a real patch is `pg_get_functiondef` plus a reference to
+  // the function, which is what all three existing patch styles share and what
+  // neither over-matcher has.
+  const fromDefinition = keys.length;
+  for (const patch of newerBodies) {
+    const bare = patch
+      .split('\n')
+      .filter((l) => !l.trimStart().startsWith('--'))
+      .join('\n');
+    if (!bare.includes('pg_get_functiondef') || !/tag_hygiene_stats/i.test(bare)) continue;
+    for (const m of bare.matchAll(/^ {4}'([a-z_]+)', \(/gm)) keys.push(m[1]);
+  }
+
+  // POSITIVE CONTROL on the patch scan. At least one counter
+  // (`junk_token_name_active`, 99991791619654) is added by patch rather than by
+  // the last `create or replace`, so finding none means this scan has stopped
+  // working — a reformatted fragment, a renamed dollar-quote, a patch style the
+  // filter above does not recognise. Without it the scan degrades silently to
+  // the defining migration's key set and reports the panel and the baseline as
+  // carrying a counter the SQL does not return, which is the opposite of the
+  // truth. If the function is ever legitimately RESTATED with the patch keys
+  // folded in, this control is the thing that asks you to re-read it.
+  expect(
+    keys.length,
+    'the patch-added key scan found nothing — re-derive it from the patch migrations',
+  ).toBeGreaterThan(fromDefinition);
+
+  cachedKeys = [...new Set(keys)].filter((k) => k !== 'totals');
   return cachedKeys;
 }
 
@@ -96,6 +143,30 @@ describe('tag hygiene metric set', () => {
 
   it('the CI baseline covers exactly the same counters', () => {
     expect([...baselineMetricKeys].sort()).toEqual([...sqlMetricKeys()].sort());
+  });
+
+  // The patch scan's FILTER, asserted separately from its output. Widening it
+  // back to "any migration mentioning tag_hygiene_stats" SURVIVED the first
+  // mutation round: `99991791396229` and `99991790172641` name this function in
+  // their headers while building jsonb objects of their own, so a mention-based
+  // filter attributed `functions_scanned`, `marketplace_reviews` and two more
+  // to it — and the three-way pin then reports the panel and the baseline as
+  // MISSING counters the SQL never returned, i.e. it blames the wrong side.
+  it('attributes a patch-added key only to a migration that patches this function', () => {
+    const src = readFileSync(join(__dirname, 'tagHygienePanelMetrics.test.ts'), 'utf8');
+    // BOUNDED at the end of sqlMetricKeys(). An unbounded slice runs to EOF and
+    // therefore includes THIS assertion's own string literals, so it matches
+    // itself and passes with the filter deleted — which is exactly what it did
+    // on the first mutation round.
+    const scan = src.slice(
+      src.indexOf('for (const patch of newerBodies)'),
+      src.indexOf('const baseline = JSON.parse'),
+    );
+    expect(scan.length).toBeGreaterThan(0);
+    expect(scan).toContain("bare.includes('pg_get_functiondef')");
+    expect(scan).toMatch(/tag_hygiene_stats/i);
+    // Comments stripped FIRST, or a prose mention qualifies the file anyway.
+    expect(scan).toMatch(/startsWith\('--'\)/);
   });
 
   it('the panel lists no counter twice', () => {

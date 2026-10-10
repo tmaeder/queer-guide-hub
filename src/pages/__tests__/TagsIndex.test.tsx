@@ -64,6 +64,9 @@ let corpus: unknown[] = PLAIN;
 // Mutable so a test can hold the page in its loading state, the same way
 // `corpus` and `aliasHits` are swapped above.
 let tagsLoading = false;
+// Mutable for the same reason as `corpus`: the definition tier is a comparison
+// between two tags, so a case that exercises it has to set both sides' counts.
+let usageCounts: Record<string, number> = { Bear: 5, Drag: 2 };
 vi.mock('@/hooks/useCentralizedTags', () => ({
   useCentralizedTags: () => ({
     allTags: tagsLoading ? [] : corpus,
@@ -92,7 +95,7 @@ vi.mock('@/hooks/useCentralizedTags', () => ({
     loading: tagsLoading,
     error: null,
   }),
-  useTagUsageCounts: () => ({ data: { Bear: 5, Drag: 2 } }),
+  useTagUsageCounts: () => ({ data: usageCounts }),
 }));
 
 import TagsIndex from '../TagsIndex';
@@ -123,6 +126,7 @@ beforeEach(() => {
   corpus = PLAIN;
   aliasHits = [];
   tagsLoading = false;
+  usageCounts = { Bear: 5, Drag: 2 };
   localStorage.clear();
 });
 
