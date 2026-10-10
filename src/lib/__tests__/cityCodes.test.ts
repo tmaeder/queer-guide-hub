@@ -2,8 +2,8 @@ import { describe, expect, it } from 'vitest';
 import { cityCodesFromRow, cityCodesText } from '@/lib/cityCodes';
 
 describe('cityCodesText', () => {
-  it('joins country and region codes', () => {
-    expect(cityCodesText({ countryCode: 'US', regionCode: 'US-ME' })).toBe('US · US-ME');
+  it('shows only the region code when it names the country', () => {
+    expect(cityCodesText({ countryCode: 'US', regionCode: 'US-ME' })).toBe('US-ME');
   });
   it('marks a missing region instead of dropping it', () => {
     expect(cityCodesText({ countryCode: 'za', regionCode: null })).toBe('ZA · –');
