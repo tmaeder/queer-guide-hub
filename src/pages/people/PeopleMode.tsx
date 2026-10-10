@@ -11,7 +11,7 @@ import { MeetMembersNotice } from '@/components/people/MeetMembersNotice';
 import { PeopleModeView } from './PeopleModeView';
 import { NearbyView } from './NearbyView';
 import { PageContainer } from '@/components/layout/PageContainer';
-import { HubNav } from '@/components/hub/HubNav';
+import { HubNavBar } from '@/components/hub/HubNavBar';
 import { PageHeader } from '@/components/layout/PageHeader';
 
 // Dating keeps its own opt-in/age-walled deck; it self-gates when not opted in.
@@ -82,11 +82,11 @@ export default function PeopleMode({ tab }: { tab: PeopleTab }) {
 
   return (
     <>
-      {/* ONE container. This was two siblings, so the page paid
-          `py-8 md:py-12` twice and opened with a doubled gap between the title
-          block and its content that no other page on the site has. */}
+      {/* The nav bar is a sibling, not a child: HubNavBar carries `pb-0`, so the
+          two containers cannot stack their vertical padding the way this page's
+          original two siblings did (`py-8 md:py-12` paid twice). */}
+      <HubNavBar />
       <PageContainer>
-        <HubNav className="mb-6" />
         {/* Was a bare `text-headline` h1 with no rule under it — the one place
             in the hub's subtree that read as an unstyled page. */}
         <PageHeader

@@ -19,6 +19,7 @@ import { cn } from '@/lib/utils';
 export function SinglePage({
   type,
   eyebrow,
+  letter,
   title,
   status,
   lead,
@@ -28,9 +29,11 @@ export function SinglePage({
   rail,
   footer,
   className,
+  density = 'default',
 }: {
   type: string;
   eyebrow?: string;
+  letter?: string;
   title: string;
   status?: string;
   lead?: React.ReactNode;
@@ -43,6 +46,8 @@ export function SinglePage({
   /** S8 — safety footer. */
   footer?: React.ReactNode;
   className?: string;
+  /** Compact opening and section rhythm for task-first location pages. */
+  density?: 'default' | 'compact';
 }) {
   return (
     /* `flush` — the single owns its own vertical rhythm: each of the three
@@ -50,18 +55,50 @@ export function SinglePage({
        on those edges, so a container-level `py-*` would double the first and
        last gap. */
     <PageContainer as="article" flush className={className}>
-      <div className="border-b border-border-hairline py-8">
-        <DetailMasthead type={type} eyebrow={eyebrow} title={title} status={status} lead={lead} />
+      <div
+        className={cn('border-b border-border-hairline', density === 'compact' ? 'py-6' : 'py-8')}
+      >
+        <DetailMasthead
+          type={type}
+          letter={letter}
+          eyebrow={eyebrow}
+          title={title}
+          status={status}
+          lead={lead}
+          compact={density === 'compact'}
+        />
         {tags && <div className="mt-6">{tags}</div>}
-        {action && <div className="mt-6 flex flex-wrap gap-2">{action}</div>}
+        {action && (
+          <div
+            className={cn(
+              'flex flex-wrap items-center gap-2',
+              density === 'compact' ? 'mt-4' : 'mt-6',
+            )}
+          >
+            {action}
+          </div>
+        )}
       </div>
 
       {/* The 360px track is declared only when there IS a rail. Declaring it
           unconditionally reserved the column for a rail that never came, so a
           single with no rail (the venue) rendered its content at 984px of a
           1440px viewport with 360px of nothing beside it. */}
-      <div className={cn('grid grid-cols-1 gap-8 py-8', rail && 'lg:grid-cols-[1fr_360px]')}>
-        <div className="flex min-w-0 flex-col gap-10">{body}</div>
+      <div
+        className={cn(
+          'grid grid-cols-1 gap-8',
+          density === 'compact' ? 'py-6' : 'py-8',
+          rail && 'lg:grid-cols-[1fr_360px]',
+        )}
+      >
+        <div
+          className={cn(
+            'flex min-w-0 flex-col',
+            density === 'compact' ? 'gap-6 md:gap-8' : 'gap-10',
+          )}
+        >
+          {body}
+        </div>
         {/* The testid exists because `article aside` is NOT unique: a signed-in
             visitor whose trip covers this destination also gets
             TripCoveringBanner, which is an <aside> inside the same <article>.

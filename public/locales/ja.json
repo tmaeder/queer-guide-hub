@@ -3004,7 +3004,28 @@
     "venueCount_one": "[JA] {{count}} place",
     "venueCount_other": "[JA] {{count}} places",
     "villageCount_one": "[JA] {{count}} district",
-    "villageCount_other": "[JA] {{count}} districts"
+    "villageCount_other": "[JA] {{count}} districts",
+    "discovery": {
+      "noMatches": "該当する結果がありません。別のフィルターをお試しください。",
+      "showing": "{{count}}件中{{shown}}件を表示",
+      "reset": "フィルターをリセット",
+      "searchPlaces": "スポットを検索",
+      "placeType": "スポットの種類",
+      "allPlaces": "すべてのスポット",
+      "morePlaces": "もっと見る",
+      "district": "クィア地区",
+      "when": "日程",
+      "upcoming": "開催予定",
+      "today": "今日",
+      "weekend": "今週末",
+      "week": "今後7日間",
+      "eventType": "イベントの種類",
+      "allTypes": "すべての種類",
+      "freeOnly": "無料のみ",
+      "moreEvents": "もっと見る",
+      "moreTypes": "他のイベントの種類",
+      "until": "終了"
+    }
   },
   "pride": {
     "eyebrow": "Pride Calendar",

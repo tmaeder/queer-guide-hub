@@ -3006,7 +3006,28 @@
     "venueCount_one": "[DE] {{count}} place",
     "venueCount_other": "[DE] {{count}} places",
     "villageCount_one": "[DE] {{count}} district",
-    "villageCount_other": "[DE] {{count}} districts"
+    "villageCount_other": "[DE] {{count}} districts",
+    "discovery": {
+      "noMatches": "Keine Treffer. Versuche einen anderen Filter.",
+      "showing": "{{shown}} von {{count}} angezeigt",
+      "reset": "Filter zurücksetzen",
+      "searchPlaces": "Orte suchen",
+      "placeType": "Art des Ortes",
+      "allPlaces": "Alle Orte",
+      "morePlaces": "Mehr Orte",
+      "district": "Queeres Viertel",
+      "when": "Wann",
+      "upcoming": "Demnächst",
+      "today": "Heute",
+      "weekend": "Dieses Wochenende",
+      "week": "Nächste 7 Tage",
+      "eventType": "Veranstaltungsart",
+      "allTypes": "Alle Arten",
+      "freeOnly": "Nur kostenlos",
+      "moreEvents": "Weitere Abfahrten",
+      "moreTypes": "Weitere Veranstaltungsarten",
+      "until": "Bis"
+    }
   },
   "pride": {
     "eyebrow": "Pride Calendar",

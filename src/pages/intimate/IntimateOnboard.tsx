@@ -30,7 +30,7 @@ import { FlatFieldGroup, FlatField } from '@/components/ui/FlatFieldGroup';
 import { PageContainer } from '@/components/layout/PageContainer';
 import { PageLoadingState } from '@/components/layout/PageLoadingState';
 import { useAgeAffirmation } from '@/hooks/useAgeAffirmation';
-import { PeopleSubpageNav } from '@/components/people/PeopleSubpageNav';
+import { HubNavBar } from '@/components/hub/HubNavBar';
 
 const STEP_ORDER: WizardStep[] = [
   'consent',
@@ -149,7 +149,7 @@ export default function IntimateOnboard() {
   if (isLoading) {
     return (
       <>
-        <PeopleSubpageNav />
+        <HubNavBar />
         <PageContainer size="form">
           <PageLoadingState count={2} variant="list" label="Loading your intimate profile" />
         </PageContainer>
@@ -159,7 +159,7 @@ export default function IntimateOnboard() {
   if (!user) {
     return (
       <>
-        <PeopleSubpageNav />
+        <HubNavBar />
         <PageContainer size="form" className="text-center">
           <h1 className="font-display text-headline">Intimate profile</h1>
           <p className="mt-4 text-muted-foreground">Sign in to continue.</p>
@@ -211,7 +211,7 @@ export default function IntimateOnboard() {
 
   return (
     <>
-      <PeopleSubpageNav />
+      <HubNavBar />
       <StepperShell
         steps={stepperSteps}
         current={visibleIdx}
