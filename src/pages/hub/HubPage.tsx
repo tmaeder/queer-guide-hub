@@ -8,7 +8,6 @@ import { SavedModule } from '@/components/hub/modules/SavedModule';
 import Feed from '@/pages/Feed';
 import { useMeta } from '@/hooks/useMeta';
 import type { HubModuleId } from '@/config/hubModules';
-import { PageContainer } from '@/components/layout/PageContainer';
 
 const MODULE_TITLES: Record<HubModuleId, string> = {
   overview: 'Overview',
@@ -70,9 +69,8 @@ export default function HubPage({ module = 'overview' }: { module?: HubModuleId 
     </AuthGate>
   );
 
-  return (
-    <PageContainer>
-      <HubShell active={module}>{content}</HubShell>
-    </PageContainer>
-  );
+  // No PageContainer here: HubShell puts the nav in its own container above the
+  // workspace's own, so wrapping it again nests two containers and doubles the
+  // gutter.
+  return <HubShell active={module}>{content}</HubShell>;
 }
