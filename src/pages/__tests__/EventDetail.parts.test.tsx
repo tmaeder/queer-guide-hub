@@ -2,7 +2,7 @@
  * @vitest-environment jsdom
  */
 import { describe, it, expect, vi } from 'vitest';
-import { screen } from '@testing-library/react';
+import { fireEvent, screen } from '@testing-library/react';
 import { renderWithProviders } from '@/test/test-utils';
 
 // The parts barrel reaches maplibre through EntityMap, whose worker URL vitest
@@ -14,7 +14,16 @@ vi.mock('@/hooks/useAuth', () => ({
 vi.mock('@/components/admin/AdminEditButton', () => ({ AdminEditButton: () => null }));
 vi.mock('@/components/moderation/ReportButton', () => ({ ReportButton: () => null }));
 
+vi.mock('@/components/trips/TripAction', () => ({
+  TripAction: () => <button>Add to a trip</button>,
+}));
+
 import {
+  EventDecisionCard,
+  EventPlanHint,
+  EventWhere,
+  hasEventAboutContent,
+  hasEventWhereContent,
   formatEventDate,
   getPriceDisplay,
   eventStatusLabel,
@@ -117,60 +126,163 @@ describe('EventMasthead', () => {
   });
 });
 
-describe('EventActions', () => {
-  const upcoming = { ...event, start_date: '2999-01-01T00:00:00Z' };
+describe('Event action consolidation', () => {
+  const upcoming = {
+    ...event,
+    start_date: '2999-01-01T00:00:00Z',
+    ticket_url: 'https://tickets.example/x',
+  };
+  const props = {
+    user: null,
+    isPast: false,
+    userAttendance: null,
+    onAttendanceUpdate: vi.fn(),
+    onExportToCalendar: vi.fn(),
+    onSendEvent: vi.fn(),
+  };
 
-  it('offers tickets only when there is a ticket url', () => {
-    renderWithProviders(<EventActions event={upcoming as never} onShare={() => {}} />);
-    expect(screen.queryByRole('link', { name: /tickets/i })).toBeNull();
-
-    renderWithProviders(
-      <EventActions
-        event={{ ...upcoming, ticket_url: 'https://tickets.example/x' } as never}
-        onShare={() => {}}
-      />,
-    );
+  it('offers one ticket action and does not repeat timing or price facts', () => {
+    renderWithProviders(<EventDecisionCard {...props} event={upcoming as never} />);
+    expect(screen.getAllByRole('link', { name: /tickets/i })).toHaveLength(1);
     expect(screen.getByRole('link', { name: /tickets/i })).toHaveAttribute(
       'href',
-      'https://tickets.example/x',
+      upcoming.ticket_url,
     );
+    expect(screen.queryByText('Price TBA')).toBeNull();
+    expect(screen.queryByText(/2999/)).toBeNull();
+    expect(screen.getByRole('button', { name: 'Add to a trip' })).toBeInTheDocument();
   });
 
-  it('withdraws the ticket link once the event is over', () => {
-    // The masthead row is the SECOND ticket surface and the one above the
-    // fold; the decision card in the rail is the other. 443 live events are
-    // past and carry a ticket_url, and selling a seat at a finished event is
-    // the kind of wrong a layout change must not leave half-fixed.
+  it('keeps reference and calendar tools but removes attendance and purchasing on past events', () => {
     renderWithProviders(
-      <EventActions
-        event={
-          {
-            ...event,
-            start_date: '2020-01-01T00:00:00Z',
-            end_date: null,
-            ticket_url: 'https://tickets.example/x',
-          } as never
-        }
-        onShare={() => {}}
+      <EventDecisionCard
+        {...props}
+        isPast
+        event={{ ...upcoming, website: 'https://example.org/pride' } as never}
       />,
     );
     expect(screen.queryByRole('link', { name: /tickets/i })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Add to a trip' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Going' })).toBeNull();
+    fireEvent.click(screen.getByText('More options'));
+    fireEvent.click(screen.getByRole('button', { name: 'Calendar' }));
+    expect(props.onExportToCalendar).toHaveBeenCalled();
+    expect(screen.getByRole('link', { name: 'Website' })).toHaveAttribute(
+      'href',
+      'https://example.org/pride',
+    );
   });
 
-  it('keeps the website link on a past event — a homepage still documents it', () => {
+  it('preserves RSVP state and toggles going off', () => {
+    const onAttendanceUpdate = vi.fn();
+    renderWithProviders(
+      <EventDecisionCard
+        {...props}
+        event={upcoming as never}
+        user={{ id: 'u1' }}
+        userAttendance="going"
+        onAttendanceUpdate={onAttendanceUpdate}
+      />,
+    );
+    const going = screen.getByRole('button', { name: 'Going' });
+    expect(going).toHaveAttribute('aria-pressed', 'true');
+    fireEvent.click(going);
+    expect(onAttendanceUpdate).toHaveBeenCalledWith('not_going');
+    fireEvent.click(screen.getByRole('button', { name: 'Interested' }));
+    expect(onAttendanceUpdate).toHaveBeenCalledWith('interested');
+  });
+
+  it('keeps the event image accessible through the secondary tools', () => {
     renderWithProviders(
       <EventActions
-        event={
-          {
-            ...event,
-            start_date: '2020-01-01T00:00:00Z',
-            end_date: null,
-            website: 'https://example.org/pride',
-          } as never
-        }
+        event={{ ...upcoming, images: ['https://example.org/event.jpg'] } as never}
         onShare={() => {}}
       />,
     );
-    expect(screen.getByRole('link', { name: /website/i })).toBeInTheDocument();
+    fireEvent.click(screen.getByText('More options'));
+    expect(screen.getByRole('link', { name: 'View image' })).toHaveAttribute(
+      'href',
+      'https://example.org/event.jpg',
+    );
+  });
+
+  it('groups utilities without introducing another ticket link', () => {
+    renderWithProviders(<EventActions event={upcoming as never} onShare={() => {}} />);
+    expect(screen.queryByRole('link', { name: /tickets/i })).toBeNull();
+    expect(screen.getByText('More options')).toBeInTheDocument();
+  });
+});
+
+describe('Event section content guards', () => {
+  it('omits empty about and location stations on a sparse record', () => {
+    expect(hasEventAboutContent(event)).toBe(false);
+    expect(hasEventWhereContent(event)).toBe(false);
+  });
+  it('keeps actual description and venue content without an empty source-only section', () => {
+    expect(hasEventAboutContent({ ...event, description: 'A community gathering.' } as never)).toBe(
+      true,
+    );
+    expect(hasEventAboutContent({ ...event, website: 'https://example.org' } as never)).toBe(false);
+    expect(hasEventWhereContent({ ...event, venue_name: 'Community Hall' } as never)).toBe(true);
+    expect(hasEventWhereContent({ ...event, organizer_name: 'Local collective' } as never)).toBe(
+      true,
+    );
+  });
+});
+
+describe('Event planning information', () => {
+  it('gives archived events a next step without a ticket purchase', () => {
+    renderWithProviders(<EventPlanHint event={event} isPast />);
+    expect(screen.getByRole('link', { name: 'Find your next outing' })).toHaveAttribute(
+      'href',
+      '/events',
+    );
+    expect(screen.queryByRole('link', { name: /tickets/i })).toBeNull();
+  });
+  it('explicitly names missing venue information and links the source', () => {
+    renderWithProviders(
+      <EventPlanHint
+        event={{ ...event, website: 'https://example.org/details' } as never}
+        isPast={false}
+      />,
+    );
+    expect(screen.getByText('Venue details aren’t listed here.')).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Check event details' })).toHaveAttribute(
+      'href',
+      'https://example.org/details',
+    );
+  });
+  it('makes a standalone street address useful without inventing coordinates', () => {
+    const addressEvent = { ...event, address: '123 Example Street' } as EventWithRelations;
+    expect(hasEventWhereContent(addressEvent)).toBe(true);
+    expect(hasEventWhereContent({ ...event, address: '   ' } as never)).toBe(false);
+    expect(hasEventWhereContent({ ...event, max_attendees: 40 } as never)).toBe(false);
+    renderWithProviders(
+      <EventWhere event={addressEvent} venueRef={{ current: null }} onOrganizerClick={() => {}} />,
+    );
+    expect(screen.getByText('123 Example Street')).toBeInTheDocument();
+    const href = screen.getByRole('link', { name: 'Directions' }).getAttribute('href');
+    expect(new URL(href!).searchParams.get('destination')).toBe(
+      '123 Example Street, Berlin, Germany',
+    );
+    expect(screen.queryByTestId('map')).toBeNull();
+  });
+  it('formats the calendar date in the event timezone across a UTC day boundary', () => {
+    const date = formatEventDate('2026-01-02T02:00:00Z', '2026-01-02T04:00:00Z', 'America/Toronto');
+    expect(date).toContain('January 1, 2026');
+    expect(date).not.toContain('January 2');
+  });
+});
+
+describe('Date-only event calendar days', () => {
+  it('preserves imported calendar dates instead of shifting them a day earlier', () => {
+    const dates = formatEventDate(
+      '2026-08-16T00:00:00Z',
+      '2026-08-24T23:59:00Z',
+      'America/Toronto',
+    );
+    expect(dates).toContain('Aug 16, 2026');
+    expect(dates).toContain('Aug 24, 2026');
+    expect(dates).not.toContain('Aug 15');
   });
 });
