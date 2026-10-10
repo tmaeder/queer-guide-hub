@@ -131,10 +131,8 @@ export function CountryLegalRecord({
 /**
  * Spec module 05 on a country — its cities as stops on the line.
  *
- * Replaces a four-across `DirectoryCard` grid whose cards navigated with
- * `window.location.href` inside an `onClick`, i.e. a full page reload and no
- * real link (no middle-click, no open-in-new-tab, invisible to a screen
- * reader's link list). `StopList` renders a real anchor per stop.
+ * Photo cards retain genuine city links, the shared route bullet, and the
+ * caller's population order. The stop model remains available to compact rails.
  *
  * No walking gap is claimed: two cities in a country are not a walk. Ordinals
  * are sequence, not merit — the order is the caller's (population desc).
@@ -153,7 +151,7 @@ export function countryCityStops(cities: CityRelation[]): Stop[] {
 export function CountryCitiesTab({ cities }: { cities: CityRelation[] }) {
   if (cities.length === 0) return null;
   return (
-    <div className="grid gap-4 sm:grid-cols-2">
+    <div className="grid grid-cols-2 gap-4 xl:grid-cols-3">
       {cities.slice(0, 6).map((city) => (
         <DiscoveryPhotoCard
           key={city.id}
@@ -162,7 +160,7 @@ export function CountryCitiesTab({ cities }: { cities: CityRelation[] }) {
             id: city.id,
             name: city.name,
             href: `/city/${city.slug || city.id}`,
-            city: city.region_name ?? null,
+            city: city.region_name && city.region_name !== city.name ? city.region_name : null,
             category: 'city',
             image: resolveEntityImage('city', city).url,
           }}

@@ -1,10 +1,18 @@
-import { useState, type ReactNode } from 'react';
+import {
+  Children,
+  cloneElement,
+  isValidElement,
+  useId,
+  useState,
+  type ReactElement,
+  type ReactNode,
+} from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { Calendar, MapPin, SlidersHorizontal, ArrowUpRight } from 'lucide-react';
 import { useDebounce } from '@/hooks/useDebounce';
-import { useVenueCategoryOptions } from '@/lib/venueCategories';
-import { useEventTypeOptions } from '@/lib/eventTypes';
+import { useVenueCategoryOptions, VENUE_CATEGORY_OPTIONS } from '@/lib/venueCategories';
+import { useEventTypeOptions, EVENT_TYPE_OPTIONS } from '@/lib/eventTypes';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { Image } from '@/components/ui/Image';
 import { Input } from '@/components/ui/input';
@@ -28,6 +36,10 @@ export function DiscoveryPhotoCard({
   kind: 'city' | DiscoveryKind;
 }) {
   const { t, i18n } = useTranslation();
+  const categoryLabel =
+    (kind === 'venue' ? VENUE_CATEGORY_OPTIONS : EVENT_TYPE_OPTIONS).find(
+      (option) => option.value === item.category,
+    )?.label ?? item.category;
   const date = item.start ? new Date(item.start) : null;
   const dateLabel =
     date && !Number.isNaN(date.getTime())
@@ -62,7 +74,7 @@ export function DiscoveryPhotoCard({
       </div>
       <div className="px-2 pb-2 pt-4">
         <div className="flex items-start justify-between gap-2">
-          <h3 className="text-title font-bold leading-tight">{item.name}</h3>
+          <h3 className="text-body-lg font-bold leading-tight sm:text-title">{item.name}</h3>
           <ArrowUpRight
             size={16}
             aria-hidden
@@ -70,6 +82,14 @@ export function DiscoveryPhotoCard({
           />
         </div>
         {item.city && <p className="mt-2 text-13 text-muted-foreground">{item.city}</p>}
+        {kind !== 'city' && (
+          <p className="mt-2 text-xs2 font-bold text-muted-foreground">
+            {t(
+              `${kind === 'venue' ? 'venueCategories' : 'eventTypes'}.${item.category}`,
+              categoryLabel,
+            )}
+          </p>
+        )}
         {item.free && <p className="mt-2 text-13 font-bold">{t('events.free', 'Free')}</p>}
       </div>
     </LocalizedLink>
@@ -77,11 +97,16 @@ export function DiscoveryPhotoCard({
 }
 
 function Field({ label, children }: { label: string; children: ReactNode }) {
+  const id = useId();
   return (
-    <label className="flex min-w-0 flex-col gap-2 text-13 font-medium">
-      {label}
-      {children}
-    </label>
+    <div className="flex min-w-0 flex-col gap-2 text-13 font-medium">
+      <label htmlFor={id}>{label}</label>
+      {Children.map(children, (child) =>
+        isValidElement(child) && child.type !== 'datalist'
+          ? cloneElement(child as ReactElement<{ id?: string }>, { id })
+          : child,
+      )}
+    </div>
   );
 }
 const SELECT =
@@ -299,7 +324,7 @@ export function CountryDiscoveryGallery({
               {t('country.gallery.results', '{{count}} results', { count: total })}
             </p>
             {query.data?.items.length ? (
-              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
                 {query.data.items.map((item) => (
                   <DiscoveryPhotoCard key={item.id} item={item} kind={kind} />
                 ))}

@@ -59,9 +59,7 @@ export function SinglePage({
        on those edges, so a container-level `py-*` would double the first and
        last gap. */
     <PageContainer as="article" flush className={className}>
-      <div
-        className={cn('border-b border-border-hairline', isCompact ? 'py-6' : 'py-8')}
-      >
+      <div className={cn('border-b border-border-hairline', isCompact ? 'py-6' : 'py-8')}>
         <DetailMasthead
           type={type}
           letter={letter}
@@ -73,12 +71,7 @@ export function SinglePage({
         />
         {tags && <div className="mt-6">{tags}</div>}
         {action && (
-          <div
-            className={cn(
-              'flex flex-wrap items-center gap-2',
-              isCompact ? 'mt-4' : 'mt-6',
-            )}
-          >
+          <div className={cn('flex flex-wrap items-center gap-2', isCompact ? 'mt-4' : 'mt-6')}>
             {action}
           </div>
         )}
@@ -95,12 +88,7 @@ export function SinglePage({
           rail && 'lg:grid-cols-[1fr_360px]',
         )}
       >
-        <div
-          className={cn(
-            'flex min-w-0 flex-col',
-            isCompact ? 'gap-6 md:gap-8' : 'gap-10',
-          )}
-        >
+        <div className={cn('flex min-w-0 flex-col', isCompact ? 'gap-6 md:gap-8' : 'gap-10')}>
           {body}
         </div>
         {/* The testid exists because `article aside` is NOT unique: a signed-in
@@ -148,7 +136,6 @@ export function SingleSection({
   children: React.ReactNode;
   className?: string;
 }) {
-  const isCompact = compact || density === 'compact';
   return (
     <section id={id} className={className}>
       <h2 className="font-display text-headline leading-tight">{title}</h2>
@@ -177,7 +164,6 @@ export function StickyRailGroup({
   children: React.ReactNode;
   className?: string;
 }) {
-  const isCompact = compact || density === 'compact';
   return (
     <div className={cn('flex flex-col gap-4 lg:sticky', STICKY_UNDER_HEADER, className)}>
       {children}
