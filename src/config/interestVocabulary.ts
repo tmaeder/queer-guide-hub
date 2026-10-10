@@ -31,9 +31,10 @@
  * thing people actively seek out rather than something inferred about them.
  *
  * EVERY SLUG HERE EXISTS IN `unified_tags` and was verified non-sensitive at
- * the time of writing. Six obvious candidates were dropped for not existing
- * rather than invented: cooking, crafts, cycling, outdoors, running,
- * volunteering. The picker resolves slugs at runtime and silently drops any
+ * the time of writing. Candidates without an active term are excluded:
+ * cooking, crafts, cycling, outdoors, running, volunteering and board games.
+ * Cinema resolves to Film, already in Culture; Museums and Sports use their
+ * active Museum and Sport terms. The picker resolves active slugs and drops any
  * that no longer resolve, so a rename degrades to a shorter list, never a chip
  * that cannot be followed.
  */
@@ -52,15 +53,15 @@ export const INTEREST_GROUPS: readonly InterestGroup[] = [
   },
   {
     label: 'Quieter',
-    slugs: ['coffee', 'brunch', 'dining', 'books', 'board-games', 'sober'],
+    slugs: ['coffee', 'brunch', 'dining', 'books', 'sober'],
   },
   {
     label: 'Culture',
-    slugs: ['art', 'film', 'cinema', 'theatre', 'music', 'museums', 'photography'],
+    slugs: ['art', 'film', 'theatre', 'music', 'museum', 'photography'],
   },
   {
     label: 'Active',
-    slugs: ['hiking', 'swimming', 'yoga', 'fitness', 'sports'],
+    slugs: ['hiking', 'swimming', 'yoga', 'fitness', 'sport'],
   },
   {
     label: 'Out in the world',
