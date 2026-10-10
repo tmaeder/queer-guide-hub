@@ -373,5 +373,5 @@
   "unsafe_slug": 0,
   "synonyms": [],
   "observed_search_synonyms_before_snapshot": 41,
-  "note": "The initial count saw 41 linked search synonyms. The subsequent before-image query found none, indicating concurrent cleanup before this repair. The migration guards removal of any still-linked synonyms together with the self-alias rows."
+  "note": "The initial count saw 41 linked search synonyms. The subsequent before-image query found none, indicating concurrent cleanup before this repair. The migration guards removal of any still-linked synonyms together with the self-alias rows. Final migration history confirmed 20261010054315_tag_alias_equals_name_cleanup cleared the aliases before 20261010054416_remove_redundant_self_aliases ran; the latter was an idempotent no-op that asserted the zero invariant."
 }
