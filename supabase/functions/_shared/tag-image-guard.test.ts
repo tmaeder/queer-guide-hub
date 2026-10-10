@@ -53,6 +53,43 @@ Deno.test('refuses the wrong-subject rows the retired corpus published', () => {
   }
 })
 
+Deno.test('a non-photographic file is refused ON THAT GROUND, corroboration or not', () => {
+  // The `hindu` -> India-locator-map-blank.svg row above asserts only that the
+  // verdict is `refuse`, and it is — on `no_corroboration`, because the text
+  // never says "hindu". So that case says NOTHING about TAG_IMAGE_REJECT, and
+  // mutation-testing proved it: removing the pattern entirely SURVIVED.
+  //
+  // These three corroborate on the tag's own name, so corroboration cannot be
+  // what refuses them. The `why` is asserted rather than the decision, because
+  // "it was refused" is the half that was already true.
+  const svg = tagImageVerdict(
+    { slug: 'bisexual', name: 'Bisexual' },
+    licensed({ sourceRef: 'File:Bisexual_pride_flag.svg', text: 'Bisexual pride flag' }),
+  )
+  assertEquals(svg, { decision: 'refuse', why: 'not_photographic' })
+
+  const locator = tagImageVerdict(
+    { slug: 'india', name: 'India' },
+    licensed({ sourceRef: 'File:India_locator_blank.png', text: 'Locator of India' }),
+  )
+  assertEquals(locator, { decision: 'refuse', why: 'not_photographic' })
+
+  const arms = tagImageVerdict(
+    { slug: 'leather', name: 'Leather' },
+    licensed({ sourceRef: 'File:Leather_coat_of_arms.jpg', text: 'Leather guild coat of arms' }),
+  )
+  assertEquals(arms, { decision: 'refuse', why: 'not_photographic' })
+
+  // The mirror: a photograph whose name merely CONTAINS one of those words as
+  // part of a longer token is not refused. Without this the pattern could be
+  // widened to a substring sweep and nothing would notice.
+  const ok = tagImageVerdict(
+    { slug: 'leather', name: 'Leather' },
+    licensed({ sourceRef: 'File:Leather_mapmaking_tools.jpg', text: 'Leather tools' }),
+  )
+  assertEquals(ok.decision, 'review')
+})
+
 Deno.test('the word boundary is what refuses cum -> Scafell', () => {
   // The substring form that the old pipeline effectively used would accept it.
   assertEquals('sca_fell_massif2010 scafell massif'.includes('cum'), false)
@@ -217,6 +254,24 @@ Deno.test('refuses an image too small for a figure band, and says the size', () 
     licensed({ width: undefined, height: undefined }),
   )
   assertEquals(unknown.decision, 'review')
+})
+
+Deno.test('EACH dimension refuses on its own', () => {
+  // A candidate failing both floors is refused by whichever arm runs first, so
+  // the case above is satisfied by the height arm alone and says nothing about
+  // the width arm. Mutation-tested: dropping MIN_W to 0 SURVIVED that test.
+  // One wide-and-short and one tall-and-narrow fixture is what pins both.
+  const short = tagImageVerdict(
+    { slug: 'leather', name: 'Leather' },
+    licensed({ width: 1807, height: 240 }),
+  )
+  assertEquals(short, { decision: 'refuse', why: 'too_small:1807x240' })
+
+  const narrow = tagImageVerdict(
+    { slug: 'leather', name: 'Leather' },
+    licensed({ width: 320, height: 2700 }),
+  )
+  assertEquals(narrow, { decision: 'refuse', why: 'too_small:320x2700' })
 })
 
 // ── Aliases ─────────────────────────────────────────────────────────────────

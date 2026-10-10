@@ -41,9 +41,20 @@ export const TAG_IMAGE_SOURCES: readonly TagImageSource[] = [
  * flag. The drawn FlagSwatch already covers those tags, so the files are still
  * rejected here -- but a future caller that wants them should widen this rather
  * than discover the rejection by surprise.
+ *
+ * THE MAP ARM IS A LOOKAROUND, NOT `\bmap\b|_map`, AND THAT WAS MEASURED.
+ * `\b` does not fire at `_map` because `_` is a \w character, which is why the
+ * `_map` alternative was there at all -- and `_map` is a plain substring, so it
+ * also matched `Leather_mapmaking_tools.jpg` and refused a photograph. Over-
+ * refusing is not free here: a refusal counts an attempt toward the terminal
+ * `data_unavailable` stamp, so it writes the tag off rather than merely costing
+ * a look. One lookaround covers both separators and neither prefix:
+ * `India-locator-map-blank` and `Locator_map_blank` match, `_mapmaking` and
+ * `Roadmap` do not. Caught by the mirror case in the guard test, which exists
+ * precisely so the pattern cannot be widened back into a substring sweep.
  */
 export const TAG_IMAGE_REJECT =
-  /\.svg$|\.gif$|\bmap\b|_map|locator|coat_of_arms|seal_of|\bcoin\b|banknote|\blogo\b/i
+  /\.svg$|\.gif$|(?<![a-z])maps?(?![a-z])|locator|coat_of_arms|seal_of|\bcoin\b|banknote|\blogo\b/i
 
 /** UI chrome that litters Commons categories and article media lists. */
 export const TAG_IMAGE_JUNK =
