@@ -1,23 +1,23 @@
 import type { ReactNode } from 'react';
-import { HubNav } from '@/components/hub/HubNav';
+import { HubNavBar } from '@/components/hub/HubNavBar';
 import type { HubModuleId } from '@/config/hubModules';
-import { useAuth } from '@/hooks/useAuth';
-import { useInboxFeed } from '@/hooks/useInboxFeed';
+import { PageContainer } from '@/components/layout/PageContainer';
 
 /**
- * Office shell for /hub: persistent module nav (left sidebar on desktop,
- * horizontal scroller on mobile) + the active module's workspace. Modules are
- * registry-driven (src/config/hubModules.ts) — the shell never knows module
- * internals.
+ * Office shell for the HubPage-backed modules: the shared hub nav above the
+ * active module's workspace. Modules are registry-driven
+ * (src/config/hubModules.ts) — the shell never knows module internals.
+ *
+ * The nav is a SIBLING of the workspace container rather than a child, so this
+ * shell places it exactly as every other /hub route does. `active` is kept only
+ * as the `data-active-hub-module` marker the e2e specs read; HubNav derives the
+ * highlighted pill from the pathname.
  */
 export function HubShell({ active, children }: { active: HubModuleId; children: ReactNode }) {
-  const { user } = useAuth();
-  const { unreadCount } = useInboxFeed('all');
-
   return (
-    <div className="flex min-w-0 flex-col gap-6" data-active-hub-module={active}>
-      <HubNav activeModule={active} unreadCount={unreadCount} showUnread={!!user} showIdentity />
-      <div className="min-w-0">{children}</div>
+    <div className="flex min-w-0 flex-col" data-active-hub-module={active}>
+      <HubNavBar />
+      <PageContainer className="min-w-0">{children}</PageContainer>
     </div>
   );
 }

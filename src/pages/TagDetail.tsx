@@ -74,6 +74,8 @@ import { TagInterchange } from '@/components/tags/TagInterchange';
 import { SubstanceInteractions } from '@/components/tags/SubstanceInteractions';
 import { TagDiagnosticCodes } from '@/components/tags/TagDiagnosticCodes';
 import { TagFlagBand } from '@/components/tags/TagFlagBand';
+import { TagFigure } from '@/components/tags/TagFigure';
+import { shouldShowTagFigure } from '@/lib/tags/tagFigureVisibility';
 import { TagFlagRailCard } from '@/components/tags/TagFlagRailCard';
 import { TagHankyCodeBand } from '@/components/tags/TagHankyCodeBand';
 import { flagByTagSlug, HANKY_CODE_TAG_SLUG } from '@/lib/flags';
@@ -305,6 +307,33 @@ export default function TagDetail() {
    *  resolves points at nothing in the meantime. */
   const figures = useMemo(() => figuresForSlug(tag?.slug), [tag?.slug]);
 
+  // Declared HERE rather than beside `meta` below, where it used to live,
+  // because `stations` needs it and that memo runs first. Nothing between the
+  // two positions reads it.
+  const isAdult = useMemo(() => {
+    const names = [
+      ...(tag?.categories?.map((c) => c.name) ?? []),
+      ...(tag?.categories?.map((c) => c.parent_name ?? null) ?? []),
+    ];
+    return names.some((n) => safeMode.isAdultCategory(n));
+  }, [tag, safeMode]);
+
+  /** Whether the photograph band renders, asked of the band's OWN predicate so
+   *  the route-strip stop and the band cannot disagree. */
+  const showPhoto = useMemo(
+    () =>
+      Boolean(tag) &&
+      shouldShowTagFigure({
+        imageUrl: tag!.image_url,
+        imageExplicit: tag!.image_explicit,
+        pageAlreadyGated: isAdult,
+        safeMode: safeMode.enabled,
+        // Reuses the memo this page already keeps for its `figure` station.
+        hasFigure: figures.length > 0,
+      }),
+    [tag, isAdult, safeMode.enabled, figures],
+  );
+
   /** The stations are the page's BANDS, with the wiki's own `<h2>`s as
    *  sub-stations under "About". A prose-only table of contents renders nothing
    *  on most terms — only a minority carry a `long_description` with headings —
@@ -316,6 +345,13 @@ export default function TagDetail() {
     if (tag.description || tag.long_description) {
       s.push({ id: 'about', title: t('tags.detail.about', 'About') });
       s.push(...(wiki?.sections ?? []).map((x) => ({ ...x, depth: 2 as const })));
+    }
+    // Right after About, matching where the band renders below. The condition
+    // is `shouldShowTagFigure` rather than a re-derivation here, so the stop
+    // cannot appear for a band that stands down (explicit under safe mode, or a
+    // term that already carries a diagram).
+    if (showPhoto) {
+      s.push({ id: 'photo', title: t('tags.photo.eyebrow', 'Photograph') });
     }
     // Both flag presence and the hanky slug are synchronous TS data, so unlike
     // the async counts below they need no extra memo deps beyond `tag`.
@@ -387,6 +423,7 @@ export default function TagDetail() {
     workbookCount,
     diagrams,
     figures,
+    showPhoto,
     t,
   ]);
 
@@ -417,13 +454,8 @@ export default function TagDetail() {
   useBreadcrumbs(breadcrumbs);
 
   // ── Meta ────────────────────────────────────────────────────────────────
-  const isAdult = useMemo(() => {
-    const names = [
-      ...(tag?.categories?.map((c) => c.name) ?? []),
-      ...(tag?.categories?.map((c) => c.parent_name ?? null) ?? []),
-    ];
-    return names.some((n) => safeMode.isAdultCategory(n));
-  }, [tag, safeMode]);
+  // `isAdult` is declared above, next to `showPhoto`, because `stations` needs
+  // both and that memo runs before this point.
 
   const meta = useMemo(() => {
     // Mirror the render's three branches below. A single `!tag` test conflated
@@ -630,6 +662,23 @@ export default function TagDetail() {
           ) : null}
         </section>
       )}
+
+      {/* Immediately after the definition, which still leads: someone arriving
+          from search needs the sentence before the picture. Its station is
+          pushed in the same position in `stations` above, and useActiveStation
+          derives the active stop from document geometry. */}
+      <TagFigure
+        slug={tag.slug}
+        name={tag.name}
+        imageUrl={tag.image_url}
+        imageAlt={tag.image_alt}
+        imageSource={tag.image_source}
+        imageLicense={tag.image_license}
+        imageAttribution={tag.image_attribution}
+        imageExplicit={tag.image_explicit}
+        pageAlreadyGated={isAdult}
+        safeMode={safeMode.enabled}
+      />
 
       <TagFlagBand tagSlug={tag.slug} />
 

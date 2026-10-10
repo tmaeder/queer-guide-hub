@@ -3004,7 +3004,28 @@
     "venueCount_one": "[ZH] {{count}} place",
     "venueCount_other": "[ZH] {{count}} places",
     "villageCount_one": "[ZH] {{count}} district",
-    "villageCount_other": "[ZH] {{count}} districts"
+    "villageCount_other": "[ZH] {{count}} districts",
+    "discovery": {
+      "noMatches": "没有匹配结果，请尝试其他筛选条件。",
+      "showing": "显示 {{count}} 项中的 {{shown}} 项",
+      "reset": "重置筛选",
+      "searchPlaces": "搜索地点",
+      "placeType": "地点类型",
+      "allPlaces": "所有地点",
+      "morePlaces": "更多地点",
+      "district": "酷儿街区",
+      "when": "时间",
+      "upcoming": "即将举行",
+      "today": "今天",
+      "weekend": "本周末",
+      "week": "未来7天",
+      "eventType": "活动类型",
+      "allTypes": "所有类型",
+      "freeOnly": "仅免费",
+      "moreEvents": "更多班次",
+      "moreTypes": "更多活动类型",
+      "until": "截至"
+    }
   },
   "pride": {
     "eyebrow": "Pride Calendar",

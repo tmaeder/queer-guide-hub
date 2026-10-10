@@ -27,6 +27,7 @@
   "uncategorized_active": 0,
   "unreviewed_typed_alias": 0,
   "_advisory": [
+    "active_tags_with_image_url",
     "denorm_category_missing",
     "event_tag_strings_unresolved",
     "events_with_tags_unlinked",
@@ -38,6 +39,7 @@
     "unreviewed_typed_alias"
   ],
   "_notes": {
+    "active_tags_with_image_url": "Was a zero-invariant from the 2026-08-28 photography retirement (20261003100000) until 2026-10-10, when glossary photography was re-introduced under a write-time contract (99991791616269). Advisory now as a class-(b) OSCILLATOR: publishing and retracting a figure both move it, so the level is not an invariant. This is the lever _advisory's own note prescribes — 'if an advisory metric should be hard again, gate on AGE or on a write-time invariant, never on a level'. The invariants the old zero-gate was standing in for are now structural: zz_enforce_tag_image_contract refuses an unlicensed, unattributed, alt-less, data:-URI, unknown-source, stock-on-adult or explicit-on-non-adult image, and tag_cover_one_tag_uniq refuses one asset on two tags. Residue is reported by tag_image_signals() and hard-gated in check-pipeline-health.mjs, where a non-zero means the trigger was bypassed rather than a backlog to work down. Do NOT re-baseline this to a non-zero and call it hard again: the count is meant to grow.",
     "alias_equals_name": "Zero-invariant since 20261012090000 deleted the 47 rows. An alias identical to its own tag's name says nothing; the sitelink importer minted them alongside real aliases.",
     "refusal_prose_active": "Zero-invariant since 20261012090000 nulled the 175 'No information available' stamps and 38 'There is no information available...' LLM refusal essays. Same class as placeholder_description_active but on short_description/long_description, which that counter never reads.",
     "unreviewed_typed_alias": "Review queue depth, advisory by nature. ~65 after the 2026-08-29 alias truth pass approved everything mechanically safe; what remains is deliberately unapproved (ordinary-word street names like Speed/Acid/Ice are true synonyms but catastrophic auto-tagging rules) or awaiting a human. Growth means a producer is minting typed aliases as 'auto' again.",

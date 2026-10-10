@@ -1,5 +1,6 @@
 import { useState, type ReactNode } from 'react';
 import { cn } from '@/lib/utils';
+import { ImageCredit } from '@/components/ui/ImageCredit';
 import type { EditorialImage } from '@/lib/editorialImages';
 
 type Decoration = 'dots' | 'grid' | 'none';
@@ -86,7 +87,7 @@ export function EditorialHero({
             {children && <div className="mt-2">{children}</div>}
           </div>
           <div className="relative bg-muted min-h-[240px] md:min-h-[400px] order-1 md:order-2">
-            {/* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions -- onError is a media-error handler, not a user-input listener. */}
+            { }
             <img
               src={src}
               alt={image.alt}
@@ -109,7 +110,7 @@ export function EditorialHero({
     <section
       className={cn('relative rounded-container overflow-hidden bg-muted', sizeClass, className)}
     >
-      {/* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions -- onError is a media-error handler, not a user-input listener. */}
+      { }
       <img
         src={src}
         alt={image.alt}
@@ -152,20 +153,15 @@ export function EditorialHero({
  * CreditTag — small image attribution caption. Required for the CC-licensed
  * Wikimedia Commons photography (author + licence + source). Sits in the
  * bottom-right corner so it never competes with the overlaid headline.
+ *
+ * A thin alias over the shared `ImageCredit` since 2026-10-10: the markup it
+ * used to own moved there verbatim as the `overlay` variant when the glossary
+ * needed the same line inside a figure frame. The two call sites above read
+ * unchanged, and there is now one implementation of a licence obligation
+ * instead of three.
  */
 function CreditTag({ credit, onDark = false }: { credit?: string; onDark?: boolean }) {
-  if (!credit) return null;
-  return (
-    <span
-      className={cn(
-        'absolute bottom-1.5 right-2 z-[2] max-w-[60%] truncate text-2xs leading-tight',
-        onDark ? 'text-white/55' : 'text-muted-foreground/70',
-      )}
-      title={credit}
-    >
-      {credit}
-    </span>
-  );
+  return <ImageCredit credit={credit} variant="overlay" onDark={onDark} />;
 }
 
 function GridDecor({ side = false }: { side?: boolean }) {
