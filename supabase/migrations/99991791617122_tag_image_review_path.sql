@@ -190,7 +190,13 @@ $function$;
 -- would see another entity's rows for the same field name and refuse to queue
 -- a tag proposal that nothing is blocking. Shaped exactly like the five
 -- existing compat views.
-create or replace view public.tag_review_queue as
+-- `with (security_invoker = true)` added 2026-10-10: the five views this one
+-- is "shaped exactly like" all carry it (20260801130000), and without it the
+-- `grant select to authenticated` below BYPASSES the base table's erq_read
+-- policy instead of applying it. Prod was fixed by 20261010104316; this is
+-- what makes a rebuild-from-zero agree with prod, since that file sorts
+-- BELOW this one and would otherwise run before the view exists.
+create or replace view public.tag_review_queue with (security_invoker = true) as
   select id,
          entity_id as tag_id,
          field,
