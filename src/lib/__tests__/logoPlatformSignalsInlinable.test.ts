@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
-const MIGRATION = '99991791607647_logo_platform_signals_inlinable_predicate.sql';
+const MIGRATION = '99991791631907_logo_platform_signals_inlinable_predicate.sql';
 const raw = readFileSync(join(process.cwd(), 'supabase/migrations', MIGRATION), 'utf8');
 
 // The header quotes almost every phrase these tests assert on -- including the OLD slow
