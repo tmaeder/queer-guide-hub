@@ -37,12 +37,6 @@ export const HYGIENE_METRICS: HygieneMetric[] = [
   { key: 'assignment_to_non_active_tag', label: 'Assignments to dead tags', zero: true },
   { key: 'dangling_category_id', label: 'Dangling category id', zero: true },
   { key: 'nonclean_entity_type', label: 'Unnormalized entity_type', zero: true },
-  {
-    key: 'active_tags_with_image_url',
-    label: 'Photos on active tags',
-    zero: true,
-    hint: 'Glossary photography retired 2026-08-28 (tags render drawn TagPlates). Non-zero means a writer is reintroducing photos.',
-  },
   { key: 'indexable_without_description', label: 'Indexable, no prose', zero: true },
   {
     key: 'indexable_marketplace_facet',
@@ -89,6 +83,19 @@ export const HYGIENE_METRICS: HygieneMetric[] = [
   },
 
   // Advisory: CI warns, never fails. This panel is their only human surface.
+  {
+    key: 'active_tags_with_image_url',
+    label: 'Photos on active tags',
+    advisory: true,
+    // The one entry here that is NOT a defect count. Glossary photography was
+    // retired 2026-08-28 and re-introduced 2026-10-10 under a write-time
+    // contract, so this is COVERAGE and is meant to grow; read it as progress,
+    // not as a backlog. It is advisory for the class-(b) reason — publishing and
+    // retracting a figure both move it — and because the invariants the old
+    // zero-gate stood in for are structural now, which is exactly the lever
+    // `_advisory`'s own note prescribes instead of gating on a level.
+    hint: 'Coverage, not a defect count — glossary photography returned 2026-10-10 and this figure is meant to grow. The real invariants are enforced at write time by zz_enforce_tag_image_contract (licensed, attributed, alt-texted, https, known source, no stock on adult/sensitive tags, explicit implies is_adult) and by tag_cover_one_tag_uniq (one asset, one page). Residue is hard-gated via tag_image_signals() in check-pipeline-health.mjs.',
+  },
   {
     key: 'redirect_to_non_canonical',
     label: 'Redirects to non-canonical',

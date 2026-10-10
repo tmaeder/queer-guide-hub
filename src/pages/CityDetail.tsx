@@ -149,7 +149,6 @@ export default function CityDetail() {
       cityId: city?.id,
       city: city?.name,
       countryId: city?.country_id ?? city?.countries?.id,
-      limit: 12,
       railQuality: true,
     });
   }, [city?.id, city?.name, city?.country_id, city?.countries?.id]);
@@ -160,7 +159,6 @@ export default function CityDetail() {
       cityId: city?.id,
       city: city?.name,
       countryId: city?.country_id ?? city?.countries?.id,
-      limit: 12,
     });
   }, [city?.id, city?.name, city?.country_id, city?.countries?.id, fetchEvents]);
 
@@ -257,7 +255,7 @@ export default function CityDetail() {
             <TrackLoader label={t('cities.detail.loadingVenues', 'Loading venues')} />
           ) : venues.length > 0 ? (
             <>
-              <CityVenuesTab venues={venues} />
+              <CityVenuesTab key={city.id} venues={venues} />
               <div className="mt-6">{seeAll(`/venues?city=${encodeURIComponent(city.name)}`)}</div>
             </>
           ) : null,
@@ -279,7 +277,9 @@ export default function CityDetail() {
             events.length > 0 ? (
               <>
                 <CityEventsTab
+                  key={city.id}
                   events={events}
+                  timeZone={city.timezone}
                   locale={i18n.language}
                   openLabel={t('cities.detail.openEvent', 'Open')}
                 />
@@ -468,7 +468,7 @@ export default function CityDetail() {
               </div>
               <CityMapTab
                 city={city}
-                venues={venues}
+                venues={venues.slice(0, 12)}
                 caption={city.region_name ?? undefined}
                 openLabel={t('cities.detail.openMap', 'Open the full map')}
               />
