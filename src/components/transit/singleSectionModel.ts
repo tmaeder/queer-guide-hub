@@ -13,6 +13,8 @@ export interface SingleSectionDef {
   preview?: React.ReactNode;
   /** Safety-critical or otherwise essential disclosures may start open. */
   defaultOpen?: boolean;
+  /** Mount size-sensitive content only while its disclosure is visible. */
+  mountWhenOpen?: boolean;
   /** Rendered inside `SingleSection`. A section with no content is dropped. */
   content: React.ReactNode;
 }

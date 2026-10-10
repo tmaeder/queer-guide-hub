@@ -48,6 +48,11 @@ vi.mock('@/hooks/useIntentData', () => ({
   useNightlifeVenues: () => ({ data: [] }),
   useDestinationCities: () => ({ data: [] }),
 }));
+// HubNav (via HubNavBar) is real page chrome here, and it reads the signed-in
+// user for the identity block and the Messages unread badge. These specs render
+// without an AuthProvider, so stub the hook rather than drop the bar — the bar
+// is part of what the nested-anchor assertion below is checking.
+vi.mock('@/hooks/useAuth', () => ({ useAuth: () => ({ user: null, loading: false }) }));
 vi.mock('@/hooks/useMeta', () => ({ useMeta: () => undefined }));
 vi.mock('@/components/people/IntentSheet', () => ({ IntentSheet: () => null }));
 vi.mock('@/components/safety/GatedContentNotice', () => ({ GatedContentNotice: () => null }));

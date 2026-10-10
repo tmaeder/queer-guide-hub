@@ -77,7 +77,7 @@ function DisclosureSection({ section }: { section: SingleSectionDef }) {
       </div>
       {section.preview && <div className="mt-4">{section.preview}</div>}
       <div id={panelId} hidden={!open} className={section.variant === 'compact' ? 'mt-2' : 'mt-4'}>
-        {section.content}
+        {open || !section.mountWhenOpen ? section.content : null}
       </div>
     </section>
   );

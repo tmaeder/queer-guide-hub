@@ -2,7 +2,7 @@ import { Suspense } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { lazyRetry } from '@/utils/lazyRetry';
 import { PageContainer } from '@/components/layout/PageContainer';
-import { HubNav } from '@/components/hub/HubNav';
+import { HubNavBar } from '@/components/hub/HubNavBar';
 import { useMeta } from '@/hooks/useMeta';
 
 // Each route renders one existing standalone surface. Suspense mounts only the
@@ -47,9 +47,7 @@ export default function Community({ tab }: { tab?: CommunityTab }) {
 
   return (
     <>
-      <PageContainer className="pb-0 pt-6 md:pt-8">
-        <HubNav />
-      </PageContainer>
+      <HubNavBar />
 
       <Suspense
         fallback={

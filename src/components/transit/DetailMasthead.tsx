@@ -1,5 +1,5 @@
-import { cn } from '@/lib/utils';
 import { RouteBullet } from './RouteBullet';
+import { cn } from '@/lib/utils';
 import type { Track } from './routeBulletMap';
 
 interface DetailMastheadProps {
@@ -82,7 +82,18 @@ export function DetailMasthead({
       >
         {title}
       </h1>
-      {lead && <p className="mt-4 max-w-2xl text-body-lg leading-relaxed md:text-xl">{lead}</p>}
+      {lead && (
+        <p
+          className={cn(
+            'max-w-2xl leading-relaxed',
+            compact
+              ? 'mt-2 text-body md:text-body-lg'
+              : 'mt-4 text-body-lg leading-relaxed md:text-xl',
+          )}
+        >
+          {lead}
+        </p>
+      )}
     </header>
   );
 }

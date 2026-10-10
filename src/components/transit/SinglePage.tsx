@@ -19,6 +19,7 @@ import { cn } from '@/lib/utils';
 export function SinglePage({
   type,
   eyebrow,
+  letter,
   title,
   status,
   lead,
@@ -28,10 +29,12 @@ export function SinglePage({
   rail,
   footer,
   className,
+  density = 'default',
   compact = false,
 }: {
   type: string;
   eyebrow?: string;
+  letter?: string;
   title: string;
   status?: string;
   lead?: React.ReactNode;
@@ -44,25 +47,41 @@ export function SinglePage({
   /** S8 — safety footer. */
   footer?: React.ReactNode;
   className?: string;
+  /** Compact opening and section rhythm for task-first location pages. */
+  density?: 'default' | 'compact';
+  /** Compatibility with existing compact event pages. */
   compact?: boolean;
 }) {
+  const isCompact = compact || density === 'compact';
   return (
     /* `flush` — the single owns its own vertical rhythm: each of the three
        spine blocks below carries `py-8` and the rules between them have to sit
        on those edges, so a container-level `py-*` would double the first and
        last gap. */
     <PageContainer as="article" flush className={className}>
-      <div className={cn('border-b border-border-hairline', compact ? 'py-4' : 'py-8')}>
+      <div
+        className={cn('border-b border-border-hairline', isCompact ? 'py-6' : 'py-8')}
+      >
         <DetailMasthead
           type={type}
+          letter={letter}
           eyebrow={eyebrow}
           title={title}
           status={status}
           lead={lead}
-          compact={compact}
+          compact={isCompact}
         />
-        {tags && <div className={compact ? 'mt-2' : 'mt-6'}>{tags}</div>}
-        {action && <div className="mt-6 flex flex-wrap gap-2">{action}</div>}
+        {tags && <div className="mt-6">{tags}</div>}
+        {action && (
+          <div
+            className={cn(
+              'flex flex-wrap items-center gap-2',
+              isCompact ? 'mt-4' : 'mt-6',
+            )}
+          >
+            {action}
+          </div>
+        )}
       </div>
 
       {/* The 360px track is declared only when there IS a rail. Declaring it
@@ -71,12 +90,19 @@ export function SinglePage({
           1440px viewport with 360px of nothing beside it. */}
       <div
         className={cn(
-          'grid grid-cols-1',
-          compact ? 'gap-4 py-4' : 'gap-8 py-8',
+          'grid grid-cols-1 gap-8',
+          isCompact ? 'py-6' : 'py-8',
           rail && 'lg:grid-cols-[1fr_360px]',
         )}
       >
-        <div className={cn('flex min-w-0 flex-col', compact ? 'gap-4' : 'gap-10')}>{body}</div>
+        <div
+          className={cn(
+            'flex min-w-0 flex-col',
+            isCompact ? 'gap-6 md:gap-8' : 'gap-10',
+          )}
+        >
+          {body}
+        </div>
         {/* The testid exists because `article aside` is NOT unique: a signed-in
             visitor whose trip covers this destination also gets
             TripCoveringBanner, which is an <aside> inside the same <article>.
@@ -92,11 +118,7 @@ export function SinglePage({
         )}
       </div>
 
-      {footer && (
-        <div className={cn('border-t border-border-hairline', compact ? 'py-4' : 'py-8')}>
-          {footer}
-        </div>
-      )}
+      {footer && <div className="border-t border-border-hairline py-8">{footer}</div>}
     </PageContainer>
   );
 }
@@ -126,6 +148,7 @@ export function SingleSection({
   children: React.ReactNode;
   className?: string;
 }) {
+  const isCompact = compact || density === 'compact';
   return (
     <section id={id} className={className}>
       <h2 className="font-display text-headline leading-tight">{title}</h2>
@@ -154,6 +177,7 @@ export function StickyRailGroup({
   children: React.ReactNode;
   className?: string;
 }) {
+  const isCompact = compact || density === 'compact';
   return (
     <div className={cn('flex flex-col gap-4 lg:sticky', STICKY_UNDER_HEADER, className)}>
       {children}
