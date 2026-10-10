@@ -173,8 +173,22 @@ export function formatEventDate(
   startDate: string,
   endDate?: string | null,
   timezone?: string | null,
+  rangeLocale?: string,
 ) {
   const calendarZone = isDateOnlyEvent(startDate, endDate) ? 'UTC' : timezone;
+  if (rangeLocale && endDate) {
+    const rangeFormat = new Intl.DateTimeFormat(rangeLocale, {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+      ...(calendarZone && isValidTimezone(calendarZone) ? { timeZone: calendarZone } : {}),
+    });
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    if (end >= start && rangeFormat.format(start) !== rangeFormat.format(end)) {
+      return rangeFormat.formatRange(start, end);
+    }
+  }
   if (calendarZone && isValidTimezone(calendarZone)) {
     const start = formatDateInZone(startDate, calendarZone);
     const end = endDate ? formatDateInZone(endDate, calendarZone) : null;
@@ -497,7 +511,7 @@ export function EventFactStrip({
   showEventTz: boolean;
   setShowEventTz: (fn: (prev: boolean) => boolean) => void;
 }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const eventZone = event.timezone && isValidTimezone(event.timezone) ? event.timezone : null;
   const zone = showEventTz ? eventZone : null;
   const displayedZone = zone || Intl.DateTimeFormat().resolvedOptions().timeZone;
@@ -587,7 +601,7 @@ export function EventFactStrip({
           {t('events.detail.date', 'Date')}
         </dt>
         <dd className="max-w-xl text-xl font-bold leading-tight tracking-tight text-pretty">
-          {formatEventDate(event.start_date, event.end_date, zone)}
+          {formatEventDate(event.start_date, event.end_date, zone, i18n.language || 'en')}
         </dd>
       </div>
       {facts.map((fact) => (
