@@ -1,6 +1,6 @@
 import { badgeVariants } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
-import { normalizeCode, type CityCodesInput } from '@/lib/cityCodes';
+import { normalizeCode, regionImpliesCountry, type CityCodesInput } from '@/lib/cityCodes';
 
 interface CityCodeBadgesProps extends CityCodesInput {
   className?: string;
@@ -10,16 +10,21 @@ interface CityCodeBadgesProps extends CityCodesInput {
  * Chips are spans (not the div-based Badge) because they sit inside buttons
  * and combobox options.
  *
- * `[US] [US-ME]` next to a city name in the admin. A missing code renders as
+ * `[US-ME]` next to a city name in the admin — the region code already
+ * names the country. `[US] [no region]` when the region is missing, and both
+ * chips when the region's prefix contradicts the country. A missing code renders as
  * an explicit muted chip rather than nothing, so an un-backfilled city is
  * visibly different from one that simply has no twin.
  */
 export function CityCodeBadges({ countryCode, regionCode, className }: CityCodeBadgesProps) {
   const country = normalizeCode(countryCode);
   const region = normalizeCode(regionCode);
+  const showCountry = !regionImpliesCountry(country, region);
   return (
     <span className={cn('inline-flex shrink-0 items-center gap-1', className)}>
-      <CodeChip code={country} missingLabel="no country" title="Country (ISO 3166-1)" />
+      {showCountry && (
+        <CodeChip code={country} missingLabel="no country" title="Country (ISO 3166-1)" />
+      )}
       <CodeChip
         code={region}
         missingLabel="no region"
