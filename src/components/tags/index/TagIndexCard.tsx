@@ -16,7 +16,7 @@ import { cn } from '@/lib/utils';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { RouteBullet } from '@/components/transit/RouteBullet';
 import { TransitIcon } from '@/components/transit/TransitIcon';
-import { cleanTitle } from '@/utils/htmlDecode';
+import { tagPreviewText } from '@/lib/tags/tagsIndexState';
 import type { CategoryLine } from '@/lib/tags/categoryIdentity';
 import type { CentralizedTag } from '@/hooks/useCentralizedTags';
 
@@ -38,17 +38,9 @@ function AliasPip({ label }: { label: string }) {
   );
 }
 
-function previewFor(tag: CentralizedTag): string {
-  // Product attributes can carry encyclopedia imports for a different sense
-  // of their name ("M" the letter, "3XL" the TV channel). Show a curated short
-  // description when present; generic imported prose is not a label definition.
-  const fallback = tag.entity_kind === 'attribute' ? '' : tag.description;
-  return cleanTitle(tag.short_description || fallback || '');
-}
-
 export function TagIndexCard({ tag, uses, line, categoryLabel, aliasMatch }: TagIndexItemProps) {
   const { t } = useTranslation();
-  const blurb = previewFor(tag);
+  const blurb = tagPreviewText(tag);
 
   return (
     <LocalizedLink
@@ -83,7 +75,7 @@ export function TagIndexCard({ tag, uses, line, categoryLabel, aliasMatch }: Tag
 
 export function TagIndexRow({ tag, uses, categoryLabel, aliasMatch }: TagIndexItemProps) {
   const { t } = useTranslation();
-  const blurb = previewFor(tag);
+  const blurb = tagPreviewText(tag);
 
   return (
     <LocalizedLink
