@@ -17,7 +17,7 @@ import { PageContainer } from '@/components/layout/PageContainer';
 import { PageLoadingState } from '@/components/layout/PageLoadingState';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { UserX } from 'lucide-react';
-import { PeopleSubpageNav } from '@/components/people/PeopleSubpageNav';
+import { HubNavBar } from '@/components/hub/HubNavBar';
 
 function Row({ k, v }: { k: string; v: string }) {
   return (
@@ -45,7 +45,7 @@ export default function IntimateUserDetail() {
   if (isLoading) {
     return (
       <>
-        <PeopleSubpageNav />
+        <HubNavBar />
         <PageContainer size="form">
           <PageLoadingState count={2} variant="list" label="Loading this profile" />
         </PageContainer>
@@ -55,7 +55,7 @@ export default function IntimateUserDetail() {
   if (!me?.opted_in_at) {
     return (
       <>
-        <PeopleSubpageNav />
+        <HubNavBar />
         <PageContainer size="form" className="text-center">
           <p className="mb-6">Opt in to view intimate profiles.</p>
           <Button onClick={() => navigate('/hub/dating/onboarding')}>Get started</Button>
@@ -66,7 +66,7 @@ export default function IntimateUserDetail() {
   if (!profile) {
     return (
       <>
-        <PeopleSubpageNav />
+        <HubNavBar />
         <PageContainer size="form">
           <EmptyState
             icon={UserX}
@@ -125,7 +125,7 @@ export default function IntimateUserDetail() {
 
   return (
     <>
-      <PeopleSubpageNav />
+      <HubNavBar />
       <PageContainer size="form">
         <header className="flex items-center gap-4 pb-6">
           {displayProfile?.avatar_url ? (

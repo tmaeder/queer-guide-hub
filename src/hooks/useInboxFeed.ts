@@ -36,6 +36,33 @@ const feedKey = (userId: string | undefined, filter: InboxFilter) =>
   ['inbox-feed', userId, filter] as const;
 const countKey = (userId: string | undefined) => ['inbox-unread', userId] as const;
 
+/**
+ * Just the unread badge number, with none of `useInboxFeed`'s weight — no
+ * infinite feed query and no realtime channel. Same query key, so a mount here
+ * shares the cache with whatever `useInboxFeed` is already running and costs no
+ * extra request. HubNav renders on all 17 hub routes; mounting the full feed
+ * there would open a seven-subscription channel per page for one integer.
+ */
+export function useInboxUnreadCount() {
+  const { user } = useAuth();
+  const countQuery = useQuery({
+    queryKey: countKey(user?.id),
+    enabled: !!user,
+    staleTime: 15_000,
+    queryFn: async () => {
+      const { data, error } = await untypedRpc<number>('get_inbox_unread_count', {
+        p_user: user!.id,
+      });
+      if (error) {
+        console.error('get_inbox_unread_count failed', error);
+        return 0;
+      }
+      return data ?? 0;
+    },
+  });
+  return countQuery.data ?? 0;
+}
+
 export function useInboxFeed(filter: InboxFilter = 'all') {
   const { user } = useAuth();
   const queryClient = useQueryClient();
@@ -64,21 +91,8 @@ export function useInboxFeed(filter: InboxFilter = 'all') {
         : undefined,
   });
 
-  const countQuery = useQuery({
-    queryKey: countKey(user?.id),
-    enabled: !!user,
-    staleTime: 15_000,
-    queryFn: async () => {
-      const { data, error } = await untypedRpc<number>('get_inbox_unread_count', {
-        p_user: user!.id,
-      });
-      if (error) {
-        console.error('get_inbox_unread_count failed', error);
-        return 0;
-      }
-      return data ?? 0;
-    },
-  });
+  // Same query key, so this is the cache entry HubNav is already reading.
+  const unreadCount = useInboxUnreadCount();
 
   useEffect(() => {
     if (!user) return;
@@ -130,7 +144,11 @@ export function useInboxFeed(filter: InboxFilter = 'all') {
       .on('postgres_changes', { event: '*', schema: 'public', table: 'post_comments' }, invalidate)
       // trip-email threads: items key on trip_id (no user column) — subscribe
       // broadly, per-user refetch reconciles (same rationale as messages).
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'trip_inbox_items' }, invalidate)
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'trip_inbox_items' },
+        invalidate,
+      )
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'trip_inbox_messages' },
@@ -152,7 +170,7 @@ export function useInboxFeed(filter: InboxFilter = 'all') {
 
   return {
     items,
-    unreadCount: countQuery.data ?? 0,
+    unreadCount,
     loading: feed.isLoading,
     hasNextPage: feed.hasNextPage,
     fetchNextPage: feed.fetchNextPage,
