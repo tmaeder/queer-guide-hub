@@ -17,6 +17,7 @@ interface RouteStripProps {
   /** Omitted = an ink line. Accessibility runs monochrome on purpose. */
   track?: Track;
   orientation?: 'vertical' | 'horizontal';
+  appearance?: 'tabs' | 'stations';
   className?: string;
   /** Accessible name for the nav landmark. */
   label?: string;
@@ -48,6 +49,7 @@ export function RouteStrip({
   activeId,
   track,
   orientation = 'vertical',
+  appearance = 'tabs',
   className,
   label = 'Sections',
   onNavigate,
@@ -89,6 +91,71 @@ export function RouteStrip({
     // BEFORE the one just clicked.
     onNavigate?.(id);
   };
+
+  if (orientation === 'horizontal' && appearance === 'stations') {
+    return (
+      <nav
+        aria-label={label}
+        className={cn(`sticky ${STICKY_UNDER_HEADER} z-30 bg-background`, className)}
+      >
+        <ol
+          ref={listRef}
+          className="flex items-center gap-6 overflow-x-auto py-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+        >
+          {stations.map((station, index) => {
+            const active = station.id === activeId;
+            return (
+              <li key={station.id} className="relative shrink-0">
+                {index < stations.length - 1 && (
+                  <svg
+                    viewBox="0 0 100 12"
+                    preserveAspectRatio="none"
+                    className={cn(
+                      'absolute top-0.5 h-3 w-[calc(100%+1.5rem)]',
+                      track === 'blue'
+                        ? 'text-track-blue'
+                        : track === 'pink'
+                          ? 'text-track-pink'
+                          : track === 'green'
+                            ? 'text-track-green'
+                            : track === 'yellow'
+                              ? 'text-track-yellow'
+                              : 'text-foreground',
+                    )}
+                    style={{ insetInlineStart: '0.5rem' }}
+                    aria-hidden="true"
+                  >
+                    <path
+                      d="M0 6 H30 Q38 6 38 2 Q38 0 46 0 H54 Q62 0 62 4 Q62 6 70 6 H100"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="3"
+                      vectorEffect="non-scaling-stroke"
+                    />
+                  </svg>
+                )}
+                <a
+                  href={`#${station.id}`}
+                  data-station-id={station.id}
+                  aria-current={active ? 'true' : undefined}
+                  onClick={(event) => handleClick(event, station.id)}
+                  className={cn(
+                    'relative z-10 grid justify-items-start gap-1 text-13 no-underline',
+                    active
+                      ? 'font-bold underline underline-offset-4'
+                      : 'font-medium hover:underline',
+                  )}
+                >
+                  <StationRing state={active ? 'typed' : 'open'} track={track || 'blue'} />
+                  <span className="py-1">{station.title}</span>
+                </a>
+              </li>
+            );
+          })}
+        </ol>
+      </nav>
+    );
+  }
 
   if (orientation === 'horizontal') {
     return (

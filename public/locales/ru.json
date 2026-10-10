@@ -1379,16 +1379,41 @@
       "eyebrow": "[RU] Event",
       "sections": "[RU] Sections",
       "section": {
-        "about": "[RU] About this event",
-        "where": "[RU] Getting there",
-        "going": "[RU] Who's going"
+        "about": "Главное",
+        "where": "Как добраться",
+        "going": "Кто с вами"
       },
       "calendar": "Календарь",
       "moreOptions": "Другие действия",
       "send": "Отправить кому-нибудь",
       "getTickets": "Купить билеты",
       "going": "Пойду",
-      "viewImage": "Посмотреть изображение"
+      "viewImage": "Посмотреть изображение",
+      "board": "Табло отправлений",
+      "date": "Дата",
+      "time": "Время",
+      "price": "Вход",
+      "ages": "Возраст",
+      "capacity": "Вместимость",
+      "schedule": "Расписание",
+      "eventTime": "Время события",
+      "yourTime": "Ваше время",
+      "showMyTime": "Показать моё время",
+      "showEventTime": "Показать время события",
+      "notListed": "Не указано",
+      "archiveHint": "Эта остановка уже позади.",
+      "nextOuting": "Найдите следующее событие",
+      "venueMissing": "Место проведения здесь не указано.",
+      "checkDetails": "Проверить подробности",
+      "freeBooking": "Вход бесплатный. Условия бронирования — по ссылке на билеты.",
+      "noBookingLink": "Ссылка для бронирования здесь не указана.",
+      "reportHint": "Что-то пошло не так? Сообщите через Другие действия.",
+      "moreStops": "Куда дальше?",
+      "relatedReason": {
+        "city": "Тот же город",
+        "similar": "Похожая атмосфера",
+        "tags": "Общие теги"
+      }
     }
   },
   "venues": {

@@ -66,3 +66,17 @@ Past and upcoming-fixture pages pass axe checks at 1440px and 390px with no
 serious/critical violations or overflow. Image and calendar access through More
 options works with keyboard interaction. A redundant missing-info/source panel
 is removed; a website alone no longer creates an About section.
+
+## Playful and informative refinement
+
+Keep the compact layout. Give facts a subtle cyan departure-board surface with
+labelled icons and a bent track. Event section links become real route stops;
+section titles use the guide's voice (The lowdown, Find your way, Riding with you).
+Show the recorded event type, age and capacity, and explain related-event reasons.
+Provide a next step for archived events and explicit venue/booking information gaps.
+Render recorded standalone street addresses and directions without inventing coordinates.
+
+Timed events switch both date and time between the event and viewer timezones.
+Abbreviations follow the event date, including DST. Date-only imports preserve their
+calendar days and do not offer a meaningless timezone toggle. Factual descriptions
+and safety information remain unchanged. UI labels are translated in all eleven locales.

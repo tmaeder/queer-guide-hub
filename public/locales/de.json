@@ -1530,16 +1530,41 @@
       "eyebrow": "[DE] Event",
       "sections": "[DE] Sections",
       "section": {
-        "about": "[DE] About this event",
-        "where": "[DE] Getting there",
-        "going": "[DE] Who's going"
+        "about": "Gut zu wissen",
+        "where": "Finde deinen Weg",
+        "going": "Mit dir unterwegs"
       },
       "calendar": "Kalender",
       "moreOptions": "Weitere Optionen",
       "send": "An jemanden senden",
       "getTickets": "Tickets kaufen",
       "going": "Dabei",
-      "viewImage": "Bild ansehen"
+      "viewImage": "Bild ansehen",
+      "board": "Abfahrtstafel",
+      "date": "Datum",
+      "time": "Zeit",
+      "price": "Eintritt",
+      "ages": "Alter",
+      "capacity": "Kapazität",
+      "schedule": "Rhythmus",
+      "eventTime": "Event-Zeit",
+      "yourTime": "Deine Zeit",
+      "showMyTime": "Meine Zeit anzeigen",
+      "showEventTime": "Event-Zeit anzeigen",
+      "notListed": "Nicht angegeben",
+      "archiveHint": "Dieser Halt liegt hinter uns.",
+      "nextOuting": "Finde dein nächstes Event",
+      "venueMissing": "Angaben zum Veranstaltungsort fehlen hier.",
+      "checkDetails": "Event-Details prüfen",
+      "freeBooking": "Eintritt frei. Infos zur Buchung findest du unter dem Ticket-Link.",
+      "noBookingLink": "Hier ist kein Buchungslink angegeben.",
+      "reportHint": "Etwas läuft neben der Spur? Melde es unter Weitere Optionen.",
+      "moreStops": "Wohin als Nächstes?",
+      "relatedReason": {
+        "city": "Gleiche Stadt",
+        "similar": "Ähnlicher Vibe",
+        "tags": "Gemeinsame Tags"
+      }
     }
   },
   "venues": {

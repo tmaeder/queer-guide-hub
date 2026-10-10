@@ -35,6 +35,7 @@ export function SingleRouteRail({
   activeId,
   onNavigate,
   orientation,
+  appearance,
   track,
   label,
   className,
@@ -43,6 +44,7 @@ export function SingleRouteRail({
   activeId: string;
   onNavigate: (id: string) => void;
   orientation: 'vertical' | 'horizontal';
+  appearance?: 'tabs' | 'stations';
   track?: Track;
   label: string;
   className?: string;
@@ -53,6 +55,7 @@ export function SingleRouteRail({
       stations={singleStations(sections)}
       activeId={activeId}
       orientation={orientation}
+      appearance={appearance}
       track={track}
       label={label}
       onNavigate={onNavigate}

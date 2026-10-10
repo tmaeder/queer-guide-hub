@@ -29,6 +29,7 @@ import {
   eventStatusLabel,
   EventFactStrip,
   EventForYou,
+  EventPlanHint,
   EventDecisionCard,
   EventAbout,
   hasEventAboutContent,
@@ -307,7 +308,7 @@ export default function EventDetail() {
     ? singleSections([
         {
           id: 'about',
-          title: t('events.detail.section.about', 'About this event'),
+          title: t('events.detail.section.about', 'The lowdown'),
           content: hasEventAboutContent(event) ? (
             <EventAbout event={event} onContentUpdated={refetch} />
           ) : null,
@@ -324,7 +325,7 @@ export default function EventDetail() {
         },
         {
           id: 'where',
-          title: t('events.detail.section.where', 'Getting there'),
+          title: t('events.detail.section.where', 'Find your way'),
           content: hasEventWhereContent(event) ? (
             <EventWhere
               event={event}
@@ -343,7 +344,7 @@ export default function EventDetail() {
           // rendered its own "Who's going" h2 and that guard strips only the
           // first heading before checking for a body; both halves are fixed.
           id: 'going',
-          title: t('events.detail.section.going', "Who's going"),
+          title: t('events.detail.section.going', 'Riding with you'),
           content: hasWhoIsGoingContent(event, isPast) ? (
             <EventWhoIsGoing event={event} user={user} isPast={isPast} />
           ) : null,
@@ -414,7 +415,15 @@ export default function EventDetail() {
       <SinglePage
         type="event"
         compact
-        eyebrow={[t('events.detail.eyebrow', 'Event'), cityName].filter(Boolean).join(' · ')}
+        eyebrow={[
+          t('events.detail.eyebrow', 'Event'),
+          event.event_type && event.event_type !== 'other'
+            ? t(`eventTypes.${event.event_type}`, event.event_type.replace(/_/g, ' '))
+            : null,
+          cityName,
+        ]
+          .filter(Boolean)
+          .join(' · ')}
         title={localizedField(event.title, event.title_i18n as I18nMap, i18n.language)}
         status={eventStatusLabel(event)}
         // No lead: the standfirst below carries where-and-whether-it-is-on,
@@ -464,6 +473,7 @@ export default function EventDetail() {
                 {decisionCard}
               </ErrorBoundary>
             </div>
+            <EventPlanHint event={event} isPast={isPast} />
             <ErrorBoundary section="event-for-you" fallback={null}>
               <EventForYou
                 event={event}
@@ -476,6 +486,7 @@ export default function EventDetail() {
               activeId={activeId}
               onNavigate={select}
               orientation="horizontal"
+              appearance="stations"
               track="blue"
               label={t('events.detail.sections', 'Sections')}
             />
@@ -508,7 +519,10 @@ export default function EventDetail() {
           entity_table: 'events',
           entity_id: event.id,
           title: event.title,
-          subtitle: [formatEventDate(event.start_date, event.end_date), event.venues?.name]
+          subtitle: [
+            formatEventDate(event.start_date, event.end_date, event.timezone),
+            event.venues?.name,
+          ]
             .filter(Boolean)
             .join(' · '),
           image_url: resolveEntityImage('event', event).url ?? null,

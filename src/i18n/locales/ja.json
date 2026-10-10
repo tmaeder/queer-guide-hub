@@ -1347,16 +1347,41 @@
       "eyebrow": "[JA] Event",
       "sections": "[JA] Sections",
       "section": {
-        "about": "[JA] About this event",
-        "where": "[JA] Getting there",
-        "going": "[JA] Who's going"
+        "about": "ここがポイント",
+        "where": "行き方を探す",
+        "going": "一緒に行く人"
       },
       "calendar": "カレンダー",
       "moreOptions": "その他の操作",
       "send": "誰かに送る",
       "getTickets": "チケットを購入",
       "going": "参加する",
-      "viewImage": "画像を見る"
+      "viewImage": "画像を見る",
+      "board": "出発案内",
+      "date": "日付",
+      "time": "時間",
+      "price": "入場料",
+      "ages": "年齢",
+      "capacity": "定員",
+      "schedule": "開催頻度",
+      "eventTime": "イベント現地時間",
+      "yourTime": "あなたの現地時間",
+      "showMyTime": "自分の現地時間を表示",
+      "showEventTime": "イベント現地時間を表示",
+      "notListed": "記載なし",
+      "archiveHint": "この停車駅は通過しました。",
+      "nextOuting": "次のお出かけを探す",
+      "venueMissing": "会場の詳細はここには記載されていません。",
+      "checkDetails": "イベントの詳細を確認",
+      "freeBooking": "入場無料。予約の詳細はチケットリンクで確認してください。",
+      "noBookingLink": "予約リンクはここには記載されていません。",
+      "reportHint": "情報が脱線している？その他の操作から報告してください。",
+      "moreStops": "次はどこへ？",
+      "relatedReason": {
+        "city": "同じ都市",
+        "similar": "似た雰囲気",
+        "tags": "共通のタグ"
+      }
     }
   },
   "venues": {

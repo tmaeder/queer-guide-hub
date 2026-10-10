@@ -1347,16 +1347,41 @@
       "eyebrow": "[KO] Event",
       "sections": "[KO] Sections",
       "section": {
-        "about": "[KO] About this event",
-        "where": "[KO] Getting there",
-        "going": "[KO] Who's going"
+        "about": "알아둘 점",
+        "where": "가는 길 찾기",
+        "going": "함께하는 사람들"
       },
       "calendar": "캘린더",
       "moreOptions": "더 보기",
       "send": "다른 사람에게 보내기",
       "getTickets": "티켓 구매",
       "going": "참석",
-      "viewImage": "이미지 보기"
+      "viewImage": "이미지 보기",
+      "board": "출발 안내",
+      "date": "날짜",
+      "time": "시간",
+      "price": "입장료",
+      "ages": "연령",
+      "capacity": "정원",
+      "schedule": "일정",
+      "eventTime": "이벤트 현지 시간",
+      "yourTime": "내 현지 시간",
+      "showMyTime": "내 현지 시간 보기",
+      "showEventTime": "이벤트 현지 시간 보기",
+      "notListed": "정보 없음",
+      "archiveHint": "이 정거장은 이미 지나갔어요.",
+      "nextOuting": "다음 나들이 찾기",
+      "venueMissing": "장소 정보가 여기에 나와 있지 않아요.",
+      "checkDetails": "이벤트 정보 확인",
+      "freeBooking": "입장 무료. 예약 정보는 티켓 링크에서 확인하세요.",
+      "noBookingLink": "예약 링크가 여기에 나와 있지 않아요.",
+      "reportHint": "정보가 경로를 벗어났나요? 더 보기에서 신고하세요.",
+      "moreStops": "다음은 어디로?",
+      "relatedReason": {
+        "city": "같은 도시",
+        "similar": "비슷한 분위기",
+        "tags": "공통 태그"
+      }
     }
   },
   "venues": {

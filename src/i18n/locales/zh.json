@@ -1347,16 +1347,41 @@
       "eyebrow": "[ZH] Event",
       "sections": "[ZH] Sections",
       "section": {
-        "about": "[ZH] About this event",
-        "where": "[ZH] Getting there",
-        "going": "[ZH] Who's going"
+        "about": "活动亮点",
+        "where": "找到路线",
+        "going": "与你同行的人"
       },
       "calendar": "日历",
       "moreOptions": "更多选项",
       "send": "发送给他人",
       "getTickets": "购买门票",
       "going": "参加",
-      "viewImage": "查看图片"
+      "viewImage": "查看图片",
+      "board": "出发信息",
+      "date": "日期",
+      "time": "时间",
+      "price": "入场费",
+      "ages": "年龄",
+      "capacity": "容量",
+      "schedule": "日程",
+      "eventTime": "活动当地时间",
+      "yourTime": "你的当地时间",
+      "showMyTime": "显示我的当地时间",
+      "showEventTime": "显示活动当地时间",
+      "notListed": "未注明",
+      "archiveHint": "这一站已经过去了。",
+      "nextOuting": "寻找下一场活动",
+      "venueMissing": "此处未注明场地信息。",
+      "checkDetails": "查看活动详情",
+      "freeBooking": "免费入场。请通过票务链接查看预订详情。",
+      "noBookingLink": "此处未列出预订链接。",
+      "reportHint": "信息偏离轨道了？请在更多选项中举报。",
+      "moreStops": "下一站去哪儿？",
+      "relatedReason": {
+        "city": "同一城市",
+        "similar": "相似氛围",
+        "tags": "共同标签"
+      }
     }
   },
   "venues": {
