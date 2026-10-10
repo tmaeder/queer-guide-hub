@@ -253,4 +253,3 @@ BEGIN
   RAISE EXCEPTION 'Missing before-images for deleted topic rows';
  END IF;
 END $verify$;
-
