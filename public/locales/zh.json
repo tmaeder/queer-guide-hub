@@ -1350,7 +1350,13 @@
         "about": "[ZH] About this event",
         "where": "[ZH] Getting there",
         "going": "[ZH] Who's going"
-      }
+      },
+      "calendar": "日历",
+      "moreOptions": "更多选项",
+      "send": "发送给他人",
+      "getTickets": "购买门票",
+      "going": "参加",
+      "viewImage": "查看图片"
     }
   },
   "venues": {
@@ -3120,6 +3126,7 @@
     }
   },
   "country": {
+    "overview": "概览",
     "loading": "正在加载国家…",
     "planTrip": "规划前往{{country}}的行程",
     "similar": "更多目的地",
@@ -3152,6 +3159,7 @@
       "cities": "城市"
     },
     "section": {
+      "about": "关于{{country}}",
       "rights": "权利与安全",
       "cities": "城市",
       "venues": "场所",
@@ -3267,6 +3275,17 @@
       "title": "[ZH] Compare the law elsewhere",
       "body": "[ZH] Every country page carries the same legal breakdown, from the same sources, with the date it was checked.",
       "rights": "[ZH] Rights across the world"
+    },
+    "gallery": {
+      "allTypes": "所有类型",
+      "verifiedOnly": "仅已验证场所",
+      "freeOnly": "仅免费活动",
+      "invalidDates": "请选择晚于开始日期的结束日期。",
+      "error": "无法加载此合集。",
+      "results_one": "{{count}} 个结果",
+      "results_other": "{{count}} 个结果",
+      "empty": "没有匹配结果。请尝试其他城市或重置筛选条件。",
+      "pagination": "图库分页"
     }
   },
   "inbox": {

@@ -1350,7 +1350,13 @@
         "about": "[IT] About this event",
         "where": "[IT] Getting there",
         "going": "[IT] Who's going"
-      }
+      },
+      "calendar": "Calendario",
+      "moreOptions": "Altre opzioni",
+      "send": "Invia a qualcuno",
+      "getTickets": "Acquista biglietti",
+      "going": "Partecipo",
+      "viewImage": "Visualizza immagine"
     }
   },
   "venues": {
@@ -3122,6 +3128,7 @@
     }
   },
   "country": {
+    "overview": "Panoramica",
     "loading": "Caricamento del paese…",
     "planTrip": "Pianifica un viaggio in {{country}}",
     "similar": "Altre destinazioni",
@@ -3154,6 +3161,7 @@
       "cities": "Città"
     },
     "section": {
+      "about": "Informazioni su {{country}}",
       "rights": "Diritti e sicurezza",
       "cities": "Città",
       "venues": "Locali",
@@ -3269,6 +3277,17 @@
       "title": "[IT] Compare the law elsewhere",
       "body": "[IT] Every country page carries the same legal breakdown, from the same sources, with the date it was checked.",
       "rights": "[IT] Rights across the world"
+    },
+    "gallery": {
+      "allTypes": "Tutti i tipi",
+      "verifiedOnly": "Solo luoghi verificati",
+      "freeOnly": "Solo eventi gratuiti",
+      "invalidDates": "Scegli una data di fine successiva a quella di inizio.",
+      "error": "Impossibile caricare questa raccolta.",
+      "results_one": "{{count}} risultato",
+      "results_other": "{{count}} risultati",
+      "empty": "Nessun risultato. Prova un’altra città o reimposta i filtri.",
+      "pagination": "Pagine della galleria"
     }
   },
   "inbox": {

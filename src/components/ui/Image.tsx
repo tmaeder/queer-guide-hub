@@ -73,6 +73,8 @@ interface ImageProps {
   objectPosition?: string;
   scrim?: ScrimVariant;
   priority?: boolean;
+  /** Optional policy for albums served from local previews as well as production. */
+  referrerPolicy?: React.HTMLAttributeReferrerPolicy;
   rounded?: RoundedToken;
 
   // ── Responsive overrides ────────────────────────────────────────────
@@ -137,6 +139,7 @@ export const Image = ({
   objectPosition,
   scrim = 'none',
   priority = false,
+  referrerPolicy: referrerPolicyOverride,
   rounded = 'top',
   sizes,
   widths,
@@ -258,7 +261,8 @@ export const Image = ({
     return () => clearTimeout(timer);
     // eslint-disable-next-line react-hooks/exhaustive-deps -- setState updaters are stable; re-arm on source/priority change and on the CF→raw retry (cfFailedRung) so the raw attempt gets its own 8s window
   }, [resolved, priority, error, cfFailedRung]);
-  const referrerPolicy = effectiveSrc ? imageReferrerPolicy(effectiveSrc) : undefined;
+  const referrerPolicy =
+    referrerPolicyOverride ?? (effectiveSrc ? imageReferrerPolicy(effectiveSrc) : undefined);
 
   // Person photos are framed head-and-shoulders; the face sits in the upper
   // third. Default to a face-safe crop so `object-cover` keeps the face:

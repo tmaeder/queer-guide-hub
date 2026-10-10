@@ -1356,7 +1356,13 @@
         "about": "[AR] About this event",
         "where": "[AR] Getting there",
         "going": "[AR] Who's going"
-      }
+      },
+      "calendar": "التقويم",
+      "moreOptions": "خيارات إضافية",
+      "send": "إرسال إلى شخص",
+      "getTickets": "شراء التذاكر",
+      "going": "سأحضر",
+      "viewImage": "عرض الصورة"
     }
   },
   "venues": {
@@ -3130,6 +3136,7 @@
     }
   },
   "country": {
+    "overview": "نظرة عامة",
     "loading": "جارٍ تحميل الدولة…",
     "planTrip": "خطّط لرحلة إلى {{country}}",
     "similar": "وجهات أخرى",
@@ -3162,6 +3169,7 @@
       "cities": "المدن"
     },
     "section": {
+      "about": "عن {{country}}",
       "rights": "الحقوق والأمان",
       "cities": "المدن",
       "venues": "الأماكن",
@@ -3277,6 +3285,17 @@
       "title": "[AR] Compare the law elsewhere",
       "body": "[AR] Every country page carries the same legal breakdown, from the same sources, with the date it was checked.",
       "rights": "[AR] Rights across the world"
+    },
+    "gallery": {
+      "allTypes": "كل الأنواع",
+      "verifiedOnly": "أماكن موثّقة فقط",
+      "freeOnly": "فعاليات مجانية فقط",
+      "invalidDates": "اختر تاريخ نهاية بعد تاريخ البداية.",
+      "error": "تعذّر تحميل هذه المجموعة.",
+      "results_one": "{{count}} نتيجة",
+      "results_other": "{{count}} نتائج",
+      "empty": "لا توجد نتائج. جرّب مدينة أخرى أو أعد ضبط عوامل التصفية.",
+      "pagination": "صفحات المعرض"
     }
   },
   "inbox": {

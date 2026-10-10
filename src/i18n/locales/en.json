@@ -608,7 +608,13 @@
         "about": "About this event",
         "where": "Getting there",
         "going": "Who's going"
-      }
+      },
+      "calendar": "Calendar",
+      "moreOptions": "More options",
+      "send": "Send to someone",
+      "getTickets": "Get tickets",
+      "going": "Going",
+      "viewImage": "View image"
     }
   },
   "venues": {
@@ -3278,6 +3284,7 @@
     }
   },
   "country": {
+    "overview": "Overview",
     "loading": "Loading country…",
     "planTrip": "Plan a trip to {{country}}",
     "similar": "More destinations",
@@ -3310,6 +3317,7 @@
       "cities": "Cities"
     },
     "section": {
+      "about": "About {{country}}",
       "rights": "Rights & safety",
       "cities": "Cities",
       "venues": "Venues",
@@ -3425,6 +3433,17 @@
       "title": "Compare the law elsewhere",
       "body": "Every country page carries the same legal breakdown, from the same sources, with the date it was checked.",
       "rights": "Rights across the world"
+    },
+    "gallery": {
+      "allTypes": "All types",
+      "verifiedOnly": "Verified venues only",
+      "freeOnly": "Free events only",
+      "invalidDates": "Choose an end date after the start date.",
+      "error": "This collection could not be loaded.",
+      "results_one": "{{count}} result",
+      "results_other": "{{count}} results",
+      "empty": "No matches. Try another city or reset your filters.",
+      "pagination": "Gallery pages"
     }
   },
   "extension": {

@@ -60,7 +60,13 @@ export function DetailMasthead({
   return (
     <header className={className}>
       <div className={cn('flex flex-wrap items-center gap-2', compact ? 'mb-2' : 'mb-4')}>
-        <RouteBullet type={type} size={44} letter={letter} track={track} label={bulletLabel} />
+        <RouteBullet
+          type={type}
+          size={compact ? 32 : 44}
+          letter={letter}
+          track={track}
+          label={bulletLabel}
+        />
         {eyebrow && <span className="text-2xs font-bold uppercase tracking-label">{eyebrow}</span>}
         {status && (
           <span className="rounded-element border border-input bg-surface-container-high px-4 py-2 text-2xs font-bold uppercase tracking-label shadow-soft">
@@ -68,7 +74,12 @@ export function DetailMasthead({
           </span>
         )}
       </div>
-      <h1 className="m-0 break-words font-display text-display leading-none tracking-tight md:text-hero">
+      <h1
+        className={cn(
+          'm-0 break-words font-display leading-none tracking-tight',
+          compact ? 'text-headline md:text-display' : 'text-display md:text-hero',
+        )}
+      >
         {title}
       </h1>
       {lead && (

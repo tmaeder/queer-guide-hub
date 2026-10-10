@@ -27,6 +27,8 @@ interface LGBTJurisdictionInfoProps {
   countryName?: string;
   countryCode?: string;
   style?: React.CSSProperties;
+  /** The country section supplies the heading and surrounding surface. */
+  embedded?: boolean;
 }
 
 /**
@@ -59,6 +61,7 @@ export default function LGBTJurisdictionInfo({
   country,
   className = '',
   style,
+  embedded = false,
 }: LGBTJurisdictionInfoProps) {
   const { t } = useTranslation();
   if (!country) return null;
@@ -84,7 +87,15 @@ export default function LGBTJurisdictionInfo({
     const isMatrix = section === 'antiDiscrimination' || section === 'criminalJustice';
 
     const rows = (
-      <div className={isMatrix ? 'flex flex-col' : 'flex flex-col gap-1'}>
+      <div
+        className={
+          embedded
+            ? 'flex flex-col divide-y divide-border-hairline [&>div]:py-4'
+            : isMatrix
+              ? 'flex flex-col'
+              : 'flex flex-col gap-1'
+        }
+      >
         {topics.map((topic) => {
           // --- Criminalisation: penalty detail + the death-penalty split ---
           if (topic.slug === 'criminalisation') {
@@ -234,17 +245,37 @@ export default function LGBTJurisdictionInfo({
             const data = country[topic.column] as Record<string, unknown> | null;
             const since = (data?.so_since || data?.gi_since) as string | undefined;
             return (
-              <div key={topic.slug} className="flex items-center gap-4 py-2">
+              <div
+                key={topic.slug}
+                className={
+                  embedded
+                    ? 'flex flex-wrap items-center gap-4 py-4 sm:flex-nowrap'
+                    : 'flex items-center gap-4 py-2'
+                }
+              >
                 <topic.icon
                   size={15}
                   className="shrink-0 text-muted-foreground"
                   aria-hidden="true"
                 />
-                <p className="min-w-0 flex-1 text-13 font-medium leading-snug">
+                <p
+                  className={
+                    embedded
+                      ? 'min-w-0 flex-1 basis-[calc(100%-32px)] text-13 font-medium leading-snug sm:basis-auto'
+                      : 'min-w-0 flex-1 text-13 font-medium leading-snug'
+                  }
+                >
                   {topicLabel(t, topic)}
+                  {embedded && since && (
+                    <span className="mt-1 block text-xs2 font-normal text-muted-foreground">
+                      {since}
+                    </span>
+                  )}
                 </p>
-                <ProtectionCells data={data} />
-                {since && <span className="shrink-0 text-xs2 text-muted-foreground">{since}</span>}
+                <ProtectionCells data={data} presentation={embedded ? 'table' : 'compact'} />
+                {!embedded && since && (
+                  <span className="shrink-0 text-xs2 text-muted-foreground">{since}</span>
+                )}
               </div>
             );
           }
@@ -283,46 +314,62 @@ export default function LGBTJurisdictionInfo({
       <RightsSection
         key={section}
         section={section}
+        comfortable={embedded}
         summary={summariseSection(country, section)}
-        columnHeader={section === 'antiDiscrimination' ? <ProtectionCellsHeader /> : undefined}
+        columnHeader={
+          isMatrix ? (
+            <ProtectionCellsHeader presentation={embedded ? 'table' : 'compact'} />
+          ) : undefined
+        }
       >
         {rows}
       </RightsSection>
     );
   };
 
+  const body = (
+    <>
+      <LensVerdictSummary
+        country={country}
+        className={embedded ? 'mb-6' : 'mb-2'}
+        columns={embedded}
+      />
+      {RIGHT_SECTION_ORDER.map(renderSection)}
+      <div className="pt-2">
+        <SourceLine className="text-xs2" provenance={rightsProvenance} />
+      </div>
+    </>
+  );
+
+  if (embedded) {
+    return (
+      <div className={`max-w-5xl ${className}`} style={style}>
+        <div className="mb-4">
+          <SourceLine
+            updatedAt={country.lgbti_data_last_updated}
+            showLink={false}
+            provenance={rightsProvenance}
+          />
+        </div>
+        {body}
+      </div>
+    );
+  }
+
   return (
     <Card className={className} style={style}>
       <CardHeader>
-        <div className="flex items-center justify-between gap-4">
-          <CardTitle>
-            <Shield size={20} aria-hidden="true" />
-            {t('country.rights.title', 'LGBTI rights overview')}
-          </CardTitle>
-        </div>
+        <CardTitle>
+          <Shield size={20} aria-hidden="true" />
+          {t('country.rights.title', 'LGBTI rights overview')}
+        </CardTitle>
         <SourceLine
           updatedAt={country.lgbti_data_last_updated}
           showLink={false}
           provenance={rightsProvenance}
         />
       </CardHeader>
-      <CardContent>
-        {/*
-          Leads the card. It is also the only verdict here now: the composite
-          equality score used to sit in the header, and one number could not
-          state three very different situations — 82 countries have LGB and
-          trans verdicts that disagree.
-        */}
-        <LensVerdictSummary country={country} className="mb-2" />
-
-        {RIGHT_SECTION_ORDER.map(renderSection)}
-
-        <div className="pt-2">
-          {/* Footer citation takes the same provenance: a country ILGA does not
-              cover must not carry an ILGA link at either end of the card. */}
-          <SourceLine className="text-xs2" provenance={rightsProvenance} />
-        </div>
-      </CardContent>
+      <CardContent>{body}</CardContent>
     </Card>
   );
 }
