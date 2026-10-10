@@ -21,6 +21,11 @@ export function useUserRelationships() {
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [relationships, setRelationships] = useState<UserRelationship[]>([]);
+  // `loading` only guards action buttons. These two let a list tell "not
+  // fetched yet" and "fetch failed" apart from "genuinely empty" — without
+  // them all three rendered the same "no friends" empty state.
+  const [hasLoaded, setHasLoaded] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   // Fetch all relationships for the current user
   const fetchRelationships = async () => {
@@ -35,8 +40,10 @@ export function useUserRelationships() {
 
       if (error) throw error;
       setRelationships((data || []) as UserRelationship[]);
+      setError(null);
     } catch (error) {
       console.error('Error fetching relationships:', error);
+      setError(error instanceof Error ? error.message : String(error));
       toast({
         title: "Error",
         description: "Failed to fetch relationships",
@@ -44,6 +51,7 @@ export function useUserRelationships() {
       });
     } finally {
       setLoading(false);
+      setHasLoaded(true);
     }
   };
 
@@ -262,6 +270,18 @@ export function useUserRelationships() {
     );
   };
 
+  // Get pending friend requests the current user sent and the other side
+  // has not answered yet.
+  const getSentRequests = () => {
+    if (!user) return [];
+
+    return relationships.filter(r =>
+      r.relationship_type === 'friend' &&
+      r.status === 'pending' &&
+      r.user_id === user.id
+    );
+  };
+
   useEffect(() => {
     if (user) {
       // eslint-disable-next-line react-hooks/set-state-in-effect -- effect synchronizes state with external props/data; React Compiler can't infer the sync direction. Documented exemption from the eslint.config.js staged-ratchet plan.
@@ -273,6 +293,8 @@ export function useUserRelationships() {
   return {
     relationships,
     loading,
+    hasLoaded,
+    error,
     addFriend,
     blockUser,
     acceptFriendRequest,
@@ -281,6 +303,7 @@ export function useUserRelationships() {
     getRelationshipStatus,
     getFriends,
     getPendingRequests,
+    getSentRequests,
     refetch: fetchRelationships
   };
 }

@@ -2674,7 +2674,21 @@
       "subtitle": "내 연결 관리",
       "gate": "친구를 보려면 로그인하세요.",
       "requests": "요청",
-      "sentRequest": "친구 요청을 보냈습니다"
+      "sentRequest": "친구 요청을 보냈습니다",
+      "loadError": "친구 목록을 불러오지 못했습니다.",
+      "empty": {
+        "title": "아직 친구가 없습니다.",
+        "description": "연결할 사람을 찾아보세요.",
+        "cta": "사람 찾기",
+        "pendingSent_one": "답변을 기다리는 보낸 요청이 {{count}}개 있습니다. 요청 탭을 확인하세요.",
+        "pendingSent_other": "답변을 기다리는 보낸 요청이 {{count}}개 있습니다. 요청 탭을 확인하세요."
+      },
+      "requestsEmpty": "대기 중인 친구 요청이 없습니다.",
+      "received": "받은 요청",
+      "sent": "보낸 요청",
+      "waitingForAnswer": "답변 대기 중",
+      "pendingBadge": "대기 중",
+      "cancelRequest": "취소"
     },
     "entityDetail": {
       "milestoneNotFoundTitle": "이정표를 찾을 수 없습니다",
@@ -3693,6 +3707,9 @@
       "blurb": "[KO] Pick a few. They shape what we suggest, and they are how other members find people with something in common.",
       "blurbSignedOut": "[KO] Sign in to pick a few. They shape what we suggest, and they are how other members find people with something in common.",
       "count": "[KO] {{count}} selected"
+    },
+    "friends": {
+      "discover": "사람 찾기"
     }
   },
   "hub": {

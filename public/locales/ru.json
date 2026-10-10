@@ -2710,7 +2710,21 @@
       "subtitle": "Управляйте своими связями",
       "gate": "Войдите, чтобы увидеть своих друзей.",
       "requests": "Запросы",
-      "sentRequest": "Отправил(а) вам запрос в друзья"
+      "sentRequest": "Отправил(а) вам запрос в друзья",
+      "loadError": "Не удалось загрузить список друзей.",
+      "empty": {
+        "title": "Пока нет друзей.",
+        "description": "Найди людей, с которыми можно познакомиться.",
+        "cta": "Найти людей",
+        "pendingSent_one": "У тебя {{count}} отправленный запрос ждёт ответа. Смотри вкладку «Запросы».",
+        "pendingSent_other": "У тебя {{count}} отправленных запросов ждут ответа. Смотри вкладку «Запросы»."
+      },
+      "requestsEmpty": "Нет открытых запросов в друзья.",
+      "received": "Полученные",
+      "sent": "Отправленные",
+      "waitingForAnswer": "Ждёт ответа",
+      "pendingBadge": "Ожидает",
+      "cancelRequest": "Отозвать"
     },
     "entityDetail": {
       "milestoneNotFoundTitle": "Веха не найдена",
@@ -3729,6 +3743,9 @@
       "blurb": "[RU] Pick a few. They shape what we suggest, and they are how other members find people with something in common.",
       "blurbSignedOut": "[RU] Sign in to pick a few. They shape what we suggest, and they are how other members find people with something in common.",
       "count": "[RU] {{count}} selected"
+    },
+    "friends": {
+      "discover": "Найти людей"
     }
   },
   "hub": {

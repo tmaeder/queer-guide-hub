@@ -2676,7 +2676,21 @@
       "subtitle": "Gestisci le tue connessioni",
       "gate": "Accedi per vedere i tuoi amici.",
       "requests": "Richieste",
-      "sentRequest": "Ti ha inviato una richiesta di amicizia"
+      "sentRequest": "Ti ha inviato una richiesta di amicizia",
+      "loadError": "Impossibile caricare le tue amicizie.",
+      "empty": {
+        "title": "Ancora nessuna amicizia.",
+        "description": "Trova persone con cui connetterti.",
+        "cta": "Trova persone",
+        "pendingSent_one": "Hai {{count}} richiesta inviata in attesa di risposta. Vedi la scheda Richieste.",
+        "pendingSent_other": "Hai {{count}} richieste inviate in attesa di risposta. Vedi la scheda Richieste."
+      },
+      "requestsEmpty": "Nessuna richiesta di amicizia aperta.",
+      "received": "Ricevute",
+      "sent": "Inviate",
+      "waitingForAnswer": "In attesa di risposta",
+      "pendingBadge": "In attesa",
+      "cancelRequest": "Ritira"
     },
     "entityDetail": {
       "milestoneNotFoundTitle": "Pietra miliare non trovata",
@@ -3695,6 +3709,9 @@
       "blurb": "[IT] Pick a few. They shape what we suggest, and they are how other members find people with something in common.",
       "blurbSignedOut": "[IT] Sign in to pick a few. They shape what we suggest, and they are how other members find people with something in common.",
       "count": "[IT] {{count}} selected"
+    },
+    "friends": {
+      "discover": "Trova persone"
     }
   },
   "hub": {

@@ -2755,7 +2755,21 @@
       "subtitle": "Manage your connections",
       "gate": "Please sign in to view your friends.",
       "requests": "Requests",
-      "sentRequest": "Sent you a friend request"
+      "sentRequest": "Sent you a friend request",
+      "loadError": "Could not load your friends.",
+      "empty": {
+        "title": "No friends yet.",
+        "description": "Find people to connect with.",
+        "cta": "Find people",
+        "pendingSent_one": "You have {{count}} sent request waiting for an answer. See the Requests tab.",
+        "pendingSent_other": "You have {{count}} sent requests waiting for an answer. See the Requests tab."
+      },
+      "requestsEmpty": "No open friend requests.",
+      "received": "Received",
+      "sent": "Sent",
+      "waitingForAnswer": "Waiting for an answer",
+      "pendingBadge": "Pending",
+      "cancelRequest": "Withdraw"
     },
     "feed": {
       "eyebrow": "Community",
@@ -3751,6 +3765,9 @@
       "blurb": "Pick a few. They shape what we suggest, and they are how other members find people with something in common.",
       "blurbSignedOut": "Sign in to pick a few. They shape what we suggest, and they are how other members find people with something in common.",
       "count": "{{count}} selected"
+    },
+    "friends": {
+      "discover": "Find people"
     }
   },
   "hub": {

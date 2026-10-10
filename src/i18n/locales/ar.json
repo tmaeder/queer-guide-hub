@@ -2684,7 +2684,21 @@
       "subtitle": "أدر اتصالاتك",
       "gate": "سجّل الدخول لعرض أصدقائك.",
       "requests": "الطلبات",
-      "sentRequest": "أرسل إليك طلب صداقة"
+      "sentRequest": "أرسل إليك طلب صداقة",
+      "loadError": "تعذّر تحميل قائمة أصدقائك.",
+      "empty": {
+        "title": "لا يوجد أصدقاء بعد.",
+        "description": "ابحث عن أشخاص للتواصل معهم.",
+        "cta": "ابحث عن أشخاص",
+        "pendingSent_one": "لديك طلب مُرسَل واحد ({{count}}) بانتظار الرد. راجع تبويب الطلبات.",
+        "pendingSent_other": "لديك {{count}} طلبات مُرسَلة بانتظار الرد. راجع تبويب الطلبات."
+      },
+      "requestsEmpty": "لا توجد طلبات صداقة مفتوحة.",
+      "received": "المستلمة",
+      "sent": "المرسلة",
+      "waitingForAnswer": "بانتظار الرد",
+      "pendingBadge": "قيد الانتظار",
+      "cancelRequest": "سحب"
     },
     "entityDetail": {
       "milestoneNotFoundTitle": "المحطة غير موجودة",
@@ -3703,6 +3717,9 @@
       "blurb": "[AR] Pick a few. They shape what we suggest, and they are how other members find people with something in common.",
       "blurbSignedOut": "[AR] Sign in to pick a few. They shape what we suggest, and they are how other members find people with something in common.",
       "count": "[AR] {{count}} selected"
+    },
+    "friends": {
+      "discover": "ابحث عن أشخاص"
     }
   },
   "hub": {

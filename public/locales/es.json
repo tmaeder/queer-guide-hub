@@ -2676,7 +2676,21 @@
       "subtitle": "Gestiona tus conexiones",
       "gate": "Inicia sesión para ver tus amigos.",
       "requests": "Solicitudes",
-      "sentRequest": "Te envió una solicitud de amistad"
+      "sentRequest": "Te envió una solicitud de amistad",
+      "loadError": "No se pudieron cargar tus amistades.",
+      "empty": {
+        "title": "Todavía no tienes amistades.",
+        "description": "Encuentra gente con quien conectar.",
+        "cta": "Encontrar gente",
+        "pendingSent_one": "Tienes {{count}} solicitud enviada esperando respuesta. Mira la pestaña Solicitudes.",
+        "pendingSent_other": "Tienes {{count}} solicitudes enviadas esperando respuesta. Mira la pestaña Solicitudes."
+      },
+      "requestsEmpty": "No hay solicitudes de amistad abiertas.",
+      "received": "Recibidas",
+      "sent": "Enviadas",
+      "waitingForAnswer": "Esperando respuesta",
+      "pendingBadge": "Pendiente",
+      "cancelRequest": "Retirar"
     },
     "entityDetail": {
       "milestoneNotFoundTitle": "Hito no encontrado",
@@ -3695,6 +3709,9 @@
       "blurb": "[ES] Pick a few. They shape what we suggest, and they are how other members find people with something in common.",
       "blurbSignedOut": "[ES] Sign in to pick a few. They shape what we suggest, and they are how other members find people with something in common.",
       "count": "[ES] {{count}} selected"
+    },
+    "friends": {
+      "discover": "Encontrar gente"
     }
   },
   "hub": {
