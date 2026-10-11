@@ -8,12 +8,27 @@ import { test, expect } from '@playwright/test';
  */
 
 // Seed the cookie-consent key so the banner doesn't intercept clicks.
+//
+// The value must be the SHAPE `useCookieConsent` reads, not a bare string: the
+// hook does `JSON.parse(stored)` and then requires `data.version === '1.0'`, so
+// a plain 'accepted' throws inside that parse, is caught, and falls through to
+// `setShowBanner(true)` — i.e. the suppression silently did nothing. Measured
+// on prod 2026-10-05: correct payload -> 0 banner regions, bare string -> 1,
+// identical to writing nothing at all. Necessary-only, per the repo's
+// decline-non-essential default.
 test.beforeEach(async ({ context }) => {
   await context.addInitScript(() => {
     try {
-      localStorage.setItem('queer-guide-cookie-consent', 'accepted');
+      localStorage.setItem(
+        'queer-guide-cookie-consent',
+        JSON.stringify({
+          preferences: { necessary: true, functional: false, analytics: false, marketing: false },
+          version: '1.0',
+          timestamp: new Date(0).toISOString(),
+        }),
+      );
     } catch {
-      /* ignore */
+      /* storage unavailable */
     }
   });
 });
