@@ -180,11 +180,22 @@ for (const route of ROUTES) {
         await expect(page.getByTestId('country-map')).toBeVisible();
         await expect(page.locator('#cities')).toBeVisible();
         await expect(page.locator('#travel')).toBeVisible();
+        // Discovery-first order. This said `rights` third and has been failing
+        // since the photo gallery landed in this same PR: the real order is
+        // cities, travel, photos, rights, trans, venues, events, about, stats,
+        // news — `rights` moved to FOURTH, it did not disappear.
+        //
+        // `rights` is now asserted separately rather than left to this slice,
+        // which was the only thing guarding it. Correcting the slice alone
+        // would have quietly stopped checking that a country page publishes a
+        // legal section at all — the one section here that carries safety
+        // weight.
         expect(
           await page
             .locator('article section[id]')
             .evaluateAll((els) => els.map((el) => el.id).slice(0, 3)),
-        ).toEqual(['cities', 'travel', 'rights']);
+        ).toEqual(['cities', 'travel', 'photos']);
+        await expect(page.locator('#rights')).toHaveCount(1);
       } else {
         await expect(page.getByTestId('single-rail')).toBeVisible();
       }
