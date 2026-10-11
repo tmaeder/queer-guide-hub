@@ -2707,7 +2707,21 @@
       "subtitle": "Faça a gestão das suas conexões",
       "gate": "Inicie sessão para ver os seus amigos.",
       "requests": "Solicitações",
-      "sentRequest": "Enviou um pedido de amizade"
+      "sentRequest": "Enviou um pedido de amizade",
+      "loadError": "Não foi possível carregar suas amizades.",
+      "empty": {
+        "title": "Ainda sem amizades.",
+        "description": "Encontre pessoas para se conectar.",
+        "cta": "Encontrar pessoas",
+        "pendingSent_one": "Você tem {{count}} pedido enviado aguardando resposta. Veja a aba Pedidos.",
+        "pendingSent_other": "Você tem {{count}} pedidos enviados aguardando resposta. Veja a aba Pedidos."
+      },
+      "requestsEmpty": "Nenhum pedido de amizade em aberto.",
+      "received": "Recebidos",
+      "sent": "Enviados",
+      "waitingForAnswer": "Aguardando resposta",
+      "pendingBadge": "Pendente",
+      "cancelRequest": "Retirar"
     },
     "entityDetail": {
       "milestoneNotFoundTitle": "Marco não encontrado",
@@ -3726,6 +3740,9 @@
       "blurb": "[PT] Pick a few. They shape what we suggest, and they are how other members find people with something in common.",
       "blurbSignedOut": "[PT] Sign in to pick a few. They shape what we suggest, and they are how other members find people with something in common.",
       "count": "[PT] {{count}} selected"
+    },
+    "friends": {
+      "discover": "Encontrar pessoas"
     }
   },
   "hub": {
