@@ -204,13 +204,35 @@ describe('hub crawl links — rendering', () => {
     await expect(mod.buildHubLinksHtml({} as never, '/venues')).resolves.toBe('');
   });
 
-  it('/places links both cities and countries', async () => {
+  // This was one test, '/places links both cities and countries', and it was
+  // the ONLY place in this file asserting either link kind. #4314 noindexed
+  // /places (it is a client-side LocalizedRedirect to /travel, so it served copy
+  // and a sitemap entry at a URL that bounces) but left its hubLinks entry
+  // behind, so the test kept passing against a route no crawler should reach —
+  // and when the orphan was removed, the city assertion went with it.
+  //
+  // Split per route, so each hub's links are asserted where they actually live
+  // and neither can be lost by removing the other.
+  it('/cities links cities', async () => {
+    const { mod } = await load({ cities: [{ slug: 'berlin', name: 'Berlin' }] });
+    const html = await mod.buildHubLinksHtml({} as never, '/cities');
+    expect(html).toContain('href="/city/berlin"');
+  });
+
+  it('/countries links countries', async () => {
+    const { mod } = await load({ countries: [{ slug: 'germany', name: 'Germany' }] });
+    const html = await mod.buildHubLinksHtml({} as never, '/countries');
+    expect(html).toContain('href="/country/germany"');
+  });
+
+  // The #4314 contract, which nothing asserted before: a route that redirects
+  // must emit no block at all. Without this, re-adding a '/places' entry — the
+  // orphan this change removed — would pass every other test in this file.
+  it('/places emits no block, because it redirects and is noindexed', async () => {
     const { mod } = await load({
       cities: [{ slug: 'berlin', name: 'Berlin' }],
       countries: [{ slug: 'germany', name: 'Germany' }],
     });
-    const html = await mod.buildHubLinksHtml({} as never, '/places');
-    expect(html).toContain('href="/city/berlin"');
-    expect(html).toContain('href="/country/germany"');
+    await expect(mod.buildHubLinksHtml({} as never, '/places')).resolves.toBe('');
   });
 });
