@@ -77,9 +77,20 @@ async function rowKey(page: Page): Promise<string> {
  * Selecting the option already showing is a no-op and must not wait for a
  * change that will never come.
  */
+async function openRecordVisibility(page: Page) {
+  const trigger = page.getByRole('combobox', { name: TOGGLE });
+  if (!(await trigger.isVisible())) {
+    await page.getByRole('button', { name: /View settings, current layout:/ }).click();
+  }
+}
+
 async function selectView(page: Page, option: string) {
+  await openRecordVisibility(page);
   const trigger = page.getByLabel(TOGGLE);
-  if ((await trigger.textContent())?.trim() === option) return;
+  if ((await trigger.textContent())?.trim() === option) {
+    await page.keyboard.press('Escape');
+    return;
+  }
 
   // The baseline must be a REAL row set. Capturing it while the table is still
   // loading yields '', and then the OUTGOING slice finishing its own fetch
@@ -90,6 +101,7 @@ async function selectView(page: Page, option: string) {
   const before = await rowKey(page);
   await trigger.click();
   await page.getByRole('option', { name: option, exact: true }).click();
+  await page.keyboard.press('Escape');
   await expect.poll(() => rowKey(page), { timeout: 30_000 }).not.toBe(before);
   await expect(rows(page).first()).toBeVisible();
 }
@@ -99,7 +111,11 @@ test.describe('archived state in the content list', () => {
     test.skip(!(await isAuthed(page)), 'requires an admin session (E2E_ADMIN_EMAIL/PASSWORD)');
   });
 
-  test('the toggle appears only for a type that can express an archived state', async ({ page }) => {
+  test('the toggle appears only for a type that can express an archived state', async ({
+    page,
+  }) => {
+    // Record visibility is disclosed from view settings.
+    await openRecordVisibility(page);
     // venues archive via review_status='archived'.
     await expect(page.getByLabel(TOGGLE)).toBeVisible();
 
@@ -109,6 +125,7 @@ test.describe('archived state in the content list', () => {
     // unconditionally, which is the bug it exists to prevent.
     await page.goto('/admin/content/countries', { waitUntil: 'domcontentloaded' });
     await expect(rows(page).first()).toBeVisible({ timeout: 20_000 });
+    await page.getByRole('button', { name: /View settings, current layout:/ }).click();
     await expect(page.getByLabel(TOGGLE)).toHaveCount(0);
   });
 
@@ -119,8 +136,10 @@ test.describe('archived state in the content list', () => {
     const archivedRows = await rows(page).count();
     // Non-vacuity: prod carries ~1.6k archived venues. Zero rows here would make
     // the badge assertion below trivially true.
-    expect(archivedRows, 'archived slice returned no rows — the assertion below would be vacuous')
-      .toBeGreaterThan(0);
+    expect(
+      archivedRows,
+      'archived slice returned no rows — the assertion below would be vacuous',
+    ).toBeGreaterThan(0);
     await expect(page.locator(BADGE)).toHaveCount(archivedRows);
 
     await selectView(page, 'Live only');
@@ -132,6 +151,7 @@ test.describe('archived state in the content list', () => {
     // A ghost city is not an archived place — it is not a place. Collapsing the
     // per-type vocabulary would misdescribe the row.
     await page.goto('/admin/content/cities', { waitUntil: 'domcontentloaded' });
+    await openRecordVisibility(page);
     await expect(page.getByLabel(TOGGLE)).toBeVisible({ timeout: 20_000 });
     await selectView(page, 'Not a place');
 
