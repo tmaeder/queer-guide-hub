@@ -1,12 +1,13 @@
 /**
  * @vitest-environment jsdom
  */
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import userEvent from '@testing-library/user-event';
 import { render, screen } from '@testing-library/react';
 import { MemoryRouter, Route, Routes } from 'react-router';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
-const state = vi.hoisted(() => ({ country: null as unknown }));
+const state = vi.hoisted(() => ({ country: null as unknown, cities: [] as unknown[] }));
 const milestones = vi.hoisted(() => ({ data: [] as unknown[] }));
 
 vi.mock('@/hooks/useAuth', () => ({
@@ -19,7 +20,7 @@ vi.mock('@/hooks/useWorldBankData', () => ({ useWorldBankData: () => ({ hasData:
 vi.mock('@/hooks/useSDGData', () => ({ useSDGData: () => ({ hasData: false }) }));
 vi.mock('@/hooks/usePlaces', () => ({
   useOptimizedCountry: () => ({ country: state.country, loading: false, refetch: vi.fn() }),
-  useOptimizedCities: () => ({ cities: [], loading: false }),
+  useOptimizedCities: () => ({ cities: state.cities, loading: false }),
 }));
 vi.mock('@/hooks/useVenues', () => ({
   useVenues: () => ({ venues: [], loading: false, fetchVenues: vi.fn() }),
@@ -38,6 +39,7 @@ vi.mock('@/hooks/useNews', () => ({
 vi.mock('@/hooks/useMilestones', () => ({
   useMilestonesForCountry: () => ({ data: milestones.data }),
 }));
+vi.mock('@/components/geo/CountryMap', () => ({ CountryMap: () => <div data-testid="map" /> }));
 // maplibre's worker URL is not resolvable under vitest.
 vi.mock('@/components/map/EntityMap', () => ({ EntityMap: () => <div data-testid="map" /> }));
 vi.mock('@/components/admin/AdminEditButton', () => ({ AdminEditButton: () => null }));
@@ -81,6 +83,88 @@ const germany = {
 };
 
 describe('CountryDetail', () => {
+  beforeEach(() => {
+    state.country = germany;
+    state.cities = [];
+    milestones.data = [];
+    window.history.replaceState(null, '', '/');
+  });
+
+  it('shows cities before travel and rights, with facts visible while options are collapsed', async () => {
+    state.country = { ...germany, government_type: 'A lengthy government description' };
+    state.cities = [{ id: 'berlin', name: 'Berlin', slug: 'berlin' }];
+    const { container } = renderPage();
+    expect(
+      [...container.querySelectorAll('article section[id]')].map((el) => el.id).slice(0, 3),
+    ).toEqual(['cities', 'travel', 'rights']);
+    expect(screen.getByRole('link', { name: /^Berlin$/ })).toBeVisible();
+    expect(screen.getByText('Capital')).toBeVisible();
+    const travel = container.querySelector('#travel-detail');
+    expect(travel).not.toBeVisible();
+    expect(screen.getByText('A lengthy government description')).not.toBeVisible();
+    const toggle = container.querySelector(
+      'button[aria-controls="travel-detail"]',
+    ) as HTMLButtonElement;
+    expect(toggle).toHaveAttribute('aria-expanded', 'false');
+    await userEvent.click(toggle);
+    expect(toggle).toHaveAttribute('aria-expanded', 'true');
+    expect(travel).toBeVisible();
+    expect(screen.getByText('A lengthy government description')).toBeVisible();
+    expect(screen.queryByText('LGBTI rights overview')).not.toBeInTheDocument();
+  });
+
+  it('retains one map with travel essentials when there are no listed cities', () => {
+    state.country = { ...germany, latitude: 52.5, longitude: 13.4 };
+    const { container } = renderPage();
+    expect(container.querySelector('#cities')).toBeNull();
+    expect(screen.getAllByTestId('map')).toHaveLength(1);
+    expect(container.querySelector('#travel')?.contains(screen.getByTestId('map'))).toBe(true);
+    expect(screen.getByText('Capital')).toBeVisible();
+  });
+
+  it('keeps a visible photo album after travel, excluding duplicate and flagged photos', async () => {
+    state.country = { ...germany, image_url: 'https://img.queer.guide/germany.jpg' };
+    state.cities = [
+      { id: 'c1', name: 'Berlin', slug: 'berlin', image_url: 'https://img.queer.guide/berlin.jpg' },
+      {
+        id: 'c2',
+        name: 'Duplicate',
+        slug: 'duplicate',
+        image_url: 'https://img.queer.guide/germany.jpg',
+      },
+      {
+        id: 'c3',
+        name: 'Flagged',
+        slug: 'flagged',
+        image_url: 'https://img.queer.guide/flagged.jpg',
+        image_flagged: true,
+      },
+    ];
+    const { container } = renderPage();
+    const album = container.querySelector('#photos')!;
+    expect(album).toBeVisible();
+    expect(album.querySelectorAll('button')).toHaveLength(2);
+    expect(
+      [...container.querySelectorAll('article section[id]')].map((el) => el.id).slice(0, 4),
+    ).toEqual(['cities', 'travel', 'photos', 'rights']);
+    await userEvent.click(album.querySelector('button')!);
+    expect(screen.getByRole('dialog', { name: 'Germany' })).toBeVisible();
+    await userEvent.keyboard('{Escape}');
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+  });
+
+  it('keeps warnings before city discovery for a criminalising destination', () => {
+    state.country = {
+      ...germany,
+      lgbti_criminalization: { legal: false, penalty: 'Life imprisonment' },
+    };
+    state.cities = [{ id: 'c1', name: 'A city', slug: 'a-city' }];
+    const { container } = renderPage();
+    const warning = screen.getByText(/Travel Warning/);
+    const cities = container.querySelector('#cities')!;
+    expect(warning.compareDocumentPosition(cities) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+
   it('renders the not-found stop when there is no such country', () => {
     state.country = null;
     renderPage();

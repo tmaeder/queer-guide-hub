@@ -3210,7 +3210,8 @@
       "news": "News",
       "map": "Karte",
       "history": "[DE] Legal record",
-      "historyNote": "[DE] What changed and when. Safety information without a date is not safety information."
+      "historyNote": "[DE] What changed and when. Safety information without a date is not safety information.",
+      "about": "Über {{country}}"
     },
     "practical": {
       "languages": "Sprachen",
@@ -3314,6 +3315,18 @@
       "title": "[DE] Compare the law elsewhere",
       "body": "[DE] Every country page carries the same legal breakdown, from the same sources, with the date it was checked.",
       "rights": "[DE] Rights across the world"
+    },
+    "overview": "Überblick",
+    "gallery": {
+      "allTypes": "Alle Kategorien",
+      "verifiedOnly": "Nur verifizierte Orte",
+      "freeOnly": "Nur kostenlose Events",
+      "invalidDates": "Wähle ein Enddatum nach dem Startdatum.",
+      "error": "Diese Sammlung konnte nicht geladen werden.",
+      "results_one": "{{count}} Ergebnis",
+      "results_other": "{{count}} Ergebnisse",
+      "empty": "Keine Treffer. Probiere eine andere Stadt oder setze die Filter zurück.",
+      "pagination": "Galerieseiten"
     }
   },
   "inbox": {
