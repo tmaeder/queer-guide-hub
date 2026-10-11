@@ -645,7 +645,7 @@ $merge$;
 update public.dedup_review_queue q
    set status = 'approved',
        reviewed_at = now(),
-       reviewer_note = 'manual multi-source cruising dedup 99991791634999'
+       reviewer_note = 'manual multi-source cruising dedup 99991791712242'
  where q.status = 'open'
    and q.entity_type = 'venue'
    and exists (select 1 from (select keep_id, keep_id m from _ms_pairs union select keep_id, drop_id from _ms_pairs) a
