@@ -2225,43 +2225,65 @@ const DETAIL_ROUTE_RE =
 // nothing canonicalises.
 
 // Static SPA sub-routes that share a segment with detail routes
-// (/venues/guides, /events/guides, legacy /venues/leaderboard redirect, …).
-// These are never entity slugs — treating them as one made the middleware
-// return a hard 404 for the whole page.
-const RESERVED_DETAIL_SLUGS = new Set([
-  'guides',
-  'leaderboard',
-  'passport',
-  'share',
-  'hotels',
-  'events',
-  'news',
-  'marketplace',
-  'travel',
-  'groups',
-  'resources',
-  // Missing entries here are invisible until someone loads the page: the route
-  // exists in the SPA, but the edge hard-404s it before React ever runs.
-  // /news/all (the "Open archive" CTA), /news/me and /personalities/milestones
-  // were all dead in production this way. `reservedDetailSlugs.test.ts` parses
-  // src/routes.tsx and fails if a static sub-route is missing from this set.
-  'all',
-  'me',
-  'milestones',
+// (/venues/guides, /news/all, /city/compare, …). These are never entity slugs
+// — treating one as an entity slug made the middleware return a hard 404 for
+// the whole page before React ever ran. /news/all (the "Open archive" CTA),
+// /news/me and /venues/guides were all dead in production that way.
+//
+// Keyed BY NAMESPACE, deliberately. This was a FLAT set, so a slug reserved
+// for one route was reserved under every detail kind: `/news/all` is a real
+// page, and reserving `all` globally made `/tags/all`, `/city/all`,
+// `/venues/all` and `/personalities/all` answer 200 at URLs with no row —
+// four soft-404s to protect one page. Measured on prod 2026-10-10 with a
+// Googlebot UA: /tags/all 200 for a DEPRECATED tag, while /tags/us (an
+// equally deprecated tag that happened not to be reserved) correctly 404'd.
+// The flat set also carried three entries no route ever needed — `share`,
+// `marketplace` and `milestones` all resolve under a first segment that is
+// not a detail kind at all (/marketplace/share, /admin/personalities/
+// milestones), so they only ever widened the hole.
+//
+// Every entry must correspond to a real static route in src/routes.tsx under
+// THAT first segment. `reservedDetailSlugs.test.ts` resolves the route table's
+// JSX nesting and checks both directions: a listed route must not be a detail
+// path, and the same slug under a namespace that does not own it must be.
+const RESERVED_DETAIL_SLUGS: Record<string, ReadonlySet<string>> = {
+  venues: new Set([
+    'events',
+    'groups',
+    'guides',
+    'hotels',
+    'leaderboard',
+    'marketplace',
+    'news',
+    'passport',
+    'resources',
+    'travel',
+  ]),
+  events: new Set(['guides']),
+  news: new Set(['all', 'me']),
   // /city/compare — the two-city comparison tool, not a city slug.
-  'compare',
-  // /tags/interactions — the drug interaction chart. Not a tag slug; the SPA
-  // route also reserves the name so no tag can ever claim it.
-  'interactions',
-  // /tags/sti-guide — the STI transmission/testing/protection guide. Same
-  // shape as interactions: a static page under the tag namespace.
-  'sti-guide',
-]);
+  city: new Set(['compare']),
+  // /tags/interactions (drug interaction chart) and /tags/sti-guide. The SPA
+  // routes also reserve the names so no tag can ever claim them.
+  tags: new Set(['interactions', 'sti-guide']),
+};
+
+// `tag/:slug` and `personality/:slug` are SlugAliasRedirect routes onto the
+// plural namespace, so they must inherit its reservations — otherwise
+// /tag/interactions hard-404s at the edge before the redirect can run.
+// The singular forms with no SPA route at all (`venue`, `event`, `hotel`,
+// `village`) are deliberately absent: a hard 404 there is honest.
+const DETAIL_KIND_ALIASES: Record<string, string> = {
+  tag: 'tags',
+  personality: 'personalities',
+};
 
 function matchDetailPath(pathname: string): RegExpMatchArray | null {
   const m = pathname.match(DETAIL_ROUTE_RE);
   if (!m) return null;
-  if (RESERVED_DETAIL_SLUGS.has(decodeURIComponent(m[2]).toLowerCase())) return null;
+  const kindRaw = m[1].toLowerCase();
+  const kind = DETAIL_KIND_ALIASES[kindRaw] ?? kindRaw;
+  if (RESERVED_DETAIL_SLUGS[kind]?.has(decodeURIComponent(m[2]).toLowerCase())) return null;
   return m;
 }
 
