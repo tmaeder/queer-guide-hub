@@ -160,6 +160,18 @@ export const STATIC_ROUTE_META: Record<string, RouteMeta> = {
     description:
       'A daily, ad-free feed of LGBTQ+ news from trusted outlets, deduplicated and tagged by topic.',
   },
+  // Same two-surface split as /tags/interactions below: reserving `all` in
+  // RESERVED_DETAIL_SLUGS (functions/_lib/detail.ts) stopped the hard 404, but
+  // the meta table is separate and the generic `/(news)/([^/]+)` matcher kept
+  // reading this as kind=news, slug="all". Measured on prod 2026-10-10 with a
+  // Googlebot UA: the real archive page served "All — New | Queer Guide" plus
+  // "All on Queer Guide — New listing curated by the LGBTQ+ community" — note
+  // the stripped plural, which is the tell that a listing template produced it.
+  '/news/all': {
+    title: 'LGBTQ+ News Archive | Queer Guide',
+    description:
+      'Every LGBTQ+ news story Queer Guide has published, searchable and filterable by topic, place and date.',
+  },
   '/podcasts': {
     title: 'LGBTQ+ Podcasts | Queer Guide',
     description:
@@ -478,6 +490,46 @@ export function canonicalUrl(pathname: string): string {
   return `${SITE_ORIGIN}${clean}`;
 }
 
+/**
+ * Static sub-routes whose element is a client-side `<Navigate>` /
+ * `LocalizedRedirect`, so the edge answers them 200 with React not yet run.
+ *
+ * They are also in RESERVED_DETAIL_SLUGS (functions/_lib/detail.ts) — they have
+ * to be, or the edge would hard-404 them before the redirect could run — and
+ * that reservation is exactly what left them visible to crawlers. Measured on
+ * prod 2026-10-10 with a Googlebot UA, every one served the generic listing
+ * template: /hotels/guides → "Guides — Hotel | Queer Guide", /news/all →
+ * "All — New | Queer Guide" (note the stripped plural, which is the tell that a
+ * `/(kind)/(slug)` matcher produced it rather than a real entry).
+ *
+ * Noindex is the fix here and a STATIC_ROUTE_META entry is NOT: sitemap-static.xml
+ * is `Object.keys(STATIC_ROUTE_META).filter(isIndexable)`, so giving a redirect
+ * source meta advertises it in the sitemap. Same call as `/shop` below, for the
+ * same reason, and `routeMetaContract.test.ts` enforces it.
+ *
+ * EXACT paths, never a `^/venues/` prefix — that would deindex the whole venue
+ * directory (~26k pages) to suppress ten stubs. `isIndexable` receives the
+ * locale-stripped `basePath`, so `/de/venues/hotels` is covered too, which is
+ * the localized gap an unprefixed `public/_redirects` rule cannot close.
+ *
+ * `/news/all` is deliberately ABSENT: it is a real page (NewsArchive), not a
+ * redirect, and it keeps its own meta entry above.
+ */
+const CLIENT_REDIRECT_STUBS = new Set([
+  '/venues/events',
+  '/venues/groups',
+  '/venues/guides',
+  '/venues/hotels',
+  '/venues/leaderboard',
+  '/venues/marketplace',
+  '/venues/news',
+  '/venues/passport',
+  '/venues/resources',
+  '/venues/travel',
+  '/events/guides',
+  '/news/me',
+]);
+
 export function isIndexable(pathname: string): boolean {
   // These Hub modules have useful anonymous content. The remaining modules are
   // personal, consent-gated, or signed-in workspaces.
@@ -485,6 +537,7 @@ export function isIndexable(pathname: string): boolean {
   if (new Set(['/hub/feed', '/hub/members', '/hub/groups', '/hub/people']).has(clean)) {
     return true;
   }
+  if (CLIENT_REDIRECT_STUBS.has(clean)) return false;
 
   const noindex = [
     /^\/auth(\/|$)/,
