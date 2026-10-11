@@ -125,17 +125,28 @@ const HUBS: Record<string, HubSpec[]> = {
       heading: 'LGBTQ+ city guides',
     },
   ],
-  '/places': [
-    {
-      table: 'cities',
-      labelColumn: 'name',
-      prefix: '/city/',
-      filter:
-        'slug=not.is.null&seo_indexable=eq.true&duplicate_of_id=is.null&shell_status=not.in.(ghost,merged)',
-      order: 'completeness_score.desc.nullslast,slug.asc',
-      limit: 60,
-      heading: 'LGBTQ+ city guides',
-    },
+  // Was '/places'. #4314 correctly stopped serving that route a body: it is a
+  // client-side LocalizedRedirect to /travel, so it was publishing copy and a
+  // sitemap entry at a URL that bounces, and it is noindexed now.
+  //
+  // It left this entry ORPHANED, and the two halves were NOT equally harmless.
+  // The cities spec duplicated '/cities' above — same table, same filter, same
+  // prefix, only a lower limit — so cities lost nothing. The countries spec was
+  // the ONLY country-prefixed spec in this file, so every country page lost its
+  // single crawler hub link. Measured on prod before this fix: zero links to a
+  // country detail page in the bot HTML of /places, /travel OR /countries.
+  //
+  // Rehomed on '/countries', not '/travel', for two reasons: it mirrors
+  // '/cities' (one hub per entity, which is exactly why cities survived this),
+  // and /travel is an intent landing page about planning rather than an index.
+  // /countries is already indexable and already gets an <article>; it simply
+  // had no entry here. buildHubLinksHtml is gated only on `detail`, so adding
+  // the key is sufficient — no routeBody or routeMeta entry is required.
+  //
+  // The guard that should have caught this did not, and that gap is closed in
+  // scripts/seo-hub-links.mjs: its '/places' row asserted '/city/' links, which
+  // '/cities' already covered, so no row ever checked for a country link.
+  '/countries': [
     {
       table: 'countries',
       labelColumn: 'name',
