@@ -135,9 +135,24 @@ test.describe('archived state in the content list', () => {
     await expect(page.getByLabel(TOGGLE)).toBeVisible({ timeout: 20_000 });
     await selectView(page, 'Not a place');
 
+    // `expect.poll`, not a bare `count()`. `selectView` settles the ROWS, and
+    // its own comment above records this test failing twice with "no ghost
+    // cities returned" and passing on the third attempt purely on load timing
+    // — but the fix went into `selectView` only, and the badge cell renders
+    // after the row it sits in. A one-shot `count()` therefore still reads
+    // "not painted yet" as "zero ghost cities", which is the same race one
+    // layer down. Observed failing this way on #4300, #4270 and #4266.
+    //
+    // This does NOT weaken the assertion: the poll still fails after its
+    // timeout, so a genuinely empty "Not a place" view — the thing the message
+    // describes — is still a loud failure rather than a pass.
     const badges = page.locator(BADGE);
-    const n = await badges.count();
-    expect(n, 'no ghost cities returned — nothing to assert the label on').toBeGreaterThan(0);
+    await expect
+      .poll(() => badges.count(), {
+        timeout: 20_000,
+        message: 'no ghost cities returned — nothing to assert the label on',
+      })
+      .toBeGreaterThan(0);
     await expect(badges.first()).toHaveText(/not a place/i);
   });
 
