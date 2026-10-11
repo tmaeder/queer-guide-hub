@@ -5,6 +5,7 @@
  * reason it surfaced. Replaces the three separate rails the page used to stack.
  */
 
+import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { RouteBullet } from '@/components/transit/RouteBullet';
@@ -117,6 +118,7 @@ interface Props {
 }
 
 export function EventMoreEvents({ eventId, city, limit = 8, className, compact = false }: Props) {
+  const { t } = useTranslation();
   const trackClick = useTrackClick();
   const { data, isLoading } = useQuery({
     queryKey: ['event-more-events', eventId, city ?? null, limit],
@@ -146,7 +148,9 @@ export function EventMoreEvents({ eventId, city, limit = 8, className, compact =
   if (compact) {
     return (
       <section className={className} aria-label="More events">
-        <h2 className="mb-2 text-body-lg font-bold">More events</h2>
+        <h2 className="mb-2 text-body-lg font-bold">
+          {t('events.detail.moreStops', 'Where to next?')}
+        </h2>
         <div className="grid gap-2 sm:grid-cols-3">
           {data.map((event) => (
             <LocalizedLink
@@ -160,9 +164,17 @@ export function EventMoreEvents({ eventId, city, limit = 8, className, compact =
               <RouteBullet type="event" size={28} />
               <div className="min-w-0">
                 <p className="line-clamp-2 text-13 font-bold leading-snug">{event.title}</p>
-                {event.city && (
-                  <p className="truncate text-2xs text-muted-foreground">{event.city}</p>
-                )}
+                <p className="truncate text-2xs text-muted-foreground">
+                  {[
+                    event.city,
+                    t(
+                      `events.detail.relatedReason.${event.reason === 'Same city' ? 'city' : event.reason === 'Similar vibe' ? 'similar' : 'tags'}`,
+                      event.reason,
+                    ),
+                  ]
+                    .filter(Boolean)
+                    .join(' · ')}
+                </p>
               </div>
             </LocalizedLink>
           ))}

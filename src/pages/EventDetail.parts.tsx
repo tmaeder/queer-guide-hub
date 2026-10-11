@@ -5,8 +5,10 @@ import { useTranslation } from 'react-i18next';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { format } from 'date-fns';
 import {
+  Calendar,
+  ChevronDown,
+  ArrowLeftRight,
   MapPin,
-  Users,
   Clock,
   Phone,
   Globe,
@@ -39,13 +41,14 @@ import { PeopleHereRail } from '@/components/people/PeopleHereRail';
 import type { Database } from '@/integrations/supabase/types';
 import { supabase } from '@/integrations/supabase/client';
 import { fetchEventBySlugOrId } from '@/hooks/usePageFetchers';
-import { formatEventTime } from '@/lib/event-time';
+import { formatEventTime, isDateOnlyEvent } from '@/lib/event-time';
 import { resolveEntityImage } from '@/lib/images/resolveEntityImage';
 import { formatCurrency } from '@/lib/currency';
 import { useReducedMotion } from '@/hooks/useReducedMotion';
 import { useProfile } from '@/hooks/useProfile';
 import { matchNeeds, needLabel } from '@/lib/accessibilityNeeds';
-import { FactGrid } from '@/components/transit/FactGrid';
+import { formatDateInZone, getTimezoneAbbr, isValidTimezone } from '@/utils/timezone';
+import { StationRing } from '@/components/transit/StationRing';
 import { NestedEntityCard } from '@/components/transit/NestedEntityCard';
 import { getEventLiveState } from '@/lib/event-countdown';
 import { GlossaryLinkedText } from '@/components/tags/GlossaryLinkedText';
@@ -166,7 +169,33 @@ export async function exportEventToCalendar(event: EventWithRelations) {
   URL.revokeObjectURL(url);
 }
 
-export function formatEventDate(startDate: string, endDate?: string | null) {
+export function formatEventDate(
+  startDate: string,
+  endDate?: string | null,
+  timezone?: string | null,
+  rangeLocale?: string,
+) {
+  const calendarZone = isDateOnlyEvent(startDate, endDate) ? 'UTC' : timezone;
+  if (rangeLocale && endDate) {
+    const rangeFormat = new Intl.DateTimeFormat(rangeLocale, {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+      ...(calendarZone && isValidTimezone(calendarZone) ? { timeZone: calendarZone } : {}),
+    });
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    if (end >= start && rangeFormat.format(start) !== rangeFormat.format(end)) {
+      return rangeFormat.formatRange(start, end);
+    }
+  }
+  if (calendarZone && isValidTimezone(calendarZone)) {
+    const start = formatDateInZone(startDate, calendarZone);
+    const end = endDate ? formatDateInZone(endDate, calendarZone) : null;
+    if (end && end !== start)
+      return `${formatDateInZone(startDate, calendarZone, { weekday: 'short' })} - ${formatDateInZone(endDate!, calendarZone, { weekday: 'short' })}`;
+    return formatDateInZone(startDate, calendarZone, { weekday: 'long', month: 'long' });
+  }
   const start = new Date(startDate);
   const end = endDate ? new Date(endDate) : null;
   if (end && format(start, 'yyyy-MM-dd') !== format(end, 'yyyy-MM-dd')) {
@@ -309,8 +338,8 @@ export function EventActions({
 }) {
   const { t } = useTranslation();
   return (
-    <div className="flex flex-wrap items-center gap-2">
-      <FavoriteButton itemId={event.id} type="event" size="md" />
+    <div className="relative flex flex-wrap items-center gap-1">
+      <FavoriteButton itemId={event.id} type="event" size="tap" />
       <ShareMenu
         url={
           typeof window !== 'undefined'
@@ -322,10 +351,11 @@ export function EventActions({
         variant="ghost"
       />
       <details className="max-w-full">
-        <summary className="w-fit cursor-pointer rounded-element py-2 text-13 font-semibold underline-offset-4 hover:underline">
+        <summary className="flex min-h-11 cursor-pointer list-none items-center gap-1.5 rounded-element px-4 text-13 font-medium text-muted-foreground hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring [&::-webkit-details-marker]:hidden">
           {t('events.detail.moreOptions', 'More options')}
+          <ChevronDown size={14} aria-hidden="true" />
         </summary>
-        <div className="flex flex-wrap items-center gap-4 py-4">
+        <div className="absolute right-0 top-full z-20 mt-1 flex w-72 max-w-full flex-wrap items-center gap-2 rounded-container border border-border-hairline bg-background p-4 shadow-soft">
           {onExportToCalendar && (
             <Button variant="ghost" size="sm" onClick={onExportToCalendar}>
               <Download size={14} className="mr-1.5" aria-hidden="true" />
@@ -481,6 +511,12 @@ export function EventFactStrip({
   showEventTz: boolean;
   setShowEventTz: (fn: (prev: boolean) => boolean) => void;
 }) {
+  const { t, i18n } = useTranslation();
+  const eventZone = event.timezone && isValidTimezone(event.timezone) ? event.timezone : null;
+  const zone = showEventTz ? eventZone : null;
+  const displayedZone = zone || Intl.DateTimeFormat().resolvedOptions().timeZone;
+  const zoneName = getTimezoneAbbr(displayedZone, event.start_date);
+  const dateOnly = isDateOnlyEvent(event.start_date, event.end_date);
   const ageRestriction = event.age_restriction;
 
   // `events.schedule` carries 141 rules on prod and until now NOTHING rendered
@@ -500,50 +536,132 @@ export function EventFactStrip({
     (event as unknown as { schedule?: EventSchedule | null }).schedule,
   );
 
-  // Spec module 01 — the bordered fact strip, shared with every other single.
-  // The timezone toggle survives the move as a node in the Time cell: an event
-  // read from another country is ambiguous without it, and dropping an
-  // interactive affordance to gain a border would be a bad trade.
+  const price = getPriceDisplay(event);
+  const facts = [
+    {
+      label: t('events.detail.time', 'Time'),
+      value: (
+        <>
+          <span>{formatEventTime(event.start_date, event.end_date, zone)}</span>
+          {!dateOnly &&
+            (eventZone ? (
+              <button
+                type="button"
+                onClick={() => setShowEventTz((prev) => !prev)}
+                aria-label={
+                  showEventTz
+                    ? t('events.detail.showMyTime', 'Show my time')
+                    : t('events.detail.showEventTime', 'Show event time')
+                }
+                className="flex min-h-11 items-center gap-1.5 text-2xs font-medium text-muted-foreground underline decoration-dotted underline-offset-4 hover:text-foreground"
+              >
+                {showEventTz
+                  ? t('events.detail.eventTime', 'Event time')
+                  : t('events.detail.yourTime', 'Your time')}
+                {zoneName && ` · ${zoneName}`}
+                <ArrowLeftRight size={12} aria-hidden="true" />
+              </button>
+            ) : (
+              <span className="mt-1 block text-2xs font-medium text-muted-foreground">
+                {t('events.detail.yourTime', 'Your time')}
+                {zoneName && ` · ${zoneName}`}
+              </span>
+            ))}
+        </>
+      ),
+    },
+    {
+      label: t('events.detail.price', 'Entry'),
+      value: event.is_free
+        ? t('events.free', 'Free')
+        : price === 'Price TBA'
+          ? t('events.detail.notListed', 'Not listed')
+          : price,
+    },
+    { label: t('events.detail.ages', 'Age'), value: ageRestriction },
+    {
+      label: t('events.detail.capacity', 'Capacity'),
+      value: event.max_attendees && event.max_attendees > 0 ? event.max_attendees : null,
+    },
+    ...(schedule
+      ? [
+          {
+            label: t('events.detail.schedule', 'Schedule'),
+            value: schedule.inferred ? `${schedule.text} (from past dates)` : schedule.text,
+          },
+        ]
+      : []),
+  ].filter((fact) => fact.value !== null && fact.value !== undefined && fact.value !== '');
+
   return (
-    <FactGrid
-      className="grid-cols-2 [&>*:nth-child(-n+2)]:border-t-0 [&>div]:py-2 [&>div]:min-w-0"
-      facts={[
-        {
-          label: 'Date',
-          value: formatEventDate(event.start_date, event.end_date),
-        },
-        ...(schedule
-          ? [
-              {
-                label: 'Schedule',
-                value: schedule.inferred ? `${schedule.text} (from past dates)` : schedule.text,
-              },
-            ]
-          : []),
-        {
-          label: 'Time',
-          value: event.timezone ? (
-            <button
-              type="button"
-              onClick={() => setShowEventTz((prev) => !prev)}
-              aria-pressed={showEventTz}
-              title="Toggle between event timezone and your local time"
-              className="text-start underline decoration-dotted underline-offset-4"
-            >
-              {formatEventTime(
-                event.start_date,
-                event.end_date,
-                showEventTz ? event.timezone : null,
-              )}
-            </button>
-          ) : (
-            formatEventTime(event.start_date, event.end_date, null)
-          ),
-        },
-        { label: 'Price', value: getPriceDisplay(event) },
-        { label: 'Ages', value: ageRestriction },
-      ]}
-    />
+    <dl className="grid grid-cols-2 items-start gap-x-6 gap-y-4 sm:flex sm:flex-wrap sm:gap-x-8">
+      <div className="col-span-2 min-w-0 sm:basis-72 lg:basis-80">
+        <dt className="mb-1 flex items-center gap-1.5 text-2xs font-bold uppercase tracking-label text-muted-foreground">
+          <Calendar size={14} className="text-foreground" aria-hidden="true" />
+          {t('events.detail.date', 'Date')}
+        </dt>
+        <dd className="max-w-xl text-xl font-bold leading-tight tracking-tight text-pretty">
+          {formatEventDate(event.start_date, event.end_date, zone, i18n.language || 'en')}
+        </dd>
+      </div>
+      {facts.map((fact) => (
+        <div key={fact.label} className="min-w-0 sm:max-w-xs sm:basis-auto">
+          <dt className="mb-1 text-2xs font-bold uppercase tracking-label text-muted-foreground">
+            {fact.label}
+          </dt>
+          <dd className="break-words text-15 font-medium leading-snug">{fact.value}</dd>
+        </div>
+      ))}
+    </dl>
+  );
+}
+
+export function EventPlanHint({ event, isPast }: { event: EventWithRelations; isPast: boolean }) {
+  const { t } = useTranslation();
+  const delivery = (event.liveness_status || event.status || '').toLowerCase();
+  const online = delivery === 'online' || delivery.includes('moved_online');
+  const hasVenue =
+    online ||
+    Boolean(
+      event.venues?.name?.trim() ||
+      event.venue_name?.trim() ||
+      event.venues?.address?.trim() ||
+      event.address?.trim(),
+    );
+  const source = event.website || event.ticket_url;
+  const message = isPast
+    ? t('events.detail.archiveHint', 'This stop has passed.')
+    : !hasVenue
+      ? t('events.detail.venueMissing', 'Venue details aren’t listed here.')
+      : event.is_free && event.ticket_url
+        ? t('events.detail.freeBooking', 'Free entry. Check the ticket link for booking details.')
+        : !event.is_free && !event.ticket_url && event.website
+          ? t('events.detail.noBookingLink', 'No booking link is listed here.')
+          : null;
+  if (!message) return null;
+  return (
+    <p className="flex flex-wrap items-center gap-x-2 gap-y-1 text-13 text-muted-foreground">
+      <StationRing state={isPast ? 'done' : 'open'} track="blue" className="shrink-0" />
+      <span>{message}</span>
+      {isPast ? (
+        <LocalizedLink
+          to="/events"
+          className="inline-flex min-h-6 items-center gap-1 py-1 font-semibold text-foreground no-underline hover:underline"
+        >
+          {t('events.detail.nextOuting', 'Find your next outing')}{' '}
+          <Navigation2 size={12} aria-hidden="true" />
+        </LocalizedLink>
+      ) : source && (!hasVenue || !event.ticket_url) ? (
+        <a
+          href={source}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="py-1 font-semibold text-foreground hover:underline"
+        >
+          {t('events.detail.checkDetails', 'Check event details')}
+        </a>
+      ) : null}
+    </p>
   );
 }
 
@@ -864,9 +982,9 @@ export function hasEventWhereContent(event: EventWithRelations): boolean {
   return Boolean(
     event.venues?.name ||
     event.venue_name ||
+    event.address?.trim() ||
     event.organizer ||
     event.organizer_name ||
-    event.max_attendees ||
     Object.values(event.social_links ?? {}).some(Boolean),
   );
 }
@@ -883,8 +1001,18 @@ export function EventWhere({ event, venueRef, onOrganizerClick }: WhereProps) {
   const visitedLookup = useVisitedPlaceLookup();
   const lat = event.latitude ?? event.venues?.latitude;
   const lng = event.longitude ?? event.venues?.longitude;
+  const { t } = useTranslation();
+  const address = event.venues?.address?.trim() || event.address?.trim() || null;
   const hasNamedVenue = Boolean(event.venues?.name || event.venue_name);
-  const hasMap = hasNamedVenue && typeof lat === 'number' && typeof lng === 'number';
+  const hasMap =
+    (hasNamedVenue || Boolean(address)) && typeof lat === 'number' && typeof lng === 'number';
+  const destination = hasMap
+    ? `${lat},${lng}`
+    : address
+      ? [address, event.cities?.name || event.city, event.countries?.name || event.country]
+          .filter(Boolean)
+          .join(', ')
+      : null;
   const org = event.organizer;
   const handles = org?.organizer_handles ?? {};
 
@@ -955,7 +1083,7 @@ export function EventWhere({ event, venueRef, onOrganizerClick }: WhereProps) {
             eyebrow="Venue"
             name={event.venues.name}
             description={[
-              event.venues.address,
+              address,
               [event.venues.city, event.venues.state].filter(Boolean).join(', '),
               event.venues.country,
             ]
@@ -972,17 +1100,12 @@ export function EventWhere({ event, venueRef, onOrganizerClick }: WhereProps) {
             </div>
           )
         )}
-        {event.max_attendees && (
-          <div className="flex items-center gap-2">
-            <Users size={16} className="shrink-0 text-muted-foreground" />
-            <span className="text-sm">Capacity {event.max_attendees}</span>
-          </div>
-        )}
+        {!event.venues && address && <p className="text-13 text-muted-foreground">{address}</p>}
         <div className="flex flex-wrap gap-2">
-          {hasMap && (
+          {destination && (
             <Button variant="outline" size="sm" asChild>
               <a
-                href={`https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`}
+                href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(destination!)}`}
                 target="_blank"
                 rel="noopener noreferrer"
               >
@@ -1047,7 +1170,7 @@ export function EventWhere({ event, venueRef, onOrganizerClick }: WhereProps) {
 
       <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
         <ShieldCheck size={13} aria-hidden="true" />
-        Spotted something off? Use the flag to let us know.
+        {t('events.detail.reportHint', 'Something off-track? Report it under More options.')}
       </p>
     </div>
   );

@@ -605,16 +605,41 @@
       "eyebrow": "Event",
       "sections": "Sections",
       "section": {
-        "about": "About this event",
-        "where": "Getting there",
-        "going": "Who's going"
+        "about": "The lowdown",
+        "where": "Find your way",
+        "going": "Riding with you"
       },
       "calendar": "Calendar",
       "moreOptions": "More options",
       "send": "Send to someone",
       "getTickets": "Get tickets",
       "going": "Going",
-      "viewImage": "View image"
+      "viewImage": "View image",
+      "board": "Departure board",
+      "date": "Date",
+      "time": "Time",
+      "price": "Entry",
+      "ages": "Age",
+      "capacity": "Capacity",
+      "schedule": "Schedule",
+      "eventTime": "Event time",
+      "yourTime": "Your time",
+      "showMyTime": "Show my time",
+      "showEventTime": "Show event time",
+      "notListed": "Not listed",
+      "archiveHint": "This stop has passed.",
+      "nextOuting": "Find your next outing",
+      "venueMissing": "Venue details aren’t listed here.",
+      "checkDetails": "Check event details",
+      "freeBooking": "Free entry. Check the ticket link for booking details.",
+      "noBookingLink": "No booking link is listed here.",
+      "reportHint": "Something off-track? Report it under More options.",
+      "moreStops": "Where to next?",
+      "relatedReason": {
+        "city": "Same city",
+        "similar": "Similar vibe",
+        "tags": "Shared tags"
+      }
     }
   },
   "venues": {
@@ -3284,7 +3309,6 @@
     }
   },
   "country": {
-    "overview": "Overview",
     "loading": "Loading country…",
     "planTrip": "Plan a trip to {{country}}",
     "similar": "More destinations",
@@ -3317,7 +3341,6 @@
       "cities": "Cities"
     },
     "section": {
-      "about": "About {{country}}",
       "rights": "Rights & safety",
       "cities": "Cities",
       "venues": "Venues",
@@ -3329,7 +3352,8 @@
       "news": "News",
       "map": "Map",
       "history": "Legal record",
-      "historyNote": "What changed and when. Safety information without a date is not safety information."
+      "historyNote": "What changed and when. Safety information without a date is not safety information.",
+      "about": "About {{country}}"
     },
     "practical": {
       "languages": "Languages",
@@ -3434,6 +3458,7 @@
       "body": "Every country page carries the same legal breakdown, from the same sources, with the date it was checked.",
       "rights": "Rights across the world"
     },
+    "overview": "Overview",
     "gallery": {
       "allTypes": "All types",
       "verifiedOnly": "Verified venues only",

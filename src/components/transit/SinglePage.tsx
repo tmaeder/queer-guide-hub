@@ -30,7 +30,6 @@ export function SinglePage({
   footer,
   className,
   density = 'default',
-  compact = false,
 }: {
   type: string;
   eyebrow?: string;
@@ -48,18 +47,20 @@ export function SinglePage({
   footer?: React.ReactNode;
   className?: string;
   /** Compact opening and section rhythm for task-first location pages. */
-  density?: 'default' | 'compact';
-  /** Compatibility with existing compact event pages. */
-  compact?: boolean;
+  density?: 'default' | 'compact' | 'dense';
 }) {
-  const isCompact = compact || density === 'compact';
   return (
     /* `flush` — the single owns its own vertical rhythm: each of the three
        spine blocks below carries `py-8` and the rules between them have to sit
        on those edges, so a container-level `py-*` would double the first and
        last gap. */
     <PageContainer as="article" flush className={className}>
-      <div className={cn('border-b border-border-hairline', isCompact ? 'py-6' : 'py-8')}>
+      <div
+        className={cn(
+          'border-b border-border-hairline',
+          density === 'dense' ? 'py-4' : density === 'compact' ? 'py-6' : 'py-8',
+        )}
+      >
         <DetailMasthead
           type={type}
           letter={letter}
@@ -67,11 +68,17 @@ export function SinglePage({
           title={title}
           status={status}
           lead={lead}
-          compact={isCompact}
+          compact={density !== 'default'}
+          size={density === 'dense' ? 'compact' : 'default'}
         />
-        {tags && <div className="mt-6">{tags}</div>}
+        {tags && <div className={density === 'dense' ? 'mt-2' : 'mt-6'}>{tags}</div>}
         {action && (
-          <div className={cn('flex flex-wrap items-center gap-2', isCompact ? 'mt-4' : 'mt-6')}>
+          <div
+            className={cn(
+              'flex flex-wrap items-center gap-2',
+              density === 'compact' ? 'mt-4' : 'mt-6',
+            )}
+          >
             {action}
           </div>
         )}
@@ -83,12 +90,18 @@ export function SinglePage({
           1440px viewport with 360px of nothing beside it. */}
       <div
         className={cn(
-          'grid grid-cols-1 gap-8',
-          isCompact ? 'py-6' : 'py-8',
+          'grid grid-cols-1',
+          density === 'dense' ? 'gap-4' : 'gap-8',
+          density === 'dense' ? 'py-4' : density === 'compact' ? 'py-6' : 'py-8',
           rail && 'lg:grid-cols-[1fr_360px]',
         )}
       >
-        <div className={cn('flex min-w-0 flex-col', isCompact ? 'gap-6 md:gap-8' : 'gap-10')}>
+        <div
+          className={cn(
+            'flex min-w-0 flex-col',
+            density === 'dense' ? 'gap-4' : density === 'compact' ? 'gap-6 md:gap-8' : 'gap-10',
+          )}
+        >
           {body}
         </div>
         {/* The testid exists because `article aside` is NOT unique: a signed-in
@@ -106,7 +119,13 @@ export function SinglePage({
         )}
       </div>
 
-      {footer && <div className="border-t border-border-hairline py-8">{footer}</div>}
+      {footer && (
+        <div
+          className={cn('border-t border-border-hairline', density === 'dense' ? 'py-4' : 'py-8')}
+        >
+          {footer}
+        </div>
+      )}
     </PageContainer>
   );
 }

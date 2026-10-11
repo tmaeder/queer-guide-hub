@@ -5,6 +5,7 @@ export interface Fact {
   label: string;
   /** Rendered value. Falsy entries are dropped by FactGrid, not by the caller. */
   value: React.ReactNode;
+  icon?: React.ReactNode;
 }
 
 /**
@@ -71,7 +72,13 @@ export function FactGrid({
           key={f.label}
           className="border-t border-r border-border-hairline px-4 py-4 last:border-r-0"
         >
-          <dt className="text-2xs font-bold uppercase tracking-label text-muted-foreground">
+          <dt
+            className={cn(
+              'text-2xs font-bold uppercase tracking-label text-muted-foreground',
+              f.icon && 'flex items-center gap-1.5',
+            )}
+          >
+            {f.icon}
             {f.label}
           </dt>
           <dd className="mt-1 text-15 font-bold leading-snug">{f.value}</dd>

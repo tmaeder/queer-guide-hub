@@ -1347,16 +1347,41 @@
       "eyebrow": "[ES] Event",
       "sections": "[ES] Sections",
       "section": {
-        "about": "[ES] About this event",
-        "where": "[ES] Getting there",
-        "going": "[ES] Who's going"
+        "about": "Lo que debes saber",
+        "where": "Encuentra el camino",
+        "going": "Quienes te acompañan"
       },
       "calendar": "Calendario",
       "moreOptions": "Más opciones",
       "send": "Enviar a alguien",
       "getTickets": "Comprar entradas",
       "going": "Voy",
-      "viewImage": "Ver imagen"
+      "viewImage": "Ver imagen",
+      "board": "Panel de salidas",
+      "date": "Fecha",
+      "time": "Hora",
+      "price": "Entrada",
+      "ages": "Edad",
+      "capacity": "Aforo",
+      "schedule": "Frecuencia",
+      "eventTime": "Hora del evento",
+      "yourTime": "Tu hora",
+      "showMyTime": "Mostrar mi hora",
+      "showEventTime": "Mostrar la hora del evento",
+      "notListed": "No indicado",
+      "archiveHint": "Esta parada ya pasó.",
+      "nextOuting": "Encuentra tu próxima salida",
+      "venueMissing": "El lugar no está indicado aquí.",
+      "checkDetails": "Consultar los detalles",
+      "freeBooking": "Entrada gratuita. Consulta el enlace de entradas para reservar.",
+      "noBookingLink": "Aquí no se indica un enlace de reserva.",
+      "reportHint": "¿Algo se salió de la vía? Repórtalo en Más opciones.",
+      "moreStops": "¿Cuál es la próxima parada?",
+      "relatedReason": {
+        "city": "Misma ciudad",
+        "similar": "Ambiente similar",
+        "tags": "Etiquetas compartidas"
+      }
     }
   },
   "venues": {
@@ -3128,7 +3153,6 @@
     }
   },
   "country": {
-    "overview": "Resumen",
     "loading": "Cargando país…",
     "planTrip": "Planear un viaje a {{country}}",
     "similar": "Más destinos",
@@ -3161,7 +3185,6 @@
       "cities": "Ciudades"
     },
     "section": {
-      "about": "Acerca de {{country}}",
       "rights": "Derechos y seguridad",
       "cities": "Ciudades",
       "venues": "Lugares",
@@ -3173,7 +3196,8 @@
       "news": "Noticias",
       "map": "Mapa",
       "history": "[ES] Legal record",
-      "historyNote": "[ES] What changed and when. Safety information without a date is not safety information."
+      "historyNote": "[ES] What changed and when. Safety information without a date is not safety information.",
+      "about": "Acerca de {{country}}"
     },
     "practical": {
       "languages": "Idiomas",
@@ -3278,6 +3302,7 @@
       "body": "[ES] Every country page carries the same legal breakdown, from the same sources, with the date it was checked.",
       "rights": "[ES] Rights across the world"
     },
+    "overview": "Resumen",
     "gallery": {
       "allTypes": "Todos los tipos",
       "verifiedOnly": "Solo lugares verificados",

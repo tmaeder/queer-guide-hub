@@ -1,6 +1,19 @@
 import { format } from 'date-fns';
 import { formatTimeInZone, formatDateInZone, getTimezoneAbbr } from '@/utils/timezone';
 
+/** Date-only imports keep their calendar days independent of viewer timezone. */
+export function isDateOnlyEvent(startDate: string, endDate?: string | null): boolean {
+  const start = new Date(startDate);
+  if (start.getUTCHours() !== 0 || start.getUTCMinutes() !== 0 || start.getUTCSeconds() !== 0)
+    return false;
+  if (!endDate) return true;
+  const end = new Date(endDate);
+  return (
+    (end.getUTCHours() === 0 && end.getUTCMinutes() === 0) ||
+    (end.getUTCHours() === 23 && end.getUTCMinutes() === 59)
+  );
+}
+
 /**
  * Determines whether an event should be treated as "All Day" based on its UTC times.
  *
@@ -34,10 +47,7 @@ function isAllDayEvent(start: Date, end: Date | null): boolean {
   if (diffMs >= 23 * 60 * 60 * 1000 + 50 * 60 * 1000) return true;
 
   // Same calendar day and end <= start (wraparound artefact, e.g. 4:00 PM – 3:59 PM)
-  if (
-    start.toDateString() === end.toDateString() &&
-    end.getTime() <= start.getTime()
-  ) {
+  if (start.toDateString() === end.toDateString() && end.getTime() <= start.getTime()) {
     return true;
   }
 
@@ -64,7 +74,7 @@ export function formatEventTime(
   if (timezone) {
     const startStr = formatTimeInZone(startDate, timezone);
     const endStr = end ? formatTimeInZone(endDate!, timezone) : null;
-    const abbr = getTimezoneAbbr(timezone);
+    const abbr = getTimezoneAbbr(timezone, startDate);
     const suffix = abbr ? ` ${abbr}` : '';
     return endStr ? `${startStr} - ${endStr}${suffix}` : `${startStr}${suffix}`;
   }
@@ -93,7 +103,7 @@ export function formatEventDateTime(
   if (timezone) {
     const startDateStr = formatDateInZone(startDate, timezone);
     const endDateStr = end ? formatDateInZone(endDate!, timezone) : null;
-    const abbr = getTimezoneAbbr(timezone);
+    const abbr = getTimezoneAbbr(timezone, startDate);
     const suffix = abbr ? ` ${abbr}` : '';
 
     // Check if same day in the event timezone

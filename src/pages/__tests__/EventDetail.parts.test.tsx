@@ -20,6 +20,8 @@ vi.mock('@/components/trips/TripAction', () => ({
 
 import {
   EventDecisionCard,
+  EventPlanHint,
+  EventWhere,
   hasEventAboutContent,
   hasEventWhereContent,
   formatEventDate,
@@ -225,5 +227,62 @@ describe('Event section content guards', () => {
     expect(hasEventWhereContent({ ...event, organizer_name: 'Local collective' } as never)).toBe(
       true,
     );
+  });
+});
+
+describe('Event planning information', () => {
+  it('gives archived events a next step without a ticket purchase', () => {
+    renderWithProviders(<EventPlanHint event={event} isPast />);
+    expect(screen.getByRole('link', { name: 'Find your next outing' })).toHaveAttribute(
+      'href',
+      '/events',
+    );
+    expect(screen.queryByRole('link', { name: /tickets/i })).toBeNull();
+  });
+  it('explicitly names missing venue information and links the source', () => {
+    renderWithProviders(
+      <EventPlanHint
+        event={{ ...event, website: 'https://example.org/details' } as never}
+        isPast={false}
+      />,
+    );
+    expect(screen.getByText('Venue details aren’t listed here.')).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Check event details' })).toHaveAttribute(
+      'href',
+      'https://example.org/details',
+    );
+  });
+  it('makes a standalone street address useful without inventing coordinates', () => {
+    const addressEvent = { ...event, address: '123 Example Street' } as EventWithRelations;
+    expect(hasEventWhereContent(addressEvent)).toBe(true);
+    expect(hasEventWhereContent({ ...event, address: '   ' } as never)).toBe(false);
+    expect(hasEventWhereContent({ ...event, max_attendees: 40 } as never)).toBe(false);
+    renderWithProviders(
+      <EventWhere event={addressEvent} venueRef={{ current: null }} onOrganizerClick={() => {}} />,
+    );
+    expect(screen.getByText('123 Example Street')).toBeInTheDocument();
+    const href = screen.getByRole('link', { name: 'Directions' }).getAttribute('href');
+    expect(new URL(href!).searchParams.get('destination')).toBe(
+      '123 Example Street, Berlin, Germany',
+    );
+    expect(screen.queryByTestId('map')).toBeNull();
+  });
+  it('formats the calendar date in the event timezone across a UTC day boundary', () => {
+    const date = formatEventDate('2026-01-02T02:00:00Z', '2026-01-02T04:00:00Z', 'America/Toronto');
+    expect(date).toContain('January 1, 2026');
+    expect(date).not.toContain('January 2');
+  });
+});
+
+describe('Date-only event calendar days', () => {
+  it('preserves imported calendar dates instead of shifting them a day earlier', () => {
+    const dates = formatEventDate(
+      '2026-08-16T00:00:00Z',
+      '2026-08-24T23:59:00Z',
+      'America/Toronto',
+    );
+    expect(dates).toContain('Aug 16, 2026');
+    expect(dates).toContain('Aug 24, 2026');
+    expect(dates).not.toContain('Aug 15');
   });
 });
