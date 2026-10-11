@@ -55,9 +55,11 @@ function verdictClass(v: Verdict): string {
 export function LensVerdictSummary({
   country,
   className = '',
+  columns = false,
 }: {
   country: Record<string, unknown>;
   className?: string;
+  columns?: boolean;
 }) {
   const { t } = useTranslation();
   const profile = useMemo(() => computeRightsProfile(country), [country]);
@@ -86,16 +88,28 @@ export function LensVerdictSummary({
         comparison to check against: it was deleted with the composite equality
         figure. Separation is the tonal step plus spacing.
       */}
-      <ul className="list-none p-0 m-0 rounded-container bg-surface-container">
+      <ul
+        className={
+          columns
+            ? 'm-0 grid list-none gap-4 p-0 sm:grid-cols-3'
+            : 'list-none p-0 m-0 rounded-container bg-surface-container'
+        }
+      >
         {LENS_ORDER.map((lens) => {
           const v = profile[lens];
           return (
             <li
               key={lens}
-              className="flex items-baseline justify-between gap-4 px-4 py-2 first:pt-4 last:pb-4"
+              className={
+                columns
+                  ? 'flex flex-col gap-2 rounded-element bg-surface-container p-4'
+                  : 'flex items-baseline justify-between gap-4 px-4 py-2 first:pt-4 last:pb-4'
+              }
             >
               <span className="text-13">{t(`rights.lens.${lens}`, LENS_LABEL[lens])}</span>
-              <span className={`shrink-0 text-13 ${verdictClass(v.verdict)}`}>
+              <span
+                className={`${columns ? 'text-body' : 'shrink-0 text-13'} ${verdictClass(v.verdict)}`}
+              >
                 {t(`rights.verdict.${v.verdict}`, VERDICT_LABEL[v.verdict])}
               </span>
             </li>
