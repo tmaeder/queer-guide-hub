@@ -115,4 +115,55 @@ test.describe('hub nav', () => {
     const distinct = new Set(Object.values(lefts));
     expect(distinct.size, `pill left edges differ across routes: ${JSON.stringify(lefts)}`).toBe(1);
   });
+
+  test('the breadcrumb rail is the same height on every route', async ({ page }) => {
+    // The vertical half, fixed separately. /hub/people publishes its own
+    // breadcrumb trail through IntentPageLayout, so BreadcrumbBar rendered the
+    // real (taller) breadcrumb there; every other hub route derived NOTHING and
+    // fell through to RouteNetworkRail, which is shorter. The nav sat 20px lower
+    // on /hub/people than on its siblings. Giving /hub a SEGMENT_SECTIONS entry
+    // levels them — and incidentally gives sixteen hub routes a reachable
+    // breadcrumb they never had, since RouteNetworkRail is aria-hidden.
+    //
+    // Measures the RAIL, not the nav's absolute y. The first draft asserted the
+    // pills' top offset and was wrong twice over: on prod the supposedly level
+    // routes read 184/184/185/184/186/184, and adding a `document.fonts.ready`
+    // wait made it worse and run-dependent (184/186/187/189/184) — so the
+    // jitter is page-level noise, not font swap, and no tolerance on an
+    // absolute offset is both tight enough to catch the defect and stable.
+    //
+    // The rail's own height is decided solely by which variant BreadcrumbBar
+    // renders, so it is exact. Probed on prod before the fix: six hub routes at
+    // 52px (the aria-hidden RouteNetworkRail) and /hub/people at 72px (the real
+    // breadcrumb) — precisely the 20px the nav was displaced by.
+    const rails: Record<string, number | null> = {};
+    for (const route of ROUTES) {
+      await openHub(page, route.path);
+      rails[route.path] = await page.evaluate(() => {
+        const r = document.querySelector('.route-network-rail')?.getBoundingClientRect();
+        return r ? Math.round(r.height) : null;
+      });
+    }
+    const distinct = new Set(Object.values(rails));
+    expect(distinct.size, `breadcrumb rail heights differ: ${JSON.stringify(rails)}`).toBe(1);
+  });
+
+  test('every hub route offers a reachable breadcrumb', async ({ page }) => {
+    // The levelling above is only safe because the short variant was
+    // decoration: RouteNetworkRail is `aria-hidden="true"` and its label is the
+    // raw URL segment. If a future change sends hub routes back to it, the tops
+    // go level again by losing the breadcrumb rather than gaining one — so
+    // assert the breadcrumb itself, not just the geometry.
+    for (const route of ROUTES) {
+      await openHub(page, route.path);
+      const crumbs = page.locator('nav[aria-label="Breadcrumb"] a');
+      await expect(crumbs.first(), `${route.path}: no reachable breadcrumb`).toBeVisible({
+        timeout: 15_000,
+      });
+      expect(
+        await crumbs.count(),
+        `${route.path}: breadcrumb has no climbable level`,
+      ).toBeGreaterThanOrEqual(1);
+    }
+  });
 });

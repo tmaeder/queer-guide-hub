@@ -40,6 +40,18 @@ const SEGMENT_SECTIONS: Record<string, { path: string; key: string; fallback: st
   city: { path: '/cities', key: 'breadcrumb.cities', fallback: 'Cities' },
   country: { path: '/cities', key: 'breadcrumb.cities', fallback: 'Cities' },
   'going-out': { path: '/going-out', key: 'breadcrumb.goingOut', fallback: 'Going out' },
+  // Every /hub route except /hub/people derived NOTHING here, so BreadcrumbBar
+  // fell through to RouteNetworkRail — which is `aria-hidden` decoration whose
+  // "hub" label is the raw URL segment. Sixteen of the seventeen hub routes
+  // therefore offered zero reachable levels, and the one that did (/hub/people
+  // publishes its own trail through IntentPageLayout) rendered the taller real
+  // breadcrumb (72px of rail against 52px), so the hub nav below it sat 20px
+  // lower than on its siblings — measured on prod, not estimated.
+  //
+  // `hub.title` rather than a new `breadcrumb.*` key: it is already translated
+  // in all eleven locales and is what this surface calls itself on its own auth
+  // gate ("Your hub"). Minting a key would need en.json plus a sync pass.
+  hub: { path: '/hub', key: 'hub.title', fallback: 'Your hub' },
   people: { path: '/hub/people', key: 'breadcrumb.people', fallback: 'Meet people' },
   community: { path: '/hub/people', key: 'breadcrumb.people', fallback: 'Meet people' },
   rights: { path: '/rights', key: 'breadcrumb.rights', fallback: 'Rights' },

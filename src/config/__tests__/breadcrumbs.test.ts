@@ -117,3 +117,56 @@ describe('localeFromPath', () => {
     expect(localeFromPath('/xy/venues')).toBeNull();
   });
 });
+
+describe('hub routes', () => {
+  // Every /hub route except /hub/people derived null here, so BreadcrumbBar fell
+  // through to RouteNetworkRail — `aria-hidden` decoration labelled with the raw
+  // URL segment. Sixteen of seventeen hub routes offered no reachable level, and
+  // the one that published a trail (/hub/people, via IntentPageLayout) rendered
+  // the taller real breadcrumb, putting the hub nav 20px lower than on siblings.
+  const HUB_ROUTES = [
+    '/hub',
+    '/hub/feed',
+    '/hub/members',
+    '/hub/friends',
+    '/hub/groups',
+    '/hub/people',
+    '/hub/dating',
+    '/hub/travel',
+    '/hub/nearby',
+    '/hub/messages',
+    '/hub/plans',
+    '/hub/saved',
+    '/hub/groups/some-group-id',
+    '/hub/dating/onboarding',
+  ];
+
+  it('derives a reachable trail on every hub route', () => {
+    for (const path of HUB_ROUTES) {
+      const trail = getRouteBreadcrumbs(path, t);
+      expect(trail, `${path}: no derived trail`).not.toBeNull();
+      // Length 2 is what BreadcrumbBar needs: it renders RouteNetworkRail for
+      // `trail.length <= 1`, which is the decoration this replaces.
+      expect(trail, `${path}: trail length`).toHaveLength(2);
+      expect(trail![0]).toEqual({ label: 'Home', href: '/' });
+      expect(trail![1].href, `${path}: second crumb must link to /hub`).toBe('/hub');
+    }
+  });
+
+  it('is the same length as the trail /hub/people publishes, so the bar is level', () => {
+    // /hub/people keeps its own published trail ([Home, Meet people]) — this
+    // asserts the DERIVED one matches its crumb count, which is what decides
+    // whether BreadcrumbBar renders at the same height on both.
+    const derived = getRouteBreadcrumbs('/hub/groups', t);
+    const publishedTrailLength = [homeCrumb(t), { label: 'Meet people' }].length;
+    expect(derived).toHaveLength(publishedTrailLength);
+  });
+
+  it('still returns null for hidden and unknown routes', () => {
+    // Positive control: the loop above passes if getRouteBreadcrumbs started
+    // returning a trail for everything.
+    expect(getRouteBreadcrumbs('/hubbub', t)).toBeNull();
+    expect(getRouteBreadcrumbs('/map', t)).toBeNull();
+    expect(getRouteBreadcrumbs('/', t)).toBeNull();
+  });
+});
