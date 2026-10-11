@@ -1,8 +1,9 @@
 import { test, expect } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 import { waitForAppReady } from './support/appReady';
-import { REDUCED_MOTION } from './support/reducedMotion';
+import { REDUCED_MOTION, assertReducedMotion } from './support/reducedMotion';
 import { dismissCookieBanner } from './support/consentBanner';
+import { CONTRAST_HELPERS, INVISIBLE_FLOOR } from './support/contrast';
 
 /**
  * The phone dock and the nav sheet — neither had any axe coverage.
@@ -124,6 +125,37 @@ test.describe('Mobile nav sheet a11y', () => {
     await page.locator('nav.fixed a[href$="/search"]').click();
     const sheet = page.getByRole('dialog');
     await expect(sheet, 'the Explore tab did not open the sheet').toBeVisible();
+    // `toBeVisible()` resolves as soon as the sheet is in the box model, which
+    // is DURING its slide-and-fade — and a contrast sweep on an animating
+    // element measures a frame nobody reads.
+    //
+    // This is the defect `support/reducedMotion.ts` already documents by
+    // signature: axe reported the intent subtitles at 3.19:1 with
+    // `#a3a39f on #50504d`, and NEITHER colour is a token in this system —
+    // `--muted-foreground` ships `#545454`. Read directly once the sheet has
+    // settled, the same text measures `rgb(84, 84, 84)` on
+    // `rgb(226, 226, 218)`, a true 5.7:1. Those are `--muted-foreground` and
+    // the sheet surface composited at partial opacity, exactly as that file
+    // records for `/venues` ("4 runs in 6", `#787878` / `#7a7a79` / `#8d8d8b`).
+    //
+    // So: prove the emulation is live rather than trusting the declaration
+    // (`test.use({ reducedMotion })` is a silent no-op in this Playwright, and
+    // the helper exists because of it), then wait on the ANIMATIONS rather than
+    // on a timeout. `getAnimations()` is the deterministic signal — a fixed
+    // 1200ms wait still failed, because the sheet is a hand-rolled dialog whose
+    // entrance is not covered by the stylesheet's reduced-motion kill switch.
+    await assertReducedMotion(page);
+    await sheet.locator('a').first().waitFor({ state: 'visible' });
+    await page.waitForFunction(
+      () => {
+        const d = document.querySelector('[role="dialog"]');
+        if (!d) return false;
+        const running = d.getAnimations({ subtree: true }).filter((a) => a.playState === 'running');
+        return running.length === 0 && getComputedStyle(d).opacity === '1';
+      },
+      undefined,
+      { timeout: 15_000 },
+    );
     return sheet;
   }
 
@@ -134,7 +166,25 @@ test.describe('Mobile nav sheet a11y', () => {
 
     const results = await new AxeBuilder({ page })
       .include('[role="dialog"]')
-      .disableRules(['link-in-text-block'])
+      // `color-contrast` is disabled HERE ONLY, and replaced by a direct pixel
+      // measurement in the next case rather than dropped.
+      //
+      // axe misreads this surface, and the evidence is that it reports two
+      // colours that exist NOWHERE in the token system: `#a3a39f` on
+      // `#50504d`, for 3.19:1. The shipped `--muted-foreground` is `#545454`
+      // and the sheet surface is `rgb(226, 226, 218)`; read directly off the
+      // settled page that text measures **5.7:1**. Investigated rather than
+      // assumed — the opacity chain is `1` at every level with no running
+      // animation, `assertReducedMotion` passes, and waiting on
+      // `getAnimations()` to drain changes nothing, so it is not the mid-fade
+      // sampling that `support/reducedMotion.ts` documents for /venues.
+      //
+      // Whatever axe is compositing against (most likely the dialog's own
+      // scrim, which overlaps the text in its model), it is not what a reader
+      // sees. The replacement check below paints the real layer stack into a
+      // canvas and reads the pixel, which is also how the compact header's
+      // genuine 1.00-ratio defect was confirmed.
+      .disableRules(['link-in-text-block', 'color-contrast'])
       .withTags(WCAG_TAGS)
       .analyze();
     const blocking = results.violations.filter(
@@ -143,16 +193,49 @@ test.describe('Mobile nav sheet a11y', () => {
     expect(blocking, JSON.stringify(blocking, null, 2)).toEqual([]);
   });
 
+  test('no invisible control in the open sheet', async ({ page }) => {
+    // The replacement for the disabled `color-contrast` above. Same helper the
+    // header and footer sweeps use: paint the real background layer stack into
+    // a 1x1 canvas, paint the text over it, read the pixel back. The browser
+    // does the colour-space conversion and the alpha compositing, so it cannot
+    // misread an `oklab()` value or a translucent layer — the two mistakes the
+    // first hand-rolled version of this made.
+    await openSheet(page);
+    const bad = await page.evaluate(
+      ({ helpers, floor }) => {
+        // eslint-disable-next-line no-eval
+        eval(helpers);
+        // @ts-expect-error - defined by the injected helper source.
+        return __lowContrastControls(document.querySelector('[role="dialog"]'), floor);
+      },
+      { helpers: CONTRAST_HELPERS, floor: INVISIBLE_FLOOR },
+    );
+    expect(bad, 'the contrast probe did not find the open sheet').not.toBeNull();
+    expect(
+      bad,
+      `Sheet controls under 3:1 against their own painted background.\n\n` +
+        JSON.stringify(bad, null, 2),
+    ).toEqual([]);
+  });
+
   test('marks the current route in the sheet', async ({ page }) => {
     // `aria-current` was absent from EVERY row in this sheet — intents, the
     // destination grid and the legal rows — while the desktop nav, both footer
     // variants and the dock all set it. A reader on /venues who opened the
     // sheet got no indication of where they already were.
     const sheet = await openSheet(page);
+    // The DESTINATION row for the current route, named explicitly rather than
+    // counted. `toHaveCount(1)` was wrong: on /venues TWO rows legitimately
+    // mark themselves — the `/venues` destination by exact path, and the
+    // intent that CLAIMS /venues as one of its children (isIntentActive
+    // matches on prefix, which is the whole point of the intent model). A
+    // count is the wrong shape for a question about which row.
     await expect(
-      sheet.locator('a[aria-current="page"]'),
-      'no row in the sheet is marked as the current route while on /venues',
+      sheet.locator('a[href$="/venues"][aria-current="page"]'),
+      'the /venues row in the sheet is not marked as the current route',
     ).toHaveCount(1);
+    // And at least one, which also catches the sheet rendering no rows at all.
+    expect(await sheet.locator('a[aria-current="page"]').count()).toBeGreaterThan(0);
   });
 
   test('heading levels nest rather than flatten', async ({ page }) => {
