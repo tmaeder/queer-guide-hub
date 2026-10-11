@@ -36,9 +36,13 @@ describe('TransitIcon', () => {
   // the department tiles could stop using a product photograph as category art
   // + 15 toy-category marks added 2026-10-03 so the `intimacy`/`bdsm_fetish`
   // GROUP tiles could stop being bare text (these are gated behind the 18+
-  // acknowledgement; see the comment on `toy-dildo`).
-  it('has 74 icons and bumps stroke weight below 32px', () => {
-    expect(TRANSIT_ICON_NAMES).toHaveLength(74);
+  // acknowledgement; see the comment on `toy-dildo`)
+  // + 2 health-stop marks added 2026-10-10 so the glossary could tell the five
+  // Health stops apart once tag glyphs resolved per STOP instead of per line
+  // (see the comment on `harm-reduction` for the nine motifs that did NOT
+  // survive the 18px collision check).
+  it('has 76 icons and bumps stroke weight below 32px', () => {
+    expect(TRANSIT_ICON_NAMES).toHaveLength(76);
     const { container } = render(<TransitIcon name="search" size={24} />);
     expect(container.querySelector('path')!.getAttribute('stroke-width')).toBe('10');
     const { container: big } = render(<TransitIcon name="search" size={48} />);

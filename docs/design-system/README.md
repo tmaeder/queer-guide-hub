@@ -283,10 +283,19 @@ a second sanctioned treatment.
 
 ## Core patterns (`src/components/transit/`)
 
-- **`TransitIcon`** — 42-icon wayfinding set (stroke-only, currentColor, round
+- **`TransitIcon`** — the wayfinding icon set (stroke-only, currentColor, round
   terminals, one station ring per icon; stroke weight bumps below 32px).
   Never takes track colors. Never mix with lucide in the same surface —
   lucide remains the default for UI chrome until a surface is migrated.
+  **The count is not restated here**: this line said "42" through three later
+  waves that took it to 76, so read it off `TransitIcon.test.tsx`'s
+  exact-length assertion, which is the one place that cannot go stale.
+  Drawing a new glyph: single `<path>`, one `d` string, commands `M C a H V Z`
+  only — a straight run is a collinear CUBIC, never `L`/`H`/`V` (those are for
+  rectangles). Circles use one fixed idiom. Safe box 16–84 (a round cap adds
+  ~5 beyond the endpoint); **16 units** minimum separation for two strokes that
+  must read as two; **14 units** is the smallest feature in the set; ring radius
+  ≤8 reads as a dot, ≥12 as an open ring, 9–11 is ambiguous — avoid.
 - **`StationRing`** — open ring = place · filled track = typed entity ·
   filled ink = done/past.
 - **`RouteBullet`** — letter = content type, color = its line; the mapping

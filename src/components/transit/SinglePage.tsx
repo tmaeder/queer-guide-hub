@@ -1,4 +1,5 @@
 import { DetailMasthead } from './DetailMasthead';
+import type { TransitIconName } from './transitIconPaths';
 import { PageContainer, STICKY_UNDER_HEADER } from '@/components/layout/PageContainer';
 import { cn } from '@/lib/utils';
 
@@ -20,6 +21,7 @@ export function SinglePage({
   type,
   eyebrow,
   letter,
+  glyph,
   title,
   status,
   lead,
@@ -34,6 +36,8 @@ export function SinglePage({
   type: string;
   eyebrow?: string;
   letter?: string;
+  /** Subject glyph for the eyebrow — see `DetailMasthead`. */
+  glyph?: TransitIconName;
   title: string;
   status?: string;
   lead?: React.ReactNode;
@@ -65,6 +69,7 @@ export function SinglePage({
           type={type}
           letter={letter}
           eyebrow={eyebrow}
+          glyph={glyph}
           title={title}
           status={status}
           lead={lead}

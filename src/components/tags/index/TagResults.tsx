@@ -22,7 +22,7 @@ import { useGridColumns } from '@/components/ui/useGridColumns';
 import { TrackLoader } from '@/components/transit/TrackLoader';
 import { TagChip } from '@/components/tags/TagChip';
 import { TagIndexCard, TagIndexRow } from './TagIndexCard';
-import type { CategoryLine } from '@/lib/tags/categoryIdentity';
+import type { TransitIconName } from '@/components/transit/transitIconPaths';
 import type { TagView } from '@/lib/tags/tagsIndexState';
 import type { CentralizedTag } from '@/hooks/useCentralizedTags';
 
@@ -45,7 +45,7 @@ export interface TagResultsProps {
   view: TagView;
   tags: CentralizedTag[];
   usageCounts: Record<string, number>;
-  lineFor: (tag: CentralizedTag) => CategoryLine | undefined;
+  glyphFor: (tag: CentralizedTag) => TransitIconName;
   categoryLabelFor: (tag: CentralizedTag) => string | undefined;
   /** Ids the query reached through a synonym rather than the canonical name. */
   aliasIds?: Set<string>;
@@ -61,7 +61,7 @@ export function TagResults({
   view,
   tags,
   usageCounts,
-  lineFor,
+  glyphFor,
   categoryLabelFor,
   aliasIds,
   graphCategory = null,
@@ -112,6 +112,7 @@ export function TagResults({
               tag={tag.slug}
               name={tag.name}
               count={usageCounts[tag.name] || 0}
+              icon
             />
           ))}
         </div>
@@ -142,7 +143,7 @@ export function TagResults({
           <TagIndexRow
             tag={tag}
             uses={usageCounts[tag.name] || 0}
-            line={lineFor(tag)}
+            icon={glyphFor(tag)}
             categoryLabel={categoryLabelFor(tag)}
             aliasMatch={aliasIds?.has(tag.id)}
           />
@@ -162,7 +163,7 @@ export function TagResults({
         <TagIndexCard
           tag={tag}
           uses={usageCounts[tag.name] || 0}
-          line={lineFor(tag)}
+          icon={glyphFor(tag)}
           categoryLabel={categoryLabelFor(tag)}
           aliasMatch={aliasIds?.has(tag.id)}
         />
