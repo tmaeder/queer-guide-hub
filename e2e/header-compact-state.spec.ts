@@ -196,36 +196,43 @@ test.describe('Header, compact ink state', () => {
     await expect(header.locator('nav[aria-label] a')).toHaveCount(7);
   });
 
-  test('the bar never grows past its own pinned-height token', async ({ page }) => {
-    // The compact row was `flex-wrap`. A wrapped row grows past 60px while
-    // `--header-pinned-h` stays 60, which silently re-introduces the
-    // sticky-bar overlap index.css documents as a fixed production bug
-    // (header bottom 82 vs bar top 64 at 1440). Now that the row carries the
-    // seven tabs as well, that is a live risk rather than a theoretical one —
-    // so it is asserted at the narrowest width where the compact state exists.
-    await page.setViewportSize({ width: 768, height: 900 });
-    await page.goto('/rights');
-    await waitForAppReady(page);
-    await enterCompact(page);
+  // Every width at which the compact state exists, not just the narrowest.
+  // This ran at 768 only and caught the regression there — but the bar was
+  // 64px at 1100 and 1440 too, so a single viewport happened to be enough and
+  // would not have been if the overflow had been width-dependent.
+  for (const width of [768, 1100, 1440]) {
+    test(`the bar never grows past its own pinned-height token at ${width}px`, async ({ page }) => {
+      // Two ways this breaks, and the second one bit the change that added
+      // this guard. (1) The row was `flex-wrap`: a wrapped row grows past the
+      // token, which silently re-introduces the sticky-bar overlap index.css
+      // documents as a fixed production bug (header bottom 82 vs bar top 64 at
+      // 1440). (2) The tab row carried into the collapse is `h-12`, and the
+      // row's `py-2` put it at 48 + 16 = **64px against a 60px token** —
+      // measured here, on prod, the moment that change deployed.
+      await page.setViewportSize({ width, height: 900 });
+      await page.goto('/rights');
+      await waitForAppReady(page);
+      await enterCompact(page);
 
-    const { actual, token } = await page.evaluate(() => {
-      const el = document.querySelector('header[class*="site-header"]')!;
-      const probe = document.createElement('div');
-      probe.style.cssText = 'position:fixed;visibility:hidden;height:var(--header-pinned-h)';
-      document.body.appendChild(probe);
-      const token = probe.getBoundingClientRect().height;
-      probe.remove();
-      return { actual: el.getBoundingClientRect().height, token };
+      const { actual, token } = await page.evaluate(() => {
+        const el = document.querySelector('header[class*="site-header"]')!;
+        const probe = document.createElement('div');
+        probe.style.cssText = 'position:fixed;visibility:hidden;height:var(--header-pinned-h)';
+        document.body.appendChild(probe);
+        const token = probe.getBoundingClientRect().height;
+        probe.remove();
+        return { actual: el.getBoundingClientRect().height, token };
+      });
+
+      // The token must resolve — a zero would make the comparison meaningless.
+      expect(token, 'could not resolve --header-pinned-h').toBeGreaterThan(0);
+      // 1px of tolerance for sub-pixel layout, nothing more. A wrap would add
+      // a whole row and the padding bug added four.
+      expect(actual, `compact bar is ${actual}px against a ${token}px token`).toBeLessThanOrEqual(
+        token + 1,
+      );
     });
-
-    // The token must resolve — a zero would make the comparison meaningless.
-    expect(token, 'could not resolve --header-pinned-h').toBeGreaterThan(0);
-    // 1px of tolerance for sub-pixel layout, nothing more. A wrap would add a
-    // whole row.
-    expect(actual, `compact bar is ${actual}px against a ${token}px token`).toBeLessThanOrEqual(
-      token + 1,
-    );
-  });
+  }
 });
 
 test.describe('Header intent tabs, 768–1279px', () => {

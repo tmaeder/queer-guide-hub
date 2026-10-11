@@ -465,7 +465,16 @@ export function Header() {
             // re-introduces the sticky-bar overlap index.css documents as a
             // fixed production bug (header bottom 82 vs bar top 64 at 1440).
             // Nothing in this row may push the bar taller than its token.
-            'mx-auto flex w-full max-w-page flex-nowrap items-center gap-4 py-2',
+            //
+            // NO `py-2`, and that is the same rule biting its own author. The
+            // tab row is `h-12` (48px), so 48 + 16 of padding made the bar
+            // **64px against a 60px token** — measured on prod at 768px the
+            // moment this change deployed, by the guard written for exactly
+            // this risk (`the bar never grows past its own pinned-height
+            // token`). The padding was redundant anyway: `minHeight` is the
+            // token and `items-center` does the centring, so the 48px nav and
+            // the 44px controls sit inside 60px with room to spare.
+            'mx-auto flex w-full max-w-page flex-nowrap items-center gap-4',
             PAGE_GUTTER,
           )}
           style={{ minHeight: 'var(--header-pinned-h)' }}
