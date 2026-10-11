@@ -51,6 +51,7 @@ import { useSafeMode } from '@/providers/SafeModeProvider';
 import { useAgeAffirmation } from '@/hooks/useAgeAffirmation';
 import { extractSections } from '@/lib/htmlSections';
 import { getCategoryShortName } from '@/components/resources/categoryMeta';
+import { resolveTagGlyph } from '@/lib/tags/tagIconography';
 import { PageContainer } from '@/components/layout/PageContainer';
 import { SinglePage, SingleSection } from '@/components/transit/SinglePage';
 import { RouteStrip, type RouteStation } from '@/components/transit/RouteStrip';
@@ -892,6 +893,12 @@ export default function TagDetail() {
       <SinglePage
         type="tag"
         eyebrow={taxonomyPath || t('tags.hero.eyebrow', 'Glossary')}
+        glyph={resolveTagGlyph({
+          slug: tag.slug,
+          stopSlug: primary?.slug,
+          parentName,
+          entityKind: (tag as { entity_kind?: string }).entity_kind,
+        })}
         title={tag.name}
         status={
           ENTITY_KIND_LABELS[(tag as { entity_kind?: string }).entity_kind ?? ''] ?? undefined
