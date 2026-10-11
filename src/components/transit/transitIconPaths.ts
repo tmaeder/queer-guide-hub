@@ -200,6 +200,51 @@ export const TRANSIT_ICON_PATHS = {
     'M 50 18 C 36 18 28 28 28 44 C 28 60 36 76 50 82 C 64 76 72 60 72 44 C 72 28 64 18 50 18 Z M 38 44 C 42 42 46 42 50 44 M 62 44 C 58 42 54 42 50 44 M 56 62 a 6 6 0 1 0 -12 0 a 6 6 0 1 0 12 0',
   'gear-pup':
     'M 31 34 C 26 24 30 18 38 20 C 42 22 44 26 46 30 M 69 34 C 74 24 70 18 62 20 C 58 22 56 26 54 30 M 50 28 C 36 28 28 38 28 50 C 28 64 38 76 50 80 C 62 76 72 64 72 50 C 72 38 64 28 50 28 Z M 57 58 a 7 7 0 1 0 -14 0 a 7 7 0 1 0 14 0',
+
+  // ── Health stops (added 2026-10-10, glossary glyph pass) ─────────────────
+  // The glossary now resolves a tag's glyph from its taxonomy STOP rather than
+  // its parent line (`src/lib/tags/tagIconography.ts`). Health was the only one
+  // of the eight lines whose five stops could not be told apart with marks that
+  // already existed: Sexual Health and Body & Reproductive Health both wanted
+  // `health`, and Substances & Recovery had no candidate at any distance, so it
+  // fell through to `library` — the global fallback, i.e. 258 tags rendering as
+  // "unfiled".
+  //
+  // These two are the ONLY new marks in that pass. Nine other gaps were each
+  // killed by a mark that already exists, at 18px: a shield for safer sex
+  // against `paddle` AND `saved`; a brain against `profile`; a heart-in-a-bowl
+  // against `aftercare` (it IS `aftercare`); a ring pair for marriage against
+  // `intimacy` and `handcuffs`; a padlock against `collar`; any cross, star or
+  // crescent against `add-station`/`health`/`after-dark`; a book against
+  // `library` and `documents`; a node graph against `share` (it IS `share`).
+  // A bare circle for intersex is worse than confusable — it is the station
+  // primitive this whole set is built from. Those stops reuse instead, which is
+  // why this wave is two marks and not eleven.
+  //
+  // Both join the roundel family (`health`, `hours`, `compass`, `consent`,
+  // `add-station`, `info-point`): the roundel is the house way of saying
+  // "service / station", which is what a health resource is. The interior
+  // budget is the 58-unit hole an r=34 ring leaves at stroke 10.
+
+  // A capsule lying DIAGONALLY across the roundel. Deliberately NOT a
+  // crossed-out pill: a slash reads as prohibition, which inverts the politics
+  // of harm-reduction content and would be the worst mark on the site. The
+  // diagonal is load-bearing, not styling — a VERTICAL capsule is `info-point`
+  // with its dot swallowed. It is also the only roundel whose interior mark is
+  // as thick as its own ring (every other holds a thin plus, check, hand or
+  // bar), and that weight difference is the first thing to survive
+  // downscaling, not the last.
+  'harm-reduction':
+    'M 84 50 a 34 34 0 1 0 -68 0 a 34 34 0 1 0 68 0 M 34 61 C 42 56 58 44 66 39',
+
+  // A belly curve spanning the roundel nearly wall to wall. The near miss is
+  // `consent` (roundel + one angular stroke, same scale), so the mitigation is
+  // structural rather than cosmetic: `consent`'s check is a narrow V parked in
+  // the lower middle, while this is one smooth bend that starts and ends out at
+  // the walls. A short centred arc would be indistinguishable at 18px — the
+  // span is the whole difference, so keep it.
+  'body-health':
+    'M 84 50 a 34 34 0 1 0 -68 0 a 34 34 0 1 0 68 0 M 26 42 C 36 70 64 70 74 42',
 } as const;
 
 export type TransitIconName = keyof typeof TRANSIT_ICON_PATHS;

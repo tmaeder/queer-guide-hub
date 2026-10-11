@@ -12,19 +12,24 @@
  */
 
 import { useTranslation } from 'react-i18next';
-import { cn } from '@/lib/utils';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { RouteBullet } from '@/components/transit/RouteBullet';
 import { TransitIcon } from '@/components/transit/TransitIcon';
 import { tagPreviewText } from '@/lib/tags/tagsIndexState';
-import type { CategoryLine } from '@/lib/tags/categoryIdentity';
+import { DEFAULT_CATEGORY_ICON } from '@/lib/tags/categoryIdentity';
+import type { TransitIconName } from '@/components/transit/transitIconPaths';
 import type { CentralizedTag } from '@/hooks/useCentralizedTags';
 
 export interface TagIndexItemProps {
   tag: CentralizedTag;
   uses: number;
-  /** The tag's parent taxonomy line, for the plate glyph and the category label. */
-  line?: CategoryLine;
+  /**
+   * The term's OWN glyph, from `resolveTagGlyph`: its taxonomy STOP where it
+   * has one, else its line, else the library fallback. This was the parent
+   * `CategoryLine` until 2026-10-10, which could only express eight marks and
+   * so drew the identical `consent` glyph on 2,415 Sex & Kink terms.
+   */
+  icon?: TransitIconName;
   categoryLabel?: string;
   /** The query reached this term through one of its synonyms. */
   aliasMatch?: boolean;
@@ -38,7 +43,7 @@ function AliasPip({ label }: { label: string }) {
   );
 }
 
-export function TagIndexCard({ tag, uses, line, categoryLabel, aliasMatch }: TagIndexItemProps) {
+export function TagIndexCard({ tag, uses, icon, categoryLabel, aliasMatch }: TagIndexItemProps) {
   const { t } = useTranslation();
   const blurb = tagPreviewText(tag);
 
@@ -49,7 +54,7 @@ export function TagIndexCard({ tag, uses, line, categoryLabel, aliasMatch }: Tag
     >
       <div className="flex items-center justify-between gap-4">
         <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-element bg-muted">
-          <TransitIcon name={line?.icon ?? 'library'} size={22} />
+          <TransitIcon name={icon ?? DEFAULT_CATEGORY_ICON} size={22} />
         </span>
         {categoryLabel && (
           <span className="text-right text-2xs font-medium text-muted-foreground">
@@ -73,7 +78,7 @@ export function TagIndexCard({ tag, uses, line, categoryLabel, aliasMatch }: Tag
   );
 }
 
-export function TagIndexRow({ tag, uses, categoryLabel, aliasMatch }: TagIndexItemProps) {
+export function TagIndexRow({ tag, uses, icon, categoryLabel, aliasMatch }: TagIndexItemProps) {
   const { t } = useTranslation();
   const blurb = tagPreviewText(tag);
 
@@ -93,13 +98,15 @@ export function TagIndexRow({ tag, uses, categoryLabel, aliasMatch }: TagIndexIt
       <span className="hidden shrink-0 text-13 tabular-nums text-muted-foreground sm:block">
         {t('tags.card.uses', '{{count}} uses', { count: uses })}
       </span>
-      {categoryLabel && (
-        <span
-          className={cn(
-            'hidden shrink-0 bg-muted rounded-element px-2 py-0.5 text-2xs font-bold uppercase tracking-label md:block',
-          )}
-        >
-          {categoryLabel}
+      {/* The term's glyph rides the category chip rather than replacing the
+          `RouteBullet`: the pink `#` is the tag mark the whole site promises
+          (`ROUTE_BULLET_MAP.tag`), so it stays. The chip used to be `md:block`
+          only — the glyph shows at every width, because a phone previously got
+          no per-term mark at all. */}
+      {(icon || categoryLabel) && (
+        <span className="inline-flex shrink-0 items-center gap-1.5 rounded-element bg-muted px-2 py-0.5 text-2xs font-bold uppercase tracking-label">
+          {icon && <TransitIcon name={icon} size={14} />}
+          {categoryLabel && <span className="hidden md:inline">{categoryLabel}</span>}
         </span>
       )}
     </LocalizedLink>

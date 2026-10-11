@@ -3244,7 +3244,8 @@
       "news": "Новости",
       "map": "Карта",
       "history": "[RU] Legal record",
-      "historyNote": "[RU] What changed and when. Safety information without a date is not safety information."
+      "historyNote": "[RU] What changed and when. Safety information without a date is not safety information.",
+      "about": "О стране {{country}}"
     },
     "practical": {
       "languages": "Языки",
@@ -3348,6 +3349,18 @@
       "title": "[RU] Compare the law elsewhere",
       "body": "[RU] Every country page carries the same legal breakdown, from the same sources, with the date it was checked.",
       "rights": "[RU] Rights across the world"
+    },
+    "overview": "Обзор",
+    "gallery": {
+      "allTypes": "Все категории",
+      "verifiedOnly": "Только проверенные места",
+      "freeOnly": "Только бесплатные события",
+      "invalidDates": "Выберите дату окончания после даты начала.",
+      "error": "Не удалось загрузить эту подборку.",
+      "results_one": "{{count}} результат",
+      "results_other": "{{count}} результатов",
+      "empty": "Ничего не найдено. Попробуйте другой город или сбросьте фильтры.",
+      "pagination": "Страницы галереи"
     }
   },
   "inbox": {
