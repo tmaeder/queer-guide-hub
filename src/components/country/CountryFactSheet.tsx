@@ -7,6 +7,7 @@ type CountryRow = any;
 interface FactRow {
   label: string;
   value: React.ReactNode;
+  secondary?: boolean;
 }
 
 /**
@@ -22,9 +23,11 @@ interface FactRow {
 export function CountryFactSheet({
   country,
   weatherNow,
+  scope = 'all',
 }: {
   country: CountryRow;
   weatherNow?: number | string | null;
+  scope?: 'all' | 'essentials' | 'reference';
 }) {
   const { t } = useTranslation();
 
@@ -68,10 +71,18 @@ export function CountryFactSheet({
       ? { label: t('country.practical.currency', 'Currency'), value: country.currency }
       : null,
     country.calling_code
-      ? { label: t('country.practical.callingCode', 'Calling code'), value: country.calling_code }
+      ? {
+          label: t('country.practical.callingCode', 'Calling code'),
+          value: country.calling_code,
+          secondary: true,
+        }
       : null,
     country.internet_tld
-      ? { label: t('country.practical.tld', 'Internet domain'), value: country.internet_tld }
+      ? {
+          label: t('country.practical.tld', 'Internet domain'),
+          value: country.internet_tld,
+          secondary: true,
+        }
       : null,
     drivingSide ? { label: t('country.practical.driving', 'Driving'), value: drivingSide } : null,
     airports.length
@@ -84,10 +95,15 @@ export function CountryFactSheet({
       ? {
           label: t('country.practical.government', 'Government'),
           value: country.government_type,
+          secondary: true,
         }
       : null,
     nationalDay
-      ? { label: t('country.practical.nationalDay', 'National day'), value: nationalDay }
+      ? {
+          label: t('country.practical.nationalDay', 'National day'),
+          value: nationalDay,
+          secondary: true,
+        }
       : null,
     weatherNow != null
       ? {
@@ -98,16 +114,18 @@ export function CountryFactSheet({
         }
       : null,
   ];
-  const items = rows.filter(Boolean) as FactRow[];
+  const items = (rows.filter(Boolean) as FactRow[]).filter(
+    (item) => scope === 'all' || (scope === 'reference' ? item.secondary : !item.secondary),
+  );
 
   if (items.length === 0) return null;
 
   return (
-    <dl className="grid grid-cols-2 gap-px overflow-hidden rounded-container bg-border">
+    <dl className="grid grid-cols-2 gap-x-6 gap-y-4 rounded-container bg-surface-container p-4 sm:grid-cols-3 xl:grid-cols-4">
       {items.map((item) => (
-        <div key={item.label} className="min-w-0 rounded-element bg-background p-2.5">
-          <dt className="text-2xs uppercase tracking-label text-muted-foreground">{item.label}</dt>
-          <dd className="mt-0.5 break-words text-13 font-semibold text-foreground">{item.value}</dd>
+        <div key={item.label} className="min-w-0">
+          <dt className="text-13 text-muted-foreground">{item.label}</dt>
+          <dd className="mt-1 break-words text-13 font-semibold text-foreground">{item.value}</dd>
         </div>
       ))}
     </dl>

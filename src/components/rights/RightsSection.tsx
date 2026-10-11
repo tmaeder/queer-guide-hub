@@ -34,11 +34,13 @@ export function RightsSection({
   /** Rendered inside the open panel, above the rows (the SO/GI/GE/SC strip). */
   columnHeader,
   children,
+  comfortable = false,
 }: {
   section: RightSection;
   summary: SectionSummary;
   columnHeader?: ReactNode;
   children: ReactNode;
+  comfortable?: boolean;
 }) {
   const { t } = useTranslation();
   const [open, setOpen] = useState(false);
@@ -59,11 +61,28 @@ export function RightsSection({
       className="border-b border-border-hairline last:border-b-0"
     >
       <CollapsibleTrigger asChild>
-        <button type="button" className="flex w-full items-center gap-4 py-4 text-start">
-          <span className="flex-1 text-xs2 font-bold uppercase tracking-[0.05em] text-muted-foreground">
+        <button
+          type="button"
+          className="flex w-full items-center gap-4 rounded-element py-4 text-start transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        >
+          <span
+            className={
+              comfortable
+                ? 'flex-1 text-body font-bold'
+                : 'flex-1 text-xs2 font-bold uppercase tracking-[0.05em] text-muted-foreground'
+            }
+          >
             {label}
           </span>
-          <span className="shrink-0 text-13 font-bold tabular-nums">{count}</span>
+          <span
+            className={
+              comfortable
+                ? 'shrink-0 rounded-badge bg-surface-container px-2 py-1 text-13 font-medium tabular-nums'
+                : 'shrink-0 text-13 font-bold tabular-nums'
+            }
+          >
+            {count}
+          </span>
           <ChevronDown
             size={16}
             aria-hidden="true"
@@ -74,7 +93,15 @@ export function RightsSection({
         </button>
       </CollapsibleTrigger>
       <CollapsibleContent>
-        {columnHeader && <div className="flex justify-end pb-2">{columnHeader}</div>}
+        {columnHeader && (
+          <div
+            className={
+              comfortable ? 'flex justify-start pb-2 sm:justify-end' : 'flex justify-end pb-2'
+            }
+          >
+            {columnHeader}
+          </div>
+        )}
         <div className="pb-4">{children}</div>
       </CollapsibleContent>
     </Collapsible>

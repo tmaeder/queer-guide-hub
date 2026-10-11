@@ -9,16 +9,17 @@ import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { useSlugRedirect } from '@/hooks/useSlugRedirect';
 import { useBreadcrumbs } from '@/contexts/BreadcrumbContext';
 import { TrackLoader } from '@/components/transit/TrackLoader';
-import { SinglePage, StickyRailGroup } from '@/components/transit/SinglePage';
+import { SinglePage } from '@/components/transit/SinglePage';
 import { ProvenanceLine } from '@/components/transit/ProvenanceLine';
-import { ClampedProse } from '@/components/ui/ClampedProse';
+import { mapUrl } from '@/lib/mapContext';
+import { splitProseParagraphs } from '@/lib/prose';
 import { buildLegalLine } from '@/lib/rights/legalLine';
 import { SafetyVerdict } from '@/components/country/SafetyVerdict';
 import { CountryFactSheet } from '@/components/country/CountryFactSheet';
 import { CountryStatsBand } from '@/components/country/CountryStatsBand';
 import { CountryMap } from '@/components/geo/CountryMap';
+import { hasCountryMap } from '@/components/geo/countryMapIndex';
 import { GeoCensus } from '@/components/geo/GeoCensus';
-import { GeoPhotoInset } from '@/components/geo/GeoPhotoInset';
 import { GeoSafetyBanner } from '@/components/geo/GeoSafetyBlock';
 import { GeoSectionList, GeoRouteRail } from '@/components/geo/GeoSections';
 import {
@@ -45,8 +46,6 @@ import {
   CountryActions,
   CountryLegalRecord,
   CountryCitiesTab,
-  CountryVenuesTab,
-  CountryEventsTab,
   CountryTravelTab,
   CountryNewsTab,
   CountryMapTab,
@@ -55,9 +54,14 @@ import {
 } from './CountryDetail.parts';
 import { PageContainer } from '@/components/layout/PageContainer';
 import { GlossaryLinkedText } from '@/components/tags/GlossaryLinkedText';
+import { publishedCountryEditorial } from '@/lib/countryEditorial';
+import { useMeta } from '@/hooks/useMeta';
+import { LocationActionMenu, LocationExploreMore } from '@/components/geo/LocationDetail';
+import { CountryPhotoGallery } from '@/components/country/CountryPhotoGallery';
+import { CountryDiscoveryGallery } from '@/components/country/CountryDiscoveryGallery';
 
-const OUTLINE_ON_INK =
-  'inline-flex items-center gap-2 rounded-element bg-background/15 px-4 py-2 text-13 font-bold text-background no-underline transition-colors hover:bg-background hover:text-foreground';
+const FOOTER_LINK =
+  'inline-flex min-h-12 items-center gap-2 rounded-element bg-surface-container px-4 py-2 text-13 font-bold no-underline transition-colors hover:bg-foreground hover:text-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring';
 
 export default function CountryDetail() {
   const { slug: countrySlug } = useParams<{ slug: string }>();
@@ -66,6 +70,10 @@ export default function CountryDetail() {
   const navigate = useLocalizedNavigate();
 
   const { country, loading, refetch: refetchCountry } = useOptimizedCountry(countrySlug ?? '');
+  const editorial = useMemo(
+    () => (country ? publishedCountryEditorial(country, i18n.resolvedLanguage) : null),
+    [country, i18n.resolvedLanguage],
+  );
 
   // Merged-duplicate slug redirect (country_slug_redirects); client-side
   // fallback for in-app navigation — the edge middleware handles the 301.
@@ -158,22 +166,13 @@ export default function CountryDetail() {
 
   // Placeholder / non-indexable countries stay reachable but never enter search.
   const isNoindex = !!country && country.seo_indexable === false;
-  useEffect(() => {
-    if (!isNoindex) return;
-    let el = document.querySelector('meta[name="robots"]') as HTMLMetaElement | null;
-    const hadTag = !!el;
-    const prev = el?.getAttribute('content') ?? null;
-    if (!el) {
-      el = document.createElement('meta');
-      el.setAttribute('name', 'robots');
-      document.head.appendChild(el);
-    }
-    el.setAttribute('content', 'noindex,nofollow');
-    return () => {
-      if (!hadTag) document.querySelector('meta[name="robots"]')?.remove();
-      else if (prev !== null) el?.setAttribute('content', prev);
-    };
-  }, [isNoindex]);
+  useMeta({
+    title: editorial?.name ?? country?.name,
+    description: editorial?.description ?? undefined,
+    canonicalPath: country?.slug ? `/country/${country.slug}` : undefined,
+    ogImage: country ? (resolveEntityImage('country', country).url ?? undefined) : undefined,
+    noIndex: isNoindex,
+  });
 
   const hasStats = useMemo(
     () =>
@@ -192,10 +191,10 @@ export default function CountryDetail() {
       country
         ? [
             { label: t('country.breadcrumb.places', 'Places'), href: '/places' },
-            { label: country.name },
+            { label: editorial?.name ?? country.name },
           ]
         : null,
-    [country, t],
+    [country, editorial?.name, t],
   );
   useBreadcrumbs(breadcrumbs);
 
@@ -203,18 +202,118 @@ export default function CountryDetail() {
     <SeeAllLink to={href} label={t('cities.detail.seeAll', 'See all')} />
   );
 
-  // Spec module order for `country`: 01 fact strip, 05 stop list (cities),
-  // 12 version history (the OWNER module), 15 stat line, 16 map inset.
-  // Built unconditionally so the route rail's stations and the rendered list
-  // come from one array, and so the hook below never sits behind an early
-  // return.
-  //
-  // The legal record is a SUB-BLOCK of rights, not its own station: the
-  // timeline is the rights story's evidence, and folding it in moved #rights —
-  // the reason the platform exists — one full section higher. The wrapper
-  // keeps id="history" so old #history deep links still land.
+  // Cities and practical travel lead the browsing flow. Safety warnings remain
+  // above it; the complete legal record keeps its stable #rights/#history anchors.
+  // Sections and route stations share this array, so empty modules disappear together.
+  const hasSilhouette = hasCountryMap(country?.code);
+  const hasMap =
+    hasSilhouette ||
+    (typeof country?.latitude === 'number' && typeof country?.longitude === 'number');
+  const countryMap =
+    country && hasMap ? (
+      hasSilhouette ? (
+        <div>
+          <CountryMap code={country.code} name={country.name} />
+          <LocalizedLink
+            to={
+              typeof country.latitude === 'number' && typeof country.longitude === 'number'
+                ? mapUrl({
+                    center: [country.longitude, country.latitude],
+                    zoom: 4,
+                    lines: ['M', 'E'],
+                  })
+                : '/map'
+            }
+            className="mt-2 inline-flex min-h-12 items-center rounded-element px-4 py-2 text-13 font-bold no-underline transition-colors hover:bg-surface-container focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          >
+            {t('country.openMap', 'Open the full map')}
+          </LocalizedLink>
+        </div>
+      ) : (
+        <CountryMapTab country={country} openLabel={t('country.openMap', 'Open the full map')} />
+      )
+    ) : null;
+  const weatherNow = weatherData?.current?.temperature ?? weatherData?.temperature ?? null;
+  const photos = useMemo(() => {
+    const candidates = [
+      {
+        src: resolveEntityImage('country', country).url,
+        caption: editorial?.name ?? country?.name ?? '',
+      },
+      ...cities.map((city) => ({ src: resolveEntityImage('city', city).url, caption: city.name })),
+    ];
+    const seen = new Set<string>();
+    return candidates
+      .filter((photo): photo is { src: string; caption: string } => {
+        if (!photo.src) return false;
+        // The same stored asset can be copied into both country and city buckets.
+        const url = new URL(photo.src);
+        const key = url.hostname === 'img.queer.guide' ? url.pathname.split('/').pop()! : photo.src;
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      })
+      .slice(0, 6);
+  }, [country, cities, editorial?.name]);
+
   const sections: GeoSection[] = country
     ? geoSections([
+        {
+          id: 'cities',
+          title: t('country.section.cities', 'Cities'),
+          content:
+            cities.length > 0 ? (
+              <div className={hasMap ? 'grid gap-6 lg:grid-cols-[minmax(0,1fr)_360px]' : undefined}>
+                <div className="min-w-0">
+                  <CountryCitiesTab cities={cities} />
+                  <div className="mt-4">{seeAll('/cities')}</div>
+                </div>
+                {countryMap}
+              </div>
+            ) : null,
+        },
+        {
+          id: 'travel',
+          title: t('country.section.travel', 'Travel'),
+          variant: 'compact',
+          presentation: 'disclosure',
+          preview: (
+            <div
+              className={
+                cities.length === 0 && hasMap
+                  ? 'grid gap-6 lg:grid-cols-[minmax(0,1fr)_360px]'
+                  : undefined
+              }
+            >
+              <CountryFactSheet country={country} weatherNow={weatherNow} scope="essentials" />
+              {cities.length === 0 ? countryMap : null}
+            </div>
+          ),
+          content: (
+            <div className="flex flex-col gap-6">
+              <CountryFactSheet country={country} scope="reference" />
+              <CountryTravelTab
+                country={country}
+                activitiesTitle={t('country.travel.activities', 'Activities & tours')}
+                noDealsTitle={t(
+                  'country.travel.noDealsTitle',
+                  "We don't promote travel deals for destinations where LGBTQ+ people face criminal penalties.",
+                )}
+                noDealsBody={t(
+                  'country.travel.noDealsBody',
+                  'If you need to travel to {{country}}, read the rights section on this page first and use the trip planner — it includes a safety briefing for high-risk destinations.',
+                  { country: country.name },
+                )}
+              />
+            </div>
+          ),
+        },
+        {
+          id: 'photos',
+          title: t('venues.photos', 'Photos'),
+          variant: 'compact',
+          content: photos.length ? <CountryPhotoGallery photos={photos} /> : null,
+        },
         {
           id: 'rights',
           title: t('country.section.rights', 'Rights & safety'),
@@ -225,7 +324,7 @@ export default function CountryDetail() {
                   legal record because it is about the reader's own documents. */}
               <TransSafetyBand country={country as unknown as Record<string, unknown>} />
               {legalStations.length ? (
-                <div id="history" className="mt-10 scroll-mt-8">
+                <div id="history" className="mt-8 scroll-mt-32">
                   <h3 className="text-title font-bold leading-tight">
                     {t('country.section.history', 'Legal record')}
                   </h3>
@@ -244,57 +343,40 @@ export default function CountryDetail() {
           ),
         },
         {
-          id: 'cities',
-          title: t('country.section.cities', 'Cities'),
-          content:
-            cities.length > 0 ? (
-              <>
-                <CountryCitiesTab cities={cities} />
-                <div className="mt-6">{seeAll('/cities')}</div>
-              </>
-            ) : null,
-        },
-        {
           id: 'venues',
           title: t('country.section.venues', 'Venues'),
-          content: venues.length > 0 ? <CountryVenuesTab venues={venues} /> : null,
+          content:
+            venues.length > 0 ? (
+              <CountryDiscoveryGallery countryId={country.id} kind="venue" cities={cities} />
+            ) : null,
         },
         {
           id: 'events',
-          title: t('country.section.events', 'Next departures'),
+          title: t('breadcrumb.events', 'Events'),
           content:
             events.length > 0 ? (
-              <CountryEventsTab
-                events={events}
-                locale={i18n.language}
-                openLabel={t('cities.detail.openEvent', 'Open')}
-              />
+              <CountryDiscoveryGallery countryId={country.id} kind="event" cities={cities} />
             ) : null,
         },
         {
-          id: 'travel',
-          title: t('country.section.travel', 'Travel'),
-          variant: 'compact',
-          content: (
-            <CountryTravelTab
-              country={country}
-              activitiesTitle={t('country.travel.activities', 'Activities & tours')}
-              noDealsTitle={t(
-                'country.travel.noDealsTitle',
-                "We don't promote travel deals for destinations where LGBTQ+ people face criminal penalties.",
-              )}
-              noDealsBody={t(
-                'country.travel.noDealsBody',
-                'If you need to travel to {{country}}, read the rights section on this page first and use the trip planner — it includes a safety briefing for high-risk destinations.',
-                { country: country.name },
-              )}
-            />
-          ),
+          id: 'about',
+          title: t('country.section.about', 'About {{country}}', {
+            country: editorial?.name ?? country.name,
+          }),
+          presentation: 'disclosure',
+          content: editorial?.description ? (
+            <div className="max-w-reading space-y-4 text-body-lg leading-relaxed">
+              {splitProseParagraphs(editorial.description).map((paragraph, index) => (
+                <p key={index}>{paragraph}</p>
+              ))}
+            </div>
+          ) : null,
         },
         {
           id: 'stats',
           title: t('country.section.stats', 'In numbers'),
           variant: 'compact',
+          presentation: 'disclosure',
           content: hasStats ? (
             <CountryStatsBand country={country} worldBankData={worldBankData} sdgData={sdgData} />
           ) : null,
@@ -303,6 +385,7 @@ export default function CountryDetail() {
           id: 'news',
           title: t('country.section.news', 'News'),
           variant: 'compact',
+          presentation: 'disclosure',
           content:
             articles.length > 0 ? (
               <CountryNewsTab
@@ -352,18 +435,17 @@ export default function CountryDetail() {
     t('country.census.stops', '{{n}} stops', { n: venues.length }),
     t('country.census.departures', '{{n}} departures', { n: events.length }),
   ];
+  const countryName = editorial?.name ?? country.name;
 
   const eyebrowParts = [t('country.eyebrow', 'Country')];
   if (country.continents?.name) eyebrowParts.push(country.continents.name);
-
-  const weatherNow = weatherData?.current?.temperature ?? weatherData?.temperature ?? null;
 
   return (
     <SinglePage
       type="country"
       eyebrow={eyebrowParts.join(' · ')}
-      title={country.flag_emoji ? `${country.flag_emoji} ${country.name}` : country.name}
-      lead={<GlossaryLinkedText text={country.editorial_hook || country.description} />}
+      title={country.flag_emoji ? `${country.flag_emoji} ${countryName}` : countryName}
+      lead={editorial?.hook ? <GlossaryLinkedText text={editorial.hook} /> : undefined}
       tags={<GeoCensus type="country" items={census} />}
       action={
         <>
@@ -376,11 +458,13 @@ export default function CountryDetail() {
                   })
                 : t('country.planTrip', {
                     defaultValue: 'Plan a trip to {{country}}',
-                    country: country.name,
+                    country: countryName,
                   })
             }
           />
-          <CountryActions country={country} onContentUpdated={refetchCountry} />
+          <LocationActionMenu label={t('common.moreActions', 'More actions')}>
+            <CountryActions country={country} onContentUpdated={refetchCountry} />
+          </LocationActionMenu>
         </>
       }
       body={
@@ -390,49 +474,13 @@ export default function CountryDetail() {
               and therefore outside the page container. */}
           <GeoSafetyBanner
             criminalization={country.lgbti_criminalization as Record<string, unknown> | null}
-            countryName={country.name}
+            countryName={countryName}
             countryId={country.id}
           />
-          {/* `SafetyVerdict`, not the shared `GeoSafetyVerdict`: this is the
-              richer country-specific component, it owns the death-penalty
-              re-escalation, and six e2e assertions in rights-safety.spec.ts
-              bind to its copy. It stays full width in the body rather than
-              moving to the 360px rail. */}
-          <SafetyVerdict countryId={country.id} equalityScore={country.equality_score ?? null} />
           <TripCoveringBanner target={{ type: 'country', countryId: country.id }} />
-          {/* The briefing band — spec module 01 (fact strip) as ONE compact
-              surface. `editorial_long` arrives as an unbroken string (2,569px
-              of <p> on Iran before the clamp); `CountryFactSheet` merges the
-              old FactGrid + CountryPracticalInfo pair and absorbs the rail
-              StatLine's one non-duplicate cell (weather). The photo sits
-              beside the facts instead of claiming its own 400px band. Both
-              stay in the body slot: the sheet's 2-col grid and the photo need
-              more than the 360px rail. */}
-          {country.editorial_long && (
-            <ClampedProse
-              text={country.editorial_long}
-              moreLabel={t('country.editorial.more', 'Read more')}
-              lessLabel={t('country.editorial.less', 'Show less')}
-              className="max-w-reading text-body-lg leading-relaxed"
-            />
-          )}
-          {/* The map takes the second column and the photograph moves below it.
-              A silhouette exists for 237 countries and a usable photograph for
-              far fewer, so the deterministic artifact owns the stable slot —
-              which also closes a standing bug: unlike CityDetail's, this grid
-              never collapsed to `contents`, so every country without a photo
-              rendered a half-width fact sheet beside a dead column. */}
-          <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-2">
-            <CountryFactSheet country={country} weatherNow={weatherNow} />
-            <CountryMap code={country.code} name={country.name} />
-          </div>
-          <GeoPhotoInset
-            src={resolveEntityImage('country', country).url}
-            alt={country.name}
-            fallbackKey={country.id}
-            priority
-            caption={country.capital ?? null}
-          />
+          <section aria-label={t('country.overview', 'Overview')}>
+            <SafetyVerdict countryId={country.id} equalityScore={country.equality_score ?? null} />
+          </section>
           <GeoRouteRail
             sections={sections}
             activeId={activeId}
@@ -440,41 +488,8 @@ export default function CountryDetail() {
             orientation="horizontal"
             track="yellow"
             label={t('country.sections', 'Sections')}
-            className="lg:hidden"
           />
           <GeoSectionList sections={sections} />
-        </>
-      }
-      rail={
-        <>
-          <CountryMapTab
-            country={country}
-            caption={country.capital ?? undefined}
-            openLabel={t('country.openMap', 'Open the full map')}
-          />
-          {/* The StatLine block is gone: cities/venues/events triplicated the
-              census strip and weather moved into the fact sheet. What remains
-              follows the reader — the aside stretches to the full body height,
-              so the sticky group keeps the TOC on screen for the whole page
-              instead of scrolling away 1,500px in. */}
-          <StickyRailGroup>
-            <GeoRouteRail
-              sections={sections}
-              activeId={activeId}
-              onNavigate={select}
-              orientation="vertical"
-              track="yellow"
-              label={t('country.sections', 'Sections')}
-              className="hidden lg:block"
-            />
-            {/* `checkedAt` is null on purpose, and the component then prints
-                "Not independently checked yet." `countries` has no
-                `last_verified_at` column — unlike `cities` and
-                `queer_villages`, which do — so there is no check date to
-                state. Saying so out loud beats implying freshness by
-                omission. */}
-            <ProvenanceLine addedAt={country.created_at} checkedAt={null} correctHref="/contact" />
-          </StickyRailGroup>
         </>
       }
       footer={
@@ -482,42 +497,44 @@ export default function CountryDetail() {
           {/* Composite rails live here, not in `sections`: each self-hides from
               inside its own body, which the section filter cannot see, so a
               station would point at an empty heading. */}
-          <PersonalitiesForEntity countryId={country.id} cityName={country.name} />
-          {/* `NearbyTriptych` is not here any more. Its only country-anchored
-              panel was the equality-score peer table, removed with the rest of
-              the composite figure; the band this page passed props for would
-              now render empty. It stays on /city/:slug, which has the
-              city-anchored "Next leg from here". */}
-          <SimilarItems
-            entity={{ type: 'country', id: country.id }}
-            title={t('country.similar', 'More destinations')}
-            contentTypes={['country']}
+          <LocationExploreMore
+            title={t('country.exploreMore', 'Explore beyond {{country}}', { country: countryName })}
+            groups={[
+              {
+                id: 'country-people',
+                title: t('country.explorePeople', 'People and culture'),
+                summary: t('country.explorePeopleNote', 'Queer lives connected to this country.'),
+                content: <PersonalitiesForEntity countryId={country.id} cityName={country.name} />,
+              },
+              {
+                id: 'country-destinations',
+                title: t('country.exploreDestinations', 'More destinations'),
+                summary: t(
+                  'country.exploreDestinationsNote',
+                  'Compare another country when you are ready.',
+                ),
+                content: (
+                  <SimilarItems
+                    entity={{ type: 'country', id: country.id }}
+                    title={t('country.similar', 'More destinations')}
+                    contentTypes={['country']}
+                  />
+                ),
+              },
+            ]}
           />
-          <section
-            aria-labelledby="country-end-of-line"
-            className="overflow-hidden rounded-container bg-foreground p-6 text-background md:p-8"
+          <ProvenanceLine addedAt={country.created_at} checkedAt={null} correctHref="/contact" />
+          <nav
+            aria-label={t('country.endOfLine.title', 'Compare the law elsewhere')}
+            className="flex flex-wrap gap-2"
           >
-            <p className="text-2xs font-bold uppercase tracking-label text-background/70">
-              {t('country.endOfLine.eyebrow', 'End of line')}
-            </p>
-            <h2 id="country-end-of-line" className="mt-1 font-display text-headline leading-tight">
-              {t('country.endOfLine.title', 'Compare the law elsewhere')}
-            </h2>
-            <p className="mt-2 max-w-reading text-13 leading-relaxed text-background/80">
-              {t(
-                'country.endOfLine.body',
-                'Every country page carries the same legal breakdown, from the same sources, with the date it was checked.',
-              )}
-            </p>
-            <div className="mt-6 flex flex-wrap gap-2">
-              <LocalizedLink to="/rights" className={OUTLINE_ON_INK}>
-                {t('country.endOfLine.rights', 'Rights across the world')}
-              </LocalizedLink>
-              <LocalizedLink to="/cities" className={OUTLINE_ON_INK}>
-                {t('cities.detail.endOfLine.allCities', 'All cities')}
-              </LocalizedLink>
-            </div>
-          </section>
+            <LocalizedLink to="/rights" className={FOOTER_LINK}>
+              {t('country.endOfLine.rights', 'Rights across the world')}
+            </LocalizedLink>
+            <LocalizedLink to="/cities" className={FOOTER_LINK}>
+              {t('cities.detail.endOfLine.allCities', 'All cities')}
+            </LocalizedLink>
+          </nav>
         </div>
       }
     />

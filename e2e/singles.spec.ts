@@ -24,7 +24,7 @@ const dismissCookieBanner = async (page: Page) => {
 
 const ROUTES = [
   { path: '/city/berlin', name: 'Berlin', eyebrow: /City/ },
-  { path: '/country/germany', name: 'Germany', eyebrow: /Country/ },
+  { path: '/country/germany', name: 'Germany', eyebrow: /Country/, taskFirst: true },
   { path: '/villages/chueca', name: 'Chueca', eyebrow: /District/ },
   // Venue and event joined the singles after the geo three. The venue is one
   // of the 626 (2.7%) that actually have opening hours, so its OWNER module
@@ -175,6 +175,27 @@ for (const route of ROUTES) {
         await expect(
           page.locator('article').getByRole('link', { name: 'Correct this page' }),
         ).toBeVisible();
+      } else if ('taskFirst' in route && route.taskFirst) {
+        await expect(page.getByTestId('single-rail')).toHaveCount(0);
+        await expect(page.getByTestId('country-map')).toBeVisible();
+        await expect(page.locator('#cities')).toBeVisible();
+        await expect(page.locator('#travel')).toBeVisible();
+        // Discovery-first order. This said `rights` third and has been failing
+        // since the photo gallery landed in this same PR: the real order is
+        // cities, travel, photos, rights, trans, venues, events, about, stats,
+        // news — `rights` moved to FOURTH, it did not disappear.
+        //
+        // `rights` is now asserted separately rather than left to this slice,
+        // which was the only thing guarding it. Correcting the slice alone
+        // would have quietly stopped checking that a country page publishes a
+        // legal section at all — the one section here that carries safety
+        // weight.
+        expect(
+          await page
+            .locator('article section[id]')
+            .evaluateAll((els) => els.map((el) => el.id).slice(0, 3)),
+        ).toEqual(['cities', 'travel', 'photos']);
+        await expect(page.locator('#rights')).toHaveCount(1);
       } else {
         await expect(page.getByTestId('single-rail')).toBeVisible();
       }
@@ -291,4 +312,15 @@ test.describe('city network diagram', () => {
       await expect(page.getByText(mode, { exact: true })).toHaveCount(0);
     }
   });
+});
+
+test('country section navigation opens travel options', async ({ page }) => {
+  await open(page, '/country/germany');
+  await expect(page.locator('#travel-detail')).toBeHidden();
+  await page.locator('article nav a[href="#travel"]').click();
+  await expect(page.locator('#travel-detail')).toBeVisible();
+  await expect(page.locator('button[aria-controls="travel-detail"]')).toHaveAttribute(
+    'aria-expanded',
+    'true',
+  );
 });
