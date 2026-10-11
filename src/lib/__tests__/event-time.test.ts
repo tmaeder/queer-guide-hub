@@ -67,17 +67,15 @@ describe('event-time', () => {
       });
 
       it('handles start-only with timezone', () => {
-        const result = formatEventTime(
-          '2026-06-14T14:00:00Z',
-          null,
-          'America/New_York',
-        );
+        const result = formatEventTime('2026-06-14T14:00:00Z', null, 'America/New_York');
         // 14:00 UTC = 10:00 AM EDT
         expect(result).toContain('10:00 AM');
       });
 
       it('still detects all-day even with timezone param', () => {
-        expect(formatEventTime('2026-06-14T00:00:00Z', '2026-06-14T23:59:00Z', 'Europe/Zurich')).toBe('All Day');
+        expect(
+          formatEventTime('2026-06-14T00:00:00Z', '2026-06-14T23:59:00Z', 'Europe/Zurich'),
+        ).toBe('All Day');
       });
     });
   });
@@ -141,11 +139,7 @@ describe('event-time', () => {
 
       it('formats all-day event with timezone (UTC dates)', () => {
         // Use a timezone that keeps both dates on the same day: UTC itself
-        const result = formatEventDateTime(
-          '2026-06-14T00:00:00Z',
-          '2026-06-14T23:59:00Z',
-          'UTC',
-        );
+        const result = formatEventDateTime('2026-06-14T00:00:00Z', '2026-06-14T23:59:00Z', 'UTC');
         // In UTC, start=Jun 14 00:00 and end=Jun 14 23:59 → same day → All Day
         expect(result).toContain('All Day');
         expect(result).toContain('Jun 14, 2026');
@@ -168,5 +162,18 @@ describe('event-time', () => {
         expect(result).toContain('5:00 AM');
       });
     });
+  });
+});
+
+describe('event timestamp timezone labels', () => {
+  it('uses the event date for the winter abbreviation rather than today', () => {
+    expect(
+      formatEventTime('2026-01-15T18:00:00Z', '2026-01-15T20:00:00Z', 'America/Toronto'),
+    ).toContain('EST');
+  });
+  it('uses the event date for the summer abbreviation', () => {
+    expect(
+      formatEventTime('2026-07-15T18:00:00Z', '2026-07-15T20:00:00Z', 'America/Toronto'),
+    ).toContain('EDT');
   });
 });

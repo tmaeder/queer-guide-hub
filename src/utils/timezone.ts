@@ -62,14 +62,17 @@ export function formatDateInZone(
  * Get abbreviated timezone name (e.g. "EST", "CET") for display.
  * Returns null if timezone is not provided.
  */
-export function getTimezoneAbbr(tz: string | null | undefined): string | null {
+export function getTimezoneAbbr(
+  tz: string | null | undefined,
+  at: string | Date = new Date(),
+): string | null {
   if (!tz) return null;
   try {
     const parts = new Intl.DateTimeFormat('en-US', {
       timeZone: tz,
       timeZoneName: 'short',
-    }).formatToParts(new Date());
-    const tzPart = parts.find(p => p.type === 'timeZoneName');
+    }).formatToParts(typeof at === 'string' ? new Date(at) : at);
+    const tzPart = parts.find((p) => p.type === 'timeZoneName');
     return tzPart?.value || null;
   } catch {
     return null;

@@ -23,33 +23,30 @@ import { socialSameAs } from '@/lib/social/registry';
 import { toast } from '@/hooks/use-toast';
 import { upsertEventAttendance } from '@/hooks/usePageFetchers';
 import { resolveEntityImage } from '@/lib/images/resolveEntityImage';
-import { MarketplaceForEvent } from '@/components/marketplace/MarketplaceForEvent';
-import { MilestonesForEntity } from '@/components/discovery/MilestonesForEntity';
 import {
   type EventWithRelations,
   EventMasthead,
-  EventActions,
   eventStatusLabel,
   EventFactStrip,
   EventForYou,
+  EventPlanHint,
   EventDecisionCard,
   EventAbout,
+  hasEventAboutContent,
+  hasEventWhereContent,
   EventWhoIsGoing,
   hasWhoIsGoingContent,
-  EventPeopleRail,
   isEventPast,
   EventWhere,
-  EventMobileBar,
   fetchEvent,
   exportEventToCalendar,
   formatEventDate,
 } from './EventDetail.parts';
 import { PageContainer } from '@/components/layout/PageContainer';
-import { SinglePage, StickyRailGroup } from '@/components/transit/SinglePage';
+import { SinglePage } from '@/components/transit/SinglePage';
 import { EventProgramme } from '@/components/events/EventProgramme';
 import { useEventProgramme } from '@/hooks/useEventProgramme';
 import { programmeLd } from '@/lib/eventProgrammeLd';
-import { PhotoInset } from '@/components/transit/PhotoInset';
 import { ProvenanceLine } from '@/components/transit/ProvenanceLine';
 import { SingleSectionList, SingleRouteRail } from '@/components/transit/SingleSections';
 import {
@@ -58,7 +55,7 @@ import {
   type SingleSectionDef,
 } from '@/components/transit/singleSectionModel';
 import { TagChipRow } from '@/components/tags/TagChipRow';
-import { FromTheGlossary } from '@/components/tags/FromTheGlossary';
+import { DestinationSafetyCard } from '@/components/safety/DestinationSafetyCard';
 import SafetyAlertBanner from '@/components/country/SafetyAlertBanner';
 import { localizedField, type I18nMap } from '@/lib/localizeContent';
 
@@ -289,7 +286,6 @@ export default function EventDetail() {
 
   // ---- render states -------------------------------------------------
 
-  const heroImage = event ? resolveEntityImage('event', event).url : undefined;
   // One definition, shared with the masthead's "Ended" chip — two copies of
   // "has it happened yet" is how a page says Ended in one place and offers
   // tickets in another.
@@ -312,8 +308,10 @@ export default function EventDetail() {
     ? singleSections([
         {
           id: 'about',
-          title: t('events.detail.section.about', 'About this event'),
-          content: <EventAbout event={event} onContentUpdated={refetch} />,
+          title: t('events.detail.section.about', 'The lowdown'),
+          content: hasEventAboutContent(event) ? (
+            <EventAbout event={event} onContentUpdated={refetch} />
+          ) : null,
         },
         {
           // Renders only when the umbrella actually has children (or the child
@@ -327,17 +325,16 @@ export default function EventDetail() {
         },
         {
           id: 'where',
-          title: t('events.detail.section.where', 'Getting there'),
-          content: (
+          title: t('events.detail.section.where', 'Find your way'),
+          content: hasEventWhereContent(event) ? (
             <EventWhere
               event={event}
               venueRef={venueRef}
-              countryId={effectiveCountry?.id ?? event.country_id}
               onOrganizerClick={(organizer) =>
                 navigate(`/events?organizer=${encodeURIComponent(organizer)}`)
               }
             />
-          ),
+          ) : null,
         },
         {
           // Guarded, like every other section on every other single. Without
@@ -347,7 +344,7 @@ export default function EventDetail() {
           // rendered its own "Who's going" h2 and that guard strips only the
           // first heading before checking for a body; both halves are fixed.
           id: 'going',
-          title: t('events.detail.section.going', "Who's going"),
+          title: t('events.detail.section.going', 'Riding with you'),
           content: hasWhoIsGoingContent(event, isPast) ? (
             <EventWhoIsGoing event={event} user={user} isPast={isPast} />
           ) : null,
@@ -417,14 +414,23 @@ export default function EventDetail() {
     <>
       <SinglePage
         type="event"
-        eyebrow={[t('events.detail.eyebrow', 'Event'), cityName].filter(Boolean).join(' · ')}
+        density="dense"
+        eyebrow={[
+          t('events.detail.eyebrow', 'Event'),
+          event.event_type && event.event_type !== 'other'
+            ? t(`eventTypes.${event.event_type}`, event.event_type.replace(/_/g, ' '))
+            : null,
+          cityName,
+        ]
+          .filter(Boolean)
+          .join(' · ')}
         title={localizedField(event.title, event.title_i18n as I18nMap, i18n.language)}
         status={eventStatusLabel(event)}
         // No lead: the standfirst below carries where-and-whether-it-is-on,
         // and `events.description` is long-form (98.8% populated) — it belongs
         // in the About section, not squeezed under the title.
         tags={
-          <div className="flex flex-col gap-4">
+          <div className="flex flex-col gap-2">
             <EventMasthead
               event={event}
               cityName={cityName}
@@ -436,11 +442,10 @@ export default function EventDetail() {
                 39,899) and was rendered NOWHERE — the single biggest piece of
                 already-collected data missing from this page. */}
             {event.tags && event.tags.length > 0 && (
-              <TagChipRow tags={event.tags} max={16} more="expand" />
+              <TagChipRow tags={event.tags} max={6} more="expand" />
             )}
           </div>
         }
-        action={<EventActions event={event} onShare={() => setSendEventOpen(true)} />}
         body={
           <>
             {/* The city-resolved country, not `event.countries`. The page has
@@ -455,21 +460,22 @@ export default function EventDetail() {
                 countryName={effectiveCountry.name}
               />
             )}
-            <ErrorBoundary section="event-fact-strip" fallback={null}>
-              <EventFactStrip
-                event={event}
-                showEventTz={showEventTz}
-                setShowEventTz={setShowEventTz}
-              />
-            </ErrorBoundary>
-            <PhotoInset
-              src={heroImage}
-              alt={event.title}
-              fallbackEntityType="event"
-              fallbackKey={event.id}
-              priority
-              caption={cityName}
-            />
+            <DestinationSafetyCard countryIds={[effectiveCountry?.id ?? event.country_id]} />
+            <div className="flex flex-wrap items-start gap-x-8 gap-y-4 border-b border-border-hairline pb-4">
+              <div className="min-w-0 flex-[1_1_36rem]">
+                <ErrorBoundary section="event-fact-strip" fallback={null}>
+                  <EventFactStrip
+                    event={event}
+                    showEventTz={showEventTz}
+                    setShowEventTz={setShowEventTz}
+                  />
+                </ErrorBoundary>
+              </div>
+              <ErrorBoundary section="event-decision-card" fallback={null}>
+                {decisionCard}
+              </ErrorBoundary>
+            </div>
+            <EventPlanHint event={event} isPast={isPast} />
             <ErrorBoundary section="event-for-you" fallback={null}>
               <EventForYou
                 event={event}
@@ -482,60 +488,27 @@ export default function EventDetail() {
               activeId={activeId}
               onNavigate={select}
               orientation="horizontal"
+              appearance="stations"
               track="blue"
               label={t('events.detail.sections', 'Sections')}
-              className="lg:hidden"
             />
-            <SingleSectionList sections={sections} />
-          </>
-        }
-        rail={
-          <>
-            {/* ONE copy. This was `hidden md:block` in the rail with a
-                duplicate `md:hidden` copy inside the body — so a phone got the
-                inline one and the rail's contents were dropped outright.
-                `SinglePage`'s rail is a sibling that reflows under the body,
-                which is the whole reason the duplication existed. */}
-            <ErrorBoundary section="event-decision-card" fallback={null}>
-              {decisionCard}
-            </ErrorBoundary>
-            <StickyRailGroup>
-              <SingleRouteRail
-                sections={sections}
-                activeId={activeId}
-                onNavigate={select}
-                orientation="vertical"
-                track="blue"
-                label={t('events.detail.sections', 'Sections')}
-                className="hidden lg:block"
-              />
-              <ProvenanceLine
-                addedAt={event.created_at}
-                checkedAt={event.last_verified_at ?? null}
-                correctHref="/contact"
-              />
-            </StickyRailGroup>
+            <div
+              className={`grid items-start gap-6 ${sections.length > 1 ? 'lg:grid-cols-2' : ''} [&>#programme]:lg:col-span-2`}
+            >
+              <SingleSectionList sections={sections} />
+            </div>
           </>
         }
         footer={
-          <div className="flex flex-col gap-12 pb-28 md:pb-12">
-            {/* Self-hiding composite rail: it belongs here, not in the
-                "Who's going" section, where its internal decision to render
-                nothing was invisible to the section filter. */}
-            <ErrorBoundary section="event-glossary" fallback={null}>
-              <FromTheGlossary tags={event.tags} />
-            </ErrorBoundary>
-            <ErrorBoundary section="event-people" fallback={null}>
-              <EventPeopleRail event={event} />
-            </ErrorBoundary>
-            <ErrorBoundary section="event-milestones" fallback={null}>
-              <MilestonesForEntity entityType="event" entityId={event.id} />
-            </ErrorBoundary>
-            <ErrorBoundary section="event-marketplace" fallback={null}>
-              <MarketplaceForEvent eventType={event.event_type} eventTitle={event.title} />
-            </ErrorBoundary>
+          <div className="flex flex-col gap-6 pb-4">
+            <ProvenanceLine
+              compact
+              addedAt={event.created_at}
+              checkedAt={event.last_verified_at ?? null}
+              correctHref="/contact"
+            />
             <ErrorBoundary section="event-more-events" fallback={null}>
-              <EventMoreEvents eventId={event.id} city={cityName} />
+              <EventMoreEvents eventId={event.id} city={cityName} limit={3} compact />
             </ErrorBoundary>
           </div>
         }
@@ -548,21 +521,16 @@ export default function EventDetail() {
           entity_table: 'events',
           entity_id: event.id,
           title: event.title,
-          subtitle: [formatEventDate(event.start_date, event.end_date), event.venues?.name]
+          subtitle: [
+            formatEventDate(event.start_date, event.end_date, event.timezone),
+            event.venues?.name,
+          ]
             .filter(Boolean)
             .join(' · '),
           image_url: resolveEntityImage('event', event).url ?? null,
           path: `/events/${event.slug || event.id}`,
           gated: Boolean((event as { safety_gated?: boolean }).safety_gated),
         }}
-      />
-
-      <EventMobileBar
-        event={event}
-        isPast={isPast}
-        user={user}
-        userAttendance={userAttendance}
-        onAttendanceUpdate={handleAttendanceUpdate}
       />
     </>
   );
