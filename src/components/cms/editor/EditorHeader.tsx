@@ -118,7 +118,7 @@ export function EditorHeader({
           </p>
 
           <h1
-            className="truncate font-sans text-lg font-semibold text-foreground"
+            className="truncate font-sans text-title font-semibold text-foreground"
             title={displayTitle}
           >
             {displayTitle}
