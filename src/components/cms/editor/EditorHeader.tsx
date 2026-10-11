@@ -2,13 +2,12 @@
  * EditorHeader - Top bar for the CMS editor.
  */
 
-import React, { useState, useRef, useCallback, useEffect } from 'react';
+import { useState, useCallback } from 'react';
 import { TrackLoader } from '@/components/transit/TrackLoader';
 import {
   X,
   RotateCcw,
   Eye,
-  Pencil,
   Sparkles,
   ChevronLeft,
   ChevronRight,
@@ -20,14 +19,13 @@ import {
 import type { ContentTypeConfig, EditorState } from '@/types/cms';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { CannedResponsePicker } from '@/components/admin/triage/CannedResponsePicker';
+import { AdminToolsPopover } from '@/components/admin/primitives/AdminToolsPopover';
 import { SaveButton } from './SaveButton';
 import { PreviewPanel } from './PreviewPanel';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { cn } from '@/lib/utils';
 import { livePath as resolveLivePath } from '@/lib/cmsLinks';
 import { useCurrentLocale } from '@/hooks/useLocalizedNavigate';
 import { DEFAULT_LOCALE } from '@/i18n/languages';
@@ -73,10 +71,6 @@ export function EditorHeader({
   const displayTitle =
     titleValue || (state.itemId ? 'Untitled' : `New ${contentType.label.singular}`);
 
-  const [isEditingTitle, setIsEditingTitle] = useState(false);
-  const [editTitleValue, setEditTitleValue] = useState(titleValue);
-  const titleInputRef = useRef<HTMLInputElement>(null);
-
   const [previewOpen, setPreviewOpen] = useState(false);
 
   // The admin shell has no locale segment, so this is the default locale —
@@ -95,38 +89,6 @@ export function EditorHeader({
     setReasonOpen(false);
   }, [reason, onRequestChanges]);
 
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- effect synchronizes state with external props/data; React Compiler can't infer the sync direction. Documented exemption from the eslint.config.js staged-ratchet plan.
-    if (!isEditingTitle) setEditTitleValue(titleValue);
-  }, [titleValue, isEditingTitle]);
-
-  useEffect(() => {
-    if (isEditingTitle && titleInputRef.current) {
-      titleInputRef.current.focus();
-      titleInputRef.current.select();
-    }
-  }, [isEditingTitle]);
-
-  const handleStartEditing = useCallback(() => {
-    setEditTitleValue(titleValue);
-    setIsEditingTitle(true);
-  }, [titleValue]);
-
-  const handleFinishEditing = useCallback(() => {
-    setIsEditingTitle(false);
-  }, []);
-
-  const handleTitleKeyDown = useCallback(
-    (e: React.KeyboardEvent) => {
-      if (e.key === 'Enter') handleFinishEditing();
-      if (e.key === 'Escape') {
-        setEditTitleValue(titleValue);
-        setIsEditingTitle(false);
-      }
-    },
-    [handleFinishEditing, titleValue],
-  );
-
   const handleClose = () => {
     if (state.isDirty) {
       const confirmed = window.confirm('You have unsaved changes. Are you sure you want to close?');
@@ -140,9 +102,9 @@ export function EditorHeader({
   const saveShortcut = isMac ? '⌘S' : 'Ctrl+S';
 
   return (
-    <div className="flex items-center justify-between px-4 py-4 border-b border-border bg-background flex-shrink-0 min-h-[56px]">
+    <div className="flex flex-wrap items-center justify-between gap-4 rounded-t-container px-4 py-4 bg-card flex-shrink-0">
       {/* Left side */}
-      <div className="flex items-center gap-4 min-w-0 flex-1">
+      <div className="flex flex-wrap items-center gap-4 min-w-0 basis-full lg:basis-auto flex-1">
         <div
           className="flex items-center justify-center flex-shrink-0 rounded-element w-10 h-10"
           style={{ backgroundColor: contentType.color + '18', color: contentType.color }}
@@ -151,50 +113,16 @@ export function EditorHeader({
         </div>
 
         <div className="min-w-0 flex-1">
-          <p
-            className="text-xs font-semibold uppercase leading-tight"
-            style={{ color: contentType.color, letterSpacing: '0.5px' }}
-          >
+          <p className="text-xs text-muted-foreground leading-tight">
             {contentType.label.singular}
           </p>
 
-          {isEditingTitle ? (
-            <Input
-              ref={titleInputRef}
-              value={editTitleValue}
-              onChange={(e) => setEditTitleValue(e.target.value)}
-              onBlur={handleFinishEditing}
-              onKeyDown={handleTitleKeyDown}
-              className="h-10 rounded-element border-0 bg-surface-container px-4 text-base font-semibold focus-visible:ring-2"
-            />
-          ) : (
-            <div
-              onClick={handleStartEditing}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' || e.key === ' ') {
-                  e.preventDefault();
-                  handleStartEditing();
-                }
-              }}
-              role="button"
-              tabIndex={0}
-              aria-label="Edit title"
-              className="group flex items-center gap-1.5 cursor-pointer border-b border-dashed border-transparent hover:border-muted-foreground/40 rounded-badge transition-colors"
-            >
-              <p
-                className={cn(
-                  'font-semibold whitespace-nowrap overflow-hidden text-ellipsis max-w-[200px] sm:max-w-[350px] md:max-w-[500px] leading-snug',
-                  titleValue ? 'text-foreground' : 'text-muted-foreground/60',
-                )}
-              >
-                {displayTitle}
-              </p>
-              <Pencil
-                size={13}
-                className="opacity-0 group-hover:opacity-100 transition-opacity shrink-0"
-              />
-            </div>
-          )}
+          <h1
+            className="truncate font-sans text-lg font-semibold text-foreground"
+            title={displayTitle}
+          >
+            {displayTitle}
+          </h1>
         </div>
 
         {queueInfo && (
@@ -205,7 +133,7 @@ export function EditorHeader({
               onClick={onPrev}
               disabled={!canPrev}
               aria-label="Previous in queue"
-              className="h-7 w-7 p-0 text-muted-foreground hover:text-foreground"
+              className="h-10 w-10 p-0 text-muted-foreground hover:text-foreground"
             >
               <ChevronLeft size={18} />
             </Button>
@@ -218,7 +146,7 @@ export function EditorHeader({
               onClick={onNext}
               disabled={!canNext}
               aria-label="Next in queue"
-              className="h-7 w-7 p-0 text-muted-foreground hover:text-foreground"
+              className="h-10 w-10 p-0 text-muted-foreground hover:text-foreground"
             >
               <ChevronRight size={18} />
             </Button>
@@ -227,10 +155,11 @@ export function EditorHeader({
 
         {state.isDirty && !state.isSaving && (
           <Badge
-            className="text-xs font-medium h-6 flex-shrink-0 opacity-90"
+            role="status"
+            className="text-xs font-medium h-6 flex-shrink-0"
             style={{
-              backgroundColor: 'hsl(var(--warning, 38 92% 50%))',
-              color: 'white',
+              backgroundColor: 'hsl(var(--muted))',
+              color: 'hsl(var(--foreground))',
             }}
           >
             Unsaved changes
@@ -246,7 +175,7 @@ export function EditorHeader({
       </div>
 
       {/* Right side */}
-      <div className="flex items-center gap-2 flex-shrink-0 ml-4">
+      <div className="flex flex-wrap items-center gap-2 min-w-0">
         <TooltipProvider>
           {queueInfo && onApprove && (
             <>
@@ -319,104 +248,81 @@ export function EditorHeader({
             </>
           )}
 
-          {onEnrich && state.itemId && (
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  disabled={isEnriching || state.isSaving}
-                  onClick={onEnrich}
-                  className="hidden sm:inline-flex font-medium normal-case text-foreground"
-                  style={{ borderColor: 'hsl(var(--foreground))' }}
-                >
-                  {isEnriching ? (
-                    <TrackLoader size={16} className="mr-1" />
-                  ) : (
-                    <Sparkles className="h-4 w-4 mr-1" />
-                  )}
-                  {isEnriching ? 'Enriching...' : 'Enrich'}
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>Enrich content with AI suggestions</TooltipContent>
-            </Tooltip>
-          )}
-
-          {contentType.id === 'personalities' && state.itemId && (
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() =>
-                    window.open(
-                      `/admin/content/personalities/${state.itemId}/datasheet?print=1`,
-                      '_blank',
-                      'noopener',
-                    )
-                  }
-                  className="hidden sm:inline-flex font-medium normal-case text-muted-foreground"
-                >
-                  <FileText className="h-4 w-4 mr-1" />
-                  Datenblatt
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>Druckfertiges Datenblatt (PDF)</TooltipContent>
-            </Tooltip>
-          )}
-
-          <Tooltip>
-            <TooltipTrigger asChild>
+          <AdminToolsPopover label="Editor tools">
+            {onEnrich && state.itemId && (
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => setPreviewOpen(true)}
-                className="hidden sm:inline-flex font-medium normal-case text-muted-foreground"
+                disabled={isEnriching || state.isSaving}
+                onClick={onEnrich}
+                className="inline-flex font-medium normal-case text-foreground"
+                style={{ borderColor: 'hsl(var(--foreground))' }}
               >
-                <Eye className="h-4 w-4 mr-1" />
-                Preview
+                {isEnriching ? (
+                  <TrackLoader size={16} className="mr-1" />
+                ) : (
+                  <Sparkles className="h-4 w-4 mr-1" />
+                )}
+                {isEnriching ? 'Enriching...' : 'Enrich'}
               </Button>
-            </TooltipTrigger>
-            <TooltipContent>Preview content</TooltipContent>
-          </Tooltip>
+            )}
 
-          {/* The other half of the switcher. Preview iframes the page inside
+            {contentType.id === 'personalities' && state.itemId && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() =>
+                  window.open(
+                    `/admin/content/personalities/${state.itemId}/datasheet?print=1`,
+                    '_blank',
+                    'noopener',
+                  )
+                }
+                className="inline-flex font-medium normal-case text-muted-foreground"
+              >
+                <FileText className="h-4 w-4 mr-1" />
+                Datenblatt
+              </Button>
+            )}
+
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setPreviewOpen(true)}
+              className="inline-flex font-medium normal-case text-muted-foreground"
+            >
+              <Eye className="h-4 w-4 mr-1" />
+              Preview
+            </Button>
+
+            {/* The other half of the switcher. Preview iframes the page inside
               the editor; this leaves for the real thing. Hidden rather than
               disabled when there is no public page — a type with no page at
               all (a vocabulary term) and an unsaved row are both "nothing to
               go to", and a permanently greyed button explains neither. */}
-          {livePath && (
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => window.open(livePath, '_blank', 'noopener')}
-                  className="hidden sm:inline-flex font-medium normal-case text-muted-foreground"
-                >
-                  <SquareArrowOutUpRight className="h-4 w-4 mr-1" />
-                  View live
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>Open the public page in a new tab</TooltipContent>
-            </Tooltip>
-          )}
-
-          <Tooltip>
-            <TooltipTrigger asChild>
+            {livePath && (
               <Button
                 variant="outline"
                 size="sm"
-                disabled={!state.isDirty || state.isSaving}
-                onClick={onReset}
-                className="hidden sm:inline-flex font-medium normal-case"
+                onClick={() => window.open(livePath, '_blank', 'noopener')}
+                className="inline-flex font-medium normal-case text-muted-foreground"
               >
-                <RotateCcw className="h-4 w-4 mr-1" />
-                Reset
+                <SquareArrowOutUpRight className="h-4 w-4 mr-1" />
+                View live
               </Button>
-            </TooltipTrigger>
-            <TooltipContent>Discard changes</TooltipContent>
-          </Tooltip>
+            )}
+
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={!state.isDirty || state.isSaving}
+              onClick={onReset}
+              className="inline-flex font-medium normal-case"
+            >
+              <RotateCcw className="h-4 w-4 mr-1" />
+              Reset
+            </Button>
+          </AdminToolsPopover>
 
           <SaveButton
             isDirty={state.isDirty}
@@ -435,7 +341,7 @@ export function EditorHeader({
                 variant="ghost"
                 size="sm"
                 onClick={handleClose}
-                className="h-7 w-7 p-0 text-muted-foreground hover:text-foreground"
+                className="h-10 w-10 p-0 text-muted-foreground hover:text-foreground"
               >
                 <X size={20} />
               </Button>

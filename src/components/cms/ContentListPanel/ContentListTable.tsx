@@ -169,11 +169,14 @@ function SortableHeader({
   return (
     <TableHead
       className="font-semibold cursor-pointer select-none transition-colors hover:text-primary"
-      // Shift-click appends to the sort list instead of replacing it.
-      onClick={(e) => onSort(field, e.shiftKey)}
-      title="Click to sort. Shift-click to add to the sort."
+      aria-sort={isActive ? (dir === 'asc' ? 'ascending' : 'descending') : 'none'}
     >
-      <div className="flex items-center gap-1">
+      <button
+        type="button"
+        className="flex min-h-10 items-center gap-1 rounded-element text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        onClick={(event) => onSort(field, event.shiftKey)}
+        title="Click to sort. Shift-click to add to the sort."
+      >
         {label}
         {isActive ? (
           dir === 'asc' ? (
@@ -185,7 +188,7 @@ function SortableHeader({
           <ArrowUpDown size={14} style={{ opacity: 0.3 }} />
         )}
         {showRank && <span className="text-2xs text-muted-foreground">{rank + 1}</span>}
-      </div>
+      </button>
     </TableHead>
   );
 }
@@ -454,9 +457,6 @@ export function ContentListTable({
                     data-state={isSelected ? 'selected' : undefined}
                     className={`transition-colors hover:bg-surface-container-high focus-within:bg-surface-container-high ${isHidden ? 'bg-muted/40' : ''}`}
                     style={{
-                      borderLeft: isHidden
-                        ? '3px solid hsl(var(--muted-foreground))'
-                        : '3px solid transparent',
                       ...(isSelected ? { backgroundColor: `${rowColor}0A` } : {}),
                     }}
                   >
@@ -600,9 +600,12 @@ export function ContentListTable({
                                   <Button
                                     variant="ghost"
                                     size="sm"
-                                    className="h-7 w-7 p-0"
+                                    className="h-10 w-10 p-0"
                                     aria-label={action.label}
-                                    onClick={() => action.onSelect(item.raw ?? {})}
+                                    onClick={(event) => {
+                                      event.stopPropagation();
+                                      action.onSelect(item.raw ?? {});
+                                    }}
                                   >
                                     <ActionIcon size={15} />
                                   </Button>
@@ -636,7 +639,7 @@ export function ContentListTable({
                                 <Button
                                   variant="ghost"
                                   size="sm"
-                                  className="h-7 w-7 p-0"
+                                  className="h-10 w-10 p-0"
                                   aria-label="View live"
                                   onClick={() => window.open(href, '_blank', 'noopener')}
                                 >
@@ -653,7 +656,7 @@ export function ContentListTable({
                             <Button
                               variant="ghost"
                               size="sm"
-                              className="h-7 w-7 p-0"
+                              className="h-10 w-10 p-0"
                               aria-label="Edit"
                               onClick={() => onEdit(item.contentType, item.id)}
                               style={{ ['--tw-color' as never]: rowColor } as never}

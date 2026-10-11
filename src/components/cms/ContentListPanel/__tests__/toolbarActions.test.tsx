@@ -103,6 +103,14 @@ function renderPanel(config: ContentTypeConfig | null) {
 }
 
 describe('ContentListPanel toolbarActions', () => {
+  it('keeps creation visible and reveals refresh through supporting tools', () => {
+    renderPanel(baseConfig());
+    expect(screen.getByRole('button', { name: /New Redirect/ })).toBeVisible();
+    expect(screen.queryByRole('button', { name: 'Refresh' })).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Content tools' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Refresh' }));
+    expect(controller.loadItems).toHaveBeenCalled();
+  });
   it('renders nothing extra when a type declares none', () => {
     renderPanel(baseConfig());
     expect(screen.queryByRole('button', { name: /import/i })).not.toBeInTheDocument();
@@ -116,6 +124,7 @@ describe('ContentListPanel toolbarActions', () => {
         toolbarActions: () => <button type="button">Import</button>,
       }),
     );
+    fireEvent.click(screen.getByRole('button', { name: 'Content tools' }));
     expect(screen.getByRole('button', { name: 'Import' })).toBeInTheDocument();
   });
 
@@ -125,6 +134,7 @@ describe('ContentListPanel toolbarActions', () => {
         toolbarActions: () => <button type="button">Import</button>,
       }),
     );
+    fireEvent.click(screen.getByRole('button', { name: 'Content tools' }));
     expect(screen.getByRole('button', { name: 'Import' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /New Redirect/i })).toBeInTheDocument();
   });

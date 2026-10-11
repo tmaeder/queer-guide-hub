@@ -282,7 +282,7 @@ export function WorkflowPanel({
               type="datetime-local"
               value={scheduleDraft}
               onChange={(e) => setScheduleDraft(e.target.value)}
-              className="text-sm h-9"
+              className="min-w-0 flex-1 text-sm h-10"
               aria-label="Scheduled publish at"
             />
             <Button

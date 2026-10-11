@@ -8,11 +8,11 @@ import { lazy, Suspense, useEffect, useRef, useState } from 'react';
 import { Navigate, useParams, useSearchParams } from 'react-router';
 import { Plus, Search, RefreshCw, X } from 'lucide-react';
 import { contentTypeRouteAliases } from '@/config/contentTypes';
+import { AdminToolsPopover } from '@/components/admin/primitives/AdminToolsPopover';
 import { ContentEntityTabs } from '@/components/admin/ContentEntityTabs';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
 
 import { tintOf } from './types';
 import { ContentListTable } from './ContentListTable';
@@ -293,29 +293,27 @@ function ContentListPanelBody(props: ContentListPanelProps) {
           }
           actions={
             <>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    // A Tooltip is NOT an accessible name: its content lives in
-                    // a portal and is never referenced by the trigger, so an
-                    // icon-only button reads as unlabelled (axe button-name).
-                    aria-label="Refresh"
-                    variant="ghost"
-                    size="sm"
-                    className="h-7 w-7 p-0"
-                    onClick={() => c.loadItems()}
-                  >
-                    <RefreshCw size={16} />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>Refresh</TooltipContent>
-              </Tooltip>
-              {c.config?.toolbarActions?.()}
-              {c.config && c.allListColumns.length > 0 && (
-                <ExportExcelButton
-                  onExport={() => exportContentType(c.config!, c.allListColumns)}
-                />
-              )}
+              <AdminToolsPopover label="Content tools">
+                <Button
+                  // A Tooltip is NOT an accessible name: its content lives in
+                  // a portal and is never referenced by the trigger, so an
+                  // icon-only button reads as unlabelled (axe button-name).
+                  aria-label="Refresh"
+                  variant="ghost"
+                  size="sm"
+                  className="min-h-10 justify-start gap-2"
+                  onClick={() => c.loadItems()}
+                >
+                  <RefreshCw size={16} aria-hidden="true" /> Refresh records
+                </Button>
+
+                {c.config?.toolbarActions?.()}
+                {c.config && c.allListColumns.length > 0 && (
+                  <ExportExcelButton
+                    onExport={() => exportContentType(c.config!, c.allListColumns)}
+                  />
+                )}
+              </AdminToolsPopover>
               {c.config && (
                 <Button size="sm" onClick={() => c.onCreate(c.config!.id)}>
                   <Plus size={16} className="mr-1" />
@@ -325,6 +323,25 @@ function ContentListPanelBody(props: ContentListPanelProps) {
             </>
           }
         />
+      )}
+
+      {((config?.lifecycle?.archive && c.archivedView && c.archivedView !== 'live') ||
+        (config?.merge && c.mergedView && c.mergedView !== 'unmerged')) && (
+        <p role="status" className="mb-2 text-xs text-muted-foreground">
+          Showing{' '}
+          {c.archivedView === 'archived'
+            ? (config?.lifecycle?.archive?.label?.toLowerCase() ?? 'archived')
+            : c.archivedView === 'all'
+              ? 'live and archived'
+              : 'live'}{' '}
+          records
+          {config?.merge && c.mergedView === 'merged'
+            ? ' · merged only'
+            : config?.merge && c.mergedView === 'all'
+              ? ' · including merged'
+              : ''}
+          . Change record visibility in view settings.
+        </p>
       )}
 
       <section
@@ -355,7 +372,7 @@ function ContentListPanelBody(props: ContentListPanelProps) {
         )}
 
         <div className="flex flex-wrap items-center gap-2">
-          <div className="relative min-w-[240px] flex-1 lg:max-w-[560px]">
+          <div className="relative min-w-0 basis-full flex-1 lg:basis-64">
             <Search
               size={16}
               aria-hidden="true"
@@ -366,6 +383,9 @@ function ContentListPanelBody(props: ContentListPanelProps) {
                 c.config
                   ? `Search ${c.config.label.plural.toLowerCase()}...`
                   : 'Search all content...'
+              }
+              aria-label={
+                c.config ? `Search ${c.config.label.plural.toLowerCase()}` : 'Search all content'
               }
               value={c.search}
               onChange={(e) => c.setSearch(e.target.value)}
@@ -395,18 +415,6 @@ function ContentListPanelBody(props: ContentListPanelProps) {
 
               <SortBuilder fields={config.fields} sorts={c.sorts} onChange={c.setSorts} />
 
-              <ArchivedViewToggle
-                lifecycle={config.lifecycle}
-                value={c.archivedView}
-                onChange={c.setArchivedView}
-              />
-
-              <MergedViewToggle
-                merge={config.merge}
-                value={c.mergedView}
-                onChange={c.setMergedView}
-              />
-
               <ViewSettings
                 config={config}
                 view={c.view}
@@ -417,6 +425,21 @@ function ContentListPanelBody(props: ContentListPanelProps) {
                 onColumnsChange={c.setColumns}
                 onGroupByChange={c.setGroupBy}
                 onDateFieldChange={c.setDateField}
+                lifecycleControls={
+                  <div className="flex flex-wrap gap-2">
+                    <ArchivedViewToggle
+                      lifecycle={config.lifecycle}
+                      value={c.archivedView}
+                      onChange={c.setArchivedView}
+                    />
+
+                    <MergedViewToggle
+                      merge={config.merge}
+                      value={c.mergedView}
+                      onChange={c.setMergedView}
+                    />
+                  </div>
+                }
               />
             </div>
           )}

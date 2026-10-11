@@ -4,7 +4,7 @@
  * (shared useAdminCounts), berry active indicator, and a collapse-to-icon-rail.
  */
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useLocation, Link } from 'react-router';
 import {
   ChevronDown,
@@ -82,6 +82,7 @@ function CountBadge({ count, overdue }: { count: number | undefined; overdue?: n
 
 export function AdminSidebar() {
   const location = useLocation();
+  const navigationRef = useRef<HTMLDivElement>(null);
   const { user } = useAuth();
   const { theme, setTheme } = useTheme();
   const { effectiveRole } = useGranularRoles();
@@ -112,10 +113,9 @@ export function AdminSidebar() {
 
   const [sectionOpen, setSectionOpen] = useState<Record<string, boolean>>(() => {
     const initial: Record<string, boolean> = {};
-    for (const section of adminNavSections) initial[section.id] = section.defaultExpanded ?? true;
+    initial.cockpit = true;
     return initial;
   });
-  const toggleSection = (id: string) => setSectionOpen((p) => ({ ...p, [id]: !p[id] }));
 
   const canSee = (item: AdminNavItem, section: AdminNavSection) =>
     isAdmin || roleAtLeast(effectiveRole, resolveItemMinRole(item, section));
@@ -163,6 +163,17 @@ export function AdminSidebar() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [visibleItems, location.pathname]);
 
+  // Keep the current destination in view without moving the page itself.
+  useEffect(() => {
+    const navigation = navigationRef.current;
+    const current = navigation?.querySelector<HTMLElement>('[aria-current="page"]');
+    if (!navigation || !current) return;
+    const viewport = navigation.getBoundingClientRect();
+    const row = current.getBoundingClientRect();
+    if (row.top < viewport.top) navigation.scrollTop += row.top - viewport.top;
+    else if (row.bottom > viewport.bottom) navigation.scrollTop += row.bottom - viewport.bottom;
+  }, [currentRoute, collapsed, sectionOpen]);
+
   const userEmail = user?.email ?? '';
   const userDisplayName =
     (user?.user_metadata?.display_name as string) ||
@@ -186,7 +197,7 @@ export function AdminSidebar() {
   // every `location.pathname` change, which a Link triggers exactly as
   // navigate() did.
   function NavRow({ item }: { item: AdminNavItem }) {
-    const active = isItemActive(item);
+    const active = item.route === currentRoute;
     const { count, overdue, hasCount } = itemCount(item);
     const pinned = isPinned(item.id);
 
@@ -199,7 +210,7 @@ export function AdminSidebar() {
         // ancestor row and would claim the page three times over.
         aria-current={item.route === currentRoute ? 'page' : undefined}
         className={cn(
-          'rounded-element mx-1.5 mb-px py-1.5 inline-flex items-center gap-2 transition-all hover:translate-x-0.5 w-[calc(100%-12px)] no-underline text-foreground',
+          'rounded-element mx-1.5 mb-px py-1.5 inline-flex items-center gap-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring w-[calc(100%-12px)] no-underline text-foreground',
           active
             ? 'bg-muted font-semibold border-l border-border-hairline pl-4'
             : 'pl-4.5 border-l border-transparent',
@@ -320,7 +331,7 @@ export function AdminSidebar() {
     <TooltipProvider>
       <div
         className={cn(
-          'min-h-full border-r border-border bg-background flex flex-col overflow-hidden transition-[width]',
+          'sticky top-0 h-dvh border-r border-border bg-background flex flex-col overflow-hidden transition-[width]',
           collapsed ? 'w-[64px]' : 'w-[260px]',
         )}
       >
@@ -344,7 +355,7 @@ export function AdminSidebar() {
             {!collapsed && (
               <div className="min-w-0">
                 <p className="text-sm font-bold tracking-tight leading-tight">Admin Console</p>
-                <p className="text-xs2 text-muted-foreground">Manage everything</p>
+                <p className="text-xs2 text-muted-foreground">Editorial workspace</p>
               </div>
             )}
             {!collapsed && isAdmin && (
@@ -372,8 +383,8 @@ export function AdminSidebar() {
               <Input
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                placeholder="Search nav — or ⌘K for everything"
-                className="h-8 pl-8 text-13 rounded-element"
+                placeholder="Find a section…"
+                className="h-10 pl-8 text-13 rounded-element"
                 aria-label="Search navigation"
               />
             </div>
@@ -381,7 +392,7 @@ export function AdminSidebar() {
         )}
 
         {/* Scrollable nav area */}
-        <div className="flex-1 overflow-auto py-1">
+        <div ref={navigationRef} className="min-h-0 flex-1 overflow-auto py-1">
           {searching ? (
             <div className="flex flex-col">
               {searchResults.length === 0 ? (
@@ -411,22 +422,47 @@ export function AdminSidebar() {
               {adminNavSections.map((section, sectionIdx) => {
                 const items = section.items.filter((i) => canSee(i, section));
                 if (items.length === 0) return null;
-                const isOpen = sectionOpen[section.id] ?? section.defaultExpanded ?? true;
+                const isCurrentSection = items.some((item) => item.route === currentRoute);
+                const isOpen = sectionOpen[section.id] ?? isCurrentSection;
 
                 if (collapsed) {
-                  // Icon rail: flat icons, no section chrome.
-                  return <SectionItems key={section.id} items={items} />;
+                  return (
+                    <Tooltip key={section.id}>
+                      <TooltipTrigger asChild>
+                        <button
+                          type="button"
+                          aria-label={`Open ${section.label} navigation`}
+                          onClick={() => {
+                            toggleCollapsed();
+                            setSectionOpen((prev) => ({ ...prev, [section.id]: true }));
+                          }}
+                          className={cn(
+                            'mx-2 mb-2 flex h-12 w-12 items-center justify-center rounded-element hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                            isCurrentSection && 'bg-muted',
+                          )}
+                        >
+                          <section.icon size={18} aria-hidden="true" />
+                        </button>
+                      </TooltipTrigger>
+                      <TooltipContent side="right">{section.label}</TooltipContent>
+                    </Tooltip>
+                  );
                 }
 
                 return (
                   <div key={section.id}>
                     {sectionIdx > 0 && <div className="my-1.5 mx-4 border-t border-border" />}
-                    <Collapsible open={isOpen} onOpenChange={() => toggleSection(section.id)}>
+                    <Collapsible
+                      open={isOpen}
+                      onOpenChange={() =>
+                        setSectionOpen((prev) => ({ ...prev, [section.id]: !isOpen }))
+                      }
+                    >
                       <CollapsibleTrigger asChild>
                         <button
                           type="button"
                           aria-expanded={isOpen}
-                          className="w-[calc(100%-12px)] rounded-element mx-1.5 mb-px py-1 px-2 inline-flex items-center gap-2 hover:translate-x-0.5 transition-transform"
+                          className="w-[calc(100%-12px)] rounded-element mx-1.5 mb-px py-1 px-2 inline-flex items-center gap-2 min-h-10 transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                           style={{ marginTop: sectionIdx === 0 ? 4 : 0 }}
                         >
                           <span
@@ -449,6 +485,11 @@ export function AdminSidebar() {
                         <SectionItems items={items} />
                       </CollapsibleContent>
                     </Collapsible>
+                    {!isOpen &&
+                      isCurrentSection &&
+                      items
+                        .filter((item) => item.route === currentRoute)
+                        .map((item) => <NavRow key={item.id} item={item} />)}
                   </div>
                 );
               })}

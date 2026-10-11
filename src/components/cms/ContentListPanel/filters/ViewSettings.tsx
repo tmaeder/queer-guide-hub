@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import { CalendarDays, Columns, GanttChart, LayoutGrid, Settings2, Table2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -36,6 +37,7 @@ const LAYOUTS = [
 const NONE = '__none__';
 
 interface Props {
+  lifecycleControls?: ReactNode;
   config: ContentTypeConfig;
   view: ContentView;
   columns: string[];
@@ -48,6 +50,7 @@ interface Props {
 }
 
 export function ViewSettings({
+  lifecycleControls,
   config,
   view,
   columns,
@@ -78,8 +81,14 @@ export function ViewSettings({
           <Settings2 size={13} className="ml-1 opacity-50" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-[380px] p-4" align="end">
+      <PopoverContent className="w-[380px] max-w-[calc(100vw-2rem)] p-4" align="end">
         <ScrollArea className="max-h-[70vh] pr-2">
+          {lifecycleControls && (
+            <section className="mb-4">
+              <p className="mb-2 text-sm font-semibold">Record visibility</p>
+              {lifecycleControls}
+            </section>
+          )}
           <section className="mb-4">
             <h6 className="text-2xs uppercase tracking-wide text-muted-foreground font-semibold mb-2">
               Layout

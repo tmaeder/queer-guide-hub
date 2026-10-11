@@ -50,11 +50,11 @@ interface PanelProps {
 function Panel({ title, open, onOpenChange, badge, children }: PanelProps) {
   return (
     <Collapsible open={open} onOpenChange={onOpenChange}>
-      <div className="rounded-element bg-muted overflow-hidden">
+      <div className="border-b border-border-hairline overflow-hidden">
         <CollapsibleTrigger asChild>
           <button
             type="button"
-            className="w-full min-h-11 flex items-center justify-between px-4 py-2 hover:bg-muted text-left"
+            className="w-full min-h-11 flex items-center justify-between px-4 py-2 hover:bg-muted text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset"
           >
             <div className="flex items-center gap-2">
               <span className="text-sm font-semibold">{title}</span>
@@ -132,7 +132,7 @@ export function EditorSidebar({
   };
 
   return (
-    <div className="p-4 flex flex-col gap-4">
+    <div className="rounded-container bg-card p-4 flex flex-col gap-1 shadow-soft">
       {/* Quality Panel (AI review) */}
       {showQuality && (
         <Panel title="Quality" open={expandedPanels.quality} onOpenChange={setPanel('quality')}>

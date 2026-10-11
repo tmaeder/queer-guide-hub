@@ -2,11 +2,17 @@
  * @vitest-environment jsdom
  */
 import { describe, it, expect, vi } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render as rtlRender, screen, fireEvent } from '@testing-library/react';
 import { ADMIN_QUEUES } from '@/config/adminQueues';
 import { TriageFilterBar } from '../TriageFilterBar';
 import { buildInboxQueueChips } from '../triageQueueFilters';
 import type { TriageFilters } from '@/hooks/useUnifiedTriageQueue';
+
+const render = (ui: React.ReactElement) => {
+  const result = rtlRender(ui);
+  fireEvent.click(screen.getByRole('button', { name: 'Choose review queues' }));
+  return result;
+};
 
 const baseFilters: TriageFilters = {
   queueTypes: null,
@@ -27,6 +33,26 @@ const counts = {
 } as never;
 
 describe('TriageFilterBar', () => {
+  it('discloses the queue selector while keeping urgent scopes visible', () => {
+    rtlRender(<TriageFilterBar filters={baseFilters} counts={counts} onFiltersChange={vi.fn()} />);
+    expect(screen.queryByRole('button', { name: /Staging/ })).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Safety' })).toBeVisible();
+    fireEvent.click(screen.getByRole('button', { name: 'Choose review queues' }));
+    expect(screen.getByRole('button', { name: /Staging/ })).toBeVisible();
+  });
+
+  it('preserves other selected queues when toggling a queue', () => {
+    const onChange = vi.fn();
+    render(
+      <TriageFilterBar
+        filters={{ ...baseFilters, queueTypes: ['moderation'] }}
+        counts={counts}
+        onFiltersChange={onChange}
+      />,
+    );
+    fireEvent.click(screen.getByRole('button', { name: /Staging/ }));
+    expect(onChange).toHaveBeenCalledWith({ queueTypes: ['moderation', 'staging'], page: 1 });
+  });
   it('renders one chip per queue', () => {
     render(<TriageFilterBar filters={baseFilters} counts={counts} onFiltersChange={vi.fn()} />);
     ['Staging', 'Reports', 'Submissions', 'CMS review', 'Automation', 'Quality'].forEach((label) =>

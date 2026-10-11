@@ -363,7 +363,7 @@ function CMSEditorBody({
         : 'hsl(var(--destructive))';
 
   return (
-    <div className="scale-in flex flex-col h-full bg-background">
+    <div className="flex min-w-0 flex-col h-full bg-background">
       {/* ── Sticky Header ──────────────────────────────────────── */}
       <div className="sticky top-0 z-20 flex-shrink-0">
         <EditorHeader
@@ -409,13 +409,13 @@ function CMSEditorBody({
       )}
 
       {/* ── Body (main + sidebar) ───────────────────────────── */}
-      <div className="flex-1 overflow-auto lg:overflow-hidden flex flex-col lg:flex-row">
+      <div className="flex-1 min-w-0 grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_19rem]">
         {/* ── Main Column ─────────────────────────────────── */}
-        <div className="flex-none lg:flex-1 overflow-visible lg:overflow-auto lg:w-[70%] lg:max-w-[70%]">
-          <div className="rounded-element bg-muted m-4 mb-1 lg:mb-4 overflow-hidden">
+        <div className="min-w-0">
+          <div className="rounded-container bg-card mt-4 overflow-hidden shadow-soft">
             {/* Group tabs */}
             <Tabs value={state.activeGroup} onValueChange={(v) => setActiveGroup(v as FieldGroup)}>
-              <TabsList className="border-b border-border min-h-12 bg-background w-full justify-start overflow-x-auto">
+              <TabsList className="border-b border-border min-h-12 bg-card w-full justify-start flex-nowrap overflow-x-auto">
                 {fieldGroups.map((group) => {
                   const GroupIcon = fieldGroupIcons[group];
                   const count =
@@ -430,7 +430,7 @@ function CMSEditorBody({
                     <TabsTrigger
                       key={group}
                       value={group}
-                      className="min-h-12 normal-case font-medium text-sm gap-1.5 px-4"
+                      className="min-h-12 shrink-0 normal-case font-medium text-sm gap-1.5 px-4"
                     >
                       <GroupIcon
                         style={{ width: 15, height: 15, color: dotColor }}
@@ -460,17 +460,7 @@ function CMSEditorBody({
                       gridColumn: field.colSpan === 2 ? '1 / -1' : undefined,
                     }}
                   >
-                    <div
-                      className={
-                        field.type === 'organisation_locations'
-                          ? 'p-4 bg-background'
-                          : `p-4 rounded-element border bg-background transition-colors focus-within:border-primary focus-within:shadow-[0_0_0_2px_hsl(var(--primary)/0.2)] ${
-                              state.errors[field.name]
-                                ? 'border border-destructive'
-                                : 'border-border'
-                            }`
-                      }
-                    >
+                    <div className="min-w-0">
                       <FieldRenderer
                         field={field}
                         value={state.data[field.name]}
@@ -499,7 +489,7 @@ function CMSEditorBody({
         </div>
 
         {/* ── Sidebar ─────────────────────────────────────── */}
-        <div className="shrink-0 overflow-visible lg:overflow-auto lg:w-[30%] lg:min-w-[300px] lg:max-w-[400px] border-t lg:border-t-0 lg:border-l border-border">
+        <div className="min-w-0 mt-4">
           <EditorSidebar
             contentType={contentType}
             itemId={state.itemId ?? itemId}

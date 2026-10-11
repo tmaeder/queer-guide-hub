@@ -2,7 +2,7 @@
  * @vitest-environment jsdom
  */
 import { describe, it, expect, vi } from 'vitest';
-import { render } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router';
 import { Box, Layers } from 'lucide-react';
 
@@ -29,6 +29,7 @@ vi.mock('@/config/adminNavigation', () => ({
     {
       id: 's1',
       label: 'Section',
+      icon: Box,
       defaultExpanded: true,
       minRole: 'editor',
       items: [
@@ -42,14 +43,32 @@ vi.mock('@/config/adminNavigation', () => ({
 
 import { AdminSidebar } from '../AdminSidebar';
 
-const at = (path: string) =>
-  render(
+const at = (path: string) => {
+  const result = render(
     <MemoryRouter initialEntries={[path]}>
       <AdminSidebar />
     </MemoryRouter>,
   );
+  const section = screen.getAllByRole('button', { name: /SECTION/ }).at(-1)!;
+  if (section.getAttribute('aria-expanded') === 'false') fireEvent.click(section);
+  return result;
+};
 
 describe('AdminSidebar', () => {
+  it('opens a labelled section from the compact navigation rail', () => {
+    at('/admin/x/deep');
+    fireEvent.click(screen.getByRole('button', { name: 'Collapse sidebar' }));
+    expect(screen.queryByRole('link', { name: 'Deep' })).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Open Section navigation' }));
+    expect(screen.getByRole('link', { name: 'Deep' })).toBeVisible();
+  });
+
+  it('keeps the current destination reachable when its section is collapsed', () => {
+    const { container } = at('/admin/x/deep');
+    fireEvent.click(screen.getByRole('button', { name: /SECTION/ }));
+    expect(container.querySelector('a[href="/admin/x/deep"]')).not.toBeNull();
+    expect(container.querySelector('a[href="/admin/x"]')).toBeNull();
+  });
   it('renders sections + items', () => {
     const { container } = at('/admin');
     expect(container).toBeTruthy();

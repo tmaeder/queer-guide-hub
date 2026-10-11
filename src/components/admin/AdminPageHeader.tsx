@@ -1,13 +1,12 @@
 import * as React from 'react';
-import { Link, useLocation, useSearchParams } from 'react-router';
+import { Link, useSearchParams } from 'react-router';
 import { ArrowLeft } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { Eyebrow } from '@/components/ui/Eyebrow';
-import { getEyebrowForRoute, getNavItemByRoute } from '@/config/adminNavigation';
+import { getNavItemByRoute } from '@/config/adminNavigation';
 
 interface AdminPageHeaderProps {
-  /** Short uppercase context, e.g. "CONTENT · VENUES". Defaults to a value
-   *  derived from the current route when omitted. Pass `null` to suppress. */
+  /** Optional context supplied by the page. The shell owns route orientation,
+   *  so no second route label is added automatically. */
   eyebrow?: React.ReactNode | null;
   title: React.ReactNode;
   subtitle?: React.ReactNode;
@@ -24,7 +23,7 @@ interface AdminPageHeaderProps {
  * (admin tree forbids framer-motion / motion/react).
  *
  * Sits below the AdminShell breadcrumb bar and replaces ad-hoc <h1>
- * blocks across admin pages. Eyebrow defaults to the route context so
+ * blocks across admin pages. Route orientation stays in the shell, so
  * pages only need to pass a title.
  */
 export function AdminPageHeader({
@@ -36,10 +35,9 @@ export function AdminPageHeader({
   className,
   children,
 }: AdminPageHeaderProps) {
-  const location = useLocation();
   const [searchParams] = useSearchParams();
 
-  const resolvedEyebrow = eyebrow === undefined ? getEyebrowForRoute(location.pathname) : eyebrow;
+  const resolvedEyebrow = eyebrow;
 
   // Auto back-link: explicit prop wins, else a `?from=` route param.
   const fromParam = searchParams.get('from');
@@ -50,7 +48,7 @@ export function AdminPageHeader({
   return (
     <header
       className={cn(
-        'mb-6 flex flex-col gap-4 border-b border-border-hairline pb-6 sm:flex-row sm:items-end sm:justify-between',
+        'mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between',
         className,
       )}
     >
@@ -64,13 +62,9 @@ export function AdminPageHeader({
             Back to {back.label}
           </Link>
         )}
-        {resolvedEyebrow && (
-          <Eyebrow as="div" className="mb-2">
-            {resolvedEyebrow}
-          </Eyebrow>
-        )}
+        {resolvedEyebrow && <p className="mb-2 text-xs text-muted-foreground">{resolvedEyebrow}</p>}
         <h1 className="text-headline font-bold tracking-tight text-foreground">{title}</h1>
-        {subtitle && <p className="mt-2 max-w-2xl text-13 text-muted-foreground">{subtitle}</p>}
+        {subtitle && <div className="mt-2 max-w-2xl text-13 text-muted-foreground">{subtitle}</div>}
       </div>
       {actions && <div className="flex shrink-0 flex-wrap items-center gap-2">{actions}</div>}
       {children && <div className="w-full">{children}</div>}

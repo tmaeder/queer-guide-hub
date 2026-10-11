@@ -1,4 +1,6 @@
 import { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import {
@@ -8,7 +10,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Globe2, Search, ShieldAlert, Timer } from 'lucide-react';
+import { ChevronDown, Globe2, Search, ShieldAlert, Timer } from 'lucide-react';
 import { queueImpact, queueRisk } from '@/config/adminQueues';
 import { readCount, type AdminCounts } from '@/hooks/useAdminCounts';
 import type { TriageFilters } from '@/hooks/useUnifiedTriageQueue';
@@ -73,7 +75,7 @@ export function TriageFilterBar({ filters, counts, onFiltersChange }: TriageFilt
   return (
     <div className="border-b border-border bg-background px-4 py-2">
       <div className="flex min-w-0 flex-col gap-2 xl:flex-row xl:items-center">
-        <div className="flex min-w-0 flex-1 items-center gap-1.5 overflow-x-auto pb-1 xl:pb-0">
+        <div className="flex min-w-0 flex-1 items-center gap-1.5 flex-wrap">
           <div className="flex shrink-0 gap-1.5" role="group" aria-label="Quick scopes">
             {scopes.map(({ key, label, Icon, keys }) => {
               const active = keys.length > 0 && sameKeys(keys);
@@ -84,7 +86,7 @@ export function TriageFilterBar({ filters, counts, onFiltersChange }: TriageFilt
                   disabled={keys.length === 0}
                   aria-pressed={active}
                   onClick={() => onFiltersChange({ queueTypes: active ? null : keys, page: 1 })}
-                  className={`inline-flex h-8 min-h-8 items-center gap-1.5 rounded-badge border px-2.5 text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-40 ${
+                  className={`inline-flex h-10 min-h-10 items-center gap-1.5 rounded-badge border px-2.5 text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-40 ${
                     active
                       ? 'border-foreground bg-foreground text-background'
                       : 'border-border bg-background text-foreground hover:bg-muted'
@@ -96,51 +98,67 @@ export function TriageFilterBar({ filters, counts, onFiltersChange }: TriageFilt
               );
             })}
           </div>
-          <span className="mx-0.5 h-5 w-px shrink-0 bg-border" aria-hidden="true" />
-          <div
-            className="flex min-w-0 flex-nowrap items-center gap-1.5"
-            role="group"
-            aria-label="Queue types"
-          >
-            <button
-              type="button"
-              aria-pressed={filters.queueTypes === null}
-              onClick={() => onFiltersChange({ queueTypes: null, page: 1 })}
-              className={`inline-flex h-8 min-h-8 shrink-0 items-center rounded-badge border px-2.5 text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
-                filters.queueTypes === null
-                  ? 'border-foreground bg-foreground text-background'
-                  : 'border-border bg-background text-foreground hover:bg-muted'
-              }`}
-            >
-              All queues
-            </button>
-            {queueChips.map((chip) => {
-              const active = chip.keys.every((k) => filters.queueTypes?.includes(k) ?? false);
-              return (
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline"
+                size="sm"
+                className="min-h-10 shrink-0 gap-2"
+                aria-label="Choose review queues"
+              >
+                {filters.queueTypes?.length
+                  ? `${filters.queueTypes.length} ${filters.queueTypes.length === 1 ? 'queue' : 'queues'} selected`
+                  : 'All queues'}
+                <ChevronDown size={14} aria-hidden="true" />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent align="start" className="w-72 max-w-[calc(100vw-2rem)] p-2">
+              <div
+                className="flex max-h-[60vh] flex-col gap-1 overflow-y-auto"
+                role="group"
+                aria-label="Queue types"
+              >
                 <button
-                  key={chip.key}
                   type="button"
-                  aria-pressed={active}
-                  onClick={() => toggleQueue(chip.keys)}
-                  className={`inline-flex h-8 min-h-8 shrink-0 items-center gap-1.5 rounded-badge border px-2.5 text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
-                    active
+                  aria-pressed={filters.queueTypes === null}
+                  onClick={() => onFiltersChange({ queueTypes: null, page: 1 })}
+                  className={`inline-flex h-10 min-h-10 shrink-0 items-center rounded-element border px-2.5 text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
+                    filters.queueTypes === null
                       ? 'border-foreground bg-foreground text-background'
                       : 'border-border bg-background text-foreground hover:bg-muted'
                   }`}
                 >
-                  {chip.label}
-                  {chip.count > 0 && (
-                    <Badge
-                      variant={active ? 'outline' : 'secondary'}
-                      className="h-4 min-w-4 border-current px-1 text-2xs font-normal"
-                    >
-                      {chip.count}
-                    </Badge>
-                  )}
+                  All queues
                 </button>
-              );
-            })}
-          </div>
+                {queueChips.map((chip) => {
+                  const active = chip.keys.every((k) => filters.queueTypes?.includes(k) ?? false);
+                  return (
+                    <button
+                      key={chip.key}
+                      type="button"
+                      aria-pressed={active}
+                      onClick={() => toggleQueue(chip.keys)}
+                      className={`inline-flex h-10 min-h-10 shrink-0 items-center justify-between gap-1.5 rounded-element border px-2.5 text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
+                        active
+                          ? 'border-foreground bg-foreground text-background'
+                          : 'border-border bg-background text-foreground hover:bg-muted'
+                      }`}
+                    >
+                      {chip.label}
+                      {chip.count > 0 && (
+                        <Badge
+                          variant={active ? 'outline' : 'secondary'}
+                          className="h-4 min-w-4 border-current px-1 text-2xs font-normal"
+                        >
+                          {chip.count}
+                        </Badge>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+            </PopoverContent>
+          </Popover>
         </div>
 
         <div className="flex w-full shrink-0 items-center gap-2 xl:w-auto">
