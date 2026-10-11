@@ -187,7 +187,13 @@ const SheetContent = React.forwardRef<HTMLDivElement, SheetContentProps>(
             type="button"
             aria-label="Close"
             onClick={() => onOpenChange(false)}
-            className="absolute right-3 top-3 inline-flex h-8 w-8 min-h-11 min-w-11 items-center justify-center rounded-element text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+            // `end-3`, not `right-3`: under `dir="rtl"` a physical offset puts
+            // the close button on the wrong side of every sheet in the app.
+            // A logical property is a strict improvement here and changes
+            // nothing in LTR. (The `aria-label` above is still hardcoded
+            // English — translating it is a cross-cutting change across all 31
+            // sheets and is deliberately out of this pass.)
+            className="absolute end-3 top-3 inline-flex h-8 w-8 min-h-11 min-w-11 items-center justify-center rounded-element text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
           >
             <X className="h-4 w-4" />
           </button>

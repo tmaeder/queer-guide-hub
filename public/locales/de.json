@@ -147,7 +147,8 @@
     "noStation": "Noch keine Station mit diesem Namen",
     "addToMap": "Zur Karte hinzufügen",
     "seeOnMap": "{{count}} Ergebnisse auf der Karte",
-    "keyHints": "↑↓ navigieren · ↵ öffnen"
+    "keyHints": "↑↓ navigieren · ↵ öffnen",
+    "open": "Suchen"
   },
   "common": {
     "contentInLanguage": "Auf {{lang}}",
@@ -231,7 +232,11 @@
     "antiDiscrimination": {
       "title": "Für Bigotterie ist hier kein Platz.",
       "body": "Rassismus, Transfeindlichkeit und Diskriminierung führen automatisch zum Ausschluss von der Plattform. Punkt."
-    }
+    },
+    "essentials": "Wichtige Links",
+    "report": "Melden",
+    "cookiePreferences": "Cookie-Einstellungen",
+    "navigation": "Fußzeilen-Navigation"
   },
   "trips": {
     "title": "Meine Reisen",
@@ -2084,7 +2089,8 @@
       "mailbox": "Postfach",
       "you": "Profil",
       "community": "Community",
-      "viewProfile": "Öffentliches Profil ansehen"
+      "viewProfile": "Öffentliches Profil ansehen",
+      "yourAccount": "Dein Konto"
     },
     "modes": {
       "dating": "Auf der Suche nach Liebe",
@@ -2099,7 +2105,10 @@
       "help": "Krisenhilfe",
       "accessibility": "Barrierefreiheit",
       "legal": "Rechtliches",
-      "contact": "Kontakt"
+      "contact": "Kontakt",
+      "privacy": "Datenschutz",
+      "terms": "AGB",
+      "donate": "Unterstütze uns"
     },
     "signUp": "Sign up",
     "navigation": "Navigation",
@@ -5287,5 +5296,18 @@
       "linked": "{{count}} mit einem bestehenden Eintrag verknüpft",
       "reviewNote": "Einreichungen werden vor der Veröffentlichung geprüft."
     }
+  },
+  "a11y": {
+    "skipToContent": "Zum Hauptinhalt springen"
+  },
+  "theme": {
+    "toggle": "Design wechseln",
+    "light": "Hell",
+    "dark": "Dunkel",
+    "system": "System"
+  },
+  "i18n": {
+    "selectLanguage": "Sprache wählen",
+    "selectCurrency": "Währung wählen"
   }
 }

@@ -147,7 +147,8 @@
     "noStation": "Aucune station de ce nom — pour l’instant",
     "addToMap": "Ajoutez-la à la carte",
     "seeOnMap": "Voir {{count}} résultats sur la carte",
-    "keyHints": "↑↓ naviguer · ↵ ouvrir"
+    "keyHints": "↑↓ naviguer · ↵ ouvrir",
+    "open": "Rechercher"
   },
   "common": {
     "contentInLanguage": "En {{lang}}",
@@ -231,7 +232,11 @@
     "antiDiscrimination": {
       "title": "Ici, pas de place pour l’intolérance.",
       "body": "Le racisme, la transphobie et la discrimination entraînent automatiquement l’exclusion de la plateforme. Point."
-    }
+    },
+    "essentials": "Liens essentiels",
+    "report": "Signaler",
+    "cookiePreferences": "Préférences de cookies",
+    "navigation": "Navigation du pied de page"
   },
   "trips": {
     "title": "Mes voyages",
@@ -2088,7 +2093,8 @@
       "mailbox": "Boîte de réception",
       "you": "Profil",
       "community": "Communauté",
-      "viewProfile": "Voir le profil public"
+      "viewProfile": "Voir le profil public",
+      "yourAccount": "Votre compte"
     },
     "modes": {
       "dating": "En quête d'amour",
@@ -2103,7 +2109,10 @@
       "help": "Aide",
       "accessibility": "Accessibilité",
       "legal": "Mentions légales",
-      "contact": "Contact"
+      "contact": "Contact",
+      "privacy": "Confidentialité",
+      "terms": "Conditions",
+      "donate": "Nous soutenir"
     },
     "signUp": "Sign up",
     "navigation": "Navigation",
@@ -5291,5 +5300,18 @@
       "linked": "{{count}} lié à une entrée existante",
       "reviewNote": "Les propositions sont vérifiées avant publication."
     }
+  },
+  "a11y": {
+    "skipToContent": "Aller au contenu principal"
+  },
+  "theme": {
+    "toggle": "Changer de thème",
+    "light": "Clair",
+    "dark": "Sombre",
+    "system": "Système"
+  },
+  "i18n": {
+    "selectLanguage": "Choisir la langue",
+    "selectCurrency": "Choisir la devise"
   }
 }

@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import { Wallet } from 'lucide-react';
 import {
   Select,
@@ -17,6 +18,7 @@ interface CurrencyRow {
 
 export function CurrencySelector() {
   const { currency, setCurrency } = useCurrency();
+  const { t } = useTranslation();
 
   const { data: currencies = [] } = useQuery({
     queryKey: ['currencies-list'],
@@ -30,7 +32,9 @@ export function CurrencySelector() {
   return (
     <Select value={currency} onValueChange={setCurrency}>
       <SelectTrigger
-        aria-label="Select currency"
+        aria-label={t('i18n.selectCurrency', 'Select currency')}
+        // See LanguageSwitcher: `height: 36` is declared intent, and the base
+        // 44px min-height in index.css is what actually renders.
         style={{
           width: 'auto',
           minWidth: 0,

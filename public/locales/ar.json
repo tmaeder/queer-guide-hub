@@ -147,7 +147,8 @@
     "noStation": "لا توجد محطة بهذا الاسم — بعد",
     "addToMap": "أضفها إلى الخريطة",
     "seeOnMap": "عرض {{count}} نتيجة على الخريطة",
-    "keyHints": "↑↓ للتنقل · ↵ للفتح"
+    "keyHints": "↑↓ للتنقل · ↵ للفتح",
+    "open": "بحث"
   },
   "common": {
     "contentInLanguage": "باللغة {{lang}}",
@@ -231,7 +232,11 @@
     "antiDiscrimination": {
       "title": "لا مكان للتعصب هنا.",
       "body": "العنصرية ورهاب المتحولين جنسياً والتمييز أسباب تلقائية للطرد من المنصة. نقطة."
-    }
+    },
+    "essentials": "روابط أساسية",
+    "report": "إبلاغ",
+    "cookiePreferences": "تفضيلات ملفات تعريف الارتباط",
+    "navigation": "تنقل التذييل"
   },
   "trips": {
     "title": "رحلاتي",
@@ -2094,7 +2099,8 @@
       "mailbox": "صندوق البريد",
       "you": "حسابي",
       "community": "المجتمع",
-      "viewProfile": "عرض الملف العام"
+      "viewProfile": "عرض الملف العام",
+      "yourAccount": "حسابك"
     },
     "modes": {
       "dating": "أبحث عن الحب",
@@ -2109,7 +2115,10 @@
       "help": "مساعدة",
       "accessibility": "إمكانية الوصول",
       "legal": "قانوني",
-      "contact": "تواصل معنا"
+      "contact": "تواصل معنا",
+      "privacy": "الخصوصية",
+      "terms": "الشروط",
+      "donate": "ادعمنا"
     },
     "signUp": "Sign up",
     "navigation": "Navigation",
@@ -5295,5 +5304,18 @@
       "linked": "تم ربط {{count}} بإدخال موجود",
       "reviewNote": "تُراجع المساهمات قبل النشر."
     }
+  },
+  "a11y": {
+    "skipToContent": "الانتقال إلى المحتوى الرئيسي"
+  },
+  "theme": {
+    "toggle": "تبديل المظهر",
+    "light": "فاتح",
+    "dark": "داكن",
+    "system": "النظام"
+  },
+  "i18n": {
+    "selectLanguage": "اختر اللغة",
+    "selectCurrency": "اختر العملة"
   }
 }

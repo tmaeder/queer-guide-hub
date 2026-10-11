@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useLocation } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { LogOut, Plane, Shield, UserRound, Users } from 'lucide-react';
 import {
@@ -9,7 +10,9 @@ import {
   SheetDescription,
 } from '@/components/ui/sheet';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
-import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+import { IdentityRow } from '@/components/layout/IdentityRow';
+import { FriendsOnlineCount } from '@/components/layout/FriendsOnlineCount';
+import { NavBadge } from '@/components/layout/bottom-nav/NavBadge';
 import { LanguageSwitcher } from '@/components/i18n/LanguageSwitcher';
 import { CurrencySelector } from '@/components/i18n/CurrencySelector';
 import { ThemeToggle } from '@/components/theme/ThemeToggle';
@@ -21,6 +24,7 @@ import {
   LEGAL_ITEMS,
   INTENT_NAV,
   INTENT_TRACK,
+  isIntentActive,
 } from '@/config/navigation';
 import { TrackSwatch } from '@/components/transit/TrackSwatch';
 import { useAuth } from '@/hooks/useAuth';
@@ -34,18 +38,6 @@ import { cn } from '@/lib/utils';
 interface MobileNavSheetProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-}
-
-function CountBadge({ count, label }: { count: number; label: string }) {
-  if (count <= 0) return null;
-  return (
-    <span
-      aria-label={label}
-      className="ml-auto flex h-5 min-w-5 items-center justify-center rounded-full bg-foreground px-1.5 text-2xs font-medium leading-none text-background"
-    >
-      {count > 99 ? '99+' : count}
-    </span>
-  );
 }
 
 /**
@@ -62,6 +54,11 @@ export function MobileNavSheet({ open, onOpenChange }: MobileNavSheetProps) {
   const friendsOnline = useFriendsOnlineCount(user?.id);
   const tripCount = useInboxBadge();
   const [authOpen, setAuthOpen] = useState(false);
+  const { pathname } = useLocation();
+  // Same locale strip the footer uses, so "am I on this route" is answered the
+  // same way on both surfaces.
+  const localePath = pathname.replace(/^\/(?:[a-z]{2}\/)?/, '/');
+  const isHere = (to: string) => localePath === to;
 
   const close = () => onOpenChange(false);
 
@@ -77,10 +74,17 @@ export function MobileNavSheet({ open, onOpenChange }: MobileNavSheetProps) {
       <Sheet open={open} onOpenChange={onOpenChange}>
         <SheetContent
           side="bottom"
-          className="max-h-[85vh] p-0"
+          // `dvh`, not `vh`: `vh` is the LARGE-viewport unit, so under a
+          // dynamic mobile toolbar an 85vh sheet overshoots the space it
+          // actually has.
+          className="max-h-[85dvh] p-0"
           style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
         >
-          <div className="flex flex-col gap-6 overflow-y-auto px-6 pb-6 pt-6">
+          {/* No `overflow-y-auto` here. SheetContent already scrolls and owns
+              the height cap, and this inner box has no cap of its own — so the
+              second scroll container could never scroll and was dead weight
+              that only made the scroll owner ambiguous. */}
+          <div className="flex flex-col gap-6 px-6 pb-6 pt-6">
             <SheetHeader className="pr-8">
               <SheetTitle className="font-display">
                 {t('header.mobileNav.menuTitle', 'Explore Queer Guide')}
@@ -101,19 +105,14 @@ export function MobileNavSheet({ open, onOpenChange }: MobileNavSheetProps) {
                   onClick={close}
                   className="flex min-w-0 flex-1 items-center gap-2 rounded-element p-2 no-underline hover:bg-muted"
                 >
-                  <Avatar style={{ height: 40, width: 40 }}>
-                    <AvatarImage src={avatarSrc} alt="" />
-                    <AvatarFallback>{avatarInitial}</AvatarFallback>
-                  </Avatar>
-                  <span className="flex min-w-0 flex-col">
-                    {username ? (
-                      <span className="truncate font-mono text-sm font-semibold">@{username}</span>
-                    ) : (
-                      <span className="truncate text-sm font-semibold">
-                        {user.email || t('header.userMenu.you', 'You')}
-                      </span>
-                    )}
-                  </span>
+                  <IdentityRow
+                    avatarSrc={avatarSrc}
+                    avatarInitial={avatarInitial}
+                    username={username}
+                    email={user.email ?? null}
+                    fallbackLabel={t('header.userMenu.you', 'You')}
+                    avatarPx={40}
+                  />
                 </LocalizedLink>
                 <LocalizedLink
                   to={`/user/${user.id}`}
@@ -142,13 +141,22 @@ export function MobileNavSheet({ open, onOpenChange }: MobileNavSheetProps) {
               <LocalizedLink
                 to="/hub/plans"
                 onClick={close}
+                aria-current={isHere('/hub/plans') ? 'page' : undefined}
                 className="flex items-center gap-2 rounded-element p-4 no-underline hover:bg-muted"
               >
                 <Plane size={18} className="text-muted-foreground" />
-                <span className="text-sm font-medium">
+                <span className="text-15 font-medium">
                   {t('header.mobileNav.trips', 'My Trips')}
                 </span>
-                <CountBadge count={tripCount} label={`${tripCount} trip items need attention`} />
+                {/* The label was an English template literal where the dock's
+                    identical badge is translated — same string, one locale. */}
+                <NavBadge
+                  inline
+                  count={tripCount}
+                  label={t('header.mobileNav.tripsBadge', '{{count}} trip items need attention', {
+                    count: tripCount,
+                  })}
+                />
               </LocalizedLink>
             )}
 
@@ -157,23 +165,14 @@ export function MobileNavSheet({ open, onOpenChange }: MobileNavSheetProps) {
               <LocalizedLink
                 to="/hub/friends"
                 onClick={close}
+                aria-current={isHere('/hub/friends') ? 'page' : undefined}
                 className="flex items-center gap-2 rounded-element p-4 no-underline hover:bg-muted"
               >
                 <Users size={18} className="text-muted-foreground" />
-                <span className="text-sm font-medium">
+                <span className="text-15 font-medium">
                   {t('header.userMenu.friends', 'Friends')}
                 </span>
-                {friendsOnline !== null && (
-                  <span className="ml-auto flex items-center gap-1.5 text-xs tabular-nums text-muted-foreground">
-                    <span aria-hidden className="h-2 w-2 rounded-full bg-foreground" />
-                    <span aria-hidden>{friendsOnline}</span>
-                    <span className="sr-only">
-                      {t('header.userMenu.friendsOnline', '{{count}} online', {
-                        count: friendsOnline,
-                      })}
-                    </span>
-                  </span>
-                )}
+                <FriendsOnlineCount count={friendsOnline} />
               </LocalizedLink>
             )}
 
@@ -187,12 +186,22 @@ export function MobileNavSheet({ open, onOpenChange }: MobileNavSheetProps) {
               <div className="flex flex-col gap-2">
                 {INTENT_NAV.map((intent) => {
                   const Icon = intent.icon;
+                  const active = isIntentActive(intent, localePath);
                   return (
                     <LocalizedLink
                       key={intent.to}
                       to={intent.to}
                       onClick={close}
-                      className="flex items-center gap-4 p-4 no-underline transition-colors hover:bg-foreground hover:text-background"
+                      // `aria-current` was absent from every row in this sheet
+                      // while the desktop nav, both footer variants and the
+                      // dock all set it — so a reader on /venues who opened
+                      // the sheet got no indication of where they already were.
+                      aria-current={active ? 'page' : undefined}
+                      // `group` so the subtitle below can follow the row's
+                      // hover inversion. It cannot inherit `hover:text-*` —
+                      // that sets the parent's own colour, and the subtitle
+                      // overrides it with a colour of its own.
+                      className="group flex items-center gap-4 p-4 no-underline transition-colors hover:bg-foreground hover:text-background"
                     >
                       {/* The line, then the icon — the same pair the desktop
                           tab and the compact bar carry, so a reader arriving
@@ -203,7 +212,19 @@ export function MobileNavSheet({ open, onOpenChange }: MobileNavSheetProps) {
                         <span className="text-15 font-bold">
                           {t(intent.labelKey, intent.fallback)}
                         </span>
-                        <span className="text-2xs leading-tight opacity-70">
+                        {/* `text-muted-foreground`, NOT `opacity-70`.
+                            Element opacity fades the type toward the surface
+                            rather than choosing a colour, and axe measured the
+                            result at **3.19:1** on prod (#a3a39f on #50504d)
+                            against the 4.5:1 that 10px normal-weight text
+                            requires. `--muted-foreground` is contrast-gated by
+                            tokenContrast.test.ts, so it cannot drift there.
+
+                            The hover arm is the other half: the row inverts to
+                            ink, and muted (#545454) on ink is the 2.49:1 case
+                            NavTab documents — paper at 70% composites to
+                            9.1:1, which is the value that file settled on. */}
+                        <span className="text-2xs leading-tight text-muted-foreground group-hover:text-background/70">
                           {t(intent.subtitleKey, intent.subtitleFallback)}
                         </span>
                       </span>
@@ -223,9 +244,14 @@ export function MobileNavSheet({ open, onOpenChange }: MobileNavSheetProps) {
               if (!items.length) return null;
               return (
                 <div key={cluster.id} className="flex flex-col gap-2">
-                  <h3 className="text-2xs font-semibold uppercase tracking-wide text-muted-foreground">
+                  {/* `h4`, not `h3`: a cluster is a SUBSECTION of "Browse
+                      everything" above, and sharing its level flattened the
+                      structure for rotor navigation. Axe's `heading-order`
+                      cannot see this — it only fires on a skipped level, and
+                      h3→h3 skips nothing. */}
+                  <h4 className="text-2xs font-semibold uppercase tracking-wide text-muted-foreground">
                     {t(cluster.labelKey)}
-                  </h3>
+                  </h4>
                   <div className="grid grid-cols-3 gap-2">
                     {items.map((dest) => {
                       const Icon = dest.icon;
@@ -234,10 +260,14 @@ export function MobileNavSheet({ open, onOpenChange }: MobileNavSheetProps) {
                           key={dest.to}
                           to={dest.to}
                           onClick={close}
+                          aria-current={isHere(dest.to) ? 'page' : undefined}
                           className="flex flex-col items-center justify-center gap-2 p-4 text-center no-underline transition-colors hover:bg-foreground hover:text-background"
                         >
                           <Icon size={20} aria-hidden />
-                          <span className="text-2xs font-bold leading-tight">
+                          {/* `truncate` — at 320px a grid cell is ~58px wide
+                              and labels like "Personalities" /
+                              "Persönlichkeiten" ran past it. */}
+                          <span className="w-full truncate text-2xs font-bold leading-tight">
                             {t(dest.labelKey)}
                           </span>
                         </LocalizedLink>
@@ -250,11 +280,15 @@ export function MobileNavSheet({ open, onOpenChange }: MobileNavSheetProps) {
 
             {/* Account actions */}
             <div className="flex flex-col gap-2 pt-4">
+              {/* `p-4`, not `p-2`. Every navigable row in this sheet is `p-4`
+                  (intents, trips, friends, the browse grid) and only these
+                  three were `p-2` — the same row type at two paddings. `p-4`
+                  is both the majority and the touch-friendlier of the two. */}
               {isAdmin || isModerator ? (
                 <LocalizedLink
                   to="/admin"
                   onClick={close}
-                  className="flex items-center gap-2 rounded-element p-2 text-sm no-underline hover:bg-muted"
+                  className="flex items-center gap-2 rounded-element p-4 text-15 no-underline hover:bg-muted"
                 >
                   <Shield size={16} />
                   <span>{t('header.adminConsole', 'Admin Console')}</span>
@@ -265,7 +299,8 @@ export function MobileNavSheet({ open, onOpenChange }: MobileNavSheetProps) {
                   key={item.to}
                   to={item.to}
                   onClick={close}
-                  className="flex items-center gap-2 rounded-element p-2 text-sm text-muted-foreground no-underline hover:bg-muted hover:text-foreground"
+                  aria-current={isHere(item.to) ? 'page' : undefined}
+                  className="flex items-center gap-2 rounded-element p-4 text-15 text-muted-foreground no-underline hover:bg-muted hover:text-foreground"
                 >
                   <item.icon size={16} />
                   <span>{t(item.labelKey)}</span>
@@ -279,7 +314,7 @@ export function MobileNavSheet({ open, onOpenChange }: MobileNavSheetProps) {
                     void signOut();
                   }}
                   className={cn(
-                    'flex items-center gap-2 rounded-element p-2 text-left text-sm text-destructive',
+                    'flex items-center gap-2 rounded-element p-4 text-left text-15 text-destructive',
                     'hover:bg-muted',
                   )}
                 >
@@ -291,6 +326,9 @@ export function MobileNavSheet({ open, onOpenChange }: MobileNavSheetProps) {
 
             {/* Display controls */}
             <div className="flex flex-col gap-2 pt-4">
+              {/* A sibling section of the sheet's own title, so `h3` is the
+                  right level here — unlike the cluster headings above, which
+                  nest under "Browse everything". */}
               <h3 className="text-2xs font-semibold uppercase tracking-wide text-muted-foreground">
                 {t('header.mobileNav.settingsSection', 'Display')}
               </h3>

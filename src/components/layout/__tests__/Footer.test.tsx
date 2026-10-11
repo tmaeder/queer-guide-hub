@@ -8,6 +8,19 @@ vi.mock('@/components/i18n/CurrencySelector', () => ({
 vi.mock('@/components/i18n/LanguageSwitcher', () => ({
   LanguageSwitcher: () => <span>Lang</span>,
 }));
+// The footer reads published branding for the compact variant's home-link
+// accessible name — it carried a hardcoded "Queer Guide" while the Header read
+// the same value from this hook, so a rebranded /admin/design deployment still
+// announced the stock name there.
+//
+// `useSiteBranding` wraps `useQuery`, and this suite renders Footer BARE with
+// no QueryClientProvider, so adding the hook turned all nine tests into "No
+// QueryClient set". It is mocked at the module boundary rather than wrapping
+// the suite in a provider: a provider would quietly convert a layout test into
+// a data-fetching test.
+vi.mock('@/hooks/useSiteBranding', () => ({
+  useSiteBranding: () => ({ siteName: 'Queer Guide' }),
+}));
 // The real `t` returns the fallback when a key is unresolved, and every string
 // in the footer passes one. The previous mock ignored the second argument and
 // returned the bare key, so any assertion about actual copy silently tested the

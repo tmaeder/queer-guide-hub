@@ -15,8 +15,9 @@
  * The source mock's four-line hero is ~4.5:1 (1440×320); it can afford them.
  * A footer cannot. So this is one line with the vertical room to actually
  * bend, which is what makes it read as track — hard rule #1, and the reason
- * the rule exists. All four colours still appear in the footer, on the six
- * column swatches below, where they do real wayfinding work.
+ * the rule exists. All four colours still appear in the footer, on the SEVEN
+ * column swatches below, where they do real wayfinding work. (INTENT_NAV holds
+ * seven intents; "six" was stale in three places at once.)
  *
  * Pink because it is the flagship line and the only track that clears 3:1
  * unaided, so it needs no ink casing (which would read as a border around a

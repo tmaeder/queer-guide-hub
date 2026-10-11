@@ -9,7 +9,20 @@ import {
 import { useInboxFeed } from '@/hooks/useInboxFeed';
 import { SignalPanel } from './SignalPanel';
 
-export const NotificationBell = () => {
+export interface NotificationBellProps {
+  /**
+   * `true` when the bell sits on an ink plate (the compact header). The trigger
+   * is a `ghost` button, i.e. `text-foreground` — ink type — so on ink it
+   * computed a contrast ratio of 1.00 and the glyph was invisible. Measured on
+   * prod 2026-10-10 alongside the Sign-in button in the same bar.
+   *
+   * A prop rather than a wrapper colour override, because `ghost` sets
+   * `text-foreground` explicitly and so wins over anything inherited.
+   */
+  onInk?: boolean;
+}
+
+export const NotificationBell = ({ onInk = false }: NotificationBellProps = {}) => {
   const { t } = useTranslation();
   // Alerts lens only (2026-07 declutter): the badge counts unread alerts in
   // the same feed the SignalPanel popover renders, so they never desync.
@@ -21,7 +34,7 @@ export const NotificationBell = () => {
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button
-          variant="ghost"
+          variant={onInk ? 'ghostReversed' : 'ghost'}
           size="icon"
           className="relative"
           aria-label={
@@ -44,7 +57,10 @@ export const NotificationBell = () => {
               // takes it (see TRACK_TEXT): the fill is identity and does not
               // flip with the mode, so its type must not either. The count and
               // compact filled silhouette make the state explicit without a rim.
-              className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-badge bg-track-pink px-1 text-2xs font-bold leading-none text-track-ring"
+              // `-end-1`, not `-right-1`: under `dir="rtl"` (ar) a physical
+              // offset pins the badge to the wrong corner of the bell. The
+              // dock's NavBadge already uses the logical property.
+              className="absolute -end-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-badge bg-track-pink px-1 text-2xs font-bold leading-none text-track-ring"
             >
               {unreadCount > 99 ? '99+' : unreadCount}
             </span>

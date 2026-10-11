@@ -1,5 +1,8 @@
 import { test, expect, type Page } from '@playwright/test';
 import { REDUCED_MOTION } from './support/reducedMotion';
+// Moved to support/ so a11y-mobile-chrome.spec.ts uses the same one — a
+// second copy of this workaround would drift from this one.
+import { dismissCookieBanner } from './support/consentBanner';
 
 /**
  * Mobile bottom navigation bar (MobileBottomNav + MobileNavSheet).
@@ -39,29 +42,6 @@ const bottomNav = (page: Page) => page.locator('nav.fixed[aria-label="Navigation
  */
 const TABS = { home: '/', explore: '/search', hub: '/hub', you: '/me' } as const;
 const tab = (page: Page, href: string) => bottomNav(page).locator(`a[href="${href}"]`);
-
-/**
- * The cookie-consent banner is fixed to the bottom (z-sticky) and overlaps the
- * bottom nav on a first visit, intercepting taps. Dismiss it before driving the
- * bar. No-op once consent is stored / if the banner never renders.
- */
-async function dismissCookieBanner(page: Page) {
-  const banner = page.getByRole('region', { name: /cookie settings/i });
-  // The banner animates in after consent state loads — a bare isVisible()
-  // check races it and leaves it covering the bottom bar. Give it a moment.
-  const appeared = await banner
-    .waitFor({ state: 'visible', timeout: 3_000 })
-    .then(() => true)
-    .catch(() => false);
-  if (!appeared) return;
-  await banner
-    .getByRole('button', { name: /necessary only|accept all/i })
-    .first()
-    .click();
-  await expect(banner)
-    .toBeHidden()
-    .catch(() => {});
-}
 
 /**
  * Wait for the React app to mount. `networkidle` never settles against prod

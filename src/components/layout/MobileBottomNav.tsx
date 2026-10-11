@@ -131,7 +131,11 @@ export function MobileBottomNav() {
             Opaque, never blurred — over a paper page a 90%-opaque blur reads
             as a third, muddier surface, and the active tab has nothing solid
             to sit against. */}
-        <ul className="island island-ink flex items-stretch gap-1 bg-foreground px-2 text-background">
+        {/* `island-dock` is what stops `.island`'s `overflow: hidden` cropping
+            the raised contribute button, which is pulled 16px above this row.
+            The class was named in the island spec's own comments for months
+            and never written. */}
+        <ul className="island island-dock island-ink flex items-stretch gap-1 bg-foreground px-2 text-background">
           {BOTTOM_NAV_TABS.map((tab) => {
             const isExplore = tab.id === 'explore';
             const anonGated = tab.authGated && !user;

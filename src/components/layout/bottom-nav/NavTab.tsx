@@ -121,8 +121,20 @@ export function NavTab({
             <NavBadge count={badgeCount} label={badgeLabel} />
           )}
         </span>
-        <span>{label}</span>
+        {/* `w-full truncate`: the slot is a fixed `h-14` with an `h-8` icon
+            wrap above, so a label that wraps to two lines needs 32+4+28 = 64px
+            of content in a 56px box and spills out of the dock. At 320px each
+            of the five slots is only ~58px wide, and `fr` "Parcourir" and `ko`
+            "둘러보기" both reach that. Truncating keeps the box; the full
+            string stays available as the link's accessible name. */}
+        <span className="w-full truncate px-0.5 text-center">{label}</span>
       </LocalizedLink>
+      {/* The accessory is a SIBLING of the link, not a child — it is
+          `pointer-events-none` decoration (the chevron hint) and must not
+          become part of the link's accessible name. Anything inside it that
+          carries meaning has to say so itself; NavBadge's `sr-only` label is
+          what makes the trip-count dot reach AT from out here, where an
+          `aria-label` on a roleless span did not. */}
       {accessory}
     </li>
   );

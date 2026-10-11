@@ -17,7 +17,7 @@ import {
 import type { SupportedLocale } from '@/i18n/languages';
 
 export function LanguageSwitcher() {
-  const { i18n } = useTranslation();
+  const { i18n, t } = useTranslation();
   // Raw navigate: handleChange already computes the fully locale-prefixed
   // target. useLocalizedNavigate would re-prefix with the CURRENT route locale
   // (still set at click time), so switching away from a non-default locale
@@ -54,7 +54,14 @@ export function LanguageSwitcher() {
   return (
     <Select value={currentLocale} onValueChange={handleChange}>
       <SelectTrigger
-        aria-label="Select language"
+        // Translated — this was hardcoded English on the LANGUAGE switcher,
+        // i.e. unreadable to exactly the user reaching for it.
+        aria-label={t('i18n.selectLanguage', 'Select language')}
+        // `height: 36` is the DECLARED intent and is not what renders: the base
+        // rule in index.css gives every `select`/`button` a 44px min-height,
+        // which wins over `height` at the box-model level. Left as-is because
+        // the 44px target is the correct outcome; noted so a reader does not
+        // believe this is a 36px control.
         style={{
           width: 'auto',
           minWidth: 0,

@@ -26,6 +26,9 @@ import {
   History,
   BookOpen,
   Crown,
+  ShieldCheck,
+  FileText,
+  HeartHandshake,
 } from 'lucide-react';
 import type { ComponentType } from 'react';
 import { transitIcon } from '@/components/transit/navTransitIcon';
@@ -193,7 +196,17 @@ export interface IntentDestination {
   id: IntentId;
   to: string;
   icon: NavIcon;
-  /** Desktop row label. Keep ≤11 chars — six locales share one flex row. */
+  /**
+   * Desktop row label.
+   *
+   * Keep it short — ELEVEN locales share one flex row, not six, and the row is
+   * `overflow-hidden` (Header.tsx), so an over-long set does not wrap, scroll
+   * or show an indicator: it silently amputates the trailing tabs. Measured
+   * 2026-10-10, `ar` "تعرّف على أشخاص" (15 chars), `de` "Leute treffen" (13)
+   * and `es` "Conocer gente" (13) already exceed the old ≤11 budget, so treat
+   * 11 as a target rather than a guarantee and check the row at `xl` in
+   * de/es/ar when adding or renaming an intent.
+   */
   labelKey: string;
   fallback: string;
   /** Fuller job phrasing for the mobile sheet and search popover. */
@@ -480,6 +493,21 @@ export const BOTTOM_NAV_TABS: BottomNavTab[] = [
       '/travel',
       '/resources',
       '/personalities',
+      // Added 2026-10-10. These are DESTINATIONS entries — browse surfaces
+      // like every other route in this list — and their absence meant the
+      // Explore tab went dark while the reader was standing in the catalogue.
+      // All four were invisible to `navigation.test.ts`, which asserted this
+      // list covers every INTENT route but never the plain destinations.
+      //
+      // Worth recording: the audit found `/competitions` by hand and assumed
+      // it was the only one. Widening the assertion found THREE MORE on its
+      // first run — the `/hub/*` community routes, which the existing
+      // `/hub/people` entry made look covered. A hand-found instance is not a
+      // measurement of the class.
+      '/competitions',
+      '/hub/feed',
+      '/hub/groups',
+      '/hub/members',
       '/history',
       '/community',
       '/feed',
@@ -547,12 +575,46 @@ export const USER_MODES: { value: UserMode; icon: NavIcon; labelKey: string }[] 
   { value: 'community', icon: Home, labelKey: 'header.modes.community' },
 ];
 
+/**
+ * The canonical legal / meta route set.
+ *
+ * It exists because TWO lists described this and had drifted: `LEGAL_ITEMS`
+ * below (the mobile nav sheet) held about · help · accessibility · legal ·
+ * contact, while the footer's own local `legalLinks` array held privacy ·
+ * terms · legal · accessibility · about · contact · donate. So `/privacy` and
+ * `/terms` — the two links a product is obliged to carry — were absent from
+ * the mobile sheet, and `/donate` was unreachable from it at all.
+ *
+ * That is the same drift class the DESTINATIONS comment above says was made
+ * "structurally impossible", one list over. The footer's array stays LOCAL on
+ * purpose (it is a legal row, not a third nav source — see Footer.tsx), so the
+ * fix is not to merge them: it is to declare the set once and assert in
+ * `navigation.test.ts` that both are subsets of it. A list may legitimately
+ * omit a route; neither may invent one.
+ */
+export const LEGAL_META_ROUTES = [
+  '/about',
+  '/accessibility',
+  '/contact',
+  '/donate',
+  '/help',
+  '/legal',
+  '/privacy',
+  '/terms',
+] as const;
+
 export const LEGAL_ITEMS: NavItem[] = [
   { to: '/about', icon: Info, labelKey: 'header.legal.about' },
   { to: '/help', icon: LifeBuoy, labelKey: 'header.legal.help' },
   { to: '/accessibility', icon: Accessibility, labelKey: 'header.legal.accessibility' },
   { to: '/legal', icon: Scale, labelKey: 'header.legal.legal' },
+  // Added 2026-10-10. Privacy and Terms were reachable on a phone only by
+  // scrolling the whole page to the footer; the sheet is where every other
+  // meta row lives, so their absence was the drift, not a decision.
+  { to: '/privacy', icon: ShieldCheck, labelKey: 'header.legal.privacy' },
+  { to: '/terms', icon: FileText, labelKey: 'header.legal.terms' },
   { to: '/contact', icon: Mail, labelKey: 'header.legal.contact' },
+  { to: '/donate', icon: HeartHandshake, labelKey: 'header.legal.donate' },
 ];
 
 /**

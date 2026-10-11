@@ -333,7 +333,8 @@
     "noStation": "No station by that name, yet",
     "addToMap": "Add it to the map",
     "seeOnMap": "See {{count}} results on the map",
-    "keyHints": "↑↓ navigate · ↵ open"
+    "keyHints": "↑↓ navigate · ↵ open",
+    "open": "Search"
   },
   "common": {
     "back": "Back",
@@ -411,7 +412,11 @@
     "antiDiscrimination": {
       "title": "We don't do bigotry here.",
       "body": "Racism, transphobia, and discrimination are automatic grounds for getting booted off the platform. Period."
-    }
+    },
+    "essentials": "Footer essentials",
+    "report": "Report",
+    "cookiePreferences": "Cookie preferences",
+    "navigation": "Footer navigation"
   },
   "auth": {
     "welcome": "Welcome!",
@@ -2251,7 +2256,8 @@
       "myGroups": "My Groups",
       "accessibility": "Accessibility",
       "extension": "Browser Extension",
-      "viewProfile": "View public profile"
+      "viewProfile": "View public profile",
+      "yourAccount": "Your account"
     },
     "notifications": {
       "label": "Notifications",
@@ -2278,7 +2284,10 @@
       "help": "Crisis support",
       "accessibility": "Accessibility",
       "legal": "Legal",
-      "contact": "Contact"
+      "contact": "Contact",
+      "privacy": "Privacy",
+      "terms": "Terms",
+      "donate": "Support Us"
     },
     "mobileNav": {
       "home": "Home",
@@ -5250,5 +5259,18 @@
       "linked": "{{count}} linked to an existing entry",
       "reviewNote": "Submissions are reviewed before publishing."
     }
+  },
+  "a11y": {
+    "skipToContent": "Skip to main content"
+  },
+  "theme": {
+    "toggle": "Toggle theme",
+    "light": "Light",
+    "dark": "Dark",
+    "system": "System"
+  },
+  "i18n": {
+    "selectLanguage": "Select language",
+    "selectCurrency": "Select currency"
   }
 }

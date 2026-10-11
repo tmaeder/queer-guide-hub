@@ -14,6 +14,8 @@ import {
   USER_MODE_VALUES,
   MODE_SCOPE_BIAS,
   isIntentActive,
+  LEGAL_ITEMS,
+  LEGAL_META_ROUTES,
 } from '../navigation';
 import { ROUTE_BULLET_MAP } from '@/components/transit/routeBulletMap';
 
@@ -90,6 +92,98 @@ describe('INTENT_NAV', () => {
         `${intent.to} does not light the Explore tab`,
       ).toBe(true);
     }
+  });
+
+  /**
+   * The assertion above covers INTENT routes only, and that gap shipped a
+   * defect: `/competitions` is a DESTINATIONS entry — a browse surface like
+   * every other route in that prefix list — and was simply absent from it, so
+   * the Explore tab went dark on it. Every destination is a browse surface by
+   * definition (that is what the cluster model means), so the prefix list has
+   * to cover them too or the tab lies about where the reader is.
+   */
+  it('lights the mobile Explore tab for every DESTINATION route', () => {
+    const explore = BOTTOM_NAV_TABS.find((t) => t.id === 'explore');
+    expect(explore).toBeDefined();
+    const dark = DESTINATIONS.filter(
+      (d) => !explore!.activePrefixes.some((p) => d.to === p || d.to.startsWith(`${p}/`)),
+    ).map((d) => d.to);
+    expect(
+      dark,
+      `These browse routes do not light the Explore tab, so the mobile dock goes\n` +
+        `dark while the reader is standing in the catalogue. Add each to\n` +
+        `BOTTOM_NAV_TABS.explore.activePrefixes:\n\n` +
+        dark.join('\n'),
+    ).toEqual([]);
+  });
+
+  /**
+   * Legal / meta links were described by TWO lists that had drifted:
+   * `LEGAL_ITEMS` (the mobile nav sheet) and the footer's own local
+   * `legalLinks` array. `/privacy` and `/terms` were missing from the sheet
+   * and `/donate` was unreachable from it entirely.
+   *
+   * The footer's array stays local on purpose — it is a legal row, not a third
+   * nav source — so this does not merge them. It asserts both are subsets of
+   * one declared set. A list may legitimately OMIT a route (the footer omits
+   * `/help`, which has a whole crisis card above it); neither may invent one,
+   * and neither may hold a route the other has never heard of.
+   */
+  describe('legal / meta routes', () => {
+    const footerSrc = readFileSync(
+      resolve(__dirname, '../../components/layout/Footer.tsx'),
+      'utf8',
+    );
+    // The `legalLinks` array literal, read out of the Footer rather than
+    // duplicated here — a copy in the test drifts exactly like the copy in the
+    // config did.
+    const footerHrefs = [
+      ...(footerSrc.match(/const legalLinks = \[[\s\S]*?\n\];/)?.[0] ?? '').matchAll(
+        /href: '([^']+)'/g,
+      ),
+    ].map((m) => m[1]);
+
+    it('finds the footer legal array (guards against a vacuous sweep)', () => {
+      // Without this, a rename of `legalLinks` makes every assertion below
+      // trivially pass over an empty list.
+      expect(footerHrefs.length).toBeGreaterThanOrEqual(5);
+    });
+
+    it('keeps LEGAL_ITEMS within the declared set', () => {
+      const stray = LEGAL_ITEMS.map((i) => i.to).filter(
+        (to) => !(LEGAL_META_ROUTES as readonly string[]).includes(to),
+      );
+      expect(stray, `Not in LEGAL_META_ROUTES: ${stray.join(', ')}`).toEqual([]);
+    });
+
+    it('keeps the footer legal row within the declared set', () => {
+      const stray = footerHrefs.filter(
+        (to) => !(LEGAL_META_ROUTES as readonly string[]).includes(to),
+      );
+      expect(stray, `Not in LEGAL_META_ROUTES: ${stray.join(', ')}`).toEqual([]);
+    });
+
+    it('carries the obliged links on BOTH surfaces', () => {
+      // Privacy and Terms are the two a product has to be able to show. Their
+      // absence from the sheet was the actual drift, not a decision.
+      for (const required of ['/privacy', '/terms']) {
+        expect(
+          LEGAL_ITEMS.some((i) => i.to === required),
+          `${required} missing from LEGAL_ITEMS (the mobile nav sheet)`,
+        ).toBe(true);
+        expect(footerHrefs, `${required} missing from the footer legal row`).toContain(required);
+      }
+    });
+
+    it('declares every meta route in routes.tsx', () => {
+      for (const to of LEGAL_META_ROUTES) {
+        const relative = to.replace(/^\//, '');
+        expect(
+          routesSrc.includes(`path="${relative}"`),
+          `${to} is in LEGAL_META_ROUTES but has no route in src/routes.tsx`,
+        ).toBe(true);
+      }
+    });
   });
 
   it('carries a label and a subtitle key for every intent', () => {

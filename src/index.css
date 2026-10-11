@@ -553,8 +553,13 @@
      the island within its stated 14-22px range can no longer desynchronise
      the two.
 
-     `--header-pinned-h` is the bar's own height in its PINNED state: 56px on
-     mobile, where it never collapses, and 60px from md, where it does. */
+     `--header-pinned-h` is the bar's own height in its PINNED state: 52px on
+     mobile, where it never collapses, and 60px from md, where it does.
+
+     (This comment said 56px, and the override at md said "the mobile row's
+     56px", while the token and the markup both said 52. Header.tsx reads the
+     token directly now rather than restating either number as a literal, so
+     there is one source again.) */
   --header-pinned-h: 52px;
   --header-pinned-bottom: calc(var(--island-inset) + var(--header-pinned-h));
 
@@ -1056,9 +1061,26 @@ h6 {
    variable Space Grotesk). Without this the browser fakes the bold by
    smearing each glyph outward, which on a 96px Anton hero is plainly visible
    as mush. One declaration neutralises every one of those call sites and any
-   future one, which is why they were NOT edited file by file. */
-h1,
-h2,
+   future one, which is why they were NOT edited file by file.
+
+   `:not(.font-sans)` is the OPT-OUT, and it has to live in the selector rather
+   than at the call site. This rule is UNLAYERED — like the border reset above
+   it — and Tailwind v4 emits `font-sans` inside `@layer utilities`, so an
+   unlayered element selector beats the utility and a bare `font-sans` on an
+   `h2` does nothing at all. That is not hypothetical: the footer's
+   anti-discrimination heading is `<h2 class="text-title font-bold">`, i.e.
+   rank 4, which the rank table says is Space Grotesk 700 — and it rendered in
+   Anton 400 through this very selector, with `font-bold` silently neutralised
+   by the `font-synthesis-weight` line below.
+   `src/test/__tests__/rankFourFace.test.ts` could not see it either, because
+   it matches the literal class pair `font-display text-title` and an inherited
+   face carries no class.
+
+   `.font-display` stays unconditional on purpose: an element carrying BOTH
+   classes has explicitly opted IN, and an explicit opt-in outranks a generic
+   opt-out. */
+h1:not(.font-sans),
+h2:not(.font-sans),
 .font-display {
   font-family: var(--font-display);
   letter-spacing: -0.03em;
@@ -1522,7 +1544,9 @@ h2,
         against a card's 6% precisely because there is no keyline under it —
         adding one back makes the depth read as a mistake.
      4. The dock owns the bottom on phones: `.island-dock` never translates
-        away, so scroll direction cannot hide it.
+        away, so scroll direction cannot hide it. That class is a real rule
+        below now — for months this was the only place it existed, and the dock
+        silently ran on bare `.island` instead.
 
    The class carries geometry only. Surface (paper vs ink) stays with the
    component, because the top bar swaps to ink when it collapses and the
@@ -1557,6 +1581,23 @@ h2,
   margin-inline: auto;
 }
 
+/* The phone dock. This class was referenced TWICE in the comments above — rule
+   4 of the island spec, and the `.island-capped` note — and defined NOWHERE,
+   so the dock rendered on bare `.island` and inherited its `overflow: hidden`.
+   That clip is correct for the top bar (the compact ink flood has to stop at
+   the rounded corners) and wrong here, because the raised contribute button is
+   pulled 16px above the row with `-mt-4`: a 48px button in a 56px box whose
+   top third sat outside the clip. The target was never affected — the box
+   model is intact and the tap area is 48×48 — but the only brand CTA on a
+   phone was visually cropped.
+
+   `overflow: visible` is the whole rule. The dock needs no corner clipping of
+   its own: it has no edge-to-edge fill, its ink surface comes from the
+   component, and the radius still rounds the plate itself. */
+.island-dock {
+  overflow: visible;
+}
+
 /* The global header is a quiet navigation plane, not a second hero. It keeps
    the island geometry but uses the product's single soft elevation token. */
 .site-header {
@@ -1567,7 +1608,7 @@ h2,
   :root {
     --island-inset: 22px;
     /* The bar collapses to one ink line from md, so its pinned height is the
-       compact state's 60px rather than the mobile row's 56px. */
+       compact state's 60px rather than the mobile row's 52px. */
     --header-pinned-h: 60px;
   }
 

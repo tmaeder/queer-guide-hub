@@ -43,6 +43,28 @@ const buttonVariants = cva(
         accent: 'bg-track-pink text-track-ring font-bold shadow-soft hover:opacity-90',
         // Blue track. Ink type (paper-on-blue fails 3:1 — see tokenContrast).
         brand: 'bg-track-blue text-track-ring font-bold shadow-soft hover:opacity-90',
+        // ── Reversed pair: for a control sitting ON an ink plate ────────────
+        //
+        // `default` and `ghost` are both wrong on ink, and not subtly. Measured
+        // on prod 2026-10-10 in the compact header (`island-ink`, plate
+        // rgb(17,17,17)): the `ghost` Sign-in button computed
+        // `color: rgb(17,17,17)` for a contrast ratio of **1.00** — literally
+        // invisible on every desktop page past the scroll threshold — and the
+        // `default` contribute button painted `bg: rgb(17,17,17)` on the same
+        // ink, so its label read (paper type, 18:1) while the button had no
+        // silhouette at all.
+        //
+        // These exist as variants rather than as another per-surface override
+        // because this is the FOURTH place in the repo to hit it: the footer
+        // patched it with `[&_button]:text-background` (Footer.tsx:317),
+        // About.tsx:901 hand-rolled `bg-background text-foreground`, and the
+        // compact header had nothing. A variant is the one shape that cannot
+        // drift between them.
+        //
+        // `bg-background/15` is not a new value — it is the footer's own
+        // reversed-CTA tint (Footer.tsx:241).
+        reversed: 'bg-background text-foreground font-bold hover:opacity-90',
+        ghostReversed: 'bg-transparent text-background hover:bg-background/15',
         // Legacy alias retained for compat (2026-05-19) — collapses to
         // `default`. Use variant="default".
         secondary: 'bg-foreground text-background font-bold hover:opacity-85',

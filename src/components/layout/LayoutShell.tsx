@@ -1,5 +1,6 @@
 import React, { Suspense } from 'react';
 import { useLocation } from 'react-router';
+import { useTranslation } from 'react-i18next';
 import { LucideProvider } from 'lucide-react';
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
@@ -84,6 +85,7 @@ const InstallBanner = lazyOptional(() =>
  */
 export const LayoutShell = ({ children }: { children: React.ReactNode }) => {
   const { pathname } = useLocation();
+  const { t } = useTranslation();
   // Match /map and /:locale/map (locale prefix is optional in the router).
   const isFullBleedMap = isMapRoute(pathname);
   const isAdmin = isAdminRoute(pathname);
@@ -114,9 +116,19 @@ export const LayoutShell = ({ children }: { children: React.ReactNode }) => {
       {!isAdmin && (
         <a
           href="#main-content"
-          className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[9999] focus:bg-card focus:text-foreground focus:px-4 focus:py-2 focus:rounded-element focus:font-semibold focus:text-sm focus:no-underline focus:outline focus:outline-[3px] focus:outline-primary focus:outline-offset-2"
+          // `focus:start-2`, not `focus:left-2`: a physical offset puts the
+          // skip link in the wrong corner under `dir="rtl"` (ar), which is the
+          // one corner a keyboard user's first Tab is looking at.
+          //
+          // `focus:text-15`, not `focus:text-sm` — 14px is raw Tailwind and
+          // off the micro-scale ladder.
+          //
+          // No hand-rolled outline here any more: `*:focus-visible` in
+          // index.css is a 2px `!important` ring, so the `outline-[3px]` this
+          // carried was a second, losing ring definition.
+          className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:start-2 focus:z-[9999] focus:bg-card focus:text-foreground focus:px-4 focus:py-2 focus:rounded-element focus:font-semibold focus:text-15 focus:no-underline"
         >
-          Skip to main content
+          {t('a11y.skipToContent', 'Skip to main content')}
         </a>
       )}
 

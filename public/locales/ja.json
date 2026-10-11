@@ -147,7 +147,8 @@
     "noStation": "その名前の駅はまだありません",
     "addToMap": "地図に追加する",
     "seeOnMap": "{{count}}件を地図で見る",
-    "keyHints": "↑↓ 移動 · ↵ 開く"
+    "keyHints": "↑↓ 移動 · ↵ 開く",
+    "open": "検索"
   },
   "common": {
     "contentInLanguage": "言語：{{lang}}",
@@ -231,7 +232,11 @@
     "antiDiscrimination": {
       "title": "ここに偏見の居場所はありません。",
       "body": "人種差別、トランス嫌悪、差別は、プラットフォームからの追放の理由になります。以上です。"
-    }
+    },
+    "essentials": "フッターの要点",
+    "report": "報告",
+    "cookiePreferences": "Cookie の設定",
+    "navigation": "フッターナビゲーション"
   },
   "trips": {
     "title": "マイトリップ",
@@ -2084,7 +2089,8 @@
       "mailbox": "メールボックス",
       "you": "マイページ",
       "community": "コミュニティ",
-      "viewProfile": "公開プロフィールを見る"
+      "viewProfile": "公開プロフィールを見る",
+      "yourAccount": "あなたのアカウント"
     },
     "modes": {
       "dating": "恋人を探す",
@@ -2099,7 +2105,10 @@
       "help": "ヘルプ",
       "accessibility": "アクセシビリティ",
       "legal": "法律",
-      "contact": "お問い合わせ"
+      "contact": "お問い合わせ",
+      "privacy": "プライバシー",
+      "terms": "利用規約",
+      "donate": "サポートする"
     },
     "signUp": "Sign up",
     "navigation": "Navigation",
@@ -5285,5 +5294,18 @@
       "linked": "{{count}}件を既存の項目に関連付けました",
       "reviewNote": "投稿は公開前に確認されます。"
     }
+  },
+  "a11y": {
+    "skipToContent": "メインコンテンツへスキップ"
+  },
+  "theme": {
+    "toggle": "テーマを切り替え",
+    "light": "ライト",
+    "dark": "ダーク",
+    "system": "システム"
+  },
+  "i18n": {
+    "selectLanguage": "言語を選択",
+    "selectCurrency": "通貨を選択"
   }
 }

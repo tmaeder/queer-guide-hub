@@ -56,14 +56,26 @@ describe('NavTab', () => {
     expect(notCancelled).toBe(false);
   });
 
-  it('renders a count badge with its localized label', () => {
+  // These query by TEXT, not by label, and the switch is the finding rather
+  // than a convenience. NavBadge used to put the sentence in `aria-label` on a
+  // ROLELESS `<span>`, which the accname spec drops — so the label was
+  // computed, translated and reached no AT at all. It is an `sr-only` span
+  // now, so `getByLabelText` no longer finds it.
+  //
+  // The negative assertion is the one that matters: `queryByLabelText` would
+  // return null whether the badge rendered or not, so leaving it would make
+  // "omits the badge" VACUOUS — passing against a badge that renders with its
+  // label. A text query tests the mechanism that actually works.
+  it('renders a count badge whose label is reachable as text', () => {
     renderTab({ badgeCount: 5, badgeLabel: '5 unread' });
-    expect(screen.getByLabelText('5 unread')).toHaveTextContent('5');
+    expect(screen.getByText('5 unread')).toBeInTheDocument();
+    expect(screen.getByText('5')).toBeInTheDocument();
   });
 
   it('omits the badge when the count is zero', () => {
     renderTab({ badgeCount: 0, badgeLabel: '0 unread' });
-    expect(screen.queryByLabelText('0 unread')).toBeNull();
+    expect(screen.queryByText('0 unread')).toBeNull();
+    expect(screen.queryByText('0')).toBeNull();
   });
 
   it('renders the avatar in place of the icon when provided', () => {

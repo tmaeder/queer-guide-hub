@@ -141,6 +141,24 @@ Anton is never letterspaced apart (tracking ≥ -0.02em, tight); the eyebrow
 convention (`text-2xs uppercase tracking-wide`) stays the one wide-tracking
 exception. Micro-scale (`--text-15/13/xs2/2xs/3xs`) unchanged.
 
+**A rank-4 heading on an `<h1>`/`<h2>` element needs `font-sans`, explicitly.**
+`index.css` puts the display face on the bare `h1, h2` ELEMENT selector, so
+`<h2 class="text-title font-bold">` renders in **Anton 400** — the wrong face
+for rank 4, with `font-bold` silently neutralised, since Anton ships one weight
+and `font-synthesis-weight: none` suppresses the synthetic bold. That selector
+is also **unlayered**, and Tailwind v4 emits `font-sans` inside
+`@layer utilities`, so a bare `font-sans` at the call site lost to it and did
+nothing; the selector carries `:not(.font-sans)` now, which is what makes the
+opt-out real. `rankFourFace.test.ts` could not see this class of defect either
+— it matched the literal class pair `font-display text-title`, and a face
+inherited from the tag carries no class. It checks `h1`/`h2` + `text-title`
+too now.
+
+Raw Tailwind sizes are **off the ladder**: `text-sm` (14px) and `text-xs`
+(12px) land between `--text-13` and `--text-15`/`--text-xs2`, which is the
+drift the micro-scale exists to prevent, and nothing lints them. 13 such sites
+were in the chrome as of 2026-10-10, 8 of them in `MobileNavSheet` alone.
+
 **Changing a size token is still a multi-layer change**: `src/index.css`
 (`@theme` + `@source` safelist) → `tokenCatalog.ts` → `functions/_lib/
 branding.ts` SIZE_KEYS → `src/lib/utils.ts` customTextSizes → a migration on
@@ -674,7 +692,9 @@ header welded to `top: 0`. Once the header floats, its underside is
 SectionNav, StickyLetterBar, the `/events` and `/cities` filter bars — pinned
 _inside_ the header: 10px behind it at 390px, 18px at 1440px, measured on prod.
 It now reads `--header-pinned-bottom` (`--island-inset` + the bar's pinned
-height: 56px on phones where it never collapses, 60px from `md` where it does),
+height: **52px** on phones where it never collapses, 60px from `md` where it
+does — this table said 56px, as did two comments in `index.css`, while the
+token and the markup both said 52),
 and so does `html { scroll-padding-top }`, which had drifted the same way and
 for the same reason. **Never re-inline a pixel value in either place** — a
 height derived from the variable the header positions itself with cannot
@@ -688,18 +708,56 @@ variant). A second permanently-pinned bottom bar on desktop would duplicate it
 and occlude content on every route. The phone dock is the one the spec argues
 for by name.
 
-- **Header** — brand · search · actions on one row, then the six intent tabs as
-  TRACK TABS under a 3px rule. Each tab is `TransitIcon` + label; the icon draws
-  in `currentColor`, so it inverts with the active tab's ink fill for free.
-  Colour appears once, as the 6px rule under the active tab — inactive rules are
-  transparent, never a muted tint. `nav[aria-label="Primary"]` is unique
+- **Header** — brand · search · actions on one row, with the **seven** intent
+  tabs as TRACK TABS beside them. (This read "six" here and in two comments
+  while `INTENT_NAV` has held seven and the footer grid has said
+  `xl:grid-cols-7`.) Each tab is `TransitIcon` + label; the icon draws in
+  `currentColor`, so it inverts with the active tab's ink fill for free.
+  Colour appears once, as the **4px** (`h-1`) rule under the active tab —
+  inactive rules are transparent, never a muted tint. (This bullet previously
+  said both "a 3px rule" and "the 6px rule" in consecutive sentences; the code
+  has always been `h-1`.) `nav[aria-label="Primary"]` is unique
   (`MobileBottomNav` owns `"Navigation"`) and stays `md:`-gated, because
   `useIsMobile` flips at 768 and `lg:` would leave 768–1023px with no nav.
   `z-index` stays **40**: every portal renders at 50, and the 1100 this once
   carried painted the bar over its own menus.
 
+  Each tab carries an explicit **`aria-label`**, and that is load-bearing
+  rather than belt-and-braces: the label span is `hidden xl:inline`, so from
+  768 to 1279 it is `display: none` and contributes nothing to the accessible
+  name. Measured on prod 2026-10-10, every tab's `innerText` was `""` and the
+  only name source was `title` — last-resort in accname, not surfaced to
+  touch, suppressed by some AT. The tabs were also **40px wide** there
+  (`w-10`), because the 44px `min-width` arm of the base rule only matches
+  `button[aria-label]`; they are `w-11` now. Both fixes also bring them into
+  the 44×44 sweep in `e2e/ux-accessibility-remediation.spec.ts`, which selects
+  `header a[aria-label]` and so could not see them at all before.
+
+- **The compact state keeps the nav.** Panel 02 says "nothing else survives
+  the collapse", and that is deliberately overridden: `useCompactHeader` used
+  to LATCH, so a reader 40px down a page had the collapsed bar as their only
+  chrome — and it carried no `<nav>`. Measured, `navLinks` was **0** at 1100px
+  and 1440px and stayed 0 back at `scrollY: 0`, because the latch's reset arm
+  only ran inside a scroll event the browser does not reliably deliver at
+  rest. That is the same outcome `routes.tsx` records as a fixed production
+  bug. The collapse is still one ink line at the same height; what it drops is
+  the active-intent chip, whose two signals the active tab's own rule already
+  carries. The latch is now a **hysteresis band** (collapse above 80px, expand
+  below 20px), which is strictly more flicker-resistant than the single 40px
+  threshold it replaces and self-corrects after a dropped event.
+
+  A control on that ink plate takes the **`reversed` / `ghostReversed`** button
+  variants. `ghost` is `text-foreground`, so the Sign-in button measured a
+  contrast ratio of **1.00** — ink on ink, invisible — and `default` is
+  `bg-foreground`, an ink plate on an ink bar with no silhouette. Those
+  variants exist because this was the fourth surface to hit it: the footer
+  patched it with `[&_button]:text-background`, `About.tsx` hand-rolled
+  `bg-background text-foreground`, and the compact header had nothing.
+
 - **Search is a command plate**, not a dropdown: centred, `max-w-[680px]`, top
-  `8vh`, 4px ink border, `shadow-hard-lg`. Mobile keeps a full-screen sheet.
+  `8vh`, `shadow-soft-lg`. (This said `shadow-hard-lg` and a 4px ink border;
+  `--shadow-hard*` no longer exists and the soft re-skin removed the cage —
+  the code is right.) Mobile keeps a full-screen sheet.
 
   **There is exactly ONE `role="combobox"` at any moment.** The field is _moved_
   between the bar and the overlay, never duplicated — two inputs claiming one

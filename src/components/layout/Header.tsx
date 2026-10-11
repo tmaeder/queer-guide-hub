@@ -3,7 +3,6 @@ import { Link, useNavigate, useLocation } from 'react-router';
 import { Button } from '@/components/ui/button';
 import { LogOut, Shield, UserRound, Users } from 'lucide-react';
 import { TransitIcon } from '@/components/transit/TransitIcon';
-import { TrackSwatch } from '@/components/transit/TrackSwatch';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
@@ -37,6 +36,8 @@ import { Wordmark } from '@/components/brand/Wordmark';
 import { useCompactHeader } from '@/hooks/useCompactHeader';
 import { cn } from '@/lib/utils';
 import { PAGE_GUTTER } from '@/components/layout/PageContainer';
+import { IdentityRow } from '@/components/layout/IdentityRow';
+import { FriendsOnlineCount } from '@/components/layout/FriendsOnlineCount';
 
 // ── Component ───────────────────────────────────────────────────────────────
 
@@ -59,9 +60,10 @@ export function Header() {
     (user?.email ? generateAvatarUrl(user.email, 96) || undefined : undefined);
 
   const submitCta = getSubmitCta(location.pathname, t);
-  // Declared here, not next to desktopNav: rightCluster's JSX reads it and is
-  // evaluated at its own const assignment above, so a later declaration is a
-  // temporal-dead-zone crash on every render.
+  // Declared up here, above every render helper that reads it. It used to be a
+  // temporal-dead-zone hazard because the helpers were `const`s whose JSX was
+  // evaluated at assignment time; they are functions now, so the ordering is
+  // no longer load-bearing — but keeping the declaration first costs nothing.
   const path = stripLocale(location.pathname);
 
   const displayName = (profile?.display_name as string | null) || null;
@@ -95,7 +97,17 @@ export function Header() {
             className="transition-transform duration-fast hover:-rotate-6 hover:scale-110 active:scale-95 object-contain"
             style={{ height: 34, width: 34 }}
           />
-          <span className="hidden flex-col font-display text-base font-bold leading-[1.1] tracking-tight text-foreground md:flex">
+          {/* `text-15`, not `text-base`: 16px is raw Tailwind and off the
+              micro-scale ladder.
+              NOT `text-title` — this span is `font-display`, and rank 4 is
+              Space Grotesk, so the pair is the exact violation
+              rankFourFace.test.ts bans (it caught this on the first run).
+              15px is the nearest micro-scale token to the 16px it replaces,
+              which matters because this is a two-line stacked name set against
+              a 34px logo: 15 × 1.1 × 2 ≈ 33px keeps them the same height,
+              where rank 4 would be 44px and rank 3 would be 70px in a 52px
+              bar. */}
+          <span className="hidden flex-col font-display text-15 font-bold leading-[1.1] tracking-tight text-foreground md:flex">
             <span>{wordmarkTop}</span>
             {wordmarkBottom && <span>{wordmarkBottom}</span>}
           </span>
@@ -120,14 +132,19 @@ export function Header() {
   // Contribute — the mock's ink-filled CTA. It carries its label from `lg:` up
   // and collapses to a square icon below that: at 768–1023px the tab row, the
   // search field and this button share one line, and a labelled button there
-  // pushed the six tabs into a wrap. The accessible name is the label either
+  // pushed the seven tabs into a wrap. The accessible name is the label either
   // way, so the collapse is visual only.
   const contributeLabel = user
     ? submitCta.label
     : t('header.signInToContribute', 'Sign in to contribute');
-  const contribute = (
+
+  // `onInk` is threaded through rather than inherited, because every variant
+  // below sets its own colour explicitly and so beats anything the header
+  // element passes down. See the `reversed` / `ghostReversed` comment in
+  // button.tsx for the measurement that forced this.
+  const renderContribute = (onInk: boolean) => (
     <Button
-      variant="default"
+      variant={onInk ? 'reversed' : 'default'}
       size="sm"
       onClick={() => (user ? navigate(submitCta.route) : setAuthDialogOpen(true))}
       aria-label={contributeLabel}
@@ -139,13 +156,13 @@ export function Header() {
     </Button>
   );
 
-  const rightCluster = (
+  const renderRightCluster = (onInk: boolean) => (
     <div className="flex items-center gap-2 flex-shrink-0">
-      {contribute}
+      {renderContribute(onInk)}
 
       {user && (
         <span className="hidden md:inline-flex">
-          <NotificationBell />
+          <NotificationBell onInk={onInk} />
         </span>
       )}
 
@@ -153,14 +170,20 @@ export function Header() {
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button
-              variant="ghost"
+              variant={onInk ? 'ghostReversed' : 'ghost'}
               size="sm"
               style={{ height: 44, width: 44 }}
               className="p-0"
               aria-label={t('header.openUserMenu', 'Open user menu')}
             >
               <Avatar style={{ height: 36, width: 36 }}>
-                <AvatarImage src={avatarSrc} alt={displayName || 'Your account'} />
+                {/* The trigger already carries an `aria-label`, so this alt is
+                    belt-and-braces — but it was hardcoded English in an
+                    11-locale product. */}
+                <AvatarImage
+                  src={avatarSrc}
+                  alt={displayName || t('header.userMenu.yourAccount', 'Your account')}
+                />
                 <AvatarFallback>{avatarInitial}</AvatarFallback>
               </Avatar>
             </Button>
@@ -172,19 +195,14 @@ export function Header() {
                 to="/hub"
                 className="flex items-center gap-2 rounded-element p-2 no-underline"
               >
-                <Avatar style={{ height: 36, width: 36 }}>
-                  <AvatarImage src={avatarSrc} alt="" />
-                  <AvatarFallback>{avatarInitial}</AvatarFallback>
-                </Avatar>
-                <span className="flex min-w-0 flex-col">
-                  {username ? (
-                    <span className="truncate font-mono text-sm font-semibold">@{username}</span>
-                  ) : (
-                    <span className="truncate text-sm font-semibold">
-                      {user.email || t('header.userMenu.you', 'You')}
-                    </span>
-                  )}
-                </span>
+                <IdentityRow
+                  avatarSrc={avatarSrc}
+                  avatarInitial={avatarInitial}
+                  username={username}
+                  email={user.email ?? null}
+                  fallbackLabel={t('header.userMenu.you', 'You')}
+                  avatarPx={36}
+                />
               </LocalizedLink>
             </DropdownMenuLabel>
 
@@ -197,24 +215,22 @@ export function Header() {
               </LocalizedLink>
             </DropdownMenuItem>
 
-            {/* Theme switch removed 2026-08: dark mode dropped with the
-                subway-map rebrand (fixed paper/ink poster identity). */}
+            {/* No theme switch in THIS menu — it lives in the footer and the
+                mobile nav sheet instead, which is where the other display
+                controls (language, currency) are.
+
+                This comment used to claim dark mode had been "dropped with the
+                subway-map rebrand". That was false and stale: `src/index.css`
+                carries a full `.dark` token block, `ThemeProvider` applies the
+                class, `ThemeToggle` ships in Footer and MobileNavSheet, and it
+                offers Light/Dark/System. Dark mode is supported — a token needs
+                a value in both blocks. */}
 
             <DropdownMenuItem asChild>
               <LocalizedLink to="/hub/friends" className="flex gap-2 no-underline">
                 <Users size={16} />
                 <span>{t('header.userMenu.friends', 'Friends')}</span>
-                {friendsOnline !== null && (
-                  <span className="ml-auto flex items-center gap-1.5 text-xs tabular-nums text-muted-foreground">
-                    <span aria-hidden className="h-2 w-2 rounded-full bg-foreground" />
-                    <span aria-hidden>{friendsOnline}</span>
-                    <span className="sr-only">
-                      {t('header.userMenu.friendsOnline', '{{count}} online', {
-                        count: friendsOnline,
-                      })}
-                    </span>
-                  </span>
-                )}
+                <FriendsOnlineCount count={friendsOnline} />
               </LocalizedLink>
             </DropdownMenuItem>
 
@@ -251,8 +267,12 @@ export function Header() {
           </DropdownMenuContent>
         </DropdownMenu>
       ) : (
+        // The 1.00-contrast case. `ghost` is `text-foreground`, so on the
+        // compact ink plate this button's label was ink on ink — measured
+        // invisible on prod for every signed-out desktop visitor past the
+        // scroll threshold.
         <Button
-          variant="ghost"
+          variant={onInk ? 'ghostReversed' : 'ghost'}
           size="sm"
           onClick={() => setAuthDialogOpen(true)}
           aria-label={t('header.signIn', 'Sign in')}
@@ -270,9 +290,24 @@ export function Header() {
   // from desktop chrome. Never re-inline it.
   //
   // Colour appears once as the active route rule. At tablet widths the labels
-  // collapse but remain the links' accessible names and native titles; from
-  // xl upward the row has room to show all seven labels without a second bar.
-  const desktopNav = (
+  // collapse to icons; from xl upward the row has room to show all seven
+  // labels without a second bar.
+  //
+  // The collapse is VISUAL ONLY, and that now needs saying precisely, because
+  // an earlier version of this comment claimed the labels "remain the links'
+  // accessible names and native titles" — conflating the two. They did not:
+  // the label span is `hidden xl:inline`, i.e. `display: none`, which
+  // contributes nothing to the accessible name. Measured on prod at 1100px,
+  // every tab's `innerText` was `""` and the only name source was `title` —
+  // the textbook accname antipattern, since `title` is last-resort, is not
+  // surfaced to touch, and is suppressed by several AT configurations. The
+  // explicit `aria-label` below is what makes the name real; `title` stays
+  // for the native tooltip only.
+  //
+  // It also brings the tabs into `e2e/ux-accessibility-remediation.spec.ts`,
+  // whose 44×44 sweep selects `header a[aria-label]` and so could never see
+  // them while they were named by `title`.
+  const renderDesktopNav = (onInk: boolean) => (
     // Distinct landmark name — the mobile bottom bar owns "Navigation";
     // duplicate nav landmark names break rotor navigation (landmark-unique).
     // `md:` not `lg:` — useIsMobile flips at md (768) and MobileBottomNav is
@@ -291,12 +326,25 @@ export function Header() {
             key={to}
             to={to}
             title={label}
+            aria-label={label}
             aria-current={active ? 'page' : undefined}
             className={cn(
-              'group relative grid h-11 w-10 shrink-0 place-items-center rounded-container no-underline transition-colors xl:w-auto xl:min-w-11 xl:px-2',
+              // `w-11`, not `w-10`. The base rule in index.css only applies its
+              // 44px min-WIDTH arm to `button[aria-label]` / `[role=button]`,
+              // so these anchors matched neither arm and sat at 40px for the
+              // whole 768–1279 band. 7×44 = 308px, 28px more than before,
+              // which the row's width budget absorbs.
+              'group relative grid h-11 w-11 shrink-0 place-items-center rounded-container no-underline transition-colors xl:w-auto xl:min-w-11 xl:px-2',
               active
-                ? 'text-foreground'
-                : 'text-muted-foreground hover:bg-surface-container hover:text-foreground',
+                ? onInk
+                  ? 'text-background'
+                  : 'text-foreground'
+                : // The inactive hover is surface-dependent: `bg-surface-container`
+                  // + `text-foreground` is a paper hover, which on the ink plate
+                  // would be a paper tile with ink type sitting in an ink bar.
+                  onInk
+                  ? 'text-background/70 hover:bg-background/15 hover:text-background'
+                  : 'text-muted-foreground hover:bg-surface-container hover:text-foreground',
             )}
           >
             {/* The icon and label are both sourced from INTENT_NAV, so the
@@ -330,10 +378,28 @@ export function Header() {
   // Design contract, panel 02: "On scroll the bar reverses to ink and drops to
   // one line, carrying the current track colour and the page action with it.
   // Nothing else survives the collapse."
-  const activeIntent = INTENT_NAV.find((i) => isIntentActive(i, path));
-  const activeTrack = activeIntent ? (INTENT_TRACK[activeIntent.id] ?? 'pink') : 'pink';
-  const ActiveIntentIcon = activeIntent?.icon;
-
+  //
+  // DELIBERATE OVERRIDE of that last sentence, 2026-10-10. The nav survives
+  // the collapse now, and the reason is a measurement rather than a taste
+  // disagreement: `useCompactHeader` LATCHES, so once a reader is 80px down a
+  // page the collapsed bar is the only chrome they have — and it carried no
+  // `<nav>` at all. Measured on prod, `header nav[aria-label="Primary"]`
+  // returned ZERO links at 1100px and at 1440px, and because the latch's reset
+  // arm fires only inside a scroll event it stayed at zero even back at
+  // `scrollY: 0`. A fresh navigation that restores scroll (measured: /travel
+  // landing at 252px) put the bar in that state from first paint.
+  //
+  // That is the same OUTCOME routes.tsx documents as a fixed production bug —
+  // "/venues and /people unreachable from desktop chrome on every fresh load"
+  // — reached by a different mechanism, so it is a regression of a known class
+  // and not a cosmetic complaint about the spec.
+  //
+  // The collapse itself is kept: one ink line, same height, same box. The tabs
+  // are already 40→44px icon-only below `xl`, so they cost 308px and fit — at
+  // 768px the row is ~617px of content in a 704px box. What is DROPPED is the
+  // TrackSwatch + icon + label chip that used to stand in for the nav: the
+  // active tab's own 4px track rule carries the line and the job already, so
+  // the chip became a second statement of the same two signals.
   return (
     <header
       // A floating island (spec panels 10-12), not a bar welded to the window
@@ -393,9 +459,16 @@ export function Header() {
         /* ── 02 · Compact, after scroll — one ink line ────────────────── */
         <div
           className={cn(
-            'mx-auto flex w-full max-w-page flex-wrap items-center gap-4 py-2',
+            // `flex-nowrap` + `min-w-0` on the nav, NOT `flex-wrap`. The wrap
+            // was load-bearing in the wrong direction: a wrapped row grows
+            // past 60px while `--header-pinned-h` stays 60, which silently
+            // re-introduces the sticky-bar overlap index.css documents as a
+            // fixed production bug (header bottom 82 vs bar top 64 at 1440).
+            // Nothing in this row may push the bar taller than its token.
+            'mx-auto flex w-full max-w-page flex-nowrap items-center gap-4 py-2',
             PAGE_GUTTER,
           )}
+          style={{ minHeight: 'var(--header-pinned-h)' }}
         >
           {/* `flex items-center`, not a bare block: the wordmark span is an
               inline-block, so a block link boxes it against the line's strut
@@ -403,29 +476,32 @@ export function Header() {
               44px box. Measured on prod at 1440: 12px above the mark, 27px
               below it, in a bar whose every other item is centred. Making the
               link a flex row centres the span box itself — 20/19. */}
-          <Link to="/" className="flex items-center no-underline" aria-label={siteName}>
+          <Link to="/" className="flex shrink-0 items-center no-underline" aria-label={siteName}>
             <Wordmark className="text-title text-background" />
           </Link>
-          {activeIntent && ActiveIntentIcon && (
-            /* The collapsed bar carries the same two signals as the expanded
-               tab — the line and the job — so scrolling never costs the reader
-               their position in the network. On ink the swatch drops its rim:
-               a paper hairline around an 8px pill reads as a second pill. */
-            <span className="flex items-center gap-2 text-15 font-bold">
-              <TrackSwatch track={activeTrack} tone="ink" />
-              <ActiveIntentIcon size={18} className="shrink-0" />
-              {t(activeIntent.labelKey, activeIntent.fallback)}
-            </span>
-          )}
-          <span className="ms-auto flex items-center gap-2">{rightCluster}</span>
+          {/* The real tab row, not a chip standing in for it. See the override
+              note above the `return` for why the spec's "nothing else survives
+              the collapse" is deviated from here. */}
+          <div className="min-w-0 flex-1 overflow-hidden">{renderDesktopNav(true)}</div>
+          <span className="flex shrink-0 items-center gap-2">{renderRightCluster(true)}</span>
         </div>
       ) : (
         <>
           {/* ── 01 · Primary. One navigation plane; search expands into its
                command plate only when asked for. ───────────────────────── */}
           <div className={cn('mx-auto w-full max-w-page', PAGE_GUTTER)}>
+            {/* `minHeight: var(--header-pinned-h)`, not a literal. The two
+                literals that used to live here (52 mobile / 60 desktop)
+                restated the token that defines them (index.css declares 52,
+                overridden to 60 at md) — the two-sources-for-one-number
+                pattern PageContainer's STICKY_UNDER_HEADER comment exists to
+                end. `minHeight` rather than `height` so the row grows instead
+                of clipping its 44px controls at 150–200% text zoom. */}
             {isMobile ? (
-              <div className="flex items-center gap-2" style={{ height: 52 }}>
+              <div
+                className="flex items-center gap-2"
+                style={{ minHeight: 'var(--header-pinned-h)' }}
+              >
                 {brand}
                 {/* `collapse`: below `sm` the search is the mock's ICON, not a
                     field (panel 06 — brand, search icon, avatar). A field
@@ -437,11 +513,14 @@ export function Header() {
                 </div>
               </div>
             ) : (
-              <div className="flex items-center gap-2" style={{ height: 60 }}>
+              <div
+                className="flex items-center gap-2"
+                style={{ minHeight: 'var(--header-pinned-h)' }}
+              >
                 <div className="flex shrink-0 items-center gap-2.5">{brand}</div>
-                <div className="min-w-0 flex-1 overflow-hidden">{desktopNav}</div>
+                <div className="min-w-0 flex-1 overflow-hidden">{renderDesktopNav(false)}</div>
                 <UniversalSearchBar iconOnly />
-                <div className="shrink-0">{rightCluster}</div>
+                <div className="shrink-0">{renderRightCluster(false)}</div>
               </div>
             )}
           </div>

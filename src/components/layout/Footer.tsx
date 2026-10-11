@@ -8,6 +8,7 @@ import { INTENT_NAV, INTENT_TRACK, isIntentActive } from '@/config/navigation';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { OPEN_COOKIE_PREFERENCES_EVENT } from '@/lib/analyticsConsent';
 import { Wordmark } from '@/components/brand/Wordmark';
+import { useSiteBranding } from '@/hooks/useSiteBranding';
 import { TrackSwatch } from '@/components/transit/TrackSwatch';
 import { PAGE_GUTTER } from '@/components/layout/PageContainer';
 import { FooterTracks } from './FooterTracks';
@@ -19,7 +20,10 @@ import { FooterTracks } from './FooterTracks';
  * Structure is load-bearing and specified, not stylistic:
  *   1. two crossing track lines, so the page ends on the metaphor it opened on
  *   2. columns are TRACKS, not a sitemap dump — one per intent, each led by its
- *      own line swatch, so the footer teaches the same six jobs the topbar does
+ *      own line swatch, so the footer teaches the same SEVEN jobs the topbar
+ *      does (INTENT_NAV holds seven; "six" was stale here, in FooterTracks and
+ *      in the design-system README while the grid below already said
+ *      `xl:grid-cols-7`)
  *   3. the anti-discrimination policy and the crisis lines sit ABOVE the legal
  *      row, "because that is the order of importance, not the order of
  *      convention"
@@ -71,6 +75,12 @@ export function Footer({ variant = 'full' }: FooterProps = {}) {
   const { pathname } = useLocation();
   const currentYear = new Date().getFullYear();
   const localePath = pathname.replace(/^\/(?:[a-z]{2}\/)?/, '/');
+  // The compact footer's home link used a hardcoded "Queer Guide" as its
+  // accessible name while the Header reads the same value from published
+  // branding, so a rebranded /admin/design deployment still announced the
+  // stock name here.
+  const branding = useSiteBranding();
+  const siteName = branding.siteName ?? 'Queer Guide';
 
   if (variant === 'compact') {
     // No data-attribution row here, deliberately. The obligation attaches to
@@ -90,7 +100,7 @@ export function Footer({ variant = 'full' }: FooterProps = {}) {
               <LocalizedLink
                 to="/"
                 className="inline-flex min-h-11 items-center no-underline"
-                aria-label="Queer Guide"
+                aria-label={siteName}
               >
                 <Wordmark className="text-title text-foreground" />
               </LocalizedLink>
@@ -170,7 +180,9 @@ export function Footer({ variant = 'full' }: FooterProps = {}) {
             chrome. The columns LINK rather than describe: a subtitle paragraph
             under a heading is the one thing in a footer nobody clicks. */}
         <nav
-          aria-label="Footer navigation"
+          // Translated: this was the one nav landmark name in the whole chrome
+          // still hardcoded in English, in an 11-locale product.
+          aria-label={t('footer.navigation', 'Footer navigation')}
           className="mt-8 grid grid-cols-2 gap-x-6 gap-y-8 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7"
         >
           {INTENT_NAV.map((intent) => {
@@ -224,10 +236,16 @@ export function Footer({ variant = 'full' }: FooterProps = {}) {
           )}
         >
           <div>
-            {/* Rank 4 is Space Grotesk 700, never Anton — dropping this from
-                text-headline to text-title means dropping font-display with
-                it (rankFourFace.test.ts). */}
-            <h2 className="max-w-md text-title font-bold leading-tight">
+            {/* Rank 4 is Space Grotesk 700, never Anton.
+                `font-sans` is REQUIRED here and is not decoration: index.css
+                puts the display face on the bare `h2` ELEMENT, unlayered, so
+                this heading rendered in Anton 400 — with `font-bold` a no-op,
+                since Anton ships one weight and `font-synthesis-weight: none`
+                suppresses the fake. The old comment here claimed the opposite
+                ("dropping font-display with it"), and the guard it cited was
+                blind to a face inherited from the tag. The opt-out had to be
+                added to that selector before this class could do anything. */}
+            <h2 className="max-w-md font-sans text-title font-bold leading-tight">
               {t('footer.antiDiscrimination.title', "We don't do bigotry here.")}
             </h2>
             <p className="mt-4 max-w-md text-13 leading-relaxed text-background/70">

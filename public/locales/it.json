@@ -147,7 +147,8 @@
     "noStation": "Nessuna stazione con questo nome — per ora",
     "addToMap": "Aggiungila alla mappa",
     "seeOnMap": "Vedi {{count}} risultati sulla mappa",
-    "keyHints": "↑↓ naviga · ↵ apri"
+    "keyHints": "↑↓ naviga · ↵ apri",
+    "open": "Cerca"
   },
   "common": {
     "contentInLanguage": "In {{lang}}",
@@ -231,7 +232,11 @@
     "antiDiscrimination": {
       "title": "Qui non c’è spazio per il bigottismo.",
       "body": "Razzismo, transfobia e discriminazione comportano l’esclusione automatica dalla piattaforma. Punto."
-    }
+    },
+    "essentials": "Link essenziali",
+    "report": "Segnala",
+    "cookiePreferences": "Preferenze dei cookie",
+    "navigation": "Navigazione del piè di pagina"
   },
   "trips": {
     "title": "I miei viaggi",
@@ -2084,7 +2089,8 @@
       "mailbox": "Casella di posta",
       "you": "Profilo",
       "community": "Community",
-      "viewProfile": "Vedi profilo pubblico"
+      "viewProfile": "Vedi profilo pubblico",
+      "yourAccount": "Il tuo account"
     },
     "modes": {
       "dating": "In cerca d'amore",
@@ -2099,7 +2105,10 @@
       "help": "Aiuto",
       "accessibility": "Accessibilità",
       "legal": "Note legali",
-      "contact": "Contatti"
+      "contact": "Contatti",
+      "privacy": "Privacy",
+      "terms": "Termini",
+      "donate": "Sostienici"
     },
     "signUp": "Sign up",
     "navigation": "Navigation",
@@ -5287,5 +5296,18 @@
       "linked": "{{count}} collegato a una voce esistente",
       "reviewNote": "Le proposte vengono controllate prima della pubblicazione."
     }
+  },
+  "a11y": {
+    "skipToContent": "Vai al contenuto principale"
+  },
+  "theme": {
+    "toggle": "Cambia tema",
+    "light": "Chiaro",
+    "dark": "Scuro",
+    "system": "Sistema"
+  },
+  "i18n": {
+    "selectLanguage": "Seleziona la lingua",
+    "selectCurrency": "Seleziona la valuta"
   }
 }

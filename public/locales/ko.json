@@ -147,7 +147,8 @@
     "noStation": "아직 그런 이름의 역이 없습니다",
     "addToMap": "지도에 추가하기",
     "seeOnMap": "지도에서 {{count}}개 결과 보기",
-    "keyHints": "↑↓ 이동 · ↵ 열기"
+    "keyHints": "↑↓ 이동 · ↵ 열기",
+    "open": "검색"
   },
   "common": {
     "contentInLanguage": "{{lang}}(으)로",
@@ -231,7 +232,11 @@
     "antiDiscrimination": {
       "title": "여기에 편견이 설 자리는 없습니다.",
       "body": "인종차별, 트랜스포비아, 차별은 플랫폼에서 즉시 퇴출되는 사유입니다. 예외는 없습니다."
-    }
+    },
+    "essentials": "푸터 필수 링크",
+    "report": "신고",
+    "cookiePreferences": "쿠키 설정",
+    "navigation": "푸터 내비게이션"
   },
   "trips": {
     "title": "내 여행",
@@ -2084,7 +2089,8 @@
       "mailbox": "메일함",
       "you": "내 정보",
       "community": "커뮤니티",
-      "viewProfile": "공개 프로필 보기"
+      "viewProfile": "공개 프로필 보기",
+      "yourAccount": "내 계정"
     },
     "modes": {
       "dating": "사랑을 찾아서",
@@ -2099,7 +2105,10 @@
       "help": "도움말",
       "accessibility": "접근성",
       "legal": "법률",
-      "contact": "문의"
+      "contact": "문의",
+      "privacy": "개인정보",
+      "terms": "약관",
+      "donate": "후원하기"
     },
     "signUp": "Sign up",
     "navigation": "Navigation",
@@ -5285,5 +5294,18 @@
       "linked": "{{count}}개를 기존 항목에 연결했습니다",
       "reviewNote": "제출 내용은 공개 전에 검토됩니다."
     }
+  },
+  "a11y": {
+    "skipToContent": "본문으로 건너뛰기"
+  },
+  "theme": {
+    "toggle": "테마 전환",
+    "light": "라이트",
+    "dark": "다크",
+    "system": "시스템"
+  },
+  "i18n": {
+    "selectLanguage": "언어 선택",
+    "selectCurrency": "통화 선택"
   }
 }

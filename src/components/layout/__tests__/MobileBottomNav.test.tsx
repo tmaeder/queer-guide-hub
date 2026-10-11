@@ -139,18 +139,23 @@ describe('MobileBottomNav', () => {
     expect(hapticSpy).toHaveBeenCalledWith('nudge');
   });
 
+  // By TEXT, not by label. NavBadge carried its sentence in `aria-label` on a
+  // roleless span (dropped by the accname spec, so it reached no AT) and uses
+  // an `sr-only` span now. The negative assertion is why this matters:
+  // `queryByLabelText` returns null either way after that change, so it would
+  // pass against a badge that renders.
   it('shows the unread badge only when signed in with unread > 0', () => {
     mockUser = { id: 'u-1' };
     mockUnread = 5;
     renderAt('/');
-    expect(screen.getByLabelText('5 unread')).toBeInTheDocument();
+    expect(screen.getByText('5 unread')).toBeInTheDocument();
   });
 
   it('hides the unread badge for anon even with a count', () => {
     mockUser = null;
     mockUnread = 5;
     renderAt('/');
-    expect(screen.queryByLabelText('5 unread')).toBeNull();
+    expect(screen.queryByText('5 unread')).toBeNull();
   });
 
   it('caps the unread badge at 99+', () => {

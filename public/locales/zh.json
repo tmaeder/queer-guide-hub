@@ -147,7 +147,8 @@
     "noStation": "还没有这个名字的车站",
     "addToMap": "把它加到地图上",
     "seeOnMap": "在地图上查看 {{count}} 条结果",
-    "keyHints": "↑↓ 导航 · ↵ 打开"
+    "keyHints": "↑↓ 导航 · ↵ 打开",
+    "open": "搜索"
   },
   "common": {
     "contentInLanguage": "语言：{{lang}}",
@@ -231,7 +232,11 @@
     "antiDiscrimination": {
       "title": "这里容不下偏见。",
       "body": "种族歧视、跨性别恐惧和各种歧视，都会被直接踢出平台。没有例外。"
-    }
+    },
+    "essentials": "页脚要点",
+    "report": "举报",
+    "cookiePreferences": "Cookie 设置",
+    "navigation": "页脚导航"
   },
   "trips": {
     "title": "我的行程",
@@ -2084,7 +2089,8 @@
       "mailbox": "邮箱",
       "you": "我的",
       "community": "社区",
-      "viewProfile": "查看公开资料"
+      "viewProfile": "查看公开资料",
+      "yourAccount": "你的账户"
     },
     "modes": {
       "dating": "寻找爱情",
@@ -2099,7 +2105,10 @@
       "help": "帮助",
       "accessibility": "无障碍",
       "legal": "法律",
-      "contact": "联系"
+      "contact": "联系",
+      "privacy": "隐私",
+      "terms": "条款",
+      "donate": "支持我们"
     },
     "signUp": "Sign up",
     "navigation": "Navigation",
@@ -5285,5 +5294,18 @@
       "linked": "已将 {{count}} 个项目关联到现有条目",
       "reviewNote": "提交内容会在发布前接受审核。"
     }
+  },
+  "a11y": {
+    "skipToContent": "跳到主要内容"
+  },
+  "theme": {
+    "toggle": "切换主题",
+    "light": "浅色",
+    "dark": "深色",
+    "system": "跟随系统"
+  },
+  "i18n": {
+    "selectLanguage": "选择语言",
+    "selectCurrency": "选择货币"
   }
 }
