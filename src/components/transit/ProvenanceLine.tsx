@@ -20,6 +20,7 @@ export function ProvenanceLine({
   checkedAt,
   correctHref,
   className,
+  compact = false,
 }: {
   addedBy?: string | null;
   addedAt?: string | null;
@@ -27,6 +28,7 @@ export function ProvenanceLine({
   /** Where "correct this" goes. Omitted = no affordance rendered, never a dead link. */
   correctHref?: string;
   className?: string;
+  compact?: boolean;
 }) {
   const fmt = (iso?: string | null) => {
     if (!iso) return null;
@@ -44,6 +46,31 @@ export function ProvenanceLine({
   if (addedBy) parts.push(added ? `Added by ${addedBy} in ${added}` : `Added by ${addedBy}`);
   else if (added) parts.push(`Added ${added}`);
   if (checked) parts.push(`Last checked ${checked}`);
+
+  if (compact) {
+    return (
+      <div
+        className={cn(
+          'flex flex-wrap items-baseline gap-x-4 gap-y-2 text-13 text-muted-foreground',
+          className,
+        )}
+      >
+        {parts.length > 0 && (
+          <p>
+            {parts.join('. ')}.{!checked && ' Not independently checked yet.'}
+          </p>
+        )}
+        {correctHref && (
+          <LocalizedLink
+            to={correctHref}
+            className="py-2 font-semibold text-foreground hover:underline"
+          >
+            Correct this page
+          </LocalizedLink>
+        )}
+      </div>
+    );
+  }
 
   return (
     <div className={cn('bg-muted rounded-element p-4', className)}>

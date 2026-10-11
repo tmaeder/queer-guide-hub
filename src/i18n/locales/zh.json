@@ -1347,9 +1347,40 @@
       "eyebrow": "[ZH] Event",
       "sections": "[ZH] Sections",
       "section": {
-        "about": "[ZH] About this event",
-        "where": "[ZH] Getting there",
-        "going": "[ZH] Who's going"
+        "about": "活动亮点",
+        "where": "找到路线",
+        "going": "与你同行的人"
+      },
+      "calendar": "日历",
+      "moreOptions": "更多选项",
+      "send": "发送给他人",
+      "getTickets": "购买门票",
+      "going": "参加",
+      "viewImage": "查看图片",
+      "board": "出发信息",
+      "date": "日期",
+      "time": "时间",
+      "price": "入场费",
+      "ages": "年龄",
+      "capacity": "容量",
+      "schedule": "日程",
+      "eventTime": "活动当地时间",
+      "yourTime": "你的当地时间",
+      "showMyTime": "显示我的当地时间",
+      "showEventTime": "显示活动当地时间",
+      "notListed": "未注明",
+      "archiveHint": "这一站已经过去了。",
+      "nextOuting": "寻找下一场活动",
+      "venueMissing": "此处未注明场地信息。",
+      "checkDetails": "查看活动详情",
+      "freeBooking": "免费入场。请通过票务链接查看预订详情。",
+      "noBookingLink": "此处未列出预订链接。",
+      "reportHint": "信息偏离轨道了？请在更多选项中举报。",
+      "moreStops": "下一站去哪儿？",
+      "relatedReason": {
+        "city": "同一城市",
+        "similar": "相似氛围",
+        "tags": "共同标签"
       }
     }
   },
@@ -2674,7 +2705,21 @@
       "subtitle": "管理你的联系人",
       "gate": "请登录以查看你的好友。",
       "requests": "请求",
-      "sentRequest": "向你发送了好友请求"
+      "sentRequest": "向你发送了好友请求",
+      "loadError": "无法加载你的好友。",
+      "empty": {
+        "title": "还没有好友。",
+        "description": "寻找可以联系的人。",
+        "cta": "寻找用户",
+        "pendingSent_one": "你有 {{count}} 个已发送的请求正在等待回复。请查看“请求”标签页。",
+        "pendingSent_other": "你有 {{count}} 个已发送的请求正在等待回复。请查看“请求”标签页。"
+      },
+      "requestsEmpty": "没有待处理的好友请求。",
+      "received": "已收到",
+      "sent": "已发送",
+      "waitingForAnswer": "等待回复",
+      "pendingBadge": "待处理",
+      "cancelRequest": "撤回"
     },
     "entityDetail": {
       "milestoneNotFoundTitle": "未找到里程碑",
@@ -3163,7 +3208,8 @@
       "news": "新闻",
       "map": "地图",
       "history": "[ZH] Legal record",
-      "historyNote": "[ZH] What changed and when. Safety information without a date is not safety information."
+      "historyNote": "[ZH] What changed and when. Safety information without a date is not safety information.",
+      "about": "关于{{country}}"
     },
     "practical": {
       "languages": "语言",
@@ -3267,6 +3313,18 @@
       "title": "[ZH] Compare the law elsewhere",
       "body": "[ZH] Every country page carries the same legal breakdown, from the same sources, with the date it was checked.",
       "rights": "[ZH] Rights across the world"
+    },
+    "overview": "概览",
+    "gallery": {
+      "allTypes": "所有类型",
+      "verifiedOnly": "仅已验证场所",
+      "freeOnly": "仅免费活动",
+      "invalidDates": "请选择晚于开始日期的结束日期。",
+      "error": "无法加载此合集。",
+      "results_one": "{{count}} 个结果",
+      "results_other": "{{count}} 个结果",
+      "empty": "没有匹配结果。请尝试其他城市或重置筛选条件。",
+      "pagination": "图库分页"
     }
   },
   "inbox": {
@@ -3693,6 +3751,9 @@
       "blurb": "[ZH] Pick a few. They shape what we suggest, and they are how other members find people with something in common.",
       "blurbSignedOut": "[ZH] Sign in to pick a few. They shape what we suggest, and they are how other members find people with something in common.",
       "count": "[ZH] {{count}} selected"
+    },
+    "friends": {
+      "discover": "寻找用户"
     }
   },
   "hub": {

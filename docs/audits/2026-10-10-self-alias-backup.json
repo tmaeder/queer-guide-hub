@@ -1,0 +1,377 @@
+{
+  "aliases": [
+    {
+      "id": "095c4af1-defa-489c-9038-f93decc2adc6",
+      "alias_name": "Komiker",
+      "alias_slug": "komiker",
+      "alias_type": "multilingual",
+      "created_at": "2026-10-10T04:53:06.505218+00:00",
+      "review_status": "approved",
+      "canonical_tag_id": "d488a153-3cc4-4d29-a917-31e7bbd200e5"
+    },
+    {
+      "id": "0a6bbdd2-9102-4337-b5c5-6d226e54f3e8",
+      "alias_name": "Identität",
+      "alias_slug": "identitat",
+      "alias_type": "multilingual",
+      "created_at": "2026-10-10T04:53:06.505218+00:00",
+      "review_status": "approved",
+      "canonical_tag_id": "1486b75e-fc4b-4f89-a149-3b34258ce11e"
+    },
+    {
+      "id": "0ca3dc2c-8584-4e73-884b-b6e47141b22d",
+      "alias_name": "Tanzer",
+      "alias_slug": "tanzer",
+      "alias_type": "multilingual",
+      "created_at": "2026-10-10T04:53:06.505218+00:00",
+      "review_status": "approved",
+      "canonical_tag_id": "9f2a4469-bf3a-448c-a211-e46a69e3ad88"
+    },
+    {
+      "id": "12898962-bb0a-4725-b972-548af5c1a851",
+      "alias_name": "Dichter",
+      "alias_slug": "dichter",
+      "alias_type": "multilingual",
+      "created_at": "2026-10-10T04:53:06.505218+00:00",
+      "review_status": "approved",
+      "canonical_tag_id": "aeb33b23-1c86-41c1-8f09-c80cf54a372a"
+    },
+    {
+      "id": "14cd46be-29f7-4929-8dbd-e72b3e554e82",
+      "alias_name": "Dirigent",
+      "alias_slug": "dirigent",
+      "alias_type": "multilingual",
+      "created_at": "2026-10-10T04:53:06.505218+00:00",
+      "review_status": "approved",
+      "canonical_tag_id": "68f21a49-5194-453d-9c9b-bb51151d237e"
+    },
+    {
+      "id": "1c5906ae-3154-42f2-8d41-5de1387fbe56",
+      "alias_name": "Dragperformer",
+      "alias_slug": "dragperformer",
+      "alias_type": "multilingual",
+      "created_at": "2026-10-10T05:25:31.315231+00:00",
+      "review_status": "approved",
+      "canonical_tag_id": "b9377ec9-ccef-40f3-b4c2-2d428f151692"
+    },
+    {
+      "id": "1f239352-9eb1-43d7-a72d-647a82469628",
+      "alias_name": "Arzt/Ärztin",
+      "alias_slug": "arzt-arztin",
+      "alias_type": "multilingual",
+      "created_at": "2026-10-10T04:53:06.505218+00:00",
+      "review_status": "approved",
+      "canonical_tag_id": "ab44548b-e4e3-4cc3-94a5-5a67e1f7694d"
+    },
+    {
+      "id": "273d60cc-deea-40fd-a220-e4677c0d5b2f",
+      "alias_name": "Anonym",
+      "alias_slug": "anonym",
+      "alias_type": "multilingual",
+      "created_at": "2026-10-10T04:53:06.505218+00:00",
+      "review_status": "approved",
+      "canonical_tag_id": "97fbd2de-2e0c-460b-a969-b8f669e2cd2e"
+    },
+    {
+      "id": "27ce1279-bf91-4548-af43-78fb68cfc1e9",
+      "alias_name": "Gleichstellung",
+      "alias_slug": "gleichstellung",
+      "alias_type": "multilingual",
+      "created_at": "2026-10-10T04:53:06.505218+00:00",
+      "review_status": "approved",
+      "canonical_tag_id": "bf819459-14e5-41cd-9adc-088a76ea4f25"
+    },
+    {
+      "id": "3f8649a1-437a-456a-bbd3-f388a0473a56",
+      "alias_name": "Queere Kultur",
+      "alias_slug": "queere-kultur",
+      "alias_type": "multilingual",
+      "created_at": "2026-10-10T04:53:06.505218+00:00",
+      "review_status": "approved",
+      "canonical_tag_id": "d746607c-78bc-454d-aaa9-742891a4f000"
+    },
+    {
+      "id": "42e4212f-dd99-4b7d-91b7-6afb8f8e324e",
+      "alias_name": "Gruppe",
+      "alias_slug": "gruppe",
+      "alias_type": "multilingual",
+      "created_at": "2026-10-10T04:53:06.505218+00:00",
+      "review_status": "approved",
+      "canonical_tag_id": "7f787c98-ce49-4ccd-bd25-bf0030195930"
+    },
+    {
+      "id": "4379bc5a-62e5-4a30-8ef9-04dd37b49c47",
+      "alias_name": "Musiker",
+      "alias_slug": "musiker",
+      "alias_type": "multilingual",
+      "created_at": "2026-10-10T04:53:06.505218+00:00",
+      "review_status": "approved",
+      "canonical_tag_id": "80643e6d-12da-4518-aed8-06e5c73d8879"
+    },
+    {
+      "id": "4d1b1a79-85e9-497e-9f53-a0bb4b662c93",
+      "alias_name": "Modedesigner",
+      "alias_slug": "modedesigner",
+      "alias_type": "multilingual",
+      "created_at": "2026-10-10T04:53:06.505218+00:00",
+      "review_status": "approved",
+      "canonical_tag_id": "f6dcd52e-f03e-40c2-8e94-bb2718b7c004"
+    },
+    {
+      "id": "511fb3ae-e335-43e5-8140-6ff08dea85c2",
+      "alias_name": "Sexarbeiter",
+      "alias_slug": "sexarbeiter",
+      "alias_type": "multilingual",
+      "created_at": "2026-10-10T04:53:06.505218+00:00",
+      "review_status": "approved",
+      "canonical_tag_id": "fbc6d5aa-82e3-436e-9d64-c27fb6eddbcc"
+    },
+    {
+      "id": "5d2f5aa4-e41e-4d1c-8540-439b20fac3e2",
+      "alias_name": "Autor",
+      "alias_slug": "autor",
+      "alias_type": "multilingual",
+      "created_at": "2026-10-10T04:53:06.505218+00:00",
+      "review_status": "approved",
+      "canonical_tag_id": "0c0eaa31-9de7-42c4-81f5-7d25054ff23f"
+    },
+    {
+      "id": "69e6a0a2-f32d-438d-889f-ffa63d669a6b",
+      "alias_name": "Redakteur",
+      "alias_slug": "redakteur",
+      "alias_type": "multilingual",
+      "created_at": "2026-10-10T04:53:06.505218+00:00",
+      "review_status": "approved",
+      "canonical_tag_id": "0aa9602e-467d-44fa-8ed8-3ed815acbfa6"
+    },
+    {
+      "id": "75bf68fa-6968-44b1-98c5-26827f624cf5",
+      "alias_name": "Queer-Kultur",
+      "alias_slug": "queer-kultur",
+      "alias_type": "multilingual",
+      "created_at": "2026-10-10T04:53:06.505218+00:00",
+      "review_status": "approved",
+      "canonical_tag_id": "c75fb1b4-36b8-4980-80db-834bc0e0119d"
+    },
+    {
+      "id": "793dddec-ee44-48d8-ac3b-3c79a35477f6",
+      "alias_name": "Polizei",
+      "alias_slug": "polizei",
+      "alias_type": "multilingual",
+      "created_at": "2026-10-10T05:25:31.315231+00:00",
+      "review_status": "approved",
+      "canonical_tag_id": "31336213-d34e-4cfb-9059-311c5548055e"
+    },
+    {
+      "id": "85461942-c77a-4284-b50f-0802354c22e8",
+      "alias_name": "Vorurteile",
+      "alias_slug": "vorurteile",
+      "alias_type": "multilingual",
+      "created_at": "2026-10-10T05:25:31.315231+00:00",
+      "review_status": "approved",
+      "canonical_tag_id": "b6624c84-286e-441b-bd03-d7778ea81654"
+    },
+    {
+      "id": "947dadc7-d924-4235-92d3-c71ec4e07b3c",
+      "alias_name": "Sängerin",
+      "alias_slug": "sangerin",
+      "alias_type": "multilingual",
+      "created_at": "2026-10-10T04:53:06.505218+00:00",
+      "review_status": "approved",
+      "canonical_tag_id": "fe2d556b-238b-48e1-8e2b-b4a6fd0d640a"
+    },
+    {
+      "id": "98286e07-a268-490a-8fc7-f15ff2930ea7",
+      "alias_name": "Gonorrhea (Tripper)",
+      "alias_slug": "gonorrhea-tripper",
+      "alias_type": "multilingual",
+      "created_at": "2026-10-10T05:25:31.315231+00:00",
+      "review_status": "approved",
+      "canonical_tag_id": "6118787c-deb4-42be-b57b-0fde91f9cb36"
+    },
+    {
+      "id": "9eb3be39-a8e5-4b6c-9f1b-e58e0e5bd633",
+      "alias_name": "Entfesselungskunstler",
+      "alias_slug": "entfesselungskunstler",
+      "alias_type": "multilingual",
+      "created_at": "2026-10-10T04:53:06.505218+00:00",
+      "review_status": "approved",
+      "canonical_tag_id": "4d9b9544-43b0-4463-92c5-8d0279461bbf"
+    },
+    {
+      "id": "ac229d41-a1f2-432a-bec1-049c9ee491fc",
+      "alias_name": "Kriegerin",
+      "alias_slug": "kriegerin",
+      "alias_type": "multilingual",
+      "created_at": "2026-10-10T04:53:06.505218+00:00",
+      "review_status": "approved",
+      "canonical_tag_id": "08073ddc-297e-49a8-b2d0-e1042ae3e48e"
+    },
+    {
+      "id": "b0d870b1-ea06-4af1-9954-27ef5ea564a8",
+      "alias_name": "Billard",
+      "alias_slug": "billard",
+      "alias_type": "multilingual",
+      "created_at": "2026-10-10T04:53:06.505218+00:00",
+      "review_status": "approved",
+      "canonical_tag_id": "972c0ff9-4255-4cfc-87dc-84f02d777dad"
+    },
+    {
+      "id": "bb1a0d30-f38d-43bd-9a3b-f4a677be0b5c",
+      "alias_name": "Schauspieler",
+      "alias_slug": "schauspieler",
+      "alias_type": "multilingual",
+      "created_at": "2026-10-10T04:53:06.505218+00:00",
+      "review_status": "approved",
+      "canonical_tag_id": "9c5088ed-7a59-439a-9681-e26c8780f99f"
+    },
+    {
+      "id": "bbb80241-560f-4207-a1df-6cd97a12de1c",
+      "alias_name": "Schauspieler/In",
+      "alias_slug": "schauspieler-in",
+      "alias_type": "multilingual",
+      "created_at": "2026-10-10T04:53:06.505218+00:00",
+      "review_status": "approved",
+      "canonical_tag_id": "333ff1a8-f38b-4e01-9da4-76f8543e056e"
+    },
+    {
+      "id": "c37081db-b260-45e6-8361-0df12f8fede3",
+      "alias_name": "Regisseur",
+      "alias_slug": "regisseur",
+      "alias_type": "multilingual",
+      "created_at": "2026-10-10T04:53:06.505218+00:00",
+      "review_status": "approved",
+      "canonical_tag_id": "9e57da0c-3e41-4808-bb3a-9580f15fbf73"
+    },
+    {
+      "id": "d0afc244-7691-479c-a944-16b648dbab45",
+      "alias_name": "Schriftstellerin",
+      "alias_slug": "schriftstellerin",
+      "alias_type": "multilingual",
+      "created_at": "2026-10-10T04:53:06.505218+00:00",
+      "review_status": "approved",
+      "canonical_tag_id": "76031504-55b5-473e-af33-4fa79e4cddae"
+    },
+    {
+      "id": "d0e3fb78-7621-4177-b98c-55762ba49184",
+      "alias_name": "Fotograf",
+      "alias_slug": "fotograf",
+      "alias_type": "multilingual",
+      "created_at": "2026-10-10T05:25:31.315231+00:00",
+      "review_status": "approved",
+      "canonical_tag_id": "35c425d2-4682-4848-816c-fa58b7ffc78b"
+    },
+    {
+      "id": "d2197f47-eab9-448a-bda0-8df36b881742",
+      "alias_name": "Performancekuenstler",
+      "alias_slug": "performancekuenstler",
+      "alias_type": "multilingual",
+      "created_at": "2026-10-10T04:53:06.505218+00:00",
+      "review_status": "approved",
+      "canonical_tag_id": "b35c2a2d-d25e-4b16-a869-15db91d3831b"
+    },
+    {
+      "id": "d543765a-a195-4da1-91d4-fbf37e496326",
+      "alias_name": "Priester",
+      "alias_slug": "priester",
+      "alias_type": "multilingual",
+      "created_at": "2026-10-10T04:53:06.505218+00:00",
+      "review_status": "approved",
+      "canonical_tag_id": "e5950c4a-f789-4c92-93cf-bdb323c9e6d5"
+    },
+    {
+      "id": "db13f9c1-dc1c-4fd5-99c5-d18b833e293b",
+      "alias_name": "Verleger",
+      "alias_slug": "verleger",
+      "alias_type": "multilingual",
+      "created_at": "2026-10-10T04:53:06.505218+00:00",
+      "review_status": "approved",
+      "canonical_tag_id": "36fa8e19-e99e-4025-8217-bc7d8cfd2e86"
+    },
+    {
+      "id": "dc5eceda-7ecd-43c6-8e16-19a746fab768",
+      "alias_name": "Begine",
+      "alias_slug": "begine",
+      "alias_type": "multilingual",
+      "created_at": "2026-10-10T04:53:06.505218+00:00",
+      "review_status": "rejected",
+      "canonical_tag_id": "e4c42ebd-abf5-4bfa-b3cb-b98d9d40317b"
+    },
+    {
+      "id": "dcc2c646-52fd-4ccd-8602-032bc55cb767",
+      "alias_name": "Preise",
+      "alias_slug": "preise",
+      "alias_type": "multilingual",
+      "created_at": "2026-10-10T04:53:06.505218+00:00",
+      "review_status": "approved",
+      "canonical_tag_id": "dc598c7d-2bd7-4f87-ba61-386cc71f216a"
+    },
+    {
+      "id": "df4158aa-1880-47ed-8f36-4a2dff369c4a",
+      "alias_name": "Dragkuenstler",
+      "alias_slug": "dragkuenstler",
+      "alias_type": "multilingual",
+      "created_at": "2026-10-10T04:53:06.505218+00:00",
+      "review_status": "approved",
+      "canonical_tag_id": "f90ac08f-e7c0-4844-9861-d43772bc193a"
+    },
+    {
+      "id": "e33b7f7b-e6bf-4aae-914e-c1f566ba2308",
+      "alias_name": "Literatur",
+      "alias_slug": "literatur",
+      "alias_type": "multilingual",
+      "created_at": "2026-10-10T05:25:31.315231+00:00",
+      "review_status": "approved",
+      "canonical_tag_id": "e5b3bee7-0152-4a63-b0df-dcad90ee0d12"
+    },
+    {
+      "id": "e47c34d7-2af6-4e35-9bc2-88551e86d361",
+      "alias_name": "Auszeichnungen",
+      "alias_slug": "auszeichnungen",
+      "alias_type": "multilingual",
+      "created_at": "2026-10-10T04:53:06.505218+00:00",
+      "review_status": "approved",
+      "canonical_tag_id": "b13755ee-56ef-4339-bd97-6a8a30c399d1"
+    },
+    {
+      "id": "e63b8d65-95f5-4c34-b214-decffb71db8e",
+      "alias_name": "Pommes",
+      "alias_slug": "pommes",
+      "alias_type": "multilingual",
+      "created_at": "2026-10-10T04:53:06.505218+00:00",
+      "review_status": "approved",
+      "canonical_tag_id": "8a517ce6-9832-4670-8e2a-84160d151862"
+    },
+    {
+      "id": "ef53f608-8fdd-4301-abd6-533acffbbaf7",
+      "alias_name": "Vernetzung",
+      "alias_slug": "vernetzung",
+      "alias_type": "multilingual",
+      "created_at": "2026-10-10T04:53:06.505218+00:00",
+      "review_status": "approved",
+      "canonical_tag_id": "13cac234-aa0d-42ba-b0e6-a42f9192a3ce"
+    },
+    {
+      "id": "fb1a759c-3c8b-4285-8d1d-e56bc859226b",
+      "alias_name": "Komponist",
+      "alias_slug": "komponist",
+      "alias_type": "multilingual",
+      "created_at": "2026-10-10T05:25:31.315231+00:00",
+      "review_status": "approved",
+      "canonical_tag_id": "188d984d-82c8-4af9-ac4b-b5d1eec239ed"
+    },
+    {
+      "id": "fba8070e-220c-422c-858f-47b78aa92a93",
+      "alias_name": "Nonne",
+      "alias_slug": "nonne",
+      "alias_type": "multilingual",
+      "created_at": "2026-10-10T04:53:06.505218+00:00",
+      "review_status": "approved",
+      "canonical_tag_id": "ad445eeb-ec3c-4473-8951-c0048fbc9c84"
+    }
+  ],
+  "unsafe_slug": 0,
+  "synonyms": [],
+  "observed_search_synonyms_before_snapshot": 41,
+  "note": "The initial count saw 41 linked search synonyms. The subsequent before-image query found none, indicating concurrent cleanup before this repair. The migration guards removal of any still-linked synonyms together with the self-alias rows. Final migration history confirmed 20261010054315_tag_alias_equals_name_cleanup cleared the aliases before 20261010054416_remove_redundant_self_aliases ran; the latter was an idempotent no-op that asserted the zero invariant."
+}

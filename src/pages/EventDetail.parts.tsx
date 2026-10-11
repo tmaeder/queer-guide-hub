@@ -6,13 +6,12 @@ import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { format } from 'date-fns';
 import {
   Calendar,
+  ChevronDown,
+  ArrowLeftRight,
   MapPin,
-  Users,
   Clock,
-  ExternalLink,
   Phone,
   Globe,
-  Send,
   Download,
   Ticket,
   Luggage,
@@ -24,7 +23,6 @@ import {
   Sparkles,
   Flag,
 } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { EntitySocialLinks } from '@/components/entity/EntitySocialLinks';
 import { buildProfileUrl } from '@/lib/social/registry';
 import { ShareMenu } from '@/components/share/ShareMenu';
@@ -39,17 +37,18 @@ import { EntityMap } from '@/components/map/EntityMap';
 import { useNearbyMapPoints } from '@/hooks/useNearbyMapPoints';
 import { MarkVisitedButton } from '@/components/marks/MarkVisitedButton';
 import { AmenityDisplay } from '@/components/venues/AmenityDisplay';
-import { DestinationSafetyCard } from '@/components/safety/DestinationSafetyCard';
 import { PeopleHereRail } from '@/components/people/PeopleHereRail';
 import type { Database } from '@/integrations/supabase/types';
 import { supabase } from '@/integrations/supabase/client';
 import { fetchEventBySlugOrId } from '@/hooks/usePageFetchers';
-import { formatEventTime } from '@/lib/event-time';
+import { formatEventTime, isDateOnlyEvent } from '@/lib/event-time';
+import { resolveEntityImage } from '@/lib/images/resolveEntityImage';
 import { formatCurrency } from '@/lib/currency';
 import { useReducedMotion } from '@/hooks/useReducedMotion';
 import { useProfile } from '@/hooks/useProfile';
 import { matchNeeds, needLabel } from '@/lib/accessibilityNeeds';
-import { FactGrid } from '@/components/transit/FactGrid';
+import { formatDateInZone, getTimezoneAbbr, isValidTimezone } from '@/utils/timezone';
+import { StationRing } from '@/components/transit/StationRing';
 import { NestedEntityCard } from '@/components/transit/NestedEntityCard';
 import { getEventLiveState } from '@/lib/event-countdown';
 import { GlossaryLinkedText } from '@/components/tags/GlossaryLinkedText';
@@ -170,7 +169,33 @@ export async function exportEventToCalendar(event: EventWithRelations) {
   URL.revokeObjectURL(url);
 }
 
-export function formatEventDate(startDate: string, endDate?: string | null) {
+export function formatEventDate(
+  startDate: string,
+  endDate?: string | null,
+  timezone?: string | null,
+  rangeLocale?: string,
+) {
+  const calendarZone = isDateOnlyEvent(startDate, endDate) ? 'UTC' : timezone;
+  if (rangeLocale && endDate) {
+    const rangeFormat = new Intl.DateTimeFormat(rangeLocale, {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+      ...(calendarZone && isValidTimezone(calendarZone) ? { timeZone: calendarZone } : {}),
+    });
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    if (end >= start && rangeFormat.format(start) !== rangeFormat.format(end)) {
+      return rangeFormat.formatRange(start, end);
+    }
+  }
+  if (calendarZone && isValidTimezone(calendarZone)) {
+    const start = formatDateInZone(startDate, calendarZone);
+    const end = endDate ? formatDateInZone(endDate, calendarZone) : null;
+    if (end && end !== start)
+      return `${formatDateInZone(startDate, calendarZone, { weekday: 'short' })} - ${formatDateInZone(endDate!, calendarZone, { weekday: 'short' })}`;
+    return formatDateInZone(startDate, calendarZone, { weekday: 'long', month: 'long' });
+  }
   const start = new Date(startDate);
   const end = endDate ? new Date(endDate) : null;
   if (end && format(start, 'yyyy-MM-dd') !== format(end, 'yyyy-MM-dd')) {
@@ -273,9 +298,7 @@ function LiveStateLine({ event }: { event: EventWithRelations }) {
     );
   }
 
-  if (state.kind === 'ended') {
-    return <span className="text-15 text-muted-foreground">{state.label}</span>;
-  }
+  if (state.kind === 'ended') return null; // The masthead status already names this state.
 
   return (
     <span className="inline-flex items-center gap-1.5 text-15 font-medium text-foreground">
@@ -307,43 +330,73 @@ interface HeroProps {
 export function EventActions({
   event,
   onShare,
+  onExportToCalendar,
 }: {
   event: EventWithRelations;
   onShare: () => void;
+  onExportToCalendar?: () => void;
 }) {
-  const OUTLINE =
-    'inline-flex items-center gap-2 px-4 py-2 text-13 font-bold no-underline transition-colors hover:bg-foreground hover:text-background';
+  const { t } = useTranslation();
   return (
-    <>
-      {/* The SECOND ticket surface, and the more prominent one — this is the
-          masthead action row, above the fold, while the decision card sits in
-          the rail. Both needed the same `isEventPast` gate; fixing only the
-          card would have left a finished event still selling tickets in the
-          place the reader looks first. The `website` link below is deliberately
-          NOT gated: an event's homepage is still a legitimate reference after
-          the event, a ticket checkout is not. */}
-      {event.ticket_url && !isEventPast(event) && (
-        <a href={event.ticket_url} target="_blank" rel="noopener noreferrer" className={OUTLINE}>
-          Get tickets
-        </a>
-      )}
-      {event.website && (
-        <a href={event.website} target="_blank" rel="noopener noreferrer" className={OUTLINE}>
-          Website
-        </a>
-      )}
-      <button type="button" onClick={onShare} className={OUTLINE}>
-        Share
-      </button>
-      <FavoriteButton itemId={event.id} type="event" size="md" />
-      <ReportButton contentType="events" contentId={event.id} contentName={event.title} />
-      <AdminEditButton
-        contentType="events"
-        contentId={event.id}
-        contentName={event.title}
-        currentData={event as unknown as Record<string, unknown>}
+    <div className="relative flex flex-wrap items-center gap-1">
+      <FavoriteButton itemId={event.id} type="event" size="tap" />
+      <ShareMenu
+        url={
+          typeof window !== 'undefined'
+            ? window.location.href
+            : `https://queer.guide/events/${event.slug ?? event.id}`
+        }
+        title={event.title}
+        label={t('events.share', 'Share')}
+        variant="ghost"
       />
-    </>
+      <details className="max-w-full">
+        <summary className="flex min-h-11 cursor-pointer list-none items-center gap-1.5 rounded-element px-4 text-13 font-medium text-muted-foreground hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring [&::-webkit-details-marker]:hidden">
+          {t('events.detail.moreOptions', 'More options')}
+          <ChevronDown size={14} aria-hidden="true" />
+        </summary>
+        <div className="absolute right-0 top-full z-20 mt-1 flex w-72 max-w-full flex-wrap items-center gap-2 rounded-container border border-border-hairline bg-background p-4 shadow-soft">
+          {onExportToCalendar && (
+            <Button variant="ghost" size="sm" onClick={onExportToCalendar}>
+              <Download size={14} className="mr-1.5" aria-hidden="true" />
+              {t('events.detail.calendar', 'Calendar')}
+            </Button>
+          )}
+          {resolveEntityImage('event', event).url && (
+            <a
+              href={resolveEntityImage('event', event).url!}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="py-2 text-13 font-semibold hover:underline"
+            >
+              {t('events.detail.viewImage', 'View image')}
+            </a>
+          )}
+          {event.website && (
+            <a
+              href={event.website}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 py-2 text-13 font-semibold hover:underline"
+            >
+              <Globe size={14} aria-hidden="true" />
+              {t('common.website', 'Website')}
+            </a>
+          )}
+          <Button variant="ghost" size="sm" onClick={onShare}>
+            {t('events.detail.send', 'Send to someone')}
+          </Button>
+          <MarkVisitedButton entityType="event" entityId={event.id} kind="visited" />
+          <ReportButton contentType="events" contentId={event.id} contentName={event.title} />
+          <AdminEditButton
+            contentType="events"
+            contentId={event.id}
+            contentName={event.title}
+            currentData={event as unknown as Record<string, unknown>}
+          />
+        </div>
+      </details>
+    </div>
   );
 }
 
@@ -458,6 +511,12 @@ export function EventFactStrip({
   showEventTz: boolean;
   setShowEventTz: (fn: (prev: boolean) => boolean) => void;
 }) {
+  const { t, i18n } = useTranslation();
+  const eventZone = event.timezone && isValidTimezone(event.timezone) ? event.timezone : null;
+  const zone = showEventTz ? eventZone : null;
+  const displayedZone = zone || Intl.DateTimeFormat().resolvedOptions().timeZone;
+  const zoneName = getTimezoneAbbr(displayedZone, event.start_date);
+  const dateOnly = isDateOnlyEvent(event.start_date, event.end_date);
   const ageRestriction = event.age_restriction;
 
   // `events.schedule` carries 141 rules on prod and until now NOTHING rendered
@@ -477,49 +536,132 @@ export function EventFactStrip({
     (event as unknown as { schedule?: EventSchedule | null }).schedule,
   );
 
-  // Spec module 01 — the bordered fact strip, shared with every other single.
-  // The timezone toggle survives the move as a node in the Time cell: an event
-  // read from another country is ambiguous without it, and dropping an
-  // interactive affordance to gain a border would be a bad trade.
+  const price = getPriceDisplay(event);
+  const facts = [
+    {
+      label: t('events.detail.time', 'Time'),
+      value: (
+        <>
+          <span>{formatEventTime(event.start_date, event.end_date, zone)}</span>
+          {!dateOnly &&
+            (eventZone ? (
+              <button
+                type="button"
+                onClick={() => setShowEventTz((prev) => !prev)}
+                aria-label={
+                  showEventTz
+                    ? t('events.detail.showMyTime', 'Show my time')
+                    : t('events.detail.showEventTime', 'Show event time')
+                }
+                className="flex min-h-11 items-center gap-1.5 text-2xs font-medium text-muted-foreground underline decoration-dotted underline-offset-4 hover:text-foreground"
+              >
+                {showEventTz
+                  ? t('events.detail.eventTime', 'Event time')
+                  : t('events.detail.yourTime', 'Your time')}
+                {zoneName && ` · ${zoneName}`}
+                <ArrowLeftRight size={12} aria-hidden="true" />
+              </button>
+            ) : (
+              <span className="mt-1 block text-2xs font-medium text-muted-foreground">
+                {t('events.detail.yourTime', 'Your time')}
+                {zoneName && ` · ${zoneName}`}
+              </span>
+            ))}
+        </>
+      ),
+    },
+    {
+      label: t('events.detail.price', 'Entry'),
+      value: event.is_free
+        ? t('events.free', 'Free')
+        : price === 'Price TBA'
+          ? t('events.detail.notListed', 'Not listed')
+          : price,
+    },
+    { label: t('events.detail.ages', 'Age'), value: ageRestriction },
+    {
+      label: t('events.detail.capacity', 'Capacity'),
+      value: event.max_attendees && event.max_attendees > 0 ? event.max_attendees : null,
+    },
+    ...(schedule
+      ? [
+          {
+            label: t('events.detail.schedule', 'Schedule'),
+            value: schedule.inferred ? `${schedule.text} (from past dates)` : schedule.text,
+          },
+        ]
+      : []),
+  ].filter((fact) => fact.value !== null && fact.value !== undefined && fact.value !== '');
+
   return (
-    <FactGrid
-      facts={[
-        {
-          label: 'Date',
-          value: formatEventDate(event.start_date, event.end_date),
-        },
-        ...(schedule
-          ? [
-              {
-                label: 'Schedule',
-                value: schedule.inferred ? `${schedule.text} (from past dates)` : schedule.text,
-              },
-            ]
-          : []),
-        {
-          label: 'Time',
-          value: event.timezone ? (
-            <button
-              type="button"
-              onClick={() => setShowEventTz((prev) => !prev)}
-              aria-pressed={showEventTz}
-              title="Toggle between event timezone and your local time"
-              className="text-start underline decoration-dotted underline-offset-4"
-            >
-              {formatEventTime(
-                event.start_date,
-                event.end_date,
-                showEventTz ? event.timezone : null,
-              )}
-            </button>
-          ) : (
-            formatEventTime(event.start_date, event.end_date, null)
-          ),
-        },
-        { label: 'Price', value: getPriceDisplay(event) },
-        { label: 'Ages', value: ageRestriction },
-      ]}
-    />
+    <dl className="grid grid-cols-2 items-start gap-x-6 gap-y-4 sm:flex sm:flex-wrap sm:gap-x-8">
+      <div className="col-span-2 min-w-0 sm:basis-72 lg:basis-80">
+        <dt className="mb-1 flex items-center gap-1.5 text-2xs font-bold uppercase tracking-label text-muted-foreground">
+          <Calendar size={14} className="text-foreground" aria-hidden="true" />
+          {t('events.detail.date', 'Date')}
+        </dt>
+        <dd className="max-w-xl text-xl font-bold leading-tight tracking-tight text-pretty">
+          {formatEventDate(event.start_date, event.end_date, zone, i18n.language || 'en')}
+        </dd>
+      </div>
+      {facts.map((fact) => (
+        <div key={fact.label} className="min-w-0 sm:max-w-xs sm:basis-auto">
+          <dt className="mb-1 text-2xs font-bold uppercase tracking-label text-muted-foreground">
+            {fact.label}
+          </dt>
+          <dd className="break-words text-15 font-medium leading-snug">{fact.value}</dd>
+        </div>
+      ))}
+    </dl>
+  );
+}
+
+export function EventPlanHint({ event, isPast }: { event: EventWithRelations; isPast: boolean }) {
+  const { t } = useTranslation();
+  const delivery = (event.liveness_status || event.status || '').toLowerCase();
+  const online = delivery === 'online' || delivery.includes('moved_online');
+  const hasVenue =
+    online ||
+    Boolean(
+      event.venues?.name?.trim() ||
+      event.venue_name?.trim() ||
+      event.venues?.address?.trim() ||
+      event.address?.trim(),
+    );
+  const source = event.website || event.ticket_url;
+  const message = isPast
+    ? t('events.detail.archiveHint', 'This stop has passed.')
+    : !hasVenue
+      ? t('events.detail.venueMissing', 'Venue details aren’t listed here.')
+      : event.is_free && event.ticket_url
+        ? t('events.detail.freeBooking', 'Free entry. Check the ticket link for booking details.')
+        : !event.is_free && !event.ticket_url && event.website
+          ? t('events.detail.noBookingLink', 'No booking link is listed here.')
+          : null;
+  if (!message) return null;
+  return (
+    <p className="flex flex-wrap items-center gap-x-2 gap-y-1 text-13 text-muted-foreground">
+      <StationRing state={isPast ? 'done' : 'open'} track="blue" className="shrink-0" />
+      <span>{message}</span>
+      {isPast ? (
+        <LocalizedLink
+          to="/events"
+          className="inline-flex min-h-6 items-center gap-1 py-1 font-semibold text-foreground no-underline hover:underline"
+        >
+          {t('events.detail.nextOuting', 'Find your next outing')}{' '}
+          <Navigation2 size={12} aria-hidden="true" />
+        </LocalizedLink>
+      ) : source && (!hasVenue || !event.ticket_url) ? (
+        <a
+          href={source}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="py-1 font-semibold text-foreground hover:underline"
+        >
+          {t('events.detail.checkDetails', 'Check event details')}
+        </a>
+      ) : null}
+    </p>
   );
 }
 
@@ -569,7 +711,7 @@ export function EventForYou({
 }
 
 /* ------------------------------------------------------------------ */
-/* Decision card — the sticky buy/RSVP/save panel (desktop rail)       */
+/* One shared action group for desktop and mobile                     */
 /* ------------------------------------------------------------------ */
 
 interface DecisionCardProps {
@@ -591,159 +733,76 @@ export function EventDecisionCard({
   onExportToCalendar,
   onSendEvent,
 }: DecisionCardProps) {
+  const { t } = useTranslation();
   const ticketHref = event.ticket_url;
-  const lat = event.latitude ?? event.venues?.latitude;
-  const lng = event.longitude ?? event.venues?.longitude;
-  const hasCoords = typeof lat === 'number' && typeof lng === 'number';
-  const venueName = event.venues?.name || event.venue_name;
-
   return (
-    // Deliberately NOT sticky. SinglePage already pins the rail's follow-along
-    // content in StickyRailGroup (top = --header-pinned-bottom, 82px) and its docblock
-    // requires other rail modules to be ordinary siblings. This card pinned itself at
-    // top-24 (96px) in the same column, so once the page scrolled the two overlapped by
-    // a measured 264px — reported as "the areas overlap on the right-hand side".
-    <Card>
-      <CardContent className="flex flex-col gap-4 p-6">
-        {/* Unknown price stays in the fact strip; a headline-sized "Price TBA"
-            here duplicated it and read like a price. */}
-        {getPriceDisplay(event) !== 'Price TBA' && (
-          <div className="flex items-baseline justify-between gap-2">
-            <span className="text-headline font-display leading-none">
-              {getPriceDisplay(event)}
-            </span>
-            {event.is_free && <Badge variant="soft">No ticket needed</Badge>}
-          </div>
-        )}
-
-        {/* `!isPast` on the ticket CTA too. Every other control in this card
-            already checked it — both "Add to Trip" variants and the RSVP pair
-            — so the primary button was the one place a finished event still
-            invited the reader to buy a ticket. Measured: 443 live events are
-            past AND carry a `ticket_url`. */}
-        {ticketHref && !isPast ? (
-          <Button asChild className="w-full">
-            <a href={ticketHref} target="_blank" rel="noopener noreferrer">
-              <Ticket size={16} className="mr-2" />
-              Get Tickets
-            </a>
-          </Button>
-        ) : (
-          !isPast && (
-            <TripAction
-              intent={{ kind: 'add_entity', entity: eventTripEntity(event) }}
-              source="event-detail-decision"
-              className="w-full"
-            />
-          )
-        )}
-
-        {user && !isPast && (
-          <div className="flex gap-2">
-            <Button
-              variant={userAttendance === 'going' ? 'default' : 'outline'}
-              onClick={() => onAttendanceUpdate(userAttendance === 'going' ? 'not_going' : 'going')}
-              aria-pressed={userAttendance === 'going'}
-              className="flex-1"
-            >
-              {userAttendance === 'going' && <CircleCheck size={16} className="mr-1.5" />}
-              Going
+    <div data-testid="event-actions" className="flex flex-wrap items-center gap-2">
+      {!isPast && (
+        <div className="flex flex-wrap items-center gap-2">
+          {ticketHref && (
+            <Button asChild>
+              <a href={ticketHref} target="_blank" rel="noopener noreferrer">
+                <Ticket size={16} className="mr-2" aria-hidden="true" />
+                {t('events.detail.getTickets', 'Get tickets')}
+              </a>
             </Button>
-            <Button
-              variant={userAttendance === 'interested' ? 'default' : 'outline'}
-              onClick={() =>
-                onAttendanceUpdate(userAttendance === 'interested' ? 'not_going' : 'interested')
-              }
-              aria-pressed={userAttendance === 'interested'}
-              className="flex-1"
-            >
-              {userAttendance === 'interested' && <CircleCheck size={16} className="mr-1.5" />}
-              Interested
-            </Button>
-          </div>
-        )}
-
-        {ticketHref && !isPast && (
+          )}
           <TripAction
             intent={{ kind: 'add_entity', entity: eventTripEntity(event) }}
             source="event-detail-decision"
-            variant="card"
-            className="w-full"
-          />
-        )}
-
-        <div className="flex flex-wrap items-center gap-2">
-          <FavoriteButton itemId={event.id} type="event" size="md" />
-          <Button variant="outline" size="sm" onClick={onExportToCalendar}>
-            <Download size={14} className="mr-1.5" />
-            Calendar
-          </Button>
-          <ShareMenu
-            url={
-              typeof window !== 'undefined'
-                ? window.location.href
-                : `https://queer.guide/events/${event.slug ?? event.id}`
-            }
-            title={event.title}
+            variant={ticketHref ? 'card' : undefined}
+            className="max-w-full"
           />
           {user && (
-            <Button variant="outline" size="sm" onClick={onSendEvent}>
-              <Send size={14} className="mr-1.5" />
-              Send
-            </Button>
-          )}
-        </div>
-
-        <div className="pt-4 text-sm">
-          <div className="flex items-start gap-2">
-            <Calendar size={15} className="mt-0.5 shrink-0 text-muted-foreground" />
-            <div>
-              <p>{formatEventDate(event.start_date, event.end_date)}</p>
-              <p className="text-muted-foreground">
-                {formatEventTime(event.start_date, event.end_date)}
-              </p>
-            </div>
-          </div>
-          {venueName && (
-            <div className="mt-4 flex items-start gap-2">
-              <MapPin size={15} className="mt-0.5 shrink-0 text-muted-foreground" />
-              <div className="flex-1">
-                <p className="font-medium">{venueName}</p>
-                {hasCoords && (
-                  <a
-                    href={`https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="mt-1 inline-flex items-center gap-1 text-muted-foreground hover:text-foreground"
-                  >
-                    <Navigation2 size={13} />
-                    Directions
-                  </a>
+            <div className="flex gap-2">
+              <Button
+                variant={userAttendance === 'going' ? 'default' : 'outline'}
+                onClick={() =>
+                  onAttendanceUpdate(userAttendance === 'going' ? 'not_going' : 'going')
+                }
+                aria-pressed={userAttendance === 'going'}
+                className="flex-1"
+              >
+                {userAttendance === 'going' && (
+                  <CircleCheck size={16} className="mr-1.5" aria-hidden="true" />
                 )}
-              </div>
+                {t('events.detail.going', 'Going')}
+              </Button>
+              <Button
+                variant={userAttendance === 'interested' ? 'default' : 'outline'}
+                onClick={() =>
+                  onAttendanceUpdate(userAttendance === 'interested' ? 'not_going' : 'interested')
+                }
+                aria-pressed={userAttendance === 'interested'}
+                className="flex-1"
+              >
+                {userAttendance === 'interested' && (
+                  <CircleCheck size={16} className="mr-1.5" aria-hidden="true" />
+                )}
+                {t('events.interested', 'Interested')}
+              </Button>
             </div>
           )}
         </div>
-
-        <div className="flex flex-wrap items-center gap-1 pt-4">
-          <MarkVisitedButton entityType="event" entityId={event.id} kind="visited" />
-          <ReportButton contentType="events" contentId={event.id} contentName={event.title} />
-          <AdminEditButton
-            contentType="events"
-            contentId={event.id}
-            contentName={event.title}
-            currentData={event as Record<string, unknown>}
-            onSaved={() => window.location.reload()}
-          />
-        </div>
-      </CardContent>
-    </Card>
+      )}
+      <EventActions event={event} onShare={onSendEvent} onExportToCalendar={onExportToCalendar} />
+    </div>
   );
 }
 
 /* ------------------------------------------------------------------ */
 /* About — description, recurrence/festival, accessibility, source     */
 /* ------------------------------------------------------------------ */
+
+export function hasEventAboutContent(event: EventWithRelations): boolean {
+  return Boolean(
+    event.description ||
+    event.is_recurring ||
+    event.festivals?.id ||
+    event.accessibility_attributes?.length ||
+    event.accessibility_notes,
+  );
+}
 
 export function EventAbout({
   event,
@@ -762,31 +821,12 @@ export function EventAbout({
   );
   const hasAccessibility =
     (event.accessibility_attributes?.length ?? 0) > 0 || Boolean(event.accessibility_notes);
-  const priceUnknown = !event.is_free && !event.price_min;
-  const locationUnknown = !(event.venues?.name || event.venue_name);
-  const sourceUrl = event.website || event.ticket_url;
-  const showSource = (priceUnknown || locationUnknown) && Boolean(sourceUrl);
-  const missing = [priceUnknown && 'price', locationUnknown && 'location']
-    .filter(Boolean)
-    .join(' and ');
-
-  if (
-    !event.description &&
-    !event.is_recurring &&
-    !event.festivals?.id &&
-    !hasAccessibility &&
-    !showSource
-  ) {
-    return null;
-  }
+  if (!hasEventAboutContent(event)) return null;
 
   return (
     <div className="flex flex-col gap-8">
       {event.description && (
         <section>
-          <Eyebrow as="div" className="mb-2">
-            About this event
-          </Eyebrow>
           <Editable
             contentType="events"
             recordId={event.id}
@@ -835,21 +875,6 @@ export function EventAbout({
             accessibilityNotes={event.accessibility_notes}
           />
         </section>
-      )}
-
-      {showSource && (
-        <div className="flex flex-wrap items-center gap-4 rounded-element bg-muted p-4">
-          <p className="text-sm text-muted-foreground">
-            {missing.charAt(0).toUpperCase() + missing.slice(1)} not listed yet — check the source
-            for the latest info.
-          </p>
-          <Button size="sm" variant="outline" asChild>
-            <a href={sourceUrl!} target="_blank" rel="noopener noreferrer">
-              <ExternalLink size={14} className="mr-1.5" />
-              Visit source
-            </a>
-          </Button>
-        </div>
       )}
     </div>
   );
@@ -953,21 +978,41 @@ export function hasWhoIsGoingContent(event: EventWithRelations, isPast: boolean)
 /* Where — map, venue contact, organizer, safety                       */
 /* ------------------------------------------------------------------ */
 
+export function hasEventWhereContent(event: EventWithRelations): boolean {
+  return Boolean(
+    event.venues?.name ||
+    event.venue_name ||
+    event.address?.trim() ||
+    event.organizer ||
+    event.organizer_name ||
+    Object.values(event.social_links ?? {}).some(Boolean),
+  );
+}
+
 interface WhereProps {
   event: EventWithRelations;
   /** `| null` matches what `useRef<HTMLDivElement>(null)` actually produces —
    *  without it this prop was the single baselined TS2322 on the event page. */
   venueRef: RefObject<HTMLDivElement | null>;
-  countryId?: string | null;
   onOrganizerClick: (organizer: string) => void;
 }
 
-export function EventWhere({ event, venueRef, countryId, onOrganizerClick }: WhereProps) {
+export function EventWhere({ event, venueRef, onOrganizerClick }: WhereProps) {
   const visitedLookup = useVisitedPlaceLookup();
   const lat = event.latitude ?? event.venues?.latitude;
   const lng = event.longitude ?? event.venues?.longitude;
+  const { t } = useTranslation();
+  const address = event.venues?.address?.trim() || event.address?.trim() || null;
   const hasNamedVenue = Boolean(event.venues?.name || event.venue_name);
-  const hasMap = hasNamedVenue && typeof lat === 'number' && typeof lng === 'number';
+  const hasMap =
+    (hasNamedVenue || Boolean(address)) && typeof lat === 'number' && typeof lng === 'number';
+  const destination = hasMap
+    ? `${lat},${lng}`
+    : address
+      ? [address, event.cities?.name || event.city, event.countries?.name || event.country]
+          .filter(Boolean)
+          .join(', ')
+      : null;
   const org = event.organizer;
   const handles = org?.organizer_handles ?? {};
 
@@ -1000,121 +1045,91 @@ export function EventWhere({ event, venueRef, countryId, onOrganizerClick }: Whe
 
   return (
     <div className="flex flex-col gap-6">
-      <Card ref={venueRef}>
-        <CardHeader>
-          <CardTitle>Where</CardTitle>
-        </CardHeader>
-        <CardContent className="flex flex-col gap-4">
-          {hasMap && (
-            <EntityMap
-              center={[Number(lng), Number(lat)]}
-              visitedLookup={visitedLookup}
-              zoom={15}
-              height={220}
-              markers={[
-                {
-                  id: event.id,
-                  lat: Number(lat),
-                  lng: Number(lng),
-                  name: event.title ?? 'Event',
-                  subtitle: event.venues?.name,
-                  type: 'events',
-                  primary: true,
-                  entityType: 'event' as const,
-                  entityId: event.id,
-                },
-                ...nearby,
-              ]}
-            />
-          )}
-          {event.venues ? (
-            // Spec module 08 — REQUIRED on events, and the spec's own example
-            // of it ("the venue on an event"). It leads with the VENUE's
-            // bullet, not the event's, per rule 4: the reader should be able
-            // to tell it links to a different type before clicking.
-            //
-            // Only the linked-venue branch becomes a card. `venue_name` below
-            // is free text with no venue row behind it, so there is nothing to
-            // link to — rendering it as a card would promise a page that does
-            // not exist.
-            <NestedEntityCard
-              type="venue"
-              eyebrow="Venue"
-              name={event.venues.name}
-              description={[
-                event.venues.address,
-                [event.venues.city, event.venues.state].filter(Boolean).join(', '),
-                event.venues.country,
-              ]
-                .filter(Boolean)
-                .join(' · ')}
-              href={`/venues/${event.venues.slug ?? event.venues.id}`}
-              actionLabel="Open venue"
-            />
-          ) : (
-            event.venue_name && (
-              <div className="flex items-start gap-2">
-                <MapPin size={16} className="mt-0.5 shrink-0 text-muted-foreground" />
-                <p className="text-sm font-medium">{event.venue_name}</p>
-              </div>
-            )
-          )}
-          {event.max_attendees && (
-            <div className="flex items-center gap-2">
-              <Users size={16} className="shrink-0 text-muted-foreground" />
-              <span className="text-sm">Capacity {event.max_attendees}</span>
+      <div ref={venueRef} className="flex flex-col gap-4">
+        {hasMap && (
+          <EntityMap
+            center={[Number(lng), Number(lat)]}
+            visitedLookup={visitedLookup}
+            zoom={15}
+            height={220}
+            markers={[
+              {
+                id: event.id,
+                lat: Number(lat),
+                lng: Number(lng),
+                name: event.title ?? 'Event',
+                subtitle: event.venues?.name,
+                type: 'events',
+                primary: true,
+                entityType: 'event' as const,
+                entityId: event.id,
+              },
+              ...nearby,
+            ]}
+          />
+        )}
+        {event.venues ? (
+          // Spec module 08 — REQUIRED on events, and the spec's own example
+          // of it ("the venue on an event"). It leads with the VENUE's
+          // bullet, not the event's, per rule 4: the reader should be able
+          // to tell it links to a different type before clicking.
+          //
+          // Only the linked-venue branch becomes a card. `venue_name` below
+          // is free text with no venue row behind it, so there is nothing to
+          // link to — rendering it as a card would promise a page that does
+          // not exist.
+          <NestedEntityCard
+            type="venue"
+            eyebrow="Venue"
+            name={event.venues.name}
+            description={[
+              address,
+              [event.venues.city, event.venues.state].filter(Boolean).join(', '),
+              event.venues.country,
+            ]
+              .filter(Boolean)
+              .join(' · ')}
+            href={`/venues/${event.venues.slug ?? event.venues.id}`}
+            actionLabel="Open venue"
+          />
+        ) : (
+          event.venue_name && (
+            <div className="flex items-start gap-2">
+              <MapPin size={16} className="mt-0.5 shrink-0 text-muted-foreground" />
+              <p className="text-sm font-medium">{event.venue_name}</p>
             </div>
+          )
+        )}
+        {!event.venues && address && <p className="text-13 text-muted-foreground">{address}</p>}
+        <div className="flex flex-wrap gap-2">
+          {destination && (
+            <Button variant="outline" size="sm" asChild>
+              <a
+                href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(destination!)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <Navigation2 size={14} className="mr-1.5" />
+                Directions
+              </a>
+            </Button>
           )}
-          <div className="flex flex-wrap gap-2">
-            {hasMap && (
-              <Button variant="outline" size="sm" asChild>
-                <a
-                  href={`https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  <Navigation2 size={14} className="mr-1.5" />
-                  Directions
-                </a>
-              </Button>
-            )}
-            {formatPhoneHref(event.venues?.phone) && (
-              <Button variant="outline" size="sm" asChild>
-                <a href={formatPhoneHref(event.venues?.phone) as string}>
-                  <Phone size={14} className="mr-1.5" />
-                  Call
-                </a>
-              </Button>
-            )}
-            {event.venues && (
-              <Button asChild variant="outline" size="sm">
-                <LocalizedLink
-                  to={`/venues/${event.venues.slug || event.venues.id}`}
-                  className="no-underline"
-                >
-                  View venue
-                </LocalizedLink>
-              </Button>
-            )}
-            {event.website && (
-              <Button variant="outline" size="sm" asChild>
-                <a href={event.website} target="_blank" rel="noopener noreferrer">
-                  <Globe size={14} className="mr-1.5" />
-                  Website
-                </a>
-              </Button>
-            )}
-            <EntitySocialLinks links={event.social_links} size="sm" />
-          </div>
-        </CardContent>
-      </Card>
+          {formatPhoneHref(event.venues?.phone) && (
+            <Button variant="outline" size="sm" asChild>
+              <a href={formatPhoneHref(event.venues?.phone) as string}>
+                <Phone size={14} className="mr-1.5" />
+                Call
+              </a>
+            </Button>
+          )}
+          <EntitySocialLinks links={event.social_links} size="sm" />
+        </div>
+      </div>
 
       {hasOrganizer && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Organizer</CardTitle>
-          </CardHeader>
-          <CardContent>
+        <div className="flex flex-col gap-4">
+          <h3 className="text-body-lg font-bold">Organizer</h3>
+          <div>
             {org ? (
               <>
                 <LocalizedLink
@@ -1149,15 +1164,13 @@ export function EventWhere({ event, venueRef, countryId, onOrganizerClick }: Whe
                 )}
               </>
             )}
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       )}
-
-      <DestinationSafetyCard countryIds={[countryId]} />
 
       <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
         <ShieldCheck size={13} aria-hidden="true" />
-        Spotted something off? Use the flag to let us know.
+        {t('events.detail.reportHint', 'Something off-track? Report it under More options.')}
       </p>
     </div>
   );
@@ -1166,50 +1179,6 @@ export function EventWhere({ event, venueRef, countryId, onOrganizerClick }: Whe
 /* ------------------------------------------------------------------ */
 /* Mobile sticky action bar                                            */
 /* ------------------------------------------------------------------ */
-
-export function EventMobileBar({
-  event,
-  isPast,
-  user,
-  userAttendance,
-  onAttendanceUpdate,
-}: {
-  event: EventWithRelations;
-  isPast: boolean;
-  user: { id: string } | null;
-  userAttendance: string | null;
-  onAttendanceUpdate: (status: 'going' | 'interested' | 'not_going') => void;
-}) {
-  if (isPast) return null;
-  return (
-    <div className="fixed inset-x-0 bottom-0 z-[1100] flex items-center gap-2 bg-background/95 p-4 backdrop-blur md:hidden">
-      {event.ticket_url ? (
-        <Button asChild className="flex-1">
-          <a href={event.ticket_url} target="_blank" rel="noopener noreferrer">
-            <Ticket size={16} className="mr-2" />
-            Get Tickets
-          </a>
-        </Button>
-      ) : user ? (
-        <Button
-          className="flex-1"
-          variant={userAttendance === 'going' ? 'default' : 'outline'}
-          onClick={() => onAttendanceUpdate(userAttendance === 'going' ? 'not_going' : 'going')}
-        >
-          {userAttendance === 'going' && <CircleCheck size={16} className="mr-1.5" />}
-          {userAttendance === 'going' ? 'Going' : "I'm going"}
-        </Button>
-      ) : (
-        <TripAction
-          intent={{ kind: 'add_entity', entity: eventTripEntity(event) }}
-          source="event-detail-mobile"
-          className="flex-1"
-        />
-      )}
-      <FavoriteButton itemId={event.id} type="event" size="md" />
-    </div>
-  );
-}
 
 function eventTripEntity(event: EventWithRelations) {
   return {

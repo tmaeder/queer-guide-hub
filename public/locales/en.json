@@ -605,9 +605,40 @@
       "eyebrow": "Event",
       "sections": "Sections",
       "section": {
-        "about": "About this event",
-        "where": "Getting there",
-        "going": "Who's going"
+        "about": "The lowdown",
+        "where": "Find your way",
+        "going": "Riding with you"
+      },
+      "calendar": "Calendar",
+      "moreOptions": "More options",
+      "send": "Send to someone",
+      "getTickets": "Get tickets",
+      "going": "Going",
+      "viewImage": "View image",
+      "board": "Departure board",
+      "date": "Date",
+      "time": "Time",
+      "price": "Entry",
+      "ages": "Age",
+      "capacity": "Capacity",
+      "schedule": "Schedule",
+      "eventTime": "Event time",
+      "yourTime": "Your time",
+      "showMyTime": "Show my time",
+      "showEventTime": "Show event time",
+      "notListed": "Not listed",
+      "archiveHint": "This stop has passed.",
+      "nextOuting": "Find your next outing",
+      "venueMissing": "Venue details aren’t listed here.",
+      "checkDetails": "Check event details",
+      "freeBooking": "Free entry. Check the ticket link for booking details.",
+      "noBookingLink": "No booking link is listed here.",
+      "reportHint": "Something off-track? Report it under More options.",
+      "moreStops": "Where to next?",
+      "relatedReason": {
+        "city": "Same city",
+        "similar": "Similar vibe",
+        "tags": "Shared tags"
       }
     }
   },
@@ -2755,7 +2786,21 @@
       "subtitle": "Manage your connections",
       "gate": "Please sign in to view your friends.",
       "requests": "Requests",
-      "sentRequest": "Sent you a friend request"
+      "sentRequest": "Sent you a friend request",
+      "loadError": "Could not load your friends.",
+      "empty": {
+        "title": "No friends yet.",
+        "description": "Find people to connect with.",
+        "cta": "Find people",
+        "pendingSent_one": "You have {{count}} sent request waiting for an answer. See the Requests tab.",
+        "pendingSent_other": "You have {{count}} sent requests waiting for an answer. See the Requests tab."
+      },
+      "requestsEmpty": "No open friend requests.",
+      "received": "Received",
+      "sent": "Sent",
+      "waitingForAnswer": "Waiting for an answer",
+      "pendingBadge": "Pending",
+      "cancelRequest": "Withdraw"
     },
     "feed": {
       "eyebrow": "Community",
@@ -3321,7 +3366,8 @@
       "news": "News",
       "map": "Map",
       "history": "Legal record",
-      "historyNote": "What changed and when. Safety information without a date is not safety information."
+      "historyNote": "What changed and when. Safety information without a date is not safety information.",
+      "about": "About {{country}}"
     },
     "practical": {
       "languages": "Languages",
@@ -3425,6 +3471,18 @@
       "title": "Compare the law elsewhere",
       "body": "Every country page carries the same legal breakdown, from the same sources, with the date it was checked.",
       "rights": "Rights across the world"
+    },
+    "overview": "Overview",
+    "gallery": {
+      "allTypes": "All types",
+      "verifiedOnly": "Verified venues only",
+      "freeOnly": "Free events only",
+      "invalidDates": "Choose an end date after the start date.",
+      "error": "This collection could not be loaded.",
+      "results_one": "{{count}} result",
+      "results_other": "{{count}} results",
+      "empty": "No matches. Try another city or reset your filters.",
+      "pagination": "Gallery pages"
     }
   },
   "extension": {
@@ -3751,6 +3809,9 @@
       "blurb": "Pick a few. They shape what we suggest, and they are how other members find people with something in common.",
       "blurbSignedOut": "Sign in to pick a few. They shape what we suggest, and they are how other members find people with something in common.",
       "count": "{{count}} selected"
+    },
+    "friends": {
+      "discover": "Find people"
     }
   },
   "hub": {

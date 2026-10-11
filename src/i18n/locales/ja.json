@@ -1347,9 +1347,40 @@
       "eyebrow": "[JA] Event",
       "sections": "[JA] Sections",
       "section": {
-        "about": "[JA] About this event",
-        "where": "[JA] Getting there",
-        "going": "[JA] Who's going"
+        "about": "ここがポイント",
+        "where": "行き方を探す",
+        "going": "一緒に行く人"
+      },
+      "calendar": "カレンダー",
+      "moreOptions": "その他の操作",
+      "send": "誰かに送る",
+      "getTickets": "チケットを購入",
+      "going": "参加する",
+      "viewImage": "画像を見る",
+      "board": "出発案内",
+      "date": "日付",
+      "time": "時間",
+      "price": "入場料",
+      "ages": "年齢",
+      "capacity": "定員",
+      "schedule": "開催頻度",
+      "eventTime": "イベント現地時間",
+      "yourTime": "あなたの現地時間",
+      "showMyTime": "自分の現地時間を表示",
+      "showEventTime": "イベント現地時間を表示",
+      "notListed": "記載なし",
+      "archiveHint": "この停車駅は通過しました。",
+      "nextOuting": "次のお出かけを探す",
+      "venueMissing": "会場の詳細はここには記載されていません。",
+      "checkDetails": "イベントの詳細を確認",
+      "freeBooking": "入場無料。予約の詳細はチケットリンクで確認してください。",
+      "noBookingLink": "予約リンクはここには記載されていません。",
+      "reportHint": "情報が脱線している？その他の操作から報告してください。",
+      "moreStops": "次はどこへ？",
+      "relatedReason": {
+        "city": "同じ都市",
+        "similar": "似た雰囲気",
+        "tags": "共通のタグ"
       }
     }
   },
@@ -2674,7 +2705,21 @@
       "subtitle": "つながりを管理",
       "gate": "友達を見るにはサインインしてください。",
       "requests": "リクエスト",
-      "sentRequest": "友達リクエストを送信しました"
+      "sentRequest": "友達リクエストを送信しました",
+      "loadError": "友達を読み込めませんでした。",
+      "empty": {
+        "title": "まだ友達はいません。",
+        "description": "つながる人を見つけましょう。",
+        "cta": "人を探す",
+        "pendingSent_one": "返事待ちの送信済みリクエストが{{count}}件あります。「リクエスト」タブを確認してください。",
+        "pendingSent_other": "返事待ちの送信済みリクエストが{{count}}件あります。「リクエスト」タブを確認してください。"
+      },
+      "requestsEmpty": "未対応の友達リクエストはありません。",
+      "received": "受信",
+      "sent": "送信済み",
+      "waitingForAnswer": "返事待ち",
+      "pendingBadge": "保留中",
+      "cancelRequest": "取り消す"
     },
     "entityDetail": {
       "milestoneNotFoundTitle": "マイルストーンが見つかりません",
@@ -3163,7 +3208,8 @@
       "news": "ニュース",
       "map": "地図",
       "history": "[JA] Legal record",
-      "historyNote": "[JA] What changed and when. Safety information without a date is not safety information."
+      "historyNote": "[JA] What changed and when. Safety information without a date is not safety information.",
+      "about": "{{country}}について"
     },
     "practical": {
       "languages": "言語",
@@ -3267,6 +3313,18 @@
       "title": "[JA] Compare the law elsewhere",
       "body": "[JA] Every country page carries the same legal breakdown, from the same sources, with the date it was checked.",
       "rights": "[JA] Rights across the world"
+    },
+    "overview": "概要",
+    "gallery": {
+      "allTypes": "すべての種類",
+      "verifiedOnly": "確認済みの施設のみ",
+      "freeOnly": "無料イベントのみ",
+      "invalidDates": "開始日より後の終了日を選んでください。",
+      "error": "このコレクションを読み込めませんでした。",
+      "results_one": "{{count}}件",
+      "results_other": "{{count}}件",
+      "empty": "該当なし。別の都市を試すか、フィルターをリセットしてください。",
+      "pagination": "ギャラリーのページ"
     }
   },
   "inbox": {
@@ -3693,6 +3751,9 @@
       "blurb": "[JA] Pick a few. They shape what we suggest, and they are how other members find people with something in common.",
       "blurbSignedOut": "[JA] Sign in to pick a few. They shape what we suggest, and they are how other members find people with something in common.",
       "count": "[JA] {{count}} selected"
+    },
+    "friends": {
+      "discover": "人を探す"
     }
   },
   "hub": {

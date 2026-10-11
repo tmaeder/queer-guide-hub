@@ -1351,9 +1351,40 @@
       "eyebrow": "[FR] Event",
       "sections": "[FR] Sections",
       "section": {
-        "about": "[FR] About this event",
-        "where": "[FR] Getting there",
-        "going": "[FR] Who's going"
+        "about": "L’essentiel",
+        "where": "Trouvez votre chemin",
+        "going": "Avec vous"
+      },
+      "calendar": "Calendrier",
+      "moreOptions": "Plus d’options",
+      "send": "Envoyer à quelqu’un",
+      "getTickets": "Acheter des billets",
+      "going": "Je participe",
+      "viewImage": "Voir l’image",
+      "board": "Tableau des départs",
+      "date": "Date",
+      "time": "Heure",
+      "price": "Entrée",
+      "ages": "Âge",
+      "capacity": "Capacité",
+      "schedule": "Récurrence",
+      "eventTime": "Heure de l’événement",
+      "yourTime": "Votre heure",
+      "showMyTime": "Afficher mon heure",
+      "showEventTime": "Afficher l’heure de l’événement",
+      "notListed": "Non indiqué",
+      "archiveHint": "Cet arrêt est derrière nous.",
+      "nextOuting": "Trouvez votre prochaine sortie",
+      "venueMissing": "Le lieu n’est pas indiqué ici.",
+      "checkDetails": "Vérifier les détails",
+      "freeBooking": "Entrée gratuite. Consultez le lien des billets pour réserver.",
+      "noBookingLink": "Aucun lien de réservation n’est indiqué ici.",
+      "reportHint": "Quelque chose déraille ? Signalez-le dans Plus d’options.",
+      "moreStops": "Prochain arrêt ?",
+      "relatedReason": {
+        "city": "Même ville",
+        "similar": "Ambiance similaire",
+        "tags": "Tags en commun"
       }
     }
   },
@@ -2680,7 +2711,21 @@
       "subtitle": "Gérez vos connexions",
       "gate": "Connectez-vous pour voir vos amis.",
       "requests": "Demandes",
-      "sentRequest": "T’a envoyé une demande d’ami"
+      "sentRequest": "T’a envoyé une demande d’ami",
+      "loadError": "Impossible de charger tes ami·es.",
+      "empty": {
+        "title": "Pas encore d'ami·es.",
+        "description": "Trouve des personnes avec qui te connecter.",
+        "cta": "Trouver des personnes",
+        "pendingSent_one": "Tu as {{count}} demande envoyée en attente de réponse. Voir l'onglet Demandes.",
+        "pendingSent_other": "Tu as {{count}} demandes envoyées en attente de réponse. Voir l'onglet Demandes."
+      },
+      "requestsEmpty": "Aucune demande d'ami·e en attente.",
+      "received": "Reçues",
+      "sent": "Envoyées",
+      "waitingForAnswer": "En attente de réponse",
+      "pendingBadge": "En attente",
+      "cancelRequest": "Retirer"
     },
     "entityDetail": {
       "milestoneNotFoundTitle": "Jalon introuvable",
@@ -3169,7 +3214,8 @@
       "news": "Actualités",
       "map": "Carte",
       "history": "[FR] Legal record",
-      "historyNote": "[FR] What changed and when. Safety information without a date is not safety information."
+      "historyNote": "[FR] What changed and when. Safety information without a date is not safety information.",
+      "about": "À propos de {{country}}"
     },
     "practical": {
       "languages": "Langues",
@@ -3273,6 +3319,18 @@
       "title": "[FR] Compare the law elsewhere",
       "body": "[FR] Every country page carries the same legal breakdown, from the same sources, with the date it was checked.",
       "rights": "[FR] Rights across the world"
+    },
+    "overview": "Vue d’ensemble",
+    "gallery": {
+      "allTypes": "Tous les types",
+      "verifiedOnly": "Lieux vérifiés uniquement",
+      "freeOnly": "Événements gratuits uniquement",
+      "invalidDates": "Choisissez une date de fin après la date de début.",
+      "error": "Impossible de charger cette sélection.",
+      "results_one": "{{count}} résultat",
+      "results_other": "{{count}} résultats",
+      "empty": "Aucun résultat. Essayez une autre ville ou réinitialisez les filtres.",
+      "pagination": "Pages de la galerie"
     }
   },
   "inbox": {
@@ -3699,6 +3757,9 @@
       "blurb": "[FR] Pick a few. They shape what we suggest, and they are how other members find people with something in common.",
       "blurbSignedOut": "[FR] Sign in to pick a few. They shape what we suggest, and they are how other members find people with something in common.",
       "count": "[FR] {{count}} selected"
+    },
+    "friends": {
+      "discover": "Trouver des personnes"
     }
   },
   "hub": {

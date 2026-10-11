@@ -47,7 +47,7 @@ export function SinglePage({
   footer?: React.ReactNode;
   className?: string;
   /** Compact opening and section rhythm for task-first location pages. */
-  density?: 'default' | 'compact';
+  density?: 'default' | 'compact' | 'dense';
 }) {
   return (
     /* `flush` — the single owns its own vertical rhythm: each of the three
@@ -56,7 +56,10 @@ export function SinglePage({
        last gap. */
     <PageContainer as="article" flush className={className}>
       <div
-        className={cn('border-b border-border-hairline', density === 'compact' ? 'py-6' : 'py-8')}
+        className={cn(
+          'border-b border-border-hairline',
+          density === 'dense' ? 'py-4' : density === 'compact' ? 'py-6' : 'py-8',
+        )}
       >
         <DetailMasthead
           type={type}
@@ -65,9 +68,10 @@ export function SinglePage({
           title={title}
           status={status}
           lead={lead}
-          compact={density === 'compact'}
+          compact={density !== 'default'}
+          size={density === 'dense' ? 'compact' : 'default'}
         />
-        {tags && <div className="mt-6">{tags}</div>}
+        {tags && <div className={density === 'dense' ? 'mt-2' : 'mt-6'}>{tags}</div>}
         {action && (
           <div
             className={cn(
@@ -86,15 +90,16 @@ export function SinglePage({
           1440px viewport with 360px of nothing beside it. */}
       <div
         className={cn(
-          'grid grid-cols-1 gap-8',
-          density === 'compact' ? 'py-6' : 'py-8',
+          'grid grid-cols-1',
+          density === 'dense' ? 'gap-4' : 'gap-8',
+          density === 'dense' ? 'py-4' : density === 'compact' ? 'py-6' : 'py-8',
           rail && 'lg:grid-cols-[1fr_360px]',
         )}
       >
         <div
           className={cn(
             'flex min-w-0 flex-col',
-            density === 'compact' ? 'gap-6 md:gap-8' : 'gap-10',
+            density === 'dense' ? 'gap-4' : density === 'compact' ? 'gap-6 md:gap-8' : 'gap-10',
           )}
         >
           {body}
@@ -114,7 +119,13 @@ export function SinglePage({
         )}
       </div>
 
-      {footer && <div className="border-t border-border-hairline py-8">{footer}</div>}
+      {footer && (
+        <div
+          className={cn('border-t border-border-hairline', density === 'dense' ? 'py-4' : 'py-8')}
+        >
+          {footer}
+        </div>
+      )}
     </PageContainer>
   );
 }
