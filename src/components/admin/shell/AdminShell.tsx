@@ -1,3 +1,4 @@
+import { useQueryClient } from '@tanstack/react-query';
 /**
  * AdminShell -- Main layout wrapper for the unified admin console.
  * Replaces CMSShell with route-based navigation via react-router-dom Outlet.
@@ -169,9 +170,13 @@ export function AdminShell() {
     });
   }, []);
 
-  const handleEditorSaved = useCallback((_id: string) => {
-    // Stay on editor after save -- child can navigate if desired
-  }, []);
+  const queryClient = useQueryClient();
+  const handleEditorSaved = useCallback(
+    (_id: string) => {
+      void queryClient.invalidateQueries();
+    },
+    [queryClient],
+  );
 
   // Per-route role enforcement. AdminRouteGuard already gated console entry at
   // 'editor'; here each route's minRole (system → admin, automation → moderator,

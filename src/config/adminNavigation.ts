@@ -32,9 +32,7 @@ import {
   Newspaper,
   Users,
   UserCog,
-  MapPin,
   Map,
-  Globe,
   Tag,
   ShoppingBag,
   BookOpen,
@@ -50,7 +48,6 @@ import {
   Handshake,
   Workflow,
   Timer,
-  Home,
   History,
   MessageSquarePlus,
   Search,
@@ -202,38 +199,13 @@ export const adminNavSections: AdminNavSection[] = [
         countTable: 'events',
         group: 'Places & Events',
       },
-      // Geography — the spine, top-down. Geography (the tree) leads because it
-      // is the surface you re-parent and merge from; the typed tables follow.
+      // Country, city and village records share one hierarchical workspace.
       {
         id: 'geography',
         label: 'Geography',
         icon: Network,
         route: '/admin/geography',
-        group: 'Geography',
-      },
-      {
-        id: 'countries',
-        label: 'Countries',
-        icon: Globe,
-        route: '/admin/content/countries',
-        countTable: 'countries',
-        group: 'Geography',
-      },
-      {
-        id: 'cities',
-        label: 'Cities',
-        icon: MapPin,
-        route: '/admin/content/cities',
-        countTable: 'cities',
-        group: 'Geography',
-      },
-      {
-        id: 'villages',
-        label: 'Queer Villages',
-        icon: Home,
-        route: '/admin/content/queer_villages',
-        countTable: 'queer_villages',
-        group: 'Geography',
+        group: 'Places & Events',
       },
       // People
       {

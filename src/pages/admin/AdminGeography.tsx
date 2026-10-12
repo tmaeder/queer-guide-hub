@@ -1,623 +1,655 @@
-import { FieldRenderer } from '@/components/cms/fields/FieldRenderer';
-import { useEffect, useState } from 'react';
-import { Link } from 'react-router';
-import { AdminTextSkeleton } from '@/components/admin/primitives/AdminLoading';
-import { AdminSimpleTable } from '@/components/admin/primitives/AdminSimpleTable';
+import { GeographyLandmarks } from '@/components/admin/GeographyLandmarks';
+import { useDeferredValue, useState } from 'react';
+import { useSearchParams } from 'react-router';
+import { useQueryClient } from '@tanstack/react-query';
 import {
-  Building,
   ChevronDown,
   ChevronRight,
   Globe,
   Home,
-  Landmark,
-  Lock,
   MapPin,
   Move,
+  Pencil,
   Plus,
-  Trash2,
+  ExternalLink,
+  Lock,
 } from 'lucide-react';
 import { AdminArchetypeHeader } from '@/components/admin/frames/AdminArchetypeHeader';
-import { CityCodeBadges } from '@/components/admin/CityCodeBadges';
-import { Badge } from '@/components/ui/badge';
+import { AdminEmpty } from '@/components/admin/primitives/AdminEmpty';
+import { AdminInlineSpinner } from '@/components/admin/primitives/AdminLoading';
+import { AdminTextSkeleton } from '@/components/admin/primitives/AdminLoading';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Badge } from '@/components/ui/badge';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { CMSEditorLayout } from '@/components/cms/editor/CMSEditorLayout';
+import { useGeoIntegrityViolations } from '@/hooks/useGeoPlaces';
 import { useToast } from '@/hooks/use-toast';
-import { LANDMARK_KINDS } from '@/lib/landmarkKinds';
 import {
-  type GeoNode,
-  type LandmarkFormValues,
-  useDeleteLandmark,
-  useGeoChildren,
-  useGeoIntegrityViolations,
-  useGeoMoveCandidates,
-  useGeoMoveNode,
-  useLandmarkProfile,
-  useLandmarkReview,
-  useLandmarkSpine,
-  useSaveLandmark,
-} from '@/hooks/useGeoPlaces';
+  geographyLabels,
+  verificationLabels,
+  useGeographyRows,
+  useGeographyRecord,
+  useGeographyFilters,
+  useMoveGeography,
+  useVerifyGeography,
+  type GeographyFilters,
+  type GeographyRecord,
+  type GeographyType,
+} from '@/hooks/useGeographyCMS';
+import { cmsEditPath, livePath } from '@/lib/cmsLinks';
 
-const TYPE_ICON: Record<string, typeof Globe> = {
-  continent: Globe,
-  region: Globe,
-  country: Globe,
-  city: MapPin,
-  village: Home,
-  landmark: Landmark,
-};
+const ICONS = { country: Globe, city: MapPin, village: Home };
+const EMPTY_FILTERS: GeographyFilters = { search: '', type: null, continent: null, region: null };
+const TABLES = { country: 'countries', city: 'cities', village: 'queer_villages' };
 
-/** Legal parent types per node type — mirrors geo_places_hierarchy_chk. */
-const LEGAL_PARENT: Record<string, string[]> = {
-  region: ['continent'],
-  country: ['continent', 'region'],
-  city: ['country'],
-  village: ['city'],
-  landmark: ['city', 'village'],
-};
-
-const EDITOR_LINK: Record<string, string> = {
-  country: '/admin/content/countries',
-  city: '/admin/content/cities',
-  village: '/admin/content/queer_villages',
-};
-
-const PUBLIC_HREF: Record<string, (slug: string) => string> = {
-  country: (slug) => `/country/${slug}`,
-  city: (slug) => `/city/${slug}`,
-  village: (slug) => `/villages/${slug}`,
-  landmark: (slug) => `/place/${slug}`,
-};
-
-function NodeRow({
-  node,
-  depth,
-  selected,
-  onSelect,
-}: {
-  node: GeoNode;
-  depth: number;
-  selected: GeoNode | null;
-  onSelect: (n: GeoNode) => void;
-}) {
-  const [open, setOpen] = useState(false);
-  const Icon = TYPE_ICON[node.place_type] ?? MapPin;
-  const isSelected = selected?.id === node.id;
-
-  return (
-    <div>
-      <div
-        className={`flex min-h-11 items-center gap-2 rounded-element px-2 py-1 ${
-          isSelected ? 'bg-accent' : 'hover:bg-muted'
-        }`}
-        style={{ paddingLeft: `${depth * 20 + 8}px` }}
-      >
-        <button
-          type="button"
-          aria-label={open ? 'Collapse' : 'Expand'}
-          className="flex h-6 w-6 shrink-0 items-center justify-center"
-          onClick={() => setOpen((o) => !o)}
-          disabled={node.child_count === 0}
-        >
-          {node.child_count > 0 ? (
-            open ? (
-              <ChevronDown className="h-4 w-4" />
-            ) : (
-              <ChevronRight className="h-4 w-4" />
-            )
-          ) : (
-            <span className="h-4 w-4" />
-          )}
-        </button>
-        <button
-          type="button"
-          className="flex min-w-0 flex-1 items-center gap-2 text-left"
-          onClick={() => onSelect(node)}
-        >
-          <Icon className="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden />
-          <span className="truncate">{node.name}</span>
-          {node.place_type === 'city' && (
-            <CityCodeBadges countryCode={node.country_code} regionCode={node.region_code} />
-          )}
-          {node.safety_gated && <Lock className="h-3 w-3 shrink-0" aria-label="Safety-gated" />}
-          {node.duplicate_of_id && (
-            <Badge variant="outline" className="shrink-0">
-              dup
-            </Badge>
-          )}
-          <span className="ml-auto shrink-0 text-2xs uppercase tracking-wide text-muted-foreground">
-            {node.child_count > 0 && `${node.child_count} · `}
-            {node.place_type}
-          </span>
-        </button>
-      </div>
-      {open && (
-        <NodeChildren
-          parentId={node.id}
-          depth={depth + 1}
-          selected={selected}
-          onSelect={onSelect}
-        />
-      )}
-    </div>
-  );
-}
-
-function NodeChildren({
+function GeographyRows({
   parentId,
-  depth,
-  selected,
+  filters,
+  depth = 0,
+  selectedId,
+  expanded,
+  onExpand,
   onSelect,
 }: {
   parentId: string | null;
-  depth: number;
-  selected: GeoNode | null;
-  onSelect: (n: GeoNode) => void;
+  filters: GeographyFilters;
+  depth?: number;
+  selectedId: string | null;
+  expanded: Set<string>;
+  onExpand: (id: string) => void;
+  onSelect: (id: string) => void;
 }) {
-  const { data, isLoading } = useGeoChildren(parentId);
-  if (isLoading) {
+  const query = useGeographyRows(parentId, filters);
+  if (query.isLoading) return <AdminTextSkeleton lines={3} />;
+  if (query.isError)
     return (
-      <div className="py-2" style={{ paddingLeft: `${depth * 20 + 16}px` }}>
-        <AdminTextSkeleton lines={2} />
+      <div role="alert" className="p-4 text-13">
+        Could not load geography: {query.error.message}{' '}
+        <Button variant="outline" onClick={() => void query.refetch()}>
+          Retry
+        </Button>
       </div>
     );
-  }
+  const rows = query.data?.pages.flatMap((page) => page.rows) ?? [];
+  const global = !!filters.search || !!filters.type || !!filters.status;
   return (
     <div>
-      {(data ?? []).map((n) => (
-        <NodeRow key={n.id} node={n} depth={depth} selected={selected} onSelect={onSelect} />
-      ))}
+      {rows.length === 0 && (
+        <AdminEmpty
+          noun="geographic records"
+          filtered={!!filters.search || !!filters.type || !!filters.continent || !!filters.region}
+          description={
+            parentId
+              ? 'Add a subitem from the selected record.'
+              : 'Add a country to start the hierarchy.'
+          }
+        />
+      )}
+      {rows.map((row) => {
+        const Icon = ICONS[row.place_type];
+        const open = expanded.has(row.id);
+        return (
+          <div key={row.id}>
+            <div
+              className={`flex min-h-12 items-center gap-2 border-b px-2 ${selectedId === row.id ? 'bg-accent' : 'hover:bg-muted/50'}`}
+              style={{ paddingLeft: `${depth * 20 + 8}px` }}
+            >
+              <button
+                type="button"
+                className="flex h-11 w-11 shrink-0 items-center justify-center rounded-element focus-visible:outline focus-visible:outline-2"
+                aria-label={`${open ? 'Collapse' : 'Expand'} ${row.name}`}
+                aria-expanded={open}
+                disabled={!row.child_count || global}
+                onClick={() => onExpand(row.id)}
+              >
+                {!!row.child_count &&
+                  !global &&
+                  (open ? <ChevronDown size={16} /> : <ChevronRight size={16} />)}
+              </button>
+              <button
+                type="button"
+                aria-pressed={selectedId === row.id}
+                onClick={() => onSelect(row.id)}
+                className="flex min-w-0 flex-1 items-center gap-2 py-2 text-left focus-visible:outline focus-visible:outline-2"
+              >
+                <Icon size={16} className="shrink-0 text-muted-foreground" aria-hidden />
+                <span className="min-w-0 flex-1">
+                  <span className="block truncate text-15 font-medium">{row.name}</span>
+                  <span className="block truncate text-13 text-muted-foreground">
+                    {global
+                      ? row.path
+                      : `${geographyLabels[row.place_type]}${row.place_type === 'city' && row.region_code ? ` · ${row.region_code}` : ''}`}
+                    {row.child_count ? ` · ${row.child_count} subitems` : ''}
+                  </span>
+                </span>
+                {row.safety_gated && <Lock size={14} aria-label="Safety gated" />}
+                <span className="hidden text-13 text-muted-foreground sm:block">
+                  {row.workflow_state ?? (row.seo_indexable ? 'Indexable' : 'Not indexed')}
+                </span>
+                <Badge variant="outline" className="shrink-0 text-xs">
+                  {verificationLabels[row.verification_status]}
+                </Badge>
+              </button>
+            </div>
+            {open && !global && !!row.child_count && (
+              <GeographyRows
+                parentId={row.id}
+                filters={EMPTY_FILTERS}
+                depth={depth + 1}
+                selectedId={selectedId}
+                expanded={expanded}
+                onExpand={onExpand}
+                onSelect={onSelect}
+              />
+            )}
+          </div>
+        );
+      })}
+      {query.hasNextPage && (
+        <Button
+          variant="ghost"
+          className="m-2"
+          disabled={query.isFetchingNextPage}
+          onClick={() => void query.fetchNextPage()}
+        >
+          {query.isFetchingNextPage ? (
+            <AdminInlineSpinner />
+          ) : (
+            `Load more (${rows.length} of ${query.data?.pages[0].total})`
+          )}
+        </Button>
+      )}
     </div>
   );
 }
 
-function MoveDialog({
-  node,
-  open,
-  onClose,
-}: {
-  node: GeoNode;
-  open: boolean;
-  onClose: () => void;
-}) {
-  const { toast } = useToast();
+function MoveGeography({ record, onClose }: { record: GeographyRecord; onClose: () => void }) {
   const [search, setSearch] = useState('');
-  const legalTypes = LEGAL_PARENT[node.place_type] ?? [];
-  const { data: candidates } = useGeoMoveCandidates(legalTypes, search, open);
-  const move = useGeoMoveNode(node.id);
-
-  const handleMove = (newParentId: string) => {
-    move.mutate(newParentId, {
-      onSuccess: (data) => {
-        const fixed = data.repaired
-          ? Object.entries(data.repaired)
-              .filter(([, n]) => n > 0)
-              .map(([k, n]) => `${n} ${k}`)
-              .join(', ')
-          : '';
-        toast({
-          title: `Moved ${node.name}`,
-          description: fixed ? `Also repaired: ${fixed}` : undefined,
-        });
-        onClose();
-      },
-      onError: (e: Error) =>
-        toast({ title: 'Move failed', description: e.message, variant: 'destructive' }),
-    });
-  };
-
+  const type = record.place_type === 'city' ? 'country' : 'city';
+  const candidates = useGeographyRows(null, {
+    ...EMPTY_FILTERS,
+    type,
+    search: useDeferredValue(search),
+  });
+  const move = useMoveGeography(record);
+  const { toast } = useToast();
   return (
-    <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
+    <Dialog open onOpenChange={(open) => !open && onClose()}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Move “{node.name}”</DialogTitle>
+          <DialogTitle>Change parent of {record.name}</DialogTitle>
         </DialogHeader>
         <p className="text-13 text-muted-foreground">
-          New parent must be a {legalTypes.join(' or ')}. Descendants and located entities are
-          re-derived automatically.
+          Choose a {geographyLabels[type].toLowerCase()}. The CMS relationship, descendants, linked
+          content and safety gates update together.
         </p>
         <Input
-          placeholder={`Search ${legalTypes.join('/')}…`}
+          aria-label="Search parents"
+          placeholder={`Search ${type === 'city' ? 'cities' : 'countries'}…`}
           value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          autoFocus
+          onChange={(event) => setSearch(event.target.value)}
         />
-        <div className="flex max-h-64 flex-col gap-1 overflow-y-auto">
-          {(candidates ?? []).map((c) => (
+        <div className="max-h-72 overflow-auto">
+          {candidates.isLoading && <AdminTextSkeleton lines={3} />}
+          {candidates.isError && <p role="alert">{candidates.error.message}</p>}
+          {candidates.data?.pages
+            .flatMap((page) => page.rows)
+            .filter((row) => row.id !== record.parent_id)
+            .map((row) => (
+              <Button
+                key={row.id}
+                variant="ghost"
+                className="h-auto min-h-11 w-full justify-start whitespace-normal text-left"
+                disabled={move.isPending}
+                onClick={() =>
+                  move.mutate(row.id, {
+                    onSuccess: () => {
+                      toast({ title: `Updated parent of ${record.name}` });
+                      onClose();
+                    },
+                  })
+                }
+              >
+                {row.path}
+              </Button>
+            ))}
+          {candidates.data?.pages[0].total === 0 && (
+            <p className="p-2 text-13">No matching parents.</p>
+          )}
+          {candidates.hasNextPage && (
             <Button
-              key={c.id}
-              variant="ghost"
-              className="justify-start"
-              disabled={move.isPending}
-              onClick={() => handleMove(c.id)}
+              variant="outline"
+              disabled={candidates.isFetchingNextPage}
+              onClick={() => void candidates.fetchNextPage()}
             >
-              <span className="mr-2 text-2xs uppercase tracking-wide text-muted-foreground">
-                {c.place_type}
-              </span>
-              {c.name}
-              {c.place_type === 'city' && (
-                <CityCodeBadges
-                  className="ml-2"
-                  countryCode={c.country_code}
-                  regionCode={c.region_code}
-                />
-              )}
+              More parents
             </Button>
-          ))}
-          {search.length >= 2 && candidates?.length === 0 && (
-            <p className="py-2 text-13 text-muted-foreground">No matches.</p>
           )}
         </div>
+        {move.isError && (
+          <p role="alert" className="text-13 text-destructive">
+            {move.error.message}
+          </p>
+        )}
+        <Button variant="outline" onClick={onClose}>
+          Cancel
+        </Button>
       </DialogContent>
     </Dialog>
   );
 }
 
-const EMPTY_FORM: LandmarkFormValues = {
-  name: '',
-  landmark_kind: 'landmark',
-  description: '',
-  address: '',
-  website: '',
-  accessibility_notes: '',
-};
-
-function LandmarkDialog({
-  parent,
-  landmark,
-  open,
-  onClose,
+function GeographyDetail({
+  record,
+  onEdit,
+  onCreate,
 }: {
-  /** City/village node to create under (create mode). */
-  parent: GeoNode | null;
-  /** Existing landmark node (edit mode). */
-  landmark: GeoNode | null;
-  open: boolean;
-  onClose: () => void;
+  record: GeographyRecord;
+  onEdit: () => void;
+  onCreate: (type: GeographyType) => void;
 }) {
-  const { toast } = useToast();
-  const [form, setForm] = useState<LandmarkFormValues>(EMPTY_FORM);
-
-  const { data: existing } = useLandmarkProfile(landmark?.id, open);
-  const { data: spineRow } = useLandmarkSpine(landmark?.id, open);
-  const save = useSaveLandmark({
-    landmarkId: landmark?.id ?? null,
-    parent: parent ? { id: parent.id, name: parent.name } : null,
-  });
-
-  // Hydrate the form when the edit target loads; reset for create mode.
-  const loadedKey = `${existing?.place_id ?? ''}:${spineRow?.id ?? ''}:${open}`;
-  useEffect(() => {
-    if (landmark && existing && spineRow) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect -- form hydrates from two async queries; sync direction is external → local.
-      setForm({
-        name: spineRow.name ?? '',
-        landmark_kind: existing.landmark_kind ?? 'landmark',
-        description: spineRow.description ?? '',
-        address: existing.address ?? '',
-        website: existing.website ?? '',
-        accessibility_notes: existing.accessibility_notes ?? '',
-      });
-    } else if (!landmark) {
-      setForm(EMPTY_FORM);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [loadedKey]);
-
-  const handleSave = () => {
-    save.mutate(form, {
-      onSuccess: () => {
-        toast({ title: landmark ? 'Landmark updated' : 'Landmark created' });
-        onClose();
-      },
-      onError: (e: Error) =>
-        toast({ title: 'Save failed', description: e.message, variant: 'destructive' }),
-    });
-  };
-
+  const [moving, setMoving] = useState(false);
+  const verify = useVerifyGeography();
+  const href = livePath(record.source_table, record as unknown as Record<string, unknown>);
+  const editHref = cmsEditPath(record.source_table, record.id);
+  const childType =
+    record.place_type === 'country' ? 'city' : record.place_type === 'city' ? 'village' : null;
   return (
-    <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
-      <DialogContent className="max-w-lg">
-        <DialogHeader>
-          <DialogTitle>
-            {landmark ? `Edit “${landmark.name}”` : `New place in ${parent?.name ?? ''}`}
-          </DialogTitle>
-        </DialogHeader>
-        <div className="flex flex-col gap-4">
-          <div className="grid grid-cols-[1fr_auto] gap-4">
-            <div>
-              <Label htmlFor="lm-name">Name</Label>
-              <Input
-                id="lm-name"
-                value={form.name}
-                onChange={(e) => setForm({ ...form, name: e.target.value })}
-              />
-            </div>
-            <div>
-              <Label htmlFor="lm-kind">Kind</Label>
-              <Select
-                value={form.landmark_kind}
-                onValueChange={(v) => setForm({ ...form, landmark_kind: v })}
-              >
-                <SelectTrigger id="lm-kind" className="w-36">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {LANDMARK_KINDS.map((k) => (
-                    <SelectItem key={k} value={k}>
-                      {k}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-          <div>
-            <FieldRenderer
-              field={{ name: 'lm-desc', label: 'Description', type: 'textarea', group: 'basic' }}
-              value={form.description}
-              onChange={(next) => setForm({ ...form, description: String(next ?? '') })}
-            />
-          </div>
-          <div>
-            <Label htmlFor="lm-address">Address</Label>
-            <Input
-              id="lm-address"
-              value={form.address}
-              onChange={(e) => setForm({ ...form, address: e.target.value })}
-            />
-          </div>
-          <div>
-            <Label htmlFor="lm-website">Website</Label>
-            <Input
-              id="lm-website"
-              value={form.website}
-              onChange={(e) => setForm({ ...form, website: e.target.value })}
-            />
-          </div>
-          <div>
-            <Label htmlFor="lm-access">Accessibility notes</Label>
-            <Textarea
-              id="lm-access"
-              rows={2}
-              value={form.accessibility_notes}
-              onChange={(e) => setForm({ ...form, accessibility_notes: e.target.value })}
-            />
-          </div>
-        </div>
-        <DialogFooter>
-          <Button variant="outline" onClick={onClose}>
-            Cancel
-          </Button>
-          <Button onClick={handleSave} disabled={save.isPending}>
-            {landmark ? 'Save' : 'Create'}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-  );
-}
-
-function DetailPanel({
-  node,
-  onMove,
-  onAddLandmark,
-  onEditLandmark,
-}: {
-  node: GeoNode;
-  onMove: () => void;
-  onAddLandmark: () => void;
-  onEditLandmark: () => void;
-}) {
-  const { toast } = useToast();
-  const isLandmark = node.place_type === 'landmark';
-  const { state: review, approve } = useLandmarkReview(node.id, isLandmark);
-  const remove = useDeleteLandmark();
-
-  const canMove = node.place_type in LEGAL_PARENT;
-  const editorLink = EDITOR_LINK[node.place_type];
-  const publicHref = node.slug ? PUBLIC_HREF[node.place_type]?.(node.slug) : undefined;
-
-  return (
-    <div className="flex flex-col gap-4 rounded-container bg-muted p-6">
+    <section
+      aria-label="Selected geography"
+      className="flex min-w-0 flex-col gap-4 lg:sticky lg:top-4"
+    >
       <div>
-        <div className="text-2xs uppercase tracking-wide text-muted-foreground">
-          {node.place_type}
-        </div>
-        <h2 className="text-title font-semibold">{node.name}</h2>
-        {node.place_type === 'city' && (
-          <CityCodeBadges
-            className="mt-1"
-            countryCode={node.country_code}
-            regionCode={node.region_code}
-          />
-        )}
-        {node.slug && <div className="text-13 text-muted-foreground">/{node.slug}</div>}
-      </div>
-      <dl className="grid grid-cols-2 gap-2 text-15">
-        <dt className="text-muted-foreground">Children</dt>
-        <dd>{node.child_count}</dd>
-        <dt className="text-muted-foreground">Venues</dt>
-        <dd>{node.venue_count}</dd>
-        <dt className="text-muted-foreground">Events</dt>
-        <dd>{node.event_count}</dd>
-        <dt className="text-muted-foreground">Hotels</dt>
-        <dd>{node.hotel_count}</dd>
-      </dl>
-      {node.safety_gated && (
-        <p className="flex items-center gap-2 text-13 text-muted-foreground">
-          <Lock className="h-3 w-3" aria-hidden /> Safety-gated: only visible to signed-in members.
+        <p className="text-13 text-muted-foreground break-words">{record.path}</p>
+        <h2 className="text-title font-semibold">{record.name}</h2>
+        <p className="text-13 text-muted-foreground">
+          {geographyLabels[record.place_type]} ·{' '}
+          {record.workflow_state ?? (record.seo_indexable ? 'Indexable' : 'Not indexed')}
         </p>
-      )}
-      {isLandmark && review.data?.needs_review && (
-        <div className="rounded-element bg-muted p-4 text-13">
-          Pending review — hidden from search and public pages until approved.
-          <Button
-            size="sm"
-            className="mt-2 w-full"
-            disabled={approve.isPending}
-            onClick={() =>
-              approve.mutate(undefined, {
-                onSuccess: () => toast({ title: 'Approved — now public and searchable' }),
-                onError: (e: Error) =>
-                  toast({
-                    title: 'Approve failed',
-                    description: e.message,
-                    variant: 'destructive',
-                  }),
-              })
-            }
-          >
-            Approve
-          </Button>
-        </div>
-      )}
+      </div>
       <div className="flex flex-wrap gap-2">
-        {canMove && (
-          <Button size="sm" variant="outline" onClick={onMove}>
-            <Move className="mr-1 h-3 w-3" /> Move
+        <Button onClick={onEdit}>
+          <Pencil size={16} className="mr-2" />
+          Edit record
+        </Button>
+        {childType && (
+          <Button variant="outline" onClick={() => onCreate(childType)}>
+            <Plus size={16} className="mr-2" />
+            Add {geographyLabels[childType].toLowerCase()}
           </Button>
         )}
-        {(node.place_type === 'city' || node.place_type === 'village') && (
-          <Button size="sm" variant="outline" onClick={onAddLandmark}>
-            <Plus className="mr-1 h-3 w-3" /> Add place
+        {record.place_type !== 'country' && (
+          <Button variant="outline" onClick={() => setMoving(true)}>
+            <Move size={16} className="mr-2" />
+            Change parent
           </Button>
         )}
-        {isLandmark && (
+      </div>
+      <dl className="grid grid-cols-2 gap-x-4 gap-y-2 border-y py-4 text-13">
+        <dt>CMS table</dt>
+        <dd className="break-all">{record.source_table}</dd>
+        <dt>Parent field</dt>
+        <dd>
+          {record.place_type === 'city'
+            ? 'country_id'
+            : record.place_type === 'village'
+              ? 'city_id'
+              : 'continent_id / region_id'}
+        </dd>
+        <dt>Country</dt>
+        <dd>{record.country_name}</dd>
+        {record.place_type === 'village' && (
           <>
-            <Button size="sm" variant="outline" onClick={onEditLandmark}>
-              Edit
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => {
-                if (window.confirm(`Delete ${node.name}? This cannot be undone.`)) {
-                  remove.mutate(node.id, {
-                    onSuccess: () => toast({ title: `Deleted ${node.name}` }),
-                    onError: (e: Error) =>
-                      toast({
-                        title: 'Delete failed',
-                        description: e.message,
-                        variant: 'destructive',
-                      }),
-                  });
-                }
-              }}
-            >
-              <Trash2 className="mr-1 h-3 w-3" /> Delete
-            </Button>
+            <dt>City</dt>
+            <dd>{record.city_name}</dd>
           </>
         )}
-        {editorLink && (
-          <Button size="sm" variant="outline" asChild>
-            <Link to={editorLink}>
-              <Building className="mr-1 h-3 w-3" /> Open editor
-            </Link>
-          </Button>
+        <dt>Coordinates</dt>
+        <dd>
+          {record.latitude == null || record.longitude == null
+            ? 'Missing'
+            : `${Number(record.latitude).toFixed(5)}, ${Number(record.longitude).toFixed(5)}`}
+        </dd>
+        <dt>Subitems</dt>
+        <dd>{record.child_count}</dd>
+        <dt>Linked content</dt>
+        <dd>
+          {record.venue_count} venues · {record.event_count} events · {record.hotel_count} hotels
+        </dd>
+      </dl>
+      <div className="flex flex-col gap-2">
+        <h3 className="text-15 font-semibold">Geographic evidence</h3>
+        <Badge variant="outline" className="self-start">
+          {verificationLabels[record.verification_status]}
+        </Badge>
+        <p className="text-13 text-muted-foreground">
+          {record.verification?.checks.reason ??
+            'No recorded geographic check. Check the country and inspect external sources before confirming identity or parentage.'}
+        </p>
+        {record.verification && (
+          <p className="text-13 text-muted-foreground">
+            Checked {new Date(record.verification.checked_at).toLocaleString()}
+            {typeof record.verification.checks.distance_to_city_m === 'number' &&
+              ` · ${(record.verification.checks.distance_to_city_m / 1000).toFixed(1)} km from city centre`}
+          </p>
         )}
-        {publicHref && (
-          <Button size="sm" variant="ghost" asChild>
-            <a href={publicHref} target="_blank" rel="noopener noreferrer">
-              View public page
-            </a>
-          </Button>
+        {record.verification?.sources.map((source) => (
+          <a
+            key={source.url}
+            className="text-13 underline underline-offset-4"
+            href={source.url}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            {source.title}
+            {source.version ? ` (${source.version})` : ''}
+          </a>
+        ))}
+        <Button
+          variant="outline"
+          className="self-start"
+          disabled={verify.isPending}
+          onClick={() => verify.mutate(record.id)}
+        >
+          {verify.isPending ? 'Checking…' : 'Check geography'}
+        </Button>
+        {verify.isError && (
+          <p role="alert" className="text-13 text-destructive">
+            {verify.error.message}
+          </p>
+        )}
+        <p className="text-13 text-muted-foreground">
+          A country match does not verify village boundaries or queer significance. Border, identity
+          and parent conflicts need review.
+        </p>
+      </div>
+      <div className="flex flex-wrap gap-4 text-13">
+        {href && (
+          <a
+            className="inline-flex items-center gap-1 underline"
+            href={href}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            View public page
+            <ExternalLink size={14} />
+          </a>
+        )}
+        {editHref && (
+          <a className="underline" href={editHref}>
+            Direct CMS link
+          </a>
         )}
       </div>
-    </div>
-  );
-}
-
-function IntegrityTab() {
-  const { data, isLoading } = useGeoIntegrityViolations();
-
-  return (
-    <AdminSimpleTable
-      caption="Geo hierarchy integrity violations"
-      rows={data ?? []}
-      rowKey={(v) => `${v.violation}:${v.entity_id}`}
-      isLoading={isLoading}
-      emptyNoun="integrity violations"
-      emptyDescription="The tree is consistent."
-      columns={[
-        { key: 'violation', header: 'Violation', render: (v) => v.violation },
-        { key: 'entity', header: 'Entity', render: (v) => v.entity_type },
-        { key: 'name', header: 'Name', render: (v) => v.entity_name },
-      ]}
-    />
+      {record.place_type !== 'country' && <GeographyLandmarks record={record} />}
+      {moving && <MoveGeography record={record} onClose={() => setMoving(false)} />}
+    </section>
   );
 }
 
 export default function AdminGeography() {
-  const [selected, setSelected] = useState<GeoNode | null>(null);
-  const [moveOpen, setMoveOpen] = useState(false);
-  const [landmarkOpen, setLandmarkOpen] = useState(false);
-  const [landmarkEdit, setLandmarkEdit] = useState(false);
-
+  const [params, setParams] = useSearchParams();
+  const client = useQueryClient();
+  const options = useGeographyFilters();
+  const selectedId = params.get('selected');
+  const record = useGeographyRecord(selectedId);
+  const integrity = useGeoIntegrityViolations();
+  const search = params.get('q') ?? '';
+  const rawType = params.get('type');
+  const type: GeographyType | null =
+    rawType === 'country' || rawType === 'city' || rawType === 'village' ? rawType : null;
+  const rawStatus = params.get('status');
+  const status =
+    rawStatus && Object.hasOwn(verificationLabels, rawStatus)
+      ? (rawStatus as GeographyRecord['verification_status'])
+      : null;
+  const filters: GeographyFilters = {
+    search: useDeferredValue(search),
+    type,
+    continent: params.get('continent'),
+    region: params.get('region'),
+    status,
+  };
+  const expanded = new Set((params.get('expanded') ?? '').split(',').filter(Boolean));
+  const change = (key: string, value: string | null) =>
+    setParams(
+      (previous) => {
+        const next = new URLSearchParams(previous);
+        if (value) next.set(key, value);
+        else next.delete(key);
+        return next;
+      },
+      { replace: true },
+    );
+  const editType = params.get('editing');
+  const createType = params.get('create');
+  const create: GeographyType | null =
+    createType === 'country' || createType === 'city' || createType === 'village'
+      ? createType
+      : null;
+  const editing = editType && record.data?.source_table === editType ? record.data : null;
+  if (editing || create)
+    return (
+      <CMSEditorLayout
+        contentType={editing?.source_table ?? TABLES[create!]}
+        itemId={editing?.id ?? null}
+        initialValues={
+          create === 'city' && record.data?.place_type === 'country'
+            ? { country_id: record.data.id }
+            : create === 'village' && record.data?.place_type === 'city'
+              ? { city_id: record.data.id, country_id: record.data.country_id }
+              : undefined
+        }
+        onClose={() =>
+          setParams(
+            (previous) => {
+              const next = new URLSearchParams(previous);
+              next.delete('editing');
+              next.delete('create');
+              return next;
+            },
+            { replace: true },
+          )
+        }
+        onSaved={(id) => {
+          void client.invalidateQueries();
+          change('selected', id);
+        }}
+      />
+    );
   return (
     <div className="flex flex-col gap-6">
-      <AdminArchetypeHeader title="Geography" />
-      <Tabs defaultValue="tree">
-        <TabsList>
-          <TabsTrigger value="tree">Tree</TabsTrigger>
-          <TabsTrigger value="integrity">Integrity</TabsTrigger>
-        </TabsList>
-        <TabsContent value="tree">
-          <div className="grid grid-cols-1 gap-6 lg:grid-cols-[3fr_2fr]">
-            <div className="max-h-[70vh] overflow-y-auto rounded-container bg-muted p-2">
-              <NodeChildren parentId={null} depth={0} selected={selected} onSelect={setSelected} />
-            </div>
-            <div>
-              {selected ? (
-                <DetailPanel
-                  node={selected}
-                  onMove={() => setMoveOpen(true)}
-                  onAddLandmark={() => {
-                    setLandmarkEdit(false);
-                    setLandmarkOpen(true);
-                  }}
-                  onEditLandmark={() => {
-                    setLandmarkEdit(true);
-                    setLandmarkOpen(true);
-                  }}
-                />
-              ) : (
-                <p className="p-6 text-15 text-muted-foreground">Select a node to inspect it.</p>
-              )}
-            </div>
-          </div>
-        </TabsContent>
-        <TabsContent value="integrity">
-          <IntegrityTab />
-        </TabsContent>
-      </Tabs>
-      {selected && (
-        <MoveDialog node={selected} open={moveOpen} onClose={() => setMoveOpen(false)} />
-      )}
-      {selected && (
-        <LandmarkDialog
-          parent={landmarkEdit ? null : selected}
-          landmark={landmarkEdit ? selected : null}
-          open={landmarkOpen}
-          onClose={() => setLandmarkOpen(false)}
+      <AdminArchetypeHeader
+        title="Geography"
+        routeLine={null}
+        actions={
+          <Button onClick={() => change('create', 'country')}>
+            <Plus size={16} className="mr-2" />
+            Add country
+          </Button>
+        }
+      />
+      <p className="text-15 text-muted-foreground">
+        Countries → Cities → Queer Villages. Browse the hierarchy and edit the linked CMS records
+        here.
+      </p>
+      <div className="flex flex-wrap items-center gap-2">
+        <Input
+          aria-label="Search geography"
+          className="w-full sm:w-72"
+          placeholder="Search countries, cities or villages…"
+          value={search}
+          onChange={(event) => change('q', event.target.value)}
         />
+        <select
+          aria-label="Geography type"
+          className="h-11 rounded-element border bg-background px-4 text-13"
+          value={type ?? ''}
+          onChange={(event) => change('type', event.target.value)}
+        >
+          <option value="">Hierarchy</option>
+          <option value="country">Countries</option>
+          <option value="city">Cities</option>
+          <option value="village">Queer Villages</option>
+        </select>
+        <select
+          aria-label="Continent"
+          className="h-11 rounded-element border bg-background px-4 text-13"
+          value={filters.continent ?? ''}
+          onChange={(event) =>
+            setParams(
+              (previous) => {
+                const next = new URLSearchParams(previous);
+                next.delete('region');
+                if (event.target.value) next.set('continent', event.target.value);
+                else next.delete('continent');
+                return next;
+              },
+              { replace: true },
+            )
+          }
+        >
+          <option value="">All continents</option>
+          {options.data?.continents.map((item) => (
+            <option key={item.id} value={item.id}>
+              {item.name}
+            </option>
+          ))}
+        </select>
+        <select
+          aria-label="Region"
+          className="h-11 rounded-element border bg-background px-4 text-13"
+          value={filters.region ?? ''}
+          onChange={(event) => change('region', event.target.value)}
+        >
+          <option value="">All regions</option>
+          {options.data?.regions
+            .filter((item) => !filters.continent || item.continent_id === filters.continent)
+            .map((item) => (
+              <option key={item.id} value={item.id}>
+                {item.name}
+              </option>
+            ))}
+        </select>
+        <select
+          aria-label="Verification status"
+          className="h-11 rounded-element border bg-background px-4 text-13"
+          value={status ?? ''}
+          onChange={(event) => change('status', event.target.value)}
+        >
+          <option value="">All evidence statuses</option>
+          {Object.entries(verificationLabels).map(([value, label]) => (
+            <option key={value} value={value}>
+              {label}
+            </option>
+          ))}
+        </select>
+        {(search || type || filters.continent || filters.region || status) && (
+          <Button
+            variant="ghost"
+            onClick={() => setParams(selectedId ? { selected: selectedId } : {}, { replace: true })}
+          >
+            Clear filters
+          </Button>
+        )}
+      </div>
+      {options.isError && (
+        <p role="alert" className="text-13">
+          Could not load geographic filters.{' '}
+          <Button variant="ghost" onClick={() => void options.refetch()}>
+            Retry
+          </Button>
+        </p>
       )}
+      <div className="grid min-w-0 grid-cols-1 items-start gap-6 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
+        <section aria-label="Geography hierarchy" className="min-w-0 border-y">
+          <GeographyRows
+            parentId={null}
+            filters={filters}
+            selectedId={selectedId}
+            expanded={expanded}
+            onSelect={(id) => change('selected', id)}
+            onExpand={(id) => {
+              const next = new Set(expanded);
+              if (next.has(id)) next.delete(id);
+              else next.add(id);
+              change('expanded', [...next].join(','));
+            }}
+          />
+        </section>
+        {record.isLoading ? (
+          <AdminTextSkeleton lines={5} />
+        ) : record.isError ? (
+          <div role="alert">
+            Could not load this record.{' '}
+            <Button variant="outline" onClick={() => void record.refetch()}>
+              Retry
+            </Button>
+          </div>
+        ) : record.data ? (
+          <GeographyDetail
+            key={record.data.id}
+            record={record.data}
+            onEdit={() => change('editing', record.data!.source_table)}
+            onCreate={(newType) => change('create', newType)}
+          />
+        ) : (
+          <p className="p-4 text-15 text-muted-foreground">
+            {selectedId
+              ? 'This geographic record is no longer available. Choose another record.'
+              : 'Select a country, city or queer village to inspect its CMS relationship and geographic evidence.'}
+          </p>
+        )}
+      </div>
+      <details className="border-t pt-4">
+        <summary className="cursor-pointer text-15 font-semibold">
+          Relationship issues
+          {integrity.data
+            ? ` (${integrity.data.length}${integrity.data.length === 200 ? '+' : ''})`
+            : ''}
+        </summary>
+        {integrity.isError && (
+          <p role="alert">
+            Could not load relationship issues.{' '}
+            <Button onClick={() => void integrity.refetch()}>Retry</Button>
+          </p>
+        )}
+        {integrity.isLoading && <AdminTextSkeleton lines={2} />}
+        {integrity.data?.length === 0 && (
+          <p className="py-4 text-13">No relationship conflicts reported.</p>
+        )}
+        <ul className="divide-y">
+          {integrity.data?.map((issue) => (
+            <li
+              key={`${issue.violation}:${issue.entity_id}`}
+              className="flex flex-wrap gap-2 py-4 text-13"
+            >
+              <span className="font-medium">{issue.entity_name}</span>
+              <span className="text-muted-foreground">{issue.violation.replaceAll('_', ' ')}</span>
+              <a
+                className="underline"
+                href={
+                  cmsEditPath(
+                    issue.entity_type === 'event'
+                      ? 'events'
+                      : issue.entity_type === 'venue'
+                        ? 'venues'
+                        : issue.entity_type === 'hotel'
+                          ? 'hotels'
+                          : issue.entity_type === 'village'
+                            ? 'queer_villages'
+                            : 'cities',
+                    issue.entity_id,
+                  ) ?? '#'
+                }
+              >
+                Inspect CMS record
+              </a>
+            </li>
+          ))}
+        </ul>
+      </details>
     </div>
   );
 }
