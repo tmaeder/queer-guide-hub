@@ -102,6 +102,7 @@ describe('Unified geography workspace', () => {
     );
     expect(screen.getByRole('textbox', { name: 'Search geography' })).toHaveValue('Spain');
     expect(screen.queryByRole('button', { name: 'Collapse all' })).not.toBeInTheDocument();
+    expect(screen.getByRole('region', { name: 'Geography hierarchy' })).toHaveFocus();
   });
   it('opens the selected canonical record instead of its entire list', () => {
     mocks.selected = country;

@@ -668,7 +668,14 @@ export default function AdminGeography() {
               <span className="hidden sm:inline">· Select a place to inspect or edit</span>
             </p>
             {expanded.size > 0 && (
-              <Button variant="ghost" size="sm" onClick={() => change('expanded', '')}>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  change('expanded', '');
+                  document.getElementById('geography-hierarchy')?.focus();
+                }}
+              >
                 Collapse all
               </Button>
             )}
