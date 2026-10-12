@@ -17,7 +17,7 @@ const poiKeys = new Set(['tourism', 'amenity', 'leisure', 'shop', 'office', 'bui
 
 export function canQueryNamedPlace(row: LocationInput, countryCode: string | null): boolean {
   const name = norm(row.name)
-  return !!countryCode && name.length >= 10 && norm(row.address).includes(name) && !!(row.city || row.postal_code)
+  return !!countryCode && name.length >= 16 && norm(row.address).includes(name) && !!(row.city || row.postal_code)
 }
 
 const exactNamedPlace = (row: LocationInput, countryCode: string | null, p: Record<string, string>) =>

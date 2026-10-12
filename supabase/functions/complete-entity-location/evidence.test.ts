@@ -44,6 +44,7 @@ test('accepts an exact named place with country, locality and postcode evidence'
   const poi = feature({ name: row.name, osm_key: 'tourism', street: 'Kennedy Road', housenumber: '20237',
     city: 'East Gwillimbury', state: 'Ontario', countrycode: 'CA', postcode: 'L0G 1V0' }, [-79.3697176, 44.1496418])
   assert.equal(canQueryNamedPlace(row, 'CA'), true)
+  assert.equal(canQueryNamedPlace({ name: 'Public Bathroom', address: 'Public Bathroom, Deer Park', city: 'Deer Park' }, 'US'), false)
   assert.equal(acceptFeature(row, 'CA', poi, false), true)
   assert.equal(acceptFeature(row, 'US', poi, false), false)
   assert.equal(acceptFeature({ ...row, city: 'Quebec' }, 'CA', poi, false), false)
