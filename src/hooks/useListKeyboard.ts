@@ -32,6 +32,20 @@ export function useListKeyboard({
 
       const tag = (e.target as HTMLElement)?.tagName;
       if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
+      const target = e.target as Element | null;
+      if (
+        target?.closest?.(
+          '[contenteditable="true"], [role="dialog"], [role="alertdialog"], [role="menu"], [role="listbox"]',
+        )
+      )
+        return;
+      // A focused control owns native activation and arrow keys. J/K still
+      // work from row controls, while Enter/Space do not open a different row.
+      if (
+        target?.closest?.('button, a, [role="button"], [role="checkbox"], [role="combobox"]') &&
+        ['Enter', ' ', 'ArrowUp', 'ArrowDown'].includes(e.key)
+      )
+        return;
 
       const idx = items.findIndex((i) => i.id === activeId);
 

@@ -7,7 +7,7 @@ import {
   type GroupingState,
 } from '@tanstack/react-table';
 import { adminTableFeatures } from './features';
-import { Checkbox } from '@/components/ui/checkbox';
+import { AdminSelectionCheckbox as Checkbox } from '@/components/admin/primitives/AdminSelectionCheckbox';
 import { MoreVertical } from 'lucide-react';
 import {
   DropdownMenu,
@@ -240,7 +240,7 @@ export function AdminDataTable<TData extends { id: string }>({
     onBulkEditSuccess?.();
   };
   return (
-    <div className="rounded-element overflow-hidden bg-muted">
+    <div className="rounded-container overflow-hidden bg-card shadow-soft">
       <DataTableToolbar
         search={state.search}
         onSearchChange={setSearch}
@@ -298,11 +298,11 @@ export function AdminDataTable<TData extends { id: string }>({
           noun={emptyNoun ?? tableName.replace(/_/g, ' ')}
         />
       ) : (
-        <Table>
+        <Table variant="admin">
           <TableHeader>
-            <TableRow className="bg-muted">
+            <TableRow>
               {enableSelection && (
-                <th style={{ width: 44, padding: '0 8px' }}>
+                <th style={{ width: 60, padding: '0 8px' }}>
                   <Checkbox
                     aria-label="Select all rows"
                     checked={someSelected ? 'indeterminate' : allSelected}
@@ -314,7 +314,14 @@ export function AdminDataTable<TData extends { id: string }>({
                 </th>
               )}
               {table.getHeaderGroups()[0]?.headers.map((header) => (
-                <DataTableHeaderCell key={header.id} header={header} onSort={toggleSort} />
+                <DataTableHeaderCell
+                  key={header.id}
+                  header={header}
+                  onSort={toggleSort}
+                  sort={
+                    state.sorting?.column === header.column.id ? state.sorting.direction : false
+                  }
+                />
               ))}
               {rowActions && rowActions.length > 0 && (
                 <th style={{ width: 48, padding: '0 8px' }} />
@@ -337,7 +344,7 @@ export function AdminDataTable<TData extends { id: string }>({
                 >
                   {enableSelection && (
                     <TableCell
-                      style={{ width: 44, padding: '0 8px' }}
+                      style={{ width: 60, padding: '0 8px' }}
                       onClick={(e) => e.stopPropagation()}
                     >
                       <Checkbox
@@ -348,7 +355,17 @@ export function AdminDataTable<TData extends { id: string }>({
                     </TableCell>
                   )}
                   {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>
+                    <TableCell
+                      key={cell.id}
+                      className="tabular-nums"
+                      style={{
+                        textAlign:
+                          typeof cell.getValue() === 'number' ||
+                          /(?:_count|_score)$/.test(cell.column.id)
+                            ? 'right'
+                            : 'left',
+                      }}
+                    >
                       {flexRender(cell.column.columnDef.cell, cell.getContext())}
                     </TableCell>
                   ))}

@@ -15,7 +15,7 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Checkbox } from '@/components/ui/checkbox';
+import { AdminSelectionCheckbox as Checkbox } from '@/components/admin/primitives/AdminSelectionCheckbox';
 import { Badge } from '@/components/ui/badge';
 import {
   Table,
@@ -142,6 +142,11 @@ function EmptyState({
   );
 }
 
+/** Derived counts and scores are virtual text fields in the registry. */
+function numericColumn(field: FieldConfig) {
+  return field.type === 'number' || (field.virtual && /(?:_count|_score)$/.test(field.name));
+}
+
 // ── Sort header cell ────────────────────────────────────────────────
 
 function SortableHeader({
@@ -151,6 +156,7 @@ function SortableHeader({
   currentDir,
   onSort,
   sorts,
+  align = 'left',
 }: {
   label: string;
   field: SortField;
@@ -158,6 +164,7 @@ function SortableHeader({
   currentDir: SortDir;
   onSort: (field: SortField, append?: boolean) => void;
   sorts?: { field: string; dir: 'asc' | 'desc' }[];
+  align?: 'left' | 'right';
 }) {
   // With a multi-sort active, "is this the primary sort" is not the same
   // question as "is this sorted at all".
@@ -169,11 +176,12 @@ function SortableHeader({
   return (
     <TableHead
       className="font-semibold cursor-pointer select-none transition-colors hover:text-primary"
+      style={{ textAlign: align }}
       aria-sort={isActive ? (dir === 'asc' ? 'ascending' : 'descending') : 'none'}
     >
       <button
         type="button"
-        className="flex min-h-10 items-center gap-1 rounded-element text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        className={`flex min-h-10 items-center gap-1 rounded-element text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${align === 'right' ? 'ml-auto' : ''}`}
         onClick={(event) => onSort(field, event.shiftKey)}
         title="Click to sort. Shift-click to add to the sort."
       >
@@ -351,10 +359,10 @@ export function ContentListTable({
       className="overflow-hidden rounded-container bg-card shadow-soft"
     >
       <div className="overflow-x-auto">
-        <Table>
-          <TableHeader className="sticky top-0 z-10 bg-surface-container-high">
-            <TableRow className="bg-surface-container-high">
-              <TableHead style={{ width: 42 }} className="pl-4">
+        <Table variant="admin">
+          <TableHeader className="bg-card">
+            <TableRow>
+              <TableHead style={{ width: 60, padding: '0 8px' }}>
                 <Checkbox
                   aria-label="Select all rows"
                   checked={someSelected && !allSelected ? 'indeterminate' : allSelected}
@@ -381,9 +389,13 @@ export function ContentListTable({
                     currentDir={sortDir}
                     onSort={handleSort}
                     sorts={sorts}
+                    align={numericColumn(f) ? 'right' : 'left'}
                   />
                 ) : (
-                  <TableHead key={f.name} className="font-semibold">
+                  <TableHead
+                    key={f.name}
+                    style={{ textAlign: numericColumn(f) ? 'right' : 'left' }}
+                  >
                     {f.label}
                   </TableHead>
                 ),
@@ -404,9 +416,7 @@ export function ContentListTable({
                 sorts={sorts}
               />
 
-              <TableHead className="text-right font-semibold" style={{ width: 60 }}>
-                Actions
-              </TableHead>
+              <TableHead style={{ width: 200, textAlign: 'right' }}>Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -455,12 +465,10 @@ export function ContentListTable({
                   <TableRow
                     key={itemKey}
                     data-state={isSelected ? 'selected' : undefined}
-                    className={`transition-colors hover:bg-surface-container-high focus-within:bg-surface-container-high ${isHidden ? 'bg-muted/40' : ''}`}
-                    style={{
-                      ...(isSelected ? { backgroundColor: `${rowColor}0A` } : {}),
-                    }}
+                    data-admin-row=""
+                    className={`focus-within:bg-muted/60 ${isHidden ? 'bg-muted/40' : ''}`}
                   >
-                    <TableCell className="pl-4">
+                    <TableCell style={{ width: 60, padding: '0 8px' }}>
                       <Checkbox
                         aria-label={`Select ${item.title}`}
                         checked={isSelected}
@@ -468,8 +476,8 @@ export function ContentListTable({
                       />
                     </TableCell>
 
-                    <TableCell className="min-w-[280px]">
-                      <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm font-semibold leading-snug text-pretty">
+                    <TableCell className="min-w-[240px]">
+                      <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm font-semibold leading-snug text-pretty text-foreground">
                         <Editable
                           contentType={item.contentType}
                           recordId={item.id}
@@ -506,14 +514,18 @@ export function ContentListTable({
                         )}
                       </div>
                       {item.description && (
-                        <span className="mt-1 block max-w-[440px] truncate text-xs leading-relaxed text-muted-foreground">
+                        <span className="mt-1 block max-w-[360px] truncate text-13 leading-relaxed text-muted-foreground">
                           {item.description}
                         </span>
                       )}
                     </TableCell>
 
                     {extraColumns.map((f) => (
-                      <TableCell key={f.name}>
+                      <TableCell
+                        key={f.name}
+                        className="tabular-nums"
+                        style={{ textAlign: numericColumn(f) ? 'right' : 'left' }}
+                      >
                         {/* Editable resolves the field config from the registry and
                             owns the save. readOnly/unsupported types fall through to
                             plain display, so this is safe for every column. */}
@@ -589,83 +601,84 @@ export function ContentListTable({
                     </TableCell>
 
                     <TableCell className="text-right">
-                      <div className="flex items-center justify-end gap-0.5 rounded-element bg-background/60 p-0.5">
-                        {(rowConfig?.rowActions ?? [])
-                          .filter((a) => !a.visible || a.visible(item.raw ?? {}))
-                          .map((action) => {
-                            const ActionIcon = action.icon;
-                            return (
-                              <Tooltip key={action.id}>
-                                <TooltipTrigger asChild>
-                                  <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    className="h-10 w-10 p-0"
-                                    aria-label={action.label}
-                                    onClick={(event) => {
-                                      event.stopPropagation();
-                                      action.onSelect(item.raw ?? {});
-                                    }}
-                                  >
-                                    <ActionIcon size={15} />
-                                  </Button>
-                                </TooltipTrigger>
-                                <TooltipContent>{action.label}</TooltipContent>
-                              </Tooltip>
-                            );
-                          })}
-
-                        {rowConfig?.lifecycle && (
-                          <RowLifecycleActions
-                            lifecycle={rowConfig.lifecycle}
-                            row={item.raw ?? {}}
-                            id={item.id}
-                            title={item.title || item.id}
-                            onDone={() => onRefresh?.()}
-                          />
-                        )}
-
-                        {/* The list is where an editor decides what to work
-                            on, so it is where "what does this look like on the
-                            site" belongs. Rendered only when the row actually
-                            has a public page — an unsaved/unpublishable row and
-                            a type with no page at all both resolve to null. */}
-                        {(() => {
-                          const href = livePath(item.contentType, item.raw ?? {});
-                          if (!href) return null;
-                          return (
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  className="h-10 w-10 p-0"
-                                  aria-label="View live"
-                                  onClick={() => window.open(href, '_blank', 'noopener')}
-                                >
-                                  <SquareArrowOutUpRight size={15} />
-                                </Button>
-                              </TooltipTrigger>
-                              <TooltipContent>View live</TooltipContent>
-                            </Tooltip>
-                          );
-                        })()}
-
+                      <div className="flex items-center justify-end gap-2">
                         <Tooltip>
                           <TooltipTrigger asChild>
                             <Button
                               variant="ghost"
                               size="sm"
-                              className="h-10 w-10 p-0"
+                              className="h-10 gap-2 px-2"
                               aria-label="Edit"
                               onClick={() => onEdit(item.contentType, item.id)}
                               style={{ ['--tw-color' as never]: rowColor } as never}
                             >
-                              <Edit size={15} />
+                              <Edit size={15} aria-hidden="true" /> Edit
                             </Button>
                           </TooltipTrigger>
                           <TooltipContent>Edit</TooltipContent>
                         </Tooltip>
+                        <div className="admin-row-secondary flex items-center gap-1 transition-opacity">
+                          {(rowConfig?.rowActions ?? [])
+                            .filter((a) => !a.visible || a.visible(item.raw ?? {}))
+                            .map((action) => {
+                              const ActionIcon = action.icon;
+                              return (
+                                <Tooltip key={action.id}>
+                                  <TooltipTrigger asChild>
+                                    <Button
+                                      variant="ghost"
+                                      size="sm"
+                                      className="h-10 w-10 p-0"
+                                      aria-label={action.label}
+                                      onClick={(event) => {
+                                        event.stopPropagation();
+                                        action.onSelect(item.raw ?? {});
+                                      }}
+                                    >
+                                      <ActionIcon size={15} />
+                                    </Button>
+                                  </TooltipTrigger>
+                                  <TooltipContent>{action.label}</TooltipContent>
+                                </Tooltip>
+                              );
+                            })}
+
+                          {rowConfig?.lifecycle && (
+                            <RowLifecycleActions
+                              lifecycle={rowConfig.lifecycle}
+                              row={item.raw ?? {}}
+                              id={item.id}
+                              title={item.title || item.id}
+                              onDone={() => onRefresh?.()}
+                            />
+                          )}
+
+                          {/* The list is where an editor decides what to work
+                            on, so it is where "what does this look like on the
+                            site" belongs. Rendered only when the row actually
+                            has a public page — an unsaved/unpublishable row and
+                            a type with no page at all both resolve to null. */}
+                          {(() => {
+                            const href = livePath(item.contentType, item.raw ?? {});
+                            if (!href) return null;
+                            return (
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="h-10 w-10 p-0"
+                                    aria-label="View live"
+                                    onClick={() => window.open(href, '_blank', 'noopener')}
+                                  >
+                                    <SquareArrowOutUpRight size={15} />
+                                  </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>View live</TooltipContent>
+                              </Tooltip>
+                            );
+                          })()}
+                        </div>
                       </div>
                     </TableCell>
                   </TableRow>

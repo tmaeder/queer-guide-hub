@@ -1,6 +1,6 @@
 import * as React from 'react';
 import * as CheckboxPrimitive from '@radix-ui/react-checkbox';
-import { Check } from 'lucide-react';
+import { Check, Minus } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const Checkbox = React.forwardRef<
@@ -23,13 +23,17 @@ const Checkbox = React.forwardRef<
       // not flip with the mode, so the mark on it must not either. The mark
       // reads 8.31:1 on pink. The two states differ by fill AND by the glyph,
       // so colour is never the only cue (WCAG 1.4.1).
-      'peer h-4 w-4 min-h-0 shrink-0 rounded-badge border border-input bg-surface-dim shadow-soft disabled:cursor-not-allowed disabled:opacity-50 data-[state=checked]:border-track-ring data-[state=checked]:bg-track-pink data-[state=checked]:text-track-ring',
+      'peer h-4 w-4 min-h-0 min-w-0 shrink-0 rounded-badge border border-input bg-surface-dim shadow-soft disabled:cursor-not-allowed disabled:opacity-50 data-[state=checked]:border-track-ring data-[state=checked]:bg-track-pink data-[state=checked]:text-track-ring',
       className,
     )}
     {...props}
   >
     <CheckboxPrimitive.Indicator className={cn('flex items-center justify-center text-current')}>
-      <Check className="h-4 w-4" />
+      {props.checked === 'indeterminate' ? (
+        <Minus className="h-4 w-4" />
+      ) : (
+        <Check className="h-4 w-4" />
+      )}
     </CheckboxPrimitive.Indicator>
   </CheckboxPrimitive.Root>
 ));
