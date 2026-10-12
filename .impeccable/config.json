@@ -8,6 +8,15 @@
         "value": "<img>",
         "createdAt": "2026-10-08T17:00:16.240Z",
         "reason": "False positive: src/index.css documents that the ground-layer SVG is a CSS data URI rather than an img element; there is no image tag or placeholder source."
+      },
+      {
+        "rule": "broken-image",
+        "value": "*",
+        "files": [
+          "src/index.css"
+        ],
+        "createdAt": "2026-10-12T20:05:36.441Z",
+        "reason": "Codex: this CSS file mentions an image element only in prose documenting the data-URI background; it contains no HTML image tag."
       }
     ]
   }

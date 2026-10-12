@@ -228,7 +228,10 @@ export function AdminShell() {
         </a>
         <div
           className="flex w-full bg-surface-container-low"
-          style={{ minHeight: 'var(--admin-content-min-h)' }}
+          style={{
+            minHeight: 'var(--admin-content-min-h)',
+            height: reviewWorkspace ? 'var(--admin-content-min-h)' : undefined,
+          }}
         >
           {/* Sidebar -- drawer on mobile, persistent on desktop */}
           {isMobile ? (

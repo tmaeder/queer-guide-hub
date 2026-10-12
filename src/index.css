@@ -606,8 +606,9 @@
   /* The admin console owns the whole viewport — LayoutShell no longer renders
      the public header + breadcrumb bar above it (that pair was the 100px this
      used to subtract). dvh so the mobile URL bar collapsing doesn't leave a
-     gap. Keep this a min-height: AdminShell relies on the document scrolling,
-     not on an inner overflow container. */
+     gap. Ordinary admin pages use this as a min-height for document scrolling;
+     the Review queue uses a definite height so its list and evidence scroll
+     independently while pagination and decision controls stay visible. */
   --admin-content-min-h: 100dvh;
 }
 

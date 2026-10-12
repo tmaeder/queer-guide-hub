@@ -21,14 +21,20 @@ test.describe('unified admin review queue', () => {
     );
     expect(data.total).toBe(data.all_total);
     await expect(page.getByText('The review queue could not be loaded')).toHaveCount(0);
-    if (data.total > 0)
+    if (data.total > 0) {
       await expect(
         page
           .getByRole('region', { name: 'Pending decisions' })
           .locator('button[aria-label^="Open "]')
           .first(),
       ).toBeVisible();
-    else await expect(page.getByText('All caught up')).toBeVisible();
+      await expect(page.getByRole('navigation', { name: 'Review queue pages' })).toBeInViewport();
+      await expect(page.getByRole('button', { name: 'Skip', exact: true })).toBeInViewport();
+      expect(
+        await page.evaluate(() => document.documentElement.scrollHeight - innerHeight),
+        'The queue scrolls its panes instead of stretching the page below the decision controls',
+      ).toBeLessThanOrEqual(1);
+    } else await expect(page.getByText('All caught up')).toBeVisible();
   });
   test('overdue is a row predicate with matching counts', async ({ page }) => {
     await page.goto('/admin');
