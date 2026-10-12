@@ -96,7 +96,12 @@ const TableHead = React.forwardRef<
       style={{
         height: 48,
         padding: '0 16px',
-        textAlign: 'left',
+        textAlign:
+          admin && className?.includes('text-right')
+            ? 'right'
+            : admin && className?.includes('text-center')
+              ? 'center'
+              : 'left',
         verticalAlign: 'middle',
         fontWeight: admin ? 600 : 500,
         color: 'hsl(var(--muted-foreground))',

@@ -56,7 +56,7 @@ export function OrgLinkReviewQueue() {
   }
 
   return (
-    <Table>
+    <Table variant="admin">
       <TableHeader>
         <TableRow>
           <TableHead>Entity</TableHead>

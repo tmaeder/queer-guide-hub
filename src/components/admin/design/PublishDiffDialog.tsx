@@ -109,7 +109,7 @@ export function PublishDiffDialog({
         )}
         {changes.length > 0 && (
           <div className="max-h-80 overflow-y-auto rounded-element bg-muted">
-            <Table>
+            <Table variant="admin">
               <TableHeader>
                 <TableRow>
                   <TableHead>Key</TableHead>

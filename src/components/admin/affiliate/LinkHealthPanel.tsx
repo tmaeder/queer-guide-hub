@@ -123,7 +123,7 @@ export function LinkHealthPanel({ days }: { days: string }) {
       {merchantsWithIssues.length > 0 && (
         <section className="mb-8">
           <h2 className="mb-4 text-15 font-semibold">By merchant</h2>
-          <Table>
+          <Table variant="admin">
             <TableHeader>
               <TableRow>
                 <TableHead>Merchant</TableHead>
@@ -169,7 +169,7 @@ export function LinkHealthPanel({ days }: { days: string }) {
         {!broken?.length ? (
           <p className="text-13 text-muted-foreground">No broken links. Nice.</p>
         ) : (
-          <Table>
+          <Table variant="admin">
             <TableHeader>
               <TableRow>
                 <TableHead>Listing</TableHead>

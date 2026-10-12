@@ -27,6 +27,7 @@ import type { SavedView } from '@/hooks/useContentViews';
  */
 
 interface Props {
+  compact?: boolean;
   views: SavedView[];
   activeId: string | null;
   dirty: boolean;
@@ -41,6 +42,7 @@ interface Props {
 
 export function ViewBar({
   views,
+  compact = false,
   activeId,
   dirty,
   onSelect,
@@ -68,12 +70,13 @@ export function ViewBar({
   };
 
   return (
-    <div className="mb-2 flex min-w-0 items-center gap-2 border-b border-border-hairline pb-2">
-      {views.length === 0 && (
-        /* Outside the group: an empty-state sentence is not one of the views
-           the group is labelled as holding. */
-        <span className="text-sm text-muted-foreground px-2">No saved views yet.</span>
-      )}
+    <div
+      className={
+        compact
+          ? 'flex min-w-0 items-center gap-2'
+          : 'mb-2 flex min-w-0 flex-wrap items-center gap-2 pb-2'
+      }
+    >
       {/* A GROUP of toggle buttons, not a tablist. There are no tabpanels here
         and no roving arrow-key focus: a saved view re-filters the list in
         place. Announcing "tab 3 of 5" promised a panel that does not exist and
@@ -96,7 +99,7 @@ export function ViewBar({
                 // Unsaved state is announced, not only shown as a dot.
                 aria-label={isActive && dirty ? `${v.name}, unsaved changes` : v.name}
                 size="sm"
-                variant={isActive ? 'secondary' : 'ghost'}
+                variant={isActive ? 'default' : 'ghost'}
                 className="h-8"
                 onClick={() => onSelect(v)}
               >
@@ -113,7 +116,7 @@ export function ViewBar({
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="h-8 w-7 p-0 opacity-0 group-hover:opacity-100 focus-visible:opacity-100"
+                    className="h-8 w-7 p-0 sm:opacity-0 sm:group-hover:opacity-100 sm:focus-visible:opacity-100"
                     aria-label={`View options: ${v.name}`}
                   >
                     <MoreHorizontal size={14} />
@@ -138,11 +141,12 @@ export function ViewBar({
       <Button
         variant="ghost"
         size="sm"
-        className="h-8 w-8 p-0 shrink-0"
-        aria-label="New view"
+        className={compact ? 'h-11 gap-2' : 'h-11 w-11 p-0 shrink-0'}
+        aria-label={compact ? 'Save view' : 'New view'}
         onClick={() => open('create')}
       >
-        <Plus size={14} />
+        <Plus size={14} aria-hidden="true" />
+        {compact && 'Save view'}
       </Button>
 
       {dirty && (

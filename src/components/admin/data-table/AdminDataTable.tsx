@@ -1,3 +1,4 @@
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useMemo } from 'react';
 import {
   useTable,
@@ -118,7 +119,7 @@ export function AdminDataTable<TData extends { id: string }>({
     defaultFilters: initialView ? initialView.filters : defaultFilters,
   });
 
-  const { data, totalCount, isLoading, isFetching, refetch } = useAdminTableQuery<TData>({
+  const { data, totalCount, isLoading, isFetching, error, refetch } = useAdminTableQuery<TData>({
     tableName,
     select,
     searchColumns,
@@ -289,16 +290,32 @@ export function AdminDataTable<TData extends { id: string }>({
         />
       )}
 
+      {error && data.length > 0 && (
+        <Alert variant="destructive" className="mx-4 w-auto">
+          <AlertDescription className="flex flex-wrap items-center justify-between gap-4">
+            <span>Could not refresh this list. Previously loaded records are still shown.</span>
+            <Button variant="outline" size="sm" loading={isFetching} onClick={() => void refetch()}>
+              Retry
+            </Button>
+          </AlertDescription>
+        </Alert>
+      )}
+
       {/* Table */}
       {isLoading || data.length === 0 ? (
         <DataTableEmptyState
           isLoading={isLoading}
           hasFilters={activeFilterCount > 0}
           columnCount={columns.length}
+          selection={enableSelection}
+          error={error}
+          onRetry={() => void refetch()}
+          isRetrying={isFetching}
+          onResetFilters={clearFilters}
           noun={emptyNoun ?? tableName.replace(/_/g, ' ')}
         />
       ) : (
-        <Table variant="admin">
+        <Table variant="admin" aria-label={emptyNoun ?? tableName.replace(/_/g, ' ')}>
           <TableHeader>
             <TableRow>
               {enableSelection && (

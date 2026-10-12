@@ -278,7 +278,7 @@ export function MerchantsManager({
           noun={organizationId ? 'merchants linked to this business' : 'merchants registered'}
         />
       ) : (
-        <Table>
+        <Table variant="admin">
           <TableHeader>
             <TableRow>
               <TableHead>Merchant</TableHead>
@@ -516,7 +516,10 @@ export function MerchantsManager({
                 onChange={(v) =>
                   setForm((f) => ({
                     ...f,
-                    config: v && typeof v === 'object' && !Array.isArray(v) ? (v as Record<string, unknown>) : {},
+                    config:
+                      v && typeof v === 'object' && !Array.isArray(v)
+                        ? (v as Record<string, unknown>)
+                        : {},
                   }))
                 }
                 label="Config"

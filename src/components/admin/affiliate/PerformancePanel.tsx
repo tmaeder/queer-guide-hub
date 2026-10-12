@@ -7,7 +7,14 @@ import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 import { untypedSupabase } from '@/integrations/supabase/untyped';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
 import { monoChartPalette, monoChartAxis } from '@/lib/chartPalette';
 import { Stat } from './Stat';
 import { AdminTextSkeleton } from '@/components/admin/primitives/AdminLoading';
@@ -45,7 +52,10 @@ export function PerformancePanel({ days, vertical }: { days: string; vertical: s
       const base = untypedSupabase.from('marketplace_listings');
       const [{ count: total }, { count: covered }] = await Promise.all([
         base.select('id', { count: 'exact', head: true }).eq('status', 'active'),
-        base.select('id', { count: 'exact', head: true }).eq('status', 'active').not('affiliate_url', 'is', null),
+        base
+          .select('id', { count: 'exact', head: true })
+          .eq('status', 'active')
+          .not('affiliate_url', 'is', null),
       ]);
       return { total: total ?? 0, covered: covered ?? 0 };
     },
@@ -62,7 +72,9 @@ export function PerformancePanel({ days, vertical }: { days: string; vertical: s
   const bySurface = useMemo(() => {
     const map = new Map<string, number>();
     for (const r of rows) map.set(r.surface, (map.get(r.surface) ?? 0) + Number(r.clicks));
-    return [...map.entries()].map(([surface, clicks]) => ({ surface, clicks })).sort((a, b) => b.clicks - a.clicks);
+    return [...map.entries()]
+      .map(([surface, clicks]) => ({ surface, clicks }))
+      .sort((a, b) => b.clicks - a.clicks);
   }, [rows]);
 
   const palette = monoChartPalette(Math.max(bySurface.length, 1));
@@ -70,7 +82,9 @@ export function PerformancePanel({ days, vertical }: { days: string; vertical: s
   return (
     <>
       {error && (
-        <p className="text-13 text-destructive">Failed to load affiliate data: {(error as Error).message}</p>
+        <p className="text-13 text-destructive">
+          Failed to load affiliate data: {(error as Error).message}
+        </p>
       )}
 
       {/* Top-line totals */}
@@ -94,7 +108,11 @@ export function PerformancePanel({ days, vertical }: { days: string; vertical: s
           <h2 className="mb-4 text-15 font-semibold">Clicks by surface</h2>
           <div className="h-64 w-full">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={bySurface} layout="vertical" margin={{ top: 4, right: 16, bottom: 4, left: 8 }}>
+              <BarChart
+                data={bySurface}
+                layout="vertical"
+                margin={{ top: 4, right: 16, bottom: 4, left: 8 }}
+              >
                 <XAxis type="number" {...monoChartAxis} />
                 <YAxis type="category" dataKey="surface" width={96} {...monoChartAxis} />
                 <Tooltip cursor={{ fill: 'hsl(var(--muted))' }} />
@@ -117,7 +135,7 @@ export function PerformancePanel({ days, vertical }: { days: string; vertical: s
         ) : rows.length === 0 ? (
           <AdminEmpty variant="inline" noun="affiliate clicks in this window" />
         ) : (
-          <Table>
+          <Table variant="admin">
             <TableHeader>
               <TableRow>
                 <TableHead>Surface</TableHead>
@@ -134,7 +152,9 @@ export function PerformancePanel({ days, vertical }: { days: string; vertical: s
                   <TableCell className="font-medium">{r.surface}</TableCell>
                   <TableCell>{r.partner}</TableCell>
                   <TableCell className="text-muted-foreground">{r.vertical}</TableCell>
-                  <TableCell className="text-right tabular-nums">{Number(r.clicks).toLocaleString()}</TableCell>
+                  <TableCell className="text-right tabular-nums">
+                    {Number(r.clicks).toLocaleString()}
+                  </TableCell>
                   <TableCell className="text-right tabular-nums text-muted-foreground">
                     {Number(r.impressions).toLocaleString()}
                   </TableCell>

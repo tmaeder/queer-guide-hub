@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Search, X, RotateCcw, Columns3, Save, BookmarkCheck, Layers, Star } from 'lucide-react';
+import { useRef, useState } from 'react';
+import { Search, X, RotateCcw, Settings2, BookmarkCheck, Plus, Star } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -7,9 +7,13 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuCheckboxItem,
+  DropdownMenuItem,
   DropdownMenuTrigger,
   DropdownMenuSeparator,
   DropdownMenuLabel,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
@@ -75,7 +79,9 @@ export function DataTableToolbar({
 }: DataTableToolbarProps) {
   const [presetDialogOpen, setPresetDialogOpen] = useState(false);
   const [presetName, setPresetName] = useState('');
-
+  const viewsTrigger = useRef<HTMLButtonElement>(null);
+  const hideableColumns = columns.filter((column) => column.hideable);
+  const canGroup = groupableColumns.length > 0 && Boolean(onGroupingChange);
   const handleSavePreset = () => {
     if (presetName.trim() && onSavePreset) {
       onSavePreset(presetName.trim());
@@ -83,222 +89,162 @@ export function DataTableToolbar({
       setPresetDialogOpen(false);
     }
   };
-
-  const hideableColumns = columns.filter((c) => c.hideable);
-
   return (
-    <div className="flex flex-col gap-4 p-4 bg-surface-container-low border-y border-border-hairline">
-      {/* Top row: search + actions */}
-      <div className="flex items-center gap-2 flex-wrap">
+    <div className="flex flex-col gap-4 bg-card p-4">
+      <div className="flex min-w-0 flex-wrap items-center gap-2">
         {enableSearch && (
-          <div className="relative max-w-[320px]" style={{ flex: '1 1 200px' }}>
+          <div className="relative min-w-0 flex-1 basis-full lg:basis-64">
             <Search
-              style={{
-                left: 10,
-                top: '50%',
-                transform: 'translateY(-50%)',
-                height: 16,
-                width: 16,
-                pointerEvents: 'none',
-              }}
-              className="absolute text-muted-foreground"
+              size={16}
+              aria-hidden="true"
+              className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground"
             />
             <Input
-              placeholder="Search..."
+              aria-label="Search records"
+              placeholder="Search records…"
               value={search}
-              onChange={(e) => onSearchChange(e.target.value)}
-              style={{ paddingLeft: 34, height: 36 }}
+              onChange={(event) => onSearchChange(event.target.value)}
+              className="h-11 pl-10 pr-12"
             />
             {search && (
-              <button
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                aria-label="Clear search"
+                className="absolute right-0 top-0 h-11 w-11"
                 onClick={() => onSearchChange('')}
-                style={{
-                  position: 'absolute',
-                  right: 8,
-                  top: '50%',
-                  transform: 'translateY(-50%)',
-                  background: 'none',
-                  border: 'none',
-                  cursor: 'pointer',
-                  padding: 2,
-                  display: 'flex',
-                  color: 'hsl(var(--muted-foreground))',
-                }}
               >
-                <X size={14} />
-              </button>
+                <X size={16} aria-hidden="true" />
+              </Button>
             )}
           </div>
         )}
-
-        {/* Filter area (rendered via children) */}
         {children}
-
-        {/* Clear filters */}
         {activeFilterCount > 0 && (
           <Button variant="ghost" size="sm" onClick={onClearFilters}>
-            <RotateCcw size={14} className="mr-1" />
-            Clear
-            <Badge variant="secondary" className="ml-1">
-              {activeFilterCount}
-            </Badge>
+            <RotateCcw size={14} aria-hidden="true" /> Clear filters{' '}
+            <Badge variant="secondary">{activeFilterCount}</Badge>
           </Button>
         )}
-
-        <div style={{ flex: '1 1 0', minWidth: 0 }} />
-
-        {/* Presets */}
-        {presets.length > 0 && onApplyPreset && (
+        {(presets.length > 0 || onSavePreset) && (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button ref={viewsTrigger} variant="outline" size="sm">
+                <BookmarkCheck size={16} aria-hidden="true" /> Views
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="min-w-56 max-w-[calc(100vw-2rem)]">
+              <DropdownMenuLabel>Saved views</DropdownMenuLabel>
+              {onApplyPreset &&
+                presets.map((preset) => (
+                  <DropdownMenuItem key={preset.id} onSelect={() => onApplyPreset(preset.id)}>
+                    <span className="flex-1">{preset.name}</span>
+                    {preset.id === defaultPresetId && <Star size={14} aria-label="Default view" />}
+                  </DropdownMenuItem>
+                ))}
+              {onSavePreset && (
+                <DropdownMenuItem onSelect={() => setPresetDialogOpen(true)}>
+                  <Plus size={14} aria-hidden="true" /> Save current view
+                </DropdownMenuItem>
+              )}
+              {presets.length > 0 && (onSetDefaultPreset || onDeletePreset) && (
+                <>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuSub>
+                    <DropdownMenuSubTrigger>Manage views</DropdownMenuSubTrigger>
+                    <DropdownMenuSubContent>
+                      {presets.map((preset) => (
+                        <DropdownMenuSub key={preset.id}>
+                          <DropdownMenuSubTrigger>{preset.name}</DropdownMenuSubTrigger>
+                          <DropdownMenuSubContent>
+                            {onSetDefaultPreset && (
+                              <DropdownMenuItem onSelect={() => onSetDefaultPreset(preset.id)}>
+                                {preset.id === defaultPresetId
+                                  ? 'Unset default view'
+                                  : 'Set as default view'}
+                              </DropdownMenuItem>
+                            )}
+                            {onDeletePreset && (
+                              <DropdownMenuItem onSelect={() => onDeletePreset(preset.id)}>
+                                Delete view
+                              </DropdownMenuItem>
+                            )}
+                          </DropdownMenuSubContent>
+                        </DropdownMenuSub>
+                      ))}
+                    </DropdownMenuSubContent>
+                  </DropdownMenuSub>
+                </>
+              )}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        )}
+        {(hideableColumns.length > 0 || canGroup) && (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" size="sm">
-                <BookmarkCheck size={14} className="mr-1" />
-                Presets
+                <Settings2 size={16} aria-hidden="true" /> Display
+                {grouping.length > 0 && <Badge variant="secondary">Grouped</Badge>}
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuLabel>Saved Presets</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              {presets.map((p) => (
-                <div
-                  key={p.id}
-                  className="flex items-center justify-between px-2 py-1 hover:bg-accent cursor-pointer rounded-badge"
-                  onClick={() => onApplyPreset(p.id)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' || e.key === ' ') {
-                      e.preventDefault();
-                      onApplyPreset(p.id);
-                    }
-                  }}
-                  role="menuitem"
-                  tabIndex={0}
-                >
-                  <p className="text-sm">{p.name}</p>
-                  <div className="flex items-center gap-1">
-                    {onSetDefaultPreset && (
-                      <button
-                        type="button"
-                        aria-label={
-                          p.id === defaultPresetId ? 'Unset default view' : 'Set as default view'
-                        }
-                        title={p.id === defaultPresetId ? 'Default view' : 'Set as default'}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onSetDefaultPreset(p.id);
-                        }}
-                        className="p-0.5 text-muted-foreground hover:text-foreground"
-                      >
-                        <Star
-                          size={12}
-                          className={p.id === defaultPresetId ? 'fill-foreground text-foreground' : ''}
-                        />
-                      </button>
-                    )}
-                    {onDeletePreset && (
-                      <button
-                        type="button"
-                        aria-label="Delete preset"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onDeletePreset(p.id);
-                        }}
-                        className="p-0.5 text-muted-foreground hover:text-foreground"
-                      >
-                        <X size={12} />
-                      </button>
-                    )}
-                  </div>
-                </div>
-              ))}
+            <DropdownMenuContent align="end" className="min-w-56 max-w-[calc(100vw-2rem)]">
+              {canGroup && (
+                <>
+                  <DropdownMenuLabel>Group by</DropdownMenuLabel>
+                  <DropdownMenuCheckboxItem
+                    checked={grouping.length === 0}
+                    onCheckedChange={() => onGroupingChange?.([])}
+                  >
+                    No grouping
+                  </DropdownMenuCheckboxItem>
+                  {groupableColumns.map((column) => (
+                    <DropdownMenuCheckboxItem
+                      key={column.id}
+                      checked={grouping.includes(column.id)}
+                      onCheckedChange={() =>
+                        onGroupingChange?.(grouping.includes(column.id) ? [] : [column.id])
+                      }
+                    >
+                      {column.label}
+                    </DropdownMenuCheckboxItem>
+                  ))}
+                  <DropdownMenuSeparator />
+                </>
+              )}
+              {hideableColumns.length > 0 && (
+                <>
+                  <DropdownMenuLabel>Visible columns</DropdownMenuLabel>
+                  {hideableColumns.map((column) => (
+                    <DropdownMenuCheckboxItem
+                      key={column.id}
+                      checked={column.visible}
+                      onCheckedChange={() => onToggleColumn(column.id)}
+                    >
+                      {column.label}
+                    </DropdownMenuCheckboxItem>
+                  ))}
+                </>
+              )}
             </DropdownMenuContent>
           </DropdownMenu>
         )}
-
-        {onSavePreset && (
-          <Button variant="outline" size="sm" onClick={() => setPresetDialogOpen(true)}>
-            <Save size={14} className="mr-1" />
-            Save
-          </Button>
-        )}
-
-        {/* Group By */}
-        {groupableColumns.length > 0 && onGroupingChange && (
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant={grouping.length > 0 ? 'default' : 'outline'} size="sm">
-                <Layers size={14} className="mr-1" />
-                Group
-                {grouping.length > 0 && (
-                  <Badge variant="secondary" className="ml-1">
-                    {groupableColumns.find((c) => c.id === grouping[0])?.label ?? grouping[0]}
-                  </Badge>
-                )}
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" style={{ minWidth: 160 }}>
-              <DropdownMenuLabel>Group by column</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              {groupableColumns.map((col) => (
-                <DropdownMenuCheckboxItem
-                  key={col.id}
-                  checked={grouping.includes(col.id)}
-                  onCheckedChange={() => {
-                    if (grouping.includes(col.id)) {
-                      onGroupingChange([]);
-                    } else {
-                      onGroupingChange([col.id]);
-                    }
-                  }}
-                >
-                  {col.label}
-                </DropdownMenuCheckboxItem>
-              ))}
-            </DropdownMenuContent>
-          </DropdownMenu>
-        )}
-
-        {/* Column visibility */}
-        {hideableColumns.length > 0 && (
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm">
-                <Columns3 size={14} className="mr-1" />
-                Columns
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" style={{ minWidth: 160 }}>
-              <DropdownMenuLabel>Toggle columns</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              {hideableColumns.map((col) => (
-                <DropdownMenuCheckboxItem
-                  key={col.id}
-                  checked={col.visible}
-                  onCheckedChange={() => onToggleColumn(col.id)}
-                >
-                  {col.label}
-                </DropdownMenuCheckboxItem>
-              ))}
-            </DropdownMenuContent>
-          </DropdownMenu>
-        )}
-
         {toolbarActions}
-
-        {/* Count + fetching indicator. The count must SURVIVE a refetch: every
-            keystroke in the search box sets isFetching, so swapping the number
-            for "Loading..." made it flicker on each character and reflow the
-            toolbar. Keep the last known count, mark it stale with a spinner. */}
-        <p className="flex items-center gap-2 whitespace-nowrap text-sm text-muted-foreground">
-          <span className="tabular-nums">{totalCount.toLocaleString()} total</span>
+        <p className="ml-auto flex items-center gap-2 whitespace-nowrap text-13 text-muted-foreground">
+          <span className="tabular-nums">{totalCount.toLocaleString()} records</span>
           {isFetching && <AdminInlineSpinner />}
         </p>
       </div>
-
-      {/* Save Preset Dialog */}
       <Dialog open={presetDialogOpen} onOpenChange={setPresetDialogOpen}>
-        <DialogContent style={{ maxWidth: 360 }}>
+        <DialogContent
+          className="max-w-sm"
+          onCloseAutoFocus={(event) => {
+            event.preventDefault();
+            viewsTrigger.current?.focus();
+          }}
+        >
           <DialogHeader>
-            <DialogTitle>Save Filter Preset</DialogTitle>
+            <DialogTitle>Save view</DialogTitle>
           </DialogHeader>
           <div className="flex flex-col gap-4 pt-2">
             <div>
@@ -306,13 +252,13 @@ export function DataTableToolbar({
               <Input
                 id="preset-name"
                 value={presetName}
-                onChange={(e) => setPresetName(e.target.value)}
+                onChange={(event) => setPresetName(event.target.value)}
                 placeholder="e.g. Active venues in Berlin"
-                onKeyDown={(e) => e.key === 'Enter' && handleSavePreset()}
+                onKeyDown={(event) => event.key === 'Enter' && handleSavePreset()}
               />
             </div>
             <Button onClick={handleSavePreset} disabled={!presetName.trim()}>
-              Save Preset
+              Save view
             </Button>
           </div>
         </DialogContent>

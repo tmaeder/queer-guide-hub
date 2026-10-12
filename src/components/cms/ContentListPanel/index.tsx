@@ -253,6 +253,28 @@ function ContentListPanelBody(props: ContentListPanelProps) {
   // "no config" as null, so normalize once here rather than at each call site.
   const config = c.config ?? null;
 
+  const viewBar = c.contentTypeId ? (
+    <ViewBar
+      compact={v.views.length === 0}
+      views={v.views}
+      activeId={activeViewId}
+      dirty={dirty}
+      onSelect={selectView}
+      onCreate={async (name) => {
+        const created = await v.createView(name, c.spec);
+        if (created) setActiveViewId(created.id);
+      }}
+      onRename={(id, name) => void v.updateView(id, { name })}
+      onDelete={async (id) => {
+        await v.deleteView(id);
+        if (id === activeViewId) setActiveViewId(null);
+      }}
+      onSetDefault={(id) => void v.setDefaultView(id)}
+      onSave={() => activeViewId && void v.updateView(activeViewId, { spec: c.spec })}
+      onReset={() => activeView && c.applySpec(normalizeSpec(activeView.spec, c.config ?? null))}
+    />
+  ) : null;
+
   return (
     <div>
       <ContentEntityTabs type={type ?? props.contentTypeId} />
@@ -355,28 +377,7 @@ function ContentListPanelBody(props: ContentListPanelProps) {
         aria-label="Content workspace controls"
         className="mb-4 rounded-container bg-card p-2 shadow-soft"
       >
-        {c.contentTypeId && (
-          <ViewBar
-            views={v.views}
-            activeId={activeViewId}
-            dirty={dirty}
-            onSelect={selectView}
-            onCreate={async (name) => {
-              const created = await v.createView(name, c.spec);
-              if (created) setActiveViewId(created.id);
-            }}
-            onRename={(id, name) => void v.updateView(id, { name })}
-            onDelete={async (id) => {
-              await v.deleteView(id);
-              if (id === activeViewId) setActiveViewId(null);
-            }}
-            onSetDefault={(id) => void v.setDefaultView(id)}
-            onSave={() => activeViewId && void v.updateView(activeViewId, { spec: c.spec })}
-            onReset={() =>
-              activeView && c.applySpec(normalizeSpec(activeView.spec, c.config ?? null))
-            }
-          />
-        )}
+        {v.views.length > 0 && viewBar}
 
         <div className="flex flex-wrap items-center gap-2">
           <div className="relative min-w-0 basis-full flex-1 lg:basis-64">
@@ -421,6 +422,8 @@ function ContentListPanelBody(props: ContentListPanelProps) {
               />
 
               <SortBuilder fields={config.fields} sorts={c.sorts} onChange={c.setSorts} />
+
+              {v.views.length === 0 && viewBar}
 
               <ViewSettings
                 config={config}
