@@ -14,6 +14,7 @@ import {
   Plus,
   ExternalLink,
   Lock,
+  X,
 } from 'lucide-react';
 import { AdminArchetypeHeader } from '@/components/admin/frames/AdminArchetypeHeader';
 import { AdminEmpty } from '@/components/admin/primitives/AdminEmpty';
@@ -42,6 +43,8 @@ import { cmsEditPath, livePath } from '@/lib/cmsLinks';
 
 const ICONS = { country: Globe, city: MapPin, village: Home };
 const EMPTY_FILTERS: GeographyFilters = { search: '', type: null, continent: null, region: null };
+const ROW_COLUMNS =
+  'grid min-w-0 flex-1 grid-cols-1 items-center gap-x-4 gap-y-1 sm:grid-cols-[minmax(0,1fr)_6rem_9rem]';
 const TABLES = { country: 'countries', city: 'cities', village: 'queer_villages' };
 
 function GeographyRows({
@@ -76,10 +79,32 @@ function GeographyRows({
   const global = !!filters.search || !!filters.type || !!filters.status;
   return (
     <div>
+      {depth === 0 && rows.length > 0 && (
+        <div className="flex items-center gap-2 border-b bg-muted/40 px-4 py-2 text-13 text-muted-foreground">
+          <span className="w-11 shrink-0" aria-hidden />
+          <div className={ROW_COLUMNS}>
+            <span>
+              Place{' '}
+              <span className="ml-2 tabular-nums">
+                {query.data?.pages[0].total.toLocaleString()}{' '}
+                {global ? (query.data?.pages[0].total === 1 ? 'result' : 'results') : 'countries'}
+              </span>
+            </span>
+            <span className="hidden sm:block">Publication</span>
+            <span className="hidden sm:block">Evidence</span>
+          </div>
+        </div>
+      )}
       {rows.length === 0 && (
         <AdminEmpty
           noun="geographic records"
-          filtered={!!filters.search || !!filters.type || !!filters.continent || !!filters.region}
+          filtered={
+            !!filters.search ||
+            !!filters.type ||
+            !!filters.continent ||
+            !!filters.region ||
+            !!filters.status
+          }
           description={
             parentId
               ? 'Add a subitem from the selected record.'
@@ -93,43 +118,75 @@ function GeographyRows({
         return (
           <div key={row.id}>
             <div
-              className={`flex min-h-12 items-center gap-2 border-b px-2 ${selectedId === row.id ? 'bg-accent' : 'hover:bg-muted/50'}`}
-              style={{ paddingLeft: `${depth * 20 + 8}px` }}
+              className={`relative flex min-h-16 items-center gap-2 border-b border-l-2 pr-4 ${selectedId === row.id ? 'border-l-primary bg-primary/10' : 'border-l-transparent hover:bg-muted/50'}`}
+              style={{ paddingLeft: `${depth * 24 + 14}px` }}
             >
-              <button
-                type="button"
-                className="flex h-11 w-11 shrink-0 items-center justify-center rounded-element focus-visible:outline focus-visible:outline-2"
-                aria-label={`${open ? 'Collapse' : 'Expand'} ${row.name}`}
-                aria-expanded={open}
-                disabled={!row.child_count}
-                onClick={() => onExpand(row.id)}
-              >
-                {!!row.child_count &&
-                  (open ? <ChevronDown size={16} /> : <ChevronRight size={16} />)}
-              </button>
+              {depth > 0 && (
+                <span
+                  aria-hidden
+                  className="absolute bottom-0 top-0 w-px bg-border"
+                  style={{ left: `${depth * 24}px` }}
+                />
+              )}
+              {row.child_count ? (
+                <button
+                  type="button"
+                  className="flex h-11 w-11 shrink-0 items-center justify-center rounded-element focus-visible:outline focus-visible:outline-2"
+                  aria-label={`${open ? 'Collapse' : 'Expand'} ${row.name}`}
+                  aria-expanded={open}
+                  disabled={!row.child_count}
+                  onClick={() => onExpand(row.id)}
+                >
+                  {!!row.child_count &&
+                    (open ? <ChevronDown size={16} /> : <ChevronRight size={16} />)}
+                </button>
+              ) : (
+                <span className="flex h-11 w-11 shrink-0 items-center justify-center" aria-hidden>
+                  <span className="h-px w-2 bg-border" />
+                </span>
+              )}
               <button
                 type="button"
                 aria-pressed={selectedId === row.id}
                 onClick={() => onSelect(row.id)}
-                className="flex min-w-0 flex-1 items-center gap-2 py-2 text-left focus-visible:outline focus-visible:outline-2"
+                className={`${ROW_COLUMNS} min-h-16 py-2 text-left focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2`}
               >
-                <Icon size={16} className="shrink-0 text-muted-foreground" aria-hidden />
-                <span className="min-w-0 flex-1">
-                  <span className="block truncate text-15 font-medium">{row.name}</span>
-                  <span className="block truncate text-13 text-muted-foreground">
-                    {global
-                      ? row.path
-                      : `${geographyLabels[row.place_type]}${row.place_type === 'city' && row.region_code ? ` · ${row.region_code}` : ''}`}
-                    {row.child_count ? ` · ${row.child_count} subitems` : ''}
+                <span className="flex min-w-0 items-center gap-2">
+                  <Icon size={16} className="shrink-0 text-muted-foreground" aria-hidden />
+                  <span className="min-w-0">
+                    <span className="flex items-center gap-2">
+                      <span className="truncate text-15 font-medium" title={row.name}>
+                        {row.name}
+                      </span>
+                      {row.safety_gated && (
+                        <Lock size={14} className="shrink-0" aria-label="Safety gated" />
+                      )}
+                    </span>
+                    <span className="block truncate text-13 text-muted-foreground" title={row.path}>
+                      {global
+                        ? row.path
+                        : `${geographyLabels[row.place_type]}${row.place_type === 'city' && row.region_code ? ` · ${row.region_code}` : ''}`}
+                      {row.child_count
+                        ? ` · ${row.child_count.toLocaleString()} ${row.place_type === 'country' ? (row.child_count === 1 ? 'city' : 'cities') : row.child_count === 1 ? 'village' : 'villages'}`
+                        : ''}
+                    </span>
+                    <span className="block text-xs text-muted-foreground sm:hidden">
+                      {row.workflow_state ?? (row.seo_indexable ? 'Indexable' : 'Not indexed')}
+                    </span>
                   </span>
                 </span>
-                {row.safety_gated && <Lock size={14} aria-label="Safety gated" />}
-                <span className="hidden text-13 text-muted-foreground sm:block">
+                <span className="hidden truncate text-13 text-muted-foreground sm:block">
                   {row.workflow_state ?? (row.seo_indexable ? 'Indexable' : 'Not indexed')}
                 </span>
-                <Badge variant="outline" className="shrink-0 text-xs">
+                <span
+                  className={`flex items-center gap-2 pl-6 text-13 sm:pl-0 ${row.verification_status === 'review' ? 'font-medium text-destructive' : 'text-muted-foreground'}`}
+                >
+                  <span
+                    aria-hidden
+                    className={`h-1.5 w-1.5 shrink-0 rounded-full ${row.verification_status === 'review' ? 'bg-destructive' : row.verification_status === 'verified' ? 'bg-primary' : 'bg-muted-foreground/50'}`}
+                  />
                   {verificationLabels[row.verification_status]}
-                </Badge>
+                </span>
               </button>
             </div>
             {open && !!row.child_count && (
@@ -244,9 +301,11 @@ function GeographyDetail({
   record,
   onEdit,
   onCreate,
+  onClose,
 }: {
   record: GeographyRecord;
   onEdit: () => void;
+  onClose: () => void;
   onCreate: (type: GeographyType) => void;
 }) {
   const detailRef = useRef<HTMLElement>(null);
@@ -280,13 +339,18 @@ function GeographyDetail({
       >
         Back to hierarchy
       </Button>
-      <div>
-        <p className="text-13 text-muted-foreground break-words">{record.path}</p>
-        <h2 className="text-title font-semibold">{record.name}</h2>
-        <p className="text-13 text-muted-foreground">
-          {geographyLabels[record.place_type]} ·{' '}
-          {record.workflow_state ?? (record.seo_indexable ? 'Indexable' : 'Not indexed')}
-        </p>
+      <div className="flex items-start justify-between gap-4">
+        <div className="min-w-0">
+          <p className="text-13 text-muted-foreground break-words">{record.path}</p>
+          <h2 className="text-title font-semibold">{record.name}</h2>
+          <p className="text-13 text-muted-foreground">
+            {geographyLabels[record.place_type]} ·{' '}
+            {record.workflow_state ?? (record.seo_indexable ? 'Indexable' : 'Not indexed')}
+          </p>
+        </div>
+        <Button variant="ghost" size="icon" aria-label="Close record details" onClick={onClose}>
+          <X size={18} />
+        </Button>
       </div>
       <div className="flex flex-wrap gap-2">
         <Button onClick={onEdit}>
@@ -589,13 +653,26 @@ export default function AdminGeography() {
           </Button>
         </p>
       )}
-      <div className="grid min-w-0 grid-cols-1 items-start gap-6 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
+      <div
+        className={`grid min-w-0 grid-cols-1 items-start gap-6 ${selectedId ? 'lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]' : ''}`}
+      >
         <section
           id="geography-hierarchy"
           tabIndex={-1}
           aria-label="Geography hierarchy"
-          className="order-last min-w-0 border-y lg:order-first"
+          className="order-last min-w-0 overflow-hidden rounded-element border bg-background lg:order-first"
         >
+          <div className="flex min-h-12 items-center justify-between gap-4 border-b px-4 py-2">
+            <p className="text-13 text-muted-foreground">
+              {search || type || status ? 'Matching places' : 'Country hierarchy'}{' '}
+              <span className="hidden sm:inline">· Select a place to inspect or edit</span>
+            </p>
+            {expanded.size > 0 && (
+              <Button variant="ghost" size="sm" onClick={() => change('expanded', '')}>
+                Collapse all
+              </Button>
+            )}
+          </div>
           <GeographyRows
             parentId={null}
             filters={filters}
@@ -610,29 +687,34 @@ export default function AdminGeography() {
             }}
           />
         </section>
-        {record.isLoading ? (
-          <AdminTextSkeleton lines={5} />
-        ) : record.isError ? (
-          <div role="alert">
-            Could not load this record.{' '}
-            <Button variant="outline" onClick={() => void record.refetch()}>
-              Retry
-            </Button>
-          </div>
-        ) : record.data ? (
-          <GeographyDetail
-            key={record.data.id}
-            record={record.data}
-            onEdit={() => change('editing', record.data!.source_table)}
-            onCreate={(newType) => change('create', newType)}
-          />
-        ) : (
-          <p className="p-4 text-15 text-muted-foreground">
-            {selectedId
-              ? 'This geographic record is no longer available. Choose another record.'
-              : 'Select a country, city or queer village to inspect its CMS relationship and geographic evidence.'}
-          </p>
-        )}
+        {selectedId &&
+          (record.isLoading ? (
+            <AdminTextSkeleton lines={5} />
+          ) : record.isError ? (
+            <div role="alert">
+              Could not load this record.{' '}
+              <Button variant="outline" onClick={() => void record.refetch()}>
+                Retry
+              </Button>
+            </div>
+          ) : record.data ? (
+            <GeographyDetail
+              key={record.data.id}
+              record={record.data}
+              onClose={() => {
+                change('selected', '');
+                document.getElementById('geography-hierarchy')?.focus();
+              }}
+              onEdit={() => change('editing', record.data!.source_table)}
+              onCreate={(newType) => change('create', newType)}
+            />
+          ) : (
+            <p className="p-4 text-15 text-muted-foreground">
+              {selectedId
+                ? 'This geographic record is no longer available. Choose another record.'
+                : 'Select a country, city or queer village to inspect its CMS relationship and geographic evidence.'}
+            </p>
+          ))}
       </div>
       <details className="border-t pt-4">
         <summary className="cursor-pointer text-15 font-semibold">
