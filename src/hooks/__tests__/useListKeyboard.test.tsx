@@ -15,6 +15,44 @@ function press(key: string, target?: HTMLElement) {
 }
 
 describe('useListKeyboard', () => {
+  it('leaves native activation to a focused control without stealing row shortcuts', () => {
+    const action = vi.fn();
+    const navigate = vi.fn();
+    renderHook(() =>
+      useListKeyboard({
+        items,
+        activeId: 'a',
+        onNavigate: navigate,
+        actions: { Enter: action, ' ': action },
+        enabled: true,
+      }),
+    );
+    const button = document.createElement('button');
+    expect(press('Enter', button).defaultPrevented).toBe(false);
+    expect(press(' ', button).defaultPrevented).toBe(false);
+    expect(action).not.toHaveBeenCalled();
+    press('j', button);
+    expect(navigate).toHaveBeenCalledWith('b');
+    press('Enter');
+    expect(action).toHaveBeenCalledOnce();
+  });
+
+  it('does not navigate behind a dialog or while editing rich text', () => {
+    const navigate = vi.fn();
+    renderHook(() =>
+      useListKeyboard({ items, activeId: 'a', onNavigate: navigate, enabled: true }),
+    );
+    const dialog = document.createElement('div');
+    dialog.setAttribute('role', 'dialog');
+    const button = document.createElement('button');
+    dialog.append(button);
+    press('j', button);
+    const editor = document.createElement('div');
+    editor.setAttribute('contenteditable', 'true');
+    press('j', editor);
+    expect(navigate).not.toHaveBeenCalled();
+  });
+
   let onNavigate: ReturnType<typeof vi.fn>;
   beforeEach(() => {
     onNavigate = vi.fn();

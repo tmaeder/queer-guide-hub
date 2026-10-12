@@ -1,11 +1,5 @@
-import {
-  Pagination,
-  PaginationContent,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from '@/components/ui/pagination';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import {
   Select,
   SelectContent,
@@ -14,25 +8,16 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 
-/**
- * Page controls for every view, not just the table.
- *
- * Gallery / Board / Timeline / Calendar shipped without any: they rendered the
- * first page and offered no way to reach the second, so on `events` (~40k rows)
- * you could see 25 records and no more. Extracted here so a new view cannot
- * repeat that by omission.
- */
-
 interface Props {
   page: number;
   rowsPerPage: number;
   totalCount: number;
   setPage: (page: number) => void;
   setRowsPerPage: (rows: number) => void;
-  /** Hidden when there is nothing to page through. */
   hidden?: boolean;
 }
 
+/** One compact footer shared by all content presentations. */
 export function ListPagination({
   page,
   rowsPerPage,
@@ -45,19 +30,21 @@ export function ListPagination({
   const totalPages = Math.max(1, Math.ceil(totalCount / rowsPerPage));
   const first = page * rowsPerPage + 1;
   const last = Math.min((page + 1) * rowsPerPage, totalCount);
-
   return (
-    <div className="flex flex-wrap items-center justify-between gap-2 border-t border-border-hairline px-4 py-2">
-      <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-        <span>Rows per page:</span>
+    <div className="grid grid-cols-[1fr_auto] items-center gap-4 border-t border-border-hairline px-4 py-4 sm:flex">
+      <p className="text-13 tabular-nums text-muted-foreground sm:mr-auto">
+        {first}-{last} of {totalCount.toLocaleString()}
+      </p>
+      <div className="flex items-center gap-2">
+        <span className="text-13 text-muted-foreground">Rows</span>
         <Select
           value={String(rowsPerPage)}
           onValueChange={(v) => {
-            setRowsPerPage(parseInt(v, 10));
+            setRowsPerPage(Number(v));
             setPage(0);
           }}
         >
-          <SelectTrigger className="h-7 w-[70px] text-xs" aria-label="Rows per page">
+          <SelectTrigger className="h-10 w-20 text-13" aria-label="Rows per page">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -68,39 +55,36 @@ export function ListPagination({
             ))}
           </SelectContent>
         </Select>
-        <span>
-          {first}-{last} of {totalCount.toLocaleString()}
-        </span>
       </div>
-      <Pagination className="mx-0 w-auto justify-end">
-        <PaginationContent>
-          <PaginationItem>
-            <PaginationPrevious
-              href="#"
-              onClick={(e) => {
-                e.preventDefault();
-                if (page > 0) setPage(page - 1);
-              }}
-              aria-disabled={page === 0}
-            />
-          </PaginationItem>
-          <PaginationItem>
-            <PaginationLink href="#" isActive>
-              {page + 1}
-            </PaginationLink>
-          </PaginationItem>
-          <PaginationItem>
-            <PaginationNext
-              href="#"
-              onClick={(e) => {
-                e.preventDefault();
-                if (page + 1 < totalPages) setPage(page + 1);
-              }}
-              aria-disabled={page + 1 >= totalPages}
-            />
-          </PaginationItem>
-        </PaginationContent>
-      </Pagination>
+      <nav
+        className="col-span-2 flex items-center justify-center gap-2"
+        aria-label="Content pagination"
+      >
+        <Button
+          variant="ghost"
+          size="sm"
+          aria-label="Previous page"
+          disabled={page === 0}
+          onClick={() => setPage(page - 1)}
+        >
+          <ChevronLeft size={16} aria-hidden="true" /> Previous
+        </Button>
+        <span
+          className="min-w-16 text-center text-13 tabular-nums"
+          aria-label={`Page ${page + 1} of ${totalPages}`}
+        >
+          {page + 1} / {totalPages}
+        </span>
+        <Button
+          variant="ghost"
+          size="sm"
+          aria-label="Next page"
+          disabled={page + 1 >= totalPages}
+          onClick={() => setPage(page + 1)}
+        >
+          Next <ChevronRight size={16} aria-hidden="true" />
+        </Button>
+      </nav>
     </div>
   );
 }

@@ -7,34 +7,52 @@ import type { AdminTableFeatures } from './features';
 interface DataTableHeaderCellProps<TData extends RowData> {
   header: Header<AdminTableFeatures, TData, unknown>;
   onSort?: (columnId: string) => void;
+  sort?: false | 'asc' | 'desc';
 }
 
 export function DataTableHeaderCell<TData extends RowData>({
   header,
   onSort,
+  sort,
 }: DataTableHeaderCellProps<TData>) {
   const meta = header.column.columnDef.meta as AdminColumnMeta | undefined;
   const canSort = meta?.serverSortable !== false && header.column.getCanSort();
-  const sorted = header.column.getIsSorted();
+  const sorted = sort ?? header.column.getIsSorted();
+  const numeric =
+    typeof header.getContext().table?.getRowModel().rows[0]?.getValue(header.column.id) ===
+      'number' || /(?:_count|_score)$/.test(header.column.id);
 
   const handleClick = () => {
     if (canSort && onSort) {
-      onSort(header.id);
+      onSort(header.column.id ?? header.id);
     }
   };
 
+  const label = header.isPlaceholder
+    ? null
+    : flexRender(header.column.columnDef.header, header.getContext());
   return (
     <TableHead
-      style={{ cursor: canSort ? 'pointer' : 'default', userSelect: canSort ? 'none' : undefined }}
       className="whitespace-nowrap"
-      onClick={handleClick}
+      style={{ textAlign: numeric ? 'right' : 'left' }}
+      aria-sort={
+        canSort
+          ? sorted === 'asc'
+            ? 'ascending'
+            : sorted === 'desc'
+              ? 'descending'
+              : 'none'
+          : undefined
+      }
     >
-      <span style={{ alignItems: 'center' }} className="inline-flex gap-1">
-        {header.isPlaceholder
-          ? null
-          : flexRender(header.column.columnDef.header, header.getContext())}
-        {canSort && (
-          <span style={{ opacity: sorted ? 1 : 0.3 }} className="inline-flex">
+      {canSort ? (
+        <button
+          type="button"
+          onClick={handleClick}
+          className="inline-flex min-h-11 items-center gap-1 rounded-element text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        >
+          {label}
+          <span style={{ opacity: sorted ? 1 : 0.3 }} className="inline-flex" aria-hidden="true">
             {sorted === 'asc' ? (
               <ArrowUp size={14} />
             ) : sorted === 'desc' ? (
@@ -43,8 +61,10 @@ export function DataTableHeaderCell<TData extends RowData>({
               <ArrowUpDown size={14} />
             )}
           </span>
-        )}
-      </span>
+        </button>
+      ) : (
+        label
+      )}
     </TableHead>
   );
 }
