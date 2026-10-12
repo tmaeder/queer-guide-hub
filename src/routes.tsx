@@ -74,7 +74,6 @@ const AdminShell = lazyRetry(() =>
 // Admin page components (rendered inside AdminShell via Outlet)
 const AdminDashboard = lazyRetry(() => import('./pages/admin/AdminDashboard'));
 const AdminAnalytics = lazyRetry(() => import('./pages/admin/AdminAnalytics'));
-const AdminMaps = lazyRetry(() => import('./pages/admin/AdminMaps'));
 const AdminUsers = lazyRetry(() => import('./pages/admin/AdminUsers'));
 const AdminTags = lazyRetry(() => import('./pages/admin/AdminTags'));
 const Cities = lazyRetry(() => import('./pages/Cities'));
@@ -436,7 +435,7 @@ export const AppRoutes = () => {
                   />
                   <Route path="business" element={<AdminBusiness />} />
                   <Route path="business/:id" element={<AdminBusiness />} />
-                  <Route path="maps" element={<AdminMaps />} />
+                  <Route path="maps" element={<Navigate to="/admin" replace />} />
                   <Route path="security" element={<SecurityMonitoringDashboard />} />
                   <Route path="cloudflare" element={<CloudflareDashboard />} />
 

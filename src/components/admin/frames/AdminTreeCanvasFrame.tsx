@@ -25,11 +25,6 @@ interface AdminTreeCanvasFrameProps {
  * panning on the pipeline builder and cuts nodes off at the boundary. The
  * canvas gets the frame's spacing and nothing else; if a surface wants a
  * rounded edge it draws one inside its own viewport.
- *
- * `/admin/maps` reaches this frame by promoting `MapShell`'s existing
- * layer/filter panel into the tree column. **`MapShell` itself is not
- * modified** — it is shared with the public `/map`, so an admin-shaped change
- * there leaks straight onto a user-facing surface.
  */
 export function AdminTreeCanvasFrame({
   title,
