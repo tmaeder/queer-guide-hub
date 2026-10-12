@@ -69,7 +69,14 @@ describe('useSearchSuggestions', () => {
 
   it('should show country as subtitle for city type', async () => {
     mockFetchAutocomplete.mockResolvedValue([
-      { id: '1', type: 'city', title: 'Berlin', slug: 'berlin', country: 'Germany', city: 'Berlin' },
+      {
+        id: '1',
+        type: 'city',
+        title: 'Berlin',
+        slug: 'berlin',
+        country: 'Germany',
+        city: 'Berlin',
+      },
     ]);
 
     const { result } = renderHook(() => useSearchSuggestions('Berlin'));
@@ -89,12 +96,12 @@ describe('useSearchSuggestions', () => {
     expect(result.current.suggestions[0].subtitle).toBe('Berlin');
   });
 
-  it('should silently fail on autocomplete errors (no banner)', async () => {
+  it('distinguishes an autocomplete failure from no matches', async () => {
     mockFetchAutocomplete.mockRejectedValue(new Error('network blip'));
     const { result } = renderHook(() => useSearchSuggestions('Berlin'));
     await waitFor(() => expect(result.current.loading).toBe(false));
-    // Autocomplete is enhancement, not core — surface no error banner.
-    expect(result.current.error).toBeNull();
+    // A compact recovery state must replace the misleading zero-result state.
+    expect(result.current.error).toBeTruthy();
     expect(result.current.suggestions).toEqual([]);
   });
 });

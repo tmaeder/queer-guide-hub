@@ -28,11 +28,9 @@ function Eyebrow({ children }: { children: ReactNode }) {
   );
 }
 
-/** Bordered chip that inverts to ink on hover — the mock's only chip state.
- *  It fills rather than lifts: at chip scale a 5px hard shadow is larger than
- *  the chip's own padding and the row turns into a stack of dominoes. */
+/** Compact navigation links; recent queries receive a quiet bordered surface. */
 const CHIP =
-  'inline-flex cursor-pointer min-h-10 items-center gap-2 rounded-element bg-muted/50 px-4 py-2 text-13 font-bold text-foreground transition-colors hover:bg-foreground hover:text-background';
+  'inline-flex cursor-pointer min-h-10 items-center gap-2 rounded-element bg-transparent px-2 py-2 text-13 font-semibold text-foreground transition-colors hover:bg-surface-container';
 
 export function SearchPopoverEmpty({
   trending,
@@ -51,32 +49,36 @@ export function SearchPopoverEmpty({
     source === 'recommended' ? t('search.forYou', 'For you') : t('search.trending', 'Trending');
 
   return (
-    <div className="min-h-0 flex-1">
+    <div className="flex min-h-0 flex-1 flex-col">
       {recentItems.length > 0 && onSelectRecent && (
         <>
-          <Eyebrow>{t('search.recent', 'Recent')}</Eyebrow>
+          <div className="flex items-center justify-between px-4 pt-4 sm:px-6">
+            <span className="text-2xs font-bold uppercase tracking-label text-muted-foreground">
+              {t('search.recent', 'Recent')}
+            </span>
+            {onClearRecents && (
+              <button
+                type="button"
+                onClick={onClearRecents}
+                aria-label={t('search.clearRecent', 'Clear')}
+                className="min-h-8 text-xs text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+              >
+                {t('search.clearRecent', 'Clear')}
+              </button>
+            )}
+          </div>
           <div className="flex flex-wrap items-center gap-2 px-4 pb-1 sm:px-6">
             {recentItems.map((term, i) => (
               <button
                 key={`recent-${i}`}
                 type="button"
                 onClick={() => onSelectRecent(term)}
-                className={`${CHIP} max-w-[200px]`}
+                className={`${CHIP} max-w-[200px] border border-border-hairline bg-surface-container/50`}
               >
                 <Clock className="h-3.5 w-3.5 shrink-0 text-muted-foreground" aria-hidden />
                 <span className="truncate">{term}</span>
               </button>
             ))}
-            {onClearRecents && (
-              <button
-                type="button"
-                onClick={onClearRecents}
-                aria-label={t('search.clearRecent', 'Clear')}
-                className="cursor-pointer bg-transparent px-2 py-2 text-13 text-muted-foreground underline underline-offset-4 hover:text-foreground"
-              >
-                {t('search.clearRecent', 'Clear')}
-              </button>
-            )}
           </div>
         </>
       )}
@@ -89,7 +91,7 @@ export function SearchPopoverEmpty({
           replaced. Each chip carries its own line's station ring, so the same
           colour that names the job in the topbar names it here. */}
       <Eyebrow>{t('search.jumpTo', 'Jump to')}</Eyebrow>
-      <div className="grid grid-cols-2 gap-2 px-4 pb-1 sm:grid-cols-3 sm:px-6">
+      <div className="grid grid-cols-2 gap-x-2 px-4 pb-2 sm:grid-cols-4 sm:px-6">
         {INTENT_NAV.map((intent) => (
           <button
             key={intent.id}
@@ -111,7 +113,7 @@ export function SearchPopoverEmpty({
       {tiles.length > 0 && (
         <>
           <Eyebrow>{heading}</Eyebrow>
-          <ul className="grid grid-cols-1 gap-x-4 px-4 pb-4 sm:grid-cols-2 sm:px-6">
+          <ul className="grid grid-cols-1 gap-x-4 px-4 pb-2 sm:grid-cols-2 sm:px-6">
             {tiles.map((hit) => {
               const name = (hit.title || hit.name || '') as string;
               if (!name) return null;
@@ -121,16 +123,19 @@ export function SearchPopoverEmpty({
                   <button
                     type="button"
                     onClick={() => onSelectTrending(hit)}
-                    className="flex w-full cursor-pointer items-center gap-4 rounded-element border-0 bg-transparent px-2 py-4 text-left transition-colors hover:bg-surface-container"
+                    className="group flex w-full cursor-pointer items-center min-h-14 gap-2 rounded-element border-0 bg-transparent px-2 py-2 text-left transition-colors hover:bg-surface-container"
                   >
-                    <RouteBullet type={hit.type} size={30} />
+                    <RouteBullet type={hit.type} size={28} />
                     <span className="min-w-0 flex-1">
-                      <span className="block truncate text-15 font-bold">{name}</span>
+                      <span className="block truncate text-sm font-semibold">{name}</span>
                       {meta && (
                         <span className="block truncate text-13 text-muted-foreground">{meta}</span>
                       )}
                     </span>
-                    <ArrowRight className="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden />
+                    <ArrowRight
+                      className="h-4 w-4 shrink-0 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100"
+                      aria-hidden
+                    />
                   </button>
                 </li>
               );
@@ -140,29 +145,18 @@ export function SearchPopoverEmpty({
       )}
 
       {/* The mode row sits right under the tiles it re-biases. */}
-      <div className="border-t border-border-hairline pt-2">
+      <div className="border-t border-border-hairline">
+        <Eyebrow>{t('header.modeLabel', 'Mode')}</Eyebrow>
         <ModeSwitcher />
       </div>
-
-      <button
-        type="button"
-        onClick={onAsk}
-        className="flex w-full items-center gap-2 border-y border-border-hairline px-6 py-4 text-left text-13 font-bold transition-colors hover:bg-foreground hover:text-background"
-      >
-        <Sparkles className="h-4 w-4 shrink-0" aria-hidden />
-        {t('search.ask.entry', 'Ask the guide a question')}
-        <span className="ml-auto shrink-0" aria-hidden>
-          <ArrowRight className="h-4 w-4" />
-        </span>
-      </button>
 
       {/* Every browse route stays reachable — the intent row is additive, never
           a replacement — but it is demoted behind a disclosure so the two
           models are not presented as peers. */}
-      <details className="px-4 pb-4 pt-4 sm:px-6">
-        <summary className="flex min-h-10 cursor-pointer list-none items-center justify-between text-2xs font-bold uppercase tracking-label text-muted-foreground">
+      <details className="group px-4 py-2 sm:px-6">
+        <summary className="flex min-h-10 cursor-pointer list-none items-center justify-between text-xs font-medium text-muted-foreground transition-colors hover:text-foreground">
           {t('header.intents.browseHeading', 'Browse everything')}
-          <ChevronDown className="h-4 w-4" aria-hidden />
+          <ChevronDown className="h-4 w-4 transition-transform group-open:rotate-180" aria-hidden />
         </summary>
         <div className="pt-2">
           {NAV_CLUSTERS.map((cluster) => {
@@ -190,6 +184,17 @@ export function SearchPopoverEmpty({
           })}
         </div>
       </details>
+      <button
+        type="button"
+        onClick={onAsk}
+        className="sticky bottom-0 z-10 flex min-h-14 w-full shrink-0 items-center gap-2 border-t border-border-hairline bg-card px-4 py-2 text-left text-sm font-semibold transition-colors hover:bg-surface-container sm:px-6"
+      >
+        <Sparkles className="h-4 w-4 shrink-0" aria-hidden />
+        {t('search.ask.entry', 'Ask the guide a question')}
+        <span className="ml-auto shrink-0" aria-hidden>
+          <ArrowRight className="h-4 w-4" />
+        </span>
+      </button>
     </div>
   );
 }

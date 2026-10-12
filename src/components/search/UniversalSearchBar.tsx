@@ -166,6 +166,7 @@ export const UniversalSearchBar = ({
   // from immediately re-opening it (otherwise Cancel/Escape can't close it).
   const suppressReopenRef = useRef(false);
   const searchBoxRef = useRef<HTMLDivElement>(null);
+  const popoverBodyRef = useRef<HTMLDivElement>(null);
   const navigate = useLocalizedNavigate();
   const location = useLocation();
   const isMobile = useIsMobile();
@@ -250,6 +251,11 @@ export const UniversalSearchBar = ({
     // eslint-disable-next-line react-hooks/set-state-in-effect -- effect synchronizes state with external props/data; React Compiler can't infer the sync direction. Documented exemption from the eslint.config.js staged-ratchet plan.
     setResultsFocused(null);
   }, [suggestions.length, activeScope]);
+
+  // A new query starts at the top, keeping mobile Cancel and scope controls visible.
+  useEffect(() => {
+    if (popoverBodyRef.current) popoverBodyRef.current.scrollTop = 0;
+  }, [query, mode, activeScope]);
 
   const saveRecentSearch = useCallback((searchTerm: string) => {
     if (!searchTerm.trim()) return;
@@ -552,8 +558,8 @@ export const UniversalSearchBar = ({
    * and the open effect re-runs `focusInput()`, so the caret follows.
    */
   const searchField = (panel: boolean) => {
-    const h = panel ? 56 : inputHeight;
-    const icon = panel ? 22 : iconSize;
+    const h = panel ? 48 : inputHeight;
+    const icon = panel ? 20 : iconSize;
     return (
       // eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions -- search landmark also acts as a click target to focus the inner input; keyboard handling provided.
       <div
@@ -569,7 +575,7 @@ export const UniversalSearchBar = ({
               // focus ring inside the field (index.css) — flush against the
               // plate's top edge, an outset ring is clipped by its
               // `overflow-hidden` into two severed arcs.
-              'search-plate-field border-b border-border-hairline px-6'
+              'search-plate-field gap-2 border-b border-border-hairline px-4 py-2 sm:px-6'
             : hero
               ? // The homepage hero entry: the template's heavier edge and a
                 // resting hard shadow, because it is the page's primary target
@@ -577,12 +583,15 @@ export const UniversalSearchBar = ({
                 'rounded-container border border-border-hairline shadow-soft'
               : 'rounded-container border border-border-hairline focus-within:shadow-soft',
         )}
-        onClick={() => {
+        onClick={(event) => {
+          if ((event.target as Element).closest('button')) return;
           setIsOpen(true);
           focusInput();
         }}
-        onKeyDown={(e) => {
-          if (e.key === 'Enter' || e.key === ' ') {
+        onKeyDown={(event) => {
+          if (event.target !== event.currentTarget) return;
+          if (event.key === 'Enter' || event.key === ' ') {
+            event.preventDefault();
             setIsOpen(true);
             focusInput();
           }
@@ -601,7 +610,7 @@ export const UniversalSearchBar = ({
             // border already say this is a search field. Same trade the
             // wordmark makes at the same breakpoint, for the same reason.
             panel
-              ? 'inline-flex pe-4 text-foreground'
+              ? 'inline-flex text-muted-foreground'
               : hero
                 ? // The hero spans its column and IS the page's primary target,
                   // so it has the room — and there the magnifier is part of the
@@ -674,12 +683,13 @@ export const UniversalSearchBar = ({
             // reads as if it did something. The ring stays; on the plate it
             // is only pulled inside the field (`.search-plate-field`), which
             // is an unlayered `!important` rule for that same reason.
-            panel ? 'font-bold' : 'text-sm md:text-sm',
+            panel
+              ? 'rounded-element px-2 font-medium placeholder:font-normal'
+              : 'text-sm md:text-sm',
           )}
           style={{
-            // The mock sets the query at 19/700 — it is the loudest thing
-            // on the plate because it is the only thing the reader wrote.
-            fontSize: panel ? '1.1875rem' : isMobile ? '1rem' : '0.875rem',
+            // Keep the query readable without letting the hint dominate discovery.
+            fontSize: panel ? '1.0625rem' : isMobile ? '1rem' : '0.875rem',
             height: h,
           }}
         />
@@ -706,8 +716,8 @@ export const UniversalSearchBar = ({
               }}
               className={cn('p-0', voice.listening ? 'text-destructive' : 'text-muted-foreground')}
               style={{
-                height: isMobile ? 32 : 28,
-                width: isMobile ? 32 : 28,
+                height: panel || isMobile ? 40 : 28,
+                width: panel || isMobile ? 40 : 28,
               }}
             >
               <Mic style={{ height: isMobile ? 16 : 14, width: isMobile ? 16 : 14 }} />
@@ -732,7 +742,7 @@ export const UniversalSearchBar = ({
               size="sm"
               aria-label="Clear search"
               className="p-0 text-muted-foreground hover:text-foreground"
-              style={{ height: isMobile ? 32 : 28, width: isMobile ? 32 : 28 }}
+              style={{ height: panel || isMobile ? 40 : 28, width: panel || isMobile ? 40 : 28 }}
               onClick={() => {
                 setQuery('');
                 focusInput();
@@ -748,7 +758,8 @@ export const UniversalSearchBar = ({
             <button
               type="button"
               onClick={() => setIsOpen(false)}
-              className="px-2 py-1 text-xs2 font-bold uppercase leading-none text-foreground transition-colors hover:bg-foreground hover:text-background"
+              aria-label={t('search.close', 'Close search')}
+              className="min-h-10 rounded-element border border-border-hairline px-2 text-xs2 font-medium uppercase leading-none text-muted-foreground transition-colors hover:bg-surface-container hover:text-foreground"
             >
               {t('search.escape', 'esc')}
             </button>
@@ -973,7 +984,12 @@ export const UniversalSearchBar = ({
               {/* The query row sits at the top of the sheet, under the safe
                   area, so it is visible while typing. */}
               <div style={{ paddingTop: 'env(safe-area-inset-top, 0px)' }}>{searchField(true)}</div>
-              <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain">{popoverBody}</div>
+              <div
+                ref={popoverBodyRef}
+                className="min-h-0 flex-1 overflow-y-auto overscroll-contain"
+              >
+                {popoverBody}
+              </div>
             </div>
           </PopoverContent>
         </Popover>
@@ -1014,7 +1030,7 @@ export const UniversalSearchBar = ({
           {/* The mock's scrim is #111111cc — ink, not black, and unblurred:
               a blur behind a hard-edged plate reads as a soft shadow, which
               is the one depth cue this system does not use. */}
-          <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-foreground/80 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:animate-in data-[state=open]:fade-in-0" />
+          <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-foreground/60 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:animate-in data-[state=open]:fade-in-0" />
           <DialogPrimitive.Content
             className="fixed inset-x-0 top-[6dvh] z-50 mx-auto flex max-h-[88dvh] w-[calc(100%-3rem)] max-w-[760px] flex-col overflow-hidden bg-card shadow-soft-lg duration-fast data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:animate-in data-[state=open]:fade-in-0 rounded-container"
             onOpenAutoFocus={(e) => {
@@ -1042,7 +1058,9 @@ export const UniversalSearchBar = ({
               {t('search.ariaLabel', 'Search Queer Guide')}
             </DialogPrimitive.Title>
             {searchField(true)}
-            <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain">{popoverBody}</div>
+            <div ref={popoverBodyRef} className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
+              {popoverBody}
+            </div>
           </DialogPrimitive.Content>
         </DialogPrimitive.Portal>
       </DialogPrimitive.Root>

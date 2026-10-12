@@ -1,7 +1,5 @@
 import { Suspense, lazy } from 'react';
 import { useTranslation } from 'react-i18next';
-import { SlidersHorizontal } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
 import type { SearchSuggestion } from '@/hooks/useSearchSuggestions';
 import type { useTrendingSuggestions } from '@/hooks/useTrendingSuggestions';
 import type { SearchFilters } from '@/hooks/useSearch';
@@ -60,7 +58,6 @@ export function SearchPopoverMobile({
   onToggleFilters,
   activeFiltersCount = 0,
   onClose,
-  onClear,
   onPrefetch,
   navigate,
   onAsk,
@@ -83,33 +80,6 @@ export function SearchPopoverMobile({
         >
           {t('common.cancel', 'Cancel')}
         </button>
-        <div className="flex items-center gap-1">
-          {query && (
-            <button
-              type="button"
-              onClick={onClear}
-              className="px-2 py-1 text-sm text-muted-foreground"
-              aria-label="Clear search"
-            >
-              {t('common.clear', 'Clear')}
-            </button>
-          )}
-          {query && onToggleFilters && (
-            <button
-              type="button"
-              onClick={onToggleFilters}
-              className="relative -mr-2 px-2 py-1 text-foreground"
-              aria-label={t('search.filters', 'Search filters')}
-            >
-              <SlidersHorizontal size={20} />
-              {activeFiltersCount > 0 && (
-                <Badge variant="destructive" className="absolute -right-1 -top-1">
-                  {activeFiltersCount}
-                </Badge>
-              )}
-            </button>
-          )}
-        </div>
       </div>
       {query.length === 0 ? (
         <SearchPopoverEmpty

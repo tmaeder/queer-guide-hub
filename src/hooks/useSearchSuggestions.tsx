@@ -1,5 +1,14 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { MapPin, Tag, Users, Newspaper, Globe, Building2, CalendarDays, ShoppingBag } from 'lucide-react';
+import {
+  MapPin,
+  Tag,
+  Users,
+  Newspaper,
+  Globe,
+  Building2,
+  CalendarDays,
+  ShoppingBag,
+} from 'lucide-react';
 import { fetchAutocomplete, type SearchHit } from '@/lib/searchClient';
 import { toIndexKeys } from '@/lib/searchTaxonomy';
 import { useDebounce } from '@/hooks/useDebounce';
@@ -161,12 +170,11 @@ export function useSearchSuggestions(query: string, scopeTypes?: string[]) {
       })
       .catch((err) => {
         if (cancelled) return;
-        // Autocomplete is a non-critical enhancement layer — a transient blip
-        // (network glitch, brief 5xx) should not surface a big red banner.
+        // Keep recovery compact, but distinguish a failed request from no matches.
         console.error('Error fetching suggestions:', err);
         setSuggestions([]);
         setCountsByType({});
-        setError(null);
+        setError(err instanceof Error ? err.message : 'Search unavailable');
       })
       .finally(() => {
         if (!cancelled) setLoading(false);

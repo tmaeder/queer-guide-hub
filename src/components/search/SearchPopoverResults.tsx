@@ -1,3 +1,4 @@
+import { Sparkles } from 'lucide-react';
 import { TrackLoader } from '@/components/transit/TrackLoader';
 import { TransitIcon } from '@/components/transit/TransitIcon';
 import { NoStationTrack } from '@/components/transit/NoStationTrack';
@@ -57,11 +58,15 @@ export function SearchPopoverResults({
     ? (CONTENT_TYPES.find((c) => c.id === activeScope)?.label ?? activeScope)
     : t('search.allLabel', 'All');
 
-  const headerText = query
-    ? totalCount > visible
-      ? `"${query}" — ${visible} of ${totalCount} ${totalCount === 1 ? t('search.resultOne', 'result') : t('search.resultMany', 'results')}`
-      : `"${query}" — ${visible} ${visible === 1 ? t('search.resultOne', 'result') : t('search.resultMany', 'results')}`
-    : `${scopeLabel}`;
+  const headerText = loading
+    ? t('search.searching', 'Searching…')
+    : error
+      ? t('search.unavailable', 'Search unavailable')
+      : query
+        ? totalCount > visible
+          ? `"${query}" — ${visible} of ${totalCount} ${totalCount === 1 ? t('search.resultOne', 'result') : t('search.resultMany', 'results')}`
+          : `"${query}" — ${visible} ${visible === 1 ? t('search.resultOne', 'result') : t('search.resultMany', 'results')}`
+        : `${scopeLabel}`;
 
   return (
     <div className="flex min-w-0 flex-1 flex-col">
@@ -162,9 +167,9 @@ export function SearchPopoverResults({
 
         {suggestions.map((suggestion, i) => {
           const displayName = suggestion.name || suggestion.title || '';
-          const subtitle = [suggestion.subtitle, suggestion.city, suggestion.country]
-            .filter(Boolean)
-            .join(' · ');
+          const subtitle = [
+            ...new Set([suggestion.city, suggestion.country, suggestion.subtitle].filter(Boolean)),
+          ].join(' · ');
           return (
             <SearchResultRow
               key={`${suggestion.type}-${suggestion.id}-${i}`}
@@ -192,7 +197,7 @@ export function SearchPopoverResults({
       </div>
 
       {/* Ask-the-guide entry: a natural-language escape hatch, promoted when thin. */}
-      {query.length >= 2 && (
+      {query.length >= 2 && visible === 0 && (
         <button
           type="button"
           onClick={onAsk}
@@ -214,7 +219,7 @@ export function SearchPopoverResults({
           combobox implements ↑↓ and Enter — and it is the only place the
           shortcut is taught, so it is not hidden behind the empty state. */}
       {visible > 0 && (
-        <div className="flex items-center justify-between gap-4 border-t border-border-hairline px-6 py-4 text-13 font-bold">
+        <div className="sticky bottom-0 z-10 flex min-h-14 items-center justify-between gap-4 border-t border-border-hairline bg-card px-6 py-2 text-13 font-semibold">
           <button
             type="button"
             onClick={onSearchAll}
@@ -224,11 +229,19 @@ export function SearchPopoverResults({
             // contrast.
             className="inline-flex cursor-pointer items-center gap-2 bg-transparent p-0 text-foreground underline-offset-4 hover:underline"
           >
-            <TransitIcon name="map" size={16} />
-            {t('search.seeOnMap', {
-              defaultValue: 'See {{count}} results on the map',
-              count: totalCount || visible,
+            <TransitIcon name="search" size={16} />
+            {t('search.seeAllN', {
+              defaultValue: 'See all {{n}} →',
+              n: totalCount || visible,
             })}
+          </button>
+          <button
+            type="button"
+            onClick={onAsk}
+            className="inline-flex min-h-10 shrink-0 items-center gap-2 rounded-element px-2 text-13 font-medium transition-colors hover:bg-surface-container"
+          >
+            <Sparkles className="h-4 w-4" aria-hidden />
+            {t('search.ask.title', 'Ask the guide')}
           </button>
           <span aria-hidden className="hidden shrink-0 text-muted-foreground sm:inline">
             {t('search.keyHints', '↑↓ navigate · ↵ open')}

@@ -2,7 +2,7 @@
  * @vitest-environment jsdom
  */
 import { describe, it, expect, vi } from 'vitest';
-import { render } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { MemoryRouter } from 'react-router';
 
 vi.mock('@/hooks/useSearchActions', () => ({ useTrackClick: () => vi.fn() }));
@@ -17,11 +17,32 @@ vi.mock('@/hooks/useSearchRecommendations', () => ({
 }));
 vi.mock('@/hooks/useAuth', () => ({ useAuth: () => ({ user: null }) }));
 
+vi.mock('@/hooks/use-mobile', () => ({ useIsMobile: () => false }));
+vi.mock('@/hooks/useTrendingSuggestions', () => ({
+  useTrendingSuggestions: () => ({ trending: [] }),
+}));
+
 import { UniversalSearchBar } from '../UniversalSearchBar';
 
 describe('UniversalSearchBar', () => {
+  it('closes from the close button without reopening from the field wrapper', async () => {
+    render(
+      <MemoryRouter>
+        <UniversalSearchBar />
+      </MemoryRouter>,
+    );
+    fireEvent.focus(screen.getByRole('combobox'));
+    fireEvent.click(await screen.findByRole('button', { name: 'Close search' }));
+    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
+    expect(screen.getByRole('combobox')).toHaveAttribute('aria-expanded', 'false');
+  });
+
   it('renders without crashing', () => {
-    const { container } = render(<MemoryRouter><UniversalSearchBar /></MemoryRouter>);
+    const { container } = render(
+      <MemoryRouter>
+        <UniversalSearchBar />
+      </MemoryRouter>,
+    );
     expect(container).toBeTruthy();
   });
 });
