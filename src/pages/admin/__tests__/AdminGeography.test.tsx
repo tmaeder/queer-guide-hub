@@ -18,8 +18,10 @@ vi.mock('@/hooks/useGeographyCMS', async (load) => {
   const original = await load<Record<string, unknown>>();
   return {
     ...original,
-    useGeographyRows: () => ({
-      data: { pages: [{ rows: mocks.rows, total: mocks.rows.length }] },
+    useGeographyRows: (parentId: string | null) => ({
+      data: {
+        pages: [{ rows: parentId ? [] : mocks.rows, total: parentId ? 0 : mocks.rows.length }],
+      },
       isLoading: false,
       isError: mocks.error,
       error: new Error('Offline'),
@@ -81,6 +83,26 @@ describe('Unified geography workspace', () => {
   it('keeps subitems expandable within search results', () => {
     view('/admin/geography?q=Spain');
     expect(screen.getByRole('button', { name: 'Expand Spain' })).not.toBeDisabled();
+  });
+  it('closes the inspector without losing the active filters and restores list focus', () => {
+    mocks.selected = country;
+    view('/admin/geography?q=Spain&type=country&selected=country-1');
+    fireEvent.click(screen.getByRole('button', { name: 'Close record details' }));
+    expect(screen.queryByRole('region', { name: 'Selected geography' })).not.toBeInTheDocument();
+    expect(screen.getByRole('textbox', { name: 'Search geography' })).toHaveValue('Spain');
+    expect(screen.getByRole('combobox', { name: 'Geography type' })).toHaveValue('country');
+    expect(screen.getByRole('region', { name: 'Geography hierarchy' })).toHaveFocus();
+  });
+  it('collapses expanded branches while preserving filters', () => {
+    view('/admin/geography?q=Spain&expanded=country-1');
+    fireEvent.click(screen.getByRole('button', { name: 'Collapse all' }));
+    expect(screen.getByRole('button', { name: 'Expand Spain' })).toHaveAttribute(
+      'aria-expanded',
+      'false',
+    );
+    expect(screen.getByRole('textbox', { name: 'Search geography' })).toHaveValue('Spain');
+    expect(screen.queryByRole('button', { name: 'Collapse all' })).not.toBeInTheDocument();
+    expect(screen.getByRole('region', { name: 'Geography hierarchy' })).toHaveFocus();
   });
   it('opens the selected canonical record instead of its entire list', () => {
     mocks.selected = country;
