@@ -126,6 +126,22 @@ jobs:
       # and it fails on ANY smoke failure that the retry did not clear. This
       # step's `outcome` is what it reports; `conclusion` is forced to success
       # by continue-on-error and must NOT be branched on.
+      - name: Refresh stale build metadata
+        continue-on-error: true
+        run: |
+          site="${SITE_URL%/}"
+          cached=$(curl -fsS --max-time 30 "$site/build-id.txt" | tr -d '\r\n')
+          fresh=$(curl -fsS --max-time 30 "$site/build-id.txt?deploy=$GITHUB_SHA" | tr -d '\r\n')
+          if [ "$fresh" = "$GITHUB_SHA" ] && [ "$cached" != "$fresh" ]; then
+            echo "Build metadata is stale at the edge; purging that URL."
+            curl -fsS --max-time 30 -X POST "https://api.cloudflare.com/client/v4/zones/$CLOUDFLARE_ZONE_ID/purge_cache" \
+              -H "Authorization: Bearer $CLOUDFLARE_PURGE_TOKEN" \
+              -H "Content-Type: application/json" \
+              --data "{\"files\":[\"$site/build-id.txt\"]}" \
+              | python3 -c 'import json,sys; result=json.load(sys.stdin); sys.exit(0 if result.get("success") else 1)'
+            sleep 5
+          fi
+
       - name: Smoke-test the deployed site
         id: smoke
         continue-on-error: true
