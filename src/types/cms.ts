@@ -41,10 +41,19 @@ export type FieldType =
   | 'profession_autocomplete'
   | 'roles_autocomplete'
   | 'link_list'
-  | 'organisation_locations';
+  | 'organisation_locations'
+  | 'organisation_relationships';
 
 export type FieldGroup =
-  'basic' | 'details' | 'location' | 'media' | 'seo' | 'settings' | 'lgbtq' | 'external';
+  | 'basic'
+  | 'details'
+  | 'location'
+  | 'media'
+  | 'seo'
+  | 'settings'
+  | 'lgbtq'
+  | 'external'
+  | 'relationships';
 
 export interface SelectOption {
   value: string;
@@ -320,6 +329,8 @@ export interface ContentTypeConfig {
    * `'*,countries(name,equality_score),venues(count)'`.
    */
   listSelect?: string;
+  /** Stored text columns searched together; defaults to titleField. */
+  listSearchFields?: string[];
   /**
    * Embedded resources in `listSelect` to scope to the embedded type's default
    * list slice (unmerged, unarchived), so a count column agrees with the list

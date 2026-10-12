@@ -19,3 +19,13 @@ record links to the workspace, preserving tabs and record IDs. Update internal
 links and compatibility routes. Preserve existing admin permissions, quality
 review routing and operational workflows. Verify redirects, record deep links,
 workspace tabs, relationship failures, filter deep links and navigation access.
+
+## Validation
+
+Implemented the unified workspace and compatibility redirects. Verified 236
+focused list, route, navigation and relationship tests; editor/location suites
+also pass. Type checking reports no new errors against the existing baseline.
+Production build and bundle-shape check pass. Browser preview confirms domain
+search against public Organisation rows and no document overflow at 390px.
+The preview has no authenticated admin session; commercial writes were covered
+with mocked RPC tests, not executed against production.

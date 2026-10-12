@@ -28,7 +28,6 @@ import {
   Cloud,
   Layers,
   Building,
-  Briefcase,
   Calendar,
   Newspaper,
   Users,
@@ -307,25 +306,14 @@ export const adminNavSections: AdminNavSection[] = [
         countTable: 'cms_pages',
         group: 'Editorial',
       },
-      // Commerce — Business and Affiliate are commerce consoles, not cockpit
-      // dashboards; both were in Cockpit only as spine-unification residue.
-      // Vendors, Brands and Hotels are TABS of the Business console, so they
-      // get no nav row of their own; their old routes redirect there.
+      // Commerce — business registries live in the Organisation workspace.
+      // Products and affiliate performance retain their own consoles.
       {
         id: 'marketplace',
         label: 'Marketplace',
         icon: ShoppingBag,
         route: '/admin/content/marketplace_listings',
         countTable: 'marketplace_listings',
-        group: 'Commerce',
-      },
-      {
-        id: 'business',
-        label: 'Business',
-        icon: Briefcase,
-        route: '/admin/business',
-        // No review badge: link review lives on /admin/quality with the other gates.
-        adminOnly: true,
         group: 'Commerce',
       },
       {
@@ -585,6 +573,7 @@ export const ADMIN_ROUTE_ROLE_OVERRIDES: Record<string, AdminRole> = {
   '/admin/content/hotels': 'admin',
   '/admin/content/marketplace_brands': 'admin',
   '/admin/content/organizations': 'admin',
+  '/admin/business': 'admin',
 
   // Deep-link-only triage pages, matching their adminQueues.ts definitions.
   // /admin/quality and /admin/content/group-requests had the same mismatch but

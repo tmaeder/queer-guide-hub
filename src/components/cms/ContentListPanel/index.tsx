@@ -76,7 +76,7 @@ function filterValueLabel(value: unknown): string {
 }
 
 /** Query params that are not field filters. */
-const RESERVED_PARAMS = new Set(['view', 'edit']);
+const RESERVED_PARAMS = new Set(['view', 'edit', 'tab', 'location']);
 
 function activeFilterLabel(filter: Filter, fields: FieldConfig[]): string {
   const field = fields.find((candidate) => candidate.name === filter.field);
@@ -192,7 +192,14 @@ function ContentListPanelBody(props: ContentListPanelProps) {
       searchParams.forEach((value, key) => {
         if (RESERVED_PARAMS.has(key) || key.endsWith(FILTER_LABEL_SUFFIX) || !value) return;
         const label = searchParams.get(`${key}${FILTER_LABEL_SUFFIX}`) || undefined;
-        urlFilters.push({ id: `url-${key}`, field: key, op: 'eq', value, label });
+        const field = c.config?.fields.find((f) => f.name === key);
+        urlFilters.push({
+          id: `url-${key}`,
+          field: key,
+          op: field?.type === 'multiselect' ? 'has_all' : field?.type === 'select' ? 'in' : 'eq',
+          value: field?.type === 'multiselect' || field?.type === 'select' ? [value] : value,
+          label,
+        });
         consumed.push(key, `${key}${FILTER_LABEL_SUFFIX}`);
       });
       const valid = normalizeSpec({ filters: urlFilters }, c.config).filters;

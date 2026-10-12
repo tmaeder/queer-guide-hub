@@ -2,6 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import {
   applyFilters,
+  applyContentSearch,
   applyArchivedView,
   applyMergedView,
   type ArchivedView,
@@ -112,7 +113,7 @@ export function useGroupedRows({
           .select(ct.listSelect ?? '*', { count: 'exact' })
           .range(0, ROWS_PER_GROUP - 1);
 
-        if (search) q = q.ilike(ct.titleField, `%${search}%`);
+        if (search) q = applyContentSearch(q as never, ct, search) as typeof q;
         q = applyFilters(q as never, filters) as typeof q;
         q = applyArchivedView(q as never, ct.lifecycle?.archive, archivedView) as typeof q;
         q = applyMergedView(q as never, ct.merge, mergedView) as typeof q;

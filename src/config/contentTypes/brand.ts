@@ -6,7 +6,7 @@ import type { ContentTypeConfig, FieldConfig } from '@/types/cms';
  * `ownership_tags` from editing: those mutate ONLY through the trust-gated
  * approve_marketplace_brand / reject_marketplace_brand RPCs (asserting
  * queer/trans/BIPOC ownership requires an explicit confirm), surfaced in the
- * review queue in the Business console (/admin/business?tab=brands).
+ * review queue in the Business console (/admin/content/organizations?tab=brands).
  */
 export const brandFields: FieldConfig[] = [
   {
@@ -96,7 +96,7 @@ export const marketplaceBrandContentType: ContentTypeConfig = {
   },
   fieldGroupOrder: ['basic', 'details', 'settings'],
   admin: {
-    qualityRoute: '/admin/business?tab=brands',
+    qualityRoute: '/admin/content/organizations?tab=brands',
   },
   publicPath: (row) =>
     row.slug && row.status === 'approved' ? `/marketplace/brands/${row.slug}` : null,

@@ -1,3 +1,4 @@
+import type { ContentTypeConfig } from '@/types/cms';
 import type { FilterOperator } from './fieldCapabilities';
 import type { Filter, SortSpec } from './viewSpec';
 
@@ -38,6 +39,18 @@ export interface QueryBuilderLike<T = unknown> {
 /** PostgREST treats `%` and `_` as wildcards; a user typing them means them literally. */
 function escapeLike(raw: string): string {
   return raw.replace(/[\\%_]/g, (m) => `\\${m}`);
+}
+
+/** Quote each OR value so names/domains containing PostgREST syntax stay literal. */
+export function applyContentSearch<T extends QueryBuilderLike<T>>(
+  query: T,
+  config: ContentTypeConfig,
+  search: string,
+): T {
+  if (!search) return query;
+  if (!config.listSearchFields?.length) return query.ilike(config.titleField, `%${search}%`);
+  const pattern = `%${escapeLike(search)}%`.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
+  return query.or(config.listSearchFields.map((field) => `${field}.ilike."${pattern}"`).join(','));
 }
 
 function asArray(value: unknown): unknown[] {
@@ -196,7 +209,9 @@ export function applyArchivedView<T extends QueryBuilderLike<T>>(
   if (!archive || view === 'all') return query;
 
   if (archive.predicate === 'present') {
-    return view === 'archived' ? query.not(archive.column, 'is', null) : query.is(archive.column, null);
+    return view === 'archived'
+      ? query.not(archive.column, 'is', null)
+      : query.is(archive.column, null);
   }
 
   // An `equals` archive with no value cannot be expressed; leave the list alone
@@ -248,9 +263,7 @@ export function applyMergedView<T extends QueryBuilderLike<T>>(
 ): T {
   if (!merge || view === 'all') return query;
 
-  return view === 'merged'
-    ? query.not(merge.column, 'is', null)
-    : query.is(merge.column, null);
+  return view === 'merged' ? query.not(merge.column, 'is', null) : query.is(merge.column, null);
 }
 
 // ── Embedded live scope ────────────────────────────────────────────

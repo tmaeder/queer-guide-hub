@@ -6,12 +6,7 @@ import { useState } from 'react';
 import { TrackLoader } from '@/components/transit/TrackLoader';
 
 import { Button } from '@/components/ui/button';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import {
   useLinkOrgEntity,
@@ -26,9 +21,17 @@ interface Props {
   typeLabel: string;
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  onLinked?: () => Promise<void>;
 }
 
-export function OrgEntityPickerDialog({ orgId, entityType, typeLabel, open, onOpenChange }: Props) {
+export function OrgEntityPickerDialog({
+  orgId,
+  entityType,
+  typeLabel,
+  open,
+  onOpenChange,
+  onLinked,
+}: Props) {
   const [q, setQ] = useState('');
   const { data: candidates, isFetching } = useOrgLinkCandidates(entityType, q, open);
   const link = useLinkOrgEntity(orgId);
@@ -36,6 +39,7 @@ export function OrgEntityPickerDialog({ orgId, entityType, typeLabel, open, onOp
   const onLink = async (entityId: string, name: string) => {
     try {
       await link.mutateAsync({ entityType, entityId });
+      await onLinked?.();
       toast.success(`Linked ${name}`);
       onOpenChange(false);
       setQ('');

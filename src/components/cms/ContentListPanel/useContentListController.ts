@@ -8,6 +8,7 @@ import { useEffect, useState, useCallback, useRef, useMemo } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import {
   applyFilters,
+  applyContentSearch,
   applySorts,
   applyArchivedView,
   applyMergedView,
@@ -238,7 +239,7 @@ export function useContentListController({
     query = applySorts(query as never, sorts, resolveSortField) as typeof query;
 
     if (debouncedSearch) {
-      query = query.ilike(ct.titleField, `%${debouncedSearch}%`);
+      query = applyContentSearch(query as never, ct, debouncedSearch) as typeof query;
     }
 
     // Every filter goes through the shared translator. The previous inline
@@ -280,7 +281,7 @@ export function useContentListController({
         .limit(100);
 
       if (debouncedSearch) {
-        query = query.ilike(ct.titleField, `%${debouncedSearch}%`);
+        query = applyContentSearch(query as never, ct, debouncedSearch) as typeof query;
       }
 
       // Threaded rather than hardcoded to 'unmerged'. There is no toggle in

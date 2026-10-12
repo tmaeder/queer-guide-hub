@@ -175,4 +175,5 @@ export const fieldGroupLabels: Record<FieldGroup, string> = {
   settings: 'Settings',
   lgbtq: 'LGBTQ+ Data',
   external: 'External Data',
+  relationships: 'Relationships',
 };

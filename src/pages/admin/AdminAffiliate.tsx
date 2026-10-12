@@ -62,8 +62,8 @@ export default function AdminAffiliate() {
   const [vertical, setVertical] = useState('all');
 
   // Absorbed by the Business console — keep the old deep links working.
-  if (rawTab === 'merchants') return <Navigate to="/admin/business?tab=merchants" replace />;
-  if (rawTab === 'partners') return <Navigate to="/admin/business?tab=partners" replace />;
+  if (rawTab === 'merchants') return <Navigate to="/admin/content/organizations?tab=merchants" replace />;
+  if (rawTab === 'partners') return <Navigate to="/admin/content/organizations?tab=partners" replace />;
 
   const tab: Tab = TABS.includes(rawTab as Tab) ? (rawTab as Tab) : 'performance';
 

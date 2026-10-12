@@ -55,6 +55,7 @@ const fieldGroupIcons: Record<FieldGroup, React.ElementType> = {
   settings: Settings,
   lgbtq: Heart,
   external: ExternalLink,
+  relationships: List,
 };
 
 /** Map field groups to dot colors */
@@ -67,6 +68,7 @@ const fieldGroupColors: Record<FieldGroup, string> = {
   settings: 'hsl(var(--muted-foreground))',
   lgbtq: 'hsl(var(--foreground))',
   external: 'hsl(var(--muted-foreground))',
+  relationships: 'hsl(var(--muted-foreground))',
 };
 
 interface CMSEditorLayoutProps {
@@ -468,10 +470,16 @@ function CMSEditorBody({
                         error={state.errors[field.name]}
                         disabled={state.isSaving}
                         setFields={setFields}
+                        onPersistedChange={refresh}
                         allValues={
                           legacyLocationId
-                            ? { ...state.data, _focused_location_id: legacyLocationId }
-                            : state.data
+                            ? {
+                                ...state.data,
+                                id: state.itemId,
+                                _editor_is_dirty: state.isDirty,
+                                _focused_location_id: legacyLocationId,
+                              }
+                            : { ...state.data, id: state.itemId, _editor_is_dirty: state.isDirty }
                         }
                       />
                     </div>

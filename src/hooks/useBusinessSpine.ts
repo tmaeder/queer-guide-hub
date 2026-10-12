@@ -1,68 +1,15 @@
 /**
  * Business spine (organizations-as-party) admin data access.
- * All Supabase reads/writes for /admin/business live here (lint rule:
+ * Organisation relationship and business operations data access lives here (lint rule:
  * supabase.from() only in src/hooks/).
  */
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { untypedFrom, untypedRpc } from '@/integrations/supabase/untyped';
-import type { Tables } from '@/integrations/supabase/types';
 
 export type OrgEntityType = 'venue' | 'hotel' | 'merchant' | 'affiliate_partner' | 'brand';
 
 export { ORG_ROLE_LABELS } from '@/lib/organizationRoles';
-
-export type AdminOrg = Tables<'organizations'>;
-
-export interface OrgListFilters {
-  q?: string;
-  role?: string;
-  claimStatus?: string;
-  needsAttention?: boolean;
-}
-
-export function useAdminOrgList(filters: OrgListFilters) {
-  const { q, role, claimStatus, needsAttention } = filters;
-  return useQuery({
-    queryKey: ['admin-orgs', q ?? '', role ?? '', claimStatus ?? '', needsAttention ?? false],
-    staleTime: 30_000,
-    queryFn: async (): Promise<AdminOrg[]> => {
-      let query = supabase
-        .from('organizations')
-        .select('*')
-        .order('updated_at', { ascending: false })
-        .limit(200);
-      if (q && q.trim()) {
-        const term = q.trim().replace(/[%_]/g, '');
-        query = query.or(
-          `name.ilike.%${term}%,website_domain.ilike.%${term}%,slug.ilike.%${term}%`,
-        );
-      }
-      if (role) query = query.contains('roles', [role]);
-      if (claimStatus) query = query.eq('claim_status', claimStatus);
-      if (needsAttention) query = query.eq('needs_attention', true);
-      const { data, error } = await query;
-      if (error) throw new Error(error.message);
-      return data ?? [];
-    },
-  });
-}
-
-export function useAdminOrg(id: string | undefined) {
-  return useQuery({
-    queryKey: ['admin-org', id],
-    enabled: Boolean(id),
-    queryFn: async (): Promise<AdminOrg | null> => {
-      const { data, error } = await supabase
-        .from('organizations')
-        .select('*')
-        .eq('id', id!)
-        .maybeSingle();
-      if (error) throw new Error(error.message);
-      return data;
-    },
-  });
-}
 
 export interface LinkedEntityRow {
   id: string;
@@ -129,7 +76,7 @@ export function useOrgLinkedEntities(orgId: string | undefined) {
             id: h.id,
             name: h.name,
             detail: [h.hotel_type, h.city].filter(Boolean).join(' · ') || null,
-            editHref: `/admin/business?tab=hotels`,
+            editHref: `/admin/content/organizations?tab=hotels`,
           })),
         ),
         merchant: map(
@@ -137,7 +84,7 @@ export function useOrgLinkedEntities(orgId: string | undefined) {
             id: m.id,
             name: m.display_name,
             detail: [m.provider, m.shop_domain].filter(Boolean).join(' · ') || null,
-            editHref: `/admin/business?tab=merchants`,
+            editHref: `/admin/content/organizations?tab=merchants`,
           })),
         ),
         affiliate_partner: map(
@@ -145,7 +92,7 @@ export function useOrgLinkedEntities(orgId: string | undefined) {
             id: p.id,
             name: p.partner_name,
             detail: [p.vertical, p.enabled ? 'enabled' : 'disabled'].filter(Boolean).join(' · '),
-            editHref: `/admin/business?tab=partners`,
+            editHref: `/admin/content/organizations?tab=partners`,
           })),
         ),
         brand: map(
@@ -153,7 +100,7 @@ export function useOrgLinkedEntities(orgId: string | undefined) {
             id: b.id,
             name: b.display_name,
             detail: b.status,
-            editHref: `/admin/business?tab=brands`,
+            editHref: `/admin/content/organizations?tab=brands`,
           })),
         ),
         news_source: map(

@@ -1,3 +1,4 @@
+import { OrganisationRelationshipsField } from './OrganisationRelationshipsField';
 import React from 'react';
 import { OrganisationLocationsField } from './OrganisationLocationsField';
 import type { FieldConfig } from '@/types/cms';
@@ -33,10 +34,12 @@ export interface FieldProps {
   setFields?: (fields: Record<string, unknown>) => void;
   /** All current form values (used by fields that depend on sibling field values) */
   allValues?: Record<string, unknown>;
+  onPersistedChange?: () => Promise<void>;
 }
 
 const FIELD_COMPONENTS: Record<string, React.ComponentType<FieldProps>> = {
   organisation_locations: OrganisationLocationsField,
+  organisation_relationships: OrganisationRelationshipsField,
   text: TextField,
   url: TextField,
   email: TextField,
@@ -76,6 +79,7 @@ export function FieldRenderer({
   disabled,
   setFields,
   allValues,
+  onPersistedChange,
 }: FieldRendererProps) {
   if (field.hidden) {
     return null;
@@ -109,6 +113,7 @@ export function FieldRenderer({
       disabled={isDisabled}
       setFields={setFields}
       allValues={allValues}
+      onPersistedChange={onPersistedChange}
     />
   );
 }

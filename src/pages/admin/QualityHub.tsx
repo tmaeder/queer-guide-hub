@@ -137,7 +137,7 @@ const SECTIONS: EngineSection[] = [
        inputs the generic triage panel does not model. */
     value: 'business-links',
     title: 'Business links — adoption review',
-    editRoute: '/admin/business',
+    editRoute: '/admin/content/organizations',
     editLabel: 'Open Business console',
     render: () => (
       <>

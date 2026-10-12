@@ -14,6 +14,7 @@ import { MemoryRouter, useLocation } from 'react-router';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { getContentType } from '@/config/contentTypes';
 
+const mockConfig = vi.hoisted(() => ({ type: 'venues' }));
 const onEdit = vi.fn();
 const setFilters = vi.fn();
 
@@ -31,7 +32,7 @@ vi.mock('@/hooks/useContentViews', () => ({
 
 vi.mock('../useContentListController', () => ({
   useContentListController: () => ({
-    config: getContentType('venues'),
+    config: getContentType(mockConfig.type),
     contentTypeId: 'venues',
     items: [],
     loading: false,
@@ -105,7 +106,10 @@ const renderAt = (entry: string, contentTypeId?: string, onLoc: (s: string) => v
   );
 
 describe('ContentListPanel ?<field>= filter deep link', () => {
-  beforeEach(() => setFilters.mockClear());
+  beforeEach(() => {
+    setFilters.mockClear();
+    mockConfig.type = 'venues';
+  });
 
   it('turns ?city_id= into an eq filter labelled with the city name', async () => {
     renderAt('/admin/content/venues?city_id=c-1&city_id_label=Berlin', 'venues');
@@ -133,6 +137,25 @@ describe('ContentListPanel ?<field>= filter deep link', () => {
     });
     await waitFor(() => expect(search).not.toContain('not_a_field'));
     expect(setFilters).not.toHaveBeenCalled();
+  });
+
+  it('applies Organisation roles as membership filters and preserves workspace tabs', async () => {
+    mockConfig.type = 'organizations';
+    let search = '?';
+    renderAt(
+      '/admin/content/organizations?tab=merchants&roles=seller&claim_status=claimed',
+      'organizations',
+      (s) => {
+        search = s;
+      },
+    );
+    await waitFor(() =>
+      expect(setFilters).toHaveBeenCalledWith([
+        expect.objectContaining({ field: 'roles', op: 'has_all', value: ['seller'] }),
+        expect.objectContaining({ field: 'claim_status', op: 'in', value: ['claimed'] }),
+      ]),
+    );
+    await waitFor(() => expect(search).toBe('?tab=merchants'));
   });
 
   it('does nothing without params', async () => {

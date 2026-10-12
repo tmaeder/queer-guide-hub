@@ -122,7 +122,7 @@ export function HotelsManager() {
     try {
       const orgId = await promote.mutateAsync({ entityType: 'hotel', entityId: hotel.id });
       toast.success(`${hotel.name} linked to business`);
-      navigate(`/admin/business/${orgId}`);
+      navigate(`/admin/content/organizations?edit=${orgId}`);
     } catch (e) {
       toast.error(`Error: ${(e as Error).message}`);
     }

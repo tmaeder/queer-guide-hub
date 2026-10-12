@@ -25,12 +25,17 @@ vi.mock('@/hooks/useBusinessSpine', () => ({
 }));
 
 import AdminBusiness from '../AdminBusiness';
+import Workspace from '../OrganisationsWorkspace';
+vi.mock('@/components/cms/ContentListPanel', () => ({
+  ContentListPanel: () => <div>Directory tools</div>,
+}));
 
 function renderAt(path: string) {
   return render(
     <MemoryRouter initialEntries={[path]}>
       <Routes>
         <Route path="/admin/business" element={<AdminBusiness />} />
+        <Route path="/admin/content/organizations" element={<Workspace />} />
         <Route path="/admin/quality" element={<div>Quality hub</div>} />
       </Routes>
     </MemoryRouter>,
@@ -57,9 +62,6 @@ describe('AdminBusiness — link review moved to Quality', () => {
 
   it('still renders an unknown tab param as the directory', () => {
     renderAt('/admin/business?tab=nonsense');
-    expect(screen.getByRole('tab', { name: /Directory/i })).toHaveAttribute(
-      'data-state',
-      'active',
-    );
+    expect(screen.getByRole('tab', { name: /Directory/i })).toHaveAttribute('data-state', 'active');
   });
 });

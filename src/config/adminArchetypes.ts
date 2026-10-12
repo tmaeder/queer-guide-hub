@@ -157,7 +157,8 @@ export const ADMIN_ARCHETYPES: AdminArchetypeEntry[] = [
   { path: 'content/personalities', archetype: 'A', title: 'Personalities', adopted: true },
   { path: 'content/milestones', archetype: 'A', title: 'Milestones', adopted: true },
   { path: 'users', archetype: 'A', title: 'Users', adopted: true },
-  { path: 'business', archetype: 'A', title: 'Business', adopted: true },
+  { path: 'content/organizations', archetype: 'A', title: 'Organisations', adopted: true },
+  { path: 'business', archetype: 'A', title: 'Organisations', adopted: true },
   { path: 'audit', archetype: 'A', title: 'Audit log', adopted: true },
   { path: 'imports/email-ingestions', archetype: 'A', title: 'Email ingestions', adopted: true },
   {

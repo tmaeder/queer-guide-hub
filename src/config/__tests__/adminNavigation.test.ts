@@ -73,6 +73,11 @@ describe('adminNavSections shape', () => {
 });
 
 describe('getNavItemByRoute', () => {
+  it('offers one Organisation workspace without a second Business directory', () => {
+    const items = adminNavSections.flatMap((section) => section.items);
+    expect(items.filter((item) => item.route === '/admin/content/organizations')).toHaveLength(1);
+    expect(items.some((item) => item.route === '/admin/business')).toBe(false);
+  });
   it('finds an item by its exact route', () => {
     const item = getNavItemByRoute('/admin/content/organizations');
     expect(item?.id).toBe('organizations');

@@ -1,4 +1,5 @@
-import { describe, it, expect } from 'vitest';
+import { applyContentSearch } from '../filterOps';
+import { describe, it, expect, vi } from 'vitest';
 import {
   applyFilter,
   applyFilters,
@@ -343,5 +344,17 @@ describe('applyEmbeddedLiveScope', () => {
     const { q, calls } = stub();
     applyEmbeddedLiveScope(q, 'tags', {});
     expect(calls).toEqual([]);
+  });
+});
+
+describe('multi-column Organisation search', () => {
+  it('quotes search values containing PostgREST delimiters', () => {
+    const query = { or: vi.fn().mockReturnThis(), ilike: vi.fn().mockReturnThis() };
+    const config = { titleField: 'name', listSearchFields: ['name', 'website_domain', 'slug'] };
+    applyContentSearch(query as never, config as never, 'shop,example("brand")');
+    expect(query.or).toHaveBeenCalledWith(
+      'name.ilike."%shop,example(\\"brand\\")%",website_domain.ilike."%shop,example(\\"brand\\")%",slug.ilike."%shop,example(\\"brand\\")%"',
+    );
+    expect(query.ilike).not.toHaveBeenCalled();
   });
 });

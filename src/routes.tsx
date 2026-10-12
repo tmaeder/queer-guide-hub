@@ -117,7 +117,7 @@ const AdminFeedback = lazyRetry(() => import('./pages/admin/feedback'));
 const AdminNotFound = lazyRetry(() => import('./pages/admin/AdminNotFound'));
 const AdminAffiliate = lazyRetry(() => import('./pages/admin/AdminAffiliate'));
 const AdminBusiness = lazyRetry(() => import('./pages/admin/AdminBusiness'));
-const AdminBusinessDetail = lazyRetry(() => import('./pages/admin/AdminBusinessDetail'));
+const OrganisationsWorkspace = lazyRetry(() => import('./pages/admin/OrganisationsWorkspace'));
 
 // CMS components rendered as admin views
 const ContentListPanel = lazyRetry(() =>
@@ -428,20 +428,21 @@ export const AppRoutes = () => {
                   {/* Vendors and brands were absorbed by the Business console. */}
                   <Route
                     path="vendors"
-                    element={<Navigate to="/admin/business?tab=merchants" replace />}
+                    element={<Navigate to="/admin/content/organizations?tab=merchants" replace />}
                   />
                   <Route
                     path="brands"
-                    element={<Navigate to="/admin/business?tab=brands" replace />}
+                    element={<Navigate to="/admin/content/organizations?tab=brands" replace />}
                   />
                   <Route path="business" element={<AdminBusiness />} />
-                  <Route path="business/:id" element={<AdminBusinessDetail />} />
+                  <Route path="business/:id" element={<AdminBusiness />} />
                   <Route path="maps" element={<AdminMaps />} />
                   <Route path="security" element={<SecurityMonitoringDashboard />} />
                   <Route path="cloudflare" element={<CloudflareDashboard />} />
 
                   {/* Content section -- unified list + per-type views */}
                   <Route path="content" element={<ContentListPanel />} />
+                  <Route path="content/organizations" element={<OrganisationsWorkspace />} />
                   {/* Personalities gets a Personencheck dashboard header above the
                     generic list; static path wins over content/:type. */}
                   <Route path="content/personalities" element={<PersonalitiesAdmin />} />
@@ -546,7 +547,7 @@ export const AppRoutes = () => {
                   {/* Hotel CRUD now lives in the Business console's Hotels tab. */}
                   <Route
                     path="hotels"
-                    element={<Navigate to="/admin/business?tab=hotels" replace />}
+                    element={<Navigate to="/admin/content/organizations?tab=hotels" replace />}
                   />
                   <Route
                     path="villages"
