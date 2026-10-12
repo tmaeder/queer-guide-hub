@@ -17,7 +17,7 @@ import {
   type EraKey,
   type View,
 } from '@/lib/personalitiesFilters';
-import { PageHero } from '@/components/discovery';
+import { KnowledgeHeader } from '@/components/knowledge/KnowledgeHeader';
 import { LoadMore } from '@/components/transit/LoadMore';
 import { EmptyState, ErrorState } from '@/components/ui/EmptyState';
 import { Button } from '@/components/ui/button';
@@ -354,28 +354,25 @@ export default function Personalities() {
 
   return (
     <div className="relative">
-      {/* The masthead was DEAD until 2026-08-11: it was nested inside
-          `<BackgroundDots>`, which the rebrand had gutted to `return null` —
-          and that stub declares no `children` prop, so React dropped the whole
-          block. This top-10 page shipped with no `<h1>`, no result count and no
-          Add-Personality button, and it is not in e2e/a11y-public-routes.spec.ts,
-          which is why nothing caught it. `PageHero` is the primitive /cities,
-          /events, /hotels, /marketplace and /guides already share. */}
-      <PageHero
-        title={t('pages.personalities.title', 'Personalities')}
-        lede={
-          loading && totalCount === 0
-            ? t('pages.personalities.ledeLoading', 'Loading personalities…')
-            : t('pages.personalities.lede', {
-                defaultValue:
-                  '{{count}} LGBTQ+ activists, artists, writers, athletes and historical icons.',
-                count: totalCount,
-              })
-        }
-        size="sm"
-      >
-        {user ? <AddPersonalityDialog onSuccess={() => window.location.reload()} /> : null}
-      </PageHero>
+      <KnowledgeHeader section="personalities">
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div>
+            <h2 className="text-title font-bold">
+              {t('pages.personalities.title', 'Personalities')}
+            </h2>
+            <p className="mt-2 max-w-reading text-body-lg leading-relaxed text-muted-foreground">
+              {loading && totalCount === 0
+                ? t('pages.personalities.ledeLoading', 'Loading personalities…')
+                : t('pages.personalities.lede', {
+                    defaultValue:
+                      '{{count}} LGBTQ+ activists, artists, writers, athletes and historical icons.',
+                    count: totalCount,
+                  })}
+            </p>
+          </div>
+          {user ? <AddPersonalityDialog onSuccess={() => window.location.reload()} /> : null}
+        </div>
+      </KnowledgeHeader>
       <PageContainer className="relative">
         {/* NSFW visibility hint — surfaces the otherwise-hidden adult filter. */}
         <div className="mb-6 text-13 text-muted-foreground">

@@ -85,7 +85,7 @@ describe('ResetPassword — no recovery session', () => {
   it('sends an already-signed-in visitor to settings', async () => {
     authState = { user: { id: 'u1' }, loading: false, passwordRecovery: false };
     renderPage();
-    await waitFor(() => expect(mockNavigate).toHaveBeenCalledWith('/settings', { replace: true }));
+    await waitFor(() => expect(mockNavigate).toHaveBeenCalledWith('/me/account', { replace: true }));
   });
 });
 

@@ -1,42 +1,36 @@
+import { AdminTextSkeleton } from '@/components/admin/primitives/AdminLoading';
+import { AdminEmpty } from '@/components/admin/primitives/AdminEmpty';
+import { Link } from 'react-router';
 import { useId, useState } from 'react';
 import { TrackLoader } from '@/components/transit/TrackLoader';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
-import { Check, X, Sparkles } from 'lucide-react';
+import { Sparkles } from 'lucide-react';
 import { useMeta } from '@/hooks/useMeta';
 import {
   type EditorialEntityType,
-  type EditorialDraft,
   type EditorialCoverRow,
-  usePendingDrafts,
-  useEntityName,
   useGenerateDrafts,
-  useSaveDraft,
-  useApproveDraft,
-  useRejectDraft,
   useAdminCovers,
   useToggleCoverPublished,
 } from '@/hooks/useAdminEditorial';
 import { AdminArchetypeHeader } from '@/components/admin/frames/AdminArchetypeHeader';
-import { AdminTextSkeleton } from '@/components/admin/primitives/AdminLoading';
-import { AdminEmpty } from '@/components/admin/primitives/AdminEmpty';
 
 export default function AdminPlacesEditorial() {
   useMeta({
-    title: 'Places editorial — Governance',
+    title: 'Editorial tools — Admin',
     description: 'Admin: drafts queue, covers. Rails moved to /admin/content/guides (format=list).',
-    canonicalPath: '/admin/governance?mode=editorial',
+    canonicalPath: '/admin/editorial-tools',
   });
 
   return (
     <div className="flex flex-col gap-6">
       {/* mb-0: the parent already spaces children with gap-6. */}
-      <AdminArchetypeHeader className="mb-0" title="Editorial — Places" />
+      <AdminArchetypeHeader className="mb-0" title="Editorial tools" />
 
       {/* Kept as body copy rather than dropped with the subtitle slot: the last
         sentence is a live POINTER — rails moved to Guides — and an operator who
@@ -48,7 +42,7 @@ export default function AdminPlacesEditorial() {
 
       <Tabs defaultValue="drafts">
         <TabsList>
-          <TabsTrigger value="drafts">Hooks queue</TabsTrigger>
+          <TabsTrigger value="drafts">Generate drafts</TabsTrigger>
           <TabsTrigger value="covers">Covers</TabsTrigger>
         </TabsList>
         <TabsContent value="drafts" className="mt-6">
@@ -74,7 +68,6 @@ function DraftsQueue() {
   const entityTypeId = useId();
   const batchSizeId = useId();
 
-  const drafts = usePendingDrafts(entityType);
   const generate = useGenerateDrafts();
 
   const handleGenerate = () => {
@@ -140,133 +133,12 @@ function DraftsQueue() {
         </Button>
       </Card>
 
-      {drafts.isLoading ? (
-        <AdminTextSkeleton lines={2} />
-      ) : (drafts.data ?? []).length === 0 ? (
-        <p className="text-muted-foreground">No pending drafts. Generate some.</p>
-      ) : (
-        <div className="flex flex-col gap-4">
-          {(drafts.data ?? []).map((d) => (
-            <DraftRow key={d.id} draft={d} />
-          ))}
-        </div>
-      )}
+      <Button asChild variant="outline">
+        <Link to="/admin?queue=editorial">Review generated drafts in the Review queue</Link>
+      </Button>
     </div>
   );
 }
-
-function DraftRow({ draft }: { draft: EditorialDraft }) {
-  const { toast } = useToast();
-  const [hook, setHook] = useState(draft.draft_hook ?? '');
-  const [long, setLong] = useState(draft.draft_long ?? '');
-
-  const hookId = useId();
-  const longId = useId();
-
-  const entityName = useEntityName(draft.entity_type, draft.entity_id);
-  const save = useSaveDraft();
-  const approve = useApproveDraft();
-  const reject = useRejectDraft();
-
-  const handleSave = () => {
-    save.mutate(
-      { id: draft.id, draft_hook: hook, draft_long: long || null },
-      { onSuccess: () => toast({ title: 'Saved' }) },
-    );
-  };
-
-  const handleApprove = async () => {
-    try {
-      await save.mutateAsync({ id: draft.id, draft_hook: hook, draft_long: long || null });
-      await approve.mutateAsync(draft.id);
-      toast({ title: 'Approved + published' });
-    } catch (e) {
-      toast({
-        title: 'Approve failed',
-        description: e instanceof Error ? e.message : 'Unknown',
-        variant: 'destructive',
-      });
-    }
-  };
-
-  const handleReject = () => {
-    reject.mutate(draft.id, { onSuccess: () => toast({ title: 'Rejected' }) });
-  };
-
-  return (
-    <Card className="p-4 flex flex-col gap-4">
-      <div className="flex items-center justify-between gap-4">
-        <div className="flex items-center gap-2">
-          <p className="text-title font-semibold">{entityName.data ?? '…'}</p>
-          <Badge variant="outline" className="text-2xs uppercase">
-            {draft.entity_type}
-          </Badge>
-        </div>
-        <p className="text-2xs text-muted-foreground">
-          {new Date(draft.generated_at).toLocaleString()}
-        </p>
-      </div>
-
-      <div className="flex flex-col gap-2">
-        <label htmlFor={hookId} className="text-2xs uppercase tracking-wide text-muted-foreground">
-          Hook
-        </label>
-        <Input
-          id={hookId}
-          value={hook}
-          onChange={(e) => setHook(e.target.value)}
-          maxLength={140}
-          placeholder="One-line editorial pull"
-        />
-        <p className="text-2xs text-muted-foreground">{hook.length}/120 recommended</p>
-      </div>
-
-      {draft.entity_type === 'country' && (
-        <div className="flex flex-col gap-2">
-          <label
-            htmlFor={longId}
-            className="text-2xs uppercase tracking-wide text-muted-foreground"
-          >
-            Long-form (optional)
-          </label>
-          <Textarea
-            id={longId}
-            value={long}
-            onChange={(e) => setLong(e.target.value)}
-            rows={4}
-            placeholder="3–6 sentences for hero / rail features"
-          />
-        </div>
-      )}
-
-      <div className="flex items-center gap-2">
-        <Button
-          onClick={handleApprove}
-          disabled={save.isPending || approve.isPending || !hook.trim()}
-          size="sm"
-        >
-          {approve.isPending ? (
-            <TrackLoader size={16} className="mr-2" />
-          ) : (
-            <Check className="h-4 w-4 mr-2" />
-          )}
-          Approve & publish
-        </Button>
-        <Button variant="outline" onClick={handleSave} disabled={save.isPending} size="sm">
-          Save draft
-        </Button>
-        <Button variant="outline" onClick={handleReject} disabled={reject.isPending} size="sm">
-          <X className="h-4 w-4 mr-2" />
-          Reject
-        </Button>
-      </div>
-    </Card>
-  );
-}
-
-// ---------------------------------------------------------------------------
-// Covers editor
-// ---------------------------------------------------------------------------
 
 function CoversEditor() {
   const { toast } = useToast();

@@ -246,7 +246,7 @@ describe('check-pipeline-health wiring', () => {
  * admin-only and skips wherever no admin storageState exists, which is every
  * environment except the nightly — so nothing else would notice the drift.
  */
-describe('the inbox e2e spec stays coupled to what it asserts about', () => {
+describe('the unified review e2e spec stays coupled to what it asserts about', () => {
   const specRaw = readFileSync(join(process.cwd(), 'e2e/admin-inbox-renders.spec.ts'), 'utf8');
   /*
    * Comment-stripped, and that is load-bearing rather than tidy. The spec's own
@@ -257,22 +257,18 @@ describe('the inbox e2e spec stays coupled to what it asserts about', () => {
    */
   const spec = specRaw.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '');
   const view = readFileSync(
-    join(process.cwd(), 'src/components/admin/triage/TriageView.tsx'),
+    join(process.cwd(), 'src/pages/admin/AdminReviewQueue.tsx'),
     'utf8',
   );
   const row = readFileSync(
     join(process.cwd(), 'src/components/admin/triage/TriageItemRow.tsx'),
     'utf8',
   );
-  const list = readFileSync(
-    join(process.cwd(), 'src/components/admin/triage/TriageList.tsx'),
-    'utf8',
-  );
 
-  it('matches the error banner TriageView actually renders', () => {
-    expect(view).toContain('Failed to load triage queue:');
-    expect(spec).toMatch(/ERROR_BANNER = \/Failed to load triage queue\//);
-    expect(spec).toMatch(/getByText\(ERROR_BANNER\)/);
+
+  it('matches the error state the unified review page actually renders', () => {
+    expect(view).toContain('The review queue could not be loaded');
+    expect(spec).toContain("getByText('The review queue could not be loaded')");
   });
 
   it('matches the accessible name the row overlay actually carries', () => {
@@ -283,28 +279,21 @@ describe('the inbox e2e spec stays coupled to what it asserts about', () => {
     expect(spec).toContain('button[aria-label^="Open "]');
   });
 
-  it('matches the empty state, which is a DIFFERENT DOM state from the error', () => {
-    // Asserting the absence of both is what makes the spec non-vacuous: a
-    // broken union and a drained queue must not be able to look alike.
-    expect(list).toContain('No items to review.');
-    expect(spec).toContain("getByText('No items to review.')");
+  it('matches the empty state, which is a different DOM state from the error', () => {
+    expect(view).toContain('All caught up');
+    expect(spec).toContain("getByText('All caught up')");
+    expect(spec).toContain('data.total > 0');
   });
 
-  it('opens the inbox UNFILTERED, which is the only shape that failed', () => {
-    // Every `?queue=<one>` deep link built a one-view union and worked. A spec
-    // that only ever visited a filtered queue would have passed throughout.
-    expect(spec).toMatch(/goto\(`\/admin\/inbox\$\{query\}`/);
-    expect(spec).toMatch(/openInbox\(page\)\)/);
+  it('opens the queue unfiltered and verifies the full source totals', () => {
+    expect(spec).toMatch(/goto\('\/admin'\)/);
+    expect(spec).toContain("p_scope === 'all'");
+    expect(spec).toContain('data.total).toBe(data.all_total)');
+    expect(spec).toContain('data.all_total');
   });
 
-  it('proves it reached the inbox before asserting the absence of an error', () => {
-    // Measured on prod: an anonymous visit to /admin/inbox lands on /auth, where
-    // "no error banner" is trivially true. Without the heading probe the whole
-    // file would pass having never seen the inbox.
-    expect(spec).toMatch(/getByRole\('heading', \{ name: 'Inbox', exact: true \}\)/);
-    // The heading is AdminInbox's, not TriageView's - and it has to be an <h1>
-    // with exactly that text, or `exact: true` silently never matches.
-    const pageSrc = readFileSync(join(process.cwd(), 'src/pages/admin/AdminInbox.tsx'), 'utf8');
-    expect(pageSrc).toMatch(/<h1[^>]*>Inbox<\/h1>/);
+  it('proves it reached the review queue before asserting the absence of an error', () => {
+    expect(spec).toMatch(/getByRole\('heading', \{ name: 'Review queue', exact: true \}\)/);
+    expect(view).toMatch(/<h1[^>]*>Review queue<\/h1>/);
   });
 });

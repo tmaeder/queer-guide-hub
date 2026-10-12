@@ -8,6 +8,7 @@ import { LayoutShell } from '@/components/layout/LayoutShell';
 import { AudioPlayerProvider } from '@/hooks/useAudioPlayer';
 import { ScrollManager } from '@/components/routing/ScrollManager';
 import { AppRoutes } from './routes';
+import { ExternalNavigationNotice } from '@/components/routing/ExternalNavigationNotice';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 
 const App = () => (
@@ -18,6 +19,7 @@ const App = () => (
             directly under the router so it sees every location change,
             including ones that never reach LayoutShell's subtree. */}
         <ScrollManager />
+        <ExternalNavigationNotice />
         <ActiveTripProvider>
           <BreadcrumbProvider>
             <PageEntityProvider>

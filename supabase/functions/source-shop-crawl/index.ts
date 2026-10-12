@@ -58,6 +58,9 @@ interface CrawlConfig {
   url_include?: string
   entity_id_from?: string
   subcategory?: string
+  category?: string
+  product_type?: string
+  brand_name?: string
   business_name?: string
   currency?: string
   lang?: string
@@ -381,7 +384,7 @@ Deno.serve(withErrorReporting('source-shop-crawl', async (req) => {
             // Tier 1 of the post-commit tag engine reads
             // marketplace_listing_sources.raw->>product_type. 'Book' resolves there at
             // 0.95, which stops Tier 2's \bring\b / \bgag\b rules from retyping a novel.
-            product_type: 'Book',
+            product_type: cfg.product_type || 'Book',
           },
         })
       }
@@ -414,13 +417,13 @@ Deno.serve(withErrorReporting('source-shop-crawl', async (req) => {
             merchant_deep_link: url, merchant_domain: extractMerchantDomain(url),
             price: d.price as number,
             currency: normalizeCurrency(d.currency ?? currencyFallback),
-            category: 'Books',
+            category: cfg.category || 'Books',
             // Drives the STORED generated columns subcategory_group + department.
             // marketplace_subcategory_group() is English-only, so a German label like
             // "Bücher" would fall through to 'other' — we always write the English
             // display string rather than the shop's own wording.
             subcategory,
-            brand: author, brand_name: author,
+            brand: cfg.brand_name || author, brand_name: cfg.brand_name || author,
             business_name: businessName,
             in_stock: d.availability as boolean | null,
             sku: d.isbn as string | null,

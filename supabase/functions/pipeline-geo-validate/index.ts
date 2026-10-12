@@ -1,3 +1,4 @@
+import { workBudget, boundedBatch } from '../_shared/work-budget.ts'
 import { getServiceClient, jsonResponse, errorResponse, corsResponse, requireInternalOrAdmin } from '../_shared/supabase-client.ts'
 import { withErrorReporting } from '../_shared/report-api-error.ts'
 import { buildCountryCanon, canonCountry } from '../_shared/geo-normalize.ts'
@@ -90,7 +91,8 @@ Deno.serve(withErrorReporting('pipeline-geo-validate', async (req) => {
 
   try {
     const body = await req.json().catch(() => ({}))
-    const batchSize = Math.min(body.batch_size ?? 30, 50)
+    const batchSize = boundedBatch(body.batch_size, 5, 10)
+    const budget = workBudget(45000)
     const onlyNew = body.only_new ?? true
 
     // One read, reused for the whole batch. Without it every comparison below
@@ -139,8 +141,10 @@ Deno.serve(withErrorReporting('pipeline-geo-validate', async (req) => {
     const toValidate = venues.filter((v) => !skipSet.has(v.id))
 
     let validated = 0, mismatches = 0, errors = 0
+    let firstError: string | null = null
 
     for (const v of toValidate) {
+      if (!budget.canStart(10000)) break
       if (v.latitude == null || v.longitude == null) continue
       try {
         const url = `${NOMINATIM}?format=json&lat=${v.latitude}&lon=${v.longitude}&zoom=10&addressdetails=1`
@@ -151,8 +155,8 @@ Deno.serve(withErrorReporting('pipeline-geo-validate', async (req) => {
         if (NOMINATIM_AUTH) {
           headers['Authorization'] = `Basic ${btoa(NOMINATIM_AUTH)}`
         }
-        const resp = await fetch(url, { headers })
-        if (!resp.ok) { errors++; await sleep(SLEEP_MS); continue }
+        const resp = await fetch(url, { headers, signal: budget.signal(8000) })
+        if (!resp.ok) throw new Error(`Reverse geocoding HTTP ${resp.status}`)
         const json = await resp.json() as NominatimResult
         const addr = json.address || {}
         const geocodedCountry = addr.country || null
@@ -171,7 +175,7 @@ Deno.serve(withErrorReporting('pipeline-geo-validate', async (req) => {
         const hasMismatch = expected !== '' && actual !== '' && expected !== actual
         if (hasMismatch) mismatches++
 
-        await supabase.from('geo_validations').upsert({
+        const { error: writeError } = await supabase.from('geo_validations').upsert({
           content_type: 'venue',
           content_id: v.id,
           original_lat: v.latitude,
@@ -197,20 +201,24 @@ Deno.serve(withErrorReporting('pipeline-geo-validate', async (req) => {
           last_validated_at: new Date().toISOString(),
         }, { onConflict: 'content_type,content_id' })
 
+        if (writeError) throw writeError
         validated++
       } catch (e) {
         console.error(`validate ${v.id}:`, (e as Error).message)
         errors++
+        firstError ??= (e as Error).message
       }
       await sleep(SLEEP_MS)
     }
 
     return jsonResponse({
-      success: true,
+      success: errors === 0,
       validated, mismatches, errors,
+      error: firstError,
+      deferred: Math.max(0, toValidate.length - validated - errors),
       candidates: venues.length,
       skipped_recent: skipSet.size,
-    }, 200, req)
+    }, errors > 0 ? 502 : 200, req)
   } catch (error) {
     console.error('pipeline-geo-validate:', error)
     return errorResponse((error as Error).message, 500, req)

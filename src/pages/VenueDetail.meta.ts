@@ -103,6 +103,8 @@ export function buildVenueJsonLd(
   if (rating.ratingCount > 0) {
     ld.aggregateRating = {
       '@type': 'AggregateRating',
+      worstRating: 0,
+      bestRating: 5,
       ratingValue: Number(rating.ratingValue.toFixed(2)),
       ratingCount: rating.ratingCount,
     };

@@ -4,7 +4,8 @@ import { AnalyticsTab } from '@/components/admin/search-intelligence/AnalyticsTa
 import { SynonymsTab } from '@/components/admin/search-intelligence/SynonymsTab';
 import { AuditTab } from '@/components/admin/search-intelligence/AuditTab';
 import { IngestionQualityTab } from '@/components/admin/search-intelligence/IngestionQualityTab';
-import { SuggestionsTab } from '@/components/admin/search-intelligence/SuggestionsTab';
+import { Link } from 'react-router';
+import { Button } from '@/components/ui/button';
 import { SetupTab } from '@/components/admin/search-intelligence/SetupTab';
 import { AdminArchetypeHeader } from '@/components/admin/frames/AdminArchetypeHeader';
 
@@ -54,7 +55,12 @@ export default function AdminSearchIntelligence() {
             <IngestionQualityTab />
           </TabsContent>
           <TabsContent value="suggestions">
-            <SuggestionsTab />
+            <p className="mb-4 text-sm text-muted-foreground">
+              Review all enrichment suggestions in the shared Review queue.
+            </p>
+            <Button asChild>
+              <Link to="/admin?family=enrichment">Open enrichment reviews</Link>
+            </Button>
           </TabsContent>
           <TabsContent value="audit">
             <AuditTab />

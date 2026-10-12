@@ -108,7 +108,7 @@ describe('SignalPanel', () => {
   it('links out to notification settings', () => {
     renderPanel();
     const link = screen.getByRole('link', { name: 'Notification settings' });
-    expect(link).toHaveAttribute('href', '/settings?section=notifications');
+    expect(link).toHaveAttribute('href', '/me/settings?section=notifications');
   });
 
   it('claims no quiet hours, because the product has none to report', () => {

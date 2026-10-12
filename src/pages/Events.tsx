@@ -1,3 +1,4 @@
+import { EventTypeLegend } from '@/components/events/EventTypeMark';
 import { lazy, Suspense, useState } from 'react';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { EventsHeroSpotlight } from '@/components/events/EventsHeroSpotlight';
@@ -215,6 +216,8 @@ const Events = () => {
             />
           </div>
         )}
+
+        <EventTypeLegend />
 
         {/* Editor-curated spotlight — only when browsing unfiltered */}
         {!f.hasActiveFilters && (

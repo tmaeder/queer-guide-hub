@@ -1,6 +1,7 @@
 import { Fragment } from 'react';
 import { useBreadcrumbs } from '@/contexts/BreadcrumbContext';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
+import { NearbyVenues } from '@/components/venues/NearbyVenues';
 import { SimilarItems } from '@/components/discovery/SimilarItems';
 import { MoreLikeThisByTag } from '@/components/tags/MoreLikeThisByTag';
 import { SinglePage, StickyRailGroup } from '@/components/transit/SinglePage';
@@ -112,8 +113,17 @@ export function EntitySingle({
         footer={
           related ? (
             <div className="flex flex-col gap-12 pb-28 md:pb-12">
-              <SimilarItems entity={{ type: related.type, id: related.id }} title={related.title} />
-              <MoreLikeThisByTag entityType={related.type} entityId={related.id} />
+              {related.type === 'venue' ? (
+                <NearbyVenues id={related.id} />
+              ) : (
+                <>
+                  <SimilarItems
+                    entity={{ type: related.type, id: related.id }}
+                    title={related.title}
+                  />
+                  <MoreLikeThisByTag entityType={related.type} entityId={related.id} />
+                </>
+              )}
             </div>
           ) : undefined
         }

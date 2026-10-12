@@ -25,12 +25,12 @@ function redirects(): Array<{ from: string; to: string }> {
 }
 
 describe('admin content redirects', () => {
-  it('preserves old group-request bookmarks by redirecting into Groups', () => {
+  it('preserves old group-request bookmarks by redirecting into the unified review queue', () => {
     expect(ROUTES).toMatch(
       /path="content\/group-requests"\s+element=\{<Navigate to="\/admin\/content\/community_groups\/requests" replace \/>\}/,
     );
     expect(ROUTES).toMatch(
-      /path="content\/community_groups\/requests"\s+element=\{<AdminGroupRequests \/>\}/,
+      /path="content\/community_groups\/requests"\s+element=\{<Navigate to="\/admin\?queue=group-requests" replace \/>\}/,
     );
   });
   it('finds the redirect table', () => {

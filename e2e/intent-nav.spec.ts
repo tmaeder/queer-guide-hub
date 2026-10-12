@@ -35,7 +35,7 @@ const INTENTS = [
   // crisis-adjacent block at the bottom of this file.
   // The tags wiki, promoted to a top-level intent (2026-08-22). /tags is the
   // real glossary hub, no wrapper path.
-  { label: 'Glossary', href: '/tags' },
+  { label: 'Knowledge', href: '/tags' },
   { label: 'Support', href: '/help' },
   // /marketplace, not /shop, and for the same reason as Support above: /shop
   // was /marketplace's twin — two of its three sections were duplicates of

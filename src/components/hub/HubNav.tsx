@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react';
 import { useLocation } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
@@ -29,6 +30,21 @@ export function HubNav({ className }: { className?: string }) {
   const location = useLocation();
   const pathname = stripLocale(location.pathname).replace(/\/+$/, '') || '/';
   const unreadCount = useInboxUnreadCount();
+  const navRef = useRef<HTMLElement>(null);
+
+  useEffect(() => {
+    const rail = navRef.current;
+    const link = rail?.querySelector<HTMLAnchorElement>('[aria-current="page"]');
+    if (!rail || !link) return;
+    const railBounds = rail.getBoundingClientRect();
+    const linkBounds = link.getBoundingClientRect();
+    // Reveal the active destination without moving the document or header.
+    if (linkBounds.right > railBounds.right) {
+      rail.scrollLeft += linkBounds.right - railBounds.right;
+    } else if (linkBounds.left < railBounds.left) {
+      rail.scrollLeft += linkBounds.left - railBounds.left;
+    }
+  }, [pathname]);
 
   return (
     <div className={cn('flex min-w-0 items-end gap-4', className)}>
@@ -37,6 +53,7 @@ export function HubNav({ className }: { className?: string }) {
         <HubIdentityBlock />
       </div>
       <nav
+        ref={navRef}
         aria-label={t('hub.nav', 'Hub sections')}
         className="min-w-0 flex-1 overflow-x-auto pb-2 md:overflow-visible"
       >

@@ -95,7 +95,7 @@ export function PreferencesMirrorCard({ profile, onUpdate }: PreferencesMirrorCa
           <div className="flex flex-col gap-2">
             <div className="flex items-baseline justify-between">
               <p className="text-sm font-medium">Budget</p>
-              <LocalizedLink to="/settings?section=travel" className="text-xs underline underline-offset-4">
+              <LocalizedLink to="/me/settings?section=travel" className="text-xs underline underline-offset-4">
                 Edit in Travel preferences
               </LocalizedLink>
             </div>
@@ -121,7 +121,7 @@ export function PreferencesMirrorCard({ profile, onUpdate }: PreferencesMirrorCa
               <p className="text-sm font-medium flex items-center gap-2">
                 <Accessibility size={14} aria-hidden="true" /> Accessibility needs
               </p>
-              <LocalizedLink to="/settings?section=travel" className="text-xs underline underline-offset-4">
+              <LocalizedLink to="/me/settings?section=travel" className="text-xs underline underline-offset-4">
                 Edit in Travel preferences
               </LocalizedLink>
             </div>
@@ -152,7 +152,7 @@ export function PreferencesMirrorCard({ profile, onUpdate }: PreferencesMirrorCa
               <LocalizedLink to="/onboarding/search">Vibes & languages</LocalizedLink>
             </Button>
             <Button asChild variant="outline" size="sm" className="rounded-element">
-              <LocalizedLink to="/settings?section=travel">Travel preferences</LocalizedLink>
+              <LocalizedLink to="/me/settings?section=travel">Travel preferences</LocalizedLink>
             </Button>
           </div>
         )}

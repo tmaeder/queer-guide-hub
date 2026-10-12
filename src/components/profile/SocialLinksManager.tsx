@@ -221,7 +221,7 @@ export function SocialLinksManager({
       <CardHeader>
         <div className="flex items-center gap-2">
           <Globe className="w-5 h-5" />
-          <h6 className="text-base font-semibold">Social profiles</h6>
+          <h3 className="text-base font-semibold">Social profiles</h3>
         </div>
       </CardHeader>
       <CardContent>

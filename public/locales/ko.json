@@ -1,4 +1,11 @@
 {
+  "knowledge": {
+    "title": "지식",
+    "terms": "용어",
+    "personalities": "인물",
+    "lede": "우리가 사용하는 말과 퀴어의 삶을 만들어 온 사람들.",
+    "navigation": "지식 섹션"
+  },
   "eventTypes": {
     "party": "파티",
     "festival": "축제",
@@ -200,7 +207,13 @@
     "contact": "연락처",
     "login": "로그인",
     "logout": "로그아웃",
-    "profile": "프로필"
+    "profile": "프로필",
+    "external": {
+      "title": "다른 웹사이트를 열까요?",
+      "description": "queer.guide를 떠납니다. 이동할 웹사이트에는 자체 콘텐츠와 개인정보 처리방침이 있습니다.",
+      "cancel": "여기에 머무르기",
+      "continue": "웹사이트 열기"
+    }
   },
   "footer": {
     "madeWith": "제작 도구",
@@ -1387,7 +1400,8 @@
         "similar": "비슷한 분위기",
         "tags": "공통 태그"
       }
-    }
+    },
+    "typeLegend": "이벤트 아이콘 및 유형"
   },
   "venues": {
     "title": "장소",
@@ -1526,7 +1540,18 @@
         "signals": "[KO] Visitor signals",
         "reviews": "[KO] Reviews",
         "photos": "[KO] Photos"
-      }
+      },
+      "nearby": "이 도시의 다른 장소"
+    },
+    "rating": {
+      "hint": "방문은 어땠나요? 이 장소에 무지개 0~5개로 평가해 주세요. 평가는 공개됩니다.",
+      "label": "내 평가",
+      "error": "평가를 저장하지 못했습니다. 다시 시도해 주세요.",
+      "loadError": "이전 평가를 불러오지 못했습니다. 페이지를 새로고침해 주세요.",
+      "signIn": "로그인하여 이 장소 평가하기",
+      "saving": "저장 중…",
+      "save": "평가 저장",
+      "saved": "평가를 저장했습니다."
     }
   },
   "marketplace": {
@@ -1576,7 +1601,8 @@
     "notifications": "알림",
     "blockedUsers": "차단한 사용자",
     "reportUser": "사용자 신고",
-    "sendMessage": "메시지 보내기"
+    "sendMessage": "메시지 보내기",
+    "favoritesShortcut": "즐겨찾기"
   },
   "groups": {
     "title": "그룹",
@@ -2041,6 +2067,10 @@
       "competitions": "[KO] Drag Race"
     },
     "intents": {
+      "knowledge": {
+        "label": "지식",
+        "subtitle": "퀴어의 언어와 우리에게 영향을 준 사람들"
+      },
       "goingOut": {
         "label": "나들이",
         "subtitle": "바, 클럽 그리고 오늘 밤 일정"
@@ -2075,6 +2105,7 @@
     "userMenu": {
       "myTrips": "내 여행",
       "favorites": "즐겨찾기",
+      "account": "계정",
       "settings": "설정",
       "inbox": "받은편지함",
       "friends": "친구",

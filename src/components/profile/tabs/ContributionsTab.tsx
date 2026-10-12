@@ -1,3 +1,4 @@
+import { profileEditPath } from '@/lib/profileEditing';
 import { PhotoGallery } from '@/components/profile/PhotoGallery';
 import { UserPostsList } from '@/components/posts/UserPostsList';
 import { UserReviewsList } from '@/components/profile/contributions/UserReviewsList';
@@ -26,7 +27,7 @@ export function ContributionsTab({ userId, isOwnProfile, lens = 'you', privacySe
       <p className="py-8 text-center text-13 text-muted-foreground">
         Contributions hidden at this visibility.{' '}
         {isOwnProfile && (
-          <LocalizedLink to="/settings?section=privacy" className="underline">
+          <LocalizedLink to={profileEditPath(userId, 'privacy')} className="underline">
             Privacy settings
           </LocalizedLink>
         )}

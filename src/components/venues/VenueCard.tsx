@@ -1,3 +1,4 @@
+import { VenueCategoryMark } from './VenueCategoryMark';
 import { memo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Card } from '@/components/ui/card';
@@ -189,6 +190,7 @@ function VenueCardImpl({ venue, loading = false, socialSignal }: VenueCardProps)
                   </span>
                 )}
               </p>
+              <VenueCategoryMark category={venue.category} />
               {(() => {
                 const blurb = localizedField(
                   venue.description,

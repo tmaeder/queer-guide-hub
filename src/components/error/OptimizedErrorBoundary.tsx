@@ -114,9 +114,10 @@ const DefaultErrorFallback = ({
   );
 };
 
-export const DataErrorFallback = ({
-  resetErrorBoundary,
-  errors = [],
+export const DataErrorFallback = ({ resetErrorBoundary, errors = [] }: {
+  error?: Error | null;
+  resetErrorBoundary?: () => void;
+  errors?: Array<{ message?: string } | null>;
 }) => {
   return (
     <Alert variant="destructive">

@@ -1,4 +1,11 @@
 {
+  "knowledge": {
+    "title": "知識",
+    "terms": "用語",
+    "personalities": "人物",
+    "lede": "私たちが使う言葉と、クィアの暮らしを形づくった人々。",
+    "navigation": "知識のセクション"
+  },
   "eventTypes": {
     "party": "パーティー",
     "festival": "フェスティバル",
@@ -200,7 +207,13 @@
     "contact": "お問い合わせ",
     "login": "ログイン",
     "logout": "ログアウト",
-    "profile": "プロフィール"
+    "profile": "プロフィール",
+    "external": {
+      "title": "別のウェブサイトを開きますか？",
+      "description": "queer.guide を離れます。移動先には独自のコンテンツとプライバシーポリシーがあります。",
+      "cancel": "ここに留まる",
+      "continue": "サイトを開く"
+    }
   },
   "footer": {
     "madeWith": "作成ツール",
@@ -1387,7 +1400,8 @@
         "similar": "似た雰囲気",
         "tags": "共通のタグ"
       }
-    }
+    },
+    "typeLegend": "イベントのアイコンと種類"
   },
   "venues": {
     "title": "スポット",
@@ -1526,7 +1540,18 @@
         "signals": "[JA] Visitor signals",
         "reviews": "[JA] Reviews",
         "photos": "[JA] Photos"
-      }
+      },
+      "nearby": "この街のほかのスポット"
+    },
+    "rating": {
+      "hint": "訪問はいかがでしたか？このスポットを虹0〜5個で評価してください。評価は公開されます。",
+      "label": "あなたの評価",
+      "error": "評価を保存できませんでした。もう一度お試しください。",
+      "loadError": "以前の評価を読み込めませんでした。ページを更新してください。",
+      "signIn": "ログインしてこのスポットを評価",
+      "saving": "保存中…",
+      "save": "評価を保存",
+      "saved": "評価を保存しました。"
     }
   },
   "marketplace": {
@@ -1576,7 +1601,8 @@
     "notifications": "通知",
     "blockedUsers": "ブロック中のユーザー",
     "reportUser": "ユーザーを報告",
-    "sendMessage": "メッセージを送る"
+    "sendMessage": "メッセージを送る",
+    "favoritesShortcut": "お気に入り"
   },
   "groups": {
     "title": "グループ",
@@ -2041,6 +2067,10 @@
       "competitions": "[JA] Drag Race"
     },
     "intents": {
+      "knowledge": {
+        "label": "知識",
+        "subtitle": "クィアの言葉と私たちに影響を与えた人々"
+      },
       "goingOut": {
         "label": "お出かけ",
         "subtitle": "バー、クラブ、今夜のイベント"
@@ -2075,6 +2105,7 @@
     "userMenu": {
       "myTrips": "マイトリップ",
       "favorites": "お気に入り",
+      "account": "アカウント",
       "settings": "設定",
       "inbox": "受信トレイ",
       "friends": "友だち",

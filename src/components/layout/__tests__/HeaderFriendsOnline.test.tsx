@@ -44,16 +44,15 @@ async function openMenu() {
 }
 
 describe('Header user menu — friends online', () => {
-  it('shows the online count above Settings, linking to the friends list', async () => {
+  it('shows the online count above Account, linking to the friends list', async () => {
     mockCount = 2;
     await openMenu();
     const items = screen.getAllByRole('menuitem');
     const friendsIdx = items.findIndex((el) => el.textContent?.includes('Friends'));
-    const settingsIdx = items.findIndex((el) =>
-      el.textContent?.includes('header.userMenu.settings'),
-    );
+    const accountIdx = items.findIndex((el) => el.getAttribute('href') === '/me/account');
     expect(friendsIdx).toBeGreaterThanOrEqual(0);
-    expect(friendsIdx).toBe(settingsIdx - 1);
+    expect(accountIdx).toBeGreaterThanOrEqual(0);
+    expect(friendsIdx).toBe(accountIdx - 1);
     const row = items[friendsIdx];
     expect(row.getAttribute('href')).toBe('/hub/friends');
     expect(row.textContent).toContain('2 online');

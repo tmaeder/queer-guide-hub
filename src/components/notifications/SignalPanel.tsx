@@ -279,7 +279,7 @@ export function SignalPanel() {
           {t('inbox.openAlerts', { defaultValue: 'All notifications' })}
         </LocalizedLink>
         <LocalizedLink
-          to="/settings?section=notifications"
+          to="/me/settings?section=notifications"
           className="text-foreground no-underline hover:underline"
         >
           {t('inbox.notificationSettings', { defaultValue: 'Notification settings' })}

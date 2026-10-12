@@ -1,4 +1,11 @@
 {
+  "knowledge": {
+    "title": "知识",
+    "terms": "术语",
+    "personalities": "人物",
+    "lede": "我们使用的词语，以及塑造酷儿生活的人物。",
+    "navigation": "知识栏目"
+  },
   "eventTypes": {
     "party": "派对",
     "festival": "节日",
@@ -200,7 +207,13 @@
     "contact": "联系",
     "login": "登录",
     "logout": "登出",
-    "profile": "个人资料"
+    "profile": "个人资料",
+    "external": {
+      "title": "打开其他网站？",
+      "description": "您即将离开 queer.guide。目标网站有自己的内容和隐私政策。",
+      "cancel": "留在这里",
+      "continue": "打开网站"
+    }
   },
   "footer": {
     "madeWith": "制作工具",
@@ -1387,7 +1400,8 @@
         "similar": "相似氛围",
         "tags": "共同标签"
       }
-    }
+    },
+    "typeLegend": "活动图标与类型"
   },
   "venues": {
     "title": "场所",
@@ -1526,7 +1540,18 @@
         "signals": "[ZH] Visitor signals",
         "reviews": "[ZH] Reviews",
         "photos": "[ZH] Photos"
-      }
+      },
+      "nearby": "这座城市的更多地点"
+    },
+    "rating": {
+      "hint": "这次体验如何？请给这个地点评 0–5 道彩虹。您的评分将公开显示。",
+      "label": "您的评分",
+      "error": "无法保存评分，请重试。",
+      "loadError": "无法加载您之前的评分，请刷新页面重试。",
+      "signIn": "登录以评价这个地点",
+      "saving": "正在保存…",
+      "save": "保存评分",
+      "saved": "您的评分已保存。"
     }
   },
   "marketplace": {
@@ -1576,7 +1601,8 @@
     "notifications": "通知",
     "blockedUsers": "已屏蔽用户",
     "reportUser": "举报用户",
-    "sendMessage": "发送消息"
+    "sendMessage": "发送消息",
+    "favoritesShortcut": "收藏"
   },
   "groups": {
     "title": "群组",
@@ -2041,6 +2067,10 @@
       "competitions": "[ZH] Drag Race"
     },
     "intents": {
+      "knowledge": {
+        "label": "知识",
+        "subtitle": "酷儿语言与影响我们的人物"
+      },
       "goingOut": {
         "label": "夜生活",
         "subtitle": "酒吧、俱乐部和今晚的活动"
@@ -2075,6 +2105,7 @@
     "userMenu": {
       "myTrips": "我的行程",
       "favorites": "收藏",
+      "account": "账户",
       "settings": "设置",
       "inbox": "收件箱",
       "friends": "朋友",

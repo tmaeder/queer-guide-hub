@@ -1,4 +1,11 @@
 {
+  "knowledge": {
+    "title": "Wissen",
+    "terms": "Begriffe",
+    "personalities": "Persönlichkeiten",
+    "lede": "Die Begriffe, die wir verwenden, und die Menschen, die queeres Leben geprägt haben.",
+    "navigation": "Wissensbereiche"
+  },
   "eventTypes": {
     "party": "Party",
     "festival": "Festival",
@@ -200,7 +207,13 @@
     "contact": "Kontakt",
     "login": "Anmelden",
     "logout": "Abmelden",
-    "profile": "Profil"
+    "profile": "Profil",
+    "external": {
+      "title": "Andere Website öffnen?",
+      "description": "Du verlässt queer.guide. Die Zielseite hat eigene Inhalte und Datenschutzregeln.",
+      "cancel": "Hier bleiben",
+      "continue": "Website öffnen"
+    }
   },
   "footer": {
     "madeWith": "Gemacht mit",
@@ -1570,7 +1583,8 @@
         "similar": "Ähnlicher Vibe",
         "tags": "Gemeinsame Tags"
       }
-    }
+    },
+    "typeLegend": "Event-Symbole & Arten"
   },
   "venues": {
     "title": "Orte",
@@ -1709,7 +1723,18 @@
         "signals": "[DE] Visitor signals",
         "reviews": "[DE] Reviews",
         "photos": "[DE] Photos"
-      }
+      },
+      "nearby": "Weitere Orte in dieser Stadt"
+    },
+    "rating": {
+      "hint": "Wie war dein Besuch? Gib diesem Ort 0–5 Regenbögen. Deine Bewertung ist öffentlich.",
+      "label": "Deine Bewertung",
+      "error": "Deine Bewertung konnte nicht gespeichert werden. Versuche es erneut.",
+      "loadError": "Deine bisherige Bewertung konnte nicht geladen werden. Lade die Seite neu.",
+      "signIn": "Melde dich an, um diesen Ort zu bewerten",
+      "saving": "Wird gespeichert…",
+      "save": "Bewertung speichern",
+      "saved": "Deine Bewertung ist gespeichert."
     }
   },
   "marketplace": {
@@ -1759,7 +1784,8 @@
     "notifications": "Benachrichtigungen",
     "blockedUsers": "Blockierte Nutzer*innen",
     "reportUser": "Nutzer*in melden",
-    "sendMessage": "Nachricht senden"
+    "sendMessage": "Nachricht senden",
+    "favoritesShortcut": "Favoriten"
   },
   "groups": {
     "title": "Gruppen",
@@ -2041,6 +2067,10 @@
       "competitions": "[DE] Drag Race"
     },
     "intents": {
+      "knowledge": {
+        "label": "Wissen",
+        "subtitle": "Queere Sprache und prägende Persönlichkeiten"
+      },
       "goingOut": {
         "label": "Ausgehen",
         "subtitle": "Bars, Clubs und was heute Abend läuft"
@@ -2075,6 +2105,7 @@
     "userMenu": {
       "myTrips": "Meine Reisen",
       "favorites": "Favoriten",
+      "account": "Konto",
       "settings": "Einstellungen",
       "inbox": "Posteingang",
       "friends": "Freund*innen",

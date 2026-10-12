@@ -38,11 +38,13 @@ for (const locale of LOCALES) {
       const errors = collectErrors(page);
 
       await page.goto(`/${locale}/trips`);
-      await page.waitForLoadState('networkidle');
+      await expect(page.locator('#main-content').getByRole('heading').first()).toBeVisible({
+        timeout: 15_000,
+      });
 
       // /trips redirects to /hub/plans through lazy chunks + auth boot;
-      // networkidle can fire inside a Suspense gap where the body is
-      // momentarily text-free on slow runners. Poll instead of sampling once —
+      // Background requests can remain active after the page is usable.
+      // Wait for its title, then poll instead of sampling a Suspense gap —
       // a real crash still fails (body stays empty).
       await expect
         .poll(async () => (await bodyText(page)).length, {
@@ -79,12 +81,13 @@ for (const locale of LOCALES) {
 test.describe('Arabic RTL', () => {
   test('Arabic locale applies RTL direction to <html>', async ({ page }) => {
     await page.goto('/ar/trips');
-    await page.waitForLoadState('networkidle');
-
-    const dir = await page.evaluate(() => document.documentElement.dir);
-    const lang = await page.evaluate(() => document.documentElement.lang);
-
-    expect(dir, 'expected <html dir="rtl"> on Arabic locale').toBe('rtl');
-    expect(lang).toMatch(/^ar/);
+    await expect(page.locator('#main-content').getByRole('heading').first()).toBeVisible({
+      timeout: 15_000,
+    });
+    await expect(
+      page.locator('html'),
+      'expected <html dir="rtl"> on Arabic locale',
+    ).toHaveAttribute('dir', 'rtl');
+    await expect(page.locator('html')).toHaveAttribute('lang', /^ar/);
   });
 });

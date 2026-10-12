@@ -323,21 +323,19 @@ export const INTENT_NAV: IntentDestination[] = [
     ],
   },
   {
-    // The tags wiki, promoted to a top-level job ("what does this word/flag/
-    // code mean"). `to` is the real hub page — /tags carries the glossary
-    // index, category tree and graph view; no wrapper path is minted. Rides
-    // the pink line because glossary↔tag is 1:1 and ROUTE_BULLET_MAP.tag is
-    // the pink `#` bullet (asserted via ONE_TO_ONE in navigation.test.ts).
+    // Knowledge combines glossary terms and notable people. Retain the
+    // stable glossary intent id for saved preferences and track geometry.
     id: 'glossary',
     to: '/tags',
     icon: transitIcon('documents'),
-    labelKey: 'header.intents.glossary.label',
-    fallback: 'Glossary',
-    subtitleKey: 'header.intents.glossary.subtitle',
-    subtitleFallback: 'What every term, flag and code means',
-    activePrefixes: ['/tags'],
+    labelKey: 'header.intents.knowledge.label',
+    fallback: 'Knowledge',
+    subtitleKey: 'header.intents.knowledge.subtitle',
+    subtitleFallback: 'Queer language and the people who shaped us',
+    activePrefixes: ['/tags', '/personalities', '/personality'],
     children: [
       { to: '/tags', labelKey: 'header.nav.tagsAll', fallback: 'All terms' },
+      { to: '/personalities', labelKey: 'header.nav.personalities', fallback: 'Personalities' },
       {
         to: '/tags/interactions',
         labelKey: 'header.nav.tagsInteractions',
@@ -424,7 +422,7 @@ export const INTENT_SCOPE_BIAS: Record<IntentId, string[]> = {
   // index in search, so this deliberately does not pretend to surface people.
   meet: ['group', 'event'],
   rights: ['country', 'news'],
-  glossary: ['tag'],
+  glossary: ['tag', 'personality'],
   support: ['organization', 'news'],
   shop: ['marketplace', 'guide'],
 };
@@ -551,7 +549,7 @@ export interface NavItem {
 // "View public profile", Admin and Sign out are rendered inline in the Header
 // because they need user.id / role gating.
 export const USER_MENU_ITEMS: NavItem[] = [
-  { to: '/settings', icon: Settings, labelKey: 'header.userMenu.settings' },
+  { to: '/me/account', icon: Settings, labelKey: 'header.userMenu.account' },
   { to: '/extension', icon: Puzzle, labelKey: 'header.userMenu.extension' },
 ];
 
@@ -653,8 +651,7 @@ export const INTENT_TRACK: Record<string, 'pink' | 'blue' | 'green' | 'yellow'> 
   travelling: 'blue',
   meet: 'green',
   rights: 'yellow',
-  // Forced, not chosen: glossary↔tag is 1:1 and ROUTE_BULLET_MAP.tag rides
-  // pink (`#` bullet) — the nav tab and every tag chip must agree.
+  // Knowledge retains the glossary's established pink line.
   glossary: 'pink',
   support: 'pink',
   shop: 'yellow',

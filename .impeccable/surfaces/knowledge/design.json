@@ -1,0 +1,63 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-12T17:08:18.489096+00:00",
+  "title": "Design System: Knowledge",
+  "scope": {
+    "mode": "Read",
+    "authority": [
+      "../../../DESIGN.md",
+      "../../../PRODUCT.md",
+      "../../../docs/design-system/README.md"
+    ],
+    "sources": [
+      "src/components/knowledge/KnowledgeHeader.tsx",
+      "src/pages/TagsIndex.tsx",
+      "src/pages/Personalities.tsx",
+      "src/config/navigation.ts",
+      "src/components/layout/PageContainer.tsx",
+      "src/index.css"
+    ],
+    "boundary": "Local shared header and route-section extension; existing tokens, routes, tools, and global documentation remain authoritative.",
+    "routes": {
+      "terms": "/tags",
+      "personalities": "/personalities",
+      "intentId": "glossary",
+      "activePrefixes": [
+        "/tags",
+        "/personalities",
+        "/personality"
+      ]
+    }
+  },
+  "extensions": {},
+  "components": [
+    {
+      "name": "Knowledge section navigation",
+      "kind": "nav",
+      "description": "Localized route links with a 44px minimum height, ink/paper active state, aria-current, and visible keyboard focus. This static English preview represents the Terms route; production uses LocalizedLink and translation keys.",
+      "html": "<nav class=\"ds-knowledge-nav\" aria-label=\"Knowledge sections\"><a class=\"ds-knowledge-link\" href=\"/tags\" aria-current=\"page\">Terms</a><a class=\"ds-knowledge-link\" href=\"/personalities\">Personalities</a></nav>",
+      "css": ".ds-knowledge-nav { display:flex; flex-wrap:wrap; gap:0.5rem; margin-top:1.5rem; padding-bottom:1rem; border-bottom:1px solid hsl(var(--border-hairline)); } .ds-knowledge-link { display:inline-flex; min-height:44px; align-items:center; padding:0.5rem 1rem; font-family:var(--font-sans); font-size:var(--text-13); line-height:var(--text-13--line-height); font-weight:700; text-decoration:none; color:hsl(var(--muted-foreground)); transition-property:color,background-color,border-color,text-decoration-color,fill,stroke; transition-duration:150ms; transition-timing-function:cubic-bezier(0.4,0,0.2,1); } .ds-knowledge-link:not([aria-current]):hover { background:hsl(var(--muted)); color:hsl(var(--foreground)); } .ds-knowledge-link[aria-current=\"page\"] { background:hsl(var(--foreground)); color:hsl(var(--background)); } .ds-knowledge-link:focus-visible { outline:2px solid hsl(var(--foreground)); outline-offset:2px; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "SUBWAY MAP",
+    "overview": "Knowledge joins the terms index and personalities directory through one shared header. It inherits the incumbent editorial paper/ink identity; comprehension and explicit wayfinding guide this Read surface.",
+    "keyCharacteristics": [
+      "One Knowledge heading with two visible, URL-backed sections.",
+      "Localized labels, ordinary navigation history, and stable chrome during loading and failure.",
+      "Existing discovery and contribution tools remain within their owning section."
+    ],
+    "rules": [],
+    "dos": [
+      "Do preserve localized, URL-backed section navigation and visible labels.",
+      "Do retain PageContainer alignment and the existing semantic tokens.",
+      "Do keep the shared heading and section links available during loading and failure.",
+      "Do retain each section's tools, filters, contribution controls, and individual URLs."
+    ],
+    "donts": [
+      "Don't add a second page h1 below Knowledge.",
+      "Don't merge term and personality results into one undifferentiated directory.",
+      "Don't introduce a new route, visual identity, palette, radius, or shadow for this extension."
+    ]
+  }
+}

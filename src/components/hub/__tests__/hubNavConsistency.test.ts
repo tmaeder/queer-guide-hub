@@ -48,7 +48,7 @@ function componentSources(): Map<string, string> {
 function hubRoutes(): Array<{ path: string; component: string }> {
   const out: Array<{ path: string; component: string }> = [];
   for (const m of routesSrc.matchAll(/<Route\s+path="(hub(?:\/[^"]*)?)"\s+element=\{<(\w+)/g)) {
-    if (m[2] === 'LocalizedRedirect' || m[2] === 'Navigate') continue;
+    if (['LocalizedRedirect', 'Navigate', 'SettingsRedirect'].includes(m[2])) continue;
     out.push({ path: `/${m[1]}`, component: m[2] });
   }
   return out;

@@ -42,7 +42,7 @@ const SRC = join(REPO_ROOT, 'src');
  * behind an improvement in the other.
  */
 const BUDGETS = {
-  admin: 26,
+  admin: 23,
   public: 165,
 } as const;
 

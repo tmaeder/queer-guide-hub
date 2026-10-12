@@ -1,3 +1,4 @@
+import { workBudget, boundedBatch } from '../_shared/work-budget.ts'
 import { getServiceClient, jsonResponse, errorResponse, corsResponse, requireInternalOrAdmin } from '../_shared/supabase-client.ts'
 import type { SourceAdapter, RawItem, NormalizedItem, AdapterConfig } from '../_shared/source-adapter.ts'
 import { writeToStaging } from '../_shared/source-adapter.ts'
@@ -72,7 +73,7 @@ const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms))
 const DETAIL_SPACING_MS = 700
 
 async function getHtml(url: string, attempt = 1): Promise<string> {
-  const res = await fetch(url, { headers: { 'User-Agent': UA, Accept: 'text/html' } })
+  const res = await fetch(url, { headers: { 'User-Agent': UA, Accept: 'text/html' }, signal: AbortSignal.timeout(10000) })
   if (res.ok) return await res.text()
   // 429/403/5xx from a throttle are "ask again later", not "this page is
   // broken" — one backoff retry before giving up on the slug.
@@ -128,10 +129,10 @@ let lastDropped = { noDate: 0, placeholder: 0, cityConflict: 0 }
  */
 let lastFetch: {
   listingsOk: number; listingsFailed: number
-  detailsOk: number; detailsFailed: number
+  detailsOk: number; detailsFailed: number; deferred: number
   cardsFound?: number; todo?: number; offset?: number
   firstError: string | null
-} = { listingsOk: 0, listingsFailed: 0, detailsOk: 0, detailsFailed: 0, firstError: null }
+} = { listingsOk: 0, listingsFailed: 0, detailsOk: 0, detailsFailed: 0, deferred: 0, firstError: null }
 
 const eventAdapter: SourceAdapter = {
   name: 'gaytravel4u',
@@ -141,11 +142,13 @@ const eventAdapter: SourceAdapter = {
     const skip = (config.filters?.skip as Set<string>) ?? new Set<string>()
     const listings = (config.filters?.listings as string[]) ?? LISTINGS
 
-    lastFetch = { listingsOk: 0, listingsFailed: 0, detailsOk: 0, detailsFailed: 0, firstError: null }
+    lastFetch = { listingsOk: 0, listingsFailed: 0, detailsOk: 0, detailsFailed: 0, deferred: 0, firstError: null }
 
+    const budget = workBudget()
     // 1. Enumerate. A card seen on two pages is one event.
     const cards = new Map<string, G4uCard>()
     for (const page of listings) {
+      if (!budget.canStart(35000)) break
       try {
         for (const c of parseListing(await getHtml(`${SITE}/${page}/`))) {
           if (!cards.has(c.slug)) cards.set(c.slug, c)
@@ -182,6 +185,7 @@ const eventAdapter: SourceAdapter = {
     lastFetch.offset = all.length ? ((Math.trunc(offset) % all.length) + all.length) % all.length : 0
     const pairs: Array<{ card: G4uCard; detail: G4uDetail }> = []
     for (let i = 0; i < todo.length; i++) {
+      if (!budget.canStart(25000)) break
       const card = todo[i]
       if (i > 0) await sleep(DETAIL_SPACING_MS)
       try {
@@ -194,6 +198,7 @@ const eventAdapter: SourceAdapter = {
     }
     lastFetch.cardsFound = cards.size
     lastFetch.todo = todo.length
+    lastFetch.deferred = todo.length - lastFetch.detailsOk - lastFetch.detailsFailed
 
     const seedCities = (config.filters?.seedCities as Iterable<string>) ?? []
     const { events, dropped } = buildEvents(pairs, new Date(), seedCities)
@@ -253,7 +258,7 @@ Deno.serve(withErrorReporting('source-gaytravel4u', async (req) => {
     // 150 fetches at 700ms is ~105s, inside the 150s IDLE timeout that
     // actually bounds this (see the header — 220 overran it and staged 0),
     // and clears the 621-slug backlog in four nights.
-    const batchSize = Math.min(180, body.limit ?? body.batch_size ?? 150)
+    const batchSize = boundedBatch(body.limit ?? body.batch_size, 25, 30)
 
     // A dry run must see unstaged work, or it reports 0 once the corpus is in
     // and looks broken. `refetch: true` forces a full pass.
@@ -279,7 +284,7 @@ Deno.serve(withErrorReporting('source-gaytravel4u', async (req) => {
 
     if (dryRun) {
       return jsonResponse({
-        success: true,
+        success: lastFetch.listingsFailed === 0 && lastFetch.detailsFailed === 0,
         items: rawEvents.length,
         dry_run: true,
         already_staged: skip.size,
@@ -292,12 +297,12 @@ Deno.serve(withErrorReporting('source-gaytravel4u', async (req) => {
     const events = await writeToStaging(supabase, eventAdapter, rawEvents, { ...config, targetTable: 'events' })
 
     return jsonResponse({
-      success: true,
+      success: lastFetch.listingsFailed === 0 && lastFetch.detailsFailed === 0,
       items: events,
       items_total: rawEvents.length,
       items_processed: events,
       items_succeeded: events,
-      items_failed: 0,
+      items_failed: lastFetch.detailsFailed + lastFetch.listingsFailed,
       already_staged: skip.size,
       // Reported, never silent: a rising placeholder or city-conflict count is
       // the upstream getting worse, and a silent drop reads as clean data.

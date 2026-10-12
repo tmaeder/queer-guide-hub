@@ -4,8 +4,7 @@ import { PLATFORM_CONFIGS } from '@/components/profile/social/platformConfigs';
  *  = best-effort, `unverified` = self-declared. Phase 1 only writes 'unverified'. */
 export type VerifiedStatus = 'unverified' | 'linked' | 'verified';
 
-/** Per-account visibility. Phase 1 stores it but the server still gates the whole
- *  array by the profile's single contact_visibility — per-account enforcement is Phase 2. */
+/** The server enforces each account's tier in addition to the profile's contact_visibility. */
 export type AccountVisibility = 'public' | 'community' | 'friends' | 'private';
 
 export interface SocialAccount {
@@ -103,7 +102,9 @@ export function displayHandle(account: SocialAccount): string {
 }
 
 /** Migrate a legacy social_links map ({platform: url}) to account objects. */
-export function fromLegacyLinks(links: Record<string, unknown> | null | undefined): SocialAccount[] {
+export function fromLegacyLinks(
+  links: Record<string, unknown> | null | undefined,
+): SocialAccount[] {
   if (!links || typeof links !== 'object') return [];
   return Object.entries(links)
     .filter(([, url]) => typeof url === 'string' && url.trim() !== '')
@@ -131,7 +132,9 @@ export function readAccounts(
   legacyLinks?: Record<string, unknown> | null,
 ): SocialAccount[] {
   if (Array.isArray(socialAccounts) && socialAccounts.length > 0) {
-    return (socialAccounts as SocialAccount[]).filter((a) => a && typeof a.url === 'string' && a.url);
+    return (socialAccounts as SocialAccount[]).filter(
+      (a) => a && typeof a.url === 'string' && a.url,
+    );
   }
   return fromLegacyLinks(legacyLinks);
 }

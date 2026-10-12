@@ -67,6 +67,7 @@ export function ActionBar({
         <Button
           size="sm"
           data-triage-action="approve"
+          data-review-action="approve"
           onClick={() => handleAction('approve')}
           disabled={isLoading || blocked('approve')}
           className="h-9 min-h-9 text-xs"
@@ -79,6 +80,7 @@ export function ActionBar({
           size="sm"
           data-triage-action="reject"
           variant="outline"
+          data-review-action="reject"
           onClick={() => handleAction('reject')}
           disabled={isLoading || blocked('reject')}
           className="h-9 min-h-9 rounded-element bg-card text-xs text-foreground shadow-soft hover:bg-foreground hover:text-background"

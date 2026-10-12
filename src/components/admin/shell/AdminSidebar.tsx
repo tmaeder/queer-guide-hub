@@ -1,3 +1,4 @@
+import { useAdminReviewSummary } from '@/hooks/useAdminReview';
 /**
  * AdminSidebar -- Unified left navigation for the admin console.
  * Search-to-filter, pinned favourites, grouped Content subheaders, live counts
@@ -90,6 +91,7 @@ export function AdminSidebar() {
   const isAdmin = effectiveRole === 'admin';
 
   const { data: counts, isLoading: countsLoading } = useAdminCounts();
+  const review = useAdminReviewSummary();
   const { pins, togglePin, isPinned } = useAdminNavPins();
 
   const [search, setSearch] = useState('');
@@ -132,6 +134,12 @@ export function AdminSidebar() {
   }, [effectiveRole, isAdmin]);
 
   const itemCount = (item: AdminNavItem) => {
+    if (item.id === 'overview')
+      return {
+        count: review.data?.all_total,
+        overdue: review.data?.overdue_total ?? 0,
+        hasCount: true,
+      };
     const key = item.countTable ?? item.reviewCountKey;
     const { count, overdue } = readCount(counts, key);
     return { count, overdue, hasCount: Boolean(item.countTable || item.reviewCountKey) };

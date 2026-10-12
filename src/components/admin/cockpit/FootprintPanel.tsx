@@ -37,11 +37,22 @@ const FOOTPRINT: Array<[key: string, label: string]> = [
 
 const compact = (n: number) => (n >= 1000 ? `${(n / 1000).toFixed(1)}k` : String(n));
 
-export function FootprintPanel({ counts }: { counts: AdminCounts | undefined }) {
+export function FootprintPanel({
+  counts,
+  loading = false,
+}: {
+  counts: AdminCounts | undefined;
+  loading?: boolean;
+}) {
   const [open, setOpen] = useState(false);
   const rows = FOOTPRINT.filter(([key]) => typeof counts?.[key] === 'number');
 
-  if (rows.length === 0) return null;
+  if (rows.length === 0)
+    return (
+      <p className="text-13 text-muted-foreground">
+        {loading ? 'Loading row counts…' : 'Row counts unavailable.'}
+      </p>
+    );
 
   return (
     <Collapsible open={open} onOpenChange={setOpen}>

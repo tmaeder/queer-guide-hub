@@ -3,6 +3,7 @@ import { motion, useScroll, useSpring } from 'motion/react';
 import { useBreadcrumbs } from '@/contexts/BreadcrumbContext';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
+import { NearbyVenues } from '@/components/venues/NearbyVenues';
 import { SimilarItems } from '@/components/discovery/SimilarItems';
 import { MoreLikeThisByTag } from '@/components/tags/MoreLikeThisByTag';
 import { EntityPersonalizationBand } from '@/components/entity/EntityPersonalizationBand';
@@ -88,16 +89,22 @@ export function EntityDetailScroll({ descriptor, loading, error }: EntityDetailS
 
         {related && (
           <div className="pb-28 md:pb-12">
-            <SimilarItems
-              entity={{ type: related.type, id: related.id }}
-              title={related.title}
-              className="mt-10"
-            />
-            {/* Cross-entity tag rail: `related` carries the current entity's
-                own type+id for both EntityDetailScroll adapters (venue, org),
-                so it doubles as the source for tag-based discovery. Renders
-                nothing until ≥3 tag-related items exist. */}
-            <MoreLikeThisByTag entityType={related.type} entityId={related.id} className="mt-10" />
+            {related.type === 'venue' ? (
+              <NearbyVenues id={related.id} />
+            ) : (
+              <>
+                <SimilarItems
+                  entity={{ type: related.type, id: related.id }}
+                  title={related.title}
+                  className="mt-10"
+                />
+                <MoreLikeThisByTag
+                  entityType={related.type}
+                  entityId={related.id}
+                  className="mt-10"
+                />
+              </>
+            )}
           </div>
         )}
       </PageContainer>

@@ -9,6 +9,7 @@
 import { Link } from 'react-router';
 import { AlertTriangle, Bot, Download, Lock } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { CockpitList } from '@/components/admin/cockpit/CockpitSection';
 import { AdminTextSkeleton } from '@/components/admin/primitives/AdminLoading';
 import type { CockpitOps } from '@/hooks/useCockpitOps';
@@ -52,77 +53,110 @@ export function BrokenList({
   ops,
   loading,
   error,
+  onRetry,
+  refreshing,
 }: {
   ops: CockpitOps | undefined;
   loading: boolean;
   error?: boolean;
+  onRetry?: () => void;
+  refreshing?: boolean;
 }) {
   if (loading) return <AdminTextSkeleton lines={3} />;
   // Say so rather than falling back to a reassuring "Nothing failing." — an
   // unread source is not a healthy one.
-  if (error || !ops) {
-    return <p className="text-13 text-destructive">Could not read system status.</p>;
+  if (!ops) {
+    return (
+      <div role="alert" className="flex flex-wrap items-center justify-between gap-4">
+        <p className="text-13 text-destructive">Could not read system status.</p>
+        <Button variant="outline" size="sm" onClick={onRetry} disabled={refreshing}>
+          {refreshing ? 'Retrying…' : 'Retry system checks'}
+        </Button>
+      </div>
+    );
   }
 
-  if (ops.allClear) {
+  const unavailable = ops.unavailableSources ?? [];
+  if (ops.allClear && unavailable.length === 0 && !error) {
     return <p className="text-13 text-muted-foreground">Nothing failing.</p>;
   }
 
   const criticalGates = ops.failingGates.filter((g) => g.severity === 'critical').length;
 
   return (
-    <CockpitList>
-      {ops.failingGates.length > 0 && (
-        <BrokenRow
-          icon={Lock}
-          label="Release gates failing"
-          detail={
-            criticalGates > 0
-              ? `${criticalGates} critical · ${ops.failingGates
-                  .slice(0, 2)
-                  .map((g) => g.label)
-                  .join(', ')}`
-              : ops.failingGates
-                  .slice(0, 3)
-                  .map((g) => g.label)
-                  .join(', ')
-          }
-          count={ops.failingGates.length}
-          route="/admin/quality"
-        />
+    <div className="flex flex-col gap-4">
+      {(error || unavailable.length > 0) && (
+        <div role="alert" className="rounded-element bg-muted p-4">
+          <p className="text-13 font-medium">System status incomplete.</p>
+          <p className="mt-1 text-13 text-muted-foreground">
+            {error
+              ? 'Could not refresh system checks. Showing the last successful results.'
+              : `Could not read: ${unavailable.join(', ')}. These checks cannot be treated as healthy.`}
+          </p>
+          <Button
+            variant="outline"
+            size="sm"
+            className="mt-4"
+            onClick={onRetry}
+            disabled={refreshing}
+          >
+            {refreshing ? 'Retrying…' : 'Retry system checks'}
+          </Button>
+        </div>
       )}
-      {ops.failingAutomations.length > 0 && (
-        <BrokenRow
-          icon={Bot}
-          label="Automations failing"
-          detail={ops.failingAutomations
-            .slice(0, 3)
-            .map((a) => a.name)
-            .join(', ')}
-          count={ops.failingAutomations.length}
-          route="/admin/automation"
-        />
-      )}
-      {ops.pipelineErrors.length > 0 && (
-        <BrokenRow
-          icon={AlertTriangle}
-          label="Pipeline errors (24h)"
-          detail={ops.pipelineErrors
-            .slice(0, 3)
-            .map((e) => e.functionName)
-            .join(', ')}
-          count={ops.pipelineErrors24h}
-          route="/admin/pipelines"
-        />
-      )}
-      {ops.failedImportsToday > 0 && (
-        <BrokenRow
-          icon={Download}
-          label="Imports failed today"
-          count={ops.failedImportsToday}
-          route="/admin/pipelines?tab=health&sub=errors"
-        />
-      )}
-    </CockpitList>
+      <CockpitList>
+        {ops.failingGates.length > 0 && (
+          <BrokenRow
+            icon={Lock}
+            label="Release gates failing"
+            detail={
+              criticalGates > 0
+                ? `${criticalGates} critical · ${ops.failingGates
+                    .slice(0, 2)
+                    .map((g) => g.label)
+                    .join(', ')}`
+                : ops.failingGates
+                    .slice(0, 3)
+                    .map((g) => g.label)
+                    .join(', ')
+            }
+            count={ops.failingGates.length}
+            route="/admin/quality"
+          />
+        )}
+        {ops.failingAutomations.length > 0 && (
+          <BrokenRow
+            icon={Bot}
+            label="Automations failing"
+            detail={ops.failingAutomations
+              .slice(0, 3)
+              .map((a) => a.name)
+              .join(', ')}
+            count={ops.failingAutomations.length}
+            route="/admin/automation"
+          />
+        )}
+        {ops.pipelineErrors.length > 0 && (
+          <BrokenRow
+            icon={AlertTriangle}
+            label="Pipeline errors (24h)"
+            detail={ops.pipelineErrors
+              .slice(0, 3)
+              .map((e) => e.functionName)
+              .join(', ')}
+            count={ops.pipelineErrors24h}
+            route="/admin/pipelines"
+          />
+        )}
+        {ops.failedImportsToday > 0 && (
+          <BrokenRow
+            icon={Download}
+            label="Imports failed today"
+            count={ops.failedImportsToday}
+            route="/admin/pipelines?tab=health&sub=errors"
+          />
+        )}
+      </CockpitList>
+    </div>
   );
 }

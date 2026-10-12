@@ -1,5 +1,5 @@
 import { getServiceClient, jsonResponse, errorResponse, corsResponse, requireInternalOrAdmin } from '../_shared/supabase-client.ts'
-import { withErrorReporting } from '../_shared/report-api-error.ts'
+import { withErrorReporting, reportApiError } from '../_shared/report-api-error.ts'
 
 // ============================================================
 // marketplace-sync-merchants — registry-driven recurring vendor sync
@@ -123,19 +123,28 @@ Deno.serve(withErrorReporting('marketplace-sync-merchants', async (req) => {
           if (!res.ok) throw new Error(`${fn} ${res.status}: ${text.slice(0, 200)}`)
         } finally { clearTimeout(timer) }
 
+        if (payload.skipped === true) {
+          results.push({ slug: m.slug, provider: m.provider, status: 'skipped', reason: payload.reason })
+          continue
+        }
+        if (payload.success === false || Number(payload.items_failed ?? 0) > 0) {
+          throw new Error(`${fn} failed: ${JSON.stringify(payload).slice(0, 200)}`)
+        }
         const items = Number(payload.items ?? payload.items_succeeded ?? 0)
         if (!dryRun) {
-          await supabase.from('marketplace_merchants')
+          const { error: syncStateError } = await supabase.from('marketplace_merchants')
             .update({ last_sync_at: new Date().toISOString(), last_sync_status: 'ok', last_sync_items: items })
             .eq('provider', m.provider).eq('slug', m.slug)
+          if (syncStateError) throw new Error(`merchant sync state: ${syncStateError.message}`)
         }
         results.push({ slug: m.slug, provider: m.provider, status: 'ok', items, ms: Date.now() - started })
       } catch (err) {
         const message = (err as Error).message.slice(0, 300)
         if (!dryRun) {
-          await supabase.from('marketplace_merchants')
+          const { error: syncStateError } = await supabase.from('marketplace_merchants')
             .update({ last_sync_at: new Date().toISOString(), last_sync_status: `error: ${message.slice(0, 120)}` })
             .eq('provider', m.provider).eq('slug', m.slug)
+          if (syncStateError) await reportApiError('marketplace-sync-merchants', new Error(`merchant sync state: ${syncStateError.message}`), { metadata: { merchant_slug: m.slug } })
         }
         results.push({ slug: m.slug, provider: m.provider, status: 'error', error: message, ms: Date.now() - started })
       }

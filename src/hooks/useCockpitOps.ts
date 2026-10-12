@@ -41,6 +41,8 @@ export interface CockpitOps {
   pipelineErrors24h: number;
   failingGates: FailingGate[];
   failedImportsToday: number;
+  /** Unread sources are unknown, never healthy. Older cached payloads omit this. */
+  unavailableSources?: string[];
   /** True when every source is clear. Drives the one-line collapsed state. */
   allClear: boolean;
 }
@@ -55,7 +57,7 @@ interface AutomationRow {
 
 interface PipelineErrorRow {
   function_name?: string;
-  errors_24h?: number;
+  last_24h?: number;
 }
 
 /**
@@ -81,29 +83,48 @@ function startOfTodayISO(): string {
   return d.toISOString();
 }
 
-async function fetchOps(): Promise<CockpitOps> {
+/** Supabase returns query errors; network clients can also reject the promise. */
+async function readSource<T>(request: PromiseLike<{ data: unknown; error: unknown }>) {
+  try {
+    const result = await request;
+    if (result.error || !Array.isArray(result.data)) return { data: [] as T[], available: false };
+    return { data: result.data as T[], available: true };
+  } catch {
+    return { data: [] as T[], available: false };
+  }
+}
+
+export async function fetchCockpitOps(): Promise<CockpitOps> {
   const [automations, errors, gates, imports] = await Promise.all([
-    untypedFrom('admin_automations').select('slug, name, enabled, last_run_status, last_run_at'),
-    untypedFrom('pipeline_error_summary').select('function_name, errors_24h').limit(100),
+    readSource<AutomationRow>(
+      untypedFrom('admin_automations').select('slug, name, enabled, last_run_status, last_run_at'),
+    ),
+    readSource<PipelineErrorRow>(
+      untypedFrom('pipeline_error_summary').select('function_name, last_24h').limit(100),
+    ),
     // admin_release_gates(), not release_gate_checks(): the core grants EXECUTE
     // only to postgres + service_role, so calling it as the signed-in admin
     // returned 42501 and blanked this whole section on production.
-    untypedRpc<GateRow[]>('admin_release_gates'),
+    readSource<GateRow>(untypedRpc<GateRow[]>('admin_release_gates')),
     // One select instead of the three head-counts the old Import Status widget
     // fired: today's rows are bounded, so counting client-side is cheaper.
-    supabase.from('import_jobs_enhanced').select('status').gte('updated_at', startOfTodayISO()),
+    readSource<{ status: string }>(
+      supabase.from('import_jobs_enhanced').select('status').gte('updated_at', startOfTodayISO()),
+    ),
   ]);
 
-  // Throw rather than fall through to empty arrays. A failed read would
-  // otherwise compute allClear=true and render "Nothing failing." — a
-  // fabricated green light, which is the exact defect that got the old System
-  // Health widget deleted. Let it surface as an error state instead.
-  const failed = [automations.error, errors.error, gates.error, imports.error].filter(Boolean);
-  if (failed.length > 0) {
-    throw new Error(`cockpit ops read failed: ${failed.map((e) => e!.message).join('; ')}`);
-  }
+  // Keep successful checks useful even when another source is unreadable.
+  // Returning availability prevents empty fallback arrays from claiming health.
+  const unavailableSources = [
+    { label: 'Automations', available: automations.available },
+    { label: 'Pipelines', available: errors.available },
+    { label: 'Release gates', available: gates.available },
+    { label: 'Imports', available: imports.available },
+  ]
+    .filter((source) => !source.available)
+    .map((source) => source.label);
 
-  const failingAutomations = ((automations.data ?? []) as AutomationRow[])
+  const failingAutomations = automations.data
     .filter((a) => a.enabled && a.last_run_status === 'failed')
     .map((a) => ({
       slug: a.slug ?? '',
@@ -111,12 +132,12 @@ async function fetchOps(): Promise<CockpitOps> {
       lastRunAt: a.last_run_at ?? null,
     }));
 
-  const pipelineErrors = ((errors.data ?? []) as PipelineErrorRow[])
-    .map((e) => ({ functionName: e.function_name ?? 'unknown', errors24h: e.errors_24h ?? 0 }))
+  const pipelineErrors = errors.data
+    .map((e) => ({ functionName: e.function_name ?? 'unknown', errors24h: e.last_24h ?? 0 }))
     .filter((e) => e.errors24h > 0)
     .sort((a, b) => b.errors24h - a.errors24h);
 
-  const failingGates = ((gates.data ?? []) as GateRow[])
+  const failingGates = gates.data
     .filter((g) => (g.failures ?? 0) > 0)
     .map((g) => ({
       label: g.gate ?? 'Unnamed gate',
@@ -124,9 +145,7 @@ async function fetchOps(): Promise<CockpitOps> {
       count: g.failures ?? null,
     }));
 
-  const failedImportsToday = ((imports.data ?? []) as Array<{ status?: string }>).filter(
-    (j) => j.status === 'failed',
-  ).length;
+  const failedImportsToday = imports.data.filter((j) => j.status === 'failed').length;
 
   return {
     failingAutomations,
@@ -134,7 +153,9 @@ async function fetchOps(): Promise<CockpitOps> {
     pipelineErrors24h: pipelineErrors.reduce((sum, e) => sum + e.errors24h, 0),
     failingGates,
     failedImportsToday,
+    unavailableSources,
     allClear:
+      unavailableSources.length === 0 &&
       failingAutomations.length === 0 &&
       pipelineErrors.length === 0 &&
       failingGates.length === 0 &&
@@ -145,9 +166,10 @@ async function fetchOps(): Promise<CockpitOps> {
 export function useCockpitOps(enabled: boolean) {
   return useQuery({
     queryKey: ['cockpit', 'ops'],
-    queryFn: fetchOps,
+    queryFn: fetchCockpitOps,
     enabled,
     staleTime: 5 * 60_000,
     refetchInterval: 5 * 60_000,
+    retry: false,
   });
 }

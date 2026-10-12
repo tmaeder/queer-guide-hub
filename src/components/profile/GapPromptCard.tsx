@@ -1,3 +1,4 @@
+import { profileEditPath, profileEditorSection } from '@/lib/profileEditing';
 import { useState } from 'react';
 import { AtSign, Sparkles, Luggage } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -46,7 +47,7 @@ export function GapPromptCard({ profile }: GapPromptCardProps) {
             <Button
               size="sm"
               className="rounded-element"
-              onClick={() => navigate(`/settings?section=${prompt.section}`)}
+              onClick={() => navigate(profileEditPath(profile.user_id as string, profileEditorSection(prompt.section) ?? 'profile'))}
             >
               {prompt.cta}
             </Button>

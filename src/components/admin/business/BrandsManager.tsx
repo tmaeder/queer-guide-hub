@@ -2,15 +2,13 @@ import { useContext, useState } from 'react';
 import { ContentListPanel } from '@/components/cms/ContentListPanel';
 import { brandListConfig } from './organisationListConfigs';
 import { AdminShellContext } from '@/components/admin/shell/AdminShell';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { BrandReviewQueue } from '@/components/admin/review-queues/BrandReviewQueue';
-import type { BrandReviewRow } from '@/components/admin/review-queues/brandReviewVocab';
+import { useNavigate } from 'react-router';
 import { Button } from '@/components/ui/button';
 import { untypedRpc } from '@/integrations/supabase/untyped';
 import { toast } from 'sonner';
 export function BrandsManager() {
   const shell = useContext(AdminShellContext);
-  const [review, setReview] = useState<BrandReviewRow | null>(null);
+  const navigate = useNavigate();
   const [version, setVersion] = useState(0);
   const [applying, setApplying] = useState(false);
   const apply = async () => {
@@ -38,45 +36,25 @@ export function BrandsManager() {
         onEdit={(_type, id) => shell?.openEditor('marketplace_brands', id)}
         onCreate={() => shell?.openEditor('marketplace_brands', null)}
         onEditRow={(row) => shell?.openEditor('marketplace_brands', String(row.id))}
-        rowActions={(row) => [
-          {
-            label: 'Review ownership',
-            run: () =>
-              setReview({
-                ...row,
-                top_source: row.top_source ?? null,
-                sample_url: row.sample_url ?? null,
-              } as unknown as BrandReviewRow),
-          },
-        ]}
+        rowActions={(row) =>
+          ['pending', 'needs_review'].includes(String(row.ownership_review_status))
+            ? [
+                {
+                  label: 'Review ownership',
+                  run: () =>
+                    navigate(
+                      `/admin?queue=brand-ownership&selected=${encodeURIComponent(`brand-ownership:${row.id}`)}`,
+                    ),
+                },
+              ]
+            : []
+        }
         tools={
           <Button variant="ghost" size="sm" disabled={applying} onClick={() => void apply()}>
             {applying ? 'Applying…' : 'Apply ownership to products'}
           </Button>
         }
       />
-      <Dialog
-        open={Boolean(review)}
-        onOpenChange={(open) => {
-          if (!open) setReview(null);
-        }}
-      >
-        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>Review ownership: {review?.display_name}</DialogTitle>
-          </DialogHeader>
-          {review && (
-            <BrandReviewQueue
-              key={review.id}
-              selectedBrand={review}
-              onReviewed={() => {
-                setReview(null);
-                setVersion((v) => v + 1);
-              }}
-            />
-          )}
-        </DialogContent>
-      </Dialog>
     </>
   );
 }

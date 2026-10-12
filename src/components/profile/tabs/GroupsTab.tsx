@@ -1,3 +1,4 @@
+import { profileEditPath } from '@/lib/profileEditing';
 import { GroupCard } from '@/components/groups/GroupCard';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { EmptyState } from '@/components/ui/EmptyState';
@@ -48,7 +49,7 @@ export function GroupsTab({
       <p className="py-8 text-center text-13 text-muted-foreground">
         {t('profile.groups.hidden', 'Groups hidden at this visibility.')}{' '}
         {isOwnProfile && (
-          <LocalizedLink to="/settings?section=privacy" className="underline">
+          <LocalizedLink to={profileEditPath(userId, 'privacy')} className="underline">
             {t('profile.privacySettings', 'Privacy settings')}
           </LocalizedLink>
         )}

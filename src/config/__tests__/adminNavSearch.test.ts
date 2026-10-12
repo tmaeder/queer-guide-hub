@@ -14,8 +14,8 @@ describe('admin navigation search', () => {
     ['geography', 'cities'],
     ['organizations', 'hotels'],
     ['tags', 'taxonomy'],
-    ['governance', 'places editorial'],
-    ['governance', 'editorial drafts'],
+    ['overview', 'places editorial'],
+    ['overview', 'editorial drafts'],
     ['cloudflare', 'cloudflare'],
   ])('finds %s by its familiar alias %s', (id, query) => {
     const { item, section } = find(id);

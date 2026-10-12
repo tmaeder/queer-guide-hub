@@ -209,7 +209,8 @@ export function AdminShell() {
    * from a child's effect: `react-hooks/set-state-in-effect` is an ERROR
    * across the admin tree, and a render-phase read has no ordering hazard.
    */
-  const onArchetypeFrame = hasAdoptedFrame(location.pathname);
+  const reviewWorkspace = location.pathname === '/admin' && !editor;
+  const onArchetypeFrame = reviewWorkspace || hasAdoptedFrame(location.pathname);
 
   // Sidebar component
   const sidebar = <AdminSidebar />;
@@ -323,9 +324,17 @@ export function AdminShell() {
               // marker it would reset a window that never moves and admin
               // would keep landing at the previous page's offset.
               data-scroll-container=""
-              className={`flex-1 overflow-auto ${PAGE_GUTTER} ${PAGE_VERTICAL}`}
+              className={
+                reviewWorkspace
+                  ? 'flex min-h-0 flex-1 flex-col overflow-hidden'
+                  : `flex-1 overflow-auto ${PAGE_GUTTER} ${PAGE_VERTICAL}`
+              }
             >
-              <div className="mx-auto w-full max-w-page">
+              <div
+                className={
+                  reviewWorkspace ? 'flex min-h-0 flex-1 flex-col' : 'mx-auto w-full max-w-page'
+                }
+              >
                 {/* Editor overlay takes priority when open */}
                 {editor ? (
                   <Suspense fallback={<ShellSkeleton />}>
@@ -340,7 +349,10 @@ export function AdminShell() {
                   </Suspense>
                 ) : (
                   <ErrorBoundary>
-                    <div key={location.pathname} className="content-enter">
+                    <div
+                      key={location.pathname}
+                      className={reviewWorkspace ? 'min-h-0 flex-1' : 'content-enter'}
+                    >
                       {routeDenied ? (
                         <div
                           className="flex flex-col items-center gap-2 rounded-container bg-muted/30 p-8 text-center"
@@ -352,7 +364,7 @@ export function AdminShell() {
                             Requires {requiredRole} role. Ask an admin if you need it.
                           </p>
                           <Button variant="outline" size="sm" onClick={() => navigate('/admin')}>
-                            Back to Cockpit
+                            Back to Review queue
                           </Button>
                         </div>
                       ) : routeGatingPending ? (

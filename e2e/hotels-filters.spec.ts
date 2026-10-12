@@ -4,16 +4,18 @@ import { test, expect } from '@playwright/test';
  * Phase 1 smoke for /hotels: type filter, URL state, /venues/<section> redirect,
  * 404 prerender meta on unknown hotel slug.
  *
- * Phase 4 cases (Load More dedupe, search relevance) are intentionally skipped
- * here — they belong to a separate PR.
+ * Also verifies pagination deduplication and search relevance.
  */
+
+const RESULT_CARDS = '[data-bento-preset="mosaic"] a[href^="/hotels/"]';
 
 test.describe('Hotels — Phase 1 quick wins', () => {
   test('apartment filter returns at least one card and reflects in the URL', async ({ page }) => {
-    await page.goto('/hotels', { waitUntil: 'networkidle' });
+    await page.goto('/hotels', { waitUntil: 'domcontentloaded' });
+    await expect(page.locator(RESULT_CARDS).first()).toBeVisible({ timeout: 15_000 });
 
     // Open the type select. shadcn/Radix select uses combobox role.
-    const typeSelect = page.getByRole('combobox').first();
+    const typeSelect = page.getByRole('combobox', { name: 'Hotel type' });
     await expect(typeSelect).toBeVisible({ timeout: 10_000 });
     await typeSelect.click();
 
@@ -26,26 +28,27 @@ test.describe('Hotels — Phase 1 quick wins', () => {
 
     await expect(page).toHaveURL(/[?&]type=apartment/);
 
-    // First request settles, results render.
-    await page.waitForLoadState('networkidle');
+    // Wait for filtered cards, rather than unrelated background requests or
+    // a skeleton/editorial grid that can render before results arrive.
+    const cards = page.locator(RESULT_CARDS);
+    await expect(cards.first().getByText('Apartment', { exact: true })).toBeVisible({
+      timeout: 15_000,
+    });
     await expect(
-      page.locator('[class*="grid"] > a, [class*="grid"] > div').first(),
-    ).toBeVisible({ timeout: 10_000 });
+      cards.filter({ hasNot: page.getByText('Apartment', { exact: true }) }),
+    ).toHaveCount(0);
   });
 
   test('B&B chip shows display label, not slug', async ({ page }) => {
     // Use a guaranteed-zero query so the empty state with chips renders.
     await page.goto('/hotels?type=bnb&q=__definitely_not_a_real_name__zzz', {
-      waitUntil: 'networkidle',
+      waitUntil: 'domcontentloaded',
     });
     // Scope to the EmptyState's active-filter chip container so we don't
     // strict-mode-collide with the same label inside the Type select. The
     // chip's dismiss glyph is an SVG <X />, not a literal × character.
     const chipsRegion = page.getByTestId('empty-state-active-filters');
-    if ((await chipsRegion.count()) === 0) {
-      test.skip(true, 'Empty-state chips region not rendered on this env.');
-      return;
-    }
+    await expect(chipsRegion).toBeVisible({ timeout: 15_000 });
     await expect(chipsRegion.getByText('B&B', { exact: true })).toBeVisible();
     await expect(chipsRegion.getByText('bnb', { exact: true })).toHaveCount(0);
   });
@@ -55,34 +58,34 @@ test.describe('Hotels — Phase 1 quick wins', () => {
     await expect(page).toHaveURL(/\/hotels$/);
   });
 
-  test('unknown hotel slug renders 404 prerender meta', async ({ page }) => {
-    await page.goto('/hotels/__definitely-not-a-real-slug-9999999', {
-      waitUntil: 'networkidle',
+  test('unknown hotel slug renders a 404 state with noindex', async ({ page }) => {
+    const response = await page.goto('/hotels/__definitely-not-a-real-slug-9999999', {
+      waitUntil: 'domcontentloaded',
     });
     // Two 404 renderers depending on environment: the CF Pages middleware
     // ("No hotel at this stop.", functions/_middleware.ts) on prod, and
     // the React SPA fallback ("Hotel not found", HotelDetail.tsx) on the
     // vite-preview PR build where the middleware doesn't run. Accept either.
-    await expect(
-      page.getByText(/no hotel at this stop|hotel not found/i).first(),
-    ).toBeVisible();
+    await expect(page.getByText(/no hotel at this stop|hotel not found/i).first()).toBeVisible({
+      timeout: 15_000,
+    });
 
-    // Prerender meta is only emitted by the static-site prerender pipeline.
-    // Skip the meta-tag asserts on environments where prerender is disabled
-    // (e.g. local vite preview, branch previews without the prerender step).
-    const statusMeta = page.locator('meta[name="prerender-status-code"]');
-    if ((await statusMeta.count()) === 0) {
-      test.skip(true, 'Prerender disabled on this env — meta tags not emitted.');
-      return;
+    // The static middleware returns an HTTP 404. The SPA signals it through
+    // NotFoundMeta, including on vite preview. Both must exclude indexing.
+    if (await page.getByText(/no hotel at this stop/i).isVisible()) {
+      expect(response?.status()).toBe(404);
+    } else {
+      await expect(page.locator('meta[name="prerender-status-code"]')).toHaveAttribute(
+        'content',
+        '404',
+      );
     }
-    const status = await statusMeta.getAttribute('content');
-    expect(status).toBe('404');
-    const robots = await page.locator('meta[name="robots"]').getAttribute('content');
-    expect(robots).toContain('noindex');
+    await expect(page.locator('meta[name="robots"]')).toHaveAttribute('content', /noindex/);
   });
 
   test('Load More yields disjoint pages (no duplicate IDs)', async ({ page }) => {
-    await page.goto('/hotels', { waitUntil: 'networkidle' });
+    await page.goto('/hotels', { waitUntil: 'domcontentloaded' });
+    await expect(page.locator(RESULT_CARDS).first()).toBeVisible({ timeout: 15_000 });
 
     // Scope to the main result grid only — the page also shows editorial
     // sections (featured hotel, picks, "in queer villages") whose anchors
@@ -91,9 +94,7 @@ test.describe('Hotels — Phase 1 quick wins', () => {
     const collectIds = () =>
       page.evaluate(() =>
         Array.from(
-          document.querySelectorAll(
-            '[data-bento-preset="mosaic"] a[href^="/hotels/"]',
-          ),
+          document.querySelectorAll('[data-bento-preset="mosaic"] a[href^="/hotels/"]'),
         ).map((a) => (a as HTMLAnchorElement).getAttribute('href') ?? ''),
       );
 
@@ -107,9 +108,7 @@ test.describe('Hotels — Phase 1 quick wins', () => {
     }
 
     await loadMore.click();
-    await page.waitForLoadState('networkidle');
-    // networkidle can fire before React has re-rendered the appended page.
-    // Poll until the grid actually grows, then assert dedupe.
+    // The rendered grid is the readiness signal for the appended page.
     await expect
       .poll(async () => (await collectIds()).length, { timeout: 10_000 })
       .toBeGreaterThan(beforeIds.size);
@@ -121,11 +120,12 @@ test.describe('Hotels — Phase 1 quick wins', () => {
   });
 
   test('searching "Berlin" returns only Berlin-y results', async ({ page }) => {
-    await page.goto('/hotels?q=Berlin', { waitUntil: 'networkidle' });
+    await page.goto('/hotels?q=Berlin', { waitUntil: 'domcontentloaded' });
 
     // Card subtitles include "City, Country" — every visible card should
     // mention Berlin somewhere (city OR country prefix matches).
-    const cards = page.locator('a[href^="/hotels/"]');
+    const cards = page.locator(RESULT_CARDS);
+    await expect(cards.first()).toBeVisible({ timeout: 15_000 });
     const count = await cards.count();
     expect(count).toBeGreaterThan(0);
     expect(count).toBeLessThanOrEqual(20);

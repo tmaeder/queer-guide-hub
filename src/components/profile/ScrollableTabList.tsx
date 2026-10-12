@@ -31,12 +31,14 @@ export function ScrollableTabList({ className, children, ...props }: ScrollableT
     const el = ref.current;
     if (!el) return;
     update();
-    // Center the active trigger so a deep link (e.g. /me/progress) doesn't land
-    // with its tab off-screen.
-    el.querySelector<HTMLElement>('[data-state="active"]')?.scrollIntoView({
-      inline: 'center',
-      block: 'nearest',
-    });
+    // Keep the active tab visible without moving the document while editing.
+    const active = el.querySelector<HTMLElement>('[data-state="active"]');
+    if (active) {
+      const rail = el.getBoundingClientRect();
+      const trigger = active.getBoundingClientRect();
+      el.scrollLeft += trigger.left + trigger.width / 2 - (rail.left + el.clientWidth / 2);
+    }
+    update();
     el.addEventListener('scroll', update, { passive: true });
     window.addEventListener('resize', update);
     return () => {
@@ -55,11 +57,11 @@ export function ScrollableTabList({ className, children, ...props }: ScrollableT
           : undefined;
 
   return (
-    <div className="relative">
+    <div className="relative min-w-0">
       <TabsList
         ref={ref}
         className={cn(
-          'h-auto w-max min-w-full justify-start gap-1 rounded-element bg-surface-container p-1 backdrop-blur-none',
+          'h-auto w-full max-w-full min-w-0 justify-start gap-1 rounded-element bg-surface-container p-1 backdrop-blur-none',
           'overflow-x-auto scroll-smooth snap-x [scrollbar-width:none] [&::-webkit-scrollbar]:hidden',
           className,
         )}

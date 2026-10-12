@@ -80,8 +80,19 @@ export function previewFilterProfile(
   if (tierVisible(resolveFieldVis(ps, 'contact_visibility', 'contact_public', 'friends'), lens)) {
     out.website = profile.website;
     out.social_links = profile.social_links;
+    // Mirror the RPC's per-account visibility filter, in addition to the
+    // containing contact tier. Neither public nor community previews are friends.
+    if (Array.isArray(profile.social_accounts)) {
+      out.social_accounts = profile.social_accounts.filter((account: unknown) => {
+        if (!account || typeof account !== 'object') return false;
+        const visibility = (account as Record<string, unknown>).visibility ?? 'public';
+        return visibility === 'public' || (visibility === 'community' && lens === 'community');
+      });
+    }
   }
-  if (tierVisible(resolveFieldVis(ps, 'interests_visibility', 'interests_public', 'community'), lens)) {
+  if (
+    tierVisible(resolveFieldVis(ps, 'interests_visibility', 'interests_public', 'community'), lens)
+  ) {
     out.interests = profile.interests;
     out.occupation = profile.occupation;
     out.education = profile.education;

@@ -321,17 +321,26 @@ export function planRecovery(orphans, bodies, { findOnBranch = () => null, md5 }
 
 /** Shared transport so the two fetchers cannot disagree about response shape. */
 async function queryHistory(token, query) {
-  const res = await fetch(
-    `https://api.supabase.com/v1/projects/${PROJECT_REF}/database/query`,
-    {
-      method: 'POST',
-      headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ query }),
-    },
-  )
-  if (!res.ok) {
+  // These are read-only history queries. A transient gateway/connection timeout
+  // must not strand every PR; auth, SQL and response-shape failures still fail
+  // immediately, and the third transient failure remains fatal.
+  let res
+  for (let attempt = 0; attempt < 3; attempt++) {
+    res = await fetch(
+      `https://api.supabase.com/v1/projects/${PROJECT_REF}/database/query`,
+      {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ query }),
+        signal: AbortSignal.timeout(30_000),
+      },
+    )
+    if (res.ok) break
     const body = await res.text().catch(() => '')
-    throw new Error(`Management API query failed: ${res.status} ${res.statusText}\n${body}`)
+    if (attempt === 2 || ![502, 503, 504, 544].includes(res.status)) {
+      throw new Error(`Management API query failed: ${res.status} ${res.statusText}\n${body}`)
+    }
+    await new Promise((resolve) => setTimeout(resolve, attempt === 0 ? 1000 : 3000))
   }
 
   const body = await res.json()

@@ -359,7 +359,6 @@ describe('INTENT_TRACK', () => {
     // not do. Add a row here only for a genuinely 1:1 intent.
     const ONE_TO_ONE: Record<string, keyof typeof ROUTE_BULLET_MAP> = {
       shop: 'marketplace',
-      glossary: 'tag',
     };
     for (const [intentId, type] of Object.entries(ONE_TO_ONE)) {
       expect(
@@ -377,6 +376,9 @@ describe('findActiveIntent', () => {
     expect(findActiveIntent('/city/berlin')?.id).toBe('travelling');
     expect(findActiveIntent('/community/groups')?.id).toBe('meet');
     expect(findActiveIntent('/tags/bear-bar')?.id).toBe('glossary');
+    expect(findActiveIntent('/personalities')?.id).toBe('glossary');
+    expect(findActiveIntent('/personalities/alan-cumming')?.id).toBe('glossary');
+    expect(findActiveIntent('/personality/alan-cumming')?.id).toBe('glossary');
   });
 
   it('returns undefined off an intent route, so the mode fallback applies', () => {

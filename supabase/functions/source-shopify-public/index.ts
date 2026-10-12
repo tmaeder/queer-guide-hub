@@ -4,6 +4,7 @@ import { writeToStaging, skippedResponse } from '../_shared/source-adapter.ts'
 import { brandFromVendor, extractMerchantDomain, normalizeCurrency } from '../_shared/marketplace-pipeline-utils.ts'
 import { withErrorReporting } from '../_shared/report-api-error.ts'
 import { assertPublicHttpUrl } from '../_shared/ssrf-guard.ts'
+import { storefrontPage, publicStorefrontCredentials, type StorefrontProduct } from '../_shared/shopify-storefront.ts'
 import { stripProductHtml } from '../_shared/product-html.ts'
 
 // ============================================================
@@ -77,61 +78,10 @@ const CURRENCY_MARKET: Record<string, string> = {
 //
 // The token is the shop theme's own PUBLIC storefront token (read-only, rate-limited,
 // served in every page load). It is config, not a secret.
-const STOREFRONT_API_VERSION = '2024-10'
-const STOREFRONT_PER_PAGE = 250
-
-// `country` is passed as a $variable rather than interpolated into the query string:
-// it originates from merchant config, and a directive built by concatenation would be
-// an injection point into the GraphQL document.
-const STOREFRONT_QUERY = `query($n:Int!,$c:String,$country:CountryCode!) @inContext(country: $country) {
-  products(first:$n, after:$c) {
-    pageInfo { hasNextPage endCursor }
-    nodes {
-      id title handle description vendor productType tags onlineStoreUrl
-      images(first:5){ nodes{ url } }
-      variants(first:1){ nodes{ sku availableForSale price{ amount currencyCode } } }
-    }
-  }
-}`
-
-interface StorefrontProduct {
-  id: string; title: string; handle: string; description: string
-  vendor: string; productType: string; tags: string[]; onlineStoreUrl: string | null
-  images: { nodes: { url: string }[] }
-  variants: { nodes: { sku: string | null; availableForSale: boolean; price: { amount: string; currencyCode: string } }[] }
-}
-
-async function storefrontPage(
-  shopDomain: string, token: string, country: string, cursor: string | null,
-): Promise<{ nodes: StorefrontProduct[]; hasNext: boolean; endCursor: string | null }> {
-  const url = assertPublicHttpUrl(`https://${shopDomain}/api/${STOREFRONT_API_VERSION}/graphql.json`)
-  const ctrl = new AbortController()
-  const timer = setTimeout(() => ctrl.abort(), 25_000)
-  try {
-    const res = await fetch(url, {
-      method: 'POST', signal: ctrl.signal,
-      headers: {
-        'X-Shopify-Storefront-Access-Token': token,
-        'content-type': 'application/json',
-        'User-Agent': UA,
-      },
-      body: JSON.stringify({
-        query: STOREFRONT_QUERY,
-        variables: { n: STOREFRONT_PER_PAGE, c: cursor, country },
-      }),
-    })
-    if (!res.ok) throw new Error(`storefront ${res.status}: ${(await res.text()).slice(0, 200)}`)
-    const json = await res.json() as { data?: { products?: { pageInfo: { hasNextPage: boolean; endCursor: string | null }; nodes: StorefrontProduct[] } }; errors?: unknown[] }
-    if (json.errors?.length) throw new Error(`storefront graphql: ${JSON.stringify(json.errors).slice(0, 250)}`)
-    const p = json.data?.products
-    if (!p) throw new Error('storefront: no products in response')
-    return { nodes: p.nodes ?? [], hasNext: p.pageInfo.hasNextPage, endCursor: p.pageInfo.endCursor }
-  } finally { clearTimeout(timer) }
-}
 
 function makeStorefrontAdapter(
   shopDomain: string, sourceSlug: string, expectedCurrency: string,
-  ov: MerchantOverrides, token: string, country: string,
+  ov: MerchantOverrides, token: string | null, country: string,
 ): SourceAdapter {
   return {
     name: sourceSlug, entityType: 'marketplace',
@@ -207,8 +157,7 @@ function makeAdapter(shopDomain: string, sourceSlug: string, currency = 'EUR', o
         // the worker wall-clock limit (HTTP 546).
         const res = await fetch(url, { headers: { 'User-Agent': UA, Accept: 'application/json' }, signal: ctrl.signal })
         if (!res.ok) {
-          if (page === 1) throw new Error(`products.json ${res.status} for ${shopDomain}`)
-          return []
+          throw new Error(`products.json ${res.status} for ${shopDomain} (page ${page})`)
         }
         data = await res.json() as { products?: PublicProduct[] }
       } catch (err) {
@@ -300,14 +249,21 @@ Deno.serve(withErrorReporting('source-shopify-public', async (req) => {
       businessName: (typeof body.business_name === 'string' && body.business_name) || cfgStr('business_name'),
       brandName: (typeof body.brand_name === 'string' && body.brand_name) || cfgStr('brand_name'),
     }
-    const maxPages = Number(body.max_pages ?? 40)
+    const requestedPages = Number(body.max_pages ?? 2)
+    const maxPages = Number.isFinite(requestedPages) ? Math.min(2, Math.max(1, Math.floor(requestedPages))) : 2
     const dryRun = body.dry_run || false
     const refresh = body.refresh === true
 
     // ── Storefront GraphQL path (currency-correct) ────────────────────────────
-    const storefrontToken = (typeof body.storefront_token === 'string' && body.storefront_token)
+    let storefrontToken = (typeof body.storefront_token === 'string' && body.storefront_token)
       || cfgStr('storefront_token')
-    if (storefrontToken) {
+    // Legacy products.json feeds can become rate-limited after a successful
+    // import. Try the theme's public token before remaining on that old path.
+    // Persist it only after the supported API and currencies have been verified.
+    const discovered = !storefrontToken && mcfg.legacy_feed === true
+      ? await publicStorefrontCredentials(shopDomain).catch(() => null) : null
+    storefrontToken ||= discovered?.token ?? null
+    if (mcfg.legacy_feed !== true || storefrontToken) {
       if (!marketCountry) return jsonResponse(skippedResponse('missing_config', ['market_country']), 200, req)
       const expected = normalizeCurrency(currency)
       const sfAdapter = makeStorefrontAdapter(shopDomain, sourceSlug, expected, overrides, storefrontToken, marketCountry)
@@ -333,16 +289,19 @@ Deno.serve(withErrorReporting('source-shopify-public', async (req) => {
       let seenCurrency: string | null = null
       let completedSweep = false
       let cursorRetried = false
+      const sweepStarted = Date.now()
+      let pagesFetched = 0
 
       for (pages = 0; pages < maxPages; pages++) {
+        if (pages > 0 && Date.now() - sweepStarted > 30_000) break
         let page: { nodes: StorefrontProduct[]; hasNext: boolean; endCursor: string | null }
         try {
-          page = await storefrontPage(shopDomain, storefrontToken, marketCountry, cursor)
+          page = await storefrontPage(discovered?.domain || cfgStr('storefront_domain') || shopDomain, storefrontToken, marketCountry, cursor)
         } catch (err) {
           // Storefront cursors are opaque and go stale when the product set shifts.
           // A persisted bad cursor would otherwise wedge this merchant forever, so
           // fall back to a fresh sweep exactly once per run rather than failing.
-          if (cursor && !cursorRetried) {
+          if (cursor && !cursorRetried && /cursor/i.test((err as Error).message)) {
             console.error(`storefront cursor rejected for ${sourceSlug}, restarting sweep:`, (err as Error).message)
             cursorRetried = true
             cursor = null
@@ -351,6 +310,7 @@ Deno.serve(withErrorReporting('source-shopify-public', async (req) => {
           }
           throw err
         }
+        pagesFetched++
         const { nodes, hasNext, endCursor } = page
         if (nodes.length === 0) { completedSweep = true; break }
 
@@ -380,6 +340,7 @@ Deno.serve(withErrorReporting('source-shopify-public', async (req) => {
             targetTable: 'marketplace_listings', refresh,
           })
         }
+        if (hasNext && (!endCursor || endCursor === cursor)) throw new Error(`storefront pagination did not advance for ${sourceSlug}`)
         cursor = endCursor
         if (!hasNext || !cursor) { completedSweep = true; break }
       }
@@ -396,6 +357,7 @@ Deno.serve(withErrorReporting('source-shopify-public', async (req) => {
           .update({
             config: {
               ...mcfg,
+              ...(discovered ? { storefront_token: discovered.token, storefront_domain: discovered.domain, legacy_feed: false } : {}),
               storefront_cursor: {
                 after: cursor, wraps,
                 completed_sweep: completedSweep,
@@ -404,13 +366,13 @@ Deno.serve(withErrorReporting('source-shopify-public', async (req) => {
             },
           })
           .eq('id', merchant.id)
-        if (cErr) console.error(`storefront cursor persist ${sourceSlug}:`, cErr.message)
+        if (cErr) throw new Error(`storefront cursor persist ${sourceSlug}: ${cErr.message}`)
       }
 
       return jsonResponse({
         success: true, items: dryRun ? total : written, items_total: total,
         items_processed: dryRun ? total : written, items_succeeded: dryRun ? total : written,
-        items_failed: 0, pages_fetched: pages + 1,
+        items_failed: 0, pages_fetched: pagesFetched,
         source: 'storefront', market_country: marketCountry, currency_verified: seenCurrency,
         resumed_from: startedAtCursor ? `${startedAtCursor.slice(0, 12)}…` : null,
         next_cursor: cursor ? `${cursor.slice(0, 12)}…` : null,

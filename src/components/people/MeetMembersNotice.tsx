@@ -98,7 +98,7 @@ export function MeetMembersNotice({
           </div>
         </div>
         <Button asChild variant="default">
-          <LocalizedLink to={user ? '/settings' : '/auth'} className="shrink-0 no-underline">
+          <LocalizedLink to={user ? '/me/settings' : '/auth'} className="shrink-0 no-underline">
             {user
               ? t('people.members.emptyCtaMember', 'Set up your profile')
               : t('people.members.emptyCtaAnon', 'Create a profile')}

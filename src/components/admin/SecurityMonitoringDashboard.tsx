@@ -18,7 +18,11 @@ interface SecurityEvent {
 }
 
 export function SecurityMonitoringDashboard() {
-  const { data: recentEvents = [], isLoading } = useQuery({
+  const {
+    data: recentEvents = [],
+    isLoading,
+    isError,
+  } = useQuery({
     queryKey: ['security-events'],
     queryFn: () =>
       listFrom<SecurityEvent>('security_events', '*', { col: 'created_at', ascending: false }, 50),
@@ -84,15 +88,6 @@ export function SecurityMonitoringDashboard() {
       e.event_type.includes('ESCALATION'),
   );
 
-  if (isLoading) {
-    return (
-      <div className="flex flex-col gap-6 p-6">
-        <AdminCardSkeleton />
-        <AdminCardSkeleton />
-      </div>
-    );
-  }
-
   return (
     <div className="flex flex-col gap-6">
       {/* Was <h2 className="text-2xl font-bold"> — an h2 as the page title, so
@@ -108,195 +103,214 @@ export function SecurityMonitoringDashboard() {
         }
       />
 
-      {criticalEvents.length > 0 && (
+      {isLoading ? (
+        <div className="flex flex-col gap-6" aria-busy="true">
+          <AdminCardSkeleton />
+          <AdminCardSkeleton />
+        </div>
+      ) : isError ? (
         <Alert variant="destructive">
-          <AlertTriangle size={16} />
           <AlertDescription>
-            {criticalEvents.length} critical security event(s) detected. Review immediately.
+            Security events could not be loaded. Please try again.
           </AlertDescription>
         </Alert>
-      )}
+      ) : (
+        <>
+          {criticalEvents.length > 0 && (
+            <Alert variant="destructive">
+              <AlertTriangle size={16} />
+              <AlertDescription>
+                {criticalEvents.length} critical security event(s) detected. Review immediately.
+              </AlertDescription>
+            </Alert>
+          )}
 
-      {/* System Statistics Overview */}
-      <div className="grid gap-4 md:grid-cols-3">
-        <Card>
-          <div className="flex items-center gap-4">
-            <div className="p-2 bg-muted rounded-element">
-              <Activity size={16} />
-            </div>
-            <div>
-              <p className="text-sm font-medium">Total Security Events</p>
-              <p className="text-headline font-bold">{recentEvents.length}</p>
-              <p className="text-xs text-muted-foreground">Last 50 events</p>
-            </div>
+          {/* System Statistics Overview */}
+          <div className="grid gap-4 md:grid-cols-3">
+            <Card>
+              <div className="flex items-center gap-4">
+                <div className="p-2 bg-muted rounded-element">
+                  <Activity size={16} />
+                </div>
+                <div>
+                  <p className="text-sm font-medium">Total Security Events</p>
+                  <p className="text-headline font-bold">{recentEvents.length}</p>
+                  <p className="text-xs text-muted-foreground">Last 50 events</p>
+                </div>
+              </div>
+            </Card>
+
+            <Card>
+              <div className="flex items-center gap-4">
+                <div
+                  className="p-2 rounded-element"
+                  style={{ backgroundColor: 'hsl(var(--destructive) / 0.1)' }}
+                >
+                  <AlertTriangle size={16} style={{ color: 'hsl(var(--destructive))' }} />
+                </div>
+                <div>
+                  <p className="text-sm font-medium">Failed Login Attempts</p>
+                  <p className="text-headline font-bold">{systemStats?.totalFailedLogins || 0}</p>
+                  <p className="text-xs text-muted-foreground">Total recorded</p>
+                </div>
+              </div>
+            </Card>
+
+            <Card>
+              <div className="flex items-center gap-4">
+                <div
+                  className="p-2 rounded-element"
+                  style={{ backgroundColor: 'hsl(var(--success) / 0.1)' }}
+                >
+                  <Shield size={16} style={{ color: 'hsl(var(--success))' }} />
+                </div>
+                <div>
+                  <p className="text-sm font-medium">CAPTCHA Verifications</p>
+                  <p className="text-headline font-bold">
+                    {systemStats?.totalCaptchaVerifications || 0}
+                  </p>
+                  <p className="text-xs text-muted-foreground">Total completed</p>
+                </div>
+              </div>
+            </Card>
           </div>
-        </Card>
 
-        <Card>
-          <div className="flex items-center gap-4">
-            <div
-              className="p-2 rounded-element"
-              style={{ backgroundColor: 'hsl(var(--destructive) / 0.1)' }}
-            >
-              <AlertTriangle size={16} style={{ color: 'hsl(var(--destructive))' }} />
-            </div>
-            <div>
-              <p className="text-sm font-medium">Failed Login Attempts</p>
-              <p className="text-headline font-bold">{systemStats?.totalFailedLogins || 0}</p>
-              <p className="text-xs text-muted-foreground">Total recorded</p>
-            </div>
-          </div>
-        </Card>
-
-        <Card>
-          <div className="flex items-center gap-4">
-            <div
-              className="p-2 rounded-element"
-              style={{ backgroundColor: 'hsl(var(--success) / 0.1)' }}
-            >
-              <Shield size={16} style={{ color: 'hsl(var(--success))' }} />
-            </div>
-            <div>
-              <p className="text-sm font-medium">CAPTCHA Verifications</p>
-              <p className="text-headline font-bold">
-                {systemStats?.totalCaptchaVerifications || 0}
-              </p>
-              <p className="text-xs text-muted-foreground">Total completed</p>
-            </div>
-          </div>
-        </Card>
-      </div>
-
-      <div className="grid gap-6 md:grid-cols-3">
-        <Card>
-          <CardHeader>
-            <CardTitle>Recent Security Events</CardTitle>
-            <CardDescription>Latest security events and system alerts</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="flex flex-col gap-4 max-h-96 overflow-y-auto">
-              {recentEvents.slice(0, 10).map((event) => {
-                const det = event.details as { severity?: string } | undefined;
-                return (
-                  <div
-                    key={event.id}
-                    className="flex items-start gap-4 p-4 rounded-element bg-muted"
-                  >
-                    <div className="mt-1">{getEventIcon(event.event_type)}</div>
-                    <div className="flex-1 flex flex-col gap-1">
-                      <div className="flex items-center justify-between">
-                        <span className="font-medium text-sm">
-                          {event.event_type.replace(/_/g, ' ')}
-                        </span>
-                        <Badge variant={getSeverityColor(det?.severity || 'info')}>
-                          {det?.severity || 'info'}
-                        </Badge>
-                      </div>
-                      <p className="text-xs text-muted-foreground">
-                        {formatDistanceToNow(new Date(event.created_at), { addSuffix: true })}
-                      </p>
-                      {event.details && Object.keys(event.details).length > 0 && (
-                        <details className="text-xs">
-                          <summary className="cursor-pointer text-muted-foreground">
-                            View details
-                          </summary>
-                          <div className="mt-1 bg-muted p-2 rounded-element overflow-x-auto">
-                            <StructuredValueView value={event.details} className="text-xs" />
+          <div className="grid gap-6 md:grid-cols-3">
+            <Card>
+              <CardHeader>
+                <CardTitle>Recent Security Events</CardTitle>
+                <CardDescription>Latest security events and system alerts</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="flex flex-col gap-4 max-h-96 overflow-y-auto">
+                  {recentEvents.slice(0, 10).map((event) => {
+                    const det = event.details as { severity?: string } | undefined;
+                    return (
+                      <div
+                        key={event.id}
+                        className="flex items-start gap-4 p-4 rounded-element bg-muted"
+                      >
+                        <div className="mt-1">{getEventIcon(event.event_type)}</div>
+                        <div className="flex-1 flex flex-col gap-1">
+                          <div className="flex items-center justify-between">
+                            <span className="font-medium text-sm">
+                              {event.event_type.replace(/_/g, ' ')}
+                            </span>
+                            <Badge variant={getSeverityColor(det?.severity || 'info')}>
+                              {det?.severity || 'info'}
+                            </Badge>
                           </div>
-                        </details>
-                      )}
-                    </div>
-                  </div>
-                );
-              })}
-              {recentEvents.length === 0 && (
-                <p className="text-muted-foreground text-center py-4">No recent security events</p>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Role Management Audit</CardTitle>
-            <CardDescription>Recent role assignments and changes</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="flex flex-col gap-4 max-h-96 overflow-y-auto">
-              {auditLogs.map((log: Record<string, unknown>) => (
-                <div
-                  key={log.id as string}
-                  className="flex items-start gap-4 p-4 rounded-element bg-muted"
-                >
-                  <Users size={16} className="mt-1" />
-                  <div className="flex-1 flex flex-col gap-1">
-                    <div className="flex items-center justify-between">
-                      <span className="font-medium text-sm">
-                        Role {log.action as string}: {log.role_name as string}
-                      </span>
-                      <Badge variant="outline">{log.action as string}</Badge>
-                    </div>
-                    <p className="text-xs text-muted-foreground">
-                      Admin: {(log.admin_user_id as string)?.slice(0, 8)}... → Target:{' '}
-                      {(log.target_user_id as string)?.slice(0, 8)}...
+                          <p className="text-xs text-muted-foreground">
+                            {formatDistanceToNow(new Date(event.created_at), { addSuffix: true })}
+                          </p>
+                          {event.details && Object.keys(event.details).length > 0 && (
+                            <details className="text-xs">
+                              <summary className="cursor-pointer text-muted-foreground">
+                                View details
+                              </summary>
+                              <div className="mt-1 bg-muted p-2 rounded-element overflow-x-auto">
+                                <StructuredValueView value={event.details} className="text-xs" />
+                              </div>
+                            </details>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                  {recentEvents.length === 0 && (
+                    <p className="text-muted-foreground text-center py-4">
+                      No recent security events
                     </p>
-                    <p className="text-xs text-muted-foreground">
-                      {formatDistanceToNow(new Date(log.timestamp as string), { addSuffix: true })}
-                    </p>
-                  </div>
+                  )}
                 </div>
-              ))}
-              {auditLogs.length === 0 && (
-                <p className="text-muted-foreground text-center py-4">No recent role changes</p>
-              )}
-            </div>
-          </CardContent>
-        </Card>
+              </CardContent>
+            </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Failed Login Attempts</CardTitle>
-            <CardDescription>Recent failed authentication attempts</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="flex flex-col gap-4 max-h-96 overflow-y-auto">
-              {recentFailedLogins.map((attempt: Record<string, unknown>) => (
-                <div
-                  key={attempt.id as string}
-                  className="flex items-start gap-4 p-4 rounded-element bg-muted"
-                >
-                  <AlertTriangle
-                    size={16}
-                    style={{ color: 'hsl(var(--destructive))' }}
-                    className="mt-1"
-                  />
-                  <div className="flex-1 flex flex-col gap-1">
-                    <div className="flex items-center justify-between">
-                      <span className="font-medium text-sm">
-                        {(attempt.attempt_type as string).toUpperCase()} Failed
-                      </span>
-                      <Badge variant="destructive">Failed</Badge>
+            <Card>
+              <CardHeader>
+                <CardTitle>Role Management Audit</CardTitle>
+                <CardDescription>Recent role assignments and changes</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="flex flex-col gap-4 max-h-96 overflow-y-auto">
+                  {auditLogs.map((log: Record<string, unknown>) => (
+                    <div
+                      key={log.id as string}
+                      className="flex items-start gap-4 p-4 rounded-element bg-muted"
+                    >
+                      <Users size={16} className="mt-1" />
+                      <div className="flex-1 flex flex-col gap-1">
+                        <div className="flex items-center justify-between">
+                          <span className="font-medium text-sm">
+                            Role {log.action as string}: {log.role_name as string}
+                          </span>
+                          <Badge variant="outline">{log.action as string}</Badge>
+                        </div>
+                        <p className="text-xs text-muted-foreground">
+                          Admin: {(log.admin_user_id as string)?.slice(0, 8)}... → Target:{' '}
+                          {(log.target_user_id as string)?.slice(0, 8)}...
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {formatDistanceToNow(new Date(log.timestamp as string), {
+                            addSuffix: true,
+                          })}
+                        </p>
+                      </div>
                     </div>
-                    <p className="text-xs text-muted-foreground">
-                      IP: {attempt.ip_address as string}
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      {formatDistanceToNow(new Date(attempt.created_at as string), {
-                        addSuffix: true,
-                      })}
-                    </p>
-                  </div>
+                  ))}
+                  {auditLogs.length === 0 && (
+                    <p className="text-muted-foreground text-center py-4">No recent role changes</p>
+                  )}
                 </div>
-              ))}
-              {recentFailedLogins.length === 0 && (
-                <p className="text-muted-foreground text-center py-4">
-                  No recent failed login attempts
-                </p>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Failed Login Attempts</CardTitle>
+                <CardDescription>Recent failed authentication attempts</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="flex flex-col gap-4 max-h-96 overflow-y-auto">
+                  {recentFailedLogins.map((attempt: Record<string, unknown>) => (
+                    <div
+                      key={attempt.id as string}
+                      className="flex items-start gap-4 p-4 rounded-element bg-muted"
+                    >
+                      <AlertTriangle
+                        size={16}
+                        style={{ color: 'hsl(var(--destructive))' }}
+                        className="mt-1"
+                      />
+                      <div className="flex-1 flex flex-col gap-1">
+                        <div className="flex items-center justify-between">
+                          <span className="font-medium text-sm">
+                            {(attempt.attempt_type as string).toUpperCase()} Failed
+                          </span>
+                          <Badge variant="destructive">Failed</Badge>
+                        </div>
+                        <p className="text-xs text-muted-foreground">
+                          IP: {attempt.ip_address as string}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {formatDistanceToNow(new Date(attempt.created_at as string), {
+                            addSuffix: true,
+                          })}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                  {recentFailedLogins.length === 0 && (
+                    <p className="text-muted-foreground text-center py-4">
+                      No recent failed login attempts
+                    </p>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </>
+      )}
     </div>
   );
 }

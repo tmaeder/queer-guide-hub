@@ -35,7 +35,8 @@ describe('CityOverviewTab', () => {
     // Timezone is deliberately NOT repeated here — the head fact strip
     // (`CityAtAGlance`) carries it, and a headline fact lives once.
     expect(screen.queryByText('Timezone')).not.toBeInTheDocument();
-    expect(screen.getByText('HU Berlin')).toBeInTheDocument();
+    expect(screen.queryByText('HU Berlin')).not.toBeInTheDocument();
+    expect(screen.queryByText('Universities')).not.toBeInTheDocument();
   });
 
   it('hides the description when the masthead lead already rendered it', () => {

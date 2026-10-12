@@ -1,3 +1,4 @@
+import { VenueRatingForm } from '@/components/venues/VenueRatingForm';
 import { useEffect, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
@@ -244,8 +245,18 @@ export function useVenueDescriptor(slug: string | undefined): EntityDescriptorRe
         {
           id: 'reviews',
           title: t('venues.detail.section.reviews', 'Reviews'),
-          when: reviews.length > 0,
-          render: () => <VenueReviews reviews={reviews} averageRating={averageRating} />,
+          render: () => (
+            <>
+              <VenueRatingForm
+                key={venue.id}
+                venueId={venue.id}
+                onSaved={() => {
+                  void refetch();
+                }}
+              />
+              <VenueReviews reviews={reviews} averageRating={averageRating} />
+            </>
+          ),
         },
         {
           id: 'photos',

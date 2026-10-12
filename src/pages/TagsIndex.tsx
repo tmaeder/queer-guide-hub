@@ -69,6 +69,7 @@ import { TagAlphabetRail } from '@/components/tags/index/TagAlphabetRail';
 import { TagResults } from '@/components/tags/index/TagResults';
 import { TagsEndOfLine } from '@/components/tags/index/TagsEndOfLine';
 import { FlagWall } from '@/components/tags/FlagWall';
+import { KnowledgeHeader } from '@/components/knowledge/KnowledgeHeader';
 
 /** One pass over the corpus. Every filter afterwards is a field read. */
 interface TagIndexEntry {
@@ -386,48 +387,35 @@ export default function TagsIndex() {
   });
 
   if (loading) {
-    // THE HEADING IS PART OF THE LOADING STATE, NOT PART OF THE PAYLOAD.
-    //
-    // This branch used to render the spinner alone, so /tags had no `h1` at
-    // all until `useCentralizedTags()` resolved. That made the page's identity
-    // a function of database latency: `e2e/intent-nav.spec.ts` asserts
-    // `main h1` is visible with a 5s timeout, and on 2026-08-24 it failed
-    // three times in a row on an unrelated PR while the tag tables were slow
-    // (`tag_hygiene_stats()` was returning 57014 statement timeouts in the same
-    // window). Nothing was broken about /tags — the query was just slower than
-    // the assertion, and a required check went red on a change that had not
-    // touched tags.
-    //
-    // The fix is not a longer timeout. A page that cannot say what it is until
-    // its data arrives is worse for a screen reader and for anyone on a slow
-    // connection, who gets an unlabelled spinner instead of "The glossary".
-    // `title` needs no data on the index (`scope` is null without a
-    // `categorySlug`), and on a scoped page it degrades to the family name
-    // until the real one loads — honest, and it stops the heading moving.
     return (
-      <PageContainer as="header">
-        <h1 className="text-display leading-tight md:text-hero">{title}</h1>
-        <div className="mt-10">
+      <>
+        <KnowledgeHeader section="terms" />
+        <PageContainer>
           <TrackLoader label={t('tags.loading', 'Loading the glossary')} />
-        </div>
-      </PageContainer>
+        </PageContainer>
+      </>
     );
   }
 
   if (error) {
     return (
-      <PageContainer>
-        <div className="bg-muted rounded-container p-6">
-          <h1 className="font-display text-headline">{t('tags.error', 'The glossary is down')}</h1>
-          <button
-            type="button"
-            onClick={() => window.location.reload()}
-            className="mt-4 px-4 py-2 text-13 font-bold transition-colors hover:bg-foreground hover:text-background"
-          >
-            {t('tags.retry', 'Try again')}
-          </button>
-        </div>
-      </PageContainer>
+      <>
+        <KnowledgeHeader section="terms" />
+        <PageContainer>
+          <div className="bg-muted rounded-container p-6" role="alert">
+            <h2 className="font-display text-headline">
+              {t('tags.error', 'The glossary is down')}
+            </h2>
+            <button
+              type="button"
+              onClick={() => window.location.reload()}
+              className="mt-4 px-4 py-2 text-13 font-bold transition-colors hover:bg-foreground hover:text-background"
+            >
+              {t('tags.retry', 'Try again')}
+            </button>
+          </div>
+        </PageContainer>
+      </>
     );
   }
 
@@ -442,8 +430,8 @@ export default function TagsIndex() {
 
   return (
     <>
-      <PageContainer as="header" className="pb-0">
-        <h1 className="text-display leading-tight md:text-hero">{title}</h1>
+      <KnowledgeHeader section="terms">
+        <h2 className="text-title font-bold">{title}</h2>
         <p className="mt-4 max-w-reading text-body-lg leading-relaxed text-muted-foreground">
           {scope
             ? t('tags.category.lede', 'Every term filed under {{name}}.', { name: scope.name })
@@ -462,7 +450,7 @@ export default function TagsIndex() {
             })}
           </p>
         )}
-      </PageContainer>
+      </KnowledgeHeader>
 
       <PageContainer as="section" flush className="pb-16 md:pb-24">
         <div className="mt-8 grid grid-cols-1 gap-6 lg:grid-cols-[256px_minmax(0,1fr)] lg:gap-8">

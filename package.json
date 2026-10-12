@@ -42,7 +42,8 @@
     "i18n:fill": "tsx scripts/sync-translations.ts --fill",
     "i18n:sync": "tsx scripts/sync-public-locales.ts --write",
     "verify:gh-sync": "tsx scripts/verify-github-sync.ts",
-    "prepare": "husky"
+    "prepare": "husky",
+    "test:merchant-sync": "vitest run --config tests/merchant-sync/vitest.config.ts"
   },
   "lint-staged": {
     "src/**/*.{ts,tsx}": [

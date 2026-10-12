@@ -144,14 +144,14 @@ describe('TagsIndex', () => {
   it('names itself while still loading, so the heading never waits on the query', () => {
     tagsLoading = true;
     renderAt('/tags');
-    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(/glossary/i);
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(/Knowledge/i);
   });
 
   it('leads with browse and search, not a help hub', () => {
     // The regression this guards: the page it replaces was headlined "Help &
     // resources." and hid the glossary behind a collapsed disclosure.
     renderAt('/tags');
-    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(/glossary/i);
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(/Knowledge/i);
     expect(screen.getByRole('searchbox')).toBeInTheDocument();
     expect(screen.queryByText(/help & resources/i)).not.toBeInTheDocument();
   });
@@ -275,7 +275,9 @@ describe('TagsIndex', () => {
 
   it('narrows to one line on /tags/c/:categorySlug and drops the site-wide stats', () => {
     renderAt('/tags/c/identity');
-    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(/Identity/);
+    expect(screen.getByRole('heading', { level: 2, name: 'Identity' })).toHaveTextContent(
+      /Identity/,
+    );
     expect(screen.getByRole('link', { name: /Drag/ })).toBeInTheDocument();
     expect(screen.queryByRole('link', { name: /Bear/ })).not.toBeInTheDocument();
     // The ink scale-board is site-wide; restating it on a category is a lie.

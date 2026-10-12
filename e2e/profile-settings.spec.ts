@@ -1,15 +1,11 @@
 import { test, expect } from '@playwright/test';
 
-// Settings IA: inline accordion at /settings (2026-06-20). The page is a single
-// scroll of glanceable summary cards; tapping one EXPANDS its editor inline on the
-// page (a Collapsible), not in a bottom Sheet/dialog. Single-open: opening another
-// section collapses the previous one. The old tabbed /profile/settings IA is gone
-// (/profile/settings redirects). Non-mutating: never saves a field. Uses the admin
-// storageState from auth.setup; skips when E2E_ADMIN_EMAIL / E2E_ADMIN_PASSWORD are unset.
+// Legacy settings links open the authenticated owner’s contextual editors.
+// These checks use the configured admin session and never change a field.
 
 const hasAuth = !!(process.env.E2E_ADMIN_EMAIL && process.env.E2E_ADMIN_PASSWORD);
 
-test.describe('profile settings — inline accordion', () => {
+test.describe('profile settings — contextual editors', () => {
   test.skip(!hasAuth, 'requires E2E_ADMIN_EMAIL / E2E_ADMIN_PASSWORD');
 
   // Pre-seed cookie consent so the fixed banner never intercepts card clicks.
@@ -30,51 +26,41 @@ test.describe('profile settings — inline accordion', () => {
     });
   });
 
-  test('renders the settings hub with accordion section headers', async ({ page }) => {
+  test('legacy Settings opens the owner’s profile editor', async ({ page }) => {
     await page.goto('/settings');
-    await expect(page.getByRole('heading', { name: 'Settings' })).toBeVisible();
-    // Anchored at the start on purpose. An AccordionSection's accessible name is
-    // its title PLUS its summary line, and the Privacy section's summary opens
-    // with "Profile: public · Identity: … · Travel: …" (privacySummary in
-    // Settings.tsx) — so an unanchored /Profile/i matched both "Profile Bio,
-    // location, links" and "Privacy & visibility Profile: public …" and failed
-    // strict mode with two elements, not with a missing one.
-    for (const title of ['Profile', 'Privacy & visibility', 'Travel preferences', 'Account']) {
-      await expect(page.getByRole('button', { name: new RegExp(`^${title}`, 'i') })).toBeVisible();
-    }
-    // Nothing is expanded on load — collapsed Collapsible content is unmounted.
-    await expect(page.locator('#settings-section-privacy')).not.toContainText('Privacy Settings');
+    await expect(page).toHaveURL(/\/user\/[^/?#]+\?[^#]*edit=profile/);
+    await expect(page.getByRole('region', { name: 'Edit profile', exact: true })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Settings', exact: true })).toHaveCount(0);
   });
 
-  test('tapping Privacy expands its editor inline — no pop-over dialog', async ({ page }) => {
-    await page.goto('/settings');
-    const trigger = page.getByRole('button', { name: /Privacy & visibility/i });
-    await trigger.click();
-
-    // The editor appears inline inside the section container, not in a dialog.
+  test('legacy Privacy opens its contextual editor without a dialog', async ({ page }) => {
+    await page.goto('/settings/privacy');
+    await expect(page).toHaveURL(/\/user\/[^/?#]+\?[^#]*edit=privacy/);
+    const editor = page.getByRole('region', { name: 'Privacy & visibility', exact: true });
+    await expect(editor).toBeVisible();
+    await expect(editor.getByText('Pronouns', { exact: true })).toBeVisible();
+    await expect(editor.getByText('Location', { exact: true })).toBeVisible();
     await expect(page.getByRole('dialog')).toHaveCount(0);
-    await expect(trigger).toHaveAttribute('aria-expanded', 'true');
-
-    const section = page.locator('#settings-section-privacy');
-    await expect(section).toContainText('Privacy Settings');
-    await expect(section.getByText('Pronouns', { exact: true })).toBeVisible();
-    await expect(section.getByText('Location', { exact: true })).toBeVisible();
+    await editor.getByRole('button', { name: 'Done', exact: true }).click();
+    await expect(editor).toHaveCount(0);
+    await expect.poll(() => new URL(page.url()).searchParams.has('edit')).toBe(false);
   });
 
-  test('single-open: expanding Profile collapses Privacy', async ({ page }) => {
-    await page.goto('/settings?section=privacy');
-    await expect(page.locator('#settings-section-privacy')).toContainText('Privacy Settings');
-
-    await page.getByRole('button', { name: /^Profile/i }).click();
-    // Profile content is now in view… (Occupation/Date of Birth are unique to it)
-    await expect(page.locator('#settings-section-profile')).toContainText(/Occupation|Date of Birth/i);
-    // …and Privacy has collapsed (its content unmounted).
-    await expect(page.locator('#settings-section-privacy')).not.toContainText('Privacy Settings');
+  test('account settings opens the separate private Account tab', async ({ page }) => {
+    await page.goto('/settings?section=account');
+    await expect(page).toHaveURL(/\/user\/[^/?#]+\/account(?:[?#]|$)/);
+    const account = page.getByRole('region', { name: 'Account', exact: true });
+    await expect(account).toBeVisible();
+    await expect(account.getByRole('heading', { name: 'Username', exact: true })).toBeVisible();
+    await expect(page.getByRole('region', { name: 'Edit profile', exact: true })).toHaveCount(0);
   });
 
-  test('?section= deep link expands the matching section inline', async ({ page }) => {
-    await page.goto('/settings?section=privacy');
-    await expect(page.getByRole('dialog')).toHaveCount(0);
-    await expect(page.locator('#settings-section-privacy')).toContainText('Privacy Settings');
+  test('old profile settings links retain their destination and unrelated query', async ({ page }) => {
+    await page.goto('/profile/settings?section=privacy&from=legacy#visibility');
+    await expect(page.getByRole('region', { name: 'Privacy & visibility', exact: true })).toBeVisible();
+    const destination = new URL(page.url());
+    expect(destination.searchParams.get('edit')).toBe('privacy');
+    expect(destination.searchParams.get('from')).toBe('legacy');
+    expect(destination.hash).toBe('#visibility');
   });
 });

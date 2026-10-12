@@ -109,37 +109,31 @@ export const adminNavSections: AdminNavSection[] = [
     items: [
       {
         id: 'overview',
-        label: 'Overview',
-        icon: LayoutDashboard,
-        route: '/admin',
-        keywords: ['dashboard', 'cockpit'],
-      },
-      {
-        id: 'governance',
-        label: 'Review & quality',
+        label: 'Review queue',
         icon: Inbox,
-        route: '/admin/governance',
-        minRole: 'moderator',
+        route: '/admin',
         keywords: [
-          'inbox',
-          'triage',
-          'moderation',
-          'submissions',
-          'approvals',
+          'dashboard',
+          'cockpit',
+          'overview',
           'governance',
+          'review',
           'quality',
+          'triage',
+          'inbox',
+          'approvals',
           'duplicates',
           'merge',
-          'places editorial',
           'editorial drafts',
+          'places editorial',
         ],
       },
+
       {
         id: 'feedback',
         label: 'Feedback',
         icon: MessageSquarePlus,
-        route: '/admin/feedback',
-        reviewCountKey: 'review_feedback',
+        route: '/admin?queue=feedback',
       },
       {
         id: 'postfach',
@@ -456,6 +450,9 @@ export function resolveItemMinRole(item: AdminNavItem, section?: AdminNavSection
  * deliberately.
  */
 export const ADMIN_ROUTE_ROLE_OVERRIDES: Record<string, AdminRole> = {
+  '/admin/diagnostics': 'moderator',
+  '/admin/governance': 'moderator',
+  '/admin/editorial-tools': 'admin',
   '/admin/settings': 'moderator',
   '/admin/business': 'admin',
   // Controlled vocabularies — the tier the "Vocabularies" nav row intends.

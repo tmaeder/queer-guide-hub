@@ -1,336 +1,167 @@
-import { useEffect, useRef, useState, type ReactNode } from 'react';
-import { Link } from 'react-router';
-import { ShieldCheck, Table2 } from 'lucide-react';
-import type { LucideIcon } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
+/** Read-only engine diagnostics. Every human decision lives in /admin. */
+import { lazy, Suspense, useState } from 'react';
+import { Link, useSearchParams } from 'react-router';
 import { Button } from '@/components/ui/button';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion';
-import { useAdminCounts } from '@/hooks/useAdminCounts';
-import { QUALITY_GATES } from '@/config/adminQueues';
-import { CityQualityPanel } from '@/components/admin/CityQualityPanel';
-import { AmenityQualityPanel } from '@/components/admin/AmenityQualityPanel';
-import { VillageQualityPanel } from '@/components/admin/VillageQualityPanel';
-import { PersonalityQualityPanel } from '@/components/admin/PersonalityQualityPanel';
-import { MarketplaceTagQualityPanel } from '@/components/admin/MarketplaceTagQualityPanel';
-import { MarketplacePruneCard } from '@/components/admin/MarketplacePruneCard';
-import { MarketplaceQualityStatsPanel } from '@/components/admin/MarketplaceQualityStatsPanel';
-import { FreigabeFunnel } from '@/components/admin/FreigabeFunnel';
-import { PersonalityFreigabeQueue } from '@/components/admin/PersonalityFreigabeQueue';
-import { DedupPendingLink } from '@/components/admin/DedupPendingLink';
-import { OrgLinkReviewQueue } from '@/components/admin/business/OrgLinkReviewQueue';
-import { BusinessBrandQualityPanel } from '@/components/admin/business/BusinessBrandQualityPanel';
-import { GeoAddressQualityPanel } from '@/components/admin/GeoAddressQualityPanel';
-import { CategoryCoveragePanel } from '@/components/admin/CategoryCoveragePanel';
-import { VenueReviewQueuePanel } from '@/components/admin/VenueReviewQueuePanel';
-import type { FreigabeStufe } from '@/lib/personalityStatus';
-import { AdminArchetypeHeader } from '@/components/admin/frames/AdminArchetypeHeader';
-import { AutomationStatusCard } from '@/components/admin/AutomationStatusCard';
+import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
+import { AdminTableSkeleton } from '@/components/admin/primitives/AdminLoading';
 
-interface QualityEngine {
-  /** get_admin_counts key for pending review items; null = engine has no gate. */
-  countKey: string | null;
-  title: string;
-  description: string;
-  /** Where the card navigates. */
-  route: string;
-  /** EngineSection.value to expand in place instead of navigating. */
-  section?: string;
-  icon: LucideIcon;
-}
-
-/**
- * Review actions live in the unified inbox; each gated engine deep-links to its
- * queue. Gates come from the shared registry so their title, count key and
- * destination cannot drift from the cockpit's copy of the same list.
- */
-const ENGINES: QualityEngine[] = [...QUALITY_GATES];
-
-/** One engine dashboard section: edit link + panels + dedup cross-link. */
-interface EngineSection {
-  value: string;
-  title: string;
-  editRoute: string;
-  editLabel: string;
-  render: () => ReactNode;
-}
-
-/** Freigabe funnel + queue are deliberately separate from the review gates and
- *  stay reachable here (multi-stage Ampel, not an inbox queue). */
-function PersonalitySection() {
-  const [stage, setStage] = useState<FreigabeStufe>('in_pruefung');
-  return (
-    <>
-      <FreigabeFunnel selected={stage} onSelect={setStage} />
-      <PersonalityFreigabeQueue stage={stage} onStageChange={setStage} />
-      <PersonalityQualityPanel />
-      <DedupPendingLink entityType="personality" />
-    </>
-  );
-}
-
-const SECTIONS: EngineSection[] = [
+const panels = [
   {
-    value: 'cities',
-    title: 'Cities',
-    editRoute: '/admin/content/cities',
-    editLabel: 'Edit cities',
-    render: () => (
-      <>
-        <CityQualityPanel />
-        <DedupPendingLink entityType="city" />
-      </>
+    key: 'cities',
+    label: 'Cities',
+    component: lazy(() =>
+      import('@/components/admin/CityQualityPanel').then((m) => ({ default: m.CityQualityPanel })),
     ),
   },
   {
-    value: 'venues',
-    title: 'Venues — amenities & accessibility',
-    editRoute: '/admin/content/venues',
-    editLabel: 'Edit venues',
-    render: () => (
-      <>
-        <AmenityQualityPanel />
-        <DedupPendingLink entityType="venue" />
-      </>
+    key: 'venues',
+    label: 'Venues: amenities and accessibility',
+    component: lazy(() =>
+      import('@/components/admin/AmenityQualityPanel').then((m) => ({
+        default: m.AmenityQualityPanel,
+      })),
     ),
   },
   {
-    value: 'villages',
-    title: 'Queer Villages',
-    editRoute: '/admin/content/queer_villages',
-    editLabel: 'Edit villages',
-    render: () => (
-      <>
-        <VillageQualityPanel />
-        <DedupPendingLink entityType="queer_village" />
-      </>
+    key: 'villages',
+    label: 'Queer villages',
+    component: lazy(() =>
+      import('@/components/admin/VillageQualityPanel').then((m) => ({
+        default: m.VillageQualityPanel,
+      })),
     ),
   },
   {
-    value: 'personalities',
-    title: 'Personalities — Freigabe & completeness',
-    editRoute: '/admin/content/personalities',
-    editLabel: 'Edit personalities',
-    render: () => <PersonalitySection />,
-  },
-  {
-    value: 'marketplace',
-    title: 'Marketplace — quality & tags',
-    editRoute: '/admin/content/marketplace_listings',
-    editLabel: 'Edit listings',
-    render: () => (
-      <>
-        <MarketplaceQualityStatsPanel />
-        <MarketplacePruneCard />
-        <MarketplaceTagQualityPanel />
-        <DedupPendingLink entityType="marketplace" />
-      </>
+    key: 'personalities',
+    label: 'Personalities',
+    component: lazy(() =>
+      import('@/components/admin/PersonalityQualityPanel').then((m) => ({
+        default: m.PersonalityQualityPanel,
+      })),
     ),
   },
   {
-    /* Reviewed inline rather than in the inbox: approving a suggestion picks a
-       target org, and with none set decide_org_adoption mints a new one —
-       inputs the generic triage panel does not model. */
-    value: 'business-links',
-    title: 'Business links — adoption review',
-    editRoute: '/admin/content/organizations',
-    editLabel: 'Open Business console',
-    render: () => (
-      <>
-        <BusinessBrandQualityPanel />
-        <OrgLinkReviewQueue />
-      </>
+    key: 'marketplace',
+    label: 'Marketplace',
+    component: lazy(() =>
+      import('@/components/admin/MarketplaceQualityStatsPanel').then((m) => ({
+        default: m.MarketplaceQualityStatsPanel,
+      })),
     ),
   },
   {
-    /* Cross-type rather than per-entity: state/postal/country share one derive
-       trigger and one queue, so the gaps only make sense side by side. */
-    value: 'addresses',
-    title: 'Addresses — state, postal code & country',
-    editRoute: '/admin/geography',
-    editLabel: 'Open Geography',
-    render: () => <GeoAddressQualityPanel />,
+    key: 'addresses',
+    label: 'Address coverage',
+    component: lazy(() =>
+      import('@/components/admin/GeoAddressQualityPanel').then((m) => ({
+        default: m.GeoAddressQualityPanel,
+      })),
+    ),
   },
   {
-    /* Cross-type like Addresses: venues.category and events.event_type are the two
-       browse axes and share one backfill pattern, so they read together. */
-    value: 'categories',
-    title: 'Categories — venue & event coverage',
-    editRoute: '/admin/content/venues',
-    editLabel: 'Open Venues',
-    /* Coverage first (how much is unknown), then the queue that actually moves
-       it. The engine holds back everything under 85% measured agreement, so the
-       numbers above only fall when a human works this list. */
-    render: () => (
-      <>
-        <CategoryCoveragePanel />
-        <VenueReviewQueuePanel />
-      </>
+    key: 'categories',
+    label: 'Category coverage',
+    component: lazy(() =>
+      import('@/components/admin/CategoryCoveragePanel').then((m) => ({
+        default: m.CategoryCoveragePanel,
+      })),
+    ),
+  },
+  {
+    key: 'tags',
+    label: 'Tag quality',
+    component: lazy(() =>
+      import('@/components/admin/TagQualityPanel').then((m) => ({ default: m.TagQualityPanel })),
+    ),
+  },
+  {
+    key: 'vocabulary',
+    label: 'Vocabulary health',
+    component: lazy(() =>
+      import('@/components/admin/TagVocabularyHealthPanel').then((m) => ({
+        default: m.TagVocabularyHealthPanel,
+      })),
+    ),
+  },
+  {
+    key: 'hygiene',
+    label: 'Tag hygiene',
+    component: lazy(() =>
+      import('@/components/admin/TagHygienePanel').then((m) => ({ default: m.TagHygienePanel })),
     ),
   },
 ];
-
-const CARD_CLASS =
-  'flex flex-col gap-2 rounded-container border border-border p-4 text-left transition-colors hover:bg-muted/40';
-
-/** Card face, identical whether the card navigates or expands a section below. */
-function EngineCardBody({
-  engine,
-  pending,
-}: {
-  engine: QualityEngine;
-  pending: number | undefined;
-}) {
-  const Icon = engine.icon;
+function EngineDiagnostics() {
+  const [active, setActive] = useState('');
   return (
-    <>
-      <div className="flex items-center justify-between gap-2">
-        <span className="flex items-center gap-2 font-medium">
-          <Icon size={16} />
-          {engine.title}
-        </span>
-        {engine.countKey === null ? (
-          <Badge variant="outline" className="font-normal">
-            no gate
-          </Badge>
-        ) : pending != null && pending > 0 ? (
-          <Badge className="tabular-nums">{pending}</Badge>
-        ) : (
-          <Badge variant="secondary" className="font-normal tabular-nums">
-            {pending ?? '…'}
-          </Badge>
-        )}
-      </div>
-      <p className="text-13 text-muted-foreground">{engine.description}</p>
-      {engine.countKey !== null && pending != null && pending > 0 && (
-        <p className="text-13 font-medium">
-          Review {pending} item{pending === 1 ? '' : 's'} →
-        </p>
-      )}
-    </>
-  );
-}
-
-/**
- * Quality hub — one page surfacing every Truth Engine review gate with its
- * pending count (gates deep-link into the unified inbox queues) plus the
- * per-engine dashboard panels that used to live on the standalone
- * /admin/content/<entity>-quality pages.
- */
-export default function QualityHub() {
-  const { data: counts } = useAdminCounts();
-  const [openSections, setOpenSections] = useState<string[]>(['personalities']);
-  const pendingScroll = useRef<string | null>(null);
-  const totalPending = ENGINES.reduce(
-    (sum, e) => sum + (e.countKey ? (counts?.[e.countKey] ?? 0) : 0),
-    0,
-  );
-
-  /** Expand an inline gate's section and bring it into view. */
-  const revealSection = (value: string) => {
-    // Already open: the state never changes, so the effect below would not
-    // fire and the card would look dead on a second click. Scroll directly.
-    if (openSections.includes(value)) {
-      document.getElementById(`section-${value}`)?.scrollIntoView({ block: 'start' });
-      return;
-    }
-    setOpenSections((prev) => [...prev, value]);
-    pendingScroll.current = value;
-  };
-
-  // Scroll once the accordion has committed. Scheduling this from the click
-  // handler (rAF) races the expansion and silently no-ops. Expanding a section
-  // does not move its own top, so no settle logic is needed — but collapsing
-  // the others would (it shrinks the page enough to clamp the scroll), which
-  // is why revealSection only ever adds.
-  useEffect(() => {
-    const value = pendingScroll.current;
-    if (!value) return;
-    pendingScroll.current = null;
-    document.getElementById(`section-${value}`)?.scrollIntoView({ block: 'start' });
-  }, [openSections]);
-
-  return (
-    <div className="flex flex-col gap-6">
-      {/* Archetype H — a registry of named quality gates, each with a pending
-        count. The pending total is the archetype's fired-count, so it moves out
-        of the subtitle and into the header's action slot where a number that
-        implies work belongs; the rest of the old subtitle was orientation the
-        route line now carries. */}
-      <AdminArchetypeHeader
-        title={
-          <span className="flex items-center gap-2">
-            <ShieldCheck size={22} aria-hidden />
-            Quality
-          </span>
-        }
+    <div>
+      <AdminPageHeader
+        title="Engine diagnostics"
+        subtitle="Coverage and quality measurements. Review pending decisions in the Review queue."
         actions={
-          <span className="text-13 text-muted-foreground">
-            {counts
-              ? `${totalPending} item${totalPending === 1 ? '' : 's'} awaiting review`
-              : 'Loading counts…'}
-          </span>
+          <Button asChild variant="outline">
+            <Link to="/admin">Open Review queue</Link>
+          </Button>
         }
       />
-
-      {/* Above the engine cards on purpose: the per-engine counts below are raw
-          depth, and depth alone is what made this page read as a wall of stuck
-          work. This says how much of it clears tonight without anyone. */}
-      <AutomationStatusCard />
-
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        {ENGINES.map((e) => {
-          const pending = e.countKey ? counts?.[e.countKey] : undefined;
-          const body = <EngineCardBody engine={e} pending={pending} />;
-          // A gate with a `section` is reviewed inline on this page — expand it
-          // rather than navigating. `route` is still set for the cockpit, which
-          // has no accordion to expand and links here instead.
-          return e.section ? (
-            <button
-              key={e.title}
-              type="button"
-              className={CARD_CLASS}
-              onClick={() => revealSection(e.section as string)}
-            >
-              {body}
-            </button>
-          ) : (
-            <Link key={e.title} to={e.route} className={CARD_CLASS}>
-              {body}
-            </Link>
-          );
-        })}
-      </div>
-
-      <div>
-        <h2 className="text-title">Engine dashboards</h2>
-        <p className="text-13 text-muted-foreground">
-          Coverage, completeness, and funnel stats per Truth Engine.
-        </p>
-      </div>
-      <Accordion type="multiple" value={openSections} onValueChange={setOpenSections}>
-        {SECTIONS.map((s) => (
-          <AccordionItem key={s.value} id={`section-${s.value}`} value={s.value}>
-            <AccordionTrigger className="text-15">{s.title}</AccordionTrigger>
+      <Button asChild variant="ghost" className="mb-4">
+        <Link to="/admin/editorial-tools">Editorial generation and covers</Link>
+      </Button>
+      <Accordion type="single" collapsible value={active} onValueChange={setActive}>
+        {panels.map(({ key, label, component: Panel }) => (
+          <AccordionItem key={key} value={key}>
+            <AccordionTrigger>{label}</AccordionTrigger>
             <AccordionContent>
-              <div className="flex flex-col gap-4 pt-2">
-                <div>
-                  <Button asChild variant="outline" size="sm">
-                    <Link to={s.editRoute}>
-                      <Table2 size={14} className="mr-1" /> {s.editLabel}
-                    </Link>
-                  </Button>
-                </div>
-                {s.render()}
-              </div>
+              {active === key && (
+                <Suspense fallback={<AdminTableSkeleton />}>
+                  <Panel />
+                </Suspense>
+              )}
             </AccordionContent>
           </AccordionItem>
         ))}
       </Accordion>
     </div>
+  );
+}
+
+const OperationalOverview = lazy(() => import('./AdminOperationalOverview'));
+
+/** One secondary diagnostics destination; all decisions remain in Review. */
+export default function QualityHub() {
+  const [params, setParams] = useSearchParams();
+  const view = params.get('view') === 'engines' ? 'engines' : 'overview';
+  return (
+    <Tabs
+      value={view}
+      onValueChange={(next) =>
+        setParams((current) => {
+          const updated = new URLSearchParams(current);
+          if (next === 'overview') updated.delete('view');
+          else updated.set('view', next);
+          return updated;
+        })
+      }
+    >
+      <TabsList aria-label="Diagnostics sections" className="mb-4">
+        <TabsTrigger value="overview">Overview</TabsTrigger>
+        <TabsTrigger value="engines">Engines</TabsTrigger>
+      </TabsList>
+      <TabsContent value="overview">
+        <Suspense fallback={<AdminTableSkeleton />}>
+          <OperationalOverview />
+        </Suspense>
+      </TabsContent>
+      <TabsContent value="engines">
+        <EngineDiagnostics />
+      </TabsContent>
+    </Tabs>
   );
 }

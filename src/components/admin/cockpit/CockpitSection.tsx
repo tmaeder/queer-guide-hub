@@ -22,10 +22,7 @@ export function CockpitSection({
   return (
     <section aria-labelledby={`cockpit-${id}-heading`} className="flex flex-col gap-2">
       <div className="flex items-baseline justify-between gap-4">
-        <h2
-          id={`cockpit-${id}-heading`}
-          className="text-2xs font-medium uppercase tracking-label text-muted-foreground"
-        >
+        <h2 id={`cockpit-${id}-heading`} className="text-sm font-semibold text-foreground">
           {title}
         </h2>
         {meta}

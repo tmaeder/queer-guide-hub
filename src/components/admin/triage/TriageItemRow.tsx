@@ -51,6 +51,9 @@ interface TriageItemRowProps {
   onSelect: () => void;
   onToggleCheck: () => void;
   slaHours?: number;
+  hideSelection?: boolean;
+  sourceLabel?: string;
+  riskLevel?: string;
 }
 
 export function TriageItemRow({
@@ -60,6 +63,9 @@ export function TriageItemRow({
   onSelect,
   onToggleCheck,
   slaHours,
+  hideSelection = false,
+  sourceLabel,
+  riskLevel,
 }: TriageItemRowProps) {
   const [renderedAt] = useState(Date.now);
   const conf = confidenceLabel(item.confidence_score);
@@ -69,9 +75,11 @@ export function TriageItemRow({
   );
   const contentLabel = CONTENT_TYPE_LABELS[item.content_type] ?? humanize(item.content_type);
   const queue = queueByKey(item.queue_type);
-  const queueLabel = item.queue_type.startsWith('quality-')
-    ? 'Quality'
-    : (queue?.label ?? humanize(item.queue_type));
+  const queueLabel =
+    sourceLabel ??
+    (item.queue_type.startsWith('quality-')
+      ? 'Quality'
+      : (queue?.label ?? humanize(item.queue_type)));
   const flags = item.risk_flags as
     | {
         confirm_may_be_required?: boolean;
@@ -81,6 +89,7 @@ export function TriageItemRow({
       }
     | undefined;
   const safety = Boolean(
+    riskLevel === 'safety' ||
     flags?.confirm_may_be_required ||
     flags?.requires_confirm ||
     flags?.safety ||
@@ -112,13 +121,15 @@ export function TriageItemRow({
           alone, so WCAG 2.5.8 target size cannot come from a surrounding label
           row the way the primitive's comment assumes. z-10 keeps it ABOVE the
           overlay below, which otherwise swallows the click. */}
-      <Checkbox
-        checked={isSelected}
-        onCheckedChange={() => onToggleCheck()}
-        onClick={(e) => e.stopPropagation()}
-        aria-label={`Select ${item.title}`}
-        className="relative z-10 mt-0.5 h-6 w-6 shrink-0"
-      />
+      {!hideSelection && (
+        <Checkbox
+          checked={isSelected}
+          onCheckedChange={() => onToggleCheck()}
+          onClick={(e) => e.stopPropagation()}
+          aria-label={`Select ${item.title}`}
+          className="relative z-10 mt-0.5 h-6 w-6 shrink-0"
+        />
+      )}
 
       <div className="min-w-0 flex-1 space-y-1">
         {/* Title row */}

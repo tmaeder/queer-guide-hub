@@ -105,11 +105,8 @@ describe('the stale-timezone record is nested, not merged into the shared object
   // quarantined the row — so the row then claimed MY migration had blocked the link.
   // The general rule: a nested fact gets its own key; merging into a shared object
   // silently overwrites whatever else wrote there.
-  // This is a one-time data repair, not part of the current function body.
-  const sql = readFileSync(
-    join(DIR, '99991790793283_event_geo_fill_timezone_provenance.sql'),
-    'utf8',
-  );
+  // This one-time data repair remains in its original migration when the function is replaced.
+  const sql = readFileSync(join(DIR, '99991790793283_event_geo_fill_timezone_provenance.sql'), 'utf8');
 
   it('re-nests under its own key and records the attribution it destroyed', () => {
     expect(sql).toContain("'stale_timezone'");

@@ -1,0 +1,230 @@
+import { useAuth } from '@/hooks/useAuth';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { untypedFrom, untypedRpc } from '@/integrations/supabase/untyped';
+import type { TriageItem } from '@/hooks/useUnifiedTriageQueue';
+import { callSearchIntelligence, createTagFromProposal } from '@/hooks/useSearchIntelligence';
+import { parseTagProposal } from '@/components/admin/search-intelligence/tagProposal';
+
+export interface ReviewItem extends TriageItem {
+  source_label: string;
+  risk: 'routine' | 'integrity' | 'safety';
+  overdue: boolean;
+  sla_hours?: number | null;
+  public_impact: boolean;
+  can_reopen: boolean;
+}
+export interface ReviewSource {
+  key: string;
+  label: string;
+  count: number;
+  overdue: number;
+  risk: ReviewItem['risk'];
+  can_reopen: boolean;
+  can_bulk?: boolean;
+}
+export interface ReviewPage {
+  items: ReviewItem[];
+  total: number;
+  all_total: number;
+  overdue_total: number;
+  safety_total: number;
+  sources: ReviewSource[];
+  page: number;
+  per_page: number;
+  updated_at: string;
+}
+export interface ReviewFilters {
+  queues: string[] | null;
+  search: string;
+  scope: 'all' | 'safety' | 'overdue' | 'public';
+  sort: 'priority' | 'age' | 'confidence';
+  page: number;
+}
+export function useAdminReview(filters: ReviewFilters) {
+  const { user } = useAuth();
+  const qc = useQueryClient();
+  const query = useQuery({
+    queryKey: ['admin-review', user?.id, filters],
+    enabled: !!user?.id,
+    queryFn: async (): Promise<ReviewPage> => {
+      const { data, error } = await untypedRpc<ReviewPage>('get_admin_review_queue', {
+        p_queue_types: filters.queues,
+        p_search: filters.search || null,
+        p_scope: filters.scope,
+        p_sort: filters.sort,
+        p_page: filters.page,
+        p_per_page: 50,
+      });
+      if (error) throw new Error(error.message);
+      if (!data) throw new Error('The review queue returned no data. Please retry.');
+      qc.setQueryData<ReviewSummary>(['admin-review-summary', user?.id], (old) =>
+        old && Date.parse(old.updated_at) > Date.parse(data.updated_at)
+          ? old
+          : {
+              all_total: data.all_total,
+              overdue_total: data.overdue_total,
+              safety_total: data.safety_total,
+              sources: data.sources,
+              updated_at: data.updated_at,
+            },
+      );
+      return data;
+    },
+    staleTime: 30_000,
+    refetchInterval: 60_000,
+  });
+  const summary = useQuery<ReviewSummary>({
+    queryKey: ['admin-review-summary', user?.id],
+    queryFn: async () => query.data!,
+    enabled: false,
+    staleTime: Infinity,
+  });
+  return { ...query, summary: summary.data ?? query.data };
+}
+export interface ReviewDecision {
+  item: ReviewItem;
+  action: 'approve' | 'reject' | 'reopen';
+  notes?: string;
+  confirm?: boolean;
+  payload?: Record<string, unknown>;
+}
+export async function decideReview({ item, action, notes, confirm, payload }: ReviewDecision) {
+  if (['ai-suggestions', 'tag-enrichment'].includes(item.queue_type)) {
+    if (action === 'reopen') throw new Error('This decision cannot be undone.');
+    const proposal = parseTagProposal({
+      suggestion_type: String(item.meta.suggestion_type ?? ''),
+      entity_id: item.entity_id,
+      proposed_value: item.meta.proposed_value,
+    });
+    let createdId: string | undefined;
+    if (action === 'approve' && proposal) {
+      const created = await createTagFromProposal(proposal.name);
+      if (!created.success) throw new Error(created.error);
+      createdId = created.data.id;
+    }
+    const result = await callSearchIntelligence<{ status: string; review_notes?: string }>(
+      `suggestions/${item.id}`,
+      {
+        method: 'PATCH',
+        body: {
+          status: action === 'reject' ? 'rejected' : createdId ? 'applied' : 'approved',
+          review_notes: notes || (createdId ? `Created tag ${createdId}` : undefined),
+        },
+      },
+    );
+    if (!result.success) throw new Error(result.error);
+    if (action === 'approve' && result.data.status !== 'applied') {
+      throw new Error(
+        result.data.review_notes ||
+          'Approved, but the change was not applied. The item remains available for retry.',
+      );
+    }
+    return;
+  }
+  const { data, error } = await untypedRpc<{ ok?: boolean; error?: string }>(
+    'admin_review_action',
+    {
+      p_queue_type: item.queue_type,
+      p_item_id: item.id,
+      p_action: action,
+      p_notes: notes || null,
+      p_confirm: confirm ?? false,
+      p_payload: payload ?? {},
+    },
+  );
+  if (error) throw new Error(error.message);
+  if (!data?.ok || data.error)
+    throw new Error(data?.error || 'The decision was not saved. Please retry.');
+}
+export function useReviewDecision() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: decideReview,
+    onSettled: () => {
+      void qc.invalidateQueries({ queryKey: ['admin-review'] });
+      void qc.invalidateQueries({ queryKey: ['admin-review-item'] });
+      void qc.invalidateQueries({ queryKey: ['admin-counts'] });
+      void qc.invalidateQueries({ queryKey: ['triage-queue'] });
+      void qc.invalidateQueries({ queryKey: ['admin-feedback-board'] });
+    },
+  });
+}
+
+export type ReviewLookupType =
+  'organizations' | 'cities' | 'countries' | 'unified_tags' | 'tag_categories';
+export function useReviewLookup(table: ReviewLookupType, search: string, enabled: boolean) {
+  return useQuery({
+    queryKey: ['review-lookup', table, search],
+    enabled: enabled && search.trim().length >= 2,
+    queryFn: async (): Promise<Array<{ id: string; name: string }>> => {
+      const { data, error } = await untypedFrom(table)
+        .select('id,name')
+        .ilike('name', `%${search.trim().replace(/[%_]/g, '')}%`)
+        .order('name')
+        .limit(20);
+      if (error) throw new Error(error.message);
+      return (data ?? []) as Array<{ id: string; name: string }>;
+    },
+    staleTime: 60_000,
+  });
+}
+
+export function useReviewBulk() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (args: { ids: string[]; action: 'approve' | 'reject'; notes: string }) => {
+      const { data, error } = await untypedRpc<{ ok: boolean; count: number }>(
+        'admin_review_bulk',
+        {
+          p_queue_type: 'staging',
+          p_item_ids: args.ids,
+          p_action: args.action,
+          p_notes: args.notes || null,
+        },
+      );
+      if (error) throw new Error(error.message);
+      if (!data?.ok) throw new Error('The bulk decision was not saved. Please retry.');
+      return data;
+    },
+    onSettled: () => {
+      void qc.invalidateQueries({ queryKey: ['admin-review'] });
+      void qc.invalidateQueries({ queryKey: ['admin-review-item'] });
+      void qc.invalidateQueries({ queryKey: ['admin-counts'] });
+      void qc.invalidateQueries({ queryKey: ['triage-queue'] });
+    },
+  });
+}
+
+type ReviewSummary = Pick<
+  ReviewPage,
+  'all_total' | 'overdue_total' | 'safety_total' | 'sources' | 'updated_at'
+>;
+export function useAdminReviewSummary() {
+  const all = useAdminReview({ queues: null, search: '', scope: 'all', sort: 'priority', page: 1 });
+  return { data: all.summary, isLoading: all.isLoading };
+}
+
+export function useSelectedReviewItem(
+  selected: string | null,
+  queue: string | null,
+  enabled: boolean,
+) {
+  const { user } = useAuth();
+  const split = selected?.indexOf(':') ?? -1;
+  const source = split > 0 ? selected!.slice(0, split) : queue;
+  const id = split > 0 ? selected!.slice(split + 1) : selected;
+  const valid = !!id && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
+  return useQuery({
+    queryKey: ['admin-review-item', user?.id, source, id],
+    enabled: enabled && !!user?.id && !!source && valid,
+    queryFn: async (): Promise<ReviewItem | null> => {
+      const { data, error } = await untypedRpc<ReviewItem>('get_admin_review_item', {
+        p_queue_type: source,
+        p_item_id: id,
+      });
+      if (error) throw new Error(error.message);
+      return data;
+    },
+    staleTime: 30_000,
+  });
+}

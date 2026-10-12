@@ -62,6 +62,15 @@ vi.mock('@/components/cms/ContentListPanel', async () => {
   return { default: Panel, ContentListPanel: Panel };
 });
 
+vi.mock('@/pages/admin/AdminDashboard', async () => {
+  const { useLocation } = await import('react-router');
+  return {
+    default: function AdminDashboardMock() {
+      const location = useLocation();
+      return <div>REVIEW_QUEUE_SENTINEL:{location.search}</div>;
+    },
+  };
+});
 vi.mock('@/pages/admin/AdminPlacesEditorial', () => ({
   default: () => <div>PLACES_EDITORIAL_SENTINEL</div>,
 }));
@@ -99,14 +108,11 @@ describe('admin route resolution', () => {
     }
   });
 
-  it('renders places editorial through the real Governance route and its legacy redirect', async () => {
+  it('routes editorial approvals into the one review workspace', async () => {
     for (const path of ['/admin/governance?mode=editorial', '/admin/places-editorial']) {
       const { unmount } = renderAt(path);
-      expect(await screen.findByText('PLACES_EDITORIAL_SENTINEL')).toBeTruthy();
-      expect(screen.getByRole('button', { name: 'Places editorial' })).toHaveAttribute(
-        'aria-current',
-        'page',
-      );
+      expect(await screen.findByText('REVIEW_QUEUE_SENTINEL:?queue=editorial')).toBeTruthy();
+      expect(screen.queryByText('PLACES_EDITORIAL_SENTINEL')).toBeNull();
       unmount();
     }
   });

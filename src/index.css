@@ -938,6 +938,13 @@ body {
   outline: none;
 }
 
+/* Route navigation and the skip link focus this non-interactive landmark.
+   Its viewport-wide outline looks like a pink divider below the breadcrumb.
+   Keep focus transfer, while leaving control focus indicators intact. */
+#main-content:focus {
+  outline: none !important;
+}
+
 /* The search plate's field is the full height of the plate's first row and sits
    flush against its top edge, so a 2px-OUTSET ring lands outside the plate's
    `overflow-hidden` clip: it renders as two severed pink arcs, cut level with

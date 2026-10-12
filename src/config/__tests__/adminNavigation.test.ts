@@ -26,7 +26,7 @@ describe('adminNavSections shape', () => {
 
   it('places editorial is reached through Governance rather than a separate sidebar destination', () => {
     const items = adminNavSections.flatMap((section) => section.items);
-    expect(items.filter((item) => item.route === '/admin/governance')).toHaveLength(1);
+    expect(items.filter((item) => item.route === '/admin')).toHaveLength(1);
     expect(items.some((item) => item.route === '/admin/places-editorial')).toBe(false);
   });
 
@@ -111,7 +111,7 @@ describe('getBreadcrumbsForRoute', () => {
   it("omits section crumb for cockpit's /admin overview", () => {
     const crumbs = getBreadcrumbsForRoute('/admin');
     // Cockpit's section crumb is suppressed; only Admin Console + Overview.
-    expect(crumbs.map((c) => c.label)).toEqual(['Admin Console', 'Overview']);
+    expect(crumbs.map((c) => c.label)).toEqual(['Admin Console', 'Review queue']);
   });
 
   it('uses the most specific item for nested content pages', () => {
@@ -275,7 +275,9 @@ describe('nav and queue role agreement', () => {
     expect(getRouteMinRole('/admin/content/community_groups/requests')).toBe('moderator');
     expect(getRouteMinRole('/admin/content/group-requests')).toBe('moderator');
     expect(
-      adminNavSections.flatMap((section) => section.items).some((item) => item.id === 'group-requests'),
+      adminNavSections
+        .flatMap((section) => section.items)
+        .some((item) => item.id === 'group-requests'),
     ).toBe(false);
   });
   /**

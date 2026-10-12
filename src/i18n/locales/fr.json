@@ -1,4 +1,11 @@
 {
+  "knowledge": {
+    "title": "Savoirs",
+    "terms": "Termes",
+    "personalities": "Personnalités",
+    "lede": "Les mots que nous utilisons et les personnes qui ont façonné la vie queer.",
+    "navigation": "Rubriques des savoirs"
+  },
   "eventTypes": {
     "party": "Soirée",
     "festival": "Festival",
@@ -200,7 +207,13 @@
     "contact": "Contact",
     "login": "Connexion",
     "logout": "Déconnexion",
-    "profile": "Profil"
+    "profile": "Profil",
+    "external": {
+      "title": "Ouvrir un autre site ?",
+      "description": "Vous quittez queer.guide. Le site de destination a son propre contenu et sa propre politique de confidentialité.",
+      "cancel": "Rester ici",
+      "continue": "Ouvrir le site"
+    }
   },
   "footer": {
     "madeWith": "Fait avec",
@@ -1391,7 +1404,8 @@
         "similar": "Ambiance similaire",
         "tags": "Tags en commun"
       }
-    }
+    },
+    "typeLegend": "Icônes et types d’événements"
   },
   "venues": {
     "title": "Lieux",
@@ -1530,7 +1544,18 @@
         "signals": "[FR] Visitor signals",
         "reviews": "[FR] Reviews",
         "photos": "[FR] Photos"
-      }
+      },
+      "nearby": "D’autres lieux dans cette ville"
+    },
+    "rating": {
+      "hint": "Comment était votre visite ? Donnez 0 à 5 arcs-en-ciel à ce lieu. Votre note est publique.",
+      "label": "Votre note",
+      "error": "Votre note n’a pas pu être enregistrée. Réessayez.",
+      "loadError": "Votre note précédente n’a pas pu être chargée. Actualisez la page.",
+      "signIn": "Connectez-vous pour noter ce lieu",
+      "saving": "Enregistrement…",
+      "save": "Enregistrer la note",
+      "saved": "Votre note est enregistrée."
     }
   },
   "marketplace": {
@@ -1580,7 +1605,8 @@
     "notifications": "Notifications",
     "blockedUsers": "Utilisateur·ices bloqué·es",
     "reportUser": "Signaler",
-    "sendMessage": "Envoyer un message"
+    "sendMessage": "Envoyer un message",
+    "favoritesShortcut": "Favoris"
   },
   "groups": {
     "title": "Groupes",
@@ -2045,6 +2071,10 @@
       "competitions": "[FR] Drag Race"
     },
     "intents": {
+      "knowledge": {
+        "label": "Savoirs",
+        "subtitle": "Langage queer et personnalités marquantes"
+      },
       "goingOut": {
         "label": "Sortir",
         "subtitle": "Bars, clubs et ce qui se passe ce soir"
@@ -2079,6 +2109,7 @@
     "userMenu": {
       "myTrips": "Mes voyages",
       "favorites": "Favoris",
+      "account": "Compte",
       "settings": "Paramètres",
       "inbox": "Boîte de réception",
       "friends": "Ami·es",

@@ -16,16 +16,16 @@ test.use(REDUCED_MOTION);
 test.describe('glossary in navigation', () => {
   test.skip(({ isMobile }) => !!isMobile, 'desktop chrome');
 
-  test('header carries a Glossary tab that lands on /tags', async ({ page }) => {
+  test('header carries a Knowledge tab that lands on /tags', async ({ page }) => {
     await page.goto('/');
-    const tab = page.locator('header nav[aria-label="Primary"] a', { hasText: 'Glossary' });
+    const tab = page.locator('header nav[aria-label="Primary"] a', { hasText: 'Knowledge' });
     await expect(tab).toBeVisible();
     await tab.click();
     await expect(page).toHaveURL(/\/tags$/);
     await expect(page.locator('main h1')).toBeVisible();
     // The active tab is marked and carries the pink track rule.
     const active = page.locator('header nav[aria-label="Primary"] a[aria-current="page"]');
-    await expect(active).toHaveText('Glossary');
+    await expect(active).toHaveText('Knowledge');
     await expect(active.locator('span[aria-hidden]')).toHaveClass(/bg-track-pink/);
   });
 
@@ -41,10 +41,10 @@ test.describe('glossary in navigation', () => {
     expect(new Set(tops.map((t) => Math.round(t))).size).toBe(1);
   });
 
-  test('footer renders a Glossary column with its wiki links', async ({ page }) => {
+  test('footer renders a Knowledge column with its wiki links', async ({ page }) => {
     await page.goto('/');
     const footer = page.locator('footer nav[aria-label="Footer navigation"]');
-    await expect(footer.getByRole('link', { name: 'Glossary' })).toBeVisible();
+    await expect(footer.getByRole('link', { name: 'Knowledge' })).toBeVisible();
     await expect(footer.getByRole('link', { name: 'All terms' })).toHaveAttribute(
       'href',
       /\/tags$/,
@@ -92,45 +92,71 @@ test.describe('glossary hover cards', () => {
 });
 
 test.describe('homepage glossary band', () => {
-  test('renders term cards or an explicit fallback state', async ({ page }) => {
-    await page.goto('/');
-    // The band mounts behind DeferredSection's intersection observer, so it
-    // does not exist until the viewport actually approaches it — and
-    // programmatic scrollTo does not fire the observer; wheel events do.
-    const band = page.getByRole('heading', { name: 'Know the words' });
-    for (let i = 0; i < 20 && (await band.count()) === 0; i++) {
-      await page.mouse.wheel(0, 1600);
-      await page.waitForTimeout(250);
-    }
-    await band.scrollIntoViewIfNeeded();
-    await expect(band).toBeVisible();
-    const section = page.locator('section', { has: band });
-    const entryLinks = section.getByRole('link', { name: 'Read the entry' });
-    const errorState = section.getByText(/this section could not load/i);
-    const emptyState = section.getByText(/no glossary terms are available right now/i);
-    await expect
-      .poll(
-        async () => {
-          if ((await entryLinks.count()) > 0) return 'entries';
-          if (await errorState.isVisible().catch(() => false)) return 'error';
-          if (await emptyState.isVisible().catch(() => false)) return 'empty';
-          return 'loading';
-        },
-        { timeout: 15_000 },
-      )
-      .not.toBe('loading');
-
-    if ((await entryLinks.count()) > 0) {
-      await expect(entryLinks.first()).toHaveAttribute('href', /\/tags\/.+/);
-      return;
-    }
-
-    const hasError = await errorState.isVisible().catch(() => false);
-    const hasEmpty = await emptyState.isVisible().catch(() => false);
-
-    expect(hasError || hasEmpty).toBe(true);
-    if (hasError) {
-      await expect(section.getByRole('button', { name: /try again/i })).toBeVisible();
-    }
-  });
+  for (const state of ['entries', 'empty', 'error'] as const) {
+    test(`renders the ${state} response state`, async ({ page }) => {
+      // Only fixture the homepage preview query. Other glossary/API requests
+      // keep their normal contract; this UI check does not depend on live DB latency.
+      await page.route('**/rest/v1/unified_tags?*', async (route) => {
+        const params = new URL(route.request().url()).searchParams;
+        if (
+          params.get('limit') !== '24' ||
+          params.get('seo_indexable') !== 'eq.true' ||
+          params.get('is_adult') !== 'eq.false'
+        ) {
+          await route.fallback();
+          return;
+        }
+        await route.fulfill({
+          status: state === 'error' ? 400 : 200,
+          contentType: 'application/json',
+          body: JSON.stringify(
+            state === 'error'
+              ? { code: 'PGRST100', message: 'Preview fixture rejected' }
+              : state === 'empty'
+                ? []
+                : [
+                    {
+                      id: '00000000-0000-4000-8000-000000000001',
+                      slug: 'glossary-preview-fixture',
+                      name: 'Glossary preview fixture',
+                      short_description: 'A defined term for the homepage preview test.',
+                      description: null,
+                      category: 'Identity',
+                      is_adult: false,
+                      is_sensitive: false,
+                      image_url: null,
+                      usage_count: 10,
+                    },
+                  ],
+          ),
+        });
+      });
+      await page.goto('/');
+      const band = page.getByRole('heading', { name: 'Know the words' });
+      for (let i = 0; i < 20 && (await band.count()) === 0; i++) {
+        await page.mouse.wheel(0, 1600);
+        await page.waitForTimeout(250);
+      }
+      await band.scrollIntoViewIfNeeded();
+      await expect(band).toBeVisible();
+      const section = page.locator('section', { has: band });
+      const entryLinks = section.getByRole('link', { name: 'Read the entry' });
+      if (state === 'entries') {
+        await expect(entryLinks).toHaveCount(1);
+        await expect(entryLinks.first()).toHaveAttribute(
+          'href',
+          /\/tags\/glossary-preview-fixture$/,
+        );
+      } else if (state === 'empty') {
+        await expect(section.getByText(/no glossary terms are available right now/i)).toBeVisible();
+        await expect(entryLinks).toHaveCount(0);
+      } else {
+        await expect(section.getByText(/this section could not load/i)).toBeVisible({
+          timeout: 15_000,
+        });
+        await expect(section.getByRole('button', { name: /try again/i })).toBeVisible();
+        await expect(entryLinks).toHaveCount(0);
+      }
+    });
+  }
 });

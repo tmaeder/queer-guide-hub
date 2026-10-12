@@ -109,14 +109,7 @@ export type AdminArchetypeEntry = {
 
 export const ADMIN_ARCHETYPES: AdminArchetypeEntry[] = [
   // ── Not archetypes ────────────────────────────────────────────────────
-  {
-    path: '(index)',
-    archetype: null,
-    exempt:
-      'This is the SHELL, not a page in it. `Admin Templates.dc.html` draws the cockpit as the ' +
-      'frame itself — ink rail, topbar greeting, 4-up stat row, panels — and the eight archetypes ' +
-      'are what sit inside that frame. Forcing it into E would invent a chart it has no data for.',
-  },
+  { path: '(index)', archetype: 'F', title: 'Review queue', adopted: true },
   {
     path: 'design',
     archetype: null,
@@ -211,15 +204,10 @@ export const ADMIN_ARCHETYPES: AdminArchetypeEntry[] = [
   },
 
   // ── E · Analytics board ───────────────────────────────────────────────
+  { path: 'editorial-tools', archetype: 'F', title: 'Editorial tools', adopted: true },
+  { path: 'diagnostics', archetype: 'H', title: 'Engine diagnostics', adopted: true },
   { path: 'analytics', archetype: 'E', title: 'Analytics', adopted: true },
   { path: 'affiliate', archetype: 'E', title: 'Affiliate', adopted: true },
-  {
-    path: 'content/event-quality',
-    archetype: 'E',
-    title: 'Event quality',
-    adopted: true,
-    caveat: 'A single panel with no ranked list — an E fragment rather than a full board.',
-  },
   {
     path: 'search-intelligence',
     archetype: 'E',
@@ -238,8 +226,6 @@ export const ADMIN_ARCHETYPES: AdminArchetypeEntry[] = [
   // registry — dropping them here silently drops their coverage.
   { path: 'inbox', archetype: 'F', title: 'Inbox' },
   { path: 'postfach', archetype: 'F', title: 'Mailbox', adopted: true },
-  { path: 'content/community_groups/requests', archetype: 'F', title: 'Groups', adopted: true },
-  { path: 'content/liveness', archetype: 'F', title: 'Liveness', adopted: true },
   { path: 'places-editorial', archetype: 'F', title: 'Places editorial', adopted: true },
   {
     path: 'feedback',

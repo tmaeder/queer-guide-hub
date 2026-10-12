@@ -1,7 +1,9 @@
+import { shortLocation } from '@/lib/shortLocation';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+import { AvatarDisplay } from '@/components/profile/AvatarDisplay';
+import type { AvatarConfig } from '@/components/profile/avatarConfig';
 import { MapPin, Calendar, Check } from 'lucide-react';
 import { StartConversationButton } from '@/components/messaging/StartConversationButton';
 import { UserModeBadge } from '@/components/profile/UserModeBadge';
@@ -12,7 +14,6 @@ import { readAccounts } from '@/lib/socialAccounts';
 import { StatusBar } from '@/components/status/StatusBar';
 import { FlagChipRow } from '@/components/profile/FlagChip';
 import { ScoreLevelChip } from '@/components/score/ScoreLevelChip';
-import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { publicDisplayName } from '@/lib/displayName';
 import type { UserStatus } from '@/hooks/useStatus';
 
@@ -22,6 +23,9 @@ interface ProfileHeaderProps {
   status?: UserStatus | null;
   score?: { level: number; tier: string; total_points: number } | null;
   onEditStatus?: () => void;
+  onEditProfile?: () => void;
+  onEditAvatar?: () => void;
+  onEditSignals?: () => void;
 }
 
 function formatJoined(dateString: string) {
@@ -37,8 +41,10 @@ export function ProfileHeader({
   status,
   score,
   onEditStatus,
+  onEditProfile,
+  onEditAvatar,
+  onEditSignals,
 }: ProfileHeaderProps) {
-  const navigate = useLocalizedNavigate();
   const username = profile.username as string | undefined;
   // The @username handle is the single visible identity. display_name mirrors it;
   // publicDisplayName stays as an email-strip guard for any un-mirrored legacy row.
@@ -60,12 +66,17 @@ export function ProfileHeader({
       <CardContent>
         <div className="flex flex-col md:flex-row gap-6 items-start">
           <div className="flex flex-col items-center text-center md:text-left">
-            <Avatar className="size-24 md:size-32 mb-4">
-              <AvatarImage src={(profile.avatar_url as string) || undefined} alt={displayName} />
-              <AvatarFallback className="text-headline">
-                {(username || 'A').charAt(0).toUpperCase()}
-              </AvatarFallback>
-            </Avatar>
+            <AvatarDisplay
+              avatarUrl={profile.avatar_url as string | undefined}
+              avatarConfig={profile.avatar_config as AvatarConfig | undefined}
+              email={profile.user_id as string}
+              size="lg"
+            />
+            {isOwnProfile && onEditAvatar && (
+              <Button variant="ghost" size="sm" onClick={onEditAvatar}>
+                Edit avatar
+              </Button>
+            )}
             {!!profile.verified_identity && (
               <Badge variant="secondary">
                 <Check size={12} className="mr-1" />
@@ -100,7 +111,7 @@ export function ProfileHeader({
                 {!!profile.location && (
                   <span className="inline-flex items-center gap-1">
                     <MapPin size={14} aria-hidden />
-                    {profile.location as string}
+                    {shortLocation(profile.location as string)}
                   </span>
                 )}
               </div>
@@ -161,10 +172,15 @@ export function ProfileHeader({
                 <UserRelationshipActions targetUserId={profile.user_id as string} />
               </div>
             ) : (
-              <div>
-                <Button onClick={() => navigate('/settings')} className="rounded-element">
+              <div className="flex flex-wrap gap-2">
+                <Button onClick={onEditProfile} className="rounded-element">
                   Edit profile
                 </Button>
+                {onEditSignals && (
+                  <Button variant="ghost" onClick={onEditSignals}>
+                    Vibe & looking for
+                  </Button>
+                )}
               </div>
             )}
           </div>

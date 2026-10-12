@@ -1,187 +1,78 @@
-/**
- * @vitest-environment jsdom
- *
- * The old version of this file was a "renders without crashing" smoke test that
- * asserted nothing about the page. These cover the three behaviours the rebuild
- * is actually for: only real work shows up, urgency wins over size, and an
- * editor costs zero extra requests.
- */
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { screen, within } from '@testing-library/react';
-import { renderWithProviders } from '@/test/test-utils';
-import { TooltipProvider } from '@/components/ui/tooltip';
-import type { AdminCounts } from '@/hooks/useAdminCounts';
-import type { CockpitOps } from '@/hooks/useCockpitOps';
-
-interface OpsResult {
-  data: CockpitOps | undefined;
-  isLoading: boolean;
-  isError: boolean;
-}
-
-const mockCounts = vi.fn<() => Partial<ReturnType<typeof adminCountsResult>>>();
-const mockRole = vi.fn(() => ({ effectiveRole: 'admin', loading: false }));
-// The `enabled` parameter has to be in the signature, not just passed through:
-// the request-budget assertions below read `mock.calls[i][0]`, which is a
-// zero-length tuple for a `vi.fn(() => …)`.
-const mockOps = vi.fn<(enabled: boolean) => OpsResult>();
-
-function adminCountsResult(data: AdminCounts | undefined) {
-  return { data, isLoading: false, isFetching: false, dataUpdatedAt: 1_700_000_000_000 };
-}
-
-vi.mock('@/hooks/useAdminCounts', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('@/hooks/useAdminCounts')>();
-  return { ...actual, useAdminCounts: () => mockCounts() };
-});
-vi.mock('@/hooks/useGranularRoles', () => ({ useGranularRoles: () => mockRole() }));
-vi.mock('@/hooks/useCockpitOps', () => ({
-  useCockpitOps: (enabled: boolean) => mockOps(enabled),
+import { render, screen, fireEvent } from '@testing-library/react';
+import { MemoryRouter } from 'react-router';
+import { describe, it, expect, vi } from 'vitest';
+const state = vi.hoisted(() => ({
+  filters: vi.fn(),
+  data: {
+    items: [],
+    total: 0,
+    all_total: 25,
+    overdue_total: 4,
+    safety_total: 3,
+    sources: [{ key: 'event-quality', label: 'Event issues', count: 25 }],
+    page: 1,
+    per_page: 50,
+  },
+  isError: false,
+  isLoading: false,
 }));
-vi.mock('@/hooks/useCockpitRealtime', () => ({ useCockpitRealtime: () => {} }));
-vi.mock('@/hooks/useCockpitSections', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('@/hooks/useCockpitSections')>();
-  return {
-    ...actual,
-    useCockpitSections: () => ({
-      isVisible: (id: string) => !hiddenSections.has(id),
-      toggle: vi.fn(),
-      reset: vi.fn(),
-      eligible: actual.COCKPIT_SECTIONS,
-      hidden: hiddenSections,
-    }),
-  };
-});
-
-let hiddenSections = new Set<string>();
-
+vi.mock('@/hooks/useAdminReview', () => ({
+  useAdminReview: (filters: unknown) => {
+    state.filters(filters);
+    return { ...state, refetch: vi.fn() };
+  },
+  useReviewDecision: () => ({ reset: vi.fn(), mutate: vi.fn(), isPending: false }),
+  useSelectedReviewItem: () => ({ data: null, isLoading: false }),
+  useReviewBulk: () => ({ isPending: false, mutate: vi.fn() }),
+}));
+vi.mock('@/components/admin/triage/TriageDetailPanel', () => ({ TriageDetailPanel: () => null }));
+vi.mock('@/components/admin/review-workspace/ReviewTaskDetail', () => ({
+  ReviewTaskDetail: () => null,
+}));
+vi.mock('@/hooks/use-mobile', () => ({ useIsMobile: () => false }));
+vi.mock('@/components/admin/triage/TriageItemRow', () => ({ TriageItemRow: () => null }));
 import AdminDashboard from '../AdminDashboard';
-
-function render() {
-  return renderWithProviders(
-    <TooltipProvider>
-      <AdminDashboard />
-    </TooltipProvider>,
-  );
-}
-
-const counts = (data: Record<string, unknown>) => adminCountsResult(data as unknown as AdminCounts);
-
-beforeEach(() => {
-  // mock.calls accumulates across tests; the request-budget assertions read it.
-  mockOps.mockClear();
-  hiddenSections = new Set<string>();
-  mockRole.mockReturnValue({ effectiveRole: 'admin', loading: false });
-  mockOps.mockReturnValue({ data: undefined, isLoading: false, isError: false });
-  mockCounts.mockReturnValue(counts({}));
-});
-
-describe('AdminDashboard — Needs you', () => {
-  it('renders no row for a queue with nothing pending', () => {
-    mockCounts.mockReturnValue(counts({ review_staging: 0, review_tags: 4 }));
-    render();
-    const list = screen.getByRole('region', { name: /needs you/i });
-    expect(within(list).queryByText('Staging')).toBeNull();
-    expect(within(list).getByText('Tag suggestions')).toBeTruthy();
-  });
-
-  it('renders each queue as a link to its own inbox queue', () => {
-    mockCounts.mockReturnValue(counts({ quality_city: 2 }));
-    render();
-    const link = screen.getByRole('link', { name: /City quality/ });
-    expect(link.getAttribute('href')).toBe('/admin/governance?mode=triage&queue=quality-city');
-  });
-
-  it('keeps safety work ahead of overdue routine work', () => {
-    mockCounts.mockReturnValue(
-      counts({
-        review_moderation: 500,
-        review_moderation_overdue: 0,
-        review_automation: 1,
-        review_automation_overdue: 1,
-      }),
+describe('admin landing review workspace', () => {
+  it('shows one review workspace with the exact API total, without cockpit sections', () => {
+    render(
+      <MemoryRouter>
+        <AdminDashboard />
+      </MemoryRouter>,
     );
-    render();
-    const links = screen
-      .getAllByRole('link')
-      .map((a) => a.textContent ?? '')
-      .filter((t) => t.includes('Automation') || t.includes('Reports'));
-    expect(links[0]).toContain('Reports');
+    expect(screen.getAllByRole('heading', { level: 1 })).toHaveLength(1);
+    expect(screen.getByRole('heading', { name: 'Review queue', level: 1 })).toBeInTheDocument();
+    expect(screen.getByText('25')).toBeInTheDocument();
+    expect(screen.queryByText('Needs you')).not.toBeInTheDocument();
   });
-
-  it('says "All clear." and lists nothing when every queue is empty', () => {
-    mockCounts.mockReturnValue(counts({ organizations: 32000 }));
-    render();
-    expect(screen.getByText('All clear.')).toBeTruthy();
-    const list = screen.getByRole('region', { name: /needs you/i });
-    expect(within(list).queryAllByRole('link')).toHaveLength(0);
+  it('passes item-level overdue scope rather than choosing queues with overdue rows', () => {
+    render(
+      <MemoryRouter>
+        <AdminDashboard />
+      </MemoryRouter>,
+    );
+    fireEvent.click(screen.getByRole('button', { name: /Overdue/ }));
+    expect(state.filters).toHaveBeenLastCalledWith(
+      expect.objectContaining({ scope: 'overdue', queues: null }),
+    );
   });
-});
-
-describe('AdminDashboard — request budget', () => {
-  it('never calls useCockpitOps for an editor', () => {
-    mockRole.mockReturnValue({ effectiveRole: 'editor', loading: false });
-    mockCounts.mockReturnValue(counts({ review_staging: 3 }));
-    render();
-    // The hook is still invoked (hooks cannot be conditional) but must be
-    // told not to fetch — that `enabled=false` is the whole guarantee.
-    expect(mockOps).toHaveBeenCalled();
-    expect(mockOps.mock.calls.every((call) => call[0] === false)).toBe(true);
-    expect(screen.queryByRole('region', { name: /broken/i })).toBeNull();
+  it('groups AI and tag enrichment inside the same queue', () => {
+    render(
+      <MemoryRouter initialEntries={['/admin?family=enrichment']}>
+        <AdminDashboard />
+      </MemoryRouter>,
+    );
+    expect(state.filters).toHaveBeenCalledWith(
+      expect.objectContaining({ queues: ['ai-suggestions', 'tag-enrichment'] }),
+    );
   });
-
-  it('enables the ops query for an admin', () => {
-    mockCounts.mockReturnValue(counts({}));
-    render();
-    expect(mockOps.mock.calls.some((call) => call[0] === true)).toBe(true);
-  });
-
-  it('disables the ops query when the Broken section is hidden', () => {
-    hiddenSections = new Set(['broken']);
-    mockCounts.mockReturnValue(counts({}));
-    render();
-    expect(mockOps.mock.calls.every((call) => call[0] === false)).toBe(true);
-    expect(screen.queryByRole('region', { name: /broken/i })).toBeNull();
-  });
-});
-
-describe('AdminDashboard — Broken', () => {
-  it('says it could not read, rather than "Nothing failing", when the ops query errors', () => {
-    mockOps.mockReturnValue({ data: undefined, isLoading: false, isError: true });
-    render();
-    expect(screen.getByText('Could not read system status.')).toBeTruthy();
-    expect(screen.queryByText('Nothing failing.')).toBeNull();
-  });
-
-  it('says nothing is failing only when the sources actually came back clear', () => {
-    mockOps.mockReturnValue({
-      data: {
-        failingAutomations: [],
-        pipelineErrors: [],
-        pipelineErrors24h: 0,
-        failingGates: [],
-        failedImportsToday: 0,
-        allClear: true,
-      },
-      isLoading: false,
-      isError: false,
-    });
-    render();
-    expect(screen.getByText('Nothing failing.')).toBeTruthy();
-  });
-});
-
-describe('AdminDashboard — Jump to', () => {
-  it('shows a destination with no RPC count as label-only, never as 0', () => {
-    // `milestones` is declared as a countTable in adminNavigation but is not in
-    // get_admin_counts' reltuples list.
-    mockCounts.mockReturnValue(counts({ organizations: 32000 }));
-    render();
-    const jump = screen.getByRole('region', { name: /jump to/i });
-    const milestones = within(jump).getByRole('link', { name: /Milestones/ });
-    expect(milestones.textContent).toBe('Milestones');
-    expect(within(jump).getByRole('link', { name: /Organisations/ }).textContent).toContain(
-      '32.0k',
+  it('restores a bookmarked filter and page', () => {
+    render(
+      <MemoryRouter initialEntries={['/admin?queue=event-quality&page=2&q=Festival']}>
+        <AdminDashboard />
+      </MemoryRouter>,
+    );
+    expect(state.filters).toHaveBeenCalledWith(
+      expect.objectContaining({ queues: ['event-quality'], search: 'Festival', page: 2 }),
     );
   });
 });

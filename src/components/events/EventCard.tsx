@@ -2,6 +2,7 @@ import React, { memo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { formatCurrency } from '@/lib/currency';
 import { Card } from '@/components/ui/card';
+import { EventTypeMark } from './EventTypeMark';
 import { Calendar } from 'lucide-react';
 import type { Database } from '@/integrations/supabase/types';
 import { format } from 'date-fns';
@@ -220,7 +221,7 @@ export const EventCard = memo(function EventCard({
               </p>
               {eventTypeTag && (
                 <p className="mt-2 text-2xs text-muted-foreground truncate capitalize">
-                  {eventTypeTag}
+                  <EventTypeMark type={eventTypeTag} />
                 </p>
               )}
               {event.tags && event.tags.length > 0 && (

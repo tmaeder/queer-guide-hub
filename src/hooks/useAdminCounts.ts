@@ -18,9 +18,12 @@ export type AdminCounts = Record<string, number> & {
   sla_hours?: Record<string, number>;
 };
 
-async function fetchAdminCounts(): Promise<AdminCounts> {
+export async function fetchAdminCounts(): Promise<AdminCounts> {
   const { data, error } = await supabase.rpc('get_admin_counts');
-  if (error || !data) return {};
+  if (error) throw new Error(`Could not load admin counts: ${error.message}`);
+  if (!data || typeof data !== 'object' || Array.isArray(data)) {
+    throw new Error('Admin counts returned no usable data');
+  }
   return data as AdminCounts;
 }
 

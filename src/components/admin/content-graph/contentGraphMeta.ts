@@ -47,7 +47,7 @@ export interface TypeMeta {
 
 export const TYPE_META: Record<string, TypeMeta> = {
   venue: { icon: Building, table: 'venues', titleCol: 'name', adminHref: '/admin/content/venues' },
-  event: { icon: Calendar, table: 'events', titleCol: 'title', adminHref: '/admin/content/event-quality' },
+  event: { icon: Calendar, table: 'events', titleCol: 'title', adminHref: '/admin/content/events' },
   personality: { icon: Users, table: 'personalities', titleCol: 'name', adminHref: '/admin/content/personalities' },
   news: { icon: Newspaper, table: 'news_articles', titleCol: 'title', adminHref: '/admin/content/news_articles' },
   marketplace: { icon: ShoppingBag, table: 'marketplace_listings', titleCol: 'title', adminHref: '/admin/content/marketplace_listings' },

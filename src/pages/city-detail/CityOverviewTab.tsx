@@ -80,7 +80,6 @@ export function CityOverviewTab({ city, showDescription = true }: CityOverviewTa
   const costOfLiving: [string, unknown][] = city.cost_of_living
     ? Object.entries(city.cost_of_living)
     : [];
-  const universities: string[] = city.universities ?? [];
   const sisterCities: string[] = city.sister_cities ?? [];
 
   return (
@@ -117,10 +116,6 @@ export function CityOverviewTab({ city, showDescription = true }: CityOverviewTa
         </div>
       )}
 
-      <ChipList
-        heading={t('cities.detail.about.universities', 'Universities')}
-        items={universities}
-      />
       <ChipList
         heading={t('cities.detail.about.sisterCities', 'Sister cities')}
         items={sisterCities}

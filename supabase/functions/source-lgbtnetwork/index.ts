@@ -1,3 +1,4 @@
+import { workBudget, boundedBatch } from '../_shared/work-budget.ts'
 import { getServiceClient, jsonResponse, errorResponse, corsResponse, requireInternalOrAdmin } from '../_shared/supabase-client.ts'
 import type { SourceAdapter, RawItem, NormalizedItem, AdapterConfig } from '../_shared/source-adapter.ts'
 import { writeToStaging } from '../_shared/source-adapter.ts'
@@ -50,13 +51,13 @@ type StagedItem = Omit<NormalizedItem, 'location'> &
     location?: NonNullable<NormalizedItem['location']> & Record<string, unknown>
   }
 
-async function getText(url: string, retry = true): Promise<string | null> {
-  const res = await fetch(url, { headers: { 'User-Agent': UA, Accept: 'text/html' } })
+async function getText(url: string, budget: ReturnType<typeof workBudget>, retry = true): Promise<string | null> {
+  const res = await fetch(url, { headers: { 'User-Agent': UA, Accept: 'text/html' }, signal: budget.signal() })
   if (res.ok) return await res.text()
   // A 403 here means we asked too fast, not that the page is gone.
   if (res.status === 403 && retry) {
     await sleep(DELAY_MS * 3)
-    return getText(url, false)
+    return getText(url, budget, false)
   }
   return null
 }
@@ -76,23 +77,32 @@ async function getText(url: string, retry = true): Promise<string | null> {
  * before fetching a single detail page put the run near the pg_net timeout for
  * no benefit — after the first backfill almost every id is already known.
  */
-async function fetchList(cap: number, skip: Set<string>): Promise<Record<string, unknown>[]> {
+async function fetchList(cap: number, skip: Set<string>, budget: ReturnType<typeof workBudget>): Promise<Record<string, unknown>[]> {
   const out: Record<string, unknown>[] = []
   let unseen = 0
-  for (let page = 1; page <= 60; page++) {
+  let failures = 0
+  let totalPages = 1
+  let firstPage = 1
+  // Visit a different list window each day. Undated rows do not enter staging,
+  // so starting at page 1 forever would starve the rest of this calendar.
+  for (let step = 0; step < 3; step++) {
+    if (!budget.canStart(30000)) break
+    const page = step === 0 ? 1 : 1 + ((firstPage - 1 + step - 1) % totalPages)
     let res: Response
     try {
       res = await fetch(
         `${BASE}/wp-json/wp/v2/ajde_events?per_page=50&page=${page}&orderby=date&order=desc`,
-        { headers: { 'User-Agent': UA, Accept: 'application/json' } },
+        { headers: { 'User-Agent': UA, Accept: 'application/json' }, signal: budget.signal() },
       )
-    } catch { break }
+    } catch { failures++; break }
     if (!res.ok) {
+      failures++
       if (res.status !== 403) break
       await sleep(DELAY_MS * 3) // rate limited — one polite retry, then give up
       continue
     }
     if (!/json/i.test(res.headers.get('content-type') ?? '')) {
+      failures++
       // An HTML body with a 2xx is this host saying "slow down".
       await res.body?.cancel()
       await sleep(DELAY_MS * 3)
@@ -102,15 +112,20 @@ async function fetchList(cap: number, skip: Set<string>): Promise<Record<string,
     try {
       rows = await res.json() as Record<string, unknown>[]
     } catch {
-      break // malformed despite the content-type; do not kill the run
+      failures++; break // malformed despite the content-type; do not kill the run
     }
     if (!Array.isArray(rows) || !rows.length) break
+    if (step === 0) {
+      totalPages = Math.max(1, Number(res.headers.get('x-wp-totalpages') ?? 1))
+      firstPage = 1 + (Math.floor(Date.now() / 86400000) % totalPages)
+      if (firstPage !== 1) continue
+    } else if (step === 1 && firstPage === 1) continue
     out.push(...rows)
     unseen += rows.filter((r) => !skip.has(String(r.id))).length
-    const total = Number(res.headers.get('x-wp-totalpages') ?? 1)
     // Enough new work for this batch, or the corpus is exhausted.
-    if (page >= total || unseen >= cap) break
+    if (totalPages === 1 || unseen >= cap) break
   }
+  if (!out.length && failures) throw new Error('LGBT Network listing requests failed')
   return out
 }
 
@@ -133,23 +148,27 @@ async function knownIds(supabase: ReturnType<typeof getServiceClient>): Promise<
   return seen
 }
 
-function makeAdapter(skip: Set<string>): SourceAdapter {
+function makeAdapter(skip: Set<string>, budget: ReturnType<typeof workBudget>, stats: { attempted: number; failed: number; deferred: number }): SourceAdapter {
   return {
     name: 'lgbtnetwork',
     entityType: 'event',
 
     async fetch(config: AdapterConfig): Promise<RawItem[]> {
-      const list = (await fetchList(config.batchSize, skip)).filter((r) => !skip.has(String(r.id)))
+      const list = (await fetchList(config.batchSize, skip, budget)).filter((r) => !skip.has(String(r.id)))
       const items: RawItem[] = []
+      let examined = 0
       for (const row of list) {
-        if (items.length >= config.batchSize) break
-        const html = await getText(String(row.link))
+        if (examined >= config.batchSize || !budget.canStart()) break
+        examined++
+        stats.attempted++
+        const html = await getText(String(row.link), budget).catch(() => null)
         await sleep(DELAY_MS)
-        if (!html) continue
+        if (!html) { stats.failed++; continue }
         // null = no date, or no usable city (see the parse module).
         const parsed = parseEvent(html, { id: row.id, slug: row.slug, link: row.link })
         if (parsed) items.push({ sourceId: parsed.id, data: parsed as unknown as Record<string, unknown> })
       }
+      stats.deferred = Math.max(0, list.length - examined)
       return items
     },
 
@@ -201,21 +220,22 @@ Deno.serve(withErrorReporting('source-lgbtnetwork', async (req) => {
   try {
     const body = await req.json().catch(() => ({}))
     const config: AdapterConfig = {
-      // 250 pages x 700 ms is ~3 min, inside the function budget. The backlog
-      // drains over several runs; after that a run only sees new events.
-      batchSize: body.limit ?? body.batch_size ?? 250,
+      // Bound attempted pages, not the small subset with usable event data.
+      batchSize: boundedBatch(body.limit ?? body.batch_size, 25, 30),
       dryRun: body.dry_run ?? body.dryRun ?? false,
       pipelineRunId: body.pipeline_run_id,
       nodeId: body.node_id,
     }
 
     const skip = body.refetch_all ? new Set<string>() : await knownIds(supabase)
-    const adapter = makeAdapter(skip)
+    const stats = { attempted: 0, failed: 0, deferred: 0 }
+    const adapter = makeAdapter(skip, workBudget(), stats)
     const rawEvents = await adapter.fetch(config)
 
     if (config.dryRun) {
       return jsonResponse({
-        success: true,
+        success: stats.failed === 0,
+      fetch: stats,
         items: rawEvents.length,
         known_skipped: skip.size,
         dry_run: true,
@@ -226,12 +246,13 @@ Deno.serve(withErrorReporting('source-lgbtnetwork', async (req) => {
     const events = await writeToStaging(supabase, adapter, rawEvents, { ...config, targetTable: 'events' })
 
     return jsonResponse({
-      success: true,
+      success: stats.failed === 0,
+      fetch: stats,
       items: events,
       items_total: rawEvents.length,
       items_processed: events,
       items_succeeded: events,
-      items_failed: 0,
+      items_failed: stats.failed,
       known_skipped: skip.size,
       events,
     }, 200, req)

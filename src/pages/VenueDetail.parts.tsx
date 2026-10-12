@@ -691,7 +691,7 @@ export function VenueReviews({
     <section>
       <div className="mb-4 flex items-baseline justify-between gap-4">
         <Eyebrow as="div">Reviews{reviews.length > 0 ? ` (${reviews.length})` : ''}</Eyebrow>
-        {averageRating > 0 && (
+        {reviews.length > 0 && (
           <span className="inline-flex items-center gap-1 text-15 font-medium">
             <Star size={14} style={{ fill: 'currentColor' }} aria-hidden="true" />
             {averageRating.toFixed(1)}
