@@ -316,7 +316,7 @@ export function Header() {
       aria-label={t('header.primaryNavigation', 'Primary')}
       className="hidden h-12 min-w-0 items-center md:flex"
     >
-      {INTENT_NAV.map((intent) => {
+      {INTENT_NAV.filter((intent) => intent.id !== 'support').map((intent) => {
         const { to, labelKey, fallback, id, icon: Icon } = intent;
         const active = isIntentActive(intent, path);
         const label = t(labelKey, fallback);
