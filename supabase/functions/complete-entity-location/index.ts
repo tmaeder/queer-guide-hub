@@ -1,7 +1,7 @@
 import tzlookup from 'npm:tz-lookup@6.1.25'
 import { getServiceClient, requireAdmin, corsResponse, jsonResponse, errorResponse } from '../_shared/supabase-client.ts'
 import { hasValidWebhookSecret } from '../_shared/webhook-auth.ts'
-import { selectFeature, type Feature } from './evidence.ts'
+import { canQueryNamedPlace, selectFeature, type Feature } from './evidence.ts'
 import { fetchOfficialAddress } from './official-address.ts'
 import { countryContradicts, postalContradicts } from '../backfill-venue-cities/geocode-guard.ts'
 
@@ -93,7 +93,8 @@ Deno.serve(async req => {
       let matched = false
       if (!row.city_id || !row.country_id || !row.postal_code || !coords) {
         const query = [input.address, input.postal_code, cityName].filter(Boolean).join(', ')
-        if (coords || (input.address && /\d/.test(input.address) && (cityName || input.postal_code || input.address.includes(',')))) {
+        if (coords || canQueryNamedPlace(input, code)
+          || (input.address && /\d/.test(input.address) && (cityName || input.postal_code || input.address.includes(',')))) {
           const url = coords
             ? `${BASE}/reverse?lat=${row.latitude}&lon=${row.longitude}&lang=en&limit=5`
             : `${BASE}/api?q=${encodeURIComponent(query)}&lang=en&limit=5${code ? `&countrycode=${code.toLowerCase()}` : ''}`
