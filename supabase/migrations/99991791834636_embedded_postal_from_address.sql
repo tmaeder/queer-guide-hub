@@ -50,4 +50,3 @@ do $$ declare t text; begin
     execute format('create trigger zzzy_embedded_postal before insert or update of address,country_id on public.%I for each row execute function public.fill_embedded_postal_from_address()',t);
   end loop;
 end $$;
-

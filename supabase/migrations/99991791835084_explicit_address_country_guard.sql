@@ -55,4 +55,3 @@ do $$ declare t text; begin
    execute format('create trigger zzzx_address_country before insert or update of address,country_id on public.%I for each row execute function public.guard_explicit_address_country()',t);
  end loop;
 end $$;
-
