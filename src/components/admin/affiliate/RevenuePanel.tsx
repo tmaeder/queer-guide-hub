@@ -214,7 +214,7 @@ export function RevenuePanel({ days }: { days: string }) {
             description="They appear after the first network pull (needs API tokens configured)."
           />
         ) : (
-          <Table>
+          <Table variant="admin">
             <TableHeader>
               <TableRow>
                 <TableHead>Surface</TableHead>

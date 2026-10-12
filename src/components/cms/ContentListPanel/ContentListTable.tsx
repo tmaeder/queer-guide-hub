@@ -359,7 +359,7 @@ export function ContentListTable({
       className="overflow-hidden rounded-container bg-card shadow-soft"
     >
       <div className="overflow-x-auto">
-        <Table variant="admin">
+        <Table variant="admin" aria-label={config?.label?.plural ?? 'All content'}>
           <TableHeader className="bg-card">
             <TableRow>
               <TableHead style={{ width: 60, padding: '0 8px' }}>

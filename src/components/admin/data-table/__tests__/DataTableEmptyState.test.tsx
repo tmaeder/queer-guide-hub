@@ -1,17 +1,43 @@
 /**
  * @vitest-environment jsdom
  */
-import { describe, it, expect } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { describe, it, expect, vi } from 'vitest';
+import { render, screen, fireEvent } from '@testing-library/react';
 import { DataTableEmptyState } from '../DataTableEmptyState';
 
 describe('DataTableEmptyState', () => {
+  it('reports a failed request instead of claiming the table is empty and retries it', () => {
+    const retry = vi.fn();
+    render(
+      <DataTableEmptyState
+        isLoading={false}
+        hasFilters={false}
+        columnCount={4}
+        noun="venues"
+        error={new Error('offline')}
+        onRetry={retry}
+      />,
+    );
+    expect(screen.getByRole('alert')).toHaveTextContent('Could not load venues');
+    expect(screen.queryByText('No venues yet.')).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Retry' }));
+    expect(retry).toHaveBeenCalledOnce();
+  });
+  it('offers a usable reset when filters hide every record', () => {
+    const reset = vi.fn();
+    render(
+      <DataTableEmptyState isLoading={false} hasFilters columnCount={4} onResetFilters={reset} />,
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'Clear filters' }));
+    expect(reset).toHaveBeenCalledOnce();
+  });
+
   it('renders 5 skeleton rows while loading', () => {
     const { container } = render(
       <DataTableEmptyState isLoading={true} hasFilters={false} columnCount={4} />,
     );
     // 5 row divs each containing skeletons.
-    const skeletonRows = container.querySelectorAll('.flex.gap-4.py-4');
+    const skeletonRows = container.querySelectorAll('[data-testid=admin-loading-row]');
     expect(skeletonRows).toHaveLength(5);
   });
 
@@ -28,7 +54,9 @@ describe('DataTableEmptyState', () => {
   });
 
   it('distinguishes a filtered miss from a genuinely empty table', () => {
-    render(<DataTableEmptyState isLoading={false} hasFilters={true} columnCount={4} noun="venues" />);
+    render(
+      <DataTableEmptyState isLoading={false} hasFilters={true} columnCount={4} noun="venues" />,
+    );
     expect(screen.getByText('No venues match these filters.')).toBeInTheDocument();
     expect(screen.getByText(/adjust the filters/i)).toBeInTheDocument();
   });
@@ -37,9 +65,9 @@ describe('DataTableEmptyState', () => {
     const { container } = render(
       <DataTableEmptyState isLoading={true} hasFilters={false} columnCount={20} />,
     );
-    // Each row has 1 leading checkbox skeleton + min(columnCount, 5) column skeletons.
-    const firstRow = container.querySelector('.flex.gap-4.py-4')!;
-    const skeletons = firstRow.querySelectorAll('[class*="Skeleton"], .h-5');
-    expect(skeletons.length).toBeLessThanOrEqual(6);
+    // Without selection, each row has exactly five data placeholders.
+    const firstRow = container.querySelector('[data-testid=admin-loading-row]')!;
+    const skeletons = firstRow.children;
+    expect(skeletons.length).toBe(5);
   });
 });

@@ -1,7 +1,14 @@
 import { useQuery } from '@tanstack/react-query';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
 import { AdminStatTile } from '@/components/admin/primitives/AdminStatTile';
 import { contrastVerdict } from '@/lib/wcagContrast';
 import { CONTRAST_PAIRS, resolveColor } from './tokenCatalog';
@@ -61,7 +68,11 @@ export function DesignAuditTab({ controller }: { controller: DesignSettingsContr
           value={data?.unused.length ?? '—'}
           alert={(data?.unused.length ?? 0) > 0}
         />
-        <AdminStatTile label="Contrast failures (AA)" value={contrastFailures} alert={contrastFailures > 0} />
+        <AdminStatTile
+          label="Contrast failures (AA)"
+          value={contrastFailures}
+          alert={contrastFailures > 0}
+        />
         <AdminStatTile
           label="Lint suppressions"
           value={data?.eslint.design_rule_suppressions ?? '—'}
@@ -89,7 +100,7 @@ export function DesignAuditTab({ controller }: { controller: DesignSettingsContr
             <CardTitle className="text-title">WCAG contrast (draft values)</CardTitle>
           </CardHeader>
           <CardContent>
-            <Table>
+            <Table variant="admin">
               <TableHeader>
                 <TableRow>
                   <TableHead>Pair</TableHead>
@@ -135,7 +146,7 @@ export function DesignAuditTab({ controller }: { controller: DesignSettingsContr
                 </CardHeader>
                 <CardContent>
                   <div className="max-h-96 overflow-y-auto">
-                    <Table>
+                    <Table variant="admin">
                       <TableHeader>
                         <TableRow>
                           <TableHead>Token</TableHead>
@@ -169,7 +180,7 @@ export function DesignAuditTab({ controller }: { controller: DesignSettingsContr
                   </CardHeader>
                   <CardContent>
                     <div className="max-h-56 overflow-y-auto">
-                      <Table>
+                      <Table variant="admin">
                         <TableBody>
                           {data.color_literals.files.map((f) => (
                             <TableRow key={f.file}>

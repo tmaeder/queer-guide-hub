@@ -212,7 +212,7 @@ export default function AdminBusiness() {
           ) : (orgs ?? []).length === 0 ? (
             <p className="py-8 text-13 text-muted-foreground">No businesses match.</p>
           ) : (
-            <Table>
+            <Table variant="admin">
               <TableHeader>
                 <TableRow>
                   <TableHead>Business</TableHead>

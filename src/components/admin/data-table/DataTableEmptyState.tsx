@@ -1,5 +1,7 @@
 import { type LucideIcon } from 'lucide-react';
 import type { ReactNode } from 'react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { AdminEmpty } from '@/components/admin/primitives/AdminEmpty';
 
@@ -21,6 +23,10 @@ interface DataTableEmptyStateProps {
   action?: ReactNode;
   /** Clears the active filters, offered only while filtered. */
   onResetFilters?: () => void;
+  selection?: boolean;
+  error?: unknown;
+  onRetry?: () => void;
+  isRetrying?: boolean;
 }
 
 /**
@@ -39,18 +45,49 @@ export function DataTableEmptyState({
   icon,
   action,
   onResetFilters,
+  selection = false,
+  error,
+  onRetry,
+  isRetrying = false,
 }: DataTableEmptyStateProps) {
   if (isLoading) {
+    const fields = Math.max(1, Math.min(columnCount, 5));
+    const layout =
+      (selection ? '24px ' : '') +
+      Array.from({ length: fields }, (_, index) =>
+        index === 0 ? 'minmax(0,2fr)' : 'minmax(0,1fr)',
+      ).join(' ');
     return (
-      <div className="p-4">
-        {Array.from({ length: 5 }).map((_, i) => (
-          <div key={i} className="flex gap-4 py-4 border-b border-border">
-            <Skeleton className="h-5 w-5 rounded-badge" />
-            {Array.from({ length: Math.min(columnCount, 5) }).map((_, j) => (
-              <Skeleton key={j} className="h-5" style={{ width: j === 0 ? 180 : 100 }} />
+      <div className="rounded-container bg-card p-4" role="status" aria-label="Loading records">
+        {Array.from({ length: 5 }).map((_, index) => (
+          <div
+            key={index}
+            data-testid="admin-loading-row"
+            className="grid min-w-0 items-center gap-4 py-4"
+            style={{ gridTemplateColumns: layout }}
+          >
+            {selection && <Skeleton className="size-6 rounded-badge" />}
+            {Array.from({ length: fields }).map((_, column) => (
+              <Skeleton key={column} className="h-4 min-w-0 w-full" />
             ))}
           </div>
         ))}
+      </div>
+    );
+  }
+  if (error) {
+    return (
+      <div className="p-4">
+        <Alert variant="destructive">
+          <AlertDescription className="flex flex-wrap items-center justify-between gap-4">
+            <span>Could not load {noun}. Try again.</span>
+            {onRetry && (
+              <Button variant="outline" size="sm" loading={isRetrying} onClick={onRetry}>
+                Retry
+              </Button>
+            )}
+          </AlertDescription>
+        </Alert>
       </div>
     );
   }

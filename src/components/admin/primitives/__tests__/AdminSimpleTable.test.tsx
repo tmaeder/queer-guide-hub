@@ -32,6 +32,31 @@ function renderTable(props: Partial<Parameters<typeof AdminSimpleTable<Row>>[0]>
 }
 
 describe('AdminSimpleTable', () => {
+  it('lets a row control activate without opening the row detail too', () => {
+    const row = vi.fn();
+    const action = vi.fn();
+    renderTable({
+      onRowClick: row,
+      columns: [
+        {
+          key: 'action',
+          header: 'Action',
+          render: () => (
+            <button type="button" onClick={action}>
+              Run
+            </button>
+          ),
+        },
+      ],
+    });
+    const button = screen.getAllByRole('button', { name: 'Run' })[0];
+    fireEvent.click(button);
+    expect(action).toHaveBeenCalledOnce();
+    expect(row).not.toHaveBeenCalled();
+    fireEvent.keyDown(button, { key: 'Enter' });
+    expect(row).not.toHaveBeenCalled();
+  });
+
   it('exposes an accessible name — zero admin tables had one before', () => {
     renderTable();
     // getByRole('table', {name}) resolves the name from <caption>. This is the

@@ -220,7 +220,7 @@ export function BusinessBrandQualityPanel() {
         </div>
       )}
 
-      <Table>
+      <Table variant="admin">
         <TableHeader>
           <TableRow>
             <TableHead className="w-10">

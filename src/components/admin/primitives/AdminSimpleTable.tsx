@@ -1,56 +1,13 @@
-import type { KeyboardEvent, ReactNode } from 'react';
+import type { KeyboardEvent, MouseEvent, ReactNode } from 'react';
 import { cn } from '@/lib/utils';
 import { AdminEmpty } from './AdminEmpty';
 import { AdminTableRowSkeleton } from './AdminLoading';
 
 /**
- * The dense admin table, once.
- *
- * 23 hand-rolled `<table>`s lived across 18 admin files — 11 of them in
- * `pipeline-builder/tabs/*` alone — and every one re-typed the same header cell:
- *
- *   text-left px-4 py-2 font-medium text-muted-foreground text-xs2 uppercase
- *   tracking-wider w-[130px]
- *
- * `OverviewTab` repeated that string nine times in one `<thead>`. Several of the
- * tables also had no loading state and no empty state at all, because each author
- * had to remember both by hand.
- *
- * **It removes fewer arbitrary sizes than it looks like it should, and the real
- * number is 16.** The claim first written here was that most of admin's ~156
- * arbitrary `[NNpx]` values were per-column widths; measured after converting 19
- * tables, the count went 156 → 140. The rest are a different thing the `width`
- * token cannot touch: `max-w-[240px]` on truncating text INSIDE a cell,
- * `TooltipContent max-w-[400px]`, `max-h-[600px]` scroll containers, and
- * `w-[8px] h-[14px]` on OverviewTab's run-status strip. Governing those is a
- * separate decision about a sizing scale, not a table concern.
- *
- * **This is deliberately NOT `AdminEntityTable`.** That stack is the sanctioned
- * one and it cannot host these: `AdminTableConfig.tableName` is required and the
- * engine queries a PostgREST table, while 7 of these files read RPCs
- * (`scraper_reconcile_orphans`, `dlq_resolve`) or edge functions and 10 more
- * receive already-fetched rows as props. Measured, ~1 of the 23 was a drop-in
- * candidate. Teaching `useAdminTableQuery` a caller-supplied source is the
- * follow-up that would let the RPC-backed ones inherit filters, sorting,
- * pagination and export; until then this gives them the markup, the skeleton,
- * the empty state and an accessible name.
- *
- * **The caption is required, not optional.** Zero of the ~36 admin tables had an
- * accessible name — `TableCaption` was exported and never once imported — so
- * every one of them announced as an unlabelled table. Passing a name is now the
- * only way to render one.
- *
- * The chrome is taken verbatim from the `pipeline-builder/tabs/*` tables this was
- * modelled on, so for those 11 files the conversion is visually identical.
- *
- * **For the others it NORMALIZES, and that is worth knowing before you convert
- * one.** `AdminAutomation` and `AdminGeography` had their own header style, so
- * converting them moved header cells to `font-medium text-muted-foreground
- * text-xs2 uppercase tracking-wider`, body text from `text-13`/`text-15` to
- * `text-sm`, and row rules from `border-t`/`border-border/60` to
- * `border-b border-border last:border-0`. That convergence is the point of the
- * primitive — but it means a conversion diff is not behaviour-only, and a table
- * whose current styling is deliberate should keep it rather than be forced here.
+ * Shared admin table for already-fetched rows, RPCs, and edge-function data.
+ * Uses the admin list typography, tonal rows, and accessible loading/empty states.
+ * A required caption names the table for assistive technology. Native table
+ * markup preserves the caller's bounded scroll container for sticky headers.
  */
 
 /**
@@ -179,19 +136,19 @@ export function AdminSimpleTable<Row>({
     // overflow-x-auto, not overflow-hidden: a dense table must be able to scroll
     // inside its own container rather than push the page sideways, which
     // e2e/page-layout.spec.ts asserts never happens.
-    <div className={cn('rounded-element bg-muted overflow-x-auto', className)}>
-      <table className="w-full text-sm">
+    <div className={cn('rounded-container bg-card overflow-x-auto', className)}>
+      <table className="w-full text-13" style={{ borderCollapse: 'collapse' }}>
         <caption className={captionVisible ? 'p-4 text-left text-13' : 'sr-only'}>
           {caption}
         </caption>
-        <thead className={cn('bg-muted/40', stickyHeader && 'sticky top-0 z-10')}>
+        <thead className={cn('bg-card', stickyHeader && 'sticky top-0 z-10')}>
           <tr className="border-b border-border">
             {columns.map((col) => (
               <th
                 key={col.key}
                 scope="col"
                 className={cn(
-                  'px-4 py-2 font-medium text-muted-foreground text-xs2 uppercase tracking-wider',
+                  'h-12 px-4 py-2 font-semibold text-muted-foreground text-13',
                   ALIGN[col.align ?? 'left'],
                   COL_WIDTH[col.width ?? 'auto'],
                 )}
@@ -227,19 +184,29 @@ export function AdminSimpleTable<Row>({
               <tr
                 key={rowKey(row, i)}
                 className={cn(
-                  'border-b border-border last:border-0',
+                  'odd:bg-muted/30 hover:bg-muted/60 focus-within:bg-muted/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring',
                   onRowClick && 'cursor-pointer',
                   rowClassName?.(row, i),
                 )}
                 {...(onRowClick
                   ? {
-                      onClick: () => onRowClick(row, i),
+                      onClick: (event: MouseEvent<HTMLTableRowElement>) => {
+                        if (
+                          (event.target as Element).closest(
+                            'button,a,label,input,select,textarea,[role=button],[role=checkbox],[role=switch],[role=combobox]',
+                          )
+                        )
+                          return;
+                        onRowClick(row, i);
+                      },
                       tabIndex: 0,
                       onKeyDown: (e: KeyboardEvent<HTMLTableRowElement>) => {
+                        if (e.target !== e.currentTarget) return;
                         if (e.key !== 'Enter' && e.key !== ' ') return;
                         // Space scrolls the page by default, and the row is the
                         // activation target here, so consume it.
                         e.preventDefault();
+                        e.stopPropagation();
                         onRowClick(row, i);
                       },
                     }
@@ -248,7 +215,11 @@ export function AdminSimpleTable<Row>({
                 {columns.map((col) => (
                   <td
                     key={col.key}
-                    className={cn('px-4 py-2', ALIGN[col.align ?? 'left'], col.cellClassName)}
+                    className={cn(
+                      'px-4 py-4 tabular-nums',
+                      ALIGN[col.align ?? 'left'],
+                      col.cellClassName,
+                    )}
                   >
                     {col.render(row, i)}
                   </td>

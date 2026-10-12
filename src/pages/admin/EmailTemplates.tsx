@@ -415,7 +415,7 @@ export default function EmailTemplates() {
                             curly braces: {`{{variable_name}}`}
                           </p>
                         </div>
-                        <Table>
+                        <Table variant="admin">
                           <TableHeader>
                             <TableRow>
                               <TableHead>Variable</TableHead>
