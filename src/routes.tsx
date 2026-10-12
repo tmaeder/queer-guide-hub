@@ -449,6 +449,7 @@ export const AppRoutes = () => {
                   {/* Milestones reuse the generic list but add an "AI suggestions"
                     action above it; static path wins over content/:type. */}
                   <Route path="content/milestones" element={<MilestonesAdmin />} />
+                  <Route path="content/unified_tags" element={<AdminTags />} />
                   <Route path="content/:type" element={<ContentListPanel />} />
                   {/* /admin/pages duplicated /admin/content/cms_pages (what nav points at);
                     kept as a redirect for old bookmarks. */}
@@ -564,7 +565,10 @@ export const AppRoutes = () => {
                   <Route path="email-templates" element={<EmailTemplates />} />
 
                   {/* Settings -- taxonomy management pages */}
-                  <Route path="settings" element={<AdminTags />} />
+                  <Route
+                    path="settings"
+                    element={<Navigate to="/admin/content/unified_tags" replace />}
+                  />
                   <Route
                     path="settings/venue-services"
                     element={<Navigate to="/admin/content/venue_services" replace />}
@@ -595,7 +599,10 @@ export const AppRoutes = () => {
                   />
 
                   {/* Legacy routes -- redirect to new paths */}
-                  <Route path="venues" element={<Navigate to="/admin/content/organizations" replace />} />
+                  <Route
+                    path="venues"
+                    element={<Navigate to="/admin/content/organizations" replace />}
+                  />
                   <Route path="duplicates" element={<GovernanceRedirect mode="merge" />} />
                   <Route path="events" element={<Navigate to="/admin/content/events" replace />} />
                   <Route

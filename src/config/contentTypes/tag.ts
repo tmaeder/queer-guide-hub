@@ -1,6 +1,7 @@
 import { createElement } from 'react';
 import { Tag } from 'lucide-react';
 import { TagAliasesSection } from '@/components/admin/TagAliasesSection';
+import { TagLegalSourcesSection } from '@/components/admin/TagLegalSourcesSection';
 import { TagMedicalCodesSection } from '@/components/admin/TagMedicalCodesSection';
 import type { ContentTypeConfig, FieldConfig } from '@/types/cms';
 
@@ -14,7 +15,7 @@ export const tagFields: FieldConfig[] = [
     searchable: true,
     sortable: true,
   },
-  { name: 'slug', label: 'Slug', type: 'text', required: true, group: 'basic' },
+  { name: 'slug', label: 'Slug', type: 'text', readOnly: true, group: 'basic' },
   { name: 'description', label: 'Description', type: 'textarea', group: 'basic', colSpan: 2 },
   { name: 'short_description', label: 'Short Description', type: 'text', group: 'basic' },
   {
@@ -93,13 +94,13 @@ export const unifiedTagsContentType: ContentTypeConfig = {
   defaults: { status: 'active' },
   fieldGroupOrder: ['basic', 'details'],
   translatableFields: ['name', 'description', 'short_description', 'long_description'],
-  // Aliases were reachable only from the separate tag console's edit dialog, so
-  // the registry editor could not fully edit a tag — which is what kept that
-  // console's duplicate tag table alive. This closes the gap. The console keeps
-  // the tools that are genuinely collection-level (merge queue, CSV import,
-  // bulk create, categorizer), which extraPanels cannot host: `render` is
-  // per-record, not per-collection.
+  // Record tools share the canonical CMS editor; collection tools live in the Tags workspace.
   extraPanels: [
+    {
+      id: 'legal-sources',
+      label: 'Legal sources',
+      render: (contentId: string) => createElement(TagLegalSourcesSection, { tagId: contentId }),
+    },
     {
       id: 'aliases',
       label: 'Aliases',

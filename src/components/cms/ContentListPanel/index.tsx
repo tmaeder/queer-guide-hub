@@ -76,7 +76,7 @@ function filterValueLabel(value: unknown): string {
 }
 
 /** Query params that are not field filters. */
-const RESERVED_PARAMS = new Set(['view', 'edit', 'tab', 'location']);
+const RESERVED_PARAMS = new Set(['view', 'edit', 'tab', 'location', 'section']);
 
 function activeFilterLabel(filter: Filter, fields: FieldConfig[]): string {
   const field = fields.find((candidate) => candidate.name === filter.field);

@@ -44,6 +44,8 @@
 import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { unifiedTagsContentType } from '@/config/contentTypes/tag';
+import { validateAgainstRegistry } from '@/lib/cms/zodFromFields';
 
 const repoRoot = join(__dirname, '..', '..', '..');
 
@@ -70,14 +72,23 @@ describe('no client-side tag slug derivation', () => {
     expect(src).not.toMatch(/replace\([^)]*\\s\+[^)]*,\s*'-'/);
   });
 
-  it('AdminTags.tsx sends no slug to createTag', () => {
+  it('the workspace delegates creation to the canonical CMS editor', () => {
     const src = statementsOf(ADMIN);
-    const call = src.slice(src.indexOf('createTag('));
-    expect(call).toContain('createTag(cleanData)');
-    // Scoped to the call, not the file: `slug` legitimately appears elsewhere
-    // (the table column, the search columns), so a file-wide assertion would
-    // fail on correct code.
-    expect(call.slice(0, call.indexOf(';'))).not.toContain('slug');
+    expect(src).toContain('<ContentListPanel contentTypeId="unified_tags" />');
+    expect(src).not.toContain('createTag(');
+  });
+
+  it('CMS creation accepts a name without a client-generated slug', () => {
+    const slug = unifiedTagsContentType.fields.find((field) => field.name === 'slug');
+    expect(slug?.readOnly).toBe(true);
+    expect(slug?.required).not.toBe(true);
+    expect(
+      validateAgainstRegistry(unifiedTagsContentType, { name: 'HIV/AIDS', status: 'active' }).ok,
+    ).toBe(true);
+    // The shared writer strips read-only fields from saveData; the database
+    // derives the slug on INSERT rather than requiring an authored spelling.
+    const editor = statementsOf('src/hooks/useCMSEditor.tsx');
+    expect(editor).toContain('readOnlyFields.has(key)');
   });
 
   it('the hook forwards the slug rather than deriving one', () => {

@@ -169,13 +169,12 @@ export const ADMIN_ARCHETYPES: AdminArchetypeEntry[] = [
     caveat: 'Index frame with a GRID view rather than a table — see the note on A below.',
   },
   {
-    path: 'settings',
+    path: 'content/unified_tags',
     archetype: 'A',
-    title: 'Vocabularies',
+    title: 'Tags',
     adopted: true,
     caveat:
-      'An A table with seven quality panels bolted on. The panels belong on /admin/quality or ' +
-      'behind an F drawer; until they move this route is A-plus-extras.',
+      'The canonical CMS list, with collection tools and controlled vocabularies in separate sections.',
   },
 
   // ── B · Record editor ─────────────────────────────────────────────────

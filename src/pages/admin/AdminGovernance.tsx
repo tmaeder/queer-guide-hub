@@ -1,8 +1,8 @@
 /**
- * Governance — one route over the three surfaces that run the ingest machine.
+ * Governance — triage, quality engines, tag review, and duplicate merging.
  *
  * `?mode=triage` decide items · `?mode=engines` watch engines · `?mode=merge`
- * merge by hand.
+ * merge by hand · `?mode=tags` review the tag vocabulary.
  *
  * WHY A ROUTER AND NOT A MERGE. These are three different interaction
  * archetypes, not three copies of one thing: triage is list → detail → act
@@ -28,7 +28,7 @@
 
 import { lazy, Suspense, useEffect } from 'react';
 import { useSearchParams } from 'react-router';
-import { Inbox, ShieldCheck, CopyCheck } from 'lucide-react';
+import { Inbox, ShieldCheck, CopyCheck, Tag } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { AdminTableSkeleton } from '@/components/admin/primitives/AdminLoading';
@@ -37,17 +37,25 @@ const AdminInbox = lazy(() => import('./AdminInbox'));
 const QualityHub = lazy(() => import('./QualityHub'));
 const AdminDuplicates = lazy(() => import('./AdminDuplicates'));
 
-export type GovernanceMode = 'triage' | 'engines' | 'merge';
+const TagGovernance = lazy(() => import('./TagGovernance'));
+
+export type GovernanceMode = 'triage' | 'engines' | 'merge' | 'tags';
 
 const MODES: Array<{ key: GovernanceMode; label: string; hint: string; icon: LucideIcon }> = [
   { key: 'triage', label: 'Triage', hint: 'Decide the items waiting on a person', icon: Inbox },
-  { key: 'engines', label: 'Engines', hint: 'Watch the automated quality engines', icon: ShieldCheck },
+  {
+    key: 'engines',
+    label: 'Engines',
+    hint: 'Watch the automated quality engines',
+    icon: ShieldCheck,
+  },
+  { key: 'tags', label: 'Tags', hint: 'Review tags and vocabulary health', icon: Tag },
   { key: 'merge', label: 'Merge', hint: 'Find and merge duplicates by hand', icon: CopyCheck },
 ];
 
 /** Unrecognised values fall back to triage rather than rendering nothing. */
 function parseMode(raw: string | null): GovernanceMode {
-  return raw === 'engines' || raw === 'merge' ? raw : 'triage';
+  return raw === 'engines' || raw === 'merge' || raw === 'tags' ? raw : 'triage';
 }
 
 export default function AdminGovernance() {
@@ -64,6 +72,8 @@ export default function AdminGovernance() {
     // `?queue=` belongs to triage only; carrying it into engines or merge would
     // put a stale filter in the URL that neither surface reads.
     if (next !== 'triage') params.delete('queue');
+    if (next !== 'tags') params.delete('tagPanel');
+    if (next !== 'merge') params.delete('family');
     setSearchParams(params, { replace: true });
   };
 
@@ -108,7 +118,7 @@ export default function AdminGovernance() {
     >
       <nav
         aria-label="Governance mode"
-        className="flex flex-wrap gap-2 border-b border-border px-4 py-2 bg-background"
+        className="flex gap-2 overflow-x-auto border-b border-border px-4 py-2 bg-background"
       >
         {MODES.map(({ key, label, hint, icon: Icon }) => {
           const active = key === mode;
@@ -117,6 +127,7 @@ export default function AdminGovernance() {
               key={key}
               type="button"
               size="sm"
+              className="shrink-0"
               // The Button primitive owns the selected/unselected polarity, so
               // it stays correct in both themes. Hand-rolling it as
               // `bg-foreground text-background` reads as ink and IS ink in light
@@ -141,6 +152,7 @@ export default function AdminGovernance() {
         <Suspense fallback={<AdminTableSkeleton />}>
           {mode === 'triage' && <AdminInbox />}
           {mode === 'engines' && <QualityHub />}
+          {mode === 'tags' && <TagGovernance />}
           {mode === 'merge' && <AdminDuplicates />}
         </Suspense>
       </div>

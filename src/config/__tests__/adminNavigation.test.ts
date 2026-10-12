@@ -17,6 +17,13 @@ describe('adminNavSections shape', () => {
     expect(adminNavSections.map((s) => s.id)).toEqual(['cockpit', 'content', 'data', 'system']);
   });
 
+  it('retires settings navigation while preserving vocabulary role floors', () => {
+    expect(getNavItemByRoute('/admin/settings')).toBeUndefined();
+    expect(getRouteMinRole('/admin/content/unified_tags')).toBe('editor');
+    expect(getRouteMinRole('/admin/settings')).toBe('moderator');
+    expect(getRouteMinRole('/admin/governance')).toBe('moderator');
+  });
+
   it('every item has unique id within its section', () => {
     for (const section of adminNavSections) {
       const ids = section.items.map((i) => i.id);

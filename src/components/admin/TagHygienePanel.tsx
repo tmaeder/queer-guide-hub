@@ -13,7 +13,7 @@ import { AdminStat } from '@/components/admin/primitives/AdminStat';
  * advisory metrics — which CI deliberately warns on rather than fails — existed
  * only as a log line on a passing run. This panel is the second half. (The
  * route in that sentence was wrong too: `/admin/tags` redirects to the generic
- * CMS table; the tag panels live on `/admin/settings`, "Vocabularies".)
+ * CMS table; the tag panels live on `/admin/governance?mode=tags`.)
  *
  * It renders an explicit failure rather than returning null on error, unlike
  * the sibling quality panels: a blank space is exactly how this went unnoticed,

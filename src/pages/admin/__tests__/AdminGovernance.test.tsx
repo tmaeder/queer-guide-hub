@@ -17,7 +17,7 @@
  */
 
 import { describe, it, expect, vi } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import { MemoryRouter, Routes, Route, Navigate, useLocation } from 'react-router';
 
 // The three real pages pull in the whole admin data layer; this suite is about
@@ -25,6 +25,8 @@ import { MemoryRouter, Routes, Route, Navigate, useLocation } from 'react-router
 vi.mock('../AdminInbox', () => ({ default: () => <div data-testid="mode-triage" /> }));
 vi.mock('../QualityHub', () => ({ default: () => <div data-testid="mode-engines" /> }));
 vi.mock('../AdminDuplicates', () => ({ default: () => <div data-testid="mode-merge" /> }));
+
+vi.mock('../TagGovernance', () => ({ default: () => <div data-testid="mode-tags" /> }));
 
 import AdminGovernance from '../AdminGovernance';
 
@@ -76,6 +78,14 @@ describe('AdminGovernance — mode selection', () => {
 
     renderAt('/admin/governance?mode=merge');
     expect(await screen.findByTestId('mode-merge')).toBeInTheDocument();
+  });
+
+  it('opens tag governance and clears its panel when changing modes', async () => {
+    renderAt('/admin/governance?mode=tags&tagPanel=hygiene');
+    expect(await screen.findByTestId('mode-tags')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Triage' }));
+    expect(await screen.findByTestId('mode-triage')).toBeInTheDocument();
+    expect(screen.getByTestId('url').textContent).not.toContain('tagPanel=');
   });
 
   it('falls back to triage on an unrecognised mode rather than rendering nothing', async () => {

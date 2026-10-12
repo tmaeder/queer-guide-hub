@@ -37,7 +37,6 @@ import { AdminArchetypeHeader } from '@/components/admin/frames/AdminArchetypeHe
  * Taxonomies: unified_tags uses its own propose/approve cockpit (TagMergeReviewQueue).
  */
 
-type Family = 'content' | 'taxonomy';
 type DupView = 'exact' | 'fuzzy';
 
 const clusterKey = (c: Cluster) => `${c.normalized_title}|${c.city ?? ''}`;
@@ -85,11 +84,16 @@ function suggestKeep(members: ClusterMember[], meta: Map<string, VenueMeta>): st
 }
 
 export default function AdminDuplicates() {
-  const [family, setFamily] = useState<Family>('content');
   const types = useDedupTypes();
   // Deep links: ?type=<registry key or merge type>&view=exact|fuzzy
   // (?view=suggested is legacy — the nightly-sweep queue moved to the inbox).
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const family = searchParams.get('family') === 'taxonomy' ? 'taxonomy' : 'content';
+  const setFamily = (nextFamily: 'content' | 'taxonomy') => {
+    const next = new URLSearchParams(searchParams);
+    next.set('family', nextFamily);
+    setSearchParams(next);
+  };
   const paramType = searchParams.get('type');
   const paramView = searchParams.get('view');
   const initialKey = types.find((t) => t.key === paramType || t.cfg.searchType === paramType)?.key;

@@ -1,31 +1,59 @@
-/**
- * @vitest-environment jsdom
- */
+/** @vitest-environment jsdom */
+import { fireEvent, render, screen } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
-import { render } from '@testing-library/react';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { TooltipProvider } from '@/components/ui/tooltip';
-import { MemoryRouter } from 'react-router';
-import type { ReactNode } from 'react';
+import { MemoryRouter, useLocation } from 'react-router';
 
-vi.mock('@/hooks/useCentralizedTags', () => ({
-  useCentralizedTags: () => ({
-    categoriesTree: [], createTag: vi.fn(), updateTag: vi.fn(), deleteTag: vi.fn(), allTags: [],
-  }),
+let effectiveRole = 'moderator';
+vi.mock('@/hooks/useGranularRoles', () => ({ useGranularRoles: () => ({ effectiveRole }) }));
+vi.mock('@/components/cms/ContentListPanel', () => ({
+  ContentListPanel: () => <h1>Canonical tag list</h1>,
 }));
-vi.mock('@/hooks/useAuth', () => ({ useAuth: () => ({ user: { id: 'u1' } }) }));
-vi.mock('@/components/admin/data-table/AdminDataTable', () => ({ AdminDataTable: () => <div>table</div> }));
-
+vi.mock('@/components/admin/TagCollectionTools', () => ({
+  default: () => <div>Collection tools loaded</div>,
+}));
 import AdminTags from '../AdminTags';
-
-function wrapper({ children }: { children: ReactNode }) {
-  const qc = new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: 0 } } });
-  return <MemoryRouter><QueryClientProvider client={qc}><TooltipProvider>{children}</TooltipProvider></QueryClientProvider></MemoryRouter>;
+function Probe() {
+  const location = useLocation();
+  return <output data-testid="url">{location.search}</output>;
+}
+function renderAt(path: string) {
+  return render(
+    <MemoryRouter initialEntries={[path]}>
+      <Probe />
+      <AdminTags />
+    </MemoryRouter>,
+  );
 }
 
-describe('AdminTags', () => {
-  it('renders without crashing', () => {
-    const { container } = render(<AdminTags />, { wrapper });
-    expect(container).toBeTruthy();
+describe('the consolidated tag workspace', () => {
+  it('starts with the canonical list and defers collection tools', async () => {
+    effectiveRole = 'moderator';
+    renderAt('/admin/content/unified_tags?category=Health');
+    expect(screen.getByRole('heading', { name: 'Canonical tag list' })).toBeInTheDocument();
+    expect(screen.queryByText('Collection tools loaded')).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Categories & tools' }));
+    expect(await screen.findByText('Collection tools loaded')).toBeInTheDocument();
+    expect(screen.getByTestId('url')).toHaveTextContent('category=Health');
+    expect(screen.getByTestId('url')).toHaveTextContent('section=tools');
+  });
+  it('links all controlled vocabularies directly to their canonical lists', () => {
+    effectiveRole = 'moderator';
+    renderAt('/admin/content/unified_tags?section=vocabularies');
+    expect(screen.getByRole('link', { name: 'Venue services' })).toHaveAttribute(
+      'href',
+      '/admin/content/venue_services',
+    );
+    expect(screen.getByRole('link', { name: 'Professions' })).toHaveAttribute(
+      'href',
+      '/admin/content/professions',
+    );
+    expect(screen.queryByRole('heading', { name: 'Canonical tag list' })).not.toBeInTheDocument();
+  });
+  it('does not expose former moderator tools to an editor through a deep link', () => {
+    effectiveRole = 'editor';
+    renderAt('/admin/content/unified_tags?section=tools');
+    expect(screen.getByRole('heading', { name: 'Canonical tag list' })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Categories & tools' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: 'Tag governance' })).not.toBeInTheDocument();
   });
 });

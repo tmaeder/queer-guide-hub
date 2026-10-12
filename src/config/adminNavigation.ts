@@ -36,7 +36,6 @@ import {
   Map,
   Globe,
   Tag,
-  ListTree,
   ShoppingBag,
   BookOpen,
   UsersRound,
@@ -324,33 +323,13 @@ export const adminNavSections: AdminNavSection[] = [
         adminOnly: true,
         group: 'Commerce',
       },
-      // Taxonomy & Media — `Vocabularies` (/admin/settings) was labelled
-      // "Taxonomies" under a gear icon at the bottom of System, three sections
-      // away from Tags. It is the same job: controlled vocabulary CRUD.
+      // Tags owns records and controlled vocabularies; reviews live in Governance.
       {
         id: 'tags',
         label: 'Tags',
         icon: Tag,
         route: '/admin/content/unified_tags',
         countTable: 'unified_tags',
-        group: 'Taxonomy & Media',
-      },
-      {
-        id: 'settings',
-        label: 'Vocabularies',
-        icon: ListTree,
-        route: '/admin/settings',
-        // Explicit, not inherited: this row used to sit in System and take that
-        // section's `moderator` floor. Content's floor is `editor`, so without
-        // this the move would silently open taxonomy CRUD to editors.
-        //
-        // This floor covers THIS route only. It does NOT reach the vocabulary
-        // pages, and the comment here used to claim it did ("every
-        // /admin/settings/* sub-page, via longest-prefix"): each of those
-        // sub-pages is a <Navigate> to /admin/content/<vocab>, whose longest nav
-        // prefix is /admin/content → editor. They are gated by
-        // ADMIN_ROUTE_ROLE_OVERRIDES instead.
-        minRole: 'moderator',
         group: 'Taxonomy & Media',
       },
       {
@@ -537,13 +516,9 @@ export function resolveItemMinRole(item: AdminNavItem, section?: AdminNavSection
 /**
  * Role floors for admin routes that have NO nav row of their own.
  *
- * **Longest-prefix inheritance only works when an ancestor route is actually in
- * the nav, and for these it is not.** `/admin/settings` carries
- * `minRole: 'moderator'` and a comment claiming it also covers "every
- * /admin/settings/* sub-page, via longest-prefix" — but each of those sub-pages
- * is a `<Navigate>` to `/admin/content/<vocab>`, whose longest nav prefix is
- * `/admin/content` → **editor**. The moderator gate protected the redirect stubs
- * and nothing behind them, so an editor had full vocabulary CRUD.
+ * Controlled vocabulary lists retain explicit moderator floors because
+ * `/admin/content` otherwise grants editor access. The retired settings route
+ * retains its old floor through an override while redirecting to Tags.
  *
  * The same shape exposed three tables the `adminOnly` Business console owns:
  * `/admin/business` is admin, while `/admin/content/hotels`,
@@ -560,7 +535,10 @@ export function resolveItemMinRole(item: AdminNavItem, section?: AdminNavSection
  * deliberately.
  */
 export const ADMIN_ROUTE_ROLE_OVERRIDES: Record<string, AdminRole> = {
-  // Controlled vocabularies — the tier the "Vocabularies" nav row intends.
+  // Preserve the old settings floor after removing its duplicate nav row.
+  '/admin/settings': 'moderator',
+
+  // Controlled vocabularies retain their moderator floor.
   '/admin/content/venue_services': 'moderator',
   '/admin/content/event_types': 'moderator',
   '/admin/content/event_amenities': 'moderator',
@@ -585,8 +563,7 @@ export const ADMIN_ROUTE_ROLE_OVERRIDES: Record<string, AdminRole> = {
 
 /**
  * Minimum role to access a pathname, for AdminShell's per-route enforcement.
- * Uses longest-prefix matching so sub-routes (e.g. /admin/settings/venue-services)
- * inherit the tier of their nearest configured nav item (/admin/settings).
+ * Uses longest-prefix matching for nav items and explicit route overrides.
  * Unknown admin routes default to 'editor' (the console entry floor).
  *
  * `ADMIN_ROUTE_ROLE_OVERRIDES` is combined by taking the **stricter** of the two,
