@@ -5,7 +5,7 @@ import { FieldRenderer } from '../FieldRenderer';
 import { JsonField } from '../JsonField';
 import { StructuredValueView } from '../structured/StructuredValueView';
 import { RichTextField } from '../RichTextField';
-import { normalizeStructured } from '../structured/structuredValue';
+import { formatScalar, normalizeStructured } from '../structured/structuredValue';
 import { StructuredEditor } from '@/components/admin/inline/editors/StructuredEditor';
 import { getEditorForFieldType } from '@/components/admin/inline/editors';
 import { StructuredValue } from '@/components/admin/triage/StructuredDataView';
@@ -36,6 +36,21 @@ const field = {
 const json = JSON.stringify({ summary: 'No', marriage: 'No', marriage_since: null });
 
 describe('rendered editor content', () => {
+  it('summarizes hostile HTML as text without retaining executable content', () => {
+    expect(
+      formatScalar(
+        '<p>Readable <img src=x onerror="alert(1)">summary</p><script>alert(2)</script>' +
+          '<style>body{display:none}</style><iframe src="https://example.com"></iframe>' +
+          '<object data="https://example.com"></object>',
+      ),
+    ).toBe('Readable summary');
+  });
+  it('keeps encoded markup as literal summary text when rendered', () => {
+    const summary = formatScalar('<p>&lt;img src=x onerror=alert(1)&gt; &amp; 2 &lt; 3</p>');
+    const { container } = render(<span>{summary}</span>);
+    expect(container.textContent).toBe('<img src=x onerror=alert(1)> & 2 < 3');
+    expect(container.querySelector('img')).toBeNull();
+  });
   it('uses structured controls for JSON stored in a text column and saves text', () => {
     const change = vi.fn();
     const { container } = render(<FieldRenderer field={field} value={json} onChange={change} />);

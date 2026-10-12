@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useCentralizedTags } from '@/hooks/useCentralizedTags';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Textarea } from '@/components/ui/textarea';
+import { FieldRenderer } from '@/components/cms/fields/FieldRenderer';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { toast } from 'sonner';
 import { TagsCsvImport } from '@/components/admin/TagsCsvImport';
@@ -72,12 +72,18 @@ export default function TagCollectionTools() {
                     <span className="font-medium">{tag.name}</span>
                     <Badge variant="outline">{tag.category}</Badge>
                   </div>
-                  <Textarea
-                    aria-label={`Description for ${tag.name}`}
+                  <FieldRenderer
+                    field={{
+                      name: `description-${tagId}`,
+                      label: `Description for ${tag.name}`,
+                      type: 'textarea',
+                      group: 'basic',
+                      placeholder: 'Enter description...',
+                    }}
                     value={description}
-                    onChange={(e) => setBulkEditTags((p) => ({ ...p, [tagId]: e.target.value }))}
-                    placeholder="Enter description..."
-                    rows={2}
+                    onChange={(next) =>
+                      setBulkEditTags((p) => ({ ...p, [tagId]: String(next ?? '') }))
+                    }
                   />
                 </div>
               );

@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { FieldRenderer } from '@/components/cms/fields/FieldRenderer';
 import { Plus, Pencil, ExternalLink } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -130,12 +131,10 @@ function LandmarkDialog({
             </div>
           </div>
           <div>
-            <Label htmlFor="lm-desc">Description</Label>
-            <Textarea
-              id="lm-desc"
-              rows={3}
+            <FieldRenderer
+              field={{ name: 'lm-desc', label: 'Description', type: 'textarea', group: 'basic' }}
               value={form.description}
-              onChange={(e) => setForm({ ...form, description: e.target.value })}
+              onChange={(next) => setForm({ ...form, description: String(next ?? '') })}
             />
           </div>
           <div>

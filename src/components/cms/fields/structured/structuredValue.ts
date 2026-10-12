@@ -1,3 +1,5 @@
+import DOMPurify from 'dompurify';
+
 /**
  * Helpers for showing and editing jsonb column values in the CMS as
  * structured data — labelled rows, lists and inputs — instead of raw JSON
@@ -127,7 +129,12 @@ export function formatScalar(original: unknown): string {
   if (typeof v === 'number') return v.toLocaleString();
   if (typeof v === 'string' && containsHtml(v)) {
     if (typeof document !== 'undefined') {
-      const parsed = new DOMParser().parseFromString(v, 'text/html');
+      // Summary text can itself come from the DOM. Sanitize before parsing so
+      // decoded markup never becomes an active element or resource request.
+      const parsed = new DOMParser().parseFromString(
+        DOMPurify.sanitize(v, { FORBID_TAGS: ['script', 'style', 'iframe', 'object', 'embed'] }),
+        'text/html',
+      );
       parsed.querySelectorAll('script,style,iframe,object').forEach((node) => node.remove());
       return parsed.body.textContent?.trim() || '—';
     }
