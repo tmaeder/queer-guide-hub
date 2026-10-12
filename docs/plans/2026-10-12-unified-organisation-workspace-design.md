@@ -33,3 +33,14 @@ with mocked RPC tests, not executed against production.
 CI accessibility validation caught missing tab panels in the inherited Business
 tab layout. Added proper labelled panels and five regression cases checking
 the selected tab/panel association.
+
+Critical-path validation also exposed view settings extending outside the
+viewport and city embedded-count queries exceeding the Data API timeout. View
+settings now use a bounded native scroll container. City rows and total count
+load first; venue and event counts are fetched only for those page IDs with
+the existing archive/merge predicates. Live read-only verification returned
+25 city rows and 25 correctly labelled non-place badges; per-page count queries
+completed in roughly 70 ms instead of the combined query timing out.
+
+The role-quality contract now checks the shared Organisation filter options
+instead of literal strings in the retired Business directory.

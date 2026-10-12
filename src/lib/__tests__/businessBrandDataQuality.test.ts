@@ -6,7 +6,8 @@ const migration = readFileSync(
   join(process.cwd(), 'supabase/migrations/99991790101222_business_brand_quality_completion.sql'),
   'utf8',
 );
-const businessPage = readFileSync(join(process.cwd(), 'src/pages/admin/AdminBusiness.tsx'), 'utf8');
+import { organizationContentType } from '@/config/contentTypes/organization';
+import { ORG_ROLE_LABELS } from '@/lib/organizationRoles';
 const verifiedBrandsHook = readFileSync(
   join(process.cwd(), 'src/hooks/useMarketplaceBrands.ts'),
   'utf8',
@@ -92,10 +93,13 @@ describe('business and brand data-quality contracts', () => {
     expect(migration).not.toMatch(/min\(id\)/);
   });
 
-  it('exposes every supported organization role in the Business filters', () => {
-    expect(businessPage).toContain("'advocacy'");
-    expect(businessPage).toContain("'community'");
-    expect(businessPage).toContain("'organizer'");
+  it('exposes every supported organization role in the unified Organisation filters', () => {
+    const roles = organizationContentType.fields.find((field) => field.name === 'roles');
+    expect(roles?.filterable).toBe(true);
+    expect(roles?.type).toBe('multiselect');
+    expect(roles?.options?.map((option) => option.value).sort()).toEqual(
+      Object.keys(ORG_ROLE_LABELS).sort(),
+    );
   });
 
   it('schedules a measured refresh and asserts full dimension coverage', () => {

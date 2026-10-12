@@ -246,6 +246,7 @@ export const cityContentType: ContentTypeConfig = {
     }),
   },
   listSelect: '*,countries(name,code,equality_score),venues(count),events(count)',
+  listCountsAfterPagination: true,
   // The Venues/Events counts link to those lists; count what the lists show.
   listEmbedScopes: [
     { embed: 'venues', type: venueContentType },

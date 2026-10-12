@@ -2,7 +2,6 @@ import type { ReactNode } from 'react';
 import { CalendarDays, Columns, GanttChart, LayoutGrid, Settings2, Table2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import {
   Select,
   SelectContent,
@@ -82,7 +81,7 @@ export function ViewSettings({
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-[380px] max-w-[calc(100vw-2rem)] p-4" align="end">
-        <ScrollArea className="max-h-[70vh] pr-2">
+        <div className="max-h-[min(70vh,calc(var(--radix-popover-content-available-height)_-_2rem))] overflow-y-auto overscroll-contain pr-2">
           {lifecycleControls && (
             <section className="mb-4">
               <p className="mb-2 text-sm font-semibold">Record visibility</p>
@@ -179,7 +178,7 @@ export function ViewSettings({
               </Select>
             </section>
           )}
-        </ScrollArea>
+        </div>
       </PopoverContent>
     </Popover>
   );

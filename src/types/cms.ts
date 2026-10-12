@@ -337,6 +337,8 @@ export interface ContentTypeConfig {
    * it links to. `type` is the embedded type's config, passed directly rather
    * than looked up by key — configs cannot import the registry (cycle).
    */
+  /** Fetch embedded counts only for the loaded page, after pagination. */
+  listCountsAfterPagination?: boolean;
   listEmbedScopes?: Array<{
     embed: string;
     type: Pick<ContentTypeConfig, 'merge' | 'lifecycle'>;

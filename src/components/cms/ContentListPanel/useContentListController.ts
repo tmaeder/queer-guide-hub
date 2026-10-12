@@ -232,9 +232,17 @@ export function useContentListController({
       return ct.fields.find((f) => f.name === name)?.virtual ? 'updated_at' : name;
     };
 
+    const pageCounts = ct.listCountsAfterPagination ? (ct.listEmbedScopes ?? []) : [];
+    // Embedded aggregate counts can make PostgREST aggregate the entire city
+    // list before applying its range. Load those counts for page IDs instead.
+    const select = pageCounts.reduce(
+      (columns, { embed }) =>
+        columns.replace(`${embed}(count),`, '').replace(`,${embed}(count)`, ''),
+      ct.listSelect ?? '*',
+    );
     let query = supabase
       .from(ct.tableName as 'events')
-      .select(ct.listSelect ?? '*', { count: 'exact' })
+      .select(select, { count: 'exact' })
       .range(from, to);
     query = applySorts(query as never, sorts, resolveSortField) as typeof query;
 
@@ -254,14 +262,40 @@ export function useContentListController({
     query = applyMergedView(query as never, ct.merge, mergedView) as typeof query;
     // Scope count embeds (e.g. a city's `venues(count)`) to the embedded
     // type's default slice, so the number matches the list it links to.
-    for (const { embed, type } of ct.listEmbedScopes ?? []) {
+    for (const { embed, type } of ct.listCountsAfterPagination ? [] : (ct.listEmbedScopes ?? [])) {
       query = applyEmbeddedLiveScope(query as never, embed, type) as typeof query;
     }
 
     const { data, error, count } = await query;
     if (error) throw error;
 
-    const mapped = (data || []).map((row: Record<string, unknown>) => toListItem(row, ct));
+    const rows = (data ?? []) as unknown as Record<string, unknown>[];
+    if (rows.length && pageCounts.length) {
+      const ids = rows.map((row) => row[ct.primaryKey]);
+      const counts = await Promise.all(
+        pageCounts.map(async ({ embed, type }) => {
+          let countsQuery = supabase
+            .from(ct.tableName as 'events')
+            .select(`${ct.primaryKey},${embed}(count)`)
+            .in(ct.primaryKey, ids);
+          countsQuery = applyEmbeddedLiveScope(
+            countsQuery as never,
+            embed,
+            type,
+          ) as typeof countsQuery;
+          const result = await countsQuery;
+          if (result.error) throw result.error;
+          const countRows = (result.data ?? []) as unknown as Record<string, unknown>[];
+          return {
+            embed,
+            byId: new Map(countRows.map((row) => [row[ct.primaryKey], row[embed]])),
+          };
+        }),
+      );
+      for (const row of rows)
+        for (const { embed, byId } of counts) row[embed] = byId.get(row[ct.primaryKey]);
+    }
+    const mapped = rows.map((row) => toListItem(row, ct));
 
     setItems(mapped);
     setTotalCount(count ?? 0);
