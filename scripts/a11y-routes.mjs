@@ -109,7 +109,6 @@ export const ADMIN_ROUTES = [
   { path: '/admin/hotels', name: 'admin-hotels', auth: 'admin' },
   { path: '/admin/villages', name: 'admin-villages', auth: 'admin' },
   { path: '/admin/duplicates', name: 'admin-duplicates', auth: 'admin' },
-  { path: '/admin/maps', name: 'admin-maps', auth: 'admin' },
   { path: '/admin/quests', name: 'admin-quests', auth: 'admin' },
   { path: '/admin/affiliate', name: 'admin-affiliate', auth: 'admin' },
   { path: '/admin/search-intelligence', name: 'admin-search-intel', auth: 'admin' },

@@ -54,7 +54,6 @@ export const ADMIN_AREA_DESCRIPTIONS: Record<string, string> = {
   // System
   '/admin/users': 'Users and roles. Assign admin, moderator, and editor access.',
   '/admin/analytics': 'Platform-wide usage statistics.',
-  '/admin/maps': 'Map tile server status.',
   '/admin/security': 'Security monitoring. RLS, auth, and anomaly detection.',
   '/admin/cloudflare': 'Cloudflare analytics and rules.',
   '/admin/affiliates': 'Affiliate partners. Manage merchant links and payouts.',

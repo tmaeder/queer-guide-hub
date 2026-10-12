@@ -264,15 +264,6 @@ export const ADMIN_ARCHETYPES: AdminArchetypeEntry[] = [
   // ── G · Tree + canvas ─────────────────────────────────────────────────
   { path: 'geography', archetype: 'G', title: 'Geography', adopted: true },
   { path: 'graph', archetype: 'G', title: 'Content graph', adopted: true },
-  {
-    path: 'maps',
-    archetype: 'G',
-    title: 'Maps',
-    adopted: true,
-    caveat:
-      'Full-bleed MapShell with no tree today; the layer/filter panel is promoted into the 320px ' +
-      'column. MapShell itself must NOT be modified — it is shared with the public /map.',
-  },
 
   // ── H · Registry ──────────────────────────────────────────────────────
   { path: 'automation', archetype: 'H', title: 'Automations', adopted: true },
