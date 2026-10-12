@@ -1,7 +1,7 @@
-import { useEffect, useRef, useState, useCallback, useMemo } from 'react';
+import { useEffect, useState, useCallback, useMemo } from 'react';
 import { useSearchParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
-import { Search, Filter, Sparkles } from 'lucide-react';
+import { Search, Filter, Sparkles, X } from 'lucide-react';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Button } from '@/components/ui/button';
@@ -48,6 +48,7 @@ import {
 } from '@/config/searchTypeConfig';
 import type { AssistantCard } from '@/lib/assistantClient';
 import { cn } from '@/lib/utils';
+import { readSearchFilters, writeSearchFilters } from '@/lib/searchParams';
 import { PageContainer } from '@/components/layout/PageContainer';
 
 const MAX_HEADING_QUERY_LEN = 80;
@@ -75,7 +76,6 @@ function countActiveFilters(f: SearchFilters): number {
     (f.tags?.length || 0) +
     (f.cluster_ids?.length || 0) +
     (f.target_groups?.length || 0) +
-    (f.tags?.length || 0) +
     (f.priceRange ? 1 : 0) +
     (f.dateRange ? 1 : 0) +
     (f.free ? 1 : 0) +
@@ -99,18 +99,7 @@ export default function SearchResults() {
   const [page, setPage] = useState(0);
   const [askOpen, setAskOpen] = useState(false);
 
-  const initialLat = Number(searchParams.get('lat')) || undefined;
-  const initialLng = Number(searchParams.get('lng')) || undefined;
-  const [filters, setFilters] = useState<SearchFilters>({
-    types: searchParams.get('types')?.split(',').filter(Boolean) || [],
-    location: searchParams.get('location') || undefined,
-    categories: searchParams.get('categories')?.split(',').filter(Boolean) || undefined,
-    cluster_ids: searchParams.get('clusters')?.split(',').filter(Boolean) || undefined,
-    tags: searchParams.get('tags')?.split(',').filter(Boolean) || undefined,
-    lat: initialLat,
-    lng: initialLng,
-    radius: Number(searchParams.get('radius')) || undefined,
-  });
+  const filters = useMemo(() => readSearchFilters(searchParams), [searchParams]);
   const geoActive = filters.lat != null && filters.lng != null;
   const activeScope = filters.types && filters.types.length === 1 ? filters.types[0] : null;
   const config = getTypeConfig(activeScope);
@@ -118,11 +107,15 @@ export default function SearchResults() {
   const availableSorts = config.sorts.filter((s) => s !== 'distance' || geoActive);
 
   const [viewMode, setViewMode] = useState<SearchViewMode>(config.defaultView);
-  const [sortId, setSortId] = useState<SearchSortId>(() => {
-    const fromUrl = searchParams.get('sort') as SearchSortId | null;
-    if (fromUrl && config.sorts.includes(fromUrl)) return fromUrl;
-    return geoActive && config.sorts.includes('distance') ? 'distance' : 'relevance';
-  });
+  const sortId = useMemo<SearchSortId>(() => {
+    const value = searchParams.get('sort') as SearchSortId | null;
+    return (
+      value ??
+      (geoActive && getTypeConfig(activeScope).sorts.includes('distance')
+        ? 'distance'
+        : 'relevance')
+    );
+  }, [searchParams, geoActive, activeScope]);
 
   // Clamp to what the scope allows (defends against a stale URL/state).
   const effectiveView = availableViews.includes(viewMode) ? viewMode : config.defaultView;
@@ -153,30 +146,25 @@ export default function SearchResults() {
   // Pass identity so the worker personalizes ranking from the profile
   // (interests/home_city → _boostReason). Anonymous users fall back to session.
   const { user } = useAuth();
-  const { results, loading, error, errorKind, totalHits, tooShort, facets } = useSearch(
-    query,
-    effectiveFilters,
-    page,
-    workerSort(effectiveSort),
-    { userId: user?.id ?? null, sessionId: getSessionId() },
-  );
+  const {
+    results,
+    resultKey,
+    loading,
+    error,
+    errorKind,
+    totalHits,
+    tooShort,
+    facets,
+    performSearch,
+  } = useSearch(query, effectiveFilters, page, workerSort(effectiveSort), {
+    userId: user?.id ?? null,
+    sessionId: getSessionId(),
+  });
 
   // ── URL sync ───────────────────────────────────────────────────────────
   const writeParams = useCallback(
     (next: SearchFilters, nextSort: SearchSortId) => {
-      const params = new URLSearchParams();
-      if (query) params.set('q', query);
-      if (next.types?.length) params.set('types', next.types.join(','));
-      if (next.location) params.set('location', next.location);
-      if (next.categories?.length) params.set('categories', next.categories.join(','));
-      if (next.cluster_ids?.length) params.set('clusters', next.cluster_ids.join(','));
-      if (next.tags?.length) params.set('tags', next.tags.join(','));
-      if (next.lat != null && next.lng != null) {
-        params.set('lat', String(next.lat));
-        params.set('lng', String(next.lng));
-        if (next.radius) params.set('radius', String(next.radius));
-      }
-      if (nextSort && nextSort !== 'relevance') params.set('sort', nextSort);
+      const params = writeSearchFilters(query, next, nextSort);
       setSearchParams(params);
     },
     [query, setSearchParams],
@@ -184,7 +172,6 @@ export default function SearchResults() {
 
   const handleFiltersChange = useCallback(
     (next: SearchFilters) => {
-      setFilters(next);
       setPage(0);
       writeParams(next, sortId);
     },
@@ -195,8 +182,13 @@ export default function SearchResults() {
   const handleTagRefine = useCallback(
     (tag: string) => {
       const current = filters.tags ?? [];
-      if (current.includes(tag)) return;
-      handleFiltersChange({ ...filters, tags: [...current, tag] });
+      const selected = current.some((value) => value.toLowerCase() === tag.toLowerCase());
+      handleFiltersChange({
+        ...filters,
+        tags: selected
+          ? current.filter((value) => value.toLowerCase() !== tag.toLowerCase())
+          : [...current, tag],
+      });
     },
     [filters, handleFiltersChange],
   );
@@ -207,27 +199,20 @@ export default function SearchResults() {
       const cfg = getTypeConfig(scope);
       const nextSort: SearchSortId =
         geoActive && cfg.sorts.includes('distance') ? 'distance' : (cfg.sorts[0] ?? 'relevance');
-      setFilters(next);
       setPage(0);
       setViewMode(cfg.defaultView);
-      setSortId(nextSort);
       writeParams(next, nextSort);
     },
     [filters, geoActive, writeParams],
   );
 
   const handleClearAll = useCallback(() => {
-    setSearchQuery('');
-    setFilters({});
-    setPage(0);
-    setSortId('relevance');
-    setSearchParams(new URLSearchParams());
-  }, [setSearchParams]);
+    handleFiltersChange({});
+  }, [handleFiltersChange]);
 
   const handleSortChange = useCallback(
     (next: string) => {
       const s = next as SearchSortId;
-      setSortId(s);
       setPage(0);
       writeParams(filters, s);
       void trackSearchUx('facet_apply', { facet: 'sort', value: s, query });
@@ -238,12 +223,12 @@ export default function SearchResults() {
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect -- reset paging on new query.
     setPage(0);
-  }, [query]);
+  }, [searchParams]);
 
   const submitSearch = useCallback(() => {
-    if (!searchQuery.trim()) return;
     const params = new URLSearchParams(searchParams);
-    params.set('q', searchQuery);
+    if (searchQuery.trim()) params.set('q', searchQuery.trim());
+    else params.delete('q');
     setSearchParams(params);
   }, [searchQuery, searchParams, setSearchParams]);
 
@@ -283,47 +268,56 @@ export default function SearchResults() {
   );
 
   // ── Accumulate pages (infinite scroll), keep previous during refetch ─────
-  const queryKey = `${query}|${JSON.stringify(filters)}|${effectiveSort}`;
-  const [accumulated, setAccumulated] = useState<SearchResult[]>([]);
-  const lastKeyRef = useRef('');
+  const queryKey = `${query}|${JSON.stringify(effectiveFilters)}|${workerSort(effectiveSort) ?? ''}`;
+  const [resultPages, setResultPages] = useState<{ key: string; items: SearchResult[] }>({
+    key: '',
+    items: [],
+  });
   useEffect(() => {
-    if (loading) return; // keep previous results visible while refetching
-    setAccumulated((prev) => {
-      if (queryKey !== lastKeyRef.current) {
-        lastKeyRef.current = queryKey;
-        return results;
-      }
-      const seen = new Set(prev.map((r) => r.objectID));
-      const fresh = results.filter((r) => r.objectID && !seen.has(r.objectID));
-      if (fresh.length > 0) return [...prev, ...fresh];
-      return prev.length === results.length ? prev : results;
+    if (loading || (resultKey !== undefined && resultKey !== queryKey)) return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- accumulate completed external search pages.
+    setResultPages((previous) => {
+      if (queryKey !== previous.key) return { key: queryKey, items: results };
+      const seen = new Set(previous.items.map((result) => `${result.type}-${result.objectID}`));
+      const fresh = results.filter((result) => !seen.has(`${result.type}-${result.objectID}`));
+      return fresh.length ? { key: queryKey, items: [...previous.items, ...fresh] } : previous;
     });
-  }, [results, loading, queryKey]);
+  }, [results, resultKey, loading, queryKey]);
 
-  const totalResults = accumulated.length;
+  const currentResults = resultPages.key === queryKey ? resultPages.items : [];
+  const totalResults = currentResults.length;
   const hasMore = totalResults < totalHits;
   const activeFilterCount = countActiveFilters(filters);
-  const showInitialSkeleton = loading && accumulated.length === 0;
+  const awaitingQuery =
+    (query.trim().length >= 2 || activeFilterCount > 0) &&
+    resultKey !== undefined &&
+    resultKey !== queryKey;
+  const showInitialSkeleton = (loading || awaitingQuery) && currentResults.length === 0;
   const hasQuery = query.trim().length > 0;
 
   // Fire zero_results telemetry once when a real query lands with no hits.
   useEffect(() => {
-    if (!query || query.trim().length < 2 || loading || tooShort) return;
+    if (!query || query.trim().length < 2 || loading || awaitingQuery || tooShort) return;
     if (totalHits === 0 && !errorKind) {
       void trackSearchUx('zero_results', { query, scope: activeScope || 'all' });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [query, totalHits, loading, tooShort, errorKind]);
+  }, [query, totalHits, loading, awaitingQuery, tooShort, errorKind]);
 
   const dymHit = useDidYouMean(
     query,
-    query.trim().length >= 2 && !loading && !tooShort && totalHits === 0 && !errorKind,
+    query.trim().length >= 2 &&
+      !loading &&
+      !awaitingQuery &&
+      !tooShort &&
+      totalHits === 0 &&
+      !errorKind,
   );
 
   // pb-4 on virtual rows preserves the inter-row gap (absolute rows don't
   // share a parent grid, so gap-y alone can't reach between them).
   const gridClass = 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 pb-4';
-  const listClass = 'flex flex-col gap-4 pb-4';
+  const listClass = 'flex flex-col pb-2';
   const gridColumns = useGridColumns(GRID_BREAKPOINTS);
 
   return (
@@ -332,38 +326,62 @@ export default function SearchResults() {
         <PageHeader
           title={t('search.resultsTitle', 'Search')}
           subtitle={
-            loading && accumulated.length === 0
-              ? t('search.searching', 'Searching…')
-              : hasQuery
-                ? t('search.resultsCount', {
-                    defaultValue: '{{count}} results for "{{q}}"',
-                    count: totalHits,
-                    q:
-                      query.length > MAX_HEADING_QUERY_LEN
-                        ? query.slice(0, MAX_HEADING_QUERY_LEN) + '…'
-                        : query,
-                  })
-                : activeFilterCount > 0
-                  ? t('search.resultsCountPlain', {
-                      defaultValue: '{{count}} results',
+            errorKind
+              ? t('search.unavailableTitle', 'Search is temporarily unavailable')
+              : loading || awaitingQuery
+                ? t('search.searching', 'Searching…')
+                : hasQuery
+                  ? t('search.resultsCount', {
+                      defaultValue: '{{count}} results for "{{q}}"',
                       count: totalHits,
+                      q:
+                        query.length > MAX_HEADING_QUERY_LEN
+                          ? query.slice(0, MAX_HEADING_QUERY_LEN) + '…'
+                          : query,
                     })
-                  : undefined
+                  : activeFilterCount > 0
+                    ? t('search.resultsCountPlain', {
+                        defaultValue: '{{count}} results',
+                        count: totalHits,
+                      })
+                    : undefined
           }
         >
-          <div className="flex gap-2">
+          <form
+            className="flex gap-2"
+            role="search"
+            onSubmit={(event) => {
+              event.preventDefault();
+              submitSearch();
+            }}
+          >
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <Input
                 placeholder={t('search.refine', 'Refine your search…')}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && submitSearch()}
-                className="pl-10"
+                aria-label={t('search.ariaLabel', 'Search Queer Guide')}
+                type="search"
+                className="h-12 pl-10 pr-12"
               />
+              {searchQuery && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="absolute right-1 top-1 h-10 w-10"
+                  aria-label={t('search.clear', 'Clear search')}
+                  onClick={() => setSearchQuery('')}
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              )}
             </div>
-            <Button onClick={submitSearch}>{t('search.button', 'Search')}</Button>
-          </div>
+            <Button type="submit" className="h-12">
+              {t('search.button', 'Search')}
+            </Button>
+          </form>
         </PageHeader>
 
         {/* Filters panel — sticky card on desktop, bottom Sheet on mobile */}
@@ -397,7 +415,11 @@ export default function SearchResults() {
 
         {(hasQuery || activeFilterCount > 0) && (
           <>
-            <SearchScopeChips activeScope={activeScope} onScopeChange={handleScopeChange} />
+            <SearchScopeChips
+              activeScope={activeScope}
+              onScopeChange={handleScopeChange}
+              className="px-0"
+            />
 
             <div className="flex flex-wrap items-center justify-between gap-4 py-2">
               <div className="flex min-w-0 flex-1 flex-col gap-2">
@@ -416,11 +438,11 @@ export default function SearchResults() {
             </div>
 
             {/* Controls bar */}
-            <div className="mb-6 flex flex-col gap-4 rounded-element bg-muted p-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="mb-4 flex flex-wrap items-center justify-between gap-4 border-y border-border-hairline py-4">
               <div className="flex items-center gap-2">
                 <span className="text-sm font-medium">{t('search.sortBy', 'Sort')}</span>
                 <Select value={effectiveSort} onValueChange={handleSortChange}>
-                  <SelectTrigger className="w-[180px]">
+                  <SelectTrigger className="w-[170px]" aria-label={t('search.sortBy', 'Sort')}>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent className="z-50">
@@ -440,8 +462,12 @@ export default function SearchResults() {
                 </Select>
               </div>
 
-              <div className="flex items-center gap-2">
-                <div className="flex items-center gap-1 rounded-element bg-surface-container p-1">
+              <div className="flex flex-wrap items-center gap-2">
+                <div
+                  className="flex items-center gap-1 rounded-element bg-surface-container p-1"
+                  role="group"
+                  aria-label={t('search.view', 'Result view')}
+                >
                   {availableViews.map((v) => {
                     const meta = VIEW_META[v];
                     const Icon = meta.Icon;
@@ -469,6 +495,7 @@ export default function SearchResults() {
                   size="sm"
                   onClick={() => setShowFilters((s) => !s)}
                   className="gap-2"
+                  aria-expanded={showFilters}
                 >
                   <Filter className="h-4 w-4" />
                   {t('search.filters', 'Filters')}
@@ -479,6 +506,20 @@ export default function SearchResults() {
               </div>
             </div>
           </>
+        )}
+
+        {errorKind && currentResults.length > 0 && (
+          <div
+            role="alert"
+            className="mb-4 flex flex-wrap items-center justify-between gap-4 rounded-element bg-muted p-4"
+          >
+            <p className="text-sm">
+              {error ?? t('search.unavailableTitle', 'Search is temporarily unavailable')}
+            </p>
+            <Button variant="outline" onClick={() => void performSearch(query, page)}>
+              {t('common.retry', 'Try again')}
+            </Button>
+          </div>
         )}
 
         {/* Results */}
@@ -492,7 +533,7 @@ export default function SearchResults() {
               {t('search.minChars', 'Enter at least 2 characters to start searching.')}
             </p>
           </div>
-        ) : accumulated.length === 0 ? (
+        ) : currentResults.length === 0 ? (
           <ZeroState
             query={query}
             errorKind={errorKind}
@@ -505,28 +546,34 @@ export default function SearchResults() {
               setSearchParams(params);
             }}
             onAsk={openAsk}
+            onRetry={() => void performSearch(query, page)}
+            hasFilters={activeFilterCount > 0}
             onAdjustFilters={() => setShowFilters(true)}
             onBrowse={(p) => navigate(p)}
           />
         ) : effectiveView === 'map' ? (
-          <ResultsMapView results={accumulated} />
+          <ResultsMapView results={currentResults} />
         ) : effectiveView === 'calendar' ? (
           <div className={cn(loading && 'opacity-60 transition-opacity')} aria-busy={loading}>
-            <SearchCalendarView results={accumulated} query={query} onActivate={trackResultClick} />
+            <SearchCalendarView
+              results={currentResults}
+              query={query}
+              onActivate={trackResultClick}
+            />
             <LoadMore
               hasMore={hasMore}
               loading={loading}
               onLoadMore={() => setPage((p) => p + 1)}
-              resetKey={query}
+              resetKey={queryKey}
             />
           </div>
         ) : (
           <div className={cn(loading && 'opacity-60 transition-opacity')} aria-busy={loading}>
             <VirtualizedGrid
-              items={accumulated}
+              items={currentResults}
               columns={effectiveView === 'grid' ? gridColumns : 1}
               rowClassName={effectiveView === 'grid' ? gridClass : listClass}
-              estimateRowHeight={effectiveView === 'grid' ? 380 : 130}
+              estimateRowHeight={effectiveView === 'grid' ? 380 : 112}
               itemKey={(r) => `${r.type}-${r.objectID}`}
               renderItem={(r) => (
                 <SearchResultCard
@@ -543,7 +590,7 @@ export default function SearchResults() {
               hasMore={hasMore}
               loading={loading}
               onLoadMore={() => setPage((p) => p + 1)}
-              resetKey={query}
+              resetKey={queryKey}
             />
           </div>
         )}
@@ -581,11 +628,15 @@ function ZeroState({
   onAsk,
   onAdjustFilters,
   onBrowse,
+  onRetry,
+  hasFilters,
 }: {
   query: string;
   errorKind: 'unavailable' | 'client_error' | null;
   error: string | null;
   dymTitle?: string;
+  onRetry: () => void;
+  hasFilters: boolean;
   onSuggest: (s: string) => void;
   onAsk: () => void;
   onAdjustFilters: () => void;
@@ -594,7 +645,7 @@ function ZeroState({
   const { t } = useTranslation();
   const hasQuery = query.trim() !== '';
 
-  if (!hasQuery) {
+  if (!hasQuery && !hasFilters && !errorKind) {
     return (
       <Card className="p-6">
         <h3 className="mb-4 text-lg font-semibold">
@@ -628,7 +679,7 @@ function ZeroState({
     );
   }
 
-  if (errorKind === 'unavailable') {
+  if (errorKind) {
     return (
       <div
         role="alert"
@@ -636,11 +687,16 @@ function ZeroState({
       >
         <Search className="mb-4 h-12 w-12 text-muted-foreground" />
         <h3 className="mb-2 text-lg font-semibold">
-          {t('search.unavailableTitle', 'Search is temporarily unavailable')}
+          {errorKind === 'unavailable'
+            ? t('search.unavailableTitle', 'Search is temporarily unavailable')
+            : t('search.error', 'Something went wrong')}
         </h3>
         <p className="text-muted-foreground">
           {error ?? t('search.unavailableBody', "We've been notified.")}
         </p>
+        <Button className="mt-4" onClick={onRetry}>
+          {t('common.retry', 'Try again')}
+        </Button>
       </div>
     );
   }

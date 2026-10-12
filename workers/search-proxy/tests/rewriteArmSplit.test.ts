@@ -62,7 +62,7 @@ interface Harness {
 async function runSearch(
 	query: string,
 	rewrite: { q_en: string; synonyms?: string[]; city?: string | null; type_hint?: string | null } | null,
-	opts: { lang?: string } = {},
+	opts: { lang?: string; page?: number; hits?: Array<Record<string, unknown>>; failHybrid?: boolean; filters?: Record<string, unknown> } = {},
 ): Promise<Harness> {
 	const embedTexts: string[] = [];
 	let llamaCalls = 0;
@@ -95,9 +95,10 @@ async function runSearch(
 		const parseBody = () => (init?.body ? (JSON.parse(init.body as string) as Record<string, unknown>) : {});
 		if (u.includes("/rpc/search_hybrid")) {
 			hybridArgs = parseBody();
+			if (opts.failHybrid) throw new Error("upstream unavailable");
 			return {
 				ok: true,
-				json: async () => ({ total: 1, hits: [{ objectID: "e1", type: "event", title: "Heldenbar", _rankingScore: 0.22 }] }),
+				json: async () => ({ total: 1, hits: opts.hits ?? [{ objectID: "e1", type: "event", title: "Heldenbar", _rankingScore: 0.22 }] }),
 			} as unknown as Response;
 		}
 		if (u.includes("/rpc/search_facets")) return { ok: true, json: async () => ({}) } as unknown as Response;
@@ -113,7 +114,7 @@ async function runSearch(
 		new Request("https://search.queer.guide/search", {
 			method: "POST",
 			headers: { "content-type": "application/json" },
-			body: JSON.stringify({ query, lang: opts.lang ?? "en", debug: true, hitsPerPage: 10 }),
+			body: JSON.stringify({ query, lang: opts.lang ?? "en", debug: true, hitsPerPage: 10, page: opts.page ?? 0, filters: opts.filters ?? {} }),
 		}),
 		env,
 		ctx,
@@ -188,4 +189,43 @@ describe("rewrite augments, never replaces", () => {
 		expect(dbg.keywordQ).toBe("Heldenbar");
 		expect(dbg.embedQ).toBe("hero bar");
 	});
+});
+
+
+describe("query results never top up with unrelated popular content", () => {
+  it.each([0, 1])("preserves an empty result page %i without a popularity request", async (page) => {
+    const h = await runSearch("germany", null, { hits: [], page });
+    expect(h.res.status).toBe(200);
+    expect(h.body.hits).toEqual([]);
+    expect(h.hybridArgs?.p_offset).toBe(page * 10);
+    expect(vi.mocked(global.fetch).mock.calls.some(([url]) => String(url).includes("v_popular_entities"))).toBe(false);
+  });
+
+  it("preserves sparse matches without filling the page with recommendations", async () => {
+    const h = await runSearch("germany", null);
+    expect((h.body.hits as unknown[]).length).toBe(1);
+    expect(vi.mocked(global.fetch).mock.calls.some(([url]) => String(url).includes("v_popular_entities"))).toBe(false);
+  });
+
+  it("reports an upstream failure so the interface can offer retry", async () => {
+    const h = await runSearch("germany", null, { failHybrid: true });
+    expect(h.res.status).toBe(503);
+    expect(h.body.code).toBe("search_unavailable");
+    expect(vi.mocked(global.fetch).mock.calls.some(([url]) => String(url).includes("v_popular_entities"))).toBe(false);
+  });
+});
+
+
+describe("filter-aware search", () => {
+  it("keeps explicit scope filters for a bare LGBTQ query", async () => {
+    const h = await runSearch("trans", null, { filters: { types: ["event"] } });
+    expect(h.hybridArgs?.p_query).toBe("trans");
+    expect(h.hybridArgs?.p_content_types).toEqual(["event"]);
+  });
+
+  it("returns a retryable failure for filter-only browsing", async () => {
+    const h = await runSearch("", null, { failHybrid: true, filters: { types: ["event"] } });
+    expect(h.res.status).toBe(503);
+    expect(h.body.code).toBe("search_unavailable");
+  });
 });

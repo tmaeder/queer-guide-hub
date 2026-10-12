@@ -1,13 +1,13 @@
-import { useState, useEffect, useRef } from "react";
-import { useDebounce } from "./useDebounce";
+import { useState, useEffect, useRef } from 'react';
+import { useDebounce } from './useDebounce';
 import {
   searchFetch,
   SearchFetchException,
   SEARCH_UNAVAILABLE_MESSAGE,
   isSearchUnavailable,
-} from "@/lib/searchFetch";
-import { resolveType } from "@/lib/searchTaxonomy";
-import { resolveImageUrl } from "@/utils/resolveImageUrl";
+} from '@/lib/searchFetch';
+import { resolveType } from '@/lib/searchTaxonomy';
+import { resolveImageUrl } from '@/utils/resolveImageUrl';
 
 // P2-8: queries shorter than this never reach the network. The worker accepts
 // short queries (returns []) but a single-character query is overwhelmingly a
@@ -73,10 +73,7 @@ export interface SearchFilters {
  * price_min/max, dateRange→date_from/to (ISO), free→is_free; drops UI-only
  * fields with no backend (rating, verified). `sort` is the worker p_sort.
  */
-export function toWorkerFilters(
-  filters: SearchFilters,
-  sort?: string,
-): Record<string, unknown> {
+export function toWorkerFilters(filters: SearchFilters, sort?: string): Record<string, unknown> {
   const out: Record<string, unknown> = {};
   // The worker's filters.types enum is the singular entity type (venue, event,
   // …) — which is exactly our scope id. (Do NOT map to plural index keys; the
@@ -134,6 +131,7 @@ function hasBrowseFilters(f: SearchFilters): boolean {
     f.types?.length ||
     f.tags?.length ||
     f.categories?.length ||
+    f.cluster_ids?.length ||
     f.target_groups?.length ||
     f.location ||
     f.priceRange ||
@@ -158,10 +156,7 @@ function sanitiseFacets(input: unknown): FacetDistribution {
   for (const [facet, values] of Object.entries(input as Record<string, unknown>)) {
     out[facet] = {};
     const pairs: Array<[unknown, unknown]> = Array.isArray(values)
-      ? values.map((e) => [
-          (e as { value?: unknown })?.value,
-          (e as { count?: unknown })?.count,
-        ])
+      ? values.map((e) => [(e as { value?: unknown })?.value, (e as { count?: unknown })?.count])
       : Object.entries((values as Record<string, unknown>) || {});
     for (const [v, c] of pairs) {
       if (v == null) continue;
@@ -270,10 +265,12 @@ export interface SearchIdentity {
 export const useSearch = (
   query: string,
   filters: SearchFilters = {},
-  page = 1,
+  page = 0,
   sort?: string,
   identity: SearchIdentity = {},
 ) => {
+  const requestIdRef = useRef(0);
+  const [resultKey, setResultKey] = useState('');
   const [results, setResults] = useState<SearchResult[]>([]);
   const [loading, setLoading] = useState(false);
   const [suggestions, setSuggestions] = useState<SearchResult[]>([]);
@@ -314,11 +311,17 @@ export const useSearch = (
     identityRef.current = { userId, sessionId };
   }, [userId, sessionId]);
 
-  const performSearch = async (searchQuery: string, searchPage = 1) => {
+  const performSearch = async (searchQuery: string, searchPage = 0) => {
+    const requestId = ++requestIdRef.current;
+    const requestFilters = filtersRef.current;
+    const requestSort = sortRef.current;
+    const key = `${searchQuery}|${JSON.stringify(requestFilters)}|${requestSort ?? ''}`;
     // Allow a filter-only browse (empty query + active filters); only short-circuit
     // a genuinely empty, unfiltered request or a 1-char mid-typing artefact.
     const browseable = hasBrowseFilters(filtersRef.current);
     if (searchQuery.trim().length < MIN_QUERY_LEN && !browseable) {
+      setLoading(false);
+      setResultKey(key);
       setResults([]);
       setSuggestions([]);
       setFacets({});
@@ -338,14 +341,16 @@ export const useSearch = (
       const { userId: uid, sessionId: sid } = identityRef.current;
       const data = await searchFetch<SearchResponse>('/', {
         query: searchQuery,
-        filters: toWorkerFilters(filtersRef.current, sortRef.current),
+        filters: toWorkerFilters(requestFilters, requestSort),
         hitsPerPage: 20,
         page: searchPage,
         ...(uid ? { user_id: uid } : {}),
         ...(sid ? { session_id: sid } : {}),
       });
 
-      const cleaned = sanitiseHits(data?.hits, filtersRef.current);
+      if (requestId !== requestIdRef.current) return;
+      setResultKey(key);
+      const cleaned = sanitiseHits(data?.hits, requestFilters);
       setResults(cleaned);
       setSuggestions(sanitiseHits(data?.suggestions, {}));
       setFacets(sanitiseFacets(data?.facetDistribution));
@@ -355,6 +360,8 @@ export const useSearch = (
       const dropped = (data?.hits?.length ?? 0) - cleaned.length;
       setTotalHits(Math.max(cleaned.length, reportedTotal - dropped));
     } catch (err) {
+      if (requestId !== requestIdRef.current) return;
+      setResultKey(key);
       console.error('Search error:', err);
       setResults([]);
       setSuggestions([]);
@@ -371,7 +378,7 @@ export const useSearch = (
         setErrorKind('unavailable');
       }
     } finally {
-      setLoading(false);
+      if (requestId === requestIdRef.current) setLoading(false);
     }
   };
 
@@ -379,6 +386,10 @@ export const useSearch = (
     if (debouncedQuery || hasBrowseFilters(filtersRef.current)) {
       performSearch(debouncedQuery, page);
     } else {
+      setLoading(false);
+      setError(null);
+      setErrorKind(null);
+      setResultKey('');
       setResults([]);
       setSuggestions([]);
       setFacets({});
@@ -386,10 +397,22 @@ export const useSearch = (
       setTooShort(false);
     }
 
+    return () => {
+      requestIdRef.current += 1;
+    };
   }, [debouncedQuery, filtersKey, page, sort, userId, sessionId]);
+
+  // Invalidate immediately while the next query waits for its debounce.
+  useEffect(
+    () => () => {
+      requestIdRef.current += 1;
+    },
+    [query],
+  );
 
   return {
     results,
+    resultKey,
     suggestions,
     facets,
     totalHits,

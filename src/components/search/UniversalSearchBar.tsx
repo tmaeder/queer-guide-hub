@@ -973,7 +973,7 @@ export const UniversalSearchBar = ({
               {/* The query row sits at the top of the sheet, under the safe
                   area, so it is visible while typing. */}
               <div style={{ paddingTop: 'env(safe-area-inset-top, 0px)' }}>{searchField(true)}</div>
-              <div className="min-h-0 flex-1 overflow-y-auto">{popoverBody}</div>
+              <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain">{popoverBody}</div>
             </div>
           </PopoverContent>
         </Popover>
@@ -1016,7 +1016,7 @@ export const UniversalSearchBar = ({
               is the one depth cue this system does not use. */}
           <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-foreground/80 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:animate-in data-[state=open]:fade-in-0" />
           <DialogPrimitive.Content
-            className="fixed inset-x-0 top-[8vh] z-50 mx-auto flex max-h-[84vh] w-[calc(100%-3rem)] max-w-[680px] flex-col overflow-hidden bg-card shadow-soft-lg duration-fast data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:animate-in data-[state=open]:fade-in-0 rounded-container"
+            className="fixed inset-x-0 top-[6dvh] z-50 mx-auto flex max-h-[88dvh] w-[calc(100%-3rem)] max-w-[760px] flex-col overflow-hidden bg-card shadow-soft-lg duration-fast data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:animate-in data-[state=open]:fade-in-0 rounded-container"
             onOpenAutoFocus={(e) => {
               e.preventDefault();
               focusInput();
@@ -1042,7 +1042,7 @@ export const UniversalSearchBar = ({
               {t('search.ariaLabel', 'Search Queer Guide')}
             </DialogPrimitive.Title>
             {searchField(true)}
-            <div className="min-h-0 flex-1 overflow-y-auto">{popoverBody}</div>
+            <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain">{popoverBody}</div>
           </DialogPrimitive.Content>
         </DialogPrimitive.Portal>
       </DialogPrimitive.Root>

@@ -17,7 +17,7 @@ export function ModeSwitcher() {
     <div
       role="radiogroup"
       aria-label={t('header.modeLabel', 'Mode')}
-      className="flex items-center gap-2 overflow-x-auto px-6 py-2"
+      className="flex flex-wrap items-center gap-1.5 px-4 py-2 sm:px-6"
     >
       {USER_MODES.map((m) => {
         const active = mode === m.value;
@@ -30,7 +30,7 @@ export function ModeSwitcher() {
             aria-checked={active}
             onClick={() => setMode(m.value)}
             className={cn(
-              'inline-flex shrink-0 cursor-pointer items-center gap-2 whitespace-nowrap bg-muted rounded-element px-2 py-1 text-13 font-bold transition-colors',
+              'inline-flex min-h-10 shrink-0 cursor-pointer items-center gap-2 whitespace-nowrap bg-muted rounded-element px-2 py-1 text-13 font-bold transition-colors',
               active
                 ? 'bg-foreground text-background'
                 : 'bg-transparent text-foreground hover:bg-foreground hover:text-background',

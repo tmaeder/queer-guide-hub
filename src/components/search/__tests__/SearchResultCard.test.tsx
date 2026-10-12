@@ -95,6 +95,24 @@ describe.each(['list', 'grid'] as const)('SearchResultCard (%s view)', (view) =>
     expectNoNestedInteractive(container);
   });
 
+  it('exposes tag refinement as a keyboard-focusable button with selection state', () => {
+    const onTagClick = vi.fn();
+    renderWithProviders(
+      <SearchResultCard
+        result={hit({ tags: ['nightlife'] })}
+        view={view}
+        query=""
+        activeTags={['nightlife']}
+        onTagClick={onTagClick}
+      />,
+    );
+    const tag = screen.getByRole('button', { name: /nightlife/i });
+    expect(tag).toHaveAttribute('type', 'button');
+    expect(tag).toHaveAttribute('aria-pressed', 'true');
+    fireEvent.click(tag);
+    expect(onTagClick).toHaveBeenCalledWith('nightlife');
+  });
+
   it('does not fall back to a role="button" click handler', () => {
     const { container } = renderWithProviders(
       <SearchResultCard result={hit()} view={view} query="" />,

@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { renderHook, waitFor } from '@testing-library/react';
+import { act, renderHook, waitFor } from '@testing-library/react';
 
 // useSearch calls the Meilisearch proxy directly via `fetch`. Mock the global
 // so tests don't hit the live worker (was mocking @/utils/fetchWithRetry which
@@ -16,8 +16,12 @@ function okJson(body: unknown): Response {
 }
 
 describe('useSearch', () => {
-  beforeEach(() => { vi.clearAllMocks(); });
-  afterEach(() => { vi.clearAllMocks(); });
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+  afterEach(() => {
+    vi.clearAllMocks();
+  });
 
   it('should start with empty results', () => {
     const { result } = renderHook(() => useSearch(''));
@@ -30,6 +34,41 @@ describe('useSearch', () => {
     mockFetch.mockResolvedValue(okJson({ hits, suggestions: [] }));
     const { result } = renderHook(() => useSearch('bar'));
     await waitFor(() => expect(result.current.results).toHaveLength(1), { timeout: 2000 });
+  });
+
+  it('keeps newer results when an older request finishes last', async () => {
+    let resolveOld!: (response: Response) => void;
+    mockFetch.mockImplementationOnce(
+      () =>
+        new Promise<Response>((resolve) => {
+          resolveOld = resolve;
+        }),
+    );
+    mockFetch.mockResolvedValueOnce(
+      okJson({ hits: [{ objectID: 'new', title: 'Berlin', type: 'city' }], totalHits: 1 }),
+    );
+    const { result, rerender } = renderHook(({ query }) => useSearch(query), {
+      initialProps: { query: 'old' },
+    });
+    await waitFor(() => expect(mockFetch).toHaveBeenCalledTimes(1));
+    rerender({ query: 'Berlin' });
+    await waitFor(() => expect(result.current.results[0]?.title).toBe('Berlin'));
+    await act(async () => {
+      resolveOld(
+        okJson({ hits: [{ objectID: 'old', title: 'Old', type: 'venue' }], totalHits: 1 }),
+      );
+    });
+    expect(result.current.results[0]?.title).toBe('Berlin');
+    expect(result.current.loading).toBe(false);
+  });
+
+  it('starts at page zero and allows cluster-only browsing', async () => {
+    mockFetch.mockResolvedValue(okJson({ hits: [], totalHits: 0 }));
+    renderHook(() => useSearch('', { cluster_ids: ['cluster-1'] }));
+    await waitFor(() => expect(mockFetch).toHaveBeenCalledTimes(1));
+    const body = JSON.parse(mockFetch.mock.calls[0][1].body);
+    expect(body.page).toBe(0);
+    expect(body.filters.cluster_ids).toEqual(['cluster-1']);
   });
 
   it('should handle search error gracefully', async () => {

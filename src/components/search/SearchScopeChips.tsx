@@ -35,9 +35,10 @@ const SCOPE_I18N_KEY: Record<string, string> = {
 interface SearchScopeChipsProps {
   activeScope: string | null;
   onScopeChange: (scope: string | null) => void;
+  className?: string;
 }
 
-export function SearchScopeChips({ activeScope, onScopeChange }: SearchScopeChipsProps) {
+export function SearchScopeChips({ activeScope, onScopeChange, className }: SearchScopeChipsProps) {
   const { t } = useTranslation();
   const scopes = SCOPE_ORDER.map((id) => CONTENT_TYPES.find((c) => c.id === id)).filter(
     (c): c is NonNullable<typeof c> => Boolean(c),
@@ -47,7 +48,10 @@ export function SearchScopeChips({ activeScope, onScopeChange }: SearchScopeChip
     <div
       role="tablist"
       aria-label={t('search.scope.all', 'Search scope')}
-      className="flex items-center gap-2 overflow-x-auto px-6 py-2 [scrollbar-width:thin]"
+      className={cn(
+        'flex items-center gap-2 overflow-x-auto px-6 py-2 [scrollbar-width:thin]',
+        className,
+      )}
     >
       <ScopeChip
         label={t('search.scope.all', 'All')}
@@ -90,11 +94,11 @@ function ScopeChip({
       aria-selected={active}
       onClick={onClick}
       className={cn(
-        'inline-flex shrink-0 cursor-pointer items-center gap-2 whitespace-nowrap bg-muted rounded-element py-1 text-13 font-bold transition-colors',
+        'inline-flex min-h-10 shrink-0 cursor-pointer items-center gap-2 whitespace-nowrap bg-muted rounded-element py-1 text-13 font-bold transition-colors',
         // A bullet is a circle inside a squared chip: it needs its own optical
         // inset on the leading edge or it kisses the border.
         type ? 'ps-1 pe-4' : 'px-4',
-        active ? 'bg-foreground text-background' : 'bg-transparent text-foreground',
+        active ? 'bg-foreground text-background' : 'bg-transparent text-foreground hover:bg-muted',
       )}
     >
       {/* The bullet keeps its own ink ring even when the chip floods ink —

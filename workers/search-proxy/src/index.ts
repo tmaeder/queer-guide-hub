@@ -247,6 +247,7 @@ async function handleSearch(request: Request, env: Env, ctx: ExecutionContext, c
 			console.warn("pgBrowse", (e as Error).message);
 			return null;
 		});
+		if (!browse) return json({ error: "Search is temporarily unavailable", code: "search_unavailable" }, 503, cors);
 		const bHits = (browse?.hits ?? []) as Array<Record<string, unknown>>;
 		return json(
 			{
@@ -306,7 +307,7 @@ async function handleSearch(request: Request, env: Env, ctx: ExecutionContext, c
 	// stop-word in the venue/event indexes — running it through the full
 	// pipeline takes ~6s for an essentially random ranking. Route it to
 	// the popular-entities path (sub-200ms) instead.
-	if (isBareLgbtqQuery(tokens)) {
+	if (isBareLgbtqQuery(tokens) && Object.keys(filters).length === 0) {
 		// First try the precomputed popular entities (fast path). Hydrate display
 		// fields so they don't render as empty cards.
 		const popular = await popularEntities(env, ["venue", "event"], hitsPerPage * (page + 1));
@@ -514,28 +515,25 @@ async function handleSearch(request: Request, env: Env, ctx: ExecutionContext, c
 		console.warn("pgHybridSearch", (e as Error).message);
 		return null;
 	});
-	const fused = (pg?.hits ?? []) as FuseItem[];
+	// A failed query must not become an unrelated popularity feed.
+	if (!pg) return json({ error: "Search is temporarily unavailable", code: "search_unavailable" }, 503, cors);
+	const fused = pg.hits as FuseItem[];
 	const facetDistribution = pg?.facetDistribution ?? {};
 	const totalHits = pg?.estimatedTotalHits ?? fused.length;
 	const dbg = { pgSize: fused.length, fusedSize: fused.length };
 
 	// An explicit sort (date/price/distance/trust) means the SQL already ordered
-	// AND paginated the result set. Personalization re-ranking, the cold-start
-	// top-up, and the semantic reranker all reorder hits — which would clobber the
+	// AND paginated the result set. Personalization re-ranking
+	// and the semantic reranker all reorder hits — which would clobber the
 	// requested sort — so skip them and serve the SQL order verbatim.
 	const explicitSort = !!mergedFilters.sort && mergedFilters.sort !== "relevance";
 
 	// Personalization nudges (boost/decay) + worker-side exact-title boost
 	// for bug #4.
-	let ranked = explicitSort ? fused : personalizedRank(fused, signal, recent, q);
+	const ranked = explicitSort ? fused : personalizedRank(fused, signal, recent, q);
 
-	// Cold-start fallback if starved (relevance order only). v_popular_entities
-	// rows are under-hydrated ({content_type, content_id, score}); hydrate them to
-	// full hits so they don't render as empty (type/title/objectID null) cards.
-	if (!explicitSort && ranked.length < 5) {
-		const popular = await popularEntities(env, pgTypes, 30);
-		ranked = dedupeById([...ranked, ...(await hydratePopular(env, popular))]);
-	}
+	// Return only query matches. Popularity belongs to discovery; adding it to
+	// sparse or exhausted pages bypasses both the query and active filters.
 
 	// Optional reranker on top-20.
 	let final = ranked.slice(0, hitsPerPage);
@@ -963,11 +961,7 @@ type FuseItem = {
 	[key: string]: unknown;
 };
 
-function itemId(h: FuseItem): string | null {
-	const id = h.id ?? h.content_id ?? h.objectID;
-	if (!id) return null;
-	return `${h.type ?? h.content_type ?? "x"}:${id}`;
-}
+
 
 type PopularRow = { content_type: string; content_id: string; score?: number };
 
@@ -1008,21 +1002,11 @@ async function hydratePopular(env: Env, popular: PopularRow[]): Promise<FuseItem
 	return out;
 }
 
-function dedupeById(list: FuseItem[]): FuseItem[] {
-	const seen = new Set<string>();
-	const out: FuseItem[] = [];
-	for (const it of list) {
-		const id = itemId(it);
-		if (!id || seen.has(id)) continue;
-		seen.add(id);
-		out.push(it);
-	}
-	return out;
-}
-
 /** True when the filters alone can drive a browse (no keyword needed). */
 function hasBrowseFilters(f: ValidatedFilters): boolean {
 	return !!(
+		f.type ||
+		(f.types && f.types.length) ||
 		(f.tags && f.tags.length) ||
 		(f.categories && f.categories.length) ||
 		(f.target_groups && f.target_groups.length) ||

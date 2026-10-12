@@ -1,6 +1,7 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import {
+  type LucideIcon,
   MapPin,
   Calendar,
   Star,
@@ -15,7 +16,9 @@ import {
   Tag,
   HelpCircle,
 } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
+import { cn } from '@/lib/utils';
+import { Image } from '@/components/ui/Image';
+import { Badge, badgeVariants } from '@/components/ui/badge';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { formatDistance } from '@/lib/formatDistance';
 import { formatNewsTag } from '@/lib/newsTags';
@@ -28,7 +31,7 @@ import { QuietAddToTripButton } from '@/components/trips/QuietAddToTripButton';
 import { CityNetwork } from '@/components/home/subway/CityNetwork';
 import { hasCityNetwork } from '@/components/home/subway/cityNetworkGeometry';
 
-const TYPE_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
+const TYPE_ICONS: Record<string, LucideIcon> = {
   venue: Building2,
   event: CalendarDays,
   marketplace: ShoppingBag,
@@ -173,19 +176,23 @@ function SearchResultCardImpl({
         {result.tags.slice(0, MAX_CARD_TAGS).map((tag) => {
           const active = tagSet.has(tag.toLowerCase());
           return (
-            <Badge
+            <button
               key={tag}
-              variant="outline"
-              className="cursor-pointer gap-1 rounded-badge text-2xs hover:bg-accent"
+              type="button"
+              aria-pressed={active}
+              className={cn(
+                badgeVariants({ variant: 'outline' }),
+                'min-h-8 cursor-pointer gap-1 rounded-badge text-2xs hover:bg-accent',
+              )}
               data-active={active || undefined}
               onClick={(e) => {
                 e.stopPropagation();
-                if (!active) onTagClick(tag);
+                onTagClick(tag);
               }}
             >
               <Tag className="h-2.5 w-2.5" />
               {formatNewsTag(tag)}
-            </Badge>
+            </button>
           );
         })}
       </div>
@@ -200,13 +207,14 @@ function SearchResultCardImpl({
               <CityNetwork slug={result.slug} variant="thumb" className="h-full" />
             </div>
           ) : result.imageUrl ? (
-            <img
+            <Image
               src={result.imageUrl}
               alt=""
-              loading="lazy"
-              decoding="async"
+              aspect="auto"
+              rounded="none"
+              fallbackIcon={TYPE_ICONS[canonicalType] ?? HelpCircle}
               sizes="(max-width: 768px) 100vw, (max-width: 1280px) 33vw, 25vw"
-              className="h-full w-full object-cover"
+              className="h-full w-full"
             />
           ) : (
             <div className="flex h-full w-full items-center justify-center">
@@ -222,7 +230,7 @@ function SearchResultCardImpl({
           {tagChips && <div className="pt-1">{tagChips}</div>}
           <div className="mt-auto flex items-center justify-between pt-2">
             {price ? <span className="text-sm font-semibold">{price}</span> : <span />}
-            <div className="relative z-10 flex items-center gap-2">
+            <div className="relative z-10 flex max-w-full flex-wrap items-center gap-2">
               {ratingEl}
               {tripEntity && <QuietAddToTripButton variant="inline" entity={tripEntity} />}
               <SearchFeedbackButtons
@@ -240,19 +248,20 @@ function SearchResultCardImpl({
 
   // list
   return (
-    <div className="group relative flex cursor-pointer items-center gap-4 rounded-element p-4 transition-colors hover:bg-accent">
+    <div className="group relative grid cursor-pointer grid-cols-[auto_minmax(0,1fr)] items-start gap-4 border-b border-border-hairline py-4 transition-colors hover:bg-accent sm:grid-cols-[auto_minmax(0,1fr)_auto] sm:items-center sm:gap-4 sm:px-4">
       <div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-element bg-muted">
         {showNetwork ? (
           <CityNetwork slug={result.slug} variant="thumb" className="p-1.5" />
         ) : result.imageUrl ? (
-          <img
+          <Image
             src={result.imageUrl}
             alt=""
-            loading="lazy"
-            decoding="async"
-            width={64}
-            height={64}
-            className="h-full w-full object-cover"
+            aspect="square"
+            rounded="none"
+            imageRole="thumb"
+            fallbackIcon={TYPE_ICONS[canonicalType] ?? HelpCircle}
+            sizes="64px"
+            className="h-full w-full"
           />
         ) : (
           <TypeIcon type={result.type} className="h-6 w-6 text-muted-foreground" />
@@ -288,9 +297,9 @@ function SearchResultCardImpl({
         {tagChips}
       </div>
 
-      <div className="flex shrink-0 flex-col items-end gap-2">
+      <div className="col-start-2 flex min-w-0 flex-col items-start gap-2 sm:col-start-3 sm:items-end">
         {price && <span className="text-base font-semibold">{price}</span>}
-        <div className="relative z-10 flex items-center gap-2">
+        <div className="relative z-10 flex max-w-full flex-wrap items-center gap-2">
           {tripEntity && <QuietAddToTripButton variant="inline" entity={tripEntity} />}
           <SearchFeedbackButtons
             entity={{ type: result.type, id: result.objectID }}
