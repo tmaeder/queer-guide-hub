@@ -40,7 +40,7 @@ export const communityGroupsContentType: ContentTypeConfig = {
   defaults: { is_private: false },
   fieldGroupOrder: ['basic', 'details', 'media', 'settings'],
   admin: {
-    requestsRoute: '/admin/content/group-requests',
+    requestsRoute: '/admin/content/community_groups/requests',
     duplicatesRoute: '/admin/duplicates',
     dedup: {
       searchType: 'group',

@@ -26,7 +26,7 @@ function entityTabsFor(type: string | undefined): EntityTab[] | null {
   if (companion.qualityRoute) tabs.push({ label: 'Quality', route: companion.qualityRoute });
   if (companion.duplicatesRoute)
     tabs.push({ label: 'Duplicates', route: companion.duplicatesRoute });
-  if (companion.requestsRoute) tabs.push({ label: 'Requests', route: companion.requestsRoute });
+  if (companion.requestsRoute) tabs.push({ label: 'Join requests', route: companion.requestsRoute });
   return tabs;
 }
 

@@ -34,7 +34,8 @@ export const ADMIN_AREA_DESCRIPTIONS: Record<string, string> = {
   '/admin/content/marketplace_listings':
     'Marketplace products. Edit listings, prices, and affiliate links.',
   '/admin/content/guides': 'Guides. Curate editorial guides, lists, and community quests.',
-  '/admin/content/community_groups': 'Community groups. Edit listings and details.',
+  '/admin/content/community_groups': 'Community groups. Edit listings and review join requests.',
+  '/admin/content/community_groups/requests': 'Group join requests. Approve or reject pending members.',
   '/admin/content/group-requests': 'Group join requests. Approve or reject pending members.',
   '/admin/places-editorial':
     'Editorial drafts. Review LLM-written hooks and covers before publish.',

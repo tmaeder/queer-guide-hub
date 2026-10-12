@@ -261,6 +261,14 @@ describe('getRouteMinRole', () => {
 });
 
 describe('nav and queue role agreement', () => {
+  it('keeps join decisions moderator-only while editors can manage the groups list', () => {
+    expect(getRouteMinRole('/admin/content/community_groups')).toBe('editor');
+    expect(getRouteMinRole('/admin/content/community_groups/requests')).toBe('moderator');
+    expect(getRouteMinRole('/admin/content/group-requests')).toBe('moderator');
+    expect(
+      adminNavSections.flatMap((section) => section.items).some((item) => item.id === 'group-requests'),
+    ).toBe(false);
+  });
   /**
    * A queue you cannot see must not be a page you can open.
    *

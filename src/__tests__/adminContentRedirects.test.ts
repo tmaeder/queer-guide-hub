@@ -25,6 +25,14 @@ function redirects(): Array<{ from: string; to: string }> {
 }
 
 describe('admin content redirects', () => {
+  it('preserves old group-request bookmarks by redirecting into Groups', () => {
+    expect(ROUTES).toMatch(
+      /path="content\/group-requests"\s+element=\{<Navigate to="\/admin\/content\/community_groups\/requests" replace \/>\}/,
+    );
+    expect(ROUTES).toMatch(
+      /path="content\/community_groups\/requests"\s+element=\{<AdminGroupRequests \/>\}/,
+    );
+  });
   it('finds the redirect table', () => {
     expect(redirects().length).toBeGreaterThanOrEqual(8);
   });

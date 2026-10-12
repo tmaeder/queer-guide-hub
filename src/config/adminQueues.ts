@@ -411,7 +411,7 @@ export const ADMIN_QUEUES: readonly AdminQueueDef[] = [
     title: 'Group requests',
     description: 'Pending requests to join a community group.',
     icon: UserPlus,
-    route: '/admin/content/group-requests',
+    route: '/admin/content/community_groups/requests',
     risk: 'safety',
     impact: 'internal',
     weight: 55,

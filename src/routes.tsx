@@ -544,7 +544,14 @@ export const AppRoutes = () => {
                     path="content/village-quality"
                     element={<Navigate to="/admin/quality" replace />}
                   />
-                  <Route path="content/group-requests" element={<AdminGroupRequests />} />
+                  <Route
+                    path="content/community_groups/requests"
+                    element={<AdminGroupRequests />}
+                  />
+                  <Route
+                    path="content/group-requests"
+                    element={<Navigate to="/admin/content/community_groups/requests" replace />}
+                  />
                   {/* Hotel CRUD now lives in the Business console's Hotels tab. */}
                   <Route
                     path="hotels"

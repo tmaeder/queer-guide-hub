@@ -250,7 +250,7 @@ export const ADMIN_ARCHETYPES: AdminArchetypeEntry[] = [
   // registry — dropping them here silently drops their coverage.
   { path: 'inbox', archetype: 'F', title: 'Inbox' },
   { path: 'postfach', archetype: 'F', title: 'Mailbox', adopted: true },
-  { path: 'content/group-requests', archetype: 'F', title: 'Group requests', adopted: true },
+  { path: 'content/community_groups/requests', archetype: 'F', title: 'Groups', adopted: true },
   { path: 'content/liveness', archetype: 'F', title: 'Liveness', adopted: true },
   { path: 'places-editorial', archetype: 'F', title: 'Places editorial', adopted: true },
   {
