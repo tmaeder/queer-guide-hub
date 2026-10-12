@@ -136,11 +136,15 @@ export default function SearchResults() {
     forget: forgetPrefChip,
   } = usePreferenceChips(['budget']);
   const chipPriceRange = priceRangeFromChips(prefChips);
+  const budgetScope =
+    activeScope === 'venue' || activeScope === 'event' || activeScope === 'marketplace';
   const effectiveFilters = useMemo<SearchFilters>(
     () =>
-      chipPriceRange && !filters.priceRange ? { ...filters, priceRange: chipPriceRange } : filters,
+      budgetScope && chipPriceRange && !filters.priceRange
+        ? { ...filters, priceRange: chipPriceRange }
+        : filters,
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [filters, chipPriceRange?.[0], chipPriceRange?.[1]],
+    [filters, budgetScope, chipPriceRange?.[0], chipPriceRange?.[1]],
   );
 
   // Pass identity so the worker personalizes ranking from the profile
@@ -423,11 +427,13 @@ export default function SearchResults() {
 
             <div className="flex flex-wrap items-center justify-between gap-4 py-2">
               <div className="flex min-w-0 flex-1 flex-col gap-2">
-                <PreferenceChips
-                  chips={prefChips}
-                  onToggle={togglePrefChip}
-                  onForget={forgetPrefChip}
-                />
+                {budgetScope && (
+                  <PreferenceChips
+                    chips={prefChips}
+                    onToggle={togglePrefChip}
+                    onForget={forgetPrefChip}
+                  />
+                )}
                 <ActiveFilterChips filters={filters} onFiltersChange={handleFiltersChange} />
               </div>
               <SavedSearchesMenu
