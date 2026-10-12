@@ -25,7 +25,7 @@ const BrandReviewQueue = lazy(() =>
   })),
 );
 import { Button } from '@/components/ui/button';
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 const TABS = ['directory', 'hotels', 'merchants', 'brands', 'partners'] as const;
 type Tab = (typeof TABS)[number];
 
@@ -62,7 +62,11 @@ export default function OrganisationsWorkspace() {
   };
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col">
+    <Tabs
+      value={tab}
+      onValueChange={(v) => setParam('tab', v === 'directory' ? '' : v)}
+      className="flex min-h-0 flex-1 flex-col"
+    >
       {/* No padding: AdminShell's <main> is the ONE owner of admin page spacing
           and already applies the gutter. The px-6 wrappers that used to sit on
           this block and on each tab body were compensating for an AdminEntityTable
@@ -81,11 +85,7 @@ export default function OrganisationsWorkspace() {
           }
         />
 
-        <Tabs
-          value={tab}
-          onValueChange={(v) => setParam('tab', v === 'directory' ? '' : v)}
-          className="mb-6"
-        >
+        <div className="mb-6">
           <TabsList className="max-w-full overflow-x-auto justify-start">
             <TabsTrigger value="directory">Directory</TabsTrigger>
             <TabsTrigger value="hotels">Hotels</TabsTrigger>
@@ -96,34 +96,40 @@ export default function OrganisationsWorkspace() {
             <TabsTrigger value="brands">Brands</TabsTrigger>
             <TabsTrigger value="partners">Partners</TabsTrigger>
           </TabsList>
-        </Tabs>
+        </div>
       </div>
 
       <Suspense fallback={<TrackLoader size={24} label="Loading tools" />}>
         {/* HotelsManager brings its own AdminEntityTable page shell. */}
-        {tab === 'hotels' && <HotelsManager />}
+        <TabsContent value="hotels">
+          <HotelsManager />
+        </TabsContent>
 
-        {tab === 'merchants' && <MerchantsManager />}
+        <TabsContent value="merchants">
+          <MerchantsManager />
+        </TabsContent>
 
-        {tab === 'brands' && (
-          <div>
-            <div className="mb-4 flex justify-end">
-              <Button variant="outline" size="sm" asChild>
-                <Link to="/admin/content/marketplace_brands">Brand registry (raw list)</Link>
-              </Button>
-            </div>
-            <BrandReviewQueue />
+        <TabsContent value="brands">
+          <div className="mb-4 flex justify-end">
+            <Button variant="outline" size="sm" asChild>
+              <Link to="/admin/content/marketplace_brands">Brand registry (raw list)</Link>
+            </Button>
           </div>
-        )}
+          <BrandReviewQueue />
+        </TabsContent>
 
-        {tab === 'partners' && <AffiliatePartnersManager embedded />}
+        <TabsContent value="partners">
+          <AffiliatePartnersManager embedded />
+        </TabsContent>
       </Suspense>
-      <div
+      <TabsContent
+        value="directory"
+        forceMount
         hidden={tab !== 'directory'}
         className={`${tab === 'directory' ? 'flex' : 'hidden'} min-h-0 flex-1 flex-col`}
       >
         <ContentListPanel contentTypeId="organizations" hideHeader />
-      </div>
-    </div>
+      </TabsContent>
+    </Tabs>
   );
 }

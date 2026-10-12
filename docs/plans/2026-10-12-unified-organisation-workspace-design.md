@@ -22,10 +22,14 @@ workspace tabs, relationship failures, filter deep links and navigation access.
 
 ## Validation
 
-Implemented the unified workspace and compatibility redirects. Verified 236
+Implemented the unified workspace and compatibility redirects. Verified 241
 focused list, route, navigation and relationship tests; editor/location suites
 also pass. Type checking reports no new errors against the existing baseline.
 Production build and bundle-shape check pass. Browser preview confirms domain
 search against public Organisation rows and no document overflow at 390px.
 The preview has no authenticated admin session; commercial writes were covered
 with mocked RPC tests, not executed against production.
+
+CI accessibility validation caught missing tab panels in the inherited Business
+tab layout. Added proper labelled panels and five regression cases checking
+the selected tab/panel association.

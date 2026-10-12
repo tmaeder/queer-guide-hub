@@ -77,6 +77,26 @@ describe('Organisation workspace compatibility', () => {
     await waitFor(() => expect(screen.getByTestId('directory')).toBeVisible());
     expect(screen.getByTestId('destination')).toHaveTextContent('?view=saved-123');
   });
+  it.each(['directory', 'hotels', 'merchants', 'brands', 'partners'])(
+    'connects the selected %s tab to a panel',
+    async (tab) => {
+      render(
+        <MemoryRouter initialEntries={[`/admin/content/organizations?tab=${tab}`]}>
+          <Workspace />
+        </MemoryRouter>,
+      );
+      await waitFor(() => {
+        const selected = screen
+          .getAllByRole('tab')
+          .find((node) => node.getAttribute('aria-selected') === 'true');
+        expect(selected).toBeTruthy();
+        const panel = document.getElementById(selected!.getAttribute('aria-controls')!);
+        expect(panel).toHaveAttribute('role', 'tabpanel');
+        expect(panel).toHaveAttribute('aria-labelledby', selected!.id);
+      });
+    },
+  );
+
   it('preserves the Brands ownership action and registry link', async () => {
     render(
       <MemoryRouter initialEntries={['/admin/content/organizations?tab=brands']}>
