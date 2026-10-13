@@ -86,8 +86,12 @@ describe('unified redirects index', () => {
       errors: [],
     };
     show();
-    expect(screen.getByText('Managed at source')).toBeVisible();
-    fireEvent.click(screen.getByRole('button', { name: 'Edit' }));
+    fireEvent.pointerDown(
+      within(screen.getByRole('row', { name: /\/go\/promo/ })).getByRole('button', {
+        name: 'Tools',
+      }),
+    );
+    fireEvent.click(screen.getByRole('menuitem', { name: 'Edit redirect' }));
     expect(mocks.openEditor).toHaveBeenCalledWith('redirects', 'manual');
     fireEvent.click(screen.getByRole('button', { name: 'New Redirect' }));
     expect(mocks.openEditor).toHaveBeenCalledWith('redirects', null);

@@ -16,6 +16,16 @@ import {
 } from '@/components/ui/table';
 import { useRedirectInventory } from '@/hooks/useRedirectInventory';
 import { filterInventory, type InventoryRedirect } from '@/lib/redirects/inventory';
+import { publicSourceUrl } from '@/lib/redirects/linkTools';
+import { RedirectLinkBuilder } from '@/components/admin/redirects/RedirectLinkBuilder';
+import { RedirectQrDialog } from '@/components/admin/redirects/RedirectQrDialog';
+import { RedirectTrackingDialog } from '@/components/admin/redirects/RedirectTrackingDialog';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 
 const PAGE_SIZE = 50;
 const SELECT_CLASS =
@@ -48,6 +58,9 @@ export default function AdminRedirects() {
   const [state, setState] = useState('');
   const [sort, setSort] = useState('updated');
   const [page, setPage] = useState(0);
+  const [linkSeed, setLinkSeed] = useState<{ row: InventoryRedirect | null } | null>(null);
+  const [qrUrl, setQrUrl] = useState<string | null>(null);
+  const [tracking, setTracking] = useState<InventoryRedirect | null>(null);
 
   useEffect(() => {
     const id = searchParams.get('edit');
@@ -103,6 +116,9 @@ export default function AdminRedirects() {
               Refresh
             </Button>
             <RedirectToolbarActions />
+            <Button variant="outline" size="sm" onClick={() => setLinkSeed({ row: null })}>
+              Create tracked link
+            </Button>
             <Button size="sm" onClick={() => openEditor('redirects', null)}>
               <Plus size={14} aria-hidden className="mr-1" />
               New Redirect
@@ -233,6 +249,7 @@ export default function AdminRedirects() {
                 <TableHead>HTTP</TableHead>
                 <TableHead>State</TableHead>
                 <TableHead>Origin</TableHead>
+                <TableHead>Visits</TableHead>
                 <TableHead>Actions</TableHead>
               </TableRow>
             </TableHeader>
@@ -257,24 +274,52 @@ export default function AdminRedirects() {
                     <span className="block whitespace-nowrap">{row.kind}</span>
                     <span className="text-xs text-muted-foreground">{row.origin}</span>
                   </TableCell>
-                  <TableCell>
+                  <TableCell className="tabular-nums">
                     {row.manualId ? (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => openEditor('redirects', row.manualId!)}
-                      >
-                        Edit
-                      </Button>
+                      (row.clicks ?? 0).toLocaleString()
                     ) : (
-                      <span className="text-xs text-muted-foreground">Managed at source</span>
+                      <span className="text-xs text-muted-foreground">Not tracked</span>
                     )}
+                  </TableCell>
+                  <TableCell>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="sm">
+                          Tools
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem onSelect={() => setLinkSeed({ row })}>
+                          Create tracked link
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          disabled={!publicSourceUrl(row.source)}
+                          onSelect={() => setQrUrl(publicSourceUrl(row.source))}
+                        >
+                          QR code
+                        </DropdownMenuItem>
+                        {row.manualId ? (
+                          <>
+                            <DropdownMenuItem onSelect={() => setTracking(row)}>
+                              Visit tracking
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                              onSelect={() => openEditor('redirects', row.manualId!)}
+                            >
+                              Edit redirect
+                            </DropdownMenuItem>
+                          </>
+                        ) : (
+                          <DropdownMenuItem disabled>Managed at source</DropdownMenuItem>
+                        )}
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   </TableCell>
                 </TableRow>
               ))}
               {!visible.length && (
                 <TableRow>
-                  <TableCell colSpan={6} className="py-12 text-center text-muted-foreground">
+                  <TableCell colSpan={7} className="py-12 text-center text-muted-foreground">
                     {rows?.length
                       ? 'No redirects match these filters.'
                       : partial
@@ -321,6 +366,9 @@ export default function AdminRedirects() {
           </div>
         </>
       )}
+      {linkSeed && <RedirectLinkBuilder seed={linkSeed.row} onClose={() => setLinkSeed(null)} />}
+      {qrUrl && <RedirectQrDialog url={qrUrl} onClose={() => setQrUrl(null)} />}
+      {tracking && <RedirectTrackingDialog row={tracking} onClose={() => setTracking(null)} />}
     </div>
   );
 }

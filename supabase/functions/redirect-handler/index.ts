@@ -103,27 +103,14 @@ function mergeQuery(
   overrides: Record<string, string> | null,
   utmDefaults: Record<string, string> | null,
 ): string {
-  let basePath: string;
-  let targetParams: URLSearchParams;
-
-  if (targetUrl.startsWith("http")) {
-    const url = new URL(targetUrl);
-    basePath = url.origin + url.pathname;
-    targetParams = url.searchParams;
-  } else {
-    const qIdx = targetUrl.indexOf("?");
-    if (qIdx >= 0) {
-      basePath = targetUrl.substring(0, qIdx);
-      targetParams = new URLSearchParams(targetUrl.substring(qIdx + 1));
-    } else {
-      basePath = targetUrl;
-      targetParams = new URLSearchParams();
-    }
-  }
+  const parsed = new URL(targetUrl, "https://queer.guide");
+  const basePath = targetUrl.startsWith("http") ? parsed.origin + parsed.pathname : parsed.pathname;
+  const targetParams = parsed.searchParams;
+  const fragment = parsed.hash;
 
   if (mode === "DROP") {
     const qs = targetParams.toString();
-    return qs ? `${basePath}?${qs}` : basePath;
+    return (qs ? `${basePath}?${qs}` : basePath) + fragment;
   }
 
   const merged = new URLSearchParams(targetParams);
@@ -154,7 +141,7 @@ function mergeQuery(
   }
 
   const qs = merged.toString();
-  return qs ? `${basePath}?${qs}` : basePath;
+  return (qs ? `${basePath}?${qs}` : basePath) + fragment;
 }
 
 async function hashIp(ip: string): Promise<string> {
@@ -265,6 +252,13 @@ async function handleRedirect(
   let locationUrl = finalUrl;
   if (finalUrl.startsWith("/")) {
     locationUrl = `https://queer.guide${finalUrl}`;
+  }
+
+  // Link checkers and admin previews must resolve without consuming a visit or limit.
+  if (req.method === "HEAD") {
+    return new Response(null, { status: redirect.status_code, headers: {
+      "Location": locationUrl, "Cache-Control": "no-cache, no-store", "X-Robots-Tag": "noindex",
+    } });
   }
 
   // Record click — must await so Deno runtime doesn't exit before it completes

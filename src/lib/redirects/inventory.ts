@@ -1,4 +1,7 @@
 export interface InventoryRedirect {
+  clicks?: number;
+  campaign?: Record<string, string>;
+  prefill?: Record<string, string>;
   id: string;
   source: string;
   target: string | null;
@@ -127,6 +130,34 @@ function automatic(
 }
 
 export function manualRedirect(row: Row, now = Date.now()): InventoryRedirect {
+  const campaign: Record<string, string> = {};
+  try {
+    const target = new URL(String(row.target), 'https://queer.guide');
+    for (const key of ['utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content']) {
+      const value = target.searchParams.get(key);
+      if (value) campaign[key] = value;
+    }
+  } catch {
+    /* Invalid stored destinations remain visible in the inventory. */
+  }
+  if (row.utm_defaults && typeof row.utm_defaults === 'object') {
+    for (const [key, value] of Object.entries(row.utm_defaults))
+      if (typeof value === 'string' && !campaign[key]) campaign[key] = value;
+  }
+  if (
+    row.query_mode === 'OVERRIDE' &&
+    row.query_override &&
+    typeof row.query_override === 'object'
+  ) {
+    for (const [key, value] of Object.entries(row.query_override)) {
+      if (
+        key in campaign ||
+        ['utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content'].includes(key)
+      ) {
+        if (typeof value === 'string') campaign[key] = value;
+      }
+    }
+  }
   let state: InventoryRedirect['state'] = row.is_enabled ? 'Enabled' : 'Disabled';
   if (state === 'Enabled' && row.start_at && Date.parse(String(row.start_at)) > now)
     state = 'Scheduled';
@@ -140,6 +171,20 @@ export function manualRedirect(row: Row, now = Date.now()): InventoryRedirect {
   return {
     id: `redirects:${row.id}`,
     manualId: String(row.id),
+    clicks: Number(row.click_count ?? 0),
+    campaign,
+    prefill:
+      row.query_mode === 'OVERRIDE' && row.query_override && typeof row.query_override === 'object'
+        ? Object.fromEntries(
+            Object.entries(row.query_override).filter(
+              (entry): entry is [string, string] =>
+                typeof entry[1] === 'string' &&
+                !['utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content'].includes(
+                  entry[0],
+                ),
+            ),
+          )
+        : {},
     origin: 'redirects',
     kind: 'Manual',
     source: row.type === 'SHORT' ? `/go/${row.slug}` : String(row.source_path ?? ''),
@@ -201,7 +246,7 @@ export async function loadDatabaseInventory(read: ReadInventoryRows) {
         (
           await read(
             'redirects',
-            'id,type,slug,source_path,target,status_code,is_enabled,start_at,end_at,click_limit,click_count,updated_at',
+            'id,type,slug,source_path,target,status_code,is_enabled,start_at,end_at,click_limit,click_count,utm_defaults,query_mode,query_override,updated_at',
             'id',
           )
         ).map((r) => manualRedirect(r)),
