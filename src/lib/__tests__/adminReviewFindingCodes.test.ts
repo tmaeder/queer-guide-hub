@@ -317,3 +317,66 @@ describe('the admin review summary shares the page scope', () => {
     expect(afterTypes).not.toMatch(/scope:\s*'all'/);
   });
 });
+
+/**
+ * The follow-up pass that reclassified three derived city roll-ups as findings.
+ *
+ * Asserted over COMMENT-STRIPPED sql: that migration's header quotes every code it registers AND
+ * every code it deliberately leaves as a decision, so an unstripped `toContain` passes with the
+ * statement deleted.
+ */
+describe('99991791887070 — city roll-ups are findings, and the mirror set is not', () => {
+  const NAME = '99991791887070_city_rollup_findings';
+  const raw = (() => {
+    const f = readdirSync(MIG_DIR).find((x) => x.startsWith(NAME));
+    if (!f) throw new Error(`migration ${NAME} not found -- renumbered without updating me?`);
+    return readFileSync(join(MIG_DIR, f), 'utf8');
+  })();
+  const sql = stripComments(raw);
+
+  it('registers exactly the three derived roll-ups', () => {
+    for (const code of [
+      'CITY_IDENTITY_AMBIGUOUS',
+      'CITY_CATEGORY_UNCLASSIFIED',
+      'CITY_LINK_UNRESOLVED',
+    ])
+      expect(sql).toContain(`'general-review', '${code}'`);
+    // Positive control: the insert exists at all, so the three checks above are not vacuous.
+    expect(sql).toMatch(/insert into public\.admin_review_finding_codes/);
+    // Exactly three rows are registered -- a fourth would be an unreviewed reclassification.
+    expect((sql.match(/\('general-review', '/g) ?? []).length).toBe(3);
+  });
+
+  it('leaves the codes a human can genuinely decide alone, and asserts it', () => {
+    // NAMED_VENUE_UNLINKED is the largest remaining block and must NOT be registered: a human can
+    // answer the namesake question the linker refuses by design.
+    expect(sql).not.toMatch(/'general-review', 'NAMED_VENUE_UNLINKED'/);
+    expect(sql).not.toMatch(/'event-quality', 'NAMED_VENUE_UNLINKED'/);
+    expect(sql).not.toMatch(/'general-review', 'CITY_LIFECYCLE_UNRESOLVED'/);
+    // P3 is the mirror postcondition: it must name the decision codes and RAISE on them.
+    expect(sql).toMatch(/P3 failed[\s\S]{0,160}remain decisions/);
+    for (const keep of [
+      'NAMED_VENUE_UNLINKED',
+      'city lifecycle unresolved',
+      'city image reused',
+      'venue link candidate',
+    ])
+      expect(sql).toContain(`('${keep}')`);
+  });
+
+  it('pins no count, because the corpus moves between measuring and applying', () => {
+    const stmts = sql.slice(0, sql.indexOf('$verify$'));
+    // A postcondition asserting a total fails on correct code the next time ingest adds a city.
+    expect(sql).not.toMatch(/<>\s*12063|<>\s*6484|<>\s*6483|<>\s*320/);
+    expect(stmts).not.toMatch(/\b(12063|6484|6483)\b/);
+  });
+
+  it('guards the partition and refuses a degenerate split', () => {
+    expect(sql).toMatch(/decisions_total'\)::bigint \+ \(v_res->>'findings_total'\)::bigint/);
+    expect(sql).toMatch(
+      /findings_total'\)::bigint <= 0 or[\s\S]{0,80}decisions_total'\)::bigint <= 0/,
+    );
+    // Every postcondition must actually raise, not merely compute.
+    expect((sql.match(/raise exception 'P[0-9]/g) ?? []).length).toBeGreaterThanOrEqual(5);
+  });
+});
