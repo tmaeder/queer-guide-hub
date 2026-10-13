@@ -218,3 +218,76 @@ describe('the health section is wired before the exit gate', () => {
     expect(sec).toMatch(/cohort > 0[\s\S]{0,400}console\.warn/);
   });
 });
+
+describe('the invariant window starts at the gate, not two days before it', () => {
+  const FOLLOWUP = '99991791906577_city_publication_window_since_gate';
+
+  function followupSql(): string {
+    const file = readdirSync(MIG_DIR).find((f) => f.startsWith(FOLLOWUP));
+    if (!file)
+      throw new Error(`migration ${FOLLOWUP} not found -- renumbered without updating me?`);
+    return stripComments(readFileSync(join(MIG_DIR, file), 'utf8'));
+  }
+
+  const F = followupSql();
+  const FN = F.slice(F.indexOf('create or replace function'), F.indexOf('$verify$'));
+
+  it('bounds the window below by the gate and above by a rolling two days', () => {
+    // Both halves. Without the lower bound this counts rows the gate could not have governed --
+    // 2,679 of them on the day it shipped, which would have hard-failed the first scheduled run.
+    // Without the upper bound it becomes an all-time counter that can never return to zero, which
+    // is the advisory shape cohort_total already occupies.
+    expect(FN).toMatch(/greatest\(now\(\) - interval '2 days', g\.since\)/);
+    expect(FN).toMatch(/to_timestamp\(substr\('99991791903202', 5\)::bigint\)/);
+  });
+
+  it('derives the moment from the version rather than pinning a date literal', () => {
+    // The repo's versions are 9999 + ten digits of Unix epoch seconds, so the version IS the
+    // timestamp. Written as the derivation so a reader can check it instead of trusting it.
+    expect(FN).not.toMatch(/'2026-10-13/);
+    expect(FN).not.toMatch(/to_timestamp\(1791903202\)/);
+  });
+
+  it('reports the window alongside the count', () => {
+    // A count without its window cannot be read: a clean gate and a gate narrowed to nothing give
+    // the same zero.
+    expect(FN).toContain("'gate_since'");
+    const iSince = FN.indexOf("'gate_since'");
+    const iBad = FN.indexOf("'published_without_identity_recent'");
+    expect(iSince).toBeGreaterThan(-1);
+    expect(iBad).toBeGreaterThan(iSince);
+  });
+
+  it('asserts the bound BEHAVIOURALLY, not only as source text', () => {
+    // A source check cannot tell a live bound from a dead one. P3 looks for an actual pre-gate row
+    // inside the window.
+    expect(F).toMatch(/raise exception 'P3 failed: the window still reaches back past the gate'/);
+    expect(F).toMatch(/created_at < to_timestamp\(substr\('99991791903202', 5\)::bigint\)/);
+    // ...and the mirror, so the fix cannot become a way to report nothing.
+    expect(F).toMatch(/raise exception 'P4 failed: the rolling 2-day ceiling is gone/);
+  });
+
+  it('restates and re-asserts the grants, in both directions', () => {
+    // CREATE OR REPLACE preserves privileges, so the restatement is belt-and-braces -- but the
+    // assertion is what catches a later rewrite that widens them.
+    expect(F).toMatch(
+      /revoke all on function public\.city_publication_signals\(\) from anon, authenticated;/,
+    );
+    expect(F).toMatch(
+      /grant execute on function public\.city_publication_signals\(\) to service_role;/,
+    );
+    expect(F).not.toMatch(/to service_role\s*,/);
+    expect(F).toMatch(/raise exception 'P5 failed: city_publication_signals is reachable by anon/);
+    expect(F).toMatch(/raise exception 'P5 failed: service_role lost execute/);
+  });
+
+  it('prints the window in the health section rather than keeping it in the RPC', () => {
+    const H = readFileSync(HEALTH, 'utf8');
+    const sec = H.slice(H.indexOf('city_publication_signals'), H.lastIndexOf('if (FAILED) {'));
+    expect(sec).toMatch(/cp\.gate_since/);
+    // Every one of the three readings names the window; a bare "in the last 2 days" line would
+    // now be a false statement about what was counted.
+    expect((sec.match(/\$\{since\}/g) ?? []).length).toBeGreaterThanOrEqual(3);
+    expect(sec).not.toMatch(/in the last 2 days/);
+  });
+});

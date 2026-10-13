@@ -5380,16 +5380,21 @@ const DISOWNED_PROSE_CEILING = 380
       const bad = Number(cp.published_without_identity_recent ?? 0)
       const withId = Number(cp.created_recent_with_identity ?? 0)
       const cohort = Number(cp.cohort_total ?? 0)
+      // The window, printed with every reading. 99991791906577 anchored its lower bound at the
+      // gate's own install moment, because the original rolling 2 days STRADDLED the deploy and
+      // counted 2,679 rows created before the gate existed -- this section's first scheduled run
+      // would have hard-failed on rows the gate could not have governed.
+      const since = cp.gate_since ? String(cp.gate_since) : '(window not reported)'
       if (made === 0) {
         // Not a pass and not a failure: there is nothing to have gated.
         console.warn(
-          '⚠ no city has been created in the last 2 days, so the publication gate is UNTESTED. ' +
-            'A zero here is absence of evidence, not evidence of a working gate.',
+          `⚠ no city has been created since the gate landed (${since}), so the publication gate is ` +
+            'UNTESTED. A zero here is absence of evidence, not evidence of a working gate.',
         )
       } else if (bad > 0) {
         console.error(
           `✗ city_publication_signals.published_without_identity_recent = ${bad} of ${made} ` +
-            'cities created in the last 2 days — a city was published with neither a wikidata_qid ' +
+            `cities created since ${since} — a city was published with neither a wikidata_qid ` +
             'nor a wikipedia_title',
         )
         console.error(
@@ -5402,7 +5407,7 @@ const DISOWNED_PROSE_CEILING = 380
         FAILED = true
       } else {
         console.log(
-          `✓ city publication gate: ${made} cities created in the last 2 days, ${withId} with an ` +
+          `✓ city publication gate: ${made} cities created since ${since}, ${withId} with an ` +
             `external identifier, 0 published without one`,
         )
         // Advisory only, and deliberately so — see the note above.
