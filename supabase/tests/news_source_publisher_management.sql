@@ -1,5 +1,8 @@
 -- Regression assertions. Load fixture and both source-management migrations in an isolated DB.
 begin;
+-- Match the legacy table privileges when using the minimal isolated fixture.
+grant select,insert,update,delete on public.news_sources to authenticated;
+grant select on public.organizations to authenticated;
 do $$
 declare org uuid; wrong_org uuid; archived_org uuid; merged_org uuid; source uuid; row_data jsonb; form jsonb; stamp timestamptz; options jsonb;
 begin
@@ -36,6 +39,7 @@ begin
  assert row_data->>'status'='draft' and row_data->'roles' @> '["publisher"]'::jsonb,'New publishers are drafts';
  begin perform public.admin_news_source_create_publisher('Publisher One',''); raise exception 'Duplicate identity accepted'; exception when unique_violation then null; end;
  begin perform public.admin_news_source_create_publisher('Different Name','https://example.com'); raise exception 'Duplicate domain accepted'; exception when unique_violation then null; end;
+ update public.news_sources set organization_id=org where id=source;
 end $$;
 insert into public.news_sources(name,url) select 'Paginated '||i,'https://pagination.example/'||i from generate_series(1,55) i;
 do $$ begin
@@ -56,11 +60,19 @@ begin
  begin perform public.admin_news_source_publishers(); raise exception 'Moderator publisher access accepted'; exception when insufficient_privilege then null; end;
  begin perform public.admin_news_source_create_publisher('Unauthorized',''); raise exception 'Moderator write accepted'; exception when insufficient_privilege then null; end;
  begin perform public.admin_news_source_delete(target,(s->>'updated_at')::timestamptz,54); raise exception 'Stale cascade preview accepted'; exception when serialization_failure then null; end;
+ begin update public.news_sources set organization_id=null where id=target; raise exception 'Direct moderator unlink accepted'; exception when insufficient_privilege then null; end;
+ begin insert into public.news_sources(name,url,organization_id) select 'Bypass source','https://bypass.example',organization_id from public.news_sources where id=target; raise exception 'Direct moderator linking accepted'; exception when insufficient_privilege then null; end;
+ update public.news_sources set name='Direct moderator feed edit' where id=target;
+ assert (select name='Direct moderator feed edit' from public.news_sources where id=target),'Direct staff feed edits retained';
+ s:=public.admin_news_sources_browse('Direct moderator feed edit')->'rows'->0;
  assert public.admin_news_source_delete(target,(s->>'updated_at')::timestamptz,55)=target,'Staff deletion uses the reviewed count';
 
 end $$;
 select set_config('request.jwt.claims','{"role":"authenticated","user_role":"admin"}',true);
 select public.admin_news_sources_browse('Paginated','all',null,false,0)->>'total' as admin_total;
+do $$ begin
+ begin insert into public.news_sources(name,url,organization_id) select 'Invalid publisher','https://wrong-link.example',id from public.organizations where name='Venue One'; raise exception 'Direct nonpublisher link accepted'; exception when invalid_parameter_value then null; end;
+end $$;
 reset role;
 do $$ begin
  assert not has_function_privilege('anon','public.admin_news_source_save(uuid,jsonb,timestamptz)','execute'), 'No anonymous writes';
