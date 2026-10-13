@@ -1,6 +1,6 @@
 begin;
 do $$
-declare paris uuid; reunion uuid; france uuid; us uuid; ev uuid; foreign_venue uuid; got uuid; blocked boolean;
+declare paris uuid; reunion uuid; france uuid; us uuid; ev uuid; foreign_venue uuid; complete_venue uuid; got uuid; blocked boolean;
 begin
  select c.id,c.country_id into paris,france from cities c join countries co on co.id=c.country_id
  where c.wikidata_qid='Q160506' and co.code='FR' and c.duplicate_of_id is null;
@@ -40,6 +40,19 @@ begin
    and (latitude is not null or longitude is not null))<>0 then raise exception 'Retracted false map pins reappeared'; end if;
  if (select pg_get_functiondef('public.run_event_geo_fill(integer,boolean)'::regprocedure))
    not like '%retracted_wrong_city_centroid%' then raise exception 'Event geo fill may restore false map pins'; end if;
+ select v.id into complete_venue from venues v join entity_location_jobs j
+   on j.entity_table='venues' and j.entity_id=v.id
+ where v.duplicate_of_id is null and v.city_id is not null and v.country_id is not null
+   and nullif(btrim(v.postal_code),'') is not null and v.latitude is not null
+   and v.longitude is not null and nullif(btrim(v.timezone),'') is not null limit 1;
+ if complete_venue is null then raise exception 'Complete venue job fixture absent'; end if;
+ update entity_location_jobs set status='no_match',last_error='old result'
+   where entity_table='venues' and entity_id=complete_venue;
+ update venues set postal_code=postal_code where id=complete_venue;
+ if not exists(select 1 from entity_location_jobs j join venues v on v.id=j.entity_id
+   where j.entity_table='venues' and j.entity_id=complete_venue and j.status='done'
+     and j.last_error is null and j.fingerprint=entity_location_fingerprint(to_jsonb(v)))
+   then raise exception 'Complete venue retained stale no_match job'; end if;
 end $$;
 rollback;
-select 'namesake resolver, explicit country, coordinate conflict and overseas regression tests passed' result;
+select 'namesake resolver, country and coordinate guards, and complete-job reconciliation passed' result;
