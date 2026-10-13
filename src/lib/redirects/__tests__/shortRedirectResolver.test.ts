@@ -15,7 +15,7 @@ describe('short-link visit recording', () => {
       compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.ESNext },
     }).outputText;
     let handler: ((request: Request) => Promise<Response>) | undefined;
-    const rpc = vi.fn(async (name: string) => ({
+    const rpc = vi.fn(async (name: string, _args?: Record<string, unknown>) => ({
       error: null,
       data:
         name === 'resolve_short_redirect'
@@ -44,7 +44,7 @@ describe('short-link visit recording', () => {
     const head = await handler!(
       new Request(
         'https://fixture.supabase.co/functions/v1/redirect-handler?slug=pride-qr&q=utm_source%3Dqr',
-        { method: 'HEAD' },
+        { method: 'HEAD', headers: { 'x-qg-visitor-country': 'CH', 'cf-ipcountry': 'US' } },
       ),
     );
     expect(head.status).toBe(302);
@@ -55,9 +55,13 @@ describe('short-link visit recording', () => {
     const get = await handler!(
       new Request(
         'https://fixture.supabase.co/functions/v1/redirect-handler?slug=pride-qr&q=utm_source%3Dqr',
+        { headers: { 'x-qg-visitor-country': 'CH', 'cf-ipcountry': 'US' } },
       ),
     );
     expect(get.status).toBe(302);
     expect(rpc.mock.calls.filter(([name]) => name === 'record_redirect_click')).toHaveLength(1);
+    expect(rpc.mock.calls.find(([name]) => name === 'record_redirect_click')?.[1]?.p_country).toBe(
+      'CH',
+    );
   });
 });

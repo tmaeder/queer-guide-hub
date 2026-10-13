@@ -33,6 +33,7 @@ describe('branded tracked URL', () => {
     expect(url.searchParams.get('q')).toBe('utm_source=qr&name=A%26B');
     expect(options.redirect).toBe('manual');
     expect(new Headers(options.headers).get('cf-ipcountry')).toBe('CH');
+    expect(new Headers(options.headers).get('x-qg-visitor-country')).toBe('CH');
   });
   it('forwards HEAD as HEAD rather than generating a GET visit', async () => {
     const fetcher = vi.fn(

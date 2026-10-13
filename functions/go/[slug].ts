@@ -25,6 +25,12 @@ export const onRequest: PagesFunction<Env> = async ({ request, params, env }) =>
     const value = request.headers.get(name);
     if (value) forwarded.set(name, value);
   }
+  // The resolver's CDN can replace cf-ipcountry with the relay's country.
+  const country =
+    typeof request.cf?.country === 'string'
+      ? request.cf.country
+      : request.headers.get('cf-ipcountry');
+  if (country) forwarded.set('x-qg-visitor-country', country);
   try {
     const response = await fetch(resolver, {
       method: request.method,

@@ -277,7 +277,7 @@ async function handleRedirect(
       p_query: incomingQuery,
       p_referer: req.headers.get("referer"),
       p_user_agent: req.headers.get("user-agent")?.substring(0, 256),
-      p_country: req.headers.get("cf-ipcountry"),
+      p_country: req.headers.get("x-qg-visitor-country") || req.headers.get("cf-ipcountry"),
       p_ip_hash: ipHash,
       p_status: redirect.status_code,
     });
