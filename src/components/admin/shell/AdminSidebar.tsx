@@ -136,7 +136,9 @@ export function AdminSidebar() {
   const itemCount = (item: AdminNavItem) => {
     if (item.id === 'overview')
       return {
-        count: review.data?.all_total,
+        // decisions_total, not all_total: the latter also counts machine detector findings
+        // ("this field is empty"), which would badge the nav with 335k instead of 54k.
+        count: review.data?.decisions_total,
         overdue: review.data?.overdue_total ?? 0,
         hasCount: true,
       };

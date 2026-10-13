@@ -38,6 +38,7 @@ import { fetchPageText } from '../_shared/enrich-harness.ts'
 import { cityNameCandidates } from '../_shared/city-name-normalize.ts'
 import { cityWikiVerdict, regionQualifiedTitle } from '../_shared/city-wiki-guard.ts'
 import { loadReviewQueueGuard } from '../_shared/review-queue-guard.ts'
+import { isSelfQuote } from '../_shared/city-self-quote.ts'
 
 // The fields this composer review-gates. `safety_notes` is deliberately absent — it is
 // composed deterministically by compose_safety_note() and is not an LLM proposal.
@@ -385,11 +386,12 @@ Deno.serve(async (req: Request) => {
       // judgement call. Dropping it means a rating whose ONLY support is our own
       // number is not produced at all, which is the correct outcome: the country
       // score is already published on the country page and needs no city row.
-      const selfQuote = (x: { quote?: unknown }) => {
-        const q = String(x?.quote ?? '').trim()
-        if (!q) return false
-        return (!!safetyContext && q === safetyContext.trim()) || /equality_score=/.test(q)
-      }
+      //
+      // The prose-restatement half of this test — and the measurements behind it —
+      // live in `_shared/city-self-quote.ts` so they can be unit-tested; the comment
+      // above states why the `=` spelling alone is no longer sufficient.
+      const selfQuote = (x: { quote?: unknown }) =>
+        isSelfQuote(x, co?.equality_score ?? null, safetyContext)
       const citeFor = (...names: string[]) =>
         citations.filter(x => names.includes(String(x?.field ?? '')) && !selfQuote(x))
       const ratingCite = citeFor('lgbt_friendly_rating', 'rating')

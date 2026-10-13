@@ -5322,6 +5322,107 @@ const DISOWNED_PROSE_CEILING = 380
   }
 }
 
+// ---------------------------------------------------------------------------
+// §  A city is published when something OUTSIDE this database agrees it exists
+//     (2026-10-13, 99991791903202)
+// ---------------------------------------------------------------------------
+//
+//     `cities.seo_indexable` carries `DEFAULT true` and `city_resolve_or_create`
+//     -- every city creator's only door -- did not mention the column at all, so
+//     the publication decision for a city nobody had ever corroborated was made
+//     by a DDL default. Measured the day this shipped: 13,125 cities created in
+//     30 days by the venue geocoder, 33 of them with an external identifier,
+//     12,955 of them indexable; and 12,893 of the whole 13,611-row cohort were
+//     created in the preceding SEVEN days. A burst, not an old backlog.
+//
+//     THE DENOMINATORS ARE READ FIRST, AND THAT IS NOT DECORATION.
+//     `published_without_identity_recent` reading 0 is equally true of a working
+//     gate, of a geocoder that has stopped creating cities at all, and of a
+//     probe that cannot see the column. Only `created_recent` separates them, so
+//     a zero over an empty denominator is reported as untested rather than
+//     clean -- the `would_merge: 0` lesson, one engine over.
+//
+//     `cohort_total` NEVER GATES. It is the standing disposition backlog, it can
+//     only fall by hand or as `city_qid_gap_link` works through it, and gating
+//     on a level that cannot be driven to zero by this change ships red on
+//     arrival and gets scrolled past.
+{
+  const res = await fetch(`${BASE}/rest/v1/rpc/city_publication_signals`, {
+    method: 'POST',
+    headers: { ...headers, 'Content-Type': 'application/json' },
+    body: '{}',
+  })
+  if (!res.ok) {
+    const detail = (await res.text()).slice(0, 200)
+    console.error(
+      `✗ city_publication_signals → HTTP ${res.status} (migration 99991791903202 not applied? ` +
+        `PGRST202 = the function does not exist) ${detail}`,
+    )
+    FAILED = true
+  } else {
+    const cp = (await res.json()) ?? {}
+    if (cp.probe_ok !== true) {
+      console.error(
+        `✗ city_publication_signals did not report probe_ok — the sentinel itself is broken${cp.error ? `: ${cp.error}` : ''}`,
+      )
+      FAILED = true
+    } else if (cp.resolver_sets_seo_indexable !== true) {
+      // Checked BEFORE the count, because without the gate on the function the
+      // count below is not a measurement of a gate — it is a measurement of
+      // whatever the geocoder happened to create today.
+      console.error(
+        '✗ city_resolve_or_create no longer sets seo_indexable from the identifier — the gate was ' +
+          'dropped by a CREATE OR REPLACE, so every new city publishes on a DDL default again',
+      )
+      FAILED = true
+    } else {
+      const made = Number(cp.created_recent ?? 0)
+      const bad = Number(cp.published_without_identity_recent ?? 0)
+      const withId = Number(cp.created_recent_with_identity ?? 0)
+      const cohort = Number(cp.cohort_total ?? 0)
+      // The window, printed with every reading. 99991791906577 anchored its lower bound at the
+      // gate's own install moment, because the original rolling 2 days STRADDLED the deploy and
+      // counted 2,679 rows created before the gate existed -- this section's first scheduled run
+      // would have hard-failed on rows the gate could not have governed.
+      const since = cp.gate_since ? String(cp.gate_since) : '(window not reported)'
+      if (made === 0) {
+        // Not a pass and not a failure: there is nothing to have gated.
+        console.warn(
+          `⚠ no city has been created since the gate landed (${since}), so the publication gate is ` +
+            'UNTESTED. A zero here is absence of evidence, not evidence of a working gate.',
+        )
+      } else if (bad > 0) {
+        console.error(
+          `✗ city_publication_signals.published_without_identity_recent = ${bad} of ${made} ` +
+            `cities created since ${since} — a city was published with neither a wikidata_qid ` +
+            'nor a wikipedia_title',
+        )
+        console.error(
+          '  The gate is on city_resolve_or_create, so a non-zero means a DIFFERENT writer set ' +
+            'seo_indexable after creation. The known one is run_city_trust_recompute, whose ' +
+            "ghost-restore arm republishes a row that was empty at a nightly pass and later " +
+            'gained content; anything else is a new writer. Find it in content_revisions before ' +
+            'changing this gate.',
+        )
+        FAILED = true
+      } else {
+        console.log(
+          `✓ city publication gate: ${made} cities created since ${since}, ${withId} with an ` +
+            `external identifier, 0 published without one`,
+        )
+        // Advisory only, and deliberately so — see the note above.
+        if (cohort > 0) {
+          console.warn(
+            `⚠ ${cohort} indexable cities still carry no external identifier. This is the standing ` +
+              'backlog the gate stops GROWING; it falls as city_qid_gap_link resolves them, and it ' +
+              'is not a regression in this change.',
+          )
+        }
+      }
+    }
+  }
+}
+
 if (FAILED) {
   console.error('')
   console.error('✗ Pipeline health check FAILED — every section above ran; each ✗ line is a separate problem')

@@ -100,9 +100,26 @@ describe('city-agentic-enrich citation scoping', () => {
   // --- (3) our own injected context is not evidence ------------------------
   it('refuses a citation that quotes our own safetyContext', () => {
     expect(code).toContain('const selfQuote');
-    expect(code).toMatch(/equality_score=/);
     // The filter must actually be applied, not merely defined.
     expect(code).toMatch(/!selfQuote\(x\)/);
+  });
+
+  it('delegates the self-quote test to the shared, unit-tested module', () => {
+    // 2026-10-13: the body of this test moved into `_shared/city-self-quote.ts`
+    // so the prose-restatement arms could be unit- and mutation-tested, which is
+    // not possible inside a Deno edge function this large.
+    //
+    // THIS ASSERTION REPLACES A `toMatch(/equality_score=/)` ON THIS FILE, which
+    // after the extraction passed for the WRONG REASON: the spelling it looked for
+    // is also present in the `safetyContext = ...` construction asserted in the
+    // next test, so it kept matching while the guard it was written for had left
+    // the file entirely. A presence check whose needle appears twice stops being a
+    // check the moment one occurrence moves.
+    expect(code).toMatch(/import \{ isSelfQuote \} from '\.\.\/_shared\/city-self-quote\.ts'/);
+    // ...and the delegation must pass BOTH inputs the guard needs. Without the
+    // score it silently degrades to the pre-2026-10-13 behaviour (the `=` spelling
+    // only), which is the exact hole this was widened to close.
+    expect(code).toMatch(/isSelfQuote\(x, co\?\.equality_score \?\? null, safetyContext\)/);
   });
 
   it('builds safetyContext from our own equality_score, which is why (3) is detectable', () => {

@@ -65,7 +65,7 @@ export function MoreSupportBand({ orgs }: { orgs: SupportOrg[] }) {
                         <img
                           src={org.logo_url}
                           alt=""
-                          className="absolute inset-0 h-full w-full bg-background object-contain"
+                          className="absolute inset-0 h-full w-full rounded-badge bg-background object-contain"
                           onError={(event) => {
                             event.currentTarget.hidden = true;
                           }}

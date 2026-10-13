@@ -4,11 +4,18 @@ const authenticated = Boolean(
 );
 test.describe('unified admin review queue', () => {
   test.skip(!authenticated, 'Requires the configured admin session');
-  test('the unfiltered queue renders the full registered source contract', async ({ page }) => {
+  // The landing scope is 'decisions' since 99991791872772: all_total also counts ~281k machine
+  // detector findings ("this field is empty") on which no human decision exists, so the default
+  // list used to lead with them. The union itself is built BEFORE the scope filter, so every
+  // registered view still executes on this request -- the plan-time UNION type mismatch that took
+  // this page down for six weeks is caught here exactly as before. What moved is only which rows
+  // survive into `filtered`, which is why `total` is compared against decisions_total here and
+  // against all_total in the scope=all test below. Both contracts are asserted, neither dropped.
+  test('the landing queue renders the full registered source contract', async ({ page }) => {
     const responsePromise = page.waitForResponse(
       (r) =>
         r.url().includes('/rpc/get_admin_review_queue') &&
-        r.request().postDataJSON()?.p_scope === 'all',
+        r.request().postDataJSON()?.p_scope === 'decisions',
     );
     await page.goto('/admin');
     await expect(page.getByRole('heading', { name: 'Review queue', exact: true })).toBeVisible();
@@ -19,7 +26,13 @@ test.describe('unified admin review queue', () => {
     expect(data.sources.reduce((sum: number, s: { count: number }) => sum + s.count, 0)).toBe(
       data.all_total,
     );
-    expect(data.total).toBe(data.all_total);
+    // The two populations must partition the queue, or rows are counted twice or not at all.
+    expect(data.decisions_total + data.findings_total).toBe(data.all_total);
+    expect(data.total).toBe(data.decisions_total);
+    // Non-degenerate in both directions: 0 findings means the registry matched nothing, 0
+    // decisions means the classification swallowed the queue. Either passes a presence-only check.
+    expect(data.findings_total).toBeGreaterThan(0);
+    expect(data.decisions_total).toBeGreaterThan(0);
     await expect(page.getByText('The review queue could not be loaded')).toHaveCount(0);
     if (data.total > 0) {
       await expect(
@@ -35,6 +48,26 @@ test.describe('unified admin review queue', () => {
         'The queue scrolls its panes instead of stretching the page below the decision controls',
       ).toBeLessThanOrEqual(1);
     } else await expect(page.getByText('All caught up')).toBeVisible();
+  });
+  test('the all-inclusive scope still reaches every row, so nothing is hidden', async ({
+    page,
+  }) => {
+    // The original unfiltered contract, preserved verbatim: findings are reclassified, never
+    // removed, so one click must still return the whole union.
+    await page.goto('/admin');
+    await expect(page.getByRole('heading', { name: 'Review queue', exact: true })).toBeVisible();
+    const responsePromise = page.waitForResponse(
+      (r) =>
+        r.url().includes('/rpc/get_admin_review_queue') &&
+        r.request().postDataJSON()?.p_scope === 'all',
+    );
+    await page.getByRole('button', { name: /^Incl\. detected/ }).click();
+    const response = await responsePromise;
+    expect(response.ok()).toBe(true);
+    const data = await response.json();
+    expect(data.total).toBe(data.all_total);
+    expect(data.total).toBeGreaterThan(data.decisions_total);
+    await expect(page.getByText('The review queue could not be loaded')).toHaveCount(0);
   });
   test('overdue is a row predicate with matching counts', async ({ page }) => {
     await page.goto('/admin');

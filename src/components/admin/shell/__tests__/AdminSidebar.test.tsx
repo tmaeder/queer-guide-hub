@@ -14,7 +14,7 @@ vi.mock('@/hooks/useGranularRoles', () => ({
   useGranularRoles: () => ({ effectiveRole: 'admin' }),
 }));
 vi.mock('@/hooks/useAdminReview', () => ({
-  useAdminReviewSummary: () => ({ data: { all_total: 12, overdue_total: 2 } }),
+  useAdminReviewSummary: () => ({ data: { decisions_total: 12, overdue_total: 2 } }),
 }));
 vi.mock('@/hooks/useAdminCounts', () => ({
   useAdminCounts: () => ({ data: {}, isLoading: false }),

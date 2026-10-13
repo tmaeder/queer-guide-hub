@@ -7,6 +7,8 @@ const state = vi.hoisted(() => ({
     items: [],
     total: 0,
     all_total: 25,
+    decisions_total: 18,
+    findings_total: 7,
     overdue_total: 4,
     safety_total: 3,
     sources: [{ key: 'event-quality', label: 'Event issues', count: 25 }],
@@ -17,6 +19,10 @@ const state = vi.hoisted(() => ({
   isLoading: false,
 }));
 vi.mock('@/hooks/useAdminReview', () => ({
+  // Mirrors the real constant. The page reads it for its default scope AND the sidebar summary
+  // passes it, so the two share one request; a mock that drifted from the real value would let
+  // the "defaults to decisions" assertion below pass against the wrong scope.
+  DEFAULT_REVIEW_SCOPE: 'decisions',
   useAdminReview: (filters: unknown) => {
     state.filters(filters);
     return { ...state, refetch: vi.fn() };
@@ -41,7 +47,11 @@ describe('admin landing review workspace', () => {
     );
     expect(screen.getAllByRole('heading', { level: 1 })).toHaveLength(1);
     expect(screen.getByRole('heading', { name: 'Review queue', level: 1 })).toBeInTheDocument();
+    // Distinct fixture figures on purpose: all_total 25 = decisions 18 + findings 7, so each
+    // assertion names one population and cannot be satisfied by the other.
     expect(screen.getByText('25')).toBeInTheDocument();
+    // 18 appears twice by design: the header line and the Decisions scope chip.
+    expect(screen.getAllByText('18')).toHaveLength(2);
     expect(screen.queryByText('Needs you')).not.toBeInTheDocument();
   });
   it('passes item-level overdue scope rather than choosing queues with overdue rows', () => {
