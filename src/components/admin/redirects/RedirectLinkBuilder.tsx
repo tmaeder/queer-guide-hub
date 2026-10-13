@@ -59,7 +59,7 @@ export function RedirectLinkBuilder({
     try {
       const created = await createRedirect({
         type: 'SHORT',
-        slug,
+        slug: slug.trim(),
         target: destination,
         match_kind: 'EXACT',
         status_code: 302,

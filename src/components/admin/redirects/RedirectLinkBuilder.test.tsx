@@ -38,8 +38,12 @@ describe('tracked link creation', () => {
     expect(screen.getByLabelText('Destination')).toHaveValue('/city/zurich?view=map#places');
     expect(screen.getByLabelText('Source')).toHaveValue('poster');
     expect(screen.getByLabelText('Parameter value')).toHaveValue('friends & family');
+    fireEvent.change(screen.getByLabelText('Short-link slug'), {
+      target: { value: ' zurich-campaign ' },
+    });
     fireEvent.click(screen.getByRole('button', { name: 'Create tracked link' }));
     await waitFor(() => expect(mocks.create).toHaveBeenCalledOnce());
+    expect(mocks.create.mock.calls[0][0].slug).toBe('zurich-campaign');
     const target = new URL(mocks.create.mock.calls[0][0].target, 'https://queer.guide');
     expect(target.searchParams.get('audience')).toBe('friends & family');
     expect(target.searchParams.get('utm_source')).toBe('poster');
