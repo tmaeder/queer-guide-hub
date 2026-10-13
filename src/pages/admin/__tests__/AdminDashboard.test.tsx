@@ -19,6 +19,10 @@ const state = vi.hoisted(() => ({
   isLoading: false,
 }));
 vi.mock('@/hooks/useAdminReview', () => ({
+  // Mirrors the real constant. The page reads it for its default scope AND the sidebar summary
+  // passes it, so the two share one request; a mock that drifted from the real value would let
+  // the "defaults to decisions" assertion below pass against the wrong scope.
+  DEFAULT_REVIEW_SCOPE: 'decisions',
   useAdminReview: (filters: unknown) => {
     state.filters(filters);
     return { ...state, refetch: vi.fn() };

@@ -251,9 +251,17 @@ describe('the reader surfaces', () => {
     expect(page).not.toMatch(/query\.data\?\.all_total === 0\s*\n?\s*\? 'All caught up'/);
   });
 
-  it('defaults the scope to decisions', () => {
-    expect(page).toMatch(/\? \(scopeRaw as ReviewFilters\['scope'\]\)\s*\n?\s*: 'decisions',/);
-    expect(page).toContain("scope: key === 'decisions' ? null : key");
+  it('defaults the scope to decisions, via the shared constant', () => {
+    // Asserts the CONSTANT rather than the literal 'decisions'. Pinning the literal here is what
+    // made this test fail on the fix that removed the duplicate request: both call sites must name
+    // one value, so the page and the sidebar summary cannot drift into two separate RPCs.
+    expect(page).toMatch(
+      /\? \(scopeRaw as ReviewFilters\['scope'\]\)\s*\n?\s*: DEFAULT_REVIEW_SCOPE,/,
+    );
+    expect(page).toContain('scope: key === DEFAULT_REVIEW_SCOPE ? null : key');
+    expect(page).toMatch(
+      /import \{[\s\S]*?DEFAULT_REVIEW_SCOPE[\s\S]*?\} from '@\/hooks\/useAdminReview'/,
+    );
   });
 
   it('still offers an all-inclusive view, so nothing is hidden', () => {
@@ -264,5 +272,48 @@ describe('the reader surfaces', () => {
   it('badges the nav with decisions_total', () => {
     expect(sidebar).toContain('count: review.data?.decisions_total');
     expect(sidebar).not.toContain('count: review.data?.all_total');
+  });
+});
+
+/**
+ * The sidebar summary and the page default must request the SAME scope.
+ *
+ * The query key is ['admin-review', user, filters], so the two share one request only while their
+ * scopes agree. When they disagreed, /admin fired two 335k-row union aggregations concurrently and
+ * the second exceeded the 8s PostgREST statement timeout -- which is how a correct counter change
+ * turned three admin e2e specs red. Asserted on the SOURCE because no unit test here mounts the
+ * router and the shell together, so nothing else can see that the two call sites agree.
+ */
+describe('the admin review summary shares the page scope', () => {
+  const hook = readFileSync(join(process.cwd(), 'src/hooks/useAdminReview.ts'), 'utf8');
+  const page = readFileSync(join(process.cwd(), 'src/pages/admin/AdminReviewQueue.tsx'), 'utf8');
+
+  it('declares one shared constant and both sides use it', () => {
+    expect(hook).toMatch(/export const DEFAULT_REVIEW_SCOPE[^=]*=\s*'decisions'/);
+    // The summary must pass the constant, never a literal of its own.
+    const summary = hook.slice(hook.indexOf('export function useAdminReviewSummary'));
+    expect(summary).toContain('scope: DEFAULT_REVIEW_SCOPE');
+    expect(summary).not.toMatch(/scope:\s*'(all|decisions|safety|overdue|public)'/);
+    // The page default must be the same constant.
+    expect(page).toContain(': DEFAULT_REVIEW_SCOPE,');
+    expect(page).toContain('DEFAULT_REVIEW_SCOPE');
+  });
+
+  it('the dashboard mock mirrors the real constant, so its scope assertion is not vacuous', () => {
+    const spec = readFileSync(
+      join(process.cwd(), 'src/pages/admin/__tests__/AdminDashboard.test.tsx'),
+      'utf8',
+    );
+    const real = /export const DEFAULT_REVIEW_SCOPE[^=]*=\s*'([a-z]+)'/.exec(hook)?.[1];
+    expect(real).toBeTruthy();
+    expect(spec).toContain(`DEFAULT_REVIEW_SCOPE: '${real}'`);
+  });
+
+  it('leaves no stray scope literal in the hook that could re-split the request', () => {
+    // Positive control: the file does carry the scope vocabulary, so a zero match below would be
+    // evidence the search is wrong rather than evidence the file is clean.
+    expect(hook).toMatch(/'all'\s*\|\s*'decisions'/);
+    const afterTypes = hook.slice(hook.indexOf('export function useAdminReview'));
+    expect(afterTypes).not.toMatch(/scope:\s*'all'/);
   });
 });

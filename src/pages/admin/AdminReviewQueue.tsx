@@ -37,6 +37,7 @@ import {
   useReviewDecision,
   useReviewBulk,
   useSelectedReviewItem,
+  DEFAULT_REVIEW_SCOPE,
   type ReviewDecision,
   type ReviewFilters,
   type ReviewItem,
@@ -98,7 +99,7 @@ export default function AdminReviewQueue() {
     search: debouncedSearch,
     scope: scopeOptions.includes(scopeRaw as ReviewFilters['scope'])
       ? (scopeRaw as ReviewFilters['scope'])
-      : 'decisions',
+      : DEFAULT_REVIEW_SCOPE,
     sort: sortOptions.includes(sortRaw as ReviewFilters['sort'])
       ? (sortRaw as ReviewFilters['sort'])
       : 'priority',
@@ -339,7 +340,7 @@ export default function AdminReviewQueue() {
               size="sm"
               aria-pressed={filters.scope === key}
               className="min-h-10 shrink-0"
-              onClick={() => changeParams({ scope: key === 'decisions' ? null : key })}
+              onClick={() => changeParams({ scope: key === DEFAULT_REVIEW_SCOPE ? null : key })}
             >
               <Icon size={14} className="mr-1.5" />
               {label}
@@ -428,7 +429,7 @@ export default function AdminReviewQueue() {
             >
               <div className="flex min-h-11 shrink-0 items-center justify-between gap-4 border-b border-border px-4 text-sm">
                 <span>
-                  {filters.queues || filters.search || filters.scope !== 'decisions'
+                  {filters.queues || filters.search || filters.scope !== DEFAULT_REVIEW_SCOPE
                     ? 'Matching decisions'
                     : 'Pending decisions'}
                 </span>

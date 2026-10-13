@@ -214,8 +214,26 @@ type ReviewSummary = Pick<
   | 'sources'
   | 'updated_at'
 >;
+// The scope the review queue lands on. Shared with AdminReviewQueue's default so the two cannot
+// drift apart, which is load-bearing rather than tidy: the query key is ['admin-review', user,
+// filters], so the page and this summary share ONE request only while their scopes agree. When
+// they disagreed (page 'decisions', sidebar 'all') /admin fired TWO 335k-row union aggregations
+// concurrently, ~3.5s and ~3.9s, every 60s per open tab -- and under that contention the second
+// one exceeded the 8s PostgREST statement timeout, which is what made all three admin e2e specs
+// unstable. Passing the same scope is safe for the counts because every count in the response is
+// computed over `authorized`, i.e. BEFORE the scope filter: measured on prod, all_total,
+// decisions_total, findings_total, overdue_total, safety_total and sources are byte-identical
+// across all five scopes, so the sidebar reads the same numbers whatever the page is showing.
+export const DEFAULT_REVIEW_SCOPE: ReviewFilters['scope'] = 'decisions';
+
 export function useAdminReviewSummary() {
-  const all = useAdminReview({ queues: null, search: '', scope: 'all', sort: 'priority', page: 1 });
+  const all = useAdminReview({
+    queues: null,
+    search: '',
+    scope: DEFAULT_REVIEW_SCOPE,
+    sort: 'priority',
+    page: 1,
+  });
   return { data: all.summary, isLoading: all.isLoading };
 }
 
