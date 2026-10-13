@@ -87,7 +87,8 @@ declare
   v_nocty uuid;
   v_live  uuid;
 begin
-  select pg_get_functiondef(p.oid) into v_src
+  select regexp_replace(pg_get_functiondef(p.oid), '--[^' || chr(10) || ']*', '', 'g')
+    into v_src
   from pg_proc p join pg_namespace n on n.oid = p.pronamespace
   where n.nspname = 'public' and p.proname = 'event_quality_findings';
 
@@ -156,7 +157,8 @@ begin
 
   -- P5: the drain this change depends on must still exist. Without the scan's auto-resolve branch
   -- the 13,820 open rows are stranded rather than closed, and nothing else would say so.
-  select pg_get_functiondef(p.oid) into v_src
+  select regexp_replace(pg_get_functiondef(p.oid), '--[^' || chr(10) || ']*', '', 'g')
+    into v_src
   from pg_proc p join pg_namespace n on n.oid = p.pronamespace
   where n.nspname = 'public' and p.proname = 'run_event_quality_scan';
   if position('cleared_by_scan' in coalesce(v_src, '')) = 0

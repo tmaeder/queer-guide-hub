@@ -40,6 +40,20 @@ describe('NAMED_VENUE_UNLINKED is scoped to the linker, by patch not by restatem
     expect(SQL).not.toMatch(/create\s+or\s+replace\s+function\s+public\.event_quality_findings/i);
   });
 
+  it('strips comments before asserting, but NOT before re-executing', () => {
+    // scripts/check-functiondef-asserts.mjs: pg_get_functiondef() returns the body INCLUDING its
+    // comments, so an assertion on it can match the prose explaining a symbol rather than the code
+    // -- which aborted `db push` on main three times on 2026-09-20. Both verify-block reads are
+    // stripped.
+    expect((SQL.match(/regexp_replace\(pg_get_functiondef/g) ?? []).length).toBe(2);
+    // The PATCH read must stay RAW: its source is re-executed, so stripping there would delete the
+    // function's own comments permanently. Exactly one bare read, and it is in the patch block.
+    const patch = SQL.slice(SQL.indexOf('$patch$'), SQL.indexOf('$verify$'));
+    const verify = SQL.slice(SQL.indexOf('$verify$'));
+    expect((patch.match(/select pg_get_functiondef\(p\.oid\) into v_src/g) ?? []).length).toBe(1);
+    expect(verify).not.toMatch(/select pg_get_functiondef\(p\.oid\) into v_src/);
+  });
+
   it('refuses to patch unless the anchor occurs exactly once', () => {
     expect(SQL).toMatch(/coalesce\(v_n,\s*0\)\s*<>\s*1/);
     expect(SQL).toMatch(/raise exception 'anchor occurs % times/);
