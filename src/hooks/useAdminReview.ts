@@ -26,6 +26,13 @@ export interface ReviewPage {
   items: ReviewItem[];
   total: number;
   all_total: number;
+  /**
+   * Rows where a human decision exists. `all_total` also counts machine detector output
+   * ("this field is empty"), which is 84% of the queue and has no decision to make -- see
+   * admin_review_finding_codes. Label a figure "decisions" only if it came from here.
+   */
+  decisions_total: number;
+  findings_total: number;
   overdue_total: number;
   safety_total: number;
   sources: ReviewSource[];
@@ -36,7 +43,7 @@ export interface ReviewPage {
 export interface ReviewFilters {
   queues: string[] | null;
   search: string;
-  scope: 'all' | 'safety' | 'overdue' | 'public';
+  scope: 'all' | 'decisions' | 'safety' | 'overdue' | 'public';
   sort: 'priority' | 'age' | 'confidence';
   page: number;
 }
@@ -62,6 +69,8 @@ export function useAdminReview(filters: ReviewFilters) {
           ? old
           : {
               all_total: data.all_total,
+              decisions_total: data.decisions_total,
+              findings_total: data.findings_total,
               overdue_total: data.overdue_total,
               safety_total: data.safety_total,
               sources: data.sources,
@@ -197,7 +206,13 @@ export function useReviewBulk() {
 
 type ReviewSummary = Pick<
   ReviewPage,
-  'all_total' | 'overdue_total' | 'safety_total' | 'sources' | 'updated_at'
+  | 'all_total'
+  | 'decisions_total'
+  | 'findings_total'
+  | 'overdue_total'
+  | 'safety_total'
+  | 'sources'
+  | 'updated_at'
 >;
 export function useAdminReviewSummary() {
   const all = useAdminReview({ queues: null, search: '', scope: 'all', sort: 'priority', page: 1 });

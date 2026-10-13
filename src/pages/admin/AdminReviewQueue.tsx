@@ -6,6 +6,7 @@ import {
   ChevronRight,
   Inbox,
   Keyboard,
+  ListFilter,
   RefreshCw,
   Search,
   ShieldAlert,
@@ -43,7 +44,25 @@ import {
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useDebounce } from '@/hooks/useDebounce';
 
-const scopeOptions = ['all', 'safety', 'overdue', 'public'] as const;
+// 'decisions' is the DEFAULT, because this page is titled "Review queue" and its headline reads
+// "Pending decisions": 84% of the rows the union carries are machine detector output with no
+// decision available (admin_review_finding_codes), so defaulting to 'all' made the page claim
+// 335,495 pending decisions against 54,034 real ones. 'all' is still one click away and hides
+// nothing.
+const scopeOptions = ['all', 'decisions', 'safety', 'overdue', 'public'] as const;
+
+/**
+ * Renders a count that may be absent, WITHOUT substituting a different one.
+ *
+ * `decisions_total` and `findings_total` arrive only from a backend carrying migration
+ * 99991791872772, so between the Pages deploy and `db push` they are undefined -- and
+ * `undefined.toLocaleString()` throws, taking the whole admin page down. Falling back to
+ * `all_total` is the tempting fix and is wrong: it would silently print 335,495 under the label
+ * "decisions", which is exactly the conflation this change exists to remove. An em dash degrades
+ * visibly instead.
+ */
+const fmtCount = (n: number | undefined | null) =>
+  typeof n === 'number' && Number.isFinite(n) ? n.toLocaleString() : '—';
 const sortOptions = ['priority', 'age', 'confidence'] as const;
 const selectClass =
   'h-10 min-w-0 rounded-element border border-input bg-background px-4 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring';
@@ -79,7 +98,7 @@ export default function AdminReviewQueue() {
     search: debouncedSearch,
     scope: scopeOptions.includes(scopeRaw as ReviewFilters['scope'])
       ? (scopeRaw as ReviewFilters['scope'])
-      : 'all',
+      : 'decisions',
     sort: sortOptions.includes(sortRaw as ReviewFilters['sort'])
       ? (sortRaw as ReviewFilters['sort'])
       : 'priority',
@@ -259,9 +278,10 @@ export default function AdminReviewQueue() {
           >
             {query.data ? (
               <>
-                <span className="tabular-nums">{summary!.all_total.toLocaleString()}</span> pending
-                · <span className="tabular-nums">{summary!.overdue_total.toLocaleString()}</span>{' '}
-                overdue
+                <span className="tabular-nums">{fmtCount(summary!.decisions_total)}</span> decisions
+                · <span className="tabular-nums">{fmtCount(summary!.overdue_total)}</span> overdue ·{' '}
+                <span className="tabular-nums">{fmtCount(summary!.findings_total)}</span> detected
+                issues
               </>
             ) : (
               'Loading pending decisions…'
@@ -307,9 +327,10 @@ export default function AdminReviewQueue() {
         <div role="group" aria-label="Review scope" className="flex gap-1 overflow-x-auto">
           {(
             [
-              { key: 'all', label: 'All', icon: Inbox },
+              { key: 'decisions', label: 'Decisions', icon: Inbox },
               { key: 'safety', label: 'High risk', icon: ShieldAlert },
               { key: 'overdue', label: 'Overdue', icon: Timer },
+              { key: 'all', label: 'Incl. detected', icon: ListFilter },
             ] as const
           ).map(({ key, label, icon: Icon }) => (
             <Button
@@ -318,16 +339,21 @@ export default function AdminReviewQueue() {
               size="sm"
               aria-pressed={filters.scope === key}
               className="min-h-10 shrink-0"
-              onClick={() => changeParams({ scope: key === 'all' ? null : key })}
+              onClick={() => changeParams({ scope: key === 'decisions' ? null : key })}
             >
               <Icon size={14} className="mr-1.5" />
               {label}
-              {query.data && key !== 'all' && (
+              {query.data && (
                 <span className="ml-2 tabular-nums">
-                  {(key === 'safety'
-                    ? summary!.safety_total
-                    : summary!.overdue_total
-                  ).toLocaleString()}
+                  {fmtCount(
+                    key === 'safety'
+                      ? summary!.safety_total
+                      : key === 'overdue'
+                        ? summary!.overdue_total
+                        : key === 'all'
+                          ? summary!.all_total
+                          : summary!.decisions_total,
+                  )}
                 </span>
               )}
             </Button>
@@ -402,7 +428,7 @@ export default function AdminReviewQueue() {
             >
               <div className="flex min-h-11 shrink-0 items-center justify-between gap-4 border-b border-border px-4 text-sm">
                 <span>
-                  {filters.queues || filters.search || filters.scope !== 'all'
+                  {filters.queues || filters.search || filters.scope !== 'decisions'
                     ? 'Matching decisions'
                     : 'Pending decisions'}
                 </span>
@@ -414,15 +440,20 @@ export default function AdminReviewQueue() {
                 {items.length === 0 ? (
                   <div className="flex flex-col items-center gap-4 px-6 py-12 text-center">
                     <Check className="size-7 text-muted-foreground" />
+                    {/* Keyed on decisions_total, not all_total: all_total also counts the 281k
+                        machine findings, so "All caught up" could never display -- not even with
+                        every decision in the queue made. */}
                     <h2 className="font-sans text-title font-bold">
-                      {query.data?.all_total === 0 ? 'All caught up' : 'No matching decisions'}
+                      {query.data?.decisions_total === 0
+                        ? 'All caught up'
+                        : 'No matching decisions'}
                     </h2>
                     <p className="text-sm text-muted-foreground">
-                      {query.data?.all_total === 0
+                      {query.data?.decisions_total === 0
                         ? 'There are no pending decisions for your permissions.'
                         : 'Clear the filters to see the remaining work.'}
                     </p>
-                    {query.data?.all_total !== 0 && (
+                    {query.data?.decisions_total !== 0 && (
                       <Button
                         variant="outline"
                         onClick={() => {
