@@ -1,0 +1,22 @@
+begin;
+do $$ declare data jsonb; begin
+ insert into public.news_articles(author,title,published_at) select 'Author drilldown test & Léa','Article '||i,now() from generate_series(1,55)i;
+ insert into public.news_articles(author,title) values('Author drilldown test & Léa','Undated article');
+ insert into public.news_articles(author,title,published_at,archived_at) values('Author drilldown test & Léa','Archived article',now(),now());
+ insert into public.news_articles(author,title,published_at,duplicate_of_id) select 'Author drilldown test & Léa','Merged article',now(),id from public.news_articles where author='Author drilldown test & Léa' limit 1;
+ insert into public.news_articles(author,title) values('Different author','Other article');
+ data:=public.admin_news_author_articles('Author drilldown test & Léa',0);
+ assert (data->>'total')::integer=58,'All byline records are counted';
+ assert jsonb_array_length(data->'rows')=50,'First page';
+ data:=public.admin_news_author_articles('Author drilldown test & Léa',50);
+ assert jsonb_array_length(data->'rows')=8,'Next page includes all remaining rows';
+ assert exists(select 1 from jsonb_array_elements(data->'rows')a where a->>'title'='Undated article'),'Undated records must be visible';
+ assert (public.admin_news_author_articles('Author drilldown test',0)->>'total')::integer=0,'Match the exact byline';
+ begin perform public.admin_news_author_articles(null);raise exception 'Unfiltered access accepted';exception when invalid_parameter_value then null;end;
+end $$;
+set local role authenticated;
+select set_config('request.jwt.claims','{"role":"authenticated","user_role":"user"}',true);
+do $$ begin begin perform public.admin_news_author_articles('Author drilldown test & Léa');raise exception 'Nonstaff access accepted';exception when insufficient_privilege then null;end;end $$;
+reset role;
+do $$ begin assert not has_function_privilege('anon','public.admin_news_author_articles(text,integer)','execute'),'Anonymous access revoked';end $$;
+rollback;

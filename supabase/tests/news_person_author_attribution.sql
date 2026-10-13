@@ -1,0 +1,32 @@
+begin;
+do $$ declare v_id uuid; v_source uuid; begin
+ insert into news_sources(name) values('Example Magazine') returning id into v_source;
+ insert into news_articles(author,title,source_id) values('https://www.facebook.com/6030918854','URL credit',v_source) returning id into v_id;
+ assert (select author is null from news_articles where id=v_id),'URL must not be a person';
+ assert exists(select 1 from news_author_credit_audit where article_id=v_id and original_author='https://www.facebook.com/6030918854'),'Original credit preserved';
+ insert into news_articles(author,title,source_id) values('Editors','Team',v_source),('Big Money Players Network and iHeartPodcasts','Network',v_source),('Dyking Out - a Lesbian and LGBTQ Podcast for Everyone!','Show',v_source),('Example Magazine','Publisher',v_source);
+ assert (select count(*) from news_articles where title in ('Team','Network','Show','Publisher') and author is not null)=0,'Collective credits rejected';
+ insert into news_articles(author,title,source_id) values('José Muñoz','Person',v_source),('Cher','Mononym',v_source),('李明','International',v_source);
+ assert (select count(*) from news_articles where title in ('Person','Mononym','International') and author is not null)=3,'Names preserved';
+ begin perform admin_news_author_change('José Muñoz','Editors',false,1);raise exception 'Invalid rename accepted';exception when invalid_parameter_value then null;end;
+ begin perform admin_news_author_change('José Muñoz','Example Magazine',false,1);raise exception 'Publisher rename accepted';exception when invalid_parameter_value then null;end;
+ assert (select author='José Muñoz' from news_articles where title='Person'),'Failed rename is atomic';
+ assert public.news_person_author('By Alex Doe')='Alex Doe','By prefix';
+end $$;
+set local role authenticated;
+select set_config('request.jwt.claims','{"user_role":"user"}',true);
+do $$ begin assert (select count(*) from news_author_credit_audit)=0,'Nonstaff audit hidden';end $$;
+select set_config('request.jwt.claims','{"user_role":"moderator"}',true);
+do $$ begin assert (select count(*) from news_author_credit_audit)>=5,'Staff audit available';end $$;
+reset role;
+do $$ begin assert not has_table_privilege('anon','news_author_credit_audit','select'),'Anonymous audit denied';end $$;
+rollback;
+begin;
+do $$ begin
+ assert public.news_person_author('Ashley Gavin & Studio71')='Ashley Gavin','Mixed credit retains named person';
+ assert public.news_person_author('Sony Music Entertainment / Jonathan Van Ness')='Jonathan Van Ness','Publisher prefix removed';
+ assert public.news_person_author('New York Post') is null,'Known publisher excluded';
+ assert public.news_person_author('foxnews') is null,'Legacy publisher excluded';
+ assert public.news_person_author('Redazione Gay.it') is null,'Editorial team excluded';
+end $$;
+rollback;

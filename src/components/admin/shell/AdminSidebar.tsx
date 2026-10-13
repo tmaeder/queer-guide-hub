@@ -91,7 +91,12 @@ export function AdminSidebar() {
   const isAdmin = effectiveRole === 'admin';
 
   const { data: counts, isLoading: countsLoading } = useAdminCounts();
-  const review = useAdminReviewSummary();
+  // The queue workspace supplies these exact totals through its own request.
+  const review = useAdminReviewSummary(
+    !['/admin', '/admin/governance', '/admin/inbox', '/admin/review'].includes(
+      location.pathname.replace(/\/$/, ''),
+    ),
+  );
   const { pins, togglePin, isPinned } = useAdminNavPins();
 
   const [search, setSearch] = useState('');

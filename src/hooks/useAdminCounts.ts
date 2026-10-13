@@ -5,6 +5,7 @@
  */
 
 import { useQuery } from '@tanstack/react-query';
+import { useMemo } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
 /**
@@ -28,13 +29,28 @@ export async function fetchAdminCounts(): Promise<AdminCounts> {
 }
 
 export function useAdminCounts() {
-  return useQuery({
+  const query = useQuery({
     queryKey: ['admin-counts'],
     queryFn: fetchAdminCounts,
     staleTime: 60_000,
     refetchInterval: 60_000,
     refetchOnWindowFocus: true,
   });
+  // Observe the inventory cache without fetching thousands of aliases on every
+  // admin page. The manual-table count is not the redirect inventory's count.
+  const inventory = useQuery<{ rows: unknown[]; errors: string[] }>({
+    queryKey: ['cms-content-list', 'redirect-inventory'],
+    enabled: false,
+  });
+  const data = useMemo(() => {
+    if (!query.data) return query.data;
+    const counts = { ...query.data };
+    delete counts.redirects;
+    if (inventory.data && !inventory.data.errors.length)
+      counts.redirects = inventory.data.rows.length;
+    return counts;
+  }, [query.data, inventory.data]);
+  return { ...query, data };
 }
 
 /** Read a count + its `_overdue` companion by key (table name or review key). */

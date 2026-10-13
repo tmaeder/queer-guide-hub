@@ -1,6 +1,7 @@
 import { useAuth } from '@/hooks/useAuth';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { untypedFrom, untypedRpc } from '@/integrations/supabase/untyped';
+import { useMutation, useQuery, useQueryClient, type QueryClient } from '@tanstack/react-query';
+import { useEffect } from 'react';
+import { untypedFrom, untypedRpc, untypedSupabase } from '@/integrations/supabase/untyped';
 import type { TriageItem } from '@/hooks/useUnifiedTriageQueue';
 import { callSearchIntelligence, createTagFromProposal } from '@/hooks/useSearchIntelligence';
 import { parseTagProposal } from '@/components/admin/search-intelligence/tagProposal';
@@ -53,15 +54,18 @@ export function useAdminReview(filters: ReviewFilters) {
   const query = useQuery({
     queryKey: ['admin-review', user?.id, filters],
     enabled: !!user?.id,
-    queryFn: async (): Promise<ReviewPage> => {
-      const { data, error } = await untypedRpc<ReviewPage>('get_admin_review_queue', {
-        p_queue_types: filters.queues,
-        p_search: filters.search || null,
-        p_scope: filters.scope,
-        p_sort: filters.sort,
-        p_page: filters.page,
-        p_per_page: 50,
-      });
+    queryFn: async ({ signal }): Promise<ReviewPage> => {
+      const { data: rawData, error } = await untypedSupabase
+        .rpc('get_admin_review_queue', {
+          p_queue_types: filters.queues,
+          p_search: filters.search || null,
+          p_scope: filters.scope,
+          p_sort: filters.sort,
+          p_page: filters.page,
+          p_per_page: 50,
+        })
+        .abortSignal(signal);
+      const data = rawData as ReviewPage | null;
       if (error) throw new Error(error.message);
       if (!data) throw new Error('The review queue returned no data. Please retry.');
       qc.setQueryData<ReviewSummary>(['admin-review-summary', user?.id], (old) =>
@@ -84,7 +88,7 @@ export function useAdminReview(filters: ReviewFilters) {
   });
   const summary = useQuery<ReviewSummary>({
     queryKey: ['admin-review-summary', user?.id],
-    queryFn: async () => query.data!,
+    queryFn: fetchReviewSummary,
     enabled: false,
     staleTime: Infinity,
   });
@@ -214,27 +218,41 @@ type ReviewSummary = Pick<
   | 'sources'
   | 'updated_at'
 >;
-// The scope the review queue lands on. Shared with AdminReviewQueue's default so the two cannot
-// drift apart, which is load-bearing rather than tidy: the query key is ['admin-review', user,
-// filters], so the page and this summary share ONE request only while their scopes agree. When
-// they disagreed (page 'decisions', sidebar 'all') /admin fired TWO 335k-row union aggregations
-// concurrently, ~3.5s and ~3.9s, every 60s per open tab -- and under that contention the second
-// one exceeded the 8s PostgREST statement timeout, which is what made all three admin e2e specs
-// unstable. Passing the same scope is safe for the counts because every count in the response is
-// computed over `authorized`, i.e. BEFORE the scope filter: measured on prod, all_total,
-// decisions_total, findings_total, overdue_total, safety_total and sources are byte-identical
-// across all five scopes, so the sidebar reads the same numbers whatever the page is showing.
+// Shared landing scope for the review workspace. Sidebar counts use a separate summary RPC.
 export const DEFAULT_REVIEW_SCOPE: ReviewFilters['scope'] = 'decisions';
 
-export function useAdminReviewSummary() {
-  const all = useAdminReview({
-    queues: null,
-    search: '',
-    scope: DEFAULT_REVIEW_SCOPE,
-    sort: 'priority',
-    page: 1,
+async function fetchReviewSummary({
+  signal,
+  queryKey,
+  client,
+}: {
+  signal: AbortSignal;
+  queryKey: readonly unknown[];
+  client: QueryClient;
+}): Promise<ReviewSummary> {
+  const { data, error } = await untypedSupabase.rpc('get_admin_review_summary').abortSignal(signal);
+  if (error) throw new Error(error.message);
+  if (!data) throw new Error('The review summary returned no data.');
+  const incoming = data as ReviewSummary;
+  const cached = client.getQueryData<ReviewSummary>(queryKey);
+  return cached && Date.parse(cached.updated_at) > Date.parse(incoming.updated_at)
+    ? cached
+    : incoming;
+}
+export function useAdminReviewSummary(enabled = true) {
+  const { user } = useAuth();
+  const qc = useQueryClient();
+  useEffect(() => {
+    if (!enabled)
+      void qc.cancelQueries({ queryKey: ['admin-review-summary', user?.id], exact: true });
+  }, [enabled, user?.id, qc]);
+  return useQuery<ReviewSummary>({
+    queryKey: ['admin-review-summary', user?.id],
+    enabled: enabled && !!user?.id,
+    queryFn: fetchReviewSummary,
+    staleTime: 30_000,
+    refetchInterval: 60_000,
   });
-  return { data: all.summary, isLoading: all.isLoading };
 }
 
 export function useSelectedReviewItem(

@@ -1,3 +1,4 @@
+import { personAuthorCandidate } from '../news-author.ts'
 import { decodeEntities } from '../html-entities.ts'
 // Deterministic news content sanitizer.
 // Pure functions — no AI, no IO. Safe to run on every staging row.
@@ -206,7 +207,7 @@ export function cleanExcerpt(raw: string): string {
 }
 
 export function cleanAuthorField(raw: string): string {
-  return cleanShortText(raw || '', true).slice(0, 200)
+  return personAuthorCandidate(cleanShortText(raw || '', true).slice(0, 200)) ?? ''
 }
 
 export function sanitizeArticle(

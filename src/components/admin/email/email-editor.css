@@ -1,0 +1,132 @@
+.email-block-editor {
+  --re-bg: hsl(var(--background));
+  --re-border: hsl(var(--border));
+}
+.email-block-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 1rem;
+}
+.email-canvas {
+  min-width: 0;
+  overflow: auto;
+  border: 1px solid hsl(var(--border));
+  border-radius: var(--radius-element);
+  background: #fafaf5;
+  color: #111;
+  padding: 24px;
+}
+.email-canvas .tiptap :is(h1, h2, h3) {
+  font-family: inherit;
+}
+/* The export theme uses a 600px canvas. Constrain only its editing view on
+   phones, while the exported email keeps the library's responsive tables. */
+.email-block-editor .email-canvas .tiptap.ProseMirror[data-editor-theme-scope] .node-container {
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+.email-canvas .tiptap {
+  min-height: 420px;
+  padding: 24px;
+  outline-offset: -2px;
+  font-family: 'Space Grotesk', sans-serif;
+  line-height: 1.55;
+  overflow-wrap: anywhere;
+}
+.email-canvas .tiptap h1 {
+  font-size: 2rem;
+  font-weight: 700;
+  line-height: 1.2;
+}
+.email-canvas .tiptap h2 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  line-height: 1.3;
+}
+.email-canvas .tiptap h3 {
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+.email-canvas .tiptap p,
+.email-canvas .tiptap h1,
+.email-canvas .tiptap h2,
+.email-canvas .tiptap h3 {
+  margin: 0 0 1rem;
+}
+.email-canvas .tiptap ul {
+  list-style: disc;
+  padding-inline-start: 1.5rem;
+}
+.email-canvas .tiptap ol {
+  list-style: decimal;
+  padding-inline-start: 1.5rem;
+}
+.email-canvas .tiptap a {
+  color: #111;
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+}
+.email-canvas .tiptap .node-button {
+  display: inline-block;
+  padding: 12px 20px;
+  border-radius: 12px;
+  background: #111;
+  color: #fafaf5;
+  text-decoration: none;
+}
+.email-canvas .tiptap img {
+  max-width: 100%;
+  height: auto;
+}
+.email-canvas .tiptap hr {
+  margin: 24px 0;
+  border-top: 1px solid #b8b8b0;
+}
+.email-canvas .email-variable {
+  display: inline;
+  background: #e2e2d7;
+  border-radius: 4px;
+  padding: 2px 4px;
+  font-family: var(--font-mono);
+  font-size: 0.9em;
+}
+.email-canvas .tiptap ::selection {
+  background: #d0d0bb;
+}
+.email-inspector {
+  min-width: 0;
+  max-height: 600px;
+  overflow: auto;
+  border: 1px solid hsl(var(--border));
+  border-radius: var(--radius-element);
+  padding: 16px;
+}
+@media (min-width: 1280px) {
+  .email-block-layout {
+    grid-template-columns: minmax(0, 1fr) 240px;
+  }
+}
+
+.email-canvas .node-columns {
+  display: flex;
+  width: 100%;
+  gap: 16px;
+}
+.email-canvas .node-column {
+  flex: 1;
+  min-width: 0;
+}
+.email-canvas .tiptap [alignment='center'] {
+  text-align: center;
+}
+.email-canvas .tiptap [alignment='right'] {
+  text-align: right;
+}
+.email-canvas .tiptap:focus-visible {
+  outline: 2px solid #111;
+}
+.email-block-editor[aria-disabled='true'] {
+  pointer-events: none;
+  opacity: 0.65;
+}

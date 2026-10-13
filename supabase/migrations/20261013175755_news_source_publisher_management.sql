@@ -180,3 +180,5 @@ grant execute on function public.assert_news_source_admin(),public.news_source_d
  public.admin_news_sources_browse(text,text,uuid,boolean,integer),public.admin_news_source_publishers(text,text),
  public.admin_news_source_save(uuid,jsonb,timestamptz),public.admin_news_source_resume(uuid,timestamptz),
  public.admin_news_source_articles(uuid,integer),public.admin_news_source_create_publisher(text,text) to authenticated,service_role;
+
+

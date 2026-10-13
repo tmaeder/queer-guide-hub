@@ -1,3 +1,4 @@
+import { personAuthorCandidate } from '../_shared/news-author.ts'
 import { getServiceClient, jsonResponse, errorResponse, corsResponse, requireInternalOrAdmin } from '../_shared/supabase-client.ts'
 import { extractArticle } from '../_shared/news-quality/extract.ts'
 import { extractContent } from '../_shared/extract-client.ts'
@@ -125,7 +126,13 @@ Deno.serve(withErrorReporting('pipeline-extract-fulltext', async (req) => {
           markdown = ext.markdown || null
           bodyText = ext.markdown ? markdownToText(ext.markdown) : ''
           extractMethod = `worker:${ext.method}`
-          metaAuthor = ext.meta.author
+          metaAuthor = personAuthorCandidate(ext.meta.author, [n.source_name as string, n.publisher_name as string])
+          // The extract worker's metadata can be a profile URL or team credit.
+          // Recover a visible person byline even when its body extraction succeeded.
+          if (!metaAuthor && !personAuthorCandidate(n.author) && targetTable === 'news_articles') {
+            const html = await fetchHtml(url)
+            metaAuthor = html ? extractArticle(html, url).author : null
+          }
           metaPublished = ext.meta.publishedAt
           metaImage = ext.meta.image
           metaLang = ext.meta.lang
@@ -168,7 +175,12 @@ Deno.serve(withErrorReporting('pipeline-extract-fulltext', async (req) => {
         }
 
         // Backfill thin/empty metadata from the page even when body wasn't swapped.
-        if (metaAuthor && !n.author) merged.author = metaAuthor
+        if (targetTable === 'news_articles') {
+          const credits = [n.source_name as string, n.publisher_name as string]
+          const previous = personAuthorCandidate(n.author, credits)
+          merged.author = previous ?? personAuthorCandidate(metaAuthor, credits)
+          if (n.author && !previous) merged.original_author = n.original_author ?? n.author
+        } else if (metaAuthor && !n.author) merged.author = metaAuthor
         if (metaPublished && !n.published_at) merged.published_at = metaPublished
         if (metaImage && !n.image_url && !(Array.isArray(n.images) && n.images.length)) {
           merged.image_url = metaImage

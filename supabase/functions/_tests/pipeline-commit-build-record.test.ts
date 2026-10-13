@@ -133,3 +133,12 @@ Deno.test('default branch: missing normalized.name leaves record without name', 
   const r = buildRecord('misc_table', {}, {}, null, NOW)
   assertEquals('name' in r, false)
 })
+
+Deno.test('news article keeps API publisher attribution separate from a person author', () => {
+  const result = buildRecord('news_articles', {
+    name: 'Story', description: 'Article body', urls: ['https://example.com/story'],
+    metadata: { source_name: 'GNews API', publisher_name: 'Example Magazine', author: null },
+  }, {}, null, NOW)
+  assertEquals(result?.publisher_name, 'Example Magazine')
+  assertEquals(result?.author, undefined)
+})

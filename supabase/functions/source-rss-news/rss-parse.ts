@@ -1,3 +1,4 @@
+import { personAuthorCandidate } from '../_shared/news-author.ts'
 // Pure RSS/podcast parsing helpers — no I/O, unit-testable.
 // Used by source-rss-news/index.ts; kept out of index.ts so tests can import
 // without triggering its Deno.serve() entrypoint.
@@ -33,6 +34,7 @@ export function parseRssItems(
   if (maxItems <= 0) return items
   // Computed ONCE, outside the loop — it is a property of the feed, not the item.
   const channelImage = isPodcast ? extractChannelImage(xml) : null
+  const channelTitle = extractTag(xml.slice(0, xml.search(/<item>/i)), 'title')
   const itemRegex = /<item>([\s\S]*?)<\/item>/gi
   let textBytes = 0
   let match
@@ -67,8 +69,11 @@ export function parseRssItems(
     // Sanitized like the other text fields — `author` never went through
     // cleanText, so it was the one raw string in the payload. Kept null-preserving:
     // extractTag returns string | null and the metadata shape distinguishes them.
-    const authorRaw = extractTag(block, 'dc:creator') || extractTag(block, 'itunes:author') || extractTag(block, 'author')
-    const author = authorRaw ? stripLoneSurrogates(authorRaw) : authorRaw
+    const authorCandidates = [extractTag(block, 'dc:creator'), extractTag(block, 'itunes:author'), extractTag(block, 'author')]
+    const original_author = authorCandidates.find(Boolean) ?? null
+    const author = authorCandidates
+      .map((candidate) => personAuthorCandidate(candidate ? cleanText(stripLoneSurrogates(candidate)) : null, [channelTitle]))
+      .find(Boolean) ?? null
 
     if (!title) continue
     if (!isPodcast && !rawLink) continue
@@ -95,7 +100,7 @@ export function parseRssItems(
       textBytes += (desc || '').length
       items.push({
         title: cleanText(title), content: cleaned,
-        url: link.trim(), image_url: image, author,
+        url: link.trim(), image_url: image, author, original_author,
         published_at: pubDate, excerpt: excerptOf(cleaned),
         media_type: 'podcast', audio_url: audioUrl,
         duration_seconds: parseItunesDuration(extractTag(block, 'itunes:duration')),
@@ -105,7 +110,7 @@ export function parseRssItems(
       textBytes += (desc || '').length
       items.push({
         title: cleanText(title), content: cleaned,
-        url: (webLink ?? rawLink!).trim(), image_url: extractMediaUrl(block), author,
+        url: (webLink ?? rawLink!).trim(), image_url: extractMediaUrl(block), author, original_author,
         published_at: pubDate, excerpt: excerptOf(cleaned),
       })
     }

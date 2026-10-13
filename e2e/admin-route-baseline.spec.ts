@@ -104,6 +104,7 @@ test.describe('admin routes stay healthy through the archetype migration', () =>
     test(`${route}`, async ({ page }) => {
       const endpoints = new Set<string>();
       const errors: string[] = [];
+      const failedScripts: string[] = [];
 
       // Intercept ONLY the API calls this spec reasons about — never `**/*`.
       //
@@ -119,6 +120,15 @@ test.describe('admin routes stay healthy through the archetype migration', () =>
       await page.route(/supabase|\/rest\/v1|\/rpc\//, (r) => {
         const url = r.request().url();
         const method = r.request().method();
+        const parsed = new URL(url);
+        // A token refresh preserves the existing session and is required for
+        // auth readiness. Application writes remain blocked below.
+        if (
+          method === 'POST' &&
+          parsed.pathname === '/auth/v1/token' &&
+          parsed.searchParams.get('grant_type') === 'refresh_token'
+        )
+          return r.continue();
         if (BLOCKED.test(url) || method !== 'GET') {
           endpoints.add(`BLOCKED ${new URL(url).pathname}`);
           return r.abort();
@@ -129,6 +139,10 @@ test.describe('admin routes stay healthy through the archetype migration', () =>
         return r.continue();
       });
       page.on('pageerror', (e) => errors.push(e.message.slice(0, 120)));
+      page.on('requestfailed', (request) => {
+        if (request.resourceType() === 'script')
+          failedScripts.push(new URL(request.url()).pathname);
+      });
 
       await page.goto(route);
       await page.waitForSelector('#root *', { state: 'attached', timeout: 20_000 });
@@ -187,6 +201,18 @@ test.describe('admin routes stay healthy through the archetype migration', () =>
       // them ever ran. Ordering the count first makes a missing h1 report as
       // "has 0 h1s", which is the true finding, in under a second.
       const h1Count = await page.locator('h1').count();
+      const readiness =
+        h1Count === 0
+          ? await page.evaluate(() => {
+              const text = `${document.body.innerText} ${[...document.querySelectorAll('[role="status"]')].map((el) => el.getAttribute('aria-label') ?? el.textContent).join(' ')}`;
+              return [
+                'Checking admin access',
+                "You don't have access to this area",
+                'Loading this station',
+                'Something went wrong',
+              ].filter((state) => text.includes(state));
+            })
+          : [];
       const h1 =
         h1Count === 0
           ? ''
@@ -218,7 +244,7 @@ test.describe('admin routes stay healthy through the archetype migration', () =>
       //    proof the route did not render blank.
       expect(
         h1Count,
-        `${route} has ${h1Count} h1s${h1NeverVisible ? ' (none became visible within 30s)' : ''}`,
+        `${route} has ${h1Count} h1s${h1NeverVisible ? ' (none became visible within 30s)' : ''}; readiness=${readiness.join(',')}; failedScripts=${failedScripts.join(',')}; pageErrors=${errors.join(';')}`,
       ).toBe(1);
       expect(h1.length, `${route} has an empty h1`).toBeGreaterThan(0);
 

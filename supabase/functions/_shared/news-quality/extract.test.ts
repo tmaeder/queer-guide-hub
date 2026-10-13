@@ -63,3 +63,17 @@ Deno.test('multiple JSON-LD blocks: picks the article node', () => {
   assertEquals(r.author, 'Sam Lee')
   assert(r.content.includes('festival'))
 })
+
+Deno.test('profile URL metadata falls through to the visible person byline', () => {
+  const html = '<html><head><meta property="article:author" content="https://www.facebook.com/6030918854"></head><body><a rel="author">Alex Doe</a></body></html>'
+  assertEquals(extractArticle(html, BASE).author, 'Alex Doe')
+})
+Deno.test('Organization credits cannot become a person byline', () => {
+  const html = `<html><head><script type="application/ld+json">${JSON.stringify({ '@type': 'Article', author: [{ '@type': 'Organization', name: 'Example Media' }, { '@type': 'Person', name: 'José Muñoz' }] })}</script></head><body></body></html>`
+  assertEquals(extractArticle(html, BASE).author, 'José Muñoz')
+})
+Deno.test('generic editorial metadata falls through without inventing a name', () => {
+  const html = '<html><head><meta name="author" content="Editors"></head><body><span class="byline">Jane Doe</span></body></html>'
+  assertEquals(extractArticle(html, BASE).author, 'Jane Doe')
+  assertEquals(extractArticle(html.replace('Jane Doe', 'Editors'), BASE).author, null)
+})

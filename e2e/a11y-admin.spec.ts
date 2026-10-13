@@ -1,6 +1,7 @@
 import { test, expect } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 import { REDUCED_MOTION } from './support/reducedMotion';
+import { waitForAppReady } from './support/appReady';
 import { ADMIN_ARCHETYPES } from '../src/config/adminArchetypes';
 
 // Route transitions fade opacity 0->1 (LayoutShell motion.div). axe blends that
@@ -110,7 +111,7 @@ test.describe('Admin shell — automated a11y', () => {
   for (const route of ADMIN_ROUTES) {
     test(`${route} has no serious/critical axe violations`, async ({ page }) => {
       await page.goto(route);
-      await page.waitForLoadState('networkidle').catch(() => {});
+      await waitForAppReady(page);
       if (!new URL(page.url()).pathname.startsWith('/admin')) {
         test.skip(
           true,
@@ -118,9 +119,8 @@ test.describe('Admin shell — automated a11y', () => {
         );
         return;
       }
-      await page
-        .waitForSelector('main, [role="main"], #admin-main-content', { timeout: 30_000 })
-        .catch(() => {});
+      await expect(page.locator('h1')).toHaveCount(1, { timeout: 30_000 });
+      await expect(page.locator('main, [role="main"], #admin-main-content').first()).toBeVisible();
 
       const results = await new AxeBuilder({ page })
         .exclude('footer')
@@ -154,9 +154,7 @@ test.describe('Admin shell — automated a11y', () => {
 
   test('admin shell exposes a skip link to main content', async ({ page }) => {
     await page.goto('/admin');
-    // networkidle, not domcontentloaded — AdminRouteGuard redirects unauthenticated
-    // sessions away via a useEffect that fires after DOMContentLoaded.
-    await page.waitForLoadState('networkidle').catch(() => {});
+    await waitForAppReady(page);
     if (!new URL(page.url()).pathname.startsWith('/admin')) {
       test.skip(true, 'Admin requires auth; run with a signed-in session to assert skip link.');
       return;

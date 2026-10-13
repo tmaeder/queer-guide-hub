@@ -42,7 +42,7 @@ export function buildRecord(
       record.content   = normalized.description
       record.url       = ((normalized.urls as string[]) ?? [])[0]
       record.image_url = ((normalized.images as string[]) ?? [])[0]
-      if (meta.source_name)  record.publisher_name = meta.source_name
+      if (meta.publisher_name || meta.source_name) record.publisher_name = meta.publisher_name || meta.source_name
       if (meta.published_at) record.published_at = meta.published_at
       break
 

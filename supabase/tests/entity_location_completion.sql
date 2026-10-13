@@ -1,6 +1,6 @@
 begin;
 do $$
-declare paris uuid; reunion uuid; france uuid; us uuid; ev uuid; foreign_venue uuid; complete_venue uuid; got uuid; blocked boolean;
+declare paris uuid; reunion uuid; france uuid; us uuid; ev uuid; foreign_venue uuid; complete_venue uuid; incomplete_venue uuid; got uuid; blocked boolean;
 begin
  select c.id,c.country_id into paris,france from cities c join countries co on co.id=c.country_id
  where c.wikidata_qid='Q160506' and co.code='FR' and c.duplicate_of_id is null;
@@ -53,6 +53,12 @@ begin
    where j.entity_table='venues' and j.entity_id=complete_venue and j.status='done'
      and j.last_error is null and j.fingerprint=entity_location_fingerprint(to_jsonb(v)))
    then raise exception 'Complete venue retained stale no_match job'; end if;
+ select v.id into incomplete_venue from venues v join entity_location_jobs j
+   on j.entity_table='venues' and j.entity_id=v.id
+ where v.duplicate_of_id is null and (v.latitude is null or v.longitude is null)
+   and nullif(btrim(v.website),'') is not null limit 1;
+ if incomplete_venue is null then raise exception 'Incomplete venue job fixture absent'; end if;
+ update venues set website=website where id=incomplete_venue;
 end $$;
 rollback;
-select 'namesake resolver, country and coordinate guards, and complete-job reconciliation passed' result;
+select 'namesake resolver, country and coordinate guards, and both complete and incomplete venue enqueue passed' result;

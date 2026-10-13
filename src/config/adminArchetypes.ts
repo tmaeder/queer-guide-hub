@@ -136,6 +136,8 @@ export const ADMIN_ARCHETYPES: AdminArchetypeEntry[] = [
   // ── A · Index (the archetype the claim lives or dies on) ───────────────
   { path: 'content', archetype: 'A', title: 'Content', adopted: true },
   { path: 'content/:type', archetype: 'A', adopted: true },
+  { path: 'content/redirects', archetype: 'A', title: 'Redirects', adopted: true },
+  { path: 'content/redirects/manual', archetype: 'A', adopted: true },
   { path: 'content/personalities', archetype: 'A', title: 'Personalities', adopted: true },
   { path: 'content/milestones', archetype: 'A', title: 'Milestones', adopted: true },
   { path: 'users', archetype: 'A', title: 'Users', adopted: true },
@@ -144,6 +146,18 @@ export const ADMIN_ARCHETYPES: AdminArchetypeEntry[] = [
     archetype: 'A',
     title: 'News Sources',
     caveat: 'Feed index with publisher linking and ingestion diagnostics.',
+  },
+  {
+    path: 'news-authors/articles',
+    archetype: 'A',
+    title: 'Author articles',
+    caveat: 'Exact-byline article index reached from author management.',
+  },
+  {
+    path: 'news-authors',
+    archetype: 'A',
+    title: 'News Authors',
+    caveat: 'RPC-backed byline index with an article drilldown and name-management dialogs.',
   },
   { path: 'content/organizations', archetype: 'A', title: 'Organisations', adopted: true },
   { path: 'business', archetype: 'A', title: 'Organisations', adopted: true },

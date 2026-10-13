@@ -284,6 +284,10 @@ export default defineConfig(({ mode }) => ({
               test: /node_modules\/(clsx|tailwind-merge|class-variance-authority|use-sync-external-store)\//,
             },
             { name: 'shared-utils-v2', test: /node_modules\/date-fns\// },
+            // React Email/Tiptap and Radix both use Floating UI. Give those
+            // shared primitives their own home so public popovers never pull
+            // in the lazy email editor's entire Tiptap chunk.
+            { name: 'floating-ui', test: /node_modules\/@floating-ui\// },
             { name: 'graph', test: /node_modules\/(react-force-graph|force-graph|d3-)/ },
             { name: 'exceljs', test: /node_modules\/exceljs\// },
             { name: 'maplibre', test: /node_modules\/(maplibre-gl|@protomaps)\// },

@@ -5,6 +5,7 @@
  */
 
 import { Resend } from "npm:resend@2.0.0";
+import { stripEmailEditorMetadata } from './email-template-content.ts';
 
 export interface EmailMessage {
   from: string;
@@ -44,7 +45,9 @@ export async function sendEmail(msg: EmailMessage): Promise<EmailResult> {
     from: msg.from,
     to: msg.to,
     subject: msg.subject,
-    html: msg.html,
+    // Editor state is stored in an inert comment alongside the template HTML.
+    // It is only for the admin editor, never part of the delivered message.
+    html: stripEmailEditorMetadata(msg.html),
   };
   if (msg.text) payload.text = msg.text;
   if (msg.headers) payload.headers = msg.headers;

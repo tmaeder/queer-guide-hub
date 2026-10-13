@@ -1,3 +1,4 @@
+import { personAuthorCandidate } from '../_shared/news-author.ts'
 import { getServiceClient, jsonResponse, errorResponse, corsResponse, requireInternalOrAdmin } from '../_shared/supabase-client.ts'
 import { withCircuitBreaker } from '../_shared/circuit-breaker.ts'
 import type { SourceAdapter, RawItem, NormalizedItem, AdapterConfig } from '../_shared/source-adapter.ts'
@@ -295,9 +296,11 @@ const rssNewsAdapter: SourceAdapter = {
       dates: { start: normalizeDate(d.published_at || d.publishedAt || d.pubDate) },
       tags: extractTags(d.title as string || '', d.content as string || ''),
       metadata: {
-        author: typeof d.author === 'string' ? stripLoneSurrogates(d.author) : d.author,
+        author: personAuthorCandidate(typeof d.author === 'string' ? stripLoneSurrogates(d.author) : d.author, [d.source_name as string]),
+        original_author: d.original_author ?? d.author,
         source_id: d.source_id,
         source_name: d.source_name,
+        publisher_name: d.publisher_name,
         excerpt: excerptOf(cleanText(d.excerpt as string || d.description as string || '')),
         published_at: normalizeDate(d.published_at || d.publishedAt || d.pubDate),
         url: d.url,
@@ -408,7 +411,7 @@ async function fetchGNews(baseUrl: string): Promise<Record<string, unknown>[]> {
   const json = await res.json()
   return (json.articles || []).map((a: Record<string, unknown>) => ({
     title: a.title, content: a.content || a.description, url: a.url,
-    image_url: a.image, author: (a.source as Record<string, unknown>)?.name,
+    image_url: a.image, author: null, publisher_name: (a.source as Record<string, unknown>)?.name,
     published_at: a.publishedAt, excerpt: a.description,
   }))
 }
@@ -423,7 +426,7 @@ async function fetchTheNewsApi(baseUrl: string): Promise<Record<string, unknown>
   const json = await res.json()
   return (json.data || []).map((a: Record<string, unknown>) => ({
     title: a.title, content: a.description || a.snippet, url: a.url,
-    image_url: a.image_url, author: a.source,
+    image_url: a.image_url, author: null, publisher_name: a.source,
     published_at: a.published_at, excerpt: a.snippet || a.description,
   }))
 }

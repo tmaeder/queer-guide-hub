@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { loadAdminRoles } from '@/hooks/adminRoleRequests';
 import { useAuth } from '@/hooks/useAuth';
 import type { Database } from '@/integrations/supabase/types';
 
@@ -44,16 +44,13 @@ export function useAdminRoles() {
 
     try {
       setLoading(true);
-      const { data, error } = await supabase
-        .from('user_roles')
-        .select('*')
-        .eq('user_id', user.id);
+      const { data, error } = await loadAdminRoles(user.id);
 
       if (error) throw error;
 
       setUserRoles(data || []);
 
-      const roles = (data || []).map(r => r.role);
+      const roles = (data || []).map((r) => r.role);
       setIsAdmin(roles.includes('admin'));
       setIsModerator(roles.includes('moderator'));
       setIsEditor(roles.includes('editor'));
@@ -65,7 +62,7 @@ export function useAdminRoles() {
   };
 
   const hasRole = (role: AppRole): boolean => {
-    return userRoles.some(r => r.role === role);
+    return userRoles.some((r) => r.role === role);
   };
 
   const canManageContent = (): boolean => {
@@ -80,6 +77,6 @@ export function useAdminRoles() {
     isEditor,
     hasRole,
     canManageContent,
-    refetch: fetchUserRoles
+    refetch: fetchUserRoles,
   };
 }

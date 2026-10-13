@@ -371,3 +371,14 @@ Deno.test('extractChannelImage still behaves exactly as before', () => {
     '<item><title>E</title><link>https://x/1</link></item></channel></rss>'
   assertEquals(extractChannelImage(feed), 'https://cdn.example/show.jpg')
 })
+
+Deno.test('podcast brand credits are preserved as provenance, never person authors', () => {
+  const xml = '<rss><channel><title>Dyking Out</title><item><title>Episode</title><itunes:author>Big Money Players Network and iHeartPodcasts</itunes:author><enclosure url="https://example.com/episode.mp3" type="audio/mpeg"/></item></channel></rss>'
+  const item = parseRssItems(xml, true)[0]
+  assertEquals(item.author, null)
+  assertEquals(item.original_author, 'Big Money Players Network and iHeartPodcasts')
+})
+Deno.test('RSS tries the next person credit after an invalid creator', () => {
+  const xml = '<rss><channel><title>Example</title><item><title>Story</title><link>https://example.com/story</link><dc:creator>Editors</dc:creator><author>José Muñoz</author></item></channel></rss>'
+  assertEquals(parseRssItems(xml)[0].author, 'José Muñoz')
+})

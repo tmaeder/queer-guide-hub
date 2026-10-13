@@ -103,27 +103,14 @@ function mergeQuery(
   overrides: Record<string, string> | null,
   utmDefaults: Record<string, string> | null,
 ): string {
-  let basePath: string;
-  let targetParams: URLSearchParams;
-
-  if (targetUrl.startsWith("http")) {
-    const url = new URL(targetUrl);
-    basePath = url.origin + url.pathname;
-    targetParams = url.searchParams;
-  } else {
-    const qIdx = targetUrl.indexOf("?");
-    if (qIdx >= 0) {
-      basePath = targetUrl.substring(0, qIdx);
-      targetParams = new URLSearchParams(targetUrl.substring(qIdx + 1));
-    } else {
-      basePath = targetUrl;
-      targetParams = new URLSearchParams();
-    }
-  }
+  const parsed = new URL(targetUrl, "https://queer.guide");
+  const basePath = targetUrl.startsWith("http") ? parsed.origin + parsed.pathname : parsed.pathname;
+  const targetParams = parsed.searchParams;
+  const fragment = parsed.hash;
 
   if (mode === "DROP") {
     const qs = targetParams.toString();
-    return qs ? `${basePath}?${qs}` : basePath;
+    return (qs ? `${basePath}?${qs}` : basePath) + fragment;
   }
 
   const merged = new URLSearchParams(targetParams);
@@ -154,7 +141,7 @@ function mergeQuery(
   }
 
   const qs = merged.toString();
-  return qs ? `${basePath}?${qs}` : basePath;
+  return (qs ? `${basePath}?${qs}` : basePath) + fragment;
 }
 
 async function hashIp(ip: string): Promise<string> {
@@ -267,6 +254,13 @@ async function handleRedirect(
     locationUrl = `https://queer.guide${finalUrl}`;
   }
 
+  // Link checkers and admin previews must resolve without consuming a visit or limit.
+  if (req.method === "HEAD") {
+    return new Response(null, { status: redirect.status_code, headers: {
+      "Location": locationUrl, "Cache-Control": "no-cache, no-store", "X-Robots-Tag": "noindex",
+    } });
+  }
+
   // Record click — must await so Deno runtime doesn't exit before it completes
   const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
   const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -283,7 +277,7 @@ async function handleRedirect(
       p_query: incomingQuery,
       p_referer: req.headers.get("referer"),
       p_user_agent: req.headers.get("user-agent")?.substring(0, 256),
-      p_country: req.headers.get("cf-ipcountry"),
+      p_country: req.headers.get("x-qg-visitor-country") || req.headers.get("cf-ipcountry"),
       p_ip_hash: ipHash,
       p_status: redirect.status_code,
     });

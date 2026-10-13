@@ -10,9 +10,30 @@ const SLUG_MIN = 3;
 const SLUG_MAX = 64;
 
 const RESERVED_SLUGS = new Set([
-  'admin', 'api', 'go', 'auth', 'login', 'signup', 'sitemap', 'robots',
-  'favicon', 'manifest', 'sw', 'index', 'health', 'status', 'null', 'undefined',
-  'test', 'www', 'mail', 'ftp', 'cdn', 'assets', 'static', 'public',
+  'admin',
+  'api',
+  'go',
+  'auth',
+  'login',
+  'signup',
+  'sitemap',
+  'robots',
+  'favicon',
+  'manifest',
+  'sw',
+  'index',
+  'health',
+  'status',
+  'null',
+  'undefined',
+  'test',
+  'www',
+  'mail',
+  'ftp',
+  'cdn',
+  'assets',
+  'static',
+  'public',
 ]);
 
 export interface ValidationResult {
@@ -34,7 +55,8 @@ export function validateSlug(slug: string): ValidationResult {
   if (!SLUG_REGEX.test(s)) {
     return {
       valid: false,
-      error: 'Slug must contain only lowercase letters, numbers, and hyphens (cannot start or end with a hyphen)',
+      error:
+        'Slug must contain only lowercase letters, numbers, and hyphens (cannot start or end with a hyphen)',
     };
   }
   if (RESERVED_SLUGS.has(s)) {
@@ -47,15 +69,9 @@ export function validateSlug(slug: string): ValidationResult {
 // ── Target validation ───────────────────────────────────────────────────────
 
 /** Domains allowed for external redirects. Add more as needed. */
-const ALLOWED_EXTERNAL_HOSTS = new Set([
-  'queer.guide',
-  'www.queer.guide',
-  'queer-guide.pages.dev',
-]);
+const ALLOWED_EXTERNAL_HOSTS = new Set(['queer.guide', 'www.queer.guide', 'queer-guide.pages.dev']);
 
-const DANGEROUS_PROTOCOLS = new Set([
-  'javascript:', 'data:', 'vbscript:', 'blob:', 'file:',
-]);
+const DANGEROUS_PROTOCOLS = new Set(['javascript:', 'data:', 'vbscript:', 'blob:', 'file:']);
 
 export function validateTarget(target: string): ValidationResult {
   if (!target || !target.trim()) {
@@ -98,7 +114,10 @@ export function validateTarget(target: string): ValidationResult {
 
     return { valid: true };
   } catch {
-    return { valid: false, error: 'Target must be a valid relative path (starting with /) or absolute URL' };
+    return {
+      valid: false,
+      error: 'Target must be a valid relative path (starting with /) or absolute URL',
+    };
   }
 }
 
@@ -120,28 +139,15 @@ export function mergeQueryParams(targetUrl: string, options: QueryMergeOptions):
   const { mode, incomingQuery, overrides, utmDefaults } = options;
 
   // Parse target URL to extract its existing query params
-  let basePath: string;
-  let targetParams: URLSearchParams;
-
-  if (targetUrl.startsWith('http')) {
-    const url = new URL(targetUrl);
-    basePath = url.origin + url.pathname;
-    targetParams = url.searchParams;
-  } else {
-    const qIdx = targetUrl.indexOf('?');
-    if (qIdx >= 0) {
-      basePath = targetUrl.substring(0, qIdx);
-      targetParams = new URLSearchParams(targetUrl.substring(qIdx + 1));
-    } else {
-      basePath = targetUrl;
-      targetParams = new URLSearchParams();
-    }
-  }
+  const parsed = new URL(targetUrl, 'https://queer.guide');
+  const basePath = targetUrl.startsWith('http') ? parsed.origin + parsed.pathname : parsed.pathname;
+  const targetParams = parsed.searchParams;
+  const fragment = parsed.hash;
 
   if (mode === 'DROP') {
     // Only keep target's own params
     const qs = targetParams.toString();
-    return qs ? `${basePath}?${qs}` : basePath;
+    return (qs ? `${basePath}?${qs}` : basePath) + fragment;
   }
 
   const merged = new URLSearchParams(targetParams);
@@ -182,7 +188,7 @@ export function mergeQueryParams(targetUrl: string, options: QueryMergeOptions):
   }
 
   const qs = merged.toString();
-  return qs ? `${basePath}?${qs}` : basePath;
+  return (qs ? `${basePath}?${qs}` : basePath) + fragment;
 }
 
 // ── Loop detection ──────────────────────────────────────────────────────────
@@ -223,7 +229,10 @@ export function detectLoop(
 
   // For /go/ short links, check if target points back to /go/
   if (dest.startsWith('/go/')) {
-    return { safe: false, error: 'Target points to another short link, which could create a chain' };
+    return {
+      safe: false,
+      error: 'Target points to another short link, which could create a chain',
+    };
   }
 
   return { safe: true };

@@ -1,3 +1,4 @@
+import { personAuthorCandidate } from '../news-author.ts'
 import * as cheerio from 'https://esm.sh/cheerio@1.0.0-rc.12'
 
 // Readability-lite: recover full article body + metadata from a fetched HTML page.
@@ -80,19 +81,17 @@ function collectJsonLd($: cheerio.CheerioAPI): Record<string, unknown>[] {
 }
 
 function jsonLdAuthor(node: Record<string, unknown>): string | null {
-  const a = node.author
-  if (!a) return null
-  if (typeof a === 'string') return a.trim() || null
-  if (Array.isArray(a)) {
-    const names = a.map((x) => (x && typeof x === 'object' ? (x as Record<string, unknown>).name : x))
-      .map((n) => (n ?? '').toString().trim()).filter(Boolean)
-    return names.length ? names.join(', ') : null
-  }
-  if (typeof a === 'object') {
-    const n = (a as Record<string, unknown>).name
-    return n ? n.toString().trim() || null : null
-  }
-  return null
+  const candidates = Array.isArray(node.author) ? node.author : [node.author]
+  const names = candidates.map((candidate) => {
+    if (candidate && typeof candidate === 'object') {
+      const obj = candidate as Record<string, unknown>
+      const types = Array.isArray(obj['@type']) ? obj['@type'] : [obj['@type']]
+      if (types.includes('Organization')) return null
+      return personAuthorCandidate(obj.name)
+    }
+    return personAuthorCandidate(candidate)
+  }).filter(Boolean)
+  return names.join(', ') || null
 }
 
 function jsonLdImage(node: Record<string, unknown>): string | null {
@@ -151,12 +150,14 @@ export function extractArticle(html: string, url: string): ExtractedArticle {
   const ld = collectJsonLd($)
   const articleLd = ld.find(isArticleNode) ?? null
 
+  const publisher = articleLd?.publisher as Record<string, unknown> | undefined
+  const credits = [typeof publisher?.name === 'string' ? publisher.name : null, $('meta[property="og:site_name"]').attr('content')]
   result.author = firstNonEmpty(
-    articleLd ? jsonLdAuthor(articleLd) : null,
-    $('meta[name="author"]').attr('content'),
-    $('meta[property="article:author"]').attr('content'),
-    $('[rel="author"]').first().text(),
-    $('.byline, .author, .c-byline__author').first().text(),
+    personAuthorCandidate(articleLd ? jsonLdAuthor(articleLd) : null, credits),
+    personAuthorCandidate($('meta[name="author"]').attr('content'), credits),
+    personAuthorCandidate($('meta[property="article:author"]').attr('content'), credits),
+    ...$('[rel="author"], .byline, .author, .c-byline__author').toArray()
+      .map((el) => personAuthorCandidate($(el).text(), credits)),
   )
 
   result.publishedAt = normalizeIsoDate(firstNonEmpty(

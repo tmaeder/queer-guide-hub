@@ -122,7 +122,7 @@ describe('admin archetype registry', () => {
     const caveated = ADMIN_ARCHETYPES.filter((e) => e.archetype && e.caveat).length;
     const exempt = ADMIN_ARCHETYPES.filter((e) => e.archetype === null).length;
     // Organisation workspace has its own static route; Business remains a redirect.
-    expect({ clean, caveated, exempt }).toEqual({ clean: 24, caveated: 11, exempt: 4 });
+    expect({ clean, caveated, exempt }).toEqual({ clean: 26, caveated: 13, exempt: 4 });
     expect(clean + caveated + exempt).toBe(ADMIN_ARCHETYPES.length);
   });
 

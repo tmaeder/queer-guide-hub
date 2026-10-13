@@ -186,6 +186,18 @@ test.describe('design system: buttons', () => {
 });
 
 test.describe('design system: dialog', () => {
+  // Forced ANONYMOUS, and that is the whole reason this test ever ran at all.
+  // playwright.config.ts attaches `storageState` whenever E2E_ADMIN_* is set,
+  // and e2e-pr.yml sets both — so in CI the run was signed in, `/trips` showed
+  // no "Sign in" button, and the two `if (count > 0)` guards below meant the
+  // test passed having opened no dialog and measured nothing. It reported green
+  // through the entire window in which every dialog on the site rendered at
+  // --radius-container instead of --radius-panel (unlayered :where() fallback
+  // in index.css beating `rounded-panel`, fixed 2026-10-13). Pinning an empty
+  // storageState makes both environments measure the same thing, which is what
+  // lets the assertions below be unconditional.
+  test.use({ storageState: { cookies: [], origins: [] } });
+
   test('dialog uses --radius-panel', async ({ page }) => {
     await page.goto('/trips');
     // Wait for the app to paint, not for the network to fall idle. These guards
@@ -195,20 +207,32 @@ test.describe('design system: dialog', () => {
     await page.waitForSelector('#root *', { state: 'attached', timeout: 15_000 });
     await dismissCookieBanner(page);
     await page.waitForTimeout(300);
+    // Positive controls, not politeness: each of these used to be an `if` that
+    // skipped the assertion, so "no dialog" and "correct dialog" were the same
+    // green. Assert the dialog opened BEFORE trusting anything measured on it.
     const signInBtn = page.getByRole('button', { name: /sign in/i }).first();
-    if ((await signInBtn.count()) > 0) {
-      await signInBtn.click();
-      await page.waitForTimeout(500);
-      const dialog = page.getByRole('dialog').first();
-      if ((await dialog.count()) > 0) {
-        const radius = await dialog.evaluate((el) => {
-          // The dialog content panel is the styled child
-          const panel = el.querySelector('[class*="DialogContent"], [class*="dialog"]') || el;
-          return getComputedStyle(panel).borderRadius;
-        });
-        expect(radius).toBe(await resolveRadius(page, '--radius-panel'));
-      }
-    }
+    await expect(signInBtn).toBeVisible();
+    await signInBtn.click();
+
+    const dialog = page.getByRole('dialog').first();
+    await expect(dialog).toBeVisible();
+
+    const measured = await dialog.evaluate((el) => {
+      // `getByRole('dialog')` IS the styled panel (Radix puts role=dialog on
+      // DialogContent). The old `querySelector('[class*="dialog"]')` child hunt
+      // matched nothing — verified on prod — and only ever fell through to the
+      // element itself, so it was noise hiding the fact that the panel was the
+      // thing being read all along.
+      const style = getComputedStyle(el);
+      return { radius: style.borderRadius, className: String(el.className) };
+    });
+
+    // The panel must declare the shape utility, not merely happen to compute
+    // the right value: with the class present and a fallback rule overriding
+    // it, the px was wrong; with the class absent and the fallback supplying
+    // 26px by luck, the px would be right and the contract still broken.
+    expect(measured.className).toContain('rounded-panel');
+    expect(measured.radius).toBe(await resolveRadius(page, '--radius-panel'));
   });
 });
 

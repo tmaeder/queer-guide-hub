@@ -54,8 +54,16 @@ test.describe('unified admin review queue', () => {
   }) => {
     // The original unfiltered contract, preserved verbatim: findings are reclassified, never
     // removed, so one click must still return the whole union.
+    // Finish the initial load before issuing another expensive scope query.
+    const initialResponse = page.waitForResponse(
+      (r) =>
+        r.url().includes('/rpc/get_admin_review_queue') &&
+        r.request().postDataJSON()?.p_scope === 'decisions',
+    );
     await page.goto('/admin');
     await expect(page.getByRole('heading', { name: 'Review queue', exact: true })).toBeVisible();
+    const initial = await initialResponse;
+    expect(initial.ok(), `Initial queue HTTP ${initial.status()}: ${initial.ok() ? '' : await initial.text()}`).toBe(true);
     const responsePromise = page.waitForResponse(
       (r) =>
         r.url().includes('/rpc/get_admin_review_queue') &&
@@ -63,15 +71,22 @@ test.describe('unified admin review queue', () => {
     );
     await page.getByRole('button', { name: /^Incl\. detected/ }).click();
     const response = await responsePromise;
-    expect(response.ok()).toBe(true);
+    expect(response.ok(), `All scope HTTP ${response.status()}: ${response.ok() ? '' : await response.text()}`).toBe(true);
     const data = await response.json();
     expect(data.total).toBe(data.all_total);
     expect(data.total).toBeGreaterThan(data.decisions_total);
     await expect(page.getByText('The review queue could not be loaded')).toHaveCount(0);
   });
   test('overdue is a row predicate with matching counts', async ({ page }) => {
+    const initialResponse = page.waitForResponse(
+      (r) =>
+        r.url().includes('/rpc/get_admin_review_queue') &&
+        r.request().postDataJSON()?.p_scope === 'decisions',
+    );
     await page.goto('/admin');
     await expect(page.getByRole('heading', { name: 'Review queue', exact: true })).toBeVisible();
+    const initial = await initialResponse;
+    expect(initial.ok(), `Initial queue HTTP ${initial.status()}: ${initial.ok() ? '' : await initial.text()}`).toBe(true);
     const responsePromise = page.waitForResponse(
       (r) =>
         r.url().includes('/rpc/get_admin_review_queue') &&
@@ -79,7 +94,7 @@ test.describe('unified admin review queue', () => {
     );
     await page.getByRole('button', { name: /^Overdue/ }).click();
     const response = await responsePromise;
-    expect(response.ok()).toBe(true);
+    expect(response.ok(), `Overdue scope HTTP ${response.status()}: ${response.ok() ? '' : await response.text()}`).toBe(true);
     const data = await response.json();
     expect(data.total).toBe(data.overdue_total);
     expect(data.items.every((x: { overdue: boolean }) => x.overdue)).toBe(true);

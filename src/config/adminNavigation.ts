@@ -31,6 +31,7 @@ import {
   Calendar,
   Newspaper,
   Rss,
+  UserRoundPen,
   Users,
   UserCog,
   Tag,
@@ -223,6 +224,14 @@ export const adminNavSections: AdminNavSection[] = [
         icon: Rss,
         route: '/admin/news-sources',
         minRole: 'moderator',
+        group: 'Editorial',
+      },
+      {
+        id: 'news-authors',
+        minRole: 'moderator',
+        label: 'News Authors',
+        icon: UserRoundPen,
+        route: '/admin/news-authors',
         group: 'Editorial',
       },
       {

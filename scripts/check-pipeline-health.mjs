@@ -5420,6 +5420,58 @@ const DISOWNED_PROSE_CEILING = 380
         }
       }
     }
+
+    // ---- the published-but-empty window (99991791910834) ----
+    //
+    // Deliberately NOT nested inside the resolver-gate branch above: that one short-circuits the
+    // whole ladder, so a dropped re-open arm would be invisible for as long as the resolver gate
+    // was also broken. Two independent producers want two independent readings.
+    //
+    // `run_city_trust_recompute` has deindexed zero-content cities since 20260821051221, but its
+    // scope only re-opened a city that CHANGED or went 30 days unverified -- and losing a venue
+    // never writes the city row, so a city that lost its last venue stayed published and empty for
+    // up to a month. Measured when the arm shipped: 33 such rows, oldest created 2026-04-21, every
+    // one carrying a trust_score the classifier only assigns to a NON-empty row.
+    if (cp.probe_ok === true) {
+      if (cp.recompute_has_reopen_arm !== true) {
+        // Before the counts, for the same reason as the resolver gate: without the arm the counts
+        // below measure whatever last night happened to touch, not a working engine.
+        console.error(
+          '✗ run_city_trust_recompute lost its empty-shell re-open arm — a CREATE OR REPLACE ' +
+            'dropped it (migration 99991791910834), so a city that loses its last venue is ' +
+            'published and empty again until the 30-day refresh',
+        )
+        FAILED = true
+      } else {
+        const emptyNow = Number(cp.empty_published ?? 0)
+        const emptyStale = Number(cp.empty_published_stale ?? 0)
+        if (emptyStale > 0) {
+          console.error(
+            `✗ city_publication_signals.empty_published_stale = ${emptyStale} — a city has been ` +
+              'published with zero venues and zero events for longer than a nightly pass, so the ' +
+              'arm is live in the source but is not reaching it',
+          )
+          console.error(
+            '  Check that city_trust_recompute is enabled AND still scheduled: auto-pause sets ' +
+              'enabled=false while pg_cron keeps firing, and a paused-then-recovered row reads ' +
+              'exactly like a deliberate retirement. Read the `recreated` list from ' +
+              'sync_automations_to_cron rather than assuming a re-enable worked.',
+          )
+          FAILED = true
+        } else {
+          console.log('✓ no city has been published empty for longer than a nightly pass')
+          // ADVISORY, and it must stay that way: every city is empty at creation, so a row sits
+          // here legitimately between being created (or losing its last venue) and the next
+          // 03:45 pass. Gating on this level fires on correct behaviour.
+          if (emptyNow > 0) {
+            console.warn(
+              `⚠ ${emptyNow} published cities currently have no venues and no events. This is the ` +
+                'one-pass window, not a defect — the recompute deindexes them on its next run.',
+            )
+          }
+        }
+      }
+    }
   }
 }
 
