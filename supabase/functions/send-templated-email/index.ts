@@ -2,6 +2,7 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5';
 import { sendEmail, isEmailConfigured } from "../_shared/email.ts";
 import { getEmailBranding, fromHeader, wrapHtml } from "../_shared/branding.ts";
 import { getCorsHeaders } from '../_shared/supabase-client.ts';
+import { takeEmailQuota } from './rate-limit.ts';
 
 function escapeHtml(s: string): string {
   return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
@@ -72,19 +73,15 @@ const handler = async (req: Request): Promise<Response> => {
       );
     }
 
-    // Basic rate limiting (per user id)
-    const ip = (req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
-               req.headers.get('cf-connecting-ip') ||
-               req.headers.get('x-real-ip') ||
-               "0.0.0.0");
-    const identifier = authData.user.id || ip;
-    const { data: allowed, error: rlError } = await supabase.rpc('check_rate_limit', {
-      identifier,
-      max_attempts: 100, // 100 emails/hour per admin user
-      time_window_minutes: 60
-    });
-    if (rlError || allowed === false) {
-      console.warn("Rate limit exceeded for send-templated-email", { identifier, rlError });
+    const quota = await takeEmailQuota((name, args) => supabase.rpc(name, args), authData.user.id);
+    if (quota === 'unavailable') {
+      return new Response(
+        JSON.stringify({ error: 'Email sending limit is temporarily unavailable. Try again.' }),
+        { status: 503, headers: { 'Content-Type': 'application/json', ...cors } },
+      );
+    }
+    if (quota === 'limited') {
+      console.warn("Rate limit exceeded for send-templated-email");
       return new Response(
         JSON.stringify({ error: "Rate limit exceeded" }),
         { status: 429, headers: { "Content-Type": "application/json", ...cors } }
