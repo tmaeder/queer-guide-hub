@@ -7,6 +7,10 @@ on:
       - 'scripts/lib/redirect-android-platform-build.mjs'
       - 'scripts/lib/redirect-native-test-wire.mjs'
       - 'supabase/functions/_shared/redirect-native-resolution.ts'
+      - 'supabase/functions/_shared/redirect-native-install-browser.ts'
+      - 'supabase/functions/_shared/redirect-native-install-page.ts'
+      - 'package.json'
+      - 'package-lock.json'
       - 'supabase/functions/redirect-handler/**'
       - 'functions/go/**'
       - 'workers/redirect-domains/**'
@@ -19,6 +23,10 @@ on:
       - 'scripts/lib/redirect-android-platform-build.mjs'
       - 'scripts/lib/redirect-native-test-wire.mjs'
       - 'supabase/functions/_shared/redirect-native-resolution.ts'
+      - 'supabase/functions/_shared/redirect-native-install-browser.ts'
+      - 'supabase/functions/_shared/redirect-native-install-page.ts'
+      - 'package.json'
+      - 'package-lock.json'
       - 'supabase/functions/redirect-handler/**'
       - 'functions/go/**'
       - 'workers/redirect-domains/**'
@@ -43,6 +51,9 @@ jobs:
       - uses: actions/setup-node@v7
         with:
           node-version: '22.20.0'
+          cache: npm
+      - name: Install locked browser fixture dependencies
+        run: npm ci --prefer-offline --no-audit --ignore-scripts
       - uses: actions/setup-java@v6
         with:
           distribution: temurin

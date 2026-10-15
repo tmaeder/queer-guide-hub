@@ -3333,3 +3333,12 @@ Live cleanup activation, signed iOS Clip/full-app and Android Play delivery, rea
 owner entry-point adoption, SDK publication, provider rollout and the remaining
 parity ledger requirements stay open. No production or signing/provider state was
 changed in this adapter step.
+
+
+The adapter's first CI run exposed a workflow-only dependency gap: the new actual
+browser-carrier fixture imports JSDOM, while the former core-only Android job did
+not install npm dependencies. The job now installs the committed lockfile with
+scripts disabled and watches the browser producer plus lockfile paths. Local
+adapter/core contracts passed before this correction; CI must confirm the fresh
+runner and directly traced native CodeQL build rather than treating local
+node_modules as clean-runner evidence.
