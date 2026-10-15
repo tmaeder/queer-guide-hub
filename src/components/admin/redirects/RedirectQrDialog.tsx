@@ -3,7 +3,8 @@ import { useRedirectQrStyle } from '@/hooks/useRedirectQrStyle';
 import { useQrExportStyle } from '@/hooks/useQrExportStyle';
 import { qrAppearance } from '@/lib/redirects/qrLogos';
 import { QrExportLogoChoice } from './QrExportLogoChoice';
-import { useCallback, useState } from 'react';
+import { useCallback, useId, useState } from 'react';
+import { installEntryUrl } from '@/lib/redirects/installLink';
 import { RedirectQrImageLinks } from './RedirectQrImageLinks';
 import {
   DEFAULT_QR_STYLE,
@@ -43,7 +44,13 @@ export function QrExport({
   linkId?: string;
 }) {
   const { user } = useAuth();
-  const scope = JSON.stringify([user?.id, url, linkId]);
+  const id = useId();
+  const baseScope = JSON.stringify([user?.id, url, linkId, managedShortLink]);
+  const [installScope, setInstallScope] = useState<string | null>(null);
+  const installUrl = managedShortLink ? installEntryUrl(url) : null;
+  const install = !!installUrl && installScope === baseScope;
+  const targetUrl = install ? installUrl : url;
+  const scope = JSON.stringify([user?.id, targetUrl, linkId]);
   const edits = useQrExportStyle(scope);
   const [publishingScope, setPublishingScope] = useState<string | null>(null);
   const publishing = publishingScope === scope;
@@ -69,7 +76,7 @@ export function QrExport({
     queryKey: [
       'redirect-qr',
       user?.id,
-      url,
+      targetUrl,
       qrAppearance(style),
       style.logoIdentity,
       managedShortLink,
@@ -79,12 +86,59 @@ export function QrExport({
     retry: false,
     enabled: ready && !error,
     queryFn: async ({ signal }) => {
-      return generateQr(qrTrackingUrl(url, managedShortLink), style, signal);
+      return generateQr(qrTrackingUrl(targetUrl, managedShortLink), style, signal);
     },
   });
   return (
     <div className="space-y-4">
-      <p className="break-all font-mono text-xs">{url}</p>
+      {installUrl && (
+        <fieldset className="space-y-2" disabled={publishing || logoBusy}>
+          <legend className="mb-2 text-sm font-medium">QR destination</legend>
+          <div className="flex flex-wrap gap-x-6 gap-y-2">
+            <label className="flex min-h-11 items-center gap-2 text-sm">
+              <input
+                type="radio"
+                className="accent-foreground"
+                name={id + '-purpose'}
+                checked={!install}
+                onChange={() => setInstallScope(null)}
+              />
+              Open link
+            </label>
+            <label className="flex min-h-11 items-center gap-2 text-sm">
+              <input
+                type="radio"
+                className="accent-foreground"
+                name={id + '-purpose'}
+                checked={install}
+                onChange={() => setInstallScope(baseScope)}
+              />
+              App installation
+            </label>
+          </div>
+          {install && (
+            <p className="text-sm text-muted-foreground">
+              Opens the app choice page without recording a visit. Requires a published app with
+              handoffs enabled. Save hosted image URLs before switching.
+            </p>
+          )}
+        </fieldset>
+      )}
+      <div className="space-y-2">
+        <p className="break-all font-mono text-xs">{targetUrl}</p>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() =>
+            void navigator.clipboard
+              .writeText(targetUrl)
+              .then(() => toast.success('Link copied'))
+              .catch(() => toast.error('Could not copy link'))
+          }
+        >
+          {install ? 'Copy install link' : 'Copy link'}
+        </Button>
+      </div>
       {!ready && !defaults.isError && <p role="status">Loading saved QR style…</p>}
       {defaults.isError && !standard && (
         <div className="space-y-2">
@@ -161,23 +215,11 @@ export function QrExport({
           src={qr.data.png}
           width={256}
           height={256}
-          alt={`QR code for ${url}`}
+          alt={`QR code for ${targetUrl}`}
           className="mx-auto max-w-full"
         />
       )}
       <div className="flex flex-wrap gap-2">
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() =>
-            void navigator.clipboard
-              .writeText(url)
-              .then(() => toast.success('Link copied'))
-              .catch(() => toast.error('Could not copy link'))
-          }
-        >
-          Copy link
-        </Button>
         <Button
           variant="outline"
           size="sm"
@@ -249,7 +291,8 @@ export function QrExport({
         <RedirectQrImageLinks
           key={'hosted:' + scope}
           accountId={user.id}
-          url={url}
+          url={targetUrl}
+          purpose={install ? 'install' : 'visit'}
           linkId={linkId}
           tracked={managedShortLink}
           style={style}
@@ -285,7 +328,9 @@ export function RedirectQrDialog({
         <DialogHeader>
           <DialogTitle>Share a QR code</DialogTitle>
           <DialogDescription>
-            The QR code opens this URL. Create a tracked link to collect visit analytics.
+            {managedShortLink
+              ? 'Share the link directly, or open its app installation page. Visitors choose whether to allow an app handoff.'
+              : 'The QR code opens this URL. Create a tracked link to collect visit analytics.'}
           </DialogDescription>
         </DialogHeader>
         <QrExport key={url} url={url} managedShortLink={managedShortLink} linkId={linkId} />

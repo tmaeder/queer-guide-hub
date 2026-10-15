@@ -239,3 +239,14 @@ submission explicitly uses POST and remains disabled until the protected script
 handler exists. App choice locks during preparation and while a receipt is active.
 Consent withdrawal aborts pending work, ignores stale responses and clears the
 password/capability links. Unknown outcomes are never retried automatically.
+
+
+Owners and permitted members can prepare a public installation entry from the
+managed link's QR sharing dialog. Choose **App installation**, then **Copy install
+link** or download a scan-verified PNG/JPG/SVG. Hosted image publication retains
+the same purpose and public campaign query, and follows the current managed
+hostname/slug/root. The QR contains only the public install page URL; no consent
+or private receipt is created by authoring, image retrieval or page rendering.
+Visitors make their own consented choice on that page. See
+[installation QR behavior](redirect-qr-branding.md#app-installation-links-and-qr-codes)
+for persistence, access checks and release ordering.

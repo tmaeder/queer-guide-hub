@@ -3342,3 +3342,51 @@ scripts disabled and watches the browser producer plus lockfile paths. Local
 adapter/core contracts passed before this correction; CI must confirm the fresh
 runner and directly traced native CodeQL build rather than treating local
 node_modules as clean-runner evidence.
+
+
+Owner/member public install entry controls are now implemented in the existing
+single-code sharing dialog. Managed links offer ordinary opening (default) or
+App installation, with Copy install link adjacent to the public URL, existing
+scan-verified local exports and hosted publication. The selected URL retains
+campaign values, source host/root and QR attribution marking; it contains no
+private capability. Consent and private receipt creation remain on the visitor's
+page. Destination selection locks during logo/publication work and export state
+is scoped to account/source/purpose. The incumbent admin design is preserved.
+
+A new unapplied QR-target migration stores visit/install purpose and a bounded,
+credential-free normalized public entry query on managed profiles. Legacy records
+retain visit semantics. Resource and table checks reject unsupported purpose,
+explicit-URL installation, password/click/handoff fields and malformed/oversized
+query data. The actual public profile and custom-artwork reservation construct
+the same exact marker-first URL and recheck existing creator/link permissions.
+Hosted images follow future slug/root changes, saved branding and revocation;
+there is no event or native receipt from authoring/profile/image retrieval.
+
+Evidence: the complete isolated SQL suite includes install authoring, current slug,
+query, custom artwork target, key/folder denial, revoked profiles and unchanged
+visit/receipt counts. Actual authenticated HTTP -> migrated SQL -> public profile
+-> real Wasm PNG/JPG/SVG independently decodes every installation image to the
+exact target, including normalized campaign values and the QR marker. Custom
+artwork publication/revocation/physical cleanup passes, and all five SDK suites
+pass.43 affected UI/helper tests pass. The detector ran once and returned[].
+Desktop1280x720 and390px mobile local-fixture captures show the controls and hosted
+verified image/URL states, with no horizontal overflow or console errors/warnings.
+The independent finish reviewer returned ship, no material fixes; the documenter
+confirmed no durable design-system change. No live provider/publication proof.
+
+The preceding6498ebf08 head passes Android core/platform and traced native CodeQL.
+The full GitGuardian report also identifies incident38260637 in browser/page
+reserved query-field name lists alongside38259152 in Swift; inspected lines have
+no credential value. Provider review remains unavailable without a logged-in
+GitGuardian session or API credential, and no scanner exclusion was introduced.
+New schema -> API plus native resolver/gateways -> frontend rollout, signed Play/
+App Clip delivery, owner adoption, full release and other parity requirements
+remain open. No production schema, provider, signing or DNS state changed.
+
+
+Release checks for the installation QR extension: app ratchet702 inherited errors,
+none new (baseline782, unchanged); production Vite build passes; Edge API Deno
+check passes with an isolated lock; targeted lint passes. All2,345 migrations
+parse with PostgreSQL17 grammar and unique versions, with no exemptions. A fresh
+read-only production history query confirms these branch candidates remain
+unapplied. No shared lock, baseline or live scheduling was changed.

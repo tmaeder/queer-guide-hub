@@ -187,6 +187,10 @@ export interface PublicReport {
   };
 }
 export interface QrImageOptions {
+  /** App installation is supported only with a managed linkId. */
+  purpose?: 'visit' | 'install';
+  /** Encoded public campaign query for install entries; no private handoff fields. */
+  entryQuery?: string;
   label?: string;
   expiresAt?: string | null;
   style?: Partial<{
@@ -202,6 +206,7 @@ export interface QrImageOptions {
 export type QrImageInput = QrImageOptions &
   ({ linkId: string; url?: never } | { url: string; linkId?: never });
 export interface QrImageLink {
+  purpose?: 'visit' | 'install';
   id: string;
   label: string;
   linkId: string | null;

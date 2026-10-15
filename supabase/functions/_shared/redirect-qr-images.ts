@@ -23,12 +23,31 @@ export function qrImageLinkInput(value: unknown) {
   const data = value as Record<string, unknown>;
   if (
     Object.keys(data).some(
-      (key) => !['linkId', 'url', 'label', 'expiresAt', 'style', 'logoMode', 'logo'].includes(key),
+      (key) =>
+        ![
+          'linkId',
+          'url',
+          'label',
+          'expiresAt',
+          'style',
+          'logoMode',
+          'logo',
+          'purpose',
+          'entryQuery',
+        ].includes(key),
     ) ||
     Object.hasOwn(data, 'linkId') === Object.hasOwn(data, 'url')
   )
     throw new Error('Choose a link or an explicit URL');
   const result: Record<string, unknown> = {};
+  if ('purpose' in data) {
+    if (
+      !['visit', 'install'].includes(data.purpose as string) ||
+      (data.purpose === 'install' && !('linkId' in data))
+    )
+      throw new Error('Choose visit or app installation for a managed link');
+    result.purpose = data.purpose;
+  }
   if ('linkId' in data) {
     if (typeof data.linkId !== 'string' || !UUID.test(data.linkId))
       throw new Error('Choose a valid managed link');
@@ -54,6 +73,27 @@ export function qrImageLinkInput(value: unknown) {
     )
       throw new Error('Provide an HTTP(S) URL without credentials up to 2048 bytes');
     result.url = url.href;
+  }
+  if ('entryQuery' in data) {
+    if (
+      data.purpose !== 'install' ||
+      typeof data.entryQuery !== 'string' ||
+      data.entryQuery.length > 2048
+    )
+      throw new Error('Entry query requires app installation');
+    const query = new URLSearchParams(data.entryQuery);
+    const reserved =
+      /^(?:pw|password|qg_click_id|qg_handoff|qg_app_choice|qg_handoff_(?:token|app|action)|x-qg-handoff-(?:token|app|action))$/i;
+    if (
+      [...query.keys()].some(
+        (key) => !/^[A-Za-z][A-Za-z0-9_.-]*$/.test(key) || reserved.test(key),
+      ) ||
+      query.size > 32
+    )
+      throw new Error('Provide a public campaign query without credentials or handoff fields');
+    const normalized = query.toString();
+    if (normalized.length > 2048) throw new Error('Entry query exceeds 2048 bytes');
+    result.entryQuery = normalized;
   }
   if ('label' in data) {
     if (typeof data.label !== 'string' || !data.label.trim() || data.label.trim().length > 100)

@@ -33,6 +33,7 @@ try {
   await db.exec(readFileSync('supabase/tests/redirect_qr_logo_assets.sql', 'utf8'));
   await db.exec(readFileSync('supabase/tests/redirect_qr_image_links.sql', 'utf8'));
   await db.exec(readFileSync('supabase/tests/redirect_qr_image_artwork.sql', 'utf8'));
+  await db.exec(readFileSync('supabase/tests/redirect_qr_install_targets.sql', 'utf8'));
   await db.exec(readFileSync('supabase/tests/redirect_customer_profiles.sql', 'utf8'));
   await db.exec(readFileSync('supabase/tests/redirect_webhooks.sql', 'utf8'));
   await db.exec(readFileSync('supabase/tests/redirect_password_branding.sql', 'utf8'));

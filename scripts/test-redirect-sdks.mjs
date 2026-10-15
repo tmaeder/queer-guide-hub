@@ -523,6 +523,23 @@ try {
     }
     logoDomain=await reportRequest('/qr-styles/domains/'+domain.id,'PATCH',{version:logoDomain.version,logoMode:'custom'});
     const preferencesBeforeCustom=await reportRequest('/qr-styles/workspace');
+    const installImage=await reportRequest('/qr-images','POST',{linkId:branded.id,purpose:'install',entryQuery:'utm_source=poster%20one&ref=community%2Bfriends',logo:logoPng.toString('base64')},undefined,201);
+    if(installImage.purpose!=='install'||installImage.state!=='published')throw new Error('Install image lost purpose/artwork publication');
+    const installProfile=await reportRequest('/public-qr-image','GET',undefined,capability(installImage));
+    const installTarget=branded.shortUrl+'?qg_handoff=install&utm_source=poster+one&ref=community%2Bfriends';
+    if(installProfile.url!==installTarget||installProfile.effectiveLogo.id!==installImage.logoAsset.id)throw new Error('Install profile lost exact campaign URL or custom artwork');
+    for(const format of ['png','jpg','svg']){
+      const response=await renderedImage(installImage.imageUrls[format],format);if(response.status!==200)throw new Error('Install QR rendering failed: '+await response.text());
+      const {data,info}=await sharp(new Uint8Array(await response.arrayBuffer())).ensureAlpha().raw().toBuffer({resolveWithObject:true});
+      if(decodeImageQr(new Uint8ClampedArray(data),info.width,info.height)?.data!==installTarget+'&qg_qr=1')throw new Error('Install hosted image encoded a different URL');
+    }
+    await reportRequest('/qr-images','POST',{linkId:branded.id,purpose:'install',entryQuery:'%70assword=private'},undefined,400);
+    await reportRequest('/qr-images','POST',{url:'https://example.org/',purpose:'install'},undefined,400);
+    await reportRequest('/qr-images/'+installImage.id,'DELETE',{version:installImage.version});
+    await db.query("UPDATE public.redirect_qr_assets SET next_cleanup_at=now()-interval '1 second' WHERE id=$1",[installImage.logoAsset.id]);
+    await policyRuntime.dispatchRedirectQrAssetCleanup(service,policyRuntime.qrAssetStorageConfig('https://fixture.supabase.co','fixture-service'),fixtureDnsFetch);
+    if(logoObjects.has(installImage.logoAsset.key))throw new Error('Revoked install image artwork was not cleaned');
+    await reportRequest('/public-qr-image','GET',undefined,capability(installImage),404);
     const customImage=await reportRequest('/qr-images','POST',{linkId:branded.id,logo:logoPng.toString('base64')},undefined,201);
     if(customImage.state!=='published'||customImage.logoMode!=='custom'||!customImage.logoAsset?.url)throw new Error('Custom image did not publish checked artwork');
     const customProfile=await reportRequest('/public-qr-image','GET',undefined,capability(customImage));

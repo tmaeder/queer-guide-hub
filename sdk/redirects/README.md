@@ -159,6 +159,17 @@ Defaults follow current workspace/domain branding. Creation requires links:read
 and current folder/ID access. Explicit arbitrary URL publication is restricted to
 an owner account session, rather than server keys.
 
+For an installation page, pass `purpose: "install"` with a managed `linkId`.
+Optional `entryQuery` carries public campaign fields, for example
+`utm_source=poster&ref=community%2Bfriends`; no password, click ID or private
+handoff fields are accepted. It is normalized, limited to32 fields/2048 bytes,
+and included after the fixed public install marker. The complete entry URL must
+fit2048 bytes. Existing clients/records default to `purpose: "visit"`. Hosted
+installation images follow the current canonical link and branding, including
+custom artwork verification. Their metadata reports `purpose`; public profiles
+retain the minimal URL/style/logo shape. Creation/rendering never mints a native
+receipt or records a visit.
+
 The creation response contains id/version/metadata plus `imageUrls.png`, `.jpg`
 and `.svg`. Each URL contains a random bearer capability, returned once; save the
 URL if you intend to embed it. The list API does not return the bearer or hash.

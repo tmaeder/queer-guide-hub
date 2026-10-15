@@ -37,7 +37,9 @@ export function RedirectQrImageLinks({
   ready,
   explicitAppearance,
   onBusy,
+  purpose = 'visit',
 }: {
+  purpose?: 'visit' | 'install';
   accountId: string;
   url: string;
   linkId?: string;
@@ -131,6 +133,7 @@ export function RedirectQrImageLinks({
         qrPublicationInput({
           url,
           linkId,
+          purpose,
           label,
           days,
           style,
@@ -332,8 +335,9 @@ export function RedirectQrImageLinks({
             Revoke this image link
           </Button>
           <p className="text-xs text-muted-foreground">
-            Image requests do not count as redirect visits. Scanning a managed link records a QR
-            visit.
+            {purpose === 'install'
+              ? 'Image requests and opening the app choice page do not record visits. Attribution is requested only when the visitor chooses an app handoff.'
+              : 'Image requests do not count as redirect visits. Scanning a managed link records a QR visit.'}
           </p>
         </div>
       )}
@@ -371,6 +375,9 @@ export function RedirectQrImageLinks({
                 <li key={row.id} className="space-y-2 py-4">
                   <div className="min-w-0 space-y-1 text-sm">
                     <p className="break-words font-medium">{row.label}</p>
+                    {row.purpose === 'install' && (
+                      <p className="text-sm text-muted-foreground">App installation</p>
+                    )}
                     <p>
                       {imageStatus(row)}
                       {row.linkId && row.linkId === linkId ? ' · This redirect' : ''}
