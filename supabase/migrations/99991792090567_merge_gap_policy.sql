@@ -432,7 +432,8 @@ CREATE INDEX IF NOT EXISTS ingestion_staging_combination_pending_idx
  AND (review_status IS NULL OR review_status IN ('auto','approved'));
 CREATE INDEX IF NOT EXISTS ingestion_staging_combination_history_idx
  ON public.ingestion_staging(target_table,target_record_id,created_at DESC)
- WHERE disposition IN ('inserted','updated','committed') AND ai_validation_status='approved'
+ WHERE disposition IN ('inserted','updated','committed','archived') AND ai_validation_status='approved'
+ AND (disposition<>'archived' OR (enriched_data->>'consensus_done'='true' AND enriched_data ? 'merged_into' AND target_record_id=dedup_match_id))
  AND (review_status IS NULL OR review_status IN ('auto','approved'));
 
 CREATE OR REPLACE FUNCTION public.load_source_combination_batch(p_table text,p_pipeline_run_id uuid DEFAULT NULL,p_limit int DEFAULT 100)
@@ -460,8 +461,9 @@ BEGIN
    SELECT entity_id,coalesce(jsonb_agg(to_jsonb(h)) FILTER(WHERE h.id IS NOT NULL),'[]') AS observations
    FROM unnest(ids) entity_id LEFT JOIN LATERAL (
      SELECT id,source_name,source_type,normalized_data,created_at FROM public.ingestion_staging
-     WHERE target_table=p_table AND target_record_id=entity_id AND disposition IN ('inserted','updated','committed')
+     WHERE target_table=p_table AND target_record_id=entity_id AND disposition IN ('inserted','updated','committed','archived')
      AND ai_validation_status='approved' AND (review_status IS NULL OR review_status IN ('auto','approved'))
+     AND (disposition<>'archived' OR (enriched_data->>'consensus_done'='true' AND enriched_data ? 'merged_into' AND target_record_id=dedup_match_id))
      AND created_at>=now()-interval '90 days' ORDER BY created_at DESC LIMIT 50
    ) h ON true GROUP BY entity_id
  ) observations;
@@ -572,3 +574,25 @@ END;
 $$;
 REVOKE ALL ON FUNCTION public.commit_matched_source_gaps(uuid) FROM PUBLIC,anon,authenticated;
 GRANT EXECUTE ON FUNCTION public.commit_matched_source_gaps(uuid) TO service_role;
+
+-- Preserve every venue source observation for later gap filling, including
+-- fields that the specialized venue consensus schema does not currently model.
+CREATE OR REPLACE FUNCTION public.archive_venue_consensus_sources(p_ids uuid[],p_primary uuid,p_venue uuid)
+RETURNS void LANGUAGE plpgsql SECURITY DEFINER SET search_path = '' AS $$
+DECLARE written int; primary_review text;
+BEGIN
+ IF coalesce(auth.jwt()->>'role','')<>'service_role' THEN RAISE EXCEPTION 'service only' USING ERRCODE='42501'; END IF;
+ IF coalesce(cardinality(p_ids),0)>500 OR p_primary=ANY(p_ids) OR NOT EXISTS
+   (SELECT 1 FROM public.ingestion_staging WHERE id=p_primary AND dedup_match_id=p_venue AND target_table='venues' AND enriched_data->>'consensus_done'='true') THEN
+   RAISE EXCEPTION 'invalid venue consensus group'; END IF;
+ SELECT review_status INTO primary_review FROM public.ingestion_staging WHERE id=p_primary FOR SHARE;
+ UPDATE public.ingestion_staging SET disposition='archived',target_record_id=p_venue,
+   review_status=CASE WHEN primary_review IN ('pending_review','rejected') THEN 'pending_review' ELSE review_status END,
+   enriched_data=coalesce(enriched_data,'{}')||jsonb_build_object('consensus_done',true,'merged_into',p_primary),updated_at=now()
+ WHERE id=ANY(p_ids) AND disposition='pending' AND dedup_match_id=p_venue AND target_table='venues';
+ GET DIAGNOSTICS written=ROW_COUNT;
+ IF written<>cardinality(p_ids) THEN RAISE EXCEPTION 'venue source group changed' USING ERRCODE='40001'; END IF;
+END;
+$$;
+REVOKE ALL ON FUNCTION public.archive_venue_consensus_sources(uuid[],uuid,uuid) FROM PUBLIC,anon,authenticated;
+GRANT EXECUTE ON FUNCTION public.archive_venue_consensus_sources(uuid[],uuid,uuid) TO service_role;

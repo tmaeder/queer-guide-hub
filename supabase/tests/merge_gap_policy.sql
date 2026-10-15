@@ -117,7 +117,7 @@ END $$;
 -- Batched loader uses approved recent evidence and never exposes raw payloads.
 SELECT set_config('test.jwt','{"role":"service_role"}',true);
 DO $$
-DECLARE canonical uuid:=gen_random_uuid(); a uuid:=gen_random_uuid(); old uuid:=gen_random_uuid(); batch jsonb;
+DECLARE canonical uuid:=gen_random_uuid(); a uuid:=gen_random_uuid(); old uuid:=gen_random_uuid(); sibling uuid:=gen_random_uuid(); batch jsonb;
 BEGIN
  INSERT INTO venues(id,name,description) VALUES(canonical,'Combined Venue',NULL);
  INSERT INTO ingestion_staging(id,target_table,disposition,ai_validation_status,review_status,dedup_match_id,dedup_status,
@@ -128,11 +128,18 @@ BEGIN
  (old,'venues',canonical,'updated','approved','auto','wikidata','{"description":"From sources"}',now()-interval '1 day'),
  (gen_random_uuid(),'venues',canonical,'updated','approved','auto','stale','{"description":"Stale"}',now()-interval '91 days'),
  (gen_random_uuid(),'venues',canonical,'updated','approved','rejected','bad','{"description":"Rejected"}',now());
+ UPDATE ingestion_staging SET enriched_data='{"consensus_done":true}' WHERE id=a;
+ INSERT INTO ingestion_staging(id,target_table,disposition,ai_validation_status,review_status,dedup_match_id,dedup_status,
+   source_name,normalized_data,enriched_data,updated_at) VALUES
+ (sibling,'venues','pending','approved','auto',canonical,'duplicate','google','{"social_links":{"facebook":"https://facebook.com/a"}}','{"keep":"evidence"}',now());
+ PERFORM archive_venue_consensus_sources(ARRAY[sibling],a,canonical);
+ ASSERT (SELECT target_record_id FROM ingestion_staging WHERE id=sibling)=canonical,'archive retains canonical association';
+ ASSERT (SELECT enriched_data->>'keep' FROM ingestion_staging WHERE id=sibling)='evidence','archive preserves source metadata';
  batch:=load_source_combination_batch('venues',NULL,100);
  ASSERT jsonb_array_length(batch->'pending')=1,'bounded pending load';
  ASSERT batch#>>ARRAY['canonical',canonical::text,'name'] IS NULL,'canonical identity not exposed for voting';
- ASSERT jsonb_array_length(batch#>ARRAY['history',canonical::text])=1,'only approved recent history';
- ASSERT batch#>>ARRAY['history',canonical::text,'0','id']=old::text,'historical evidence retained';
+ ASSERT jsonb_array_length(batch#>ARRAY['history',canonical::text])=2,'only approved recent history';
+ ASSERT EXISTS(SELECT 1 FROM jsonb_array_elements(batch#>ARRAY['history',canonical::text]) x WHERE x->>'id'=old::text),'historical evidence retained';
 END $$;
 -- Matched legacy sources fill the canonical row rather than insert a duplicate.
 DO $$ DECLARE canonical uuid:=gen_random_uuid(); source_id uuid:=gen_random_uuid(); result jsonb;

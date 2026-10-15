@@ -4,7 +4,7 @@ import { reportApiError } from '../_shared/report-api-error.ts'
 import { rpcWithBreaker } from '../_shared/circuit-breaker.ts'
 import { buildRecord } from './build-record.ts'
 import { mergeSocialLinks } from './social-merge.ts'
-import { combineStagingSources } from './combine-sources.ts'
+import { combineStagingSources, type CombinationRpcClient } from './combine-sources.ts'
 import {
   commitConfigForTable,
   socialColumnForTable,
@@ -125,7 +125,7 @@ Deno.serve(async (req) => {
 
     // Combine corroborating sources for already-matched records before any
     // commit path. Conflicts gate every contributing row in one transaction.
-    if (!dryRun) await combineStagingSources(supabase, resolvedTarget, pipelineRunId, batchSize)
+    if (!dryRun) await combineStagingSources(supabase as unknown as CombinationRpcClient, resolvedTarget, pipelineRunId, batchSize)
 
     // Registry commit config for the resolved target table (exact-table match —
     // unknown tables fall through to the legacy path below, unchanged).

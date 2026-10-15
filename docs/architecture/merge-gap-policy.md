@@ -17,7 +17,7 @@ batch to 500 groups. Two partial indexes support pending and historical reads.
 
 The combiner uses existing dedup matches as identity evidence. It never guesses
 identity from a name. Unmatched records continue through normal ingestion.
-Historical observations must have the same committed target ID, approved AI
+Historical observations include safely archived venue-consensus siblings with a verified canonical pointer, so fields outside the specialized venue schema remain available. They must have the same committed target ID, approved AI
 validation, and an automatic or approved review status.
 
 ## Decisions and safeguards

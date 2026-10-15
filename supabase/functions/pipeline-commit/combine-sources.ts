@@ -1,4 +1,3 @@
-import type { getServiceClient } from '../_shared/supabase-client.ts'
 import { combineDataSources, setCombinedPath, providerKey, type DataRecord } from '../_shared/source-combination.ts'
 import { isDataGap } from '../_shared/gap-fill.ts'
 import { sourceWeight } from '../_shared/venue-consensus.ts'
@@ -104,13 +103,14 @@ export function planSourceCombinations(batch: CombinationBatch, table: string): 
  * indexed recent history and applies each group's CAS in a short transaction.
  * No name matching, source archiving, external AI calls, or cleared review gates.
  */
+export interface CombinationRpcClient {
+  rpc(name: string, args: DataRecord): PromiseLike<{ data: unknown; error: { message: string } | null }>
+}
 export async function combineStagingSources(
-  supabase: ReturnType<typeof getServiceClient>, table: string, pipelineRunId?: string, limit = 100,
+  supabase: CombinationRpcClient, table: string, pipelineRunId?: string, limit = 100,
 ) {
   if (!TABLES.has(table)) return { groups: 0, gated: 0 }
-  const rpc = supabase as unknown as {
-    rpc(name: string, args: DataRecord): Promise<{ data: unknown; error: { message: string } | null }>
-  }
+  const rpc = supabase
   const loaded = await rpc.rpc('load_source_combination_batch', {
     p_table: table, p_pipeline_run_id: pipelineRunId || null, p_limit: Math.min(Math.max(limit, 1), 500),
   })

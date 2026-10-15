@@ -58,6 +58,22 @@ describe('batched source combination integration', () => {
       metadata: { keep: 'untouched' },
     });
   });
+  it('uses safely archived observations to fill fields outside the venue consensus schema', () => {
+    const input = batch();
+    input.canonical.canonical.social_links = { facebook: '' };
+    input.history.canonical.push({
+      id: 'archived',
+      source_name: 'google',
+      source_type: 'api',
+      normalized_data: { social_links: { facebook: 'https://facebook.com/venue' } },
+      created_at: '2026-10-15T09:00:00Z',
+    });
+    const [plan] = planSourceCombinations(input, 'venues');
+    expect(plan.normalized).toMatchObject({
+      social_links: { facebook: 'https://facebook.com/venue' },
+    });
+    expect(plan.needs_review).toBe(false);
+  });
   it('does no work when gaps are filled or sources only contain unsupported fields', () => {
     const input = batch();
     input.canonical.canonical.description = 'Curated';

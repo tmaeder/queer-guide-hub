@@ -289,11 +289,11 @@ Deno.serve(withErrorReporting('pipeline-consensus-merge', async (req) => {
         // Sibling rows are superseded by the primary merge — archive them.
         const siblingIds = members.filter((m) => m.id !== primary.id).map((m) => m.id)
         if (siblingIds.length > 0) {
-          await supabase.from('ingestion_staging').update({
-            disposition: 'archived',
-            enriched_data: { consensus_done: true, merged_into: primary.id },
-            updated_at: nowIso,
-          }).in('id', siblingIds)
+          const rpc = supabase as unknown as { rpc(name: string, args: Json): Promise<{ error: { message: string } | null }> }
+          const { error: archiveError } = await rpc.rpc('archive_venue_consensus_sources', {
+            p_ids: siblingIds, p_primary: primary.id, p_venue: venueId,
+          })
+          if (archiveError) throw new Error(`archive venue sources: ${archiveError.message}`)
         }
       }
       merged++
