@@ -13,8 +13,9 @@ ignores `state`. It is a pure helper: it does not authorize a user, discover DNS
 create a setup operation, contact a provider, activate records or change readiness.
 The authenticated API, bounded discovery, stored review/sign/issue operations and
 fresh TXT callback verification are now implemented separately in
-`_shared/redirect-domain-connect-api.ts`. Admin controls and live provider/key
-onboarding still need completion before exposing a setup button.
+`_shared/redirect-domain-connect-api.ts`. Admin controls are implemented locally and stay unavailable without configured
+signing. Live provider/key onboarding and controlled approval remain required
+before release.
 
 Operator prerequisites:
 
@@ -31,7 +32,7 @@ Operator prerequisites:
 4. Confirm the exact template is available at the discovered provider, including
    Cloudflare and Vercel, before enabling the provider's approval flow. Request
    Cloudflare DNS-only CNAME proxy status for this SaaS target during onboarding.
-5. Complete the approval UI and exercise the implemented owner authorization,
+5. Exercise the implemented approval UI and current-owner authorization,
    versioned bounded storage, fixed-provider discovery, callback/session checks
    and current TXT DNS verification against the approved provider. Callback success alone must never establish ownership/TLS
    or routing readiness. Rotation, disabling, role loss and stale versions must

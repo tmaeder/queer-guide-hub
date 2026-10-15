@@ -1,3 +1,4 @@
+import { RedirectDomainConnect, RedirectDomainConnectReturn } from './RedirectDomainConnect';
 import { RedirectQrStyleSettings } from './RedirectQrStyleSettings';
 import { RedirectDomainSubpath } from './RedirectDomainSubpath';
 import { RedirectPrimaryDomain } from './RedirectPrimaryDomain';
@@ -49,7 +50,11 @@ function DomainRegistry({ accountId }: { accountId: string }) {
         data: Domain[];
         count: number;
         nextCursor: string | null;
-        providerSetup?: { configured: boolean; cnameTarget: string | null };
+        dnsSetup?: { configured: boolean; cnameTarget: string };
+        providerSetup?: {
+          configured: boolean;
+          cnameTarget: string | null;
+        };
       }>(
         '/domains?' +
           new URLSearchParams({
@@ -100,6 +105,16 @@ function DomainRegistry({ accountId }: { accountId: string }) {
         are separate requirements. Provider connections run in the background. Check branded routing
         once DNS and the certificate are ready.
       </p>
+      <RedirectDomainConnectReturn
+        accountId={accountId}
+        onChanged={() =>
+          Promise.all([
+            client.invalidateQueries({ queryKey: key }),
+            client.invalidateQueries({ queryKey: ['redirect-domain-choices'] }),
+            client.invalidateQueries({ queryKey: ['redirect-domain-preference'] }),
+          ])
+        }
+      />
       <RedirectPrimaryDomain userId={accountId} />
       <form
         className="space-y-2"
@@ -214,6 +229,7 @@ function DomainRegistry({ accountId }: { accountId: string }) {
               domain={domain}
               pending={mutation.isPending}
               setup={query.data?.pages[0].providerSetup}
+              dnsSetup={query.data?.pages[0].dnsSetup}
               onRoutingChecked={() =>
                 Promise.all([
                   client.invalidateQueries({ queryKey: key }),
@@ -273,7 +289,9 @@ function DomainRow({
   onExpand,
   setup,
   onRoutingChecked,
+  dnsSetup,
 }: {
+  dnsSetup?: { configured: boolean; cnameTarget: string };
   domain: Domain;
   onRoutingChecked: () => Promise<unknown>;
   setup?: { configured: boolean; cnameTarget: string | null };
@@ -383,6 +401,12 @@ function DomainRow({
         <RedirectDomainSubpath
           hostname={domain.hostname}
           ready={Boolean(domain.routingReady && !domain.disabled)}
+        />
+        <RedirectDomainConnect
+          domain={domain}
+          configured={dnsSetup?.configured === true}
+          cnameTarget={dnsSetup?.cnameTarget ?? null}
+          disabled={pending || domain.disabled || domain.archived}
         />
         <div className="space-y-2 text-sm">
           <p>

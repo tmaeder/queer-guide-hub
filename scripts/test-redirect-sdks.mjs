@@ -2,7 +2,7 @@ import { getDomain } from 'tldts';
 import { verifyRedirectIntegrationHttp } from './lib/redirect-integration-fixtures.mjs';
 import sharp from 'sharp';
 import { createServer } from 'node:http';
-import { spawn } from 'node:child_process';
+import { execFileSync, spawn } from 'node:child_process';
 import { readFileSync, mkdirSync, writeFileSync } from 'node:fs';
 import { webcrypto } from 'node:crypto';
 import ts from 'typescript';
@@ -267,6 +267,8 @@ async function run(command, args, extra = {}) {
   console.log(command + ' SDK: live HTTP → actual edge handler → isolated PostgreSQL passed');
 }
 try {
+  // Runnable examples import the real package output; a clean checkout has no dist.
+  execFileSync(process.execPath, ['node_modules/typescript/bin/tsc', '-p', 'sdk/redirects/typescript/tsconfig.json'], { stdio: 'pipe' });
   mkdirSync('tmp/sdk-tests', { recursive: true });
   const compiled = ts.transpileModule(readFileSync('sdk/redirects/typescript/index.ts', 'utf8'), {
     compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.ESNext },
@@ -832,9 +834,12 @@ try {
 
   const setupDomain=await reportRequest('/domains','POST',{hostname:'go.setup-example.com'},undefined,201);
   const setupPath='/domains/'+setupDomain.id+'/dns-setup/';
+  if((await reportRequest('/domains')).dnsSetup.configured)throw new Error('Missing signing key appeared configured');
   await reportRequest(setupPath+'discover','POST',{version:setupDomain.version},undefined,503);
   if(domainConnectDnsCalls)throw new Error('Unconfigured setup reached DNS');
   domainConnectEnabled=true;
+  const dnsAvailability=(await reportRequest('/domains')).dnsSetup;
+  if(!dnsAvailability.configured||dnsAvailability.cnameTarget!=='links.queer.guide'||Object.keys(dnsAvailability).sort().join(',')!=='cnameTarget,configured')throw new Error('DNS setup availability exposed signing configuration or wrong target');
   await reportRequest(setupPath+'discover','POST',{version:setupDomain.version},token,403);
   await reportRequest(setupPath+'discover','POST',{version:setupDomain.version,target:'https://evil.example.com'},undefined,400);
   const setup=await reportRequest(setupPath+'discover','POST',{version:setupDomain.version});

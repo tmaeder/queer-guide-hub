@@ -19,7 +19,7 @@ exist. Existing local tools are a foundation, not proof of parity or deployment.
 | Bulk actions         | Create/update/upsert/delete, folder/tag assignment, archive, import/export, QR export                              | Candidate for managed links: atomic create/update/upsert/deletion API and CSV review/import/export UI, archive/restore, folder/tag assignment and verified QR ZIP; production release pending                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
 | Custom previews      | Uploaded OG image (1200×630, ≤1.5 MB), title≤120, description≤240, video API, crawler unfurl                       | Candidate: editor, scoped upload/presentation APIs and crawler HTML; native browser/Storage release pending                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
 | AI previews          | Generate title/description from destination content using configured AI provider                                   | Candidate: scoped draft generator with spend limits; live provider and browser verification pending                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
-| Custom domains       | Verify ownership/DNS, multiple domains, primary domain, redirects on branded hostname                              | Partial: private registry, exact DNS verification, owner UI and stored defaults implemented locally; durable Cloudflare lifecycle/TLS checks implemented locally; hostname namespaces, signed relay/resolver, routing health, background proof renewal and inventory/CSV/QR/API/SDK fields implemented locally; ready choices, owner primary preference and tracked/member builders implemented locally; active manual CMS domain field and atomic owner saves implemented locally; URL domain filters and scoped linked-domain facets implemented locally; explicit provider validation restart and versioned archive/search/restore implemented locally; external website-subpath setup/generation and authenticated Domain Connect backend implemented locally; DNS controls/forwarding, transfer, real provider proof and release pending |
+| Custom domains       | Verify ownership/DNS, multiple domains, primary domain, redirects on branded hostname                              | Partial: private registry, exact DNS verification, owner UI and stored defaults implemented locally; durable Cloudflare lifecycle/TLS checks implemented locally; hostname namespaces, signed relay/resolver, routing health, background proof renewal and inventory/CSV/QR/API/SDK fields implemented locally; ready choices, owner primary preference and tracked/member builders implemented locally; active manual CMS domain field and atomic owner saves implemented locally; URL domain filters and scoped linked-domain facets implemented locally; explicit provider validation restart and versioned archive/search/restore implemented locally; external website-subpath setup/generation and authenticated Domain Connect backend and owner approval/callback UI implemented locally; DNS instruction forwarding, transfer, real provider proof and release pending |
 | Domain defaults      | Root/not-found redirects, default expiration URL, workspace/domain QR logos                                        | Partial: root/not-found/expiry settings, signed-host resolver and managed root-link policies/metadata/tracking implemented locally; QR/logo precedence and release pending                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
 | Deep links           | iOS/Android association files, app page routes, fallback and deferred attribution                                  | Partial: owner-managed app identities, per-host association files and gateway behavior implemented locally; policy-aware native resolver and local Swift/Android clients implemented; consented private receipts, first-party install/resume pages, Swift App Group/Android Play adapters and persistent install QR targets implemented locally; signed store/device delivery and release evidence remain open                                                                                                                                                                                                                                                                                                                                                                                                       |
 | Geo targeting        | Country-specific destinations and default fallback                                                                 | Candidate: country rules and fallback tested                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
@@ -3557,3 +3557,39 @@ provider template/key onboarding and controlled live approval remain open,
 alongside domain transfer, signed store/device delivery, SDK publication, provider
 security review and full schema/API/gateway/client rollout. No production schema,
 DNS, signing key, provider account, app publication or email was changed here.
+
+
+Owner DNS controls checkpoint: the existing domain setup now discovers supported
+providers only when server signing configuration is available. The inline review
+shows the exact CNAME/TXT names and values before a checked review enables the
+provider action. Approval URLs are restricted to the matching provider/template;
+late unmounted/account-switched results cannot navigate. Account-keyed callback
+lookup ignores provider success flags and offers a fresh TXT check. Verified
+ownership still points to separate certificate/routing checks; missing proof
+explains propagation and the existing ownership checker. Invalid/expired/changed
+operations have a dismiss/error path; dismissal preserves other query fields.
+
+Thirteen registry/approval/return UI cases pass after correcting one async test
+that initially asserted against loading text. Strict spacing lint is corrected
+without a rule exception. Typecheck stays at702 inherited/none new, baseline782
+unchanged; build and frozen Edge API checks pass. The one detector pass returns
+[]. A bounded initial/final desktop1280/mobile390 fixture inspection of record
+review and callback finds no horizontal overflow or browser warnings/errors.
+The fixtures label simulated provider/DNS data and block external requests.
+
+The first new Linux DNS contract run38822728046 passes frozen Deno checking,
+17 protocol/configuration cases and migrated SQL, then exposes a pre-existing
+runnable TypeScript-example assumption: dist/index.js was available locally but
+absent on a clean checkout. The SDK harness now builds the actual package before
+running examples. Moving its local ignored dist away and rerunning all five SDK
+runtimes/actual owner HTTP proves the cold-output path, including availability
+metadata with no private signing fields. Fresh-head remote confirmation remains
+required; this failure is not dismissed or worked around by skipping examples.
+Provider onboarding/key publication/live approval, native instruction forwarding,
+real workspace transfer, signed store/device proof, SDK publication, provider
+false-positive review and controlled production rollout remain open.
+
+The fresh DNS UI finish reviewer returns ship, with all four final captures valid
+and no material fixes within the owner approval/return extension. The subsequent
+documenter confirms no new durable design rules and leaves system documents
+unchanged. All temporary preview tabs are closed and viewport overrides reset.

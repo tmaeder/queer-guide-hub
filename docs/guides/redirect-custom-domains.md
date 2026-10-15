@@ -528,8 +528,8 @@ Sources: [Cloudflare Routes](https://developers.cloudflare.com/workers/configura
 ## Owner-approved automatic DNS setup
 
 The candidate API now supports a signed Domain Connect flow for short-link
-subdomains whose closest authoritative zone uses Cloudflare or Vercel. This is a
-backend implementation; its admin controls and provider onboarding remain open.
+subdomains whose closest authoritative zone uses Cloudflare or Vercel. The owner admin controls are implemented locally; provider onboarding and
+controlled live approval remain open.
 The fixed candidate template is `config/domain-connect/queer.guide.redirects.json`.
 It creates a CNAME to `links.queer.guide.` plus the exact ownership TXT challenge
 under the chosen subdomain. It does not configure an apex or unrelated records.
@@ -556,9 +556,8 @@ Owner-session endpoints (API keys and members are denied):
   network budget, discovers the DNS provider and checks exact template support.
   An available result enters `review` and includes the current domain challenge.
 - `POST /domains/:id/dns-setup/approve` with `{version,operation}` signs the fixed
-  records/callback and returns `approvalUrl`. The UI must review the CNAME/TXT
-  records before this explicit action and send the user to the provider's own
-  approval screen. The API does not write customer DNS.
+  records/callback and returns `approvalUrl`. The admin UI shows the exact CNAME/TXT names and values, requires record
+  review, and sends the user to the matching provider's own approval screen. The API does not write customer DNS.
 - `GET /domain-connect/:operation` resolves callback correlation for the same
   current owner and returns its domain/version. It ignores provider success
   assertions and does not change ownership.
@@ -594,3 +593,19 @@ Proof: parser/provider cases, configuration and actual RSA signature tests; the
 isolated migrated PostgreSQL suite; and the real owner HTTP handler through
 stored operations, bounded provider fixtures, signed approval, callback lookup
 and fresh TXT verification. No live provider approval or DNS write is implied.
+
+
+The Custom domains section uses `dnsSetup.configured` and `dnsSetup.cnameTarget`
+from the owner list response to show availability without exposing signing
+material. Unconfigured setup has an explanation and manual instructions. The
+inline review supports cancel, pending/error and unsupported-provider states;
+archived/disabled domains cannot start. Callback UI reads only `domain_connect`,
+loads the account-bound operation, ignores provider success parameters and
+requires a fresh check. Dismissal preserves unrelated query fields. Account and
+domain-version keys reset stale row state; an unmounted approval cannot navigate.
+
+Local UI verification covers 13 registry/approval/return interactions and final
+1280px/390px record-review and callback fixtures with no horizontal overflow.
+The actual API contract suite also checks that public availability contains only
+its boolean and fixed CNAME target. These fixture captures do not establish live
+provider onboarding, approval or DNS changes.

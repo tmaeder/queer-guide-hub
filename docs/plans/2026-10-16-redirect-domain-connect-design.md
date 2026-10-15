@@ -67,3 +67,15 @@ provider URL/signature checks, owner loss during discovery, callback lookup,
 missing TXT proof and replay denial. UI controls, native instruction forwarding,
 provider onboarding/public-key publication and controlled live approval remain
 open; this backend checkpoint does not complete DNS parity or release.
+
+
+Owner controls are now implemented locally in the existing domain registry.
+Only configured, active domains can discover a provider; the exact CNAME/TXT
+review precedes navigation to the matching provider. Callback UI resolves the
+current actor-bound operation and explicitly checks fresh TXT proof, with no
+provider success assertion accepted. Late approval responses cannot navigate
+an unmounted account/domain panel. Availability metadata exposes only a boolean
+and fixed target. Thirteen registry/approval/return UI interactions pass, as do
+cold-checkout SDK examples, the actual API suite, app typecheck (702 inherited,
+none new), production build and frozen API Deno check. Final UI review and
+provider/live-release requirements are tracked separately in the UI brief/ledger.
