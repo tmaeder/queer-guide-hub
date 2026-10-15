@@ -336,7 +336,7 @@ BEGIN
     tab := public.merge_gap_table(kind);
     fn := CASE kind WHEN 'queer_village' THEN 'commit_village_staging_item' ELSE 'commit_'||kind||'_staging_item' END;
     SELECT pg_get_functiondef(p.oid) INTO src FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace
-      WHERE n.nspname='public' AND p.proname=fn AND pg_get_function_identity_arguments(p.oid) LIKE 'p_staging_id uuid%';
+      WHERE n.nspname='public' AND p.proname=fn AND p.proargnames[1]='p_staging_id' AND p.proargtypes[0]='uuid'::regtype;
     IF src IS NULL THEN RAISE EXCEPTION 'missing commit function %',fn; END IF;
     changed := src;
     FOREACH k IN ARRAY public.merge_gap_fields(kind) LOOP
