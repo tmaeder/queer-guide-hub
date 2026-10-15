@@ -3482,3 +3482,41 @@ A path-filtered native runtime CI workflow is added. No dependency lock, migrati
 provider, DNS, website deployment or signing state changed. Domain transfer,
 authorized DNS automation, real provider/signed-device delivery, provider security
 review and the full release requirements remain open.
+
+
+DNS/transfer audit and Domain Connect foundation: Dub's current auto-configuration
+flow uses provider approval at Cloudflare/Vercel. The corresponding fixed-target
+subdomain template candidate and pure RS256 query signer are now present. The
+only template variable is the matching ownership TXT value; the callback origin
+is fixed and operation correlation is inside the signed redirect URI because
+Cloudflare ignores state. Key/sig are excluded from the signed bytes, and sig is
+last. Input scope, IDNs, nested hosts, signature verification/tampering and invalid
+key/field rejection are covered by four actual WebCrypto tests. There is no
+owner API, provider discovery, stored operation, approval button or readiness
+change from this helper alone; these remain required implementation work.
+
+Official dc-template-linter131 at6e8ca43761a9 exits0 for standard and Cloudflare
+validation. Cloudflare reports three informational notices (ignored redirect
+domain/hostRequired properties and scoped CNAME flattening); no gate was weakened
+or warning/error suppressed. Isolated Deno checking and targeted test lint pass.
+The exact candidate public-key TXT lookup currently returns NOERROR with no
+answer, so this does not prove a published signing key. A CNAME query for the
+fixed target also has no answer; that alone cannot prove target unavailability
+because DNS flattening/A records are possible. Live target/relay verification
+remains required. Test keys were ephemeral and no production key was created.
+
+Domain transfer cannot be implemented faithfully by changing created_by: current
+resources/memberships/preferences form one shared workspace and have no tenant
+workspace identity. Full transfer still requires independent workspace isolation
+and current source/destination authorization before moving the domain and links.
+The design audit explicitly preserves that requirement. Provider template review,
+public-key DNS/onboarding, signed device/provider proof and the full controlled
+release remain open. No onboarding email, upstream PR, DNS record, production
+credential, schema change or live approval flow was created in this step.
+
+The Domain Connect foundation app typecheck passes with702 inherited errors and
+none new (baseline782 unchanged). The preceding282e43695 main coverage job
+116709862425 is authoritatively still running its coverage step; the generated
+subpath/signed-gateway clean-runner job already passed. The new protocol work
+remains local pending the wider authenticated provider integration, preserving
+that current CI run rather than treating an in-progress job as stopped.
