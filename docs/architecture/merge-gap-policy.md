@@ -8,7 +8,7 @@ schedules drive it (the read-only production check found 12 enabled commit pipel
 network request is added. Ordinary high-confidence fills need no manual action.
 
 One batched RPC loads pending sources, canonical descriptive fields, and up to
-50 approved observations per entity from the last 90 days. A pure local planner
+50 approved observations per entity from the last 90 days, sampled fairly across providers so frequent scrapes cannot crowd out independent evidence. A pure local planner
 then produces field decisions. One batched write applies independent groups,
 retaining source rows and evidence IDs. The database skips stale groups using a
 snapshot comparison; unrelated groups continue. Records with no remaining gaps

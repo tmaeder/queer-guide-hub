@@ -140,6 +140,14 @@ BEGIN
  ASSERT batch#>>ARRAY['canonical',canonical::text,'name'] IS NULL,'canonical identity not exposed for voting';
  ASSERT jsonb_array_length(batch#>ARRAY['history',canonical::text])=2,'only approved recent history';
  ASSERT EXISTS(SELECT 1 FROM jsonb_array_elements(batch#>ARRAY['history',canonical::text]) x WHERE x->>'id'=old::text),'historical evidence retained';
+ -- A fast-updating provider must not crowd slower independent providers out.
+ INSERT INTO ingestion_staging(id,target_table,target_record_id,disposition,ai_validation_status,review_status,
+   source_name,normalized_data,created_at)
+ SELECT gen_random_uuid(),'venues',canonical,'updated','approved','auto','osm','{"description":"From sources"}',now()-g*interval '1 minute'
+ FROM generate_series(1,60) g;
+ batch:=load_source_combination_batch('venues',NULL,100);
+ ASSERT jsonb_array_length(batch#>ARRAY['history',canonical::text])=50,'history payloads remain bounded';
+ ASSERT EXISTS(SELECT 1 FROM jsonb_array_elements(batch#>ARRAY['history',canonical::text]) x WHERE x->>'id'=old::text),'frequent sources cannot crowd out independent evidence';
 END $$;
 -- Matched legacy sources fill the canonical row rather than insert a duplicate.
 DO $$ DECLARE canonical uuid:=gen_random_uuid(); source_id uuid:=gen_random_uuid(); result jsonb;

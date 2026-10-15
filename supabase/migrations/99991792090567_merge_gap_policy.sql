@@ -431,7 +431,7 @@ CREATE INDEX IF NOT EXISTS ingestion_staging_combination_pending_idx
  AND dedup_status IN ('duplicate','merge_candidate') AND dedup_match_id IS NOT NULL
  AND (review_status IS NULL OR review_status IN ('auto','approved'));
 CREATE INDEX IF NOT EXISTS ingestion_staging_combination_history_idx
- ON public.ingestion_staging(target_table,target_record_id,created_at DESC)
+ ON public.ingestion_staging(target_table,target_record_id,created_at DESC) INCLUDE(id,source_name,source_type)
  WHERE disposition IN ('inserted','updated','committed','archived') AND ai_validation_status='approved'
  AND (disposition<>'archived' OR (enriched_data->>'consensus_done'='true' AND enriched_data ? 'merged_into' AND target_record_id=dedup_match_id))
  AND (review_status IS NULL OR review_status IN ('auto','approved'));
@@ -460,11 +460,22 @@ BEGIN
  SELECT coalesce(jsonb_object_agg(entity_id,observations),'{}') INTO history FROM (
    SELECT entity_id,coalesce(jsonb_agg(to_jsonb(h)) FILTER(WHERE h.id IS NOT NULL),'[]') AS observations
    FROM unnest(ids) entity_id LEFT JOIN LATERAL (
-     SELECT id,source_name,source_type,normalized_data,created_at FROM public.ingestion_staging
-     WHERE target_table=p_table AND target_record_id=entity_id AND disposition IN ('inserted','updated','committed','archived')
-     AND ai_validation_status='approved' AND (review_status IS NULL OR review_status IN ('auto','approved'))
-     AND (disposition<>'archived' OR (enriched_data->>'consensus_done'='true' AND enriched_data ? 'merged_into' AND target_record_id=dedup_match_id))
-     AND created_at>=now()-interval '90 days' ORDER BY created_at DESC LIMIT 50
+     SELECT s.id,s.source_name,s.source_type,s.normalized_data,s.created_at
+     FROM public.ingestion_staging s JOIN (
+       -- Rank narrow metadata first. A frequent provider cannot crowd out
+       -- another provider's independent evidence; fetch at most 50 payloads.
+       SELECT id FROM (
+         SELECT id,created_at,row_number() OVER (
+           PARTITION BY coalesce(source_name,source_type,'unknown') ORDER BY created_at DESC,id) AS provider_rank
+         FROM public.ingestion_staging
+         WHERE target_table=p_table AND target_record_id=entity_id
+         AND disposition IN ('inserted','updated','committed','archived')
+         AND ai_validation_status='approved' AND (review_status IS NULL OR review_status IN ('auto','approved'))
+         AND (disposition<>'archived' OR (enriched_data->>'consensus_done'='true' AND enriched_data ? 'merged_into' AND target_record_id=dedup_match_id))
+         AND created_at>=now()-interval '90 days'
+       ) ranked ORDER BY provider_rank,created_at DESC,id LIMIT 50
+     ) chosen ON chosen.id=s.id
+
    ) h ON true GROUP BY entity_id
  ) observations;
  RETURN jsonb_build_object('pending',pending,'canonical',canonical,'history',history);
