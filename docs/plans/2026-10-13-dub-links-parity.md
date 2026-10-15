@@ -3442,3 +3442,11 @@ controlled release remain open.
 The team-report documenter confirmed no durable design-system update is needed.
 Deploy the candidate schema before the Edge API/clients/UI; previous installations
 remain personal/private by default. No baseline or shared lock changed.
+
+Full security-check output at022cf4ffc adds incident38261150 and another38260637
+occurrence in installLink.test.ts. Exact inspected lines29/35 are reserved or
+percent-encoded query field names used with a dummy value on example.com to test
+rejection, not credential values. Together with38259152, all three incidents
+require provider false-positive review; no scanner exemption or history rewrite
+was applied. The available provider session still requires login. Fresh CI for
+2ea81768b is pending; local checks do not substitute for that release evidence.
