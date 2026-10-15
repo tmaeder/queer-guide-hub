@@ -173,7 +173,7 @@ export async function resolveWebhookAddress(
     if (!publicWebhookIp(host)) throw new WebhookTransportError('dns_blocked');
     return host;
   }
-  let records: { name: string; type: number; data: string }[] = [];
+  let records: { name: string; type: number; data: string }[];
   try {
     const results = await Promise.all(
       ['A', 'AAAA'].map(async (type) => {
