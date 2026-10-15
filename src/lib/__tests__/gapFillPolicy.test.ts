@@ -133,6 +133,22 @@ describe('automated multi-source combination', () => {
     expect(result.patch).toMatchObject({ hours: { tue: '9-17' } });
     expect(result.patch).not.toHaveProperty('hours.mon');
   });
+  it('corroborates equivalent website URLs without unnecessary review', () => {
+    const result = combineDataSources({}, [
+      { source: 'osm', data: { website: 'https://Example.org' } },
+      { source: 'wikidata', data: { website: 'https://example.org/' } },
+    ]);
+    expect(result.needsReview).toBe(false);
+    expect(result.patch).toHaveProperty('website');
+  });
+  it('never treats swapped latitude/longitude as agreeing coordinates', () => {
+    const result = combineDataSources({}, [
+      { source: 'google', data: { location: { lat: 47, lng: 8 } } },
+      { source: 'wikidata', data: { location: { lat: 8, lng: 47 } } },
+    ]);
+    expect(result.needsReview).toBe(true);
+    expect(result.patch).not.toHaveProperty('location');
+  });
   it('uses latest observation per provider without confidence inflation', () => {
     const result = combineDataSources({}, [
       { ...source('osm', 'Old'), observedAt: '2026-10-01' },

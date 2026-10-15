@@ -50,6 +50,20 @@ function fingerprint(value: unknown): string {
   if (value && typeof value === 'object') return JSON.stringify(Object.entries(value).sort(([a], [b]) => a.localeCompare(b)))
   return JSON.stringify(value)
 }
+function evidenceKey(path: string, value: unknown): string {
+  // Coordinate tuples are ordered: [latitude, longitude] must never compare
+  // equal to [longitude, latitude]. Image lists, by contrast, are unordered.
+  if (path === '@coordinates') return JSON.stringify(value)
+  if (typeof value === 'string') {
+    if (/website|image_url|social_links\./.test(path)) {
+      try { return JSON.stringify(new URL(value.trim()).href) } catch { /* validity is checked separately */ }
+    }
+    if (/email$/.test(path)) return JSON.stringify(value.trim().toLowerCase())
+    if (/phone$/.test(path)) return JSON.stringify(value.replace(/[^0-9]/g, ''))
+  }
+  return fingerprint(value)
+}
+
 function valid(path: string, value: unknown): boolean {
   if (isDataGap(value)) return false
   if (path === 'images') return Array.isArray(value) && value.every((v) => typeof v === 'string' && /^https?:\/\/\S+$/.test(v))
@@ -100,7 +114,7 @@ export function combineDataSources(existing: DataRecord, sources: CombinationSou
       const time = Date.parse(source.observedAt || '') || 0
       const previous = byProvider.get(provider)
       // Equal-time contradictions from one provider do not manufacture a vote.
-      if (previous && previous.time === time && fingerprint(previous.value) !== fingerprint(value)) {
+      if (previous && previous.time === time && evidenceKey(path, previous.value) !== evidenceKey(path, value)) {
         byProvider.set(provider, { value: undefined, time })
         ambiguous.add(provider)
       } else if (!previous || time > previous.time) {
@@ -111,13 +125,13 @@ export function combineDataSources(existing: DataRecord, sources: CombinationSou
     const groups = new Map<string, { value: unknown; providers: string[]; confidence: number }>()
     for (const [provider, candidate] of byProvider) {
       if (candidate.value === undefined) continue
-      const key = fingerprint(candidate.value)
+      const key = evidenceKey(path, candidate.value)
       const group = groups.get(key) || { value: candidate.value, providers: [], confidence: 0 }
       group.providers.push(provider)
       group.confidence = 1 - (1 - group.confidence) * (1 - sourceWeight(provider))
       groups.set(key, group)
     }
-    const ranked = [...groups.values()].sort((a, b) => b.confidence - a.confidence || fingerprint(a.value).localeCompare(fingerprint(b.value)))
+    const ranked = [...groups.values()].sort((a, b) => b.confidence - a.confidence || evidenceKey(path, a.value).localeCompare(evidenceKey(path, b.value)))
     if (!ranked.length) {
       if (ambiguous.size) decisions.push({ path, action: 'review', value: null, confidence: 0, sources: [], conflicts: [...ambiguous] })
       continue
