@@ -3245,3 +3245,57 @@ RPC data type derives from the installed Supabase SDK while the narrow awaitable
 result avoids cross-import nominal builder classes. Hosted-logo response types now
 accurately add URL fields without losing the input record shape. No shared lock,
 type/lint baseline, real credential or production state changed.
+
+
+Implemented the first-party install/resume browser page through built-in Pages
+and signed branded/root routing. Only an uncredentialed GET marker renders HTML;
+other marked requests retain native consent/header validation. Rendering loads
+current public app choices before password verification and creates no event or
+receipt. It discloses no destination/private configuration. Unavailable app cases
+retain a clean explicit web fallback; marked source failures never redirect a
+private fragment to a domain fallback. Resume rendering respects an already
+reserved quota without granting a new visit.
+
+The page offers explicit app choice, optional fresh consent, protected form POST,
+Android preparation and fixed Play referrer, private fragment resume fallback and
+web continuation. Client responses are bounded and checked, capabilities remain
+header-only on ordinary requests, and no cookie/cache/referrer/browser storage or
+automatic clipboard/retry is used. Play's explicit carrier contains canonical
+source/binding/capability/expiry only, bounded conservatively to512 encoded chars
+before creation. Original campaign query remains in the server event. Withdrawal
+aborts and generation-invalidates pending responses and clears local capability/
+password fields. Apple gets only a selected configured Clip banner on the original
+first-party invocation URL; no browser receipt is pre-created and app-argument is
+not used. The new Swift invocation normalizer preserves original query while
+checking host/binding/install markers without network, before the Clip's own consent.
+
+Impeccable's local UI review found two material issues: default form GET could
+put a password in a URL on script failure, and changing app choice could mismatch
+an active prepared receipt. The single correction batch sets explicit POST plus
+server-disabled submit until the protected handler exists, and locks choice while
+request/receipt is active. Reviewer scored both resolved and returned ship at
+that local scope; all four desktop/mobile/prepared/error captures are valid. The
+independent documenter found no durable design-system change. One detector pass
+returned[]; no new assets or design tokens. Fixtures use example IDs and block
+external navigation, with no production publication/provider proof.
+
+The preceding40c687c18 CI passed critical paths, lint, native contracts and CodeQL.
+The home Lighthouse job failed during npm download with ECONNRESET before producing
+an audit; no a11y threshold was lowered. GitGuardian's historical protocol-field
+false-positive review remains open. Android Play delivery/persistence, signed iOS
+Clip/full-app transition, owner adoption/entry-point rollout, live cleanup/provider
+activation, SDK publication and all other parity ledger requirements remain open.
+
+Release evidence for the browser extension:44 focused cases pass; actual Pages and
+signed branded/root Worker -> resolver -> migrated PostgreSQL verify uncounted
+protected rendering, selected Clip metadata, private projection, invalid token
+queries, absent-source no-Location and quota-reserved resume pages, alongside
+existing creation/consumption invariants. All five server SDK/HTTP suites pass.
+Swift14 groups additionally validate first-party Clip normalization, exact binding,
+original query, duplicate/credential/fragment/untrusted-source rejection and no
+normalization request. App ratchet remains702 inherited/none new; strict Pages/
+Worker and Deno resolver checks pass, targeted lint passes, Worker dry-run29.47KiB
+(7.74KiB gzip), no upload. A separate local HTTP fixture delivered the actual nonce
+CSP headers; the serialized preparation handler completed with no console errors
+or warnings. This functional CSP check introduced no UI changes or further polish.
+No production, store, signing or provider changes were made. Full goal stays active.

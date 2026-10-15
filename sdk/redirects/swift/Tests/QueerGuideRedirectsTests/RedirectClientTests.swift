@@ -190,6 +190,20 @@ final class RedirectClientTests {
         }
     }
     func testHandoffCreateResumeAndExplicitConsent() async throws {
+        let parser = try client(), binding = UUID(uuidString: id)!
+        let invocation = URL(string: source.absoluteString + "?utm_source=clip&qg_handoff=install&qg_app_choice=" + id)!
+        let initialRequests = StubProtocol.requestCount()
+        let clean = try parser.sourceFromAppClipInvocation(invocation, appBindingID: binding)
+        expectEqual(clean.absoluteString, source.absoluteString + "?utm_source=clip")
+        expectEqual(StubProtocol.requestCount(), initialRequests)
+        for raw in [invocation.absoluteString + "&qg_handoff=install", invocation.absoluteString + "#private",
+                    invocation.absoluteString + "&password=unsafe", invocation.absoluteString + "&qg_handoff_token=unsafe",
+                    source.absoluteString + "?qg_handoff=resume&qg_app_choice=" + id,
+                    "https://untrusted.example.org/?qg_handoff=install&qg_app_choice=" + id] {
+            expectThrows(try parser.sourceFromAppClipInvocation(URL(string: raw)!, appBindingID: binding))
+        }
+        expectThrows(try parser.sourceFromAppClipInvocation(invocation, appBindingID: UUID()))
+
         let app = UUID(uuidString: handoffWire["app"] as! String)!
         let body = handoffWire["body"] as! [String: Any]
         let headers = (handoffWire["headers"] as! [String: String]).filter { $0.key.hasPrefix("x-qg-handoff-") }

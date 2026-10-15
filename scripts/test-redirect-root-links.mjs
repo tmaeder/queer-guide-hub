@@ -10,6 +10,8 @@ let handle;
 const source = [
   '_shared/link-policy.ts',
   '_shared/redirect-native-resolution.ts',
+  '_shared/redirect-native-install-browser.ts',
+  '_shared/redirect-native-install-page.ts',
   '_shared/redirect-visitor.ts',
   '_shared/redirect-relay.ts',
   '_shared/redirect-presentation.ts',
@@ -566,6 +568,21 @@ await db.query(
   "UPDATE public.redirect_native_apps SET handoff_enabled=true,public_name='Fixture app',store_id='1234567890',app_group_id='group.org.example.handoff',app_clip_id=app_id||'.Clip' WHERE id=$1",
   [handoffAppId],
 );
+const browserLanding = (query = '?qg_handoff=install') => builtinExports.onRequest({
+  request: new Request('https://queer.guide/go/native-proof' + query, {headers: {Accept: 'text/html'}}),
+  params: {slug: 'native-proof'}, env: {SUPABASE_URL: 'https://fixture.supabase.co', SUPABASE_ANON_KEY: 'fixture-public', REDIRECT_RELAY_SECRET: secret},
+});
+const browserBefore = await nativeEvents();
+const installLanding = await browserLanding('?qg_handoff=install&qg_app_choice=' + handoffAppId + '&utm_source=poster');
+assert.equal(installLanding.status, 200); assert.equal(installLanding.headers.get('Location'), null);
+const installHtml = await installLanding.text();
+assert.ok(installHtml.includes('name="apple-itunes-app"'));
+assert.ok(installHtml.includes('Fixture app')); assert.ok(installHtml.includes('name="password"'));
+assert.ok(!installHtml.includes('race-new-password') && !installHtml.includes('group.org.example.handoff'));
+assert.ok(installLanding.headers.get('Content-Security-Policy').includes("connect-src 'self'"));
+assert.equal(await nativeEvents(), browserBefore);
+const tokenQueryLanding = await browserLanding('?qg_handoff=resume&qg_handoff_token=' + 'qg_handoff_' + 'a'.repeat(64));
+assert.equal(tokenQueryLanding.status, 400); assert.equal(await nativeEvents(), browserBefore);
 // Use an active real experiment: resume must restore the original cohort rather
 // than randomly rerolling it, even with its original quota already exhausted.
 await db.query('UPDATE public.redirect_link_policies SET policy=$2 WHERE redirect_id=$1', [
@@ -600,6 +617,11 @@ assert.equal(createdHandoff.headers.get(nativeProtocol.NATIVE_HANDOFF_STATE), 'c
 assert.ok(
   Date.parse(createdHandoff.headers.get(nativeProtocol.NATIVE_HANDOFF_EXPIRY)) > Date.now(),
 );
+assert.equal(await nativeEvents(), handoffCount + 1);
+// A resume page must remain available at its already-reserved visit cap.
+const resumeLanding = await browserLanding('?qg_handoff=resume');
+assert.equal(resumeLanding.status, 200); assert.equal(resumeLanding.headers.get('Location'), null);
+assert.ok((await resumeLanding.text()).includes('Continue with your link'));
 assert.equal(await nativeEvents(), handoffCount + 1);
 const storedReceipt = (
   await db.query('SELECT * FROM public.redirect_native_handoff_receipts WHERE click_id=$1', [
@@ -721,6 +743,13 @@ const brandedOpen = (action, token) =>
     ),
     { ...values, SUPABASE_ANON_KEY: 'fixture-public' },
   );
+const beforeBrandedLanding = await rootNativeTotal();
+const brandedLanding = await worker.fetch(new Request('https://root-http.example.com/?qg_handoff=install&qg_app_choice=' + brandedApp.data.id, {headers: {Accept: 'text/html'}}), {...values,SUPABASE_ANON_KEY:'fixture-public'});
+assert.equal(brandedLanding.status, 200); assert.equal(brandedLanding.headers.get('Location'), null);
+assert.ok((await brandedLanding.text()).includes('name="apple-itunes-app"'));
+assert.equal(await rootNativeTotal(), beforeBrandedLanding);
+const missingBranded = await worker.fetch(new Request('https://root-http.example.com/missing-link?qg_handoff=resume', {headers: {Accept:'text/html'}}), {...values,SUPABASE_ANON_KEY:'fixture-public'});
+assert.equal(missingBranded.status,404); assert.equal(missingBranded.headers.get('Location'),null);
 const beforeBranded = await rootNativeTotal();
 const brandedReceipt = await brandedOpen('create');
 assert.equal(brandedReceipt.status, 200);

@@ -137,3 +137,17 @@ Fourteen local contract groups compile the real package and exercise native
 transport and temporary filesystem lifecycle, including competing processes and
 restart suppression. These are local filesystem fixtures, not evidence of signed
 App Clip replacement, iOS file protection on a device or App Store delivery.
+
+
+### First-party App Clip invocation
+
+For the install page's Safari App Clip invocation, normalize the actual
+`NSUserActivity.webpageURL` with
+`client.sourceFromAppClipInvocation(invocationURL, appBindingID: configuredBinding)`.
+It requires the trusted short host, exactly one install marker and a matching
+public app-choice UUID, rejects credential fields/fragments, and preserves the
+original campaign query. It performs no request. The Clip then obtains its own
+current consent, calls `createHandoff` with that source and stores the unconsumed
+receipt. It must still implement its useful app functionality. An already installed
+full app can call ordinary `resolve` with the normalized source. Do not interpret
+a banner selection or an invocation URL as consent or proof of app authentication.

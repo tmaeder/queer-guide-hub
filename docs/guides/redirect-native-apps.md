@@ -112,8 +112,8 @@ The caller must verify the current password and use the shared live selector bef
 calling the consumer; these SQL functions are not public authentication endpoints.
 
 The resolver and gateways now support explicit receipt transport, while existing
-apps remain opted out. Owner store configuration is available; browser handoff,
-platform adapters and scheduled expiry cleanup remain subsequent work. The Swift
+apps remain opted out. Owner store configuration is available; Android platform adapters and live expiry-cleanup activation remain subsequent
+work. The browser install/resume flow is implemented. The Swift
 and Android core clients expose explicit receipt methods. Enabling the flag alone
 does not establish a working deferred link
 or distribute a raw receipt in URLs, logs or browser storage. Actual signed OS
@@ -134,9 +134,8 @@ mismatched markers fail without becoming a new visit. Password failures do not
 consume the receipt. Gateways validate and reconstruct receipt metadata; success
 without the expected metadata is an unknown outcome, with no automatic retry.
 
-Markers currently select this explicit native protocol. A browser install/resume
-landing page is still pending; a browser marker request fails without a Location
-or a visit. No token is accepted through a query parameter. These APIs do not prove
+Native requests use the explicit header protocol. Uncredentialed browser GET
+markers render the first-party install/resume page, without a Location or a visit. No token is accepted through a query parameter. These APIs do not prove
 Play delivery, App Clip functionality, persistence or the signed OS transition.
 
 
@@ -163,8 +162,8 @@ deploying the new owner API. Its service-only `redirect_native_install_choices`
 function projects eligible apps for one host/path using current ownership,
 publisher authority and domain readiness. It exposes the public name, fixed store
 link and Clip bundle identity, excluding private labels, Group IDs, signing data
-and revisions. This projection is ready for the pending browser landing flow;
-it does not itself publish a new public endpoint or install an app.
+and revisions. The browser landing flow uses this projection; it does not expose the service
+function as a public Data API endpoint or install an app.
 
 ## Expired receipt cleanup
 
@@ -183,3 +182,57 @@ and TTL enforcement do not depend on cleanup having run: expired receipts cannot
 redeem even while awaiting deletion. Local tests execute the real scheduled SQL
 through an isolated scheduler seam; production scheduling has not been performed.
 See [Supabase Cron](https://supabase.com/docs/guides/cron) for job monitoring.
+
+
+## Browser install and resume
+
+Add `qg_handoff=install` to a configured short URL to open its first-party app
+handoff page. Original campaign query values remain on the source and are sent to
+the live resolver only on an explicit consented Android preparation action. The
+page lists only eligible public app choices and keeps its web fallback visible.
+Rendering does not verify a password, reserve a visit, mint a receipt or disclose
+a routing destination. Native header requests remain strictly validated; dropping
+their marker/header fields cannot silently create a visit.
+
+Android preparation submits the current password in a form POST with no cookies,
+cache, referrer or HTTP redirects. A successful response prepares a fixed Google
+Play listing link. Its `referrer` contains exactly `qg_v=1`, `qg_source` (canonical
+query-free URL), `qg_app` (binding UUID), `qg_token` (receipt capability) and
+`qg_expires` (integer Unix milliseconds). No original campaign query, password,
+destination or private label enters the provider payload. The application imposes
+a conservative 512-character limit after the outer encoding layer, checked before
+creation. This Play referrer is the deliberate capability-carrier exception to
+the ordinary no-token-query rule. The actual Android adapter still needs to read,
+validate and persist it through Play Install Referrer before automatic resumption.
+
+The private fallback resume URL uses `?qg_handoff=resume#qg_receipt=...`. Its fragment
+is unpadded base64url JSON with exact keys `{v:1,app,token,expires}`. It contains no
+campaign query, destination or password. The page captures it in memory and removes
+the fragment from history before any request. It neither stores it in browser
+storage nor copies it automatically. Resumption requires fresh consent/password
+and sends the capability only in its header. It reuses the original click through
+the current server selector, then opens the checked live web result. A clean web
+fallback is an explicit new visit, independent of deferred attribution. Missing,
+expired, replayed, changed-policy or malformed receipts cannot silently fall back
+to counting a new visit. A resume page remains available at its reserved quota cap.
+
+For iOS, choosing an eligible app reloads this same first-party page with the public
+`qg_app_choice` binding UUID. It renders Apple's App Clip banner metadata for that
+specific configured Clip; it does not pre-mint a browser receipt. The Clip receives
+the current first-party page URL as its invocation, preserving original query
+context. Apple's `app-argument` value is not delivered to Clips, so it is not used
+as a carrier. The Swift client's `sourceFromAppClipInvocation` validates the host,
+matching binding and install marker, strips only the transport/selection markers,
+and returns the source without a request. The Clip obtains its own consent,
+creates one handoff while offering useful functionality, and stores its unconsumed
+receipt through the shared Group store. An already installed full app can resolve
+the normalized source normally. Actual experiences, entitlements, Clip functionality
+and signed-device transitions remain app-owner release requirements. See [Apple's
+website invocation guidance](https://developer.apple.com/documentation/appclip/supporting-invocations-from-your-website-and-the-messages-app).
+
+The page uses a nonce CSP with no external assets and same-origin fetch only.
+Public names are escaped; fixed store identities are revalidated. Native form
+submission explicitly uses POST and remains disabled until the protected script
+handler exists. App choice locks during preparation and while a receipt is active.
+Consent withdrawal aborts pending work, ignores stale responses and clears the
+password/capability links. Unknown outcomes are never retried automatically.

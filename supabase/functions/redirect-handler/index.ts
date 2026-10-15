@@ -1,4 +1,5 @@
-import { nativeRedirectRequested, nativeAttributionConsent, nativeProblem, nativeResolution, nativeHandoffRequest, nativeHandoffDigest, newNativeHandoffToken, nativeHandoffResponse, NATIVE_HANDOFF_MARKER } from '../_shared/redirect-native-resolution.ts';
+import { nativeInstallPage } from '../_shared/redirect-native-install-page.ts';
+import { nativeRedirectRequested, nativeAttributionConsent, nativeProblem, nativeResolution, nativeHandoffRequest, nativeHandoffDigest, newNativeHandoffToken, nativeHandoffResponse, NATIVE_HANDOFF_MARKER, browserHandoffRequested } from '../_shared/redirect-native-resolution.ts';
 import { passwordPageBranding, redirectPasswordPage } from '../_shared/redirect-password-page.ts';
 import { DOMAIN_HEALTH_PATH, hasDomainRelay, verifyDomainRelay } from "../_shared/redirect-domain-relay.ts";
 import { socialPreviewAgent, presentationPage } from "../_shared/redirect-presentation.ts";
@@ -44,7 +45,8 @@ Deno.serve(async (req: Request) => {
   if(native&&(url.searchParams.has("pw")||url.searchParams.has("password")||incoming.has("pw")||incoming.has("password")))return nativeProblem(400,head);
   let handoff:ReturnType<typeof nativeHandoffRequest>;
   try { handoff=nativeHandoffRequest(req,incoming); } catch { return page(400,"Invalid app handoff","Open a supported install or resume link.",false,head); }
-  incoming.delete(NATIVE_HANDOFF_MARKER);
+  const browserHandoff=browserHandoffRequested(req,incoming), selectedApp=incoming.get('qg_app_choice');
+  incoming.delete(NATIVE_HANDOFF_MARKER);incoming.delete('qg_app_choice');
   if(handoff?.action==='resume'&&incoming.size)return nativeProblem(400,head);
   const handoffToken=handoff?.action==='create'?newNativeHandoffToken():handoff?.token;
   const handoffHash=handoffToken?await nativeHandoffDigest(handoffToken):null;
@@ -72,7 +74,7 @@ Deno.serve(async (req: Request) => {
       }
     }
     const fallback=async(target:string|null|undefined) => {
-      if(handoff || !target || !validPublicTarget(target))return null;
+      if(handoff || browserHandoff || !target || !validPublicTarget(target))return null;
       const parsed=target.trim().startsWith("/") ? new URL(target,"https://queer.guide") : new URL(target);
       const {data:managed,error}=await db.from("redirect_domains").select("id").eq("hostname",parsed.hostname).maybeSingle();
       if(error || managed?.id || ["queer.guide","www.queer.guide"].includes(parsed.hostname)&&parsed.pathname.startsWith("/go/"))return null;
@@ -93,6 +95,12 @@ Deno.serve(async (req: Request) => {
     if(handoff?.action==='resume')incoming=new URLSearchParams(snapshot.query??'');
     const policy:LinkPolicy={...(settings?.policy ?? {}),...(link.end_at ? {expires_at:link.end_at} : {}),...(!settings?.policy?.expired_target && domain?.expiredUrl ? {expired_target:domain.expiredUrl} : {})};
     if (policyErrors(policy).length || !validPublicTarget(link.target)) return page(503,"Link unavailable","The destination settings need attention.",false,head);
+    if(browserHandoff) {
+      if(!policy.track_conversions||policy.cloaked||policy.expires_at&&Date.parse(policy.expires_at)<=Date.now()||browserHandoff==='install'&&link.click_limit!==null&&link.click_limit!==undefined&&link.click_count>=link.click_limit)return nativeInstallPage('https://'+sourceHost+sourcePath,incoming,[],!!settings.password_hash,browserHandoff);
+      const {data:choices,error:choiceError}=await db.rpc('redirect_native_install_choices',{p_hostname:sourceHost,p_path:sourcePath});
+      if(choiceError||!choices)return page(503,"App handoff unavailable","Please try again shortly.",false,head);
+      return nativeInstallPage('https://'+sourceHost+sourcePath,incoming,choices,!!settings.password_hash,browserHandoff,selectedApp);
+    }
     const ip=relay?.ip ?? await redirectClientIp(req.headers,slug,Deno.env.get("REDIRECT_RELAY_SECRET"));
     const hash=new Uint8Array(await crypto.subtle.digest("SHA-256",new TextEncoder().encode(ip+(Deno.env.get("REDIRECT_IP_HASH_SALT") ?? "qg-redirect-salt-2026"))));
     const ipHash=Array.from(hash,(value)=>value.toString(16).padStart(2,"0")).join("");

@@ -15,6 +15,7 @@ export const onRequest: PagesFunction<Env> = async ({ request, params, env }) =>
     Vary: 'Accept',
     'X-Robots-Tag': 'noindex',
     'Referrer-Policy': 'no-referrer',
+    'X-Content-Type-Options': 'nosniff',
   };
   const native = nativeRedirectRequested(request);
   const failure = (status: number, message: string) =>

@@ -129,7 +129,9 @@ describe('native handoff metadata', () => {
       creation(undefined, { 'x-qg-handoff-token': token }),
       creation(undefined, { 'x-qg-handoff-app': 'bad' }),
       creation(undefined, { 'x-qg-handoff-other': 'unknown' }),
-      new Request(source.href + '?qg_handoff=resume'),
+      new Request(source.href + '?qg_handoff=resume', {
+        headers: { Accept: NATIVE_REDIRECT_MEDIA },
+      }),
     ])
       expect(() => nativeHandoffRequest(request)).toThrow('Invalid native handoff request');
     expect(

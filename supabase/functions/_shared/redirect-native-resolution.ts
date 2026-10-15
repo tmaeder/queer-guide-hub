@@ -56,6 +56,21 @@ export interface NativeHandoffRequest {
   app: string;
   token?: string;
 }
+/** Browser markers render a no-visit page, never a credential-bearing GET.
+ * All other marked/hand-off-header requests still require the native protocol. */
+export function browserHandoffRequested(
+  request: Request,
+  query = new URL(request.url).searchParams,
+): 'install' | 'resume' | null {
+  const marker = query.get(NATIVE_HANDOFF_MARKER);
+  return request.method === 'GET' &&
+    !nativeRedirectRequested(request) &&
+    query.getAll(NATIVE_HANDOFF_MARKER).length === 1 &&
+    (marker === 'install' || marker === 'resume') &&
+    ![...request.headers.keys()].some((key) => key.startsWith('x-qg-handoff-'))
+    ? marker
+    : null;
+}
 /** The marker survives an older gateway that omits headers: never count a
  * marked resume as a clean visit. Tokens are accepted only in a header. */
 export function nativeHandoffRequest(
@@ -77,6 +92,7 @@ export function nativeHandoffRequest(
   const marked = query.has(NATIVE_HANDOFF_MARKER);
   const supplied = [...request.headers.keys()].filter((key) => key.startsWith('x-qg-handoff-'));
   if (!marked && !supplied.length) return null;
+  if (browserHandoffRequested(request, query)) return null;
   const action = request.headers.get(NATIVE_HANDOFF_ACTION),
     app = request.headers.get(NATIVE_HANDOFF_APP),
     token = request.headers.get(NATIVE_HANDOFF_TOKEN);

@@ -43,6 +43,13 @@ function runtime() {
   )
     .replace(/^import .*;\s*$/gm, '')
     .replace(/^export\s+/gm, '');
+  const install = ['redirect-native-install-browser.ts', 'redirect-native-install-page.ts']
+    .map((file) =>
+      readFileSync(join(__dirname, '../../../../supabase/functions/_shared/' + file), 'utf8')
+        .replace(/^import .*;\s*$/gm, '')
+        .replace(/^export\s+/gm, ''),
+    )
+    .join('\n');
   const code = ts.transpileModule(
     nativeResolution +
       '\n' +
@@ -57,6 +64,8 @@ function runtime() {
       presentation +
       '\n' +
       domainRelay +
+      '\n' +
+      install +
       '\n' +
       source,
     {

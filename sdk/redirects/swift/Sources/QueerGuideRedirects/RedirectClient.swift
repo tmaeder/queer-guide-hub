@@ -91,6 +91,27 @@ public struct RedirectClient: Sendable {
         try await perform(link, password: password, attributionConsent: attributionConsent).0
     }
 
+    /// Normalize this binding's first-party Safari App Clip invocation. The Clip
+    /// must obtain its own consent before creating/storing a handoff. An installed
+    /// full app may resolve this source normally instead. No request is sent here.
+    public func sourceFromAppClipInvocation(_ invocation: URL, appBindingID: UUID) throws -> URL {
+        guard let source = Self.publicURL(invocation.absoluteString, maximum: 4096, https: true),
+              let host = source.host?.lowercased(), shortHosts.contains(host), source.fragment == nil,
+              var parts = URLComponents(url: source, resolvingAgainstBaseURL: false)
+        else { throw RedirectError.invalidLink }
+        let items = parts.queryItems ?? []
+        let marker = items.filter { $0.name == "qg_handoff" }
+        let choice = items.filter { $0.name == "qg_app_choice" }
+        guard marker.count == 1, marker[0].value == "install", choice.count == 1,
+              choice[0].value?.lowercased() == appBindingID.uuidString.lowercased(),
+              !items.contains(where: { $0.name != "qg_handoff" && Self.reservedQueryFields.contains($0.name) })
+        else { throw RedirectError.invalidLink }
+        parts.queryItems = items.filter { !["qg_handoff", "qg_app_choice"].contains($0.name) }
+        if parts.queryItems?.isEmpty == true { parts.queryItems = nil }
+        guard let clean = parts.url else { throw RedirectError.invalidLink }
+        return clean
+    }
+
     /// No automatic retry: a transport/metadata error may follow a reserved visit.
     public func createHandoff(_ link: URL, appBindingID: UUID, password: String? = nil,
                               attributionConsent: Bool = false) async throws -> RedirectHandoff {
