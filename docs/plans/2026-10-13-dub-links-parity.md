@@ -3031,3 +3031,38 @@ checks after that base update. Deferred linking itself is still unimplemented;
 the committed design is the specification for the next phase, not completion
 evidence. Its iOS path has the Clip create the original receipt while serving its
 own useful functionality; the browser must not pre-mint a duplicate visit.
+
+PR4422 merged externally at2026-10-15 18:54:57UTC as0680410b037f26e17e803bce31a4cd866c89497f
+with headc8bea7364. The App Clip work began after read-only history confirmed the
+registry migration was unapplied; merging made that original file immutable.
+Restored its exact merged contents and moved the new column/check/index and
+function replacements into allocator-created99991792091258_redirect_native_app_clips.
+The isolated DB harness now applies this explicit successor. No old version is
+rewritten or renamed for the App Clip addition, and no production DDL is executed.
+
+The optional App Clip identity has owner UI/API input, typed/private DTO state,
+parent/platform invariants enforced by SQL as well as input/render validation,
+per-host uniqueness, publication/removal and private-label boundaries. Apple AASA
+gets a bounded appclips.apps list only when configured, enabled and ready. Parent
+Universal Link paths remain unchanged; Android's document remains byte-equivalent.
+Gateways reconstruct this exact new root permission and reject unrelated/duplicate
+Clip IDs, unknown permissions or fields. Domain/role/readiness checks also apply.
+
+Current evidence:18 focused UI/helper/gateway cases, full isolated SQL, all five
+server SDK/actual HTTP suites (including Clip creation/publication and role loss),
+strict Pages production/tests and Worker types, app702 inherited errors with none
+new, targeted lint, and full Edge API Deno check with an isolated lock/global npm
+cache. The initial Deno npm-mode/frozen checks lacked existing transitive type
+packages; no shared lock or type baseline was changed. Production build29.36s;
+Worker dry-run24.84KiB/6.71KiB gzip;2,339-migration grammar checks passed before the
+successor split. Repeat SQL/grammar after that split. Local browser save/edit retains
+the Clip value with publication disabled; desktop and390px layouts are readable,
+content width390px (no horizontal overflow). Screenshots app-clip-desktop.png and
+app-clip-mobile.png are labelled isolated fixtures with external requests blocked.
+This host authorization does not yet implement receipt creation/redemption or
+prove a signed Clip/install/App Group transition. Those remain in the full scope.
+
+After splitting the successor, full SQL and all five SDK/actual HTTP suites pass
+again; the2,340-file grammar and unique-version checks pass. The original merged
+registry file has no diff. No production app/association/data/provider state was
+changed. The App Clip work belongs in a focused successor PR to merged4422.

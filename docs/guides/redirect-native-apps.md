@@ -73,3 +73,25 @@ host; clients must still resolve each link against live policies. A local
 [Swift client](../../sdk/redirects/swift/README.md) consumes that transport; the local [Android client](../../sdk/redirects/android/README.md)
 also resolves live policies.
 Deferred attribution and real signed-device verification remain required.
+
+## App Clip identities
+
+An iOS binding may also set an optional `appClipId`, such as
+`ABCDE12345.org.yourcompany.app.Clip`. It must extend the signed parent app ID;
+another team/parent, the parent ID itself, an Android binding, duplicate clip
+identities on the same host and stale saves are rejected. Clear it with null to
+remove that grant. It is published only with an enabled binding and current
+publisher/domain readiness. Private labels and revisions remain absent from public
+association data.
+
+Apple's AASA file then contains an exact `appclips: { apps: [...] }` section in
+addition to the existing full-app path rules. Android's document stays unchanged.
+The gateway validates/reconstructs this explicit bounded grant and continues to
+reject unknown permissions or unrelated App Clip identities. App Clip authorization
+covers the host; narrow invocation experiences and both targets' capabilities
+must be configured with Apple. See [registering a Clip identity](https://developer.apple.com/help/account/identifiers/register-an-app-id-for-app-clips/)
+and [website associations](https://developer.apple.com/documentation/appclip/associating-your-app-clip-with-your-website).
+
+This registers host authorization. Receipt creation, deferred install attribution,
+App Group migration and real signed-device verification remain unfinished; do
+not treat this setting as an installed App Clip or a working store experience.

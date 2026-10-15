@@ -46,6 +46,49 @@ describe('native app associations', () => {
     ]);
     expect(associationDocument('android', [])).toEqual([]);
   });
+  it('publishes only parent-bound App Clip identities and reconstructs their exact gateway schema', async () => {
+    const clipped = { ...ios, appClipId: ios.appId + '.Clip' };
+    const document = associationDocument('ios', [clipped, android]);
+    expect(document).toEqual({
+      applinks: { details: [{ appIDs: [ios.appId], components: [{ '/': '/go/*' }] }] },
+      appclips: { apps: [clipped.appClipId] },
+    });
+    expect(associationDocument('android', [clipped, android])).toEqual(
+      associationDocument('android', [ios, android]),
+    );
+    const proxy = await proxyAppAssociation(
+      get(),
+      env,
+      vi.fn(async () => Response.json(document)),
+    );
+    expect(proxy?.status).toBe(200);
+    expect(await proxy?.json()).toEqual(document);
+    expect(nativeAppValues({ appClipId: '  ' })).toEqual({ appClipId: null });
+    expect(() => nativeAppValues({ appClipId: true })).toThrow();
+    expect(() =>
+      associationDocument('ios', [{ ...ios, appClipId: 'OTHER12345.org.other.Clip' }]),
+    ).toThrow();
+    expect(() => associationDocument('ios', [{ ...ios, appClipId: ios.appId }])).toThrow();
+    expect(() =>
+      associationDocument('android', [{ ...android, appClipId: clipped.appClipId }]),
+    ).toThrow();
+    for (const bad of [
+      { ...document, appclips: { apps: ['OTHER12345.org.other.Clip'] } },
+      { ...document, appclips: { apps: [clipped.appClipId, clipped.appClipId] } },
+      { ...document, appclips: { apps: [clipped.appClipId], extra: true } },
+      { ...document, webcredentials: { apps: [ios.appId] } },
+    ]) {
+      expect(
+        (
+          await proxyAppAssociation(
+            get(),
+            env,
+            vi.fn(async () => Response.json(bad)),
+          )
+        )?.status,
+      ).toBe(503);
+    }
+  });
   it('normalizes fingerprints and rejects arbitrary identifiers, fields and unsafe patterns', () => {
     expect(
       nativeAppValues(

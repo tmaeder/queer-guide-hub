@@ -2,6 +2,7 @@ import { UUID } from './redirect-api.ts';
 export interface NativeAppBinding {
   platform: 'ios' | 'android';
   appId: string;
+  appClipId?: string;
   fingerprints: string[];
   paths: string[];
 }
@@ -18,7 +19,16 @@ export function nativeAppValues(input: unknown, creating = false): Record<string
     !Object.keys(value).length ||
     Object.keys(value).some(
       (k) =>
-        !['label', 'domainId', 'platform', 'appId', 'fingerprints', 'paths', 'enabled'].includes(k),
+        ![
+          'label',
+          'domainId',
+          'platform',
+          'appId',
+          'appClipId',
+          'fingerprints',
+          'paths',
+          'enabled',
+        ].includes(k),
     )
   )
     throw new Error('Invalid app fields');
@@ -45,6 +55,16 @@ export function nativeAppValues(input: unknown, creating = false): Record<string
       !/^[A-Za-z0-9_.-]+$/.test(value.appId))
   )
     throw new Error('Invalid app identifier');
+  const appClipId =
+    typeof value.appClipId === 'string' ? value.appClipId.trim() || null : value.appClipId;
+  if (
+    appClipId !== undefined &&
+    appClipId !== null &&
+    (typeof appClipId !== 'string' ||
+      appClipId.length > 255 ||
+      !/^[A-Z0-9]{10}\.[A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)+$/.test(appClipId))
+  )
+    throw new Error('Provide the signed App Clip application identifier');
   if (value.enabled !== undefined && typeof value.enabled !== 'boolean')
     throw new Error('Invalid app publication state');
   if (value.fingerprints !== undefined) {
@@ -78,12 +98,17 @@ export function nativeAppValues(input: unknown, creating = false): Record<string
       ))
   )
     throw new Error('Use 1–20 absolute short-link path patterns');
-  return { ...value, ...(typeof value.label === 'string' ? { label: value.label.trim() } : {}) };
+  return {
+    ...value,
+    ...(typeof value.label === 'string' ? { label: value.label.trim() } : {}),
+    ...(appClipId !== undefined ? { appClipId } : {}),
+  };
 }
 export function associationDocument(
   platform: 'ios' | 'android',
   records: NativeAppBinding[],
   hostname?: string,
+  publishedClips?: unknown,
 ) {
   if (!Array.isArray(records) || records.length > 10) throw new Error('Invalid app bindings');
   for (const record of records) {
@@ -97,6 +122,13 @@ export function associationDocument(
           record.fingerprints.length < 1
     )
       throw new Error('Invalid platform app identity');
+    if (
+      record.appClipId !== undefined &&
+      (record.platform !== 'ios' ||
+        typeof record.appClipId !== 'string' ||
+        !record.appClipId.startsWith(record.appId + '.'))
+    )
+      throw new Error('Invalid App Clip parent identity');
   }
   if (
     hostname &&
@@ -105,6 +137,26 @@ export function associationDocument(
   )
     throw new Error('Built-in associations must stay under /go/');
   const selected = records.filter((record) => record.platform === platform);
+  const clips =
+    publishedClips === undefined
+      ? selected.flatMap((record) => (record.appClipId ? [record.appClipId] : []))
+      : publishedClips;
+  if (
+    !Array.isArray(clips) ||
+    clips.length > 10 ||
+    new Set(clips).size !== clips.length ||
+    clips.some(
+      (clip) =>
+        typeof clip !== 'string' ||
+        clip.length > 255 ||
+        !/^[A-Z0-9]{10}\.[A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)+$/.test(clip) ||
+        !selected.some(
+          (record) => record.platform === 'ios' && clip.startsWith(record.appId + '.'),
+        ),
+    ) ||
+    (platform !== 'ios' && clips.length)
+  )
+    throw new Error('Invalid published App Clip identities');
   return platform === 'ios'
     ? {
         applinks: {
@@ -113,6 +165,7 @@ export function associationDocument(
             components: record.paths.map((path) => ({ '/': path })),
           })),
         },
+        ...(clips.length ? { appclips: { apps: clips } } : {}),
       }
     : selected.map((record) => ({
         relation: ['delegate_permission/common.handle_all_urls'],

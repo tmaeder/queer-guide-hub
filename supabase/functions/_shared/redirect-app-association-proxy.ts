@@ -114,7 +114,12 @@ export async function proxyAppAssociation(
                 .map((rule) => rule['/']),
             }),
           );
-    const result = associationDocument(platform, records, url.hostname);
+    const result = associationDocument(
+      platform,
+      records,
+      url.hostname,
+      platform === 'ios' ? raw.appclips?.apps : undefined,
+    );
     if (JSON.stringify(result) !== JSON.stringify(raw))
       throw new Error('Unexpected association schema');
     return reply(result);

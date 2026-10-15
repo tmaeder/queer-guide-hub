@@ -9,6 +9,7 @@ const base = {
   label: 'Existing app',
   platform: 'ios' as const,
   appId: 'ABCDE12345.org.example.existing',
+  appClipId: null as string | null,
   fingerprints: [] as string[],
   paths: ['/go/*'],
   enabled: false,
@@ -87,6 +88,7 @@ describe('native app registry', () => {
         label: 'New app',
         platform: 'ios',
         appId: 'ABCDE12345.org.example.new',
+        appClipId: null,
         domainId: null,
         fingerprints: [],
         paths: ['/go/*'],
@@ -94,10 +96,39 @@ describe('native app registry', () => {
       }),
     );
   });
+  it('saves an explicit App Clip identity alongside its signed iOS parent', async () => {
+    show();
+    await screen.findByLabelText('App label');
+    fireEvent.change(screen.getByLabelText('App label'), { target: { value: 'Clip app' } });
+    fireEvent.change(screen.getByLabelText('iOS application identifier'), {
+      target: { value: 'ABCDE12345.org.example.parent' },
+    });
+    fireEvent.change(screen.getByLabelText('App Clip application identifier (optional)'), {
+      target: { value: 'ABCDE12345.org.example.parent.Clip' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Register app' }));
+    await waitFor(() =>
+      expect(mocks.api).toHaveBeenCalledWith(
+        '/apps',
+        'POST',
+        expect.objectContaining({
+          appId: 'ABCDE12345.org.example.parent',
+          appClipId: 'ABCDE12345.org.example.parent.Clip',
+          enabled: false,
+        }),
+      ),
+    );
+  });
   it('requires Android release fingerprints and publishes only on explicit selection', async () => {
     show();
     await screen.findByLabelText('App label');
+    fireEvent.change(screen.getByLabelText('App Clip application identifier (optional)'), {
+      target: { value: 'ABCDE12345.org.example.parent.Clip' },
+    });
     fireEvent.change(screen.getByLabelText('Platform'), { target: { value: 'android' } });
+    expect(
+      screen.queryByLabelText('App Clip application identifier (optional)'),
+    ).not.toBeInTheDocument();
     expect(screen.getByLabelText('SHA-256 release signing fingerprints')).toBeRequired();
     fireEvent.change(screen.getByLabelText('App label'), { target: { value: 'Android app' } });
     fireEvent.change(screen.getByLabelText('Android package name'), {
@@ -112,7 +143,7 @@ describe('native app registry', () => {
       expect(mocks.api).toHaveBeenCalledWith(
         '/apps',
         'POST',
-        expect.objectContaining({ enabled: true, fingerprints: ['a'.repeat(64)] }),
+        expect.objectContaining({ enabled: true, appClipId: null, fingerprints: ['a'.repeat(64)] }),
       ),
     );
   });

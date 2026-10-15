@@ -14,6 +14,7 @@ interface AppRow {
   label: string;
   platform: 'ios' | 'android';
   appId: string;
+  appClipId: string | null;
   fingerprints: string[];
   paths: string[];
   enabled: boolean;
@@ -51,6 +52,7 @@ function AppForm({
   const [label, setLabel] = useState(row?.label ?? ''),
     [platform, setPlatform] = useState<'ios' | 'android'>(row?.platform ?? 'ios'),
     [appId, setAppId] = useState(row?.appId ?? ''),
+    [appClipId, setAppClipId] = useState(row?.appClipId ?? ''),
     [fingerprints, setFingerprints] = useState(row?.fingerprints.join('\n') ?? ''),
     [paths, setPaths] = useState(row?.paths.join('\n') ?? '/go/*'),
     [enabled, setEnabled] = useState(row?.enabled ?? false);
@@ -67,6 +69,7 @@ function AppForm({
         label,
         platform,
         appId,
+        appClipId: platform === 'ios' ? appClipId.trim() || null : null,
         domainId: selection.domainId,
         fingerprints: platform === 'android' ? fingerprints.split(/[\s,]+/).filter(Boolean) : [],
         paths: paths
@@ -108,6 +111,7 @@ function AppForm({
             onChange={(e) => {
               setPlatform(e.target.value as 'ios' | 'android');
               setAppId('');
+              setAppClipId('');
               setFingerprints('');
             }}
           >
@@ -158,6 +162,23 @@ function AppForm({
             : 'Use the application ID from your release build.'}
         </p>
       </div>
+      {platform === 'ios' && (
+        <div>
+          <Label htmlFor="app-clip-identifier">App Clip application identifier (optional)</Label>
+          <Input
+            id="app-clip-identifier"
+            maxLength={255}
+            value={appClipId}
+            onChange={(e) => setAppClipId(e.target.value)}
+            autoComplete="off"
+          />
+          <p className="text-sm text-muted-foreground">
+            Use the signed parent application identifier followed by the Clip suffix. Publishing
+            this binding authorizes that App Clip on the host. Configure its invocation URLs and App
+            Groups with Apple; the path rules below apply to full-app links.
+          </p>
+        </div>
+      )}
       {platform === 'android' && (
         <div>
           <Label htmlFor="app-fingerprints">SHA-256 release signing fingerprints</Label>

@@ -317,14 +317,16 @@ try {
     const response=await fetch(base+path,{method,headers:{Authorization:'Bearer '+credential,...(body?{'Content-Type':'application/json'}:{})},...(body?{body:JSON.stringify(body)}:{})});
     const data=await response.json();if(response.status!==expected)throw new Error('Report HTTP '+path+' expected '+expected+' received '+response.status+': '+JSON.stringify(data));return data;
   }
-  const nativeApp=await reportRequest('/apps','POST',{label:'HTTP native app',platform:'ios',appId:'ABCDE12345.org.example.http',paths:['/go/*']},undefined,201);
+  await reportRequest('/apps','POST',{label:'Wrong Clip parent',platform:'ios',appId:'ABCDE12345.org.example.http',appClipId:'OTHER12345.org.other.Clip',paths:['/go/*']},undefined,400);
+  const nativeApp=await reportRequest('/apps','POST',{label:'HTTP native app',platform:'ios',appId:'ABCDE12345.org.example.http',appClipId:'ABCDE12345.org.example.http.Clip',paths:['/go/*']},undefined,201);
   if(nativeApp.enabled||!nativeApp.version)throw new Error('Native app was not disabled by default');
   const activeNativeApp=await reportRequest('/apps/'+nativeApp.id,'PATCH',{version:nativeApp.version,enabled:true});
   await reportRequest('/apps/'+nativeApp.id,'PATCH',{version:nativeApp.version,label:'stale'},undefined,409);
   const aasa=await reportRequest('/public-app-association?hostname=queer.guide&platform=ios');
-  if(!aasa.applinks.details.some(item=>item.appIDs.includes('ABCDE12345.org.example.http'))||JSON.stringify(aasa).includes('HTTP native app'))throw new Error('Public iOS association projection failed');
+  if(!aasa.applinks.details.some(item=>item.appIDs.includes('ABCDE12345.org.example.http'))||!aasa.appclips?.apps.includes('ABCDE12345.org.example.http.Clip')||JSON.stringify(aasa).includes('HTTP native app'))throw new Error('Public iOS association projection failed');
   await reportRequest('/apps','GET',undefined,token,403);
   const androidNativeApp=await reportRequest('/apps','POST',{label:'HTTP Android app',platform:'android',appId:'org.example.http',fingerprints:['a'.repeat(64)],paths:['/go/*'],enabled:true},undefined,201);
+  await reportRequest('/apps/'+androidNativeApp.id,'PATCH',{version:androidNativeApp.version,appClipId:'ABCDE12345.org.example.http.Clip'},undefined,400);
   const assetlinks=await reportRequest('/public-app-association?hostname=www.queer.guide&platform=android');
   if(assetlinks[0].target.sha256_cert_fingerprints[0]!==Array(32).fill('AA').join(':')||assetlinks[0].relation[0]!=='delegate_permission/common.handle_all_urls')throw new Error('Android fingerprints/permission changed');
   const invitationReceipt=await reportRequest('/invitations','POST',{email:'http-invite@example.org',label:'HTTP recipient',role:'viewer'},undefined,201);
@@ -364,7 +366,7 @@ try {
   await reportRequest('/invitations','GET',undefined,undefined,403);
   await reportRequest('/apps','GET',undefined,undefined,403);
   const revokedNativeApp=await reportRequest('/public-app-association?hostname=queer.guide&platform=ios');
-  if(revokedNativeApp.applinks.details.length)throw new Error('Lost owner app association stayed public');
+  if(revokedNativeApp.applinks.details.length||revokedNativeApp.appclips)throw new Error('Lost owner app association stayed public');
   await reportRequest('/tokens','GET',undefined,undefined,403);
   await reportRequest('/links','GET',undefined,ownerCredential.secret,403);
   await reportRequest('/tokens/'+ownerCredential.id,'DELETE',undefined,undefined,403);

@@ -47,6 +47,7 @@ export async function createRedirectTestDb() {
       'redirect_all_source_inventory.sql',
       'redirect_workspace_invitations.sql',
       'redirect_native_apps.sql',
+      'redirect_native_app_clips.sql',
       'redirect_invitation_inbox.sql',
     ]) {
       const name = files.find((file) => file.endsWith(suffix));
