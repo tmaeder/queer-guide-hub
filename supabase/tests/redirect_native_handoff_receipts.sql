@@ -53,6 +53,8 @@ BEGIN
  INSERT INTO public.user_roles VALUES(actor,'admin');
  UPDATE public.redirect_link_policies SET policy='{"track_conversions":true,"cloaked":true}' WHERE redirect_id=link_id;
  IF pg_temp.mint_handoff(link_id,fixture_app_id,repeat('f',64)) IS NOT NULL THEN RAISE EXCEPTION 'Cloaked receipt minted';END IF;
+ UPDATE public.redirect_link_policies SET policy='{"track_conversions":true,"expires_at":"2020-01-01T00:00:00Z"}' WHERE redirect_id=link_id;
+ IF pg_temp.mint_handoff(link_id,fixture_app_id,repeat('f',64)) IS NOT NULL THEN RAISE EXCEPTION 'Expired policy receipt minted';END IF;
  UPDATE public.redirect_link_policies SET policy='{}' WHERE redirect_id=link_id;
  IF pg_temp.mint_handoff(link_id,fixture_app_id,repeat('f',64)) IS NOT NULL THEN RAISE EXCEPTION 'Tracking-disabled receipt minted';END IF;
  UPDATE public.redirect_link_policies SET policy='{"track_conversions":true}' WHERE redirect_id=link_id;

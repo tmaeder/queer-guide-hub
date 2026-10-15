@@ -360,6 +360,8 @@ async function nativeOpen({
   consent = false,
   query = '',
   agent = 'QueerGuide SDK iPhone',
+  handoffHeaders = {},
+  ip = '192.0.2.33',
 } = {}) {
   return builtinExports.onRequest({
     request: new Request('https://queer.guide/go/native-proof' + query, {
@@ -367,8 +369,9 @@ async function nativeOpen({
       headers: {
         Accept: nativeProtocol.NATIVE_REDIRECT_MEDIA,
         'User-Agent': agent,
-        'cf-connecting-ip': '192.0.2.33',
+        'cf-connecting-ip': ip,
         ...(consent ? { [nativeProtocol.NATIVE_CONSENT_HEADER]: 'granted' } : {}),
+        ...handoffHeaders,
         ...(password ? { 'Content-Type': 'application/x-www-form-urlencoded' } : {}),
       },
       ...(password ? { body: new URLSearchParams({ password }).toString() } : {}),
@@ -517,6 +520,236 @@ const currentPassword = await nativeOpen({ method: 'POST', password: 'race-new-p
 assert.equal(currentPassword.status, 200);
 assert.equal(new URL((await currentPassword.json()).destination).pathname, '/native-ios');
 assert.equal(await nativeEvents(), beforeRaceEvents + 1);
+const handoffOpen = (options) => nativeOpen({ ...options, ip: '192.0.2.34' });
+const handoffApp = await service.rpc('redirect_native_app_admin', {
+  p_actor: actor,
+  p_action: 'create',
+  p_values: JSON.stringify({
+    label: 'Private handoff fixture',
+    platform: 'ios',
+    appId: 'ABCDE12345.org.example.http',
+    enabled: true,
+  }),
+});
+assert.equal(handoffApp.error, null);
+const handoffAppId = handoffApp.data.id;
+const creationHeaders = {
+  [nativeProtocol.NATIVE_HANDOFF_ACTION]: 'create',
+  [nativeProtocol.NATIVE_HANDOFF_APP]: handoffAppId,
+};
+const handoffCount = await nativeEvents();
+assert.equal(
+  (
+    await handoffOpen({
+      method: 'POST',
+      password: 'race-new-password',
+      query: '?qg_handoff=install',
+      handoffHeaders: creationHeaders,
+    })
+  ).status,
+  400,
+);
+assert.equal(
+  (
+    await handoffOpen({
+      method: 'POST',
+      password: 'race-new-password',
+      consent: true,
+      query: '?qg_handoff=install',
+      handoffHeaders: creationHeaders,
+    })
+  ).status,
+  410,
+);
+assert.equal(await nativeEvents(), handoffCount);
+await db.query('UPDATE public.redirect_native_apps SET handoff_enabled=true WHERE id=$1', [
+  handoffAppId,
+]);
+// Use an active real experiment: resume must restore the original cohort rather
+// than randomly rerolling it, even with its original quota already exhausted.
+await db.query('UPDATE public.redirect_link_policies SET policy=$2 WHERE redirect_id=$1', [
+  nativeLink.id,
+  JSON.stringify({
+    track_conversions: true,
+    experiment: {
+      starts_at: new Date(Date.now() - 60000).toISOString(),
+      ends_at: new Date(Date.now() + 3600000).toISOString(),
+      variants: [
+        { id: 'a', url: 'https://example.org/cohort-a', weight: 50 },
+        { id: 'b', url: 'https://example.org/cohort-b', weight: 50 },
+      ],
+    },
+  }),
+]);
+await db.query('UPDATE public.redirects SET click_limit=click_count+1 WHERE id=$1', [
+  nativeLink.id,
+]);
+const createdHandoff = await handoffOpen({
+  method: 'POST',
+  password: 'race-new-password',
+  consent: true,
+  query: '?qg_handoff=install&utm_source=installation',
+  handoffHeaders: creationHeaders,
+});
+assert.equal(createdHandoff.status, 200);
+const handoffOutcome = await createdHandoff.json(),
+  rawReceipt = createdHandoff.headers.get(nativeProtocol.NATIVE_HANDOFF_TOKEN);
+assert.match(rawReceipt, /^qg_handoff_[a-f0-9]{64}$/);
+assert.equal(createdHandoff.headers.get(nativeProtocol.NATIVE_HANDOFF_STATE), 'created');
+assert.ok(
+  Date.parse(createdHandoff.headers.get(nativeProtocol.NATIVE_HANDOFF_EXPIRY)) > Date.now(),
+);
+assert.equal(await nativeEvents(), handoffCount + 1);
+const storedReceipt = (
+  await db.query('SELECT * FROM public.redirect_native_handoff_receipts WHERE click_id=$1', [
+    handoffOutcome.clickId,
+  ])
+).rows[0];
+assert.equal(storedReceipt.token_hash, await nativeProtocol.nativeHandoffDigest(rawReceipt));
+assert.notEqual(storedReceipt.token_hash, rawReceipt);
+assert.ok(
+  !(
+    await db.query(
+      'SELECT to_jsonb(r)::text AS value FROM public.redirect_native_handoff_receipts r',
+    )
+  ).rows.some((row) => row.value.includes(rawReceipt)),
+);
+const resumeHeaders = {
+  [nativeProtocol.NATIVE_HANDOFF_ACTION]: 'resume',
+  [nativeProtocol.NATIVE_HANDOFF_APP]: handoffAppId,
+  [nativeProtocol.NATIVE_HANDOFF_TOKEN]: rawReceipt,
+};
+assert.equal((await handoffOpen({ query: '?qg_handoff=resume', consent: true })).status, 400);
+assert.equal(
+  (
+    await handoffOpen({
+      query: '?qg_handoff=resume',
+      consent: false,
+      handoffHeaders: resumeHeaders,
+    })
+  ).status,
+  400,
+);
+assert.equal(
+  (
+    await handoffOpen({
+      query: '?qg_handoff=resume&utm_source=forged',
+      consent: true,
+      handoffHeaders: resumeHeaders,
+    })
+  ).status,
+  400,
+);
+assert.equal(
+  (
+    await handoffOpen({
+      method: 'POST',
+      password: 'race-old-password',
+      query: '?qg_handoff=resume',
+      consent: true,
+      handoffHeaders: resumeHeaders,
+    })
+  ).status,
+  401,
+);
+assert.equal(await nativeEvents(), handoffCount + 1);
+const resumedHandoff = await handoffOpen({
+  method: 'POST',
+  password: 'race-new-password',
+  query: '?qg_handoff=resume',
+  consent: true,
+  handoffHeaders: resumeHeaders,
+});
+assert.equal(resumedHandoff.status, 200);
+const resumedOutcome = await resumedHandoff.json();
+assert.equal(resumedOutcome.clickId, handoffOutcome.clickId);
+assert.equal(resumedOutcome.destination, handoffOutcome.destination);
+assert.equal(new URL(resumedOutcome.destination).searchParams.get('utm_source'), 'installation');
+assert.ok(!resumedOutcome.destination.includes('qg_handoff'));
+assert.equal(resumedHandoff.headers.get(nativeProtocol.NATIVE_HANDOFF_STATE), 'consumed');
+assert.equal(resumedHandoff.headers.get(nativeProtocol.NATIVE_HANDOFF_TOKEN), null);
+assert.equal(await nativeEvents(), handoffCount + 1);
+assert.equal(
+  (
+    await handoffOpen({
+      method: 'POST',
+      password: 'race-new-password',
+      query: '?qg_handoff=resume',
+      consent: true,
+      handoffHeaders: resumeHeaders,
+    })
+  ).status,
+  404,
+);
+assert.equal(await nativeEvents(), handoffCount + 1);
+// Prove the same header protocol through the actual signed branded-root Worker.
+const brandedApp = await service.rpc('redirect_native_app_admin', {
+  p_actor: actor,
+  p_action: 'create',
+  p_values: JSON.stringify({
+    label: 'Private branded fixture',
+    domainId: domain.id,
+    platform: 'ios',
+    appId: 'ABCDE12345.org.example.brand',
+    paths: ['/'],
+    enabled: true,
+  }),
+});
+assert.equal(brandedApp.error, null);
+await db.query('UPDATE public.redirect_native_apps SET handoff_enabled=true WHERE id=$1', [
+  brandedApp.data.id,
+]);
+await db.query(
+  'INSERT INTO public.redirect_link_policies(redirect_id,policy) VALUES($1,$2) ON CONFLICT(redirect_id) DO UPDATE SET policy=excluded.policy',
+  [nativeRootId, JSON.stringify({ track_conversions: true })],
+);
+const brandedOpen = (action, token) =>
+  worker.fetch(
+    new Request(
+      'https://root-http.example.com/?qg_handoff=' + (action === 'create' ? 'install' : 'resume'),
+      {
+        headers: {
+          Accept: nativeProtocol.NATIVE_REDIRECT_MEDIA,
+          'x-qg-attribution-consent': 'granted',
+          [nativeProtocol.NATIVE_HANDOFF_ACTION]: action,
+          [nativeProtocol.NATIVE_HANDOFF_APP]: brandedApp.data.id,
+          ...(token ? { [nativeProtocol.NATIVE_HANDOFF_TOKEN]: token } : {}),
+        },
+      },
+    ),
+    { ...values, SUPABASE_ANON_KEY: 'fixture-public' },
+  );
+const beforeBranded = await rootNativeTotal();
+const brandedReceipt = await brandedOpen('create');
+assert.equal(brandedReceipt.status, 200);
+const brandedCreated = await brandedReceipt.json();
+const brandedResumed = await brandedOpen(
+  'resume',
+  brandedReceipt.headers.get(nativeProtocol.NATIVE_HANDOFF_TOKEN),
+);
+assert.equal(brandedResumed.status, 200);
+const brandedResumedBody = await brandedResumed.json();
+assert.equal(brandedResumedBody.clickId, brandedCreated.clickId);
+assert.equal(brandedResumedBody.canonicalUrl, 'https://root-http.example.com/');
+assert.equal(await rootNativeTotal(), beforeBranded + 1);
+// The shared IP budget applies before disclosure/consumption, without weakening
+// the independent password throttle. Saturate only this isolated DB fixture.
+await db.query(
+  "UPDATE public.redirect_report_budgets SET attempts=30 WHERE bucket LIKE 'native-handoff:%'",
+);
+const throttledHandoff = await handoffOpen({
+  method: 'POST',
+  password: 'race-new-password',
+  query: '?qg_handoff=install',
+  consent: true,
+  handoffHeaders: creationHeaders,
+});
+assert.equal(throttledHandoff.status, 429);
+assert.match(throttledHandoff.headers.get('retry-after'), /^[1-9][0-9]*$/);
+assert.equal(await nativeEvents(), handoffCount + 1);
+console.log(
+  'Native handoff: actual Pages and signed branded Worker/resolver/SQL create, digest-only storage, current password, marker downgrade/consent denial, original query/cohort/quota reservation and single-use redemption pass.',
+);
 console.log(
   'Resolution snapshots: actual gateway/resolver/SQL reject mid-flight target and password changes without counting a visit; only the current password succeeds.',
 );

@@ -49,7 +49,7 @@ BEGIN
  IF settings.policy->'track_conversions' IS DISTINCT FROM 'true'::jsonb OR settings.policy->'cloaked'='true'::jsonb THEN RETURN NULL;END IF;
  app:=public.redirect_native_handoff_app(p_app,p_metadata->>'domain',p_path);
  IF app.id IS NULL OR app.domain_id IS DISTINCT FROM link.domain_id THEN RETURN NULL;END IF;
- expires:=least(started+interval '24 hours',coalesce(link.end_at,'infinity'::timestamptz));
+ expires:=least(started+interval '24 hours',coalesce(link.end_at,'infinity'::timestamptz),coalesce((settings.policy->>'expires_at')::timestamptz,'infinity'::timestamptz));
  IF settings.policy?'experiment' AND NOT settings.policy->'experiment'?'completed_target' THEN expires:=least(expires,(settings.policy->'experiment'->>'ends_at')::timestamptz);END IF;
  IF expires<=started THEN RETURN NULL;END IF;
  click:=public.record_redirect_snapshot_visit(p_snapshot,p_redirect_id,p_path,p_query,p_referer,p_user_agent,p_country,p_ip_hash,p_status,p_variant_id,p_destination,p_metadata);

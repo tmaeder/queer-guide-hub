@@ -111,8 +111,28 @@ current policy and selected outcome, consumes once and reuses the original click
 The caller must verify the current password and use the shared live selector before
 calling the consumer; these SQL functions are not public authentication endpoints.
 
-This schema does not expose or enable an install flow. Store configuration, native
-receipt headers, browser handoff, platform adapters and scheduled expiry cleanup
-are subsequent work. Do not set the private flag to claim a working deferred link
+The resolver and gateways now support explicit receipt transport, while existing
+apps remain opted out. Owner store configuration, browser handoff, SDK receipt
+methods/platform adapters and scheduled expiry cleanup are subsequent work. Do not set the private flag to claim a working deferred link
 or distribute a raw receipt in URLs, logs or browser storage. Actual signed OS
 installation and App Group/referrer delivery still require device proof.
+
+The opt-in native wire keeps the six-field JSON result. Creation uses the ordinary
+short URL with `qg_handoff=install`, native Accept and granted attribution consent,
+`X-QG-Handoff-Action: create` and `X-QG-Handoff-App` set to the configured binding
+UUID. A successful creation additionally returns `X-QG-Handoff-State: created`, a
+256-bit capability in `X-QG-Handoff-Token` and `X-QG-Handoff-Expires` as ISO UTC.
+
+Resumption uses the canonical source with only `qg_handoff=resume`, the same app/
+consent headers, action `resume` and the capability in its token header. It restores
+query/cohort from the original event and returns state `consumed` with the original
+click. It never increments the visit count again. A current password, if required,
+uses the existing bounded form POST. Missing tokens/headers, denied consent and
+mismatched markers fail without becoming a new visit. Password failures do not
+consume the receipt. Gateways validate and reconstruct receipt metadata; success
+without the expected metadata is an unknown outcome, with no automatic retry.
+
+Markers currently select this explicit native protocol. A browser install/resume
+landing page is still pending; a browser marker request fails without a Location
+or a visit. No token is accepted through a query parameter. These APIs do not prove
+Play delivery, App Clip functionality, persistence or the signed OS transition.

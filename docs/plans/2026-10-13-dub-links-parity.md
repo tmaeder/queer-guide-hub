@@ -3115,3 +3115,33 @@ queue scope failures (initial queue/heading/response waits), outside these local
 redirect fixtures. Its test job was still running at inspection. Preserve those
 gates and inspect fresh CI rather than treating local redirect tests as an all-
 repository release proof.
+
+The next transport layer is now implemented behind the same default-false private
+handoff flag. Creation/resumption requires native negotiation, explicit consent,
+matching bounded action/app/token headers and a reserved install/resume marker.
+Gateways reject malformed requests before proxying; the resolver also checks them,
+so an older gateway dropping headers cannot turn a marked resume into a counted
+visit. Tokens are header-only; creation returns validated token/ISO-expiry metadata,
+redemption returns an explicit consumed acknowledgement, and success missing those
+headers fails as an unknown outcome. The six-field JSON body is unchanged.
+
+The handler uses the existing password throttle and shared target selector, restores
+an unchanged original A/B bucket and query from the private event, applies an IP-
+hash handoff budget and invokes the atomic create/consume functions. Cloaked or
+expired navigation cannot mint a handoff. Current source/domain readiness, app and
+publisher checks still apply. A quota already reserved by creation does not count
+again at resume. Receipt expiry also respects a legacy policy expires_at value;
+read-only production history confirmed the two pending migrations were unapplied
+before adding that cap. No production schema or data mutation was made.
+
+Evidence:40 focused protocol/resolver/gateway cases; full isolated SQL (including
+legacy policy expiry); real Pages and signed branded-root Worker -> handler -> DB
+creation/resumption; digest-only storage; original query/cohort/click, exhausted
+original quota, current password, marker/consent denial, replay and rate limiting.
+The first combined HTTP case exhausted the deliberately unchanged password throttle
+using earlier tests' visitor; a separate fixture visitor tests the new flow without
+weakening that throttle. Deno handler and strict Pages/Worker types pass; targeted
+lint passes; Worker dry-run28.17KiB/7.48KiB gzip, no upload. Public receipt transport
+is no longer missing. Owner store configuration, native SDK receipt methods and
+platform adapters, browser UI, cleanup activation, signed-device/provider proof and
+the rest of the full parity ledger remain open. Existing bindings stay opted out.
