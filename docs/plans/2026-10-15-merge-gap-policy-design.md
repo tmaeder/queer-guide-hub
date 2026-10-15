@@ -29,3 +29,12 @@ through reversible cores, retaining explicit field selections with audit coverag
 Provide an admin-only dry-run preview for historical merges, without automatically
 trusting or copying their donors. Test empties, nested fields, false/zero, coordinate
 pairs, conflict preservation, provenance, rollback, undo and later edits.
+
+## Additional user requirements
+
+The user requested automated combination of multiple data sources, with high
+automation, efficiency and speed. The implementation uses independent-provider
+field consensus over current and recent approved observations, two batched RPCs,
+partial indexes, stale-write protection and no writes for already-filled records.
+Routine high-confidence fills are automatic; exceptions retain the review gates.
+See `docs/architecture/merge-gap-policy.md` for the operational contract.

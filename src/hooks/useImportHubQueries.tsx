@@ -316,7 +316,7 @@ export function useMergeEntities() {
       queryClient.invalidateQueries({ queryKey: ['import-statistics'] });
       toast({
         title: 'Records Merged',
-        description: `Kept "${data.keep_name}", removed "${data.remove_name}" (${data.fk_updates} references updated)`,
+        description: `Kept "${data.keep_name}", merged "${data.remove_name}" (${data.fk_updates} references updated)`,
       });
     },
     onError: (error: Error) => {

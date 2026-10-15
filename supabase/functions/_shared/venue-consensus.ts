@@ -1,3 +1,4 @@
+import { providerKey } from './source-identity.ts'
 // Venue Truth Engine — pure field-level consensus voting.
 // No I/O. Imported by pipeline-consensus-merge and unit-tested in isolation.
 //
@@ -28,7 +29,7 @@ export const SOURCE_WEIGHTS: Record<string, number> = {
 }
 
 export function sourceWeight(source: string): number {
-  return SOURCE_WEIGHTS[source] ?? 0.5
+  return SOURCE_WEIGHTS[providerKey(source)] ?? 0.5
 }
 
 export type FieldKind = 'identity' | 'url' | 'phone' | 'email' | 'coords' | 'text' | 'number' | 'array'
@@ -148,7 +149,9 @@ export function decideField(
   rawCandidates: Candidate[],
   autoThreshold = 0.85,
 ): FieldDecision | null {
-  const candidates = rawCandidates.filter((c) => !isEmpty(c.value))
+  // A provider gets one vote, even if repeated scrapes or aliases supplied it.
+  const candidates = [...new Map(rawCandidates.filter((c) => !isEmpty(c.value))
+    .map((c) => [providerKey(c.source), { ...c, source: providerKey(c.source) }])).values()]
   if (candidates.length === 0) return null
 
   // Arrays: union of all values. Every contributing source agrees UNLESS the

@@ -123,3 +123,12 @@ Deno.test('accessibility_attributes declares its contradictions in VENUE_FIELDS'
   assertEquals(spec.kind, 'array')
   assertEquals((spec.contradictions?.length ?? 0) > 0, true)
 })
+
+Deno.test('provider aliases and repeated scrapes cannot inflate confidence', () => {
+  const decision = decideField({ field: 'description', path: 'description', kind: 'text' }, [
+    { source: 'osm', value: 'A' }, { source: 'OpenStreetMap', value: 'A' }, { source: 'osm', value: 'A' },
+  ])
+  assertEquals(decision?.confidence, 0.7)
+  assertEquals(decision?.agreeing, ['osm'])
+  assertEquals(decision?.action, 'triage')
+})

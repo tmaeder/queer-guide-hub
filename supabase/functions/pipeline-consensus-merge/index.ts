@@ -1,3 +1,4 @@
+import { providerKey } from '../_shared/source-identity.ts'
 import { getServiceClient, jsonResponse, errorResponse, corsResponse, requireInternalOrAdmin } from '../_shared/supabase-client.ts'
 import { withErrorReporting } from '../_shared/report-api-error.ts'
 import {
@@ -136,7 +137,7 @@ Deno.serve(withErrorReporting('pipeline-consensus-merge', async (req) => {
 
       // Build source records: each staging row + the venue's current value.
       const sources: SourceRecord[] = members.map((m) => ({
-        source: m.source_name || 'unknown',
+        source: providerKey(m.source_name || 'unknown'),
         data: (m.normalized_data || {}) as Json,
       }))
       if (venue) {
