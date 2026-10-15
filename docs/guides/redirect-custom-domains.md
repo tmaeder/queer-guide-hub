@@ -51,7 +51,7 @@ proof refreshes keep expanded setup panels open.
 Signed branded routing serves these defaults after current readiness checks.
 Domain namespaces, guarded CRUD/bulk, five SDK field contracts, inventory/CSV/QR
 and the tracked/member builders are implemented locally. Remaining domain work
-includes archive/transfer/subpath workflows, authorized DNS auto-configuration/
+includes transfer/subpath workflows, authorized DNS auto-configuration/
 forwarding setup and production rollout. Managed root-link policies and explicit
 provider validation restart are implemented locally; see their sections below.
 
@@ -59,10 +59,12 @@ provider validation restart are implemented locally; see their sections below.
 
 Registered owner sessions use `/api/redirects` (or the existing direct edge API):
 
-- `GET /domains?limit=50&cursor=<UUID>`: owner-only keyset list and exact count.
+- `GET /domains?archive=active&q=<hostname>&limit=50&cursor=<UUID>`: owner-only
+  filtered keyset list and exact count. `archive` accepts `active` (default),
+  `archived` or `all`; `q` matches a literal case-insensitive hostname substring.
 - `POST /domains`: hostname and optional stored defaults.
 - `GET /domains/:id`: current setup/proof metadata.
-- `PATCH /domains/:id`: version plus changed defaults/disabled state.
+- `PATCH /domains/:id`: version plus changed defaults/disabled/archived state.
 - `POST /domains/:id/verify`: version; reserve, check real DNS, apply current result.
 - `POST /domains/:id/rotate`: version; replace challenge and clear proof.
 - `DELETE /domains/:id`: JSON version; reject a provisioned hostname.
@@ -418,3 +420,33 @@ record restores the configured legacy fallback.
 isolated PostgreSQL together, with provider/DNS/production requests excluded.
 This proves local behavior; controlled real-host and deployment validation remain
 part of release.
+
+
+## Archive and restore
+
+Owner domain settings include hostname search and Active, Archived and All views.
+Archiving requires review and hides the domain from new-link choices and the
+default registry list. Existing links, inventory facets, QR targets, signed routing,
+provider work and outstanding native handoff receipts continue under their current
+authorization and readiness checks. Archive is organization; use Disable or the
+provider disconnect flow when routing must stop. Existing link editors preserve
+an omitted current domain rather than changing its URL. Explicit authorized API
+writes using a known domain ID retain the existing binding rules.
+
+`PATCH /domains/:id` accepts `{ "version": "<current UUID>", "archived": true }`
+or `false`. The API rejects stale versions and non-boolean values. Archiving the
+primary domain atomically clears the new-link default and changes its preference
+version; new links use `queer.guide/go` until another primary is chosen. Restore
+returns the domain to active choices when its readiness checks pass, without
+automatically choosing it as primary.
+
+Isolated SQL and actual owner HTTP tests cover filtered counts/paging, scoped
+choices, current-link editing, API-key/owner boundaries and concurrent versions.
+The signed Worker/root resolver test archives a ready hostname and proves both
+normal HEAD routing and resumption of an already issued native receipt, without
+recounting the original visit. Desktop and 390px local fixtures show review,
+archived readiness and restore; external DNS/provider requests are blocked.
+The independent UI reviewer returned ship with no material fixes. The schema
+change remains a release candidate; no live domain was archived during testing.
+
+Reference: [Dub domain archiving](https://dub.co/help/article/archiving-domains).

@@ -32,13 +32,15 @@ export function domainInput(
       ? ['version']
       : action === 'create'
         ? ['hostname', 'rootUrl', 'notFoundUrl', 'expiredUrl', 'disabled']
-        : ['version', 'rootUrl', 'notFoundUrl', 'expiredUrl', 'disabled'];
+        : ['version', 'rootUrl', 'notFoundUrl', 'expiredUrl', 'disabled', 'archived'];
   if (!Object.keys(body).length || Object.keys(body).some((key) => !fields.includes(key)))
     throw new Error('Invalid domain fields');
   if (action !== 'create' && (typeof body.version !== 'string' || !UUID.test(body.version)))
     throw new Error('Reload the domain before continuing');
   const output: Record<string, unknown> = { ...body };
   if (action === 'create') output.hostname = redirectHostname(body.hostname);
+  if ('archived' in body && typeof body.archived !== 'boolean')
+    throw new Error('Invalid archive state');
   if (body.disabled !== undefined && typeof body.disabled !== 'boolean')
     throw new Error('Invalid domain state');
   for (const key of ['rootUrl', 'notFoundUrl', 'expiredUrl'])

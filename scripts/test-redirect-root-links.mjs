@@ -754,6 +754,14 @@ const beforeBranded = await rootNativeTotal();
 const brandedReceipt = await brandedOpen('create');
 assert.equal(brandedReceipt.status, 200);
 const brandedCreated = await brandedReceipt.json();
+const archivedDomainBefore = await service.rpc('redirect_domain_resource', {p_action:'get',p_actor:actor,p_id:domain.id});
+assert.equal(archivedDomainBefore.error,null);
+const archivedDomain = await service.rpc('redirect_domain_resource', {p_action:'patch',p_actor:actor,p_id:domain.id,p_values:JSON.stringify({version:archivedDomainBefore.data.version,archived:true})});
+assert.equal(archivedDomain.error,null);assert.equal(archivedDomain.data.archived,true);assert.equal(archivedDomain.data.routingReady,true);
+const archivedHead = await worker.fetch(new Request('https://root-http.example.com/',{method:'HEAD'}),{...values,SUPABASE_ANON_KEY:'fixture-public'});
+assert.ok([301,302,303,307,308].includes(archivedHead.status));assert.equal(archivedHead.headers.get('Location'),'https://example.org/native-root');assert.equal(await archivedHead.text(),'');
+assert.equal(await rootNativeTotal(),beforeBranded+1);
+
 const brandedResumed = await brandedOpen(
   'resume',
   brandedReceipt.headers.get(nativeProtocol.NATIVE_HANDOFF_TOKEN),
@@ -763,6 +771,9 @@ const brandedResumedBody = await brandedResumed.json();
 assert.equal(brandedResumedBody.clickId, brandedCreated.clickId);
 assert.equal(brandedResumedBody.canonicalUrl, 'https://root-http.example.com/');
 assert.equal(await rootNativeTotal(), beforeBranded + 1);
+const restoredDomain = await service.rpc('redirect_domain_resource', {p_action:'patch',p_actor:actor,p_id:domain.id,p_values:JSON.stringify({version:archivedDomain.data.version,archived:false})});
+assert.equal(restoredDomain.error,null);assert.equal(restoredDomain.data.archived,false);
+console.log('Domain archival: actual signed branded Worker HEAD and outstanding native receipt resume keep routing/current click identity without recounting while the domain is archived.');
 // The shared IP budget applies before disclosure/consumption, without weakening
 // the independent password throttle. Saturate only this isolated DB fixture.
 await db.query(

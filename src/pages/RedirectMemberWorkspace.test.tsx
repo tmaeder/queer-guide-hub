@@ -256,7 +256,7 @@ describe('member redirect workspace', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Edit https://links.community.com/pride' }));
     expect(screen.getByLabelText('Short-link domain')).toHaveValue(domainId);
     expect(
-      screen.getByRole('option', { name: 'links.community.com (current, unavailable)' }),
+      screen.getByRole('option', { name: 'links.community.com (current)' }),
     ).toBeInTheDocument();
     fireEvent.change(screen.getByLabelText('Destination'), {
       target: { value: 'https://example.org/repaired' },

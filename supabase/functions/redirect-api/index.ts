@@ -379,7 +379,13 @@ Deno.serve(async (req: Request) => {
     const result=await db.rpc('redirect_domain_check_result',{p_actor:user!.id,p_id:id,p_version:domain.version,p_attempt:reserved.data.attempt,p_outcome:outcome});if(result.error)return rpcError(result.error);return json(result.data);
    }
    if(endpoint==='rotate'&&req.method==='POST'){action='rotate';values=domainInput(await boundedJson(req,16384),'version');}
-   else if(!endpoint&&req.method==='GET'){action=id?'get':'list';const q=new URL(req.url).searchParams;if([...q.keys()].some(key=>!['limit','cursor'].includes(key)))return json({error:'Invalid domain page'},400);limit=Number(q.get('limit')??50);after=q.get('cursor');if(!Number.isInteger(limit)||limit<1||limit>100||after&&!UUID.test(after))return json({error:'Invalid domain page'},400);}
+   else if(!endpoint&&req.method==='GET'){
+    action=id?'get':'list';const q=new URL(req.url).searchParams;
+    if(id&&q.size||[...q.keys()].some(key=>!['limit','cursor','archive','q'].includes(key)||q.getAll(key).length!==1))return json({error:'Invalid domain page'},400);
+    limit=Number(q.get('limit')??50);after=q.get('cursor');const archive=q.get('archive')??'active',search=(q.get('q')??'').trim();
+    if(!Number.isInteger(limit)||limit<1||limit>100||after&&!UUID.test(after)||!['active','archived','all'].includes(archive)||search.length>253||Array.from(search).some(char=>char.charCodeAt(0)<32))return json({error:'Invalid domain page'},400);
+    if(!id)values={archive,...(search?{q:search}:{})};
+   }
    else if(!id&&req.method==='POST'){action='create';values=domainInput(await boundedJson(req,16384),'create');}
    else if(id&&!endpoint&&req.method==='PATCH'){action='patch';values=domainInput(await boundedJson(req,16384),'patch');}
    else if(id&&!endpoint&&req.method==='DELETE'){action='delete';values=domainInput(await boundedJson(req,16384),'version');}else return json({error:'Method not supported'},405);
