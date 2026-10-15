@@ -101,23 +101,28 @@ function runtime() {
     error:
       (name === 'redirect_password_branding_public' && state.brandingError) ||
       (name === 'reserve_redirect_password_attempt' && state.attemptError) ||
-      (name === 'redirect_public_domain' && state.domainFailure)
+      (name === 'redirect_public_domain' && state.domainFailure) ||
+      (name === 'redirect_resolution_snapshot' && state.failed)
         ? { message: 'offline' }
         : null,
     data:
-      name === 'redirect_password_branding_public'
-        ? state.branding
-        : name === 'redirect_public_domain'
-          ? state.domain
-          : name === 'record_redirect_domain_route'
-            ? !!state.domain
-            : name === 'reserve_redirect_password_attempt'
-              ? state.retry
-              : name === 'record_redirect_visit'
-                ? state.quota
-                  ? '10000000-0000-4000-8000-000000000001'
-                  : null
-                : [],
+      name === 'redirect_resolution_snapshot'
+        ? _args?.p_root === state.link.is_domain_root
+          ? { link: state.link, settings: state.settings, fingerprint: 'a'.repeat(64) }
+          : null
+        : name === 'redirect_password_branding_public'
+          ? state.branding
+          : name === 'redirect_public_domain'
+            ? state.domain
+            : name === 'record_redirect_domain_route'
+              ? !!state.domain
+              : name === 'reserve_redirect_password_attempt'
+                ? state.retry
+                : name === 'record_redirect_snapshot_visit'
+                  ? state.quota
+                    ? '10000000-0000-4000-8000-000000000001'
+                    : null
+                  : [],
   }));
   const db = {
     rpc,
@@ -205,10 +210,14 @@ describe('live short-link resolver', () => {
     expect(head.headers.get('Location')).toBe(
       `${origin}/events/pride?utm_campaign=poster&utm_source=qr#details`,
     );
-    expect(run.rpc).not.toHaveBeenCalled();
+    expect(
+      run.rpc.mock.calls.filter(([name]) => name !== 'redirect_resolution_snapshot'),
+    ).toHaveLength(0);
     const get = await run.invoke();
     expect(get.headers.get('Location')).toBe(head.headers.get('Location'));
-    expect(run.rpc.mock.calls.filter(([name]) => name === 'record_redirect_visit')).toHaveLength(1);
+    expect(
+      run.rpc.mock.calls.filter(([name]) => name === 'record_redirect_snapshot_visit'),
+    ).toHaveLength(1);
   });
   it('records GET and visitor context, but HEAD does not count or consume quota', async () => {
     const run = runtime();
@@ -217,10 +226,13 @@ describe('live short-link resolver', () => {
     expect(head.headers.get('Location')).toBe(
       'https://example.com/pride?utm_campaign=poster&utm_source=qr#details',
     );
-    expect(run.rpc).not.toHaveBeenCalled();
+    expect(
+      run.rpc.mock.calls.filter(([name]) => name !== 'redirect_resolution_snapshot'),
+    ).toHaveLength(0);
     expect((await run.invoke()).status).toBe(302);
     expect(
-      run.rpc.mock.calls.find(([name]) => name === 'record_redirect_visit')?.[1]?.p_country,
+      run.rpc.mock.calls.find(([name]) => name === 'record_redirect_snapshot_visit')?.[1]
+        ?.p_country,
     ).toBe('CH');
   });
   it('does not disclose destinations or record invalid password attempts, and strips password query values', async () => {
@@ -232,15 +244,16 @@ describe('live short-link resolver', () => {
     expect(denied.status).toBe(401);
     expect(denied.headers.has('Location')).toBe(false);
     expect(await denied.text()).not.toContain('example.com');
-    expect(run.rpc.mock.calls.map(([name]) => name)).toEqual([
-      'redirect_password_branding_public',
-      'reserve_redirect_password_attempt',
-    ]);
+    expect(
+      run.rpc.mock.calls
+        .filter(([name]) => name !== 'redirect_resolution_snapshot')
+        .map(([name]) => name),
+    ).toEqual(['redirect_password_branding_public', 'reserve_redirect_password_attempt']);
     const allowed = await run.invoke('GET', 'pw=fixture+password&utm_source=qr');
     expect(allowed.status).toBe(302);
     expect(allowed.headers.get('Location')).not.toContain('pw=');
     expect(
-      run.rpc.mock.calls.find(([name]) => name === 'record_redirect_visit')?.[1]?.p_query,
+      run.rpc.mock.calls.find(([name]) => name === 'record_redirect_snapshot_visit')?.[1]?.p_query,
     ).toBe('utm_source=qr');
     expect((await run.invoke('POST', 'utm_source=qr', 'password=fixture+password')).status).toBe(
       303,
@@ -255,7 +268,7 @@ describe('live short-link resolver', () => {
     expect((await run.invoke('GET', '')).status).toBe(401);
     expect(
       run.rpc.mock.calls.filter(([name]) =>
-        ['reserve_redirect_password_attempt', 'record_redirect_visit'].includes(name),
+        ['reserve_redirect_password_attempt', 'record_redirect_snapshot_visit'].includes(name),
       ),
     ).toHaveLength(0);
     run.state.retry = 601;
@@ -264,7 +277,9 @@ describe('live short-link resolver', () => {
     expect(blocked.headers.get('Retry-After')).toBe('601');
     expect(blocked.headers.has('Location')).toBe(false);
     expect(await blocked.text()).not.toContain('example.com');
-    expect(run.rpc.mock.calls.some(([name]) => name === 'record_redirect_visit')).toBe(false);
+    expect(run.rpc.mock.calls.some(([name]) => name === 'record_redirect_snapshot_visit')).toBe(
+      false,
+    );
     run.state.attemptError = true;
     expect((await run.invoke('GET', 'pw=anything')).status).toBe(503);
   });
@@ -301,7 +316,9 @@ describe('live short-link resolver', () => {
     const generic = await run.invoke('GET', '');
     expect(generic.status).toBe(401);
     expect(await generic.text()).toContain('name="password"');
-    expect(run.rpc.mock.calls.some(([name]) => name === 'record_redirect_visit')).toBe(false);
+    expect(run.rpc.mock.calls.some(([name]) => name === 'record_redirect_snapshot_visit')).toBe(
+      false,
+    );
   });
   it('serves custom unfurl metadata without visits, and never reveals protected previews', async () => {
     const run = runtime();
@@ -315,7 +332,9 @@ describe('live short-link resolver', () => {
     const preview = await run.invoke('GET', '', undefined, 'Twitterbot/1.0');
     expect(preview.status).toBe(200);
     expect(await preview.text()).toContain('Community preview');
-    expect(run.rpc).not.toHaveBeenCalled();
+    expect(
+      run.rpc.mock.calls.filter(([name]) => name !== 'redirect_resolution_snapshot'),
+    ).toHaveLength(0);
     expect((await run.invoke()).status).toBe(302);
     vi.stubGlobal('crypto', webcrypto);
     run.state.settings.password_hash = await hashLinkPassword('fixture password');
@@ -333,9 +352,13 @@ describe('live short-link resolver', () => {
     expect(html).toContain('<iframe');
     expect(html).toContain('qg_click_id=10000000-0000-4000-8000-000000000001');
     expect(html).toContain('Open destination directly');
-    expect(run.rpc.mock.calls.filter(([name]) => name === 'record_redirect_visit')).toHaveLength(1);
+    expect(
+      run.rpc.mock.calls.filter(([name]) => name === 'record_redirect_snapshot_visit'),
+    ).toHaveLength(1);
     expect((await run.invoke('HEAD')).status).toBe(200);
-    expect(run.rpc.mock.calls.filter(([name]) => name === 'record_redirect_visit')).toHaveLength(1);
+    expect(
+      run.rpc.mock.calls.filter(([name]) => name === 'record_redirect_snapshot_visit'),
+    ).toHaveLength(1);
     run.state.link.target = 'http://example.com/plain';
     expect((await run.invoke()).status).toBe(503);
   });
@@ -350,7 +373,9 @@ describe('live short-link resolver', () => {
     expect((await run.invoke()).headers.get('Location')).toBe(
       'https://queer.guide/expired?utm_source=qr',
     );
-    expect(run.rpc).toHaveBeenCalledTimes(1);
+    expect(
+      run.rpc.mock.calls.filter(([name]) => name === 'record_redirect_snapshot_visit'),
+    ).toHaveLength(1);
   });
   it('fails closed on missing policy data and on an atomically exhausted quota', async () => {
     const run = runtime();
@@ -369,17 +394,24 @@ describe('live short-link resolver', () => {
     expect(new URL(get.headers.get('Location')!).searchParams.get('qg_click_id')).toBe(
       '10000000-0000-4000-8000-000000000001',
     );
-    expect(run.rpc.mock.calls[0][1]?.p_query).toBe('utm_source=qr');
+    expect(
+      run.rpc.mock.calls.find(([name]) => name === 'record_redirect_snapshot_visit')?.[1]?.p_query,
+    ).toBe('utm_source=qr');
   });
   it('records QR source as visitor metadata and removes it from the destination/query', async () => {
     const run = runtime();
     const response = await run.invoke('GET', 'qg_qr=1&utm_source=poster');
     expect(response.headers.get('Location')).not.toContain('qg_qr');
-    expect(run.rpc.mock.calls[0][1]?.p_metadata).toMatchObject({
+    expect(
+      run.rpc.mock.calls.find(([name]) => name === 'record_redirect_snapshot_visit')?.[1]
+        ?.p_metadata,
+    ).toMatchObject({
       is_qr: true,
       domain: 'queer.guide',
     });
-    expect(run.rpc.mock.calls[0][1]?.p_query).toBe('utm_source=poster');
+    expect(
+      run.rpc.mock.calls.find(([name]) => name === 'record_redirect_snapshot_visit')?.[1]?.p_query,
+    ).toBe('utm_source=poster');
   });
 });
 
@@ -419,9 +451,13 @@ describe('branded Worker → actual resolver', () => {
     const run = branded();
     const response = await run.open('/pride-qr?qg_qr=1&utm_source=poster');
     expect(response.status).toBe(302);
-    expect(run.state.filters).toContainEqual(['redirects', 'domain_id', 'domain-a']);
+    expect(run.rpc).toHaveBeenCalledWith('redirect_resolution_snapshot', {
+      p_hostname: 'links.community.com',
+      p_slug: 'pride-qr',
+      p_root: false,
+    });
     expect(
-      run.rpc.mock.calls.find(([name]) => name === 'record_redirect_visit')?.[1],
+      run.rpc.mock.calls.find(([name]) => name === 'record_redirect_snapshot_visit')?.[1],
     ).toMatchObject({
       p_path: '/pride-qr',
       p_metadata: { domain: 'links.community.com', is_qr: true },
@@ -430,14 +466,20 @@ describe('branded Worker → actual resolver', () => {
     expect(response.headers.get('Location')).not.toContain('qg_qr');
     run.state.filters = [];
     expect((await run.invoke()).status).toBe(302);
-    expect(run.state.filters).toContainEqual(['redirects', 'domain_id', null]);
+    expect(run.rpc).toHaveBeenCalledWith('redirect_resolution_snapshot', {
+      p_hostname: 'queer.guide',
+      p_slug: 'pride-qr',
+      p_root: false,
+    });
   });
   it('does not fall back to builtin links for a rejected, missing or unavailable custom domain', async () => {
     const run = branded();
     run.state.domain = null;
     expect((await run.open()).status).toBe(404);
     expect(run.state.filters).toHaveLength(0);
-    expect(run.rpc.mock.calls.some(([name]) => name === 'record_redirect_visit')).toBe(false);
+    expect(run.rpc.mock.calls.some(([name]) => name === 'record_redirect_snapshot_visit')).toBe(
+      false,
+    );
     run.state.domainFailure = true;
     expect((await run.open()).status).toBe(502);
     const forged = await run.handle(
@@ -459,7 +501,9 @@ describe('branded Worker → actual resolver', () => {
     );
     run.state.link.end_at = '2000-01-01T00:00:00Z';
     expect((await run.open()).headers.get('Location')).toBe('https://example.com/expired');
-    expect(run.rpc.mock.calls.some(([name]) => name === 'record_redirect_visit')).toBe(false);
+    expect(run.rpc.mock.calls.some(([name]) => name === 'record_redirect_snapshot_visit')).toBe(
+      false,
+    );
   });
   it('keeps protected previews private and uses the branded canonical URL for public previews', async () => {
     const run = branded();
@@ -473,13 +517,17 @@ describe('branded Worker → actual resolver', () => {
     const denied = await domainWorker.fetch(request, env);
     expect(denied.status).toBe(401);
     expect(await denied.text()).not.toContain('Branded preview');
-    expect(run.rpc.mock.calls.some(([name]) => name === 'record_redirect_visit')).toBe(false);
+    expect(run.rpc.mock.calls.some(([name]) => name === 'record_redirect_snapshot_visit')).toBe(
+      false,
+    );
   });
   it('rejects managed-domain destination loops before counting a visit', async () => {
     const run = branded();
     run.state.managedTarget = true;
     expect((await run.open()).status).toBe(502);
-    expect(run.rpc.mock.calls.some(([name]) => name === 'record_redirect_visit')).toBe(false);
+    expect(run.rpc.mock.calls.some(([name]) => name === 'record_redirect_snapshot_visit')).toBe(
+      false,
+    );
   });
 });
 
@@ -524,7 +572,9 @@ describe('policy-aware native resolver', () => {
       mode: 'navigate',
       clickId: null,
     });
-    expect(run.rpc.mock.calls.filter(([name]) => name === 'record_redirect_visit')).toHaveLength(1);
+    expect(
+      run.rpc.mock.calls.filter(([name]) => name === 'record_redirect_snapshot_visit'),
+    ).toHaveLength(1);
     const consented = await run.handle(request('GET', undefined, true));
     const attributed = await consented.json();
     expect(attributed.clickId).toBe('10000000-0000-4000-8000-000000000001');
@@ -545,7 +595,9 @@ describe('policy-aware native resolver', () => {
       400,
     );
     expect((await run.handle(request('POST', 'wrong'))).status).toBe(401);
-    expect(run.rpc.mock.calls.some(([name]) => name === 'record_redirect_visit')).toBe(false);
+    expect(run.rpc.mock.calls.some(([name]) => name === 'record_redirect_snapshot_visit')).toBe(
+      false,
+    );
     run.state.retry = 120;
     const throttled = await run.handle(request('POST', 'native-password'));
     expect(throttled.status).toBe(429);
@@ -567,7 +619,9 @@ describe('policy-aware native resolver', () => {
   it('keeps quotas and HEAD observational without creating additional visits', async () => {
     const run = runtime();
     expect((await run.handle(request('HEAD'))).status).toBe(200);
-    expect(run.rpc.mock.calls.some(([name]) => name === 'record_redirect_visit')).toBe(false);
+    expect(run.rpc.mock.calls.some(([name]) => name === 'record_redirect_snapshot_visit')).toBe(
+      false,
+    );
     run.state.link.click_limit = 1;
     run.state.link.click_count = 1;
     expect((await run.handle(request('HEAD'))).status).toBe(410);
@@ -581,13 +635,17 @@ describe('policy-aware native resolver', () => {
     const response = await run.handle(request('GET', undefined, false, '', 'Twitterbot'));
     expect(response.status).toBe(200);
     expect((await response.json()).mode).toBe('web');
-    expect(run.rpc.mock.calls.filter(([name]) => name === 'record_redirect_visit')).toHaveLength(1);
+    expect(
+      run.rpc.mock.calls.filter(([name]) => name === 'record_redirect_snapshot_visit'),
+    ).toHaveLength(1);
     run.state.settings.policy = {
       expires_at: '2020-01-01T00:00:00Z',
       expired_target: 'https://example.com/expired',
     };
     const expired = await run.handle(request());
     expect((await expired.json()).mode).toBe('web');
-    expect(run.rpc.mock.calls.filter(([name]) => name === 'record_redirect_visit')).toHaveLength(1);
+    expect(
+      run.rpc.mock.calls.filter(([name]) => name === 'record_redirect_snapshot_visit'),
+    ).toHaveLength(1);
   });
 });

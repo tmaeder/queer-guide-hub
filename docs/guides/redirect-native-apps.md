@@ -95,3 +95,24 @@ and [website associations](https://developer.apple.com/documentation/appclip/ass
 This registers host authorization. Receipt creation, deferred install attribution,
 App Group migration and real signed-device verification remain unfinished; do
 not treat this setting as an installed App Clip or a working store experience.
+
+## Deferred transaction foundation (not activated)
+
+Apply `redirect_resolution_snapshots` before deploying the updated resolver. It
+loads routing/protection together and rejects a visit if an edit invalidates that
+snapshot before recording. RPC failures fail closed; they do not use the old
+unguarded writer.
+
+`redirect_native_handoff_receipts` adds private service-only create/context/consume
+functions and a default-false app handoff flag. The table stores only token hashes
+and references to the original event/app/source/policy version, with bounded TTL.
+Creation and visit reservation share one transaction. Redemption validates the
+current policy and selected outcome, consumes once and reuses the original click.
+The caller must verify the current password and use the shared live selector before
+calling the consumer; these SQL functions are not public authentication endpoints.
+
+This schema does not expose or enable an install flow. Store configuration, native
+receipt headers, browser handoff, platform adapters and scheduled expiry cleanup
+are subsequent work. Do not set the private flag to claim a working deferred link
+or distribute a raw receipt in URLs, logs or browser storage. Actual signed OS
+installation and App Group/referrer delivery still require device proof.

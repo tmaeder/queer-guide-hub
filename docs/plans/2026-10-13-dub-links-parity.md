@@ -3066,3 +3066,52 @@ After splitting the successor, full SQL and all five SDK/actual HTTP suites pass
 again; the2,340-file grammar and unique-version checks pass. The original merged
 registry file has no diff. No production app/association/data/provider state was
 changed. The App Clip work belongs in a focused successor PR to merged4422.
+
+The native resolver now loads link, policy, password hash and semantic routing
+fingerprint in one service-only SQL snapshot. The visit writer locks redirect ->
+policy and compares that original fingerprint before invoking the existing quota/
+event writer. Counters, notes and generic update timestamps do not invalidate the
+fingerprint; routing, protection, namespace, scheduling and quota changes do.
+Timestamp inputs use epoch values so session time zones cannot change the digest.
+The source path is checked against the locked link as well as the existing host/
+root/readiness checks. Both web and native resolutions use this path; HEAD and
+expired fallback behavior remain without visit writes. Deploy the additive SQL
+before the resolver; there is no fallback to an unguarded visit on RPC failure.
+
+Actual Pages -> resolver -> migrated PostgreSQL tests change a target after its
+snapshot and rotate a password after verification, before the final write. Both
+return closed410 without events; the current password alone succeeds.27 resolver
+tests, full isolated SQL, all five server SDK/HTTP suites, Deno resolver check,
+strict Pages/Worker types, lint and app ratchet702 inherited/none new pass. The
+first server SDK run lacked the ignored Go runtime on PATH; with the installed
+runtime it passes. No baseline, shared Deno lock or production state changed.
+
+Added private deferred receipt transaction primitives behind a new default-false
+app handoff flag. Creation checks explicit consent, conversion tracking, current
+publisher/app/path/host readiness and the routing snapshot, then reserves the
+visit and inserts a SHA256 digest-bound receipt atomically. Digest collisions roll
+back the event/counter. Receipt state binds original click, app revision, source,
+routing fingerprint and expiration; query/variant/destination stay in the existing
+event. TTL is capped at24h and link/experiment expiration. Live private context
+loads the current password and fingerprint together. Final locked consumption
+checks current routing/app/role/source/expiry and the freshly selected original
+destination/cohort, returns the original click once and creates no extra visit,
+even at the already-reserved quota cap. Event/link deletion cascades receipts.
+Cleanup is bounded to500 expired rows and is service-only. No raw receipt token,
+password, visitor identity or device identifier is added to the receipt table.
+
+SQL verifies opt-out defaults, denied consent, one-event reservation, quota and
+collision rollback, source/target/cohort scope, replay, binding/policy/password/
+publisher revocation, link/experiment TTL, bounded cleanup and cascade/private
+Data API boundaries. This is the database foundation only: public native create/
+resume transport, owner store configuration, browser install UI, automatic Play/
+App Group adapters, signed-device proof and scheduled cleanup rollout still need
+implementation/verification. No existing binding is opted in, and no production
+DDL/app/provider state is changed. Keep the full goal active.
+
+App Clip PR4430's first CI completed security/build/accessibility and migration
+checks; the critical-path run had248 passes,18 skips and two live admin review
+queue scope failures (initial queue/heading/response waits), outside these local
+redirect fixtures. Its test job was still running at inspection. Preserve those
+gates and inspect fresh CI rather than treating local redirect tests as an all-
+repository release proof.

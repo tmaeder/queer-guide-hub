@@ -75,14 +75,12 @@ Deno.serve(async (req: Request) => {
     };
     const rootRequest=!!domain && relay?.path==="/";
     if(!rootRequest&&!validSlug)return await fallback(domain?.notFoundUrl) ?? page(404,"Link not found","This short link does not exist.",false,head);
-    const baseQuery=db.from("redirects").select("*").eq("type","SHORT").eq("is_domain_root",rootRequest);
-    const query=rootRequest ? baseQuery : baseQuery.eq("slug",slug);
-    const {data:link,error:lookupError}=await (domain ? query.eq("domain_id",domain.id) : query.is("domain_id",null)).maybeSingle();
+    const {data:snapshot,error:lookupError}=await db.rpc("redirect_resolution_snapshot",{p_hostname:domain?.hostname??"queer.guide",p_slug:slug,p_root:rootRequest});
     if (lookupError) return page(503,"Link unavailable","Please try again shortly.",false,head);
+    const link=snapshot?.link, settings=snapshot?.settings;
     if(rootRequest&&!link)return await fallback(domain?.rootUrl) ?? page(404,"Link not found","No destination is configured for this domain.",false,head);
     if (!link || !link.is_enabled || link.start_at && Date.parse(link.start_at)>Date.now()) return await fallback(domain?.notFoundUrl) ?? page(404,"Link not found","This link is unavailable.",false,head);
-    const {data:settings,error:settingsError}=await db.from("redirect_link_policies").select("policy,password_hash").eq("redirect_id",link.id).maybeSingle();
-    if (settingsError) return page(503,"Link unavailable","Please try again shortly.",false,head);
+    if(typeof snapshot?.fingerprint!=="string"||!settings)return page(503,"Link unavailable","Please try again shortly.",false,head);
     const policy:LinkPolicy={...(settings?.policy ?? {}),...(link.end_at ? {expires_at:link.end_at} : {}),...(!settings?.policy?.expired_target && domain?.expiredUrl ? {expired_target:domain.expiredUrl} : {})};
     if (policyErrors(policy).length || !validPublicTarget(link.target)) return page(503,"Link unavailable","The destination settings need attention.",false,head);
     const ip=relay?.ip ?? await redirectClientIp(req.headers,slug,Deno.env.get("REDIRECT_RELAY_SECRET"));
@@ -133,7 +131,7 @@ Deno.serve(async (req: Request) => {
     if(head&&!selected.expired&&link.click_limit!==null&&link.click_limit!==undefined&&link.click_count>=link.click_limit)return page(410,"Link unavailable","This link has reached its visit limit.",false,head);
     let attributionClickId:string|null=null;
     if (!head && !selected.expired) {
-      const {data:clickId,error}=await db.rpc("record_redirect_visit",{p_redirect_id:link.id,p_path:domain ? rootRequest ? "/" : "/"+slug : "/go/"+slug,p_query:incoming.toString() || null,p_referer:cleanReferrer(req.headers.get("referer")),p_user_agent:req.headers.get("user-agent"),p_country:country,p_ip_hash:ipHash,p_status:redirectStatus,p_variant_id:selected.variantId,p_destination:destination,p_metadata:{...visitorMetadata(req,isQr),domain:domain?.hostname ?? "queer.guide"}});
+      const {data:clickId,error}=await db.rpc("record_redirect_snapshot_visit",{p_snapshot:snapshot.fingerprint,p_redirect_id:link.id,p_path:domain ? rootRequest ? "/" : "/"+slug : "/go/"+slug,p_query:incoming.toString() || null,p_referer:cleanReferrer(req.headers.get("referer")),p_user_agent:req.headers.get("user-agent"),p_country:country,p_ip_hash:ipHash,p_status:redirectStatus,p_variant_id:selected.variantId,p_destination:destination,p_metadata:{...visitorMetadata(req,isQr),domain:domain?.hostname ?? "queer.guide"}});
       if(error)return page(503,"Link unavailable","Please try again shortly.",false,head);
       if(!clickId)return page(410,"Link unavailable","This link has expired or reached its visit limit.",false,head);
       if(policy.track_conversions&&(!native||nativeConsent)){attributionClickId=clickId;targetUrl.searchParams.set("qg_click_id",clickId);destination=targetUrl.href;}

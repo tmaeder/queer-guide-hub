@@ -23,9 +23,15 @@ const source = [
       .replace(/^export\s+/gm, ''),
   )
   .join('\n');
+let beforeSnapshotVisit;
 const service = {
   rpc: async (name, args) => {
     try {
+      if (name === 'record_redirect_snapshot_visit' && beforeSnapshotVisit) {
+        const mutate = beforeSnapshotVisit;
+        beforeSnapshotVisit = undefined;
+        await mutate();
+      }
       const entries = Object.entries(args ?? {});
       const result = await db.query(
         'SELECT public.' +
@@ -478,6 +484,42 @@ assert.equal(fallbackOutcome.mode, 'web');
 assert.equal(fallbackOutcome.destination, 'https://example.org/not-found');
 assert.equal(fallbackOutcome.clickId, null);
 assert.equal(await rootNativeTotal(), beforeRootNative + 1);
+// A policy/target edit after the snapshot/password check must win over the
+// resolver's old in-memory outcome. Exercise the actual gateway/resolver/SQL.
+await db.query('UPDATE public.redirects SET is_enabled=true WHERE id=$1', [nativeLink.id]);
+const beforeRaceEvents = await nativeEvents();
+beforeSnapshotVisit = () =>
+  db.query('UPDATE public.redirects SET target=$2 WHERE id=$1', [
+    nativeLink.id,
+    'https://example.org/new-native-target',
+  ]);
+const targetRace = await nativeOpen();
+assert.equal(targetRace.status, 410);
+assert.deepEqual(await targetRace.json(), { protocol: 1, error: 'unavailable' });
+assert.equal(await nativeEvents(), beforeRaceEvents);
+await db.query('UPDATE public.redirect_link_policies SET password_hash=$2 WHERE redirect_id=$1', [
+  nativeLink.id,
+  JSON.stringify(await policy.hashLinkPassword('race-old-password')),
+]);
+const newHash = JSON.stringify(await policy.hashLinkPassword('race-new-password'));
+beforeSnapshotVisit = () =>
+  db.query('UPDATE public.redirect_link_policies SET password_hash=$2 WHERE redirect_id=$1', [
+    nativeLink.id,
+    newHash,
+  ]);
+const passwordRace = await nativeOpen({ method: 'POST', password: 'race-old-password' });
+assert.equal(passwordRace.status, 410);
+assert.equal(await nativeEvents(), beforeRaceEvents);
+const oldPassword = await nativeOpen({ method: 'POST', password: 'race-old-password' });
+assert.equal(oldPassword.status, 401);
+assert.equal(await nativeEvents(), beforeRaceEvents);
+const currentPassword = await nativeOpen({ method: 'POST', password: 'race-new-password' });
+assert.equal(currentPassword.status, 200);
+assert.equal(new URL((await currentPassword.json()).destination).pathname, '/native-ios');
+assert.equal(await nativeEvents(), beforeRaceEvents + 1);
+console.log(
+  'Resolution snapshots: actual gateway/resolver/SQL reject mid-flight target and password changes without counting a visit; only the current password succeeds.',
+);
 console.log(
   'Native resolution: actual built-in Pages and signed branded Worker -> resolver -> PostgreSQL verify password/challenge/POST, query-secret rejection, denied/granted attribution, iOS targeting, root identity, atomic quota, HEAD, expiry fallback and disabled links.',
 );
