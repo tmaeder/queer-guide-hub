@@ -8,6 +8,8 @@ on:
       - 'supabase/migrations/**'
       - 'supabase/tests/redirect_*.sql'
       - 'supabase/tests/fixtures/**'
+      - 'src/components/admin/redirects/RedirectDomainConnect*'
+      - 'src/components/admin/redirects/RedirectDomains*'
       - 'src/lib/redirects/__tests__/domainConnect*'
       - 'src/lib/redirects/__tests__/domainDiscovery*'
       - 'config/domain-connect/**'
@@ -28,6 +30,8 @@ on:
       - 'supabase/migrations/**'
       - 'supabase/tests/redirect_*.sql'
       - 'supabase/tests/fixtures/**'
+      - 'src/components/admin/redirects/RedirectDomainConnect*'
+      - 'src/components/admin/redirects/RedirectDomains*'
       - 'src/lib/redirects/__tests__/domainConnect*'
       - 'src/lib/redirects/__tests__/domainDiscovery*'
       - 'config/domain-connect/**'
@@ -68,8 +72,8 @@ jobs:
       - run: npm ci --prefer-offline --no-audit
       - name: Check API with isolated frozen deployment dependencies
         run: deno check --node-modules-dir=none --config supabase/functions/redirect-api/deno.json --lock=supabase/functions/redirect-api/deno.lock --frozen supabase/functions/redirect-api/index.ts
-      - name: Verify DNS discovery, signing and server configuration
-        run: npx vitest run src/lib/redirects/__tests__/domainConnect.test.ts src/lib/redirects/__tests__/domainConnectApi.test.ts src/lib/redirects/__tests__/domainDiscovery.test.ts
+      - name: Verify DNS discovery, signing, configuration and owner controls
+        run: npx vitest run src/lib/redirects/__tests__/domainConnect.test.ts src/lib/redirects/__tests__/domainConnectApi.test.ts src/lib/redirects/__tests__/domainDiscovery.test.ts src/components/admin/redirects/RedirectDomainConnect.test.tsx src/components/admin/redirects/RedirectDomains.test.tsx
       - name: Execute migrated database contracts
         run: npm run test:redirect-sql
       - name: Follow owner API approval and callback through real SQL and five SDK runtimes
