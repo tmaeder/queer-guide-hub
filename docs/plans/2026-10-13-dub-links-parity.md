@@ -3036,7 +3036,7 @@ PR4422 merged externally at2026-10-15 18:54:57UTC as0680410b037f26e17e803bce31a4
 with headc8bea7364. The App Clip work began after read-only history confirmed the
 registry migration was unapplied; merging made that original file immutable.
 Restored its exact merged contents and moved the new column/check/index and
-function replacements into allocator-created99991792091258_redirect_native_app_clips.
+function replacements into allocator-created99991792095483_redirect_native_app_clips.
 The isolated DB harness now applies this explicit successor. No old version is
 rewritten or renamed for the App Clip addition, and no production DDL is executed.
 
@@ -3169,3 +3169,28 @@ still required for this head. Core SDK receipt APIs are no longer missing; platf
 persistence/attempt adapters, browser/store controls, actual signed delivery,
 publication and the other full parity requirements remain open. No production
 or signing/provider state was changed, and existing app handoffs remain disabled.
+
+
+Owner installation configuration is implemented in the existing native app editor
+and session API. Public app name and fixed-provider store identity are distinct
+from the private label; iOS additionally validates parent Clip and App Group.
+SQL enforces complete metadata before opt-in, current publication, strict types,
+optimistic revisions and automatic opt-out when older clients unpublish. The
+service-only host/path choice projection excludes private configuration and
+rechecks owner/role/readiness. No browser landing consumer is claimed yet.
+
+Evidence:18 UI/helper cases, full isolated SQL including direct constraint and
+private projection tests, actual owner HTTP and all five server SDK suites, and
+Pages/signed Worker-to-resolver receipt integration pass. Strict Pages/Worker and
+Deno API checks, targeted lint, the production build and app ratchet (702 inherited,
+none new) pass. Desktop and390px fixture captures show save/edit persistence with
+no horizontal overflow. One bounded Impeccable review returned ship; the independent
+documenter confirmed no new design tokens or system rules. Fixture IDs only, with
+external requests blocked. No production publication or signing/provider change.
+
+CI for a6dc61fb7 passed critical paths, all application/native suites, a11y and
+CodeQL. The migration gate found two pending versions overtaken by an unrelated
+applied migration. Read-only production history confirmed all four candidate
+migrations unapplied; the allocator renumbered them in dependency order. GitGuardian
+also reports one finding without file-level annotations in its GitHub result;
+its diagnosis remains open and is not waived by these local checks.

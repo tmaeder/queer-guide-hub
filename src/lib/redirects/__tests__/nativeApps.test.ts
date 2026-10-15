@@ -25,6 +25,34 @@ const env = {
 const get = (path = '/.well-known/apple-app-site-association', method = 'GET') =>
   new Request('https://queer.guide' + path, { method });
 describe('native app associations', () => {
+  it('normalizes optional install settings and rejects wrong field types or multiline labels', () => {
+    expect(
+      nativeAppValues({
+        publicName: '  Visitor app  ',
+        storeId: ' 1234567890 ',
+        appGroupId: ' group.org.example ',
+        handoffEnabled: false,
+      }),
+    ).toEqual({
+      publicName: 'Visitor app',
+      storeId: '1234567890',
+      appGroupId: 'group.org.example',
+      handoffEnabled: false,
+    });
+    expect(nativeAppValues({ publicName: ' ', storeId: null, appGroupId: '' })).toEqual({
+      publicName: null,
+      storeId: null,
+      appGroupId: null,
+    });
+    for (const value of [
+      { publicName: true },
+      { publicName: 'bad\nname' },
+      { storeId: 4 },
+      { appGroupId: [] },
+      { handoffEnabled: 'true' },
+    ])
+      expect(() => nativeAppValues(value)).toThrow();
+  });
   it('renders exact platform permissions and Android dynamic exclusions without private fields', () => {
     expect(associationDocument('ios', [ios, android])).toEqual({
       applinks: { details: [{ appIDs: [ios.appId], components: [{ '/': '/go/*' }] }] },

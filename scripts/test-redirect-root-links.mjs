@@ -562,9 +562,10 @@ assert.equal(
   410,
 );
 assert.equal(await nativeEvents(), handoffCount);
-await db.query('UPDATE public.redirect_native_apps SET handoff_enabled=true WHERE id=$1', [
-  handoffAppId,
-]);
+await db.query(
+  "UPDATE public.redirect_native_apps SET handoff_enabled=true,public_name='Fixture app',store_id='1234567890',app_group_id='group.org.example.handoff',app_clip_id=app_id||'.Clip' WHERE id=$1",
+  [handoffAppId],
+);
 // Use an active real experiment: resume must restore the original cohort rather
 // than randomly rerolling it, even with its original quota already exhausted.
 await db.query('UPDATE public.redirect_link_policies SET policy=$2 WHERE redirect_id=$1', [
@@ -696,9 +697,10 @@ const brandedApp = await service.rpc('redirect_native_app_admin', {
   }),
 });
 assert.equal(brandedApp.error, null);
-await db.query('UPDATE public.redirect_native_apps SET handoff_enabled=true WHERE id=$1', [
-  brandedApp.data.id,
-]);
+await db.query(
+  "UPDATE public.redirect_native_apps SET handoff_enabled=true,public_name='Fixture app',store_id='1234567890',app_group_id='group.org.example.handoff',app_clip_id=app_id||'.Clip' WHERE id=$1",
+  [brandedApp.data.id],
+);
 await db.query(
   'INSERT INTO public.redirect_link_policies(redirect_id,policy) VALUES($1,$2) ON CONFLICT(redirect_id) DO UPDATE SET policy=excluded.policy',
   [nativeRootId, JSON.stringify({ track_conversions: true })],

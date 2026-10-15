@@ -28,6 +28,10 @@ export function nativeAppValues(input: unknown, creating = false): Record<string
           'fingerprints',
           'paths',
           'enabled',
+          'publicName',
+          'storeId',
+          'appGroupId',
+          'handoffEnabled',
         ].includes(k),
     )
   )
@@ -65,6 +69,20 @@ export function nativeAppValues(input: unknown, creating = false): Record<string
       !/^[A-Z0-9]{10}\.[A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)+$/.test(appClipId))
   )
     throw new Error('Provide the signed App Clip application identifier');
+  for (const [field, maximum] of [
+    ['publicName', 100],
+    ['storeId', 255],
+    ['appGroupId', 255],
+  ] as const) {
+    if (value[field] === undefined || value[field] === null) continue;
+    if (typeof value[field] !== 'string') throw new Error('Invalid install settings');
+    const normalized = (value[field] as string).trim() || null;
+    if (normalized && (normalized.length > maximum || /[\u0000-\u001f\u007f]/.test(normalized)))
+      throw new Error('Invalid install settings');
+    value[field] = normalized;
+  }
+  if (value.handoffEnabled !== undefined && typeof value.handoffEnabled !== 'boolean')
+    throw new Error('Invalid handoff state');
   if (value.enabled !== undefined && typeof value.enabled !== 'boolean')
     throw new Error('Invalid app publication state');
   if (value.fingerprints !== undefined) {

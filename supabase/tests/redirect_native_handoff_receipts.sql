@@ -16,7 +16,7 @@ BEGIN
  INSERT INTO public.redirect_link_policies(redirect_id,policy) VALUES(link_id,'{"track_conversions":true}');
  app:=public.redirect_native_app_admin(actor,'create',p_values=>'{"label":"Private internal app label","platform":"ios","appId":"ABCDE12345.org.example.handoff","enabled":true}');fixture_app_id:=(app->>'id')::uuid;
  IF pg_temp.mint_handoff(link_id,fixture_app_id,repeat('a',64)) IS NOT NULL THEN RAISE EXCEPTION 'Existing app opted into handoff automatically';END IF;
- UPDATE public.redirect_native_apps SET handoff_enabled=true WHERE id=fixture_app_id;
+ UPDATE public.redirect_native_apps SET handoff_enabled=true,public_name='Fixture app',store_id='1234567890',app_group_id='group.org.example.handoff',app_clip_id=app_id||'.Clip' WHERE id=fixture_app_id;
  IF pg_temp.mint_handoff(link_id,fixture_app_id,repeat('a',64),false) IS NOT NULL THEN RAISE EXCEPTION 'Denied consent minted receipt';END IF;
  IF (SELECT click_count FROM public.redirects WHERE id=link_id)<>0 THEN RAISE EXCEPTION 'Denied creation consumed quota';END IF;
  receipt:=pg_temp.mint_handoff(link_id,fixture_app_id,repeat('a',64));click:=(receipt->>'clickId')::uuid;

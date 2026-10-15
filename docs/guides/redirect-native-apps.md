@@ -92,7 +92,7 @@ covers the host; narrow invocation experiences and both targets' capabilities
 must be configured with Apple. See [registering a Clip identity](https://developer.apple.com/help/account/identifiers/register-an-app-id-for-app-clips/)
 and [website associations](https://developer.apple.com/documentation/appclip/associating-your-app-clip-with-your-website).
 
-This registers host authorization. Receipt creation, deferred install attribution,
+This registers host authorization. Deferred install delivery,
 App Group migration and real signed-device verification remain unfinished; do
 not treat this setting as an installed App Clip or a working store experience.
 
@@ -112,8 +112,10 @@ The caller must verify the current password and use the shared live selector bef
 calling the consumer; these SQL functions are not public authentication endpoints.
 
 The resolver and gateways now support explicit receipt transport, while existing
-apps remain opted out. Owner store configuration, browser handoff, platform adapters and scheduled expiry cleanup are subsequent
-work. The Swift and Android core clients expose explicit receipt methods. Do not set the private flag to claim a working deferred link
+apps remain opted out. Owner store configuration is available; browser handoff,
+platform adapters and scheduled expiry cleanup remain subsequent work. The Swift
+and Android core clients expose explicit receipt methods. Enabling the flag alone
+does not establish a working deferred link
 or distribute a raw receipt in URLs, logs or browser storage. Actual signed OS
 installation and App Group/referrer delivery still require device proof.
 
@@ -136,3 +138,30 @@ Markers currently select this explicit native protocol. A browser install/resume
 landing page is still pending; a browser marker request fails without a Location
 or a visit. No token is accepted through a query parameter. These APIs do not prove
 Play delivery, App Clip functionality, persistence or the signed OS transition.
+
+
+## Installation settings
+
+The native app editor keeps the private workspace label separate from the public
+app name. Expand **Installation and deferred links** to configure the public name
+and store identity. Android uses the signed package name already entered above;
+iOS requires the numeric App Store ID. Store links use fixed Apple/Google hosts.
+An iOS handoff additionally requires its parent-bound App Clip ID and shared App
+Group identifier. Both signed targets must actually hold that Group entitlement;
+entering the identifier here does not create it. See [Apple App Groups](https://developer.apple.com/help/account/identifiers/register-an-app-group/)
+and [Google Play store links](https://developer.android.com/distribute/marketing-tools/linking-to-google-play).
+
+The owner API accepts nullable `publicName`, `storeId`, `appGroupId` and boolean
+`handoffEnabled`. Enabling requires complete platform metadata and a published
+association. Existing clients can still edit association-only bindings without
+these fields. Unpublishing also disables handoffs; publishing again requires an
+explicit handoff opt-in. Every change rotates the binding revision, invalidating
+receipts issued against its previous configuration. Stale writes remain 409.
+
+Apply `redirect_native_install_settings` after the receipt migration and before
+deploying the new owner API. Its service-only `redirect_native_install_choices`
+function projects eligible apps for one host/path using current ownership,
+publisher authority and domain readiness. It exposes the public name, fixed store
+link and Clip bundle identity, excluding private labels, Group IDs, signing data
+and revisions. This projection is ready for the pending browser landing flow;
+it does not itself publish a new public endpoint or install an app.
