@@ -212,6 +212,17 @@ func TestSDKIntegration(t *testing.T) {
 	if must(other.ListReports(ctx, 50, ""))["count"].(interface{ String() string }).String() != "0" {
 		t.Fatal("Other account sees reports")
 	}
+	report = must(account.UpdateReport(ctx, rid, Object{"version": report["version"], "visibility": "team"}))
+	teamPage := must(other.ListReportsInView(ctx, 50, "", "team"))
+	if teamPage["data"].([]any)[0].(map[string]any)["canEdit"] != false {
+		t.Fatal("Team reader can edit report")
+	}
+	_, err = other.UpdateReport(ctx, rid, Object{"version": report["version"], "name": "Denied team edit"})
+	expectStatus(err, 404)
+	report = must(account.UpdateReport(ctx, rid, Object{"version": report["version"], "visibility": "private"}))
+	if must(other.ListReportsInView(ctx, 50, "", "team"))["count"].(interface{ String() string }).String() != "0" {
+		t.Fatal("Private report remains discoverable")
+	}
 	oldVersion := report["version"]
 	report = must(account.UpdateReport(ctx, rid, Object{"version": oldVersion, "name": "Reviewed Go report"}))
 	_, err = account.UpdateReport(ctx, rid, Object{"version": oldVersion, "name": "Stale"})

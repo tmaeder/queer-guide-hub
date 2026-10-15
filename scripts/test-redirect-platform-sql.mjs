@@ -19,6 +19,7 @@ try {
   await db.exec(readFileSync('supabase/tests/redirect_folder_access.sql', 'utf8'));
   await db.exec(readFileSync('supabase/tests/redirect_access_requests.sql', 'utf8'));
   await db.exec(readFileSync('supabase/tests/redirect_saved_reports.sql', 'utf8'));
+  await db.exec(readFileSync('supabase/tests/redirect_team_reports.sql', 'utf8'));
   await db.exec(readFileSync('supabase/tests/redirect_public_report_dates.sql', 'utf8'));
   await db.exec(readFileSync('supabase/tests/redirect_report_indexing.sql', 'utf8'));
   await db.exec(readFileSync('supabase/tests/redirect_domain_registry.sql', 'utf8'));

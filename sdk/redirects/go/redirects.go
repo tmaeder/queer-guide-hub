@@ -290,7 +290,10 @@ func (c *Client) GetReport(ctx context.Context, id string) (Object, error) {
 	return c.Request(ctx, "GET", "/reports/"+url.PathEscape(id), nil, nil)
 }
 func (c *Client) ListReports(ctx context.Context, limit int, cursor string) (Object, error) {
-	query := Object{"limit": limit}
+	return c.ListReportsInView(ctx, limit, cursor, "personal")
+}
+func (c *Client) ListReportsInView(ctx context.Context, limit int, cursor, view string) (Object, error) {
+	query := Object{"limit": limit, "view": view}
 	if cursor != "" {
 		query["cursor"] = cursor
 	}

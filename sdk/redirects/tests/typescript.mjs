@@ -59,6 +59,11 @@ let reportPage=await account.listReports(1);assert.equal(reportPage.data.length,
 assert.equal((await account.listReports(1,reportPage.nextCursor)).data.length,1);
 await assert.rejects(otherAccount.getReport(report.id),error=>error.status===404);
 assert.equal((await otherAccount.listReports()).count,0);
+report=await account.updateReport(report.id,{version:report.version,visibility:'team'});
+assert.equal((await otherAccount.listReports(50,undefined,'team')).data[0].canEdit,false);
+await assert.rejects(otherAccount.updateReport(report.id,{version:report.version,name:'Denied team edit'}),error=>error.status===404);
+report=await account.updateReport(report.id,{version:report.version,visibility:'private'});
+assert.equal((await otherAccount.listReports(50,undefined,'team')).count,0);
 const oldReportVersion=report.version;
 report=await account.updateReport(report.id,{version:report.version,name:'Reviewed TS report'});
 await assert.rejects(account.updateReport(report.id,{version:oldReportVersion,name:'Stale'}),error=>error.status===409);

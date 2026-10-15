@@ -83,7 +83,7 @@ class RedirectsClient:
     def customer_journey(self, customer_id, limit=50, cursor=None): return self.request('GET','/customers/journey',query={'id':customer_id,'limit':limit,'cursor':cursor})
     def create_report(self, data): return self.request('POST','/reports',data)
     def get_report(self, report_id): return self.request('GET','/reports/'+quote(report_id,safe=''))
-    def list_reports(self, limit=50, cursor=None): return self.request('GET','/reports',query={'limit':limit,'cursor':cursor})
+    def list_reports(self, limit=50, cursor=None, view=None): return self.request('GET','/reports',query={'limit':limit,'cursor':cursor,'view':view})
     def update_report(self, report_id, data): return self.request('PATCH','/reports/'+quote(report_id,safe=''),data)
     def delete_report(self, report_id): return self.request('DELETE','/reports/'+quote(report_id,safe=''))
     def run_report(self, report_id): return self.request('GET','/reports/'+quote(report_id,safe='')+'/run')

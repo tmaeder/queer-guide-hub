@@ -128,3 +128,77 @@ describe('saved-report review controls', () => {
     );
   });
 });
+
+describe('team saved-report discovery', () => {
+  it('reviews team visibility and sends a versioned definition-only change', async () => {
+    mocks.invoke.mockImplementation(async (_path, options) => ({
+      data:
+        options.method === 'GET'
+          ? { data: [report], count: 1, nextCursor: null, canPublishToTeam: true }
+          : { ...report, visibility: 'team', canEdit: true },
+      error: null,
+    }));
+    show();
+    fireEvent.click(screen.getByText('Saved reports and sharing'));
+    fireEvent.click(await screen.findByRole('button', { name: 'Load report' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Make available to team' }));
+    expect(screen.getByRole('group', { name: 'Team report review' })).toHaveTextContent(
+      'saved name, filters and dates',
+    );
+    expect(
+      mocks.invoke.mock.calls.filter(([, options]) => options.method === 'PATCH'),
+    ).toHaveLength(0);
+    fireEvent.click(screen.getByRole('button', { name: 'Confirm team discovery' }));
+    await waitFor(() =>
+      expect(mocks.invoke).toHaveBeenCalledWith(
+        'redirect-api/reports/report',
+        expect.objectContaining({
+          method: 'PATCH',
+          body: { version: report.version, visibility: 'team' },
+        }),
+      ),
+    );
+    expect(await screen.findByRole('button', { name: 'Make report private' })).toBeVisible();
+  });
+  it('scopes team views and hides author controls while allowing a private copy', async () => {
+    mocks.invoke.mockImplementation(async (_path, options) => ({
+      data:
+        options.method === 'GET'
+          ? {
+              data: [{ ...report, visibility: 'team', canEdit: false }],
+              count: 1,
+              nextCursor: null,
+              canPublishToTeam: false,
+            }
+          : { ...report, id: 'copy', canEdit: true, visibility: 'private' },
+      error: null,
+    }));
+    show();
+    fireEvent.click(screen.getByText('Saved reports and sharing'));
+    fireEvent.change(screen.getByLabelText('Report view'), { target: { value: 'team' } });
+    fireEvent.click(await screen.findByRole('button', { name: 'Load report' }));
+    expect(mocks.load).toHaveBeenCalledWith(report.filters);
+    for (const name of [
+      'Update selected report',
+      'Delete selected report',
+      'Share selected report',
+      'Make available to team',
+      'Make report private',
+    ])
+      expect(screen.queryByRole('button', { name })).not.toBeInTheDocument();
+    expect(mocks.invoke).toHaveBeenCalledWith(
+      'redirect-api/reports?limit=50&view=team',
+      expect.objectContaining({ method: 'GET', signal: expect.any(AbortSignal) }),
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'Save as new report' }));
+    await waitFor(() =>
+      expect(mocks.invoke).toHaveBeenCalledWith(
+        'redirect-api/reports',
+        expect.objectContaining({
+          method: 'POST',
+          body: { name: report.name, filters: { country: 'US' } },
+        }),
+      ),
+    );
+  });
+});

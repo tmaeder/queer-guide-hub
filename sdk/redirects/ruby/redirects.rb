@@ -79,7 +79,7 @@ module QueerGuide
     def customer_journey(id,limit:50,cursor:nil); request('GET','/customers/journey',nil,{id:id,limit:limit,cursor:cursor}); end
     def create_report(data); request('POST','/reports',data); end
     def get_report(id); request('GET','/reports/'+URI.encode_www_form_component(id)); end
-    def list_reports(limit:50,cursor:nil); request('GET','/reports',nil,{limit:limit,cursor:cursor}); end
+    def list_reports(limit:50,cursor:nil,view:nil); request('GET','/reports',nil,{limit:limit,cursor:cursor,view:view}); end
     def update_report(id,data); request('PATCH','/reports/'+URI.encode_www_form_component(id),data); end
     def delete_report(id); request('DELETE','/reports/'+URI.encode_www_form_component(id)); end
     def run_report(id); request('GET','/reports/'+URI.encode_www_form_component(id)+'/run'); end

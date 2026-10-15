@@ -73,6 +73,11 @@ assert account.get_report(report['id'])['name']==report['name']
 page=account.list_reports(limit=1); assert len(page['data'])==1 and page['nextCursor']
 assert len(account.list_reports(limit=1,cursor=page['nextCursor'])['data'])==1
 report_error(lambda:other.get_report(report['id']),404); assert other.list_reports()['count']==0
+report=account.update_report(report['id'],{'version':report['version'],'visibility':'team'})
+assert other.list_reports(view='team')['data'][0]['canEdit'] is False
+report_error(lambda:other.update_report(report['id'],{'version':report['version'],'name':'Denied team edit'}),404)
+report=account.update_report(report['id'],{'version':report['version'],'visibility':'private'})
+assert other.list_reports(view='team')['count']==0
 old_version=report['version']; report=account.update_report(report['id'],{'version':old_version,'name':'Reviewed Python report'})
 report_error(lambda:account.update_report(report['id'],{'version':old_version,'name':'Stale'}),409)
 aggregate=account.run_report(report['id']); assert aggregate['totals']['clicks']==1 and isinstance(aggregate['revenue'][0]['amount'],str)

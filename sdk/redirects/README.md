@@ -236,7 +236,7 @@ limit and uses an empty cursor for the first page; the others default to 50.
 Create takes `{name, filters}`; filters support link/folder/tag scope, UTC dates,
 event kind, geo/device/referrer/domain/variant/bot/QR choices and interval. Edits
 take the current `version` and optional name/filters; reload after a 409 conflict.
-Report metadata preserves the API's `created_at`, `updated_at`, `owner_user_id`
+Owned report metadata preserves the API's `created_at`, `updated_at`, `owner_user_id`
 names. Aggregate money remains decimal strings; no SDK converts it to floats.
 
 Creating/running a private report does not publish it. Share creation requires
@@ -532,3 +532,16 @@ and it returns explicit app/browser navigation decisions. Run
 protocol with a dedicated OkHttp transport. Run `node scripts/test-redirect-android.mjs`
 with JDK21/Maven. Both clients remain local candidates; deterministic deferred
 attribution, signed-device evidence and package publication remain open.
+
+
+Team report discovery is opt in. Lists default to personal reports; use optional
+`view=team` or `view=all` with TypeScript/Python/PHP's third list argument or Ruby's
+`view:` keyword. Go offers `ListReportsInView(ctx, limit, cursor, view)` alongside
+the compatible personal `ListReports`. Current owners can set `visibility: team`
+on their own create/update; updates require the current version. Team readers
+receive `canEdit: false` and no author's account ID. Their runs use current link
+permissions; they cannot edit/delete the source or manage its public shares. Save
+a new report with the loaded filters to create a private copy. Set visibility to
+`private` to withdraw discovery; independent public snapshots remain managed by
+their own share methods. Publisher-owner and reader-member rights are checked on
+every request. API keys cannot list or manage report definitions.

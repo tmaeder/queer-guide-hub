@@ -462,7 +462,7 @@ Deno.serve(async (req: Request) => {
    }
    let action:string,values:Record<string,unknown>={},limit=50,after:string|null=null;
    if(req.method==='GET'&&endpoint==='run')action='run';
-   else if(req.method==='GET'&&!endpoint){action=id?'get':'list';const q=new URL(req.url).searchParams;if([...q.keys()].some(k=>!['limit','cursor'].includes(k)))return json({error:'Invalid report page'},400);limit=Number(q.get('limit')??50);after=q.get('cursor');if(!Number.isInteger(limit)||limit<1||limit>100||after&&!UUID.test(after))return json({error:'Invalid report page'},400);}
+   else if(req.method==='GET'&&!endpoint){action=id?'get':'list';const q=new URL(req.url).searchParams;if([...q.keys()].some(k=>!['limit','cursor','view'].includes(k)||q.getAll(k).length!==1)||id&&q.size)return json({error:'Invalid report page'},400);const view=q.get('view')??'personal';if(!['personal','team','all'].includes(view))return json({error:'Invalid report view'},400);values={view};limit=Number(q.get('limit')??50);after=q.get('cursor');if(!Number.isInteger(limit)||limit<1||limit>100||after&&!UUID.test(after))return json({error:'Invalid report page'},400);}
    else if(req.method==='POST'&&!id){action='create';values=savedReportInput(await boundedJson(req),true);}
    else if(req.method==='PATCH'&&id&&!endpoint){action='patch';values=savedReportInput(await boundedJson(req),false);}
    else if(req.method==='DELETE'&&id&&!endpoint)action='delete';else return json({error:'Method not supported'},405);

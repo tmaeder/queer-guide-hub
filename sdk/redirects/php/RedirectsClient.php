@@ -70,7 +70,7 @@ final class RedirectsClient {
     public function customerJourney(string $id,int $limit=50,?array $cursor=null): array {return $this->request('GET','/customers/journey',null,['id'=>$id,'limit'=>$limit,'cursor'=>$cursor]);}
     public function createReport(array $data): array {if (isset($data['filters']) && is_array($data['filters'])) $data['filters']=(object)$data['filters'];return $this->request('POST','/reports',$data);}
     public function getReport(string $id): array {return $this->request('GET','/reports/'.rawurlencode($id));}
-    public function listReports(int $limit=50,?string $cursor=null): array {return $this->request('GET','/reports',null,['limit'=>$limit,'cursor'=>$cursor]);}
+    public function listReports(int $limit=50,?string $cursor=null,?string $view=null): array {return $this->request('GET','/reports',null,['limit'=>$limit,'cursor'=>$cursor,'view'=>$view]);}
     public function updateReport(string $id,array $data): array {if (isset($data['filters']) && is_array($data['filters'])) $data['filters']=(object)$data['filters'];return $this->request('PATCH','/reports/'.rawurlencode($id),$data);}
     public function deleteReport(string $id): array {return $this->request('DELETE','/reports/'.rawurlencode($id));}
     public function runReport(string $id): array {return $this->request('GET','/reports/'.rawurlencode($id).'/run');}

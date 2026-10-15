@@ -128,7 +128,9 @@ export interface ReportFilters {
 }
 export interface SavedReport {
   id: string;
-  owner_user_id: string;
+  owner_user_id?: string;
+  visibility?: 'private' | 'team';
+  canEdit?: boolean;
   name: string;
   filters: ReportFilters;
   version: string;
@@ -651,16 +653,16 @@ export class RedirectsClient {
       { version },
     );
   }
-  createReport(data: { name: string; filters: ReportFilters }) {
+  createReport(data: { name: string; filters: ReportFilters; visibility?: 'private' | 'team' }) {
     return this.request<SavedReport>('POST', '/reports', data);
   }
   getReport(id: string) {
     return this.request<SavedReport>('GET', '/reports/' + encodeURIComponent(id));
   }
-  listReports(limit = 50, cursor?: string) {
-    return this.request<Page<SavedReport>>('GET', '/reports', undefined, { limit, cursor });
+  listReports(limit = 50, cursor?: string, view?: 'personal' | 'team' | 'all') {
+    return this.request<Page<SavedReport> & { canPublishToTeam?: boolean }>('GET', '/reports', undefined, { limit, cursor, view });
   }
-  updateReport(id: string, data: { version: string; name?: string; filters?: ReportFilters }) {
+  updateReport(id: string, data: { version: string; name?: string; filters?: ReportFilters; visibility?: 'private' | 'team' }) {
     return this.request<SavedReport>('PATCH', '/reports/' + encodeURIComponent(id), data);
   }
   deleteReport(id: string) {

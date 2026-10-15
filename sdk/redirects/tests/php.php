@@ -53,6 +53,11 @@ $second=$account->createReport(['name'=>'SDK PHP second','filters'=>['linkIds'=>
 check($account->getReport($report['id'])['name']===$report['name']);
 $page=$account->listReports(1);check(count($page['data'])===1&&$page['nextCursor']);check(count($account->listReports(1,$page['nextCursor'])['data'])===1);
 reportError(fn()=>$other->getReport($report['id']),404);check($other->listReports()['count']===0);
+$report=$account->updateReport($report['id'],['version'=>$report['version'],'visibility'=>'team']);
+check($other->listReports(50,null,'team')['data'][0]['canEdit']===false);
+reportError(fn()=>$other->updateReport($report['id'],['version'=>$report['version'],'name'=>'Denied team edit']),404);
+$report=$account->updateReport($report['id'],['version'=>$report['version'],'visibility'=>'private']);
+check($other->listReports(50,null,'team')['count']===0);
 $oldVersion=$report['version'];$report=$account->updateReport($report['id'],['version'=>$oldVersion,'name'=>'Reviewed PHP report']);
 reportError(fn()=>$account->updateReport($report['id'],['version'=>$oldVersion,'name'=>'Stale']),409);
 $aggregate=$account->runReport($report['id']);check($aggregate['totals']['clicks']===1&&is_string($aggregate['revenue'][0]['amount']));

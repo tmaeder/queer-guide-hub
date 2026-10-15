@@ -58,6 +58,11 @@ second=account.create_report({name:'SDK Ruby second',filters:{linkIds:[ENV.fetch
 check(account.get_report(report['id'])['name']==report['name'])
 page=account.list_reports(limit:1);check(page['data'].length==1&&page['nextCursor']);check(account.list_reports(limit:1,cursor:page['nextCursor'])['data'].length==1)
 report_error(404){other.get_report(report['id'])};check(other.list_reports['count']==0)
+report=account.update_report(report['id'],{version:report['version'],visibility:'team'})
+check(other.list_reports(view:'team')['data'][0]['canEdit']==false)
+report_error(404){other.update_report(report['id'],{version:report['version'],name:'Denied team edit'})}
+report=account.update_report(report['id'],{version:report['version'],visibility:'private'})
+check(other.list_reports(view:'team')['count']==0)
 old_version=report['version'];report=account.update_report(report['id'],{version:old_version,name:'Reviewed Ruby report'})
 report_error(409){account.update_report(report['id'],{version:old_version,name:'Stale'})}
 aggregate=account.run_report(report['id']);check(aggregate['totals']['clicks']==1&&aggregate['revenue'][0]['amount'].is_a?(String))
