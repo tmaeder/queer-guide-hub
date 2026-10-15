@@ -14,7 +14,9 @@ function mergeQuery(target: string, mode: string, incoming: URLSearchParams, ove
   const parsed=target.trim().startsWith("/") ? new URL(target,"https://queer.guide") : new URL(target);
   if (mode !== "DROP") {
     if (mode === "OVERRIDE") for (const [key,value] of Object.entries(overrides ?? {})) parsed.searchParams.set(key,value);
-    for (const [key,value] of incoming) if (!parsed.searchParams.has(key)) parsed.searchParams.set(key,value);
+    // Keep destination/override precedence while retaining every incoming value for new keys.
+    const fixedKeys=new Set(parsed.searchParams.keys());
+    for (const [key,value] of incoming) if (!fixedKeys.has(key)) parsed.searchParams.append(key,value);
     for (const [key,value] of Object.entries(defaults ?? {})) if (!parsed.searchParams.has(key)) parsed.searchParams.set(key,value);
   }
   return parsed.href;

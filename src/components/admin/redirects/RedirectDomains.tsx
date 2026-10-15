@@ -1,4 +1,5 @@
 import { RedirectQrStyleSettings } from './RedirectQrStyleSettings';
+import { RedirectDomainSubpath } from './RedirectDomainSubpath';
 import { RedirectPrimaryDomain } from './RedirectPrimaryDomain';
 import { RedirectDomainProvider, type DomainProviderStatus } from './RedirectDomainProvider';
 import { useState } from 'react';
@@ -379,6 +380,10 @@ function DomainRow({
               ? 'Provider record present; routing readiness still requires verification.'
               : 'TLS and branded routing are not connected.'}
         </p>
+        <RedirectDomainSubpath
+          hostname={domain.hostname}
+          ready={Boolean(domain.routingReady && !domain.disabled)}
+        />
         <div className="space-y-2 text-sm">
           <p>
             Add this record in your DNS provider. Leave it in place for future ownership checks.

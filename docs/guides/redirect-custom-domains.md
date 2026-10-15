@@ -51,7 +51,7 @@ proof refreshes keep expanded setup panels open.
 Signed branded routing serves these defaults after current readiness checks.
 Domain namespaces, guarded CRUD/bulk, five SDK field contracts, inventory/CSV/QR
 and the tracked/member builders are implemented locally. Remaining domain work
-includes transfer/subpath workflows, authorized DNS auto-configuration/
+includes transfer workflows, authorized DNS auto-configuration/
 forwarding setup and production rollout. Managed root-link policies and explicit
 provider validation restart are implemented locally; see their sections below.
 
@@ -450,3 +450,77 @@ The independent UI reviewer returned ship with no material fixes. The schema
 change remains a release candidate; no live domain was archived during testing.
 
 Reference: [Dub domain archiving](https://dub.co/help/article/archiving-domains).
+
+
+## Use an existing website path
+
+A ready domain row offers **Use under a website path**. Enter the existing website
+origin (for example `https://example.com`), a path such as `/r`, and its hosting
+platform. Generate and copy configuration for Cloudflare Worker Routes, Next.js,
+Vercel or Netlify. This follows [Dub's external subpath adapter approach](https://dub.co/help/article/how-to-use-dub-with-subpath).
+
+The visitor entry `https://example.com/r/community?utm_source=website` redirects
+to `https://links.example.com/community?utm_source=website`. The browser moves to
+the managed short-link hostname. Stored short URLs continue to use that hostname;
+installing this adapter does not add a second routing namespace. Existing password,
+install-page, targeting, tracking and expiration behavior runs there. Website
+configuration must be installed and tested on the existing website. Generation
+and copying do not change DNS, hosting or provider state.
+
+Configuration generation requires current branded routing readiness. Origins
+accept public HTTPS with a different hostname, with no credentials, port, path,
+query or fragment. IDNs/case normalize. Prefixes are bounded ordinary path
+segments; root, traversal, percent encodings, platform matcher syntax and reserved
+account/API paths are rejected. Editing inputs or losing readiness clears old
+output. Clipboard failures leave selectable configuration and clear instructions.
+
+For Cloudflare, use a **Worker Route** on the existing proxied website origin,
+scoped to the displayed path pattern. A Worker Custom Domain would replace the
+website's origin handling. The module checks the configured HTTPS origin and the
+exact path segment boundary. Unmatched paths stream through to the existing
+website using `fetch(request)`. Matched GET/HEAD requests return an empty307 with
+no-store and a fixed destination hostname. Other matched methods return405 before
+forwarding. Visitors submit password/consent forms after arriving at the managed
+host. Disable request URL logging on this adapter. Use the current compatibility
+date when installing a new Worker project; the module needs no bindings, packages
+or secrets.
+
+Next.js generates an external temporary redirect with basePath/locale additions
+disabled for the exact chosen prefix. Merge it into the existing configuration,
+ahead of broader routes. Vercel also uses temporary redirects. Netlify uses302!
+with bare-prefix and wildcard rules; the explicit priority can replace an existing
+website page under that prefix, so choose the prefix accordingly. Next.js and
+Netlify's published behavior passes queries through; provider deployment remains
+an operator responsibility. Their platforms have separate caching/routing rules.
+
+The Cloudflare adapter retains the exact encoded suffix and query, including
+duplicate values and public install/QR markers. Its strict-origin-when-cross-origin
+policy retains origin-level referrer analytics without forwarding the referring
+page's path/query across origins. The managed resolver now also preserves repeated
+incoming query values for keys absent from the target. Target and explicit
+override keys retain precedence; DROP still ignores incoming/default values.
+
+`npm run test:redirect-subpath` executes the exact generated module in workerd,
+with every origin request isolated. It proves boundary/hostname/HTTPS guards,
+GET/HEAD, method denial, fixed-host handling for double slashes, encoded suffixes,
+exact duplicate queries, public markers and unchanged website fallback including
+POST bodies. `npm run test:redirect-roots` follows its actual Location through the
+signed branded Worker, resolver and migrated PostgreSQL: install pages do not
+count, password GET/HEAD stays protected, the successful branded password POST
+records one QR-attributed original click, and duplicate values/referrer plus query
+mode precedence are retained. An automatic path-filtered CI workflow runs both.
+
+Latest Workers5.20261015.1 types check the generated JavaScript. The checked-in
+workerd fixture uses the compatibility date supported by its locked runtime; no
+project dependency lock changed. Twelve UI/helper tests cover origin/prefix
+validation, executable provider syntax, readiness, copying and stale-output reset.
+Labeled desktop/390px fixtures fit the viewport and produce no console warnings
+or errors. One detector returns[], and the independent finish reviewer approves
+with no material fixes. These are local runtime/configuration proofs, not evidence
+of installation on a live website.
+
+Sources: [Cloudflare Routes](https://developers.cloudflare.com/workers/configuration/routing/routes/),
+[Next.js redirects](https://nextjs.org/docs/app/api-reference/config/next-config-js/redirects),
+[Vercel redirects](https://vercel.com/docs/routing/redirects),
+[Netlify query parameters](https://docs.netlify.com/manage/routing/redirects/redirect-options/#query-parameters),
+[W3C Referrer Policy](https://www.w3.org/TR/referrer-policy/).

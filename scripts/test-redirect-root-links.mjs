@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { webcrypto } from 'node:crypto';
 import ts from 'typescript';
+import { subpathFixture } from './lib/redirect-subpath-fixture.mjs';
 import { createRedirectTestDb } from './lib/redirect-test-db.mjs';
 const db = await createRedirectTestDb();
 await db.exec('SET ROLE service_role');
@@ -774,6 +775,55 @@ assert.equal(await rootNativeTotal(), beforeBranded + 1);
 const restoredDomain = await service.rpc('redirect_domain_resource', {p_action:'patch',p_actor:actor,p_id:domain.id,p_values:JSON.stringify({version:archivedDomain.data.version,archived:false})});
 assert.equal(restoredDomain.error,null);assert.equal(restoredDomain.data.archived,false);
 console.log('Domain archival: actual signed branded Worker HEAD and outstanding native receipt resume keep routing/current click identity without recounting while the domain is archived.');
+// Follow the exact generated subpath adapter through the actual signed gateway.
+const subpathRuntime = await subpathFixture('https://website.example.com', '/r', 'root-http.example.com', () => { throw new Error('Subpath gateway contract attempted an external request'); });
+try {
+  const beforeSubpathRoot = await rootNativeTotal();
+  const publicEntry = await subpathRuntime.runtime.dispatchFetch('https://website.example.com/r/?qg_handoff=install&utm_source=website&qg_app_choice=' + brandedApp.data.id, { redirect: 'manual' });
+  assert.equal(publicEntry.status, 307);
+  const installEntry = await worker.fetch(new Request(publicEntry.headers.get('Location'), { headers: { Accept: 'text/html' } }), { ...values, SUPABASE_ANON_KEY: 'fixture-public' });
+  assert.equal(installEntry.status, 200);
+  assert.match(await installEntry.text(), /name="apple-itunes-app"/);
+  assert.equal(await rootNativeTotal(), beforeSubpathRoot);
+  const subpathCreated = await service.rpc('redirect_management_mutate', { p_operations: [{ operation: 'create', data: { domainId: domain.id, slug: 'subpath-proof', target: 'https://example.org/subpath-final?fixed=target-a&fixed=target-b', queryMode: 'PRESERVE' } }], p_actor_id: actor });
+  assert.equal(subpathCreated.error, null);
+  const subpathLink = subpathCreated.data[0].link;
+  await db.query('INSERT INTO public.redirect_link_policies(redirect_id,policy,password_hash) VALUES($1,$2,$3)', [subpathLink.id, JSON.stringify({ track_conversions: true }), JSON.stringify(await policy.hashLinkPassword('subpath-fixture-passphrase'))]);
+  const subpathEntry = await subpathRuntime.runtime.dispatchFetch('https://website.example.com/r/subpath-proof?utm_source=website&qg_qr=1&tag=one&tag=two&fixed=visitor-a&fixed=visitor-b', { redirect: 'manual' });
+  assert.equal(subpathEntry.status, 307);
+  const forward = (method = 'GET', body) => worker.fetch(new Request(subpathEntry.headers.get('Location'), { method, headers: { 'cf-connecting-ip': '192.0.2.25', 'User-Agent': 'Fixture browser', Referer: 'https://website.example.com/', Accept: 'text/html', ...(body ? { 'Content-Type': 'application/x-www-form-urlencoded' } : {}) }, ...(body ? { body } : {}) }), { ...values, SUPABASE_ANON_KEY: 'fixture-public' });
+  const protectedEntry = await forward();
+  assert.equal(protectedEntry.status, 401);
+  assert.match(await protectedEntry.text(), /type="password"/);
+  const protectedHead = await forward('HEAD');
+  assert.equal(protectedHead.status, 401); assert.equal(await protectedHead.text(), '');
+  assert.equal((await db.query('SELECT click_count FROM public.redirects WHERE id=$1', [subpathLink.id])).rows[0].click_count, 0);
+  const passwordEntry = await forward('POST', new URLSearchParams({ password: 'subpath-fixture-passphrase' }).toString());
+  assert.equal(passwordEntry.status, 303);
+  const finalEntry = new URL(passwordEntry.headers.get('Location'));
+  assert.equal(finalEntry.origin + finalEntry.pathname, 'https://example.org/subpath-final');
+  assert.equal(finalEntry.searchParams.get('utm_source'), 'website');
+  assert.deepEqual(finalEntry.searchParams.getAll('tag'), ['one', 'two']);
+  assert.deepEqual(finalEntry.searchParams.getAll('fixed'), ['target-a', 'target-b']);
+  assert.match(finalEntry.searchParams.get('qg_click_id'), /^[a-f0-9-]{36}$/i);
+  const subpathEvent = (await db.query('SELECT path,visitor,query,referer FROM public.redirect_events WHERE redirect_id=$1', [subpathLink.id])).rows;
+  assert.equal(subpathEvent.length, 1); assert.equal(subpathEvent[0].path, '/subpath-proof');
+  assert.equal(subpathEvent[0].referer, 'https://website.example.com/');
+  assert.equal(subpathEvent[0].visitor.domain, 'root-http.example.com'); assert.equal(subpathEvent[0].visitor.is_qr, true);
+  assert.equal(subpathEvent[0].query, 'utm_source=website&tag=one&tag=two&fixed=visitor-a&fixed=visitor-b');
+  assert.equal(await rootNativeTotal(), beforeSubpathRoot);
+  await db.query("UPDATE public.redirects SET query_mode='OVERRIDE',query_override='{}'::jsonb||jsonb_build_object('tag','forced','extra','from-override'),utm_defaults=jsonb_build_object('utm_campaign','default','tag','not-used') WHERE id=$1", [subpathLink.id]);
+  const overriddenEntry = new URL((await forward('POST', new URLSearchParams({ password: 'subpath-fixture-passphrase' }).toString())).headers.get('Location'));
+  assert.deepEqual(overriddenEntry.searchParams.getAll('tag'), ['forced']);
+  assert.deepEqual(overriddenEntry.searchParams.getAll('fixed'), ['target-a', 'target-b']);
+  assert.equal(overriddenEntry.searchParams.get('utm_source'), 'website');
+  assert.equal(overriddenEntry.searchParams.get('utm_campaign'), 'default');
+  await db.query("UPDATE public.redirects SET query_mode='DROP' WHERE id=$1", [subpathLink.id]);
+  const droppedEntry = new URL((await forward('POST', new URLSearchParams({ password: 'subpath-fixture-passphrase' }).toString())).headers.get('Location'));
+  assert.deepEqual(droppedEntry.searchParams.getAll('fixed'), ['target-a', 'target-b']);
+  assert.equal(droppedEntry.searchParams.has('tag'), false); assert.equal(droppedEntry.searchParams.has('utm_source'), false); assert.equal(droppedEntry.searchParams.has('utm_campaign'), false);
+  console.log('Website subpath: actual generated workerd adapter -> signed branded Worker -> resolver -> migrated SQL preserves install-page/no-count behavior, password GET/HEAD protection, exact campaigns/duplicate query/QR attribution and one original click after the branded password POST.');
+} finally { await subpathRuntime.runtime.dispose(); }
 // The shared IP budget applies before disclosure/consumption, without weakening
 // the independent password throttle. Saturate only this isolated DB fixture.
 await db.query(
