@@ -11,7 +11,10 @@ query signatures, places `sig` last and excludes `key`/`sig` from signing. Callb
 correlation is inside the signed, fixed-origin `redirect_uri` because Cloudflare
 ignores `state`. It is a pure helper: it does not authorize a user, discover DNS,
 create a setup operation, contact a provider, activate records or change readiness.
-Those application layers still need implementation before exposing a setup button.
+The authenticated API, bounded discovery, stored review/sign/issue operations and
+fresh TXT callback verification are now implemented separately in
+`_shared/redirect-domain-connect-api.ts`. Admin controls and live provider/key
+onboarding still need completion before exposing a setup button.
 
 Operator prerequisites:
 
@@ -28,9 +31,9 @@ Operator prerequisites:
 4. Confirm the exact template is available at the discovered provider, including
    Cloudflare and Vercel, before enabling the provider's approval flow. Request
    Cloudflare DNS-only CNAME proxy status for this SaaS target during onboarding.
-5. Complete current-owner authorization, versioned bounded operation storage,
-   fixed-provider discovery, approval UI, callback/session checks and current TXT
-   DNS verification. Callback success alone must never establish ownership/TLS
+5. Complete the approval UI and exercise the implemented owner authorization,
+   versioned bounded storage, fixed-provider discovery, callback/session checks
+   and current TXT DNS verification against the approved provider. Callback success alone must never establish ownership/TLS
    or routing readiness. Rotation, disabling, role loss and stale versions must
    reject an obsolete operation; unknown outcomes must not retry external writes.
 6. Verify apex-domain requirements separately. No platform A/AAAA address or
@@ -44,7 +47,8 @@ No errors or warnings were suppressed. The signer itself enforces non-apex scope
 and a fixed callback. Four tests verify template scope, actual WebCrypto signing
 and tamper failure, IDNs/nested hosts, invalid fields and key type. Test keys are
 ephemeral and never written or published. This is protocol evidence, not provider
-approval, discovery or live DNS-change evidence.
+approval or live DNS-change evidence. Read-only discovery now has isolated
+provider fixtures; see the custom-domain guide for the authenticated API contract.
 
 Sources:
 

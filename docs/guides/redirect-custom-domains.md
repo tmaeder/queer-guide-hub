@@ -524,3 +524,73 @@ Sources: [Cloudflare Routes](https://developers.cloudflare.com/workers/configura
 [Vercel redirects](https://vercel.com/docs/routing/redirects),
 [Netlify query parameters](https://docs.netlify.com/manage/routing/redirects/redirect-options/#query-parameters),
 [W3C Referrer Policy](https://www.w3.org/TR/referrer-policy/).
+
+## Owner-approved automatic DNS setup
+
+The candidate API now supports a signed Domain Connect flow for short-link
+subdomains whose closest authoritative zone uses Cloudflare or Vercel. This is a
+backend implementation; its admin controls and provider onboarding remain open.
+The fixed candidate template is `config/domain-connect/queer.guide.redirects.json`.
+It creates a CNAME to `links.queer.guide.` plus the exact ownership TXT challenge
+under the chosen subdomain. It does not configure an apex or unrelated records.
+
+Server-only configuration requires `REDIRECT_DOMAIN_CONNECT_PRIVATE_JWK` (an RSA
+private JWK for RS256, 2048–8192 bits), `REDIRECT_DOMAIN_CONNECT_KEY_LABEL` (one DNS
+label such as `_dcpubkeyv1`) and `REDIRECT_CNAME_TARGET=links.queer.guide`. A missing
+or invalid configuration returns 503 after owner authorization. There is no
+unsigned fallback. Keep the key in the deployment secret store; never commit it,
+return it to the browser or reuse the platform Cloudflare API token for customer
+DNS. The function has its own `deno.json`/`deno.lock`; tldts and its parser core
+are locked to the same versions used in the application tests.
+
+Before enabling this in production, register and obtain provider approval for the
+exact template, publish its matching public key at
+`<REDIRECT_DOMAIN_CONNECT_KEY_LABEL>.domainconnect.queer.guide`, and exercise the
+provider approval flow on a controlled domain. Neither the candidate template nor
+a configured private key proves provider onboarding or public-key publication.
+These external prerequisites have not been performed.
+
+Owner-session endpoints (API keys and members are denied):
+
+- `POST /domains/:id/dns-setup/discover` with `{version}` reserves an operation and
+  network budget, discovers the DNS provider and checks exact template support.
+  An available result enters `review` and includes the current domain challenge.
+- `POST /domains/:id/dns-setup/approve` with `{version,operation}` signs the fixed
+  records/callback and returns `approvalUrl`. The UI must review the CNAME/TXT
+  records before this explicit action and send the user to the provider's own
+  approval screen. The API does not write customer DNS.
+- `GET /domain-connect/:operation` resolves callback correlation for the same
+  current owner and returns its domain/version. It ignores provider success
+  assertions and does not change ownership.
+- `POST /domains/:id/dns-setup/complete` with `{version,operation}` reserves and runs
+  a fresh ownership TXT check, then applies its single-use observation through the
+  existing verifier. `missing`/`unavailable` cannot become successful proof. TLS,
+  SaaS hostname provisioning and signed branded routing remain separate checks.
+
+Operations have a 15-minute application lease and are bound to the actor, domain
+version and signing configuration fingerprint. Edits, challenge rotation,
+archive/disable/removal, owner removal, expiry or key/label changes invalidate
+pending operations. Discovery is limited to one operation/domain/minute,
+30/owner/hour and 100 globally/hour before external requests. The operation table
+and RPCs are service-only with RLS. Old expired operations are pruned on new
+reservations. Review/sign/issue/check transitions reject replay.
+
+The synchronous Domain Connect protocol does not give the signed provider URL
+an enforced expiration. The application lease bounds callback/check processing;
+it does not revoke an already issued provider URL. Applying any URL still needs
+the DNS provider's authorization, and an obsolete TXT challenge cannot prove
+current ownership. Do not label the provider URL as expiring after 15 minutes.
+
+Discovery uses a public-suffix parser including private suffixes, walks only to
+the registrable boundary, and honors closer delegated NS zones. DNS requests go
+to one fixed HTTPS resolver; settings/API/dashboard URLs are restricted to the
+supported providers and must agree with the DNS-advertised provider. All requests
+reject redirects and share an eight-second deadline. DNS bodies are capped at
+16 KiB, provider bodies at 32 KiB. Ambiguous aliases/TXT records, malformed
+metadata and template errors fail closed. A 200 template response may have an
+empty body per the protocol; a supplied version must equal the candidate version.
+
+Proof: parser/provider cases, configuration and actual RSA signature tests; the
+isolated migrated PostgreSQL suite; and the real owner HTTP handler through
+stored operations, bounded provider fixtures, signed approval, callback lookup
+and fresh TXT verification. No live provider approval or DNS write is implied.

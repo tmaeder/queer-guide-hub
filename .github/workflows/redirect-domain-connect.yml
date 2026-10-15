@@ -1,0 +1,76 @@
+name: Redirect DNS setup contracts
+on:
+  pull_request:
+    paths:
+      - 'supabase/functions/_shared/redirect-*'
+      - 'supabase/functions/_shared/link-policy.ts'
+      - 'supabase/functions/redirect-api/**'
+      - 'supabase/migrations/**'
+      - 'supabase/tests/redirect_*.sql'
+      - 'supabase/tests/fixtures/**'
+      - 'src/lib/redirects/__tests__/domainConnect*'
+      - 'src/lib/redirects/__tests__/domainDiscovery*'
+      - 'config/domain-connect/**'
+      - 'scripts/lib/redirect-test-db.mjs'
+      - 'scripts/lib/redirect-integration-fixtures.mjs'
+      - 'scripts/test-redirect-platform-sql.mjs'
+      - 'scripts/test-redirect-sdks.mjs'
+      - 'sdk/redirects/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - '.github/workflows/redirect-domain-connect.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'supabase/functions/_shared/redirect-*'
+      - 'supabase/functions/_shared/link-policy.ts'
+      - 'supabase/functions/redirect-api/**'
+      - 'supabase/migrations/**'
+      - 'supabase/tests/redirect_*.sql'
+      - 'supabase/tests/fixtures/**'
+      - 'src/lib/redirects/__tests__/domainConnect*'
+      - 'src/lib/redirects/__tests__/domainDiscovery*'
+      - 'config/domain-connect/**'
+      - 'scripts/lib/redirect-test-db.mjs'
+      - 'scripts/lib/redirect-integration-fixtures.mjs'
+      - 'scripts/test-redirect-platform-sql.mjs'
+      - 'scripts/test-redirect-sdks.mjs'
+      - 'sdk/redirects/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - '.github/workflows/redirect-domain-connect.yml'
+permissions:
+  contents: read
+concurrency:
+  group: redirect-domain-connect-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  contracts:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '22.20.0'
+          cache: npm
+      - uses: actions/setup-go@v7
+        with:
+          go-version: '1.27.2'
+          cache: false
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+      - name: Install SDK fixture runtimes
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y php-cli ruby
+      - run: npm ci --prefer-offline --no-audit
+      - name: Check API with isolated frozen deployment dependencies
+        run: deno check --node-modules-dir=none --config supabase/functions/redirect-api/deno.json --lock=supabase/functions/redirect-api/deno.lock --frozen supabase/functions/redirect-api/index.ts
+      - name: Verify DNS discovery, signing and server configuration
+        run: npx vitest run src/lib/redirects/__tests__/domainConnect.test.ts src/lib/redirects/__tests__/domainConnectApi.test.ts src/lib/redirects/__tests__/domainDiscovery.test.ts
+      - name: Execute migrated database contracts
+        run: npm run test:redirect-sql
+      - name: Follow owner API approval and callback through real SQL and five SDK runtimes
+        run: npm run test:redirect-sdks

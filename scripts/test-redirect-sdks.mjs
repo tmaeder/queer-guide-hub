@@ -1,3 +1,4 @@
+import { getDomain } from 'tldts';
 import { verifyRedirectIntegrationHttp } from './lib/redirect-integration-fixtures.mjs';
 import sharp from 'sharp';
 import { createServer } from 'node:http';
@@ -18,6 +19,9 @@ const pieces = [
   '_shared/redirect-native-apps.ts',
   '_shared/redirect-qr-style.ts',
   '_shared/redirect-domains.ts',
+  '_shared/redirect-domain-connect.ts',
+  '_shared/redirect-domain-discovery.ts',
+  '_shared/redirect-domain-connect-api.ts',
   '_shared/redirect-domain-provider.ts',
   '_shared/redirect-presentation.ts',
   '_shared/redirect-qr-assets.ts',
@@ -106,6 +110,9 @@ await db.query("INSERT INTO auth.users(id,email,email_confirmed_at) VALUES($1,'h
 await db.query("INSERT INTO public.user_roles(user_id,role) VALUES($1,'admin')",[reportOtherActor]);
 const identity={auth:{getUser:async(value)=>({data:{user:['fixture-account-session','fixture-other-account-session'].includes(value)?{id:value==='fixture-account-session'?reportActor:reportOtherActor,created_at:'2026-10-01T00:00:00Z',is_anonymous:false}:null},error:null})},rpc:async()=>({data:true,error:null})};
 let dnsCalls=0,dnsMissing=false;
+const domainConnectKey = await webcrypto.subtle.generateKey({name:'RSASSA-PKCS1-v1_5',modulusLength:2048,publicExponent:new Uint8Array([1,0,1]),hash:'SHA-256'},true,['sign','verify']);
+const domainConnectJwk = JSON.stringify(await webcrypto.subtle.exportKey('jwk',domainConnectKey.privateKey));
+let domainConnectEnabled=false,domainConnectTemplateMissing=false,domainConnectLoseOwner=false,domainConnectDnsCalls=0;
 const providerConfig={zoneId:'a'.repeat(32),token:'fixture-provider-token',cnameTarget:'links.queer.guide'};
 const providerObjects=new Map();let providerCreates=0,providerDeletes=0,providerRestarts=0;
 const logoObjects=new Map();let logoUploads=0,logoDeletes=0,loseLogoReceipt=false,revokeLogoOwner=false;
@@ -137,6 +144,16 @@ if(url.origin==='https://fixture.supabase.co'&&url.pathname.startsWith('/storage
  }
  throw new Error('Unexpected Storage operation');
 }
+if(url.origin==='https://api.cloudflare.com'&&url.pathname.startsWith('/client/v4/dns/domainconnect/')){
+ if(new Headers(options?.headers).has('Authorization'))throw new Error('Platform DNS credential leaked to Domain Connect');
+ if(domainConnectLoseOwner){domainConnectLoseOwner=false;await db.query('DELETE FROM public.user_roles WHERE user_id=$1',[reportActor]);}
+ if(url.pathname.endsWith('/settings'))return Response.json({providerId:'cloudflare.com',urlAPI:'https://api.cloudflare.com/client/v4/dns/domainconnect',urlSyncUX:'https://dash.cloudflare.com/domainconnect'});
+ return new Response('',{status:domainConnectTemplateMissing?404:200});
+}
+if(url.origin==='https://cloudflare-dns.com'&&(url.searchParams.get('type')==='2'||url.searchParams.get('name')==='_domainconnect.setup-example.com')){
+ domainConnectDnsCalls++;const name=url.searchParams.get('name'),type=Number(url.searchParams.get('type'));
+ return new Response(JSON.stringify({Status:0,TC:false,Question:[{name,type}],Answer:type===2?(name==='setup-example.com'?[{name,type:2,data:'ns1.cloudflare.com.'}]:[]):[{name,type:16,data:'"api.cloudflare.com/client/v4/dns/domainconnect"'}]}),{headers:{'Content-Type':'application/dns-json'}});
+}
 if(url.origin==='https://api.cloudflare.com'){
  if(new Headers(options?.headers).get('Authorization')!=='Bearer '+providerConfig.token||!url.pathname.startsWith('/client/v4/zones/'+providerConfig.zoneId+'/custom_hostnames'))throw new Error('Invalid fixture provider credentials/zone');
  const method=options?.method??'GET',tail=url.pathname.split('/custom_hostnames')[1];
@@ -148,9 +165,9 @@ if(url.origin==='https://api.cloudflare.com'){
  return Response.json({success:true,result:item});
 }
 if(url.origin!=='https://cloudflare-dns.com'||url.pathname!=='/dns-query')throw new Error('Unexpected external fixture request');dnsCalls++;const hostname=url.searchParams.get('name').replace(/^_qg-redirect\./,'');const row=(await db.query('SELECT verification_token FROM public.redirect_domains WHERE hostname=$1',[hostname])).rows[0];return new Response(JSON.stringify({Status:0,Question:[{name:url.searchParams.get('name'),type:16}],Answer:row&&!dnsMissing?[{name:url.searchParams.get('name'),type:16,data:'\"qg-redirect='+row.verification_token+'\"'}]:[]}),{headers:{'Content-Type':'application/dns-json'}});};
-policyRuntime=new Function('Deno', 'createClient', 'crypto', 'fetch', code+'\nreturn {verifyLinkPassword,dispatchRedirectDomainJobs,dispatchRedirectQrAssetCleanup,qrAssetStorageConfig};')(
+policyRuntime=new Function('Deno', 'createClient', 'crypto', 'fetch', 'getDomain', code+'\nreturn {verifyLinkPassword,dispatchRedirectDomainJobs,dispatchRedirectQrAssetCleanup,qrAssetStorageConfig};')(
   {
-    env: { get: (key) => key==='SUPABASE_URL'?'https://fixture.supabase.co':key==='SUPABASE_SERVICE_ROLE_KEY'?'fixture-service':key==='SUPABASE_ANON_KEY'?'fixture-anon':key==='REDIRECT_CF_ZONE_ID'?providerConfig.zoneId:key==='REDIRECT_CF_API_TOKEN'?providerConfig.token:key==='REDIRECT_CNAME_TARGET'?providerConfig.cnameTarget:'fixture' },
+    env: { get: (key) => key==='SUPABASE_URL'?'https://fixture.supabase.co':key==='SUPABASE_SERVICE_ROLE_KEY'?'fixture-service':key==='SUPABASE_ANON_KEY'?'fixture-anon':key==='REDIRECT_CF_ZONE_ID'?providerConfig.zoneId:key==='REDIRECT_CF_API_TOKEN'?providerConfig.token:key==='REDIRECT_CNAME_TARGET'?providerConfig.cnameTarget:key==='REDIRECT_DOMAIN_CONNECT_PRIVATE_JWK'?(domainConnectEnabled?domainConnectJwk:''):key==='REDIRECT_DOMAIN_CONNECT_KEY_LABEL'?'_fixture':'fixture' },
     serve: (fn) => {
       handler = fn;
     },
@@ -158,6 +175,7 @@ policyRuntime=new Function('Deno', 'createClient', 'crypto', 'fetch', code+'\nre
   (_url,key,options) => key==='fixture-service'?{...service,rpc:(name,args)=>service.rpc(name,args,options?.global?.headers??{})}:identity,
   webcrypto,
   fixtureDnsFetch,
+  getDomain,
 );
 const token = 'qg_redirect_' + 'a'.repeat(64);
 const digest = Buffer.from(
@@ -811,6 +829,48 @@ try {
   for(let clean=0;clean<8&&passwordAssets.some(key=>logoObjects.has(key));clean++)await policyRuntime.dispatchRedirectQrAssetCleanup(service,sdkArtworkStorage,fixtureDnsFetch);
   if(passwordAssets.some(key=>logoObjects.has(key)))throw new Error('Released/lost password-logo objects not physically cleaned');
   console.log('Password branding: five native SDK read/update/upload methods plus owner HTTP -> versioned reservation -> exact immutable Storage bytes -> current-role finish; stale/SVG preflight denial, no unknown upload replay, lost-owner denial, independent public profile and physical delete cleanup passed.');
+
+  const setupDomain=await reportRequest('/domains','POST',{hostname:'go.setup-example.com'},undefined,201);
+  const setupPath='/domains/'+setupDomain.id+'/dns-setup/';
+  await reportRequest(setupPath+'discover','POST',{version:setupDomain.version},undefined,503);
+  if(domainConnectDnsCalls)throw new Error('Unconfigured setup reached DNS');
+  domainConnectEnabled=true;
+  await reportRequest(setupPath+'discover','POST',{version:setupDomain.version},token,403);
+  await reportRequest(setupPath+'discover','POST',{version:setupDomain.version,target:'https://evil.example.com'},undefined,400);
+  const setup=await reportRequest(setupPath+'discover','POST',{version:setupDomain.version});
+  if(setup.state!=='review'||setup.domain.ownershipVerified||setup.domain.providerConnected||setup.discovery.provider!=='cloudflare')throw new Error('Domain Connect discovery/review incorrect');
+  const beforeRepeatedDiscovery=domainConnectDnsCalls;
+  await reportRequest(setupPath+'discover','POST',{version:setupDomain.version},undefined,429);
+  if(domainConnectDnsCalls!==beforeRepeatedDiscovery)throw new Error('Rate-limited discovery still reached DNS');
+  await reportRequest('/domain-connect/'+setup.id,'GET',undefined,'fixture-other-account-session',404);
+  const approval=await reportRequest(setupPath+'approve','POST',{version:setupDomain.version,operation:setup.id});
+  const approvalUrl=new URL(approval.approvalUrl),approvalQuery=approvalUrl.searchParams;
+  if(approvalUrl.origin!=='https://dash.cloudflare.com'||approvalUrl.pathname!=='/domainconnect/v2/domainTemplates/providers/queer.guide/services/redirects/apply'||approvalQuery.get('domain')!=='setup-example.com'||approvalQuery.get('host')!=='go'||approvalQuery.get('verification')!==setupDomain.verification.value.slice('qg-redirect='.length)||approvalQuery.get('key')!=='_fixture'||[...approvalQuery.keys()].at(-1)!=='sig')throw new Error('Approval URL escaped fixed template/host/challenge');
+  const signedBytes=approvalUrl.search.slice(1).split('&key=')[0];
+  if(!await webcrypto.subtle.verify('RSASSA-PKCS1-v1_5',domainConnectKey.publicKey,Buffer.from(approvalQuery.get('sig'),'base64'),new TextEncoder().encode(signedBytes)))throw new Error('Actual HTTP approval signature did not verify');
+  const callback=new URL(approvalQuery.get('redirect_uri'));
+  if(callback.origin!=='https://queer.guide'||callback.searchParams.get('domain_connect')!==setup.id)throw new Error('Callback correlation escaped fixed origin');
+  await reportRequest(setupPath+'approve','POST',{version:setupDomain.version,operation:setup.id},undefined,409);
+  const lookup=await reportRequest('/domain-connect/'+setup.id);
+  if(lookup.state!=='approved'||lookup.domain.ownershipVerified)throw new Error('Provider callback implied DNS ownership');
+  dnsMissing=true;const beforeComplete=dnsCalls;
+  const completed=await reportRequest(setupPath+'complete','POST',{version:setupDomain.version,operation:setup.id});
+  dnsMissing=false;
+  if(dnsCalls!==beforeComplete+1||completed.state!=='complete'||completed.outcome!=='missing'||completed.domain.ownershipVerified||completed.domain.routingReady)throw new Error('Callback skipped fresh DNS check or promoted readiness');
+  await reportRequest(setupPath+'complete','POST',{version:completed.domain.version,operation:setup.id},undefined,409);
+  // A fresh live-role check must reject a result arriving after owner removal.
+  const lossDomain=await reportRequest('/domains','POST',{hostname:'lost.setup-example.com'},undefined,201);
+  domainConnectLoseOwner=true;
+  await reportRequest('/domains/'+lossDomain.id+'/dns-setup/discover','POST',{version:lossDomain.version},undefined,403);
+  await db.query("INSERT INTO public.user_roles VALUES($1,'admin')",[reportActor]);
+  if((await db.query('SELECT state FROM public.redirect_domain_connect_operations WHERE domain_id=$1',[lossDomain.id])).rows[0].state!=='discovering')throw new Error('Lost-owner discovery result published');
+  const unsupportedDomain=await reportRequest('/domains','POST',{hostname:'unsupported.setup-example.com'},undefined,201);
+  domainConnectTemplateMissing=true;
+  const unsupportedSetup=await reportRequest('/domains/'+unsupportedDomain.id+'/dns-setup/discover','POST',{version:unsupportedDomain.version});
+  domainConnectTemplateMissing=false;
+  if(unsupportedSetup.state!=='unsupported')throw new Error('Missing provider template was treated as usable');
+  await reportRequest('/domains/'+unsupportedDomain.id+'/dns-setup/approve','POST',{version:unsupportedDomain.version,operation:unsupportedSetup.id},undefined,409);
+  console.log('Domain Connect: actual owner HTTP -> bounded discovery -> stored review -> verified RSA approval -> current-owner callback -> fresh TXT proof; key denial, budgets, template absence, replay and role loss passed.');
   await verifyRedirectIntegrationHttp(db,base,reportActor);
   console.log(
     'Five SDKs passed; no external API calls, credentials, payments or production schema were used.',

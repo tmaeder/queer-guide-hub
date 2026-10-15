@@ -1,0 +1,48 @@
+BEGIN;
+SET LOCAL ROLE service_role;
+DO $$
+DECLARE actor uuid:=gen_random_uuid();other_actor uuid:=gen_random_uuid();outsider uuid:=gen_random_uuid();d jsonb;r jsonb;o uuid;v uuid;domain uuid;config text:=repeat('a',64);discovery jsonb;
+BEGIN
+ INSERT INTO auth.users(id) VALUES(actor),(other_actor),(outsider);INSERT INTO public.user_roles VALUES(actor,'admin'),(other_actor,'admin');
+ d:=public.redirect_domain_resource('create',actor,p_values=>'{"hostname":"go.dns-setup-community.com"}');domain:=(d->>'id')::uuid;v:=(d->>'version')::uuid;
+ discovery:=jsonb_build_object('status','available','provider','cloudflare','hostname',d->>'hostname','domain','dns-setup-community.com','host','go','apiBase','https://api.cloudflare.com/client/v4/dns/domainconnect','syncBase','https://dash.cloudflare.com/domainconnect','templateVersion',1);
+ BEGIN PERFORM public.redirect_domain_connect_operation('reserve',outsider,domain,v,config);RAISE EXCEPTION 'Non-owner discovered provider';EXCEPTION WHEN insufficient_privilege THEN NULL;END;
+ BEGIN PERFORM public.redirect_domain_connect_operation('reserve',actor,domain,v,config,p_values=>'{"target":"evil.example.com"}');RAISE EXCEPTION 'Unexpected discovery fields accepted';EXCEPTION WHEN invalid_parameter_value THEN NULL;END;
+ r:=public.redirect_domain_connect_operation('reserve',actor,domain,v,config);o:=(r->>'id')::uuid;
+ IF r->>'state'<>'discovering' OR r#>>'{domain,ownershipState}'<>'pending' THEN RAISE EXCEPTION 'Discovery changed ownership';END IF;
+ IF NOT(public.redirect_domain_connect_operation('reserve',actor,domain,v,config)?'retryAfter') THEN RAISE EXCEPTION 'Discovery network budget missing';END IF;
+ BEGIN PERFORM public.redirect_domain_connect_operation('discovered',other_actor,domain,v,config,o,discovery);RAISE EXCEPTION 'Another owner used operation';EXCEPTION WHEN no_data_found THEN NULL;END;
+ BEGIN PERFORM public.redirect_domain_connect_operation('discovered',actor,domain,v,config,o,discovery||'{"syncBase":"https://evil.example.com"}');RAISE EXCEPTION 'Arbitrary provider URL accepted';EXCEPTION WHEN invalid_parameter_value THEN NULL;END;
+ BEGIN PERFORM public.redirect_domain_connect_operation('issued',actor,domain,v,config,o);RAISE EXCEPTION 'Issued without review/signing';EXCEPTION WHEN unique_violation THEN NULL;END;
+ r:=public.redirect_domain_connect_operation('discovered',actor,domain,v,config,o,discovery);
+ IF r->>'state'<>'review' THEN RAISE EXCEPTION 'Discovery did not produce review';END IF;
+ BEGIN PERFORM public.redirect_domain_connect_operation('sign',actor,domain,v,repeat('b',64),o);RAISE EXCEPTION 'Changed signing key accepted';EXCEPTION WHEN unique_violation THEN NULL;END;
+ r:=public.redirect_domain_connect_operation('sign',actor,domain,v,config,o);
+ r:=public.redirect_domain_connect_operation('issued',actor,domain,v,config,o);
+ IF r->>'state'<>'approved' OR r#>>'{domain,ownershipState}'<>'pending' OR r#>>'{domain,providerConnected}'<>'false' THEN RAISE EXCEPTION 'Approval implied ownership/provider proof';END IF;
+ BEGIN PERFORM public.redirect_domain_connect_operation('issued',actor,domain,v,config,o);RAISE EXCEPTION 'Approval replayed';EXCEPTION WHEN unique_violation THEN NULL;END;
+ IF public.redirect_domain_connect_current(actor,o,config)->>'id'<>o::text THEN RAISE EXCEPTION 'Current-owner callback lookup failed';END IF;
+ BEGIN PERFORM public.redirect_domain_connect_current(other_actor,o,config);RAISE EXCEPTION 'Cross-owner callback lookup';EXCEPTION WHEN no_data_found THEN NULL;END;
+ DELETE FROM public.user_roles WHERE user_id=actor;
+ BEGIN PERFORM public.redirect_domain_connect_operation('check',actor,domain,v,config,o);RAISE EXCEPTION 'Removed owner checked DNS';EXCEPTION WHEN insufficient_privilege THEN NULL;END;
+ INSERT INTO public.user_roles VALUES(actor,'admin');
+ r:=public.redirect_domain_connect_operation('check',actor,domain,v,config,o);
+ IF r->>'state'<>'checking' OR r#>>'{domain,ownershipState}'<>'pending' THEN RAISE EXCEPTION 'Callback promoted ownership without fresh DNS';END IF;
+ BEGIN PERFORM public.redirect_domain_connect_operation('checked',actor,domain,v,config,o,'{"success":true}');RAISE EXCEPTION 'Provider success accepted as proof';EXCEPTION WHEN invalid_parameter_value THEN NULL;END;
+ r:=public.redirect_domain_connect_operation('checked',actor,domain,v,config,o,'{"outcome":"verified"}');
+ IF r->>'state'<>'complete' OR r#>>'{domain,ownershipState}'<>'verified' OR r#>>'{domain,version}'=v::text OR r#>>'{domain,routingReady}'<>'false' THEN RAISE EXCEPTION 'Fresh nonce-bound DNS outcome failed or implied branded readiness';END IF;
+ BEGIN PERFORM public.redirect_domain_connect_operation('checked',actor,domain,(r#>>'{domain,version}')::uuid,config,o,'{"outcome":"verified"}');RAISE EXCEPTION 'DNS proof replayed';EXCEPTION WHEN unique_violation THEN NULL;END;
+ -- Every domain change, expiry or configuration change invalidates pending correlation.
+ d:=public.redirect_domain_resource('create',actor,p_values=>'{"hostname":"new.dns-setup-community.com"}');domain:=(d->>'id')::uuid;v:=(d->>'version')::uuid;
+ r:=public.redirect_domain_connect_operation('reserve',actor,domain,v,config);o:=(r->>'id')::uuid;
+ UPDATE public.redirect_domain_connect_operations SET expires_at=clock_timestamp()-interval '1 second' WHERE id=o;
+ BEGIN PERFORM public.redirect_domain_connect_current(actor,o,config);RAISE EXCEPTION 'Expired callback accepted';EXCEPTION WHEN unique_violation THEN NULL;END;
+ UPDATE public.redirect_domain_connect_operations SET expires_at=clock_timestamp()+interval '1 minute' WHERE id=o;
+ d:=public.redirect_domain_resource('rotate',actor,domain,jsonb_build_object('version',v));
+ BEGIN PERFORM public.redirect_domain_connect_current(actor,o,config);RAISE EXCEPTION 'Rotated challenge accepted';EXCEPTION WHEN unique_violation THEN NULL;END;
+ BEGIN PERFORM public.redirect_domain_connect_operation('discovered',actor,domain,(d->>'version')::uuid,config,o,discovery);RAISE EXCEPTION 'Old operation accepted new version';EXCEPTION WHEN unique_violation THEN NULL;END;
+ PERFORM public.redirect_domain_resource('delete',actor,domain,jsonb_build_object('version',d->>'version'));
+ IF EXISTS(SELECT FROM public.redirect_domain_connect_operations WHERE id=o) THEN RAISE EXCEPTION 'Removed domain retained operation';END IF;
+ IF has_table_privilege('authenticated','public.redirect_domain_connect_operations','SELECT') OR has_table_privilege('anon','public.redirect_domain_connect_operations','INSERT') OR has_function_privilege('authenticated','public.redirect_domain_connect_operation(text,uuid,uuid,uuid,text,uuid,jsonb)','EXECUTE') OR has_function_privilege('anon','public.redirect_domain_connect_current(uuid,uuid,text)','EXECUTE') THEN RAISE EXCEPTION 'DNS setup state exposed directly';END IF;
+END $$;
+ROLLBACK;

@@ -1,3 +1,4 @@
+import { domainConnectConfig, domainConnectInput, runDomainConnectAction } from '../_shared/redirect-domain-connect-api.ts';
 import { nativeAppValues, publicAppAssociation } from '../_shared/redirect-native-apps.ts';
 import { inventoryQuery, inventoryOperations, redirectInventoryManifest } from '../_shared/redirect-inventory-api.ts';
 import {passwordBrandingInput,storePasswordLogo} from '../_shared/redirect-password-branding.ts';
@@ -356,6 +357,22 @@ Deno.serve(async (req: Request) => {
     values=body;
    }
    const result=await db.rpc('redirect_domain_preference',{p_actor:user!.id,p_values:values});if(result.error)return rpcError(result.error);return json(result.data);
+  }
+  const dnsSetup=path.match(/^\/domains\/([a-f0-9-]{36})\/dns-setup\/(discover|approve|complete)$/i);
+  const dnsCallback=path.match(/^\/domain-connect\/([a-f0-9-]{36})$/i);
+  if(dnsSetup||dnsCallback){
+   if(tokenCredential)return json({error:'Workspace owner account session required'},403);
+   const principal=await sessionPrincipal('workspace:write');if(principal.failure)return principal.failure;if(principal.id!==null)return json({error:'Workspace owner access required'},403);
+   if(new URL(req.url).search)return json({error:'Unexpected DNS setup parameters'},400);
+   if(dnsSetup&&req.method!=='POST'||dnsCallback&&req.method!=='GET')return json({error:'Method not supported'},405);
+   const config=await domainConnectConfig(Deno.env.get('REDIRECT_DOMAIN_CONNECT_PRIVATE_JWK')??'',Deno.env.get('REDIRECT_DOMAIN_CONNECT_KEY_LABEL')??'',Deno.env.get('REDIRECT_CNAME_TARGET')??'');
+   if(!config)return json({error:'Automatic DNS setup is not configured'},503);
+   if(dnsCallback){const result=await db.rpc('redirect_domain_connect_current',{p_actor:user!.id,p_operation:dnsCallback[1],p_configuration:config.fingerprint});if(result.error)return rpcError(result.error);return json(result.data);}
+   const [,domain,action]=dnsSetup!;const operation=action as 'discover'|'approve'|'complete';
+   const input=domainConnectInput(await boundedJson(req,16384),operation);
+   const result=await runDomainConnectAction(db,user!.id,domain,operation,input,config);if(result.error)return rpcError(result.error);
+   if(result.data?.retryAfter)return new Response(JSON.stringify({error:'Please wait before checking DNS setup again'}),{status:429,headers:{...cors,'Content-Type':'application/json','Cache-Control':'no-store','Retry-After':String(result.data.retryAfter)}});
+   return json(result.data);
   }
   const domains=path.match(/^\/domains(?:\/([a-f0-9-]{36}))?(?:\/(verify|rotate|provider)(?:\/(connect|refresh|disconnect|adopt|confirm-absence|restart-validation))?)?$/i);
   if(domains){

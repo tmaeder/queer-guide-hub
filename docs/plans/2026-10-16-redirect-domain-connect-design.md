@@ -40,3 +40,30 @@ transfer and auto-configuration pages, Domain Connect specification and provider
 onboarding instructions were read. The candidate is checked by the official
 linter in standard/Cloudflare modes, with actual RSA signature/tamper tests. No UI
 or production changes are implied by this protocol foundation.
+
+## Authenticated backend implementation checkpoint
+
+The stored operation path and owner API are now implemented locally. A
+service-only/RLS operation table binds the 15-minute application lease to the
+current actor, domain version and signing configuration. Discovery reserves
+per-domain/owner/global budgets before network requests; strict provider discovery
+uses the closest NS zone, public/private suffix boundaries, provider-family
+coherence and bounded responses. The explicit approval action signs only the
+fixed candidate records/callback and rechecks current authorization after signing.
+Callback lookup is actor-bound; completion runs the existing fresh nonce-bound
+TXT verifier and cannot infer ownership, TLS or routing from provider parameters.
+
+The synchronous signed URL itself has no protocol-enforced expiry. Document the
+lease as an application processing deadline, not a revocation of the provider
+URL. Provider authorization is still required for DNS changes, and old challenges
+cannot prove current ownership after rotation. Configuration is server-only,
+requires a non-exportable RS256 key and the fixed SaaS target, and has no unsigned
+fallback. Deployment dependency resolution now has an isolated function config
+and lock; the root Deno lock remains unchanged.
+
+Local tests execute the actual HTTP handler, migrated database and signer,
+including rate-limit-before-network, key/member denial, missing templates,
+provider URL/signature checks, owner loss during discovery, callback lookup,
+missing TXT proof and replay denial. UI controls, native instruction forwarding,
+provider onboarding/public-key publication and controlled live approval remain
+open; this backend checkpoint does not complete DNS parity or release.
