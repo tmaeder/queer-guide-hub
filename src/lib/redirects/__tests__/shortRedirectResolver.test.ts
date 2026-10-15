@@ -37,8 +37,16 @@ function runtime() {
     join(__dirname, '../../../../supabase/functions/_shared/redirect-domain-relay.ts'),
     'utf8',
   ).replace(/^export\s+/gm, '');
+  const nativeResolution = readFileSync(
+    join(__dirname, '../../../../supabase/functions/_shared/redirect-native-resolution.ts'),
+    'utf8',
+  )
+    .replace(/^import .*;\s*$/gm, '')
+    .replace(/^export\s+/gm, '');
   const code = ts.transpileModule(
-    shared +
+    nativeResolution +
+      '\n' +
+      shared +
       '\n' +
       visitor +
       '\n' +
@@ -68,6 +76,8 @@ function runtime() {
       is_enabled: true,
       start_at: null,
       end_at: null as string | null,
+      click_count: 0,
+      click_limit: null as number | null,
     },
     domain: null as null | {
       id: string;
@@ -105,7 +115,7 @@ function runtime() {
               ? state.retry
               : name === 'record_redirect_visit'
                 ? state.quota
-                  ? 'click-id'
+                  ? '10000000-0000-4000-8000-000000000001'
                   : null
                 : [],
   }));
@@ -233,7 +243,7 @@ describe('live short-link resolver', () => {
       run.rpc.mock.calls.find(([name]) => name === 'record_redirect_visit')?.[1]?.p_query,
     ).toBe('utm_source=qr');
     expect((await run.invoke('POST', 'utm_source=qr', 'password=fixture+password')).status).toBe(
-      302,
+      303,
     );
   });
   it('returns Retry-After without a target on exhausted attempts and fails closed on limiter errors', async () => {
@@ -321,7 +331,7 @@ describe('live short-link resolver', () => {
     expect(result.status).toBe(200);
     const html = await result.text();
     expect(html).toContain('<iframe');
-    expect(html).toContain('qg_click_id=click-id');
+    expect(html).toContain('qg_click_id=10000000-0000-4000-8000-000000000001');
     expect(html).toContain('Open destination directly');
     expect(run.rpc.mock.calls.filter(([name]) => name === 'record_redirect_visit')).toHaveLength(1);
     expect((await run.invoke('HEAD')).status).toBe(200);
@@ -356,7 +366,9 @@ describe('live short-link resolver', () => {
     const head = await run.invoke('HEAD', 'qg_click_id=spoofed&utm_source=qr');
     expect(head.headers.get('Location')).not.toContain('qg_click_id');
     const get = await run.invoke('GET', 'qg_click_id=spoofed&utm_source=qr');
-    expect(new URL(get.headers.get('Location')!).searchParams.get('qg_click_id')).toBe('click-id');
+    expect(new URL(get.headers.get('Location')!).searchParams.get('qg_click_id')).toBe(
+      '10000000-0000-4000-8000-000000000001',
+    );
     expect(run.rpc.mock.calls[0][1]?.p_query).toBe('utm_source=qr');
   });
   it('records QR source as visitor metadata and removes it from the destination/query', async () => {
@@ -468,5 +480,114 @@ describe('branded Worker → actual resolver', () => {
     run.state.managedTarget = true;
     expect((await run.open()).status).toBe(502);
     expect(run.rpc.mock.calls.some(([name]) => name === 'record_redirect_visit')).toBe(false);
+  });
+});
+
+describe('policy-aware native resolver', () => {
+  const media = 'application/vnd.queer-guide.redirect+json';
+  const request = (
+    method = 'GET',
+    password?: string,
+    consent = false,
+    query = '',
+    agent = 'iPhone',
+  ) =>
+    new Request(
+      'https://fixture.supabase.co/functions/v1/redirect-handler?slug=pride-qr&q=' +
+        encodeURIComponent(query),
+      {
+        method,
+        headers: {
+          Accept: media,
+          'User-Agent': agent,
+          ...(consent ? { 'x-qg-attribution-consent': 'granted' } : {}),
+          ...(password ? { 'content-type': 'application/x-www-form-urlencoded' } : {}),
+        },
+        ...(password ? { body: new URLSearchParams({ password }).toString() } : {}),
+      },
+    );
+  it('resolves through the normal visit path without exposing attribution before consent', async () => {
+    const run = runtime();
+    run.state.settings.policy = {
+      track_conversions: true,
+      device_targets: { ios: 'https://example.com/ios' },
+    };
+    const response = await run.handle(request());
+    expect(response.status).toBe(200);
+    expect(response.headers.get('content-type')).toContain(media);
+    const body = await response.json();
+    expect(body).toEqual({
+      protocol: 1,
+      canonicalUrl: 'https://queer.guide/go/pride-qr',
+      destination: 'https://example.com/ios',
+      statusCode: 302,
+      mode: 'navigate',
+      clickId: null,
+    });
+    expect(run.rpc.mock.calls.filter(([name]) => name === 'record_redirect_visit')).toHaveLength(1);
+    const consented = await run.handle(request('GET', undefined, true));
+    const attributed = await consented.json();
+    expect(attributed.clickId).toBe('10000000-0000-4000-8000-000000000001');
+    expect(new URL(attributed.destination).searchParams.get('qg_click_id')).toBe(
+      attributed.clickId,
+    );
+  });
+  it('keeps password challenges, form checks and throttling ahead of destinations', async () => {
+    const run = runtime();
+    run.state.settings.password_hash = await hashLinkPassword('native-password');
+    const challenge = await run.handle(request());
+    expect(challenge.status).toBe(401);
+    expect(await challenge.json()).toEqual({ protocol: 1, error: 'password_required' });
+    expect(run.rpc.mock.calls.some(([name]) => name === 'redirect_password_branding_public')).toBe(
+      false,
+    );
+    expect((await run.handle(request('GET', undefined, false, 'pw=native-password'))).status).toBe(
+      400,
+    );
+    expect((await run.handle(request('POST', 'wrong'))).status).toBe(401);
+    expect(run.rpc.mock.calls.some(([name]) => name === 'record_redirect_visit')).toBe(false);
+    run.state.retry = 120;
+    const throttled = await run.handle(request('POST', 'native-password'));
+    expect(throttled.status).toBe(429);
+    expect(throttled.headers.get('Retry-After')).toBe('120');
+    run.state.retry = 0;
+    expect((await run.handle(request('POST', 'native-password'))).status).toBe(200);
+  });
+  it.each([301, 302, 303, 307, 308])(
+    'uses a GET redirect after password submission with stored status %s',
+    async (storedStatus) => {
+      const run = runtime();
+      run.state.link.status_code = storedStatus;
+      run.state.settings.password_hash = await hashLinkPassword('native-password');
+      const response = await run.invoke('POST', '', 'password=native-password');
+      expect(response.status).toBe(303);
+      expect(response.headers.get('Location')).toContain('https://example.com/pride');
+    },
+  );
+  it('keeps quotas and HEAD observational without creating additional visits', async () => {
+    const run = runtime();
+    expect((await run.handle(request('HEAD'))).status).toBe(200);
+    expect(run.rpc.mock.calls.some(([name]) => name === 'record_redirect_visit')).toBe(false);
+    run.state.link.click_limit = 1;
+    run.state.link.click_count = 1;
+    expect((await run.handle(request('HEAD'))).status).toBe(410);
+    run.state.link.click_limit = null;
+    run.state.quota = false;
+    expect((await run.handle(request())).status).toBe(410);
+  });
+  it('uses a web fallback for expiry and cloaking and counts native requests with crawler agents', async () => {
+    const run = runtime();
+    run.state.settings.policy = { cloaked: true, preview: { title: 'Private presentation' } };
+    const response = await run.handle(request('GET', undefined, false, '', 'Twitterbot'));
+    expect(response.status).toBe(200);
+    expect((await response.json()).mode).toBe('web');
+    expect(run.rpc.mock.calls.filter(([name]) => name === 'record_redirect_visit')).toHaveLength(1);
+    run.state.settings.policy = {
+      expires_at: '2020-01-01T00:00:00Z',
+      expired_target: 'https://example.com/expired',
+    };
+    const expired = await run.handle(request());
+    expect((await expired.json()).mode).toBe('web');
+    expect(run.rpc.mock.calls.filter(([name]) => name === 'record_redirect_visit')).toHaveLength(1);
   });
 });

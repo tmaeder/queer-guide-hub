@@ -1,5 +1,12 @@
 // eslint-disable-next-line @typescript-eslint/triple-slash-reference -- Generated ambient Worker declarations require a type reference without a runtime import.
 /// <reference path="./worker-configuration.d.ts" />
+import {
+  nativeRedirectRequested,
+  nativeProblem,
+  nativeUpstreamResponse,
+  forwardNativeHeaders,
+} from '../../supabase/functions/_shared/redirect-native-resolution';
+import { proxyAppAssociation } from '../../supabase/functions/_shared/redirect-app-association-proxy';
 import type { IncomingRequestCfProperties } from '@cloudflare/workers-types';
 import {
   DOMAIN_HEALTH_PATH,
@@ -10,6 +17,7 @@ import {
 
 const publicHeaders = {
   'Cache-Control': 'no-store',
+  Vary: 'Accept',
   'X-Robots-Tag': 'noindex',
   'Referrer-Policy': 'no-referrer',
   'X-Content-Type-Options': 'nosniff',
@@ -50,14 +58,24 @@ async function passwordBody(request: Request) {
 /** Deploy only to the dedicated SaaS fallback zone after its routing is reviewed. */
 export default {
   async fetch(request: Request, env: Cloudflare.Env): Promise<Response> {
-    const head = request.method === 'HEAD';
+    const association = await proxyAppAssociation(request, env);
+    if (association) return association;
+    const head = request.method === 'HEAD',
+      native = nativeRedirectRequested(request);
     const error = (status: number, message = 'Link unavailable') =>
-      new Response(head ? null : message, { status, headers: publicHeaders });
+      native
+        ? nativeProblem(status, head)
+        : new Response(head ? null : message, { status, headers: publicHeaders });
     if (!['GET', 'HEAD', 'POST'].includes(request.method))
-      return new Response('Method not allowed', {
-        status: 405,
-        headers: { ...publicHeaders, Allow: 'GET, HEAD, POST' },
-      });
+      return native
+        ? nativeProblem(405, request.method === 'HEAD')
+        : new Response('Method not allowed', {
+            status: 405,
+            headers: {
+              ...publicHeaders,
+              Allow: 'GET, HEAD, POST',
+            },
+          });
     try {
       const actualUrl = new URL(request.url);
       if (actualUrl.pathname === DOMAIN_HEALTH_PATH && request.method !== 'GET')
@@ -90,6 +108,7 @@ export default {
         ...domainRelayHeaders(relay),
         'x-qg-visitor-domain': relay.hostname,
       });
+      forwardNativeHeaders(request, forwarded);
       for (const name of ['referer', 'user-agent']) {
         const value = request.headers.get(name);
         if (value) forwarded.set(name, value);
@@ -107,6 +126,7 @@ export default {
         redirect: 'manual',
         signal: AbortSignal.timeout(8000),
       });
+      if (native) return nativeUpstreamResponse(request, response);
       const headers = new Headers(publicHeaders);
       const location = response.headers.get('Location');
       if ([301, 302, 303, 307, 308].includes(response.status) && location) {

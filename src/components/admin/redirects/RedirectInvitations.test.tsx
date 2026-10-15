@@ -33,7 +33,8 @@ beforeEach(() => {
   window.history.replaceState(null, '', '/');
   sessionStorage.clear();
   mocks.api.mockImplementation(async (path, method) => {
-    if (path.startsWith('/invitations?')) return { data: [], count: 0 };
+    if (path.startsWith('/invitations?') || path.startsWith('/invitations/received?'))
+      return { data: [], count: 0 };
     if (path === '/invitations' && method === 'POST') return { invitationUrl: url };
     return { accepted: true };
   });
@@ -87,34 +88,44 @@ describe('recipient-bound workspace invitations', () => {
     const destination = await screen.findByTestId('auth-location');
     expect(destination).toHaveTextContent('/auth?redirect=%2Flinks-workspace');
     expect(destination.textContent).not.toContain(secret);
-    expect(JSON.parse(sessionStorage.getItem('redirect-pending-invitation')!)).toMatchObject({
-      token: secret,
-    });
+    expect(sessionStorage.getItem('redirect-pending-invitation')).toBeNull();
   });
-  it('consumes a fresh sign-in handoff once and discards expired handoffs', async () => {
-    sessionStorage.setItem(
-      'redirect-pending-invitation',
-      JSON.stringify({ token: secret, at: Date.now() }),
-    );
-    const first = view(true);
-    expect(screen.getByLabelText('Invitation link')).toHaveValue(secret);
-    expect(sessionStorage.getItem('redirect-pending-invitation')).toBeNull();
-    first.unmount();
-    sessionStorage.setItem(
-      'redirect-pending-invitation',
-      JSON.stringify({ token: secret, at: Date.now() - 900001 }),
-    );
+  it('offers verified-account pending invitations without storing a token', async () => {
+    const invitationId = '10000000-0000-4000-8000-000000000001';
+    mocks.api.mockImplementation(async (path, method, body) => {
+      if (path.startsWith('/invitations/received?'))
+        return {
+          data: [
+            {
+              id: invitationId,
+              label: 'Campaign teammate',
+              role: 'viewer',
+              expires_at: '2026-10-22T00:00:00Z',
+            },
+          ],
+          count: 1,
+        };
+      if (method === 'POST') return { accepted: true, memberId: body.id };
+      return { data: [], count: 0 };
+    });
     view(true);
-    expect(screen.getByLabelText('Invitation link')).toHaveValue('');
-    expect(sessionStorage.getItem('redirect-pending-invitation')).toBeNull();
+    fireEvent.click(
+      await screen.findByRole('button', { name: 'Accept invitation for Campaign teammate' }),
+    );
+    await screen.findByText('Invitation accepted. Workspace access refreshed.');
+    expect(mocks.api).toHaveBeenCalledWith('/invitations/accept', 'POST', { id: invitationId });
+    expect(sessionStorage.length).toBe(0);
   });
   it('keeps a denied acceptance visible without retrying automatically', async () => {
-    mocks.api.mockRejectedValue(new Error('Invitation unavailable'));
+    mocks.api.mockImplementation(async (path) => {
+      if (path.startsWith('/invitations/received?')) return { data: [], count: 0 };
+      throw new Error('Invitation unavailable');
+    });
     view(true);
     fireEvent.change(screen.getByLabelText('Invitation link'), { target: { value: url } });
     fireEvent.click(screen.getByRole('button', { name: 'Accept invitation' }));
     await screen.findByRole('alert');
-    expect(mocks.api).toHaveBeenCalledTimes(1);
+    expect(mocks.api.mock.calls.filter(([path]) => path === '/invitations/accept')).toHaveLength(1);
     expect(screen.queryByText('Invitation accepted. Workspace access refreshed.')).toBeNull();
   });
   it('ignores a late creation receipt after account switching', async () => {

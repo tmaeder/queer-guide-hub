@@ -42,6 +42,8 @@ try {
   await db.exec(readFileSync('supabase/tests/redirect_token_administration.sql', 'utf8'));
   await db.exec(readFileSync('supabase/tests/redirect_all_source_inventory.sql','utf8'));
   await db.exec(readFileSync('supabase/tests/redirect_workspace_invitations.sql', 'utf8'));
+  await db.exec(readFileSync('supabase/tests/redirect_native_apps.sql', 'utf8'));
+  await db.exec(readFileSync('supabase/tests/redirect_invitation_inbox.sql', 'utf8'));
   console.log(
     'Redirect platform SQL: policies, atomic creation, quotas, expiry, variant metrics, conversion attribution, analytics, password throttling scoped link management, workspace APIs and presentations passed.',
   );

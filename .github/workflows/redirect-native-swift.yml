@@ -1,0 +1,57 @@
+name: Redirect native Swift contracts
+on:
+  pull_request:
+    paths:
+      - 'sdk/redirects/swift/**'
+      - 'scripts/test-redirect-swift.mjs'
+      - 'scripts/lib/redirect-native-test-wire.mjs'
+      - 'supabase/functions/_shared/redirect-native-resolution.ts'
+      - 'supabase/functions/redirect-handler/**'
+      - 'functions/go/**'
+      - 'workers/redirect-domains/**'
+      - '.github/workflows/redirect-native-swift.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'sdk/redirects/swift/**'
+      - 'scripts/test-redirect-swift.mjs'
+      - 'scripts/lib/redirect-native-test-wire.mjs'
+      - 'supabase/functions/_shared/redirect-native-resolution.ts'
+      - 'supabase/functions/redirect-handler/**'
+      - 'functions/go/**'
+      - 'workers/redirect-domains/**'
+      - '.github/workflows/redirect-native-swift.yml'
+permissions:
+  contents: read
+concurrency:
+  group: redirect-swift-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  contracts:
+    runs-on: macos-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+      actions: read
+      packages: read
+      security-events: write
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '22.20.0'
+      - name: Compile Swift package and run native URLSession contracts
+        run: node scripts/test-redirect-swift.mjs
+      - name: Initialize native CodeQL
+        uses: github/codeql-action/init@v4.38.2
+        with:
+          languages: swift
+          build-mode: manual
+      # Keep traced compilation in a direct step with the job's build budget
+      # and persistent output, separate from the contract runner's process cap.
+      - name: Build SDK for Swift CodeQL
+        run: swift build --package-path sdk/redirects/swift --scratch-path tmp/native-swift-codeql -Xswiftc -warnings-as-errors
+      - name: Analyze native client
+        uses: github/codeql-action/analyze@v4.38.2
+        with:
+          category: /language:swift/native-redirects

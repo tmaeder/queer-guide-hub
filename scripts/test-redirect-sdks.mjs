@@ -15,6 +15,7 @@ const pieces = [
   '_shared/redirect-api.ts',
   '_shared/redirect-inventory-manifest.ts',
   '_shared/redirect-inventory-api.ts',
+  '_shared/redirect-native-apps.ts',
   '_shared/redirect-qr-style.ts',
   '_shared/redirect-domains.ts',
   '_shared/redirect-domain-provider.ts',
@@ -231,6 +232,10 @@ const env = {
   REDIRECT_TEST_QR_LOGO:(await sharp({create:{width:64,height:64,channels:3,background:'#652895'}}).png().toBuffer()).toString('base64'),
 };
 async function run(command, args, extra = {}) {
+  // Each child gets a fresh simulated provider heartbeat. Long local suspension
+  // between language runs must not turn a positive ready-domain fixture stale.
+  await db.query("UPDATE public.redirect_domains SET verified_until=clock_timestamp()+interval '1 day',routing_seen_at=clock_timestamp() WHERE id=$1",[sdkRootDomain]);
+  await db.query('UPDATE public.redirect_domain_jobs SET checked_at=clock_timestamp() WHERE domain_id=$1',[sdkRootDomain]);
   await new Promise((resolve, reject) => {
     const child = spawn(command, args, { env, ...extra, stdio: ['ignore', 'pipe', 'pipe'] });
     let output = '';
@@ -312,6 +317,16 @@ try {
     const response=await fetch(base+path,{method,headers:{Authorization:'Bearer '+credential,...(body?{'Content-Type':'application/json'}:{})},...(body?{body:JSON.stringify(body)}:{})});
     const data=await response.json();if(response.status!==expected)throw new Error('Report HTTP '+path+' expected '+expected+' received '+response.status+': '+JSON.stringify(data));return data;
   }
+  const nativeApp=await reportRequest('/apps','POST',{label:'HTTP native app',platform:'ios',appId:'ABCDE12345.org.example.http',paths:['/go/*']},undefined,201);
+  if(nativeApp.enabled||!nativeApp.version)throw new Error('Native app was not disabled by default');
+  const activeNativeApp=await reportRequest('/apps/'+nativeApp.id,'PATCH',{version:nativeApp.version,enabled:true});
+  await reportRequest('/apps/'+nativeApp.id,'PATCH',{version:nativeApp.version,label:'stale'},undefined,409);
+  const aasa=await reportRequest('/public-app-association?hostname=queer.guide&platform=ios');
+  if(!aasa.applinks.details.some(item=>item.appIDs.includes('ABCDE12345.org.example.http'))||JSON.stringify(aasa).includes('HTTP native app'))throw new Error('Public iOS association projection failed');
+  await reportRequest('/apps','GET',undefined,token,403);
+  const androidNativeApp=await reportRequest('/apps','POST',{label:'HTTP Android app',platform:'android',appId:'org.example.http',fingerprints:['a'.repeat(64)],paths:['/go/*'],enabled:true},undefined,201);
+  const assetlinks=await reportRequest('/public-app-association?hostname=www.queer.guide&platform=android');
+  if(assetlinks[0].target.sha256_cert_fingerprints[0]!==Array(32).fill('AA').join(':')||assetlinks[0].relation[0]!=='delegate_permission/common.handle_all_urls')throw new Error('Android fingerprints/permission changed');
   const invitationReceipt=await reportRequest('/invitations','POST',{email:'http-invite@example.org',label:'HTTP recipient',role:'viewer'},undefined,201);
   const invitationSecret=new URL(invitationReceipt.invitationUrl).hash.slice('#invite='.length);
   if(!/^qg_invite_[a-f0-9]{64}$/.test(invitationSecret))throw new Error('Invitation secret shape');
@@ -319,7 +334,11 @@ try {
   if(JSON.stringify(invitationList).includes(invitationSecret)||invitationList.data.some(item=>item.token_hash))throw new Error('Invitation listing leaked secret');
   await reportRequest('/invitations/accept','POST',{token:invitationSecret},undefined,404);
   await reportRequest('/invitations','GET',undefined,token,403);
-  const acceptedInvite=await reportRequest('/invitations/accept','POST',{token:invitationSecret},'fixture-other-account-session');
+  const receivedInvites=await reportRequest('/invitations/received?offset=0','GET',undefined,'fixture-other-account-session');
+  if(receivedInvites.count!==1||receivedInvites.data[0].id!==invitationReceipt.id||JSON.stringify(receivedInvites).includes(invitationSecret)||receivedInvites.data.some(item=>item.email||item.token_hash))throw new Error('Recipient invitation inbox projection failed');
+  await reportRequest('/invitations/accept','POST',{id:invitationReceipt.id},undefined,404);
+  const acceptedInvite=await reportRequest('/invitations/accept','POST',{id:invitationReceipt.id},'fixture-other-account-session');
+  if((await reportRequest('/invitations/received','GET',undefined,'fixture-other-account-session')).count!==0)throw new Error('Accepted invite remained pending');
   const replayInvite=await reportRequest('/invitations/accept','POST',{token:invitationSecret},'fixture-other-account-session');
   if(acceptedInvite.memberId!==replayInvite.memberId||acceptedInvite.role!=='viewer')throw new Error('Invitation acceptance/replay failed');
   const revokedInvite=await reportRequest('/invitations','POST',{email:'http-invite@example.org',label:'Revoked',role:'member'},undefined,201);
@@ -343,6 +362,9 @@ try {
   await db.query('DELETE FROM public.user_roles WHERE user_id=$1',[reportActor]);
   await reportRequest('/members','GET',undefined,undefined,403);
   await reportRequest('/invitations','GET',undefined,undefined,403);
+  await reportRequest('/apps','GET',undefined,undefined,403);
+  const revokedNativeApp=await reportRequest('/public-app-association?hostname=queer.guide&platform=ios');
+  if(revokedNativeApp.applinks.details.length)throw new Error('Lost owner app association stayed public');
   await reportRequest('/tokens','GET',undefined,undefined,403);
   await reportRequest('/links','GET',undefined,ownerCredential.secret,403);
   await reportRequest('/tokens/'+ownerCredential.id,'DELETE',undefined,undefined,403);
@@ -355,6 +377,8 @@ try {
   await reportRequest('/members/'+managedMember.id,'DELETE',undefined,undefined,403);
   if(!(await db.query('SELECT id FROM public.redirect_workspace_members WHERE id=$1',[managedMember.id])).rows.length)throw new Error('Stale admin removed member');
   await db.query("INSERT INTO public.user_roles VALUES($1,'admin')",[reportActor]);
+  await reportRequest('/apps/'+activeNativeApp.id,'DELETE',{version:activeNativeApp.version});
+  await reportRequest('/apps/'+androidNativeApp.id,'DELETE',{version:androidNativeApp.version});
   const credentialRevoked=await reportRequest('/tokens/'+ownerCredential.id,'DELETE');
   if(!credentialRevoked.revoked)throw new Error('Credential revoke HTTP failed');
   await reportRequest('/links','GET',undefined,ownerCredential.secret,403);

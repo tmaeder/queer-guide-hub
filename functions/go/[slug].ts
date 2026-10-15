@@ -1,3 +1,9 @@
+import {
+  nativeRedirectRequested,
+  nativeProblem,
+  nativeUpstreamResponse,
+  forwardNativeHeaders,
+} from '../../supabase/functions/_shared/redirect-native-resolution';
 import { signRedirectRelay } from '../../supabase/functions/_shared/redirect-relay';
 import type { Env } from '../_lib/sitemap';
 
@@ -5,19 +11,26 @@ import type { Env } from '../_lib/sitemap';
 export const onRequest: PagesFunction<Env> = async ({ request, params, env }) => {
   const headers = {
     'Cache-Control': 'no-store',
+    Vary: 'Accept',
     'X-Robots-Tag': 'noindex',
     'Referrer-Policy': 'no-referrer',
   };
+  const native = nativeRedirectRequested(request);
+  const failure = (status: number, message: string) =>
+    native
+      ? nativeProblem(status, request.method === 'HEAD')
+      : new Response(request.method === 'HEAD' ? null : message, { status, headers });
   if (!['GET', 'HEAD', 'POST'].includes(request.method))
-    return new Response('Method not allowed', {
-      status: 405,
-      headers: { ...headers, Allow: 'GET, HEAD, POST' },
-    });
+    return native
+      ? nativeProblem(405, request.method === 'HEAD')
+      : new Response('Method not allowed', {
+          status: 405,
+          headers: { ...headers, Allow: 'GET, HEAD, POST' },
+        });
   const slug = String(params.slug ?? '').toLowerCase();
-  if (!/^[a-z0-9][a-z0-9-]{1,62}[a-z0-9]$/.test(slug))
-    return new Response('Link not found', { status: 404, headers });
+  if (!/^[a-z0-9][a-z0-9-]{1,62}[a-z0-9]$/.test(slug)) return failure(404, 'Link not found');
   if (!env.SUPABASE_URL || !env.SUPABASE_ANON_KEY)
-    return new Response('Short links are temporarily unavailable', { status: 503, headers });
+    return failure(503, 'Short links are temporarily unavailable');
   const resolver = new URL('/functions/v1/redirect-handler', env.SUPABASE_URL);
   resolver.searchParams.set('slug', slug);
   const query = new URL(request.url).searchParams.toString();
@@ -26,6 +39,7 @@ export const onRequest: PagesFunction<Env> = async ({ request, params, env }) =>
     Authorization: `Bearer ${env.SUPABASE_ANON_KEY}`,
     apikey: env.SUPABASE_ANON_KEY,
   });
+  forwardNativeHeaders(request, forwarded);
   for (const name of ['referer', 'user-agent', 'cf-connecting-ip', 'cf-ipcountry']) {
     const value = request.headers.get(name);
     if (value) forwarded.set(name, value);
@@ -63,6 +77,7 @@ export const onRequest: PagesFunction<Env> = async ({ request, params, env }) =>
       redirect: 'manual',
       signal: AbortSignal.timeout(8000),
     });
+    if (native) return nativeUpstreamResponse(request, response);
     const status = response.status;
     const location = response.headers.get('Location');
     if ([301, 302, 303, 307, 308].includes(status) && location)
@@ -87,8 +102,8 @@ export const onRequest: PagesFunction<Env> = async ({ request, params, env }) =>
         headers: htmlHeaders,
       });
     }
-    return new Response('Short links are temporarily unavailable', { status: 502, headers });
+    return failure(502, 'Short links are temporarily unavailable');
   } catch {
-    return new Response('Short links are temporarily unavailable', { status: 502, headers });
+    return failure(502, 'Short links are temporarily unavailable');
   }
 };

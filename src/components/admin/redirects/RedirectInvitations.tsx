@@ -188,35 +188,14 @@ function InvitationEditor({ userId }: { userId: string }) {
     </section>
   );
 }
-function pendingInvitation() {
-  const fromUrl = new URLSearchParams(window.location.hash.slice(1)).get('invite');
-  if (fromUrl) return fromUrl;
-  try {
-    const pending = JSON.parse(sessionStorage.getItem('redirect-pending-invitation') ?? 'null');
-    if (
-      pending &&
-      typeof pending.token === 'string' &&
-      typeof pending.at === 'number' &&
-      Date.now() - pending.at < 900000 &&
-      Date.now() >= pending.at
-    )
-      return pending.token as string;
-  } catch {
-    /* Pasting an invitation remains available when storage is blocked. */
-  }
-  return '';
-}
 export function RedirectInvitationAcceptance({ userId }: { userId: string }) {
   const client = useQueryClient(),
     alive = useRef(true),
-    [token, setToken] = useState(pendingInvitation);
+    [token, setToken] = useState(
+      () => new URLSearchParams(window.location.hash.slice(1)).get('invite') ?? '',
+    );
   useEffect(() => {
     alive.current = true;
-    try {
-      sessionStorage.removeItem('redirect-pending-invitation');
-    } catch {
-      /* Storage can be disabled. */
-    }
     if (new URLSearchParams(window.location.hash.slice(1)).has('invite'))
       window.history.replaceState(
         window.history.state,
@@ -227,10 +206,34 @@ export function RedirectInvitationAcceptance({ userId }: { userId: string }) {
       alive.current = false;
     };
   }, []);
-  const accept = useMutation({
+  const inbox = useQuery({
+    queryKey: ['redirect-invitation-inbox', userId],
     gcTime: 0,
     retry: false,
-    mutationFn: async () => {
+    queryFn: async ({ signal }) => {
+      const rows: { id: string; label: string; role: string; expires_at: string }[] = [];
+      for (let offset = 0; ; offset += 100) {
+        const page = await memberRedirectApi<{ data: typeof rows; count: number }>(
+          '/invitations/received?offset=' + offset,
+          'GET',
+          undefined,
+          signal,
+        );
+        rows.push(...page.data);
+        if (rows.length >= page.count) return rows;
+        if (!page.data.length) throw new Error('Incomplete invitation inbox');
+      }
+    },
+  });
+  const accept = useMutation({
+    onError: () => {
+      if (alive.current)
+        void client.invalidateQueries({ queryKey: ['redirect-invitation-inbox', userId] });
+    },
+    gcTime: 0,
+    retry: false,
+    mutationFn: async (id?: string) => {
+      if (id) return memberRedirectApi('/invitations/accept', 'POST', { id });
       let secret = token.trim();
       if (secret.startsWith('https://')) {
         const url = new URL(secret);
@@ -246,6 +249,7 @@ export function RedirectInvitationAcceptance({ userId }: { userId: string }) {
       if (!alive.current) return;
       setToken('');
       await client.invalidateQueries({ queryKey: ['redirect-member', userId] });
+      await client.invalidateQueries({ queryKey: ['redirect-invitation-inbox', userId] });
     },
   });
   return (
@@ -262,7 +266,7 @@ export function RedirectInvitationAcceptance({ userId }: { userId: string }) {
         className="flex flex-wrap gap-2"
         onSubmit={(e) => {
           e.preventDefault();
-          accept.mutate();
+          accept.mutate(undefined);
         }}
       >
         <Label htmlFor="accept-invite" className="sr-only">
@@ -281,6 +285,32 @@ export function RedirectInvitationAcceptance({ userId }: { userId: string }) {
         />
         <Button disabled={accept.isPending || !token}>Accept invitation</Button>
       </form>
+      {inbox.isError ? (
+        <p role="alert">{inbox.error.message}</p>
+      ) : (
+        inbox.data?.map((invitation) => (
+          <div
+            key={invitation.id}
+            className="flex flex-wrap items-center justify-between gap-2 border-t py-2"
+          >
+            <p>
+              {invitation.label} · {invitation.role} · expires{' '}
+              {new Date(invitation.expires_at).toLocaleDateString()}
+            </p>
+            <Button
+              disabled={accept.isPending}
+              variant="outline"
+              onClick={() => accept.mutate(invitation.id)}
+            >
+              Accept invitation for {invitation.label}
+            </Button>
+          </div>
+        ))
+      )}
+      <p className="text-sm">
+        Pending invitations for your current verified email appear here after sign-in. Invitation
+        links are never saved in browser storage.
+      </p>
       {accept.isError && <p role="alert">{accept.error.message}</p>}
       {accept.isSuccess && <p role="status">Invitation accepted. Workspace access refreshed.</p>}
     </section>
