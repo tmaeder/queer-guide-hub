@@ -2,17 +2,20 @@ import Foundation
 
 private final class StubProtocol: URLProtocol, @unchecked Sendable {
     static let lock = NSLock()
+    static var totalRequests = 0
     static var handler: ((URLRequest, URLProtocolClient, StubProtocol) -> Void)?
     override class func canInit(with request: URLRequest) -> Bool { true }
     override class func canonicalRequest(for request: URLRequest) -> URLRequest { request }
     override func startLoading() {
         Self.lock.lock()
+        Self.totalRequests += 1
         let callback = Self.handler
         Self.lock.unlock()
         guard let client else { return }
         callback?(request, client, self)
     }
     override func stopLoading() {}
+    static func requestCount() -> Int { lock.lock(); defer { lock.unlock() }; return totalRequests }
     static func respond(_ callback: @escaping (URLRequest, URLProtocolClient, StubProtocol) -> Void) {
         lock.lock()
         handler = callback
@@ -22,7 +25,11 @@ private final class StubProtocol: URLProtocol, @unchecked Sendable {
 
 final class RedirectClientTests {
     let backendWire: [String: Any]
-    init(backendWire: [String: Any]) { self.backendWire = backendWire }
+    let handoffWire: [String: Any]
+    init(backendWire: [String: Any], handoffWire: [String: Any]) {
+        self.backendWire = backendWire
+        self.handoffWire = handoffWire
+    }
     let source = URL(string: "https://queer.guide/go/example-link")!
     let id = "10000000-0000-4000-8000-000000000001"
     func client() throws -> RedirectClient {
@@ -182,6 +189,75 @@ final class RedirectClientTests {
             catch { expectEqual(error as? RedirectError, expected) }
         }
     }
+    func testHandoffCreateResumeAndExplicitConsent() async throws {
+        let app = UUID(uuidString: handoffWire["app"] as! String)!
+        let body = handoffWire["body"] as! [String: Any]
+        let headers = (handoffWire["headers"] as! [String: String]).filter { $0.key.hasPrefix("x-qg-handoff-") }
+        let sdk = try client()
+        let beforeDenied = StubProtocol.requestCount()
+        do { _ = try await sdk.createHandoff(source, appBindingID: app); fail("Expected consent requirement") }
+        catch { expectEqual(error as? RedirectError, .consentRequired) }
+        expectEqual(StubProtocol.requestCount(), beforeDenied)
+        try stub(body, headers: headers) { request in
+            expectEqual(request.httpMethod, "POST")
+            expectEqual(URLComponents(url: request.url!, resolvingAgainstBaseURL: false)?.queryItems, [URLQueryItem(name: "qg_handoff", value: "install")])
+            expectEqual(request.value(forHTTPHeaderField: "X-QG-Handoff-Action"), "create")
+            expectEqual(request.value(forHTTPHeaderField: "X-QG-Handoff-App"), app.uuidString.lowercased())
+            expectEqual(request.value(forHTTPHeaderField: "X-QG-Attribution-Consent"), "granted")
+            expectNil(request.value(forHTTPHeaderField: "X-QG-Handoff-Token"))
+        }
+        let created = try await sdk.createHandoff(source, appBindingID: app, attributionConsent: true)
+        expectEqual(created.receipt.canonicalURL, source)
+        expectEqual(created.receipt.token, headers["x-qg-handoff-token"]!)
+        expectTrue(!String(describing: created.receipt).contains(created.receipt.token))
+        expectTrue(!String(reflecting: created).contains(created.receipt.token))
+        do { _ = try await sdk.resumeHandoff(created.receipt); fail("Expected consent requirement") }
+        catch { expectEqual(error as? RedirectError, .consentRequired) }
+        try stub(body, headers: ["x-qg-handoff-state": "consumed"]) { request in
+            expectEqual(request.httpMethod, "POST")
+            expectEqual(request.url?.query, "qg_handoff=resume")
+            expectEqual(request.value(forHTTPHeaderField: "X-QG-Handoff-Action"), "resume")
+            expectEqual(request.value(forHTTPHeaderField: "X-QG-Handoff-Token"), created.receipt.token)
+            expectTrue(!request.url!.absoluteString.contains(created.receipt.token))
+        }
+        let resumed = try await sdk.resumeHandoff(created.receipt, attributionConsent: true)
+        expectEqual(resumed.clickID, created.resolution.clickID)
+        expectEqual(resumed.destination, created.resolution.destination)
+    }
+    func testHandoffMetadataAndPreflightFailClosed() async throws {
+        let app = UUID(uuidString: handoffWire["app"] as! String)!
+        let body = handoffWire["body"] as! [String: Any]
+        let original = (handoffWire["headers"] as! [String: String]).filter { $0.key.hasPrefix("x-qg-handoff-") }
+        let sdk = try client()
+        for change in [[String: String](), ["x-qg-handoff-state": "consumed"],
+                       ["x-qg-handoff-token": "invalid"], ["x-qg-handoff-expires": "2020-01-01T00:00:00.000Z"],
+                       ["x-qg-handoff-expires": "2099-01-01T00:00:00.000Z"]] {
+            let headers = change.isEmpty ? [:] : original.merging(change) { _, new in new }
+            try stub(body, headers: headers)
+            let before = StubProtocol.requestCount()
+            do { _ = try await sdk.createHandoff(source, appBindingID: app, attributionConsent: true); fail("Expected invalid metadata") }
+            catch { expectEqual(error as? RedirectError, .invalidResponse) }
+            expectEqual(StubProtocol.requestCount(), before + 1)
+        }
+        let receipt = try RedirectHandoffReceipt(canonicalURL: source, appBindingID: app,
+            token: original["x-qg-handoff-token"]!, expiresAt: Date().addingTimeInterval(3600))
+        for headers in [[String: String](), ["x-qg-handoff-state": "consumed", "x-qg-handoff-token": receipt.token]] {
+            try stub(body, headers: headers)
+            do { _ = try await sdk.resumeHandoff(receipt, attributionConsent: true); fail("Expected invalid consumption metadata") }
+            catch { expectEqual(error as? RedirectError, .invalidResponse) }
+        }
+        for suffix in ["?qg_handoff=resume", "?qg_handoff_token=secret", "?x-qg-handoff-token=secret"] {
+            do { _ = try await sdk.resolve(URL(string: source.absoluteString + suffix)!); fail("Expected invalid source") }
+            catch { expectEqual(error as? RedirectError, .invalidLink) }
+        }
+        let untrusted = try RedirectHandoffReceipt(canonicalURL: URL(string: "https://example.org/")!, appBindingID: app, token: receipt.token, expiresAt: Date().addingTimeInterval(60))
+        let beforeUntrusted = StubProtocol.requestCount()
+        do { _ = try await sdk.resumeHandoff(untrusted, attributionConsent: true); fail("Expected invalid source") }
+        catch { expectEqual(error as? RedirectError, .invalidLink) }
+        expectEqual(StubProtocol.requestCount(), beforeUntrusted)
+        expectThrows(try RedirectHandoffReceipt(canonicalURL: source, appBindingID: app, token: receipt.token, expiresAt: Date().addingTimeInterval(-1)))
+        expectThrows(try RedirectHandoffReceipt(canonicalURL: URL(string: source.absoluteString + "?campaign=leak")!, appBindingID: app, token: receipt.token, expiresAt: Date().addingTimeInterval(60)))
+    }
     func testCancellationStopsHangingTransport() async throws {
         let (started, signal) = AsyncStream<Void>.makeStream()
         StubProtocol.respond { _, _, _ in signal.yield(); signal.finish() }
@@ -220,10 +296,11 @@ private func expectNoThrow<T>(_ expression: @autoclosure () throws -> T) {
 
 @main private struct ContractRunner {
     static func main() async throws {
-        guard CommandLine.arguments.count == 2,
-              let backendWire = try JSONSerialization.jsonObject(with: Data(contentsOf: URL(fileURLWithPath: CommandLine.arguments[1]))) as? [String: Any]
-        else { fatalError("Backend wire fixture required") }
-        let tests = RedirectClientTests(backendWire: backendWire)
+        guard CommandLine.arguments.count == 3,
+              let backendWire = try JSONSerialization.jsonObject(with: Data(contentsOf: URL(fileURLWithPath: CommandLine.arguments[1]))) as? [String: Any],
+              let handoffWire = try JSONSerialization.jsonObject(with: Data(contentsOf: URL(fileURLWithPath: CommandLine.arguments[2]))) as? [String: Any]
+        else { fatalError("Backend wire fixtures required") }
+        let tests = RedirectClientTests(backendWire: backendWire, handoffWire: handoffWire)
         try await tests.testRealTransportSendsExplicitDeniedConsentWithoutCredentialsOrCookies()
         try await tests.testBareBrandedHostMatchesCanonicalRootSlash()
         try await tests.testPasswordUsesFormPostWithLiteralPlusAndNoQuerySecret()
@@ -233,7 +310,9 @@ private func expectNoThrow<T>(_ expression: @autoclosure () throws -> T) {
         try tests.testStrictShapeSourceAndAttributionValidation()
         try await tests.testUnsafeDestinationsAndSourceHostsAreRejected()
         try await tests.testWrongMimeRedirectAndOversizedStreamFailClosed()
+        try await tests.testHandoffCreateResumeAndExplicitConsent()
+        try await tests.testHandoffMetadataAndPreflightFailClosed()
         try await tests.testCancellationStopsHangingTransport()
-        print("Swift native redirects: ten contract groups pass against real URLSession and isolated URLProtocol fixtures; no production requests or persistent storage.")
+        print("Swift native redirects: twelve contract groups pass against real URLSession and isolated URLProtocol fixtures; no production requests or persistent storage.")
     }
 }

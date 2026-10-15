@@ -11,6 +11,7 @@ import java.net.UnknownHostException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -52,6 +53,7 @@ public final class ContractTests {
     catch (RedirectClient.RedirectException error) { equal(error.reason, reason); }
   }
   private static String backendWire;
+  private static JSONObject handoffWire;
   private static JSONObject payload() {
     if (backendWire == null) throw new IllegalStateException("Backend wire fixture required");
     return new JSONObject(backendWire);
@@ -243,6 +245,64 @@ public final class ContractTests {
       catch(ExecutionException expected) {equal(((RedirectClient.RedirectException)expected.getCause()).reason,"cancelled");}
     }
   }
+  private static Map<String,String> handoffHeaders() {
+    JSONObject headers=handoffWire.getJSONObject("headers");Map<String,String> result=new HashMap<>();
+    for(String key:headers.keySet()) if(key.startsWith("x-qg-handoff-")) result.put(key,headers.getString(key));
+    return result;
+  }
+  private static MockResponse handoffResponse(Map<String,String> headers) {
+    MockResponse.Builder builder=response(new JSONObject(handoffWire.getJSONObject("body").toString()),200);
+    for(Map.Entry<String,String> header:headers.entrySet()) builder.addHeader(header.getKey(),header.getValue());
+    return builder.build();
+  }
+  private static void handoffReceipts() throws Exception {
+    try(Fixture f=new Fixture()) {
+      UUID app=UUID.fromString(handoffWire.getString("app"));
+      fails("consent_required",()->f.sdk.newHandoffCall(SOURCE,app,null,false));
+      equal(f.server.getRequestCount(),0);
+      Map<String,String> headers=handoffHeaders();
+      f.server.enqueue(handoffResponse(headers));
+      RedirectClient.Resolution created=f.sdk.newHandoffCall(SOURCE,app,null,true).execute();
+      RecordedRequest request=take(f.server);
+      equal(request.getMethod(),"POST");equal(request.getUrl().query(),"qg_handoff=install");
+      equal(request.getHeaders().get("X-QG-Handoff-Action"),"create");equal(request.getHeaders().get("X-QG-Handoff-App"),app.toString());
+      equal(request.getHeaders().get("X-QG-Handoff-Token"),null);equal(request.getHeaders().get("X-QG-Attribution-Consent"),"granted");
+      check(created.receipt!=null,"Missing typed receipt");equal(created.handoffConsumed,false);
+      equal(created.receipt.token,headers.get("x-qg-handoff-token"));equal(created.receipt.canonicalUrl,SOURCE);
+      check(!created.receipt.toString().contains(created.receipt.token),"Receipt logged its token");
+      fails("consent_required",()->f.sdk.newResumeCall(created.receipt,null,false));
+      f.server.enqueue(handoffResponse(Collections.singletonMap("x-qg-handoff-state","consumed")));
+      CompletableFuture<RedirectClient.Resolution> ready=new CompletableFuture<>();
+      RedirectClient.ResolutionCall resume=f.sdk.newResumeCall(created.receipt,null,true);
+      resume.enqueue(new RedirectClient.ResolutionCallback() {
+        @Override public void onResponse(RedirectClient.Resolution value) {ready.complete(value);}
+        @Override public void onFailure(IOException error) {ready.completeExceptionally(error);}
+      });
+      RedirectClient.Resolution resumed=ready.get(3,TimeUnit.SECONDS);request=take(f.server);
+      equal(request.getMethod(),"POST");equal(request.getUrl().query(),"qg_handoff=resume");
+      equal(request.getHeaders().get("X-QG-Handoff-Token"),created.receipt.token);
+      check(!request.getUrl().toString().contains(created.receipt.token),"Capability leaked into URL");
+      equal(resumed.clickId,created.clickId);equal(resumed.destination,created.destination);equal(resumed.receipt,null);equal(resumed.handoffConsumed,true);
+      fails("already_executed",resume::execute);
+      for(String key:Arrays.asList("missing","x-qg-handoff-state","x-qg-handoff-token","expired","future")) {
+        Map<String,String> bad=handoffHeaders();
+        if(key.equals("missing")) bad.clear();
+        else if(key.equals("expired")) bad.put("x-qg-handoff-expires","2020-01-01T00:00:00.000Z");
+        else if(key.equals("future")) bad.put("x-qg-handoff-expires","2099-01-01T00:00:00.000Z");
+        else bad.put(key,"invalid");
+        f.server.enqueue(handoffResponse(bad));
+        fails("invalid_response",()->f.sdk.newHandoffCall(SOURCE,app,null,true).execute());take(f.server);
+      }
+      Map<String,String> invalidResume=new HashMap<>();invalidResume.put("x-qg-handoff-state","consumed");invalidResume.put("x-qg-handoff-token",created.receipt.token);
+      f.server.enqueue(handoffResponse(invalidResume));fails("invalid_response",()->f.sdk.newResumeCall(created.receipt,null,true).execute());take(f.server);
+      for(String suffix:Arrays.asList("?qg_handoff=resume","?qg_handoff_token=secret","?x-qg-handoff-token=secret")) fails("invalid_link",()->f.sdk.newCall(URI.create(SOURCE+suffix)));
+      fails("invalid_handoff",()->new RedirectClient.HandoffReceipt(SOURCE,app,created.receipt.token,System.currentTimeMillis()-1));
+      fails("invalid_handoff",()->new RedirectClient.HandoffReceipt(URI.create(SOURCE+"?campaign=leak"),app,created.receipt.token,System.currentTimeMillis()+60000));
+      RedirectClient.HandoffReceipt wrongHost=new RedirectClient.HandoffReceipt(URI.create("https://example.org/"),app,created.receipt.token,System.currentTimeMillis()+60000);
+      fails("invalid_link",()->f.sdk.newResumeCall(wrongHost,null,true));
+      check(f.server.takeRequest(200,TimeUnit.MILLISECONDS)==null,"Unknown metadata/preflight triggered a retry");
+    }
+  }
   private static void cancellationAndWholeCallDeadline() throws Exception {
     try(Fixture f=new Fixture()) {
       ExecutorService worker=Executors.newSingleThreadExecutor();
@@ -261,9 +321,11 @@ public final class ContractTests {
     }
   }
   public static void main(String[] args) throws Exception {
-    if (args.length != 1) throw new IllegalArgumentException("Backend wire fixture required");
+    if (args.length != 2) throw new IllegalArgumentException("Backend wire fixture required");
     backendWire = new String(java.nio.file.Files.readAllBytes(java.nio.file.Paths.get(args[0])), java.nio.charset.StandardCharsets.UTF_8);
+    handoffWire=new JSONObject(new String(java.nio.file.Files.readAllBytes(java.nio.file.Paths.get(args[1])),java.nio.charset.StandardCharsets.UTF_8));
+    handoffReceipts();
     transportAndPasswords();attributionAndNavigation();errorsAndValidation();limitsNoRedirectOrRetry();asyncCallbacksAndCancellation();cancellationAndWholeCallDeadline();
-    System.out.println("Android native core: Java8 compilation and actual loopback TLS/OkHttp prove forms, consent, root identity, browser fallback, strict payload/URL guards, errors, no cookies/credentials/redirects/retries, 64KiB limits, cancellation and ten-second deadline. No production or installed-device requests.");
+    System.out.println("Android native core: Java8 compilation and actual loopback TLS/OkHttp prove receipt create/resume metadata, consent, header-only tokens, forms, root identity, browser fallback, strict payload/URL guards, errors, no cookies/credentials/redirects/retries, 64KiB limits, cancellation and ten-second deadline. No production or installed-device requests.");
   }
 }

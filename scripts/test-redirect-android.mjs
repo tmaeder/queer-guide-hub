@@ -1,7 +1,7 @@
 import { execFileSync } from 'node:child_process';
 import { readFileSync, mkdtempSync, writeFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { nativeTestWire } from './lib/redirect-native-test-wire.mjs';
+import { nativeTestWire, nativeHandoffTestWire } from './lib/redirect-native-test-wire.mjs';
 import { delimiter, join, resolve } from 'node:path';
 
 // Dedicated local SDK/JDK paths are optional; CI uses setup-java and Maven.
@@ -32,9 +32,11 @@ const output = mkdtempSync(join(tmpdir(), 'qg-android-wire-'));
 try {
   const wire = join(output, 'native-wire.json');
   writeFileSync(wire, await nativeTestWire());
+  const handoffWire = join(output, 'handoff-wire.json');
+  writeFileSync(handoffWire, await nativeHandoffTestWire());
   execFileSync(
     javaHome ? join(javaHome, 'bin/java') : 'java',
-    ['-cp', classpath, 'guide.queer.redirects.ContractTests', wire],
+    ['-cp', classpath, 'guide.queer.redirects.ContractTests', wire, handoffWire],
     { env, stdio: 'inherit', timeout: 70000 },
   );
 } finally {

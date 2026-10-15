@@ -5,6 +5,8 @@ public enum RedirectError: Error, Equatable, Sendable {
     case invalidConfiguration
     case invalidLink
     case invalidPassword
+    case invalidHandoff
+    case consentRequired
     case invalidResponse
     case responseTooLarge
     /// No upstream body, HTML, URL, password or private policy is retained.
@@ -26,8 +28,39 @@ public struct RedirectResolution: Equatable, Sendable {
     public let navigation: RedirectNavigation
 }
 
+/// Short-lived capability. Keep it out of URLs/logs and persist only through an
+/// explicitly consented platform adapter. Debug/string descriptions are redacted.
+public struct RedirectHandoffReceipt: Equatable, Sendable, CustomStringConvertible, CustomDebugStringConvertible {
+    public let canonicalURL: URL
+    public let appBindingID: UUID
+    public let token: String
+    public let expiresAt: Date
+    public var description: String { "RedirectHandoffReceipt(redacted)" }
+    public var debugDescription: String { description }
+
+    public init(canonicalURL: URL, appBindingID: UUID, token: String, expiresAt: Date) throws {
+        guard token.range(of: "^qg_handoff_[a-f0-9]{64}$", options: .regularExpression) != nil,
+              expiresAt > Date(), expiresAt.timeIntervalSinceNow <= 86401,
+              canonicalURL.absoluteString.count <= 4096, canonicalURL.scheme == "https",
+              canonicalURL.host != nil, canonicalURL.user == nil, canonicalURL.password == nil,
+              canonicalURL.query == nil, canonicalURL.fragment == nil,
+              canonicalURL.port == nil || canonicalURL.port == 443
+        else { throw RedirectError.invalidHandoff }
+        self.canonicalURL = canonicalURL
+        self.appBindingID = appBindingID
+        self.token = token
+        self.expiresAt = expiresAt
+    }
+}
+
+public struct RedirectHandoff: Equatable, Sendable {
+    public let resolution: RedirectResolution
+    public let receipt: RedirectHandoffReceipt
+}
+
 /// Credential-free, stateless client for canonical short URLs. Each call is a
-/// new visit. The SDK does not retry; a user must initiate any new attempt.
+/// new visit; a receipt resume continues its reserved visit. The SDK never retries.
+/// A user must initiate any new attempt, including after an unknown outcome.
 public struct RedirectClient: Sendable {
     public static let mediaType = "application/vnd.queer-guide.redirect+json"
     private let shortHosts: Set<String>
@@ -55,19 +88,72 @@ public struct RedirectClient: Sendable {
 
     public func resolve(_ link: URL, password: String? = nil,
                         attributionConsent: Bool = false) async throws -> RedirectResolution {
+        try await perform(link, password: password, attributionConsent: attributionConsent).0
+    }
+
+    /// No automatic retry: a transport/metadata error may follow a reserved visit.
+    public func createHandoff(_ link: URL, appBindingID: UUID, password: String? = nil,
+                              attributionConsent: Bool = false) async throws -> RedirectHandoff {
+        guard attributionConsent else { throw RedirectError.consentRequired }
+        let (resolution, http) = try await perform(link, password: password, attributionConsent: true,
+            handoff: HandoffAttempt(action: "create", app: appBindingID, token: nil))
+        guard http.value(forHTTPHeaderField: "X-QG-Handoff-State") == "created",
+              let token = http.value(forHTTPHeaderField: "X-QG-Handoff-Token"),
+              let rawExpiry = http.value(forHTTPHeaderField: "X-QG-Handoff-Expires"),
+              rawExpiry.range(of: "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}\\.[0-9]{3}Z$", options: .regularExpression) != nil
+        else { throw RedirectError.invalidResponse }
+        let formatter = ISO8601DateFormatter()
+        formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        guard let expiry = formatter.date(from: rawExpiry),
+              let receipt = try? RedirectHandoffReceipt(canonicalURL: resolution.canonicalURL,
+                appBindingID: appBindingID, token: token, expiresAt: expiry)
+        else { throw RedirectError.invalidResponse }
+        return RedirectHandoff(resolution: resolution, receipt: receipt)
+    }
+
+    public func resumeHandoff(_ receipt: RedirectHandoffReceipt, password: String? = nil,
+                              attributionConsent: Bool = false) async throws -> RedirectResolution {
+        guard attributionConsent else { throw RedirectError.consentRequired }
+        guard receipt.expiresAt > Date(), receipt.expiresAt.timeIntervalSinceNow <= 86401
+        else { throw RedirectError.invalidHandoff }
+        let (resolution, http) = try await perform(receipt.canonicalURL, password: password, attributionConsent: true,
+            handoff: HandoffAttempt(action: "resume", app: receipt.appBindingID, token: receipt.token))
+        guard http.value(forHTTPHeaderField: "X-QG-Handoff-State") == "consumed",
+              http.value(forHTTPHeaderField: "X-QG-Handoff-Token") == nil,
+              http.value(forHTTPHeaderField: "X-QG-Handoff-Expires") == nil
+        else { throw RedirectError.invalidResponse }
+        return resolution
+    }
+
+    private struct HandoffAttempt {
+        let action: String
+        let app: UUID
+        let token: String?
+    }
+
+    private func perform(_ link: URL, password: String?, attributionConsent: Bool,
+                         handoff: HandoffAttempt? = nil) async throws -> (RedirectResolution, HTTPURLResponse) {
         guard let source = Self.publicURL(link.absoluteString, maximum: 4096, https: true),
               let host = source.host?.lowercased(), shortHosts.contains(host),
               let sourceParts = URLComponents(url: source, resolvingAgainstBaseURL: false),
-              !(sourceParts.queryItems ?? []).contains(where: { ["pw", "password"].contains($0.name) })
+              !(sourceParts.queryItems ?? []).contains(where: { ["pw", "password", "qg_handoff", "qg_handoff_token", "qg_handoff_app", "qg_handoff_action", "x-qg-handoff-token", "x-qg-handoff-app", "x-qg-handoff-action"].contains($0.name) })
         else { throw RedirectError.invalidLink }
         var parts = sourceParts
         parts.fragment = nil
+        if let handoff {
+            parts.queryItems = (parts.queryItems ?? []) + [URLQueryItem(name: "qg_handoff", value: handoff.action == "create" ? "install" : "resume")]
+        }
         guard let requestURL = parts.url else { throw RedirectError.invalidLink }
         var request = URLRequest(url: requestURL, cachePolicy: .reloadIgnoringLocalCacheData,
                                  timeoutInterval: 10)
         request.setValue(Self.mediaType, forHTTPHeaderField: "Accept")
         request.setValue(attributionConsent ? "granted" : "denied",
                          forHTTPHeaderField: "X-QG-Attribution-Consent")
+        if let handoff {
+            request.setValue(handoff.action, forHTTPHeaderField: "X-QG-Handoff-Action")
+            request.setValue(handoff.app.uuidString.lowercased(), forHTTPHeaderField: "X-QG-Handoff-App")
+            if let token = handoff.token { request.setValue(token, forHTTPHeaderField: "X-QG-Handoff-Token") }
+        }
         // Also enables iOS targeting in macOS transport fixtures. The host app may
         // not override device/country with an arbitrary trusted server header.
         request.setValue("QueerGuideRedirects/1 (iPhone; iOS)", forHTTPHeaderField: "User-Agent")
@@ -78,6 +164,11 @@ public struct RedirectClient: Sendable {
             // URLComponents is query syntax: '+' must be escaped for form syntax.
             request.httpBody = form.percentEncodedQuery?.replacingOccurrences(of: "+", with: "%2B").data(using: .utf8)
             request.httpMethod = "POST"
+            request.setValue("application/x-www-form-urlencoded", forHTTPHeaderField: "Content-Type")
+        }
+        if handoff != nil && password == nil {
+            request.httpMethod = "POST"
+            request.httpBody = Data()
             request.setValue("application/x-www-form-urlencoded", forHTTPHeaderField: "Content-Type")
         }
         let config = configuration()
@@ -103,9 +194,10 @@ public struct RedirectClient: Sendable {
                 guard data.count < 65536 else { throw RedirectError.responseTooLarge }
                 data.append(byte)
             }
-            return try decode(data, status: http.statusCode,
+            let resolution = try decode(data, status: http.statusCode,
                               retry: http.value(forHTTPHeaderField: "Retry-After"),
-                              source: source, consent: attributionConsent)
+                              source: source, consent: attributionConsent, requireHandoff: handoff != nil)
+            return (resolution, http)
         } onCancel: {
             session.invalidateAndCancel()
         }
@@ -116,7 +208,7 @@ public struct RedirectClient: Sendable {
         502: "upstream_unavailable", 503: "temporarily_unavailable", 508: "loop"]
 
     func decode(_ data: Data, status: Int, retry: String?, source: URL,
-                consent: Bool) throws -> RedirectResolution {
+                consent: Bool, requireHandoff: Bool = false) throws -> RedirectResolution {
         guard data.count <= 65536,
               let object = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
               let protocolValue = object["protocol"] as? NSNumber,
@@ -166,6 +258,7 @@ public struct RedirectClient: Sendable {
             guard let clean = destinationParts.url else { throw RedirectError.invalidResponse }
             target = clean
         }
+        if requireHandoff && (mode != "navigate" || clickID == nil) { throw RedirectError.invalidResponse }
         let navigation: RedirectNavigation = mode == "navigate" && target.scheme == "https" && (target.port == nil || target.port == 443) && contentHosts.contains(target.host?.lowercased() ?? "")
             ? .app(target) : .browser(target)
         return RedirectResolution(canonicalURL: canonical, destination: target,

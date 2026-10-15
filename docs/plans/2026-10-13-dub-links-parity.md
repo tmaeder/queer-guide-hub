@@ -3145,3 +3145,27 @@ lint passes; Worker dry-run28.17KiB/7.48KiB gzip, no upload. Public receipt tran
 is no longer missing. Owner store configuration, native SDK receipt methods and
 platform adapters, browser UI, cleanup activation, signed-device/provider proof and
 the rest of the full parity ledger remain open. Existing bindings stay opted out.
+
+Both native core SDKs now expose explicit receipt create/resume methods. Swift
+returns a typed resolution+receipt and resume result; Android reuses its existing
+single-execution/cancellable synchronous/async call type with typed receipt and
+consumed state. They require current explicit consent, add only the reserved marker
+and bounded headers, use form POSTs (including no-password handoffs), validate
+creation expiry/capability and consumed acknowledgement, reject web-mode/missing-
+click outcomes and preserve the existing host/body/deadline/cookie/auth/navigation
+boundaries. Receipts have canonical query-free source, binding UUID and bounded
+TTL; string/debug descriptions redact capability values. They retain no state and
+perform no automatic retry. Reserved marker/token query input fails preflight.
+
+The shared native wire helper now produces creation bodies/metadata through the
+actual backend response/receipt producers. Both native contract runners load that
+fixture in addition to the ordinary six-field body. Swift's package builds with
+warnings as errors and12 contract groups pass against real URLSession/URLProtocol;
+Android Java8 compiles and actual confined TLS/OkHttp tests pass for receipt headers,
+synchronous creation/async resume, original click/destination, consent/preflight,
+expired/malformed/missing metadata and no unknown-result retries, alongside its
+existing cookie/URL/body/cancellation/deadline cases. Fresh native CodeQL/CI is
+still required for this head. Core SDK receipt APIs are no longer missing; platform
+persistence/attempt adapters, browser/store controls, actual signed delivery,
+publication and the other full parity requirements remain open. No production
+or signing/provider state was changed, and existing app handoffs remain disabled.

@@ -67,10 +67,38 @@ the ordinary web redirect. Automatic post-install/deferred attribution is not
 implemented by this package. Do not substitute device fingerprint matching.
 
 From the repository root run `node scripts/test-redirect-swift.mjs`. It builds the
-actual package and compiles/runs ten native contract groups using the actual
+actual package and compiles/runs twelve native contract groups using the actual
 backend JSON producer, URLSession and
 isolated URLProtocol fixtures, without XCTest or external packages. A macOS CI
 workflow runs the same command, then a separate directly traced SDK build
 for Swift CodeQL. These tests prove the Apple Foundation client;
 they do not prove Universal Link installation, device behavior, production gateway
 deployment or package-registry publication.
+
+The core also exposes explicit receipt methods for the configured opt-in transport:
+
+```swift
+let created = try await redirects.createHandoff(
+    shortURL, appBindingID: appBindingID, attributionConsent: true
+)
+// An App Clip can use created.resolution for its useful functionality and retain
+// created.receipt only in its configured, consented App Group adapter.
+let resumed = try await redirects.resumeHandoff(
+    receipt, password: enteredPassword, attributionConsent: true
+)
+```
+
+The binding ID is the owner's configured UUID, separate from the signed bundle
+identifier. Both methods require current explicit consent; they use form POSTs,
+header-only capabilities and validated creation/consumption metadata. The receipt
+has a bounded expiry and a canonical source without campaign/password/token query
+data. Resume reuses its original click and server-side query/cohort. Source/content
+host allowlists and normal app authentication still apply.
+
+The core stores nothing and never retries an unknown create/resume outcome.
+`RedirectHandoffReceipt` descriptions redact its token. Do not log or put that
+capability in ordinary URLs, clipboard or browser storage. A configured platform
+adapter must mark an automatic attempt durably before calling resume, validate
+expiry/current consent, and clear data on consent withdrawal. No automatic App
+Group migration, App Clip functionality or signed installation is implemented by
+these methods. The Clip must not consume its own receipt before the full app.

@@ -112,8 +112,8 @@ The caller must verify the current password and use the shared live selector bef
 calling the consumer; these SQL functions are not public authentication endpoints.
 
 The resolver and gateways now support explicit receipt transport, while existing
-apps remain opted out. Owner store configuration, browser handoff, SDK receipt
-methods/platform adapters and scheduled expiry cleanup are subsequent work. Do not set the private flag to claim a working deferred link
+apps remain opted out. Owner store configuration, browser handoff, platform adapters and scheduled expiry cleanup are subsequent
+work. The Swift and Android core clients expose explicit receipt methods. Do not set the private flag to claim a working deferred link
 or distribute a raw receipt in URLs, logs or browser storage. Actual signed OS
 installation and App Group/referrer delivery still require device proof.
 

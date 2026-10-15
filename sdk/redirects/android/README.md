@@ -107,3 +107,29 @@ filters, verified association files and real signed-device tests. See
 [the native protocol](../../../docs/guides/redirect-native-resolution.md).
 Automatic install/deferred attribution, publication and production rollout remain
 required; do not substitute device fingerprint matching.
+
+The same cancellable, single-execution call type supports explicit handoffs:
+
+```java
+RedirectClient.Resolution created = redirects
+    .newHandoffCall(shortUrl, appBindingId, null, true).execute();
+RedirectClient.HandoffReceipt receipt = created.receipt;
+RedirectClient.Resolution resumed = redirects
+    .newResumeCall(receipt, enteredPassword, true).execute();
+```
+
+The UUID is the configured binding ID, separate from the Android package name.
+Both methods require current explicit consent. They use form POSTs and bounded
+header-only receipt metadata, preserving the existing callback/cancellation,
+body-size, host, credential and no-retry safeguards. Creation returns a non-null
+`receipt`; successful resumption returns `handoffConsumed == true`, the original
+click and no new receipt. Invalid/missing metadata fails closed. The receipt's
+`toString()` redacts its capability; never log or place its token in ordinary URLs.
+
+The core does not persist receipts or fetch Play Install Referrer. An explicit
+platform adapter must obtain a validated carrier after consent, mark its automatic
+attempt durably before calling `newResumeCall`, use app-private no-backup storage
+and clear it on withdrawal. It must not retry after an unknown result. Android's
+browser install action creates the receipt before the Play handoff; the app
+resumes it after installation. These methods and TLS fixtures alone do not prove
+that automatic OS/store delivery, application lifecycle or signed installation.
