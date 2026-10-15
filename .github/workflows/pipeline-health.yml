@@ -23,6 +23,28 @@ jobs:
         with:
           deno-version: v2.x
 
+      # Load-bearing, and its absence is why this workflow was red 2026-10-13
+      # to 2026-10-15. redirect-webhooks-dispatch/tests/tls.test.ts reads
+      # tmp/webhook-tls/{ca,cert,key}.pem, tmp/ is gitignored, and the step
+      # below runs the tree BY DISCOVERY — so it picks that file up and
+      # Deno.readTextFile throws. b27ade3ec ("prepare disposable webhook TLS
+      # fixtures in CI and deploy checks") added this step to ci.yml and
+      # deploy-supabase-functions.yml and missed this third caller of the same
+      # discovery suite.
+      #
+      # The cost was not two red tests: "Check pipeline health" below has no
+      # continue-on-error and follows a failed step, so it was SKIPPED on every
+      # nightly run for three days — the sentinel sweep this workflow exists
+      # for was not running at all, and because it gates no PR nothing
+      # surfaced it. Any future workflow running the suite by discovery needs
+      # this step too.
+      #
+      # Needs no npm ci and no setup-node: the script imports only node:fs and
+      # node:child_process and shells out to openssl, both present on the
+      # runner, and --prepare-only returns before the live-dispatch half.
+      - name: Prepare disposable redirect webhook TLS certificates
+        run: node scripts/test-redirect-webhooks.mjs --prepare-only
+
       - name: Run Deno unit tests
         # Whole tree by discovery, matching ci.yml + deploy-supabase-functions.yml.
         # This job differs from those two in one way that matters: it sets real
