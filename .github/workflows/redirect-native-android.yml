@@ -4,6 +4,7 @@ on:
     paths:
       - 'sdk/redirects/android/**'
       - 'scripts/test-redirect-android.mjs'
+      - 'scripts/lib/redirect-android-platform-build.mjs'
       - 'scripts/lib/redirect-native-test-wire.mjs'
       - 'supabase/functions/_shared/redirect-native-resolution.ts'
       - 'supabase/functions/redirect-handler/**'
@@ -15,6 +16,7 @@ on:
     paths:
       - 'sdk/redirects/android/**'
       - 'scripts/test-redirect-android.mjs'
+      - 'scripts/lib/redirect-android-platform-build.mjs'
       - 'scripts/lib/redirect-native-test-wire.mjs'
       - 'supabase/functions/_shared/redirect-native-resolution.ts'
       - 'supabase/functions/redirect-handler/**'
@@ -55,7 +57,9 @@ jobs:
           languages: java-kotlin
           build-mode: manual
       - name: Build SDK for Java CodeQL
-        run: mvn -B -ntp -f sdk/redirects/android/pom.xml clean compile
+        run: |
+          mvn -B -ntp -f sdk/redirects/android/pom.xml clean compile dependency:build-classpath -Dmdep.outputFile=target/contract-classpath.txt
+          node scripts/lib/redirect-android-platform-build.mjs
       - name: Analyze native client
         uses: github/codeql-action/analyze@v4.38.2
         with:

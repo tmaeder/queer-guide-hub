@@ -66,7 +66,7 @@ public final class ContractTests {
     check(request != null, "Missing TLS request"); check(request.getHandshake() != null, "TLS was not used");
     return request;
   }
-  private static final class Fixture implements AutoCloseable {
+  static final class Fixture implements AutoCloseable {
     final MockWebServer server = new MockWebServer();
     final AtomicInteger cookieCalls = new AtomicInteger();
     final RedirectClient sdk;

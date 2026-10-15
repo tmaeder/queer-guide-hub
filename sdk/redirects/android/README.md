@@ -105,7 +105,7 @@ proof. Configure your actual package/signing fingerprints, narrow manifest inten
 filters, verified association files and real signed-device tests. See
 [app association setup](../../../docs/guides/redirect-native-apps.md) and
 [the native protocol](../../../docs/guides/redirect-native-resolution.md).
-Automatic install/deferred attribution, publication and production rollout remain
+Signed install/deferred-attribution proof, publication and production rollout remain
 required; do not substitute device fingerprint matching.
 
 The same cancellable, single-execution call type supports explicit handoffs:
@@ -126,10 +126,67 @@ body-size, host, credential and no-retry safeguards. Creation returns a non-null
 click and no new receipt. Invalid/missing metadata fails closed. The receipt's
 `toString()` redacts its capability; never log or place its token in ordinary URLs.
 
-The core does not persist receipts or fetch Play Install Referrer. An explicit
-platform adapter must obtain a validated carrier after consent, mark its automatic
-attempt durably before calling `newResumeCall`, use app-private no-backup storage
-and clear it on withdrawal. It must not retry after an unknown result. Android's
-browser install action creates the receipt before the Play handoff; the app
-resumes it after installation. These methods and TLS fixtures alone do not prove
-that automatic OS/store delivery, application lifecycle or signed installation.
+The core stays stateless. The optional `platform/` adapter implements Play Install
+Referrer delivery and durable attempts for Android API21+, separately from the
+core JAR. It is source/local-artifact only, with no published Maven coordinate.
+Build it with the contract command above (JDK21/Maven, network to Google Maven
+and Maven Central). `platform/target/redirects-play-install.jar` contains only our
+adapter classes; add it alongside the core and its dependencies. Your Android app
+must also declare Google's official AAR so its manifest permission merges:
+
+```kotlin
+implementation("com.android.installreferrer:installreferrer:2.2")
+```
+
+Use the actual application package and registered binding UUID:
+
+```java
+PlayInstallHandoff installs = new PlayInstallHandoff(
+    applicationContext, "your.actual.package", appBindingId, redirects);
+installs.resumeAutomatically(currentAttributionConsent, enteredPassword, callback);
+// Only after a new explicit user action following an uncertain result:
+installs.retryAfterUserAction(currentAttributionConsent, enteredPassword, callback);
+// Clear receipt data and cancel pending delivery on consent withdrawal:
+installs.withdrawConsent();
+// Close at the owning lifecycle boundary; the caller still owns redirects.
+installs.close();
+```
+
+Callbacks run off the UI thread; dispatch any UI/navigation work to your app's
+main executor. A successful callback can return null when an expiring consumed
+marker already exists: no navigation is owed. Keep one app-wide adapter instance;
+an optional constructor accepts up to20 configured binding UUIDs for one package.
+The current Context package must match. Construction does not query Play or send
+HTTP. False consent clears SDK data without a provider request.
+
+The adapter reads only Play's referrer string, validates the exact first-party
+version/source/binding/token/expiry carrier and trusted source host, and resumes
+using header-only capability transport. It never reads device identifiers or
+referrer timestamps. The browser creates Android receipts before entering Play;
+current consent in the installed app is independently required. Passwords remain
+in memory and are never stored. Source, capability and expiry live only below
+`Context.getNoBackupFilesDir()`, in private bounded files. An OS lock and atomic
+fsync'd marker precede the provider attempt, and an attempted receipt precedes
+HTTP. Unknown outcomes survive process restart without another automatic attempt;
+a separate explicit retry reuses the saved receipt when available. Success drops
+source/capability, retaining only an expiring consumed marker. Withdrawal clears
+SDK receipt/temporary files and suppresses pending navigation.
+
+The Play connection and core HTTP each have a ten-second deadline; connection
+cleanup is attempted once on a separate daemon so a slow Binder close does not
+hold up callback delivery. There is no automatic reconnect or transport retry.
+An app can receive `already_attempted`, `referrer_unavailable`, `referrer_timeout`,
+`invalid_referrer`, `invalid_store`, `store_busy`, `store_unavailable`,
+`consent_required`, `consent_withdrawn`, `cancelled`, `operation_in_progress` or
+`adapter_closed`; show an explicit recovery action without logging receipts.
+SDK transport errors retain the core's bounded error type. Closing the adapter
+cancels work but preserves an uncertain attempt; consent withdrawal clears it.
+
+The runner compiles against SHA256-pinned Android API21 framework classes and the
+actual Google2.2 AAR, without packaging either. JVM contracts execute the actual
+adapter with module-private filesystem/provider seams, the actual browser carrier
+producer, core loopback TLS, competing child processes, persisted unknown results,
+restart suppression, explicit retry, consent revocation during HTTP, cleanup and
+provider deadlines. This does not prove a signed app, real Play delivery, Android
+filesystem behavior or device lifecycle. Complete those tests with the actual
+package/signing/store identity before publishing or enabling production handoffs.

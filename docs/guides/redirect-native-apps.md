@@ -112,7 +112,7 @@ The caller must verify the current password and use the shared live selector bef
 calling the consumer; these SQL functions are not public authentication endpoints.
 
 The resolver and gateways now support explicit receipt transport, while existing
-apps remain opted out. Owner store configuration is available; Android platform adapters and live expiry-cleanup activation remain subsequent
+apps remain opted out. Owner store configuration and the optional Android Play adapter are available; live expiry-cleanup activation remains subsequent
 work. The browser install/resume flow is implemented. The Swift
 and Android core clients expose explicit receipt methods. Enabling the flag alone
 does not establish a working deferred link
@@ -202,8 +202,11 @@ query-free URL), `qg_app` (binding UUID), `qg_token` (receipt capability) and
 destination or private label enters the provider payload. The application imposes
 a conservative 512-character limit after the outer encoding layer, checked before
 creation. This Play referrer is the deliberate capability-carrier exception to
-the ordinary no-token-query rule. The actual Android adapter still needs to read,
-validate and persist it through Play Install Referrer before automatic resumption.
+the ordinary no-token-query rule. The optional [Android Play adapter](../../sdk/redirects/android/README.md) reads
+and validates that exact carrier after current app consent. It uses private no-backup
+files and a cross-process durable attempt marker before provider/HTTP work,
+suppresses unknown-result automatic retries, and clears capability/source on
+success or withdrawal. Real signed Play installation delivery is still required.
 
 The private fallback resume URL uses `?qg_handoff=resume#qg_receipt=...`. Its fragment
 is unpadded base64url JSON with exact keys `{v:1,app,token,expires}`. It contains no

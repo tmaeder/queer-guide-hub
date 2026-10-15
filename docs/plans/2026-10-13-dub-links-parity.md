@@ -3299,3 +3299,37 @@ Worker and Deno resolver checks pass, targeted lint passes, Worker dry-run29.47K
 CSP headers; the serialized preparation handler completed with no console errors
 or warnings. This functional CSP check introduced no UI changes or further polish.
 No production, store, signing or provider changes were made. Full goal stays active.
+
+
+The optional Android API21+ Play Install Referrer adapter is implemented separately
+from the stateless core. Production code calls the actual Google2.2 library and
+Context no-backup storage, validates the actual package plus configured binding
+and trusted host, and reads only the provider referrer string. It validates the
+exact bounded browser carrier, obtains fresh app consent and uses the existing
+header-only core resume transport. Private bounded atomic/fsync'd records and an
+OS lock mark the provider attempt before connection and the receipt before HTTP.
+Unknown results survive restart without automatic reconnect/retry; explicit retry
+is separate. Success drops source/capability; withdrawal cancels and clears SDK
+files while suppressing pending navigation. Provider connection and HTTP each
+have bounded deadlines; Binder cleanup is attempted once off the callback path.
+
+The executable runner compiles against SHA256-pinned API21 framework classes and
+the actual Google AAR. Its optional JAR contains only our own adapter classes; the
+consumer includes Google's official Gradle dependency/manifest. JVM contracts use
+the real browser carrier producer, core confined TLS and actual adapter/store
+code with module-private provider/filesystem seams. They cover exact carrier and
+trusted binding/host guards, password/header transport, duplicate callbacks,
+consumed restart suppression, uncertain explicit retry without another provider
+read, consent withdrawal including in-flight HTTP, unavailable/malformed/timeout
+provider results, blocked connection callback deadlines, corruption/expiry/temp
+cleanup and two competing child processes plus restart. One process claims the
+automatic attempt. No Android SDK or signed store app is installed locally; this
+is not device filesystem, Play delivery, package signing or lifecycle proof.
+
+All checks for the preceding98d745046 head passed, including full application,
+critical paths, accessibility, native and CodeQL jobs. GitGuardian alone retains
+the known historical protocol-field false positive, requiring provider review.
+Live cleanup activation, signed iOS Clip/full-app and Android Play delivery, real
+owner entry-point adoption, SDK publication, provider rollout and the remaining
+parity ledger requirements stay open. No production or signing/provider state was
+changed in this adapter step.
