@@ -9,7 +9,7 @@ export function passwordPageBranding(
   projectUrl: string,
 ): PasswordPageBranding | null {
   if (!input || typeof input !== 'object' || Array.isArray(input)) return null;
-  const data = input as Record<string, any>;
+  const data = input as Record<string, unknown>;
   const brandName =
     typeof data.brandName === 'string' &&
     data.brandName.trim() &&
@@ -19,7 +19,7 @@ export function passwordPageBranding(
       : null;
   let logo: PasswordPageBranding['logo'] = null,
     imageOrigin: string | null = null;
-  const asset = data.logoAsset;
+  const asset = data.logoAsset as Record<string, unknown> | null | undefined;
   if (
     asset &&
     typeof asset === 'object' &&
@@ -28,14 +28,18 @@ export function passwordPageBranding(
     typeof asset.sha256 === 'string' &&
     /^https:\/\/[a-z0-9-]+\.supabase\.co\/?$/.test(projectUrl) &&
     /^[a-f0-9]{8}(?:-[a-f0-9]{4}){3}-[a-f0-9]{12}$/i.test(asset.id) &&
+    typeof asset.mime === 'string' &&
     ['image/png', 'image/jpeg'].includes(asset.mime) &&
     asset.key === asset.id + (asset.mime === 'image/png' ? '.png' : '.jpg') &&
+    typeof asset.bytes === 'number' &&
     Number.isInteger(asset.bytes) &&
     asset.bytes > 0 &&
     asset.bytes <= 1500000 &&
+    typeof asset.width === 'number' &&
     Number.isInteger(asset.width) &&
     asset.width > 0 &&
     asset.width <= 1024 &&
+    typeof asset.height === 'number' &&
     Number.isInteger(asset.height) &&
     asset.height > 0 &&
     asset.height <= 1024 &&

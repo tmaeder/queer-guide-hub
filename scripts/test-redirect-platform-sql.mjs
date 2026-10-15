@@ -1,4 +1,5 @@
-import { readFileSync } from 'node:fs';
+import { readFileSync, readdirSync } from 'node:fs';
+import assert from 'node:assert/strict';
 import { createRedirectTestDb } from './lib/redirect-test-db.mjs';
 
 // Isolated PostgreSQL only; never the production project.
@@ -47,6 +48,35 @@ try {
   await db.exec(readFileSync('supabase/tests/redirect_native_handoff_receipts.sql', 'utf8'));
   await db.exec(readFileSync('supabase/tests/redirect_native_install_settings.sql', 'utf8'));
   await db.exec(readFileSync('supabase/tests/redirect_invitation_inbox.sql', 'utf8'));
+  // Missing cron was already exercised while loading the migration. Reapply
+  // against a named-job seam, then execute its actual bounded SQL command.
+  await db.exec(readFileSync('supabase/tests/redirect_native_handoff_cleanup.sql', 'utf8'));
+  const cleanup = readdirSync('supabase/migrations').find((name) =>
+    name.endsWith('_redirect_native_handoff_cleanup_schedule.sql'),
+  );
+  const scheduleSql = readFileSync('supabase/migrations/' + cleanup, 'utf8');
+  await db.exec(scheduleSql);
+  await db.exec(scheduleSql);
+  const jobs = (await db.query('SELECT * FROM cron.test_jobs')).rows;
+  assert.equal(jobs.length, 1, 'Reapplication duplicated cleanup schedule');
+  assert.equal(jobs[0].name, 'redirect-native-handoff-expiry');
+  assert.equal(jobs[0].schedule, '* * * * *');
+  const priorRole = (await db.query('SELECT current_user AS role')).rows[0].role;
+  await db.exec(jobs[0].command);
+  assert.equal(
+    (await db.query('SELECT current_user AS role')).rows[0].role,
+    priorRole,
+    'Cleanup role escaped its transaction',
+  );
+  // No credential-bearing relay or extra execution grant is needed.
+  assert.equal(
+    (
+      await db.query(
+        "SELECT has_function_privilege('anon','public.cleanup_redirect_native_handoffs(integer)','EXECUTE') OR has_function_privilege('authenticated','public.cleanup_redirect_native_handoffs(integer)','EXECUTE') AS exposed",
+      )
+    ).rows[0].exposed,
+    false,
+  );
   console.log(
     'Redirect platform SQL: policies, atomic creation, quotas, expiry, variant metrics, conversion attribution, analytics, password throttling scoped link management, workspace APIs and presentations passed.',
   );

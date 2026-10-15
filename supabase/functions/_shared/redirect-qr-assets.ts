@@ -1,11 +1,18 @@
+import type { SupabaseClient } from '@supabase/supabase-js';
 import { UUID } from './redirect-api.ts';
 import { previewImageInfo } from './redirect-presentation.ts';
 export const QR_ASSET_BUCKET = 'redirect-brand-assets';
+// Keep only the awaitable SDK result at this boundary, avoiding nominal
+// PostgREST builder types across Edge import providers. Runtime guards below
+// validate each operation's actual payload before using it.
 export interface QrAssetDb {
   rpc(
     name: string,
     args: Record<string, unknown>,
-  ): PromiseLike<{ data: any; error: { code?: string; message?: string } | null }>;
+  ): PromiseLike<{
+    data: Awaited<ReturnType<SupabaseClient['rpc']>>['data'];
+    error: { code?: string; message?: string } | null;
+  }>;
 }
 export interface QrAssetStorage {
   origin: string;
@@ -80,7 +87,11 @@ export async function uploadQrLogoObject(
   input: Awaited<ReturnType<typeof qrLogoInput>>,
   fetcher: typeof fetch = fetch,
 ) {
-  if (!UUID.test(asset.id) || asset.key !== asset.id + '.' + input.extension)
+  if (
+    typeof asset.id !== 'string' ||
+    !UUID.test(asset.id) ||
+    asset.key !== asset.id + '.' + input.extension
+  )
     throw new Error('Invalid logo upload reservation');
   const response = await fetcher(
     config.origin + '/storage/v1/object/' + QR_ASSET_BUCKET + '/' + asset.key,
@@ -121,12 +132,18 @@ export async function storeRedirectQrLogo(
     p_sha256: input.sha256,
   });
   if (reservation.error) return reservation;
-  if (reservation.data?.retryAfter) return reservation;
-  const asset = reservation.data;
-  if (!asset || !UUID.test(asset.id) || asset.key !== asset.id + '.' + input.extension)
+  const asset = reservation.data as Record<string, unknown> | null;
+  if (asset?.retryAfter) return reservation;
+  if (
+    !asset ||
+    typeof asset.id !== 'string' ||
+    typeof asset.key !== 'string' ||
+    !UUID.test(asset.id) ||
+    asset.key !== asset.id + '.' + input.extension
+  )
     throw new Error('Invalid logo upload reservation');
   try {
-    await uploadQrLogoObject(config, asset, input, fetcher);
+    await uploadQrLogoObject(config, { id: asset.id, key: asset.key }, input, fetcher);
   } catch {
     // Reservation survives crashes/timeouts; the cleanup worker owns this exact key.
     return {
@@ -155,6 +172,7 @@ export async function dispatchRedirectQrAssetCleanup(
   for (const asset of claimed.data) {
     if (
       !asset ||
+      typeof asset.id !== 'string' ||
       !UUID.test(asset.id) ||
       !UUID.test(asset.lease) ||
       ![asset.id + '.png', asset.id + '.jpg'].includes(asset.key)
@@ -194,15 +212,23 @@ export async function dispatchRedirectQrAssetCleanup(
 }
 
 /** Add only deterministic public object URLs; never accept a caller-supplied host/path. */
-export function qrLogoPublicResponse(value: any, projectUrl: string): any {
-  if (Array.isArray(value)) return value.map((row) => qrLogoPublicResponse(row, projectUrl));
-  if (!value || typeof value !== 'object') return value;
-  const output = { ...value };
+type HostedLogo<T> = T extends object ? T & { url: string } : T;
+export type QrLogoPublicResponse<T> = T extends (infer Row)[]
+  ? QrLogoPublicResponse<Row>[]
+  : T extends object
+    ? { [Field in keyof T]: Field extends 'logoAsset' | 'effectiveLogo' ? HostedLogo<T[Field]> : T[Field] }
+    : T;
+export function qrLogoPublicResponse<T>(value: T, projectUrl: string): QrLogoPublicResponse<T> {
+  if (Array.isArray(value)) return value.map((row) => qrLogoPublicResponse(row, projectUrl)) as QrLogoPublicResponse<T>;
+  if (!value || typeof value !== 'object') return value as QrLogoPublicResponse<T>;
+  const output: Record<string, unknown> = { ...(value as Record<string, unknown>) };
   for (const field of ['logoAsset', 'effectiveLogo'])
     if (output[field]) {
-      const asset = output[field];
+      const asset = output[field] as Record<string, unknown>;
       if (
         !/^https:\/\/[a-z0-9-]+\.supabase\.co\/?$/.test(projectUrl) ||
+        typeof asset.id !== 'string' ||
+        typeof asset.key !== 'string' ||
         !UUID.test(asset.id) ||
         ![asset.id + '.png', asset.id + '.jpg'].includes(asset.key)
       )
@@ -217,5 +243,5 @@ export function qrLogoPublicResponse(value: any, projectUrl: string): any {
           asset.key,
       };
     }
-  return output;
+  return output as QrLogoPublicResponse<T>;
 }

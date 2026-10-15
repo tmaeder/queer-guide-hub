@@ -28,6 +28,7 @@ try {
       '-parse-as-library',
       '-warnings-as-errors',
       'sdk/redirects/swift/Sources/QueerGuideRedirects/RedirectClient.swift',
+      'sdk/redirects/swift/Sources/QueerGuideRedirects/RedirectAppGroupHandoffStore.swift',
       'sdk/redirects/swift/Tests/QueerGuideRedirectsTests/RedirectClientTests.swift',
       '-o',
       binary,

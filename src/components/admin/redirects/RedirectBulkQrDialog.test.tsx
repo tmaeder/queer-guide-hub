@@ -6,7 +6,7 @@ import { manualRedirect } from '@/lib/redirects/inventory';
 const mocks = vi.hoisted(() => ({ build: vi.fn() }));
 vi.mock('@/hooks/useAuth', () => ({ useAuth: () => ({ user: { id: 'qr-owner' } }) }));
 vi.mock('@/hooks/useRedirectBulkQrStyles', () => ({
-  useRedirectBulkQrStyles: (rows: any[]) => ({
+  useRedirectBulkQrStyles: (rows: { id: string }[]) => ({
     isSuccess: true,
     isError: false,
     data: new Map(rows.map((row) => [row.id, DEFAULT_QR_STYLE])),

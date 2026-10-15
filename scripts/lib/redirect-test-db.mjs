@@ -51,6 +51,7 @@ export async function createRedirectTestDb() {
       'redirect_resolution_snapshots.sql',
       'redirect_native_handoff_receipts.sql',
       'redirect_native_install_settings.sql',
+      'redirect_native_handoff_cleanup_schedule.sql',
       'redirect_invitation_inbox.sql',
     ]) {
       const name = files.find((file) => file.endsWith(suffix));

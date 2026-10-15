@@ -3194,3 +3194,54 @@ applied migration. Read-only production history confirmed all four candidate
 migrations unapplied; the allocator renumbered them in dependency order. GitGuardian
 also reports one finding without file-level annotations in its GitHub result;
 its diagnosis remains open and is not waived by these local checks.
+
+The optional Swift App Group store is now implemented. Public setup requires the
+configured iOS Group container, binding and short-host allowlist plus current
+consent; macOS cannot authorize it. It retains one bounded live receipt per app
+binding, no password/destination/customer/device identity. Files exclude backup,
+use private permissions and iOS first-unlock protection. Cross-process locking and
+an atomic fsync'd attempted record precede transport; an unknown outcome survives
+restart without automatic retry. A fresh explicit retry is separate. Successful
+redemption removes capability/source, retaining an expiring consumed marker. Clear
+on withdrawal; withdrawal during transport also suppresses returned navigation.
+Expiry clears without transport, and re-saving cannot reset an attempted receipt.
+
+Local contracts exposed sub-microsecond Unix/Date serialization rounding; receipt
+identity matching tolerates only that rounding without extending stored expiry.
+Fourteen contract groups exercise the actual package, URLSession, fresh temporary
+stores, denied/revoked consent, expiry/corruption and two concurrent child processes
+plus a third restarted process: exactly one reaches transport after an uncertain
+outcome. A local iphoneos SDK is absent; iOS compilation/protection, signed Group
+migration and actual Clip functionality/Store setup still require the real Apple
+toolchain and owner identities. No SDK publication, signed OS or production claim.
+
+Prepared the expired-receipt cleanup schedule: one named every-minute pg_cron job
+runs the existing service-role-only, 500-row SKIP LOCKED expiry deletion in a
+bounded transaction (10s statement/1s lock timeout). No HTTP credentials, new
+public grants or live scheduling were used. Isolated SQL covers absent-cron
+installation, repeated named scheduling, execution of the actual command and
+role restoration; the full platform SQL suite and2,344 migration grammar/version
+checks pass. Activation and live backlog/job monitoring remain rollout proof.
+
+The next CI found a CodeQL DOM-text alert on store preview href concatenation;
+validated IDs are now additionally percent-encoded. ESLint's newly added control
+regex rejection is expressed as character-code checks. Existing lint failures in
+QR/password/provider helpers were repaired with SDK-derived awaitable RPC data
+boundaries, unknown provider payload validation, typed logo transformation and
+explicit test row types. Fifty affected tests and API/resolver/provider Deno checks
+pass; no lint baseline or scanner exclusion was added.
+
+GitGuardian's full check text identifies incident38259152 in the Swift reserved
+query-field name list (a6dc61fb7 line139), rather than a credential value. The list
+is extracted into a named constant without changing rejection semantics. The
+historical false-positive incident still requires GitGuardian review; no secret
+rotation is applicable to those protocol names, and no detection was disabled.
+
+Final local checks for this extension: Swift14 groups pass after extracting the
+reserved fields; all five server SDK and actual HTTP suites pass after the helper
+boundary changes; API/resolver/provider Deno checks pass with an isolated lock;
+strict Pages types pass; app ratchet remains702 inherited/none new. The schema-free
+RPC data type derives from the installed Supabase SDK while the narrow awaitable
+result avoids cross-import nominal builder classes. Hosted-logo response types now
+accurately add URL fields without losing the input record shape. No shared lock,
+type/lint baseline, real credential or production state changed.

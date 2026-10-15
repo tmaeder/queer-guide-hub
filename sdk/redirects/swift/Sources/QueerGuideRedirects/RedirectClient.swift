@@ -125,6 +125,12 @@ public struct RedirectClient: Sendable {
         return resolution
     }
 
+    // Protocol field names, never credential values. Reject them before transport.
+    private static let reservedQueryFields: Set<String> = [
+        "pw", "password", "qg_handoff", "qg_handoff_token", "qg_handoff_app",
+        "qg_handoff_action", "x-qg-handoff-token", "x-qg-handoff-app", "x-qg-handoff-action"
+    ]
+
     private struct HandoffAttempt {
         let action: String
         let app: UUID
@@ -136,7 +142,7 @@ public struct RedirectClient: Sendable {
         guard let source = Self.publicURL(link.absoluteString, maximum: 4096, https: true),
               let host = source.host?.lowercased(), shortHosts.contains(host),
               let sourceParts = URLComponents(url: source, resolvingAgainstBaseURL: false),
-              !(sourceParts.queryItems ?? []).contains(where: { ["pw", "password", "qg_handoff", "qg_handoff_token", "qg_handoff_app", "qg_handoff_action", "x-qg-handoff-token", "x-qg-handoff-app", "x-qg-handoff-action"].contains($0.name) })
+              !(sourceParts.queryItems ?? []).contains(where: { Self.reservedQueryFields.contains($0.name) })
         else { throw RedirectError.invalidLink }
         var parts = sourceParts
         parts.fragment = nil

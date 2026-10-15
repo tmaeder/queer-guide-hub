@@ -1,3 +1,4 @@
+import type { SupabaseClient } from '@supabase/supabase-js';
 import { checkRedirectDomainDns } from './redirect-domains.ts';
 import { UUID } from './redirect-api.ts';
 export interface DomainProviderConfig {
@@ -44,11 +45,14 @@ export function domainProviderInput(value: unknown, action: string) {
     throw new Error('Confirm that you reviewed Cloudflare and the hostname is absent');
   return { version: body.version, candidateId: body.candidateId as string | undefined };
 }
+// Keep only the awaitable SDK result at this boundary, avoiding nominal
+// PostgREST builder types across Edge import providers. Runtime guards below
+// validate each operation's actual payload before using it.
 export interface DomainProviderDb {
-  rpc(
-    name: string,
-    args: Record<string, unknown>,
-  ): PromiseLike<{ data: any; error: { message?: string } | null }>;
+  rpc(name: string, args: Record<string, unknown>): PromiseLike<{
+    data: Awaited<ReturnType<SupabaseClient['rpc']>>['data'];
+    error: { code?: string; message?: string } | null;
+  }>;
 }
 export interface DomainProviderJob {
   id: string;
@@ -61,6 +65,19 @@ export interface DomainProviderJob {
   providerId: string | null;
   adoptId: string | null;
   desired: boolean;
+}
+interface ProviderObject {
+  id?: string;
+  hostname?: string;
+  status?: unknown;
+  created_at?: unknown;
+  ownership_verification?: { name?: unknown; value?: unknown };
+  ssl?: { status?: unknown; type?: unknown; method?: unknown; validation_records?: { txt_name?: unknown; txt_value?: unknown }[] };
+}
+interface ProviderEnvelope {
+  success?: boolean;
+  result: unknown;
+  result_info?: { total_pages?: number };
 }
 type Snapshot = {
   id: string;
@@ -115,7 +132,7 @@ async function providerRequest(
   method: 'GET' | 'POST' | 'PATCH' | 'DELETE',
   fetcher: typeof fetch,
   body?: unknown,
-): Promise<any> {
+): Promise<ProviderEnvelope | null> {
   let response: Response;
   try {
     response = await fetcher(
@@ -132,9 +149,11 @@ async function providerRequest(
   } catch {
     throw new ProviderFailure(true, method === 'POST', false);
   }
-  let data: any;
+  let data: ProviderEnvelope;
   try {
-    data = await boundedProviderJson(response);
+    const raw: unknown = await boundedProviderJson(response);
+    if (!raw || typeof raw !== 'object' || Array.isArray(raw)) throw new Error('Invalid provider envelope');
+    data = raw as ProviderEnvelope;
   } catch {
     throw new ProviderFailure(true, method === 'POST', false, retryAfter(response));
   }
@@ -162,9 +181,11 @@ async function providerRequest(
   }
   return data;
 }
-function providerSnapshot(value: any, hostname: string): Snapshot {
+function providerSnapshot(input: unknown, hostname: string): Snapshot {
+  const value = input as ProviderObject | null;
   if (
     !value ||
+    typeof value !== 'object' || Array.isArray(value) ||
     typeof value.id !== 'string' ||
     !UUID.test(value.id) ||
     typeof value.hostname !== 'string' ||
@@ -215,10 +236,11 @@ async function providerCandidates(
     'GET',
     fetcher,
   );
-  if (!Array.isArray(data.result) || data.result.length > 2 || data.result_info?.total_pages > 1)
+  if (!data || !Array.isArray(data.result) || data.result.length > 2 || (data.result_info?.total_pages ?? 1) > 1)
     throw new Error('Ambiguous provider search');
-  return data.result.map((item: any) => {
-    const snapshot = providerSnapshot(item, hostname);
+  return data.result.map((input: unknown) => {
+    const snapshot = providerSnapshot(input, hostname);
+    const item = input as ProviderObject;
     return {
       id: snapshot.id,
       hostname,
@@ -267,9 +289,9 @@ export async function dispatchRedirectDomainJobs(
         const renewal = await db.rpc('reserve_redirect_domain_renewal', { p_id:job.id,p_lease:job.lease,p_operation:job.operation });
         if (renewal.error) throw new Error('Ownership renewal unavailable');
         if (renewal.data) {
-          const proof=renewal.data;
+          const proof=renewal.data as { actor:unknown; version:unknown; attempt:unknown; verification?: {name?:unknown;value?:unknown} };
           if (![proof.actor,proof.version,proof.attempt].every(value=>typeof value==='string' && UUID.test(value)) || proof.verification?.name !== '_qg-redirect.'+job.hostname || typeof proof.verification?.value!=='string') throw new Error('Invalid ownership renewal');
-          const outcome=await checkRedirectDomainDns(proof.verification,fetcher);
+          const outcome=await checkRedirectDomainDns({name: proof.verification!.name as string, value: proof.verification!.value as string},fetcher);
           const recorded=await db.rpc('redirect_domain_check_result',{p_actor:proof.actor,p_id:job.id,p_version:proof.version,p_attempt:proof.attempt,p_outcome:outcome});
           if(recorded.error) throw new Error('Ownership changed during renewal');
         }
@@ -293,7 +315,7 @@ export async function dispatchRedirectDomainJobs(
               hostname: job.hostname,
               ssl: { method: 'txt', type: 'dv' },
             });
-            const snapshot = providerSnapshot(created.result, job.hostname);
+            const snapshot = providerSnapshot(created?.result, job.hostname);
             const recorded = await db.rpc('record_redirect_domain_provider', {
               p_id: job.id,
               p_nonce: started.data,
@@ -325,7 +347,7 @@ export async function dispatchRedirectDomainJobs(
           if (snapshot.id !== id.toLowerCase()) throw new Error('Provider object mismatch');
           if (job.kind === 'delete') {
             const removed = await providerRequest(config, '/' + id, 'DELETE', fetcher);
-            if (removed && removed.result?.id?.toLowerCase() !== id.toLowerCase())
+            if (removed && (typeof (removed.result as ProviderObject | null)?.id !== 'string' || (removed.result as ProviderObject).id!.toLowerCase() !== id.toLowerCase()))
               throw new Error('Invalid provider deletion receipt');
             result = { kind: 'deleted', id };
           } else if (job.kind === 'adopt') {
@@ -344,8 +366,8 @@ export async function dispatchRedirectDomainJobs(
             });
             if (restarting.error) throw new Error('Validation restart authorization unavailable');
             if (restarting.data === true) {
-              const ssl = found.result.ssl;
-              if (ssl?.type !== 'dv' || !['txt', 'http', 'email'].includes(ssl?.method))
+              const ssl = (found.result as ProviderObject).ssl;
+              if (ssl?.type !== 'dv' || typeof ssl?.method !== 'string' || !['txt', 'http', 'email'].includes(ssl.method))
                 throw new ProviderFailure(false, false, false, undefined, 'Unsupported certificate settings; inspect Cloudflare before restarting validation');
               try {
                 const patched = await providerRequest(config, '/' + id, 'PATCH', fetcher, {

@@ -258,6 +258,106 @@ final class RedirectClientTests {
         expectThrows(try RedirectHandoffReceipt(canonicalURL: source, appBindingID: app, token: receipt.token, expiresAt: Date().addingTimeInterval(-1)))
         expectThrows(try RedirectHandoffReceipt(canonicalURL: URL(string: source.absoluteString + "?campaign=leak")!, appBindingID: app, token: receipt.token, expiresAt: Date().addingTimeInterval(60)))
     }
+    func testAppGroupStoreLifecycle() async throws {
+        let root = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString, isDirectory: true)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let app = UUID(uuidString: id)!
+        let headers = handoffWire["headers"] as! [String: String]
+        let receipt = try RedirectHandoffReceipt(canonicalURL: source, appBindingID: app,
+            token: headers["x-qg-handoff-token"]!, expiresAt: Date().addingTimeInterval(3600))
+        let store = try RedirectAppGroupHandoffStore(container: root, appBindingID: app, shortHosts: ["queer.guide"])
+        expectThrows(try store.store(receipt)) { expectEqual($0 as? RedirectError, .consentRequired) }
+        expectTrue(!FileManager.default.fileExists(atPath: root.path))
+        expectThrows(try RedirectAppGroupHandoffStore(appGroupID: "bad", appBindingID: app, shortHosts: ["queer.guide"], attributionConsent: true))
+        #if !os(iOS)
+        expectThrows(try RedirectAppGroupHandoffStore(appGroupID: "group.org.example.fixture", appBindingID: app,
+            shortHosts: ["queer.guide"], attributionConsent: true)) { expectEqual($0 as? RedirectHandoffStoreError, .unavailable) }
+        #endif
+        try store.store(receipt, attributionConsent: true)
+        try store.store(receipt, attributionConsent: true)
+        let location = root.appendingPathComponent("QueerGuideRedirectHandoffs/" + id + "/receipt.json")
+        expectEqual(try location.resourceValues(forKeys: [.isExcludedFromBackupKey]).isExcludedFromBackup, true)
+        let attributes = try FileManager.default.attributesOfItem(atPath: location.path)
+        expectEqual((attributes[.posixPermissions] as! NSNumber).intValue, 0o600)
+        let before = StubProtocol.requestCount()
+        // Missing consumed metadata is an uncertain outcome, and remains attempted.
+        try stub(handoffWire["body"] as! [String: Any])
+        do { _ = try await store.resumeAutomatically(using: client(), attributionConsent: true); fail("Expected metadata error") }
+        catch { expectEqual(error as? RedirectError, .invalidResponse) }
+        let reopened = try RedirectAppGroupHandoffStore(container: root, appBindingID: app, shortHosts: ["queer.guide"])
+        do { _ = try await reopened.resumeAutomatically(using: client(), attributionConsent: true); fail("Expected attempted state") }
+        catch { expectEqual(error as? RedirectHandoffStoreError, .alreadyAttempted) }
+        expectThrows(try reopened.store(receipt, attributionConsent: true))
+        expectEqual(StubProtocol.requestCount(), before + 1)
+        try stub(handoffWire["body"] as! [String: Any], headers: ["X-QG-Handoff-State": "consumed"])
+        let result = try await reopened.retryAfterUserAction(using: client(), attributionConsent: true)
+        expectEqual(result?.clickID, UUID(uuidString: (handoffWire["body"] as! [String: Any])["clickId"] as! String))
+        expectNil(try await reopened.resumeAutomatically(using: client(), attributionConsent: true))
+        let consumed = String(decoding: try Data(contentsOf: location), as: UTF8.self)
+        expectTrue(!consumed.contains(receipt.token) && !consumed.contains(source.absoluteString))
+        expectThrows(try reopened.store(receipt, attributionConsent: true))
+        do { _ = try await reopened.resumeAutomatically(using: client()); fail("Expected consent withdrawal") }
+        catch { expectEqual(error as? RedirectError, .consentRequired) }
+        expectTrue(!FileManager.default.fileExists(atPath: location.path))
+        try reopened.store(receipt, attributionConsent: true)
+        var expired = try JSONSerialization.jsonObject(with: Data(contentsOf: location)) as! [String: Any]
+        expired["expires"] = Date().addingTimeInterval(-1).timeIntervalSince1970
+        try JSONSerialization.data(withJSONObject: expired).write(to: location)
+        let expiryCount = StubProtocol.requestCount()
+        expectNil(try await reopened.resumeAutomatically(using: client(), attributionConsent: true))
+        expectEqual(StubProtocol.requestCount(), expiryCount)
+        expectTrue(!FileManager.default.fileExists(atPath: location.path))
+        let wrong = try RedirectHandoffReceipt(canonicalURL: source, appBindingID: UUID(), token: receipt.token,
+            expiresAt: Date().addingTimeInterval(3600))
+        expectThrows(try reopened.store(wrong, attributionConsent: true))
+        let other = try RedirectAppGroupHandoffStore(container: root, appBindingID: app, shortHosts: ["links.example.org"])
+        expectThrows(try other.store(receipt, attributionConsent: true))
+        try reopened.store(receipt, attributionConsent: true)
+        try Data("{}".utf8).write(to: location)
+        do { _ = try await reopened.resumeAutomatically(using: client(), attributionConsent: true); fail("Expected corrupt state") }
+        catch { expectEqual(error as? RedirectHandoffStoreError, .invalidState) }
+        expectEqual(StubProtocol.requestCount(), expiryCount)
+        try reopened.clear()
+        try reopened.store(receipt, attributionConsent: true)
+        let responseBody = try JSONSerialization.data(withJSONObject: handoffWire["body"] as! [String: Any])
+        StubProtocol.respond { request, client, proto in
+            do { try reopened.clear() } catch { fail("Withdrawal failed") }
+            let response = HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: "HTTP/1.1",
+                headerFields: ["Content-Type": RedirectClient.mediaType, "X-QG-Handoff-State": "consumed"])!
+            client.urlProtocol(proto, didReceive: response, cacheStoragePolicy: .notAllowed)
+            client.urlProtocol(proto, didLoad: responseBody)
+            client.urlProtocolDidFinishLoading(proto)
+        }
+        do { _ = try await reopened.resumeAutomatically(using: client(), attributionConsent: true); fail("Navigation survived withdrawal") }
+        catch { expectEqual(error as? RedirectError, .consentRequired) }
+        expectTrue(!FileManager.default.fileExists(atPath: location.path))
+    }
+
+    func testAppGroupCrossProcessClaim(wirePath: String) throws {
+        let root = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString, isDirectory: true)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let receipt = try RedirectHandoffReceipt(canonicalURL: source, appBindingID: UUID(uuidString: id)!,
+            token: (handoffWire["headers"] as! [String: String])["x-qg-handoff-token"]!, expiresAt: Date().addingTimeInterval(3600))
+        let store = try RedirectAppGroupHandoffStore(container: root, appBindingID: receipt.appBindingID, shortHosts: ["queer.guide"])
+        try store.store(receipt, attributionConsent: true)
+        var processes: [Process] = []
+        for _ in 0..<2 {
+            let process = Process()
+            process.executableURL = URL(fileURLWithPath: CommandLine.arguments[0])
+            process.arguments = ["--store-attempt", root.path, wirePath]
+            try process.run()
+            processes.append(process)
+        }
+        for process in processes { process.waitUntilExit(); expectEqual(process.terminationStatus, 0) }
+        let evidence = try String(contentsOf: root.appendingPathComponent("requests.txt"), encoding: .utf8)
+        expectEqual(evidence, "one request")
+        // A third fresh process must not automatically retry either.
+        let process = Process()
+        process.executableURL = URL(fileURLWithPath: CommandLine.arguments[0])
+        process.arguments = ["--store-attempt", root.path, wirePath]
+        try process.run(); process.waitUntilExit(); expectEqual(process.terminationStatus, 0)
+        expectEqual(try String(contentsOf: root.appendingPathComponent("requests.txt"), encoding: .utf8), evidence)
+    }
     func testCancellationStopsHangingTransport() async throws {
         let (started, signal) = AsyncStream<Void>.makeStream()
         StubProtocol.respond { _, _, _ in signal.yield(); signal.finish() }
@@ -296,6 +396,26 @@ private func expectNoThrow<T>(_ expression: @autoclosure () throws -> T) {
 
 @main private struct ContractRunner {
     static func main() async throws {
+        if CommandLine.arguments.count == 4 && CommandLine.arguments[1] == "--store-attempt" {
+            let root = URL(fileURLWithPath: CommandLine.arguments[2], isDirectory: true)
+            let wire = try JSONSerialization.jsonObject(with: Data(contentsOf: URL(fileURLWithPath: CommandLine.arguments[3]))) as! [String: Any]
+            let tests = RedirectClientTests(backendWire: wire["body"] as! [String: Any], handoffWire: wire)
+            let data = try JSONSerialization.data(withJSONObject: wire["body"] as! [String: Any])
+            StubProtocol.respond { request, client, proto in
+                do { try Data("one request".utf8).write(to: root.appendingPathComponent("requests.txt"), options: .withoutOverwriting) }
+                catch { fatalError("A second process reached transport") }
+                let response = HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: "HTTP/1.1",
+                    headerFields: ["Content-Type": RedirectClient.mediaType])!
+                client.urlProtocol(proto, didReceive: response, cacheStoragePolicy: .notAllowed)
+                client.urlProtocol(proto, didLoad: data)
+                client.urlProtocolDidFinishLoading(proto)
+            }
+            let store = try RedirectAppGroupHandoffStore(container: root, appBindingID: UUID(uuidString: tests.id)!, shortHosts: ["queer.guide"])
+            do { _ = try await store.resumeAutomatically(using: tests.client(), attributionConsent: true); fail("Expected uncertain outcome") }
+            catch RedirectHandoffStoreError.alreadyAttempted { }
+            catch RedirectError.invalidResponse { }
+            return
+        }
         guard CommandLine.arguments.count == 3,
               let backendWire = try JSONSerialization.jsonObject(with: Data(contentsOf: URL(fileURLWithPath: CommandLine.arguments[1]))) as? [String: Any],
               let handoffWire = try JSONSerialization.jsonObject(with: Data(contentsOf: URL(fileURLWithPath: CommandLine.arguments[2]))) as? [String: Any]
@@ -312,7 +432,9 @@ private func expectNoThrow<T>(_ expression: @autoclosure () throws -> T) {
         try await tests.testWrongMimeRedirectAndOversizedStreamFailClosed()
         try await tests.testHandoffCreateResumeAndExplicitConsent()
         try await tests.testHandoffMetadataAndPreflightFailClosed()
+        try await tests.testAppGroupStoreLifecycle()
+        try tests.testAppGroupCrossProcessClaim(wirePath: CommandLine.arguments[2])
         try await tests.testCancellationStopsHangingTransport()
-        print("Swift native redirects: twelve contract groups pass against real URLSession and isolated URLProtocol fixtures; no production requests or persistent storage.")
+        print("Swift native redirects: fourteen contract groups pass against real URLSession, isolated URLProtocol fixtures and temporary cross-process receipt storage; no production requests or signed OS transition proof.")
     }
 }

@@ -77,7 +77,13 @@ export function nativeAppValues(input: unknown, creating = false): Record<string
     if (value[field] === undefined || value[field] === null) continue;
     if (typeof value[field] !== 'string') throw new Error('Invalid install settings');
     const normalized = (value[field] as string).trim() || null;
-    if (normalized && (normalized.length > maximum || /[\u0000-\u001f\u007f]/.test(normalized)))
+    if (
+      normalized &&
+      (normalized.length > maximum ||
+        Array.from(normalized).some(
+          (char) => char.charCodeAt(0) < 32 || char.charCodeAt(0) === 127,
+        ))
+    )
       throw new Error('Invalid install settings');
     value[field] = normalized;
   }

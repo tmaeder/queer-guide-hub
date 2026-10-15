@@ -318,8 +318,8 @@ function AppForm({
               className="block break-all text-sm underline underline-offset-4"
               href={
                 platform === 'ios'
-                  ? 'https://apps.apple.com/app/id' + storeId
-                  : 'https://play.google.com/store/apps/details?id=' + appId
+                  ? 'https://apps.apple.com/app/id' + encodeURIComponent(storeId)
+                  : 'https://play.google.com/store/apps/details?id=' + encodeURIComponent(appId)
               }
               target="_blank"
               rel="noreferrer"

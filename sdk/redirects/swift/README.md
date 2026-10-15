@@ -102,3 +102,38 @@ adapter must mark an automatic attempt durably before calling resume, validate
 expiry/current consent, and clear data on consent withdrawal. No automatic App
 Group migration, App Clip functionality or signed installation is implemented by
 these methods. The Clip must not consume its own receipt before the full app.
+
+### Optional iOS App Group receipt storage
+
+`RedirectAppGroupHandoffStore` stores one live receipt per binding. Initialize it
+with the real Group ID and binding UUID from owner settings, your short-host
+allowlist and current attribution consent. The public initializer requires an iOS
+App Group container; the macOS contract runner cannot authorize one. Configure the
+same Group entitlement in the actual Clip and full app as described by
+[Apple](https://developer.apple.com/documentation/appclip/sharing-data-between-your-app-clip-and-your-full-app).
+
+The Clip calls `store(handoff.receipt, attributionConsent: true)` after its useful
+functionality creates a handoff. It leaves the receipt unconsumed. The full app
+uses `resumeAutomatically(using: client, attributionConsent: true)` and handles
+its optional live resolution through normal authenticated app navigation. Supply
+any freshly entered password to the method; passwords are never stored.
+
+Storage excludes backup, uses private file permissions and iOS protection until
+first unlock. Each record contains only the canonical source, capability, binding,
+expiry, fixed consent purpose and lifecycle state. A cross-process file lock and
+atomic synchronized write mark an attempt before transport. Reopening the store
+cannot automatically retry an uncertain request. `retryAfterUserAction` is reserved
+for a fresh explicit user action. Success removes the source/capability and retains
+an expiring consumed marker. Re-saving cannot reset an attempt or replace a live
+receipt; this adapter deliberately holds one live receipt per binding.
+
+Call `clear()` on consent withdrawal. A resume called with denied consent clears
+the record and does not start transport; clearing during a request also prevents
+navigation delivery when that request returns. Expired records are cleared without
+transport. Corrupt/unavailable storage fails closed. Do not bypass an unavailable
+Group by falling back to ordinary preferences or a public directory.
+
+Fourteen local contract groups compile the real package and exercise native
+transport and temporary filesystem lifecycle, including competing processes and
+restart suppression. These are local filesystem fixtures, not evidence of signed
+App Clip replacement, iOS file protection on a device or App Store delivery.

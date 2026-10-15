@@ -165,3 +165,21 @@ publisher authority and domain readiness. It exposes the public name, fixed stor
 link and Clip bundle identity, excluding private labels, Group IDs, signing data
 and revisions. This projection is ready for the pending browser landing flow;
 it does not itself publish a new public endpoint or install an app.
+
+## Expired receipt cleanup
+
+The successor `redirect_native_handoff_cleanup_schedule` schedules the private
+cleanup function every minute when pg_cron is installed. Each run is a separate
+transaction that switches locally to `service_role`, deletes at most 500 expired
+digests with `SKIP LOCKED`, and restores its role at commit. Ten-second statement
+and one-second lock limits bound impact. It needs no HTTP/Vault credentials and
+adds no public grant. If cron is absent, the migration emits a notice and installs
+no job; an operator must enable cron and reapply this scheduling step before
+claiming background retention is active.
+
+After rollout, inspect the `redirect-native-handoff-expiry` row in `cron.job` and
+its results in `cron.job_run_details`, and monitor the expired-row backlog. Rate
+and TTL enforcement do not depend on cleanup having run: expired receipts cannot
+redeem even while awaiting deletion. Local tests execute the real scheduled SQL
+through an isolated scheduler seam; production scheduling has not been performed.
+See [Supabase Cron](https://supabase.com/docs/guides/cron) for job monitoring.
