@@ -127,7 +127,14 @@ export interface WebhookDb {
   rpc(
     name: string,
     args?: Record<string, unknown>,
-  ): PromiseLike<{ data: any; error: { code?: string; message?: string } | null }>;
+  ): PromiseLike<{ data: unknown; error: { code?: string; message?: string } | null }>;
+}
+/** Narrow an RPC payload for property reads. Returns null rather than throwing;
+ *  every call site below already has its own validity guard for the null case. */
+function asRecord(value: unknown): Record<string, unknown> | null {
+  return value && typeof value === 'object' && !Array.isArray(value)
+    ? (value as Record<string, unknown>)
+    : null;
 }
 export async function dispatchRedirectWebhooks(
   db: WebhookDb,
@@ -166,32 +173,45 @@ export async function dispatchRedirectWebhooks(
           if (prepared.error) {
             error = 'scope_changed';
           } else {
-            const value = prepared.data;
+            const value = asRecord(prepared.data);
             if (
               !value ||
               value.id !== job.id ||
               value.url !== url.href ||
-              !UUID.test(value.eventId) ||
-              !UUID.test(value.keyVersion) ||
+              !UUID.test(String(value.eventId)) ||
+              !UUID.test(String(value.keyVersion)) ||
               typeof value.body !== 'string' ||
               new TextEncoder().encode(value.body).length > 32768 ||
               typeof value.secret !== 'string'
             )
               throw new WebhookTransportError('invalid_response');
-            secrets = [value.secret, ...(value.previousSecret ? [value.previousSecret] : [])];
+            secrets = [
+              value.secret,
+              // Keep the original TRUTHINESS test, not just the type test: an empty-string
+              // previousSecret must stay out, or `excerpt.replaceAll('', …)` below would
+              // splice "[redacted]" between every character of the excerpt.
+              ...(typeof value.previousSecret === 'string' && value.previousSecret
+                ? [value.previousSecret]
+                : []),
+            ];
             const timestamp = Math.floor(Date.now() / 1000),
-              signature = await webhookSignatures(secrets, value.eventId, timestamp, value.body);
+              signature = await webhookSignatures(
+                secrets,
+                String(value.eventId),
+                timestamp,
+                value.body,
+              );
             signal.throwIfAborted();
             const receipt = await sendPinnedWebhook(
               url,
               address,
               value.body,
               {
-                'webhook-id': value.eventId,
+                'webhook-id': String(value.eventId),
                 'webhook-timestamp': String(timestamp),
                 'webhook-signature': signature,
                 'webhook-delivery-id': job.id,
-                'webhook-key-version': value.keyVersion,
+                'webhook-key-version': String(value.keyVersion),
               },
               network,
               signal,
@@ -228,8 +248,8 @@ export async function dispatchRedirectWebhooks(
           }
           throw new Error('Webhook acknowledgement unavailable');
         }
-        const state = completed.data?.state;
-        if (!['delivered', 'retry', 'failed', 'cancelled'].includes(state))
+        const state = asRecord(completed.data)?.state;
+        if (!['delivered', 'retry', 'failed', 'cancelled'].includes(state as string))
           throw new Error('Invalid webhook acknowledgement');
         summary[state as 'delivered' | 'retry' | 'failed' | 'cancelled']++;
       }),
