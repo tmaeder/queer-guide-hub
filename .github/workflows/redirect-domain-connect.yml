@@ -5,6 +5,8 @@ on:
       - 'supabase/functions/_shared/redirect-*'
       - 'supabase/functions/_shared/link-policy.ts'
       - 'supabase/functions/redirect-api/**'
+      - 'supabase/functions/redirect-domain-instruction-mail/**'
+      - 'supabase/config.toml'
       - 'supabase/migrations/**'
       - 'supabase/tests/redirect_*.sql'
       - 'supabase/tests/fixtures/**'
@@ -12,6 +14,7 @@ on:
       - 'src/components/admin/redirects/RedirectDomains*'
       - 'src/lib/redirects/__tests__/domainConnect*'
       - 'src/lib/redirects/__tests__/domainDiscovery*'
+      - 'src/lib/redirects/__tests__/domainMail*'
       - 'config/domain-connect/**'
       - 'scripts/lib/redirect-test-db.mjs'
       - 'scripts/lib/redirect-integration-fixtures.mjs'
@@ -27,6 +30,8 @@ on:
       - 'supabase/functions/_shared/redirect-*'
       - 'supabase/functions/_shared/link-policy.ts'
       - 'supabase/functions/redirect-api/**'
+      - 'supabase/functions/redirect-domain-instruction-mail/**'
+      - 'supabase/config.toml'
       - 'supabase/migrations/**'
       - 'supabase/tests/redirect_*.sql'
       - 'supabase/tests/fixtures/**'
@@ -34,6 +39,7 @@ on:
       - 'src/components/admin/redirects/RedirectDomains*'
       - 'src/lib/redirects/__tests__/domainConnect*'
       - 'src/lib/redirects/__tests__/domainDiscovery*'
+      - 'src/lib/redirects/__tests__/domainMail*'
       - 'config/domain-connect/**'
       - 'scripts/lib/redirect-test-db.mjs'
       - 'scripts/lib/redirect-integration-fixtures.mjs'
@@ -72,8 +78,10 @@ jobs:
       - run: npm ci --prefer-offline --no-audit
       - name: Check API with isolated frozen deployment dependencies
         run: deno check --node-modules-dir=none --config supabase/functions/redirect-api/deno.json --lock=supabase/functions/redirect-api/deno.lock --frozen supabase/functions/redirect-api/index.ts
-      - name: Verify DNS discovery, signing, configuration and owner controls
-        run: npx vitest run src/lib/redirects/__tests__/domainConnect.test.ts src/lib/redirects/__tests__/domainConnectApi.test.ts src/lib/redirects/__tests__/domainDiscovery.test.ts src/components/admin/redirects/RedirectDomainConnect.test.tsx src/components/admin/redirects/RedirectDomains.test.tsx
+      - name: Check instruction mail consumer with frozen deployment dependencies
+        run: deno check --node-modules-dir=none --config supabase/functions/redirect-domain-instruction-mail/deno.json --lock=supabase/functions/redirect-domain-instruction-mail/deno.lock --frozen supabase/functions/redirect-domain-instruction-mail/index.ts
+      - name: Verify DNS discovery, signing, email transport and owner controls
+        run: npx vitest run src/lib/redirects/__tests__/domainConnect.test.ts src/lib/redirects/__tests__/domainConnectApi.test.ts src/lib/redirects/__tests__/domainDiscovery.test.ts src/lib/redirects/__tests__/domainMail.test.ts src/components/admin/redirects/RedirectDomainConnect.test.tsx src/components/admin/redirects/RedirectDomains.test.tsx
       - name: Execute migrated database contracts
         run: npm run test:redirect-sql
       - name: Follow owner API approval and callback through real SQL and five SDK runtimes

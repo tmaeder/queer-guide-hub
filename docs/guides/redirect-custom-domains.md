@@ -609,3 +609,85 @@ Local UI verification covers 13 registry/approval/return interactions and final
 The actual API contract suite also checks that public availability contains only
 its boolean and fixed CNAME target. These fixture captures do not establish live
 provider onboarding, approval or DNS changes.
+
+## Native DNS instruction email backend
+
+The owner API now supports native instruction email through a private durable
+outbox and Resend transport. The recipient/review/status controls remain UI work;
+this backend checkpoint alone does not complete the Forward instructions feature.
+No real recipient or email provider was contacted during implementation.
+
+Explicit server configuration is `RESEND_API_KEY`,
+`REDIRECT_DOMAIN_EMAIL_FROM` (a verified sender address, optionally with a display
+name), and the current `REDIRECT_CNAME_TARGET`. Missing/invalid configuration
+leaves the feature unavailable. The owner domain list exposes only
+`instructionMail.configured`; sender, credentials and transport fingerprints are
+not returned. This uses the existing email provider, independently of Domain
+Connect template onboarding or its signing key.
+
+Owner-session routes:
+
+- `GET /domains/:id/instructions` returns current `hostname`, domain `version`,
+  `records`, a SHA-256 `snapshot` digest and the latest caller-owned `latestMail`.
+  Records include the full CNAME, ownership TXT and applicable saved provider TXT
+  records. The API never invents an apex A/AAAA address. Certificate records also
+  affect the digest, even if a provider refresh does not change the domain version.
+- `POST /domains/:id/instructions` accepts only
+  `{version,snapshot,email,requestId}`. The request ID is a client UUID retained
+  through an unknown HTTP response. Recipient validation permits one address,
+  preserves local-part case and normalizes IDN domains. Caller-supplied records,
+  content, sender, callbacks, CC/BCC and attachments are not accepted. The API
+  queues once, attempts only that job immediately and returns its receipt with
+  HTTP202. Read the receipt state; HTTP202 is not a delivery promise.
+- `GET /domains/:id/instruction-emails/:jobId` reads a caller-owned receipt.
+  `GET /domains/:id/instruction-emails?requestId=:uuid` recovers a receipt by request
+  identity as `{mail:receipt|null}`, including after a domain version changes.
+  A null lookup does not prove an earlier in-flight HTTP request can never queue.
+- `POST /domains/:id/instruction-emails/:jobId/cancel` with `{}` cancels only an
+  unsent, non-ambiguous job. A started request or unknown outcome cannot be
+  recalled. Receipts retain truth if the owner loses permission after provider
+  acceptance; that user cannot read them again until current owner access returns.
+
+All routes deny API keys and ordinary members. SQL rechecks current owner role;
+job metadata is actor-bound. The outbox, snapshots and RPCs are service-only with
+RLS and cascade away when the domain/account is deleted. New mail is limited to
+one job/domain/minute, ten/owner/hour and100 globally/hour. Identical replay of a
+request ID returns its existing receipt without spending send quota or creating
+another message; a different recipient/snapshot under that ID conflicts.
+
+Before every send, the durable lease rechecks the current owner, domain version,
+enabled/archive state, record digest and configured target. A cancelled lease or
+stale unsent snapshot never reaches the provider. The exact first message payload,
+including sender, is saved before sending and reused on retry. Provider requests
+use a fixed HTTPS endpoint, reject redirects, time out after10seconds and bound
+response bodies to16KiB. Bodies/raw provider errors are not exposed or logged.
+
+A provider receipt yields `sent`, meaning provider acceptance. It does not confirm
+inbox delivery or DNS/ownership/TLS/routing readiness. Known rejection or exhausted
+unsent retry yields `failed`. Lost/invalid receipts are retried with the same
+idempotency key and persisted payload, at most eight attempts and within23hours
+of queueing, inside Resend's24-hour deduplication window. An unresolved result at
+the boundary, a changed credential after an ambiguous attempt, or setup changes
+after a possible send yield `uncertain`, not a false failure/cancellation. A request
+already in flight can complete after a role or setup change; it cannot be recalled.
+
+`redirect-domain-instruction-mail` is a dedicated internal-secret/current-admin
+consumer, with its own frozen Deno configuration/lock. It claims at most three
+jobs per invocation. The guarded once/minute cron command uses the existing
+Vault `supabase_url` and `internal_invoke_secret` (matching the function’s
+`INTERNAL_INVOKE_SECRET`); missing configuration makes no
+HTTP call. Its named schedule can be reapplied without duplicating jobs. These
+migration/configuration files have not been applied or enabled in production.
+
+Verification covers exact records and certificate changes, idempotent queueing,
+private receipts, cancellation/races, current-owner removal, immutable retries,
+credential changes, expired leases, retries and uncertainty. The actual HTTP
+handler runs through migrated PostgreSQL and a bounded Resend fixture, including
+lost responses after simulated acceptance. The SQL driver also executes the real
+scheduler command against an isolated net/Vault seam to prove missing-secret and
+invalid-project guards. Sender verification, a controlled real email, cron/Vault
+activation, frontend controls and the overall release remain open.
+
+References: [Dub forwarding behavior](https://dub.co/help/article/how-to-add-custom-domain),
+[Resend idempotency](https://resend.com/docs/dashboard/emails/idempotency-keys),
+[Supabase scheduled functions](https://supabase.com/docs/guides/functions/schedule-functions).

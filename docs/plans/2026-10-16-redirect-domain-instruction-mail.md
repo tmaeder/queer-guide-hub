@@ -50,3 +50,35 @@ controlled delivery test remain release evidence.
 Primary references: Dub's custom-domain setup guide describes forwarding exact
 records; Resend's send/idempotency documentation specifies a 24-hour retention
 window and distinguishes concurrent requests from payload-conflict errors.
+
+## Backend checkpoint
+
+The current implementation provides owner-only draft/queue/status/request-lookup/
+cancel routes, service-only exact record snapshots and a durable outbox. The owner
+API attempts only its job immediately; the dedicated authenticated consumer and
+once/minute guarded Vault scheduler provide retries. Payloads are persisted before
+sending, and unknown outcomes cannot be reported as safely cancelled or failed.
+Status lookup by request ID survives a changed domain version; a null lookup alone
+is not proof that a previous incoming HTTP request can never queue. Frontend work
+must retain the original identity/body on ambiguous responses and never silently
+start another request because a status observation timed out.
+
+SQL and actual owner HTTP/Resend-fixture tests pass for immutable unknown retries,
+role loss before prepare and after provider acceptance, source-record changes,
+cancellation and nonce isolation. Private table/RPC grants and missing/invalid
+scheduler credentials are tested. Eleven focused transport/input/configuration
+cases pass; both API and consumer Deno graphs are frozen and checked. App
+typechecking stays at702 inherited errors, none new; baseline782 is unchanged.
+All2349 migration versions and SQL bodies parse/check without exemptions. UI
+controls, configured sender/actual delivery and controlled rollout remain open.
+
+
+Frontend follow-through must keep status/cancellation usable when delivery
+configuration is disabled. Retain an unresolved request identity and exact body
+per account/domain across reloads, recover by request ID and never silently change
+the recipient or request after an ambiguous response. Even a403 after the send
+can follow real provider acceptance if owner permission changed before the final
+receipt read; the API/SQL test exercises this boundary. A null status lookup alone
+cannot certify that another incoming request has stopped. The forwarding UI and
+its uncertainty/recovery states are required next work, not discharged by this
+backend or its tests.

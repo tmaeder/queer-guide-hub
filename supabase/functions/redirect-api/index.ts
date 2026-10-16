@@ -1,3 +1,4 @@
+import {domainInstructionMailConfig,instructionMailInput,dispatchDomainInstructionMail} from '../_shared/redirect-domain-mail.ts';
 import { domainConnectConfig, domainConnectInput, runDomainConnectAction } from '../_shared/redirect-domain-connect-api.ts';
 import { nativeAppValues, publicAppAssociation } from '../_shared/redirect-native-apps.ts';
 import { inventoryQuery, inventoryOperations, redirectInventoryManifest } from '../_shared/redirect-inventory-api.ts';
@@ -358,6 +359,33 @@ Deno.serve(async (req: Request) => {
    }
    const result=await db.rpc('redirect_domain_preference',{p_actor:user!.id,p_values:values});if(result.error)return rpcError(result.error);return json(result.data);
   }
+  const instructionMail=path.match(/^\/domains\/([a-f0-9-]{36})\/(instructions|instruction-emails)(?:\/([a-f0-9-]{36})(?:\/(cancel))?)?$/i);
+  if(instructionMail){
+   if(tokenCredential)return json({error:'Workspace owner account session required'},403);
+   const principal=await sessionPrincipal('workspace:write');if(principal.failure)return principal.failure;if(principal.id!==null)return json({error:'Workspace owner access required'},403);
+   const [,domain,part,job,cancel]=instructionMail;
+   if(part==='instructions'&&(new URL(req.url).search||job||cancel)||part==='instruction-emails'&&job&&new URL(req.url).search)return json({error:'Invalid instruction email request'},400);
+   if(part==='instruction-emails'&&!job){
+    if(req.method!=='GET')return json({error:'Method not supported'},405);
+    const query=new URL(req.url).searchParams,requestId=query.get('requestId');
+    if(query.size!==1||query.getAll('requestId').length!==1||!requestId||!UUID.test(requestId))return json({error:'Choose an instruction email request'},400);
+    const result=await db.rpc('redirect_domain_instruction_mail_action',{p_action:'lookup',p_actor:user!.id,p_domain:domain,p_values:{requestId}});if(result.error)return rpcError(result.error);return json({mail:result.data});
+   }
+   if(part==='instruction-emails'){
+    if(cancel?req.method!=='POST':req.method!=='GET')return json({error:'Method not supported'},405);
+    if(cancel){const body=await boundedJson(req,4096);if(!body||typeof body!=='object'||Array.isArray(body)||Object.keys(body).length)return json({error:'Do not provide cancellation fields'},400);}
+    const result=await db.rpc('redirect_domain_instruction_mail_action',{p_action:cancel?'cancel':'get',p_actor:user!.id,p_domain:domain,p_job:job});if(result.error)return rpcError(result.error);return json(result.data);
+   }
+   if(!['GET','POST'].includes(req.method))return json({error:'Method not supported'},405);
+   const config=await domainInstructionMailConfig(Deno.env.get('RESEND_API_KEY')??'',Deno.env.get('REDIRECT_DOMAIN_EMAIL_FROM')??'',Deno.env.get('REDIRECT_CNAME_TARGET')??'');
+   if(!config)return json({error:'DNS instruction email is not configured'},503);
+   const values=req.method==='POST'?instructionMailInput(await boundedJson(req,16384)):{};
+   const result=await db.rpc('redirect_domain_instruction_mail_action',{p_action:req.method==='POST'?'queue':'draft',p_actor:user!.id,p_domain:domain,p_values:values,p_target:config.target});if(result.error)return rpcError(result.error);
+   if(result.data?.retryAfter)return new Response(JSON.stringify({error:'Please wait before emailing more DNS instructions'}),{status:429,headers:{...cors,'Content-Type':'application/json','Cache-Control':'no-store','Retry-After':String(result.data.retryAfter)}});
+   if(req.method==='GET')return json(result.data);
+   try{await dispatchDomainInstructionMail(db,config,fetch,result.data.id);}catch{/* The stored request ID remains authoritative after an unknown transport/ack outcome. */}
+   const receipt=await db.rpc('redirect_domain_instruction_mail_action',{p_action:'get',p_actor:user!.id,p_domain:domain,p_job:result.data.id});if(receipt.error)return rpcError(receipt.error);return json(receipt.data,202);
+  }
   const dnsSetup=path.match(/^\/domains\/([a-f0-9-]{36})\/dns-setup\/(discover|approve|complete)$/i);
   const dnsCallback=path.match(/^\/domain-connect\/([a-f0-9-]{36})$/i);
   if(dnsSetup||dnsCallback){
@@ -406,7 +434,7 @@ Deno.serve(async (req: Request) => {
    else if(!id&&req.method==='POST'){action='create';values=domainInput(await boundedJson(req,16384),'create');}
    else if(id&&!endpoint&&req.method==='PATCH'){action='patch';values=domainInput(await boundedJson(req,16384),'patch');}
    else if(id&&!endpoint&&req.method==='DELETE'){action='delete';values=domainInput(await boundedJson(req,16384),'version');}else return json({error:'Method not supported'},405);
-   const result=await db.rpc('redirect_domain_resource',{p_action:action,p_actor:user!.id,p_id:id??null,p_values:values,p_limit:limit,p_after:after});if(result.error)return rpcError(result.error);return json(action==='list'?{...result.data,providerSetup:{configured:providerConfig!==null,cnameTarget:providerConfig?.cnameTarget??null},dnsSetup:{configured:(await domainConnectConfig(Deno.env.get('REDIRECT_DOMAIN_CONNECT_PRIVATE_JWK')??'',Deno.env.get('REDIRECT_DOMAIN_CONNECT_KEY_LABEL')??'',Deno.env.get('REDIRECT_CNAME_TARGET')??''))!==null,cnameTarget:'links.queer.guide'}}:result.data,action==='create'?201:200);
+   const result=await db.rpc('redirect_domain_resource',{p_action:action,p_actor:user!.id,p_id:id??null,p_values:values,p_limit:limit,p_after:after});if(result.error)return rpcError(result.error);return json(action==='list'?{...result.data,providerSetup:{configured:providerConfig!==null,cnameTarget:providerConfig?.cnameTarget??null},instructionMail:{configured:(await domainInstructionMailConfig(Deno.env.get('RESEND_API_KEY')??'',Deno.env.get('REDIRECT_DOMAIN_EMAIL_FROM')??'',Deno.env.get('REDIRECT_CNAME_TARGET')??''))!==null},dnsSetup:{configured:(await domainConnectConfig(Deno.env.get('REDIRECT_DOMAIN_CONNECT_PRIVATE_JWK')??'',Deno.env.get('REDIRECT_DOMAIN_CONNECT_KEY_LABEL')??'',Deno.env.get('REDIRECT_CNAME_TARGET')??''))!==null,cnameTarget:'links.queer.guide'}}:result.data,action==='create'?201:200);
   }
   if (path === '/customers/profile' || path === '/customers/journey') {
     const read = req.method === 'GET';

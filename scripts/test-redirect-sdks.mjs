@@ -22,6 +22,7 @@ const pieces = [
   '_shared/redirect-domain-connect.ts',
   '_shared/redirect-domain-discovery.ts',
   '_shared/redirect-domain-connect-api.ts',
+  '_shared/redirect-domain-mail.ts',
   '_shared/redirect-domain-provider.ts',
   '_shared/redirect-presentation.ts',
   '_shared/redirect-qr-assets.ts',
@@ -112,6 +113,8 @@ const identity={auth:{getUser:async(value)=>({data:{user:['fixture-account-sessi
 let dnsCalls=0,dnsMissing=false;
 const domainConnectKey = await webcrypto.subtle.generateKey({name:'RSASSA-PKCS1-v1_5',modulusLength:2048,publicExponent:new Uint8Array([1,0,1]),hash:'SHA-256'},true,['sign','verify']);
 const domainConnectJwk = JSON.stringify(await webcrypto.subtle.exportKey('jwk',domainConnectKey.privateKey));
+let instructionMailEnabled=false,instructionMailCalls=0,instructionMailMode='accepted',instructionMailLoseOwner=false;
+const instructionMailMessages=new Map();
 let domainConnectEnabled=false,domainConnectTemplateMissing=false,domainConnectLoseOwner=false,domainConnectDnsCalls=0;
 const providerConfig={zoneId:'a'.repeat(32),token:'fixture-provider-token',cnameTarget:'links.queer.guide'};
 const providerObjects=new Map();let providerCreates=0,providerDeletes=0,providerRestarts=0;
@@ -128,6 +131,20 @@ async function verifyArtworkFixture(request) {
  return render(request,'https://fixture.supabase.co',async()=>true,async()=>{},async()=>{throw new Error('Artwork verifier attempted an external fetch');});
 }
 const fixtureDnsFetch=async (input,options)=>{const url=new URL(String(input));
+if(url.origin==='https://api.resend.com'){
+ if(url.pathname!=='/emails'||options.method!=='POST'||options.redirect!=='error'||new Headers(options.headers).get('Authorization')!=='Bearer fixture-mail-provider')throw new Error('Unexpected instruction email transport');
+ const messageId=new Headers(options.headers).get('Idempotency-Key');if(!/^qg-domain-instructions\/v1\/[a-f0-9-]{36}$/.test(messageId))throw new Error('Missing stable email identity');
+ instructionMailCalls++;
+ if(instructionMailMode==='throttled')return Response.json({name:'rate_limit'},{status:429,headers:{'Retry-After':'60'}});
+ if(instructionMailMode==='rejected')return Response.json({name:'validation_error'},{status:422});
+ const previous=instructionMailMessages.get(messageId);
+ if(previous&&previous.body!==options.body)throw new Error('Retry changed provider message bytes');
+ if(!previous)instructionMailMessages.set(messageId,{body:options.body,id:webcrypto.randomUUID()});
+ if(instructionMailLoseOwner){instructionMailLoseOwner=false;await db.query('DELETE FROM public.user_roles WHERE user_id=$1',[reportActor]);}
+ if(instructionMailMode==='lost-receipt'){instructionMailMode='accepted';throw new TypeError('Provider receipt lost after acceptance');}
+ return Response.json({id:instructionMailMessages.get(messageId).id});
+}
+
 if(url.origin==='https://queer.guide'&&url.pathname==='/api/qr'){if(options.method!=='POST'||new Headers(options.headers).has('Authorization'))throw new Error('Invalid artwork verification request');return verifyArtworkFixture(new Request(url,options));}
 if(url.origin==='https://fixture.supabase.co'&&url.pathname.startsWith('/storage/v1/object/redirect-brand-assets')){
  const headers=new Headers(options?.headers);if(headers.get('Authorization')!=='Bearer fixture-service'||headers.get('apikey')!=='fixture-service')throw new Error('Wrong Storage credentials');
@@ -165,9 +182,9 @@ if(url.origin==='https://api.cloudflare.com'){
  return Response.json({success:true,result:item});
 }
 if(url.origin!=='https://cloudflare-dns.com'||url.pathname!=='/dns-query')throw new Error('Unexpected external fixture request');dnsCalls++;const hostname=url.searchParams.get('name').replace(/^_qg-redirect\./,'');const row=(await db.query('SELECT verification_token FROM public.redirect_domains WHERE hostname=$1',[hostname])).rows[0];return new Response(JSON.stringify({Status:0,Question:[{name:url.searchParams.get('name'),type:16}],Answer:row&&!dnsMissing?[{name:url.searchParams.get('name'),type:16,data:'\"qg-redirect='+row.verification_token+'\"'}]:[]}),{headers:{'Content-Type':'application/dns-json'}});};
-policyRuntime=new Function('Deno', 'createClient', 'crypto', 'fetch', 'getDomain', code+'\nreturn {verifyLinkPassword,dispatchRedirectDomainJobs,dispatchRedirectQrAssetCleanup,qrAssetStorageConfig};')(
+policyRuntime=new Function('Deno', 'createClient', 'crypto', 'fetch', 'getDomain', code+'\nreturn {verifyLinkPassword,dispatchRedirectDomainJobs,dispatchRedirectQrAssetCleanup,qrAssetStorageConfig,dispatchDomainInstructionMail,domainInstructionMailConfig};')(
   {
-    env: { get: (key) => key==='SUPABASE_URL'?'https://fixture.supabase.co':key==='SUPABASE_SERVICE_ROLE_KEY'?'fixture-service':key==='SUPABASE_ANON_KEY'?'fixture-anon':key==='REDIRECT_CF_ZONE_ID'?providerConfig.zoneId:key==='REDIRECT_CF_API_TOKEN'?providerConfig.token:key==='REDIRECT_CNAME_TARGET'?providerConfig.cnameTarget:key==='REDIRECT_DOMAIN_CONNECT_PRIVATE_JWK'?(domainConnectEnabled?domainConnectJwk:''):key==='REDIRECT_DOMAIN_CONNECT_KEY_LABEL'?'_fixture':'fixture' },
+    env: { get: (key) => key==='SUPABASE_URL'?'https://fixture.supabase.co':key==='SUPABASE_SERVICE_ROLE_KEY'?'fixture-service':key==='SUPABASE_ANON_KEY'?'fixture-anon':key==='REDIRECT_CF_ZONE_ID'?providerConfig.zoneId:key==='REDIRECT_CF_API_TOKEN'?providerConfig.token:key==='REDIRECT_CNAME_TARGET'?providerConfig.cnameTarget:key==='REDIRECT_DOMAIN_EMAIL_FROM'?(instructionMailEnabled?'Queer Guide <noreply@queer.guide>':''):key==='RESEND_API_KEY'?'fixture-mail-provider':key==='REDIRECT_DOMAIN_CONNECT_PRIVATE_JWK'?(domainConnectEnabled?domainConnectJwk:''):key==='REDIRECT_DOMAIN_CONNECT_KEY_LABEL'?'_fixture':'fixture' },
     serve: (fn) => {
       handler = fn;
     },
@@ -876,6 +893,57 @@ try {
   if(unsupportedSetup.state!=='unsupported')throw new Error('Missing provider template was treated as usable');
   await reportRequest('/domains/'+unsupportedDomain.id+'/dns-setup/approve','POST',{version:unsupportedDomain.version,operation:unsupportedSetup.id},undefined,409);
   console.log('Domain Connect: actual owner HTTP -> bounded discovery -> stored review -> verified RSA approval -> current-owner callback -> fresh TXT proof; key denial, budgets, template absence, replay and role loss passed.');
+
+  const mailDomain=await reportRequest('/domains','POST',{hostname:'mail-forward.example.com'},undefined,201),mailPath='/domains/'+mailDomain.id+'/instructions';
+  await reportRequest(mailPath,'GET',undefined,undefined,503);
+  if((await reportRequest('/domains')).instructionMail.configured||instructionMailCalls)throw new Error('Unconfigured instruction mail appeared usable');
+  instructionMailEnabled=true;
+  const mailAvailability=(await reportRequest('/domains')).instructionMail;
+  if(!mailAvailability.configured||Object.keys(mailAvailability).join(',')!=='configured')throw new Error('Instruction mail availability exposed delivery secret/sender');
+  await reportRequest(mailPath,'GET',undefined,token,403);
+  const mailDraft=await reportRequest(mailPath);
+  if(mailDraft.records.length!==2||mailDraft.records[0].name!==mailDomain.hostname||mailDraft.records[0].value!=='links.queer.guide.'||mailDraft.records[1].value!==mailDomain.verification.value)throw new Error('Forwarded draft differs from current exact records');
+  const mailInput={version:mailDraft.version,snapshot:mailDraft.snapshot,email:'DNS+setup@EXAMPLE.ORG',requestId:webcrypto.randomUUID()};
+  await reportRequest(mailPath,'POST',{...mailInput,records:[]},undefined,400);
+  await reportRequest(mailPath,'POST',{...mailInput,email:'dns@example.org,other@example.org'},undefined,400);
+  await reportRequest(mailPath,'POST',{...mailInput,snapshot:'a'.repeat(64)},undefined,409);
+  if(instructionMailCalls)throw new Error('Rejected mail input reached provider');
+  const mailed=await reportRequest(mailPath,'POST',mailInput,undefined,202);
+  if(mailed.state!=='sent'||mailed.canCancel||mailed.email!=='DNS+setup@example.org'||instructionMailCalls!==1)throw new Error('Instruction mail did not record exact provider acceptance');
+  const mailMessage=JSON.parse([...instructionMailMessages.values()][0].body);
+  if(mailMessage.to.join(',')!=='DNS+setup@example.org'||!mailMessage.text.includes(mailDomain.verification.value)||!mailMessage.text.includes('Name: '+mailDomain.hostname)||!mailMessage.text.includes('sending this email does not complete those checks'))throw new Error('Native email body lost recipient, exact records or readiness distinction');
+  const mailedAgain=await reportRequest(mailPath,'POST',mailInput,undefined,202);
+  if(mailedAgain.id!==mailed.id||instructionMailCalls!==1)throw new Error('Request replay sent duplicate email');
+  await reportRequest(mailPath,'POST',{...mailInput,email:'different@example.org'},undefined,409);
+  await reportRequest(mailPath,'POST',{...mailInput,requestId:webcrypto.randomUUID()},undefined,429);
+  const receiptPath='/domains/'+mailDomain.id+'/instruction-emails/'+mailed.id;
+  await reportRequest(receiptPath,'GET',undefined,'fixture-other-account-session',404);
+  const recovered=await reportRequest('/domains/'+mailDomain.id+'/instruction-emails?requestId='+mailInput.requestId);
+  if(recovered.mail.id!==mailed.id||(await reportRequest(mailPath)).latestMail.id!==mailed.id)throw new Error('Owner receipt could not recover across reload/unknown HTTP response');
+  await reportRequest(receiptPath+'/cancel','POST',{},undefined,409);
+  const unknownMailDomain=await reportRequest('/domains','POST',{hostname:'unknown-mail.example.com'},undefined,201),unknownMailPath='/domains/'+unknownMailDomain.id+'/instructions';
+  const unknownDraft=await reportRequest(unknownMailPath),unknownInput={version:unknownDraft.version,snapshot:unknownDraft.snapshot,email:'dns@example.org',requestId:webcrypto.randomUUID()};
+  instructionMailMode='lost-receipt';const unknownReceipt=await reportRequest(unknownMailPath,'POST',unknownInput,undefined,202);
+  if(unknownReceipt.state!=='queued'||unknownReceipt.canCancel)throw new Error('Lost receipt falsely marked failed/cancellable');
+  const beforeUnknownRetry=instructionMailCalls,unknownBody=instructionMailMessages.get('qg-domain-instructions/v1/'+unknownReceipt.id).body;
+  await db.query("UPDATE public.redirect_domain_instruction_mail SET next_attempt_at=clock_timestamp()-interval '1 second' WHERE id=$1",[unknownReceipt.id]);
+  const knownReceipt=await reportRequest(unknownMailPath,'POST',unknownInput,undefined,202);
+  if(knownReceipt.id!==unknownReceipt.id||knownReceipt.state!=='sent'||instructionMailCalls!==beforeUnknownRetry+1||instructionMailMessages.get('qg-domain-instructions/v1/'+unknownReceipt.id).body!==unknownBody)throw new Error('Unknown delivery retry changed identity or persisted message');
+  const cancelledDomain=await reportRequest('/domains','POST',{hostname:'cancel-mail.example.com'},undefined,201),cancelledPath='/domains/'+cancelledDomain.id+'/instructions';
+  const cancelledDraft=await reportRequest(cancelledPath);instructionMailMode='throttled';
+  const queuedMail=await reportRequest(cancelledPath,'POST',{version:cancelledDraft.version,snapshot:cancelledDraft.snapshot,email:'dns@example.org',requestId:webcrypto.randomUUID()},undefined,202);
+  instructionMailMode='accepted';const beforeCancel=instructionMailCalls;
+  const cancelledMail=await reportRequest('/domains/'+cancelledDomain.id+'/instruction-emails/'+queuedMail.id+'/cancel','POST',{});
+  if(cancelledMail.state!=='cancelled')throw new Error('Unsent queued mail could not cancel');
+  await db.query("UPDATE public.redirect_domain_instruction_mail SET next_attempt_at=clock_timestamp()-interval '1 second' WHERE id=$1",[queuedMail.id]);
+  await policyRuntime.dispatchDomainInstructionMail(service,await policyRuntime.domainInstructionMailConfig('fixture-mail-provider','Queer Guide <noreply@queer.guide>','links.queer.guide'),fixtureDnsFetch,queuedMail.id);
+  if(instructionMailCalls!==beforeCancel)throw new Error('Cancelled mail was sent');
+  const postflightDomain=await reportRequest('/domains','POST',{hostname:'postflight-mail.example.com'},undefined,201),postflightPath='/domains/'+postflightDomain.id+'/instructions',postflightDraft=await reportRequest(postflightPath);
+  instructionMailLoseOwner=true;
+  await reportRequest(postflightPath,'POST',{version:postflightDraft.version,snapshot:postflightDraft.snapshot,email:'dns@example.org',requestId:webcrypto.randomUUID()},undefined,403);
+  await db.query("INSERT INTO public.user_roles VALUES($1,'admin')",[reportActor]);
+  if((await reportRequest(postflightPath)).latestMail.state!=='sent')throw new Error('Owner loss after actual acceptance erased delivery truth');
+  console.log('Native DNS instruction forwarding: actual owner HTTP -> reviewed current CNAME/TXT snapshot -> durable private queue -> exact persisted Resend fixture -> provider receipt, same-request replay/recovery, immutable unknown retry, cancellation and postflight role loss pass without real emails.');
   await verifyRedirectIntegrationHttp(db,base,reportActor);
   console.log(
     'Five SDKs passed; no external API calls, credentials, payments or production schema were used.',
