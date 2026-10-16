@@ -92,6 +92,11 @@ const DIRECTORY_PAGES = new Set([
 
 const SINGLE_PAGES = new Set([
   'CompetitionCategoryPage',
+  // The DB-driven twin of the line above. `/competitions/types/:categorySlug`
+  // renders a category managed in the CMS, where the six hardcoded
+  // `/competitions/<name>` routes each pass a literal `category` prop. Same
+  // family: the data source changed, not the layout.
+  'ManagedCompetitionCategoryPage',
   'EntityDetail',
   'EventDetail',
   'GuideDetail',
