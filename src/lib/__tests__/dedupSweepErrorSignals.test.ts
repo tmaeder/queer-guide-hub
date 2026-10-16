@@ -150,16 +150,38 @@ describe('dedup_sweep_error_signals', () => {
 
   // ── the health-script gate ───────────────────────────────────────────────
 
-  it('fails the run on a blocking error and on shape drift', () => {
-    expect(section).toMatch(/blocking\s*>\s*0[\s\S]{0,700}FAILED = true/);
-    expect(section).toMatch(/shapeDrift\s*>\s*0[\s\S]{0,500}FAILED = true/);
+  /**
+   * Slice ONE branch, bounded by where the next one starts.
+   *
+   * A `[\s\S]{0,N}FAILED = true` window is vacuous here: the branches sit next to
+   * each other, so deleting the `FAILED = true` from the branch under test leaves
+   * the regex free to match the NEXT branch's one and stay green. Mutation
+   * testing caught exactly that — removing the blocking branch's gate survived.
+   */
+  const branch = (from: string, to: string) => {
+    const a = section.indexOf(from);
+    const b = section.indexOf(to, a + 1);
+    expect(a, `branch start not found: ${from}`).toBeGreaterThan(-1);
+    expect(b, `branch end not found: ${to}`).toBeGreaterThan(a);
+    return section.slice(a, b);
+  };
+
+  it('fails the run on a blocking error', () => {
+    expect(branch('if (blocking > 0)', 'if (shapeDrift > 0)')).toMatch(/FAILED = true/);
+  });
+
+  it('fails the run on shape drift it cannot classify', () => {
+    expect(branch('if (shapeDrift > 0)', 'if (blocking === 0')).toMatch(/FAILED = true/);
   });
 
   it('fails when the probe itself is broken, rather than passing quietly', () => {
-    expect(section).toMatch(/probe_ok !== true[\s\S]{0,400}FAILED = true/);
-    // An absent key reads as undefined and skips its own comparison.
-    expect(section).toMatch(/'errors_blocking' in s[\s\S]{0,300}FAILED = true/);
-    expect(section).toMatch(/types\s*<\s*2[\s\S]{0,300}FAILED = true/);
+    expect(branch('if (s.probe_ok !== true)', "} else if (!('errors_blocking' in s)")).toMatch(
+      /FAILED = true/,
+    );
+    // An absent key reads as undefined and skips its own comparison silently.
+    expect(branch("} else if (!('errors_blocking' in s)", '} else {')).toMatch(/FAILED = true/);
+    // Zero types parsed reads exactly like a sweep with no errors.
+    expect(branch('if (types < 2)', 'for (const d of details)')).toMatch(/FAILED = true/);
   });
 
   it('does NOT fail on a benign error', () => {
