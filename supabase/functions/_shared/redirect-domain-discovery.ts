@@ -13,7 +13,7 @@ function endpoint(value: unknown, purpose: 'settings' | 'api' | 'sync', provider
   if (typeof value !== 'string' || value.length > 1024 || /[\s\\@?#%]/.test(value)) return null;
   let url: URL;
   try { url = new URL(value); } catch { return null; }
-  if (url.protocol !== 'https:' || url.port || url.username || url.password || !/^\/(?:[a-zA-Z0-9_-]+\/?)*$/.test(url.pathname)) return null;
+  if (url.protocol !== 'https:' || url.port || url.username || url.password || !/^\/(?:[a-zA-Z0-9_-]+(?:\/[a-zA-Z0-9_-]+)*)?\/?$/.test(url.pathname)) return null;
   const family = url.hostname === 'cloudflare.com' || url.hostname.endsWith('.cloudflare.com') ? 'cloudflare' : url.hostname === 'vercel.com' || url.hostname.endsWith('.vercel.com') ? 'vercel' : null;
   if (!family || provider && provider !== family) return null;
   if (purpose === 'sync' && (family === 'cloudflare' ? url.origin !== 'https://dash.cloudflare.com' : url.origin !== 'https://vercel.com')) return null;
