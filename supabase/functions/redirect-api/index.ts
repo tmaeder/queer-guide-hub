@@ -681,8 +681,11 @@ Deno.serve(async (req: Request) => {
    const name='redirect_scoped_analytics';let args:Record<string,unknown>={p_action:path==='/events'?'events':'report',p_filters:filters,p_token_id:tokenId};
    if(path==='/events'){
     const limit=Number(body?body.limit??50:query.get('limit')??50),snapshot=body?(typeof body.snapshot==='string'?body.snapshot:null):query.get('snapshot');
-    const cursor:any=body?body.cursor??null:query.has('cursor')?JSON.parse(query.get('cursor')!):null;
-    if(!Number.isInteger(limit)||limit<1||limit>100||snapshot&&!Number.isFinite(Date.parse(snapshot))||cursor&&(!Number.isFinite(Date.parse(cursor.at))||typeof cursor.id!=='string'||cursor.id.length>100))return json({error:'Invalid event page'},400);
+    // `Date.parse(String(x))` is behaviour-identical to the old untyped `Date.parse(x)`:
+    // both coerce, and undefined/null/object all parse to NaN either way.
+    const rawCursor=body?body.cursor??null:query.has('cursor')?JSON.parse(query.get('cursor')!):null;
+    const cursor=rawCursor&&typeof rawCursor==='object'&&!Array.isArray(rawCursor)?rawCursor as {at?:unknown;id?:unknown}:null;
+    if(!Number.isInteger(limit)||limit<1||limit>100||snapshot&&!Number.isFinite(Date.parse(snapshot))||rawCursor&&(!cursor||!Number.isFinite(Date.parse(String(cursor.at)))||typeof cursor.id!=='string'||cursor.id.length>100))return json({error:'Invalid event page'},400);
     args={...args,p_limit:limit,p_snapshot:snapshot,p_before_at:cursor?.at??null,p_before_id:cursor?.id??null};
    }
    const {data,error}=await db.rpc(name,args);if(error)return rpcError(error);return json(data);
