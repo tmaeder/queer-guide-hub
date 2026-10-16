@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 /**
- * Guards 99991792175608 — cities_directory() must stay inside anon's 3s ceiling.
+ * Guards 99991792192204 — cities_directory() must stay inside anon's 3s ceiling.
  *
  * EVERY ASSERTION HERE RUNS OVER COMMENT-STRIPPED SQL, and that is load-bearing rather
  * than tidy: the migration's header quotes every phrase this file asserts on, including
@@ -12,7 +12,7 @@ import { join } from 'node:path';
  * assertion this repo has recorded repeatedly.
  */
 
-const MIGRATION = '99991792175608_cities_directory_venue_count_index.sql';
+const MIGRATION = '99991792192204_cities_directory_venue_count_index.sql';
 const raw = readFileSync(join(process.cwd(), 'supabase/migrations', MIGRATION), 'utf8');
 
 // Comments at LINE START only — the house stripper. Enough here because every comment in
@@ -162,7 +162,7 @@ describe('the growth watcher is wired', () => {
     );
     // Asserts the SHAPE of the gate, not its tuning. The threshold is legitimately
     // re-sized when the payload shape changes — it moved 12 MB -> 6 MB when the RPC
-    // went columnar in 99991792178303, and pinning the literal made this test fail on
+    // went columnar in 99991792192213, and pinning the literal made this test fail on
     // a correct re-size. What must not change is which quantity is allowed to FAIL:
     // bytes do, and latency measured as service_role from a runner — carrying that
     // network, with no statement_timeout behind it — only ever warns.

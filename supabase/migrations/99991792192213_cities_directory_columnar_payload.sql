@@ -1,6 +1,6 @@
 -- cities_directory(): stop sending 16,206 copies of 25 key names and 212 countries.
 --
--- 99991792175608 indexed the venue count and took this RPC from 2,565 ms to 1,620 ms
+-- 99991792192204 indexed the venue count and took this RPC from 2,565 ms to 1,620 ms
 -- against anon's 3s statement_timeout. It then named the remaining cost rather than
 -- fixing it: `jsonb_agg` was **851 ms of that 1,620**, building a **7,514 kB** payload
 -- over 16,206 rows. This is that follow-up.
@@ -35,7 +35,7 @@
 --
 -- (b) at identical blast radius, so (b). End to end, dry-run on prod:
 --
---   2,565 ms (before 99991792175608) -> 1,620 ms (its index) -> **720 ms** (this)
+--   2,565 ms (before 99991792192204) -> 1,620 ms (its index) -> **720 ms** (this)
 --
 -- i.e. 4.2x headroom under the 3s ceiling where it was 1.17x, and 12,590 blocks.
 --
@@ -66,7 +66,7 @@
 -- and was already wrong before this migration; the sorters there are total regardless,
 -- so nothing depends on it being true.)
 --
--- CARRIED FORWARD FROM 99991792175608, deliberately unchanged: the index-only venue
+-- CARRIED FORWARD FROM 99991792192204, deliberately unchanged: the index-only venue
 -- count, `hr as materialized` (PG12+ inlines a once-referenced CTE and would rebuild the
 -- per-row scan), the `geo_places` country fallback, and `high_risk` as a LEFT JOIN that
 -- cannot yield NULL. `rows` gains `materialized` because it is now referenced twice — by
@@ -84,7 +84,7 @@ security definer
 set search_path to 'public'
 as $function$
   with vc as (
-    -- Index-only scan on idx_venues_city_id_approved; see 99991792175608 for the two
+    -- Index-only scan on idx_venues_city_id_approved; see 99991792192204 for the two
     -- measured visibility-map bounds and why the degraded one is still a win.
     select v.city_id, count(*)::int as n
     from public.venues v
@@ -236,7 +236,7 @@ begin
   from pg_proc p join pg_namespace n on n.oid = p.pronamespace
   where n.nspname = 'public' and p.proname = 'cities_directory';
 
-  -- P1: the three things 99991792175608 established stay established. Each is a
+  -- P1: the three things 99991792192204 established stay established. Each is a
   -- silent, measured regression if dropped, so none of them is restated by accident.
   if position('hr as materialized' in v_src) = 0 then
     raise exception 'P1 failed: the hr CTE is no longer materialized — the per-row scan is back';
@@ -370,4 +370,4 @@ comment on function public.cities_directory() is
   'Columnar directory payload for /cities: {countries, cols, rows}. Key names were 55% '
   'of the old 7,514 kB array-of-objects and the country block another 35% over 212 '
   'distinct tuples; this is 2,815 kB / ~720 ms against anon''s 3s ceiling. Decode by '
-  'name via cols — never by a hardcoded column order. See 99991792178303.';
+  'name via cols — never by a hardcoded column order. See 99991792192213.';

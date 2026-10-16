@@ -159,7 +159,7 @@ async function fetchCityDots() {
   });
   if (!dirRes.ok) throw new Error(`cities_directory: ${dirRes.status} ${await dirRes.text()}`);
 
-  // The payload is COLUMNAR since 99991792178303 — `{countries, cols, rows}`, not an
+  // The payload is COLUMNAR since 99991792192213 — `{countries, cols, rows}`, not an
   // array of objects; key names were 55% of the old 7,514 kB. Decoded back into objects
   // here BY NAME from `cols`, so everything below is unchanged and a column inserted
   // upstream cannot silently shift every field. Row order is preserved (venue_count

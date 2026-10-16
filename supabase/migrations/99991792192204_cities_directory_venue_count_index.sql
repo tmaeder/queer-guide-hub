@@ -350,4 +350,4 @@ $verify$;
 comment on index public.idx_venues_city_id_approved is
   'Serves the per-city approved-venue count in cities_directory() as an index-only scan '
   '(12,882 blocks/828 ms -> 147/39). Partial on review_status so the predicate is the '
-  'index and no heap access is needed for it. See 99991792175608.';
+  'index and no heap access is needed for it. See 99991792192204.';
