@@ -3,7 +3,13 @@ project_id = "xqeacpakadqfxjxjcewc"
 [api]
 enabled = true
 port = 54321
-schemas = ["public", "graphql_public"]
+# Mirrors the linked project's PostgREST `db_schema` exactly (verified
+# 2026-10-16: "public, pgmq_public"). `graphql_public` was REMOVED on 2026-10-16
+# to close the pg_graphql introspection exposure — /graphql/v1 is unused by this
+# product and now answers PGRST106. Nothing in CI runs `supabase config push`,
+# but a hand-run one with the old value would both re-expose GraphQL and drop
+# pgmq_public, so keep this line in step with the remote setting.
+schemas = ["public", "pgmq_public"]
 extra_search_path = ["public", "extensions"]
 max_rows = 1000
 
