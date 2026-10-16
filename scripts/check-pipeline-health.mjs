@@ -4754,7 +4754,30 @@ const DISOWNED_PROSE_CEILING = 380
   // -> North Charleston; Condom Sense -> Mansfield TX) countable for the first
   // time. The fourth is a real new misfiling: Me Nightclub, city text
   // Trondheim, linked to Oslo (written 2026-10-06), left for review.
-  const VENUE_CITY_TEXT_BASELINE = 403
+  //
+  // 403 -> 575 on 2026-10-16, the SAME mechanism at 58x the scale and again
+  // measured before it was moved. Decomposing the metric's own predicate by when
+  // the OTHER city -- the one the venue's `city` text names -- was created:
+  //
+  //   total                                              575
+  //   other city created >= 2026-10-07 (the burst)        233
+  //   other city older                                    342
+  //   ... of the 233, venue itself predates the burst      233
+  //   venues created in the burst themselves                 0
+  //
+  // So not one of the new rows is a newly misfiled venue. All 233 were ALREADY
+  // filed under the wrong same-country city and became COUNTABLE for the first
+  // time when the 2026-10-07..13 city-creation burst (nominatim-geocode /
+  // photon-location, ~13.5k rows) minted the city their text had been naming all
+  // along. The pre-burst population did not grow -- it FELL, 403 -> 342, as rows
+  // were worked by hand.
+  //
+  // The 233 are real misfilings and this does not fix them; it makes them
+  // visible-but-tolerated, which is what the advisory warning below is for. The
+  // number must not be raised again without the same decomposition: if
+  // `venues created in the burst themselves` is ever non-zero, a producer IS
+  // filing new venues under the wrong city and that is a failure, not a baseline.
+  const VENUE_CITY_TEXT_BASELINE = 575
   const res = await fetch(`${BASE}/rest/v1/rpc/venue_city_text_signals`, {
     method: 'POST',
     headers: { ...headers, 'Content-Type': 'application/json' },
