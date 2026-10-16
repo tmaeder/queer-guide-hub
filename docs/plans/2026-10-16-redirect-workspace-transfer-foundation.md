@@ -203,10 +203,69 @@ All29 existing API cases and five new context/role/header cases pass locally;
 the focused workflow now includes this file, for100 cases overall. No assertion
 or production guard was weakened to repair the harness.
 
-Still unconverted among the original membership/helper-reference inventory:
-customer access, inventory rank/metadata, managed link mutation, password-branding
-actor, QR image draft/resource and report actor/share-ID/share-resource routines.
-Those families and every other service/public reader/job require complete tenant
+At that checkpoint the original helper-reference inventory still included
+customer access, inventory/link mutation, password-branding actor, QR drafts and
+reports. Subsequent checkpoints below convert private link/QR/report boundaries;
+customer/analytics and remaining service/public readers/jobs still require tenant
 conversion and model changes before removing activation fences. Workspace owner
 membership, per-workspace uniqueness, multiple-workspace creation/switching and
 reviewed atomic domain transfer remain required.
+
+
+Managed link and inventory isolation checkpoint: migration99991792120766 converts
+14 private link/inventory/policy/preview helpers to explicit workspace predicates.
+Managed inventory rows must bind to their physical workspace root; client manifest
+entries cannot impersonate managed rows. Legacy static/CMS coverage stays intact.
+Managed list counts, metadata/tags, linked-domain facets, policy/presentation,
+variant metrics and branding authorization exclude foreign resources. Link/domain/
+folder/tag destinations are checked before mutation; global public URL uniqueness
+still prevents takeover. Metadata/policy upsert conflicts cannot silently update or
+ignore a foreign association. Foreign preview/password requests are denied before
+CPU/provider budgets. The existing global abuse caps are intentionally unchanged.
+
+Rollback-only SQL fixtures prove mixed-batch atomicity, unchanged foreign snapshots,
+foreign-ID denial and metadata collision rollback. Real owner HTTP plus all five
+SDK runtimes prove private list/count/inventory/facet isolation and foreign edit,
+delete, upsert, domain/tag/folder assignment, policy, metadata, variants, branding
+and preview denial. All existing SQL and HTTP/SDK contracts pass. No product
+activation fence was removed and no production schema/configuration changed.
+QR assets, reports/customers, remaining service/public readers/jobs, tenant owner
+model and per-workspace uniqueness still require conversion before activation.
+The domain transfer and controlled release remain open; this is not parity proof.
+
+
+QR and saved-report isolation checkpoint: migration99991792121517 converts22
+QR/style/logo and saved-report/share functions or triggers. Private QR lists,
+serialization, inherited branding and link-style lookup constrain the selected
+workspace. Logo reservation/finish checks resource identity before any attachment;
+style-key upserts reject a foreign conflict atomically. The QR creation-log trigger
+copies the new image's authoritative workspace. Existing principal/actor/global
+abuse caps remain, alongside workspace-scoped resource quotas.
+
+Personal/team report pages, counts, direct access, mutation, publication and share
+expansion now constrain workspace. Saved-report execution supplies an explicit
+workspace-root allowlist to the older analytics reader. Broad local publications
+cannot collect foreign roots. Public QR/report capabilities are explicitly limited
+to the sole active legacy workspace; provisioning records cannot be served or
+expose password hashes, and denied public reports spend no view/hash budgets.
+This is a staged legacy guard, not public multi-tenant resolution or activation.
+
+Rollback-only SQL fixtures include foreign records owned by the same global admin,
+so the tests require workspace separation independently of creator ownership.
+They prove foreign style/asset/draft/report/share denials, unchanged exact snapshots,
+style collision rollback, no foreign branding inheritance, local publication root
+selection and creation-log workspace propagation. Existing SQL contracts pass.
+Actual HTTP/five-SDK checks, final-head CI and remaining customer/analytics,
+provider/public/job/cleanup paths and model conversion are required before release.
+Product activation fences and global key uniqueness remain intact. No production
+schema, configuration, provider, email or app-store mutation was made.
+
+
+Link/QR/report verification:100 focused cases, complete migrated SQL and rollback
+isolation fixtures, the40-table backfill and actual owner HTTP/five SDK runtimes
+pass locally after both migrations. HTTP denials preserve exact foreign records
+and report view/password budgets; the legacy inventory's legitimate read budget
+is measured before the QR/report denial sequence. All2354 migration versions and
+SQL bodies validate without exemptions; targeted script lint/format/diff checks
+pass. Previous d511 full CI38834417691 and focused CI38834417752 both completed
+successfully. New exact-head CI remains required; no live release was performed.
