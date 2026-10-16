@@ -8,6 +8,16 @@ import { test, expect } from '@playwright/test';
 // a fillable form. Feedback remains anonymous and opens its form directly.
 const ENTITY_TYPES = ['event', 'venue', 'product', 'personality', 'place', 'tag', 'news'];
 
+// SIGNED OUT BY CONSTRUCTION, and this is load-bearing rather than tidy.
+// `playwright.config.ts` hands the chromium project the admin storageState
+// whenever E2E_ADMIN_* is set — as it is in the nightly — and every assertion
+// below is about what a GUEST is served ("Sign in to contribute", the form
+// withheld). Without this the suite signs in and contradicts its own premise:
+// all 8 entity-type cases plus the empty-payload case failed every scheduled
+// nightly for exactly that reason, while the "Add something new" heading above
+// them kept passing, so the failure read as a copy change rather than a session.
+test.use({ storageState: { cookies: [], origins: [] } });
+
 test.describe('submission type routes render their form', () => {
   for (const id of ENTITY_TYPES) {
     test(`/submit/${id} renders the authenticated add branch`, async ({ page }) => {
