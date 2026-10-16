@@ -58,6 +58,110 @@ let FAILED = false
 console.warn = (...a) => console.log(...a)
 console.error = (...a) => console.log(...a)
 
+// §  cities_directory() is the anonymous /cities page, and it has a 3s ceiling
+//    (2026-10-16, 99991792192204).
+//
+// `anon` carries its own `statement_timeout = 3s` (pg_roles.rolconfig), not the 8s
+// `authenticated` and `authenticator` get. This RPC takes no arguments and aggregates
+// the whole directory into one jsonb payload, so its cost tracks the corpus — and the
+// corpus MOVES: 2,529 rows when 99991789855163 tuned it, 16,206 twenty-six days later,
+// all of them legitimate (16,159 have an approved venue). It timed out for anonymous
+// visitors at 2 calls in 3 before the venue-count index landed, and /cities renders an
+// RPC failure as the "No cities found" empty state, so the failure is indistinguishable
+// from a filter that matched nothing.
+//
+// A constant-factor fix therefore buys time rather than settling this, which is why
+// there is a watcher at all. WHAT IS GATED IS THE PAYLOAD, NOT THE LATENCY: this runs
+// from a GitHub runner as `service_role`, which has no statement_timeout, so an elapsed
+// figure here carries that network and says nothing reliable about the 3s a browser
+// meets. The payload and the row count are measurable from anywhere and they are what
+// actually grew. Latency is reported and only warns.
+{
+  const t0 = Date.now()
+  let res
+  try {
+    res = await fetch(`${BASE}/rest/v1/rpc/cities_directory`, {
+      method: 'POST',
+      headers: { ...headers, 'Content-Type': 'application/json' },
+      body: '{}',
+    })
+  } catch (err) {
+    // A transport throw is "we could not look", which must never read as "nothing
+    // found" — the gate-rpc lesson. Fail closed.
+    console.error(`✗ cities_directory() could not be reached: ${err?.message ?? err}`)
+    FAILED = true
+  }
+
+  if (res && !res.ok) {
+    const body = await res.text().catch(() => '')
+    console.error(
+      `✗ cities_directory() returned HTTP ${res.status} ${body.slice(0, 300)} — this is the ` +
+        'anonymous /cities directory; a 57014 here means it is over even the 8s ceiling.',
+    )
+    FAILED = true
+  } else if (res) {
+    const text = await res.text()
+    const elapsed = Date.now() - t0
+    const bytes = Buffer.byteLength(text)
+    // The payload is the columnar `{countries, cols, rows}` envelope since
+    // 99991792192213. Reading `.length` off it — which is what this did while the RPC
+    // returned a bare array — yields `undefined` and reports a false "no rows", so the
+    // gate would have failed on a healthy directory the moment the shape changed.
+    let rows = null
+    let countries = null
+    try {
+      const parsed = JSON.parse(text)
+      rows = Array.isArray(parsed?.rows) ? parsed.rows.length : null
+      countries = Array.isArray(parsed?.countries) ? parsed.countries.length : null
+    } catch {
+      rows = null
+    }
+
+    // Reported BEFORE any verdict: zero rows and a 404 and a healthy directory would
+    // otherwise all produce the same reassuring absence of a ✗.
+    console.log(
+      `· cities_directory: ${rows ?? '?'} rows, ${countries ?? '?'} countries, ` +
+        `${(bytes / 1024 / 1024).toFixed(2)} MB, ${elapsed}ms (service_role)`,
+    )
+
+    if (!rows) {
+      console.error(
+        '✗ cities_directory() returned no rows. /cities renders that as "No cities found", ' +
+          'so an empty directory looks exactly like a search that matched nothing.',
+      )
+      FAILED = true
+    } else if (bytes > 6 * 1024 * 1024) {
+      // RE-SIZED for the columnar payload (99991792192213). The old 12 MB was set
+      // against 7,514 kB / 16,206 rows; at 179 bytes/row columnar it would not trip
+      // until ~69k rows, which is a gate in name only. 6 MB is ~34k rows, a little over
+      // 2x today's corpus — past that, string building alone puts the anon call back
+      // over 3s however well the scans are indexed, and the remaining lever is
+      // pagination, which needs search/facets/map moved server-side first. Hard fail
+      // rather than a nudge, because by then the page is already broken for anon.
+      console.error(
+        `✗ cities_directory() payload is ${(bytes / 1024 / 1024).toFixed(1)} MB over ${rows} rows. ` +
+          'The anon 3s ceiling cannot be held by indexing or by trimming further at this ' +
+          'size; this needs the pagination 99991792192213 deferred.',
+      )
+      FAILED = true
+    } else {
+      console.log(`✓ cities_directory payload inside the 6 MB gate`)
+      if (bytes > 4.5 * 1024 * 1024) {
+        console.warn(
+          `⚠ cities_directory payload is ${(bytes / 1024 / 1024).toFixed(1)} MB and the gate is 6 MB — ` +
+            'the directory is growing into the ceiling again. Plan the pagination change.',
+        )
+      }
+      if (elapsed > 2500) {
+        console.warn(
+          `⚠ cities_directory took ${elapsed}ms as service_role (no timeout). anon dies at 3000ms, ` +
+            'and this measurement includes runner network — re-measure server-side before acting.',
+        )
+      }
+    }
+  }
+}
+
 // 1. Open alerts
 const alerts = await get('pipeline_health_alerts?resolved_at=is.null&select=kind,subject,first_seen_at')
 if (alerts.length > 0) {
@@ -5679,110 +5783,6 @@ const DISOWNED_PROSE_CEILING = 380
       if (ageH > 36) {
         console.warn(
           `⚠ the newest dedup sweep run is ${ageH}h old — the counts above are not about last night.`,
-        )
-      }
-    }
-  }
-}
-
-// §  cities_directory() is the anonymous /cities page, and it has a 3s ceiling
-//    (2026-10-16, 99991792192204).
-//
-// `anon` carries its own `statement_timeout = 3s` (pg_roles.rolconfig), not the 8s
-// `authenticated` and `authenticator` get. This RPC takes no arguments and aggregates
-// the whole directory into one jsonb payload, so its cost tracks the corpus — and the
-// corpus MOVES: 2,529 rows when 99991789855163 tuned it, 16,206 twenty-six days later,
-// all of them legitimate (16,159 have an approved venue). It timed out for anonymous
-// visitors at 2 calls in 3 before the venue-count index landed, and /cities renders an
-// RPC failure as the "No cities found" empty state, so the failure is indistinguishable
-// from a filter that matched nothing.
-//
-// A constant-factor fix therefore buys time rather than settling this, which is why
-// there is a watcher at all. WHAT IS GATED IS THE PAYLOAD, NOT THE LATENCY: this runs
-// from a GitHub runner as `service_role`, which has no statement_timeout, so an elapsed
-// figure here carries that network and says nothing reliable about the 3s a browser
-// meets. The payload and the row count are measurable from anywhere and they are what
-// actually grew. Latency is reported and only warns.
-{
-  const t0 = Date.now()
-  let res
-  try {
-    res = await fetch(`${BASE}/rest/v1/rpc/cities_directory`, {
-      method: 'POST',
-      headers: { ...headers, 'Content-Type': 'application/json' },
-      body: '{}',
-    })
-  } catch (err) {
-    // A transport throw is "we could not look", which must never read as "nothing
-    // found" — the gate-rpc lesson. Fail closed.
-    console.error(`✗ cities_directory() could not be reached: ${err?.message ?? err}`)
-    FAILED = true
-  }
-
-  if (res && !res.ok) {
-    const body = await res.text().catch(() => '')
-    console.error(
-      `✗ cities_directory() returned HTTP ${res.status} ${body.slice(0, 300)} — this is the ` +
-        'anonymous /cities directory; a 57014 here means it is over even the 8s ceiling.',
-    )
-    FAILED = true
-  } else if (res) {
-    const text = await res.text()
-    const elapsed = Date.now() - t0
-    const bytes = Buffer.byteLength(text)
-    // The payload is the columnar `{countries, cols, rows}` envelope since
-    // 99991792192213. Reading `.length` off it — which is what this did while the RPC
-    // returned a bare array — yields `undefined` and reports a false "no rows", so the
-    // gate would have failed on a healthy directory the moment the shape changed.
-    let rows = null
-    let countries = null
-    try {
-      const parsed = JSON.parse(text)
-      rows = Array.isArray(parsed?.rows) ? parsed.rows.length : null
-      countries = Array.isArray(parsed?.countries) ? parsed.countries.length : null
-    } catch {
-      rows = null
-    }
-
-    // Reported BEFORE any verdict: zero rows and a 404 and a healthy directory would
-    // otherwise all produce the same reassuring absence of a ✗.
-    console.log(
-      `· cities_directory: ${rows ?? '?'} rows, ${countries ?? '?'} countries, ` +
-        `${(bytes / 1024 / 1024).toFixed(2)} MB, ${elapsed}ms (service_role)`,
-    )
-
-    if (!rows) {
-      console.error(
-        '✗ cities_directory() returned no rows. /cities renders that as "No cities found", ' +
-          'so an empty directory looks exactly like a search that matched nothing.',
-      )
-      FAILED = true
-    } else if (bytes > 6 * 1024 * 1024) {
-      // RE-SIZED for the columnar payload (99991792192213). The old 12 MB was set
-      // against 7,514 kB / 16,206 rows; at 179 bytes/row columnar it would not trip
-      // until ~69k rows, which is a gate in name only. 6 MB is ~34k rows, a little over
-      // 2x today's corpus — past that, string building alone puts the anon call back
-      // over 3s however well the scans are indexed, and the remaining lever is
-      // pagination, which needs search/facets/map moved server-side first. Hard fail
-      // rather than a nudge, because by then the page is already broken for anon.
-      console.error(
-        `✗ cities_directory() payload is ${(bytes / 1024 / 1024).toFixed(1)} MB over ${rows} rows. ` +
-          'The anon 3s ceiling cannot be held by indexing or by trimming further at this ' +
-          'size; this needs the pagination 99991792192213 deferred.',
-      )
-      FAILED = true
-    } else {
-      console.log(`✓ cities_directory payload inside the 6 MB gate`)
-      if (bytes > 4.5 * 1024 * 1024) {
-        console.warn(
-          `⚠ cities_directory payload is ${(bytes / 1024 / 1024).toFixed(1)} MB and the gate is 6 MB — ` +
-            'the directory is growing into the ceiling again. Plan the pagination change.',
-        )
-      }
-      if (elapsed > 2500) {
-        console.warn(
-          `⚠ cities_directory took ${elapsed}ms as service_role (no timeout). anon dies at 3000ms, ` +
-            'and this measurement includes runner network — re-measure server-side before acting.',
         )
       }
     }
