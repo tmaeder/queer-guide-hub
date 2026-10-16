@@ -66,7 +66,7 @@ export function publicReportResult(value:unknown) {
  return {allowIndexing:root.allowIndexing===true,dateRange:publicDateRange(root.dateRange),title:root.title,includeConversions:conversions,linkCount:count(root.linkCount),scopeMode:root.scopeMode==='folder'?'folder':'snapshot',expiresAt:typeof root.expiresAt==='string'?root.expiresAt:null,report:{snapshot:new Date(report.snapshot).toISOString(),interval:report.interval as string,totals:resultTotals,revenue,series,breakdowns}};
 }
 export type PublicRedirectReport=ReturnType<typeof publicReportResult>;
-export interface ReportDb {rpc(name:string,args:Record<string,unknown>):PromiseLike<{data:any;error:{code?:string;message?:string}|null}>;}
+export interface ReportDb {rpc(name:string,args:Record<string,unknown>):PromiseLike<{data:unknown;error:{code?:string;message?:string}|null}>;}
 export async function publicReportRequest(req:Request,db:ReportDb,secret:string,cors:Record<string,string>) {
  const json=(body:unknown,status=200,extra:Record<string,string>={})=>new Response(JSON.stringify(body),{status,headers:{...cors,Vary:[cors.Vary??cors.vary,'Authorization'].filter(Boolean).join(', '),'Content-Type':'application/json','Cache-Control':'no-store','Referrer-Policy':'no-referrer','X-Robots-Tag':'noindex, nofollow',...extra}});
  if(!['GET','POST'].includes(req.method))return json({error:'Method not supported'},405);
@@ -83,10 +83,13 @@ export async function publicReportRequest(req:Request,db:ReportDb,secret:string,
   const ip=await redirectClientIp(req.headers,'report:'+id,secret),clientHash=await tokenDigest(secret+':report:'+id+':'+ip);
   const check=await db.rpc('redirect_public_report_check',{p_id:id,p_client_hash:clientHash,p_password_attempt:password!==undefined});
   if(check.error)return json({error:check.error.code==='P0002'?'Dashboard unavailable':'Dashboard temporarily unavailable'},check.error.code==='P0002'?404:503);
-  if(check.data.retryAfter)return json({error:'Please wait before refreshing or trying another password'},429,{'Retry-After':String(check.data.retryAfter)});
+  // `record()` is the file's existing narrowing helper and throws on a non-object,
+  // which is the same shape `publicReportResult` already demands of the read below.
+  const checkData=record(check.data);
+  if(checkData.retryAfter)return json({error:'Please wait before refreshing or trying another password'},429,{'Retry-After':String(checkData.retryAfter)});
   let verified=false;
-  if(check.data.passwordHash){if(!password)return json({error:'Password required',passwordRequired:true},401);verified=await verifyLinkPassword(password,check.data.passwordHash as PasswordHash);if(!verified)return json({error:'Incorrect password',passwordRequired:true},401);}
-  const report=await db.rpc('redirect_public_report_read',{p_id:id,p_version:check.data.version,p_password_verified:verified,p_dates:dates});
+  if(checkData.passwordHash){if(!password)return json({error:'Password required',passwordRequired:true},401);verified=await verifyLinkPassword(password,checkData.passwordHash as PasswordHash);if(!verified)return json({error:'Incorrect password',passwordRequired:true},401);}
+  const report=await db.rpc('redirect_public_report_read',{p_id:id,p_version:checkData.version,p_password_verified:verified,p_dates:dates});
   if(report.error&&['22023','22007','22008'].includes(report.error.code??''))return json({error:'Choose a shorter date range within the published reporting period, with start before end'},400);
   if(report.error)return json({error:report.error.code==='42501'?'Dashboard access changed; unlock again':'Dashboard unavailable',...(report.error.code==='42501'?{passwordRequired:true}:{})},report.error.code==='42501'?401:report.error.code==='P0002'?404:503);
   return json(publicReportResult(report.data));
