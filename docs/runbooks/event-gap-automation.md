@@ -145,3 +145,9 @@ The source-evidence reopener uses `SKIP LOCKED` so ingestion cannot wait on a
 completion worker's queue lock while holding an event lock. Plain description
 recovery accepts plain text and decodes entities in one pass, addressing both
 CodeQL findings from the first PR run.
+
+Timezone validation resolves the declared zone directly with `AT TIME ZONE`;
+unknown zones are rejected. This avoids enumerating the entire timezone catalog
+for each source period. The full-schema integration test exercises raw source
+insertion, preview, canonical schedule recovery, date-index trigger, local opening
+time, idempotence and preservation of an authored schedule, all with rollback.

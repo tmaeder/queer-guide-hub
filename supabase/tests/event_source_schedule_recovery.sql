@@ -16,6 +16,7 @@ begin
  assert public.agendaq_evidence_schedule('{"dates":[["cal",{"start":"2026-10-01","end":"2026-10-31","tz":"Europe/Paris","startH":"12:00","endH":"17:00","recurring":"m","every":1,"m.day":6,"m.nth":5}]]}', '2026-10-01','2026-10-31') is null,'unknown fifth/last sentinel silently interpreted';
  assert public.agendaq_evidence_schedule('{"dates":[["cal",{"start":"invalid","end":"2026-10-31"}]]}') is null,'invalid source date accepted';
  assert public.agendaq_evidence_schedule('{"dates":"invalid"}') is null,'non-array dates accepted';
+ assert public.agendaq_evidence_schedule('{"dates":[["cal",{"start":"2026-10-01","end":"2026-10-31","tz":"Invalid/Timezone","startH":"12:00","endH":"17:00","recurring":"d"}]]}', '2026-10-01','2026-10-31') is null,'invalid timezone accepted';
  rule:=public.agendaq_evidence_schedule('{"dates":[["cal",{"start":"2026-10-01","end":"2026-10-31","tz":"Europe/Paris","startH":"12:00","endH":"17:00","recurring":"d","every":2}]]}', '2026-10-01','2026-10-05');
  assert jsonb_array_length(rule->'extra')=3,'daily interval anchor lost';
  assert public.agendaq_evidence_schedule('{"dates":[["cal",{"start":"2026-10-01","end":"2026-10-05","tz":"Europe/Paris","startH":"12:00","endH":"17:00","recurring":""}]]}', '2026-10-01','2026-10-31') is null,'unsupported multiday span truncated to one day';
