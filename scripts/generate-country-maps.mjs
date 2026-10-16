@@ -158,7 +158,34 @@ async function fetchCityDots() {
     body: '{}',
   });
   if (!dirRes.ok) throw new Error(`cities_directory: ${dirRes.status} ${await dirRes.text()}`);
-  const cities = await dirRes.json();
+
+  // The payload is COLUMNAR since 99991792178303 — `{countries, cols, rows}`, not an
+  // array of objects; key names were 55% of the old 7,514 kB. Decoded back into objects
+  // here BY NAME from `cols`, so everything below is unchanged and a column inserted
+  // upstream cannot silently shift every field. Row order is preserved (venue_count
+  // desc), which is what the capital pinning further down relies on.
+  const payload = await dirRes.json();
+  const cols = payload?.cols ?? [];
+  const countryLookup = payload?.countries ?? [];
+  const need = (col) => {
+    const i = cols.indexOf(col);
+    if (i === -1) throw new Error(`cities_directory: payload has no "${col}" column`);
+    return i;
+  };
+  const ix = {
+    country: need('country'),
+    name: need('name'),
+    latitude: need('latitude'),
+    longitude: need('longitude'),
+    is_capital: need('is_capital'),
+  };
+  const cities = (payload?.rows ?? []).map((row) => ({
+    name: row[ix.name],
+    latitude: row[ix.latitude],
+    longitude: row[ix.longitude],
+    is_capital: row[ix.is_capital],
+    country_slug: row[ix.country] == null ? null : (countryLookup[row[ix.country]]?.slug ?? null),
+  }));
 
   // cities_directory keys countries by slug; the geometry is keyed by ISO-2.
   const cRes = await fetch(`${url}/rest/v1/countries?select=code,slug&limit=400`, { headers });

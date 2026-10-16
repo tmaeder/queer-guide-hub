@@ -20,38 +20,58 @@ import {
  *      Brighton, Sitges, Palm Springs, Puerto Vallarta, West Hollywood, Tel Aviv.
  *   2. Scaling that batching to the real corpus is 22 round trips.
  *
- * `cities_directory()` (migration 20260905100000) returns all 2,142 seo-indexable,
- * non-ghost cities WITH their counts in a single 98 ms statement. See the migration
- * for the gate and for why it is SECURITY DEFINER.
+ * `cities_directory()` returns every seo-indexable, non-ghost city WITH its counts in
+ * one statement — 16,206 rows in ~720 ms as of 2026-10-16. See the migration for the
+ * gate and for why it is SECURITY DEFINER.
+ *
+ * THE PAYLOAD IS COLUMNAR, and that is a size decision with numbers behind it
+ * (99991792178303). As an array of 25-key objects it was 7,514 kB, of which the KEY
+ * NAMES were 3,675 kB — 55% — and a denormalised country block another 2,673 kB over
+ * just 212 distinct countries. As `{countries, cols, rows}` it is 2,831 kB, which took
+ * the RPC from 1,620 ms to ~720 ms against anon's 3s statement_timeout.
+ *
+ * Pagination was the obvious alternative and is the wrong one here: `filterAndSortCities`,
+ * `continentFacetCounts` and `CitiesMapPane` all read the WHOLE corpus client-side, so
+ * paginating breaks search, the continent counts and the map at once, and only pays off
+ * once all three move server-side.
  */
 
-/** A row exactly as `cities_directory()` returns it — flat, one level. */
-interface CitiesDirectoryRow {
-  id: string;
-  slug: string;
-  name: string;
-  name_en: string | null;
-  name_de: string | null;
-  region_name: string | null;
-  population: number | null;
-  latitude: number | null;
-  longitude: number | null;
-  is_capital: boolean | null;
-  /** Absent, not false, when the city is not a regional capital — the RPC nulls
-   *  it so jsonb_strip_nulls drops it from ~3,000 rows that would all say false. */
-  is_regional_capital?: boolean | null;
-  capital_of_region?: string | null;
-  editorial_hook: string | null;
-  country_id: string | null;
-  country_name: string | null;
-  country_slug: string | null;
+/** One entry of the payload's country lookup. Rows reference it by index. */
+interface DirectoryCountryEntry {
+  id: string | null;
+  name: string | null;
+  slug: string | null;
   equality_score: number | null;
   continent_code: string | null;
   continent_name: string | null;
-  venue_count: number;
-  upcoming_event_count: number;
-  village_count: number;
-  high_risk: boolean;
+}
+
+/**
+ * `cols` names each position in `rows`, and this hook decodes BY NAME.
+ *
+ * Decoding against a column order hardcoded here would break silently and
+ * catastrophically the first time the migration inserts a column — every city would
+ * read a neighbouring field with no error raised anywhere. `requireColumn` throws
+ * instead, which is the one failure mode worth having on a shape like this.
+ */
+interface CitiesDirectoryPayload {
+  countries?: DirectoryCountryEntry[] | null;
+  cols?: string[] | null;
+  rows?: unknown[][] | null;
+}
+
+function columnLookup(cols: readonly string[]) {
+  const index = new Map<string, number>();
+  cols.forEach((col, i) => index.set(col, i));
+  return function requireColumn(col: string): number {
+    const i = index.get(col);
+    if (i === undefined) {
+      throw new Error(
+        `cities_directory: payload has no "${col}" column (cols: ${cols.join(', ') || 'none'})`,
+      );
+    }
+    return i;
+  };
 }
 
 /**
@@ -104,61 +124,89 @@ interface CitiesDirectoryFetch {
 const CACHE_TIME = 30 * 60 * 1000;
 const STALE_TIME = 15 * 60 * 1000;
 
-function toDirectoryCity(row: CitiesDirectoryRow): DirectoryCity {
-  return {
-    id: row.id,
-    slug: row.slug,
-    name: row.name,
-    name_en: row.name_en,
-    name_de: row.name_de,
-    region_name: row.region_name,
-    population: row.population,
-    latitude: row.latitude,
-    longitude: row.longitude,
-    is_capital: row.is_capital,
-    is_regional_capital: row.is_regional_capital ?? false,
-    capital_of_region: row.capital_of_region ?? null,
-    editorial_hook: row.editorial_hook,
-    venue_count: row.venue_count,
-    upcoming_event_count: row.upcoming_event_count,
-    village_count: row.village_count,
-    high_risk: row.high_risk,
-    countries: row.country_id
-      ? {
-          id: row.country_id,
-          name: row.country_name,
-          slug: row.country_slug,
-          equality_score: row.equality_score,
-          continents: row.continent_code
-            ? { code: row.continent_code, name: row.continent_name }
-            : null,
-        }
-      : null,
+/** Decodes the columnar payload into the nested shape every consumer already reads. */
+export function decodeCitiesDirectory(payload: CitiesDirectoryPayload): CitiesDirectoryFetch {
+  const requireColumn = columnLookup(payload.cols ?? []);
+  const lookup = payload.countries ?? [];
+  const rows = payload.rows ?? [];
+
+  // Resolved once, outside the row loop. Every one of these throws if absent, so a
+  // payload that has lost a column fails loudly here rather than rendering 16,206
+  // cities with one field quietly shifted.
+  const I = {
+    id: requireColumn('id'),
+    slug: requireColumn('slug'),
+    name: requireColumn('name'),
+    nameEn: requireColumn('name_en'),
+    nameDe: requireColumn('name_de'),
+    regionName: requireColumn('region_name'),
+    population: requireColumn('population'),
+    latitude: requireColumn('latitude'),
+    longitude: requireColumn('longitude'),
+    isCapital: requireColumn('is_capital'),
+    isRegionalCapital: requireColumn('is_regional_capital'),
+    capitalOfRegion: requireColumn('capital_of_region'),
+    editorialHook: requireColumn('editorial_hook'),
+    venueCount: requireColumn('venue_count'),
+    upcomingEventCount: requireColumn('upcoming_event_count'),
+    villageCount: requireColumn('village_count'),
+    highRisk: requireColumn('high_risk'),
+    country: requireColumn('country'),
   };
-}
 
-async function fetchCitiesDirectory(): Promise<CitiesDirectoryFetch> {
-  // `untypedRpc` until types.ts is regenerated against prod — the function only
-  // reaches the live schema when its migration merges to main, and the generated
-  // types are produced from the live schema.
-  const { data, error } = await untypedRpc<CitiesDirectoryRow[]>('cities_directory');
-  if (error) throw new Error(error.message);
-
-  const rows = data ?? [];
   const cities: DirectoryCity[] = [];
   const venueCounts = new Map<string, number>();
   const continentsMap = new Map<string, DirectoryContinent>();
 
   for (const row of rows) {
-    cities.push(toDirectoryCity(row));
-    venueCounts.set(row.id, row.venue_count);
-    if (row.continent_code && row.continent_name) {
-      const existing = continentsMap.get(row.continent_code);
+    const id = row[I.id] as string;
+    const venueCount = (row[I.venueCount] as number | null) ?? 0;
+    const countryIx = row[I.country] as number | null;
+    // A dangling index would be a bug in the RPC (its P5 asserts against it), but it
+    // must degrade to "no country" rather than throw on one bad row.
+    const country = countryIx === null || countryIx === undefined ? undefined : lookup[countryIx];
+
+    cities.push({
+      id,
+      slug: row[I.slug] as string,
+      name: row[I.name] as string,
+      name_en: (row[I.nameEn] as string | null) ?? null,
+      name_de: (row[I.nameDe] as string | null) ?? null,
+      region_name: (row[I.regionName] as string | null) ?? null,
+      population: (row[I.population] as number | null) ?? null,
+      latitude: (row[I.latitude] as number | null) ?? null,
+      longitude: (row[I.longitude] as number | null) ?? null,
+      is_capital: (row[I.isCapital] as boolean | null) ?? null,
+      // Null, not false, for ~16,000 rows — the RPC nullifs it so the columnar cell is
+      // the 4-byte `null` rather than `false`.
+      is_regional_capital: (row[I.isRegionalCapital] as boolean | null) ?? false,
+      capital_of_region: (row[I.capitalOfRegion] as string | null) ?? null,
+      editorial_hook: (row[I.editorialHook] as string | null) ?? null,
+      venue_count: venueCount,
+      upcoming_event_count: (row[I.upcomingEventCount] as number | null) ?? 0,
+      village_count: (row[I.villageCount] as number | null) ?? 0,
+      high_risk: (row[I.highRisk] as boolean | null) ?? false,
+      countries: country
+        ? {
+            id: country.id ?? undefined,
+            name: country.name,
+            slug: country.slug,
+            equality_score: country.equality_score,
+            continents: country.continent_code
+              ? { code: country.continent_code, name: country.continent_name }
+              : null,
+          }
+        : null,
+    });
+
+    venueCounts.set(id, venueCount);
+    if (country?.continent_code && country.continent_name) {
+      const existing = continentsMap.get(country.continent_code);
       if (existing) existing.count += 1;
       else
-        continentsMap.set(row.continent_code, {
-          code: row.continent_code,
-          name: row.continent_name,
+        continentsMap.set(country.continent_code, {
+          code: country.continent_code,
+          name: country.continent_name,
           count: 1,
         });
     }
@@ -169,6 +217,15 @@ async function fetchCitiesDirectory(): Promise<CitiesDirectoryFetch> {
   );
 
   return { cities, continents, venueCounts };
+}
+
+async function fetchCitiesDirectory(): Promise<CitiesDirectoryFetch> {
+  // `untypedRpc` until types.ts is regenerated against prod — the function only
+  // reaches the live schema when its migration merges to main, and the generated
+  // types are produced from the live schema.
+  const { data, error } = await untypedRpc<CitiesDirectoryPayload>('cities_directory');
+  if (error) throw new Error(error.message);
+  return decodeCitiesDirectory(data ?? {});
 }
 
 export interface UseCitiesDirectoryResult {

@@ -5610,9 +5610,16 @@ const DISOWNED_PROSE_CEILING = 380
     const text = await res.text()
     const elapsed = Date.now() - t0
     const bytes = Buffer.byteLength(text)
+    // The payload is the columnar `{countries, cols, rows}` envelope since
+    // 99991792178303. Reading `.length` off it — which is what this did while the RPC
+    // returned a bare array — yields `undefined` and reports a false "no rows", so the
+    // gate would have failed on a healthy directory the moment the shape changed.
     let rows = null
+    let countries = null
     try {
-      rows = JSON.parse(text)?.length ?? null
+      const parsed = JSON.parse(text)
+      rows = Array.isArray(parsed?.rows) ? parsed.rows.length : null
+      countries = Array.isArray(parsed?.countries) ? parsed.countries.length : null
     } catch {
       rows = null
     }
@@ -5620,7 +5627,8 @@ const DISOWNED_PROSE_CEILING = 380
     // Reported BEFORE any verdict: zero rows and a 404 and a healthy directory would
     // otherwise all produce the same reassuring absence of a ✗.
     console.log(
-      `· cities_directory: ${rows ?? '?'} rows, ${(bytes / 1024 / 1024).toFixed(2)} MB, ${elapsed}ms (service_role)`,
+      `· cities_directory: ${rows ?? '?'} rows, ${countries ?? '?'} countries, ` +
+        `${(bytes / 1024 / 1024).toFixed(2)} MB, ${elapsed}ms (service_role)`,
     )
 
     if (!rows) {
@@ -5629,23 +5637,26 @@ const DISOWNED_PROSE_CEILING = 380
           'so an empty directory looks exactly like a search that matched nothing.',
       )
       FAILED = true
-    } else if (bytes > 12 * 1024 * 1024) {
-      // ~12 MB is roughly 26k rows at today's 7.5 MB / 16,206. Past that, jsonb_agg
-      // alone (851 ms of the current 1,620 ms) puts the anon call back over 3s however
-      // well the scans are indexed, and the remedy is pagination — a signature change
-      // with a frontend half, which is why this is a hard fail and not a nudge.
+    } else if (bytes > 6 * 1024 * 1024) {
+      // RE-SIZED for the columnar payload (99991792178303). The old 12 MB was set
+      // against 7,514 kB / 16,206 rows; at 179 bytes/row columnar it would not trip
+      // until ~69k rows, which is a gate in name only. 6 MB is ~34k rows, a little over
+      // 2x today's corpus — past that, string building alone puts the anon call back
+      // over 3s however well the scans are indexed, and the remaining lever is
+      // pagination, which needs search/facets/map moved server-side first. Hard fail
+      // rather than a nudge, because by then the page is already broken for anon.
       console.error(
         `✗ cities_directory() payload is ${(bytes / 1024 / 1024).toFixed(1)} MB over ${rows} rows. ` +
-          'The anon 3s ceiling cannot be held by indexing at this size; this needs the ' +
-          'pagination/field-trim that 99991789855163 and 99991792175608 both deferred.',
+          'The anon 3s ceiling cannot be held by indexing or by trimming further at this ' +
+          'size; this needs the pagination 99991792178303 deferred.',
       )
       FAILED = true
     } else {
-      console.log(`✓ cities_directory payload inside the 12 MB gate`)
-      if (bytes > 9 * 1024 * 1024) {
+      console.log(`✓ cities_directory payload inside the 6 MB gate`)
+      if (bytes > 4.5 * 1024 * 1024) {
         console.warn(
-          `⚠ cities_directory payload is ${(bytes / 1024 / 1024).toFixed(1)} MB and the gate is 12 MB — ` +
-            'the directory is growing into the ceiling again. Plan the payload change.',
+          `⚠ cities_directory payload is ${(bytes / 1024 / 1024).toFixed(1)} MB and the gate is 6 MB — ` +
+            'the directory is growing into the ceiling again. Plan the pagination change.',
         )
       }
       if (elapsed > 2500) {

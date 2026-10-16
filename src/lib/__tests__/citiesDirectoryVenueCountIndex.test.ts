@@ -160,11 +160,17 @@ describe('the growth watcher is wired', () => {
       health.indexOf('rpc/cities_directory'),
       health.lastIndexOf('process.exit(1)'),
     );
-    // Latency measured as service_role from a runner carries the network and has no
-    // statement_timeout behind it, so it cannot gate.
-    expect(section).toMatch(/12 \* 1024 \* 1024/);
+    // Asserts the SHAPE of the gate, not its tuning. The threshold is legitimately
+    // re-sized when the payload shape changes — it moved 12 MB -> 6 MB when the RPC
+    // went columnar in 99991792178303, and pinning the literal made this test fail on
+    // a correct re-size. What must not change is which quantity is allowed to FAIL:
+    // bytes do, and latency measured as service_role from a runner — carrying that
+    // network, with no statement_timeout behind it — only ever warns.
+    expect(section).toMatch(/bytes > [\d.]+ \* 1024 \* 1024/);
     expect(section).toMatch(/console\.error\([\s\S]{0,400}payload is/);
-    expect(section).toMatch(/elapsed > 2500[\s\S]{0,300}console\.warn/);
+    expect(section).toMatch(/elapsed > \d+[\s\S]{0,300}console\.warn/);
+    // Latency must never reach a hard fail.
+    expect(section).not.toMatch(/elapsed > \d+[\s\S]{0,300}FAILED = true/);
   });
 
   it('reports rows and bytes BEFORE any verdict, and fails closed', () => {

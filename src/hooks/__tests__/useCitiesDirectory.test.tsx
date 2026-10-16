@@ -6,10 +6,11 @@
  * PostgREST/Cloudflare cap the URL near 8 KB.
  *
  * That whole mechanism is gone. `cities_directory()` returns the counts with the
- * rows, so what needs guarding now is the RESHAPE — the RPC is flat and every
- * consumer (filter, sorter, map pane) reads a nested `countries.continents`
- * object. A silent mistake there does not throw; it makes every continent filter
- * match nothing.
+ * rows, so what needs guarding now is the RESHAPE — and since 99991792178303 the RPC
+ * is COLUMNAR (`{countries, cols, rows}`, with the country block normalised over 212
+ * entries) while every consumer (filter, sorter, map pane) reads a nested
+ * `countries.continents` object. A silent mistake there does not throw; it makes every
+ * continent filter match nothing.
  */
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { waitFor, renderHook } from '@testing-library/react';
@@ -20,7 +21,7 @@ vi.mock('@/integrations/supabase/untyped', () => ({
   untypedRpc: vi.fn(),
 }));
 
-import { useCitiesDirectory } from '@/hooks/useCitiesDirectory';
+import { useCitiesDirectory, decodeCitiesDirectory } from '@/hooks/useCitiesDirectory';
 import { untypedRpc } from '@/integrations/supabase/untyped';
 
 const rpcMock = untypedRpc as unknown as ReturnType<typeof vi.fn>;
@@ -68,11 +69,80 @@ function row(over: Partial<Record<string, unknown>> = {}) {
   };
 }
 
+/**
+ * The columns the RPC ships in `cols`, in its order.
+ *
+ * Declared here only so `payload()` can encode; the HOOK must never rely on this
+ * order — `decodes by name, not by position` below reverses it and asserts the decode
+ * still works.
+ */
+const COLS = [
+  'id',
+  'slug',
+  'name',
+  'name_en',
+  'name_de',
+  'region_name',
+  'population',
+  'latitude',
+  'longitude',
+  'is_capital',
+  'is_regional_capital',
+  'capital_of_region',
+  'editorial_hook',
+  'venue_count',
+  'upcoming_event_count',
+  'village_count',
+  'high_risk',
+  'country',
+] as const;
+
+/**
+ * Encodes flat test rows into the columnar `{countries, cols, rows}` envelope the RPC
+ * actually returns (99991792178303), normalising the country block exactly as the SQL
+ * does.
+ *
+ * These tests keep DESCRIBING cities as objects — that part reads better — but they must
+ * EXERCISE the real decoder. Feeding the hook a flat array it no longer receives is how
+ * a test passes against a shape only the test knows about.
+ */
+function payload(rows: Record<string, unknown>[], cols: readonly string[] = COLS) {
+  const countries: Record<string, unknown>[] = [];
+  const seen = new Map<string, number>();
+  const encoded = rows.map((r) => {
+    let country: number | null = null;
+    if (r.country_id != null) {
+      const key = [
+        r.country_id,
+        r.country_name,
+        r.country_slug,
+        r.equality_score,
+        r.continent_code,
+        r.continent_name,
+      ].join('|');
+      if (!seen.has(key)) {
+        seen.set(key, countries.length);
+        countries.push({
+          id: r.country_id,
+          name: r.country_name,
+          slug: r.country_slug,
+          equality_score: r.equality_score,
+          continent_code: r.continent_code,
+          continent_name: r.continent_name,
+        });
+      }
+      country = seen.get(key)!;
+    }
+    return cols.map((col) => (col === 'country' ? country : (r[col] ?? null)));
+  });
+  return { countries, cols: [...cols], rows: encoded };
+}
+
 beforeEach(() => rpcMock.mockReset());
 
 describe('useCitiesDirectory', () => {
   it('reshapes the flat RPC row into the nested country/continent shape', async () => {
-    rpcMock.mockResolvedValue({ data: [row()], error: null });
+    rpcMock.mockResolvedValue({ data: payload([row()]), error: null });
 
     const { result } = renderHook(() => useCitiesDirectory(NEUTRAL_PARAMS), {
       wrapper: makeWrapper(),
@@ -92,7 +162,10 @@ describe('useCitiesDirectory', () => {
 
   it('derives venueCounts from the same payload — no second query', async () => {
     rpcMock.mockResolvedValue({
-      data: [row(), row({ id: 'id-2', slug: 'brighton', name: 'Brighton', venue_count: 184 })],
+      data: payload([
+        row(),
+        row({ id: 'id-2', slug: 'brighton', name: 'Brighton', venue_count: 184 }),
+      ]),
       error: null,
     });
 
@@ -109,11 +182,11 @@ describe('useCitiesDirectory', () => {
 
   it('counts continents across the whole corpus, biggest first', async () => {
     rpcMock.mockResolvedValue({
-      data: [
+      data: payload([
         row({ id: 'a' }),
         row({ id: 'b' }),
         row({ id: 'c', continent_code: 'OC', continent_name: 'Oceania' }),
-      ],
+      ]),
       error: null,
     });
 
@@ -130,11 +203,11 @@ describe('useCitiesDirectory', () => {
 
   it('facet counts honour the other filters but not the continent facet', async () => {
     rpcMock.mockResolvedValue({
-      data: [
+      data: payload([
         row({ id: 'a', name: 'Berlin' }),
         row({ id: 'b', name: 'Brighton', country_name: 'United Kingdom' }),
         row({ id: 'c', name: 'Sydney', continent_code: 'OC', continent_name: 'Oceania' }),
-      ],
+      ]),
       error: null,
     });
 
@@ -154,6 +227,181 @@ describe('useCitiesDirectory', () => {
     expect(result.current.continentFacets.get('oc')).toBe(1);
     // …while the grid itself does respect it.
     expect(result.current.filtered.map((c) => c.name)).toEqual(['Sydney']);
+  });
+
+  it('decodes by name, not by position', async () => {
+    // The whole reason `cols` ships with the data. Reverse the column order and the
+    // hook must still read every field correctly; a decoder with the order hardcoded
+    // would silently hand each city its neighbour's values.
+    const reversed = [...COLS].reverse();
+    rpcMock.mockResolvedValue({ data: payload([row()], reversed), error: null });
+
+    const { result } = renderHook(() => useCitiesDirectory(NEUTRAL_PARAMS), {
+      wrapper: makeWrapper(),
+    });
+    await waitFor(() => expect(result.current.loading).toBe(false));
+
+    const city = result.current.cities[0];
+    expect(city.name).toBe('Berlin');
+    expect(city.venue_count).toBe(870);
+    expect(city.high_risk).toBe(false);
+    expect(city.countries?.continents?.code).toBe('EU');
+  });
+
+  it('fails loudly when the payload loses a column it needs', async () => {
+    // Absence of a column must not degrade to `undefined` on 16,206 cities. Dropping
+    // `venue_count` from cols leaves the sort silently reading nothing.
+    rpcMock.mockResolvedValue({
+      data: payload(
+        [row()],
+        COLS.filter((c) => c !== 'venue_count'),
+      ),
+      error: null,
+    });
+
+    const { result } = renderHook(() => useCitiesDirectory(NEUTRAL_PARAMS), {
+      wrapper: makeWrapper(),
+    });
+    await waitFor(() => expect(result.current.error).toMatch(/no "venue_count" column/));
+    expect(result.current.cities).toEqual([]);
+  });
+
+  it('decodes a real cities_directory() envelope', () => {
+    // Captured verbatim from prod (SELECT over the 99991792178303 shape), so this
+    // fixture is SQL output rather than a shape invented by the test. Note jsonb
+    // reorders object keys by length — `cols` first, `countries` last — which is one
+    // more reason nothing may decode by position.
+    const envelope = {
+      cols: [
+        'id',
+        'slug',
+        'name',
+        'name_en',
+        'name_de',
+        'region_name',
+        'population',
+        'latitude',
+        'longitude',
+        'is_capital',
+        'is_regional_capital',
+        'capital_of_region',
+        'editorial_hook',
+        'venue_count',
+        'upcoming_event_count',
+        'village_count',
+        'high_risk',
+        'country',
+      ],
+      rows: [
+        [
+          '5761c6c4-3ed6-4429-832b-025e508db544',
+          'berlin',
+          'Berlin',
+          null,
+          null,
+          'Berlin',
+          3700000,
+          52.52,
+          13.405,
+          true,
+          null,
+          null,
+          'Vibrant queer culture',
+          0,
+          0,
+          0,
+          false,
+          1,
+        ],
+        [
+          '01111a29-40ee-4497-82e5-a1be74bf93ba',
+          's-o-paulo',
+          'São Paulo',
+          null,
+          null,
+          'São Paulo',
+          22400000,
+          -23.5558,
+          -46.6396,
+          false,
+          true,
+          'São Paulo',
+          'Vibrant metropolis',
+          0,
+          0,
+          0,
+          false,
+          0,
+        ],
+        [
+          'bdbeb5bc-d2de-462a-a906-aed8e3b9f968',
+          'sitges',
+          'Sitges',
+          null,
+          null,
+          'Catalonia',
+          31954,
+          41.2358212,
+          1.8080251,
+          false,
+          null,
+          null,
+          null,
+          0,
+          0,
+          0,
+          false,
+          2,
+        ],
+      ],
+      countries: [
+        {
+          id: '79939873-bda8-4822-bdae-21ec2239b48a',
+          name: 'Brazil',
+          slug: 'brazil',
+          continent_code: 'SA',
+          continent_name: 'South America',
+          equality_score: 100,
+        },
+        {
+          id: 'fd9997de-bf8f-49a5-a641-9240a39541ff',
+          name: 'Germany',
+          slug: 'germany',
+          continent_code: 'EU',
+          continent_name: 'Europe',
+          equality_score: 100,
+        },
+        {
+          id: '4020d296-538c-4d6d-a728-33db16460181',
+          name: 'Spain',
+          slug: 'spain',
+          continent_code: 'EU',
+          continent_name: 'Europe',
+          equality_score: 100,
+        },
+      ],
+    };
+
+    const { cities, continents, venueCounts } = decodeCitiesDirectory(envelope);
+    const byName = Object.fromEntries(cities.map((c) => [c.name, c]));
+
+    expect(cities).toHaveLength(3);
+    expect(byName['Berlin'].countries?.name).toBe('Germany');
+    expect(byName['Berlin'].countries?.continents?.code).toBe('EU');
+    expect(byName['Berlin'].is_capital).toBe(true);
+    expect(byName['Sitges'].countries?.slug).toBe('spain');
+    expect(byName['Sitges'].region_name).toBe('Catalonia');
+    // nullif(is_regional_capital, false) means the cell is null for most rows; the
+    // hook must still surface a boolean.
+    expect(byName['Berlin'].is_regional_capital).toBe(false);
+    expect(byName['São Paulo'].is_regional_capital).toBe(true);
+    expect(byName['São Paulo'].countries?.continents?.name).toBe('South America');
+    // Two EU cities share one lookup entry each; the facet count must still be 2.
+    expect(continents).toEqual([
+      { code: 'EU', name: 'Europe', count: 2 },
+      { code: 'SA', name: 'South America', count: 1 },
+    ]);
+    expect(venueCounts.get('5761c6c4-3ed6-4429-832b-025e508db544')).toBe(0);
   });
 
   it('surfaces an RPC error as a message', async () => {
