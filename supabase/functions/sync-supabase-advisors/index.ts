@@ -16,12 +16,49 @@
  *     actionable. Everything else (rls_policy_always_true, security_definer_view,
  *     auth_insufficient_mfa_options, …) still surfaces.
  *
+ * pg_graphql (added 2026-10-16) is the same class and the reasoning is worth
+ * keeping, because the obvious reading of these two lints is wrong twice over.
+ *   - The exposure IS closed: `graphql_public` was removed from the project's
+ *     PostgREST exposed schemas (`db_schema` is now `public, pgmq_public`), so
+ *     /graphql/v1 answers `PGRST106 Invalid schema: graphql_public` to every
+ *     role. Before the flip, anon POSTing `{ countriesCollection(first:1) … }`
+ *     got HTTP 200 with real rows — measured 3/3, with a REST positive control
+ *     at 200 to prove the key was valid. Note the FIRST such probe returned
+ *     `500 57014` (the 8s statement timeout under load) — a timeout is not a
+ *     denial, and reading one as "already closed" is how this survived.
+ *   - A SQL REVOKE could never have closed it. `20260610190942` §8 tried
+ *     exactly that and was a silent no-op: `graphql`, `graphql_public` and
+ *     `graphql_public.graphql()` are all owned by `supabase_admin`, postgres
+ *     cannot revoke a supabase_admin grant, and the statement sat inside an
+ *     exception handler that swallowed the error. anon still holds USAGE +
+ *     EXECUTE on all three today. Do not re-attempt the REVOKE.
+ *   - These two lints nevertheless STILL FIRE, at 149 + 587 = 736 findings,
+ *     re-measured on a fresh uncached advisor run AFTER the flip. They key on
+ *     table SELECT grants and pg_graphql reflection, not on whether the HTTP
+ *     endpoint is routed — the linter cannot see the PostgREST config. So the
+ *     finding is unfixable by construction while REST works.
+ *   - Their own stated remediation ("revoke SELECT from anon") is forbidden
+ *     here: `20260427160000` did it and `20260428060000` reverted it, because
+ *     the table-level GRANT is what PostgREST checks before RLS runs and every
+ *     public page started returning 401. That revert's header names disabling
+ *     /graphql/v1 as the correct mitigation instead — which is what shipped.
+ *   - Cost of leaving them on the board: 736 of the 818 open `api_error` rows,
+ *     90%, one per object, regenerating on every run. That is how a review
+ *     queue teaches its reviewers to ignore it.
+ *   Dropping them here lets step 4 auto-resolve the existing backlog, since the
+ *   fingerprints stop appearing in `liveFingerprints`. If the GraphQL endpoint
+ *   is ever re-exposed, remove these two entries in the same change.
+ *
  * Each finding uses the advisor's stable `cache_key` as the fingerprint so
  * repeat runs deduplicate. Findings that disappear between runs auto-resolve
  * (feedback_status='done', resolution='fixed'), closing the loop without a
  * manual admin click.
  *
- * Scheduled hourly via pg_cron — see the migration alongside this function.
+ * Scheduled via pg_cron — see the migration alongside this function. The job is
+ * named `sync-supabase-advisors-hourly` and the NAME IS STALE: measured
+ * 2026-10-16 its schedule is `17 3 * * *`, i.e. once daily at 03:17 UTC, not
+ * hourly. Read `cron.job.schedule`, not the jobname, before reasoning about how
+ * fast a backlog here drains.
  *
  * Required env:
  *   MANAGEMENT_ACCESS_TOKEN  Personal Access Token with project:read (the
@@ -118,6 +155,10 @@ Deno.serve(async (req) => {
     'authenticated_security_definer_function_executable',
     'anon_security_definer_function_executable',
     'function_search_path_mutable',
+    // pg_graphql: see the header. The endpoint is closed; these two lints read
+    // table grants, which cannot be revoked, so they fire forever at ~736 rows.
+    'pg_graphql_anon_table_exposed',
+    'pg_graphql_authenticated_table_exposed',
   ]);
   const keepLint = (l: AdvisorLint, type: 'security' | 'performance'): boolean => {
     if (l.level === 'INFO') return false;
