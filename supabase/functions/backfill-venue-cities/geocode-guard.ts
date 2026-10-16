@@ -47,6 +47,29 @@ export function canStartPostalRequest(
   return elapsedMs + requestTimeoutMs + intervalMs < runBudgetMs
 }
 
+export interface PostalQueuePoint {
+  latitude: number | string | null
+  longitude: number | string | null
+}
+
+export interface PostalQueueEntity extends PostalQueuePoint {
+  postal_code: string | null
+  safety_gated: boolean | null
+  duplicate_of_id: string | null
+}
+
+/** Never reverse-geocode an old coordinate or a record held for geography review. */
+export function postalQueueAction(
+  queued: PostalQueuePoint,
+  current: PostalQueueEntity | null,
+): 'drop' | 'defer' | 'refresh' | 'geocode' {
+  if (!current || current.duplicate_of_id || current.postal_code?.trim()) return 'drop'
+  if (current.safety_gated || current.latitude == null || current.longitude == null) return 'defer'
+  if (Number(current.latitude) !== Number(queued.latitude) ||
+    Number(current.longitude) !== Number(queued.longitude)) return 'refresh'
+  return 'geocode'
+}
+
 export function normPostal(p?: string | null): string | null {
   const s = (p || '').toUpperCase().replace(/[^A-Z0-9]/g, '')
   return s.length >= 3 ? s : null

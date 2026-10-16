@@ -10,6 +10,7 @@ import {
   postalContradicts,
   postalJobOutcome,
   canStartPostalRequest,
+  postalQueueAction,
   stampGeocode,
   houseNumberContradicts,
   normPlace,
@@ -35,6 +36,22 @@ function venue(over: Partial<GeoVenue> = {}): GeoVenue {
 Deno.test('postal drain stops before an in-flight request could exceed its HTTP budget', () => {
   assert(canStartPostalRequest(70_000, 15_000, 1_100, 90_000))
   assertFalse(canStartPostalRequest(74_000, 15_000, 1_100, 90_000))
+})
+
+Deno.test('postal drain refuses satisfied, quarantined and stale-coordinate queue rows', () => {
+  const queued = { latitude: 51.5, longitude: -0.1 }
+  const current = {
+    ...queued,
+    postal_code: null,
+    safety_gated: false,
+    duplicate_of_id: null,
+  }
+  assertEquals(postalQueueAction(queued, current), 'geocode')
+  assertEquals(postalQueueAction(queued, { ...current, postal_code: 'SW1A 1AA' }), 'drop')
+  assertEquals(postalQueueAction(queued, { ...current, duplicate_of_id: 'canonical' }), 'drop')
+  assertEquals(postalQueueAction(queued, { ...current, safety_gated: true }), 'defer')
+  assertEquals(postalQueueAction(queued, { ...current, latitude: null }), 'defer')
+  assertEquals(postalQueueAction(queued, { ...current, latitude: 52 }), 'refresh')
 })
 
 // The live reproduction this guard was written for.

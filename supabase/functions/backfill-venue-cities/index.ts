@@ -12,6 +12,7 @@ import {
   postalContradicts,
   postalJobOutcome,
   canStartPostalRequest,
+  postalQueueAction,
   stampGeocode,
   houseNumberContradicts,
   photonToNominatim,
@@ -1170,7 +1171,7 @@ async function photonReverse(lat: number, lon: number): Promise<PhotonReverse | 
 async function processPostalQueue(
   supabase: ReturnType<typeof getServiceClient>,
   batchSize: number,
-): Promise<{ processed: number; filled: number; extras: number; parked: number; failed: number; remaining: number }> {
+): Promise<{ processed: number; filled: number; extras: number; parked: number; failed: number; skipped: number; remaining: number }> {
   const startedAt = Date.now()
   const { data: jobs, error } = await supabase
     .from('geo_address_queue')
@@ -1181,12 +1182,12 @@ async function processPostalQueue(
     .limit(batchSize)
 
   if (error) throw error
-  if (!jobs?.length) return { processed: 0, filled: 0, extras: 0, parked: 0, failed: 0, remaining: 0 }
+  if (!jobs?.length) return { processed: 0, filled: 0, extras: 0, parked: 0, failed: 0, skipped: 0, remaining: 0 }
 
   // `filled` counts postal codes ACTUALLY written — the one thing this queue
   // exists to do. `extras` counts opportunistic state/country_id fills taken
   // from the same response. `parked` counts rows Photon has no postcode for.
-  let processed = 0, filled = 0, extras = 0, parked = 0, failed = 0
+  let processed = 0, filled = 0, extras = 0, parked = 0, failed = 0, skipped = 0
 
   for (const job of jobs) {
     if (!canStartPostalRequest(
@@ -1200,8 +1201,47 @@ async function processPostalQueue(
     if (!table) continue
 
     try {
-      if (job.latitude == null || job.longitude == null) throw new Error('no_coords')
+      const readCurrent = async () => {
+        const { data, error: readError } = await supabase.from(table)
+          .select('postal_code, latitude, longitude, safety_gated, duplicate_of_id, country_id')
+          .eq('id', job.entity_id).maybeSingle()
+        if (readError) throw readError
+        return data
+      }
+      const reconcileQueue = async (current: Awaited<ReturnType<typeof readCurrent>>) => {
+        const action = postalQueueAction(job, current)
+        if (action === 'geocode') return false
+        skipped++
+        if (action === 'drop') {
+          const { error: queueError } = await supabase.from('geo_address_queue').delete()
+            .eq('entity_type', job.entity_type).eq('entity_id', job.entity_id)
+          if (queueError) throw queueError
+        } else if (action === 'refresh' && current) {
+          const { error: queueError } = await supabase.from('geo_address_queue').update({
+            latitude: current.latitude,
+            longitude: current.longitude,
+            next_attempt_at: new Date().toISOString(),
+            last_error: null,
+          }).eq('entity_type', job.entity_type).eq('entity_id', job.entity_id)
+          if (queueError) throw queueError
+        } else {
+          // A review hold or removed coordinates must not consume a Photon call.
+          // Recheck daily so a source-backed correction can resume automatically.
+          const { error: queueError } = await supabase.from('geo_address_queue').update({
+            next_attempt_at: new Date(Date.now() + 24 * 3600_000).toISOString(),
+            last_error: 'geography_review_hold',
+          }).eq('entity_type', job.entity_type).eq('entity_id', job.entity_id)
+          if (queueError) throw queueError
+        }
+        return true
+      }
+
+      if (await reconcileQueue(await readCurrent())) continue
       const geo = await photonReverse(Number(job.latitude), Number(job.longitude))
+      // The entity may have changed during the external request. Recheck before
+      // writing a postcode or parking a no-postcode result for old coordinates.
+      const currentAfterReverse = await readCurrent()
+      if (await reconcileQueue(currentAfterReverse)) continue
 
       // country_id from Photon's countrycode. This is a DIFFERENT kind of answer
       // from the free-text `country` column, which needs resolve_country_from_text's
@@ -1220,6 +1260,18 @@ async function processPostalQueue(
           .maybeSingle()
         geoCountryId = co?.id ?? null
       }
+      if (geoCountryId && currentAfterReverse?.country_id &&
+        geoCountryId !== currentAfterReverse.country_id) {
+        // A coordinate/country contradiction needs review, not a postal code
+        // copied from the other side of a border or an incorrect old pin.
+        const { error: queueError } = await supabase.from('geo_address_queue').update({
+          next_attempt_at: new Date(Date.now() + 24 * 3600_000).toISOString(),
+          last_error: 'reverse_country_conflict',
+        }).eq('entity_type', job.entity_type).eq('entity_id', job.entity_id)
+        if (queueError) throw queueError
+        skipped++
+        continue
+      }
 
       // EVERY write gets its own statement with its own `is null` guard, and
       // every one is measured by `.select('id')` rather than assumed.
@@ -1237,12 +1289,22 @@ async function processPostalQueue(
           .update({ [col]: value })
           .eq('id', job.entity_id)
           .is(col, null)
+          .eq('latitude', job.latitude)
+          .eq('longitude', job.longitude)
+          .eq('safety_gated', false)
+          .is('duplicate_of_id', null)
           .select('id')
         if (wErr) throw new Error(wErr.message)
         return (data?.length ?? 0) > 0
       }
 
       const wrotePostal = geo?.postcode ? await wrote('postal_code', geo.postcode) : false
+      if (geo?.postcode && !wrotePostal) {
+        if (await reconcileQueue(await readCurrent())) continue
+        // The guarded write did not land even though the row still appears
+        // eligible. Keep the job with normal backoff rather than dropping it.
+        throw new Error('postal_write_not_applied')
+      }
       if (geo?.state) { if (await wrote('state', geo.state)) extras++ }
       if (geoCountryId) { if (await wrote('country_id', geoCountryId)) extras++ }
 
@@ -1258,6 +1320,7 @@ async function processPostalQueue(
           .eq('entity_type', job.entity_type)
           .eq('entity_id', job.entity_id)
       } else {
+        if (await reconcileQueue(await readCurrent())) continue
         // Photon answered and has NO postcode for this location (city-states,
         // micro-states, unaddressed coordinates). PARK the row — do not delete
         // it.
@@ -1310,7 +1373,7 @@ async function processPostalQueue(
     .select('entity_id', { count: 'exact', head: true })
     .lt('attempts', PARK_ATTEMPTS)
 
-  return { processed, filled, extras, parked, failed, remaining: count ?? 0 }
+  return { processed, filled, extras, parked, failed, skipped, remaining: count ?? 0 }
 }
 
 async function processPostalQueueWithLease(
@@ -1319,7 +1382,7 @@ async function processPostalQueueWithLease(
 ) {
   const { data: claimedAt, error } = await supabase.rpc('claim_postal_geocoder_lease')
   if (error) throw error
-  if (!claimedAt) return { processed: 0, filled: 0, extras: 0, parked: 0, failed: 0, remaining: null, lease_busy: true }
+  if (!claimedAt) return { processed: 0, filled: 0, extras: 0, parked: 0, failed: 0, skipped: 0, remaining: null, lease_busy: true }
 
   try {
     return await processPostalQueue(supabase, batchSize)
