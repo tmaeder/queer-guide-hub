@@ -8,6 +8,7 @@ DECLARE actor uuid:=gen_random_uuid();other uuid:=gen_random_uuid();legacy uuid:
 BEGIN
  INSERT INTO auth.users(id) VALUES(actor);INSERT INTO public.user_roles VALUES(actor,'admin');
  INSERT INTO public.redirect_workspaces(id,name,slug) VALUES(other,'QR defaults fixture','qr-defaults-fixture');
+ INSERT INTO redirect_internal.workspace_owners(workspace_id,user_id) VALUES(other,actor);
  INSERT INTO public.redirect_domain_preferences(workspace_id,singleton) VALUES(other,true);
  INSERT INTO public.redirect_qr_assets(id,workspace_id,target_scope,requested_by,mime,bytes,width,height,sha256,state) VALUES(foreign_asset,other,'workspace',actor,'image/png',8,1,1,repeat('b',64),'active');
  INSERT INTO public.redirect_qr_styles(workspace_id,scope,style,logo_mode,logo_asset_id) VALUES(other,'workspace','{"dots":"circle"}','custom',foreign_asset);

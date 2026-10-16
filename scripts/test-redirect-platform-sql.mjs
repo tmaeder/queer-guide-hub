@@ -5,6 +5,7 @@ import { createRedirectTestDb } from './lib/redirect-test-db.mjs';
 // Isolated PostgreSQL only; never the production project.
 const db = await createRedirectTestDb();
 try {
+  await db.exec(readFileSync('supabase/tests/redirect_workspace_owner_authority.sql', 'utf8'));
   await db.exec(readFileSync('supabase/tests/redirect_workspace_identity.sql', 'utf8'));
   await db.exec(readFileSync('supabase/tests/redirect_workspace_relationships.sql', 'utf8'));
   await db.exec(readFileSync('supabase/tests/redirect_workspace_membership_scope.sql', 'utf8'));
@@ -12,7 +13,9 @@ try {
   await db.exec(readFileSync('supabase/tests/redirect_workspace_link_scope.sql', 'utf8'));
   await db.exec(readFileSync('supabase/tests/redirect_workspace_qr_report_scope.sql', 'utf8'));
   await db.exec(readFileSync('supabase/tests/redirect_workspace_qr_defaults.sql', 'utf8'));
-  await db.exec(readFileSync('supabase/tests/redirect_workspace_customer_analytics_scope.sql', 'utf8'));
+  await db.exec(
+    readFileSync('supabase/tests/redirect_workspace_customer_analytics_scope.sql', 'utf8'),
+  );
   await db.exec(readFileSync('supabase/tests/redirect_workspace_customer_keys.sql', 'utf8'));
   await db.exec(readFileSync('supabase/tests/redirect_workspace_domain_scope.sql', 'utf8'));
   await db.exec(readFileSync('supabase/tests/redirect_workspace_webhook_scope.sql', 'utf8'));
@@ -96,11 +99,18 @@ try {
     ).rows[0].exposed,
     false,
   );
-  const mailMigration = readdirSync('supabase/migrations').find(name => name.endsWith('_redirect_domain_instruction_mail.sql'));
-  const mailSchedule = readFileSync('supabase/migrations/' + mailMigration, 'utf8').match(/DO \$migration\$[\s\S]*?\$migration\$;/)?.[0];
+  const mailMigration = readdirSync('supabase/migrations').find((name) =>
+    name.endsWith('_redirect_domain_instruction_mail.sql'),
+  );
+  const mailSchedule = readFileSync('supabase/migrations/' + mailMigration, 'utf8').match(
+    /DO \$migration\$[\s\S]*?\$migration\$;/,
+  )?.[0];
   assert.ok(mailSchedule, 'Instruction mail schedule missing');
-  await db.exec(mailSchedule); await db.exec(mailSchedule);
-  const mailJobs = (await db.query("SELECT * FROM cron.test_jobs WHERE name='redirect-domain-instruction-mail'")).rows;
+  await db.exec(mailSchedule);
+  await db.exec(mailSchedule);
+  const mailJobs = (
+    await db.query("SELECT * FROM cron.test_jobs WHERE name='redirect-domain-instruction-mail'")
+  ).rows;
   assert.equal(mailJobs.length, 1, 'Instruction mail schedule duplicated');
   assert.equal(mailJobs[0].schedule, '* * * * *');
   await db.exec(`CREATE SCHEMA vault; CREATE SCHEMA net;
@@ -108,19 +118,43 @@ try {
    CREATE TABLE net.test_mail_requests(id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,url text,headers jsonb,body jsonb,timeout_ms integer);
    CREATE FUNCTION net.http_post(url text,headers jsonb,body jsonb,timeout_milliseconds integer) RETURNS bigint LANGUAGE sql AS $$ INSERT INTO net.test_mail_requests(url,headers,body,timeout_ms) VALUES($1,$2,$3,$4) RETURNING id $$;`);
   await db.exec(mailJobs[0].command);
-  assert.equal((await db.query('SELECT count(*)::int AS n FROM net.test_mail_requests')).rows[0].n,0);
-  await db.exec("INSERT INTO vault.decrypted_secrets VALUES('supabase_url','https://fixture.supabase.co'),('internal_invoke_secret','')");
+  assert.equal(
+    (await db.query('SELECT count(*)::int AS n FROM net.test_mail_requests')).rows[0].n,
+    0,
+  );
+  await db.exec(
+    "INSERT INTO vault.decrypted_secrets VALUES('supabase_url','https://fixture.supabase.co'),('internal_invoke_secret','')",
+  );
   await db.exec(mailJobs[0].command);
-  assert.equal((await db.query('SELECT count(*)::int AS n FROM net.test_mail_requests')).rows[0].n,0);
-  await db.exec("UPDATE vault.decrypted_secrets SET decrypted_secret='fixture-domain-mail' WHERE name='internal_invoke_secret'");
+  assert.equal(
+    (await db.query('SELECT count(*)::int AS n FROM net.test_mail_requests')).rows[0].n,
+    0,
+  );
+  await db.exec(
+    "UPDATE vault.decrypted_secrets SET decrypted_secret='fixture-domain-mail' WHERE name='internal_invoke_secret'",
+  );
   await db.exec(mailJobs[0].command);
-  const scheduledMail=(await db.query('SELECT * FROM net.test_mail_requests')).rows;
-  assert.equal(scheduledMail.length,1);assert.equal(scheduledMail[0].url,'https://fixture.supabase.co/functions/v1/redirect-domain-instruction-mail');
-  assert.deepEqual(scheduledMail[0].headers,{'Content-Type':'application/json','x-internal-secret':'fixture-domain-mail'});
-  assert.deepEqual(scheduledMail[0].body,{});assert.equal(scheduledMail[0].timeout_ms,60000);
-  await db.exec("UPDATE vault.decrypted_secrets SET decrypted_secret='http://other.example.org' WHERE name='supabase_url'");
+  const scheduledMail = (await db.query('SELECT * FROM net.test_mail_requests')).rows;
+  assert.equal(scheduledMail.length, 1);
+  assert.equal(
+    scheduledMail[0].url,
+    'https://fixture.supabase.co/functions/v1/redirect-domain-instruction-mail',
+  );
+  assert.deepEqual(scheduledMail[0].headers, {
+    'Content-Type': 'application/json',
+    'x-internal-secret': 'fixture-domain-mail',
+  });
+  assert.deepEqual(scheduledMail[0].body, {});
+  assert.equal(scheduledMail[0].timeout_ms, 60000);
+  await db.exec(
+    "UPDATE vault.decrypted_secrets SET decrypted_secret='http://other.example.org' WHERE name='supabase_url'",
+  );
   await db.exec(mailJobs[0].command);
-  assert.equal((await db.query('SELECT count(*)::int AS n FROM net.test_mail_requests')).rows[0].n,1,'Invalid scheduler URL escaped guard');
+  assert.equal(
+    (await db.query('SELECT count(*)::int AS n FROM net.test_mail_requests')).rows[0].n,
+    1,
+    'Invalid scheduler URL escaped guard',
+  );
   console.log(
     'Redirect platform SQL: policies, atomic creation, quotas, expiry, variant metrics, conversion attribution, analytics, password throttling scoped link management, workspace APIs and presentations passed.',
   );

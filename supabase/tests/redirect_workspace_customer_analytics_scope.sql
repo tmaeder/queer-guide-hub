@@ -10,6 +10,7 @@ DECLARE actor uuid:='00000000-0000-4000-8000-000000000081';other uuid:='00000000
 BEGIN
  INSERT INTO auth.users(id) VALUES(actor);INSERT INTO public.user_roles VALUES(actor,'admin');
  INSERT INTO public.redirect_workspaces(id,name,slug) VALUES(other,'Customer analytics fixture','customer-analytics-fixture');
+ INSERT INTO redirect_internal.workspace_owners(workspace_id,user_id) VALUES(other,actor);
  INSERT INTO public.redirects(id,workspace_id,type,slug,target) VALUES(foreign_link,other,'SHORT','foreign-customer-analytics','https://example.org/foreign-customer');
  INSERT INTO public.redirects(type,slug,target) VALUES('SHORT','local-customer-analytics','https://example.org/local-customer') RETURNING id INTO local_link;
  INSERT INTO public.redirect_events(workspace_id,redirect_id,click_id,ts,path,variant_id,status) VALUES(other,foreign_link,foreign_click,now()-interval '1 hour','/foreign-private-customer','foreign-private-variant',302);

@@ -548,3 +548,46 @@ change. That merge is preserved on this branch. Post-integration lint/diff and a
 2368 migration version/parser checks pass; Redirects source and fixture deployment
 order are unchanged by the integration. Production history/trigger reconciliation
 and final-head CI remain release gates.
+
+
+Owner-authority checkpoint: migration99991792176060 introduces a private explicit
+workspace-owner registry. App admins remain owners only of the immutable legacy
+workspace; created_by and global admin status do not grant another workspace.
+Nonlegacy grants may hold multiple active owners independently, with immutable
+workspace/account identity. Registry writes and workspace lifecycle writes share
+the existing ACL lock. Deferred guards reject activation without an active owner
+and reject removing/deactivating the last active owner, while permitting an atomic
+replacement. Legacy ownership continues to follow current application roles and
+cannot be overridden through registry rows.
+
+Two private owner lookup/enumeration helpers replace global-role assumptions in36
+resource functions: private session/member/key/ACL/report/QR/customer/native/domain/
+mail/webhook operations, public source-row checks and durable worker pre/postflight
+checks. Background authority uses the resource's workspace, not caller headers.
+Folder notification owners are workspace-specific. Direct authenticated legacy RLS
+continues using redirect_current_owner with its existing fixed-legacy row fences.
+A nonlegacy null-principal management operation will require explicit owner account
+context; legacy internal/no-actor compatibility is retained. New tenant activation,
+creation/switching and owner-admission HTTP controls remain unavailable.
+
+Rollback-only owner fixtures verify independent and multiple grants, creator/admin
+non-escalation, explicit revocation, ownerless activation denial, last-owner guards,
+atomic replacement, private grants and preserved activation denial. Catalog proof
+finds no remaining public redirect resource function reading application user_roles
+except the intentionally legacy-only direct-RLS helper. Foreign resource fixtures
+now carry genuine owner grants. The webhook fixture uses a foreign owner with no
+application admin role and proves source-row click/conversion/lifecycle delivery
+still reaches only that workspace. Actual owner HTTP/five SDK runtimes, full SQL,
+40-table existing-data backfill,2369 migration version/parser checks and script
+lint/format/diff checks pass locally. No UI changed and no tenant was activated;
+final-head CI and live release proof remain required.
+
+Current role reference: https://dub.co/help/article/workspace-roles (read2026-10-16).
+Dub supports inviting additional owners. Its Links grid permits member tag edits
+and all roles to view domains, API-key metadata and webhooks; these permissions
+still need follow-through. The current page also includes Billing as a fourth
+role with read-only Links permissions; that role remains open rather than being
+counted as implemented. The wider owner admission/lifecycle UI, workspace creation/
+switching, public/shared-host activation, domain transfer and live provider/device/
+release verification remain open. Firecrawl retrieval was unavailable due to
+account credits; the primary page was read directly instead.

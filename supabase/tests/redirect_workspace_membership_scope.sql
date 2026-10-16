@@ -19,6 +19,7 @@ BEGIN
  -- private to service-only definer routines in the real schema.
  INSERT INTO auth.users(id,email,email_confirmed_at) VALUES(account,'membership-scope@example.org',now());
  INSERT INTO public.redirect_workspaces(id,name,slug,created_by) VALUES(other,'Private second workspace','membership-scope-fixture',owner_id);
+ INSERT INTO redirect_internal.workspace_owners(workspace_id,user_id) VALUES(other,owner_id);
  INSERT INTO public.redirect_workspace_members(id,workspace_id,user_id,kind,label,role) VALUES(foreign_member,other,account,'user','Foreign private member','member');
  INSERT INTO public.redirect_workspace_members(id,user_id,kind,label,role) VALUES(local_member,account,'user','Local member','member');
  BEGIN INSERT INTO public.redirect_workspace_members(user_id,kind,label) VALUES(account,'user','Duplicate local');RAISE EXCEPTION 'Duplicate membership within workspace accepted';EXCEPTION WHEN unique_violation THEN NULL;END;
