@@ -368,6 +368,7 @@ Deno.serve(async (req: Request) => {
    if(part==='instruction-emails'&&!job){
     if(req.method!=='GET')return json({error:'Method not supported'},405);
     const query=new URL(req.url).searchParams,requestId=query.get('requestId');
+    if(query.size===0){const result=await db.rpc('redirect_domain_instruction_mail_latest',{p_actor:user!.id,p_domain:domain});if(result.error)return rpcError(result.error);return json({mail:result.data});}
     if(query.size!==1||query.getAll('requestId').length!==1||!requestId||!UUID.test(requestId))return json({error:'Choose an instruction email request'},400);
     const result=await db.rpc('redirect_domain_instruction_mail_action',{p_action:'lookup',p_actor:user!.id,p_domain:domain,p_values:{requestId}});if(result.error)return rpcError(result.error);return json({mail:result.data});
    }

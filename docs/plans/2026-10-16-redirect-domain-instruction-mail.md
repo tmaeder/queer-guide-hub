@@ -82,3 +82,18 @@ receipt read; the API/SQL test exercises this boundary. A null status lookup alo
 cannot certify that another incoming request has stopped. The forwarding UI and
 its uncertainty/recovery states are required next work, not discharged by this
 backend or its tests.
+
+
+Implementation follow-through: native owner review/recipient/send/status/recovery/
+cancel controls are now implemented. Exact body/UUID are persisted per account/
+domain before POST; unknown outcomes retain identity, while first known prequeue
+validation errors permit correction. Status and cancellation work when sending
+is disabled. A new service-only current-owner latest-receipt RPC and collection
+GET support fresh tabs without local state; another owner receives no private
+history. Terminal accepted/uncertain receipts require an explicit recipient
+acknowledgement before another draft/UUID. Latest-receipt reads cannot enqueue.
+
+Fifteen UI tests, full56-case focused suite, SQL and actual owner HTTP/five-SDK
+contracts pass locally. Fresh desktop/mobile review fixed unavailable fresh-tab
+status and ended with ship. The documenter found no new global design rules.
+Live sender/provider proof and the full rollout are still outstanding.

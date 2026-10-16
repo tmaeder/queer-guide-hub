@@ -13,6 +13,13 @@ BEGIN
  BEGIN PERFORM public.redirect_domain_instruction_mail_action('queue',actor,domain,queue_values||jsonb_build_object('snapshot',repeat('b',64)),p_target=>'links.queer.guide');RAISE EXCEPTION 'Changed draft accepted';EXCEPTION WHEN unique_violation THEN NULL;END;
  r:=public.redirect_domain_instruction_mail_action('queue',actor,domain,queue_values,p_target=>'links.queer.guide');job:=(r->>'id')::uuid;
  IF r->>'state'<>'queued' OR NOT(r->>'canCancel')::boolean THEN RAISE EXCEPTION 'New email not queued';END IF;
+ IF public.redirect_domain_instruction_mail_latest(actor,domain)->>'id' IS DISTINCT FROM job::text OR public.redirect_domain_instruction_mail_latest(other_actor,domain) IS NOT NULL THEN RAISE EXCEPTION 'Latest email leaked across accounts or was lost';END IF;
+ UPDATE public.redirect_domains SET disabled=true,archived=true WHERE id=domain;
+ IF public.redirect_domain_instruction_mail_latest(actor,domain)->>'id' IS DISTINCT FROM job::text THEN RAISE EXCEPTION 'Inactive domain hid existing email';END IF;
+ UPDATE public.redirect_domains SET disabled=false,archived=false WHERE id=domain;
+ BEGIN PERFORM public.redirect_domain_instruction_mail_latest(outsider,domain);RAISE EXCEPTION 'Non-owner read latest email';EXCEPTION WHEN insufficient_privilege THEN NULL;END;
+ IF has_function_privilege('authenticated','public.redirect_domain_instruction_mail_latest(uuid,uuid)','EXECUTE') OR has_function_privilege('anon','public.redirect_domain_instruction_mail_latest(uuid,uuid)','EXECUTE') THEN RAISE EXCEPTION 'Latest email RPC is not service-only';END IF;
+
  IF public.redirect_domain_instruction_mail_action('queue',actor,domain,queue_values,p_target=>'links.queer.guide')->>'id'<>job::text OR (SELECT count(*) FROM public.redirect_domain_instruction_mail WHERE domain_id=domain)<>1 THEN RAISE EXCEPTION 'Request replay duplicated email';END IF;
  BEGIN PERFORM public.redirect_domain_instruction_mail_action('queue',actor,domain,queue_values||'{"email":"different@example.org"}',p_target=>'links.queer.guide');RAISE EXCEPTION 'Reused request changed recipient';EXCEPTION WHEN unique_violation THEN NULL;END;
  IF NOT(public.redirect_domain_instruction_mail_action('queue',actor,domain,queue_values||jsonb_build_object('requestId',gen_random_uuid()),p_target=>'links.queer.guide')?'retryAfter') THEN RAISE EXCEPTION 'Email cooldown absent';END IF;

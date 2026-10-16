@@ -1,3 +1,4 @@
+import { RedirectDomainMail } from './RedirectDomainMail';
 import { RedirectDomainConnect, RedirectDomainConnectReturn } from './RedirectDomainConnect';
 import { RedirectQrStyleSettings } from './RedirectQrStyleSettings';
 import { RedirectDomainSubpath } from './RedirectDomainSubpath';
@@ -51,6 +52,7 @@ function DomainRegistry({ accountId }: { accountId: string }) {
         count: number;
         nextCursor: string | null;
         dnsSetup?: { configured: boolean; cnameTarget: string };
+        instructionMail?: { configured: boolean };
         providerSetup?: {
           configured: boolean;
           cnameTarget: string | null;
@@ -227,6 +229,8 @@ function DomainRegistry({ accountId }: { accountId: string }) {
             <DomainRow
               key={domain.id + domain.version}
               domain={domain}
+              accountId={accountId}
+              mailConfigured={query.data?.pages[0].instructionMail?.configured === true}
               pending={mutation.isPending}
               setup={query.data?.pages[0].providerSetup}
               dnsSetup={query.data?.pages[0].dnsSetup}
@@ -282,6 +286,8 @@ function DomainRegistry({ accountId }: { accountId: string }) {
   );
 }
 function DomainRow({
+  accountId,
+  mailConfigured,
   domain,
   pending,
   act,
@@ -292,6 +298,8 @@ function DomainRow({
   dnsSetup,
 }: {
   dnsSetup?: { configured: boolean; cnameTarget: string };
+  accountId: string;
+  mailConfigured: boolean;
   domain: Domain;
   onRoutingChecked: () => Promise<unknown>;
   setup?: { configured: boolean; cnameTarget: string | null };
@@ -438,6 +446,7 @@ function DomainRow({
           </Button>
           {copyStatus && <p role="status">{copyStatus}</p>}
         </div>
+        <RedirectDomainMail accountId={accountId} domain={domain} configured={mailConfigured} />
         <div className="flex flex-wrap gap-2">
           <Button
             variant="outline"

@@ -610,11 +610,12 @@ The actual API contract suite also checks that public availability contains only
 its boolean and fixed CNAME target. These fixture captures do not establish live
 provider onboarding, approval or DNS changes.
 
-## Native DNS instruction email backend
+## Native DNS instruction email
 
 The owner API now supports native instruction email through a private durable
-outbox and Resend transport. The recipient/review/status controls remain UI work;
-this backend checkpoint alone does not complete the Forward instructions feature.
+outbox and Resend transport. The owner domain row provides inline exact-record
+review, a single recipient, email submission and private status/recovery/cancel
+controls. Live configured-sender/delivery proof and rollout remain required.
 No real recipient or email provider was contacted during implementation.
 
 Explicit server configuration is `RESEND_API_KEY`,
@@ -642,6 +643,10 @@ Owner-session routes:
 - `GET /domains/:id/instruction-emails/:jobId` reads a caller-owned receipt.
   `GET /domains/:id/instruction-emails?requestId=:uuid` recovers a receipt by request
   identity as `{mail:receipt|null}`, including after a domain version changes.
+  With no query, the collection returns the current owner’s latest receipt for
+  this domain, also as `{mail:receipt|null}`. It remains available when sending
+  is unconfigured or the domain is disabled/archived; another owner’s recipient
+  and receipts are never returned.
   A null lookup does not prove an earlier in-flight HTTP request can never queue.
 - `POST /domains/:id/instruction-emails/:jobId/cancel` with `{}` cancels only an
   unsent, non-ambiguous job. A started request or unknown outcome cannot be
@@ -691,3 +696,23 @@ activation, frontend controls and the overall release remain open.
 References: [Dub forwarding behavior](https://dub.co/help/article/how-to-add-custom-domain),
 [Resend idempotency](https://resend.com/docs/dashboard/emails/idempotency-keys),
 [Supabase scheduled functions](https://supabase.com/docs/guides/functions/schedule-functions).
+
+
+The email form persists the exact request body and UUID in account/domain-scoped
+session storage before POST. A lost response or postflight403 keeps the recipient
+locked and offers same-request retry/status recovery. A null lookup alone never
+resets an ambiguous attempt. Only an observed first pre-queue400/409/429 unlocks
+editing; a previously ambiguous retry remains locked on the same response.
+A different fresh domain version plus a null request lookup can retire an
+uncreated stale attempt. Provider acceptance is described separately from inbox
+delivery; accepted or uncertain mail requires explicit recipient acknowledgement
+before a new draft/UUID. Cancellation is shown only after server confirmation.
+Fresh sessions can check previous email status without preparing a new send.
+
+Fifteen UI interaction cases and the full56-case focused suite pass. Actual owner
+HTTP/migrated SQL proves private latest status on disabled/archived domains with
+sending disabled, key/current-role denial, exact snapshots, immutable unknown
+retries, cancellation and postflight acceptance truth. The bounded1280/390px
+fixture review reports no overflow or console errors. An independent reviewer’s
+fresh-session status finding was fixed and its verdict is ship; the documenter
+found no new global design rules. No actual email or production write was made.

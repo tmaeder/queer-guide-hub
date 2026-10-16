@@ -920,6 +920,17 @@ try {
   await reportRequest(receiptPath,'GET',undefined,'fixture-other-account-session',404);
   const recovered=await reportRequest('/domains/'+mailDomain.id+'/instruction-emails?requestId='+mailInput.requestId);
   if(recovered.mail.id!==mailed.id||(await reportRequest(mailPath)).latestMail.id!==mailed.id)throw new Error('Owner receipt could not recover across reload/unknown HTTP response');
+  const latestMailPath='/domains/'+mailDomain.id+'/instruction-emails';
+  instructionMailEnabled=false;
+  await db.query('UPDATE public.redirect_domains SET disabled=true,archived=true WHERE id=$1',[mailDomain.id]);
+  if((await reportRequest(latestMailPath)).mail.id!==mailed.id||(await reportRequest(latestMailPath,'GET',undefined,'fixture-other-account-session')).mail!==null)throw new Error('Fresh-session inactive latest mail lost privacy/status');
+  await reportRequest(latestMailPath,'GET',undefined,token,403);
+  await reportRequest(latestMailPath+'?unexpected=true','GET',undefined,undefined,400);
+  await db.query('DELETE FROM public.user_roles WHERE user_id=$1',[reportActor]);
+  await reportRequest(latestMailPath,'GET',undefined,undefined,403);
+  await db.query("INSERT INTO public.user_roles VALUES($1,'admin')",[reportActor]);
+  await db.query('UPDATE public.redirect_domains SET disabled=false,archived=false WHERE id=$1',[mailDomain.id]);
+  instructionMailEnabled=true;
   await reportRequest(receiptPath+'/cancel','POST',{},undefined,409);
   const unknownMailDomain=await reportRequest('/domains','POST',{hostname:'unknown-mail.example.com'},undefined,201),unknownMailPath='/domains/'+unknownMailDomain.id+'/instructions';
   const unknownDraft=await reportRequest(unknownMailPath),unknownInput={version:unknownDraft.version,snapshot:unknownDraft.snapshot,email:'dns@example.org',requestId:webcrypto.randomUUID()};
