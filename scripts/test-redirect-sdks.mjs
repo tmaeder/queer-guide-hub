@@ -14,6 +14,7 @@ let handler;
 let policyRuntime;
 const pieces = [
   '_shared/redirect-api.ts',
+  '_shared/redirect-workspace.ts',
   '_shared/redirect-inventory-manifest.ts',
   '_shared/redirect-inventory-api.ts',
   '_shared/redirect-native-apps.ts',
@@ -257,6 +258,7 @@ const base = 'http://127.0.0.1:' + server.address().port + '/api/redirects';
 const env = {
   ...process.env,
   REDIRECT_TEST_SESSION: 'fixture-account-session',
+  REDIRECT_TEST_WORKSPACE: '58aa4340-8f21-4b7f-9a10-90be2da89c01',
   REDIRECT_TEST_OTHER_SESSION: 'fixture-other-account-session',
   REDIRECT_TEST_REPORT_LINK: seed.rows[0].id,
   REDIRECT_TEST_ROOT_DOMAIN: sdkRootDomain,
@@ -354,6 +356,28 @@ try {
     const response=await fetch(base+path,{method,headers:{Authorization:'Bearer '+credential,...(body?{'Content-Type':'application/json'}:{})},...(body?{body:JSON.stringify(body)}:{})});
     const data=await response.json();if(response.status!==expected)throw new Error('Report HTTP '+path+' expected '+expected+' received '+response.status+': '+JSON.stringify(data));return data;
   }
+  const legacyWorkspace='58aa4340-8f21-4b7f-9a10-90be2da89c01';
+  const workspaceList=await reportRequest('/workspaces');
+  if(workspaceList.data.length!==1||workspaceList.currentWorkspaceId!==legacyWorkspace||workspaceList.data[0].role!=='owner'||(await reportRequest('/session')).workspace.id!==legacyWorkspace)throw new Error('Durable owner workspace context missing');
+  await reportRequest('/workspaces','GET',undefined,token,403);
+  await reportRequest('/workspaces?unexpected=true','GET',undefined,undefined,400);
+  const foldersBeforeWorkspaceSelection=(await db.query('SELECT count(*)::int AS n FROM public.redirect_link_folders')).rows[0].n;
+  for(const [selected,status] of [[legacyWorkspace.toUpperCase(),201],['00000000-0000-4000-8000-000000000777',403],['',400],[legacyWorkspace+','+legacyWorkspace,400]]){
+   const response=await fetch(base+'/folders',{method:'POST',headers:{Authorization:'Bearer fixture-account-session','Content-Type':'application/json','X-Qg-Redirect-Workspace':selected},body:JSON.stringify({name:'Explicit workspace HTTP'})});
+   if(response.status!==status)throw new Error('Workspace selection was ignored or falsely authorized');
+   if(status===201){const created=await response.json();await reportRequest('/folders/'+created.id,'DELETE');}
+  }
+  if((await db.query('SELECT count(*)::int AS n FROM public.redirect_link_folders')).rows[0].n!==foldersBeforeWorkspaceSelection)throw new Error('Denied workspace selection performed a mutation');
+  // Fresh account membership metadata comes from SQL, not stale admin claims.
+  await db.query('DELETE FROM public.user_roles WHERE user_id=$1',[reportOtherActor]);
+  const discoveryMember=(await db.query("INSERT INTO public.redirect_workspace_members(user_id,kind,label,role) VALUES($1,'user','HTTP viewer','viewer') RETURNING id",[reportOtherActor])).rows[0].id;
+  const viewerWorkspaces=await reportRequest('/workspaces','GET',undefined,'fixture-other-account-session');
+  if(viewerWorkspaces.data[0].role!=='viewer')throw new Error('Stale admin claim overrode current workspace membership');
+  await db.query('UPDATE public.redirect_workspace_members SET active=false WHERE id=$1',[discoveryMember]);
+  await reportRequest('/workspaces','GET',undefined,'fixture-other-account-session',403);
+  await db.query('DELETE FROM public.redirect_workspace_members WHERE id=$1',[discoveryMember]);
+  await db.query("INSERT INTO public.user_roles VALUES($1,'admin')",[reportOtherActor]);
+  console.log('Workspace identity: owner/member current-role discovery, immutable legacy selection, unsupported/empty/duplicate selector preflight denial and no wrong-workspace mutation pass.');
   await reportRequest('/apps','POST',{label:'Wrong Clip parent',platform:'ios',appId:'ABCDE12345.org.example.http',appClipId:'OTHER12345.org.other.Clip',paths:['/go/*']},undefined,400);
   const nativeApp=await reportRequest('/apps','POST',{label:'HTTP native app',platform:'ios',appId:'ABCDE12345.org.example.http',appClipId:'ABCDE12345.org.example.http.Clip',paths:['/go/*']},undefined,201);
   if(nativeApp.enabled||!nativeApp.version)throw new Error('Native app was not disabled by default');

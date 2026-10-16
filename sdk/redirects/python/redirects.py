@@ -1,5 +1,6 @@
 """Server SDK using Python's standard library. No automatic mutation retries."""
 import json
+import re
 from urllib.request import Request, build_opener, HTTPRedirectHandler
 from urllib.error import HTTPError
 from urllib.parse import urlsplit, urlencode, quote
@@ -14,22 +15,27 @@ class _NoRedirect(HTTPRedirectHandler):
         return None
 
 class RedirectsClient:
-    def __init__(self, token, base_url='https://queer.guide/api/redirects', timeout=10):
+    def __init__(self, token, base_url='https://queer.guide/api/redirects', timeout=10, workspace_id=None):
         parsed = urlsplit(base_url)
         if not token.strip() or '\r' in token or '\n' in token:
             raise ValueError('A server credential is required')
         if parsed.username or parsed.password or parsed.query or parsed.fragment or not (parsed.scheme == 'https' or parsed.scheme == 'http' and parsed.hostname in ('localhost','127.0.0.1','::1')):
             raise ValueError('Use HTTPS or a loopback development API')
         if timeout <= 0: raise ValueError('Timeout must be positive')
+        if workspace_id is not None and (not isinstance(workspace_id,str) or not re.fullmatch(r'[a-fA-F0-9]{8}(?:-[a-fA-F0-9]{4}){3}-[a-fA-F0-9]{12}',workspace_id)): raise ValueError('Provide a valid workspace ID')
+        self._workspace_id = workspace_id.lower() if workspace_id is not None else None
         self._token, self._base, self._timeout = token, base_url.rstrip('/'), timeout
         self._opener = build_opener(_NoRedirect())
+
+    def get_session(self): return self.request('GET','/session')
+    def list_workspaces(self): return self.request('GET','/workspaces')
 
     def request(self, method, path, body=None, query=None):
         if not path.startswith('/') or '//' in path or any(not (c.isascii() and (c.isalnum() or c in '/_-')) for c in path):
             raise ValueError('Invalid API path')
         params = {k: json.dumps(v, ensure_ascii=False, separators=(',', ':')) if isinstance(v, (dict,list)) else str(v).lower() if isinstance(v,bool) else str(v) for k,v in (query or {}).items() if v is not None}
         url = self._base + path + ('?' + urlencode(params) if params else '')
-        req = Request(url, data=None if body is None else json.dumps(body, ensure_ascii=False).encode(), method=method, headers={'Authorization':'Bearer '+self._token, 'Content-Type':'application/json'})
+        req = Request(url, data=None if body is None else json.dumps(body, ensure_ascii=False).encode(), method=method, headers={'Authorization':'Bearer '+self._token, 'Content-Type':'application/json', **({'X-Qg-Redirect-Workspace':self._workspace_id} if self._workspace_id else {})})
         try: response = self._opener.open(req, timeout=self._timeout)
         except HTTPError as error: response = error
         with response:

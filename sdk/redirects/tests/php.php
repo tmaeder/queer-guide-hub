@@ -1,7 +1,7 @@
 <?php
 require_once __DIR__.'/../php/RedirectsClient.php';
 function check($value): void {if (!$value) throw new RuntimeException('Assertion failed');}
-$api=new QueerGuide\RedirectsClient(getenv('REDIRECT_TEST_TOKEN'),getenv('REDIRECT_TEST_BASE'));
+$api=new QueerGuide\RedirectsClient(getenv('REDIRECT_TEST_TOKEN'),getenv('REDIRECT_TEST_BASE'),workspaceId:getenv('REDIRECT_TEST_WORKSPACE'));
 $sourcePage=$api->listInventory(['kind'=>'Client'],1);check(count($sourcePage['data'])===1 && $sourcePage['count']>0);
 $sourceRecord=$sourcePage['data'][0];$sourceMetadata=$api->getInventoryMetadata($sourceRecord['id']);
 $organizedSource=$api->organizeInventory([['id'=>$sourceRecord['id'],'version'=>$sourceMetadata['metadataVersion'],'values'=>['comment'=>'SDK source metadata']]]);
@@ -44,7 +44,11 @@ check($api->updatePasswordBranding($id,['version'=>$branding['version'],'clearLo
 $api->deleteLink($id);foreach ([['folders',$folder],['tags',$tag],['templates',$template]] as [$kind,$item]) $api->deleteResource($kind,$item['id']);
 foreach ([['/redirect-probe',302],['/limited-probe',429]] as [$path,$status]) {try {$api->request('GET',$path);throw new RuntimeException('Expected API error');} catch (QueerGuide\RedirectApiError $error) {check($error->status===$status);if ($status===429) check($error->retryAfter==='17');}}
 try {new QueerGuide\RedirectsClient('token','http://example.com/api');throw new RuntimeException('Insecure base accepted');} catch (InvalidArgumentException) {}
-$account=new QueerGuide\RedirectsClient(getenv('REDIRECT_TEST_SESSION'),getenv('REDIRECT_TEST_BASE'));
+$account=new QueerGuide\RedirectsClient(getenv('REDIRECT_TEST_SESSION'),getenv('REDIRECT_TEST_BASE'),workspaceId:getenv('REDIRECT_TEST_WORKSPACE'));
+check($account->getSession()['workspace']['id']===getenv('REDIRECT_TEST_WORKSPACE'));
+check($account->listWorkspaces()['currentWorkspaceId']===getenv('REDIRECT_TEST_WORKSPACE'));
+try {(new QueerGuide\RedirectsClient(getenv('REDIRECT_TEST_TOKEN'),getenv('REDIRECT_TEST_BASE'),workspaceId:'00000000-0000-4000-8000-000000000777'))->listLinks();throw new RuntimeException('Unavailable workspace accepted');} catch(QueerGuide\RedirectApiError $error) {check($error->status===403);}
+try {new QueerGuide\RedirectsClient('fixture',workspaceId:"bad\r\nInjected: header");throw new RuntimeException('Invalid workspace accepted');} catch(InvalidArgumentException $error) {}
 $other=new QueerGuide\RedirectsClient(getenv('REDIRECT_TEST_OTHER_SESSION'),getenv('REDIRECT_TEST_BASE'));
 function reportError(callable $action,int $status): void {try {$action();throw new RuntimeException('Expected report error');}catch(QueerGuide\RedirectApiError $error){check($error->status===$status);}}
 reportError(fn()=>$api->listReports(),403);

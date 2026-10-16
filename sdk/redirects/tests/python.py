@@ -2,7 +2,7 @@ import json
 import os, sys
 sys.path.insert(0,os.path.join(os.path.dirname(__file__),'../python'))
 from redirects import RedirectsClient, RedirectApiError, verify_webhook
-api=RedirectsClient(os.environ['REDIRECT_TEST_TOKEN'],os.environ['REDIRECT_TEST_BASE'])
+api=RedirectsClient(os.environ['REDIRECT_TEST_TOKEN'],os.environ['REDIRECT_TEST_BASE'],workspace_id=os.environ['REDIRECT_TEST_WORKSPACE'])
 source_page=api.list_inventory({'kind':'Client'},limit=1)
 assert len(source_page['data'])==1 and source_page['count']>0
 source_record=source_page['data'][0];source_metadata=api.get_inventory_metadata(source_record['id'])
@@ -61,7 +61,17 @@ for path,status in [('/redirect-probe',302),('/limited-probe',429)]:
         if status==429: assert error.retry_after=='17'
 try: RedirectsClient('token','http://example.com/api'); raise AssertionError('Insecure base accepted')
 except ValueError: pass
-account=RedirectsClient(os.environ['REDIRECT_TEST_SESSION'],os.environ['REDIRECT_TEST_BASE'])
+account=RedirectsClient(os.environ['REDIRECT_TEST_SESSION'],os.environ['REDIRECT_TEST_BASE'],workspace_id=os.environ['REDIRECT_TEST_WORKSPACE'])
+assert account.get_session()['workspace']['id']==os.environ['REDIRECT_TEST_WORKSPACE']
+assert account.list_workspaces()['currentWorkspaceId']==os.environ['REDIRECT_TEST_WORKSPACE']
+try:
+    RedirectsClient(os.environ['REDIRECT_TEST_TOKEN'],os.environ['REDIRECT_TEST_BASE'],workspace_id='00000000-0000-4000-8000-000000000777').list_links()
+    raise AssertionError('Unavailable workspace accepted')
+except RedirectApiError as error: assert error.status==403
+try:
+    RedirectsClient('fixture',workspace_id='bad\r\nInjected: header')
+    raise AssertionError('Invalid workspace accepted')
+except ValueError: pass
 other=RedirectsClient(os.environ['REDIRECT_TEST_OTHER_SESSION'],os.environ['REDIRECT_TEST_BASE'])
 def report_error(action,status):
     try: action(); raise AssertionError('Expected report error')

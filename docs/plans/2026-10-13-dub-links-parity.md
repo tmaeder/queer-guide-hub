@@ -19,6 +19,7 @@ exist. Existing local tools are a foundation, not proof of parity or deployment.
 | Bulk actions         | Create/update/upsert/delete, folder/tag assignment, archive, import/export, QR export                              | Candidate for managed links: atomic create/update/upsert/deletion API and CSV review/import/export UI, archive/restore, folder/tag assignment and verified QR ZIP; production release pending                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
 | Custom previews      | Uploaded OG image (1200×630, ≤1.5 MB), title≤120, description≤240, video API, crawler unfurl                       | Candidate: editor, scoped upload/presentation APIs and crawler HTML; native browser/Storage release pending                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
 | AI previews          | Generate title/description from destination content using configured AI provider                                   | Candidate: scoped draft generator with spend limits; live provider and browser verification pending                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
+| Workspace isolation | Independent workspace identity, current membership, tenant-bound resources/API/SDK context and domain transfer | Partial: private identity registry, legacy backfill/fences on40 tables,40 tenant-aware relationships and current-role API/five-SDK context implemented locally; multiple-workspace activation, all tenant resource/read/job boundaries and atomic transfer pending |
 | Custom domains       | Verify ownership/DNS, multiple domains, primary domain, redirects on branded hostname                              | Partial: private registry, exact DNS verification, owner UI and stored defaults implemented locally; durable Cloudflare lifecycle/TLS checks implemented locally; hostname namespaces, signed relay/resolver, routing health, background proof renewal and inventory/CSV/QR/API/SDK fields implemented locally; ready choices, owner primary preference and tracked/member builders implemented locally; active manual CMS domain field and atomic owner saves implemented locally; URL domain filters and scoped linked-domain facets implemented locally; explicit provider validation restart and versioned archive/search/restore implemented locally; external website-subpath setup/generation and authenticated Domain Connect backend and owner approval/callback UI implemented locally; native instruction email backend and recipient/review/status/recovery/cancel UI implemented locally; transfer, real provider/email proof and release pending |
 | Domain defaults      | Root/not-found redirects, default expiration URL, workspace/domain QR logos                                        | Partial: root/not-found/expiry settings, signed-host resolver and managed root-link policies/metadata/tracking implemented locally; QR/logo precedence and release pending                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
 | Deep links           | iOS/Android association files, app page routes, fallback and deferred attribution                                  | Partial: owner-managed app identities, per-host association files and gateway behavior implemented locally; policy-aware native resolver and local Swift/Android clients implemented; consented private receipts, first-party install/resume pages, Swift App Group/Android Play adapters and persistent install QR targets implemented locally; signed store/device delivery and release evidence remain open                                                                                                                                                                                                                                                                                                                                                                                                       |
@@ -3656,3 +3657,38 @@ Configured sender/live mail, cron/Vault activation, genuine workspace/domain
 transfer, provider/store/device proof, SDK publication, provider false-positive
 review and the complete controlled release remain open. The full goal remains
 active; this checkpoint does not claim parity or deployment.
+
+
+Workspace identity foundation checkpoint: migration99991792110542 seeds a private
+stable legacy workspace identity and backfills all40 resource tables using a
+constant default. Validated activation checks prevent storing data in a second
+tenant until legacy global paths are converted. Provisioning workspaces cannot
+activate; identity changes and legacy disable/removal fail. All40 internal FKs
+now include workspace identity, preserving CASCADE/RESTRICT and nullable-ID-only
+SET NULL behavior, with17 composite parent uniqueness constraints.
+
+Current-role SQL context now backs account session/accessible-workspace discovery.
+Private API workspace headers are explicit, UUID-validated and rejected before
+mutation for unsupported tenants. The branded gateway preserves even invalid
+empty selectors, and all five SDKs retain an explicit client workspace context.
+Omitted context retains legacy compatibility. This does not expose creation or
+switching to a second workspace; no transfer is claimed.
+
+The isolated backfill compares every existing value in all40 tables. SQL tests
+cover privacy, current roles, spoofing, activation fences and complete relationship
+coverage; rollback-only second-tenant fixtures prove cross-workspace folder/tag/
+member/token attachments fail. Actual HTTP/five SDKs prove propagated context,
+current account discovery and no mutation after rejected selection. The prior
+b0e26646a full CI run38829226239 completed successfully, alongside its56-case
+focused DNS gate38829226218. Final foundation checks/CI and all remaining runtime,
+provider/store/publication/transfer and controlled release evidence remain required.
+See2026-10-16-redirect-workspace-transfer-foundation.md for the staged conversion.
+
+
+Foundation verification:66 focused protocol/owner UI/gateway cases pass, along
+with full migrated SQL, the40-table existing-data backfill and actual HTTP/five
+SDK runtimes. Frozen API Deno checking, targeted lint (0 errors; inherited any
+warning), production build and app typecheck pass. Typecheck remains702 inherited
+errors/none new with baseline782 unchanged. All2351 migration versions and SQL
+bodies check/parse without exemptions. No production schema, workspace activation,
+actual transfer, provider configuration, email or app publication was changed.

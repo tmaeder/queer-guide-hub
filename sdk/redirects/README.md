@@ -23,6 +23,29 @@ automatic retries, especially for create/update/delete. Retry conversion ingesti
 with a stable event ID; pass money as decimal strings to preserve all six supported
 decimal places. Revenue responses remain exact strings by currency.
 
+## Workspace context
+
+Account-session clients can call `getSession` / `get_session` / `GetSession` and
+`listWorkspaces` / `list_workspaces` / `ListWorkspaces` to discover their current
+workspace UUID and role. These account-only methods reject server API keys.
+The server reads current membership/owner state; stale admin claims do not grant
+workspace access.
+
+Bind a client to a discovered UUID with TypeScript `options.workspaceId`, Python
+`workspace_id=`, Ruby `workspace_id:`, PHP `workspaceId:` (fourth constructor
+argument), or Go `client.WithWorkspace(id)`. Go returns a separate client copy;
+other constructors retain their selected context. Requests carry the
+`X-Qg-Redirect-Workspace` header. UUIDs are validated and normalized before
+transport. The header selects a requested context and never grants permission.
+
+The current implementation exposes only the explicit legacy workspace. Omitting
+the option selects that workspace for existing clients. Other UUIDs fail403;
+empty, duplicate or malformed selections fail400. The branded gateway preserves
+these selections, including invalid empty values, so it cannot silently turn a
+rejected selection into a mutation in the legacy workspace. New workspace
+activation and domain transfer remain unavailable until all resource paths are
+scoped. This foundation has not been deployed or published to package registries.
+
 ## Local usage
 
 These sources have not been published to package registries. Copy the relevant

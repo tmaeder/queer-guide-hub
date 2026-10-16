@@ -1,3 +1,4 @@
+import { redirectWorkspaceSelection } from '../_shared/redirect-workspace.ts';
 import {domainInstructionMailConfig,instructionMailInput,dispatchDomainInstructionMail} from '../_shared/redirect-domain-mail.ts';
 import { domainConnectConfig, domainConnectInput, runDomainConnectAction } from '../_shared/redirect-domain-connect-api.ts';
 import { nativeAppValues, publicAppAssociation } from '../_shared/redirect-native-apps.ts';
@@ -25,7 +26,7 @@ import { boundedJson, conversionInput, createRedirectToken, tokenDigest, UUID } 
 
 Deno.serve(async (req: Request) => {
  const origin=req.headers.get('origin') ?? '';
- const cors={ 'Access-Control-Allow-Origin':['https://queer.guide','https://www.queer.guide','http://localhost:5173','http://localhost:4178'].includes(origin)?origin:'', 'Access-Control-Allow-Headers':'authorization, apikey, x-client-info, content-type', 'Access-Control-Allow-Methods':'GET, POST, PUT, PATCH, DELETE, OPTIONS', Vary:'Origin' };
+ const cors={ 'Access-Control-Allow-Origin':['https://queer.guide','https://www.queer.guide','http://localhost:5173','http://localhost:4178'].includes(origin)?origin:'', 'Access-Control-Allow-Headers':'authorization, apikey, x-client-info, content-type, x-qg-redirect-workspace', 'Access-Control-Allow-Methods':'GET, POST, PUT, PATCH, DELETE, OPTIONS', Vary:'Origin' };
  const json=(body:unknown,status=200)=>new Response(JSON.stringify(body),{status,headers:{...cors,'Content-Type':'application/json','Cache-Control':'no-store'}});
  const rpcError=(error:{code?:string;message:string})=>{const status=error.code==='23505'?409:error.code==='42501'?403:error.code==='P0002'?404:(error.code?.startsWith('22')||['23503','23514'].includes(error.code??''))?400:503;return json({error:status===503?'Redirect API temporarily unavailable':error.message},status);};
  if(req.method==='OPTIONS') return new Response(null,{headers:cors});
@@ -46,15 +47,15 @@ Deno.serve(async (req: Request) => {
   user=data.user;
   db=createClient(Deno.env.get('SUPABASE_URL')!,Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,{global:{headers:{'x-qg-redirect-session-actor':user.id}}});
  }
- const sessionPrincipal=async(scope:string):Promise<{id:string|null;role?:string;label?:string;failure?:Response}>=>{
+ const selectedWorkspace=redirectWorkspaceSelection(req.headers.get('x-qg-redirect-workspace'));
+ if('error' in selectedWorkspace)return json({error:selectedWorkspace.error},selectedWorkspace.status);
+ const sessionPrincipal=async(scope:string):Promise<{id:string|null;role?:string;label?:string;workspace?:{id:string;name:string;slug:string};failure?:Response}>=>{
   if(!user||user.is_anonymous)return {id:null,failure:json({error:'A registered account is required'},403)};
-  const role=await identityClient!.rpc('has_role_jwt',{required_role:'admin'});
-  if(role.error)return {id:null,failure:json({error:'Authorization unavailable'},503)};
-  if(role.data)return {id:null,role:'owner'};
-  const membership=await db.rpc('redirect_session_principal',{p_user_id:user.id,p_scope:scope});
-  if(membership.error)return {id:null,failure:rpcError(membership.error)};
-  if(!membership.data||typeof membership.data.id!=='string'||!UUID.test(membership.data.id))return {id:null,failure:json({error:'Redirects workspace access is required'},403)};
-  return {id:membership.data.id,role:membership.data.role,label:membership.data.label};
+  const result=await db.rpc('redirect_workspace_context',{p_actor:user.id,p_workspace:selectedWorkspace.id,p_scope:scope});
+  if(result.error)return {id:null,failure:rpcError(result.error)};
+  const context=result.data,principal=context?.principal;
+  if(context?.workspace?.id!==selectedWorkspace.id||!principal||!['owner','member','viewer'].includes(principal.role)||(principal.role==='owner'?principal.id!==null:typeof principal.id!=='string'||!UUID.test(principal.id)))return {id:null,failure:json({error:'Workspace authorization unavailable'},503)};
+  return {id:principal.id,role:principal.role,label:principal.label,workspace:context.workspace};
  };
  try {
   if(path==='/inventory'||path==='/inventory/metadata'||path==='/inventory/organization'){
@@ -113,7 +114,14 @@ Deno.serve(async (req: Request) => {
    if(part&&UUID.test(part)&&req.method==='DELETE'&&!query.size){const {data,error}=await db.rpc('redirect_workspace_invitation',{p_actor:user.id,p_action:'revoke',p_id:part});if(error)return rpcError(error);return json(data);}
    return json({error:'Method not supported'},405);
   }
-  if(path==='/session'&&req.method==='GET'){if(tokenCredential)return json({error:'Account session required'},403);const principal=await sessionPrincipal('links:read');if(principal.failure)return principal.failure;return json({role:principal.role,label:principal.label??null});}
+  if(path==='/workspaces'){
+   if(tokenCredential)return json({error:'Account session required'},403);
+   if(req.method!=='GET')return json({error:'Method not supported'},405);
+   if(new URL(req.url).search)return json({error:'Unexpected workspace query'},400);
+   const principal=await sessionPrincipal('links:read');if(principal.failure)return principal.failure;
+   return json({data:[{...principal.workspace,role:principal.role}],currentWorkspaceId:principal.workspace!.id});
+  }
+  if(path==='/session'&&req.method==='GET'){if(tokenCredential)return json({error:'Account session required'},403);const principal=await sessionPrincipal('links:read');if(principal.failure)return principal.failure;return json({role:principal.role,label:principal.label??null,workspace:principal.workspace});}
   const manual=path.match(/^\/manual-records(?:\/([a-f0-9-]{36}))?$/i);
   if(manual){
    if(tokenCredential)return json({error:'Workspace owner account session required'},403);

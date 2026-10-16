@@ -1,7 +1,8 @@
 # Redirect workspace isolation and domain transfer
 
-Status: implementation design; no tenant migration, transfer endpoint or production
-transfer is implemented by this document. The full parity requirement remains open.
+Status: the identity/backfill and request-context foundation is implemented
+locally. Multiple-workspace activation, full tenant isolation, transfer endpoints
+and production transfer remain open.
 
 The existing Redirects workspace is global. `redirect_workspace_members.user_id`
 is unique globally, owners come from application `user_roles=admin`, resource
@@ -115,3 +116,44 @@ Existing release integration ownership and intentional data-quality holds stay i
 force. No change goes to the separately owned integration branch. Unavailable
 provider/store credentials are not a reason to omit independent isolation work,
 but local tests cannot certify live provider, app-store or production behavior.
+
+
+## Identity foundation implementation checkpoint
+
+Migration99991792110542 creates a private workspace registry and seeds one stable
+legacy UUID. All40 Redirects resource tables receive a non-null workspace ID with
+a constant legacy default and a validated activation fence. Provisioning rows can
+exist privately, but cannot become active or hold resource data while legacy
+readers remain unscoped. Workspace identities are immutable and the legacy
+identity cannot be disabled/deleted. No existing data is reassigned by creator.
+
+All40 internal relationships now use composite workspace/identifier FKs, backed
+by17 parent uniqueness constraints. Existing CASCADE/RESTRICT behavior is retained;
+SET NULL applies only to nullable relationship IDs, never to the workspace ID.
+These FKs are initially immediate and can be deferred for a future atomic
+transfer. Global identifiers and existing uniqueness rules remain until their
+readers/writers have been converted.
+
+A service-only `redirect_workspace_context` checks the current account, selected
+legacy identity and owner/membership under the ACL lock. Owner authority comes
+from current SQL state rather than stale JWT role metadata. Private account
+`GET /session` returns workspace metadata; `GET /workspaces` returns the one
+currently accessible workspace and role. API keys cannot discover account
+workspaces. Private API requests reject unsupported/malformed/empty/duplicate
+workspace headers before mutation; the branded gateway preserves those headers.
+All five SDKs support an explicit immutable client context and account discovery.
+
+The backfill fixture seeds existing links, events, metadata, folders/tags, domains
+and membership before applying the migration, then compares every existing value
+across all40 tables after migration. SQL proof covers current roles, session
+spoofing, provisioning denial, immutable identity and complete table coverage.
+Separate rollback-only relationship fixtures temporarily remove three activation
+checks solely to prove that cross-workspace folder/tag/member/token attachments
+fail at composite FKs; activation checks in the migration remain intact. Existing
+delete/cleanup contracts verify cascade and SET NULL behavior. Actual HTTP/five
+SDKs cover context propagation, account discovery, stale claims, invalid/unknown
+selection, independent Go clients and rejected selection with no mutation.
+
+Next: convert memberships/owners, all resource RPCs/readers/jobs, public resolution
+and UI/SDK selection contexts into genuine isolated tenants. Do not remove the
+activation fences or claim transfer is implemented from this foundation alone.

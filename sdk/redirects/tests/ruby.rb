@@ -1,5 +1,5 @@
 require_relative '../ruby/redirects'
-api=QueerGuide::RedirectsClient.new(ENV.fetch('REDIRECT_TEST_TOKEN'),base_url:ENV.fetch('REDIRECT_TEST_BASE'))
+api=QueerGuide::RedirectsClient.new(ENV.fetch('REDIRECT_TEST_TOKEN'),base_url:ENV.fetch('REDIRECT_TEST_BASE'),workspace_id:ENV.fetch('REDIRECT_TEST_WORKSPACE'))
 def check(value); raise 'Assertion failed' unless value; end
 source_page=api.list_inventory({kind:'Client'},limit:1)
 check(source_page['data'].length==1 && source_page['count']>0)
@@ -49,7 +49,17 @@ api.delete_link(id);[['folders',folder],['tags',tag],['templates',template]].eac
  rescue QueerGuide::RedirectApiError => error;check(error.status==status);check(error.retry_after=='17') if status==429;end
 end
 begin;QueerGuide::RedirectsClient.new('token',base_url:'http://example.com/api');raise 'Insecure base accepted';rescue ArgumentError;end
-account=QueerGuide::RedirectsClient.new(ENV.fetch('REDIRECT_TEST_SESSION'),base_url:ENV.fetch('REDIRECT_TEST_BASE'))
+account=QueerGuide::RedirectsClient.new(ENV.fetch('REDIRECT_TEST_SESSION'),base_url:ENV.fetch('REDIRECT_TEST_BASE'),workspace_id:ENV.fetch('REDIRECT_TEST_WORKSPACE'))
+check(account.get_session['workspace']['id']==ENV.fetch('REDIRECT_TEST_WORKSPACE'))
+check(account.list_workspaces['currentWorkspaceId']==ENV.fetch('REDIRECT_TEST_WORKSPACE'))
+begin
+  QueerGuide::RedirectsClient.new(ENV.fetch('REDIRECT_TEST_TOKEN'),base_url:ENV.fetch('REDIRECT_TEST_BASE'),workspace_id:'00000000-0000-4000-8000-000000000777').list_links
+  raise 'Unavailable workspace accepted'
+rescue QueerGuide::RedirectApiError=>error; check(error.status==403); end
+begin
+  QueerGuide::RedirectsClient.new('fixture',workspace_id:"bad\r\nInjected: header")
+  raise 'Invalid workspace accepted'
+rescue ArgumentError; end
 other=QueerGuide::RedirectsClient.new(ENV.fetch('REDIRECT_TEST_OTHER_SESSION'),base_url:ENV.fetch('REDIRECT_TEST_BASE'))
 def report_error(status);begin;yield;raise 'Expected report error';rescue QueerGuide::RedirectApiError=>error;check(error.status==status);end;end
 report_error(403){api.list_reports}

@@ -8,7 +8,7 @@ export const onRequest: PagesFunction<Env> = async ({ request, params, env }) =>
     'Content-Type': 'application/json',
     'X-Robots-Tag': 'noindex',
     'Referrer-Policy': 'no-referrer',
-    Vary: 'Authorization',
+    Vary: 'Authorization, X-Qg-Redirect-Workspace',
   };
   const error = (message: string, status: number) =>
     new Response(JSON.stringify({ error: message }), { status, headers });
@@ -21,9 +21,9 @@ export const onRequest: PagesFunction<Env> = async ({ request, params, env }) =>
   const upstream = new URL('/functions/v1/redirect-api/' + segments.join('/'), env.SUPABASE_URL);
   upstream.search = new URL(request.url).search;
   const forwarded = new Headers();
-  for (const name of ['authorization', 'content-type', 'origin']) {
+  for (const name of ['authorization', 'content-type', 'origin', 'x-qg-redirect-workspace']) {
     const value = request.headers.get(name);
-    if (value) forwarded.set(name, value);
+    if (value !== null) forwarded.set(name, value);
   }
   if (segments.join('/') === 'public-report' && env.REDIRECT_RELAY_SECRET) {
     const id = request.headers
@@ -67,6 +67,8 @@ export const onRequest: PagesFunction<Env> = async ({ request, params, env }) =>
     }
     if (!result.get('vary')?.toLowerCase().split(/,\s*/).includes('authorization'))
       result.append('Vary', 'Authorization');
+    if (!result.get('vary')?.toLowerCase().split(/,\s*/).includes('x-qg-redirect-workspace'))
+      result.append('Vary', 'X-Qg-Redirect-Workspace');
     return new Response(response.body, { status: response.status, headers: result });
   } catch {
     return error('Redirect API unavailable', 502);

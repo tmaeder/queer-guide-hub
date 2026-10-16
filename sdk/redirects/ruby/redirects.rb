@@ -11,20 +11,25 @@ module QueerGuide
     end
   end
   class RedirectsClient
-    def initialize(token, base_url: 'https://queer.guide/api/redirects', timeout: 10)
+    def initialize(token, base_url: 'https://queer.guide/api/redirects', timeout: 10, workspace_id: nil)
       uri = URI(base_url)
       raise ArgumentError, 'A server credential is required' if token.strip.empty? || token.match?(/[\r\n]/)
       safe = uri.scheme == 'https' || uri.scheme == 'http' && ['localhost','127.0.0.1','[::1]'].include?(uri.host)
       raise ArgumentError, 'Use HTTPS or a loopback development API' unless safe && !uri.userinfo && !uri.query && !uri.fragment
       raise ArgumentError, 'Timeout must be positive' unless timeout > 0
+      raise ArgumentError, 'Provide a valid workspace ID' unless workspace_id.nil? || workspace_id.is_a?(String) && workspace_id.match?(/\A[a-f0-9]{8}(?:-[a-f0-9]{4}){3}-[a-f0-9]{12}\z/i)
+      @workspace_id = workspace_id&.downcase
       @token, @base, @timeout = token, base_url.sub(%r{/$}, ''), timeout
     end
+    def get_session; request('GET','/session'); end
+    def list_workspaces; request('GET','/workspaces'); end
     def request(method, path, body = nil, query = {})
       raise ArgumentError, 'Invalid API path' unless path.match?(%r{\A/[a-zA-Z0-9_/-]+\z}) && !path.include?('//')
       uri = URI(@base + path)
       params = query.reject { |_,v| v.nil? }.map { |k,v| [k, (v.is_a?(Hash) || v.is_a?(Array)) ? JSON.generate(v) : v.to_s] }
       uri.query = URI.encode_www_form(params) unless params.empty?
       req = Net::HTTPGenericRequest.new(method, !body.nil?, true, uri.request_uri, {'Authorization'=>'Bearer '+@token,'Content-Type'=>'application/json'})
+      req['X-Qg-Redirect-Workspace'] = @workspace_id if @workspace_id
       req.body = JSON.generate(body) unless body.nil?
       raw = ''; status = nil; retry_after = nil
       Net::HTTP.start(uri.host,uri.port,use_ssl: uri.scheme=='https',open_timeout:@timeout,read_timeout:@timeout) do |http|

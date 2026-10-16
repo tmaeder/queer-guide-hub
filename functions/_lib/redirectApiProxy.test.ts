@@ -47,12 +47,29 @@ describe('branded Redirects API proxy', () => {
       env: { SUPABASE_URL: 'https://fixture.supabase.co', REDIRECT_RELAY_SECRET: secret },
     } as never);
     expect(result.headers.get('Referrer-Policy')).toBe('no-referrer');
-    expect(result.headers.get('Vary')).toBe('Origin, Authorization');
+    expect(result.headers.get('Vary')).toBe('Origin, Authorization, X-Qg-Redirect-Workspace');
     const options = fetcher.mock.calls[0] as unknown as [URL, RequestInit];
     expect(await redirectClientIp(new Headers(options[1].headers), 'report:' + id, secret)).toBe(
       '203.0.113.5',
     );
   });
+  it.each(['58aa4340-8f21-4b7f-9a10-90be2da89c01', '', 'unsupported'])(
+    'preserves explicit workspace selection %j for upstream rejection/authorization',
+    async (workspace) => {
+      const fetcher = vi.fn(async () => new Response('{}'));
+      vi.stubGlobal('fetch', fetcher);
+      const response = await onRequest({
+        request: new Request('https://queer.guide/api/redirects/links', {
+          headers: { Authorization: 'Bearer server-fixture', 'x-qg-redirect-workspace': workspace },
+        }),
+        params: { path: ['links'] },
+        env: { SUPABASE_URL: 'https://fixture.supabase.co' },
+      } as never);
+      const options = (fetcher.mock.calls[0] as unknown as [URL, RequestInit])[1];
+      expect(new Headers(options.headers).get('x-qg-redirect-workspace')).toBe(workspace);
+      expect(response.headers.get('Vary')).toContain('X-Qg-Redirect-Workspace');
+    },
+  );
   it('preserves retry-after on rate-limited policy writes', async () => {
     vi.stubGlobal(
       'fetch',
