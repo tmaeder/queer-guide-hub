@@ -36,12 +36,12 @@ try {
   );
   await db.exec(
     readFileSync(
-      'supabase/migrations/99991792173081_managed_profile_preference_vocabularies.sql',
+      'supabase/migrations/99991792173133_managed_profile_preference_vocabularies.sql',
       'utf8',
     ),
   );
   await db.exec(
-    readFileSync('supabase/migrations/99991792173091_managed_organisation_roles.sql', 'utf8'),
+    readFileSync('supabase/migrations/99991792173141_managed_organisation_roles.sql', 'utf8'),
   );
   await db.exec(readFileSync('supabase/tests/managed_taxonomies.sql', 'utf8'));
   await db.exec(readFileSync('supabase/tests/managed_reference_taxonomies.sql', 'utf8'));
