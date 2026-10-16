@@ -124,8 +124,86 @@ interface CitiesDirectoryFetch {
 const CACHE_TIME = 30 * 60 * 1000;
 const STALE_TIME = 15 * 60 * 1000;
 
+/**
+ * DELETE-ME WINDOW: tolerates the pre-99991792178303 flat array.
+ *
+ * `supabase db push` (deploy-supabase-functions.yml) and the Cloudflare Pages build
+ * both trigger on the same push to main and RACE. If Pages wins, this bundle is live
+ * against the old RPC for a minute or two — and `requireColumn` would throw, which
+ * react-query surfaces as an error, which /cities renders as its "No cities found"
+ * empty state. That is the exact symptom this whole change exists to remove, so
+ * shipping a fix that briefly reproduces it is not acceptable.
+ *
+ * This is a correct read of the OLD shape, not a reconstruction of data the new shape
+ * dropped — the hazard #3332 records. Columnar is detected by `Array.isArray`, which
+ * the two shapes cannot both satisfy.
+ *
+ * REMOVE once 99991792178303 is applied to prod (check `schema_migrations` by NAME,
+ * not by version). Nothing breaks if it lingers; it is just dead weight.
+ */
+function decodeLegacyFlatRows(rows: Record<string, unknown>[]): CitiesDirectoryPayload {
+  const cols = [
+    'id',
+    'slug',
+    'name',
+    'name_en',
+    'name_de',
+    'region_name',
+    'population',
+    'latitude',
+    'longitude',
+    'is_capital',
+    'is_regional_capital',
+    'capital_of_region',
+    'editorial_hook',
+    'venue_count',
+    'upcoming_event_count',
+    'village_count',
+    'high_risk',
+    'country',
+  ];
+  const countries: DirectoryCountryEntry[] = [];
+  const seen = new Map<string, number>();
+  return {
+    cols,
+    countries,
+    rows: rows.map((r) => {
+      let country: number | null = null;
+      if (r.country_id != null) {
+        // Keyed on the FULL tuple, matching the SQL's GROUP BY — not on country_id
+        // alone. Keying on the id assumes country -> continent is 1:1, which holds in
+        // real data and silently drops a row's own continent when it does not.
+        const key = [
+          r.country_id,
+          r.country_name,
+          r.country_slug,
+          r.equality_score,
+          r.continent_code,
+          r.continent_name,
+        ].join('|');
+        if (!seen.has(key)) {
+          seen.set(key, countries.length);
+          countries.push({
+            id: r.country_id as string,
+            name: (r.country_name as string | null) ?? null,
+            slug: (r.country_slug as string | null) ?? null,
+            equality_score: (r.equality_score as number | null) ?? null,
+            continent_code: (r.continent_code as string | null) ?? null,
+            continent_name: (r.continent_name as string | null) ?? null,
+          });
+        }
+        country = seen.get(key)!;
+      }
+      return cols.map((col) => (col === 'country' ? country : (r[col] ?? null)));
+    }),
+  };
+}
+
 /** Decodes the columnar payload into the nested shape every consumer already reads. */
-export function decodeCitiesDirectory(payload: CitiesDirectoryPayload): CitiesDirectoryFetch {
+export function decodeCitiesDirectory(
+  input: CitiesDirectoryPayload | Record<string, unknown>[],
+): CitiesDirectoryFetch {
+  const payload = Array.isArray(input) ? decodeLegacyFlatRows(input) : input;
   const requireColumn = columnLookup(payload.cols ?? []);
   const lookup = payload.countries ?? [];
   const rows = payload.rows ?? [];
@@ -223,7 +301,9 @@ async function fetchCitiesDirectory(): Promise<CitiesDirectoryFetch> {
   // `untypedRpc` until types.ts is regenerated against prod — the function only
   // reaches the live schema when its migration merges to main, and the generated
   // types are produced from the live schema.
-  const { data, error } = await untypedRpc<CitiesDirectoryPayload>('cities_directory');
+  const { data, error } = await untypedRpc<CitiesDirectoryPayload | Record<string, unknown>[]>(
+    'cities_directory',
+  );
   if (error) throw new Error(error.message);
   return decodeCitiesDirectory(data ?? {});
 }

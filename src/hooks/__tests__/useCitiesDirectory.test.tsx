@@ -416,6 +416,37 @@ describe('useCitiesDirectory', () => {
     expect(venueCounts.get('5761c6c4-3ed6-4429-832b-025e508db544')).toBe(0);
   });
 
+  it('still reads the PRE-columnar flat array', async () => {
+    // `db push` and the Cloudflare Pages build both fire on the same push to main and
+    // race. If Pages wins, this bundle talks to the old RPC for a minute or two — and
+    // without this path /cities would render its "No cities found" empty state, which
+    // is the exact symptom the change exists to remove. Delete with the shim.
+    rpcMock.mockResolvedValue({
+      data: [
+        row(),
+        row({ id: 'id-2', name: 'Sydney', continent_code: 'OC', continent_name: 'Oceania' }),
+      ],
+      error: null,
+    });
+
+    const { result } = renderHook(() => useCitiesDirectory(NEUTRAL_PARAMS), {
+      wrapper: makeWrapper(),
+    });
+    await waitFor(() => expect(result.current.loading).toBe(false));
+
+    const city = result.current.cities.find((c) => c.name === 'Berlin')!;
+    expect(city.id).toBe('id-1');
+    expect(city.countries?.name).toBe('Germany');
+    expect(city.countries?.continents?.code).toBe('EU');
+    expect(city.venue_count).toBe(870);
+    expect(result.current.venueCounts.get('id-1')).toBe(870);
+    // The country block is normalised on the way in, so the facets still work.
+    expect(result.current.continents).toEqual([
+      { code: 'EU', name: 'Europe', count: 1 },
+      { code: 'OC', name: 'Oceania', count: 1 },
+    ]);
+  });
+
   it('surfaces an RPC error as a message', async () => {
     rpcMock.mockResolvedValue({ data: null, error: { message: 'boom' } });
 

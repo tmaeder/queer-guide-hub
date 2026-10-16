@@ -147,9 +147,17 @@ describe('every consumer decodes the new shape', () => {
     expect(hook).toContain('function columnLookup(');
     expect(hook).toMatch(/payload has no "\$\{col\}" column/);
     expect(hook).toContain("requireColumn('country')");
-    // The old flat-row reads must be gone, or a stale path would silently return
-    // undefined for every field.
-    expect(hook).not.toMatch(/row\.country_slug|row\.continent_code|row\.venue_count/);
+    // Flat-row reads are allowed ONLY inside the named legacy shim, which exists for
+    // the db-push/Pages deploy race. Outside it they would mean a stale decode path
+    // silently returning undefined for every field.
+    const legacyStart = hook.indexOf('function decodeLegacyFlatRows');
+    const legacyEnd = hook.indexOf('export function decodeCitiesDirectory');
+    expect(legacyStart).toBeGreaterThan(0);
+    expect(legacyEnd).toBeGreaterThan(legacyStart);
+    const live = hook.slice(0, legacyStart) + hook.slice(legacyEnd);
+    expect(live).not.toMatch(/\br\.country_slug|\br\.continent_code|\brow\.venue_count/);
+    // The shim must carry its removal condition, or it becomes permanent by default.
+    expect(hook).toMatch(/REMOVE once 99991792178303 is applied/);
   });
 
   it('the hook resolves the country through the lookup', () => {
