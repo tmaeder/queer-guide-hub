@@ -1,0 +1,84 @@
+import { serveEventGaps } from '../_shared/event-gap-worker.ts'
+
+function assert(condition: unknown, message: string): asserts condition {
+  if (!condition) throw new Error(message)
+}
+
+const description = 'An attributable evening of queer art and live performances, followed by a discussion with the artists and community members.'
+const event = { id: '00000000-0000-0000-0000-000000000001', title: 'Queer Arts Night', website: 'https://arts.example.org/show' }
+
+async function harness(
+  body: unknown,
+  options: { fullDescription?: boolean; failFinish?: boolean; budgetAvailable?: boolean; rawDescription?: boolean } = {},
+) {
+  const savedFetch = globalThis.fetch
+  const keys = ['SUPABASE_URL', 'SUPABASE_SERVICE_ROLE_KEY', 'EVENT_QUALITY_WEBHOOK_SECRET']
+  const previous = keys.map(k => Deno.env.get(k))
+  Deno.env.set(keys[0], 'https://gap-db.example.test')
+  Deno.env.set(keys[1], 'fixture-key')
+  Deno.env.set(keys[2], 'fixture-secret')
+  const calls: Array<{ path: string; body: Record<string, unknown> }> = []
+  globalThis.fetch = (async (input: string | URL | Request, init?: RequestInit) => {
+    const url = new URL(input instanceof Request ? input.url : String(input))
+    const payload = JSON.parse(String(init?.body ?? '{}'))
+    calls.push({ path: url.pathname, body: payload })
+    let data: unknown
+    if (url.pathname.endsWith('/claim_event_gaps')) data = [{
+      event_id: event.id,
+      event: { ...event, description: options.fullDescription ? description : '' },
+      sources: [{ source_url: event.website, raw: options.rawDescription === false ? {} : { description } }],
+    }]
+    else if (url.pathname.endsWith('/llm_budget_consume')) data = {
+      allowed: options.budgetAvailable ?? true, cap: 60,
+      remaining: options.budgetAvailable === false ? 0 : 60,
+    }
+    else if (url.pathname.endsWith('/finish_event_gap')) {
+      if (options.failFinish) return new Response(JSON.stringify({ message: 'fixture write rejected' }), { status: 500, headers: { 'Content-Type': 'application/json' } })
+      const fields = Object.keys((payload.p_patch ?? {}) as object)
+      data = { outcome: fields.length ? 'updated' : payload.p_outcome, fields }
+    } else throw new Error(`Unexpected external request: ${url.href}`)
+    return new Response(JSON.stringify(data), { headers: { 'Content-Type': 'application/json' } })
+  }) as typeof fetch
+  try {
+    const response = await serveEventGaps('content')(new Request('https://worker.example.test', {
+      method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Webhook-Secret': 'fixture-secret' }, body: JSON.stringify(body),
+    }))
+    return { status: response.status, body: await response.json(), calls }
+  } finally {
+    globalThis.fetch = savedFetch
+    keys.forEach((k, i) => previous[i] === undefined ? Deno.env.delete(k) : Deno.env.set(k, previous[i]!))
+  }
+}
+
+Deno.test('event gaps: dry-run claims no lease, makes no page requests or budget writes', async () => {
+  const result = await harness({ dry_run: true })
+  assert(result.status === 200 && result.body.dry_run, 'dry-run failed')
+  assert(result.calls.length === 1, 'dry-run made additional calls')
+  assert(result.calls[0].body.p_dry_run === true, 'dry-run acquired a lease')
+})
+
+Deno.test('event gaps: raw evidence fills a description without a page or model request', async () => {
+  const result = await harness({ batch_limit: 1 })
+  assert(result.status === 200 && result.body.fields_filled === 1, 'grounded fill was not counted')
+  assert(result.body.network_requests === 0 && result.body.ai_attempts === 0, 'raw evidence incurred external work')
+  const finish = result.calls.find(c => c.path.endsWith('/finish_event_gap'))!
+  assert((finish.body.p_evidence as Record<string, unknown>).source_url === event.website, 'provenance missing')
+})
+
+Deno.test('event gaps: a persistence error never reports a successful fill', async () => {
+  const result = await harness({}, { failFinish: true })
+  assert(result.status === 500, 'write failure reported HTTP success')
+  assert(result.body.fields_filled === 0 && result.body.failed === 1, 'write failure counted as a fill')
+})
+
+Deno.test('event gaps: exhausted optional-field budget avoids external requests', async () => {
+  const result = await harness({}, { fullDescription: true, rawDescription: false, budgetAvailable: false })
+  assert(result.status === 200, 'budget cooldown is not a worker failure')
+  assert(result.body.results[0].outcome === 'capped', 'budget exhaustion was not recorded')
+  assert(result.body.network_requests === 0 && result.body.ai_attempts === 0, 'empty budget wasted external calls')
+})
+
+Deno.test('event gaps: invalid request body is rejected before work is claimed', async () => {
+  const result = await harness([])
+  assert(result.status === 400 && result.calls.length === 0, 'invalid body claimed work')
+})
