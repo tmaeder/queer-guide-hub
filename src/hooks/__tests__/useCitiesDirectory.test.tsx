@@ -242,10 +242,22 @@ describe('useCitiesDirectory', () => {
     await waitFor(() => expect(result.current.loading).toBe(false));
 
     const city = result.current.cities[0];
+    // `id` and `slug` are asserted FIRST because they are what a careless decoder
+    // hardcodes: `id` sits at position 0 in the real payload, so `id: 0` is
+    // indistinguishable from a correct decode until the order moves. A mutation doing
+    // exactly that SURVIVED this test until these lines existed.
+    expect(city.id).toBe('id-1');
+    expect(city.slug).toBe('berlin');
     expect(city.name).toBe('Berlin');
+    expect(city.population).toBe(3_700_000);
     expect(city.venue_count).toBe(870);
+    expect(city.upcoming_event_count).toBe(4);
+    expect(city.village_count).toBe(2);
+    expect(city.is_capital).toBe(true);
     expect(city.high_risk).toBe(false);
     expect(city.countries?.continents?.code).toBe('EU');
+    // venueCounts is keyed by id, so a wrong id silently empties the venues sort.
+    expect(result.current.venueCounts.get('id-1')).toBe(870);
   });
 
   it('fails loudly when the payload loses a column it needs', async () => {
