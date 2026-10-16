@@ -1,3 +1,8 @@
+import {
+  withIndexedOccurrence,
+  type IndexedOccurrence,
+} from '../../supabase/functions/_shared/event-occurrence-timing';
+import { untypedFrom } from '@/integrations/supabase/untyped';
 import { useEffect, useState, type ReactNode, type RefObject } from 'react';
 import { scheduleSentence, type EventSchedule } from '@/lib/eventScheduleSentence';
 import { formatPhoneHref } from '@/lib/formatPhone';
@@ -58,6 +63,8 @@ import { TripAction } from '@/components/trips/TripAction';
 
 export type EventWithRelations = Database['public']['Tables']['events']['Row'] & {
   social_links?: Record<string, string> | null;
+  indexed_occurrence?: IndexedOccurrence | null;
+  source_span?: { start_date: string; end_date: string | null };
   venues?: {
     id: string;
     slug?: string;
@@ -156,7 +163,19 @@ export async function fetchEvent(
   slug: string,
   userId: string | undefined,
 ): Promise<EventWithRelations | null> {
-  return fetchEventBySlugOrId<EventWithRelations>(slug, EVENT_SELECT_FIELDS, userId);
+  const event = await fetchEventBySlugOrId<EventWithRelations>(slug, EVENT_SELECT_FIELDS, userId);
+  if (!event) return null;
+  const schedule = (event as unknown as { schedule?: { source?: string; kind?: string } }).schedule;
+  if (schedule?.source !== 'agendaq-raw' || schedule.kind !== 'recurrence') return event;
+  const now = new Date().toISOString();
+  const { data, error } = await untypedFrom('event_dates')
+    .select('open_at,close_at')
+    .eq('event_id', event.id)
+    .or(`close_at.gte.${now},and(close_at.is.null,open_at.gte.${now})`)
+    .order('open_at', { ascending: true })
+    .limit(1)
+    .maybeSingle();
+  return withIndexedOccurrence(event, error ? null : (data as IndexedOccurrence | null));
 }
 
 export async function exportEventToCalendar(event: EventWithRelations) {
@@ -288,7 +307,7 @@ function LiveStateLine({ event }: { event: EventWithRelations }) {
     return () => clearInterval(id);
   }, [state.kind, soon, reduced]);
 
-  if (!state.label) return null;
+  if (event.indexed_occurrence === null || !state.label) return null;
 
   if (state.kind === 'live') {
     return (
@@ -522,7 +541,8 @@ export function EventFactStrip({
   const zone = showEventTz ? eventZone : null;
   const displayedZone = zone || Intl.DateTimeFormat().resolvedOptions().timeZone;
   const zoneName = getTimezoneAbbr(displayedZone, event.start_date);
-  const dateOnly = isDateOnlyEvent(event.start_date, event.end_date);
+  const dateOnly =
+    event.indexed_occurrence === null || isDateOnlyEvent(event.start_date, event.end_date);
   const ageRestriction = event.age_restriction;
 
   // `events.schedule` carries 141 rules on prod and until now NOTHING rendered
@@ -548,7 +568,11 @@ export function EventFactStrip({
       label: t('events.detail.time', 'Time'),
       value: (
         <>
-          <span>{formatEventTime(event.start_date, event.end_date, zone)}</span>
+          <span>
+            {event.indexed_occurrence === null
+              ? t('events.detail.notListed', 'Not listed')
+              : formatEventTime(event.start_date, event.end_date, zone)}
+          </span>
           {!dateOnly &&
             (eventZone ? (
               <button

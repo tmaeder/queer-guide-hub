@@ -151,3 +151,17 @@ unknown zones are rejected. This avoids enumerating the entire timezone catalog
 for each source period. The full-schema integration test exercises raw source
 insertion, preview, canonical schedule recovery, date-index trigger, local opening
 time, idempotence and preservation of an authored schedule, all with rollback.
+
+## Production E2E timing correction
+
+The live browser check exposed a reader gap after recovery: event details still
+used the broad legacy span for countdowns and time labels. Feed-backed recovered
+recurrences now load the next current/future row from `event_dates`; detail timing,
+countdown and structured event metadata use that observed session. The source span
+is preserved in memory and in the database. Missing index data suppresses a false
+happening-now claim. Explicit multi-date schedules are described as multiple
+scheduled dates rather than guessed weekly rules.
+
+Calendar export reads the same next indexed occurrence and uses the explicit
+venue FK. It declines export when a recovered recurrence has no available indexed
+date, instead of generating an all-day or year-long calendar entry.
