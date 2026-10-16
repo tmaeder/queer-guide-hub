@@ -10,6 +10,7 @@ import {
   structuredEvent,
   supportedContentPatch,
   hasUnverifiedLongRange,
+  sourceArtwork,
 } from '../../../supabase/functions/_shared/event-gap-core';
 
 const ev = { id: 'fixture', title: 'Queer Arts Night', start_date: '2026-11-03T19:00:00Z' };
@@ -28,6 +29,13 @@ describe('event gap evidence', () => {
       ]),
     ).toBeNull();
     expect(cleanDescription(`Accept cookies to read our cookie policy. ${description}`)).toBeNull();
+  });
+  it('rejects markup and decodes source entities exactly once', () => {
+    expect(cleanDescription(`<script>alert(1)</script >${description}`)).toBeNull();
+    expect(cleanDescription(`<p>${description}</p>`)).toBeNull();
+    expect(cleanDescription(`${description} &amp;quot;quoted&amp;quot;`)).toBe(
+      `${description} &quot;quoted&quot;`,
+    );
   });
   it('falls back to a ticket page when the website is a homepage or unsafe', () => {
     expect(
@@ -65,6 +73,26 @@ describe('event gap evidence', () => {
       'https://arts.example.org/poster.jpg',
     ]);
   });
+  it('uses only event-owned, cover-sized feed assets', () => {
+    const source = {
+      source_slug: 'agendaq',
+      source_url: 'https://www.agendaq.fr/fr/agenda/arts',
+      raw: {
+        assets: [
+          ['bonus', '/assets/events/arts/bonus.jpg', 'image/jpeg', 1200, 800],
+          ['small', '/assets/events/arts/small.jpg', 'image/jpeg', 300, 200],
+          ['other', '/assets/events/another/bonus.jpg', 'image/jpeg', 1200, 800],
+        ],
+      },
+    };
+    expect(sourceArtwork([source])).toEqual([
+      {
+        url: 'https://data.agendaq.fr/assets/events/arts/bonus.jpg',
+        source_url: source.source_url,
+      },
+    ]);
+    expect(sourceArtwork([{ ...source, source_slug: 'unknown' }])).toEqual([]);
+  });
   it('fills gaps only and requires stronger evidence for venue/address', () => {
     const ai = {
       confidence: 0.85,
@@ -89,6 +117,12 @@ describe('event gap evidence', () => {
     const ranged = { ...ev, start_date: '2023-01-01', end_date: '2027-01-01', is_recurring: false };
     expect(hasUnverifiedLongRange(ranged, now)).toBe(true);
     expect(hasUnverifiedLongRange({ ...ranged, is_recurring: true }, now)).toBe(false);
+    expect(
+      hasUnverifiedLongRange(
+        { ...ranged, schedule: { kind: 'recurrence', confidence: 'feed' } },
+        now,
+      ),
+    ).toBe(false);
     expect(hasUnverifiedLongRange(ev, now)).toBe(false);
   });
   it('rejects unquoted model claims despite high confidence', () => {

@@ -109,3 +109,39 @@ Keep queue rows, signals and provenance. Expired leases recover on resumption.
 To roll back worker code, restore both endpoint files and deploy the earlier
 versions together; restore the prior schedules (content hourly at :50, images
 Monday 02:15 UTC). The additive database objects can remain for audit.
+
+## Source-calendar recovery follow-up
+
+`run_event_source_schedule_recovery` fills missing canonical schedules directly
+from the event's stored AgendaQ calendar records. It preserves source date bounds,
+timezones, weekday selection, daily intervals and supported monthly ordinals,
+while preserving the original span and the separate legacy annual-edition flag.
+Each restored schedule records its source row, URL and calendar fingerprint.
+The existing schedule trigger rebuilds concrete occurrences. Changed source
+calendars are picked up again; the materialized 18-month horizon refreshes before
+it becomes shorter than a year.
+
+Unsupported fifth/last-week sentinels, inconsistent timezones and multi-day spans
+that the current slot model cannot express are recorded for review once per
+source fingerprint. They never become fabricated dates. Recovery runs every 20
+minutes. A temporary one-minute drain stops itself when the backlog is empty;
+each transaction stops taking new work after 20 seconds.
+
+Canonical feed/authored recurrence evidence prevents the content worker from
+misclassifying a long span based on the legacy `is_recurring` flag. Raw, event-owned
+cover assets can also be validated directly before attempting a page scrape.
+
+```sql
+select public.run_event_source_schedule_recovery(75,true); -- preview only
+select count(*) from public.events where schedule->>'source'='agendaq-raw';
+select count(*) from public.event_dates d join public.events e on e.id=d.event_id
+where e.schedule->>'source'='agendaq-raw';
+select field_provenance#>>'{source_schedule_recovery,reason}',count(*)
+from public.events where field_provenance#>>'{source_schedule_recovery,outcome}'='review'
+group by 1;
+```
+
+The source-evidence reopener uses `SKIP LOCKED` so ingestion cannot wait on a
+completion worker's queue lock while holding an event lock. Plain description
+recovery accepts plain text and decodes entities in one pass, addressing both
+CodeQL findings from the first PR run.

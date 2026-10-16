@@ -16,9 +16,12 @@ export function text(value: unknown): string {
 }
 
 export function cleanDescription(value: unknown): string | null {
-  const s = text(value).replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, ' ')
-    .replace(/<style\b[^>]*>[\s\S]*?<\/style>/gi, ' ').replace(/<[^>]*>/g, ' ')
-    .replace(/&nbsp;/gi, ' ').replace(/&amp;/gi, '&').replace(/&quot;/gi, '"').replace(/&#39;/g, "'")
+  const raw = text(value)
+  // This boundary accepts plain source text. Markup needs a real parser and is
+  // deliberately left to grounded extraction, rather than filtered with regex.
+  if (raw.includes('<') || raw.includes('>')) return null
+  const entities: Record<string, string> = { '&nbsp;': ' ', '&amp;': '&', '&quot;': '"', '&#39;': "'" }
+  const s = raw.replace(/&(?:nbsp|amp|quot|#39);/gi, entity => entities[entity.toLowerCase()])
     .replace(/\s+/g, ' ').trim()
   if (s.length < 80 || /accept cookies|cookie policy|sign in to read|subscribe to continue|all rights reserved|privacy policy|erfasse deinen event schnell/i.test(s)) return null
   return s.slice(0, 20000)
@@ -145,6 +148,31 @@ export function supportedContentPatch(ev: GapEvent, ai: Record<string, unknown>,
 
 export function hasUnverifiedLongRange(ev: GapEvent, now = Date.now()): boolean {
   const start = Date.parse(text(ev.start_date)), end = Date.parse(text(ev.end_date))
-  return ev.is_recurring !== true && Number.isFinite(start) && Number.isFinite(end)
+  const schedule = ev.schedule as Record<string, unknown> | null | undefined
+  const supportedSchedule = schedule?.kind === 'recurrence' && ['feed', 'authored'].includes(text(schedule.confidence))
+  return !supportedSchedule && ev.is_recurring !== true && Number.isFinite(start) && Number.isFinite(end)
     && start < now - 180 * 86400000 && end >= now
+}
+
+/** Event-owned feed assets avoid an HTML scrape; declared small images are skipped. */
+export function sourceArtwork(sources: SourceEvidence[]): Array<{ url: string; source_url: string }> {
+  const output: Array<{ url: string; source_url: string }> = []
+  for (const source of sources) {
+    if (source.source_slug !== 'agendaq' || !Array.isArray(source.raw?.assets)) continue
+    const page = eventPageUrl(source.source_url)
+    if (!page) continue
+    const parsed = new URL(page)
+    if (parsed.hostname !== 'www.agendaq.fr') continue
+    const slug = parsed.pathname.split('/').filter(Boolean).at(-1)
+    for (const asset of source.raw.assets) {
+      if (!Array.isArray(asset) || typeof asset[1] !== 'string' || !asset[1].startsWith(`/assets/events/${slug}/`)) continue
+      if (typeof asset[3] === 'number' && asset[3] > 0 && asset[3] < 800) continue
+      if (typeof asset[4] === 'number' && asset[4] > 0 && asset[4] < 450) continue
+      try {
+        const url = assertPublicHttpUrl(new URL(asset[1], 'https://data.agendaq.fr').href)
+        if (url.hostname === 'data.agendaq.fr') output.push({ url: url.href, source_url: page })
+      } catch { /* Invalid source asset. */ }
+    }
+  }
+  return output.filter((v, i) => output.findIndex(x => x.url === v.url) === i).slice(0, 3)
 }

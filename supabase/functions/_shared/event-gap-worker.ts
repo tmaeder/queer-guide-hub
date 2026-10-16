@@ -8,7 +8,7 @@ import { assertPublicHttpUrl } from './ssrf-guard.ts'
 import { gateImages } from './image-gate.ts'
 import { readImageDimensions } from './image-dimensions.ts'
 import { evaluateCover } from './image-probe.ts'
-import { boundedInt, cleanDescription, hasUnverifiedLongRange, supportedContentPatch, imageCandidates, mapConcurrent, sourceUrls, storedDescription, structuredEvent, text, type GapEvent, type GapLane, type GapPatch, type SourceEvidence } from './event-gap-core.ts'
+import { boundedInt, cleanDescription, hasUnverifiedLongRange, supportedContentPatch, imageCandidates, mapConcurrent, sourceArtwork, sourceUrls, storedDescription, structuredEvent, text, type GapEvent, type GapLane, type GapPatch, type SourceEvidence } from './event-gap-core.ts'
 
 type Candidate = { event_id: string; event: GapEvent; sources: SourceEvidence[] }
 type Evidence = { source_url?: string; confidence?: number; previous_images?: unknown }
@@ -107,6 +107,17 @@ export function serveEventGaps(lane: GapLane) {
       try {
         if (Date.now() >= deadline) return await finish(c, {}, {}, 'capped', { reason: 'wall_clock' })
         if (hasUnverifiedLongRange(c.event)) return await finish(c, {}, {}, 'review', { reason: 'unverified_long_running_schedule' })
+        if (lane === 'image') {
+          for (const asset of sourceArtwork(c.sources)) {
+            if (Array.isArray(c.event.images) && c.event.images.includes(asset.url)) continue
+            if (!gateImages([asset.url]).kept.length) continue
+            networkRequests++; stats.get(c.event_id)!.network_requests++
+            const probe = await fetchPrefix(asset.url, 65_536, true).catch(() => null)
+            const dims = probe ? readImageDimensions(probe.bytes) : null
+            if (!probe || probe.bytes.length < 20_000 || !dims || evaluateCover({ width: dims.width, height: dims.height, bytes: probe.totalBytes }, 'cover')) continue
+            return await finish(c, { images: [asset.url] }, { source_url: asset.source_url, confidence: 1, previous_images: c.event.images }, 'updated', { method: 'raw_source_artwork', width: dims.width, height: dims.height })
+          }
+        }
         if (lane === 'content' && !text(c.event.website) && !text(c.event.ticket_url)) {
           const knownUrl = sourceUrls(c.event, c.sources)[0]
           if (knownUrl) return await finish(c, { website: knownUrl }, { source_url: knownUrl, confidence: 1 }, 'updated', { method: 'source_registry' })
