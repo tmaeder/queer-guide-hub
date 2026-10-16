@@ -29,6 +29,22 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  merge-policy:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    env:
+      # Native isolated cluster; never connects to an application database.
+      # Ubuntu 24.04 ships PG16. Local/prod verification also covers PG17.
+      PG_BIN: /usr/lib/postgresql/16/bin
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '22.20.0'
+          cache: npm
+      - run: npm ci --prefer-offline --no-audit
+      - run: npm run test:merge-policy
+
   typecheck:
     runs-on: ubuntu-latest
     steps:
