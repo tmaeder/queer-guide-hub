@@ -5565,6 +5565,99 @@ const DISOWNED_PROSE_CEILING = 380
   }
 }
 
+// §  cities_directory() is the anonymous /cities page, and it has a 3s ceiling
+//    (2026-10-16, 99991792175608).
+//
+// `anon` carries its own `statement_timeout = 3s` (pg_roles.rolconfig), not the 8s
+// `authenticated` and `authenticator` get. This RPC takes no arguments and aggregates
+// the whole directory into one jsonb payload, so its cost tracks the corpus — and the
+// corpus MOVES: 2,529 rows when 99991789855163 tuned it, 16,206 twenty-six days later,
+// all of them legitimate (16,159 have an approved venue). It timed out for anonymous
+// visitors at 2 calls in 3 before the venue-count index landed, and /cities renders an
+// RPC failure as the "No cities found" empty state, so the failure is indistinguishable
+// from a filter that matched nothing.
+//
+// A constant-factor fix therefore buys time rather than settling this, which is why
+// there is a watcher at all. WHAT IS GATED IS THE PAYLOAD, NOT THE LATENCY: this runs
+// from a GitHub runner as `service_role`, which has no statement_timeout, so an elapsed
+// figure here carries that network and says nothing reliable about the 3s a browser
+// meets. The payload and the row count are measurable from anywhere and they are what
+// actually grew. Latency is reported and only warns.
+{
+  const t0 = Date.now()
+  let res
+  try {
+    res = await fetch(`${BASE}/rest/v1/rpc/cities_directory`, {
+      method: 'POST',
+      headers: { ...headers, 'Content-Type': 'application/json' },
+      body: '{}',
+    })
+  } catch (err) {
+    // A transport throw is "we could not look", which must never read as "nothing
+    // found" — the gate-rpc lesson. Fail closed.
+    console.error(`✗ cities_directory() could not be reached: ${err?.message ?? err}`)
+    FAILED = true
+  }
+
+  if (res && !res.ok) {
+    const body = await res.text().catch(() => '')
+    console.error(
+      `✗ cities_directory() returned HTTP ${res.status} ${body.slice(0, 300)} — this is the ` +
+        'anonymous /cities directory; a 57014 here means it is over even the 8s ceiling.',
+    )
+    FAILED = true
+  } else if (res) {
+    const text = await res.text()
+    const elapsed = Date.now() - t0
+    const bytes = Buffer.byteLength(text)
+    let rows = null
+    try {
+      rows = JSON.parse(text)?.length ?? null
+    } catch {
+      rows = null
+    }
+
+    // Reported BEFORE any verdict: zero rows and a 404 and a healthy directory would
+    // otherwise all produce the same reassuring absence of a ✗.
+    console.log(
+      `· cities_directory: ${rows ?? '?'} rows, ${(bytes / 1024 / 1024).toFixed(2)} MB, ${elapsed}ms (service_role)`,
+    )
+
+    if (!rows) {
+      console.error(
+        '✗ cities_directory() returned no rows. /cities renders that as "No cities found", ' +
+          'so an empty directory looks exactly like a search that matched nothing.',
+      )
+      FAILED = true
+    } else if (bytes > 12 * 1024 * 1024) {
+      // ~12 MB is roughly 26k rows at today's 7.5 MB / 16,206. Past that, jsonb_agg
+      // alone (851 ms of the current 1,620 ms) puts the anon call back over 3s however
+      // well the scans are indexed, and the remedy is pagination — a signature change
+      // with a frontend half, which is why this is a hard fail and not a nudge.
+      console.error(
+        `✗ cities_directory() payload is ${(bytes / 1024 / 1024).toFixed(1)} MB over ${rows} rows. ` +
+          'The anon 3s ceiling cannot be held by indexing at this size; this needs the ' +
+          'pagination/field-trim that 99991789855163 and 99991792175608 both deferred.',
+      )
+      FAILED = true
+    } else {
+      console.log(`✓ cities_directory payload inside the 12 MB gate`)
+      if (bytes > 9 * 1024 * 1024) {
+        console.warn(
+          `⚠ cities_directory payload is ${(bytes / 1024 / 1024).toFixed(1)} MB and the gate is 12 MB — ` +
+            'the directory is growing into the ceiling again. Plan the payload change.',
+        )
+      }
+      if (elapsed > 2500) {
+        console.warn(
+          `⚠ cities_directory took ${elapsed}ms as service_role (no timeout). anon dies at 3000ms, ` +
+            'and this measurement includes runner network — re-measure server-side before acting.',
+        )
+      }
+    }
+  }
+}
+
 if (FAILED) {
   console.error('')
   console.error('✗ Pipeline health check FAILED — every section above ran; each ✗ line is a separate problem')
