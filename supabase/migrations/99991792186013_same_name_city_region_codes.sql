@@ -103,7 +103,7 @@ begin
          enrichment_status = coalesce(c.enrichment_status, '{}'::jsonb)
            || jsonb_build_object('region_code_manual', jsonb_build_object(
                 'at', now(),
-                'by', 'migration:99991792173929',
+                'by', 'migration:99991792186013',
                 'code', s.code,
                 'evidence', 'venue state text + coordinates; polygon refused '
                             || coalesce(c.enrichment_status->'region_polygon'->>'state', 'unknown')))

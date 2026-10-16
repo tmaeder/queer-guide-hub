@@ -3,7 +3,7 @@ import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 /**
- * 99991792173929 takes venue_city_text_signals().same_name_cities_without_region
+ * 99991792186013 takes venue_city_text_signals().same_name_cities_without_region
  * from 9 to 0 with two different remedies: code six cities from the venues' own
  * `state` text, and merge three PR placeholder twins into the real row.
  *
@@ -12,7 +12,7 @@ import { describe, expect, it } from 'vitest';
  * of the raw file would match the explanation and fail on correct code.
  */
 
-const MIGRATION = '99991792173929_same_name_city_region_codes.sql';
+const MIGRATION = '99991792186013_same_name_city_region_codes.sql';
 
 const raw = readFileSync(join(process.cwd(), 'supabase/migrations', MIGRATION), 'utf8');
 
