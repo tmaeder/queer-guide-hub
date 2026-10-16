@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { RedirectQrDialog } from '@/components/admin/redirects/RedirectQrDialog';
+import { concreteInventorySource } from './inventorySource';
 import { validPublicTarget } from '../../../../supabase/functions/_shared/link-policy';
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { memberRedirectApi, type MemberResources } from '@/lib/redirects/memberApi';
@@ -25,26 +26,6 @@ export interface OtherInventoryRow extends InventoryRedirect {
   canEditMetadata: boolean;
   tagIds: string[];
   matchKind?: string;
-}
-export function concreteInventorySource(
-  row: InventoryRedirect & { matchKind?: string },
-): string | null {
-  if (row.kind === 'Manual' && !row.isShortLink && row.matchKind && row.matchKind !== 'EXACT')
-    return null;
-  if (
-    (!row.source.startsWith('/') && !/^https?:\/\//i.test(row.source)) ||
-    /(^|\/):[a-z_]/i.test(row.source) ||
-    row.source.includes('*')
-  )
-    return null;
-  try {
-    const url = new URL(row.source, 'https://queer.guide');
-    return ['http:', 'https:'].includes(url.protocol) && !url.username && !url.password
-      ? url.href
-      : null;
-  } catch {
-    return null;
-  }
 }
 type Metadata = Pick<
   OtherInventoryRow,
