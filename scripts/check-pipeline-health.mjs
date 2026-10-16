@@ -4754,7 +4754,30 @@ const DISOWNED_PROSE_CEILING = 380
   // -> North Charleston; Condom Sense -> Mansfield TX) countable for the first
   // time. The fourth is a real new misfiling: Me Nightclub, city text
   // Trondheim, linked to Oslo (written 2026-10-06), left for review.
-  const VENUE_CITY_TEXT_BASELINE = 403
+  //
+  // 403 -> 575 on 2026-10-16, the SAME mechanism at 58x the scale and again
+  // measured before it was moved. Decomposing the metric's own predicate by when
+  // the OTHER city -- the one the venue's `city` text names -- was created:
+  //
+  //   total                                              575
+  //   other city created >= 2026-10-07 (the burst)        233
+  //   other city older                                    342
+  //   ... of the 233, venue itself predates the burst      233
+  //   venues created in the burst themselves                 0
+  //
+  // So not one of the new rows is a newly misfiled venue. All 233 were ALREADY
+  // filed under the wrong same-country city and became COUNTABLE for the first
+  // time when the 2026-10-07..13 city-creation burst (nominatim-geocode /
+  // photon-location, ~13.5k rows) minted the city their text had been naming all
+  // along. The pre-burst population did not grow -- it FELL, 403 -> 342, as rows
+  // were worked by hand.
+  //
+  // The 233 are real misfilings and this does not fix them; it makes them
+  // visible-but-tolerated, which is what the advisory warning below is for. The
+  // number must not be raised again without the same decomposition: if
+  // `venues created in the burst themselves` is ever non-zero, a producer IS
+  // filing new venues under the wrong city and that is a failure, not a baseline.
+  const VENUE_CITY_TEXT_BASELINE = 575
   const res = await fetch(`${BASE}/rest/v1/rpc/venue_city_text_signals`, {
     method: 'POST',
     headers: { ...headers, 'Content-Type': 'application/json' },
@@ -5560,6 +5583,103 @@ const DISOWNED_PROSE_CEILING = 380
             )
           }
         }
+      }
+    }
+  }
+}
+
+// The dedup sweep writes down WHY a merge threw and nothing read it. On
+// 2026-10-16 its own run row carried
+//   {"type":"venue","capped":46,"auto_merged":0,
+//    "merge_error":"record \"new\" has no field \"entity_type\"", ...}
+// while cron.job_run_details said `succeeded`, last_run_status said `success` and
+// consecutive_failures stayed 0 — so auto-pause could never fire and this would
+// have run indefinitely. The venue section above literally tells a human to "read
+// `merge_error` in its result", which is the definition of a signal nothing
+// automates. dedup_sweep_error_signals() automates it.
+{
+  console.log('')
+  console.log('Dedup sweep merge errors')
+  const res = await fetch(`${BASE}/rest/v1/rpc/dedup_sweep_error_signals`, {
+    method: 'POST',
+    headers: { ...headers, 'Content-Type': 'application/json' },
+    body: '{}',
+  })
+  if (!res.ok) {
+    console.warn(
+      `⚠ dedup_sweep_error_signals → HTTP ${res.status} (RPC missing? migration 99991792188826)`,
+    )
+    console.warn('  This check measured NOTHING — it did not pass.')
+  } else {
+    const s = (await res.json()) ?? {}
+
+    // "Could not look" must never read as "looked and found none" — an absent run,
+    // a revoked grant and a clean sweep otherwise all return the same 0.
+    if (s.probe_ok !== true) {
+      console.error('✗ dedup_sweep_error_signals: probe_ok is not true — no sweep run carries a results summary')
+      console.error('  Nothing below was measured.')
+      FAILED = true
+    } else if (!('errors_blocking' in s) || !('types_missing_auto_merged' in s)) {
+      // An absent key reads as undefined and skips its own comparison silently.
+      console.error('✗ dedup_sweep_error_signals is missing the keys this gate reads — the probe is broken')
+      FAILED = true
+    } else {
+      const types = Number(s.types_reported ?? 0)
+      const blocking = Number(s.errors_blocking ?? 0)
+      const benign = Number(s.errors_benign ?? 0)
+      const shapeDrift = Number(s.types_missing_auto_merged ?? 0)
+      const ageH = Number(s.run_age_hours ?? 0)
+      const details = Array.isArray(s.error_details) ? s.error_details : []
+
+      // Reported FIRST: zero types parsed reads exactly like a sweep with no
+      // errors. The sweep covers 12 entity types.
+      if (types < 2) {
+        console.error(`✗ dedup sweep summary parsed ${types} entity type(s) — the probe measured nothing`)
+        FAILED = true
+      }
+
+      // Every error is printed whether or not it gates, because the benign/genuine
+      // split below is a heuristic and a human reading the message can see past it.
+      for (const d of details) {
+        const line = `${d.type}: ${d.merge_error} (auto_merged ${d.auto_merged}, capped ${d.capped})`
+        if (d.blocking) console.error(`  ✗ ${line}`)
+        else console.warn(`  ⚠ ${line}`)
+      }
+
+      if (blocking > 0) {
+        console.error(`✗ ${blocking} entity type(s) in the last dedup sweep threw and merged NOTHING`)
+        console.error('  The sweep catches these per type and still books last_run_status=success, so')
+        console.error('  consecutive_failures stays 0 and auto-pause never fires — it will not self-report.')
+        console.error('  A merge core is broken for those types. Read the message above, not the run status.')
+        FAILED = true
+      }
+
+      // The one state in which the auto_merged split cannot be trusted at all.
+      if (shapeDrift > 0) {
+        console.error(`✗ ${shapeDrift} entity type(s) report no auto_merged key — the sweep summary shape changed`)
+        console.error('  benign chain-collapse and a systemic failure are no longer distinguishable.')
+        FAILED = true
+      }
+
+      if (blocking === 0 && shapeDrift === 0 && types >= 2) {
+        console.log(`✓ dedup sweep: ${types} types, no blocking merge errors (run ${ageH}h old)`)
+      }
+
+      // Advisory: a merge core guard refusing an already-collapsed chain sits
+      // beside a successful merge and is expected under concurrency.
+      if (benign > 0) {
+        console.warn(
+          `⚠ ${benign} benign merge error(s) — a guard refused an already-merged pair while the ` +
+            'same type merged successfully. Expected; printed so it stays visible.',
+        )
+      }
+
+      // The sweep is nightly. Staleness is the auto-pause rules' job, not this
+      // gate's, but a stale run makes every count above describe the past.
+      if (ageH > 36) {
+        console.warn(
+          `⚠ the newest dedup sweep run is ${ageH}h old — the counts above are not about last night.`,
+        )
       }
     }
   }
