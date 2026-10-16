@@ -439,6 +439,8 @@ export interface EventMoatEnrichment {
   lgbtq_relevance_score?: number
   clean_title?: string                  // cleaned human-readable title from flyer-style raw title
   extracted_date?: string               // ISO YYYY-MM-DD start date as stated on the page
+  extracted_end_date?: string           // explicit final date, never inferred from a weekday
+  field_evidence?: Record<string, string> // exact source quotes supporting extracted fields
   extracted_venue_name?: string         // venue name as stated on the page
   extracted_address?: string            // street address as stated on the page
   confidence?: number                   // 0.0-1.0 — how well the page supported the extraction
@@ -446,7 +448,7 @@ export interface EventMoatEnrichment {
 
 const MOAT_KEYS = ['description', 'accessibility_attributes', 'accessibility_notes', 'target_groups',
   'age_restriction', 'dress_code', 'safety_notes', 'lineup', 'lgbtq_relevance_score',
-  'clean_title', 'extracted_date', 'extracted_venue_name', 'extracted_address', 'confidence']
+  'clean_title', 'extracted_date', 'extracted_end_date', 'field_evidence', 'extracted_venue_name', 'extracted_address', 'confidence']
 
 const MOAT_SYSTEM_PROMPT = `${BASE_CONTEXT}
 
@@ -454,7 +456,7 @@ You extract structured, high-value fields for an LGBTQ+ events platform from an 
 
 Hard rules:
 - Use ONLY facts present in the provided page text. If a field is not stated, set it to null or omit it. NEVER invent details, performers, prices, or policies.
-- description: a factual 2-3 sentence summary built only from page facts.
+- description: a factual 2-3 sentence summary of what the event offers, built only from page facts. Omit dates, clock times and recurrence schedules from this prose; those belong in structured date fields and must never be translated or guessed in a summary.
 - accessibility_attributes: pick ONLY from this closed list, and only if the page actually says so:
   wheelchair-accessible, step-free-entrance, ramp-access, elevator-access, accessible-restroom,
   gender-neutral-restroom, accessible-parking, accessible-seating, wide-doorways, quiet-space,
@@ -478,6 +480,8 @@ Hard rules:
 - lgbtq_relevance_score: 0.0-1.0 how clearly LGBTQ+ this event is.
 - clean_title: a cleaned, human-readable version of the given event title (titles often arrive as flyer text: emoji spam, ALL CAPS, embedded dates/prices/venue tags, decorative symbols). Keep the actual event name, normal casing, no dates/prices/venues/emoji. null if the given title is already clean.
 - extracted_date: the event START date exactly as stated on the page, ISO format YYYY-MM-DD. null unless clearly stated.
+- extracted_end_date: the explicit final/end date, ISO YYYY-MM-DD. Omit if no year is stated; never infer a year or recurrence interval.
+- field_evidence: an object mapping each extracted field name to a short EXACT quote copied from PAGE TEXT that supports it. Include description, accessibility_attributes, target_groups, age_restriction, extracted_venue_name, extracted_address, safety_notes, dress_code and lineup when populated. Do not supply a field without a supporting page quote. Destination context does not prove venue policies.
 - extracted_venue_name: the venue name exactly as stated on the page. null if not stated.
 - extracted_address: the street address exactly as stated on the page. null if not stated.
 - confidence: 0.0-1.0 how well the page text supported this extraction (low if the page was thin/irrelevant).
@@ -505,7 +509,7 @@ PAGE TEXT:
 ${ud(page)}
 
 Respond with JSON using these keys (null where unknown):
-{"description":"...","accessibility_attributes":[...],"accessibility_notes":"...","target_groups":[...],"age_restriction":"...","dress_code":"...","safety_notes":"...","lineup":[...],"lgbtq_relevance_score":0.0,"clean_title":"...","extracted_date":"YYYY-MM-DD","extracted_venue_name":"...","extracted_address":"...","confidence":0.0}`
+{"description":"...","accessibility_attributes":[...],"accessibility_notes":"...","target_groups":[...],"age_restriction":"...","dress_code":"...","safety_notes":"...","lineup":[...],"lgbtq_relevance_score":0.0,"clean_title":"...","extracted_date":"YYYY-MM-DD","extracted_end_date":"YYYY-MM-DD","field_evidence":{"description":"exact supporting page quote"},"extracted_venue_name":"...","extracted_address":"...","confidence":0.0}`
 
   try {
     const result = await chatCompletion(supabase, {

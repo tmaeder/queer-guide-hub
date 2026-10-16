@@ -12,6 +12,7 @@ const DAY_ORDER = ['MO', 'TU', 'WE', 'TH', 'FR', 'SA', 'SU'];
 export interface EventSchedule {
   kind?: 'opening_hours' | 'recurrence' | 'run' | string;
   tz?: string;
+  extra?: Array<{ date: string; start?: string; end?: string }>;
   weekly?: Array<{ day: string; start?: string; end?: string }>;
   monthly?: { nth: number; day: string; start?: string; end?: string };
   interval_weeks?: number;
@@ -87,6 +88,10 @@ export function scheduleSentence(
           : `Every ${dayPart}`;
 
     return { text: join([every, range, until]), inferred };
+  }
+
+  if (schedule.kind === 'recurrence' && (schedule.extra?.length ?? 0) > 1) {
+    return { text: `Multiple scheduled dates${until ? ` · ${until}` : ''}`, inferred };
   }
 
   if (schedule.kind === 'run' && until) {
