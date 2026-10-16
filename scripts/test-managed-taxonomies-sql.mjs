@@ -26,22 +26,22 @@ try {
   if (!log) throw new Error('Missing revision trigger function');
   await db.exec(log[0]);
   await db.exec(
-    readFileSync('supabase/migrations/99991792168442_complete_backend_taxonomies.sql', 'utf8'),
+    readFileSync('supabase/migrations/99991792173062_complete_backend_taxonomies.sql', 'utf8'),
   );
   await db.exec(
-    readFileSync('supabase/migrations/99991792168443_managed_reference_taxonomies.sql', 'utf8'),
+    readFileSync('supabase/migrations/99991792173072_managed_reference_taxonomies.sql', 'utf8'),
   );
   await db.exec(
     'create trigger trg_marketplace_listings_aa_derive before insert or update on public.marketplace_listings for each row execute function public.marketplace_listings_derive_taxonomy()',
   );
   await db.exec(
     readFileSync(
-      'supabase/migrations/99991792168444_managed_profile_preference_vocabularies.sql',
+      'supabase/migrations/99991792173081_managed_profile_preference_vocabularies.sql',
       'utf8',
     ),
   );
   await db.exec(
-    readFileSync('supabase/migrations/99991792168445_managed_organisation_roles.sql', 'utf8'),
+    readFileSync('supabase/migrations/99991792173091_managed_organisation_roles.sql', 'utf8'),
   );
   await db.exec(readFileSync('supabase/tests/managed_taxonomies.sql', 'utf8'));
   await db.exec(readFileSync('supabase/tests/managed_reference_taxonomies.sql', 'utf8'));
