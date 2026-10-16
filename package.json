@@ -28,6 +28,7 @@
     "typecheck:functions": "tsc -p tsconfig.functions.json --noEmit && tsc -p tsconfig.functions-tests.json --noEmit",
     "typecheck:baseline": "node scripts/typecheck-ratchet.mjs --write",
     "test": "vitest run",
+    "test:merge-policy": "tsx scripts/test-merge-gap-policy.mjs",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "test:functions": "cd supabase/functions && deno test --allow-net --allow-env --allow-read --node-modules-dir=none",

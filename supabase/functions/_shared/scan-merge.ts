@@ -1,3 +1,5 @@
+import { fillDataGaps, isDataGap } from './gap-fill.ts'
+
 // scan-merge — merge extracted items coming from parallel content chunks into a
 // deduped list. Pure (no Deno/network) so it's unit-testable.
 
@@ -12,7 +14,7 @@ export interface MergeItem {
 /** Stable dedup key. Empty title/name → key ends with '|' and the item is dropped. */
 export function itemKey(item: MergeItem): string {
   const v = (k: string) => {
-    const f = item.fields[k] as { value?: unknown } | undefined
+    const f = item.fields[k] as { value?: unknown; confidence?: unknown; merge_evidence?: unknown[] } | undefined
     return String(f?.value ?? '').trim().toLowerCase()
   }
   const t = item.detected_type
@@ -37,7 +39,20 @@ export function mergeExtractedItems<T extends MergeItem>(items: T[], maxItems = 
       continue
     }
     for (const [k, f] of Object.entries(item.fields)) {
-      if (existing.fields[k] === undefined) existing.fields[k] = f
+      const prior = existing.fields[k] as { value?: unknown; confidence?: unknown; merge_evidence?: unknown[] } | undefined
+      const donor = f as { value?: unknown; confidence?: unknown; merge_evidence?: unknown[] } | undefined
+      if (!donor || isDataGap(donor.value)) continue
+      if (!prior || isDataGap(prior.value)) existing.fields[k] = f
+      else if (prior.value && typeof prior.value === 'object' && !Array.isArray(prior.value)) {
+        const value = fillDataGaps(prior.value, donor.value)
+        if (JSON.stringify(value) === JSON.stringify(prior.value)) continue
+        const confidence = (v: unknown) => typeof v === 'number' && Number.isFinite(v) && v >= 0 && v <= 1 ? v : 0
+        existing.fields[k] = {
+          ...prior, value,
+          confidence: Math.min(confidence(prior.confidence), confidence(donor.confidence)),
+          merge_evidence: [...(Array.isArray(prior.merge_evidence) ? prior.merge_evidence : [prior]), donor],
+        }
+      }
     }
     for (const tag of item.raw_tags) if (!existing.raw_tags.includes(tag)) existing.raw_tags.push(tag)
   }

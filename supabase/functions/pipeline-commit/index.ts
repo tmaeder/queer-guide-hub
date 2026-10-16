@@ -4,6 +4,7 @@ import { reportApiError } from '../_shared/report-api-error.ts'
 import { rpcWithBreaker } from '../_shared/circuit-breaker.ts'
 import { buildRecord } from './build-record.ts'
 import { mergeSocialLinks } from './social-merge.ts'
+import { combineStagingSources, type CombinationRpcClient } from './combine-sources.ts'
 import {
   commitConfigForTable,
   socialColumnForTable,
@@ -39,10 +40,11 @@ async function persistSocialLinks(
 ): Promise<void> {
   const col = socialColumnForTable(target)
   if (!col || !rows.length) return
-  const { data: sRows } = await supabase
+  const { data: sRows, error: stagingError } = await supabase
     .from('ingestion_staging')
     .select('id, normalized_data')
     .in('id', rows.map((r) => r.staging_id))
+  if (stagingError) throw new Error(`social source read: ${stagingError.message}`)
   const byId = new Map<string, Record<string, unknown>>()
   for (const s of sRows ?? []) byId.set(s.id, (s.normalized_data ?? {}) as Record<string, unknown>)
   for (const r of rows) {
@@ -51,11 +53,13 @@ async function persistSocialLinks(
     if (!links || Object.keys(links).length === 0) continue
     const entityId = r[idColumn]
     if (!entityId) continue
-    const { data: cur } = await supabase.from(target).select(col).eq('id', entityId).maybeSingle()
-    const existing = (cur?.[col as keyof typeof cur] as Record<string, unknown>) ?? {}
+    const { data: cur, error: currentError } = await supabase.from(target).select(col).eq('id', entityId).maybeSingle()
+    if (currentError) throw new Error(`social entity read: ${currentError.message}`)
+    const existing = ((cur as unknown as Record<string, unknown> | null)?.[col] as Record<string, unknown>) ?? {}
     const merged = mergeSocialLinks(existing, links)
     if (!merged) continue // no change
-    await supabase.from(target).update({ [col]: merged }).eq('id', entityId)
+    const { error: updateError } = await supabase.from(target).update({ [col]: merged }).eq('id', entityId)
+    if (updateError) throw new Error(`social persist: ${updateError.message}`)
   }
 }
 
@@ -118,6 +122,10 @@ Deno.serve(async (req) => {
     if (!resolvedTarget) {
       return jsonResponse({ success: true, items: 0, message: 'nothing to commit' }, 200, req)
     }
+
+    // Combine corroborating sources for already-matched records before any
+    // commit path. Conflicts gate every contributing row in one transaction.
+    if (!dryRun) await combineStagingSources(supabase as unknown as CombinationRpcClient, resolvedTarget, pipelineRunId, batchSize)
 
     // Registry commit config for the resolved target table (exact-table match —
     // unknown tables fall through to the legacy path below, unchanged).
@@ -265,9 +273,11 @@ Deno.serve(async (req) => {
     // and to the pipeline run when one is given.
     let query = supabase
       .from('ingestion_staging')
-      .select('id, normalized_data, enriched_data, target_table, entity_type, source_type, raw_data, target_record_id, idempotency_key, source_name')
-      .in('disposition', ['pending'])
-      .in('dedup_status', ['unique', 'pending'])
+      .select('id, normalized_data, enriched_data, target_table, entity_type, source_type, raw_data, target_record_id, idempotency_key, source_name, dedup_match_id')
+      .in('disposition', ['pending', 'approved'])
+      .in('dedup_status', ['unique', 'pending', 'duplicate', 'merge_candidate'])
+      .eq('ai_validation_status', 'approved')
+      .or('review_status.is.null,review_status.in.(auto,approved)')
       .eq('target_table', resolvedTarget)
       .order('created_at', { ascending: true })
       .limit(batchSize)
@@ -318,6 +328,16 @@ Deno.serve(async (req) => {
             skipped++
             continue
           }
+        }
+
+        if (item.dedup_match_id) {
+          if (dryRun) { committed++; continue }
+          const rpc = supabase as unknown as { rpc(name: string, args: Record<string, unknown>): Promise<{ data: unknown; error: { message: string } | null }> }
+          const result = await rpc.rpc('commit_matched_source_gaps', { p_staging_id: item.id })
+          if (result.error) throw new Error(`matched gap commit: ${result.error.message}`)
+          if ((result.data as { action?: string })?.action === 'skipped') skipped++
+          else committed++
+          continue
         }
 
         const normalized = (item.normalized_data ?? {}) as Record<string, unknown>

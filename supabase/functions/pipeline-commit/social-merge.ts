@@ -1,3 +1,5 @@
+import { fillDataGaps } from '../_shared/gap-fill.ts'
+
 /**
  * Merge incoming social links onto an entity's existing `social_links`.
  *
@@ -17,13 +19,12 @@ export function mergeSocialLinks(
   const base: Record<string, unknown> =
     existing && typeof existing === 'object' && !Array.isArray(existing) ? { ...existing } : {}
   if (!incoming || typeof incoming !== 'object' || Array.isArray(incoming)) return null
-  let changed = false
+  const valid: Record<string, unknown> = {}
   for (const [key, value] of Object.entries(incoming)) {
     if (typeof value !== 'string' || !value.trim()) continue
-    const cur = base[key]
-    if (typeof cur === 'string' && cur.trim()) continue
-    base[key] = value.trim()
-    changed = true
+    if (['__proto__', 'constructor', 'prototype'].includes(key)) continue
+    valid[key] = value.trim()
   }
-  return changed ? base : null
+  const merged = fillDataGaps(base, valid) as Record<string, unknown>
+  return JSON.stringify(merged) === JSON.stringify(base) ? null : merged
 }

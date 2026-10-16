@@ -1,3 +1,4 @@
+import { isDataGap } from '../../../../supabase/functions/_shared/gap-fill';
 import { useState, useMemo } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -22,29 +23,13 @@ interface SideBySideComparisonProps {
 
 type FieldChoice = 'left' | 'right';
 
-function pickBetterValue(leftVal: unknown, rightVal: unknown, type: FieldDef['type']): FieldChoice {
-  const leftEmpty = leftVal === null || leftVal === undefined || leftVal === '';
-  const rightEmpty = rightVal === null || rightVal === undefined || rightVal === '';
-
-  if (leftEmpty && !rightEmpty) return 'right';
-  if (!leftEmpty && rightEmpty) return 'left';
-  if (leftEmpty && rightEmpty) return 'left';
-
-  // For text/textarea, prefer longer string
-  if (type === 'text' || type === 'textarea') {
-    const leftLen = String(leftVal).length;
-    const rightLen = String(rightVal).length;
-    if (rightLen > leftLen * 1.2) return 'right';
-    return 'left';
-  }
-
-  // For numbers, prefer non-zero
-  if (type === 'number') {
-    if (Number(leftVal) === 0 && Number(rightVal) !== 0) return 'right';
-    return 'left';
-  }
-
-  return 'left';
+function pickBetterValue(
+  leftVal: unknown,
+  rightVal: unknown,
+  _type: FieldDef['type'],
+): FieldChoice {
+  // Populated values, including zero and false, belong to the survivor.
+  return isDataGap(leftVal) && !isDataGap(rightVal) ? 'right' : 'left';
 }
 
 function valuesAreDifferent(a: unknown, b: unknown): boolean {
@@ -76,7 +61,14 @@ export function SideBySideComparison({
   showActions = true,
 }: SideBySideComparisonProps) {
   const fields = useMemo(
-    () => getFieldsForEntity(entityType, { ...leftData, ...rightData }),
+    () =>
+      getFieldsForEntity(entityType, { ...leftData, ...rightData }).filter(
+        (field) =>
+          !['featured', 'is_featured', 'country_id', 'lgbti_connection', 'lgbtq_friendly'].includes(
+            field.key,
+          ) &&
+          (Object.hasOwn(leftData, field.key) || Object.hasOwn(rightData, field.key)),
+      ),
     [entityType, leftData, rightData],
   );
 
@@ -277,7 +269,7 @@ export function SideBySideComparison({
               className="flex gap-1.5"
             >
               <Merge size={14} />
-              Merge & Keep Best
+              Merge Records
             </Button>
           )}
         </div>
