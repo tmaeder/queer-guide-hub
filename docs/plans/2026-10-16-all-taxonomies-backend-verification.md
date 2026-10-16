@@ -31,7 +31,7 @@ npx vitest run src/hooks/__tests__/useManagedOptions.test.tsx src/config/__tests
 
 The SQL runner uses an isolated PGlite database, a minimal surrounding schema fixture and the real existing CMS revision implementation. It applies all four migrations, exercises permissions and data guards, and makes no live database changes. This is not a replacement for the normal staging migration process against a full database.
 
-Desktop and mobile browser checks verified the searchable directory, flex row layout, absence of page errors and horizontal overflow. Changed TypeScript sources pass ESLint. The repository typecheck ratchet passes with 701 existing errors against a baseline of 782; no baseline was relaxed.
+Desktop and mobile browser checks verified the searchable directory, flex row layout, absence of page errors and horizontal overflow. The final focused run passes 135 tests across 10 files. Changed TypeScript sources pass ESLint. Production build, bundle shape and Pages routing checks pass. All four migration files pass the PostgreSQL 17 syntax/body-balance parser; the version check reports unique versions ordered after current main and the read-only production history check. The repository typecheck ratchet passes with 701 existing errors against a baseline of 782; no baseline was relaxed.
 
 ## Release
 
