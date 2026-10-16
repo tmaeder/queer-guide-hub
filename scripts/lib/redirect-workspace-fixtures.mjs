@@ -22,6 +22,7 @@ export async function verifyRedirectWorkspaceMembershipHttp(db, request, owner) 
   ).count;
   const facetsBefore = await request('/linked-domains');
   const imagesBefore = await request('/qr-images');
+  const analyticsBefore = await request('/analytics', 'POST', { filters: {} });
   await db.exec('BEGIN');
   async function call(...args) {
     await db.exec('SAVEPOINT workspace_http_call');
@@ -58,6 +59,10 @@ export async function verifyRedirectWorkspaceMembershipHttp(db, request, owner) 
       'redirect_qr_styles',
       'redirect_saved_reports',
       'redirect_report_shares',
+      'redirect_events',
+      'redirect_link_conversions',
+      'redirect_link_customers',
+      'redirect_customer_profiles',
     ];
     for (const table of tables)
       await db.exec(`ALTER TABLE public.${table} DROP CONSTRAINT ${table}_pending_tenant_fence`);
@@ -201,6 +206,46 @@ export async function verifyRedirectWorkspaceMembershipHttp(db, request, owner) 
       return results;
     }
     const qrReportsBefore = await qrReportSnapshot();
+    const foreignClick = randomUUID(),
+      foreignCustomer = 'foreign-http-customer:' + randomUUID(),
+      foreignEvent = 'foreign-http-event:' + randomUUID();
+    await db.query(
+      "INSERT INTO public.redirect_events(workspace_id,redirect_id,click_id,ts,path,variant_id,status) VALUES($1,$2,$3,now()-interval '5 minutes','/foreign-private-http-customer','foreign-private-http-variant',302)",
+      [workspace, link, foreignClick],
+    );
+    await db.query(
+      "INSERT INTO public.redirect_link_conversions(workspace_id,click_id,kind,customer_key,provider_event_id,event_name) VALUES($1,$2,'lead',$3,$4,'Foreign private HTTP customer event')",
+      [workspace, foreignClick, foreignCustomer, foreignEvent],
+    );
+    await db.query(
+      'INSERT INTO public.redirect_link_customers(workspace_id,customer_key,click_id) VALUES($1,$2,$3)',
+      [workspace, foreignCustomer, foreignClick],
+    );
+    const customerVersion = (
+      await db.query(
+        "INSERT INTO public.redirect_customer_profiles(workspace_id,customer_key,name,email) VALUES($1,$2,'Foreign private HTTP customer','foreign-customer@example.org') RETURNING version",
+        [workspace, foreignCustomer],
+      )
+    ).rows[0].version;
+    async function customerSnapshot() {
+      const state = {};
+      for (const table of [
+        'redirect_events',
+        'redirect_link_conversions',
+        'redirect_link_customers',
+        'redirect_customer_profiles',
+      ])
+        state[table] = (
+          await db.query(
+            'SELECT to_jsonb(r) AS row FROM public.' +
+              table +
+              ' r WHERE workspace_id=$1 ORDER BY to_jsonb(r)::text',
+            [workspace],
+          )
+        ).rows;
+      return state;
+    }
+    const customersBefore = await customerSnapshot();
     const foreignSnapshot = (
       await db.query(
         'SELECT to_jsonb(r) AS link,(SELECT to_jsonb(m) FROM public.redirect_link_metadata m WHERE redirect_key=$2) AS metadata,(SELECT to_jsonb(p) FROM public.redirect_link_policies p WHERE redirect_id=$1) AS policy FROM public.redirects r WHERE id=$1',
@@ -385,6 +430,96 @@ export async function verifyRedirectWorkspaceMembershipHttp(db, request, owner) 
     assert.deepEqual(
       (await db.query('SELECT * FROM public.redirect_report_budgets ORDER BY bucket')).rows,
       reportBudgetsBefore,
+    );
+    const analyticsAfter = await call('/analytics', 'POST', { filters: {} });
+    for (const key of ['totals', 'revenue', 'breakdowns'])
+      assert.deepEqual(
+        analyticsAfter[key],
+        analyticsBefore[key],
+        'Analytics ' + key + ' included foreign events',
+      );
+    const foreignAnalytics = await call('/analytics', 'POST', { filters: { linkIds: [link] } });
+    assert.equal(foreignAnalytics.totals.clicks, 0);
+    assert.equal(foreignAnalytics.totals.leads, 0);
+    const eventsPage = await call('/events', 'POST', { filters: {}, limit: 100 });
+    assert.ok(!JSON.stringify(eventsPage).includes('foreign-private-http'));
+    await call(
+      '/customers/profile?id=' + encodeURIComponent(foreignCustomer),
+      'GET',
+      undefined,
+      undefined,
+      404,
+    );
+    await call(
+      '/customers/journey?id=' + encodeURIComponent(foreignCustomer),
+      'GET',
+      undefined,
+      undefined,
+      404,
+    );
+    await call(
+      '/customers/profile',
+      'PATCH',
+      { customerExternalId: foreignCustomer, version: customerVersion, name: 'Denied' },
+      undefined,
+      404,
+    );
+    await call(
+      '/customers/profile',
+      'DELETE',
+      { customerExternalId: foreignCustomer, version: customerVersion },
+      undefined,
+      404,
+    );
+    const ownClick = (
+      await db.query(
+        "SELECT click_id FROM public.redirect_events WHERE workspace_id='58aa4340-8f21-4b7f-9a10-90be2da89c01' AND redirect_id IS NOT NULL LIMIT 1",
+      )
+    ).rows[0].click_id;
+    const localConversionsBefore = (
+      await db.query(
+        "SELECT count(*)::int AS n FROM public.redirect_link_conversions WHERE workspace_id='58aa4340-8f21-4b7f-9a10-90be2da89c01'",
+      )
+    ).rows[0].n;
+    await call(
+      '/track/lead',
+      'POST',
+      { clickId: foreignClick, customerExternalId: 'denied-foreign-click', eventId: randomUUID() },
+      undefined,
+      404,
+    );
+    await call(
+      '/track/lead',
+      'POST',
+      { customerExternalId: foreignCustomer, eventId: randomUUID() },
+      undefined,
+      404,
+    );
+    await call(
+      '/track/lead',
+      'POST',
+      { clickId: ownClick, customerExternalId: foreignCustomer, eventId: randomUUID() },
+      undefined,
+      409,
+    );
+    await call(
+      '/track/lead',
+      'POST',
+      { clickId: ownClick, customerExternalId: 'denied-foreign-event-key', eventId: foreignEvent },
+      undefined,
+      409,
+    );
+    assert.equal(
+      (
+        await db.query(
+          "SELECT count(*)::int AS n FROM public.redirect_link_conversions WHERE workspace_id='58aa4340-8f21-4b7f-9a10-90be2da89c01'",
+        )
+      ).rows[0].n,
+      localConversionsBefore,
+    );
+    assert.deepEqual(await customerSnapshot(), customersBefore);
+    console.log(
+      'Workspace customer/analytics isolation: actual owner HTTP totals/breakdowns/pages exclude foreign events; foreign profiles/journeys/updates/clear/click attribution and global customer/event-key collisions deny without changing foreign snapshots or inserting a local conversion.',
     );
     console.log(
       'Workspace QR/report isolation: actual owner HTTP hides foreign QR images, branding and personal/team reports; foreign creation/revocation/style/report/run/share and public-token requests are denied, preserving foreign records and report budgets.',

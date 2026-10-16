@@ -3782,3 +3782,38 @@ is measured before the QR/report denial sequence. All2354 migration versions and
 SQL bodies validate without exemptions; targeted script lint/format/diff checks
 pass. Previous d511 full CI38834417691 and focused CI38834417752 both completed
 successfully. New exact-head CI remains required; no live release was performed.
+
+
+Customer/analytics isolation checkpoint: migration99991792122076 scopes9 customer,
+conversion and analytics functions. Private customer access, profile reads/writes,
+chronological events and conversion attribution use the selected workspace. A
+foreign click/anchor is unavailable; global customer/event-key conflicts fail
+atomically instead of returning a foreign receipt or silently keeping its anchor.
+Profile reads cannot enrich local activity with a foreign same-key identity.
+Global external-ID uniqueness and customer locks remain pending model conversion.
+
+Analytics filters bind to authoritative visit workspace, preserving local visits
+without a current root and existing event DTOs. Folder/tag predicates and variant
+metrics are scoped. Existing authenticated invoker analytics/journey/variant RPCs
+remain fixed to legacy under current-role RLS, including when a foreign header is
+supplied. A separate PL/pgSQL service-role branch uses the private selector; no
+selector execution grant was widened. Native signup keeps separate verified
+account/timing semantics and cannot attribute a foreign click.
+
+Complete migrated SQL, rollback-only customer/analytics fixtures,40-table backfill
+and actual owner HTTP/five SDK runtimes pass locally. Coverage includes same-key
+local activity with foreign identity, profile collision rollback, foreign native
+attribution, direct authenticated compatibility and stale-admin denial; HTTP totals,
+breakdowns, event pages, profile/journey/clear, tracking and event-key collisions
+preserve exact foreign snapshots without inserting a local conversion. All2356
+migration versions/bodies validate; script lint/format/diff checks pass.
+
+PR4430 was merged externally while this work continued. The new link/QR/report and
+customer work is now on feature/redirect-workspace-resource-isolation, based on
+current main, in draft PR4432. No merged PR code was rewritten; its description
+was restored after discovering the merge. Focused Linux CI38846628376 passes the
+link/QR/report head0ef498bb6; full CI38846628390 is still finishing, and final-head
+customer CI is required. Product activation fences stay intact. Public resolver,
+provider/background/cleanup writers, tenant ownership/uniqueness, creation/switching
+and reviewed domain transfer still require completion; no production mutation or
+full parity/release claim is made.
