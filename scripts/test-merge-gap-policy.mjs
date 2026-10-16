@@ -8,7 +8,7 @@ import { planSourceCombinations } from '../supabase/functions/pipeline-commit/co
 const pgBin = process.env.PG_BIN || (existsSync('/opt/homebrew/opt/postgresql@17/bin/initdb') ? '/opt/homebrew/opt/postgresql@17/bin' : '');
 const root = mkdtempSync('/tmp/qg-merge-test-');
 const executable = (name) => pgBin ? join(pgBin, name) : name;
-const run = (name, args, input) => execFileSync(executable(name), args, { input, encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 });
+const run = (name, args, input) => execFileSync(executable(name), args, { input, stdio: ['pipe', 'pipe', 'pipe'], encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 });
 const pgArgs = ['-h', root, '-p', '5432', '-v', 'ON_ERROR_STOP=1', '-qAt'];
 const sql = (database, input) => run('psql', [...pgArgs, '-d', database], input);
 const migrationFiles = readdirSync('supabase/migrations').filter((f) => f.endsWith('.sql')).sort();
@@ -34,7 +34,7 @@ function latestDefinition(name) {
 function bootstrap(database, actualItems) {
   run('createdb', ['-h', root, '-p', '5432', database]);
   run('psql', [...pgArgs, '-d', database, '-f', 'supabase/tests/fixtures/merge-gap-policy.sql']);
-  const batchDefinitions = ['news_commit_staging_batch', 'commit_village_staging_batch'].map(latestDefinition).join('\n');
+  const batchDefinitions = ['news_commit_staging_batch', 'commit_village_staging_batch', 'commit_marketplace_staging_batch'].map(latestDefinition).join('\n');
   sql(database, batchDefinitions);
   if (actualItems) {
     const names = ['venue', 'event', 'city', 'country', 'marketplace', 'personality'].map((kind) => `commit_${kind}_staging_item`);
@@ -51,9 +51,20 @@ try {
   bootstrap('behavior', false);
   run('psql', [...pgArgs, '-d', 'behavior', '-f', 'supabase/tests/merge_gap_policy.sql']);
   bootstrap('real_definitions', true);
+  // Prove the test catches the actual inline marketplace batch bypass.
+  let caughtBypass = false;
+  try {
+    run('psql', [...pgArgs, '-d', 'real_definitions', '-f', 'supabase/tests/marketplace_batch_gap_policy.sql']);
+  } catch (error) {
+    caughtBypass = String(error.stderr).includes('marketplace batch must preserve populated descriptive fields');
+  }
+  assert.equal(caughtBypass, true, 'regression test must detect the pre-fix batch bypass');
+  const batchMigration = migrationFiles.find((file) => file.endsWith('_marketplace_batch_gap_policy.sql'));
+  sql('real_definitions', readFileSync(join('supabase/migrations', batchMigration), 'utf8'));
+  run('psql', [...pgArgs, '-d', 'real_definitions', '-f', 'supabase/tests/marketplace_batch_gap_policy.sql']);
   const compiled = JSON.parse(sql('real_definitions', `SELECT json_agg(proname) FROM pg_proc WHERE proname LIKE 'commit_%_staging_item' AND pg_get_functiondef(oid) LIKE '%merge_gap_patch%';`));
   assert.equal(compiled.length, 6, 'every real item function receives the policy');
-  console.log('PostgreSQL: gap fills, typed arrays/JSON, merge/undo, source evidence, CAS, review gates and eight real commit definitions passed.');
+  console.log('PostgreSQL: gap fills, typed arrays/JSON, merge/undo, source evidence, CAS, review gates and nine real commit definitions passed (including the inline marketplace batch).');
   // Representative throughput: 500 entities and 30,000 historical observations.
   sql('behavior', `
     INSERT INTO venues(id,name,description) SELECT md5('venue-'||g)::uuid,'Venue '||g,NULL FROM generate_series(1,500) g;
