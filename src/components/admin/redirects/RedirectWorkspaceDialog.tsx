@@ -1,3 +1,4 @@
+import { RedirectNativeApps } from './RedirectNativeApps';
 import { RedirectInvitations } from '@/components/admin/redirects/RedirectInvitations';
 import { RedirectIntegrationSetup } from './RedirectIntegrationSetup';
 import { RedirectWebhooks } from './RedirectWebhooks';
@@ -25,6 +26,7 @@ export function RedirectWorkspaceDialog({ onClose }: { onClose: () => void }) {
   const workspace = useRedirectWorkspace();
   const [showMembers, setShowMembers] = useState(false);
   const [showDomains, setShowDomains] = useState(false);
+  const [showApps, setShowApps] = useState(false);
   const [showQrStyle, setShowQrStyle] = useState(false);
   const [showWebhooks, setShowWebhooks] = useState(false);
   const [showIntegrations, setShowIntegrations] = useState(false);
@@ -103,6 +105,10 @@ export function RedirectWorkspaceDialog({ onClose }: { onClose: () => void }) {
           {showDomains ? 'Hide domains' : 'Manage custom domains'}
         </Button>
         {showDomains && <RedirectDomains />}
+        <Button variant="outline" onClick={() => setShowApps(!showApps)}>
+          {showApps ? 'Hide native apps' : 'Manage native apps'}
+        </Button>
+        {showApps && <RedirectNativeApps />}
         <Button variant="outline" onClick={() => setShowQrStyle(!showQrStyle)}>
           {showQrStyle ? 'Hide saved QR style' : 'Manage saved QR style'}
         </Button>

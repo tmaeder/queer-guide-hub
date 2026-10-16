@@ -1,3 +1,4 @@
+import { proxyAppAssociation } from '../supabase/functions/_shared/redirect-app-association-proxy';
 /**
  * Pages middleware: rewrites the SPA shell <head> per route so every URL
  * ships its own <title>, <meta name="description">, <link rel="canonical">,
@@ -222,6 +223,9 @@ export const onRequest: PagesFunction<Env> = async (context) => {
   const { request, next, env } = context;
   const url = new URL(request.url);
   const { pathname } = url;
+
+  const association = await proxyAppAssociation(request, env);
+  if (association) return association;
 
   // Per-request CSP nonce. Generated up front so both the HTML rewriter
   // and any synthetic 404 we may emit share the same value.

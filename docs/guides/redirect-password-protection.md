@@ -2,7 +2,11 @@
 
 Passwords are salted PBKDF2-SHA256 hashes. The resolver loads protection on each
 request before disclosing or recording a destination. Never distribute passwords
-in query strings; the POST form is the preferred entry path.
+in query strings; the POST form is the preferred entry path. Successful password
+POSTs return HTTP 303, including links configured with 307/308, so browsers fetch
+the destination without forwarding the password form body. Native JSON transport
+reports the same effective 303 in its payload; see
+[the native protocol](redirect-native-resolution.md).
 
 ## Attempt limits
 

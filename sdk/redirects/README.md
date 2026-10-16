@@ -510,3 +510,14 @@ Values may contain folderId, tagIds, comment and isArchived only. Writes are ato
 a conflict requires reviewing the current version before retrying. Routing remains
 controlled by its source. Pattern and reservation definitions are not concrete QR
 URLs. See the inventory section in `docs/guides/redirect-workspace-api.md`.
+
+## Native installed-app resolution
+
+The credential-free [Swift package](swift/README.md) resolves canonical short URLs
+for iOS15+/macOS12+. It is separate from the five server management/conversion
+clients above. Its default consent is denied, it uses the live resolver policies,
+and it returns explicit app/browser navigation decisions. Run
+`node scripts/test-redirect-swift.mjs` on macOS. The [Android Java/Kotlin client](android/README.md) uses the same policy/consent
+protocol with a dedicated OkHttp transport. Run `node scripts/test-redirect-android.mjs`
+with JDK21/Maven. Both clients remain local candidates; deterministic deferred
+attribution, signed-device evidence and package publication remain open.

@@ -1,7 +1,8 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { RedirectOtherInventory, concreteInventorySource } from './RedirectOtherInventory';
+import { RedirectOtherInventory } from './RedirectOtherInventory';
+import { concreteInventorySource } from './inventorySource';
 const mocks = vi.hoisted(() => ({
   api: vi.fn(),
   denied: false,

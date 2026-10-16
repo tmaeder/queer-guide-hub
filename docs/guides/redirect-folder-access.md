@@ -157,17 +157,23 @@ revoked from the invitation list. The secret is shown once and stored only as a
 hash on the server. The list never returns it.
 
 The recipient opens `/links-workspace`, signs in or registers, verifies the exact
-invited email, then explicitly accepts. A fragment-based secret is kept out of
-HTTP request URLs. During sign-in, a browser-tab session handoff lasts at most
-15 minutes and is consumed once. The invitation can also be pasted manually if
-browser storage is unavailable. Acceptance creates only link workspace membership;
-folder defaults apply. It grants no site-admin role. Existing active members keep
-their current role; inactive members need an owner to reactivate them. Removing
-an accepted member prevents reusing the old invitation to recreate membership.
+invited email, then explicitly accepts. Pending invitations for the current
+verified email also appear in the private account inbox, so sign-in does not
+require preserving the invitation token. Links can still be pasted manually or
+opened while signed in; the fragment is removed after capture. Tokens are never
+saved in local or session storage. Inbox acceptance uses an invitation ID and
+rechecks the account's actual verified email, creator authority and invitation
+state in the database. Knowing an ID alone does not grant another account access.
+
+Acceptance creates only link workspace membership; folder defaults apply. It
+grants no site-admin role. Existing active members keep their current role;
+inactive members need an owner to reactivate them. Removing an accepted member
+prevents reusing the old invitation to recreate membership.
 
 Session-only REST routes: `GET /invitations?offset=0` (100 per page),
 `POST /invitations` with `{email,label,role}`, `DELETE /invitations/:id` and
-`POST /invitations/accept` with `{token}`. Owner routes check the current owner
+`GET /invitations/received?offset=0` and `POST /invitations/accept` with either
+`{token}` or a received `{id}`. Owner routes check the current owner
 in the database; API credentials cannot administer or accept invitations.
 Creation returns `{id,expiresAt,invitationUrl}` once. Acceptance is idempotent for
 the same current member and checks the recipient's current verified email,

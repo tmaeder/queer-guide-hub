@@ -9,6 +9,7 @@ const secret = 'fixture-root-secret-'.repeat(3);
 let handle;
 const source = [
   '_shared/link-policy.ts',
+  '_shared/redirect-native-resolution.ts',
   '_shared/redirect-visitor.ts',
   '_shared/redirect-relay.ts',
   '_shared/redirect-presentation.ts',
@@ -108,18 +109,56 @@ const relayCode = ts.transpileModule(
 const relay = await import(
   'data:text/javascript;base64,' + Buffer.from(relayCode).toString('base64')
 );
+const sharedCache = new Map();
+const sharedAllow = new Set([
+  'redirect-domain-relay',
+  'redirect-relay',
+  'redirect-native-resolution',
+  'redirect-app-association-proxy',
+  'redirect-native-apps',
+  'redirect-api',
+  'link-policy',
+]);
+function sharedModule(id) {
+  const name = id.split('/').at(-1).replace(/\.ts$/, '');
+  assert.ok(sharedAllow.has(name), 'Unexpected test dependency ' + id);
+  if (sharedCache.has(name)) return sharedCache.get(name);
+  const exports = {};
+  sharedCache.set(name, exports);
+  const compiled = ts.transpileModule(
+    readFileSync('supabase/functions/_shared/' + name + '.ts', 'utf8'),
+    { compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.CommonJS } },
+  ).outputText;
+  new Function('require', 'exports', compiled)(sharedModule, exports);
+  return exports;
+}
+// Node requires duplex for streaming form bodies; Cloudflare does not.
+async function fixtureResolve(input, init) {
+  return handle(
+    new Request(input, {
+      ...init,
+      ...(init?.body instanceof ReadableStream ? { duplex: 'half' } : {}),
+    }),
+  );
+}
 const workerExports = {};
 const workerCode = ts.transpileModule(readFileSync('workers/redirect-domains/index.ts', 'utf8'), {
   compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.CommonJS },
 }).outputText;
 new Function('require', 'exports', 'fetch', workerCode)(
-  (id) => {
-    assert.match(id, /redirect-domain-relay$/);
-    return relay;
-  },
+  sharedModule,
   workerExports,
-  (input, init) => handle(new Request(input, init)),
+  fixtureResolve,
 );
+const builtinExports = {};
+new Function(
+  'require',
+  'exports',
+  'fetch',
+  ts.transpileModule(readFileSync('functions/go/[slug].ts', 'utf8'), {
+    compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.CommonJS },
+  }).outputText,
+)(sharedModule, builtinExports, fixtureResolve);
 const worker = workerExports.default;
 const passwordCode = ts.transpileModule(
   readFileSync('supabase/functions/_shared/link-policy.ts', 'utf8'),
@@ -244,7 +283,7 @@ const granted = await open('/?qg_qr=1&utm_source=poster', {
   method: 'POST',
   password: 'fixture-root-password',
 });
-assert.equal(granted.status, 302);
+assert.equal(granted.status, 303);
 assert.match(granted.headers.get('Location'), /^https:\/\/example.org\/home\?/);
 assert.ok(new URL(granted.headers.get('Location')).searchParams.get('qg_click_id'));
 assert.equal(await total(), 1);
@@ -291,7 +330,159 @@ assert.equal(await total(), 2);
 assert.equal((await open('/' + root.slug)).status, 404);
 await db.query('DELETE FROM public.redirects WHERE id=$1', [root.id]);
 assert.equal((await open()).headers.get('Location'), 'https://example.org/legacy');
-await db.close();
+// Native requests run the same actual policy/visit transaction on both gateways.
+const nativeProtocol = sharedModule('redirect-native-resolution');
+const nativeLink = (
+  await db.query(
+    "INSERT INTO public.redirects(type,slug,target,status_code,query_mode) VALUES('SHORT','native-proof','https://example.org/content#section',302,'PRESERVE') RETURNING *",
+  )
+).rows[0];
+await db.query(
+  'INSERT INTO public.redirect_link_policies(redirect_id,policy,password_hash) VALUES($1,$2,$3)',
+  [
+    nativeLink.id,
+    JSON.stringify({
+      track_conversions: true,
+      device_targets: { ios: 'https://example.org/native-ios#section' },
+    }),
+    JSON.stringify(await policy.hashLinkPassword('native-password')),
+  ],
+);
+async function nativeOpen({
+  method = 'GET',
+  password,
+  consent = false,
+  query = '',
+  agent = 'QueerGuide SDK iPhone',
+} = {}) {
+  return builtinExports.onRequest({
+    request: new Request('https://queer.guide/go/native-proof' + query, {
+      method,
+      headers: {
+        Accept: nativeProtocol.NATIVE_REDIRECT_MEDIA,
+        'User-Agent': agent,
+        'cf-connecting-ip': '192.0.2.33',
+        ...(consent ? { [nativeProtocol.NATIVE_CONSENT_HEADER]: 'granted' } : {}),
+        ...(password ? { 'Content-Type': 'application/x-www-form-urlencoded' } : {}),
+      },
+      ...(password ? { body: new URLSearchParams({ password }).toString() } : {}),
+    }),
+    params: { slug: 'native-proof' },
+    env: { ...values, SUPABASE_ANON_KEY: 'fixture-public' },
+  });
+}
+const nativeEvents = async () =>
+  (
+    await db.query(
+      'SELECT count(*)::int AS count FROM public.redirect_events WHERE redirect_id=$1',
+      [nativeLink.id],
+    )
+  ).rows[0].count;
+assert.equal((await nativeOpen()).status, 401);
+assert.equal(await nativeEvents(), 0);
+assert.equal((await nativeOpen({ method: 'HEAD' })).status, 401);
+assert.equal((await nativeOpen({ query: '?pw=native-password' })).status, 400);
+assert.equal((await nativeOpen({ method: 'POST', password: 'wrong' })).status, 401);
+assert.equal(await nativeEvents(), 0);
+const anonymousNative = await nativeOpen({
+  method: 'POST',
+  password: 'native-password',
+  query: '?utm_source=native&qg_click_id=forged',
+});
+assert.equal(anonymousNative.status, 200);
+const anonymousOutcome = await anonymousNative.json();
+assert.equal(anonymousOutcome.clickId, null);
+assert.equal(
+  anonymousOutcome.destination,
+  'https://example.org/native-ios?utm_source=native#section',
+);
+assert.equal(await nativeEvents(), 1);
+const attributedNative = await nativeOpen({
+  method: 'POST',
+  password: 'native-password',
+  consent: true,
+});
+assert.equal(attributedNative.status, 200);
+const nativeOutcome = await attributedNative.json();
+assert.match(nativeOutcome.clickId, /^[a-f0-9-]{36}$/);
+assert.equal(
+  new URL(nativeOutcome.destination).searchParams.get('qg_click_id'),
+  nativeOutcome.clickId,
+);
+assert.equal(nativeOutcome.mode, 'navigate');
+assert.equal(await nativeEvents(), 2);
+await db.query('UPDATE public.redirects SET click_limit=2 WHERE id=$1', [nativeLink.id]);
+assert.equal((await nativeOpen({ method: 'POST', password: 'native-password' })).status, 410);
+await db.query('UPDATE public.redirect_link_policies SET password_hash=NULL WHERE redirect_id=$1', [
+  nativeLink.id,
+]);
+assert.equal((await nativeOpen({ method: 'HEAD' })).status, 410);
+assert.equal(await nativeEvents(), 2);
+await db.query(
+  "UPDATE public.redirects SET click_limit=NULL,end_at=now()-interval '1 minute' WHERE id=$1",
+  [nativeLink.id],
+);
+await db.query(
+  'UPDATE public.redirect_link_policies SET policy=policy||\'{"expired_target":"https://example.org/expired"}\' WHERE redirect_id=$1',
+  [nativeLink.id],
+);
+const nativeExpired = await nativeOpen();
+assert.equal(nativeExpired.status, 200);
+assert.equal((await nativeExpired.json()).mode, 'web');
+assert.equal(await nativeEvents(), 2);
+await db.query('UPDATE public.redirects SET end_at=NULL,is_enabled=false WHERE id=$1', [
+  nativeLink.id,
+]);
+assert.equal((await nativeOpen()).status, 404);
+assert.equal(await nativeEvents(), 2);
+// The branded root also traverses the real Worker, signed relay, resolver and SQL.
+const nativeRootCreated = await service.rpc('redirect_management_mutate', {
+  p_actor_id: actor,
+  p_operations: [
+    {
+      operation: 'create',
+      data: { target: 'https://example.org/native-root', domainId: domain.id, isDomainRoot: true },
+    },
+  ],
+});
+assert.equal(nativeRootCreated.error, null);
+const nativeRootId = nativeRootCreated.data[0].link.id;
+const rootNativeTotal = async () =>
+  (await db.query('SELECT click_count FROM public.redirects WHERE id=$1', [nativeRootId])).rows[0]
+    .click_count;
+const beforeRootNative = await rootNativeTotal();
+const brandedNative = await worker.fetch(
+  new Request('https://root-http.example.com/', {
+    headers: { Accept: nativeProtocol.NATIVE_REDIRECT_MEDIA, 'User-Agent': 'iPhone' },
+  }),
+  { ...values, SUPABASE_ANON_KEY: 'fixture-public' },
+);
+assert.equal(brandedNative.status, 200);
+const brandedOutcome = await brandedNative.json();
+assert.equal(brandedOutcome.canonicalUrl, 'https://root-http.example.com/');
+assert.equal(brandedOutcome.clickId, null);
+assert.equal(await rootNativeTotal(), beforeRootNative + 1);
+await db.query(
+  "UPDATE public.redirect_domains SET not_found_url='https://example.org/not-found?qg_click_id=forged' WHERE id=$1",
+  [domain.id],
+);
+const nativeFallback = await worker.fetch(
+  new Request('https://root-http.example.com/missing-native', {
+    headers: { Accept: nativeProtocol.NATIVE_REDIRECT_MEDIA },
+  }),
+  { ...values, SUPABASE_ANON_KEY: 'fixture-public' },
+);
+assert.equal(nativeFallback.status, 200);
+const fallbackOutcome = await nativeFallback.json();
+assert.equal(fallbackOutcome.mode, 'web');
+assert.equal(fallbackOutcome.destination, 'https://example.org/not-found');
+assert.equal(fallbackOutcome.clickId, null);
+assert.equal(await rootNativeTotal(), beforeRootNative + 1);
+console.log(
+  'Native resolution: actual built-in Pages and signed branded Worker -> resolver -> PostgreSQL verify password/challenge/POST, query-secret rejection, denied/granted attribution, iOS targeting, root identity, atomic quota, HEAD, expiry fallback and disabled links.',
+);
 console.log(
   'Managed roots: actual Worker → signed resolver → migrated PostgreSQL verifies legacy fallback only when absent, password POST/HEAD denial, targeting, root preview canonical URL, QR/conversion attribution, atomic quota, scheduling/expiry/disabled behavior and inaccessible internal slug. No external requests.',
 );
+
+await db.close();

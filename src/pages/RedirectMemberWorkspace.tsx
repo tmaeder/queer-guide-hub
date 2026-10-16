@@ -6,7 +6,7 @@ import {
 } from '@/components/admin/redirects/RedirectAccessRequests';
 import { PageContainer } from '@/components/layout/PageContainer';
 import { useEffect, useState } from 'react';
-import { useNavigate, useLocation, useSearchParams } from 'react-router';
+import { Navigate, useLocation, useSearchParams } from 'react-router';
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { RedirectDomainSelect } from '@/components/admin/redirects/RedirectDomainSelect';
 import { useRedirectDomainChoices } from '@/hooks/useRedirectDomainChoices';
@@ -1040,31 +1040,16 @@ export function MemberWorkspaceContent({
     </div>
   );
 }
-function WorkspaceSignIn({ target, fragment }: { target: string; fragment: string }) {
-  const navigate = useNavigate();
-  useEffect(() => {
-    const token = new URLSearchParams(fragment.slice(1)).get('invite');
-    if (token && /^qg_invite_[a-f0-9]{64}$/.test(token)) {
-      try {
-        sessionStorage.setItem(
-          'redirect-pending-invitation',
-          JSON.stringify({ token, at: Date.now() }),
-        );
-      } catch {
-        /* The invitation can be pasted after sign-in. */
-      }
-    }
-    void navigate('/auth?redirect=' + encodeURIComponent(target), { replace: true });
-  }, [navigate, target, fragment]);
-  return <p role="status">Preparing workspace sign-in…</p>;
-}
 export default function RedirectMemberWorkspace() {
   const { user, loading } = useAuth();
   const location = useLocation();
   if (loading) return <p role="status">Loading account…</p>;
   if (!user || user.is_anonymous)
     return (
-      <WorkspaceSignIn target={location.pathname + location.search} fragment={location.hash} />
+      <Navigate
+        to={'/auth?redirect=' + encodeURIComponent(location.pathname + location.search)}
+        replace
+      />
     );
   return (
     <PageContainer>
