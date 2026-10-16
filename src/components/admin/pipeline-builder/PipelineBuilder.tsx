@@ -170,7 +170,18 @@ function PipelineBuilderInner() {
       if (mod && (e.key === 'y' || (e.key === 'z' && e.shiftKey))) { e.preventDefault(); undoRedo.redo(); setIsDirty(true); return; }
       if (mod && e.key === 'd' && !inInput) { e.preventDefault(); actions.handleDuplicate(); return; }
       if (mod && e.key === 'l' && !inInput) { e.preventDefault(); actions.handleAutoLayout(); return; }
-      if (mod && e.key === 'k' && !inInput) { e.preventDefault(); setQuickAddOpen(o => !o); return; }
+      // The builder owns ⌘K while it is mounted. AdminShell binds the same chord for its
+      // command palette on window (bubble phase); preventDefault alone does NOT stop that,
+      // so stop propagation here — this handler is registered in the capture phase below.
+      // No `inInput` guard, unlike ⌘D/⌘L: a mod chord is never text entry, and this is a
+      // TOGGLE — once quick-add is open its own search input holds focus, so skipping here
+      // let the second press escape to the shell instead of closing the palette.
+      if (mod && (e.key === 'k' || e.key === 'K')) {
+        e.preventDefault();
+        e.stopPropagation();
+        setQuickAddOpen(o => !o);
+        return;
+      }
       if (e.key === 'Escape' && selectedNodeId) { setSelectedNodeId(null); return; }
       if ((e.key === 'Delete' || e.key === 'Backspace') && selectedNodeId && !inInput) {
         e.preventDefault();
@@ -180,8 +191,8 @@ function PipelineBuilderInner() {
         setIsDirty(true);
       }
     };
-    window.addEventListener('keydown', handler);
-    return () => window.removeEventListener('keydown', handler);
+    window.addEventListener('keydown', handler, true);
+    return () => window.removeEventListener('keydown', handler, true);
   }, [handleSave, handleRun, actions, undoRedo, selectedNodeId, setNodes, setEdges, setSelectedNodeId]);
 
   // Unsaved changes warning
