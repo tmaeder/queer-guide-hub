@@ -212,7 +212,7 @@ membership, per-workspace uniqueness, multiple-workspace creation/switching and
 reviewed atomic domain transfer remain required.
 
 
-Managed link and inventory isolation checkpoint: migration99991792120766 converts
+Managed link and inventory isolation checkpoint: migration99991792123545 converts
 14 private link/inventory/policy/preview helpers to explicit workspace predicates.
 Managed inventory rows must bind to their physical workspace root; client manifest
 entries cannot impersonate managed rows. Legacy static/CMS coverage stays intact.
