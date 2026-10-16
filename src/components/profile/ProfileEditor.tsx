@@ -28,7 +28,6 @@ import { UsernamePanel } from '@/components/profile/UsernamePanel';
 import { ChangePasswordPanel } from '@/components/profile/ChangePasswordPanel';
 import { PreferencesMirrorCard } from '@/components/profile/PreferencesMirrorCard';
 import { pronounDisplay } from '@/components/ui/pronoun-utils';
-import { flagById } from '@/lib/flags';
 import { initFormData } from '@/types/profileForm';
 import type { ProfileFormData, ComingOutStatus } from '@/types/profileForm';
 import type { Profile, ProfileUpdateResult } from '@/hooks/useProfile';
@@ -261,7 +260,7 @@ function ProfileSettingsContent({
           pronoun_tags: formData.pronoun_tags,
           // Filter to the known vocabulary on save — TS is the vocabulary, the
           // DB only caps cardinality.
-          identity_flags: formData.identity_flags.filter((id) => flagById(id)).slice(0, 8),
+          identity_flags: formData.identity_flags.slice(0, 8),
           phone: formData.phone,
           website: formData.website,
           date_of_birth: formData.date_of_birth || null,

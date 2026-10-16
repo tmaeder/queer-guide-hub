@@ -1,3 +1,4 @@
+import { useReferenceTaxonomy } from '@/hooks/useReferenceTaxonomy';
 /**
  * /tags/:tagName — a glossary entry.
  *
@@ -144,6 +145,8 @@ function extractFacts(data: Record<string, unknown> | null | undefined): Fact[] 
 }
 
 export default function TagDetail() {
+  const taxonomyRevision = useReferenceTaxonomy('pride_flag');
+
   const { t, i18n } = useTranslation();
   const { tagName } = useParams<{ tagName: string }>();
   const navigate = useLocalizedNavigate();
@@ -341,6 +344,9 @@ export default function TagDetail() {
    *  which is why the component this replaces bailed out below three headings
    *  and showed an empty sidebar the rest of the time. */
   const stations = useMemo<RouteStation[]>(() => {
+    // Imported vocabulary bindings change with this external-store revision.
+    void taxonomyRevision;
+
     if (!tag) return [];
     const s: RouteStation[] = [];
     if (tag.description || tag.long_description) {
@@ -426,6 +432,7 @@ export default function TagDetail() {
     figures,
     showPhoto,
     t,
+    taxonomyRevision,
   ]);
 
   const { activeId, goToStation } = useActiveStation(stations);

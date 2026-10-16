@@ -1,3 +1,4 @@
+import { useMarketplaceTaxonomy } from '@/hooks/useMarketplaceTaxonomy';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tags } from 'lucide-react';
 import { useMarketplaceTagQuality } from '@/hooks/useMarketplaceTagQuality';
@@ -6,6 +7,8 @@ import { AdminTextSkeleton } from '@/components/admin/primitives/AdminLoading';
 
 /** Live counts for the marketplace tag engine: departments, attributes, open gate. */
 export function MarketplaceTagQualityPanel() {
+  useMarketplaceTaxonomy();
+
   const { data, isLoading } = useMarketplaceTagQuality();
 
   return (

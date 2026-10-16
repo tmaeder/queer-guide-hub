@@ -1,3 +1,4 @@
+import { useMarketplaceTaxonomy } from './useMarketplaceTaxonomy';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { DEPARTMENT_ORDER, departmentOf } from '@/lib/marketplaceTaxonomy';
@@ -11,8 +12,9 @@ export interface TagQualitySummary {
 
 /** Live counts for the marketplace tag engine admin panel. */
 export function useMarketplaceTagQuality() {
+  const taxonomyRevision = useMarketplaceTaxonomy();
   return useQuery<TagQualitySummary>({
-    queryKey: ['marketplace-tag-quality'],
+    queryKey: ['marketplace-tag-quality', taxonomyRevision],
     queryFn: async () => {
       const [subcats, assignments, reviews, total] = await Promise.all([
         supabase.rpc('get_marketplace_subcategory_counts'),
@@ -41,9 +43,10 @@ export function useMarketplaceTagQuality() {
         totalActive: total.count ?? 0,
         attributeAssignments: assignments.count ?? 0,
         openReviews: reviews.count ?? 0,
-        departments: DEPARTMENT_ORDER
-          .filter((d) => (counts.get(d) ?? 0) > 0)
-          .map((d) => ({ slug: d, count: counts.get(d) ?? 0 })),
+        departments: DEPARTMENT_ORDER.filter((d) => (counts.get(d) ?? 0) > 0).map((d) => ({
+          slug: d,
+          count: counts.get(d) ?? 0,
+        })),
       };
     },
     staleTime: 60_000,

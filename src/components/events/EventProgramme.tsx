@@ -6,7 +6,7 @@ import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { TransitIcon } from '@/components/transit/TransitIcon';
 import { byDay, laneSpan, type ProgrammeChild } from '@/utils/prideProgramme';
 import { byType, isParade, shouldOfferTypeToggle } from '@/utils/eventProgrammeView';
-import { EVENT_TYPE_OPTIONS } from '@/lib/eventTypes';
+import { useEventTypeOptions } from '@/lib/eventTypes';
 
 /**
  * The programme of a multi-day event, as a timetable.
@@ -56,9 +56,6 @@ function fmtSpan(children: readonly ProgrammeChild[]): string {
 }
 
 /** Human label for an `event_type` slug, from the vocabulary the admin form uses. */
-function typeLabel(slug: string): string {
-  return EVENT_TYPE_OPTIONS.find((o) => o.value === slug)?.label ?? slug;
-}
 
 function ProgrammeRow({ child }: { child: ProgrammeChild }) {
   const { t } = useTranslation();
@@ -124,6 +121,9 @@ function Group({
 }
 
 export function EventProgramme({ entries }: { entries: ProgrammeChild[] }) {
+  const eventTypeOptions = useEventTypeOptions();
+  const typeLabel = (slug: string) =>
+    eventTypeOptions.find((option) => option.value === slug)?.label ?? slug;
   const { t } = useTranslation();
   const [axis, setAxis] = useState<'day' | 'type'>('day');
 

@@ -49,6 +49,9 @@ const TagDetail = lazyRetry(() => import('./pages/TagDetail'));
 const SubstanceInteractionsPage = lazyRetry(() => import('./pages/SubstanceInteractionsPage'));
 const StiGuidePage = lazyRetry(() => import('./pages/StiGuidePage'));
 const Competitions = lazyRetry(() => import('./pages/Competitions'));
+const ManagedCompetitionCategoryPage = lazyRetry(
+  () => import('./pages/ManagedCompetitionCategoryPage'),
+);
 const CompetitionCategoryPage = lazyRetry(() => import('./pages/CompetitionCategoryPage'));
 const ConnectionsExplorer = lazyRetry(() => import('./pages/explore/ConnectionsExplorer'));
 const Personalities = lazyRetry(() => import('./pages/Personalities'));
@@ -77,6 +80,7 @@ const AdminShell = lazyRetry(() =>
 const AdminDashboard = lazyRetry(() => import('./pages/admin/AdminDashboard'));
 const AdminAnalytics = lazyRetry(() => import('./pages/admin/AdminAnalytics'));
 const AdminUsers = lazyRetry(() => import('./pages/admin/AdminUsers'));
+const AdminTaxonomies = lazyRetry(() => import('./pages/admin/AdminTaxonomies'));
 const AdminTags = lazyRetry(() => import('./pages/admin/AdminTags'));
 const AdminNewsSources = lazyRetry(() => import('./pages/admin/AdminNewsSources'));
 const AdminNewsAuthors = lazyRetry(() => import('./pages/admin/AdminNewsAuthors'));
@@ -451,6 +455,7 @@ export const AppRoutes = () => {
                     action above it; static path wins over content/:type. */}
                   <Route path="content/milestones" element={<MilestonesAdmin />} />
                   <Route path="content/unified_tags" element={<AdminTags />} />
+                  <Route path="taxonomies" element={<AdminTaxonomies />} />
                   <Route path="content/redirects" element={<AdminRedirects />} />
                   <Route
                     path="content/redirects/manual"
@@ -898,6 +903,10 @@ export const AppRoutes = () => {
                       src/lib/competitionCategories.ts and are asserted against
                       it by competitionRoutes.test.ts. */}
                   <Route path="competitions" element={<Competitions />} />
+                  <Route
+                    path="competitions/types/:categorySlug"
+                    element={<ManagedCompetitionCategoryPage />}
+                  />
                   <Route
                     path="competitions/drag-series"
                     element={<CompetitionCategoryPage category="drag_series" />}

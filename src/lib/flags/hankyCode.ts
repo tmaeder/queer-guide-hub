@@ -1,3 +1,5 @@
+import { observeReferenceTaxonomies } from '@/lib/referenceTaxonomyStore';
+import { hankyDefinition } from '@/lib/referenceTaxonomyDefinitions';
 /**
  * The handkerchief code — REFERENCE DATA ONLY.
  *
@@ -28,7 +30,7 @@ export interface HankyCodeEntry {
   tier: 'classic' | 'extended';
 }
 
-export const HANKY_CODE: readonly HankyCodeEntry[] = [
+export let HANKY_CODE: readonly HankyCodeEntry[] = [
   // ── Classic (Townsend, 1983) ─────────────────────────────────────────────
   {
     id: 'black',
@@ -179,3 +181,12 @@ export const HANKY_CODE: readonly HankyCodeEntry[] = [
 
 /** The one tag page the hanky band mounts on. */
 export const HANKY_CODE_TAG_SLUG = 'handkerchief-code';
+
+const originalCode = new Map(HANKY_CODE.map((entry) => [entry.id, entry]));
+observeReferenceTaxonomies((taxonomy, terms) => {
+  if (taxonomy !== 'hanky_code') return;
+  HANKY_CODE = terms
+    .filter((term) => term.is_active)
+    .map((term) => hankyDefinition(term, originalCode.get(term.value)))
+    .filter((entry): entry is HankyCodeEntry => entry !== null);
+});

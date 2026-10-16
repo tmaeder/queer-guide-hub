@@ -1,3 +1,5 @@
+import { useClassificationOptions } from '@/hooks/useManagedOptions';
+import seeds from '@/config/classificationSeeds.json';
 import { useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
@@ -12,7 +14,6 @@ import { groupMilestonesByEra, sumEraCounts } from '@/lib/historyEraGrouping';
 import { EraLineNav } from '@/components/milestones/EraLineNav';
 import { EraSection } from '@/components/milestones/EraSection';
 import { OnThisDayBand } from '@/components/milestones/OnThisDayBand';
-import { MILESTONE_CATEGORIES, milestoneCategoryLabelKey } from '@/types/milestone';
 import { cn } from '@/lib/utils';
 import { PageContainer } from '@/components/layout/PageContainer';
 
@@ -48,6 +49,11 @@ export default function HistoryTimeline() {
   const filters = useMemo(
     () => ({ countryLabel: country, category, impact }),
     [country, category, impact],
+  );
+  const categoryOptions = useClassificationOptions(
+    'milestone_category',
+    seeds.milestone_category,
+    category,
   );
   const { data: spine, isLoading } = useMilestonesTimeline(
     { ...filters, significanceMin: 4 },
@@ -161,14 +167,16 @@ export default function HistoryTimeline() {
             aria-label={t('milestones.filter.categoryGroup', 'Category')}
             className="flex flex-wrap gap-2"
           >
-            {MILESTONE_CATEGORIES.filter((c) => c !== 'other').map((c) => (
-              <FilterChip
-                key={c}
-                active={category === c}
-                label={t(milestoneCategoryLabelKey(c))}
-                onClick={() => setParam('category', category === c ? null : c)}
-              />
-            ))}
+            {categoryOptions
+              .filter((option) => option.value !== 'other')
+              .map(({ value: c, label }) => (
+                <FilterChip
+                  key={c}
+                  active={category === c}
+                  label={label}
+                  onClick={() => setParam('category', category === c ? null : c)}
+                />
+              ))}
           </div>
 
           <div className="flex flex-wrap items-center gap-2">

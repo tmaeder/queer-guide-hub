@@ -385,3 +385,9 @@ describe('resolveMeta', () => {
     }
   });
 });
+
+it('gives newly managed competition category routes distinct metadata', () => {
+  const meta = resolveMeta('/competitions/types/community-awards');
+  expect(meta.title).toContain('Community Awards Competitions');
+  expect(meta.description).toContain('community awards');
+});

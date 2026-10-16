@@ -1,3 +1,4 @@
+import { useClassificationOptions } from '@/hooks/useManagedOptions';
 import { useState } from 'react';
 import { Check, ChevronsUpDown, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -35,6 +36,11 @@ export function PronounCombobox({ value, onValueChange, id, disabled }: PronounC
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState('');
 
+  const suggestions = useClassificationOptions(
+    'pronouns',
+    PRONOUN_SUGGESTIONS.map((value) => ({ value, label: value })),
+    value,
+  );
   const atLimit = value.length >= MAX_PRONOUN_SETS;
   const trimmed = search.trim();
   const tooLong = trimmed.length > MAX_FREE_TEXT_LEN;
@@ -42,7 +48,7 @@ export function PronounCombobox({ value, onValueChange, id, disabled }: PronounC
     trimmed.length > 0 &&
     !tooLong &&
     !atLimit &&
-    !PRONOUN_SUGGESTIONS.some((p) => p.toLowerCase() === trimmed.toLowerCase()) &&
+    !suggestions.some((p) => p.value.toLowerCase() === trimmed.toLowerCase()) &&
     !value.some((p) => p.toLowerCase() === trimmed.toLowerCase());
 
   const toggle = (tag: string) => {
@@ -96,7 +102,7 @@ export function PronounCombobox({ value, onValueChange, id, disabled }: PronounC
                 {tooLong ? `Keep it under ${MAX_FREE_TEXT_LEN} characters.` : 'No match.'}
               </CommandEmpty>
               <CommandGroup>
-                {PRONOUN_SUGGESTIONS.map((p) => {
+                {suggestions.map(({ value: p, label }) => {
                   const selected = value.includes(p);
                   return (
                     <CommandItem
@@ -108,7 +114,7 @@ export function PronounCombobox({ value, onValueChange, id, disabled }: PronounC
                       <Check
                         className={cn('mr-2 h-4 w-4', selected ? 'opacity-100' : 'opacity-0')}
                       />
-                      {p}
+                      {label}
                     </CommandItem>
                   );
                 })}

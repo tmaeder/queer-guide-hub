@@ -1,3 +1,4 @@
+import { useReferenceTaxonomy } from '@/hooks/useReferenceTaxonomy';
 /**
  * TagHankyCodeBand — the handkerchief-code reference table, mounted only on
  * /tags/handkerchief-code.
@@ -38,6 +39,8 @@ function CodeRow({ entry }: { entry: HankyCodeEntry }) {
 }
 
 export function TagHankyCodeBand({ tagSlug }: { tagSlug: string }) {
+  useReferenceTaxonomy('hanky_code');
+
   const { t } = useTranslation();
   const safeMode = useSafeMode();
   const { affirmed } = useAgeAffirmation();

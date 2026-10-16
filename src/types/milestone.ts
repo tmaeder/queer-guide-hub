@@ -1,6 +1,7 @@
 // Queer-history milestone content type (table: milestones, route: /history).
 
 export type MilestoneCategory =
+  | (string & {})
   | 'uprising-movement'
   | 'law-equality'
   | 'law-decriminalization'

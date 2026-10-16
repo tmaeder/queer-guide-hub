@@ -1,3 +1,4 @@
+import { invalidateManagedOptions } from '@/hooks/useManagedOptions';
 /**
  * useCMSEditor - Core CMS editing hook
  * Handles loading, saving, dirty tracking, conflict detection, and auto-revision.
@@ -372,7 +373,7 @@ export function useCMSEditor({
         serverRow = updatedRows[0] as unknown as Record<string, unknown>;
       } else {
         // INSERT
-        if (user) {
+        if (user && config.writeCreatedBy !== false) {
           saveData.created_by = user.id;
         }
 
@@ -521,6 +522,7 @@ export function useCMSEditor({
         errors: dropErrors,
       }));
 
+      invalidateManagedOptions();
       if (droppedFields.length === 0 && savedId) onSaved?.(savedId);
       return droppedFields.length === 0;
     } catch (error) {

@@ -116,7 +116,9 @@ export const STATE_BADGE_ICONS = {
 
 /** Every (glyph-key → icon) pair the map needs to rasterize into map images. */
 export const GLYPH_DEFS: { key: string; icon: TransitIconName }[] = [
-  ...Object.entries(VENUE_CATEGORY_ICONS).map(([cat, icon]) => ({ key: `cat:${cat}`, icon })),
+  ...Object.entries(VENUE_CATEGORY_ICONS).flatMap(([cat, icon]) =>
+    icon ? [{ key: `cat:${cat}`, icon }] : [],
+  ),
   ...(Object.entries(LAYER_FALLBACK_ICONS) as [LayerType, TransitIconName][]).map(
     ([type, icon]) => ({ key: `type:${type}`, icon }),
   ),

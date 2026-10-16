@@ -1,0 +1,424 @@
+{
+  "profile_bdsm_role": [
+    {
+      "value": "dominant",
+      "label": "Dominant"
+    },
+    {
+      "value": "submissive",
+      "label": "Submissive"
+    },
+    {
+      "value": "switch",
+      "label": "Switch"
+    },
+    {
+      "value": "top",
+      "label": "Top"
+    },
+    {
+      "value": "bottom",
+      "label": "Bottom"
+    },
+    {
+      "value": "versatile",
+      "label": "Versatile"
+    },
+    {
+      "value": "not_interested",
+      "label": "Not interested"
+    },
+    {
+      "value": "prefer_not_to_say",
+      "label": "Prefer not to say"
+    }
+  ],
+  "profile_communication_about_sex": [
+    {
+      "value": "very_open",
+      "label": "Very open"
+    },
+    {
+      "value": "open_with_partners",
+      "label": "Open with partners"
+    },
+    {
+      "value": "private",
+      "label": "Private"
+    },
+    {
+      "value": "uncomfortable",
+      "label": "Uncomfortable"
+    },
+    {
+      "value": "prefer_not_to_say",
+      "label": "Prefer not to say"
+    }
+  ],
+  "profile_disability_status": [
+    {
+      "value": "yes",
+      "label": "Yes"
+    },
+    {
+      "value": "no",
+      "label": "No"
+    },
+    {
+      "value": "prefer_not_to_say",
+      "label": "Prefer not to say"
+    }
+  ],
+  "profile_family_acceptance_level": [
+    {
+      "value": "very_supportive",
+      "label": "Very supportive"
+    },
+    {
+      "value": "supportive",
+      "label": "Supportive"
+    },
+    {
+      "value": "neutral",
+      "label": "Neutral"
+    },
+    {
+      "value": "unsupportive",
+      "label": "Unsupportive"
+    },
+    {
+      "value": "very_unsupportive",
+      "label": "Very unsupportive"
+    },
+    {
+      "value": "no_contact",
+      "label": "No contact"
+    },
+    {
+      "value": "prefer_not_to_say",
+      "label": "Prefer not to say"
+    }
+  ],
+  "profile_financial_situation": [
+    {
+      "value": "financially_stable",
+      "label": "Financially stable"
+    },
+    {
+      "value": "getting_by",
+      "label": "Getting by"
+    },
+    {
+      "value": "struggling",
+      "label": "Struggling"
+    },
+    {
+      "value": "in_crisis",
+      "label": "In crisis"
+    },
+    {
+      "value": "prefer_not_to_say",
+      "label": "Prefer not to say"
+    }
+  ],
+  "profile_housing_situation": [
+    {
+      "value": "stable_housing",
+      "label": "Stable housing"
+    },
+    {
+      "value": "temporary_housing",
+      "label": "Temporary housing"
+    },
+    {
+      "value": "looking_for_housing",
+      "label": "Looking for housing"
+    },
+    {
+      "value": "housing_insecure",
+      "label": "Housing insecure"
+    },
+    {
+      "value": "prefer_not_to_say",
+      "label": "Prefer not to say"
+    }
+  ],
+  "profile_immigration_status": [
+    {
+      "value": "citizen",
+      "label": "Citizen"
+    },
+    {
+      "value": "permanent_resident",
+      "label": "Permanent resident"
+    },
+    {
+      "value": "temporary_resident",
+      "label": "Temporary resident"
+    },
+    {
+      "value": "undocumented",
+      "label": "Undocumented"
+    },
+    {
+      "value": "prefer_not_to_say",
+      "label": "Prefer not to say"
+    }
+  ],
+  "profile_jealousy_comfort_level": [
+    {
+      "value": "very_comfortable",
+      "label": "Very comfortable"
+    },
+    {
+      "value": "somewhat_comfortable",
+      "label": "Somewhat comfortable"
+    },
+    {
+      "value": "gets_jealous",
+      "label": "Gets jealous"
+    },
+    {
+      "value": "very_jealous",
+      "label": "Very jealous"
+    },
+    {
+      "value": "depends",
+      "label": "Depends"
+    },
+    {
+      "value": "prefer_not_to_say",
+      "label": "Prefer not to say"
+    }
+  ],
+  "profile_kink_experience_level": [
+    {
+      "value": "none",
+      "label": "None"
+    },
+    {
+      "value": "curious",
+      "label": "Curious"
+    },
+    {
+      "value": "beginner",
+      "label": "Beginner"
+    },
+    {
+      "value": "intermediate",
+      "label": "Intermediate"
+    },
+    {
+      "value": "advanced",
+      "label": "Advanced"
+    },
+    {
+      "value": "expert",
+      "label": "Expert"
+    },
+    {
+      "value": "prefer_not_to_say",
+      "label": "Prefer not to say"
+    }
+  ],
+  "profile_mental_health_openness": [
+    {
+      "value": "very_open",
+      "label": "Very open"
+    },
+    {
+      "value": "somewhat_open",
+      "label": "Somewhat open"
+    },
+    {
+      "value": "private",
+      "label": "Private"
+    },
+    {
+      "value": "prefer_not_to_discuss",
+      "label": "Prefer not to discuss"
+    }
+  ],
+  "profile_neurodivergent_status": [
+    {
+      "value": "yes",
+      "label": "Yes"
+    },
+    {
+      "value": "no",
+      "label": "No"
+    },
+    {
+      "value": "self_diagnosed",
+      "label": "Self diagnosed"
+    },
+    {
+      "value": "questioning",
+      "label": "Questioning"
+    },
+    {
+      "value": "prefer_not_to_say",
+      "label": "Prefer not to say"
+    }
+  ],
+  "profile_physical_affection_preference": [
+    {
+      "value": "very_affectionate",
+      "label": "Very affectionate"
+    },
+    {
+      "value": "moderately_affectionate",
+      "label": "Moderately affectionate"
+    },
+    {
+      "value": "minimal_affection",
+      "label": "Minimal affection"
+    },
+    {
+      "value": "touch_averse",
+      "label": "Touch averse"
+    },
+    {
+      "value": "depends_on_relationship",
+      "label": "Depends on relationship"
+    },
+    {
+      "value": "prefer_not_to_say",
+      "label": "Prefer not to say"
+    }
+  ],
+  "profile_romance_style": [
+    {
+      "value": "very_romantic",
+      "label": "Very romantic"
+    },
+    {
+      "value": "somewhat_romantic",
+      "label": "Somewhat romantic"
+    },
+    {
+      "value": "practical",
+      "label": "Practical"
+    },
+    {
+      "value": "anti_romantic",
+      "label": "Anti romantic"
+    },
+    {
+      "value": "depends_on_partner",
+      "label": "Depends on partner"
+    },
+    {
+      "value": "prefer_not_to_say",
+      "label": "Prefer not to say"
+    }
+  ],
+  "profile_sexual_exploration_openness": [
+    {
+      "value": "very_open",
+      "label": "Very open"
+    },
+    {
+      "value": "somewhat_open",
+      "label": "Somewhat open"
+    },
+    {
+      "value": "selective",
+      "label": "Selective"
+    },
+    {
+      "value": "not_interested",
+      "label": "Not interested"
+    },
+    {
+      "value": "prefer_not_to_say",
+      "label": "Prefer not to say"
+    }
+  ],
+  "profile_sexual_frequency_preference": [
+    {
+      "value": "multiple_times_daily",
+      "label": "Multiple times daily"
+    },
+    {
+      "value": "daily",
+      "label": "Daily"
+    },
+    {
+      "value": "few_times_week",
+      "label": "Few times week"
+    },
+    {
+      "value": "weekly",
+      "label": "Weekly"
+    },
+    {
+      "value": "few_times_month",
+      "label": "Few times month"
+    },
+    {
+      "value": "monthly",
+      "label": "Monthly"
+    },
+    {
+      "value": "rarely",
+      "label": "Rarely"
+    },
+    {
+      "value": "asexual",
+      "label": "Asexual"
+    },
+    {
+      "value": "depends",
+      "label": "Depends"
+    },
+    {
+      "value": "prefer_not_to_say",
+      "label": "Prefer not to say"
+    }
+  ],
+  "profile_sexual_health_status": [
+    {
+      "value": "recently_tested_clean",
+      "label": "Recently tested clean"
+    },
+    {
+      "value": "regularly_tested",
+      "label": "Regularly tested"
+    },
+    {
+      "value": "prefer_not_to_discuss",
+      "label": "Prefer not to discuss"
+    },
+    {
+      "value": "will_discuss_privately",
+      "label": "Will discuss privately"
+    }
+  ],
+  "profile_workplace_safety": [
+    {
+      "value": "completely_out",
+      "label": "Completely out"
+    },
+    {
+      "value": "partially_out",
+      "label": "Partially out"
+    },
+    {
+      "value": "not_out",
+      "label": "Not out"
+    },
+    {
+      "value": "unsafe_to_be_out",
+      "label": "Unsafe to be out"
+    },
+    {
+      "value": "not_applicable",
+      "label": "Not applicable"
+    },
+    {
+      "value": "prefer_not_to_say",
+      "label": "Prefer not to say"
+    }
+  ]
+}

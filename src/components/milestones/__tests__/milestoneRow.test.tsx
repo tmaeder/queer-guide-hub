@@ -15,7 +15,11 @@ vi.mock('@/components/routing/LocalizedLink', () => ({
 }));
 
 vi.mock('react-i18next', () => ({
-  useTranslation: () => ({ t: (_k: string, d?: string) => d ?? _k, i18n: { language: 'en' } }),
+  useTranslation: () => ({
+    t: (_k: string, d?: string | { defaultValue?: string }) =>
+      (typeof d === 'string' ? d : d?.defaultValue) ?? _k,
+    i18n: { language: 'en' },
+  }),
 }));
 
 /** The impact marker is the only rounded-full box in a row. */

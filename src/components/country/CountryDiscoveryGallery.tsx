@@ -11,8 +11,8 @@ import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { Calendar, MapPin, SlidersHorizontal, ArrowUpRight } from 'lucide-react';
 import { useDebounce } from '@/hooks/useDebounce';
-import { useVenueCategoryOptions, VENUE_CATEGORY_OPTIONS } from '@/lib/venueCategories';
-import { useEventTypeOptions, EVENT_TYPE_OPTIONS } from '@/lib/eventTypes';
+import { useVenueCategoryOptions, useVenueCategoryLabel } from '@/lib/venueCategories';
+import { useEventTypeOptions, useEventTypeLabel } from '@/lib/eventTypes';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { Image } from '@/components/ui/Image';
 import { Input } from '@/components/ui/input';
@@ -36,10 +36,9 @@ export function DiscoveryPhotoCard({
   kind: 'city' | DiscoveryKind;
 }) {
   const { t, i18n } = useTranslation();
-  const categoryLabel =
-    (kind === 'venue' ? VENUE_CATEGORY_OPTIONS : EVENT_TYPE_OPTIONS).find(
-      (option) => option.value === item.category,
-    )?.label ?? item.category;
+  const venueCategoryLabel = useVenueCategoryLabel(kind === 'venue' ? item.category : null);
+  const eventTypeLabel = useEventTypeLabel(kind === 'event' ? item.category : null);
+  const categoryLabel = kind === 'venue' ? venueCategoryLabel : eventTypeLabel;
   const date = item.start ? new Date(item.start) : null;
   const dateLabel =
     date && !Number.isNaN(date.getTime())
@@ -83,12 +82,7 @@ export function DiscoveryPhotoCard({
         </div>
         {item.city && <p className="mt-2 text-13 text-muted-foreground">{item.city}</p>}
         {kind !== 'city' && (
-          <p className="mt-2 text-xs2 font-bold text-muted-foreground">
-            {t(
-              `${kind === 'venue' ? 'venueCategories' : 'eventTypes'}.${item.category}`,
-              categoryLabel,
-            )}
-          </p>
+          <p className="mt-2 text-xs2 font-bold text-muted-foreground">{categoryLabel}</p>
         )}
         {item.free && <p className="mt-2 text-13 font-bold">{t('events.free', 'Free')}</p>}
       </div>

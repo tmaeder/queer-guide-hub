@@ -4,6 +4,26 @@ import { describe, expect, it, vi } from 'vitest';
 import { StructuredFieldEditor, StructuredValue } from '../StructuredDataView';
 import { coordinatesFromLocation, withLocationCoordinates } from '../governanceFieldControlUtils';
 
+vi.mock('@/hooks/useManagedOptions', async (original) => ({
+  ...(await original<typeof import('@/hooks/useManagedOptions')>()),
+  useManagedOptions: (source?: { table?: string }) => ({
+    options: (source?.table === 'event_types'
+      ? [
+          { value: 'party', label: 'Party' },
+          { value: 'new_event', label: 'New managed event' },
+        ]
+      : [
+          { value: 'bar', label: 'Bar' },
+          { value: 'cafe', label: 'Café' },
+          { value: 'new_place', label: 'New managed place' },
+        ]
+    ).map((option) => ({ ...option, active: true })),
+    loading: false,
+    error: null,
+    retry: vi.fn(),
+  }),
+}));
+
 vi.mock('@/hooks/usePageFetchers', () => ({
   listFrom: vi
     .fn()
@@ -66,12 +86,13 @@ describe('StructuredFieldEditor', () => {
     await waitFor(() => expect(onDirtyChange).toHaveBeenLastCalledWith(0));
   });
 
-  it('uses canonical selects for venue category and event type', () => {
+  it('uses managed selects for venue category and event type', () => {
     const onVenueSave = vi.fn().mockResolvedValue(undefined);
     const { unmount } = render(
       <StructuredFieldEditor entityType="venue" data={{ category: 'bar' }} onSave={onVenueSave} />,
     );
 
+    expect(screen.getByRole('option', { name: 'New managed place' })).toBeInTheDocument();
     fireEvent.change(screen.getByRole('combobox', { name: 'Category' }), {
       target: { value: 'cafe' },
     });

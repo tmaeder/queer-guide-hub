@@ -451,6 +451,18 @@ function dynamicMeta(pathname: string): RouteMeta | null {
     };
   }
 
+  const competition = /^\/competitions\/types\/([^/?#]+)$/.exec(pathname);
+  if (competition) {
+    const name = titlecase(decodeURIComponent(competition[1]));
+    return {
+      title: truncate(`${name} Competitions${TITLE_SUFFIX}`, MAX_TITLE),
+      description: truncate(
+        `Explore ${name.toLowerCase()} competitions and title contests on Queer Guide.`,
+        MAX_DESC,
+      ),
+    };
+  }
+
   const match =
     /^\/(venue|venues|event|events|hotel|hotels|news|blog|personality|personalities|tag|tags|city|cities|country|countries|place|places|article|user|users)\/([^/?#]+)/.exec(
       pathname,

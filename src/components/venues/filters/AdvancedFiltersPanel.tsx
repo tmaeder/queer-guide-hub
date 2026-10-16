@@ -1,3 +1,4 @@
+import { useVocabularyOptions } from '@/hooks/useManagedOptions';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
@@ -95,6 +96,17 @@ function PanelBody({
   hasActiveFilters,
   onClearFilters,
 }: AdvancedFiltersPanelProps) {
+  const serviceOptions = useVocabularyOptions(
+    {
+      table: 'venue_services',
+      valueColumn: 'slug',
+      labelColumn: 'name',
+      orderBy: 'sort_order',
+      activeColumn: 'is_active',
+    },
+    commonServices.map((value) => ({ value, label: value })),
+    selectedServices,
+  );
   return (
     <div className="flex flex-col gap-6">
       <div>
@@ -145,7 +157,7 @@ function PanelBody({
               ? amenityOptions
               : commonAmenities.map((a) => ({ key: a, label: a }))
           }
-          services={commonServices.map((s) => ({ key: s, label: s }))}
+          services={serviceOptions.map((o) => ({ key: o.value, label: o.label }))}
           accessibility={accessibilityOptions}
           accessibilityLoading={vocabLoading}
           accessibilityLabel={accessibilityLabel}

@@ -134,6 +134,7 @@ export const ADMIN_ARCHETYPES: AdminArchetypeEntry[] = [
   },
 
   // ── A · Index (the archetype the claim lives or dies on) ───────────────
+  { path: 'taxonomies', archetype: 'A', title: 'Taxonomies', adopted: true },
   { path: 'content', archetype: 'A', title: 'Content', adopted: true },
   { path: 'content/:type', archetype: 'A', adopted: true },
   { path: 'content/redirects', archetype: 'A', title: 'Redirects', adopted: true },

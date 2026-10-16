@@ -1,3 +1,5 @@
+import { observeReferenceTaxonomies } from '@/lib/referenceTaxonomyStore';
+import { prideFlagDefinition } from '@/lib/referenceTaxonomyDefinitions';
 /**
  * Pride flags — the hand-curated vocabulary behind the glossary flag bands,
  * the Symbols & Flags wall, and (later) profile identity flags.
@@ -65,7 +67,7 @@ const RAINBOW: readonly FlagStripe[] = [
   { hex: '#770088', meaningKey: 'flags.meanings.rainbow.violet', meaningEn: 'Spirit' },
 ];
 
-export const PRIDE_FLAGS: readonly PrideFlag[] = [
+export let PRIDE_FLAGS: readonly PrideFlag[] = [
   {
     id: 'rainbow-pride',
     nameKey: 'flags.names.rainbow-pride',
@@ -483,3 +485,11 @@ export const PRIDE_FLAGS: readonly PrideFlag[] = [
     identityTagSlugs: ['bear'],
   },
 ];
+
+const originalFlags = new Map(PRIDE_FLAGS.map((flag) => [flag.id, flag]));
+observeReferenceTaxonomies((taxonomy, terms) => {
+  if (taxonomy !== 'pride_flag') return;
+  PRIDE_FLAGS = terms
+    .map((term) => prideFlagDefinition(term, originalFlags.get(term.value)))
+    .filter((flag): flag is PrideFlag => flag !== null);
+});

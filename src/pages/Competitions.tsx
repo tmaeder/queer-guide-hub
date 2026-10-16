@@ -1,3 +1,4 @@
+import { useReferenceTaxonomy } from '@/hooks/useReferenceTaxonomy';
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -80,6 +81,8 @@ function TrackSegment({ track }: { track: CategoryDef['bullet']['track'] }) {
 }
 
 export default function Competitions() {
+  useReferenceTaxonomy('competition_category');
+
   const { t } = useTranslation();
   const overview = useCompetitionOverview();
 

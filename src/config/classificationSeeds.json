@@ -1,0 +1,580 @@
+{
+  "hotel_type": [
+    {
+      "value": "hotel",
+      "label": "Hotel"
+    },
+    {
+      "value": "bnb",
+      "label": "B&B"
+    },
+    {
+      "value": "hostel",
+      "label": "Hostel"
+    },
+    {
+      "value": "guesthouse",
+      "label": "Guesthouse"
+    },
+    {
+      "value": "apartment",
+      "label": "Apartment"
+    },
+    {
+      "value": "resort",
+      "label": "Resort"
+    },
+    {
+      "value": "other",
+      "label": "Other"
+    }
+  ],
+  "milestone_category": [
+    {
+      "value": "uprising-movement",
+      "label": "Uprising / Movement"
+    },
+    {
+      "value": "law-equality",
+      "label": "Law / Equality"
+    },
+    {
+      "value": "law-decriminalization",
+      "label": "Law / Decriminalization"
+    },
+    {
+      "value": "law-criminalization",
+      "label": "Law / Criminalization"
+    },
+    {
+      "value": "depathologization",
+      "label": "Depathologization"
+    },
+    {
+      "value": "persecution-destruction",
+      "label": "Persecution / Destruction"
+    },
+    {
+      "value": "other",
+      "label": "Other"
+    },
+    {
+      "value": "culture-media",
+      "label": "Culture / Media"
+    },
+    {
+      "value": "politics-representation",
+      "label": "Politics / Representation"
+    },
+    {
+      "value": "health-aids",
+      "label": "Health / AIDS"
+    },
+    {
+      "value": "community-institution",
+      "label": "Community / Institution"
+    }
+  ],
+  "personality_cause_of_death": [
+    {
+      "value": "natural",
+      "label": "Natural causes"
+    },
+    {
+      "value": "illness",
+      "label": "Illness"
+    },
+    {
+      "value": "hiv_aids",
+      "label": "HIV/AIDS"
+    },
+    {
+      "value": "suicide",
+      "label": "Suicide"
+    },
+    {
+      "value": "homicide",
+      "label": "Homicide / violent death"
+    },
+    {
+      "value": "accident",
+      "label": "Accident"
+    },
+    {
+      "value": "overdose",
+      "label": "Overdose"
+    },
+    {
+      "value": "execution",
+      "label": "Execution"
+    },
+    {
+      "value": "unknown",
+      "label": "Unknown"
+    },
+    {
+      "value": "other",
+      "label": "Other"
+    }
+  ],
+  "venue_category": [
+    {
+      "value": "bar",
+      "label": "Bar"
+    },
+    {
+      "value": "club",
+      "label": "Club"
+    },
+    {
+      "value": "cafe",
+      "label": "Café"
+    },
+    {
+      "value": "restaurant",
+      "label": "Restaurant"
+    },
+    {
+      "value": "hotel",
+      "label": "Hotel"
+    },
+    {
+      "value": "sauna",
+      "label": "Sauna"
+    },
+    {
+      "value": "cruising",
+      "label": "Cruising"
+    },
+    {
+      "value": "outdoor",
+      "label": "Outdoor"
+    },
+    {
+      "value": "shop",
+      "label": "Shop"
+    },
+    {
+      "value": "community_center",
+      "label": "Community"
+    },
+    {
+      "value": "event-venue",
+      "label": "Event Venue"
+    },
+    {
+      "value": "theater",
+      "label": "Theater"
+    },
+    {
+      "value": "gallery",
+      "label": "Gallery"
+    },
+    {
+      "value": "salon",
+      "label": "Salon"
+    },
+    {
+      "value": "gym",
+      "label": "Gym"
+    },
+    {
+      "value": "toilet",
+      "label": "Restroom"
+    },
+    {
+      "value": "other",
+      "label": "Other"
+    }
+  ],
+  "service_category": [
+    {
+      "value": "general",
+      "label": "General"
+    },
+    {
+      "value": "beauty",
+      "label": "Beauty"
+    },
+    {
+      "value": "business",
+      "label": "Business"
+    },
+    {
+      "value": "dining",
+      "label": "Dining"
+    },
+    {
+      "value": "entertainment",
+      "label": "Entertainment"
+    },
+    {
+      "value": "events",
+      "label": "Events"
+    },
+    {
+      "value": "fitness",
+      "label": "Fitness"
+    },
+    {
+      "value": "professional",
+      "label": "Professional"
+    },
+    {
+      "value": "retail",
+      "label": "Retail"
+    },
+    {
+      "value": "wellness",
+      "label": "Wellness"
+    }
+  ],
+  "accessibility_category": [
+    {
+      "value": "general",
+      "label": "General"
+    },
+    {
+      "value": "mobility",
+      "label": "Mobility"
+    },
+    {
+      "value": "visual",
+      "label": "Visual"
+    },
+    {
+      "value": "hearing",
+      "label": "Hearing"
+    },
+    {
+      "value": "sensory",
+      "label": "Sensory"
+    }
+  ],
+  "gender": [
+    {
+      "value": "woman",
+      "label": "Woman"
+    },
+    {
+      "value": "man",
+      "label": "Man"
+    },
+    {
+      "value": "non_binary",
+      "label": "Non-binary"
+    },
+    {
+      "value": "genderfluid",
+      "label": "Genderfluid"
+    },
+    {
+      "value": "agender",
+      "label": "Agender"
+    },
+    {
+      "value": "bigender",
+      "label": "Bigender"
+    },
+    {
+      "value": "genderqueer",
+      "label": "Genderqueer"
+    },
+    {
+      "value": "demigender",
+      "label": "Demigender"
+    },
+    {
+      "value": "transgender_woman",
+      "label": "Transgender woman"
+    },
+    {
+      "value": "transgender_man",
+      "label": "Transgender man"
+    },
+    {
+      "value": "two_spirit",
+      "label": "Two-Spirit"
+    },
+    {
+      "value": "questioning",
+      "label": "Questioning"
+    },
+    {
+      "value": "prefer_not_to_say",
+      "label": "Prefer not to say"
+    },
+    {
+      "value": "other",
+      "label": "Other"
+    }
+  ],
+  "orientation": [
+    {
+      "value": "straight",
+      "label": "Straight"
+    },
+    {
+      "value": "gay",
+      "label": "Gay"
+    },
+    {
+      "value": "lesbian",
+      "label": "Lesbian"
+    },
+    {
+      "value": "bisexual",
+      "label": "Bisexual"
+    },
+    {
+      "value": "pansexual",
+      "label": "Pansexual"
+    },
+    {
+      "value": "asexual",
+      "label": "Asexual"
+    },
+    {
+      "value": "demisexual",
+      "label": "Demisexual"
+    },
+    {
+      "value": "queer",
+      "label": "Queer"
+    },
+    {
+      "value": "questioning",
+      "label": "Questioning"
+    },
+    {
+      "value": "prefer_not_to_say",
+      "label": "Prefer not to say"
+    },
+    {
+      "value": "other",
+      "label": "Other"
+    }
+  ],
+  "chosen_family": [
+    {
+      "value": "involved",
+      "label": "Involved in chosen family"
+    },
+    {
+      "value": "building",
+      "label": "Building chosen family"
+    },
+    {
+      "value": "seeking",
+      "label": "Seeking chosen family"
+    },
+    {
+      "value": "not_applicable",
+      "label": "Not applicable"
+    },
+    {
+      "value": "prefer_not_to_say",
+      "label": "Prefer not to say"
+    }
+  ],
+  "coming_out": [
+    {
+      "value": "out",
+      "label": "Out"
+    },
+    {
+      "value": "partially_out",
+      "label": "Partially out"
+    },
+    {
+      "value": "not_out",
+      "label": "Not out"
+    },
+    {
+      "value": "not_applicable",
+      "label": "Not applicable"
+    }
+  ],
+  "romantic_orientation": [
+    {
+      "value": "heteroromantic",
+      "label": "Heteroromantic"
+    },
+    {
+      "value": "homoromantic",
+      "label": "Homoromantic"
+    },
+    {
+      "value": "biromantic",
+      "label": "Biromantic"
+    },
+    {
+      "value": "panromantic",
+      "label": "Panromantic"
+    },
+    {
+      "value": "aromantic",
+      "label": "Aromantic"
+    },
+    {
+      "value": "demiromantic",
+      "label": "Demiromantic"
+    },
+    {
+      "value": "greyromantic",
+      "label": "Greyromantic"
+    },
+    {
+      "value": "queerplatonic",
+      "label": "Queerplatonic"
+    },
+    {
+      "value": "questioning",
+      "label": "Questioning"
+    },
+    {
+      "value": "prefer_not_to_say",
+      "label": "Prefer not to say"
+    },
+    {
+      "value": "other",
+      "label": "Other"
+    }
+  ],
+  "relationship_status": [
+    {
+      "value": "single",
+      "label": "Single"
+    },
+    {
+      "value": "taken",
+      "label": "Taken"
+    },
+    {
+      "value": "its_complicated",
+      "label": "It's complicated"
+    },
+    {
+      "value": "open_to_explore",
+      "label": "Open to explore"
+    },
+    {
+      "value": "prefer_not_to_say",
+      "label": "Prefer not to say"
+    }
+  ],
+  "relationship_style": [
+    {
+      "value": "monogamous",
+      "label": "Monogamous"
+    },
+    {
+      "value": "polyamorous",
+      "label": "Polyamorous"
+    },
+    {
+      "value": "relationship_anarchist",
+      "label": "Relationship anarchist"
+    },
+    {
+      "value": "open_relationship",
+      "label": "Open relationship"
+    },
+    {
+      "value": "swinging",
+      "label": "Swinging"
+    },
+    {
+      "value": "exploring",
+      "label": "Exploring"
+    },
+    {
+      "value": "prefer_not_to_say",
+      "label": "Prefer not to say"
+    }
+  ],
+  "pronouns": [
+    {
+      "value": "she/her",
+      "label": "she/her"
+    },
+    {
+      "value": "he/him",
+      "label": "he/him"
+    },
+    {
+      "value": "they/them",
+      "label": "they/them"
+    },
+    {
+      "value": "ze/zir",
+      "label": "ze/zir"
+    },
+    {
+      "value": "ze/hir",
+      "label": "ze/hir"
+    },
+    {
+      "value": "xe/xem",
+      "label": "xe/xem"
+    },
+    {
+      "value": "it/its",
+      "label": "it/its"
+    },
+    {
+      "value": "fae/faer",
+      "label": "fae/faer"
+    },
+    {
+      "value": "any pronouns",
+      "label": "any pronouns"
+    },
+    {
+      "value": "ask me",
+      "label": "ask me"
+    }
+  ],
+  "organization_role": [
+    {
+      "value": "venue",
+      "label": "Venue"
+    },
+    {
+      "value": "hotel",
+      "label": "Hotel"
+    },
+    {
+      "value": "seller",
+      "label": "Merchant"
+    },
+    {
+      "value": "affiliate_partner",
+      "label": "Partner"
+    },
+    {
+      "value": "brand",
+      "label": "Brand"
+    },
+    {
+      "value": "publisher",
+      "label": "Publisher"
+    },
+    {
+      "value": "support",
+      "label": "Support"
+    },
+    {
+      "value": "advocacy",
+      "label": "Advocacy"
+    },
+    {
+      "value": "organizer",
+      "label": "Organizer"
+    },
+    {
+      "value": "community",
+      "label": "Community"
+    }
+  ]
+}

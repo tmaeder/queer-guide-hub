@@ -1,3 +1,4 @@
+import { useMarketplaceTaxonomy } from '@/hooks/useMarketplaceTaxonomy';
 import { memo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 // `Card`, NOT `MotionCard`. MotionCard is a borderless tinted plate that
@@ -118,6 +119,8 @@ function MarketplaceCardImpl({
   surface = 'marketplace_grid',
   variant = 'grid',
 }: MarketplaceCardProps) {
+  useMarketplaceTaxonomy();
+
   const { t, i18n } = useTranslation();
   const { currency } = useCurrency();
   const { data: rates } = useFxRates();

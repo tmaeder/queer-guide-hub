@@ -1,3 +1,4 @@
+import { useMarketplaceTaxonomy } from '@/hooks/useMarketplaceTaxonomy';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { useMarketplaceDepartmentCounts } from '@/hooks/useMarketplaceQueries';
 import { useAdultAcknowledgement } from '@/hooks/useAdultContent';
@@ -58,6 +59,8 @@ function TrackRule() {
  * heading above still outranks it by size.
  */
 export function MarketplaceLineIndex({ activeDepartment }: { activeDepartment?: string }) {
+  useMarketplaceTaxonomy();
+
   // Count what the visitor will actually see: gated to their 18+ state, so a tile's
   // number always matches the grid it opens. Adult-only departments stay hidden until
   // the visitor has opted in (their category pages are age-gated anyway).

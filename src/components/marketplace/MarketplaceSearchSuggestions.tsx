@@ -1,3 +1,4 @@
+import { useMarketplaceTaxonomy } from '@/hooks/useMarketplaceTaxonomy';
 import { useEffect, useMemo, useRef, useState, type RefObject } from 'react';
 import { fetchAutocomplete, type SearchHit } from '@/lib/searchClient';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
@@ -75,6 +76,8 @@ export function MarketplaceSearchSuggestions({
   onPick: (q: string) => void;
   inputRef?: RefObject<HTMLInputElement | null>;
 }) {
+  const taxonomyRevision = useMarketplaceTaxonomy();
+
   const navigate = useLocalizedNavigate();
   const { data: brands = [] } = useBrandVocab();
   const [hits, setHits] = useState<SearchHit[]>([]);
@@ -105,12 +108,15 @@ export function MarketplaceSearchSuggestions({
 
   const visible = open && query.trim().length >= 2;
   const suggestions = useMemo(() => {
+    // Imported vocabulary bindings change with this external-store revision.
+    void taxonomyRevision;
+
     if (!visible) return [];
     const local = buildLocalSuggestions(query.trim(), brands);
     const listings = hits.filter((h) => h.title).map(hitToSuggestion);
     // Flat, grouped-by-kind order: products first (most specific intent).
     return [...listings, ...local];
-  }, [visible, query, brands, hits]);
+  }, [visible, query, brands, hits, taxonomyRevision]);
 
   const select = (s: Suggestion) => {
     setOpen(false);
