@@ -73,3 +73,180 @@ host; clients must still resolve each link against live policies. A local
 [Swift client](../../sdk/redirects/swift/README.md) consumes that transport; the local [Android client](../../sdk/redirects/android/README.md)
 also resolves live policies.
 Deferred attribution and real signed-device verification remain required.
+
+## App Clip identities
+
+An iOS binding may also set an optional `appClipId`, such as
+`ABCDE12345.org.yourcompany.app.Clip`. It must extend the signed parent app ID;
+another team/parent, the parent ID itself, an Android binding, duplicate clip
+identities on the same host and stale saves are rejected. Clear it with null to
+remove that grant. It is published only with an enabled binding and current
+publisher/domain readiness. Private labels and revisions remain absent from public
+association data.
+
+Apple's AASA file then contains an exact `appclips: { apps: [...] }` section in
+addition to the existing full-app path rules. Android's document stays unchanged.
+The gateway validates/reconstructs this explicit bounded grant and continues to
+reject unknown permissions or unrelated App Clip identities. App Clip authorization
+covers the host; narrow invocation experiences and both targets' capabilities
+must be configured with Apple. See [registering a Clip identity](https://developer.apple.com/help/account/identifiers/register-an-app-id-for-app-clips/)
+and [website associations](https://developer.apple.com/documentation/appclip/associating-your-app-clip-with-your-website).
+
+This registers host authorization. Deferred install delivery,
+App Group migration and real signed-device verification remain unfinished; do
+not treat this setting as an installed App Clip or a working store experience.
+
+## Deferred transaction foundation (not activated)
+
+Apply `redirect_resolution_snapshots` before deploying the updated resolver. It
+loads routing/protection together and rejects a visit if an edit invalidates that
+snapshot before recording. RPC failures fail closed; they do not use the old
+unguarded writer.
+
+`redirect_native_handoff_receipts` adds private service-only create/context/consume
+functions and a default-false app handoff flag. The table stores only token hashes
+and references to the original event/app/source/policy version, with bounded TTL.
+Creation and visit reservation share one transaction. Redemption validates the
+current policy and selected outcome, consumes once and reuses the original click.
+The caller must verify the current password and use the shared live selector before
+calling the consumer; these SQL functions are not public authentication endpoints.
+
+The resolver and gateways now support explicit receipt transport, while existing
+apps remain opted out. Owner store configuration and the optional Android Play adapter are available; live expiry-cleanup activation remains subsequent
+work. The browser install/resume flow is implemented. The Swift
+and Android core clients expose explicit receipt methods. Enabling the flag alone
+does not establish a working deferred link
+or distribute a raw receipt in URLs, logs or browser storage. Actual signed OS
+installation and App Group/referrer delivery still require device proof.
+
+The opt-in native wire keeps the six-field JSON result. Creation uses the ordinary
+short URL with `qg_handoff=install`, native Accept and granted attribution consent,
+`X-QG-Handoff-Action: create` and `X-QG-Handoff-App` set to the configured binding
+UUID. A successful creation additionally returns `X-QG-Handoff-State: created`, a
+256-bit capability in `X-QG-Handoff-Token` and `X-QG-Handoff-Expires` as ISO UTC.
+
+Resumption uses the canonical source with only `qg_handoff=resume`, the same app/
+consent headers, action `resume` and the capability in its token header. It restores
+query/cohort from the original event and returns state `consumed` with the original
+click. It never increments the visit count again. A current password, if required,
+uses the existing bounded form POST. Missing tokens/headers, denied consent and
+mismatched markers fail without becoming a new visit. Password failures do not
+consume the receipt. Gateways validate and reconstruct receipt metadata; success
+without the expected metadata is an unknown outcome, with no automatic retry.
+
+Native requests use the explicit header protocol. Uncredentialed browser GET
+markers render the first-party install/resume page, without a Location or a visit. No token is accepted through a query parameter. These APIs do not prove
+Play delivery, App Clip functionality, persistence or the signed OS transition.
+
+
+## Installation settings
+
+The native app editor keeps the private workspace label separate from the public
+app name. Expand **Installation and deferred links** to configure the public name
+and store identity. Android uses the signed package name already entered above;
+iOS requires the numeric App Store ID. Store links use fixed Apple/Google hosts.
+An iOS handoff additionally requires its parent-bound App Clip ID and shared App
+Group identifier. Both signed targets must actually hold that Group entitlement;
+entering the identifier here does not create it. See [Apple App Groups](https://developer.apple.com/help/account/identifiers/register-an-app-group/)
+and [Google Play store links](https://developer.android.com/distribute/marketing-tools/linking-to-google-play).
+
+The owner API accepts nullable `publicName`, `storeId`, `appGroupId` and boolean
+`handoffEnabled`. Enabling requires complete platform metadata and a published
+association. Existing clients can still edit association-only bindings without
+these fields. Unpublishing also disables handoffs; publishing again requires an
+explicit handoff opt-in. Every change rotates the binding revision, invalidating
+receipts issued against its previous configuration. Stale writes remain 409.
+
+Apply `redirect_native_install_settings` after the receipt migration and before
+deploying the new owner API. Its service-only `redirect_native_install_choices`
+function projects eligible apps for one host/path using current ownership,
+publisher authority and domain readiness. It exposes the public name, fixed store
+link and Clip bundle identity, excluding private labels, Group IDs, signing data
+and revisions. The browser landing flow uses this projection; it does not expose the service
+function as a public Data API endpoint or install an app.
+
+## Expired receipt cleanup
+
+The successor `redirect_native_handoff_cleanup_schedule` schedules the private
+cleanup function every minute when pg_cron is installed. Each run is a separate
+transaction that switches locally to `service_role`, deletes at most 500 expired
+digests with `SKIP LOCKED`, and restores its role at commit. Ten-second statement
+and one-second lock limits bound impact. It needs no HTTP/Vault credentials and
+adds no public grant. If cron is absent, the migration emits a notice and installs
+no job; an operator must enable cron and reapply this scheduling step before
+claiming background retention is active.
+
+After rollout, inspect the `redirect-native-handoff-expiry` row in `cron.job` and
+its results in `cron.job_run_details`, and monitor the expired-row backlog. Rate
+and TTL enforcement do not depend on cleanup having run: expired receipts cannot
+redeem even while awaiting deletion. Local tests execute the real scheduled SQL
+through an isolated scheduler seam; production scheduling has not been performed.
+See [Supabase Cron](https://supabase.com/docs/guides/cron) for job monitoring.
+
+
+## Browser install and resume
+
+Add `qg_handoff=install` to a configured short URL to open its first-party app
+handoff page. Original campaign query values remain on the source and are sent to
+the live resolver only on an explicit consented Android preparation action. The
+page lists only eligible public app choices and keeps its web fallback visible.
+Rendering does not verify a password, reserve a visit, mint a receipt or disclose
+a routing destination. Native header requests remain strictly validated; dropping
+their marker/header fields cannot silently create a visit.
+
+Android preparation submits the current password in a form POST with no cookies,
+cache, referrer or HTTP redirects. A successful response prepares a fixed Google
+Play listing link. Its `referrer` contains exactly `qg_v=1`, `qg_source` (canonical
+query-free URL), `qg_app` (binding UUID), `qg_token` (receipt capability) and
+`qg_expires` (integer Unix milliseconds). No original campaign query, password,
+destination or private label enters the provider payload. The application imposes
+a conservative 512-character limit after the outer encoding layer, checked before
+creation. This Play referrer is the deliberate capability-carrier exception to
+the ordinary no-token-query rule. The optional [Android Play adapter](../../sdk/redirects/android/README.md) reads
+and validates that exact carrier after current app consent. It uses private no-backup
+files and a cross-process durable attempt marker before provider/HTTP work,
+suppresses unknown-result automatic retries, and clears capability/source on
+success or withdrawal. Real signed Play installation delivery is still required.
+
+The private fallback resume URL uses `?qg_handoff=resume#qg_receipt=...`. Its fragment
+is unpadded base64url JSON with exact keys `{v:1,app,token,expires}`. It contains no
+campaign query, destination or password. The page captures it in memory and removes
+the fragment from history before any request. It neither stores it in browser
+storage nor copies it automatically. Resumption requires fresh consent/password
+and sends the capability only in its header. It reuses the original click through
+the current server selector, then opens the checked live web result. A clean web
+fallback is an explicit new visit, independent of deferred attribution. Missing,
+expired, replayed, changed-policy or malformed receipts cannot silently fall back
+to counting a new visit. A resume page remains available at its reserved quota cap.
+
+For iOS, choosing an eligible app reloads this same first-party page with the public
+`qg_app_choice` binding UUID. It renders Apple's App Clip banner metadata for that
+specific configured Clip; it does not pre-mint a browser receipt. The Clip receives
+the current first-party page URL as its invocation, preserving original query
+context. Apple's `app-argument` value is not delivered to Clips, so it is not used
+as a carrier. The Swift client's `sourceFromAppClipInvocation` validates the host,
+matching binding and install marker, strips only the transport/selection markers,
+and returns the source without a request. The Clip obtains its own consent,
+creates one handoff while offering useful functionality, and stores its unconsumed
+receipt through the shared Group store. An already installed full app can resolve
+the normalized source normally. Actual experiences, entitlements, Clip functionality
+and signed-device transitions remain app-owner release requirements. See [Apple's
+website invocation guidance](https://developer.apple.com/documentation/appclip/supporting-invocations-from-your-website-and-the-messages-app).
+
+The page uses a nonce CSP with no external assets and same-origin fetch only.
+Public names are escaped; fixed store identities are revalidated. Native form
+submission explicitly uses POST and remains disabled until the protected script
+handler exists. App choice locks during preparation and while a receipt is active.
+Consent withdrawal aborts pending work, ignores stale responses and clears the
+password/capability links. Unknown outcomes are never retried automatically.
+
+
+Owners and permitted members can prepare a public installation entry from the
+managed link's QR sharing dialog. Choose **App installation**, then **Copy install
+link** or download a scan-verified PNG/JPG/SVG. Hosted image publication retains
+the same purpose and public campaign query, and follows the current managed
+hostname/slug/root. The QR contains only the public install page URL; no consent
+or private receipt is created by authoring, image retrieval or page rendering.
+Visitors make their own consented choice on that page. See
+[installation QR behavior](redirect-qr-branding.md#app-installation-links-and-qr-codes)
+for persistence, access checks and release ordering.

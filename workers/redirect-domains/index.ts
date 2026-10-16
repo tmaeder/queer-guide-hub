@@ -2,6 +2,7 @@
 /// <reference path="./worker-configuration.d.ts" />
 import {
   nativeRedirectRequested,
+  nativeHandoffRequest,
   nativeProblem,
   nativeUpstreamResponse,
   forwardNativeHeaders,
@@ -76,6 +77,11 @@ export default {
               Allow: 'GET, HEAD, POST',
             },
           });
+    try {
+      nativeHandoffRequest(request);
+    } catch {
+      return error(400, 'Invalid handoff request');
+    }
     try {
       const actualUrl = new URL(request.url);
       if (actualUrl.pathname === DOMAIN_HEALTH_PATH && request.method !== 'GET')

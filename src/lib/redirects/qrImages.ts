@@ -17,8 +17,11 @@ export function qrPublicationInput(options: {
   followSaved: boolean;
   style: QrStyle;
   logoMode: 'saved' | 'none' | 'custom';
+  purpose?: 'visit' | 'install';
 }): QrImageInput {
-  const { url, linkId, label, days, followSaved, style, logoMode } = options;
+  const { url, linkId, label, days, followSaved, style, logoMode, purpose = 'visit' } = options;
+  if (purpose === 'install' && !linkId)
+    throw new Error('App installation images require a managed link.');
   if (!label.trim() || label.trim().length > 100) throw new Error('Enter an image label.');
   if (![0, 30, 365].includes(days)) throw new Error('Choose an image lifetime.');
   let logo: string | undefined;
@@ -27,8 +30,13 @@ export function qrPublicationInput(options: {
     if (!match) throw new Error('Choose PNG or JPG artwork before publishing.');
     logo = match[1];
   }
+  const query = new URL(url).searchParams;
+  query.delete('qg_handoff');
+  const entryQuery = purpose === 'install' ? query.toString() : '';
   return {
     ...(linkId ? { linkId } : { url }),
+    ...(entryQuery ? { entryQuery } : {}),
+    ...(purpose === 'install' ? { purpose } : {}),
     label: label.trim(),
     expiresAt: days ? new Date(Date.now() + days * 86400000).toISOString() : null,
     style: followSaved ? null : qrAppearance(style),

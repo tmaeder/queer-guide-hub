@@ -51,7 +51,7 @@ proof refreshes keep expanded setup panels open.
 Signed branded routing serves these defaults after current readiness checks.
 Domain namespaces, guarded CRUD/bulk, five SDK field contracts, inventory/CSV/QR
 and the tracked/member builders are implemented locally. Remaining domain work
-includes archive/transfer/subpath workflows, authorized DNS auto-configuration/
+includes transfer workflows, authorized DNS auto-configuration/
 forwarding setup and production rollout. Managed root-link policies and explicit
 provider validation restart are implemented locally; see their sections below.
 
@@ -59,10 +59,12 @@ provider validation restart are implemented locally; see their sections below.
 
 Registered owner sessions use `/api/redirects` (or the existing direct edge API):
 
-- `GET /domains?limit=50&cursor=<UUID>`: owner-only keyset list and exact count.
+- `GET /domains?archive=active&q=<hostname>&limit=50&cursor=<UUID>`: owner-only
+  filtered keyset list and exact count. `archive` accepts `active` (default),
+  `archived` or `all`; `q` matches a literal case-insensitive hostname substring.
 - `POST /domains`: hostname and optional stored defaults.
 - `GET /domains/:id`: current setup/proof metadata.
-- `PATCH /domains/:id`: version plus changed defaults/disabled state.
+- `PATCH /domains/:id`: version plus changed defaults/disabled/archived state.
 - `POST /domains/:id/verify`: version; reserve, check real DNS, apply current result.
 - `POST /domains/:id/rotate`: version; replace challenge and clear proof.
 - `DELETE /domains/:id`: JSON version; reject a provisioned hostname.
@@ -418,3 +420,299 @@ record restores the configured legacy fallback.
 isolated PostgreSQL together, with provider/DNS/production requests excluded.
 This proves local behavior; controlled real-host and deployment validation remain
 part of release.
+
+
+## Archive and restore
+
+Owner domain settings include hostname search and Active, Archived and All views.
+Archiving requires review and hides the domain from new-link choices and the
+default registry list. Existing links, inventory facets, QR targets, signed routing,
+provider work and outstanding native handoff receipts continue under their current
+authorization and readiness checks. Archive is organization; use Disable or the
+provider disconnect flow when routing must stop. Existing link editors preserve
+an omitted current domain rather than changing its URL. Explicit authorized API
+writes using a known domain ID retain the existing binding rules.
+
+`PATCH /domains/:id` accepts `{ "version": "<current UUID>", "archived": true }`
+or `false`. The API rejects stale versions and non-boolean values. Archiving the
+primary domain atomically clears the new-link default and changes its preference
+version; new links use `queer.guide/go` until another primary is chosen. Restore
+returns the domain to active choices when its readiness checks pass, without
+automatically choosing it as primary.
+
+Isolated SQL and actual owner HTTP tests cover filtered counts/paging, scoped
+choices, current-link editing, API-key/owner boundaries and concurrent versions.
+The signed Worker/root resolver test archives a ready hostname and proves both
+normal HEAD routing and resumption of an already issued native receipt, without
+recounting the original visit. Desktop and 390px local fixtures show review,
+archived readiness and restore; external DNS/provider requests are blocked.
+The independent UI reviewer returned ship with no material fixes. The schema
+change remains a release candidate; no live domain was archived during testing.
+
+Reference: [Dub domain archiving](https://dub.co/help/article/archiving-domains).
+
+
+## Use an existing website path
+
+A ready domain row offers **Use under a website path**. Enter the existing website
+origin (for example `https://example.com`), a path such as `/r`, and its hosting
+platform. Generate and copy configuration for Cloudflare Worker Routes, Next.js,
+Vercel or Netlify. This follows [Dub's external subpath adapter approach](https://dub.co/help/article/how-to-use-dub-with-subpath).
+
+The visitor entry `https://example.com/r/community?utm_source=website` redirects
+to `https://links.example.com/community?utm_source=website`. The browser moves to
+the managed short-link hostname. Stored short URLs continue to use that hostname;
+installing this adapter does not add a second routing namespace. Existing password,
+install-page, targeting, tracking and expiration behavior runs there. Website
+configuration must be installed and tested on the existing website. Generation
+and copying do not change DNS, hosting or provider state.
+
+Configuration generation requires current branded routing readiness. Origins
+accept public HTTPS with a different hostname, with no credentials, port, path,
+query or fragment. IDNs/case normalize. Prefixes are bounded ordinary path
+segments; root, traversal, percent encodings, platform matcher syntax and reserved
+account/API paths are rejected. Editing inputs or losing readiness clears old
+output. Clipboard failures leave selectable configuration and clear instructions.
+
+For Cloudflare, use a **Worker Route** on the existing proxied website origin,
+scoped to the displayed path pattern. A Worker Custom Domain would replace the
+website's origin handling. The module checks the configured HTTPS origin and the
+exact path segment boundary. Unmatched paths stream through to the existing
+website using `fetch(request)`. Matched GET/HEAD requests return an empty307 with
+no-store and a fixed destination hostname. Other matched methods return405 before
+forwarding. Visitors submit password/consent forms after arriving at the managed
+host. Disable request URL logging on this adapter. Use the current compatibility
+date when installing a new Worker project; the module needs no bindings, packages
+or secrets.
+
+Next.js generates an external temporary redirect with basePath/locale additions
+disabled for the exact chosen prefix. Merge it into the existing configuration,
+ahead of broader routes. Vercel also uses temporary redirects. Netlify uses302!
+with bare-prefix and wildcard rules; the explicit priority can replace an existing
+website page under that prefix, so choose the prefix accordingly. Next.js and
+Netlify's published behavior passes queries through; provider deployment remains
+an operator responsibility. Their platforms have separate caching/routing rules.
+
+The Cloudflare adapter retains the exact encoded suffix and query, including
+duplicate values and public install/QR markers. Its strict-origin-when-cross-origin
+policy retains origin-level referrer analytics without forwarding the referring
+page's path/query across origins. The managed resolver now also preserves repeated
+incoming query values for keys absent from the target. Target and explicit
+override keys retain precedence; DROP still ignores incoming/default values.
+
+`npm run test:redirect-subpath` executes the exact generated module in workerd,
+with every origin request isolated. It proves boundary/hostname/HTTPS guards,
+GET/HEAD, method denial, fixed-host handling for double slashes, encoded suffixes,
+exact duplicate queries, public markers and unchanged website fallback including
+POST bodies. `npm run test:redirect-roots` follows its actual Location through the
+signed branded Worker, resolver and migrated PostgreSQL: install pages do not
+count, password GET/HEAD stays protected, the successful branded password POST
+records one QR-attributed original click, and duplicate values/referrer plus query
+mode precedence are retained. An automatic path-filtered CI workflow runs both.
+
+Latest Workers5.20261015.1 types check the generated JavaScript. The checked-in
+workerd fixture uses the compatibility date supported by its locked runtime; no
+project dependency lock changed. Twelve UI/helper tests cover origin/prefix
+validation, executable provider syntax, readiness, copying and stale-output reset.
+Labeled desktop/390px fixtures fit the viewport and produce no console warnings
+or errors. One detector returns[], and the independent finish reviewer approves
+with no material fixes. These are local runtime/configuration proofs, not evidence
+of installation on a live website.
+
+Sources: [Cloudflare Routes](https://developers.cloudflare.com/workers/configuration/routing/routes/),
+[Next.js redirects](https://nextjs.org/docs/app/api-reference/config/next-config-js/redirects),
+[Vercel redirects](https://vercel.com/docs/routing/redirects),
+[Netlify query parameters](https://docs.netlify.com/manage/routing/redirects/redirect-options/#query-parameters),
+[W3C Referrer Policy](https://www.w3.org/TR/referrer-policy/).
+
+## Owner-approved automatic DNS setup
+
+The candidate API now supports a signed Domain Connect flow for short-link
+subdomains whose closest authoritative zone uses Cloudflare or Vercel. The owner admin controls are implemented locally; provider onboarding and
+controlled live approval remain open.
+The fixed candidate template is `config/domain-connect/queer.guide.redirects.json`.
+It creates a CNAME to `links.queer.guide.` plus the exact ownership TXT challenge
+under the chosen subdomain. It does not configure an apex or unrelated records.
+
+Server-only configuration requires `REDIRECT_DOMAIN_CONNECT_PRIVATE_JWK` (an RSA
+private JWK for RS256, 2048–8192 bits), `REDIRECT_DOMAIN_CONNECT_KEY_LABEL` (one DNS
+label such as `_dcpubkeyv1`) and `REDIRECT_CNAME_TARGET=links.queer.guide`. A missing
+or invalid configuration returns 503 after owner authorization. There is no
+unsigned fallback. Keep the key in the deployment secret store; never commit it,
+return it to the browser or reuse the platform Cloudflare API token for customer
+DNS. The function has its own `deno.json`/`deno.lock`; tldts and its parser core
+are locked to the same versions used in the application tests.
+
+Before enabling this in production, register and obtain provider approval for the
+exact template, publish its matching public key at
+`<REDIRECT_DOMAIN_CONNECT_KEY_LABEL>.domainconnect.queer.guide`, and exercise the
+provider approval flow on a controlled domain. Neither the candidate template nor
+a configured private key proves provider onboarding or public-key publication.
+These external prerequisites have not been performed.
+
+Owner-session endpoints (API keys and members are denied):
+
+- `POST /domains/:id/dns-setup/discover` with `{version}` reserves an operation and
+  network budget, discovers the DNS provider and checks exact template support.
+  An available result enters `review` and includes the current domain challenge.
+- `POST /domains/:id/dns-setup/approve` with `{version,operation}` signs the fixed
+  records/callback and returns `approvalUrl`. The admin UI shows the exact CNAME/TXT names and values, requires record
+  review, and sends the user to the matching provider's own approval screen. The API does not write customer DNS.
+- `GET /domain-connect/:operation` resolves callback correlation for the same
+  current owner and returns its domain/version. It ignores provider success
+  assertions and does not change ownership.
+- `POST /domains/:id/dns-setup/complete` with `{version,operation}` reserves and runs
+  a fresh ownership TXT check, then applies its single-use observation through the
+  existing verifier. `missing`/`unavailable` cannot become successful proof. TLS,
+  SaaS hostname provisioning and signed branded routing remain separate checks.
+
+Operations have a 15-minute application lease and are bound to the actor, domain
+version and signing configuration fingerprint. Edits, challenge rotation,
+archive/disable/removal, owner removal, expiry or key/label changes invalidate
+pending operations. Discovery is limited to one operation/domain/minute,
+30/owner/hour and 100 globally/hour before external requests. The operation table
+and RPCs are service-only with RLS. Old expired operations are pruned on new
+reservations. Review/sign/issue/check transitions reject replay.
+
+The synchronous Domain Connect protocol does not give the signed provider URL
+an enforced expiration. The application lease bounds callback/check processing;
+it does not revoke an already issued provider URL. Applying any URL still needs
+the DNS provider's authorization, and an obsolete TXT challenge cannot prove
+current ownership. Do not label the provider URL as expiring after 15 minutes.
+
+Discovery uses a public-suffix parser including private suffixes, walks only to
+the registrable boundary, and honors closer delegated NS zones. DNS requests go
+to one fixed HTTPS resolver; settings/API/dashboard URLs are restricted to the
+supported providers and must agree with the DNS-advertised provider. All requests
+reject redirects and share an eight-second deadline. DNS bodies are capped at
+16 KiB, provider bodies at 32 KiB. Ambiguous aliases/TXT records, malformed
+metadata and template errors fail closed. A 200 template response may have an
+empty body per the protocol; a supplied version must equal the candidate version.
+
+Proof: parser/provider cases, configuration and actual RSA signature tests; the
+isolated migrated PostgreSQL suite; and the real owner HTTP handler through
+stored operations, bounded provider fixtures, signed approval, callback lookup
+and fresh TXT verification. No live provider approval or DNS write is implied.
+
+
+The Custom domains section uses `dnsSetup.configured` and `dnsSetup.cnameTarget`
+from the owner list response to show availability without exposing signing
+material. Unconfigured setup has an explanation and manual instructions. The
+inline review supports cancel, pending/error and unsupported-provider states;
+archived/disabled domains cannot start. Callback UI reads only `domain_connect`,
+loads the account-bound operation, ignores provider success parameters and
+requires a fresh check. Dismissal preserves unrelated query fields. Account and
+domain-version keys reset stale row state; an unmounted approval cannot navigate.
+
+Local UI verification covers 13 registry/approval/return interactions and final
+1280px/390px record-review and callback fixtures with no horizontal overflow.
+The actual API contract suite also checks that public availability contains only
+its boolean and fixed CNAME target. These fixture captures do not establish live
+provider onboarding, approval or DNS changes.
+
+## Native DNS instruction email
+
+The owner API now supports native instruction email through a private durable
+outbox and Resend transport. The owner domain row provides inline exact-record
+review, a single recipient, email submission and private status/recovery/cancel
+controls. Live configured-sender/delivery proof and rollout remain required.
+No real recipient or email provider was contacted during implementation.
+
+Explicit server configuration is `RESEND_API_KEY`,
+`REDIRECT_DOMAIN_EMAIL_FROM` (a verified sender address, optionally with a display
+name), and the current `REDIRECT_CNAME_TARGET`. Missing/invalid configuration
+leaves the feature unavailable. The owner domain list exposes only
+`instructionMail.configured`; sender, credentials and transport fingerprints are
+not returned. This uses the existing email provider, independently of Domain
+Connect template onboarding or its signing key.
+
+Owner-session routes:
+
+- `GET /domains/:id/instructions` returns current `hostname`, domain `version`,
+  `records`, a SHA-256 `snapshot` digest and the latest caller-owned `latestMail`.
+  Records include the full CNAME, ownership TXT and applicable saved provider TXT
+  records. The API never invents an apex A/AAAA address. Certificate records also
+  affect the digest, even if a provider refresh does not change the domain version.
+- `POST /domains/:id/instructions` accepts only
+  `{version,snapshot,email,requestId}`. The request ID is a client UUID retained
+  through an unknown HTTP response. Recipient validation permits one address,
+  preserves local-part case and normalizes IDN domains. Caller-supplied records,
+  content, sender, callbacks, CC/BCC and attachments are not accepted. The API
+  queues once, attempts only that job immediately and returns its receipt with
+  HTTP202. Read the receipt state; HTTP202 is not a delivery promise.
+- `GET /domains/:id/instruction-emails/:jobId` reads a caller-owned receipt.
+  `GET /domains/:id/instruction-emails?requestId=:uuid` recovers a receipt by request
+  identity as `{mail:receipt|null}`, including after a domain version changes.
+  With no query, the collection returns the current owner’s latest receipt for
+  this domain, also as `{mail:receipt|null}`. It remains available when sending
+  is unconfigured or the domain is disabled/archived; another owner’s recipient
+  and receipts are never returned.
+  A null lookup does not prove an earlier in-flight HTTP request can never queue.
+- `POST /domains/:id/instruction-emails/:jobId/cancel` with `{}` cancels only an
+  unsent, non-ambiguous job. A started request or unknown outcome cannot be
+  recalled. Receipts retain truth if the owner loses permission after provider
+  acceptance; that user cannot read them again until current owner access returns.
+
+All routes deny API keys and ordinary members. SQL rechecks current owner role;
+job metadata is actor-bound. The outbox, snapshots and RPCs are service-only with
+RLS and cascade away when the domain/account is deleted. New mail is limited to
+one job/domain/minute, ten/owner/hour and100 globally/hour. Identical replay of a
+request ID returns its existing receipt without spending send quota or creating
+another message; a different recipient/snapshot under that ID conflicts.
+
+Before every send, the durable lease rechecks the current owner, domain version,
+enabled/archive state, record digest and configured target. A cancelled lease or
+stale unsent snapshot never reaches the provider. The exact first message payload,
+including sender, is saved before sending and reused on retry. Provider requests
+use a fixed HTTPS endpoint, reject redirects, time out after10seconds and bound
+response bodies to16KiB. Bodies/raw provider errors are not exposed or logged.
+
+A provider receipt yields `sent`, meaning provider acceptance. It does not confirm
+inbox delivery or DNS/ownership/TLS/routing readiness. Known rejection or exhausted
+unsent retry yields `failed`. Lost/invalid receipts are retried with the same
+idempotency key and persisted payload, at most eight attempts and within23hours
+of queueing, inside Resend's24-hour deduplication window. An unresolved result at
+the boundary, a changed credential after an ambiguous attempt, or setup changes
+after a possible send yield `uncertain`, not a false failure/cancellation. A request
+already in flight can complete after a role or setup change; it cannot be recalled.
+
+`redirect-domain-instruction-mail` is a dedicated internal-secret/current-admin
+consumer, with its own frozen Deno configuration/lock. It claims at most three
+jobs per invocation. The guarded once/minute cron command uses the existing
+Vault `supabase_url` and `internal_invoke_secret` (matching the function’s
+`INTERNAL_INVOKE_SECRET`); missing configuration makes no
+HTTP call. Its named schedule can be reapplied without duplicating jobs. These
+migration/configuration files have not been applied or enabled in production.
+
+Verification covers exact records and certificate changes, idempotent queueing,
+private receipts, cancellation/races, current-owner removal, immutable retries,
+credential changes, expired leases, retries and uncertainty. The actual HTTP
+handler runs through migrated PostgreSQL and a bounded Resend fixture, including
+lost responses after simulated acceptance. The SQL driver also executes the real
+scheduler command against an isolated net/Vault seam to prove missing-secret and
+invalid-project guards. Sender verification, a controlled real email, cron/Vault
+activation, frontend controls and the overall release remain open.
+
+References: [Dub forwarding behavior](https://dub.co/help/article/how-to-add-custom-domain),
+[Resend idempotency](https://resend.com/docs/dashboard/emails/idempotency-keys),
+[Supabase scheduled functions](https://supabase.com/docs/guides/functions/schedule-functions).
+
+
+The email form persists the exact request body and UUID in account/domain-scoped
+session storage before POST. A lost response or postflight403 keeps the recipient
+locked and offers same-request retry/status recovery. A null lookup alone never
+resets an ambiguous attempt. Only an observed first pre-queue400/409/429 unlocks
+editing; a previously ambiguous retry remains locked on the same response.
+A different fresh domain version plus a null request lookup can retire an
+uncreated stale attempt. Provider acceptance is described separately from inbox
+delivery; accepted or uncertain mail requires explicit recipient acknowledgement
+before a new draft/UUID. Cancellation is shown only after server confirmation.
+Fresh sessions can check previous email status without preparing a new send.
+
+Fifteen UI interaction cases and the full56-case focused suite pass. Actual owner
+HTTP/migrated SQL proves private latest status on disabled/archived domains with
+sending disabled, key/current-role denial, exact snapshots, immutable unknown
+retries, cancellation and postflight acceptance truth. The bounded1280/390px
+fixture review reports no overflow or console errors. An independent reviewer’s
+fresh-session status finding was fixed and its verdict is ship; the documenter
+found no new global design rules. No actual email or production write was made.

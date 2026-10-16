@@ -1,0 +1,88 @@
+-- Deliberately seed future-tenant data to test converted legacy readers. Fence
+-- and global-user-uniqueness removals are isolated to this rollback-only fixture.
+BEGIN;
+ALTER TABLE public.redirect_workspace_members DROP CONSTRAINT redirect_workspace_members_pending_tenant_fence,DROP CONSTRAINT redirect_workspace_members_user_id_key;
+ALTER TABLE public.redirect_api_tokens DROP CONSTRAINT redirect_api_tokens_pending_tenant_fence;
+ALTER TABLE public.redirect_link_folders DROP CONSTRAINT redirect_link_folders_pending_tenant_fence;
+ALTER TABLE public.redirect_link_tags DROP CONSTRAINT redirect_link_tags_pending_tenant_fence;
+ALTER TABLE public.redirect_utm_templates DROP CONSTRAINT redirect_utm_templates_pending_tenant_fence;
+ALTER TABLE public.redirects DROP CONSTRAINT redirects_pending_tenant_fence;
+ALTER TABLE public.redirect_workspace_invitations DROP CONSTRAINT redirect_workspace_invitations_pending_tenant_fence;
+ALTER TABLE public.redirect_access_requests DROP CONSTRAINT redirect_access_requests_pending_tenant_fence;
+ALTER TABLE public.redirect_access_mail DROP CONSTRAINT redirect_access_mail_pending_tenant_fence;
+SET LOCAL ROLE service_role;
+DO $$
+DECLARE legacy uuid:='58aa4340-8f21-4b7f-9a10-90be2da89c01';other uuid:=gen_random_uuid();owner_id uuid:=gen_random_uuid();account uuid:=gen_random_uuid();foreign_member uuid:=gen_random_uuid();local_member uuid:=gen_random_uuid();foreign_folder uuid:=gen_random_uuid();local_folder uuid:=gen_random_uuid();foreign_tag uuid:=gen_random_uuid();foreign_template uuid:=gen_random_uuid();foreign_link uuid:=gen_random_uuid();local_link uuid:=gen_random_uuid();foreign_key uuid:=gen_random_uuid();local_key uuid:=gen_random_uuid();read_key uuid:=gen_random_uuid();foreign_request uuid:=gen_random_uuid();foreign_job uuid:=gen_random_uuid();foreign_lease uuid:=gen_random_uuid();foreign_invite uuid:=gen_random_uuid();local_invite uuid:=gen_random_uuid();r jsonb;ids uuid[];snapshot text;key_values jsonb;
+BEGIN
+ INSERT INTO auth.users(id) VALUES(owner_id);INSERT INTO public.user_roles VALUES(owner_id,'admin');
+ -- Use the existing privileged recipient test seam; confirmed email remains
+ -- private to service-only definer routines in the real schema.
+ INSERT INTO auth.users(id,email,email_confirmed_at) VALUES(account,'membership-scope@example.org',now());
+ INSERT INTO public.redirect_workspaces(id,name,slug,created_by) VALUES(other,'Private second workspace','membership-scope-fixture',owner_id);
+ INSERT INTO public.redirect_workspace_members(id,workspace_id,user_id,kind,label,role) VALUES(foreign_member,other,account,'user','Foreign private member','member');
+ INSERT INTO public.redirect_workspace_members(id,user_id,kind,label,role) VALUES(local_member,account,'user','Local member','member');
+ INSERT INTO public.redirect_link_folders(id,name,workspace_id) VALUES(foreign_folder,'Foreign private folder',other),(local_folder,'Local folder',legacy);
+ INSERT INTO public.redirect_link_tags(id,name,workspace_id) VALUES(foreign_tag,'Foreign private tag',other);
+ INSERT INTO public.redirect_utm_templates(id,name,workspace_id) VALUES(foreign_template,'Foreign private template',other);
+ INSERT INTO public.redirects(id,type,slug,target,workspace_id) VALUES(foreign_link,'SHORT','membership-foreign','https://example.org/foreign',other),(local_link,'SHORT','membership-local','https://example.org/local',legacy);
+ INSERT INTO public.redirect_api_tokens(id,name,token_hash,prefix,scopes,member_id,created_by,expires_at,workspace_id) VALUES(foreign_key,'Foreign private credential',repeat('f',64),'qg_redirect_ffffffff',ARRAY['links:read','links:write','workspace:read','workspace:write'],foreign_member,owner_id,now()+interval '1 day',other),(local_key,'Local credential',repeat('b',64),'qg_redirect_bbbbbbbb',ARRAY['links:read','links:write'],NULL,owner_id,now()+interval '1 day',legacy),(read_key,'Read credential',repeat('c',64),'qg_redirect_cccccccc',ARRAY['links:read'],NULL,owner_id,now()+interval '1 day',legacy);
+ UPDATE public.redirect_api_tokens SET redirect_ids=ARRAY[local_link,foreign_link] WHERE id=local_key;
+ IF public.redirect_session_principal(account,'links:read')->>'id' IS DISTINCT FROM local_member::text THEN RAISE EXCEPTION 'Session chose membership from another workspace';END IF;
+ BEGIN PERFORM public.redirect_session_principal(account,NULL);RAISE EXCEPTION 'Null session scope accepted';EXCEPTION WHEN insufficient_privilege THEN NULL;END;
+ BEGIN PERFORM public.redirect_principal_member(foreign_member);RAISE EXCEPTION 'Foreign principal became implicit owner';EXCEPTION WHEN insufficient_privilege THEN NULL;END;
+ BEGIN PERFORM public.redirect_principal_member(foreign_key);RAISE EXCEPTION 'Foreign credential became implicit owner';EXCEPTION WHEN insufficient_privilege THEN NULL;END;
+ BEGIN PERFORM public.redirect_principal_member(gen_random_uuid());RAISE EXCEPTION 'Unknown principal became implicit owner';EXCEPTION WHEN insufficient_privilege THEN NULL;END;
+ IF public.redirect_folder_rank(NULL,foreign_folder)<>0 OR public.redirect_folder_rank(local_member,foreign_folder)<>0 OR public.redirect_can_write_link(NULL,foreign_link) OR public.redirect_can_write_link(local_key,foreign_link) OR public.redirect_can_create_in_folder(read_key,NULL) THEN RAISE EXCEPTION 'Foreign resource or read-only key gained a capability';END IF;
+ ids:=public.redirect_management_scope(local_key,'links:read');
+ IF ids IS DISTINCT FROM ARRAY[local_link] THEN RAISE EXCEPTION 'Scoped key retained a foreign link identifier';END IF;
+ IF public.authenticate_redirect_api_token(repeat('f',64),'links:read') IS NOT NULL OR public.redirect_token_metadata(foreign_key) IS NOT NULL OR (SELECT last_used_at FROM public.redirect_api_tokens WHERE id=foreign_key) IS NOT NULL THEN RAISE EXCEPTION 'Foreign credential was authenticated/read/touched';END IF;
+ r:=public.redirect_member_administration(owner_id,'list');
+ IF r->>'count'<>'1' OR r::text LIKE '%Foreign private%' THEN RAISE EXCEPTION 'Member page leaked another workspace';END IF;
+ BEGIN PERFORM public.redirect_member_administration(owner_id,'update',foreign_member,'{"label":"changed"}');RAISE EXCEPTION 'Foreign membership updated';EXCEPTION WHEN no_data_found THEN NULL;END;
+ IF(public.redirect_member_administration(owner_id,'delete',foreign_member)->>'deleted')::boolean THEN RAISE EXCEPTION 'Foreign membership deleted';END IF;
+ r:=public.redirect_token_administration(owner_id,'list');
+ IF r->>'count'<>'2' OR r::text LIKE '%Foreign private%' THEN RAISE EXCEPTION 'Credential page leaked another workspace';END IF;
+ IF(public.redirect_token_administration(owner_id,'revoke',foreign_key)->>'revoked')::boolean THEN RAISE EXCEPTION 'Foreign credential revoked';END IF;
+ key_values:=jsonb_build_object('name','Denied cross-workspace binding','expires_at',now()+interval '1 day','scopes',jsonb_build_array('links:read'),'token_hash',repeat('d',64),'prefix','qg_redirect_dddddddd');
+ BEGIN PERFORM public.redirect_token_administration(owner_id,'create',p_values=>key_values||jsonb_build_object('member_id',foreign_member));RAISE EXCEPTION 'Foreign member bound to a legacy credential';EXCEPTION WHEN invalid_parameter_value THEN NULL;END;
+ BEGIN PERFORM public.redirect_token_administration(owner_id,'create',p_values=>key_values||jsonb_build_object('redirect_ids',jsonb_build_array(foreign_link)));RAISE EXCEPTION 'Foreign link bound to a legacy credential';EXCEPTION WHEN invalid_parameter_value THEN NULL;END;
+ FOR snapshot IN SELECT unnest(ARRAY['folders','tags','templates']) LOOP
+  r:=public.redirect_workspace_resource(snapshot,'list');
+  IF r::text LIKE '%Foreign private%' THEN RAISE EXCEPTION 'Resource list leaked another workspace: %',snapshot;END IF;
+  BEGIN PERFORM public.redirect_workspace_resource(snapshot,'get',CASE snapshot WHEN 'folders' THEN foreign_folder WHEN 'tags' THEN foreign_tag ELSE foreign_template END);RAISE EXCEPTION 'Foreign resource read';EXCEPTION WHEN no_data_found THEN NULL;END;
+ END LOOP;
+ BEGIN PERFORM public.redirect_workspace_resource('folders','update',foreign_folder,'{"description":"changed"}');RAISE EXCEPTION 'Foreign folder updated';EXCEPTION WHEN no_data_found THEN NULL;END;
+ BEGIN PERFORM public.redirect_workspace_resource('folders','delete',foreign_folder);RAISE EXCEPTION 'Foreign folder deleted';EXCEPTION WHEN no_data_found THEN NULL;END;
+ r:=public.redirect_folder_access(local_folder);
+ IF r::text LIKE '%Foreign private%' OR jsonb_array_length(r->'members')<>1 THEN RAISE EXCEPTION 'Folder ACL page leaked another workspace member';END IF;
+ BEGIN PERFORM public.redirect_folder_access(foreign_folder);RAISE EXCEPTION 'Foreign folder ACL read';EXCEPTION WHEN insufficient_privilege THEN NULL;END;
+ IF EXISTS(SELECT FROM public.redirect_folder_owners(foreign_folder)) THEN RAISE EXCEPTION 'Foreign folder acquired legacy owners';END IF;
+ INSERT INTO public.redirect_workspace_invitations(id,email,label,role,token_hash,created_by,workspace_id) VALUES(foreign_invite,'membership-scope@example.org','Foreign private invitation','member',repeat('e',64),owner_id,other),(local_invite,'membership-scope@example.org','Local invitation','viewer',repeat('a',64),owner_id,legacy);
+ r:=public.redirect_workspace_invitation(owner_id,'list');
+ IF r->>'count'<>'1' OR r::text LIKE '%Foreign private%' THEN RAISE EXCEPTION 'Invitation list leaked another workspace';END IF;
+ r:=public.redirect_invitation_inbox(account);
+ IF r->>'count'<>'1' OR r::text LIKE '%Foreign private%' THEN RAISE EXCEPTION 'Verified inbox leaked another workspace';END IF;
+ IF(public.redirect_workspace_invitation(owner_id,'revoke',foreign_invite)->>'revoked')::boolean THEN RAISE EXCEPTION 'Foreign invitation revoked';END IF;
+ BEGIN PERFORM public.redirect_workspace_invitation(account,'accept',p_hash=>repeat('e',64));RAISE EXCEPTION 'Foreign invitation accepted';EXCEPTION WHEN no_data_found THEN NULL;END;
+ r:=public.redirect_workspace_invitation(account,'accept',local_invite);
+ IF r->>'memberId' IS DISTINCT FROM local_member::text THEN RAISE EXCEPTION 'Invitation attached a foreign membership';END IF;
+ INSERT INTO public.redirect_access_requests(id,workspace_id,folder_id,member_id,message) VALUES(foreign_request,other,foreign_folder,foreign_member,'Foreign private edit request');
+ INSERT INTO public.redirect_access_mail(id,workspace_id,request_id,recipient_user_id,recipient_email,event,state,lease_id,lease_until) VALUES(foreign_job,other,foreign_request,account,'membership-scope@example.org','requested','leased',foreign_lease,clock_timestamp()-interval '1 second');
+ IF public.redirect_access_requests_page(NULL,'review')->>'count'<>'0' THEN RAISE EXCEPTION 'Foreign access request appeared in owner review';END IF;
+ BEGIN PERFORM public.redirect_access_request('approve',NULL,p_id=>foreign_request,p_actor=>owner_id);RAISE EXCEPTION 'Foreign access request approved';EXCEPTION WHEN no_data_found THEN NULL;END;
+ BEGIN PERFORM public.redirect_access_notify(foreign_request,'requested');RAISE EXCEPTION 'Foreign notification generated';EXCEPTION WHEN no_data_found THEN NULL;END;
+ IF public.claim_redirect_access_mail('fixture@example.org')<>'[]' OR public.finish_redirect_access_mail(foreign_job,foreign_lease,'foreign-provider-receipt') THEN RAISE EXCEPTION 'Legacy queue claimed or acknowledged foreign mail';END IF;
+ IF NOT EXISTS(SELECT FROM public.redirect_access_mail WHERE id=foreign_job AND state='leased' AND lease_id=foreign_lease) OR EXISTS(SELECT FROM public.notifications WHERE related_id=foreign_request) OR NOT EXISTS(SELECT FROM public.redirect_access_requests WHERE id=foreign_request AND status='pending') THEN RAISE EXCEPTION 'Legacy request/queue touched foreign state';END IF;
+ PERFORM set_config('request.headers',jsonb_build_object('x-qg-redirect-workspace',other)::text,true);
+ BEGIN PERFORM public.redirect_member_administration(owner_id,'list');RAISE EXCEPTION 'Unconverted workspace selection accepted';EXCEPTION WHEN insufficient_privilege THEN NULL;END;
+ PERFORM set_config('request.headers',jsonb_build_object('x-qg-redirect-workspace','')::text,true);
+ BEGIN PERFORM public.redirect_workspace_resource('folders','list');RAISE EXCEPTION 'Empty workspace silently defaulted';EXCEPTION WHEN invalid_parameter_value THEN NULL;END;
+ PERFORM set_config('request.headers',jsonb_build_object('x-qg-redirect-session-actor',account)::text,true);
+ BEGIN PERFORM public.redirect_member_administration(owner_id,'list');RAISE EXCEPTION 'Spoofed owner actor accepted';EXCEPTION WHEN insufficient_privilege THEN NULL;END;
+ PERFORM set_config('request.headers','{}',true);
+ DELETE FROM public.user_roles WHERE user_id=owner_id;
+ BEGIN PERFORM public.redirect_principal_member(local_key);RAISE EXCEPTION 'Removed credential owner became implicit owner';EXCEPTION WHEN insufficient_privilege THEN NULL;END;
+ IF NOT EXISTS(SELECT FROM public.redirect_workspace_members WHERE id=foreign_member AND label='Foreign private member') OR NOT EXISTS(SELECT FROM public.redirect_api_tokens WHERE id=foreign_key AND revoked_at IS NULL AND last_used_at IS NULL) OR NOT EXISTS(SELECT FROM public.redirect_link_folders WHERE id=foreign_folder AND name='Foreign private folder') OR NOT EXISTS(SELECT FROM public.redirect_workspace_invitations WHERE id=foreign_invite AND accepted_at IS NULL AND revoked_at IS NULL) THEN RAISE EXCEPTION 'Denied operations modified foreign tenant data';END IF;
+ IF has_function_privilege('authenticated','public.redirect_request_workspace(uuid)','EXECUTE') OR has_function_privilege('anon','public.redirect_request_workspace(uuid)','EXECUTE') THEN RAISE EXCEPTION 'Workspace selection helper is public';END IF;
+END $$;
+ROLLBACK;

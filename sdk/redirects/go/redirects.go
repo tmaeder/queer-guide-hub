@@ -29,6 +29,7 @@ func (e *APIError) Error() string { return e.Message }
 
 type Client struct {
 	token, base string
+	workspaceID string
 	http        *http.Client
 }
 
@@ -49,6 +50,25 @@ func New(token, base string) (*Client, error) {
 	}
 	return &Client{token: token, base: strings.TrimRight(base, "/"), http: &http.Client{Timeout: 10 * time.Second, CheckRedirect: func(*http.Request, []*http.Request) error { return http.ErrUseLastResponse }}}, nil
 }
+
+// WithWorkspace returns an independent client context; it never mutates a client
+// shared by concurrent callers. The server still authorizes the selected UUID.
+func (c *Client) WithWorkspace(id string) (*Client, error) {
+	if !workspacePattern.MatchString(id) {
+		return nil, fmt.Errorf("provide a valid workspace ID")
+	}
+	selected := *c
+	selected.workspaceID = strings.ToLower(id)
+	return &selected, nil
+}
+func (c *Client) GetSession(ctx context.Context) (Object, error) {
+	return c.Request(ctx, "GET", "/session", nil, nil)
+}
+func (c *Client) ListWorkspaces(ctx context.Context) (Object, error) {
+	return c.Request(ctx, "GET", "/workspaces", nil, nil)
+}
+
+var workspacePattern = regexp.MustCompile(`(?i)^[a-f0-9]{8}(?:-[a-f0-9]{4}){3}-[a-f0-9]{12}$`)
 
 var pathPattern = regexp.MustCompile(`^/[a-zA-Z0-9_/-]+$`)
 
@@ -88,6 +108,9 @@ func (c *Client) Request(ctx context.Context, method, path string, body any, que
 	}
 	req.Header.Set("Authorization", "Bearer "+c.token)
 	req.Header.Set("Content-Type", "application/json")
+	if c.workspaceID != "" {
+		req.Header.Set("X-Qg-Redirect-Workspace", c.workspaceID)
+	}
 	response, err := c.http.Do(req)
 	if err != nil {
 		return nil, err
@@ -290,7 +313,10 @@ func (c *Client) GetReport(ctx context.Context, id string) (Object, error) {
 	return c.Request(ctx, "GET", "/reports/"+url.PathEscape(id), nil, nil)
 }
 func (c *Client) ListReports(ctx context.Context, limit int, cursor string) (Object, error) {
-	query := Object{"limit": limit}
+	return c.ListReportsInView(ctx, limit, cursor, "personal")
+}
+func (c *Client) ListReportsInView(ctx context.Context, limit int, cursor, view string) (Object, error) {
+	query := Object{"limit": limit, "view": view}
 	if cursor != "" {
 		query["cursor"] = cursor
 	}

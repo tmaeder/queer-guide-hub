@@ -1,3 +1,6 @@
+import { redirectWorkspaceSelection } from '../_shared/redirect-workspace.ts';
+import {domainInstructionMailConfig,instructionMailInput,dispatchDomainInstructionMail} from '../_shared/redirect-domain-mail.ts';
+import { domainConnectConfig, domainConnectInput, runDomainConnectAction } from '../_shared/redirect-domain-connect-api.ts';
 import { nativeAppValues, publicAppAssociation } from '../_shared/redirect-native-apps.ts';
 import { inventoryQuery, inventoryOperations, redirectInventoryManifest } from '../_shared/redirect-inventory-api.ts';
 import {passwordBrandingInput,storePasswordLogo} from '../_shared/redirect-password-branding.ts';
@@ -23,7 +26,7 @@ import { boundedJson, conversionInput, createRedirectToken, tokenDigest, UUID } 
 
 Deno.serve(async (req: Request) => {
  const origin=req.headers.get('origin') ?? '';
- const cors={ 'Access-Control-Allow-Origin':['https://queer.guide','https://www.queer.guide','http://localhost:5173','http://localhost:4178'].includes(origin)?origin:'', 'Access-Control-Allow-Headers':'authorization, apikey, x-client-info, content-type', 'Access-Control-Allow-Methods':'GET, POST, PUT, PATCH, DELETE, OPTIONS', Vary:'Origin' };
+ const cors={ 'Access-Control-Allow-Origin':['https://queer.guide','https://www.queer.guide','http://localhost:5173','http://localhost:4178'].includes(origin)?origin:'', 'Access-Control-Allow-Headers':'authorization, apikey, x-client-info, content-type, x-qg-redirect-workspace', 'Access-Control-Allow-Methods':'GET, POST, PUT, PATCH, DELETE, OPTIONS', Vary:'Origin' };
  const json=(body:unknown,status=200)=>new Response(JSON.stringify(body),{status,headers:{...cors,'Content-Type':'application/json','Cache-Control':'no-store'}});
  const rpcError=(error:{code?:string;message:string})=>{const status=error.code==='23505'?409:error.code==='42501'?403:error.code==='P0002'?404:(error.code?.startsWith('22')||['23503','23514'].includes(error.code??''))?400:503;return json({error:status===503?'Redirect API temporarily unavailable':error.message},status);};
  if(req.method==='OPTIONS') return new Response(null,{headers:cors});
@@ -36,23 +39,22 @@ Deno.serve(async (req: Request) => {
  if(path==='/public-report')return publicReportRequest(req,db,Deno.env.get('REDIRECT_RELAY_SECRET')??Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,cors);
  const tokenCredential=/^qg_redirect_[a-f0-9]{64}$/.test(credential);
  let user: {id:string;created_at:string;email_confirmed_at?:string;confirmed_at?:string;is_anonymous?:boolean} | null=null;
- let identityClient: ReturnType<typeof createClient> | null=null;
  if(!tokenCredential){
-  identityClient=createClient(Deno.env.get('SUPABASE_URL')!,Deno.env.get('SUPABASE_ANON_KEY')!,{global:{headers:{Authorization:'Bearer '+credential}}});
+  const identityClient=createClient(Deno.env.get('SUPABASE_URL')!,Deno.env.get('SUPABASE_ANON_KEY')!,{global:{headers:{Authorization:'Bearer '+credential}}});
   const {data,error}=await identityClient.auth.getUser(credential);
   if(error || !data.user)return json({error:'Unauthorized'},401);
   user=data.user;
-  db=createClient(Deno.env.get('SUPABASE_URL')!,Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,{global:{headers:{'x-qg-redirect-session-actor':user.id}}});
  }
- const sessionPrincipal=async(scope:string):Promise<{id:string|null;role?:string;label?:string;failure?:Response}>=>{
+ const selectedWorkspace=redirectWorkspaceSelection(req.headers.get('x-qg-redirect-workspace'));
+ if('error' in selectedWorkspace)return json({error:selectedWorkspace.error},selectedWorkspace.status);
+ db=createClient(Deno.env.get('SUPABASE_URL')!,Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,{global:{headers:{'x-qg-redirect-workspace':selectedWorkspace.id,...(user?{'x-qg-redirect-session-actor':user.id}:{})}}});
+ const sessionPrincipal=async(scope:string):Promise<{id:string|null;role?:string;label?:string;workspace?:{id:string;name:string;slug:string};failure?:Response}>=>{
   if(!user||user.is_anonymous)return {id:null,failure:json({error:'A registered account is required'},403)};
-  const role=await identityClient!.rpc('has_role_jwt',{required_role:'admin'});
-  if(role.error)return {id:null,failure:json({error:'Authorization unavailable'},503)};
-  if(role.data)return {id:null,role:'owner'};
-  const membership=await db.rpc('redirect_session_principal',{p_user_id:user.id,p_scope:scope});
-  if(membership.error)return {id:null,failure:rpcError(membership.error)};
-  if(!membership.data||typeof membership.data.id!=='string'||!UUID.test(membership.data.id))return {id:null,failure:json({error:'Redirects workspace access is required'},403)};
-  return {id:membership.data.id,role:membership.data.role,label:membership.data.label};
+  const result=await db.rpc('redirect_workspace_context',{p_actor:user.id,p_workspace:selectedWorkspace.id,p_scope:scope});
+  if(result.error)return {id:null,failure:rpcError(result.error)};
+  const context=result.data,principal=context?.principal;
+  if(context?.workspace?.id!==selectedWorkspace.id||!principal||!['owner','member','viewer'].includes(principal.role)||(principal.role==='owner'?principal.id!==null:typeof principal.id!=='string'||!UUID.test(principal.id)))return {id:null,failure:json({error:'Workspace authorization unavailable'},503)};
+  return {id:principal.id,role:principal.role,label:principal.label,workspace:context.workspace};
  };
  try {
   if(path==='/inventory'||path==='/inventory/metadata'||path==='/inventory/organization'){
@@ -111,7 +113,14 @@ Deno.serve(async (req: Request) => {
    if(part&&UUID.test(part)&&req.method==='DELETE'&&!query.size){const {data,error}=await db.rpc('redirect_workspace_invitation',{p_actor:user.id,p_action:'revoke',p_id:part});if(error)return rpcError(error);return json(data);}
    return json({error:'Method not supported'},405);
   }
-  if(path==='/session'&&req.method==='GET'){if(tokenCredential)return json({error:'Account session required'},403);const principal=await sessionPrincipal('links:read');if(principal.failure)return principal.failure;return json({role:principal.role,label:principal.label??null});}
+  if(path==='/workspaces'){
+   if(tokenCredential)return json({error:'Account session required'},403);
+   if(req.method!=='GET')return json({error:'Method not supported'},405);
+   if(new URL(req.url).search)return json({error:'Unexpected workspace query'},400);
+   const principal=await sessionPrincipal('links:read');if(principal.failure)return principal.failure;
+   return json({data:[{...principal.workspace,role:principal.role}],currentWorkspaceId:principal.workspace!.id});
+  }
+  if(path==='/session'&&req.method==='GET'){if(tokenCredential)return json({error:'Account session required'},403);const principal=await sessionPrincipal('links:read');if(principal.failure)return principal.failure;return json({role:principal.role,label:principal.label??null,workspace:principal.workspace});}
   const manual=path.match(/^\/manual-records(?:\/([a-f0-9-]{36}))?$/i);
   if(manual){
    if(tokenCredential)return json({error:'Workspace owner account session required'},403);
@@ -357,6 +366,50 @@ Deno.serve(async (req: Request) => {
    }
    const result=await db.rpc('redirect_domain_preference',{p_actor:user!.id,p_values:values});if(result.error)return rpcError(result.error);return json(result.data);
   }
+  const instructionMail=path.match(/^\/domains\/([a-f0-9-]{36})\/(instructions|instruction-emails)(?:\/([a-f0-9-]{36})(?:\/(cancel))?)?$/i);
+  if(instructionMail){
+   if(tokenCredential)return json({error:'Workspace owner account session required'},403);
+   const principal=await sessionPrincipal('workspace:write');if(principal.failure)return principal.failure;if(principal.id!==null)return json({error:'Workspace owner access required'},403);
+   const [,domain,part,job,cancel]=instructionMail;
+   if(part==='instructions'&&(new URL(req.url).search||job||cancel)||part==='instruction-emails'&&job&&new URL(req.url).search)return json({error:'Invalid instruction email request'},400);
+   if(part==='instruction-emails'&&!job){
+    if(req.method!=='GET')return json({error:'Method not supported'},405);
+    const query=new URL(req.url).searchParams,requestId=query.get('requestId');
+    if(query.size===0){const result=await db.rpc('redirect_domain_instruction_mail_latest',{p_actor:user!.id,p_domain:domain});if(result.error)return rpcError(result.error);return json({mail:result.data});}
+    if(query.size!==1||query.getAll('requestId').length!==1||!requestId||!UUID.test(requestId))return json({error:'Choose an instruction email request'},400);
+    const result=await db.rpc('redirect_domain_instruction_mail_action',{p_action:'lookup',p_actor:user!.id,p_domain:domain,p_values:{requestId}});if(result.error)return rpcError(result.error);return json({mail:result.data});
+   }
+   if(part==='instruction-emails'){
+    if(cancel?req.method!=='POST':req.method!=='GET')return json({error:'Method not supported'},405);
+    if(cancel){const body=await boundedJson(req,4096);if(!body||typeof body!=='object'||Array.isArray(body)||Object.keys(body).length)return json({error:'Do not provide cancellation fields'},400);}
+    const result=await db.rpc('redirect_domain_instruction_mail_action',{p_action:cancel?'cancel':'get',p_actor:user!.id,p_domain:domain,p_job:job});if(result.error)return rpcError(result.error);return json(result.data);
+   }
+   if(!['GET','POST'].includes(req.method))return json({error:'Method not supported'},405);
+   const config=await domainInstructionMailConfig(Deno.env.get('RESEND_API_KEY')??'',Deno.env.get('REDIRECT_DOMAIN_EMAIL_FROM')??'',Deno.env.get('REDIRECT_CNAME_TARGET')??'');
+   if(!config)return json({error:'DNS instruction email is not configured'},503);
+   const values=req.method==='POST'?instructionMailInput(await boundedJson(req,16384)):{};
+   const result=await db.rpc('redirect_domain_instruction_mail_action',{p_action:req.method==='POST'?'queue':'draft',p_actor:user!.id,p_domain:domain,p_values:values,p_target:config.target});if(result.error)return rpcError(result.error);
+   if(result.data?.retryAfter)return new Response(JSON.stringify({error:'Please wait before emailing more DNS instructions'}),{status:429,headers:{...cors,'Content-Type':'application/json','Cache-Control':'no-store','Retry-After':String(result.data.retryAfter)}});
+   if(req.method==='GET')return json(result.data);
+   try{await dispatchDomainInstructionMail(db,config,fetch,result.data.id);}catch{/* The stored request ID remains authoritative after an unknown transport/ack outcome. */}
+   const receipt=await db.rpc('redirect_domain_instruction_mail_action',{p_action:'get',p_actor:user!.id,p_domain:domain,p_job:result.data.id});if(receipt.error)return rpcError(receipt.error);return json(receipt.data,202);
+  }
+  const dnsSetup=path.match(/^\/domains\/([a-f0-9-]{36})\/dns-setup\/(discover|approve|complete)$/i);
+  const dnsCallback=path.match(/^\/domain-connect\/([a-f0-9-]{36})$/i);
+  if(dnsSetup||dnsCallback){
+   if(tokenCredential)return json({error:'Workspace owner account session required'},403);
+   const principal=await sessionPrincipal('workspace:write');if(principal.failure)return principal.failure;if(principal.id!==null)return json({error:'Workspace owner access required'},403);
+   if(new URL(req.url).search)return json({error:'Unexpected DNS setup parameters'},400);
+   if(dnsSetup&&req.method!=='POST'||dnsCallback&&req.method!=='GET')return json({error:'Method not supported'},405);
+   const config=await domainConnectConfig(Deno.env.get('REDIRECT_DOMAIN_CONNECT_PRIVATE_JWK')??'',Deno.env.get('REDIRECT_DOMAIN_CONNECT_KEY_LABEL')??'',Deno.env.get('REDIRECT_CNAME_TARGET')??'');
+   if(!config)return json({error:'Automatic DNS setup is not configured'},503);
+   if(dnsCallback){const result=await db.rpc('redirect_domain_connect_current',{p_actor:user!.id,p_operation:dnsCallback[1],p_configuration:config.fingerprint});if(result.error)return rpcError(result.error);return json(result.data);}
+   const [,domain,action]=dnsSetup!;const operation=action as 'discover'|'approve'|'complete';
+   const input=domainConnectInput(await boundedJson(req,16384),operation);
+   const result=await runDomainConnectAction(db,user!.id,domain,operation,input,config);if(result.error)return rpcError(result.error);
+   if(result.data?.retryAfter)return new Response(JSON.stringify({error:'Please wait before checking DNS setup again'}),{status:429,headers:{...cors,'Content-Type':'application/json','Cache-Control':'no-store','Retry-After':String(result.data.retryAfter)}});
+   return json(result.data);
+  }
   const domains=path.match(/^\/domains(?:\/([a-f0-9-]{36}))?(?:\/(verify|rotate|provider)(?:\/(connect|refresh|disconnect|adopt|confirm-absence|restart-validation))?)?$/i);
   if(domains){
    if(tokenCredential)return json({error:'Workspace owner account session required'},403);
@@ -379,11 +432,17 @@ Deno.serve(async (req: Request) => {
     const result=await db.rpc('redirect_domain_check_result',{p_actor:user!.id,p_id:id,p_version:domain.version,p_attempt:reserved.data.attempt,p_outcome:outcome});if(result.error)return rpcError(result.error);return json(result.data);
    }
    if(endpoint==='rotate'&&req.method==='POST'){action='rotate';values=domainInput(await boundedJson(req,16384),'version');}
-   else if(!endpoint&&req.method==='GET'){action=id?'get':'list';const q=new URL(req.url).searchParams;if([...q.keys()].some(key=>!['limit','cursor'].includes(key)))return json({error:'Invalid domain page'},400);limit=Number(q.get('limit')??50);after=q.get('cursor');if(!Number.isInteger(limit)||limit<1||limit>100||after&&!UUID.test(after))return json({error:'Invalid domain page'},400);}
+   else if(!endpoint&&req.method==='GET'){
+    action=id?'get':'list';const q=new URL(req.url).searchParams;
+    if(id&&q.size||[...q.keys()].some(key=>!['limit','cursor','archive','q'].includes(key)||q.getAll(key).length!==1))return json({error:'Invalid domain page'},400);
+    limit=Number(q.get('limit')??50);after=q.get('cursor');const archive=q.get('archive')??'active',search=(q.get('q')??'').trim();
+    if(!Number.isInteger(limit)||limit<1||limit>100||after&&!UUID.test(after)||!['active','archived','all'].includes(archive)||search.length>253||Array.from(search).some(char=>char.charCodeAt(0)<32))return json({error:'Invalid domain page'},400);
+    if(!id)values={archive,...(search?{q:search}:{})};
+   }
    else if(!id&&req.method==='POST'){action='create';values=domainInput(await boundedJson(req,16384),'create');}
    else if(id&&!endpoint&&req.method==='PATCH'){action='patch';values=domainInput(await boundedJson(req,16384),'patch');}
    else if(id&&!endpoint&&req.method==='DELETE'){action='delete';values=domainInput(await boundedJson(req,16384),'version');}else return json({error:'Method not supported'},405);
-   const result=await db.rpc('redirect_domain_resource',{p_action:action,p_actor:user!.id,p_id:id??null,p_values:values,p_limit:limit,p_after:after});if(result.error)return rpcError(result.error);return json(action==='list'?{...result.data,providerSetup:{configured:providerConfig!==null,cnameTarget:providerConfig?.cnameTarget??null}}:result.data,action==='create'?201:200);
+   const result=await db.rpc('redirect_domain_resource',{p_action:action,p_actor:user!.id,p_id:id??null,p_values:values,p_limit:limit,p_after:after});if(result.error)return rpcError(result.error);return json(action==='list'?{...result.data,providerSetup:{configured:providerConfig!==null,cnameTarget:providerConfig?.cnameTarget??null},instructionMail:{configured:(await domainInstructionMailConfig(Deno.env.get('RESEND_API_KEY')??'',Deno.env.get('REDIRECT_DOMAIN_EMAIL_FROM')??'',Deno.env.get('REDIRECT_CNAME_TARGET')??''))!==null},dnsSetup:{configured:(await domainConnectConfig(Deno.env.get('REDIRECT_DOMAIN_CONNECT_PRIVATE_JWK')??'',Deno.env.get('REDIRECT_DOMAIN_CONNECT_KEY_LABEL')??'',Deno.env.get('REDIRECT_CNAME_TARGET')??''))!==null,cnameTarget:'links.queer.guide'}}:result.data,action==='create'?201:200);
   }
   if (path === '/customers/profile' || path === '/customers/journey') {
     const read = req.method === 'GET';
@@ -456,7 +515,7 @@ Deno.serve(async (req: Request) => {
    }
    let action:string,values:Record<string,unknown>={},limit=50,after:string|null=null;
    if(req.method==='GET'&&endpoint==='run')action='run';
-   else if(req.method==='GET'&&!endpoint){action=id?'get':'list';const q=new URL(req.url).searchParams;if([...q.keys()].some(k=>!['limit','cursor'].includes(k)))return json({error:'Invalid report page'},400);limit=Number(q.get('limit')??50);after=q.get('cursor');if(!Number.isInteger(limit)||limit<1||limit>100||after&&!UUID.test(after))return json({error:'Invalid report page'},400);}
+   else if(req.method==='GET'&&!endpoint){action=id?'get':'list';const q=new URL(req.url).searchParams;if([...q.keys()].some(k=>!['limit','cursor','view'].includes(k)||q.getAll(k).length!==1)||id&&q.size)return json({error:'Invalid report page'},400);const view=q.get('view')??'personal';if(!['personal','team','all'].includes(view))return json({error:'Invalid report view'},400);values={view};limit=Number(q.get('limit')??50);after=q.get('cursor');if(!Number.isInteger(limit)||limit<1||limit>100||after&&!UUID.test(after))return json({error:'Invalid report page'},400);}
    else if(req.method==='POST'&&!id){action='create';values=savedReportInput(await boundedJson(req),true);}
    else if(req.method==='PATCH'&&id&&!endpoint){action='patch';values=savedReportInput(await boundedJson(req),false);}
    else if(req.method==='DELETE'&&id&&!endpoint)action='delete';else return json({error:'Method not supported'},405);
@@ -483,7 +542,7 @@ Deno.serve(async (req: Request) => {
   const memberMatch=path.match(/^\/members(?:\/([a-f0-9-]{36}))?$/i);
   if(memberMatch){
    if(tokenCredential||!user||user.is_anonymous)return json({error:'Admin session required'},403);
-   const role=await identityClient!.rpc('has_role_jwt',{required_role:'admin'});if(role.error)return json({error:'Authorization unavailable'},503);if(!role.data)return json({error:'Forbidden'},403);
+   const principal=await sessionPrincipal(req.method==='GET'?'workspace:read':'workspace:write');if(principal.failure)return principal.failure;if(principal.role!=='owner')return json({error:'Workspace owner access required'},403);
    const id=memberMatch[1];if(id&&!UUID.test(id))return json({error:'Invalid member ID'},400);
    if(req.method==='GET'&&!id){
     const query=new URL(req.url).searchParams,offset=Number(query.get('offset')??0);if([...query.keys()].some(k=>k!=='offset')||!Number.isInteger(offset)||offset<0||offset>1e7)return json({error:'Invalid member page'},400);
@@ -645,8 +704,7 @@ Deno.serve(async (req: Request) => {
     if(!data)return json({error:'Credential expired, revoked, or missing conversion scope'},403);
     tokenId=data.id;
    }else{
-    const {data,error}=await identityClient!.rpc('has_role_jwt',{required_role:'admin'});
-    if(error || !data)return json({error:'Forbidden'},403);
+    const principal=await sessionPrincipal('workspace:write');if(principal.failure)return principal.failure;if(principal.role!=='owner')return json({error:'Workspace owner access required'},403);
    }
    const event=conversionInput(await boundedJson(req),kind);
    const {data,error}=await db.rpc('record_redirect_conversion',{p_event:event,p_token_id:tokenId});
@@ -655,8 +713,7 @@ Deno.serve(async (req: Request) => {
   }
   if(path==='/tokens' || /^\/tokens\/[a-f0-9-]+$/i.test(path)) {
    if(tokenCredential||user?.is_anonymous)return json({error:'Admin session required'},403);
-   const {data:admin,error:roleError}=await identityClient!.rpc('has_role_jwt',{required_role:'admin'});
-   if(roleError || !admin)return json({error:'Forbidden'},403);
+   const principal=await sessionPrincipal(req.method==='GET'?'workspace:read':'workspace:write');if(principal.failure)return principal.failure;if(principal.role!=='owner')return json({error:'Workspace owner access required'},403);
    if(path==='/tokens' && req.method==='GET') {
     const offset=Number(new URL(req.url).searchParams.get('offset') ?? '0');
     if(!Number.isInteger(offset) || offset<0 || offset>1e7)return json({error:'Invalid page offset'},400);

@@ -1,4 +1,13 @@
 import { supabase } from '@/integrations/supabase/client';
+export class RedirectApiError extends Error {
+  constructor(
+    message: string,
+    public readonly status: number | null,
+  ) {
+    super(message);
+    this.name = 'RedirectApiError';
+  }
+}
 export async function memberRedirectApi<T>(
   path: string,
   method: 'GET' | 'POST' | 'PATCH' | 'DELETE' = 'GET',
@@ -20,7 +29,10 @@ export async function memberRedirectApi<T>(
         /* Preserve the transport error. */
       }
     }
-    throw new Error(message);
+    throw new RedirectApiError(
+      message,
+      error?.context instanceof Response ? error.context.status : null,
+    );
   }
   return data as T;
 }

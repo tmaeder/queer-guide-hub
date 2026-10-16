@@ -1,6 +1,6 @@
 import { readFileSync, readdirSync } from 'node:fs';
 import { PGlite } from '@electric-sql/pglite';
-export async function createRedirectTestDb() {
+export async function createRedirectTestDb({ beforeMigration } = {}) {
   const db = new PGlite();
   try {
     await db.exec(readFileSync('supabase/tests/fixtures/redirect-platform-bootstrap.sql', 'utf8'));
@@ -47,10 +47,24 @@ export async function createRedirectTestDb() {
       'redirect_all_source_inventory.sql',
       'redirect_workspace_invitations.sql',
       'redirect_native_apps.sql',
+      'redirect_native_app_clips.sql',
+      'redirect_resolution_snapshots.sql',
+      'redirect_native_handoff_receipts.sql',
+      'redirect_native_install_settings.sql',
+      'redirect_native_handoff_cleanup_schedule.sql',
       'redirect_invitation_inbox.sql',
+      'redirect_qr_install_targets.sql',
+      'redirect_domain_archiving.sql',
+      'redirect_team_reports.sql',
+      'redirect_domain_connect_operations.sql',
+      'redirect_domain_instruction_mail.sql',
+      'redirect_domain_instruction_mail_latest.sql',
+      'redirect_workspace_identity.sql',
+      'redirect_workspace_membership_scope.sql',
     ]) {
       const name = files.find((file) => file.endsWith(suffix));
       if (!name) throw new Error('Missing migration ' + suffix);
+      if (beforeMigration) await beforeMigration(db, suffix);
       await db.exec(readFileSync('supabase/migrations/' + name, 'utf8'));
     }
     return db;

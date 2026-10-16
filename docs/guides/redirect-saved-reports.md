@@ -3,7 +3,7 @@
 The analytics dialog can save its current filters and dates as a personal report.
 Loading a report restores that selection. Updating requires its current version;
 deleting it also deletes its published dashboards. Reports belong to the signed-in
-account and are not automatically discoverable by other workspace members.
+account and stay private unless their author explicitly enables team discovery.
 
 Publishing requires review and confirmation. A share copies the saved filters,
 so later edits to the private report do not expand its audience. By default it
@@ -66,7 +66,8 @@ when existing results/copies disappear.
 Registered sessions use the branded `/api/redirects` proxy. All private report
 operations require verified account identity; API keys cannot manage reports.
 
-- `GET /reports`: account-owned, keyset-paginated list.
+- `GET /reports`: account-owned, keyset-paginated list by default. Optional
+  `view=team` lists discoverable team definitions; `view=all` includes both.
 - `POST /reports`: create from a name and filters.
 - `GET`, `PATCH`, `DELETE /reports/:id`: read, guarded update and delete.
 - `POST /reports/:id/run`: run with current analytics access.
@@ -100,7 +101,8 @@ actual worker and verifies network-only routing and targeted cache cleanup.
 Native desktop/mobile evidence under `outputs/redirect-dub-parity/` uses labelled
 local fixtures with production fetches blocked. No live reports or shares were
 created. Production migrations/deployment and controlled-account checks remain
-pending. Report SDK methods and team discovery remain open parity work.
+pending. Five SDKs expose report management and optional team discovery views; production
+release and controlled-account evidence remain open.
 
 
 The public date extension is verified with seeded clicks on both half-open date
@@ -120,3 +122,41 @@ in that harness are isolated fixtures. SQL tests separately enforce the stored
 choice/password constraint and live revocation; HTTP tests exercise the actual
 handler against migrated PostgreSQL. Native `report-indexing-*` screenshots verify
 review, password restrictions and mobile layout with production calls blocked.
+
+
+## Team discovery
+
+My reports is the default view. Current workspace owners can review and confirm
+**Make available to team** on their own saved report. Members with analytics
+access can discover its name, saved filters and dates in Team reports or All
+available reports. Loading it applies those filters; results always use the
+reader's current link permissions. Discovery grants no link or event access.
+A team report is read only for everyone except its author. Teammates can save
+a new private copy, then edit that copy. New reports and copies default to private.
+
+Team discovery and public dashboards are independent. Only the report author
+can edit/delete the definition or manage its public URLs. Updating a team report
+changes the definition teammates can load, while existing public dashboards keep
+their published snapshots. **Make report private** removes future team discovery
+and direct team reads without silently revoking public URLs or private copies.
+If the publisher loses workspace-owner rights, team discovery suspends. Current
+workspace membership is required on every team list, read and run.
+
+`POST /reports` and versioned `PATCH /reports/:id` accept `visibility: private|team`.
+Only current workspace owners can publish a team definition. Responses include
+`visibility` and `canEdit`; lists include `canPublishToTeam`. Another author's
+account ID is omitted, while owned responses retain `owner_user_id`. Unknown,
+duplicate or invalid view parameters are rejected, and API keys remain denied.
+
+TypeScript, Python and PHP list methods accept an optional third `view` argument;
+Ruby accepts `view:`. Go preserves `ListReports` and adds `ListReportsInView`.
+All five native SDK integration tests opt in, discover a read-only definition,
+reject another author's update and prove private reports disappear again through
+the actual HTTP handler and migrated isolated database. SQL additionally proves
+reader link scoping, private copying, stale versions, current-role loss, keyset
+paging, strict inputs and independent public publications.
+
+Desktop and 390px fixture captures show discovery review and read-only loading/
+private copying with external requests blocked. The detector found no issues,
+and the independent finish reviewer returned ship with no material fixes. This
+is local evidence; no live report definition or public audience was changed.

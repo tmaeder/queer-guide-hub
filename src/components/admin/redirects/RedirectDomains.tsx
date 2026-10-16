@@ -1,4 +1,7 @@
+import { RedirectDomainMail } from './RedirectDomainMail';
+import { RedirectDomainConnect, RedirectDomainConnectReturn } from './RedirectDomainConnect';
 import { RedirectQrStyleSettings } from './RedirectQrStyleSettings';
+import { RedirectDomainSubpath } from './RedirectDomainSubpath';
 import { RedirectPrimaryDomain } from './RedirectPrimaryDomain';
 import { RedirectDomainProvider, type DomainProviderStatus } from './RedirectDomainProvider';
 import { useState } from 'react';
@@ -13,6 +16,7 @@ interface Domain {
   hostname: string;
   version: string;
   disabled: boolean;
+  archived: boolean;
   ownershipState: 'pending' | 'verified' | 'lost';
   ownershipVerified: boolean;
   verifiedUntil: string | null;
@@ -34,18 +38,37 @@ function DomainRegistry({ accountId }: { accountId: string }) {
   const client = useQueryClient();
   const [hostname, setHostname] = useState('');
   const [message, setMessage] = useState('');
+  const [archive, setArchive] = useState<'active' | 'archived' | 'all'>('active');
+  const [searchDraft, setSearchDraft] = useState('');
+  const [search, setSearch] = useState('');
   const [expanded, setExpanded] = useState<Set<string>>(() => new Set());
   const key = ['redirect-domains', accountId];
   const query = useInfiniteQuery({
-    queryKey: key,
+    queryKey: [...key, archive, search],
     initialPageParam: null as string | null,
-    queryFn: ({ pageParam }) =>
+    queryFn: ({ pageParam, signal }) =>
       memberRedirectApi<{
         data: Domain[];
         count: number;
         nextCursor: string | null;
-        providerSetup?: { configured: boolean; cnameTarget: string | null };
-      }>('/domains?limit=50' + (pageParam ? '&cursor=' + pageParam : '')),
+        dnsSetup?: { configured: boolean; cnameTarget: string };
+        instructionMail?: { configured: boolean };
+        providerSetup?: {
+          configured: boolean;
+          cnameTarget: string | null;
+        };
+      }>(
+        '/domains?' +
+          new URLSearchParams({
+            limit: '50',
+            archive,
+            ...(search ? { q: search } : {}),
+            ...(pageParam ? { cursor: pageParam } : {}),
+          }),
+        'GET',
+        undefined,
+        signal,
+      ),
     getNextPageParam: (page) => page.nextCursor ?? undefined,
     retry: false,
     refetchOnWindowFocus: false,
@@ -63,7 +86,11 @@ function DomainRegistry({ accountId }: { accountId: string }) {
     onSuccess: async (_, variables) => {
       if (variables.path === '/domains') setHostname('');
       setMessage(
-        'Domain settings updated. Ownership verification alone does not activate short links.',
+        variables.body.archived === true
+          ? 'Domain archived. Existing links and routing keep working.'
+          : variables.body.archived === false
+            ? 'Domain restored to active choices. Its readiness checks still apply.'
+            : 'Domain settings updated. Ownership verification alone does not activate short links.',
       );
       await Promise.all([
         client.invalidateQueries({ queryKey: key }),
@@ -80,6 +107,16 @@ function DomainRegistry({ accountId }: { accountId: string }) {
         are separate requirements. Provider connections run in the background. Check branded routing
         once DNS and the certificate are ready.
       </p>
+      <RedirectDomainConnectReturn
+        accountId={accountId}
+        onChanged={() =>
+          Promise.all([
+            client.invalidateQueries({ queryKey: key }),
+            client.invalidateQueries({ queryKey: ['redirect-domain-choices'] }),
+            client.invalidateQueries({ queryKey: ['redirect-domain-preference'] }),
+          ])
+        }
+      />
       <RedirectPrimaryDomain userId={accountId} />
       <form
         className="space-y-2"
@@ -110,6 +147,59 @@ function DomainRegistry({ accountId }: { accountId: string }) {
           Register domain
         </Button>
       </form>
+      <form
+        className="space-y-4"
+        onSubmit={(event) => {
+          event.preventDefault();
+          setSearch(searchDraft.trim());
+        }}
+      >
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div className="space-y-2">
+            <Label htmlFor="redirect-domain-search">Search domains</Label>
+            <Input
+              id="redirect-domain-search"
+              type="search"
+              value={searchDraft}
+              maxLength={253}
+              autoCapitalize="none"
+              autoCorrect="off"
+              spellCheck={false}
+              onChange={(event) => setSearchDraft(event.target.value)}
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="redirect-domain-archive">Domain status</Label>
+            <select
+              id="redirect-domain-archive"
+              className="min-h-11 w-full rounded-element border bg-background p-2 text-sm"
+              value={archive}
+              onChange={(event) => setArchive(event.target.value as 'active' | 'archived' | 'all')}
+            >
+              <option value="active">Active domains</option>
+              <option value="archived">Archived domains</option>
+              <option value="all">All domains</option>
+            </select>
+          </div>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          <Button type="submit" variant="outline">
+            Search domains
+          </Button>
+          {search && (
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={() => {
+                setSearchDraft('');
+                setSearch('');
+              }}
+            >
+              Clear domain search
+            </Button>
+          )}
+        </div>
+      </form>
       {query.isPending && <p role="status">Loading domains…</p>}
       {(query.isError || mutation.isError) && (
         <p role="alert">{mutation.error?.message ?? query.error?.message}</p>
@@ -126,7 +216,12 @@ function DomainRegistry({ accountId }: { accountId: string }) {
       >
         Refresh domains
       </Button>
-      {query.data && <p className="text-sm">{query.data.pages[0].count} registered domains</p>}
+      {query.data && (
+        <p className="text-sm">
+          {query.data.pages[0].count} {archive === 'all' ? '' : archive + ' '}domains
+          {search ? ' match this search' : ''}
+        </p>
+      )}
       <ul className="space-y-4">
         {query.data?.pages
           .flatMap((page) => page.data)
@@ -134,8 +229,11 @@ function DomainRegistry({ accountId }: { accountId: string }) {
             <DomainRow
               key={domain.id + domain.version}
               domain={domain}
+              accountId={accountId}
+              mailConfigured={query.data?.pages[0].instructionMail?.configured === true}
               pending={mutation.isPending}
               setup={query.data?.pages[0].providerSetup}
+              dnsSetup={query.data?.pages[0].dnsSetup}
               onRoutingChecked={() =>
                 Promise.all([
                   client.invalidateQueries({ queryKey: key }),
@@ -165,7 +263,15 @@ function DomainRegistry({ accountId }: { accountId: string }) {
           ))}
       </ul>
       {query.data?.pages[0].count === 0 && (
-        <p className="text-sm text-muted-foreground">No custom domains registered.</p>
+        <p className="text-sm text-muted-foreground">
+          {search
+            ? 'No domains match this search.'
+            : archive === 'archived'
+              ? 'No archived domains.'
+              : archive === 'all'
+                ? 'No custom domains registered.'
+                : 'No active custom domains.'}
+        </p>
       )}
       {query.hasNextPage && (
         <Button
@@ -180,6 +286,8 @@ function DomainRegistry({ accountId }: { accountId: string }) {
   );
 }
 function DomainRow({
+  accountId,
+  mailConfigured,
   domain,
   pending,
   act,
@@ -187,7 +295,11 @@ function DomainRow({
   onExpand,
   setup,
   onRoutingChecked,
+  dnsSetup,
 }: {
+  dnsSetup?: { configured: boolean; cnameTarget: string };
+  accountId: string;
+  mailConfigured: boolean;
   domain: Domain;
   onRoutingChecked: () => Promise<unknown>;
   setup?: { configured: boolean; cnameTarget: string | null };
@@ -205,7 +317,7 @@ function DomainRow({
     [missing, setMissing] = useState(domain.notFoundUrl ?? ''),
     [expired, setExpired] = useState(domain.expiredUrl ?? '');
   const [disabled, setDisabled] = useState(domain.disabled),
-    [confirm, setConfirm] = useState<'rotate' | 'delete' | null>(null),
+    [confirm, setConfirm] = useState<'rotate' | 'delete' | 'archive' | null>(null),
     [copyStatus, setCopyStatus] = useState('');
   return (
     <li className="min-w-0 border-t pt-4">
@@ -215,7 +327,7 @@ function DomainRow({
         className="min-w-0 space-y-4"
       >
         <summary className="cursor-pointer break-all font-medium">
-          {domain.hostname} ·{' '}
+          {domain.hostname} · {domain.archived ? 'Archived · ' : ''}
           {domain.disabled
             ? 'Disabled'
             : domain.ownershipVerified
@@ -226,6 +338,57 @@ function DomainRow({
                   ? 'Proof expired'
                   : 'Awaiting DNS proof'}
         </summary>
+        {domain.archived ? (
+          <div className="space-y-2">
+            <p className="text-sm">
+              Archived domains stay available to existing links and their settings. Restore this
+              domain to show it in new-link choices.
+            </p>
+            <Button
+              type="button"
+              variant="outline"
+              disabled={pending}
+              onClick={() => act('', 'PATCH', { archived: false })}
+            >
+              Restore domain
+            </Button>
+          </div>
+        ) : confirm === 'archive' ? (
+          <div role="group" aria-label="Archive domain review" className="space-y-2">
+            <p className="text-sm">
+              Hide {domain.hostname} from new-link choices and the active domain list? Existing
+              links and the provider connection keep working. If this is the primary domain, new
+              links will use queer.guide/go until another primary is chosen.
+            </p>
+            <div className="flex flex-wrap gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                disabled={pending}
+                onClick={() => act('', 'PATCH', { archived: true })}
+              >
+                Confirm domain archive
+              </Button>
+              <Button
+                type="button"
+                variant="ghost"
+                disabled={pending}
+                onClick={() => setConfirm(null)}
+              >
+                Cancel domain archive
+              </Button>
+            </div>
+          </div>
+        ) : (
+          <Button
+            type="button"
+            variant="outline"
+            disabled={pending}
+            onClick={() => setConfirm('archive')}
+          >
+            Archive domain
+          </Button>
+        )}
         {domain.verifiedUntil && (
           <p className="text-sm">
             Ownership proof valid until {new Date(domain.verifiedUntil).toLocaleString()}.
@@ -243,6 +406,16 @@ function DomainRow({
               ? 'Provider record present; routing readiness still requires verification.'
               : 'TLS and branded routing are not connected.'}
         </p>
+        <RedirectDomainSubpath
+          hostname={domain.hostname}
+          ready={Boolean(domain.routingReady && !domain.disabled)}
+        />
+        <RedirectDomainConnect
+          domain={domain}
+          configured={dnsSetup?.configured === true}
+          cnameTarget={dnsSetup?.cnameTarget ?? null}
+          disabled={pending || domain.disabled || domain.archived}
+        />
         <div className="space-y-2 text-sm">
           <p>
             Add this record in your DNS provider. Leave it in place for future ownership checks.
@@ -273,6 +446,7 @@ function DomainRow({
           </Button>
           {copyStatus && <p role="status">{copyStatus}</p>}
         </div>
+        <RedirectDomainMail accountId={accountId} domain={domain} configured={mailConfigured} />
         <div className="flex flex-wrap gap-2">
           <Button
             variant="outline"
@@ -358,7 +532,7 @@ function DomainRow({
             <Button type="submit">Save domain settings</Button>
           </fieldset>
         </form>
-        {confirm ? (
+        {confirm && confirm !== 'archive' ? (
           <div className="space-y-2">
             <p className="text-sm">
               {confirm === 'rotate'

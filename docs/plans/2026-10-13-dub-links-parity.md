@@ -19,9 +19,10 @@ exist. Existing local tools are a foundation, not proof of parity or deployment.
 | Bulk actions         | Create/update/upsert/delete, folder/tag assignment, archive, import/export, QR export                              | Candidate for managed links: atomic create/update/upsert/deletion API and CSV review/import/export UI, archive/restore, folder/tag assignment and verified QR ZIP; production release pending                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
 | Custom previews      | Uploaded OG image (1200×630, ≤1.5 MB), title≤120, description≤240, video API, crawler unfurl                       | Candidate: editor, scoped upload/presentation APIs and crawler HTML; native browser/Storage release pending                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
 | AI previews          | Generate title/description from destination content using configured AI provider                                   | Candidate: scoped draft generator with spend limits; live provider and browser verification pending                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
-| Custom domains       | Verify ownership/DNS, multiple domains, primary domain, redirects on branded hostname                              | Partial: private registry, exact DNS verification, owner UI and stored defaults implemented locally; durable Cloudflare lifecycle/TLS checks implemented locally; hostname namespaces, signed relay/resolver, routing health, background proof renewal and inventory/CSV/QR/API/SDK fields implemented locally; ready choices, owner primary preference and tracked/member builders implemented locally; active manual CMS domain field and atomic owner saves implemented locally; URL domain filters and scoped linked-domain facets implemented locally; explicit provider validation restart implemented locally; real provider proof and release pending |
+| Workspace isolation | Independent workspace identity, current membership, tenant-bound resources/API/SDK context and domain transfer | Partial: private identity registry, legacy backfill/fences on40 tables,40 tenant-aware relationships, core member/credential/invitation/folder ACL predicates, restrictive direct Data API policies and current-role API/five-SDK context implemented locally; multiple-workspace activation, all tenant resource/read/job boundaries and atomic transfer pending |
+| Custom domains       | Verify ownership/DNS, multiple domains, primary domain, redirects on branded hostname                              | Partial: private registry, exact DNS verification, owner UI and stored defaults implemented locally; durable Cloudflare lifecycle/TLS checks implemented locally; hostname namespaces, signed relay/resolver, routing health, background proof renewal and inventory/CSV/QR/API/SDK fields implemented locally; ready choices, owner primary preference and tracked/member builders implemented locally; active manual CMS domain field and atomic owner saves implemented locally; URL domain filters and scoped linked-domain facets implemented locally; explicit provider validation restart and versioned archive/search/restore implemented locally; external website-subpath setup/generation and authenticated Domain Connect backend and owner approval/callback UI implemented locally; native instruction email backend and recipient/review/status/recovery/cancel UI implemented locally; transfer, real provider/email proof and release pending |
 | Domain defaults      | Root/not-found redirects, default expiration URL, workspace/domain QR logos                                        | Partial: root/not-found/expiry settings, signed-host resolver and managed root-link policies/metadata/tracking implemented locally; QR/logo precedence and release pending                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
-| Deep links           | iOS/Android association files, app page routes, fallback and deferred attribution                                  | Partial: owner-managed app identities, per-host association files and gateway behavior implemented locally; policy-aware native resolver and local Swift/Android clients implemented; deferred attribution and real device/release evidence remain open                                                                                                                                                                                                                                                                                                                                                                                                       |
+| Deep links           | iOS/Android association files, app page routes, fallback and deferred attribution                                  | Partial: owner-managed app identities, per-host association files and gateway behavior implemented locally; policy-aware native resolver and local Swift/Android clients implemented; consented private receipts, first-party install/resume pages, Swift App Group/Android Play adapters and persistent install QR targets implemented locally; signed store/device delivery and release evidence remain open                                                                                                                                                                                                                                                                                                                                                                                                       |
 | Geo targeting        | Country-specific destinations and default fallback                                                                 | Candidate: country rules and fallback tested                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
 | Device targeting     | iOS/Android destinations, evaluated before geo                                                                     | Candidate: iOS/Android priority tested                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
 | A/B testing          | 2–5 destinations, weighted traffic≥10%, end date≤6 weeks, manual winner/end                                        | Candidate: editor/resolver implemented locally                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
@@ -36,7 +37,7 @@ exist. Existing local tools are a foundation, not proof of parity or deployment.
 | Customer insights    | Customer journey across click→lead→sale with private event timeline                                                | Candidate: private versioned name/email/avatar enrichment, scoped chronological journey API/UI and five SDKs implemented locally; production release pending                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
 | Live events          | Paginated live click/lead/sale stream, real events rather than demo data                                           | Candidate: private click/lead/sale activity with keyset pages and five-second refresh                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
 | Shared dashboards    | Revocable scoped sharing, sanitized aggregate-only default                                                         | Candidate: saved snapshots, explicit dynamic folders, password/expiry/revoke, aggregate-only UI, date selection and live opt-in indexing implemented locally; runtime release pending                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
-| Custom reports       | Custom dates, granular link/folder/tag/domain/geo/device/event filters                                             | Partial: date/dimension report UI/API, personal saved definitions and scoped sharing implemented locally; team discovery and runtime release pending                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| Custom reports       | Custom dates, granular link/folder/tag/domain/geo/device/event filters                                             | Partial: date/dimension report UI/API, personal saved definitions, opt-in team discovery and scoped sharing implemented locally; runtime release pending                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
 | Integrations         | Segment and GTM adapters; native configured integrations and provider callbacks                                    | Partial: native Segment/GTM artifacts and setup, privacy/consent gates and actual conversion/outbox handler fixtures pass; provider installation/runtime evidence pending                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
 | REST API             | Authenticated/scoped link CRUD/upsert/count/list, analytics/events, folders/tags, bulk operations                  | Partial: scoped link CRUD/upsert/count/list/mixed bulk, conversions and analytics/events; folder/tag/template resource CRUD with workspace scopes; scoped targeting/password/tracking/preview policy endpoints; domain fields/filter/canonical URLs implemented locally; deep-link fields and release pending                                                                                                                                                                                                                                                                                                                                                 |
 | SDKs                 | TypeScript, Python, Go, Ruby, PHP wrappers and runnable examples covering management/tracking                      | Candidate: five native clients verified through actual HTTP handler and isolated DB; publication/release pending                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
@@ -3031,3 +3032,694 @@ checks after that base update. Deferred linking itself is still unimplemented;
 the committed design is the specification for the next phase, not completion
 evidence. Its iOS path has the Clip create the original receipt while serving its
 own useful functionality; the browser must not pre-mint a duplicate visit.
+
+PR4422 merged externally at2026-10-15 18:54:57UTC as0680410b037f26e17e803bce31a4cd866c89497f
+with headc8bea7364. The App Clip work began after read-only history confirmed the
+registry migration was unapplied; merging made that original file immutable.
+Restored its exact merged contents and moved the new column/check/index and
+function replacements into allocator-created99991792095483_redirect_native_app_clips.
+The isolated DB harness now applies this explicit successor. No old version is
+rewritten or renamed for the App Clip addition, and no production DDL is executed.
+
+The optional App Clip identity has owner UI/API input, typed/private DTO state,
+parent/platform invariants enforced by SQL as well as input/render validation,
+per-host uniqueness, publication/removal and private-label boundaries. Apple AASA
+gets a bounded appclips.apps list only when configured, enabled and ready. Parent
+Universal Link paths remain unchanged; Android's document remains byte-equivalent.
+Gateways reconstruct this exact new root permission and reject unrelated/duplicate
+Clip IDs, unknown permissions or fields. Domain/role/readiness checks also apply.
+
+Current evidence:18 focused UI/helper/gateway cases, full isolated SQL, all five
+server SDK/actual HTTP suites (including Clip creation/publication and role loss),
+strict Pages production/tests and Worker types, app702 inherited errors with none
+new, targeted lint, and full Edge API Deno check with an isolated lock/global npm
+cache. The initial Deno npm-mode/frozen checks lacked existing transitive type
+packages; no shared lock or type baseline was changed. Production build29.36s;
+Worker dry-run24.84KiB/6.71KiB gzip;2,339-migration grammar checks passed before the
+successor split. Repeat SQL/grammar after that split. Local browser save/edit retains
+the Clip value with publication disabled; desktop and390px layouts are readable,
+content width390px (no horizontal overflow). Screenshots app-clip-desktop.png and
+app-clip-mobile.png are labelled isolated fixtures with external requests blocked.
+This host authorization does not yet implement receipt creation/redemption or
+prove a signed Clip/install/App Group transition. Those remain in the full scope.
+
+After splitting the successor, full SQL and all five SDK/actual HTTP suites pass
+again; the2,340-file grammar and unique-version checks pass. The original merged
+registry file has no diff. No production app/association/data/provider state was
+changed. The App Clip work belongs in a focused successor PR to merged4422.
+
+The native resolver now loads link, policy, password hash and semantic routing
+fingerprint in one service-only SQL snapshot. The visit writer locks redirect ->
+policy and compares that original fingerprint before invoking the existing quota/
+event writer. Counters, notes and generic update timestamps do not invalidate the
+fingerprint; routing, protection, namespace, scheduling and quota changes do.
+Timestamp inputs use epoch values so session time zones cannot change the digest.
+The source path is checked against the locked link as well as the existing host/
+root/readiness checks. Both web and native resolutions use this path; HEAD and
+expired fallback behavior remain without visit writes. Deploy the additive SQL
+before the resolver; there is no fallback to an unguarded visit on RPC failure.
+
+Actual Pages -> resolver -> migrated PostgreSQL tests change a target after its
+snapshot and rotate a password after verification, before the final write. Both
+return closed410 without events; the current password alone succeeds.27 resolver
+tests, full isolated SQL, all five server SDK/HTTP suites, Deno resolver check,
+strict Pages/Worker types, lint and app ratchet702 inherited/none new pass. The
+first server SDK run lacked the ignored Go runtime on PATH; with the installed
+runtime it passes. No baseline, shared Deno lock or production state changed.
+
+Added private deferred receipt transaction primitives behind a new default-false
+app handoff flag. Creation checks explicit consent, conversion tracking, current
+publisher/app/path/host readiness and the routing snapshot, then reserves the
+visit and inserts a SHA256 digest-bound receipt atomically. Digest collisions roll
+back the event/counter. Receipt state binds original click, app revision, source,
+routing fingerprint and expiration; query/variant/destination stay in the existing
+event. TTL is capped at24h and link/experiment expiration. Live private context
+loads the current password and fingerprint together. Final locked consumption
+checks current routing/app/role/source/expiry and the freshly selected original
+destination/cohort, returns the original click once and creates no extra visit,
+even at the already-reserved quota cap. Event/link deletion cascades receipts.
+Cleanup is bounded to500 expired rows and is service-only. No raw receipt token,
+password, visitor identity or device identifier is added to the receipt table.
+
+SQL verifies opt-out defaults, denied consent, one-event reservation, quota and
+collision rollback, source/target/cohort scope, replay, binding/policy/password/
+publisher revocation, link/experiment TTL, bounded cleanup and cascade/private
+Data API boundaries. This is the database foundation only: public native create/
+resume transport, owner store configuration, browser install UI, automatic Play/
+App Group adapters, signed-device proof and scheduled cleanup rollout still need
+implementation/verification. No existing binding is opted in, and no production
+DDL/app/provider state is changed. Keep the full goal active.
+
+App Clip PR4430's first CI completed security/build/accessibility and migration
+checks; the critical-path run had248 passes,18 skips and two live admin review
+queue scope failures (initial queue/heading/response waits), outside these local
+redirect fixtures. Its test job was still running at inspection. Preserve those
+gates and inspect fresh CI rather than treating local redirect tests as an all-
+repository release proof.
+
+The next transport layer is now implemented behind the same default-false private
+handoff flag. Creation/resumption requires native negotiation, explicit consent,
+matching bounded action/app/token headers and a reserved install/resume marker.
+Gateways reject malformed requests before proxying; the resolver also checks them,
+so an older gateway dropping headers cannot turn a marked resume into a counted
+visit. Tokens are header-only; creation returns validated token/ISO-expiry metadata,
+redemption returns an explicit consumed acknowledgement, and success missing those
+headers fails as an unknown outcome. The six-field JSON body is unchanged.
+
+The handler uses the existing password throttle and shared target selector, restores
+an unchanged original A/B bucket and query from the private event, applies an IP-
+hash handoff budget and invokes the atomic create/consume functions. Cloaked or
+expired navigation cannot mint a handoff. Current source/domain readiness, app and
+publisher checks still apply. A quota already reserved by creation does not count
+again at resume. Receipt expiry also respects a legacy policy expires_at value;
+read-only production history confirmed the two pending migrations were unapplied
+before adding that cap. No production schema or data mutation was made.
+
+Evidence:40 focused protocol/resolver/gateway cases; full isolated SQL (including
+legacy policy expiry); real Pages and signed branded-root Worker -> handler -> DB
+creation/resumption; digest-only storage; original query/cohort/click, exhausted
+original quota, current password, marker/consent denial, replay and rate limiting.
+The first combined HTTP case exhausted the deliberately unchanged password throttle
+using earlier tests' visitor; a separate fixture visitor tests the new flow without
+weakening that throttle. Deno handler and strict Pages/Worker types pass; targeted
+lint passes; Worker dry-run28.17KiB/7.48KiB gzip, no upload. Public receipt transport
+is no longer missing. Owner store configuration, native SDK receipt methods and
+platform adapters, browser UI, cleanup activation, signed-device/provider proof and
+the rest of the full parity ledger remain open. Existing bindings stay opted out.
+
+Both native core SDKs now expose explicit receipt create/resume methods. Swift
+returns a typed resolution+receipt and resume result; Android reuses its existing
+single-execution/cancellable synchronous/async call type with typed receipt and
+consumed state. They require current explicit consent, add only the reserved marker
+and bounded headers, use form POSTs (including no-password handoffs), validate
+creation expiry/capability and consumed acknowledgement, reject web-mode/missing-
+click outcomes and preserve the existing host/body/deadline/cookie/auth/navigation
+boundaries. Receipts have canonical query-free source, binding UUID and bounded
+TTL; string/debug descriptions redact capability values. They retain no state and
+perform no automatic retry. Reserved marker/token query input fails preflight.
+
+The shared native wire helper now produces creation bodies/metadata through the
+actual backend response/receipt producers. Both native contract runners load that
+fixture in addition to the ordinary six-field body. Swift's package builds with
+warnings as errors and12 contract groups pass against real URLSession/URLProtocol;
+Android Java8 compiles and actual confined TLS/OkHttp tests pass for receipt headers,
+synchronous creation/async resume, original click/destination, consent/preflight,
+expired/malformed/missing metadata and no unknown-result retries, alongside its
+existing cookie/URL/body/cancellation/deadline cases. Fresh native CodeQL/CI is
+still required for this head. Core SDK receipt APIs are no longer missing; platform
+persistence/attempt adapters, browser/store controls, actual signed delivery,
+publication and the other full parity requirements remain open. No production
+or signing/provider state was changed, and existing app handoffs remain disabled.
+
+
+Owner installation configuration is implemented in the existing native app editor
+and session API. Public app name and fixed-provider store identity are distinct
+from the private label; iOS additionally validates parent Clip and App Group.
+SQL enforces complete metadata before opt-in, current publication, strict types,
+optimistic revisions and automatic opt-out when older clients unpublish. The
+service-only host/path choice projection excludes private configuration and
+rechecks owner/role/readiness. No browser landing consumer is claimed yet.
+
+Evidence:18 UI/helper cases, full isolated SQL including direct constraint and
+private projection tests, actual owner HTTP and all five server SDK suites, and
+Pages/signed Worker-to-resolver receipt integration pass. Strict Pages/Worker and
+Deno API checks, targeted lint, the production build and app ratchet (702 inherited,
+none new) pass. Desktop and390px fixture captures show save/edit persistence with
+no horizontal overflow. One bounded Impeccable review returned ship; the independent
+documenter confirmed no new design tokens or system rules. Fixture IDs only, with
+external requests blocked. No production publication or signing/provider change.
+
+CI for a6dc61fb7 passed critical paths, all application/native suites, a11y and
+CodeQL. The migration gate found two pending versions overtaken by an unrelated
+applied migration. Read-only production history confirmed all four candidate
+migrations unapplied; the allocator renumbered them in dependency order. GitGuardian
+also reports one finding without file-level annotations in its GitHub result;
+its diagnosis remains open and is not waived by these local checks.
+
+The optional Swift App Group store is now implemented. Public setup requires the
+configured iOS Group container, binding and short-host allowlist plus current
+consent; macOS cannot authorize it. It retains one bounded live receipt per app
+binding, no password/destination/customer/device identity. Files exclude backup,
+use private permissions and iOS first-unlock protection. Cross-process locking and
+an atomic fsync'd attempted record precede transport; an unknown outcome survives
+restart without automatic retry. A fresh explicit retry is separate. Successful
+redemption removes capability/source, retaining an expiring consumed marker. Clear
+on withdrawal; withdrawal during transport also suppresses returned navigation.
+Expiry clears without transport, and re-saving cannot reset an attempted receipt.
+
+Local contracts exposed sub-microsecond Unix/Date serialization rounding; receipt
+identity matching tolerates only that rounding without extending stored expiry.
+Fourteen contract groups exercise the actual package, URLSession, fresh temporary
+stores, denied/revoked consent, expiry/corruption and two concurrent child processes
+plus a third restarted process: exactly one reaches transport after an uncertain
+outcome. A local iphoneos SDK is absent; iOS compilation/protection, signed Group
+migration and actual Clip functionality/Store setup still require the real Apple
+toolchain and owner identities. No SDK publication, signed OS or production claim.
+
+Prepared the expired-receipt cleanup schedule: one named every-minute pg_cron job
+runs the existing service-role-only, 500-row SKIP LOCKED expiry deletion in a
+bounded transaction (10s statement/1s lock timeout). No HTTP credentials, new
+public grants or live scheduling were used. Isolated SQL covers absent-cron
+installation, repeated named scheduling, execution of the actual command and
+role restoration; the full platform SQL suite and2,344 migration grammar/version
+checks pass. Activation and live backlog/job monitoring remain rollout proof.
+
+The next CI found a CodeQL DOM-text alert on store preview href concatenation;
+validated IDs are now additionally percent-encoded. ESLint's newly added control
+regex rejection is expressed as character-code checks. Existing lint failures in
+QR/password/provider helpers were repaired with SDK-derived awaitable RPC data
+boundaries, unknown provider payload validation, typed logo transformation and
+explicit test row types. Fifty affected tests and API/resolver/provider Deno checks
+pass; no lint baseline or scanner exclusion was added.
+
+GitGuardian's full check text identifies incident38259152 in the Swift reserved
+query-field name list (a6dc61fb7 line139), rather than a credential value. The list
+is extracted into a named constant without changing rejection semantics. The
+historical false-positive incident still requires GitGuardian review; no secret
+rotation is applicable to those protocol names, and no detection was disabled.
+
+Final local checks for this extension: Swift14 groups pass after extracting the
+reserved fields; all five server SDK and actual HTTP suites pass after the helper
+boundary changes; API/resolver/provider Deno checks pass with an isolated lock;
+strict Pages types pass; app ratchet remains702 inherited/none new. The schema-free
+RPC data type derives from the installed Supabase SDK while the narrow awaitable
+result avoids cross-import nominal builder classes. Hosted-logo response types now
+accurately add URL fields without losing the input record shape. No shared lock,
+type/lint baseline, real credential or production state changed.
+
+
+Implemented the first-party install/resume browser page through built-in Pages
+and signed branded/root routing. Only an uncredentialed GET marker renders HTML;
+other marked requests retain native consent/header validation. Rendering loads
+current public app choices before password verification and creates no event or
+receipt. It discloses no destination/private configuration. Unavailable app cases
+retain a clean explicit web fallback; marked source failures never redirect a
+private fragment to a domain fallback. Resume rendering respects an already
+reserved quota without granting a new visit.
+
+The page offers explicit app choice, optional fresh consent, protected form POST,
+Android preparation and fixed Play referrer, private fragment resume fallback and
+web continuation. Client responses are bounded and checked, capabilities remain
+header-only on ordinary requests, and no cookie/cache/referrer/browser storage or
+automatic clipboard/retry is used. Play's explicit carrier contains canonical
+source/binding/capability/expiry only, bounded conservatively to512 encoded chars
+before creation. Original campaign query remains in the server event. Withdrawal
+aborts and generation-invalidates pending responses and clears local capability/
+password fields. Apple gets only a selected configured Clip banner on the original
+first-party invocation URL; no browser receipt is pre-created and app-argument is
+not used. The new Swift invocation normalizer preserves original query while
+checking host/binding/install markers without network, before the Clip's own consent.
+
+Impeccable's local UI review found two material issues: default form GET could
+put a password in a URL on script failure, and changing app choice could mismatch
+an active prepared receipt. The single correction batch sets explicit POST plus
+server-disabled submit until the protected handler exists, and locks choice while
+request/receipt is active. Reviewer scored both resolved and returned ship at
+that local scope; all four desktop/mobile/prepared/error captures are valid. The
+independent documenter found no durable design-system change. One detector pass
+returned[]; no new assets or design tokens. Fixtures use example IDs and block
+external navigation, with no production publication/provider proof.
+
+The preceding40c687c18 CI passed critical paths, lint, native contracts and CodeQL.
+The home Lighthouse job failed during npm download with ECONNRESET before producing
+an audit; no a11y threshold was lowered. GitGuardian's historical protocol-field
+false-positive review remains open. Android Play delivery/persistence, signed iOS
+Clip/full-app transition, owner adoption/entry-point rollout, live cleanup/provider
+activation, SDK publication and all other parity ledger requirements remain open.
+
+Release evidence for the browser extension:44 focused cases pass; actual Pages and
+signed branded/root Worker -> resolver -> migrated PostgreSQL verify uncounted
+protected rendering, selected Clip metadata, private projection, invalid token
+queries, absent-source no-Location and quota-reserved resume pages, alongside
+existing creation/consumption invariants. All five server SDK/HTTP suites pass.
+Swift14 groups additionally validate first-party Clip normalization, exact binding,
+original query, duplicate/credential/fragment/untrusted-source rejection and no
+normalization request. App ratchet remains702 inherited/none new; strict Pages/
+Worker and Deno resolver checks pass, targeted lint passes, Worker dry-run29.47KiB
+(7.74KiB gzip), no upload. A separate local HTTP fixture delivered the actual nonce
+CSP headers; the serialized preparation handler completed with no console errors
+or warnings. This functional CSP check introduced no UI changes or further polish.
+No production, store, signing or provider changes were made. Full goal stays active.
+
+
+The optional Android API21+ Play Install Referrer adapter is implemented separately
+from the stateless core. Production code calls the actual Google2.2 library and
+Context no-backup storage, validates the actual package plus configured binding
+and trusted host, and reads only the provider referrer string. It validates the
+exact bounded browser carrier, obtains fresh app consent and uses the existing
+header-only core resume transport. Private bounded atomic/fsync'd records and an
+OS lock mark the provider attempt before connection and the receipt before HTTP.
+Unknown results survive restart without automatic reconnect/retry; explicit retry
+is separate. Success drops source/capability; withdrawal cancels and clears SDK
+files while suppressing pending navigation. Provider connection and HTTP each
+have bounded deadlines; Binder cleanup is attempted once off the callback path.
+
+The executable runner compiles against SHA256-pinned API21 framework classes and
+the actual Google AAR. Its optional JAR contains only our own adapter classes; the
+consumer includes Google's official Gradle dependency/manifest. JVM contracts use
+the real browser carrier producer, core confined TLS and actual adapter/store
+code with module-private provider/filesystem seams. They cover exact carrier and
+trusted binding/host guards, password/header transport, duplicate callbacks,
+consumed restart suppression, uncertain explicit retry without another provider
+read, consent withdrawal including in-flight HTTP, unavailable/malformed/timeout
+provider results, blocked connection callback deadlines, corruption/expiry/temp
+cleanup and two competing child processes plus restart. One process claims the
+automatic attempt. No Android SDK or signed store app is installed locally; this
+is not device filesystem, Play delivery, package signing or lifecycle proof.
+
+All checks for the preceding98d745046 head passed, including full application,
+critical paths, accessibility, native and CodeQL jobs. GitGuardian alone retains
+the known historical protocol-field false positive, requiring provider review.
+Live cleanup activation, signed iOS Clip/full-app and Android Play delivery, real
+owner entry-point adoption, SDK publication, provider rollout and the remaining
+parity ledger requirements stay open. No production or signing/provider state was
+changed in this adapter step.
+
+
+The adapter's first CI run exposed a workflow-only dependency gap: the new actual
+browser-carrier fixture imports JSDOM, while the former core-only Android job did
+not install npm dependencies. The job now installs the committed lockfile with
+scripts disabled and watches the browser producer plus lockfile paths. Local
+adapter/core contracts passed before this correction; CI must confirm the fresh
+runner and directly traced native CodeQL build rather than treating local
+node_modules as clean-runner evidence.
+
+
+Owner/member public install entry controls are now implemented in the existing
+single-code sharing dialog. Managed links offer ordinary opening (default) or
+App installation, with Copy install link adjacent to the public URL, existing
+scan-verified local exports and hosted publication. The selected URL retains
+campaign values, source host/root and QR attribution marking; it contains no
+private capability. Consent and private receipt creation remain on the visitor's
+page. Destination selection locks during logo/publication work and export state
+is scoped to account/source/purpose. The incumbent admin design is preserved.
+
+A new unapplied QR-target migration stores visit/install purpose and a bounded,
+credential-free normalized public entry query on managed profiles. Legacy records
+retain visit semantics. Resource and table checks reject unsupported purpose,
+explicit-URL installation, password/click/handoff fields and malformed/oversized
+query data. The actual public profile and custom-artwork reservation construct
+the same exact marker-first URL and recheck existing creator/link permissions.
+Hosted images follow future slug/root changes, saved branding and revocation;
+there is no event or native receipt from authoring/profile/image retrieval.
+
+Evidence: the complete isolated SQL suite includes install authoring, current slug,
+query, custom artwork target, key/folder denial, revoked profiles and unchanged
+visit/receipt counts. Actual authenticated HTTP -> migrated SQL -> public profile
+-> real Wasm PNG/JPG/SVG independently decodes every installation image to the
+exact target, including normalized campaign values and the QR marker. Custom
+artwork publication/revocation/physical cleanup passes, and all five SDK suites
+pass.43 affected UI/helper tests pass. The detector ran once and returned[].
+Desktop1280x720 and390px mobile local-fixture captures show the controls and hosted
+verified image/URL states, with no horizontal overflow or console errors/warnings.
+The independent finish reviewer returned ship, no material fixes; the documenter
+confirmed no durable design-system change. No live provider/publication proof.
+
+The preceding6498ebf08 head passes Android core/platform and traced native CodeQL.
+The full GitGuardian report also identifies incident38260637 in browser/page
+reserved query-field name lists alongside38259152 in Swift; inspected lines have
+no credential value. Provider review remains unavailable without a logged-in
+GitGuardian session or API credential, and no scanner exclusion was introduced.
+New schema -> API plus native resolver/gateways -> frontend rollout, signed Play/
+App Clip delivery, owner adoption, full release and other parity requirements
+remain open. No production schema, provider, signing or DNS state changed.
+
+
+Release checks for the installation QR extension: app ratchet702 inherited errors,
+none new (baseline782, unchanged); production Vite build passes; Edge API Deno
+check passes with an isolated lock; targeted lint passes. All2,345 migrations
+parse with PostgreSQL17 grammar and unique versions, with no exemptions. A fresh
+read-only production history query confirms these branch candidates remain
+unapplied. No shared lock, baseline or live scheduling was changed.
+
+
+Domain archive/search parity is implemented locally. Owner registry lists now
+default to active domains and support archived/all views, literal hostname search
+and filtered keyset counts. Versioned archive is reviewed; it atomically clears
+a matching primary preference and hides new-link choices while preserving
+existing routes, provider work, link editing, inventory facets and QR targets.
+Restore does not silently choose a primary. SQL and actual owner HTTP tests prove
+permissions, stale writes, strict filters and unchanged provider/event counts.
+The actual signed Worker test also routes an archived root and consumes an
+outstanding native receipt once without recounting. All five SDK contracts pass.
+29 focused UI/helper tests pass; one detector run returned[]. Desktop/390px
+labelled local-fixture captures fit without horizontal overflow, and the fresh
+finish reviewer returned ship, no material fixes. No production domain, provider,
+DNS or scheduling state changed. Transfer, subpath setup, authorized DNS/forwarding,
+team report discovery and the remaining live release evidence remain open.
+
+The archive release candidate passes production Vite build, isolated Edge API
+Deno checking, targeted lint and all2,346 migration grammar/version checks. A
+fresh read-only production history check on2026-10-16 still returns no applied
+versions in this branch's candidate range. The UI documenter found no durable
+design-system change. A test-only Testing Library matcher typing issue was
+corrected without changing behavior; its five affected tests pass again.
+
+The final archive application typecheck passes with702 inherited errors, none
+new (baseline782 unchanged). No baseline or shared dependency lock was edited.
+
+
+Team saved-report discovery is implemented locally with personal/private defaults.
+Only a current workspace owner can explicitly publish their own definition after
+UI review. Current analytics members can discover/load it read only or save a
+private copy; all analytics still use reader link scope. The author alone edits/
+deletes/manages public dashboards. Versioned make-private removes team discovery,
+while existing public snapshots stay independent. Publisher role loss suspends
+team visibility. Another author's account ID is omitted from team reads.
+
+Evidence: isolated SQL covers visibility, defaults, link scope, current-role loss,
+paging, stale edits, strict inputs and independent public publication. Actual
+owner HTTP and all five native SDKs prove reviewed-equivalent explicit opt-in,
+read-only discovery, denied cross-author edits, private restoration, strict views
+and API-key denial.17 UI/helper tests pass. Desktop/390px labeled local fixtures
+show review and read-only load/private copy, no overflow or console warnings/
+errors. The single detector returns[], and a fresh reviewer returns ship, no
+material fixes. App typecheck702 inherited errors/none new, production build,
+isolated Edge API checking and all2,347 migration parser/version checks pass.
+No production definition, sharing audience, schema or provider state changed.
+Domain transfer/subpath/DNS/forwarding, signed app/provider delivery and the full
+controlled release remain open.
+
+The team-report documenter confirmed no durable design-system update is needed.
+Deploy the candidate schema before the Edge API/clients/UI; previous installations
+remain personal/private by default. No baseline or shared lock changed.
+
+Full security-check output at022cf4ffc adds incident38261150 and another38260637
+occurrence in installLink.test.ts. Exact inspected lines29/35 are reserved or
+percent-encoded query field names used with a dummy value on example.com to test
+rejection, not credential values. Together with38259152, all three incidents
+require provider false-positive review; no scanner exemption or history rewrite
+was applied. The available provider session still requires login. Fresh CI for
+2ea81768b is pending; local checks do not substitute for that release evidence.
+
+
+Website-subpath setup follows the documented Dub external adapter model. Ready
+owner domain rows generate validated website origin/path configurations for
+Cloudflare Worker Routes, Next.js, Vercel and Netlify, with explicit entry/target
+examples, install instructions, copy feedback and stale-output clearing. The
+managed hostname, namespaces and short URLs stay unchanged. No automatic website
+or DNS mutation is performed. This is a path forwarding setup, with live provider
+installation/release still pending.
+
+The exact generated Cloudflare module runs in workerd: fixed target, configured
+HTTPS origin, path boundaries, empty no-store307 GET/HEAD, matched-method denial,
+encoded suffix/duplicate queries/public install+QR markers and unchanged origin
+fallback including unrelated POST bodies. Latest Workers5.20261015.1 types pass.
+The full signed gateway/resolver/migrated SQL harness follows its Location and
+checks password protection, no-count install pages and one original QR-attributed
+click on a valid branded password POST. Origin-only referrer remains available
+to analytics under strict-origin-when-cross-origin. The test found and fixed
+first-value-only query merging in the resolver: incoming duplicate values now
+survive for new keys, target/override precedence and DROP/default semantics stay
+intact. Native/source snapshot and existing root/receipt tests stay in this suite.
+
+Twelve focused UI/helper tests, targeted lint, the application ratchet702 inherited
+errors/none new, production build and isolated resolver Deno check pass. One
+detector returns[]. Desktop1280x720 and390px captures show generated Worker and
+Netlify configuration with no overflow or console warnings/errors. The fresh
+finish reviewer returns ship/no material fixes, including the single referrer-
+policy correction/confirmation; the documenter finds no durable system changes.
+A path-filtered native runtime CI workflow is added. No dependency lock, migration,
+provider, DNS, website deployment or signing state changed. Domain transfer,
+authorized DNS automation, real provider/signed-device delivery, provider security
+review and the full release requirements remain open.
+
+
+DNS/transfer audit and Domain Connect foundation: Dub's current auto-configuration
+flow uses provider approval at Cloudflare/Vercel. The corresponding fixed-target
+subdomain template candidate and pure RS256 query signer are now present. The
+only template variable is the matching ownership TXT value; the callback origin
+is fixed and operation correlation is inside the signed redirect URI because
+Cloudflare ignores state. Key/sig are excluded from the signed bytes, and sig is
+last. Input scope, IDNs, nested hosts, signature verification/tampering and invalid
+key/field rejection are covered by four actual WebCrypto tests. There is no
+owner API, provider discovery, stored operation, approval button or readiness
+change from this helper alone; these remain required implementation work.
+
+Official dc-template-linter131 at6e8ca43761a9 exits0 for standard and Cloudflare
+validation. Cloudflare reports three informational notices (ignored redirect
+domain/hostRequired properties and scoped CNAME flattening); no gate was weakened
+or warning/error suppressed. Isolated Deno checking and targeted test lint pass.
+The exact candidate public-key TXT lookup currently returns NOERROR with no
+answer, so this does not prove a published signing key. A CNAME query for the
+fixed target also has no answer; that alone cannot prove target unavailability
+because DNS flattening/A records are possible. Live target/relay verification
+remains required. Test keys were ephemeral and no production key was created.
+
+Domain transfer cannot be implemented faithfully by changing created_by: current
+resources/memberships/preferences form one shared workspace and have no tenant
+workspace identity. Full transfer still requires independent workspace isolation
+and current source/destination authorization before moving the domain and links.
+The design audit explicitly preserves that requirement. Provider template review,
+public-key DNS/onboarding, signed device/provider proof and the full controlled
+release remain open. No onboarding email, upstream PR, DNS record, production
+credential, schema change or live approval flow was created in this step.
+
+The Domain Connect foundation app typecheck passes with702 inherited errors and
+none new (baseline782 unchanged). The preceding282e43695 main coverage job
+116709862425 is authoritatively still running its coverage step; the generated
+subpath/signed-gateway clean-runner job already passed. The new protocol work
+remains local pending the wider authenticated provider integration, preserving
+that current CI run rather than treating an in-progress job as stopped.
+
+
+Authenticated Domain Connect backend checkpoint: the candidate now has bounded
+Cloudflare/Vercel provider discovery, public/private-suffix and delegated-zone
+handling, exact template support checks and owner-only API operations. A new
+service-only/RLS operation table binds review/sign/issue/check transitions to the
+actor, current domain version, signing configuration and a 15-minute application
+lease. Discovery reserves domain/owner/global budgets before network requests.
+Approval signs the fixed CNAME/TXT template and callback, then rechecks current
+role/version before returning the provider URL. Callback lookup is actor-bound;
+completion runs fresh nonce-bound TXT verification and never accepts a provider
+success flag as ownership/TLS/routing proof. Missing signing configuration fails
+closed with no unsigned mode. The protocol does not expire/revoke a signed
+provider URL; the documented lease bounds application processing only.
+
+Seventeen focused discovery/signing/configuration tests pass. The isolated SQL
+suite covers ownership, scope, budgets, invalid destinations, configuration
+changes, challenge rotation, expiry, role loss, replay, cascade cleanup and private
+grants. The real owner HTTP/five-native-SDK suite passes through actual migrated
+SQL, ephemeral RSA approval verification, callback resolution and missing TXT
+proof, including role removal during discovery. Deno API checking passes with its
+own frozen deployment config/lock; the root Deno lock remains unchanged. The
+existing parser dependency is now direct/pinned at tldts7.4.12 with no package
+resolution changes. Typechecking passes with702 inherited errors, none new and
+baseline782 unchanged. Targeted lint has no errors (one inherited API any warning).
+The production build passes. All2348 migration versions and SQL bodies parse/check without exemptions. A
+path-filtered Linux/Node22 CI job now runs these contracts with five SDK runtimes.
+
+The preceding282e43695 main coverage job116709862425 and critical paths
+job116709325770 both completed successfully; the earlier still-running observation
+is superseded by their completed job API records. The generated subpath/signed
+gateway CI job also passed. Current-head CI remains a separate requirement after
+publishing this backend batch. DNS UI controls, native instruction forwarding,
+provider template/key onboarding and controlled live approval remain open,
+alongside domain transfer, signed store/device delivery, SDK publication, provider
+security review and full schema/API/gateway/client rollout. No production schema,
+DNS, signing key, provider account, app publication or email was changed here.
+
+
+Owner DNS controls checkpoint: the existing domain setup now discovers supported
+providers only when server signing configuration is available. The inline review
+shows the exact CNAME/TXT names and values before a checked review enables the
+provider action. Approval URLs are restricted to the matching provider/template;
+late unmounted/account-switched results cannot navigate. Account-keyed callback
+lookup ignores provider success flags and offers a fresh TXT check. Verified
+ownership still points to separate certificate/routing checks; missing proof
+explains propagation and the existing ownership checker. Invalid/expired/changed
+operations have a dismiss/error path; dismissal preserves other query fields.
+
+Thirteen registry/approval/return UI cases pass after correcting one async test
+that initially asserted against loading text. Strict spacing lint is corrected
+without a rule exception. Typecheck stays at702 inherited/none new, baseline782
+unchanged; build and frozen Edge API checks pass. The one detector pass returns
+[]. A bounded initial/final desktop1280/mobile390 fixture inspection of record
+review and callback finds no horizontal overflow or browser warnings/errors.
+The fixtures label simulated provider/DNS data and block external requests.
+
+The first new Linux DNS contract run38822728046 passes frozen Deno checking,
+17 protocol/configuration cases and migrated SQL, then exposes a pre-existing
+runnable TypeScript-example assumption: dist/index.js was available locally but
+absent on a clean checkout. The SDK harness now builds the actual package before
+running examples. Moving its local ignored dist away and rerunning all five SDK
+runtimes/actual owner HTTP proves the cold-output path, including availability
+metadata with no private signing fields. Fresh-head remote confirmation remains
+required; this failure is not dismissed or worked around by skipping examples.
+Provider onboarding/key publication/live approval, native instruction forwarding,
+real workspace transfer, signed store/device proof, SDK publication, provider
+false-positive review and controlled production rollout remain open.
+
+The fresh DNS UI finish reviewer returns ship, with all four final captures valid
+and no material fixes within the owner approval/return extension. The subsequent
+documenter confirms no new durable design rules and leaves system documents
+unchanged. All temporary preview tabs are closed and viewport overrides reset.
+
+
+Native DNS instruction mail backend checkpoint: owner draft/queue/status/request-
+lookup/cancel APIs now use exact current CNAME/ownership TXT and applicable saved
+certificate TXT records. The server digest detects certificate changes even when
+the domain version stays unchanged. An actor-bound request UUID deduplicates
+submission, and the owner API attempts only that queued job immediately. The
+private/RLS outbox stores an exact payload before sending, with stable provider
+idempotency keys, bounded retries and truthful accepted/failed/cancelled/uncertain
+states. Current role, domain version/state, target and records are rechecked before
+transport; ambiguous in-flight mail cannot be recalled or retried under a changed
+credential. No email action establishes DNS ownership, TLS or branded routing.
+
+Eleven focused transport/configuration/input tests, migrated SQL lifecycle/race
+contracts and the actual owner HTTP/five-SDK suite pass locally. HTTP proof includes
+receipt recovery, duplicate-submit denial, immutable retries after simulated
+acceptance/receipt loss, cancellation before send and preserving provider receipt
+truth after postflight owner removal. The dedicated authenticated consumer has its
+own frozen dependency graph. The real guarded scheduler command is executed only
+against an isolated net/Vault seam: no key/project makes no request, valid fixture
+configuration produces one exact POST and reapplying the named schedule does not
+duplicate it. Frozen API/consumer Deno checks and lint pass (only inherited API any
+warning); app typecheck stays702 inherited/none new, baseline782 unchanged; build
+passes; all2349 migration versions and SQL bodies parse without exemptions.
+
+The prior9b57f248b full coverage job116727920029 completed successfully, in addition
+to its focused DNS job38824222507. A focused gate now includes the native transport
+and consumer. Fresh-head CI remains required after publishing this backend batch.
+Forwarding UI, configured sender/real email proof, cron/Vault activation and full
+release remain open, alongside transfer, provider/store/device proof, SDK
+publication and provider false-positive review. No production schema/configuration,
+actual recipient, email, DNS or provider write was changed in this checkpoint.
+
+
+Native DNS instruction mail UI checkpoint: owner domain rows now provide exact
+CNAME/TXT review, one recipient and native send/receipt/recovery/cancel controls.
+Account/domain-scoped session storage retains the exact body and request UUID
+before submission. Unknown outcomes, reloads and postflight403 never silently
+change the recipient/request. Known first pre-queue errors permit correction;
+ambiguous retries stay locked. Accepted/uncertain mail requires an explicit
+recipient acknowledgement before preparing another email and a fresh UUID.
+Status/cancellation remain usable with sending disabled or a domain inactive.
+
+The fresh finish reviewer found that a new tab without a locally saved request
+could not check previous mail when sending was unavailable. This is fixed with
+an actor-private latest-receipt RPC and collection GET, independent of sending
+configuration and domain state. Current owner checks, service-only grants and
+another-owner isolation apply. SQL and actual owner HTTP tests cover inactive/
+unconfigured access, key denial, role loss and no private recipient leakage.
+The reviewer scored the fix resolved and returned ship; the documenter found no
+new global visual-system rules. Six validated1280/390px fixture captures cover
+record review, acceptance and inactive status, with no overflow or console errors.
+
+All56 focused cases (including15 new mail UI cases), migrated SQL and actual
+owner HTTP/five SDK runtimes pass locally. Lint, frozen API Deno, production build
+and app typecheck pass; inherited702 errors/none new and baseline782 remain.
+Migration99991792109906 supplies only private latest-receipt access. The previous
+backend focused Linux CI38827642469 passed; final-head CI is still required.
+No actual recipient/provider email or production configuration/schema changed.
+Configured sender/live mail, cron/Vault activation, genuine workspace/domain
+transfer, provider/store/device proof, SDK publication, provider false-positive
+review and the complete controlled release remain open. The full goal remains
+active; this checkpoint does not claim parity or deployment.
+
+
+Workspace identity foundation checkpoint: migration99991792110542 seeds a private
+stable legacy workspace identity and backfills all40 resource tables using a
+constant default. Validated activation checks prevent storing data in a second
+tenant until legacy global paths are converted. Provisioning workspaces cannot
+activate; identity changes and legacy disable/removal fail. All40 internal FKs
+now include workspace identity, preserving CASCADE/RESTRICT and nullable-ID-only
+SET NULL behavior, with17 composite parent uniqueness constraints.
+
+Current-role SQL context now backs account session/accessible-workspace discovery.
+Private API workspace headers are explicit, UUID-validated and rejected before
+mutation for unsupported tenants. The branded gateway preserves even invalid
+empty selectors, and all five SDKs retain an explicit client workspace context.
+Omitted context retains legacy compatibility. This does not expose creation or
+switching to a second workspace; no transfer is claimed.
+
+The isolated backfill compares every existing value in all40 tables. SQL tests
+cover privacy, current roles, spoofing, activation fences and complete relationship
+coverage; rollback-only second-tenant fixtures prove cross-workspace folder/tag/
+member/token attachments fail. Actual HTTP/five SDKs prove propagated context,
+current account discovery and no mutation after rejected selection. The prior
+b0e26646a full CI run38829226239 completed successfully, alongside its56-case
+focused DNS gate38829226218. Final foundation checks/CI and all remaining runtime,
+provider/store/publication/transfer and controlled release evidence remain required.
+See2026-10-16-redirect-workspace-transfer-foundation.md for the staged conversion.
+
+
+Foundation verification:66 focused protocol/owner UI/gateway cases pass, along
+with full migrated SQL, the40-table existing-data backfill and actual HTTP/five
+SDK runtimes. Frozen API Deno checking, targeted lint (0 errors; inherited any
+warning), production build and app typecheck pass. Typecheck remains702 inherited
+errors/none new with baseline782 unchanged. All2351 migration versions and SQL
+bodies check/parse without exemptions. No production schema, workspace activation,
+actual transfer, provider configuration, email or app publication was changed.
+
+
+Core membership/administration checkpoint: migration99991792111872 converts22
+administration/ACL functions to explicit selected-workspace predicates, including
+member/token controls, invitation/inbox, folder CRUD/access and access-request/
+notification/mail lifecycle. Unknown/foreign principals no longer become implicit
+owners. Private service clients receive the verified actor and canonical workspace;
+member/token/manual tracking authority now uses current SQL role. A conversion
+write-boundary recheck rejects owner loss after initial context verification while
+preserving separate verified native-signup semantics.
+
+Restrictive legacy-only policies now cover all40 resource tables for direct
+anon/authenticated Data API access, retaining existing current-role checks and
+without new grants. Service paths still require their own predicates. SQL and real
+HTTP fixtures demonstrate no foreign page/count/identity leaks or foreign ID
+mutation/revocation/grants, no foreign token authentication and no foreign mail
+claim/acknowledgement. Independent RLS fixtures deny cross-workspace direct reads,
+writes, deletion and moves. Test-only fence/uniqueness removals roll back; product
+activation fences and global uniqueness remain intact.
+
+The45ce full coverage run38830961925 failed the29 older API harness cases because
+it did not load the newly imported workspace helper. Its1842 other test files
+passed. The harness is repaired with the real module/current SQL context seam;
+29 existing plus five new role/context cases pass, and all100 focused cases now
+run in the dedicated gate. Full migrated SQL, actual owner HTTP/five SDKs,
+40-table backfill and final-authority race checks pass locally. Frozen API Deno,
+production build, targeted lint and app typecheck pass (702 inherited/none new,
+baseline782 unchanged). All2352 migration versions/SQL bodies check/parse without
+exemptions. Final-head CI remains required. Full tenant activation and remaining
+resource/model conversion, transfer, live provider/store/publication and controlled
+release proof remain open; no production configuration/schema/data was changed.

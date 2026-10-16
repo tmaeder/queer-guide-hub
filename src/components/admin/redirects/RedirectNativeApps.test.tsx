@@ -9,6 +9,11 @@ const base = {
   label: 'Existing app',
   platform: 'ios' as const,
   appId: 'ABCDE12345.org.example.existing',
+  appClipId: null as string | null,
+  publicName: null as string | null,
+  storeId: null as string | null,
+  appGroupId: null as string | null,
+  handoffEnabled: false,
   fingerprints: [] as string[],
   paths: ['/go/*'],
   enabled: false,
@@ -87,6 +92,11 @@ describe('native app registry', () => {
         label: 'New app',
         platform: 'ios',
         appId: 'ABCDE12345.org.example.new',
+        appClipId: null,
+        publicName: null,
+        storeId: null,
+        appGroupId: null,
+        handoffEnabled: false,
         domainId: null,
         fingerprints: [],
         paths: ['/go/*'],
@@ -94,10 +104,39 @@ describe('native app registry', () => {
       }),
     );
   });
+  it('saves an explicit App Clip identity alongside its signed iOS parent', async () => {
+    show();
+    await screen.findByLabelText('App label');
+    fireEvent.change(screen.getByLabelText('App label'), { target: { value: 'Clip app' } });
+    fireEvent.change(screen.getByLabelText('iOS application identifier'), {
+      target: { value: 'ABCDE12345.org.example.parent' },
+    });
+    fireEvent.change(screen.getByLabelText('App Clip application identifier (optional)'), {
+      target: { value: 'ABCDE12345.org.example.parent.Clip' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Register app' }));
+    await waitFor(() =>
+      expect(mocks.api).toHaveBeenCalledWith(
+        '/apps',
+        'POST',
+        expect.objectContaining({
+          appId: 'ABCDE12345.org.example.parent',
+          appClipId: 'ABCDE12345.org.example.parent.Clip',
+          enabled: false,
+        }),
+      ),
+    );
+  });
   it('requires Android release fingerprints and publishes only on explicit selection', async () => {
     show();
     await screen.findByLabelText('App label');
+    fireEvent.change(screen.getByLabelText('App Clip application identifier (optional)'), {
+      target: { value: 'ABCDE12345.org.example.parent.Clip' },
+    });
     fireEvent.change(screen.getByLabelText('Platform'), { target: { value: 'android' } });
+    expect(
+      screen.queryByLabelText('App Clip application identifier (optional)'),
+    ).not.toBeInTheDocument();
     expect(screen.getByLabelText('SHA-256 release signing fingerprints')).toBeRequired();
     fireEvent.change(screen.getByLabelText('App label'), { target: { value: 'Android app' } });
     fireEvent.change(screen.getByLabelText('Android package name'), {
@@ -112,7 +151,78 @@ describe('native app registry', () => {
       expect(mocks.api).toHaveBeenCalledWith(
         '/apps',
         'POST',
-        expect.objectContaining({ enabled: true, fingerprints: ['a'.repeat(64)] }),
+        expect.objectContaining({ enabled: true, appClipId: null, fingerprints: ['a'.repeat(64)] }),
+      ),
+    );
+  });
+  it('saves separately approved public install identity without replacing the private label', async () => {
+    show();
+    await screen.findByRole('button', { name: 'Edit Existing app' });
+    fireEvent.click(screen.getByRole('button', { name: 'Edit Existing app' }));
+    fireEvent.click(screen.getByText('Installation and deferred links'));
+    expect(screen.getByLabelText('Enable deferred app handoffs')).toBeDisabled();
+    fireEvent.change(screen.getByLabelText('App Clip application identifier (optional)'), {
+      target: { value: base.appId + '.Clip' },
+    });
+    fireEvent.change(screen.getByLabelText('Public app name'), {
+      target: { value: 'Visitor app name' },
+    });
+    fireEvent.change(screen.getByLabelText('App Store ID'), { target: { value: '1234567890' } });
+    fireEvent.change(screen.getByLabelText('Shared App Group ID'), {
+      target: { value: 'group.org.example.existing' },
+    });
+    fireEvent.click(screen.getByRole('checkbox', { name: 'Publish this app association' }));
+    fireEvent.click(screen.getByLabelText('Enable deferred app handoffs'));
+    expect(screen.getByLabelText('App Clip application identifier')).toBeRequired();
+    expect(screen.getByLabelText('Public app name')).toBeRequired();
+    fireEvent.click(screen.getByRole('button', { name: 'Save app binding' }));
+    await waitFor(() =>
+      expect(mocks.api).toHaveBeenCalledWith(
+        '/apps/' + base.id,
+        'PATCH',
+        expect.objectContaining({
+          label: 'Existing app',
+          publicName: 'Visitor app name',
+          storeId: '1234567890',
+          appGroupId: 'group.org.example.existing',
+          appClipId: base.appId + '.Clip',
+          handoffEnabled: true,
+          enabled: true,
+          version: base.version,
+        }),
+      ),
+    );
+  });
+  it('unpublishing switches off handoffs and preserves reviewed store settings', async () => {
+    mocks.rows = [
+      {
+        ...base,
+        enabled: true,
+        handoffEnabled: true,
+        publicName: 'Public app',
+        storeId: '1234567890',
+        appGroupId: 'group.org.example.existing',
+        appClipId: base.appId + '.Clip',
+      },
+    ];
+    show();
+    await screen.findByRole('button', { name: 'Edit Existing app' });
+    fireEvent.click(screen.getByRole('button', { name: 'Edit Existing app' }));
+    expect(screen.getByLabelText('Enable deferred app handoffs')).toBeChecked();
+    fireEvent.click(screen.getByRole('checkbox', { name: 'Publish this app association' }));
+    expect(screen.getByLabelText('Enable deferred app handoffs')).not.toBeChecked();
+    expect(screen.getByLabelText('Enable deferred app handoffs')).toBeDisabled();
+    fireEvent.click(screen.getByRole('button', { name: 'Save app binding' }));
+    await waitFor(() =>
+      expect(mocks.api).toHaveBeenCalledWith(
+        '/apps/' + base.id,
+        'PATCH',
+        expect.objectContaining({
+          enabled: false,
+          handoffEnabled: false,
+          publicName: 'Public app',
+          storeId: '1234567890',
+        }),
       ),
     );
   });

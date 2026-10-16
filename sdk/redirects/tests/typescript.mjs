@@ -1,7 +1,7 @@
 import {readFileSync} from 'node:fs';
 import assert from 'node:assert/strict';
 import {RedirectsClient,RedirectApiError,verifyWebhook} from '../../../tmp/sdk-tests/typescript.mjs';
-const api=new RedirectsClient(process.env.REDIRECT_TEST_TOKEN,{baseUrl:process.env.REDIRECT_TEST_BASE});
+const api=new RedirectsClient(process.env.REDIRECT_TEST_TOKEN,{baseUrl:process.env.REDIRECT_TEST_BASE,workspaceId:process.env.REDIRECT_TEST_WORKSPACE});
 const sourcePage=await api.listInventory({kind:'Client'},1);assert.equal(sourcePage.data.length,1);assert.ok(sourcePage.count>0);
 const sourceRecord=sourcePage.data[0],sourceMetadata=await api.getInventoryMetadata(sourceRecord.id);
 const organizedSource=await api.organizeInventory([{id:sourceRecord.id,version:sourceMetadata.metadataVersion,values:{comment:'SDK source metadata'}}]);assert.equal(organizedSource.data[0].comment,'SDK source metadata');assert.notEqual(organizedSource.data[0].metadataVersion,sourceMetadata.metadataVersion);
@@ -49,7 +49,12 @@ assert.ok((await api.updatePasswordBranding(id,{version:branding.version,clearLo
 await api.deleteLink(id);for(const [kind,item] of [['folders',folder],['tags',tag],['templates',template]])await api.deleteResource(kind,item.id);
 for(const [path,status] of [['/redirect-probe',302],['/limited-probe',429]]){await assert.rejects(api.request('GET',path),error=>error instanceof RedirectApiError&&error.status===status&&(status!==429||error.retryAfter==='17'));}
 assert.throws(()=>new RedirectsClient('token',{baseUrl:'http://example.com/api'}));
-const account=new RedirectsClient(process.env.REDIRECT_TEST_SESSION,{baseUrl:process.env.REDIRECT_TEST_BASE});
+const account=new RedirectsClient(process.env.REDIRECT_TEST_SESSION,{baseUrl:process.env.REDIRECT_TEST_BASE,workspaceId:process.env.REDIRECT_TEST_WORKSPACE});
+assert.equal((await account.getSession()).workspace.id,process.env.REDIRECT_TEST_WORKSPACE);
+assert.equal((await account.listWorkspaces()).currentWorkspaceId,process.env.REDIRECT_TEST_WORKSPACE);
+const unavailableWorkspace=new RedirectsClient(process.env.REDIRECT_TEST_TOKEN,{baseUrl:process.env.REDIRECT_TEST_BASE,workspaceId:'00000000-0000-4000-8000-000000000777'});
+await assert.rejects(unavailableWorkspace.listLinks(),error=>error instanceof RedirectApiError&&error.status===403);
+assert.throws(()=>new RedirectsClient('fixture',{workspaceId:'bad\r\nInjected: header'}));
 const otherAccount=new RedirectsClient(process.env.REDIRECT_TEST_OTHER_SESSION,{baseUrl:process.env.REDIRECT_TEST_BASE});
 await assert.rejects(api.listReports(),error=>error instanceof RedirectApiError&&error.status===403);
 let report=await account.createReport({name:'SDK TS report',filters:{linkIds:[process.env.REDIRECT_TEST_REPORT_LINK]}});
@@ -59,6 +64,11 @@ let reportPage=await account.listReports(1);assert.equal(reportPage.data.length,
 assert.equal((await account.listReports(1,reportPage.nextCursor)).data.length,1);
 await assert.rejects(otherAccount.getReport(report.id),error=>error.status===404);
 assert.equal((await otherAccount.listReports()).count,0);
+report=await account.updateReport(report.id,{version:report.version,visibility:'team'});
+assert.equal((await otherAccount.listReports(50,undefined,'team')).data[0].canEdit,false);
+await assert.rejects(otherAccount.updateReport(report.id,{version:report.version,name:'Denied team edit'}),error=>error.status===404);
+report=await account.updateReport(report.id,{version:report.version,visibility:'private'});
+assert.equal((await otherAccount.listReports(50,undefined,'team')).count,0);
 const oldReportVersion=report.version;
 report=await account.updateReport(report.id,{version:report.version,name:'Reviewed TS report'});
 await assert.rejects(account.updateReport(report.id,{version:oldReportVersion,name:'Stale'}),error=>error.status===409);

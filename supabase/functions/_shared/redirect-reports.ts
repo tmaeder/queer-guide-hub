@@ -5,13 +5,14 @@ import {redirectClientIp} from './redirect-relay.ts';
 export function savedReportInput(value:unknown,create:boolean) {
  if(!value||typeof value!=='object'||Array.isArray(value))throw new Error('Provide report fields');
  const body=value as Record<string,unknown>;
- if(!Object.keys(body).length||Object.keys(body).some(k=>!['name','filters','version'].includes(k)))throw new Error('Invalid report fields');
+ if(!Object.keys(body).length||Object.keys(body).some(k=>!['name','filters','version','visibility'].includes(k)))throw new Error('Invalid report fields');
  if((create||body.name!==undefined)&&(typeof body.name!=='string'||!body.name.trim()||body.name.trim().length>100))throw new Error('Report name must be 1–100 characters');
  if(!create&&(typeof body.version!=='string'||!UUID.test(body.version)))throw new Error('Reload the report before editing');
  if(create&&body.filters===undefined)throw new Error('Report filters are required');
+ if(body.visibility!==undefined&&!['private','team'].includes(body.visibility as string))throw new Error('Invalid report visibility');
  const filters=body.filters!==undefined?analyticsFilters(body.filters):undefined;
  if(filters&&new TextEncoder().encode(JSON.stringify(filters)).length>32768)throw new Error('Report filters exceed 32 KB');
- return {...(body.name!==undefined?{name:(body.name as string).trim()}:{}),...(filters?{filters}:{}),...(!create?{version:body.version}:{})};
+ return {...(body.visibility!==undefined?{visibility:body.visibility}:{}),...(body.name!==undefined?{name:(body.name as string).trim()}:{}),...(filters?{filters}:{}),...(!create?{version:body.version}:{})};
 }
 export function reportShareInput(value:unknown) {
  if(!value||typeof value!=='object'||Array.isArray(value))throw new Error('Provide share settings');

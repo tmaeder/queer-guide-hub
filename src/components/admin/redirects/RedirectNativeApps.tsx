@@ -14,6 +14,11 @@ interface AppRow {
   label: string;
   platform: 'ios' | 'android';
   appId: string;
+  appClipId: string | null;
+  publicName: string | null;
+  storeId: string | null;
+  appGroupId: string | null;
+  handoffEnabled: boolean;
   fingerprints: string[];
   paths: string[];
   enabled: boolean;
@@ -51,6 +56,14 @@ function AppForm({
   const [label, setLabel] = useState(row?.label ?? ''),
     [platform, setPlatform] = useState<'ios' | 'android'>(row?.platform ?? 'ios'),
     [appId, setAppId] = useState(row?.appId ?? ''),
+    [appClipId, setAppClipId] = useState(row?.appClipId ?? ''),
+    [publicName, setPublicName] = useState(row?.publicName ?? ''),
+    [storeId, setStoreId] = useState(row?.storeId ?? ''),
+    [appGroupId, setAppGroupId] = useState(row?.appGroupId ?? ''),
+    [handoffEnabled, setHandoffEnabled] = useState(row?.handoffEnabled ?? false),
+    [showInstall, setShowInstall] = useState(
+      !!(row?.publicName || row?.storeId || row?.appGroupId || row?.handoffEnabled),
+    ),
     [fingerprints, setFingerprints] = useState(row?.fingerprints.join('\n') ?? ''),
     [paths, setPaths] = useState(row?.paths.join('\n') ?? '/go/*'),
     [enabled, setEnabled] = useState(row?.enabled ?? false);
@@ -67,6 +80,16 @@ function AppForm({
         label,
         platform,
         appId,
+        appClipId: platform === 'ios' ? appClipId.trim() || null : null,
+        publicName: publicName.trim() || null,
+        storeId:
+          platform === 'android'
+            ? publicName.trim() || handoffEnabled
+              ? appId.trim() || null
+              : null
+            : storeId.trim() || null,
+        appGroupId: platform === 'ios' ? appGroupId.trim() || null : null,
+        handoffEnabled,
         domainId: selection.domainId,
         fingerprints: platform === 'android' ? fingerprints.split(/[\s,]+/).filter(Boolean) : [],
         paths: paths
@@ -108,6 +131,10 @@ function AppForm({
             onChange={(e) => {
               setPlatform(e.target.value as 'ios' | 'android');
               setAppId('');
+              setAppClipId('');
+              setStoreId('');
+              setAppGroupId('');
+              setHandoffEnabled(false);
               setFingerprints('');
             }}
           >
@@ -158,6 +185,26 @@ function AppForm({
             : 'Use the application ID from your release build.'}
         </p>
       </div>
+      {platform === 'ios' && (
+        <div>
+          <Label htmlFor="app-clip-identifier">
+            App Clip application identifier{handoffEnabled ? '' : ' (optional)'}
+          </Label>
+          <Input
+            id="app-clip-identifier"
+            required={platform === 'ios' && handoffEnabled}
+            maxLength={255}
+            value={appClipId}
+            onChange={(e) => setAppClipId(e.target.value)}
+            autoComplete="off"
+          />
+          <p className="text-sm text-muted-foreground">
+            Use the signed parent application identifier followed by the Clip suffix. Publishing
+            this binding authorizes that App Clip on the host. Configure its invocation URLs and App
+            Groups with Apple; the path rules below apply to full-app links.
+          </p>
+        </div>
+      )}
       {platform === 'android' && (
         <div>
           <Label htmlFor="app-fingerprints">SHA-256 release signing fingerprints</Label>
@@ -188,7 +235,14 @@ function AppForm({
         </p>
       </div>
       <label className="flex items-center gap-2">
-        <input type="checkbox" checked={enabled} onChange={(e) => setEnabled(e.target.checked)} />
+        <input
+          type="checkbox"
+          checked={enabled}
+          onChange={(e) => {
+            setEnabled(e.target.checked);
+            if (!e.target.checked) setHandoffEnabled(false);
+          }}
+        />
         Publish this app association
       </label>
       <p className="text-sm text-muted-foreground">
@@ -196,6 +250,99 @@ function AppForm({
         before opening content. Publishing a file alone does not implement that flow. Custom hosts
         publish only while their domain checks remain ready. Devices may cache earlier associations.
       </p>
+      <details
+        open={showInstall}
+        onToggle={(event) => setShowInstall(event.currentTarget.open)}
+        className="border-t pt-4"
+      >
+        <summary className="cursor-pointer font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+          Installation and deferred links
+        </summary>
+        <div className="space-y-4 pt-4">
+          <div>
+            <Label htmlFor="app-public-name">Public app name</Label>
+            <Input
+              id="app-public-name"
+              value={publicName}
+              required={handoffEnabled}
+              maxLength={100}
+              onChange={(event) => setPublicName(event.target.value)}
+            />
+            <p className="text-sm text-muted-foreground">
+              Shown to visitors choosing an app. Your workspace label stays private.
+            </p>
+          </div>
+          {platform === 'ios' ? (
+            <>
+              <div>
+                <Label htmlFor="app-store-id">App Store ID</Label>
+                <Input
+                  id="app-store-id"
+                  inputMode="numeric"
+                  pattern="[1-9][0-9]{0,19}"
+                  maxLength={20}
+                  required={handoffEnabled}
+                  value={storeId}
+                  onChange={(event) => setStoreId(event.target.value)}
+                />
+                <p className="text-sm text-muted-foreground">
+                  Use the numeric Apple ID from App Store Connect.
+                </p>
+              </div>
+              <div>
+                <Label htmlFor="app-group-id">Shared App Group ID</Label>
+                <Input
+                  id="app-group-id"
+                  pattern={'group\\.[A-Za-z0-9\\-]+(\\.[A-Za-z0-9\\-]+)*'}
+                  maxLength={255}
+                  value={appGroupId}
+                  required={handoffEnabled}
+                  onChange={(event) => setAppGroupId(event.target.value)}
+                  autoComplete="off"
+                />
+                <p className="text-sm text-muted-foreground">
+                  The App Clip and full app must both have this shared group entitlement.
+                </p>
+              </div>
+            </>
+          ) : (
+            <p className="break-all text-sm">
+              The Google Play listing uses your Android package:{' '}
+              <span className="font-medium">{appId || 'add the package name above'}</span>.
+            </p>
+          )}
+          {(platform === 'ios'
+            ? /^[1-9][0-9]{0,19}$/.test(storeId)
+            : /^[A-Za-z][A-Za-z0-9_]*(?:\.[A-Za-z][A-Za-z0-9_]*)+$/.test(appId)) && (
+            <a
+              className="block break-all text-sm underline underline-offset-4"
+              href={
+                platform === 'ios'
+                  ? 'https://apps.apple.com/app/id' + encodeURIComponent(storeId)
+                  : 'https://play.google.com/store/apps/details?id=' + encodeURIComponent(appId)
+              }
+              target="_blank"
+              rel="noreferrer"
+            >
+              View {platform === 'ios' ? 'App Store' : 'Google Play'} listing
+            </a>
+          )}
+          <label className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              checked={handoffEnabled}
+              disabled={!enabled}
+              onChange={(event) => setHandoffEnabled(event.target.checked)}
+            />
+            Enable deferred app handoffs
+          </label>
+          <p className="text-sm text-muted-foreground">
+            {enabled
+              ? 'Requires the app integration and store setup. iOS also needs an App Clip; Android uses Play Install Referrer.'
+              : 'Publish this association before enabling deferred handoffs.'}
+          </p>
+        </div>
+      </details>
       {save.isError && <p role="alert">{save.error.message} Reload before trying again.</p>}
       <div className="flex gap-2">
         <Button disabled={save.isPending || save.isError || !selection.valid}>
@@ -309,6 +456,12 @@ function AppRegistry({ userId }: { userId: string }) {
               <p className="break-all text-sm">
                 {row.appId} · {row.hostname}
               </p>
+              <p className="break-all text-sm text-muted-foreground">
+                Binding ID: <code className="select-all">{row.id}</code>
+              </p>
+              {row.handoffEnabled && (
+                <p className="text-sm">Deferred handoffs enabled · {row.publicName}</p>
+              )}
               <div className="flex flex-wrap gap-2">
                 <Button
                   variant="outline"

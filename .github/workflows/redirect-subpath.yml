@@ -1,0 +1,58 @@
+name: Redirect website subpaths
+on:
+  pull_request:
+    paths:
+      - 'src/lib/redirects/subpath.ts'
+      - 'src/components/admin/redirects/RedirectDomainSubpath*'
+      - 'scripts/lib/redirect-subpath-fixture.mjs'
+      - 'scripts/test-redirect-subpath.mjs'
+      - 'scripts/test-redirect-root-links.mjs'
+      - 'supabase/functions/_shared/redirect-*'
+      - 'supabase/functions/_shared/link-policy.ts'
+      - 'functions/go/**'
+      - 'scripts/lib/redirect-test-db.mjs'
+      - 'supabase/tests/fixtures/**'
+      - 'supabase/functions/redirect-handler/**'
+      - 'workers/redirect-domains/**'
+      - 'supabase/migrations/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - '.github/workflows/redirect-subpath.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'src/lib/redirects/subpath.ts'
+      - 'scripts/lib/redirect-subpath-fixture.mjs'
+      - 'scripts/test-redirect-subpath.mjs'
+      - 'scripts/test-redirect-root-links.mjs'
+      - 'supabase/functions/_shared/redirect-*'
+      - 'supabase/functions/_shared/link-policy.ts'
+      - 'functions/go/**'
+      - 'scripts/lib/redirect-test-db.mjs'
+      - 'supabase/tests/fixtures/**'
+      - 'supabase/functions/redirect-handler/**'
+      - 'workers/redirect-domains/**'
+      - 'supabase/migrations/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - '.github/workflows/redirect-subpath.yml'
+permissions:
+  contents: read
+concurrency:
+  group: redirect-subpaths-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  contracts:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '22.20.0'
+          cache: npm
+      - run: npm ci --prefer-offline --no-audit
+      - name: Execute generated website adapter in workerd
+        run: npm run test:redirect-subpath
+      - name: Follow adapter through signed gateway and migrated database
+        run: npm run test:redirect-roots

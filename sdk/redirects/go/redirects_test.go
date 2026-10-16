@@ -25,6 +25,23 @@ func TestSDKIntegration(t *testing.T) {
 		}
 		return result
 	}
+	scoped, err := api.WithWorkspace(os.Getenv("REDIRECT_TEST_WORKSPACE"))
+	if err != nil || api.workspaceID != "" {
+		t.Fatal("Workspace context mutated original client", err)
+	}
+	api = scoped
+	if _, err := api.WithWorkspace("bad\r\nInjected: header"); err == nil {
+		t.Fatal("Invalid workspace accepted")
+	}
+	unavailable, err := api.WithWorkspace("00000000-0000-4000-8000-000000000777")
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, err = unavailable.Request(ctx, "GET", "/links", nil, nil)
+	var selectionError *APIError
+	if !errors.As(err, &selectionError) || selectionError.Status != 403 {
+		t.Fatal("Unavailable workspace accepted", err)
+	}
 	sourcePage := must(api.ListInventory(ctx, Object{"kind": "Client"}, 1, ""))
 	sourceRows := sourcePage["data"].([]any)
 	if len(sourceRows) != 1 {
@@ -181,6 +198,13 @@ func TestSDKIntegration(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	account, err = account.WithWorkspace(os.Getenv("REDIRECT_TEST_WORKSPACE"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if must(account.GetSession(ctx))["workspace"].(map[string]any)["id"] != os.Getenv("REDIRECT_TEST_WORKSPACE") || must(account.ListWorkspaces(ctx))["currentWorkspaceId"] != os.Getenv("REDIRECT_TEST_WORKSPACE") {
+		t.Fatal("Workspace discovery missing")
+	}
 	other, err := New(os.Getenv("REDIRECT_TEST_OTHER_SESSION"), os.Getenv("REDIRECT_TEST_BASE"))
 	if err != nil {
 		t.Fatal(err)
@@ -211,6 +235,17 @@ func TestSDKIntegration(t *testing.T) {
 	expectStatus(err, 404)
 	if must(other.ListReports(ctx, 50, ""))["count"].(interface{ String() string }).String() != "0" {
 		t.Fatal("Other account sees reports")
+	}
+	report = must(account.UpdateReport(ctx, rid, Object{"version": report["version"], "visibility": "team"}))
+	teamPage := must(other.ListReportsInView(ctx, 50, "", "team"))
+	if teamPage["data"].([]any)[0].(map[string]any)["canEdit"] != false {
+		t.Fatal("Team reader can edit report")
+	}
+	_, err = other.UpdateReport(ctx, rid, Object{"version": report["version"], "name": "Denied team edit"})
+	expectStatus(err, 404)
+	report = must(account.UpdateReport(ctx, rid, Object{"version": report["version"], "visibility": "private"}))
+	if must(other.ListReportsInView(ctx, 50, "", "team"))["count"].(interface{ String() string }).String() != "0" {
+		t.Fatal("Private report remains discoverable")
 	}
 	oldVersion := report["version"]
 	report = must(account.UpdateReport(ctx, rid, Object{"version": oldVersion, "name": "Reviewed Go report"}))

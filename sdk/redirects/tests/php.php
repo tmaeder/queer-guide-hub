@@ -1,7 +1,7 @@
 <?php
 require_once __DIR__.'/../php/RedirectsClient.php';
 function check($value): void {if (!$value) throw new RuntimeException('Assertion failed');}
-$api=new QueerGuide\RedirectsClient(getenv('REDIRECT_TEST_TOKEN'),getenv('REDIRECT_TEST_BASE'));
+$api=new QueerGuide\RedirectsClient(getenv('REDIRECT_TEST_TOKEN'),getenv('REDIRECT_TEST_BASE'),workspaceId:getenv('REDIRECT_TEST_WORKSPACE'));
 $sourcePage=$api->listInventory(['kind'=>'Client'],1);check(count($sourcePage['data'])===1 && $sourcePage['count']>0);
 $sourceRecord=$sourcePage['data'][0];$sourceMetadata=$api->getInventoryMetadata($sourceRecord['id']);
 $organizedSource=$api->organizeInventory([['id'=>$sourceRecord['id'],'version'=>$sourceMetadata['metadataVersion'],'values'=>['comment'=>'SDK source metadata']]]);
@@ -44,7 +44,11 @@ check($api->updatePasswordBranding($id,['version'=>$branding['version'],'clearLo
 $api->deleteLink($id);foreach ([['folders',$folder],['tags',$tag],['templates',$template]] as [$kind,$item]) $api->deleteResource($kind,$item['id']);
 foreach ([['/redirect-probe',302],['/limited-probe',429]] as [$path,$status]) {try {$api->request('GET',$path);throw new RuntimeException('Expected API error');} catch (QueerGuide\RedirectApiError $error) {check($error->status===$status);if ($status===429) check($error->retryAfter==='17');}}
 try {new QueerGuide\RedirectsClient('token','http://example.com/api');throw new RuntimeException('Insecure base accepted');} catch (InvalidArgumentException) {}
-$account=new QueerGuide\RedirectsClient(getenv('REDIRECT_TEST_SESSION'),getenv('REDIRECT_TEST_BASE'));
+$account=new QueerGuide\RedirectsClient(getenv('REDIRECT_TEST_SESSION'),getenv('REDIRECT_TEST_BASE'),workspaceId:getenv('REDIRECT_TEST_WORKSPACE'));
+check($account->getSession()['workspace']['id']===getenv('REDIRECT_TEST_WORKSPACE'));
+check($account->listWorkspaces()['currentWorkspaceId']===getenv('REDIRECT_TEST_WORKSPACE'));
+try {(new QueerGuide\RedirectsClient(getenv('REDIRECT_TEST_TOKEN'),getenv('REDIRECT_TEST_BASE'),workspaceId:'00000000-0000-4000-8000-000000000777'))->listLinks();throw new RuntimeException('Unavailable workspace accepted');} catch(QueerGuide\RedirectApiError $error) {check($error->status===403);}
+try {new QueerGuide\RedirectsClient('fixture',workspaceId:"bad\r\nInjected: header");throw new RuntimeException('Invalid workspace accepted');} catch(InvalidArgumentException $error) {}
 $other=new QueerGuide\RedirectsClient(getenv('REDIRECT_TEST_OTHER_SESSION'),getenv('REDIRECT_TEST_BASE'));
 function reportError(callable $action,int $status): void {try {$action();throw new RuntimeException('Expected report error');}catch(QueerGuide\RedirectApiError $error){check($error->status===$status);}}
 reportError(fn()=>$api->listReports(),403);
@@ -53,6 +57,11 @@ $second=$account->createReport(['name'=>'SDK PHP second','filters'=>['linkIds'=>
 check($account->getReport($report['id'])['name']===$report['name']);
 $page=$account->listReports(1);check(count($page['data'])===1&&$page['nextCursor']);check(count($account->listReports(1,$page['nextCursor'])['data'])===1);
 reportError(fn()=>$other->getReport($report['id']),404);check($other->listReports()['count']===0);
+$report=$account->updateReport($report['id'],['version'=>$report['version'],'visibility'=>'team']);
+check($other->listReports(50,null,'team')['data'][0]['canEdit']===false);
+reportError(fn()=>$other->updateReport($report['id'],['version'=>$report['version'],'name'=>'Denied team edit']),404);
+$report=$account->updateReport($report['id'],['version'=>$report['version'],'visibility'=>'private']);
+check($other->listReports(50,null,'team')['count']===0);
 $oldVersion=$report['version'];$report=$account->updateReport($report['id'],['version'=>$oldVersion,'name'=>'Reviewed PHP report']);
 reportError(fn()=>$account->updateReport($report['id'],['version'=>$oldVersion,'name'=>'Stale']),409);
 $aggregate=$account->runReport($report['id']);check($aggregate['totals']['clicks']===1&&is_string($aggregate['revenue'][0]['amount']));

@@ -1,7 +1,9 @@
+import { verifyRedirectWorkspaceMembershipHttp } from './lib/redirect-workspace-fixtures.mjs';
+import { getDomain } from 'tldts';
 import { verifyRedirectIntegrationHttp } from './lib/redirect-integration-fixtures.mjs';
 import sharp from 'sharp';
 import { createServer } from 'node:http';
-import { spawn } from 'node:child_process';
+import { execFileSync, spawn } from 'node:child_process';
 import { readFileSync, mkdirSync, writeFileSync } from 'node:fs';
 import { webcrypto } from 'node:crypto';
 import ts from 'typescript';
@@ -11,13 +13,19 @@ const db = await createRedirectTestDb();
 await db.exec('SET ROLE service_role; SET request.jwt.claims = \'{"role":"service_role"}\'');
 let handler;
 let policyRuntime;
+let loseConversionOwnerAfterContext=false;
 const pieces = [
   '_shared/redirect-api.ts',
+  '_shared/redirect-workspace.ts',
   '_shared/redirect-inventory-manifest.ts',
   '_shared/redirect-inventory-api.ts',
   '_shared/redirect-native-apps.ts',
   '_shared/redirect-qr-style.ts',
   '_shared/redirect-domains.ts',
+  '_shared/redirect-domain-connect.ts',
+  '_shared/redirect-domain-discovery.ts',
+  '_shared/redirect-domain-connect-api.ts',
+  '_shared/redirect-domain-mail.ts',
   '_shared/redirect-domain-provider.ts',
   '_shared/redirect-presentation.ts',
   '_shared/redirect-qr-assets.ts',
@@ -85,6 +93,7 @@ const service = {
         entries.map(([key], index) => key + '=> $' + (index + 1)).join(',') +
         ') AS result FROM context';
       const result = await db.query(sql, [...params, JSON.stringify(requestHeaders)]);
+      if(name==='redirect_workspace_context'&&args.p_scope==='workspace:write'&&loseConversionOwnerAfterContext){loseConversionOwnerAfterContext=false;await db.query('DELETE FROM public.user_roles WHERE user_id=$1',[reportActor]);}
       if(name==='redirect_policy_resource'&&args.p_change_password===true&&args.p_password_hash){
         const stored=(await db.query('SELECT password_hash FROM public.redirect_link_policies WHERE redirect_id=$1',[args.p_redirect_id])).rows[0].password_hash;
         if(!await policyRuntime.verifyLinkPassword('fixture-sdk-password',stored))throw new Error('Persisted SDK password hash did not verify');
@@ -106,6 +115,11 @@ await db.query("INSERT INTO auth.users(id,email,email_confirmed_at) VALUES($1,'h
 await db.query("INSERT INTO public.user_roles(user_id,role) VALUES($1,'admin')",[reportOtherActor]);
 const identity={auth:{getUser:async(value)=>({data:{user:['fixture-account-session','fixture-other-account-session'].includes(value)?{id:value==='fixture-account-session'?reportActor:reportOtherActor,created_at:'2026-10-01T00:00:00Z',is_anonymous:false}:null},error:null})},rpc:async()=>({data:true,error:null})};
 let dnsCalls=0,dnsMissing=false;
+const domainConnectKey = await webcrypto.subtle.generateKey({name:'RSASSA-PKCS1-v1_5',modulusLength:2048,publicExponent:new Uint8Array([1,0,1]),hash:'SHA-256'},true,['sign','verify']);
+const domainConnectJwk = JSON.stringify(await webcrypto.subtle.exportKey('jwk',domainConnectKey.privateKey));
+let instructionMailEnabled=false,instructionMailCalls=0,instructionMailMode='accepted',instructionMailLoseOwner=false;
+const instructionMailMessages=new Map();
+let domainConnectEnabled=false,domainConnectTemplateMissing=false,domainConnectLoseOwner=false,domainConnectDnsCalls=0;
 const providerConfig={zoneId:'a'.repeat(32),token:'fixture-provider-token',cnameTarget:'links.queer.guide'};
 const providerObjects=new Map();let providerCreates=0,providerDeletes=0,providerRestarts=0;
 const logoObjects=new Map();let logoUploads=0,logoDeletes=0,loseLogoReceipt=false,revokeLogoOwner=false;
@@ -121,6 +135,20 @@ async function verifyArtworkFixture(request) {
  return render(request,'https://fixture.supabase.co',async()=>true,async()=>{},async()=>{throw new Error('Artwork verifier attempted an external fetch');});
 }
 const fixtureDnsFetch=async (input,options)=>{const url=new URL(String(input));
+if(url.origin==='https://api.resend.com'){
+ if(url.pathname!=='/emails'||options.method!=='POST'||options.redirect!=='error'||new Headers(options.headers).get('Authorization')!=='Bearer fixture-mail-provider')throw new Error('Unexpected instruction email transport');
+ const messageId=new Headers(options.headers).get('Idempotency-Key');if(!/^qg-domain-instructions\/v1\/[a-f0-9-]{36}$/.test(messageId))throw new Error('Missing stable email identity');
+ instructionMailCalls++;
+ if(instructionMailMode==='throttled')return Response.json({name:'rate_limit'},{status:429,headers:{'Retry-After':'60'}});
+ if(instructionMailMode==='rejected')return Response.json({name:'validation_error'},{status:422});
+ const previous=instructionMailMessages.get(messageId);
+ if(previous&&previous.body!==options.body)throw new Error('Retry changed provider message bytes');
+ if(!previous)instructionMailMessages.set(messageId,{body:options.body,id:webcrypto.randomUUID()});
+ if(instructionMailLoseOwner){instructionMailLoseOwner=false;await db.query('DELETE FROM public.user_roles WHERE user_id=$1',[reportActor]);}
+ if(instructionMailMode==='lost-receipt'){instructionMailMode='accepted';throw new TypeError('Provider receipt lost after acceptance');}
+ return Response.json({id:instructionMailMessages.get(messageId).id});
+}
+
 if(url.origin==='https://queer.guide'&&url.pathname==='/api/qr'){if(options.method!=='POST'||new Headers(options.headers).has('Authorization'))throw new Error('Invalid artwork verification request');return verifyArtworkFixture(new Request(url,options));}
 if(url.origin==='https://fixture.supabase.co'&&url.pathname.startsWith('/storage/v1/object/redirect-brand-assets')){
  const headers=new Headers(options?.headers);if(headers.get('Authorization')!=='Bearer fixture-service'||headers.get('apikey')!=='fixture-service')throw new Error('Wrong Storage credentials');
@@ -137,6 +165,16 @@ if(url.origin==='https://fixture.supabase.co'&&url.pathname.startsWith('/storage
  }
  throw new Error('Unexpected Storage operation');
 }
+if(url.origin==='https://api.cloudflare.com'&&url.pathname.startsWith('/client/v4/dns/domainconnect/')){
+ if(new Headers(options?.headers).has('Authorization'))throw new Error('Platform DNS credential leaked to Domain Connect');
+ if(domainConnectLoseOwner){domainConnectLoseOwner=false;await db.query('DELETE FROM public.user_roles WHERE user_id=$1',[reportActor]);}
+ if(url.pathname.endsWith('/settings'))return Response.json({providerId:'cloudflare.com',urlAPI:'https://api.cloudflare.com/client/v4/dns/domainconnect',urlSyncUX:'https://dash.cloudflare.com/domainconnect'});
+ return new Response('',{status:domainConnectTemplateMissing?404:200});
+}
+if(url.origin==='https://cloudflare-dns.com'&&(url.searchParams.get('type')==='2'||url.searchParams.get('name')==='_domainconnect.setup-example.com')){
+ domainConnectDnsCalls++;const name=url.searchParams.get('name'),type=Number(url.searchParams.get('type'));
+ return new Response(JSON.stringify({Status:0,TC:false,Question:[{name,type}],Answer:type===2?(name==='setup-example.com'?[{name,type:2,data:'ns1.cloudflare.com.'}]:[]):[{name,type:16,data:'"api.cloudflare.com/client/v4/dns/domainconnect"'}]}),{headers:{'Content-Type':'application/dns-json'}});
+}
 if(url.origin==='https://api.cloudflare.com'){
  if(new Headers(options?.headers).get('Authorization')!=='Bearer '+providerConfig.token||!url.pathname.startsWith('/client/v4/zones/'+providerConfig.zoneId+'/custom_hostnames'))throw new Error('Invalid fixture provider credentials/zone');
  const method=options?.method??'GET',tail=url.pathname.split('/custom_hostnames')[1];
@@ -148,9 +186,9 @@ if(url.origin==='https://api.cloudflare.com'){
  return Response.json({success:true,result:item});
 }
 if(url.origin!=='https://cloudflare-dns.com'||url.pathname!=='/dns-query')throw new Error('Unexpected external fixture request');dnsCalls++;const hostname=url.searchParams.get('name').replace(/^_qg-redirect\./,'');const row=(await db.query('SELECT verification_token FROM public.redirect_domains WHERE hostname=$1',[hostname])).rows[0];return new Response(JSON.stringify({Status:0,Question:[{name:url.searchParams.get('name'),type:16}],Answer:row&&!dnsMissing?[{name:url.searchParams.get('name'),type:16,data:'\"qg-redirect='+row.verification_token+'\"'}]:[]}),{headers:{'Content-Type':'application/dns-json'}});};
-policyRuntime=new Function('Deno', 'createClient', 'crypto', 'fetch', code+'\nreturn {verifyLinkPassword,dispatchRedirectDomainJobs,dispatchRedirectQrAssetCleanup,qrAssetStorageConfig};')(
+policyRuntime=new Function('Deno', 'createClient', 'crypto', 'fetch', 'getDomain', code+'\nreturn {verifyLinkPassword,dispatchRedirectDomainJobs,dispatchRedirectQrAssetCleanup,qrAssetStorageConfig,dispatchDomainInstructionMail,domainInstructionMailConfig};')(
   {
-    env: { get: (key) => key==='SUPABASE_URL'?'https://fixture.supabase.co':key==='SUPABASE_SERVICE_ROLE_KEY'?'fixture-service':key==='SUPABASE_ANON_KEY'?'fixture-anon':key==='REDIRECT_CF_ZONE_ID'?providerConfig.zoneId:key==='REDIRECT_CF_API_TOKEN'?providerConfig.token:key==='REDIRECT_CNAME_TARGET'?providerConfig.cnameTarget:'fixture' },
+    env: { get: (key) => key==='SUPABASE_URL'?'https://fixture.supabase.co':key==='SUPABASE_SERVICE_ROLE_KEY'?'fixture-service':key==='SUPABASE_ANON_KEY'?'fixture-anon':key==='REDIRECT_CF_ZONE_ID'?providerConfig.zoneId:key==='REDIRECT_CF_API_TOKEN'?providerConfig.token:key==='REDIRECT_CNAME_TARGET'?providerConfig.cnameTarget:key==='REDIRECT_DOMAIN_EMAIL_FROM'?(instructionMailEnabled?'Queer Guide <noreply@queer.guide>':''):key==='RESEND_API_KEY'?'fixture-mail-provider':key==='REDIRECT_DOMAIN_CONNECT_PRIVATE_JWK'?(domainConnectEnabled?domainConnectJwk:''):key==='REDIRECT_DOMAIN_CONNECT_KEY_LABEL'?'_fixture':'fixture' },
     serve: (fn) => {
       handler = fn;
     },
@@ -158,6 +196,7 @@ policyRuntime=new Function('Deno', 'createClient', 'crypto', 'fetch', code+'\nre
   (_url,key,options) => key==='fixture-service'?{...service,rpc:(name,args)=>service.rpc(name,args,options?.global?.headers??{})}:identity,
   webcrypto,
   fixtureDnsFetch,
+  getDomain,
 );
 const token = 'qg_redirect_' + 'a'.repeat(64);
 const digest = Buffer.from(
@@ -222,6 +261,7 @@ const base = 'http://127.0.0.1:' + server.address().port + '/api/redirects';
 const env = {
   ...process.env,
   REDIRECT_TEST_SESSION: 'fixture-account-session',
+  REDIRECT_TEST_WORKSPACE: '58aa4340-8f21-4b7f-9a10-90be2da89c01',
   REDIRECT_TEST_OTHER_SESSION: 'fixture-other-account-session',
   REDIRECT_TEST_REPORT_LINK: seed.rows[0].id,
   REDIRECT_TEST_ROOT_DOMAIN: sdkRootDomain,
@@ -249,6 +289,8 @@ async function run(command, args, extra = {}) {
   console.log(command + ' SDK: live HTTP → actual edge handler → isolated PostgreSQL passed');
 }
 try {
+  // Runnable examples import the real package output; a clean checkout has no dist.
+  execFileSync(process.execPath, ['node_modules/typescript/bin/tsc', '-p', 'sdk/redirects/typescript/tsconfig.json'], { stdio: 'pipe' });
   mkdirSync('tmp/sdk-tests', { recursive: true });
   const compiled = ts.transpileModule(readFileSync('sdk/redirects/typescript/index.ts', 'utf8'), {
     compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.ESNext },
@@ -317,14 +359,52 @@ try {
     const response=await fetch(base+path,{method,headers:{Authorization:'Bearer '+credential,...(body?{'Content-Type':'application/json'}:{})},...(body?{body:JSON.stringify(body)}:{})});
     const data=await response.json();if(response.status!==expected)throw new Error('Report HTTP '+path+' expected '+expected+' received '+response.status+': '+JSON.stringify(data));return data;
   }
-  const nativeApp=await reportRequest('/apps','POST',{label:'HTTP native app',platform:'ios',appId:'ABCDE12345.org.example.http',paths:['/go/*']},undefined,201);
+  await verifyRedirectWorkspaceMembershipHttp(db,reportRequest,reportActor);
+  const lostRoleEvent='owner-context-race:'+webcrypto.randomUUID();
+  loseConversionOwnerAfterContext=true;
+  await reportRequest('/track/lead','POST',{clickId:click.rows[0].id,customerExternalId:'owner-context-race',eventId:lostRoleEvent},undefined,403);
+  if((await db.query('SELECT id FROM public.redirect_link_conversions WHERE provider_event_id=$1',[lostRoleEvent])).rows.length)throw new Error('Manual conversion ignored owner loss after context check');
+  await db.query("INSERT INTO public.user_roles VALUES($1,'admin')",[reportActor]);
+  const legacyWorkspace='58aa4340-8f21-4b7f-9a10-90be2da89c01';
+  const workspaceList=await reportRequest('/workspaces');
+  if(workspaceList.data.length!==1||workspaceList.currentWorkspaceId!==legacyWorkspace||workspaceList.data[0].role!=='owner'||(await reportRequest('/session')).workspace.id!==legacyWorkspace)throw new Error('Durable owner workspace context missing');
+  await reportRequest('/workspaces','GET',undefined,token,403);
+  await reportRequest('/workspaces?unexpected=true','GET',undefined,undefined,400);
+  const foldersBeforeWorkspaceSelection=(await db.query('SELECT count(*)::int AS n FROM public.redirect_link_folders')).rows[0].n;
+  for(const [selected,status] of [[legacyWorkspace.toUpperCase(),201],['00000000-0000-4000-8000-000000000777',403],['',400],[legacyWorkspace+','+legacyWorkspace,400]]){
+   const response=await fetch(base+'/folders',{method:'POST',headers:{Authorization:'Bearer fixture-account-session','Content-Type':'application/json','X-Qg-Redirect-Workspace':selected},body:JSON.stringify({name:'Explicit workspace HTTP'})});
+   if(response.status!==status)throw new Error('Workspace selection was ignored or falsely authorized');
+   if(status===201){const created=await response.json();await reportRequest('/folders/'+created.id,'DELETE');}
+  }
+  if((await db.query('SELECT count(*)::int AS n FROM public.redirect_link_folders')).rows[0].n!==foldersBeforeWorkspaceSelection)throw new Error('Denied workspace selection performed a mutation');
+  // Fresh account membership metadata comes from SQL, not stale admin claims.
+  await db.query('DELETE FROM public.user_roles WHERE user_id=$1',[reportOtherActor]);
+  const discoveryMember=(await db.query("INSERT INTO public.redirect_workspace_members(user_id,kind,label,role) VALUES($1,'user','HTTP viewer','viewer') RETURNING id",[reportOtherActor])).rows[0].id;
+  const viewerWorkspaces=await reportRequest('/workspaces','GET',undefined,'fixture-other-account-session');
+  if(viewerWorkspaces.data[0].role!=='viewer')throw new Error('Stale admin claim overrode current workspace membership');
+  await db.query('UPDATE public.redirect_workspace_members SET active=false WHERE id=$1',[discoveryMember]);
+  await reportRequest('/workspaces','GET',undefined,'fixture-other-account-session',403);
+  await db.query('DELETE FROM public.redirect_workspace_members WHERE id=$1',[discoveryMember]);
+  await db.query("INSERT INTO public.user_roles VALUES($1,'admin')",[reportOtherActor]);
+  console.log('Workspace identity: owner/member current-role discovery, immutable legacy selection, unsupported/empty/duplicate selector preflight denial and no wrong-workspace mutation pass.');
+  await reportRequest('/apps','POST',{label:'Wrong Clip parent',platform:'ios',appId:'ABCDE12345.org.example.http',appClipId:'OTHER12345.org.other.Clip',paths:['/go/*']},undefined,400);
+  const nativeApp=await reportRequest('/apps','POST',{label:'HTTP native app',platform:'ios',appId:'ABCDE12345.org.example.http',appClipId:'ABCDE12345.org.example.http.Clip',paths:['/go/*']},undefined,201);
   if(nativeApp.enabled||!nativeApp.version)throw new Error('Native app was not disabled by default');
-  const activeNativeApp=await reportRequest('/apps/'+nativeApp.id,'PATCH',{version:nativeApp.version,enabled:true});
+  let activeNativeApp=await reportRequest('/apps/'+nativeApp.id,'PATCH',{version:nativeApp.version,enabled:true});
   await reportRequest('/apps/'+nativeApp.id,'PATCH',{version:nativeApp.version,label:'stale'},undefined,409);
+  await reportRequest('/apps/'+nativeApp.id,'PATCH',{version:activeNativeApp.version,handoffEnabled:true},undefined,400);
+  await reportRequest('/apps/'+nativeApp.id,'PATCH',{version:activeNativeApp.version,publicName:true},undefined,400);
+  activeNativeApp=await reportRequest('/apps/'+nativeApp.id,'PATCH',{version:activeNativeApp.version,publicName:'HTTP public app',storeId:'1234567890',appGroupId:'group.org.example.http',handoffEnabled:true});
+  if(!activeNativeApp.handoffEnabled||activeNativeApp.publicName!=='HTTP public app'||activeNativeApp.label!=='HTTP native app')throw new Error('Install setup changed private label or lost opt-in');
+  const installChoices=(await db.query("SELECT public.redirect_native_install_choices('queer.guide','/go/http-test') AS value")).rows[0].value;
+  if(installChoices.length!==1||installChoices[0].displayName!=='HTTP public app'||installChoices[0].storeUrl!=='https://apps.apple.com/app/id1234567890'||JSON.stringify(installChoices).includes('HTTP native app')||JSON.stringify(installChoices).includes('group.org.example.http'))throw new Error('Install choices leaked private setup or lost public identity');
   const aasa=await reportRequest('/public-app-association?hostname=queer.guide&platform=ios');
-  if(!aasa.applinks.details.some(item=>item.appIDs.includes('ABCDE12345.org.example.http'))||JSON.stringify(aasa).includes('HTTP native app'))throw new Error('Public iOS association projection failed');
+  if(!aasa.applinks.details.some(item=>item.appIDs.includes('ABCDE12345.org.example.http'))||!aasa.appclips?.apps.includes('ABCDE12345.org.example.http.Clip')||JSON.stringify(aasa).includes('HTTP native app'))throw new Error('Public iOS association projection failed');
   await reportRequest('/apps','GET',undefined,token,403);
-  const androidNativeApp=await reportRequest('/apps','POST',{label:'HTTP Android app',platform:'android',appId:'org.example.http',fingerprints:['a'.repeat(64)],paths:['/go/*'],enabled:true},undefined,201);
+  let androidNativeApp=await reportRequest('/apps','POST',{label:'HTTP Android app',platform:'android',appId:'org.example.http',fingerprints:['a'.repeat(64)],paths:['/go/*'],enabled:true},undefined,201);
+  await reportRequest('/apps/'+androidNativeApp.id,'PATCH',{version:androidNativeApp.version,appClipId:'ABCDE12345.org.example.http.Clip'},undefined,400);
+  await reportRequest('/apps/'+androidNativeApp.id,'PATCH',{version:androidNativeApp.version,storeId:'org.other.package'},undefined,400);
+  androidNativeApp=await reportRequest('/apps/'+androidNativeApp.id,'PATCH',{version:androidNativeApp.version,publicName:'HTTP Android public',storeId:'org.example.http',handoffEnabled:true});
   const assetlinks=await reportRequest('/public-app-association?hostname=www.queer.guide&platform=android');
   if(assetlinks[0].target.sha256_cert_fingerprints[0]!==Array(32).fill('AA').join(':')||assetlinks[0].relation[0]!=='delegate_permission/common.handle_all_urls')throw new Error('Android fingerprints/permission changed');
   const invitationReceipt=await reportRequest('/invitations','POST',{email:'http-invite@example.org',label:'HTTP recipient',role:'viewer'},undefined,201);
@@ -364,7 +444,8 @@ try {
   await reportRequest('/invitations','GET',undefined,undefined,403);
   await reportRequest('/apps','GET',undefined,undefined,403);
   const revokedNativeApp=await reportRequest('/public-app-association?hostname=queer.guide&platform=ios');
-  if(revokedNativeApp.applinks.details.length)throw new Error('Lost owner app association stayed public');
+  if(revokedNativeApp.applinks.details.length||revokedNativeApp.appclips)throw new Error('Lost owner app association stayed public');
+  if((await db.query("SELECT public.redirect_native_install_choices('queer.guide','/go/http-test') AS value")).rows[0].value.length)throw new Error('Lost owner install choice stayed public');
   await reportRequest('/tokens','GET',undefined,undefined,403);
   await reportRequest('/links','GET',undefined,ownerCredential.secret,403);
   await reportRequest('/tokens/'+ownerCredential.id,'DELETE',undefined,undefined,403);
@@ -431,6 +512,29 @@ try {
   const branded=(await reportRequest('/links','POST',{slug:'same-domain-slug',target:'https://example.org/branded',domainId:domain.id},undefined,201)).link;
   const builtinDomainLink=(await reportRequest('/links','POST',{slug:'same-domain-slug',target:'https://example.org/builtin'},undefined,201)).link;
   if(branded.shortUrl!=='https://links.example.com/same-domain-slug'||branded.id===builtinDomainLink.id)throw new Error('HTTP hostname namespace isolation failed');
+  const archiveBefore=await reportRequest('/domains/'+domain.id);
+  const archiveCounters={providerCreates,providerDeletes,providerRestarts,dnsCalls};
+  const archiveEvents=(await db.query('SELECT count(*)::integer AS n FROM public.redirect_events')).rows[0].n;
+  const archived=await reportRequest('/domains/'+domain.id,'PATCH',{version:archiveBefore.version,archived:true});
+  if(!archived.archived||archived.disabled||!archived.routingReady)throw new Error('Archive disabled serving or lost versioned state');
+  const activeArchiveSearch=await reportRequest('/domains?archive=active&q='+encodeURIComponent(domain.hostname));
+  const archivedSearch=await reportRequest('/domains?archive=archived&limit=1&q='+encodeURIComponent(domain.hostname.toUpperCase()));
+  if(activeArchiveSearch.count!==0||archivedSearch.count!==1||archivedSearch.data[0].id!==domain.id||archivedSearch.nextCursor!==null)throw new Error('Owner archive/search pages diverged');
+  if((await reportRequest('/domain-choices','GET',undefined,token)).data.some(row=>row.id===domain.id))throw new Error('Archived domain stayed in new-link choices');
+  if((await reportRequest('/links/'+branded.id)).shortUrl!==branded.shortUrl)throw new Error('Archive changed a managed URL');
+  const archivePreference=await reportRequest('/domain-preference');if(archivePreference.domainId!==null||archivePreference.version===primary.version)throw new Error('Archive retained the primary default');
+  await reportRequest('/domains/'+domain.id,'PATCH',{version:archiveBefore.version,archived:false},undefined,409);
+  await reportRequest('/domain-preference','PATCH',{version:archivePreference.version,domainId:domain.id},undefined,400);
+  for(const query of ['archive=invalid','archive=active&archive=all','q=one&q=two'])await reportRequest('/domains?'+query,'GET',undefined,undefined,400);
+  await reportRequest('/domains?archive=archived','GET',undefined,token,403);
+  await reportRequest('/domains/'+domain.id+'?archive=all','GET',undefined,undefined,400);
+  await reportRequest('/domains/'+domain.id,'PATCH',{version:archived.version,archived:'false'},undefined,400);
+  providerView=await reportRequest('/domains/'+domain.id,'PATCH',{version:archived.version,archived:false});
+  if(providerView.archived||(await reportRequest('/domain-preference')).domainId!==null)throw new Error('Restore failed or silently set primary');
+  if(JSON.stringify(archiveCounters)!==JSON.stringify({providerCreates,providerDeletes,providerRestarts,dnsCalls})||(await db.query('SELECT count(*)::integer AS n FROM public.redirect_events')).rows[0].n!==archiveEvents)throw new Error('Archive maintenance called a provider or recorded visits');
+  primary=await reportRequest('/domain-preference','PATCH',{version:archivePreference.version,domainId:domain.id});
+  console.log('Domain archives: owner HTTP -> migrated SQL active/archived/search paging, guarded archive/restore, current link URL, hidden new-link choice, atomic primary clearing and explicit re-selection pass without provider/visit effects.');
+
   await reportRequest('/qr-styles/workspace','POST',{},undefined,405);
   let qrWorkspace=await reportRequest('/qr-styles/workspace');
   qrWorkspace=await reportRequest('/qr-styles/workspace','PATCH',{version:qrWorkspace.version,style:{dots:'joined'}});
@@ -512,6 +616,23 @@ try {
     }
     logoDomain=await reportRequest('/qr-styles/domains/'+domain.id,'PATCH',{version:logoDomain.version,logoMode:'custom'});
     const preferencesBeforeCustom=await reportRequest('/qr-styles/workspace');
+    const installImage=await reportRequest('/qr-images','POST',{linkId:branded.id,purpose:'install',entryQuery:'utm_source=poster%20one&ref=community%2Bfriends',logo:logoPng.toString('base64')},undefined,201);
+    if(installImage.purpose!=='install'||installImage.state!=='published')throw new Error('Install image lost purpose/artwork publication');
+    const installProfile=await reportRequest('/public-qr-image','GET',undefined,capability(installImage));
+    const installTarget=branded.shortUrl+'?qg_handoff=install&utm_source=poster+one&ref=community%2Bfriends';
+    if(installProfile.url!==installTarget||installProfile.effectiveLogo.id!==installImage.logoAsset.id)throw new Error('Install profile lost exact campaign URL or custom artwork');
+    for(const format of ['png','jpg','svg']){
+      const response=await renderedImage(installImage.imageUrls[format],format);if(response.status!==200)throw new Error('Install QR rendering failed: '+await response.text());
+      const {data,info}=await sharp(new Uint8Array(await response.arrayBuffer())).ensureAlpha().raw().toBuffer({resolveWithObject:true});
+      if(decodeImageQr(new Uint8ClampedArray(data),info.width,info.height)?.data!==installTarget+'&qg_qr=1')throw new Error('Install hosted image encoded a different URL');
+    }
+    await reportRequest('/qr-images','POST',{linkId:branded.id,purpose:'install',entryQuery:'%70assword=private'},undefined,400);
+    await reportRequest('/qr-images','POST',{url:'https://example.org/',purpose:'install'},undefined,400);
+    await reportRequest('/qr-images/'+installImage.id,'DELETE',{version:installImage.version});
+    await db.query("UPDATE public.redirect_qr_assets SET next_cleanup_at=now()-interval '1 second' WHERE id=$1",[installImage.logoAsset.id]);
+    await policyRuntime.dispatchRedirectQrAssetCleanup(service,policyRuntime.qrAssetStorageConfig('https://fixture.supabase.co','fixture-service'),fixtureDnsFetch);
+    if(logoObjects.has(installImage.logoAsset.key))throw new Error('Revoked install image artwork was not cleaned');
+    await reportRequest('/public-qr-image','GET',undefined,capability(installImage),404);
     const customImage=await reportRequest('/qr-images','POST',{linkId:branded.id,logo:logoPng.toString('base64')},undefined,201);
     if(customImage.state!=='published'||customImage.logoMode!=='custom'||!customImage.logoAsset?.url)throw new Error('Custom image did not publish checked artwork');
     const customProfile=await reportRequest('/public-qr-image','GET',undefined,capability(customImage));
@@ -713,6 +834,25 @@ try {
   const clearedIdentity=await reportRequest('/customers/profile','DELETE',{customerExternalId:identityCustomer,version:privateIdentityVersion});
   if(clearedIdentity.name!==null||clearedIdentity.email!==null||clearedIdentity.version===privateIdentityVersion)throw new Error('HTTP identity clear failed');
   console.log('Private customer profiles: five native SDK methods, opaque UTF-8 IDs, scoped chronological pages, partial-grant edit denial, stale writes, private public-report boundary and identity-only clear passed.');
+  let teamReport=await reportRequest('/reports','POST',{name:'HTTP team report',filters:{}},undefined,201);
+  await reportRequest('/reports/'+teamReport.id,'GET',undefined,'fixture-other-account-session',404);
+  teamReport=await reportRequest('/reports/'+teamReport.id,'PATCH',{version:teamReport.version,visibility:'team'});
+  const teamPage=await reportRequest('/reports?view=team','GET',undefined,'fixture-other-account-session');
+  const teamItem=teamPage.data.find(item=>item.id===teamReport.id);
+  if(!teamItem||teamItem.canEdit!==false||'owner_user_id' in teamItem)throw new Error('Team HTTP discovery/metadata failed');
+  if((await reportRequest('/reports','GET',undefined,'fixture-other-account-session')).data.some(item=>item.id===teamReport.id))throw new Error('Team report changed default personal list');
+  await reportRequest('/reports/'+teamReport.id,'PATCH',{version:teamReport.version,name:'Forbidden'},'fixture-other-account-session',404);
+  await reportRequest('/reports/'+teamReport.id+'/shares','GET',undefined,'fixture-other-account-session',404);
+  for(const suffix of ['?view=team&view=all','?view=public','?view=team&unknown=1'])await reportRequest('/reports'+suffix,'GET',undefined,undefined,400);
+  await reportRequest('/reports?view=team','GET',undefined,token,403);
+  await reportRequest('/reports/'+teamReport.id+'?view=team','GET',undefined,undefined,400);
+  const copiedTeam=await reportRequest('/reports','POST',{name:'HTTP private copy',filters:teamItem.filters},'fixture-other-account-session',201);
+  if(copiedTeam.visibility!=='private'||!copiedTeam.canEdit)throw new Error('Team HTTP copy not private');
+  teamReport=await reportRequest('/reports/'+teamReport.id,'PATCH',{version:teamReport.version,visibility:'private'});
+  await reportRequest('/reports/'+teamReport.id,'GET',undefined,'fixture-other-account-session',404);
+  await reportRequest('/reports/'+teamReport.id,'DELETE');
+  await reportRequest('/reports/'+copiedTeam.id,'DELETE',undefined,'fixture-other-account-session');
+  console.log('Team reports: actual owner HTTP/migrated SQL proves explicit opt-in, default privacy, read-only discovery, guarded visibility, private copy, key denial and strict views.');
   console.log('Saved/share/public reports: real HTTP → edge handler → migrated PostgreSQL, real password verification, sanitized totals and revocation passed');
   const passwordBrandLink=(await reportRequest('/links','POST',{target:'https://example.org/password-brand-fixture'},undefined,201)).link;
   const passwordBrandPath='/links/'+passwordBrandLink.id+'/password-branding';
@@ -741,6 +881,113 @@ try {
   for(let clean=0;clean<8&&passwordAssets.some(key=>logoObjects.has(key));clean++)await policyRuntime.dispatchRedirectQrAssetCleanup(service,sdkArtworkStorage,fixtureDnsFetch);
   if(passwordAssets.some(key=>logoObjects.has(key)))throw new Error('Released/lost password-logo objects not physically cleaned');
   console.log('Password branding: five native SDK read/update/upload methods plus owner HTTP -> versioned reservation -> exact immutable Storage bytes -> current-role finish; stale/SVG preflight denial, no unknown upload replay, lost-owner denial, independent public profile and physical delete cleanup passed.');
+
+  const setupDomain=await reportRequest('/domains','POST',{hostname:'go.setup-example.com'},undefined,201);
+  const setupPath='/domains/'+setupDomain.id+'/dns-setup/';
+  if((await reportRequest('/domains')).dnsSetup.configured)throw new Error('Missing signing key appeared configured');
+  await reportRequest(setupPath+'discover','POST',{version:setupDomain.version},undefined,503);
+  if(domainConnectDnsCalls)throw new Error('Unconfigured setup reached DNS');
+  domainConnectEnabled=true;
+  const dnsAvailability=(await reportRequest('/domains')).dnsSetup;
+  if(!dnsAvailability.configured||dnsAvailability.cnameTarget!=='links.queer.guide'||Object.keys(dnsAvailability).sort().join(',')!=='cnameTarget,configured')throw new Error('DNS setup availability exposed signing configuration or wrong target');
+  await reportRequest(setupPath+'discover','POST',{version:setupDomain.version},token,403);
+  await reportRequest(setupPath+'discover','POST',{version:setupDomain.version,target:'https://evil.example.com'},undefined,400);
+  const setup=await reportRequest(setupPath+'discover','POST',{version:setupDomain.version});
+  if(setup.state!=='review'||setup.domain.ownershipVerified||setup.domain.providerConnected||setup.discovery.provider!=='cloudflare')throw new Error('Domain Connect discovery/review incorrect');
+  const beforeRepeatedDiscovery=domainConnectDnsCalls;
+  await reportRequest(setupPath+'discover','POST',{version:setupDomain.version},undefined,429);
+  if(domainConnectDnsCalls!==beforeRepeatedDiscovery)throw new Error('Rate-limited discovery still reached DNS');
+  await reportRequest('/domain-connect/'+setup.id,'GET',undefined,'fixture-other-account-session',404);
+  const approval=await reportRequest(setupPath+'approve','POST',{version:setupDomain.version,operation:setup.id});
+  const approvalUrl=new URL(approval.approvalUrl),approvalQuery=approvalUrl.searchParams;
+  if(approvalUrl.origin!=='https://dash.cloudflare.com'||approvalUrl.pathname!=='/domainconnect/v2/domainTemplates/providers/queer.guide/services/redirects/apply'||approvalQuery.get('domain')!=='setup-example.com'||approvalQuery.get('host')!=='go'||approvalQuery.get('verification')!==setupDomain.verification.value.slice('qg-redirect='.length)||approvalQuery.get('key')!=='_fixture'||[...approvalQuery.keys()].at(-1)!=='sig')throw new Error('Approval URL escaped fixed template/host/challenge');
+  const signedBytes=approvalUrl.search.slice(1).split('&key=')[0];
+  if(!await webcrypto.subtle.verify('RSASSA-PKCS1-v1_5',domainConnectKey.publicKey,Buffer.from(approvalQuery.get('sig'),'base64'),new TextEncoder().encode(signedBytes)))throw new Error('Actual HTTP approval signature did not verify');
+  const callback=new URL(approvalQuery.get('redirect_uri'));
+  if(callback.origin!=='https://queer.guide'||callback.searchParams.get('domain_connect')!==setup.id)throw new Error('Callback correlation escaped fixed origin');
+  await reportRequest(setupPath+'approve','POST',{version:setupDomain.version,operation:setup.id},undefined,409);
+  const lookup=await reportRequest('/domain-connect/'+setup.id);
+  if(lookup.state!=='approved'||lookup.domain.ownershipVerified)throw new Error('Provider callback implied DNS ownership');
+  dnsMissing=true;const beforeComplete=dnsCalls;
+  const completed=await reportRequest(setupPath+'complete','POST',{version:setupDomain.version,operation:setup.id});
+  dnsMissing=false;
+  if(dnsCalls!==beforeComplete+1||completed.state!=='complete'||completed.outcome!=='missing'||completed.domain.ownershipVerified||completed.domain.routingReady)throw new Error('Callback skipped fresh DNS check or promoted readiness');
+  await reportRequest(setupPath+'complete','POST',{version:completed.domain.version,operation:setup.id},undefined,409);
+  // A fresh live-role check must reject a result arriving after owner removal.
+  const lossDomain=await reportRequest('/domains','POST',{hostname:'lost.setup-example.com'},undefined,201);
+  domainConnectLoseOwner=true;
+  await reportRequest('/domains/'+lossDomain.id+'/dns-setup/discover','POST',{version:lossDomain.version},undefined,403);
+  await db.query("INSERT INTO public.user_roles VALUES($1,'admin')",[reportActor]);
+  if((await db.query('SELECT state FROM public.redirect_domain_connect_operations WHERE domain_id=$1',[lossDomain.id])).rows[0].state!=='discovering')throw new Error('Lost-owner discovery result published');
+  const unsupportedDomain=await reportRequest('/domains','POST',{hostname:'unsupported.setup-example.com'},undefined,201);
+  domainConnectTemplateMissing=true;
+  const unsupportedSetup=await reportRequest('/domains/'+unsupportedDomain.id+'/dns-setup/discover','POST',{version:unsupportedDomain.version});
+  domainConnectTemplateMissing=false;
+  if(unsupportedSetup.state!=='unsupported')throw new Error('Missing provider template was treated as usable');
+  await reportRequest('/domains/'+unsupportedDomain.id+'/dns-setup/approve','POST',{version:unsupportedDomain.version,operation:unsupportedSetup.id},undefined,409);
+  console.log('Domain Connect: actual owner HTTP -> bounded discovery -> stored review -> verified RSA approval -> current-owner callback -> fresh TXT proof; key denial, budgets, template absence, replay and role loss passed.');
+
+  const mailDomain=await reportRequest('/domains','POST',{hostname:'mail-forward.example.com'},undefined,201),mailPath='/domains/'+mailDomain.id+'/instructions';
+  await reportRequest(mailPath,'GET',undefined,undefined,503);
+  if((await reportRequest('/domains')).instructionMail.configured||instructionMailCalls)throw new Error('Unconfigured instruction mail appeared usable');
+  instructionMailEnabled=true;
+  const mailAvailability=(await reportRequest('/domains')).instructionMail;
+  if(!mailAvailability.configured||Object.keys(mailAvailability).join(',')!=='configured')throw new Error('Instruction mail availability exposed delivery secret/sender');
+  await reportRequest(mailPath,'GET',undefined,token,403);
+  const mailDraft=await reportRequest(mailPath);
+  if(mailDraft.records.length!==2||mailDraft.records[0].name!==mailDomain.hostname||mailDraft.records[0].value!=='links.queer.guide.'||mailDraft.records[1].value!==mailDomain.verification.value)throw new Error('Forwarded draft differs from current exact records');
+  const mailInput={version:mailDraft.version,snapshot:mailDraft.snapshot,email:'DNS+setup@EXAMPLE.ORG',requestId:webcrypto.randomUUID()};
+  await reportRequest(mailPath,'POST',{...mailInput,records:[]},undefined,400);
+  await reportRequest(mailPath,'POST',{...mailInput,email:'dns@example.org,other@example.org'},undefined,400);
+  await reportRequest(mailPath,'POST',{...mailInput,snapshot:'a'.repeat(64)},undefined,409);
+  if(instructionMailCalls)throw new Error('Rejected mail input reached provider');
+  const mailed=await reportRequest(mailPath,'POST',mailInput,undefined,202);
+  if(mailed.state!=='sent'||mailed.canCancel||mailed.email!=='DNS+setup@example.org'||instructionMailCalls!==1)throw new Error('Instruction mail did not record exact provider acceptance');
+  const mailMessage=JSON.parse([...instructionMailMessages.values()][0].body);
+  if(mailMessage.to.join(',')!=='DNS+setup@example.org'||!mailMessage.text.includes(mailDomain.verification.value)||!mailMessage.text.includes('Name: '+mailDomain.hostname)||!mailMessage.text.includes('sending this email does not complete those checks'))throw new Error('Native email body lost recipient, exact records or readiness distinction');
+  const mailedAgain=await reportRequest(mailPath,'POST',mailInput,undefined,202);
+  if(mailedAgain.id!==mailed.id||instructionMailCalls!==1)throw new Error('Request replay sent duplicate email');
+  await reportRequest(mailPath,'POST',{...mailInput,email:'different@example.org'},undefined,409);
+  await reportRequest(mailPath,'POST',{...mailInput,requestId:webcrypto.randomUUID()},undefined,429);
+  const receiptPath='/domains/'+mailDomain.id+'/instruction-emails/'+mailed.id;
+  await reportRequest(receiptPath,'GET',undefined,'fixture-other-account-session',404);
+  const recovered=await reportRequest('/domains/'+mailDomain.id+'/instruction-emails?requestId='+mailInput.requestId);
+  if(recovered.mail.id!==mailed.id||(await reportRequest(mailPath)).latestMail.id!==mailed.id)throw new Error('Owner receipt could not recover across reload/unknown HTTP response');
+  const latestMailPath='/domains/'+mailDomain.id+'/instruction-emails';
+  instructionMailEnabled=false;
+  await db.query('UPDATE public.redirect_domains SET disabled=true,archived=true WHERE id=$1',[mailDomain.id]);
+  if((await reportRequest(latestMailPath)).mail.id!==mailed.id||(await reportRequest(latestMailPath,'GET',undefined,'fixture-other-account-session')).mail!==null)throw new Error('Fresh-session inactive latest mail lost privacy/status');
+  await reportRequest(latestMailPath,'GET',undefined,token,403);
+  await reportRequest(latestMailPath+'?unexpected=true','GET',undefined,undefined,400);
+  await db.query('DELETE FROM public.user_roles WHERE user_id=$1',[reportActor]);
+  await reportRequest(latestMailPath,'GET',undefined,undefined,403);
+  await db.query("INSERT INTO public.user_roles VALUES($1,'admin')",[reportActor]);
+  await db.query('UPDATE public.redirect_domains SET disabled=false,archived=false WHERE id=$1',[mailDomain.id]);
+  instructionMailEnabled=true;
+  await reportRequest(receiptPath+'/cancel','POST',{},undefined,409);
+  const unknownMailDomain=await reportRequest('/domains','POST',{hostname:'unknown-mail.example.com'},undefined,201),unknownMailPath='/domains/'+unknownMailDomain.id+'/instructions';
+  const unknownDraft=await reportRequest(unknownMailPath),unknownInput={version:unknownDraft.version,snapshot:unknownDraft.snapshot,email:'dns@example.org',requestId:webcrypto.randomUUID()};
+  instructionMailMode='lost-receipt';const unknownReceipt=await reportRequest(unknownMailPath,'POST',unknownInput,undefined,202);
+  if(unknownReceipt.state!=='queued'||unknownReceipt.canCancel)throw new Error('Lost receipt falsely marked failed/cancellable');
+  const beforeUnknownRetry=instructionMailCalls,unknownBody=instructionMailMessages.get('qg-domain-instructions/v1/'+unknownReceipt.id).body;
+  await db.query("UPDATE public.redirect_domain_instruction_mail SET next_attempt_at=clock_timestamp()-interval '1 second' WHERE id=$1",[unknownReceipt.id]);
+  const knownReceipt=await reportRequest(unknownMailPath,'POST',unknownInput,undefined,202);
+  if(knownReceipt.id!==unknownReceipt.id||knownReceipt.state!=='sent'||instructionMailCalls!==beforeUnknownRetry+1||instructionMailMessages.get('qg-domain-instructions/v1/'+unknownReceipt.id).body!==unknownBody)throw new Error('Unknown delivery retry changed identity or persisted message');
+  const cancelledDomain=await reportRequest('/domains','POST',{hostname:'cancel-mail.example.com'},undefined,201),cancelledPath='/domains/'+cancelledDomain.id+'/instructions';
+  const cancelledDraft=await reportRequest(cancelledPath);instructionMailMode='throttled';
+  const queuedMail=await reportRequest(cancelledPath,'POST',{version:cancelledDraft.version,snapshot:cancelledDraft.snapshot,email:'dns@example.org',requestId:webcrypto.randomUUID()},undefined,202);
+  instructionMailMode='accepted';const beforeCancel=instructionMailCalls;
+  const cancelledMail=await reportRequest('/domains/'+cancelledDomain.id+'/instruction-emails/'+queuedMail.id+'/cancel','POST',{});
+  if(cancelledMail.state!=='cancelled')throw new Error('Unsent queued mail could not cancel');
+  await db.query("UPDATE public.redirect_domain_instruction_mail SET next_attempt_at=clock_timestamp()-interval '1 second' WHERE id=$1",[queuedMail.id]);
+  await policyRuntime.dispatchDomainInstructionMail(service,await policyRuntime.domainInstructionMailConfig('fixture-mail-provider','Queer Guide <noreply@queer.guide>','links.queer.guide'),fixtureDnsFetch,queuedMail.id);
+  if(instructionMailCalls!==beforeCancel)throw new Error('Cancelled mail was sent');
+  const postflightDomain=await reportRequest('/domains','POST',{hostname:'postflight-mail.example.com'},undefined,201),postflightPath='/domains/'+postflightDomain.id+'/instructions',postflightDraft=await reportRequest(postflightPath);
+  instructionMailLoseOwner=true;
+  await reportRequest(postflightPath,'POST',{version:postflightDraft.version,snapshot:postflightDraft.snapshot,email:'dns@example.org',requestId:webcrypto.randomUUID()},undefined,403);
+  await db.query("INSERT INTO public.user_roles VALUES($1,'admin')",[reportActor]);
+  if((await reportRequest(postflightPath)).latestMail.state!=='sent')throw new Error('Owner loss after actual acceptance erased delivery truth');
+  console.log('Native DNS instruction forwarding: actual owner HTTP -> reviewed current CNAME/TXT snapshot -> durable private queue -> exact persisted Resend fixture -> provider receipt, same-request replay/recovery, immutable unknown retry, cancellation and postflight role loss pass without real emails.');
   await verifyRedirectIntegrationHttp(db,base,reportActor);
   console.log(
     'Five SDKs passed; no external API calls, credentials, payments or production schema were used.',

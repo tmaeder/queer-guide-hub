@@ -94,7 +94,7 @@ describe('active CMS domain field', () => {
     await waitFor(() => expect(screen.getByLabelText('Short-link domain')).toBeEnabled());
     expect(screen.getByTestId('bound-value')).toHaveTextContent(domain);
     expect(
-      screen.getByRole('option', { name: 'links.community.com (current, unavailable)' }),
+      screen.getByRole('option', { name: 'links.community.com (current)' }),
     ).toBeInTheDocument();
   });
   it('does not overwrite a refreshed server binding with its original value', async () => {

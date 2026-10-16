@@ -105,6 +105,47 @@ describe('hosted QR authoring controls', () => {
     await screen.findByLabelText('Published image URL');
     expect(screen.getAllByLabelText('QR dots')).toHaveLength(1);
   });
+  it('publishes and verifies the install destination, holding its mode during pending publication', async () => {
+    let complete!: (value: unknown) => void;
+    api.mockReturnValueOnce(
+      new Promise((done) => {
+        complete = done;
+      }),
+    );
+    render(
+      <QueryClientProvider
+        client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}
+      >
+        <QrExport
+          url="https://queer.guide/go/demo?utm_source=poster"
+          managedShortLink
+          linkId={id}
+        />
+      </QueryClientProvider>,
+    );
+    await screen.findByRole('img');
+    fireEvent.click(screen.getByRole('radio', { name: 'App installation' }));
+    await screen.findByAltText(
+      'QR code for https://queer.guide/go/demo?qg_handoff=install&utm_source=poster',
+    );
+    publish();
+    await waitFor(() => expect(api).toHaveBeenCalledOnce());
+    expect(api).toHaveBeenCalledWith(
+      '/qr-images',
+      'POST',
+      expect.objectContaining({ linkId: id, purpose: 'install', entryQuery: 'utm_source=poster' }),
+      expect.any(AbortSignal),
+    );
+    expect(screen.getByRole('radio', { name: 'Open link' })).toBeDisabled();
+    await act(async () => complete({ ...record(), purpose: 'install' }));
+    await screen.findByLabelText('Published image URL');
+    expect(previewHostedQr).toHaveBeenCalledWith(
+      record().imageUrls.png,
+      'https://queer.guide/go/demo?qg_handoff=install&utm_source=poster&qg_qr=1',
+      expect.any(AbortSignal),
+    );
+    expect(screen.getByRole('radio', { name: 'Open link' })).not.toBeDisabled();
+  });
   it('holds back bearer copying until hosted verification succeeds and never caches the bearer', async () => {
     let resolve!: (value: string) => void;
     vi.mocked(previewHostedQr).mockReturnValue(

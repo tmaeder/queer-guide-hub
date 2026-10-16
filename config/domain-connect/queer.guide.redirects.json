@@ -1,0 +1,16 @@
+{
+  "providerId": "queer.guide",
+  "providerName": "Queer Guide",
+  "serviceId": "redirects",
+  "serviceName": "Redirect short-link subdomain",
+  "version": 1,
+  "description": "Connect a selected short-link subdomain and its Queer Guide ownership verification record.",
+  "syncBlock": false,
+  "syncPubKeyDomain": "domainconnect.queer.guide",
+  "syncRedirectDomain": "queer.guide",
+  "hostRequired": true,
+  "records": [
+    { "type": "CNAME", "host": "@", "pointsTo": "links.queer.guide.", "ttl": 1800 },
+    { "type": "TXT", "host": "_qg-redirect", "data": "qg-redirect=%verification%", "ttl": 1800 }
+  ]
+}

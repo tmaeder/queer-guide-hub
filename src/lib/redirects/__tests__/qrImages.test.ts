@@ -47,6 +47,22 @@ describe('hosted QR UI contracts', () => {
       qrPublicationInput({ ...input, linkId: undefined, followSaved: false, logoMode: 'none' }),
     ).toMatchObject({ url: input.url, style: DEFAULT_QR_STYLE, logoMode: 'none' });
   });
+  it('keeps install purpose and public campaign query attached to managed hosted images', () => {
+    expect(
+      qrPublicationInput({
+        ...input,
+        purpose: 'install',
+        url: input.url + '?qg_handoff=install&utm_source=poster&ref=print%2Bcommunity',
+      }),
+    ).toMatchObject({
+      linkId: id,
+      purpose: 'install',
+      entryQuery: 'utm_source=poster&ref=print%2Bcommunity',
+    });
+    expect(() => qrPublicationInput({ ...input, linkId: undefined, purpose: 'install' })).toThrow(
+      'managed link',
+    );
+  });
   it('separates per-image custom bytes from appearance and saved branding', () => {
     const result = qrPublicationInput({
       ...input,

@@ -75,6 +75,20 @@ export interface WebhookReceipt extends WebhookDelivery {
 }
 export type WebhookMutation<T> = T | { retryAfter: number };
 export type JsonObject = Record<string, unknown>;
+export interface RedirectWorkspace {
+  id: string;
+  name: string;
+  slug: string;
+}
+export interface RedirectWorkspaceSession {
+  role: 'owner' | 'member' | 'viewer';
+  label: string | null;
+  workspace: RedirectWorkspace;
+}
+export interface RedirectWorkspaceList {
+  data: (RedirectWorkspace & { role: RedirectWorkspaceSession['role'] })[];
+  currentWorkspaceId: string;
+}
 export interface CustomerProfile {
   customerExternalId: string;
   name: string | null;
@@ -128,7 +142,9 @@ export interface ReportFilters {
 }
 export interface SavedReport {
   id: string;
-  owner_user_id: string;
+  owner_user_id?: string;
+  visibility?: 'private' | 'team';
+  canEdit?: boolean;
   name: string;
   filters: ReportFilters;
   version: string;
@@ -187,6 +203,10 @@ export interface PublicReport {
   };
 }
 export interface QrImageOptions {
+  /** App installation is supported only with a managed linkId. */
+  purpose?: 'visit' | 'install';
+  /** Encoded public campaign query for install entries; no private handoff fields. */
+  entryQuery?: string;
   label?: string;
   expiresAt?: string | null;
   style?: Partial<{
@@ -202,6 +222,7 @@ export interface QrImageOptions {
 export type QrImageInput = QrImageOptions &
   ({ linkId: string; url?: never } | { url: string; linkId?: never });
 export interface QrImageLink {
+  purpose?: 'visit' | 'install';
   id: string;
   label: string;
   linkId: string | null;
@@ -329,7 +350,11 @@ export class RedirectsClient {
   private readonly token: string;
   private readonly base: string;
   private readonly timeout: number;
-  constructor(token: string, options: { baseUrl?: string; timeoutMs?: number } = {}) {
+  private readonly workspaceId?: string;
+  constructor(
+    token: string,
+    options: { baseUrl?: string; timeoutMs?: number; workspaceId?: string } = {},
+  ) {
     if (!token.trim() || /[\r\n]/.test(token)) throw new Error('A server credential is required');
     const url = new URL(options.baseUrl ?? 'https://queer.guide/api/redirects');
     if (
@@ -343,11 +368,23 @@ export class RedirectsClient {
       )
     )
       throw new Error('Use HTTPS or a loopback development API');
+    if (
+      options.workspaceId !== undefined &&
+      !/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i.test(options.workspaceId)
+    )
+      throw new Error('Provide a valid workspace ID');
+    this.workspaceId = options.workspaceId?.toLowerCase();
     this.token = token;
     this.base = url.href.replace(/\/$/, '');
     this.timeout = options.timeoutMs ?? 10000;
     if (!Number.isFinite(this.timeout) || this.timeout <= 0)
       throw new Error('Timeout must be positive');
+  }
+  getSession(): Promise<RedirectWorkspaceSession> {
+    return this.request('GET', '/session');
+  }
+  listWorkspaces(): Promise<RedirectWorkspaceList> {
+    return this.request('GET', '/workspaces');
   }
   async request<T>(
     method: string,
@@ -368,7 +405,11 @@ export class RedirectsClient {
     const response = await fetch(url, {
       method,
       redirect: 'manual',
-      headers: { Authorization: 'Bearer ' + this.token, 'Content-Type': 'application/json' },
+      headers: {
+        Authorization: 'Bearer ' + this.token,
+        'Content-Type': 'application/json',
+        ...(this.workspaceId ? { 'X-Qg-Redirect-Workspace': this.workspaceId } : {}),
+      },
       body: body === undefined ? undefined : JSON.stringify(body),
       signal: signal
         ? AbortSignal.any([signal, AbortSignal.timeout(this.timeout)])
@@ -646,16 +687,29 @@ export class RedirectsClient {
       { version },
     );
   }
-  createReport(data: { name: string; filters: ReportFilters }) {
+  createReport(data: { name: string; filters: ReportFilters; visibility?: 'private' | 'team' }) {
     return this.request<SavedReport>('POST', '/reports', data);
   }
   getReport(id: string) {
     return this.request<SavedReport>('GET', '/reports/' + encodeURIComponent(id));
   }
-  listReports(limit = 50, cursor?: string) {
-    return this.request<Page<SavedReport>>('GET', '/reports', undefined, { limit, cursor });
+  listReports(limit = 50, cursor?: string, view?: 'personal' | 'team' | 'all') {
+    return this.request<Page<SavedReport> & { canPublishToTeam?: boolean }>(
+      'GET',
+      '/reports',
+      undefined,
+      { limit, cursor, view },
+    );
   }
-  updateReport(id: string, data: { version: string; name?: string; filters?: ReportFilters }) {
+  updateReport(
+    id: string,
+    data: {
+      version: string;
+      name?: string;
+      filters?: ReportFilters;
+      visibility?: 'private' | 'team';
+    },
+  ) {
     return this.request<SavedReport>('PATCH', '/reports/' + encodeURIComponent(id), data);
   }
   deleteReport(id: string) {

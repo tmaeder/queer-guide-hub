@@ -67,10 +67,87 @@ the ordinary web redirect. Automatic post-install/deferred attribution is not
 implemented by this package. Do not substitute device fingerprint matching.
 
 From the repository root run `node scripts/test-redirect-swift.mjs`. It builds the
-actual package and compiles/runs ten native contract groups using the actual
+actual package and compiles/runs twelve native contract groups using the actual
 backend JSON producer, URLSession and
 isolated URLProtocol fixtures, without XCTest or external packages. A macOS CI
 workflow runs the same command, then a separate directly traced SDK build
 for Swift CodeQL. These tests prove the Apple Foundation client;
 they do not prove Universal Link installation, device behavior, production gateway
 deployment or package-registry publication.
+
+The core also exposes explicit receipt methods for the configured opt-in transport:
+
+```swift
+let created = try await redirects.createHandoff(
+    shortURL, appBindingID: appBindingID, attributionConsent: true
+)
+// An App Clip can use created.resolution for its useful functionality and retain
+// created.receipt only in its configured, consented App Group adapter.
+let resumed = try await redirects.resumeHandoff(
+    receipt, password: enteredPassword, attributionConsent: true
+)
+```
+
+The binding ID is the owner's configured UUID, separate from the signed bundle
+identifier. Both methods require current explicit consent; they use form POSTs,
+header-only capabilities and validated creation/consumption metadata. The receipt
+has a bounded expiry and a canonical source without campaign/password/token query
+data. Resume reuses its original click and server-side query/cohort. Source/content
+host allowlists and normal app authentication still apply.
+
+The core stores nothing and never retries an unknown create/resume outcome.
+`RedirectHandoffReceipt` descriptions redact its token. Do not log or put that
+capability in ordinary URLs, clipboard or browser storage. A configured platform
+adapter must mark an automatic attempt durably before calling resume, validate
+expiry/current consent, and clear data on consent withdrawal. No automatic App
+Group migration, App Clip functionality or signed installation is implemented by
+these methods. The Clip must not consume its own receipt before the full app.
+
+### Optional iOS App Group receipt storage
+
+`RedirectAppGroupHandoffStore` stores one live receipt per binding. Initialize it
+with the real Group ID and binding UUID from owner settings, your short-host
+allowlist and current attribution consent. The public initializer requires an iOS
+App Group container; the macOS contract runner cannot authorize one. Configure the
+same Group entitlement in the actual Clip and full app as described by
+[Apple](https://developer.apple.com/documentation/appclip/sharing-data-between-your-app-clip-and-your-full-app).
+
+The Clip calls `store(handoff.receipt, attributionConsent: true)` after its useful
+functionality creates a handoff. It leaves the receipt unconsumed. The full app
+uses `resumeAutomatically(using: client, attributionConsent: true)` and handles
+its optional live resolution through normal authenticated app navigation. Supply
+any freshly entered password to the method; passwords are never stored.
+
+Storage excludes backup, uses private file permissions and iOS protection until
+first unlock. Each record contains only the canonical source, capability, binding,
+expiry, fixed consent purpose and lifecycle state. A cross-process file lock and
+atomic synchronized write mark an attempt before transport. Reopening the store
+cannot automatically retry an uncertain request. `retryAfterUserAction` is reserved
+for a fresh explicit user action. Success removes the source/capability and retains
+an expiring consumed marker. Re-saving cannot reset an attempt or replace a live
+receipt; this adapter deliberately holds one live receipt per binding.
+
+Call `clear()` on consent withdrawal. A resume called with denied consent clears
+the record and does not start transport; clearing during a request also prevents
+navigation delivery when that request returns. Expired records are cleared without
+transport. Corrupt/unavailable storage fails closed. Do not bypass an unavailable
+Group by falling back to ordinary preferences or a public directory.
+
+Fourteen local contract groups compile the real package and exercise native
+transport and temporary filesystem lifecycle, including competing processes and
+restart suppression. These are local filesystem fixtures, not evidence of signed
+App Clip replacement, iOS file protection on a device or App Store delivery.
+
+
+### First-party App Clip invocation
+
+For the install page's Safari App Clip invocation, normalize the actual
+`NSUserActivity.webpageURL` with
+`client.sourceFromAppClipInvocation(invocationURL, appBindingID: configuredBinding)`.
+It requires the trusted short host, exactly one install marker and a matching
+public app-choice UUID, rejects credential fields/fragments, and preserves the
+original campaign query. It performs no request. The Clip then obtains its own
+current consent, calls `createHandoff` with that source and stores the unconsumed
+receipt. It must still implement its useful app functionality. An already installed
+full app can call ordinary `resolve` with the normalized source. Do not interpret
+a banner selection or an invocation URL as consent or proof of app authentication.

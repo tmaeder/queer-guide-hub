@@ -673,3 +673,7 @@ verify_jwt = false
 # Signed outgoing webhook queue validates an internal secret or owner account.
 [functions.redirect-webhooks-dispatch]
 verify_jwt = false
+
+# Durable DNS instruction outbox; the handler checks the internal secret/current admin.
+[functions.redirect-domain-instruction-mail]
+verify_jwt = false

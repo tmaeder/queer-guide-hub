@@ -25,6 +25,34 @@ const env = {
 const get = (path = '/.well-known/apple-app-site-association', method = 'GET') =>
   new Request('https://queer.guide' + path, { method });
 describe('native app associations', () => {
+  it('normalizes optional install settings and rejects wrong field types or multiline labels', () => {
+    expect(
+      nativeAppValues({
+        publicName: '  Visitor app  ',
+        storeId: ' 1234567890 ',
+        appGroupId: ' group.org.example ',
+        handoffEnabled: false,
+      }),
+    ).toEqual({
+      publicName: 'Visitor app',
+      storeId: '1234567890',
+      appGroupId: 'group.org.example',
+      handoffEnabled: false,
+    });
+    expect(nativeAppValues({ publicName: ' ', storeId: null, appGroupId: '' })).toEqual({
+      publicName: null,
+      storeId: null,
+      appGroupId: null,
+    });
+    for (const value of [
+      { publicName: true },
+      { publicName: 'bad\nname' },
+      { storeId: 4 },
+      { appGroupId: [] },
+      { handoffEnabled: 'true' },
+    ])
+      expect(() => nativeAppValues(value)).toThrow();
+  });
   it('renders exact platform permissions and Android dynamic exclusions without private fields', () => {
     expect(associationDocument('ios', [ios, android])).toEqual({
       applinks: { details: [{ appIDs: [ios.appId], components: [{ '/': '/go/*' }] }] },
@@ -45,6 +73,49 @@ describe('native app associations', () => {
       },
     ]);
     expect(associationDocument('android', [])).toEqual([]);
+  });
+  it('publishes only parent-bound App Clip identities and reconstructs their exact gateway schema', async () => {
+    const clipped = { ...ios, appClipId: ios.appId + '.Clip' };
+    const document = associationDocument('ios', [clipped, android]);
+    expect(document).toEqual({
+      applinks: { details: [{ appIDs: [ios.appId], components: [{ '/': '/go/*' }] }] },
+      appclips: { apps: [clipped.appClipId] },
+    });
+    expect(associationDocument('android', [clipped, android])).toEqual(
+      associationDocument('android', [ios, android]),
+    );
+    const proxy = await proxyAppAssociation(
+      get(),
+      env,
+      vi.fn(async () => Response.json(document)),
+    );
+    expect(proxy?.status).toBe(200);
+    expect(await proxy?.json()).toEqual(document);
+    expect(nativeAppValues({ appClipId: '  ' })).toEqual({ appClipId: null });
+    expect(() => nativeAppValues({ appClipId: true })).toThrow();
+    expect(() =>
+      associationDocument('ios', [{ ...ios, appClipId: 'OTHER12345.org.other.Clip' }]),
+    ).toThrow();
+    expect(() => associationDocument('ios', [{ ...ios, appClipId: ios.appId }])).toThrow();
+    expect(() =>
+      associationDocument('android', [{ ...android, appClipId: clipped.appClipId }]),
+    ).toThrow();
+    for (const bad of [
+      { ...document, appclips: { apps: ['OTHER12345.org.other.Clip'] } },
+      { ...document, appclips: { apps: [clipped.appClipId, clipped.appClipId] } },
+      { ...document, appclips: { apps: [clipped.appClipId], extra: true } },
+      { ...document, webcredentials: { apps: [ios.appId] } },
+    ]) {
+      expect(
+        (
+          await proxyAppAssociation(
+            get(),
+            env,
+            vi.fn(async () => Response.json(bad)),
+          )
+        )?.status,
+      ).toBe(503);
+    }
   });
   it('normalizes fingerprints and rejects arbitrary identifiers, fields and unsafe patterns', () => {
     expect(

@@ -64,6 +64,12 @@ describe('saved reports and aggregate-only publication', () => {
     expect(() => savedReportInput({ name: 'Name', filters: { allowedIds: [id] } }, true)).toThrow();
     expect(() => savedReportInput({ name: 'Name', ownerUserId: id, filters: {} }, true)).toThrow();
     expect(() => savedReportInput({ name: 'Changed' }, false)).toThrow('Reload');
+    expect(savedReportInput({ visibility: 'team', version }, false)).toEqual({
+      visibility: 'team',
+      version,
+    });
+    for (const visibility of [true, null, {}, 'public'])
+      expect(() => savedReportInput({ visibility, version }, false)).toThrow('visibility');
     expect(() => savedReportInput({ name: 'Name', filters: { start: 'invalid' } }, true)).toThrow();
   });
   it('accepts only real UTC dates and never caller-supplied scope filters', () => {

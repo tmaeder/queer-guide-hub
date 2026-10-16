@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { AdminEmpty } from '@/components/admin/primitives/AdminEmpty';
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/hooks/useAuth';
 import { memberRedirectApi } from '@/lib/redirects/memberApi';
@@ -12,6 +13,8 @@ interface SavedReport {
   filters: AnalyticsFilters;
   version: string;
   updated_at: string;
+  visibility?: 'private' | 'team';
+  canEdit?: boolean;
 }
 interface Share {
   id: string;
@@ -60,14 +63,22 @@ function SavedReports({
   const [name, setName] = useState(''),
     [active, setActive] = useState<SavedReport | null>(null),
     [remove, setRemove] = useState(false),
-    [sharing, setSharing] = useState(false);
+    [sharing, setSharing] = useState(false),
+    [view, setView] = useState<'personal' | 'team' | 'all'>('personal'),
+    [teamReview, setTeamReview] = useState(false);
+  const canEdit = active && active.canEdit !== false;
   const query = useInfiniteQuery({
-    queryKey: ['redirect-saved-reports', userId],
+    queryKey: ['redirect-saved-reports', userId, view],
     initialPageParam: null as string | null,
     queryFn: ({ pageParam, signal }) =>
-      memberRedirectApi<{ data: SavedReport[]; count: number; nextCursor: string | null }>(
+      memberRedirectApi<{
+        data: SavedReport[];
+        count: number;
+        nextCursor: string | null;
+        canPublishToTeam?: boolean;
+      }>(
         '/reports?' +
-          new URLSearchParams({ limit: '50', ...(pageParam ? { cursor: pageParam } : {}) }),
+          new URLSearchParams({ limit: '50', view, ...(pageParam ? { cursor: pageParam } : {}) }),
         'GET',
         undefined,
         signal,
@@ -87,6 +98,7 @@ function SavedReports({
     }) => memberRedirectApi<SavedReport>('/reports' + (id ? '/' + id : ''), method, body),
     onSuccess: async (data, variables) => {
       setActive(variables.method === 'DELETE' ? null : data);
+      setTeamReview(false);
       if (variables.method === 'DELETE') {
         setName('');
         setRemove(false);
@@ -99,9 +111,31 @@ function SavedReports({
     <details className="space-y-4 rounded-container border p-4">
       <summary className="cursor-pointer font-medium">Saved reports and sharing</summary>
       <p className="text-sm text-muted-foreground">
-        Save the applied filters and dates. Reports are private to your account until you explicitly
-        publish a dashboard.
+        Save the applied filters and dates. New reports and copies are private. Team reports share
+        their saved definition with workspace members; analytics results still follow each viewer’s
+        access.
       </p>
+      <div className="space-y-2">
+        <Label htmlFor="saved-report-view">Report view</Label>
+        <select
+          id="saved-report-view"
+          className="min-h-11 w-full rounded-element border bg-background p-2 text-sm"
+          value={view}
+          disabled={mutation.isPending}
+          onChange={(event) => {
+            setView(event.target.value as 'personal' | 'team' | 'all');
+            setActive(null);
+            setName('');
+            setRemove(false);
+            setSharing(false);
+            setTeamReview(false);
+          }}
+        >
+          <option value="personal">My reports</option>
+          <option value="team">Team reports</option>
+          <option value="all">All available reports</option>
+        </select>
+      </div>
       <div className="space-y-2">
         <Label htmlFor="saved-report-name">Report name</Label>
         <Input
@@ -119,7 +153,7 @@ function SavedReports({
         >
           Save as new report
         </Button>
-        {active && (
+        {canEdit && active && (
           <>
             <Button
               type="button"
@@ -138,13 +172,100 @@ function SavedReports({
             <Button type="button" variant="outline" onClick={() => setSharing(!sharing)}>
               {sharing ? 'Hide sharing' : 'Share selected report'}
             </Button>
-            <Button type="button" variant="ghost" onClick={() => setRemove(true)}>
+            <Button
+              type="button"
+              variant="ghost"
+              disabled={mutation.isPending}
+              onClick={() => {
+                setRemove(true);
+                setTeamReview(false);
+              }}
+            >
               Delete selected report
             </Button>
           </>
         )}
       </div>
-      {remove && active && (
+      {active && (
+        <p className="text-sm text-muted-foreground">
+          Selected: {active.name} ·{' '}
+          {active.visibility === 'team' ? 'Team report' : 'Private report'}
+          {canEdit ? '' : ' · Read only. Save as new report to create a private copy.'}
+        </p>
+      )}
+      {canEdit && active && (
+        <div className="space-y-2">
+          {active.visibility === 'team' ? (
+            <Button
+              type="button"
+              variant="outline"
+              disabled={mutation.isPending}
+              onClick={() =>
+                mutation.mutate({
+                  method: 'PATCH',
+                  id: active.id,
+                  body: { version: active.version, visibility: 'private' },
+                })
+              }
+            >
+              Make report private
+            </Button>
+          ) : query.data?.pages[0].canPublishToTeam && !teamReview ? (
+            <Button
+              type="button"
+              variant="outline"
+              disabled={mutation.isPending}
+              onClick={() => {
+                setTeamReview(true);
+                setRemove(false);
+              }}
+            >
+              Make available to team
+            </Button>
+          ) : null}
+          {teamReview && active.visibility !== 'team' && (
+            <div role="group" aria-label="Team report review" className="space-y-2">
+              <p>
+                Make “{active.name}” discoverable to workspace members? They can see its saved name,
+                filters and dates, load it, and save private copies. Their existing analytics
+                permissions still apply. Only you can edit this report. Public dashboards are
+                managed separately.
+              </p>
+              <div className="flex flex-wrap gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  disabled={mutation.isPending}
+                  onClick={() =>
+                    mutation.mutate({
+                      method: 'PATCH',
+                      id: active.id,
+                      body: { version: active.version, visibility: 'team' },
+                    })
+                  }
+                >
+                  Confirm team discovery
+                </Button>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  disabled={mutation.isPending}
+                  onClick={() => setTeamReview(false)}
+                >
+                  Keep report private
+                </Button>
+              </div>
+            </div>
+          )}
+          {active.visibility === 'team' && (
+            <p className="text-sm text-muted-foreground">
+              Updating this report changes the saved definition your team can load. Existing public
+              dashboards keep their published snapshots.
+            </p>
+          )}
+        </div>
+      )}
+      {remove && canEdit && active && (
         <div className="space-y-2">
           <p>Delete “{active.name}” and revoke every public dashboard created from it?</p>
           <Button
@@ -174,6 +295,10 @@ function SavedReports({
         </p>
       )}
       {query.isPending && <p role="status">Loading saved reports…</p>}
+      {query.data && <p className="text-sm">{query.data.pages[0].count} available reports</p>}
+      {query.data?.pages[0].count === 0 && (
+        <AdminEmpty noun={view === 'team' ? 'team reports' : 'saved reports'} variant="inline" />
+      )}
       <ul className="space-y-2">
         {query.data?.pages
           .flatMap((p) => p.data)
@@ -183,7 +308,8 @@ function SavedReports({
               className="flex flex-wrap items-center justify-between gap-2 border-t pt-2"
             >
               <span>
-                {report.name}
+                {report.name} · {report.visibility === 'team' ? 'Team' : 'Private'}
+                {report.canEdit === false ? ' · Read only' : ''}
                 {active?.id === report.id ? ' · Selected' : ''}
               </span>
               <Button
@@ -195,6 +321,7 @@ function SavedReports({
                   setName(report.name);
                   setRemove(false);
                   setSharing(false);
+                  setTeamReview(false);
                   onLoad(report.filters);
                 }}
               >
@@ -213,7 +340,7 @@ function SavedReports({
           Load more reports
         </Button>
       )}
-      {sharing && active && (
+      {sharing && canEdit && active && (
         <ReportSharing key={active.id + active.version} report={active} userId={userId} />
       )}
     </details>

@@ -44,8 +44,113 @@ export function nativeAttributionConsent(request: Request) {
     nativeRedirectRequested(request) && request.headers.get(NATIVE_CONSENT_HEADER) === 'granted'
   );
 }
+export const NATIVE_HANDOFF_MARKER = 'qg_handoff';
+export const NATIVE_HANDOFF_ACTION = 'x-qg-handoff-action';
+export const NATIVE_HANDOFF_APP = 'x-qg-handoff-app';
+export const NATIVE_HANDOFF_TOKEN = 'x-qg-handoff-token';
+export const NATIVE_HANDOFF_STATE = 'x-qg-handoff-state';
+export const NATIVE_HANDOFF_EXPIRY = 'x-qg-handoff-expires';
+const handoffTokenPattern = /^qg_handoff_[a-f0-9]{64}$/;
+export interface NativeHandoffRequest {
+  action: 'create' | 'resume';
+  app: string;
+  token?: string;
+}
+/** Browser markers render a no-visit page, never a credential-bearing GET.
+ * All other marked/hand-off-header requests still require the native protocol. */
+export function browserHandoffRequested(
+  request: Request,
+  query = new URL(request.url).searchParams,
+): 'install' | 'resume' | null {
+  const marker = query.get(NATIVE_HANDOFF_MARKER);
+  return request.method === 'GET' &&
+    !nativeRedirectRequested(request) &&
+    query.getAll(NATIVE_HANDOFF_MARKER).length === 1 &&
+    (marker === 'install' || marker === 'resume') &&
+    ![...request.headers.keys()].some((key) => key.startsWith('x-qg-handoff-'))
+    ? marker
+    : null;
+}
+/** The marker survives an older gateway that omits headers: never count a
+ * marked resume as a clean visit. Tokens are accepted only in a header. */
+export function nativeHandoffRequest(
+  request: Request,
+  query = new URL(request.url).searchParams,
+): NativeHandoffRequest | null {
+  if (
+    [
+      NATIVE_HANDOFF_ACTION,
+      NATIVE_HANDOFF_APP,
+      NATIVE_HANDOFF_TOKEN,
+      'qg_handoff_action',
+      'qg_handoff_app',
+      'qg_handoff_token',
+    ].some((key) => query.has(key))
+  )
+    throw new Error('Handoff credentials require headers');
+  const fields = [NATIVE_HANDOFF_ACTION, NATIVE_HANDOFF_APP, NATIVE_HANDOFF_TOKEN];
+  const marked = query.has(NATIVE_HANDOFF_MARKER);
+  const supplied = [...request.headers.keys()].filter((key) => key.startsWith('x-qg-handoff-'));
+  if (!marked && !supplied.length) return null;
+  if (browserHandoffRequested(request, query)) return null;
+  const action = request.headers.get(NATIVE_HANDOFF_ACTION),
+    app = request.headers.get(NATIVE_HANDOFF_APP),
+    token = request.headers.get(NATIVE_HANDOFF_TOKEN);
+  if (
+    !nativeAttributionConsent(request) ||
+    !['GET', 'POST'].includes(request.method) ||
+    query.getAll(NATIVE_HANDOFF_MARKER).length !== 1 ||
+    supplied.some((key) => !fields.includes(key)) ||
+    !app ||
+    !/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i.test(app) ||
+    (action === 'create'
+      ? query.get(NATIVE_HANDOFF_MARKER) !== 'install' || token !== null
+      : action !== 'resume' ||
+        query.get(NATIVE_HANDOFF_MARKER) !== 'resume' ||
+        !token ||
+        !handoffTokenPattern.test(token))
+  )
+    throw new Error('Invalid native handoff request');
+  return { action: action as 'create' | 'resume', app, ...(token ? { token } : {}) };
+}
+export function newNativeHandoffToken() {
+  return (
+    'qg_handoff_' +
+    Array.from(crypto.getRandomValues(new Uint8Array(32)), (byte) =>
+      byte.toString(16).padStart(2, '0'),
+    ).join('')
+  );
+}
+export async function nativeHandoffDigest(token: string) {
+  if (!handoffTokenPattern.test(token)) throw new Error('Invalid handoff token');
+  return Array.from(
+    new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(token))),
+    (byte) => byte.toString(16).padStart(2, '0'),
+  ).join('');
+}
+export function nativeHandoffResponse(headers: Headers, token: string | null, expires?: string) {
+  headers.set(NATIVE_HANDOFF_STATE, token ? 'created' : 'consumed');
+  if (token) {
+    const time = Date.parse(expires ?? '');
+    if (
+      !handoffTokenPattern.test(token) ||
+      !Number.isFinite(time) ||
+      time <= Date.now() ||
+      time > Date.now() + 86401000
+    )
+      throw new Error('Invalid handoff receipt');
+    headers.set(NATIVE_HANDOFF_TOKEN, token);
+    headers.set(NATIVE_HANDOFF_EXPIRY, new Date(time).toISOString());
+  }
+}
 export function forwardNativeHeaders(request: Request, headers: Headers) {
   if (nativeRedirectRequested(request)) {
+    const handoff = nativeHandoffRequest(request);
+    if (handoff) {
+      headers.set(NATIVE_HANDOFF_ACTION, handoff.action);
+      headers.set(NATIVE_HANDOFF_APP, handoff.app);
+      if (handoff.token) headers.set(NATIVE_HANDOFF_TOKEN, handoff.token);
+    }
     headers.set('Accept', NATIVE_REDIRECT_MEDIA);
     headers.set(NATIVE_CONSENT_HEADER, nativeAttributionConsent(request) ? 'granted' : 'denied');
   }
@@ -211,6 +316,21 @@ export async function nativeUpstreamResponse(
       response.status,
       new URL(request.url),
     );
+    const handoff = nativeHandoffRequest(request);
+    if (handoff && response.status === 200) {
+      if (!('mode' in body) || body.mode !== 'navigate' || !body.clickId)
+        throw new Error('Invalid handoff outcome');
+      const state = response.headers.get(NATIVE_HANDOFF_STATE),
+        token = response.headers.get(NATIVE_HANDOFF_TOKEN),
+        expiry = response.headers.get(NATIVE_HANDOFF_EXPIRY);
+      if (handoff.action === 'create') {
+        if (state !== 'created' || !token || !expiry) throw new Error('Missing handoff receipt');
+        nativeHandoffResponse(headers, token, expiry);
+      } else {
+        if (state !== 'consumed' || token || expiry) throw new Error('Invalid handoff consumption');
+        nativeHandoffResponse(headers, null);
+      }
+    }
     return new Response(JSON.stringify(body), { status: response.status, headers });
   } catch {
     return nativeProblem(502, request.method === 'HEAD');

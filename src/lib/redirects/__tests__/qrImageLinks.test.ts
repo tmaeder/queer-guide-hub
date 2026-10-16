@@ -80,6 +80,26 @@ describe('image capability authoring and public profile API', () => {
     for (const value of [{ version: 'bad' }, { version: id, extra: true }, {}, null])
       expect(() => qrImageRevokeInput(value)).toThrow();
   });
+  it('validates installation purpose and normalizes only public entry query fields', () => {
+    expect(
+      qrImageLinkInput({
+        linkId: id,
+        purpose: 'install',
+        entryQuery: 'utm_source=poster%20one&ref=a%2Bb',
+      }),
+    ).toEqual({ linkId: id, purpose: 'install', entryQuery: 'utm_source=poster+one&ref=a%2Bb' });
+    for (const value of [
+      { url: 'https://example.com', purpose: 'install' },
+      { linkId: id, purpose: null },
+      { linkId: id, purpose: 'resume' },
+      { linkId: id, purpose: 'visit', entryQuery: 'utm_source=poster' },
+      { linkId: id, purpose: 'install', entryQuery: '%70assword=private' },
+      { linkId: id, purpose: 'install', entryQuery: 'qg_handoff_token=private' },
+      { linkId: id, purpose: 'install', entryQuery: 'QG_CLICK_ID=private' },
+      { linkId: id, purpose: 'install', entryQuery: Array(33).fill('utm_source=x').join('&') },
+    ])
+      expect(() => qrImageLinkInput(value)).toThrow();
+  });
   it('hashes the bearer for the service-only lookup, emits fixed public asset metadata and closes missing grants', async () => {
     const db = { rpc: vi.fn(async () => ({ data: profile(), error: null })) };
     const req = new Request(origin + '/functions/v1/redirect-api/public-qr-image', {

@@ -23,6 +23,29 @@ automatic retries, especially for create/update/delete. Retry conversion ingesti
 with a stable event ID; pass money as decimal strings to preserve all six supported
 decimal places. Revenue responses remain exact strings by currency.
 
+## Workspace context
+
+Account-session clients can call `getSession` / `get_session` / `GetSession` and
+`listWorkspaces` / `list_workspaces` / `ListWorkspaces` to discover their current
+workspace UUID and role. These account-only methods reject server API keys.
+The server reads current membership/owner state; stale admin claims do not grant
+workspace access.
+
+Bind a client to a discovered UUID with TypeScript `options.workspaceId`, Python
+`workspace_id=`, Ruby `workspace_id:`, PHP `workspaceId:` (fourth constructor
+argument), or Go `client.WithWorkspace(id)`. Go returns a separate client copy;
+other constructors retain their selected context. Requests carry the
+`X-Qg-Redirect-Workspace` header. UUIDs are validated and normalized before
+transport. The header selects a requested context and never grants permission.
+
+The current implementation exposes only the explicit legacy workspace. Omitting
+the option selects that workspace for existing clients. Other UUIDs fail403;
+empty, duplicate or malformed selections fail400. The branded gateway preserves
+these selections, including invalid empty values, so it cannot silently turn a
+rejected selection into a mutation in the legacy workspace. New workspace
+activation and domain transfer remain unavailable until all resource paths are
+scoped. This foundation has not been deployed or published to package registries.
+
 ## Local usage
 
 These sources have not been published to package registries. Copy the relevant
@@ -159,6 +182,17 @@ Defaults follow current workspace/domain branding. Creation requires links:read
 and current folder/ID access. Explicit arbitrary URL publication is restricted to
 an owner account session, rather than server keys.
 
+For an installation page, pass `purpose: "install"` with a managed `linkId`.
+Optional `entryQuery` carries public campaign fields, for example
+`utm_source=poster&ref=community%2Bfriends`; no password, click ID or private
+handoff fields are accepted. It is normalized, limited to32 fields/2048 bytes,
+and included after the fixed public install marker. The complete entry URL must
+fit2048 bytes. Existing clients/records default to `purpose: "visit"`. Hosted
+installation images follow the current canonical link and branding, including
+custom artwork verification. Their metadata reports `purpose`; public profiles
+retain the minimal URL/style/logo shape. Creation/rendering never mints a native
+receipt or records a visit.
+
 The creation response contains id/version/metadata plus `imageUrls.png`, `.jpg`
 and `.svg`. Each URL contains a random bearer capability, returned once; save the
 URL if you intend to embed it. The list API does not return the bearer or hash.
@@ -225,7 +259,7 @@ limit and uses an empty cursor for the first page; the others default to 50.
 Create takes `{name, filters}`; filters support link/folder/tag scope, UTC dates,
 event kind, geo/device/referrer/domain/variant/bot/QR choices and interval. Edits
 take the current `version` and optional name/filters; reload after a 409 conflict.
-Report metadata preserves the API's `created_at`, `updated_at`, `owner_user_id`
+Owned report metadata preserves the API's `created_at`, `updated_at`, `owner_user_id`
 names. Aggregate money remains decimal strings; no SDK converts it to floats.
 
 Creating/running a private report does not publish it. Share creation requires
@@ -521,3 +555,16 @@ and it returns explicit app/browser navigation decisions. Run
 protocol with a dedicated OkHttp transport. Run `node scripts/test-redirect-android.mjs`
 with JDK21/Maven. Both clients remain local candidates; deterministic deferred
 attribution, signed-device evidence and package publication remain open.
+
+
+Team report discovery is opt in. Lists default to personal reports; use optional
+`view=team` or `view=all` with TypeScript/Python/PHP's third list argument or Ruby's
+`view:` keyword. Go offers `ListReportsInView(ctx, limit, cursor, view)` alongside
+the compatible personal `ListReports`. Current owners can set `visibility: team`
+on their own create/update; updates require the current version. Team readers
+receive `canEdit: false` and no author's account ID. Their runs use current link
+permissions; they cannot edit/delete the source or manage its public shares. Save
+a new report with the loaded filters to create a private copy. Set visibility to
+`private` to withdraw discovery; independent public snapshots remain managed by
+their own share methods. Publisher-owner and reader-member rights are checked on
+every request. API keys cannot list or manage report definitions.

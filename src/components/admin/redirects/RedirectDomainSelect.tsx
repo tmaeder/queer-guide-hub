@@ -46,9 +46,7 @@ export function RedirectDomainSelect({
         )}
         <option value="">queer.guide/go</option>
         {currentUnavailable && (
-          <option value={existing.id!}>
-            {existing.hostname ?? 'Current domain'} (current, unavailable)
-          </option>
+          <option value={existing.id!}>{existing.hostname ?? 'Current domain'} (current)</option>
         )}
         {query.data?.data.map((domain) => (
           <option key={domain.id} value={domain.id}>

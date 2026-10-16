@@ -1,0 +1,104 @@
+name: Redirect DNS setup contracts
+on:
+  pull_request:
+    paths:
+      - 'supabase/functions/_shared/redirect-*'
+      - 'supabase/functions/_shared/link-policy.ts'
+      - 'supabase/functions/redirect-api/**'
+      - 'supabase/functions/redirect-domain-instruction-mail/**'
+      - 'supabase/config.toml'
+      - 'supabase/migrations/**'
+      - 'supabase/tests/redirect_*.sql'
+      - 'supabase/tests/fixtures/**'
+      - 'src/components/admin/redirects/RedirectDomainConnect*'
+      - 'src/components/admin/redirects/RedirectDomainMail*'
+      - 'src/lib/redirects/memberApi.ts'
+      - 'src/components/admin/redirects/RedirectDomains*'
+      - 'src/lib/redirects/__tests__/domainConnect*'
+      - 'src/lib/redirects/__tests__/domainDiscovery*'
+      - 'src/lib/redirects/__tests__/domainMail*'
+      - 'src/lib/redirects/__tests__/redirectApi.test.ts'
+      - 'config/domain-connect/**'
+      - 'scripts/lib/redirect-test-db.mjs'
+      - 'scripts/lib/redirect-integration-fixtures.mjs'
+      - 'scripts/lib/redirect-workspace-fixtures.mjs'
+      - 'scripts/test-redirect-platform-sql.mjs'
+      - 'scripts/test-redirect-workspace-backfill.mjs'
+      - 'functions/api/redirects/**'
+      - 'functions/_lib/redirectApiProxy.test.ts'
+      - 'scripts/test-redirect-sdks.mjs'
+      - 'sdk/redirects/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - '.github/workflows/redirect-domain-connect.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'supabase/functions/_shared/redirect-*'
+      - 'supabase/functions/_shared/link-policy.ts'
+      - 'supabase/functions/redirect-api/**'
+      - 'supabase/functions/redirect-domain-instruction-mail/**'
+      - 'supabase/config.toml'
+      - 'supabase/migrations/**'
+      - 'supabase/tests/redirect_*.sql'
+      - 'supabase/tests/fixtures/**'
+      - 'src/components/admin/redirects/RedirectDomainConnect*'
+      - 'src/components/admin/redirects/RedirectDomainMail*'
+      - 'src/lib/redirects/memberApi.ts'
+      - 'src/components/admin/redirects/RedirectDomains*'
+      - 'src/lib/redirects/__tests__/domainConnect*'
+      - 'src/lib/redirects/__tests__/domainDiscovery*'
+      - 'src/lib/redirects/__tests__/domainMail*'
+      - 'src/lib/redirects/__tests__/redirectApi.test.ts'
+      - 'config/domain-connect/**'
+      - 'scripts/lib/redirect-test-db.mjs'
+      - 'scripts/lib/redirect-integration-fixtures.mjs'
+      - 'scripts/lib/redirect-workspace-fixtures.mjs'
+      - 'scripts/test-redirect-platform-sql.mjs'
+      - 'scripts/test-redirect-workspace-backfill.mjs'
+      - 'functions/api/redirects/**'
+      - 'functions/_lib/redirectApiProxy.test.ts'
+      - 'scripts/test-redirect-sdks.mjs'
+      - 'sdk/redirects/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - '.github/workflows/redirect-domain-connect.yml'
+permissions:
+  contents: read
+concurrency:
+  group: redirect-domain-connect-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  contracts:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '22.20.0'
+          cache: npm
+      - uses: actions/setup-go@v7
+        with:
+          go-version: '1.27.2'
+          cache: false
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+      - name: Install SDK fixture runtimes
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y php-cli ruby
+      - run: npm ci --prefer-offline --no-audit
+      - name: Check API with isolated frozen deployment dependencies
+        run: deno check --node-modules-dir=none --config supabase/functions/redirect-api/deno.json --lock=supabase/functions/redirect-api/deno.lock --frozen supabase/functions/redirect-api/index.ts
+      - name: Check instruction mail consumer with frozen deployment dependencies
+        run: deno check --node-modules-dir=none --config supabase/functions/redirect-domain-instruction-mail/deno.json --lock=supabase/functions/redirect-domain-instruction-mail/deno.lock --frozen supabase/functions/redirect-domain-instruction-mail/index.ts
+      - name: Verify DNS discovery, signing, email transport and owner controls
+        run: npx vitest run src/lib/redirects/__tests__/domainConnect.test.ts src/lib/redirects/__tests__/domainConnectApi.test.ts src/lib/redirects/__tests__/domainDiscovery.test.ts src/lib/redirects/__tests__/domainMail.test.ts src/components/admin/redirects/RedirectDomainConnect.test.tsx src/components/admin/redirects/RedirectDomains.test.tsx src/components/admin/redirects/RedirectDomainMail.test.tsx functions/_lib/redirectApiProxy.test.ts src/lib/redirects/__tests__/redirectApi.test.ts
+      - name: Prove existing data survives workspace identity backfill
+        run: node scripts/test-redirect-workspace-backfill.mjs
+      - name: Execute migrated database contracts
+        run: npm run test:redirect-sql
+      - name: Follow owner API approval and callback through real SQL and five SDK runtimes
+        run: npm run test:redirect-sdks

@@ -1,0 +1,40 @@
+BEGIN;
+SET LOCAL ROLE service_role;
+DO $$
+DECLARE actor uuid:=gen_random_uuid();member_user uuid:=gen_random_uuid();outsider uuid:=gen_random_uuid();member uuid;other uuid:=gen_random_uuid();legacy uuid:='58aa4340-8f21-4b7f-9a10-90be2da89c01';context jsonb;resource record;fenced integer:=0;
+BEGIN
+ INSERT INTO auth.users(id) VALUES(actor),(member_user),(outsider);
+ INSERT INTO public.user_roles VALUES(actor,'admin');
+ INSERT INTO public.redirect_workspace_members(user_id,kind,label,role) VALUES(member_user,'user','Workspace member','viewer') RETURNING id INTO member;
+ context:=public.redirect_workspace_context(actor);
+ IF context#>>'{workspace,id}' IS DISTINCT FROM legacy::text OR context#>>'{principal,role}' IS DISTINCT FROM 'owner' OR context#>'{principal,id}'<>'null'::jsonb THEN RAISE EXCEPTION 'Legacy owner identity changed';END IF;
+ context:=public.redirect_workspace_context(member_user,legacy,'links:read');
+ IF context#>>'{principal,id}' IS DISTINCT FROM member::text OR context#>>'{principal,role}' IS DISTINCT FROM 'viewer' THEN RAISE EXCEPTION 'Explicit human membership lost';END IF;
+ INSERT INTO public.redirect_workspaces(id,name,slug,created_by) VALUES(other,'Second workspace','second-workspace',actor);
+ BEGIN PERFORM public.redirect_workspace_context(actor,other);RAISE EXCEPTION 'Global owner acquired provisioning workspace';EXCEPTION WHEN insufficient_privilege THEN NULL;END;
+ BEGIN PERFORM public.redirect_workspace_context(outsider,legacy);RAISE EXCEPTION 'Unknown account gained legacy membership';EXCEPTION WHEN insufficient_privilege THEN NULL;END;
+ BEGIN PERFORM public.redirect_workspace_context(actor,legacy,'invalid:scope');RAISE EXCEPTION 'Unknown scope accepted';EXCEPTION WHEN invalid_parameter_value THEN NULL;END;
+ BEGIN UPDATE public.redirect_workspaces SET status='active' WHERE id=other;RAISE EXCEPTION 'Unfenced workspace activated';EXCEPTION WHEN check_violation THEN NULL;END;
+ BEGIN UPDATE public.redirect_workspaces SET id=gen_random_uuid() WHERE id=other;RAISE EXCEPTION 'Workspace identity changed';EXCEPTION WHEN check_violation THEN NULL;END;
+ BEGIN UPDATE public.redirect_workspaces SET status='provisioning' WHERE id=legacy;RAISE EXCEPTION 'Legacy workspace disabled';EXCEPTION WHEN check_violation THEN NULL;END;
+ BEGIN INSERT INTO public.redirect_link_folders(name,workspace_id) VALUES('Cross-tenant folder',other);RAISE EXCEPTION 'Unconverted reader could see a second tenant folder';EXCEPTION WHEN check_violation THEN NULL;END;
+ BEGIN UPDATE public.redirect_workspace_members SET workspace_id=other WHERE id=member;RAISE EXCEPTION 'Unconverted member helper acquired another tenant';EXCEPTION WHEN check_violation THEN NULL;END;
+ PERFORM set_config('request.headers',jsonb_build_object('x-qg-redirect-session-actor',outsider)::text,true);
+ BEGIN PERFORM public.redirect_workspace_context(actor);RAISE EXCEPTION 'Spoofed session actor accepted';EXCEPTION WHEN insufficient_privilege THEN NULL;END;
+ PERFORM set_config('request.headers','{}',true);
+ DELETE FROM public.user_roles WHERE user_id=actor;
+ BEGIN PERFORM public.redirect_workspace_context(actor);RAISE EXCEPTION 'Removed legacy owner retained context';EXCEPTION WHEN insufficient_privilege THEN NULL;END;
+ UPDATE public.redirect_workspace_members SET active=false WHERE id=member;
+ BEGIN PERFORM public.redirect_workspace_context(member_user);RAISE EXCEPTION 'Inactive member retained context';EXCEPTION WHEN insufficient_privilege THEN NULL;END;
+ INSERT INTO public.user_roles VALUES(actor,'admin');
+ DELETE FROM auth.users WHERE id=actor;
+ IF (SELECT created_by FROM public.redirect_workspaces WHERE id=other) IS NOT NULL THEN RAISE EXCEPTION 'Creator deletion incorrectly deleted workspace';END IF;
+ FOR resource IN SELECT c.relname,c.oid FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace WHERE n.nspname='public' AND c.relkind IN('r','p') AND(c.relname LIKE 'redirect\_%' ESCAPE '\' OR c.relname='redirects') AND c.relname<>'redirect_workspaces' LOOP
+  IF NOT EXISTS(SELECT FROM pg_attribute WHERE attrelid=resource.oid AND attname='workspace_id' AND attnotnull AND NOT attisdropped) OR NOT EXISTS(SELECT FROM pg_constraint WHERE conrelid=resource.oid AND conname=resource.relname||'_pending_tenant_fence' AND contype='c' AND convalidated) THEN RAISE EXCEPTION 'Unfenced Redirects table: %',resource.relname;END IF;
+  IF NOT EXISTS(SELECT FROM pg_constraint WHERE conrelid=resource.oid AND contype='f' AND confrelid='public.redirect_workspaces'::regclass) THEN RAISE EXCEPTION 'Unbound workspace identity: %',resource.relname;END IF;
+  fenced:=fenced+1;
+ END LOOP;
+ IF fenced<>40 THEN RAISE EXCEPTION 'Resource inventory changed; review tenant fence coverage: %',fenced;END IF;
+ IF has_table_privilege('authenticated','public.redirect_workspaces','SELECT') OR has_table_privilege('anon','public.redirect_workspaces','SELECT') OR has_function_privilege('authenticated','public.redirect_workspace_context(uuid,uuid,text)','EXECUTE') OR has_function_privilege('anon','public.redirect_workspace_context(uuid,uuid,text)','EXECUTE') THEN RAISE EXCEPTION 'Private workspace discovery grants expanded';END IF;
+END $$;
+ROLLBACK;

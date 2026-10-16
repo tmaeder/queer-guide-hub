@@ -16,6 +16,10 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Date;
+import java.util.TimeZone;
+import java.text.ParsePosition;
+import java.text.SimpleDateFormat;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -37,7 +41,7 @@ import com.squareup.moshi.JsonDataException;
 import com.squareup.moshi.Moshi;
 import com.squareup.moshi.Types;
 
-/** Stateless native resolution. Use from a background thread; each call is a visit. */
+/** Stateless native resolution. Ordinary/create calls reserve a visit; resume continues it. */
 public final class RedirectClient implements AutoCloseable {
   public static final String MEDIA_TYPE = "application/vnd.queer-guide.redirect+json";
   private final Set<String> shortHosts;
@@ -63,10 +67,37 @@ public final class RedirectClient implements AutoCloseable {
     public final int statusCode;
     public final UUID clickId;
     public final Navigation navigation;
-    private Resolution(URI canonicalUrl, URI destination, int statusCode, UUID clickId, Navigation navigation) {
+    public final HandoffReceipt receipt;
+    public final boolean handoffConsumed;
+    private final boolean nativeNavigation;
+    private Resolution(URI canonicalUrl, URI destination, int statusCode, UUID clickId, Navigation navigation, boolean nativeNavigation) {
+      this(canonicalUrl,destination,statusCode,clickId,navigation,nativeNavigation,null,false);
+    }
+    private Resolution(URI canonicalUrl, URI destination, int statusCode, UUID clickId, Navigation navigation, boolean nativeNavigation, HandoffReceipt receipt, boolean consumed) {
+      this.receipt=receipt;this.handoffConsumed=consumed;this.nativeNavigation=nativeNavigation;
       this.canonicalUrl = canonicalUrl; this.destination = destination;
       this.statusCode = statusCode; this.clickId = clickId; this.navigation = navigation;
     }
+  }
+  /** Header-only capability. No storage or automatic retry; never log the token. */
+  public static final class HandoffReceipt {
+    public final URI canonicalUrl;
+    public final UUID appBindingId;
+    public final String token;
+    public final long expiresAtEpochMillis;
+    public HandoffReceipt(URI canonicalUrl, UUID appBindingId, String token, long expiresAtEpochMillis) throws RedirectException {
+      if (canonicalUrl==null || appBindingId==null || token==null || !token.matches("qg_handoff_[a-f0-9]{64}") || expiresAtEpochMillis<=System.currentTimeMillis() || expiresAtEpochMillis-System.currentTimeMillis()>86401000L) throw new RedirectException("invalid_handoff");
+      URI source;
+      try { source=publicUrl(canonicalUrl.toString(),4096,true); }
+      catch (RedirectException invalid) { throw new RedirectException("invalid_handoff"); }
+      if(source.getRawQuery()!=null || source.getRawFragment()!=null) throw new RedirectException("invalid_handoff");
+      this.canonicalUrl=source;this.appBindingId=appBindingId;this.token=token;this.expiresAtEpochMillis=expiresAtEpochMillis;
+    }
+    @Override public String toString() { return "HandoffReceipt(redacted)"; }
+  }
+  private static final class HandoffAttempt {
+    final String action;final UUID app;final String token;
+    HandoffAttempt(String action,UUID app,String token) {this.action=action;this.app=app;this.token=token;}
   }
   public static final class RedirectException extends IOException {
     private static final long serialVersionUID = 1L;
@@ -112,21 +143,40 @@ public final class RedirectClient implements AutoCloseable {
 
   public ResolutionCall newCall(URI link) throws RedirectException { return newCall(link, null, false); }
   public ResolutionCall newCall(URI link, String password, boolean attributionConsent) throws RedirectException {
+    return prepare(link,password,attributionConsent,null);
+  }
+  public ResolutionCall newHandoffCall(URI link,UUID appBindingId,String password,boolean attributionConsent) throws RedirectException {
+    if(!attributionConsent) throw new RedirectException("consent_required");
+    if(appBindingId==null) throw new RedirectException("invalid_handoff");
+    return prepare(link,password,true,new HandoffAttempt("create",appBindingId,null));
+  }
+  public ResolutionCall newResumeCall(HandoffReceipt receipt,String password,boolean attributionConsent) throws RedirectException {
+    if(!attributionConsent) throw new RedirectException("consent_required");
+    if(receipt==null || receipt.expiresAtEpochMillis<=System.currentTimeMillis() || receipt.expiresAtEpochMillis-System.currentTimeMillis()>86401000L) throw new RedirectException("invalid_handoff");
+    return prepare(receipt.canonicalUrl,password,true,new HandoffAttempt("resume",receipt.appBindingId,receipt.token));
+  }
+  private ResolutionCall prepare(URI link,String password,boolean attributionConsent,HandoffAttempt handoff) throws RedirectException {
     if (closed.get()) throw new RedirectException("client_closed");
     if (link == null) throw new RedirectException("invalid_link");
     URI source = publicUrl(link.toString(), 4096, true);
     if (!shortHosts.contains(source.getHost().toLowerCase(Locale.ROOT))) throw new RedirectException("invalid_link");
-    for (String[] pair : query(source)) if (pair[0].equals("pw") || pair[0].equals("password")) throw new RedirectException("invalid_link");
+    for (String[] pair : query(source)) if (Arrays.asList("pw","password","qg_handoff","qg_handoff_token","qg_handoff_app","qg_handoff_action","x-qg-handoff-token","x-qg-handoff-app","x-qg-handoff-action").contains(pair[0])) throw new RedirectException("invalid_link");
     String raw = source.toString(); int hash = raw.indexOf('#');
     if (hash >= 0) raw = raw.substring(0, hash);
+    if(handoff!=null) raw+=(source.getRawQuery()==null?"?":"&")+"qg_handoff="+(handoff.action.equals("create")?"install":"resume");
     Request.Builder request = new Request.Builder().url(raw)
       .header("Accept", MEDIA_TYPE).header("X-QG-Attribution-Consent", attributionConsent ? "granted" : "denied")
       .header("User-Agent", "QueerGuideRedirects/1 (Android)");
+    if(handoff!=null) {
+      request.header("X-QG-Handoff-Action",handoff.action).header("X-QG-Handoff-App",handoff.app.toString());
+      if(handoff.token!=null) request.header("X-QG-Handoff-Token",handoff.token);
+      request.post(new FormBody.Builder().build());
+    }
     if (password != null) {
       if (password.isEmpty() || password.length() > 256) throw new RedirectException("invalid_password");
       request.post(new FormBody.Builder().add("password", password).build());
     }
-    return new ResolutionCall(client.newCall(request.build()), source, attributionConsent);
+    return new ResolutionCall(client.newCall(request.build()), source, attributionConsent, handoff);
   }
 
   public interface ResolutionCallback {
@@ -137,9 +187,10 @@ public final class RedirectClient implements AutoCloseable {
     private final Call call;
     private final URI source;
     private final boolean consent;
+    private final HandoffAttempt handoff;
     private final AtomicBoolean executed = new AtomicBoolean();
     private final AtomicBoolean canceled = new AtomicBoolean();
-    private ResolutionCall(Call call, URI source, boolean consent) { this.call = call; this.source = source; this.consent = consent; }
+    private ResolutionCall(Call call, URI source, boolean consent, HandoffAttempt handoff) { this.call = call; this.source = source; this.consent = consent; this.handoff=handoff; }
     public void cancel() { canceled.set(true); call.cancel(); }
     public boolean isCanceled() { return call.isCanceled(); }
     /** Blocking: run on your app's I/O executor. One execution; no SDK retry. */
@@ -188,7 +239,21 @@ public final class RedirectClient implements AutoCloseable {
           }
           bytes = output.toByteArray();
         }
-        return decode(bytes, response.code(), response.header("Retry-After"), source, consent);
+        Resolution result=decode(bytes, response.code(), response.header("Retry-After"), source, consent);
+        if(handoff==null) return result;
+        if(!result.nativeNavigation || result.clickId==null) throw new RedirectException("invalid_response");
+        HandoffReceipt receipt=null;
+        if(handoff.action.equals("create")) {
+          String state=response.header("X-QG-Handoff-State"),token=response.header("X-QG-Handoff-Token"),expiry=response.header("X-QG-Handoff-Expires");
+          if(!"created".equals(state) || expiry==null || !expiry.matches("[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}\\.[0-9]{3}Z")) throw new RedirectException("invalid_response");
+          SimpleDateFormat format=new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'",Locale.ROOT);
+          format.setLenient(false);format.setTimeZone(TimeZone.getTimeZone("UTC"));
+          ParsePosition position=new ParsePosition(0);Date parsed=format.parse(expiry,position);
+          if(parsed==null || position.getIndex()!=expiry.length()) throw new RedirectException("invalid_response");
+          try { receipt=new HandoffReceipt(result.canonicalUrl,handoff.app,token,parsed.getTime()); }
+          catch(RedirectException invalid) {throw new RedirectException("invalid_response");}
+        } else if(!"consumed".equals(response.header("X-QG-Handoff-State")) || response.header("X-QG-Handoff-Token")!=null || response.header("X-QG-Handoff-Expires")!=null) throw new RedirectException("invalid_response");
+        return new Resolution(result.canonicalUrl,result.destination,result.statusCode,result.clickId,result.navigation,result.nativeNavigation,receipt,handoff.action.equals("resume"));
       }
     }
   }
@@ -234,7 +299,7 @@ public final class RedirectClient implements AutoCloseable {
       if (!consent) target = withoutClickId(target);
       boolean app = mode.equals("navigate") && target.getScheme().equalsIgnoreCase("https")
         && (target.getPort() == -1 || target.getPort() == 443) && contentHosts.contains(target.getHost().toLowerCase(Locale.ROOT));
-      return new Resolution(canonical, target, ((Number) code).intValue(), id, app ? Navigation.APP : Navigation.BROWSER);
+      return new Resolution(canonical, target, ((Number) code).intValue(), id, app ? Navigation.APP : Navigation.BROWSER, mode.equals("navigate"));
     } catch (RedirectException invalid) {
       if (invalid.status == 0 && !invalid.reason.equals("response_too_large")) throw new RedirectException("invalid_response");
       throw invalid;

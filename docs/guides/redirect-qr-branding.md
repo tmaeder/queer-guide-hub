@@ -229,3 +229,37 @@ images does not record visits; scanning a managed code records QR attribution.
 Account/URL/link changes reset secret state and abort old requests. Export edits
 are disabled during publication. The live service must be deployed and configured
 before these controls can publish in production.
+
+
+## App installation links and QR codes
+
+For a managed short link, the single-code sharing dialog offers **QR destination**:
+**Open link** keeps the normal redirect; **App installation** opens the first-party
+app choice page. **Copy install link** copies its public URL near the URL preview.
+The same selection applies to PNG/JPG/SVG downloads and hosted image publication.
+The marker URL contains no private receipt or app consent. Merely opening that
+page does not record a visit; the visitor explicitly chooses a handoff or web
+continuation. A compatible app must be published with handoffs enabled in native
+app settings. Downloaded codes retain the URL encoded at export time.
+
+Hosted images persist the chosen `purpose` (`visit`, the default, or `install`).
+Install purpose requires an accessible managed `linkId`; an arbitrary explicit
+URL cannot opt into it. The public profile follows the link's current hostname,
+slug/root and saved branding, and adds `qg_handoff=install`. Optional `entryQuery`
+retains public campaign context in normalized form. It is limited to32 fields and
+2048 encoded bytes, with plain field names, and rejects password, click identity
+and private handoff fields. The complete install URL must also fit2048 bytes.
+Both ordinary profile rendering and custom-artwork verification use the same
+entry URL; every image format is independently scanned against that exact URL.
+
+Changing destination resets the export's local appearance/publication state;
+save any one-time hosted URLs first. The choice locks during artwork work and
+publication. Hosted metadata identifies installation-purpose images, and current
+creator/link access, expiry and revocation continue to apply. Image retrieval and
+publication do not create a native receipt or redirect event. Existing image
+records and clients retain ordinary visit behavior by default.
+
+This is candidate functionality. Apply the install-target schema before deploying
+the updated API; deploy the native resolver and gateways before exposing the new
+frontend option. Actual provider/Storage/cron and signed native installation
+proof remain release requirements.

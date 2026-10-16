@@ -1,6 +1,6 @@
 import { execFileSync } from 'node:child_process';
 import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
-import { nativeTestWire } from './lib/redirect-native-test-wire.mjs';
+import { nativeTestWire, nativeHandoffTestWire } from './lib/redirect-native-test-wire.mjs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -28,6 +28,7 @@ try {
       '-parse-as-library',
       '-warnings-as-errors',
       'sdk/redirects/swift/Sources/QueerGuideRedirects/RedirectClient.swift',
+      'sdk/redirects/swift/Sources/QueerGuideRedirects/RedirectAppGroupHandoffStore.swift',
       'sdk/redirects/swift/Tests/QueerGuideRedirectsTests/RedirectClientTests.swift',
       '-o',
       binary,
@@ -36,7 +37,9 @@ try {
   );
   const wire = join(output, 'native-wire.json');
   writeFileSync(wire, await nativeTestWire());
-  execFileSync(binary, [wire], { stdio: 'inherit', timeout: 30000 });
+  const handoffWire = join(output, 'handoff-wire.json');
+  writeFileSync(handoffWire, await nativeHandoffTestWire());
+  execFileSync(binary, [wire, handoffWire], { stdio: 'inherit', timeout: 30000 });
 } finally {
   rmSync(output, { recursive: true, force: true });
 }

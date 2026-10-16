@@ -6,19 +6,24 @@ class RedirectApiError extends \RuntimeException {
 }
 final class RedirectsClient {
     private string $base;
-    public function __construct(private string $token, string $baseUrl = 'https://queer.guide/api/redirects', private float $timeout = 10) {
+    public function __construct(private string $token, string $baseUrl = 'https://queer.guide/api/redirects', private float $timeout = 10, private ?string $workspaceId = null) {
         $url = parse_url($baseUrl);
         if (trim($token)==='' || preg_match('/[\r\n]/', $token)) throw new \InvalidArgumentException('A server credential is required');
         $safe = $url && (($url['scheme']??'')==='https' || ($url['scheme']??'')==='http' && in_array($url['host']??'', ['localhost','127.0.0.1','[::1]'], true));
         if (!$safe || isset($url['user']) || isset($url['pass']) || isset($url['query']) || isset($url['fragment'])) throw new \InvalidArgumentException('Use HTTPS or a loopback development API');
         if ($timeout<=0) throw new \InvalidArgumentException('Timeout must be positive');
+        if ($workspaceId!==null && !preg_match('/^[a-f0-9]{8}(?:-[a-f0-9]{4}){3}-[a-f0-9]{12}$/iD',$workspaceId)) throw new \InvalidArgumentException('Provide a valid workspace ID');
+        $this->workspaceId = $workspaceId===null?null:strtolower($workspaceId);
         $this->base = rtrim($baseUrl,'/');
     }
+    public function getSession(): array {return $this->request('GET','/session');}
+    public function listWorkspaces(): array {return $this->request('GET','/workspaces');}
     public function request(string $method, string $path, mixed $body = null, array $query = []): array {
         if (!preg_match('~^/[a-zA-Z0-9_/-]+$~D',$path) || str_contains($path,'//')) throw new \InvalidArgumentException('Invalid API path');
         $params=[];foreach ($query as $key=>$value) if ($value!==null) $params[$key] = is_array($value)||is_object($value) ? json_encode($value,JSON_THROW_ON_ERROR) : (is_bool($value)?($value?'true':'false'):(string)$value);
         $url=$this->base.$path.($params?'?'.http_build_query($params,'','&',PHP_QUERY_RFC3986):'');
         $options=['method'=>$method,'header'=>"Authorization: Bearer ".$this->token."\r\nContent-Type: application/json\r\n",'timeout'=>$this->timeout,'ignore_errors'=>true,'follow_location'=>0,'max_redirects'=>0];
+        if ($this->workspaceId!==null) $options['header'].="X-Qg-Redirect-Workspace: ".$this->workspaceId."\r\n";
         if ($body!==null) $options['content']=json_encode($body,JSON_THROW_ON_ERROR);
         $stream=@fopen($url,'rb',false,stream_context_create(['http'=>$options]));
         if ($stream===false) throw new \RuntimeException('Redirect API connection failed');
@@ -70,7 +75,7 @@ final class RedirectsClient {
     public function customerJourney(string $id,int $limit=50,?array $cursor=null): array {return $this->request('GET','/customers/journey',null,['id'=>$id,'limit'=>$limit,'cursor'=>$cursor]);}
     public function createReport(array $data): array {if (isset($data['filters']) && is_array($data['filters'])) $data['filters']=(object)$data['filters'];return $this->request('POST','/reports',$data);}
     public function getReport(string $id): array {return $this->request('GET','/reports/'.rawurlencode($id));}
-    public function listReports(int $limit=50,?string $cursor=null): array {return $this->request('GET','/reports',null,['limit'=>$limit,'cursor'=>$cursor]);}
+    public function listReports(int $limit=50,?string $cursor=null,?string $view=null): array {return $this->request('GET','/reports',null,['limit'=>$limit,'cursor'=>$cursor,'view'=>$view]);}
     public function updateReport(string $id,array $data): array {if (isset($data['filters']) && is_array($data['filters'])) $data['filters']=(object)$data['filters'];return $this->request('PATCH','/reports/'.rawurlencode($id),$data);}
     public function deleteReport(string $id): array {return $this->request('DELETE','/reports/'.rawurlencode($id));}
     public function runReport(string $id): array {return $this->request('GET','/reports/'.rawurlencode($id).'/run');}

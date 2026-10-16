@@ -1,5 +1,6 @@
 import {
   nativeRedirectRequested,
+  nativeHandoffRequest,
   nativeProblem,
   nativeUpstreamResponse,
   forwardNativeHeaders,
@@ -14,6 +15,7 @@ export const onRequest: PagesFunction<Env> = async ({ request, params, env }) =>
     Vary: 'Accept',
     'X-Robots-Tag': 'noindex',
     'Referrer-Policy': 'no-referrer',
+    'X-Content-Type-Options': 'nosniff',
   };
   const native = nativeRedirectRequested(request);
   const failure = (status: number, message: string) =>
@@ -27,6 +29,11 @@ export const onRequest: PagesFunction<Env> = async ({ request, params, env }) =>
           status: 405,
           headers: { ...headers, Allow: 'GET, HEAD, POST' },
         });
+  try {
+    nativeHandoffRequest(request);
+  } catch {
+    return failure(400, 'Invalid handoff request');
+  }
   const slug = String(params.slug ?? '').toLowerCase();
   if (!/^[a-z0-9][a-z0-9-]{1,62}[a-z0-9]$/.test(slug)) return failure(404, 'Link not found');
   if (!env.SUPABASE_URL || !env.SUPABASE_ANON_KEY)

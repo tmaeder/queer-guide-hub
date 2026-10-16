@@ -20,6 +20,19 @@ const dns = (value: unknown, status = 200) =>
       }),
   );
 describe('custom-domain ownership verifier', () => {
+  it('accepts versioned archive/restore only as boolean updates', () => {
+    const version = '10000000-0000-4000-8000-000000000001';
+    expect(domainInput({ version, archived: true }, 'patch')).toEqual({ version, archived: true });
+    expect(domainInput({ version, archived: false }, 'patch')).toEqual({
+      version,
+      archived: false,
+    });
+    for (const archived of ['true', 1, null])
+      expect(() => domainInput({ version, archived }, 'patch')).toThrow();
+    expect(() =>
+      domainInput({ hostname: 'links.example.com', archived: true }, 'create'),
+    ).toThrow();
+  });
   it('normalizes case, trailing dots and IDNs while rejecting URL/IP/private/infrastructure inputs', () => {
     expect(redirectHostname('LINKS.Example.com.')).toBe('links.example.com');
     expect(redirectHostname('links.bücher.ch')).toBe('links.xn--bcher-kva.ch');

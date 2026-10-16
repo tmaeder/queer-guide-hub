@@ -1,4 +1,5 @@
-import { nativeRedirectRequested, nativeAttributionConsent, nativeProblem, nativeResolution } from '../_shared/redirect-native-resolution.ts';
+import { nativeInstallPage } from '../_shared/redirect-native-install-page.ts';
+import { nativeRedirectRequested, nativeAttributionConsent, nativeProblem, nativeResolution, nativeHandoffRequest, nativeHandoffDigest, newNativeHandoffToken, nativeHandoffResponse, NATIVE_HANDOFF_MARKER, browserHandoffRequested } from '../_shared/redirect-native-resolution.ts';
 import { passwordPageBranding, redirectPasswordPage } from '../_shared/redirect-password-page.ts';
 import { DOMAIN_HEALTH_PATH, hasDomainRelay, verifyDomainRelay } from "../_shared/redirect-domain-relay.ts";
 import { socialPreviewAgent, presentationPage } from "../_shared/redirect-presentation.ts";
@@ -13,7 +14,9 @@ function mergeQuery(target: string, mode: string, incoming: URLSearchParams, ove
   const parsed=target.trim().startsWith("/") ? new URL(target,"https://queer.guide") : new URL(target);
   if (mode !== "DROP") {
     if (mode === "OVERRIDE") for (const [key,value] of Object.entries(overrides ?? {})) parsed.searchParams.set(key,value);
-    for (const [key,value] of incoming) if (!parsed.searchParams.has(key)) parsed.searchParams.set(key,value);
+    // Keep destination/override precedence while retaining every incoming value for new keys.
+    const fixedKeys=new Set(parsed.searchParams.keys());
+    for (const [key,value] of incoming) if (!fixedKeys.has(key)) parsed.searchParams.append(key,value);
     for (const [key,value] of Object.entries(defaults ?? {})) if (!parsed.searchParams.has(key)) parsed.searchParams.set(key,value);
   }
   return parsed.href;
@@ -40,8 +43,15 @@ Deno.serve(async (req: Request) => {
   if (branded && !relay) return page(404,"Link not found","This short link does not exist.",false,head);
   const validSlug=/^[a-z0-9][a-z0-9-]{1,62}[a-z0-9]$/.test(slug);
   if (!branded && !validSlug) return page(404,"Link not found","This short link does not exist.",false,head);
-  const incoming=new URLSearchParams(url.searchParams.get("q") ?? "");
+  let incoming=new URLSearchParams(url.searchParams.get("q") ?? "");
   if(native&&(url.searchParams.has("pw")||url.searchParams.has("password")||incoming.has("pw")||incoming.has("password")))return nativeProblem(400,head);
+  let handoff:ReturnType<typeof nativeHandoffRequest>;
+  try { handoff=nativeHandoffRequest(req,incoming); } catch { return page(400,"Invalid app handoff","Open a supported install or resume link.",false,head); }
+  const browserHandoff=browserHandoffRequested(req,incoming), selectedApp=incoming.get('qg_app_choice');
+  incoming.delete(NATIVE_HANDOFF_MARKER);incoming.delete('qg_app_choice');
+  if(handoff?.action==='resume'&&incoming.size)return nativeProblem(400,head);
+  const handoffToken=handoff?.action==='create'?newNativeHandoffToken():handoff?.token;
+  const handoffHash=handoffToken?await nativeHandoffDigest(handoffToken):null;
   let password=url.searchParams.get("pw") ?? incoming.get("pw") ?? "";
   const isQr=incoming.get("qg_qr") === "1";
   incoming.delete("qg_qr");incoming.delete("pw");incoming.delete("password");incoming.delete("qg_click_id");
@@ -66,7 +76,7 @@ Deno.serve(async (req: Request) => {
       }
     }
     const fallback=async(target:string|null|undefined) => {
-      if(!target || !validPublicTarget(target))return null;
+      if(handoff || browserHandoff || !target || !validPublicTarget(target))return null;
       const parsed=target.trim().startsWith("/") ? new URL(target,"https://queer.guide") : new URL(target);
       const {data:managed,error}=await db.from("redirect_domains").select("id").eq("hostname",parsed.hostname).maybeSingle();
       if(error || managed?.id || ["queer.guide","www.queer.guide"].includes(parsed.hostname)&&parsed.pathname.startsWith("/go/"))return null;
@@ -75,19 +85,32 @@ Deno.serve(async (req: Request) => {
     };
     const rootRequest=!!domain && relay?.path==="/";
     if(!rootRequest&&!validSlug)return await fallback(domain?.notFoundUrl) ?? page(404,"Link not found","This short link does not exist.",false,head);
-    const baseQuery=db.from("redirects").select("*").eq("type","SHORT").eq("is_domain_root",rootRequest);
-    const query=rootRequest ? baseQuery : baseQuery.eq("slug",slug);
-    const {data:link,error:lookupError}=await (domain ? query.eq("domain_id",domain.id) : query.is("domain_id",null)).maybeSingle();
+    const sourcePath=domain ? rootRequest ? "/" : "/"+slug : "/go/"+slug, sourceHost=domain?.hostname??"queer.guide";
+    const {data:snapshot,error:lookupError}=handoff?.action==='resume'
+      ? await db.rpc("redirect_native_handoff_context",{p_token_hash:handoffHash,p_app:handoff.app,p_hostname:sourceHost,p_path:sourcePath,p_consent:nativeConsent})
+      : await db.rpc("redirect_resolution_snapshot",{p_hostname:sourceHost,p_slug:slug,p_root:rootRequest});
     if (lookupError) return page(503,"Link unavailable","Please try again shortly.",false,head);
+    const link=snapshot?.link, settings=snapshot?.settings;
     if(rootRequest&&!link)return await fallback(domain?.rootUrl) ?? page(404,"Link not found","No destination is configured for this domain.",false,head);
     if (!link || !link.is_enabled || link.start_at && Date.parse(link.start_at)>Date.now()) return await fallback(domain?.notFoundUrl) ?? page(404,"Link not found","This link is unavailable.",false,head);
-    const {data:settings,error:settingsError}=await db.from("redirect_link_policies").select("policy,password_hash").eq("redirect_id",link.id).maybeSingle();
-    if (settingsError) return page(503,"Link unavailable","Please try again shortly.",false,head);
+    if(typeof snapshot?.fingerprint!=="string"||!settings)return page(503,"Link unavailable","Please try again shortly.",false,head);
+    if(handoff?.action==='resume')incoming=new URLSearchParams(snapshot.query??'');
     const policy:LinkPolicy={...(settings?.policy ?? {}),...(link.end_at ? {expires_at:link.end_at} : {}),...(!settings?.policy?.expired_target && domain?.expiredUrl ? {expired_target:domain.expiredUrl} : {})};
     if (policyErrors(policy).length || !validPublicTarget(link.target)) return page(503,"Link unavailable","The destination settings need attention.",false,head);
+    if(browserHandoff) {
+      if(!policy.track_conversions||policy.cloaked||policy.expires_at&&Date.parse(policy.expires_at)<=Date.now()||browserHandoff==='install'&&link.click_limit!==null&&link.click_limit!==undefined&&link.click_count>=link.click_limit)return nativeInstallPage('https://'+sourceHost+sourcePath,incoming,[],!!settings.password_hash,browserHandoff);
+      const {data:choices,error:choiceError}=await db.rpc('redirect_native_install_choices',{p_hostname:sourceHost,p_path:sourcePath});
+      if(choiceError||!choices)return page(503,"App handoff unavailable","Please try again shortly.",false,head);
+      return nativeInstallPage('https://'+sourceHost+sourcePath,incoming,choices,!!settings.password_hash,browserHandoff,selectedApp);
+    }
     const ip=relay?.ip ?? await redirectClientIp(req.headers,slug,Deno.env.get("REDIRECT_RELAY_SECRET"));
     const hash=new Uint8Array(await crypto.subtle.digest("SHA-256",new TextEncoder().encode(ip+(Deno.env.get("REDIRECT_IP_HASH_SALT") ?? "qg-redirect-salt-2026"))));
     const ipHash=Array.from(hash,(value)=>value.toString(16).padStart(2,"0")).join("");
+    if(handoff) {
+      const {data:retry,error:budgetError}=await db.rpc('redirect_report_budget',{p_bucket:'native-handoff:'+ipHash,p_limit:30,p_seconds:60});
+      if(budgetError||!Number.isInteger(retry)||retry<0||retry>900)return nativeProblem(503,head);
+      if(retry>0){const response=nativeProblem(429,head);response.headers.set('Retry-After',String(retry));return response;}
+    }
     if (settings?.password_hash) {
       let branding = null;
       if (!head && !native) {
@@ -113,7 +136,17 @@ Deno.serve(async (req: Request) => {
       if(error)return page(503,"Link unavailable","Please try again shortly.",false,head);
       stats=data ?? [];
     }
-    const selected=chooseLinkTarget(link.target,policy,{device:deviceFromAgent(req.headers.get("user-agent") ?? ""),country,bucket:words[0]/4294967296*100},stats);
+    let bucket=words[0]/4294967296*100;
+    if(handoff?.action==='resume'&&snapshot.variantId) {
+      let threshold=0,found=false;
+      for(const variant of policy.experiment?.variants??[]) {
+        if(variant.id===snapshot.variantId){bucket=threshold+variant.weight/2;found=true;break;}
+        threshold+=variant.weight;
+      }
+      if(!found)return nativeProblem(410,head);
+    }
+    const selected=chooseLinkTarget(link.target,policy,{device:deviceFromAgent(req.headers.get("user-agent") ?? ""),country,bucket},stats);
+    if(handoff&&(selected.expired||policy.cloaked))return nativeProblem(410,head);
     if (selected.expired && !selected.target) return page(410,"Link expired","This link is no longer available.",false,head);
     if (!selected.target || !validPublicTarget(selected.target)) return page(503,"Link unavailable","The destination settings need attention.",false,head);
     let destination=mergeQuery(selected.target,link.query_mode,incoming,link.query_override,link.utm_defaults);
@@ -131,14 +164,21 @@ Deno.serve(async (req: Request) => {
     }
     if(policy.cloaked&&!selected.expired&&!destination.startsWith("https://"))return page(503,"Link unavailable","Framed destinations require HTTPS.",false,head);
     if(head&&!selected.expired&&link.click_limit!==null&&link.click_limit!==undefined&&link.click_count>=link.click_limit)return page(410,"Link unavailable","This link has reached its visit limit.",false,head);
-    let attributionClickId:string|null=null;
+    let attributionClickId:string|null=null, handoffExpires:string|undefined;
     if (!head && !selected.expired) {
-      const {data:clickId,error}=await db.rpc("record_redirect_visit",{p_redirect_id:link.id,p_path:domain ? rootRequest ? "/" : "/"+slug : "/go/"+slug,p_query:incoming.toString() || null,p_referer:cleanReferrer(req.headers.get("referer")),p_user_agent:req.headers.get("user-agent"),p_country:country,p_ip_hash:ipHash,p_status:redirectStatus,p_variant_id:selected.variantId,p_destination:destination,p_metadata:{...visitorMetadata(req,isQr),domain:domain?.hostname ?? "queer.guide"}});
+      const visit={p_snapshot:snapshot.fingerprint,p_redirect_id:link.id,p_path:sourcePath,p_query:incoming.toString() || null,p_referer:cleanReferrer(req.headers.get("referer")),p_user_agent:req.headers.get("user-agent"),p_country:country,p_ip_hash:ipHash,p_status:redirectStatus,p_variant_id:selected.variantId,p_destination:destination,p_metadata:{...visitorMetadata(req,isQr),domain:sourceHost}};
+      const {data:recorded,error}=handoff?.action==='create'
+        ? await db.rpc('create_redirect_native_handoff',{...visit,p_token_hash:handoffHash,p_app:handoff.app,p_consent:nativeConsent})
+        : handoff?.action==='resume'
+          ? await db.rpc('consume_redirect_native_handoff',{p_token_hash:handoffHash,p_app:handoff.app,p_hostname:sourceHost,p_path:sourcePath,p_consent:nativeConsent,p_snapshot:snapshot.fingerprint,p_destination:destination,p_variant_id:selected.variantId})
+          : await db.rpc('record_redirect_snapshot_visit',visit);
+      const clickId=handoff?.action==='create'?recorded?.clickId:recorded;
+      if(handoff?.action==='create'&&recorded)handoffExpires=recorded.expiresAt;
       if(error)return page(503,"Link unavailable","Please try again shortly.",false,head);
       if(!clickId)return page(410,"Link unavailable","This link has expired or reached its visit limit.",false,head);
       if(policy.track_conversions&&(!native||nativeConsent)){attributionClickId=clickId;targetUrl.searchParams.set("qg_click_id",clickId);destination=targetUrl.href;}
     }
-    if(native)return nativeResolution(canonical,destination,redirectStatus,selected.expired||policy.cloaked?'web':'navigate',attributionClickId,head);
+    if(native){const response=nativeResolution(canonical,destination,redirectStatus,selected.expired||policy.cloaked?'web':'navigate',attributionClickId,head);if(handoff)nativeHandoffResponse(response.headers,handoff.action==='create'?handoffToken!:null,handoffExpires);return response;}
     if(policy.cloaked&&!selected.expired)return presentationPage(policy.preview,canonical,destination,true,head);
     return new Response(null,{status:redirectStatus,headers:{...responseHeaders,Location:destination}});
   } catch {return page(503,"Link unavailable","Please try again shortly.",false,head);}
