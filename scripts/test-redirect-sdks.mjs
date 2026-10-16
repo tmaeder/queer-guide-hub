@@ -1,3 +1,4 @@
+import { verifyRedirectWorkspaceMembershipHttp } from './lib/redirect-workspace-fixtures.mjs';
 import { getDomain } from 'tldts';
 import { verifyRedirectIntegrationHttp } from './lib/redirect-integration-fixtures.mjs';
 import sharp from 'sharp';
@@ -12,6 +13,7 @@ const db = await createRedirectTestDb();
 await db.exec('SET ROLE service_role; SET request.jwt.claims = \'{"role":"service_role"}\'');
 let handler;
 let policyRuntime;
+let loseConversionOwnerAfterContext=false;
 const pieces = [
   '_shared/redirect-api.ts',
   '_shared/redirect-workspace.ts',
@@ -91,6 +93,7 @@ const service = {
         entries.map(([key], index) => key + '=> $' + (index + 1)).join(',') +
         ') AS result FROM context';
       const result = await db.query(sql, [...params, JSON.stringify(requestHeaders)]);
+      if(name==='redirect_workspace_context'&&args.p_scope==='workspace:write'&&loseConversionOwnerAfterContext){loseConversionOwnerAfterContext=false;await db.query('DELETE FROM public.user_roles WHERE user_id=$1',[reportActor]);}
       if(name==='redirect_policy_resource'&&args.p_change_password===true&&args.p_password_hash){
         const stored=(await db.query('SELECT password_hash FROM public.redirect_link_policies WHERE redirect_id=$1',[args.p_redirect_id])).rows[0].password_hash;
         if(!await policyRuntime.verifyLinkPassword('fixture-sdk-password',stored))throw new Error('Persisted SDK password hash did not verify');
@@ -356,6 +359,12 @@ try {
     const response=await fetch(base+path,{method,headers:{Authorization:'Bearer '+credential,...(body?{'Content-Type':'application/json'}:{})},...(body?{body:JSON.stringify(body)}:{})});
     const data=await response.json();if(response.status!==expected)throw new Error('Report HTTP '+path+' expected '+expected+' received '+response.status+': '+JSON.stringify(data));return data;
   }
+  await verifyRedirectWorkspaceMembershipHttp(db,reportRequest,reportActor);
+  const lostRoleEvent='owner-context-race:'+webcrypto.randomUUID();
+  loseConversionOwnerAfterContext=true;
+  await reportRequest('/track/lead','POST',{clickId:click.rows[0].id,customerExternalId:'owner-context-race',eventId:lostRoleEvent},undefined,403);
+  if((await db.query('SELECT id FROM public.redirect_link_conversions WHERE provider_event_id=$1',[lostRoleEvent])).rows.length)throw new Error('Manual conversion ignored owner loss after context check');
+  await db.query("INSERT INTO public.user_roles VALUES($1,'admin')",[reportActor]);
   const legacyWorkspace='58aa4340-8f21-4b7f-9a10-90be2da89c01';
   const workspaceList=await reportRequest('/workspaces');
   if(workspaceList.data.length!==1||workspaceList.currentWorkspaceId!==legacyWorkspace||workspaceList.data[0].role!=='owner'||(await reportRequest('/session')).workspace.id!==legacyWorkspace)throw new Error('Durable owner workspace context missing');

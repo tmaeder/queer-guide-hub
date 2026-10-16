@@ -157,3 +157,56 @@ selection, independent Go clients and rejected selection with no mutation.
 Next: convert memberships/owners, all resource RPCs/readers/jobs, public resolution
 and UI/SDK selection contexts into genuine isolated tenants. Do not remove the
 activation fences or claim transfer is implemented from this foundation alone.
+
+
+## Core membership and administration conversion checkpoint
+
+Migration99991792111872 adds a private request-workspace selector and explicit
+workspace predicates to22 existing core administration/ACL functions: current
+principals/session context, member and credential administration/authentication/
+metadata, invitations/inbox, folder resources/access/capabilities/owners, and
+access requests/notifications/mail claims/acknowledgements. Inserts carry their
+workspace explicitly. Unknown, inactive or foreign principals now fail rather
+than becoming the null owner sentinel. Selected-link credentials cannot retain
+foreign link IDs; read-only credentials cannot create links. The fixed legacy
+activation guard remains and no new workspace is exposed.
+
+The API now supplies the canonical selected workspace alongside its verified
+account actor on its private service client. Member/token administration and
+manual tracking use current SQL workspace role, with no cached JWT admin filter.
+A separate conversion-write guard rechecks manual account owner authority under
+the ACL lock; an actual HTTP race removes ownership after context verification
+and proves that the conversion is denied and not inserted. Verified-account
+native signup attribution retains its existing separate timing/identity rules.
+This final-authority guard does not complete tenant conversion of analytics.
+
+All40 resource tables have an additional restrictive legacy-only policy for
+anon/authenticated direct Data API access, intersecting existing current-role
+policies and granting no new permission. Service-role paths still need explicit
+tenant predicates; these policies are not proof of service-role isolation.
+
+Rollback-only fixtures seed a foreign workspace after temporarily removing its
+resource activation checks. SQL and real owner HTTP prove that the converted
+pages/counts do not expose foreign members, credentials, folders/tags/templates,
+invitations or access requests; foreign IDs cannot be read/changed/deleted/
+revoked/granted/authenticated. Foreign mail is neither claimed nor acknowledged.
+A second human membership for the same account is exercised only in the SQL
+fixture after temporarily removing global user uniqueness; session lookup still
+chooses the legacy membership. The product uniqueness/activation checks remain
+unchanged. Direct authenticated RLS fixtures independently deny foreign reads,
+updates, deletes, inserts and workspace moves. All foreign state stays unchanged.
+
+The previous45ce full CI exposed a missing workspace module in the older API unit
+harness (29 API tests failed;1842 other files passed). The harness now loads the
+real helper and models SQL context authorization separately from business RPCs.
+All29 existing API cases and five new context/role/header cases pass locally;
+the focused workflow now includes this file, for100 cases overall. No assertion
+or production guard was weakened to repair the harness.
+
+Still unconverted among the original membership/helper-reference inventory:
+customer access, inventory rank/metadata, managed link mutation, password-branding
+actor, QR image draft/resource and report actor/share-ID/share-resource routines.
+Those families and every other service/public reader/job require complete tenant
+conversion and model changes before removing activation fences. Workspace owner
+membership, per-workspace uniqueness, multiple-workspace creation/switching and
+reviewed atomic domain transfer remain required.

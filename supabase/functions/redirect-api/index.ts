@@ -39,16 +39,15 @@ Deno.serve(async (req: Request) => {
  if(path==='/public-report')return publicReportRequest(req,db,Deno.env.get('REDIRECT_RELAY_SECRET')??Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,cors);
  const tokenCredential=/^qg_redirect_[a-f0-9]{64}$/.test(credential);
  let user: {id:string;created_at:string;email_confirmed_at?:string;confirmed_at?:string;is_anonymous?:boolean} | null=null;
- let identityClient: ReturnType<typeof createClient> | null=null;
  if(!tokenCredential){
-  identityClient=createClient(Deno.env.get('SUPABASE_URL')!,Deno.env.get('SUPABASE_ANON_KEY')!,{global:{headers:{Authorization:'Bearer '+credential}}});
+  const identityClient=createClient(Deno.env.get('SUPABASE_URL')!,Deno.env.get('SUPABASE_ANON_KEY')!,{global:{headers:{Authorization:'Bearer '+credential}}});
   const {data,error}=await identityClient.auth.getUser(credential);
   if(error || !data.user)return json({error:'Unauthorized'},401);
   user=data.user;
-  db=createClient(Deno.env.get('SUPABASE_URL')!,Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,{global:{headers:{'x-qg-redirect-session-actor':user.id}}});
  }
  const selectedWorkspace=redirectWorkspaceSelection(req.headers.get('x-qg-redirect-workspace'));
  if('error' in selectedWorkspace)return json({error:selectedWorkspace.error},selectedWorkspace.status);
+ db=createClient(Deno.env.get('SUPABASE_URL')!,Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,{global:{headers:{'x-qg-redirect-workspace':selectedWorkspace.id,...(user?{'x-qg-redirect-session-actor':user.id}:{})}}});
  const sessionPrincipal=async(scope:string):Promise<{id:string|null;role?:string;label?:string;workspace?:{id:string;name:string;slug:string};failure?:Response}>=>{
   if(!user||user.is_anonymous)return {id:null,failure:json({error:'A registered account is required'},403)};
   const result=await db.rpc('redirect_workspace_context',{p_actor:user.id,p_workspace:selectedWorkspace.id,p_scope:scope});
@@ -543,7 +542,7 @@ Deno.serve(async (req: Request) => {
   const memberMatch=path.match(/^\/members(?:\/([a-f0-9-]{36}))?$/i);
   if(memberMatch){
    if(tokenCredential||!user||user.is_anonymous)return json({error:'Admin session required'},403);
-   const role=await identityClient!.rpc('has_role_jwt',{required_role:'admin'});if(role.error)return json({error:'Authorization unavailable'},503);if(!role.data)return json({error:'Forbidden'},403);
+   const principal=await sessionPrincipal(req.method==='GET'?'workspace:read':'workspace:write');if(principal.failure)return principal.failure;if(principal.role!=='owner')return json({error:'Workspace owner access required'},403);
    const id=memberMatch[1];if(id&&!UUID.test(id))return json({error:'Invalid member ID'},400);
    if(req.method==='GET'&&!id){
     const query=new URL(req.url).searchParams,offset=Number(query.get('offset')??0);if([...query.keys()].some(k=>k!=='offset')||!Number.isInteger(offset)||offset<0||offset>1e7)return json({error:'Invalid member page'},400);
@@ -705,8 +704,7 @@ Deno.serve(async (req: Request) => {
     if(!data)return json({error:'Credential expired, revoked, or missing conversion scope'},403);
     tokenId=data.id;
    }else{
-    const {data,error}=await identityClient!.rpc('has_role_jwt',{required_role:'admin'});
-    if(error || !data)return json({error:'Forbidden'},403);
+    const principal=await sessionPrincipal('workspace:write');if(principal.failure)return principal.failure;if(principal.role!=='owner')return json({error:'Workspace owner access required'},403);
    }
    const event=conversionInput(await boundedJson(req),kind);
    const {data,error}=await db.rpc('record_redirect_conversion',{p_event:event,p_token_id:tokenId});
@@ -715,8 +713,7 @@ Deno.serve(async (req: Request) => {
   }
   if(path==='/tokens' || /^\/tokens\/[a-f0-9-]+$/i.test(path)) {
    if(tokenCredential||user?.is_anonymous)return json({error:'Admin session required'},403);
-   const {data:admin,error:roleError}=await identityClient!.rpc('has_role_jwt',{required_role:'admin'});
-   if(roleError || !admin)return json({error:'Forbidden'},403);
+   const principal=await sessionPrincipal(req.method==='GET'?'workspace:read':'workspace:write');if(principal.failure)return principal.failure;if(principal.role!=='owner')return json({error:'Workspace owner access required'},403);
    if(path==='/tokens' && req.method==='GET') {
     const offset=Number(new URL(req.url).searchParams.get('offset') ?? '0');
     if(!Number.isInteger(offset) || offset<0 || offset>1e7)return json({error:'Invalid page offset'},400);

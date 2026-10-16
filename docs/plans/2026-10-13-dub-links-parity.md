@@ -19,7 +19,7 @@ exist. Existing local tools are a foundation, not proof of parity or deployment.
 | Bulk actions         | Create/update/upsert/delete, folder/tag assignment, archive, import/export, QR export                              | Candidate for managed links: atomic create/update/upsert/deletion API and CSV review/import/export UI, archive/restore, folder/tag assignment and verified QR ZIP; production release pending                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
 | Custom previews      | Uploaded OG image (1200×630, ≤1.5 MB), title≤120, description≤240, video API, crawler unfurl                       | Candidate: editor, scoped upload/presentation APIs and crawler HTML; native browser/Storage release pending                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
 | AI previews          | Generate title/description from destination content using configured AI provider                                   | Candidate: scoped draft generator with spend limits; live provider and browser verification pending                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
-| Workspace isolation | Independent workspace identity, current membership, tenant-bound resources/API/SDK context and domain transfer | Partial: private identity registry, legacy backfill/fences on40 tables,40 tenant-aware relationships and current-role API/five-SDK context implemented locally; multiple-workspace activation, all tenant resource/read/job boundaries and atomic transfer pending |
+| Workspace isolation | Independent workspace identity, current membership, tenant-bound resources/API/SDK context and domain transfer | Partial: private identity registry, legacy backfill/fences on40 tables,40 tenant-aware relationships, core member/credential/invitation/folder ACL predicates, restrictive direct Data API policies and current-role API/five-SDK context implemented locally; multiple-workspace activation, all tenant resource/read/job boundaries and atomic transfer pending |
 | Custom domains       | Verify ownership/DNS, multiple domains, primary domain, redirects on branded hostname                              | Partial: private registry, exact DNS verification, owner UI and stored defaults implemented locally; durable Cloudflare lifecycle/TLS checks implemented locally; hostname namespaces, signed relay/resolver, routing health, background proof renewal and inventory/CSV/QR/API/SDK fields implemented locally; ready choices, owner primary preference and tracked/member builders implemented locally; active manual CMS domain field and atomic owner saves implemented locally; URL domain filters and scoped linked-domain facets implemented locally; explicit provider validation restart and versioned archive/search/restore implemented locally; external website-subpath setup/generation and authenticated Domain Connect backend and owner approval/callback UI implemented locally; native instruction email backend and recipient/review/status/recovery/cancel UI implemented locally; transfer, real provider/email proof and release pending |
 | Domain defaults      | Root/not-found redirects, default expiration URL, workspace/domain QR logos                                        | Partial: root/not-found/expiry settings, signed-host resolver and managed root-link policies/metadata/tracking implemented locally; QR/logo precedence and release pending                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
 | Deep links           | iOS/Android association files, app page routes, fallback and deferred attribution                                  | Partial: owner-managed app identities, per-host association files and gateway behavior implemented locally; policy-aware native resolver and local Swift/Android clients implemented; consented private receipts, first-party install/resume pages, Swift App Group/Android Play adapters and persistent install QR targets implemented locally; signed store/device delivery and release evidence remain open                                                                                                                                                                                                                                                                                                                                                                                                       |
@@ -3692,3 +3692,34 @@ warning), production build and app typecheck pass. Typecheck remains702 inherite
 errors/none new with baseline782 unchanged. All2351 migration versions and SQL
 bodies check/parse without exemptions. No production schema, workspace activation,
 actual transfer, provider configuration, email or app publication was changed.
+
+
+Core membership/administration checkpoint: migration99991792111872 converts22
+administration/ACL functions to explicit selected-workspace predicates, including
+member/token controls, invitation/inbox, folder CRUD/access and access-request/
+notification/mail lifecycle. Unknown/foreign principals no longer become implicit
+owners. Private service clients receive the verified actor and canonical workspace;
+member/token/manual tracking authority now uses current SQL role. A conversion
+write-boundary recheck rejects owner loss after initial context verification while
+preserving separate verified native-signup semantics.
+
+Restrictive legacy-only policies now cover all40 resource tables for direct
+anon/authenticated Data API access, retaining existing current-role checks and
+without new grants. Service paths still require their own predicates. SQL and real
+HTTP fixtures demonstrate no foreign page/count/identity leaks or foreign ID
+mutation/revocation/grants, no foreign token authentication and no foreign mail
+claim/acknowledgement. Independent RLS fixtures deny cross-workspace direct reads,
+writes, deletion and moves. Test-only fence/uniqueness removals roll back; product
+activation fences and global uniqueness remain intact.
+
+The45ce full coverage run38830961925 failed the29 older API harness cases because
+it did not load the newly imported workspace helper. Its1842 other test files
+passed. The harness is repaired with the real module/current SQL context seam;
+29 existing plus five new role/context cases pass, and all100 focused cases now
+run in the dedicated gate. Full migrated SQL, actual owner HTTP/five SDKs,
+40-table backfill and final-authority race checks pass locally. Frozen API Deno,
+production build, targeted lint and app typecheck pass (702 inherited/none new,
+baseline782 unchanged). All2352 migration versions/SQL bodies check/parse without
+exemptions. Final-head CI remains required. Full tenant activation and remaining
+resource/model conversion, transfer, live provider/store/publication and controlled
+release proof remain open; no production configuration/schema/data was changed.

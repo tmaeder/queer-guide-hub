@@ -17,9 +17,11 @@ on:
       - 'src/lib/redirects/__tests__/domainConnect*'
       - 'src/lib/redirects/__tests__/domainDiscovery*'
       - 'src/lib/redirects/__tests__/domainMail*'
+      - 'src/lib/redirects/__tests__/redirectApi.test.ts'
       - 'config/domain-connect/**'
       - 'scripts/lib/redirect-test-db.mjs'
       - 'scripts/lib/redirect-integration-fixtures.mjs'
+      - 'scripts/lib/redirect-workspace-fixtures.mjs'
       - 'scripts/test-redirect-platform-sql.mjs'
       - 'scripts/test-redirect-workspace-backfill.mjs'
       - 'functions/api/redirects/**'
@@ -47,9 +49,11 @@ on:
       - 'src/lib/redirects/__tests__/domainConnect*'
       - 'src/lib/redirects/__tests__/domainDiscovery*'
       - 'src/lib/redirects/__tests__/domainMail*'
+      - 'src/lib/redirects/__tests__/redirectApi.test.ts'
       - 'config/domain-connect/**'
       - 'scripts/lib/redirect-test-db.mjs'
       - 'scripts/lib/redirect-integration-fixtures.mjs'
+      - 'scripts/lib/redirect-workspace-fixtures.mjs'
       - 'scripts/test-redirect-platform-sql.mjs'
       - 'scripts/test-redirect-workspace-backfill.mjs'
       - 'functions/api/redirects/**'
@@ -91,7 +95,7 @@ jobs:
       - name: Check instruction mail consumer with frozen deployment dependencies
         run: deno check --node-modules-dir=none --config supabase/functions/redirect-domain-instruction-mail/deno.json --lock=supabase/functions/redirect-domain-instruction-mail/deno.lock --frozen supabase/functions/redirect-domain-instruction-mail/index.ts
       - name: Verify DNS discovery, signing, email transport and owner controls
-        run: npx vitest run src/lib/redirects/__tests__/domainConnect.test.ts src/lib/redirects/__tests__/domainConnectApi.test.ts src/lib/redirects/__tests__/domainDiscovery.test.ts src/lib/redirects/__tests__/domainMail.test.ts src/components/admin/redirects/RedirectDomainConnect.test.tsx src/components/admin/redirects/RedirectDomains.test.tsx src/components/admin/redirects/RedirectDomainMail.test.tsx functions/_lib/redirectApiProxy.test.ts
+        run: npx vitest run src/lib/redirects/__tests__/domainConnect.test.ts src/lib/redirects/__tests__/domainConnectApi.test.ts src/lib/redirects/__tests__/domainDiscovery.test.ts src/lib/redirects/__tests__/domainMail.test.ts src/components/admin/redirects/RedirectDomainConnect.test.tsx src/components/admin/redirects/RedirectDomains.test.tsx src/components/admin/redirects/RedirectDomainMail.test.tsx functions/_lib/redirectApiProxy.test.ts src/lib/redirects/__tests__/redirectApi.test.ts
       - name: Prove existing data survives workspace identity backfill
         run: node scripts/test-redirect-workspace-backfill.mjs
       - name: Execute migrated database contracts

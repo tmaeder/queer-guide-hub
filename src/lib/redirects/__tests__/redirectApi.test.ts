@@ -18,6 +18,12 @@ function runtime() {
     new URL(root + 'redirect-api/index.ts', import.meta.url),
     'utf8',
   ).replace(/^import .*;\s*$/gm, '');
+  const workspace = readFileSync(
+    new URL(root + '_shared/redirect-workspace.ts', import.meta.url),
+    'utf8',
+  )
+    .replace(/^import .*;\s*$/gm, '')
+    .replace(/^export\s+/gm, '');
   const analytics = readFileSync(
     new URL(root + '_shared/redirect-analytics.ts', import.meta.url),
     'utf8',
@@ -44,6 +50,8 @@ function runtime() {
   const code = ts.transpileModule(
     shared +
       '\n' +
+      workspace +
+      '\n' +
       analytics +
       '\n' +
       policy +
@@ -62,6 +70,8 @@ function runtime() {
   let handler: (req: Request) => Promise<Response>;
   const state = {
     admin: true,
+    cachedAdmin: undefined as boolean | undefined,
+    membership: null as { id: string; role: string; label: string } | null,
     validIdentity: true,
     validToken: true,
     allowedIds: ['00000000-0000-4000-8000-000000000002'] as string[] | null,
@@ -105,6 +115,30 @@ function runtime() {
           error: state.conversionError,
         },
   );
+  // Authorization is a separate SQL seam from business RPCs, so mutation mocks
+  // cannot accidentally stand in for the current workspace principal.
+  const workspaceRpc = vi.fn(
+    async (
+      _args?: Record<string, unknown>,
+    ): Promise<{ data: unknown; error: { code: string; message: string } | null }> =>
+      state.admin || state.membership
+        ? {
+            data: {
+              workspace: {
+                id: '58aa4340-8f21-4b7f-9a10-90be2da89c01',
+                name: 'Queer Guide',
+                slug: 'queer-guide',
+              },
+              principal: state.admin ? { id: null, role: 'owner', label: null } : state.membership,
+            },
+            error: null,
+          }
+        : {
+            data: null,
+            error: { code: '42501', message: 'Redirects workspace access is required' },
+          },
+  );
+  const serviceHeaders: Record<string, string>[] = [];
   const generate = vi.fn(async () => ({
     title: 'Generated title',
     description: 'Generated description',
@@ -150,7 +184,7 @@ function runtime() {
   }));
   const identity = {
     auth: { getUser },
-    rpc: vi.fn(async () => ({ data: state.admin, error: null })),
+    rpc: vi.fn(async () => ({ data: state.cachedAdmin ?? state.admin, error: null })),
   };
   new Function(
     'Deno',
@@ -171,7 +205,16 @@ function runtime() {
         handler = fn;
       },
     },
-    (_url: string, key: string) => (key === 'service' ? { rpc, from, storage } : identity),
+    (_url: string, key: string, options?: { global?: { headers: Record<string, string> } }) => {
+      if (key !== 'service') return identity;
+      serviceHeaders.push(options?.global?.headers ?? {});
+      return {
+        rpc: (name: string, args?: Record<string, unknown>) =>
+          name === 'redirect_workspace_context' ? workspaceRpc(args) : rpc(name, args),
+        from,
+        storage,
+      };
+    },
     webcrypto,
     generate,
     () => true,
@@ -181,6 +224,9 @@ function runtime() {
   );
   return {
     state,
+    workspaceRpc,
+    identityRpc: identity.rpc,
+    serviceHeaders,
     generate,
     rpc,
     from,
@@ -192,6 +238,7 @@ function runtime() {
       body?: unknown,
       credential: string | null = 'signed-user',
       method = 'POST',
+      headers: Record<string, string> = {},
     ) =>
       handler(
         new Request('https://fixture.supabase.co/functions/v1/redirect-api' + path, {
@@ -199,6 +246,7 @@ function runtime() {
           headers: {
             'Content-Type': 'application/json',
             ...(credential ? { Authorization: 'Bearer ' + credential } : {}),
+            ...headers,
           },
           ...(body === undefined ? {} : { body: JSON.stringify(body) }),
         }),
@@ -460,16 +508,12 @@ describe('actual Redirects API handler', () => {
     const run = runtime();
     run.state.admin = false;
     const memberId = '00000000-0000-4000-8000-000000000009';
-    const base = run.rpc.getMockImplementation()!;
-    run.rpc.mockImplementation(async (name, args) =>
-      name === 'redirect_session_principal'
-        ? { data: { id: memberId, duplicate: false }, error: null }
-        : base(name, args),
-    );
+    run.state.membership = { id: memberId, role: 'member', label: 'Verified member' };
     expect((await run.invoke('/links', undefined, 'signed-user', 'GET')).status).toBe(200);
-    expect(run.rpc).toHaveBeenCalledWith('redirect_session_principal', {
-      p_user_id: '00000000-0000-4000-8000-000000000001',
+    expect(run.workspaceRpc).toHaveBeenCalledWith({
+      p_actor: '00000000-0000-4000-8000-000000000001',
       p_scope: 'links:read',
+      p_workspace: '58aa4340-8f21-4b7f-9a10-90be2da89c01',
     });
     expect(run.rpc).toHaveBeenCalledWith(
       'redirect_management_list',
@@ -906,5 +950,104 @@ describe('policy revocation during password hashing', () => {
     );
     expect(response.status).toBe(403);
     expect(await response.json()).toEqual({ error: 'Credential revoked' });
+  });
+});
+
+describe('verified workspace request context', () => {
+  const legacy = '58aa4340-8f21-4b7f-9a10-90be2da89c01';
+  it('rejects empty, duplicate and unavailable selectors before business or authority RPCs', async () => {
+    const run = runtime();
+    for (const [selected, status] of [
+      ['', 400],
+      [legacy + ',' + legacy, 400],
+      ['00000000-0000-4000-8000-000000000777', 403],
+    ] as const) {
+      expect(
+        (
+          await run.invoke('/links', { target: '/events' }, 'signed-user', 'POST', {
+            'X-Qg-Redirect-Workspace': selected,
+          })
+        ).status,
+      ).toBe(status);
+    }
+    expect(run.rpc).not.toHaveBeenCalled();
+    expect(run.workspaceRpc).not.toHaveBeenCalled();
+    expect(run.upload).not.toHaveBeenCalled();
+  });
+  it('uses current SQL owner state for membership, credentials, links and tracking despite stale cached claims', async () => {
+    const run = runtime();
+    run.state.admin = false;
+    run.state.cachedAdmin = true;
+    for (const path of ['/members', '/tokens', '/links'])
+      expect((await run.invoke(path, undefined, 'signed-user', 'GET')).status).toBe(403);
+    expect((await run.invoke('/track/lead', lead)).status).toBe(403);
+    expect(run.rpc).not.toHaveBeenCalled();
+    run.state.admin = true;
+    run.state.cachedAdmin = false;
+    for (const path of ['/members', '/tokens', '/links'])
+      expect((await run.invoke(path, undefined, 'signed-user', 'GET')).status).toBe(200);
+    expect((await run.invoke('/track/lead', lead)).status).toBe(201);
+    expect(run.identityRpc).not.toHaveBeenCalled();
+  });
+  it('fails closed on authorization outages, mismatched workspace IDs and malformed principals', async () => {
+    const run = runtime();
+    run.workspaceRpc
+      .mockResolvedValueOnce({
+        data: null,
+        error: { code: '08006', message: 'Private database diagnostic' },
+      })
+      .mockResolvedValueOnce({
+        data: {
+          workspace: { id: '00000000-0000-4000-8000-000000000777' },
+          principal: { id: null, role: 'owner' },
+        },
+        error: null,
+      })
+      .mockResolvedValueOnce({
+        data: { workspace: { id: legacy }, principal: { id: 'invalid-member', role: 'member' } },
+        error: null,
+      });
+    for (let attempt = 0; attempt < 3; attempt++)
+      expect((await run.invoke('/links', { target: '/events' })).status).toBe(503);
+    expect(run.rpc).not.toHaveBeenCalled();
+  });
+  it('binds SQL headers to the verified actor and canonical selected UUID', async () => {
+    const run = runtime();
+    const response = await run.invoke('/session', undefined, 'signed-user', 'GET', {
+      'X-Qg-Redirect-Workspace': legacy.toUpperCase(),
+      'X-Qg-Redirect-Session-Actor': '00000000-0000-4000-8000-000000000777',
+    });
+    expect(response.status).toBe(200);
+    expect((await response.json()).workspace.id).toBe(legacy);
+    expect(run.serviceHeaders.at(-1)).toEqual({
+      'x-qg-redirect-workspace': legacy,
+      'x-qg-redirect-session-actor': '00000000-0000-4000-8000-000000000001',
+    });
+    expect(run.workspaceRpc).toHaveBeenCalledWith({
+      p_actor: '00000000-0000-4000-8000-000000000001',
+      p_workspace: legacy,
+      p_scope: 'links:read',
+    });
+  });
+  it('returns member workspace metadata without granting owner operations or key-based account discovery', async () => {
+    const run = runtime();
+    run.state.admin = false;
+    run.state.membership = {
+      id: '00000000-0000-4000-8000-000000000009',
+      role: 'viewer',
+      label: 'Current viewer',
+    };
+    const response = await run.invoke('/workspaces', undefined, 'signed-user', 'GET');
+    expect(response.status).toBe(200);
+    expect(await response.json()).toMatchObject({
+      currentWorkspaceId: legacy,
+      data: [{ id: legacy, role: 'viewer' }],
+    });
+    for (const path of ['/members', '/tokens'])
+      expect((await run.invoke(path, undefined, 'signed-user', 'GET')).status).toBe(403);
+    expect(
+      (await run.invoke('/workspaces', undefined, 'qg_redirect_' + 'a'.repeat(64), 'GET')).status,
+    ).toBe(403);
+    expect(run.rpc).not.toHaveBeenCalled();
   });
 });
