@@ -8,18 +8,36 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import type { ReactNode } from 'react';
 
 const NODE_TYPES = [
-  { slug: 'rss', display_name: 'RSS Source', category: 'source', color: '#0ff', icon: 'rss', description: 'fetch RSS' },
+  {
+    slug: 'rss',
+    display_name: 'RSS Source',
+    category: 'source',
+    color: '#0ff',
+    icon: 'rss',
+    description: 'fetch RSS',
+  },
 ] as never;
 
 vi.mock('sonner', () => ({ toast: Object.assign(vi.fn(), { success: vi.fn(), error: vi.fn() }) }));
 
 vi.mock('../hooks/usePipelineBuilder', () => ({
   usePipelineBuilder: () => ({
-    nodes: [], edges: [], setNodes: vi.fn(), setEdges: vi.fn(),
-    onNodesChange: vi.fn(), onEdgesChange: vi.fn(), onConnect: vi.fn(),
-    addNode: vi.fn(), pipelineName: '', setPipelineName: vi.fn(),
-    save: vi.fn(), isSaving: false, run: vi.fn(), isRunning: false,
-    selectedNodeId: null, setSelectedNodeId: vi.fn(),
+    nodes: [],
+    edges: [],
+    setNodes: vi.fn(),
+    setEdges: vi.fn(),
+    onNodesChange: vi.fn(),
+    onEdgesChange: vi.fn(),
+    onConnect: vi.fn(),
+    addNode: vi.fn(),
+    pipelineName: '',
+    setPipelineName: vi.fn(),
+    save: vi.fn(),
+    isSaving: false,
+    run: vi.fn(),
+    isRunning: false,
+    selectedNodeId: null,
+    setSelectedNodeId: vi.fn(),
     loadPipeline: vi.fn(),
   }),
   usePipelineNodeTypes: () => ({ data: NODE_TYPES }),
@@ -35,13 +53,33 @@ vi.mock('../hooks/usePipelineHistory', () => ({
 // Every `actions.*` the component reads. A missing key is silently `undefined` until
 // something calls or spreads it, so keep this in step with PipelineBuilder's usage.
 const ACTION_KEYS = [
-  'copyNodeConfig', 'deleteEdge', 'deleteNode', 'duplicateNode',
-  'handleAddComment', 'handleAddGroup', 'handleAutoLayout', 'handleBulkDelete',
-  'handleBulkDuplicate', 'handleDeselectAll', 'handleDuplicate', 'handleImport',
-  'handleLayoutSelection', 'handleQuickAdd', 'handleRun', 'handleSave',
-  'handleTemplateApply', 'handleUpdateNode', 'loadVersionRevert', 'onDragOver',
-  'onDragStart', 'onDrop', 'onNodeClick', 'pasteNodeConfig', 'toastChangesDiscarded',
-  'applyAISuggestion', 'updateEdgeCondition',
+  'copyNodeConfig',
+  'deleteEdge',
+  'deleteNode',
+  'duplicateNode',
+  'handleAddComment',
+  'handleAddGroup',
+  'handleAutoLayout',
+  'handleBulkDelete',
+  'handleBulkDuplicate',
+  'handleDeselectAll',
+  'handleDuplicate',
+  'handleImport',
+  'handleLayoutSelection',
+  'handleQuickAdd',
+  'handleRun',
+  'handleSave',
+  'handleTemplateApply',
+  'handleUpdateNode',
+  'loadVersionRevert',
+  'onDragOver',
+  'onDragStart',
+  'onDrop',
+  'onNodeClick',
+  'pasteNodeConfig',
+  'toastChangesDiscarded',
+  'applyAISuggestion',
+  'updateEdgeCondition',
 ] as const;
 
 vi.mock('../hooks/usePipelineActions', () => ({
@@ -56,7 +94,13 @@ vi.mock('../hooks/usePipelineActions', () => ({
   }),
 }));
 vi.mock('../hooks/useUndoRedo', () => ({
-  useUndoRedo: () => ({ undo: vi.fn(), redo: vi.fn(), canUndo: false, canRedo: false, reset: vi.fn() }),
+  useUndoRedo: () => ({
+    undo: vi.fn(),
+    redo: vi.fn(),
+    canUndo: false,
+    canRedo: false,
+    reset: vi.fn(),
+  }),
 }));
 vi.mock('../hooks/useDraftAutosave', () => ({
   useDraftAutosave: () => ({ hasDraft: () => false, loadDraft: () => null, clearDraft: vi.fn() }),
@@ -64,9 +108,17 @@ vi.mock('../hooks/useDraftAutosave', () => ({
 vi.mock('@xyflow/react', () => ({
   ReactFlow: ({ children }: { children?: React.ReactNode }) => <div>{children}</div>,
   ReactFlowProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
-  Background: () => null, Controls: () => null, MiniMap: () => null,
+  Background: () => null,
+  Controls: () => null,
+  MiniMap: () => null,
   Panel: ({ children }: { children?: React.ReactNode }) => <div>{children}</div>,
-  useReactFlow: () => ({ fitView: vi.fn(), zoomIn: vi.fn(), zoomOut: vi.fn(), getNodes: () => [], getEdges: () => [] }),
+  useReactFlow: () => ({
+    fitView: vi.fn(),
+    zoomIn: vi.fn(),
+    zoomOut: vi.fn(),
+    getNodes: () => [],
+    getEdges: () => [],
+  }),
   Position: { Top: 'top', Bottom: 'bottom', Left: 'left', Right: 'right' },
   Handle: () => null,
   applyNodeChanges: (changes: unknown, nodes: unknown[]) => nodes,
@@ -75,7 +127,13 @@ vi.mock('@xyflow/react', () => ({
   useNodesState: (initial: unknown[]) => [initial, vi.fn(), vi.fn()],
   useEdgesState: (initial: unknown[]) => [initial, vi.fn(), vi.fn()],
   MarkerType: { ArrowClosed: 'arrowclosed' },
-  ConnectionLineType: { Bezier: 'bezier', Straight: 'straight', Step: 'step', SmoothStep: 'smoothstep', SimpleBezier: 'simplebezier' },
+  ConnectionLineType: {
+    Bezier: 'bezier',
+    Straight: 'straight',
+    Step: 'step',
+    SmoothStep: 'smoothstep',
+    SimpleBezier: 'simplebezier',
+  },
   ConnectionMode: { Strict: 'strict', Loose: 'loose' },
   PanOnScrollMode: { Free: 'free', Vertical: 'vertical', Horizontal: 'horizontal' },
   SelectionMode: { Partial: 'partial', Full: 'full' },
@@ -86,7 +144,11 @@ import PipelineBuilder from '../PipelineBuilder';
 
 function wrapper({ children }: { children: ReactNode }) {
   const qc = new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: 0 } } });
-  return <MemoryRouter><QueryClientProvider client={qc}>{children}</QueryClientProvider></MemoryRouter>;
+  return (
+    <MemoryRouter>
+      <QueryClientProvider client={qc}>{children}</QueryClientProvider>
+    </MemoryRouter>
+  );
 }
 
 describe('PipelineBuilder', () => {

@@ -23,13 +23,21 @@ import PipelineCanvas from './PipelineCanvas';
 
 import { useUndoRedo } from './hooks/useUndoRedo';
 import { useDraftAutosave } from './hooks/useDraftAutosave';
-import { usePipelineBuilder, usePipelineNodeTypes, usePipelineDefinitions } from './hooks/usePipelineBuilder';
+import {
+  usePipelineBuilder,
+  usePipelineNodeTypes,
+  usePipelineDefinitions,
+} from './hooks/usePipelineBuilder';
 import { usePipelineExecution } from './hooks/usePipelineExecution';
 import { useLatestPipelineRun, usePipelineRun } from './hooks/usePipelineHistory';
 import { usePipelineActions, usePipelineDerived } from './hooks/usePipelineActions';
 import { isBaseNode, type AppEdge } from './types';
 
-const nodeTypes = { baseNode: BaseNode, commentNode: CommentNode, groupNode: GroupNode } satisfies NodeTypes;
+const nodeTypes = {
+  baseNode: BaseNode,
+  commentNode: CommentNode,
+  groupNode: GroupNode,
+} satisfies NodeTypes;
 
 function PipelineBuilderInner() {
   const reactFlowWrapper = useRef<HTMLDivElement>(null);
@@ -44,33 +52,57 @@ function PipelineBuilderInner() {
   const [isDirty, setIsDirty] = useState(false);
   const [lastSavedAt, setLastSavedAt] = useState<number | null>(null);
   const [paletteSearch, setPaletteSearch] = useState('');
-  const [editingEdge, setEditingEdge] = useState<{ edge: AppEdge; x: number; y: number } | null>(null);
-  const [contextMenu, setContextMenu] = useState<{ nodeId: string; x: number; y: number } | null>(null);
+  const [editingEdge, setEditingEdge] = useState<{ edge: AppEdge; x: number; y: number } | null>(
+    null,
+  );
+  const [contextMenu, setContextMenu] = useState<{ nodeId: string; x: number; y: number } | null>(
+    null,
+  );
   const [quickAddOpen, setQuickAddOpen] = useState(false);
-  const [templateLibrary, setTemplateLibrary] = useState<{ open: boolean; mode: 'browse' | 'save' }>({ open: false, mode: 'browse' });
+  const [templateLibrary, setTemplateLibrary] = useState<{
+    open: boolean;
+    mode: 'browse' | 'save';
+  }>({ open: false, mode: 'browse' });
   const [logDrawerOpen, setLogDrawerOpen] = useState(false);
   const configClipboardRef = useRef<Record<string, unknown> | null>(null);
 
   useEffect(() => {
     if (!pipelineList || selectedPipelineId) return;
     if (initialPipelineParam) {
-      const match = pipelineList.find(p => p.id === initialPipelineParam || p.name === initialPipelineParam);
-      // eslint-disable-next-line react-hooks/set-state-in-effect -- effect synchronizes state with external props/data; React Compiler can't infer the sync direction. Documented exemption from the eslint.config.js staged-ratchet plan.
-      if (match) { setSelectedPipelineId(match.id); return; }
+      const match = pipelineList.find(
+        (p) => p.id === initialPipelineParam || p.name === initialPipelineParam,
+      );
+      if (match) {
+        // eslint-disable-next-line react-hooks/set-state-in-effect -- effect synchronizes state with external props/data; React Compiler can't infer the sync direction. Documented exemption from the eslint.config.js staged-ratchet plan.
+        setSelectedPipelineId(match.id);
+        return;
+      }
     }
-    const defaultDef = pipelineList.find(p => p.name === 'hotel-ingestion-pipeline')
-                    ?? pipelineList.find(p => p.name === 'events-ingestion-bulletproof')
-                    ?? pipelineList.find(p => p.is_enabled && !p.is_template)
-                    ?? pipelineList[0];
+    const defaultDef =
+      pipelineList.find((p) => p.name === 'hotel-ingestion-pipeline') ??
+      pipelineList.find((p) => p.name === 'events-ingestion-bulletproof') ??
+      pipelineList.find((p) => p.is_enabled && !p.is_template) ??
+      pipelineList[0];
     if (defaultDef) setSelectedPipelineId(defaultDef.id);
   }, [pipelineList, initialPipelineParam, selectedPipelineId]);
 
   const {
-    nodes, edges, setNodes, setEdges,
-    onNodesChange, onEdgesChange, onConnect,
-    addNode, pipelineName, setPipelineName,
-    save, isSaving, run, isRunning,
-    selectedNodeId, setSelectedNodeId,
+    nodes,
+    edges,
+    setNodes,
+    setEdges,
+    onNodesChange,
+    onEdgesChange,
+    onConnect,
+    addNode,
+    pipelineName,
+    setPipelineName,
+    save,
+    isSaving,
+    run,
+    isRunning,
+    selectedNodeId,
+    setSelectedNodeId,
     loadPipeline,
   } = usePipelineBuilder(selectedPipelineId);
 
@@ -78,41 +110,72 @@ function PipelineBuilderInner() {
   const draftAutosave = useDraftAutosave(selectedPipelineId, pipelineName, nodes, edges, isDirty);
 
   // Track dirty state on user-originated edits + record undo history
-  const nodesChangeWithHistory = useCallback((changes: Parameters<typeof onNodesChange>[0]) => {
-    const isUserEdit = changes.some(c =>
-      c.type === 'add' || c.type === 'remove' || c.type === 'replace' ||
-      (c.type === 'position' && c.dragging === false)
-    );
-    if (isUserEdit) { undoRedo.markEdit(); setIsDirty(true); }
-    return onNodesChange(changes);
-  }, [onNodesChange, undoRedo]);
+  const nodesChangeWithHistory = useCallback(
+    (changes: Parameters<typeof onNodesChange>[0]) => {
+      const isUserEdit = changes.some(
+        (c) =>
+          c.type === 'add' ||
+          c.type === 'remove' ||
+          c.type === 'replace' ||
+          (c.type === 'position' && c.dragging === false),
+      );
+      if (isUserEdit) {
+        undoRedo.markEdit();
+        setIsDirty(true);
+      }
+      return onNodesChange(changes);
+    },
+    [onNodesChange, undoRedo],
+  );
 
-  const edgesChangeWithHistory = useCallback((changes: Parameters<typeof onEdgesChange>[0]) => {
-    const isUserEdit = changes.some(c => c.type === 'add' || c.type === 'remove' || c.type === 'replace');
-    if (isUserEdit) { undoRedo.markEdit(); setIsDirty(true); }
-    return onEdgesChange(changes);
-  }, [onEdgesChange, undoRedo]);
+  const edgesChangeWithHistory = useCallback(
+    (changes: Parameters<typeof onEdgesChange>[0]) => {
+      const isUserEdit = changes.some(
+        (c) => c.type === 'add' || c.type === 'remove' || c.type === 'replace',
+      );
+      if (isUserEdit) {
+        undoRedo.markEdit();
+        setIsDirty(true);
+      }
+      return onEdgesChange(changes);
+    },
+    [onEdgesChange, undoRedo],
+  );
 
   const actions = usePipelineActions({
-    nodes, edges, setNodes, setEdges, setIsDirty,
-    setSelectedNodeId, selectedNodeId,
-    pipelineName, setPipelineName, addNode, undoRedo,
-    reactFlowWrapperRef: reactFlowWrapper, nodeTypeList, isDirty, configClipboardRef,
+    nodes,
+    edges,
+    setNodes,
+    setEdges,
+    setIsDirty,
+    setSelectedNodeId,
+    selectedNodeId,
+    pipelineName,
+    setPipelineName,
+    addNode,
+    undoRedo,
+    reactFlowWrapperRef: reactFlowWrapper,
+    nodeTypeList,
+    isDirty,
+    configClipboardRef,
   });
 
   const handleSave = useCallback(() => {
     if (isSaving) return;
-    const slug = (pipelineName || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+    const slug = (pipelineName || '')
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-|-$/g, '');
     if (!slug || slug.length < 2) {
       toast.error('Invalid name: Pipeline name must be at least 2 characters');
       return;
     }
-    const conflict = pipelineList?.find(p => p.name === slug && p.id !== selectedPipelineId);
+    const conflict = pipelineList?.find((p) => p.name === slug && p.id !== selectedPipelineId);
     if (conflict) {
       const override = window.confirm(
         `A pipeline named "${slug}" already exists (${conflict.display_name || conflict.name}).\n\n` +
-        `Saving here would create a second pipeline with the same slug, which may cause routing confusion.\n\n` +
-        `Continue anyway?`
+          `Saving here would create a second pipeline with the same slug, which may cause routing confusion.\n\n` +
+          `Continue anyway?`,
       );
       if (!override) return;
     }
@@ -121,38 +184,55 @@ function PipelineBuilderInner() {
         setIsDirty(false);
         setLastSavedAt(Date.now());
         draftAutosave.clearDraft();
-        toast.success('Pipeline saved', { description: `${nodes.length} nodes, ${edges.length} edges` });
+        toast.success('Pipeline saved', {
+          description: `${nodes.length} nodes, ${edges.length} edges`,
+        });
       },
       onError: (e: Error) => toast.error(`Save failed: ${e.message}`),
     });
-  }, [isSaving, save, nodes.length, edges.length, draftAutosave, pipelineName, pipelineList, selectedPipelineId]);
+  }, [
+    isSaving,
+    save,
+    nodes.length,
+    edges.length,
+    draftAutosave,
+    pipelineName,
+    pipelineList,
+    selectedPipelineId,
+  ]);
 
-  const handleRun = useCallback((opts?: { dryRun?: boolean }) => {
-    if (!opts?.dryRun) {
-      const hasCommitNode = nodes.some(n => isBaseNode(n) && (n.data.nodeTypeSlug || '').includes('commit'));
-      const def = pipelineList?.find(p => p.id === selectedPipelineId);
-      const nameLooksProd = /\b(prod|production|hotels?|events?|marketplace|news|personalities|cities|countries|venues?)\b/i.test(
-        `${def?.name || ''} ${pipelineName}`
-      );
-      if ((hasCommitNode || nameLooksProd) && def?.is_enabled) {
-        const confirmed = window.confirm(
-          `⚠ This pipeline writes to production tables (commit node detected).\n\n` +
-          `Run "${def?.display_name || def?.name || pipelineName}" now?\n\n` +
-          `Click Cancel to abort, or use Dry Run to test without committing.`
+  const handleRun = useCallback(
+    (opts?: { dryRun?: boolean }) => {
+      if (!opts?.dryRun) {
+        const hasCommitNode = nodes.some(
+          (n) => isBaseNode(n) && (n.data.nodeTypeSlug || '').includes('commit'),
         );
-        if (!confirmed) return;
-      }
-    }
-    run(opts, {
-      onSuccess: (data) => {
-        if (data?.pipeline_run_id) {
-          setActiveRunId(data.pipeline_run_id);
-          setViewingRunId(null);
-          setLogDrawerOpen(true);
+        const def = pipelineList?.find((p) => p.id === selectedPipelineId);
+        const nameLooksProd =
+          /\b(prod|production|hotels?|events?|marketplace|news|personalities|cities|countries|venues?)\b/i.test(
+            `${def?.name || ''} ${pipelineName}`,
+          );
+        if ((hasCommitNode || nameLooksProd) && def?.is_enabled) {
+          const confirmed = window.confirm(
+            `⚠ This pipeline writes to production tables (commit node detected).\n\n` +
+              `Run "${def?.display_name || def?.name || pipelineName}" now?\n\n` +
+              `Click Cancel to abort, or use Dry Run to test without committing.`,
+          );
+          if (!confirmed) return;
         }
-      },
-    });
-  }, [run, nodes, pipelineList, selectedPipelineId, pipelineName]);
+      }
+      run(opts, {
+        onSuccess: (data) => {
+          if (data?.pipeline_run_id) {
+            setActiveRunId(data.pipeline_run_id);
+            setViewingRunId(null);
+            setLogDrawerOpen(true);
+          }
+        },
+      });
+    },
+    [run, nodes, pipelineList, selectedPipelineId, pipelineName],
+  );
 
   const onEdgeClick = useCallback((event: React.MouseEvent, edge: AppEdge) => {
     event.stopPropagation();
@@ -164,12 +244,38 @@ function PipelineBuilderInner() {
     const handler = (e: KeyboardEvent) => {
       const inInput = ['INPUT', 'TEXTAREA'].includes(document.activeElement?.tagName || '');
       const mod = e.metaKey || e.ctrlKey;
-      if (mod && e.key === 's') { e.preventDefault(); handleSave(); return; }
-      if (mod && e.key === 'Enter') { e.preventDefault(); handleRun({ dryRun: e.shiftKey }); return; }
-      if (mod && e.key === 'z' && !e.shiftKey) { e.preventDefault(); undoRedo.undo(); setIsDirty(true); return; }
-      if (mod && (e.key === 'y' || (e.key === 'z' && e.shiftKey))) { e.preventDefault(); undoRedo.redo(); setIsDirty(true); return; }
-      if (mod && e.key === 'd' && !inInput) { e.preventDefault(); actions.handleDuplicate(); return; }
-      if (mod && e.key === 'l' && !inInput) { e.preventDefault(); actions.handleAutoLayout(); return; }
+      if (mod && e.key === 's') {
+        e.preventDefault();
+        handleSave();
+        return;
+      }
+      if (mod && e.key === 'Enter') {
+        e.preventDefault();
+        handleRun({ dryRun: e.shiftKey });
+        return;
+      }
+      if (mod && e.key === 'z' && !e.shiftKey) {
+        e.preventDefault();
+        undoRedo.undo();
+        setIsDirty(true);
+        return;
+      }
+      if (mod && (e.key === 'y' || (e.key === 'z' && e.shiftKey))) {
+        e.preventDefault();
+        undoRedo.redo();
+        setIsDirty(true);
+        return;
+      }
+      if (mod && e.key === 'd' && !inInput) {
+        e.preventDefault();
+        actions.handleDuplicate();
+        return;
+      }
+      if (mod && e.key === 'l' && !inInput) {
+        e.preventDefault();
+        actions.handleAutoLayout();
+        return;
+      }
       // The builder owns ⌘K while it is mounted. AdminShell binds the same chord for its
       // command palette on window (bubble phase); preventDefault alone does NOT stop that,
       // so stop propagation here — this handler is registered in the capture phase below.
@@ -179,26 +285,42 @@ function PipelineBuilderInner() {
       if (mod && (e.key === 'k' || e.key === 'K')) {
         e.preventDefault();
         e.stopPropagation();
-        setQuickAddOpen(o => !o);
+        setQuickAddOpen((o) => !o);
         return;
       }
-      if (e.key === 'Escape' && selectedNodeId) { setSelectedNodeId(null); return; }
+      if (e.key === 'Escape' && selectedNodeId) {
+        setSelectedNodeId(null);
+        return;
+      }
       if ((e.key === 'Delete' || e.key === 'Backspace') && selectedNodeId && !inInput) {
         e.preventDefault();
-        setNodes(nds => nds.filter(n => n.id !== selectedNodeId));
-        setEdges(eds => eds.filter(ed => ed.source !== selectedNodeId && ed.target !== selectedNodeId));
+        setNodes((nds) => nds.filter((n) => n.id !== selectedNodeId));
+        setEdges((eds) =>
+          eds.filter((ed) => ed.source !== selectedNodeId && ed.target !== selectedNodeId),
+        );
         setSelectedNodeId(null);
         setIsDirty(true);
       }
     };
     window.addEventListener('keydown', handler, true);
     return () => window.removeEventListener('keydown', handler, true);
-  }, [handleSave, handleRun, actions, undoRedo, selectedNodeId, setNodes, setEdges, setSelectedNodeId]);
+  }, [
+    handleSave,
+    handleRun,
+    actions,
+    undoRedo,
+    selectedNodeId,
+    setNodes,
+    setEdges,
+    setSelectedNodeId,
+  ]);
 
   // Unsaved changes warning
   useEffect(() => {
     if (!isDirty) return;
-    const handler = (e: BeforeUnloadEvent) => { e.preventDefault(); };
+    const handler = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+    };
     window.addEventListener('beforeunload', handler);
     return () => window.removeEventListener('beforeunload', handler);
   }, [isDirty]);
@@ -206,7 +328,7 @@ function PipelineBuilderInner() {
   // Load pipeline + draft restore
   useEffect(() => {
     if (!selectedPipelineId || !pipelineList || !nodeTypeList) return;
-    const def = pipelineList.find(p => p.id === selectedPipelineId);
+    const def = pipelineList.find((p) => p.id === selectedPipelineId);
     if (!def) return;
     loadPipeline(def, nodeTypeList);
     // eslint-disable-next-line react-hooks/set-state-in-effect -- effect synchronizes state with external props/data; React Compiler can't infer the sync direction. Documented exemption from the eslint.config.js staged-ratchet plan.
@@ -215,8 +337,17 @@ function PipelineBuilderInner() {
     const draft = draftAutosave.loadDraft();
     if (draft?.pipelineId === selectedPipelineId && draft.nodes.length > 0) {
       const age = Math.round((Date.now() - draft.savedAt) / 1000);
-      const ageStr = age < 60 ? `${age}s` : age < 3600 ? `${Math.round(age / 60)}m` : `${Math.round(age / 3600)}h`;
-      if (window.confirm(`Unsaved draft found (${draft.nodes.length} nodes, saved ${ageStr} ago). Restore?`)) {
+      const ageStr =
+        age < 60
+          ? `${age}s`
+          : age < 3600
+            ? `${Math.round(age / 60)}m`
+            : `${Math.round(age / 3600)}h`;
+      if (
+        window.confirm(
+          `Unsaved draft found (${draft.nodes.length} nodes, saved ${ageStr} ago). Restore?`,
+        )
+      ) {
         setNodes(draft.nodes);
         setEdges(draft.edges);
         setPipelineName(draft.pipelineName);
@@ -226,7 +357,7 @@ function PipelineBuilderInner() {
         draftAutosave.clearDraft();
       }
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedPipelineId, pipelineList, nodeTypeList]);
 
   const { runStatus, clearOverlay } = usePipelineExecution(activeRunId, setNodes);
@@ -247,18 +378,40 @@ function PipelineBuilderInner() {
         if (!s) {
           if (node.data.status || node.data.itemsOut !== undefined) {
             changed = true;
-            return { ...node, data: { ...node.data, status: undefined, itemsOut: undefined, itemsIn: undefined, durationMs: undefined, errorMessage: undefined } };
+            return {
+              ...node,
+              data: {
+                ...node.data,
+                status: undefined,
+                itemsOut: undefined,
+                itemsIn: undefined,
+                durationMs: undefined,
+                errorMessage: undefined,
+              },
+            };
           }
           return node;
         }
-        if (node.data.status === s.status && node.data.itemsOut === s.items_out && node.data.itemsIn === s.items_in &&
-            node.data.durationMs === s.duration_ms && node.data.errorMessage === s.error) return node;
+        if (
+          node.data.status === s.status &&
+          node.data.itemsOut === s.items_out &&
+          node.data.itemsIn === s.items_in &&
+          node.data.durationMs === s.duration_ms &&
+          node.data.errorMessage === s.error
+        )
+          return node;
         changed = true;
-        return { ...node, data: {
-          ...node.data,
-          status: s.status, itemsOut: s.items_out, itemsIn: s.items_in,
-          durationMs: s.duration_ms, errorMessage: s.error,
-        } };
+        return {
+          ...node,
+          data: {
+            ...node.data,
+            status: s.status,
+            itemsOut: s.items_out,
+            itemsIn: s.items_in,
+            durationMs: s.duration_ms,
+            errorMessage: s.error,
+          },
+        };
       });
       return changed ? next : current;
     });
@@ -286,7 +439,11 @@ function PipelineBuilderInner() {
 
   return (
     <TooltipProvider delayDuration={200}>
-      <div ref={containerRef} className="flex overflow-hidden -mx-6 -mt-4" style={{ height: containerHeight }}>
+      <div
+        ref={containerRef}
+        className="flex overflow-hidden -mx-6 -mt-4"
+        style={{ height: containerHeight }}
+      >
         <PipelineNodePalette
           paletteSearch={paletteSearch}
           setPaletteSearch={setPaletteSearch}
@@ -331,9 +488,16 @@ function PipelineBuilderInner() {
             handleTemplateApply={actions.handleTemplateApply}
             templateLibraryOpen={templateLibrary.open}
             templateLibraryMode={templateLibrary.mode}
-            onTemplateLibraryOpenChange={(open) => setTemplateLibrary(t => ({ ...t, open, ...(open ? {} : { mode: 'browse' as const }) }))}
+            onTemplateLibraryOpenChange={(open) =>
+              setTemplateLibrary((t) => ({
+                ...t,
+                open,
+                ...(open ? {} : { mode: 'browse' as const }),
+              }))
+            }
             applyAISuggestion={(suggestedNodes, suggestedEdges) => {
-              if (isDirty && !window.confirm('Unsaved changes will be lost. Apply AI suggestion?')) return;
+              if (isDirty && !window.confirm('Unsaved changes will be lost. Apply AI suggestion?'))
+                return;
               undoRedo.commitNow();
               setNodes(suggestedNodes);
               setEdges(suggestedEdges);
@@ -343,11 +507,21 @@ function PipelineBuilderInner() {
             loadVersionRevert={(v) => {
               if (!nodeTypeList) return;
               undoRedo.commitNow();
-              loadPipeline({
-                id: v.pipeline_id, name: v.name, display_name: v.display_name,
-                description: v.description, nodes: v.nodes, edges: v.edges,
-                schedule: v.schedule, is_enabled: true, is_template: false, version: v.version,
-              }, nodeTypeList);
+              loadPipeline(
+                {
+                  id: v.pipeline_id,
+                  name: v.name,
+                  display_name: v.display_name,
+                  description: v.description,
+                  nodes: v.nodes,
+                  edges: v.edges,
+                  schedule: v.schedule,
+                  is_enabled: true,
+                  is_template: false,
+                  version: v.version,
+                },
+                nodeTypeList,
+              );
               setIsDirty(true);
               toast.success(`Reverted to v${v.version}`, { description: 'Click Save to persist' });
             }}
@@ -363,7 +537,9 @@ function PipelineBuilderInner() {
             navigate={navigate}
           />
 
-          {viewingRunId && <RunStatsBar runId={viewingRunId} onClose={() => setViewingRunId(null)} />}
+          {viewingRunId && (
+            <RunStatsBar runId={viewingRunId} onClose={() => setViewingRunId(null)} />
+          )}
 
           <PipelineCanvas
             ref={reactFlowWrapper}
@@ -376,12 +552,20 @@ function PipelineBuilderInner() {
             nodeTypes={nodeTypes}
             onNodesChange={nodesChangeWithHistory}
             onEdgesChange={edgesChangeWithHistory}
-            onConnect={(c) => { undoRedo.commitNow(); onConnect(c); setIsDirty(true); }}
+            onConnect={(c) => {
+              undoRedo.commitNow();
+              onConnect(c);
+              setIsDirty(true);
+            }}
             onDrop={actions.onDrop}
             onDragOver={actions.onDragOver}
             onNodeClick={actions.onNodeClick}
             onEdgeClick={onEdgeClick}
-            onPaneClick={() => { setSelectedNodeId(null); setEditingEdge(null); setContextMenu(null); }}
+            onPaneClick={() => {
+              setSelectedNodeId(null);
+              setEditingEdge(null);
+              setContextMenu(null);
+            }}
             onNodeContextMenu={(event, node) => {
               event.preventDefault();
               setContextMenu({ nodeId: node.id, x: event.clientX, y: event.clientY });
@@ -436,14 +620,22 @@ function PipelineBuilderInner() {
             onClose={() => setContextMenu(null)}
             onDuplicate={actions.duplicateNode}
             onDelete={actions.deleteNode}
-            onConfigure={(id) => { setSelectedNodeId(id); setContextMenu(null); }}
+            onConfigure={(id) => {
+              setSelectedNodeId(id);
+              setContextMenu(null);
+            }}
             onCopyConfig={actions.copyNodeConfig}
             onPasteConfig={actions.pasteNodeConfig}
           />
         )}
 
         {nodeTypeList && (
-          <QuickAddPalette nodeTypes={nodeTypeList} onAdd={actions.handleQuickAdd} open={quickAddOpen} onOpenChange={setQuickAddOpen} />
+          <QuickAddPalette
+            nodeTypes={nodeTypeList}
+            onAdd={actions.handleQuickAdd}
+            open={quickAddOpen}
+            onOpenChange={setQuickAddOpen}
+          />
         )}
         {nodes.length > 0 && <FindNodePalette nodes={nodes} onSelect={setSelectedNodeId} />}
 
