@@ -3,7 +3,7 @@ import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 /**
- * 99991792178185 adds dedup_sweep_error_signals(), which reads `merge_error` off
+ * 99991792185901 adds dedup_sweep_error_signals(), which reads `merge_error` off
  * the latest dedup_truth_sweep run. Nothing had ever read it: on 2026-10-16 the
  * run row recorded 46 auto-eligible venue pairs, 0 merged, and the reason, while
  * every status field said success and consecutive_failures stayed 0.
@@ -19,7 +19,7 @@ import { describe, expect, it } from 'vitest';
  * them, so a naive scan of the raw file would match the explanation.
  */
 
-const MIGRATION = '99991792178185_dedup_sweep_error_signals.sql';
+const MIGRATION = '99991792185901_dedup_sweep_error_signals.sql';
 
 const rawSql = readFileSync(join(process.cwd(), 'supabase/migrations', MIGRATION), 'utf8');
 const health = readFileSync(join(process.cwd(), 'scripts/check-pipeline-health.mjs'), 'utf8');

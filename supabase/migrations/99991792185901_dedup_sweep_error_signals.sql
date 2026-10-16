@@ -119,7 +119,7 @@ $function$;
 comment on function public.dedup_sweep_error_signals() is
   'Reads merge_error off the latest dedup_truth_sweep run. Gates on a type that '
   'errored while merging nothing (auto_merged = 0); a chain-collapse guard always '
-  'sits beside a successful merge. See 99991792178185 for the measurement.';
+  'sits beside a successful merge. See 99991792185901 for the measurement.';
 
 -- A DEFINER function granted to `authenticated` is granted to every member, and
 -- this one reads automation bookkeeping. service_role only, same as its siblings.

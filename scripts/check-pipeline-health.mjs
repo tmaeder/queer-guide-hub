@@ -5584,7 +5584,7 @@ const DISOWNED_PROSE_CEILING = 380
   })
   if (!res.ok) {
     console.warn(
-      `⚠ dedup_sweep_error_signals → HTTP ${res.status} (RPC missing? migration 99991792178185)`,
+      `⚠ dedup_sweep_error_signals → HTTP ${res.status} (RPC missing? migration 99991792185901)`,
     )
     console.warn('  This check measured NOTHING — it did not pass.')
   } else {
