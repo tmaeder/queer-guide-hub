@@ -60,10 +60,24 @@ const page2Venues: Hit[] = Array.from({ length: 5 }, (_, i) => ({
 
 test.describe('search UX — universal searchbar', () => {
   test('⌘K hotkey handler is wired up and opens the dropdown', async ({ page }) => {
+    // IT OPENS THE DIALOG SEARCH, NOT THE HERO INPUT, and asserting the hero one
+    // is why this failed every scheduled nightly.
+    //
+    // Measured on prod 2026-10-17: before the hotkey there is ONE combobox,
+    // `aria-controls="qg-search-listbox-hero"`, and no dialog. After Ctrl+K a
+    // `role="dialog"` (aria-label "Search Queer Guide") mounts carrying a SECOND
+    // combobox, `qg-search-listbox-header`, which is expanded AND focused — while
+    // the hero input correctly stays `aria-expanded="false"`.
+    //
+    // So the hotkey was working the whole time and `.first()` resolved to the
+    // wrong element. The assertion is scoped to the dialog's combobox, which is
+    // also the thing the test NAME claims ("opens the dropdown") — the hero
+    // input's state is not evidence either way.
     await page.goto('/');
-    const combo = page.locator('input[role="combobox"][aria-label*="Search"]').first();
-    await expect(combo).toBeVisible();
-    await expect(combo).toHaveAttribute('aria-expanded', 'false');
+    const hero = page.locator('input[role="combobox"][aria-controls="qg-search-listbox-hero"]');
+    await expect(hero).toBeVisible();
+    await expect(hero).toHaveAttribute('aria-expanded', 'false');
+    const combo = page.locator('input[role="combobox"][aria-controls="qg-search-listbox-header"]');
 
     // Real keyboard events through Playwright's high-level API. Try Meta
     // first, fall back to Control (Linux/Windows runners).
@@ -86,6 +100,10 @@ test.describe('search UX — universal searchbar', () => {
         );
       });
     }
+    // Paired: the dialog mounted (so the hotkey did something) and its combobox
+    // is the expanded one. Either alone is weaker — a dialog with a collapsed
+    // listbox is not "opens the dropdown".
+    await expect(page.getByRole('dialog')).toBeVisible({ timeout: 3_000 });
     await expect(combo).toHaveAttribute('aria-expanded', 'true', { timeout: 3_000 });
   });
 
@@ -128,11 +146,25 @@ test.describe('search UX — results page', () => {
     await page.goto('/search?q=berlin');
     await expect(page.getByText('Venue 1', { exact: true })).toBeVisible();
     await page.getByRole('button', { name: /Map view/i }).click();
-    // Result cards are replaced — the MapLibre canvas or the "no mappable"
-    // fallback occupies the slot. Either way, Venue 1's <h3> is gone.
-    await expect(page.getByText('Venue 1', { exact: true })).toHaveCount(0, {
-      timeout: 5_000,
-    });
+
+    // THE CARD IS GONE AND THE MAP IS THERE — asserted as those two things,
+    // because "no element anywhere says Venue 1" is too strong and failed every
+    // scheduled nightly against correct behaviour.
+    //
+    // Measured on prod 2026-10-17, same mock: in grid view "Venue 1" is an <h3>
+    // and there are 20 of them with no canvas; in map view there are ZERO <h3>
+    // and one canvas, but "Venue 1" still appears twice as <span> — the map's own
+    // pin/list labels for the same venue. The toggle does exactly what this test
+    // is named for; the old assertion just forbade the map from labelling its
+    // own markers.
+    await expect(
+      page.locator('h3', { hasText: /^Venue 1$/ }),
+      'the result CARD should be swapped out',
+    ).toHaveCount(0, { timeout: 5_000 });
+    await expect(
+      page.locator('canvas').first(),
+      'the map surface should occupy the slot',
+    ).toBeVisible({ timeout: 10_000 });
   });
 
   test('Saved searches popover lets you save and reload a search', async ({ page }) => {

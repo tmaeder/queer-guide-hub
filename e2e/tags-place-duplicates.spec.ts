@@ -101,7 +101,30 @@ const DUPLICATES: Array<{ slug: string; geo: string; bucket: string }> = [
 // Deliberately NOT reversed here: whether a 226-use region tag or `bdsm` (also `utility`,
 // "correctness-first: authoritative source missing") ought to be published is an editorial
 // and SEO decision with a reviewed note behind it, not a test repair.
-const MUST_NOT_BE_GEO_DUPLICATES: Array<{ slug: string; why: string }> = [
+/**
+ * `productRedirect` — this tag is DELIBERATELY redirected to a product surface by
+ * a hand-written rule, so the geo invariant is asserted about the TARGET instead
+ * of about the status code.
+ *
+ * Added for `travel` on 2026-10-17. `public/_redirects:39` carries
+ * `/tags/travel  /travel  301` under its own instruction to keep it: "`travel` is
+ * a first-class product surface, not a glossary article [...] the dynamic tag
+ * fallback must never publish a generic thin page for the utility-vocabulary
+ * row." The 301 is a decision, not a regression, and this case failed every
+ * scheduled nightly against it.
+ *
+ * The case is NOT deleted, because that would drop the geo guard for `travel`
+ * altogether. What this file promises — in its own header, and in this entry's
+ * own `why` — is that these tags "do NOT redirect to a GEO PAGE". `/travel` is a
+ * product surface. Requiring a 200 was a PROXY for that, and the proxy is what
+ * collided with the product decision, so the assertion now checks the thing
+ * itself: where the redirect lands, and that the row is not `entity_redirect`.
+ */
+const MUST_NOT_BE_GEO_DUPLICATES: Array<{
+  slug: string;
+  why: string;
+  productRedirect?: string;
+}> = [
   {
     slug: 'california',
     why:
@@ -118,8 +141,12 @@ const MUST_NOT_BE_GEO_DUPLICATES: Array<{ slug: string; why: string }> = [
     why:
       'bucket F — a real travel concept with no geo match at all. If this ever redirects ' +
       'to a geo page the classifier has started matching concepts, not places.',
+    productRedirect: '/travel',
   },
 ];
+
+/** Path prefixes that ARE geo pages — the thing none of these may land on. */
+const GEO_PREFIXES = ['/city/', '/cities/', '/country/', '/countries/', '/villages/', '/place/'];
 
 /**
  * Tags that ARE published as glossary articles. The arming control for the sitemap: a
@@ -154,24 +181,53 @@ test.describe('place-named glossary tags redirect to the canonical geo page', ()
   for (const c of MUST_NOT_BE_GEO_DUPLICATES) {
     test(`/tags/${c.slug} is not treated as a geo duplicate`, async ({ request }) => {
       // The URL contract is what a geo duplicate gets: a permanent redirect onto the
-      // canonical geo page. These must keep serving their own page instead.
+      // canonical geo page. These must never land on one.
       const res = await request.get(`/tags/${c.slug}`, {
         headers: { 'User-Agent': BOT_UA },
         maxRedirects: 0,
       });
-      expect(res.status(), `/tags/${c.slug} should serve its own page, not redirect: ${c.why}`)
-        .toBe(200);
-      expect(
-        res.headers().location,
-        `/tags/${c.slug} redirects to ${res.headers().location} — the classifier has ` +
-          `matched it to a geo entity: ${c.why}`,
-      ).toBeUndefined();
+      const location = res.headers().location;
+      const target = location ? new URL(location, 'https://queer.guide').pathname : null;
+
+      if (c.productRedirect) {
+        // A deliberate product rule. Assert WHERE it goes rather than that it does
+        // not go anywhere — see the note on `productRedirect` above.
+        expect(res.status(), `/tags/${c.slug} should still 301 to its product surface`).toBe(301);
+        expect(
+          target,
+          `/tags/${c.slug} redirects to ${target} rather than its product surface`,
+        ).toBe(c.productRedirect);
+      } else {
+        expect(
+          res.status(),
+          `/tags/${c.slug} should serve its own page, not redirect: ${c.why}`,
+        ).toBe(200);
+        expect(
+          location,
+          `/tags/${c.slug} redirects to ${location} — the classifier has ` +
+            `matched it to a geo entity: ${c.why}`,
+        ).toBeUndefined();
+      }
+
+      // THE INVARIANT ITSELF, asserted for both shapes: wherever a redirect goes, it
+      // is never a geo page. This is what the status check was a proxy for, and it
+      // catches the real regression — a product redirect quietly repointed at
+      // /cities/... would satisfy the branch above but not this.
+      if (target) {
+        expect(
+          GEO_PREFIXES.some((p) => target.startsWith(p)),
+          `/tags/${c.slug} redirects to the geo page ${target}: ${c.why}`,
+        ).toBe(false);
+      }
 
       // And the disposition behind it, read through the ANON role because that is what a
       // visitor's browser uses. `entity_redirect` is the role the duplicates carry; these
       // may be `utility` or `article` — that is the other programme's call — but never a
       // geo redirect.
-      const rows = await anonGet(request, `unified_tags?select=slug,publication_role&slug=eq.${c.slug}`);
+      const rows = await anonGet(
+        request,
+        `unified_tags?select=slug,publication_role&slug=eq.${c.slug}`,
+      );
       expect(rows, `no anon-readable tag row for ${c.slug}`).toHaveLength(1);
       expect(
         rows[0].publication_role,

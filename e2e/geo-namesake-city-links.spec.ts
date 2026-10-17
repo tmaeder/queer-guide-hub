@@ -67,31 +67,74 @@ const REPAIRED = [
 // 250 km from its city -- is postcondition P4 of the migration, which runs as postgres
 // over every row. It deliberately does not live here: anon cannot read safety-gated
 // events, so a sweep from this role would check a subset and report it as the whole.
+//
+// SEVEN OF THE EIGHT `block` ENTRIES BECAME `relink` ON 2026-10-17, and one migration
+// did all of it. `block` meant "the correct city row is unrepresentable"; migration
+// 99991791233856 (2026-10-06) created those rows and relinked the events, stamping
+// `evidence: "state+coords"` and keeping the old decision in `previous_block`. The
+// spec was never updated, so it kept asserting a null city_id and failed every
+// scheduled nightly with a message claiming the city "is not creatable".
+//
+// Measured on prod 2026-10-17, each now sits 1-4 km from its own coordinates with the
+// event's own `state` matching the city's region:
+//
+//   Portland, Oregon          -> Portland / Maine           1 km   (state Maine)
+//   Lakewood, Colorado x3     -> Lakewood / Ohio             2 km   (state Ohio)
+//   Milton, Pennsylvania      -> Milton / Delaware           3 km   (state Delaware)
+//   Salisbury, North Carolina -> Salisbury / Massachusetts   4 km   (state Massachusetts)
+//   Sanford, North Carolina   -> Sanford / Florida           3 km   (state Florida)
+//
+// The one that is STILL `block` is Arlington, Virginia -> 77bcbdab, and it is blocked
+// deliberately: 99991792215136 unlinked it this week because no Arlington, Texas row
+// exists, so it is the remedy working rather than a leftover. That it survives as the
+// single `block` is also what keeps this branch of the test non-vacuous.
 const SWEPT = [
   {
+    // REMEDY CHANGED block -> relink ON 2026-10-17, and this is the THIRD time this
+    // file has gone red for pinning a repair's momentary shape — which is what its
+    // own header warns about.
+    //
+    // `block` was right when written: the event is in Portland, MAINE, was linked
+    // to Portland, Oregon by name alone, and 99991789886174 recorded that the
+    // correct row "cannot be created: public.cities is unique on (name, country)".
+    // That stopped being true. Measured on prod 2026-10-17 the row reads
+    // city_id -> Portland / Maine, about 1 km from its own coordinates, and its
+    // enrichment_status names who changed it:
+    //
+    //   by: "migration:99991791233856", linked: true, evidence: "state+coords",
+    //   region_code: "US-ME", previous_block: { by: "migration:99991789886174", ... }
+    //
+    // A later migration created the representable row and relinked it, so the data
+    // is now BETTER than the remedy this entry asserted — while the failure message
+    // went on claiming the city "is not creatable".
+    //
+    // The flip does not weaken correctness: `relink` asserts the city link is KEPT,
+    // and the two distance sweeps in this file ('no same-name city hosts an event
+    // it is nowhere near' and the venue-backed one) already fail if a relinked row
+    // sits far from its city. Both pass.
     id: '39fe5af6-7d44-401d-8c0b-41020fb5eeed',
-    remedy: 'block',
+    remedy: 'relink',
     lat: 43.656551,
     lon: -70.258943,
     was: 'Portland, Oregon',
   },
   {
     id: 'e223aa71-3edf-4ead-b46a-afc12c040344',
-    remedy: 'block',
+    remedy: 'relink',
     lat: 41.477055,
     lon: -81.773585,
     was: 'Lakewood, Colorado',
   },
   {
     id: 'f21efc92-11d5-4774-846b-e769b95abb3a',
-    remedy: 'block',
+    remedy: 'relink',
     lat: 41.477055,
     lon: -81.773585,
     was: 'Lakewood, Colorado',
   },
   {
     id: '15560889-b4bf-49f9-a584-13709c565f4d',
-    remedy: 'block',
+    remedy: 'relink',
     lat: 41.477055,
     lon: -81.773585,
     was: 'Lakewood, Colorado',
@@ -105,21 +148,21 @@ const SWEPT = [
   },
   {
     id: '0d3a2d4c-d470-458b-9f04-641f4721ce6f',
-    remedy: 'block',
+    remedy: 'relink',
     lat: 42.843561,
     lon: -70.816296,
     was: 'Salisbury, North Carolina',
   },
   {
     id: '7bee9d1f-f908-47c6-9220-e5796f1d6cd5',
-    remedy: 'block',
+    remedy: 'relink',
     lat: 28.810713,
     lon: -81.265142,
     was: 'Sanford, North Carolina',
   },
   {
     id: 'f4acf601-07f8-4790-b498-0b2a6b36d89e',
-    remedy: 'block',
+    remedy: 'relink',
     lat: 38.7673,
     lon: -75.285797,
     was: 'Milton, Pennsylvania',

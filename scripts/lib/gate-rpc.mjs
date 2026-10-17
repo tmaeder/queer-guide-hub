@@ -112,11 +112,53 @@ export async function callRpc(url, init) {
 }
 
 /**
+ * Cloudflare's origin-side 5xx range: 520 unknown error, 521 origin down, 522
+ * connection timed out, 523 origin unreachable, 524 a timeout occurred, 525/526
+ * TLS, 527 railgun. Every one means the CDN could not get a usable response out
+ * of the origin. Supabase sits behind Cloudflare and PostgREST never emits any
+ * of them, so the range is unambiguous — it is always the CDN talking ABOUT the
+ * origin, never the origin answering about a gate.
+ */
+export const CF_ORIGIN_ERROR_MIN = 520
+export const CF_ORIGIN_ERROR_MAX = 527
+
+function isCloudflareOriginError(status) {
+  return (
+    typeof status === 'number' &&
+    status >= CF_ORIGIN_ERROR_MIN &&
+    status <= CF_ORIGIN_ERROR_MAX
+  )
+}
+
+/**
  * Did this call fail to EVALUATE the gate, as opposed to finding it breached?
  *
- * Only these three, and the narrowness is the point: anything else — a 403, a
+ * Only these four, and the narrowness is the point: anything else — a 403, a
  * 404, a 500 naming a real error — is the server answering, and retrying it
  * would retry a genuine breach into silence.
+ *
+ * THE FOURTH WAS MEASURED 2026-10-17. `release_gate_checks` came back
+ *   HTTP 522: <!DOCTYPE html>…  (Cloudflare "connection timed out")
+ * at 06:28, during a window in which the Postgres instance was saturated — 35
+ * active client backends, and a trivial `pg_stat_activity` read could not even
+ * get a connection. A 522 matched NONE of the other arms: its status is a real
+ * number so it is not NO_RESPONSE, and its body is Cloudflare's HTML
+ * interstitial so it carries neither PGRST002 nor 57014. It fell through to
+ * "the server answered" and hard-failed with no retry, reddening `Critical
+ * data-quality gates` on a PR whose diff could not affect it. Not novel either:
+ * CLAUDE.md records a Supabase 522 turning all 21 open PRs red at once on
+ * 2026-09-05.
+ *
+ * IT IS THE PUREST "COULD NOT LOOK" OF THE FOUR. With a 57014 the query at
+ * least reached Postgres; with PGRST002 the request at least reached PostgREST;
+ * with a throw it at least left this process. Here the CDN is reporting that it
+ * never got an answer to relay.
+ *
+ * MATCHED ON THE STATUS RANGE AND NOT ON A BLANKET 5xx, and that bound is
+ * load-bearing: a Postgres 57014 arrives as **HTTP 500** with the code in the
+ * body, and a 500 naming a real error is the server answering. Widening to 5xx
+ * would retry genuine breaches into silence, which is the one thing this module
+ * must never do. 520-527 is safe precisely because PostgREST cannot produce it.
  *
  * THE THIRD WAS MEASURED 2026-10-17. PostgREST answers
  *   503 {"code":"PGRST002","message":"Could not query the database for the
@@ -135,6 +177,7 @@ export async function callRpc(url, init) {
 export function notEvaluated(result) {
   if (!result || result.ok) return false
   if (result.status === NO_RESPONSE) return true
+  if (isCloudflareOriginError(result.status)) return true
   if (result.body?.includes('PGRST002')) return true
   return Boolean(result.body?.includes('57014'))
 }
@@ -143,6 +186,9 @@ export function notEvaluated(result) {
 export function stallReason(result) {
   if (!notEvaluated(result)) return null
   if (result.status === NO_RESPONSE) return 'no HTTP response (transport stall)'
+  if (isCloudflareOriginError(result.status)) {
+    return `Cloudflare could not reach the origin (HTTP ${result.status})`
+  }
   if (result.body?.includes('PGRST002')) return 'PostgREST could not reach Postgres (PGRST002)'
   return 'Postgres statement_timeout (57014)'
 }
