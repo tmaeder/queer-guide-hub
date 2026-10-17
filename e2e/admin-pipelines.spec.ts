@@ -131,8 +131,11 @@ test.describe('Admin pipelines — authenticated', () => {
 
   test('the quick-add palette opens from the builder toolbar', async ({ page }) => {
     // gotoBuilder waits for the toolbar, so nothing here can race the lazy
-    // chunk. The toolbar button is asserted rather than ⌘K because that
-    // shortcut is shadowed — see the test below.
+    // chunk. This covers the pointer route; the test below covers ⌘K, which
+    // reaches the builder's quick-add since the capture-phase binding landed.
+    // (Until then this comment said the shortcut was shadowed and pointed at
+    // that test for proof — it now asserts the opposite, and two comments
+    // disagreeing about one behaviour is worse than neither.)
     await gotoBuilder(page);
     await page.getByRole('button', { name: 'Quick-add node' }).click();
     await expect(page.getByPlaceholder(/Type to search nodes/i)).toBeVisible({ timeout: 10_000 });

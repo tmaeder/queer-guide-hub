@@ -5791,7 +5791,10 @@ const DISOWNED_PROSE_CEILING = 380
       }
 
       if (blocking > 0) {
-        console.error(`✗ ${blocking} entity type(s) in the last dedup sweep threw and merged NOTHING`)
+        console.error(
+          `✗ ${blocking} entity type(s) in the last dedup sweep threw and merged NOTHING ` +
+            `(that run is ${ageH}h old — check it is describing last night before acting)`,
+        )
         console.error('  The sweep catches these per type and still books last_run_status=success, so')
         console.error('  consecutive_failures stays 0 and auto-pause never fires — it will not self-report.')
         console.error('  A merge core is broken for those types. Read the message above, not the run status.')
@@ -5818,12 +5821,30 @@ const DISOWNED_PROSE_CEILING = 380
         )
       }
 
-      // The sweep is nightly. Staleness is the auto-pause rules' job, not this
-      // gate's, but a stale run makes every count above describe the past.
-      if (ageH > 36) {
-        console.warn(
-          `⚠ the newest dedup sweep run is ${ageH}h old — the counts above are not about last night.`,
+      // Staleness GATES, and the 2026-10-17 incident is why it is not a warning.
+      //
+      // A sweep that FAILS writes no results summary at all -- `dedup_truth_sweep`
+      // was cancelled by a statement timeout at 05:50 that morning during a
+      // Supabase degradation -- so this probe silently falls back to the newest
+      // run that DOES carry one and every count above then describes that older
+      // run. Absence of evidence read as evidence: on 2026-10-17 the gate
+      // hard-failed on 30h-old counts naming a merge defect that had already been
+      // repaired the previous evening, and because the old warn threshold was 36h
+      // it did not even mention that the numbers were a day and a half stale. It
+      // would have stayed red until a sweep happened to succeed.
+      //
+      // The cadence is `50 5 * * *`, so >26h means a nightly run did not complete.
+      // That is the actionable fact -- the sweep is not finishing -- and it is
+      // true whether or not the last completed run found anything. Gate on the
+      // sweep COMPLETING, not only on what the last completed one said.
+      if (ageH > 26) {
+        console.error(
+          `✗ the newest dedup sweep summary is ${ageH}h old — a nightly sweep did not complete`,
         )
+        console.error('  A failed sweep writes NO summary, so every count above is from an older')
+        console.error('  run and describes the past. Check cron.job_run_details for dedup_truth_sweep')
+        console.error('  (a statement timeout leaves status=failed and no summary row).')
+        FAILED = true
       }
     }
   }

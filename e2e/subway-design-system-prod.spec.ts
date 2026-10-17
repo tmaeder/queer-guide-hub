@@ -197,23 +197,75 @@ test.describe('production subway design-system contract', () => {
 
     const activeTrack = rail.locator('.route-network-rail__track--pink');
     await expect(activeTrack).toHaveCount(1);
+
+    // THE RAIL CARRIES STATION LABELS NOW, so 52px is stale. Measured on prod
+    // 2026-10-17 on /venues: height 72, one track, zero `.network-backdrop`,
+    // classes `route-network-rail route-network-rail--breadcrumbs
+    // route-network-rail--pink`, labels ["Home", "Venues"]. Every invariant this
+    // test is named for still holds — one compact line, no ambient wallpaper —
+    // and only the number moved, because the labels take a line of their own.
+    //
+    // The modifier is asserted too, because that is what makes this the COMPACT
+    // rail rather than a number that happens to be small. The ceiling stays tight
+    // enough to separate a strip from a band: ambient wallpaper is hundreds of px
+    // and could never fit under it, while 96 leaves headroom for label
+    // line-height and font rendering on the linux runner.
+    await expect(rail).toHaveClass(/route-network-rail--breadcrumbs/);
     const box = await rail.boundingBox();
     expect(box).not.toBeNull();
-    expect(box!.height).toBeLessThanOrEqual(52);
+    expect(
+      box!.height,
+      'the breadcrumb rail should stay a strip, not become a band',
+    ).toBeLessThanOrEqual(96);
   });
 
-  test('client-side navigation plays one complete station journey', async ({ page }) => {
+  test('client-side navigation plays the arrival animation, and skips it on motion-free routes', async ({
+    page,
+  }) => {
+    // THE JOURNEY OVERLAY NO LONGER EXISTS, which is why this could never pass.
+    // `grep -rn 'route-journey' src/` returns NOTHING: there is no element with
+    // `data-testid="route-journey"` and no `route-journey--<track>` class in the
+    // app. What survives is `RouteFade` (20 lines), which puts a `station-arrive`
+    // class on the route wrapper when `isRouteMotionAllowed(pathname)`.
+    //
+    // NOTE FOR WHOEVER TOUCHES THE SIBLING TEST: 'reduced motion suppresses the
+    // route journey' is currently PASSING VACUOUSLY for the same reason — it
+    // asserts that element is hidden and absent, which is trivially true of an
+    // element that is never rendered. It is left alone here rather than guessed
+    // at, because asserting what reduced motion does to `station-arrive` needs
+    // its own measurement.
+    //
+    // Measured on prod 2026-10-17 via client-side nav from /:
+    //   -> /going-out   1 `.station-arrive`, computed animationName "station-arrive"
+    //   -> /help        0 `.station-arrive`   (a MOTION_FREE_PREFIXES entry)
+    //
+    // So the pair below is the real contract and is strictly better than a count
+    // of overlays: it asserts the animation runs AND that the motion-free list is
+    // honoured, which is the half that protects the crisis pages.
     await gotoReady(page, '/');
-    await observeRouteJourneys(page);
-
     await page.locator('header nav[aria-label="Primary"] a').first().click();
     await expect(page).toHaveURL(/\/going-out$/);
-    await expect.poll(() => page.evaluate(() => window.__routeJourneys?.length ?? 0)).toBe(1);
 
-    const [journey] = await page.evaluate(() => window.__routeJourneys ?? []);
-    expect(journey.display).not.toBe('none');
-    expect(journey.className).toMatch(/route-journey--(pink|blue|green|yellow)/);
-    await expect(page.getByTestId('route-journey')).toHaveCount(0, { timeout: 2_000 });
+    const arrived = page.locator('.station-arrive');
+    await expect(arrived).toHaveCount(1);
+    await expect
+      .poll(() => arrived.first().evaluate((el) => getComputedStyle(el).animationName))
+      .toBe('station-arrive');
+
+    // The other half: /help is in MOTION_FREE_PREFIXES, so the same navigation
+    // must NOT animate. Without this the assertion above passes on a build that
+    // animates everything, including the crisis pages this list exists to keep
+    // still.
+    // Located by HREF and clicked through the element, which is this file's own
+    // pattern further down. The primary nav has no "Help" item — /help lives
+    // under "Support" — so `getByRole('link', { name: /^help$/i })` times out on
+    // the homepage, and the footer link can sit under the sticky bar.
+    await gotoReady(page, '/');
+    const helpLink = page.locator('a[href$="/help"]').first();
+    await expect(helpLink).toHaveCount(1);
+    await helpLink.evaluate((element: HTMLAnchorElement) => element.click());
+    await expect(page).toHaveURL(/\/help(?:[?#]|$)/);
+    await expect(page.locator('.station-arrive')).toHaveCount(0);
   });
 
   test('reduced motion suppresses the route journey', async ({ page }) => {

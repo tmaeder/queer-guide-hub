@@ -75,14 +75,41 @@ test.describe('tag discovery', () => {
     await expect(page.getByRole('heading', { name: 'Shop' })).toBeVisible();
   });
 
-  test('"More like this" cross-entity rail renders on a venue detail', async ({ page }) => {
+  test('the cross-entity glossary rail renders on a venue detail', async ({ page }) => {
+    // THIS ASSERTED A RAIL THAT IS NOT ON THIS SURFACE, and the component is not
+    // the thing that broke — it was never mounted here.
+    //
+    // `SimilarItems` ("More like this") is mounted on news and personality
+    // detail; `src/pages/VenueDetail.tsx` has never rendered it. On CityDetail it
+    // was deliberately REMOVED, and that file says why in its own comment: "Two
+    // rails were cut as duplicates, not casualties: [...] `SimilarItems`
+    // filtered to cities answered the question `SimilarCities` already answers
+    // with equality-aware ranking. One question, one module." So the heading does
+    // not appear on /city/berlin, /city/chicago, /personalities/marsha-p-johnson
+    // or any of four venue pages measured on 2026-10-17, and
+    // `scrollIntoViewIfNeeded` sat until the 30s test timeout every scheduled
+    // nightly.
+    //
+    // NOT a data outage, which was checked rather than assumed: the search-proxy
+    // `/similar` endpoint answers this corpus fine — a POST for Berlin returns
+    // scored venue and city neighbours.
+    //
+    // What a venue detail DOES carry is a genuinely cross-entity rail, which is
+    // what this test is named for: "From the glossary" (venue -> defined terms),
+    // rendered by src/components/tags/FromTheGlossary.tsx. Measured on the same
+    // fixture: an <h2> whose section links to /tags/lgbtq-friendly,
+    // /tags/gay-bar and /tags/leather-bar. That is this file's subject — tag
+    // discovery — where "More like this" is semantic-neighbour discovery and
+    // belongs to whichever page mounts it.
     await page.goto('/venues/the-long-island-eagle-tavern');
-    const rail = page.getByRole('heading', { name: 'More like this' });
+    const rail = page.getByRole('heading', { name: /from the glossary/i });
     await rail.scrollIntoViewIfNeeded();
     await expect(rail).toBeVisible();
-    // The rail links out to other entity detail pages.
+    // Paired: the rail links OUT to the other entity type. Without this the
+    // heading alone passes on an empty rail, which is what a dark discovery
+    // surface looks like.
     const section = page.locator('section', { has: rail });
-    await expect(section.locator('a[href*="/venues/"]').first()).toBeVisible();
+    await expect(section.locator('a[href^="/tags/"]').first()).toBeVisible();
   });
 
   test('search tag filter narrows results via the ?tags= URL', async ({ page }) => {

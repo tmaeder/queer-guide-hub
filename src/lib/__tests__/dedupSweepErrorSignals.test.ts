@@ -210,10 +210,31 @@ describe('dedup_sweep_error_signals', () => {
     expect(section).toMatch(/d\.auto_merged/);
   });
 
-  it('warns rather than fails on a stale run', () => {
-    const staleBlock = section.slice(section.indexOf('ageH > 36'));
-    expect(staleBlock).toMatch(/console\.warn/);
-    expect(staleBlock).not.toMatch(/FAILED = true/);
+  it('FAILS on a stale run, because a failed sweep writes no summary', () => {
+    // This assertion used to require a warning, on the reasoning that staleness is
+    // the auto-pause rules' job. The 2026-10-17 incident disproved the premise: a
+    // sweep cancelled by a statement timeout writes NO results summary, so the
+    // probe falls back to an older run and reports the past as the present. It
+    // hard-failed on 30h-old counts naming an already-repaired defect, and the
+    // 36h warn threshold meant it never said the numbers were stale.
+    //
+    // The cadence is nightly, so >26h means a run did not complete -- which is the
+    // actionable fact, and true regardless of what the last completed run found.
+    const staleBlock = section.slice(section.indexOf('ageH > 26'));
+    expect(staleBlock).toMatch(/FAILED = true/);
+    // Anchored on the threshold too: loosening it back past a missed nightly run
+    // reinstates the blind spot this replaced.
+    expect(section).not.toMatch(/ageH > (3[0-9]|[4-9][0-9])/);
+  });
+
+  it('states the run age alongside a blocking error', () => {
+    // The blocking counts are only meaningful with their run's age attached --
+    // without it, 30h-old evidence of a fixed defect reads as last night's.
+    const blockingBlock = section.slice(
+      section.indexOf('blocking > 0'),
+      section.indexOf('shapeDrift > 0'),
+    );
+    expect(blockingBlock).toMatch(/\$\{ageH\}h old/);
   });
 
   it('treats an HTTP failure as having measured nothing', () => {
