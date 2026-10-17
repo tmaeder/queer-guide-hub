@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 /**
- * Guards 99991792239679 — the 15 search_documents_index_* functions move from LANGUAGE sql to
+ * Guards 99991792241188 — the 15 search_documents_index_* functions move from LANGUAGE sql to
  * plpgsql + force_custom_plan so their dual-mode `(p_id is null or x.id = p_id)` predicate can
  * be planned against the actual id. Measured 1,092.9 MB -> 14.9 MB per 15 single-row reindexes.
  *
@@ -14,7 +14,7 @@ import { join } from 'node:path';
  * which is the vacuous assertion this repo has recorded repeatedly.
  */
 
-const MIGRATION = '99991792239679_search_indexers_plpgsql_custom_plan.sql';
+const MIGRATION = '99991792241188_search_indexers_plpgsql_custom_plan.sql';
 const raw = readFileSync(join(process.cwd(), 'supabase/migrations', MIGRATION), 'utf8');
 
 // Comments at LINE START only — the house stripper. Sufficient here: every comment in this
