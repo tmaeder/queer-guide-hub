@@ -6,7 +6,7 @@
  * PostgREST/Cloudflare cap the URL near 8 KB.
  *
  * That whole mechanism is gone. `cities_directory()` returns the counts with the
- * rows, so what needs guarding now is the RESHAPE — and since 99991792196987 the RPC
+ * rows, so what needs guarding now is the RESHAPE — and since 99991792214568 the RPC
  * is COLUMNAR (`{countries, cols, rows}`, with the country block normalised over 212
  * entries) while every consumer (filter, sorter, map pane) reads a nested
  * `countries.continents` object. A silent mistake there does not throw; it makes every
@@ -99,7 +99,7 @@ const COLS = [
 
 /**
  * Encodes flat test rows into the columnar `{countries, cols, rows}` envelope the RPC
- * actually returns (99991792196987), normalising the country block exactly as the SQL
+ * actually returns (99991792214568), normalising the country block exactly as the SQL
  * does.
  *
  * These tests keep DESCRIBING cities as objects — that part reads better — but they must
@@ -279,7 +279,7 @@ describe('useCitiesDirectory', () => {
   });
 
   it('decodes a real cities_directory() envelope', () => {
-    // Captured verbatim from prod (SELECT over the 99991792196987 shape), so this
+    // Captured verbatim from prod (SELECT over the 99991792214568 shape), so this
     // fixture is SQL output rather than a shape invented by the test. Note jsonb
     // reorders object keys by length — `cols` first, `countries` last — which is one
     // more reason nothing may decode by position.

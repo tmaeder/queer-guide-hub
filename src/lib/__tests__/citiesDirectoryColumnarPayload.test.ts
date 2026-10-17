@@ -3,14 +3,14 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 /**
- * Guards 99991792196987 — the columnar `{countries, cols, rows}` payload.
+ * Guards 99991792214568 — the columnar `{countries, cols, rows}` payload.
  *
  * Over COMMENT-STRIPPED SQL, which is load-bearing: the migration's header quotes
  * every phrase asserted here, including the shapes it replaced, so an unstripped
  * `toContain` would pass against a deleted statement.
  */
 
-const MIGRATION = '99991792196987_cities_directory_columnar_payload.sql';
+const MIGRATION = '99991792214568_cities_directory_columnar_payload.sql';
 const raw = readFileSync(join(process.cwd(), 'supabase/migrations', MIGRATION), 'utf8');
 const sql = raw
   .split('\n')
@@ -67,7 +67,7 @@ describe('the columnar envelope', () => {
     expect(cols).not.toContain('name_local_lang');
   });
 
-  it('carries forward every property 99991792196981 established', () => {
+  it('carries forward every property 99991792214562 established', () => {
     expect(fn).toContain('hr as materialized (');
     expect(fn).toContain("where gp.id = c.id and gp.place_type = 'city'");
     expect(fn).toContain('(hr.country_id is not null) as high_risk');
@@ -157,7 +157,7 @@ describe('every consumer decodes the new shape', () => {
     const live = hook.slice(0, legacyStart) + hook.slice(legacyEnd);
     expect(live).not.toMatch(/\br\.country_slug|\br\.continent_code|\brow\.venue_count/);
     // The shim must carry its removal condition, or it becomes permanent by default.
-    expect(hook).toMatch(/REMOVE once 99991792196987 is applied/);
+    expect(hook).toMatch(/REMOVE once 99991792214568 is applied/);
   });
 
   it('the hook resolves the country through the lookup', () => {
