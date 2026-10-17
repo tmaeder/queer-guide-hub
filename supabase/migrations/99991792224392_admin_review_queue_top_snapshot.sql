@@ -343,33 +343,41 @@ begin
     raise exception 'get_admin_review_queue does not exist -- this migration patches it, it does not create it';
   end if;
 
-  -- PATCH 1 -- the decisions predicate moves into the union branches.
-  -- Anchor: the tail of the union branch template. Appending a %s and supplying either '' or the
-  -- NOT EXISTS keeps every other scope byte-identical, so the blast radius is one scope.
-  v_anchor := '%L::boolean can_reopen from public.%I u'',
-  r.risk,r.label,r.risk,r.public_impact,r.sla_hours,r.priority_weight,r.can_reopen,r.view_name)';
-  -- NO `position(v_anchor in v_src)` PRE-CHECK, HERE OR IN PATCH 2, AND THAT IS NOT A WEAKENING.
-  -- `pg_get_functiondef()` returns the body INCLUDING its comments, so any SEARCH over it is the
-  -- defect scripts/check-functiondef-asserts.mjs exists to stop -- it aborted db push on main three
-  -- times in one day. Stripping comments is the normal fix and is wrong here: this block must
-  -- `replace()` and then `execute` the RAW body, because executing a comment-stripped one would
-  -- permanently delete two other sessions' reasoning from the live function.
+  -- PATCH 1 IS GONE, BECAUSE 99991792213011 DID IT FIRST AND DID IT BETTER.
   --
-  -- The `v_new = v_src` test below is the STRONGER invariant anyway. It proves the substitution
-  -- HAPPENED; a position() check only proves a string was present somewhere, comments included.
-  -- The cost is a less specific error message, so the no-op raise carries the diagnosis instead.
-  v_new := replace(v_src, v_anchor,
-    '%L::boolean can_reopen from public.%I u%s'',
-  r.risk,r.label,r.risk,r.public_impact,r.sla_hours,r.priority_weight,r.can_reopen,r.view_name,'
-    || 'case when p_scope=''decisions'' then format('' where not exists (select 1 from '
-    || 'public.admin_review_finding_codes f where f.queue_key=%L and f.subtitle_match=u.subtitle)'', '
-    || 'r.queue_key) else '''' end)');
-  if v_new = v_src then
-    raise exception 'PATCH 1 replaced nothing -- the union builder in get_admin_review_queue was '
-      'rewritten and the anchor no longer matches. Re-read the live body with pg_get_functiondef '
-      'and re-cut it; do NOT widen the anchor to match loosely.';
-  end if;
-  v_src := v_new;
+  -- This file was cut against a body that no longer exists. 99991792213011 merged between
+  -- the cut and the push and moved the SAME decisions predicate into the SAME place, so
+  -- PATCH 1's anchor ('%L::boolean can_reopen from public.%I u'',' + the argument tail)
+  -- is legitimately absent and its `v_new = v_src` test fired exactly as designed:
+  --   ERROR: PATCH 1 replaced nothing -- the union builder in get_admin_review_queue was
+  --   rewritten and the anchor no longer matches.
+  -- That raise was right. It blocked db push for the whole repo, 9 migrations deep, which
+  -- is the correct outcome for an anchor that silently stopped matching.
+  --
+  -- IT IS DELETED RATHER THAN RE-CUT, and that is the measured call. The two predicates are
+  -- the same rows; 213011's is strictly cheaper, because it emits the NOT EXISTS only for
+  -- branches that actually carry a finding code:
+  --     and exists (select 1 from public.admin_review_finding_codes fc
+  --                  where fc.queue_key = r.queue_key)
+  -- where this one emitted it for every branch and leaned on `not exists(...)` being
+  -- vacuously true for the rest. Re-cutting would replace a narrower emit with a wider one.
+  --
+  -- SUBSUMED IN EVERY WORLD, not just on today's prod: 99991792213011 < 99991792224392, so
+  -- a rebuild from zero applies it first too. There is no ordering in which PATCH 1 has
+  -- work left to do.
+  --
+  -- NO `position()` GUARD EITHER, and the original header is why. It states that
+  -- pg_get_functiondef() returns the body INCLUDING its comments, so any SEARCH over it is
+  -- the defect scripts/check-functiondef-asserts.mjs exists to stop ("it aborted db push on
+  -- main three times in one day"). A first draft of this fix kept PATCH 1 and skipped it
+  -- when a post-213011 string was `position()`-found in v_src -- i.e. exactly the pattern
+  -- this file warns against, and one that gate does not catch because it only inspects NEW
+  -- migrations and this is an edit to an existing one. Deleting the patch needs no search at
+  -- all, which is why it is the better fix.
+  --
+  -- PATCH 2 below is untouched and still applies: its anchor is the v_search assignment
+  -- tail, which 99991792216385 inserted AFTER rather than rewriting. Verified on prod --
+  -- PATCH 1's anchor absent, 213011's form present, PATCH 2's anchor present.
 
   -- PATCH 2 -- an unfiltered page within the cached depth is served from the snapshot.
   -- Inserted as an EARLY RETURN immediately after v_search is assigned, rather than by rewriting
