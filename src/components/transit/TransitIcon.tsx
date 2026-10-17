@@ -1,4 +1,13 @@
-import { ICON_DEFS, TICKS, ink, inkPathOf, paper, type FillKind, type Stroke } from './iconDefs';
+import {
+  ICON_DEFS,
+  TICKS,
+  ink,
+  inkPathOf,
+  paper,
+  strokeWidthFor,
+  type FillKind,
+  type Stroke,
+} from './iconDefs';
 import type { TransitIconName } from './transitIconPaths';
 
 interface TransitIconProps {
@@ -82,11 +91,7 @@ export function TransitIcon({
   // also forced the stroke to be scaled by the same factor to keep its
   // apparent weight, which is why the set looked thin.
   const viewBox = '0 0 100 100';
-  // Ramp: 9 / 11 / 13. v1's 9/10/11 was tuned for a single ink stroke on
-  // paper. A v2 mark is an OUTLINE around a fill, so the same number renders
-  // a hairline casing with almost no colour showing through at the 12-20px
-  // sizes most of this product uses — which is what made the set read thin.
-  const sw = size >= 32 ? 9 : size >= 24 ? 11 : 13;
+  const sw = strokeWidthFor(size);
   const ticks = !mono && showTicks && def.t !== 'none' && size >= 32 ? TICKS[def.t] : [];
 
   // Monochrome renders the DEDUPED flat path as a single element, not the

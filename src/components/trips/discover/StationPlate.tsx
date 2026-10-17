@@ -139,7 +139,7 @@ export function StationPlate({
                 'focus-visible:ring-offset-2 focus-visible:ring-offset-background',
               )}
             >
-              <TransitIcon name="tune" size={18} />
+              <TransitIcon name="tune" size={22} />
             </button>
           )}
         </div>
@@ -163,7 +163,7 @@ export function StationPlate({
 
         {badge && (
           <p className="mt-1 flex items-center gap-1 text-xs2 text-muted-foreground">
-            <TransitIcon name={badge.level === 'protected' ? 'info-point' : 'alerts'} size={16} />
+            <TransitIcon name={badge.level === 'protected' ? 'info-point' : 'alerts'} size={20} />
             <span>{badge.label}</span>
           </p>
         )}

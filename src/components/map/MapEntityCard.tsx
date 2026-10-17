@@ -305,7 +305,7 @@ export function MapEntityCard({
                 onClick={() => onShare(point)}
                 className="inline-flex items-center gap-1 text-13 text-muted-foreground underline"
               >
-                <TransitIcon name="share" size={18} />
+                <TransitIcon name="share" size={22} />
                 Share
               </button>
             )}

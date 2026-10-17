@@ -33,12 +33,13 @@ export const TAIL_MAX = 92;
 /**
  * The widest stroke the renderer ever draws an outline at, in path units.
  *
- * `TransitIcon` picks a base weight of 9/10/11 by rendered size, into a plain
- * `0 0 100 100` box, so the worst case is 11. Every floor below is derived from
- * this rather than written down, so re-tuning the weight moves the floors with
- * it instead of silently invalidating them.
+ * IMPORTED, never restated. This was written down as a literal once and went
+ * stale within the hour: the ramp moved 9/10/11 -> 9/11/13 and this constant
+ * stayed at 11, so every floor below was computed against a stroke two units
+ * thinner than the one being drawn — while the test it feeds stayed green.
  */
-export const MAX_SW = 11;
+export { MAX_STROKE_WIDTH as MAX_SW } from '../iconDefs';
+import { MAX_STROKE_WIDTH } from '../iconDefs';
 
 /**
  * §3. A paper hole smaller than this fills in at small sizes.
@@ -51,11 +52,18 @@ export const MAX_SW = 11;
  * but legible one, and the first draft of `pride` proved the negative case by
  * rendering a solid black blob.
  *
- * The floor is therefore the radius that leaves ~1 unit of hole, not the
- * stated 5. Writing the spec's number down here would have produced a check
- * that passes on an icon nobody can see.
+ * The floor is the radius that leaves ~3 units of hole, not the stated 5, and
+ * the 3 is measured rather than chosen. On the contact sheet at the small-size
+ * stroke: r=8 (3 units) holds an open hole at 16/24/32px on `near-you`,
+ * `toy-cockring` and `toy-condom`; r=7 (1 unit) does not — `events` closed to a
+ * dark smudge and `gear-fetish`'s counter vanished entirely.
+ *
+ * A ONE-UNIT FLOOR WAS GREEN OVER BOTH OF THEM. The arithmetic said "positive,
+ * therefore open", which is true and useless: the question is whether a reader
+ * sees a hole, and that is answered on the sheet, not by the sign of a
+ * subtraction.
  */
-export const MIN_COUNTER_R = Math.ceil((MAX_SW + 1) / 2);
+export const MIN_COUNTER_R = Math.ceil((MAX_STROKE_WIDTH + 3) / 2);
 
 /**
  * Minimum pitch for a band in a stack of filled shapes, same arithmetic: a
@@ -67,7 +75,7 @@ export const MIN_COUNTER_R = Math.ceil((MAX_SW + 1) / 2);
  * §8 human checklist in docs/design-system/README.md instead, and `pride`'s
  * comment carries the worked example.
  */
-export const MIN_FILL_PITCH = Math.ceil(MAX_SW + 3);
+export const MIN_FILL_PITCH = Math.ceil(MAX_STROKE_WIDTH + 3);
 
 export type Box = { minX: number; minY: number; maxX: number; maxY: number };
 

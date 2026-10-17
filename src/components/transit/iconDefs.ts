@@ -121,6 +121,28 @@ export function ring(cx: number, cy: number, r: number): string {
 }
 
 /**
+ * Outline weight by rendered size, in path units.
+ *
+ * 9 / 11 / 13. v1's 9/10/11 was tuned for a single ink stroke on paper; a v2
+ * mark is an outline AROUND a fill, so the same number renders a hairline
+ * casing with almost no colour showing through at the 12-20px sizes most of
+ * this product uses.
+ *
+ * EXPORTED, AND READ BY THE SPEC TEST, because the counter and band floors are
+ * derived from the widest value here. Restating the ramp in the test is how the
+ * floors silently stop matching the renderer: that is exactly what happened
+ * when this went 9/10/11 -> 9/11/13 while `MAX_SW` stayed at 11, leaving the
+ * minimum counter radius computed against a stroke two units thinner than the
+ * one actually drawn.
+ */
+export function strokeWidthFor(size: number): number {
+  return size >= 32 ? 9 : size >= 24 ? 11 : 13;
+}
+
+/** The widest outline the renderer ever draws. Every §3 floor derives from it. */
+export const MAX_STROKE_WIDTH = strokeWidthFor(0);
+
+/**
  * §5. Motion ticks. Short curved strokes in the margin (0-12 and 88-100) that
  * make an icon feel alive, and that the renderer drops below 32px because at
  * that size they are noise rather than life.
@@ -1031,7 +1053,7 @@ const DEFS = {
         'M 20 36 C 20 28 26 24 34 24 C 45 23 55 23 66 24 C 74 24 80 28 80 36 C 81 47 81 57 80 68 C 80 76 74 80 66 80 C 55 81 45 81 34 80 C 26 80 20 76 20 68 Z',
         'T',
       ],
-      [ring(50, 56, 7), 'P'],
+      [ring(50, 56, 8), 'P'],
     ],
     l: ['M 36 16 C 35 20 35 24 36 28', 'M 64 16 C 65 20 65 24 64 28'],
   },
@@ -1272,12 +1294,16 @@ const DEFS = {
     hex: M,
     t: 'top',
     use: 'Latex, leather, rubber and uniform gear.',
+    // NO STATION DOT. The boot's shaft leaves ~11 units of clear interior once
+    // its own outline is drawn, and the counter floor is 16 wide plus a stroke,
+    // so an open hole does not fit at any centre. At r=7 it did not render as a
+    // hole at all — §8 says simplify what you cannot read, and the silhouette
+    // is what names this icon anyway.
     f: [
       [
         'M 36 18 C 35 32 35 46 36 58 C 36 70 42 76 52 78 C 62 80 72 80 80 78 C 82 74 82 70 80 66 C 72 64 66 60 62 54 C 60 44 60 30 60 18 C 52 16 44 16 36 18 Z',
         'T',
       ],
-      [ring(48, 38, 7), 'P'],
     ],
   },
 
