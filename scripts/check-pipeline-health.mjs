@@ -59,7 +59,7 @@ console.warn = (...a) => console.log(...a)
 console.error = (...a) => console.log(...a)
 
 // §  cities_directory() is the anonymous /cities page, and it has a 3s ceiling
-//    (2026-10-16, 99991792192204).
+//    (2026-10-16, 99991792196981).
 //
 // `anon` carries its own `statement_timeout = 3s` (pg_roles.rolconfig), not the 8s
 // `authenticated` and `authenticator` get. This RPC takes no arguments and aggregates
@@ -104,7 +104,7 @@ console.error = (...a) => console.log(...a)
     const elapsed = Date.now() - t0
     const bytes = Buffer.byteLength(text)
     // The payload is the columnar `{countries, cols, rows}` envelope since
-    // 99991792192213. Reading `.length` off it — which is what this did while the RPC
+    // 99991792196987. Reading `.length` off it — which is what this did while the RPC
     // returned a bare array — yields `undefined` and reports a false "no rows", so the
     // gate would have failed on a healthy directory the moment the shape changed.
     let rows = null
@@ -131,7 +131,7 @@ console.error = (...a) => console.log(...a)
       )
       FAILED = true
     } else if (bytes > 6 * 1024 * 1024) {
-      // RE-SIZED for the columnar payload (99991792192213). The old 12 MB was set
+      // RE-SIZED for the columnar payload (99991792196987). The old 12 MB was set
       // against 7,514 kB / 16,206 rows; at 179 bytes/row columnar it would not trip
       // until ~69k rows, which is a gate in name only. 6 MB is ~34k rows, a little over
       // 2x today's corpus — past that, string building alone puts the anon call back
@@ -141,7 +141,7 @@ console.error = (...a) => console.log(...a)
       console.error(
         `✗ cities_directory() payload is ${(bytes / 1024 / 1024).toFixed(1)} MB over ${rows} rows. ` +
           'The anon 3s ceiling cannot be held by indexing or by trimming further at this ' +
-          'size; this needs the pagination 99991792192213 deferred.',
+          'size; this needs the pagination 99991792196987 deferred.',
       )
       FAILED = true
     } else {

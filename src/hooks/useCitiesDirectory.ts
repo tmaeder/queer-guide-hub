@@ -25,7 +25,7 @@ import {
  * gate and for why it is SECURITY DEFINER.
  *
  * THE PAYLOAD IS COLUMNAR, and that is a size decision with numbers behind it
- * (99991792192213). As an array of 25-key objects it was 7,514 kB, of which the KEY
+ * (99991792196987). As an array of 25-key objects it was 7,514 kB, of which the KEY
  * NAMES were 3,675 kB — 55% — and a denormalised country block another 2,673 kB over
  * just 212 distinct countries. As `{countries, cols, rows}` it is 2,831 kB, which took
  * the RPC from 1,620 ms to ~720 ms against anon's 3s statement_timeout.
@@ -125,7 +125,7 @@ const CACHE_TIME = 30 * 60 * 1000;
 const STALE_TIME = 15 * 60 * 1000;
 
 /**
- * DELETE-ME WINDOW: tolerates the pre-99991792192213 flat array.
+ * DELETE-ME WINDOW: tolerates the pre-99991792196987 flat array.
  *
  * `supabase db push` (deploy-supabase-functions.yml) and the Cloudflare Pages build
  * both trigger on the same push to main and RACE. If Pages wins, this bundle is live
@@ -138,7 +138,7 @@ const STALE_TIME = 15 * 60 * 1000;
  * dropped — the hazard #3332 records. Columnar is detected by `Array.isArray`, which
  * the two shapes cannot both satisfy.
  *
- * REMOVE once 99991792192213 is applied to prod (check `schema_migrations` by NAME,
+ * REMOVE once 99991792196987 is applied to prod (check `schema_migrations` by NAME,
  * not by version). Nothing breaks if it lingers; it is just dead weight.
  */
 function decodeLegacyFlatRows(rows: Record<string, unknown>[]): CitiesDirectoryPayload {
