@@ -383,10 +383,10 @@ begin
       || 'public.admin_review_finding_codes f where f.queue_key=%L and f.subtitle_match=u.subtitle)'', '
       || 'r.queue_key) else '''' end)');
     if v_new = v_src then
-      raise exception 'PATCH 1 replaced nothing -- the union builder in get_admin_review_queue was '
-        'rewritten and the anchor no longer matches, and it does not carry 99991792216385''s '
-        'pushdown either. Re-read the live body with pg_get_functiondef and re-cut it; do NOT '
-        'widen the anchor to match loosely.';
+      raise exception 'PATCH 1 replaced nothing -- the union builder in get_admin_review_queue '
+        'was rewritten and the anchor no longer matches. Re-read the live body with '
+        'pg_get_functiondef and re-cut it; do NOT widen the anchor to match loosely. '
+        '(It does not carry 99991792216385''s pushdown either, so this is not the skip case.)';
     end if;
     v_src := v_new;
   end if;
