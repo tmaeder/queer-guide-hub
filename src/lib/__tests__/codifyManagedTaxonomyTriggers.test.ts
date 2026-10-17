@@ -141,6 +141,15 @@ describe('validate_managed_* trigger codification', () => {
     // P1 must assert attachment, not count statements — a count passes on a
     // file that emitted none.
     expect(SQL).toMatch(/not exists \(\s*\n\s*select 1\s*\n\s*from pg_trigger/);
+
+    // A short-circuit ban must cover BOTH forms. Banning only `if false then`
+    // let the mutation `where false and not exists (...)` through: P1's regex
+    // still matched, `if false then` never appeared, and the postcondition had
+    // silently stopped finding anything. Caught by the mutation pass, not by
+    // reading.
     expect(SQL).not.toMatch(/if\s+false\s+then/i);
+    expect(SQL).not.toMatch(/where\s+false\b/i);
+    expect(SQL).not.toMatch(/\band\s+false\b/i);
+    expect(SQL).not.toMatch(/\bor\s+true\b/i);
   });
 });
