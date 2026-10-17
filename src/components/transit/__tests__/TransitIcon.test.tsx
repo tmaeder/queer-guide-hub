@@ -2,7 +2,11 @@ import { render, screen } from '@testing-library/react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
 import { TransitIcon } from '@/components/transit/TransitIcon';
-import { TRANSIT_ICON_NAMES } from '@/components/transit/transitIconPaths';
+import { ICON_DEFS, ink } from '@/components/transit/iconDefs';
+import {
+  TRANSIT_ICON_NAMES,
+  TRANSIT_ICON_PATHS,
+} from '@/components/transit/transitIconPaths';
 
 describe('TransitIcon', () => {
   // The map rasterizes these into MapLibre images by serialising them on their
@@ -13,40 +17,105 @@ describe('TransitIcon', () => {
   it('serialises to a standalone SVG document the browser can decode', () => {
     const svg = renderToStaticMarkup(<TransitIcon name="search" size={20} color="#111111" />);
     expect(svg).toContain('xmlns="http://www.w3.org/2000/svg"');
-    // `color` must land on the element itself: there is no ancestor to
-    // inherit `currentColor` from once the markup is on its own.
-    expect(svg).toMatch(/style="[^"]*color:/);
+    // The colour must land on the elements themselves: there is no ancestor
+    // for `currentColor` to inherit from once the markup is on its own.
+    expect(svg).toContain('stroke="#111111"');
+    expect(svg).not.toContain('currentColor');
   });
 
-  it('renders a stroke-only svg for every name', () => {
-    for (const name of TRANSIT_ICON_NAMES) {
-      const { container, unmount } = render(<TransitIcon name={name} />);
-      const path = container.querySelector('path');
-      expect(path, name).not.toBeNull();
-      expect(path!.getAttribute('fill')).toBe('none');
-      expect(path!.getAttribute('stroke')).toBe('currentColor');
-      unmount();
-    }
+  describe('monochrome mode (`color`)', () => {
+    // The map draws an INK glyph inside a pin that is already the layer's track
+    // colour — ink-on-track is a measured contrast fix — and the favicon is one
+    // file serving a 16px tab and a 512px app icon. Both need the v1 rendition:
+    // one hollow path, one weight, the full 0-100 box.
+    it('draws one hollow path per icon, in the given colour', () => {
+      for (const name of TRANSIT_ICON_NAMES) {
+        const { container, unmount } = render(<TransitIcon name={name} color={ink} />);
+        const paths = container.querySelectorAll('path');
+        expect(paths, name).toHaveLength(1);
+        expect(paths[0].getAttribute('fill'), name).toBe('none');
+        expect(paths[0].getAttribute('stroke'), name).toBe(ink);
+        unmount();
+      }
+    });
+
+    it('keeps the full 0-100 box and draws no ticks', () => {
+      // Reserving the 8-unit tick margin here would shrink the glyph 14% in the
+      // two places with the least room for it, and neither draws ticks anyway.
+      const svg = renderToStaticMarkup(<TransitIcon name="events" size={64} color={ink} />);
+      expect(svg).toContain('viewBox="0 0 100 100"');
+      expect(svg.match(/<path/g)).toHaveLength(1);
+    });
+
+    it('emits each path exactly once, so a tinted glyph is not double-stroked', () => {
+      // A line drawing stores the same `d` twice — ink under, colour over. The
+      // monochrome path is deduplicated; without that it would stroke at 2.2x
+      // and 1.1x on top of each other and come out visibly fatter than the
+      // rest of the set.
+      const d = TRANSIT_ICON_PATHS.rainbow;
+      const first = ICON_DEFS.rainbow.l![0];
+      const geometry = typeof first === 'string' ? first : first[0];
+      expect(d).toBe(geometry);
+    });
+  });
+
+  describe('colour mode (default)', () => {
+    it('gives every filled shape an ink outline and a track fill', () => {
+      // §4b: the outline is always ink, colour sits inside it. A coloured
+      // outline would put the colour where the ink belongs.
+      for (const name of TRANSIT_ICON_NAMES) {
+        const def = ICON_DEFS[name];
+        if (!def.f?.length) continue;
+        const { container, unmount } = render(<TransitIcon name={name} />);
+        const filled = [...container.querySelectorAll('path')].slice(0, def.f.length);
+        for (const p of filled) {
+          expect(p.getAttribute('stroke'), name).toBe(ink);
+          expect(p.getAttribute('fill'), name).not.toBe('none');
+        }
+        unmount();
+      }
+    });
+
+    it('reserves the tick margin at every size so the body never rescales', () => {
+      // Ticks appear at 32px and vanish below it. If the viewBox changed with
+      // them, an icon in a 28px slot and one in a 36px slot would draw their
+      // bodies at different scales.
+      for (const size of [16, 24, 32, 64]) {
+        const svg = renderToStaticMarkup(<TransitIcon name="saved" size={size} />);
+        expect(svg, `${size}px`).toContain('viewBox="-8 -8 116 116"');
+      }
+    });
+
+    it('drops motion ticks below 32px and draws them at and above it', () => {
+      const count = (size: number) =>
+        (renderToStaticMarkup(<TransitIcon name="saved" size={size} />).match(/<path/g) ?? [])
+          .length;
+      // `saved` is a single heart with a `crown` tick set, so the difference
+      // between the two is exactly the three ticks.
+      expect(count(32) - count(24)).toBe(3);
+    });
+
+    it('draws no ticks for an icon whose set is `none`', () => {
+      const quiet = renderToStaticMarkup(<TransitIcon name="aftercare" size={64} />);
+      const loud = renderToStaticMarkup(<TransitIcon name="saved" size={64} />);
+      // Both are a heart plus strokes; only one is allowed to be jaunty.
+      expect(quiet.match(/<path/g)).toHaveLength(2);
+      expect((loud.match(/<path/g) ?? []).length).toBeGreaterThan(2);
+    });
   });
 
   // Exact count on purpose — it is the guard against a vacuous "every icon
-  // renders" pass over an accidentally-empty set. 42 wayfinding icons from the
-  // rebrand + 10 venue-category glyphs added 2026-08-10 so the map could drop
-  // lucide from its pins + 7 marketplace department glyphs added 2026-08-23 so
-  // the department tiles could stop using a product photograph as category art
-  // + 15 toy-category marks added 2026-10-03 so the `intimacy`/`bdsm_fetish`
-  // GROUP tiles could stop being bare text (these are gated behind the 18+
-  // acknowledgement; see the comment on `toy-dildo`)
-  // + 2 health-stop marks added 2026-10-10 so the glossary could tell the five
-  // Health stops apart once tag glyphs resolved per STOP instead of per line
-  // (see the comment on `harm-reduction` for the nine motifs that did NOT
-  // survive the 18px collision check).
+  // renders" pass over an accidentally-empty set.
   it('has 76 icons and bumps stroke weight below 32px', () => {
     expect(TRANSIT_ICON_NAMES).toHaveLength(76);
-    const { container } = render(<TransitIcon name="search" size={24} />);
-    expect(container.querySelector('path')!.getAttribute('stroke-width')).toBe('10');
-    const { container: big } = render(<TransitIcon name="search" size={48} />);
-    expect(big.querySelector('path')!.getAttribute('stroke-width')).toBe('9');
+    const w = (size: number) =>
+      Number(
+        render(<TransitIcon name="search" size={size} color={ink} />)
+          .container.querySelector('path')!
+          .getAttribute('stroke-width'),
+      );
+    expect(w(24)).toBe(10);
+    expect(w(48)).toBe(9);
   });
 
   it('is aria-hidden by default, labelled when told', () => {

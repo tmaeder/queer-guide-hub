@@ -208,6 +208,12 @@ export default tseslint.config(
     ignores: [
       'src/theme/**',
       'src/lib/animation.ts',
+      // Icon System v2 palette. The four track colours and the two neutrals
+      // have to be literals here: this data is serialised standalone by the
+      // map's pin rasteriser into a data-URI, where there is no document for a
+      // CSS variable to resolve against. Drift-tested against src/index.css by
+      // src/components/transit/__tests__/iconPalette.test.ts.
+      'src/components/transit/iconDefs.ts',
       'src/config/mapStyle.ts',
       'src/config/contentTypeRegistry.ts',
       'src/config/submissionRegistry.ts',
@@ -528,6 +534,12 @@ export default tseslint.config(
       // files legitimately encode data with categorical palettes.
       'src/theme/**',
       'src/lib/animation.ts',
+      // Icon System v2 palette. The four track colours and the two neutrals
+      // have to be literals here: this data is serialised standalone by the
+      // map's pin rasteriser into a data-URI, where there is no document for a
+      // CSS variable to resolve against. Drift-tested against src/index.css by
+      // src/components/transit/__tests__/iconPalette.test.ts.
+      'src/components/transit/iconDefs.ts',
       'src/lib/avatar.ts',
       // Locked drug-interaction risk scale — see the note in the block above.
       'src/lib/substanceRisk.ts',

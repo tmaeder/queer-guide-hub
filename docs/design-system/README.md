@@ -301,19 +301,169 @@ a second sanctioned treatment.
 
 ## Core patterns (`src/components/transit/`)
 
-- **`TransitIcon`** — the wayfinding icon set (stroke-only, currentColor, round
-  terminals, one station ring per icon; stroke weight bumps below 32px).
-  Never takes track colors. Never mix with lucide in the same surface —
-  lucide remains the default for UI chrome until a surface is migrated.
-  **The count is not restated here**: this line said "42" through three later
-  waves that took it to 76, so read it off `TransitIcon.test.tsx`'s
-  exact-length assertion, which is the one place that cannot go stale.
-  Drawing a new glyph: single `<path>`, one `d` string, commands `M C a H V Z`
-  only — a straight run is a collinear CUBIC, never `L`/`H`/`V` (those are for
-  rectangles). Circles use one fixed idiom. Safe box 16–84 (a round cap adds
-  ~5 beyond the endpoint); **16 units** minimum separation for two strokes that
-  must read as two; **14 units** is the smallest feature in the set; ring radius
-  ≤8 reads as a dot, ≥12 as an open ring, 9–11 is ambiguous — avoid.
+- **`TransitIcon`** — the icon set, now **Icon System v2**: filled shapes with
+  an ink outline and **one track colour inside**, open strokes over the top, and
+  motion ticks in the margin. The data is `src/components/transit/iconDefs.ts`;
+  you do not write SVG markup, you add one object to `ICON_DEFS`. Never mix with
+  lucide in the same surface — lucide remains the default for UI chrome until a
+  surface is migrated. **The count is not restated here**: this line said "42"
+  through three later waves that took it to 76, so read it off
+  `TransitIcon.test.tsx`'s exact-length assertion, which is the one place that
+  cannot go stale. Full authoring law in **§Icon System v2** below.
+- **v1 → v2, for anyone reading older code.** v1 was one ink stroke per icon and
+  nothing else, and this bullet used to say _"stroke-only, currentColor … never
+  takes track colors"_. That is now **false of the default rendition and still
+  true of one mode**: `TransitIcon` takes a `color` prop that renders the icon
+  monochrome in that colour, and two callers depend on it — the map's pin
+  rasteriser (an ink glyph inside a pin that is already the layer's track
+  colour, a measured contrast fix) and `public/favicon.svg`.
+  `TRANSIT_ICON_PATHS` still exists and still yields one flat ink path per icon,
+  but it is **derived** from `ICON_DEFS` rather than authored, so the favicon
+  cannot drift from the icon set.
+
+## Icon System v2
+
+The lines come from a subway map (curves only, round caps, station rings, track
+colours). The attitude comes from simplified subway chalk drawing (one thick ink
+outline, flat colour inside, faceless round-headed figures, short motion ticks
+outside the shape).
+
+**You do not write SVG.** You add one object to `ICON_DEFS` in
+`src/components/transit/iconDefs.ts`:
+
+```ts
+'sober-space': {
+  name: 'Sober space',        // Title case, 1-3 words, unique
+  group: 'Places',            // one of ICON_GROUPS
+  hex: G,                     // M / C / G / Y, chosen by meaning
+  t: 'crown',                 // motion-tick set
+  use: 'Alcohol-free venues and nights.',   // ≤12 words, one sentence
+  f: [[pathD, 'T'], [ring(50, 50, 8), 'P']], // fills, back to front
+  l: ['M …', ...tinted('M …')],              // strokes, over the fills
+}
+```
+
+`f` entries are closed shapes, each drawn with an ink outline, filled with the
+icon's own track colour (`'T'`) or paper (`'P'`). `l` entries are open strokes:
+a bare string is ink at the base weight, `[d, 'T', k]` is the track colour at
+`base × k`, `[d, null, k]` is ink at `base × k`, `[d, 'P', k]` is paper.
+`ring(cx, cy, r)` is the one helper.
+
+**The record key is the slug, `name` is the display string.** 55 call sites, the
+map rasteriser and `brandAssetSync` all address icons by slug.
+
+### The grid
+
+- viewBox `0 0 100 100`, rendered with an 8-unit bleed (`-8 -8 116 116`).
+- **The body lives between 12 and 88** on both axes.
+- **Motion ticks live in the margin.** Nothing else goes there; thin tails may
+  reach 92.
+- Minimum gap between two separate outlined shapes: **6 units**, or the outlines
+  merge at 24px.
+
+### Curves only
+
+Use only `M`, `C`, `Q`, `Z` and the `a` arcs `ring()` emits. **Never `L`, `H`,
+`V`.** A "straight" line is a cubic whose control points sit ~2 units off the
+chord. Corners are soft — four cubics with control points pulled 2–4 units in.
+
+**Counting `L H V` is not enough, and assuming it is under-measures by about
+20×.** A cubic whose control points lie on its own chord is a straight line
+wearing a curve's command letter. v1 had four glyphs using `L H V` and **70 more
+flat cubics**; `flatCubics()` in `__tests__/iconSpecRules.ts` is what finds them.
+
+### Colour
+
+| Track   | Const | Use it for                                         |
+| ------- | ----- | -------------------------------------------------- |
+| Magenta | `M`   | nightlife, love, alerts, destructive, kink gear    |
+| Cyan    | `C`   | care, info, trans, travel logistics, UI navigation |
+| Green   | `G`   | community, safety, success, outdoors               |
+| Yellow  | `Y`   | culture, events, money, warnings, highlights       |
+
+**One track colour per icon.** `pride` is the only exception and nothing else
+may join it — the spec test asserts the exemption as an exact set. The outline
+is always ink; colour sits **inside** it, never as it. The one exception is a
+coloured stroke that has an ink stroke underneath on the same path.
+
+**That pair comes in two weights and picking the wrong one changes the
+picture.** `colored()` is the spec's 2.2 ink / 1.1 colour and is right for a
+glyph drawn as a STRAP (a lens ring, two wide-set arcs). `tinted()` is 1.0 / 0.45
+and preserves v1's single-weight line art. Widening fine line art to 2.2 does not
+make it bolder — the flogger's four falls merged into one pink moth, and every
+glyph with internal spacing under ~20 units closed up solid. Which applies is a
+fact about the drawing, not about the category: check the contact sheet.
+
+### Two floors the spec's own numbers do not survive
+
+An outline straddles its path, taking half the stroke width off each side. At
+the widest the renderer draws (`11 × 1.16 ≈ 12.8` units), that means:
+
+- **Counter radius ≥ 7, not the stated 5.** A radius-5 hole is 10 units across
+  against a 12.8 stroke — a _negative_ opening, rendering as solid ink. Measured:
+  r=8 is clean (`near-you`), r=7 is tight but legible (`events`). Below the
+  floor, use an ink dot in `l` instead.
+- **A band in a stack of fills needs ~16 units of pitch.** `pride`'s first draft
+  used 9-unit bands and rendered a **solid black blob** at every size. This one
+  is _not_ mechanically enforced and cannot be: a thin band's bounding box is
+  wide, so no bbox test sees it. It is on the human checklist below.
+
+### Motion ticks
+
+`crown` (radiates) · `sides` (moves sideways) · `top` (upright) · `corners`
+(round/symmetric) · `burst` (high energy) · `wave` (greeting) · `none`.
+
+`none` is a choice, not an omission: it is required for **calm or sensitive
+content** (aftercare, rope play, safeword) and for anything that draws its own
+motion. Ticks vanish below 32px. A tick set may not collide with the icon's own
+projections — the calendar's hangers plus `crown` read as a robot with antennae,
+which is why `events` is `sides`.
+
+### Content rules
+
+1. **Figures have no faces.** A round head and soft limbs. No eyes, mouths,
+   hair, gendered clothing or skin tone. Two neutral figures, not a skirt and
+   trousers. (Filled discs side by side will _become_ eyes — `community` drew a
+   face by accident until its heads were re-opened.)
+2. **Kink and sex icons show gear, symbols and safety — never bodies or acts.**
+3. **Safety, health and legal icons are literal.** Clear before fun.
+4. Original drawings only. Take the way of drawing, not any artist's figures.
+5. No text, letters or numbers — except a single `?` or `i` drawn as strokes.
+6. `use:` is written for designers: when to use it, 12 words or fewer.
+
+### Checking it
+
+```
+npx vitest run src/components/transit/__tests__/iconSpec.test.ts
+npx tsx --tsconfig tsconfig.app.json scripts/render-icon-sheet.mjs sheet.html
+```
+
+The `--tsconfig` flag is load-bearing: tsx reads the solution-style root
+`tsconfig.json`, which carries no `jsx` setting, so the component dies with
+`ReferenceError: React is not defined`.
+
+**A green test suite is not a legible icon set, and the two halves catch
+different things.** `iconSpec.test.ts` decides what a parser can — commands,
+bounds, counter radius, one-colour, metadata. It caught a flag drawn outside the
+body box. The contact sheet caught the _same flag_ rendering as a solid black
+blob, which no predicate would ever have seen.
+
+So the sheet is mandatory, and these are the failures it has actually caught:
+
+- **Concentric shapes read as a target** — and a small offset does not fix it.
+  `rope-play` kept reading as a bullseye at a 2.8-unit offset and only stopped
+  when it became a spiral.
+- **A blob with a stick reads as nothing**, and three of them read as _each
+  other_: `search`, `rope-play` and `paddle` all converged on a disc-on-a-stick.
+- **Two icons separated only by hue is a failure**, not a near miss. `health`
+  and `add-station` were both a circle with a plus; colour is never the only cue.
+- **Strokes that merge**: two bands closer than the stroke width become one mass
+  (`rope-play`'s loops), and an asterisk of three strokes becomes a four-leaf
+  clover (`safeword`).
+- **Check what the mark says, not just what it depicts.** `harm-reduction` drawn
+  as one thick ink diagonal is a _prohibition slash_, which inverts the politics
+  of the content it labels.
+
 - **`StationRing`** — open ring = place · filled track = typed entity ·
   filled ink = done/past.
 - **`RouteBullet`** — letter = content type, color = its line; the mapping
