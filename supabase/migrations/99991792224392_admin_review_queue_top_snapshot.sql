@@ -358,18 +358,38 @@ begin
   -- The `v_new = v_src` test below is the STRONGER invariant anyway. It proves the substitution
   -- HAPPENED; a position() check only proves a string was present somewhere, comments included.
   -- The cost is a less specific error message, so the no-op raise carries the diagnosis instead.
-  v_new := replace(v_src, v_anchor,
-    '%L::boolean can_reopen from public.%I u%s'',
+  -- PATCH 1 IS NOW CONDITIONAL, AND THE REASON IS AN ORDERING INVERSION, NOT A WEAKENED ANCHOR.
+  --
+  -- This migration was authored as 99991792215935, i.e. BEFORE
+  -- 99991792216385_admin_review_queue_branch_topn. It was renumbered above that version while
+  -- clearing the 19-PR backlog, so the two now apply in the opposite order -- and branch_topn
+  -- rewrites the same union builder and ALREADY pushes the decisions predicate into the branches.
+  -- Measured on prod: the live body carries `can_reopen from public.%I u %s'` and
+  -- `admin_review_finding_codes fc where fc.queue_key=r.queue_key`, which is this patch's intent
+  -- under branch_topn's spelling (`fc`/`r.queue_key` rather than `f`/`%L`).
+  --
+  -- So PATCH 1 has nothing left to do. The anchor is NOT widened -- the original exact anchor is
+  -- still required whenever the pushdown is absent, and a body matching neither still raises. What
+  -- is added is a precise already-applied branch keyed on branch_topn's own output, so this
+  -- migration is correct under either ordering instead of only the one it was written for.
+  if position('can_reopen from public.%I u %s' in v_src) > 0
+     and position('admin_review_finding_codes fc where fc.queue_key=r.queue_key' in v_src) > 0 then
+    raise notice 'PATCH 1 skipped: 99991792216385 already pushed the decisions predicate into the union branches';
+  else
+    v_new := replace(v_src, v_anchor,
+      '%L::boolean can_reopen from public.%I u%s'',
   r.risk,r.label,r.risk,r.public_impact,r.sla_hours,r.priority_weight,r.can_reopen,r.view_name,'
-    || 'case when p_scope=''decisions'' then format('' where not exists (select 1 from '
-    || 'public.admin_review_finding_codes f where f.queue_key=%L and f.subtitle_match=u.subtitle)'', '
-    || 'r.queue_key) else '''' end)');
-  if v_new = v_src then
-    raise exception 'PATCH 1 replaced nothing -- the union builder in get_admin_review_queue was '
-      'rewritten and the anchor no longer matches. Re-read the live body with pg_get_functiondef '
-      'and re-cut it; do NOT widen the anchor to match loosely.';
+      || 'case when p_scope=''decisions'' then format('' where not exists (select 1 from '
+      || 'public.admin_review_finding_codes f where f.queue_key=%L and f.subtitle_match=u.subtitle)'', '
+      || 'r.queue_key) else '''' end)');
+    if v_new = v_src then
+      raise exception 'PATCH 1 replaced nothing -- the union builder in get_admin_review_queue was '
+        'rewritten and the anchor no longer matches, and it does not carry 99991792216385''s '
+        'pushdown either. Re-read the live body with pg_get_functiondef and re-cut it; do NOT '
+        'widen the anchor to match loosely.';
+    end if;
+    v_src := v_new;
   end if;
-  v_src := v_new;
 
   -- PATCH 2 -- an unfiltered page within the cached depth is served from the snapshot.
   -- Inserted as an EARLY RETURN immediately after v_search is assigned, rather than by rewriting
@@ -441,7 +461,12 @@ begin
   select regexp_replace(pg_get_functiondef(p.oid), '--[^' || chr(10) || ']*', '', 'g') into v_src
     from pg_proc p join pg_namespace n on n.oid = p.pronamespace
    where n.nspname='public' and p.proname='get_admin_review_queue';
-  if position('admin_review_finding_codes f where f.queue_key=%L' in v_src) = 0 then
+  -- Either spelling satisfies this: the one PATCH 1 writes (`f` / `%L`), or the one
+  -- 99991792216385 writes (`fc` / `r.queue_key`). The CLAIM is "the decisions predicate is pushed
+  -- into the union branches", and both bodies make it. This is deliberately an OR over two exact
+  -- strings rather than a loosened substring -- a body carrying neither still raises.
+  if position('admin_review_finding_codes f where f.queue_key=%L' in v_src) = 0
+     and position('admin_review_finding_codes fc where fc.queue_key=r.queue_key' in v_src) = 0 then
     raise exception 'the decisions pushdown is not present in the live function after patching';
   end if;
   if position('public.admin_review_queue_top t where t.scope=p_scope' in v_src) = 0 then
