@@ -29,22 +29,56 @@ describe('department category art', () => {
     expect(new Set(marks).size).toBe(marks.length);
   });
 
-  // ONE LINE, ONE HUE. The masthead calls this surface "Marketplace · Yellow
-  // line". Reaching for a second track colour here would assert a second route
-  // that does not exist — the four-track licence `CityNetwork` holds does not
-  // extend to a stop list. This is the guard on that rule.
-  it('draws every plate on the yellow track and no other', () => {
+  // ONE LINE, ONE HUE — FOR THE LINE. This guard used to also require that no
+  // other track colour appeared anywhere in the plate, on the rule that a
+  // second hue asserts a second route. Icon System v2 reversed that for the
+  // MARK (see the header of DepartmentArt.tsx): a department's glyph now
+  // carries its own hue, the same one it carries in the glossary and the nav.
+  //
+  // THE OLD ASSERTION WOULD STILL HAVE PASSED, AND THAT IS THE POINT OF
+  // REWRITING IT RATHER THAN DELETING IT. It searched for the class names
+  // `track-pink` / `track-blue` / `track-green`, while a v2 mark arrives as a
+  // literal hex — so it went green over plates that are visibly pink and cyan.
+  // An assertion that cannot see the thing it forbids is worse than none.
+  //
+  // What still holds, and what this now checks, is the half that carries the
+  // meaning: the ROUTE is yellow on every plate, because the stroke running
+  // between the stations is what says "one line, eleven stops".
+  it('draws the route in yellow on every plate', () => {
     for (const [i, slug] of DEPARTMENT_ORDER.entries()) {
       const { container, unmount } = render(
         <DepartmentArt slug={slug} index={i} count={DEPARTMENT_ORDER.length} />,
       );
-      const html = container.innerHTML;
-      expect(html, slug).toContain('stroke-track-yellow');
+      const route = container.querySelector('path.stroke-track-yellow');
+      expect(route, `${slug} route stroke`).not.toBeNull();
+      // No OTHER track class on the route itself — a hex mark is fine, a
+      // second coloured route is not.
       for (const other of ['track-pink', 'track-blue', 'track-green']) {
-        expect(html, `${slug} must not carry ${other}`).not.toContain(other);
+        expect(
+          container.querySelector(`path.stroke-${other}`),
+          `${slug} must not draw a ${other} route`,
+        ).toBeNull();
       }
       unmount();
     }
+  });
+
+  // The marks are genuinely coloured now, which is the visible half of the v2
+  // change on this surface. Asserted positively so "the plates went monochrome
+  // again" fails here rather than being noticed on the page.
+  it('renders each department mark in its own track colour', () => {
+    const hues = new Set<string>();
+    for (const [i, slug] of DEPARTMENT_ORDER.entries()) {
+      const { container, unmount } = render(
+        <DepartmentArt slug={slug} index={i} count={DEPARTMENT_ORDER.length} />,
+      );
+      for (const m of container.innerHTML.matchAll(/#(?:FF1F8F|00B4E6|2BE05A|FFD500)/gi))
+        hues.add(m[0].toUpperCase());
+      unmount();
+    }
+    // More than one, or the surface is effectively still single-hue and this
+    // test is decorative.
+    expect(hues.size).toBeGreaterThan(1);
   });
 
   // The plates are windows onto ONE shared line, which is the only reason a

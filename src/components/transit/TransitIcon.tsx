@@ -25,6 +25,17 @@ interface TransitIconProps {
    * outline belongs, which §4b forbids.
    */
   color?: string;
+  /**
+   * Suppress motion ticks regardless of size.
+   *
+   * For a glyph drawn INSIDE another shape — the marketplace department plate
+   * sets its mark in a station disc — the containing shape is the boundary, so
+   * the 8-unit tick margin is inside the disc rather than outside the icon.
+   * Ticks there do not read as motion, they read as marks on the disc. Size
+   * cannot express this: the plate's glyph is large in user units and small on
+   * screen.
+   */
+  ticks?: boolean;
 }
 
 /** Resolve `"T"` / `"P"` / a literal track colour against this icon's own hex. */
@@ -46,25 +57,37 @@ function strokeOf(s: Stroke, hex: string): { d: string; color: string; weight: n
  * Wayfinding and content icon. Filled shapes with an ink outline and one track
  * colour inside, open strokes over the top, motion ticks in the margin.
  *
- * Two viewBoxes, on purpose. In colour mode the box carries the spec's 8-unit
- * bleed (`-8 -8 116 116`) so the margin the ticks live in is always reserved —
- * which means the BODY is scaled identically at every size, and ticks appear
- * and disappear without the drawing resizing under them. Monochrome mode keeps
- * `0 0 100 100`: it never draws ticks, so reserving the margin would only
- * shrink the glyph 14% in the two places that need every pixel (a 20px map pin,
- * a 16px browser tab).
+ * One viewBox, `0 0 100 100`, in both modes — see the note on `viewBox` below
+ * for why the spec's 8-unit bleed is not applied. Ticks appear and disappear in
+ * the margin the body already leaves them, so the drawing never rescales under
+ * them.
  */
-export function TransitIcon({ name, size = 24, label, className, color }: TransitIconProps) {
+export function TransitIcon({
+  name,
+  size = 24,
+  label,
+  className,
+  color,
+  ticks: showTicks = true,
+}: TransitIconProps) {
   const def = ICON_DEFS[name];
   const mono = Boolean(color);
-  const span = mono ? 100 : 116;
-  const viewBox = mono ? '0 0 100 100' : '-8 -8 116 116';
-  // Base weight in the v1 100-unit box, then scaled to this box so the
-  // RENDERED weight is the same at a given `size` in either mode. The set has
-  // one stroke weight and that is drift-tested; an icon that strokes thinner in
-  // colour mode than in monochrome would break it invisibly.
-  const sw = (size >= 32 ? 9 : size >= 24 ? 10 : 11) * (span / 100);
-  const ticks = !mono && def.t !== 'none' && size >= 32 ? TICKS[def.t] : [];
+  // ONE viewBox, and the 8-unit bleed the spec describes is NOT needed.
+  //
+  // §3 reserves 0-12 and 88-100 for motion ticks — a margin INSIDE the
+  // 100-unit box, not outside it — and every tick in `TICKS` is drawn there
+  // (2..11 and 89..98), which the spec test asserts. Rendering into
+  // `-8 -8 116 116` to "make room" therefore reserved space twice and drew
+  // every icon at 86% of the size the same `size` prop used to produce. It
+  // also forced the stroke to be scaled by the same factor to keep its
+  // apparent weight, which is why the set looked thin.
+  const viewBox = '0 0 100 100';
+  // Ramp: 9 / 11 / 13. v1's 9/10/11 was tuned for a single ink stroke on
+  // paper. A v2 mark is an OUTLINE around a fill, so the same number renders
+  // a hairline casing with almost no colour showing through at the 12-20px
+  // sizes most of this product uses — which is what made the set read thin.
+  const sw = size >= 32 ? 9 : size >= 24 ? 11 : 13;
+  const ticks = !mono && showTicks && def.t !== 'none' && size >= 32 ? TICKS[def.t] : [];
 
   // Monochrome renders the DEDUPED flat path as a single element, not the
   // layered shapes recoloured. Recolouring them draws both halves of every

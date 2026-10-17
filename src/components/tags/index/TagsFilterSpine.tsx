@@ -104,7 +104,7 @@ export function TagsFilterSpine({
             />
             <TransitIcon
               name="search"
-              size={16}
+              size={20}
               className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground"
             />
           </div>
@@ -143,7 +143,7 @@ export function TagsFilterSpine({
                   view === key ? CHIP_ON : CHIP_OFF,
                 )}
               >
-                <TransitIcon name={icon} size={14} />
+                <TransitIcon name={icon} size={18} />
                 <span>{t(labelKey, fallback)}</span>
               </button>
             ))}

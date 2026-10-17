@@ -76,14 +76,24 @@ describe('TransitIcon', () => {
       }
     });
 
-    it('reserves the tick margin at every size so the body never rescales', () => {
-      // Ticks appear at 32px and vanish below it. If the viewBox changed with
-      // them, an icon in a 28px slot and one in a 36px slot would draw their
-      // bodies at different scales.
+    it('draws into the plain 100-unit box at every size, like monochrome', () => {
+      // The tick margin is INSIDE 0-100 (§3 reserves 0-12 and 88-100), so an
+      // outer bleed would reserve it twice and render every icon at 86% of the
+      // size the `size` prop promises — which is what made the set look small
+      // and thin. One box, both modes, no rescale across the 32px tick
+      // threshold.
       for (const size of [16, 24, 32, 64]) {
         const svg = renderToStaticMarkup(<TransitIcon name="saved" size={size} />);
-        expect(svg, `${size}px`).toContain('viewBox="-8 -8 116 116"');
+        expect(svg, `${size}px`).toContain('viewBox="0 0 100 100"');
       }
+    });
+
+    it('can be told to draw no ticks even when it is large enough', () => {
+      // A glyph set inside another shape (the marketplace station disc) has
+      // that shape as its boundary, so its tick margin is interior.
+      const plain = renderToStaticMarkup(<TransitIcon name="saved" size={64} />);
+      const quiet = renderToStaticMarkup(<TransitIcon name="saved" size={64} ticks={false} />);
+      expect((plain.match(/<path/g) ?? []).length - (quiet.match(/<path/g) ?? []).length).toBe(3);
     });
 
     it('drops motion ticks below 32px and draws them at and above it', () => {
@@ -114,7 +124,11 @@ describe('TransitIcon', () => {
           .container.querySelector('path')!
           .getAttribute('stroke-width'),
       );
-    expect(w(24)).toBe(10);
+    // 9 / 11 / 13 — see the ramp comment in TransitIcon. A v2 mark is an
+    // outline around a fill, so it needs more weight at small sizes than v1's
+    // single stroke did.
+    expect(w(20)).toBe(13);
+    expect(w(24)).toBe(11);
     expect(w(48)).toBe(9);
   });
 

@@ -94,7 +94,7 @@ export function TagChip({
   // 14/16, not the old 10/12: `TransitIcon`'s stroke ramp puts an 11-unit
   // stroke on a 100-unit grid below 24px, and at 10px that fuses into a blob.
   // These are drawn marks, not a hinted icon font.
-  const iconSize = size === 'sm' ? 14 : 16;
+  const iconSize = size === 'sm' ? 18 : 16;
   const glyph = icon ? tagGlyphOverride(tag) : undefined;
   const content = (
     <>

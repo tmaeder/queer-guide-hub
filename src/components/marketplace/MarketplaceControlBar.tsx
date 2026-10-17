@@ -255,7 +255,7 @@ export function MarketplaceControlBar({
         <div className="relative flex-1">
           <TransitIcon
             name="search"
-            size={18}
+            size={22}
             className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground"
           />
           <Input
@@ -292,7 +292,7 @@ export function MarketplaceControlBar({
           onClick={() => setSheetOpen(true)}
           aria-label="All filters"
         >
-          <TransitIcon name="filter" size={18} />
+          <TransitIcon name="filter" size={22} />
           <span className="hidden sm:inline">All filters</span>
           {activeCount > 0 && (
             <span className="ml-1 inline-flex h-5 min-w-5 items-center justify-center bg-foreground px-1.5 text-2xs font-bold text-background">

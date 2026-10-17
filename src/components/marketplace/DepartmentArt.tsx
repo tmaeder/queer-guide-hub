@@ -1,5 +1,5 @@
 import { horizontalLine } from '@/components/transit/lineGeometry';
-import { TRANSIT_ICON_PATHS } from '@/components/transit/transitIconPaths';
+import { TransitIcon } from '@/components/transit/TransitIcon';
 import { cn } from '@/lib/utils';
 import {
   PLATE_CREST,
@@ -36,14 +36,26 @@ import {
  * what Brand Guidelines §08 wants, since it forbids treatments on photos but
  * says nothing against illustration that never pretends to be one.
  *
- * ONE HUE, NOT FOUR. The masthead already declares this surface "Marketplace ·
- * Yellow line", so every plate carries `--track-yellow` and the departments
- * are told apart by their MARK, not by hue. The four-track exception granted
- * to `CityNetwork` does not apply here: there, the colours are the wayfinding
- * vocabulary of a network with four real lines; here there is one line, and
- * painting eleven stops in four colours would assert four routes that do not
- * exist. `--track-yellow` is fill-only and meets the paper disc at an ink
- * ring, so 1.4.11 is satisfied fill-vs-ring exactly as it is everywhere else.
+ * THE LINE IS YELLOW; THE MARKS ARE NOT. This paragraph used to read "ONE HUE,
+ * NOT FOUR" and argued that painting eleven stops in four colours would assert
+ * four routes that do not exist. That rule was reversed deliberately when Icon
+ * System v2 landed (2026-10-17): under v2 a track colour belongs to the ICON,
+ * chosen by what the icon means, and an icon that drops its colour on one
+ * surface is a different icon there. So the department MARK now renders in its
+ * own hue, exactly as the same glyph does in the glossary, the nav and search.
+ *
+ * What did NOT change is the LINE: `--track-yellow` still carries the route
+ * through every plate, and the route is what says "one line, eleven stops".
+ * The hue of a station's mark was never what asserted a route — the stroke
+ * running between the stations is. 1.4.11 is unaffected: every mark is still
+ * fill-with-an-ink-outline, and it meets the disc at that outline.
+ *
+ * The ACTIVE tile is the exception and it is arithmetic, not taste. Its disc
+ * inverts to `fill-foreground`, and a mark whose outline is ink is invisible on
+ * an ink disc — the `bg-foreground` trap, where the class names still read
+ * correctly and the glyph disappears. The active tile therefore draws the
+ * monochrome rendition in `currentColor` against `text-background`, which is
+ * theme-aware where a literal would not be.
  *
  * The `index` / `count` pair is load-bearing, not decoration — see
  * `plateWindow`. Pass the position in the RENDERED tile list, not in
@@ -76,7 +88,6 @@ export function DepartmentArt({
     crest: PLATE_CREST,
   });
 
-  const glyph = TRANSIT_ICON_PATHS[departmentGlyph(slug)];
   const cx = index * PLATE_W + PLATE_STATION_X;
   const g = PLATE_GLYPH_SCALE;
 
@@ -143,9 +154,17 @@ export function DepartmentArt({
       />
       <g
         transform={`translate(${cx - 50 * g} ${PLATE_MID - 50 * g}) scale(${g})`}
-        className={active ? 'stroke-background' : 'stroke-foreground'}
+        className={active ? 'text-background' : undefined}
       >
-        <path d={glyph} fill="none" strokeWidth={8} strokeLinecap="round" strokeLinejoin="round" />
+        {/* `ticks={false}`: the disc is this glyph's boundary, so its tick
+            margin is interior — ticks here read as marks ON the disc, not as
+            motion around the icon. */}
+        <TransitIcon
+          name={departmentGlyph(slug)}
+          size={100}
+          ticks={false}
+          {...(active ? { color: 'currentColor' } : {})}
+        />
       </g>
     </svg>
   );

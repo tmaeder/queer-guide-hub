@@ -84,7 +84,7 @@ export function DetailMasthead({
         />
         {(eyebrow || glyph) && (
           <span className="inline-flex items-center gap-1.5 text-2xs font-bold uppercase tracking-label">
-            {glyph && <TransitIcon name={glyph} size={18} />}
+            {glyph && <TransitIcon name={glyph} size={22} />}
             {eyebrow}
           </span>
         )}

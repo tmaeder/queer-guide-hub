@@ -410,8 +410,11 @@ const DEFS = {
     hex: C,
     t: 'top',
     use: 'A member’s profile and account.',
-    f: [[ring(50, 32, 12), 'T']],
-    l: ['M 24 78 C 28 62 36 54 50 54 C 64 54 72 62 76 78'],
+    // Drawn the same way as `community`, and that consistency is the point: a
+    // filled head over an ink shoulder stroke puts the colour on the smallest
+    // part of the figure, so at sidebar size it read as a BLACK icon sitting
+    // next to a visibly green `community`. Two figure glyphs, one treatment.
+    l: [...tinted(`${ring(50, 32, 12)} M 24 78 C 28 62 36 54 50 54 C 64 54 72 62 76 78`)],
   },
 
   alerts: {

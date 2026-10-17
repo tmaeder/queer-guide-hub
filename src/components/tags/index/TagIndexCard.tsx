@@ -54,7 +54,7 @@ export function TagIndexCard({ tag, uses, icon, categoryLabel, aliasMatch }: Tag
     >
       <div className="flex items-center justify-between gap-4">
         <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-element bg-muted">
-          <TransitIcon name={icon ?? DEFAULT_CATEGORY_ICON} size={22} />
+          <TransitIcon name={icon ?? DEFAULT_CATEGORY_ICON} size={26} />
         </span>
         {categoryLabel && (
           <span className="text-right text-2xs font-medium text-muted-foreground">
@@ -105,7 +105,7 @@ export function TagIndexRow({ tag, uses, icon, categoryLabel, aliasMatch }: TagI
           no per-term mark at all. */}
       {(icon || categoryLabel) && (
         <span className="inline-flex shrink-0 items-center gap-1.5 rounded-element bg-muted px-2 py-0.5 text-2xs font-bold uppercase tracking-label">
-          {icon && <TransitIcon name={icon} size={14} />}
+          {icon && <TransitIcon name={icon} size={18} />}
           {categoryLabel && <span className="hidden md:inline">{categoryLabel}</span>}
         </span>
       )}

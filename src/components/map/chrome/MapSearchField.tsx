@@ -127,7 +127,7 @@ export const MapSearchField = ({
           aria-controls="map-shell-listbox"
         >
           <span className="pointer-events-none absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground">
-            <TransitIcon name="search" size={14} />
+            <TransitIcon name="search" size={18} />
           </span>
           <Input
             ref={inputRef}
@@ -186,7 +186,7 @@ export const MapSearchField = ({
                   onSelect={() => applySearchFilter(query)}
                   className="flex items-center gap-2 cursor-pointer"
                 >
-                  <TransitIcon name="search" size={14} />
+                  <TransitIcon name="search" size={18} />
                   <span className="flex-1 truncate text-sm">
                     {t('map.commandBar.filterMapFor', {
                       defaultValue: 'Filter map for "{{query}}"',

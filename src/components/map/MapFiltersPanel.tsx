@@ -196,7 +196,7 @@ export const MapFiltersPanel = ({
             disabled={locating}
             className={cn(chip, 'self-start', filters.nearMe ? chipOn : chipOff)}
           >
-            {locating ? <TrackLoader size={14} /> : <TransitIcon name="near-you" size={14} />}
+            {locating ? <TrackLoader size={14} /> : <TransitIcon name="near-you" size={18} />}
             {filters.nearMe ? 'Within 10 km of you' : 'Near me'}
           </button>
         </div>

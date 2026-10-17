@@ -143,7 +143,7 @@ export function MapControls({
                 onClick={() => setPreset(key)}
                 className={cn(chip, activePreset(key) ? chipOn : chipOff)}
               >
-                <TransitIcon name={icon} size={14} />
+                <TransitIcon name={icon} size={18} />
                 {t(`map.filters.${key}`, { defaultValue: label })}
               </button>
             ))}
@@ -156,7 +156,7 @@ export function MapControls({
         {showTime && (
           <details className="group">
             <summary className="inline-flex cursor-pointer list-none items-center gap-1.5 text-xs2 font-semibold text-muted-foreground hover:text-foreground [&::-webkit-details-marker]:hidden">
-              <TransitIcon name="events" size={12} />
+              <TransitIcon name="events" size={16} />
               {t('map.filters.customDates', { defaultValue: 'Pick exact dates' })}
             </summary>
             <div className="pt-2">
@@ -181,7 +181,7 @@ export function MapControls({
             }}
             className={cn(chip, 'self-start', savedOnly ? chipOn : chipOff)}
           >
-            <TransitIcon name="saved" size={14} />
+            <TransitIcon name="saved" size={18} />
             {t('map.filters.saved', { defaultValue: 'Saved only' })}
           </button>
         </Section>
@@ -216,7 +216,7 @@ export function MapControls({
                 }}
                 className={cn(chip, v === view ? chipOn : chipOff)}
               >
-                <TransitIcon name={VIEW_ICONS[v]} size={14} />
+                <TransitIcon name={VIEW_ICONS[v]} size={18} />
                 {t(`map.view.${v}`, { defaultValue: VIEW_LABELS[v] })}
               </button>
             ))}
@@ -227,7 +227,7 @@ export function MapControls({
       <Section title={t('map.controls.actions', { defaultValue: 'This map' })}>
         <div className="flex flex-col gap-1.5">
           <Button variant="outline" size="sm" className="justify-start gap-2" onClick={onGeolocate}>
-            <TransitIcon name="near-you" size={16} />
+            <TransitIcon name="near-you" size={20} />
             {t('map.actions.locate', { defaultValue: 'My location' })}
           </Button>
           {onFitBounds && (
@@ -237,12 +237,12 @@ export function MapControls({
               className="justify-start gap-2"
               onClick={onFitBounds}
             >
-              <TransitIcon name="map" size={16} />
+              <TransitIcon name="map" size={20} />
               {t('map.actions.fit', { defaultValue: 'Fit to results' })}
             </Button>
           )}
           <Button variant="outline" size="sm" className="justify-start gap-2" onClick={onShare}>
-            <TransitIcon name="share" size={16} />
+            <TransitIcon name="share" size={20} />
             {t('map.actions.share', { defaultValue: 'Share this view' })}
           </Button>
         </div>

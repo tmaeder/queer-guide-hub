@@ -180,7 +180,7 @@ export function MapBar({
               }}
               className={cn(trigger, 'w-10 justify-center px-0')}
             >
-              <TransitIcon name="search" size={16} />
+              <TransitIcon name="search" size={20} />
             </button>
           ))}
 
@@ -195,7 +195,7 @@ export function MapBar({
             }}
             className={trigger}
           >
-            <TransitIcon name="tune" size={16} />
+            <TransitIcon name="tune" size={20} />
             {filtersLabel}
             {count > 0 && badge(count)}
           </button>
@@ -205,7 +205,7 @@ export function MapBar({
               className={trigger}
               aria-label={`${filtersLabel}${count > 0 ? `, ${count} active` : ''}`}
             >
-              <TransitIcon name="tune" size={16} />
+              <TransitIcon name="tune" size={20} />
               {filtersLabel}
               {count > 0 && badge(count)}
             </PopoverTrigger>
@@ -233,13 +233,13 @@ export function MapBar({
             }}
             className={trigger}
           >
-            <TransitIcon name="map" size={16} />
+            <TransitIcon name="map" size={20} />
             {linesLabel}
           </button>
         ) : (
           <Popover open={linesOpen} onOpenChange={setLinesOpen}>
             <PopoverTrigger className={trigger} aria-label={`${linesLabel}, ${onCount} on`}>
-              <TransitIcon name="map" size={16} />
+              <TransitIcon name="map" size={20} />
               {linesLabel}
             </PopoverTrigger>
             <PopoverContent

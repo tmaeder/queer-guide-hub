@@ -124,7 +124,7 @@ export const TimePopover = ({ value, onChange, trigger }: TimePopoverProps) => {
             className="h-8 px-2"
           >
             <span className="mr-1.5 inline-flex">
-              <TransitIcon name="events" size={14} />
+              <TransitIcon name="events" size={18} />
             </span>
             <span className="text-xs">
               {value
@@ -174,7 +174,7 @@ export const EraPopover = ({
         {trigger ?? (
           <Button variant="ghost" size="sm" aria-label="Era" title="Era" className="h-8 px-2">
             <span className="mr-1.5 inline-flex">
-              <TransitIcon name="hours" size={14} />
+              <TransitIcon name="hours" size={18} />
             </span>
             <span className="text-xs">
               {value ? `${value.decadeStart}s–${value.decadeEnd}s` : 'Any era'}

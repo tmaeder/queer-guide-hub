@@ -144,7 +144,7 @@ export function EventProgramme({ entries }: { entries: ProgrammeChild[] }) {
       {parades.length > 0 && (
         <section aria-labelledby="programme-parade" className="mb-8">
           <div className="mb-4 flex items-center gap-4">
-            <TransitIcon name="march" size={20} className="shrink-0 text-foreground" />
+            <TransitIcon name="march" size={24} className="shrink-0 text-foreground" />
             <h3 id="programme-parade" className="text-title font-bold">
               {t('events.programme.parade', 'Parade')}
             </h3>
@@ -160,7 +160,7 @@ export function EventProgramme({ entries }: { entries: ProgrammeChild[] }) {
 
       {offerToggle && (
         <div className="mb-6 flex items-center gap-2">
-          <TransitIcon name="hours" size={16} className="shrink-0 text-muted-foreground" />
+          <TransitIcon name="hours" size={20} className="shrink-0 text-muted-foreground" />
           {(['day', 'type'] as const).map((option) => (
             <button
               key={option}

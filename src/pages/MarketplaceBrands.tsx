@@ -310,7 +310,7 @@ export default function MarketplaceBrands() {
       <section className="border-b border-border-hairline">
         <PageContainer flush className="flex flex-col gap-4 py-4 md:py-6">
           <label className="flex h-12 items-center gap-2 bg-card px-4 shadow-soft rounded-container">
-            <TransitIcon name="search" size={20} />
+            <TransitIcon name="search" size={24} />
             <span className="sr-only">{t('marketplace.searchMakers', 'Search makers')}</span>
             <input
               value={search}

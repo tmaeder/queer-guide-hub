@@ -33,12 +33,12 @@ export const TAIL_MAX = 92;
 /**
  * The widest stroke the renderer ever draws an outline at, in path units.
  *
- * `TransitIcon` picks a base weight of 9/10/11 by rendered size and scales it
- * by 116/100 for the bleed viewBox, so the worst case is `11 * 1.16`. Every
- * floor below is derived from this rather than written down, so re-tuning the
- * weight moves the floors with it instead of silently invalidating them.
+ * `TransitIcon` picks a base weight of 9/10/11 by rendered size, into a plain
+ * `0 0 100 100` box, so the worst case is 11. Every floor below is derived from
+ * this rather than written down, so re-tuning the weight moves the floors with
+ * it instead of silently invalidating them.
  */
-export const MAX_SW = 11 * 1.16;
+export const MAX_SW = 11;
 
 /**
  * §3. A paper hole smaller than this fills in at small sizes.

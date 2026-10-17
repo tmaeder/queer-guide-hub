@@ -235,7 +235,7 @@ const NotFound = () => {
           </Button>
           <Button asChild className="gap-2">
             <LocalizedLink to="/">
-              <TransitIcon name="home-base" size={18} />
+              <TransitIcon name="home-base" size={22} />
               {t('pages.notFound.returnHome', 'Return Home')}
             </LocalizedLink>
           </Button>
@@ -264,7 +264,7 @@ const NotFound = () => {
             className="h-12"
           />
           <Button type="submit" className="h-12 shrink-0 gap-2 px-6">
-            <TransitIcon name="search" size={18} />
+            <TransitIcon name="search" size={22} />
             {t('pages.notFound.searchSubmit', 'Search')}
           </Button>
         </form>
@@ -335,7 +335,7 @@ const NotFound = () => {
         <div className="mt-8 flex flex-wrap gap-2">
           {SUGGESTIONS.map(({ to, icon, labelKey, fallback }) => (
             <LocalizedLink key={to} to={to} className={END_OF_LINE_LINK}>
-              <TransitIcon name={icon} size={18} />
+              <TransitIcon name={icon} size={22} />
               {t(labelKey, fallback)}
             </LocalizedLink>
           ))}

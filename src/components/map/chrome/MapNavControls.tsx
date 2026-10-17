@@ -97,7 +97,7 @@ export const MapNavControls = ({ handle, className }: MapNavControlsProps) => {
             aria-hidden="true"
             style={{ transform: `rotate(${-45 - bearing}deg)`, display: 'inline-flex' }}
           >
-            <TransitIcon name="compass" size={18} />
+            <TransitIcon name="compass" size={22} />
           </span>
         </button>
       )}
@@ -108,7 +108,7 @@ export const MapNavControls = ({ handle, className }: MapNavControlsProps) => {
         onClick={() => handle?.triggerGeolocate()}
         className={btn}
       >
-        <TransitIcon name={tracking ? 'near-you' : 'compass'} size={18} />
+        <TransitIcon name={tracking ? 'near-you' : 'compass'} size={22} />
       </button>
     </div>
   );

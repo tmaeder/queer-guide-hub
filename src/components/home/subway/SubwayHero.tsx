@@ -39,7 +39,7 @@ export function SubwayHero() {
             to="/map"
             className="flex min-h-12 items-center gap-2 px-4 text-15 font-bold no-underline transition-colors hover:bg-foreground hover:text-background"
           >
-            <TransitIcon name="map" size={20} />
+            <TransitIcon name="map" size={24} />
             {t('home.hero.openMap', 'Open the map')}
           </LocalizedLink>
         </div>

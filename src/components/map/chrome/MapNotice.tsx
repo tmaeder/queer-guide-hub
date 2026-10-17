@@ -141,7 +141,7 @@ export function MapNotice({
   } else if (firstRun) {
     body = (
       <>
-        <TransitIcon name="info-point" size={14} />
+        <TransitIcon name="info-point" size={18} />
         <span>
           {t('map.firstRun.spotsInView', {
             defaultValue: '{{count}} queer spots in view',
@@ -154,7 +154,7 @@ export function MapNotice({
   } else if (locationHint) {
     body = (
       <>
-        <TransitIcon name="near-you" size={14} />
+        <TransitIcon name="near-you" size={18} />
         <span>{locationHint}</span>
       </>
     );

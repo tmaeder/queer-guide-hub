@@ -124,7 +124,7 @@ export function LineKey({
             />
           </span>
 
-          <TransitIcon name={iconForMarker(glyphLayer)} size={16} />
+          <TransitIcon name={iconForMarker(glyphLayer)} size={20} />
           <span className="min-w-0 flex-1 truncate">{label}</span>
 
           {count != null && count > 0 && (
@@ -188,13 +188,13 @@ export function LineKey({
                 {t('map.key.featured', { defaultValue: 'Double ring = featured' })}
               </p>
               <p className="flex items-center gap-2 text-2xs text-muted-foreground">
-                <TransitIcon name="alerts" size={14} />
+                <TransitIcon name="alerts" size={18} />
                 {t('map.key.live', { defaultValue: 'Pulsing = open now / live' })}
               </p>
               {/* The label is what satisfies WCAG 1.4.1 for the saved badge:
                   the badge is a glyph, and this names it. */}
               <p className="flex items-center gap-2 text-2xs text-muted-foreground">
-                <TransitIcon name="saved" size={14} />
+                <TransitIcon name="saved" size={18} />
                 {t('map.key.saved', { defaultValue: 'Badge = saved by you' })}
               </p>
             </>

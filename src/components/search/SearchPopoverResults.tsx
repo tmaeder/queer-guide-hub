@@ -224,7 +224,7 @@ export function SearchPopoverResults({
             // contrast.
             className="inline-flex cursor-pointer items-center gap-2 bg-transparent p-0 text-foreground underline-offset-4 hover:underline"
           >
-            <TransitIcon name="map" size={16} />
+            <TransitIcon name="map" size={20} />
             {t('search.seeOnMap', {
               defaultValue: 'See {{count}} results on the map',
               count: totalCount || visible,

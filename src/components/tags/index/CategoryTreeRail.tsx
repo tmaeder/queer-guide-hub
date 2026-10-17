@@ -94,7 +94,7 @@ export function CategoryTreeRail({
                   isActive ? CHIP_ON : CHIP_OFF,
                 )}
               >
-                <TransitIcon name={line?.icon ?? DEFAULT_CATEGORY_ICON} size={14} />
+                <TransitIcon name={line?.icon ?? DEFAULT_CATEGORY_ICON} size={18} />
                 {getCategoryShortName(p.name)}
               </LocalizedLink>
             );
@@ -186,7 +186,7 @@ export function CategoryTreeRail({
                   >
                     <TransitIcon
                       name={line?.icon ?? DEFAULT_CATEGORY_ICON}
-                      size={16}
+                      size={20}
                       className="shrink-0"
                     />
                     <span className="min-w-0 flex-1 truncate">{getCategoryShortName(p.name)}</span>

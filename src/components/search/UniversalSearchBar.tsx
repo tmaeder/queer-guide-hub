@@ -526,7 +526,7 @@ export const UniversalSearchBar = ({
 
   const hero = size === 'hero';
   const inputHeight = hero ? (isMobile ? 56 : 64) : isMobile ? 48 : 40;
-  const iconSize = hero ? 24 : isMobile ? 20 : 16;
+  const iconSize = hero ? 24 : isMobile ? 24 : 16;
   // Two mounts on one document must not share a DOM id or a landmark name.
   const listboxId = `qg-search-listbox-${surface}`;
   const landmarkLabel =
@@ -924,7 +924,7 @@ export const UniversalSearchBar = ({
                       }}
                       className="grid h-11 w-11 shrink-0 place-items-center rounded-container bg-muted text-foreground sm:hidden"
                     >
-                      <TransitIcon name="search" size={20} />
+                      <TransitIcon name="search" size={24} />
                     </button>
                   )}
                   <div className={cn(collapse && 'hidden sm:block')}>{searchField(false)}</div>
@@ -1003,7 +1003,7 @@ export const UniversalSearchBar = ({
           }}
           className="grid h-11 w-11 shrink-0 place-items-center rounded-element text-foreground transition-colors hover:bg-surface-container"
         >
-          <TransitIcon name="search" size={20} />
+          <TransitIcon name="search" size={24} />
         </button>
       ) : (
         searchField(false)
