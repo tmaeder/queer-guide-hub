@@ -97,9 +97,66 @@ describe('scripts/lib/gate-rpc.mjs', () => {
     expect(stallReason(r)).toBeNull();
   });
 
-  it('names the three non-evaluations APART, so a log says which happened', async () => {
-    // They need different fixes — the network, the query, or PostgREST's link
-    // to Postgres — so collapsing them loses the only actionable half.
+  it('classifies a Cloudflare 522 as NOT EVALUATED', async () => {
+    // Measured 2026-10-17: `release_gate_checks` came back
+    //   HTTP 522: <!DOCTYPE html>…
+    // during a saturation window (35 active backends). It matched NO other arm —
+    // real status so not NO_RESPONSE, Cloudflare HTML so neither PGRST002 nor
+    // 57014 — fell through to "the server answered", and hard-failed with no
+    // retry on a PR whose diff could not affect it.
+    globalThis.fetch = vi.fn().mockResolvedValue(
+      res({
+        ok: false,
+        status: 522,
+        text: async () =>
+          '<!DOCTYPE html><html><head><title>522 Connection timed out</title></head></html>',
+      }),
+    );
+    const r = await callRpc('https://example.invalid/x', {});
+    expect(notEvaluated(r)).toBe(true);
+    expect(stallReason(r)).toBe('Cloudflare could not reach the origin (HTTP 522)');
+  });
+
+  it('covers the whole Cloudflare origin range, and nothing either side of it', async () => {
+    // 520-527 is safe precisely because PostgREST cannot produce it. 519 and 528
+    // are not Cloudflare origin errors, so they must stay "the server answered".
+    for (const status of [520, 521, 522, 523, 524, 525, 526, 527]) {
+      globalThis.fetch = vi
+        .fn()
+        .mockResolvedValue(res({ ok: false, status, text: async () => 'cf html' }));
+      const r = await callRpc('https://example.invalid/x', {});
+      expect(notEvaluated(r), `HTTP ${status} must be a non-evaluation`).toBe(true);
+    }
+    for (const status of [519, 528]) {
+      globalThis.fetch = vi
+        .fn()
+        .mockResolvedValue(res({ ok: false, status, text: async () => 'something else' }));
+      const r = await callRpc('https://example.invalid/x', {});
+      expect(notEvaluated(r), `HTTP ${status} must NOT be a non-evaluation`).toBe(false);
+    }
+  });
+
+  it('does NOT widen to a bare 500, which is how 57014 itself arrives', async () => {
+    // THE BOUND THAT MATTERS. A Postgres statement_timeout is delivered as HTTP
+    // 500 with the code in the body, so "any 5xx is a non-evaluation" would
+    // retry a genuine breach into silence. A 500 naming a real error is the
+    // server answering.
+    globalThis.fetch = vi.fn().mockResolvedValue(
+      res({
+        ok: false,
+        status: 500,
+        text: async () => '{"code":"P0001","message":"CRITICAL gate breached"}',
+      }),
+    );
+    const r = await callRpc('https://example.invalid/x', {});
+    expect(notEvaluated(r)).toBe(false);
+    expect(stallReason(r)).toBeNull();
+  });
+
+  it('names the four non-evaluations APART, so a log says which happened', async () => {
+    // They need different fixes — the network, the query, PostgREST's link to
+    // Postgres, or the CDN's link to the origin — so collapsing them loses the
+    // only actionable half.
     globalThis.fetch = vi.fn().mockRejectedValue(new TypeError('fetch failed'));
     const transport = await callRpc('https://example.invalid/x', {});
     globalThis.fetch = vi
@@ -110,8 +167,17 @@ describe('scripts/lib/gate-rpc.mjs', () => {
       .fn()
       .mockResolvedValue(res({ ok: false, status: 503, text: async () => 'PGRST002' }));
     const schema = await callRpc('https://example.invalid/x', {});
-    const reasons = [stallReason(transport), stallReason(timeout), stallReason(schema)];
-    expect(new Set(reasons).size, `reasons collapsed: ${reasons.join(' | ')}`).toBe(3);
+    globalThis.fetch = vi
+      .fn()
+      .mockResolvedValue(res({ ok: false, status: 522, text: async () => 'cf html' }));
+    const cdn = await callRpc('https://example.invalid/x', {});
+    const reasons = [
+      stallReason(transport),
+      stallReason(timeout),
+      stallReason(schema),
+      stallReason(cdn),
+    ];
+    expect(new Set(reasons).size, `reasons collapsed: ${reasons.join(' | ')}`).toBe(4);
   });
 
   it('does NOT treat a real server answer as a non-evaluation', async () => {
