@@ -61,6 +61,25 @@ describe('the transformation asserts it applied before executing', () => {
     expect(rewrite).toMatch(/position\('\$' in r\.prosrc\)\s*>\s*0/);
   });
 
+  it('requires each anchor to be UNIQUE, because replace() is global', () => {
+    // Presence is not enough: a second `\n LANGUAGE sql\n` or `AS $function$` inside a body
+    // comment would also be rewritten and corrupt the body with no error. Counting the
+    // anchors is what makes it safe to PRESERVE the body's comments rather than strip them —
+    // 5 of the 15 bodies carry comments.
+    expect(rewrite).toMatch(/n_lang\s*<>\s*1/);
+    expect(rewrite).toMatch(/n_as\s*<>\s*1/);
+    expect(rewrite).toMatch(/n_tag\s*<>\s*2/);
+    const raises = rewrite.match(/raise exception/g) ?? [];
+    expect(raises.length).toBeGreaterThanOrEqual(5);
+  });
+
+  it('claims the functiondef opt-out explicitly, with a stated reason', () => {
+    // Asserted on the RAW file: the marker is a comment, which `sql` strips by design.
+    // check-functiondef-asserts.mjs requires the marker; this requires it to carry a why.
+    expect(raw).toMatch(/--\s*functiondef-assert-ok:\s*\S/);
+    expect(raw).toContain('EXECUTES');
+  });
+
   it('anchors the closing delimiter on trailing whitespace, not bare end-of-string', () => {
     // rtrim(text) strips SPACES but not newlines, and pg_get_functiondef ends with
     // `$function$\n`. Anchoring on `\$function\$$` matched nothing and left the body

@@ -113,6 +113,17 @@
 -- ROLLBACK: re-create any function with `LANGUAGE sql` and no `plan_cache_mode`; the body is
 -- unchanged, so reverting is a language flip in the other direction.
 
+-- functiondef-assert-ok: this migration does not ASSERT on pg_get_functiondef(), it EXECUTES
+-- it. `def` is the text re-submitted as the new definition, so stripping comments would delete
+-- each function's own explanatory comments from the rewritten body -- 5 of the 15 carry them
+-- (groups, news, organizations, personalities, villages), measured. The hazard the guard
+-- protects against is real here but has a different shape: `replace()` is GLOBAL, so an anchor
+-- occurring twice -- once in the header, once in a body comment -- would corrupt the body
+-- silently. That is asserted away instead of stripped, which is strictly stronger for a
+-- transformation: every anchor must occur EXACTLY the expected number of times or the migration
+-- aborts. Measured on all 15 before writing this: `\n LANGUAGE sql\n` once, `AS $function$`
+-- once, `$function$` twice, and no body contains the string "language sql" in any case.
+--
 -- No lock_timeout guard: CREATE OR REPLACE FUNCTION locks the pg_proc row, not the tables, and
 -- `SET LOCAL` is a no-op under `db push` in this repo anyway -- including one would be theatre.
 
@@ -122,6 +133,9 @@ declare
   def     text;
   newdef  text;
   n_done  integer := 0;
+  n_lang  integer;
+  n_as    integer;
+  n_tag   integer;
 begin
   for r in
     select p.oid, p.proname, p.prosrc
@@ -134,12 +148,23 @@ begin
   loop
     def := pg_get_functiondef(r.oid);
 
-    -- Soft on preconditions, loud on a shape this cannot safely transform.
-    if position(E'\n LANGUAGE sql\n' in def) = 0 then
-      raise exception 'search_indexers_plpgsql: % has no "LANGUAGE sql" header line', r.proname;
+    -- Soft on preconditions, loud on a shape this cannot safely transform. Each anchor must be
+    -- UNIQUE, not merely present: replace() is global, so a second occurrence in a body comment
+    -- would be rewritten too and corrupt the body with no error. Counting is what makes
+    -- preserving the body's comments safe.
+    n_lang := (length(def) - length(replace(def, E'\n LANGUAGE sql\n', '')))
+              / length(E'\n LANGUAGE sql\n');
+    n_as   := (length(def) - length(replace(def, 'AS $function$', ''))) / length('AS $function$');
+    n_tag  := (length(def) - length(replace(def, '$function$', ''))) / length('$function$');
+
+    if n_lang <> 1 then
+      raise exception 'search_indexers_plpgsql: % has % occurrences of the LANGUAGE sql header line, expected exactly 1', r.proname, n_lang;
     end if;
-    if position('AS $function$' in def) = 0 then
-      raise exception 'search_indexers_plpgsql: % does not use the $function$ body delimiter', r.proname;
+    if n_as <> 1 then
+      raise exception 'search_indexers_plpgsql: % has % occurrences of "AS $function$", expected exactly 1', r.proname, n_as;
+    end if;
+    if n_tag <> 2 then
+      raise exception 'search_indexers_plpgsql: % has % occurrences of the $function$ tag, expected exactly 2 (open and close)', r.proname, n_tag;
     end if;
     if position('$' in r.prosrc) > 0 then
       raise exception 'search_indexers_plpgsql: % body contains a $; the $function$ tag is no longer unambiguous', r.proname;
