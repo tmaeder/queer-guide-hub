@@ -1,3 +1,4 @@
+import { DynamicChoiceField } from './DynamicChoiceField';
 import { RedirectDomainField } from './RedirectDomainField';
 import { OrganisationRelationshipsField } from './OrganisationRelationshipsField';
 import React from 'react';
@@ -105,7 +106,10 @@ export function FieldRenderer({
       : kind === 'richtext'
         ? 'richtext'
         : field.type;
-  const Component = FIELD_COMPONENTS[effectiveType];
+  const Component =
+    field.dynamicOptions && ['select', 'multiselect'].includes(field.type)
+      ? DynamicChoiceField
+      : FIELD_COMPONENTS[effectiveType];
 
   if (!Component) {
     return (
@@ -115,7 +119,10 @@ export function FieldRenderer({
     );
   }
 
-  const isDisabled = disabled || field.readOnly;
+  const isDisabled =
+    disabled ||
+    field.readOnly ||
+    (field.immutable && !!originalValues?.id && !!originalValues[field.name]);
 
   return (
     <Component

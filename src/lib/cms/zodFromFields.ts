@@ -57,6 +57,7 @@ export function fieldToZod(field: FieldConfig): ZodTypeAny {
     if (typeof field.max === 'number') schema = schema.max(field.max);
   }
   if (
+    !field.dynamicOptions &&
     field.options &&
     field.options.length > 0 &&
     (field.type === 'select' || field.type === 'multiselect')

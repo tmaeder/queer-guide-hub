@@ -1,3 +1,4 @@
+import { useReferenceTaxonomy } from '@/hooks/useReferenceTaxonomy';
 import { useTranslation } from 'react-i18next';
 import { Band } from './Band';
 import { HomeSectionError } from './HomeSectionError';
@@ -15,6 +16,8 @@ import { pickOfTheDay, useHomeGlossaryPool } from '@/hooks/useTagPreviews';
  * carried by the `#` RouteBullet, never a colour literal.
  */
 export default function GlossaryBand() {
+  useReferenceTaxonomy('pride_flag');
+
   const { t } = useTranslation();
   const { data: pool = [], isLoading, isError, isFetching, refetch } = useHomeGlossaryPool();
 

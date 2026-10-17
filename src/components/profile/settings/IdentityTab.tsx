@@ -1,6 +1,10 @@
+import legacyProfileOptions from '@/config/legacyProfileTaxonomySeeds.json';
+import { referenceTaxonomyRows } from '@/lib/referenceTaxonomyStore';
+import { useReferenceTaxonomy } from '@/hooks/useReferenceTaxonomy';
+import { useClassificationOptions } from '@/hooks/useManagedOptions';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { SelectField, FormField } from './fields';
+import { SelectField } from './fields';
 import { Heart } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
@@ -102,6 +106,8 @@ function FlagPicker({
   selected: string[];
   onChange: (flags: string[]) => void;
 }) {
+  useReferenceTaxonomy('pride_flag');
+
   const { t } = useTranslation();
   const atCap = selected.length >= MAX_IDENTITY_FLAGS;
 
@@ -115,7 +121,14 @@ function FlagPicker({
 
   return (
     <div className="flex flex-wrap gap-2" role="group" aria-label="Pride flags">
-      {PRIDE_FLAGS.map((flag) => {
+      {PRIDE_FLAGS.filter((flag) => {
+        const terms = referenceTaxonomyRows('pride_flag');
+        return (
+          !terms ||
+          selected.includes(flag.id) ||
+          terms.some((term) => term.value === flag.id && term.is_active)
+        );
+      }).map((flag) => {
         const active = selected.includes(flag.id);
         const disabled = !active && atCap;
         return (
@@ -146,6 +159,51 @@ export function IdentityTab({
   onComingOutChange,
   onFlagsChange,
 }: IdentityTabProps) {
+  const genderOptions = useClassificationOptions(
+    'gender',
+    GENDER_OPTIONS,
+    formData.gender_identity,
+  );
+  const orientationOptions = useClassificationOptions(
+    'orientation',
+    ORIENTATION_OPTIONS,
+    formData.sexual_orientation,
+  );
+  const chosen_familyOptions = useClassificationOptions(
+    'chosen_family',
+    CHOSEN_FAMILY_OPTIONS,
+    formData.chosen_family_status,
+  );
+  const coming_outOptions = useClassificationOptions(
+    'coming_out',
+    COMING_OUT_OPTIONS,
+    Object.values(formData.coming_out_status),
+  );
+  const romantic_orientationOptions = useClassificationOptions(
+    'romantic_orientation',
+    ROMANTIC_ORIENTATION_OPTIONS,
+    formData.romantic_orientation,
+  );
+  const relationship_statusOptions = useClassificationOptions(
+    'relationship_status',
+    RELATIONSHIP_STATUS_OPTIONS,
+    formData.current_relationship_status,
+  );
+  const relationship_styleOptions = useClassificationOptions(
+    'relationship_style',
+    RELATIONSHIP_STYLE_OPTIONS,
+    formData.relationship_style,
+  );
+  const disabilityOptions = useClassificationOptions(
+    'profile_disability_status',
+    legacyProfileOptions.profile_disability_status,
+    formData.disability_status,
+  );
+  const neurodivergenceOptions = useClassificationOptions(
+    'profile_neurodivergent_status',
+    legacyProfileOptions.profile_neurodivergent_status,
+    formData.neurodivergent_status,
+  );
   return (
     <div className="flex flex-col gap-6">
       <Card>
@@ -173,14 +231,14 @@ export function IdentityTab({
                 label="Gender Identity"
                 value={formData.gender_identity}
                 onChange={(v) => onChange('gender_identity', v)}
-                options={GENDER_OPTIONS}
+                options={genderOptions}
               />
               <SelectField
                 id="sexual_orientation"
                 label="Sexual Orientation"
                 value={formData.sexual_orientation}
                 onChange={(v) => onChange('sexual_orientation', v)}
-                options={ORIENTATION_OPTIONS}
+                options={orientationOptions}
               />
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -189,22 +247,24 @@ export function IdentityTab({
                 label="Chosen Family"
                 value={formData.chosen_family_status}
                 onChange={(v) => onChange('chosen_family_status', v)}
-                options={CHOSEN_FAMILY_OPTIONS}
+                options={chosen_familyOptions}
               />
-              <FormField
+              <SelectField
                 id="disability_status"
                 label="Disability Status"
+                options={disabilityOptions}
                 value={formData.disability_status}
                 onChange={(v) => onChange('disability_status', v)}
                 placeholder="Optional"
               />
             </div>
-            <FormField
+            <SelectField
               id="neurodivergent_status"
               label="Neurodivergent Status"
+              options={neurodivergenceOptions}
               value={formData.neurodivergent_status}
               onChange={(v) => onChange('neurodivergent_status', v)}
-              placeholder="Optional — e.g., ADHD, autism, dyslexia"
+              placeholder="Optional"
             />
           </div>
         </CardContent>
@@ -225,14 +285,14 @@ export function IdentityTab({
                 label="Romantic Orientation"
                 value={formData.romantic_orientation}
                 onChange={(v) => onChange('romantic_orientation', v)}
-                options={ROMANTIC_ORIENTATION_OPTIONS}
+                options={romantic_orientationOptions}
               />
               <SelectField
                 id="current_relationship_status"
                 label="Current Status"
                 value={formData.current_relationship_status}
                 onChange={(v) => onChange('current_relationship_status', v)}
-                options={RELATIONSHIP_STATUS_OPTIONS}
+                options={relationship_statusOptions}
               />
             </div>
             <SelectField
@@ -240,7 +300,7 @@ export function IdentityTab({
               label="Relationship Style"
               value={formData.relationship_style}
               onChange={(v) => onChange('relationship_style', v)}
-              options={RELATIONSHIP_STYLE_OPTIONS}
+              options={relationship_styleOptions}
             />
           </div>
         </CardContent>
@@ -269,7 +329,7 @@ export function IdentityTab({
                 placeholder="Not answered"
                 value={formData.coming_out_status.family}
                 onChange={(v) => onComingOutChange('family', v)}
-                options={COMING_OUT_OPTIONS}
+                options={coming_outOptions}
               />
               <SelectField
                 id="coming_out_friends"
@@ -277,7 +337,7 @@ export function IdentityTab({
                 placeholder="Not answered"
                 value={formData.coming_out_status.friends}
                 onChange={(v) => onComingOutChange('friends', v)}
-                options={COMING_OUT_OPTIONS}
+                options={coming_outOptions}
               />
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -287,7 +347,7 @@ export function IdentityTab({
                 placeholder="Not answered"
                 value={formData.coming_out_status.work}
                 onChange={(v) => onComingOutChange('work', v)}
-                options={COMING_OUT_OPTIONS}
+                options={coming_outOptions}
               />
               <SelectField
                 id="coming_out_public"
@@ -295,7 +355,7 @@ export function IdentityTab({
                 placeholder="Not answered"
                 value={formData.coming_out_status.public}
                 onChange={(v) => onComingOutChange('public', v)}
-                options={COMING_OUT_OPTIONS}
+                options={coming_outOptions}
               />
             </div>
           </div>

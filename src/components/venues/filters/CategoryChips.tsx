@@ -1,7 +1,7 @@
-import { useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
-import { AUTH_ONLY_CATEGORIES, categories, categoryLabels } from './constants';
+import { AUTH_ONLY_CATEGORIES } from './constants';
+import { useVenueCategoryOptions } from '@/lib/venueCategories';
 
 interface CategoryChipsProps {
   category: string;
@@ -20,17 +20,14 @@ export function CategoryChips({ category, onCategoryClick }: CategoryChipsProps)
   // list. Keep it visible when it is the ACTIVE filter (a shared or bookmarked
   // ?category=cruising URL), or the selected chip vanishes while the results
   // stay filtered and the page looks broken instead of empty.
-  const visible = useMemo(
-    () =>
-      user
-        ? categories
-        : categories.filter((c) => !AUTH_ONLY_CATEGORIES.includes(c) || c === category),
-    [user, category],
+  const options = useVenueCategoryOptions(category);
+  const visible = options.filter(
+    (o) => user || !AUTH_ONLY_CATEGORIES.includes(o.value) || o.value === category,
   );
 
   return (
     <div className="flex gap-1.5 overflow-x-auto sm:flex-wrap max-w-full -mx-4 px-4 sm:mx-0 sm:px-0 scrollbar-thin">
-      {visible.map((cat) => (
+      {visible.map(({ value: cat, label }) => (
         <Button
           key={cat}
           variant={category === cat ? 'default' : 'outline'}
@@ -38,7 +35,7 @@ export function CategoryChips({ category, onCategoryClick }: CategoryChipsProps)
           onClick={() => onCategoryClick(cat)}
           className="rounded-badge h-8 px-4 text-xs font-bold uppercase transition-all whitespace-nowrap flex-shrink-0"
         >
-          {categoryLabels[cat] ?? cat}
+          {label}
         </Button>
       ))}
     </div>

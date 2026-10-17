@@ -1,4 +1,3 @@
-import { useTranslation } from 'react-i18next';
 import {
   Wine,
   Music,
@@ -19,7 +18,7 @@ import {
   Footprints,
   type LucideIcon,
 } from 'lucide-react';
-import { VENUE_CATEGORY_OPTIONS, type VenueCategory } from '@/lib/venueCategories';
+import { useVenueCategoryLabel, type VenueCategory } from '@/lib/venueCategories';
 
 const ICONS: Record<VenueCategory, LucideIcon> = {
   bar: Wine,
@@ -41,14 +40,13 @@ const ICONS: Record<VenueCategory, LucideIcon> = {
   other: MapPin,
 };
 export function VenueCategoryMark({ category }: { category: string | null }) {
-  const { t } = useTranslation();
-  const option = VENUE_CATEGORY_OPTIONS.find((item) => item.value === category);
-  if (!option) return null;
-  const Icon = ICONS[option.value];
+  const label = useVenueCategoryLabel(category);
+  if (!category) return null;
+  const Icon = ICONS[category] ?? MapPin;
   return (
     <span className="mt-2 inline-flex items-center gap-1.5 text-13 text-muted-foreground">
       <Icon size={16} className="shrink-0" aria-hidden="true" />
-      {t(`venueCategories.${option.value}`, { defaultValue: option.label })}
+      {label}
     </span>
   );
 }

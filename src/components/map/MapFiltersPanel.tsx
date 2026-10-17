@@ -14,15 +14,12 @@ import { hapticTrigger } from '@/hooks/useHaptics';
 import { useToast } from '@/hooks/use-toast';
 import { useTranslation } from 'react-i18next';
 import type { MapFilterKey, MapShellFilters } from './MapShell.types';
-import { VENUE_CATEGORY_OPTIONS } from '@/lib/venueCategories';
+import { useVenueCategoryOptions } from '@/lib/venueCategories';
 import { TransitIcon } from '@/components/transit/TransitIcon';
 
 // Venue categories that carry real data. `other` is still excluded — filtering to a
 // catch-all is meaningless — but the rest now come from the shared vocabulary rather
 // than a hand-maintained list, which had dropped cafe / outdoor / shop / cruising.
-const CATEGORIES: { value: string; label: string }[] = VENUE_CATEGORY_OPTIONS.filter(
-  (o) => o.value !== 'other',
-);
 
 // Curated from the most-used real `venues.tags` values so every option is a
 // guaranteed array-overlap match (the column stores kebab-case strings, not
@@ -82,6 +79,7 @@ export const MapFiltersPanel = ({
   filters,
   onFiltersChange,
 }: MapFiltersPanelProps) => {
+  const CATEGORIES = useVenueCategoryOptions().filter((o) => o.value !== 'other');
   const { toast } = useToast();
   const { t } = useTranslation();
   const [locating, setLocating] = useState(false);

@@ -23,7 +23,7 @@ import {
   LockKeyhole,
   type LucideIcon,
 } from 'lucide-react';
-import { EVENT_TYPE_OPTIONS, type EventType } from '@/lib/eventTypes';
+import { useEventTypeOptions, useEventTypeLabel, type EventType } from '@/lib/eventTypes';
 
 const ICONS: Record<EventType, LucideIcon> = {
   party: Music,
@@ -51,18 +51,18 @@ const ICONS: Record<EventType, LucideIcon> = {
 };
 
 export function EventTypeMark({ type }: { type: string }) {
-  const { t } = useTranslation();
-  const option = EVENT_TYPE_OPTIONS.find((item) => item.value === type);
-  const Icon = option ? ICONS[option.value] : Calendar;
+  const label = useEventTypeLabel(type);
+  const Icon = ICONS[type] ?? Calendar;
   return (
     <span className="inline-flex items-center gap-1.5 text-13">
       <Icon size={16} aria-hidden="true" className="shrink-0" />
-      {option ? t(`eventTypes.${option.value}`, { defaultValue: option.label }) : type}
+      {label}
     </span>
   );
 }
 
 export function EventTypeLegend() {
+  const options = useEventTypeOptions();
   const { t } = useTranslation();
   return (
     <details className="mb-4 rounded-element bg-surface-container px-4 py-2">
@@ -70,7 +70,7 @@ export function EventTypeLegend() {
         {t('events.typeLegend', 'Event icons & types')}
       </summary>
       <ul className="mt-4 grid list-none grid-cols-2 gap-4 p-0 sm:grid-cols-3 lg:grid-cols-4">
-        {EVENT_TYPE_OPTIONS.map((option) => (
+        {options.map((option) => (
           <li key={option.value}>
             <EventTypeMark type={option.value} />
           </li>

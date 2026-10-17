@@ -1,3 +1,4 @@
+import { useMarketplaceTaxonomy } from '@/hooks/useMarketplaceTaxonomy';
 import { useSearchParams } from 'react-router';
 import { useMarketplaceCollections } from '@/hooks/useMarketplaceCollections';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
@@ -19,6 +20,8 @@ export function OccasionChips({
   /** Which chip kinds to render — the control bar owns occasion toggles now. */
   kinds?: Array<'occasion' | 'collection'>;
 }) {
+  useMarketplaceTaxonomy('occasions');
+
   const { collections: chipCollections } = useMarketplaceCollections('chip');
   // The hero collections are fetched only to be SUBTRACTED. `marketplace_
   // collections` holds two published rows titled "Pride essentials" —

@@ -2,7 +2,12 @@ import { expect, test } from '@playwright/test';
 
 const ROUTE_READY_TIMEOUT = 15_000;
 
-test.use({ serviceWorkers: 'block' });
+// `storageState` is signed out by construction: `playwright.config.ts` hands the
+// chromium project the admin storageState whenever E2E_ADMIN_* is set, as it is
+// in the nightly, and this file asserts the ANONYMOUS auth wall on /hub/dating
+// and the signed-out gate on the private modules. Signed in there is no wall to
+// find, so those cases failed every scheduled nightly.
+test.use({ serviceWorkers: 'block', storageState: { cookies: [], origins: [] } });
 
 /** Read-only production contract for the unified Hub. */
 test.beforeEach(async ({ page }) => {

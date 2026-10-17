@@ -1,3 +1,6 @@
+import { competitionContentType } from './competition';
+import { additionalVocabularies } from './additionalVocabularies';
+import { CLASSIFICATION_FIELDS } from '@/config/taxonomyCatalog';
 import type { ContentTypeConfig, FieldConfig, FieldGroup } from '@/types/cms';
 import { venueContentType } from './venue';
 import { eventContentType } from './event';
@@ -53,6 +56,8 @@ const ACCESSIBILITY_CATEGORIES = [
 ];
 
 export const contentTypeRegistry: Record<string, ContentTypeConfig> = {
+  ...additionalVocabularies,
+  competitions: competitionContentType,
   events: eventContentType,
   personalities: personalityContentType,
   news_articles: newsArticleContentType,
@@ -86,6 +91,7 @@ export const contentTypeRegistry: Record<string, ContentTypeConfig> = {
     table: 'event_types',
     icon: CalendarCog,
     label: { singular: 'Event Type', plural: 'Event Types' },
+    hasSlug: true,
     hasColor: true,
   }),
   event_amenities: vocabularyContentType({
@@ -110,6 +116,7 @@ export const contentTypeRegistry: Record<string, ContentTypeConfig> = {
     table: 'target_groups',
     icon: Users,
     label: { singular: 'Target Group', plural: 'Target Groups' },
+    hasSlug: true,
     hasColor: true,
   }),
   professions: vocabularyContentType({
@@ -136,6 +143,102 @@ export const internalContentTypeRegistry: Record<string, ContentTypeConfig> = {
 };
 /** Supported legacy routes resolve to a canonical CMS content type. */
 export const contentTypeRouteAliases: Record<string, string> = { venues: 'organizations' };
+
+// Aliases are part of the matching contract, so editors must be able to maintain them.
+for (const id of [
+  'venue_services',
+  'event_types',
+  'event_amenities',
+  'event_services',
+  'accessibility_attributes',
+  'target_groups',
+]) {
+  contentTypeRegistry[id].fields.push({
+    name: 'aliases',
+    label: 'Aliases',
+    type: 'tags',
+    group: 'basic',
+    helpText: 'Alternative names recognized during import and matching.',
+  });
+}
+
+// Bind editorial choices to the managed vocabulary; defaults remain available
+// as deployment fallbacks, but validation must not freeze the old enum.
+for (const [id, bindings] of Object.entries(CLASSIFICATION_FIELDS)) {
+  const config = id === 'venues' ? venueContentType : contentTypeRegistry[id];
+  if (!config) continue;
+  for (const field of config.fields) {
+    const taxonomy = bindings[field.name];
+    if (taxonomy)
+      field.dynamicOptions = {
+        table: 'taxonomy_terms',
+        valueColumn: 'value',
+        labelColumn: 'name',
+        orderBy: 'sort_order',
+        filters: { taxonomy },
+        activeColumn: 'is_active',
+      };
+  }
+}
+const newsCategory = contentTypeRegistry.news_articles.fields.find(
+  (f) => f.name === 'category_canonical',
+);
+if (newsCategory)
+  newsCategory.dynamicOptions = {
+    table: 'news_categories',
+    valueColumn: 'slug',
+    labelColumn: 'name',
+    orderBy: 'sort_order',
+    activeColumn: 'is_active',
+  };
+
+for (const config of [
+  venueContentType,
+  contentTypeRegistry.events,
+  contentTypeRegistry.organizations,
+]) {
+  for (const field of config.fields) {
+    const table =
+      field.name === 'target_groups'
+        ? 'target_groups'
+        : field.name === 'amenities' || field.name === 'accessibility_attributes'
+          ? 'amenities'
+          : field.name === 'services'
+            ? 'venue_services'
+            : null;
+    if (!table) continue;
+    field.type = 'multiselect';
+    field.dynamicOptions = {
+      table,
+      valueColumn: 'slug',
+      labelColumn: 'name',
+      orderBy: 'sort_order',
+      activeColumn: 'is_active',
+      ...(field.name === 'accessibility_attributes' ? { filters: { kind: 'accessibility' } } : {}),
+    };
+  }
+}
+const tagCategory = contentTypeRegistry.unified_tags.fields.find((f) => f.name === 'category');
+if (tagCategory) {
+  tagCategory.type = 'select';
+  tagCategory.dynamicOptions = {
+    table: 'tag_categories',
+    valueColumn: 'slug',
+    labelColumn: 'name',
+    orderBy: 'sort_order',
+    activeColumn: 'is_active',
+  };
+}
+
+const eventClassification = contentTypeRegistry.events.fields.find((f) => f.name === 'event_type');
+if (eventClassification)
+  eventClassification.dynamicOptions = {
+    table: 'event_types',
+    valueColumn: 'slug',
+    labelColumn: 'name',
+    orderBy: 'sort_order',
+    activeColumn: 'is_active',
+  };
 
 /** Get all content type IDs */
 export function getContentTypeIds(): string[] {

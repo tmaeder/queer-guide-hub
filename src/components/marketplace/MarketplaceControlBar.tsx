@@ -1,3 +1,4 @@
+import { useMarketplaceTaxonomy } from '@/hooks/useMarketplaceTaxonomy';
 import { useEffect, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router';
 // TransitIcon only in this band, never lucide alongside it — "never mix the
@@ -81,6 +82,8 @@ export function MarketplaceControlBar({
   resultCount,
   onClearAll,
 }: MarketplaceControlBarProps) {
+  useMarketplaceTaxonomy();
+
   const [sheetOpen, setSheetOpen] = useState(false);
   const [searchParams, setSearchParams] = useSearchParams();
   const inputRef = useRef<HTMLInputElement>(null);

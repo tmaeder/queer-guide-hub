@@ -1,3 +1,4 @@
+import { fetchManagedOptions } from '@/hooks/useManagedOptions';
 /**
  * useContentListController — encapsulates state, persistence, dynamic option
  * loading, debouncing, data fetching, sort, and selection logic for the
@@ -111,6 +112,12 @@ export function useContentListController({
   const [groupBy, setGroupBy] = useState<string | null>(persisted?.groupBy ?? null);
   const [dateField, setDateField] = useState<string | null>(persisted?.dateField ?? null);
   const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [optionsVersion, setOptionsVersion] = useState(0);
+  useEffect(() => {
+    const refresh = () => setOptionsVersion((v) => v + 1);
+    window.addEventListener('taxonomy-options-changed', refresh);
+    return () => window.removeEventListener('taxonomy-options-changed', refresh);
+  }, []);
   const [dynamicOptions, setDynamicOptions] = useState<Record<string, SelectOption[]>>({});
   /**
    * Which slice of the list to show. Deliberately NOT persisted alongside the
@@ -160,19 +167,12 @@ export function useContentListController({
 
     Promise.all(
       dynFields.map(async (f) => {
-        const cfg = f.dynamicOptions!;
-        const { data, error } = await supabase
-          .from(cfg.table as 'cities')
-          .select(`${cfg.valueColumn},${cfg.labelColumn}`)
-          .order(cfg.orderBy ?? cfg.labelColumn);
-        if (error) {
+        let opts: SelectOption[] = [];
+        try {
+          opts = await fetchManagedOptions(f.dynamicOptions!);
+        } catch (error) {
           console.error(`Failed to load options for ${f.name}:`, error);
-          return [f.name, [] as SelectOption[]] as const;
         }
-        const opts: SelectOption[] = (data ?? []).map((row: Record<string, unknown>) => ({
-          value: String(row[cfg.valueColumn]),
-          label: String(row[cfg.labelColumn] ?? row[cfg.valueColumn]),
-        }));
         return [f.name, opts] as const;
       }),
     ).then((entries) => {
@@ -187,7 +187,7 @@ export function useContentListController({
     return () => {
       cancelled = true;
     };
-  }, [filterFields]);
+  }, [filterFields, optionsVersion, refreshKey]);
 
   // Debounced search
   useEffect(() => {

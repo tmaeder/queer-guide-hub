@@ -935,6 +935,8 @@ export type Database = {
       }
       amenities: {
         Row: {
+          contradicts: string | null
+          is_negative_assertion: boolean
           category_scope: string[]
           icon_name: string | null
           id: string
@@ -946,6 +948,8 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          contradicts?: string | null
+          is_negative_assertion?: boolean
           category_scope?: string[]
           icon_name?: string | null
           id?: string
@@ -957,6 +961,8 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          contradicts?: string | null
+          is_negative_assertion?: boolean
           category_scope?: string[]
           icon_name?: string | null
           id?: string
@@ -3310,6 +3316,54 @@ export type Database = {
             referencedColumns: ["user_id"]
           },
         ]
+      }
+      competitions: {
+        Row: {
+          id: string
+          name: string
+          slug: string
+          kind: string
+          category: string
+          country_id: string | null
+          network: string | null
+          organizer: string | null
+          parent_competition_id: string | null
+          sort_order: number
+          created_at: string
+          updated_at: string
+          format: string | null
+        }
+        Insert: {
+          id?: string
+          name: string
+          slug: string
+          kind: string
+          category: string
+          country_id?: string | null
+          network?: string | null
+          organizer?: string | null
+          parent_competition_id?: string | null
+          sort_order?: number
+          created_at?: string
+          updated_at?: string
+          format?: string | null
+        }
+        Update: {
+          id?: string
+          name?: string
+          slug?: string
+          kind?: string
+          category?: string
+          country_id?: string | null
+          network?: string | null
+          organizer?: string | null
+          parent_competition_id?: string | null
+          sort_order?: number
+          created_at?: string
+          updated_at?: string
+          format?: string | null
+        }
+        Relationships: []
       }
       community_groups: {
         Row: {
@@ -5788,14 +5842,23 @@ export type Database = {
       }
       event_categories: {
         Row: {
+          sort_order: number
+          is_active: boolean
+          updated_at: string
           id: string
           name: string
         }
         Insert: {
+          sort_order?: number
+          is_active?: boolean
+          updated_at?: string
           id?: string
           name: string
         }
         Update: {
+          sort_order?: number
+          is_active?: boolean
+          updated_at?: string
           id?: string
           name?: string
         }
@@ -6102,6 +6165,7 @@ export type Database = {
       }
       event_types: {
         Row: {
+          slug: string | null
           aliases: string[]
           color: string | null
           created_at: string
@@ -6114,6 +6178,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          slug?: string | null
           aliases?: string[]
           color?: string | null
           created_at?: string
@@ -6126,6 +6191,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          slug?: string | null
           aliases?: string[]
           color?: string | null
           created_at?: string
@@ -10679,6 +10745,7 @@ export type Database = {
       }
       kink_categories: {
         Row: {
+          updated_at: string
           added_in_version: number
           axis: string
           description: string | null
@@ -10691,6 +10758,7 @@ export type Database = {
           sort_order: number
         }
         Insert: {
+          updated_at?: string
           added_in_version?: number
           axis: string
           description?: string | null
@@ -10703,6 +10771,7 @@ export type Database = {
           sort_order?: number
         }
         Update: {
+          updated_at?: string
           added_in_version?: number
           axis?: string
           description?: string | null
@@ -10875,6 +10944,7 @@ export type Database = {
       }
       kink_items: {
         Row: {
+          updated_at: string
           added_in_version: number
           axis_override: string | null
           category_id: string
@@ -10892,6 +10962,7 @@ export type Database = {
           unified_tag_slug: string | null
         }
         Insert: {
+          updated_at?: string
           added_in_version?: number
           axis_override?: string | null
           category_id: string
@@ -10909,6 +10980,7 @@ export type Database = {
           unified_tag_slug?: string | null
         }
         Update: {
+          updated_at?: string
           added_in_version?: number
           axis_override?: string | null
           category_id?: string
@@ -20136,6 +20208,7 @@ export type Database = {
       }
       tag_categories: {
         Row: {
+          is_active: boolean
           color: string | null
           created_at: string
           description: string | null
@@ -20148,6 +20221,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          is_active?: boolean
           color?: string | null
           created_at?: string
           description?: string | null
@@ -20160,6 +20234,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          is_active?: boolean
           color?: string | null
           created_at?: string
           description?: string | null
@@ -21367,6 +21442,45 @@ export type Database = {
             referencedColumns: ["tag_id"]
           },
         ]
+      }
+      taxonomy_terms: {
+        Row: {
+          metadata: Json
+          id: string
+          taxonomy: string
+          value: string
+          name: string
+          description: string | null
+          parent_id: string | null
+          sort_order: number
+          is_active: boolean
+          updated_at: string
+        }
+        Insert: {
+          metadata?: Json
+          id?: string
+          taxonomy: string
+          value: string
+          name: string
+          description?: string | null
+          parent_id?: string | null
+          sort_order?: number
+          is_active?: boolean
+          updated_at?: string
+        }
+        Update: {
+          metadata?: Json
+          id?: string
+          taxonomy?: string
+          value?: string
+          name?: string
+          description?: string | null
+          parent_id?: string | null
+          sort_order?: number
+          is_active?: boolean
+          updated_at?: string
+        }
+        Relationships: []
       }
       target_groups: {
         Row: {

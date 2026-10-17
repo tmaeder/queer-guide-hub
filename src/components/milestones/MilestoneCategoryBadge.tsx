@@ -1,3 +1,5 @@
+import { classificationSource, useManagedLabel } from '@/hooks/useManagedOptions';
+import seeds from '@/config/classificationSeeds.json';
 import {
   Ban,
   Flag,
@@ -41,6 +43,13 @@ export function MilestoneCategoryBadge({
   className?: string;
 }) {
   const { t } = useTranslation();
+  const seed = seeds.milestone_category.find((option) => option.value === category)?.label;
+  const label = useManagedLabel(
+    classificationSource('milestone_category'),
+    category,
+    category ? t(milestoneCategoryLabelKey(category), { defaultValue: seed ?? category }) : '',
+    seed,
+  );
   if (!category) return null;
   const Icon = CATEGORY_ICON[category] ?? MilestoneIcon;
   return (
@@ -51,7 +60,7 @@ export function MilestoneCategoryBadge({
       )}
     >
       <Icon className="h-3 w-3" aria-hidden />
-      {t(milestoneCategoryLabelKey(category))}
+      {label}
     </span>
   );
 }

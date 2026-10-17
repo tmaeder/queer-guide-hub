@@ -1,3 +1,4 @@
+import { useMarketplaceTaxonomy } from '@/hooks/useMarketplaceTaxonomy';
 import type { Database } from '@/integrations/supabase/types';
 import { SIZE_ORDER } from '@/lib/marketplaceTaxonomy';
 
@@ -32,6 +33,8 @@ function sizeSort(a: string, b: string): number {
  * nothing without variant rows (rule 2: no empty shells).
  */
 export function VariantAvailability({ variants }: { variants: ListingVariant[] }) {
+  useMarketplaceTaxonomy('sizes');
+
   const bySize = new Map<string, { available: boolean }>();
   for (const v of variants) {
     if (!v.option_size) continue;

@@ -21,6 +21,15 @@ import { test, expect } from '@playwright/test';
 // (DB "Fetish Practices"), so it reliably fires the gate for signed-out visitors.
 const ADULT_TAG_PATH = '/tags/age-play';
 
+// SIGNED OUT BY CONSTRUCTION. `playwright.config.ts` hands the chromium project
+// the admin storageState whenever E2E_ADMIN_* is set, as it is in the nightly,
+// and an affirmed account never sees the gate this file exists to assert.
+// `context.clearCookies()` below is NOT sufficient on its own: the Supabase
+// session lives in localStorage, which storageState restores at context
+// creation and clearing cookies does not touch — so the gate tests ran as a
+// signed-in admin and failed every scheduled nightly.
+test.use({ storageState: { cookies: [], origins: [] } });
+
 test.describe('@p0-3 /tags age gate', () => {
   test('Sexuality & Kink tag URL shows the gate before any content', async ({ page, context }) => {
     await context.clearCookies();
