@@ -356,12 +356,36 @@ BEGIN
  GET DIAGNOSTICS removed=ROW_COUNT;RETURN removed;
 END $function$;
 
+-- DROP FIRST, AND RE-REVOKE AFTER. Both halves are required and neither is cosmetic.
+--
+-- `CREATE OR REPLACE FUNCTION` cannot change a return type: prod still carries the baseline's
+-- `RETURNS TABLE(id, slug, target, status_code, preserve_query, query_mode, query_override,
+-- utm_defaults, click_limit, click_count)` while this file declares `RETURNS SETOF redirects`,
+-- so the bare replace fails `42P13 cannot change return type of existing function` and takes
+-- every later migration in the push with it. Measured on prod 2026-10-17: it aborted db push
+-- here, 4 migrations from the end.
+--
+-- Dropping is safe for this function specifically, checked rather than assumed: pg_depend shows
+-- 0 dependents, the live grants are postgres + service_role only, and it is the RETIRED resolver
+-- -- supabase/tests/redirect_link_policies.sql raises 'Old resolver bypass remains' and
+-- redirect_current_owner_keys.sql raises 'Raw public resolver exposed' precisely to keep it
+-- unreachable. The replacement body is also the shape the test fixture already builds
+-- (redirect-platform-bootstrap.sql: RETURNS SETOF public.redirects).
+--
+-- THE REVOKE IS THE HALF THAT WOULD BITE. A newly created function in `public` is granted EXECUTE
+-- to PUBLIC by default, so DROP + CREATE alone would hand the retired resolver to anon and
+-- authenticated -- turning a mechanical fix into a privilege regression, and failing both tests
+-- above. `grant ... to service_role` does NOT undo that; only an explicit REVOKE does.
+DROP FUNCTION IF EXISTS public.resolve_short_redirect(text);
+
 CREATE OR REPLACE FUNCTION public.resolve_short_redirect(p_slug text)
  RETURNS SETOF redirects
  LANGUAGE sql
  SECURITY DEFINER
  SET search_path TO 'public', 'pg_temp'
 AS $function$ SELECT * FROM public.redirects WHERE workspace_id='58aa4340-8f21-4b7f-9a10-90be2da89c01'::uuid AND type='SHORT' AND domain_id IS NULL AND NOT is_domain_root AND slug=p_slug $function$;
+REVOKE ALL ON FUNCTION public.resolve_short_redirect(text) FROM PUBLIC, anon, authenticated;
+GRANT EXECUTE ON FUNCTION public.resolve_short_redirect(text) TO service_role;
 
 CREATE OR REPLACE FUNCTION redirect_internal.qr_asset_for_workspace(p_workspace uuid,p_id uuid)
  RETURNS jsonb
