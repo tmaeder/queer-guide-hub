@@ -93,7 +93,16 @@ describe('postconditions assert the reached state, not the work done', () => {
   it('counts nothing that a second run would change, so the migration is idempotent', () => {
     // A `rewritten = 15` assertion would pass on the first run and fail on the second while
     // the schema was correct. Every check must be over the end state.
+    //
+    // SCOPED TO THE WHOLE FILE, not just the verify block: a surviving mutation put exactly
+    // this assertion in the REWRITE block instead, where a verify-only check could not see
+    // it. n_done may be incremented and reported, never asserted on.
     expect(verify).not.toMatch(/n_done/);
+    const raisesOnCount = sql
+      .split('\n')
+      .filter((l) => /n_done/.test(l) && /raise\s+exception/i.test(l));
+    expect(raisesOnCount).toEqual([]);
+    expect(sql).not.toMatch(/n_done\s*(<>|!=|<|>|=)\s*\d/);
   });
 
   it('asserts the dual-mode predicate SURVIVED, over comment-stripped bodies', () => {
