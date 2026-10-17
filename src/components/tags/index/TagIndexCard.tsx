@@ -53,9 +53,10 @@ export function TagIndexCard({ tag, uses, icon, categoryLabel, aliasMatch }: Tag
       className="card-lift group flex h-full min-h-56 flex-col gap-4 rounded-container bg-card p-4 text-inherit no-underline shadow-soft focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ring"
     >
       <div className="flex items-center justify-between gap-4">
-        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-element bg-muted">
-          <TransitIcon name={icon ?? DEFAULT_CATEGORY_ICON} size={34} />
-        </span>
+        {/* No plate. The muted square under this was a v1 affordance: a single
+            thin ink stroke needs a ground to read against, a filled mark with
+            an ink outline does not. Dropping it is what buys the size. */}
+        <TransitIcon name={icon ?? DEFAULT_CATEGORY_ICON} size={44} ticks={false} />
         {categoryLabel && (
           <span className="text-right text-2xs font-medium text-muted-foreground">
             {categoryLabel}
@@ -88,6 +89,12 @@ export function TagIndexRow({ tag, uses, icon, categoryLabel, aliasMatch }: TagI
       className="card-lift-sm flex items-center gap-4 bg-card p-4 text-inherit no-underline rounded-container shadow-soft focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ring"
     >
       <RouteBullet type="tag" size={30} />
+      {/* Paired with the bullet at the row's leading edge, the same way the
+          detail masthead pairs them. It used to ride the trailing category
+          chip, where a 24px mark sat inside a 10px uppercase pill and made the
+          pill lumpy — and where the one thing that says what the TERM is sat
+          furthest from the term's name. */}
+      {icon && <TransitIcon name={icon} size={30} ticks={false} />}
       <div className="min-w-0 flex-1">
         <p className="flex items-center gap-2 text-title font-bold leading-tight">
           <span className="break-words">{tag.name}</span>
@@ -103,10 +110,9 @@ export function TagIndexRow({ tag, uses, icon, categoryLabel, aliasMatch }: TagI
           (`ROUTE_BULLET_MAP.tag`), so it stays. The chip used to be `md:block`
           only — the glyph shows at every width, because a phone previously got
           no per-term mark at all. */}
-      {(icon || categoryLabel) && (
-        <span className="inline-flex shrink-0 items-center gap-1.5 rounded-element bg-muted px-2 py-0.5 text-2xs font-bold uppercase tracking-label">
-          {icon && <TransitIcon name={icon} size={24} />}
-          {categoryLabel && <span className="hidden md:inline">{categoryLabel}</span>}
+      {categoryLabel && (
+        <span className="hidden shrink-0 items-center rounded-element bg-muted px-2 py-0.5 text-2xs font-bold uppercase tracking-label md:inline-flex">
+          {categoryLabel}
         </span>
       )}
     </LocalizedLink>

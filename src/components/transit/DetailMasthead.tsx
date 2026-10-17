@@ -82,9 +82,29 @@ export function DetailMasthead({
           track={track}
           label={bulletLabel}
         />
-        {(eyebrow || glyph) && (
-          <span className="inline-flex items-center gap-1.5 text-2xs font-bold uppercase tracking-label">
-            {glyph && <TransitIcon name={glyph} size={22} />}
+        {/* The glyph is a SIBLING of the bullet, at the bullet's own size — not
+            a 22px mark inside the eyebrow's 10px uppercase text, which is where
+            it used to sit. Two things were wrong with that. It was smaller than
+            the bullet it stood beside, so it read as decoration on a label
+            rather than as this entity's mark; and it was baseline-aligned with
+            micro-type, which squashed a drawing that had just been given fills
+            and a colour. Bullet says WHICH LINE, glyph says WHAT THIS IS, and
+            at matched diameters the pair reads as one unit.
+
+            No plate under it: a v2 mark is a filled shape with an ink outline
+            and carries its own weight. The muted plates and chips around these
+            glyphs were compensating for v1's single thin stroke. */}
+        {glyph && (
+          <TransitIcon
+            name={glyph}
+            size={size === 'compact' ? 32 : 44}
+            // Ticks need the icon's own margin, and here it is flush against a
+            // bullet and a text run.
+            ticks={false}
+          />
+        )}
+        {eyebrow && (
+          <span className="inline-flex items-center text-2xs font-bold uppercase tracking-label">
             {eyebrow}
           </span>
         )}
