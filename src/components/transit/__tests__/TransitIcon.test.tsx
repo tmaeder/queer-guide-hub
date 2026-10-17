@@ -57,20 +57,33 @@ describe('TransitIcon', () => {
   });
 
   describe('colour mode (default)', () => {
-    it('gives every filled shape an ink outline and a track fill', () => {
-      // §4b: the outline is always ink, colour sits inside it. A coloured
-      // outline would put the colour where the ink belongs.
+    it('outlines every filled shape in ink, or in nothing at all', () => {
+      // §4b: colour sits INSIDE an outline and may never act as one. An
+      // outline weight of 0 is the only way a fill goes without — and it has
+      // to mean NO stroke, not a stroke of the track colour, which is the one
+      // way this escape hatch could break the rule it sits beside.
+      let unoutlined = 0;
       for (const name of TRANSIT_ICON_NAMES) {
         const def = ICON_DEFS[name];
         if (!def.f?.length) continue;
         const { container, unmount } = render(<TransitIcon name={name} />);
         const filled = [...container.querySelectorAll('path')].slice(0, def.f.length);
-        for (const p of filled) {
-          expect(p.getAttribute('stroke'), name).toBe(ink);
-          expect(p.getAttribute('fill'), name).not.toBe('none');
-        }
+        filled.forEach((p, i) => {
+          const [, , outline = 1] = def.f![i];
+          if (outline === 0) {
+            unoutlined += 1;
+            expect(p.getAttribute('stroke'), `${name} f[${i}]`).toBe('none');
+          } else {
+            expect(p.getAttribute('stroke'), `${name} f[${i}]`).toBe(ink);
+          }
+          expect(p.getAttribute('fill'), `${name} f[${i}]`).not.toBe('none');
+        });
         unmount();
       }
+      // A positive control. The `outline === 0` arm above is the whole point of
+      // the assertion and is reachable from exactly one icon today, so without
+      // this the branch is satisfied by never being taken.
+      expect(unoutlined).toBeGreaterThan(0);
     });
 
     it('draws into the plain 100-unit box at every size, like monochrome', () => {
@@ -124,7 +137,13 @@ describe('TransitIcon', () => {
         .filter(([, d]) => d.t !== 'none')
         .map(([slug]) => slug)
         .sort();
-      expect(ticked).toEqual(['alerts', 'disco', 'flogger', 'march', 'pride', 'rainbow']);
+      // Three, and each survives the same test the other 73 failed: the tick
+      // must not land on the end of a stem or on a straight edge, because a
+      // mark in either place reads as a thing attached to the shape. `alerts`
+      // ticks sideways off a bell, `disco` radiates off a sphere and
+      // `rainbow` radiates off an arc — none of them has an upright for a
+      // tick to sit on top of.
+      expect(ticked).toEqual(['alerts', 'disco', 'rainbow']);
     });
   });
 
