@@ -389,7 +389,34 @@ const MERGED = [
   { retired: 'mr-riegillio-988d', survivor: 'mr-riegillio', title: 'MR. Riegillio' },
   // slug-base merge
   { retired: 'b-vibe-e3a1', survivor: 'b-vibe', title: 'b-Vibe' },
-  { retired: 'mr-s-leather-77da', survivor: 'mr-s-leather', title: 'MR S LEATHER' },
+  // THE SURVIVOR SLUG MOVED AGAIN, and both of this file's failures came from
+  // that one entry. It read `survivor: 'mr-s-leather', title: 'MR S LEATHER'`.
+  // Measured on prod 2026-10-17:
+  //
+  //   /marketplace/brands/mr-s-leather       301 -> /marketplace/brands/mrsleather
+  //   /marketplace/brands/mr-s-leather-77da  200  "MR S LEATHER"
+  //   /marketplace/brands/mrsleather         200  "mrsleather", in the sitemap
+  //
+  // So `mr-s-leather` is itself a redirect now, which is why the sitemap test
+  // reported "mr-s-leather is the surviving URL and MUST be advertised" — a
+  // redirect is correctly not advertised — and the 301 test saw a 200 because
+  // `-77da` resolved to a DIFFERENT row.
+  //
+  // THE 200 WAS A REAL DEFECT, not just a stale slug. `-77da` resolved through
+  // `marketplace_brand_slug_redirects` onto a `status='rejected'`, `slug IS
+  // NULL` row with 36 products, which `get_marketplace_brand()` happily serves
+  // because it does not check the target's status. Repaired by
+  // 99991792216663, which repoints it at the approved row; that migration also
+  // asserts the corpus-wide invariant (0 of 43 redirects may resolve to a
+  // missing, slug-less or unapproved brand) and records that this was the only
+  // one.
+  //
+  // The title here is the factual current state and NOT an endorsement: the
+  // approved row's `display_name` is the literal merchant slug "mrsleather",
+  // while the rejected row carries the properly cased "MR S LEATHER". Which
+  // spelling this brand should publish under is an editorial decision, so it is
+  // reported rather than baked in by renaming the row to make a test prettier.
+  { retired: 'mr-s-leather-77da', survivor: 'mrsleather', title: 'mrsleather' },
   { retired: 'ouch-7434', survivor: 'ouch', title: 'OUCH' },
   { retired: 'rocks-off-2', survivor: 'rocks-off', title: 'Rocks-Off' },
   { retired: 'strap-on-me-7b42', survivor: 'strap-on-me', title: 'Strap-On-Me' },
