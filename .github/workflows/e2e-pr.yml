@@ -65,7 +65,28 @@ jobs:
           files=$(gh api "repos/${{ github.repository }}/pulls/${{ github.event.number }}/files" \
             --paginate --jq '.[].filename')
           echo "Changed files:"; echo "$files" | sed 's/^/  /'
-          if echo "$files" | grep -qE '^(src/|public/|e2e/|index\.html$|vite\.config\.ts$|playwright\.config\.ts$|package\.json$|package-lock\.json$|\.github/workflows/e2e-pr\.yml$|\.github/actions/setup-playwright/)'; then
+          # `supabase/migrations/` is in the list because the specs below run a
+          # LOCAL build of this PR against the LIVE backend, so a schema change
+          # can break them while nothing in src/ moved. PR #4423 is the worked
+          # example: get_admin_review_queue was costing 8,664ms against the 8s
+          # statement_timeout on `authenticated`, /admin answered 500 for every
+          # staff user, and admin-inbox-renders.spec.ts — which is ON the list
+          # below and exists to catch exactly that — never ran, because a
+          # migration-only diff matched nothing here and the job short-circuited
+          # to success in 8 seconds.
+          #
+          # Scoped to migrations, NOT all of `supabase/`: edge functions deploy
+          # separately and are covered by edge-fn-tests, so pulling in
+          # `supabase/functions/` would add ~7 minutes to a large share of PRs
+          # for paths these browser specs do not exercise.
+          #
+          # The cost is deliberate and worth stating: this makes every migration
+          # PR depend on production backend health. That is the same coupling
+          # that reds unrelated PRs when prod is slow, now applied to a busy
+          # path. If it starts crying wolf, narrow the SPEC LIST for this
+          # trigger rather than silently dropping the path — a filter that
+          # excludes schema changes is how this class went unnoticed.
+          if echo "$files" | grep -qE '^(src/|public/|e2e/|supabase/migrations/|index\.html$|vite\.config\.ts$|playwright\.config\.ts$|package\.json$|package-lock\.json$|\.github/workflows/e2e-pr\.yml$|\.github/actions/setup-playwright/)'; then
             echo "relevant=true" >> "$GITHUB_OUTPUT"
             echo "::notice::Relevant paths changed - running critical-path specs."
           else
