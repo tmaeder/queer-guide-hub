@@ -32,6 +32,22 @@ import { anonHeaders, SUPABASE_REST_URL } from './support/anonKey';
 
 const BOT_UA = 'Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)';
 
+// SIGNED OUT BY CONSTRUCTION. `playwright.config.ts` hands the chromium project
+// the admin storageState whenever E2E_ADMIN_* is set, as it is in the nightly,
+// and an account that has already affirmed 18+ never sees the gate — so the
+// positive control at the bottom of this file ("the age gate itself is not
+// working — the negative below would be vacuous") fired on every scheduled run.
+//
+// The `context.clearCookies()` there is NOT sufficient on its own and that is
+// the whole trap: the Supabase session lives in localStorage, which storageState
+// restores at context creation and clearing cookies does not touch. Identical to
+// the fix #4447 applied to tags-age-gate.spec.ts, which has the same shape.
+//
+// It also covers the `request`-based cases above, which inherit the same
+// storageState — those happen to assert the crawler surface, where it makes no
+// difference, but the file should not depend on that.
+test.use({ storageState: { cookies: [], origins: [] } });
+
 test.describe('@smoke clinical conditions are not fetishes', () => {
   test('the crawler sees a Sexual Health page, not a fetish', async ({ request }) => {
     const { prose: article, html } = await glossaryEntry(request, 'orgasmic-dysfunction');
