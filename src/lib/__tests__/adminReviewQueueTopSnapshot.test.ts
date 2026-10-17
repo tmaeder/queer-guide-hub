@@ -154,31 +154,36 @@ describe('the snapshot stores ordering, never content', () => {
   });
 });
 
-describe('PATCH 1 pushes the decisions predicate into the union branches', () => {
-  it('emits the predicate per branch and only for scope=decisions', () => {
-    // Same predicate, same rows, evaluated earlier. Measured same-transaction on the live
-    // function: 2,455/1,962ms -> 959/1,027ms. Scoping it to 'decisions' is what keeps every other
-    // scope byte-identical, so the blast radius is one scope.
-    expect(patch).toContain("case when p_scope=''decisions'' then format");
-    expect(patch).toContain(
-      'admin_review_finding_codes f where f.queue_key=%L and f.subtitle_match=u.subtitle',
-    );
-    expect(patch).toContain("else '''' end)");
+describe('PATCH 1 is gone, and the property it guarded is guarded elsewhere', () => {
+  // The two assertions that used to live here tested PATCH 1's replacement text and its
+  // no-op raise. PATCH 1 was DELETED because 99991792213011 landed between this migration
+  // being cut and being pushed and did the same job with a strictly narrower emit
+  // condition, so the anchor was legitimately gone and its raise fired and blocked db push
+  // 9 migrations deep. Deleting the assertions is relocation, not a weakening: the property
+  // is still asserted, on the migration that now owns it —
+  // src/lib/__tests__/adminReviewQueueScopePushdown.test.ts, which pins the exact
+  // `where not exists(... f.queue_key=%L and f.subtitle_match=u.subtitle)` predicate and
+  // the `p_scope=''decisions''` condition. Verified passing (12/12) alongside this change.
+  it('no longer carries a PATCH 1, so nothing here may assert one', () => {
+    expect(patch).not.toContain("raise exception 'PATCH 1 replaced nothing");
+    expect(patch).not.toMatch(/v_anchor := '%L::boolean can_reopen/);
   });
 
-  it('RAISES if it replaced nothing, and SEARCHES the raw body nowhere', () => {
-    // This function was rewritten twice in one day. A patch that quietly matches nothing is the
-    // failure mode, not a missing feature — so the no-op test must raise AND carry the diagnosis,
-    // because it is now the only thing standing between a stale anchor and a silent no-op.
-    expect(patch).toContain("raise exception 'PATCH 1 replaced nothing");
-    expect(patch).toMatch(/PATCH 1 replaced nothing[\s\S]{0,200}re-cut/i);
-
-    // AND NO position()/strpos()/LIKE OVER pg_get_functiondef's OUTPUT. scripts/
-    // check-functiondef-asserts.mjs bans it because that output includes the function's comments;
-    // it aborted db push on main three times in one day. The patch block cannot strip them (it
-    // must execute the RAW body), so the pre-check is deleted rather than stripped, and
-    // `v_new = v_src` is the stronger invariant that replaces it.
-    expect(patch).not.toMatch(/position\s*\(\s*v_anchor\s+in\s+v_src\s*\)/);
+  it('SEARCHES the raw body nowhere — now the only surviving half of the old test', () => {
+    // NO position()/strpos()/LIKE OVER pg_get_functiondef's OUTPUT. scripts/
+    // check-functiondef-asserts.mjs bans it because that output includes the function's
+    // comments; it aborted db push on main three times in one day. The patch block cannot
+    // strip them (it must execute the RAW body), so there is no pre-check at all and
+    // `v_new = v_src` is the stronger invariant.
+    //
+    // WIDENED FROM `position(v_anchor in v_src)` TO ANY position() OVER v_src, because the
+    // narrow form has a hole this change walked straight into: a first draft of the PATCH 1
+    // fix used `position('<literal string>' in v_src)`, which is the same defect and which
+    // the v_anchor-anchored pattern does not match. check-functiondef-asserts.mjs would not
+    // have caught it either — it only inspects NEW migrations, and this was an edit to an
+    // existing one. The ban now covers PATCH 2 as well, which the original header also
+    // declared pre-check-free ("HERE OR IN PATCH 2").
+    expect(patch).not.toMatch(/position\s*\([^)]*\bin\s+v_src\s*\)/);
     expect(patch).not.toMatch(/\bstrpos\s*\(\s*v_src/);
     expect(patch).not.toMatch(/v_src\s+(?:not\s+)?i?like/i);
   });
