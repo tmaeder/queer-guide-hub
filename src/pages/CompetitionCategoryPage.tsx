@@ -1,3 +1,4 @@
+import { useReferenceTaxonomy } from '@/hooks/useReferenceTaxonomy';
 import { Suspense, lazy, useMemo } from 'react';
 import { useSearchParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
@@ -67,6 +68,8 @@ const VIEWS: { id: View; labelKey: string; fallback: string }[] = [
 ];
 
 export default function CompetitionCategoryPage({ category }: { category: CompetitionCategory }) {
+  useReferenceTaxonomy('competition_category');
+
   const { t } = useTranslation();
   const [params, setParams] = useSearchParams();
 

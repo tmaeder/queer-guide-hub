@@ -67,6 +67,16 @@ async function openHub(page: Page, path: string) {
   return nav;
 }
 
+// SIGNED OUT BY CONSTRUCTION, which the header above already states as the
+// intent and which `playwright.config.ts` overrides: it hands the chromium
+// project the admin storageState whenever E2E_ADMIN_* is set, as it is in the
+// nightly. Both signed-in affordances this file says it does not cover then
+// appear and break it — the Messages pill reads "Messages2" because the unread
+// badge renders inside the anchor, so the pill-list assertion fails on every
+// route, and `HubIdentityBlock` stops returning null, which is the premise the
+// flush-left edge assertion rests on.
+test.use({ storageState: { cookies: [], origins: [] } });
+
 test.describe('hub nav', () => {
   test('the route list covers more than one shell', () => {
     // Positive control. Every test below loops over ROUTES, so an empty or

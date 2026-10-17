@@ -36,6 +36,23 @@ const PAGELESS = [
   'professions',
   'redirects',
   'feedback',
+  // The managed taxonomies. Each is a vocabulary edited in the CMS and read as
+  // a FACET or a label elsewhere — none has a detail route of its own, checked
+  // against src/routes.tsx rather than assumed.
+  'amenities',
+  'event_categories',
+  'kink_categories',
+  'kink_items',
+  'marketplace_categories',
+  'news_categories',
+  'tag_categories',
+  'taxonomy_terms',
+  // `competitions` is the one that looks like it should have a page and does
+  // not. The public surface is the `/competitions` hub plus the per-category
+  // pages (`/competitions/types/:categorySlug` and six hardcoded ones); there
+  // is NO `/competitions/:slug`, so a single competition row has nowhere to
+  // link to and `livePath` must return null rather than fabricate one.
+  'competitions',
 ];
 
 describe('cmsEditPath', () => {
@@ -98,9 +115,7 @@ describe('livePath', () => {
     // Tags are slug-keyed despite the route param being named `tagName`, and
     // the lookup lowercases; groups are id-keyed, not slug-keyed.
     expect(livePath('unified_tags', { slug: 'Bear-Bar', status: 'active' })).toBe('/tags/bear-bar');
-    expect(livePath('community_groups', { id: 'g-1', slug: 'ignored' })).toBe(
-      '/hub/groups/g-1',
-    );
+    expect(livePath('community_groups', { id: 'g-1', slug: 'ignored' })).toBe('/hub/groups/g-1');
   });
 
   it('typesWithPublicPath and PAGELESS partition the registry', () => {

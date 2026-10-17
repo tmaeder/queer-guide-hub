@@ -1,3 +1,4 @@
+import { useReferenceTaxonomy } from '@/hooks/useReferenceTaxonomy';
 /**
  * Open org_link_suggestions from the nightly backfill: ambiguous
  * entity→organization matches (and queer-brand mint proposals) an admin
@@ -31,6 +32,7 @@ const TYPE_LABEL: Record<string, string> = {
 };
 
 export function OrgLinkReviewQueue() {
+  useReferenceTaxonomy('organization_role');
   const { data: suggestions, isLoading } = useOrgLinkSuggestions();
   const decide = useDecideOrgAdoption();
 

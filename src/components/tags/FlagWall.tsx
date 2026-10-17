@@ -1,3 +1,4 @@
+import { useReferenceTaxonomy } from '@/hooks/useReferenceTaxonomy';
 /**
  * FlagWall — the visual index of the pride-flag vocabulary, mounted ONLY on
  * the Symbols & Flags category hub (/tags/c/symbols-flags). One mount point
@@ -15,6 +16,8 @@ import { FlagSwatch } from '@/components/tags/FlagSwatch';
 import { PRIDE_FLAGS } from '@/lib/flags';
 
 export function FlagWall() {
+  useReferenceTaxonomy('pride_flag');
+
   const { t } = useTranslation();
 
   return (

@@ -1,3 +1,4 @@
+import { useReferenceTaxonomy } from '@/hooks/useReferenceTaxonomy';
 /**
  * FlagChip — a pride flag as a small labelled chip (profile headers, the
  * settings picker). The swatch is decorative; the text label carries the
@@ -10,6 +11,8 @@ import { FlagSwatch } from '@/components/tags/FlagSwatch';
 import { flagById } from '@/lib/flags';
 
 export function FlagChip({ flagId, className }: { flagId: string; className?: string }) {
+  useReferenceTaxonomy('pride_flag');
+
   const { t } = useTranslation();
   const flag = flagById(flagId);
   // Unknown id (vocabulary drift) renders nothing rather than crashing.
@@ -36,6 +39,8 @@ export function FlagChipRow({
   flagIds: readonly string[] | null | undefined;
   className?: string;
 }) {
+  useReferenceTaxonomy('pride_flag');
+
   const known = (flagIds ?? []).filter((id) => flagById(id));
   if (known.length === 0) return null;
   return (

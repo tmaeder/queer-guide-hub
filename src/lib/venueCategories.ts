@@ -1,23 +1,14 @@
+import {
+  useClassificationOptions,
+  useManagedLabel,
+  classificationSource,
+} from '@/hooks/useManagedOptions';
 import { useTranslation } from 'react-i18next';
 
 /**
- * Single source of truth for `venues.category`.
- *
- * Must stay in sync with the DB CHECK constraint `venues_category_check`. A drift test
- * (`src/lib/__tests__/venueCategories.test.ts`) asserts this list matches the constraint
- * values recorded there.
- *
- * Before this existed there were five divergent copies. The costly one was the admin CMS
- * select (`src/config/contentTypes/venue.ts`), which offered `beach`, `cruise_club` and
- * `bookstore` — none of them legal — so choosing them produced a hard constraint
- * violation on save. Other copies offered `gym`/`salon` combinations matching ~2 rows total.
- *
- * `organization` was retired 2026-08-21 (migration 20260915140000): a category answers
- * "what kind of place is this", and an organization is not a kind of place — the
- * organizations table and the nonvenue_candidate flow own that distinction.
- *
- * Mirrors the shape of `src/lib/eventTypes.ts` deliberately: same exports, same i18n
- * hook, so both taxonomies are consumed identically.
+ * Seed values and offline labels for place categories.
+ * Runtime options come from the backend-managed venue_category vocabulary.
+ * Stable values keep existing URLs and records working when labels change.
  */
 export const VENUE_CATEGORIES = [
   'bar',
@@ -39,7 +30,7 @@ export const VENUE_CATEGORIES = [
   'other',
 ] as const;
 
-export type VenueCategory = (typeof VENUE_CATEGORIES)[number];
+export type VenueCategory = (typeof VENUE_CATEGORIES)[number] | (string & {});
 
 const FALLBACK_LABELS: Record<VenueCategory, string> = {
   bar: 'Bar',
@@ -73,10 +64,22 @@ export const VENUE_CATEGORY_OPTIONS: VenueCategoryOption[] = VENUE_CATEGORIES.ma
 }));
 
 /** Translated options keyed by `venueCategories.<value>` in the current locale. */
-export function useVenueCategoryOptions(): VenueCategoryOption[] {
+export function useVenueCategoryOptions(selected?: unknown): VenueCategoryOption[] {
   const { t } = useTranslation();
-  return VENUE_CATEGORIES.map((value) => ({
+  const fallback = VENUE_CATEGORIES.map((value) => ({
     value,
     label: t(`venueCategories.${value}`, { defaultValue: FALLBACK_LABELS[value] }),
   }));
+  return useClassificationOptions('venue_category', fallback, selected);
+}
+
+export function useVenueCategoryLabel(value: string | null | undefined): string {
+  const { t } = useTranslation();
+  const seed = FALLBACK_LABELS[value ?? ''];
+  return useManagedLabel(
+    classificationSource('venue_category'),
+    value,
+    value ? t(`venueCategories.${value}`, { defaultValue: seed ?? value }) : '',
+    seed,
+  );
 }

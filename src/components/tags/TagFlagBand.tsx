@@ -1,3 +1,4 @@
+import { useReferenceTaxonomy } from '@/hooks/useReferenceTaxonomy';
 /**
  * TagFlagBand — the full flag treatment on the tag page that IS a flag
  * (/tags/transgender-pride-flag and friends).
@@ -17,6 +18,8 @@ import { FlagSwatch } from '@/components/tags/FlagSwatch';
 import { flagByTagSlug } from '@/lib/flags';
 
 export function TagFlagBand({ tagSlug }: { tagSlug: string }) {
+  useReferenceTaxonomy('pride_flag');
+
   const { t } = useTranslation();
   const flag = flagByTagSlug.get(tagSlug);
   if (!flag) return null;

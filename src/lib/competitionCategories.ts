@@ -1,3 +1,5 @@
+import { observeReferenceTaxonomies } from '@/lib/referenceTaxonomyStore';
+import { competitionDefinition } from '@/lib/referenceTaxonomyDefinitions';
 /**
  * The six comparable types, and the ONE place their routes, labels and blurbs
  * are defined.
@@ -38,7 +40,13 @@ import type { Track } from '@/components/transit/routeBulletMap';
 import type { TransitIconName } from '@/components/transit/transitIconPaths';
 
 export type CompetitionCategory =
-  'drag_series' | 'drag_pageant' | 'trans_pageant' | 'gay_title' | 'leather_title' | 'drag_king';
+  | (string & {})
+  | 'drag_series'
+  | 'drag_pageant'
+  | 'trans_pageant'
+  | 'gay_title'
+  | 'leather_title'
+  | 'drag_king';
 
 export interface CategoryDef {
   id: CompetitionCategory;
@@ -63,7 +71,7 @@ export interface CategoryDef {
   icon: TransitIconName;
 }
 
-export const COMPETITION_CATEGORIES: readonly CategoryDef[] = [
+export let COMPETITION_CATEGORIES: readonly CategoryDef[] = [
   {
     id: 'drag_series',
     slug: 'drag-series',
@@ -157,14 +165,30 @@ export const COMPETITION_CATEGORIES: readonly CategoryDef[] = [
 ];
 
 export function categoryBySlug(slug: string): CategoryDef | undefined {
-  return COMPETITION_CATEGORIES.find((c) => c.slug === slug);
+  return allCategories.find((c) => c.slug === slug);
 }
 
 export function categoryById(id: string): CategoryDef | undefined {
-  return COMPETITION_CATEGORIES.find((c) => c.id === id);
+  return allCategories.find((c) => c.id === id);
 }
 
 /** Path for a category page. Kept here so no caller hand-builds one. */
 export function categoryPath(c: CategoryDef): string {
-  return `/competitions/${c.slug}`;
+  return legacyCategoryIds.has(c.id)
+    ? `/competitions/${encodeURIComponent(c.slug)}`
+    : `/competitions/types/${encodeURIComponent(c.slug)}`;
 }
+
+let allCategories = COMPETITION_CATEGORIES;
+const originalCategories = new Map(
+  COMPETITION_CATEGORIES.map((category) => [category.id, category]),
+);
+const legacyCategoryIds = new Set(originalCategories.keys());
+observeReferenceTaxonomies((taxonomy, terms) => {
+  if (taxonomy !== 'competition_category') return;
+  allCategories = terms
+    .map((term) => competitionDefinition(term, originalCategories.get(term.value)))
+    .filter((category): category is CategoryDef => category !== null);
+  const active = new Set(terms.filter((term) => term.is_active).map((term) => term.value));
+  COMPETITION_CATEGORIES = allCategories.filter((category) => active.has(category.id));
+});

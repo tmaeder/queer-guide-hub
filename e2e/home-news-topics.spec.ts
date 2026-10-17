@@ -116,21 +116,40 @@ test.describe('homepage news topics', () => {
     // Deliberately no content assertion. See the header.
   });
 
-  test('signed-out readers are NOT offered the follow control', async ({ page }) => {
-    // Asserts the component's STATED contract, not an absence I happened to observe:
-    // NewsMagazine returns null for the follow popover when there is no user
-    // ("signed-out readers have nothing to follow with; the chip row above is their
-    // control"), the same contract as FollowedTagsRail.
-    //
-    // The first draft of this test asserted the control WAS visible, and it failed on
-    // prod against correct code because Playwright runs anonymous. Written this way it
-    // earns its place twice: it fails if the control is ever exposed to a signed-out
-    // reader — a control that cannot work — and it records why the signed-in path is
-    // not covered here.
-    const tablist = await gotoNews(page);
-    await expect(page.getByRole('button', { name: /follow topics|following \d/i })).toHaveCount(0);
-    // The topic chips ARE the signed-out reader's control, and they work.
-    await expect(tablist.getByRole('tab')).toHaveCount(5);
+  // SIGNED OUT BY CONSTRUCTION, and scoped to this one test on purpose.
+  //
+  // `playwright.config.ts` hands the chromium project the admin storageState
+  // whenever E2E_ADMIN_* is set, as it is in the nightly — so this is the only
+  // test in the file whose subject is the signed-out reader, and it was being
+  // asserted against a signed-in admin, who IS offered the control. It failed
+  // every scheduled nightly while passing on every PR, because PR CI has no
+  // credentials and therefore runs anonymous.
+  //
+  // A FILE-LEVEL override was tried first and is wrong: signed out, the podcasts
+  // tab renders DISABLED, so `podcasts rail is selectable` and the PostgREST
+  // sweep below (which clicks through every tab) both fail. Those two were green
+  // in the nightly and are left on the project's session.
+  test.describe('signed out', () => {
+    test.use({ storageState: { cookies: [], origins: [] } });
+
+    test('readers are NOT offered the follow control', async ({ page }) => {
+      // Asserts the component's STATED contract, not an absence I happened to observe:
+      // NewsMagazine returns null for the follow popover when there is no user
+      // ("signed-out readers have nothing to follow with; the chip row above is their
+      // control"), the same contract as FollowedTagsRail.
+      //
+      // The first draft of this test asserted the control WAS visible and failed on
+      // prod against correct code. The reason recorded here was "because Playwright
+      // runs anonymous", and that was WRONG — it is anonymous only where no admin
+      // credentials are set, which is PR CI and a laptop but NOT the nightly. The
+      // override above is what makes the premise true rather than incidental.
+      const tablist = await gotoNews(page);
+      await expect(page.getByRole('button', { name: /follow topics|following \d/i })).toHaveCount(
+        0,
+      );
+      // The topic chips ARE the signed-out reader's control, and they work.
+      await expect(tablist.getByRole('tab')).toHaveCount(5);
+    });
   });
 
   test('no PostgREST 4xx while the news block mounts and topics are switched', async ({ page }) => {

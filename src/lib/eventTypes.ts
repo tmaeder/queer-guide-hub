@@ -1,10 +1,7 @@
+import { useVocabularyOptions, useManagedLabel } from '@/hooks/useManagedOptions';
 import { useTranslation } from 'react-i18next';
 
-/**
- * Single source of truth for `events.event_type` values.
- * Must stay in sync with the DB CHECK constraint on `public.events.event_type`
- * (see supabase/migrations/00000000000000_baseline.sql).
- */
+/** Seed values and offline labels; runtime choices come from event_types. */
 export const EVENT_TYPES = [
   'party',
   'festival',
@@ -30,7 +27,7 @@ export const EVENT_TYPES = [
   'other',
 ] as const;
 
-export type EventType = (typeof EVENT_TYPES)[number];
+export type EventType = (typeof EVENT_TYPES)[number] | (string & {});
 
 const FALLBACK_LABELS: Record<EventType, string> = {
   party: 'Party',
@@ -69,10 +66,38 @@ export const EVENT_TYPE_OPTIONS: EventTypeOption[] = EVENT_TYPES.map((value) => 
 }));
 
 /** Translated options keyed by `eventTypes.<value>` in the current locale. */
-export function useEventTypeOptions(): EventTypeOption[] {
+export function useEventTypeOptions(selected?: unknown): EventTypeOption[] {
   const { t } = useTranslation();
-  return EVENT_TYPES.map((value) => ({
+  const fallback = EVENT_TYPES.map((value) => ({
     value,
     label: t(`eventTypes.${value}`, { defaultValue: FALLBACK_LABELS[value] }),
   }));
+  return useVocabularyOptions(
+    {
+      table: 'event_types',
+      valueColumn: 'slug',
+      labelColumn: 'name',
+      orderBy: 'sort_order',
+      activeColumn: 'is_active',
+    },
+    fallback,
+    selected,
+  );
+}
+
+export function useEventTypeLabel(value: string | null | undefined): string {
+  const { t } = useTranslation();
+  const seed = FALLBACK_LABELS[value ?? ''];
+  return useManagedLabel(
+    {
+      table: 'event_types',
+      valueColumn: 'slug',
+      labelColumn: 'name',
+      orderBy: 'sort_order',
+      activeColumn: 'is_active',
+    },
+    value,
+    value ? t(`eventTypes.${value}`, { defaultValue: seed ?? value }) : '',
+    seed,
+  );
 }

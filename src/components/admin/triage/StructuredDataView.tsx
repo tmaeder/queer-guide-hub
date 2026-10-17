@@ -10,12 +10,9 @@ import { ExternalLink, Save } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import {
-  GovernanceLocationField,
-  GovernanceSelectField,
-  GovernanceTagsField,
-} from './GovernanceFieldControls';
-import { fieldControlKind, GOVERNANCE_SELECT_OPTIONS } from './governanceFieldControlUtils';
+import { GovernanceLocationField, GovernanceTagsField } from './GovernanceFieldControls';
+import { fieldControlKind } from './governanceFieldControlUtils';
+import { GovernanceTaxonomySelectField } from './GovernanceTaxonomySelectField';
 
 const PRIORITY_FIELDS = [
   'name',
@@ -271,10 +268,10 @@ export function StructuredFieldEditor({
                 {key in drafts && <span className="text-foreground">Edited</span>}
               </span>
               {controlKind === 'venue-category' || controlKind === 'event-type' ? (
-                <GovernanceSelectField
+                <GovernanceTaxonomySelectField
+                  kind={controlKind}
                   ariaLabel={humanizeField(key)}
                   value={String(value ?? '')}
-                  options={GOVERNANCE_SELECT_OPTIONS[controlKind]}
                   onChange={(next) => updateTypedField(key, original, next)}
                 />
               ) : controlKind === 'tags' && Array.isArray(value) ? (

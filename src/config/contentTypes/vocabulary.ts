@@ -48,6 +48,7 @@ export function vocabularyContentType(options: VocabularyOptions): ContentTypeCo
   const fields: FieldConfig[] = [
     {
       name: 'name',
+      minLength: 1,
       label: 'Name',
       type: 'text',
       required: true,
@@ -61,6 +62,8 @@ export function vocabularyContentType(options: VocabularyOptions): ContentTypeCo
   if (hasSlug) {
     fields.push({
       name: 'slug',
+      immutable: true,
+      required: true,
       label: 'Slug',
       type: 'text',
       group: 'basic',
@@ -148,6 +151,7 @@ export function vocabularyContentType(options: VocabularyOptions): ContentTypeCo
     .join(',');
 
   return {
+    writeCreatedBy: false,
     id: table,
     tableName: table,
     primaryKey: 'id',

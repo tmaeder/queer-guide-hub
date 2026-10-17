@@ -1,3 +1,4 @@
+import { useMarketplaceTaxonomy } from '@/hooks/useMarketplaceTaxonomy';
 import { FilterChip } from '@/components/transit/FilterChip';
 import { SIZE_ORDER } from '@/lib/marketplaceTaxonomy';
 
@@ -29,6 +30,8 @@ function sizeSort(a: string, b: string): number {
 }
 
 export function SizeChipGrid({ options, selected, onToggle }: SizeChipGridProps) {
+  useMarketplaceTaxonomy('sizes');
+
   if (options.length === 0) return null;
   const sorted = [...options].sort((a, b) => sizeSort(a.slug, b.slug));
   return (

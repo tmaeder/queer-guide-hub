@@ -1,3 +1,4 @@
+import { useMarketplaceTaxonomy } from '@/hooks/useMarketplaceTaxonomy';
 import { useMemo } from 'react';
 import { useMeta } from '@/hooks/useMeta';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
@@ -52,6 +53,8 @@ import { PageContainer } from '@/components/layout/PageContainer';
  * manufacturing them.
  */
 export default function MarketplaceCategories() {
+  const taxonomyRevision = useMarketplaceTaxonomy();
+
   // Same source as the hub, so a group's number here matches the grid it opens
   // and the department tile it sits under. Hardcoding SFW would make this page
   // disagree with the hub for every reader who has opted in.
@@ -59,6 +62,9 @@ export default function MarketplaceCategories() {
   const { data: groups, loading } = useMarketplaceSubcategoryGroupCounts(null, acknowledged);
 
   const { sections, orphans, stopCount } = useMemo(() => {
+    // Imported vocabulary bindings change with this external-store revision.
+    void taxonomyRevision;
+
     const counts = new Map(groups.map((g) => [g.slug, g.count]));
 
     const built = DEPARTMENT_ORDER.filter((d) => d !== 'other')
@@ -87,7 +93,7 @@ export default function MarketplaceCategories() {
       orphans: stray,
       stopCount: built.reduce((n, s) => n + s.stops.length, 0) + stray.length,
     };
-  }, [groups, acknowledged]);
+  }, [groups, acknowledged, taxonomyRevision]);
 
   useMeta({
     title: 'All categories — Marketplace',

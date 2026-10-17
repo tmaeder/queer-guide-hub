@@ -1,3 +1,4 @@
+import { useMarketplaceTaxonomy } from '@/hooks/useMarketplaceTaxonomy';
 import { useMemo } from 'react';
 import { useParams, useSearchParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
@@ -48,6 +49,8 @@ function chipLabel(text: string, count: number, active: boolean) {
 }
 
 export default function MarketplaceCategory() {
+  const taxonomyRevision = useMarketplaceTaxonomy();
+
   const { t } = useTranslation();
   const { slug } = useParams<{ slug: string }>();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -100,23 +103,29 @@ export default function MarketplaceCategory() {
   // in the canonical display order; NULL-fine listings simply stay under the
   // group tile, so "All" is always present.
   const fineTiles = useMemo(() => {
+    // Imported vocabulary bindings change with this external-store revision.
+    void taxonomyRevision;
+
     if (!isDepartment || !activeGroup) return [];
     const counts = new Map(fineCounts.map((f) => [f.slug, f.count]));
     const order = GROUP_FINE[activeGroup] ?? [];
     return order
       .filter((f) => (counts.get(f) ?? 0) > 0)
       .map((f) => ({ slug: f, count: counts.get(f) ?? 0 }));
-  }, [fineCounts, isDepartment, activeGroup]);
+  }, [fineCounts, isDepartment, activeGroup, taxonomyRevision]);
 
   // Order groups by the department's canonical display order; keep only non-empty.
   const groupTiles = useMemo(() => {
+    // Imported vocabulary bindings change with this external-store revision.
+    void taxonomyRevision;
+
     if (!isDepartment) return [];
     const counts = new Map(groups.map((g) => [g.slug, g.count]));
     const order = DEPARTMENT_GROUPS[subcategory] ?? [];
     const ordered = order.filter((g) => (counts.get(g) ?? 0) > 0);
     const extras = groups.map((g) => g.slug).filter((g) => !order.includes(g));
     return [...ordered, ...extras].map((g) => ({ slug: g, count: counts.get(g) ?? 0 }));
-  }, [groups, isDepartment, subcategory]);
+  }, [groups, isDepartment, subcategory, taxonomyRevision]);
 
   const setGroup = (g: string) => {
     setSearchParams(

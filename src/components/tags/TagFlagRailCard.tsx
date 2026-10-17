@@ -1,3 +1,4 @@
+import { useReferenceTaxonomy } from '@/hooks/useReferenceTaxonomy';
 /**
  * TagFlagRailCard — the compact flag card on an IDENTITY tag page
  * (/tags/lesbian shows the lesbian flag; /tags/gay shows rainbow + the gay
@@ -12,6 +13,8 @@ import { FlagSwatch } from '@/components/tags/FlagSwatch';
 import { flagsForIdentityTag } from '@/lib/flags';
 
 export function TagFlagRailCard({ tagSlug }: { tagSlug: string }) {
+  useReferenceTaxonomy('pride_flag');
+
   const { t } = useTranslation();
   const flags = flagsForIdentityTag(tagSlug);
   if (flags.length === 0) return null;

@@ -82,6 +82,8 @@ export interface FieldConfig {
   defaultValue?: unknown;
   /** Read-only (computed or system field) */
   readOnly?: boolean;
+  /** Stable taxonomy identifiers can be assigned once, then only labels change. */
+  immutable?: boolean;
   /** Hidden from editor UI */
   hidden?: boolean;
   /**
@@ -133,6 +135,11 @@ export interface FieldConfig {
     valueColumn: string;
     labelColumn: string;
     orderBy?: string;
+    filters?: Record<string, string>;
+    activeColumn?: string;
+    extraColumns?: string[];
+    /** A structured vocabulary may share one table; strip a stable kind prefix for stored content values. */
+    valuePrefix?: string;
   };
   /** Max length for text fields */
   maxLength?: number;
@@ -278,6 +285,8 @@ export interface MergeCapability {
 }
 
 export interface ContentTypeConfig {
+  /** Omit actor columns on vocabularies without created_by. */
+  writeCreatedBy?: boolean;
   /** Unique ID matching the source table (e.g., 'venues', 'events') */
   id: string;
   /** Database table name */

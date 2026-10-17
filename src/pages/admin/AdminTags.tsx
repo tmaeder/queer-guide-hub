@@ -1,3 +1,4 @@
+import { TaxonomyDirectory } from '@/components/admin/TaxonomyDirectory';
 import { lazy, Suspense } from 'react';
 import { Link, useSearchParams } from 'react-router';
 import { Button } from '@/components/ui/button';
@@ -8,16 +9,6 @@ import { useGranularRoles } from '@/hooks/useGranularRoles';
 import { roleAtLeast } from '@/config/adminRoles';
 
 const TagCollectionTools = lazy(() => import('@/components/admin/TagCollectionTools'));
-
-const VOCABULARIES = [
-  ['Venue services', 'venue_services'],
-  ['Event types', 'event_types'],
-  ['Event amenities', 'event_amenities'],
-  ['Event services', 'event_services'],
-  ['Accessibility attributes', 'accessibility_attributes'],
-  ['Target groups', 'target_groups'],
-  ['Professions', 'professions'],
-] as const;
 
 export default function AdminTags() {
   const [params, setParams] = useSearchParams();
@@ -30,7 +21,7 @@ export default function AdminTags() {
     ? [
         ['tags', 'Tags'],
         ['tools', 'Categories & tools'],
-        ['vocabularies', 'Vocabularies'],
+        ['vocabularies', 'Taxonomies'],
       ]
     : [['tags', 'Tags']];
 
@@ -72,27 +63,7 @@ export default function AdminTags() {
           </Suspense>
         </>
       )}
-      {section === 'vocabularies' && (
-        <>
-          <AdminArchetypeHeader title="Vocabularies" />
-          <p className="text-15 text-muted-foreground">
-            Manage the controlled choices used by content editors.
-          </p>
-          <ul className="divide-y divide-border">
-            {VOCABULARIES.map(([label, type]) => (
-              <li key={type}>
-                <Link
-                  className="flex min-h-12 items-center justify-between py-4 text-15 font-medium hover:underline"
-                  to={`/admin/content/${type}`}
-                >
-                  {label}
-                  <span aria-hidden="true">→</span>
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </>
-      )}
+      {section === 'vocabularies' && <TaxonomyDirectory />}
     </div>
   );
 }

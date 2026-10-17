@@ -1,3 +1,4 @@
+import { observeReferenceTaxonomies } from '@/lib/referenceTaxonomyStore';
 // Marketplace browse taxonomy — client mirror of the SQL umbrellas.
 // Department umbrellas mirror public.marketplace_department() (migration
 // 20260609000000); fine buckets mirror public.marketplace_subcategory_group()
@@ -5,7 +6,7 @@
 // 20260926100000); attribute namespaces mirror _shared/marketplace-normalize.ts.
 // Keep the three in sync.
 
-export const DEPARTMENT_LABELS: Record<string, string> = {
+export let DEPARTMENT_LABELS: Record<string, string> = {
   apparel: 'Apparel',
   underwear: 'Underwear',
   swimwear: 'Swimwear',
@@ -20,7 +21,7 @@ export const DEPARTMENT_LABELS: Record<string, string> = {
 };
 
 /** Browse order: SFW-friendly departments first, adult umbrellas last. */
-export const DEPARTMENT_ORDER = [
+export let DEPARTMENT_ORDER: readonly string[] = [
   'apparel',
   'underwear',
   'swimwear',
@@ -37,7 +38,7 @@ export const DEPARTMENT_ORDER = [
 /** Departments entirely made of adult/explicit fine buckets (hidden in default-SFW browse). */
 export const ADULT_DEPARTMENTS = new Set(['intimacy', 'bdsm_fetish']);
 
-const SUBCAT_TO_DEPARTMENT: Record<string, string> = {
+export let SUBCAT_TO_DEPARTMENT: Record<string, string> = {
   sex_toys: 'intimacy',
   anal_toys: 'intimacy',
   cock_rings_and_stretchers: 'intimacy',
@@ -78,7 +79,7 @@ export function departmentLabel(slug: string | null | undefined): string {
 // ── Fine buckets (subcategory_group) — mirror public.marketplace_subcategory_group()
 // (migration 20260704120000). Each department's canonical groups, in display order,
 // drive the finer sub-tiles on a department page. Keep in sync with the SQL classifier.
-export const DEPARTMENT_GROUPS: Record<string, string[]> = {
+export let DEPARTMENT_GROUPS: Record<string, string[]> = {
   apparel: [
     'tops',
     'bottoms',
@@ -127,7 +128,7 @@ export const DEPARTMENT_GROUPS: Record<string, string[]> = {
   services: ['services'],
 };
 
-export const GROUP_LABELS: Record<string, string> = {
+export let GROUP_LABELS: Record<string, string> = {
   tops: 'Tops',
   bottoms: 'Bottoms',
   outerwear: 'Outerwear',
@@ -183,7 +184,7 @@ export function groupLabel(slug: string | null | undefined): string {
 // (migration 20260926100000). Nullable third level under a group: a group
 // absent here has no fine tier, and a listing may resolve to none (NULL) —
 // the UI must always fall back to the group tile. Keep in sync with the SQL.
-export const GROUP_FINE: Record<string, string[]> = {
+export let GROUP_FINE: Record<string, string[]> = {
   tops: ['t_shirts', 'tanks', 'crop_tops', 'jerseys_polos', 'shirts_blouses'],
   bottoms: ['jeans', 'shorts', 'leggings_joggers', 'skirts'],
   outerwear: ['hoodies', 'sweaters', 'jackets'],
@@ -243,7 +244,7 @@ export const GROUP_FINE: Record<string, string[]> = {
   fetish_gear: ['latex', 'leather', 'rubber_neoprene', 'uniforms'],
 };
 
-export const FINE_LABELS: Record<string, string> = {
+export let FINE_LABELS: Record<string, string> = {
   t_shirts: 'T-shirts',
   tanks: 'Tanks & camis',
   crop_tops: 'Crop tops',
@@ -397,7 +398,7 @@ export function attributeKindOfSlug(slug: string): MarketplaceAttributeKind | nu
 
 /** Canonical size display order — never alphabetical. Mirrors SIZE_LADDER in
  *  supabase/functions/_shared/marketplace-attributes.ts. */
-export const SIZE_ORDER = [
+export let SIZE_ORDER: readonly string[] = [
   'xxs',
   'xs',
   's',
@@ -449,9 +450,56 @@ export function attributeFacetsForDepartment(
  * vocabulary is `occ-*` and there has never been a `gift` tag. Sourcing from
  * here makes a taxonomy rename a build error instead of an empty tile.
  */
-export const OCCASION_CHIPS: Array<{ slug: string; label: string }> = [
+export let OCCASION_CHIPS: Array<{ slug: string; label: string }> = [
   { slug: 'occ-pride', label: 'Pride' },
   { slug: 'occ-drag', label: 'Drag' },
   { slug: 'occ-wedding', label: 'Wedding' },
   { slug: 'occ-everyday', label: 'Everyday' },
 ];
+
+const originalSourceDepartments = { ...SUBCAT_TO_DEPARTMENT };
+observeReferenceTaxonomies((taxonomy, terms) => {
+  if (taxonomy === 'marketplace_size') {
+    SIZE_ORDER = terms.filter((term) => term.is_active).map((term) => term.value);
+    return;
+  }
+  if (taxonomy === 'marketplace_occasion') {
+    OCCASION_CHIPS = terms
+      .filter((term) => term.is_active)
+      .map((term) => ({ slug: term.value, label: term.name }));
+    return;
+  }
+  if (taxonomy !== 'marketplace_browse') return;
+  const byId = new Map(terms.map((term) => [term.id, term]));
+  const slug = (value: string) => value.slice(value.indexOf(':') + 1);
+  const departments = terms.filter((term) => term.value.startsWith('department:'));
+  const groups = terms.filter((term) => term.value.startsWith('group:'));
+  const fine = terms.filter((term) => term.value.startsWith('fine:'));
+  DEPARTMENT_LABELS = Object.fromEntries(departments.map((term) => [slug(term.value), term.name]));
+  GROUP_LABELS = Object.fromEntries(groups.map((term) => [slug(term.value), term.name]));
+  FINE_LABELS = Object.fromEntries(fine.map((term) => [slug(term.value), term.name]));
+  DEPARTMENT_ORDER = departments.filter((term) => term.is_active).map((term) => slug(term.value));
+  DEPARTMENT_GROUPS = Object.fromEntries(
+    departments.map((department) => [
+      slug(department.value),
+      groups
+        .filter((group) => group.parent_id === department.id && group.is_active)
+        .map((group) => slug(group.value)),
+    ]),
+  );
+  GROUP_FINE = Object.fromEntries(
+    groups.map((group) => [
+      slug(group.value),
+      fine
+        .filter((term) => term.parent_id === group.id && term.is_active)
+        .map((term) => slug(term.value)),
+    ]),
+  );
+  SUBCAT_TO_DEPARTMENT = { ...originalSourceDepartments };
+  for (const term of terms) {
+    if (!term.value.startsWith('source:')) continue;
+    const parent = byId.get(term.parent_id ?? '');
+    if (parent?.value.startsWith('department:'))
+      SUBCAT_TO_DEPARTMENT[slug(term.value)] = slug(parent.value);
+  }
+});
