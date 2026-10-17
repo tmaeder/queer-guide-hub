@@ -152,6 +152,21 @@ export const MAX_STROKE_WIDTH = strokeWidthFor(0);
  * icons that radiate should tick identically. Per-icon tick paths would let
  * them drift apart for no reason anyone could state.
  */
+/**
+ * How heavy a motion tick is, as a fraction of the body outline.
+ *
+ * THE MARGIN IS 12 UNITS AND THE OUTLINE IS 9-13, so a tick drawn at the body
+ * weight fills 75-108% of the space it is supposed to float in. That is why the
+ * first version read as horns, ears and bolts rather than as motion: at that
+ * weight a tick is not a mark beside the shape, it is a second piece of body
+ * pressed against it. Measured on the contact sheet — `theater` rendered as a
+ * horned devil, and every garment in the Market group grew a pair of ears.
+ *
+ * 0.4 puts the stroke at ~4-5 units in a 12-unit margin, which leaves air on
+ * both sides and reads as a drawn motion line.
+ */
+export const TICK_WEIGHT = 0.4;
+
 export const TICKS: Record<Exclude<(typeof TICK_SETS)[number], 'none'>, string[]> = {
   /** Three above: things that radiate or announce. */
   crown: ['M 50 11 C 52 8 52 5 50 2', 'M 30 11 C 31 7 29 5 27 2', 'M 70 11 C 69 7 71 5 73 2'],
@@ -232,7 +247,7 @@ const DEFS = {
     name: 'Search',
     group: 'Wayfinding',
     hex: C,
-    t: 'corners',
+    t: 'none',
     use: 'Site search and result lists.',
     l: [...colored(ring(44, 44, 24)), 'M 61 61 C 66.9 69.1 72.9 75.1 80 80'],
   },
@@ -241,7 +256,7 @@ const DEFS = {
     name: 'Route',
     group: 'Travel',
     hex: C,
-    t: 'sides',
+    t: 'none',
     use: 'Directions and routes between two places.',
     l: [
       ...colored('M 22 78 C 44 76 38 50 56 44 C 70 39 72 34 78 26'),
@@ -260,7 +275,7 @@ const DEFS = {
     name: 'Saved',
     group: 'Actions',
     hex: M,
-    t: 'crown',
+    t: 'none',
     use: 'Saved items, favourites and bookmarks.',
     f: [
       [
@@ -274,7 +289,7 @@ const DEFS = {
     name: 'Chat',
     group: 'Community',
     hex: C,
-    t: 'crown',
+    t: 'none',
     use: 'Direct messages and conversations.',
     f: [
       [
@@ -292,18 +307,14 @@ const DEFS = {
     name: 'Community',
     group: 'Community',
     hex: G,
-    t: 'sides',
+    t: 'none',
     use: 'Groups, members and community spaces.',
     // Open heads. Filled discs plus crown ticks read as two eyes and a pair of
     // antennae — §7.1 bans faces on figures, and this was drawing one by
     // accident.
     l: [
-      ...tinted(
-        `${ring(32, 34, 12)} M 14 76 C 18 62 24 56 32 56 C 40 56 44 60 50 66`,
-      ),
-      ...tinted(
-        `${ring(68, 34, 12)} M 86 76 C 82 62 76 56 68 56 C 60 56 56 60 50 66`,
-      ),
+      ...tinted(`${ring(32, 34, 12)} M 14 76 C 18 62 24 56 32 56 C 40 56 44 60 50 66`),
+      ...tinted(`${ring(68, 34, 12)} M 86 76 C 82 62 76 56 68 56 C 60 56 56 60 50 66`),
     ],
   },
 
@@ -311,7 +322,7 @@ const DEFS = {
     name: 'Health',
     group: 'Safety',
     hex: C,
-    t: 'corners',
+    t: 'none',
     use: 'Sexual health services, clinics and testing.',
     // A PULSE, not a cross. v1 drew this as a circle with a plus inside it and
     // so did `add-station`, which left hue as the only thing separating them —
@@ -324,7 +335,7 @@ const DEFS = {
     name: 'Filter',
     group: 'Actions',
     hex: C,
-    t: 'sides',
+    t: 'none',
     use: 'Narrow a list down by facet.',
     l: tinted(
       'M 22 34 C 40 30 60 38 78 34 M 30 52 C 44 48 58 56 72 52 M 40 70 C 48 67 54 72 62 70',
@@ -335,7 +346,7 @@ const DEFS = {
     name: 'Add station',
     group: 'Actions',
     hex: G,
-    t: 'corners',
+    t: 'none',
     use: 'Add a new place, event or entry.',
     f: [[ring(50, 50, 32), 'T']],
     l: ['M 50 36 C 48.5 45 48.5 55 50 64', 'M 36 50 C 45 51.5 55 51.5 64 50'],
@@ -347,7 +358,7 @@ const DEFS = {
     name: 'Ticket',
     group: 'Events',
     hex: Y,
-    t: 'sides',
+    t: 'none',
     use: 'Tickets, entry prices and door policy.',
     f: [
       [
@@ -363,7 +374,7 @@ const DEFS = {
     name: 'Map',
     group: 'Travel',
     hex: C,
-    t: 'sides',
+    t: 'none',
     use: 'Map views and geographic browsing.',
     f: [
       [
@@ -378,7 +389,7 @@ const DEFS = {
     name: 'After dark',
     group: 'Places',
     hex: M,
-    t: 'corners',
+    t: 'none',
     use: 'Late-night venues and after-hours listings.',
     f: [
       [
@@ -392,7 +403,7 @@ const DEFS = {
     name: 'Tune',
     group: 'Actions',
     hex: C,
-    t: 'sides',
+    t: 'none',
     use: 'Adjust ranking, weighting and preferences.',
     f: [
       [ring(40, 37, 7), 'T'],
@@ -405,7 +416,7 @@ const DEFS = {
     name: 'Compass',
     group: 'Travel',
     hex: C,
-    t: 'corners',
+    t: 'none',
     use: 'Explore and discover what is nearby.',
     f: [
       [ring(50, 50, 34), 'T'],
@@ -417,7 +428,7 @@ const DEFS = {
     name: 'Home base',
     group: 'Places',
     hex: C,
-    t: 'crown',
+    t: 'none',
     use: 'The reader’s home city or saved base.',
     l: [
       ...colored('M 22 50 C 32 38 42 28 50 22 C 58 28 68 38 78 50'),
@@ -430,7 +441,7 @@ const DEFS = {
     name: 'Profile',
     group: 'People',
     hex: C,
-    t: 'top',
+    t: 'none',
     use: 'A member’s profile and account.',
     // Drawn the same way as `community`, and that consistency is the point: a
     // filled head over an ink shoulder stroke puts the colour on the smallest
@@ -458,7 +469,7 @@ const DEFS = {
     name: 'Helpline',
     group: 'Safety',
     hex: G,
-    t: 'sides',
+    t: 'none',
     use: 'Crisis lines and support phone numbers.',
     f: [
       [
@@ -472,7 +483,7 @@ const DEFS = {
     name: 'Hours',
     group: 'Signals',
     hex: C,
-    t: 'corners',
+    t: 'none',
     use: 'Opening hours and time windows.',
     f: [[ring(50, 50, 34), 'T']],
     l: ['M 50 32 C 48.5 39 48.5 46 50 52 C 56 54 61 57 65 61'],
@@ -482,7 +493,7 @@ const DEFS = {
     name: 'Library',
     group: 'Community',
     hex: Y,
-    t: 'top',
+    t: 'none',
     use: 'Guides, articles and saved reading.',
     l: [
       ...colored(
@@ -496,7 +507,7 @@ const DEFS = {
     name: 'Nightlife',
     group: 'Places',
     hex: M,
-    t: 'sides',
+    t: 'none',
     use: 'Bars, clubs and nightlife venues.',
     f: [
       [ring(31, 76, 9), 'T'],
@@ -509,7 +520,7 @@ const DEFS = {
     name: 'Meetups',
     group: 'Community',
     hex: G,
-    t: 'crown',
+    t: 'none',
     use: 'Meetups, socials and casual gatherings.',
     f: [
       [
@@ -528,7 +539,7 @@ const DEFS = {
     name: 'Housing',
     group: 'Places',
     hex: C,
-    t: 'sides',
+    t: 'none',
     use: 'Housing, rooms and places to stay.',
     f: [[ring(30, 40, 14), 'T']],
     l: [
@@ -542,7 +553,7 @@ const DEFS = {
     name: 'Documents',
     group: 'Actions',
     hex: C,
-    t: 'top',
+    t: 'none',
     use: 'Documents, records and attachments.',
     f: [
       [
@@ -561,7 +572,7 @@ const DEFS = {
     name: 'Share',
     group: 'Actions',
     hex: C,
-    t: 'corners',
+    t: 'none',
     use: 'Share a page or send someone a link.',
     f: [
       [ring(27, 50, 9), 'T'],
@@ -575,7 +586,7 @@ const DEFS = {
     name: 'Info point',
     group: 'Signals',
     hex: C,
-    t: 'corners',
+    t: 'none',
     use: 'Explanatory notes, help text and definitions.',
     f: [[ring(50, 50, 34), 'T']],
     // The one glyph §7.5 permits inside an icon, drawn as strokes: an "i".
@@ -587,19 +598,15 @@ const DEFS = {
     name: 'Sapphic',
     group: 'Queer',
     hex: M,
-    t: 'top',
+    t: 'none',
     use: 'Sapphic, lesbian and women-loving-women content.',
     // A VENUS SYMBOL IS ONE LINE DRAWING, not a disc with a cross beside it.
     // Filling the rings and leaving the crosses as separate ink strokes merged
     // the casing into the cross and the pair rendered as a SKULL at 80px. Ring
     // and cross are one figure at one weight, which is how v1 drew them.
     l: [
-      ...tinted(
-        `${ring(42, 36, 13)} M 42 49 C 40.5 57 40.5 64 42 72 M 33 62 C 39 61 45 63 51 62`,
-      ),
-      ...tinted(
-        `${ring(66, 36, 13)} M 66 49 C 64.5 57 64.5 64 66 72 M 57 62 C 63 61 69 63 75 62`,
-      ),
+      ...tinted(`${ring(42, 36, 13)} M 42 49 C 40.5 57 40.5 64 42 72 M 33 62 C 39 61 45 63 51 62`),
+      ...tinted(`${ring(66, 36, 13)} M 66 49 C 64.5 57 64.5 64 66 72 M 57 62 C 63 61 69 63 75 62`),
     ],
   },
 
@@ -607,7 +614,7 @@ const DEFS = {
     name: 'Achillean',
     group: 'Queer',
     hex: C,
-    t: 'top',
+    t: 'none',
     use: 'Achillean, gay and men-loving-men content.',
     // Same rule as `sapphic`: circle and arrow are one figure.
     l: [
@@ -623,7 +630,7 @@ const DEFS = {
     // Cyan is the trans track by the colour table's own entry, so this is the
     // one icon whose hue is not a free choice.
     hex: C,
-    t: 'top',
+    t: 'none',
     use: 'Trans and non-binary identity and content.',
     // Same rule as `sapphic`: circle, both arrows and the cross are one figure.
     l: [
@@ -674,7 +681,7 @@ const DEFS = {
     name: 'Consent',
     group: 'Safety',
     hex: G,
-    t: 'corners',
+    t: 'none',
     use: 'Consent, boundaries and negotiation.',
     f: [[ring(50, 50, 34), 'T']],
     l: ['M 36 52 C 39 57 43 61 48 64 C 53 54 59 45 66 38'],
@@ -705,7 +712,7 @@ const DEFS = {
     name: 'Handcuffs',
     group: 'Kink',
     hex: M,
-    t: 'sides',
+    t: 'none',
     use: 'Restraint gear and bondage equipment.',
     // Open cuffs, not filled discs: two solid pink circles joined by a curve
     // read as a pair of GLASSES. The hole is what makes a cuff a cuff.
@@ -738,7 +745,7 @@ const DEFS = {
     name: 'Collar',
     group: 'Kink',
     hex: M,
-    t: 'top',
+    t: 'none',
     use: 'Collars and ownership dynamics.',
     // The band is INK at the base weight and the TAG carries the colour, which
     // is the way round that survives: a 2.2x coloured band over the tag read as
@@ -754,7 +761,7 @@ const DEFS = {
     name: 'Paddle',
     group: 'Kink',
     hex: M,
-    t: 'sides',
+    t: 'none',
     use: 'Impact play gear and spanking equipment.',
     // The blade is deliberately NOT a circle: §8.7, a disc on a stick is the
     // silhouette `rope-play` and `search` already carry. Squaring the shoulders
@@ -790,7 +797,7 @@ const DEFS = {
     name: 'Restaurant',
     group: 'Places',
     hex: Y,
-    t: 'sides',
+    t: 'none',
     use: 'Restaurants and places to eat.',
     l: tinted(
       'M 36 84 C 37.5 66 37.5 54 36 44 M 28 20 C 28 30 30 38 36 44 C 42 38 44 30 44 20 M 36 20 C 34.5 26 34.5 32 36 38 M 64 84 C 65.5 66 65.5 52 64 44 C 72 38 74 28 70 18 C 66 22 64 32 64 44',
@@ -801,25 +808,23 @@ const DEFS = {
     name: 'Cafe',
     group: 'Places',
     hex: Y,
-    t: 'crown',
+    t: 'none',
     use: 'Cafés, coffee bars and daytime venues.',
-    f: [
-      ['M 26 38 C 26 58 35 72 50 72 C 65 72 74 58 74 38 C 58 36 42 36 26 38 Z', 'T'],
-    ],
-    l: [
-      'M 74 44 C 84 42 88 52 82 58 C 79 61 76 61 73 60',
-      'M 20 82 C 34 86 66 86 80 82',
-    ],
+    f: [['M 26 38 C 26 58 35 72 50 72 C 65 72 74 58 74 38 C 58 36 42 36 26 38 Z', 'T']],
+    l: ['M 74 44 C 84 42 88 52 82 58 C 79 61 76 61 73 60', 'M 20 82 C 34 86 66 86 80 82'],
   },
 
   shop: {
     name: 'Shop',
     group: 'Places',
     hex: Y,
-    t: 'top',
+    t: 'none',
     use: 'Shops, boutiques and retail venues.',
     f: [
-      ['M 26 38 C 42 36 58 36 74 38 C 76 54 76 66 74 80 C 58 82 42 82 26 80 C 24 66 24 54 26 38 Z', 'T'],
+      [
+        'M 26 38 C 42 36 58 36 74 38 C 76 54 76 66 74 80 C 58 82 42 82 26 80 C 24 66 24 54 26 38 Z',
+        'T',
+      ],
     ],
     l: ['M 38 38 C 38 26 43 20 50 20 C 57 20 62 26 62 38'],
   },
@@ -828,7 +833,7 @@ const DEFS = {
     name: 'Gym',
     group: 'Places',
     hex: G,
-    t: 'sides',
+    t: 'none',
     use: 'Gyms, fitness venues and sports clubs.',
     l: tinted(
       'M 34 50 C 42 51.5 58 51.5 66 50 M 26 36 C 24 45 24 55 26 64 M 34 32 C 32 44 32 56 34 68 M 74 36 C 76 45 76 55 74 64 M 66 32 C 68 44 68 56 66 68',
@@ -839,7 +844,7 @@ const DEFS = {
     name: 'Salon',
     group: 'Places',
     hex: M,
-    t: 'sides',
+    t: 'none',
     use: 'Salons, barbers and grooming venues.',
     f: [
       [ring(24, 76, 10), 'T'],
@@ -852,10 +857,13 @@ const DEFS = {
     name: 'Gallery',
     group: 'Places',
     hex: Y,
-    t: 'crown',
+    t: 'none',
     use: 'Galleries, museums and exhibitions.',
     f: [
-      ['M 22 26 C 40 24 60 24 78 26 C 80 44 80 60 78 76 C 60 78 40 78 22 76 C 20 60 20 44 22 26 Z', 'T'],
+      [
+        'M 22 26 C 40 24 60 24 78 26 C 80 44 80 60 78 76 C 60 78 40 78 22 76 C 20 60 20 44 22 26 Z',
+        'T',
+      ],
     ],
     l: ['M 28 68 C 36 56 42 48 50 48 C 58 48 66 58 72 68', ring(60, 38, 6)],
   },
@@ -864,11 +872,9 @@ const DEFS = {
     name: 'Theater',
     group: 'Places',
     hex: Y,
-    t: 'crown',
+    t: 'none',
     use: 'Theatres, cinemas and performance venues.',
-    f: [
-      ['M 24 30 C 40 26 60 26 76 30 C 76 52 66 74 50 82 C 34 74 24 52 24 30 Z', 'T'],
-    ],
+    f: [['M 24 30 C 40 26 60 26 76 30 C 76 52 66 74 50 82 C 34 74 24 52 24 30 Z', 'T']],
     // A mask, not a face: §7.1 bans features on a FIGURE, and this is the
     // object itself. Two dots and a curve are what make it read as a mask
     // rather than a shield at 24px.
@@ -879,10 +885,13 @@ const DEFS = {
     name: 'Sauna',
     group: 'Places',
     hex: M,
-    t: 'crown',
+    t: 'none',
     use: 'Saunas, bathhouses and cruising venues.',
     f: [
-      ['M 22 62 C 40 58 60 58 78 62 C 76.5 70 76.5 74 78 78 C 60 80 40 80 22 78 C 23.5 74 23.5 70 22 62 Z', 'T'],
+      [
+        'M 22 62 C 40 58 60 58 78 62 C 76.5 70 76.5 74 78 78 C 60 80 40 80 22 78 C 23.5 74 23.5 70 22 62 Z',
+        'T',
+      ],
     ],
     l: [
       'M 34 46 C 30 38 38 32 34 22',
@@ -897,10 +906,13 @@ const DEFS = {
     name: 'Restroom',
     group: 'Places',
     hex: C,
-    t: 'top',
+    t: 'none',
     use: 'Public toilets and restrooms.',
     f: [
-      ['M 28 18 C 44 16 56 16 72 18 C 74 44 74 62 72 84 C 56 86 44 86 28 84 C 26 62 26 44 28 18 Z', 'T'],
+      [
+        'M 28 18 C 44 16 56 16 72 18 C 74 44 74 62 72 84 C 56 86 44 86 28 84 C 26 62 26 44 28 18 Z',
+        'T',
+      ],
     ],
     l: ['M 62 52 C 57 50.5 52 50.5 47 52', ring(63, 52, 5)],
   },
@@ -909,10 +921,13 @@ const DEFS = {
     name: 'Outdoor',
     group: 'Places',
     hex: G,
-    t: 'crown',
+    t: 'none',
     use: 'Parks, beaches and outdoor spaces.',
     f: [
-      ['M 50 16 C 38.8 29.2 30.8 41.2 26 52 C 34 55 42 56 50 56 C 58 56 66 55 74 52 C 69.2 41.2 61.2 29.2 50 16 Z', 'T'],
+      [
+        'M 50 16 C 38.8 29.2 30.8 41.2 26 52 C 34 55 42 56 50 56 C 58 56 66 55 74 52 C 69.2 41.2 61.2 29.2 50 16 Z',
+        'T',
+      ],
     ],
     l: ['M 50 56 C 48.5 68 48.5 78 50 86'],
   },
@@ -922,7 +937,7 @@ const DEFS = {
     name: 'Apparel',
     group: 'Market',
     hex: Y,
-    t: 'top',
+    t: 'none',
     use: 'Clothing and apparel listings.',
     f: [
       [
@@ -936,7 +951,7 @@ const DEFS = {
     name: 'Underwear',
     group: 'Market',
     hex: M,
-    t: 'top',
+    t: 'none',
     use: 'Underwear, jockstraps and base layers.',
     l: tinted(
       'M 22 34 C 41 31 59 31 78 34 M 22 34 C 23 46 26 56 31 64 C 34 69 36 74 37 80 C 41 81 45 81 48 80 C 50.5 70.1 50.5 62.1 50 56 C 49.5 62.1 49.5 70.1 52 80 C 55 81 59 81 63 80 C 64 74 66 69 69 64 C 74 56 77 46 78 34',
@@ -947,7 +962,7 @@ const DEFS = {
     name: 'Swimwear',
     group: 'Market',
     hex: C,
-    t: 'top',
+    t: 'none',
     use: 'Swimwear, trunks and beachwear.',
     f: [
       [
@@ -962,10 +977,13 @@ const DEFS = {
     name: 'Jewelry',
     group: 'Market',
     hex: Y,
-    t: 'crown',
+    t: 'none',
     use: 'Jewellery, rings and accessories.',
     f: [
-      ['M 50 48 C 45 53 41 59 41 65 C 41 73 45 79 50 79 C 55 79 59 73 59 65 C 59 59 55 53 50 48 Z', 'T'],
+      [
+        'M 50 48 C 45 53 41 59 41 65 C 41 73 45 79 50 79 C 55 79 59 73 59 65 C 59 59 55 53 50 48 Z',
+        'T',
+      ],
     ],
     l: ['M 20 26 C 30 40 40 48 50 48 C 60 48 70 40 80 26'],
   },
@@ -974,11 +992,9 @@ const DEFS = {
     name: 'Homeware',
     group: 'Market',
     hex: Y,
-    t: 'crown',
+    t: 'none',
     use: 'Home goods, decor and houseware.',
-    f: [
-      ['M 34 45 C 38 33 42 24 50 24 C 58 24 62 33 66 45 C 55 47 45 47 34 45 Z', 'T'],
-    ],
+    f: [['M 34 45 C 38 33 42 24 50 24 C 58 24 62 33 66 45 C 55 47 45 47 34 45 Z', 'T']],
     l: ['M 50 47 C 49 57 49 67 50 75', 'M 36 79 C 45 77 55 77 64 79'],
   },
 
@@ -986,10 +1002,13 @@ const DEFS = {
     name: 'Selfcare',
     group: 'Market',
     hex: C,
-    t: 'top',
+    t: 'none',
     use: 'Grooming, skincare and self-care products.',
     f: [
-      ['M 38 45 C 37 57 37 69 38 79 C 46 81 54 81 62 79 C 63 69 63 57 62 45 C 54 43 46 43 38 45 Z', 'T'],
+      [
+        'M 38 45 C 37 57 37 69 38 79 C 46 81 54 81 62 79 C 63 69 63 57 62 45 C 54 43 46 43 38 45 Z',
+        'T',
+      ],
     ],
     l: [
       'M 44 45 C 47 39 46 35 46 33 C 50 32 54 32 58 33',
@@ -1005,7 +1024,7 @@ const DEFS = {
     name: 'Intimacy',
     group: 'Market',
     hex: M,
-    t: 'corners',
+    t: 'none',
     use: 'Intimacy and adult product departments.',
     f: [
       [ring(38, 50, 18), 'T'],
@@ -1019,7 +1038,7 @@ const DEFS = {
     name: 'Near you',
     group: 'Wayfinding',
     hex: C,
-    t: 'crown',
+    t: 'none',
     use: 'Results sorted by distance from the reader.',
     f: [
       [
@@ -1046,7 +1065,7 @@ const DEFS = {
     // already stand up out of the body, and crown's three ticks land directly
     // above them — the glyph stopped reading as a calendar and started reading
     // as a robot with antennae. Ticks are motion, not more drawing.
-    t: 'sides',
+    t: 'none',
     use: 'Event listings, calendars and date pickers.',
     f: [
       [
@@ -1139,7 +1158,7 @@ const DEFS = {
     name: 'Dildo',
     group: 'Market',
     hex: M,
-    t: 'top',
+    t: 'none',
     use: 'Dildos and insertable toys.',
     l: [
       ...tinted(
@@ -1152,7 +1171,7 @@ const DEFS = {
     name: 'Plug',
     group: 'Market',
     hex: M,
-    t: 'top',
+    t: 'none',
     use: 'Plugs and anal toys.',
     f: [
       [
@@ -1167,7 +1186,7 @@ const DEFS = {
     name: 'Stroker',
     group: 'Market',
     hex: M,
-    t: 'top',
+    t: 'none',
     use: 'Strokers and masturbation sleeves.',
     f: [
       [
@@ -1182,7 +1201,7 @@ const DEFS = {
     name: 'Vibrator',
     group: 'Market',
     hex: M,
-    t: 'sides',
+    t: 'none',
     use: 'Vibrators and powered toys.',
     f: [
       [
@@ -1197,7 +1216,7 @@ const DEFS = {
     name: 'Cockring',
     group: 'Market',
     hex: M,
-    t: 'corners',
+    t: 'none',
     use: 'Cockrings and constriction toys.',
     f: [
       [
@@ -1212,7 +1231,7 @@ const DEFS = {
     name: 'Chastity',
     group: 'Market',
     hex: M,
-    t: 'top',
+    t: 'none',
     use: 'Chastity cages and devices.',
     l: [
       ...tinted(
@@ -1225,7 +1244,7 @@ const DEFS = {
     name: 'Pump',
     group: 'Market',
     hex: M,
-    t: 'top',
+    t: 'none',
     use: 'Pumps and suction toys.',
     f: [
       [
@@ -1240,7 +1259,7 @@ const DEFS = {
     name: 'Lube',
     group: 'Market',
     hex: C,
-    t: 'top',
+    t: 'none',
     use: 'Lubricant and personal lubricants.',
     f: [
       [
@@ -1248,14 +1267,18 @@ const DEFS = {
         'T',
       ],
     ],
-    l: ['M 45 38 C 46.5 33.1 46.5 29.1 46 26 C 50 25 54 25 56 26', 'M 56 26 C 61 24 65 22 69 22', ring(50, 58, 7)],
+    l: [
+      'M 45 38 C 46.5 33.1 46.5 29.1 46 26 C 50 25 54 25 56 26',
+      'M 56 26 C 61 24 65 22 69 22',
+      ring(50, 58, 7),
+    ],
   },
 
   'toy-poppers': {
     name: 'Poppers',
     group: 'Market',
     hex: M,
-    t: 'top',
+    t: 'none',
     use: 'Poppers and inhalants.',
     f: [
       [
@@ -1263,7 +1286,10 @@ const DEFS = {
         'T',
       ],
     ],
-    l: ['M 43 42 C 44.5 34.1 44.5 28.1 44 24 C 50 22 56 23 57 24 C 56.5 28.1 56.5 35.1 58 42', ring(50, 62, 7)],
+    l: [
+      'M 43 42 C 44.5 34.1 44.5 28.1 44 24 C 50 22 56 23 57 24 C 56.5 28.1 56.5 35.1 58 42',
+      ring(50, 62, 7),
+    ],
   },
 
   // A rolled condom in profile — reservoir tip over the ring. Drawn as a
@@ -1273,7 +1299,7 @@ const DEFS = {
     name: 'Condom',
     group: 'Market',
     hex: G,
-    t: 'top',
+    t: 'none',
     use: 'Condoms and barrier protection.',
     f: [
       [
@@ -1292,7 +1318,7 @@ const DEFS = {
     name: 'Fetish gear',
     group: 'Kink',
     hex: M,
-    t: 'top',
+    t: 'none',
     use: 'Latex, leather, rubber and uniform gear.',
     // NO STATION DOT. The boot's shaft leaves ~11 units of clear interior once
     // its own outline is drawn, and the counter floor is 16 wide plus a stroke,
@@ -1311,7 +1337,7 @@ const DEFS = {
     name: 'Harness',
     group: 'Kink',
     hex: M,
-    t: 'corners',
+    t: 'none',
     use: 'Harnesses and body gear.',
     l: [
       ...tinted(
@@ -1327,7 +1353,7 @@ const DEFS = {
     name: 'Gag',
     group: 'Kink',
     hex: M,
-    t: 'sides',
+    t: 'none',
     use: 'Gags and mouth gear.',
     f: [[ring(50, 50, 14), 'T']],
     l: [
@@ -1386,7 +1412,7 @@ const DEFS = {
     name: 'Harm reduction',
     group: 'Safety',
     hex: G,
-    t: 'corners',
+    t: 'none',
     use: 'Harm reduction, drug checking and safer use.',
     f: [[ring(50, 50, 34), 'T']],
     // A PAPER capsule with an ink casing, not an ink bar. As a single thick ink
@@ -1408,7 +1434,7 @@ const DEFS = {
     name: 'Body health',
     group: 'Safety',
     hex: C,
-    t: 'corners',
+    t: 'none',
     use: 'Body and reproductive health resources.',
     f: [[ring(50, 50, 34), 'T']],
     l: ['M 26 42 C 36 70 64 70 74 42'],

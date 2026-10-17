@@ -1,6 +1,7 @@
 import {
   ICON_DEFS,
   TICKS,
+  TICK_WEIGHT,
   ink,
   inkPathOf,
   paper,
@@ -175,7 +176,7 @@ export function TransitIcon({
           d={d}
           fill="none"
           stroke={ink}
-          strokeWidth={sw}
+          strokeWidth={sw * TICK_WEIGHT}
           strokeLinecap="round"
           strokeLinejoin="round"
         />
