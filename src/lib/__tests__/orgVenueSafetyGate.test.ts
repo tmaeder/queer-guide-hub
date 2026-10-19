@@ -49,10 +49,27 @@ describe('organization safety gate: hold recognition', () => {
 describe('organization safety gate: venue inheritance seal', () => {
   const sql = stripped(SEAL);
 
+  // Scoped to the seal FUNCTION BODY. `v.safety_gated is true` also occurs in the
+  // backfill join and in several postconditions, so a file-wide match is satisfied
+  // by a surviving copy while the seal itself is inverted -- measured: that mutation
+  // SURVIVED the first round.
+  const sealBody = (() => {
+    const i = sql.indexOf('new.safety_gated :=');
+    const j = sql.indexOf('end $fn$', i);
+    expect(i).toBeGreaterThan(-1);
+    expect(j).toBeGreaterThan(i);
+    return sql.slice(i, j);
+  })();
+
   it('ORs the parent venue gate into the org gate', () => {
-    expect(sql).toMatch(/new\.safety_gated :=[\s\S]{0,200}?location_is_high_risk/);
-    expect(sql).toMatch(/or exists \([\s\S]{0,200}?v\.id = new\.primary_venue_id/);
-    expect(sql).toMatch(/v\.safety_gated is true/);
+    expect(sealBody).toContain('location_is_high_risk(new.country_id, new.city_id)');
+    expect(sealBody).toContain('v.id = new.primary_venue_id');
+    expect(sealBody).toContain('v.duplicate_of_id is null');
+  });
+
+  it('tests the venue gate for TRUE, inside the seal itself', () => {
+    expect(sealBody).toMatch(/and v\.safety_gated is true/);
+    expect(sealBody).not.toMatch(/v\.safety_gated is (false|not true)/);
   });
 
   it('scopes the trigger so attaching a venue AND a direct column write both re-decide', () => {
@@ -102,14 +119,23 @@ describe('organization safety gate: venue inheritance seal', () => {
 
 describe('both migrations assert their postconditions by RAISING', () => {
   // Asserting the condition text alone passes when the raise is replaced by
-  // `null;` -- the branch stops failing while every string check stays green.
+  // `null;`. But counting labels against raises is ALSO vacuous: deleting a whole
+  // postcondition drops both sides together and the counts stay equal -- measured,
+  // that mutation SURVIVED the first round. So pin the explicit label set too.
+  const EXPECTED: Record<string, string[]> = {
+    [HOLD]: ['P1', 'P2', 'P3', 'P4', 'P5', 'P6'],
+    [SEAL]: ['P1', 'P2', 'P3', 'P4', 'P5', 'P6', 'P7'],
+  };
+
   for (const f of [HOLD, SEAL]) {
     it(`${f} raises on every postcondition it declares`, () => {
       const sql = stripped(f);
-      const labels = [...sql.matchAll(/'([AB]-)?P\d+b? failed/g)].length;
-      const raises = [...sql.matchAll(/raise exception\s+'([AB]-)?P\d+b? failed/g)].length;
-      expect(labels).toBeGreaterThanOrEqual(5);
+      const labels = [...sql.matchAll(/'P\d+b? failed/g)].length;
+      const raises = [...sql.matchAll(/raise exception\s+'P\d+b? failed/g)].length;
       expect(raises).toBe(labels);
+      for (const label of EXPECTED[f]) {
+        expect(sql).toMatch(new RegExp(`raise exception\\s+'${label} failed`));
+      }
     });
   }
 });
