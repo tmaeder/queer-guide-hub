@@ -43,7 +43,7 @@ export default function AdminFeedback() {
         actions={
           <button
             onClick={() => c.setHelpOpen(true)}
-            aria-label="Keyboard shortcuts"
+            aria-label="Keyboard shortcuts: press ? for shortcuts"
             title="Keyboard shortcuts (?)"
             className="border-0 bg-transparent p-0 cursor-pointer text-xs text-muted-foreground inline-flex items-center gap-1 tracking-wide transition-colors hover:text-primary active:opacity-70"
           >

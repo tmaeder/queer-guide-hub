@@ -133,7 +133,7 @@ describe('Editable', () => {
         <span>Hello</span>
       </Editable>,
     );
-    fireEvent.click(screen.getByRole('button', { name: 'Edit Name' }));
+    fireEvent.click(screen.getByRole('button', { name: /^Edit Name/ }));
     const input = await screen.findByRole('textbox', { name: 'Name' });
     fireEvent.change(input, { target: { value: '' } });
     fireEvent.keyDown(input, { key: 'Enter' });
@@ -189,7 +189,7 @@ describe('Editable', () => {
         <span>Hello</span>
       </Editable>,
     );
-    const editable = screen.getByRole('button', { name: 'Edit Name' });
+    const editable = screen.getByRole('button', { name: /^Edit Name/ });
     expect(editable.className).toContain('hover:bg-surface-container-high');
     expect(editable.className).toContain('min-h-11');
     expect(editable.className).toContain('sm:min-h-8');
@@ -216,7 +216,7 @@ describe('Editable', () => {
         <span>Hello</span>
       </Editable>,
     );
-    fireEvent.keyDown(screen.getByRole('button', { name: 'Edit Name' }), { key: 'Enter' });
+    fireEvent.keyDown(screen.getByRole('button', { name: /^Edit Name/ }), { key: 'Enter' });
     expect(await screen.findByRole('textbox', { name: 'Name' })).toBeInTheDocument();
 
     unmount();
@@ -231,7 +231,7 @@ describe('Editable', () => {
         <span>Hello</span>
       </Editable>,
     );
-    fireEvent.keyDown(screen.getByRole('button', { name: 'Edit Name' }), { key: ' ' });
+    fireEvent.keyDown(screen.getByRole('button', { name: /^Edit Name/ }), { key: ' ' });
     expect(await screen.findByRole('textbox', { name: 'Name' })).toBeInTheDocument();
   });
 
