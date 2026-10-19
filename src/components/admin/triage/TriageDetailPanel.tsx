@@ -236,7 +236,13 @@ export function TriageDetailPanel({
       </div>
 
       {/* Content */}
-      <div className="flex-1 overflow-y-auto overscroll-contain bg-background">
+      {/* Focusable so keyboard users can scroll it (axe scrollable-region-focusable). */}
+      <div
+        tabIndex={0}
+        role="region"
+        aria-label="Item details"
+        className="flex-1 overflow-y-auto overscroll-contain bg-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring"
+      >
         {entityLoading ? (
           <div className="flex items-center justify-center py-12">
             <TrackLoader size={20} />
