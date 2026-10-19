@@ -99,7 +99,9 @@ export function SearchResultRow({
           : 'hover:bg-surface-container',
       )}
     >
-      <RouteBullet type={type} size={34} />
+      <span aria-hidden="true" className="flex shrink-0">
+        <RouteBullet type={type} size={34} />
+      </span>
       <div className="flex min-w-0 flex-1 flex-col">
         <span className="truncate text-15 font-bold">
           <HighlightedText text={name} query={query} html={nameHtml} />
