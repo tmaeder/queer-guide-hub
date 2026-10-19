@@ -47,7 +47,6 @@ export function DiscoveryPhotoCard({
   return (
     <LocalizedLink
       to={item.href}
-      aria-label={item.name}
       className="group block min-w-0 rounded-container bg-surface-container p-2 no-underline transition-colors hover:bg-surface-container-high focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
     >
       <div className="relative overflow-hidden rounded-element">

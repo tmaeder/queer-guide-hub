@@ -139,7 +139,7 @@ export function GeoSafetyVerdict({
       data-testid="geo-safety-verdict"
       href={rightsHref}
       className={cn(frame, 'no-underline', className)}
-      aria-label={t('cities.detail.glance.safetyLink', 'Jump to safety & rights')}
+      // Accessible name is the visible verdict (WCAG 2.5.3); the href says where it goes.
     >
       {inner}
     </a>

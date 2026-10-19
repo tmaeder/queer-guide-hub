@@ -306,7 +306,7 @@ export function NewsSourcesWorkspace({
                     type="button"
                     variant="ghost"
                     size="sm"
-                    aria-label={`Articles from ${s.name}`}
+                    aria-label={`${s.article_count.toLocaleString()} articles from ${s.name}`}
                     onClick={() => {
                       setSelected(s);
                       setArticlePage(0);

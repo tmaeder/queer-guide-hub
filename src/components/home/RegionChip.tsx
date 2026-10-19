@@ -78,7 +78,8 @@ export function RegionChip({ region }: { region: HomeRegionApi }) {
               <span aria-hidden>▾</span>
             </>
           }
-          aria-label={t('home.region.change', 'Change region')}
+          // Name starts with the visible text (WCAG 2.5.3 label in name).
+          aria-label={`${label} — ${t('home.region.change', 'Change region')}`}
         />
       </PopoverTrigger>
       <PopoverContent align="end" className="w-72 bg-muted rounded-element p-0">

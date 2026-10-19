@@ -101,9 +101,6 @@ function PersonalityCardImpl({
     : undefined;
   const showImage = Boolean(resolvedImageUrl) && !imgError;
   const metaParts = [era, personality.nationality].filter(Boolean) as string[];
-  const ariaLabel = personality.profession
-    ? `${personality.name}, ${formatProfession(personality.profession)}`
-    : personality.name;
   const href = `/personalities/${personality.slug ?? personality.id}`;
 
   const scheduleOpen = () => {
@@ -146,7 +143,6 @@ function PersonalityCardImpl({
       onMouseLeave={isFinePointer ? scheduleClose : undefined}
       onFocus={isFinePointer ? scheduleOpen : undefined}
       onBlur={isFinePointer ? scheduleClose : undefined}
-      aria-label={ariaLabel}
       /* The lift and the border live on the LINK itself. `CardHoverEffect`'s
          group/overlay contract exists for cards whose click target is a
          sibling overlay — this card has no nested interactive elements, so the
@@ -163,7 +159,7 @@ function PersonalityCardImpl({
             src={resolvedImageUrl!}
             srcSet={srcSet}
             sizes="(max-width: 640px) 160px, (max-width: 1024px) 200px, 250px"
-            alt={personality.name}
+            alt=""
             loading="lazy"
             decoding="async"
             draggable={false}
@@ -173,7 +169,7 @@ function PersonalityCardImpl({
           />
         ) : (
           <div className="absolute inset-0 flex items-center justify-center">
-            <span className="font-display text-headline text-muted-foreground">
+            <span aria-hidden="true" className="font-display text-headline text-muted-foreground">
               {getInitials(personality.name)}
             </span>
           </div>

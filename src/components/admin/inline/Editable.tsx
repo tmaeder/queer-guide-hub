@@ -162,7 +162,6 @@ export function Editable({
       onKeyDown={handleKeyDown}
       role={showAffordance ? 'button' : undefined}
       tabIndex={showAffordance ? 0 : undefined}
-      aria-label={showAffordance ? `Edit ${fieldConfig.label}` : undefined}
       title={
         showAffordance
           ? `${requireAltClick && !editMode ? 'Alt-click' : 'Click'} to edit · ${fieldConfig.label}`
@@ -172,6 +171,9 @@ export function Editable({
       data-editable-field={field}
     >
       {children}
+      {/* Appended, not an aria-label override: the visible value stays part of the
+          name (WCAG 2.5.3 label in name). */}
+      {showAffordance && <span className="sr-only"> — edit {fieldConfig.label}</span>}
       {showAffordance && (
         <Pencil
           size={13}

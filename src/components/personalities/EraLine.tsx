@@ -124,7 +124,6 @@ export function EraLine({ activeEra, onEraSelect, className }: EraLineProps) {
                   type="button"
                   onClick={() => onEraSelect(active ? undefined : key)}
                   aria-pressed={active}
-                  aria-label={era.label}
                   className={cn(
                     'flex w-full flex-col items-center gap-0.5 px-1 pt-2 pb-2 text-center transition-colors',
                     active ? 'text-foreground' : 'text-muted-foreground hover:text-foreground',

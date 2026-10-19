@@ -309,7 +309,7 @@ export function cityOccurrences(
       action: e.slug ? (
         <LocalizedLink
           to={`/events/${e.slug}`}
-          aria-label={title}
+          aria-label={`${openLabel} — ${title}`}
           className="inline-flex min-h-11 items-center rounded-element text-xs font-bold underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-ring"
         >
           {openLabel}
