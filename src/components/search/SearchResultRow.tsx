@@ -85,7 +85,6 @@ export function SearchResultRow({
       id={id}
       role="option"
       aria-selected={focused}
-      aria-label={[name, subtitle, label].filter(Boolean).join(' ')}
       tabIndex={-1}
       onClick={onClick}
       onMouseEnter={onMouseEnter}
