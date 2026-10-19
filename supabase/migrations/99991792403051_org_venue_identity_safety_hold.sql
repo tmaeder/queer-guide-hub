@@ -190,7 +190,13 @@ begin
   -- the wrapper a careless restatement loses -- including the venue arm's own
   -- `cruising` exclusion, whose sibling term in release_gate_checks_raw has been
   -- re-reverted by a full restatement before.
-  select pg_get_functiondef(p.oid) into v_src
+  -- Strips comments BEFORE asserting. pg_get_functiondef() returns the body
+  -- INCLUDING its comments, so an unstripped assertion matches the prose
+  -- explaining a symbol rather than the code -- and these very migrations
+  -- quote `cruising` and `primary_venue_id` in their own text. The PATCH reads
+  -- above deliberately keep comments: stripping there would delete the
+  -- function's own documentation when the patched body is re-executed.
+  select regexp_replace(pg_get_functiondef(p.oid), '--[^' || chr(10) || ']*', '', 'g') into v_src
     from pg_proc p join pg_namespace n on n.oid = p.pronamespace
    where n.nspname = 'public' and p.proname = 'release_gate_checks';
   if position('o.safety_gated IS TRUE' in v_src) = 0
