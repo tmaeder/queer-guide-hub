@@ -170,10 +170,8 @@ export function Editable({
       className={[className, affordanceClass].filter(Boolean).join(' ')}
       data-editable-field={field}
     >
+      {showAffordance && <span className="sr-only">Edit {fieldConfig.label}: </span>}
       {children}
-      {/* Appended, not an aria-label override: the visible value stays part of the
-          name (WCAG 2.5.3 label in name). */}
-      {showAffordance && <span className="sr-only"> — edit {fieldConfig.label}</span>}
       {showAffordance && (
         <Pencil
           size={13}
