@@ -3450,6 +3450,7 @@ export type Database = {
           created_at: string
           id: string
           images: string[] | null
+          labels: string[]
           image_assets_synced_at: string | null
           likes_count: number | null
           link_description: string | null
@@ -3473,6 +3474,7 @@ export type Database = {
           created_at?: string
           id?: string
           images?: string[] | null
+          labels?: string[]
           likes_count?: number | null
           link_description?: string | null
           link_title?: string | null
@@ -3495,6 +3497,7 @@ export type Database = {
           created_at?: string
           id?: string
           images?: string[] | null
+          labels?: string[]
           likes_count?: number | null
           link_description?: string | null
           link_title?: string | null
@@ -24154,6 +24157,75 @@ export type Database = {
           metadata?: Json | null
           session_id?: string | null
           user_id?: string | null
+        }
+        Relationships: []
+      }
+      user_moderation_prefs: {
+        Row: {
+          adult_content_enabled: boolean
+          label_prefs: Json
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          adult_content_enabled?: boolean
+          label_prefs?: Json
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          adult_content_enabled?: boolean
+          label_prefs?: Json
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_muted_words: {
+        Row: {
+          actor_target: string
+          created_at: string
+          expires_at: string | null
+          id: string
+          targets: string[]
+          user_id: string
+          value: string
+        }
+        Insert: {
+          actor_target?: string
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          targets?: string[]
+          user_id: string
+          value: string
+        }
+        Update: {
+          actor_target?: string
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          targets?: string[]
+          user_id?: string
+          value?: string
+        }
+        Relationships: []
+      }
+      user_mutes: {
+        Row: {
+          created_at: string
+          muted_id: string
+          muter_id: string
+        }
+        Insert: {
+          created_at?: string
+          muted_id: string
+          muter_id: string
+        }
+        Update: {
+          created_at?: string
+          muted_id?: string
+          muter_id?: string
         }
         Relationships: []
       }

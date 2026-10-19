@@ -23,13 +23,15 @@ import { useToast } from '@/hooks/use-toast';
 import { useReportContent, type ReportableContentType } from '@/hooks/useReportContent';
 import { useUserRelationships } from '@/hooks/useUserRelationships';
 
+// Reason set mirrors com.atproto.moderation.defs#reason* so a report can be
+// forwarded to Bluesky (createReport) without remapping. Text stays human-readable.
 const REASONS = [
-  'Spam or scam',
-  'Harassment or hate',
-  'Sexual or explicit content',
-  'Impersonation',
-  'Violence or threats',
-  'Other',
+  'Spam or scam', // reasonSpam
+  'Harassment or hate', // reasonRude
+  'Sexual or explicit content', // reasonSexual
+  'Impersonation or misleading', // reasonMisleading
+  'Violence, threats or illegal', // reasonViolation
+  'Other', // reasonOther
 ] as const;
 
 interface ReportContentDialogProps {
@@ -77,7 +79,10 @@ export function ReportContentDialog({
       toast({
         title: t('report.sent', 'Report sent'),
         description: alsoBlock
-          ? t('report.sentBlocked', 'Thanks — our team will review it, and you won’t see this person anymore.')
+          ? t(
+              'report.sentBlocked',
+              'Thanks — our team will review it, and you won’t see this person anymore.',
+            )
           : t('report.sentDesc', 'Thanks — our moderation team will review it.'),
       });
       reset();
@@ -85,19 +90,29 @@ export function ReportContentDialog({
     } catch (e) {
       toast({
         title: t('common.error', 'Error'),
-        description: e instanceof Error ? e.message : t('report.failed', 'Could not send the report.'),
+        description:
+          e instanceof Error ? e.message : t('report.failed', 'Could not send the report.'),
         variant: 'destructive',
       });
     }
   };
 
   return (
-    <Dialog open={open} onOpenChange={(o) => { if (!o) reset(); onOpenChange(o); }}>
+    <Dialog
+      open={open}
+      onOpenChange={(o) => {
+        if (!o) reset();
+        onOpenChange(o);
+      }}
+    >
       <DialogContent>
         <DialogHeader>
           <DialogTitle>{t('report.title', 'Report content')}</DialogTitle>
           <DialogDescription>
-            {t('report.description', 'Tell us what’s wrong. Reports are private and reviewed by our team.')}
+            {t(
+              'report.description',
+              'Tell us what’s wrong. Reports are private and reviewed by our team.',
+            )}
           </DialogDescription>
         </DialogHeader>
 

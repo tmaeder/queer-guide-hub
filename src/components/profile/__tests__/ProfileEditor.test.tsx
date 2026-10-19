@@ -36,6 +36,9 @@ vi.mock('@/components/profile/settings/IdentityTab', () => ({
 vi.mock('@/components/profile/settings/PrivacyTab', () => ({
   PrivacyTab: () => <div>Privacy editor</div>,
 }));
+vi.mock('@/components/profile/settings/ModerationSettings', () => ({
+  ModerationSettings: () => null,
+}));
 vi.mock('@/components/profile/settings/DangerZone', () => ({ DangerZone: () => null }));
 vi.mock('@/components/profile/IntimateTab', () => ({ IntimateTab: () => null }));
 vi.mock('@/components/profile/TravelPreferencesEditor', () => ({

@@ -5,6 +5,25 @@ import { describe, it, expect, vi } from 'vitest';
 import { render } from '@testing-library/react';
 import { MemoryRouter } from 'react-router';
 
+vi.mock('@/hooks/useSocialModeration', () => ({
+  useSocialModeration: () => ({
+    mutedUserIds: [],
+    mutedWords: [],
+    adultContentEnabled: false,
+    labelPrefs: {},
+    mute: { mutate: vi.fn() },
+    unmute: { mutate: vi.fn() },
+  }),
+  usePostModeration: () => new Map(),
+}));
+vi.mock('@/hooks/useFollows', () => ({
+  useFollows: () => ({
+    followingIds: new Set(),
+    isFollowing: () => false,
+    follow: { mutate: vi.fn() },
+    unfollow: { mutate: vi.fn() },
+  }),
+}));
 vi.mock('@/hooks/useAuth', () => ({ useAuth: () => ({ user: { id: 'u1' } }) }));
 
 import { PostCard } from '../PostCard';
@@ -21,7 +40,11 @@ const post = {
 
 describe('PostCard', () => {
   it('renders', () => {
-    const { container } = render(<MemoryRouter><PostCard post={post} /></MemoryRouter>);
+    const { container } = render(
+      <MemoryRouter>
+        <PostCard post={post} />
+      </MemoryRouter>,
+    );
     expect(container).toBeTruthy();
   });
 });
