@@ -12,6 +12,7 @@ import { useNearbyMapPoints } from '@/hooks/useNearbyMapPoints';
 import { useVenueSafetyScore } from '@/hooks/useVenueSafetySignals';
 import { TripAction } from '@/components/trips/TripAction';
 import { FromTheGlossary } from '@/components/tags/FromTheGlossary';
+import { EntityKindChips } from '@/components/entity/EntityKindChips';
 import {
   fetchVenue,
   VenueActions,
@@ -280,6 +281,22 @@ export function useVenueDescriptor(slug: string | undefined): EntityDescriptorRe
         ),
         tags: (
           <div className="flex flex-col gap-4">
+            {/* What this page is — a venue, and also an organisation when one
+                runs it. Same chips, same slot as the organisation page. */}
+            <EntityKindChips
+              kinds={[
+                { kind: 'venue' },
+                ...(venue.organizations
+                  ? [
+                      {
+                        kind: 'organization' as const,
+                        href: `/organizations/${venue.organizations.slug}`,
+                      },
+                    ]
+                  : []),
+              ]}
+              roles={venue.organizations?.roles ?? []}
+            />
             <VenueFacts venue={venue} t={t} />
             <VenueTags venue={venue} onContentUpdated={refetch} />
           </div>

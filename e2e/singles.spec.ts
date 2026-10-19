@@ -35,6 +35,12 @@ const ROUTES = [
   // sections. Lehighton has no hours, no amenities and no organisation, so it
   // is the page that exposed the empty "Access" heading.
   { path: '/venues/lehighton', name: 'Lehighton', eyebrow: /Venue/ },
+  // Organisations moved onto the same single as venues. DeMask is both — an
+  // organisation (seller) that runs one venue — so the pair below is the case
+  // the unified layout exists for: the same frame from either side.
+  { path: '/organizations/demask', name: 'DeMask', eyebrow: /Organization/ },
+  // The venue row is spelled "Demask", the organisation "DeMask".
+  { path: '/venues/demask', name: 'Demask', eyebrow: /Venue/ },
   { path: '/events/capital-pride-ottawa-2026', name: 'Capital Pride', eyebrow: /Event/ },
   // A genuinely PAST event, for the same reason `/venues/lehighton` is above:
   // without one the empty-section test never sees the state that 99.2% of the

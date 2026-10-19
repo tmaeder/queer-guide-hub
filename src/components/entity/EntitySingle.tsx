@@ -15,7 +15,7 @@ import type { EntityDescriptor } from '@/components/entity/entityDescriptor';
  * The subway single, rendered from an `EntityDescriptor`.
  *
  * Sibling of `EntityDetailScroll`, not a replacement: that shell still serves
- * organisations and milestones, and this one takes any descriptor that carries
+ * milestones, and this one takes any descriptor that carries
  * a `single` block. Venue moved first because it was already half-migrated —
  * it had `FactGrid`, `HoursTable`, `MapInset` and `NestedEntityCard` inside a
  * hand-rolled layout, which is the worst of both.

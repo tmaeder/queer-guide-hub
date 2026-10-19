@@ -133,9 +133,9 @@ function EntityDetailView({
   }
 
   // A descriptor that carries `single` has moved to the subway shell; the rest
-  // stay on the legacy scroll. Venue moved first (#2777 follow-up);
-  // organisations and milestones follow, and then both this branch and
-  // `EntityDetailScroll` go.
+  // stay on the legacy scroll. Venue moved first (#2777 follow-up) and
+  // organisations followed, sharing its layout; milestones are the last on
+  // the scroll, and when they move this branch and `EntityDetailScroll` go.
   return descriptor?.single || source === 'venue' ? (
     <EntitySingle descriptor={descriptor} loading={isLoading} error={error} />
   ) : (
