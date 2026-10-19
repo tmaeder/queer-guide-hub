@@ -15,6 +15,10 @@ interface RouteBulletProps {
   /** Which surface the bullet sits on. `ink` reverses the ring, and the
    *  unmapped/ink bullet inverts so it stays legible on an ink plate. */
   tone?: 'paper' | 'ink';
+  /** The row already names the entity in text. Hides the bullet from assistive
+   *  tech and draws the letter with CSS, so it is not DOM text that an
+   *  enclosing control's accessible name has to repeat (axe label-content-name-mismatch). */
+  decorative?: boolean;
 }
 
 /** NYC-style route bullet: letter = content type, color = its line. Falls
@@ -35,6 +39,7 @@ export function RouteBullet({
   track,
   label,
   tone = 'paper',
+  decorative = false,
 }: RouteBulletProps) {
   const def = ROUTE_BULLET_MAP[type];
   const resolved = track ?? def?.track;
@@ -45,20 +50,23 @@ export function RouteBullet({
   // line-colour contract that ROUTE_BULLET_MAP exists to hold.
   const bg = useInk ? (onInk ? 'bg-background' : 'bg-foreground') : TRACK_BG[resolved];
   const text = useInk ? (onInk ? 'text-foreground' : 'text-background') : TRACK_TEXT[resolved];
+  const glyph = letter ?? def?.letter ?? type.charAt(0).toUpperCase();
   return (
     <span
-      role="img"
-      aria-label={label ?? def?.label ?? type}
+      {...(decorative
+        ? { 'aria-hidden': true, 'data-letter': glyph }
+        : { role: 'img', 'aria-label': label ?? def?.label ?? type })}
       style={{ width: size, height: size, fontSize: Math.round(size * 0.45) }}
       className={cn(
         'transit-marker grid shrink-0 place-items-center rounded-full border-2 font-bold',
         onInk ? 'border border-background' : 'border-track-ring',
         bg,
         text,
+        decorative && 'after:content-[attr(data-letter)]',
         className,
       )}
     >
-      {letter ?? def?.letter ?? type.charAt(0).toUpperCase()}
+      {decorative ? null : glyph}
     </span>
   );
 }
