@@ -3,7 +3,7 @@
 // up in Bluesky. Run with the official account's credentials (an app password,
 // never the main password):
 //
-//   BLUESKY_HANDLE=queerguide.bsky.social BLUESKY_APP_PASSWORD=xxxx-xxxx-xxxx-xxxx \
+//   BLUESKY_HANDLE=queerguide.bsky.social BLUESKY_APP_PASSWORD="<app password from Bluesky settings>" \
 //     node scripts/bluesky/publish-feed-generator.mjs
 //
 // Then set FEED_PUBLISHER_DID (printed below) as a Cloudflare Pages env var so
