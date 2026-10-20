@@ -58,7 +58,8 @@ Deno.serve(async (req) => {
   try {
     session = await xrpc('com.atproto.server.createSession', { identifier, password })
   } catch (e) {
-    return jsonResponse({ error: String(e) }, 502, req)
+    console.error('bluesky-bot-post: createSession failed', e)
+    return jsonResponse({ error: 'Upstream service request failed' }, 502, req)
   }
 
   const posted: string[] = []
@@ -81,7 +82,8 @@ Deno.serve(async (req) => {
       }
       posted.push(res.uri)
     } catch (e) {
-      errors.push(`${c.entity_type}:${c.entity_id} ${e}`)
+      console.error(`bluesky-bot-post: createRecord failed for ${c.entity_type}:${c.entity_id}`, e)
+      errors.push(`${c.entity_type}:${c.entity_id} failed`)
     }
   }
 
