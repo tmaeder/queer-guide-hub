@@ -168,3 +168,62 @@ export function bskyPostUrl(atUri: string): string | null {
   const m = /^at:\/\/([^/]+)\/app\.bsky\.feed\.post\/([^/]+)$/.exec(atUri);
   return m ? `https://bsky.app/profile/${m[1]}/post/${m[2]}` : null;
 }
+
+export type ActivityKind = 'checkin' | 'review' | 'rsvp' | 'save';
+export type ActivityEntity = 'venue' | 'event' | 'city' | 'country';
+export interface ActivitySubject {
+  uri: string;
+  title: string;
+}
+
+/** Record key for one-per-subject records; check-ins get a TID from the PDS instead. */
+export const activityRkey = (entityType: ActivityEntity, entityId: string) =>
+  `${entityType}-${entityId}`;
+
+/** A guide.queer.* record (schemas in lexicons/guide/queer/). */
+export function activityRecord(
+  kind: ActivityKind,
+  entityType: ActivityEntity,
+  subject: ActivitySubject,
+  extra: { rating?: number; status?: 'going' | 'interested' } = {},
+  now = new Date(),
+) {
+  return {
+    $type: `guide.queer.${kind}`,
+    subject: { uri: subject.uri, type: entityType, title: subject.title.slice(0, 300) },
+    ...(kind === 'review' ? { rating: extra.rating } : {}),
+    ...(kind === 'rsvp' ? { status: extra.status } : {}),
+    createdAt: now.toISOString(),
+  };
+}
+
+/** Writes (or, with record = null, deletes) a guide.queer.* record in the user's own repo. */
+export async function writeActivityRecord(
+  did: string,
+  kind: ActivityKind,
+  entityType: ActivityEntity,
+  entityId: string,
+  record: ReturnType<typeof activityRecord> | null,
+): Promise<void> {
+  const session = await restoreSession(did);
+  if (!session) return; // expired: nothing to do until the user reconnects.
+  const agent = await agentFor(session);
+  const collection = `guide.queer.${kind}`;
+  if (kind === 'checkin') {
+    if (record)
+      await agent.com.atproto.repo.createRecord({ repo: did, collection, record, validate: false });
+    return;
+  }
+  const rkey = activityRkey(entityType, entityId);
+  if (record) {
+    await agent.com.atproto.repo.putRecord({
+      repo: did,
+      collection,
+      rkey,
+      record,
+      validate: false,
+    });
+  } else {
+    await agent.com.atproto.repo.deleteRecord({ repo: did, collection, rkey });
+  }
+}
