@@ -13,6 +13,8 @@ describe('subdomainOf', () => {
     expect(subdomainOf('al_ice.queer.guide')).toBeNull();
     expect(subdomainOf('alice.evil.test')).toBeNull();
     expect(subdomainOf('queer.guide')).toBeNull();
+    expect(subdomainOf('img.queer.guide')).toBeNull();
+    expect(subdomainOf('search.queer.guide')).toBeNull();
   });
 });
 

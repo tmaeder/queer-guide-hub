@@ -11,6 +11,43 @@
 -- which cannot be a subdomain). A renamed user's old subdomain stops resolving
 -- immediately — no redirect, so an old handle cannot be linked to the new one.
 
+-- Usernames are also subdomains now, so the names of real queer.guide hosts
+-- (and obvious service/brand names) must never be claimable: a member called
+-- "img" would otherwise be able to present img.queer.guide as their identity.
+insert into public.reserved_usernames (name, reason) values
+  ('admin', 'infrastructure subdomain — cannot be a name.queer.guide handle'),
+  ('api', 'infrastructure subdomain — cannot be a name.queer.guide handle'),
+  ('app', 'infrastructure subdomain — cannot be a name.queer.guide handle'),
+  ('assets', 'infrastructure subdomain — cannot be a name.queer.guide handle'),
+  ('assistant', 'infrastructure subdomain — cannot be a name.queer.guide handle'),
+  ('atproto', 'infrastructure subdomain — cannot be a name.queer.guide handle'),
+  ('blog', 'infrastructure subdomain — cannot be a name.queer.guide handle'),
+  ('bluesky', 'infrastructure subdomain — cannot be a name.queer.guide handle'),
+  ('bsky', 'infrastructure subdomain — cannot be a name.queer.guide handle'),
+  ('cdn', 'infrastructure subdomain — cannot be a name.queer.guide handle'),
+  ('dev', 'infrastructure subdomain — cannot be a name.queer.guide handle'),
+  ('docs', 'infrastructure subdomain — cannot be a name.queer.guide handle'),
+  ('extract', 'infrastructure subdomain — cannot be a name.queer.guide handle'),
+  ('go', 'infrastructure subdomain — cannot be a name.queer.guide handle'),
+  ('help', 'infrastructure subdomain — cannot be a name.queer.guide handle'),
+  ('img', 'infrastructure subdomain — cannot be a name.queer.guide handle'),
+  ('inbox', 'infrastructure subdomain — cannot be a name.queer.guide handle'),
+  ('ingest', 'infrastructure subdomain — cannot be a name.queer.guide handle'),
+  ('links', 'infrastructure subdomain — cannot be a name.queer.guide handle'),
+  ('mail', 'infrastructure subdomain — cannot be a name.queer.guide handle'),
+  ('nominatim', 'infrastructure subdomain — cannot be a name.queer.guide handle'),
+  ('ntfy', 'infrastructure subdomain — cannot be a name.queer.guide handle'),
+  ('search', 'infrastructure subdomain — cannot be a name.queer.guide handle'),
+  ('staging', 'infrastructure subdomain — cannot be a name.queer.guide handle'),
+  ('status', 'infrastructure subdomain — cannot be a name.queer.guide handle'),
+  ('submit', 'infrastructure subdomain — cannot be a name.queer.guide handle'),
+  ('team', 'infrastructure subdomain — cannot be a name.queer.guide handle'),
+  ('tiles', 'infrastructure subdomain — cannot be a name.queer.guide handle'),
+  ('travel', 'infrastructure subdomain — cannot be a name.queer.guide handle'),
+  ('trip', 'infrastructure subdomain — cannot be a name.queer.guide handle'),
+  ('www', 'infrastructure subdomain — cannot be a name.queer.guide handle')
+on conflict do nothing;
+
 alter table public.bluesky_identities
   add column if not exists use_queer_guide_handle boolean not null default false;
 
@@ -38,6 +75,9 @@ begin
   if public.atproto_did_for_subdomain('a.b') is not null
      or public.atproto_did_for_subdomain('x_y') is not null then
     raise exception 'queer guide handles: a multi-label or underscore name resolved';
+  end if;
+  if not exists (select 1 from public.reserved_usernames where name = 'img') then
+    raise exception 'queer guide handles: infrastructure subdomains are not reserved';
   end if;
   if exists (select 1 from public.bluesky_identities where use_queer_guide_handle) then
     raise notice 'queer guide handles: opt-in rows already present';

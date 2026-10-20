@@ -5,12 +5,19 @@ export interface Env {
 
 const APEX = 'queer.guide';
 
+/** Real queer.guide hosts and service names; mirrors the reserved_usernames rows. */
+const RESERVED = new Set(
+  'admin api app assets assistant atproto blog bluesky bsky cdn dev docs extract go help img inbox ingest links mail nominatim ntfy search staging status submit team tiles travel trip www'.split(
+    ' ',
+  ),
+);
+
 /** "alice.queer.guide" -> "alice"; anything deeper or foreign -> null. */
 export function subdomainOf(host: string): string | null {
   const h = host.toLowerCase().replace(/\.$/, '');
   if (!h.endsWith(`.${APEX}`)) return null;
   const sub = h.slice(0, -(APEX.length + 1));
-  return /^[a-z0-9]{3,20}$/.test(sub) ? sub : null;
+  return /^[a-z0-9]{3,20}$/.test(sub) && !RESERVED.has(sub) ? sub : null;
 }
 
 export async function handleRequest(request: Request, env: Env, fetchImpl: typeof fetch = fetch) {
