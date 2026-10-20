@@ -86,9 +86,23 @@ jobs:
           # path. If it starts crying wolf, narrow the SPEC LIST for this
           # trigger rather than silently dropping the path — a filter that
           # excludes schema changes is how this class went unnoticed.
-          if echo "$files" | grep -qE '^(src/|public/|e2e/|supabase/migrations/|index\.html$|vite\.config\.ts$|playwright\.config\.ts$|package\.json$|package-lock\.json$|\.github/workflows/e2e-pr\.yml$|\.github/actions/setup-playwright/)'; then
+          #
+          # NARROWED 2026-10-20: a migration-only diff runs the two admin specs
+          # that catch the #4423 class (an RPC too slow for the 8s timeout
+          # turns /admin into a 500), not all ~250 tests. Measured on prod:
+          # each full suite is ~18 min of browser traffic against the LIVE
+          # backend, and once ~20+ full suites/hour ran concurrently the
+          # database stalled and was crash-restarted twice (2026-10-16 20:03 at
+          # 33/hr, 2026-10-17 07:18 at 31/hr; Azure browser traffic was 71% of
+          # REST time in that window). A src/-touching PR still runs everything.
+          if echo "$files" | grep -qE '^(src/|public/|e2e/|index\.html$|vite\.config\.ts$|playwright\.config\.ts$|package\.json$|package-lock\.json$|\.github/workflows/e2e-pr\.yml$|\.github/actions/setup-playwright/)'; then
             echo "relevant=true" >> "$GITHUB_OUTPUT"
+            echo "scope=full" >> "$GITHUB_OUTPUT"
             echo "::notice::Relevant paths changed - running critical-path specs."
+          elif echo "$files" | grep -qE '^supabase/migrations/'; then
+            echo "relevant=true" >> "$GITHUB_OUTPUT"
+            echo "scope=migrations" >> "$GITHUB_OUTPUT"
+            echo "::notice::Migration-only diff - running the admin schema-cost specs only."
           else
             echo "relevant=false" >> "$GITHUB_OUTPUT"
             echo "::notice::No app/e2e paths changed - skipping specs, reporting success."
@@ -113,9 +127,19 @@ jobs:
           E2E_BASE_URL: http://localhost:4173
           E2E_ADMIN_EMAIL: ${{ secrets.E2E_ADMIN_EMAIL }}
           E2E_ADMIN_PASSWORD: ${{ secrets.E2E_ADMIN_PASSWORD }}
+          SCOPE: ${{ steps.changes.outputs.scope }}
         run: |
           npx vite preview --port 4173 &
           sleep 5
+          if [ "$SCOPE" = "migrations" ]; then
+            # auth.setup.ts first for the same reason as below.
+            npx playwright test \
+              e2e/auth.setup.ts \
+              e2e/admin-inbox-renders.spec.ts \
+              e2e/admin-route-baseline.spec.ts \
+              --reporter=line
+            exit $?
+          fi
           npx playwright test \
             e2e/auth.setup.ts \
             e2e/auth-signup-renders.spec.ts \
