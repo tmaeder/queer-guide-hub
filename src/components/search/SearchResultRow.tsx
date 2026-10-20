@@ -85,7 +85,6 @@ export function SearchResultRow({
       id={id}
       role="option"
       aria-selected={focused}
-      aria-label={subtitle ? `${name}, ${subtitle}` : name}
       tabIndex={-1}
       onClick={onClick}
       onMouseEnter={onMouseEnter}
@@ -99,7 +98,7 @@ export function SearchResultRow({
           : 'hover:bg-surface-container',
       )}
     >
-      <RouteBullet type={type} size={34} />
+      <RouteBullet type={type} size={34} decorative />
       <div className="flex min-w-0 flex-1 flex-col">
         <span className="truncate text-15 font-bold">
           <HighlightedText text={name} query={query} html={nameHtml} />

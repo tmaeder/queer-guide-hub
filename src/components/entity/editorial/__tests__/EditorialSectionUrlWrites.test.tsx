@@ -26,7 +26,6 @@ const setSearchParams = vi.fn();
 let activeId: string | null = 'stay';
 let currentSearch = '';
 
-vi.mock('@/hooks/useBreadcrumbs', () => ({ useBreadcrumbs: () => undefined }));
 vi.mock('@/components/transit/useActiveSection', () => ({
   useActiveSection: () => [activeId, vi.fn()] as const,
 }));

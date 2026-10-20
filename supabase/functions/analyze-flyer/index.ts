@@ -14,7 +14,7 @@ import { createClient, type SupabaseClient } from 'https://esm.sh/@supabase/supa
 import { corsHeaders, jsonResponse, errorResponse, hasInternalSecret } from '../_shared/supabase-client.ts'
 import { chatCompletion } from '../_shared/openai-client.ts'
 import { extractContent, type ExtractResult } from '../_shared/extract-client.ts'
-import { COUNTRY_ALIASES } from '../_shared/automation-utils.ts'
+import { COUNTRY_ALIASES } from '../_shared/geo-normalize.ts'
 import { buildTagSuggestions } from '../_shared/scan-tags.ts'
 import { mergeExtractedItems } from '../_shared/scan-merge.ts'
 

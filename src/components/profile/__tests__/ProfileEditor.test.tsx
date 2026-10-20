@@ -11,9 +11,6 @@ vi.mock('@/hooks/useAuth', () => ({
 vi.mock('@/hooks/useProfile', () => ({
   useProfile: () => ({ updateProfile: state.updateProfile, refetchProfile: vi.fn() }),
 }));
-vi.mock('@/hooks/useProfileData', () => ({
-  useProfileData: () => ({ profile: null, isLoading: false, profileLoading: false }),
-}));
 vi.mock('@/hooks/use-toast', () => ({ useToast: () => ({ toast: vi.fn() }) }));
 vi.mock('@/components/profile/settings/BasicInfoTab', () => ({
   BasicInfoTab: ({
@@ -45,7 +42,6 @@ vi.mock('@/components/profile/TravelPreferencesEditor', () => ({
   TravelPreferencesEditor: () => null,
 }));
 vi.mock('@/components/status/StatusEditor', () => ({ StatusEditor: () => null }));
-vi.mock('@/components/profile/IdentityPreviewCard', () => ({ IdentityPreviewCard: () => null }));
 vi.mock('@/components/profile/AvatarChooser', () => ({
   AvatarChooser: () => <div>Avatar editor</div>,
 }));

@@ -24,9 +24,8 @@ import { cn } from '@/lib/utils';
  *     stops the horizontal stretch from also fattening the stroke.
  *
  * Selecting a station is a FILTER, not progress — picking "Stonewall" does not
- * make pre-Stonewall "done" — which is why this is not
- * `src/components/transit/LineStepper.tsx`, whose whole semantic is that
- * everything before `current` renders complete.
+ * make pre-Stonewall "done" — which is why this is not a stepper, whose whole
+ * semantic is that everything before `current` renders complete.
  */
 
 /** Station x/y inside the 300×44 viewBox. Each x is a 5-column grid centre

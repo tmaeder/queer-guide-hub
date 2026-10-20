@@ -1,6 +1,6 @@
 import type { SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5'
 import { getServiceClient, jsonResponse, errorResponse, corsResponse, requireAdmin } from '../_shared/supabase-client.ts'
-import { COUNTRY_ALIASES } from '../_shared/automation-utils.ts'
+import { COUNTRY_ALIASES } from '../_shared/geo-normalize.ts'
 
 /**
  * resolve-or-create-city

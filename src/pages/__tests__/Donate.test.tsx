@@ -18,7 +18,6 @@ vi.mock('@/components/donate/DonationSuccess', () => ({
 vi.mock('@/components/effects/ColourfulText', () => ({
   ColourfulText: (p: { text: string }) => <>{p.text}</>,
 }));
-vi.mock('@/components/effects/Sparkles', () => ({ Sparkles: () => null }));
 
 import Donate from '../Donate';
 

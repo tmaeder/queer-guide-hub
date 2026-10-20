@@ -12,9 +12,6 @@ vi.mock('@/components/admin/affiliate/MerchantsManager', () => ({
   MerchantsManager: () => <div />,
 }));
 vi.mock('@/components/admin/business/HotelsManager', () => ({ HotelsManager: () => <div /> }));
-vi.mock('@/components/admin/review-queues/BrandReviewQueue', () => ({
-  BrandReviewQueue: () => <div />,
-}));
 vi.mock('@/integrations/supabase/untyped', () => ({
   untypedSupabase: { rpc: vi.fn() },
 }));

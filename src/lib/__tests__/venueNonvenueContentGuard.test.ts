@@ -2,8 +2,6 @@ import { readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
-import { assertNonvenueDecisionApplied } from '../../hooks/useVenueReviewQueue';
-
 /**
  * Archiving a venue must not silently orphan the events held there.
  *
@@ -112,34 +110,5 @@ describe('archive_entity honours the refusal (second caller)', () => {
     // The insert is after the CASE, so raising anywhere inside the branch is
     // enough — but only if the branch actually raises, which is asserted above.
     expect(fn.indexOf('insert into public.admin_lifecycle_audit')).toBeGreaterThan(branchStart);
-  });
-});
-
-describe('decide_venue_nonvenue refusal (client half)', () => {
-  it('throws on a has_events refusal, naming the count', () => {
-    expect(() =>
-      assertNonvenueDecisionApplied({
-        ok: false,
-        error: 'has_events',
-        events: 34,
-        hint: 'Re-point them first.',
-      }),
-    ).toThrow(/34 event\(s\)/);
-  });
-
-  it('throws on any other refusal', () => {
-    expect(() => assertNonvenueDecisionApplied({ ok: false, error: 'something_else' })).toThrow();
-  });
-
-  it('passes a real success through untouched', () => {
-    expect(() => assertNonvenueDecisionApplied({ ok: true, status: 'confirmed' })).not.toThrow();
-    expect(() => assertNonvenueDecisionApplied({ ok: true, status: 'rejected' })).not.toThrow();
-  });
-
-  it('passes the pre-guard response shape through', () => {
-    // The old 3-arg function returned `{id, status}` with no `ok`. A deploy
-    // where the migration has not yet applied must not start throwing.
-    expect(() => assertNonvenueDecisionApplied({ id: 'abc', status: 'confirmed' })).not.toThrow();
-    expect(() => assertNonvenueDecisionApplied(null)).not.toThrow();
   });
 });

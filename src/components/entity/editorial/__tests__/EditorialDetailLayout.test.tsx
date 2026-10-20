@@ -1,12 +1,10 @@
 /**
  * @vitest-environment jsdom
  */
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import { renderWithProviders, screen } from '@/test/test-utils';
 import { EditorialDetailLayout } from '../EditorialDetailLayout';
 import type { SectionDef } from '../types';
-
-vi.mock('@/hooks/useBreadcrumbs', () => ({ useBreadcrumbs: () => undefined }));
 
 /**
  * `EditorialSection` emits kicker + <h2> + action unconditionally, and the

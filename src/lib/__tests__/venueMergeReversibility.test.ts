@@ -118,7 +118,7 @@ describe('unmerge_venues restores a venue merge', () => {
   it('drops the old 1-arg signature and takes p_force', () => {
     // PostgREST resolves overloads BY ARGUMENT NAME; leaving both would make a
     // call naming only p_audit_id ambiguous (42725) rather than picking the new
-    // one. src/hooks/useVenueDuplicates.ts calls it with exactly that one arg.
+    // one.
     expect(sql).toMatch(/DROP FUNCTION IF EXISTS public\.unmerge_venues\(uuid\)/i);
     expect(sql).toMatch(/p_audit_id uuid, p_force boolean DEFAULT false/);
   });

@@ -17,7 +17,6 @@ vi.mock('@/hooks/useInboxFeed', () => ({ useInboxFeed: () => ({ unreadCount: moc
 vi.mock('@/hooks/useInboxBadge', () => ({ useInboxBadge: () => mockTrips }));
 vi.mock('@/hooks/useLocalizedNavigate', () => ({ useLocalizedNavigate: () => navigateSpy }));
 vi.mock('@/hooks/useHaptics', () => ({ useHaptics: () => ({ trigger: hapticSpy }) }));
-vi.mock('@/hooks/useScrollDirection', () => ({ useScrollDirection: () => 'up' }));
 // Reduced motion → static pills, no motion/react layout animation in jsdom.
 vi.mock('@/lib/motion', () => ({ useMotionTokens: () => ({ reduced: true }) }));
 vi.mock('react-i18next', () => ({

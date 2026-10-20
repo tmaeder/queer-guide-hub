@@ -72,7 +72,6 @@ const ROUTES = ADMIN_ARCHETYPES.filter(
     if (!QUARANTINED.has(r)) return true;
     // Say it out loud on every run. A quarantined route that stops announcing
     // itself is indistinguishable from one nobody ever wrote a guard for.
-    // eslint-disable-next-line no-console
     console.warn(
       `::warning::${r} is QUARANTINED from the admin route baseline (main thread hangs)`,
     );
@@ -275,7 +274,6 @@ test.describe('admin routes stay healthy through the archetype migration', () =>
         .evaluate((el) => el.textContent ?? '', { timeout: 15_000 })
         .catch(() => null);
       if (bodyText === null) {
-        // eslint-disable-next-line no-console
         console.warn(`::warning::${route}: body text read timed out — NOT measured here`);
       } else {
         expect(bodyText.trim().length, `${route} rendered no content`).toBeGreaterThan(0);

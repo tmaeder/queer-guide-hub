@@ -2,14 +2,12 @@ import { render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import { HoursTable } from '@/components/transit/HoursTable';
 import { AccessGrid } from '@/components/transit/AccessGrid';
-import { TicketTiers } from '@/components/transit/TicketTiers';
 import { OccurrenceList } from '@/components/transit/OccurrenceList';
 import { ProvenanceLine } from '@/components/transit/ProvenanceLine';
 import { Roster } from '@/components/transit/Roster';
 import { NestedEntityCard } from '@/components/transit/NestedEntityCard';
 import { MemoryRouter } from 'react-router';
 import { StopList } from '@/components/transit/StopList';
-import { VersionHistory } from '@/components/transit/VersionHistory';
 
 const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((d) => ({
   day: d,
@@ -81,25 +79,6 @@ describe('AccessGrid', () => {
   });
 });
 
-describe('TicketTiers', () => {
-  it('renders every tier identically — no recommended highlight', () => {
-    // "Nobody is turned away for money": emphasising a tier puts a thumb on
-    // a scale the reader is meant to set themselves.
-    const { container } = render(
-      <TicketTiers
-        tiers={[
-          { price: '€8', name: 'Low end', note: 'Take this if money is tight.' },
-          { price: '€12', name: 'Standard' },
-          { price: '€15', name: 'Solidarity' },
-        ]}
-      />,
-    );
-    const items = [...container.querySelectorAll('li')].map((li) => li.className);
-    expect(new Set(items).size).toBe(1);
-    expect(screen.getByText('€8')).toBeInTheDocument();
-  });
-});
-
 describe('OccurrenceList', () => {
   it('floods the next occurrence only', () => {
     const { container } = render(
@@ -121,7 +100,9 @@ describe('ProvenanceLine', () => {
     // "2 months ago" re-reads as fresh on every visit — the exact illusion
     // provenance exists to break.
     render(<ProvenanceLine addedBy="Ines K." checkedAt="2026-07-02T00:00:00Z" />);
-    expect(screen.getByText(/Last checked 2 July 2026|Last checked July 2, 2026/)).toBeInTheDocument();
+    expect(
+      screen.getByText(/Last checked 2 July 2026|Last checked July 2, 2026/),
+    ).toBeInTheDocument();
     expect(screen.queryByText(/ago/)).toBeNull();
   });
 
@@ -187,7 +168,12 @@ describe('StopList', () => {
     // A guide is "not a ranked listicle" — ranking breaks zero-hierarchy.
     const { container } = render(
       <MemoryRouter>
-        <StopList stops={[{ id: '1', name: 'A' }, { id: '2', name: 'B' }]} />
+        <StopList
+          stops={[
+            { id: '1', name: 'A' },
+            { id: '2', name: 'B' },
+          ]}
+        />
       </MemoryRouter>,
     );
     expect(container.querySelector('ol')).toBeTruthy();
@@ -198,38 +184,5 @@ describe('StopList', () => {
   it('renders nothing with no stops', () => {
     const { container } = render(<StopList stops={[]} />);
     expect(container.firstChild).toBeNull();
-  });
-});
-
-describe('VersionHistory', () => {
-  it('renders every revision with a machine-readable absolute date', () => {
-    // "Safety information without a date is dangerous."
-    const { container } = render(
-      <VersionHistory
-        revisions={[
-          { id: '1', date: '2026-07-02', change: 'Added the slang note.', by: 'Rae M.' },
-          { id: '2', date: '2021-03-14', change: 'Page created.', by: 'Ines K.' },
-        ]}
-      />,
-    );
-    const times = container.querySelectorAll('time');
-    expect(times).toHaveLength(2);
-    expect(times[0].getAttribute('dateTime')).toBe('2026-07-02');
-    expect(screen.getByText('Page created.')).toBeInTheDocument();
-  });
-
-  it('collapses nothing behind a show-more', () => {
-    // On these types the history IS the content, not an appendix.
-    render(
-      <VersionHistory
-        revisions={[...Array(8)].map((_, i) => ({
-          id: String(i),
-          date: '2026-01-0' + ((i % 9) + 1),
-          change: 'change ' + i,
-        }))}
-      />,
-    );
-    expect(screen.queryByText(/show more|see all|expand/i)).toBeNull();
-    expect(screen.getByText('change 7')).toBeInTheDocument();
   });
 });

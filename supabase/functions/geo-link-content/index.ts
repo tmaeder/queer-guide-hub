@@ -13,7 +13,7 @@
  */
 
 import { requireAdmin, getCorsHeaders, getServiceClient } from '../_shared/supabase-client.ts';
-import { COUNTRY_ALIASES } from '../_shared/automation-utils.ts';
+import { COUNTRY_ALIASES } from '../_shared/geo-normalize.ts';
 import { cityCollisionReason, proseStateContradiction } from '../_shared/city-collision-guard.ts';
 import { cityLinkContradiction, linkWriteStatus, mergeRoundRobin } from '../_shared/geo-link-guards.ts';
 

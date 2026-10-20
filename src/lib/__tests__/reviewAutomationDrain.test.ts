@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { cadenceLabel } from '@/lib/automationCadence';
 
 const MIGRATIONS = join(process.cwd(), 'supabase', 'migrations');
 
@@ -273,37 +272,5 @@ describe('cadence — minutes, not a nightly window', () => {
     const verify = verifyOf(findMigration('drain_cadence_minutes'));
     expect(verify).toContain('registry schedule not retuned');
     expect(verify).toContain('live cron schedule not retuned');
-  });
-});
-
-describe('cadenceLabel — derived from the schedules, never hardcoded', () => {
-  const J = (s: Record<string, string | null>, enabled = true) =>
-    Object.fromEntries(Object.entries(s).map(([k, v]) => [k, { enabled, schedule: v }]));
-
-  it('reports the WORST case across jobs, not the best', () => {
-    expect(cadenceLabel(J({ a: '*/5 * * * *', b: '*/15 * * * *' }))).toBe(
-      'next pass within 15 min',
-    );
-  });
-
-  it('treats the offset form as the same cadence', () => {
-    expect(cadenceLabel(J({ a: '2-59/5 * * * *' }))).toBe('next pass within 5 min');
-  });
-
-  it('calls a fixed hour-of-day what it is', () => {
-    // The whole point: if someone puts the nightly window back, the card must
-    // say so rather than keep promising minutes.
-    expect(cadenceLabel(J({ a: '*/5 * * * *', b: '20 6 * * *' }))).toBe('next pass tonight');
-  });
-
-  it('ignores disabled jobs — a job that is off has no cadence', () => {
-    expect(
-      cadenceLabel({ ...J({ a: '*/5 * * * *' }), b: { enabled: false, schedule: '20 6 * * *' } }),
-    ).toBe('next pass within 5 min');
-  });
-
-  it('returns null when nothing is scheduled at all', () => {
-    expect(cadenceLabel({})).toBeNull();
-    expect(cadenceLabel(J({ a: null }))).toBeNull();
   });
 });

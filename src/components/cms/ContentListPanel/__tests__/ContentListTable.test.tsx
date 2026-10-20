@@ -200,8 +200,8 @@ describe('ContentListTable', () => {
       </TooltipProvider>,
     );
 
-    expect(screen.getByRole('button', { name: 'Edit Title' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Edit Status' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /^Edit Title/ })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /^Edit Status/ })).toBeInTheDocument();
   });
 
   it('renders computed properties without a false editing affordance', () => {
@@ -224,6 +224,6 @@ describe('ContentListTable', () => {
     );
 
     expect(screen.getByText('Yes')).toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: 'Edit Needs Attention' })).toBeNull();
+    expect(screen.queryByRole('button', { name: /^Edit Needs Attention/ })).toBeNull();
   });
 });

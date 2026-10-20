@@ -131,7 +131,6 @@ test.describe('Header, compact ink state', () => {
       // a literal here would make this spec a second source for both.
       const bad = await page.evaluate(
         ({ helpers, floor, sel }) => {
-          // eslint-disable-next-line no-eval
           eval(helpers);
           // @ts-expect-error — defined by the injected helper source.
           return __lowContrastControls(document.querySelector(sel), floor);

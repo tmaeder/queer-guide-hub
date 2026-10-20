@@ -102,7 +102,6 @@ test.describe('Footer a11y', () => {
         // Playwright `evaluate` callback cannot close over an imported
         // function, and inlining it in three specs is how the oklab bug would
         // have survived in two of them.
-        // eslint-disable-next-line no-eval
         eval(helpers);
         const footers = Array.from(document.querySelectorAll('#root footer'));
         // @ts-expect-error — defined by the injected helper source.

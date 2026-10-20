@@ -181,41 +181,11 @@ describe('the UI stops offering what the RPC refuses', () => {
     // and an unknown queue both read false.
     expect(hook).toMatch(/\?\.can_reopen === true/);
   });
-
-  it('handleUndo consults canReopenFor before sending a write', () => {
-    const view = read('components/admin/triage/TriageView.tsx');
-    expect(view).toMatch(/const \{ externalConsoleFor, canReopenFor \}/);
-    expect(view).toMatch(/if \(!canReopenFor\(target\.queueType\)\)/);
-    // And the refusal must return, not warn and continue.
-    const undo = view.slice(view.indexOf('const handleUndo'));
-    const gate = undo.slice(undo.indexOf('if (!canReopenFor(target.queueType))'));
-    expect(gate.slice(0, 400)).toMatch(/return;/);
-  });
-
-  it('arms undo only for a reopenable queue', () => {
-    const view = read('components/admin/triage/TriageView.tsx');
-    // The second gate is the one that matters: without it the U key is offered
-    // after an irreversible merge and the backstop above is all that stands
-    // between the reviewer and a false "Reopened".
-    expect(view).toMatch(
-      /\(action === 'approve' \|\| action === 'reject'\) &&\s*\n?\s*canReopenFor\(activeItem\.queue_type\)/,
-    );
-  });
-
-  it('includes canReopenFor in both callbacks dependency lists', () => {
-    const view = read('components/admin/triage/TriageView.tsx');
-    // A stale closure here reads the capabilities of whatever queue was
-    // selected when the callback was built.
-    expect(view).toMatch(/\[activeItem, answers, externalConsoleFor, canReopenFor,/);
-    expect(view).toMatch(/\[lastActed, canReopenFor, triageAction\]/);
-  });
 });
 
 describe('flag is gone from every executable path', () => {
   const files = [
-    'components/admin/triage/TriageView.tsx',
     'components/admin/triage/ActionBar.tsx',
-    'components/admin/triage/useTriageKeyboard.ts',
     'components/admin/triage/resolveDecision.ts',
     'hooks/useUnifiedTriageQueue.ts',
   ];
@@ -253,28 +223,11 @@ describe('flag is gone from every executable path', () => {
 
   it('skip SURVIVES — it is navigation, not a dropped decision', () => {
     // The cheap way to make every assertion above pass is to delete the whole
-    // action bar. Skip is client-side only (TriageView intercepts it before
-    // the RPC) and must still be offered.
+    // action bar. Skip is client-side only and must still be offered.
     const bar = stripTs(read('components/admin/triage/ActionBar.tsx'));
     expect(bar).toMatch(/data-triage-action="skip"/);
     expect(bar).toMatch(/data-triage-action="approve"/);
     expect(bar).toMatch(/data-triage-action="reject"/);
-    const kb = stripTs(read('components/admin/triage/useTriageKeyboard.ts'));
-    expect(kb).toMatch(/s:\s*onSkip/);
-    expect(kb).toMatch(/a:\s*onApprove/);
-  });
-});
-
-describe('the success toast reads as English', () => {
-  it('uses a past-tense map rather than action + "d"', () => {
-    const view = stripTs(read('components/admin/triage/TriageView.tsx'));
-    expect(view).toMatch(/ACTION_PAST_TENSE: Record<TriageAction, string>/);
-    expect(view).toMatch(/approve: 'Approved'/);
-    expect(view).toMatch(/reject: 'Rejected'/);
-    expect(view).toMatch(/skip: 'Skipped'/);
-    // The defect itself: `${action}d` gave "rejectd" and "skipd".
-    expect(view).not.toMatch(/\$\{action\}d/);
-    expect(view).toMatch(/\$\{ACTION_PAST_TENSE\[action\]\}/);
   });
 });
 

@@ -19,7 +19,6 @@ const snapshotTimeoutFix = readFileSync(
 ).toLowerCase();
 const gates = readFileSync('scripts/check-data-quality-gates.mjs', 'utf8');
 const queues = readFileSync('src/config/adminQueues.ts', 'utf8');
-const qualityPage = readFileSync('src/pages/admin/AdminEventQuality.tsx', 'utf8');
 const sourceAdapter = readFileSync('supabase/functions/_shared/source-adapter.ts', 'utf8');
 const pipelineValidate = readFileSync('supabase/functions/pipeline-validate/index.ts', 'utf8');
 const imageAudit = readFileSync('supabase/functions/event-image-quality/index.ts', 'utf8');
@@ -64,7 +63,6 @@ describe('event data quality programme', () => {
     expect(gates).toContain('event_quality_gate_checks');
     expect(queues).toContain("countKey: 'quality_event'");
     expect(queues).toContain("slaKey: 'quality_event'");
-    expect(qualityPage).toContain('<EventQualityIssuesPanel');
     expect(operationsCompletion).toContain('event_quality_issue_page');
     expect(operationsCompletion).toContain('e.duplicate_of_id is null');
     expect(operationsCompletion).toContain('event_became_duplicate');
