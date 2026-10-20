@@ -11,7 +11,7 @@ This branch is a locally verified delivery and consent foundation, not a product
 ## Rollout
 
 1. Confirm `queer.guide` (or deliberately change `SENDER_DOMAIN` and published sender branding) is onboarded to Email Sending with SPF/DKIM/DMARC. `wrangler email sending list` reports sending subdomains; verify the apex in the dashboard too. Requires sending entitlement. The locally authenticated OAuth token did not include email_sending:write when checked on 2026-10-20.
-2. Apply both email platform and email platform privacy migrations through the normal migration workflow. Existing profile accounts are **not** enrolled. Its cron calls the authenticated outbox dispatcher once per minute using the existing vault `internal_invoke_secret`.
+2. Apply email platform, email platform privacy and email platform segments migrations through the normal migration workflow. Existing profile accounts are **not** enrolled. Its cron calls the authenticated outbox dispatcher once per minute using the existing vault `internal_invoke_secret`.
 3. In this directory create queues `queer-guide-email-events` and `queer-guide-email-events-dlq`. Set Worker secrets `EMAIL_GATEWAY_SECRET` and `EMAIL_EVENTS_SECRET` with Wrangler, then deploy. Keep the generated resource bindings in sync using `wrangler types worker-configuration.d.ts --include-runtime=false`.
 4. Set Supabase secrets `EMAIL_GATEWAY_URL` (the deployed Worker origin), `EMAIL_GATEWAY_SECRET`, and `EMAIL_EVENTS_SECRET` (same values on each side). Deploy the changed functions and new `email-dispatch`, `email-admin`, `email-subscriptions`, `cloudflare-email-events` functions. They own their authorization; preserve `verify_jwt=false` for new endpoints. Keep all credential values out of browser env vars.
 5. Configure Cloudflare Email Sending Event Subscriptions on the verified sending domain, delivering all six native lifecycle event types to `queer-guide-email-events`. The consumer forwards to the authenticated backend. Configure DLQ monitoring in the existing operations workflow.
@@ -39,6 +39,8 @@ Before production, establish retention periods for message bodies, delivery/cons
 
 - `npm test` and `npm run typecheck` here; `npm run dry-run` bundles without deploying.
 - `deno test --no-config --allow-env supabase/functions/_shared/email-platform.test.ts supabase/functions/_shared/email-render.test.ts supabase/functions/_shared/email-outbox.test.ts` from repository root.
-- Run `supabase/tests/fixtures/email_platform_bootstrap.sql`, both migrations and `supabase/tests/email_platform.sql` plus `supabase/tests/email_platform_privacy.sql` in a fresh isolated Postgres database. The bootstrap supplies only the prerequisites for the contract suite; it does not validate every application migration. It rolls back test data.
+- Run `supabase/tests/fixtures/email_platform_bootstrap.sql`, all three migrations and `supabase/tests/email_platform.sql`, `supabase/tests/email_platform_privacy.sql`, `supabase/tests/email_platform_segments.sql` in a fresh isolated Postgres database. The bootstrap supplies only the prerequisites for the contract suite; it does not validate every application migration. It rolls back test data.
 
 Remaining provider limitation: the full marketing/newsletter objective cannot be activated while Cloudflare disallows that delivery class. Deployment, domain setup, event subscriptions and Auth SMTP cutover are still rollout steps, not proven by local tests.
+
+Dynamic audience definitions, live previews and contact timelines are available through the admin API; see `docs/architecture/email-audiences.md`. The audience builder UI, campaign binding and general product-event journey engine remain unfinished.

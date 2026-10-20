@@ -16,8 +16,10 @@ on:
       - 'supabase/functions/_shared/cloudflare-email-*.ts'
       - 'supabase/migrations/*email_platform.sql'
       - 'supabase/migrations/*email_platform_privacy.sql'
+      - 'supabase/migrations/*email_platform_segments.sql'
       - 'supabase/tests/email_platform.sql'
       - 'supabase/tests/email_platform_privacy.sql'
+      - 'supabase/tests/email_platform_segments.sql'
       - 'supabase/tests/fixtures/email_platform_bootstrap.sql'
       - 'package.json'
       - 'package-lock.json'
@@ -72,5 +74,7 @@ jobs:
           psql -v ON_ERROR_STOP=1 -f supabase/tests/fixtures/email_platform_bootstrap.sql
           psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261020182833_email_platform.sql
           psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261020191722_email_platform_privacy.sql
+          psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261020192818_email_platform_segments.sql
           psql -v ON_ERROR_STOP=1 -f supabase/tests/email_platform.sql
           psql -v ON_ERROR_STOP=1 -f supabase/tests/email_platform_privacy.sql
+          psql -v ON_ERROR_STOP=1 -f supabase/tests/email_platform_segments.sql

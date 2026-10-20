@@ -64,6 +64,23 @@ Deno.serve(async (req: Request) => {
         if (error) throw error;
         return result({ subscribers: data });
       }
+      if (resource === "segments") {
+        const { data, error } = await db.from("email_segments").select("*")
+          .order("updated_at", { ascending: false }).limit(100);
+        if (error) throw error;
+        return result({ segments: data });
+      }
+      if (resource === "timeline") {
+        const id = url.searchParams.get("id");
+        if (!id || !/^[a-f0-9-]{36}$/i.test(id)) {
+          return result({ error: "Subscriber required" }, 400);
+        }
+        const { data, error } = await db.rpc("email_contact_timeline", {
+          p_subscriber: id,
+        });
+        if (error) throw error;
+        return result({ events: data });
+      }
       if (resource === "consent") {
         const id = url.searchParams.get("id");
         if (!id || !/^[a-f0-9-]{36}$/i.test(id)) {
@@ -82,8 +99,89 @@ Deno.serve(async (req: Request) => {
       return result({ error: "Method not allowed" }, 405);
     }
     const raw = await req.text();
-    if (raw.length > 8000) return result({ error: "Request too large" }, 413);
+    if (raw.length > 12000) return result({ error: "Request too large" }, 413);
     const body = JSON.parse(raw);
+    if (body.action === "segment-save") {
+      if (
+        typeof body.name !== "string" || !body.rule ||
+        typeof body.rule !== "object" || Array.isArray(body.rule) ||
+        (body.id &&
+          (typeof body.id !== "string" || !/^[a-f0-9-]{36}$/i.test(body.id))) ||
+        (body.id &&
+          (!Number.isInteger(body.expected_version) ||
+            body.expected_version < 1 || body.expected_version > 1000000000)) ||
+        (body.status && !["active", "archived"].includes(body.status))
+      ) return result({ error: "Invalid segment" }, 400);
+      const { data, error } = await db.rpc("email_segment_save", {
+        p_name: body.name,
+        p_rule: body.rule,
+        p_actor: actor.isServiceRole ? null : actor.userId,
+        p_id: body.id ?? null,
+        p_expected_version: body.expected_version ?? null,
+        p_status: body.status ?? "active",
+      });
+      if (error) {
+        if (error.code === "40001") {
+          return result(
+            { error: "Segment changed. Reload before saving." },
+            409,
+          );
+        }
+        if (["22023", "22P02", "23514"].includes(error.code)) {
+          return result({ error: "Invalid segment rule" }, 400);
+        }
+        if (error.code === "P0002") {
+          return result({ error: "Segment not found" }, 404);
+        }
+        throw error;
+      }
+      return result({ segment: data });
+    }
+    if (body.action === "segment-preview") {
+      if (
+        (body.id &&
+          (typeof body.id !== "string" || !/^[a-f0-9-]{36}$/i.test(body.id))) ||
+        (!body.id &&
+          (!body.rule || typeof body.rule !== "object" ||
+            Array.isArray(body.rule))) ||
+        (body.limit !== undefined &&
+          (!Number.isInteger(body.limit) || body.limit < 1 ||
+            body.limit > 100)) ||
+        (body.after &&
+          (typeof body.after !== "string" ||
+            !/^[a-f0-9-]{36}$/i.test(body.after)))
+      ) return result({ error: "Invalid segment preview" }, 400);
+      let rule = body.rule;
+      let version: number | null = null;
+      if (body.id) {
+        const saved = await db.from("email_segments").select("rule,version").eq(
+          "id",
+          body.id,
+        ).maybeSingle();
+        if (saved.error) throw saved.error;
+        if (!saved.data) return result({ error: "Segment not found" }, 404);
+        rule = saved.data.rule;
+        version = saved.data.version;
+      }
+      const { data, error } = await db.rpc("email_segment_preview", {
+        p_rule: rule,
+        p_topic: body.topic ?? null,
+        p_limit: body.limit ?? 50,
+        p_after: body.after ?? null,
+      });
+      if (error) {
+        if (["22023", "22P02"].includes(error.code)) {
+          return result({ error: "Invalid segment rule" }, 400);
+        }
+        throw error;
+      }
+      return result({
+        preview: data,
+        version,
+        dispatchAvailable: false,
+        reason: BLOCK,
+      });
+    }
     if (body.action === "campaign-save") {
       if (
         typeof body.name !== "string" || !body.name.trim() ||
