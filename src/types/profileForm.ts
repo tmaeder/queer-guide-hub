@@ -34,6 +34,12 @@ export interface PrivacySettings {
   /** Who sees interests, occupation, education (default community). */
   interests_visibility?: string;
   /**
+   * Open web opt-in (default off): publishes public, unlabelled posts as an Atom
+   * feed and lists @handle@queer.guide in WebFinger. Read by resolve_handle /
+   * open_web_posts; only effective while profile_visibility is public.
+   */
+  open_web?: boolean;
+  /**
    * Whether accepted friends see your birthday (month + day ONLY — the year
    * and age are never exposed) on their hub calendar. 'friends' | 'private',
    * default private; consumed server-side by the friends_birthdays RPC.
@@ -119,16 +125,32 @@ function strArr(val: unknown): string[] {
 export function initFormData(profile: Profile | null | undefined): ProfileFormData {
   if (!profile) {
     return {
-      display_name: '', first_name: '', last_name: '', chosen_name: '',
-      name_pronunciation: '', pronouns: '', pronoun_tags: [], identity_flags: [],
-      bio: '', location: '',
-      date_of_birth: '', age_range: '', occupation: '', education: '',
-      phone: '', website: '',
-      gender_identity: '', sexual_orientation: '',
+      display_name: '',
+      first_name: '',
+      last_name: '',
+      chosen_name: '',
+      name_pronunciation: '',
+      pronouns: '',
+      pronoun_tags: [],
+      identity_flags: [],
+      bio: '',
+      location: '',
+      date_of_birth: '',
+      age_range: '',
+      occupation: '',
+      education: '',
+      phone: '',
+      website: '',
+      gender_identity: '',
+      sexual_orientation: '',
       coming_out_status: DEFAULT_COMING_OUT,
-      chosen_family_status: '', disability_status: '', neurodivergent_status: '',
-      cultural_background: [], languages: [],
-      romantic_orientation: '', current_relationship_status: '',
+      chosen_family_status: '',
+      disability_status: '',
+      neurodivergent_status: '',
+      cultural_background: [],
+      languages: [],
+      romantic_orientation: '',
+      current_relationship_status: '',
       relationship_style: '',
       privacy_settings: DEFAULT_PRIVACY,
       user_mode: 'exploration',
@@ -146,11 +168,12 @@ export function initFormData(profile: Profile | null | undefined): ProfileFormDa
     chosen_name: str(p.chosen_name),
     name_pronunciation: str(p.name_pronunciation),
     pronouns: str(p.pronouns),
-    pronoun_tags: strArr(p.pronoun_tags).length > 0
-      ? strArr(p.pronoun_tags)
-      : str(p.pronouns).trim()
-        ? [str(p.pronouns).trim()]
-        : [],
+    pronoun_tags:
+      strArr(p.pronoun_tags).length > 0
+        ? strArr(p.pronoun_tags)
+        : str(p.pronouns).trim()
+          ? [str(p.pronouns).trim()]
+          : [],
     identity_flags: strArr(p.identity_flags),
     bio: str(p.bio),
     location: str(p.location),

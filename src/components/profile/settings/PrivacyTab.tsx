@@ -189,6 +189,13 @@ export function PrivacyTab({
                 checked={ps.birthday_visibility === 'friends'}
                 onChange={(v) => onPrivacyChange('birthday_visibility', v ? 'friends' : 'private')}
               />
+              <SwitchField
+                id="open_web"
+                label="Open web"
+                description="Publish your public posts as an Atom feed and let fediverse apps find you as @handle@queer.guide. Posts with content warnings are never included. Needs a public profile."
+                checked={ps.open_web === true}
+                onChange={(v) => onPrivacyChange('open_web', v)}
+              />
             </div>
           </CardContent>
         </Card>

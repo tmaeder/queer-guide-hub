@@ -33657,6 +33657,22 @@ export type Database = {
         Args: { p_amount: number; p_currency: string }
         Returns: number
       }
+      resolve_handle: {
+        Args: { p_handle: string }
+        Returns: Json
+      }
+      open_web_posts: {
+        Args: { p_handle?: string; p_tag?: string; p_limit?: number }
+        Returns: {
+          id: string
+          username: string
+          display_name: string | null
+          content: string
+          tags: string[] | null
+          created_at: string
+          updated_at: string | null
+        }[]
+      }
       gated_count_for_location: {
         Args: { p_city_id?: string; p_country_id?: string }
         Returns: Json
