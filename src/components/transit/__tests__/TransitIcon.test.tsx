@@ -3,10 +3,7 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
 import { TransitIcon } from '@/components/transit/TransitIcon';
 import { ICON_DEFS, ink } from '@/components/transit/iconDefs';
-import {
-  TRANSIT_ICON_NAMES,
-  TRANSIT_ICON_PATHS,
-} from '@/components/transit/transitIconPaths';
+import { TRANSIT_ICON_NAMES, TRANSIT_ICON_PATHS } from '@/components/transit/transitIconPaths';
 
 describe('TransitIcon', () => {
   // The map rasterizes these into MapLibre images by serialising them on their
@@ -60,20 +57,33 @@ describe('TransitIcon', () => {
   });
 
   describe('colour mode (default)', () => {
-    it('gives every filled shape an ink outline and a track fill', () => {
-      // §4b: the outline is always ink, colour sits inside it. A coloured
-      // outline would put the colour where the ink belongs.
+    it('outlines every filled shape in ink, or in nothing at all', () => {
+      // §4b: colour sits INSIDE an outline and may never act as one. An
+      // outline weight of 0 is the only way a fill goes without — and it has
+      // to mean NO stroke, not a stroke of the track colour, which is the one
+      // way this escape hatch could break the rule it sits beside.
+      let unoutlined = 0;
       for (const name of TRANSIT_ICON_NAMES) {
         const def = ICON_DEFS[name];
         if (!def.f?.length) continue;
         const { container, unmount } = render(<TransitIcon name={name} />);
         const filled = [...container.querySelectorAll('path')].slice(0, def.f.length);
-        for (const p of filled) {
-          expect(p.getAttribute('stroke'), name).toBe(ink);
-          expect(p.getAttribute('fill'), name).not.toBe('none');
-        }
+        filled.forEach((p, i) => {
+          const [, , outline = 1] = def.f![i];
+          if (outline === 0) {
+            unoutlined += 1;
+            expect(p.getAttribute('stroke'), `${name} f[${i}]`).toBe('none');
+          } else {
+            expect(p.getAttribute('stroke'), `${name} f[${i}]`).toBe(ink);
+          }
+          expect(p.getAttribute('fill'), `${name} f[${i}]`).not.toBe('none');
+        });
         unmount();
       }
+      // A positive control. The `outline === 0` arm above is the whole point of
+      // the assertion and is reachable from exactly one icon today, so without
+      // this the branch is satisfied by never being taken.
+      expect(unoutlined).toBeGreaterThan(0);
     });
 
     it('draws into the plain 100-unit box at every size, like monochrome', () => {
@@ -91,26 +101,49 @@ describe('TransitIcon', () => {
     it('can be told to draw no ticks even when it is large enough', () => {
       // A glyph set inside another shape (the marketplace station disc) has
       // that shape as its boundary, so its tick margin is interior.
-      const plain = renderToStaticMarkup(<TransitIcon name="saved" size={64} />);
-      const quiet = renderToStaticMarkup(<TransitIcon name="saved" size={64} ticks={false} />);
+      // `rainbow` on purpose: most of the set is `t: 'none'` now, so a fixture
+      // has to be one of the six icons where movement is the subject.
+      const plain = renderToStaticMarkup(<TransitIcon name="rainbow" size={64} />);
+      const quiet = renderToStaticMarkup(<TransitIcon name="rainbow" size={64} ticks={false} />);
       expect((plain.match(/<path/g) ?? []).length - (quiet.match(/<path/g) ?? []).length).toBe(3);
     });
 
     it('drops motion ticks below 32px and draws them at and above it', () => {
       const count = (size: number) =>
-        (renderToStaticMarkup(<TransitIcon name="saved" size={size} />).match(/<path/g) ?? [])
+        (renderToStaticMarkup(<TransitIcon name="rainbow" size={size} />).match(/<path/g) ?? [])
           .length;
-      // `saved` is a single heart with a `crown` tick set, so the difference
+      // `rainbow` is two strokes with a `crown` tick set, so the difference
       // between the two is exactly the three ticks.
       expect(count(32) - count(24)).toBe(3);
     });
 
     it('draws no ticks for an icon whose set is `none`', () => {
-      const quiet = renderToStaticMarkup(<TransitIcon name="aftercare" size={64} />);
-      const loud = renderToStaticMarkup(<TransitIcon name="saved" size={64} />);
-      // Both are a heart plus strokes; only one is allowed to be jaunty.
-      expect(quiet.match(/<path/g)).toHaveLength(2);
+      const quiet = renderToStaticMarkup(<TransitIcon name="saved" size={64} />);
+      const loud = renderToStaticMarkup(<TransitIcon name="rainbow" size={64} />);
+      // `saved` is one filled heart and nothing else; `rainbow` is two strokes
+      // plus three ticks.
+      expect(quiet.match(/<path/g)).toHaveLength(1);
       expect((loud.match(/<path/g) ?? []).length).toBeGreaterThan(2);
+    });
+
+    it('keeps ticks only where movement is the subject', () => {
+      // Not a style preference, and the reason is arithmetic: the tick margin
+      // is 12 units and the body outline is 9-13, so a tick drawn at body
+      // weight fills 75-108% of the space it floats in and reads as a horn or
+      // an ear rather than as motion. TICK_WEIGHT fixes the weight; this fixes
+      // the COUNT. Measured on the contact sheet — `theater` was a horned
+      // devil and every garment in Market grew a pair of ears.
+      const ticked = Object.entries(ICON_DEFS)
+        .filter(([, d]) => d.t !== 'none')
+        .map(([slug]) => slug)
+        .sort();
+      // Three, and each survives the same test the other 73 failed: the tick
+      // must not land on the end of a stem or on a straight edge, because a
+      // mark in either place reads as a thing attached to the shape. `alerts`
+      // ticks sideways off a bell, `disco` radiates off a sphere and
+      // `rainbow` radiates off an arc — none of them has an upright for a
+      // tick to sit on top of.
+      expect(ticked).toEqual(['alerts', 'disco', 'rainbow']);
     });
   });
 

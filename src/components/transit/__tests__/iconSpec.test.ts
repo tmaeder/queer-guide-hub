@@ -1,5 +1,15 @@
 import { describe, expect, it } from 'vitest';
-import { ICON_DEFS, TICKS, M, C, G, Y, type IconName, type Stroke } from '../iconDefs';
+import {
+  ICON_DEFS,
+  TICKS,
+  M,
+  C,
+  G,
+  Y,
+  type FilledShape,
+  type IconName,
+  type Stroke,
+} from '../iconDefs';
 import {
   BLEED_MAX,
   BLEED_MIN,
@@ -45,7 +55,7 @@ const TRACKS: string[] = [M, C, G, Y];
 function pathsOf(slug: IconName): { where: string; d: string }[] {
   const def = ICON_DEFS[slug];
   const out: { where: string; d: string }[] = [];
-  (def.f ?? []).forEach(([d]: [string, unknown], i: number) => out.push({ where: `f[${i}]`, d }));
+  (def.f ?? []).forEach(([d]: FilledShape, i: number) => out.push({ where: `f[${i}]`, d }));
   (def.l ?? []).forEach((s: Stroke, i: number) =>
     out.push({ where: `l[${i}]`, d: typeof s === 'string' ? s : s[0] }),
   );

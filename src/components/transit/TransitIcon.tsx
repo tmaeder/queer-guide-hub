@@ -1,6 +1,7 @@
 import {
   ICON_DEFS,
   TICKS,
+  TICK_WEIGHT,
   ink,
   inkPathOf,
   paper,
@@ -139,16 +140,23 @@ export function TransitIcon({
       {...(label ? { role: 'img', 'aria-label': label } : { 'aria-hidden': true })}
     >
       {/* Fills first, back to front: a later shape paints over an earlier one,
-          which is how a paper counter cuts a hole in a track-coloured mass. */}
-      {(def.f ?? []).map(([d, kind], i) => (
+          which is how a paper counter cuts a hole in a track-coloured mass —
+          and, at outline weight 0, how a band of pure colour lands inside one
+          keyline instead of carrying its own. `stroke="none"` rather than a
+          zero width because a zero-width stroke still joins and caps. */}
+      {(def.f ?? []).map(([d, kind, outline = 1], i) => (
         <path
           key={`f${i}`}
           d={d}
           fill={fillOf(kind, def.hex)}
-          stroke={ink}
-          strokeWidth={sw}
-          strokeLinecap="round"
-          strokeLinejoin="round"
+          {...(outline === 0
+            ? { stroke: 'none' }
+            : {
+                stroke: ink,
+                strokeWidth: sw * outline,
+                strokeLinecap: 'round' as const,
+                strokeLinejoin: 'round' as const,
+              })}
         />
       ))}
       {(def.l ?? []).map((s, i) => {
@@ -175,7 +183,7 @@ export function TransitIcon({
           d={d}
           fill="none"
           stroke={ink}
-          strokeWidth={sw}
+          strokeWidth={sw * TICK_WEIGHT}
           strokeLinecap="round"
           strokeLinejoin="round"
         />
