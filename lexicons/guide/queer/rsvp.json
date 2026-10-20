@@ -1,0 +1,20 @@
+{
+  "lexicon": 1,
+  "id": "guide.queer.rsvp",
+  "defs": {
+    "main": {
+      "type": "record",
+      "description": "The author's attendance for an event. One per event; the record key is derived from the event.",
+      "key": "any",
+      "record": {
+        "type": "object",
+        "required": ["subject", "status", "createdAt"],
+        "properties": {
+          "subject": { "type": "ref", "ref": "guide.queer.defs#subject" },
+          "status": { "type": "string", "knownValues": ["going", "interested"] },
+          "createdAt": { "type": "string", "format": "datetime" }
+        }
+      }
+    }
+  }
+}

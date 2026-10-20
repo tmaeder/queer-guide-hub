@@ -1,4 +1,5 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { mirrorActivity } from '@/hooks/blueskyActivity';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
 
@@ -33,6 +34,11 @@ export function useVenueRating(venueId: string) {
       { onConflict: 'venue_id,user_id' },
     );
     if (error) throw error;
+    mirrorActivity(
+      rating >= 1
+        ? { kind: 'review', entityType: 'venue', entityId: venueId, rating }
+        : { kind: 'review', entityType: 'venue', entityId: venueId, remove: true },
+    );
     await client.invalidateQueries({ queryKey: key });
     await client.invalidateQueries({ queryKey: ['user-reviews', user.id] });
   };

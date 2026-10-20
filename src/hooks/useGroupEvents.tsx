@@ -1,4 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { mirrorRsvp } from '@/hooks/blueskyActivity';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
 import { useToast } from '@/hooks/use-toast';
@@ -86,7 +87,10 @@ export const useGroupEvents = (groupId: string) => {
         event_ids: ids,
       });
       const countById = new Map(
-        (counts ?? []).map((r: { event_id: string; going_count: number }) => [r.event_id, r.going_count]),
+        (counts ?? []).map((r: { event_id: string; going_count: number }) => [
+          r.event_id,
+          r.going_count,
+        ]),
       );
 
       let ownAttending = new Set<string>();
@@ -106,7 +110,7 @@ export const useGroupEvents = (groupId: string) => {
         user_attending: ownAttending.has(event.id),
       }));
     },
-    enabled: !!user && !!groupId
+    enabled: !!user && !!groupId,
   });
 
   // Create event mutation
@@ -118,7 +122,7 @@ export const useGroupEvents = (groupId: string) => {
           ...eventData,
           group_id: groupId,
           created_by: user?.id,
-          country: 'US' // Default country
+          country: 'US', // Default country
         })
         .select()
         .single();
@@ -129,49 +133,48 @@ export const useGroupEvents = (groupId: string) => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['group-events', groupId] });
       toast({
-        title: "Event created",
-        description: "Your group event has been created successfully."
+        title: 'Event created',
+        description: 'Your group event has been created successfully.',
       });
     },
     onError: (error) => {
       toast({
-        title: "Error",
-        description: "Failed to create event. Please try again.",
-        variant: "destructive"
+        title: 'Error',
+        description: 'Failed to create event. Please try again.',
+        variant: 'destructive',
       });
       console.error('Error creating event:', error);
-    }
+    },
   });
 
   // Join event mutation
   const joinEventMutation = useMutation({
     mutationFn: async (eventId: string) => {
-      const { data, error } = await supabase
-        .from('event_attendees')
-        .insert({
-          event_id: eventId,
-          user_id: user?.id,
-          status: 'going'
-        });
+      const { data, error } = await supabase.from('event_attendees').insert({
+        event_id: eventId,
+        user_id: user?.id,
+        status: 'going',
+      });
 
       if (error) throw error;
+      mirrorRsvp(eventId, 'going');
       return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['group-events', groupId] });
       toast({
-        title: "Joined event",
-        description: "You've successfully joined the event."
+        title: 'Joined event',
+        description: "You've successfully joined the event.",
       });
     },
     onError: (error) => {
       toast({
-        title: "Error",
-        description: "Failed to join event. Please try again.",
-        variant: "destructive"
+        title: 'Error',
+        description: 'Failed to join event. Please try again.',
+        variant: 'destructive',
       });
       console.error('Error joining event:', error);
-    }
+    },
   });
 
   // Leave event mutation
@@ -184,22 +187,23 @@ export const useGroupEvents = (groupId: string) => {
         .eq('user_id', user?.id);
 
       if (error) throw error;
+      mirrorRsvp(eventId, 'not_going');
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['group-events', groupId] });
       toast({
-        title: "Left event",
-        description: "You've left the event."
+        title: 'Left event',
+        description: "You've left the event.",
       });
     },
     onError: (error) => {
       toast({
-        title: "Error",
-        description: "Failed to leave event. Please try again.",
-        variant: "destructive"
+        title: 'Error',
+        description: 'Failed to leave event. Please try again.',
+        variant: 'destructive',
       });
       console.error('Error leaving event:', error);
-    }
+    },
   });
 
   // Delete event mutation
@@ -216,18 +220,18 @@ export const useGroupEvents = (groupId: string) => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['group-events', groupId] });
       toast({
-        title: "Event deleted",
-        description: "The event has been deleted successfully."
+        title: 'Event deleted',
+        description: 'The event has been deleted successfully.',
       });
     },
     onError: (error) => {
       toast({
-        title: "Error",
-        description: "Failed to delete event. Please try again.",
-        variant: "destructive"
+        title: 'Error',
+        description: 'Failed to delete event. Please try again.',
+        variant: 'destructive',
       });
       console.error('Error deleting event:', error);
-    }
+    },
   });
 
   return {
@@ -240,6 +244,6 @@ export const useGroupEvents = (groupId: string) => {
     leaveEvent: leaveEventMutation.mutate,
     isLeavingEvent: leaveEventMutation.isPending,
     deleteEvent: deleteEventMutation.mutate,
-    isDeletingEvent: deleteEventMutation.isPending
+    isDeletingEvent: deleteEventMutation.isPending,
   };
 };

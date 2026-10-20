@@ -24240,6 +24240,7 @@ export type Database = {
           did: string
           handle: string
           linked_at: string
+          publish_activity: boolean
           use_queer_guide_handle: boolean
           user_id: string
         }
@@ -24247,6 +24248,7 @@ export type Database = {
           did: string
           handle: string
           linked_at?: string
+          publish_activity?: boolean
           use_queer_guide_handle?: boolean
           user_id: string
         }
@@ -24254,6 +24256,7 @@ export type Database = {
           did?: string
           handle?: string
           linked_at?: string
+          publish_activity?: boolean
           use_queer_guide_handle?: boolean
           user_id?: string
         }
