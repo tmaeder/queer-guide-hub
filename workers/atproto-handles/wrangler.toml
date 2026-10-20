@@ -1,0 +1,17 @@
+# AT Protocol handle resolution for name.queer.guide (HTTPS method):
+#   GET https://<name>.queer.guide/.well-known/atproto-did  ->  200 text/plain <DID> | 404
+# Needs a proxied wildcard DNS record `*` on queer.guide (e.g. AAAA 100::).
+# Explicit records (search., img., extract., …) are unaffected: the route below
+# only claims the one well-known path, and an explicit DNS record always wins
+# over the wildcard.
+name = "queer-guide-atproto-handles"
+main = "src/index.ts"
+compatibility_date = "2026-04-01"
+
+[[routes]]
+pattern = "*.queer.guide/.well-known/atproto-did"
+zone_name = "queer.guide"
+
+[vars]
+SUPABASE_URL = "https://xqeacpakadqfxjxjcewc.supabase.co"
+# SUPABASE_ANON_KEY is set with `wrangler secret put SUPABASE_ANON_KEY` (public key, kept out of git by convention).
