@@ -186,7 +186,7 @@ CREATE OR REPLACE FUNCTION public.redirect_domain_actor(p_actor uuid)
  LANGUAGE plpgsql
  SET search_path TO 'public', 'pg_temp'
 AS $function$
-DECLARE selected_workspace uuid:=public.redirect_request_workspace(p_actor); 
+DECLARE selected_workspace uuid:=public.redirect_request_workspace(p_actor);
 BEGIN
  PERFORM pg_advisory_xact_lock(471983093);
  PERFORM 1 WHERE redirect_internal.workspace_owner(selected_workspace,p_actor);
