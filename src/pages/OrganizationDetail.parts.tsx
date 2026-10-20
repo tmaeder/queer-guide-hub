@@ -143,6 +143,14 @@ export function OrgTags({ org }: { org: Organization }) {
   );
 }
 
+/** The organisation's own phone, else its primary venue's (the RPC lists the
+ *  primary venue first). Most organisations are the identity behind one venue
+ *  and were minted before the venue's number arrived, so `organizations.phone`
+ *  is empty on ~2,200 of them while the venue has one. */
+export function orgPhone(org: Organization): string | null {
+  return org.phone || org.venues[0]?.phone || null;
+}
+
 /** True when the organisation has anything for the "Location & contact"
  *  section — so the descriptor's guard and the component's null-return agree. */
 export function orgHasLocationOrContact(org: Organization): boolean {
@@ -150,7 +158,7 @@ export function orgHasLocationOrContact(org: Organization): boolean {
     org.venues.length > 0 ||
     org.website ||
     org.email ||
-    formatPhoneHref(org.phone) ||
+    formatPhoneHref(orgPhone(org)) ||
     hasSocialLinks(org.social),
   );
 }
@@ -176,7 +184,8 @@ export function OrgLocationContact({ org }: { org: Organization }) {
     excludeType: 'venue',
     excludeId: center?.id ?? null,
   });
-  const phoneHref = formatPhoneHref(org.phone);
+  const phone = orgPhone(org);
+  const phoneHref = formatPhoneHref(phone);
   const hasContact = Boolean(org.website || org.email || phoneHref || hasSocialLinks(org.social));
   if (!center && !hasContact && org.venues.length === 0) return null;
 
@@ -209,22 +218,28 @@ export function OrgLocationContact({ org }: { org: Organization }) {
 
         {hasContact && (
           <div className="flex min-w-0 flex-col gap-4">
-            {phoneHref && (
-              <div className="flex items-center gap-2">
-                <Phone size={16} className="shrink-0 text-muted-foreground" aria-hidden="true" />
-                <a href={phoneHref} className="text-sm text-primary hover:underline">
-                  {formatPhoneDisplay(org.phone)}
-                </a>
-              </div>
-            )}
+            {/* `flex items-center` on the link, not just the row: the base layer
+                gives every <a> min-height 44px, so a bare link is a 44px block
+                whose text sits at its top while the icon is centred. */}
             {org.email && (
               <div className="flex items-center gap-2">
                 <Mail size={16} className="shrink-0 text-muted-foreground" aria-hidden="true" />
                 <a
                   href={`mailto:${org.email}`}
-                  className="min-w-0 truncate text-sm text-primary hover:underline"
+                  className="flex min-w-0 items-center text-sm text-primary hover:underline"
                 >
-                  {org.email}
+                  <span className="truncate">{org.email}</span>
+                </a>
+              </div>
+            )}
+            {phoneHref && (
+              <div className="flex items-center gap-2">
+                <Phone size={16} className="shrink-0 text-muted-foreground" aria-hidden="true" />
+                <a
+                  href={phoneHref}
+                  className="flex items-center text-sm text-primary hover:underline"
+                >
+                  {formatPhoneDisplay(phone)}
                 </a>
               </div>
             )}
@@ -235,9 +250,9 @@ export function OrgLocationContact({ org }: { org: Organization }) {
                   href={org.website}
                   target="_blank"
                   rel="noopener noreferrer nofollow"
-                  className="min-w-0 truncate text-sm text-primary hover:underline"
+                  className="flex min-w-0 items-center text-sm text-primary hover:underline"
                 >
-                  {displayWebsite(org.website)}
+                  <span className="truncate">{displayWebsite(org.website)}</span>
                 </a>
               </div>
             )}

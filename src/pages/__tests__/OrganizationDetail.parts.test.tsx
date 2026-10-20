@@ -56,13 +56,13 @@ const org: Organization = {
   ],
 };
 
-function renderPage() {
+function renderPage(o: Organization = org) {
   const qc = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   return render(
     <MemoryRouter>
       <QueryClientProvider client={qc}>
-        <OrgActions org={org} />
-        <OrgLocationContact org={org} />
+        <OrgActions org={o} />
+        <OrgLocationContact org={o} />
       </QueryClientProvider>
     </MemoryRouter>,
   );
@@ -85,5 +85,49 @@ describe('organization page — website renders once', () => {
   it('lists the venue it runs', () => {
     const { container } = renderPage();
     expect(container.querySelector('a[href*="/venues/acme-bar"]')).not.toBeNull();
+  });
+});
+
+describe('organization page — contact lines', () => {
+  const withVenuePhone: Organization = {
+    ...org,
+    venues: [{ ...org.venues[0], phone: '+492012488403' }],
+  };
+
+  it("falls back to the primary venue's phone when the organisation has none", () => {
+    const { container } = renderPage(withVenuePhone);
+    expect(container.querySelector('a[href^="tel:"]')?.getAttribute('href')).toBe(
+      'tel:+492012488403',
+    );
+  });
+
+  it("prefers the organisation's own phone", () => {
+    const { container } = renderPage({ ...withVenuePhone, phone: '+4930123456' });
+    expect(container.querySelector('a[href^="tel:"]')?.getAttribute('href')).toBe(
+      'tel:+4930123456',
+    );
+  });
+
+  it('renders no phone line when neither has one', () => {
+    const { container } = renderPage();
+    expect(container.querySelector('a[href^="tel:"]')).toBeNull();
+  });
+
+  it('puts the phone directly under the email', () => {
+    const { container } = renderPage(withVenuePhone);
+    const order = [...container.querySelectorAll('a')]
+      .map((a) => a.getAttribute('href') ?? '')
+      .filter((h) => /^(mailto:|tel:|https:\/\/acme)/.test(h))
+      .map((h) => h.split(':')[0]);
+    expect(order).toEqual(['mailto', 'tel', 'https']);
+  });
+
+  it('centres each contact link on its icon (links are 44px-tall blocks)', () => {
+    const { container } = renderPage(withVenuePhone);
+    for (const sel of ['a[href^="mailto:"]', 'a[href^="tel:"]', 'a[href^="https://acme"]']) {
+      const cls = container.querySelector(sel)?.className ?? '';
+      expect(cls).toMatch(/\bflex\b/);
+      expect(cls).toMatch(/\bitems-center\b/);
+    }
   });
 });
