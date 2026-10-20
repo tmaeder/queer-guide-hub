@@ -161,7 +161,7 @@ Deno.serve(async (req) => {
     return jsonResponse({ url: session.url }, 200, req);
   } catch (err) {
     console.error("create-checkout-session error:", err);
-    if (err instanceof Stripe.errors.StripeError) {
+    if (err instanceof Error && err instanceof Stripe.errors.StripeError) {
       return errorResponse(err.message, 400, req);
     }
     return errorResponse("Internal server error", 500, req);
