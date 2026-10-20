@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
-import { OnBluesky, bskyPostUrl } from '../OnBluesky';
+import { OnBluesky } from '../OnBluesky';
+import { bskyPostUrl } from '@/lib/atprotoClient';
 
 const mention = {
   at_uri: 'at://did:plc:abc/app.bsky.feed.post/3k',

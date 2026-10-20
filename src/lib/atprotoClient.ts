@@ -162,3 +162,9 @@ export async function handleResolvesTo(handle: string, did: string): Promise<boo
     return false;
   }
 }
+
+/** https://bsky.app link for an at://did/app.bsky.feed.post/rkey URI. */
+export function bskyPostUrl(atUri: string): string | null {
+  const m = /^at:\/\/([^/]+)\/app\.bsky\.feed\.post\/([^/]+)$/.exec(atUri);
+  return m ? `https://bsky.app/profile/${m[1]}/post/${m[2]}` : null;
+}

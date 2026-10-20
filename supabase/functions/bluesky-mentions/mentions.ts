@@ -4,15 +4,30 @@
 /** Labels that keep a post out of the rail entirely (Bluesky global values). */
 const BLOCKED_LABELS = new Set(['porn', 'sexual', 'nudity', 'graphic-media', 'gore', 'nsfl', '!hide', '!warn'])
 
-// deno-lint-ignore no-explicit-any
-export type BskyPostView = any
+type Label = { val?: string }
+type Link = { uri?: string }
+/** The fields of app.bsky.feed.defs#postView this function reads. */
+export interface BskyPostView {
+  uri: string
+  cid?: string
+  indexedAt?: string
+  labels?: Label[]
+  author: { did: string; handle: string; displayName?: string; avatar?: string; labels?: Label[] }
+  record?: {
+    text?: string
+    createdAt?: string
+    labels?: { values?: Label[] }
+    facets?: { features?: Link[] }[]
+    embed?: { external?: Link; media?: { external?: Link } }
+  }
+}
 
 export function isBlocked(post: BskyPostView): boolean {
   const vals = [
     ...(post.labels ?? []),
     ...(post.author?.labels ?? []),
     ...(post.record?.labels?.values ?? []),
-  ].map((l: { val?: string }) => l?.val)
+  ].map((l) => l?.val)
   return vals.some((v) => v && BLOCKED_LABELS.has(v))
 }
 

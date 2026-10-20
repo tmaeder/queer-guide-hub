@@ -8,12 +8,7 @@ import {
 import { usePostModeration } from '@/hooks/useSocialModeration';
 import { useAdminRoles } from '@/hooks/useAdminRoles';
 import { Button } from '@/components/ui/button';
-
-/** https://bsky.app link for an at://did/app.bsky.feed.post/rkey URI. */
-export function bskyPostUrl(atUri: string): string | null {
-  const m = /^at:\/\/([^/]+)\/app\.bsky\.feed\.post\/([^/]+)$/.exec(atUri);
-  return m ? `https://bsky.app/profile/${m[1]}/post/${m[2]}` : null;
-}
+import { bskyPostUrl } from '@/lib/atprotoClient';
 
 /**
  * "On Bluesky": public posts that link to this page (or quote a featured
