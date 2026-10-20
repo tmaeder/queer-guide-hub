@@ -80,6 +80,26 @@ test('the browse feed serves no merged duplicate, no series repeat and no progra
   expect(total, 'browse feed is empty — nothing below proves anything').toBeGreaterThan(100);
   expect(rows.length).toBeGreaterThan(50);
 
+  // SECOND POSITIVE CONTROL, and this one is about the SHAPE rather than the size.
+  //
+  // Each filter below reads `r.field !== null` or `r.field === false`. On a payload
+  // that stopped carrying the field those read `undefined`, which satisfies NEITHER
+  // predicate — so all three would report an empty violation set and pass while
+  // checking nothing. The size control above does not cover it: a feed of 3,000 rows
+  // none of which carries `series_next` is large and proves as little as an empty one.
+  //
+  // It is reachable rather than theoretical because of how the payload is built:
+  // `search_events` composes its jsonb from `to_jsonb(p)` over the whole row rather
+  // than naming columns, so a renamed or dropped column silently takes the key with
+  // it and `pg_get_functiondef` never mentions the field at all. Assert the keys are
+  // PRESENT before trusting their values.
+  for (const field of ['duplicate_of_id', 'parent_event_id', 'series_next'] as const) {
+    expect(
+      rows.some((r) => field in r),
+      `search_events payload no longer carries "${field}" — the filter below it passes vacuously`,
+    ).toBeTruthy();
+  }
+
   const merged = rows.filter((r) => r.duplicate_of_id !== null);
   expect(
     merged.map((r) => r.slug),
