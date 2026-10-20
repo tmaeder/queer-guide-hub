@@ -601,3 +601,12 @@ isolated SQL and 40-table backfill checks pass on this integration; all 2413
 migrations pass version and PostgreSQL parser checks. No production schema or
 tenant activation was changed. This follow-up remains distinct from the merged
 workspace resource changes; owner admission and the activation audit remain open.
+
+The public donation checkout's service-role click lookup now explicitly selects
+the Queer Guide workspace. A submitted workspace header cannot change donation
+attribution. The offline Stripe harness executes the actual checkout handler
+against isolated local/foreign/expired click rows, covering one-time payments and
+recurring subscription metadata plus persisted donation attribution. All ten
+checkout cases and existing signed-webhook/retry/renewal attribution checks pass;
+Stripe creation is simulated and sends no payments or provider requests. The
+full five-SDK HTTP integration suite also passed on the recovered owner branch.
