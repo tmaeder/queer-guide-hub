@@ -19,6 +19,7 @@ interface RequestBody {
   user_id: string;
   email?: string;
   display_name?: string;
+  journey?: { runId: string; leaseId: string; stepId: string };
 }
 
 const handler = async (req: Request): Promise<Response> => {
@@ -114,9 +115,10 @@ const handler = async (req: Request): Promise<Response> => {
     const branding = await getEmailBranding();
     const rendered=renderEmailTemplate(tpl,{...vars,site_name:branding.from_name});
     await sendEmail({
-      idempotencyKey: `welcome:${body.user_id}`,
+      idempotencyKey: `welcome:${profile.user_id}`,
       templateKey: 'welcome',
-      recipientUserId: body.user_id,
+      recipientUserId: profile.user_id,
+      journey: body.journey,
       from: fromHeader(branding),
       to: [toEmail],
       subject: rendered.subject,

@@ -13,6 +13,9 @@ create table public.email_templates(
 );
 grant usage on schema public,auth to service_role;
 grant select on auth.users,public.email_templates to service_role;
+-- Test-only emulation of the Auth provider changing an account's primary
+-- address. Application migrations do not grant this privilege.
+grant update(email) on auth.users to service_role;
 
 -- Existing privacy entry points, reduced to their boundary contracts. The
 -- suite verifies the email wrappers preserve authorization and atomicity;

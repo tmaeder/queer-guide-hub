@@ -1,6 +1,6 @@
 # Dynamic email audiences
 
-The email platform has service-only versioned audience definitions and an admin-authorized API. This is the backend foundation; no visual audience builder, campaign binding or general product-event journey runtime is included yet. A matching contact is not necessarily eligible, and eligibility never overrides Cloudflare's transactional-only delivery capability.
+The email platform has service-only versioned audience definitions and an admin-authorized API. This is the backend foundation; the visual audience builder, campaign binding and broad journey action catalog remain unfinished. The bounded transactional runtime is documented in `docs/architecture/email-journeys.md`. A matching contact is not necessarily eligible, and eligibility never overrides Cloudflare's transactional-only delivery capability.
 
 ## Rules
 
@@ -38,4 +38,4 @@ Apply the delivery, privacy and segment migrations in order. Run all three stand
 
 On 2026-10-20 a clean application of all three migrations and all three SQL contract suites passed after disk space recovered. The stronger pending-mailbox assertion caught an incorrect test expectation: erasing one contact must preserve another pending mailbox's event. That expectation was corrected, and all suites were rerun successfully. Eleven Deno backend tests and checks of all eight affected endpoints also passed. No frontend code changed in this continuation.
 
-Only task-created disposable databases, build output and the isolated worktree npm dependency installation were removed during recovery. Source and commits were preserved. Restore worktree dependencies with npm ci after adequate disk space is available. Production data, the main checkout and real mail were untouched.
+Only task-created disposable databases, build output and the isolated worktree npm dependency installation were removed during recovery. Source and commits were preserved. The isolated worktree dependencies were subsequently restored with npm ci after disk space recovered. Production data, the main checkout and real mail were untouched.

@@ -14,6 +14,7 @@ export interface EmailMessage {
   idempotencyKey?: string;
   templateKey?: string;
   recipientUserId?: string;
+  journey?: { runId: string; leaseId: string; stepId: string };
   category?: "transactional" | "newsletter" | "marketing";
 }
 export interface EmailResult {
@@ -63,7 +64,18 @@ export async function sendEmail(msg: EmailMessage): Promise<EmailResult> {
         .maybeSingle()
       : null;
     if (prior?.error) throw new Error("Could not read email identity");
-    const queued = prior?.data
+    const queued = msg.journey
+      ? await db.rpc("email_journey_enqueue", {
+        p_key: key,
+        p_recipient: address,
+        p_payload: prior?.data?.payload ?? payload,
+        p_template: msg.templateKey ?? null,
+        p_user: msg.recipientUserId ?? null,
+        p_run: msg.journey.runId,
+        p_lease: msg.journey.leaseId,
+        p_step: msg.journey.stepId,
+      }).single()
+      : prior?.data
       ? { data: prior.data, error: null }
       : await db.rpc("email_enqueue", {
         p_key: key,

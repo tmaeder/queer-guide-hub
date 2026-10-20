@@ -701,3 +701,5 @@ verify_jwt = false
 verify_jwt = false
 [functions.email-admin]
 verify_jwt = false
+[functions.email-journeys]
+verify_jwt = false
