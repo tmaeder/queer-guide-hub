@@ -1,6 +1,6 @@
 # Activity email delivery policy
 
-The first optional activity adapter covers `dm_digest`. Essential account/service mail continues through its existing eligibility checks, independent of these activity settings. Marketing/newsletter delivery remains blocked by Cloudflare's transactional-only capability. This is not yet a global policy for every transactional producer.
+Optional activity adapters now cover `dm_digest` and verified `group_mention` post events; see `email-group-mentions.md` for the latter. Essential account/service mail continues through its existing eligibility checks, independent of these activity settings. Marketing/newsletter delivery remains blocked by Cloudflare's transactional-only capability. This is not yet a global policy for every transactional producer.
 
 ## Member settings and API
 
@@ -16,7 +16,7 @@ No existing account is automatically opted into digest email, including accounts
 
 Quiet intervals include their start and exclude their end, and may cross midnight. Equal start/end is rejected when quiet hours are enabled. Conversion uses `AT TIME ZONE`, so skipped spring hours and both repeated autumn hours follow the member's actual local clock. This does not change the scheduler's daily UTC identity or guarantee delivery at the first minute after quiet hours.
 
-Before a digest can cross the provider boundary, `email_dispatch_authorize` reserves a unique `(user_id, UTC day)` in `email_activity_reservations`. Authorization uses the same account lock as preference saves and erasure, so erasure cannot leave a newly inserted reservation behind. Competing rows cannot both reserve the same day, including overlapping transactions. The same outbox identity can retry against its original Worker Durable Object receipt. A timeout or uncertain provider result keeps its reservation because a message might already have been submitted. This conservative allowance measures possible submissions, not confirmed deliveries. It is not a rolling 24-hour or local-calendar-day cap; submissions on either side of UTC midnight can be close together. Other activity domains still need to join the shared budget explicitly.
+Before a digest can cross the provider boundary, `email_dispatch_authorize` reserves a unique `(user_id, UTC day)` in `email_activity_reservations`. Authorization uses the same account lock as preference saves and erasure, so erasure cannot leave a newly inserted reservation behind. Competing rows cannot both reserve the same day, including overlapping transactions. The same outbox identity can retry against its original Worker Durable Object receipt. A timeout or uncertain provider result keeps its reservation because a message might already have been submitted. This conservative allowance measures possible submissions, not confirmed deliveries. It is not a rolling 24-hour or local-calendar-day cap; submissions on either side of UTC midnight can be close together. Group post mentions now join this budget; other activity domains still need explicit adapters.
 
 Database authorization narrows the race between opt-out/read/mute/erasure and network submission; it cannot recall mail or atomically lock a member's settings across an external provider call. No provider request is issued during local contract tests.
 

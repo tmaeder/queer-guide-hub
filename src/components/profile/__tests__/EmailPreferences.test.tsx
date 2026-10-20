@@ -18,6 +18,7 @@ beforeEach(() => {
 });
 const delivery = {
   dm_digest_enabled: false,
+  group_mentions_enabled: false,
   timezone: 'Etc/UTC',
   quiet_hours_enabled: false,
   quiet_start: 22,
@@ -42,10 +43,10 @@ describe('account email preferences', () => {
     expect(optIn).not.toBeChecked();
     fireEvent.click(optIn);
     fireEvent.click(
-      screen.getByRole('checkbox', { name: 'Hold message digests during quiet hours' }),
+      screen.getByRole('checkbox', { name: 'Hold activity emails during quiet hours' }),
     );
     fireEvent.change(screen.getByLabelText('Time zone'), { target: { value: 'Europe/Zurich' } });
-    fireEvent.click(screen.getByRole('button', { name: 'Save message email settings' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Save activity email settings' }));
     await waitFor(() =>
       expect(api.invoke).toHaveBeenCalledWith('email-subscriptions', {
         body: {
@@ -59,6 +60,36 @@ describe('account email preferences', () => {
     );
     expect(api.invoke.mock.calls.some((c) => c[1]?.body?.action === 'subscribe')).toBe(false);
   });
+  it('saves group mentions independently without enabling message digests', async () => {
+    api.invoke.mockImplementation((_name, options) =>
+      Promise.resolve({
+        data:
+          options?.method === 'GET'
+            ? { subscription: null, delivery_preferences: delivery }
+            : { delivery_preferences: { ...delivery, group_mentions_enabled: true, version: 1 } },
+        error: null,
+      }),
+    );
+    render(<EmailPreferences />);
+    const mentions = await screen.findByRole('checkbox', {
+      name: 'Email me when I am mentioned in a group post',
+    });
+    expect(mentions).not.toBeChecked();
+    fireEvent.click(mentions);
+    fireEvent.click(screen.getByRole('button', { name: 'Save activity email settings' }));
+    await waitFor(() =>
+      expect(api.invoke).toHaveBeenCalledWith('email-subscriptions', {
+        body: {
+          action: 'delivery_preferences',
+          ...delivery,
+          group_mentions_enabled: true,
+        },
+      }),
+    );
+    expect(
+      screen.getByRole('checkbox', { name: 'Email me a daily unread-message digest' }),
+    ).not.toBeChecked();
+  });
   it('requires a reload after a conflicting save', async () => {
     api.invoke.mockImplementation((_name, options) =>
       Promise.resolve(
@@ -71,12 +102,12 @@ describe('account email preferences', () => {
       ),
     );
     render(<EmailPreferences />);
-    fireEvent.click(await screen.findByRole('button', { name: 'Save message email settings' }));
+    fireEvent.click(await screen.findByRole('button', { name: 'Save activity email settings' }));
     expect(await screen.findByRole('alert')).toHaveTextContent('changed in another session');
-    expect(screen.getByRole('button', { name: 'Save message email settings' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Save activity email settings' })).toBeDisabled();
     fireEvent.click(screen.getByRole('button', { name: 'Reload email settings' }));
     await waitFor(() =>
-      expect(screen.getByRole('button', { name: 'Save message email settings' })).toBeEnabled(),
+      expect(screen.getByRole('button', { name: 'Save activity email settings' })).toBeEnabled(),
     );
   });
   it('prevents an empty quiet-hour interval and allows recovery from load failure', async () => {
@@ -84,12 +115,12 @@ describe('account email preferences', () => {
     render(<EmailPreferences />);
     fireEvent.click(await screen.findByRole('button', { name: 'Retry' }));
     fireEvent.click(
-      await screen.findByRole('checkbox', { name: 'Hold message digests during quiet hours' }),
+      await screen.findByRole('checkbox', { name: 'Hold activity emails during quiet hours' }),
     );
     fireEvent.change(screen.getByLabelText('Quiet hours end'), { target: { value: '22' } });
-    expect(screen.getByRole('button', { name: 'Save message email settings' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Save activity email settings' })).toBeDisabled();
     fireEvent.change(screen.getByLabelText('Quiet hours end'), { target: { value: '8' } });
-    expect(screen.getByRole('button', { name: 'Save message email settings' })).toBeEnabled();
+    expect(screen.getByRole('button', { name: 'Save activity email settings' })).toBeEnabled();
   });
   it('never enrolls a member automatically', async () => {
     render(<EmailPreferences />);

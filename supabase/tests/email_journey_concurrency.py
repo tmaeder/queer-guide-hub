@@ -41,6 +41,7 @@ journey = None
 connection = None
 competing = None
 conversation = str(uuid.uuid4())
+group = str(uuid.uuid4())
 try:
     # Control steps only: no send action or real recipient address is used.
     graph = '{"start":"wait","steps":{"wait":{"type":"wait","seconds":60,"next":"end"},"end":{"type":"end"}}}'
@@ -91,11 +92,18 @@ try:
     query(f"insert into public.conversations(id) values('{conversation}')")
     query(f"insert into public.conversation_participants(user_id,conversation_id,last_read_at) values('{user}','{conversation}',now()-interval '1 day')")
     query(f"insert into public.notifications(user_id,type,related_id,created_at) values('{user}','dm','{conversation}',now()-interval '3 hours')")
+    query(f"select public.email_delivery_preferences_save('{user}',true,'Etc/UTC',false,22,8,1,true)")
+    query(f"insert into public.community_groups(id) values('{group}')")
+    query(f"insert into public.group_memberships(group_id,user_id) values('{group}','{user}'),('{group}','{users[1]}')")
+    mentions = json.dumps([{"user_id": user}])
+    query(f"insert into public.group_posts(group_id,user_id,mentions,content) values('{group}','{users[1]}','{mentions}','Private fixture content')")
+    source = query(f"select id from public.email_group_mentions where user_id='{user}' and group_id='{group}'")
+    assert re.fullmatch(r"[a-f0-9-]{36}", source), source
     rows = []
     for suffix in ('a', 'b'):
         payload = json.dumps({"category": "transactional", "from": "hello@queer.guide",
                               "to": f"{user}@example.invalid", "subject": "Unread", "html": "<p>Open app</p>", "text": "Open app", "headers": {}})
-        outbox = query(f"select (public.email_enqueue('{user}-{suffix}','{user}@example.invalid','{payload}','dm_digest',null,'{user}')).id")
+        outbox = query(f"select (public.email_enqueue('{user}-{suffix}','{user}@example.invalid','{payload}','dm_digest',null,'{user}')).id") if suffix == 'a' else query(f"select (public.email_group_mention_enqueue('{source}','{payload}')).id")
         lease = query(f"select lease_id from public.email_claim(1,'{outbox}')")
         assert re.fullmatch(r"[a-f0-9-]{36}", lease), lease
         rows.append((outbox, lease))
@@ -116,7 +124,7 @@ try:
     assert competing.returncode == 0, errors
     assert output.strip() == "f", "Both identities acquired the daily delivery budget"
     assert query(f"select public.email_dispatch_authorize('{rows[0][0]}','{rows[0][1]}')") == "t", "Same-identity replay lost its reservation"
-    print("Overlapping activity authorizations passed: one daily budget, same-identity retries allowed.")
+    print("Overlapping DM/group authorizations passed: one shared daily budget, same-identity retries allowed.")
 finally:
     if competing and competing.poll() is None:
         competing.kill()
@@ -124,6 +132,7 @@ finally:
     if connection and connection.poll() is None:
         connection.kill()
         connection.wait(timeout=5)
+    query(f"delete from public.community_groups where id='{group}'")
     query(f"delete from public.conversations where id='{conversation}'")
     for user in users:
         query(f"delete from public.profiles where user_id='{user}'")

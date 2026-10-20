@@ -48,3 +48,22 @@ create table public.conversations(id uuid primary key default gen_random_uuid())
 create table public.conversation_participants(id uuid primary key default gen_random_uuid(),conversation_id uuid references public.conversations(id) on delete cascade,user_id uuid references auth.users(id) on delete cascade,is_muted boolean default false,last_read_at timestamptz);
 create table public.push_sent(user_id uuid references auth.users(id) on delete cascade,kind text,day_bucket date);
 grant all on public.notifications,public.conversations,public.conversation_participants,public.push_sent to service_role;
+
+create table public.community_groups(id uuid primary key default gen_random_uuid(),duplicate_of_id uuid,archived_at timestamptz);
+create table public.group_posts(id uuid primary key default gen_random_uuid(),group_id uuid references public.community_groups(id) on delete cascade,user_id uuid references auth.users(id) on delete cascade,mentions jsonb default '[]',content text);
+create table public.group_notifications(id uuid primary key default gen_random_uuid(),group_id uuid references public.community_groups(id) on delete cascade,user_id uuid references auth.users(id) on delete cascade,notification_type text,related_post_id uuid references public.group_posts(id) on delete cascade,related_comment_id uuid,triggered_by_user_id uuid references auth.users(id) on delete cascade,content text,read_at timestamptz,created_at timestamptz default now());
+create table public.user_relationships(user_id uuid,target_user_id uuid,relationship_type text);
+create function public.is_blocked(p_a uuid,p_b uuid) returns boolean language sql stable security definer set search_path=public,pg_temp as $$
+ select exists(select 1 from public.user_relationships where relationship_type='block' and ((user_id=p_a and target_user_id=p_b) or (user_id=p_b and target_user_id=p_a)));
+$$;
+revoke all on function public.is_blocked(uuid,uuid) from public,anon;
+grant execute on function public.is_blocked(uuid,uuid) to authenticated;
+grant all on public.community_groups,public.group_posts,public.group_notifications,public.user_relationships to service_role;
+
+-- Existing operations registries, reduced to the columns used by the adapters.
+create table public.admin_automations(slug text primary key,name text,description text,managed_by text,enabled boolean,trigger jsonb,conditions jsonb,action jsonb,schedule text);
+create table public.workflow_definitions(name text primary key,display_name text,description text,edge_function text,default_payload jsonb,is_enabled boolean default false);
+alter table public.admin_automations enable row level security;
+alter table public.workflow_definitions enable row level security;
+grant all on public.admin_automations,public.workflow_definitions to service_role;
+insert into public.workflow_definitions(name,description,edge_function,default_payload) values('send-group-notifications','Legacy provider','send-group-notifications','{}');

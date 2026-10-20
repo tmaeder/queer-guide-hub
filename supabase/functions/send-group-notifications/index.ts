@@ -1,150 +1,91 @@
-import { sendEmail } from "../_shared/email.ts";
-import { getCorsHeaders, getServiceClient, requireAdmin } from '../_shared/supabase-client.ts';
+import { parseGroupMentionRequest } from "../_shared/email-group-mention.ts";
+import { isEmailConfigured } from "../_shared/email.ts";
+import { groupMentionEmail } from "../_shared/email-activity.ts";
+import { fromHeader, getEmailBranding, wrapHtml } from "../_shared/branding.ts";
+import {
+  getCorsHeaders,
+  getServiceClient,
+  jsonResponse,
+  requireInternalOrAdmin,
+} from "../_shared/supabase-client.ts";
 
-function escapeHtml(s: string): string {
-  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-}
-
-interface NotificationRequest {
-  notification_type: 'mention' | 'new_post' | 'new_announcement' | 'new_poll';
-  group_id: string;
-  group_name: string;
-  user_email: string;
-  user_name: string;
-  triggered_by_name: string;
-  content: string;
-  post_url?: string;
-}
-
-const handler = async (req: Request): Promise<Response> => {
-  const cors = getCorsHeaders(req);
-
-  // Handle CORS preflight requests
+// Producers submit no recipients, private content or links. The database derives
+// those identities from a current, saved post mention and its original membership.
+Deno.serve(async (req: Request): Promise<Response> => {
   if (req.method === "OPTIONS") {
-    return new Response('ok', { headers: cors });
+    return new Response(null, { headers: getCorsHeaders(req) });
   }
-
+  if (req.method !== "POST") {
+    return jsonResponse({ error: "Method not allowed" }, 405, req);
+  }
+  const db = getServiceClient();
+  const auth = await requireInternalOrAdmin(req, db);
+  if (auth instanceof Response) return auth;
   try {
-    const serviceClient = getServiceClient();
-    const authResult = await requireAdmin(req, serviceClient);
-    if (authResult instanceof Response) return authResult;
-
-    const {
-      notification_type,
-      group_name,
-      user_email,
-      user_name,
-      triggered_by_name,
-      content,
-      post_url
-    }: NotificationRequest = await req.json();
-
-    const safeTriggeredByName = escapeHtml(triggered_by_name);
-    const safeUserName = escapeHtml(user_name);
-    const safeGroupName = escapeHtml(group_name);
-    const safeContent = escapeHtml(content);
-    const safePostUrl = post_url ? escapeHtml(post_url) : '';
-
-    let subject = '';
-    let htmlContent = '';
-
-    switch (notification_type) {
-      case 'mention':
-        subject = `${safeTriggeredByName} mentioned you in ${safeGroupName}`;
-        htmlContent = `
-          <h2>You were mentioned in ${safeGroupName}</h2>
-          <p>Hi ${safeUserName},</p>
-          <p><strong>${safeTriggeredByName}</strong> mentioned you in a post:</p>
-          <blockquote style="border-left:3px solid #111111;padding-left:16px;margin:16px 0;color:#3f3f3a;">
-            ${safeContent}
-          </blockquote>
-          ${post_url ? `<p><a href="${safePostUrl}" style="background:#111111;color:#FAFAF5;padding:12px 20px;text-decoration:none;border-radius:12px;display:inline-block;font-weight:700;">View Post</a></p>` : ''}
-          <p>Best regards,<br>The ${safeGroupName} Group</p>
-        `;
-        break;
-
-      case 'new_announcement':
-        subject = `New announcement in ${safeGroupName}`;
-        htmlContent = `
-          <h2>New announcement in ${safeGroupName}</h2>
-          <p>Hi ${safeUserName},</p>
-          <p><strong>${safeTriggeredByName}</strong> made an important announcement:</p>
-          <div style="background:#EAEADE;border-radius:12px;padding:16px;margin:16px 0;">
-            <h3 style="margin:0 0 8px 0;color:#111111;font-size:15px;">Announcement</h3>
-            <p style="margin:0;color:#111111;">${safeContent}</p>
-          </div>
-          ${post_url ? `<p><a href="${safePostUrl}" style="background:#111111;color:#FAFAF5;padding:12px 20px;text-decoration:none;border-radius:12px;display:inline-block;font-weight:700;">View Announcement</a></p>` : ''}
-          <p>Best regards,<br>The ${safeGroupName} Group</p>
-        `;
-        break;
-
-      case 'new_poll':
-        subject = `New poll in ${safeGroupName} - Your input needed!`;
-        htmlContent = `
-          <h2>🗳️ New Poll in ${safeGroupName}</h2>
-          <p>Hi ${safeUserName},</p>
-          <p><strong>${safeTriggeredByName}</strong> created a new poll and wants your input:</p>
-          <div style="background:#EAEADE;border-radius:12px;padding:16px;margin:16px 0;">
-            <h3 style="margin:0 0 8px 0;color:#111111;font-size:15px;">Poll question</h3>
-            <p style="margin:0;color:#111111;">${safeContent}</p>
-          </div>
-          ${post_url ? `<p><a href="${safePostUrl}" style="background:#111111;color:#FAFAF5;padding:12px 20px;text-decoration:none;border-radius:12px;display:inline-block;font-weight:700;">Vote Now</a></p>` : ''}
-          <p>Your vote matters! Join the discussion and share your opinion.</p>
-          <p>Best regards,<br>The ${safeGroupName} Group</p>
-        `;
-        break;
-
-      default:
-        subject = `New activity in ${safeGroupName}`;
-        htmlContent = `
-          <h2>New Activity in ${safeGroupName}</h2>
-          <p>Hi ${safeUserName},</p>
-          <p>There's new activity in your group:</p>
-          <p>${safeContent}</p>
-          ${post_url ? `<p><a href="${safePostUrl}" style="background:#111111;color:#FAFAF5;padding:12px 20px;text-decoration:none;border-radius:12px;display:inline-block;font-weight:700;">View Post</a></p>` : ''}
-          <p>Best regards,<br>The ${safeGroupName} Group</p>
-        `;
+    const raw = await req.text();
+    if (raw.length > 1000) {
+      return jsonResponse({ error: "Request too large" }, 413, req);
     }
-
-    const emailResult = await sendEmail({
-      from: "Community Groups <noreply@queer.guide>",
-      to: [user_email],
-      subject,
-      html: `
-        <div style="max-width: 600px; margin: 0 auto; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif; line-height: 1.6; color: #374151;">
-          ${htmlContent}
-          <hr style="border: none; border-top: 1px solid #E5E7EB; margin: 32px 0;">
-          <div style="text-align: center; color: #6B7280; font-size: 14px;">
-            <p>You're receiving this because you're a member of ${safeGroupName}.</p>
-            <p>To manage your notification preferences, visit your group settings.</p>
-          </div>
-        </div>
-      `,
-    });
-
-    if (emailResult.error) {
-      throw new Error(emailResult.error);
+    let body;
+    try {
+      body = JSON.parse(raw);
+    } catch {
+      return jsonResponse({ error: "Invalid request" }, 400, req);
     }
-
-    console.log("Group notification email sent successfully:", emailResult.id);
-
-    return new Response(JSON.stringify({ data: { id: emailResult.id } }), {
-      status: 200,
-      headers: {
-        "Content-Type": "application/json",
-        ...cors,
-      },
+    const request = parseGroupMentionRequest(body);
+    if (!request) {
+      return jsonResponse(
+        {
+          error:
+            "A saved group mention source is required; arbitrary group mail is unsupported",
+        },
+        400,
+        req,
+      );
+    }
+    if (!isEmailConfigured()) {
+      return jsonResponse(
+        { error: "Cloudflare email delivery not configured" },
+        503,
+        req,
+      );
+    }
+    const candidates = await db.rpc("email_group_mention_candidates", {
+      p_limit: 5,
+      p_source: request.source_id ?? null,
     });
-  } catch (error: unknown) {
-    console.error("Error in send-group-notifications function:", error);
-    return new Response(
-      JSON.stringify({ error: 'Internal server error' }),
-      {
-        status: 500,
-        headers: { "Content-Type": "application/json", ...cors },
+    if (candidates.error) throw candidates.error;
+    const branding = await getEmailBranding();
+    const message = groupMentionEmail();
+    let queued = 0, skipped = 0;
+    for (const candidate of candidates.data ?? []) {
+      const result = await db.rpc("email_group_mention_enqueue", {
+        p_source: candidate.source_id,
+        p_payload: {
+          category: "transactional",
+          from: fromHeader(branding),
+          to: candidate.recipient,
+          subject: message.subject,
+          html: wrapHtml(message.html, branding),
+          text: message.text,
+          headers: {},
+        },
+      });
+      // A member can read/leave/block/change preferences between selection and enqueue.
+      if (result.error?.code === "22023") {
+        skipped++;
+        continue;
       }
+      if (result.error) throw result.error;
+      queued++;
+    }
+    return jsonResponse({ queued, skipped }, 202, req);
+  } catch {
+    console.error("Group mention queue unavailable");
+    return jsonResponse(
+      { error: "Group mention service unavailable" },
+      503,
+      req,
     );
   }
-};
-
-Deno.serve(handler);
+});

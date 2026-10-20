@@ -16,6 +16,7 @@ interface Subscription {
 }
 interface DeliveryPreferences {
   dm_digest_enabled: boolean;
+  group_mentions_enabled: boolean;
   timezone: string;
   quiet_hours_enabled: boolean;
   quiet_start: number;
@@ -24,6 +25,7 @@ interface DeliveryPreferences {
 }
 const defaultDelivery: DeliveryPreferences = {
   dm_digest_enabled: false,
+  group_mentions_enabled: false,
   timezone: 'Etc/UTC',
   quiet_hours_enabled: false,
   quiet_start: 22,
@@ -45,7 +47,7 @@ export function EmailPreferences() {
       const r = await supabase.functions.invoke('email-subscriptions', { method: 'GET' });
       if (r.error) throw r.error;
       setSubscription(r.data.subscription);
-      setDelivery(r.data.delivery_preferences ?? defaultDelivery);
+      setDelivery({ ...defaultDelivery, ...r.data.delivery_preferences });
       setDeliveryConflict(false);
       setSelected(r.data.subscription?.topics ?? []);
       setError(false);
@@ -94,7 +96,7 @@ export function EmailPreferences() {
         if (r.error.context?.status === 409) setDeliveryConflict(true);
         throw r.error;
       }
-      setDelivery(r.data.delivery_preferences);
+      setDelivery({ ...defaultDelivery, ...r.data.delivery_preferences });
       toast.success(t('emailPreferences.saved', 'Email preferences saved'));
     } catch {
       toast.error(
@@ -133,7 +135,7 @@ export function EmailPreferences() {
         <>
           <fieldset disabled={busy} className="space-y-4">
             <legend className="font-medium">
-              {t('emailPreferences.activity', 'Message activity')}
+              {t('emailPreferences.activity', 'Activity emails')}
             </legend>
             <div className="flex min-h-10 items-center gap-4">
               <input
@@ -146,10 +148,32 @@ export function EmailPreferences() {
                 {t('emailPreferences.dmDigest', 'Email me a daily unread-message digest')}
               </Label>
             </div>
+            <div className="flex min-h-10 items-center gap-4">
+              <input
+                id="email-group-mentions"
+                type="checkbox"
+                checked={delivery.group_mentions_enabled}
+                onChange={(e) =>
+                  setDelivery({ ...delivery, group_mentions_enabled: e.target.checked })
+                }
+              />
+              <Label htmlFor="email-group-mentions">
+                {t(
+                  'emailPreferences.groupMentions',
+                  'Email me when I am mentioned in a group post',
+                )}
+              </Label>
+            </div>
             <p className="text-sm text-muted-foreground">
               {t(
                 'emailPreferences.dmPrivacy',
-                'Push notifications are controlled separately. Message text and sender names stay in the app.',
+                'Push notifications are controlled separately. Message text, group names and sender names stay in the app.',
+              )}
+            </p>
+            <p className="text-sm text-muted-foreground">
+              {t(
+                'emailPreferences.activityBudget',
+                'Message digests and group mentions share a limit of one activity email per UTC day. Essential account emails remain available.',
               )}
             </p>
             <div className="flex min-h-10 items-center gap-4">
@@ -162,7 +186,7 @@ export function EmailPreferences() {
                 }
               />
               <Label htmlFor="email-quiet-hours">
-                {t('emailPreferences.quietHours', 'Hold message digests during quiet hours')}
+                {t('emailPreferences.quietHours', 'Hold activity emails during quiet hours')}
               </Label>
             </div>
             <div className="grid gap-4 sm:grid-cols-3">
@@ -211,7 +235,7 @@ export function EmailPreferences() {
               }
               onClick={() => void saveDelivery()}
             >
-              {t('emailPreferences.saveDelivery', 'Save message email settings')}
+              {t('emailPreferences.saveDelivery', 'Save activity email settings')}
             </Button>
           </fieldset>
           {deliveryConflict && (

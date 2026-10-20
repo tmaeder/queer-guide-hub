@@ -1,4 +1,5 @@
-import { unreadMessageEmail } from "./email-activity.ts";
+import { parseGroupMentionRequest } from "./email-group-mention.ts";
+import { groupMentionEmail, unreadMessageEmail } from "./email-activity.ts";
 import {
   assertEquals,
   assertNotEquals,
@@ -80,4 +81,37 @@ Deno.test("message digests expose no sender identity, group names or private tex
     unreadMessageEmail(4).subject,
     "4 unread messages on Queer Guide",
   );
+});
+
+Deno.test("group delivery rejects caller-selected recipients, content and arbitrary URLs", () => {
+  assertEquals(parseGroupMentionRequest({ action: "tick" }), {
+    action: "tick",
+  });
+  const request = {
+    action: "tick",
+    source_id: "a5555555-0000-4000-8000-000000000001",
+  } as const;
+  assertEquals(parseGroupMentionRequest(request), request);
+  for (
+    const value of [
+      null,
+      [],
+      "tick",
+      {},
+      { ...request, source_id: "bad" },
+      { ...request, user_email: "other@example.com" },
+      { ...request, content: "private" },
+      { ...request, post_url: "https://evil.invalid" },
+      { ...request, notification_type: "new_post" },
+    ]
+  ) {
+    assertEquals(parseGroupMentionRequest(value), null);
+  }
+});
+Deno.test("group mentions keep names, private content and source identities out of the inbox", () => {
+  const message = groupMentionEmail();
+  assertEquals(message.subject, "New group mention on Queer Guide");
+  assertEquals(message.html.includes("https://queer.guide/hub/groups"), true);
+  assertEquals(message.html.includes("post_id"), false);
+  assertEquals(message.text.includes("settings?section=account"), true);
 });

@@ -18,3 +18,15 @@ export function unreadMessageEmail(count: number) {
       `${heading}. Open ${inbox} to read your messages. Notification settings: ${preferences}`,
   };
 }
+
+export function groupMentionEmail() {
+  const inbox = "https://queer.guide/hub/groups";
+  const preferences = "https://queer.guide/settings?section=account";
+  return {
+    subject: "New group mention on Queer Guide",
+    html:
+      `<h2>You were mentioned in a group post</h2><p>Open Queer Guide to read it.</p><p><a href="${inbox}">Open your groups</a></p><p>You receive this because group mention emails are on. <a href="${preferences}">Change email settings</a>.</p>`,
+    text:
+      `You were mentioned in a group post. Open ${inbox} to read it. Email settings: ${preferences}`,
+  };
+}
