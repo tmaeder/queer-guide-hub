@@ -13,6 +13,7 @@ export interface EmailMessage {
   headers?: Record<string, string>;
   idempotencyKey?: string;
   templateKey?: string;
+  recipientUserId?: string;
   category?: "transactional" | "newsletter" | "marketing";
 }
 export interface EmailResult {
@@ -69,6 +70,7 @@ export async function sendEmail(msg: EmailMessage): Promise<EmailResult> {
         p_recipient: address,
         p_payload: payload,
         p_template: msg.templateKey ?? null,
+        p_user: msg.recipientUserId ?? null,
       }).single();
     if (queued.error || !queued.data) {
       throw new Error(

@@ -94,6 +94,7 @@ const handler = async (req: Request): Promise<Response> => {
     await sendEmail({
       idempotencyKey: `username-reminder:${profile.user_id}:${body.stage}`,
       templateKey: 'username_claim_reminder',
+      recipientUserId: profile.user_id,
       from: 'The Queer Guide <noreply@queer.guide>',
       to: [profile.email],
       subject: rendered.subject,

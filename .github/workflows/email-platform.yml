@@ -12,9 +12,12 @@ on:
       - 'supabase/functions/redirect-domain-instruction-mail/**'
       - 'supabase/functions/_shared/redirect*mail.ts'
       - 'supabase/functions/_shared/email*.ts'
+      - 'supabase/functions/export-my-data/**'
       - 'supabase/functions/_shared/cloudflare-email-*.ts'
       - 'supabase/migrations/*email_platform.sql'
+      - 'supabase/migrations/*email_platform_privacy.sql'
       - 'supabase/tests/email_platform.sql'
+      - 'supabase/tests/email_platform_privacy.sql'
       - 'supabase/tests/fixtures/email_platform_bootstrap.sql'
       - 'package.json'
       - 'package-lock.json'
@@ -56,7 +59,7 @@ jobs:
           npm run dry-run
       - name: Backend contracts
         run: |
-          deno test --no-config --allow-env supabase/functions/_shared/email-platform.test.ts supabase/functions/_shared/email-render.test.ts
+          deno test --no-config --allow-env supabase/functions/_shared/email-platform.test.ts supabase/functions/_shared/email-render.test.ts supabase/functions/_shared/email-outbox.test.ts
           deno check --no-config supabase/functions/email-admin/index.ts supabase/functions/email-subscriptions/index.ts supabase/functions/email-dispatch/index.ts supabase/functions/cloudflare-email-events/index.ts
       - name: Schema, consent, outbox and access contracts
         env:
@@ -68,4 +71,6 @@ jobs:
         run: |
           psql -v ON_ERROR_STOP=1 -f supabase/tests/fixtures/email_platform_bootstrap.sql
           psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261020182833_email_platform.sql
+          psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261020191722_email_platform_privacy.sql
           psql -v ON_ERROR_STOP=1 -f supabase/tests/email_platform.sql
+          psql -v ON_ERROR_STOP=1 -f supabase/tests/email_platform_privacy.sql

@@ -17,6 +17,16 @@ export async function dispatchEmail(
   if (!url || !secret) {
     throw new Error("Cloudflare email delivery not configured");
   }
+  // Claims may predate an account erasure or cancellation. Re-read the lease
+  // immediately before crossing the provider boundary; never trust its payload alone.
+  const authorized = await db.rpc("email_dispatch_authorize", {
+    p_id: row.id,
+    p_lease: row.lease_id,
+  });
+  if (authorized.error) {
+    throw new Error("Could not validate email delivery eligibility");
+  }
+  if (authorized.data !== true) return;
   // Transport failure can be retried using the SAME immutable Worker identity.
   // The Durable Object remembers acceptance and holds ambiguous submissions.
   let retryAfter: number | null = null;

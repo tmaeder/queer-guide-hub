@@ -116,6 +116,7 @@ const handler = async (req: Request): Promise<Response> => {
     await sendEmail({
       idempotencyKey: `welcome:${body.user_id}`,
       templateKey: 'welcome',
+      recipientUserId: body.user_id,
       from: fromHeader(branding),
       to: [toEmail],
       subject: rendered.subject,

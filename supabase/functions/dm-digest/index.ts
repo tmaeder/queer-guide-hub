@@ -63,6 +63,8 @@ Deno.serve(async (req) => {
       const branding=await getEmailBranding();
       await sendEmail({
         idempotencyKey: `dm-digest:${c.user_id}:${today}`,
+        recipientUserId: c.user_id,
+        templateKey: 'dm_digest',
         from: fromHeader(branding),
         to: [c.email],
         subject: message.subject,
