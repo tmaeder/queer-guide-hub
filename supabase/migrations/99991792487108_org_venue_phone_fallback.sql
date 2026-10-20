@@ -33,7 +33,9 @@ $patch$;
 
 do $verify$
 declare
-  v_src text := pg_get_functiondef('public.get_organization(text)'::regprocedure);
+  v_src text := regexp_replace(
+    pg_get_functiondef('public.get_organization(text)'::regprocedure),
+    '--[^' || chr(10) || ']*', '', 'g');
 begin
   if position('''phone'', v.phone' in v_src) = 0 then
     raise exception 'get_organization does not return venue phone';
