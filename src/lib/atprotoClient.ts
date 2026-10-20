@@ -143,3 +143,22 @@ export async function deleteBlueskyPost(did: string, uri: string): Promise<void>
   if (!session) return;
   await (await agentFor(session)).deletePost(uri);
 }
+
+/** The Bluesky handle a Queer Guide username can use, or null if it cannot be one DNS label. */
+export function queerGuideHandleFor(username: string | null | undefined): string | null {
+  const u = (username ?? '').toLowerCase();
+  return /^[a-z0-9]{3,20}$/.test(u) ? `${u}.queer.guide` : null;
+}
+
+/** Does Bluesky currently resolve this handle to this DID? (public AppView, no auth) */
+export async function handleResolvesTo(handle: string, did: string): Promise<boolean> {
+  try {
+    const res = await fetch(
+      `https://public.api.bsky.app/xrpc/com.atproto.identity.resolveHandle?handle=${encodeURIComponent(handle)}`,
+    );
+    if (!res.ok) return false;
+    return ((await res.json()) as { did?: string }).did === did;
+  } catch {
+    return false;
+  }
+}

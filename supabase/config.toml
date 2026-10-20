@@ -692,5 +692,5 @@ verify_jwt = false
 [functions.redirect-domain-instruction-mail]
 verify_jwt = false
 
-[functions.bluesky-mentions]
+[functions.bluesky-bot-post]
 verify_jwt = false

@@ -5,13 +5,23 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { useBlueskyIdentity } from '@/hooks/useBlueskyIdentity';
-import { connectBluesky, disconnectBluesky } from '@/lib/atprotoClient';
+import {
+  connectBluesky,
+  disconnectBluesky,
+  handleResolvesTo,
+  queerGuideHandleFor,
+} from '@/lib/atprotoClient';
+import { useProfile } from '@/hooks/useProfile';
+import { Switch } from '@/components/ui/switch';
 import { useAuth } from '@/hooks/useAuth';
 import { profileEditPath } from '@/lib/profileEditing';
 
 /** Settings → Privacy: link a Bluesky account via atproto OAuth. */
 export function BlueskyConnect() {
-  const { identity, save, remove } = useBlueskyIdentity();
+  const { identity, save, remove, setUseQueerGuideHandle } = useBlueskyIdentity();
+  const { profile } = useProfile();
+  const qgHandle = queerGuideHandleFor(profile?.username);
+  const [verified, setVerified] = useState<boolean | null>(null);
   const { user } = useAuth();
   const { toast } = useToast();
   const [handle, setHandle] = useState('');
@@ -62,7 +72,64 @@ export function BlueskyConnect() {
               Disconnect
             </Button>
           </div>
-        ) : (
+        ) : null}
+        {identity && (
+          <div className="mt-6 flex flex-col gap-4 border-t border-border pt-4">
+            {qgHandle ? (
+              <>
+                <div className="flex items-center justify-between gap-4">
+                  <div>
+                    <Label htmlFor="use-qg-handle">Use @{qgHandle} on Bluesky</Label>
+                    <p className="text-xs text-muted-foreground">
+                      Queer Guide answers Bluesky&apos;s handle check for this name. Turn it off and
+                      the handle stops working at once.
+                    </p>
+                  </div>
+                  <Switch
+                    id="use-qg-handle"
+                    checked={!!identity.use_queer_guide_handle}
+                    onCheckedChange={(on) => {
+                      setVerified(null);
+                      setUseQueerGuideHandle.mutate(on);
+                    }}
+                  />
+                </div>
+                {identity.use_queer_guide_handle && (
+                  <div className="flex flex-col gap-2 text-sm">
+                    <p>
+                      In Bluesky, open Settings → Account → Handle → &ldquo;I have my own
+                      domain&rdquo;, choose &ldquo;No DNS panel&rdquo; and enter{' '}
+                      <span className="font-bold">{qgHandle}</span>.
+                    </p>
+                    <div className="flex items-center gap-2">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={async () =>
+                          setVerified(await handleResolvesTo(qgHandle, identity.did))
+                        }
+                      >
+                        Check
+                      </Button>
+                      {verified !== null && (
+                        <span role="status" className="text-xs">
+                          {verified
+                            ? `Bluesky resolves @${qgHandle} to your account.`
+                            : 'Not active yet — finish the step in Bluesky, then check again.'}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </>
+            ) : (
+              <p className="text-xs text-muted-foreground">
+                A queer.guide Bluesky handle needs a username made only of letters and numbers.
+              </p>
+            )}
+          </div>
+        )}
+        {identity ? null : (
           <form className="flex flex-col gap-2" onSubmit={connect}>
             <Label htmlFor="bluesky-handle">Bluesky handle</Label>
             <div className="flex gap-2">
