@@ -5,6 +5,8 @@ on:
       - 'supabase/functions/_shared/redirect-*'
       - 'supabase/functions/_shared/link-policy.ts'
       - 'supabase/functions/redirect-api/**'
+      - 'supabase/functions/create-checkout-session/**'
+      - 'supabase/functions/stripe-webhook/**'
       - 'supabase/functions/redirect-domain-instruction-mail/**'
       - 'supabase/config.toml'
       - 'supabase/migrations/**'
@@ -23,6 +25,7 @@ on:
       - 'scripts/lib/redirect-integration-fixtures.mjs'
       - 'scripts/lib/redirect-workspace-fixtures.mjs'
       - 'scripts/test-redirect-platform-sql.mjs'
+      - 'scripts/test-redirect-stripe.mjs'
       - 'scripts/test-redirect-workspace-backfill.mjs'
       - 'functions/api/redirects/**'
       - 'functions/_lib/redirectApiProxy.test.ts'
@@ -37,6 +40,8 @@ on:
       - 'supabase/functions/_shared/redirect-*'
       - 'supabase/functions/_shared/link-policy.ts'
       - 'supabase/functions/redirect-api/**'
+      - 'supabase/functions/create-checkout-session/**'
+      - 'supabase/functions/stripe-webhook/**'
       - 'supabase/functions/redirect-domain-instruction-mail/**'
       - 'supabase/config.toml'
       - 'supabase/migrations/**'
@@ -55,6 +60,7 @@ on:
       - 'scripts/lib/redirect-integration-fixtures.mjs'
       - 'scripts/lib/redirect-workspace-fixtures.mjs'
       - 'scripts/test-redirect-platform-sql.mjs'
+      - 'scripts/test-redirect-stripe.mjs'
       - 'scripts/test-redirect-workspace-backfill.mjs'
       - 'functions/api/redirects/**'
       - 'functions/_lib/redirectApiProxy.test.ts'
@@ -100,5 +106,7 @@ jobs:
         run: node scripts/test-redirect-workspace-backfill.mjs
       - name: Execute migrated database contracts
         run: npm run test:redirect-sql
+      - name: Verify donation checkout isolation and signed Stripe attribution offline
+        run: npm run test:redirect-stripe
       - name: Follow owner API approval and callback through real SQL and five SDK runtimes
         run: npm run test:redirect-sdks

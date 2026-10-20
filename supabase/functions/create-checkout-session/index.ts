@@ -1,4 +1,5 @@
 import { UUID } from "../_shared/redirect-api.ts";
+import { LEGACY_REDIRECT_WORKSPACE } from "../_shared/redirect-workspace.ts";
 import Stripe from "https://esm.sh/stripe@17?target=deno";
 import { corsResponse, jsonResponse, errorResponse, getServiceClient } from "../_shared/supabase-client.ts";
 
@@ -84,6 +85,7 @@ Deno.serve(async (req) => {
     let attributedClick: string | null = null;
     if (typeof qg_click_id === "string" && UUID.test(qg_click_id)) {
       const { data: click } = await rlClient.from("redirect_events").select("click_id")
+        .eq("workspace_id", LEGACY_REDIRECT_WORKSPACE)
         .eq("click_id", qg_click_id).gte("ts", new Date(Date.now()-30*86400000).toISOString()).maybeSingle();
       if (click) attributedClick = click.click_id;
     }
@@ -159,7 +161,7 @@ Deno.serve(async (req) => {
     return jsonResponse({ url: session.url }, 200, req);
   } catch (err) {
     console.error("create-checkout-session error:", err);
-    if (err instanceof Stripe.errors.StripeError) {
+    if (err instanceof Error && err instanceof Stripe.errors.StripeError) {
       return errorResponse(err.message, 400, req);
     }
     return errorResponse("Internal server error", 500, req);

@@ -16,6 +16,7 @@ DECLARE legacy uuid:='58aa4340-8f21-4b7f-9a10-90be2da89c01';other uuid:=gen_rand
 BEGIN
  INSERT INTO auth.users(id) VALUES(actor);INSERT INTO public.user_roles VALUES(actor,'admin');
  INSERT INTO public.redirect_workspaces(id,name,slug) VALUES(other,'Native asset fixture','native-asset-fixture');
+ INSERT INTO redirect_internal.workspace_owners(workspace_id,user_id) VALUES(other,actor);
  INSERT INTO public.redirect_domains(id,workspace_id,hostname,created_by) VALUES(foreign_domain,other,'foreign-native.example.com',actor);
  INSERT INTO public.redirects(id,workspace_id,type,slug,target) VALUES(foreign_link,other,'SHORT','foreign-native-scope','https://example.org/foreign-native');
  INSERT INTO public.redirect_link_policies(workspace_id,redirect_id,policy) VALUES(other,foreign_link,'{"track_conversions":true}');

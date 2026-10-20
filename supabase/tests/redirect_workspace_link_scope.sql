@@ -14,6 +14,7 @@ DECLARE legacy uuid:='58aa4340-8f21-4b7f-9a10-90be2da89c01';other uuid:=gen_rand
 BEGIN
  INSERT INTO auth.users(id) VALUES(actor);INSERT INTO public.user_roles VALUES(actor,'admin');
  INSERT INTO public.redirect_workspaces(id,name,slug) VALUES(other,'Private link fixture','private-link-fixture');
+ INSERT INTO redirect_internal.workspace_owners(workspace_id,user_id) VALUES(other,actor);
  INSERT INTO public.redirect_domains(id,workspace_id,hostname,created_by) VALUES(foreign_domain,other,'foreign-sql-scope.example.com',actor);
  INSERT INTO public.redirects(id,workspace_id,type,slug,target) VALUES(foreign_link,other,'SHORT','foreign-sql-scope','https://example.org/foreign-private-link');
  INSERT INTO public.redirect_link_folders(id,workspace_id,name) VALUES(foreign_folder,other,'Foreign private link folder');

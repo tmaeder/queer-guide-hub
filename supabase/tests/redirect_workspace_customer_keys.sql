@@ -10,6 +10,7 @@ DECLARE actor uuid:=gen_random_uuid();other uuid:=gen_random_uuid();legacy uuid:
 BEGIN
  INSERT INTO auth.users(id) VALUES(actor);INSERT INTO public.user_roles VALUES(actor,'admin');
  INSERT INTO public.redirect_workspaces(id,name,slug) VALUES(other,'Customer keys fixture','customer-keys-fixture');
+ INSERT INTO redirect_internal.workspace_owners(workspace_id,user_id) VALUES(other,actor);
  INSERT INTO public.redirects(type,slug,target) VALUES('SHORT','customer-keys-local','https://example.org/local') RETURNING id INTO root;
  INSERT INTO public.redirects(workspace_id,type,slug,target) VALUES(other,'SHORT','customer-keys-foreign','https://example.org/foreign') RETURNING id INTO foreign_root;
  INSERT INTO public.redirect_events(workspace_id,redirect_id,click_id,path,status) VALUES(legacy,root,click,'/go/customer-keys-local',302),(other,foreign_root,foreign_click,'/go/customer-keys-foreign',302);
