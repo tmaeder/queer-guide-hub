@@ -1,18 +1,12 @@
 import { useState, useEffect, useCallback } from 'react';
+import { mirrorActivity } from '@/hooks/blueskyActivity';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useTrackEvent } from '@/hooks/useTrackEvent';
 
 export type FavoriteType =
-  | 'venue'
-  | 'event'
-  | 'city'
-  | 'country'
-  | 'marketplace'
-  | 'news'
-  | 'tag'
-  | 'queer_village';
+  'venue' | 'event' | 'city' | 'country' | 'marketplace' | 'news' | 'tag' | 'queer_village';
 
 const tableMap: Record<FavoriteType, { table: string; idColumn: string }> = {
   venue: { table: 'venue_favorites', idColumn: 'venue_id' },
@@ -24,6 +18,19 @@ const tableMap: Record<FavoriteType, { table: string; idColumn: string }> = {
   tag: { table: 'tag_favorites', idColumn: 'tag_id' },
   queer_village: { table: 'venue_favorites', idColumn: 'venue_id' },
 };
+
+// Saves of these types become guide.queer.save records for opted-in Bluesky users.
+const SAVE_ENTITY: Partial<Record<FavoriteType, 'venue' | 'event' | 'city' | 'country'>> = {
+  venue: 'venue',
+  event: 'event',
+  city: 'city',
+  country: 'country',
+  queer_village: 'venue',
+};
+function mirrorSave(type: FavoriteType, itemId: string, remove: boolean) {
+  const entityType = SAVE_ENTITY[type];
+  if (entityType) mirrorActivity({ kind: 'save', entityType, entityId: itemId, remove });
+}
 
 // Per-user×type request cache. Multiple useFavorites callers in the same
 // page (one per card on /events, /venues, etc.) collapse to a single
@@ -127,6 +134,7 @@ export function useFavorites(type: FavoriteType) {
           toast({ title: 'Failed to remove favorite', variant: 'destructive' });
         } else {
           invalidateFavoritesCache(type, user.id);
+          mirrorSave(type, itemId, true);
         }
       } else {
         const { error } = await supabase
@@ -142,6 +150,7 @@ export function useFavorites(type: FavoriteType) {
           toast({ title: 'Failed to add favorite', variant: 'destructive' });
         } else {
           invalidateFavoritesCache(type, user.id);
+          mirrorSave(type, itemId, false);
         }
       }
     },

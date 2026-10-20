@@ -18,7 +18,8 @@ import { profileEditPath } from '@/lib/profileEditing';
 
 /** Settings → Privacy: link a Bluesky account via atproto OAuth. */
 export function BlueskyConnect() {
-  const { identity, save, remove, setUseQueerGuideHandle } = useBlueskyIdentity();
+  const { identity, save, remove, setUseQueerGuideHandle, setPublishActivity } =
+    useBlueskyIdentity();
   const { profile } = useProfile();
   const qgHandle = queerGuideHandleFor(profile?.username);
   const [verified, setVerified] = useState<boolean | null>(null);
@@ -73,6 +74,24 @@ export function BlueskyConnect() {
             </Button>
           </div>
         ) : null}
+        {identity && (
+          <div className="mt-6 flex items-center justify-between gap-4 border-t border-border pt-4">
+            <div>
+              <Label htmlFor="publish-activity">Publish my activity to Bluesky</Label>
+              <p className="text-xs text-muted-foreground">
+                Your public check-ins, ratings, RSVPs and saves are written to your Bluesky account,
+                where anyone can read them. Never for gated places, cruising venues or saunas, or
+                places where being LGBTQ+ is criminalised. Turning this off stops new records; it
+                does not delete ones already published.
+              </p>
+            </div>
+            <Switch
+              id="publish-activity"
+              checked={!!identity.publish_activity}
+              onCheckedChange={(on) => setPublishActivity.mutate(on)}
+            />
+          </div>
+        )}
         {identity && (
           <div className="mt-6 flex flex-col gap-4 border-t border-border pt-4">
             {qgHandle ? (

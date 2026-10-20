@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
+import { mirrorRsvp } from '@/hooks/blueskyActivity';
 import { supabase } from '@/integrations/supabase/client';
 import type { Database } from '@/integrations/supabase/types';
 import { calculateDistanceKm } from '@/utils/calculateDistance';
@@ -561,6 +562,7 @@ export function useEvents(autoFetch: boolean = true, opts?: { skipDatasetTotal?:
         .upsert({ event_id: eventId, user_id: userId, status }, { onConflict: 'event_id,user_id' });
 
       if (error) throw error;
+      mirrorRsvp(eventId, status);
 
       // Auto-add to favorites when going or interested
       if (status === 'going' || status === 'interested') {

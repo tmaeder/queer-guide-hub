@@ -3,6 +3,7 @@
  * Grouped here rather than splitting into one hook file per page.
  */
 import { useQuery } from '@tanstack/react-query';
+import { mirrorRsvp } from '@/hooks/blueskyActivity';
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { untypedFrom } from '@/integrations/supabase/untyped';
@@ -166,6 +167,7 @@ export async function upsertEventAttendance(payload: {
   const { error } = await supabase
     .from('event_attendees')
     .upsert(payload, { onConflict: 'event_id,user_id' });
+  if (!error) mirrorRsvp(payload.event_id, payload.status);
   return { error };
 }
 

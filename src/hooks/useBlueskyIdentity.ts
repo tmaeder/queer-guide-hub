@@ -15,7 +15,7 @@ export function useBlueskyIdentity() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('bluesky_identities')
-        .select('did, handle, linked_at, use_queer_guide_handle')
+        .select('did, handle, linked_at, use_queer_guide_handle, publish_activity')
         .maybeSingle();
       if (error) throw error;
       return data;
@@ -54,11 +54,24 @@ export function useBlueskyIdentity() {
     onSuccess: () => qc.invalidateQueries({ queryKey: KEY }),
   });
 
+  const setPublishActivity = useMutation({
+    mutationFn: async (on: boolean) => {
+      if (!user) return;
+      const { error } = await supabase
+        .from('bluesky_identities')
+        .update({ publish_activity: on })
+        .eq('user_id', user.id);
+      if (error) throw error;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: KEY }),
+  });
+
   return {
     identity: query.data ?? null,
     isLoading: query.isLoading,
     save,
     remove,
     setUseQueerGuideHandle,
+    setPublishActivity,
   };
 }

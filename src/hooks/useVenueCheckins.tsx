@@ -1,4 +1,5 @@
 import { useCallback, useState } from 'react';
+import { mirrorActivity } from '@/hooks/blueskyActivity';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
@@ -26,109 +27,117 @@ export function useVenueCheckins() {
         return;
       }
 
-      navigator.geolocation.getCurrentPosition(
-        resolve,
-        reject,
-        {
-          enableHighAccuracy: true,
-          timeout: 10000,
-          maximumAge: 60000
-        }
-      );
+      navigator.geolocation.getCurrentPosition(resolve, reject, {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 60000,
+      });
     });
   };
 
-  const checkInAtVenue = useCallback(async (venueId: string, venueLat: number, venueLng: number, privacySettings = { isPublic: false, locationVisibility: 'private' }) => {
-    setLoading(true);
-    
-    try {
-      // Get current location
-      const position = await getCurrentLocation();
-      const userLat = position.coords.latitude;
-      const userLng = position.coords.longitude;
-      
-      // Use secure distance calculation without exposing coordinates
-      const { data: distanceData, error: distanceError } = await supabase
-        .rpc('calculate_secure_venue_distance', {
-          venue_id: venueId,
-          user_lat: userLat,
-          user_lng: userLng
+  const checkInAtVenue = useCallback(
+    async (
+      venueId: string,
+      venueLat: number,
+      venueLng: number,
+      privacySettings = { isPublic: false, locationVisibility: 'private' },
+    ) => {
+      setLoading(true);
+
+      try {
+        // Get current location
+        const position = await getCurrentLocation();
+        const userLat = position.coords.latitude;
+        const userLng = position.coords.longitude;
+
+        // Use secure distance calculation without exposing coordinates
+        const { data: distanceData, error: distanceError } = await supabase.rpc(
+          'calculate_secure_venue_distance',
+          {
+            venue_id: venueId,
+            user_lat: userLat,
+            user_lng: userLng,
+          },
+        );
+
+        if (distanceError) throw distanceError;
+
+        const distance = distanceData;
+
+        // Check if user is within check-in radius
+        if (distance > MAX_CHECKIN_DISTANCE_METERS) {
+          toast({
+            title: 'Too far from venue',
+            description: `You must be within ${MAX_CHECKIN_DISTANCE_METERS}m of the venue to check in. You are ${Math.round(distance)}m away.`,
+            variant: 'destructive',
+          });
+          return { success: false, distance };
+        }
+
+        // Create check-in record with enhanced privacy controls
+        const { data, error } = await supabase
+          .from('venue_checkins')
+          .insert({
+            venue_id: venueId,
+            user_id: (await supabase.auth.getUser()).data.user?.id,
+            latitude: userLat,
+            longitude: userLng,
+            distance_meters: distance,
+            is_public: privacySettings.isPublic,
+            location_visibility: privacySettings.locationVisibility,
+            approximate_only: true,
+            auto_anonymize_after: '24 hours',
+          })
+          .select()
+          .single();
+
+        if (error) throw error;
+        // Only a check-in the user made public may leave Queer Guide.
+        if (privacySettings.isPublic)
+          mirrorActivity({ kind: 'checkin', entityType: 'venue', entityId: venueId });
+
+        toast({
+          title: 'Successfully checked in!',
+          description: `You've checked in at this venue. Your location data will be ${privacySettings.isPublic ? 'visible to friends' : 'kept private'}.`,
         });
 
-      if (distanceError) throw distanceError;
-      
-      const distance = distanceData;
-      
-      // Check if user is within check-in radius
-      if (distance > MAX_CHECKIN_DISTANCE_METERS) {
-        toast({
-          title: "Too far from venue",
-          description: `You must be within ${MAX_CHECKIN_DISTANCE_METERS}m of the venue to check in. You are ${Math.round(distance)}m away.`,
-          variant: "destructive"
-        });
-        return { success: false, distance };
+        return { success: true, distance, checkin: data };
+      } catch (error: unknown) {
+        console.error('Check-in error:', error);
+        const err = error as { code?: number; message?: string };
+        if (err.code === 1) {
+          toast({
+            title: 'Location permission denied',
+            description: 'Please allow location access to check in at venues.',
+            variant: 'destructive',
+          });
+        } else if (err.code === 3) {
+          toast({
+            title: 'Location timeout',
+            description: 'Unable to get your location. Please try again.',
+            variant: 'destructive',
+          });
+        } else {
+          toast({
+            title: 'Check-in failed',
+            description: err.message || 'Unable to check in. Please try again.',
+            variant: 'destructive',
+          });
+        }
+
+        return { success: false, error };
+      } finally {
+        setLoading(false);
       }
-
-      // Create check-in record with enhanced privacy controls
-      const { data, error } = await supabase
-        .from('venue_checkins')
-        .insert({
-          venue_id: venueId,
-          user_id: (await supabase.auth.getUser()).data.user?.id,
-          latitude: userLat,
-          longitude: userLng,
-          distance_meters: distance,
-          is_public: privacySettings.isPublic,
-          location_visibility: privacySettings.locationVisibility,
-          approximate_only: true,
-          auto_anonymize_after: '24 hours'
-        })
-        .select()
-        .single();
-
-      if (error) throw error;
-
-      toast({
-        title: "Successfully checked in!",
-        description: `You've checked in at this venue. Your location data will be ${privacySettings.isPublic ? 'visible to friends' : 'kept private'}.`,
-      });
-
-      return { success: true, distance, checkin: data };
-    } catch (error: unknown) {
-      console.error('Check-in error:', error);
-      const err = error as { code?: number; message?: string };
-      if (err.code === 1) {
-        toast({
-          title: "Location permission denied",
-          description: "Please allow location access to check in at venues.",
-          variant: "destructive"
-        });
-      } else if (err.code === 3) {
-        toast({
-          title: "Location timeout",
-          description: "Unable to get your location. Please try again.",
-          variant: "destructive"
-        });
-      } else {
-        toast({
-          title: "Check-in failed",
-          description: err.message || "Unable to check in. Please try again.",
-          variant: "destructive"
-        });
-      }
-      
-      return { success: false, error };
-    } finally {
-      setLoading(false);
-    }
-  }, [toast]);
+    },
+    [toast],
+  );
 
   const getVenueCheckins = useCallback(async (venueId: string) => {
     // SECURITY: Use secure function that applies proper privacy controls
-    const { data, error } = await supabase
-      .rpc('get_secure_venue_checkins', {
-        venue_id: venueId
-      });
+    const { data, error } = await supabase.rpc('get_secure_venue_checkins', {
+      venue_id: venueId,
+    });
 
     if (error) {
       console.error('Error fetching secure venue check-ins:', error);
@@ -145,19 +154,20 @@ export function useVenueCheckins() {
       location_data: checkin.location_data,
       distance_meters: checkin.distance_meters,
       is_public: checkin.is_public,
-      can_view_precise_location: checkin.can_view_precise_location
+      can_view_precise_location: checkin.can_view_precise_location,
     }));
   }, []);
 
   const getUserCheckins = useCallback(async () => {
-    const { data: { user } } = await supabase.auth.getUser();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
     if (!user) return [];
 
     // Use secure function to get user's own check-ins with full access
-    const { data, error } = await supabase
-      .rpc('get_secure_venue_checkins', {
-        venue_id: null // Get all venues
-      });
+    const { data, error } = await supabase.rpc('get_secure_venue_checkins', {
+      venue_id: null, // Get all venues
+    });
 
     if (error) {
       console.error('Error fetching user check-ins:', error);
@@ -166,8 +176,10 @@ export function useVenueCheckins() {
 
     // Get venue details for user's check-ins
     const checkinData = Array.isArray(data) ? data : [];
-    const venueIds = [...new Set(checkinData.map((c: Record<string, unknown>) => c.venue_id as string))];
-    
+    const venueIds = [
+      ...new Set(checkinData.map((c: Record<string, unknown>) => c.venue_id as string)),
+    ];
+
     if (venueIds.length === 0) return [];
 
     const { data: venues, error: venueError } = await supabase
@@ -183,7 +195,7 @@ export function useVenueCheckins() {
     // Merge venue data with check-ins
     return checkinData.map((checkin: Record<string, unknown>) => ({
       ...checkin,
-      venues: venues?.find(v => v.id === checkin.venue_id) || null
+      venues: venues?.find((v) => v.id === checkin.venue_id) || null,
     }));
   }, []);
 
@@ -192,6 +204,6 @@ export function useVenueCheckins() {
     getVenueCheckins,
     getUserCheckins,
     loading,
-    MAX_CHECKIN_DISTANCE_METERS
+    MAX_CHECKIN_DISTANCE_METERS,
   };
 }
