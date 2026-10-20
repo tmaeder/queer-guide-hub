@@ -694,3 +694,6 @@ verify_jwt = false
 
 [functions.bluesky-bot-post]
 verify_jwt = false
+
+[functions.bluesky-mentions]
+verify_jwt = false
