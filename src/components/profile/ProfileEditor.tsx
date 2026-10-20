@@ -14,6 +14,7 @@ import OptimizedErrorBoundary, {
   DataErrorFallback,
 } from '@/components/error/OptimizedErrorBoundary';
 import { TravelForwardingSettings } from '@/components/profile/TravelForwardingSettings';
+import { EmailPreferences } from '@/components/profile/EmailPreferences';
 import { PushNotificationSettings } from '@/components/profile/PushNotificationSettings';
 import { DocumentsList } from '@/components/trips/DocumentsList';
 import { BasicInfoTab } from '@/components/profile/settings/BasicInfoTab';
@@ -418,6 +419,7 @@ function ProfileSettingsContent({
           showVisibility={false}
         />
         <PushNotificationSettings />
+        <EmailPreferences />
         <TravelForwardingSettings username={username} />
         <Collapsible>
           <CollapsibleTrigger asChild>

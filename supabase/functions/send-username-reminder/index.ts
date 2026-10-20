@@ -1,3 +1,4 @@
+import {renderEmailTemplate} from '../_shared/email-render.ts';
 // Username-rollout claim reminder (T-14d / T-2d before auto-assign deadline).
 //
 // Invoked by pg_cron via run_username_claim_reminders() with
@@ -18,9 +19,7 @@ interface RequestBody {
   deadline: string; // ISO date
 }
 
-function renderTemplate(tpl: string, vars: Record<string, string>): string {
-  return tpl.replace(/\{\{\s*([\w_]+)\s*\}\}/g, (_, k) => vars[k] ?? '');
-}
+
 
 const handler = async (req: Request): Promise<Response> => {
   const cors = getCorsHeaders(req);
@@ -91,12 +90,15 @@ const handler = async (req: Request): Promise<Response> => {
   };
 
   try {
+    const rendered=renderEmailTemplate(tpl,vars);
     await sendEmail({
+      idempotencyKey: `username-reminder:${profile.user_id}:${body.stage}`,
+      templateKey: 'username_claim_reminder',
       from: 'The Queer Guide <noreply@queer.guide>',
       to: [profile.email],
-      subject: renderTemplate(tpl.subject, vars),
-      html: renderTemplate(tpl.html_content, vars),
-      text: tpl.text_content ? renderTemplate(tpl.text_content, vars) : undefined,
+      subject: rendered.subject,
+      html: rendered.html,
+      text: rendered.text,
     });
   } catch (e) {
     console.error('username reminder send failed', e);

@@ -107,7 +107,7 @@ const handler = async (req: Request): Promise<Response> => {
     }
 
     const emailResult = await sendEmail({
-      from: "Community Groups <noreply@resend.dev>",
+      from: "Community Groups <noreply@queer.guide>",
       to: [user_email],
       subject,
       html: `

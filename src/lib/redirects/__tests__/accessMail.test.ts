@@ -5,6 +5,7 @@ import {
   type AccessMailJob,
   type AccessMailDb,
 } from '../../../../supabase/functions/_shared/redirect-access-mail';
+const gateway = 'https://email-gateway.example.com';
 const job: AccessMailJob = {
   id: '00000000-0000-4000-8000-000000000001',
   leaseId: '00000000-0000-4000-8000-000000000002',
@@ -23,7 +24,7 @@ describe('durable access request email delivery', () => {
   it('does not claim jobs or call a provider before email is configured', async () => {
     const db = database(),
       fetcher = vi.fn<typeof fetch>();
-    expect(await dispatchRedirectAccessMail(db, '', 'sender', fetcher)).toMatchObject({
+    expect(await dispatchRedirectAccessMail(db, '', 'sender', fetcher, gateway)).toMatchObject({
       configured: false,
     });
     expect(db.rpc).not.toHaveBeenCalled();
@@ -33,15 +34,17 @@ describe('durable access request email delivery', () => {
     const db = database(),
       fetcher = vi
         .fn<typeof fetch>()
-        .mockResolvedValue(new Response('{"id":"provider-receipt"}', { status: 200 }));
+        .mockResolvedValue(
+          new Response('{"status":"accepted","id":"provider-receipt"}', { status: 200 }),
+        );
     expect(
-      await dispatchRedirectAccessMail(db, 'fixture-provider-key', 'sender', fetcher),
+      await dispatchRedirectAccessMail(db, 'fixture-provider-key', 'sender', fetcher, gateway),
     ).toMatchObject({ sent: 1 });
     expect(fetcher).toHaveBeenCalledWith(
-      'https://api.resend.com/emails',
+      gateway + '/send',
       expect.objectContaining({
         redirect: 'error',
-        headers: expect.objectContaining({ 'Idempotency-Key': 'qg-redirect-access/' + job.id }),
+        headers: expect.objectContaining({ Authorization: 'Bearer fixture-provider-key' }),
       }),
     );
     expect(db.rpc).toHaveBeenCalledWith(
@@ -65,7 +68,7 @@ describe('durable access request email delivery', () => {
           headers: { 'Retry-After': '999999999999999999999999' },
         }),
       );
-    await dispatchRedirectAccessMail(db, 'fixture', 'sender', fetcher);
+    await dispatchRedirectAccessMail(db, 'fixture', 'sender', fetcher, gateway);
     expect(db.rpc).toHaveBeenCalledWith(
       'finish_redirect_access_mail',
       expect.objectContaining({
@@ -79,8 +82,8 @@ describe('durable access request email delivery', () => {
   it('retries ambiguous network failures with the identical body and provider key', async () => {
     const db = database(),
       fetcher = vi.fn<typeof fetch>().mockRejectedValue(new Error('timeout'));
-    await dispatchRedirectAccessMail(db, 'fixture', 'sender', fetcher);
-    await dispatchRedirectAccessMail(db, 'fixture', 'changed sender', fetcher);
+    await dispatchRedirectAccessMail(db, 'fixture', 'sender', fetcher, gateway);
+    await dispatchRedirectAccessMail(db, 'fixture', 'changed sender', fetcher, gateway);
     expect(fetcher.mock.calls[0][1]?.body).toBe(fetcher.mock.calls[1][1]?.body);
     expect(fetcher.mock.calls[0][1]?.headers).toEqual(fetcher.mock.calls[1][1]?.headers);
     expect(db.rpc).toHaveBeenCalledWith(
@@ -91,7 +94,7 @@ describe('durable access request email delivery', () => {
   it('does not retry permanent provider rejection or acknowledge a superseded lease as sent', async () => {
     const db = database(),
       fetcher = vi.fn<typeof fetch>().mockResolvedValue(new Response('{}', { status: 422 }));
-    await dispatchRedirectAccessMail(db, 'fixture', 'sender', fetcher);
+    await dispatchRedirectAccessMail(db, 'fixture', 'sender', fetcher, gateway);
     expect(db.rpc).toHaveBeenCalledWith(
       'finish_redirect_access_mail',
       expect.objectContaining({ p_retry: false }),
@@ -100,8 +103,12 @@ describe('durable access request email delivery', () => {
       data: name === 'claim_redirect_access_mail' ? [job] : false,
       error: null,
     }));
-    fetcher.mockResolvedValue(new Response('{"id":"accepted"}', { status: 200 }));
-    expect(await dispatchRedirectAccessMail(db, 'fixture', 'sender', fetcher)).toMatchObject({
+    fetcher.mockResolvedValue(
+      new Response('{"status":"accepted","id":"accepted"}', { status: 200 }),
+    );
+    expect(
+      await dispatchRedirectAccessMail(db, 'fixture', 'sender', fetcher, gateway),
+    ).toMatchObject({
       sent: 0,
       stale: 1,
     });
@@ -117,7 +124,10 @@ describe('durable access request email delivery', () => {
         db,
         'fixture',
         'sender',
-        vi.fn<typeof fetch>().mockResolvedValue(new Response('{"id":"accepted"}')),
+        vi
+          .fn<typeof fetch>()
+          .mockResolvedValue(new Response('{"status":"accepted","id":"accepted"}')),
+        gateway,
       ),
     ).rejects.toThrow('Could not acknowledge');
   });

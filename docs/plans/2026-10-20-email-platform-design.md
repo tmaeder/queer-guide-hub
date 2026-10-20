@@ -21,3 +21,11 @@ Cloudflare's FAQ checked on 2026-10-20 says Email Service supports transactional
 ## Verification
 
 Test idempotency, concurrent claims, uncertain submissions, stale leases, rate limits, consent/token ownership, unsubscribe replay, RLS and privilege boundaries, event replay/order, suppression and provider capability rejection. Run targeted frontend and backend tests, type checks, SQL execution against an isolated database and Worker dry run. Production deployment and actual mail delivery require configured sending domain, bindings, secrets and queue subscription. Current CLI discovery reports no sending subdomains; verify apex status separately before rollout.
+
+## Expanded benchmark requirement
+
+On 2026-10-20 the user additionally required analysis of Klaviyo, ActiveCampaign and Mailchimp and comparable strength integrated across Queer Guide. The inspected capability matrix and product-wide integration requirements are recorded in `docs/research/2026-10-20-email-platform-benchmark.md`. This expands the acceptance criteria: the delivery/consent foundation is not a completed marketing platform. Remaining work includes the event/identity spine, dynamic saved segments, durable journeys, shared eligibility/frequency rules, full content/personalization, experiments, reporting and domain adapters. Keep every missing capability visible and preserve the Cloudflare-only delivery limitation.
+
+## Local verification notes
+
+The branch has a dedicated `email-platform` CI workflow for Worker tests/types/dry-run, backend contracts and an isolated PostgreSQL migration/permission/consent/outbox suite. A production frontend build passed, the existing typecheck ratchet reported no new errors, targeted UI/redirect contracts passed, and desktop/mobile fixture renders had no overflow or browser errors. The existing real lazy-editor test initially timed out in a combined run; its complete seven-test file subsequently passed when isolated. These checks do not prove production sending, inbox placement, throughput, or parity with the benchmark platforms. See the research report for all remaining capability and integration gates.

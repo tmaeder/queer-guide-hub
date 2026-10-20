@@ -691,3 +691,13 @@ verify_jwt = false
 # Durable DNS instruction outbox; the handler checks the internal secret/current admin.
 [functions.redirect-domain-instruction-mail]
 verify_jwt = false
+
+# Handlers validate an internal/admin credential or the dedicated event secret.
+[functions.email-dispatch]
+verify_jwt = false
+[functions.cloudflare-email-events]
+verify_jwt = false
+[functions.email-subscriptions]
+verify_jwt = false
+[functions.email-admin]
+verify_jwt = false

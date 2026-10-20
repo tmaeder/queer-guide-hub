@@ -1,0 +1,12 @@
+{
+  "name": "queer-guide-email-delivery",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "types": "wrangler types worker-configuration.d.ts --include-runtime=false",
+    "test": "vitest run --config vitest.config.ts",
+    "deploy": "wrangler deploy",
+    "dry-run": "wrangler deploy --dry-run"
+  }
+}

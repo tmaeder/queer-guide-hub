@@ -1,3 +1,4 @@
+import { cloudflareGatewayRequest } from './cloudflare-email-gateway.ts';
 export interface AccessMailJob {
  id:string;leaseId:string;email:string;from:string;event:'requested'|'approved'|'denied';
 }
@@ -13,8 +14,8 @@ export function accessMailPayload(job:AccessMailJob) {
  return {from:job.from,to:[job.email],subject,text:text+'\n\n'+url,
   html:'<p>'+text+'</p><p><a href="'+url+'">Open link workspace</a></p>'};
 }
-export async function dispatchRedirectAccessMail(db:AccessMailDb,key:string,from:string,fetcher:typeof fetch=fetch) {
- if(!key||!from)return {configured:false,sent:0,failed:0,stale:0};
+export async function dispatchRedirectAccessMail(db:AccessMailDb,key:string,from:string,fetcher:typeof fetch=fetch,gatewayUrl:string='') {
+ if(!key||!from||!gatewayUrl)return {configured:false,sent:0,failed:0,stale:0};
  const claimed=await db.rpc('claim_redirect_access_mail',{p_from:from,p_limit:5});
  if(claimed.error)throw new Error('Could not claim access notifications');
  if(!Array.isArray(claimed.data))throw new Error('Invalid notification claim');
@@ -22,7 +23,7 @@ export async function dispatchRedirectAccessMail(db:AccessMailDb,key:string,from
  for(const job of claimed.data as AccessMailJob[]) {
   let providerId:string|null=null,error='Email delivery unavailable',retry=true,retryAfter:number|null=null;
   try {
-   const response=await fetcher('https://api.resend.com/emails',{method:'POST',redirect:'error',signal:AbortSignal.timeout(10000),headers:{Authorization:'Bearer '+key,'Content-Type':'application/json','Idempotency-Key':'qg-redirect-access/'+job.id},body:JSON.stringify(accessMailPayload(job))});
+   const response=await cloudflareGatewayRequest(accessMailPayload(job),'qg-redirect-access/'+job.id,key,gatewayUrl,fetcher);
    if(response.ok){const receipt=await response.json();if(typeof receipt.id==='string'&&receipt.id.length>0&&receipt.id.length<=200)providerId=receipt.id;}
    else {
     error='Email provider returned HTTP '+response.status;retry=response.status===408||response.status===409||response.status===429||response.status>=500;
