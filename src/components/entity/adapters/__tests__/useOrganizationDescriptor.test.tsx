@@ -16,6 +16,9 @@ vi.mock('@/hooks/useOrganization', () => ({
   }),
   useOrganizationArticles: () => ({ data: [], isLoading: false }),
 }));
+vi.mock('@/hooks/useMilestones', () => ({
+  useMilestonesForEntity: () => ({ data: [] }),
+}));
 
 import { useOrganizationDescriptor } from '../useOrganizationDescriptor';
 
@@ -57,7 +60,7 @@ describe('useOrganizationDescriptor section gating', () => {
     const { result } = renderHook(() => useOrganizationDescriptor('o1'));
     const s = result.current.descriptor!.sections;
     expect(when(s, 'articles')).toBe(true);
-    expect(when(s, 'visit')).toBe(false);
+    expect(when(s, 'location')).toBe(false);
     expect(when(s, 'shop')).toBe(false);
   });
 
@@ -68,13 +71,48 @@ describe('useOrganizationDescriptor section gating', () => {
       website_domain: 'shop.example',
       venue_count: 2,
       venues: [
-        { id: 'v1', slug: 'v1', name: 'Store', city: 'Berlin', latitude: 52.5, longitude: 13.4, image_url: null },
+        {
+          id: 'v1',
+          slug: 'v1',
+          name: 'Store',
+          city: 'Berlin',
+          latitude: 52.5,
+          longitude: 13.4,
+          image_url: null,
+        },
       ],
     });
     const { result } = renderHook(() => useOrganizationDescriptor('o1'));
     const s = result.current.descriptor!.sections;
-    expect(when(s, 'visit')).toBe(true);
+    expect(when(s, 'location')).toBe(true);
     expect(when(s, 'shop')).toBe(true);
     expect(when(s, 'articles')).toBe(false);
+  });
+});
+
+describe('useOrganizationDescriptor single layout', () => {
+  it('renders on the subway single, like the venue page', () => {
+    orgRef.current = makeOrg({ roles: ['publisher'], article_count: 1 });
+    const { result } = renderHook(() => useOrganizationDescriptor('o1'));
+    const d = result.current.descriptor!;
+    // `single` is what routes EntityDetail to EntitySingle instead of the
+    // legacy scroll shell.
+    expect(d.single).toBeDefined();
+    expect(d.hero).toBeNull();
+    expect(d.sidebar).toBeNull();
+    expect(d.single!.eyebrow).toBe('Organization');
+    for (const section of d.sections) expect(section.title).toBeTruthy();
+  });
+
+  it('shows contact (and so the website) with no venue at all', () => {
+    orgRef.current = makeOrg({ website: 'https://acme.example' });
+    const { result } = renderHook(() => useOrganizationDescriptor('o1'));
+    expect(when(result.current.descriptor!.sections, 'location')).toBe(true);
+  });
+
+  it('hides the milestones station when there are none', () => {
+    orgRef.current = makeOrg({});
+    const { result } = renderHook(() => useOrganizationDescriptor('o1'));
+    expect(when(result.current.descriptor!.sections, 'milestones')).toBe(false);
   });
 });

@@ -42,16 +42,6 @@ const pool = strip(poolRaw);
 const decisionsRaw = read(DECISIONS);
 const decisions = strip(decisionsRaw);
 
-const hook = readFileSync(join(process.cwd(), 'src/hooks/useExistenceEngine.ts'), 'utf8');
-
-/** AdminLiveness with comments removed. Both the JSX comment explaining why the
- *  any-kind count is NOT rendered and the hook's doc comment name that key, so an
- *  unstripped read makes "does not render it" pass against code that does. */
-const page = readFileSync(join(process.cwd(), 'src/pages/admin/AdminLiveness.tsx'), 'utf8')
-  .replace(/\{\s*\/\*[\s\S]*?\*\/\s*\}/g, '')
-  .replace(/\/\*[\s\S]*?\*\//g, '')
-  .replace(/^\s*\/\/.*$/gm, '');
-
 /** The verify block only, so a postcondition assertion cannot be satisfied by the body. */
 const poolVerify = pool.slice(pool.indexOf('do $verify$'));
 /** The overview body only. */
@@ -194,9 +184,7 @@ describe('overview payload', () => {
       overviewBody.indexOf("'archive_eligible'"),
     );
     expect(currentPool).toMatch(/g\.strong_dead >= 1/);
-    expect(currentPool).toMatch(
-      /fresh_alive_at is null or g\.fresh_alive_at <= g\.newest_dead_at/,
-    );
+    expect(currentPool).toMatch(/fresh_alive_at is null or g\.fresh_alive_at <= g\.newest_dead_at/);
   });
 
   it('reports archive_eligible with the decision predicate, not just strong_dead >= 2', () => {
@@ -273,33 +261,5 @@ describe('review-queue decisions', () => {
   it('scopes the evidence check so it is vacuous only when nothing is stamped', () => {
     const p4 = decisions.slice(decisions.indexOf("a.signals ? 'admin_verification'"));
     expect(p4).toMatch(/\(a\.signals->>'strong_dead'\) is null/);
-  });
-});
-
-describe('AdminLiveness surface', () => {
-  it('does not render the any-kind count — that was the defect', () => {
-    expect(page).not.toContain('dead_signals_any_kind');
-  });
-
-  it('renders the corrected pool and the eligible count', () => {
-    expect(page).toContain('o?.dead_signal_entities');
-    expect(page).toContain('o?.archive_eligible');
-  });
-
-  it('prints a denominator for the blind-spot sample', () => {
-    expect(page).toContain('blindSpotsTotal');
-    expect(page).toMatch(/Showing \{blindSpotsShown\} of \{blindSpotsTotal/);
-    // Guarded so it does not claim "showing 0 of 0" on an empty or loading list.
-    expect(page).toMatch(/blindSpotsShown > 0 && blindSpotsTotal > blindSpotsShown/);
-  });
-
-  it('sums the denominator from the overview, not from the rendered list', () => {
-    expect(page).toMatch(/overview\.data\?\.\[t\]\?\.blind_spots/);
-  });
-
-  it('types the new keys so a renamed key fails typecheck', () => {
-    for (const k of ['archive_eligible', 'dead_signals_any_kind', 'blind_spots']) {
-      expect(hook).toMatch(new RegExp(`${k}:\\s*number`));
-    }
   });
 });

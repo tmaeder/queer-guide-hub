@@ -10,6 +10,8 @@ import { PostCard } from '@/components/posts/PostCard';
 import { CreatePostDialog } from '@/components/posts/CreatePostDialog';
 import { useCommunityPosts } from '@/hooks/useCommunityPosts';
 import { useAuth } from '@/hooks/useAuth';
+import { usePostModeration } from '@/hooks/useSocialModeration';
+import { useFollows } from '@/hooks/useFollows';
 import { FollowedTagsFeed } from '@/components/tags/FollowedTagsFeed';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { PageLoadingState } from '@/components/layout/PageLoadingState';
@@ -22,7 +24,7 @@ export default function Feed({ embedded = false }: { embedded?: boolean }) {
   const { t } = useTranslation();
   const { user } = useAuth();
   const [searchTerm, setSearchTerm] = useState('');
-  const [activeTab, setActiveTab] = useState<'recent' | 'popular'>('recent');
+  const [activeTab, setActiveTab] = useState<'recent' | 'following' | 'popular'>('recent');
 
   const {
     posts,
@@ -39,15 +41,24 @@ export default function Feed({ embedded = false }: { embedded?: boolean }) {
     isDeletingPost,
   } = useCommunityPosts();
 
+  // Bluesky moderation: muted authors, muted words and hide-labels drop out of lists.
+  const moderation = usePostModeration(posts);
+  const { followingIds } = useFollows();
+
   const filteredPosts = useMemo(() => {
     const term = searchTerm.trim().toLowerCase();
-    if (!term) return posts;
-    return posts.filter(
+    const visible = posts.filter(
+      (post) =>
+        !moderation.get(post.id)?.filter &&
+        (activeTab !== 'following' || followingIds.has(post.user_id)),
+    );
+    if (!term) return visible;
+    return visible.filter(
       (post) =>
         post.content?.toLowerCase().includes(term) ||
         post.profiles?.display_name?.toLowerCase().includes(term),
     );
-  }, [posts, searchTerm]);
+  }, [posts, searchTerm, moderation, activeTab, followingIds]);
 
   const sortedPosts = useMemo(() => {
     if (activeTab === 'popular') {
@@ -152,12 +163,14 @@ export default function Feed({ embedded = false }: { embedded?: boolean }) {
                   aria-label={t('pages.feed.searchPlaceholder', 'Search posts or users...')}
                 />
               </div>
-              <Tabs
-                value={activeTab}
-                onValueChange={(v) => setActiveTab(v as 'recent' | 'popular')}
-              >
+              <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as typeof activeTab)}>
                 <TabsList className="w-full sm:w-auto">
                   <TabsTrigger value="recent">{t('pages.feed.recent', 'Recent')}</TabsTrigger>
+                  {user && (
+                    <TabsTrigger value="following">
+                      {t('pages.feed.following', 'Following')}
+                    </TabsTrigger>
+                  )}
                   <TabsTrigger value="popular">{t('pages.feed.popular', 'Popular')}</TabsTrigger>
                 </TabsList>
               </Tabs>
@@ -224,6 +237,7 @@ export default function Feed({ embedded = false }: { embedded?: boolean }) {
                       onUnlike={unlikePost}
                       onDelete={deletePost}
                       isLiking={isLikingPost || isDeletingPost}
+                      moderation={moderation.get(post.id)}
                     />
                   )}
                 />

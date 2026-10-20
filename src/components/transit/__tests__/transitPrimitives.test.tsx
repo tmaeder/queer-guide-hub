@@ -6,7 +6,6 @@ import { StationRing } from '@/components/transit/StationRing';
 import { RouteBullet } from '@/components/transit/RouteBullet';
 import { ROUTE_BULLET_MAP } from '@/components/transit/routeBulletMap';
 import { DepartureRow } from '@/components/transit/DepartureRow';
-import { LineStepper } from '@/components/transit/LineStepper';
 
 describe('StationRing', () => {
   it('renders the three states', () => {
@@ -78,19 +77,6 @@ describe('DepartureRow', () => {
     expect(screen.getByText('FRI 21:00')).toBeInTheDocument();
     expect(screen.getByText('Ballroom Is Burning')).toBeInTheDocument();
     expect(screen.getByText('Selling fast')).toBeInTheDocument();
-  });
-});
-
-describe('LineStepper', () => {
-  it('renders one station circle per step, filled up to current', () => {
-    const { container } = render(
-      <LineStepper steps={['Basics', 'Details', 'Review']} current={1} />,
-    );
-    const circles = container.querySelectorAll('circle');
-    expect(circles).toHaveLength(3);
-    expect(circles[0].getAttribute('fill')).toBe('hsl(var(--foreground))'); // done
-    expect(circles[1].getAttribute('fill')).toBe('hsl(var(--foreground))'); // current
-    expect(circles[2].getAttribute('fill')).toBe('hsl(var(--background))'); // ahead
   });
 });
 

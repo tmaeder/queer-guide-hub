@@ -154,11 +154,6 @@ export function PickerLine({
                   onClick={() => !option.disabled && onSelect(active ? null : option.id)}
                   aria-pressed={active}
                   aria-disabled={option.disabled || undefined}
-                  aria-label={
-                    option.disabled && option.disabledReason
-                      ? `${option.label} — ${option.disabledReason}`
-                      : option.label
-                  }
                   className={cn(
                     'flex w-full flex-col items-center gap-0.5 px-1 pb-2 pt-2 text-center',
                     'transition-colors duration-fast focus-visible:outline-none focus-visible:ring-2',
@@ -178,6 +173,16 @@ export function PickerLine({
                   {option.meta && (
                     <span className="text-2xs tabular-nums text-muted-foreground">
                       {option.meta}
+                    </span>
+                  )}
+                  {/* Name is the visible text plus this suffix (WCAG 2.5.3 label in name). */}
+                  {((option.short && option.short !== option.label) ||
+                    (option.disabled && option.disabledReason)) && (
+                    <span className="sr-only">
+                      {option.short && option.short !== option.label ? ` — ${option.label}` : ''}
+                      {option.disabled && option.disabledReason
+                        ? ` — ${option.disabledReason}`
+                        : ''}
                     </span>
                   )}
                 </button>

@@ -35,7 +35,7 @@ export interface IntentLocation {
  *
  * This wraps `useVisitorLocation` rather than joining the four existing geo
  * implementations (`useNearMe`, `useVisitorLocation`, three inline
- * `navigator.geolocation` call sites, `useGeoCountry`/`useUserCountry`).
+ * `navigator.geolocation` call sites, `useGeoCountry`).
  * Consolidating those is a separate piece of work and this must not depend on it.
  */
 export function useIntentLocation(citySlugParam?: string | null): IntentLocation {

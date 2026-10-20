@@ -242,7 +242,6 @@ const NewsCardImpl = ({
     return (
       <LocalizedLink
         to={`/news/${article.slug}`}
-        aria-label={safeTitle}
         className="group block relative overflow-hidden rounded-container no-underline text-inherit focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
       >
         <div className="relative w-full aspect-[16/9] md:aspect-[21/9] overflow-hidden bg-muted">
@@ -308,7 +307,6 @@ const NewsCardImpl = ({
     return (
       <LocalizedLink
         to={`/news/${article.slug}`}
-        aria-label={safeTitle}
         className="group grid grid-cols-1 md:grid-cols-12 gap-6 md:gap-8 no-underline text-inherit focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-container"
       >
         <div className="md:col-span-7 flex flex-col justify-center gap-4">
@@ -361,7 +359,6 @@ const NewsCardImpl = ({
     return (
       <LocalizedLink
         to={`/news/${article.slug}`}
-        aria-label={safeTitle}
         className="flex items-center gap-4 py-4 px-4 transition-colors hover:bg-muted no-underline text-inherit focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
       >
         <div className="flex-1 min-w-0">

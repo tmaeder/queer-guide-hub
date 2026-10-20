@@ -43,9 +43,6 @@ vi.mock('../EventDetail.parts', async (orig) => {
 vi.mock('@/components/map/EntityMap', () => ({ EntityMap: () => <div data-testid="map" /> }));
 vi.mock('@/components/admin/AdminEditButton', () => ({ AdminEditButton: () => null }));
 vi.mock('@/components/moderation/ReportButton', () => ({ ReportButton: () => null }));
-vi.mock('@/components/marketplace/MarketplaceForEvent', () => ({
-  MarketplaceForEvent: () => null,
-}));
 vi.mock('@/components/events/EventMoreEvents', () => ({ EventMoreEvents: () => null }));
 vi.mock('@/components/discovery/MilestonesForEntity', () => ({ MilestonesForEntity: () => null }));
 

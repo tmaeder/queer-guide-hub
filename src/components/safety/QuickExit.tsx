@@ -21,7 +21,8 @@ export function QuickExit() {
       type="button"
       onClick={performQuickExit}
       className="inline-flex min-h-11 items-center gap-2 rounded-element bg-foreground px-4 text-13 font-bold text-background"
-      aria-label={t('help.quick_exit_aria', 'Leave this page immediately')}
+      // Name starts with the visible text (WCAG 2.5.3 label in name).
+      aria-label={`${t('help.quick_exit', 'Quick exit')} — ${t('help.quick_exit_aria', 'Leave this page immediately')}`}
     >
       <LogOut size={16} aria-hidden="true" />
       {t('help.quick_exit', 'Quick exit')}

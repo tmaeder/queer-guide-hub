@@ -44,6 +44,10 @@ export function ShareMenu({
   const opts: ShareOptions = { url, title, text };
   const canNativeShare = typeof navigator !== 'undefined' && typeof navigator.share === 'function';
   const canSendInApp = !!entity && !!user;
+  // Safety-gated places (criminalising countries) are signed-in only on Queer
+  // Guide. Broadcasting one to Bluesky/X/… would publish it to everyone, so
+  // only private routes stay: copy link and send to a member.
+  const publicShare = !entity?.gated;
 
   return (
     <>
@@ -64,7 +68,7 @@ export function ShareMenu({
               <DropdownMenuSeparator />
             </>
           )}
-          {canNativeShare && (
+          {publicShare && canNativeShare && (
             <DropdownMenuItem onSelect={() => void shareOrCopy(opts)}>
               <Send size={16} className="mr-2" />
               Share…
@@ -74,18 +78,25 @@ export function ShareMenu({
             <Link2 size={16} className="mr-2" />
             Copy link
           </DropdownMenuItem>
-          <DropdownMenuSeparator />
-          {SHARE_TARGETS.map(({ target, label: tLabel, platformKey }) => {
-            const Icon = platformIcon(platformKey);
-            return (
-              <DropdownMenuItem key={target} asChild>
-                <a href={buildShareUrl(target, opts)} target="_blank" rel="noopener noreferrer">
-                  <Icon size={16} className="mr-2" />
-                  {tLabel}
-                </a>
-              </DropdownMenuItem>
-            );
-          })}
+          {publicShare ? (
+            <DropdownMenuSeparator />
+          ) : (
+            <p className="px-2 py-1.5 text-xs text-muted-foreground">
+              Public sharing is off for places in countries that criminalise queer people.
+            </p>
+          )}
+          {publicShare &&
+            SHARE_TARGETS.map(({ target, label: tLabel, platformKey }) => {
+              const Icon = platformIcon(platformKey);
+              return (
+                <DropdownMenuItem key={target} asChild>
+                  <a href={buildShareUrl(target, opts)} target="_blank" rel="noopener noreferrer">
+                    <Icon size={16} className="mr-2" />
+                    {tLabel}
+                  </a>
+                </DropdownMenuItem>
+              );
+            })}
         </DropdownMenuContent>
       </DropdownMenu>
       {canSendInApp && entity && (

@@ -297,8 +297,6 @@ export default tseslint.config(
       'src/components/profile/PhotoGallery.tsx',
       'src/components/analytics/UmamiAnalyticsDashboard.tsx',
       'src/components/resources/TagListRenderer.tsx',
-      // Hero / cover overlays — pre-multiplied black gradients on imagery.
-      'src/components/location/LocationInfo.tsx',
     ],
     rules: {
       'no-restricted-syntax': [
@@ -576,7 +574,6 @@ export default tseslint.config(
       'src/components/theme/ThemeProvider.tsx',
       'src/components/analytics/UmamiAnalyticsDashboard.tsx',
       'src/components/resources/TagListRenderer.tsx',
-      'src/components/location/LocationInfo.tsx',
       'src/components/country/EqualityScoreBadge.tsx',
       // Hex-rule allowlist entries the P2-1 block carries but this block was
       // missing — without them, re-adding the hex selector here would flag

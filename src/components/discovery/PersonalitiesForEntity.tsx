@@ -70,11 +70,7 @@ function PersonalityRailCard({ personality, href }: { personality: Personality; 
   const src = resolveImageUrl({ imageUrl: personality.image_url, preferThumb: true });
   const era = formatEra(personality);
   return (
-    <LocalizedLink
-      to={href}
-      aria-label={personality.name}
-      className="group flex h-full flex-col gap-2 no-underline"
-    >
+    <LocalizedLink to={href} className="group flex h-full flex-col gap-2 no-underline">
       <div className="relative aspect-square w-full overflow-hidden rounded-container bg-muted">
         {src ? (
           <img
@@ -84,7 +80,10 @@ function PersonalityRailCard({ personality, href }: { personality: Personality; 
             className="h-full w-full object-cover transition-transform duration-slow group-hover:scale-[1.04]"
           />
         ) : (
-          <div className="flex h-full w-full items-center justify-center text-headline font-bold text-muted-foreground">
+          <div
+            aria-hidden="true"
+            className="flex h-full w-full items-center justify-center text-headline font-bold text-muted-foreground"
+          >
             {getInitials(personality.name)}
           </div>
         )}

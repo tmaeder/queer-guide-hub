@@ -25,7 +25,7 @@ export function CannedResponsePicker({ value, onSelect }: CannedResponsePickerPr
         if (r) onSelect(r.slug, r.template);
       }}
     >
-      <SelectTrigger className="h-7 text-xs">
+      <SelectTrigger className="h-7 text-xs" aria-label="Quick response">
         <SelectValue placeholder="Quick response..." />
       </SelectTrigger>
       <SelectContent>

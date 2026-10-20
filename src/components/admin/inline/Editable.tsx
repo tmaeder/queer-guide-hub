@@ -162,7 +162,6 @@ export function Editable({
       onKeyDown={handleKeyDown}
       role={showAffordance ? 'button' : undefined}
       tabIndex={showAffordance ? 0 : undefined}
-      aria-label={showAffordance ? `Edit ${fieldConfig.label}` : undefined}
       title={
         showAffordance
           ? `${requireAltClick && !editMode ? 'Alt-click' : 'Click'} to edit · ${fieldConfig.label}`
@@ -171,6 +170,7 @@ export function Editable({
       className={[className, affordanceClass].filter(Boolean).join(' ')}
       data-editable-field={field}
     >
+      {showAffordance && <span className="sr-only">Edit {fieldConfig.label}: </span>}
       {children}
       {showAffordance && (
         <Pencil

@@ -20,6 +20,10 @@ import {
   Flag,
   ChevronDown,
   ChevronUp,
+  VolumeX,
+  Volume2,
+  UserPlus,
+  UserMinus,
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -44,6 +48,10 @@ import { CommentsSection } from './CommentsSection';
 import { ReportContentDialog } from '@/components/moderation/ReportContentDialog';
 import { useAuth } from '@/hooks/useAuth';
 import { ContentSanitizer } from '@/components/security/ContentSanitizer';
+import { ContentWarningGate } from '@/components/moderation/ContentWarningGate';
+import { useSocialModeration } from '@/hooks/useSocialModeration';
+import { useFollows } from '@/hooks/useFollows';
+import type { PostModeration } from '@/lib/atprotoModeration';
 
 interface PostCardProps {
   post: CommunityPost;
@@ -51,9 +59,11 @@ interface PostCardProps {
   onUnlike?: (postId: string) => void;
   onDelete?: (postId: string) => void;
   isLiking?: boolean;
+  /** Bluesky moderation decision for this post (from usePostModeration). */
+  moderation?: PostModeration;
 }
 
-export const PostCard = ({ post, onLike, onUnlike, onDelete }: PostCardProps) => {
+export const PostCard = ({ post, onLike, onUnlike, onDelete, moderation }: PostCardProps) => {
   const { user } = useAuth();
   const reduced = useReducedMotion() ?? false;
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
@@ -61,6 +71,10 @@ export const PostCard = ({ post, onLike, onUnlike, onDelete }: PostCardProps) =>
   const [showReportDialog, setShowReportDialog] = useState(false);
 
   const isOwnPost = user?.id === post.user_id;
+  const { mutedUserIds, mute, unmute } = useSocialModeration();
+  const { isFollowing, follow, unfollow } = useFollows();
+  const authorMuted = mutedUserIds.includes(post.user_id);
+  const following = isFollowing(post.user_id);
 
   const handleLikeToggle = () => {
     if (post.user_liked) {
@@ -94,7 +108,7 @@ export const PostCard = ({ post, onLike, onUnlike, onDelete }: PostCardProps) =>
 
   const getVisibilityIcon = () => {
     switch (post.visibility) {
-      case 'friends':
+      case 'followers':
         return <Users size={12} />;
       case 'private':
         return <Lock size={12} />;
@@ -105,8 +119,8 @@ export const PostCard = ({ post, onLike, onUnlike, onDelete }: PostCardProps) =>
 
   const getVisibilityLabel = () => {
     switch (post.visibility) {
-      case 'friends':
-        return 'Friends';
+      case 'followers':
+        return 'Followers';
       case 'private':
         return 'Private';
       default:
@@ -166,34 +180,36 @@ export const PostCard = ({ post, onLike, onUnlike, onDelete }: PostCardProps) =>
 
         {/* Images */}
         {post.images && post.images.length > 0 && (
-          <div className="grid gap-2 grid-cols-1 sm:grid-cols-2">
-            {post.images.slice(0, 4).map((image, index) => (
-              <div
-                key={index}
-                className="relative bg-muted rounded-element overflow-hidden"
-                style={{ aspectRatio: '16/9' }}
-              >
-                <img
-                  src={image}
-                  alt=""
-                  role="presentation"
-                  className="w-full h-full object-cover"
-                  onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
-                    const target = e.target as HTMLImageElement;
-                    target.style.display = 'none';
-                  }}
-                />
-              </div>
-            ))}
-            {post.images.length > 4 && (
-              <div
-                className="bg-muted rounded-element flex items-center justify-center text-muted-foreground"
-                style={{ aspectRatio: '16/9' }}
-              >
-                +{post.images.length - 4} more
-              </div>
-            )}
-          </div>
+          <ContentWarningGate moderation={moderation}>
+            <div className="grid gap-2 grid-cols-1 sm:grid-cols-2">
+              {post.images.slice(0, 4).map((image, index) => (
+                <div
+                  key={index}
+                  className="relative bg-muted rounded-element overflow-hidden"
+                  style={{ aspectRatio: '16/9' }}
+                >
+                  <img
+                    src={image}
+                    alt=""
+                    role="presentation"
+                    className="w-full h-full object-cover"
+                    onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
+                      const target = e.target as HTMLImageElement;
+                      target.style.display = 'none';
+                    }}
+                  />
+                </div>
+              ))}
+              {post.images.length > 4 && (
+                <div
+                  className="bg-muted rounded-element flex items-center justify-center text-muted-foreground"
+                  style={{ aspectRatio: '16/9' }}
+                >
+                  +{post.images.length - 4} more
+                </div>
+              )}
+            </div>
+          </ContentWarningGate>
         )}
 
         {/* Link Preview */}
@@ -301,12 +317,14 @@ export const PostCard = ({ post, onLike, onUnlike, onDelete }: PostCardProps) =>
                 {post.profiles?.display_name || 'Unknown User'}
               </LocalizedLink>
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <span>{(() => {
-                  const d = post.created_at ? new Date(post.created_at) : null;
-                  return d && !Number.isNaN(d.getTime())
-                    ? formatDistanceToNow(d, { addSuffix: true })
-                    : '';
-                })()}</span>
+                <span>
+                  {(() => {
+                    const d = post.created_at ? new Date(post.created_at) : null;
+                    return d && !Number.isNaN(d.getTime())
+                      ? formatDistanceToNow(d, { addSuffix: true })
+                      : '';
+                  })()}
+                </span>
                 <span>&bull;</span>
                 <div className="flex items-center gap-1">
                   {getVisibilityIcon()}
@@ -351,6 +369,30 @@ export const PostCard = ({ post, onLike, onUnlike, onDelete }: PostCardProps) =>
                       Delete Post
                     </DropdownMenuItem>
                   </>
+                )}
+                {!isOwnPost && user && (
+                  <DropdownMenuItem
+                    onClick={() => (following ? unfollow : follow).mutate(post.user_id)}
+                  >
+                    {following ? (
+                      <UserMinus size={16} className="mr-2" />
+                    ) : (
+                      <UserPlus size={16} className="mr-2" />
+                    )}
+                    {following ? 'Unfollow' : 'Follow'}
+                  </DropdownMenuItem>
+                )}
+                {!isOwnPost && user && (
+                  <DropdownMenuItem
+                    onClick={() => (authorMuted ? unmute : mute).mutate(post.user_id)}
+                  >
+                    {authorMuted ? (
+                      <Volume2 size={16} className="mr-2" />
+                    ) : (
+                      <VolumeX size={16} className="mr-2" />
+                    )}
+                    {authorMuted ? 'Unmute account' : 'Mute account'}
+                  </DropdownMenuItem>
                 )}
                 {!isOwnPost && user && (
                   <DropdownMenuItem onClick={() => setShowReportDialog(true)}>
@@ -418,7 +460,9 @@ export const PostCard = ({ post, onLike, onUnlike, onDelete }: PostCardProps) =>
               initial={reduced ? false : { height: 0, opacity: 0 }}
               animate={{ height: 'auto', opacity: 1 }}
               exit={reduced ? { opacity: 0 } : { height: 0, opacity: 0 }}
-              transition={reduced ? { duration: 0 } : { duration: duration.fast, ease: easing.smooth }}
+              transition={
+                reduced ? { duration: 0 } : { duration: duration.fast, ease: easing.smooth }
+              }
               className="overflow-hidden"
             >
               <div className="pt-4">

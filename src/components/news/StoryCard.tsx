@@ -23,7 +23,6 @@ export const StoryCard = ({ story, hero }: StoryCardProps) => {
   return (
     <LocalizedLink
       to={`/news/story/${story.slug}`}
-      aria-label={title}
       className="card-lift group flex flex-col gap-4 rounded-element bg-surface-container overflow-hidden no-underline text-inherit focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
     >
       <div className="relative overflow-hidden">
@@ -32,8 +31,7 @@ export const StoryCard = ({ story, hero }: StoryCardProps) => {
           decoding="async"
           referrerPolicy="no-referrer"
           src={img}
-          alt={title}
-          role="presentation"
+          alt=""
           width={400}
           height={200}
           style={{ width: '100%', height: 200, objectFit: 'cover' }}

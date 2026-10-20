@@ -72,7 +72,6 @@ const ROUTES = ADMIN_ARCHETYPES.filter(
     if (!QUARANTINED.has(r)) return true;
     // Say it out loud on every run. A quarantined route that stops announcing
     // itself is indistinguishable from one nobody ever wrote a guard for.
-    // eslint-disable-next-line no-console
     console.warn(
       `::warning::${r} is QUARANTINED from the admin route baseline (main thread hangs)`,
     );
@@ -85,6 +84,17 @@ const BLOCKED = /\/rpc\/(branding_|admin_automation_set_enabled|.*_upsert|.*_del
 type Shape = { endpoints: string[]; h1: string; errors: string[] };
 
 test.describe('admin routes stay healthy through the archetype migration', () => {
+  // Fork PRs receive no admin secrets. Skip before opening protected routes;
+  // waiting for page furniture first costs the full timeout on every route.
+  // Explicit storage state also supports local authenticated runs.
+  test.skip(
+    !(
+      process.env.E2E_STORAGE_STATE ||
+      (process.env.E2E_ADMIN_EMAIL && process.env.E2E_ADMIN_PASSWORD)
+    ),
+    'Requires the configured admin session',
+  );
+
   // Admin pages are heavier than the 30s default allows and CI runs one
   // worker, so the budget is set for admin, not for public pages.
   //
@@ -275,7 +285,6 @@ test.describe('admin routes stay healthy through the archetype migration', () =>
         .evaluate((el) => el.textContent ?? '', { timeout: 15_000 })
         .catch(() => null);
       if (bodyText === null) {
-        // eslint-disable-next-line no-console
         console.warn(`::warning::${route}: body text read timed out — NOT measured here`);
       } else {
         expect(bodyText.trim().length, `${route} rendered no content`).toBeGreaterThan(0);

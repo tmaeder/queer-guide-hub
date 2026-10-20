@@ -17,8 +17,9 @@ vi.mock('@/integrations/supabase/untyped', () => ({
     return chain;
   },
 }));
-vi.mock('@/components/admin/WebScrapersPanel', () => ({ WebScrapersPanel: () => null }));
-vi.mock('@/components/admin/IngestionSourcesManager', () => ({ IngestionSourcesManager: () => null }));
+vi.mock('@/components/admin/IngestionSourcesManager', () => ({
+  IngestionSourcesManager: () => null,
+}));
 vi.mock('@/components/admin/NewsSourcesManager', () => ({ NewsSourcesManager: () => null }));
 vi.mock('@/components/admin/ApiKeysManager', () => ({ ApiKeysManager: () => null }));
 
@@ -26,7 +27,11 @@ import SourcesTab from '../SourcesTab';
 
 function wrapper({ children }: { children: ReactNode }) {
   const qc = new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: 0 } } });
-  return <QueryClientProvider client={qc}><TooltipProvider>{children}</TooltipProvider></QueryClientProvider>;
+  return (
+    <QueryClientProvider client={qc}>
+      <TooltipProvider>{children}</TooltipProvider>
+    </QueryClientProvider>
+  );
 }
 
 describe('SourcesTab', () => {

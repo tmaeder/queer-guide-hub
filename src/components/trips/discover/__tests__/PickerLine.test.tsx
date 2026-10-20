@@ -33,7 +33,7 @@ describe('PickerLine', () => {
     renderWithProviders(
       <PickerLine options={opts()} activeId="b" onSelect={onSelect} label="Vibe" />,
     );
-    fireEvent.click(screen.getByRole('button', { name: 'Option B' }));
+    fireEvent.click(screen.getByRole('button', { name: /Option B/ }));
     expect(onSelect).toHaveBeenCalledWith(null);
   });
 
@@ -42,7 +42,7 @@ describe('PickerLine', () => {
     renderWithProviders(
       <PickerLine options={opts()} activeId="b" onSelect={onSelect} label="Vibe" />,
     );
-    fireEvent.click(screen.getByRole('button', { name: 'Option C' }));
+    fireEvent.click(screen.getByRole('button', { name: /Option C/ }));
     expect(onSelect).toHaveBeenCalledWith('c');
   });
 
@@ -83,7 +83,9 @@ describe('PickerLine', () => {
       const { container } = renderWithProviders(
         <PickerLine options={withEmpty} activeId={null} onSelect={vi.fn()} label="When" />,
       );
-      const strokes = [...container.querySelectorAll('svg > path')].map((p) => p.getAttribute('stroke'));
+      const strokes = [...container.querySelectorAll('svg > path')].map((p) =>
+        p.getAttribute('stroke'),
+      );
       expect(strokes[1]).toBe('hsl(var(--foreground))');
       expect(strokes[0]).toBe('hsl(var(--track-pink))');
     });

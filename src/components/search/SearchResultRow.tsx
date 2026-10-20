@@ -85,7 +85,6 @@ export function SearchResultRow({
       id={id}
       role="option"
       aria-selected={focused}
-      aria-label={subtitle ? `${name}, ${subtitle}` : name}
       tabIndex={-1}
       onClick={onClick}
       onMouseEnter={onMouseEnter}
@@ -99,14 +98,24 @@ export function SearchResultRow({
           : 'hover:bg-surface-container',
       )}
     >
-      <RouteBullet type={type} size={34} />
+      <span aria-hidden="true" className="flex shrink-0">
+        <RouteBullet type={type} size={34} />
+      </span>
       <div className="flex min-w-0 flex-1 flex-col">
         <span className="truncate text-15 font-bold">
           <HighlightedText text={name} query={query} html={nameHtml} />
         </span>
-        {subtitle && <span className="truncate text-13 text-muted-foreground">{subtitle}</span>}
+        {subtitle && (
+          <span className="truncate text-13 text-muted-foreground">
+            <span className="sr-only">, </span>
+            {subtitle}
+          </span>
+        )}
       </div>
+      {/* No aria-label: the option's name is its visible text, so it always
+          contains what is on screen (WCAG 2.5.3 label in name). */}
       <span className="shrink-0 text-2xs font-bold uppercase tracking-label text-muted-foreground">
+        <span className="sr-only">, </span>
         {label}
       </span>
     </div>

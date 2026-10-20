@@ -11,6 +11,7 @@ DECLARE actor uuid:=gen_random_uuid();other uuid:=gen_random_uuid();domain uuid:
 BEGIN
  INSERT INTO auth.users(id) VALUES(actor);INSERT INTO public.user_roles VALUES(actor,'admin');
  INSERT INTO public.redirect_workspaces(id,name,slug) VALUES(other,'Domain scope fixture','domain-scope-fixture');
+ INSERT INTO redirect_internal.workspace_owners(workspace_id,user_id) VALUES(other,actor);
  INSERT INTO public.redirect_domains(id,workspace_id,hostname,created_by,provider_id,ownership_state,verified_at,verified_until,routing_provider_id,routing_protocol,routing_seen_at) VALUES(domain,other,'foreign-domain-scope.example.com',actor,provider::text,'verified',now(),now()+interval '3 hours',provider::text,1,now()) RETURNING redirect_domains.version INTO version;
  INSERT INTO public.redirect_domain_jobs(workspace_id,domain_id,zone_id,cname_target,requested_by,state,provider_status,ssl_status,checked_at,create_nonce) VALUES(other,domain,repeat('a',32),'links.queer.guide',actor,'ready','active','active',now(),nonce);
  INSERT INTO public.redirects(id,workspace_id,type,slug,target,notes) VALUES(link,other,'SHORT','foreign-domain-manual','https://example.org/private-domain-manual','Foreign private manual record') RETURNING updated_at INTO link_version;

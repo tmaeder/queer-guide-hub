@@ -5,6 +5,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { PenSquare, Users } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
+import { usePostModeration } from '@/hooks/useSocialModeration';
 
 interface UserPostsListProps {
   userId: string;
@@ -15,6 +16,8 @@ export const UserPostsList = ({ userId, isOwnProfile }: UserPostsListProps) => {
   const { user } = useAuth();
   const { posts, isLoading, likePost, unlikePost, deletePost, isLikingPost, isDeletingPost } =
     useCommunityPosts(userId);
+  // On a profile, labels still blur media; a muted author's own page stays readable (as on Bluesky).
+  const moderation = usePostModeration(posts);
 
   if (isLoading) {
     return (
@@ -93,6 +96,7 @@ export const UserPostsList = ({ userId, isOwnProfile }: UserPostsListProps) => {
             onUnlike={unlikePost}
             onDelete={deletePost}
             isLiking={isLikingPost || isDeletingPost}
+            moderation={moderation.get(post.id)}
           />
         ))}
       </div>

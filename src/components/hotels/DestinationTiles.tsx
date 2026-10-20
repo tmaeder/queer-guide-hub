@@ -29,7 +29,6 @@ export function DestinationTiles({ cities }: DestinationTilesProps) {
             to={href}
             className="relative block group overflow-hidden rounded-container aspect-[4/3] no-underline"
             style={{ color: 'inherit' }}
-            aria-label={`${c.name}, ${c.hotel_count} hotels`}
           >
             {showNetwork ? (
               <div className="absolute inset-0 flex items-center justify-center rounded-container bg-background p-4 pb-12">
@@ -40,7 +39,7 @@ export function DestinationTiles({ cities }: DestinationTilesProps) {
                 {}
                 <img
                   src={img}
-                  alt={c.name}
+                  alt=""
                   className="absolute inset-0 w-full h-full object-cover transition-transform group-hover:scale-[1.02]"
                   loading="lazy"
                   decoding="async"

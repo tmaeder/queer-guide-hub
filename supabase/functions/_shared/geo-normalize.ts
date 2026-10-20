@@ -1,7 +1,6 @@
 /**
  * Country name canonicalization — dependency-free so lean functions
  * can import the alias map without pulling the automation/AI-suggestion stack.
- * automation-utils.ts re-exports COUNTRY_ALIASES from here for its existing users.
  */
 
 /** Canonical country alias map — ISO-2 codes, local names, demonyms → English name. */

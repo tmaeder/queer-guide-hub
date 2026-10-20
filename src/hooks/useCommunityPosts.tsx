@@ -1,8 +1,4 @@
-import {
-  useInfiniteQuery,
-  useMutation,
-  useQueryClient,
-} from '@tanstack/react-query';
+import { useInfiniteQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useEffect, useId, useMemo } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -23,13 +19,17 @@ export interface CreatePostData {
   content: string;
   images?: string[];
   post_type?: 'text' | 'image' | 'link' | 'poll';
-  visibility?: 'public' | 'friends' | 'private';
+  visibility?: 'public' | 'followers' | 'private';
   link_url?: string;
   link_title?: string;
   link_description?: string;
   poll_options?: Record<string, unknown>;
   mentions?: Array<{ user_id: string; username: string }>;
   tags?: string[];
+  /** Bluesky self-label values (see SELF_LABELS). */
+  labels?: string[];
+  /** DID of the author's connected Bluesky account; set only when they ticked "Also post to Bluesky". */
+  crossPostDid?: string;
 }
 
 const PAGE_SIZE = 20;
@@ -45,92 +45,90 @@ export const useCommunityPosts = (userId?: string) => {
   // `.on()` on an already-subscribed channel, which throws and crashed the page.
   const instanceId = useId();
 
-  const {
-    data,
-    isLoading,
-    error,
-    refetch,
-    fetchNextPage,
-    hasNextPage,
-    isFetchingNextPage,
-  } = useInfiniteQuery<Page>({
-    queryKey: ['community-posts', userId ?? null, user?.id ?? null],
-    initialPageParam: 0,
-    queryFn: async ({ pageParam }) => {
-      const page = (pageParam as number) ?? 0;
-      const from = page * PAGE_SIZE;
-      const to = from + PAGE_SIZE - 1;
+  const { data, isLoading, error, refetch, fetchNextPage, hasNextPage, isFetchingNextPage } =
+    useInfiniteQuery<Page>({
+      queryKey: ['community-posts', userId ?? null, user?.id ?? null],
+      initialPageParam: 0,
+      queryFn: async ({ pageParam }) => {
+        const page = (pageParam as number) ?? 0;
+        const from = page * PAGE_SIZE;
+        const to = from + PAGE_SIZE - 1;
 
-      let query = supabase
-        .from('community_posts')
-        .select('*')
-        .order('created_at', { ascending: false })
-        .range(from, to);
+        let query = supabase
+          .from('community_posts')
+          .select('*')
+          .order('created_at', { ascending: false })
+          .range(from, to);
 
-      if (userId) {
-        query = query.eq('user_id', userId);
-      } else {
-        query = query.eq('visibility', 'public');
-      }
+        // RLS decides what is readable: own posts, public posts, and
+        // followers-only posts of accounts the viewer follows.
+        if (userId) {
+          query = query.eq('user_id', userId);
+        } else if (!user) {
+          query = query.eq('visibility', 'public');
+        } else {
+          query = query.or(`visibility.eq.public,visibility.eq.followers,user_id.eq.${user.id}`);
+        }
 
-      const { data: rows, error: queryError } = await query;
-      if (queryError) throw queryError;
-      if (!rows?.length) return { posts: [], nextPage: null };
+        const { data: rows, error: queryError } = await query;
+        if (queryError) throw queryError;
+        if (!rows?.length) return { posts: [], nextPage: null };
 
-      // Resolve profiles + likes in parallel. We avoid PostgREST embedding
-      // (`profiles ( ... )`) because community_posts has no direct FK to
-      // public.profiles — both reference auth.users — and an ambiguous embed
-      // would surface as a render-time crash on the Feed page (D1).
-      const userIds = Array.from(new Set(rows.map((p) => p.user_id).filter(Boolean)));
-      const [profilesRes, likesRes] = await Promise.all([
-        userIds.length
-          ? supabase
-              .from('profiles')
-              .select('user_id, display_name, avatar_url')
-              .in('user_id', userIds)
-          : Promise.resolve({
-              data: [] as Array<{
-                user_id: string;
-                display_name: string | null;
-                avatar_url: string | null;
-              }>,
-            }),
-        user
-          ? supabase
-              .from('post_likes')
-              .select('post_id')
-              .in('post_id', rows.map((p) => p.id))
-              .eq('user_id', user.id)
-          : Promise.resolve({ data: [] as Array<{ post_id: string }> }),
-      ]);
+        // Resolve profiles + likes in parallel. We avoid PostgREST embedding
+        // (`profiles ( ... )`) because community_posts has no direct FK to
+        // public.profiles — both reference auth.users — and an ambiguous embed
+        // would surface as a render-time crash on the Feed page (D1).
+        const userIds = Array.from(new Set(rows.map((p) => p.user_id).filter(Boolean)));
+        const [profilesRes, likesRes] = await Promise.all([
+          userIds.length
+            ? supabase
+                .from('profiles')
+                .select('user_id, display_name, avatar_url')
+                .in('user_id', userIds)
+            : Promise.resolve({
+                data: [] as Array<{
+                  user_id: string;
+                  display_name: string | null;
+                  avatar_url: string | null;
+                }>,
+              }),
+          user
+            ? supabase
+                .from('post_likes')
+                .select('post_id')
+                .in(
+                  'post_id',
+                  rows.map((p) => p.id),
+                )
+                .eq('user_id', user.id)
+            : Promise.resolve({ data: [] as Array<{ post_id: string }> }),
+        ]);
 
-      const profileMap = new Map(
-        (profilesRes.data ?? []).map((p) => [p.user_id, p]),
-      );
-      const likedPostIds = new Set((likesRes.data ?? []).map((l) => l.post_id));
+        const profileMap = new Map((profilesRes.data ?? []).map((p) => [p.user_id, p]));
+        const likedPostIds = new Set((likesRes.data ?? []).map((l) => l.post_id));
 
-      const posts = rows.map((post) => {
-        const profile = profileMap.get(post.user_id);
+        const posts = rows.map((post) => {
+          const profile = profileMap.get(post.user_id);
+          return {
+            ...post,
+            profiles: profile
+              ? {
+                  user_id: profile.user_id,
+                  display_name: profile.display_name ?? 'Unknown User',
+                  avatar_url: profile.avatar_url,
+                }
+              : undefined,
+            user_liked: likedPostIds.has(post.id),
+          };
+        }) as CommunityPost[];
+
         return {
-          ...post,
-          profiles: profile
-            ? {
-                user_id: profile.user_id,
-                display_name: profile.display_name ?? 'Unknown User',
-                avatar_url: profile.avatar_url,
-              }
-            : undefined,
-          user_liked: likedPostIds.has(post.id),
+          posts,
+          nextPage: rows.length === PAGE_SIZE ? page + 1 : null,
         };
-      }) as CommunityPost[];
-
-      return {
-        posts,
-        nextPage: rows.length === PAGE_SIZE ? page + 1 : null,
-      };
-    },
-    getNextPageParam: (lastPage) => lastPage.nextPage,
-  });
+      },
+      getNextPageParam: (lastPage) => lastPage.nextPage,
+    });
 
   const posts = useMemo(
     () => data?.pages.flatMap((p) => p.posts) ?? ([] as CommunityPost[]),
@@ -142,36 +140,31 @@ export const useCommunityPosts = (userId?: string) => {
   // Patch the target post across every cached infinite-query page so the heart
   // fill + count flip immediately, before the server round-trip settles.
   const patchLike = (postId: string, liked: boolean) => {
-    queryClient.setQueriesData<InfinitePosts>(
-      { queryKey: ['community-posts'] },
-      (prev) => {
-        if (!prev) return prev;
-        return {
-          ...prev,
-          pages: prev.pages.map((page) => ({
-            ...page,
-            posts: page.posts.map((p) =>
-              p.id === postId
-                ? {
-                    ...p,
-                    user_liked: liked,
-                    likes_count: Math.max(0, (p.likes_count ?? 0) + (liked ? 1 : -1)),
-                  }
-                : p,
-            ),
-          })),
-        };
-      },
-    );
+    queryClient.setQueriesData<InfinitePosts>({ queryKey: ['community-posts'] }, (prev) => {
+      if (!prev) return prev;
+      return {
+        ...prev,
+        pages: prev.pages.map((page) => ({
+          ...page,
+          posts: page.posts.map((p) =>
+            p.id === postId
+              ? {
+                  ...p,
+                  user_liked: liked,
+                  likes_count: Math.max(0, (p.likes_count ?? 0) + (liked ? 1 : -1)),
+                }
+              : p,
+          ),
+        })),
+      };
+    });
   };
 
   // Snapshot every matching cache entry so onError can restore exactly.
   const snapshotPosts = () =>
     queryClient.getQueriesData<InfinitePosts>({ queryKey: ['community-posts'] });
 
-  const restorePosts = (
-    snapshot: ReturnType<typeof snapshotPosts>,
-  ) => {
+  const restorePosts = (snapshot: ReturnType<typeof snapshotPosts>) => {
     snapshot.forEach(([key, value]) => queryClient.setQueryData(key, value));
   };
 
@@ -194,25 +187,46 @@ export const useCommunityPosts = (userId?: string) => {
           poll_options: postData.poll_options,
           mentions: postData.mentions || [],
           tags: postData.tags || [],
+          labels: postData.labels || [],
         })
         .select()
         .single();
 
       if (error) throw error;
+
+      // Opt-in copy into the author's own Bluesky repo. Public posts only. A
+      // failure here never undoes the Queer Guide post — it is reported instead.
+      if (postData.crossPostDid && (postData.visibility ?? 'public') === 'public') {
+        try {
+          const { crossPostToBluesky } = await import('@/lib/atprotoClient');
+          const ref = await crossPostToBluesky(postData.crossPostDid, data);
+          await supabase
+            .from('community_posts')
+            .update({ at_uri: ref.uri, at_cid: ref.cid })
+            .eq('id', data.id)
+            .eq('user_id', user.id);
+        } catch (e) {
+          toast({
+            title: 'Posted here, not on Bluesky',
+            description: e instanceof Error ? e.message : 'Bluesky did not accept the post.',
+            variant: 'destructive',
+          });
+        }
+      }
       return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['community-posts'] });
       toast({
-        title: "Post created",
-        description: "Your post has been shared successfully."
+        title: 'Post created',
+        description: 'Your post has been shared successfully.',
       });
     },
     onError: (error: Error) => {
       toast({
-        title: "Failed to create post",
+        title: 'Failed to create post',
         description: error.message,
-        variant: "destructive",
+        variant: 'destructive',
       });
     },
   });
@@ -222,12 +236,10 @@ export const useCommunityPosts = (userId?: string) => {
     mutationFn: async (postId: string) => {
       if (!user) throw new Error('Must be logged in to like posts');
 
-      const { error } = await supabase
-        .from('post_likes')
-        .insert({
-          post_id: postId,
-          user_id: user.id,
-        });
+      const { error } = await supabase.from('post_likes').insert({
+        post_id: postId,
+        user_id: user.id,
+      });
 
       if (error) throw error;
 
@@ -283,6 +295,24 @@ export const useCommunityPosts = (userId?: string) => {
     mutationFn: async (postId: string) => {
       if (!user) throw new Error('Must be logged in to delete posts');
 
+      // Delete the Bluesky copy too, while this browser still has a session.
+      const { data: existing } = await supabase
+        .from('community_posts')
+        .select('at_uri')
+        .eq('id', postId)
+        .eq('user_id', user.id)
+        .maybeSingle();
+      if (existing?.at_uri) {
+        const { data: identity } = await supabase
+          .from('bluesky_identities')
+          .select('did')
+          .maybeSingle();
+        if (identity?.did) {
+          const { deleteBlueskyPost } = await import('@/lib/atprotoClient');
+          await deleteBlueskyPost(identity.did, existing.at_uri).catch(() => undefined);
+        }
+      }
+
       const { error } = await supabase
         .from('community_posts')
         .delete()
@@ -294,15 +324,15 @@ export const useCommunityPosts = (userId?: string) => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['community-posts'] });
       toast({
-        title: "Post deleted",
-        description: "Your post has been deleted successfully."
+        title: 'Post deleted',
+        description: 'Your post has been deleted successfully.',
       });
     },
     onError: (error: Error) => {
       toast({
-        title: "Failed to delete post",
+        title: 'Failed to delete post',
         description: error.message,
-        variant: "destructive",
+        variant: 'destructive',
       });
     },
   });
@@ -327,11 +357,7 @@ export const useCommunityPosts = (userId?: string) => {
             { event: '*', schema: 'public', table: 'community_posts' },
             invalidate,
           )
-          .on(
-            'postgres_changes',
-            { event: '*', schema: 'public', table: 'post_likes' },
-            invalidate,
-          )
+          .on('postgres_changes', { event: '*', schema: 'public', table: 'post_likes' }, invalidate)
           .on(
             'postgres_changes',
             { event: '*', schema: 'public', table: 'post_comments' },

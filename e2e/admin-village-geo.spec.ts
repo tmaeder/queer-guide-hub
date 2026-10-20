@@ -2,8 +2,10 @@
  * Queer Villages CMS geography — the fix in #2487, asserted against production.
  *
  * The reported symptom was "City / Country / Latitude / Longitude are empty, run
- * a backfill". The data was never missing (190/190 villages carry all four, and
- * city_id/country_id are NOT NULL so a gap is impossible). The CMS could not
+ * a backfill". The data was never missing (181/181 villages carry all four, and
+ * city_id/country_id are NOT NULL so a gap is impossible — the count was 190 when
+ * this was written and is 181 since the 14 whole-city villages were merged away
+ * by 20260928100000; re-measure rather than trusting either figure). The CMS could not
  * read them: `queer_villages` stores geography as FKs only, `relatedFields` is a
  * write-only name→FK map, and the two picker fields named columns that do not
  * exist — so the editor showed placeholders, and picking a city put `city` in
@@ -46,8 +48,13 @@ async function isAuthed(page: Page): Promise<boolean> {
  * filter textboxes), so page-level queries below cannot collide with them.
  */
 async function openFirstRecord(page: Page): Promise<void> {
-  await page.getByRole('table').first().locator('tbody tr').first()
-    .getByRole('button', { name: /^edit$/i }).click();
+  await page
+    .getByRole('table')
+    .first()
+    .locator('tbody tr')
+    .first()
+    .getByRole('button', { name: /^edit$/i })
+    .click();
 
   const location = page.getByRole('tab', { name: /^Location\b/ });
   await expect(location).toBeVisible({ timeout: 20_000 });
@@ -56,7 +63,10 @@ async function openFirstRecord(page: Page): Promise<void> {
 
 test.describe('Queer Villages CMS geography', () => {
   test.beforeEach(async ({ page }) => {
-    test.skip(!(await isAuthed(page)), 'No admin session — set E2E_ADMIN_EMAIL / E2E_ADMIN_PASSWORD.');
+    test.skip(
+      !(await isAuthed(page)),
+      'No admin session — set E2E_ADMIN_EMAIL / E2E_ADMIN_PASSWORD.',
+    );
   });
 
   test('list shows City, Country, Latitude and Longitude for every row', async ({ page }) => {
@@ -73,6 +83,26 @@ test.describe('Queer Villages CMS geography', () => {
     );
 
     const rows = table.locator('tbody tr');
+
+    // WAIT FOR DATA ROWS, because the skeleton is also a table with rows.
+    //
+    // This read the cells as soon as the table was visible, and on prod with admin
+    // credentials that is the LOADING state. Measured from the 2026-10-17 failure's
+    // own page snapshot: the header carried 13 columnheaders while every body row
+    // carried 6 empty cells. `cells[5]` was therefore undefined, the `?? ''` turned
+    // it into an empty string, and the assertion reported "City rendered empty"
+    // about a column whose data is present and correct — `queer_villages` is
+    // 181/181 on city_id, country_id, latitude and longitude, both FKs are NOT
+    // NULL, and the list's own embed returns `cities: {name: "Saint Louis"}` when
+    // asked directly.
+    //
+    // A skeleton row and a data row differ in CELL COUNT, so that is the signal,
+    // derived from the header rather than pinned: a loaded row carries one cell per
+    // columnheader.
+    await expect
+      .poll(() => rows.first().locator('td').count(), { timeout: 30_000 })
+      .toBe(headers.length);
+
     const n = Math.min(await rows.count(), 10);
     expect(n, 'no village rows rendered').toBeGreaterThan(0);
 
@@ -96,15 +126,30 @@ test.describe('Queer Villages CMS geography', () => {
     for (const label of ['City', 'Country']) {
       const control = page.getByRole('combobox', { name: new RegExp(`^${label}$`, 'i') }).first();
       await expect(control, `${label} control never rendered`).toBeVisible({ timeout: 20_000 });
+
+      // POLLED, NOT READ ONCE — the same defect as the list test above.
+      //
+      // The placeholder is what the picker shows BEFORE it has resolved the FK to
+      // a name, so a single `innerText()` taken the moment the control becomes
+      // visible catches the pre-resolution state and reports it as the bug. The
+      // 2026-10-17 failure's received string was literally "Search or create a
+      // city...", with the record's city_id set and resolvable.
+      //
+      // The assertion itself is unchanged: a placeholder that never resolves is
+      // still the defect #2487 fixed, and this still fails on it — it just gives
+      // the resolution the time it takes on a cold prod admin.
+      await expect
+        .poll(async () => ((await control.innerText()) ?? '').trim(), { timeout: 30_000 })
+        .not.toMatch(/search or create|select a/i);
+
       const text = ((await control.innerText()) ?? '').trim();
-      // The bug: the FK was set but the picker fell back to its placeholder,
-      // because it read row.city — a column queer_villages does not have.
-      expect(text, `${label} still shows its placeholder`).not.toMatch(/search or create|select a/i);
       expect(text.length, `${label} rendered empty`).toBeGreaterThan(0);
     }
   });
 
-  test('save payload sends city_id/country_id, never the phantom city/country', async ({ page }) => {
+  test('save payload sends city_id/country_id, never the phantom city/country', async ({
+    page,
+  }) => {
     await openFirstRecord(page);
 
     const bodies: string[] = [];
@@ -133,7 +178,10 @@ test.describe('Queer Villages CMS geography', () => {
     await option.waitFor({ state: 'visible', timeout: 15_000 });
     await option.click();
 
-    await page.getByRole('button', { name: /^save$/i }).first().click();
+    await page
+      .getByRole('button', { name: /^save$/i })
+      .first()
+      .click();
     await expect
       .poll(() => bodies.length, { timeout: 20_000, message: 'no write was attempted' })
       .toBeGreaterThan(0);

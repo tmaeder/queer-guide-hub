@@ -25,6 +25,8 @@ export interface OrgVenueRef {
   latitude: number | null;
   longitude: number | null;
   image_url: string | null;
+  /** Absent on payloads from before the RPC returned it. */
+  phone?: string | null;
 }
 
 export interface Organization {

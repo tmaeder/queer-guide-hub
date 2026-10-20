@@ -257,7 +257,6 @@ export default function Sitemap() {
                                 <LocalizedLink
                                   to={link.to}
                                   className="block rounded-badge"
-                                  aria-label={`${link.label} page in ${section.title}`}
                                   aria-describedby={`${id}-${slugify(link.label)}-subtitle`}
                                 >
                                   <span className="font-medium">{link.label}</span>
@@ -277,7 +276,6 @@ export default function Sitemap() {
                               <LocalizedLink
                                 to={link.to}
                                 className="block rounded-badge"
-                                aria-label={`${link.label} hub in ${section.title}`}
                                 aria-describedby={`${id}-${slugify(link.label)}-subtitle`}
                               >
                                 <span className="font-medium">{link.label}</span>
@@ -295,7 +293,6 @@ export default function Sitemap() {
                                     <LocalizedLink
                                       to={cl.to}
                                       className="block rounded-badge"
-                                      aria-label={`${cl.label} page under ${link.label} in ${section.title}`}
                                       aria-describedby={`${id}-${slugify(link.label)}-${slugify(cl.label)}-subtitle`}
                                     >
                                       <span className="font-medium">{cl.label}</span>

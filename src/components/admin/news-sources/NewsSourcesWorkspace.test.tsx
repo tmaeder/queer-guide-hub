@@ -117,7 +117,7 @@ describe('News source workspace', () => {
       'href',
       '/admin/content/organizations?edit=pub-1',
     );
-    fireEvent.click(screen.getByRole('button', { name: 'Articles from Feed One' }));
+    fireEvent.click(screen.getByRole('button', { name: /articles from Feed One/ }));
     expect(mocks.articles).toHaveBeenLastCalledWith('source-1', 0);
     expect(screen.getByRole('link', { name: 'An imported article' })).toHaveAttribute(
       'href',

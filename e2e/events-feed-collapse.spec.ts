@@ -55,6 +55,22 @@ async function searchEvents(
   };
 }
 
+/**
+ * A plain anon PostgREST read of `events`, for seeding an assertion from live
+ * data instead of pinning a title. Same role as everything else here, so it
+ * cannot see rows a reader could not.
+ */
+async function restEvents(
+  request: APIRequestContext,
+  path: string,
+): Promise<Array<{ title: string; series_size: number | null }>> {
+  const res = await request.get(`${SUPABASE_URL}/rest/v1/${path}`, {
+    headers: await anonHeaders(request),
+  });
+  expect(res.ok(), `${path} -> HTTP ${res.status()}`).toBeTruthy();
+  return res.json();
+}
+
 test('the browse feed serves no merged duplicate, no series repeat and no programme child', async ({
   request,
 }) => {
@@ -88,13 +104,40 @@ test('collapsing is actually happening, and releases when dates are requested', 
 }) => {
   const browse = await searchEvents(request, { p_limit: 200 });
 
-  // Positive control for the collapse itself: "no repeats in the feed" is also
-  // true of a corpus where nothing was ever grouped. At least one card must be
-  // standing in for a series.
-  const representing = browse.rows.filter((r) => (r.series_size ?? 0) > 1);
+  // POSITIVE CONTROL FOR THE COLLAPSE, asked where it is observable.
+  //
+  // This took the first 200 rows of the browse feed and required one of them to
+  // represent a series. Measured on prod 2026-10-17, that is a SAMPLING problem
+  // and not an inert engine: 7 distinct series exist across 46 events (sizes
+  // 6-21), `search_events` emits `series_size` correctly for any row it does
+  // return — "TINA+ Schwimmen" comes back as 21 — and NONE of the seven
+  // representatives falls within the first 1000 rows of the unfiltered feed,
+  // which spans 2021-2027 and is not date-ordered. So the old assertion reported
+  // "the recompute is inert" about an engine that is working, every nightly.
+  //
+  // Derived from live data with no pinned title, and it asserts BOTH halves of
+  // the claim rather than hoping one lands in a page-1 sample:
+  //   1. the column is populated, so the recompute ran;
+  //   2. the RPC serves that count, so the collapse reaches a reader.
+  //
+  // Scoped to non-duplicate upcoming rows because that is the set the browse RPC
+  // can return. Anon can read series rows the feed excludes — there is a
+  // 93-strong series carrying `duplicate_of_id` — so an unscoped seed would pick
+  // a row `search_events` is right to withhold and fail for the wrong reason.
+  const seeds = await restEvents(
+    request,
+    `events?select=title,series_size&series_size=gt.1&duplicate_of_id=is.null` +
+      `&start_date=gte.${new Date().toISOString()}&order=series_size.desc&limit=1`,
+  );
   expect(
-    representing.length,
-    'no card represents a multi-date series — the recompute is inert or the column is unpopulated',
+    seeds.length,
+    'no event anywhere carries series_size > 1 — the recompute is inert or the column is unpopulated',
+  ).toBeGreaterThan(0);
+
+  const served = await searchEvents(request, { p_search: seeds[0].title, p_limit: 10 });
+  expect(
+    served.rows.filter((r) => (r.series_size ?? 0) > 1).length,
+    `the corpus groups "${seeds[0].title}" into ${seeds[0].series_size} dates, but search_events served no row carrying that count — the collapse is not reaching a reader`,
   ).toBeGreaterThan(0);
 
   // A reader who asks for a date window wants the individual occurrences, so the

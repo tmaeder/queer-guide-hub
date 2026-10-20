@@ -4,7 +4,8 @@ import { useTranslation } from 'react-i18next';
 import { DEFAULT_LOCALE, SUPPORTED_LOCALES, isSupportedLocale } from '@/i18n/languages';
 import type { SupportedLocale } from '@/i18n/languages';
 
-const NotFound = lazy(() => import('@/pages/NotFound'));
+// Also serves Bluesky-style /@handle links, whose first segment is not a locale.
+const NotFound = lazy(() => import('@/pages/social/HandleOrNotFound'));
 
 function getLocaleFromPath(pathname: string): SupportedLocale {
   const segment = pathname.split('/')[1];
@@ -37,9 +38,10 @@ export function LocaleRouter() {
     const existing = document.querySelectorAll('link[data-hreflang]');
     existing.forEach((el) => el.remove());
 
-    const pathWithoutLocale = locale && isSupportedLocale(locale)
-      ? location.pathname.replace(`/${locale}`, '') || '/'
-      : location.pathname;
+    const pathWithoutLocale =
+      locale && isSupportedLocale(locale)
+        ? location.pathname.replace(`/${locale}`, '') || '/'
+        : location.pathname;
 
     const origin = window.location.origin;
 
@@ -47,9 +49,10 @@ export function LocaleRouter() {
       const link = document.createElement('link');
       link.rel = 'alternate';
       link.hreflang = lang;
-      link.href = lang === DEFAULT_LOCALE
-        ? `${origin}${pathWithoutLocale}`
-        : `${origin}/${lang}${pathWithoutLocale}`;
+      link.href =
+        lang === DEFAULT_LOCALE
+          ? `${origin}${pathWithoutLocale}`
+          : `${origin}/${lang}${pathWithoutLocale}`;
       link.setAttribute('data-hreflang', 'true');
       document.head.appendChild(link);
     });

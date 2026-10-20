@@ -114,13 +114,13 @@ describe('city galleries and filters', () => {
       within(party)
         .getAllByRole('link')
         .map((link) => link.getAttribute('aria-label')),
-    ).toEqual(['Early party', 'Late party']);
+    ).toEqual(['Open — Early party', 'Open — Late party']);
     fireEvent.change(screen.getByRole('combobox', { name: 'Event type' }), {
       target: { value: 'party' },
     });
     fireEvent.click(screen.getByRole('button', { name: 'Free only' }));
     expect(screen.getAllByRole('link')).toHaveLength(1);
-    expect(screen.getByRole('link', { name: 'Early party' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Open — Early party' })).toBeInTheDocument();
     fireEvent.change(screen.getByRole('combobox', { name: 'When' }), {
       target: { value: 'today' },
     });

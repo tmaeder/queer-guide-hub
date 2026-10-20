@@ -323,12 +323,10 @@ export default function HelpHotlines() {
           <a
             href={channelHref({ kind: 'phone', value: heroPhone })}
             className="mt-6 inline-flex min-h-12 items-center justify-center rounded-element bg-foreground px-6 text-15 font-bold text-background no-underline transition-opacity hover:opacity-90 active:opacity-80 md:mt-0"
-            aria-label={t('help.call_aria', 'Call {{name}} {{phone}}', {
-              name: hero.name,
-              phone: heroPhone,
-            })}
           >
             {t('help.call_now', 'Call now')} · {heroPhone}
+            {/* Name = visible text + suffix (WCAG 2.5.3 label in name). */}
+            <span className="sr-only"> — {hero.name}</span>
           </a>
         )}
       </div>

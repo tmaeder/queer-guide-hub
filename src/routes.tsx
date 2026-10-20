@@ -179,7 +179,9 @@ const Community = lazyRetry(() => import('./pages/Community'));
 const HubPage = lazyRetry(() => import('./pages/hub/HubPage'));
 const GroupDetail = lazyRetry(() => import('./pages/GroupDetail'));
 const GroupInviteAccept = lazyRetry(() => import('./pages/GroupInviteAccept'));
-const NotFound = lazyRetry(() => import('./pages/NotFound'));
+const HandleOrNotFound = lazyRetry(() => import('./pages/social/HandleOrNotFound'));
+const PostDetail = lazyRetry(() => import('./pages/social/PostDetail'));
+const BlueskyCallback = lazyRetry(() => import('./pages/social/BlueskyCallback'));
 const SearchResults = lazyRetry(() => import('./pages/SearchResults'));
 const TripWorkspace = lazyRetry(() => import('./pages/trips/TripWorkspace'));
 const TripsDiscoverPage = lazyRetry(() => import('./pages/trips/TripsDiscoverPage'));
@@ -1041,6 +1043,9 @@ export const AppRoutes = () => {
                   {/* /favorites folded into /hub (Saved module). */}
                   <Route path="favorites" element={<LocalizedRedirect to="/hub/saved" />} />
                   <Route path="feed" element={<LocalizedRedirect to="/hub/feed" />} />
+                  <Route path="posts/:postId" element={<PostDetail />} />
+                  {/* atproto OAuth redirect_uri — must match public/oauth/client-metadata.json. */}
+                  <Route path="oauth/callback" element={<BlueskyCallback />} />
                   <Route path="friends" element={<LocalizedRedirect to="/hub/friends" />} />
                   <Route path="community" element={<LocalizedRedirect to="/hub/feed" />} />
                   <Route path="community/feed" element={<LocalizedRedirect to="/hub/feed" />} />
@@ -1190,10 +1195,10 @@ export const AppRoutes = () => {
                   {/* Inner catch-all: paths like /de/unknown or /en/typo
                   fall through to NotFound instead of rendering nothing
                   inside the locale layout. */}
-                  <Route path="*" element={<NotFound />} />
+                  <Route path="*" element={<HandleOrNotFound />} />
                 </Route>
 
-                <Route path="*" element={<NotFound />} />
+                <Route path="*" element={<HandleOrNotFound />} />
               </Routes>
             </Suspense>
           </ErrorBoundary>

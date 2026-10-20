@@ -1,7 +1,8 @@
 import { Star, MapPin, Phone, Globe, Mail, Navigation2, Sparkles } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { EntitySocialLinks } from '@/components/entity/EntitySocialLinks';
-import { buildProfileUrl, normalizeHandle, normalizeSocialLinks } from '@/lib/social/registry';
+import { buildProfileUrl, normalizeHandle } from '@/lib/social/registry';
+import { displayWebsite, hasSocialLinks } from '@/lib/entityContact';
 import { ShareMenu } from '@/components/share/ShareMenu';
 import { TagChipRow } from '@/components/tags/TagChipRow';
 import { Button } from '@/components/ui/button';
@@ -108,16 +109,9 @@ export function buildVenueBreadcrumbs(
   ];
 }
 
-/**
- * True when `social_links` holds at least one usable profile URL. Exported so
- * the descriptor's section guard and `VenueLocationContact`'s own null-return
- * agree: a venue whose only contact data is Facebook/Instagram/X used to get no
- * "Location & contact" section at all, because neither check read this column.
- */
-export function hasSocialLinks(links: unknown): boolean {
-  if (!links || typeof links !== 'object' || Array.isArray(links)) return false;
-  return Object.keys(normalizeSocialLinks(links as Record<string, unknown>)).length > 0;
-}
+// Moved to `@/lib/entityContact` so the organisation page shares one guard;
+// re-exported because the venue descriptor and tests import it from here.
+export { hasSocialLinks } from '@/lib/entityContact';
 
 /**
  * The bare Instagram handle behind `venues.instagram`, or null.
@@ -370,19 +364,11 @@ export function VenueActions({
           venueLongitude={venue.longitude}
         />
       )}
-      {/* `isPublishableLink`, not `!== 'broken'`. The old test let an `unsafe` URL
-          through — one the SSRF guard refused because it resolves to a private
-          target or is malformed — and this is a travel site, so an outbound link
-          is a place we are sending someone. Same predicate as the contact block
-          below, so the two can no longer disagree about one venue. */}
-      {venue.website && isPublishableLink(venue.url_status as VenueUrlStatus) && (
-        <Button variant="outline" size="sm" asChild>
-          <a href={venue.website} target="_blank" rel="noopener noreferrer nofollow">
-            <Globe size={14} className="mr-1.5" />
-            {t('venues.detail.website', 'Website')}
-          </a>
-        </Button>
-      )}
+      {/* No website button here. The website renders ONCE, in "Location &
+          contact" — the same place the organisation page puts it. A masthead
+          copy made every venue with a site show it twice ("the homepage link is
+          shown twice"), and the two copies already disagreed once about a
+          broken link. */}
       <ShareMenu
         url={
           typeof window !== 'undefined'
@@ -454,7 +440,7 @@ export function VenueBodyLead({ venue }: { venue: VenueWithRelations }) {
  * Identity only — City / Category / Price. Address, phone and website are NOT here.
  *
  * They used to be, and `VenueLocationContact` below carries the same three (website
- * a third time, as a masthead action button), so a venue page stated its address,
+ * a third time, as a masthead action button — since removed), so a venue page stated its address,
  * phone and homepage twice. Reported three separate ways on /venues/alphabet-city-beer-co:
  * "further down the page the address, phone and homepage are shown again", "the address
  * field shows the city, which is also in the field next to it", "the homepage link is
@@ -941,12 +927,10 @@ export function VenueLocationContact({
                     rel="noopener noreferrer nofollow"
                     className="text-primary hover:underline"
                   >
-                    {venue.website.replace(/^https?:\/\//, '').replace(/\/$/, '')}
+                    {displayWebsite(venue.website)}
                   </a>
                 ) : (
-                  <span className="text-muted-foreground">
-                    {venue.website.replace(/^https?:\/\//, '').replace(/\/$/, '')}
-                  </span>
+                  <span className="text-muted-foreground">{displayWebsite(venue.website)}</span>
                 )}
               </Editable>
             </span>
@@ -958,7 +942,13 @@ export function VenueLocationContact({
             into the icon row instead, so all platforms share one presentation
             and one order (SOCIAL_DISPLAY_ORDER). The column wins over a
             `social_links.instagram` entry, as before. */}
-        <EntitySocialLinks links={socialLinks} size="sm" />
+        {/* `website` excluded when the column is set: the registry's catch-all
+            `website` key would otherwise render the homepage a second time. */}
+        <EntitySocialLinks
+          links={socialLinks}
+          size="sm"
+          exclude={venue.website ? ['website'] : undefined}
+        />
 
         {hasMap && (
           <Button variant="outline" size="sm" asChild className="self-start">

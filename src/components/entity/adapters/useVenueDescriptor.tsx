@@ -1,5 +1,6 @@
 import { VenueRatingForm } from '@/components/venues/VenueRatingForm';
 import { useEffect, useMemo } from 'react';
+import { OnBluesky } from '@/components/social/OnBluesky';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { FavoriteButton } from '@/components/ui/favorite-button';
@@ -12,6 +13,7 @@ import { useNearbyMapPoints } from '@/hooks/useNearbyMapPoints';
 import { useVenueSafetyScore } from '@/hooks/useVenueSafetySignals';
 import { TripAction } from '@/components/trips/TripAction';
 import { FromTheGlossary } from '@/components/tags/FromTheGlossary';
+import { EntityKindChips } from '@/components/entity/EntityKindChips';
 import {
   fetchVenue,
   VenueActions,
@@ -276,10 +278,31 @@ export function useVenueDescriptor(slug: string | undefined): EntityDescriptorRe
                 `sections` — a station pointing at nothing is a dead stop. */}
             <VenueGuides venue={venue} />
             <FromTheGlossary tags={venue.tags} />
+            <OnBluesky
+              entityType="venue"
+              entityId={venue.id}
+              gated={Boolean((venue as { safety_gated?: boolean }).safety_gated)}
+            />
           </>
         ),
         tags: (
           <div className="flex flex-col gap-4">
+            {/* What this page is — a venue, and also an organisation when one
+                runs it. Same chips, same slot as the organisation page. */}
+            <EntityKindChips
+              kinds={[
+                { kind: 'venue' },
+                ...(venue.organizations
+                  ? [
+                      {
+                        kind: 'organization' as const,
+                        href: `/organizations/${venue.organizations.slug}`,
+                      },
+                    ]
+                  : []),
+              ]}
+              roles={venue.organizations?.roles ?? []}
+            />
             <VenueFacts venue={venue} t={t} />
             <VenueTags venue={venue} onContentUpdated={refetch} />
           </div>

@@ -40,6 +40,9 @@ import {
 import { useCommunityPosts, CreatePostData } from '@/hooks/useCommunityPosts';
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
+import { SELF_LABELS, SELF_LABEL_TEXT, type SelfLabel } from '@/lib/atprotoModeration';
+import { useBlueskyIdentity } from '@/hooks/useBlueskyIdentity';
+import { Checkbox } from '@/components/ui/checkbox';
 
 interface CreatePostDialogProps {
   children?: React.ReactNode;
@@ -55,7 +58,11 @@ export const CreatePostDialog = ({ children }: CreatePostDialogProps) => {
   const [open, setOpen] = useState(false);
   const [content, setContent] = useState('');
   const [postType, setPostType] = useState<'text' | 'image' | 'link' | 'poll'>('text');
-  const [visibility, setVisibility] = useState<'public' | 'friends' | 'private'>('public');
+  const [visibility, setVisibility] = useState<'public' | 'followers' | 'private'>('public');
+  const [labels, setLabels] = useState<SelfLabel[]>([]);
+  const [crossPost, setCrossPost] = useState(false);
+  const { identity: bluesky } = useBlueskyIdentity();
+  const canCrossPost = !!bluesky && visibility === 'public';
   const [images, setImages] = useState<string[]>([]);
   const [linkUrl, setLinkUrl] = useState('');
   const [linkTitle, setLinkTitle] = useState('');
@@ -115,6 +122,8 @@ export const CreatePostDialog = ({ children }: CreatePostDialogProps) => {
       visibility,
       mentions: extractedMentions.length > 0 ? extractedMentions : undefined,
       tags: extractedTags.length > 0 ? extractedTags : undefined,
+      labels,
+      crossPostDid: canCrossPost && crossPost ? bluesky?.did : undefined,
     };
 
     if (postType === 'image' && images.length > 0) {
@@ -176,6 +185,8 @@ export const CreatePostDialog = ({ children }: CreatePostDialogProps) => {
     setContent('');
     setPostType('text');
     setVisibility('public');
+    setLabels([]);
+    setCrossPost(false);
     setImages([]);
     setLinkUrl('');
     setLinkTitle('');
@@ -218,7 +229,7 @@ export const CreatePostDialog = ({ children }: CreatePostDialogProps) => {
 
   const getVisibilityIcon = () => {
     switch (visibility) {
-      case 'friends':
+      case 'followers':
         return <Users size={16} />;
       case 'private':
         return <Lock size={16} />;
@@ -410,7 +421,10 @@ export const CreatePostDialog = ({ children }: CreatePostDialogProps) => {
           {/* Visibility Selection */}
           <div className="flex flex-col gap-2">
             <Label>Post Visibility</Label>
-            <Select value={visibility} onValueChange={(value: string) => setVisibility(value)}>
+            <Select
+              value={visibility}
+              onValueChange={(value: string) => setVisibility(value as typeof visibility)}
+            >
               <SelectTrigger aria-label="Post visibility">
                 <SelectValue />
               </SelectTrigger>
@@ -421,10 +435,10 @@ export const CreatePostDialog = ({ children }: CreatePostDialogProps) => {
                     <span>Public - Anyone can see this post</span>
                   </div>
                 </SelectItem>
-                <SelectItem value="friends">
+                <SelectItem value="followers">
                   <div className="flex items-center gap-2">
                     <Users size={16} />
-                    <span>Friends - Only your connections</span>
+                    <span>Followers - Only people who follow you</span>
                   </div>
                 </SelectItem>
                 <SelectItem value="private">
@@ -436,6 +450,47 @@ export const CreatePostDialog = ({ children }: CreatePostDialogProps) => {
               </SelectContent>
             </Select>
           </div>
+
+          {/* Content warnings (Bluesky self-labels) */}
+          <fieldset className="flex flex-col gap-2">
+            <legend className="text-sm font-medium">Content warning</legend>
+            <p className="text-xs text-muted-foreground">
+              Add a label if your images contain adult or graphic content. Viewers choose how
+              labelled media is shown.
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {SELF_LABELS.map((l) => {
+                const on = labels.includes(l);
+                return (
+                  <Button
+                    key={l}
+                    type="button"
+                    size="sm"
+                    variant={on ? 'default' : 'outline'}
+                    aria-pressed={on}
+                    onClick={() =>
+                      setLabels((cur) => (on ? cur.filter((x) => x !== l) : [...cur, l]))
+                    }
+                  >
+                    {SELF_LABEL_TEXT[l]}
+                  </Button>
+                );
+              })}
+            </div>
+          </fieldset>
+
+          {canCrossPost && (
+            <div className="flex items-center gap-2">
+              <Checkbox
+                id="cross-post-bluesky"
+                checked={crossPost}
+                onCheckedChange={(v) => setCrossPost(v === true)}
+              />
+              <Label htmlFor="cross-post-bluesky" className="text-sm">
+                Also post to Bluesky as @{bluesky?.handle}
+              </Label>
+            </div>
+          )}
 
           {/* Character count */}
           <div className="text-right text-xs text-muted-foreground">

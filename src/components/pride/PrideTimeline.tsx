@@ -209,7 +209,12 @@ export function PrideTimeline({
                     <Link
                       to={`/events/${p.event.slug}`}
                       data-event-id={p.event.id}
-                      aria-label={`${p.event.title} on ${dateLabel}`}
+                      // Name starts with the visible pin text (WCAG 2.5.3 label in name).
+                      aria-label={
+                        p.event.city
+                          ? `${p.event.city} — ${p.event.title}, ${dateLabel}`
+                          : `${p.event.title}, ${dateLabel}`
+                      }
                       aria-current={isSelected ? 'true' : undefined}
                       className={cn(
                         'absolute flex items-center gap-1.5 min-h-0 min-w-0 p-0 bg-transparent group no-underline',

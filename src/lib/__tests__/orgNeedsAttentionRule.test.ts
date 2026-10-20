@@ -96,14 +96,26 @@ describe('run_org_quality_recompute flags on completeness alone', () => {
   });
 });
 
+/**
+ * Pinned to 20370801100000 BY NAME, not to the latest definition: that file
+ * repaired the rows inline, so asserting their end state was its own
+ * postcondition. A later redefinition that writes no rows (99991792261855
+ * leaves the change to the next nightly run) must NOT copy this check —
+ * there it asserts data the file never touches, and its first apply aborted
+ * db push for the whole repo on 2 rows another writer had left behind.
+ */
+const repairSql = statementsOnly(
+  readFileSync(join(MIGRATIONS, '20370801100000_org_needs_attention_drop_email_arm.sql'), 'utf8'),
+);
+
 describe('the repair migration asserts its own postcondition', () => {
   it('fails on a surviving flag above the threshold', () => {
-    expect(sql).toMatch(/needs_attention\s+AND\s+completeness_score\s*>=\s*40/i);
-    expect(sql).toMatch(/RAISE EXCEPTION[^;]*scoring >= 40/i);
+    expect(repairSql).toMatch(/needs_attention\s+AND\s+completeness_score\s*>=\s*40/i);
+    expect(repairSql).toMatch(/RAISE EXCEPTION[^;]*scoring >= 40/i);
   });
 
   it('carries a positive control so a rule that flags nothing also fails', () => {
-    expect(sql).toMatch(/v_flagged\s*=\s*0\s+THEN/i);
-    expect(sql).toMatch(/RAISE EXCEPTION[^;]*flags nothing/i);
+    expect(repairSql).toMatch(/v_flagged\s*=\s*0\s+THEN/i);
+    expect(repairSql).toMatch(/RAISE EXCEPTION[^;]*flags nothing/i);
   });
 });

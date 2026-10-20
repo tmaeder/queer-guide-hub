@@ -58,7 +58,23 @@ function collectEventQueries(page: Page): Query[] {
   return queries;
 }
 
+// THE POLLS COULD NEVER USE THEIR OWN BUDGET, which is what made this flaky.
+//
+// Both `expect.poll`s below allow 45s inside a test that ran on Playwright's
+// default 30s timeout, so under a slow prod the TEST died first and reported the
+// poll's last value. That is exactly the pairing seen on the 2026-10-17 prod run
+// and in one local run: "Received: 0" alongside "Test timeout of 30000ms
+// exceeded" — a timeout wearing a failed-assertion's clothes.
+//
+// It is not a data problem: with the test's own collector replicated, the
+// city-scoped query (`or=(city.ilike.Berlin)`) arrives within 3 seconds and the
+// match count is 1, and the spec passes in ~2s on a warm prod. Measured.
+//
+// 120_000 matches tags-release-prod.spec.ts and covers the worst case this test
+// can reach: up to six candidate cities, each a navigation plus a 45s poll.
 test.describe('/events Load more', () => {
+  test.setTimeout(120_000);
+
   test('pages within the city filter instead of appending unfiltered rows', async ({ page }) => {
     const queries = collectEventQueries(page);
 

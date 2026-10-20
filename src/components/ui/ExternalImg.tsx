@@ -10,8 +10,10 @@ import { imageReferrerPolicy } from '@/utils/imageHost';
  * the caller's fallback texture. Keeps the call site's own markup — for the
  * full treatment (aspect frames, fade-in, source ladder) use `<Image>` instead.
  */
-interface ExternalImgProps
-  extends Omit<React.ImgHTMLAttributes<HTMLImageElement>, 'src' | 'onError' | 'referrerPolicy'> {
+interface ExternalImgProps extends Omit<
+  React.ImgHTMLAttributes<HTMLImageElement>,
+  'src' | 'onError' | 'referrerPolicy'
+> {
   src: string | null | undefined;
   /** Explicit so jsx-a11y can see it (empty string for decorative images). */
   alt: string;
@@ -45,10 +47,10 @@ export const ExternalImg = ({
     setStage(initial);
   }
 
-  const resolved = stage === 'cf' ? (cf as string) : stage === 'raw' ? (raw as string) : fallbackSrc;
+  const resolved =
+    stage === 'cf' ? (cf as string) : stage === 'raw' ? (raw as string) : fallbackSrc;
 
   return (
-    // eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions -- onError is a media-error handler, not a user-input listener.
     <img
       src={resolved}
       alt={alt}

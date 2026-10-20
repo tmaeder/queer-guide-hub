@@ -217,10 +217,7 @@ export function MapRail({ points, selectedId, loading, onHover, onSelect, ordere
                 aria-selected={selectedId === point.id}
                 tabIndex={i === focusIndex ? 0 : -1}
                 data-point-id={point.id}
-                aria-label={t('map.rail.showOnMap', {
-                  defaultValue: 'Show {{name}} on the map',
-                  name: point.name,
-                })}
+                // Option name is the visible departure row (WCAG 2.5.3 label in name).
                 className={cn(
                   'card-lift-sm block w-[17.5rem] shrink-0 cursor-pointer snap-start bg-card text-left rounded-container shadow-soft',
                   'focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',

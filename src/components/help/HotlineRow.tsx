@@ -135,14 +135,12 @@ export function HotlineRow({
             <a
               href={channelHref(primaryPhone)}
               className="flex min-h-11 basis-full items-center justify-center gap-2 rounded-element bg-foreground px-4 py-2 text-background no-underline transition-opacity hover:opacity-90 active:opacity-80 sm:basis-auto"
-              aria-label={t('help.call_aria', 'Call {{name}} {{phone}}', {
-                name: hotline.name,
-                phone: primaryPhone.value,
-              })}
             >
+              {/* Name = visible text + suffix (WCAG 2.5.3 label in name). */}
               <Phone size={14} aria-hidden />
               <span className="text-13 font-bold">{t('help.call_now', 'Call now')}</span>
               <span className="text-15 font-bold tabular-nums">{primaryPhone.value}</span>
+              <span className="sr-only"> — {hotline.name}</span>
             </a>
           )}
           {quickAlt && QuickAltIcon && (
@@ -151,19 +149,16 @@ export function HotlineRow({
               target={quickAlt.kind === 'chat' ? '_blank' : undefined}
               rel={quickAlt.kind === 'chat' ? 'noopener noreferrer' : undefined}
               className={`${CHANNEL_BTN} min-h-11 flex-1 sm:flex-none`}
-              aria-label={`${hotline.name} — ${quickAlt.label ?? quickAlt.kind}`}
             >
               <QuickAltIcon size={14} aria-hidden />
               {quickAlt.label ?? t(`help.channel.${quickAlt.kind}`, quickAlt.kind)}
+              <span className="sr-only"> — {hotline.name}</span>
             </a>
           )}
           <button
             type="button"
             onClick={() => toggleKeep(hotline.id)}
             aria-pressed={isKept}
-            aria-label={
-              isKept ? t('help.unkeep', 'Stop keeping this line') : t('help.keep', 'Keep this line')
-            }
             className="inline-flex min-h-11 items-center gap-2 rounded-element px-4 py-2 text-13 font-bold transition-colors hover:bg-foreground hover:text-background sm:px-2"
           >
             <Bookmark size={14} fill={isKept ? 'currentColor' : 'none'} aria-hidden />
@@ -178,12 +173,12 @@ export function HotlineRow({
             onClick={() => setExpanded((v) => !v)}
             aria-expanded={expanded}
             aria-controls={detailsId}
-            aria-label={t('help.details_aria', 'Details for {{name}}', { name: hotline.name })}
             className="inline-flex min-h-11 items-center gap-2 rounded-element px-4 py-2 text-13 font-bold transition-colors hover:bg-foreground hover:text-background sm:px-2"
           >
             {/* Static flip, no transition — the crisis pages are animation-free. */}
             <ChevronDown size={16} aria-hidden className={expanded ? 'rotate-180' : undefined} />
             <span className="sm:sr-only">{t('common.more', 'More')}</span>
+            <span className="sr-only"> — {hotline.name}</span>
           </button>
         </div>
       </div>

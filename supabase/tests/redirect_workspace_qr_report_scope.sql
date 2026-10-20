@@ -14,6 +14,7 @@ DECLARE legacy uuid:='58aa4340-8f21-4b7f-9a10-90be2da89c01';other uuid:=gen_rand
 BEGIN
  INSERT INTO auth.users(id) VALUES(actor);INSERT INTO public.user_roles VALUES(actor,'admin');
  INSERT INTO public.redirect_workspaces(id,name,slug) VALUES(other,'QR report fixture','qr-report-fixture');
+ INSERT INTO redirect_internal.workspace_owners(workspace_id,user_id) VALUES(other,actor);
  INSERT INTO public.redirects(id,workspace_id,type,slug,target) VALUES(foreign_link,other,'SHORT','foreign-qr-report','https://example.org/private-qr-report');
  INSERT INTO public.redirect_domains(id,workspace_id,hostname,created_by) VALUES(foreign_domain,other,'foreign-qr-report.example.com',actor);
  INSERT INTO public.redirect_qr_image_links(id,workspace_id,token_hash,creator_user_id,principal_key,link_id,label) VALUES(foreign_image,other,repeat('a',64),actor,'owner:'||actor,foreign_link,'Private QR image');

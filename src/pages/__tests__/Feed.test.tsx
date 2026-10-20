@@ -5,6 +5,25 @@ import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router';
 
+vi.mock('@/hooks/useSocialModeration', () => ({
+  useSocialModeration: () => ({
+    mutedUserIds: [],
+    mutedWords: [],
+    adultContentEnabled: false,
+    labelPrefs: {},
+    mute: { mutate: vi.fn() },
+    unmute: { mutate: vi.fn() },
+  }),
+  usePostModeration: () => new Map(),
+}));
+vi.mock('@/hooks/useFollows', () => ({
+  useFollows: () => ({
+    followingIds: new Set(),
+    isFollowing: () => false,
+    follow: { mutate: vi.fn() },
+    unfollow: { mutate: vi.fn() },
+  }),
+}));
 vi.mock('@/components/posts/PostCard', () => ({ PostCard: () => null }));
 vi.mock('@/components/posts/CreatePostDialog', () => ({ CreatePostDialog: () => null }));
 vi.mock('@/hooks/useCommunityPosts', () => ({

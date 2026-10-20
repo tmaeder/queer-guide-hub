@@ -47,7 +47,6 @@ function FeaturedItem({
   return (
     <LocalizedLink
       to={href}
-      aria-label={`${p.name}${p.profession ? ', ' + formatProfession(p.profession) : ''}`}
       className="group block w-40 flex-none text-inherit no-underline"
       style={{ scrollSnapAlign: 'start' }}
     >
@@ -59,7 +58,7 @@ function FeaturedItem({
             src={resolvedSrc}
             srcSet={srcSet}
             sizes="160px"
-            alt={p.name}
+            alt=""
             loading={eager ? 'eager' : 'lazy'}
             // fetchpriority is widely supported but not in React's typings yet
             // — pass via a typed cast inline.
@@ -69,7 +68,7 @@ function FeaturedItem({
             className="h-full w-full object-cover object-top"
           />
         ) : (
-          <span className="font-display text-headline text-muted-foreground">
+          <span aria-hidden="true" className="font-display text-headline text-muted-foreground">
             {getInitials(p.name)}
           </span>
         )}

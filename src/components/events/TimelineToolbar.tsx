@@ -52,7 +52,7 @@ export function TimelineToolbar({
         variant="outline"
         size="sm"
         onClick={() => onPan(-step.ms)}
-        aria-label={`Pan back one ${stepLabel}`}
+        aria-label={`Pan back 1 ${stepLabel}`}
         style={{ display: 'inline-flex', gap: 4 }}
       >
         <ChevronLeft className="size-4" />
@@ -63,7 +63,7 @@ export function TimelineToolbar({
         size="sm"
         onClick={() => onCenter(Date.now())}
         style={{ display: 'inline-flex', gap: 4 }}
-        aria-label="Center on today"
+        aria-label="Today — center the timeline"
       >
         <Crosshair className="size-4" />
         Today
@@ -72,7 +72,7 @@ export function TimelineToolbar({
         variant="outline"
         size="sm"
         onClick={() => onPan(step.ms)}
-        aria-label={`Pan forward one ${stepLabel}`}
+        aria-label={`Pan forward 1 ${stepLabel}`}
         style={{ display: 'inline-flex', gap: 4 }}
       >
         <span className="hidden sm:inline">1 {stepLabel}</span>

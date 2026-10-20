@@ -174,16 +174,15 @@ export function CrisisTriage({
                 <a
                   href={channelHref({ kind: 'phone', value: phone })}
                   className={`mt-6 ${PRIMARY}`}
-                  aria-label={t('help.call_aria', 'Call {{name}} {{phone}}', {
-                    name: hero.name,
-                    phone,
-                  })}
                 >
+                  {/* Name comes from the visible text plus this suffix, so it always
+                      contains what is on screen (WCAG 2.5.3 label in name). */}
                   <span className="flex items-center gap-2 text-15 font-bold">
                     <Phone size={20} aria-hidden />
                     {t('help.call_now', 'Call now')}
                   </span>
                   <span className="text-title font-bold tabular-nums">{phone}</span>
+                  <span className="sr-only"> — {hero.name}</span>
                 </a>
               )}
 
@@ -203,13 +202,10 @@ export function CrisisTriage({
                     <a
                       href={channelHref({ kind: 'phone', value: altPhone })}
                       className={`mt-4 ${SECONDARY}`}
-                      aria-label={t('help.call_aria', 'Call {{name}} {{phone}}', {
-                        name: openAlt.name,
-                        phone: altPhone,
-                      })}
                     >
                       <Phone size={16} aria-hidden />
                       <span className="tabular-nums">{altPhone}</span>
+                      <span className="sr-only"> — {openAlt.name}</span>
                     </a>
                   ) : altChannel ? (
                     <a
@@ -217,9 +213,9 @@ export function CrisisTriage({
                       target={altChannel.kind === 'chat' ? '_blank' : undefined}
                       rel={altChannel.kind === 'chat' ? 'noopener noreferrer' : undefined}
                       className={`mt-4 ${SECONDARY}`}
-                      aria-label={`${openAlt.name} — ${altChannel.label ?? altChannel.kind}`}
                     >
                       {altChannel.label ?? t(`help.channel.${altChannel.kind}`, altChannel.kind)}
+                      <span className="sr-only"> — {openAlt.name}</span>
                     </a>
                   ) : null}
                 </div>
@@ -266,10 +262,10 @@ export function CrisisTriage({
                           target={c.kind === 'chat' ? '_blank' : undefined}
                           rel={c.kind === 'chat' ? 'noopener noreferrer' : undefined}
                           className={SECONDARY}
-                          aria-label={`${hero.name} — ${c.label ?? c.kind}`}
                         >
                           <Icon size={16} aria-hidden />
                           {c.label ?? t(`help.channel.${c.kind}`, c.kind)}
+                          <span className="sr-only"> — {hero.name}</span>
                         </a>
                       );
                     })}
@@ -354,17 +350,10 @@ export function CrisisTriage({
                         target={offsite ? '_blank' : undefined}
                         rel={offsite ? 'noopener noreferrer' : undefined}
                         className={KEPT}
-                        aria-label={
-                          keptPhone
-                            ? t('help.call_aria', 'Call {{name}} {{phone}}', {
-                                name: h.name,
-                                phone: keptPhone,
-                              })
-                            : h.name
-                        }
                       >
                         {keptPhone && <Phone size={14} aria-hidden />}
                         {h.name}
+                        {keptPhone && <span className="sr-only"> — {keptPhone}</span>}
                       </a>
                     </li>
                   );

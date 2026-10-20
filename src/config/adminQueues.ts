@@ -26,9 +26,7 @@
  *    a naming drift: the first is the triage duplicate view (weight 20, 72h),
  *    the second is the nightly dedup sweep's review queue (weight 40, 168h).
  *
- * Links use `?queue=`, never `adminLink.review()` — that emits `?tab=`, and
- * AdminInbox's TAB_TO_QUEUE map has no entries for the quality queues, so a
- * `?tab=quality-city` link silently lands on the unscoped inbox.
+ * Links use `?queue=`, the review workspace's canonical parameter.
  */
 
 import {

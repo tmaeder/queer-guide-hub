@@ -203,7 +203,6 @@ test.describe('Mobile nav sheet a11y', () => {
     await openSheet(page);
     const bad = await page.evaluate(
       ({ helpers, floor }) => {
-        // eslint-disable-next-line no-eval
         eval(helpers);
         // @ts-expect-error - defined by the injected helper source.
         return __lowContrastControls(document.querySelector('[role="dialog"]'), floor);

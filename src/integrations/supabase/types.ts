@@ -3445,11 +3445,14 @@ export type Database = {
       }
       community_posts: {
         Row: {
+          at_cid: string | null
+          at_uri: string | null
           comments_count: number | null
           content: string
           created_at: string
           id: string
           images: string[] | null
+          labels: string[]
           image_assets_synced_at: string | null
           likes_count: number | null
           link_description: string | null
@@ -3468,11 +3471,14 @@ export type Database = {
           visibility: string | null
         }
         Insert: {
+          at_cid?: string | null
+          at_uri?: string | null
           comments_count?: number | null
           content: string
           created_at?: string
           id?: string
           images?: string[] | null
+          labels?: string[]
           likes_count?: number | null
           link_description?: string | null
           link_title?: string | null
@@ -3490,11 +3496,14 @@ export type Database = {
           visibility?: string | null
         }
         Update: {
+          at_cid?: string | null
+          at_uri?: string | null
           comments_count?: number | null
           content?: string
           created_at?: string
           id?: string
           images?: string[] | null
+          labels?: string[]
           likes_count?: number | null
           link_description?: string | null
           link_title?: string | null
@@ -24157,6 +24166,99 @@ export type Database = {
         }
         Relationships: []
       }
+      user_moderation_prefs: {
+        Row: {
+          adult_content_enabled: boolean
+          label_prefs: Json
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          adult_content_enabled?: boolean
+          label_prefs?: Json
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          adult_content_enabled?: boolean
+          label_prefs?: Json
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_muted_words: {
+        Row: {
+          actor_target: string
+          created_at: string
+          expires_at: string | null
+          id: string
+          targets: string[]
+          user_id: string
+          value: string
+        }
+        Insert: {
+          actor_target?: string
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          targets?: string[]
+          user_id: string
+          value: string
+        }
+        Update: {
+          actor_target?: string
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          targets?: string[]
+          user_id?: string
+          value?: string
+        }
+        Relationships: []
+      }
+      user_mutes: {
+        Row: {
+          created_at: string
+          muted_id: string
+          muter_id: string
+        }
+        Insert: {
+          created_at?: string
+          muted_id: string
+          muter_id: string
+        }
+        Update: {
+          created_at?: string
+          muted_id?: string
+          muter_id?: string
+        }
+        Relationships: []
+      }
+      bluesky_identities: {
+        Row: {
+          did: string
+          handle: string
+          linked_at: string
+          use_queer_guide_handle: boolean
+          user_id: string
+        }
+        Insert: {
+          did: string
+          handle: string
+          linked_at?: string
+          use_queer_guide_handle?: boolean
+          user_id: string
+        }
+        Update: {
+          did?: string
+          handle?: string
+          linked_at?: string
+          use_queer_guide_handle?: boolean
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_follows: {
         Row: {
           created_at: string
@@ -33584,6 +33686,26 @@ export type Database = {
       fx_to_usd: {
         Args: { p_amount: number; p_currency: string }
         Returns: number
+      }
+      atproto_did_for_subdomain: {
+        Args: { p_sub: string }
+        Returns: string
+      }
+      resolve_handle: {
+        Args: { p_handle: string }
+        Returns: Json
+      }
+      open_web_posts: {
+        Args: { p_handle?: string; p_tag?: string; p_limit?: number }
+        Returns: {
+          id: string
+          username: string
+          display_name: string | null
+          content: string
+          tags: string[] | null
+          created_at: string
+          updated_at: string | null
+        }[]
       }
       gated_count_for_location: {
         Args: { p_city_id?: string; p_country_id?: string }

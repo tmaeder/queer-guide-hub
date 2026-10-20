@@ -55,6 +55,7 @@ import { buildHubLinksHtml } from './_lib/hubLinks';
 import { isLocaleLocalised, LOCALISED_LOCALES } from './_lib/localisedLocales';
 import { resolveDetailRoute, isDetailPath, resolveSlugRedirect } from './_lib/detail';
 import { resolveLandingRoute, isOwnedLandingShape } from './_lib/landing';
+import { resolveHandleRoute } from './_lib/openWeb';
 import { bootGuardTag } from './_lib/boot-guard';
 import { placeTagEdgeLocation } from './_lib/placeTagRedirect';
 import { applySecurityHeaders, generateCspNonce } from './_lib/securityHeaders';
@@ -105,7 +106,7 @@ const ASSET_SUFFIXES = [
 // actually protects returning users with a stale bundle. Keep the branch —
 // it still covers any asset-looking path NOT in the exclude list, and it
 // comes straight back if the exclusions are ever narrowed.
-const SKIP_PREFIXES = ['/api/', '/functions/'];
+const SKIP_PREFIXES = ['/api/', '/functions/', '/xrpc/'];
 const SKIP_SUFFIXES = ['.json', '.xml', '.txt'];
 
 function looksLikeAssetPath(pathname: string): boolean {
@@ -323,6 +324,30 @@ export const onRequest: PagesFunction<Env> = async (context) => {
     return landingNotFound;
   }
 
+  // Bluesky-style /@handle profile links. Unknown handles hard-404 (the SPA
+  // would otherwise render its catch-all at 200); renamed handles 301.
+  const handleRoute = await resolveHandleRoute(env, basePath);
+  if (handleRoute?.status === 404) {
+    const handleNotFound = new Response(notFoundHtml(basePath), {
+      status: 404,
+      headers: {
+        'Content-Type': 'text/html; charset=utf-8',
+        'Cache-Control': 'public, s-maxage=60, max-age=30',
+      },
+    });
+    applySecurityHeaders(handleNotFound, cspNonce);
+    return handleNotFound;
+  }
+  if (handleRoute?.status === 301) {
+    return new Response(null, {
+      status: 301,
+      headers: {
+        Location: locale ? localizedUrl(locale, handleRoute.location) : canonicalUrl(handleRoute.location),
+        'Cache-Control': 'public, s-maxage=300, max-age=60',
+      },
+    });
+  }
+
   let response = await next();
   if (basePath.startsWith('/share/redirect-report/')) {
     response = new Response(response.body, response);
@@ -420,7 +445,8 @@ export const onRequest: PagesFunction<Env> = async (context) => {
 
   // Detail routes look up the row in Supabase and override meta/body/JSON-LD.
   // Returns null if the path isn't a detail route OR the row isn't found.
-  const detail = await resolveDetailRoute(env, basePath);
+  const detail =
+    handleRoute?.status === 200 ? handleRoute.detail : await resolveDetailRoute(env, basePath);
 
   // Published branding overrides (site_branding, /admin/design). Memoized
   // 60s per isolate; null (fetch failure or kill-switch) = stock site.
@@ -526,6 +552,12 @@ export const onRequest: PagesFunction<Env> = async (context) => {
   }
   if (detail?.jsonLd) {
     headInjections.push(detail.jsonLd);
+  }
+  // oEmbed discovery (https://oembed.com §4) for shareable detail pages.
+  if (detail && indexable) {
+    headInjections.push(
+      `<link rel="alternate" type="application/json+oembed" href="${escapeAttr(`${canonicalUrl('/api/oembed')}?url=${encodeURIComponent(canonical)}`)}">`,
+    );
   }
   // BreadcrumbList for detail pages. Gated on `indexable` because it is a
   // rich-result signal, and emitting one on a page carrying noindex — a gated
