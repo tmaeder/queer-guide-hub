@@ -155,7 +155,12 @@ export function pageDesignFamilyForModule(modulePath: string): PageDesignFamily 
   if (modulePath.startsWith('./pages/intimate/') || modulePath.startsWith('./pages/tools/')) {
     return 'community';
   }
-  if (modulePath.startsWith('./pages/people/') || modulePath.startsWith('./pages/hub/')) {
+  if (
+    modulePath.startsWith('./pages/people/') ||
+    modulePath.startsWith('./pages/hub/') ||
+    // /@handle profile links and /posts/:id permalinks.
+    modulePath.startsWith('./pages/social/')
+  ) {
     return 'community';
   }
   if (modulePath.startsWith('./pages/rights/')) {
