@@ -24240,18 +24240,21 @@ export type Database = {
           did: string
           handle: string
           linked_at: string
+          use_queer_guide_handle: boolean
           user_id: string
         }
         Insert: {
           did: string
           handle: string
           linked_at?: string
+          use_queer_guide_handle?: boolean
           user_id: string
         }
         Update: {
           did?: string
           handle?: string
           linked_at?: string
+          use_queer_guide_handle?: boolean
           user_id?: string
         }
         Relationships: []
@@ -33683,6 +33686,10 @@ export type Database = {
       fx_to_usd: {
         Args: { p_amount: number; p_currency: string }
         Returns: number
+      }
+      atproto_did_for_subdomain: {
+        Args: { p_sub: string }
+        Returns: string
       }
       resolve_handle: {
         Args: { p_handle: string }

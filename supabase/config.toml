@@ -691,3 +691,6 @@ verify_jwt = false
 # Durable DNS instruction outbox; the handler checks the internal secret/current admin.
 [functions.redirect-domain-instruction-mail]
 verify_jwt = false
+
+[functions.bluesky-bot-post]
+verify_jwt = false

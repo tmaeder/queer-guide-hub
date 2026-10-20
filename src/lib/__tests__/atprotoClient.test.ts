@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import { RichText } from '@atproto/api';
-import { BLUESKY_MAX_GRAPHEMES, fitToBluesky, selfLabelsFor } from '../atprotoClient';
+import {
+  BLUESKY_MAX_GRAPHEMES,
+  fitToBluesky,
+  queerGuideHandleFor,
+  selfLabelsFor,
+} from '../atprotoClient';
 
 const graphemes = (s: string) => new RichText({ text: s }).graphemeLength;
 
@@ -39,5 +44,15 @@ describe('selfLabelsFor', () => {
   it('drops anything that is not a Bluesky self-label, and omits empty sets', () => {
     expect(selfLabelsFor(['!hide', 'spam'])).toBeUndefined();
     expect(selfLabelsFor(null)).toBeUndefined();
+  });
+});
+
+describe('queerGuideHandleFor', () => {
+  it('offers name.queer.guide only for single-label usernames', () => {
+    expect(queerGuideHandleFor('Alice99')).toBe('alice99.queer.guide');
+    expect(queerGuideHandleFor('al.ice')).toBeNull();
+    expect(queerGuideHandleFor('al_ice')).toBeNull();
+    expect(queerGuideHandleFor('ab')).toBeNull();
+    expect(queerGuideHandleFor(null)).toBeNull();
   });
 });
