@@ -84,6 +84,17 @@ const BLOCKED = /\/rpc\/(branding_|admin_automation_set_enabled|.*_upsert|.*_del
 type Shape = { endpoints: string[]; h1: string; errors: string[] };
 
 test.describe('admin routes stay healthy through the archetype migration', () => {
+  // Fork PRs receive no admin secrets. Skip before opening protected routes;
+  // waiting for page furniture first costs the full timeout on every route.
+  // Explicit storage state also supports local authenticated runs.
+  test.skip(
+    !(
+      process.env.E2E_STORAGE_STATE ||
+      (process.env.E2E_ADMIN_EMAIL && process.env.E2E_ADMIN_PASSWORD)
+    ),
+    'Requires the configured admin session',
+  );
+
   // Admin pages are heavier than the 30s default allows and CI runs one
   // worker, so the budget is set for admin, not for public pages.
   //

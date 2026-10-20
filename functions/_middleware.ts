@@ -106,7 +106,7 @@ const ASSET_SUFFIXES = [
 // actually protects returning users with a stale bundle. Keep the branch —
 // it still covers any asset-looking path NOT in the exclude list, and it
 // comes straight back if the exclusions are ever narrowed.
-const SKIP_PREFIXES = ['/api/', '/functions/'];
+const SKIP_PREFIXES = ['/api/', '/functions/', '/xrpc/'];
 const SKIP_SUFFIXES = ['.json', '.xml', '.txt'];
 
 function looksLikeAssetPath(pathname: string): boolean {

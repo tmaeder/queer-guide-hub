@@ -107,6 +107,17 @@ async function selectView(page: Page, option: string) {
 }
 
 test.describe('archived state in the content list', () => {
+  // Fork PRs receive no admin secrets. Skip before opening protected routes;
+  // waiting for page furniture first costs the full timeout on every route.
+  // Explicit storage state also supports local authenticated runs.
+  test.skip(
+    !(
+      process.env.E2E_STORAGE_STATE ||
+      (process.env.E2E_ADMIN_EMAIL && process.env.E2E_ADMIN_PASSWORD)
+    ),
+    'Requires the configured admin session',
+  );
+
   test.beforeEach(async ({ page }) => {
     test.skip(!(await isAuthed(page)), 'requires an admin session (E2E_ADMIN_EMAIL/PASSWORD)');
   });
