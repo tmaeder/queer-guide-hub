@@ -78,7 +78,7 @@ begin
  assert (preview->>'matched')::int=5,'unconfirmed contact matched confirmation age';
  preview:=public.email_segment_preview('{"field":"created_at","op":"older_than_days","value":1}');
  assert (preview->>'matched')::int=0;
- assert jsonb_array_length(public.email_contact_timeline(a))=5,'contact timeline missing authoritative events';
+ assert (select count(*)=5 from jsonb_array_elements(public.email_contact_timeline(a)) entry where entry->>'kind' like 'consent.%' or entry->>'kind' like 'delivery.%'),'contact timeline missing authoritative events';
  perform public.email_record_event('pending-foreign-event','pending-provider','segment-b@example.com','delivered',now());
  assert public.email_contact_timeline(b)::text not like '%delivery.delivered%','unproved mailbox disclosed delivery timeline';
  perform public.email_erase_account('f1111111-0000-4000-8000-000000000001');

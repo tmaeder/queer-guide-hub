@@ -17,7 +17,11 @@ grant select on auth.users,public.email_templates to service_role;
 -- Existing privacy entry points, reduced to their boundary contracts. The
 -- suite verifies the email wrappers preserve authorization and atomicity;
 -- full application table erasure remains covered by the product's own suite.
-create table public.profiles(user_id uuid primary key references auth.users(id),display_name text);
+create table public.profiles(user_id uuid primary key references auth.users(id),display_name text,username text);
+create table public.event_attendees(id uuid primary key default gen_random_uuid(),event_id uuid not null,user_id uuid not null references auth.users(id) on delete cascade,status text);
+create table public.group_memberships(id uuid primary key default gen_random_uuid(),group_id uuid not null,user_id uuid not null references auth.users(id) on delete cascade,role text not null default 'member');
+create table public.trip_members(id uuid primary key default gen_random_uuid(),trip_id uuid not null,user_id uuid not null references auth.users(id) on delete cascade,role text not null default 'editor',accepted_at timestamptz);
+grant all on public.event_attendees,public.group_memberships,public.trip_members,public.profiles to service_role;
 create function public._delete_user_data_core(p_user_id uuid) returns jsonb
 language plpgsql security definer set search_path=public,pg_temp as $$
 begin

@@ -35,3 +35,7 @@ Implementation decisions: explicit recipient account ownership; only verified li
 ## Audience and timeline continuation
 
 Reusable audiences use bounded, typed JSON rules with nested all/any/not groups over approved subscription traits and authoritative consent/delivery windows. Keep sensitive traits and browsing events unsupported. Save a new rule version on every edit and reject stale updates; previews recompute current data, eligibility and exclusion reasons. Contact timelines derive from existing consent/delivery records so erasure does not leave a copied event store. The admin API exposes these backend operations; visual builders, campaign binding and the general product-event/journey runtime remain required work. See `docs/architecture/email-audiences.md` for contracts and limits.
+
+## Operational event continuation
+
+A service-only event ledger captures account creation, username changes, RSVP changes, group join/leave and trip invitation/acceptance/leave from authoritative database writes in the same transaction. Restrict each event to its owner, opaque source ID and validated type/state; do not copy private source data. Include owned events in export and proof-linked timelines, and erase them through the existing disabled-account barrier and Auth cascade. Do not expose these operational membership events as marketing segmentation predicates or automatically enroll historic users. General journey consumption and the remaining product adapters are still outstanding. See `docs/architecture/email-lifecycle-events.md`.
