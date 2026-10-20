@@ -591,3 +591,13 @@ counted as implemented. The wider owner admission/lifecycle UI, workspace creati
 switching, public/shared-host activation, domain transfer and live provider/device/
 release verification remain open. Firecrawl retrieval was unavailable due to
 account credits; the primary page was read directly instead.
+
+### 2026-10-20 integration recovery
+
+PR #4437 merged without the owner-authority commit. Rebased only that unpublished
+commit onto main at 872863af9 and allocated migration 99991792517815, replacing
+the unpublished 99991792176060 filename cited in the earlier checkpoint. Full
+isolated SQL and 40-table backfill checks pass on this integration; all 2413
+migrations pass version and PostgreSQL parser checks. No production schema or
+tenant activation was changed. This follow-up remains distinct from the merged
+workspace resource changes; owner admission and the activation audit remain open.
