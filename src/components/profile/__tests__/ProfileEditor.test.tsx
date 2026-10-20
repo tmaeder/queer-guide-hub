@@ -33,6 +33,7 @@ vi.mock('@/components/profile/settings/IdentityTab', () => ({
 vi.mock('@/components/profile/settings/PrivacyTab', () => ({
   PrivacyTab: () => <div>Privacy editor</div>,
 }));
+vi.mock('@/components/profile/settings/BlueskyConnect', () => ({ BlueskyConnect: () => null }));
 vi.mock('@/components/profile/settings/ModerationSettings', () => ({
   ModerationSettings: () => null,
 }));

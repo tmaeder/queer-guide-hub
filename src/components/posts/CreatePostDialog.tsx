@@ -41,6 +41,8 @@ import { useCommunityPosts, CreatePostData } from '@/hooks/useCommunityPosts';
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
 import { SELF_LABELS, SELF_LABEL_TEXT, type SelfLabel } from '@/lib/atprotoModeration';
+import { useBlueskyIdentity } from '@/hooks/useBlueskyIdentity';
+import { Checkbox } from '@/components/ui/checkbox';
 
 interface CreatePostDialogProps {
   children?: React.ReactNode;
@@ -58,6 +60,9 @@ export const CreatePostDialog = ({ children }: CreatePostDialogProps) => {
   const [postType, setPostType] = useState<'text' | 'image' | 'link' | 'poll'>('text');
   const [visibility, setVisibility] = useState<'public' | 'followers' | 'private'>('public');
   const [labels, setLabels] = useState<SelfLabel[]>([]);
+  const [crossPost, setCrossPost] = useState(false);
+  const { identity: bluesky } = useBlueskyIdentity();
+  const canCrossPost = !!bluesky && visibility === 'public';
   const [images, setImages] = useState<string[]>([]);
   const [linkUrl, setLinkUrl] = useState('');
   const [linkTitle, setLinkTitle] = useState('');
@@ -118,6 +123,7 @@ export const CreatePostDialog = ({ children }: CreatePostDialogProps) => {
       mentions: extractedMentions.length > 0 ? extractedMentions : undefined,
       tags: extractedTags.length > 0 ? extractedTags : undefined,
       labels,
+      crossPostDid: canCrossPost && crossPost ? bluesky?.did : undefined,
     };
 
     if (postType === 'image' && images.length > 0) {
@@ -180,6 +186,7 @@ export const CreatePostDialog = ({ children }: CreatePostDialogProps) => {
     setPostType('text');
     setVisibility('public');
     setLabels([]);
+    setCrossPost(false);
     setImages([]);
     setLinkUrl('');
     setLinkTitle('');
@@ -471,6 +478,19 @@ export const CreatePostDialog = ({ children }: CreatePostDialogProps) => {
               })}
             </div>
           </fieldset>
+
+          {canCrossPost && (
+            <div className="flex items-center gap-2">
+              <Checkbox
+                id="cross-post-bluesky"
+                checked={crossPost}
+                onCheckedChange={(v) => setCrossPost(v === true)}
+              />
+              <Label htmlFor="cross-post-bluesky" className="text-sm">
+                Also post to Bluesky as @{bluesky?.handle}
+              </Label>
+            </div>
+          )}
 
           {/* Character count */}
           <div className="text-right text-xs text-muted-foreground">
