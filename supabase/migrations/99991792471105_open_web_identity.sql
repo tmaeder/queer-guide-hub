@@ -104,7 +104,8 @@ begin
     raise exception 'open web: resolve_handle returned a row for a malformed handle';
   end if;
   -- The feed source must refuse labelled posts: check the predicate is in place.
-  select pg_get_functiondef('public.open_web_posts(text,text,int)'::regprocedure) into v_post_labels;
+  -- Strip comments first: pg_get_functiondef() includes them.
+  select regexp_replace(pg_get_functiondef('public.open_web_posts(text,text,int)'::regprocedure), '--[^' || chr(10) || ']*', '', 'g') into v_post_labels;
   if position('cardinality(c.labels) = 0' in v_post_labels) = 0 then
     raise exception 'open web: open_web_posts no longer excludes labelled posts';
   end if;
