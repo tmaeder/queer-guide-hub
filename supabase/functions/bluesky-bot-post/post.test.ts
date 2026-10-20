@@ -1,5 +1,5 @@
 import { assertEquals } from 'https://deno.land/std@0.224.0/assert/mod.ts'
-import { buildPost, hashtagFor } from './post.ts'
+import { buildPost, hashtagFor, pickHashtags } from './post.ts'
 
 const base = {
   entity_type: 'event' as const,
@@ -33,4 +33,11 @@ Deno.test('buildPost stays within 300 graphemes', () => {
   const n = [...new Intl.Segmenter(undefined, { granularity: 'grapheme' }).segment(p.text)].length
   assertEquals(n <= 300, true)
   assertEquals(p.text.includes('…'), true)
+})
+
+Deno.test('pickHashtags puts specific tags before broad identity tags', () => {
+  assertEquals(pickHashtags(['gay', 'pride', 'lgbtqia+']), ['pride', 'gay'])
+  assertEquals(pickHashtags(['queer', 'drag', 'trans-rights']), ['drag', 'transRights'])
+  assertEquals(pickHashtags(['gay', 'lgbtqia+']), ['gay', 'lgbtqia'])
+  assertEquals(pickHashtags(null), [])
 })

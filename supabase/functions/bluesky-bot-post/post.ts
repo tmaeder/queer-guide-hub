@@ -22,8 +22,18 @@ export function hashtagFor(tag: string): string | null {
   return t.length >= 2 && t.length <= 30 && !/^\d+$/.test(t) ? t : null
 }
 
+/** On most items, so they say little: used only when nothing more specific exists. */
+const BROAD = new Set(['lgbtqia', 'lgbtq', 'lgbt', 'gay', 'queer', 'lesbian', 'transgender', 'bisexual', 'community'])
+
+/** Up to two hashtags, specific tags first (#pride, #drag, #TransRights), broad ones only to fill. */
+export function pickHashtags(tags: string[] | null): string[] {
+  const all = [...new Set((tags ?? []).map(hashtagFor).filter((t): t is string => !!t))]
+  const broad = (t: string) => BROAD.has(t.toLowerCase())
+  return [...all.filter((t) => !broad(t)), ...all.filter(broad)].slice(0, 2)
+}
+
 export function buildPost(c: Candidate, now = new Date()) {
-  const tags = [...new Set((c.tags ?? []).map(hashtagFor).filter((t): t is string => !!t))].slice(0, 2)
+  const tags = pickHashtags(c.tags)
   const suffix = tags.map((t) => ` #${t}`).join('')
   const room = MAX_GRAPHEMES - graphemes(suffix).length
   const title = c.title.trim()
