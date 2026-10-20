@@ -107,6 +107,10 @@ export async function verifyRedirectWorkspaceMembershipHttp(
       [workspace, owner],
     );
     await db.query(
+      'INSERT INTO redirect_internal.workspace_owners(workspace_id,user_id) VALUES($1,$2)',
+      [workspace, owner],
+    );
+    await db.query(
       "INSERT INTO public.redirect_workspace_members(id,workspace_id,kind,label) VALUES($1,$2,'machine','Foreign private HTTP member')",
       [member, workspace],
     );

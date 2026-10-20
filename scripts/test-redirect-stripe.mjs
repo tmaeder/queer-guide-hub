@@ -28,6 +28,151 @@ try {
     [link.id],
   );
   const user = '00000000-0000-4000-8000-000000000001';
+  // Exercise the actual checkout handler against isolated rows. The fixture
+  // transaction alone lifts the two tenant fences; rollback restores them.
+  await db.exec(
+    'BEGIN; RESET ROLE; ALTER TABLE public.redirects DROP CONSTRAINT redirects_pending_tenant_fence; ALTER TABLE public.redirect_events DROP CONSTRAINT redirect_events_pending_tenant_fence; SET LOCAL ROLE service_role;',
+  );
+  try {
+    const other = webcrypto.randomUUID();
+    const foreignClick = webcrypto.randomUUID();
+    const expiredClick = webcrypto.randomUUID();
+    await db.query(
+      "INSERT INTO public.redirect_workspaces(id,name,slug) VALUES($1,'Checkout fixture','checkout-fixture')",
+      [other],
+    );
+    const {
+      rows: [foreignLink],
+    } = await db.query(
+      "INSERT INTO public.redirects(workspace_id,type,slug,target) VALUES($1,'SHORT','foreign-checkout','https://example.org/foreign') RETURNING id",
+      [other],
+    );
+    await db.query(
+      "INSERT INTO public.redirect_events(workspace_id,redirect_id,click_id,ts,path,status) VALUES($1,$2,$3,now(),'/foreign-checkout',302)",
+      [other, foreignLink.id, foreignClick],
+    );
+    await db.query(
+      "INSERT INTO public.redirect_events(redirect_id,click_id,ts,path,status) VALUES($1,$2,now()-interval '31 days','/expired-checkout',302)",
+      [link.id, expiredClick],
+    );
+    const sessions = [];
+    const donations = [];
+    let checkoutHandler;
+    const checkoutClient = {
+      rpc: async () => ({ data: true, error: null }),
+      from: (table) => {
+        if (table === 'donations')
+          return {
+            insert: async (value) => {
+              donations.push(value);
+              return { error: null };
+            },
+          };
+        assert.equal(table, 'redirect_events');
+        const filters = [];
+        const query = {
+          select: () => query,
+          eq: (column, value) => {
+            filters.push([column, '=', value]);
+            return query;
+          },
+          gte: (column, value) => {
+            filters.push([column, '>=', value]);
+            return query;
+          },
+          maybeSingle: async () => {
+            for (const [column] of filters)
+              assert.ok(['workspace_id', 'click_id', 'ts'].includes(column));
+            const result = await db.query(
+              'SELECT click_id FROM public.redirect_events WHERE ' +
+                filters.map(([column, op], i) => `${column} ${op} $${i + 1}`).join(' AND '),
+              filters.map(([, , value]) => value),
+            );
+            return { data: result.rows[0] ?? null, error: null };
+          },
+        };
+        return query;
+      },
+    };
+    class CheckoutStripe {
+      checkout = {
+        sessions: {
+          create: async (value) => {
+            sessions.push(value);
+            return { id: 'cs_offline', url: 'https://example.org/checkout' };
+          },
+        },
+      };
+    }
+    const checkoutCode = ts.transpileModule(
+      [
+        '_shared/redirect-api.ts',
+        '_shared/redirect-workspace.ts',
+        'create-checkout-session/index.ts',
+      ]
+        .map(source)
+        .join('\n'),
+      { compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.ESNext } },
+    ).outputText;
+    new Function(
+      'Deno',
+      'Stripe',
+      'getServiceClient',
+      'corsResponse',
+      'jsonResponse',
+      'errorResponse',
+      checkoutCode,
+    )(
+      {
+        env: { get: () => 'offline-fixture' },
+        serve: (fn) => {
+          checkoutHandler = fn;
+        },
+      },
+      CheckoutStripe,
+      () => checkoutClient,
+      () => new Response(null),
+      (body, status) => new Response(JSON.stringify(body), { status }),
+      (message, status) => new Response(message, { status }),
+    );
+    for (const recurring of [false, true]) {
+      for (const [click, expected] of [
+        [visit.id, visit.id],
+        [foreignClick, null],
+        [expiredClick, null],
+        [webcrypto.randomUUID(), null],
+        ['invalid', null],
+      ]) {
+        const response = await checkoutHandler(
+          new Request('https://fixture.example/checkout', {
+            method: 'POST',
+            // Public request headers must not choose the donation's workspace.
+            headers: { 'content-type': 'application/json', 'x-qg-redirect-workspace': other },
+            body: JSON.stringify({
+              amount: 500,
+              email: 'fixture@example.org',
+              qg_click_id: click,
+              donation_type: recurring ? 'recurring' : 'one_time',
+              ...(recurring ? { interval: 'month' } : {}),
+            }),
+          }),
+        );
+        assert.equal(response.status, 200);
+        assert.equal(sessions.at(-1).metadata.qg_click_id, expected ?? undefined);
+        if (recurring)
+          assert.equal(
+            sessions.at(-1).subscription_data.metadata.qg_click_id,
+            expected ?? undefined,
+          );
+        assert.equal(donations.at(-1).redirect_click_id, expected);
+      }
+    }
+    console.log(
+      'Donation checkout: actual handler accepts recent Queer Guide clicks and excludes foreign, expired, missing and malformed clicks from payment/subscription metadata and donation records. No Stripe requests were sent.',
+    );
+  } finally {
+    await db.exec('ROLLBACK');
+  }
   const metadata = { qg_click_id: visit.id, user_id: user };
   const records = [];
   const client = {
