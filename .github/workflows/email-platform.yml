@@ -19,13 +19,17 @@ on:
       - 'supabase/migrations/*email_platform_segments.sql'
       - 'supabase/migrations/*email_platform_lifecycle.sql'
       - 'supabase/migrations/*email_platform_journeys.sql'
+      - 'supabase/migrations/*email_platform_policy.sql'
       - 'supabase/tests/email_platform.sql'
       - 'supabase/tests/email_platform_privacy.sql'
       - 'supabase/tests/email_platform_segments.sql'
       - 'supabase/tests/email_platform_lifecycle.sql'
       - 'supabase/tests/email_platform_journeys.sql'
+      - 'supabase/tests/email_platform_policy.sql'
       - 'supabase/tests/email_journey_concurrency.py'
       - 'supabase/tests/fixtures/email_platform_bootstrap.sql'
+      - 'src/components/profile/EmailPreferences.tsx'
+      - 'src/components/profile/__tests__/EmailPreferences.test.tsx'
       - 'package.json'
       - 'package-lock.json'
       - '.github/workflows/email-platform.yml'
@@ -64,10 +68,12 @@ jobs:
           npm test
           npm run typecheck
           npm run dry-run
+      - name: Member preferences
+        run: npx vitest run src/components/profile/__tests__/EmailPreferences.test.tsx
       - name: Backend contracts
         run: |
           deno test --no-config --allow-env supabase/functions/_shared/email-platform.test.ts supabase/functions/_shared/email-render.test.ts supabase/functions/_shared/email-outbox.test.ts supabase/functions/_shared/email-journey-worker.test.ts
-          deno check --no-config supabase/functions/email-admin/index.ts supabase/functions/email-subscriptions/index.ts supabase/functions/email-dispatch/index.ts supabase/functions/cloudflare-email-events/index.ts supabase/functions/email-journeys/index.ts supabase/functions/send-welcome-email/index.ts
+          deno check --no-config supabase/functions/email-admin/index.ts supabase/functions/email-subscriptions/index.ts supabase/functions/email-dispatch/index.ts supabase/functions/cloudflare-email-events/index.ts supabase/functions/email-journeys/index.ts supabase/functions/send-welcome-email/index.ts supabase/functions/dm-digest/index.ts
       - name: Schema, consent, outbox and access contracts
         env:
           PGHOST: localhost
@@ -82,9 +88,11 @@ jobs:
           psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261020192818_email_platform_segments.sql
           psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261020200040_email_platform_lifecycle.sql
           psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261020201344_email_platform_journeys.sql
+          psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261020204500_email_platform_policy.sql
           psql -v ON_ERROR_STOP=1 -f supabase/tests/email_platform.sql
           psql -v ON_ERROR_STOP=1 -f supabase/tests/email_platform_privacy.sql
           psql -v ON_ERROR_STOP=1 -f supabase/tests/email_platform_segments.sql
           psql -v ON_ERROR_STOP=1 -f supabase/tests/email_platform_lifecycle.sql
           psql -v ON_ERROR_STOP=1 -f supabase/tests/email_platform_journeys.sql
+          psql -v ON_ERROR_STOP=1 -f supabase/tests/email_platform_policy.sql
           QG_EMAIL_CONTRACTS=1 python3 supabase/tests/email_journey_concurrency.py

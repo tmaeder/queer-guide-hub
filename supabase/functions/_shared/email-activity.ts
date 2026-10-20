@@ -13,7 +13,7 @@ export function unreadMessageEmail(count: number) {
       ? "Unread message on Queer Guide"
       : `${count} unread messages on Queer Guide`,
     html:
-      `<h2>${heading}</h2><p>Open Queer Guide to read your messages.</p><p><a href="${inbox}">Open messages</a></p><p>You receive this because direct-message notifications are on. <a href="${preferences}">Change notification settings</a>.</p>`,
+      `<h2>${heading}</h2><p>Open Queer Guide to read your messages.</p><p><a href="${inbox}">Open messages</a></p><p>You receive this because direct-message email digests are on. <a href="${preferences}">Change notification settings</a>.</p>`,
     text:
       `${heading}. Open ${inbox} to read your messages. Notification settings: ${preferences}`,
   };

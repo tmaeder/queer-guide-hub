@@ -39,6 +39,8 @@ def barrier(process):
 users = [str(uuid.uuid4()) for _ in range(3)]
 journey = None
 connection = None
+competing = None
+conversation = str(uuid.uuid4())
 try:
     # Control steps only: no send action or real recipient address is used.
     graph = '{"start":"wait","steps":{"wait":{"type":"wait","seconds":60,"next":"end"},"end":{"type":"end"}}}'
@@ -81,11 +83,50 @@ try:
     assert query("select public.email_journey_enroll()") == "1", "Late-committing event was lost"
     assert query(f"select version from public.email_journey_runs where journey_id='{journey}' and user_id='{users[2]}'") == "1", "Late event used a newer definition"
     print("Late commit passed: the source event enrolled in its original published version.")
+    # Two different digest rows must never reserve the same member/day budget.
+    # Hold A's reservation uncommitted while B tries to authorize another row.
+    user = users[0]
+    query(f"insert into public.profiles(user_id) values('{user}')")
+    query(f"select public.email_delivery_preferences_save('{user}',true,'Etc/UTC',false,22,8,0)")
+    query(f"insert into public.conversations(id) values('{conversation}')")
+    query(f"insert into public.conversation_participants(user_id,conversation_id,last_read_at) values('{user}','{conversation}',now()-interval '1 day')")
+    query(f"insert into public.notifications(user_id,type,related_id,created_at) values('{user}','dm','{conversation}',now()-interval '3 hours')")
+    rows = []
+    for suffix in ('a', 'b'):
+        payload = json.dumps({"category": "transactional", "from": "hello@queer.guide",
+                              "to": f"{user}@example.invalid", "subject": "Unread", "html": "<p>Open app</p>", "text": "Open app", "headers": {}})
+        outbox = query(f"select (public.email_enqueue('{user}-{suffix}','{user}@example.invalid','{payload}','dm_digest',null,'{user}')).id")
+        lease = query(f"select lease_id from public.email_claim(1,'{outbox}')")
+        assert re.fullmatch(r"[a-f0-9-]{36}", lease), lease
+        rows.append((outbox, lease))
+    connection = subprocess.Popen(psql, stdin=subprocess.PIPE, stdout=subprocess.PIPE,
+                                  stderr=subprocess.PIPE, bufsize=0)
+    connection.stdin.write((f"begin;\nselect public.email_dispatch_authorize('{rows[0][0]}','{rows[0][1]}');\n\\echo READY\n").encode())
+    connection.stdin.flush()
+    assert "t" in barrier(connection)
+    competing = subprocess.Popen(psql + ["-c", f"select public.email_dispatch_authorize('{rows[1][0]}','{rows[1][1]}')"],
+                                 stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+    # B cannot pass the unique reservation while A's transaction is still open.
+    time.sleep(0.2)
+    assert competing.poll() is None, "Competing authorization bypassed the open reservation"
+    connection.stdin.write(b"commit;\n\\q\n")
+    connection.stdin.flush()
+    connection.wait(timeout=5)
+    output, errors = competing.communicate(timeout=10)
+    assert competing.returncode == 0, errors
+    assert output.strip() == "f", "Both identities acquired the daily delivery budget"
+    assert query(f"select public.email_dispatch_authorize('{rows[0][0]}','{rows[0][1]}')") == "t", "Same-identity replay lost its reservation"
+    print("Overlapping activity authorizations passed: one daily budget, same-identity retries allowed.")
 finally:
+    if competing and competing.poll() is None:
+        competing.kill()
+        competing.wait(timeout=5)
     if connection and connection.poll() is None:
         connection.kill()
         connection.wait(timeout=5)
+    query(f"delete from public.conversations where id='{conversation}'")
     for user in users:
+        query(f"delete from public.profiles where user_id='{user}'")
         query(f"delete from auth.users where id='{user}'")
     if journey:
         query(f"delete from public.email_journeys where id='{journey}'")

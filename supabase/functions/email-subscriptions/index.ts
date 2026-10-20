@@ -60,7 +60,15 @@ Deno.serve(async (req: Request) => {
         "status,topics,locale,confirmed_at",
       ).eq("user_id", user.id).maybeSingle();
       if (error) throw error;
-      return jsonResponse({ subscription: data }, 200, req);
+      const preferences = await db.rpc("email_delivery_preferences_get", {
+        p_user: user.id,
+      });
+      if (preferences.error) throw preferences.error;
+      return jsonResponse(
+        { subscription: data, delivery_preferences: preferences.data },
+        200,
+        req,
+      );
     }
     if (req.method !== "POST") {
       return jsonResponse({ error: "Method not allowed" }, 405, req);
@@ -69,9 +77,58 @@ Deno.serve(async (req: Request) => {
     if (raw.length > 4000) {
       return jsonResponse({ error: "Request too large" }, 413, req);
     }
-    const body = JSON.parse(raw);
+    let body;
+    try {
+      body = JSON.parse(raw);
+    } catch {
+      return jsonResponse({ error: "Invalid request" }, 400, req);
+    }
+    if (body?.action === "delivery_preferences") {
+      if (!user) {
+        return jsonResponse({ error: "Authentication required" }, 401, req);
+      }
+      if (
+        typeof body.dm_digest_enabled !== "boolean" ||
+        typeof body.quiet_hours_enabled !== "boolean" ||
+        typeof body.timezone !== "string" || body.timezone.length > 100 ||
+        !Number.isInteger(body.quiet_start) ||
+        !Number.isInteger(body.quiet_end) ||
+        !Number.isInteger(body.version) || body.version < 0
+      ) {
+        return jsonResponse(
+          { error: "Invalid delivery preferences" },
+          400,
+          req,
+        );
+      }
+      const saved = await db.rpc("email_delivery_preferences_save", {
+        p_user: user.id,
+        p_enabled: body.dm_digest_enabled,
+        p_timezone: body.timezone,
+        p_quiet: body.quiet_hours_enabled,
+        p_start: body.quiet_start,
+        p_end: body.quiet_end,
+        p_version: body.version,
+      });
+      if (saved.error?.code === "40001") {
+        return jsonResponse(
+          { error: "Preferences changed. Reload and retry." },
+          409,
+          req,
+        );
+      }
+      if (saved.error?.code === "22023") {
+        return jsonResponse(
+          { error: "Invalid delivery preferences" },
+          400,
+          req,
+        );
+      }
+      if (saved.error) throw saved.error;
+      return jsonResponse({ delivery_preferences: saved.data }, 200, req);
+    }
     if (
-      !validTopics(body.topics) || typeof body.locale !== "string" ||
+      !body || !validTopics(body.topics) || typeof body.locale !== "string" ||
       !/^[a-z]{2}(?:-[A-Za-z]{2,8})?$/.test(body.locale)
     ) return jsonResponse({ error: "Invalid preferences" }, 400, req);
     if (body.action === "preferences") {

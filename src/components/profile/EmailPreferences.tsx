@@ -14,10 +14,28 @@ interface Subscription {
   topics: string[];
   locale: string;
 }
+interface DeliveryPreferences {
+  dm_digest_enabled: boolean;
+  timezone: string;
+  quiet_hours_enabled: boolean;
+  quiet_start: number;
+  quiet_end: number;
+  version: number;
+}
+const defaultDelivery: DeliveryPreferences = {
+  dm_digest_enabled: false,
+  timezone: 'Etc/UTC',
+  quiet_hours_enabled: false,
+  quiet_start: 22,
+  quiet_end: 8,
+  version: 0,
+};
 export function EmailPreferences() {
   const { t, i18n } = useTranslation();
   const [subscription, setSubscription] = useState<Subscription | null>(null),
     [selected, setSelected] = useState<string[]>([]);
+  const [delivery, setDelivery] = useState<DeliveryPreferences>(defaultDelivery);
+  const [deliveryConflict, setDeliveryConflict] = useState(false);
   const [loading, setLoading] = useState(true),
     [error, setError] = useState(false),
     [busy, setBusy] = useState(false),
@@ -27,6 +45,8 @@ export function EmailPreferences() {
       const r = await supabase.functions.invoke('email-subscriptions', { method: 'GET' });
       if (r.error) throw r.error;
       setSubscription(r.data.subscription);
+      setDelivery(r.data.delivery_preferences ?? defaultDelivery);
+      setDeliveryConflict(false);
       setSelected(r.data.subscription?.topics ?? []);
       setError(false);
     } catch {
@@ -64,6 +84,26 @@ export function EmailPreferences() {
       setBusy(false);
     }
   }
+  async function saveDelivery() {
+    setBusy(true);
+    try {
+      const r = await supabase.functions.invoke('email-subscriptions', {
+        body: { action: 'delivery_preferences', ...delivery },
+      });
+      if (r.error) {
+        if (r.error.context?.status === 409) setDeliveryConflict(true);
+        throw r.error;
+      }
+      setDelivery(r.data.delivery_preferences);
+      toast.success(t('emailPreferences.saved', 'Email preferences saved'));
+    } catch {
+      toast.error(
+        t('emailPreferences.saveError', 'Could not save email preferences. Please retry.'),
+      );
+    } finally {
+      setBusy(false);
+    }
+  }
   return (
     <section
       aria-labelledby="email-preferences-heading"
@@ -76,7 +116,7 @@ export function EmailPreferences() {
         <p className="text-sm text-muted-foreground">
           {t(
             'emailPreferences.description',
-            'Choose the updates you want. Account and service emails are handled separately.',
+            'Choose your activity emails and updates. Essential account and service emails remain available.',
           )}
         </p>
       </div>
@@ -92,7 +132,105 @@ export function EmailPreferences() {
       ) : (
         <>
           <fieldset disabled={busy} className="space-y-4">
-            <legend className="sr-only">{t('emailPreferences.topics', 'Email topics')}</legend>
+            <legend className="font-medium">
+              {t('emailPreferences.activity', 'Message activity')}
+            </legend>
+            <div className="flex min-h-10 items-center gap-4">
+              <input
+                id="email-dm-digest"
+                type="checkbox"
+                checked={delivery.dm_digest_enabled}
+                onChange={(e) => setDelivery({ ...delivery, dm_digest_enabled: e.target.checked })}
+              />
+              <Label htmlFor="email-dm-digest">
+                {t('emailPreferences.dmDigest', 'Email me a daily unread-message digest')}
+              </Label>
+            </div>
+            <p className="text-sm text-muted-foreground">
+              {t(
+                'emailPreferences.dmPrivacy',
+                'Push notifications are controlled separately. Message text and sender names stay in the app.',
+              )}
+            </p>
+            <div className="flex min-h-10 items-center gap-4">
+              <input
+                id="email-quiet-hours"
+                type="checkbox"
+                checked={delivery.quiet_hours_enabled}
+                onChange={(e) =>
+                  setDelivery({ ...delivery, quiet_hours_enabled: e.target.checked })
+                }
+              />
+              <Label htmlFor="email-quiet-hours">
+                {t('emailPreferences.quietHours', 'Hold message digests during quiet hours')}
+              </Label>
+            </div>
+            <div className="grid gap-4 sm:grid-cols-3">
+              <div className="space-y-2">
+                <Label htmlFor="email-timezone">
+                  {t('emailPreferences.timezone', 'Time zone')}
+                </Label>
+                <input
+                  id="email-timezone"
+                  className="h-10 w-full rounded-element border border-input bg-background px-4 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  value={delivery.timezone}
+                  maxLength={100}
+                  placeholder="Europe/Zurich"
+                  onChange={(e) => setDelivery({ ...delivery, timezone: e.target.value })}
+                />
+              </div>
+              {(['quiet_start', 'quiet_end'] as const).map((field) => (
+                <div key={field} className="space-y-2">
+                  <Label htmlFor={`email-${field}`}>
+                    {field === 'quiet_start'
+                      ? t('emailPreferences.quietStart', 'Quiet hours start')
+                      : t('emailPreferences.quietEnd', 'Quiet hours end')}
+                  </Label>
+                  <select
+                    id={`email-${field}`}
+                    disabled={!delivery.quiet_hours_enabled}
+                    className="h-10 w-full rounded-element border border-input bg-background px-4 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    value={delivery[field]}
+                    onChange={(e) => setDelivery({ ...delivery, [field]: Number(e.target.value) })}
+                  >
+                    {Array.from({ length: 24 }, (_, hour) => (
+                      <option key={hour} value={hour}>
+                        {String(hour).padStart(2, '0')}:00
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              ))}
+            </div>
+            <Button
+              disabled={
+                busy ||
+                deliveryConflict ||
+                !delivery.timezone.trim() ||
+                (delivery.quiet_hours_enabled && delivery.quiet_start === delivery.quiet_end)
+              }
+              onClick={() => void saveDelivery()}
+            >
+              {t('emailPreferences.saveDelivery', 'Save message email settings')}
+            </Button>
+          </fieldset>
+          {deliveryConflict && (
+            <div role="alert" className="space-y-2">
+              <p>
+                {t(
+                  'emailPreferences.conflict',
+                  'These settings changed in another session. Reload before saving.',
+                )}
+              </p>
+              <Button variant="outline" disabled={busy} onClick={() => void load()}>
+                {t('emailPreferences.reload', 'Reload email settings')}
+              </Button>
+            </div>
+          )}
+          <fieldset disabled={busy} className="space-y-4">
+            <legend className="font-medium">
+              {t('emailPreferences.topics', 'Newsletters and updates')}
+            </legend>
             {topics.map(([value, label]) => (
               <div key={value} className="flex min-h-10 items-center gap-4">
                 <input
@@ -126,7 +264,13 @@ export function EmailPreferences() {
             </p>
           )}
           <div className="flex flex-wrap gap-4">
-            <Button disabled={busy || selected.length === 0} onClick={() => void save()}>
+            <Button
+              disabled={
+                busy ||
+                (selected.length === 0 && (!subscription || subscription.status === 'unsubscribed'))
+              }
+              onClick={() => void save()}
+            >
               {busy
                 ? t('common.saving', 'Saving…')
                 : subscription && subscription.status !== 'unsubscribed'

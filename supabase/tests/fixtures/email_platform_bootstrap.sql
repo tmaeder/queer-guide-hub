@@ -42,3 +42,9 @@ begin
  update public.profiles set display_name='Deleted user' where user_id=p_user_id;
  return jsonb_build_object('anonymized',true);
 end $$;
+
+create table public.notifications(id uuid primary key default gen_random_uuid(),user_id uuid references auth.users(id) on delete cascade,type text,read boolean not null default false,related_id uuid,created_at timestamptz not null default now());
+create table public.conversations(id uuid primary key default gen_random_uuid());
+create table public.conversation_participants(id uuid primary key default gen_random_uuid(),conversation_id uuid references public.conversations(id) on delete cascade,user_id uuid references auth.users(id) on delete cascade,is_muted boolean default false,last_read_at timestamptz);
+create table public.push_sent(user_id uuid references auth.users(id) on delete cascade,kind text,day_bucket date);
+grant all on public.notifications,public.conversations,public.conversation_participants,public.push_sent to service_role;
