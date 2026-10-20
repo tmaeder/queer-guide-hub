@@ -3445,6 +3445,8 @@ export type Database = {
       }
       community_posts: {
         Row: {
+          at_cid: string | null
+          at_uri: string | null
           comments_count: number | null
           content: string
           created_at: string
@@ -3469,6 +3471,8 @@ export type Database = {
           visibility: string | null
         }
         Insert: {
+          at_cid?: string | null
+          at_uri?: string | null
           comments_count?: number | null
           content: string
           created_at?: string
@@ -3492,6 +3496,8 @@ export type Database = {
           visibility?: string | null
         }
         Update: {
+          at_cid?: string | null
+          at_uri?: string | null
           comments_count?: number | null
           content?: string
           created_at?: string
@@ -24226,6 +24232,27 @@ export type Database = {
           created_at?: string
           muted_id?: string
           muter_id?: string
+        }
+        Relationships: []
+      }
+      bluesky_identities: {
+        Row: {
+          did: string
+          handle: string
+          linked_at: string
+          user_id: string
+        }
+        Insert: {
+          did: string
+          handle: string
+          linked_at?: string
+          user_id: string
+        }
+        Update: {
+          did?: string
+          handle?: string
+          linked_at?: string
+          user_id?: string
         }
         Relationships: []
       }

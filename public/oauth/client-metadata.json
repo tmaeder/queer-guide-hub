@@ -1,0 +1,15 @@
+{
+  "client_id": "https://queer.guide/oauth/client-metadata.json",
+  "client_name": "Queer Guide",
+  "client_uri": "https://queer.guide",
+  "logo_uri": "https://queer.guide/icons/icon-192.png",
+  "tos_uri": "https://queer.guide/terms",
+  "policy_uri": "https://queer.guide/privacy",
+  "redirect_uris": ["https://queer.guide/oauth/callback"],
+  "scope": "atproto transition:generic",
+  "grant_types": ["authorization_code", "refresh_token"],
+  "response_types": ["code"],
+  "token_endpoint_auth_method": "none",
+  "application_type": "web",
+  "dpop_bound_access_tokens": true
+}
