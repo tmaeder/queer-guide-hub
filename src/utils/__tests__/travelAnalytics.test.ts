@@ -6,10 +6,15 @@ describe('trackTravelEvent', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    localStorage.setItem(
+      'queer-guide-cookie-consent',
+      JSON.stringify({ version: '1.0', preferences: { analytics: true } }),
+    );
     (window as unknown as Record<string, unknown>).umami = { track: mockTrack };
   });
 
   afterEach(() => {
+    localStorage.clear();
     delete (window as unknown as Record<string, unknown>).umami;
   });
 
@@ -52,7 +57,9 @@ describe('trackTravelEvent', () => {
   });
 
   it('should never throw even on internal error', () => {
-    mockTrack.mockImplementation(() => { throw new Error('boom'); });
+    mockTrack.mockImplementation(() => {
+      throw new Error('boom');
+    });
     expect(() => trackTravelEvent('booking_click', { id: '1' })).not.toThrow();
   });
 });

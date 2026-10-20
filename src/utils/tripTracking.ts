@@ -12,6 +12,7 @@
 
 import { supabase } from '@/integrations/supabase/client';
 import { insertTelemetry } from '@/lib/telemetryInsert';
+import { trackConsentedEvent } from '@/utils/consentedAnalytics';
 
 type TripEventName =
   // Trip lifecycle
@@ -41,16 +42,11 @@ type TripEventName =
 
 type EventData = Record<string, string | number | boolean | null | undefined>;
 
-type UmamiTracker = { track?: (event: string, data: Record<string, string>) => void };
-
 function trackUmami(event: string, data?: EventData): void {
   try {
     if (import.meta.env.DEV) {
       console.debug(`[trip:${event}]`, data ?? '');
     }
-    const umami = (window as unknown as Record<string, unknown>).umami as UmamiTracker | undefined;
-    if (!umami?.track) return;
-
     const safe: Record<string, string> = {
       device:
         typeof window !== 'undefined' &&
@@ -70,7 +66,7 @@ function trackUmami(event: string, data?: EventData): void {
         if (v !== undefined && v !== null) safe[k] = String(v);
       }
     }
-    umami.track(event, safe);
+    trackConsentedEvent(event, safe);
   } catch {
     // Never let analytics break the app
   }

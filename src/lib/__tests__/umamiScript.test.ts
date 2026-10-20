@@ -31,7 +31,6 @@ function go(url: string) {
 }
 
 function loadTracker() {
-   
   new Function(source)();
 }
 
@@ -213,6 +212,16 @@ describe('public/umami.js — custom events', () => {
     const sent = beacons();
     expect(sent).toHaveLength(2);
     expect(sent[0].body.name).toBe('travel_deal_click');
+    expect(fetchMock.mock.calls[0]?.[1]).toEqual(expect.objectContaining({ keepalive: true }));
+  });
+
+  it('announces when the tracker is ready', () => {
+    const ready = vi.fn();
+    window.addEventListener('qgAnalyticsReady', ready, { once: true });
+
+    loadTracker();
+
+    expect(ready).toHaveBeenCalledTimes(1);
   });
 
   it('refuses custom events under Do Not Track too', () => {

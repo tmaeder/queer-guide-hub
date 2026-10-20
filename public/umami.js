@@ -101,6 +101,7 @@
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
+      keepalive: true,
     }).catch(function () {});
   };
 
@@ -127,4 +128,5 @@
   }
 
   window.umami = { track: track };
+  window.dispatchEvent(new Event('qgAnalyticsReady'));
 })();
