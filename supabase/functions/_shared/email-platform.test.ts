@@ -1,5 +1,10 @@
+import { parseTripInvitationRequest } from "./email-trip-invitation.ts";
 import { parseGroupMentionRequest } from "./email-group-mention.ts";
-import { groupMentionEmail, unreadMessageEmail } from "./email-activity.ts";
+import {
+  groupMentionEmail,
+  tripInvitationEmail,
+  unreadMessageEmail,
+} from "./email-activity.ts";
 import {
   assertEquals,
   assertNotEquals,
@@ -114,4 +119,48 @@ Deno.test("group mentions keep names, private content and source identities out 
   assertEquals(message.html.includes("https://queer.guide/hub/groups"), true);
   assertEquals(message.html.includes("post_id"), false);
   assertEquals(message.text.includes("settings?section=account"), true);
+});
+
+Deno.test("trip invitation requests never accept an actor, recipient address or caller-authored content", () => {
+  const id = "a6666666-0000-4000-8000-000000000001";
+  assertEquals(
+    parseTripInvitationRequest({
+      action: "create",
+      trip_id: id,
+      username: "member",
+      role: "viewer",
+    })?.action,
+    "create",
+  );
+  assertEquals(
+    parseTripInvitationRequest({
+      action: "respond",
+      invitation_id: id,
+      decision: "accept",
+    })?.action,
+    "respond",
+  );
+  for (
+    const body of [
+      { action: "create", trip_id: id, username: "member", role: "owner" },
+      {
+        action: "create",
+        trip_id: id,
+        username: "member",
+        role: "viewer",
+        actor_id: id,
+      },
+      { action: "respond", invitation_id: id, decision: "accept", user_id: id },
+      { action: "tick", recipient: "other@example.com" },
+      { action: "tick", html: "<p>private</p>" },
+      { action: "respond", invitation_id: "bad", decision: "accept" },
+    ]
+  ) assertEquals(parseTripInvitationRequest(body), null);
+  const email = tripInvitationEmail();
+  assertEquals(email.subject, "New trip invitation on Queer Guide");
+  assertEquals(
+    email.html.includes("https://queer.guide/trips/invitations"),
+    true,
+  );
+  assertEquals(email.text.includes(id), false);
 });

@@ -67,3 +67,9 @@ alter table public.admin_automations enable row level security;
 alter table public.workflow_definitions enable row level security;
 grant all on public.admin_automations,public.workflow_definitions to service_role;
 insert into public.workflow_definitions(name,description,edge_function,default_payload) values('send-group-notifications','Legacy provider','send-group-notifications','{}');
+
+create table public.trips(id uuid primary key default gen_random_uuid(),owner_id uuid references auth.users(id) on delete cascade,title text not null default 'Private trip',status text not null default 'planning');
+create function auth.uid() returns uuid language sql stable as $$ select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid; $$;
+grant usage on schema auth to authenticated;
+grant execute on function auth.uid() to service_role,authenticated;
+grant all on public.trips to service_role;

@@ -30,3 +30,15 @@ export function groupMentionEmail() {
       `You were mentioned in a group post. Open ${inbox} to read it. Email settings: ${preferences}`,
   };
 }
+
+export function tripInvitationEmail() {
+  const review = "https://queer.guide/trips/invitations",
+    preferences = "https://queer.guide/settings?section=account";
+  return {
+    subject: "New trip invitation on Queer Guide",
+    html:
+      `<h2>You have a trip invitation</h2><p>Sign in to review the invitation and choose whether to join.</p><p><a href="${review}">Review invitations</a></p><p>You receive this because trip invitation emails are on. <a href="${preferences}">Change email settings</a>.</p>`,
+    text:
+      `You have a trip invitation. Sign in to review it at ${review} and choose whether to join. Email settings: ${preferences}`,
+  };
+}

@@ -17,6 +17,7 @@ interface Subscription {
 interface DeliveryPreferences {
   dm_digest_enabled: boolean;
   group_mentions_enabled: boolean;
+  trip_invites_enabled: boolean;
   timezone: string;
   quiet_hours_enabled: boolean;
   quiet_start: number;
@@ -26,6 +27,7 @@ interface DeliveryPreferences {
 const defaultDelivery: DeliveryPreferences = {
   dm_digest_enabled: false,
   group_mentions_enabled: false,
+  trip_invites_enabled: false,
   timezone: 'Etc/UTC',
   quiet_hours_enabled: false,
   quiet_start: 22,
@@ -164,16 +166,29 @@ export function EmailPreferences() {
                 )}
               </Label>
             </div>
+            <div className="flex min-h-10 items-center gap-4">
+              <input
+                id="email-trip-invites"
+                type="checkbox"
+                checked={delivery.trip_invites_enabled}
+                onChange={(e) =>
+                  setDelivery({ ...delivery, trip_invites_enabled: e.target.checked })
+                }
+              />
+              <Label htmlFor="email-trip-invites">
+                {t('emailPreferences.tripInvites', 'Email me when I receive a trip invitation')}
+              </Label>
+            </div>
             <p className="text-sm text-muted-foreground">
               {t(
                 'emailPreferences.dmPrivacy',
-                'Push notifications are controlled separately. Message text, group names and sender names stay in the app.',
+                'Push notifications are controlled separately. Message text, group names and trip details stay in the app.',
               )}
             </p>
             <p className="text-sm text-muted-foreground">
               {t(
                 'emailPreferences.activityBudget',
-                'Message digests and group mentions share a limit of one activity email per UTC day. Essential account emails remain available.',
+                'Message digests, group mentions and trip invitations share a limit of one activity email per UTC day. Essential account emails remain available.',
               )}
             </p>
             <div className="flex min-h-10 items-center gap-4">

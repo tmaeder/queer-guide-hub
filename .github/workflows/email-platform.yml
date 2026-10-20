@@ -7,6 +7,7 @@ on:
       - 'supabase/functions/send-username-reminder/**'
       - 'supabase/functions/dm-digest/**'
       - 'supabase/functions/send-group-notifications/**'
+      - 'supabase/functions/trip-invitations/**'
       - 'supabase/config.toml'
       - 'supabase/functions/reply-to-feedback/**'
       - 'supabase/functions/notify-feedback-status/**'
@@ -23,6 +24,7 @@ on:
       - 'supabase/migrations/*email_platform_journeys.sql'
       - 'supabase/migrations/*email_platform_policy.sql'
       - 'supabase/migrations/*email_platform_groups.sql'
+      - 'supabase/migrations/*email_platform_trip_invitations.sql'
       - 'supabase/tests/email_platform.sql'
       - 'supabase/tests/email_platform_privacy.sql'
       - 'supabase/tests/email_platform_segments.sql'
@@ -30,8 +32,17 @@ on:
       - 'supabase/tests/email_platform_journeys.sql'
       - 'supabase/tests/email_platform_policy.sql'
       - 'supabase/tests/email_platform_groups.sql'
+      - 'supabase/tests/email_platform_trip_invitations.sql'
       - 'supabase/tests/email_journey_concurrency.py'
       - 'supabase/tests/fixtures/email_platform_bootstrap.sql'
+      - 'src/components/trips/TripInviteControls.tsx'
+      - 'src/components/trips/ShareTripDialog.tsx'
+      - 'src/pages/trips/TripInvitationsPage.tsx'
+      - 'src/components/trips/__tests__/TripInvitations.test.tsx'
+      - 'src/lib/tripInvitations.ts'
+      - 'src/lib/queryKeys.ts'
+      - 'src/routes.tsx'
+      - 'src/components/hub/TripsStrip.tsx'
       - 'src/components/profile/EmailPreferences.tsx'
       - 'src/components/profile/__tests__/EmailPreferences.test.tsx'
       - 'package.json'
@@ -73,11 +84,11 @@ jobs:
           npm run typecheck
           npm run dry-run
       - name: Member preferences
-        run: npx vitest run src/components/profile/__tests__/EmailPreferences.test.tsx
+        run: npx vitest run src/components/profile/__tests__/EmailPreferences.test.tsx src/components/trips/__tests__/TripInvitations.test.tsx
       - name: Backend contracts
         run: |
           deno test --no-config --allow-env supabase/functions/_shared/email-platform.test.ts supabase/functions/_shared/email-render.test.ts supabase/functions/_shared/email-outbox.test.ts supabase/functions/_shared/email-journey-worker.test.ts
-          deno check --no-config supabase/functions/email-admin/index.ts supabase/functions/email-subscriptions/index.ts supabase/functions/email-dispatch/index.ts supabase/functions/cloudflare-email-events/index.ts supabase/functions/email-journeys/index.ts supabase/functions/send-welcome-email/index.ts supabase/functions/dm-digest/index.ts supabase/functions/send-group-notifications/index.ts
+          deno check --no-config supabase/functions/email-admin/index.ts supabase/functions/email-subscriptions/index.ts supabase/functions/email-dispatch/index.ts supabase/functions/cloudflare-email-events/index.ts supabase/functions/email-journeys/index.ts supabase/functions/send-welcome-email/index.ts supabase/functions/dm-digest/index.ts supabase/functions/send-group-notifications/index.ts supabase/functions/trip-invitations/index.ts
       - name: Schema, consent, outbox and access contracts
         env:
           PGHOST: localhost
@@ -94,6 +105,7 @@ jobs:
           psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261020201344_email_platform_journeys.sql
           psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261020204500_email_platform_policy.sql
           psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261020211000_email_platform_groups.sql
+          psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261020214000_email_platform_trip_invitations.sql
           psql -v ON_ERROR_STOP=1 -f supabase/tests/email_platform.sql
           psql -v ON_ERROR_STOP=1 -f supabase/tests/email_platform_privacy.sql
           psql -v ON_ERROR_STOP=1 -f supabase/tests/email_platform_segments.sql
@@ -101,4 +113,5 @@ jobs:
           psql -v ON_ERROR_STOP=1 -f supabase/tests/email_platform_journeys.sql
           psql -v ON_ERROR_STOP=1 -f supabase/tests/email_platform_policy.sql
           psql -v ON_ERROR_STOP=1 -f supabase/tests/email_platform_groups.sql
+          psql -v ON_ERROR_STOP=1 -f supabase/tests/email_platform_trip_invitations.sql
           QG_EMAIL_CONTRACTS=1 python3 supabase/tests/email_journey_concurrency.py

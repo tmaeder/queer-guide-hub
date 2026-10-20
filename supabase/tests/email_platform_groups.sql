@@ -98,6 +98,7 @@ begin
  p:=public.email_delivery_preferences_save(u,false,'Etc/UTC',false,22,8,3,false);
  perform public.email_claim(1,o.id);
  assert (select status='suppressed' from public.email_outbox where id=o.id),'group opt-out ignored';
+ assert (select email_cancelled from public.email_group_mentions where id=event),'group opt-out did not cancel source';
  legacy:=public.email_enqueue('group-legacy','group-member@example.com',jsonb_set(payload,'{from}','"Community Groups <noreply@queer.guide>"'),null,null,u);
  perform public.email_claim(1,legacy.id);
  assert (select status='suppressed' from public.email_outbox where id=legacy.id),'legacy unproved content remained sendable';

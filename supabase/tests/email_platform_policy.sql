@@ -84,7 +84,7 @@ begin
  assert not public.email_dispatch_authorize(second.id,lease),'opt-out after claim ignored';
  -- Keep a live lease intact so an already submitted receipt can be recorded.
  perform public.email_claim(1,second.id);
- assert (select status='processing' from public.email_outbox where id=second.id);
+ assert (select status='processing' and activity_cancelled_at is not null from public.email_outbox where id=second.id);
  update public.email_outbox set leased_until=now()-interval '1 second' where id=second.id;
  perform public.email_claim(1,second.id);
  assert (select status='suppressed' and last_error='activity_email_disabled' from public.email_outbox where id=second.id);
@@ -105,7 +105,7 @@ begin
  exception when invalid_parameter_value then null; end;
  assert not has_table_privilege('authenticated','public.email_delivery_preferences','select');
  assert not has_table_privilege('anon','public.email_activity_reservations','select');
- assert not has_function_privilege('authenticated','public.email_delivery_preferences_save(uuid,boolean,text,boolean,integer,integer,integer,boolean)','execute');
+ assert not has_function_privilege('authenticated','public.email_delivery_preferences_save(uuid,boolean,text,boolean,integer,integer,integer,boolean,boolean)','execute');
  assert not has_function_privilege('anon','public.dm_digest_candidates(integer)','execute');
 end $$;
 reset role;

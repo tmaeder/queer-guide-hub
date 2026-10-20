@@ -42,6 +42,7 @@ connection = None
 competing = None
 conversation = str(uuid.uuid4())
 group = str(uuid.uuid4())
+trip = str(uuid.uuid4())
 try:
     # Control steps only: no send action or real recipient address is used.
     graph = '{"start":"wait","steps":{"wait":{"type":"wait","seconds":60,"next":"end"},"end":{"type":"end"}}}'
@@ -125,6 +126,68 @@ try:
     assert output.strip() == "f", "Both identities acquired the daily delivery budget"
     assert query(f"select public.email_dispatch_authorize('{rows[0][0]}','{rows[0][1]}')") == "t", "Same-identity replay lost its reservation"
     print("Overlapping DM/group authorizations passed: one shared daily budget, same-identity retries allowed.")
+    # Keep sender erasure open while a concurrent post attempts to create a
+    # new mention source. After the scrub commits, capture must remain disabled.
+    connection = subprocess.Popen(psql, stdin=subprocess.PIPE, stdout=subprocess.PIPE,
+                                  stderr=subprocess.PIPE, bufsize=0)
+    connection.stdin.write((f"begin;\nselect public.email_erase_account('{users[1]}');\n\\echo READY\n").encode())
+    connection.stdin.flush()
+    barrier(connection)
+    competing = subprocess.Popen(psql + ["-c", f"insert into public.group_posts(group_id,user_id,mentions,content) values('{group}','{users[1]}','{mentions}','Concurrent private fixture')"],
+                                 stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+    time.sleep(0.2)
+    assert competing.poll() is None, "Source capture bypassed the sender erasure barrier"
+    connection.stdin.write(b"commit;\n\\q\n")
+    connection.stdin.flush()
+    connection.wait(timeout=5)
+    output, errors = competing.communicate(timeout=10)
+    assert competing.returncode == 0, errors
+    assert query(f"select count(*) from public.email_group_mentions where actor_user_id='{users[1]}'") == "0", "Source reappeared after sender erasure"
+    print("Sender-erasure race passed: concurrent source capture cannot recreate erased metadata.")
+    # Invitation creation and responses derive actors from the edge boundary;
+    # here service RPCs exercise the same row/account locking on disposable users.
+    inviter = users[2]
+    username = 'contract_' + uuid.uuid4().hex[:16]
+    query(f"update public.profiles set username='{username}' where user_id='{user}'")
+    query(f"select public.email_delivery_preferences_save('{user}',true,'Etc/UTC',false,22,8,2,true,true)")
+    query(f"insert into public.trips(id,owner_id) values('{trip}','{inviter}')")
+    query(f"insert into public.trip_members(trip_id,user_id,role,accepted_at) values('{trip}','{inviter}','owner',now())")
+    invitation = query(f"select public.trip_invitation_create('{inviter}','{trip}','{username}','viewer')")
+    trip_payload = json.dumps({"category":"transactional","from":"hello@queer.guide","to":f"{user}@example.invalid","subject":"Trip invitation","html":"<p>Sign in to review</p>","text":"Sign in to review","headers":{}})
+    trip_outbox = query(f"select (public.email_trip_invitation_enqueue('{invitation}','{trip_payload}')).id")
+    assert query(f"select public.email_activity_message_reason('{trip_outbox}')") == 'activity_daily_budget', "Trip invitation bypassed the DM/group daily budget"
+    connection = subprocess.Popen(psql, stdin=subprocess.PIPE, stdout=subprocess.PIPE,
+                                  stderr=subprocess.PIPE, bufsize=0)
+    connection.stdin.write((f"begin;\nselect public.trip_invitation_respond('{user}','{invitation}','accept');\n\\echo READY\n").encode())
+    connection.stdin.flush()
+    barrier(connection)
+    competing = subprocess.Popen(psql + ["-c",f"select public.trip_invitation_revoke('{inviter}','{invitation}')"],stdout=subprocess.PIPE,stderr=subprocess.PIPE,text=True)
+    time.sleep(0.2)
+    assert competing.poll() is None, "Revocation bypassed an in-flight acceptance"
+    connection.stdin.write(b"commit;\n\\q\n")
+    connection.stdin.flush()
+    connection.wait(timeout=5)
+    output, errors = competing.communicate(timeout=10)
+    assert competing.returncode == 0 and output.strip() == 'f', errors
+    assert query(f"select accepted_at is not null from public.trip_members where trip_id='{trip}' and user_id='{user}'") == 't', "Revocation removed accepted access"
+    print("Acceptance/revocation race passed: the losing revoke cannot remove accepted access.")
+    query(f"delete from public.trip_members where trip_id='{trip}' and user_id='{user}'")
+    invitation = query(f"select public.trip_invitation_create('{inviter}','{trip}','{username}','viewer')")
+    connection = subprocess.Popen(psql, stdin=subprocess.PIPE, stdout=subprocess.PIPE,
+                                  stderr=subprocess.PIPE, bufsize=0)
+    connection.stdin.write((f"begin;\nselect public.email_erase_account('{inviter}');\n\\echo READY\n").encode())
+    connection.stdin.flush()
+    barrier(connection)
+    competing = subprocess.Popen(psql + ["-c",f"select public.trip_invitation_respond('{user}','{invitation}','accept')"],stdout=subprocess.PIPE,stderr=subprocess.PIPE,text=True)
+    time.sleep(0.2)
+    assert competing.poll() is None, "Acceptance bypassed the inviter erasure barrier"
+    connection.stdin.write(b"commit;\n\\q\n")
+    connection.stdin.flush()
+    connection.wait(timeout=5)
+    output, errors = competing.communicate(timeout=10)
+    assert competing.returncode != 0 and 'invitation_unavailable' in errors, errors
+    assert query(f"select accepted_at is null from public.trip_members where trip_id='{trip}' and user_id='{user}'") == 't', "Erased inviter still granted access"
+    print("Invitation erasure race passed: a concurrent acceptance cannot grant stale access.")
 finally:
     if competing and competing.poll() is None:
         competing.kill()
@@ -132,6 +195,8 @@ finally:
     if connection and connection.poll() is None:
         connection.kill()
         connection.wait(timeout=5)
+    query(f"delete from public.trip_members where trip_id='{trip}'")
+    query(f"delete from public.trips where id='{trip}'")
     query(f"delete from public.community_groups where id='{group}'")
     query(f"delete from public.conversations where id='{conversation}'")
     for user in users:

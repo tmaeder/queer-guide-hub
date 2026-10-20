@@ -89,6 +89,8 @@ Deno.serve(async (req: Request) => {
       }
       if (
         typeof body.dm_digest_enabled !== "boolean" ||
+        (body.trip_invites_enabled !== undefined &&
+          typeof body.trip_invites_enabled !== "boolean") ||
         (body.group_mentions_enabled !== undefined &&
           typeof body.group_mentions_enabled !== "boolean") ||
         typeof body.quiet_hours_enabled !== "boolean" ||
@@ -107,6 +109,7 @@ Deno.serve(async (req: Request) => {
         p_user: user.id,
         p_enabled: body.dm_digest_enabled,
         p_group_enabled: body.group_mentions_enabled ?? null,
+        p_trip_enabled: body.trip_invites_enabled ?? null,
         p_timezone: body.timezone,
         p_quiet: body.quiet_hours_enabled,
         p_start: body.quiet_start,

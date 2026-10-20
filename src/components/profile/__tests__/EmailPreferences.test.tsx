@@ -19,6 +19,7 @@ beforeEach(() => {
 const delivery = {
   dm_digest_enabled: false,
   group_mentions_enabled: false,
+  trip_invites_enabled: false,
   timezone: 'Etc/UTC',
   quiet_hours_enabled: false,
   quiet_start: 22,
@@ -89,6 +90,31 @@ describe('account email preferences', () => {
     expect(
       screen.getByRole('checkbox', { name: 'Email me a daily unread-message digest' }),
     ).not.toBeChecked();
+  });
+  it('enables trip invitation email without enabling other activity mail', async () => {
+    api.invoke.mockImplementation((_name, options) =>
+      Promise.resolve({
+        data:
+          options?.method === 'GET'
+            ? { subscription: null, delivery_preferences: delivery }
+            : { delivery_preferences: { ...delivery, trip_invites_enabled: true, version: 1 } },
+        error: null,
+      }),
+    );
+    render(<EmailPreferences />);
+    fireEvent.click(
+      await screen.findByRole('checkbox', { name: 'Email me when I receive a trip invitation' }),
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'Save activity email settings' }));
+    await waitFor(() =>
+      expect(api.invoke).toHaveBeenCalledWith('email-subscriptions', {
+        body: {
+          action: 'delivery_preferences',
+          ...delivery,
+          trip_invites_enabled: true,
+        },
+      }),
+    );
   });
   it('requires a reload after a conflicting save', async () => {
     api.invoke.mockImplementation((_name, options) =>
