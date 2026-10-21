@@ -49,6 +49,7 @@ export type TripFacet =
   | 'email-turns'
   | 'inbox'
   | 'inbox-items'
+  | 'invitations'
   | 'journal'
   | 'local-context'
   | 'messages'
@@ -92,6 +93,7 @@ export const qk = {
 
     // ── Not trip-scoped: keyed by user or by query args, so they are lists in
     // their own right and must NOT hang off detail(tripId).
+    invitationsFor: (userId: Id) => [TRIP, 'invitations', id(userId)] as const,
     savesFor: (userId: Id) => [TRIP, 'saves', id(userId)] as const,
     documentsFor: (userId: Id) => [TRIP, 'documents', id(userId)] as const,
     templates: (month: number, homeCountryId: Id, homeCityId: Id) =>

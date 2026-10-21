@@ -22,9 +22,10 @@ Deno.serve(async (req: Request) => {
   if (auth instanceof Response) return auth;
   try {
     const config = await domainInstructionMailConfig(
-      Deno.env.get('RESEND_API_KEY') ?? '',
+      Deno.env.get('EMAIL_GATEWAY_SECRET') ?? '',
       Deno.env.get('REDIRECT_DOMAIN_EMAIL_FROM') ?? '',
       Deno.env.get('REDIRECT_CNAME_TARGET') ?? '',
+      Deno.env.get('EMAIL_GATEWAY_URL') ?? '',
     );
     return json(await dispatchDomainInstructionMail(db, config));
   } catch {

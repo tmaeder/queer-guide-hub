@@ -46,14 +46,15 @@ function runtime() {
             | 'SUPABASE_URL'
             | 'SUPABASE_SERVICE_ROLE_KEY'
             | 'INTERNAL_INVOKE_SECRET'
-            | 'RESEND_API_KEY',
+            | 'EMAIL_GATEWAY_SECRET',
         ) =>
           (
             ({
               SUPABASE_URL: 'https://fixture.supabase.co',
               SUPABASE_SERVICE_ROLE_KEY: 'fixture-service',
               INTERNAL_INVOKE_SECRET: 'fixture-internal',
-              RESEND_API_KEY: state.configured ? 'fixture-provider' : '',
+              EMAIL_GATEWAY_SECRET: state.configured ? 'fixture-provider' : '',
+              EMAIL_GATEWAY_URL: 'https://email-gateway.example.com',
             }) as Record<string, string>
           )[key],
       },

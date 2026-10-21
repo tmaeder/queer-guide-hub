@@ -385,7 +385,7 @@ Deno.serve(async (req: Request) => {
     const result=await db.rpc('redirect_domain_instruction_mail_action',{p_action:cancel?'cancel':'get',p_actor:user!.id,p_domain:domain,p_job:job});if(result.error)return rpcError(result.error);return json(result.data);
    }
    if(!['GET','POST'].includes(req.method))return json({error:'Method not supported'},405);
-   const config=await domainInstructionMailConfig(Deno.env.get('RESEND_API_KEY')??'',Deno.env.get('REDIRECT_DOMAIN_EMAIL_FROM')??'',Deno.env.get('REDIRECT_CNAME_TARGET')??'');
+   const config=await domainInstructionMailConfig(Deno.env.get('EMAIL_GATEWAY_SECRET')??'',Deno.env.get('REDIRECT_DOMAIN_EMAIL_FROM')??'',Deno.env.get('REDIRECT_CNAME_TARGET')??'',Deno.env.get('EMAIL_GATEWAY_URL')??'');
    if(!config)return json({error:'DNS instruction email is not configured'},503);
    const values=req.method==='POST'?instructionMailInput(await boundedJson(req,16384)):{};
    const result=await db.rpc('redirect_domain_instruction_mail_action',{p_action:req.method==='POST'?'queue':'draft',p_actor:user!.id,p_domain:domain,p_values:values,p_target:config.target});if(result.error)return rpcError(result.error);
@@ -442,7 +442,7 @@ Deno.serve(async (req: Request) => {
    else if(!id&&req.method==='POST'){action='create';values=domainInput(await boundedJson(req,16384),'create');}
    else if(id&&!endpoint&&req.method==='PATCH'){action='patch';values=domainInput(await boundedJson(req,16384),'patch');}
    else if(id&&!endpoint&&req.method==='DELETE'){action='delete';values=domainInput(await boundedJson(req,16384),'version');}else return json({error:'Method not supported'},405);
-   const result=await db.rpc('redirect_domain_resource',{p_action:action,p_actor:user!.id,p_id:id??null,p_values:values,p_limit:limit,p_after:after});if(result.error)return rpcError(result.error);return json(action==='list'?{...result.data,providerSetup:{configured:providerConfig!==null,cnameTarget:providerConfig?.cnameTarget??null},instructionMail:{configured:(await domainInstructionMailConfig(Deno.env.get('RESEND_API_KEY')??'',Deno.env.get('REDIRECT_DOMAIN_EMAIL_FROM')??'',Deno.env.get('REDIRECT_CNAME_TARGET')??''))!==null},dnsSetup:{configured:(await domainConnectConfig(Deno.env.get('REDIRECT_DOMAIN_CONNECT_PRIVATE_JWK')??'',Deno.env.get('REDIRECT_DOMAIN_CONNECT_KEY_LABEL')??'',Deno.env.get('REDIRECT_CNAME_TARGET')??''))!==null,cnameTarget:'links.queer.guide'}}:result.data,action==='create'?201:200);
+   const result=await db.rpc('redirect_domain_resource',{p_action:action,p_actor:user!.id,p_id:id??null,p_values:values,p_limit:limit,p_after:after});if(result.error)return rpcError(result.error);return json(action==='list'?{...result.data,providerSetup:{configured:providerConfig!==null,cnameTarget:providerConfig?.cnameTarget??null},instructionMail:{configured:(await domainInstructionMailConfig(Deno.env.get('EMAIL_GATEWAY_SECRET')??'',Deno.env.get('REDIRECT_DOMAIN_EMAIL_FROM')??'',Deno.env.get('REDIRECT_CNAME_TARGET')??'',Deno.env.get('EMAIL_GATEWAY_URL')??''))!==null},dnsSetup:{configured:(await domainConnectConfig(Deno.env.get('REDIRECT_DOMAIN_CONNECT_PRIVATE_JWK')??'',Deno.env.get('REDIRECT_DOMAIN_CONNECT_KEY_LABEL')??'',Deno.env.get('REDIRECT_CNAME_TARGET')??''))!==null,cnameTarget:'links.queer.guide'}}:result.data,action==='create'?201:200);
   }
   if (path === '/customers/profile' || path === '/customers/journey') {
     const read = req.method === 'GET';
