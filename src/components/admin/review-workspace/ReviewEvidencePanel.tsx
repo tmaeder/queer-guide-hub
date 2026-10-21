@@ -9,6 +9,8 @@ const FACTS = [
   'status',
   'address',
   'postal_code',
+  'latitude',
+  'longitude',
   'start_date',
   'end_date',
   'venue_name',
@@ -34,11 +36,16 @@ export function ReviewEvidencePanel({
   const meta = item.meta ?? {};
   const sources = reviewCitations(meta, record);
   const field = typeof meta.field === 'string' ? meta.field : null;
-  const image = reviewHttpUrl(
-    record?.cover_image_url ??
-      record?.logo_url ??
-      (Array.isArray(record?.images) ? record.images[0] : null),
-  );
+  const image =
+    [
+      record?.curated_image_url,
+      record?.cover_image_url,
+      record?.image_url,
+      record?.logo_url,
+      Array.isArray(record?.images) ? record.images[0] : null,
+    ]
+      .map(reviewHttpUrl)
+      .find((url): url is string => !!url) ?? null;
   return (
     <div className="mt-6 space-y-6">
       <section aria-label="Review question" className="bg-muted/40 p-4">

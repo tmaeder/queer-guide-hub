@@ -27,8 +27,8 @@ export function ReviewCleanupStatus() {
           </span>
         )}
         <p className="mt-1 text-muted-foreground">
-          Unsupported claims, obsolete findings, broken images and missing business contacts are
-          handled automatically. Remaining decisions need evidence or judgment.
+          Routine repairs run automatically. Evidence gaps go to research; blocked jobs remain
+          visible.
         </p>
       </div>
       <Link

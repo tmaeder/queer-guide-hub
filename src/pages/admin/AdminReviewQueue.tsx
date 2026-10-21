@@ -6,11 +6,10 @@ import {
   ChevronRight,
   Inbox,
   Keyboard,
-  ListFilter,
   RefreshCw,
   Search,
-  ShieldAlert,
-  Timer,
+  FlaskConical,
+  CircleAlert,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { TrackLoader } from '@/components/transit/TrackLoader';
@@ -27,6 +26,7 @@ import {
 } from '@/components/admin/triage/resolveDecision';
 import { ReviewCleanupStatus } from '@/components/admin/review-workspace/ReviewCleanupStatus';
 import { ReviewTaskDetail } from '@/components/admin/review-workspace/ReviewTaskDetail';
+import { ReviewCaseDetail } from '@/components/admin/review-workspace/ReviewCaseDetail';
 import {
   MERGE_REVIEW_SOURCES,
   TAG_REVIEW_SOURCES,
@@ -46,12 +46,18 @@ import {
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useDebounce } from '@/hooks/useDebounce';
 
-// 'decisions' is the DEFAULT, because this page is titled "Review queue" and its headline reads
-// "Pending decisions": 84% of the rows the union carries are machine detector output with no
-// decision available (admin_review_finding_codes), so defaulting to 'all' made the page claim
-// 335,495 pending decisions against 54,034 real ones. 'all' is still one click away and hides
-// nothing.
-const scopeOptions = ['all', 'decisions', 'safety', 'overdue', 'public'] as const;
+// Lead with independent, ready cases. Research, blocked jobs, raw decision rows
+// and the inclusive detector union remain separately reachable and labelled.
+const scopeOptions = [
+  'ready',
+  'research',
+  'blocked',
+  'all',
+  'decisions',
+  'safety',
+  'overdue',
+  'public',
+] as const;
 
 /**
  * Renders a count that may be absent, WITHOUT substituting a different one.
@@ -280,15 +286,30 @@ export default function AdminReviewQueue() {
           >
             {query.data ? (
               <>
-                <span className="tabular-nums">{fmtCount(summary!.decisions_total)}</span> decisions
-                · <span className="tabular-nums">{fmtCount(summary!.overdue_total)}</span> overdue ·{' '}
-                <span className="tabular-nums">{fmtCount(summary!.findings_total)}</span> detected
-                issues
+                <span className="tabular-nums">{fmtCount(summary!.ready_total)}</span> ready ·{' '}
+                <span className="tabular-nums">{fmtCount(summary!.research_total)}</span>{' '}
+                researching ·{' '}
+                <span className="tabular-nums">{fmtCount(summary!.blocked_total)}</span> blocked
               </>
             ) : (
-              'Loading pending decisions…'
+              'Loading review cases…'
             )}
           </p>
+          {summary && (!mobile || !selected) && (
+            <p className="mt-1 text-xs text-muted-foreground">
+              {fmtCount(summary.case_total)} cases from {fmtCount(summary.decisions_total)} source
+              tasks.{' '}
+              <button
+                className="underline underline-offset-4"
+                onClick={() => changeParams({ scope: 'decisions' })}
+              >
+                Inspect raw tasks
+              </button>
+              {summary.research_enabled === false && ' · Automatic research is paused.'}
+              {summary.worklist_as_of &&
+                ` · Updated ${new Date(summary.worklist_as_of).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`}
+            </p>
+          )}
         </div>
         <div className="flex items-center gap-2">
           {lastActed && (
@@ -325,89 +346,117 @@ export default function AdminReviewQueue() {
       </header>
       {(!mobile || !selected) && <ReviewCleanupStatus />}
       <div
-        className={`${mobile && selected ? 'hidden' : 'flex'} shrink-0 flex-col gap-4 border-b border-border px-4 py-4 md:px-6 xl:flex-row xl:items-center`}
+        className={`${mobile && selected ? 'hidden' : 'flex'} shrink-0 flex-col gap-4 border-b border-border px-4 py-4 md:px-6`}
       >
-        <div role="group" aria-label="Review scope" className="flex gap-1 overflow-x-auto">
-          {(
-            [
-              { key: 'decisions', label: 'Decisions', icon: Inbox },
-              { key: 'safety', label: 'High risk', icon: ShieldAlert },
-              { key: 'overdue', label: 'Overdue', icon: Timer },
-              { key: 'all', label: 'Incl. detected', icon: ListFilter },
-            ] as const
-          ).map(({ key, label, icon: Icon }) => (
-            <Button
-              key={key}
-              variant={filters.scope === key ? 'default' : 'ghost'}
-              size="sm"
-              aria-pressed={filters.scope === key}
-              className="min-h-10 shrink-0"
-              onClick={() => changeParams({ scope: key === DEFAULT_REVIEW_SCOPE ? null : key })}
-            >
-              <Icon size={14} className="mr-1.5" />
-              {label}
-              {query.data && (
-                <span className="ml-2 tabular-nums">
-                  {fmtCount(
-                    key === 'safety'
-                      ? summary!.safety_total
-                      : key === 'overdue'
-                        ? summary!.overdue_total
-                        : key === 'all'
-                          ? summary!.all_total
-                          : summary!.decisions_total,
-                  )}
-                </span>
-              )}
-            </Button>
-          ))}
-        </div>
-        <select
-          aria-label="Review type"
-          value={queue ?? (family ? `family:${family}` : 'all')}
-          className={`${selectClass} xl:max-w-64`}
-          onChange={(e) => {
-            const value = e.target.value;
-            changeParams({
-              queue: value.startsWith('family:') || value === 'all' ? null : value,
-              family: value.startsWith('family:') ? value.slice(7) : null,
-            });
-          }}
-        >
-          <option value="all">All review types</option>
-          <option value="family:tags">Tags & glossary</option>
-          <option value="family:merge">Duplicates & merges</option>
-          <option value="family:enrichment">AI & enrichment</option>
-          {summary?.sources
-            .filter((source) => source.count > 0 || source.key === queue)
-            .map((source) => (
-              <option key={source.key} value={source.key}>
-                {source.label} ({source.count.toLocaleString()})
-              </option>
+        <div className="flex min-w-0 flex-wrap items-center justify-between gap-4">
+          <div
+            role="group"
+            aria-label="Review scope"
+            className="flex min-w-0 gap-1 overflow-x-auto"
+          >
+            {(
+              [
+                { key: 'ready', label: 'Ready', icon: Inbox },
+                { key: 'research', label: 'Research', icon: FlaskConical },
+                { key: 'blocked', label: 'Blocked', icon: CircleAlert },
+              ] as const
+            ).map(({ key, label, icon: Icon }) => (
+              <Button
+                key={key}
+                variant={filters.scope === key ? 'default' : 'ghost'}
+                size="sm"
+                aria-pressed={filters.scope === key}
+                className="min-h-10 shrink-0"
+                onClick={() => changeParams({ scope: key === DEFAULT_REVIEW_SCOPE ? null : key })}
+              >
+                <Icon size={14} className="mr-1.5" />
+                {label}
+                {query.data && (
+                  <span className="ml-2 hidden tabular-nums sm:inline">
+                    {fmtCount(
+                      key === 'ready'
+                        ? summary!.ready_total
+                        : key === 'research'
+                          ? summary!.research_total
+                          : summary!.blocked_total,
+                    )}
+                  </span>
+                )}
+              </Button>
             ))}
-        </select>
-        <div className="relative min-w-0 flex-1">
-          <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            aria-label="Search review queue"
-            placeholder="Search names or review reasons"
-            className="h-10 pl-10"
-            value={search}
-            onChange={(e) => changeParams({ q: e.target.value || null })}
-          />
+          </div>
+          <select
+            aria-label="Source task scope"
+            className={`${selectClass} w-full sm:max-w-64`}
+            value={
+              ['all', 'decisions', 'safety', 'overdue', 'public'].includes(filters.scope)
+                ? filters.scope
+                : ''
+            }
+            onChange={(event) => changeParams({ scope: event.target.value })}
+          >
+            <option value="" disabled>
+              Inspect source tasks & findings
+            </option>
+            <option value="decisions">Raw decisions ({fmtCount(summary?.decisions_total)})</option>
+            <option value="safety">
+              High-risk source rows ({fmtCount(summary?.safety_total)})
+            </option>
+            <option value="overdue">
+              Overdue source rows ({fmtCount(summary?.overdue_total)})
+            </option>
+            <option value="all">All source rows & findings ({fmtCount(summary?.all_total)})</option>
+            <option value="public">Public-impact source rows</option>
+          </select>
         </div>
-        <select
-          aria-label="Sort review queue"
-          className={selectClass}
-          value={filters.sort}
-          onChange={(e) =>
-            changeParams({ sort: e.target.value === 'priority' ? null : e.target.value })
-          }
-        >
-          <option value="priority">Risk, then oldest</option>
-          <option value="age">Oldest first</option>
-          <option value="confidence">Lowest confidence</option>
-        </select>
+        <div className="grid min-w-0 grid-cols-1 gap-4 lg:grid-cols-[minmax(0,14rem)_minmax(0,1fr)_minmax(0,12rem)]">
+          <select
+            aria-label="Review type"
+            value={queue ?? (family ? `family:${family}` : 'all')}
+            className={`${selectClass} w-full`}
+            onChange={(e) => {
+              const value = e.target.value;
+              changeParams({
+                queue: value.startsWith('family:') || value === 'all' ? null : value,
+                family: value.startsWith('family:') ? value.slice(7) : null,
+              });
+            }}
+          >
+            <option value="all">All review types</option>
+            <option value="family:tags">Tags & glossary</option>
+            <option value="family:merge">Duplicates & merges</option>
+            <option value="family:enrichment">AI & enrichment</option>
+            {summary?.sources
+              .filter((source) => source.count > 0 || source.key === queue)
+              .map((source) => (
+                <option key={source.key} value={source.key}>
+                  {source.label} ({source.count.toLocaleString()})
+                </option>
+              ))}
+          </select>
+          <div className="relative min-w-0 flex-1">
+            <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              aria-label="Search review queue"
+              placeholder="Search names or review reasons"
+              className="h-10 pl-10"
+              value={search}
+              onChange={(e) => changeParams({ q: e.target.value || null })}
+            />
+          </div>
+          <select
+            aria-label="Sort review queue"
+            className={selectClass}
+            value={filters.sort}
+            onChange={(e) =>
+              changeParams({ sort: e.target.value === 'priority' ? null : e.target.value })
+            }
+          >
+            <option value="priority">Risk, then oldest</option>
+            <option value="age">Oldest first</option>
+            <option value="confidence">Lowest confidence</option>
+          </select>
+        </div>
       </div>
       {query.isError ? (
         <div
@@ -427,13 +476,17 @@ export default function AdminReviewQueue() {
           {(!mobile || !selected) && (
             <section
               className="flex min-h-0 w-full flex-col border-r border-border md:w-[38%] md:min-w-72 md:max-w-lg"
-              aria-label="Pending decisions"
+              aria-label="Review worklist"
             >
               <div className="flex min-h-11 shrink-0 items-center justify-between gap-4 border-b border-border px-4 text-sm">
                 <span>
-                  {filters.queues || filters.search || filters.scope !== DEFAULT_REVIEW_SCOPE
-                    ? 'Matching decisions'
-                    : 'Pending decisions'}
+                  {filters.scope === 'ready'
+                    ? 'Ready decisions'
+                    : filters.scope === 'research'
+                      ? 'Automatic research'
+                      : filters.scope === 'blocked'
+                        ? 'Blocked research'
+                        : 'Source tasks'}
                 </span>
                 <span className="tabular-nums text-muted-foreground">
                   {query.data?.total.toLocaleString()}
@@ -447,14 +500,18 @@ export default function AdminReviewQueue() {
                         machine findings, so "All caught up" could never display -- not even with
                         every decision in the queue made. */}
                     <h2 className="font-sans text-title font-bold">
-                      {query.data?.decisions_total === 0
-                        ? 'All caught up'
-                        : 'No matching decisions'}
+                      {filters.scope === 'ready' && query.data?.ready_total === 0
+                        ? 'No decisions ready'
+                        : query.data?.decisions_total === 0
+                          ? 'All caught up'
+                          : 'No matching decisions'}
                     </h2>
                     <p className="text-sm text-muted-foreground">
-                      {query.data?.decisions_total === 0
-                        ? 'There are no pending decisions for your permissions.'
-                        : 'Clear the filters to see the remaining work.'}
+                      {filters.scope === 'ready' && query.data?.ready_total === 0
+                        ? 'Research and blocked cases remain visible in their own views.'
+                        : query.data?.decisions_total === 0
+                          ? 'There are no pending decisions for your permissions.'
+                          : 'Clear the filters to see the remaining work.'}
                     </p>
                     {query.data?.decisions_total !== 0 && (
                       <Button
@@ -579,7 +636,17 @@ export default function AdminReviewQueue() {
           {(!mobile || selected) && (
             <div ref={detailRef} className="min-h-0 min-w-0 flex-1">
               {selected ? (
-                hasSpecialReview(selected) ? (
+                selected.queue_type === 'review-case' ? (
+                  <ReviewCaseDetail
+                    key={reviewKey(selected)}
+                    item={selected}
+                    busy={mutation.isPending || bulk.isPending}
+                    error={error}
+                    onDecision={decide}
+                    onSkip={skip}
+                    onBack={() => choose()}
+                  />
+                ) : hasSpecialReview(selected) ? (
                   <ReviewTaskDetail
                     key={reviewKey(selected)}
                     item={selected}
