@@ -566,9 +566,9 @@ You enrich CITY pages for queer.guide from PROVIDED SOURCES. This is GROUNDED EX
 Hard rules:
 - Use ONLY facts present in the SOURCES + DESTINATION CONTEXT below. NEVER invent venues, neighborhoods, statistics, or claims.
 - description: a factual 2-3 sentence city summary built from the SOURCES. Add queer-relevant detail (gay districts, scene, history) ONLY if the sources state it. Produce this whenever the sources describe the city.
-- editorial_hook: one evocative single line (<=120 chars), grounded in the sources.
-- best_time_to_visit / local_customs: produce if the sources support them, else null. local_customs should favor LGBTQ+-relevant norms where stated.
-- lgbt_friendly_rating [SENSITIVE]: an INTEGER 1-5 (1 = hostile/criminalized, 5 = very welcoming) assessed from the legal/equality DESTINATION CONTEXT plus any LGBTQ+ evidence in the sources. You MUST populate "citations" with a url + exact quote supporting it. If you cannot cite it, set lgbt_friendly_rating to null. Do not guess a middle value.
+- editorial_hook: one factual single line (<=120 chars), grounded in the sources, with a field-specific citation and exact supporting quote. Return null for generic filler or absent evidence.
+- best_time_to_visit / local_customs: produce if the sources support them, else null. best_time_to_visit needs a field-specific source URL and exact quote supporting the recommended timing. local_customs should favor LGBTQ+-relevant norms where stated.
+- lgbt_friendly_rating [SENSITIVE]: an INTEGER 1-5 (1 = hostile/criminalized, 5 = very welcoming) assessed ONLY from city-specific LGBTQ+ evidence in the provided sources. Country law and national equality scores do not establish local friendliness; return null when only national context is available. You MUST populate "citations" with a url + exact quote supporting it. If you cannot cite it, set lgbt_friendly_rating to null. Do not guess a middle value.
 - citations: array of {field, url, quote} backing the SENSITIVE field (rating).
 - confidence: 0.0-1.0 how well the sources supported the NON-sensitive extraction (description/hook/best_time/customs). Base it on the sources, not on whether a rating was produced.
 

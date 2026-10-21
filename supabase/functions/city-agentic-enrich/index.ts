@@ -39,6 +39,7 @@ import { cityNameCandidates } from '../_shared/city-name-normalize.ts'
 import { cityWikiVerdict, regionQualifiedTitle } from '../_shared/city-wiki-guard.ts'
 import { loadReviewQueueGuard } from '../_shared/review-queue-guard.ts'
 import { isSelfQuote } from '../_shared/city-self-quote.ts'
+import { hasCityReviewEvidence } from '../_shared/city-review-evidence.ts'
 
 // The fields this composer review-gates. `safety_notes` is deliberately absent — it is
 // composed deterministically by compose_safety_note() and is not an LLM proposal.
@@ -395,9 +396,11 @@ Deno.serve(async (req: Request) => {
       const citeFor = (...names: string[]) =>
         citations.filter(x => names.includes(String(x?.field ?? '')) && !selfQuote(x))
       const ratingCite = citeFor('lgbt_friendly_rating', 'rating')
+      const hookCite = citeFor('editorial_hook', 'hook')
+      const bestTimeCite = citeFor('best_time_to_visit', 'best_time')
       const ratingValid = typeof ai.lgbt_friendly_rating === 'number'
         && Number.isFinite(ai.lgbt_friendly_rating)
-        && ratingCite.length > 0   // rating MUST be cited FOR THE RATING or it is not produced
+        && hasCityReviewEvidence('lgbt_friendly_rating', ratingCite)
       const gatedProposals: { field: string; value: unknown; cite: typeof citations }[] = []
       if (ratingValid) {
         const r = Math.max(1, Math.min(5, Math.round(ai.lgbt_friendly_rating as number)))
@@ -405,17 +408,19 @@ Deno.serve(async (req: Request) => {
       }
       // safety_notes is no longer LLM-generated — it is composed deterministically by
       // the SQL compose_safety_note() / city safety backfill (migration 20260608000001).
-      if (ai.editorial_hook) gatedProposals.push({ field: 'editorial_hook', value: { value: ai.editorial_hook }, cite: citeFor('editorial_hook', 'hook') })
+      if (ai.editorial_hook && hasCityReviewEvidence('editorial_hook', hookCite)) gatedProposals.push({ field: 'editorial_hook', value: { value: ai.editorial_hook }, cite: hookCite })
       // Still fill-if-empty: a city that already carries a best_time_to_visit keeps it,
       // and queueing a proposal against it would invite a reviewer to overwrite curated
       // text. Deliberately NOT gated on highConf, following editorial_hook — a human
       // reads it either way and the row carries its own confidence.
       if (ai.best_time_to_visit && !c.best_time_to_visit) {
-        gatedProposals.push({
-          field: 'best_time_to_visit',
-          value: { value: ai.best_time_to_visit },
-          cite: citeFor('best_time_to_visit', 'best_time'),
-        })
+        if (hasCityReviewEvidence('best_time_to_visit', bestTimeCite)) {
+          gatedProposals.push({
+            field: 'best_time_to_visit',
+            value: { value: ai.best_time_to_visit },
+            cite: bestTimeCite,
+          })
+        }
       }
 
       if (skipGated) gatedProposals.length = 0
@@ -483,10 +488,8 @@ Deno.serve(async (req: Request) => {
             // `{field: lgbt_friendly_rating, url: ilga.org, quote: "Vietnam:
             // equality_score=73, legal_status=legal"}` as their basis — an equality
             // score offered as the source for a travel-timing claim.
-            // An empty list is the honest answer: absence of evidence must not be
-            // recorded as evidence. The rating is the only field that REQUIRES a
-            // citation (see ratingValid above); prose fields may legitimately have
-            // none and must then show none.
+            // Missing evidence is rejected before queueing. Every gated city
+            // field now requires its own usable source quotation.
             citations: g.cite, confidence, model: 'gpt-4o-mini', status: 'open',
           })
           queued.push(g.field)

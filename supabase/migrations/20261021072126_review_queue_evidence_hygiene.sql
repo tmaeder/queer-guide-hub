@@ -39,10 +39,11 @@ on public.entity_review_queue for each row execute function public.guard_city_re
 -- from the existence decision's strong-dead set; keep collecting raw HTTP signals.
 -- Exact anchor and postcondition prevent silently patching a different contract.
 do $patch$
-declare v_src text; v_anchor text := $a$ARRAY['http_status','jsonld_status','content_closed_phrase',$a$;
+declare v_src text; v_code text; v_anchor text := $a$ARRAY['http_status','jsonld_status','content_closed_phrase',$a$;
 begin
  select pg_get_functiondef('public.run_existence_decision(text,boolean)'::regprocedure) into v_src;
- if position(v_anchor in v_src)=0 then raise exception 'existence strong-dead anchor changed'; end if;
+ select regexp_replace(pg_get_functiondef('public.run_existence_decision(text,boolean)'::regprocedure), '--[^' || chr(10) || ']*', '', 'g') into v_code;
+ if position(v_anchor in v_code)=0 then raise exception 'existence strong-dead anchor changed'; end if;
  v_src:=replace(v_src,v_anchor,$b$ARRAY['jsonld_status','content_closed_phrase',$b$);
  execute v_src;
 end $patch$;

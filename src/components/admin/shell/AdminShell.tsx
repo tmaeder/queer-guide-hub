@@ -229,7 +229,11 @@ export function AdminShell() {
           Skip to admin content
         </a>
         <div
-          className="flex w-full bg-surface-container-low"
+          className={
+            reviewWorkspace
+              ? 'flex w-full overflow-hidden bg-surface-container-low'
+              : 'flex w-full bg-surface-container-low'
+          }
           style={{
             minHeight: 'var(--admin-content-min-h)',
             height: reviewWorkspace ? 'var(--admin-content-min-h)' : undefined,
@@ -356,7 +360,11 @@ export function AdminShell() {
                   <ErrorBoundary>
                     <div
                       key={location.pathname}
-                      className={reviewWorkspace ? 'min-h-0 flex-1' : 'content-enter'}
+                      className={
+                        reviewWorkspace
+                          ? 'relative min-h-0 flex-1 overflow-hidden'
+                          : 'content-enter'
+                      }
                     >
                       {routeDenied ? (
                         <div

@@ -31,6 +31,14 @@ vi.mock('@/hooks/useAdminReview', () => ({
   useSelectedReviewItem: () => ({ data: null, isLoading: false }),
   useReviewBulk: () => ({ isPending: false, mutate: vi.fn() }),
 }));
+vi.mock('@/hooks/useReviewCleanupStatus', () => ({
+  useReviewCleanupStatus: () => ({
+    data: { enabled: true, last_run_at: null, last_run_status: null },
+    isLoading: false,
+    isError: false,
+    dataUpdatedAt: 0,
+  }),
+}));
 vi.mock('@/components/admin/triage/TriageDetailPanel', () => ({ TriageDetailPanel: () => null }));
 vi.mock('@/components/admin/review-workspace/ReviewTaskDetail', () => ({
   ReviewTaskDetail: () => null,
@@ -53,6 +61,7 @@ describe('admin landing review workspace', () => {
     // 18 appears twice by design: the header line and the Decisions scope chip.
     expect(screen.getAllByText('18')).toHaveLength(2);
     expect(screen.queryByText('Needs you')).not.toBeInTheDocument();
+    expect(screen.getByText('Automatic cleanup runs every 5 minutes.')).toBeInTheDocument();
   });
   it('passes item-level overdue scope rather than choosing queues with overdue rows', () => {
     render(
