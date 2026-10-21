@@ -37,7 +37,11 @@ export const useUnifiedTags = () => {
 
       let query = supabase
         .from('unified_tags')
-        .select('*')
+        // Only the UnifiedTag fields: select('*') also shipped every tag's full
+        // long_description, ~630 KB gzipped per call, for a filter that uses id + name.
+        .select(
+          'id, name, slug, description, image_url, usage_count, category, created_at, updated_at',
+        )
         .eq('status', 'active')
         .order('usage_count', { ascending: false });
 
