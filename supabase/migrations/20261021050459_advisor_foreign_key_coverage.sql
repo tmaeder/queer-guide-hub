@@ -1,3 +1,4 @@
+-- Recovered verbatim from production migration history; already applied.
 -- 450 indexes cover 451 reported foreign-key constraints (one pair shares columns).
 -- Production builds these CONCURRENTLY with scripts/data-quality/apply-advisor-fk-indexes.py.
 -- Applying the migration afterwards records the schema change without rebuilding.
@@ -454,4 +455,3 @@ CREATE INDEX IF NOT EXISTS "idx_fk_marketplace_listings_category_id_b6748601" ON
 CREATE INDEX IF NOT EXISTS "idx_fk_marketplace_listings_created_by_6c41ec93" ON "public"."marketplace_listings" USING btree ("created_by");
 CREATE INDEX IF NOT EXISTS "idx_fk_ai_suggestions_reviewer_id_2e159ec9" ON "public"."ai_suggestions" USING btree ("reviewer_id");
 CREATE INDEX IF NOT EXISTS "idx_fk_entity_quality_findings_waived_by_d505df8a" ON "public"."entity_quality_findings" USING btree ("waived_by");
-

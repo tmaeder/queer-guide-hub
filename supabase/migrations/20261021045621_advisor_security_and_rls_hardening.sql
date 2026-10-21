@@ -1,3 +1,4 @@
+-- Recovered verbatim from production migration history; already applied.
 -- Resolve the actionable findings in the 2026-10-21 advisor exports.
 -- Public/user/staff RPCs that deliberately enforce authorization retain their grants.
 SET lock_timeout = '5s';
@@ -672,4 +673,3 @@ ALTER TABLE public.redirect_customer_profiles ADD CONSTRAINT redirect_customer_p
 ALTER TABLE public.redirect_customer_profiles VALIDATE CONSTRAINT redirect_customer_profiles_customer_key_fkey;
 
 NOTIFY pgrst, 'reload schema';
-

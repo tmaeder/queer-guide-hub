@@ -1,3 +1,4 @@
+-- Recovered verbatim from production migration history; already applied.
 -- Preserve redirect ownership data behind the existing backend-only ACL/RLS.
 SET LOCAL lock_timeout = '5s';
 DO $policy$
@@ -19,4 +20,3 @@ BEGIN
  END IF;
 END $coverage$;
 DROP INDEX IF EXISTS umami.session_website_id_idx;
-

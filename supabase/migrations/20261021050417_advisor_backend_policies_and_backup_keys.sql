@@ -1,3 +1,4 @@
+-- Recovered verbatim from production migration history; already applied.
 -- Make the existing backend-only RLS contract explicit. Browser grants stay
 -- revoked; service_role and the existing BYPASSRLS jobs retain their access.
 SET LOCAL lock_timeout = '5s';
@@ -32,4 +33,3 @@ DROP INDEX IF EXISTS "public"."idx_venue_sources_slug";
 DROP INDEX IF EXISTS "public"."user_trust_events_user_kind_idx";
 -- Retained: trip_days_trip_id_date_key
 DROP INDEX IF EXISTS "public"."idx_trip_days_trip_date";
-
