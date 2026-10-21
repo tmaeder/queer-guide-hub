@@ -120,7 +120,11 @@ Deno.test("group delivery rejects caller-selected recipients, content and arbitr
 Deno.test("group mentions keep names, private content and source identities out of the inbox", () => {
   const message = groupMentionEmail();
   assertEquals(message.subject, "New group mention on Queer Guide");
-  assertEquals(message.html.includes("https://queer.guide/hub/groups"), true);
+  const htmlUrlMatch = message.html.match(/https:\/\/[^\s"'<>]+/);
+  assertNotEquals(htmlUrlMatch, null);
+  const htmlUrl = new URL(htmlUrlMatch![0]);
+  assertEquals(htmlUrl.hostname, "queer.guide");
+  assertEquals(htmlUrl.pathname, "/hub/groups");
   assertEquals(message.html.includes("post_id"), false);
   assertEquals(message.text.includes("settings?section=account"), true);
 });
