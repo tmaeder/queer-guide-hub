@@ -158,9 +158,11 @@ Deno.test("trip invitation requests never accept an actor, recipient address or 
   ) assertEquals(parseTripInvitationRequest(body), null);
   const email = tripInvitationEmail();
   assertEquals(email.subject, "New trip invitation on Queer Guide");
-  assertEquals(
-    email.html.includes("https://queer.guide/trips/invitations"),
-    true,
-  );
+  const invitationUrlMatch = email.html.match(/https?:\/\/[^\s"'<>]+/);
+  assertNotEquals(invitationUrlMatch, null);
+  const invitationUrl = new URL(invitationUrlMatch![0]);
+  assertEquals(invitationUrl.protocol, "https:");
+  assertEquals(invitationUrl.hostname, "queer.guide");
+  assertEquals(invitationUrl.pathname, "/trips/invitations");
   assertEquals(email.text.includes(id), false);
 });
