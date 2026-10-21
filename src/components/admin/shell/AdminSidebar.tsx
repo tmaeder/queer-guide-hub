@@ -143,7 +143,7 @@ export function AdminSidebar() {
       return {
         // decisions_total, not all_total: the latter also counts machine detector findings
         // ("this field is empty"), which would badge the nav with 335k instead of 54k.
-        count: review.data?.decisions_total,
+        count: review.data?.ready_total ?? review.data?.decisions_total,
         overdue: review.data?.overdue_total ?? 0,
         hasCount: true,
       };

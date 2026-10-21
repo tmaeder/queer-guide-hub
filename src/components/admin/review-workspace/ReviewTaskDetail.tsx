@@ -158,6 +158,9 @@ export function ReviewTaskDetail({ item, busy, error, onDecision, onSkip, onBack
           'updated_at',
           'reviewer_id',
           'status',
+          'review_case',
+          'original_queue_type',
+          'original_item_id',
           'description_i18n_candidates',
         ].includes(key),
     );

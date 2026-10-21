@@ -11,6 +11,8 @@ import {
   Search,
   ShieldAlert,
   Timer,
+  FlaskConical,
+  CircleAlert,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { TrackLoader } from '@/components/transit/TrackLoader';
@@ -27,6 +29,7 @@ import {
 } from '@/components/admin/triage/resolveDecision';
 import { ReviewCleanupStatus } from '@/components/admin/review-workspace/ReviewCleanupStatus';
 import { ReviewTaskDetail } from '@/components/admin/review-workspace/ReviewTaskDetail';
+import { ReviewCaseDetail } from '@/components/admin/review-workspace/ReviewCaseDetail';
 import {
   MERGE_REVIEW_SOURCES,
   TAG_REVIEW_SOURCES,
@@ -51,7 +54,16 @@ import { useDebounce } from '@/hooks/useDebounce';
 // decision available (admin_review_finding_codes), so defaulting to 'all' made the page claim
 // 335,495 pending decisions against 54,034 real ones. 'all' is still one click away and hides
 // nothing.
-const scopeOptions = ['all', 'decisions', 'safety', 'overdue', 'public'] as const;
+const scopeOptions = [
+  'ready',
+  'research',
+  'blocked',
+  'all',
+  'decisions',
+  'safety',
+  'overdue',
+  'public',
+] as const;
 
 /**
  * Renders a count that may be absent, WITHOUT substituting a different one.
@@ -280,15 +292,27 @@ export default function AdminReviewQueue() {
           >
             {query.data ? (
               <>
-                <span className="tabular-nums">{fmtCount(summary!.decisions_total)}</span> decisions
-                · <span className="tabular-nums">{fmtCount(summary!.overdue_total)}</span> overdue ·{' '}
-                <span className="tabular-nums">{fmtCount(summary!.findings_total)}</span> detected
-                issues
+                <span className="tabular-nums">{fmtCount(summary!.ready_total)}</span> ready ·{' '}
+                <span className="tabular-nums">{fmtCount(summary!.research_total)}</span>{' '}
+                researching ·{' '}
+                <span className="tabular-nums">{fmtCount(summary!.blocked_total)}</span> blocked
               </>
             ) : (
-              'Loading pending decisions…'
+              'Loading review cases…'
             )}
           </p>
+          {summary && (!mobile || !selected) && (
+            <p className="mt-1 text-xs text-muted-foreground">
+              {fmtCount(summary.case_total)} cases from {fmtCount(summary.decisions_total)} source
+              tasks.{' '}
+              <button
+                className="underline underline-offset-4"
+                onClick={() => changeParams({ scope: 'decisions' })}
+              >
+                Inspect raw tasks
+              </button>
+            </p>
+          )}
         </div>
         <div className="flex items-center gap-2">
           {lastActed && (
@@ -330,7 +354,9 @@ export default function AdminReviewQueue() {
         <div role="group" aria-label="Review scope" className="flex gap-1 overflow-x-auto">
           {(
             [
-              { key: 'decisions', label: 'Decisions', icon: Inbox },
+              { key: 'ready', label: 'Ready', icon: Inbox },
+              { key: 'research', label: 'Research', icon: FlaskConical },
+              { key: 'blocked', label: 'Blocked', icon: CircleAlert },
               { key: 'safety', label: 'High risk', icon: ShieldAlert },
               { key: 'overdue', label: 'Overdue', icon: Timer },
               { key: 'all', label: 'Incl. detected', icon: ListFilter },
@@ -355,7 +381,13 @@ export default function AdminReviewQueue() {
                         ? summary!.overdue_total
                         : key === 'all'
                           ? summary!.all_total
-                          : summary!.decisions_total,
+                          : key === 'ready'
+                            ? summary!.ready_total
+                            : key === 'research'
+                              ? summary!.research_total
+                              : key === 'blocked'
+                                ? summary!.blocked_total
+                                : summary!.decisions_total,
                   )}
                 </span>
               )}
@@ -427,13 +459,17 @@ export default function AdminReviewQueue() {
           {(!mobile || !selected) && (
             <section
               className="flex min-h-0 w-full flex-col border-r border-border md:w-[38%] md:min-w-72 md:max-w-lg"
-              aria-label="Pending decisions"
+              aria-label="Review worklist"
             >
               <div className="flex min-h-11 shrink-0 items-center justify-between gap-4 border-b border-border px-4 text-sm">
                 <span>
-                  {filters.queues || filters.search || filters.scope !== DEFAULT_REVIEW_SCOPE
-                    ? 'Matching decisions'
-                    : 'Pending decisions'}
+                  {filters.scope === 'ready'
+                    ? 'Ready decisions'
+                    : filters.scope === 'research'
+                      ? 'Automatic research'
+                      : filters.scope === 'blocked'
+                        ? 'Blocked research'
+                        : 'Source tasks'}
                 </span>
                 <span className="tabular-nums text-muted-foreground">
                   {query.data?.total.toLocaleString()}
@@ -447,14 +483,18 @@ export default function AdminReviewQueue() {
                         machine findings, so "All caught up" could never display -- not even with
                         every decision in the queue made. */}
                     <h2 className="font-sans text-title font-bold">
-                      {query.data?.decisions_total === 0
-                        ? 'All caught up'
-                        : 'No matching decisions'}
+                      {filters.scope === 'ready' && query.data?.ready_total === 0
+                        ? 'No decisions ready'
+                        : query.data?.decisions_total === 0
+                          ? 'All caught up'
+                          : 'No matching decisions'}
                     </h2>
                     <p className="text-sm text-muted-foreground">
-                      {query.data?.decisions_total === 0
-                        ? 'There are no pending decisions for your permissions.'
-                        : 'Clear the filters to see the remaining work.'}
+                      {filters.scope === 'ready' && query.data?.ready_total === 0
+                        ? 'Research and blocked cases remain visible in their own views.'
+                        : query.data?.decisions_total === 0
+                          ? 'There are no pending decisions for your permissions.'
+                          : 'Clear the filters to see the remaining work.'}
                     </p>
                     {query.data?.decisions_total !== 0 && (
                       <Button
@@ -579,7 +619,17 @@ export default function AdminReviewQueue() {
           {(!mobile || selected) && (
             <div ref={detailRef} className="min-h-0 min-w-0 flex-1">
               {selected ? (
-                hasSpecialReview(selected) ? (
+                selected.queue_type === 'review-case' ? (
+                  <ReviewCaseDetail
+                    key={reviewKey(selected)}
+                    item={selected}
+                    busy={mutation.isPending || bulk.isPending}
+                    error={error}
+                    onDecision={decide}
+                    onSkip={skip}
+                    onBack={() => choose()}
+                  />
+                ) : hasSpecialReview(selected) ? (
                   <ReviewTaskDetail
                     key={reviewKey(selected)}
                     item={selected}

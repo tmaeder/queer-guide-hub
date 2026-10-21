@@ -40,11 +40,19 @@ export interface ReviewPage {
   page: number;
   per_page: number;
   updated_at: string;
+  ready_total?: number;
+  research_total?: number;
+  blocked_total?: number;
+  case_total?: number;
+  grouped_rows?: number;
+  worklist_available?: boolean;
+  worklist_as_of?: string | null;
+  research_enabled?: boolean;
 }
 export interface ReviewFilters {
   queues: string[] | null;
   search: string;
-  scope: 'all' | 'decisions' | 'safety' | 'overdue' | 'public';
+  scope: 'ready' | 'research' | 'blocked' | 'all' | 'decisions' | 'safety' | 'overdue' | 'public';
   sort: 'priority' | 'age' | 'confidence';
   page: number;
 }
@@ -56,14 +64,19 @@ export function useAdminReview(filters: ReviewFilters) {
     enabled: !!user?.id,
     queryFn: async ({ signal }): Promise<ReviewPage> => {
       const { data: rawData, error } = await untypedSupabase
-        .rpc('get_admin_review_queue', {
-          p_queue_types: filters.queues,
-          p_search: filters.search || null,
-          p_scope: filters.scope,
-          p_sort: filters.sort,
-          p_page: filters.page,
-          p_per_page: 50,
-        })
+        .rpc(
+          ['ready', 'research', 'blocked'].includes(filters.scope)
+            ? 'get_admin_review_worklist'
+            : 'get_admin_review_queue',
+          {
+            p_queue_types: filters.queues,
+            p_search: filters.search || null,
+            p_scope: filters.scope,
+            p_sort: filters.sort,
+            p_page: filters.page,
+            p_per_page: 50,
+          },
+        )
         .abortSignal(signal);
       const data = rawData as ReviewPage | null;
       if (error) throw new Error(error.message);
@@ -79,6 +92,14 @@ export function useAdminReview(filters: ReviewFilters) {
               safety_total: data.safety_total,
               sources: data.sources,
               updated_at: data.updated_at,
+              ready_total: data.ready_total ?? old?.ready_total,
+              research_total: data.research_total ?? old?.research_total,
+              blocked_total: data.blocked_total ?? old?.blocked_total,
+              case_total: data.case_total ?? old?.case_total,
+              grouped_rows: data.grouped_rows ?? old?.grouped_rows,
+              worklist_available: data.worklist_available ?? old?.worklist_available,
+              worklist_as_of: data.worklist_as_of ?? old?.worklist_as_of,
+              research_enabled: data.research_enabled ?? old?.research_enabled,
             },
       );
       return data;
@@ -102,6 +123,23 @@ export interface ReviewDecision {
   payload?: Record<string, unknown>;
 }
 export async function decideReview({ item, action, notes, confirm, payload }: ReviewDecision) {
+  const caseInfo = item.meta?.review_case as { id?: string; fingerprint?: string } | undefined;
+  if (caseInfo?.id && !['ai-suggestions', 'tag-enrichment'].includes(item.queue_type)) {
+    const { data, error } = await untypedRpc<{ ok?: boolean; error?: string }>(
+      'decide_admin_review_case',
+      {
+        p_case_id: caseInfo.id,
+        p_fingerprint: caseInfo.fingerprint,
+        p_action: action,
+        p_notes: notes || null,
+        p_confirm: confirm ?? false,
+        p_payload: payload ?? {},
+      },
+    );
+    if (error) throw new Error(error.message);
+    if (!data?.ok || data.error) throw new Error(data?.error || 'The case decision was not saved.');
+    return;
+  }
   if (['ai-suggestions', 'tag-enrichment'].includes(item.queue_type)) {
     if (action === 'reopen') throw new Error('This decision cannot be undone.');
     const proposal = parseTagProposal({
@@ -132,6 +170,13 @@ export async function decideReview({ item, action, notes, confirm, payload }: Re
           'Approved, but the change was not applied. The item remains available for retry.',
       );
     }
+    if (caseInfo?.id) {
+      const { error } = await untypedRpc('reconcile_admin_review_cases', {
+        p_queue_type: item.queue_type,
+        p_item_ids: [item.id],
+      });
+      if (error) throw new Error(error.message);
+    }
     return;
   }
   const { data, error } = await untypedRpc<{ ok?: boolean; error?: string }>(
@@ -157,6 +202,7 @@ export function useReviewDecision() {
       void qc.invalidateQueries({ queryKey: ['admin-review'] });
       void qc.invalidateQueries({ queryKey: ['admin-review-item'] });
       void qc.invalidateQueries({ queryKey: ['review-context'] });
+      void qc.invalidateQueries({ queryKey: ['review-case-details'] });
       void qc.invalidateQueries({ queryKey: ['admin-review-summary'] });
       void qc.invalidateQueries({ queryKey: ['admin-counts'] });
       void qc.invalidateQueries({ queryKey: ['triage-queue'] });
@@ -199,6 +245,11 @@ export function useReviewBulk() {
       );
       if (error) throw new Error(error.message);
       if (!data?.ok) throw new Error('The bulk decision was not saved. Please retry.');
+      const reconciled = await untypedRpc('reconcile_admin_review_cases', {
+        p_queue_type: 'staging',
+        p_item_ids: args.ids,
+      });
+      if (reconciled.error) throw new Error(reconciled.error.message);
       return data;
     },
     onSettled: () => {
@@ -221,9 +272,17 @@ type ReviewSummary = Pick<
   | 'safety_total'
   | 'sources'
   | 'updated_at'
+  | 'ready_total'
+  | 'research_total'
+  | 'blocked_total'
+  | 'case_total'
+  | 'grouped_rows'
+  | 'worklist_available'
+  | 'worklist_as_of'
+  | 'research_enabled'
 >;
 // Shared landing scope for the review workspace. Sidebar counts use a separate summary RPC.
-export const DEFAULT_REVIEW_SCOPE: ReviewFilters['scope'] = 'decisions';
+export const DEFAULT_REVIEW_SCOPE: ReviewFilters['scope'] = 'ready';
 
 async function fetchReviewSummary({
   signal,
@@ -234,7 +293,9 @@ async function fetchReviewSummary({
   queryKey: readonly unknown[];
   client: QueryClient;
 }): Promise<ReviewSummary> {
-  const { data, error } = await untypedSupabase.rpc('get_admin_review_summary').abortSignal(signal);
+  const { data, error } = await untypedSupabase
+    .rpc('get_admin_review_work_summary')
+    .abortSignal(signal);
   if (error) throw new Error(error.message);
   if (!data) throw new Error('The review summary returned no data.');
   const incoming = data as ReviewSummary;
@@ -273,6 +334,14 @@ export function useSelectedReviewItem(
     queryKey: ['admin-review-item', user?.id, source, id],
     enabled: enabled && !!user?.id && !!source && valid,
     queryFn: async (): Promise<ReviewItem | null> => {
+      if (source === 'review-case') {
+        const { data, error } = await untypedRpc<{ item: ReviewItem }>(
+          'get_admin_review_case_details',
+          { p_case_id: id },
+        );
+        if (error) throw new Error(error.message);
+        return data?.item ?? null;
+      }
       const { data, error } = await untypedRpc<ReviewItem>('get_admin_review_item', {
         p_queue_type: source,
         p_item_id: id,

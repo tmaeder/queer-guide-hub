@@ -8,6 +8,10 @@ const state = vi.hoisted(() => ({
     total: 0,
     all_total: 25,
     decisions_total: 18,
+    ready_total: 5,
+    research_total: 7,
+    blocked_total: 2,
+    case_total: 14,
     findings_total: 7,
     overdue_total: 4,
     safety_total: 3,
@@ -22,7 +26,7 @@ vi.mock('@/hooks/useAdminReview', () => ({
   // Mirrors the real constant. The page reads it for its default scope AND the sidebar summary
   // passes it, so the two share one request; a mock that drifted from the real value would let
   // the "defaults to decisions" assertion below pass against the wrong scope.
-  DEFAULT_REVIEW_SCOPE: 'decisions',
+  DEFAULT_REVIEW_SCOPE: 'ready',
   useAdminReview: (filters: unknown) => {
     state.filters(filters);
     return { ...state, refetch: vi.fn() };
@@ -58,8 +62,8 @@ describe('admin landing review workspace', () => {
     // Distinct fixture figures on purpose: all_total 25 = decisions 18 + findings 7, so each
     // assertion names one population and cannot be satisfied by the other.
     expect(screen.getByText('25')).toBeInTheDocument();
-    // 18 appears twice by design: the header line and the Decisions scope chip.
-    expect(screen.getAllByText('18')).toHaveLength(2);
+    expect(screen.getAllByText('5')).toHaveLength(2);
+    expect(screen.getByText(/14 cases from 18 source tasks/)).toBeInTheDocument();
     expect(screen.queryByText('Needs you')).not.toBeInTheDocument();
     expect(screen.getByText('Automatic cleanup runs every 5 minutes.')).toBeInTheDocument();
   });

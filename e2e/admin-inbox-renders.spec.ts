@@ -4,10 +4,8 @@ const authenticated = Boolean(
 );
 test.describe('unified admin review queue', () => {
   test.skip(!authenticated, 'Requires the configured admin session');
-  // The landing scope is 'decisions' since 99991791872772: all_total also counts ~281k machine
-  // detector findings ("this field is empty") on which no human decision exists, so the default
-  // list used to lead with them. `total` is compared against decisions_total here and against
-  // all_total in the scope=all test below. Both contracts are asserted, neither dropped.
+  // The landing page serves independent, decision-ready cases. Raw source tasks
+  // and detector findings remain reachable and retain their original partition.
   //
   // THIS REQUEST IS NO LONGER THE UNION CANARY. That changed in 99991792224392. The claim this
   // replaces -- that the union is built before the scope filter, so every registered view executes
@@ -25,8 +23,8 @@ test.describe('unified admin review queue', () => {
   test('the landing queue renders the full registered source contract', async ({ page }) => {
     const responsePromise = page.waitForResponse(
       (r) =>
-        r.url().includes('/rpc/get_admin_review_queue') &&
-        r.request().postDataJSON()?.p_scope === 'decisions',
+        r.url().includes('/rpc/get_admin_review_worklist') &&
+        r.request().postDataJSON()?.p_scope === 'ready',
     );
     await page.goto('/admin');
     await expect(page.getByRole('heading', { name: 'Review queue', exact: true })).toBeVisible();
@@ -39,7 +37,9 @@ test.describe('unified admin review queue', () => {
     );
     // The two populations must partition the queue, or rows are counted twice or not at all.
     expect(data.decisions_total + data.findings_total).toBe(data.all_total);
-    expect(data.total).toBe(data.decisions_total);
+    expect(data.total).toBe(data.ready_total);
+    expect(data.ready_total + data.research_total + data.blocked_total).toBe(data.case_total);
+    expect(data.worklist_available).toBe(true);
     // Non-degenerate in both directions: 0 findings means the registry matched nothing, 0
     // decisions means the classification swallowed the queue. Either passes a presence-only check.
     expect(data.findings_total).toBeGreaterThan(0);
@@ -48,7 +48,7 @@ test.describe('unified admin review queue', () => {
     if (data.total > 0) {
       await expect(
         page
-          .getByRole('region', { name: 'Pending decisions' })
+          .getByRole('region', { name: 'Review worklist' })
           .locator('button[aria-label^="Open "]')
           .first(),
       ).toBeVisible();
@@ -58,7 +58,7 @@ test.describe('unified admin review queue', () => {
         await page.evaluate(() => document.documentElement.scrollHeight - innerHeight),
         'The queue scrolls its panes instead of stretching the page below the decision controls',
       ).toBeLessThanOrEqual(1);
-    } else await expect(page.getByText('All caught up')).toBeVisible();
+    } else await expect(page.getByText('No decisions ready')).toBeVisible();
   });
   test('the all-inclusive scope still reaches every row, so nothing is hidden', async ({
     page,
@@ -68,13 +68,16 @@ test.describe('unified admin review queue', () => {
     // Finish the initial load before issuing another expensive scope query.
     const initialResponse = page.waitForResponse(
       (r) =>
-        r.url().includes('/rpc/get_admin_review_queue') &&
-        r.request().postDataJSON()?.p_scope === 'decisions',
+        r.url().includes('/rpc/get_admin_review_worklist') &&
+        r.request().postDataJSON()?.p_scope === 'ready',
     );
     await page.goto('/admin');
     await expect(page.getByRole('heading', { name: 'Review queue', exact: true })).toBeVisible();
     const initial = await initialResponse;
-    expect(initial.ok(), `Initial queue HTTP ${initial.status()}: ${initial.ok() ? '' : await initial.text()}`).toBe(true);
+    expect(
+      initial.ok(),
+      `Initial queue HTTP ${initial.status()}: ${initial.ok() ? '' : await initial.text()}`,
+    ).toBe(true);
     const responsePromise = page.waitForResponse(
       (r) =>
         r.url().includes('/rpc/get_admin_review_queue') &&
@@ -82,7 +85,10 @@ test.describe('unified admin review queue', () => {
     );
     await page.getByRole('button', { name: /^Incl\. detected/ }).click();
     const response = await responsePromise;
-    expect(response.ok(), `All scope HTTP ${response.status()}: ${response.ok() ? '' : await response.text()}`).toBe(true);
+    expect(
+      response.ok(),
+      `All scope HTTP ${response.status()}: ${response.ok() ? '' : await response.text()}`,
+    ).toBe(true);
     const data = await response.json();
     expect(data.total).toBe(data.all_total);
     expect(data.total).toBeGreaterThan(data.decisions_total);
@@ -91,13 +97,16 @@ test.describe('unified admin review queue', () => {
   test('overdue is a row predicate with matching counts', async ({ page }) => {
     const initialResponse = page.waitForResponse(
       (r) =>
-        r.url().includes('/rpc/get_admin_review_queue') &&
-        r.request().postDataJSON()?.p_scope === 'decisions',
+        r.url().includes('/rpc/get_admin_review_worklist') &&
+        r.request().postDataJSON()?.p_scope === 'ready',
     );
     await page.goto('/admin');
     await expect(page.getByRole('heading', { name: 'Review queue', exact: true })).toBeVisible();
     const initial = await initialResponse;
-    expect(initial.ok(), `Initial queue HTTP ${initial.status()}: ${initial.ok() ? '' : await initial.text()}`).toBe(true);
+    expect(
+      initial.ok(),
+      `Initial queue HTTP ${initial.status()}: ${initial.ok() ? '' : await initial.text()}`,
+    ).toBe(true);
     const responsePromise = page.waitForResponse(
       (r) =>
         r.url().includes('/rpc/get_admin_review_queue') &&
@@ -105,7 +114,10 @@ test.describe('unified admin review queue', () => {
     );
     await page.getByRole('button', { name: /^Overdue/ }).click();
     const response = await responsePromise;
-    expect(response.ok(), `Overdue scope HTTP ${response.status()}: ${response.ok() ? '' : await response.text()}`).toBe(true);
+    expect(
+      response.ok(),
+      `Overdue scope HTTP ${response.status()}: ${response.ok() ? '' : await response.text()}`,
+    ).toBe(true);
     const data = await response.json();
     expect(data.total).toBe(data.overdue_total);
     expect(data.items.every((x: { overdue: boolean }) => x.overdue)).toBe(true);
