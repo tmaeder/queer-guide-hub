@@ -190,7 +190,15 @@ Deno.test("operational notice purposes use fixed app links without private detai
   ) {
     const email = operationalEmail(kind);
     assertEquals(email.html.includes("Change email settings"), true);
-    assertEquals(email.html.includes("https://queer.guide/"), true);
+    const links = Array.from(
+      email.html.matchAll(/href="([^"]+)"/g),
+      (match) => new URL(match[1]),
+    );
+    assertEquals(links.length, 2);
+    for (const link of links) {
+      assertEquals(link.protocol, "https:");
+      assertEquals(link.hostname, "queer.guide");
+    }
     assertEquals(email.html.includes("{{"), false);
   }
   let rejected = false;
