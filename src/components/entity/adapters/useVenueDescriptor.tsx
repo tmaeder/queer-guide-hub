@@ -1,5 +1,6 @@
 import { VenueRatingForm } from '@/components/venues/VenueRatingForm';
 import { useEffect, useMemo } from 'react';
+import { OnBluesky } from '@/components/social/OnBluesky';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { FavoriteButton } from '@/components/ui/favorite-button';
@@ -277,6 +278,11 @@ export function useVenueDescriptor(slug: string | undefined): EntityDescriptorRe
                 `sections` — a station pointing at nothing is a dead stop. */}
             <VenueGuides venue={venue} />
             <FromTheGlossary tags={venue.tags} />
+            <OnBluesky
+              entityType="venue"
+              entityId={venue.id}
+              gated={Boolean((venue as { safety_gated?: boolean }).safety_gated)}
+            />
           </>
         ),
         tags: (

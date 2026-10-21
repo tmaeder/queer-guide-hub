@@ -3445,6 +3445,8 @@ export type Database = {
       }
       community_posts: {
         Row: {
+          at_cid: string | null
+          at_uri: string | null
           comments_count: number | null
           content: string
           created_at: string
@@ -3469,6 +3471,8 @@ export type Database = {
           visibility: string | null
         }
         Insert: {
+          at_cid?: string | null
+          at_uri?: string | null
           comments_count?: number | null
           content: string
           created_at?: string
@@ -3492,6 +3496,8 @@ export type Database = {
           visibility?: string | null
         }
         Update: {
+          at_cid?: string | null
+          at_uri?: string | null
           comments_count?: number | null
           content?: string
           created_at?: string
@@ -24229,6 +24235,33 @@ export type Database = {
         }
         Relationships: []
       }
+      bluesky_identities: {
+        Row: {
+          did: string
+          handle: string
+          linked_at: string
+          publish_activity: boolean
+          use_queer_guide_handle: boolean
+          user_id: string
+        }
+        Insert: {
+          did: string
+          handle: string
+          linked_at?: string
+          publish_activity?: boolean
+          use_queer_guide_handle?: boolean
+          user_id: string
+        }
+        Update: {
+          did?: string
+          handle?: string
+          linked_at?: string
+          publish_activity?: boolean
+          use_queer_guide_handle?: boolean
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_follows: {
         Row: {
           created_at: string
@@ -33656,6 +33689,10 @@ export type Database = {
       fx_to_usd: {
         Args: { p_amount: number; p_currency: string }
         Returns: number
+      }
+      atproto_did_for_subdomain: {
+        Args: { p_sub: string }
+        Returns: string
       }
       resolve_handle: {
         Args: { p_handle: string }

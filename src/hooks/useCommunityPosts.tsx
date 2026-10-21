@@ -28,6 +28,8 @@ export interface CreatePostData {
   tags?: string[];
   /** Bluesky self-label values (see SELF_LABELS). */
   labels?: string[];
+  /** DID of the author's connected Bluesky account; set only when they ticked "Also post to Bluesky". */
+  crossPostDid?: string;
 }
 
 const PAGE_SIZE = 20;
@@ -191,6 +193,26 @@ export const useCommunityPosts = (userId?: string) => {
         .single();
 
       if (error) throw error;
+
+      // Opt-in copy into the author's own Bluesky repo. Public posts only. A
+      // failure here never undoes the Queer Guide post — it is reported instead.
+      if (postData.crossPostDid && (postData.visibility ?? 'public') === 'public') {
+        try {
+          const { crossPostToBluesky } = await import('@/lib/atprotoClient');
+          const ref = await crossPostToBluesky(postData.crossPostDid, data);
+          await supabase
+            .from('community_posts')
+            .update({ at_uri: ref.uri, at_cid: ref.cid })
+            .eq('id', data.id)
+            .eq('user_id', user.id);
+        } catch (e) {
+          toast({
+            title: 'Posted here, not on Bluesky',
+            description: e instanceof Error ? e.message : 'Bluesky did not accept the post.',
+            variant: 'destructive',
+          });
+        }
+      }
       return data;
     },
     onSuccess: () => {
@@ -272,6 +294,24 @@ export const useCommunityPosts = (userId?: string) => {
   const deletePostMutation = useMutation({
     mutationFn: async (postId: string) => {
       if (!user) throw new Error('Must be logged in to delete posts');
+
+      // Delete the Bluesky copy too, while this browser still has a session.
+      const { data: existing } = await supabase
+        .from('community_posts')
+        .select('at_uri')
+        .eq('id', postId)
+        .eq('user_id', user.id)
+        .maybeSingle();
+      if (existing?.at_uri) {
+        const { data: identity } = await supabase
+          .from('bluesky_identities')
+          .select('did')
+          .maybeSingle();
+        if (identity?.did) {
+          const { deleteBlueskyPost } = await import('@/lib/atprotoClient');
+          await deleteBlueskyPost(identity.did, existing.at_uri).catch(() => undefined);
+        }
+      }
 
       const { error } = await supabase
         .from('community_posts')

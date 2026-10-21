@@ -21,10 +21,16 @@ interface UmamiWindow extends Window {
   umami?: { track: (event: string, data: Record<string, string>) => void };
 }
 
+const CONSENT_KEY = 'queer-guide-cookie-consent';
+
 describe('trackTripEvent', () => {
   let trackSpy: ReturnType<typeof vi.fn>;
 
   beforeEach(() => {
+    localStorage.setItem(
+      CONSENT_KEY,
+      JSON.stringify({ version: '1.0', preferences: { analytics: true } }),
+    );
     trackSpy = vi.fn();
     (window as UmamiWindow).umami = { track: trackSpy };
   });

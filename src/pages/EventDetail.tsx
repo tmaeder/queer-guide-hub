@@ -48,6 +48,7 @@ import { useEventProgramme } from '@/hooks/useEventProgramme';
 import { programmeLd } from '@/lib/eventProgrammeLd';
 import { ProvenanceLine } from '@/components/transit/ProvenanceLine';
 import { SingleSectionList, SingleRouteRail } from '@/components/transit/SingleSections';
+import { OnBluesky } from '@/components/social/OnBluesky';
 import {
   singleSections,
   useSingleActiveSection,
@@ -495,6 +496,13 @@ export default function EventDetail() {
             />
             <ErrorBoundary section="event-more-events" fallback={null}>
               <EventMoreEvents eventId={event.id} city={cityName} limit={3} compact />
+            </ErrorBoundary>
+            <ErrorBoundary section="event-on-bluesky" fallback={null}>
+              <OnBluesky
+                entityType="event"
+                entityId={event.id}
+                gated={Boolean((event as { safety_gated?: boolean }).safety_gated)}
+              />
             </ErrorBoundary>
           </div>
         }

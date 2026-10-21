@@ -58,8 +58,19 @@ export type TrackColor = typeof M | typeof C | typeof G | typeof Y;
  *  cannot spread by a second author copying the pattern. */
 export type FillKind = 'T' | 'P' | TrackColor;
 
-/** A closed shape: the path, and what goes inside the ink outline. */
-export type FilledShape = [d: string, fill: FillKind];
+/**
+ * A closed shape: the path, what goes inside the ink outline, and optionally
+ * how heavy that outline is as a fraction of the base weight.
+ *
+ * The third element exists for ONE shape and the arithmetic is why. `pride`
+ * is four stacked bands; the flag is 60 units tall, so a band is 15 and the
+ * outline is up to 13 of them. Every band therefore rendered as two ink rules
+ * with two units of colour trapped between, which is the "muddy scribble"
+ * reading. An outline weight of 0 lets a band be pure colour and lets ONE
+ * silhouette carry the keyline for all four -- the same per-shape weight
+ * `Stroke` has always had, for the same reason.
+ */
+export type FilledShape = [d: string, fill: FillKind, outline?: number];
 
 /**
  * An open stroke, in one of three forms:
@@ -152,6 +163,21 @@ export const MAX_STROKE_WIDTH = strokeWidthFor(0);
  * icons that radiate should tick identically. Per-icon tick paths would let
  * them drift apart for no reason anyone could state.
  */
+/**
+ * How heavy a motion tick is, as a fraction of the body outline.
+ *
+ * THE MARGIN IS 12 UNITS AND THE OUTLINE IS 9-13, so a tick drawn at the body
+ * weight fills 75-108% of the space it is supposed to float in. That is why the
+ * first version read as horns, ears and bolts rather than as motion: at that
+ * weight a tick is not a mark beside the shape, it is a second piece of body
+ * pressed against it. Measured on the contact sheet — `theater` rendered as a
+ * horned devil, and every garment in the Market group grew a pair of ears.
+ *
+ * 0.4 puts the stroke at ~4-5 units in a 12-unit margin, which leaves air on
+ * both sides and reads as a drawn motion line.
+ */
+export const TICK_WEIGHT = 0.4;
+
 export const TICKS: Record<Exclude<(typeof TICK_SETS)[number], 'none'>, string[]> = {
   /** Three above: things that radiate or announce. */
   crown: ['M 50 11 C 52 8 52 5 50 2', 'M 30 11 C 31 7 29 5 27 2', 'M 70 11 C 69 7 71 5 73 2'],
@@ -232,7 +258,7 @@ const DEFS = {
     name: 'Search',
     group: 'Wayfinding',
     hex: C,
-    t: 'corners',
+    t: 'none',
     use: 'Site search and result lists.',
     l: [...colored(ring(44, 44, 24)), 'M 61 61 C 66.9 69.1 72.9 75.1 80 80'],
   },
@@ -241,18 +267,25 @@ const DEFS = {
     name: 'Route',
     group: 'Travel',
     hex: C,
-    t: 'sides',
+    t: 'none',
     use: 'Directions and routes between two places.',
+    // ONE weight for the whole figure, and the rings are in it.
+    //
+    // The line was `colored` (ink 2.2x, colour 1.1x) while the two station
+    // rings were bare strings at 1.0 — so the icon drew its own route at more
+    // than twice the weight of its own stations, which is what read as "parts
+    // of this are thin" beside the rest of the set. Rings cannot join a 2.2x
+    // pair: at 28.6 units of stroke a radius-7 circle is a solid dot, so the
+    // figure comes down to the base weight the rest of the line art uses
+    // instead of the rings going up.
+    //
+    // Radius 9 rather than 7 for the same reason as the counter floor: a
+    // stroked ring of radius r leaves `r - sw/2` of hole, so r=7 left half a
+    // unit and rendered solid. 9 leaves 2.5 at 16px and 4.5 at 32px.
     l: [
-      ...colored('M 22 78 C 44 76 38 50 56 44 C 70 39 72 34 78 26'),
-      // The two station rings stay OPEN ink circles rather than filled dots.
-      // At radius 7 against this stroke weight they do fill in solid — which is
-      // exactly why `public/favicon.svg` rejected this glyph as the app icon —
-      // but in a row of icons the neighbours supply the context the browser tab
-      // could not, and "a point of interest is an open circle" is the rule the
-      // whole wayfinding set is drawn to.
-      ring(22, 78, 7),
-      ring(78, 26, 7),
+      ...tinted(
+        `M 22 78 C 44 76 38 50 56 44 C 70 39 72 34 78 26 ${ring(22, 78, 9)} ${ring(78, 26, 9)}`,
+      ),
     ],
   },
 
@@ -260,7 +293,7 @@ const DEFS = {
     name: 'Saved',
     group: 'Actions',
     hex: M,
-    t: 'crown',
+    t: 'none',
     use: 'Saved items, favourites and bookmarks.',
     f: [
       [
@@ -274,7 +307,7 @@ const DEFS = {
     name: 'Chat',
     group: 'Community',
     hex: C,
-    t: 'crown',
+    t: 'none',
     use: 'Direct messages and conversations.',
     f: [
       [
@@ -292,18 +325,14 @@ const DEFS = {
     name: 'Community',
     group: 'Community',
     hex: G,
-    t: 'sides',
+    t: 'none',
     use: 'Groups, members and community spaces.',
     // Open heads. Filled discs plus crown ticks read as two eyes and a pair of
     // antennae — §7.1 bans faces on figures, and this was drawing one by
     // accident.
     l: [
-      ...tinted(
-        `${ring(32, 34, 12)} M 14 76 C 18 62 24 56 32 56 C 40 56 44 60 50 66`,
-      ),
-      ...tinted(
-        `${ring(68, 34, 12)} M 86 76 C 82 62 76 56 68 56 C 60 56 56 60 50 66`,
-      ),
+      ...tinted(`${ring(32, 34, 12)} M 14 76 C 18 62 24 56 32 56 C 40 56 44 60 50 66`),
+      ...tinted(`${ring(68, 34, 12)} M 86 76 C 82 62 76 56 68 56 C 60 56 56 60 50 66`),
     ],
   },
 
@@ -311,7 +340,7 @@ const DEFS = {
     name: 'Health',
     group: 'Safety',
     hex: C,
-    t: 'corners',
+    t: 'none',
     use: 'Sexual health services, clinics and testing.',
     // A PULSE, not a cross. v1 drew this as a circle with a plus inside it and
     // so did `add-station`, which left hue as the only thing separating them —
@@ -324,7 +353,7 @@ const DEFS = {
     name: 'Filter',
     group: 'Actions',
     hex: C,
-    t: 'sides',
+    t: 'none',
     use: 'Narrow a list down by facet.',
     l: tinted(
       'M 22 34 C 40 30 60 38 78 34 M 30 52 C 44 48 58 56 72 52 M 40 70 C 48 67 54 72 62 70',
@@ -335,7 +364,7 @@ const DEFS = {
     name: 'Add station',
     group: 'Actions',
     hex: G,
-    t: 'corners',
+    t: 'none',
     use: 'Add a new place, event or entry.',
     f: [[ring(50, 50, 32), 'T']],
     l: ['M 50 36 C 48.5 45 48.5 55 50 64', 'M 36 50 C 45 51.5 55 51.5 64 50'],
@@ -347,7 +376,7 @@ const DEFS = {
     name: 'Ticket',
     group: 'Events',
     hex: Y,
-    t: 'sides',
+    t: 'none',
     use: 'Tickets, entry prices and door policy.',
     f: [
       [
@@ -363,7 +392,7 @@ const DEFS = {
     name: 'Map',
     group: 'Travel',
     hex: C,
-    t: 'sides',
+    t: 'none',
     use: 'Map views and geographic browsing.',
     f: [
       [
@@ -371,14 +400,24 @@ const DEFS = {
         'T',
       ],
     ],
-    l: ['M 38 28 C 39 42 37 56 38 69', 'M 62 31 C 61 44 63 58 62 72'],
+    // NO crease at all. Two evenly spaced folds across a wavy band is an
+    // accordion or a book — §8.7, and both were offered when the sheet was
+    // read cold — and cutting it to one did not help: a single vertical ink
+    // bar near the left edge is a SPINE, which is the book reading rather than
+    // the accordion one, and beside the marker it rendered as two glyphs
+    // ("I O") instead of one picture.
+    //
+    // The wave in the outline already says "a folded sheet"; it does not need
+    // the folds drawn as well. What it needed was somewhere to BE, and the
+    // station ring is the family's own word for a place.
+    l: [ring(62, 48, 8)],
   },
 
   'after-dark': {
     name: 'After dark',
     group: 'Places',
     hex: M,
-    t: 'corners',
+    t: 'none',
     use: 'Late-night venues and after-hours listings.',
     f: [
       [
@@ -392,7 +431,7 @@ const DEFS = {
     name: 'Tune',
     group: 'Actions',
     hex: C,
-    t: 'sides',
+    t: 'none',
     use: 'Adjust ranking, weighting and preferences.',
     f: [
       [ring(40, 37, 7), 'T'],
@@ -405,7 +444,7 @@ const DEFS = {
     name: 'Compass',
     group: 'Travel',
     hex: C,
-    t: 'corners',
+    t: 'none',
     use: 'Explore and discover what is nearby.',
     f: [
       [ring(50, 50, 34), 'T'],
@@ -417,7 +456,7 @@ const DEFS = {
     name: 'Home base',
     group: 'Places',
     hex: C,
-    t: 'crown',
+    t: 'none',
     use: 'The reader’s home city or saved base.',
     l: [
       ...colored('M 22 50 C 32 38 42 28 50 22 C 58 28 68 38 78 50'),
@@ -430,7 +469,7 @@ const DEFS = {
     name: 'Profile',
     group: 'People',
     hex: C,
-    t: 'top',
+    t: 'none',
     use: 'A member’s profile and account.',
     // Drawn the same way as `community`, and that consistency is the point: a
     // filled head over an ink shoulder stroke puts the colour on the smallest
@@ -458,7 +497,7 @@ const DEFS = {
     name: 'Helpline',
     group: 'Safety',
     hex: G,
-    t: 'sides',
+    t: 'none',
     use: 'Crisis lines and support phone numbers.',
     f: [
       [
@@ -472,7 +511,7 @@ const DEFS = {
     name: 'Hours',
     group: 'Signals',
     hex: C,
-    t: 'corners',
+    t: 'none',
     use: 'Opening hours and time windows.',
     f: [[ring(50, 50, 34), 'T']],
     l: ['M 50 32 C 48.5 39 48.5 46 50 52 C 56 54 61 57 65 61'],
@@ -482,7 +521,7 @@ const DEFS = {
     name: 'Library',
     group: 'Community',
     hex: Y,
-    t: 'top',
+    t: 'none',
     use: 'Guides, articles and saved reading.',
     l: [
       ...colored(
@@ -496,7 +535,7 @@ const DEFS = {
     name: 'Nightlife',
     group: 'Places',
     hex: M,
-    t: 'sides',
+    t: 'none',
     use: 'Bars, clubs and nightlife venues.',
     f: [
       [ring(31, 76, 9), 'T'],
@@ -509,7 +548,7 @@ const DEFS = {
     name: 'Meetups',
     group: 'Community',
     hex: G,
-    t: 'crown',
+    t: 'none',
     use: 'Meetups, socials and casual gatherings.',
     f: [
       [
@@ -528,7 +567,7 @@ const DEFS = {
     name: 'Housing',
     group: 'Places',
     hex: C,
-    t: 'sides',
+    t: 'none',
     use: 'Housing, rooms and places to stay.',
     f: [[ring(30, 40, 14), 'T']],
     l: [
@@ -542,7 +581,7 @@ const DEFS = {
     name: 'Documents',
     group: 'Actions',
     hex: C,
-    t: 'top',
+    t: 'none',
     use: 'Documents, records and attachments.',
     f: [
       [
@@ -561,7 +600,7 @@ const DEFS = {
     name: 'Share',
     group: 'Actions',
     hex: C,
-    t: 'corners',
+    t: 'none',
     use: 'Share a page or send someone a link.',
     f: [
       [ring(27, 50, 9), 'T'],
@@ -575,7 +614,7 @@ const DEFS = {
     name: 'Info point',
     group: 'Signals',
     hex: C,
-    t: 'corners',
+    t: 'none',
     use: 'Explanatory notes, help text and definitions.',
     f: [[ring(50, 50, 34), 'T']],
     // The one glyph §7.5 permits inside an icon, drawn as strokes: an "i".
@@ -587,19 +626,15 @@ const DEFS = {
     name: 'Sapphic',
     group: 'Queer',
     hex: M,
-    t: 'top',
+    t: 'none',
     use: 'Sapphic, lesbian and women-loving-women content.',
     // A VENUS SYMBOL IS ONE LINE DRAWING, not a disc with a cross beside it.
     // Filling the rings and leaving the crosses as separate ink strokes merged
     // the casing into the cross and the pair rendered as a SKULL at 80px. Ring
     // and cross are one figure at one weight, which is how v1 drew them.
     l: [
-      ...tinted(
-        `${ring(42, 36, 13)} M 42 49 C 40.5 57 40.5 64 42 72 M 33 62 C 39 61 45 63 51 62`,
-      ),
-      ...tinted(
-        `${ring(66, 36, 13)} M 66 49 C 64.5 57 64.5 64 66 72 M 57 62 C 63 61 69 63 75 62`,
-      ),
+      ...tinted(`${ring(42, 36, 13)} M 42 49 C 40.5 57 40.5 64 42 72 M 33 62 C 39 61 45 63 51 62`),
+      ...tinted(`${ring(66, 36, 13)} M 66 49 C 64.5 57 64.5 64 66 72 M 57 62 C 63 61 69 63 75 62`),
     ],
   },
 
@@ -607,7 +642,7 @@ const DEFS = {
     name: 'Achillean',
     group: 'Queer',
     hex: C,
-    t: 'top',
+    t: 'none',
     use: 'Achillean, gay and men-loving-men content.',
     // Same rule as `sapphic`: circle and arrow are one figure.
     l: [
@@ -623,7 +658,7 @@ const DEFS = {
     // Cyan is the trans track by the colour table's own entry, so this is the
     // one icon whose hue is not a free choice.
     hex: C,
-    t: 'top',
+    t: 'none',
     use: 'Trans and non-binary identity and content.',
     // Same rule as `sapphic`: circle, both arrows and the cross are one figure.
     l: [
@@ -638,7 +673,12 @@ const DEFS = {
     name: 'March',
     group: 'Queer',
     hex: M,
-    t: 'burst',
+    // No ticks. A banner on a pole reaches y=18, and `burst` puts a mark at
+    // y=2-11 directly above it — so the tick lands on the end of a vertical
+    // stem and reads as an antenna, which is the horn problem TICK_WEIGHT was
+    // supposed to have solved. It does not: 0.4 makes the mark thin, and a
+    // thin mark on the end of a stem is still an antenna.
+    t: 'none',
     use: 'Marches, protests and political action.',
     // `H 62` and `H 38` on the banner are cubics now. The station ring v1 put
     // in the middle is gone: at radius 7 it is on the floor for a paper hole,
@@ -674,7 +714,7 @@ const DEFS = {
     name: 'Consent',
     group: 'Safety',
     hex: G,
-    t: 'corners',
+    t: 'none',
     use: 'Consent, boundaries and negotiation.',
     f: [[ring(50, 50, 34), 'T']],
     l: ['M 36 52 C 39 57 43 61 48 64 C 53 54 59 45 66 38'],
@@ -705,7 +745,7 @@ const DEFS = {
     name: 'Handcuffs',
     group: 'Kink',
     hex: M,
-    t: 'sides',
+    t: 'none',
     use: 'Restraint gear and bondage equipment.',
     // Open cuffs, not filled discs: two solid pink circles joined by a curve
     // read as a pair of GLASSES. The hole is what makes a cuff a cuff.
@@ -718,18 +758,26 @@ const DEFS = {
     hex: M,
     t: 'none',
     use: 'Rope, shibari and tie gear.',
-    // A SPIRAL, because §8.3 is not satisfied by a small offset. Two loops with
-    // a 2.8-unit offset still rendered a clean BULLSEYE — at this scale the eye
-    // reads concentricity long before it reads a few units of eccentricity. A
-    // spiral has no second closed loop to be concentric with, which is the only
-    // thing that actually fixed it.
+    // ONE length of cord, doubling back at the left.
     //
-    // It also has to differ from `intimacy` (two interlocking rings) and from
-    // `search` (a circle with a tail), both of which this icon has already been
-    // mistaken for once.
+    // Two drafts failed here and the second is the useful one. The SPIRAL
+    // solved §8.3 (no second closed loop, so nothing to read as concentric)
+    // and bought an "@": a curl that closes on itself at this weight is a
+    // snail. The HANK that replaced it — a bight over two hanging strands —
+    // was offered as an arch, a magnet and the letter A, because a curve
+    // across the top of two uprights is an arch whatever it is made of, and
+    // the wrap meant to say "rope" merged into the strands at every size.
+    //
+    // Laid on its side it is none of those. The bight is at the LEFT, so the
+    // silhouette is a long doubled line rather than a closed-topped shape, the
+    // two passes stay 16 units apart (over a 13-unit stroke at the smallest
+    // size) so they never merge, and there is no closed loop anywhere for an
+    // "@" to live in. It also stays clear of `intimacy` (two interlocking
+    // rings) and `search` (a circle with a tail) on silhouette rather than on
+    // a few units of eccentricity.
     l: [
       ...tinted(
-        'M 72 48 C 72 33 61 21 47 21 C 33 21 22 34 22 49 C 22 62 32 72 45 72 C 56 72 64 63 64 54 C 64 46 58 40 51 40',
+        'M 78 56 C 64 62 52 54 50 42 C 48 30 36 22 22 26 C 14 28 14 40 22 42 C 36 38 48 46 50 58 C 52 70 64 72 78 72',
       ),
     ],
   },
@@ -738,50 +786,79 @@ const DEFS = {
     name: 'Collar',
     group: 'Kink',
     hex: M,
-    t: 'top',
+    t: 'none',
     use: 'Collars and ownership dynamics.',
-    // The band is INK at the base weight and the TAG carries the colour, which
-    // is the way round that survives: a 2.2x coloured band over the tag read as
-    // a fat pink smile, and a band ending at the tag's own centre simply
-    // painted over it. The band stops at y=62 so the tag hangs clear below it,
-    // and the tag is drawn first so the band crosses in front of its top —
-    // which is how a tag hangs off a collar.
-    f: [[ring(50, 74, 10), 'T']],
-    l: ['M 22 38 C 26 54 36 62 50 62 C 64 62 74 54 78 38'],
+    // CLOSED band, and the tag kept. Two things were wrong and only one of
+    // them was the tag.
+    //
+    // §8.7: the open drooping curve with a weight hanging off it WAS
+    // `jewelry` — same silhouette, same pair of parts — so the band is a
+    // closed ellipse now, which is the one property a necklace does not have.
+    // But dropping the tag with it left a flat ring that read as a donut, and
+    // the buckle nick alone could not carry the object: it sits ON the band,
+    // so it changes no silhouette. The tag does, and a closed band with a tag
+    // hanging under it is not a shape `jewelry` makes.
+    //
+    // The band is INK and the TAG carries the colour, which is the way round
+    // that survives — a coloured band over a coloured tag is one pink mass.
+    // The tag is drawn first so the band crosses in front of its top, which is
+    // how a tag hangs off a collar, and it sits 6 units clear of the band's
+    // underside: the §3 minimum gap between two outlined shapes.
+    // The band sits HIGH so the tag can be big. A ring of radius 10 under a
+    // 13-unit outline shows 7 units of colour, which at 16px is a speck and
+    // reads as part of the band rather than as a thing hanging off it; 12
+    // shows 11, which is a tag. Moving the band up to 22-54 is what makes room
+    // for that without breaking either the §3 body bound at 88 or the 6-unit
+    // gap the two outlined shapes need between them.
+    f: [[ring(50, 72, 12), 'T']],
+    l: [
+      'M 24 38 C 24 28 36 22 50 22 C 64 22 76 28 76 38 C 76 48 64 54 50 54 C 36 54 24 48 24 38 Z',
+      'M 24 30 C 21 35 21 41 24 46',
+    ],
   },
 
   paddle: {
     name: 'Paddle',
     group: 'Kink',
     hex: M,
-    t: 'sides',
+    t: 'none',
     use: 'Impact play gear and spanking equipment.',
-    // The blade is deliberately NOT a circle: §8.7, a disc on a stick is the
-    // silhouette `rope-play` and `search` already carry. Squaring the shoulders
-    // and flattening the top is what separates the three at 24px. The centre
-    // dot is gone with it — at radius 6 it is below the floor for a hole, so it
-    // rendered as an ink blot rather than a rivet.
+    // DIAGONAL, because the vertical version was `march` — §8.7. Both were a
+    // rounded mass on a vertical stem, and squaring the blade's shoulders (the
+    // previous attempt) is a detail you cannot see at 24px while the axis is
+    // the first thing you can. A banner is carried upright and a paddle is
+    // held in the hand, so the two now differ in the one property a silhouette
+    // test actually reads.
     f: [
       [
-        'M 34 18 C 44 15 56 15 66 18 C 69 30 69 44 66 56 C 56 59 44 59 34 56 C 31 44 31 30 34 18 Z',
+        'M 64.8 14.8 C 72 16 80 24 83.2 33.2 C 80 44 72 54 59.2 57.2 C 52 56 44 48 40.8 38.8 C 44 28 52 18 64.8 14.8 Z',
         'T',
       ],
     ],
-    l: ['M 50 59 C 51 68 51 76 50 84'],
+    l: ['M 56 56 C 48 64 38 70 28 78'],
   },
 
   flogger: {
     name: 'Flogger',
     group: 'Kink',
     hex: M,
-    t: 'burst',
+    // Same antenna as `march`: the handle is a vertical stem ending at y=16
+    // and `burst` marks sit just above it.
+    t: 'none',
     use: 'Floggers, whips and impact toys.',
+    // The falls HANG. Four strokes fanning out of one point under a dome is a
+    // jellyfish — offered unprompted when the sheet was read cold — because a
+    // radial fan below a rounded top is what a jellyfish is. A flogger at rest
+    // has near-parallel falls with a little sway, so the spread comes down
+    // from 42 units wide to 24 and the cross-stroke moves from the top of the
+    // handle (where it read as a pommel) to the collar, which is the join that
+    // names the object.
     l: [
       ...tinted(
-        'M 50 44 C 40 56 34 68 30 82 M 50 44 C 48 58 46 70 46 84 M 50 44 C 52.6 58.5 56.6 70.5 62 82 M 50 44 C 58 54 66 64 72 74',
+        'M 44 46 C 40 58 38 70 38 84 M 48 46 C 46 58 45 72 46 84 M 52 46 C 54 58 55 72 54 84 M 56 46 C 60 58 62 70 62 84',
       ),
       'M 50 16 C 48.5 26 48.5 36 50 44',
-      'M 44 20 C 47 19 53 19 56 20',
+      'M 40 44 C 46 42 54 42 60 44',
     ],
   },
 
@@ -790,7 +867,7 @@ const DEFS = {
     name: 'Restaurant',
     group: 'Places',
     hex: Y,
-    t: 'sides',
+    t: 'none',
     use: 'Restaurants and places to eat.',
     l: tinted(
       'M 36 84 C 37.5 66 37.5 54 36 44 M 28 20 C 28 30 30 38 36 44 C 42 38 44 30 44 20 M 36 20 C 34.5 26 34.5 32 36 38 M 64 84 C 65.5 66 65.5 52 64 44 C 72 38 74 28 70 18 C 66 22 64 32 64 44',
@@ -801,25 +878,23 @@ const DEFS = {
     name: 'Cafe',
     group: 'Places',
     hex: Y,
-    t: 'crown',
+    t: 'none',
     use: 'Cafés, coffee bars and daytime venues.',
-    f: [
-      ['M 26 38 C 26 58 35 72 50 72 C 65 72 74 58 74 38 C 58 36 42 36 26 38 Z', 'T'],
-    ],
-    l: [
-      'M 74 44 C 84 42 88 52 82 58 C 79 61 76 61 73 60',
-      'M 20 82 C 34 86 66 86 80 82',
-    ],
+    f: [['M 26 38 C 26 58 35 72 50 72 C 65 72 74 58 74 38 C 58 36 42 36 26 38 Z', 'T']],
+    l: ['M 74 44 C 84 42 88 52 82 58 C 79 61 76 61 73 60', 'M 20 82 C 34 86 66 86 80 82'],
   },
 
   shop: {
     name: 'Shop',
     group: 'Places',
     hex: Y,
-    t: 'top',
+    t: 'none',
     use: 'Shops, boutiques and retail venues.',
     f: [
-      ['M 26 38 C 42 36 58 36 74 38 C 76 54 76 66 74 80 C 58 82 42 82 26 80 C 24 66 24 54 26 38 Z', 'T'],
+      [
+        'M 26 38 C 42 36 58 36 74 38 C 76 54 76 66 74 80 C 58 82 42 82 26 80 C 24 66 24 54 26 38 Z',
+        'T',
+      ],
     ],
     l: ['M 38 38 C 38 26 43 20 50 20 C 57 20 62 26 62 38'],
   },
@@ -828,7 +903,7 @@ const DEFS = {
     name: 'Gym',
     group: 'Places',
     hex: G,
-    t: 'sides',
+    t: 'none',
     use: 'Gyms, fitness venues and sports clubs.',
     l: tinted(
       'M 34 50 C 42 51.5 58 51.5 66 50 M 26 36 C 24 45 24 55 26 64 M 34 32 C 32 44 32 56 34 68 M 74 36 C 76 45 76 55 74 64 M 66 32 C 68 44 68 56 66 68',
@@ -839,7 +914,7 @@ const DEFS = {
     name: 'Salon',
     group: 'Places',
     hex: M,
-    t: 'sides',
+    t: 'none',
     use: 'Salons, barbers and grooming venues.',
     f: [
       [ring(24, 76, 10), 'T'],
@@ -852,10 +927,13 @@ const DEFS = {
     name: 'Gallery',
     group: 'Places',
     hex: Y,
-    t: 'crown',
+    t: 'none',
     use: 'Galleries, museums and exhibitions.',
     f: [
-      ['M 22 26 C 40 24 60 24 78 26 C 80 44 80 60 78 76 C 60 78 40 78 22 76 C 20 60 20 44 22 26 Z', 'T'],
+      [
+        'M 22 26 C 40 24 60 24 78 26 C 80 44 80 60 78 76 C 60 78 40 78 22 76 C 20 60 20 44 22 26 Z',
+        'T',
+      ],
     ],
     l: ['M 28 68 C 36 56 42 48 50 48 C 58 48 66 58 72 68', ring(60, 38, 6)],
   },
@@ -864,11 +942,9 @@ const DEFS = {
     name: 'Theater',
     group: 'Places',
     hex: Y,
-    t: 'crown',
+    t: 'none',
     use: 'Theatres, cinemas and performance venues.',
-    f: [
-      ['M 24 30 C 40 26 60 26 76 30 C 76 52 66 74 50 82 C 34 74 24 52 24 30 Z', 'T'],
-    ],
+    f: [['M 24 30 C 40 26 60 26 76 30 C 76 52 66 74 50 82 C 34 74 24 52 24 30 Z', 'T']],
     // A mask, not a face: §7.1 bans features on a FIGURE, and this is the
     // object itself. Two dots and a curve are what make it read as a mask
     // rather than a shield at 24px.
@@ -879,10 +955,13 @@ const DEFS = {
     name: 'Sauna',
     group: 'Places',
     hex: M,
-    t: 'crown',
+    t: 'none',
     use: 'Saunas, bathhouses and cruising venues.',
     f: [
-      ['M 22 62 C 40 58 60 58 78 62 C 76.5 70 76.5 74 78 78 C 60 80 40 80 22 78 C 23.5 74 23.5 70 22 62 Z', 'T'],
+      [
+        'M 22 62 C 40 58 60 58 78 62 C 76.5 70 76.5 74 78 78 C 60 80 40 80 22 78 C 23.5 74 23.5 70 22 62 Z',
+        'T',
+      ],
     ],
     l: [
       'M 34 46 C 30 38 38 32 34 22',
@@ -897,10 +976,13 @@ const DEFS = {
     name: 'Restroom',
     group: 'Places',
     hex: C,
-    t: 'top',
+    t: 'none',
     use: 'Public toilets and restrooms.',
     f: [
-      ['M 28 18 C 44 16 56 16 72 18 C 74 44 74 62 72 84 C 56 86 44 86 28 84 C 26 62 26 44 28 18 Z', 'T'],
+      [
+        'M 28 18 C 44 16 56 16 72 18 C 74 44 74 62 72 84 C 56 86 44 86 28 84 C 26 62 26 44 28 18 Z',
+        'T',
+      ],
     ],
     l: ['M 62 52 C 57 50.5 52 50.5 47 52', ring(63, 52, 5)],
   },
@@ -909,10 +991,13 @@ const DEFS = {
     name: 'Outdoor',
     group: 'Places',
     hex: G,
-    t: 'crown',
+    t: 'none',
     use: 'Parks, beaches and outdoor spaces.',
     f: [
-      ['M 50 16 C 38.8 29.2 30.8 41.2 26 52 C 34 55 42 56 50 56 C 58 56 66 55 74 52 C 69.2 41.2 61.2 29.2 50 16 Z', 'T'],
+      [
+        'M 50 16 C 38.8 29.2 30.8 41.2 26 52 C 34 55 42 56 50 56 C 58 56 66 55 74 52 C 69.2 41.2 61.2 29.2 50 16 Z',
+        'T',
+      ],
     ],
     l: ['M 50 56 C 48.5 68 48.5 78 50 86'],
   },
@@ -922,7 +1007,7 @@ const DEFS = {
     name: 'Apparel',
     group: 'Market',
     hex: Y,
-    t: 'top',
+    t: 'none',
     use: 'Clothing and apparel listings.',
     f: [
       [
@@ -936,7 +1021,7 @@ const DEFS = {
     name: 'Underwear',
     group: 'Market',
     hex: M,
-    t: 'top',
+    t: 'none',
     use: 'Underwear, jockstraps and base layers.',
     l: tinted(
       'M 22 34 C 41 31 59 31 78 34 M 22 34 C 23 46 26 56 31 64 C 34 69 36 74 37 80 C 41 81 45 81 48 80 C 50.5 70.1 50.5 62.1 50 56 C 49.5 62.1 49.5 70.1 52 80 C 55 81 59 81 63 80 C 64 74 66 69 69 64 C 74 56 77 46 78 34',
@@ -947,7 +1032,7 @@ const DEFS = {
     name: 'Swimwear',
     group: 'Market',
     hex: C,
-    t: 'top',
+    t: 'none',
     use: 'Swimwear, trunks and beachwear.',
     f: [
       [
@@ -962,10 +1047,13 @@ const DEFS = {
     name: 'Jewelry',
     group: 'Market',
     hex: Y,
-    t: 'crown',
+    t: 'none',
     use: 'Jewellery, rings and accessories.',
     f: [
-      ['M 50 48 C 45 53 41 59 41 65 C 41 73 45 79 50 79 C 55 79 59 73 59 65 C 59 59 55 53 50 48 Z', 'T'],
+      [
+        'M 50 48 C 45 53 41 59 41 65 C 41 73 45 79 50 79 C 55 79 59 73 59 65 C 59 59 55 53 50 48 Z',
+        'T',
+      ],
     ],
     l: ['M 20 26 C 30 40 40 48 50 48 C 60 48 70 40 80 26'],
   },
@@ -974,11 +1062,9 @@ const DEFS = {
     name: 'Homeware',
     group: 'Market',
     hex: Y,
-    t: 'crown',
+    t: 'none',
     use: 'Home goods, decor and houseware.',
-    f: [
-      ['M 34 45 C 38 33 42 24 50 24 C 58 24 62 33 66 45 C 55 47 45 47 34 45 Z', 'T'],
-    ],
+    f: [['M 34 45 C 38 33 42 24 50 24 C 58 24 62 33 66 45 C 55 47 45 47 34 45 Z', 'T']],
     l: ['M 50 47 C 49 57 49 67 50 75', 'M 36 79 C 45 77 55 77 64 79'],
   },
 
@@ -986,10 +1072,13 @@ const DEFS = {
     name: 'Selfcare',
     group: 'Market',
     hex: C,
-    t: 'top',
+    t: 'none',
     use: 'Grooming, skincare and self-care products.',
     f: [
-      ['M 38 45 C 37 57 37 69 38 79 C 46 81 54 81 62 79 C 63 69 63 57 62 45 C 54 43 46 43 38 45 Z', 'T'],
+      [
+        'M 38 45 C 37 57 37 69 38 79 C 46 81 54 81 62 79 C 63 69 63 57 62 45 C 54 43 46 43 38 45 Z',
+        'T',
+      ],
     ],
     l: [
       'M 44 45 C 47 39 46 35 46 33 C 50 32 54 32 58 33',
@@ -1005,7 +1094,7 @@ const DEFS = {
     name: 'Intimacy',
     group: 'Market',
     hex: M,
-    t: 'corners',
+    t: 'none',
     use: 'Intimacy and adult product departments.',
     f: [
       [ring(38, 50, 18), 'T'],
@@ -1019,7 +1108,7 @@ const DEFS = {
     name: 'Near you',
     group: 'Wayfinding',
     hex: C,
-    t: 'crown',
+    t: 'none',
     use: 'Results sorted by distance from the reader.',
     f: [
       [
@@ -1046,7 +1135,7 @@ const DEFS = {
     // already stand up out of the body, and crown's three ticks land directly
     // above them — the glyph stopped reading as a calendar and started reading
     // as a robot with antennae. Ticks are motion, not more drawing.
-    t: 'sides',
+    t: 'none',
     use: 'Event listings, calendars and date pickers.',
     f: [
       [
@@ -1077,13 +1166,31 @@ const DEFS = {
     name: 'Pride',
     group: 'Queer',
     hex: M,
-    t: 'burst',
+    // No ticks. The flag's top edge runs straight under the `burst` marks, so
+    // the two vertical ones read as a pair of aerials standing on it — the
+    // flag is the one shape in the set wide enough for that to look deliberate
+    // and therefore wrong rather than merely noisy.
+    t: 'none',
     use: 'Pride events, queer identity and the brand mark.',
+    // ONE keyline around the whole flag, four bands of pure colour inside it.
+    //
+    // Four separately outlined bands is MIN_FILL_PITCH read the wrong way
+    // round: the flag is 60 units tall, so a band is 15 and the outline is up
+    // to 13 of them, which left two units of colour between two ink rules —
+    // and because neighbouring bands each drew their own, every boundary came
+    // out double. Four bands, seven ink rules, almost no colour. That is the
+    // "muddy scribble".
+    //
+    // The silhouette is drawn FIRST so the bands paint over the inner half of
+    // its stroke; what survives is a ~6.5-unit casing on the outside, which is
+    // a keyline rather than a scribble. The 1-unit sliver of M visible past the
+    // bands on the right sits under that casing.
     f: [
-      ['M 14 20 C 38 13 62 27 86 19 C 84.5 24 84.5 29 86 35 C 62 43 38 29 14 36 Z', M],
-      ['M 14 36 C 38 29 62 43 86 35 C 84.5 40 84.5 45 86 51 C 62 59 38 45 14 52 Z', C],
-      ['M 14 52 C 38 45 62 59 86 51 C 84.5 56 84.5 61 86 67 C 62 75 38 61 14 68 Z', G],
-      ['M 14 68 C 38 61 62 75 86 67 C 84.5 71 84.5 75 86 80 C 62 87 38 73 14 80 Z', Y],
+      ['M 14 20 C 38 13 62 27 86 19 C 87.5 39 87.5 60 86 80 C 62 87 38 73 14 80 Z', M],
+      ['M 14 20 C 38 13 62 27 86 19 C 84.5 24 84.5 29 86 34 C 62 42 38 28 14 35 Z', M, 0],
+      ['M 14 35 C 38 28 62 42 86 34 C 84.5 39 84.5 44 86 49 C 62 57 38 43 14 50 Z', C, 0],
+      ['M 14 50 C 38 43 62 57 86 49 C 84.5 54 84.5 59 86 64 C 62 72 38 58 14 65 Z', G, 0],
+      ['M 14 65 C 38 58 62 72 86 64 C 84.5 69 84.5 74 86 79 C 62 87 38 73 14 80 Z', Y, 0],
     ],
   },
 
@@ -1139,12 +1246,18 @@ const DEFS = {
     name: 'Dildo',
     group: 'Market',
     hex: M,
-    t: 'top',
+    t: 'none',
     use: 'Dildos and insertable toys.',
-    l: [
-      ...tinted(
-        `M 36 62 C 35 50 35 38 36 30 C 37 21 42 16 50 16 C 58 16 63 21 64 30 C 65 38 65 50 64 62 M 26 74 C 34 66 66 66 74 74 ${ring(50, 80, 7)}`,
-      ),
+    // FILLED, and the ring is gone. An open U with a separate ring below it is
+    // a padlock — shackle over body — which is what the sheet offered, and the
+    // ring was the body. Drawn as one closed mass with a flared base it is an
+    // object with a base, which is what it is; a padlock's shackle cannot be
+    // solid.
+    f: [
+      [
+        'M 38 62 C 36.5 50 36.5 38 38 30 C 39 21 43 16 50 16 C 57 16 61 21 62 30 C 63.5 38 63.5 50 62 62 C 68 66 72 70 74 76 C 66 80 34 80 26 76 C 28 70 32 66 38 62 Z',
+        'T',
+      ],
     ],
   },
 
@@ -1152,7 +1265,7 @@ const DEFS = {
     name: 'Plug',
     group: 'Market',
     hex: M,
-    t: 'top',
+    t: 'none',
     use: 'Plugs and anal toys.',
     f: [
       [
@@ -1167,7 +1280,7 @@ const DEFS = {
     name: 'Stroker',
     group: 'Market',
     hex: M,
-    t: 'top',
+    t: 'none',
     use: 'Strokers and masturbation sleeves.',
     f: [
       [
@@ -1182,7 +1295,7 @@ const DEFS = {
     name: 'Vibrator',
     group: 'Market',
     hex: M,
-    t: 'sides',
+    t: 'none',
     use: 'Vibrators and powered toys.',
     f: [
       [
@@ -1197,7 +1310,7 @@ const DEFS = {
     name: 'Cockring',
     group: 'Market',
     hex: M,
-    t: 'corners',
+    t: 'none',
     use: 'Cockrings and constriction toys.',
     f: [
       [
@@ -1212,7 +1325,7 @@ const DEFS = {
     name: 'Chastity',
     group: 'Market',
     hex: M,
-    t: 'top',
+    t: 'none',
     use: 'Chastity cages and devices.',
     l: [
       ...tinted(
@@ -1225,7 +1338,7 @@ const DEFS = {
     name: 'Pump',
     group: 'Market',
     hex: M,
-    t: 'top',
+    t: 'none',
     use: 'Pumps and suction toys.',
     f: [
       [
@@ -1240,7 +1353,7 @@ const DEFS = {
     name: 'Lube',
     group: 'Market',
     hex: C,
-    t: 'top',
+    t: 'none',
     use: 'Lubricant and personal lubricants.',
     f: [
       [
@@ -1248,14 +1361,18 @@ const DEFS = {
         'T',
       ],
     ],
-    l: ['M 45 38 C 46.5 33.1 46.5 29.1 46 26 C 50 25 54 25 56 26', 'M 56 26 C 61 24 65 22 69 22', ring(50, 58, 7)],
+    l: [
+      'M 45 38 C 46.5 33.1 46.5 29.1 46 26 C 50 25 54 25 56 26',
+      'M 56 26 C 61 24 65 22 69 22',
+      ring(50, 58, 7),
+    ],
   },
 
   'toy-poppers': {
     name: 'Poppers',
     group: 'Market',
     hex: M,
-    t: 'top',
+    t: 'none',
     use: 'Poppers and inhalants.',
     f: [
       [
@@ -1263,7 +1380,10 @@ const DEFS = {
         'T',
       ],
     ],
-    l: ['M 43 42 C 44.5 34.1 44.5 28.1 44 24 C 50 22 56 23 57 24 C 56.5 28.1 56.5 35.1 58 42', ring(50, 62, 7)],
+    l: [
+      'M 43 42 C 44.5 34.1 44.5 28.1 44 24 C 50 22 56 23 57 24 C 56.5 28.1 56.5 35.1 58 42',
+      ring(50, 62, 7),
+    ],
   },
 
   // A rolled condom in profile — reservoir tip over the ring. Drawn as a
@@ -1273,7 +1393,7 @@ const DEFS = {
     name: 'Condom',
     group: 'Market',
     hex: G,
-    t: 'top',
+    t: 'none',
     use: 'Condoms and barrier protection.',
     f: [
       [
@@ -1292,7 +1412,7 @@ const DEFS = {
     name: 'Fetish gear',
     group: 'Kink',
     hex: M,
-    t: 'top',
+    t: 'none',
     use: 'Latex, leather, rubber and uniform gear.',
     // NO STATION DOT. The boot's shaft leaves ~11 units of clear interior once
     // its own outline is drawn, and the counter floor is 16 wide plus a stroke,
@@ -1305,17 +1425,29 @@ const DEFS = {
         'T',
       ],
     ],
+    // ONE strap across the shaft, running a few units past it on both sides.
+    // The silhouette alone was offered as a sock and as the letter L: a
+    // right-angled mass names no object on its own. A strap is the detail that
+    // separates a boot from every soft thing this shape could be, and it has
+    // to overhang the shaft or it reads as a seam.
+    l: ['M 32 34 C 40 31 56 31 64 34'],
   },
 
   'gear-harness': {
     name: 'Harness',
     group: 'Kink',
     hex: M,
-    t: 'corners',
+    t: 'none',
     use: 'Harnesses and body gear.',
+    // Four straps converging on a centre ring from four corners is an X with a
+    // dot — a level crossing, which is what the sheet offered, and a mark this
+    // set can least afford on a wayfinding-shaped brand. A harness is not
+    // symmetric about the horizontal: the straps come over the SHOULDERS, the
+    // O-ring sits at the sternum, and a band runs round the chest below it. The
+    // asymmetry is the fix; the parts are unchanged.
     l: [
       ...tinted(
-        `M 22 22 C 34 32 42 40 44 46 M 78 22 C 66 32 58 40 56 46 M 22 78 C 34 68 42 60 44 54 M 78 78 C 66 68 58 60 56 54 ${ring(50, 50, 10)}`,
+        `M 28 20 C 34 30 40 33 48 35 M 72 20 C 66 30 60 33 52 35 ${ring(50, 44, 10)} M 22 60 C 34 68 66 68 78 60`,
       ),
     ],
   },
@@ -1327,7 +1459,7 @@ const DEFS = {
     name: 'Gag',
     group: 'Kink',
     hex: M,
-    t: 'sides',
+    t: 'none',
     use: 'Gags and mouth gear.',
     f: [[ring(50, 50, 14), 'T']],
     l: [
@@ -1344,13 +1476,29 @@ const DEFS = {
     hex: M,
     t: 'none',
     use: 'Hoods, masks and sensory deprivation gear.',
+    // §7.1 FORBIDS FACES AND THIS WAS ONE. Two eye strokes and a mouth ring on
+    // a head-shaped oval is the §8.4 failure stated almost word for word: two
+    // horizontal curves across an ellipse read as a face, and here they were
+    // meant to.
+    //
+    // The silhouette is the other half of the fix. A head-shaped mass with ANY
+    // interior mark reads as a head, so the hood now hangs the way it does on a
+    // rack — dome at the top flaring to a collar at the bottom — which is a
+    // garment rather than a head, and the one interior mark is its zip.
     f: [
       [
-        'M 50 18 C 36 18 28 28 28 44 C 28 60 36 76 50 82 C 64 76 72 60 72 44 C 72 28 64 18 50 18 Z',
+        'M 50 16 C 38 16 30 24 30 36 C 30 46 26 56 24 66 C 24 74 36 80 50 80 C 64 80 76 74 76 66 C 74 56 70 46 70 36 C 70 24 62 16 50 16 Z',
         'T',
       ],
     ],
-    l: ['M 38 44 C 42 42 46 42 50 44', 'M 62 44 C 58 42 54 42 50 44', ring(50, 62, 6)],
+    // The zip is SHORT and the hem does the rest. Run crown-to-collar it was
+    // one unbroken dark slot down the middle of a dome — a keyhole, not a zip
+    // — and the pull sat close enough to the end to merge into it at every
+    // size, making the slot longer still. Cut to the upper half it reads as a
+    // fastening, and the hem band is what says garment; it is also the mark
+    // `gear-pup` carries, so the two read as one family rather than as two
+    // unrelated domes.
+    l: ['M 50 24 C 48.5 34 48.5 44 50 54', 'M 28 70 C 38 74 62 74 72 70'],
   },
 
   'gear-pup': {
@@ -1359,16 +1507,24 @@ const DEFS = {
     hex: M,
     t: 'none',
     use: 'Pup play hoods and petplay gear.',
+    // Same §7.1 failure as `gear-hood`: the ears were fine and the snout ring
+    // was a nose, so ears plus nose on an oval is a dog's face. The ears stay
+    // because they are the whole identity of a pup hood; the snout goes, the
+    // silhouette becomes the hanging garment, and the hem band replaces it —
+    // garment detail cannot be mistaken for a feature.
+    //
+    // Deliberately NO zip here, unlike `gear-hood`: a vertical line down the
+    // centre of a dome that already has two ears reads as a muzzle.
     f: [
       [
-        'M 50 28 C 36 28 28 38 28 50 C 28 64 38 76 50 80 C 62 76 72 64 72 50 C 72 38 64 28 50 28 Z',
+        'M 50 26 C 38 26 32 34 32 44 C 32 54 28 62 26 70 C 26 77 37 82 50 82 C 63 82 74 77 74 70 C 72 62 68 54 68 44 C 68 34 62 26 50 26 Z',
         'T',
       ],
     ],
     l: [
-      'M 31 34 C 26 24 30 18 38 20 C 42 22 44 26 46 30',
-      'M 69 34 C 74 24 70 18 62 20 C 58 22 56 26 54 30',
-      ring(50, 58, 7),
+      'M 33 38 C 27 28 31 20 39 22 C 43 24 45 28 46 32',
+      'M 67 38 C 73 28 69 20 61 22 C 57 24 55 28 54 32',
+      'M 28 72 C 38 76 62 76 72 72',
     ],
   },
 
@@ -1386,7 +1542,7 @@ const DEFS = {
     name: 'Harm reduction',
     group: 'Safety',
     hex: G,
-    t: 'corners',
+    t: 'none',
     use: 'Harm reduction, drug checking and safer use.',
     f: [[ring(50, 50, 34), 'T']],
     // A PAPER capsule with an ink casing, not an ink bar. As a single thick ink
@@ -1408,7 +1564,7 @@ const DEFS = {
     name: 'Body health',
     group: 'Safety',
     hex: C,
-    t: 'corners',
+    t: 'none',
     use: 'Body and reproductive health resources.',
     f: [[ring(50, 50, 34), 'T']],
     l: ['M 26 42 C 36 70 64 70 74 42'],
@@ -1441,7 +1597,11 @@ export function inkPathOf(def: IconDef): string {
     seen.add(d);
     out.push(d);
   };
-  for (const [d] of def.f ?? []) take(d);
+  // An unoutlined band (outline weight 0) contributes no ink, so it must not
+  // join the mono path either — in mono every path in it is STROKED, so a
+  // colour band would come back as a second outline the colour render does not
+  // draw.
+  for (const [d, , outline] of def.f ?? []) if (outline !== 0) take(d);
   for (const s of def.l ?? []) take(typeof s === 'string' ? s : s[0]);
   return out.join(' ');
 }

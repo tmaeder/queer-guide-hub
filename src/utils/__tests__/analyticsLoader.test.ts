@@ -44,7 +44,7 @@ describe('installAnalyticsConsentLoader (fail-closed)', () => {
     installAnalyticsConsentLoader();
     const tag = document.getElementById('umami-analytics') as HTMLScriptElement | null;
     expect(tag).not.toBeNull();
-    expect(tag!.src).toContain('/umami.js');
+    expect(tag!.src).toContain('/umami.js?v=4');
     expect(tag!.dataset.websiteId).toBe('queer-guide');
   });
 

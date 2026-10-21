@@ -15,6 +15,8 @@
  *   3. Available for future extension (e.g., Supabase event table)
  */
 
+import { trackConsentedEvent } from '@/utils/consentedAnalytics';
+
 type TravelEventName =
   | 'search_submitted'
   | 'results_loaded'
@@ -38,20 +40,16 @@ export function trackTravelEvent(event: TravelEventName, data?: EventData): void
       console.log(`[travel:${event}]`, data || '');
     }
 
-    // Umami analytics (if loaded)
-    const umami = (window as unknown as Record<string, unknown>).umami as { track?: (event: string, data: Record<string, string>) => void } | undefined;
-    if (umami?.track) {
-      // Flatten data for Umami (string values only, no PII)
-      const safeData: Record<string, string> = {};
-      if (data) {
-        for (const [k, v] of Object.entries(data)) {
-          if (v !== undefined && v !== null) {
-            safeData[k] = String(v);
-          }
+    // Flatten data for Umami (string values only, no PII)
+    const safeData: Record<string, string> = {};
+    if (data) {
+      for (const [k, v] of Object.entries(data)) {
+        if (v !== undefined && v !== null) {
+          safeData[k] = String(v);
         }
       }
-      umami.track(`travel_${event}`, safeData);
     }
+    trackConsentedEvent(`travel_${event}`, safeData);
   } catch {
     // Never throw from analytics
   }

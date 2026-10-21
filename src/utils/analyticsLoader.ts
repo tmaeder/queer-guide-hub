@@ -33,7 +33,7 @@ import { hasAnalyticsConsent } from '@/lib/analyticsConsent';
 const UMAMI_SCRIPT_ID = 'umami-analytics';
 // Version query busts the year-long edge/browser cache the old /*.js rule
 // applied to this unversioned file. Bump when the tracker script changes.
-const UMAMI_SRC = '/umami.js?v=3';
+const UMAMI_SRC = '/umami.js?v=4';
 
 /**
  * Withdrawal has to actually stop tracking, not merely stop it after a reload.

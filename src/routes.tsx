@@ -183,6 +183,7 @@ const GroupDetail = lazyRetry(() => import('./pages/GroupDetail'));
 const GroupInviteAccept = lazyRetry(() => import('./pages/GroupInviteAccept'));
 const HandleOrNotFound = lazyRetry(() => import('./pages/social/HandleOrNotFound'));
 const PostDetail = lazyRetry(() => import('./pages/social/PostDetail'));
+const BlueskyCallback = lazyRetry(() => import('./pages/social/BlueskyCallback'));
 const SearchResults = lazyRetry(() => import('./pages/SearchResults'));
 const TripWorkspace = lazyRetry(() => import('./pages/trips/TripWorkspace'));
 const TripsDiscoverPage = lazyRetry(() => import('./pages/trips/TripsDiscoverPage'));
@@ -1047,6 +1048,8 @@ export const AppRoutes = () => {
                   <Route path="favorites" element={<LocalizedRedirect to="/hub/saved" />} />
                   <Route path="feed" element={<LocalizedRedirect to="/hub/feed" />} />
                   <Route path="posts/:postId" element={<PostDetail />} />
+                  {/* atproto OAuth redirect_uri — must match public/oauth/client-metadata.json. */}
+                  <Route path="oauth/callback" element={<BlueskyCallback />} />
                   <Route path="friends" element={<LocalizedRedirect to="/hub/friends" />} />
                   <Route path="community" element={<LocalizedRedirect to="/hub/feed" />} />
                   <Route path="community/feed" element={<LocalizedRedirect to="/hub/feed" />} />

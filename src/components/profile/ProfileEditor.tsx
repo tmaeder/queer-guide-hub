@@ -22,6 +22,7 @@ import { IdentityTab } from '@/components/profile/settings/IdentityTab';
 import { PrivacyTab } from '@/components/profile/settings/PrivacyTab';
 import { DangerZone } from '@/components/profile/settings/DangerZone';
 import { ModerationSettings } from '@/components/profile/settings/ModerationSettings';
+import { BlueskyConnect } from '@/components/profile/settings/BlueskyConnect';
 import { IntimateTab } from '@/components/profile/IntimateTab';
 import { TravelPreferencesEditor } from '@/components/profile/TravelPreferencesEditor';
 import { StatusEditor } from '@/components/status/StatusEditor';
@@ -368,6 +369,7 @@ function ProfileSettingsContent({
           showSecurity={false}
         />
         <ModerationSettings />
+        <BlueskyConnect />
       </>
     ) : section === 'avatar' ? (
       <AvatarChooser

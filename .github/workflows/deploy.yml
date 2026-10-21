@@ -9,6 +9,7 @@ on:
       - "workers/assistant/**"
       - "workers/submit/**"
       - "workers/image-cdn/**"
+      - "workers/atproto-handles/**"
       # Load-bearing: four of the five workers below compile code from
       # workers/_shared (search-proxy + assistant → supabase-jwt, submit →
       # ssrf-guard + supabase-jwt-jose, image-cdn → supabase-jwt-jose). Without
@@ -108,6 +109,17 @@ jobs:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           workingDirectory: workers/image-cdn
+          command: deploy
+
+  deploy-atproto-handles:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: cloudflare/wrangler-action@v4
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          workingDirectory: workers/atproto-handles
           command: deploy
 
   smoke:

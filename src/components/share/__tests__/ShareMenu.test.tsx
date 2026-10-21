@@ -55,3 +55,26 @@ describe('ShareMenu in-app send', () => {
     expect(screen.queryByRole('menuitem', { name: /send to member/i })).toBeNull();
   });
 });
+
+describe('ShareMenu on a safety-gated place', () => {
+  beforeEach(() => {
+    authState.user = { id: 'u1' };
+  });
+
+  it('offers public targets (incl. Bluesky) for an ordinary place', async () => {
+    render(<ShareMenu url="https://queer.guide/venues/eagle-atlanta" entity={entity} />);
+    await openMenu();
+    expect(await screen.findByRole('menuitem', { name: /bluesky/i })).toBeInTheDocument();
+  });
+
+  it('keeps only private routes when the place is gated', async () => {
+    render(<ShareMenu url="https://queer.guide/venues/x" entity={{ ...entity, gated: true }} />);
+    await openMenu();
+    expect(await screen.findByRole('menuitem', { name: /copy link/i })).toBeInTheDocument();
+    expect(screen.getByRole('menuitem', { name: /send to member/i })).toBeInTheDocument();
+    for (const name of [/bluesky/i, /facebook/i, /whatsapp/i, /reddit/i, /^share…$/i]) {
+      expect(screen.queryByRole('menuitem', { name })).toBeNull();
+    }
+    expect(screen.getByText(/public sharing is off/i)).toBeInTheDocument();
+  });
+});
