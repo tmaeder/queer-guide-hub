@@ -96,7 +96,9 @@ Deno.serve(async req => {
       else if (status === 'retry') summary.retry++
       else summary.blocked++
     }
-    await rpc('refresh_admin_review_worklist')
+    // Results are already durable. The dedicated five-minute SQL refresh has a
+    // 90-second budget; running it through PostgREST here can exceed its shorter
+    // statement timeout and incorrectly auto-pause a successful research worker.
     await rpc('record_admin_review_research_run', { p_started: started, p_summary: summary, p_failed: false, p_run_id: runId })
     return jsonResponse({ success: true, ...summary }, 200, req)
   } catch (error) {
