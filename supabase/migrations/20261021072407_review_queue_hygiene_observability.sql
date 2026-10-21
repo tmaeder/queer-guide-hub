@@ -1,4 +1,3 @@
--- Recovered from production migration history; already applied.
 -- Record actual repair counts, not only cron completion.
 create or replace function public.run_review_queue_hygiene(p_batch integer default 500,p_dry_run boolean default false)
 returns jsonb language plpgsql security definer set search_path=public,pg_temp as $$

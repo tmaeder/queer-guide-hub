@@ -1,4 +1,3 @@
--- Recovered from production migration history; already applied.
 -- Stop evidenced repeat noise at intake. Keep the rejected proposal for audit;
 -- do not publish unsupported prose or record a machine decision as human review.
 create or replace function public.city_review_evidence_rejection(p_type text,p_field text,p_citations jsonb)

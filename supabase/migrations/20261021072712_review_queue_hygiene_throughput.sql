@@ -1,4 +1,3 @@
--- Recovered from production migration history; already applied.
 -- 100+100 record repairs finish in 2.4s on production. Raise the bounded cap to
 -- 400 per family per five-minute pass; keep the <=2000 caller clamp and SKIP LOCKED.
 do $patch$
