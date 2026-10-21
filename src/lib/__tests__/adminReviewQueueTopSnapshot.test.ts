@@ -342,8 +342,11 @@ describe('the e2e spec no longer claims the landing request executes every view'
     expect(spec).toContain('admin_review_top_signals');
   });
 
-  it('keeps asserting both total contracts', () => {
-    // The scope contracts are untouched by this change and must stay asserted.
+  it('asserts ready-case, raw-decision and all-source total contracts', () => {
+    expect(spec).toContain('expect(data.total).toBe(data.ready_total)');
+    expect(spec).toContain(
+      'expect(data.ready_total + data.research_total + data.blocked_total).toBe(data.case_total)',
+    );
     expect(spec).toContain('expect(data.total).toBe(data.decisions_total)');
     expect(spec).toContain('expect(data.total).toBe(data.all_total)');
   });

@@ -35,7 +35,7 @@ describe('review requests', () => {
     mocks.rpc.mockReturnValue({ abortSignal });
     const { result } = renderHook(() => useAdminReviewSummary(), { wrapper: Wrapper });
     await waitFor(() => expect(result.current.data).toEqual(summary));
-    expect(mocks.rpc).toHaveBeenCalledExactlyOnceWith('get_admin_review_summary');
+    expect(mocks.rpc).toHaveBeenCalledExactlyOnceWith('get_admin_review_work_summary');
     expect(abortSignal).toHaveBeenCalledWith(expect.any(AbortSignal));
   });
   it('cancels a queue request when its workspace unmounts', async () => {

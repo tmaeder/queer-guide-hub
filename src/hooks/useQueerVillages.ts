@@ -20,9 +20,15 @@ export function useQueerVillages(autoFetch = true) {
       setLoading(true);
       setError(null);
 
+      // The unfiltered list feeds VillagesRail, which renders VillageCard fields only;
+      // select('*') shipped every village's history and editorial text (~400 KB gzipped
+      // per call). A single city's districts still get every column.
+      const columns = filters?.cityId
+        ? '*, cities:city_id(id, name), countries:country_id(id, name, continent_id)'
+        : 'id, name, slug, description, image_url, featured, city_id, country_id, cities:city_id(id, name), countries:country_id(id, name, continent_id)';
       let query = supabase
         .from('queer_villages')
-        .select('*, cities:city_id(id, name), countries:country_id(id, name, continent_id)')
+        .select(columns)
         .order('featured', { ascending: false })
         .order('name', { ascending: true });
 
@@ -35,7 +41,7 @@ export function useQueerVillages(autoFetch = true) {
 
       const { data, error: fetchError } = await query;
       if (fetchError) throw fetchError;
-      setVillages(data || []);
+      setVillages((data || []) as unknown as QueerVillageWithRelations[]);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to fetch villages');
     } finally {
@@ -70,5 +76,14 @@ export function useQueerVillages(autoFetch = true) {
     if (autoFetch) fetchVillages();
   }, [autoFetch, fetchVillages]);
 
-  return { villages, loading, error, fetchVillages, createVillage, updateVillage, deleteVillage, refetch: () => fetchVillages() };
+  return {
+    villages,
+    loading,
+    error,
+    fetchVillages,
+    createVillage,
+    updateVillage,
+    deleteVillage,
+    refetch: () => fetchVillages(),
+  };
 }

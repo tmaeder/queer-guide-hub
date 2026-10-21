@@ -229,8 +229,9 @@ describe('the reader surfaces', () => {
     'utf8',
   );
 
-  it('headlines decisions_total, never all_total', () => {
-    expect(page).toContain('fmtCount(summary!.decisions_total)');
+  it('headlines ready cases and separately labels raw decisions, never all_total', () => {
+    expect(page).toContain('fmtCount(summary!.ready_total)');
+    expect(page).toContain('Raw decisions ({fmtCount(summary?.decisions_total)})');
     expect(page).not.toContain('fmtCount(summary!.all_total)} decisions');
   });
 
@@ -251,8 +252,8 @@ describe('the reader surfaces', () => {
     expect(page).not.toMatch(/query\.data\?\.all_total === 0\s*\n?\s*\? 'All caught up'/);
   });
 
-  it('defaults the scope to decisions, via the shared constant', () => {
-    // Asserts the CONSTANT rather than the literal 'decisions'. Pinning the literal here is what
+  it('defaults the scope to ready cases, via the shared constant', () => {
+    // Asserts the CONSTANT rather than a scope literal. Pinning the literal here is what
     // made this test fail on the fix that removed the duplicate request: both call sites must name
     // one value, so the page and the sidebar summary cannot drift into two separate RPCs.
     expect(page).toMatch(
@@ -265,12 +266,12 @@ describe('the reader surfaces', () => {
   });
 
   it('still offers an all-inclusive view, so nothing is hidden', () => {
-    expect(page).toMatch(/key: 'all', label: 'Incl\. detected'/);
-    expect(page).toContain('summary!.all_total');
+    expect(page).toContain('<option value="all">All source rows & findings');
+    expect(page).toContain('fmtCount(summary?.all_total)');
   });
 
-  it('badges the nav with decisions_total', () => {
-    expect(sidebar).toContain('count: review.data?.decisions_total');
+  it('badges the nav with ready cases, retaining the legacy decisions fallback', () => {
+    expect(sidebar).toContain('count: review.data?.ready_total ?? review.data?.decisions_total');
     expect(sidebar).not.toContain('count: review.data?.all_total');
   });
 });
@@ -287,12 +288,12 @@ describe('the admin review summary avoids a duplicate queue request', () => {
   const page = readFileSync(join(process.cwd(), 'src/pages/admin/AdminReviewQueue.tsx'), 'utf8');
 
   it('keeps the page default shared and uses the summary RPC for badges', () => {
-    expect(hook).toMatch(/export const DEFAULT_REVIEW_SCOPE[^=]*=\s*'decisions'/);
+    expect(hook).toMatch(/export const DEFAULT_REVIEW_SCOPE[^=]*=\s*'ready'/);
     const fetchSummary = hook.slice(
       hook.indexOf('async function fetchReviewSummary'),
       hook.indexOf('export function useAdminReviewSummary'),
     );
-    expect(fetchSummary).toContain(".rpc('get_admin_review_summary')");
+    expect(fetchSummary).toContain(".rpc('get_admin_review_work_summary')");
     expect(fetchSummary).not.toContain('get_admin_review_queue');
     const summary = hook.slice(hook.indexOf('export function useAdminReviewSummary'));
     expect(summary).toContain('queryFn: fetchReviewSummary');
