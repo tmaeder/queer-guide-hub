@@ -22,7 +22,9 @@ trap cleanup EXIT
 "$qg_pg_bin/psql" -h "$qg_test_dir" -p 55489 -d postgres -v ON_ERROR_STOP=1 \
   -f "$qg_repo_root/tests/sql/business-facts-only/bootstrap.sql" \
   -f "$qg_repo_root/supabase/migrations/20261021184341_business_facts_only_source_outcomes.sql" \
-  -f "$qg_repo_root/tests/sql/business-facts-only/assertions.sql" > "$qg_test_dir/test.log" 2>&1 || {
+  -f "$qg_repo_root/tests/sql/business-facts-only/assertions.sql" \
+  -f "$qg_repo_root/supabase/migrations/20261021203842_source_specific_business_quality_limits.sql" \
+  -f "$qg_repo_root/tests/sql/business-facts-only/source-specific-assertions.sql" > "$qg_test_dir/test.log" 2>&1 || {
     cat "$qg_test_dir/test.log"
     exit 1
   }
