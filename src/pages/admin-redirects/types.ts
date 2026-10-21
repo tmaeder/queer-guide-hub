@@ -1,6 +1,6 @@
 import type { RedirectType } from '@/hooks/useRedirects';
 
-export const SUPABASE_URL = 'https://xqeacpakadqfxjxjcewc.supabase.co';
+export { SUPABASE_URL } from '@/integrations/supabase/client';
 
 export interface RedirectRow {
   id: string;
