@@ -175,8 +175,17 @@ try {
   }
   const metadata = { qg_click_id: visit.id, user_id: user };
   const records = [];
+  const paymentNotices = [];
+  let noticeUnavailable = false;
   const client = {
     rpc: async (name, args) => {
+      if (name === 'email_notice_verified_payment') {
+        paymentNotices.push(args);
+        return {
+          data: !noticeUnavailable,
+          error: noticeUnavailable ? { message: 'offline provenance fixture' } : null,
+        };
+      }
       assert.equal(name, 'record_redirect_conversion');
       records.push(args.p_event);
       try {
@@ -205,8 +214,14 @@ try {
           },
           error: null,
         }),
-        update: () => ({ eq: async () => ({ error: null }) }),
-        insert: async () => ({ error: null }),
+        update: () => query,
+        upsert: () => query,
+        insert: () => query,
+        then: (resolve, reject) =>
+          Promise.resolve({ data: [{ id: 'offline-donation' }], error: null }).then(
+            resolve,
+            reject,
+          ),
       };
       return query;
     },
@@ -277,6 +292,7 @@ try {
     console.error = oldConsoleError;
   }
   assert.equal(records.length, 0, 'Invalid signature reached tracking');
+  assert.equal(paymentNotices.length, 0, 'Invalid signature reached payment notices');
   assert.equal(
     (
       await call(
@@ -288,6 +304,7 @@ try {
     200,
   );
   assert.equal(records.length, 0, 'Unpaid checkout credited revenue');
+  assert.equal(paymentNotices.length, 0, 'Unpaid checkout created a payment notice');
   assert.equal((await call('checkout.session.completed', checkout)).status, 200);
   assert.equal((await call('checkout.session.completed', checkout)).status, 200);
   assert.equal(
@@ -307,6 +324,29 @@ try {
     ).status,
     200,
   );
+  assert.equal(
+    paymentNotices.length,
+    3,
+    'Verified paid checkouts/renewal did not record provenance',
+  );
+  assert.deepEqual(
+    paymentNotices.map((n) => n.p_event),
+    ['evt_fixture', 'evt_fixture', 'evt_renewal'],
+  );
+  assert.ok(paymentNotices.every((n) => n.p_donation === 'offline-donation'));
+  noticeUnavailable = true;
+  console.error = () => {};
+  try {
+    assert.equal(
+      (await call('checkout.session.completed', checkout)).status,
+      500,
+      'Provenance failure must request a webhook retry',
+    );
+  } finally {
+    console.error = oldConsoleError;
+    noticeUnavailable = false;
+  }
+  assert.equal((await call('checkout.session.completed', checkout)).status, 200);
   const {
     rows: [totals],
   } = await db.query(
