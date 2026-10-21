@@ -101,14 +101,14 @@ jobs:
           PGDATABASE: email_platform
         run: |
           psql -v ON_ERROR_STOP=1 -f supabase/tests/fixtures/email_platform_bootstrap.sql
-          psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261020182833_email_platform.sql
-          psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261020191722_email_platform_privacy.sql
-          psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261020192818_email_platform_segments.sql
-          psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261020200040_email_platform_lifecycle.sql
-          psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261020201344_email_platform_journeys.sql
-          psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261020204500_email_platform_policy.sql
-          psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261020211000_email_platform_groups.sql
-          psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261020214000_email_platform_trip_invitations.sql
+          psql -v ON_ERROR_STOP=1 -f supabase/migrations/99991792565185_email_platform.sql
+          psql -v ON_ERROR_STOP=1 -f supabase/migrations/99991792565194_email_platform_privacy.sql
+          psql -v ON_ERROR_STOP=1 -f supabase/migrations/99991792565201_email_platform_segments.sql
+          psql -v ON_ERROR_STOP=1 -f supabase/migrations/99991792565208_email_platform_lifecycle.sql
+          psql -v ON_ERROR_STOP=1 -f supabase/migrations/99991792565215_email_platform_journeys.sql
+          psql -v ON_ERROR_STOP=1 -f supabase/migrations/99991792565221_email_platform_policy.sql
+          psql -v ON_ERROR_STOP=1 -f supabase/migrations/99991792565228_email_platform_groups.sql
+          psql -v ON_ERROR_STOP=1 -f supabase/migrations/99991792565235_email_platform_trip_invitations.sql
           psql -v ON_ERROR_STOP=1 -f supabase/tests/email_platform.sql
           psql -v ON_ERROR_STOP=1 -f supabase/tests/email_platform_privacy.sql
           psql -v ON_ERROR_STOP=1 -f supabase/tests/email_platform_segments.sql
