@@ -55,3 +55,16 @@ stay in Research or Blocked; a matching business name never verifies ownership;
 an identity candidate never changes city indexing; accepting shared artwork
 does not resolve unrelated media findings. Raw task and detector views remain
 reachable from the workspace.
+
+Live follow-up found that the research endpoint's redundant full refresh exceeded
+PostgREST's statement timeout after results had already been saved. Three such
+runs triggered the circuit breaker. Version 3 removes that refresh; the separate
+five-minute SQL refresh succeeds within its 90-second budget. The corrected
+worker passed a four-case HTTP 200 probe and its original schedule was restored,
+with failures reset through an audited operational repair. Fresh CLI metadata
+confirmed version 3 after deployment API metadata disagreed with the listing.
+
+The already-applied security follow-up migration `20261021183535` was recovered
+verbatim from the security release worktree so the release ledger stays complete.
+It preserves the review RPC contracts and staff guards while moving privileged
+implementations into the private schema. It was not replayed or renumbered.
