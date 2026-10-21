@@ -38,3 +38,7 @@ A compact status band reports active, paused, stale or unavailable automatic cle
 ## Validation
 
 Scoped component and intake tests, existing city producer contract tests, ESLint, the typecheck ratchet and a production build were run. Desktop and mobile fixtures use the actual review page and components with illustrative data; no overflow or browser exceptions were observed. Database migrations and the city enrichment producer are deployed. Frontend changes are delivered through the associated pull request.
+
+## Shared migration drift
+
+PR CI exposed four advisor migrations already applied by other work, without files on main. Their exact statements were recovered from schema_migrations into matching files; no advisor changes were run as part of this task. This clears the shared remote-history gate so the review changes can be released.

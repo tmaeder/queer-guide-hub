@@ -1,3 +1,4 @@
+-- functiondef-assert-ok: Exact executable ARRAY declaration anchor; preserve the full live body for replacement. This migration is already applied and recovered under its production version.
 -- Stop evidenced repeat noise at intake. Keep the rejected proposal for audit;
 -- do not publish unsupported prose or record a machine decision as human review.
 create or replace function public.city_review_evidence_rejection(p_type text,p_field text,p_citations jsonb)
