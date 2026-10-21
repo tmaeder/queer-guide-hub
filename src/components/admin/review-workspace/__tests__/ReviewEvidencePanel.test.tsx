@@ -19,6 +19,25 @@ beforeEach(() => {
   state.reload.mockReset();
 });
 describe('review evidence', () => {
+  it('shows the actual curated city image and coordinates when reviewing geography or media', () => {
+    state.context = {
+      data: {
+        record: {
+          name: 'Example city',
+          curated_image_url: 'https://example.org/curated.jpg',
+          image_url: 'https://example.org/old.jpg',
+          latitude: 47.37,
+          longitude: 8.54,
+        },
+        location: 'Switzerland',
+        signals: [],
+      },
+    };
+    render(<ReviewEvidencePanel item={{ ...item, queue_type: 'geography' }} />);
+    expect(screen.getByRole('img')).toHaveAttribute('src', 'https://example.org/curated.jpg');
+    expect(screen.getByText('47.37')).toBeInTheDocument();
+    expect(screen.getByText('8.54')).toBeInTheDocument();
+  });
   it('shows the current identity, quoted sources and timestamped signals on the decision page', () => {
     state.context = {
       data: {

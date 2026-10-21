@@ -27,9 +27,8 @@ export function ReviewCleanupStatus() {
           </span>
         )}
         <p className="mt-1 text-muted-foreground">
-          Unsupported claims, obsolete findings, broken images and missing business contacts are
-          handled automatically. Missing evidence goes to research; ready decisions include
-          grouped findings and source context.
+          Routine repairs run automatically. Evidence gaps go to research; blocked jobs remain
+          visible.
         </p>
       </div>
       <Link

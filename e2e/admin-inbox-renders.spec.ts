@@ -83,7 +83,7 @@ test.describe('unified admin review queue', () => {
         r.url().includes('/rpc/get_admin_review_queue') &&
         r.request().postDataJSON()?.p_scope === 'all',
     );
-    await page.getByRole('button', { name: /^Incl\. detected/ }).click();
+    await page.getByRole('combobox', { name: 'Source task scope' }).selectOption('all');
     const response = await responsePromise;
     expect(
       response.ok(),
@@ -112,7 +112,7 @@ test.describe('unified admin review queue', () => {
         r.url().includes('/rpc/get_admin_review_queue') &&
         r.request().postDataJSON()?.p_scope === 'overdue',
     );
-    await page.getByRole('button', { name: /^Overdue/ }).click();
+    await page.getByRole('combobox', { name: 'Source task scope' }).selectOption('overdue');
     const response = await responsePromise;
     expect(
       response.ok(),

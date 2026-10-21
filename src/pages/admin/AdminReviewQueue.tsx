@@ -6,11 +6,8 @@ import {
   ChevronRight,
   Inbox,
   Keyboard,
-  ListFilter,
   RefreshCw,
   Search,
-  ShieldAlert,
-  Timer,
   FlaskConical,
   CircleAlert,
 } from 'lucide-react';
@@ -349,97 +346,117 @@ export default function AdminReviewQueue() {
       </header>
       {(!mobile || !selected) && <ReviewCleanupStatus />}
       <div
-        className={`${mobile && selected ? 'hidden' : 'flex'} shrink-0 flex-col gap-4 border-b border-border px-4 py-4 md:px-6 xl:flex-row xl:items-center`}
+        className={`${mobile && selected ? 'hidden' : 'flex'} shrink-0 flex-col gap-4 border-b border-border px-4 py-4 md:px-6`}
       >
-        <div role="group" aria-label="Review scope" className="flex gap-1 overflow-x-auto">
-          {(
-            [
-              { key: 'ready', label: 'Ready', icon: Inbox },
-              { key: 'research', label: 'Research', icon: FlaskConical },
-              { key: 'blocked', label: 'Blocked', icon: CircleAlert },
-              { key: 'safety', label: 'High risk', icon: ShieldAlert },
-              { key: 'overdue', label: 'Overdue', icon: Timer },
-              { key: 'all', label: 'Incl. detected', icon: ListFilter },
-            ] as const
-          ).map(({ key, label, icon: Icon }) => (
-            <Button
-              key={key}
-              variant={filters.scope === key ? 'default' : 'ghost'}
-              size="sm"
-              aria-pressed={filters.scope === key}
-              className="min-h-10 shrink-0"
-              onClick={() => changeParams({ scope: key === DEFAULT_REVIEW_SCOPE ? null : key })}
-            >
-              <Icon size={14} className="mr-1.5" />
-              {label}
-              {query.data && (
-                <span className="ml-2 tabular-nums">
-                  {fmtCount(
-                    key === 'safety'
-                      ? summary!.safety_total
-                      : key === 'overdue'
-                        ? summary!.overdue_total
-                        : key === 'all'
-                          ? summary!.all_total
-                          : key === 'ready'
-                            ? summary!.ready_total
-                            : key === 'research'
-                              ? summary!.research_total
-                              : key === 'blocked'
-                                ? summary!.blocked_total
-                                : summary!.decisions_total,
-                  )}
-                </span>
-              )}
-            </Button>
-          ))}
-        </div>
-        <select
-          aria-label="Review type"
-          value={queue ?? (family ? `family:${family}` : 'all')}
-          className={`${selectClass} xl:max-w-64`}
-          onChange={(e) => {
-            const value = e.target.value;
-            changeParams({
-              queue: value.startsWith('family:') || value === 'all' ? null : value,
-              family: value.startsWith('family:') ? value.slice(7) : null,
-            });
-          }}
-        >
-          <option value="all">All review types</option>
-          <option value="family:tags">Tags & glossary</option>
-          <option value="family:merge">Duplicates & merges</option>
-          <option value="family:enrichment">AI & enrichment</option>
-          {summary?.sources
-            .filter((source) => source.count > 0 || source.key === queue)
-            .map((source) => (
-              <option key={source.key} value={source.key}>
-                {source.label} ({source.count.toLocaleString()})
-              </option>
+        <div className="flex min-w-0 flex-wrap items-center justify-between gap-4">
+          <div
+            role="group"
+            aria-label="Review scope"
+            className="flex min-w-0 gap-1 overflow-x-auto"
+          >
+            {(
+              [
+                { key: 'ready', label: 'Ready', icon: Inbox },
+                { key: 'research', label: 'Research', icon: FlaskConical },
+                { key: 'blocked', label: 'Blocked', icon: CircleAlert },
+              ] as const
+            ).map(({ key, label, icon: Icon }) => (
+              <Button
+                key={key}
+                variant={filters.scope === key ? 'default' : 'ghost'}
+                size="sm"
+                aria-pressed={filters.scope === key}
+                className="min-h-10 shrink-0"
+                onClick={() => changeParams({ scope: key === DEFAULT_REVIEW_SCOPE ? null : key })}
+              >
+                <Icon size={14} className="mr-1.5" />
+                {label}
+                {query.data && (
+                  <span className="ml-2 hidden tabular-nums sm:inline">
+                    {fmtCount(
+                      key === 'ready'
+                        ? summary!.ready_total
+                        : key === 'research'
+                          ? summary!.research_total
+                          : summary!.blocked_total,
+                    )}
+                  </span>
+                )}
+              </Button>
             ))}
-        </select>
-        <div className="relative min-w-0 flex-1">
-          <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            aria-label="Search review queue"
-            placeholder="Search names or review reasons"
-            className="h-10 pl-10"
-            value={search}
-            onChange={(e) => changeParams({ q: e.target.value || null })}
-          />
+          </div>
+          <select
+            aria-label="Source task scope"
+            className={`${selectClass} w-full sm:max-w-64`}
+            value={
+              ['all', 'decisions', 'safety', 'overdue', 'public'].includes(filters.scope)
+                ? filters.scope
+                : ''
+            }
+            onChange={(event) => changeParams({ scope: event.target.value })}
+          >
+            <option value="" disabled>
+              Inspect source tasks & findings
+            </option>
+            <option value="decisions">Raw decisions ({fmtCount(summary?.decisions_total)})</option>
+            <option value="safety">
+              High-risk source rows ({fmtCount(summary?.safety_total)})
+            </option>
+            <option value="overdue">
+              Overdue source rows ({fmtCount(summary?.overdue_total)})
+            </option>
+            <option value="all">All source rows & findings ({fmtCount(summary?.all_total)})</option>
+            <option value="public">Public-impact source rows</option>
+          </select>
         </div>
-        <select
-          aria-label="Sort review queue"
-          className={selectClass}
-          value={filters.sort}
-          onChange={(e) =>
-            changeParams({ sort: e.target.value === 'priority' ? null : e.target.value })
-          }
-        >
-          <option value="priority">Risk, then oldest</option>
-          <option value="age">Oldest first</option>
-          <option value="confidence">Lowest confidence</option>
-        </select>
+        <div className="grid min-w-0 grid-cols-1 gap-4 lg:grid-cols-[minmax(0,14rem)_minmax(0,1fr)_minmax(0,12rem)]">
+          <select
+            aria-label="Review type"
+            value={queue ?? (family ? `family:${family}` : 'all')}
+            className={`${selectClass} w-full`}
+            onChange={(e) => {
+              const value = e.target.value;
+              changeParams({
+                queue: value.startsWith('family:') || value === 'all' ? null : value,
+                family: value.startsWith('family:') ? value.slice(7) : null,
+              });
+            }}
+          >
+            <option value="all">All review types</option>
+            <option value="family:tags">Tags & glossary</option>
+            <option value="family:merge">Duplicates & merges</option>
+            <option value="family:enrichment">AI & enrichment</option>
+            {summary?.sources
+              .filter((source) => source.count > 0 || source.key === queue)
+              .map((source) => (
+                <option key={source.key} value={source.key}>
+                  {source.label} ({source.count.toLocaleString()})
+                </option>
+              ))}
+          </select>
+          <div className="relative min-w-0 flex-1">
+            <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              aria-label="Search review queue"
+              placeholder="Search names or review reasons"
+              className="h-10 pl-10"
+              value={search}
+              onChange={(e) => changeParams({ q: e.target.value || null })}
+            />
+          </div>
+          <select
+            aria-label="Sort review queue"
+            className={selectClass}
+            value={filters.sort}
+            onChange={(e) =>
+              changeParams({ sort: e.target.value === 'priority' ? null : e.target.value })
+            }
+          >
+            <option value="priority">Risk, then oldest</option>
+            <option value="age">Oldest first</option>
+            <option value="confidence">Lowest confidence</option>
+          </select>
+        </div>
       </div>
       {query.isError ? (
         <div

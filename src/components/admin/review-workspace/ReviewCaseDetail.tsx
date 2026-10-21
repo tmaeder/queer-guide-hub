@@ -61,7 +61,9 @@ export function ReviewCaseDetail({ item, busy, error, onDecision, onSkip, onBack
       : info.stage;
   const selected = members.filter((member) => !excluded.has(member.id));
   const events = new Set(members.map((member) => member.entity_id)).size;
-  const candidates = asList(data?.candidates ?? outcome.candidates ?? asObject(members[0]?.meta?.details).candidates);
+  const candidates = asList(
+    data?.candidates ?? outcome.candidates ?? asObject(members[0]?.meta?.details).candidates,
+  );
   const artwork = [
     ...new Set(
       members.flatMap((member) => {
@@ -98,7 +100,7 @@ export function ReviewCaseDetail({ item, busy, error, onDecision, onSkip, onBack
           >
             <ArrowLeft size={16} />
           </Button>
-          <h2 className="truncate text-base font-semibold">{title}</h2>
+          <h2 className="truncate font-sans text-base font-semibold">{title}</h2>
         </div>
         <Button
           variant="ghost"
@@ -145,7 +147,9 @@ export function ReviewCaseDetail({ item, busy, error, onDecision, onSkip, onBack
                     ? 'Evidence available for review'
                     : stage === 'blocked'
                       ? 'Research is blocked'
-                    : data.research_enabled === false ? 'Automatic research is paused' : 'Automatic research is queued or running'}
+                      : data.research_enabled === false
+                        ? 'Automatic research is paused'
+                        : 'Automatic research is queued or running'}
                 </h3>
                 <p className="mt-2 text-sm leading-relaxed">
                   {typeof outcome.reason === 'string'

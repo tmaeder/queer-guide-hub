@@ -61,7 +61,9 @@ describe('admin landing review workspace', () => {
     expect(screen.getByRole('heading', { name: 'Review queue', level: 1 })).toBeInTheDocument();
     // Distinct fixture figures on purpose: all_total 25 = decisions 18 + findings 7, so each
     // assertion names one population and cannot be satisfied by the other.
-    expect(screen.getByText('25')).toBeInTheDocument();
+    expect(
+      screen.getByRole('option', { name: 'All source rows & findings (25)' }),
+    ).toBeInTheDocument();
     expect(screen.getAllByText('5')).toHaveLength(2);
     expect(screen.getByText(/14 cases from 18 source tasks/)).toBeInTheDocument();
     expect(screen.queryByText('Needs you')).not.toBeInTheDocument();
@@ -73,7 +75,9 @@ describe('admin landing review workspace', () => {
         <AdminDashboard />
       </MemoryRouter>,
     );
-    fireEvent.click(screen.getByRole('button', { name: /Overdue/ }));
+    fireEvent.change(screen.getByRole('combobox', { name: 'Source task scope' }), {
+      target: { value: 'overdue' },
+    });
     expect(state.filters).toHaveBeenLastCalledWith(
       expect.objectContaining({ scope: 'overdue', queues: null }),
     );
