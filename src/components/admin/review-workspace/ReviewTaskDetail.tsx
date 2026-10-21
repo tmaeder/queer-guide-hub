@@ -21,6 +21,7 @@ import {
   type ReviewDecision,
 } from '@/hooks/useAdminReview';
 import { reviewContract } from './reviewContracts';
+import { ReviewEvidencePanel } from './ReviewEvidencePanel';
 
 function Lookup({
   table,
@@ -258,8 +259,22 @@ export function ReviewTaskDetail({ item, busy, error, onDecision, onSkip, onBack
       <div className="min-h-0 flex-1 overflow-y-auto px-4 py-6 md:px-6">
         <h2 className="break-words font-sans text-title font-bold leading-snug">{item.title}</h2>
         <p className="mt-2 break-words text-sm text-muted-foreground">
-          {item.subtitle || 'Review the evidence and choose the appropriate outcome.'}
+          {item.subtitle
+            ? /^[a-zA-Z][a-zA-Z0-9_]*$/.test(item.subtitle)
+              ? item.subtitle.replace(/_/g, ' ').replace(/^./, (c) => c.toUpperCase())
+              : item.subtitle
+            : 'Review the evidence and choose the appropriate outcome.'}
         </p>
+        <ReviewEvidencePanel
+          item={item}
+          candidateOrganizationId={
+            workflow === 'org-link-review'
+              ? adoptionChoice === 'existing'
+                ? orgId
+                : null
+              : undefined
+          }
+        />
         <div className="mt-6 border-y border-border py-4">
           <h3 className="text-sm font-semibold">Decision</h3>
           <p className="mt-1 max-w-prose text-sm leading-relaxed">{contract.consequence}</p>
@@ -270,18 +285,25 @@ export function ReviewTaskDetail({ item, busy, error, onDecision, onSkip, onBack
           )}
         </div>
         <div className="mt-6 flex flex-col gap-6">
-          {evidenceEntries.map(([key, value]) => (
-            <div key={key}>
-              <h3 className="mb-2 text-sm font-medium">
-                {key === 'current_value'
-                  ? 'Value at proposal time'
-                  : key === 'proposed_value'
-                    ? 'Proposed change'
-                    : key.replace(/_/g, ' ').replace(/^./, (c) => c.toUpperCase())}
-              </h3>
-              <StructuredValue value={value} />
+          <details className="border-y border-border py-4">
+            <summary className="cursor-pointer text-sm font-semibold">
+              Full proposal and detector details
+            </summary>
+            <div className="mt-4 space-y-6">
+              {evidenceEntries.map(([key, value]) => (
+                <div key={key}>
+                  <h3 className="mb-2 text-sm font-medium">
+                    {key === 'current_value'
+                      ? 'Value at proposal time'
+                      : key === 'proposed_value'
+                        ? 'Proposed change'
+                        : key.replace(/_/g, ' ').replace(/^./, (c) => c.toUpperCase())}
+                  </h3>
+                  <StructuredValue value={value} />
+                </div>
+              ))}
             </div>
-          ))}
+          </details>
           {workflow === 'org-link-review' && (
             <fieldset className="flex flex-col gap-4">
               <legend className="mb-2 text-sm font-semibold">Business to link</legend>

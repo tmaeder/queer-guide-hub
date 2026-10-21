@@ -17,7 +17,7 @@ export interface FeedbackReply {
   email_id?: string | null;
   email_error?: string | null;
   github_url?: string | null;
-  // Populated by resend-webhook as the email moves through Resend's pipeline.
+  // Populated by Cloudflare email delivery events; historical Resend receipts remain readable.
   delivered_at?: string | null;
   opened_at?: string | null;
   bounced_at?: string | null;

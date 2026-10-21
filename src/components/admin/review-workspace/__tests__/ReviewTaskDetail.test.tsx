@@ -2,6 +2,7 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
 import { ReviewTaskDetail } from '../ReviewTaskDetail';
 import type { ReviewItem } from '@/hooks/useAdminReview';
+vi.mock('../ReviewEvidencePanel', () => ({ ReviewEvidencePanel: () => <div>Evidence panel</div> }));
 vi.mock('@/components/admin/shell/AdminShell', () => ({
   useAdminShell: () => ({ openEditor: vi.fn() }),
 }));

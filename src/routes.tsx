@@ -16,6 +16,7 @@ import { DEFAULT_LOCALE, isSupportedLocale } from '@/i18n/languages';
 import { useAuth } from '@/hooks/useAuth';
 import { legacySettingsDestination } from '@/lib/profileEditing';
 
+const TripInvitationsPage = lazyRetry(() => import('./pages/trips/TripInvitationsPage'));
 const Index = lazyRetry(() => import('./pages/Index'));
 const Venues = lazyRetry(() => import('./pages/Venues'));
 const EntityDetail = lazyRetry(() => import('./pages/EntityDetail'));
@@ -99,6 +100,7 @@ const AdminMailbox = lazyRetry(() => import('./pages/admin/AdminMailbox'));
 const AdminDiagnostics = lazyRetry(() => import('./pages/admin/QualityHub'));
 const AdminTrash = lazyRetry(() => import('./pages/admin/AdminTrash'));
 const ContentGraph = lazyRetry(() => import('./pages/admin/ContentGraph'));
+const EmailPlatform = lazyRetry(() => import('./pages/admin/EmailPlatform'));
 const EmailTemplates = lazyRetry(() => import('./pages/admin/EmailTemplates'));
 const AdminPipelines = lazyRetry(() => import('./pages/admin/AdminPipelines'));
 
@@ -593,6 +595,7 @@ export const AppRoutes = () => {
                     path="redirects"
                     element={<Navigate to="/admin/content/redirects" replace />}
                   />
+                  <Route path="email" element={<EmailPlatform />} />
                   <Route path="email-templates" element={<EmailTemplates />} />
 
                   {/* Settings -- taxonomy management pages */}
@@ -860,6 +863,7 @@ export const AppRoutes = () => {
                   {/* /trips list folded into the /hub office (Plans module). The
                   /trips/:id workspace + discover/shared stay top-level. */}
                   <Route path="trips" element={<LocalizedRedirect to="/hub/plans" />} />
+                  <Route path="trips/invitations" element={<TripInvitationsPage />} />
                   <Route path="trips/inbox" element={<LocalizedRedirect to="/hub/plans" />} />
                   <Route path="trips/discover" element={<TripsDiscoverPage />} />
                   <Route path="trips/shared/:token" element={<SharedTripPage />} />

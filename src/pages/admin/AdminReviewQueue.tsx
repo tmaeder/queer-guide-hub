@@ -25,6 +25,7 @@ import {
   type TriageAction,
   type TriageAnswers,
 } from '@/components/admin/triage/resolveDecision';
+import { ReviewCleanupStatus } from '@/components/admin/review-workspace/ReviewCleanupStatus';
 import { ReviewTaskDetail } from '@/components/admin/review-workspace/ReviewTaskDetail';
 import {
   MERGE_REVIEW_SOURCES,
@@ -322,6 +323,7 @@ export default function AdminReviewQueue() {
           </Button>
         </div>
       </header>
+      {(!mobile || !selected) && <ReviewCleanupStatus />}
       <div
         className={`${mobile && selected ? 'hidden' : 'flex'} shrink-0 flex-col gap-4 border-b border-border px-4 py-4 md:px-6 xl:flex-row xl:items-center`}
       >

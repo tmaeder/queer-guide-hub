@@ -692,6 +692,24 @@ verify_jwt = false
 [functions.redirect-domain-instruction-mail]
 verify_jwt = false
 
+# Handlers validate an internal/admin credential or the dedicated event secret.
+[functions.email-dispatch]
+verify_jwt = false
+[functions.cloudflare-email-events]
+verify_jwt = false
+[functions.email-subscriptions]
+verify_jwt = false
+[functions.email-admin]
+verify_jwt = false
+[functions.email-journeys]
+verify_jwt = false
+
+[functions.send-group-notifications]
+verify_jwt = false
+
+[functions.trip-invitations]
+verify_jwt = false
+
 [functions.bluesky-bot-post]
 verify_jwt = false
 

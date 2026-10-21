@@ -1,7 +1,8 @@
+import { TripInviteControls } from './TripInviteControls';
 import { useState } from 'react';
 import { TrackLoader } from '@/components/transit/TrackLoader';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Copy, Trash2, Check, Link2, Lock, Calendar, Eye} from 'lucide-react';
+import { Copy, Trash2, Check, Link2, Lock, Calendar, Eye } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -164,11 +165,17 @@ export function ShareTripDialog({ open, onClose, tripId }: Props) {
   return (
     <>
       <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
-        <DialogContent>
+        <DialogContent className="max-h-[calc(100dvh-4rem)] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>{t('trips.share.title')}</DialogTitle>
-            <DialogDescription>{t('trips.share.description')}</DialogDescription>
+            <DialogDescription>
+              {t(
+                'trips.share.memberAndLinkDescription',
+                'Invite a Queer Guide member or create a share link.',
+              )}
+            </DialogDescription>
           </DialogHeader>
+          <TripInviteControls tripId={tripId} enabled={open && !!user} />
 
           {/* Existing shares */}
           {isLoading ? (

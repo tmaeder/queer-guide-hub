@@ -13,7 +13,7 @@
  */
 
 import { SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5';
-import { Resend } from 'npm:resend@2.0.0';
+import { sendEmail, isEmailConfigured } from '../_shared/email.ts';
 import { getCorsHeaders as corsHeaders, jsonResponse, errorResponse, getServiceClient } from '../_shared/supabase-client.ts';
 
 async function requireAdmin(
@@ -147,15 +147,6 @@ function buildEmailHtml(t: Template, submissionId: string): string {
 </body></html>`;
 }
 
-let _resend: Resend | null = null;
-function getResend(): Resend | null {
-  if (_resend) return _resend;
-  const key = Deno.env.get('RESEND_API_KEY');
-  if (!key) return null;
-  _resend = new Resend(key);
-  return _resend;
-}
-
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders(req) });
@@ -215,6 +206,7 @@ Deno.serve(async (req) => {
 
   const at = new Date().toISOString();
   const systemReply = {
+    id: crypto.randomUUID(),
     by: null as string | null,
     by_name: 'system',
     body: `${template.heading}\n\n${template.body}`,
@@ -225,38 +217,33 @@ Deno.serve(async (req) => {
     event,
   };
 
-  const resend = getResend();
-  if (contactEmail && resend) {
+  const configured = isEmailConfigured();
+  if (contactEmail && configured) {
     try {
-      const result = await resend.emails.send({
-        from: 'The Queer Guide <noreply@resend.dev>',
+      const result = await sendEmail({
+        from: 'The Queer Guide <noreply@queer.guide>',
         to: [contactEmail],
         subject: template.subject,
         html: buildEmailHtml(template, submissionId),
         text: `${template.heading}\n\n${template.body}`,
       });
       systemReply.emailed = !result.error;
-      systemReply.email_id = result.data?.id ?? null;
-      systemReply.email_error = result.error?.message ?? null;
+      systemReply.email_id = result.id ?? null;
+      systemReply.email_error = result.error ?? null;
     } catch (e) {
-      console.error('notify-feedback-status: resend send failed', e);
+      console.error('notify-feedback-status: email send failed', e);
       systemReply.email_error = 'email_send_failed';
     }
   } else if (!contactEmail) {
     systemReply.email_error = 'no_contact_email';
   } else {
-    systemReply.email_error = 'resend_not_configured';
+    systemReply.email_error = 'cloudflare_not_configured';
   }
 
-  const replies = Array.isArray(data.replies)
-    ? (data.replies as Array<Record<string, unknown>>)
-    : [];
-  const nextData = { ...data, replies: [...replies, systemReply] };
-  const { error: updErr } = await svc
-    .from('community_submissions')
-    .update({ data: nextData, reviewed_by: userId, reviewed_at: at })
-    .eq('id', submissionId);
+
+  const {error: updErr} = await svc.rpc('email_append_feedback_reply', {p_submission: submissionId, p_reply: systemReply, p_actor: userId, p_at: at});
   if (updErr) return errorResponse(updErr.message, 500, req);
+  if (systemReply.email_id) await svc.rpc('email_sync_feedback', {p_provider: systemReply.email_id});
 
   void displayName; // only used in shared signature
   return jsonResponse(

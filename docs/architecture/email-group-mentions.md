@@ -1,0 +1,42 @@
+# Group post mention delivery
+
+This adapter handles direct mentions in saved group posts. It replaces the old group sender's arbitrary recipient/content request with an authoritative source queue. Announcements, general new-post broadcasts, polls, comments, likes and invitations are not supported mail actions in this release. Newsletter and marketing dispatch remain blocked by Cloudflare's provider capability.
+
+## Product source and permission
+
+An AFTER INSERT/UPDATE-of-mentions trigger on `group_posts` compares actual mention IDs with current Auth accounts and group memberships. It creates a generic in-app mention notification and, only for explicitly opted-in recipients, a service-only `email_group_mentions` source in the same transaction. It copies no group names, usernames, sender names or post bodies. Malformed IDs, outsiders, self mentions, disabled accounts and blocked pairs are skipped. At most 50 recipient membership rows are processed per post write. Duplicate mention entries cannot create duplicate email sources.
+
+Updates process newly added mentions only. Content edits, unchanged mention lists and repeated mention removal/re-addition do not create another email source for the same post/member. Existing posts are not scanned or backfilled. Enabling group email after a mention does not create an email for that historic mention. This adapter also makes post mentions visible in the existing group inbox; read status remains owned by that inbox.
+
+`group_mentions_enabled` is independent of DM email and defaults false. Account settings expose it alongside the existing digest and quiet-hour controls. The delivery-preferences save RPC adds optional `p_group_enabled`; clients omitting it preserve the current group value. The optimistic version and change-history snapshot cover all switches together. Quiet hours apply to both adapters, and they share one possible activity submission per member per UTC day. This is conservative notification delivery, not a digest aggregator or a rolling/local-day limit.
+
+## Source checks and immutable queue
+
+Every candidate and enqueue rechecks the saved source. Claim and immediate pre-dispatch authorization additionally enforce current preferences, current primary mailbox, quiet hours, the shared budget and suppression/account erasure. Current source eligibility requires:
+
+- The original post and group still exist and the group is neither archived nor merged; the post retains its original author and group and still mentions the member.
+- Both recipient and author retain their **original membership IDs**. Leaving and rejoining cannot revive a pending message from a prior membership.
+- The original notification remains unread and its recipient/group/post/type/author fields still match the captured proof. A member's ability to edit a notification cannot replace that proof.
+- Neither party has blocked the other or had their account disabled for erasure, and the source is less than 24 hours old.
+
+`email_group_mention_enqueue` derives the recipient from current Auth and links the source to the outbox atomically. Its canonical key is SHA-256 of `group-mention:<source UUID>`, independent of mailbox changes. Retries return the original payload/identity, even after branding changes. Changing the account email cannot submit the same mention to a second mailbox. Snapshots expire 24 hours after the mention source; read/removal/leave/block/opt-out invalidate queued mail. Live processing leases remain intact to record a receipt from a request already in flight. Expired processing leases with ambiguous delivery become uncertain rather than being blindly resent.
+
+The email has a generic subject and body with fixed links to authenticated groups and account settings. It includes no source UUID, group name, author identity, excerpt or caller-provided URL. The existing Cloudflare Worker, Durable Object identity, Queue callbacks and outbox dispatcher handle submission and receipts.
+
+## API, scheduler and rollout
+
+`send-group-notifications` requires the existing internal secret, service credential or a current admin. It accepts only POST `{"action":"tick"}` or that object plus a valid `source_id`. Other fields, including the former recipient, content, group name, notification type and URL fields, return 400. This is an intentional incompatible replacement of the unsafe legacy contract. The existing workflow registry entry is updated to the new tick payload and Cloudflare description while preserving its enabled/disabled state; no direct caller was found in the inspected application source.
+
+A tick queues at most five candidates and returns 202 with `queued`/`skipped` counts. It does not claim successful delivery. The existing authenticated outbox dispatcher processes the resulting rows. If a source changes between selection and enqueue, the item is skipped. Unconfigured Cloudflare delivery returns 503 before queueing. The minute scheduler uses the existing vault secret and has an `email_group_mentions` entry in the admin automation registry; disabling that entry pauses creation of new queued rows, while the normal dispatcher continues to enforce current source policy for already queued rows.
+
+The migration suppresses queued or expired-lease snapshots identifiable as the old `Community Groups <noreply@queer.guide>` sender without a template/source. Live legacy requests cannot pass final authorization, but a provider submission already in flight cannot be recalled. This does not attempt to classify unrelated historical mail.
+
+Apply the seventh email migration and deploy the changed `email-subscriptions`, `send-group-notifications` and shared/dispatcher code together. `verify_jwt=false` on this endpoint allows the vault-secret scheduler to reach the function's own authorization checks. It does not make the operation public. No production schema change, scheduler execution, deployment or real email has been performed in local verification.
+
+## Privacy and verification
+
+The source table has RLS and service-only grants. Its recipient export contains owned opaque source/post/notification IDs and time, with no author/member identities or private content. Recipient erasure removes sources and scrubs outbox source links; author erasure removes their sources so recipients cannot receive stale mail from them. Auth/post/group/notification deletion cascades source removal. Existing shared privacy behavior covers preference history and reservations. The new event history needs a production retention period, alongside existing message/receipt retention.
+
+SQL contracts exercise explicit opt-in without backfill, compatibility with older settings clients, authoritative capture, immutable replay, blocks in both directions, unread/source mutation/removal, departure/rejoin, mailbox changes, quiet-hour holds, opt-out, legacy quarantine, author/recipient erasure, export and permissions. A real overlapping-transaction test pits a DM digest against a group mention and verifies that only one can reserve the shared daily budget, while retries of the winner retain eligibility. Backend contracts reject arbitrary request content and verify generic mail rendering; UI tests verify independent group opt-in. These isolated fixtures do not prove every production migration, inbox placement or throughput. Archive checks support both before and after the later `archived_at` application migration. Comment mentions and other group activity types still require their own authoritative adapters before they can send email.
+
+Local verification on 2026-10-20: all seven email migrations applied to a fresh isolated PostgreSQL database, all seven SQL contract suites passed, and all three actual overlapping-transaction cases passed. The fixture now exercises the operations-registry branches too, including preservation of the disabled workflow state and a disabled scheduler returning before any network call. Seventeen backend contracts and seven member-settings UI tests passed. Changed endpoints passed Deno checking, changed UI passed ESLint, the existing typecheck ratchet reported no new errors (698 existing versus baseline 782), and the production frontend build passed. Security advisor found no issues in the isolated fixture database. Settings fixtures at 1280 and 390 pixels showed no horizontal overflow or browser errors. No production migrations, deployment or real mail were performed.
