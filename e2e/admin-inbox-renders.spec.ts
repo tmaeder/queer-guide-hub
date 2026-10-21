@@ -78,6 +78,18 @@ test.describe('unified admin review queue', () => {
       initial.ok(),
       `Initial queue HTTP ${initial.status()}: ${initial.ok() ? '' : await initial.text()}`,
     ).toBe(true);
+    const rawResponsePromise = page.waitForResponse(
+      (r) =>
+        r.url().includes('/rpc/get_admin_review_queue') &&
+        r.request().postDataJSON()?.p_scope === 'decisions',
+    );
+    await page.getByRole('combobox', { name: 'Source task scope' }).selectOption('decisions');
+    const rawResponse = await rawResponsePromise;
+    expect(rawResponse.ok()).toBe(true);
+    {
+      const data = await rawResponse.json();
+      expect(data.total).toBe(data.decisions_total);
+    }
     const responsePromise = page.waitForResponse(
       (r) =>
         r.url().includes('/rpc/get_admin_review_queue') &&

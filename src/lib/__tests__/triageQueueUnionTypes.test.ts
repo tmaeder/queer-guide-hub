@@ -256,15 +256,11 @@ describe('the unified review e2e spec stays coupled to what it asserts about', (
    * the empty-state assertion left this suite green until the strip was added.
    */
   const spec = specRaw.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '');
-  const view = readFileSync(
-    join(process.cwd(), 'src/pages/admin/AdminReviewQueue.tsx'),
-    'utf8',
-  );
+  const view = readFileSync(join(process.cwd(), 'src/pages/admin/AdminReviewQueue.tsx'), 'utf8');
   const row = readFileSync(
     join(process.cwd(), 'src/components/admin/triage/TriageItemRow.tsx'),
     'utf8',
   );
-
 
   it('matches the error state the unified review page actually renders', () => {
     expect(view).toContain('The review queue could not be loaded');
@@ -280,8 +276,8 @@ describe('the unified review e2e spec stays coupled to what it asserts about', (
   });
 
   it('matches the empty state, which is a different DOM state from the error', () => {
-    expect(view).toContain('All caught up');
-    expect(spec).toContain("getByText('All caught up')");
+    expect(view).toContain('No decisions ready');
+    expect(spec).toContain("getByText('No decisions ready')");
     expect(spec).toContain('data.total > 0');
   });
 
