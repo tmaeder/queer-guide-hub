@@ -61,7 +61,7 @@ export function ReviewCaseDetail({ item, busy, error, onDecision, onSkip, onBack
       : info.stage;
   const selected = members.filter((member) => !excluded.has(member.id));
   const events = new Set(members.map((member) => member.entity_id)).size;
-  const candidates = asList(outcome.candidates ?? asObject(members[0]?.meta?.details).candidates);
+  const candidates = asList(data?.candidates ?? outcome.candidates ?? asObject(members[0]?.meta?.details).candidates);
   const artwork = [
     ...new Set(
       members.flatMap((member) => {

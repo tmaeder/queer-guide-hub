@@ -28,7 +28,7 @@ const member = (id: string): ReviewItem & { current_record: Record<string, unkno
     entity_table: 'events',
     meta: { evidence: { images: [{ url: 'https://example.test/artwork.jpg' }] } },
     current_record: { start_date: '2026-11-01T20:00:00Z', website: 'https://example.test/event' },
-  }) as ReviewItem & { current_record: Record<string, unknown> };
+  }) as unknown as ReviewItem & { current_record: Record<string, unknown> };
 const item = (family = 'artwork', stage = 'ready'): ReviewItem =>
   ({
     id: 'case',

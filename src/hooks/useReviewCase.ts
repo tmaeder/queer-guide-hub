@@ -15,6 +15,7 @@ export interface ReviewCaseDetails {
   family: ReviewCaseInfo['family'];
   fingerprint: string;
   members: Array<ReviewItem & { current_record?: Record<string, unknown> | null }>;
+  candidates?: Record<string, unknown>[] | null;
   research_enabled?: boolean;
   research: {
     status: string;
