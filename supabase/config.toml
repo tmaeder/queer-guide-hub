@@ -703,6 +703,8 @@ verify_jwt = false
 verify_jwt = false
 [functions.email-journeys]
 verify_jwt = false
+[functions.email-operations]
+verify_jwt = false
 
 [functions.send-group-notifications]
 verify_jwt = false

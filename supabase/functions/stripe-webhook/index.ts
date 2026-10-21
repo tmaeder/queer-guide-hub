@@ -9,7 +9,9 @@ import {
   isRenewalInvoice,
 } from "./helpers.ts";
 
-const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY")!, { apiVersion: "2024-12-18.acacia" });
+const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY")!, {
+  apiVersion: "2024-12-18.acacia",
+});
 const webhookSecret = Deno.env.get("STRIPE_WEBHOOK_SECRET")!;
 const cryptoProvider = Stripe.createSubtleCryptoProvider();
 
@@ -27,7 +29,13 @@ Deno.serve(async (req) => {
 
   let event: Stripe.Event;
   try {
-    event = await stripe.webhooks.constructEventAsync(body, signature, webhookSecret, undefined, cryptoProvider);
+    event = await stripe.webhooks.constructEventAsync(
+      body,
+      signature,
+      webhookSecret,
+      undefined,
+      cryptoProvider,
+    );
   } catch (err) {
     console.error("Webhook signature verification failed:", err);
     return new Response("Invalid signature", { status: 400 });
@@ -37,26 +45,46 @@ Deno.serve(async (req) => {
 
   const track = async (conversion: ConversionInput | null) => {
     if (!conversion) return;
-    const { error } = await supabase.rpc("record_redirect_conversion", { p_event: conversion });
+    const { error } = await supabase.rpc("record_redirect_conversion", {
+      p_event: conversion,
+    });
     // Deleting a campaign clears its attribution FK; an already-issued Stripe
     // event may still carry that former click. Never recreate deleted history.
-    if (error && error.code !== "P0002") throw new Error("Conversion recording failed: " + error.message);
+    if (error && error.code !== "P0002") {
+      throw new Error("Conversion recording failed: " + error.message);
+    }
   };
   try {
     switch (event.type) {
       case "checkout.session.completed":
       case "checkout.session.async_payment_succeeded": {
         const session = event.data.object as Stripe.Checkout.Session;
-        if (!["paid","no_payment_required"].includes(session.payment_status)) break;
-        const update = buildCheckoutCompletedUpdate(session, new Date().toISOString());
+        if (!["paid", "no_payment_required"].includes(session.payment_status)) {
+          break;
+        }
+        const update = buildCheckoutCompletedUpdate(
+          session,
+          new Date().toISOString(),
+        );
 
-        const { error } = await supabase
+        const { data: paidDonations, error } = await supabase
           .from("donations")
           .update(update)
-          .eq("stripe_session_id", session.id);
+          .eq("stripe_session_id", session.id).select("id");
 
-        if (error) console.error("Failed to update donation:", error);
-        await track(checkoutSale(session, new Date(event.created*1000).toISOString()));
+        if (error) throw new Error("Failed to persist verified donation");
+        for (const donation of paidDonations ?? []) {
+          const notice = await supabase.rpc("email_notice_verified_payment", {
+            p_donation: donation.id,
+            p_event: event.id,
+          });
+          if (notice.error) {
+            throw new Error("Failed to record payment notification provenance");
+          }
+        }
+        await track(
+          checkoutSale(session, new Date(event.created * 1000).toISOString()),
+        );
         break;
       }
 
@@ -71,26 +99,48 @@ Deno.serve(async (req) => {
         // Find original donation for this subscription
         const { data: original } = await supabase
           .from("donations")
-          .select("user_id, email, donor_name, message, is_anonymous, currency, recurring_interval, redirect_click_id")
+          .select(
+            "user_id, email, donor_name, message, is_anonymous, currency, recurring_interval, redirect_click_id",
+          )
           .eq("stripe_subscription_id", subscriptionId)
           .order("created_at", { ascending: true })
           .limit(1)
           .single();
 
         if (!original) {
-          console.warn("No original donation found for subscription:", subscriptionId);
+          console.warn(
+            "No original donation found for subscription:",
+            subscriptionId,
+          );
           break;
         }
 
         // Skip if this is the first invoice (handled by checkout.session.completed)
         if (!isRenewalInvoice(invoice)) break;
 
-        const { error } = await supabase
+        const { data: renewals, error } = await supabase
           .from("donations")
-          .insert(buildRenewalDonation(original, invoice, subscriptionId));
+          .upsert(buildRenewalDonation(original, invoice, subscriptionId), {
+            onConflict: "stripe_session_id",
+          }).select("id");
 
-        if (error) console.error("Failed to insert renewal donation:", error);
-        await track(renewalSale(original, invoice, new Date(event.created*1000).toISOString()));
+        if (error) throw new Error("Failed to persist verified renewal");
+        for (const donation of renewals ?? []) {
+          const notice = await supabase.rpc("email_notice_verified_payment", {
+            p_donation: donation.id,
+            p_event: event.id,
+          });
+          if (notice.error) {
+            throw new Error("Failed to record renewal notification provenance");
+          }
+        }
+        await track(
+          renewalSale(
+            original,
+            invoice,
+            new Date(event.created * 1000).toISOString(),
+          ),
+        );
         break;
       }
 
@@ -104,7 +154,9 @@ Deno.serve(async (req) => {
           })
           .eq("stripe_subscription_id", subscription.id);
 
-        if (error) console.error("Failed to mark subscription canceled:", error);
+        if (error) {
+          console.error("Failed to mark subscription canceled:", error);
+        }
         break;
       }
 
@@ -113,7 +165,9 @@ Deno.serve(async (req) => {
     }
   } catch (err) {
     console.error("Webhook processing error:", err);
-    reportApiError("stripe-webhook", err, { endpoint: "/functions/v1/stripe-webhook" });
+    reportApiError("stripe-webhook", err, {
+      endpoint: "/functions/v1/stripe-webhook",
+    });
     return new Response("Webhook processing failed", { status: 500 });
   }
 

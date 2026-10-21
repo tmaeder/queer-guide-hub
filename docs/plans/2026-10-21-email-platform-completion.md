@@ -8,8 +8,8 @@ Extend the existing Email admin workspace, paper/ink visual system, shared contr
 
 ## Completion sequence
 
-- [ ] Journey editor: typed graphs, validation, sample previews, immutable versions, pause/resume/archive, cancellation and actual step traces.
-- [ ] Campaign governance: saved audience binding, optimistic editing, immutable content versions, review/approval, deduplicated audience snapshots and inclusion/exclusion explanations; promotional delivery remains blocked.
+- [x] Journey editor: typed graphs, validation, sample previews, immutable versions, pause/resume/archive, cancellation and actual step traces.
+- [x] Campaign governance: saved audience binding, optimistic editing, immutable content versions, review/approval, deduplicated audience snapshots and inclusion/exclusion explanations; promotional delivery remains blocked.
 - [ ] Content: shared rendering throughout, explicit locale fallback, validated public catalog/editorial blocks and previews.
 - [ ] Remaining operational adapters: authoritative event changes/reminders, trip changes/reminders, group invitations/comments/requests, saved alerts, merchant/organization/contribution/payment notices. Every enabled adapter requires independent purpose/permission, current source/visibility and immutable logical identity; product domains without an authoritative source or qualifying permission remain explicitly excluded.
 - [ ] Measurement: deterministic experiment/control assignment, declared outcome windows, verified app outcomes, recipient/step/flow reporting; no fabricated purchases, lift or automatic winner.
@@ -26,3 +26,8 @@ Extend the existing Email admin workspace, paper/ink visual system, shared contr
 ## Verification record
 
 Prior release: all twelve required PR checks, Pages smoke and all-functions backend deployment passed. Eight email migrations and four scheduler jobs are live; RLS/critical RPC audit passed. Cloudflare SMTP AUTH/NOOP passed without test mail. Native lifecycle subscription is enabled. These facts do not establish full platform parity or inbox placement.
+
+
+Completion checkpoint (local verification, not a deployment claim): journey/campaign workspace reviewed at 1440px and 390px, two independent reviewer findings fixed and scored resolved. Immutable campaign snapshots/reviews and operational audit pass isolated SQL contracts. Seven new source-backed notice kinds cover event/trip changes/reminders, group-request decisions, contribution decisions and signature-verified payment notifications, each independently opted in and revalidated before dispatch. Membership replacement, rescheduling, opt-out, erasure and timezone-stable fingerprints are covered. Group comments/invitations, saved alerts and merchant/organization adapters still require implementation or an explicit justified exclusion; they are not claimed here.
+
+Operations now provide read-only durable receipt reconciliation, observed health/latency, a configured bounded body-retention job, 10,000-contact capacity contracts and a disposable PostgreSQL restore rehearsal. The recovery runbook documents DLQ handling; a live DLQ drain, production restore and actual inbox/native-event correlation remain unverified. Content localization/catalog blocks, experiment/reporting and subscriber import/public management remain unchecked. Cloudflare's restriction is a failed marketing release gate, not a reason to label these software gaps complete.

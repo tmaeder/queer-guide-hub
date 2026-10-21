@@ -18,6 +18,7 @@ interface DeliveryPreferences {
   dm_digest_enabled: boolean;
   group_mentions_enabled: boolean;
   trip_invites_enabled: boolean;
+  operational_topics: string[];
   timezone: string;
   quiet_hours_enabled: boolean;
   quiet_start: number;
@@ -28,6 +29,7 @@ const defaultDelivery: DeliveryPreferences = {
   dm_digest_enabled: false,
   group_mentions_enabled: false,
   trip_invites_enabled: false,
+  operational_topics: [],
   timezone: 'Etc/UTC',
   quiet_hours_enabled: false,
   quiet_start: 22,
@@ -44,13 +46,15 @@ export function EmailPreferences() {
     [error, setError] = useState(false),
     [busy, setBusy] = useState(false),
     [confirmation, setConfirmation] = useState(false);
-  const load = useCallback(async () => {
+  const load = useCallback(async (preserveActivity = false) => {
     try {
       const r = await supabase.functions.invoke('email-subscriptions', { method: 'GET' });
       if (r.error) throw r.error;
       setSubscription(r.data.subscription);
-      setDelivery({ ...defaultDelivery, ...r.data.delivery_preferences });
-      setDeliveryConflict(false);
+      if (!preserveActivity) {
+        setDelivery({ ...defaultDelivery, ...r.data.delivery_preferences });
+        setDeliveryConflict(false);
+      }
       setSelected(r.data.subscription?.topics ?? []);
       setError(false);
     } catch {
@@ -78,7 +82,7 @@ export function EmailPreferences() {
       });
       if (r.error) throw r.error;
       if (subscribing && !unsubscribe) setConfirmation(true);
-      await load();
+      await load(true);
       toast.success(t('emailPreferences.saved', 'Email preferences saved'));
     } catch {
       toast.error(
@@ -179,6 +183,36 @@ export function EmailPreferences() {
                 {t('emailPreferences.tripInvites', 'Email me when I receive a trip invitation')}
               </Label>
             </div>
+            {(
+              [
+                ['event_updates', 'Email me schedule changes and reminders for events I joined'],
+                [
+                  'trip_updates',
+                  'Email me schedule changes and UTC next-day reminders for my trips',
+                ],
+                ['group_requests', 'Email me the outcome of my group join requests'],
+                ['contributions', 'Email me decisions on my contributions'],
+                ['payments', 'Email me when a verified payment confirmation is ready'],
+              ] as const
+            ).map(([topic, label]) => (
+              <div key={topic} className="flex min-h-10 items-center gap-4">
+                <input
+                  id={`email-operation-${topic}`}
+                  type="checkbox"
+                  disabled={busy}
+                  checked={delivery.operational_topics.includes(topic)}
+                  onChange={(e) =>
+                    setDelivery({
+                      ...delivery,
+                      operational_topics: e.target.checked
+                        ? [...delivery.operational_topics, topic]
+                        : delivery.operational_topics.filter((t) => t !== topic),
+                    })
+                  }
+                />
+                <Label htmlFor={`email-operation-${topic}`}>{label}</Label>
+              </div>
+            ))}
             <p className="text-sm text-muted-foreground">
               {t(
                 'emailPreferences.dmPrivacy',
@@ -188,7 +222,7 @@ export function EmailPreferences() {
             <p className="text-sm text-muted-foreground">
               {t(
                 'emailPreferences.activityBudget',
-                'Message digests, group mentions and trip invitations share a limit of one activity email per UTC day. Essential account emails remain available.',
+                'All optional activity emails share a limit of one email per UTC day. Essential account emails remain available.',
               )}
             </p>
             <div className="flex min-h-10 items-center gap-4">

@@ -24,7 +24,9 @@ Deno.serve(async (req: Request) => {
           db.from("email_outbox").select(
             "id,status,recipient_email,attempts,template_key,last_error,provider_id,created_at",
           ).order("created_at", { ascending: false }).limit(50),
-          db.from("email_campaigns").select("*").order("created_at", {
+          db.from("email_campaigns").select(
+            "id,name,status,topic,template_key,locale,scheduled_at,version,review_state,segment_id,created_at,updated_at",
+          ).order("created_at", {
             ascending: false,
           }).limit(50),
           db.from("email_subscribers").select("id", {
@@ -70,6 +72,52 @@ Deno.serve(async (req: Request) => {
         if (error) throw error;
         return result({ segments: data });
       }
+      if (resource === "campaign") {
+        const id = url.searchParams.get("id");
+        if (
+          !id ||
+          !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+            .test(id)
+        ) {
+          return result({ error: "Campaign required" }, 400);
+        }
+        const [campaign, versions, reviews, audiences] = await Promise.all([
+          db.from("email_campaigns").select("*").eq("id", id).maybeSingle(),
+          db.from("email_campaign_versions").select(
+            "campaign_id,version,created_at,created_by",
+          ).eq("campaign_id", id).order("version", { ascending: false }).limit(
+            100,
+          ),
+          db.from("email_campaign_reviews").select(
+            "version,action,created_at,actor_id",
+          ).eq("campaign_id", id).order("created_at", { ascending: false })
+            .limit(100),
+          db.rpc("email_campaign_audience_report", { p_campaign: id }),
+        ]);
+        if ([campaign, versions, reviews, audiences].some((q) => q.error)) {
+          throw new Error("Campaign overview unavailable");
+        }
+        if (!campaign.data) return result({ error: "Campaign not found" }, 404);
+        const version = await db.from("email_campaign_versions").select("*").eq(
+          "campaign_id",
+          id,
+        ).eq("version", campaign.data.version).maybeSingle();
+        if (version.error) throw version.error;
+        return result({
+          campaign: campaign.data,
+          version: version.data,
+          versions: versions.data,
+          reviews: reviews.data,
+          audiences: audiences.data,
+        });
+      }
+      if (resource === "audit") {
+        const { data, error } = await db.from("email_operator_events").select(
+          "id,object_type,object_id,version,action,actor_id,created_at",
+        ).order("created_at", { ascending: false }).limit(100);
+        if (error) throw error;
+        return result({ events: data });
+      }
       if (resource === "timeline") {
         const id = url.searchParams.get("id");
         if (!id || !/^[a-f0-9-]{36}$/i.test(id)) {
@@ -100,7 +148,34 @@ Deno.serve(async (req: Request) => {
     }
     const raw = await req.text();
     if (raw.length > 12000) return result({ error: "Request too large" }, 413);
-    const body = JSON.parse(raw);
+    let body;
+    try {
+      body = JSON.parse(raw);
+    } catch {
+      return result({ error: "Invalid request" }, 400);
+    }
+    if (!body || typeof body !== "object" || Array.isArray(body)) {
+      return result({ error: "Invalid request" }, 400);
+    }
+    if (
+      [
+        "campaign-save",
+        "campaign-cancel",
+        "campaign-review",
+        "campaign-snapshot",
+      ].includes(body.action) &&
+      (body.action !== "campaign-save" || body.id !== undefined)
+    ) {
+      if (
+        typeof body.id !== "string" ||
+        !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+          body.id,
+        ) || !Number.isInteger(body.expected_version) ||
+        body.expected_version < 1 || body.expected_version > 2147483647
+      ) {
+        return result({ error: "Current campaign and version required" }, 400);
+      }
+    }
     if (body.action === "segment-save") {
       if (
         typeof body.name !== "string" || !body.rule ||
@@ -153,6 +228,13 @@ Deno.serve(async (req: Request) => {
       ) return result({ error: "Invalid segment preview" }, 400);
       let rule = body.rule;
       let version: number | null = null;
+      if (
+        body.locale &&
+        (typeof body.locale !== "string" ||
+          !/^[a-z]{2}(?:-[A-Za-z]{2,8})?$/.test(body.locale))
+      ) {
+        return result({ error: "Invalid locale" }, 400);
+      }
       if (body.id) {
         const saved = await db.from("email_segments").select("rule,version").eq(
           "id",
@@ -162,6 +244,11 @@ Deno.serve(async (req: Request) => {
         if (!saved.data) return result({ error: "Segment not found" }, 404);
         rule = saved.data.rule;
         version = saved.data.version;
+      }
+      if (body.locale) {
+        rule = {
+          all: [rule, { field: "locale", op: "eq", value: body.locale }],
+        };
       }
       const { data, error } = await db.rpc("email_segment_preview", {
         p_rule: rule,
@@ -196,36 +283,41 @@ Deno.serve(async (req: Request) => {
       if (
         body.scheduled_at && !Number.isFinite(Date.parse(body.scheduled_at))
       ) return result({ error: "Invalid schedule" }, 400);
-      const { data: template, error } = await db.from("email_templates").select(
-        "subject,html_content,text_content",
-      ).eq("template_key", body.template_key).eq("is_active", true).single();
-      if (error || !template) {
-        return result({ error: "Active template required" }, 400);
-      }
       const values = {
         name: body.name.trim(),
         template_key: body.template_key,
         topic: body.topic,
         locale: body.locale || null,
-        subject: template.subject,
-        html_content: template.html_content,
-        text_content: template.text_content ?? "",
         scheduled_at: body.scheduled_at || null,
-        status: body.scheduled_at ? "blocked" : "draft",
-        blocked_reason: body.scheduled_at ? BLOCK : null,
-        updated_at: new Date().toISOString(),
+        segment_id: body.segment_id || null,
       };
-      const query = body.id
-        ? db.from("email_campaigns").update(values).eq("id", body.id).neq(
-          "status",
-          "cancelled",
-        )
-        : db.from("email_campaigns").insert({
-          ...values,
-          created_by: actor.isServiceRole ? null : actor.userId,
-        });
-      const saved = await query.select("id").single();
-      if (saved.error) throw saved.error;
+      const saved = await db.rpc("email_campaign_save", {
+        p_data: values,
+        p_actor: actor.isServiceRole ? null : actor.userId,
+        p_id: body.id ?? null,
+        p_expected_version: body.expected_version ?? null,
+      });
+      if (saved.error) {
+        if (saved.error.code === "40001") {
+          return result(
+            { error: "Campaign changed. Reload before saving." },
+            409,
+          );
+        }
+        if (
+          ["22023", "22P02", "23514", "22007", "22008"].includes(
+            saved.error.code,
+          )
+        ) {
+          return result({
+            error: "Check the campaign, active template and audience.",
+          }, 400);
+        }
+        if (saved.error.code === "P0002") {
+          return result({ error: "Campaign not found" }, 404);
+        }
+        throw saved.error;
+      }
       return result({
         campaign: saved.data,
         dispatchAvailable: false,
@@ -239,12 +331,66 @@ Deno.serve(async (req: Request) => {
       }, 409);
     }
     if (body.action === "campaign-cancel") {
-      const { error } = await db.from("email_campaigns").update({
-        status: "cancelled",
-        updated_at: new Date().toISOString(),
-      }).eq("id", body.id);
+      const { error } = await db.rpc("email_campaign_cancel", {
+        p_id: body.id,
+        p_version: body.expected_version,
+        p_actor: actor.isServiceRole ? null : actor.userId,
+      });
+      if (error?.code === "40001") {
+        return result(
+          { error: "Campaign changed. Reload before cancelling." },
+          409,
+        );
+      }
       if (error) throw error;
       return result({ success: true });
+    }
+    if (body.action === "campaign-review") {
+      if (!["submit", "approve", "request_changes"].includes(body.decision)) {
+        return result({ error: "Invalid review action" }, 400);
+      }
+      const { data, error } = await db.rpc("email_campaign_review", {
+        p_id: body.id,
+        p_version: body.expected_version,
+        p_action: body.decision,
+        p_actor: actor.isServiceRole ? null : actor.userId,
+      });
+      if (error?.code === "40001") {
+        return result(
+          { error: "Campaign changed. Reload before reviewing." },
+          409,
+        );
+      }
+      if (error?.code === "22023") {
+        return result(
+          { error: "Refresh the campaign's current review state." },
+          400,
+        );
+      }
+      if (error) throw error;
+      return result({
+        campaign: data,
+        dispatchAvailable: false,
+        reason: BLOCK,
+      });
+    }
+    if (body.action === "campaign-snapshot") {
+      const { data, error } = await db.rpc("email_campaign_snapshot_begin", {
+        p_id: body.id,
+        p_version: body.expected_version,
+        p_actor: actor.isServiceRole ? null : actor.userId,
+      });
+      if (error?.code === "40001") {
+        return result({
+          error: "Campaign changed. Reload before collecting an audience.",
+        }, 409);
+      }
+      if (error) throw error;
+      return result({
+        audience_id: data,
+        dispatchAvailable: false,
+        reason: BLOCK,
+      });
     }
     if (body.action === "audience-count") {
       if (!["newsletter", "product_updates", "events"].includes(body.topic)) {

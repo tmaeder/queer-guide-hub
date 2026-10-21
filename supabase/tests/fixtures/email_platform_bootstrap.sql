@@ -73,3 +73,12 @@ create function auth.uid() returns uuid language sql stable as $$ select nullif(
 grant usage on schema auth to authenticated;
 grant execute on function auth.uid() to service_role,authenticated;
 grant all on public.trips to service_role;
+
+-- Operational adapters exercise the real source columns, without private content.
+create table public.events(id uuid primary key default gen_random_uuid(),start_date timestamptz not null,end_date timestamptz,duplicate_of_id uuid,status text default 'active');
+alter table public.trips add column start_date date;
+alter table public.trips add column end_date date;
+create table public.group_join_requests(id uuid primary key default gen_random_uuid(),group_id uuid references public.community_groups(id),user_id uuid references auth.users(id),status text default 'pending',decided_by uuid references auth.users(id));
+create table public.community_submissions(id uuid primary key default gen_random_uuid(),submitted_by uuid references auth.users(id),content_type text default 'feedback',data jsonb not null default '{}',reviewed_by uuid,reviewed_at timestamptz,status text default 'pending',is_spam boolean default false);
+create table public.donations(id uuid primary key default gen_random_uuid(),user_id uuid references auth.users(id),status text default 'pending',stripe_session_id text);
+grant all on public.events,public.group_join_requests,public.community_submissions,public.donations to service_role;
