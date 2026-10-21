@@ -1,3 +1,4 @@
+import {renderEmailTemplate} from '../_shared/email-render.ts';
 // Send welcome email after a user verifies their account.
 //
 // Triggered by Supabase auth webhook on email confirmation, OR by an
@@ -5,7 +6,7 @@
 // profiles.welcome_email_sent_at before sending.
 //
 // Reuses the existing 'welcome' template in public.email_templates and
-// the shared sendEmail() helper (Resend backend).
+// the shared sendEmail() helper (Cloudflare backend).
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5';
 import { sendEmail } from '../_shared/email.ts';
 import { getEmailBranding, fromHeader, wrapHtml } from '../_shared/branding.ts';
@@ -18,10 +19,7 @@ interface RequestBody {
   user_id: string;
   email?: string;
   display_name?: string;
-}
-
-function renderTemplate(tpl: string, vars: Record<string, string>): string {
-  return tpl.replace(/\{\{\s*([\w_]+)\s*\}\}/g, (_, k) => vars[k] ?? '');
+  journey?: { runId: string; leaseId: string; stepId: string };
 }
 
 const handler = async (req: Request): Promise<Response> => {
@@ -109,18 +107,23 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   const vars = {
-    display_name: body.display_name ?? profile.display_name ?? '',
+    display_name: body.display_name ?? profile.display_name ?? 'there',
     site_url: Deno.env.get('SITE_URL') ?? 'https://queer.guide',
   };
 
   try {
     const branding = await getEmailBranding();
+    const rendered=renderEmailTemplate(tpl,{...vars,site_name:branding.from_name});
     await sendEmail({
+      idempotencyKey: `welcome:${profile.user_id}`,
+      templateKey: 'welcome',
+      recipientUserId: profile.user_id,
+      journey: body.journey,
       from: fromHeader(branding),
       to: [toEmail],
-      subject: renderTemplate(tpl.subject, vars),
-      html: wrapHtml(renderTemplate(tpl.html_content, vars), branding),
-      text: tpl.text_content ? renderTemplate(tpl.text_content, vars) : undefined,
+      subject: rendered.subject,
+      html: wrapHtml(rendered.html, branding),
+      text: rendered.text,
     });
   } catch (e) {
     console.error('welcome email send failed', e);

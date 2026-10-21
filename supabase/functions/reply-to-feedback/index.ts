@@ -1,7 +1,7 @@
 /**
  * reply-to-feedback — admin/moderator endpoint.
  * Appends a reply to data->replies and (if the submitter left a contact email)
- * emails them via Resend. The conversation stays in the submission's jsonb so
+ * emails them via Cloudflare. The conversation stays in the submission's jsonb so
  * we don't churn the schema for every message.
  */
 
@@ -97,11 +97,10 @@ Deno.serve(async (req) => {
   }
 
   const data = (row.data ?? {}) as Record<string, unknown>;
-  const replies = Array.isArray(data.replies)
-    ? (data.replies as Array<Record<string, unknown>>)
-    : [];
+
   const at = new Date().toISOString();
   const newReply = {
+    id: crypto.randomUUID(),
     by: userId,
     by_name: displayName,
     body,
@@ -116,7 +115,7 @@ Deno.serve(async (req) => {
   if (notify && contactEmail && isEmailConfigured()) {
     try {
       const result = await sendEmail({
-        from: 'The Queer Guide <noreply@resend.dev>',
+        from: 'The Queer Guide <noreply@queer.guide>',
         to: [contactEmail],
         subject: `Re: ${String(data.title ?? 'your feedback')}`,
         html: buildEmailHtml(String(data.title ?? 'your feedback'), body, submissionId),
@@ -131,12 +130,9 @@ Deno.serve(async (req) => {
     }
   }
 
-  const nextData = { ...data, replies: [...replies, newReply] };
-  const { error: updErr } = await svc
-    .from('community_submissions')
-    .update({ data: nextData, reviewed_by: userId, reviewed_at: at })
-    .eq('id', submissionId);
+  const {error: updErr} = await svc.rpc('email_append_feedback_reply', {p_submission: submissionId, p_reply: newReply, p_actor: userId, p_at: at});
   if (updErr) return errorResponse(updErr.message, 500, req);
+  if (newReply.email_id) await svc.rpc('email_sync_feedback', {p_provider: newReply.email_id});
 
   return jsonResponse({ success: true, reply: newReply }, 200, req);
 });

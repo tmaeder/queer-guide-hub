@@ -1,16 +1,9 @@
+import {renderEmailTemplate} from '../_shared/email-render.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5';
 import { sendEmail, isEmailConfigured } from "../_shared/email.ts";
 import { getEmailBranding, fromHeader, wrapHtml } from "../_shared/branding.ts";
 import { getCorsHeaders } from '../_shared/supabase-client.ts';
 import { takeEmailQuota } from './rate-limit.ts';
-
-function escapeHtml(s: string): string {
-  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-}
-
-function escapeRegExp(s: string): string {
-  return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-}
 
 const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
 const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
@@ -91,7 +84,7 @@ const handler = async (req: Request): Promise<Response> => {
     const requestData: SendEmailRequest = await req.json();
     const { template_key, to_email, variables, is_test = false } = requestData;
 
-    console.log(`Processing email request for template: ${template_key}, recipient: ${to_email}`);
+
 
     // Fetch the email template from the database
     const { data: template, error: templateError } = await supabase
@@ -112,30 +105,22 @@ const handler = async (req: Request): Promise<Response> => {
       );
     }
 
-    // Replace variables in the template content
-    let htmlContent = template.html_content;
-    let textContent = template.text_content || '';
-    let subject = template.subject;
-
-    // Process template variables
-    const templateVariables = Array.isArray(template.variables) ? template.variables : [];
-    templateVariables.forEach((variable: unknown) => {
-      const value = variables[variable.name] || `{{${variable.name}}}`;
-      const regex = new RegExp(`\\{\\{${escapeRegExp(variable.name)}\\}\\}`, 'g');
-      htmlContent = htmlContent.replace(regex, escapeHtml(value));
-      textContent = textContent.replace(regex, value);
-      subject = subject.replace(regex, value);
-    });
+    let rendered;
+    try { rendered=renderEmailTemplate(template,variables??{}); }
+    catch { return new Response(JSON.stringify({error:'Template variables are invalid or incomplete'}),{status:400,headers:{...cors,'Content-Type':'application/json'}}); }
+    const htmlContent=rendered.html,textContent=rendered.text;
+    let subject=rendered.subject;
 
     // Add test prefix for test emails
     if (is_test) {
       subject = `[TEST] ${subject}`;
     }
 
-    console.log(`Sending email with subject: "${subject}" to ${to_email}`);
+
 
     const branding = await getEmailBranding();
     const emailResult = await sendEmail({
+      templateKey: template_key,
       from: fromHeader(branding),
       to: [to_email],
       subject,
@@ -150,24 +135,12 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log('Email sent successfully:', emailResult.id);
 
-    // Log the email send for tracking (optional)
-    if (!is_test) {
-      await supabase
-        .from('email_logs') // You could create this table for tracking
-        .insert({
-          template_key,
-          recipient_email: to_email,
-          subject,
-          sent_at: new Date().toISOString(),
-          resend_id: emailResult.id,
-        })
-        .catch(err => console.log('Failed to log email:', err)); // Non-blocking
-    }
+    // The shared outbox is the durable delivery log for both tests and production.
 
     return new Response(
       JSON.stringify({ 
         success: true, 
-        message: `Email sent successfully to ${to_email}`,
+        message: `Email accepted for delivery to ${to_email}`,
         email_id: emailResult.id
       }),
       {

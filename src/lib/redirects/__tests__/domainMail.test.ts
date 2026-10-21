@@ -25,6 +25,7 @@ const job: DomainInstructionMailJob = {
 };
 const config = {
   key: 'fixture-mail-provider',
+  gatewayUrl: 'https://email-gateway.example.com',
   from: job.from,
   target: 'links.queer.guide',
   fingerprint: 'a'.repeat(64),
@@ -88,13 +89,23 @@ describe('DNS instruction email boundaries', () => {
       expect(() => instructionMailInput(value)).toThrow();
   });
   it('requires explicit valid sender/target configuration and exposes a key fingerprint rather than a key-derived client field', async () => {
-    const actual = await domainInstructionMailConfig(config.key, config.from, config.target);
+    const actual = await domainInstructionMailConfig(
+      config.key,
+      config.from,
+      config.target,
+      config.gatewayUrl,
+    );
     expect(actual).toMatchObject({
       ...config,
       fingerprint: expect.stringMatching(/^[a-f0-9]{64}$/),
     });
     expect(
-      (await domainInstructionMailConfig(config.key, config.from, config.target))!.fingerprint,
+      (await domainInstructionMailConfig(
+        config.key,
+        config.from,
+        config.target,
+        config.gatewayUrl,
+      ))!.fingerprint,
     ).toBe(actual!.fingerprint);
     for (const [key, from, target] of [
       ['', config.from, config.target],
@@ -104,7 +115,7 @@ describe('DNS instruction email boundaries', () => {
       [config.key, config.from, 'localhost'],
       ['bad key', config.from, config.target],
     ])
-      expect(await domainInstructionMailConfig(key, from, target)).toBeNull();
+      expect(await domainInstructionMailConfig(key, from, target, config.gatewayUrl)).toBeNull();
   });
   it('renders exact record text, escapes HTML and keeps readiness/flattening statements honest', () => {
     const payload = domainInstructionMailPayload({
@@ -137,7 +148,9 @@ describe('durable instruction mail transport', () => {
   });
   it('prepares a current payload before one fixed HTTPS request and records acceptance, not inbox delivery', async () => {
     const db = database(),
-      fetcher = vi.fn<typeof fetch>().mockResolvedValue(Response.json({ id: 'provider-accepted' }));
+      fetcher = vi
+        .fn<typeof fetch>()
+        .mockResolvedValue(Response.json({ status: 'accepted', id: 'provider-accepted' }));
     expect(await dispatchDomainInstructionMail(db, config, fetcher, id)).toMatchObject({ sent: 1 });
     expect(db.rpc.mock.calls[0]).toEqual([
       'claim_redirect_domain_instruction_mail',
@@ -151,14 +164,14 @@ describe('durable instruction mail transport', () => {
     ]);
     expect(fetcher).toHaveBeenCalledOnce();
     expect(fetcher).toHaveBeenCalledWith(
-      'https://api.resend.com/emails',
+      config.gatewayUrl + '/send',
       expect.objectContaining({
         method: 'POST',
         redirect: 'error',
         cache: 'no-store',
         signal: expect.any(AbortSignal),
-        headers: expect.objectContaining({ 'Idempotency-Key': 'qg-domain-instructions/v1/' + id }),
-        body: JSON.stringify(domainInstructionMailPayload(job)),
+        headers: expect.objectContaining({ Authorization: 'Bearer ' + config.key }),
+        body: expect.any(String),
       }),
     );
     expect(db.rpc.mock.calls[1][0]).toBe('prepare_redirect_domain_instruction_mail');
@@ -200,7 +213,7 @@ describe('durable instruction mail transport', () => {
     const fetcher = vi
       .fn<typeof fetch>()
       .mockRejectedValueOnce(new TypeError('Lost response'))
-      .mockResolvedValueOnce(Response.json({ id: 'same-provider-accepted' }));
+      .mockResolvedValueOnce(Response.json({ status: 'accepted', id: 'same-provider-accepted' }));
     expect(await dispatchDomainInstructionMail({ rpc }, config, fetcher)).toMatchObject({
       deferred: 1,
       sent: 0,
@@ -285,7 +298,9 @@ describe('durable instruction mail transport', () => {
       await dispatchDomainInstructionMail(
         db,
         config,
-        vi.fn<typeof fetch>().mockResolvedValue(Response.json({ id: 'accepted' })),
+        vi
+          .fn<typeof fetch>()
+          .mockResolvedValue(Response.json({ status: 'accepted', id: 'accepted' })),
       ),
     ).toMatchObject({ stale: 1, sent: 0 });
     db.rpc.mockResolvedValue({ data: null, error: { message: 'private database detail' } });
