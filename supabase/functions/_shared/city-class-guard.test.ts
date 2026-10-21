@@ -243,3 +243,12 @@ Deno.test('the municipality itself stays a settlement, even beside a locality la
   assertEquals(cityClassVerdict(['hamlet']).verdict, 'settlement')
   assertEquals(cityClassVerdict(['locality']).verdict, 'settlement')
 })
+
+Deno.test('Italian comune class is recognized without admitting provinces or municipal parts', () => {
+  // Live Wikidata Q747074: English label 'comune of Italy', subclass municipality.
+  assertEquals(cityClassVerdict(['comune of Italy']).verdict, 'settlement')
+  assertEquals(cityClassVerdict(['quarter', 'comune of Italy']).verdict, 'settlement')
+  assertEquals(cityClassVerdict(['province of Italy']).verdict, 'refused')
+  assertEquals(cityClassVerdict(['quarter']).verdict, 'locality')
+  assertEquals(cityClassVerdict(['part of a comune of Italy']).verdict, 'refused')
+})

@@ -22,6 +22,7 @@
 // Body: { phase?, batch_limit?, dry_run?, city_ids?, scope? }
 
 import { getCorsHeaders, getServiceClient, requireInternalOrAdmin, jsonResponse } from '../_shared/supabase-client.ts'
+import { searchCityQid } from '../_shared/city-wikidata-search.ts'
 import { hasValidWebhookSecret } from '../_shared/webhook-auth.ts'
 import { safeErrCode } from '../_shared/safe-error.ts'
 import { withCircuitBreaker, CircuitOpenError } from '../_shared/circuit-breaker.ts'
@@ -41,7 +42,7 @@ import {
 // runtime keeps serving an older bundle (seen 2026-10-07: v214 held the
 // name_local code and answered in the old shape), so the only proof a change
 // is live is the response itself. Bump this when the link/sparql output changes.
-const FN_REVISION = '2026-10-09.locality-not-a-city'
+const FN_REVISION = '2026-10-21.retryable-city-search'
 
 const DEFAULT_BATCH_LIMIT = 40
 // 300 is the repo-wide ceiling for city writes: one cities UPDATE fans out
@@ -122,22 +123,10 @@ async function fetchWikipediaExtract(title: string): Promise<string | null> {
  * ("Kapstadt, Südafrika"); wbsearchentities with language=en resolves German
  * exonyms and returns English descriptions this matcher understands.
  */
-const PLACE_RE = /(capital|city|town|municipality|commune|village|settlement|prefecture|district|county|borough|locality|metropolis|urban)/i
-
 async function searchQid(query: string, country?: string | null): Promise<string | null> {
-  const d = await fetchJson(
-    `https://www.wikidata.org/w/api.php?action=wbsearchentities&search=${encodeURIComponent(query)}` +
-    `&language=en&uselang=en&type=item&limit=7&format=json`,
-  )
-  const hits = (d?.search ?? []) as Array<{ id: string; description?: string }>
-  let fallback: string | null = null
-  for (const h of hits) {
-    const desc = h.description ?? ''
-    if (!PLACE_RE.test(desc)) continue
-    if (country && desc.toLowerCase().includes(country.toLowerCase())) return h.id  // strong match
-    if (!fallback) fallback = h.id
-  }
-  return fallback
+  // Use the same retry/transport handling as entity reads. The old fetchJson
+  // converted 429/5xx into null and exhausted valid cities as "no candidate".
+  return searchCityQid(query, country ?? null, fetchWbEntities)
 }
 
 /**

@@ -52,6 +52,9 @@ const SETTLEMENT_PATTERNS: readonly RegExp[] = [
   /\bvillage\b/i,
   /\bmunicipalit/i,
   /\bcommune\b/i,
+  // Wikidata Q747074 is explicitly a subclass of municipality. Its English
+  // label uses the Italian spelling, so the generic commune regex misses it.
+  /^comune of Italy$/i,
   /\bsettlement\b/i,
   /\bhamlet\b/i,
   /\bborough\b/i,
@@ -144,6 +147,9 @@ const MUNICIPALITY_GRADE_PATTERNS: readonly RegExp[] = [
   /\btown\b/i,
   /\bmunicipalit/i,
   /\bcommune\b/i,
+  // Wikidata Q747074 is explicitly a subclass of municipality. Its English
+  // label uses the Italian spelling, so the generic commune regex misses it.
+  /^comune of Italy$/i,
   /\bborough\b/i,
   /\bmetropolis\b/i,
   /\bmegacity\b/i,
