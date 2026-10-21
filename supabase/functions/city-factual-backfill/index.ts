@@ -22,7 +22,7 @@
 // Body: { phase?, batch_limit?, dry_run?, city_ids?, scope? }
 
 import { getCorsHeaders, getServiceClient, requireInternalOrAdmin, jsonResponse } from '../_shared/supabase-client.ts'
-import { searchCityQid } from '../_shared/city-wikidata-search.ts'
+import { createCitySearchResolver, type CityCandidateEntity } from '../_shared/city-wikidata-match.ts'
 import { hasValidWebhookSecret } from '../_shared/webhook-auth.ts'
 import { safeErrCode } from '../_shared/safe-error.ts'
 import { withCircuitBreaker, CircuitOpenError } from '../_shared/circuit-breaker.ts'
@@ -31,7 +31,7 @@ import { plausibleCityScalar } from '../_shared/city-scalar-bounds.ts'
 import { cityClassVerdict, cityCoordVerdict, isCityRefreshScope } from '../_shared/city-class-guard.ts'
 import { countryLanguageCodes } from '../_shared/language-codes.ts'
 import {
-  airportQuery, applyLabels, capitalQuery, parseCityFacts, parseCityNames, parseCityNativeName, pickAirports,
+  airportQuery, applyLabels, bestStatement, capitalQuery, parseCityFacts, parseCityNames, parseCityNativeName, pickAirports,
   pickCapitals, pickUniversities, resolveLabels, sparqlUrl, universityQuery,
   CITY_NAME_LANGS, CITY_NAME_SITES,
   type AirportPick, type CapitalPick, type Claims, type CityNameAlias, type CityWdFacts,
@@ -42,7 +42,7 @@ import {
 // runtime keeps serving an older bundle (seen 2026-10-07: v214 held the
 // name_local code and answered in the old shape), so the only proof a change
 // is live is the response itself. Bump this when the link/sparql output changes.
-const FN_REVISION = '2026-10-21.retryable-city-search'
+const FN_REVISION = '2026-10-21.corroborated-city-candidates'
 
 const DEFAULT_BATCH_LIMIT = 40
 // 300 is the repo-wide ceiling for city writes: one cities UPDATE fans out
@@ -73,7 +73,15 @@ async function fetchJson(url: string, timeout = FETCH_TIMEOUT, accept = 'applica
   } catch { return null } finally { clearTimeout(t) }
 }
 
-const wdFetch = (url: string) => fetchJson(url)
+const wdFetch = async (url: string): Promise<Json> => {
+  const response = await fetchWbEntities(url)
+  const entities = response.ok ? response.data.entities : null
+  const requested = new URL(url).searchParams.get('ids')?.split('|') ?? []
+  if (!response.ok || response.data.error || !entities || typeof entities !== 'object' || Array.isArray(entities) || requested.some(q => !(q in entities))) {
+    throw new Error('wikidata_entity_lookup_unavailable')
+  }
+  return response.data
+}
 
 // Codes this function throws itself and is willing to expose. Anything else
 // reaching a catch is either a driver/DB message (the cities UPDATE below
@@ -113,20 +121,6 @@ async function fetchWikipediaExtract(title: string): Promise<string | null> {
     if (typeof ex === 'string' && ex.trim().length > 80) return ex.slice(0, 1200)
   }
   return null
-}
-
-/**
- * Resolve a city to a QID by entity search.
- *
- * The ladder deliberately starts at Wikidata, not at a Wikipedia title lookup.
- * The title endpoint is exactly what 404s on the import residue
- * ("Kapstadt, Südafrika"); wbsearchentities with language=en resolves German
- * exonyms and returns English descriptions this matcher understands.
- */
-async function searchQid(query: string, country?: string | null): Promise<string | null> {
-  // Use the same retry/transport handling as entity reads. The old fetchJson
-  // converted 429/5xx into null and exhausted valid cities as "no candidate".
-  return searchCityQid(query, country ?? null, fetchWbEntities)
 }
 
 /**
@@ -377,7 +371,7 @@ interface CityRow {
   is_regional_capital: boolean | null; capital_of_region: string | null
   field_provenance: Prov | null; enrichment_status: Status | null
   wikidata_qid: string | null; wikipedia_title: string | null
-  country_id: string | null; countries: { name?: string; languages?: string[] | null } | null
+  country_id: string | null; countries: { code?: string; name?: string; languages?: string[] | null } | null
   name_local: string | null; name_local_lang: string | null
 }
 
@@ -388,7 +382,7 @@ const CITY_COLUMNS =
   'airport_codes, major_airport_code, transportation_info, ' +
   'is_regional_capital, capital_of_region, ' +
   'field_provenance, enrichment_status, wikidata_qid, wikipedia_title, country_id, ' +
-  'name_local, name_local_lang, countries(name, languages)'
+  'name_local, name_local_lang, countries(code, name, languages)'
 
 /**
  * An array counts as empty when it holds nothing usable, not merely when it has
@@ -463,8 +457,8 @@ async function runLinkPhase(
   // life on the wrong list while reporting success.
   scope: string,
 ): Promise<Response> {
-  // Country + region names power the suspect-name heuristic: "Indonesien" and
-  // "Baskenland" are filed as cities but are not places this engine can enrich.
+  // Country/region names remain hints: Djibouti and Singapore may also name
+  // real cities. Class, country and coordinates decide whether a match exists.
   const knownPlaceNames = new Set<string>()
   for (const table of ['countries', 'regions']) {
     const { data } = await supabase.from(table).select('name')
@@ -474,6 +468,9 @@ async function runLinkPhase(
   }
 
   const labelCache = new Map<string, string>()
+  const { data: parents, error: parentError } = await supabase.from('geo_country_parent').select('child_code,parent_code')
+  if (parentError) return jsonResponse({ success: false, error: 'country_equivalence_unavailable' }, 503, req)
+  const resolveSearch = createCitySearchResolver(fetchWbEntities, parents ?? [], labelCache)
   let processed = 0, updated = 0, skipped = 0, failed = 0, aliasesWritten = 0
   // Class-gate tallies. `classRefused` is a decision about the entity;
   // `classUndetermined` is a failure to read one, and the two must stay apart:
@@ -522,6 +519,9 @@ async function runLinkPhase(
       const update: Record<string, unknown> = {}
       const rankFixed: string[] = []
       const country = c.countries?.name ?? null
+      const langInfo = countryLanguageCodes(c.countries?.languages)
+      for (const u of langInfo.unmapped) nativeUnmapped.add(u)
+      let searchedEntity: CityCandidateEntity | undefined
 
       // --- 1. QID: cached, or resolved from cleaned name candidates -------
       // `relink` ignores the cache and re-resolves. Needed after a resolver bug:
@@ -532,17 +532,26 @@ async function runLinkPhase(
       const cand = cityNameCandidates(c.name, { country, knownPlaceNames })
 
       if (!qid) {
-        if (cand.suspect) {
+        if (cand.suspect && cand.suspectReason !== 'country_or_region_only') {
           bumpMiss(state, 'wikidata_link', 'name')
           missReason = `suspect_name:${cand.suspectReason}`
+          enwikiTitle = null
         } else {
-          for (const q of cand.queries) {
-            const hit = await withCircuitBreaker(supabase, 'wikidata.api', () => searchQid(q, country))
-            if (hit) { qid = hit; break }
-          }
+          const match = await withCircuitBreaker(supabase, 'wikidata.api', () => resolveSearch({
+            queries: cand.queries, base: cand.base, originalName: c.name,
+            countryCode: c.countries?.code ?? null, languages: langInfo.codes,
+            latitude: c.latitude == null ? null : Number(c.latitude),
+            longitude: c.longitude == null ? null : Number(c.longitude),
+          }))
+          qid = match.qid
+          searchedEntity = match.entity
+          enwikiTitle = searchedEntity?.enwikiTitle ?? null
+          state.wikidata_search = { state: match.kind === 'ambiguous' || match.kind === 'unresolved' ? 'pending' : 'resolved',
+            source: 'wikidata', at: new Date().toISOString(), detail: { outcome: match.kind, probes: match.probes } }
           if (!qid) {
-            bumpMiss(state, 'wikidata_link', 'wikidata')
-            missReason = `no_qid_candidates:${cand.queries.join(' | ')}`.slice(0, 200)
+            if (match.kind === 'no_match') bumpMiss(state, 'wikidata_link', 'wikidata')
+            if (match.kind === 'ambiguous') update.needs_attention = true
+            missReason = `candidate_search:${match.kind}`
           }
         }
       }
@@ -550,14 +559,14 @@ async function runLinkPhase(
       // --- 2. Claims + sitelink (ONE request when the QID is cached) ------
       let facts: CityWdFacts | null = null
       if (qid) {
-        const langInfo = countryLanguageCodes(c.countries?.languages)
-        for (const u of langInfo.unmapped) nativeUnmapped.add(u)
-        const ent = await withCircuitBreaker(supabase, 'wikidata.api', () => fetchEntity(qid!, langInfo.codes))
+        const ent = searchedEntity ?? await withCircuitBreaker(supabase, 'wikidata.api', () => fetchEntity(qid!, langInfo.codes))
         if (ent === 'transient') {
           // Never bumpMiss: a throttled request says nothing about the entity.
           wdTransient++
+          enwikiTitle = null
           missReason ??= 'wikidata_fetch_failed'
         } else if (!ent) {
+          enwikiTitle = null
           bumpMiss(state, 'wikidata_link', 'wikidata')
           missReason ??= 'wikidata_entity_missing'
         } else {
@@ -597,11 +606,8 @@ async function runLinkPhase(
           // filling that borough's population, area and elevation. Both are
           // permanent and both re-derive weekly, so geography gets a veto.
           // P625 rides in the claims already fetched -- no extra request.
-          const p625 = (ent.claims.P625 ?? [])
-            .filter((st) => st.rank !== 'deprecated' && st.mainsnak?.snaktype === 'value')
-            .map((st) => st.mainsnak?.datavalue?.value as
-              { latitude?: number; longitude?: number } | undefined)
-            .find((v) => v && Number.isFinite(Number(v.latitude)) && Number.isFinite(Number(v.longitude)))
+          const p625 = bestStatement(ent.claims.P625)?.mainsnak?.datavalue?.value as
+            { latitude?: number; longitude?: number } | undefined
           const geo = cityCoordVerdict(
             c.latitude == null ? null : Number(c.latitude),
             c.longitude == null ? null : Number(c.longitude),
@@ -740,6 +746,7 @@ async function runLinkPhase(
             bumpMiss(state, 'wikidata_link', 'locality')
             missReason ??= `locality_of:${parentQid ?? 'unknown'}:${cls.label ?? ''}`.slice(0, 200)
           } else if (cls.verdict === 'refused') {
+            enwikiTitle = null
             // A decision about the entity, so it counts toward the terminal
             // sentinel: three of these and the row leaves the work list instead
             // of being re-offered forever.
@@ -755,6 +762,7 @@ async function runLinkPhase(
             // dead and written off permanently.
             qid = null
             classUndetermined++
+            enwikiTitle = null
             missReason ??= 'class_unreadable'
           }
         }
