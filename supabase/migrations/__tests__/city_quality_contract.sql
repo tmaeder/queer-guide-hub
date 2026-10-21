@@ -88,6 +88,21 @@ begin
     raise exception 'placeholder lifecycle was not classified: %, %', q.lifecycle_cohort, q.warnings;
   end if;
 
+  -- A historical tmp-* slug must not reopen a terminal lifecycle decision.
+  update public.cities set shell_status='ghost' where id=placeholder_id;
+  select * into q from public.city_quality_profile where id=placeholder_id;
+  if q.lifecycle_cohort <> 'archived_non_place'
+     or 'CITY_LIFECYCLE_UNRESOLVED'=any(q.issue_codes) then
+    raise exception 'archived tmp slug reopened lifecycle: %, %',q.lifecycle_cohort,q.issue_codes;
+  end if;
+  update public.cities set shell_status='merged' where id=placeholder_id;
+  select * into q from public.city_quality_profile where id=placeholder_id;
+  if q.lifecycle_cohort <> 'merged_redirect'
+     or 'CITY_LIFECYCLE_UNRESOLVED'=any(q.issue_codes) then
+    raise exception 'merged tmp slug reopened lifecycle: %, %',q.lifecycle_cohort,q.issue_codes;
+  end if;
+  update public.cities set shell_status='placeholder' where id=placeholder_id;
+
   select * into q from public.city_quality_profile where id = namesake_a;
   if not ('CITY_IMAGE_REUSED' = any(q.blockers)) then
     raise exception 'cross-country duplicate image was not blocked: %', q.blockers;

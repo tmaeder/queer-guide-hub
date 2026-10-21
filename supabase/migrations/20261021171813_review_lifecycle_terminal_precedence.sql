@@ -1,4 +1,3 @@
--- Recovered from production migration history; already applied.
 -- An archived/merged city may retain its original tmp-* slug for history.
 -- Terminal lifecycle states must win over that naming convention. Otherwise
 -- resolved identities reopen forever, and ghost exposure/child blockers vanish.
