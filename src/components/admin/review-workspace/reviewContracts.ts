@@ -1,6 +1,14 @@
 import type { ReviewItem } from '@/hooks/useAdminReview';
 import { getTriageDecisionGuidance } from '@/components/admin/triage/triageDecisionGuidance';
 
+export function isVenueMatchReview(item: ReviewItem) {
+  return (
+    item.entity_table === 'events' &&
+    !!item.entity_id &&
+    ((item.queue_type === 'general-review' && item.meta?.review_type === 'venue_link_candidate') ||
+      (item.queue_type === 'event-quality' && item.meta?.issue_code === 'NAMED_VENUE_UNLINKED'))
+  );
+}
 export const reviewKey = (item: Pick<ReviewItem, 'queue_type' | 'id'>) =>
   `${item.queue_type}:${item.id}`;
 export const TAG_REVIEW_SOURCES = [
@@ -57,6 +65,14 @@ export interface ReviewContract {
   approveDisabled?: boolean;
 }
 export function reviewContract(item: ReviewItem): ReviewContract {
+  if (isVenueMatchReview(item))
+    return {
+      approve: 'Link selected venue',
+      reject: '',
+      rejectDisabled: true,
+      consequence:
+        'Link this event to the selected catalogue venue and resolve both venue-link findings. Its source venue name is preserved. If there is no supported match, skip and investigate the record.',
+    };
   switch (item.queue_type) {
     case 'editorial':
       return {

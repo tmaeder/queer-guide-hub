@@ -4,6 +4,7 @@ import { useEffect } from 'react';
 import { untypedFrom, untypedRpc, untypedSupabase } from '@/integrations/supabase/untyped';
 import type { TriageItem } from '@/hooks/useUnifiedTriageQueue';
 import { callSearchIntelligence, createTagFromProposal } from '@/hooks/useSearchIntelligence';
+import { isVenueMatchReview } from '@/components/admin/review-workspace/reviewContracts';
 import { parseTagProposal } from '@/components/admin/search-intelligence/tagProposal';
 
 export interface ReviewItem extends TriageItem {
@@ -134,15 +135,21 @@ export async function decideReview({ item, action, notes, confirm, payload }: Re
     }
     return;
   }
+  const venueMatch = action === 'approve' && isVenueMatchReview(item);
+  if (venueMatch && (!payload?.venue_id || !payload?.expected_updated_at))
+    throw new Error('Compare and select a current catalogue venue before linking.');
   const { data, error } = await untypedRpc<{ ok?: boolean; error?: string }>(
-    'admin_review_action',
+    venueMatch ? 'admin_review_link_event_venue' : 'admin_review_action',
     {
       p_queue_type: item.queue_type,
       p_item_id: item.id,
-      p_action: action,
+      ...(venueMatch
+        ? {
+            p_venue_id: payload!.venue_id,
+            p_expected_updated_at: payload!.expected_updated_at,
+          }
+        : { p_action: action, p_confirm: confirm ?? false, p_payload: payload ?? {} }),
       p_notes: notes || null,
-      p_confirm: confirm ?? false,
-      p_payload: payload ?? {},
     },
   );
   if (error) throw new Error(error.message);
@@ -157,6 +164,7 @@ export function useReviewDecision() {
       void qc.invalidateQueries({ queryKey: ['admin-review'] });
       void qc.invalidateQueries({ queryKey: ['admin-review-item'] });
       void qc.invalidateQueries({ queryKey: ['review-context'] });
+      void qc.invalidateQueries({ queryKey: ['venue-match-review'] });
       void qc.invalidateQueries({ queryKey: ['admin-review-summary'] });
       void qc.invalidateQueries({ queryKey: ['admin-counts'] });
       void qc.invalidateQueries({ queryKey: ['triage-queue'] });
@@ -205,6 +213,7 @@ export function useReviewBulk() {
       void qc.invalidateQueries({ queryKey: ['admin-review'] });
       void qc.invalidateQueries({ queryKey: ['admin-review-item'] });
       void qc.invalidateQueries({ queryKey: ['review-context'] });
+      void qc.invalidateQueries({ queryKey: ['venue-match-review'] });
       void qc.invalidateQueries({ queryKey: ['admin-review-summary'] });
       void qc.invalidateQueries({ queryKey: ['admin-counts'] });
       void qc.invalidateQueries({ queryKey: ['triage-queue'] });

@@ -20,7 +20,8 @@ import {
   type ReviewLookupType,
   type ReviewDecision,
 } from '@/hooks/useAdminReview';
-import { reviewContract } from './reviewContracts';
+import { VenueMatchPanel, type VenueMatchSelection } from './VenueMatchPanel';
+import { isVenueMatchReview, reviewContract } from './reviewContracts';
 import { ReviewEvidencePanel } from './ReviewEvidencePanel';
 
 function Lookup({
@@ -94,6 +95,8 @@ export function ReviewTaskDetail({ item, busy, error, onDecision, onSkip, onBack
   const { openEditor } = useAdminShell();
   const contract = reviewContract(item);
   const meta = item.meta ?? {};
+  const venueMatch = isVenueMatchReview(item);
+  const [venueSelection, setVenueSelection] = useState<VenueMatchSelection | null>(null);
   const [notes, setNotes] = useState('');
   const [confirmed, setConfirmed] = useState(false);
   const [description, setDescription] = useState(String(meta.draft_long ?? meta.description ?? ''));
@@ -196,6 +199,8 @@ export function ReviewTaskDetail({ item, busy, error, onDecision, onSkip, onBack
       problem = 'Choose the correct city or country before resolving.';
     if (action === 'approve' && workflow === 'editorial' && !draftHook.trim())
       problem = 'Write a reviewed hook before publishing this draft.';
+    if (action === 'approve' && venueMatch && !venueSelection)
+      problem = 'Compare and select a current catalogue venue before linking.';
     setValidation(problem);
     if (problem) return;
     onDecision({
@@ -204,6 +209,7 @@ export function ReviewTaskDetail({ item, busy, error, onDecision, onSkip, onBack
       notes,
       confirm: (action === 'approve' || Boolean(item.risk_flags?.confirm_rejection)) && confirmed,
       payload: {
+        ...(venueMatch ? venueSelection : {}),
         city_id: cityId || null,
         country_id: countryId || null,
         organization_id: adoptionChoice === 'existing' ? orgId : null,
@@ -265,6 +271,7 @@ export function ReviewTaskDetail({ item, busy, error, onDecision, onSkip, onBack
               : item.subtitle
             : 'Review the evidence and choose the appropriate outcome.'}
         </p>
+        {venueMatch && <VenueMatchPanel item={item} busy={busy} onSelect={setVenueSelection} />}
         <ReviewEvidencePanel
           item={item}
           candidateOrganizationId={
@@ -502,7 +509,7 @@ export function ReviewTaskDetail({ item, busy, error, onDecision, onSkip, onBack
           <Button
             data-review-action="approve"
             onClick={() => decide('approve')}
-            disabled={busy || contract.approveDisabled}
+            disabled={busy || contract.approveDisabled || (venueMatch && !venueSelection)}
             className="min-h-10"
           >
             <Check size={16} className="mr-1.5" />

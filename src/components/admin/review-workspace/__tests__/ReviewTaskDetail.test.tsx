@@ -2,6 +2,13 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
 import { ReviewTaskDetail } from '../ReviewTaskDetail';
 import type { ReviewItem } from '@/hooks/useAdminReview';
+vi.mock('../VenueMatchPanel', () => ({
+  VenueMatchPanel: ({ onSelect }: { onSelect: (value: unknown) => void }) => (
+    <button onClick={() => onSelect({ venue_id: 'venue', expected_updated_at: 'timestamp' })}>
+      Select verified venue
+    </button>
+  ),
+}));
 vi.mock('../ReviewEvidencePanel', () => ({ ReviewEvidencePanel: () => <div>Evidence panel</div> }));
 vi.mock('@/components/admin/shell/AdminShell', () => ({
   useAdminShell: () => ({ openEditor: vi.fn() }),
@@ -33,6 +40,22 @@ function renderTask(queue_type: string, overrides: Partial<ReviewItem> = {}) {
   return onDecision;
 }
 describe('inline decisions', () => {
+  it('applies venue matching through a selected live candidate, never a generic resolved flag', () => {
+    const decide = renderTask('general-review', {
+      entity_table: 'events',
+      entity_id: 'event',
+      meta: { review_type: 'venue_link_candidate' },
+    });
+    expect(screen.getByRole('button', { name: 'Link selected venue' })).toBeDisabled();
+    expect(screen.queryByRole('button', { name: 'Dismiss finding' })).toBeNull();
+    fireEvent.click(screen.getByRole('button', { name: 'Select verified venue' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Link selected venue' }));
+    expect(decide).toHaveBeenCalledWith(
+      expect.objectContaining({
+        payload: expect.objectContaining({ venue_id: 'venue', expected_updated_at: 'timestamp' }),
+      }),
+    );
+  });
   it('preserves the full editorial prose when approving a corrected draft', () => {
     const prose = 'A complete source-grounded description. '.repeat(100);
     const decide = renderTask('editorial', {

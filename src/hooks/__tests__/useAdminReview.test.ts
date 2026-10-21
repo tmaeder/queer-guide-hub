@@ -32,6 +32,37 @@ describe('review decision adapters', () => {
       }),
     );
   });
+  it('routes selected venue matches to the transactional link applier', async () => {
+    mocks.rpc.mockResolvedValue({ data: { ok: true }, error: null });
+    await decideReview({
+      item: {
+        ...item('general-review', { review_type: 'venue_link_candidate' }),
+        entity_table: 'events',
+      },
+      action: 'approve',
+      payload: { venue_id: 'venue', expected_updated_at: 'timestamp' },
+    });
+    expect(mocks.rpc).toHaveBeenCalledWith(
+      'admin_review_link_event_venue',
+      expect.objectContaining({
+        p_venue_id: 'venue',
+        p_expected_updated_at: 'timestamp',
+        p_item_id: 'source-id',
+      }),
+    );
+  });
+  it('refuses a generic approval for venue matching without live comparison', async () => {
+    await expect(
+      decideReview({
+        item: {
+          ...item('event-quality', { issue_code: 'NAMED_VENUE_UNLINKED' }),
+          entity_table: 'events',
+        },
+        action: 'approve',
+      }),
+    ).rejects.toThrow('Compare and select');
+    expect(mocks.rpc).not.toHaveBeenCalled();
+  });
   it('does not treat an unsuccessful source response as approval', async () => {
     mocks.rpc.mockResolvedValue({ data: { ok: false, error: 'Source refused' }, error: null });
     await expect(decideReview({ item: item('venue-category'), action: 'approve' })).rejects.toThrow(
