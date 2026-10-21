@@ -1,6 +1,6 @@
 # Dynamic email audiences
 
-The email platform has service-only versioned audience definitions and an admin-authorized API. This is the backend foundation; the visual audience builder, campaign binding and broad journey action catalog remain unfinished. The bounded transactional runtime is documented in `docs/architecture/email-journeys.md`. A matching contact is not necessarily eligible, and eligibility never overrides Cloudflare's transactional-only delivery capability.
+The email platform has service-only versioned audience definitions and an admin-authorized API. The admin Email workspace now includes a visual audience builder. Campaign binding and the broad journey action catalog remain unfinished. The bounded transactional runtime is documented in `docs/architecture/email-journeys.md`. A matching contact is not necessarily eligible, and eligibility never overrides Cloudflare's transactional-only delivery capability.
 
 ## Rules
 
@@ -34,8 +34,20 @@ The timeline and event predicates query the authoritative consent/delivery table
 
 Apply the delivery, privacy and segment migrations in order. Run all three standalone SQL contract files after the bootstrap. Tests cover nested conditions, changing preferences, topic/consent/suppression exclusions, event counts, time bounds, malformed/sensitive rules, SQL-shaped literal values, version conflicts, mailbox-proof timeline boundaries, erasure and service-only grants/RLS. These fixtures do not prove the complete production schema or production-scale performance.
 
-## Latest local verification
+## Earlier foundation verification — 2026-10-20
 
 On 2026-10-20 a clean application of all three migrations and all three SQL contract suites passed after disk space recovered. The stronger pending-mailbox assertion caught an incorrect test expectation: erasing one contact must preserve another pending mailbox's event. That expectation was corrected, and all suites were rerun successfully. Eleven Deno backend tests and checks of all eight affected endpoints also passed. No frontend code changed in this continuation.
 
 Only task-created disposable databases, build output and the isolated worktree npm dependency installation were removed during recovery. Source and commits were preserved. The isolated worktree dependencies were subsequently restored with npm ci after disk space recovered. Production data, the main checkout and real mail were untouched.
+
+## Admin audience workspace — 2026-10-21
+
+The Audiences tab at `/admin/email` lists up to 100 recently updated definitions and edits their current name, active/archived state and version. The existing admin authorization remains the only API entry point; the browser receives no direct table or RPC grants. The editor supports nested all/any/not groups, scalar/list subscription fields, subscription/confirmation age and the six documented consent/delivery events. It offers no sensitive targeting or arbitrary expressions. Client feedback checks nesting, group/list/window/count bounds and a conservative 7,000-byte serialized limit; database validation remains authoritative.
+
+Save sends the last loaded `expected_version`. A 409 preserves local edits and blocks overwriting: administrators can explicitly discard/reload the saved definition or retain the edits as a new definition. Other errors preserve the editor too. Opening another saved definition is disabled while changes are unsaved; the explicit discard control starts a new audience. Switching workspace tabs keeps audience edits mounted. Refreshing definitions does not overwrite the current editor.
+
+Preview evaluates the current unsaved rule, with an optional consent topic, against live data. It shows exact matching/eligible totals, exclusion reasons, evaluation time and a sample capped at 25 contacts. Rule or topic changes immediately remove the prior preview; a request revision guard discards late results. Definition list failures have a retry state and do not claim an empty audience. Preview never invokes dispatch, freezes recipients or binds a campaign.
+
+Local verification covers nested archived saves with expected versions, exclusion display, stale responses, conflicting edit copies and explicit reload, network recovery, local invalid-value rejection, and preserving edits across workspace tabs. Desktop (1,280 pixels) and mobile (390 pixels) fixtures showed no horizontal overflow; the rendered fixture displayed preview totals and suppression reasons without console errors after replacing the API with local data. This is not authenticated production or real-inbox verification. Journey editing, contact timeline UI, campaign binding/approval and larger audience pagination remain separate work.
+
+The continuation passed 12 focused UI tests, ESLint on changed TypeScript/TSX, workflow parsing and the production Vite build. The repository type-check ratchet passed with 698 pre-existing errors and none added (baseline 782). No database schema, send endpoint, provider configuration or production data changed in this stage.

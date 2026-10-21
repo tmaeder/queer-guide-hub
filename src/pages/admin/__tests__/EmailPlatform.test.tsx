@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router';
 import EmailPlatform from '../EmailPlatform';
 const api = vi.hoisted(() => ({ invoke: vi.fn() }));
@@ -61,6 +62,25 @@ describe('integrated admin email workspace', () => {
       }),
     );
     expect(api.invoke.mock.calls.some((c) => c[1]?.body?.action === 'campaign-send')).toBe(false);
+  });
+  it('keeps unsaved audience edits when switching workspace tabs', async () => {
+    api.invoke.mockImplementation(async (url) => ({
+      data: url.includes('resource=segments') ? { segments: [] } : data,
+      error: null,
+    }));
+    render(
+      <MemoryRouter>
+        <EmailPlatform />
+      </MemoryRouter>,
+    );
+    const user = userEvent.setup();
+    await user.click(await screen.findByRole('tab', { name: 'Audiences' }));
+    fireEvent.change(screen.getByLabelText('Audience name'), {
+      target: { value: 'Unfinished audience' },
+    });
+    await user.click(screen.getByRole('tab', { name: 'Campaigns' }));
+    await user.click(screen.getByRole('tab', { name: 'Audiences' }));
+    expect(screen.getByLabelText('Audience name')).toHaveValue('Unfinished audience');
   });
   it('shows query failures instead of claiming the lists are empty', async () => {
     api.invoke.mockResolvedValue({ error: new Error('unavailable') });

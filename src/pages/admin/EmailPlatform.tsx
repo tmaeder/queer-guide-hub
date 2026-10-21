@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { toast } from 'sonner';
+import { EmailAudiences } from '@/components/admin/email/EmailAudiences';
 interface Campaign {
   id: string;
   name: string;
@@ -161,8 +162,9 @@ export default function EmailPlatform() {
               if (tab === 'subscribers') void loadSubscribers();
             }}
           >
-            <TabsList>
+            <TabsList className="h-auto flex-wrap justify-start gap-1">
               <TabsTrigger value="campaigns">Campaigns</TabsTrigger>
+              <TabsTrigger value="audiences">Audiences</TabsTrigger>
               <TabsTrigger value="delivery">Delivery</TabsTrigger>
               <TabsTrigger value="subscribers">Subscribers</TabsTrigger>
             </TabsList>
@@ -330,6 +332,9 @@ export default function EmailPlatform() {
                   </ul>
                 )}
               </section>
+            </TabsContent>
+            <TabsContent value="audiences" forceMount className="data-[state=inactive]:hidden">
+              <EmailAudiences />
             </TabsContent>
             <TabsContent value="delivery">
               <section className="py-6">

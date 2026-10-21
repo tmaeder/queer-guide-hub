@@ -55,3 +55,8 @@ Replace caller-authored group email with a post-mention adapter captured transac
 ## Trip invitation continuation
 
 Add a verified existing-member trip invitation flow before sending invitation email. Derive actors from Auth, validate current accepted editor/actual-owner authority, pin original memberships and offered role, and require the recipient's explicit accept/decline on a signed-in review page. Keep trip details in the product; email uses a fixed generic review link and separate default-off opt-in captured at invitation time. Reuse shared quiet hours, daily activity reservations and immutable outbox identities. Guard pending membership role/identity/acceptance writes, serialize creation/response with erasure, retain a source-independent inviter admission counter, and integrate invite/revoke controls into trip sharing plus a Plans review link. Export/erase invitation metadata and counters. Raw legacy membership imports do not create email proof. Group source capture also acquires both parties' erasure barriers so it cannot recreate sender metadata after a concurrent scrub.
+
+
+## Admin audience continuation — 2026-10-21
+
+Connect saved audience definitions to the existing admin Email workspace using the established admin components. Provide typed nested rules and current consent/delivery previews, version-aware save/archive, preserved edits on failure, explicit conflict recovery and request revision guards. Keep unsaved audience edits across workspace tab changes. Display bounded definition/sample limits and exclusion evidence. Use the authorized admin API; do not enable campaign delivery or expose sensitive application traits. Campaign binding, journey editing and broader contact operations remain outstanding.

@@ -43,6 +43,9 @@ on:
       - 'src/lib/queryKeys.ts'
       - 'src/routes.tsx'
       - 'src/components/hub/TripsStrip.tsx'
+      - 'src/components/admin/email/**'
+      - 'src/pages/admin/EmailPlatform.tsx'
+      - 'src/pages/admin/__tests__/EmailPlatform.test.tsx'
       - 'src/components/profile/EmailPreferences.tsx'
       - 'src/components/profile/__tests__/EmailPreferences.test.tsx'
       - 'package.json'
@@ -83,8 +86,8 @@ jobs:
           npm test
           npm run typecheck
           npm run dry-run
-      - name: Member preferences
-        run: npx vitest run src/components/profile/__tests__/EmailPreferences.test.tsx src/components/trips/__tests__/TripInvitations.test.tsx
+      - name: Member preferences and admin workspace
+        run: npx vitest run src/components/profile/__tests__/EmailPreferences.test.tsx src/components/trips/__tests__/TripInvitations.test.tsx src/pages/admin/__tests__/EmailPlatform.test.tsx src/components/admin/email/__tests__/EmailAudiences.test.tsx
       - name: Backend contracts
         run: |
           deno test --no-config --allow-env supabase/functions/_shared/email-platform.test.ts supabase/functions/_shared/email-render.test.ts supabase/functions/_shared/email-outbox.test.ts supabase/functions/_shared/email-journey-worker.test.ts

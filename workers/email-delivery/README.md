@@ -43,7 +43,7 @@ Before production, establish retention periods for message bodies, delivery/cons
 
 Remaining provider limitation: the full marketing/newsletter objective cannot be activated while Cloudflare disallows that delivery class. Deployment, domain setup, event subscriptions and Auth SMTP cutover are still rollout steps, not proven by local tests.
 
-Dynamic audience definitions, live previews and contact timelines are available through the admin API; see `docs/architecture/email-audiences.md`. The audience builder UI, campaign binding and full transactional journey action catalog remain unfinished.
+Dynamic audience definitions and live previews are available in the admin Email Audiences tab, with typed nested rules and version-conflict recovery. Contact timelines remain available through the admin API; see `docs/architecture/email-audiences.md`. Campaign binding, the journey editor and the full transactional journey action catalog remain unfinished.
 
 Operational lifecycle producers now connect Auth, profile usernames, RSVPs, groups and trips. They record restricted state changes without automatically sending mail; see `docs/architecture/email-lifecycle-events.md`. The bounded journey runtime now consumes these events; further transactional actions and product adapters remain required work.
 
