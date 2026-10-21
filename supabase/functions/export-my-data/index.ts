@@ -59,6 +59,13 @@ Deno.serve(async (req) => {
       return json({ error: 'Export failed' }, 500)
     }
 
+    // Service-only RPC; derive the subject from the verified session, never
+    // accept an account ID or mailbox from the request body.
+    const { data: emailData, error: emailError } = await admin.rpc('email_export_for_user', {
+      p_user: user.id,
+    })
+    if (emailError) return json({ error: 'Email data export failed' }, 500)
+
     const { data: objects } = await userClient.rpc('list_my_storage_objects', { p_user_id: user.id })
 
     const payload = {
@@ -66,10 +73,11 @@ Deno.serve(async (req) => {
         generated_at: new Date().toISOString(),
         user_id: user.id,
         app: 'queer.guide',
-        schema_version: 1,
+        schema_version: 2,
       },
       account: { email: user.email, created_at: user.created_at },
       data,
+      email: emailData,
       files: objects ?? [],
     }
 

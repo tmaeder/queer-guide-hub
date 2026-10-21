@@ -1,3 +1,4 @@
+import { cloudflareGatewayRequest } from './cloudflare-email-gateway.ts';
 import { UUID, tokenDigest } from './redirect-api.ts';
 export interface DomainInstructionRecord {
   type: 'CNAME' | 'TXT';
@@ -6,6 +7,7 @@ export interface DomainInstructionRecord {
 }
 export interface DomainInstructionMailConfig {
   key: string;
+  gatewayUrl: string;
   from: string;
   target: string;
   fingerprint: string;
@@ -86,8 +88,10 @@ export async function domainInstructionMailConfig(
   key: string,
   from: string,
   target: string,
+  gatewayUrl: string = '',
 ): Promise<DomainInstructionMailConfig | null> {
   if (
+    !gatewayUrl ||
     !key ||
     key.length > 4096 ||
     /\s/.test(key) ||
@@ -105,9 +109,10 @@ export async function domainInstructionMailConfig(
     if (match && (!match[1].trim() || match[1].length > 100)) return null;
     return {
       key,
+      gatewayUrl,
       from: match ? match[1].trim() + ' <' + address + '>' : address,
       target,
-      fingerprint: await tokenDigest(key),
+      fingerprint: await tokenDigest(gatewayUrl + key),
     };
   } catch {
     return null;
@@ -241,18 +246,7 @@ export async function dispatchDomainInstructionMail(
       retry = true,
       retryAfter: number | null = null;
     try {
-      const response = await fetcher('https://api.resend.com/emails', {
-        method: 'POST',
-        redirect: 'error',
-        cache: 'no-store',
-        signal: AbortSignal.timeout(10000),
-        headers: {
-          Authorization: 'Bearer ' + config.key,
-          'Content-Type': 'application/json',
-          'Idempotency-Key': 'qg-domain-instructions/v1/' + job.id,
-        },
-        body: JSON.stringify(prepared.data),
-      });
+      const response = await cloudflareGatewayRequest(prepared.data as Record<string, unknown>, 'qg-domain-instructions/v1/' + job.id, config.key, config.gatewayUrl, fetcher);
       retryAfter = instructionRetryAfter(response);
       if (response.ok) {
         const data = await instructionProviderJson(response);

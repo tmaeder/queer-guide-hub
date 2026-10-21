@@ -121,8 +121,8 @@ describe('admin archetype registry', () => {
     const clean = ADMIN_ARCHETYPES.filter((e) => e.archetype && !e.caveat).length;
     const caveated = ADMIN_ARCHETYPES.filter((e) => e.archetype && e.caveat).length;
     const exempt = ADMIN_ARCHETYPES.filter((e) => e.archetype === null).length;
-    // The taxonomy directory adds a standard index route. Organisation workspace has its own static route; Business remains a redirect.
-    expect({ clean, caveated, exempt }).toEqual({ clean: 27, caveated: 13, exempt: 4 });
+    // The email workspace adds a standard inbox route. The taxonomy directory adds a standard index route. Organisation workspace has its own static route; Business remains a redirect.
+    expect({ clean, caveated, exempt }).toEqual({ clean: 28, caveated: 13, exempt: 4 });
     expect(clean + caveated + exempt).toBe(ADMIN_ARCHETYPES.length);
   });
 

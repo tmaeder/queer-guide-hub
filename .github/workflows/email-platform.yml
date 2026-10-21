@@ -1,0 +1,120 @@
+name: Email platform
+on:
+  pull_request:
+    paths:
+      - 'workers/email-delivery/**'
+      - 'supabase/functions/**email**/**'
+      - 'supabase/functions/send-username-reminder/**'
+      - 'supabase/functions/dm-digest/**'
+      - 'supabase/functions/send-group-notifications/**'
+      - 'supabase/functions/trip-invitations/**'
+      - 'supabase/config.toml'
+      - 'supabase/functions/reply-to-feedback/**'
+      - 'supabase/functions/notify-feedback-status/**'
+      - 'supabase/functions/redirect-access-notifications/**'
+      - 'supabase/functions/redirect-domain-instruction-mail/**'
+      - 'supabase/functions/_shared/redirect*mail.ts'
+      - 'supabase/functions/_shared/email*.ts'
+      - 'supabase/functions/export-my-data/**'
+      - 'supabase/functions/_shared/cloudflare-email-*.ts'
+      - 'supabase/migrations/*email_platform.sql'
+      - 'supabase/migrations/*email_platform_privacy.sql'
+      - 'supabase/migrations/*email_platform_segments.sql'
+      - 'supabase/migrations/*email_platform_lifecycle.sql'
+      - 'supabase/migrations/*email_platform_journeys.sql'
+      - 'supabase/migrations/*email_platform_policy.sql'
+      - 'supabase/migrations/*email_platform_groups.sql'
+      - 'supabase/migrations/*email_platform_trip_invitations.sql'
+      - 'supabase/tests/email_platform.sql'
+      - 'supabase/tests/email_platform_privacy.sql'
+      - 'supabase/tests/email_platform_segments.sql'
+      - 'supabase/tests/email_platform_lifecycle.sql'
+      - 'supabase/tests/email_platform_journeys.sql'
+      - 'supabase/tests/email_platform_policy.sql'
+      - 'supabase/tests/email_platform_groups.sql'
+      - 'supabase/tests/email_platform_trip_invitations.sql'
+      - 'supabase/tests/email_journey_concurrency.py'
+      - 'supabase/tests/fixtures/email_platform_bootstrap.sql'
+      - 'src/components/trips/TripInviteControls.tsx'
+      - 'src/components/trips/ShareTripDialog.tsx'
+      - 'src/pages/trips/TripInvitationsPage.tsx'
+      - 'src/components/trips/__tests__/TripInvitations.test.tsx'
+      - 'src/lib/tripInvitations.ts'
+      - 'src/lib/queryKeys.ts'
+      - 'src/routes.tsx'
+      - 'src/components/hub/TripsStrip.tsx'
+      - 'src/components/admin/email/**'
+      - 'src/pages/admin/EmailPlatform.tsx'
+      - 'src/pages/admin/__tests__/EmailPlatform.test.tsx'
+      - 'src/components/profile/EmailPreferences.tsx'
+      - 'src/components/profile/__tests__/EmailPreferences.test.tsx'
+      - 'package.json'
+      - 'package-lock.json'
+      - '.github/workflows/email-platform.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  contracts:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_PASSWORD: ${{ github.run_id }}-${{ github.run_attempt }}
+          POSTGRES_DB: email_platform
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+      - name: Worker contracts and types
+        working-directory: workers/email-delivery
+        run: |
+          npm test
+          npm run typecheck
+          npm run dry-run
+      - name: Member preferences and admin workspace
+        run: npx vitest run src/components/profile/__tests__/EmailPreferences.test.tsx src/components/trips/__tests__/TripInvitations.test.tsx src/pages/admin/__tests__/EmailPlatform.test.tsx src/components/admin/email/__tests__/EmailAudiences.test.tsx
+      - name: Backend contracts
+        run: |
+          deno test --no-config --allow-env supabase/functions/_shared/email-platform.test.ts supabase/functions/_shared/email-render.test.ts supabase/functions/_shared/email-outbox.test.ts supabase/functions/_shared/email-journey-worker.test.ts
+          deno check --no-config supabase/functions/email-admin/index.ts supabase/functions/email-subscriptions/index.ts supabase/functions/email-dispatch/index.ts supabase/functions/cloudflare-email-events/index.ts supabase/functions/email-journeys/index.ts supabase/functions/send-welcome-email/index.ts supabase/functions/dm-digest/index.ts supabase/functions/send-group-notifications/index.ts supabase/functions/trip-invitations/index.ts
+      - name: Schema, consent, outbox and access contracts
+        env:
+          PGHOST: localhost
+          PGPORT: 5432
+          PGUSER: postgres
+          PGPASSWORD: ${{ github.run_id }}-${{ github.run_attempt }}
+          PGDATABASE: email_platform
+        run: |
+          psql -v ON_ERROR_STOP=1 -f supabase/tests/fixtures/email_platform_bootstrap.sql
+          psql -v ON_ERROR_STOP=1 -f supabase/migrations/99991792565185_email_platform.sql
+          psql -v ON_ERROR_STOP=1 -f supabase/migrations/99991792565194_email_platform_privacy.sql
+          psql -v ON_ERROR_STOP=1 -f supabase/migrations/99991792565201_email_platform_segments.sql
+          psql -v ON_ERROR_STOP=1 -f supabase/migrations/99991792565208_email_platform_lifecycle.sql
+          psql -v ON_ERROR_STOP=1 -f supabase/migrations/99991792565215_email_platform_journeys.sql
+          psql -v ON_ERROR_STOP=1 -f supabase/migrations/99991792565221_email_platform_policy.sql
+          psql -v ON_ERROR_STOP=1 -f supabase/migrations/99991792565228_email_platform_groups.sql
+          psql -v ON_ERROR_STOP=1 -f supabase/migrations/99991792565235_email_platform_trip_invitations.sql
+          psql -v ON_ERROR_STOP=1 -f supabase/tests/email_platform.sql
+          psql -v ON_ERROR_STOP=1 -f supabase/tests/email_platform_privacy.sql
+          psql -v ON_ERROR_STOP=1 -f supabase/tests/email_platform_segments.sql
+          psql -v ON_ERROR_STOP=1 -f supabase/tests/email_platform_lifecycle.sql
+          psql -v ON_ERROR_STOP=1 -f supabase/tests/email_platform_journeys.sql
+          psql -v ON_ERROR_STOP=1 -f supabase/tests/email_platform_policy.sql
+          psql -v ON_ERROR_STOP=1 -f supabase/tests/email_platform_groups.sql
+          psql -v ON_ERROR_STOP=1 -f supabase/tests/email_platform_trip_invitations.sql
+          QG_EMAIL_CONTRACTS=1 python3 supabase/tests/email_journey_concurrency.py

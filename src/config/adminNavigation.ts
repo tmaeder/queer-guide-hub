@@ -45,6 +45,7 @@ import {
   Settings,
   Mail,
   MailCheck,
+  Send,
   Route as RouteIcon,
   Handshake,
   Workflow,
@@ -411,6 +412,15 @@ export const adminNavSections: AdminNavSection[] = [
         route: '/admin/styleguide',
         group: 'Configuration',
         keywords: ['styleguide', 'voice', 'terminology'],
+      },
+      {
+        id: 'email',
+        label: 'Email',
+        icon: Send,
+        route: '/admin/email',
+        minRole: 'admin',
+        group: 'Configuration',
+        keywords: ['newsletter', 'campaigns', 'subscribers', 'transactional'],
       },
       {
         id: 'email-templates',
