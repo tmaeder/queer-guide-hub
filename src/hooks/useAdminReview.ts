@@ -156,6 +156,8 @@ export function useReviewDecision() {
     onSettled: () => {
       void qc.invalidateQueries({ queryKey: ['admin-review'] });
       void qc.invalidateQueries({ queryKey: ['admin-review-item'] });
+      void qc.invalidateQueries({ queryKey: ['review-context'] });
+      void qc.invalidateQueries({ queryKey: ['admin-review-summary'] });
       void qc.invalidateQueries({ queryKey: ['admin-counts'] });
       void qc.invalidateQueries({ queryKey: ['triage-queue'] });
       void qc.invalidateQueries({ queryKey: ['admin-feedback-board'] });
@@ -202,6 +204,8 @@ export function useReviewBulk() {
     onSettled: () => {
       void qc.invalidateQueries({ queryKey: ['admin-review'] });
       void qc.invalidateQueries({ queryKey: ['admin-review-item'] });
+      void qc.invalidateQueries({ queryKey: ['review-context'] });
+      void qc.invalidateQueries({ queryKey: ['admin-review-summary'] });
       void qc.invalidateQueries({ queryKey: ['admin-counts'] });
       void qc.invalidateQueries({ queryKey: ['triage-queue'] });
     },

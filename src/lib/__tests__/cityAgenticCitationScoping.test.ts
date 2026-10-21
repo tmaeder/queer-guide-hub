@@ -62,7 +62,7 @@ describe('city-agentic-enrich citation scoping', () => {
 
   // --- (1) the rating gate reads its OWN citation set -----------------------
   it('gates the rating on a rating-scoped citation, not on any citation', () => {
-    expect(code).toMatch(/ratingCite\.length > 0/);
+    expect(code).toContain("hasCityReviewEvidence('lgbt_friendly_rating', ratingCite)");
     // The defect verbatim. `citations.length` must not gate the rating again.
     expect(code).not.toMatch(/&&\s*citations\.length > 0/);
   });
