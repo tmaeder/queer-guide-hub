@@ -80,7 +80,11 @@ Deno.test("native Cloudflare events retain recipient, identity, event time and s
 Deno.test("message digests expose no sender identity, group names or private text", () => {
   const one = unreadMessageEmail(1);
   assertEquals(one.subject, "Unread message on Queer Guide");
-  assertEquals(one.html.includes("https://queer.guide/hub/messages"), true);
+  const htmlUrlMatch = one.html.match(/https:\/\/[^\s"'<>]+/);
+  assertNotEquals(htmlUrlMatch, null);
+  const htmlUrl = new URL(htmlUrlMatch![0]);
+  assertEquals(htmlUrl.hostname, "queer.guide");
+  assertEquals(htmlUrl.pathname, "/hub/messages");
   assertEquals(one.text.includes("settings?section=account"), true);
   assertEquals(
     unreadMessageEmail(4).subject,
