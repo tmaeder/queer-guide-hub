@@ -13,6 +13,7 @@
     "vitest": "5.0.5",
     "typescript": "5.9.3",
     "wrangler": "4.151.0",
-    "@cloudflare/workers-types": "5.20261015.1"
+    "@cloudflare/workers-types": "5.20261015.1",
+    "vite": "8.3.4"
   }
 }

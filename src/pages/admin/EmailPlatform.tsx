@@ -134,7 +134,11 @@ export default function EmailPlatform() {
           </>
         }
       />
-      <p role="status" className="border border-border bg-muted p-4 text-sm">
+      <p
+        role="status"
+        aria-label="Cloudflare email capability"
+        className="border border-border bg-muted p-4 text-sm"
+      >
         Cloudflare sends transactional email only. Newsletter and marketing drafts can be prepared
         here; campaign delivery is unavailable.
       </p>
@@ -170,7 +174,7 @@ export default function EmailPlatform() {
             </TabsList>
             <TabsContent value="campaigns" className="space-y-8">
               <form onSubmit={save} className="max-w-2xl space-y-4 border-b border-border py-6">
-                <h2 className="text-lg font-semibold">
+                <h2 className="font-sans text-title font-bold">
                   {editingId ? 'Edit campaign draft' : 'Prepare a campaign'}
                 </h2>
                 <div>
@@ -275,7 +279,7 @@ export default function EmailPlatform() {
                 </div>
               </form>
               <section aria-label="Campaign drafts">
-                <h2 className="mb-4 text-lg font-semibold">Campaign drafts</h2>
+                <h2 className="mb-4 font-sans text-title font-bold">Campaign drafts</h2>
                 {!data.campaigns.length ? (
                   <AdminEmpty noun="campaign drafts" />
                 ) : (
@@ -338,7 +342,9 @@ export default function EmailPlatform() {
             </TabsContent>
             <TabsContent value="delivery">
               <section className="py-6">
-                <h2 className="mb-4 text-lg font-semibold">Recent transactional delivery</h2>
+                <h2 className="mb-4 font-sans text-title font-bold">
+                  Recent transactional delivery
+                </h2>
                 {!data.messages.length ? (
                   <AdminEmpty noun="transactional messages" />
                 ) : (
@@ -362,7 +368,7 @@ export default function EmailPlatform() {
             </TabsContent>
             <TabsContent value="subscribers">
               <section className="space-y-4 py-6">
-                <h2 className="text-lg font-semibold">Recent subscribers</h2>
+                <h2 className="font-sans text-title font-bold">Recent subscribers</h2>
                 <p className="text-sm text-muted-foreground">
                   Showing up to 100 subscriptions. A pending subscription cannot receive
                   newsletters.

@@ -18,7 +18,10 @@ const data = {
 };
 beforeEach(() => {
   api.invoke.mockReset();
-  api.invoke.mockResolvedValue({ data, error: null });
+  api.invoke.mockImplementation(async (url) => ({
+    data: url.includes('resource=segments') ? { segments: [] } : data,
+    error: null,
+  }));
 });
 describe('integrated admin email workspace', () => {
   it('exposes the provider restriction and links to the existing editor', async () => {
@@ -28,7 +31,9 @@ describe('integrated admin email workspace', () => {
       </MemoryRouter>,
     );
     await screen.findByText('Prepare a campaign');
-    expect(screen.getByRole('status')).toHaveTextContent('transactional email only');
+    expect(screen.getByRole('status', { name: 'Cloudflare email capability' })).toHaveTextContent(
+      'transactional email only',
+    );
     expect(screen.getByRole('link', { name: 'Edit templates' })).toHaveAttribute(
       'href',
       '/admin/email-templates',

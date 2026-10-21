@@ -154,7 +154,7 @@ export function EmailAudiences() {
   return (
     <div className="space-y-8 py-6">
       <div className="space-y-2">
-        <h2 className="text-lg font-semibold">Saved audiences</h2>
+        <h2 className="font-sans text-title font-bold">Saved audiences</h2>
         <Button type="button" variant="outline" disabled={!!busy} onClick={() => void load()}>
           Refresh saved audiences
         </Button>
@@ -212,7 +212,7 @@ export function EmailAudiences() {
       </section>
       <form onSubmit={save} className="max-w-3xl space-y-6 border-t border-border pt-6">
         <div className="flex flex-wrap items-center justify-between gap-4">
-          <h2 className="text-lg font-semibold">
+          <h2 className="font-sans text-title font-bold">
             {selected ? `Edit audience · version ${selected.version}` : 'New audience'}
           </h2>
           <Button type="button" variant="ghost" disabled={!!busy} onClick={() => edit(null)}>
@@ -314,7 +314,7 @@ export function EmailAudiences() {
         aria-label="Audience preview"
         className="max-w-3xl space-y-4 border-t border-border pt-6"
       >
-        <h2 className="text-lg font-semibold">Preview current rule</h2>
+        <h2 className="font-sans text-title font-bold">Preview current rule</h2>
         <p className="text-sm text-muted-foreground">
           Counts reflect current data. The sample shows up to 25 contacts, including exclusions.
           Recheck permissions before any future send.
