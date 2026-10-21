@@ -61,7 +61,7 @@ jobs:
       postgres:
         image: postgres:17
         env:
-          POSTGRES_PASSWORD: postgres
+          POSTGRES_PASSWORD: ${{ github.run_id }}-${{ github.run_attempt }}
           POSTGRES_DB: email_platform
         ports:
           - 5432:5432
@@ -97,7 +97,7 @@ jobs:
           PGHOST: localhost
           PGPORT: 5432
           PGUSER: postgres
-          PGPASSWORD: postgres
+          PGPASSWORD: ${{ github.run_id }}-${{ github.run_attempt }}
           PGDATABASE: email_platform
         run: |
           psql -v ON_ERROR_STOP=1 -f supabase/tests/fixtures/email_platform_bootstrap.sql

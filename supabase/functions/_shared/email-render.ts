@@ -58,7 +58,9 @@ export function renderEmailTemplate(
       // escaping alone does not make javascript: safe in a link.
       if (
         /^(javascript|vbscript|data):/i.test(
-          value.replace(/[\u0000-\u0020\u007f]/g, ""),
+          Array.from(value).filter((character) =>
+            character.charCodeAt(0) > 32 && character.charCodeAt(0) !== 127
+          ).join(""),
         )
       ) throw new Error(`Unsafe email variable: ${name}`);
       if (declaration?.type === "url" || name.endsWith("_url")) {

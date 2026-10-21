@@ -48,6 +48,19 @@ Deno.test("link variables require HTTPS and cannot smuggle active schemes", () =
       html_content: '<a href="{{link}}">Go</a>',
     }, { link: "java\nscript:alert(1)" })
   );
+  for (
+    const control of [
+      String.fromCharCode(0),
+      String.fromCharCode(31),
+      String.fromCharCode(127),
+    ]
+  ) {
+    assertThrows(() =>
+      renderEmailTemplate({ subject: "Hi", html_content: "{{link}}" }, {
+        link: `java${control}script:alert(1)`,
+      })
+    );
+  }
   assertStringIncludes(
     renderEmailTemplate({
       subject: "Hi",

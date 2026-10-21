@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { validateDelivery } from '../src/protocol';
 vi.mock('cloudflare:workers', () => ({
   DurableObject: class {
