@@ -274,7 +274,14 @@ export function ReviewTaskDetail({ item, busy, error, onDecision, onSkip, onBack
               : item.subtitle
             : 'Review the evidence and choose the appropriate outcome.'}
         </p>
-        {venueMatch && <VenueMatchPanel item={item} busy={busy} onSelect={setVenueSelection} />}
+        {venueMatch && (
+          <VenueMatchPanel
+            item={item}
+            busy={busy}
+            selection={venueSelection}
+            onSelect={setVenueSelection}
+          />
+        )}
         <ReviewEvidencePanel
           item={item}
           candidateOrganizationId={

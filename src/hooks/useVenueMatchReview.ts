@@ -14,6 +14,7 @@ export interface VenueMatchContext {
   event: {
     id: string;
     venue_name: string | null;
+    address: string | null;
     venue_id: string | null;
     city_id: string | null;
     country_id: string | null;

@@ -8,6 +8,7 @@ import { useAdminShell } from '@/components/admin/shell/AdminShell';
 import { useReviewCase, useRetryReviewResearch, reviewCaseInfo } from '@/hooks/useReviewCase';
 import type { ReviewDecision, ReviewItem } from '@/hooks/useAdminReview';
 import { reviewHttpUrl } from './reviewEvidence';
+import { VenueMatchPanel, type VenueMatchSelection } from './VenueMatchPanel';
 
 type Props = {
   item: ReviewItem;
@@ -47,10 +48,13 @@ export function ReviewCaseDetail({ item, busy, error, onDecision, onSkip, onBack
   const retry = useRetryReviewResearch();
   const { openEditor } = useAdminShell();
   const [excluded, setExcluded] = useState<Set<string>>(new Set());
-  const [venue, setVenue] = useState('');
+  const [venueSelection, setVenueSelection] = useState<
+    (VenueMatchSelection & { fingerprint: string }) | null
+  >(null);
   const [notes, setNotes] = useState('');
-  const [confirmed, setConfirmed] = useState(false);
+  const [confirmedFingerprint, setConfirmedFingerprint] = useState<string | null>(null);
   const data = query.data;
+  const confirmed = !!data && confirmedFingerprint === data.fingerprint;
   const members = data?.members ?? [];
   const research = data?.research;
   const outcome = research?.outcome ?? {};
@@ -271,36 +275,24 @@ export function ReviewCaseDetail({ item, busy, error, onDecision, onSkip, onBack
                 })}
               </div>
             </section>
-            {info.family === 'venue' && candidates.length > 0 && (
-              <fieldset className="space-y-4">
-                <legend className="mb-4 text-sm font-semibold">Canonical venue candidates</legend>
-                {candidates.map((candidate) => {
-                  const id = String(candidate.id ?? candidate.venue_id ?? '');
-                  return (
-                    <div key={id} className="border-b border-border pb-4">
-                      <label className="flex min-h-10 items-center gap-4 text-sm font-medium">
-                        <input
-                          type="radio"
-                          name="review-venue"
-                          value={id}
-                          checked={venue === id}
-                          onChange={() => setVenue(id)}
-                        />
-                        {String(candidate.name ?? candidate.venue_name ?? id)}
-                      </label>
-                      <p className="ml-8 text-sm text-muted-foreground">
-                        {String(candidate.address ?? 'Address not recorded')}
-                        {typeof candidate.distance_m === 'number'
-                          ? ` · ${Math.round(candidate.distance_m)} m from event pin`
-                          : ''}
-                      </p>
-                      <div className="ml-8">
-                        <SourceLink value={candidate.website} label="Venue website" />
-                      </div>
-                    </div>
-                  );
-                })}
-              </fieldset>
+            {info.family === 'venue' && stage === 'ready' && data && (
+              <VenueMatchPanel
+                key={data.fingerprint}
+                item={{ ...item, entity_id: members[0]?.entity_id ?? item.entity_id }}
+                busy={busy}
+                selection={venueSelection?.fingerprint === data.fingerprint ? venueSelection : null}
+                onSelect={(selection) =>
+                  setVenueSelection(
+                    selection ? { ...selection, fingerprint: data.fingerprint } : null,
+                  )
+                }
+              />
+            )}
+            {info.family === 'venue' && stage !== 'ready' && candidates.length > 0 && (
+              <section aria-label="Research venue candidates">
+                <h3 className="mb-2 text-sm font-semibold">Research venue candidates</h3>
+                <StructuredValue value={candidates} />
+              </section>
             )}
             {Boolean(outcome.source_evidence) && (
               <section aria-label="Publisher evidence">
@@ -340,7 +332,9 @@ export function ReviewCaseDetail({ item, busy, error, onDecision, onSkip, onBack
                   <Checkbox
                     className="mt-0.5 size-6 shrink-0"
                     checked={confirmed}
-                    onCheckedChange={(value) => setConfirmed(value === true)}
+                    onCheckedChange={(value) =>
+                      setConfirmedFingerprint(value === true && data ? data.fingerprint : null)
+                    }
                   />
                   {info.family === 'artwork'
                     ? `I checked all ${selected.length} selected findings. Accepting shared artwork retains the images and records this note for each finding.`
@@ -386,9 +380,7 @@ export function ReviewCaseDetail({ item, busy, error, onDecision, onSkip, onBack
           <Button
             data-review-action="approve"
             disabled={
-              !canSave ||
-              !venue ||
-              !candidates.some((candidate) => String(candidate.id ?? candidate.venue_id) === venue)
+              !canSave || !venueSelection || venueSelection.fingerprint !== data.fingerprint
             }
             onClick={() =>
               onDecision({
@@ -397,9 +389,9 @@ export function ReviewCaseDetail({ item, busy, error, onDecision, onSkip, onBack
                 notes,
                 confirm: confirmed,
                 payload: {
-                  venue_id: venue,
+                  venue_id: venueSelection?.venue_id,
                   member_ids: members.map((member) => member.id),
-                  expected_updated_at: members[0]?.current_record?.updated_at,
+                  expected_updated_at: venueSelection?.expected_updated_at,
                 },
               })
             }

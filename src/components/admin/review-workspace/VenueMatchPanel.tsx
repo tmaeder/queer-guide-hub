@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { ExternalLink, MapPin, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -14,22 +14,32 @@ export interface VenueMatchSelection {
 export function VenueMatchPanel({
   item,
   busy,
+  selection,
   onSelect,
 }: {
   item: ReviewItem;
   busy: boolean;
+  selection: VenueMatchSelection | null;
   onSelect: (selection: VenueMatchSelection | null) => void;
 }) {
   const [search, setSearch] = useState('');
-  const [selected, setSelected] = useState<string | null>(null);
   const query = useVenueMatchReview(item.entity_id, useDebounce(search, 300));
   const context = query.data;
+  const selectionCurrent =
+    !!selection &&
+    !query.isFetching &&
+    !query.isError &&
+    !context?.event.venue_id &&
+    selection.expected_updated_at === context?.event.updated_at &&
+    !!context?.candidates.some((candidate) => candidate.id === selection.venue_id);
+  useEffect(() => {
+    if (selection && !selectionCurrent) onSelect(null);
+  }, [onSelect, selection, selectionCurrent]);
   const source = reviewHttpUrl(context?.event.source_url);
   const location = [context?.city, context?.country].filter(Boolean).join(', ');
   // Selection belongs to this exact live query. A search/reload immediately
   // clears it so a previous response cannot submit a stale hidden candidate.
   const clear = () => {
-    setSelected(null);
     onSelect(null);
   };
   return (
@@ -53,6 +63,7 @@ export function VenueMatchPanel({
       {context && (
         <div className="space-y-2 bg-muted/40 p-4 text-sm">
           <p className="font-medium">{context.event.venue_name || 'No source venue name'}</p>
+          <p>{context.event.address || 'Source address not recorded'}</p>
           <p className="flex items-center gap-2 text-muted-foreground">
             <MapPin size={14} />
             {location || 'Location missing'}
@@ -130,9 +141,8 @@ export function VenueMatchPanel({
                       id={`venue-candidate-${candidate.id}`}
                       name="venue-match"
                       className="mt-1 size-4 accent-current"
-                      checked={selected === `${candidate.id}:${context.event.updated_at}`}
+                      checked={selectionCurrent && selection?.venue_id === candidate.id}
                       onChange={() => {
-                        setSelected(`${candidate.id}:${context.event.updated_at}`);
                         onSelect({
                           venue_id: candidate.id,
                           expected_updated_at: context.event.updated_at,

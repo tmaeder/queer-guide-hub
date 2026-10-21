@@ -7,12 +7,15 @@ const state = vi.hoisted(() => ({
   data: null as ReviewCaseDetails | null,
   isFetching: false,
   error: null as Error | null,
+  venueQuery: {} as Record<string, unknown>,
 }));
 vi.mock('@/hooks/useReviewCase', () => ({
   reviewCaseInfo: (item: ReviewItem) => item.meta.review_case,
   useReviewCase: () => ({ ...state, isError: !!state.error, isLoading: false, refetch: vi.fn() }),
   useRetryReviewResearch: () => ({ mutate: vi.fn(), isPending: false, error: null }),
 }));
+vi.mock('@/hooks/useVenueMatchReview', () => ({ useVenueMatchReview: () => state.venueQuery }));
+vi.mock('@/hooks/useDebounce', () => ({ useDebounce: (value: string) => value }));
 vi.mock('@/components/admin/shell/AdminShell', () => ({
   useAdminShell: () => ({ openEditor: vi.fn() }),
 }));
@@ -40,6 +43,30 @@ const item = (family = 'artwork', stage = 'ready'): ReviewItem =>
   }) as unknown as ReviewItem;
 describe('review cases', () => {
   beforeEach(() => {
+    state.venueQuery = {
+      data: {
+        event: {
+          id: 'e1',
+          city_id: 'city',
+          venue_name: 'Source venue',
+          updated_at: '2026-10-21T12:00:00Z',
+          source_url: 'https://source.test/event',
+        },
+        city: 'Zürich',
+        country: 'Switzerland',
+        candidates: [
+          {
+            id: 'venue-live',
+            name: 'Live catalogue venue',
+            address: '42 Source Street',
+            website: 'https://venue.test',
+            name_exact: true,
+            distance_m: 40,
+          },
+        ],
+      },
+      refetch: vi.fn(),
+    };
     state.isFetching = false;
     state.error = null;
     state.data = {
@@ -114,6 +141,51 @@ describe('review cases', () => {
     expect(
       screen.getByRole('button', { name: 'Queue another research attempt' }),
     ).toBeInTheDocument();
+  });
+  it('uses live comparison and requires renewed confirmation when case evidence changes', () => {
+    state.data!.family = 'venue';
+    state.data!.members = [member('source-one'), member('source-two')].map((m) => ({
+      ...m,
+      entity_id: 'e1',
+      current_record: { ...m.current_record, updated_at: 'stale-cached-timestamp' },
+    }));
+    const save = vi.fn();
+    const props = {
+      item: item('venue'),
+      busy: false,
+      onDecision: save,
+      onBack: vi.fn(),
+      onSkip: vi.fn(),
+    };
+    const { rerender } = render(<ReviewCaseDetail {...props} />);
+    expect(screen.getByText('42 Source Street')).toBeVisible();
+    expect(screen.getByText(/Exact name/)).toHaveTextContent('40 m');
+    expect(screen.getByLabelText('Search venues in this city')).toBeVisible();
+    fireEvent.change(screen.getByLabelText('Evidence and decision note'), {
+      target: { value: 'The event source identifies this exact address.' },
+    });
+    fireEvent.click(screen.getByRole('checkbox', { name: /I checked the current record/ }));
+    const link = screen.getByRole('button', { name: 'Link selected venue' });
+    expect(link).toBeDisabled();
+    fireEvent.click(screen.getByRole('radio'));
+    expect(link).toBeEnabled();
+    fireEvent.click(link);
+    expect(save).toHaveBeenCalledWith(
+      expect.objectContaining({
+        payload: {
+          venue_id: 'venue-live',
+          member_ids: ['source-one', 'source-two'],
+          expected_updated_at: '2026-10-21T12:00:00Z',
+        },
+      }),
+    );
+    state.data = { ...state.data!, fingerprint: 'new-current-evidence' };
+    rerender(<ReviewCaseDetail {...props} />);
+    expect(
+      screen.getByRole('checkbox', { name: /I checked the current record/ }),
+    ).not.toBeChecked();
+    expect(screen.getByRole('radio')).not.toBeChecked();
+    expect(screen.getByRole('button', { name: 'Link selected venue' })).toBeDisabled();
   });
   it('does not offer a decision when current evidence failed to load', () => {
     state.data = null;

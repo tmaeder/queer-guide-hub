@@ -11,6 +11,7 @@ begin
  select * into strict v from public.venues where city_id=e.city_id and closed_at is null and duplicate_of_id is null and (e.country_id is null or country_id=e.country_id) limit 1;
  select id into strict q from public.review_queue where entity_id=e.id and entity_type='event' and review_type='venue_link_candidate' and status='pending' limit 1;
  result:=public.get_event_venue_review_context(e.id,v.name);
+ if not ((result->'event')?'address') or result#>>'{event,address}' is distinct from e.address then raise exception 'Live source address missing from comparison'; end if;
  if not exists(select 1 from jsonb_array_elements(result->'candidates') c where c->>'id'=v.id::text) then raise exception 'Selected same-city candidate missing'; end if;
  begin
   perform public.admin_review_link_event_venue('general-review',q,v.id,e.updated_at-interval '1 second');
