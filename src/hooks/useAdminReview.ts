@@ -171,11 +171,13 @@ export async function decideReview({ item, action, notes, confirm, payload }: Re
       );
     }
     if (caseInfo?.id) {
-      const { error } = await untypedRpc('reconcile_admin_review_cases', {
+      // The source service has already confirmed the application. A cache
+      // reconciliation failure must not report that durable write as failed;
+      // the scheduled reconciler retries it independently.
+      await untypedRpc('reconcile_admin_review_cases', {
         p_queue_type: item.queue_type,
         p_item_ids: [item.id],
-      });
-      if (error) throw new Error(error.message);
+      }).catch(() => undefined);
     }
     return;
   }
@@ -193,6 +195,11 @@ export async function decideReview({ item, action, notes, confirm, payload }: Re
   if (error) throw new Error(error.message);
   if (!data?.ok || data.error)
     throw new Error(data?.error || 'The decision was not saved. Please retry.');
+  if (action !== 'reopen')
+    await untypedRpc('reconcile_admin_review_cases', {
+      p_queue_type: item.queue_type,
+      p_item_ids: [item.id],
+    }).catch(() => undefined);
 }
 export function useReviewDecision() {
   const qc = useQueryClient();
@@ -245,11 +252,10 @@ export function useReviewBulk() {
       );
       if (error) throw new Error(error.message);
       if (!data?.ok) throw new Error('The bulk decision was not saved. Please retry.');
-      const reconciled = await untypedRpc('reconcile_admin_review_cases', {
+      await untypedRpc('reconcile_admin_review_cases', {
         p_queue_type: 'staging',
         p_item_ids: args.ids,
-      });
-      if (reconciled.error) throw new Error(reconciled.error.message);
+      }).catch(() => undefined);
       return data;
     },
     onSettled: () => {

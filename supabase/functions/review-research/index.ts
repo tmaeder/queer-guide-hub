@@ -1,7 +1,7 @@
 // Bounded evidence collection. Source gaps are visible blocked jobs, never accepted facts.
 import { corsResponse, errorResponse, getServiceClient, jsonResponse, requireInternalOrAdmin } from '../_shared/supabase-client.ts'
 import { coordinateEvidence, ids, matchesName, values, type WikiEntity } from '../geography-verify/evidence.ts'
-import { readEventSource } from './source-evidence.ts'
+import { canResearchCity, readEventSource } from './source-evidence.ts'
 
 type Job = { case_id: string; lease_token: string; family: string; item: { entity_id: string; title: string } }
 type Outcome = Record<string, unknown>
@@ -38,6 +38,11 @@ Deno.serve(async req => {
       try {
         outcome = await rpc<Outcome>('research_admin_review_local', { p_case_id: job.case_id, p_lease_token: job.lease_token })
         if (job.family === 'city_identity') {
+          const initial = await db.from('cities').select('shell_status,duplicate_of_id').eq('id', job.item.entity_id).maybeSingle()
+          if (initial.error) throw initial.error
+          if (!canResearchCity(initial.data)) {
+            outcome = { decision_ready: false, reason: 'This identity is archived or merged. Preserve its disposition; the geography workflow needs an explicit non-place resolution.' }
+          } else {
           // Reuse the existing identity resolver and its name/country/coordinate refusal gates.
           const backfill = await fetch(`${Deno.env.get('SUPABASE_URL')}/functions/v1/city-factual-backfill`, {
             method: 'POST', headers: { Authorization: `Bearer ${Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')}`, 'Content-Type': 'application/json' },
@@ -69,6 +74,7 @@ Deno.serve(async req => {
               reason: ready ? 'Settlement identity, name, country and coordinates agree; inspect the cited evidence before changing lifecycle'
                 : conflict ? 'Existing classification evidence conflicts with the candidate; resolve the cited sources'
                 : 'Candidate identity lacks corroborated settlement, name, country or coordinate evidence' }
+          }
           }
         } else if (job.family === 'venue' && !outcome.repaired) {
           if (typeof outcome.source_url === 'string') {

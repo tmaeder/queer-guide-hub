@@ -1,6 +1,11 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { eventEvidence, readEventSource } from './source-evidence.ts'
+import { canResearchCity, eventEvidence, readEventSource } from './source-evidence.ts'
+
+test('does not enrich archived or merged identities', () => {
+  for (const row of [null, { shell_status: 'ghost' }, { shell_status: 'merged' }, { shell_status: 'placeholder', duplicate_of_id: 'canonical' }]) assert.equal(canResearchCity(row), false)
+  assert.equal(canResearchCity({ shell_status: 'placeholder', duplicate_of_id: null }), true)
+})
 
 test('retains only publisher events with the exact normalized subject', () => {
   const html = `<script type="application/ld+json">${JSON.stringify({ '@graph': [

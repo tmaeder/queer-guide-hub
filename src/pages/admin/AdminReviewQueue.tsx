@@ -49,11 +49,8 @@ import {
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useDebounce } from '@/hooks/useDebounce';
 
-// 'decisions' is the DEFAULT, because this page is titled "Review queue" and its headline reads
-// "Pending decisions": 84% of the rows the union carries are machine detector output with no
-// decision available (admin_review_finding_codes), so defaulting to 'all' made the page claim
-// 335,495 pending decisions against 54,034 real ones. 'all' is still one click away and hides
-// nothing.
+// Lead with independent, ready cases. Research, blocked jobs, raw decision rows
+// and the inclusive detector union remain separately reachable and labelled.
 const scopeOptions = [
   'ready',
   'research',
@@ -311,6 +308,9 @@ export default function AdminReviewQueue() {
               >
                 Inspect raw tasks
               </button>
+              {summary.research_enabled === false && ' · Automatic research is paused.'}
+              {summary.worklist_as_of &&
+                ` · Updated ${new Date(summary.worklist_as_of).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`}
             </p>
           )}
         </div>

@@ -1,6 +1,9 @@
 import { assertPublicHttpUrl } from '../_shared/ssrf-guard.ts'
 
 export const normalize = (value: string) => value.normalize('NFKD').replace(/\p{M}/gu, '').toLowerCase().replace(/[^\p{L}\p{N}]/gu, '')
+export function canResearchCity(city: { shell_status?: string; duplicate_of_id?: string | null } | null): boolean {
+  return !!city && !city.duplicate_of_id && !['ghost', 'merged'].includes(city.shell_status ?? '')
+}
 type Node = Record<string, unknown>
 export function eventEvidence(html: string, expectedTitle: string): Node[] {
   const found: Node[] = []
