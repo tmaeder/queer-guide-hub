@@ -114,7 +114,8 @@ Deno.serve(withErrorReporting('pipeline-quality-enhance', async (req) => {
     const { data: items, error } = await q
     if (error) return errorResponse(`load: ${error.message}`, 500, req)
     if (!items || items.length === 0) {
-      return jsonResponse({ success: true, items: 0, message: 'nothing to quality-enhance' }, 200, req)
+      return jsonResponse({ success: true, items: 0, input_version: STAGED_NEWS_INPUT_VERSION,
+        message: 'nothing to quality-enhance' }, 200, req)
     }
 
     // Honor the kill switch — short-circuit before any LLM call.
@@ -129,6 +130,7 @@ Deno.serve(withErrorReporting('pipeline-quality-enhance', async (req) => {
         success: true, items: 0, items_total: items.length, items_processed: 0,
         items_succeeded: 0, items_failed: 0,
         skipped_reason: 'news_quality_disabled',
+        input_version: STAGED_NEWS_INPUT_VERSION,
       }, 200, req)
     }
     const imageReplacementEnabled = cfg.image_replacement_enabled === true
@@ -325,6 +327,7 @@ Deno.serve(withErrorReporting('pipeline-quality-enhance', async (req) => {
       items_failed: failed,
       passed, review, rejected,
       pipeline_version: QUALITY_PIPELINE_VERSION,
+      input_version: STAGED_NEWS_INPUT_VERSION,
       dry_run: dryRun,
     }, 200, req)
   } catch (error) {
