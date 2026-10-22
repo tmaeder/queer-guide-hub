@@ -71,9 +71,9 @@ begin
  assert (select attempts=0 from public.email_outbox where id=second.id);
  p:=public.email_delivery_preferences_save(u,true,'Etc/UTC',false,22,8,4);
  select lease_id into lease from public.email_claim(1,second.id);
- update auth.users set email='changed@example.com' where id=u;
+ perform public.email_fixture_change_mailbox(u,'changed@example.com');
  assert not public.email_dispatch_authorize(second.id,lease),'old primary address sent';
- update auth.users set email='policy@example.com' where id=u;
+ perform public.email_fixture_change_mailbox(u,'policy@example.com');
  update public.notifications set read=true where user_id=u;
  assert not public.email_dispatch_authorize(second.id,lease),'read source sent';
  update public.notifications set read=false where user_id=u;

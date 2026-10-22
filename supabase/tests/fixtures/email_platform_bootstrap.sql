@@ -94,3 +94,12 @@ create index idx_marketplace_merchants_organization_id on public.marketplace_mer
 
 create table public.marketplace_listings(id uuid primary key default gen_random_uuid(),business_name text not null,contact_email text,status text not null default 'active',archived_at timestamptz,deprecated_at timestamptz,duplicate_of_id uuid,review_status text);
 grant all on public.marketplace_listings to service_role;
+
+-- Test-only source mutation, modelling Auth changing a mailbox independently of
+-- the email service role. Never included in production migrations.
+create function public.email_fixture_change_mailbox(p_user uuid,p_email text)
+returns void language sql security definer set search_path=pg_catalog as $$
+ update auth.users set email=p_email where id=p_user;
+$$;
+revoke all on function public.email_fixture_change_mailbox(uuid,text) from public,anon,authenticated;
+grant execute on function public.email_fixture_change_mailbox(uuid,text) to service_role;
