@@ -78,3 +78,15 @@ historical relationship type and the existing post-lock helper check, which
 remains authoritative before disposition. A temporary compiled copy of the
 entire updated worker completed a live dry-run successfully; no permanent
 production function was changed during the coordinated schema pause.
+
+
+A further detector check found 81 open LIVENESS_STALE issues that the current
+native event detector no longer emitted. All 81 were resolved with complete
+before/after journals and zero changes to the original issue evidence. The
+unapplied worker patch now repeats this reconciliation for untouched native
+findings only, locking both event and issue and checking the detector again
+after the lock. It does not verify event liveness or alter dates. Rolled-back
+regressions verify dry-run, successful resolution, retained current findings,
+human-touched and external-detector refusal, evidence preservation and audit
+provenance. Fixtures include explicit evidence hashes and serialize with the
+worker lease to avoid conflicting with a scheduled sweep.
