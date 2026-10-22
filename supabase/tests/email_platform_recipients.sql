@@ -28,6 +28,12 @@ begin
  perform public.email_subscription_request('shared-business@example.com',uid,'en',array['newsletter'],'website','fixture',repeat('6',64));
  assert public.email_subscription_consume(repeat('6',64),'confirm');
  assert public.email_segment_preview('{"field":"recipient_kind","op":"eq","value":"vendor"}','newsletter')->>'eligible'='1';
+ update auth.users set email='new-canonical-account@example.com' where id=uid;
+ assert public.email_segment_preview('{"field":"recipient_kind","op":"eq","value":"user"}','newsletter')->>'matched'='0','user mailbox change left a stale association';
+ update auth.users set email='shared-business@example.com' where id=uid;
+ assert public.email_segment_preview('{"field":"recipient_kind","op":"eq","value":"user"}','newsletter')->>'eligible'='1';
+ begin update public.email_recipient_user_lookup set mailbox_hash=repeat('f',64) where user_id=uid;raise exception 'service caller forged account proof';exception when insufficient_privilege then null;end;
+
  segment:=public.email_segment_save('Current vendor contacts','{"field":"recipient_kind","op":"eq","value":"vendor"}',aid);
  campaign:=public.email_campaign_save(jsonb_build_object('name','Entity fixture','template_key','entity-fixture','topic','newsletter','segment_id',segment->>'id'),aid);
  audience:=public.email_campaign_snapshot_begin((campaign->>'id')::uuid,1,aid);
@@ -51,12 +57,15 @@ begin
  assert (select count(*) from public.email_outbox)=before_mail,'directory or import sent mail';
  -- Erasure must also hide source associations and prevent reimport.
  perform public.email_erase_account(uid);
+ assert not exists(select 1 from public.email_recipient_user_lookup where user_id=uid),'derived recipient hash survived erasure';
  assert not exists(select 1 from jsonb_array_elements(public.email_recipient_directory('venue')->'recipients') x where x->>'email'='shared-business@example.com');
  r:=public.email_recipient_import('venue','66666666-0000-4000-8000-000000000012',aid);
  assert r->>'inserted_pending'='0','erased entity mailbox recreated';
 end $$;
 reset role;
 do $$ declare f record;begin
+ assert (select relrowsecurity from pg_class where oid='public.email_recipient_user_lookup'::regclass);
+ assert not has_table_privilege('authenticated','public.email_recipient_user_lookup','SELECT');
  assert not has_table_privilege('anon','public.email_recipient_sources','SELECT') and not has_table_privilege('authenticated','public.email_recipient_sources','SELECT');
  for f in select oid from pg_proc where pronamespace='public'::regnamespace and (proname like 'email_recipient_%' or proname like 'email_segment_%') loop
   assert not has_function_privilege('anon',f.oid,'EXECUTE') and not has_function_privilege('authenticated',f.oid,'EXECUTE');

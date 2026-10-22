@@ -88,3 +88,6 @@ create table public.organizations(id uuid primary key default gen_random_uuid(),
 create table public.venues(id uuid primary key default gen_random_uuid(),name text not null,email text,duplicate_of_id uuid,closed_at timestamptz,review_status text,safety_gated boolean not null default false);
 create table public.marketplace_merchants(id uuid primary key default gen_random_uuid(),display_name text not null,organization_id uuid references public.organizations(id),is_enabled boolean not null default true);
 grant all on public.organizations,public.venues,public.marketplace_merchants to service_role;
+
+-- Existing production organization foreign-key lookup index.
+create index idx_marketplace_merchants_organization_id on public.marketplace_merchants(organization_id);

@@ -42,6 +42,7 @@ on:
       - 'supabase/tests/email_platform_content_contacts.sql'
       - 'supabase/tests/email_platform_measurement.sql'
       - 'supabase/tests/email_platform_recipients.sql'
+      - 'supabase/tests/email_platform_recipient_capacity.sql'
       - 'supabase/tests/email_platform_capacity.sql'
       - 'supabase/tests/email_journey_concurrency.py'
       - 'supabase/tests/fixtures/email_platform_bootstrap.sql'
@@ -137,5 +138,6 @@ jobs:
           psql -v ON_ERROR_STOP=1 -f supabase/tests/email_platform_content_contacts.sql
           psql -v ON_ERROR_STOP=1 -f supabase/tests/email_platform_measurement.sql
           psql -v ON_ERROR_STOP=1 -f supabase/tests/email_platform_recipients.sql
+          psql -v ON_ERROR_STOP=1 -f supabase/tests/email_platform_recipient_capacity.sql
           psql -v ON_ERROR_STOP=1 -f supabase/tests/email_platform_capacity.sql
           QG_EMAIL_CONTRACTS=1 python3 supabase/tests/email_journey_concurrency.py

@@ -416,6 +416,7 @@ returns trigger language plpgsql security definer set search_path=pg_catalog,pg_
 begin
  update public.email_template_localizations set updated_by=null where updated_by=new.user_id;
  update public.email_import_batches set created_by=null where created_by=new.user_id;
+ delete from public.email_recipient_user_lookup where user_id=new.user_id;
  update public.email_experiments set created_by=null where created_by=new.user_id;
  delete from public.email_experiment_assignments where user_id=new.user_id;
  return new;
@@ -429,21 +430,55 @@ $$;
 -- Entity associations are resolved from CURRENT canonical records. A directory
 -- association is not ownership proof or marketing consent, and is never copied
 -- into a permanent address book that could survive a contact change or erasure.
+-- A derived, service-private hash lookup avoids an Auth table scan for every
+-- contact. It never stores another plaintext address or creates an account link
+-- on a subscriber; current Auth proof is checked again when resolving it.
+create table public.email_recipient_user_lookup (
+ user_id uuid primary key references auth.users(id) on delete cascade,
+ mailbox_hash text not null check(mailbox_hash~'^[a-f0-9]{64}$')
+);
+create index email_recipient_user_lookup_mailbox on public.email_recipient_user_lookup(mailbox_hash);
+alter table public.email_recipient_user_lookup enable row level security;
+revoke all on public.email_recipient_user_lookup from public,anon,authenticated,service_role;
+grant select on public.email_recipient_user_lookup to service_role;
+create function email_private.capture_recipient_mailbox()
+returns trigger language plpgsql security definer set search_path=pg_catalog,pg_temp as $$
+begin
+ perform pg_advisory_xact_lock(hashtextextended(new.id::text,914));
+ if new.email is null or new.email_confirmed_at is null
+  or exists(select 1 from public.email_disabled_accounts d where d.user_id=new.id) then
+  delete from public.email_recipient_user_lookup where user_id=new.id;
+ else
+  insert into public.email_recipient_user_lookup(user_id,mailbox_hash)
+  values(new.id,encode(sha256(convert_to(lower(btrim(new.email)),'UTF8')),'hex'))
+  on conflict(user_id) do update set mailbox_hash=excluded.mailbox_hash;
+ end if;
+ return new;
+end $$;
+revoke all on function email_private.capture_recipient_mailbox() from public,anon,authenticated,service_role;
+create trigger email_capture_recipient_mailbox after insert or update of email,email_confirmed_at on auth.users
+ for each row execute function email_private.capture_recipient_mailbox();
+insert into public.email_recipient_user_lookup(user_id,mailbox_hash)
+ select u.id,encode(sha256(convert_to(lower(btrim(u.email)),'UTF8')),'hex') from auth.users u
+ where u.email_confirmed_at is not null and u.email is not null
+ and not exists(select 1 from public.email_disabled_accounts d where d.user_id=u.id);
+analyze public.email_recipient_user_lookup;
+
 create index email_organizations_mailbox on public.organizations(lower(btrim(email))) where email is not null;
 create index email_venues_mailbox on public.venues(lower(btrim(email))) where email is not null;
 create view public.email_recipient_sources with (security_invoker=true) as
- select 'organization'::text kind,o.id,o.name label,lower(btrim(o.email)) email,'published_contact'::text evidence
+ select 'organization'::text kind,o.id,o.name label,lower(btrim(o.email)) email,'published_contact'::text evidence,encode(sha256(convert_to(lower(btrim(o.email)),'UTF8')),'hex') mailbox_hash
  from public.organizations o where o.status='active' and o.duplicate_of_id is null and not o.safety_gated and not o.is_defunct and o.email is not null
  union all
- select 'venue',v.id,v.name,lower(btrim(v.email)),'published_contact'
+ select 'venue',v.id,v.name,lower(btrim(v.email)),'published_contact',encode(sha256(convert_to(lower(btrim(v.email)),'UTF8')),'hex')
  from public.venues v where v.duplicate_of_id is null and v.closed_at is null and coalesce(v.review_status,'')<>'archived' and not v.safety_gated and v.email is not null
  union all
- select 'vendor',m.id,m.display_name,lower(btrim(o.email)),'linked_organization_contact'
+ select 'vendor',m.id,m.display_name,lower(btrim(o.email)),'linked_organization_contact',encode(sha256(convert_to(lower(btrim(o.email)),'UTF8')),'hex')
  from public.marketplace_merchants m join public.organizations o on o.id=m.organization_id
  where m.is_enabled and o.status='active' and o.duplicate_of_id is null and not o.safety_gated and not o.is_defunct and o.email is not null
  union all
- select 'user',u.id,'Account '||u.id::text,lower(btrim(u.email)),'verified_account_mailbox'
- from auth.users u where u.email_confirmed_at is not null and u.email is not null
+ select 'user',u.id,'Account '||u.id::text,lower(btrim(u.email)),'verified_account_mailbox',l.mailbox_hash
+ from public.email_recipient_user_lookup l join auth.users u on u.id=l.user_id and l.mailbox_hash=encode(sha256(convert_to(lower(btrim(u.email)),'UTF8')),'hex') where u.email_confirmed_at is not null and u.email is not null
  and not exists(select 1 from public.email_disabled_accounts d where d.user_id=u.id);
 revoke all on public.email_recipient_sources from public,anon,authenticated;
 grant select on public.email_recipient_sources to service_role;
@@ -453,7 +488,7 @@ returns jsonb language plpgsql stable security invoker set search_path=public,pg
 declare result jsonb;
 begin
  if p_kind is null or p_kind not in ('organization','venue','vendor','user') then raise exception 'invalid_recipient_kind' using errcode='22023'; end if;
- with page as materialized (select r.* from public.email_recipient_sources r where r.kind=p_kind and (p_after is null or r.id>p_after)
+ with page as materialized (select r.kind,r.id,r.label,r.email,r.evidence from public.email_recipient_sources r where r.kind=p_kind and (p_after is null or r.id>p_after)
    and length(r.email)<=254 and r.email~'^[^[:space:]@<>]+@[^[:space:]@<>]+\.[^[:space:]@<>]+$'
    and not exists(select 1 from public.email_erased_mailboxes e where e.mailbox_hash=encode(sha256(convert_to(r.email,'UTF8')),'hex')) order by r.id limit 101),
  items as (select p.*,s.id subscriber_id,s.status subscription_status,s.topics,s.confirmed_at,
@@ -558,7 +593,7 @@ begin
  end if;
  field:=p_rule->>'field'; op:=p_rule->>'op';
  if field='recipient_kind' then
-  return exists(select 1 from public.email_recipient_sources r where r.email=p_sub.email
+  return exists(select 1 from public.email_recipient_sources r where r.email=p_sub.email and r.mailbox_hash=encode(sha256(convert_to(p_sub.email,'UTF8')),'hex')
    and case when op='eq' then r.kind=p_rule->>'value' else p_rule->'value' ? r.kind end);
  end if;
  if field='topic' then return (p_rule->>'value')=any(p_sub.topics); end if;
