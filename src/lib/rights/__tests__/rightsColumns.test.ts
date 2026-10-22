@@ -13,12 +13,13 @@ describe('rights select stays in step with the catalog', () => {
   // Guards the WIDE select (useAllCountriesRightsFull). The narrow one is
   // deliberately smaller — /travel and /rights/sources must not pay for the
   // 22-column payload — so it is not checked here.
-  const selected = new Set(RIGHTS_SELECT_COLUMNS.split(',').map((c) => c.trim()));
+  // `alias:column->key` (the JSON-path subset of lgbti_criminalization) counts as `column`.
+  const selected = new Set(
+    RIGHTS_SELECT_COLUMNS.split(',').map((c) => c.trim().replace(/^\w+:/, '').replace(/->.*$/, '')),
+  );
 
   it('fetches every column named by RIGHT_TOPICS', () => {
-    const missing = [...new Set(RIGHT_TOPICS.map((t) => t.column))].filter(
-      (c) => !selected.has(c),
-    );
+    const missing = [...new Set(RIGHT_TOPICS.map((t) => t.column))].filter((c) => !selected.has(c));
     expect(missing, `not fetched, so /rights cannot count them: ${missing.join(', ')}`).toEqual([]);
   });
 

@@ -249,7 +249,7 @@ test.describe('@smoke podcasts', () => {
       // src/hooks/usePodcasts.ts
       'id,name,slug,description,website_url,url,artwork_url,episode_count',
       // src/hooks/useNews.tsx — fetchSources
-      'id,name,slug,description,url,website_url,category,feed_type,artwork_url,is_active,is_aggregator,organization_id,episode_count',
+      'id,name,url',
       // src/hooks/usePageFetchers.ts — fetchNewsSourceById
       'name,url',
     ];

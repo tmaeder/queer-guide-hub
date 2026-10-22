@@ -274,10 +274,11 @@ export const useNews = () => {
       // untypedFrom: slug / description / website_url / episode_count are newer
       // than the last `supabase gen types` run, and naming an unknown column in
       // a typed select collapses the whole builder to SelectQueryError.
+      //
+      // id/name/url only: the Source dropdown and sourcesMap read nothing else,
+      // and `description` alone made this ~111 KB gzipped on every news page.
       const { data, error: fetchError } = await untypedFrom('news_sources')
-        .select(
-          'id, name, slug, description, url, website_url, category, feed_type, artwork_url, is_active, is_aggregator, organization_id, episode_count',
-        )
+        .select('id, name, url')
         .eq('is_active', true)
         .or('is_aggregator.is.null,is_aggregator.eq.false')
         .order('name', { ascending: true });
