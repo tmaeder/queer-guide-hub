@@ -60,11 +60,16 @@ jobs:
       - name: Start local Supabase and load the snapshot
         run: |
           mkdir -p /tmp/migrations && mv supabase/migrations/*.sql /tmp/migrations/
-          scripts/ci/supabase-retry.sh start -x studio,imgproxy,inbucket,edge-runtime,logflare,vector,realtime,postgres-meta,supavisor
+          # PostgREST stays unhealthy until the snapshot creates pgmq_public (config.toml
+          # exposes it); it retries the schema cache on its own, so do not wait for it here.
+          scripts/ci/supabase-retry.sh start --ignore-health-check -x studio,imgproxy,inbucket,edge-runtime,logflare,vector,realtime,postgres-meta,supavisor
           eval "$(supabase status -o env)"
           { echo "DB_URL=$DB_URL"; echo "API_URL=$API_URL"; echo "ANON_KEY=$ANON_KEY"; } >> "$GITHUB_ENV"
           echo "::add-mask::$SERVICE_ROLE_KEY"; echo "SERVICE_ROLE_KEY=$SERVICE_ROLE_KEY" >> "$GITHUB_ENV"
           scripts/ci/db-snapshot.sh load "$DB_URL" snapshot
+          psql "$DB_URL" -X -c "notify pgrst, 'reload schema'"
+          for i in $(seq 30); do curl -sf "$API_URL/rest/v1/" -H "apikey: $ANON_KEY" -o /dev/null && break; sleep 2; done
+          curl -sf "$API_URL/rest/v1/countries?select=slug&limit=1" -H "apikey: $ANON_KEY"; echo
 
       - name: Apply this PR's new migrations
         run: |
