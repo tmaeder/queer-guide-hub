@@ -2,6 +2,7 @@
 -- cities before joining the 26 current verification candidates. Scan each
 -- relationship once. The existing locked-row helper and trigger still recheck
 -- every candidate before a real disposition; historical links are preserved.
+set local lock_timeout='5s';
 -- Final locked-row probes and relationship triggers still use array containment.
 -- Avoid a full news table scan for every such probe (no existing city_ids index).
 create index if not exists idx_news_articles_city_ids_gin
