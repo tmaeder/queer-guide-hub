@@ -187,15 +187,26 @@ async function queueImageReview(
   reason: string,
   candidates: Array<ImageCandidate & { score: number }>,
 ) {
-  const { error } = await supabase.from('review_queue').insert({
+  // These candidates failed the identity/asset gate. Keep an idempotent machine
+  // rejection for audit rather than asking staff to select an invalid image.
+  const digest = await sha256(JSON.stringify({ kind: 'failed_city_image_search', city: city.id, reason,
+    candidates: candidates.slice(0, 5).map(candidate => candidate.sourceIdentity) }))
+  const id = digest.slice(0, 32).replace(/^(.{8})(.{4})(.{4})(.{4})(.{12})$/, '$1-$2-$3-$4-$5')
+  const { error } = await supabase.from('review_queue').upsert({
+    id,
     entity_type: 'city',
     entity_id: city.id,
     review_type: 'CITY_IMAGE_AMBIGUOUS',
-    status: 'pending',
+    status: 'rejected',
+    resolved_at: new Date().toISOString(),
+    resolved_by: null,
     details: {
       city_name: city.name,
       country: city.countries?.name,
       reason,
+      auto_resolution: 'failed_image_search_discarded',
+      human_reviewed: false,
+      resolution_note: 'Candidates failed the image identity or asset gate. Existing city images are unchanged; no image identity is verified.',
       candidates: candidates.slice(0, 5).map((candidate) => ({
         url: candidate.url,
         source: candidate.source,
@@ -205,7 +216,7 @@ async function queueImageReview(
         score: candidate.score,
       })),
     },
-  })
+  }, { onConflict: 'id' })
   if (error && error.code !== '23505') throw new Error(error.message)
 }
 
