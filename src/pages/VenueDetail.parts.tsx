@@ -38,6 +38,7 @@ import { useTranslation } from 'react-i18next';
 import { GlossaryLinkedText } from '@/components/tags/GlossaryLinkedText';
 import { localizedField, type I18nMap } from '@/lib/localizeContent';
 import { useVisitedPlaceLookup } from '@/hooks/useVisitedPlaceLookup';
+import { useSharedMobilityValue } from '@/components/venues/SharedMobilityValue';
 import { formatPlaceLabel } from '@/lib/formatPlaceLabel';
 
 type Venue = Database['public']['Tables']['venues']['Row'];
@@ -466,6 +467,7 @@ export function VenueFacts({ venue, t }: { venue: VenueWithRelations; t: TFuncti
     regionCode: venue.cities?.region_code,
     country: venue.countries?.name,
   });
+  const sharedMobility = useSharedMobilityValue(venue.latitude, venue.longitude);
   return (
     <FactGrid
       facts={[
@@ -485,6 +487,10 @@ export function VenueFacts({ venue, t }: { venue: VenueWithRelations; t: TFuncti
         {
           label: t('venues.detail.price', 'Price'),
           value: getPriceRange(venue.price_range ?? null),
+        },
+        {
+          label: t('venues.detail.sharedMobility', 'Bikes & e-scooters now'),
+          value: sharedMobility,
         },
       ]}
     />
