@@ -595,6 +595,7 @@ export const LEGAL_META_ROUTES = [
   '/accessibility',
   '/contact',
   '/donate',
+  '/email-updates',
   '/help',
   '/legal',
   '/privacy',
