@@ -68,3 +68,11 @@ Continue the approved source-backed activity policy with registered-user group i
 Extend the current account email-preference list with one default-off checkbox, preserving existing topics and stale-version recovery. News saved-search digests must explicitly declare their newsletter purpose so the shared provider gate rejects them; they must not reach Cloudflare by inheriting the legacy transactional default. Saved search/query operations remain usable.
 
 Group comment/reply delivery is excluded in this continuation: the current app has no comment producer or comment/read workflow beyond legacy tables. It needs an authoritative unread source and an explicit recipient scope before dispatch. Business-status delivery is also excluded until a verified owner/claimant source exists; listing email and merchant association cannot establish ownership. These exclusions do not imply full platform parity. Inbox delivery tests still require an expressly authorized mailbox.
+
+Narrow UI direction contract for the invitation continuation:
+
+- **THESIS:** A requested service email leads to an explicit, private review action; viewing never joins a group.
+- **OWN-WORLD:** Preserve Queer Guide's existing paper/ink controls, shared typography and subway ground. This extends current operational surfaces; it introduces no replacement visual world.
+- **STORY:** Choose the independent invitation opt-in in account settings; a source-backed invite may produce a generic notice; review the current invitation on the signed-in Groups page before choosing to join. Saved news searches remain usable while their delivery limitation is stated beside their preferences.
+- **FIRST VIEWPORT:** The invitation section names its task, explains that viewing does not accept, and shows readable group names with explicit review links, or a clear loading/error/empty state. The settings continuation adds one ordinary checkbox; the saved-search popover states availability before the alert preference.
+- **FORM:** Existing semantic sections, shared Button/LocalizedLink and labeled checkbox/switch controls. Bound review pages to twenty owner-scoped records, reflow long multilingual names, keep recovery controls visible, and preserve mobile touch targets. No new imagery or card system is needed.

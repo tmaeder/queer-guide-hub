@@ -49,7 +49,7 @@ create table public.conversation_participants(id uuid primary key default gen_ra
 create table public.push_sent(user_id uuid references auth.users(id) on delete cascade,kind text,day_bucket date);
 grant all on public.notifications,public.conversations,public.conversation_participants,public.push_sent to service_role;
 
-create table public.community_groups(id uuid primary key default gen_random_uuid(),duplicate_of_id uuid,archived_at timestamptz);
+create table public.community_groups(id uuid primary key default gen_random_uuid(),name text not null default 'Private group',duplicate_of_id uuid,archived_at timestamptz);
 create table public.group_posts(id uuid primary key default gen_random_uuid(),group_id uuid references public.community_groups(id) on delete cascade,user_id uuid references auth.users(id) on delete cascade,mentions jsonb default '[]',content text);
 create table public.group_notifications(id uuid primary key default gen_random_uuid(),group_id uuid references public.community_groups(id) on delete cascade,user_id uuid references auth.users(id) on delete cascade,notification_type text,related_post_id uuid references public.group_posts(id) on delete cascade,related_comment_id uuid,triggered_by_user_id uuid references auth.users(id) on delete cascade,content text,read_at timestamptz,created_at timestamptz default now());
 create table public.user_relationships(user_id uuid,target_user_id uuid,relationship_type text);
@@ -103,3 +103,7 @@ returns void language sql security definer set search_path=pg_catalog as $$
 $$;
 revoke all on function public.email_fixture_change_mailbox(uuid,text) from public,anon,authenticated;
 grant execute on function public.email_fixture_change_mailbox(uuid,text) to service_role;
+
+-- Existing group invite source used by the source-proof adapter.
+create table public.group_invites(id uuid primary key default gen_random_uuid(),group_id uuid not null references public.community_groups(id) on delete cascade,invited_by uuid not null references auth.users(id) on delete cascade,invited_user_id uuid references auth.users(id) on delete cascade,email text,token text not null default gen_random_uuid()::text,status text not null default 'pending',created_at timestamptz not null default now(),expires_at timestamptz not null default now()+interval '7 days',accepted_at timestamptz,accepted_by uuid);
+grant all on public.group_invites to service_role;

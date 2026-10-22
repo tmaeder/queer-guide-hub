@@ -132,6 +132,29 @@ Deno.serve(async (req: Request) => {
       if (!user) {
         return jsonResponse({ error: "Authentication required" }, 401, req);
       }
+      if (action === "group_invitations") {
+        const after = url.searchParams.get("after");
+        if (
+          after &&
+          !/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i
+            .test(after)
+        ) {
+          return jsonResponse({ error: "Invalid invitation cursor" }, 400, req);
+        }
+        const page = await db.rpc("email_group_invitation_review", {
+          p_user: user.id,
+          p_after: after,
+        });
+        if (page.error) throw page.error;
+        const response = jsonResponse(
+          { ...page.data, userId: user.id },
+          200,
+          req,
+        );
+        response.headers.set("Cache-Control", "no-store");
+        response.headers.set("Referrer-Policy", "no-referrer");
+        return response;
+      }
       const { data, error } = await db.from("email_subscribers").select(
         "status,topics,locale,confirmed_at",
       ).eq("user_id", user.id).maybeSingle();
@@ -218,7 +241,7 @@ Deno.serve(async (req: Request) => {
           typeof body.group_mentions_enabled !== "boolean") ||
         (body.operational_topics !== undefined &&
           (!Array.isArray(body.operational_topics) ||
-            body.operational_topics.length > 5 ||
+            body.operational_topics.length > 6 ||
             new Set(body.operational_topics).size !==
               body.operational_topics.length ||
             body.operational_topics.some((topic: unknown) =>
@@ -229,6 +252,7 @@ Deno.serve(async (req: Request) => {
                 "group_requests",
                 "contributions",
                 "payments",
+                "group_invitations",
               ].includes(topic)
             ))) ||
         typeof body.quiet_hours_enabled !== "boolean" ||

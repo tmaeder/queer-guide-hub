@@ -28,6 +28,12 @@ const notices: Record<
     message: "Sign in to review the outcome of your request.",
     url: "https://queer.guide/hub/groups",
   },
+  group_invitation: {
+    subject: "You have a group invitation to review",
+    message:
+      "Sign in to review the invitation. Opening this email does not join the group.",
+    url: "https://queer.guide/hub/groups",
+  },
   contribution: {
     subject: "Your contribution has a decision",
     message: "Sign in to review the outcome of your contribution.",
