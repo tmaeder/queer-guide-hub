@@ -5995,6 +5995,42 @@ const DISOWNED_PROSE_CEILING = 380
   }
 }
 
+// ---------------------------------------------------------------------------
+// §  Shared bikes & e-scooters snapshot (shared_mobility_snapshot, 99991792696992)
+// ---------------------------------------------------------------------------
+// Refreshed */5 by shared_mobility_refresh. The UI hides counts older than 20 min,
+// so a dead refresher does not publish stale numbers — it silently removes the
+// feature. That silence is what this section exists to break. The vehicle count is
+// the denominator: an empty snapshot and a fresh one both have a recent timestamp.
+{
+  const res = await fetch(
+    `${BASE}/rest/v1/shared_mobility_snapshot?select=region,vehicles,generated_at`,
+    { headers },
+  )
+  if (res.status === 404) {
+    console.warn('⚠ shared_mobility_snapshot not deployed yet (migration 99991792696992?) — skipping')
+  } else if (!res.ok) {
+    console.error(`✗ shared_mobility_snapshot returned HTTP ${res.status} — measured nothing`)
+    FAILED = true
+  } else {
+    const [snap] = await res.json()
+    const ageMin = snap?.generated_at ? (Date.now() - Date.parse(snap.generated_at)) / 60000 : Infinity
+    if (!snap) {
+      console.error('✗ shared_mobility_snapshot has no row — the shared_mobility_refresh cron has never succeeded')
+      FAILED = true
+    } else if (ageMin > 120) {
+      console.error(
+        `✗ shared mobility snapshot is ${Math.round(ageMin)} min old against a */5 cron — venue pages ` +
+          'and the map overlay show nothing. Check admin_automations.shared_mobility_refresh (auto-paused?).',
+      )
+      FAILED = true
+    } else {
+      if (ageMin > 20) console.warn(`⚠ shared mobility snapshot ${Math.round(ageMin)} min old — UI hides counts past 20 min`)
+      console.log(`✓ shared mobility snapshot: ${snap.vehicles} vehicles, ${Math.round(ageMin)} min old`)
+    }
+  }
+}
+
 if (FAILED) {
   console.error('')
   console.error('✗ Pipeline health check FAILED — every section above ran; each ✗ line is a separate problem')
