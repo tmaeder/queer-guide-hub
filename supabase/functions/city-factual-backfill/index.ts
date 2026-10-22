@@ -547,7 +547,7 @@ async function runLinkPhase(
           searchedEntity = match.entity
           enwikiTitle = searchedEntity?.enwikiTitle ?? null
           state.wikidata_search = { state: match.kind === 'ambiguous' || match.kind === 'unresolved' ? 'pending' : 'resolved',
-            source: 'wikidata', at: new Date().toISOString(), detail: { outcome: match.kind, probes: match.probes } }
+            source: 'wikidata', at: new Date().toISOString(), detail: { outcome: match.kind, blocked_by: match.blockedBy ?? null, probes: match.probes } }
           if (!qid) {
             if (match.kind === 'no_match') bumpMiss(state, 'wikidata_link', 'wikidata')
             if (match.kind === 'ambiguous') update.needs_attention = true
