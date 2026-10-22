@@ -27,7 +27,7 @@ third approach preserves data quality and is the implemented design.
   reopens geography review; linked ghosts and all active places remain unchanged.
 
 The sweep is service-only, independently pausable, bounded and serialized. The
-existing five-minute worklist refresh invokes it. Every source disposition has a
+independent five-minute schedule invokes it. Every source disposition has a
 before/after journal; originals remain recoverable. Dry runs perform no writes.
 New private definer functions are inaccessible to browser roles. Regression
 checks cover gate refusal, dry-run behavior, pause behavior, inactive applicability
@@ -40,3 +40,8 @@ approval. Legacy incomplete gates are retried under the same two-attempt bound.
 Commit work is bounded across all source jobs, rather than multiplying the batch
 limit by the number of jobs. Relationship inserts lock the verification row before
 testing applicability, so a concurrent sweep cannot miss a newly linked record.
+
+The initial integration reused the worklist refresh. A measured union-rebuild
+timeout showed that this could roll back successful source corrections, so the
+final deployment separates their transactions and schedules. The sweep remains
+independently pausable and the worklist refresh consumes its committed results.

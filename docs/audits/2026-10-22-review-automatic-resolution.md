@@ -47,3 +47,9 @@ trigger declarations. A final pending migration explicitly recreates the same
 audit. The already-applied matching-stream migration 20261022181530 was recovered
 verbatim so its staging outcome trigger is also represented. No baseline was
 expanded and no schema drift check was weakened.
+
+A live worklist union rebuild later exceeded its 90-second budget. The source
+recovery helper measured 1.15 seconds independently. An independent five-minute
+sweep schedule was activated so repairs commit even when a worklist rebuild
+fails. The final pending migration removes the old nested sweep call, updates
+its schedule metadata, and recreates the same trigger attachments explicitly.
