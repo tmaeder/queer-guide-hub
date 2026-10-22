@@ -58,6 +58,9 @@ jobs:
         with:
           version: 2.98.2
       - name: Start local Supabase and load the snapshot
+        env:
+          # setup-cli pins ghcr.io, which rate-limits shared runners (toomanyrequests, 2026-10-22).
+          SUPABASE_INTERNAL_IMAGE_REGISTRY: public.ecr.aws
         run: |
           mkdir -p /tmp/migrations && mv supabase/migrations/*.sql /tmp/migrations/
           supabase start -x studio,imgproxy,inbucket,edge-runtime,logflare,vector,realtime,postgres-meta,supavisor

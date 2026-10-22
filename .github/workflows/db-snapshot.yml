@@ -38,6 +38,8 @@ jobs:
       - name: Dump schema and anon-readable data
         env:
           DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+          # setup-cli pins ghcr.io, which rate-limits shared runners (toomanyrequests, 2026-10-22).
+          SUPABASE_INTERNAL_IMAGE_REGISTRY: public.ecr.aws
         run: scripts/ci/db-snapshot.sh dump "$DB_URL" snapshot
       - name: Pack and encrypt
         env:
