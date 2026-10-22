@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase, SUPABASE_URL } from '@/integrations/supabase/client';
 import { untypedFrom } from '@/integrations/supabase/untyped';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
@@ -177,18 +177,15 @@ export const useMailbox = () => {
         const {
           data: { session },
         } = await supabase.auth.getSession();
-        const res = await fetch(
-          `${import.meta.env.VITE_SUPABASE_URL || 'https://xqeacpakadqfxjxjcewc.supabase.co'}/functions/v1/send-mailbox-email`,
-          {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              Authorization: `Bearer ${session?.access_token}`,
-              apikey: import.meta.env.VITE_SUPABASE_ANON_KEY || '',
-            },
-            body: JSON.stringify(params),
+        const res = await fetch(`${SUPABASE_URL}/functions/v1/send-mailbox-email`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${session?.access_token}`,
+            apikey: import.meta.env.VITE_SUPABASE_ANON_KEY || '',
           },
-        );
+          body: JSON.stringify(params),
+        });
         const result = await res.json();
         if (!res.ok) throw new Error(result.error || 'Failed to send');
         toast({ title: 'Email sent', description: `To: ${params.to}` });
