@@ -14,6 +14,8 @@ set -euo pipefail
 
 FULL_MAX_BYTES=${FULL_MAX_BYTES:-20000000}
 ROW_CAP=${ROW_CAP:-3000}
+# Copied whole despite their size: glossary pages join across the full tag set.
+FULL_TABLES=${FULL_TABLES:-unified_tags}
 
 cmd=$1 db=$2 dir=$3
 # SUPABASE_DB_URL is written for node-postgres; libpq and the CLI reject no-verify.
@@ -37,7 +39,7 @@ dump)
     select c.relname,
            string_agg(quote_ident(a.attname), ',' order by a.attnum),
            case when bool_or(a.attname = 'slug') then 'slug' when bool_or(a.attname = 'domain') then 'domain' else '' end,
-           (pg_table_size(c.oid) > $FULL_MAX_BYTES)::int
+           (pg_table_size(c.oid) > $FULL_MAX_BYTES and c.relname <> all(string_to_array('$FULL_TABLES', ',')))::int
     from pg_class c
     join pg_namespace n on n.oid = c.relnamespace
     join pg_attribute a on a.attrelid = c.oid and a.attnum > 0 and not a.attisdropped and a.attgenerated = ''
