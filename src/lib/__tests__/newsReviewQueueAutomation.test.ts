@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 const root = process.cwd();
-const MIGRATION = '99991792696446_news_review_queue_automation.sql';
+const MIGRATION = '99991792709554_news_review_queue_automation.sql';
 const read = (...p: string[]) => readFileSync(join(root, ...p), 'utf8');
 
 // Comment-stripped: the header quotes the identifiers these guards look for.

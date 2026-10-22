@@ -88,7 +88,7 @@ update public.ingestion_staging s
          || jsonb_build_object(
               'quality_attempts', 1,
               'quality_last_error', 'empty_extraction',
-              'quality_reset_by', 'migration:99991792696446')
+              'quality_reset_by', 'migration:99991792709554')
  where s.target_table = 'news_articles'
    and s.review_status = 'pending_review'
    and s.disposition = 'pending'
@@ -105,7 +105,7 @@ update public.ingestion_staging s
            (s.enriched_data->'auto_publish_blocked_reasons') ? 'image_unusable'
            and not (s.enriched_data ? 'quality_image_replaced'),
          'quality_relaxed_from', s.enriched_data->'auto_publish_blocked_reasons',
-         'quality_relaxed_by', 'migration:99991792696446')
+         'quality_relaxed_by', 'migration:99991792709554')
  where s.target_table = 'news_articles'
    and s.review_status = 'pending_review'
    and s.disposition = 'pending'
