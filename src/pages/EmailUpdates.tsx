@@ -17,6 +17,9 @@ const topics = [
 ] as const;
 export default function EmailUpdates() {
   const { t, i18n } = useTranslation();
+  const emailSiteKey =
+    (import.meta.env.VITE_TURNSTILE_EMAIL_SITE_KEY as string | undefined)?.trim() || undefined;
+  const verificationEnabled = Boolean(emailSiteKey) || isTurnstileEnabled;
   const [email, setEmail] = useState(''),
     [selected, setSelected] = useState<string[]>(() => {
       const topic = new URLSearchParams(location.search).get('topic');
@@ -184,13 +187,14 @@ export default function EmailUpdates() {
             </p>
           )}
           <TurnstileWidget
+            siteKey={emailSiteKey}
             key={mode}
             ref={challenge}
             action={mode === 'manage' ? 'email-manage' : 'email-subscribe'}
             onVerify={setProof}
             onExpire={() => setProof('')}
           />
-          {!isTurnstileEnabled && (
+          {!verificationEnabled && (
             <p role="status" className="text-sm">
               {t(
                 'emailUpdates.unconfigured',
@@ -200,7 +204,7 @@ export default function EmailUpdates() {
           )}
           <Button
             disabled={
-              !isTurnstileEnabled ||
+              !verificationEnabled ||
               !proof ||
               (mode === 'subscribe' && (!consent || !selected.length))
             }
