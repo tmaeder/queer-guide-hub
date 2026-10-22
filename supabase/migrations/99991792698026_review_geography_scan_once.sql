@@ -2,6 +2,11 @@
 -- cities before joining the 26 current verification candidates. Scan each
 -- relationship once. The existing locked-row helper and trigger still recheck
 -- every candidate before a real disposition; historical links are preserved.
+-- Final locked-row probes and relationship triggers still use array containment.
+-- Avoid a full news table scan for every such probe (no existing city_ids index).
+create index if not exists idx_news_articles_city_ids_gin
+ on public.news_articles using gin(city_ids);
+
 do $patch$
 declare s text; anchor text:=$anchor$ for r in select v.* from public.geo_cms_verifications v join public.cities c on c.id=v.place_id
   where v.status in ('review','stale') and c.shell_status='ghost' and c.seo_indexable=false

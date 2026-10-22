@@ -102,3 +102,12 @@ unjudged rows after the bounded catch-up completed. At19:58 UTC the actual UI
 worklist reported1,797 ready,3,250 research and805 blocked; the81 cleared liveness
 findings were no longer active cached cases. The source corrections are real;
 blocked/research outcomes are not counted as resolved decisions.
+
+
+The final locked-row relationship probe also lacked an index for
+news_articles.city_ids containment. A production read-only EXPLAIN confirmed a
+sequential scan taking102.36 ms for an absent city. On the same temporary copy,
+the identical lookup took9.863 ms without an index and0.060 ms with GIN, using
+Bitmap Index Scan. The pending optimization adds that index for the remaining
+per-record rechecks and relationship triggers. These temporary-copy timings
+are not claimed as production post-deployment measurements.
