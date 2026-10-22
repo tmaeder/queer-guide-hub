@@ -58,10 +58,18 @@ describe('cities.name_local schema', () => {
 
 describe('lockstep patches', () => {
   it('patches sync_geo_spine_city from its live definition, with exactly-once anchors', () => {
-    const b = block('DO $patch$\nDECLARE\n  v_def text := pg_get_functiondef(\'public.sync_geo_spine_city()');
-    expect(b).toContain("RAISE EXCEPTION 'sync_geo_spine_city: an anchor did not match exactly once");
-    expect(b).toContain('new.wikidata_qid, new.wikipedia_title, new.name_local, new.name_local_lang)');
-    expect(b).toContain('name_local = excluded.name_local, name_local_lang = excluded.name_local_lang;');
+    const b = block(
+      "DO $patch$\nDECLARE\n  v_def text := pg_get_functiondef('public.sync_geo_spine_city()",
+    );
+    expect(b).toContain(
+      "RAISE EXCEPTION 'sync_geo_spine_city: an anchor did not match exactly once",
+    );
+    expect(b).toContain(
+      'new.wikidata_qid, new.wikipedia_title, new.name_local, new.name_local_lang)',
+    );
+    expect(b).toContain(
+      'name_local = excluded.name_local, name_local_lang = excluded.name_local_lang;',
+    );
     expect(b).toContain('EXECUTE v_new;');
   });
 
@@ -113,6 +121,6 @@ describe('link-phase writer', () => {
   });
 
   it('selects the country languages the native-name parser needs', () => {
-    expect(fn).toContain("'name_local, name_local_lang, countries(name, languages)'");
+    expect(fn).toContain("'name_local, name_local_lang, countries(code, name, languages)'");
   });
 });
