@@ -4,6 +4,7 @@ import { hasAnyCriminalizationSignal } from '@/utils/equalityScore';
 import { FactGrid, type Fact } from '@/components/transit/FactGrid';
 import { CityTravelHub } from '@/components/travel/CityTravelHub';
 import { CityNetworkPanel } from '@/components/geo/CityNetworkPanel';
+import { CityLateNightPanel } from '@/components/geo/CityLateNightPanel';
 import type { CityRelation } from './types';
 import { useCityNearestAirports } from '@/hooks/useCityNearestAirports';
 
@@ -107,6 +108,8 @@ export function CityTravelTab({ city, effectiveIata }: CityTravelTabProps) {
           'Rapid-transit lines, drawn from OpenStreetMap. Schematic, not to scale.',
         )}
       />
+
+      <CityLateNightPanel cityId={city.id} />
 
       <FactGrid facts={airportFacts} />
 

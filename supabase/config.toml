@@ -269,6 +269,9 @@ verify_jwt = false
 [functions.source-aids-ch]
 verify_jwt = false
 
+[functions.shared-mobility-refresh]
+verify_jwt = false
+
 [functions.source-airbnb]
 verify_jwt = false
 

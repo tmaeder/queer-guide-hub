@@ -48,6 +48,9 @@ export interface MapControlsProps {
   canSave: boolean;
   savedOnly: boolean;
   onToggleSaved: () => void;
+  /** Monochrome shared bikes & e-scooters overlay (Switzerland). */
+  showSharedMobility: boolean;
+  onToggleSharedMobility: () => void;
   onGeolocate: () => void;
   onFitBounds?: () => void;
   onShare: () => void;
@@ -78,6 +81,8 @@ export function MapControls({
   canSave,
   savedOnly,
   onToggleSaved,
+  showSharedMobility,
+  onToggleSharedMobility,
   onGeolocate,
   onFitBounds,
   onShare,
@@ -186,6 +191,20 @@ export function MapControls({
           </button>
         </Section>
       )}
+
+      <Section title={t('map.controls.gettingAround', { defaultValue: 'Getting around' })}>
+        <button
+          type="button"
+          aria-pressed={showSharedMobility}
+          onClick={() => {
+            hapticTrigger('nudge');
+            onToggleSharedMobility();
+          }}
+          className={cn(chip, 'self-start', showSharedMobility ? chipOn : chipOff)}
+        >
+          {t('map.filters.sharedMobility', { defaultValue: 'Shared bikes & e-scooters' })}
+        </button>
+      </Section>
 
       {availableFilters.length > 0 && (
         <Section title={t('map.controls.narrow', { defaultValue: 'Narrow it down' })}>

@@ -31,6 +31,9 @@ export interface MapBarProps {
   canSave: boolean;
   savedOnly: boolean;
   onToggleSaved: () => void;
+  /** Monochrome shared bikes & e-scooters overlay (Switzerland). */
+  showSharedMobility: boolean;
+  onToggleSharedMobility: () => void;
   onGeolocate: () => void;
   onFitBounds?: () => void;
   onShare: () => void;
@@ -90,6 +93,8 @@ export function MapBar({
   canSave,
   savedOnly,
   onToggleSaved,
+  showSharedMobility,
+  onToggleSharedMobility,
   onGeolocate,
   onFitBounds,
   onShare,
@@ -118,6 +123,8 @@ export function MapBar({
       canSave={canSave}
       savedOnly={savedOnly}
       onToggleSaved={onToggleSaved}
+      showSharedMobility={showSharedMobility}
+      onToggleSharedMobility={onToggleSharedMobility}
       onGeolocate={() => {
         setControlsOpen(false);
         onGeolocate();
