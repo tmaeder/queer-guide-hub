@@ -14,14 +14,17 @@
 -- pre-2026 migrations applied and the migration history table tracks them.
 -- This baseline replaces that history with a single dump for new envs.
 --
--- For new environments:
---   supabase db reset                           # applies baseline + all 2026 migrations
+-- NOT A WORKING STARTING POINT FOR NEW ENVIRONMENTS (measured 2026-10-22).
+-- This header used to say `supabase db reset` builds a new environment from
+-- this file plus the later migrations. It does not: on an empty local
+-- Supabase, even with production's dashboard-enabled extensions and the
+-- legacy Algolia roles created first, 957 of 2,450 files fail (PR #4556).
+-- This dump was never executed anywhere, it needs objects created outside
+-- migrations, and many later files were applied out of version order against
+-- a production state that no longer exists.
 --
--- For ongoing development:
---   - Pre-2026 migrations are in supabase/migrations/_archive/ (kept as
---     historical reference; never run by `supabase db reset`).
---   - 2026+ migrations remain in supabase/migrations/ and apply on top
---     of the baseline.
+-- To get a production-shaped database, load the nightly snapshot instead:
+-- .github/workflows/db-snapshot.yml + scripts/ci/db-snapshot.sh.
 --
 -- Ref: docs/migrations.md
 -- ============================================================================
