@@ -14,6 +14,8 @@ begin
   select id,v_job,'rss-news','rss-news','news_articles','{}',
    jsonb_build_object('title','Retry regression source','content','','description',repeat('Available source evidence. ',8)),
    v_base,'enriched','pending_review','pending','unique' from unnest(ids) id;
+  update public.ingestion_staging set normalized_data=normalized_data||jsonb_build_object(
+   'description','','markdown',repeat('Original extracted page evidence. ',8)) where id=ids[1];
   update public.ingestion_staging set enriched_data=jsonb_set(enriched_data,'{quality_decision,warnings}','["Editorial uncertainty"]')
    where id=ids[2];
   update public.ingestion_staging set review_notes='Human note; retain for review' where id=ids[3];

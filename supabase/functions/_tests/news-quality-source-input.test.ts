@@ -46,6 +46,21 @@ Deno.test('metadata excerpt is not invented as an article body', () => {
   assertEquals(input.excerpt, 'Only a short excerpt')
 })
 
+Deno.test('extracted markdown is retained before a short RSS description', () => {
+  const markdown = 'Original article paragraph. '.repeat(35) + 'Full-page evidence retained.'
+  const input = readStagedNewsInput({ name: 'Source article', content: '', body: ' ',
+    markdown, description: 'Short RSS summary' })
+  assertEquals(input.content, markdown)
+  assertEquals(input.excerpt, 'Short RSS summary')
+  assert(buildQualityUserPrompt({ ...input, body: input.content }).includes('Full-page evidence retained.'))
+})
+
+Deno.test('invalid or blank markdown falls back to the actual RSS description', () => {
+  for (const markdown of ['', ' ', [], { content: 'Not source text' }]) {
+    assertEquals(readStagedNewsInput({ markdown, description: 'Original RSS text' }).content, 'Original RSS text')
+  }
+})
+
 Deno.test('invalid fields and private source URLs do not become fetch targets', () => {
   const input = readStagedNewsInput({ title: {}, content: [], url: 'http://127.0.0.1/private',
     urls: ['https://user:secret@example.org/private'], metadata: { url: 'https://example.org/public' } })

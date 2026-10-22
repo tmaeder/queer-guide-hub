@@ -167,3 +167,11 @@ allocator-renumbered above the pending email Auth fix05625 to preserve deploymen
 order; no applied migration was changed. Quote-aware SQL comment stripping
 passed the strict function-definition guard, PostgreSQL grammar validation and
 native literal-preservation fixtures.
+
+A final adapter check found148 pending news rows with extracted markdown; three
+carried fuller markdown than their RSS description without a separate body.
+The input adapter now reads that extractor output before the description, and
+the retry text-availability check uses the same fallback. Twenty-nine Deno
+tests and all twelve rolled-back SQL fixtures passed, including a markdown-only
+service-failure retry. No additional retries or final dispositions are claimed
+from this read-only cohort count.

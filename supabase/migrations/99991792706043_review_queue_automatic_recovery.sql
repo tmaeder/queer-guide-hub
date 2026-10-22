@@ -124,7 +124,7 @@ begin
  s:=replace(s,anchor,replacement);
  anchor:=$a$length(coalesce(normalized_data->>'content',normalized_data->>'description',''))>=80$a$;
  if (length(s)-length(replace(s,anchor,'')))/length(anchor)<>1 then raise exception 'Source text availability check changed'; end if;
- s:=replace(s,anchor,$r$length(coalesce(nullif(btrim(normalized_data->>'content'),''),nullif(btrim(normalized_data->>'body'),''),nullif(btrim(normalized_data->>'description'),''),''))>=80$r$);
+ s:=replace(s,anchor,$r$length(coalesce(nullif(btrim(normalized_data->>'content'),''),nullif(btrim(normalized_data->>'body'),''),nullif(btrim(normalized_data->>'markdown'),''),nullif(btrim(normalized_data->>'description'),''),''))>=80$r$);
  anchor:=$a$case when r.enriched_data->>'quality_status'='passed' then 'incomplete_legacy_gate' else 'empty_extraction' end$a$;
  if (length(s)-length(replace(s,anchor,'')))/length(anchor)<>1 then raise exception 'Retry reason changed'; end if;
  s:=replace(s,anchor,$r$case when r.enriched_data->>'quality_status'='passed' then 'incomplete_legacy_gate'

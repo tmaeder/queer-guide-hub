@@ -24,7 +24,8 @@ export function readStagedNewsInput(n: Record<string, unknown>) {
   const urls = Array.isArray(n.urls) ? n.urls : []
   return {
     title: text(n.title, n.name) ?? '',
-    content: text(n.content, n.body, n.description) ?? '',
+    // Full-text extraction writes markdown; prefer it to a short RSS summary.
+    content: text(n.content, n.body, n.markdown, n.description) ?? '',
     excerpt: text(n.excerpt, metadata.excerpt, n.description),
     // Match the committer's source identity; retain the old flat fallback.
     url: articleUrl(n.url, urls[0], metadata.url, n.source_url),
