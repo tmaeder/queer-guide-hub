@@ -89,6 +89,10 @@ jobs:
       - name: Replay every migration, recording failures
         run: |
           set +e
+          # The baseline is a reconstruction (never executed on prod): its pg_dump-style
+          # header empties search_path, so later unqualified names (app_role, ...) fail.
+          sed -i "s/set_config('search_path', '', false)/set_config('search_path', 'public, extensions', false)/" \
+            /tmp/all-migrations/00000000000000_baseline.sql
           ok=0; fail=0
           : > failures.txt
           for f in $(ls /tmp/all-migrations/*.sql | sort); do
