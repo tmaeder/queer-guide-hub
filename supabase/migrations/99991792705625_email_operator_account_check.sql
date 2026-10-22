@@ -1,6 +1,6 @@
 -- 99991792705625_email_operator_account_check
 --
--- TODO: why this migration exists.
+-- Restore account-dependent email operations under production Auth permissions.
 
 -- Production service_role has no direct SELECT on auth.users. Expose only the
 -- existing account-existence/disabled barrier, never account rows or addresses.
