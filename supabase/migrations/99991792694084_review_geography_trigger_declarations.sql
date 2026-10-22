@@ -1,3 +1,8 @@
+-- 2026-10-22: the drop/create pairs below were rewritten as create-if-missing. As
+-- drop+create they needed ACCESS EXCLUSIVE on cities/venues/events/... and timed out
+-- (55P03) on four consecutive deploys, blocking every later migration on prod. The
+-- triggers already existed live with these definitions; a fresh rebuild still creates
+-- them. Same pattern as 99991792694100.
 -- Explicit declarations make every generated attachment visible to the schema
 -- drift guard and to migration reviewers. This recreates the same attachments;
 -- the functions, conditions and source permissions are unchanged.
@@ -19,95 +24,164 @@ where slug='review_automatic_resolution';
 select cron.schedule('review_automatic_resolution','0-59/5 * * * *',
  'set statement_timeout=''90s''; select public.run_review_automatic_resolution(200,false);');
 
-drop trigger if exists review_geo_reopen_id on public.cities;
-create trigger review_geo_reopen_id after insert or update of shell_status,seo_indexable,duplicate_of_id on public.cities
+do $t$ begin
+  if not exists (select 1 from pg_trigger where tgrelid = 'public.cities'::regclass and tgname = 'review_geo_reopen_id' and not tgisinternal) then
+    create trigger review_geo_reopen_id after insert or update of shell_status,seo_indexable,duplicate_of_id on public.cities
  for each row execute function api_private.review_reopen_geography('id');
+  end if;
+end $t$;
 
-drop trigger if exists review_geo_reopen_parent_id on public.geo_places;
-create trigger review_geo_reopen_parent_id after insert or update of parent_id on public.geo_places
+do $t$ begin
+  if not exists (select 1 from pg_trigger where tgrelid = 'public.geo_places'::regclass and tgname = 'review_geo_reopen_parent_id' and not tgisinternal) then
+    create trigger review_geo_reopen_parent_id after insert or update of parent_id on public.geo_places
  for each row execute function api_private.review_reopen_geography('parent_id');
+  end if;
+end $t$;
 
-drop trigger if exists review_geo_reopen_city_id on public.venues;
-create trigger review_geo_reopen_city_id after insert or update of city_id on public.venues
+do $t$ begin
+  if not exists (select 1 from pg_trigger where tgrelid = 'public.venues'::regclass and tgname = 'review_geo_reopen_city_id' and not tgisinternal) then
+    create trigger review_geo_reopen_city_id after insert or update of city_id on public.venues
  for each row execute function api_private.review_reopen_geography('city_id');
+  end if;
+end $t$;
 
-drop trigger if exists review_geo_reopen_city_id on public.events;
-create trigger review_geo_reopen_city_id after insert or update of city_id on public.events
+do $t$ begin
+  if not exists (select 1 from pg_trigger where tgrelid = 'public.events'::regclass and tgname = 'review_geo_reopen_city_id' and not tgisinternal) then
+    create trigger review_geo_reopen_city_id after insert or update of city_id on public.events
  for each row execute function api_private.review_reopen_geography('city_id');
+  end if;
+end $t$;
 
-drop trigger if exists review_geo_reopen_city_id on public.organizations;
-create trigger review_geo_reopen_city_id after insert or update of city_id on public.organizations
+do $t$ begin
+  if not exists (select 1 from pg_trigger where tgrelid = 'public.organizations'::regclass and tgname = 'review_geo_reopen_city_id' and not tgisinternal) then
+    create trigger review_geo_reopen_city_id after insert or update of city_id on public.organizations
  for each row execute function api_private.review_reopen_geography('city_id');
+  end if;
+end $t$;
 
-drop trigger if exists review_geo_reopen_city_id on public.hotels;
-create trigger review_geo_reopen_city_id after insert or update of city_id on public.hotels
+do $t$ begin
+  if not exists (select 1 from pg_trigger where tgrelid = 'public.hotels'::regclass and tgname = 'review_geo_reopen_city_id' and not tgisinternal) then
+    create trigger review_geo_reopen_city_id after insert or update of city_id on public.hotels
  for each row execute function api_private.review_reopen_geography('city_id');
+  end if;
+end $t$;
 
-drop trigger if exists review_geo_reopen_city_id on public.queer_villages;
-create trigger review_geo_reopen_city_id after insert or update of city_id on public.queer_villages
+do $t$ begin
+  if not exists (select 1 from pg_trigger where tgrelid = 'public.queer_villages'::regclass and tgname = 'review_geo_reopen_city_id' and not tgisinternal) then
+    create trigger review_geo_reopen_city_id after insert or update of city_id on public.queer_villages
  for each row execute function api_private.review_reopen_geography('city_id');
+  end if;
+end $t$;
 
-drop trigger if exists review_geo_reopen_city_id on public.news_article_cities;
-create trigger review_geo_reopen_city_id after insert or update of city_id on public.news_article_cities
+do $t$ begin
+  if not exists (select 1 from pg_trigger where tgrelid = 'public.news_article_cities'::regclass and tgname = 'review_geo_reopen_city_id' and not tgisinternal) then
+    create trigger review_geo_reopen_city_id after insert or update of city_id on public.news_article_cities
  for each row execute function api_private.review_reopen_geography('city_id');
+  end if;
+end $t$;
 
-drop trigger if exists review_geo_reopen_city_ids on public.news_articles;
-create trigger review_geo_reopen_city_ids after insert or update of city_ids on public.news_articles
+do $t$ begin
+  if not exists (select 1 from pg_trigger where tgrelid = 'public.news_articles'::regclass and tgname = 'review_geo_reopen_city_ids' and not tgisinternal) then
+    create trigger review_geo_reopen_city_ids after insert or update of city_ids on public.news_articles
  for each row execute function api_private.review_reopen_geography('city_ids');
+  end if;
+end $t$;
 
-drop trigger if exists review_geo_reopen_city_id on public.personalities;
-create trigger review_geo_reopen_city_id after insert or update of city_id on public.personalities
+do $t$ begin
+  if not exists (select 1 from pg_trigger where tgrelid = 'public.personalities'::regclass and tgname = 'review_geo_reopen_city_id' and not tgisinternal) then
+    create trigger review_geo_reopen_city_id after insert or update of city_id on public.personalities
  for each row execute function api_private.review_reopen_geography('city_id');
+  end if;
+end $t$;
 
-drop trigger if exists review_geo_reopen_death_city_id on public.personalities;
-create trigger review_geo_reopen_death_city_id after insert or update of death_city_id on public.personalities
+do $t$ begin
+  if not exists (select 1 from pg_trigger where tgrelid = 'public.personalities'::regclass and tgname = 'review_geo_reopen_death_city_id' and not tgisinternal) then
+    create trigger review_geo_reopen_death_city_id after insert or update of death_city_id on public.personalities
  for each row execute function api_private.review_reopen_geography('death_city_id');
+  end if;
+end $t$;
 
-drop trigger if exists review_geo_reopen_city_id on public.festivals;
-create trigger review_geo_reopen_city_id after insert or update of city_id on public.festivals
+do $t$ begin
+  if not exists (select 1 from pg_trigger where tgrelid = 'public.festivals'::regclass and tgname = 'review_geo_reopen_city_id' and not tgisinternal) then
+    create trigger review_geo_reopen_city_id after insert or update of city_id on public.festivals
  for each row execute function api_private.review_reopen_geography('city_id');
+  end if;
+end $t$;
 
-drop trigger if exists review_geo_reopen_city_id on public.guides;
-create trigger review_geo_reopen_city_id after insert or update of city_id on public.guides
+do $t$ begin
+  if not exists (select 1 from pg_trigger where tgrelid = 'public.guides'::regclass and tgname = 'review_geo_reopen_city_id' and not tgisinternal) then
+    create trigger review_geo_reopen_city_id after insert or update of city_id on public.guides
  for each row execute function api_private.review_reopen_geography('city_id');
+  end if;
+end $t$;
 
-drop trigger if exists review_geo_reopen_city_id on public.milestones;
-create trigger review_geo_reopen_city_id after insert or update of city_id on public.milestones
+do $t$ begin
+  if not exists (select 1 from pg_trigger where tgrelid = 'public.milestones'::regclass and tgname = 'review_geo_reopen_city_id' and not tgisinternal) then
+    create trigger review_geo_reopen_city_id after insert or update of city_id on public.milestones
  for each row execute function api_private.review_reopen_geography('city_id');
+  end if;
+end $t$;
 
-drop trigger if exists review_geo_reopen_host_city_id on public.competition_editions;
-create trigger review_geo_reopen_host_city_id after insert or update of host_city_id on public.competition_editions
+do $t$ begin
+  if not exists (select 1 from pg_trigger where tgrelid = 'public.competition_editions'::regclass and tgname = 'review_geo_reopen_host_city_id' and not tgisinternal) then
+    create trigger review_geo_reopen_host_city_id after insert or update of host_city_id on public.competition_editions
  for each row execute function api_private.review_reopen_geography('host_city_id');
+  end if;
+end $t$;
 
-drop trigger if exists review_geo_reopen_city_id on public.competition_entrants;
-create trigger review_geo_reopen_city_id after insert or update of city_id on public.competition_entrants
+do $t$ begin
+  if not exists (select 1 from pg_trigger where tgrelid = 'public.competition_entrants'::regclass and tgname = 'review_geo_reopen_city_id' and not tgisinternal) then
+    create trigger review_geo_reopen_city_id after insert or update of city_id on public.competition_entrants
  for each row execute function api_private.review_reopen_geography('city_id');
+  end if;
+end $t$;
 
-drop trigger if exists review_geo_reopen_city_id on public.trip_destinations;
-create trigger review_geo_reopen_city_id after insert or update of city_id on public.trip_destinations
+do $t$ begin
+  if not exists (select 1 from pg_trigger where tgrelid = 'public.trip_destinations'::regclass and tgname = 'review_geo_reopen_city_id' and not tgisinternal) then
+    create trigger review_geo_reopen_city_id after insert or update of city_id on public.trip_destinations
  for each row execute function api_private.review_reopen_geography('city_id');
+  end if;
+end $t$;
 
-drop trigger if exists review_geo_reopen_city_id on public.trip_places;
-create trigger review_geo_reopen_city_id after insert or update of city_id on public.trip_places
+do $t$ begin
+  if not exists (select 1 from pg_trigger where tgrelid = 'public.trip_places'::regclass and tgname = 'review_geo_reopen_city_id' and not tgisinternal) then
+    create trigger review_geo_reopen_city_id after insert or update of city_id on public.trip_places
  for each row execute function api_private.review_reopen_geography('city_id');
+  end if;
+end $t$;
 
-drop trigger if exists review_geo_reopen_city_id on public.reservations;
-create trigger review_geo_reopen_city_id after insert or update of city_id on public.reservations
+do $t$ begin
+  if not exists (select 1 from pg_trigger where tgrelid = 'public.reservations'::regclass and tgname = 'review_geo_reopen_city_id' and not tgisinternal) then
+    create trigger review_geo_reopen_city_id after insert or update of city_id on public.reservations
  for each row execute function api_private.review_reopen_geography('city_id');
+  end if;
+end $t$;
 
-drop trigger if exists review_geo_reopen_city_id on public.city_favorites;
-create trigger review_geo_reopen_city_id after insert or update of city_id on public.city_favorites
+do $t$ begin
+  if not exists (select 1 from pg_trigger where tgrelid = 'public.city_favorites'::regclass and tgname = 'review_geo_reopen_city_id' and not tgisinternal) then
+    create trigger review_geo_reopen_city_id after insert or update of city_id on public.city_favorites
  for each row execute function api_private.review_reopen_geography('city_id');
+  end if;
+end $t$;
 
-drop trigger if exists review_geo_reopen_city_id on public.user_place_marks;
-create trigger review_geo_reopen_city_id after insert or update of city_id on public.user_place_marks
+do $t$ begin
+  if not exists (select 1 from pg_trigger where tgrelid = 'public.user_place_marks'::regclass and tgname = 'review_geo_reopen_city_id' and not tgisinternal) then
+    create trigger review_geo_reopen_city_id after insert or update of city_id on public.user_place_marks
  for each row execute function api_private.review_reopen_geography('city_id');
+  end if;
+end $t$;
 
-drop trigger if exists review_geo_reopen_city_id on public.user_presence_location;
-create trigger review_geo_reopen_city_id after insert or update of city_id on public.user_presence_location
+do $t$ begin
+  if not exists (select 1 from pg_trigger where tgrelid = 'public.user_presence_location'::regclass and tgname = 'review_geo_reopen_city_id' and not tgisinternal) then
+    create trigger review_geo_reopen_city_id after insert or update of city_id on public.user_presence_location
  for each row execute function api_private.review_reopen_geography('city_id');
+  end if;
+end $t$;
 
-drop trigger if exists review_geo_reopen_city_id on public.intimate_cruising_mode;
-create trigger review_geo_reopen_city_id after insert or update of city_id on public.intimate_cruising_mode
+do $t$ begin
+  if not exists (select 1 from pg_trigger where tgrelid = 'public.intimate_cruising_mode'::regclass and tgname = 'review_geo_reopen_city_id' and not tgisinternal) then
+    create trigger review_geo_reopen_city_id after insert or update of city_id on public.intimate_cruising_mode
  for each row execute function api_private.review_reopen_geography('city_id');
+  end if;
+end $t$;
 
