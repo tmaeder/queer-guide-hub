@@ -73,7 +73,7 @@ slow: its planner ran the volatile relationship helper before joining the
 verification status, probing 1,026 ghost cities rather than 26 candidates.
 A scan-once relationship set completed in 2.57 seconds and produced zero
 eligibility differences against the original helper for all 26 candidates.
-Migration 99991792698026 changes only candidate selection. It preserves every
+Migration 99991792703017 changes only candidate selection. It preserves every
 historical relationship type and the existing post-lock helper check, which
 remains authoritative before disposition. A temporary compiled copy of the
 entire updated worker completed a live dry-run successfully; no permanent
@@ -150,3 +150,13 @@ found174 currently eligible retries across the service/image repair cohorts.
 Twelve rolled-back fixture cases passed, including the image kill switch,
 current-format, prior-URL and additional-blocker guards. A retry is not recorded
 as a resolved review or image verification.
+
+The original94084/94100/96301 migrations have since applied through a normal
+main deployment alongside transit work. All branch edits to applied94084 were
+restored exactly to its recorded unguarded form (50 stored statements); the
+unneeded guard draft was withdrawn. The sole remaining unapplied recovery
+migration was allocator-renumbered to99991792703017. Recent live scheduled
+worklist refreshes completed in19–33 seconds after decoupling, while the older
+independent sweep still took58–77 seconds before the pending index/selector
+optimization. Both review cron starts and their registry records were verified
+enabled/active after the brief coordinated lock window.
