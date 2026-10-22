@@ -25,6 +25,7 @@ do $patch$
 declare
   v_fn regprocedure;
   v_src text;
+  v_code text;
   v_anchor constant text := 'v_image_hash := nullif(v_enr->>''image_hash'', '''');';
   v_add constant text := v_anchor || E'\n  IF coalesce((v_enr->>''image_suppressed'')::boolean, false) THEN\n    v_image := NULL; v_image_attribution := NULL; v_image_hash := NULL;\n  END IF;';
 begin
@@ -32,8 +33,9 @@ begin
     'public.commit_news_staging_item(uuid,text)'::regprocedure,
     'public.news_commit_staging_batch(uuid,uuid,integer)'::regprocedure]
   loop
-    v_src := pg_get_functiondef(v_fn);
-    if position('image_suppressed' in v_src) > 0 then
+    v_src := pg_get_functiondef(v_fn);  -- raw: the text that is re-executed
+    v_code := regexp_replace(pg_get_functiondef(v_fn), '--[^' || chr(10) || ']*', '', 'g');
+    if position('image_suppressed' in v_code) > 0 then
       continue; -- already patched
     end if;
     if (length(v_src) - length(replace(v_src, v_anchor, ''))) / length(v_anchor) <> 1 then
@@ -97,7 +99,7 @@ begin
   select count(*) into v_bad from pg_proc
    where oid in ('public.commit_news_staging_item(uuid,text)'::regprocedure,
                  'public.news_commit_staging_batch(uuid,uuid,integer)'::regprocedure)
-     and position('image_suppressed' in pg_get_functiondef(oid)) = 0;
+     and position('image_suppressed' in regexp_replace(pg_get_functiondef(oid), '--[^' || chr(10) || ']*', '', 'g')) = 0;
   if v_bad <> 0 then raise exception 'P1 failed: % commit functions ignore image_suppressed', v_bad; end if;
 
   select count(*) into v_bad from public.admin_automations
