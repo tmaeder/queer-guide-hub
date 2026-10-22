@@ -133,3 +133,17 @@ Deno.test('candidate entity reads respect the anonymous fifty-ID batch limit', a
   assertEquals((await createCitySearchResolver(f.request,[])(input)).kind,'ambiguous')
   assertEquals(f.calls.filter(u=>new URL(u).searchParams.get('props')==='claims|sitelinks|labels|aliases').map(u=>new URL(u).searchParams.get('ids')!.split('|').length),[50,1])
 })
+Deno.test('a city whose own label is the name is not blocked by a same-named region nearby', async () => {
+  const f = fixture([{id:'Q84',label:'London'}, {id:'Q2',label:'London'}], {
+    ...common, Q84:{claims:claims()}, Q2:{claims:claims(35.5,-97.5,'Q3')}, Q3:{labels:{en:{value:'region of England'}}},
+  })
+  const r = await createCitySearchResolver(f.request,[])({...input,base:'London',queries:['London']})
+  assertEquals(r.kind,'selected'); assertEquals(r.qid,'Q84')
+})
+Deno.test('a "Name, Country" alias admits the candidate, and corroboration still decides', async () => {
+  for (const [point, expected] of [[claims(), 'selected'], [claims(40, -70), 'no_match']] as const) {
+    const f = fixture([{id:'Q1449',label:'Genoa',match:{text:'Genova, Italy'}}], {...common, Q1449:{claims:point}})
+    const r = await createCitySearchResolver(f.request,[])({...input,base:'Genova',queries:['Genova']})
+    assertEquals(r.kind, expected)
+  }
+})
