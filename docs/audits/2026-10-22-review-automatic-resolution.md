@@ -40,3 +40,10 @@ Applied migration files are recovered at the exact versions recorded by Supabase
 20261022180826, 20261022181726, 20261022182128, 20261022182611 and 20261022182915.
 No applied history is replayed or renumbered. The final source and UI changes must
 still pass the ordinary PR and deployment gates.
+
+The first CI run found that the schema drift scanner only recognizes literal
+trigger declarations. A final pending migration explicitly recreates the same
+23 loop-generated attachments, preserving the guard and making rebuilds easy to
+audit. The already-applied matching-stream migration 20261022181530 was recovered
+verbatim so its staging outcome trigger is also represented. No baseline was
+expanded and no schema drift check was weakened.
