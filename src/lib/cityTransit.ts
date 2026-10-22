@@ -1,4 +1,4 @@
-/** One row of `get_city_transit_service` (migration 99991792696431). */
+/** One row of `get_city_transit_service` (migration 99991792699660). */
 export interface CityTransitRow {
   feed_key: string;
   attribution: string;
