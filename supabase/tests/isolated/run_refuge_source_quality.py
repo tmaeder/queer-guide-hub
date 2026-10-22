@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
-"""Run the source-contract regression in a new, disposable local PostgreSQL cluster.
+"""Run business-quality regressions in a new, disposable local PostgreSQL cluster.
+
+Default: restroom source contract. --superseded: duplicate-identity lifecycle.
 
 Requires PostgreSQL 17 tools on PATH, or PG_BINDIR pointing to their directory.
 No connection string or existing database is accepted.
@@ -8,6 +10,7 @@ import os
 from pathlib import Path
 import shutil
 import subprocess
+import sys
 import tempfile
 
 ROOT = Path(__file__).resolve().parents[3]
@@ -37,15 +40,34 @@ create table business_brand_quality_events(id bigint generated always as identit
 -- Authentication is outside this isolated helper/reconciliation regression.
 create function assert_admin_or_internal() returns void language sql as 'select';
 """
-original = (ROOT / 'supabase/migrations/20261021184341_business_facts_only_source_outcomes.sql').read_text()
-latest = (ROOT / 'supabase/migrations/20261021203842_source_specific_business_quality_limits.sql').read_text()
-reconciler = latest[latest.index('create or replace function public.reconcile_facts_only_business_findings'):]
-trigger = original[original.index('create function public.invalidate_business_source_contract'):]
-migrations = list((ROOT / 'supabase/migrations').glob('*_refuge_source_quality_limits.sql'))
-if len(migrations) != 1:
-    raise SystemExit('Exactly one refuge source migration required')
-sql = SCHEMA + trigger + migrations[0].read_text() + reconciler
-sql += (Path(__file__).parent / 'refuge_source_quality.sql').read_text()
+if sys.argv[1:] == ['--superseded']:
+    migrations = list((ROOT / 'supabase/migrations').glob('*_superseded_business_quality_findings.sql'))
+    if len(migrations) != 1:
+        raise SystemExit('Exactly one superseded business migration required')
+    # Only the producer hook is stubbed here. Full producer integration is
+    # checked separately against the production schema in a rollback.
+    stubs = """
+create function reconcile_organization_link_roles() returns void language sql as 'select';
+create function refresh_business_brand_quality() returns jsonb language plpgsql as $stub$
+begin
+  perform public.reconcile_organization_link_roles();
+  return '{}'::jsonb;
+end $stub$;
+"""
+    sql = SCHEMA + stubs + migrations[0].read_text()
+    sql += (Path(__file__).parent / 'superseded_business_quality.sql').read_text()
+elif not sys.argv[1:]:
+    original = (ROOT / 'supabase/migrations/20261021184341_business_facts_only_source_outcomes.sql').read_text()
+    latest = (ROOT / 'supabase/migrations/20261021203842_source_specific_business_quality_limits.sql').read_text()
+    reconciler = latest[latest.index('create or replace function public.reconcile_facts_only_business_findings'):]
+    trigger = original[original.index('create function public.invalidate_business_source_contract'):]
+    migrations = list((ROOT / 'supabase/migrations').glob('*_refuge_source_quality_limits.sql'))
+    if len(migrations) != 1:
+        raise SystemExit('Exactly one refuge source migration required')
+    sql = SCHEMA + trigger + migrations[0].read_text() + reconciler
+    sql += (Path(__file__).parent / 'refuge_source_quality.sql').read_text()
+else:
+    raise SystemExit('Usage: run_refuge_source_quality.py [--superseded]')
 
 with tempfile.TemporaryDirectory(prefix='qg-refuge-test-') as tmp:
     data = Path(tmp) / 'data'
