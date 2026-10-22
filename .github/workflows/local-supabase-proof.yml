@@ -60,7 +60,7 @@ jobs:
               ('vector','extensions'),('wrappers','extensions')) v(name, sch)
             loop
               begin
-                if e.name = 'pgmq' then
+                if e.name in ('pgmq', 'pg_cron') then
                   execute format('create extension if not exists %I', e.name);
                 else
                   execute format('create schema if not exists %I', e.sch);
@@ -72,6 +72,18 @@ jobs:
             end loop;
           end $$;
           select string_agg(extname, ', ' order by extname) as installed from pg_extension;
+          -- Roles the baseline grants to: left behind by an old Algolia connector.
+          do $$
+          declare r text;
+          begin
+            foreach r in array array['algolia_supabase_connector_postgres_1755536843',
+              'algolia_supabase_connector_postgres_1755537334',
+              'algolia_supabase_connector_postgres_1755537511'] loop
+              if not exists (select 1 from pg_roles where rolname = r) then
+                execute format('create role %I nologin', r);
+              end if;
+            end loop;
+          end $$;
           SQL
 
       - name: Replay every migration, recording failures
