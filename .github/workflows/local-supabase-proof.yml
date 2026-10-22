@@ -1,0 +1,142 @@
+# Proof for moving CI e2e off the production database: can the full migration
+# history replay on a local Supabase stack inside a GitHub runner?
+#
+# Starts the local stack with an EMPTY migrations directory (so `supabase start`
+# cannot stop at the first failure), then applies every file in
+# supabase/migrations/ in version order, each in its own transaction, and
+# records every failure instead of stopping. The report is the job summary plus
+# an artifact. Nothing here touches the hosted project.
+name: Local Supabase proof
+
+on:
+  workflow_dispatch: {}
+  pull_request:
+    paths:
+      - '.github/workflows/local-supabase-proof.yml'
+
+concurrency:
+  group: local-supabase-proof-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  replay:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: supabase/setup-cli@v3
+        with:
+          version: 2.98.2
+
+      - name: Start local Postgres with no migrations
+        run: |
+          mkdir -p /tmp/all-migrations
+          mv supabase/migrations/*.sql /tmp/all-migrations/
+          supabase start -x studio,imgproxy,inbucket,edge-runtime,logflare,vector,realtime,postgres-meta,supavisor,postgrest,kong
+          # The local stack's own connection string (no credential literal in this file).
+          eval "$(supabase status -o env)"
+          echo "DB_URL=$DB_URL" >> "$GITHUB_ENV"
+          ls /tmp/all-migrations | wc -l
+
+      - name: Create the extensions production enabled outside migrations
+        # Production got these through the dashboard, never a migration, so the
+        # baseline assumes them. Same schemas as production (read 2026-10-22).
+        run: |
+          psql "$DB_URL" -X -v ON_ERROR_STOP=0 <<'SQL' | tee -a "$GITHUB_STEP_SUMMARY"
+          create schema if not exists extensions;
+          do $$
+          declare e record;
+          begin
+            for e in select * from (values
+              ('fuzzystrmatch','extensions'),('http','extensions'),('hypopg','extensions'),
+              ('index_advisor','extensions'),('pg_cron','pg_catalog'),('pg_net','extensions'),
+              ('pg_stat_statements','extensions'),('pg_trgm','extensions'),('pgcrypto','extensions'),
+              ('pgmq','pgmq'),('pgstattuple','extensions'),('postgis','extensions'),
+              ('supabase_vault','vault'),('unaccent','extensions'),('uuid-ossp','extensions'),
+              ('vector','extensions'),('wrappers','extensions')) v(name, sch)
+            loop
+              begin
+                if e.name in ('pgmq', 'pg_cron') then
+                  execute format('create extension if not exists %I', e.name);
+                else
+                  execute format('create schema if not exists %I', e.sch);
+                  execute format('create extension if not exists %I schema %I', e.name, e.sch);
+                end if;
+              exception when others then
+                raise notice 'extension % not available: %', e.name, sqlerrm;
+              end;
+            end loop;
+          end $$;
+          select string_agg(extname, ', ' order by extname) as installed from pg_extension;
+          -- Roles the baseline grants to: left behind by an old Algolia connector.
+          do $$
+          declare r text;
+          begin
+            foreach r in array array['algolia_supabase_connector_postgres_1755536843',
+              'algolia_supabase_connector_postgres_1755537334',
+              'algolia_supabase_connector_postgres_1755537511'] loop
+              if not exists (select 1 from pg_roles where rolname = r) then
+                execute format('create role %I nologin', r);
+              end if;
+            end loop;
+          end $$;
+          SQL
+
+      - name: Replay every migration, recording failures
+        run: |
+          set +e
+          # The baseline is a reconstruction (never executed on prod): its pg_dump-style
+          # header empties search_path, so later unqualified names (app_role, ...) fail.
+          sed -i "s/set_config('search_path', '', false)/set_config('search_path', 'public, extensions', false)/" \
+            /tmp/all-migrations/00000000000000_baseline.sql
+          ok=0; fail=0
+          : > failures.txt
+          skipped=0
+          for f in $(ls /tmp/all-migrations/*.sql | sort); do
+            v=$(basename "$f" | cut -c1-8)
+            # The baseline is production as of 2026-05-02, so migrations dated
+            # before then are already inside it; replaying them only conflicts.
+            if [ "$(basename "$f")" != "00000000000000_baseline.sql" ] && [ "$v" \< "20260503" ]; then
+              skipped=$((skipped+1)); continue
+            fi
+            out=$(psql "$DB_URL" -X -q -1 -v ON_ERROR_STOP=1 -f "$f" 2>&1)
+            if [ $? -eq 0 ]; then ok=$((ok+1)); else
+              fail=$((fail+1))
+              echo "### $(basename "$f")" >> failures.txt
+              echo "$out" | grep -E 'ERROR|DETAIL|HINT' | head -4 >> failures.txt
+            fi
+          done
+          echo "applied=$ok failed=$fail"
+          {
+            echo "## Migration replay on local Supabase"
+            echo ""
+            echo "- applied: **$ok**"
+            echo "- failed: **$fail**"
+            echo "- skipped (already in the 2026-05-02 baseline): **$skipped**"
+            echo ""
+            echo "### First 40 failures"
+            echo '```'
+            head -160 failures.txt
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+          echo "$ok $fail" > counts.txt
+
+      - name: Schema size after replay
+        run: |
+          psql "$DB_URL" -X -At -c "
+            select 'tables', count(*) from pg_tables where schemaname='public'
+            union all select 'functions', count(*) from pg_proc p join pg_namespace n on n.oid=p.pronamespace where n.nspname='public'
+            union all select 'cron jobs', count(*) from cron.job" | tee -a "$GITHUB_STEP_SUMMARY"
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        continue-on-error: true
+        with:
+          name: migration-replay-report
+          path: |
+            failures.txt
+            counts.txt
