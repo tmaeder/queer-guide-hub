@@ -18,11 +18,14 @@ import {
   generateFilename,
   type ExportColumnDef,
 } from '@/utils/excelExport';
+import { exportToCsv } from '@/utils/csvExport';
 import { formatDate, formatDateTime } from '@/lib/format';
 
 type Row = Record<string, unknown>;
 
-function accessorFor(field: FieldConfig): (row: Row) => string | number | boolean | null | undefined {
+function accessorFor(
+  field: FieldConfig,
+): (row: Row) => string | number | boolean | null | undefined {
   return (row) => {
     const v = row[field.name];
     if (v === null || v === undefined) return '';
@@ -54,6 +57,7 @@ function accessorFor(field: FieldConfig): (row: Row) => string | number | boolea
 export async function exportContentType(
   config: ContentTypeConfig,
   listColumns: FieldConfig[],
+  format: 'Excel' | 'CSV' = 'Excel',
 ): Promise<void> {
   // Title first, then the configured list columns (deduped by column name).
   const columns: ExportColumnDef<Row>[] = [
@@ -68,5 +72,9 @@ export async function exportContentType(
     ascending: true,
   });
 
-  await exportToExcel(rows, columns, generateFilename(config.id));
+  if (format === 'CSV') {
+    exportToCsv(rows, columns, generateFilename(config.id).replace(/\.xlsx$/, '.csv'));
+  } else {
+    await exportToExcel(rows, columns, generateFilename(config.id));
+  }
 }

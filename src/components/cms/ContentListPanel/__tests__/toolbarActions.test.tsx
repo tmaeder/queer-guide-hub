@@ -2,7 +2,7 @@
  * @vitest-environment jsdom
  */
 import { describe, it, expect, vi } from 'vitest';
-import { fireEvent, render as rtlRender, screen } from '@testing-library/react';
+import { fireEvent, render as rtlRender, screen, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 // ContentListPanel now loads saved views through TanStack Query.
@@ -17,7 +17,7 @@ const render = (ui: React.ReactElement) =>
 import { MemoryRouter } from 'react-router';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { Tag } from 'lucide-react';
-import type { ContentTypeConfig } from '@/types/cms';
+import type { ContentTypeConfig, FieldConfig } from '@/types/cms';
 import type { Filter } from '../viewSpec';
 
 /**
@@ -54,7 +54,7 @@ const controller = {
   applySpec: vi.fn(),
   setColumns: vi.fn(),
 
-  allListColumns: [],
+  allListColumns: [] as FieldConfig[],
   extraColumns: [],
   selected: new Set<string>(),
   setSelected: vi.fn(),
@@ -74,6 +74,11 @@ const controller = {
 vi.mock('../useContentListController', () => ({
   useContentListController: () => controller,
 }));
+
+vi.mock('../exportContentList', () => ({
+  exportContentType: vi.fn().mockResolvedValue(undefined),
+}));
+import { exportContentType } from '../exportContentList';
 
 const { ContentListPanel } = await import('../index');
 
@@ -111,6 +116,38 @@ describe('ContentListPanel toolbarActions', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Refresh' }));
     expect(controller.loadItems).toHaveBeenCalled();
   });
+  it('offers CSV alongside Excel for tags even with search, filters, and pagination active', async () => {
+    const config = baseConfig({
+      id: 'unified_tags',
+      tableName: 'unified_tags',
+      titleField: 'name',
+    });
+    const original = {
+      filters: controller.filters,
+      search: controller.search,
+      page: controller.page,
+      allListColumns: controller.allListColumns,
+    };
+    controller.filters = [{ id: 'status-filter', field: 'status', op: 'eq', value: 'active' }];
+    controller.search = 'filtered';
+    controller.page = 3;
+    controller.allListColumns = [{ name: 'name', label: 'Name', type: 'text' } as FieldConfig];
+    try {
+      renderPanel(config);
+      fireEvent.click(screen.getByRole('button', { name: 'Content tools' }));
+      expect(screen.getByRole('button', { name: 'Export Excel' })).toBeVisible();
+      fireEvent.click(screen.getByRole('button', { name: 'Export CSV' }));
+      await waitFor(() =>
+        expect(exportContentType).toHaveBeenCalledWith(config, controller.allListColumns, 'CSV'),
+      );
+      await waitFor(() =>
+        expect(screen.getByRole('button', { name: 'Export CSV' })).not.toBeDisabled(),
+      );
+    } finally {
+      Object.assign(controller, original);
+    }
+  });
+
   it('renders nothing extra when a type declares none', () => {
     renderPanel(baseConfig());
     expect(screen.queryByRole('button', { name: /import/i })).not.toBeInTheDocument();

@@ -1,4 +1,5 @@
 export const topics = ['newsletter', 'product_updates', 'events'] as const;
+export const recipientKinds = ['organization', 'venue', 'vendor', 'user'] as const;
 export const statuses = ['pending', 'subscribed', 'unsubscribed'] as const;
 export const events = [
   'consent.confirmed',
@@ -12,7 +13,11 @@ export type Rule =
   | { all: Rule[] }
   | { any: Rule[] }
   | { not: Rule }
-  | { field: 'locale' | 'status' | 'source'; op: 'eq' | 'in'; value: string | string[] }
+  | {
+      field: 'locale' | 'status' | 'source' | 'recipient_kind';
+      op: 'eq' | 'in';
+      value: string | string[];
+    }
   | { field: 'topic'; op: 'contains'; value: string }
   | { field: 'created_at' | 'confirmed_at'; op: 'within_days' | 'older_than_days'; value: number }
   | { event: string; within_days: number; min_count: number };
@@ -58,10 +63,12 @@ export function ruleError(rule: Rule): string | null {
             ? !/^[a-z]{2}(-[A-Za-z]{2,8})?$/.test(v)
             : r.field === 'status'
               ? !statuses.includes(v as (typeof statuses)[number])
-              : v.length < 1 || v.length > 100),
+              : r.field === 'recipient_kind'
+                ? !recipientKinds.includes(v as (typeof recipientKinds)[number])
+                : v.length < 1 || v.length > 100),
       )
     )
-      return 'Check the condition values. Language codes use en or de-CH; sources need 1–100 characters.';
+      return 'Check the condition values. Language codes use en or de-CH; choose a recipient type or use a source of 1–100 characters.';
     return null;
   }
   return check(rule, 0);
