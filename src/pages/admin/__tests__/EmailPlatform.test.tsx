@@ -19,7 +19,11 @@ const data = {
 beforeEach(() => {
   api.invoke.mockReset();
   api.invoke.mockImplementation(async (url) => ({
-    data: url.includes('resource=segments') ? { segments: [] } : data,
+    data: url.startsWith('email-journeys')
+      ? { journeys: [], runs: [], versions: [] }
+      : url.includes('resource=segments')
+        ? { segments: [] }
+        : data,
     error: null,
   }));
 });
@@ -63,6 +67,7 @@ describe('integrated admin email workspace', () => {
           topic: 'newsletter',
           locale: null,
           scheduled_at: null,
+          segment_id: null,
         },
       }),
     );

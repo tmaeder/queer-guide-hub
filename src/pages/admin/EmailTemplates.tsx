@@ -302,7 +302,9 @@ export default function EmailTemplates() {
       setTestDialog(false);
       setRecipient('');
     } catch {
-      setTestError('Could not send the test email. Check the address and try again.');
+      setTestError(
+        'Could not send the test email. Use your verified admin email address and try again.',
+      );
     } finally {
       setSending(false);
     }

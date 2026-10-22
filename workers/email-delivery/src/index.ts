@@ -3,6 +3,10 @@ import { validateDelivery, type DeliveryInput, type Receipt } from './protocol';
 const json = (value: unknown, status = 200) =>
   Response.json(value, { status, headers: { 'Cache-Control': 'no-store' } });
 export class EmailDelivery extends DurableObject<Env> {
+  async inspect(): Promise<Receipt | null> {
+    const stored = await this.ctx.storage.get<{ receipt: Receipt }>('receipt');
+    return stored?.receipt ?? null;
+  }
   async submit(input: DeliveryInput): Promise<Receipt> {
     return this.ctx.blockConcurrencyWhile(async () => {
       const fingerprint = Array.from(
@@ -80,8 +84,19 @@ export default {
       req.headers.get('Authorization') !== `Bearer ${env.EMAIL_GATEWAY_SECRET}`
     )
       return json({ error: 'Unauthorized' }, 401);
-    if (req.method !== 'POST' || new URL(req.url).pathname !== '/send')
-      return json({ error: 'Not found' }, 404);
+    const url = new URL(req.url);
+    if (req.method === 'GET' && url.pathname.startsWith('/receipts/')) {
+      const id = url.pathname.slice('/receipts/'.length);
+      if (!/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i.test(id))
+        return json({ error: 'Invalid identity' }, 400);
+      try {
+        const receipt = await env.DELIVERIES.get(env.DELIVERIES.idFromName(id)).inspect();
+        return json({ found: receipt !== null, receipt });
+      } catch {
+        return json({ error: 'Receipt unavailable' }, 503);
+      }
+    }
+    if (req.method !== 'POST' || url.pathname !== '/send') return json({ error: 'Not found' }, 404);
     try {
       const reader = req.body?.getReader();
       if (!reader) return json({ error: 'Body required' }, 400);

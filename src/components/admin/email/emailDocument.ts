@@ -8,6 +8,15 @@ export interface EmailVariable {
 const MARKER = 'queer-guide-email-blocks:v1:';
 const TOKEN = /\{\{\s*([\w.-]+)\s*\}\}/g;
 
+/** A review must not execute template code, navigate or load tracking pixels. */
+export function reviewDocument(html: string): string {
+  const body = DOMPurify.sanitize(html, {
+    FORBID_TAGS: ['script', 'iframe', 'object', 'embed', 'form', 'link', 'meta', 'base'],
+    FORBID_ATTR: ['src', 'srcset', 'href', 'action', 'background', 'poster'],
+  });
+  return `<!doctype html><html><head><meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; img-src data:; form-action 'none'; base-uri 'none'"></head><body>${body}</body></html>`;
+}
+
 export function tokensIn(value: string): string[] {
   return [...new Set(Array.from(value.matchAll(TOKEN), (match) => match[1]))];
 }

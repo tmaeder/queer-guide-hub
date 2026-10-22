@@ -1,23 +1,15 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router';
 import { supabase } from '@/integrations/supabase/client';
 import { AdminEmpty } from '@/components/admin/primitives/AdminEmpty';
 import { AdminArchetypeHeader } from '@/components/admin/frames/AdminArchetypeHeader';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { toast } from 'sonner';
 import { EmailAudiences } from '@/components/admin/email/EmailAudiences';
-interface Campaign {
-  id: string;
-  name: string;
-  status: string;
-  topic: string;
-  template_key: string;
-  locale: string | null;
-  scheduled_at: string | null;
-}
+import { EmailOperations } from '@/components/admin/email/EmailOperations';
+import { EmailJourneys } from '@/components/admin/email/EmailJourneys';
+import { EmailCampaigns, type Campaign } from '@/components/admin/email/EmailCampaigns';
 interface Message {
   id: string;
   recipient_email: string;
@@ -46,64 +38,34 @@ interface Overview {
 }
 export default function EmailPlatform() {
   const [data, setData] = useState<Overview | null>(null),
-    [error, setError] = useState(false),
-    [busy, setBusy] = useState(false);
-  const [subscribers, setSubscribers] = useState<Subscriber[]>([]),
-    [audience, setAudience] = useState<string | null>(null);
-  const [editingId, setEditingId] = useState<string | null>(null);
-  const [name, setName] = useState(''),
-    [template, setTemplate] = useState(''),
-    [topic, setTopic] = useState('newsletter'),
-    [locale, setLocale] = useState(''),
-    [schedule, setSchedule] = useState('');
+    [error, setError] = useState(false);
+  const [subscribers, setSubscribers] = useState<Subscriber[]>([]);
+  const [audienceRevision, setAudienceRevision] = useState(0);
+  const loadRequest = useRef(0);
   const [consent, setConsent] = useState<
     { action: string; source: string; created_at: string; topics: string[] }[] | null
   >(null);
   const load = useCallback(async () => {
+    const request = ++loadRequest.current;
     setError(false);
-    const response = await supabase.functions.invoke('email-admin', { method: 'GET' });
-    if (response.error) {
-      setError(true);
-      return;
+    try {
+      const response = await supabase.functions.invoke('email-admin', { method: 'GET' });
+      if (request !== loadRequest.current) return;
+      if (
+        response.error ||
+        !Array.isArray(response.data?.campaigns) ||
+        !Array.isArray(response.data?.templates)
+      )
+        throw new Error('overview');
+      setData(response.data);
+    } catch {
+      if (request === loadRequest.current) setError(true);
     }
-    setData(response.data);
   }, []);
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect -- Fetch remote preferences/workspace data on mount.
     void load();
   }, [load]);
-  async function mutate(body: Record<string, unknown>) {
-    setBusy(true);
-    try {
-      const r = await supabase.functions.invoke('email-admin', { body });
-      if (r.error) throw r.error;
-      return r.data;
-    } catch {
-      toast.error('Could not save. Please retry.');
-      return null;
-    } finally {
-      setBusy(false);
-    }
-  }
-  async function save(e: React.FormEvent) {
-    e.preventDefault();
-    if (
-      await mutate({
-        action: 'campaign-save',
-        ...(editingId ? { id: editingId } : {}),
-        name,
-        template_key: template,
-        topic,
-        locale: locale || null,
-        scheduled_at: schedule ? new Date(schedule).toISOString() : null,
-      })
-    ) {
-      toast.success('Campaign draft saved');
-      setName('');
-      setEditingId(null);
-      await load();
-    }
-  }
   async function loadSubscribers() {
     const r = await supabase.functions.invoke('email-admin?resource=subscribers', {
       method: 'GET',
@@ -147,13 +109,14 @@ export default function EmailPlatform() {
           Transactional delivery is not configured. Complete the email gateway setup before sending.
         </p>
       )}
-      {error ? (
+      {error && (
         <div role="alert">
           <p>Email administration could not load.</p>
           <Button onClick={() => void load()}>Retry</Button>
         </div>
-      ) : !data ? (
-        <p role="status">Loading email workspace…</p>
+      )}
+      {!data ? (
+        !error && <p role="status">Loading email workspace…</p>
       ) : (
         <>
           <p className="text-sm text-muted-foreground">
@@ -169,176 +132,27 @@ export default function EmailPlatform() {
             <TabsList className="h-auto flex-wrap justify-start gap-1">
               <TabsTrigger value="campaigns">Campaigns</TabsTrigger>
               <TabsTrigger value="audiences">Audiences</TabsTrigger>
+              <TabsTrigger value="journeys">Journeys</TabsTrigger>
               <TabsTrigger value="delivery">Delivery</TabsTrigger>
+              <TabsTrigger value="operations">Operations</TabsTrigger>
               <TabsTrigger value="subscribers">Subscribers</TabsTrigger>
             </TabsList>
-            <TabsContent value="campaigns" className="space-y-8">
-              <form onSubmit={save} className="max-w-2xl space-y-4 border-b border-border py-6">
-                <h2 className="font-sans text-title font-bold">
-                  {editingId ? 'Edit campaign draft' : 'Prepare a campaign'}
-                </h2>
-                <div>
-                  <Label htmlFor="campaign-name">Campaign name</Label>
-                  <Input
-                    id="campaign-name"
-                    required
-                    maxLength={200}
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="campaign-template">Saved email template</Label>
-                  <select
-                    id="campaign-template"
-                    className="flex min-h-10 w-full border border-input bg-background px-4"
-                    required
-                    value={template}
-                    onChange={(e) => setTemplate(e.target.value)}
-                  >
-                    <option value="">Choose an active template</option>
-                    {data.templates
-                      .filter((t) => t.is_active)
-                      .map((t) => (
-                        <option key={t.template_key} value={t.template_key}>
-                          {t.name}
-                        </option>
-                      ))}
-                  </select>
-                </div>
-                <div className="grid gap-4 sm:grid-cols-2">
-                  <div>
-                    <Label htmlFor="campaign-topic">Subscribed topic</Label>
-                    <select
-                      id="campaign-topic"
-                      className="min-h-10 w-full border border-input bg-background px-4"
-                      value={topic}
-                      onChange={(e) => {
-                        setTopic(e.target.value);
-                        setAudience(null);
-                      }}
-                    >
-                      <option value="newsletter">Newsletter</option>
-                      <option value="product_updates">Product updates</option>
-                      <option value="events">Events</option>
-                    </select>
-                  </div>
-                  <div>
-                    <Label htmlFor="campaign-locale">Language code (optional)</Label>
-                    <Input
-                      id="campaign-locale"
-                      placeholder="All languages"
-                      value={locale}
-                      onChange={(e) => {
-                        setLocale(e.target.value);
-                        setAudience(null);
-                      }}
-                    />
-                  </div>
-                </div>
-                <div>
-                  <Label htmlFor="campaign-schedule">
-                    Desired send date (local time, optional)
-                  </Label>
-                  <Input
-                    id="campaign-schedule"
-                    type="datetime-local"
-                    value={schedule}
-                    onChange={(e) => setSchedule(e.target.value)}
-                  />
-                  <p className="mt-2 text-sm text-muted-foreground">
-                    Dates are saved for planning. Scheduled campaigns remain blocked until delivery
-                    is supported.
-                  </p>
-                </div>
-                <div className="flex flex-wrap items-center gap-4">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    disabled={busy}
-                    onClick={async () => {
-                      const r = await mutate({
-                        action: 'audience-count',
-                        topic,
-                        locale: locale || null,
-                      });
-                      if (r)
-                        setAudience(`${r.eligible}${r.truncated ? '+' : ''} eligible subscribers`);
-                    }}
-                  >
-                    Check audience
-                  </Button>
-                  <Button disabled={busy}>
-                    {busy ? 'Saving…' : editingId ? 'Save changes' : 'Save draft'}
-                  </Button>
-                  {audience && (
-                    <p role="status" className="text-sm">
-                      {audience}
-                    </p>
-                  )}
-                </div>
-              </form>
-              <section aria-label="Campaign drafts">
-                <h2 className="mb-4 font-sans text-title font-bold">Campaign drafts</h2>
-                {!data.campaigns.length ? (
-                  <AdminEmpty noun="campaign drafts" />
-                ) : (
-                  <ul className="divide-y divide-border">
-                    {data.campaigns.map((c) => (
-                      <li
-                        key={c.id}
-                        className="flex flex-wrap items-center justify-between gap-4 py-4"
-                      >
-                        <div>
-                          <h3 className="font-semibold">{c.name}</h3>
-                          <p className="text-sm text-muted-foreground">
-                            {c.topic} · {c.status}
-                            {c.scheduled_at
-                              ? ` · ${new Date(c.scheduled_at).toLocaleString()}`
-                              : ''}
-                          </p>
-                        </div>
-                        {c.status !== 'cancelled' && (
-                          <Button
-                            variant="outline"
-                            disabled={busy}
-                            onClick={() => {
-                              setEditingId(c.id);
-                              setName(c.name);
-                              setTemplate(c.template_key);
-                              setTopic(c.topic);
-                              setLocale(c.locale || '');
-                              setAudience(null);
-                              if (c.scheduled_at) {
-                                const d = new Date(c.scheduled_at);
-                                d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
-                                setSchedule(d.toISOString().slice(0, 16));
-                              } else setSchedule('');
-                            }}
-                          >
-                            Edit draft
-                          </Button>
-                        )}
-                        {c.status !== 'cancelled' && (
-                          <Button
-                            variant="outline"
-                            disabled={busy}
-                            onClick={async () => {
-                              if (await mutate({ action: 'campaign-cancel', id: c.id }))
-                                await load();
-                            }}
-                          >
-                            Cancel draft
-                          </Button>
-                        )}
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </section>
+            <TabsContent value="campaigns" forceMount className="data-[state=inactive]:hidden">
+              <EmailCampaigns
+                campaigns={data.campaigns}
+                templates={data.templates}
+                refresh={load}
+                audienceRevision={audienceRevision}
+              />
             </TabsContent>
             <TabsContent value="audiences" forceMount className="data-[state=inactive]:hidden">
-              <EmailAudiences />
+              <EmailAudiences onSaved={() => setAudienceRevision((v) => v + 1)} />
+            </TabsContent>
+            <TabsContent value="journeys" forceMount className="data-[state=inactive]:hidden">
+              <EmailJourneys />
+            </TabsContent>
+            <TabsContent value="operations">
+              <EmailOperations />
             </TabsContent>
             <TabsContent value="delivery">
               <section className="py-6">
@@ -356,6 +170,9 @@ export default function EmailPlatform() {
                           <span>{m.status}</span>
                         </div>
                         <p className="break-all text-sm">{m.recipient_email}</p>
+                        <p className="break-all text-sm text-muted-foreground">
+                          Message ID: {m.id}
+                        </p>
                         <p className="text-sm text-muted-foreground">
                           {new Date(m.created_at).toLocaleString()} · {m.attempts} attempts
                         </p>

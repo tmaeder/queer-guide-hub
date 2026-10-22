@@ -31,7 +31,7 @@ const reasonNames: Record<string, string> = {
   topic_not_selected: 'Topic not selected',
 };
 const reasonName = (reason: string) => reasonNames[reason] || reason.replaceAll('_', ' ');
-export function EmailAudiences() {
+export function EmailAudiences({ onSaved }: { onSaved?: () => void } = {}) {
   const id = useId();
   const [segments, setSegments] = useState<Segment[] | null>(null);
   const [listError, setListError] = useState(false);
@@ -123,6 +123,7 @@ export function EmailAudiences() {
       setSelected({ id: saved.id, version: saved.version, name: name.trim(), rule, status });
       setDirty(false);
       setNotice(`Audience saved as version ${saved.version}.`);
+      onSaved?.();
       await load();
     } catch {
       if (request === revision.current)

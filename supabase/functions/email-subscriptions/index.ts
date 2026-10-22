@@ -93,6 +93,21 @@ Deno.serve(async (req: Request) => {
           typeof body.trip_invites_enabled !== "boolean") ||
         (body.group_mentions_enabled !== undefined &&
           typeof body.group_mentions_enabled !== "boolean") ||
+        (body.operational_topics !== undefined &&
+          (!Array.isArray(body.operational_topics) ||
+            body.operational_topics.length > 5 ||
+            new Set(body.operational_topics).size !==
+              body.operational_topics.length ||
+            body.operational_topics.some((topic: unknown) =>
+              typeof topic !== "string" ||
+              ![
+                "event_updates",
+                "trip_updates",
+                "group_requests",
+                "contributions",
+                "payments",
+              ].includes(topic)
+            ))) ||
         typeof body.quiet_hours_enabled !== "boolean" ||
         typeof body.timezone !== "string" || body.timezone.length > 100 ||
         !Number.isInteger(body.quiet_start) ||
@@ -110,6 +125,7 @@ Deno.serve(async (req: Request) => {
         p_enabled: body.dm_digest_enabled,
         p_group_enabled: body.group_mentions_enabled ?? null,
         p_trip_enabled: body.trip_invites_enabled ?? null,
+        p_operational_topics: body.operational_topics ?? null,
         p_timezone: body.timezone,
         p_quiet: body.quiet_hours_enabled,
         p_start: body.quiet_start,
