@@ -134,6 +134,7 @@ jobs:
 
       - uses: actions/upload-artifact@v4
         if: always()
+        continue-on-error: true
         with:
           name: migration-replay-report
           path: |
