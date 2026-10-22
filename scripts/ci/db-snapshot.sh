@@ -27,11 +27,17 @@ dump)
   "$(dirname "$0")/supabase-retry.sh" db dump --db-url "$db" -f "$dir/schema.sql"
   psqlq -At -c "select version from supabase_migrations.schema_migrations order by 1" > "$dir/versions.txt"
 
-  # table|non-generated columns|limit clause, for every table anon may SELECT.
+  # Slugs and domains named anywhere in e2e/ are always copied, so a capped table
+  # still holds the rows specs open by name (checkpoint-zuerich, /tags/transgender).
+  pins=$( { grep -ohE "['\"\`][a-z0-9]+([-.][a-z0-9]+)+" -r e2e | cut -c2-
+            grep -ohE "/[a-z0-9]+([-.][a-z0-9]+)*" -r e2e | cut -c2-; } | grep -E '[a-z]' | sort -u | paste -sd, -)
+
+  # table|non-generated columns|pin column (slug/domain) or empty|capped?
   psqlq -At -F'|' -c "
     select c.relname,
            string_agg(quote_ident(a.attname), ',' order by a.attnum),
-           case when pg_table_size(c.oid) > $FULL_MAX_BYTES then ' limit $ROW_CAP' else '' end
+           case when bool_or(a.attname = 'slug') then 'slug' when bool_or(a.attname = 'domain') then 'domain' else '' end,
+           (pg_table_size(c.oid) > $FULL_MAX_BYTES)::int
     from pg_class c
     join pg_namespace n on n.oid = c.relnamespace
     join pg_attribute a on a.attrelid = c.oid and a.attnum > 0 and not a.attisdropped and a.attgenerated = ''
@@ -41,8 +47,14 @@ dump)
 
   {
     echo "set role anon;"
-    while IFS='|' read -r t cols lim; do
-      echo "\\copy (select $cols from public.\"$t\"$lim) to '$dir/data/$t.csv' csv"
+    while IFS='|' read -r t cols pin capped; do
+      q="select $cols from public.\"$t\""
+      if [ "$capped" = 1 ] && [ -n "$pin" ]; then
+        q="($q where $pin = any('{$pins}')) union all ($q where not coalesce($pin = any('{$pins}'), false) limit $ROW_CAP)"
+      elif [ "$capped" = 1 ]; then
+        q="$q limit $ROW_CAP"
+      fi
+      echo "\\copy ($q) to '$dir/data/$t.csv' csv"
     done < "$dir/manifest.txt"
   } > "$dir/copy-out.sql"
   # A table anon cannot actually read (column grants, RLS errors) is skipped, not fatal.
