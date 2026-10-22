@@ -21,7 +21,8 @@ export interface GeographyRecord extends GeoNode {
   source_table: 'countries' | 'cities' | 'queer_villages';
   workflow_state: string | null;
   seo_indexable: boolean;
-  verification_status: 'verified' | 'review' | 'missing' | 'stale' | 'country_checked';
+  verification_status:
+    'verified' | 'review' | 'missing' | 'stale' | 'country_checked' | 'not_applicable';
   verification: null | {
     checked_at: string;
     checks: {
@@ -55,6 +56,7 @@ export const verificationLabels: Record<GeographyRecord['verification_status'], 
   missing: 'Missing evidence',
   stale: 'Stale',
   country_checked: 'Country checked',
+  not_applicable: 'Archived and unused',
 };
 
 export function useGeographyRows(parentId: string | null, filters: GeographyFilters) {
