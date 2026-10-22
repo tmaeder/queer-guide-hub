@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-10-21T21:15:42.832188+00:00",
+  "generatedAt": "2026-10-22T18:59:44.462008+00:00",
   "title": "Design System: queer.guide email admin",
   "extensions": {
     "colorMeta": {
@@ -127,8 +127,8 @@
       "name": "Workspace tabs",
       "kind": "nav",
       "refersTo": "tab-active",
-      "description": "Wrapping local tab group. This snippet illustrates style; Radix supplies runtime tab behavior.",
-      "html": "<div class=\"ds-email-tabs\" aria-label=\"Email workspace\"><button class=\"ds-email-tab ds-email-selected\" aria-current=\"page\">Campaigns</button><button class=\"ds-email-tab\">Journeys</button><button class=\"ds-email-tab\">Operations</button></div>",
+      "description": "Eight wrapping local tabs: one row in inspected desktop captures and three at 390px. Radix supplies runtime tab behavior; this snippet illustrates style.",
+      "html": "<div class=\"ds-email-tabs\" aria-label=\"Email workspace\"><button class=\"ds-email-tab ds-email-selected\" aria-current=\"page\">Campaigns</button><button class=\"ds-email-tab\">Audiences</button><button class=\"ds-email-tab\">Journeys</button><button class=\"ds-email-tab\">Content</button><button class=\"ds-email-tab\">Delivery</button><button class=\"ds-email-tab\">Operations</button><button class=\"ds-email-tab\">Measurement</button><button class=\"ds-email-tab\">Subscribers</button></div>",
       "css": ".ds-email-tabs{display:inline-flex;flex-wrap:wrap;gap:4px;padding:4px;background:hsl(var(--surface-container,60 15.8% 88.8%));border-radius:var(--radius-element,12px);backdrop-filter:blur(4px)}.ds-email-tab{font-family:var(--font-sans, \"Space Grotesk\",system-ui,sans-serif);font-size:14px;height:36px;padding:0 16px;border:0;border-radius:var(--radius-badge,9px);background:transparent;color:hsl(var(--muted-foreground,0 0% 33%));font-weight:500;transition:all 300ms cubic-bezier(.22,1,.36,1)}.ds-email-tab:hover{color:hsl(var(--foreground,0 0% 6.7%))}.ds-email-selected,.ds-email-selected:hover{background:hsl(var(--foreground,0 0% 6.7%));color:hsl(var(--background,60 33% 97%))}.ds-email-tab:focus-visible{outline:2px solid hsl(var(--ring,330 100% 56%));outline-offset:2px;}.ds-email-tab:active{transform:scale(.97)}@media(prefers-reduced-motion:reduce){.ds-email-tab:active{transform:none}}"
     },
     {
@@ -138,11 +138,18 @@
       "description": "Persistent, explicit boundary on promotional delivery.",
       "html": "<p class=\"ds-email-notice\" role=\"status\">Cloudflare sends transactional email only. Newsletter and marketing drafts can be prepared here; campaign delivery is unavailable.</p>",
       "css": ".ds-email-notice{font-family:var(--font-sans, \"Space Grotesk\",system-ui,sans-serif);font-size:14px;margin:0;padding:16px;border:1px solid hsl(var(--border,60 7.4% 81.4%));background:hsl(var(--muted,60 22.2% 89.4%));color:hsl(var(--foreground,0 0% 6.7%));line-height:1.428571}"
+    },
+    {
+      "name": "Provenance record",
+      "kind": "custom",
+      "description": "Source and eligibility remain beside a wrapping mailbox; short history action retains a mailbox-specific accessible name.",
+      "html": "<div class=\"ds-email-record\"><div><strong class=\"ds-email-mailbox\">subscriber@example.com</strong><p>subscribed \u00b7 de \u00b7 newsletter</p><p class=\"ds-email-meta\">Source: website \u00b7 Confirmed</p></div><button class=\"ds-email-history\" aria-label=\"History for subscriber@example.com\">View history</button></div>",
+      "css": ".ds-email-record{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:16px;padding:16px 0;border-bottom:1px solid hsl(var(--border,60 7.4% 81.4%));font-family:var(--font-sans,\"Space Grotesk\",system-ui,sans-serif);font-size:14px;color:hsl(var(--foreground,0 0% 6.7%))}.ds-email-record>div{min-width:0}.ds-email-mailbox{overflow-wrap:anywhere}.ds-email-record p{margin:8px 0 0}.ds-email-meta{color:hsl(var(--muted-foreground,0 0% 33%))}.ds-email-history{min-height:44px;padding:0 24px;border:1px solid hsl(var(--input,60 4.8% 44.9%));border-radius:var(--radius-element,12px);background:hsl(var(--surface-container-high,60 15% 84.3%));color:hsl(var(--foreground,0 0% 6.7%));font:700 14px var(--font-sans,\"Space Grotesk\",system-ui,sans-serif);box-shadow:var(--shadow-soft,0 16px 40px rgba(17,17,17,.06));transition:all 200ms cubic-bezier(.22,1,.36,1)}.ds-email-history:hover{background:hsl(var(--foreground,0 0% 6.7%));color:hsl(var(--background,60 33% 97%))}.ds-email-history:focus-visible{outline:2px solid hsl(var(--ring,330 100% 56%));outline-offset:2px}.ds-email-history:active{transform:scale(.98)}"
     }
   ],
   "narrative": {
     "northStar": "Paper and ink utility workspace",
-    "overview": "This local surface extends the incumbent admin system. It inherits the existing editorial title, warm paper, ink actions, tonal controls and direct language; it establishes no new brand or global tokens. The governing sources remain root `DESIGN.md`, `PRODUCT.md`, `docs/design-system/README.md` and `docs/plans/2026-10-21-email-platform-completion.md`.\n\nThe workspace puts preparation, saved records, review and operational evidence in a readable vertical sequence. Campaign approval and audience collection prepare content; the persistent capability notice states that promotional dispatch is unavailable. Profile preferences give activity mail and newsletters separate control groups and save actions.",
+    "overview": "This local surface extends the incumbent admin system. It inherits the existing editorial title, warm paper, ink actions, tonal controls and direct language; it establishes no new brand or global tokens. The governing sources remain root `DESIGN.md`, `PRODUCT.md`, `docs/design-system/README.md` and `docs/plans/2026-10-21-email-platform-completion.md`.\n\nThe workspace puts preparation, saved records, review and operational evidence in a readable vertical sequence. Content localization, public catalog references, recipient provenance and experiment definitions extend this same registry layout. Campaign approval, audience collection and stable experiment assignments prepare work; the persistent capability notice states that promotional dispatch is unavailable. Profile preferences give activity mail and newsletters separate control groups and save actions. The public Email updates form uses the same controls and explains newsletter availability before collecting choices.",
     "keyCharacteristics": [
       "Inherited paper/ink hierarchy and compact labelled controls.",
       "Plain lists and section rules rather than a new dashboard card system.",
@@ -160,12 +167,13 @@
       "**Do** reuse inherited semantic colors, radii, typography and shared controls.",
       "**Do** keep provider limits, version context and action effects visible in plain language.",
       "**Do** preserve drafts across tab changes and failed operations, with explicit conflict recovery.",
-      "**Do** distinguish sample previews, captured eligibility and observed delivery evidence.",
+      "**Do** distinguish sample previews, captured eligibility, pending contact provenance, assignments and observed first-party evidence.",
       "**Do** keep mobile labels, wrapping controls and long identifiers readable."
     ],
     "donts": [
       "**Don't** imply approval, a planning date or a snapshot authorizes promotional dispatch.",
-      "**Don't** promote synthetic screenshot data or empty detector findings into production evidence.",
+      "**Don't** promote synthetic screenshot data or review findings into production evidence.",
+      "**Don't** treat published business contacts as ownership or consent, or assignments and observed outcomes as exposures or causal lift.",
       "**Don't** introduce an email-specific palette, decorative graph canvas or elevation ladder.",
       "**Don't** let newsletter saves overwrite activity edits or asynchronous responses replace newer editing state."
     ]

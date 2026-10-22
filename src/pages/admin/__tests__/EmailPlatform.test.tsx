@@ -23,7 +23,9 @@ beforeEach(() => {
       ? { journeys: [], runs: [], versions: [] }
       : url.includes('resource=segments')
         ? { segments: [] }
-        : data,
+        : url.includes('resource=contacts')
+          ? { contacts: [], next: null }
+          : data,
     error: null,
   }));
 });
@@ -68,6 +70,7 @@ describe('integrated admin email workspace', () => {
           locale: null,
           scheduled_at: null,
           segment_id: null,
+          catalog_references: [],
         },
       }),
     );

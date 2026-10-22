@@ -85,6 +85,7 @@ describe('campaign preparation and governance', () => {
           locale: 'de',
           scheduled_at: null,
           segment_id: 'audience',
+          catalog_references: [],
         },
       }),
     );
@@ -118,6 +119,7 @@ describe('campaign preparation and governance', () => {
           locale: 'de',
           scheduled_at: null,
           segment_id: 'audience',
+          catalog_references: [],
         },
       }),
     );

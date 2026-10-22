@@ -116,6 +116,8 @@ Deno.serve(async (req: Request) => {
       p_limit: 5,
     });
     if (error) throw error;
+    const experiments = await db.rpc("email_experiment_tick", { p_limit: 5 });
+    if (experiments.error) throw experiments.error;
     const reminders = await db.rpc("email_notice_reminders", { p_limit: 50 });
     if (reminders.error) throw reminders.error;
     const candidates = await db.rpc("email_notice_candidates", { p_limit: 5 });
@@ -147,6 +149,7 @@ Deno.serve(async (req: Request) => {
     return result({
       audience_batches: data,
       notices_queued: noticesQueued,
+      experiment_batches: experiments.data,
       retention: retained.data,
       messages_sent: 0,
     });
