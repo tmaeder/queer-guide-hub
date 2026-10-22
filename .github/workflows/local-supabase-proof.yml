@@ -42,6 +42,38 @@ jobs:
           echo "DB_URL=$DB_URL" >> "$GITHUB_ENV"
           ls /tmp/all-migrations | wc -l
 
+      - name: Create the extensions production enabled outside migrations
+        # Production got these through the dashboard, never a migration, so the
+        # baseline assumes them. Same schemas as production (read 2026-10-22).
+        run: |
+          psql "$DB_URL" -X -v ON_ERROR_STOP=0 <<'SQL' | tee -a "$GITHUB_STEP_SUMMARY"
+          create schema if not exists extensions;
+          do $$
+          declare e record;
+          begin
+            for e in select * from (values
+              ('fuzzystrmatch','extensions'),('http','extensions'),('hypopg','extensions'),
+              ('index_advisor','extensions'),('pg_cron','pg_catalog'),('pg_net','extensions'),
+              ('pg_stat_statements','extensions'),('pg_trgm','extensions'),('pgcrypto','extensions'),
+              ('pgmq','pgmq'),('pgstattuple','extensions'),('postgis','extensions'),
+              ('supabase_vault','vault'),('unaccent','extensions'),('uuid-ossp','extensions'),
+              ('vector','extensions'),('wrappers','extensions')) v(name, sch)
+            loop
+              begin
+                if e.name = 'pgmq' then
+                  execute format('create extension if not exists %I', e.name);
+                else
+                  execute format('create schema if not exists %I', e.sch);
+                  execute format('create extension if not exists %I schema %I', e.name, e.sch);
+                end if;
+              exception when others then
+                raise notice 'extension % not available: %', e.name, sqlerrm;
+              end;
+            end loop;
+          end $$;
+          select string_agg(extname, ', ' order by extname) as installed from pg_extension;
+          SQL
+
       - name: Replay every migration, recording failures
         run: |
           set +e
