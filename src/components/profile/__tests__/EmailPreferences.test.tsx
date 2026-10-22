@@ -20,6 +20,7 @@ const delivery = {
   dm_digest_enabled: false,
   group_mentions_enabled: false,
   trip_invites_enabled: false,
+  operational_topics: [],
   timezone: 'Etc/UTC',
   quiet_hours_enabled: false,
   quiet_start: 22,
@@ -27,6 +28,27 @@ const delivery = {
   version: 0,
 };
 describe('account email preferences', () => {
+  it('preserves unsaved activity changes when newsletter preferences are saved', async () => {
+    api.invoke.mockResolvedValue({
+      data: {
+        subscription: { status: 'subscribed', topics: ['newsletter'], locale: 'en' },
+        delivery_preferences: delivery,
+      },
+      error: null,
+    });
+    render(<EmailPreferences />);
+    const activity = await screen.findByRole('checkbox', {
+      name: 'Email me a daily unread-message digest',
+    });
+    fireEvent.click(activity);
+    fireEvent.click(screen.getByRole('checkbox', { name: 'Product updates' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Save email preferences' }));
+    await waitFor(() =>
+      expect(api.invoke.mock.calls.filter((c) => c[1]?.method === 'GET')).toHaveLength(2),
+    );
+    expect(activity).toBeChecked();
+  });
+
   it('saves explicit activity opt-in and quiet hours without subscribing to marketing', async () => {
     api.invoke.mockImplementation((_name, options) =>
       Promise.resolve({

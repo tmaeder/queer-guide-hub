@@ -6,6 +6,7 @@ import {
   prepareLegacyHtml,
   readBlockDocument,
   renderSample,
+  reviewDocument,
   storeBlockDocument,
 } from '../emailDocument';
 
@@ -51,5 +52,20 @@ describe('email document compatibility', () => {
         '<html><head><style>p{color:red}</style></head><body><p onclick="bad()">Email</p><script>bad()</script></body></html>',
       ),
     ).toBe('<style>p{color:red}</style><p>Email</p>');
+  });
+});
+
+describe('campaign review isolation', () => {
+  it('prevents content review from fetching trackers or executing template markup', () => {
+    const result = reviewDocument(
+      '<script>fetch("/admin")</script><img src="https://tracker.invalid/pixel" onerror="bad()"><a href="https://tracker.invalid/click">Link</a><form action="/change"><input></form><p>Saved content</p>',
+    );
+    expect(result).toContain("default-src 'none'");
+    expect(result).toContain("form-action 'none'");
+    expect(result).toContain('Saved content');
+    expect(result).not.toContain('tracker.invalid');
+    expect(result).not.toContain('<script');
+    expect(result).not.toContain('onerror');
+    expect(result).not.toContain('<form');
   });
 });

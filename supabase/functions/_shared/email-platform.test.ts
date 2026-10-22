@@ -174,3 +174,42 @@ Deno.test("trip invitation requests never accept an actor, recipient address or 
   assertEquals(invitationUrl.pathname, "/trips/invitations");
   assertEquals(email.text.includes(id), false);
 });
+
+Deno.test("operational notice purposes use fixed app links without private details or caller URLs", async () => {
+  const { operationalEmail } = await import("./email-operational.ts");
+  for (
+    const kind of [
+      "event_change",
+      "event_reminder",
+      "trip_change",
+      "trip_reminder",
+      "group_request",
+      "contribution",
+      "payment",
+    ]
+  ) {
+    const email = operationalEmail(kind);
+    assertEquals(email.html.includes("Change email settings"), true);
+    const links = Array.from(
+      email.html.matchAll(/href="([^"]+)"/g),
+      (match) => new URL(match[1]),
+    );
+    assertEquals(links.length, 2);
+    for (const link of links) {
+      assertEquals(link.protocol, "https:");
+      assertEquals(link.hostname, "queer.guide");
+    }
+    assertEquals(email.html.includes("{{"), false);
+  }
+  let rejected = false;
+  try {
+    operationalEmail("newsletter");
+  } catch {
+    rejected = true;
+  }
+  assertEquals(rejected, true);
+  assertEquals(
+    operationalEmail("payment").text.includes("not a tax receipt"),
+    true,
+  );
+});

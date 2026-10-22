@@ -31,6 +31,47 @@ function setup() {
   return { stored, ctx, env, delivery: new EmailDelivery(ctx as never, env as never) };
 }
 describe('transactional gateway', () => {
+  it('inspects persisted receipts without sending, including unknown identities and uncertain submissions', async () => {
+    const s = setup();
+    expect(await s.delivery.inspect()).toBeNull();
+    expect(s.env.EMAIL.send).not.toHaveBeenCalled();
+    s.env.EMAIL.send.mockRejectedValueOnce(new Error('unknown outcome'));
+    await s.delivery.submit(validateDelivery(valid, 'queer.guide')!);
+    expect(await s.delivery.inspect()).toMatchObject({ status: 'uncertain' });
+    expect(s.env.EMAIL.send).toHaveBeenCalledTimes(1);
+  });
+  it('authenticates receipt inspection and accepts only immutable UUID identities', async () => {
+    const inspect = vi.fn(async () => ({ status: 'accepted', id: 'provider' }));
+    const env = {
+      EMAIL_GATEWAY_SECRET: 'fixture',
+      DELIVERIES: { idFromName: vi.fn((id) => id), get: vi.fn(() => ({ inspect })) },
+    };
+    expect(
+      (await worker.fetch(new Request('https://gateway/receipts/' + valid.id), env as never))
+        .status,
+    ).toBe(401);
+    expect(
+      (
+        await worker.fetch(
+          new Request('https://gateway/receipts/not-an-id', {
+            headers: { Authorization: 'Bearer fixture' },
+          }),
+          env as never,
+        )
+      ).status,
+    ).toBe(400);
+    const r = await worker.fetch(
+      new Request('https://gateway/receipts/' + valid.id, {
+        headers: { Authorization: 'Bearer fixture' },
+      }),
+      env as never,
+    );
+    expect(await r.json()).toEqual({
+      found: true,
+      receipt: { status: 'accepted', id: 'provider' },
+    });
+    expect(inspect).toHaveBeenCalledTimes(1);
+  });
   it('rejects marketing, wrong sender, injected headers and multiple recipients', () => {
     expect(validateDelivery(valid, 'queer.guide')).toMatchObject({ to: valid.to });
     for (const change of [
@@ -82,6 +123,52 @@ describe('transactional gateway', () => {
     });
     await expect(s.delivery.submit(validateDelivery(valid, 'queer.guide')!)).rejects.toThrow();
     expect(s.env.EMAIL.send).not.toHaveBeenCalled();
+  });
+  it('preserves an ambiguous accepted submission across a fresh object instance', async () => {
+    const s = setup();
+    const input = validateDelivery(valid, 'queer.guide')!;
+    s.ctx.storage.put
+      .mockImplementationOnce(async (key, value) => {
+        s.stored.set(key, value);
+      })
+      .mockImplementationOnce(async () => {
+        throw new Error('receipt commit interrupted');
+      });
+    await expect(s.delivery.submit(input)).rejects.toThrow();
+    const restarted = new EmailDelivery(s.ctx as never, s.env as never);
+    expect(await restarted.inspect()).toMatchObject({ status: 'uncertain' });
+    expect(await restarted.submit(input)).toMatchObject({ status: 'uncertain' });
+    expect(s.env.EMAIL.send).toHaveBeenCalledTimes(1);
+  });
+  it('retries failed event ingestion and acknowledges recovery, including safe replay', async () => {
+    const fetchMock = vi
+      .spyOn(globalThis, 'fetch')
+      .mockResolvedValueOnce(new Response('unavailable', { status: 503 }))
+      .mockResolvedValue(new Response('{}', { status: 200 }));
+    const message = {
+      body: { type: 'cf.email.sending.message.delivered' },
+      ack: vi.fn(),
+      retry: vi.fn(),
+    };
+    const env = {
+      EMAIL_EVENTS_SECRET: 'fixture',
+      EMAIL_EVENTS_URL: 'https://events.invalid/receiver',
+    };
+    try {
+      await worker.queue({ messages: [message] } as never, env as never);
+      expect(message.retry).toHaveBeenCalledWith({ delaySeconds: 60 });
+      expect(message.ack).not.toHaveBeenCalled();
+      await worker.queue({ messages: [message] } as never, env as never);
+      await worker.queue({ messages: [message] } as never, env as never);
+      expect(message.ack).toHaveBeenCalledTimes(2);
+      expect(fetchMock.mock.calls[0][1]).toMatchObject({
+        method: 'POST',
+        redirect: 'error',
+        body: JSON.stringify(message.body),
+      });
+    } finally {
+      fetchMock.mockRestore();
+    }
   });
   it('authenticates before parsing or creating a delivery', async () => {
     const response = await worker.fetch(

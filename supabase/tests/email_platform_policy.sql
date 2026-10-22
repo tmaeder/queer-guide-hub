@@ -105,7 +105,7 @@ begin
  exception when invalid_parameter_value then null; end;
  assert not has_table_privilege('authenticated','public.email_delivery_preferences','select');
  assert not has_table_privilege('anon','public.email_activity_reservations','select');
- assert not has_function_privilege('authenticated','public.email_delivery_preferences_save(uuid,boolean,text,boolean,integer,integer,integer,boolean,boolean)','execute');
+ assert not has_function_privilege('authenticated','public.email_delivery_preferences_save(uuid,boolean,text,boolean,integer,integer,integer,boolean,boolean,text[])','execute');
  assert not has_function_privilege('anon','public.dm_digest_candidates(integer)','execute');
 end $$;
 reset role;

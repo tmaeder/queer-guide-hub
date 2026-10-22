@@ -26,6 +26,41 @@ Deno.serve(async (req: Request) => {
   if (gate instanceof Response) return gate;
   try {
     if (req.method === "GET") {
+      const url = new URL(req.url);
+      const id = url.searchParams.get("id");
+      const runId = url.searchParams.get("run_id");
+      const uuid =
+        /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+      if (
+        (id && !uuid.test(id)) || (runId && !uuid.test(runId)) || (id && runId)
+      ) {
+        return result({ error: "Choose one valid journey or run" }, 400);
+      }
+      if (id) {
+        const journey = await db.from("email_journeys").select("*")
+          .eq("id", id).maybeSingle();
+        if (journey.error) throw journey.error;
+        if (!journey.data) return result({ error: "Journey not found" }, 404);
+        const version = await db.from("email_journey_versions").select("*")
+          .eq("journey_id", id).eq("version", journey.data.version).single();
+        if (version.error) throw version.error;
+        return result({ journey: journey.data, version: version.data });
+      }
+      if (runId) {
+        const [run, steps] = await Promise.all([
+          db.from("email_journey_runs").select(
+            "id,journey_id,version,step_id,status,due_at,attempts,total_steps,last_error,created_at",
+          ).eq("id", runId).maybeSingle(),
+          db.from("email_journey_steps").select(
+            "step_id,kind,outcome,completed_at",
+          ).eq("run_id", runId).order("completed_at", { ascending: true }),
+        ]);
+        if (run.error || steps.error) {
+          throw new Error("Run history unavailable");
+        }
+        if (!run.data) return result({ error: "Run not found" }, 404);
+        return result({ run: run.data, steps: steps.data });
+      }
       const [journeys, runs, versions] = await Promise.all([
         db.from("email_journeys").select("*").order("updated_at", {
           ascending: false,
