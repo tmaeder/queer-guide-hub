@@ -20,6 +20,7 @@ on:
       - '.github/workflows/e2e-local.yml'
       - '.github/workflows/db-snapshot.yml'
       - 'scripts/ci/db-snapshot.sh'
+      - 'scripts/ci/e2e-seed.sql'
 
 concurrency:
   group: e2e-local-${{ github.head_ref || github.ref }}
@@ -90,6 +91,7 @@ jobs:
             -H "Authorization: Bearer $SERVICE_ROLE_KEY" -H 'Content-Type: application/json' \
             -d "{\"email\":\"$email\",\"password\":\"$pw\",\"email_confirm\":true}" | jq -r .id)
           psql "$DB_URL" -X -v ON_ERROR_STOP=1 -c "insert into public.user_roles (user_id, role) values ('$uid', 'admin')"
+          psql "$DB_URL" -X -v ON_ERROR_STOP=1 -f scripts/ci/e2e-seed.sql || echo "::warning::e2e seed failed; admin specs will show why"
           { echo "E2E_ADMIN_EMAIL=$email"; echo "E2E_ADMIN_PASSWORD=$pw"; } >> "$GITHUB_ENV"
 
       - uses: actions/setup-node@v7
