@@ -1,4 +1,4 @@
-# Critical paths against a LOCAL Supabase built from the nightly snapshot
+# Critical paths against a LOCAL Supabase built from a production snapshot
 # (db-snapshot.yml), instead of against production.
 #
 # Not a required check yet. It runs beside "Critical paths" (e2e-pr.yml) until
@@ -30,8 +30,15 @@ permissions:
   contents: read
 
 jobs:
+  # Rebuilds the snapshot in this run so the job below cannot race a separate
+  # snapshot workflow (two workflows on one branch cancelled each other).
+  snapshot:
+    uses: ./.github/workflows/db-snapshot.yml
+    secrets: inherit
+
   critical-local:
     name: Critical paths (local DB)
+    needs: snapshot
     runs-on: ubuntu-latest
     timeout-minutes: 45
     steps:
