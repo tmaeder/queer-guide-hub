@@ -360,7 +360,11 @@ begin
   n:=n+1;last_id:=member.subscriber_id;choice:=null;
   select * into s from public.email_subscribers where id=member.subscriber_id;
   if not found then continue; end if;
-  reason:=public.email_subscriber_eligibility(s,(select topic from public.email_campaign_audiences where id=e.audience_id));
+  if not public.email_segment_matches(s,(select rule from public.email_campaign_audiences where id=e.audience_id),statement_timestamp()) then
+   reason:='no_longer_matches';
+  else
+   reason:=public.email_subscriber_eligibility(s,(select topic from public.email_campaign_audiences where id=e.audience_id));
+  end if;
   if reason='eligible' then
    bucket:=(('x'||substr(md5(e.id::text||':'||s.id::text),1,8))::bit(32)::bigint%100)::int;
    select v->>'key' into choice from (

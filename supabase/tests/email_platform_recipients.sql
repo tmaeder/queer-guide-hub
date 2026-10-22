@@ -6,9 +6,10 @@ insert into auth.users(id,email,email_confirmed_at) values
 insert into public.organizations(id,name,email) values ('66666666-0000-4000-8000-000000000011','Organisation fixture',' SHARED-business@example.com ');
 insert into public.venues(id,name,email) values ('66666666-0000-4000-8000-000000000012','Venue fixture','shared-business@example.com');
 insert into public.marketplace_merchants(id,display_name,organization_id) values ('66666666-0000-4000-8000-000000000013','Vendor fixture','66666666-0000-4000-8000-000000000011');
+insert into public.email_templates(template_key,name,subject,html_content) values('entity-fixture','Entity fixture','Service fixture','<p>Fixture</p>');
 set local role service_role;
 do $$
-declare r jsonb;s public.email_subscribers;uid uuid:='66666666-0000-4000-8000-000000000002';before_mail bigint;aid uuid:='66666666-0000-4000-8000-000000000001';
+declare r jsonb;s public.email_subscribers;uid uuid:='66666666-0000-4000-8000-000000000002';before_mail bigint;segment jsonb;campaign jsonb;audience uuid;experiment uuid;aid uuid:='66666666-0000-4000-8000-000000000001';
 begin
  select count(*) into before_mail from public.email_outbox;
  r:=public.email_recipient_directory('organization');
@@ -27,10 +28,17 @@ begin
  perform public.email_subscription_request('shared-business@example.com',uid,'en',array['newsletter'],'website','fixture',repeat('6',64));
  assert public.email_subscription_consume(repeat('6',64),'confirm');
  assert public.email_segment_preview('{"field":"recipient_kind","op":"eq","value":"vendor"}','newsletter')->>'eligible'='1';
+ segment:=public.email_segment_save('Current vendor contacts','{"field":"recipient_kind","op":"eq","value":"vendor"}',aid);
+ campaign:=public.email_campaign_save(jsonb_build_object('name','Entity fixture','template_key','entity-fixture','topic','newsletter','segment_id',segment->>'id'),aid);
+ audience:=public.email_campaign_snapshot_begin((campaign->>'id')::uuid,1,aid);
+ r:=public.email_campaign_snapshot_batch(audience,1000);
+ experiment:=public.email_experiment_create((campaign->>'id')::uuid,1,'username_claimed',604800,'[{"key":"control","weight":50},{"key":"a","weight":50,"template_key":"entity-fixture"}]',aid);
  -- Current entity contact changes invalidate the association; consent never
  -- follows the entity to its new mailbox.
  update public.organizations set email='replacement@example.com' where id='66666666-0000-4000-8000-000000000011';
  assert public.email_segment_preview('{"field":"recipient_kind","op":"eq","value":"vendor"}','newsletter')->>'matched'='0';
+ r:=public.email_experiment_batch(experiment,1000);
+ assert (select reason='no_longer_matches' and variant_key is null from public.email_experiment_assignments where experiment_id=experiment and subscriber_id=s.id),'experiment assigned an obsolete entity contact';
  assert public.email_segment_preview('{"field":"recipient_kind","op":"eq","value":"venue"}','newsletter')->>'eligible'='1';
  r:=public.email_recipient_import('organization','66666666-0000-4000-8000-000000000011',aid);
  assert (select status='pending' and topics='{}' from public.email_subscribers where email='replacement@example.com');
