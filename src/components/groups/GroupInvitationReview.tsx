@@ -61,7 +61,7 @@ export function GroupInvitationReview() {
       aria-labelledby="group-invitation-review-heading"
       className="space-y-4 border-t border-border pt-6"
     >
-      <h2 id="group-invitation-review-heading" className="text-lg font-semibold">
+      <h2 id="group-invitation-review-heading" className="text-headline font-semibold">
         {t('groups.invitationReview.title', 'Group invitations')}
       </h2>
       <p className="text-sm text-muted-foreground">

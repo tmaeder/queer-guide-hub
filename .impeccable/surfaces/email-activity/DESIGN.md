@@ -14,8 +14,8 @@ colors:
 typography:
   headline:
     fontFamily: "Anton, Space Grotesk, system-ui, sans-serif"
-    fontSize: "18px"
-    lineHeight: "28px"
+    fontSize: "32px"
+    lineHeight: "36.8px"
     letterSpacing: "-0.03em"
   title:
     fontFamily: "Space Grotesk, system-ui, sans-serif"
