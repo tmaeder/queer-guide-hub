@@ -10,10 +10,14 @@ export interface CitySearchInput {
 }
 export interface CandidateProbe {
   qid: string; class: string; country: 'agree' | 'disagree' | 'unknown'; coordinates: string; distanceKm: number | null
+  /** The search hit's own label is the name, not merely an alias. */
+  exactLabel: boolean
 }
 export interface CitySearchMatch {
   kind: 'selected' | 'locality' | 'ambiguous' | 'unresolved' | 'no_match'
   qid: string | null; probes: CandidateProbe[]; entity?: CityCandidateEntity
+  /** Why an `unresolved` outcome was refused; stored on the row for diagnosis. */
+  blockedBy?: 'incomplete' | 'scope'
 }
 const key = (s: string) => s.normalize('NFKD').replace(/\p{M}/gu, '').toLowerCase().replace(/[^\p{L}\p{N}]/gu, '')
 const ids = (claims: Claims, property: string) => [...new Set(currentStatements(claims[property]).map(s =>
@@ -103,7 +107,7 @@ export function createCitySearchResolver(request: Request, parents: ReadonlyArra
       const codes = ids(claims, 'P17').map(q => countries.get(q)).filter((x): x is string => !!x)
       const expected = input.countryCode?.toUpperCase()
       const country = !expected || !codes.length ? 'unknown' : codes.some(code => equivalent(expected, code)) ? 'agree' : 'disagree'
-      probes.push({ qid, class: cls.verdict, country, coordinates: geo.verdict, distanceKm: geo.distanceKm })
+      probes.push({ qid, class: cls.verdict, country, coordinates: geo.verdict, distanceKm: geo.distanceKm, exactLabel: exactLabels.has(qid) })
       // A nearby island/country/region with the literal name can also be an
       // alias of a city inside it. Proximity does not establish equal scope.
       if (exactLabels.has(qid) && cls.verdict === 'refused' && country !== 'disagree' && geo.verdict === 'agree' &&
@@ -122,7 +126,8 @@ export function createCitySearchResolver(request: Request, parents: ReadonlyArra
     // The scope guard stops a city that merely carries the wider place's name as
     // an alias. A city whose own label is the name (London beside the London
     // region) is not that case.
-    if (incomplete || (geographicScopeConflict && viable.some(p => !exactLabels.has(p.qid)))) return { kind: 'unresolved', qid: null, probes }
+    if (incomplete) return { kind: 'unresolved', qid: null, probes, blockedBy: 'incomplete' }
+    if (geographicScopeConflict && viable.some(p => !exactLabels.has(p.qid))) return { kind: 'unresolved', qid: null, probes, blockedBy: 'scope' }
     if (viable.length === 1) return adopt('selected', viable[0].qid)
     const localities = probes.filter(p => p.class === 'locality' && p.country === 'agree' && p.coordinates === 'agree')
     if (localities.length === 1) return adopt('locality', localities[0].qid)
