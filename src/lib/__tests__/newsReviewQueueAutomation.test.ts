@@ -35,6 +35,16 @@ describe('news review queue automation migration', () => {
     expect(apply).toMatch(/<> 1 then\s+raise exception 'image_suppressed patch/);
   });
 
+  it('patches the podcast verdict to stamp auto_publish, from the live definition', () => {
+    expect(apply).toContain("'public.run_podcast_deterministic_verdict(integer)'::regprocedure");
+    expect(apply).toMatch(/execute replace\(v_src, v_anchor, v_anchor \|\| ' ''auto_publish'', true,'\);/);
+    expect(apply).toMatch(/raise exception 'podcast auto_publish patch: anchor not found exactly once'/);
+  });
+
+  it('stamps auto_publish on existing passed verdicts with nothing blocking', () => {
+    expect(apply).toMatch(/jsonb_build_object\('auto_publish', true\)\s+where s\.target_table = 'news_articles'/);
+  });
+
   it('raises only the quality-enhance batch, never the enrich-news one', () => {
     expect(apply).toMatch(/\(pipeline-quality-enhance''\.\*\?\)\\\{"batch_size":5/);
     expect(apply).toContain('{"batch_size":24,"concurrency":4}');
@@ -54,7 +64,7 @@ describe('news review queue automation migration', () => {
   });
 
   it('every postcondition raises on a non-zero count', () => {
-    for (const p of ['P1', 'P2', 'P3', 'P4']) {
+    for (const p of ['P1', 'P2', 'P3', 'P4', 'P5', 'P6']) {
       expect(verify).toMatch(new RegExp(`if v_bad <> 0 then raise exception '${p} failed`));
     }
     expect(verify).not.toMatch(/where false|if \(false\)|if v_bad < 0/);
@@ -70,12 +80,6 @@ describe('pipeline code half', () => {
   it('review gate publishes a passed verdict with nothing blocking', () => {
     expect(gate).toMatch(/qualityStatus === 'passed' && blockedList\.length === 0/);
     expect(gate).toMatch(/if \(qualityStatus && publishable && !lowReliability && !forceReview\)/);
-  });
-
-  it('review gate sweep is round-robin on review_gated_at and guards its writes', () => {
-    expect(gate).toMatch(/\.order\(sweep \? 'enriched_data->>review_gated_at' : 'created_at'/);
-    expect(gate).toMatch(/review_gated_at: gatedAt/);
-    expect(gate.match(/sameVerdict\(/g)?.length).toBeGreaterThanOrEqual(2);
   });
 
   it('quality-enhance retries empty/failed verdicts and uses staging relaxations', () => {

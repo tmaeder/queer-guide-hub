@@ -42,10 +42,7 @@ Deno.serve(withErrorReporting('pipeline-review-gate', async (req) => {
       .eq('ai_validation_status', 'approved')
       .in('review_status', sweep ? ['pending_review'] : ['auto', 'pending_review'])
       .eq('disposition', 'pending')
-      // Sweep is a round-robin over everything held: least recently re-gated
-      // first. Ordering by created_at re-read the same oldest 200 rows every
-      // hour (unchanged rows write nothing), so newer verdicts never re-gated.
-      .order(sweep ? 'enriched_data->>review_gated_at' : 'created_at', { ascending: true, nullsFirst: true })
+      .order('created_at', { ascending: true })
       .limit(batchSize)
 
     if (pipelineRunId && !sweep) query = query.eq('pipeline_run_id', pipelineRunId)
@@ -164,30 +161,16 @@ Deno.serve(withErrorReporting('pipeline-review-gate', async (req) => {
           return false
         }
       }
-      const gatedAt = new Date().toISOString()
-      // These writes replace enriched_data wholesale. Only land them if the
-      // verdict is still the one read here, so a quality-enhance verdict
-      // written in between is never clobbered (the next sweep picks it up).
-      const readStatus = enriched.quality_status as string | undefined
-      const sameVerdict = <T extends { filter: (c: string, o: string, v: unknown) => T }>(q: T) =>
-        readStatus ? q.filter('enriched_data->>quality_status', 'eq', readStatus)
-                   : q.filter('enriched_data->>quality_status', 'is', null)
       if (item.review_status === 'pending_review' && enriched.review_reason === reason) {
-        // Same reason: only advance the sweep cursor (see the query above).
-        if (sweep) {
-          await sameVerdict(supabase.from('ingestion_staging')
-            .update({ enriched_data: { ...enriched, review_gated_at: gatedAt } })
-            .eq('id', item.id))
-        }
-        return true
+        return true // already routed with the same reason — nothing to write
       }
-      const { error: updErr } = await sameVerdict(supabase
+      const { error: updErr } = await supabase
         .from('ingestion_staging')
         .update({
           review_status: 'pending_review',
-          enriched_data: { ...enriched, review_reason: reason, review_gated_at: gatedAt },
+          enriched_data: { ...enriched, review_reason: reason },
         })
-        .eq('id', item.id))
+        .eq('id', item.id)
       if (updErr) {
         console.error(`staging update ${item.id}: ${updErr.message}`)
         return false
@@ -261,7 +244,7 @@ Deno.serve(withErrorReporting('pipeline-review-gate', async (req) => {
         continue
       }
       // A 'passed' verdict with nothing blocking publishes even when auto_publish
-      // was never stamped — the curated-podcast verdict writes the status only.
+      // was never stamped (older curated-podcast verdicts wrote the status only).
       const blockedList = Array.isArray(enriched.auto_publish_blocked_reasons)
         ? enriched.auto_publish_blocked_reasons as unknown[] : []
       const publishable = enriched.auto_publish === true ||

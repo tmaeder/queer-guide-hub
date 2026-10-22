@@ -46,6 +46,28 @@ begin
 end
 $patch$;
 
+-- (1b) The curated-podcast verdict stamps quality_status='passed' but never
+-- auto_publish, and the review gate's candidate selector
+-- (pipeline_review_gate_candidates) only picks pending news rows whose
+-- auto_publish is true. Those episodes were never re-gated at all.
+do $patch$
+declare
+  v_src text;
+  v_code text;
+  v_anchor constant text := '''quality_status'', ''passed'',';
+begin
+  v_src := pg_get_functiondef('public.run_podcast_deterministic_verdict(integer)'::regprocedure);  -- raw, re-executed
+  v_code := regexp_replace(pg_get_functiondef('public.run_podcast_deterministic_verdict(integer)'::regprocedure), '--[^' || chr(10) || ']*', '', 'g');
+  if position('''auto_publish''' in v_code) > 0 then
+    return; -- already patched
+  end if;
+  if (length(v_src) - length(replace(v_src, v_anchor, ''))) / length(v_anchor) <> 1 then
+    raise exception 'podcast auto_publish patch: anchor not found exactly once';
+  end if;
+  execute replace(v_src, v_anchor, v_anchor || ' ''auto_publish'', true,');
+end
+$patch$;
+
 -- (2) The hourly quality call: 5 items -> 24 items, 4 concurrent, inside the
 -- 150s edge wall clock. Only the pipeline-quality-enhance body moves; the
 -- enrich-news body in the same command is untouched. Registry is canonical;
@@ -93,6 +115,17 @@ update public.ingestion_staging s
    and (s.enriched_data->'auto_publish_blocked_reasons')
        <@ '["image_unusable","entity_links_pending_review"]'::jsonb;
 
+-- (3c) Existing passed verdicts with nothing blocking get the missing stamp.
+update public.ingestion_staging s
+   set enriched_data = s.enriched_data || jsonb_build_object('auto_publish', true)
+ where s.target_table = 'news_articles'
+   and s.review_status = 'pending_review'
+   and s.disposition = 'pending'
+   and s.enriched_data->>'quality_status' = 'passed'
+   and coalesce(s.enriched_data->>'auto_publish', '') <> 'true'
+   and coalesce(jsonb_array_length(case when jsonb_typeof(s.enriched_data->'auto_publish_blocked_reasons') = 'array'
+                                        then s.enriched_data->'auto_publish_blocked_reasons' end), 0) = 0;
+
 do $verify$
 declare v_bad int;
 begin
@@ -120,6 +153,19 @@ begin
      and jsonb_array_length(enriched_data->'auto_publish_blocked_reasons') > 0
      and (enriched_data->'auto_publish_blocked_reasons') <@ '["image_unusable","entity_links_pending_review"]'::jsonb;
   if v_bad <> 0 then raise exception 'P4 failed: % rows held only by relaxed blocks', v_bad; end if;
+
+  select count(*) into v_bad from public.ingestion_staging
+   where target_table = 'news_articles' and review_status = 'pending_review' and disposition = 'pending'
+     and enriched_data->>'quality_status' = 'passed'
+     and coalesce(enriched_data->>'auto_publish', '') <> 'true'
+     and coalesce(jsonb_array_length(case when jsonb_typeof(enriched_data->'auto_publish_blocked_reasons') = 'array'
+                                          then enriched_data->'auto_publish_blocked_reasons' end), 0) = 0;
+  if v_bad <> 0 then raise exception 'P5 failed: % passed verdicts invisible to the gate selector', v_bad; end if;
+
+  select count(*) into v_bad from pg_proc
+   where oid = 'public.run_podcast_deterministic_verdict(integer)'::regprocedure
+     and position('''auto_publish''' in regexp_replace(pg_get_functiondef(oid), '--[^' || chr(10) || ']*', '', 'g')) = 0;
+  if v_bad <> 0 then raise exception 'P6 failed: podcast verdict does not stamp auto_publish'; end if;
 end
 $verify$;
 
