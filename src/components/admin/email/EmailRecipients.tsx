@@ -79,10 +79,10 @@ export function EmailRecipients({ onImported }: { onImported: () => void }) {
     <section className="space-y-4 border-t border-border pt-6" aria-label="Entity recipients">
       <h2 className="font-sans text-title font-bold">Organisations, venues, vendors and users</h2>
       <p className="max-w-prose text-sm text-muted-foreground">
-        Browse current listing contacts and verified account mailboxes. Vendors use their linked
-        organisation’s contact. Published addresses establish a contact source; they do not
-        establish ownership or subscription consent. Shared addresses use one subscription and
-        suppression record.
+        Browse current listing contacts and verified account mailboxes. Vendors use linked
+        organisation contacts or current marketplace listing contacts. Published addresses establish
+        a contact source; they do not establish ownership or subscription consent. Shared addresses
+        use one subscription and suppression record.
       </p>
       <div className="flex flex-wrap items-end gap-4">
         <div className="min-w-0 space-y-2 sm:flex-1 sm:max-w-xs">

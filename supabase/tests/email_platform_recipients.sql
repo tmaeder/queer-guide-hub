@@ -7,6 +7,7 @@ insert into public.organizations(id,name,email) values ('66666666-0000-4000-8000
 insert into public.venues(id,name,email) values ('66666666-0000-4000-8000-000000000012','Venue fixture','shared-business@example.com');
 insert into public.marketplace_merchants(id,display_name,organization_id) values ('66666666-0000-4000-8000-000000000013','Vendor fixture','66666666-0000-4000-8000-000000000011');
 insert into public.email_templates(template_key,name,subject,html_content) values('entity-fixture','Entity fixture','Service fixture','<p>Fixture</p>');
+insert into public.marketplace_listings(id,business_name,contact_email) values('66666666-0000-4000-8000-000000000014','Standalone vendor fixture','standalone-vendor@example.com'),('66666666-0000-4000-8000-000000000013','Collision fixture','must-not-shadow@example.com');
 set local role service_role;
 do $$
 declare r jsonb;s public.email_subscribers;uid uuid:='66666666-0000-4000-8000-000000000002';before_mail bigint;segment jsonb;campaign jsonb;audience uuid;experiment uuid;aid uuid:='66666666-0000-4000-8000-000000000001';
@@ -49,12 +50,17 @@ begin
  r:=public.email_recipient_import('organization','66666666-0000-4000-8000-000000000011',aid);
  assert (select status='pending' and topics='{}' from public.email_subscribers where email='replacement@example.com');
  update public.organizations set status='archived' where id='66666666-0000-4000-8000-000000000011';
- assert jsonb_array_length(public.email_recipient_directory('vendor')->'recipients')=0;
+ assert not exists(select 1 from jsonb_array_elements(public.email_recipient_directory('vendor')->'recipients') x where x->>'id'='66666666-0000-4000-8000-000000000013'),'listing shadowed archived merchant';
  begin perform public.email_recipient_import('vendor','66666666-0000-4000-8000-000000000013',aid);raise exception 'archived vendor imported';exception when invalid_parameter_value then null;end;
  insert into public.email_suppressions(email,reason) values('shared-business@example.com','complaint');
  assert public.email_recipient_directory('venue')->'recipients'->0->>'eligibility'='recipient_suppressed';
  assert public.email_segment_preview('{"field":"recipient_kind","op":"eq","value":"venue"}','newsletter')->>'eligible'='0';
  assert (select count(*) from public.email_outbox)=before_mail,'directory or import sent mail';
+ r:=public.email_recipient_import('vendor','66666666-0000-4000-8000-000000000014',aid);
+ assert r->>'inserted_pending'='1' and r->>'messages_queued'='0';
+ assert (select status='pending' and topics='{}' and user_id is null from public.email_subscribers where email='standalone-vendor@example.com');
+ update public.marketplace_listings set archived_at=now() where id='66666666-0000-4000-8000-000000000014';
+ assert not exists(select 1 from jsonb_array_elements(public.email_recipient_directory('vendor')->'recipients') x where x->>'id'='66666666-0000-4000-8000-000000000014'),'archived listing remained a vendor source';
  -- Erasure must also hide source associations and prevent reimport.
  perform public.email_erase_account(uid);
  assert not exists(select 1 from public.email_recipient_user_lookup where user_id=uid),'derived recipient hash survived erasure';

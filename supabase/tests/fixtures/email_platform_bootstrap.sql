@@ -91,3 +91,6 @@ grant all on public.organizations,public.venues,public.marketplace_merchants to 
 
 -- Existing production organization foreign-key lookup index.
 create index idx_marketplace_merchants_organization_id on public.marketplace_merchants(organization_id);
+
+create table public.marketplace_listings(id uuid primary key default gen_random_uuid(),business_name text not null,contact_email text,status text not null default 'active',archived_at timestamptz,deprecated_at timestamptz,duplicate_of_id uuid,review_status text);
+grant all on public.marketplace_listings to service_role;

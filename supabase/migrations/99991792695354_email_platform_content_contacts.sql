@@ -465,6 +465,7 @@ insert into public.email_recipient_user_lookup(user_id,mailbox_hash)
 analyze public.email_recipient_user_lookup;
 
 create index email_organizations_mailbox on public.organizations(lower(btrim(email))) where email is not null;
+create index email_marketplace_mailbox on public.marketplace_listings(lower(btrim(contact_email))) where contact_email is not null;
 create index email_venues_mailbox on public.venues(lower(btrim(email))) where email is not null;
 create view public.email_recipient_sources with (security_invoker=true) as
  select 'organization'::text kind,o.id,o.name label,lower(btrim(o.email)) email,'published_contact'::text evidence,encode(sha256(convert_to(lower(btrim(o.email)),'UTF8')),'hex') mailbox_hash
@@ -476,6 +477,12 @@ create view public.email_recipient_sources with (security_invoker=true) as
  select 'vendor',m.id,m.display_name,lower(btrim(o.email)),'linked_organization_contact',encode(sha256(convert_to(lower(btrim(o.email)),'UTF8')),'hex')
  from public.marketplace_merchants m join public.organizations o on o.id=m.organization_id
  where m.is_enabled and o.status='active' and o.duplicate_of_id is null and not o.safety_gated and not o.is_defunct and o.email is not null
+ union all
+ select 'vendor',l.id,l.business_name,lower(btrim(l.contact_email)),'published_listing_contact',encode(sha256(convert_to(lower(btrim(l.contact_email)),'UTF8')),'hex')
+ from public.marketplace_listings l where l.status='active' and l.archived_at is null and l.deprecated_at is null and l.duplicate_of_id is null
+ and coalesce(l.review_status,'')<>'archived' and l.contact_email is not null
+ -- A listing cannot shadow a merchant by choosing the same UUID.
+ and not exists(select 1 from public.marketplace_merchants m where m.id=l.id)
  union all
  select 'user',u.id,'Account '||u.id::text,lower(btrim(u.email)),'verified_account_mailbox',l.mailbox_hash
  from public.email_recipient_user_lookup l join auth.users u on u.id=l.user_id and l.mailbox_hash=encode(sha256(convert_to(lower(btrim(u.email)),'UTF8')),'hex') where u.email_confirmed_at is not null and u.email is not null
