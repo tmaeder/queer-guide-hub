@@ -5950,7 +5950,7 @@ const DISOWNED_PROSE_CEILING = 380
 }
 
 // ---------------------------------------------------------------------------
-// §  Transit timetable facts (city_transit_service, 99991792690290)
+// §  Transit timetable facts (city_transit_service, 99991792696431)
 // ---------------------------------------------------------------------------
 // Written by .github/workflows/transit-gtfs-weekly.yml, which is OUTSIDE
 // admin_automations — run tracking cannot see it, so this is the only thing
@@ -5965,7 +5965,7 @@ const DISOWNED_PROSE_CEILING = 380
     { headers },
   )
   if (res.status === 404) {
-    console.warn('⚠ transit_feeds not deployed yet (migration 99991792690290?) — skipping')
+    console.warn('⚠ transit_feeds not deployed yet (migration 99991792696431?) — skipping')
   } else if (!res.ok) {
     console.error(`✗ transit_feeds returned HTTP ${res.status} — measured nothing`)
     FAILED = true
