@@ -130,12 +130,18 @@ describe('the promoted column is the one the stages actually read', () => {
   // promoting the wrong thing and silently stops unblocking anything.
   const stages = [
     'supabase/functions/pipeline-deduplicate/index.ts',
-    'supabase/functions/pipeline-review-gate/index.ts',
   ];
 
   it.each(stages)('%s still gates on ai_validation_status', (rel) => {
     const src = readFileSync(join(ROOT, rel), 'utf8');
     expect(src).toMatch(/\.eq\('ai_validation_status',\s*'approved'\)/);
+  });
+
+  it('the review gate reads only validator-approved candidates through its selector RPC', () => {
+    const src = readFileSync(join(ROOT, 'supabase/functions/pipeline-review-gate/index.ts'), 'utf8');
+    expect(src).toMatch(/\.rpc\('pipeline_review_gate_candidates',/);
+    const selector = latestDefinitionOf('pipeline_review_gate_candidates');
+    expect(selector).toMatch(/where\s+s\.ai_validation_status\s*=\s*'approved'\s+and\s+s\.disposition\s*=\s*'pending'/i);
   });
 
   it('commit accepts the human verdict on review_status, so only the validator column blocked', () => {
