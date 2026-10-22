@@ -30,14 +30,18 @@ export const ADMIN_STORAGE_STATE = path.join(process.cwd(), 'playwright/.auth/ad
 
 /** The anon key the app itself ships, read from its single source of truth. */
 function anonKey(): string {
+  // Same override the app build honours, so a build pointed elsewhere logs in there too.
+  if (process.env.VITE_SUPABASE_ANON_KEY) return process.env.VITE_SUPABASE_ANON_KEY;
   const src = readFileSync(path.join(process.cwd(), 'src/integrations/supabase/client.ts'), 'utf8');
-  const m = src.match(/SUPABASE_PUBLISHABLE_KEY\s*=\s*["']([^"']+)["']/);
+  // The default literal, matched by its JWT shape rather than by how the line is laid out.
+  const m = src.match(/["'](eyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+)["']/);
   if (!m) throw new Error('Could not read the anon key from src/integrations/supabase/client.ts');
   return m[1];
 }
 function supabaseUrl(): string {
+  if (process.env.VITE_SUPABASE_URL) return process.env.VITE_SUPABASE_URL;
   const src = readFileSync(path.join(process.cwd(), 'src/integrations/supabase/client.ts'), 'utf8');
-  const m = src.match(/SUPABASE_URL\s*=\s*["']([^"']+)["']/);
+  const m = src.match(/["'](https:\/\/[a-z0-9]+\.supabase\.co)["']/);
   if (!m)
     throw new Error('Could not read the Supabase URL from src/integrations/supabase/client.ts');
   return m[1];
