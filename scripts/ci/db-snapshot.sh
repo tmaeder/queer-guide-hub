@@ -23,8 +23,8 @@ psqlq() { psql "$db" -X -v ON_ERROR_STOP=1 "$@"; }
 case "$cmd" in
 dump)
   mkdir -p "$dir/data"
-  supabase db dump --db-url "$db" --role-only -f "$dir/roles.sql"
-  supabase db dump --db-url "$db" -f "$dir/schema.sql"
+  "$(dirname "$0")/supabase-retry.sh" db dump --db-url "$db" --role-only -f "$dir/roles.sql"
+  "$(dirname "$0")/supabase-retry.sh" db dump --db-url "$db" -f "$dir/schema.sql"
   psqlq -At -c "select version from supabase_migrations.schema_migrations order by 1" > "$dir/versions.txt"
 
   # table|non-generated columns|limit clause, for every table anon may SELECT.
