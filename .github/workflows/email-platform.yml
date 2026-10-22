@@ -28,6 +28,7 @@ on:
       - 'supabase/migrations/*email_platform_operations.sql'
       - 'supabase/migrations/*email_platform_domain_notices.sql'
       - 'supabase/migrations/*email_platform_content_contacts.sql'
+      - 'supabase/migrations/*email_operator_account_check.sql'
       - 'supabase/functions/stripe-webhook/**'
       - 'supabase/tests/email_platform.sql'
       - 'supabase/tests/email_platform_privacy.sql'
@@ -40,6 +41,7 @@ on:
       - 'supabase/tests/email_platform_operations.sql'
       - 'supabase/tests/email_platform_domain_notices.sql'
       - 'supabase/tests/email_platform_content_contacts.sql'
+      - 'supabase/tests/email_operator_account_check.sql'
       - 'supabase/tests/email_platform_measurement.sql'
       - 'supabase/tests/email_platform_recipients.sql'
       - 'supabase/tests/email_platform_recipient_capacity.sql'
@@ -125,6 +127,7 @@ jobs:
           psql -v ON_ERROR_STOP=1 -f supabase/migrations/99991792608890_email_platform_operations.sql
           psql -v ON_ERROR_STOP=1 -f supabase/migrations/99991792616499_email_platform_domain_notices.sql
           psql -v ON_ERROR_STOP=1 -f supabase/migrations/99991792701247_email_platform_content_contacts.sql
+          psql -v ON_ERROR_STOP=1 -f supabase/migrations/99991792705625_email_operator_account_check.sql
           psql -v ON_ERROR_STOP=1 -f supabase/tests/email_platform.sql
           psql -v ON_ERROR_STOP=1 -f supabase/tests/email_platform_privacy.sql
           psql -v ON_ERROR_STOP=1 -f supabase/tests/email_platform_segments.sql
@@ -136,6 +139,7 @@ jobs:
           psql -v ON_ERROR_STOP=1 -f supabase/tests/email_platform_operations.sql
           psql -v ON_ERROR_STOP=1 -f supabase/tests/email_platform_domain_notices.sql
           psql -v ON_ERROR_STOP=1 -f supabase/tests/email_platform_content_contacts.sql
+          psql -v ON_ERROR_STOP=1 -f supabase/tests/email_operator_account_check.sql
           psql -v ON_ERROR_STOP=1 -f supabase/tests/email_platform_measurement.sql
           psql -v ON_ERROR_STOP=1 -f supabase/tests/email_platform_recipients.sql
           psql -v ON_ERROR_STOP=1 -f supabase/tests/email_platform_recipient_capacity.sql
