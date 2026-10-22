@@ -73,3 +73,59 @@ $block$||anchor);
  s:=replace(s,'''geography_not_applicable'',v_geo,','''stale_liveness_findings'',v_liveness,''geography_not_applicable'',v_geo,');
  execute s;
 end $liveness$;
+
+-- Increase the existing hourly quality batch; retain its schedule, enrichment
+-- batch, budget wrapper, vault references and current paused/active state.
+do $news_recovery$
+declare r record; v_pos integer; v_tail text; v_command text;
+ v_body text:=$payload$'{"batch_size":5,"concurrency":1}'::jsonb$payload$;
+ v_timeout text:='timeout_milliseconds := 60000';
+begin
+ select * into r from cron.job where jobname='news_orphan_reclaim';
+ if not found then return; end if;
+ v_pos:=strpos(r.command,'/pipeline-quality-enhance');
+ if v_pos=0 then raise exception 'News recovery quality stage missing'; end if;
+ v_tail:=substring(r.command from v_pos);
+ if (length(v_tail)-length(replace(v_tail,v_body,'')))/length(v_body)<>1
+ or (length(v_tail)-length(replace(v_tail,v_timeout,'')))/length(v_timeout)<>1
+ then raise exception 'News recovery payload changed; preserve custom configuration'; end if;
+ v_tail:=replace(v_tail,v_body,$payload$'{"batch_size":24,"concurrency":6}'::jsonb$payload$);
+ v_tail:=replace(v_tail,v_timeout,'timeout_milliseconds := 170000');
+ v_command:=left(r.command,v_pos-1)||v_tail;
+ perform cron.alter_job(job_id:=r.jobid,command:=v_command,active:=r.active);
+ update public.admin_automations set
+ description='Hourly orphan recovery: enrich five rows and quality-check up to 24 with six workers, retaining existing service, budget and pause gates.',
+ action=case when action->>'type'='cron' then jsonb_set(action,'{command}',to_jsonb(v_command)) else action end
+ where slug='news_orphan_reclaim';
+end $news_recovery$;
+
+-- Old service failures are failed machine attempts, not editorial choices.
+-- Reuse the existing two-attempt/six-hour retry bounds and human-touch guards.
+do $service_retries$
+declare s text; anchor text; replacement text;
+begin
+ s:=pg_get_functiondef('api_private.run_review_automatic_resolution(integer,boolean)'::regprocedure);
+ anchor:=$a$or (enriched_data->>'quality_status'='passed' and not enriched_data ? 'auto_publish'
+   and enriched_data#>>'{quality_decision,needsManualReview}'='false'))$a$;
+ replacement:=$r$or (enriched_data->>'quality_status'='passed' and not enriched_data ? 'auto_publish'
+   and enriched_data#>>'{quality_decision,needsManualReview}'='false')
+  or (enriched_data->>'quality_status'='review'
+   and enriched_data->>'quality_input_version' is distinct from 'normalized-news.2026.10.22.1'
+   and enriched_data#>>'{quality_decision,confidence}'='0.3'
+   and enriched_data#>>'{quality_decision,needsManualReview}'='true'
+   and enriched_data#>>'{quality_decision,warnings}' like '%"llm:%'))$r$;
+ if (length(s)-length(replace(s,anchor,'')))/length(anchor)<>1 then raise exception 'Bounded news retry selector changed'; end if;
+ s:=replace(s,anchor,replacement);
+ anchor:=$a$length(coalesce(normalized_data->>'content',normalized_data->>'description',''))>=80$a$;
+ if (length(s)-length(replace(s,anchor,'')))/length(anchor)<>1 then raise exception 'Source text availability check changed'; end if;
+ s:=replace(s,anchor,$r$length(coalesce(nullif(btrim(normalized_data->>'content'),''),nullif(btrim(normalized_data->>'body'),''),nullif(btrim(normalized_data->>'description'),''),''))>=80$r$);
+ anchor:=$a$case when r.enriched_data->>'quality_status'='passed' then 'incomplete_legacy_gate' else 'empty_extraction' end$a$;
+ if (length(s)-length(replace(s,anchor,'')))/length(anchor)<>1 then raise exception 'Retry reason changed'; end if;
+ s:=replace(s,anchor,$r$case when r.enriched_data->>'quality_status'='passed' then 'incomplete_legacy_gate'
+ when r.enriched_data#>>'{quality_decision,confidence}'='0.3' then 'service_failure' else 'empty_extraction' end$r$);
+ anchor:=$a$case when r.enriched_data->>'quality_status'='passed' then 'incomplete_news_gate_retry_queued' else 'empty_news_extraction_retry_queued' end$a$;
+ if (length(s)-length(replace(s,anchor,'')))/length(anchor)<>1 then raise exception 'Retry audit reason changed'; end if;
+ s:=replace(s,anchor,$r$case when r.enriched_data->>'quality_status'='passed' then 'incomplete_news_gate_retry_queued'
+ when r.enriched_data#>>'{quality_decision,confidence}'='0.3' then 'news_service_failure_retry_queued' else 'empty_news_extraction_retry_queued' end$r$);
+ execute s;
+end $service_retries$;

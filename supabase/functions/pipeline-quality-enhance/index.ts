@@ -1,5 +1,5 @@
 import { getServiceClient, jsonResponse, errorResponse, corsResponse, requireInternalOrAdmin } from '../_shared/supabase-client.ts'
-import { withCircuitBreaker, CircuitOpenError } from '../_shared/circuit-breaker.ts'
+import { withCircuitBreaker } from '../_shared/circuit-breaker.ts'
 import { chatCompletion, isOpenAIAvailable } from '../_shared/openai-client.ts'
 import { sanitizeArticle } from '../_shared/news-quality/sanitize.ts'
 import { parseQualityDecision, QUALITY_PIPELINE_VERSION, type QualityDecision } from '../_shared/news-quality/schema.ts'
@@ -10,6 +10,8 @@ import { probeImage, resolveStagedImageUrl } from '../_shared/news-quality/image
 import { findReplacementImage } from '../_shared/news-quality/image-replace.ts'
 import { hashImageUrl } from '../_shared/news-quality/image-hash.ts'
 import { withErrorReporting } from '../_shared/report-api-error.ts'
+import { readStagedNewsInput, STAGED_NEWS_INPUT_VERSION } from './staging-input.ts'
+import { attemptNewsQuality } from './quality-attempt.ts'
 
 // Pipeline Quality Enhance (News) — AI-assisted relevance + rewrite + entity linking + image probe.
 // Reads ingestion_staging rows post-enrich, writes a QualityDecision into enriched_data + applies
@@ -57,7 +59,6 @@ async function callQualityLLM(
   supabase: ReturnType<typeof getServiceClient>,
   userPrompt: string,
 ): Promise<QualityDecision | null> {
-  if (!(await isOpenAIAvailable(supabase))) return null
   const result = await chatCompletion(supabase, {
     callerFn: 'pipeline-quality-enhance',
     messages: [
@@ -142,8 +143,8 @@ Deno.serve(withErrorReporting('pipeline-quality-enhance', async (req) => {
         const n = (item.normalized_data ?? {}) as Record<string, unknown>
         // Some sources land the headline under `name` (not `title`) — mirror the
         // fallback enrich-news uses, else ~45% of enriched rows fail with no title.
-        const title = String(n.title ?? n.name ?? '').trim()
-        const content = String(n.content ?? n.body ?? '')
+        const sourceInput = readStagedNewsInput(n)
+        const { title, content } = sourceInput
         if (!title) { failed++; return }
 
         // Re-run sanitizer locally so we know criticalPaywall/truncated state without
@@ -160,10 +161,10 @@ Deno.serve(withErrorReporting('pipeline-quality-enhance', async (req) => {
 
         const userPrompt = buildQualityUserPrompt({
           title: sani.title || title,
-          excerpt: String(n.excerpt ?? n.description ?? '') || undefined,
+          excerpt: sourceInput.excerpt,
           body: sani.content || content,
-          url: String(n.url ?? n.source_url ?? '') || undefined,
-          sourceName: String(n.source_name ?? '') || undefined,
+          url: sourceInput.url,
+          sourceName: sourceInput.sourceName,
           imageUrl,
           imageProbe: imageProbe.url ? imageProbe : undefined,
           existingTags: pools.tags.slice(0, 80),
@@ -174,14 +175,17 @@ Deno.serve(withErrorReporting('pipeline-quality-enhance', async (req) => {
           alreadyRemoved: sani.removedArtifacts,
         })
 
-        let decision: QualityDecision | null = null
-        let llmError: string | null = null
-        try {
-          decision = await withCircuitBreaker(supabase, 'llm.openai.quality-enhance',
-            () => callQualityLLM(supabase, userPrompt))
-        } catch (e) {
-          llmError = e instanceof CircuitOpenError ? `circuit_open:${e.apiName}` : (e as Error).message
+        const attempt = await attemptNewsQuality(
+          () => isOpenAIAvailable(supabase),
+          () => withCircuitBreaker(supabase, 'llm.openai.quality-enhance',
+            () => callQualityLLM(supabase, userPrompt)),
+        )
+        if (attempt.kind === 'deferred') {
+          failed++
+          console.warn(`quality-enhance deferred ${item.id}: ${attempt.reason}`, attempt.error)
+          return
         }
+        let decision: QualityDecision | null = attempt.kind === 'decision' ? attempt.decision : null
 
         if (!decision) {
           // Cannot make a confident call — push to review with available signals.
@@ -194,7 +198,7 @@ Deno.serve(withErrorReporting('pipeline-quality-enhance', async (req) => {
             linkedVenues: [], linkedEvents: [], linkedPersonalities: [], linkedOrganisations: [],
             imageAssessment: { isUsable: imageProbe.ok, qualityScore: imageProbe.ok ? 0.5 : 0,
               isRelevant: imageProbe.ok, needsReplacement: !imageProbe.ok, reason: imageProbe.reason ?? '' },
-            removedArtifacts: sani.removedArtifacts, warnings: [llmError ? `llm:${llmError}` : 'llm:no_response'],
+            removedArtifacts: sani.removedArtifacts, warnings: ['llm:malformed_response'],
             confidence: 0.3, isSatire: false, isAdvertorial: false,
           }
         }
@@ -224,7 +228,7 @@ Deno.serve(withErrorReporting('pipeline-quality-enhance', async (req) => {
           const replaceQuery = [decision.title || sani.title, ...(decision.tags ?? [])]
             .filter(Boolean).join(' ').slice(0, 100)
           const found = await findReplacementImage({
-            articleUrl: String(n.url ?? n.source_url ?? '') || undefined,
+            articleUrl: sourceInput.url,
             query: replaceQuery,
             signal: AbortSignal.timeout(10000),
           })
@@ -255,6 +259,7 @@ Deno.serve(withErrorReporting('pipeline-quality-enhance', async (req) => {
           relevance_score: decision.relevanceScore,
           sentiment: decision.sentiment,
           quality_pipeline_version: QUALITY_PIPELINE_VERSION,
+          quality_input_version: STAGED_NEWS_INPUT_VERSION,
           quality_status: gate.status,
           auto_publish: gate.autoPublish,
           auto_publish_blocked_reasons: gate.blockedReasons,

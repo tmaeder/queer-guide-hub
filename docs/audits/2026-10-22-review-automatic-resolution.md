@@ -113,3 +113,27 @@ per-record rechecks and relationship triggers. These temporary-copy timings
 are not claimed as production post-deployment measurements.
 
 GIN array containment support was checked against the [PostgreSQL 17 manual](https://www.postgresql.org/docs/17/gin.html#GIN-BUILTIN-OPCLASSES). The index build uses a five-second lock budget.
+
+
+Further producer fixes preserve actual normalized RSS descriptions, source URLs
+and publisher names in the quality prompt and source-image recovery. The old
+stage ignored urls[0]/metadata.url, sourceName/metadata.source_name, and full
+description text beyond a 600-character excerpt. The stage now reads those
+fields with legacy precedence and the existing public-URL guard. Existing
+confidence, image, relevance, paywall and manual-review gates are unchanged.
+Budget/provider/circuit failures remain eligible for another machine attempt
+instead of being converted into editorial decisions. A malformed model response
+retains the existing conservative review behavior.
+
+Thirty-five old reviews carried runtime llm warnings. The sweep can requeue
+eligible old service-failure rows using its existing maximum of two retries and
+six-hour gap; a new input-version tag prevents this legacy repair from looping
+on current-format malformed verdicts. Twenty-nine existing rows qualified in
+a live dry-run. Seven rolled-back SQL fixtures verify the positive retry,
+editorial/human/current-version refusal, retry cap, cooldown, source-text
+availability and unchanged publication status. Twenty-seven Deno tests and the
+endpoint Deno typecheck passed, including existing publish gates. The existing
+hourly orphan quality batch is increased from five to 24 with six workers and
+170-second HTTP budget; its cadence, enrichment batch, pause state, vault
+references and budget wrapper remain unchanged. The command rewrite was tested
+read-only against the real cron, including preservation of its enrichment call.
