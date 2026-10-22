@@ -66,3 +66,15 @@ cadence while the slow union is investigated. PR #4565 merged with all required
 checks passing; frontend deployment succeeded. Backend migrations succeeded,
 but the function deployment encountered a container registry rate limit and
 is being retried.
+
+
+The larger live dry-run exposed why the archived-city sweep could still be
+slow: its planner ran the volatile relationship helper before joining the
+verification status, probing 1,026 ghost cities rather than 26 candidates.
+A scan-once relationship set completed in 2.57 seconds and produced zero
+eligibility differences against the original helper for all 26 candidates.
+Migration 99991792698026 changes only candidate selection. It preserves every
+historical relationship type and the existing post-lock helper check, which
+remains authoritative before disposition. A temporary compiled copy of the
+entire updated worker completed a live dry-run successfully; no permanent
+production function was changed during the coordinated schema pause.
