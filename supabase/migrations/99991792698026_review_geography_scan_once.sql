@@ -129,3 +129,31 @@ begin
  when r.enriched_data#>>'{quality_decision,confidence}'='0.3' then 'news_service_failure_retry_queued' else 'empty_news_extraction_retry_queued' end$r$);
  execute s;
 end $service_retries$;
+
+-- The old adapter omitted the original page URL for these otherwise-ready
+-- rows. Retry only that corrected input path, with image recovery enabled.
+do $image_retries$
+declare s text; anchor text; replacement text;
+begin
+ s:=pg_get_functiondef('api_private.run_review_automatic_resolution(integer,boolean)'::regprocedure);
+ anchor:=$a$and enriched_data#>>'{quality_decision,warnings}' like '%"llm:%'))$a$;
+ replacement:=$r$and enriched_data#>>'{quality_decision,warnings}' like '%"llm:%')
+  or (enriched_data->>'quality_status'='review'
+   and enriched_data->>'quality_input_version' is distinct from 'normalized-news.2026.10.22.1'
+   and enriched_data->'auto_publish_blocked_reasons'='["image_unusable"]'::jsonb
+   and enriched_data#>>'{quality_decision,needsManualReview}'='false'
+   and (select image_replacement_enabled from public.news_quality_settings where id=1) is true
+   and coalesce(normalized_data->>'url',normalized_data->>'source_url','') !~* '^https?://'
+   and coalesce(nullif(btrim(normalized_data->'urls'->>0),''),normalized_data#>>'{metadata,url}') ~* '^https?://'))$r$;
+ if (length(s)-length(replace(s,anchor,'')))/length(anchor)<>1 then raise exception 'Legacy service retry selector changed'; end if;
+ s:=replace(s,anchor,replacement);
+ anchor:=$a$when r.enriched_data#>>'{quality_decision,confidence}'='0.3' then 'service_failure'$a$;
+ if (length(s)-length(replace(s,anchor,'')))/length(anchor)<>1 then raise exception 'Service retry reason changed'; end if;
+ s:=replace(s,anchor,$r$when r.enriched_data->'auto_publish_blocked_reasons'='["image_unusable"]'::jsonb then 'source_image_recovery'
+ when r.enriched_data#>>'{quality_decision,confidence}'='0.3' then 'service_failure'$r$);
+ anchor:=$a$when r.enriched_data#>>'{quality_decision,confidence}'='0.3' then 'news_service_failure_retry_queued'$a$;
+ if (length(s)-length(replace(s,anchor,'')))/length(anchor)<>1 then raise exception 'Service retry audit reason changed'; end if;
+ s:=replace(s,anchor,$r$when r.enriched_data->'auto_publish_blocked_reasons'='["image_unusable"]'::jsonb then 'news_image_recovery_retry_queued'
+ when r.enriched_data#>>'{quality_decision,confidence}'='0.3' then 'news_service_failure_retry_queued'$r$);
+ execute s;
+end $image_retries$;

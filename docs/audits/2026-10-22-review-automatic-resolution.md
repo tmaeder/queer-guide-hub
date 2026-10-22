@@ -137,3 +137,16 @@ hourly orphan quality batch is increased from five to 24 with six workers and
 170-second HTTP budget; its cadence, enrichment batch, pause state, vault
 references and budget wrapper remain unchanged. The command rewrite was tested
 read-only against the real cron, including preservation of its enrichment call.
+
+
+The source-URL mismatch also affected175 image-only pending news reviews with
+no manual-review request. Every one lacked a usable URL in the old flat fields
+and had its original page in urls/metadata. The legacy retry selector now gives
+that corrected input one fresh attempt only when image replacement is enabled,
+source text is present, no additional blocked reason exists, and the existing
+retry cap/cooldown permit it. Current-input failures, prior usable flat URLs,
+manual requests and other blockers remain untouched. The combined live dry-run
+found174 currently eligible retries across the service/image repair cohorts.
+Twelve rolled-back fixture cases passed, including the image kill switch,
+current-format, prior-URL and additional-blocker guards. A retry is not recorded
+as a resolved review or image verification.
