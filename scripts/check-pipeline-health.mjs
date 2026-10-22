@@ -4195,6 +4195,49 @@ const DISOWNED_PROSE_CEILING = 380
   }
 }
 
+// §18b — news staging review queue holds only real decisions.
+//
+// 99991792693519 drained the machine-held part of the queue: empty verdicts are
+// retried (3 attempts) and a verdict blocked only by an unusable image or
+// pending entity links publishes. Both counts are zero by construction; a
+// non-zero value means the staging relaxations or the retry were reverted.
+{
+  const res = await fetch(`${BASE}/rest/v1/rpc/news_staging_review_signals`, {
+    method: 'POST',
+    headers: { ...headers, 'Content-Type': 'application/json' },
+    body: '{}',
+  })
+  if (res.status === 404) {
+    console.warn('⚠ news_staging_review_signals not deployed yet (migration 99991792693519) — skipped')
+  } else if (!res.ok) {
+    console.error(`✗ news_staging_review_signals → HTTP ${res.status} ${(await res.text()).slice(0, 200)}`)
+    FAILED = true
+  } else {
+    const q = (await res.json()) ?? {}
+    if (q.probe_ok !== true) {
+      console.error('✗ news_staging_review_signals did not report probe_ok')
+      FAILED = true
+    } else {
+      const empty = Number(q.empty_held_under_cap ?? 0)
+      const relax = Number(q.relaxable_held ?? 0)
+      if (empty > 0) {
+        console.error(`✗ ${empty} empty news verdicts are held for a human before their 3 retries`)
+        FAILED = true
+      }
+      if (relax > 0) {
+        console.error(`✗ ${relax} news rows are held only by image_unusable / entity_links_pending_review`)
+        FAILED = true
+      }
+      if (Number(q.no_verdict_older_7d ?? 0) > 0) {
+        console.warn(`⚠ ${q.no_verdict_older_7d} news staging rows older than 7 days still have no verdict (quality call too slow?)`)
+      }
+      if (empty === 0 && relax === 0) {
+        console.log(`✓ news review queue holds decisions only (${q.held_total} held: ${q.judged_awaiting_human} judged, ${q.no_verdict} awaiting a verdict)`)
+      }
+    }
+  }
+}
+
 // §19 — the item-level audit inspector must stay honest.
 //
 // The timeline is only as trustworthy as three things it cannot check about
