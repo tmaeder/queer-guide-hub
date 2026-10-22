@@ -1,0 +1,83 @@
+# Proof for moving CI e2e off the production database: can the full migration
+# history replay on a local Supabase stack inside a GitHub runner?
+#
+# Starts the local stack with an EMPTY migrations directory (so `supabase start`
+# cannot stop at the first failure), then applies every file in
+# supabase/migrations/ in version order, each in its own transaction, and
+# records every failure instead of stopping. The report is the job summary plus
+# an artifact. Nothing here touches the hosted project.
+name: Local Supabase proof
+
+on:
+  workflow_dispatch: {}
+  pull_request:
+    paths:
+      - '.github/workflows/local-supabase-proof.yml'
+
+concurrency:
+  group: local-supabase-proof-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  replay:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: supabase/setup-cli@v3
+        with:
+          version: 2.98.2
+
+      - name: Start local Postgres with no migrations
+        run: |
+          mkdir -p /tmp/all-migrations
+          mv supabase/migrations/*.sql /tmp/all-migrations/
+          supabase start -x studio,imgproxy,inbucket,edge-runtime,logflare,vector,realtime,postgres-meta,supavisor
+          ls /tmp/all-migrations | wc -l
+
+      - name: Replay every migration, recording failures
+        env:
+          PGPASSWORD: postgres
+        run: |
+          set +e
+          ok=0; fail=0
+          : > failures.txt
+          for f in $(ls /tmp/all-migrations/*.sql | sort); do
+            out=$(psql -h 127.0.0.1 -p 54322 -U postgres -d postgres -X -q -1 -v ON_ERROR_STOP=1 -f "$f" 2>&1)
+            if [ $? -eq 0 ]; then ok=$((ok+1)); else
+              fail=$((fail+1))
+              echo "### $(basename "$f")" >> failures.txt
+              echo "$out" | grep -E 'ERROR|DETAIL|HINT' | head -4 >> failures.txt
+            fi
+          done
+          echo "applied=$ok failed=$fail"
+          {
+            echo "## Migration replay on local Supabase"
+            echo ""
+            echo "- applied: **$ok**"
+            echo "- failed: **$fail**"
+            echo ""
+            echo "### First 40 failures"
+            echo '```'
+            head -160 failures.txt
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+          echo "$ok $fail" > counts.txt
+
+      - name: Schema size after replay
+        env:
+          PGPASSWORD: postgres
+        run: |
+          psql -h 127.0.0.1 -p 54322 -U postgres -d postgres -X -At -c "
+            select 'tables', count(*) from pg_tables where schemaname='public'
+            union all select 'functions', count(*) from pg_proc p join pg_namespace n on n.oid=p.pronamespace where n.nspname='public'
+            union all select 'cron jobs', count(*) from cron.job" | tee -a "$GITHUB_STEP_SUMMARY"
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: migration-replay-report
+          path: |
+            failures.txt
+            counts.txt
