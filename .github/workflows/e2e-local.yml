@@ -101,6 +101,14 @@ jobs:
           psql "$DB_URL" -X -v ON_ERROR_STOP=1 -f scripts/ci/e2e-seed.sql || echo "::warning::e2e seed failed; admin specs will show why"
           { echo "E2E_ADMIN_EMAIL=$email"; echo "E2E_ADMIN_PASSWORD=$pw"; } >> "$GITHUB_ENV"
 
+      - name: Snapshot sanity
+        run: |
+          psql "$DB_URL" -X -c "select count(*) tags, count(*) filter (where status = 'active') active from public.unified_tags"
+          psql "$DB_URL" -X -c "select slug, status, publication_role, is_sensitive from public.unified_tags where slug in ('lesbian','transgender','methamphetamine','sti-guide')"
+          psql "$DB_URL" -X -c "select count(*) from public.substance_interactions"
+          curl -s "$API_URL/rest/v1/unified_tags?slug=eq.lesbian&select=slug,status" -H "apikey: $ANON_KEY"; echo
+          curl -s -X POST "$API_URL/rest/v1/rpc/substance_interaction_matrix" -H "apikey: $ANON_KEY" -H 'Content-Type: application/json' -d '{}' | head -c 400; echo
+
       - uses: actions/setup-node@v7
         with:
           node-version: 22

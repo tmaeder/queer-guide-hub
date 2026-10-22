@@ -4,15 +4,16 @@
 -- specs that refuse to pass vacuously (admin-inbox-renders,
 -- admin-archived-lifecycle) fail. Nothing here comes from production.
 
--- An archived slice for /admin/content/venues.
-update public.venues set review_status = 'archived'
-where id in (select id from public.venues where duplicate_of_id is null order by id limit 5);
+-- An archived slice for /admin/content/venues, which lists organisations;
+-- they archive via status = 'archived' (src/config/contentTypes/organization.ts).
+update public.organizations set status = 'archived'
+where id in (select id from public.organizations order by id limit 5);
 
 -- One decision source (general-review) and one finding source (event-quality).
 insert into public.review_queue (entity_type, entity_id, review_type, status, details)
 select 'venue', id, 'ci_seed', 'pending', '{}'::jsonb
 from public.venues
-where duplicate_of_id is null and review_status is distinct from 'archived'
+where duplicate_of_id is null
 order by id limit 3;
 
 insert into public.event_quality_issues (event_id, dimension, issue_code, detector, severity, status, evidence, evidence_hash)
