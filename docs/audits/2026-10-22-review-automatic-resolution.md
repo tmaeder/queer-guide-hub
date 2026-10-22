@@ -53,3 +53,16 @@ recovery helper measured 1.15 seconds independently. An independent five-minute
 sweep schedule was activated so repairs commit even when a worklist rebuild
 fails. The final pending migration removes the old nested sweep call, updates
 its schedule metadata, and recreates the same trigger attachments explicitly.
+
+
+Follow-up: preserve exact applied migration 20261022190025. Its change-only
+upsert retains all grouped case IDs, including unchanged cases, so a skipped
+UPDATE cannot retire an active case. A live probe retained 6,052 active cases
+and completed in 87.2 seconds. A later scheduled run exceeded even 180 seconds
+under concurrent database load; this is not evidence of a fast rebuild. The
+independent source sweep remains separate and has completed successfully.
+The operational 180-second worklist budget is codified below its five-minute
+cadence while the slow union is investigated. PR #4565 merged with all required
+checks passing; frontend deployment succeeded. Backend migrations succeeded,
+but the function deployment encountered a container registry rate limit and
+is being retried.
