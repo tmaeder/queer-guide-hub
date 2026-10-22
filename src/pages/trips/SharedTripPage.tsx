@@ -4,7 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { MapPin, AlertTriangle, Heart, Sparkles } from 'lucide-react';
 import { format } from 'date-fns';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase, SUPABASE_URL } from '@/integrations/supabase/client';
 import { untypedRpc } from '@/integrations/supabase/untyped';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -151,7 +151,7 @@ function SharedTripPage() {
     setMeta('og:title', title, true);
     setMeta('og:description', desc, true);
     setMeta('og:type', 'article', true);
-    const ogImage = `https://xqeacpakadqfxjxjcewc.supabase.co/functions/v1/trip-og-image?trip_id=${data.trip.id}`;
+    const ogImage = `${SUPABASE_URL}/functions/v1/trip-og-image?trip_id=${data.trip.id}`;
     setMeta('og:image', ogImage, true);
     setMeta('twitter:card', 'summary_large_image');
     setMeta('twitter:image', ogImage);
