@@ -2,6 +2,7 @@ import { workBudget, boundedBatch } from '../_shared/work-budget.ts'
 import { getServiceClient, jsonResponse, errorResponse, corsResponse, requireInternalOrAdmin } from '../_shared/supabase-client.ts'
 import { withErrorReporting } from '../_shared/report-api-error.ts'
 import { buildCountryCanon, canonCountry } from '../_shared/geo-normalize.ts'
+import { reverseGeocode, GeocodeFailure, PHOTON_INTERVAL_MS } from './reverse-geocode.ts'
 
 // Geo-validation worker. Reverse-geocodes a small batch of venues via
 // Nominatim and writes to geo_validations. Country mismatch is the primary
@@ -44,18 +45,18 @@ import { buildCountryCanon, canonCountry } from '../_shared/geo-normalize.ts'
 // smaller and more honest error than flagging every US venue, which is what
 // this function did until now.
 //
-// Rate limit: Nominatim asks for ≤1 req/sec. We sleep 1100ms between calls.
-// Batch size 30 → ~33 sec runtime, well under the edge-function timeout.
+// Rate limit: the public Photon instance is rate-limited, so we sleep
+// PHOTON_INTERVAL_MS (1100ms) between calls, matching the repo's other Photon
+// caller. Batch size 30 → ~33 sec runtime, well under the edge timeout.
 //
 // Run daily via cron OR manually with {batch_size, only_new} body.
 
-// Self-host: set NOMINATIM_URL=https://nominatim.queer.guide and
-// optional NOMINATIM_BASIC_AUTH=user:pass to bypass the 1 req/sec
-// public-Nominatim limit. With self-host we drop sleep to 50ms.
-const NOMINATIM_BASE = (Deno.env.get('NOMINATIM_URL') || 'https://nominatim.openstreetmap.org').replace(/\/$/, '')
-const NOMINATIM = `${NOMINATIM_BASE}/reverse`
-const NOMINATIM_AUTH = Deno.env.get('NOMINATIM_BASIC_AUTH') || ''
-const SLEEP_MS = Deno.env.get('NOMINATIM_URL') ? 50 : 1100
+// PROVIDER MOVED NOMINATIM → PHOTON, 2026-10-22. The public Nominatim endpoint
+// answers Supabase's egress with 403 and this validator had written nothing
+// since 2026-09-24 as a result. Rationale, evidence and the 403-is-hard /
+// 429-is-transient split all live in ./reverse-geocode.ts — read that before
+// changing the provider again. Self-host via PHOTON_REVERSE_URL.
+const SLEEP_MS = PHOTON_INTERVAL_MS
 
 interface VenueRow {
   id: string
@@ -63,18 +64,6 @@ interface VenueRow {
   longitude: number | null
   country: string | null
   city: string | null
-}
-
-interface NominatimResult {
-  display_name?: string
-  address?: {
-    country?: string
-    country_code?: string
-    city?: string
-    town?: string
-    village?: string
-    state?: string
-  }
 }
 
 function sleep(ms: number) { return new Promise((r) => setTimeout(r, ms)) }
@@ -141,32 +130,30 @@ Deno.serve(withErrorReporting('pipeline-geo-validate', async (req) => {
     const toValidate = venues.filter((v) => !skipSet.has(v.id))
 
     let validated = 0, mismatches = 0, errors = 0
+    // Split the error count by cause. Without this, "the upstream asked us to
+    // slow down" and "the upstream is refusing us" are one number, and the
+    // first one walks a working job into auto-pause while the second reads
+    // exactly like weather. See ./reverse-geocode.ts for the split.
+    let transientErrors = 0, hardErrors = 0
     let firstError: string | null = null
 
     for (const v of toValidate) {
       if (!budget.canStart(10000)) break
       if (v.latitude == null || v.longitude == null) continue
       try {
-        const url = `${NOMINATIM}?format=json&lat=${v.latitude}&lon=${v.longitude}&zoom=10&addressdetails=1`
-        const headers: Record<string, string> = {
-          'User-Agent': 'queer.guide geo-validator',
-          'Accept-Language': 'en',
-        }
-        if (NOMINATIM_AUTH) {
-          headers['Authorization'] = `Basic ${btoa(NOMINATIM_AUTH)}`
-        }
-        const resp = await fetch(url, { headers, signal: budget.signal(8000) })
-        if (!resp.ok) throw new Error(`Reverse geocoding HTTP ${resp.status}`)
-        const json = await resp.json() as NominatimResult
-        const addr = json.address || {}
-        const geocodedCountry = addr.country || null
-        const geocodedCity = addr.city || addr.town || addr.village || null
-        const geocodedAddress = json.display_name || null
+        const geo = await reverseGeocode(v.latitude, v.longitude, budget.signal(8000))
+        // A 200 that resolves to nothing is not a failure and not a verdict:
+        // it means the provider has no feature at this point. Skip the row
+        // rather than storing a row of nulls that reads like a checked venue.
+        if (!geo) { await sleep(SLEEP_MS); continue }
+        const geocodedCountry = geo.country
+        const geocodedCity = geo.city
+        const geocodedAddress = geo.address
 
         // Prefer the ISO-2 code over the localized country name. Both sides go
         // through the same canon map, so 'US' / 'us' / 'United States' all
         // collapse to one value and only a real disagreement survives.
-        const geocodedCode = addr.country_code || null
+        const geocodedCode = geo.countryCode
         const expected = canonCountry(countryCanon, v.country)
         const actual   = canonCountry(countryCanon, geocodedCode) ||
                          canonCountry(countryCanon, geocodedCountry)
@@ -188,7 +175,7 @@ Deno.serve(withErrorReporting('pipeline-geo-validate', async (req) => {
           // Carry the admin-1 name through. Nominatim already returns it and
           // it was being discarded; the containment validator needs a stored
           // admin-1 to check the same-name-twin case (Portland ME vs OR).
-          region: addr.state ?? null,
+          region: geo.state,
           confidence: hasMismatch ? 0.4 : 0.9,
           has_mismatch: hasMismatch,
           // Record the canonical forms that were actually compared, not the
@@ -197,28 +184,75 @@ Deno.serve(withErrorReporting('pipeline-geo-validate', async (req) => {
           mismatch_details: hasMismatch
             ? `Coordinate resolves to ${actual}${geocodedCode ? ` (${geocodedCode.toUpperCase()})` : ''} but venue is filed under ${expected} (stored '${v.country}')`
             : null,
-          source: 'nominatim',
+          source: 'photon',
           last_validated_at: new Date().toISOString(),
         }, { onConflict: 'content_type,content_id' })
 
         if (writeError) throw writeError
         validated++
       } catch (e) {
-        console.error(`validate ${v.id}:`, (e as Error).message)
+        const msg = (e as Error).message
+        console.error(`validate ${v.id}:`, msg)
         errors++
-        firstError ??= (e as Error).message
+        if (e instanceof GeocodeFailure && e.kind === 'transient') transientErrors++
+        else hardErrors++
+        firstError ??= msg
       }
       await sleep(SLEEP_MS)
     }
 
+    // A BUSY UPSTREAM IS NOT OUR FAILURE, but a PERMANENT one must still go
+    // red. This function has no recordRun() — the pg_net reaper derives the
+    // run status from this HTTP status (a non-2xx is a bad response and feeds
+    // consecutive_failures against auto_pause_threshold=3), so the status code
+    // below IS the health signal.
+    //
+    // Hard errors (403/401/404) are always red, which is the half that matters:
+    // the 403 that killed the Nominatim path would have gone red on its first
+    // run under this rule instead of hiding for 28 days behind `validated: 0`.
+    //
+    // An all-transient wipeout (429/5xx/abort) is weather and returns 200 —
+    // unless the previous 3 runs were also all-transient wipeouts, at which
+    // point it is not weather any more. At a daily cron that is 4 days of
+    // continuous rate-limiting before the job goes red, and 6 before it could
+    // auto-pause: long past transient, and still bounded.
+    const wipedOut = validated === 0 && errors > 0
+    let upstreamBusy = wipedOut && hardErrors === 0 && transientErrors > 0
+    let escalated = false
+    if (upstreamBusy) {
+      const { data: recent } = await supabase
+        .from('admin_automation_runs')
+        .select('summary')
+        .eq('automation_slug', 'pipeline_geo_validate')
+        .order('started_at', { ascending: false })
+        .limit(3)
+      // The reaper stores this response body under summary.requests[0].body as
+      // a STRING, so the flag has to be read back out of that JSON rather than
+      // addressed as a jsonb key. Verified against live rows before relying on
+      // it; a shape change here fails closed (escalate stays false) rather than
+      // silently keeping a dead upstream green, because `hardErrors` still
+      // reds any non-429 refusal on the very first run.
+      escalated = (recent?.length ?? 0) >= 3 && recent!.every((r) => {
+        const raw = (r.summary as { requests?: Array<{ body?: string }> } | null)?.requests?.[0]?.body
+        if (!raw) return false
+        try { return (JSON.parse(raw) as { upstream_busy?: boolean }).upstream_busy === true }
+        catch { return false }
+      })
+      if (escalated) upstreamBusy = false
+    }
+    const status = hardErrors > 0 || escalated ? 502 : (errors > 0 && !upstreamBusy ? 502 : 200)
     return jsonResponse({
-      success: errors === 0,
+      success: status === 200,
       validated, mismatches, errors,
+      transient_errors: transientErrors,
+      hard_errors: hardErrors,
+      upstream_busy: upstreamBusy,
+      escalated,
       error: firstError,
       deferred: Math.max(0, toValidate.length - validated - errors),
       candidates: venues.length,
       skipped_recent: skipSet.size,
-    }, errors > 0 ? 502 : 200, req)
+    }, status, req)
   } catch (error) {
     console.error('pipeline-geo-validate:', error)
     return errorResponse((error as Error).message, 500, req)
