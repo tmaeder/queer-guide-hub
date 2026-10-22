@@ -33,7 +33,7 @@ jobs:
         run: |
           mkdir -p /tmp/all-migrations
           mv supabase/migrations/*.sql /tmp/all-migrations/
-          supabase start -x studio,imgproxy,inbucket,edge-runtime,logflare,vector,realtime,postgres-meta,supavisor
+          supabase start -x studio,imgproxy,inbucket,edge-runtime,logflare,vector,realtime,postgres-meta,supavisor,postgrest,kong
           ls /tmp/all-migrations | wc -l
 
       - name: Replay every migration, recording failures
