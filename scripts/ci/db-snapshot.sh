@@ -16,6 +16,8 @@ FULL_MAX_BYTES=${FULL_MAX_BYTES:-20000000}
 ROW_CAP=${ROW_CAP:-3000}
 
 cmd=$1 db=$2 dir=$3
+# SUPABASE_DB_URL is written for node-postgres; libpq and the CLI reject no-verify.
+db=${db//sslmode=no-verify/sslmode=require}
 psqlq() { psql "$db" -X -v ON_ERROR_STOP=1 "$@"; }
 
 case "$cmd" in
