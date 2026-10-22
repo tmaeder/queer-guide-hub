@@ -10,7 +10,14 @@ import { formatClock, summarizeCityTransit, type LastDeparture } from '@/lib/cit
  * planning and no per-user query: the browser reads one derived table.
  * Renders nothing for a city without data — absence is never shown as "no service".
  */
-export function CityLateNightPanel({ cityId }: { cityId: string }) {
+export function CityLateNightPanel({
+  cityId,
+  showHeading = true,
+}: {
+  cityId: string;
+  /** Off where the surrounding section already titles it (/going-out). */
+  showHeading?: boolean;
+}) {
   const { t, i18n } = useTranslation();
   const { data = [] } = useCityTransitService(cityId);
   const s = summarizeCityTransit(data);
@@ -64,11 +71,13 @@ export function CityLateNightPanel({ cityId }: { cityId: string }) {
   });
 
   return (
-    <section aria-labelledby="city-late-night-heading">
-      <h3 id="city-late-night-heading" className="text-title font-bold">
-        {t('cities.detail.transit.heading', 'Late night')}
-      </h3>
-      <FactGrid facts={facts} className="mt-2" />
+    <section aria-labelledby={showHeading ? 'city-late-night-heading' : undefined}>
+      {showHeading && (
+        <h3 id="city-late-night-heading" className="text-title font-bold">
+          {t('cities.detail.transit.heading', 'Late night')}
+        </h3>
+      )}
+      <FactGrid facts={facts} className={showHeading ? 'mt-2' : undefined} />
       <p className="mt-2 text-13 text-muted-foreground">
         <a href={s.sourceUrl} target="_blank" rel="noopener noreferrer">
           {s.attribution}

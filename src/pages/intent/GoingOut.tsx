@@ -6,6 +6,8 @@ import { IntentPageLayout } from '@/components/intent/IntentPageLayout';
 import { VenueCard } from '@/components/venues/VenueCard';
 import { UpcomingEvents } from '@/components/intent/UpcomingEvents';
 import { useIntentLocation } from '@/hooks/useIntentLocation';
+import { useCityTransitService } from '@/hooks/useCityTransitService';
+import { CityLateNightPanel } from '@/components/geo/CityLateNightPanel';
 import { GatedContentNotice } from '@/components/safety/GatedContentNotice';
 import { CityLandmarksRail } from '@/components/geo/CityLandmarksRail';
 import { useCityLandmarks } from '@/hooks/useGeoPlaces';
@@ -52,6 +54,8 @@ export default function GoingOut() {
   // Same query CityLandmarksRail runs; react-query dedupes it. Used only to
   // decide whether the "Scenes" section should exist at all.
   const { data: landmarks } = useCityLandmarks(cityId ?? undefined);
+  // Same query the panel runs (deduped), so the section and its content cannot disagree.
+  const { data: transit } = useCityTransitService(cityId);
 
   const where = cityName ?? 'your area';
 
@@ -136,6 +140,13 @@ export default function GoingOut() {
       // two cannot disagree; the query is deduped by react-query.
       hidden: !landmarks || landmarks.length === 0,
       content: cityId ? <CityLandmarksRail cityId={cityId} /> : null,
+    },
+    {
+      id: 'getting-home',
+      label: 'Getting home',
+      kicker: 'When the last tram leaves',
+      hidden: !transit || transit.length === 0,
+      content: cityId ? <CityLateNightPanel cityId={cityId} showHeading={false} /> : null,
     },
     {
       id: 'safety',

@@ -5949,6 +5949,51 @@ const DISOWNED_PROSE_CEILING = 380
   }
 }
 
+// ---------------------------------------------------------------------------
+// §  Transit timetable facts (city_transit_service, 99991792690290)
+// ---------------------------------------------------------------------------
+// Written by .github/workflows/transit-gtfs-weekly.yml, which is OUTSIDE
+// admin_automations — run tracking cannot see it, so this is the only thing
+// that notices it stopped. Two different failures:
+//  * EXPIRED feed: the reader refuses it, so the Late night panel silently
+//    vanishes. Hard fail — it happens every December if the rollover breaks.
+//  * STALE fetch (>14 days = two missed weekly runs) or a non-ok parse: the
+//    last good timetable keeps serving, so it only warns.
+{
+  const res = await fetch(
+    `${BASE}/rest/v1/transit_feeds?select=feed_key,parse_status,parse_note,feed_end_date,fetched_at`,
+    { headers },
+  )
+  if (res.status === 404) {
+    console.warn('⚠ transit_feeds not deployed yet (migration 99991792690290?) — skipping')
+  } else if (!res.ok) {
+    console.error(`✗ transit_feeds returned HTTP ${res.status} — measured nothing`)
+    FAILED = true
+  } else {
+    const feeds = await res.json()
+    const today = new Date().toISOString().slice(0, 10)
+    console.log(`  transit feeds: ${feeds.length}`)
+    for (const f of feeds) {
+      const ageDays = f.fetched_at ? (Date.now() - Date.parse(f.fetched_at)) / 86400000 : Infinity
+      if (f.feed_end_date && f.feed_end_date < today) {
+        console.error(
+          `✗ transit feed ${f.feed_key} expired ${f.feed_end_date}: every city on it shows no Late ` +
+            'night panel. Check the December rollover in transit-gtfs-weekly.yml.',
+        )
+        FAILED = true
+      } else if (f.parse_status !== 'ok' || ageDays > 14) {
+        console.warn(
+          `⚠ transit feed ${f.feed_key}: status ${f.parse_status}, last fetch ` +
+            `${Number.isFinite(ageDays) ? Math.round(ageDays) + 'd' : 'never'} ago` +
+            (f.parse_note ? ` (${f.parse_note})` : '') +
+            ' — the last good timetable is still serving',
+        )
+      } else {
+        console.log(`✓ transit feed ${f.feed_key} fresh (${Math.round(ageDays)}d), valid until ${f.feed_end_date}`)
+      }
+    }
+  }
+}
 
 if (FAILED) {
   console.error('')
