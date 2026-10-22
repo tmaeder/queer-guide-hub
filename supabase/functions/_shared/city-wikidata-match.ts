@@ -73,7 +73,11 @@ export function createCitySearchResolver(request: Request, parents: ReadonlyArra
         if (!names.length) throw new Error('wikidata_candidate_response_invalid')
         if (typeof h.label === 'string' && [original, key(input.base)].includes(key(h.label))) exactLabels.add(h.id)
         if (names.includes(original) && original !== key(input.base)) literal.add(h.id)
-        if (names.includes(key(input.base)) || names.includes(original)) seen.add(h.id)
+        // "Genova, Italy" is how Wikidata spells the endonym of Genoa. The head
+        // before the comma only admits the candidate; class, country and
+        // coordinates still decide.
+        const heads = [h.label, h.match?.text].filter((x): x is string => typeof x === 'string' && x.includes(',')).map(x => key(x.split(',')[0]))
+        if ([...names, ...heads].some(n => n === key(input.base) || n === original)) seen.add(h.id)
       }
     }
     const qids = [...seen].filter(q => !literal.size || literal.has(q))
@@ -115,7 +119,10 @@ export function createCitySearchResolver(request: Request, parents: ReadonlyArra
     if (viable.length > 1) return { kind: 'ambiguous', qid: null, probes }
     // Missing corroboration on another exact namesake cannot silently favor
     // whichever candidate happened to have complete metadata.
-    if (incomplete || (geographicScopeConflict && viable.length > 0)) return { kind: 'unresolved', qid: null, probes }
+    // The scope guard stops a city that merely carries the wider place's name as
+    // an alias. A city whose own label is the name (London beside the London
+    // region) is not that case.
+    if (incomplete || (geographicScopeConflict && viable.some(p => !exactLabels.has(p.qid)))) return { kind: 'unresolved', qid: null, probes }
     if (viable.length === 1) return adopt('selected', viable[0].qid)
     const localities = probes.filter(p => p.class === 'locality' && p.country === 'agree' && p.coordinates === 'agree')
     if (localities.length === 1) return adopt('locality', localities[0].qid)
