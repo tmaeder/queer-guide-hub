@@ -4,7 +4,7 @@
 
 The user's target is **fewer than 100 pending items across all queues in total**. The preceding venue-matching delivery does not satisfy that goal. Do not substitute ready-case counts, a filtered view or a single queue for the complete total. Machine findings must be included when auditing the current displayed all-queue count.
 
-Latest inspected full cached count: **132,088 rows (8,095 decisions, 123,993 findings)**, refreshed 2026-10-22 17:54:51 UTC. The prior inspected total was 320,741 at 18:20 UTC; source activity continues concurrently, so per-repair counts are not a net-change claim. The goal remains active.
+Latest inspected full cached count: **131,450 rows (7,520 decisions, 123,930 findings)**, refreshed 2026-10-22 18:57:12 UTC. Source activity continues concurrently, so per-repair counts are not a net-change claim. The under-100 completion requirement remains unmet.
 
 ## Verified additional repairs
 
