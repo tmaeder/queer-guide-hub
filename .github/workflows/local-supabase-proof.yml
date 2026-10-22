@@ -95,7 +95,14 @@ jobs:
             /tmp/all-migrations/00000000000000_baseline.sql
           ok=0; fail=0
           : > failures.txt
+          skipped=0
           for f in $(ls /tmp/all-migrations/*.sql | sort); do
+            v=$(basename "$f" | cut -c1-8)
+            # The baseline is production as of 2026-05-02, so migrations dated
+            # before then are already inside it; replaying them only conflicts.
+            if [ "$(basename "$f")" != "00000000000000_baseline.sql" ] && [ "$v" \< "20260503" ]; then
+              skipped=$((skipped+1)); continue
+            fi
             out=$(psql "$DB_URL" -X -q -1 -v ON_ERROR_STOP=1 -f "$f" 2>&1)
             if [ $? -eq 0 ]; then ok=$((ok+1)); else
               fail=$((fail+1))
@@ -109,6 +116,7 @@ jobs:
             echo ""
             echo "- applied: **$ok**"
             echo "- failed: **$fail**"
+            echo "- skipped (already in the 2026-05-02 baseline): **$skipped**"
             echo ""
             echo "### First 40 failures"
             echo '```'
