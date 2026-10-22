@@ -6,7 +6,7 @@ do $$ begin
  if not exists(select from pg_roles where rolname='service_role') then create role service_role bypassrls; end if;
 end $$;
 create schema auth;
-create table auth.users(id uuid primary key,email text);
+create table auth.users(id uuid primary key,email text,email_confirmed_at timestamptz);
 create table public.email_templates(
  template_key text primary key,name text not null,subject text not null,
  html_content text not null,text_content text,variables jsonb default '[]',is_active boolean default true
@@ -82,3 +82,9 @@ create table public.group_join_requests(id uuid primary key default gen_random_u
 create table public.community_submissions(id uuid primary key default gen_random_uuid(),submitted_by uuid references auth.users(id),content_type text default 'feedback',data jsonb not null default '{}',reviewed_by uuid,reviewed_at timestamptz,status text default 'pending',is_spam boolean default false);
 create table public.donations(id uuid primary key default gen_random_uuid(),user_id uuid references auth.users(id),status text default 'pending',stripe_session_id text);
 grant all on public.events,public.group_join_requests,public.community_submissions,public.donations to service_role;
+
+-- Canonical entity contact columns used by the recipient directory.
+create table public.organizations(id uuid primary key default gen_random_uuid(),name text not null,email text,status text not null default 'active',duplicate_of_id uuid,safety_gated boolean not null default false,is_defunct boolean not null default false);
+create table public.venues(id uuid primary key default gen_random_uuid(),name text not null,email text,duplicate_of_id uuid,closed_at timestamptz,review_status text,safety_gated boolean not null default false);
+create table public.marketplace_merchants(id uuid primary key default gen_random_uuid(),display_name text not null,organization_id uuid references public.organizations(id),is_enabled boolean not null default true);
+grant all on public.organizations,public.venues,public.marketplace_merchants to service_role;

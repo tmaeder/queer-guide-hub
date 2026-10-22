@@ -5,7 +5,9 @@ import { AdminEmpty } from '@/components/admin/primitives/AdminEmpty';
 import { AdminArchetypeHeader } from '@/components/admin/frames/AdminArchetypeHeader';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { toast } from 'sonner';
+import { EmailMeasurement } from '@/components/admin/email/EmailMeasurement';
+import { EmailContent } from '@/components/admin/email/EmailContent';
+import { EmailContacts } from '@/components/admin/email/EmailContacts';
 import { EmailAudiences } from '@/components/admin/email/EmailAudiences';
 import { EmailOperations } from '@/components/admin/email/EmailOperations';
 import { EmailJourneys } from '@/components/admin/email/EmailJourneys';
@@ -20,14 +22,6 @@ interface Message {
   last_error: string | null;
   created_at: string;
 }
-interface Subscriber {
-  id: string;
-  email: string;
-  status: string;
-  topics: string[];
-  locale: string;
-  confirmed_at: string | null;
-}
 interface Overview {
   configured: boolean;
   campaigns: Campaign[];
@@ -39,12 +33,8 @@ interface Overview {
 export default function EmailPlatform() {
   const [data, setData] = useState<Overview | null>(null),
     [error, setError] = useState(false);
-  const [subscribers, setSubscribers] = useState<Subscriber[]>([]);
   const [audienceRevision, setAudienceRevision] = useState(0);
   const loadRequest = useRef(0);
-  const [consent, setConsent] = useState<
-    { action: string; source: string; created_at: string; topics: string[] }[] | null
-  >(null);
   const load = useCallback(async () => {
     const request = ++loadRequest.current;
     setError(false);
@@ -66,21 +56,6 @@ export default function EmailPlatform() {
     // eslint-disable-next-line react-hooks/set-state-in-effect -- Fetch remote preferences/workspace data on mount.
     void load();
   }, [load]);
-  async function loadSubscribers() {
-    const r = await supabase.functions.invoke('email-admin?resource=subscribers', {
-      method: 'GET',
-    });
-    if (r.error) toast.error('Could not load subscribers');
-    else setSubscribers(r.data.subscribers);
-  }
-  async function showConsent(id: string) {
-    const r = await supabase.functions.invoke(
-      `email-admin?resource=consent&id=${encodeURIComponent(id)}`,
-      { method: 'GET' },
-    );
-    if (r.error) toast.error('Could not load consent history');
-    else setConsent(r.data.events);
-  }
   return (
     <div className="space-y-6">
       <AdminArchetypeHeader
@@ -123,18 +98,15 @@ export default function EmailPlatform() {
             {data.subscribers} confirmed subscribers · {data.suppressions} suppressed addresses ·
             Showing the latest 50 deliveries and campaigns
           </p>
-          <Tabs
-            defaultValue="campaigns"
-            onValueChange={(tab) => {
-              if (tab === 'subscribers') void loadSubscribers();
-            }}
-          >
+          <Tabs defaultValue="campaigns">
             <TabsList className="h-auto flex-wrap justify-start gap-1">
               <TabsTrigger value="campaigns">Campaigns</TabsTrigger>
               <TabsTrigger value="audiences">Audiences</TabsTrigger>
               <TabsTrigger value="journeys">Journeys</TabsTrigger>
+              <TabsTrigger value="content">Content</TabsTrigger>
               <TabsTrigger value="delivery">Delivery</TabsTrigger>
               <TabsTrigger value="operations">Operations</TabsTrigger>
+              <TabsTrigger value="measurement">Measurement</TabsTrigger>
               <TabsTrigger value="subscribers">Subscribers</TabsTrigger>
             </TabsList>
             <TabsContent value="campaigns" forceMount className="data-[state=inactive]:hidden">
@@ -148,8 +120,14 @@ export default function EmailPlatform() {
             <TabsContent value="audiences" forceMount className="data-[state=inactive]:hidden">
               <EmailAudiences onSaved={() => setAudienceRevision((v) => v + 1)} />
             </TabsContent>
+            <TabsContent value="content" forceMount className="data-[state=inactive]:hidden">
+              <EmailContent templates={data.templates} />
+            </TabsContent>
             <TabsContent value="journeys" forceMount className="data-[state=inactive]:hidden">
               <EmailJourneys />
+            </TabsContent>
+            <TabsContent value="measurement">
+              <EmailMeasurement />
             </TabsContent>
             <TabsContent value="operations">
               <EmailOperations />
@@ -183,49 +161,8 @@ export default function EmailPlatform() {
                 )}
               </section>
             </TabsContent>
-            <TabsContent value="subscribers">
-              <section className="space-y-4 py-6">
-                <h2 className="font-sans text-title font-bold">Recent subscribers</h2>
-                <p className="text-sm text-muted-foreground">
-                  Showing up to 100 subscriptions. A pending subscription cannot receive
-                  newsletters.
-                </p>
-                {!subscribers.length ? (
-                  <AdminEmpty noun="subscriptions" />
-                ) : (
-                  <ul className="divide-y divide-border">
-                    {subscribers.map((s) => (
-                      <li
-                        key={s.id}
-                        className="flex flex-wrap items-center justify-between gap-4 py-4"
-                      >
-                        <div className="min-w-0">
-                          <p className="break-all font-semibold">{s.email}</p>
-                          <p className="text-sm text-muted-foreground">
-                            {s.status} · {s.locale} · {s.topics.join(', ')}
-                          </p>
-                        </div>
-                        <Button variant="outline" onClick={() => void showConsent(s.id)}>
-                          Consent history
-                        </Button>
-                      </li>
-                    ))}
-                  </ul>
-                )}
-                {consent && (
-                  <section aria-label="Consent history" className="border-t border-border pt-4">
-                    <h3 className="font-semibold">Consent history</h3>
-                    <ul>
-                      {consent.map((e, i) => (
-                        <li key={i} className="py-2 text-sm">
-                          {new Date(e.created_at).toLocaleString()} · {e.action} · {e.source} ·{' '}
-                          {e.topics.join(', ')}
-                        </li>
-                      ))}
-                    </ul>
-                  </section>
-                )}
-              </section>
+            <TabsContent value="subscribers" forceMount className="data-[state=inactive]:hidden">
+              <EmailContacts />
             </TabsContent>
           </Tabs>
         </>
