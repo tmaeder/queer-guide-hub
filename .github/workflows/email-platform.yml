@@ -123,7 +123,7 @@ jobs:
           psql -v ON_ERROR_STOP=1 -f supabase/migrations/99991792565235_email_platform_trip_invitations.sql
           psql -v ON_ERROR_STOP=1 -f supabase/migrations/99991792608890_email_platform_operations.sql
           psql -v ON_ERROR_STOP=1 -f supabase/migrations/99991792616499_email_platform_domain_notices.sql
-          psql -v ON_ERROR_STOP=1 -f supabase/migrations/99991792617642_email_platform_content_contacts.sql
+          psql -v ON_ERROR_STOP=1 -f supabase/migrations/99991792695354_email_platform_content_contacts.sql
           psql -v ON_ERROR_STOP=1 -f supabase/tests/email_platform.sql
           psql -v ON_ERROR_STOP=1 -f supabase/tests/email_platform_privacy.sql
           psql -v ON_ERROR_STOP=1 -f supabase/tests/email_platform_segments.sql

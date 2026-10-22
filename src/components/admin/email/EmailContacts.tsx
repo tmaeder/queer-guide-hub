@@ -208,8 +208,12 @@ export function EmailContacts() {
                     : 'Unconfirmed'}
                 </p>
               </div>
-              <Button variant="outline" onClick={() => void inspect(c)}>
-                History for {c.email}
+              <Button
+                variant="outline"
+                aria-label={`History for ${c.email}`}
+                onClick={() => void inspect(c)}
+              >
+                View history
               </Button>
             </li>
           ))}

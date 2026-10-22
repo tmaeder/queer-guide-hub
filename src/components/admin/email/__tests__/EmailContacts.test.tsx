@@ -23,6 +23,16 @@ beforeEach(() => {
   });
 });
 describe('contact operations', () => {
+  it('keeps long mailbox history actions compact while retaining their accessible identity', async () => {
+    const email = 'a'.repeat(64) + '@' + 'b'.repeat(63) + '.example.com';
+    api.invoke.mockResolvedValue({
+      data: { contacts: [{ ...contact, email }], next: null },
+      error: null,
+    });
+    render(<EmailContacts />);
+    const action = await screen.findByRole('button', { name: `History for ${email}` });
+    expect(action).toHaveTextContent(/^View history$/);
+  });
   it('validates CSV quoting and rejects imported consent, invalid addresses and oversized batches', () => {
     expect(parseContactImport('\uFEFFemail,locale\r\n"PERSON@example.com",de-CH\r\n')).toEqual([
       { email: 'person@example.com', locale: 'de-CH' },
