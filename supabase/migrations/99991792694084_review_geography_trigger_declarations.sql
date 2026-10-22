@@ -3,6 +3,22 @@
 -- the functions, conditions and source permissions are unchanged.
 set local lock_timeout='5s';
 
+-- Persist automatic repairs independently of the expensive union refresh. A
+-- worklist timeout must never roll back completed source dispositions.
+do $decouple$
+declare s text; anchor text:=' perform api_private.run_review_automatic_resolution(p_batch,p_dry_run);';
+begin
+ s:=pg_get_functiondef('public.repair_admin_review_mechanical(integer,boolean)'::regprocedure);
+ if (length(s)-length(replace(s,anchor,'')))/length(anchor)<>1 then raise exception 'Automatic sweep hook anchor changed'; end if;
+ execute replace(s,anchor,'');
+end $decouple$;
+update public.admin_automations set schedule='0-59/5 * * * *',
+ description='Independent five-minute source corrections; completed repairs survive worklist refresh failures.',
+ action='{"type":"rpc","fn":"run_review_automatic_resolution","args":{"p_batch":200,"p_dry_run":false}}'::jsonb
+where slug='review_automatic_resolution';
+select cron.schedule('review_automatic_resolution','0-59/5 * * * *',
+ 'set statement_timeout=''90s''; select public.run_review_automatic_resolution(200,false);');
+
 drop trigger if exists review_geo_reopen_id on public.cities;
 create trigger review_geo_reopen_id after insert or update of shell_status,seo_indexable,duplicate_of_id on public.cities
  for each row execute function api_private.review_reopen_geography('id');
@@ -94,5 +110,4 @@ create trigger review_geo_reopen_city_id after insert or update of city_id on pu
 drop trigger if exists review_geo_reopen_city_id on public.intimate_cruising_mode;
 create trigger review_geo_reopen_city_id after insert or update of city_id on public.intimate_cruising_mode
  for each row execute function api_private.review_reopen_geography('city_id');
-
 

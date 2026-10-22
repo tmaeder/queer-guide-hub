@@ -8,4 +8,3 @@ begin
    and not exists(select 1 from public.news_articles other where other.url=a.url and other.source_id=a.source_id and other.id<>a.id)');
  execute s;
 end $patch$;
-
