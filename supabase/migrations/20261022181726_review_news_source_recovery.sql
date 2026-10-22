@@ -68,4 +68,3 @@ begin
   '''extraction_retries_queued'',v_retry,''news_source_content_recovered'',v_recovered)');
  execute s;
 end $patch$;
-

@@ -8,4 +8,3 @@ begin
  execute replace(s,anchor,'public.news_commit_staging_batch(v_job,null,
     least(v_limit,(select count(*)::integer from unnest(v_jobs) queued_job where queued_job=v_job)))');
 end $patch$;
-

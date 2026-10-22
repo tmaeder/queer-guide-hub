@@ -206,4 +206,3 @@ begin
  if (length(s)-length(replace(s,anchor,'')))/length(anchor)<>1 then raise exception 'Mechanical repair anchor changed'; end if;
  execute replace(s,anchor,E' perform api_private.run_review_automatic_resolution(p_batch,p_dry_run);\n'||anchor);
 end $patch$;
-

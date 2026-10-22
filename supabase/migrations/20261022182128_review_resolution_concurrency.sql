@@ -30,4 +30,3 @@ begin
    if v_after is null or v_after->>''status''<>''not_applicable'' then v_geo:=v_geo-1; continue; end if;');
  execute s;
 end $patch$;
-
