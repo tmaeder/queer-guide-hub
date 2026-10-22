@@ -13,7 +13,9 @@ declare s text; anchor text:=$anchor$ for r in select v.* from public.geo_cms_ve
   where v.status in ('review','stale') and c.shell_status='ghost' and c.seo_indexable=false
    and api_private.review_inactive_city_unlinked(c.id) order by v.place_id limit v_limit for update of v skip locked loop$anchor$;
 begin
- s:=pg_get_functiondef('api_private.run_review_automatic_resolution(integer,boolean)'::regprocedure);
+ s:=regexp_replace(pg_get_functiondef('api_private.run_review_automatic_resolution(integer,boolean)'::regprocedure),
+  $strip$('(?:[^']|'')*'|"(?:[^"]|"")*")|--[^$strip$||chr(10)||']*',
+  $keep$\1$keep$,'g');
  if (length(s)-length(replace(s,anchor,'')))/length(anchor)<>1 then
   raise exception 'Geography candidate selector anchor changed'; end if;
  if position('where place_id=r.place_id and api_private.review_inactive_city_unlinked(r.place_id)' in s)=0 then
@@ -44,7 +46,9 @@ end $patch$;
 do $liveness$
 declare s text; anchor text:=' for r in with referenced as materialized (';
 begin
- s:=pg_get_functiondef('api_private.run_review_automatic_resolution(integer,boolean)'::regprocedure);
+ s:=regexp_replace(pg_get_functiondef('api_private.run_review_automatic_resolution(integer,boolean)'::regprocedure),
+  $strip$('(?:[^']|'')*'|"(?:[^"]|"")*")|--[^$strip$||chr(10)||']*',
+  $keep$\1$keep$,'g');
  if (length(s)-length(replace(s,anchor,'')))/length(anchor)<>1 then raise exception 'Scan-once selector must be present'; end if;
  if position('v_geo integer:=0;' in s)=0 or position('''geography_not_applicable'',v_geo,' in s)=0 then raise exception 'Resolution counters changed'; end if;
  s:=replace(s,'v_geo integer:=0;','v_liveness integer:=0; v_geo integer:=0;');
@@ -104,7 +108,9 @@ end $news_recovery$;
 do $service_retries$
 declare s text; anchor text; replacement text;
 begin
- s:=pg_get_functiondef('api_private.run_review_automatic_resolution(integer,boolean)'::regprocedure);
+ s:=regexp_replace(pg_get_functiondef('api_private.run_review_automatic_resolution(integer,boolean)'::regprocedure),
+  $strip$('(?:[^']|'')*'|"(?:[^"]|"")*")|--[^$strip$||chr(10)||']*',
+  $keep$\1$keep$,'g');
  anchor:=$a$or (enriched_data->>'quality_status'='passed' and not enriched_data ? 'auto_publish'
    and enriched_data#>>'{quality_decision,needsManualReview}'='false'))$a$;
  replacement:=$r$or (enriched_data->>'quality_status'='passed' and not enriched_data ? 'auto_publish'
@@ -135,7 +141,9 @@ end $service_retries$;
 do $image_retries$
 declare s text; anchor text; replacement text;
 begin
- s:=pg_get_functiondef('api_private.run_review_automatic_resolution(integer,boolean)'::regprocedure);
+ s:=regexp_replace(pg_get_functiondef('api_private.run_review_automatic_resolution(integer,boolean)'::regprocedure),
+  $strip$('(?:[^']|'')*'|"(?:[^"]|"")*")|--[^$strip$||chr(10)||']*',
+  $keep$\1$keep$,'g');
  anchor:=$a$and enriched_data#>>'{quality_decision,warnings}' like '%"llm:%'))$a$;
  replacement:=$r$and enriched_data#>>'{quality_decision,warnings}' like '%"llm:%')
   or (enriched_data->>'quality_status'='review'
