@@ -37,17 +37,18 @@ jobs:
           mkdir -p /tmp/all-migrations
           mv supabase/migrations/*.sql /tmp/all-migrations/
           supabase start -x studio,imgproxy,inbucket,edge-runtime,logflare,vector,realtime,postgres-meta,supavisor,postgrest,kong
+          # The local stack's own connection string (no credential literal in this file).
+          eval "$(supabase status -o env)"
+          echo "DB_URL=$DB_URL" >> "$GITHUB_ENV"
           ls /tmp/all-migrations | wc -l
 
       - name: Replay every migration, recording failures
-        env:
-          PGPASSWORD: postgres
         run: |
           set +e
           ok=0; fail=0
           : > failures.txt
           for f in $(ls /tmp/all-migrations/*.sql | sort); do
-            out=$(psql -h 127.0.0.1 -p 54322 -U postgres -d postgres -X -q -1 -v ON_ERROR_STOP=1 -f "$f" 2>&1)
+            out=$(psql "$DB_URL" -X -q -1 -v ON_ERROR_STOP=1 -f "$f" 2>&1)
             if [ $? -eq 0 ]; then ok=$((ok+1)); else
               fail=$((fail+1))
               echo "### $(basename "$f")" >> failures.txt
@@ -69,10 +70,8 @@ jobs:
           echo "$ok $fail" > counts.txt
 
       - name: Schema size after replay
-        env:
-          PGPASSWORD: postgres
         run: |
-          psql -h 127.0.0.1 -p 54322 -U postgres -d postgres -X -At -c "
+          psql "$DB_URL" -X -At -c "
             select 'tables', count(*) from pg_tables where schemaname='public'
             union all select 'functions', count(*) from pg_proc p join pg_namespace n on n.oid=p.pronamespace where n.nspname='public'
             union all select 'cron jobs', count(*) from cron.job" | tee -a "$GITHUB_STEP_SUMMARY"
