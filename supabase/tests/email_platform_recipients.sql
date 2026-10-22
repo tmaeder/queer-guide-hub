@@ -8,6 +8,20 @@ insert into public.venues(id,name,email) values ('66666666-0000-4000-8000-000000
 insert into public.marketplace_merchants(id,display_name,organization_id) values ('66666666-0000-4000-8000-000000000013','Vendor fixture','66666666-0000-4000-8000-000000000011');
 insert into public.email_templates(template_key,name,subject,html_content) values('entity-fixture','Entity fixture','Service fixture','<p>Fixture</p>');
 insert into public.marketplace_listings(id,business_name,contact_email) values('66666666-0000-4000-8000-000000000014','Standalone vendor fixture','standalone-vendor@example.com'),('66666666-0000-4000-8000-000000000013','Collision fixture','must-not-shadow@example.com');
+-- Match production: service_role has no direct Auth table/column SELECT.
+revoke select on auth.users from service_role;
+set local role service_role;
+do $$ declare r jsonb;k text;begin
+ assert not has_column_privilege('service_role','auth.users','email','SELECT');
+ foreach k in array array['organization','venue','vendor','user'] loop
+  r:=public.email_recipient_directory(k);
+  assert jsonb_array_length(r->'recipients')>0,'directory requires direct Auth access';
+ end loop;
+ assert exists(select 1 from jsonb_array_elements(public.email_recipient_directory('user')->'recipients') x where x->>'email'='shared-business@example.com');
+end $$;
+reset role;
+-- Subsequent source-change fixtures update Auth as service_role explicitly.
+grant select on auth.users to service_role;
 set local role service_role;
 do $$
 declare r jsonb;s public.email_subscribers;uid uuid:='66666666-0000-4000-8000-000000000002';before_mail bigint;segment jsonb;campaign jsonb;audience uuid;experiment uuid;aid uuid:='66666666-0000-4000-8000-000000000001';
@@ -70,6 +84,8 @@ begin
 end $$;
 reset role;
 do $$ declare f record;begin
+ assert not has_function_privilege('anon','email_private.resolve_recipient_account(uuid,text)','EXECUTE');
+ assert not has_function_privilege('authenticated','email_private.resolve_recipient_account(uuid,text)','EXECUTE');
  assert (select relrowsecurity from pg_class where oid='public.email_recipient_user_lookup'::regclass);
  assert not has_table_privilege('authenticated','public.email_recipient_user_lookup','SELECT');
  assert not has_table_privilege('anon','public.email_recipient_sources','SELECT') and not has_table_privilege('authenticated','public.email_recipient_sources','SELECT');

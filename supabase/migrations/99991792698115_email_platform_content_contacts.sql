@@ -467,6 +467,19 @@ analyze public.email_recipient_user_lookup;
 create index email_organizations_mailbox on public.organizations(lower(btrim(email))) where email is not null;
 create index email_marketplace_mailbox on public.marketplace_listings(lower(btrim(contact_email))) where contact_email is not null;
 create index email_venues_mailbox on public.venues(lower(btrim(email))) where email is not null;
+-- Supabase service_role cannot SELECT auth.users in production. Resolve only
+-- this verified mailbox through a tightly scoped definer; keep the indexed
+-- lookup outside the function so audience hash predicates still use its index.
+create function email_private.resolve_recipient_account(p_user uuid,p_hash text)
+returns table(email text) language sql stable security definer set search_path=pg_catalog as $$
+ select lower(btrim(u.email)) from auth.users u
+ where u.id=p_user and u.email is not null and u.email_confirmed_at is not null
+ and encode(sha256(convert_to(lower(btrim(u.email)),'UTF8')),'hex')=p_hash
+ and not exists(select 1 from public.email_disabled_accounts d where d.user_id=u.id)
+$$;
+revoke all on function email_private.resolve_recipient_account(uuid,text) from public,anon,authenticated,service_role;
+grant execute on function email_private.resolve_recipient_account(uuid,text) to service_role;
+
 create view public.email_recipient_sources with (security_invoker=true) as
  select 'organization'::text kind,o.id,o.name label,lower(btrim(o.email)) email,'published_contact'::text evidence,encode(sha256(convert_to(lower(btrim(o.email)),'UTF8')),'hex') mailbox_hash
  from public.organizations o where o.status='active' and o.duplicate_of_id is null and not o.safety_gated and not o.is_defunct and o.email is not null
@@ -484,9 +497,9 @@ create view public.email_recipient_sources with (security_invoker=true) as
  -- A listing cannot shadow a merchant by choosing the same UUID.
  and not exists(select 1 from public.marketplace_merchants m where m.id=l.id)
  union all
- select 'user',u.id,'Account '||u.id::text,lower(btrim(u.email)),'verified_account_mailbox',l.mailbox_hash
- from public.email_recipient_user_lookup l join auth.users u on u.id=l.user_id and l.mailbox_hash=encode(sha256(convert_to(lower(btrim(u.email)),'UTF8')),'hex') where u.email_confirmed_at is not null and u.email is not null
- and not exists(select 1 from public.email_disabled_accounts d where d.user_id=u.id);
+ select 'user',l.user_id,'Account '||l.user_id::text,u.email,'verified_account_mailbox',l.mailbox_hash
+ from public.email_recipient_user_lookup l
+ cross join lateral email_private.resolve_recipient_account(l.user_id,l.mailbox_hash) u;
 revoke all on public.email_recipient_sources from public,anon,authenticated;
 grant select on public.email_recipient_sources to service_role;
 

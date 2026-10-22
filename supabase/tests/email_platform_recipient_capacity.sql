@@ -12,6 +12,8 @@ analyze public.email_subscribers;
 analyze public.organizations;
 analyze public.venues;
 analyze public.marketplace_merchants;
+-- Production service_role has no direct Auth SELECT.
+revoke select on auth.users from service_role;
 set local role service_role;
 select jsonb_array_length(public.email_recipient_directory('organization')->'recipients') page_size;
 select jsonb_array_length(public.email_recipient_directory('user')->'recipients') page_size;
