@@ -1,0 +1,53 @@
+# Nightly production snapshot for CI e2e (see scripts/ci/db-snapshot.sh).
+#
+# One read of production per night replaces the per-PR browser traffic that
+# e2e runs used to send to the live backend (53% of API reads, 2026-10-21).
+# The snapshot holds the schema plus rows the anon role can read, so nothing
+# in it is more private than queer.guide itself. It is still ENCRYPTED: this
+# repo is public, and a fork PR's workflow can restore caches from main.
+# Fork PRs get no secrets, so they cannot decrypt it.
+name: DB snapshot
+
+on:
+  schedule:
+    - cron: '20 2 * * *'
+  workflow_dispatch: {}
+  # A PR changing the snapshot machinery builds its own (PR-scoped cache), so
+  # e2e-local.yml on that PR tests the change instead of last night's main.
+  pull_request:
+    paths:
+      - '.github/workflows/db-snapshot.yml'
+      - 'scripts/ci/db-snapshot.sh'
+
+concurrency:
+  group: db-snapshot-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  snapshot:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+      - uses: supabase/setup-cli@v3
+        with:
+          version: 2.98.2
+      - name: Dump schema and anon-readable data
+        env:
+          DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+        run: scripts/ci/db-snapshot.sh dump "$DB_URL" snapshot
+      - name: Pack and encrypt
+        env:
+          KEY: ${{ secrets.DB_SNAPSHOT_KEY }}
+        run: |
+          tar -czf - snapshot | openssl enc -aes-256-cbc -pbkdf2 -salt -pass env:KEY -out db-snapshot.tgz.enc
+          ls -lh db-snapshot.tgz.enc
+          { echo "## DB snapshot"; echo; echo "- size: $(du -h db-snapshot.tgz.enc | cut -f1)";
+            echo "- tables: $(wc -l < snapshot/manifest.txt)"; echo "- migrations: $(wc -l < snapshot/versions.txt)"; } >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/cache/save@v4
+        with:
+          path: db-snapshot.tgz.enc
+          key: db-snapshot-${{ github.run_id }}
