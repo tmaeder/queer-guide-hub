@@ -54,6 +54,9 @@ dump)
     while IFS='|' read -r t cols _ _; do
       case ",$CONFIG_TABLES," in *",$t,"*) echo "\\copy (select $cols from public.\"$t\") to '$dir/data/$t.csv' csv" ;; esac
     done < "$dir/manifest.txt"
+    # Read exactly as PostgREST serves an anonymous visitor: some policies read
+    # the JWT claims, and without them `set role anon` alone sees 0 unified_tags.
+    echo "select set_config('request.jwt.claims', '{\"role\":\"anon\"}', false);"
     echo "set role anon;"
     while IFS='|' read -r t cols pin capped; do
       case ",$CONFIG_TABLES," in *",$t,"*) continue ;; esac
