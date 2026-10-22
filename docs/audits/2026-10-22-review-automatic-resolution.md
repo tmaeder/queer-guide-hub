@@ -90,3 +90,15 @@ regressions verify dry-run, successful resolution, retained current findings,
 human-touched and external-detector refusal, evidence preservation and audit
 provenance. Fixtures include explicit evidence hashes and serialize with the
 worker lease to avoid conflicting with a scheduled sweep.
+
+
+Catch-up window from19:18 UTC:21 existing native quality API batches processed
+503 rows with zero processing failures (53 passed verdicts,239 rejected verdicts,
+211 review verdicts). Final dispositions were checked separately:44 automatic
+inserts,11 automatic updates and35 terminal rejections were observed in this
+window; a further human-approved update is excluded. Verdict totals are not
+claimed as terminal resolutions. Continued ingestion left two newly eligible
+unjudged rows after the bounded catch-up completed. At19:58 UTC the actual UI
+worklist reported1,797 ready,3,250 research and805 blocked; the81 cleared liveness
+findings were no longer active cached cases. The source corrections are real;
+blocked/research outcomes are not counted as resolved decisions.
