@@ -73,7 +73,7 @@ slow: its planner ran the volatile relationship helper before joining the
 verification status, probing 1,026 ghost cities rather than 26 candidates.
 A scan-once relationship set completed in 2.57 seconds and produced zero
 eligibility differences against the original helper for all 26 candidates.
-Migration 99991792703017 changes only candidate selection. It preserves every
+Migration 99991792706043 changes only candidate selection. It preserves every
 historical relationship type and the existing post-lock helper check, which
 remains authoritative before disposition. A temporary compiled copy of the
 entire updated worker completed a live dry-run successfully; no permanent
@@ -155,8 +155,15 @@ The original94084/94100/96301 migrations have since applied through a normal
 main deployment alongside transit work. All branch edits to applied94084 were
 restored exactly to its recorded unguarded form (50 stored statements); the
 unneeded guard draft was withdrawn. The sole remaining unapplied recovery
-migration was allocator-renumbered to99991792703017. Recent live scheduled
+migration was allocator-renumbered to99991792706043. Recent live scheduled
 worklist refreshes completed in19–33 seconds after decoupling, while the older
 independent sweep still took58–77 seconds before the pending index/selector
 optimization. Both review cron starts and their registry records were verified
 enabled/active after the brief coordinated lock window.
+
+All twelve required checks passed on86884726a. A city-match main update required
+a fresh protected-branch validation pass. The unapplied recovery migration was
+allocator-renumbered above the pending email Auth fix05625 to preserve deployment
+order; no applied migration was changed. Quote-aware SQL comment stripping
+passed the strict function-definition guard, PostgreSQL grammar validation and
+native literal-preservation fixtures.
