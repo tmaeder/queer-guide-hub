@@ -137,7 +137,8 @@ Deno.serve(withErrorReporting('pipeline-quality-enhance', async (req) => {
 
     const pools = await loadCandidatePools(supabase)
 
-    let processed = 0, passed = 0, review = 0, rejected = 0, failed = 0
+    let processed = 0, passed = 0, review = 0, rejected = 0, failed = 0, deferred = 0
+    const deferredReasons = new Set<string>()
 
     const processItem = async (item: (typeof items)[number]) => {
       const startedAt = Date.now()
@@ -183,7 +184,8 @@ Deno.serve(withErrorReporting('pipeline-quality-enhance', async (req) => {
             () => callQualityLLM(supabase, userPrompt)),
         )
         if (attempt.kind === 'deferred') {
-          failed++
+          deferred++
+          deferredReasons.add(attempt.reason)
           console.warn(`quality-enhance deferred ${item.id}: ${attempt.reason}`, attempt.error)
           return
         }
@@ -325,6 +327,8 @@ Deno.serve(withErrorReporting('pipeline-quality-enhance', async (req) => {
       items_processed: processed + failed,
       items_succeeded: processed,
       items_failed: failed,
+      items_deferred: deferred,
+      ...(deferred > 0 ? { deferred_reasons: [...deferredReasons] } : {}),
       passed, review, rejected,
       pipeline_version: QUALITY_PIPELINE_VERSION,
       input_version: STAGED_NEWS_INPUT_VERSION,
