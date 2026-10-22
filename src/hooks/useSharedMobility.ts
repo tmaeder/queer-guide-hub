@@ -12,7 +12,7 @@ export interface SharedMobilityNear {
 
 /**
  * Rideable shared bikes & e-scooters near a point, from the national snapshot
- * (`shared_mobility_near`, migration 99991792693301). Reads our own table only —
+ * (`shared_mobility_near`, migration 99991792696992). Reads our own table only —
  * the browser never calls the upstream feed.
  */
 export function useSharedMobilityNear(

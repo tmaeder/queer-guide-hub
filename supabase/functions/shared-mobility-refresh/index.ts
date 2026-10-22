@@ -2,7 +2,7 @@
 //
 // Source: sharedmobility.ch GBFS 2.0 (Swiss Federal Office of Energy), open data,
 // attribution required, no key. Writes the single shared_mobility_snapshot row
-// (migration 99991792693301); the browser reads only that row.
+// (migration 99991792696992); the browser reads only that row.
 //
 // Every failure exits 5xx: this is a tracked automation and a 200 resets
 // consecutive_failures (see airport-service-refresh for the incident).

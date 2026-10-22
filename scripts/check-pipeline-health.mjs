@@ -5950,7 +5950,7 @@ const DISOWNED_PROSE_CEILING = 380
 }
 
 // ---------------------------------------------------------------------------
-// §  Shared bikes & e-scooters snapshot (shared_mobility_snapshot, 99991792693301)
+// §  Shared bikes & e-scooters snapshot (shared_mobility_snapshot, 99991792696992)
 // ---------------------------------------------------------------------------
 // Refreshed */5 by shared_mobility_refresh. The UI hides counts older than 20 min,
 // so a dead refresher does not publish stale numbers — it silently removes the
@@ -5962,7 +5962,7 @@ const DISOWNED_PROSE_CEILING = 380
     { headers },
   )
   if (res.status === 404) {
-    console.warn('⚠ shared_mobility_snapshot not deployed yet (migration 99991792693301?) — skipping')
+    console.warn('⚠ shared_mobility_snapshot not deployed yet (migration 99991792696992?) — skipping')
   } else if (!res.ok) {
     console.error(`✗ shared_mobility_snapshot returned HTTP ${res.status} — measured nothing`)
     FAILED = true
