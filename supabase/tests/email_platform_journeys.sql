@@ -95,9 +95,9 @@ begin
  assert not exists(select 1 from public.email_journey_claim(5)),'paused run claimed';
  perform public.email_journey_save('Onboarding','account.created','created',definition,'once_per_account','active',null,j.id,3);
  assert public.email_journey_run_allowed(rid,lid),'resume lost persisted run';
- update auth.users set email='changed-primary@example.com' where id='b3333333-0000-4000-8000-000000000001';
+ perform public.email_fixture_change_mailbox('b3333333-0000-4000-8000-000000000001','changed-primary@example.com');
  assert not public.email_journey_message_allowed(mid),'stale primary email submitted';
- update auth.users set email='journey-b@example.com' where id='b3333333-0000-4000-8000-000000000001';
+ perform public.email_fixture_change_mailbox('b3333333-0000-4000-8000-000000000001','journey-b@example.com');
  select lease_id into mailbox_lease from public.email_claim(1,mid);
  assert public.email_finish(mid,mailbox_lease,'queued',null,'E_DAILY_LIMIT_EXCEEDED',86400);
  assert public.email_journey_advance(rid,lid,'test_quota');

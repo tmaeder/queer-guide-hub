@@ -20,8 +20,7 @@ do $$ declare r jsonb;k text;begin
  assert exists(select 1 from jsonb_array_elements(public.email_recipient_directory('user')->'recipients') x where x->>'email'='shared-business@example.com');
 end $$;
 reset role;
--- Subsequent source-change fixtures update Auth as service_role explicitly.
-grant select on auth.users to service_role;
+-- Subsequent Auth source changes use the test-only privileged fixture helper.
 set local role service_role;
 do $$
 declare r jsonb;s public.email_subscribers;uid uuid:='66666666-0000-4000-8000-000000000002';before_mail bigint;segment jsonb;campaign jsonb;audience uuid;experiment uuid;aid uuid:='66666666-0000-4000-8000-000000000001';
@@ -43,9 +42,9 @@ begin
  perform public.email_subscription_request('shared-business@example.com',uid,'en',array['newsletter'],'website','fixture',repeat('6',64));
  assert public.email_subscription_consume(repeat('6',64),'confirm');
  assert public.email_segment_preview('{"field":"recipient_kind","op":"eq","value":"vendor"}','newsletter')->>'eligible'='1';
- update auth.users set email='new-canonical-account@example.com' where id=uid;
+ perform public.email_fixture_change_mailbox(uid,'new-canonical-account@example.com');
  assert public.email_segment_preview('{"field":"recipient_kind","op":"eq","value":"user"}','newsletter')->>'matched'='0','user mailbox change left a stale association';
- update auth.users set email='shared-business@example.com' where id=uid;
+ perform public.email_fixture_change_mailbox(uid,'shared-business@example.com');
  assert public.email_segment_preview('{"field":"recipient_kind","op":"eq","value":"user"}','newsletter')->>'eligible'='1';
  begin update public.email_recipient_user_lookup set mailbox_hash=repeat('f',64) where user_id=uid;raise exception 'service caller forged account proof';exception when insufficient_privilege then null;end;
 
