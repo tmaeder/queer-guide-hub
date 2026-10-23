@@ -2,8 +2,8 @@
  * Image CDN Worker — serves images and thumbnails from R2.
  *
  * Routes:
- *   GET /{id}.{ext}           → original image from R2
- *   GET /thumb/{id}.{ext}     → 400px-wide thumbnail (generated on first request, cached in R2)
+ *   GET/HEAD /{id}.{ext}      → original image or its metadata from R2
+ *   GET/HEAD /thumb/{id}.{ext} → thumbnail or its metadata
  *   PUT /upload/{id}.{ext}    → upload image to R2 (requires ADMIN_SECRET)
  *   POST /upload-batch        → upload multiple images (requires ADMIN_SECRET)
  *   POST /avatar/resolve      → privacy proxy: resolve via unavatar.io, cache in R2
@@ -32,7 +32,7 @@ function corsHeaders(req: Request, env: Env): Record<string, string> {
   const allowed = (env.ALLOWED_ORIGINS || '').split(',').map(s => s.trim());
   return {
     'Access-Control-Allow-Origin': allowed.includes(origin) ? origin : '',
-    'Access-Control-Allow-Methods': 'GET, PUT, POST, OPTIONS',
+    'Access-Control-Allow-Methods': 'GET, HEAD, PUT, POST, OPTIONS',
     'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Admin-Secret',
   };
 }
@@ -75,8 +75,9 @@ export default {
       return handleSocialResolve(req, env, corsHeaders(req, env));
     }
 
-    // GET — serve image
-    if (req.method !== 'GET') {
+    // Image probes use HEAD before requesting any bytes. Rejecting it marks
+    // publicly readable assets as unreachable across all quality workers.
+    if (req.method !== 'GET' && req.method !== 'HEAD') {
       return new Response('Method not allowed', { status: 405 });
     }
 
@@ -84,29 +85,47 @@ export default {
     const key = isThumb ? path.slice(THUMB_PREFIX.length) : path;
 
     if (!key || key.includes('..')) {
-      return new Response('Not found', { status: 404 });
+      return new Response(req.method === 'HEAD' ? null : 'Not found', { status: 404 });
     }
 
     // Try to serve from R2
     if (isThumb) {
+      if (req.method === 'HEAD') {
+        const cached = await env.IMAGES.head(`${THUMB_PREFIX}${key}`);
+        if (cached) return new Response(null, { headers: { ...imageHeaders(req, env, key, cached), 'X-Thumb': 'cached' } });
+        // An uncached thumbnail can differ from its original. Build the same
+        // representation as GET rather than reporting the original's metadata.
+        const response = await serveThumb(req, env, ctx, key);
+        await response.body?.cancel();
+        return new Response(null, { status: response.status, headers: response.headers });
+      }
       return serveThumb(req, env, ctx, key);
     }
     return serveOriginal(req, env, key);
   },
 };
 
+function imageHeaders(req: Request, env: Env, key: string, obj: R2Object): Record<string, string> {
+  return {
+    ...corsHeaders(req, env),
+    'Content-Type': obj.httpMetadata?.contentType || contentType(key.split('.').pop() || 'jpg'),
+    'Content-Length': String(obj.size),
+    'Cache-Control': `public, max-age=${CACHE_TTL}, immutable`,
+    'ETag': obj.httpEtag,
+  };
+}
+
 async function serveOriginal(req: Request, env: Env, key: string): Promise<Response> {
+  if (req.method === 'HEAD') {
+    const metadata = await env.IMAGES.head(key);
+    return metadata ? new Response(null, { headers: imageHeaders(req, env, key, metadata) })
+      : new Response(null, { status: 404 });
+  }
   const obj = await env.IMAGES.get(key);
   if (!obj) return new Response('Not found', { status: 404 });
 
-  const ext = key.split('.').pop() || 'jpg';
   return new Response(obj.body, {
-    headers: {
-      ...corsHeaders(req, env),
-      'Content-Type': obj.httpMetadata?.contentType || contentType(ext),
-      'Cache-Control': `public, max-age=${CACHE_TTL}, immutable`,
-      'ETag': obj.etag,
-    },
+    headers: imageHeaders(req, env, key, obj),
   });
 }
 
@@ -116,13 +135,9 @@ async function serveThumb(req: Request, env: Env, ctx: ExecutionContext, key: st
   // Check if thumbnail already exists in R2
   const cached = await env.IMAGES.get(thumbKey);
   if (cached) {
-    const ext = key.split('.').pop() || 'jpg';
     return new Response(cached.body, {
       headers: {
-        ...corsHeaders(req, env),
-        'Content-Type': cached.httpMetadata?.contentType || contentType(ext),
-        'Cache-Control': `public, max-age=${CACHE_TTL}, immutable`,
-        'ETag': cached.etag,
+        ...imageHeaders(req, env, key, cached),
         'X-Thumb': 'cached',
       },
     });

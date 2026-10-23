@@ -9,7 +9,7 @@ const event = { id: '00000000-0000-0000-0000-000000000001', title: 'Queer Arts N
 
 async function harness(
   body: unknown,
-  options: { fullDescription?: boolean; failFinish?: boolean; budgetAvailable?: boolean; rawDescription?: boolean } = {},
+  options: { fullDescription?: boolean; failFinish?: boolean; budgetAvailable?: boolean; rawDescription?: boolean; capturedHtml?: boolean } = {},
 ) {
   const savedFetch = globalThis.fetch
   const keys = ['SUPABASE_URL', 'SUPABASE_SERVICE_ROLE_KEY', 'EVENT_QUALITY_WEBHOOK_SECRET']
@@ -25,8 +25,12 @@ async function harness(
     let data: unknown
     if (url.pathname.endsWith('/claim_event_gaps')) data = [{
       event_id: event.id,
-      event: { ...event, description: options.fullDescription ? description : '' },
-      sources: [{ source_url: event.website, raw: options.rawDescription === false ? {} : { description } }],
+      event: { ...event, description: options.fullDescription ? description : '',
+        ...(options.capturedHtml ? { external_id: 'arts', start_date: '2026-11-03T19:00:00Z' } : {}) },
+      sources: options.capturedHtml ? [{ source_slug: 'agendaq', source_url: 'https://www.agendaq.fr/fr/agenda/arts', raw: {
+        description: `<p>${description}</p>`, full_description: `<p>${description}</p>`, name: event.title,
+        slug: 'arts', start: '2026-11-03T19:00:00Z', source_id: 'source-fixture', payload_hash: 'a'.repeat(64),
+      } }] : [{ source_url: event.website, raw: options.rawDescription === false ? {} : { description } }],
     }]
     else if (url.pathname.endsWith('/llm_budget_consume')) data = {
       allowed: options.budgetAvailable ?? true, cap: 60,
@@ -81,4 +85,15 @@ Deno.test('event gaps: exhausted optional-field budget avoids external requests'
 Deno.test('event gaps: invalid request body is rejected before work is claimed', async () => {
   const result = await harness([])
   assert(result.status === 400 && result.calls.length === 0, 'invalid body claimed work')
+})
+
+Deno.test('event gaps: captured HTML enriches without page requests or inference at zero model budget', async () => {
+  const result = await harness({ batch_size: 1 }, { capturedHtml: true, budgetAvailable: false })
+  assert(result.status === 200, 'captured copy failed')
+  const finish = result.calls.find(c => c.path.endsWith('/finish_event_gap'))
+  assert(finish !== undefined, 'missing native finish')
+  assert((finish.body.p_patch as Record<string, unknown>).description === description, 'original copy not preserved')
+  const details = finish.body.p_details as Record<string, unknown>
+  assert(details.method === 'captured_source_html' && details.source_payload_hash === 'a'.repeat(64), 'missing source proof')
+  assert(details.network_requests === 0 && details.ai_attempts === 0, 'unexpected source fetch or inference')
 })

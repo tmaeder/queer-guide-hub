@@ -14,6 +14,11 @@ set -euo pipefail
 
 FULL_MAX_BYTES=${FULL_MAX_BYTES:-20000000}
 ROW_CAP=${ROW_CAP:-3000}
+# Copied whole despite their size: glossary pages join across the full tag set.
+FULL_TABLES=${FULL_TABLES:-unified_tags}
+# Admin registries copied as the dump role, not anon: queue definitions only, no
+# queue rows and no user data. The admin review page needs them to render at all.
+CONFIG_TABLES=${CONFIG_TABLES:-admin_review_sources,admin_review_finding_codes,triage_sources,review_field_registry}
 
 cmd=$1 db=$2 dir=$3
 # SUPABASE_DB_URL is written for node-postgres; libpq and the CLI reject no-verify.
@@ -27,22 +32,41 @@ dump)
   "$(dirname "$0")/supabase-retry.sh" db dump --db-url "$db" -f "$dir/schema.sql"
   psqlq -At -c "select version from supabase_migrations.schema_migrations order by 1" > "$dir/versions.txt"
 
-  # table|non-generated columns|limit clause, for every table anon may SELECT.
+  # Slugs and domains named anywhere in e2e/ are always copied, so a capped table
+  # still holds the rows specs open by name (checkpoint-zuerich, /tags/transgender).
+  pins=$( { grep -ohE "['\"\`][a-z0-9]+([-.][a-z0-9]+)+" -r e2e | cut -c2-
+            grep -ohE "/[a-z0-9]+([-.][a-z0-9]+)*" -r e2e | cut -c2-; } | grep -E '[a-z]' | sort -u | paste -sd, -)
+
+  # table|non-generated columns|pin column (slug/domain) or empty|capped?
   psqlq -At -F'|' -c "
     select c.relname,
            string_agg(quote_ident(a.attname), ',' order by a.attnum),
-           case when pg_table_size(c.oid) > $FULL_MAX_BYTES then ' limit $ROW_CAP' else '' end
+           case when bool_or(a.attname = 'slug') then 'slug' when bool_or(a.attname = 'domain') then 'domain' else '' end,
+           (pg_table_size(c.oid) > $FULL_MAX_BYTES and c.relname <> all(string_to_array('$FULL_TABLES', ',')))::int
     from pg_class c
     join pg_namespace n on n.oid = c.relnamespace
     join pg_attribute a on a.attrelid = c.oid and a.attnum > 0 and not a.attisdropped and a.attgenerated = ''
     where n.nspname = 'public' and c.relkind = 'r'
-      and has_table_privilege('anon', c.oid, 'SELECT')
+      and (has_table_privilege('anon', c.oid, 'SELECT') or c.relname = any(string_to_array('$CONFIG_TABLES', ',')))
     group by c.oid, c.relname order by c.relname" > "$dir/manifest.txt"
 
   {
+    while IFS='|' read -r t cols _ _; do
+      case ",$CONFIG_TABLES," in *",$t,"*) echo "\\copy (select $cols from public.\"$t\") to '$dir/data/$t.csv' csv" ;; esac
+    done < "$dir/manifest.txt"
+    # Read exactly as PostgREST serves an anonymous visitor: some policies read
+    # the JWT claims, and without them `set role anon` alone sees 0 unified_tags.
+    echo "select set_config('request.jwt.claims', '{\"role\":\"anon\"}', false);"
     echo "set role anon;"
-    while IFS='|' read -r t cols lim; do
-      echo "\\copy (select $cols from public.\"$t\"$lim) to '$dir/data/$t.csv' csv"
+    while IFS='|' read -r t cols pin capped; do
+      case ",$CONFIG_TABLES," in *",$t,"*) continue ;; esac
+      q="select $cols from public.\"$t\""
+      if [ "$capped" = 1 ] && [ -n "$pin" ]; then
+        q="($q where $pin = any('{$pins}')) union all ($q where not coalesce($pin = any('{$pins}'), false) limit $ROW_CAP)"
+      elif [ "$capped" = 1 ]; then
+        q="$q limit $ROW_CAP"
+      fi
+      echo "\\copy ($q) to '$dir/data/$t.csv' csv"
     done < "$dir/manifest.txt"
   } > "$dir/copy-out.sql"
   # A table anon cannot actually read (column grants, RLS errors) is skipped, not fatal.

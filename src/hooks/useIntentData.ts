@@ -314,6 +314,37 @@ export interface RightsCountry {
  * `useTripSafety` already sets this precedent.
  */
 /**
+ * `lgbti_criminalization` minus its `enforcement` key, as PostgREST JSON-path
+ * selects. `enforcement` is ILGA free text: 1.13 MB of the column's 1.2 MB over
+ * 250 rows, read by no list view, and the reason the all-countries fetch was
+ * 486 KB gzipped (16.6 KB without it). Every other key is kept, so the helpers
+ * in src/utils/equalityScore.ts see the same object. `withCriminalization`
+ * reassembles it.
+ */
+export const CRIMINALIZATION_LIST_COLUMNS =
+  'crim_legal:lgbti_criminalization->legal, crim_penalty:lgbti_criminalization->penalty, crim_death_penalty:lgbti_criminalization->death_penalty, crim_max_prison:lgbti_criminalization->max_prison, crim_max_prison_years:lgbti_criminalization->max_prison_years, crim_fine:lgbti_criminalization->fine, crim_has_fine:lgbti_criminalization->has_fine, crim_other:lgbti_criminalization->other, crim_other_punishment:lgbti_criminalization->other_punishment, crim_illegal_since:lgbti_criminalization->illegal_since, crim_decrim_year_1:lgbti_criminalization->decrim_year_1, crim_decrim_year_2:lgbti_criminalization->decrim_year_2, crim_basis:lgbti_criminalization->basis, crim_source:lgbti_criminalization->source, crim_de_facto_authority:lgbti_criminalization->de_facto_authority, crim_disputed:lgbti_criminalization->disputed' as const;
+
+const CRIM_PREFIX = 'crim_';
+
+/** Folds the `crim_*` JSON-path columns back into `lgbti_criminalization`. */
+export function withCriminalization<T>(rows: Record<string, unknown>[] | null): T[] {
+  return (rows ?? []).map((row) => {
+    const out: Record<string, unknown> = {};
+    let crim: Record<string, unknown> | null = null;
+    for (const [k, v] of Object.entries(row)) {
+      if (!k.startsWith(CRIM_PREFIX)) {
+        out[k] = v;
+        continue;
+      }
+      if (v === null || v === undefined) continue;
+      (crim ??= {})[k.slice(CRIM_PREFIX.length)] = v;
+    }
+    if (crim || !('lgbti_criminalization' in out)) out.lgbti_criminalization = crim;
+    return out as T;
+  });
+}
+
+/**
  * `id, name, slug, code, equality_score` plus every column named by
  * RIGHT_TOPICS.
  *
@@ -332,7 +363,7 @@ export interface RightsCountry {
 // widens it to `string`, inference collapses to GenericStringError[] and the
 // row cast below becomes a TS2352. Caught by the typecheck ratchet.
 export const RIGHTS_SELECT_COLUMNS =
-  'id, name, slug, code, equality_score, lgbti_criminalization, lgbti_expression_restrictions, lgbti_association_restrictions, lgbti_constitutional_protection, lgbti_employment_protection, lgbti_housing_protection, lgbti_education_protection, lgbti_health_protection, lgbti_goods_services_protection, lgbti_bullying_protection, lgbti_hate_crime_law, lgbti_incitement_prohibition, lgbti_same_sex_unions, lgbti_adoption_rights, lgbti_gender_recognition, lgbti_conversion_therapy_regulation, lgbti_intersex_protection' as const;
+  `id, name, slug, code, equality_score, ${CRIMINALIZATION_LIST_COLUMNS}, lgbti_expression_restrictions, lgbti_association_restrictions, lgbti_constitutional_protection, lgbti_employment_protection, lgbti_housing_protection, lgbti_education_protection, lgbti_health_protection, lgbti_goods_services_protection, lgbti_bullying_protection, lgbti_hate_crime_law, lgbti_incitement_prohibition, lgbti_same_sex_unions, lgbti_adoption_rights, lgbti_gender_recognition, lgbti_conversion_therapy_regulation, lgbti_intersex_protection` as const;
 
 /**
  * The NARROW fetch: what /travel and /rights/sources actually read.
@@ -351,11 +382,11 @@ export function useAllCountriesRights() {
       const { data, error } = await supabase
         .from('countries')
         .select(
-          'id, name, slug, code, equality_score, lgbti_criminalization, lgbti_same_sex_unions',
+          `id, name, slug, code, equality_score, ${CRIMINALIZATION_LIST_COLUMNS}, lgbti_same_sex_unions`,
         )
         .order('name', { ascending: true });
       if (error) throw error;
-      return (data ?? []) as RightsCountry[];
+      return withCriminalization<RightsCountry>(data as unknown as Record<string, unknown>[]);
     },
   });
 }
@@ -378,7 +409,7 @@ export function useAllCountriesRightsFull() {
         .select(RIGHTS_SELECT_COLUMNS)
         .order('name', { ascending: true });
       if (error) throw error;
-      return (data ?? []) as RightsCountry[];
+      return withCriminalization<RightsCountry>(data as unknown as Record<string, unknown>[]);
     },
   });
 }
@@ -441,7 +472,7 @@ export function useAllCountriesTransRights() {
         .select(TRANS_RIGHTS_SELECT_COLUMNS)
         .order('name', { ascending: true });
       if (error) throw error;
-      return (data ?? []) as unknown as TransRightsCountry[];
+      return withCriminalization<TransRightsCountry>(data as unknown as Record<string, unknown>[]);
     },
   });
 }

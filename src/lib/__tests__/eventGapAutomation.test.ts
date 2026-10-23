@@ -73,7 +73,7 @@ describe('event gap evidence', () => {
       'https://arts.example.org/poster.jpg',
     ]);
   });
-  it('uses only event-owned, cover-sized feed assets', () => {
+  it('uses event-owned landscape or portrait artwork with the same minimum edges', () => {
     const source = {
       source_slug: 'agendaq',
       source_url: 'https://www.agendaq.fr/fr/agenda/arts',
@@ -81,6 +81,9 @@ describe('event gap evidence', () => {
         assets: [
           ['bonus', '/assets/events/arts/bonus.jpg', 'image/jpeg', 1200, 800],
           ['small', '/assets/events/arts/small.jpg', 'image/jpeg', 300, 200],
+          ['poster', '/assets/events/arts/poster.jpg', 'image/jpeg', 679, 960],
+          ['narrow', '/assets/events/arts/narrow.jpg', 'image/jpeg', 449, 1200],
+          ['short', '/assets/events/arts/short.jpg', 'image/jpeg', 600, 799],
           ['other', '/assets/events/another/bonus.jpg', 'image/jpeg', 1200, 800],
         ],
       },
@@ -88,6 +91,10 @@ describe('event gap evidence', () => {
     expect(sourceArtwork([source])).toEqual([
       {
         url: 'https://data.agendaq.fr/assets/events/arts/bonus.jpg',
+        source_url: source.source_url,
+      },
+      {
+        url: 'https://data.agendaq.fr/assets/events/arts/poster.jpg',
         source_url: source.source_url,
       },
     ]);
