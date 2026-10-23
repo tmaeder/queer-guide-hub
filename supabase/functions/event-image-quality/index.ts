@@ -13,7 +13,7 @@ import { probeForRole } from '../_shared/image-probe.ts'
 import { assertPublicHttpUrl } from '../_shared/ssrf-guard.ts'
 
 const DETECTOR = 'event-image-quality'
-const RUNTIME_REVISION = '2026-10-22.event-artwork-v1'
+const RUNTIME_REVISION = '2026-10-23.current-artwork-reuse-v1'
 const MAX_IMAGE_BYTES = 12 * 1024 * 1024
 
 type Severity = 'critical' | 'high' | 'medium' | 'low'
@@ -189,16 +189,24 @@ Deno.serve(async (req: Request) => {
               requireDb(observationResult.error, 'persist image observation')
 
               if (contentHash) {
-                const { count, error: reuseError } = await supabase
-                  .from('event_image_quality_observations')
-                  .select('event_id', { count: 'exact', head: true })
-                  .eq('content_hash', contentHash)
-                requireDb(reuseError, 'count reused image content')
-                if ((count ?? 0) >= 10) {
+                const { data: reuse, error: reuseError } = await supabase.rpc(
+                  'event_image_reuse_assessment',
+                  { p_event_id: eventId, p_image_url: imageUrl, p_content_hash: contentHash },
+                )
+                requireDb(reuseError, 'assess current event artwork reuse')
+                if (!reuse || reuse.contract !== 'current-event-artwork-reuse:v1') {
+                  throw new Error('Invalid current artwork reuse assessment')
+                }
+                if (!reuse.current_image) {
+                  return { event_id: eventId, image_url: imageUrl, skipped: 'primary_image_changed' }
+                }
+                if (reuse.should_flag) {
                   findings.push({
                     code: 'IMAGE_CONTENT_REUSED',
                     severity: 'medium',
-                    evidence: { url: imageUrl, content_hash: contentHash, event_count: count },
+                    evidence: {
+                      url: imageUrl, content_hash: contentHash, event_count: reuse.event_count,
+                    },
                   })
                 }
               }
