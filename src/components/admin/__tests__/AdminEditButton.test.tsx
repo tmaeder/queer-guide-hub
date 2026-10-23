@@ -278,4 +278,19 @@ describe('AdminEditButton', () => {
     expect(await screen.findByText('Revision history')).toBeInTheDocument();
     expect(screen.queryByText(/Export record/)).toBeNull();
   });
+
+  it('exports an event record from the events detail page', async () => {
+    exportRecordMock.mockReset().mockResolvedValue(undefined);
+    useAdminRolesMock.mockReturnValue({ canManageContent: () => true, loading: false });
+    renderIn(<AdminEditButton contentType="events" contentId="e1" exportable />, '/events/x');
+    await openMenu();
+    fireEvent.click(await screen.findByText('Export record (CSV)'));
+    await waitFor(() =>
+      expect(exportRecordMock).toHaveBeenCalledWith(
+        expect.objectContaining({ tableName: 'events' }),
+        'e1',
+        'CSV',
+      ),
+    );
+  });
 });

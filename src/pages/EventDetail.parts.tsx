@@ -441,6 +441,7 @@ export function EventActions({
             contentId={event.id}
             contentName={event.title}
             currentData={event as unknown as Record<string, unknown>}
+            exportable
           />
         </div>
       </details>
