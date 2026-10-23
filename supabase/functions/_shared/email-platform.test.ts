@@ -184,6 +184,7 @@ Deno.test("operational notice purposes use fixed app links without private detai
       "trip_change",
       "trip_reminder",
       "group_request",
+      "group_invitation",
       "contribution",
       "payment",
     ]
