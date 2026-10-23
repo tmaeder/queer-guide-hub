@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
-const MIGRATION = '99991792749487_merge_gap_cost_hints.sql';
+const MIGRATION = '99991792753750_merge_gap_cost_hints.sql';
 const raw = readFileSync(join(process.cwd(), 'supabase/migrations', MIGRATION), 'utf8');
 
 // The header quotes the plan, the default cost and the words "enabled=false", so an
