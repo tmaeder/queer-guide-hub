@@ -43,6 +43,11 @@ describe('exportAllTaxonomies', () => {
     const gender = sheets.find((s) => s.name === 'Gender identities')!;
     expect(gender.rows.map((r) => r.id)).toEqual(['g1', 'g2']);
     expect(gender.columns.at(-1)?.header).toBe('ID');
+    // All fields: the configured ones plus any raw column (here none extra).
+    const headers = gender.columns.map((c) => c.header);
+    expect(headers).toEqual(
+      expect.arrayContaining(['Taxonomy', 'Stable value', 'Reference details']),
+    );
   });
 
   it('can leave tags out', async () => {
@@ -64,6 +69,9 @@ describe('exportAllTaxonomies', () => {
       'Parent ID',
       'Description',
       'ID',
+      // Every other column any vocabulary carries follows, so nothing is dropped.
+      'name',
+      'taxonomy',
     ]);
     const cells = rows.map((r) => columns.map((c) => c.accessor(r)));
     expect(cells).toContainEqual([
@@ -76,6 +84,8 @@ describe('exportAllTaxonomies', () => {
       '',
       '',
       'p1',
+      'Bisexual',
+      'pride_flag',
     ]);
     expect(rows.length).toBe(TAXONOMY_CATALOG.length - 1 + 3);
   });

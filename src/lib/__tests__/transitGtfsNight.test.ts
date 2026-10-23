@@ -7,6 +7,7 @@ import {
   mapMode,
   parseCsvLine,
   pickServiceWeek,
+  separateNightVariants,
   serviceEnd,
 } from '../../../scripts/transit/lib/gtfs-night.mjs';
 
@@ -136,5 +137,15 @@ describe('gtfs-night', () => {
     const acc = createNightAccumulator(WEEK);
     acc.add('20261107', 'tram|9|0', 4 * 3600 + 40 * 60, 'm');
     expect(acc.result().filter((r) => r.day_class === 'friday')).toHaveLength(0);
+  });
+
+  it('relabels a night variant that shares a regular line number (St. Gallen bus 200)', () => {
+    const base = { city_id: 'c', mode: 'bus', route_ref: '200', day_class: 'friday' };
+    const out = separateNightVariants([
+      { ...base, is_night_line: false },
+      { ...base, is_night_line: true },
+      { ...base, route_ref: 'N4', is_night_line: true }, // no collision: unchanged
+    ]);
+    expect(out.map((r) => r.route_ref)).toEqual(['200', '200 (night)', 'N4']);
   });
 });

@@ -17,6 +17,7 @@ import {
 import {
   exportColumnsFor,
   fetchContentRows,
+  rowColumnNames,
   type ExportFormat,
 } from '@/components/cms/ContentListPanel/exportContentList';
 import type { ContentTypeConfig } from '@/types/cms';
@@ -95,6 +96,23 @@ const FLAT_HEADERS = [
   'ID',
 ] as const;
 
+/** Raw columns the shared columns above already carry. */
+const FLAT_COVERED = new Set([
+  'id',
+  'slug',
+  'value',
+  'is_active',
+  'sort_order',
+  'parent_id',
+  'description',
+]);
+
+function cell(v: unknown): string | number | boolean {
+  if (v === null || v === undefined) return '';
+  if (typeof v === 'object') return JSON.stringify(v);
+  return v as string | number | boolean;
+}
+
 /** The columns every vocabulary shares, for the single flat CSV (FLAT_HEADERS order). */
 function flatColumns(source: TaxonomySource): ExportColumnDef<Row>[] {
   const { config } = source;
@@ -131,17 +149,26 @@ export async function exportAllTaxonomies(
       const columns = flatColumns(s);
       return s.rows.map((row) => ({ row, columns }));
     });
-    const columns: ExportColumnDef<Tagged>[] = FLAT_HEADERS.map((header, i) => ({
+    const shared: ExportColumnDef<Tagged>[] = FLAT_HEADERS.map((header, i) => ({
       header,
       accessor: (t) => t.columns[i].accessor(t.row),
     }));
+    // Then every other column any vocabulary carries, so no field is dropped;
+    // a vocabulary without that column leaves the cell empty.
+    const extra = rowColumnNames(sources.flatMap((s) => s.rows))
+      .filter((name) => !FLAT_COVERED.has(name))
+      .map((name): ExportColumnDef<Tagged> => ({
+        header: name,
+        accessor: (t) => cell(t.row[name]),
+      }));
+    const columns = [...shared, ...extra];
     exportToCsv(tagged, columns, generateFilename('taxonomies').replace(/\.xlsx$/, '.csv'));
     return;
   }
   const sheets: ExportSheet<Row>[] = sources.map((s) => ({
     name: s.label,
     rows: s.rows,
-    columns: exportColumnsFor(s.config, s.config.fields),
+    columns: exportColumnsFor(s.config, s.rows),
   }));
   await exportWorkbook(sheets, generateFilename('taxonomies'));
 }

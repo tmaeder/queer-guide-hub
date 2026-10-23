@@ -76,11 +76,36 @@ describe('content exports', () => {
       );
       const call = vi.mocked(format === 'CSV' ? exportToCsv : exportToExcel).mock.lastCall!;
       expect(call[0]).toHaveLength(2);
+      // List column, then every other column the rows carry, then ID.
       expect(call[1].map((column) => column.header)).toEqual(['Title', 'Status', 'ID']);
       expect(call[1][2].accessor(call[0][0])).toBe('t1');
       expect(call[2]).toMatch(format === 'CSV' ? /\.csv$/ : /\.xlsx$/);
     },
   );
+
+  it('exports every field, not just the list columns', async () => {
+    vi.mocked(fetchAllRows).mockResolvedValueOnce([
+      { id: 'v1', name: 'Bar', status: 'active', phone: '+41', extra_json: { a: 1 } },
+    ]);
+    const withFields = {
+      ...config,
+      fields: [
+        ...fields,
+        { name: 'phone', label: 'Phone', type: 'text' },
+        { name: 'computed', label: 'Computed', type: 'text', virtual: true },
+      ],
+    } as unknown as ContentTypeConfig;
+    await exportContentType(withFields, fields, 'CSV');
+    const [rows, columns] = vi.mocked(exportToCsv).mock.lastCall!;
+    expect(columns.map((c) => c.header)).toEqual(['Title', 'Status', 'Phone', 'extra_json', 'ID']);
+    expect(columns.map((c) => c.accessor(rows[0]))).toEqual([
+      'Bar',
+      'active',
+      '+41',
+      '{"a":1}',
+      'v1',
+    ]);
+  });
 
   it('with no scope, only adds the primary-key tiebreak', async () => {
     vi.mocked(fetchAllRows).mockClear();

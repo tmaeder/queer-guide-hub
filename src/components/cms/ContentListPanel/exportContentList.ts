@@ -74,20 +74,40 @@ export interface ExportScope {
   mergedView?: MergedView;
 }
 
-/** Title first, then the export fields (deduped by column name), then the id. */
+/** Every column present on at least one row, in first-seen order. */
+export function rowColumnNames(rows: Row[]): string[] {
+  const names = new Set<string>();
+  for (const row of rows) for (const key of Object.keys(row)) names.add(key);
+  return [...names];
+}
+
+/**
+ * Title first, then the preferred fields (the list's columns), then every other
+ * configured field, then every remaining column the rows actually carry, then
+ * the id — so an export contains all fields, not just the ones on screen.
+ * Configured fields keep their label and type formatting; unconfigured columns
+ * use the raw column name.
+ */
 export function exportColumnsFor(
   config: ContentTypeConfig,
-  fields: FieldConfig[],
+  rows: Row[],
+  preferred: FieldConfig[] = [],
 ): ExportColumnDef<Row>[] {
   const seen = new Set<string>([config.titleField, config.primaryKey]);
-  const rest = fields.filter((f) => {
-    if (f.virtual || seen.has(f.name)) return false;
+  const fields: FieldConfig[] = [];
+  for (const f of [...preferred, ...config.fields]) {
+    if (f.virtual || seen.has(f.name)) continue;
     seen.add(f.name);
-    return true;
-  });
+    fields.push(f);
+  }
+  for (const name of rowColumnNames(rows)) {
+    if (seen.has(name)) continue;
+    seen.add(name);
+    fields.push({ name, label: name, type: 'text' } as FieldConfig);
+  }
   return [
     { header: 'Title', accessor: (r) => (r[config.titleField] as string) ?? '' },
-    ...rest.map((f) => ({ header: f.label, accessor: accessorFor(f) })),
+    ...fields.map((f) => ({ header: f.label, accessor: accessorFor(f) })),
     { header: 'ID', accessor: (r) => String(r[config.primaryKey] ?? '') },
   ];
 }
@@ -125,11 +145,9 @@ export async function exportContentType(
   format: ExportFormat = 'Excel',
   scope?: ExportScope,
 ): Promise<void> {
-  // Types with no list columns (tags) export their configured fields rather
-  // than a file of names alone.
-  const exportFields = listColumns.length === 0 ? config.fields : listColumns;
-  const columns = exportColumnsFor(config, exportFields);
   const rows = await fetchContentRows(config, scope);
+  // List columns lead; every other field and column follows.
+  const columns = exportColumnsFor(config, rows, listColumns);
 
   if (format === 'CSV') {
     exportToCsv(rows, columns, generateFilename(config.id).replace(/\.xlsx$/, '.csv'));

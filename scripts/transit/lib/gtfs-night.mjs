@@ -204,3 +204,19 @@ export function serviceEnd(times) {
   }
   return { last: times[times.length - 1], allNight: false }; // nothing after 20:00
 }
+
+/**
+ * A night variant that shares its line number with a regular line (St. Gallen buses
+ * 200/211/120/121 on Fri/Sat) would produce two rows for one
+ * (city, mode, route_ref, day_class) key and abort the whole commit with
+ * "ON CONFLICT DO UPDATE command cannot affect row a second time". Both rows are
+ * real — the regular one is the last regular bus, the night one is all-night
+ * service — so the night variant is relabelled "<ref> (night)", only on collision.
+ */
+export function separateNightVariants(rows) {
+  const key = (r) => `${r.city_id}|${r.mode}|${r.route_ref}|${r.day_class}`;
+  const regular = new Set(rows.filter((r) => !r.is_night_line).map(key));
+  return rows.map((r) =>
+    r.is_night_line && regular.has(key(r)) ? { ...r, route_ref: `${r.route_ref} (night)` } : r,
+  );
+}

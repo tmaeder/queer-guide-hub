@@ -26,6 +26,7 @@ import {
   mapMode,
   parseCsvLine,
   pickServiceWeek,
+  separateNightVariants,
 } from './lib/gtfs-night.mjs';
 
 export const FEED_KEY = 'ch-opentransportdata-gtfs';
@@ -213,7 +214,7 @@ async function main() {
     for (const d of trip.dates) accs[ci].add(d, key, t, st.trip_id);
   }
 
-  const out = [];
+  let out = [];
   CITIES.forEach((c, i) => {
     for (const r of accs[i].result()) {
       const [mode, route_ref, night] = r.routeKey.split('|');
@@ -232,6 +233,16 @@ async function main() {
       });
     }
   });
+
+  out = separateNightVariants(out);
+  // The table key is (city, feed, mode, route_ref, day_class). A duplicate here makes the
+  // database reject the WHOLE batch, so name it and stop before sending anything.
+  const seen = new Set();
+  for (const r of out) {
+    const k = `${r.city_id}|${r.mode}|${r.route_ref}|${r.day_class}`;
+    if (seen.has(k)) throw new Error(`duplicate city_transit_service key: ${k}`);
+    seen.add(k);
+  }
 
   const summary = {
     feed_key: FEED_KEY,
