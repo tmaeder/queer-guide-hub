@@ -15,6 +15,8 @@ import { StructuredFieldEditor } from './StructuredDataView';
 import { useDedupMatchData } from '@/hooks/useTriageDetail';
 import type { TriageItem } from '@/hooks/useUnifiedTriageQueue';
 import { StructuredValueView } from '@/components/cms/fields/structured/StructuredValueView';
+import { NewsStagingPreview } from './NewsStagingPreview';
+import { readNewsStaging } from '@/lib/newsStaging';
 
 interface StagingPreviewProps {
   item: TriageItem;
@@ -138,12 +140,22 @@ export function StagingPreview({
   const hero = images[Math.min(heroIdx, images.length - 1)];
 
   const link = sourceUrl(normalized);
+  const isNews = (staging.target_table ?? item.content_type) === 'news_articles';
+  const news = useMemo(
+    () => (isNews ? readNewsStaging(normalized, enriched) : null),
+    [isNews, normalized, enriched],
+  );
   // Score breakdown — mixed scales normalised in ScoreChip (≤1 → %, else 0-100).
-  const confidence = (staging.ai_confidence_score as number | null) ?? item.confidence_score;
+  // News rows carry their scores on the LLM verdict, not on enriched_data.
+  const confidence =
+    news?.decision?.confidence ??
+    (staging.ai_confidence_score as number | null) ??
+    item.confidence_score;
   const quality =
     (enriched.quality_score as number | undefined) ??
     (typeof enriched.quality_score_after === 'number' ? enriched.quality_score_after : undefined);
-  const relevance = enriched.relevance_score as number | undefined;
+  const relevance =
+    news?.decision?.relevanceScore ?? (enriched.relevance_score as number | undefined);
   const dedupScore = staging.dedup_match_score as number | undefined;
   const reviewReason = enriched.review_reason as string | undefined;
 
@@ -158,10 +170,32 @@ export function StagingPreview({
     [matchData, normalized],
   );
 
+  const editor = (
+    <StructuredFieldEditor
+      key={item.id}
+      data={normalized}
+      entityType={item.content_type}
+      onSave={onSaveFields}
+      onDirtyChange={onDirtyChange}
+      saving={isSavingFields}
+    />
+  );
+
   return (
     <div>
+      {news && (
+        <>
+          <div className="px-4 pt-4 flex items-center gap-1.5 flex-wrap">
+            <ScoreChip label="Confidence" value={confidence} />
+            <ScoreChip label="Relevance" value={relevance} />
+            <ScoreChip label="LGBTQ+ relevance" value={news.lgbtqRelevance} />
+            <ScoreChip label="Dedup match" value={dedupScore} />
+          </div>
+          <NewsStagingPreview news={news} editor={editor} />
+        </>
+      )}
       {/* Image gallery */}
-      {hero && (
+      {!news && hero && (
         <div className="px-4 pt-4 space-y-2">
           {}
           <img
@@ -196,42 +230,37 @@ export function StagingPreview({
       )}
 
       {/* Scores + reason */}
-      <div className="px-4 py-4 space-y-2">
-        <div className="flex items-center gap-1.5 flex-wrap">
-          <ScoreChip label="Confidence" value={confidence} />
-          <ScoreChip label="Quality" value={quality} />
-          <ScoreChip label="Relevance" value={relevance} />
-          <ScoreChip label="Dedup match" value={dedupScore} />
+      {!news && (
+        <div className="px-4 py-4 space-y-2">
+          <div className="flex items-center gap-1.5 flex-wrap">
+            <ScoreChip label="Confidence" value={confidence} />
+            <ScoreChip label="Quality" value={quality} />
+            <ScoreChip label="Relevance" value={relevance} />
+            <ScoreChip label="Dedup match" value={dedupScore} />
+          </div>
+          {reviewReason && (
+            <p className="text-xs text-muted-foreground">
+              <span className="text-2xs uppercase tracking-wider">Reason</span>{' '}
+              {humanizeReason(reviewReason)}
+            </p>
+          )}
+          {link && (
+            <p className="text-xs">
+              <a
+                href={link.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1 text-muted-foreground hover:text-foreground"
+              >
+                {link.hostname.replace(/^www\./, '')}
+                <ExternalLink className="h-3 w-3" />
+              </a>
+            </p>
+          )}
         </div>
-        {reviewReason && (
-          <p className="text-xs text-muted-foreground">
-            <span className="text-2xs uppercase tracking-wider">Reason</span>{' '}
-            {humanizeReason(reviewReason)}
-          </p>
-        )}
-        {link && (
-          <p className="text-xs">
-            <a
-              href={link.href}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-1 text-muted-foreground hover:text-foreground"
-            >
-              {link.hostname.replace(/^www\./, '')}
-              <ExternalLink className="h-3 w-3" />
-            </a>
-          </p>
-        )}
-      </div>
+      )}
 
-      <StructuredFieldEditor
-        key={item.id}
-        data={normalized}
-        entityType={item.content_type}
-        onSave={onSaveFields}
-        onDirtyChange={onDirtyChange}
-        saving={isSavingFields}
-      />
+      {!news && editor}
 
       {/* Dedup: side-by-side with the matched live entity */}
       {matchData && (
