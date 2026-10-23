@@ -30,7 +30,8 @@ create table event_image_quality_observations(event_id uuid references events(id
 paths = list((ROOT / 'supabase/migrations').glob('*_event_image_reuse_scope.sql'))
 if len(paths) != 1:
     raise SystemExit('Exactly one reuse-scope migration required')
-sql = schema + paths[0].read_text() + (HERE / 'event_image_reuse_scope.sql').read_text()
+tighten = ROOT / 'supabase/migrations/99991792791040_tighten_event_artwork_series_scope.sql'
+sql = schema + paths[0].read_text() + tighten.read_text() + (HERE / 'event_image_reuse_scope.sql').read_text()
 with tempfile.TemporaryDirectory(prefix='qg-artwork-reuse-') as tmp:
     data = Path(tmp) / 'data'
     subprocess.run([binary('initdb'), '-D', str(data), '-A', 'trust', '--no-locale', '--wal-segsize=1'], check=True, stdout=subprocess.DEVNULL)

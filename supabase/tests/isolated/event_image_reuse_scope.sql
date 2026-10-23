@@ -8,9 +8,17 @@ begin
  assert(proof->>'event_count')::integer=10 and(proof->>'should_flag')::boolean,'Ten unrelated current events must still flag';
  update events set is_recurring=true where id=target;
  proof:=event_image_reuse_assessment(target,'https://images.example/1',fixture_hash);
- assert not(proof->>'should_flag')::boolean and proof->>'reason'='declared_recurring_artwork','Declared recurrence must follow the SQL scanner policy';
+ assert(proof->>'should_flag')::boolean,'A recurring flag alone must not hide cross-series or generic artwork';
  update events set is_recurring=false,series_key='registered-series'where id=target;
- assert not(event_image_reuse_assessment(target,'https://images.example/1',fixture_hash)->>'should_flag')::boolean,'A declared series also permits repeated artwork';
+ assert(event_image_reuse_assessment(target,'https://images.example/1',fixture_hash)->>'should_flag')::boolean,'A declared series must not exempt unrelated peers';
+ update events set series_key='registered-series';
+ proof:=event_image_reuse_assessment(target,'https://images.example/1',fixture_hash);
+ assert not(proof->>'should_flag')::boolean and(proof->>'same_recurrence_cluster')::boolean,'A wholly single-series cluster permits reused artwork';
+ update events set series_key=null where id=md5('event-10')::uuid;
+ assert(event_image_reuse_assessment(target,'https://images.example/1',fixture_hash)->>'should_flag')::boolean,'One unassigned peer must block the exemption';
+ update events set series_key='other-series'where id=md5('event-10')::uuid;
+ assert(event_image_reuse_assessment(target,'https://images.example/1',fixture_hash)->>'should_flag')::boolean,'One different series must block the exemption';
+ update events set series_key=null;
  update events set series_key=null where id=target;
  insert into event_image_quality_observations(event_id,image_url,content_hash,probe_status)
   select target,'https://images.example/obsolete-'||n,fixture_hash,'pass'from generate_series(1,20)n;
@@ -35,5 +43,5 @@ begin
  assert not has_function_privilege('anon','event_image_reuse_assessment(uuid,text,text)','EXECUTE');
  assert not has_function_privilege('authenticated','event_image_reuse_assessment(uuid,text,text)','EXECUTE');
  assert has_function_privilege('service_role','event_image_reuse_assessment(uuid,text,text)','EXECUTE');
- raise notice 'PASS: 14 current-artwork reuse, stale-observation, recurrence, and permission checks';
+ raise notice 'PASS: 17 current-artwork reuse, stale-observation, recurrence, and permission checks';
 end $test$;

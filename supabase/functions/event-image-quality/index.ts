@@ -200,7 +200,8 @@ Deno.serve(async (req: Request) => {
                 if (!reuse.current_image) {
                   return { event_id: eventId, image_url: imageUrl, skipped: 'primary_image_changed' }
                 }
-                if (reuse.should_flag) {
+                // Fail closed against the earlier, broader recurrence assessment.
+                if (reuse.should_flag || (Number(reuse.event_count) >= 10 && reuse.same_recurrence_cluster !== true)) {
                   findings.push({
                     code: 'IMAGE_CONTENT_REUSED',
                     severity: 'medium',
