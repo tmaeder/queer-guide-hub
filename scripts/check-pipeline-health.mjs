@@ -4197,7 +4197,7 @@ const DISOWNED_PROSE_CEILING = 380
 
 // §18b — news staging review queue holds only real decisions.
 //
-// 99991792709554 drained the machine-held part of the queue: empty verdicts are
+// 99991792729790 drained the machine-held part of the queue: empty verdicts are
 // retried (3 attempts) and a verdict blocked only by an unusable image or
 // pending entity links publishes. Both counts are zero by construction; a
 // non-zero value means the staging relaxations or the retry were reverted.
@@ -4208,7 +4208,7 @@ const DISOWNED_PROSE_CEILING = 380
     body: '{}',
   })
   if (res.status === 404) {
-    console.warn('⚠ news_staging_review_signals not deployed yet (migration 99991792709554) — skipped')
+    console.warn('⚠ news_staging_review_signals not deployed yet (migration 99991792729790) — skipped')
   } else if (!res.ok) {
     console.error(`✗ news_staging_review_signals → HTTP ${res.status} ${(await res.text()).slice(0, 200)}`)
     FAILED = true
