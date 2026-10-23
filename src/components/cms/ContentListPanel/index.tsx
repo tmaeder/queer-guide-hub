@@ -390,7 +390,7 @@ function ContentListPanelBody(props: ContentListPanelProps) {
                 </Button>
 
                 {c.config?.toolbarActions?.()}
-                {c.config && c.allListColumns.length > 0 && (
+                {c.config && (c.allListColumns.length > 0 || c.config.id === 'unified_tags') && (
                   <>
                     <ExportExcelButton
                       onExport={() => exportContentType(c.config!, c.allListColumns)}

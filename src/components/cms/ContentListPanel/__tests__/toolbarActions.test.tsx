@@ -19,6 +19,7 @@ import { TooltipProvider } from '@/components/ui/tooltip';
 import { Tag } from 'lucide-react';
 import type { ContentTypeConfig, FieldConfig } from '@/types/cms';
 import type { Filter } from '../viewSpec';
+import { unifiedTagsContentType } from '@/config/contentTypes/tag';
 
 /**
  * `toolbarActions` is what lets a page like AdminRedirects — which carries a
@@ -117,11 +118,7 @@ describe('ContentListPanel toolbarActions', () => {
     expect(controller.loadItems).toHaveBeenCalled();
   });
   it('offers CSV alongside Excel for tags even with search, filters, and pagination active', async () => {
-    const config = baseConfig({
-      id: 'unified_tags',
-      tableName: 'unified_tags',
-      titleField: 'name',
-    });
+    const config = unifiedTagsContentType;
     const original = {
       filters: controller.filters,
       search: controller.search,
@@ -131,7 +128,8 @@ describe('ContentListPanel toolbarActions', () => {
     controller.filters = [{ id: 'status-filter', field: 'status', op: 'eq', value: 'active' }];
     controller.search = 'filtered';
     controller.page = 3;
-    controller.allListColumns = [{ name: 'name', label: 'Name', type: 'text' } as FieldConfig];
+    controller.allListColumns = config.fields.filter((field) => field.listColumn);
+    expect(controller.allListColumns).toEqual([]);
     try {
       renderPanel(config);
       fireEvent.click(screen.getByRole('button', { name: 'Content tools' }));

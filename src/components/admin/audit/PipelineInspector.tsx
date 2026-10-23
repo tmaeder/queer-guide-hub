@@ -75,7 +75,7 @@ const KIND_META: Record<AuditEventKind, { label: string; icon: LucideIcon }> = {
  * 1.4.1). `destructive` is the only chromatic token in the product and its
  * sanctioned use is hard-error semantics, which is what `blocking` is.
  */
-function SeverityChip({ severity }: { severity: string | null }) {
+export function SeverityChip({ severity }: { severity: string | null }) {
   if (!severity) return null;
   if (severity === 'blocking') {
     return (
