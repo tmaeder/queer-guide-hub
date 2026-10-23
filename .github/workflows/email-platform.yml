@@ -143,7 +143,7 @@ jobs:
           psql -v ON_ERROR_STOP=1 -f supabase/migrations/99991792701247_email_platform_content_contacts.sql
           psql -v ON_ERROR_STOP=1 -f supabase/migrations/99991792705625_email_operator_account_check.sql
           psql -v ON_ERROR_STOP=1 -f supabase/migrations/99991792707766_email_group_invitations.sql
-          psql -v ON_ERROR_STOP=1 -f supabase/migrations/99991792730101_email_mailbox_delivery.sql
+          psql -v ON_ERROR_STOP=1 -f supabase/migrations/99991792788296_email_mailbox_delivery.sql
           # Match production; fixture Auth mutations use a test-only helper.
           psql -v ON_ERROR_STOP=1 -c 'REVOKE SELECT ON auth.users FROM service_role'
           psql -v ON_ERROR_STOP=1 -f supabase/tests/email_platform.sql
