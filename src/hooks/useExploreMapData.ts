@@ -268,6 +268,7 @@ export function useExploreMapData({ enabledLayers, viewport, filters }: UseExplo
   const { cities: rawCities = [], isFetching: citiesFetching } = useOptimizedCities({
     enabled: citiesEnabled,
     limit: 500,
+    columns: 'id,name,slug,latitude,longitude,population,is_capital',
     ...(filters?.search ? { search: filters.search } : {}),
   });
 
@@ -298,6 +299,7 @@ export function useExploreMapData({ enabledLayers, viewport, filters }: UseExplo
   const { countries: rawCountries = [], isFetching: countriesFetching } = useOptimizedCountries({
     enabled: countriesEnabled,
     limit: 250,
+    columns: 'id,name,slug,code,capital,latitude,longitude,population',
     ...(filters?.search ? { search: filters.search } : {}),
   });
 

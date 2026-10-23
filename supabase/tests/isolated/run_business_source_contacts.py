@@ -17,7 +17,7 @@ def binary(name):
 
 
 schema = """
-create role anon;create role authenticated;create role service_role;create schema auth;
+create role anon;create role authenticated;create role service_role;create schema auth;create schema extensions;create extension pgcrypto with schema extensions;
 create function auth.uid() returns uuid language sql stable as 'select null::uuid';
 create function assert_admin_or_internal() returns void language sql as 'select';
 create table countries(id uuid primary key,code text);
@@ -28,7 +28,7 @@ create table organizations(id uuid primary key,name text,status text default 'ac
  last_verified_at timestamptz,safety_score int default 42);
 create table venues(id uuid primary key,organization_id uuid,name text,city_id uuid,country_id uuid,
  closed_at timestamptz,duplicate_of_id uuid,updated_at timestamptz default now());
-create table venue_sources(id uuid primary key,venue_id uuid,source_slug text,source_url text,
+create table venue_sources(id uuid primary key,venue_id uuid,source_slug text,source_entity_id text,source_url text,
  payload_hash text default repeat('a',64),last_seen_at timestamptz default now(),payload jsonb);
 create table entity_quality_findings(id uuid primary key default gen_random_uuid(),entity_type text,
  entity_id uuid,dimension text,state text default 'fail',waived_at timestamptz,reason_code text default 'contact_missing',
@@ -50,7 +50,10 @@ end $stub$;
 paths = list((ROOT / 'supabase/migrations').glob('*_business_source_contact_repairs.sql'))
 if len(paths) != 1:
     raise SystemExit('Exactly one business contact repair migration required')
-sql = schema + paths[0].read_text() + (Path(__file__).parent / 'business_source_contacts.sql').read_text()
+extensions = list((ROOT / 'supabase/migrations').glob('*_overture_contact_source_inheritance.sql'))
+if len(extensions) != 1:
+    raise SystemExit('Exactly one Overture contact migration required')
+sql = schema + paths[0].read_text() + extensions[0].read_text() + (Path(__file__).parent / 'business_source_contacts.sql').read_text() + (Path(__file__).parent / 'overture_source_contacts.sql').read_text()
 with tempfile.TemporaryDirectory(prefix='qg-business-contacts-') as tmp:
     data = Path(tmp) / 'data'
     subprocess.run([binary('initdb'), '-D', str(data), '-A', 'trust', '--no-locale'], check=True, stdout=subprocess.DEVNULL)

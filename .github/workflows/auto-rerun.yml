@@ -12,6 +12,7 @@ jobs:
   rerun:
     if: github.event.workflow_run.conclusion == 'failure'
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     permissions:
       actions: write
     steps:

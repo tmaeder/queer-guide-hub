@@ -1202,6 +1202,13 @@ async function processPostalQueue(
 
     try {
       const readCurrent = async () => {
+        if (job.entity_type === 'event' || job.entity_type === 'organization') {
+          const { data, error: readError } = await supabase.from(table)
+            .select('postal_code, latitude, longitude, safety_gated, duplicate_of_id, country_id, field_provenance')
+            .eq('id', job.entity_id).maybeSingle()
+          if (readError) throw readError
+          return data
+        }
         const { data, error: readError } = await supabase.from(table)
           .select('postal_code, latitude, longitude, safety_gated, duplicate_of_id, country_id')
           .eq('id', job.entity_id).maybeSingle()
@@ -1229,7 +1236,7 @@ async function processPostalQueue(
           // Recheck daily so a source-backed correction can resume automatically.
           const { error: queueError } = await supabase.from('geo_address_queue').update({
             next_attempt_at: new Date(Date.now() + 24 * 3600_000).toISOString(),
-            last_error: 'geography_review_hold',
+            last_error: action === 'centroid_hold' ? 'city_centroid_not_postal_evidence' : 'geography_review_hold',
           }).eq('entity_type', job.entity_type).eq('entity_id', job.entity_id)
           if (queueError) throw queueError
         }

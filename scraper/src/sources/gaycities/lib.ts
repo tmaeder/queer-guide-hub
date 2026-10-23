@@ -787,6 +787,11 @@ function liveImage(url: string | null): string | null {
     // second, undocumented behaviour.
     return url;
   }
+  // Legacy snapshots reference Facebook Graph object pictures. These are API
+  // endpoints requiring credentials, not durable public artwork URLs. Existing
+  // imports return JSON errors (including HTTP 200), so do not publish them as
+  // images. Keep ordinary Facebook CDN images and proxy URLs on other hosts.
+  if (host === 'graph.facebook.com') return null;
   return DEAD_IMAGE_HOSTS.includes(host) ? null : url;
 }
 

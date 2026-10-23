@@ -96,7 +96,10 @@ Deno.serve(withErrorReporting('pipeline-quality-enhance', async (req) => {
       .select('id, normalized_data, enriched_data, target_table')
       .in('target_table', ['news_articles'])
       // apply_enrichment() writes 'enriched' on success — not 'success'.
-      .eq('enrichment_status', 'enriched')
+      // 'completed' is written by an older enrich path. A row whose empty verdict
+      // was reset for a retry can carry it, and selecting 'enriched' alone left
+      // those rows unjudgeable forever (64 measured on 2026-10-23).
+      .in('enrichment_status', ['enriched', 'completed'])
       // Never spend an LLM call on a row a deterministic gate already discarded:
       // validate-reject stamps disposition='rejected', dedup marks duplicates
       // (disposition stays 'pending' there, hence the separate neq). validate

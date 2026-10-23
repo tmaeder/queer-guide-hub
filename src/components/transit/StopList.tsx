@@ -26,8 +26,69 @@ export interface Stop {
  *
  * Ordinals are sequence, not merit. Nothing here sorts or scores.
  */
-export function StopList({ stops, className }: { stops: Stop[]; className?: string }) {
+export function StopList({
+  stops,
+  className,
+  variant = 'compact',
+}: {
+  stops: Stop[];
+  className?: string;
+  variant?: 'compact' | 'route';
+}) {
   if (stops.length === 0) return null;
+
+  if (variant === 'route') {
+    return (
+      <ol className={cn('max-w-reading list-none p-0', className)}>
+        {stops.map((stop) => (
+          <li
+            key={stop.id}
+            className="relative grid grid-cols-[44px_minmax(0,1fr)] gap-4 sm:grid-cols-[56px_minmax(0,1fr)] sm:gap-4"
+          >
+            <svg
+              aria-hidden="true"
+              viewBox="0 0 56 120"
+              preserveAspectRatio="none"
+              className="absolute inset-y-0 left-0 h-full w-11 text-track-green sm:w-14"
+            >
+              <path
+                d="M28 0 C8 30 48 90 28 120"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="8"
+              />
+            </svg>
+            <div aria-hidden="true" className="relative z-10 flex justify-center pt-6">
+              <span className="mt-1 h-5 w-5 rounded-full border-[4px] border-foreground bg-background" />
+            </div>
+            <div className="min-w-0 pb-6 pt-4">
+              {stop.walkFromPrevious && (
+                <p className="mb-2 text-13 text-muted-foreground">{stop.walkFromPrevious}</p>
+              )}
+              <div className="flex items-center gap-4">
+                <div className="min-w-0 flex-1 font-display text-headline leading-tight">
+                  {stop.href ? (
+                    <LocalizedLink
+                      to={stop.href}
+                      className="rounded-element no-underline underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    >
+                      {stop.name}
+                    </LocalizedLink>
+                  ) : (
+                    stop.name
+                  )}
+                </div>
+                {stop.type && <RouteBullet type={stop.type} size={30} />}
+              </div>
+              {stop.accessNote && (
+                <p className="mt-2 text-13 text-muted-foreground">{stop.accessNote}</p>
+              )}
+            </div>
+          </li>
+        ))}
+      </ol>
+    );
+  }
 
   return (
     <ol className={cn('list-none bg-muted rounded-element p-0', className)}>

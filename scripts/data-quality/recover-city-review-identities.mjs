@@ -3,7 +3,7 @@
 // population. No identity decisions, source classifications or quality counters
 // are written here; all enrichment uses the native corroboration/ownership rules.
 import { execFileSync } from 'node:child_process'
-import { mkdir, readFile, writeFile } from 'node:fs/promises'
+import { mkdir, readFile, writeFile, rename } from 'node:fs/promises'
 import { dirname } from 'node:path'
 
 const args = process.argv.slice(2)
@@ -22,19 +22,34 @@ if (!token) {
   catch { throw new Error('Existing Supabase CLI account or SUPABASE_PAT required') }
   token = raw.startsWith('go-keyring-base64:') ? Buffer.from(raw.slice(18),'base64').toString('utf8') : raw
 }
-async function sql(query) {
-  const r = await fetch(`https://api.supabase.com/v1/projects/${project}/database/query`, {
-    method:'POST',headers:{Authorization:`Bearer ${token}`,'Content-Type':'application/json'},
-    body:JSON.stringify({query}),signal:AbortSignal.timeout(60_000),
-  })
-  if (!r.ok) throw new Error(`Management query failed (${r.status}); inspect native diagnostics`)
-  return r.json()
+async function sql(query, readOnly = false) {
+  for (let attempt=0;attempt<3;attempt++) {
+    let response
+    try {
+      response = await fetch(`https://api.supabase.com/v1/projects/${project}/database/query`, {
+        method:'POST',headers:{Authorization:`Bearer ${token}`,'Content-Type':'application/json'},
+        body:JSON.stringify({query}),signal:AbortSignal.timeout(60_000),
+      })
+    } catch (error) {
+      if (!readOnly || attempt===2) throw error
+      await new Promise(resolve=>setTimeout(resolve,3000*(attempt+1)))
+      continue
+    }
+    if (response.ok) return response.json()
+    if (!readOnly || attempt===2 || ![502,503,504].includes(response.status)) {
+      throw new Error(`Management query failed (${response.status}); inspect native diagnostics`)
+    }
+    await response.body?.cancel()
+    await new Promise(resolve=>setTimeout(resolve,3000*(attempt+1)))
+  }
+  throw new Error('Read retry bound exhausted')
 }
 const sleep = ms => new Promise(resolve=>setTimeout(resolve,ms))
 let skippedIds=[]
 if (skipReport) {
   const previous=JSON.parse(await readFile(skipReport,'utf8'))
   if (previous.apply!==true || !Array.isArray(previous.receipts)) throw new Error('An actual native recovery report is required')
+  if (previous.receipts.some(receipt=>receipt.status!=='completed')) throw new Error('Reconcile all prior request receipts before resuming; an unknown write must not be replayed')
   skippedIds=[...new Set([...(previous.skipped_ids??[]),...previous.receipts.filter(r=>r.status==='completed').flatMap(r=>r.ids)])]
   if (skippedIds.some(id=>typeof id!=='string' || !/^[0-9a-f-]{36}$/.test(id))) throw new Error('Invalid prior native identity')
 }
@@ -47,16 +62,27 @@ const candidates = await sql(`select distinct c.id,c.country_id from public.revi
  and coalesce(c.enrichment_status#>>'{disposition,state}','')<>'not_a_city'
  and c.latitude between -90 and 90 and c.longitude between -180 and 180
  ${skipClause}
- order by c.country_id nulls last,c.id limit ${batchSize*maxBatches}`)
+ order by c.country_id nulls last,c.id limit ${batchSize*maxBatches}`,true)
 const report = { started_at:new Date().toISOString(),apply,skip_report:skipReport,skipped_ids:skippedIds,candidate_ids:candidates.map(c=>c.id),receipts:[],totals:{processed:0,updated:0,failed:0},complete:false }
 await mkdir(dirname(output),{recursive:true})
-const save = () => writeFile(output,JSON.stringify(report,null,2))
+// Keep the last complete receipt journal intact if a full disk interrupts a
+// write. A partial JSON file cannot safely tell an operator what ran already.
+const save = async () => {
+  const temporary = `${output}.tmp`
+  await writeFile(temporary,JSON.stringify(report,null,2))
+  await rename(temporary,output)
+}
 await save()
 for (let offset=0;offset<candidates.length;offset+=batchSize) {
   const ids=candidates.slice(offset,offset+batchSize).map(c=>c.id)
   // Values originate from native UUID columns; still validate before SQL quoting.
   if (ids.some(id=>!/^[0-9a-f-]{36}$/.test(id))) throw new Error('Invalid native identity')
   const payload=JSON.stringify({phase:'link',batch_limit:batchSize,city_ids:ids,relink:true,dry_run:!apply})
+  // Preserve the intended identities before submitting a write. A connection
+  // failure after submission can otherwise leave no journal entry at all.
+  const receipt={offset,ids,status:'submitting',submitted_at:new Date().toISOString()}
+  report.receipts.push(receipt)
+  await save()
   const sent=await sql(`select public.automation_http_post(
    url:='https://${project}.supabase.co/functions/v1/city-factual-backfill',
    headers:=jsonb_build_object('Content-Type','application/json',
@@ -64,13 +90,13 @@ for (let offset=0;offset<candidates.length;offset+=batchSize) {
    body:='${payload}'::jsonb,timeout_milliseconds:=180000) request_id`)
   const rid=Number(sent[0]?.request_id)
   if (!Number.isSafeInteger(rid)) throw new Error('No native request receipt')
-  const receipt={offset,request_id:rid,ids,status:'waiting'}
-  report.receipts.push(receipt)
+  receipt.request_id=rid
+  receipt.status='waiting'
   await save()
   let response
   for (let poll=0;poll<45;poll++) {
     await sleep(5000)
-    const rows=await sql(`select status_code,timed_out,content,error_msg from net._http_response where id=${rid}`)
+    const rows=await sql(`select status_code,timed_out,content,error_msg from net._http_response where id=${rid}`,true)
     if (rows.length) { response=rows[0];break }
   }
   if (!response || response.timed_out || response.status_code!==200) {

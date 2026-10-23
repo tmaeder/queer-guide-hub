@@ -199,9 +199,9 @@ export function VillageAbout({
  * A venue missing coordinates simply gets no gap label rather than being
  * dropped — it is still a stop on the walk, we just cannot say how far.
  */
-export function villageStops(venues: VillageVenue[]): Stop[] {
+export function villageStops(venues: VillageVenue[], previousVenue?: VillageVenue): Stop[] {
   return venues.map((v, i) => {
-    const prev = i > 0 ? venues[i - 1] : null;
+    const prev = i > 0 ? venues[i - 1] : (previousVenue ?? null);
     const hasPair =
       prev &&
       typeof prev.latitude === 'number' &&
@@ -249,9 +249,15 @@ export function villageStops(venues: VillageVenue[]): Stop[] {
  * Rendering "5 min walk" from a crow-flies number would invent precision
  * across a canal.
  */
-export function VillageStops({ venues }: { venues: VillageVenue[] }) {
+export function VillageStops({
+  venues,
+  previousVenue,
+}: {
+  venues: VillageVenue[];
+  previousVenue?: VillageVenue;
+}) {
   if (venues.length === 0) return null;
-  return <StopList stops={villageStops(venues)} />;
+  return <StopList stops={villageStops(venues, previousVenue)} variant="route" />;
 }
 
 /**

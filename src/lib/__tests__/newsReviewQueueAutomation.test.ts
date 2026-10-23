@@ -87,6 +87,8 @@ describe('pipeline code half', () => {
     expect(enhance).toMatch(/stagingRelaxations: true/);
     expect(enhance).toMatch(/image_suppressed: gate\.suppressImage && !replacementImage/);
     expect(enhance).toMatch(/\.order\('enriched_data->quality_attempts'/);
+    // A reset row may carry the older 'completed' status; it must stay selectable.
+    expect(enhance).toMatch(/\.in\('enrichment_status', \['enriched', 'completed'\]\)/);
   });
 });
 

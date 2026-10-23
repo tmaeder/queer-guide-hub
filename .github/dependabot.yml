@@ -95,7 +95,51 @@ updates:
     schedule: { interval: weekly }
     groups: { npm: { patterns: ['*'], update-types: [minor, patch] } }
 
+  # Cover standalone tools, infrastructure, SDKs, and every worker package.
+  - package-ecosystem: npm
+    directory: /infra/mail/smtp-relay
+    schedule: { interval: weekly }
+    groups: { npm: { patterns: ['*'], update-types: [minor, patch] } }
+
+  - package-ecosystem: npm
+    directory: /sdk/redirects/typescript
+    schedule: { interval: weekly }
+    groups: { npm: { patterns: ['*'], update-types: [minor, patch] } }
+
+  - package-ecosystem: npm
+    directory: /tools/person-db
+    schedule: { interval: weekly }
+    groups: { npm: { patterns: ['*'], update-types: [minor, patch] } }
+
+  - package-ecosystem: npm
+    directory: /workers/assistant
+    schedule: { interval: weekly }
+    groups: { npm: { patterns: ['*'], update-types: [minor, patch] } }
+
+  - package-ecosystem: npm
+    directory: /workers/email-delivery
+    schedule: { interval: weekly }
+    groups: { npm: { patterns: ['*'], update-types: [minor, patch] } }
+
+  - package-ecosystem: npm
+    directory: /workers/extract
+    schedule: { interval: weekly }
+    groups: { npm: { patterns: ['*'], update-types: [minor, patch] } }
+
+  - package-ecosystem: npm
+    directory: /workers/team-inbox
+    schedule: { interval: weekly }
+    groups: { npm: { patterns: ['*'], update-types: [minor, patch] } }
+
+  - package-ecosystem: npm
+    directory: /workers/travel-inbox
+    schedule: { interval: weekly }
+    groups: { npm: { patterns: ['*'], update-types: [minor, patch] } }
+
   - package-ecosystem: github-actions
     directory: /
     schedule:
-      interval: monthly
+      interval: weekly
+    groups:
+      actions:
+        patterns: ['*']

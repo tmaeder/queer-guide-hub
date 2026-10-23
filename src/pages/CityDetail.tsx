@@ -64,7 +64,7 @@ export default function CityDetail() {
   const { toast } = useToast();
   const { toggleFavorite, isFavorited } = useFavorites('city');
   const { fetchCityImage } = useCityImages();
-  const { articles, fetchArticles } = useNews();
+  const { articles, fetchArticles } = useNews({ autoload: false });
   const { city, loading, refetch: refetchCity } = useOptimizedCity(slug ?? '');
   useTrackView({
     type: 'city',

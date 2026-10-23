@@ -51,7 +51,7 @@ jobs:
       SUPABASE_PROJECT_REF: xqeacpakadqfxjxjcewc
     steps:
       - name: Checkout
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
       - name: Skip notice (no token)
         if: env.SUPABASE_ACCESS_TOKEN == ''
@@ -60,7 +60,7 @@ jobs:
 
       - name: Set up Node
         if: env.SUPABASE_ACCESS_TOKEN != ''
-        uses: actions/setup-node@v7
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
         with:
           node-version: 22
 
@@ -108,7 +108,7 @@ jobs:
       # all-clear because it fell over is worse than one that says nothing.
       - name: Raise or clear the drift alert
         if: ${{ env.SUPABASE_ACCESS_TOKEN != '' && contains(fromJSON('["drift","clean"]'), steps.check.outputs.verdict) }}
-        uses: actions/github-script@v9
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9
         env:
           VERDICT: ${{ steps.check.outputs.verdict }}
           DRIFT_LOG: ${{ steps.check.outputs.log }}

@@ -56,15 +56,21 @@ export interface PostalQueueEntity extends PostalQueuePoint {
   postal_code: string | null
   safety_gated: boolean | null
   duplicate_of_id: string | null
+  field_provenance?: {
+    latitude?: { source?: string | null } | null
+    longitude?: { source?: string | null } | null
+  } | null
 }
 
-/** Never reverse-geocode an old coordinate or a record held for geography review. */
+/** Never reverse-geocode an old, held, or city-centroid coordinate for a postal code. */
 export function postalQueueAction(
   queued: PostalQueuePoint,
   current: PostalQueueEntity | null,
-): 'drop' | 'defer' | 'refresh' | 'geocode' {
+): 'drop' | 'defer' | 'centroid_hold' | 'refresh' | 'geocode' {
   if (!current || current.duplicate_of_id || current.postal_code?.trim()) return 'drop'
   if (current.safety_gated || current.latitude == null || current.longitude == null) return 'defer'
+  if (current.field_provenance?.latitude?.source === 'derived:city_centroid' ||
+    current.field_provenance?.longitude?.source === 'derived:city_centroid') return 'centroid_hold'
   if (Number(current.latitude) !== Number(queued.latitude) ||
     Number(current.longitude) !== Number(queued.longitude)) return 'refresh'
   return 'geocode'

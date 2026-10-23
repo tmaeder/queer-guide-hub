@@ -6,7 +6,8 @@
 #
 # The snapshot is the production SCHEMA plus a DATA SUBSET read as the `anon`
 # role, so RLS decides what is copied: it holds only rows an anonymous visitor
-# can already read on queer.guide. No auth, profiles, staging, logs or vault.
+# can already read on queer.guide, plus four static review configuration tables.
+# No auth, profiles, staging, logs, private queue records or vault.
 # Tables up to FULL_MAX_BYTES are copied whole; larger ones are capped at
 # ROW_CAP rows. Loading runs with session_replication_role=replica so foreign
 # keys and triggers (search sync, pg_net posts) do not fire.
@@ -14,11 +15,10 @@ set -euo pipefail
 
 FULL_MAX_BYTES=${FULL_MAX_BYTES:-20000000}
 ROW_CAP=${ROW_CAP:-3000}
-# Copied whole despite their size: glossary pages join across the full tag set.
+# Preserve main's complete public glossary export. Other large tables remain capped.
 FULL_TABLES=${FULL_TABLES:-unified_tags}
-# Admin registries copied as the dump role, not anon: queue definitions only, no
-# queue rows and no user data. The admin review page needs them to render at all.
-CONFIG_TABLES=${CONFIG_TABLES:-admin_review_sources,admin_review_finding_codes,triage_sources,review_field_registry}
+# Fixed static registries only; no private queue records or user data.
+CONFIG_TABLES=admin_review_sources,admin_review_finding_codes,triage_sources,review_field_registry
 
 cmd=$1 db=$2 dir=$3
 # SUPABASE_DB_URL is written for node-postgres; libpq and the CLI reject no-verify.
@@ -32,47 +32,26 @@ dump)
   "$(dirname "$0")/supabase-retry.sh" db dump --db-url "$db" -f "$dir/schema.sql"
   psqlq -At -c "select version from supabase_migrations.schema_migrations order by 1" > "$dir/versions.txt"
 
-  # Slugs and domains named anywhere in e2e/ are always copied, so a capped table
-  # still holds the rows specs open by name (checkpoint-zuerich, /tags/transgender).
-  pins=$( { grep -ohE "['\"\`][a-z0-9]+([-.][a-z0-9]+)+" -r e2e | cut -c2-
-            grep -ohE "/[a-z0-9]+([-.][a-z0-9]+)*" -r e2e | cut -c2-; } | grep -E '[a-z]' | sort -u | paste -sd, -)
-
-  # table|non-generated columns|pin column (slug/domain) or empty|capped?|sample order
-  psqlq -At -F'|' -c "
-    select c.relname,
-           string_agg(quote_ident(a.attname), ',' order by a.attnum),
-           case when bool_or(a.attname = 'slug') then 'slug' when bool_or(a.attname = 'domain') then 'domain' else '' end,
-           (pg_table_size(c.oid) > $FULL_MAX_BYTES and c.relname <> all(string_to_array('$FULL_TABLES', ',')))::int,
-           -- A capped table keeps its rows nearest to now (events around today, else the
-           -- most recently updated): physical order is mostly old
-           -- rows, which left /travel with no upcoming Pride events (2026-10-23).
-           case when bool_or(a.attname = 'start_date') then 'abs(extract(epoch from (start_date::timestamptz - now()))) nulls last'
-                when bool_or(a.attname = 'updated_at') then 'updated_at desc nulls last' else '' end
-    from pg_class c
-    join pg_namespace n on n.oid = c.relnamespace
-    join pg_attribute a on a.attrelid = c.oid and a.attnum > 0 and not a.attisdropped and a.attgenerated = ''
-    where n.nspname = 'public' and c.relkind = 'r'
-      and (has_table_privilege('anon', c.oid, 'SELECT') or c.relname = any(string_to_array('$CONFIG_TABLES', ',')))
-    group by c.oid, c.relname order by c.relname" > "$dir/manifest.txt"
+  # Bound the export while prioritizing actual browser route fixtures and
+  # their parent cities. Public data is read as anon; the fixed static registries
+  # are exported separately, matching main.
+  FULL_MAX_BYTES="$FULL_MAX_BYTES" ROW_CAP="$ROW_CAP" FULL_TABLES="$FULL_TABLES" \
+    node "$(dirname "$0")/snapshot-fixtures.mjs" manifest > "$dir/manifest-query.sql"
+  psqlq -At -F'|' -f "$dir/manifest-query.sql" > "$dir/manifest.txt"
+  rm "$dir/manifest-query.sql"
 
   {
+    # These definitions are code/configuration, as in main's exporter.
     while IFS='|' read -r t cols _; do
       case ",$CONFIG_TABLES," in *",$t,"*) echo "\\copy (select $cols from public.\"$t\") to '$dir/data/$t.csv' csv" ;; esac
     done < "$dir/manifest.txt"
-    # Read exactly as PostgREST serves an anonymous visitor: some policies read
-    # the JWT claims, and without them `set role anon` alone sees 0 unified_tags.
-    echo "select set_config('request.jwt.claims', '{\"role\":\"anon\"}', false);"
     echo "set role anon;"
-    while IFS='|' read -r t cols pin capped order; do
+    # Match an anonymous PostgREST request: auth.role() reads JWT claims,
+    # not the SQL role. No subject or authenticated/service claim is set.
+    echo "set request.jwt.claims = '{\"role\":\"anon\"}';"
+    while IFS='|' read -r t cols lim; do
       case ",$CONFIG_TABLES," in *",$t,"*) continue ;; esac
-      q="select $cols from public.\"$t\""
-      ob=${order:+ order by $order}
-      if [ "$capped" = 1 ] && [ -n "$pin" ]; then
-        q="($q where $pin = any('{$pins}')) union all ($q where not coalesce($pin = any('{$pins}'), false)$ob limit $ROW_CAP)"
-      elif [ "$capped" = 1 ]; then
-        q="$q$ob limit $ROW_CAP"
-      fi
-      echo "\\copy ($q) to '$dir/data/$t.csv' csv"
+      echo "\\copy (select $cols from public.\"$t\"$lim) to '$dir/data/$t.csv' csv"
     done < "$dir/manifest.txt"
   } > "$dir/copy-out.sql"
   # A table anon cannot actually read (column grants, RLS errors) is skipped, not fatal.

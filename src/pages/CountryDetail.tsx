@@ -100,7 +100,7 @@ export default function CountryDetail() {
   const { cities } = useOptimizedCities({ countryId: country?.id ?? '', limit: 12 });
   const { venues, fetchVenues } = useVenues(false);
   const { events, fetchEvents } = useEvents(false);
-  const { articles, fetchArticles, incrementViews } = useNews();
+  const { articles, fetchArticles, incrementViews } = useNews({ autoload: false });
 
   // Hoisted rather than left inside `CountryLegalRecord`: a component that
   // returns null from its own body is invisible to the section filter, so the

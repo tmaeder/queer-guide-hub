@@ -109,12 +109,33 @@ console.error = (...a) => console.log(...a)
     // gate would have failed on a healthy directory the moment the shape changed.
     let rows = null
     let countries = null
+    let refreshedAt = null
     try {
       const parsed = JSON.parse(text)
       rows = Array.isArray(parsed?.rows) ? parsed.rows.length : null
       countries = Array.isArray(parsed?.countries) ? parsed.countries.length : null
+      refreshedAt = parsed?.refreshed_at ?? null
     } catch {
       rows = null
+    }
+
+    // Served from a snapshot since 99991792737444 (cron `cities_directory_refresh`,
+    // every 10 min). A dead refresher freezes the directory with no error anywhere, so
+    // staleness is a hard fail. A missing key means the RPC fell back to the live
+    // compute (no snapshot row) — the 3s-timeout path — which also fails.
+    const ageMin = refreshedAt ? (Date.now() - Date.parse(refreshedAt)) / 60000 : null
+    if (ageMin == null || Number.isNaN(ageMin)) {
+      console.error(
+        '✗ cities_directory() carries no refreshed_at — it is not serving the snapshot ' +
+          '(api_private.cities_directory_snapshot empty?), so anon is back on the live 3s-risk path.',
+      )
+      FAILED = true
+    } else if (ageMin > 120) {
+      console.error(
+        `✗ cities_directory snapshot is ${Math.round(ageMin)} min old (refresh is every 10 min). ` +
+          'Check cron job cities_directory_refresh / admin_automations slug cities_directory_refresh.',
+      )
+      FAILED = true
     }
 
     // Reported BEFORE any verdict: zero rows and a 404 and a healthy directory would

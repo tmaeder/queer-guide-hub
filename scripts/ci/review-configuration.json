@@ -1,0 +1,659 @@
+{
+  "sources": [
+    {
+      "risk": "integrity",
+      "label": "Enrichment suggestions",
+      "active": true,
+      "min_role": "admin",
+      "queue_key": "ai-suggestions",
+      "sla_hours": 168,
+      "view_name": "admin_review_src_ai_suggestions",
+      "can_reopen": false,
+      "lock_table": null,
+      "public_impact": true,
+      "priority_weight": 35
+    },
+    {
+      "risk": "routine",
+      "label": "Automation",
+      "active": true,
+      "min_role": "moderator",
+      "queue_key": "automation",
+      "sla_hours": 72,
+      "view_name": "triage_src_automation",
+      "can_reopen": true,
+      "lock_table": "content_flags",
+      "public_impact": false,
+      "priority_weight": 10
+    },
+    {
+      "risk": "safety",
+      "label": "Brand ownership",
+      "active": true,
+      "min_role": "admin",
+      "queue_key": "brand-ownership",
+      "sla_hours": 168,
+      "view_name": "admin_review_src_brand_ownership",
+      "can_reopen": false,
+      "lock_table": "marketplace_brands",
+      "public_impact": true,
+      "priority_weight": 80
+    },
+    {
+      "risk": "integrity",
+      "label": "Business quality findings",
+      "active": true,
+      "min_role": "admin",
+      "queue_key": "business-quality",
+      "sla_hours": 168,
+      "view_name": "admin_review_src_business_quality",
+      "can_reopen": false,
+      "lock_table": null,
+      "public_impact": true,
+      "priority_weight": 25
+    },
+    {
+      "risk": "integrity",
+      "label": "CMS review tasks",
+      "active": true,
+      "min_role": "admin",
+      "queue_key": "cms-issues",
+      "sla_hours": 168,
+      "view_name": "admin_review_src_cms_issues",
+      "can_reopen": false,
+      "lock_table": "cms_review_queue",
+      "public_impact": true,
+      "priority_weight": 35
+    },
+    {
+      "risk": "integrity",
+      "label": "CMS Review",
+      "active": true,
+      "min_role": "moderator",
+      "queue_key": "content",
+      "sla_hours": 72,
+      "view_name": "triage_src_content",
+      "can_reopen": true,
+      "lock_table": "cms_content_metadata",
+      "public_impact": true,
+      "priority_weight": 50
+    },
+    {
+      "risk": "safety",
+      "label": "Dup merge review",
+      "active": true,
+      "min_role": "moderator",
+      "queue_key": "dedup-review",
+      "sla_hours": 168,
+      "view_name": "triage_src_dedup_review",
+      "can_reopen": false,
+      "lock_table": null,
+      "public_impact": true,
+      "priority_weight": 40
+    },
+    {
+      "risk": "integrity",
+      "label": "Duplicates",
+      "active": true,
+      "min_role": "moderator",
+      "queue_key": "duplicates",
+      "sla_hours": 72,
+      "view_name": "triage_src_duplicates",
+      "can_reopen": false,
+      "lock_table": "scraper_dedupe_decisions",
+      "public_impact": true,
+      "priority_weight": 20
+    },
+    {
+      "risk": "integrity",
+      "label": "Editorial drafts",
+      "active": true,
+      "min_role": "admin",
+      "queue_key": "editorial",
+      "sla_hours": 168,
+      "view_name": "admin_review_src_editorial",
+      "can_reopen": false,
+      "lock_table": "editorial_drafts",
+      "public_impact": true,
+      "priority_weight": 30
+    },
+    {
+      "risk": "integrity",
+      "label": "Entity links",
+      "active": true,
+      "min_role": "moderator",
+      "queue_key": "entity-links",
+      "sla_hours": 72,
+      "view_name": "triage_src_entity_links",
+      "can_reopen": true,
+      "lock_table": "entity_link_review",
+      "public_impact": true,
+      "priority_weight": 20
+    },
+    {
+      "risk": "integrity",
+      "label": "Event quality issues",
+      "active": true,
+      "min_role": "admin",
+      "queue_key": "event-quality",
+      "sla_hours": 336,
+      "view_name": "admin_review_src_event_quality",
+      "can_reopen": false,
+      "lock_table": null,
+      "public_impact": true,
+      "priority_weight": 45
+    },
+    {
+      "risk": "integrity",
+      "label": "Feedback review",
+      "active": true,
+      "min_role": "admin",
+      "queue_key": "feedback",
+      "sla_hours": 48,
+      "view_name": "admin_review_src_feedback",
+      "can_reopen": false,
+      "lock_table": "community_submissions",
+      "public_impact": true,
+      "priority_weight": 55
+    },
+    {
+      "risk": "integrity",
+      "label": "Record correctness",
+      "active": true,
+      "min_role": "admin",
+      "queue_key": "general-review",
+      "sla_hours": 168,
+      "view_name": "admin_review_src_general_review",
+      "can_reopen": false,
+      "lock_table": "review_queue",
+      "public_impact": true,
+      "priority_weight": 35
+    },
+    {
+      "risk": "safety",
+      "label": "Geography conflicts",
+      "active": true,
+      "min_role": "admin",
+      "queue_key": "geography",
+      "sla_hours": 168,
+      "view_name": "admin_review_src_geography",
+      "can_reopen": false,
+      "lock_table": null,
+      "public_impact": true,
+      "priority_weight": 65
+    },
+    {
+      "risk": "safety",
+      "label": "Group join requests",
+      "active": true,
+      "min_role": "moderator",
+      "queue_key": "group-requests",
+      "sla_hours": 48,
+      "view_name": "admin_review_src_group_requests",
+      "can_reopen": false,
+      "lock_table": null,
+      "public_impact": true,
+      "priority_weight": 70
+    },
+    {
+      "risk": "integrity",
+      "label": "Closure reviews",
+      "active": true,
+      "min_role": "admin",
+      "queue_key": "liveness",
+      "sla_hours": 168,
+      "view_name": "admin_review_src_liveness",
+      "can_reopen": false,
+      "lock_table": null,
+      "public_impact": true,
+      "priority_weight": 50
+    },
+    {
+      "risk": "safety",
+      "label": "Milestone duplicates",
+      "active": true,
+      "min_role": "admin",
+      "queue_key": "milestone-duplicates",
+      "sla_hours": 168,
+      "view_name": "admin_review_src_milestone_duplicates",
+      "can_reopen": false,
+      "lock_table": null,
+      "public_impact": true,
+      "priority_weight": 30
+    },
+    {
+      "risk": "integrity",
+      "label": "Milestone links",
+      "active": true,
+      "min_role": "admin",
+      "queue_key": "milestone-links",
+      "sla_hours": 168,
+      "view_name": "admin_review_src_milestone_links",
+      "can_reopen": false,
+      "lock_table": null,
+      "public_impact": true,
+      "priority_weight": 30
+    },
+    {
+      "risk": "integrity",
+      "label": "Milestone field proposals",
+      "active": true,
+      "min_role": "admin",
+      "queue_key": "milestone-review",
+      "sla_hours": 168,
+      "view_name": "admin_review_src_milestone_review",
+      "can_reopen": false,
+      "lock_table": null,
+      "public_impact": true,
+      "priority_weight": 30
+    },
+    {
+      "risk": "safety",
+      "label": "Reports",
+      "active": true,
+      "min_role": "moderator",
+      "queue_key": "moderation",
+      "sla_hours": 24,
+      "view_name": "triage_src_moderation",
+      "can_reopen": true,
+      "lock_table": "moderation_flags",
+      "public_impact": true,
+      "priority_weight": 100
+    },
+    {
+      "risk": "integrity",
+      "label": "News quality",
+      "active": true,
+      "min_role": "moderator",
+      "queue_key": "news-quality",
+      "sla_hours": 72,
+      "view_name": "triage_src_news_quality",
+      "can_reopen": true,
+      "lock_table": "news_articles",
+      "public_impact": true,
+      "priority_weight": 30
+    },
+    {
+      "risk": "integrity",
+      "label": "Business link review",
+      "active": true,
+      "min_role": "moderator",
+      "queue_key": "org-link-review",
+      "sla_hours": 168,
+      "view_name": "triage_src_org_link_review",
+      "can_reopen": false,
+      "lock_table": "org_link_suggestions",
+      "public_impact": true,
+      "priority_weight": 40
+    },
+    {
+      "risk": "safety",
+      "label": "Personality publication",
+      "active": true,
+      "min_role": "admin",
+      "queue_key": "personality-publication",
+      "sla_hours": 168,
+      "view_name": "admin_review_src_personality_publication",
+      "can_reopen": false,
+      "lock_table": "personalities",
+      "public_impact": true,
+      "priority_weight": 70
+    },
+    {
+      "risk": "safety",
+      "label": "City quality",
+      "active": true,
+      "min_role": "admin",
+      "queue_key": "quality-city",
+      "sla_hours": 168,
+      "view_name": "triage_src_quality_city",
+      "can_reopen": false,
+      "lock_table": null,
+      "public_impact": true,
+      "priority_weight": 35
+    },
+    {
+      "risk": "safety",
+      "label": "Marketplace quality",
+      "active": true,
+      "min_role": "admin",
+      "queue_key": "quality-marketplace",
+      "sla_hours": 168,
+      "view_name": "triage_src_quality_marketplace",
+      "can_reopen": false,
+      "lock_table": null,
+      "public_impact": true,
+      "priority_weight": 25
+    },
+    {
+      "risk": "integrity",
+      "label": "Other field proposals",
+      "active": true,
+      "min_role": "admin",
+      "queue_key": "quality-other",
+      "sla_hours": 168,
+      "view_name": "admin_review_src_quality_other",
+      "can_reopen": false,
+      "lock_table": null,
+      "public_impact": true,
+      "priority_weight": 30
+    },
+    {
+      "risk": "safety",
+      "label": "Personality quality",
+      "active": true,
+      "min_role": "admin",
+      "queue_key": "quality-personality",
+      "sla_hours": 168,
+      "view_name": "triage_src_quality_personality",
+      "can_reopen": false,
+      "lock_table": null,
+      "public_impact": true,
+      "priority_weight": 40
+    },
+    {
+      "risk": "integrity",
+      "label": "Tag field proposals",
+      "active": true,
+      "min_role": "admin",
+      "queue_key": "quality-tag",
+      "sla_hours": 168,
+      "view_name": "admin_review_src_quality_tag",
+      "can_reopen": false,
+      "lock_table": null,
+      "public_impact": true,
+      "priority_weight": 30
+    },
+    {
+      "risk": "safety",
+      "label": "Venue quality",
+      "active": true,
+      "min_role": "admin",
+      "queue_key": "quality-venue",
+      "sla_hours": 168,
+      "view_name": "triage_src_quality_venue",
+      "can_reopen": false,
+      "lock_table": null,
+      "public_impact": true,
+      "priority_weight": 35
+    },
+    {
+      "risk": "integrity",
+      "label": "Village quality",
+      "active": true,
+      "min_role": "admin",
+      "queue_key": "quality-village",
+      "sla_hours": 168,
+      "view_name": "triage_src_quality_village",
+      "can_reopen": false,
+      "lock_table": null,
+      "public_impact": true,
+      "priority_weight": 30
+    },
+    {
+      "risk": "safety",
+      "label": "Sensitive tag visibility",
+      "active": true,
+      "min_role": "admin",
+      "queue_key": "sensitive-tags",
+      "sla_hours": 168,
+      "view_name": "admin_review_src_sensitive_tags",
+      "can_reopen": false,
+      "lock_table": "unified_tags",
+      "public_impact": true,
+      "priority_weight": 90
+    },
+    {
+      "risk": "integrity",
+      "label": "Staging",
+      "active": true,
+      "min_role": "moderator",
+      "queue_key": "staging",
+      "sla_hours": 48,
+      "view_name": "triage_src_staging",
+      "can_reopen": true,
+      "lock_table": "ingestion_staging",
+      "public_impact": true,
+      "priority_weight": 60
+    },
+    {
+      "risk": "integrity",
+      "label": "Submissions",
+      "active": true,
+      "min_role": "moderator",
+      "queue_key": "submissions",
+      "sla_hours": 24,
+      "view_name": "admin_review_src_submissions",
+      "can_reopen": true,
+      "lock_table": "community_submissions",
+      "public_impact": true,
+      "priority_weight": 80
+    },
+    {
+      "risk": "integrity",
+      "label": "Glossary editorial",
+      "active": true,
+      "min_role": "admin",
+      "queue_key": "tag-editorial",
+      "sla_hours": 168,
+      "view_name": "admin_review_src_tag_editorial",
+      "can_reopen": false,
+      "lock_table": null,
+      "public_impact": true,
+      "priority_weight": 50
+    },
+    {
+      "risk": "integrity",
+      "label": "Tag enrichment",
+      "active": true,
+      "min_role": "admin",
+      "queue_key": "tag-enrichment",
+      "sla_hours": 168,
+      "view_name": "admin_review_src_tag_enrichment",
+      "can_reopen": false,
+      "lock_table": null,
+      "public_impact": true,
+      "priority_weight": 35
+    },
+    {
+      "risk": "safety",
+      "label": "Tag merges",
+      "active": true,
+      "min_role": "admin",
+      "queue_key": "tag-merges",
+      "sla_hours": 168,
+      "view_name": "admin_review_src_tag_merges",
+      "can_reopen": false,
+      "lock_table": null,
+      "public_impact": true,
+      "priority_weight": 60
+    },
+    {
+      "risk": "integrity",
+      "label": "Tag restoration",
+      "active": true,
+      "min_role": "admin",
+      "queue_key": "tag-restoration",
+      "sla_hours": 168,
+      "view_name": "admin_review_src_tag_restoration",
+      "can_reopen": false,
+      "lock_table": "unified_tags",
+      "public_impact": true,
+      "priority_weight": 40
+    },
+    {
+      "risk": "integrity",
+      "label": "Tags",
+      "active": true,
+      "min_role": "moderator",
+      "queue_key": "tags",
+      "sla_hours": 72,
+      "view_name": "triage_src_tags",
+      "can_reopen": false,
+      "lock_table": "tag_suggestions",
+      "public_impact": true,
+      "priority_weight": 30
+    },
+    {
+      "risk": "integrity",
+      "label": "Trip location review",
+      "active": true,
+      "min_role": "admin",
+      "queue_key": "trip-geography",
+      "sla_hours": 168,
+      "view_name": "admin_review_src_trip_geography",
+      "can_reopen": false,
+      "lock_table": "trip_geo_review_queue",
+      "public_impact": false,
+      "priority_weight": 50
+    },
+    {
+      "risk": "integrity",
+      "label": "Venue categories",
+      "active": true,
+      "min_role": "admin",
+      "queue_key": "venue-category",
+      "sla_hours": 168,
+      "view_name": "admin_review_src_venue_category",
+      "can_reopen": false,
+      "lock_table": "venues",
+      "public_impact": true,
+      "priority_weight": 40
+    },
+    {
+      "risk": "integrity",
+      "label": "Possible non-venues",
+      "active": true,
+      "min_role": "admin",
+      "queue_key": "venue-kind",
+      "sla_hours": 168,
+      "view_name": "admin_review_src_venue_kind",
+      "can_reopen": false,
+      "lock_table": "venues",
+      "public_impact": true,
+      "priority_weight": 40
+    }
+  ],
+  "findingCodes": [
+    {
+      "code": "contact_missing",
+      "queue_key": "business-quality",
+      "subtitle_match": "contact_missing"
+    },
+    {
+      "code": "description_missing_or_thin",
+      "queue_key": "business-quality",
+      "subtitle_match": "description_missing_or_thin"
+    },
+    {
+      "code": "location_missing",
+      "queue_key": "business-quality",
+      "subtitle_match": "location_missing"
+    },
+    {
+      "code": "media_missing",
+      "queue_key": "business-quality",
+      "subtitle_match": "media_missing"
+    },
+    {
+      "code": "slug_missing",
+      "queue_key": "business-quality",
+      "subtitle_match": "slug_missing"
+    },
+    {
+      "code": "story_missing_or_thin",
+      "queue_key": "business-quality",
+      "subtitle_match": "story_missing_or_thin"
+    },
+    {
+      "code": "website_missing",
+      "queue_key": "business-quality",
+      "subtitle_match": "website_missing"
+    },
+    {
+      "code": "DESCRIPTION_MISSING",
+      "queue_key": "event-quality",
+      "subtitle_match": "DESCRIPTION_MISSING"
+    },
+    {
+      "code": "DESCRIPTION_THIN",
+      "queue_key": "event-quality",
+      "subtitle_match": "DESCRIPTION_THIN"
+    },
+    {
+      "code": "IMAGE_DIMENSIONS_UNKNOWN",
+      "queue_key": "event-quality",
+      "subtitle_match": "IMAGE_DIMENSIONS_UNKNOWN"
+    },
+    {
+      "code": "IMAGE_HASH_UNAVAILABLE",
+      "queue_key": "event-quality",
+      "subtitle_match": "IMAGE_HASH_UNAVAILABLE"
+    },
+    {
+      "code": "IMAGE_LOW_RESOLUTION",
+      "queue_key": "event-quality",
+      "subtitle_match": "IMAGE_LOW_RESOLUTION"
+    },
+    {
+      "code": "IMAGE_MIME_INVALID",
+      "queue_key": "event-quality",
+      "subtitle_match": "IMAGE_MIME_INVALID"
+    },
+    {
+      "code": "IMAGE_MISSING",
+      "queue_key": "event-quality",
+      "subtitle_match": "IMAGE_MISSING"
+    },
+    {
+      "code": "IMAGE_TOO_SMALL",
+      "queue_key": "event-quality",
+      "subtitle_match": "IMAGE_TOO_SMALL"
+    },
+    {
+      "code": "IMAGE_UNREACHABLE",
+      "queue_key": "event-quality",
+      "subtitle_match": "IMAGE_UNREACHABLE"
+    },
+    {
+      "code": "SOURCE_ID_MISSING",
+      "queue_key": "event-quality",
+      "subtitle_match": "SOURCE_ID_MISSING"
+    },
+    {
+      "code": "CITY_CATEGORY_UNCLASSIFIED",
+      "queue_key": "general-review",
+      "subtitle_match": "city category unclassified"
+    },
+    {
+      "code": "CITY_DESCRIPTION_PROVENANCE_MISSING",
+      "queue_key": "general-review",
+      "subtitle_match": "city description provenance missing"
+    },
+    {
+      "code": "CITY_IDENTITY_AMBIGUOUS",
+      "queue_key": "general-review",
+      "subtitle_match": "city identity ambiguous"
+    },
+    {
+      "code": "CITY_LINK_UNRESOLVED",
+      "queue_key": "general-review",
+      "subtitle_match": "city link unresolved"
+    },
+    {
+      "code": "venue_media_evidence",
+      "queue_key": "general-review",
+      "subtitle_match": "venue media evidence"
+    },
+    {
+      "code": "venue_missing_country",
+      "queue_key": "general-review",
+      "subtitle_match": "venue missing country"
+    },
+    {
+      "code": "venue_source_evidence",
+      "queue_key": "general-review",
+      "subtitle_match": "venue source evidence"
+    }
+  ]
+}

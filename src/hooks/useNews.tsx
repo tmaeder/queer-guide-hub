@@ -44,11 +44,19 @@ interface NewsFilters {
   sortOrder?: 'asc' | 'desc';
 }
 
-export const useNews = () => {
+/**
+ * `autoload: false` skips the mount-time fetch of the unfiltered 200-article
+ * list, every source, every category and one count query per category. City
+ * and country pages only render their own filtered articles and call
+ * `fetchArticles` themselves; the mount fetch cost ~85 KB gzipped plus ~15
+ * queries per page view and could resolve after (and overwrite) the filtered
+ * list.
+ */
+export const useNews = ({ autoload = true }: { autoload?: boolean } = {}) => {
   const [articles, setArticles] = useState<NewsArticle[]>([]);
   const [sources, setSources] = useState<NewsSource[]>([]);
   const [categories, setCategories] = useState<NewsCategory[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(autoload);
   const [error, setError] = useState<string | null>(null);
   const [loadingTimedOut, setLoadingTimedOut] = useState(false);
   const [articleTags, setArticleTags] = useState<Record<string, string[]>>({});
@@ -430,6 +438,7 @@ export const useNews = () => {
   }, [fetchArticles, fetchSources, fetchCategories]);
 
   useEffect(() => {
+    if (!autoload) return;
     // eslint-disable-next-line react-hooks/set-state-in-effect -- effect synchronizes state with external props/data; React Compiler can't infer the sync direction. Documented exemption from the eslint.config.js staged-ratchet plan.
     Promise.all([fetchArticles(), fetchSources(), fetchCategories()]);
     // eslint-disable-next-line react-hooks/exhaustive-deps
