@@ -41,6 +41,19 @@ test.describe('Zürich late-night mobility', () => {
     );
   });
 
+  test('the national timetable also covers Geneva, without Zürich-only punctuality', async ({
+    page,
+  }) => {
+    await page.goto('/city/geneva#travel');
+    await dismissConsent(page);
+    const section = page.getByRole('region', { name: 'Late night' });
+    await expect(section).toContainText('Last tram', { timeout: 20_000 });
+    await expect(section).toContainText(CLOCK);
+    await expect(section).toContainText('opentransportdata.swiss');
+    // VBZ punctuality is Zürich data; it must not leak onto another city's page.
+    await expect(section).not.toContainText('On time after 23:00');
+  });
+
   test('/going-out in Zürich has a Getting home section', async ({ page }) => {
     await page.goto('/going-out?city=zuerich');
     await dismissConsent(page);
