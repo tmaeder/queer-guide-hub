@@ -391,9 +391,17 @@ function ContentListPanelBody(props: ContentListPanelProps) {
 
                 {c.config?.toolbarActions?.()}
                 {c.config && c.allListColumns.length > 0 && (
-                  <ExportExcelButton
-                    onExport={() => exportContentType(c.config!, c.allListColumns)}
-                  />
+                  <>
+                    <ExportExcelButton
+                      onExport={() => exportContentType(c.config!, c.allListColumns)}
+                    />
+                    {c.config.id === 'unified_tags' && (
+                      <ExportExcelButton
+                        format="CSV"
+                        onExport={() => exportContentType(c.config!, c.allListColumns, 'CSV')}
+                      />
+                    )}
+                  </>
                 )}
               </AdminToolsPopover>
               {c.config && (

@@ -1,4 +1,8 @@
 import { getCorsHeaders, getServiceClient, requireAdmin } from '../_shared/supabase-client.ts'
+import { providerFetch, providerResults, ProviderUnavailable } from './provider-outcomes.ts'
+import { searchFoursquare } from './foursquare.ts'
+import { collectContactEvidence, type ContactVenue } from './contact-evidence.ts'
+import { reserveFoursquareApiCalls, type FoursquareBudgetVerdict } from '../_shared/foursquare-budget.ts'
 
 interface VenueData {
   name?: string;
@@ -32,9 +36,48 @@ Deno.serve(async (req) => {
     const authResult = await requireAdmin(req, serviceClient)
     if (authResult instanceof Response) return authResult
 
-    const { venueName, currentData = {} } = await req.json()
+    const body = await req.json()
+    // Read-only, bounded source capture for known native identities. This mode
+    // never stages new places, proposes claims, or writes venue/source data.
+    if (body.mode === 'contact_evidence') {
+      const ids = body.venue_ids
+      if (!Array.isArray(ids) || !ids.length || ids.length > 5 || new Set(ids).size !== ids.length
+        || ids.some(id => typeof id !== 'string' || !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id))) {
+        return new Response(JSON.stringify({ error: 'Provide one to five unique venue UUIDs' }), { status: 400, headers: corsHeaders })
+      }
+      const apiKey = Deno.env.get('FOURSQUARE_API_KEY')
+      if (!apiKey) throw new ProviderUnavailable()
+      const { data: venues, error } = await serviceClient.from('venues')
+        .select('id,name,latitude,longitude,address,country_id,city_id,organization_id,updated_at,category')
+        .in('id', ids).is('duplicate_of_id', null).is('closed_at', null)
+      if (error) throw new Error('Could not read native venue identities')
+      const { data: countries, error: countryError } = await serviceClient.from('countries')
+        .select('id,code').in('id', [...new Set((venues ?? []).map(v => v.country_id).filter(Boolean))])
+      if (countryError) throw new Error('Could not read native country identities')
+      const { data: cities, error: cityError } = await serviceClient.from('cities')
+        .select('id,name').in('id', [...new Set((venues ?? []).map(v => v.city_id).filter(Boolean))])
+      if (cityError) throw new Error('Could not read native city identities')
+      const budget = await reserveFoursquareApiCalls(serviceClient, 'contact-evidence', venues?.length ?? 0)
+      if (!budget.allowed) return new Response(JSON.stringify({ success: false, read_only: true, capped: true, captures: [], budget }), {
+        status: 503, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
+      const captures = []
+      for (const venue of venues ?? []) {
+        const country = countries?.find(c => c.id === venue.country_id)
+        if (!country || ['cruising', 'toilet', 'other'].includes(venue.category)
+          || typeof venue.latitude !== 'number' || typeof venue.longitude !== 'number'
+          || !Number.isFinite(venue.latitude) || !Number.isFinite(venue.longitude)
+          || Math.abs(venue.latitude) > 90 || Math.abs(venue.longitude) > 180
+          || (!venue.latitude && !venue.longitude)) continue
+        captures.push(await collectContactEvidence({ ...venue, country_code: country.code, city_name: cities?.find(c => c.id === venue.city_id)?.name } as ContactVenue, apiKey))
+      }
+      return new Response(JSON.stringify({ success: true, read_only: true, captures }), {
+        status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
+    }
+    const { venueName, currentData = {} } = body
     
-    if (!venueName) {
+    if (typeof venueName !== 'string' || venueName.trim().length < 2 || venueName.length > 200) {
       return new Response(
         JSON.stringify({ error: 'Venue name is required' }),
         { 
@@ -52,50 +95,62 @@ Deno.serve(async (req) => {
     const tomtomKey = Deno.env.get('TOMTOM_API_KEY')
     const tripadvisorKey = Deno.env.get('TRIPADVISOR_API_KEY')
 
-    const enrichmentPromises = []
+    const providers: { source: string; run: () => Promise<VenueData | null> }[] = []
+    let foursquareBudget: FoursquareBudgetVerdict | undefined
+
+    let foursquareBudget: FoursquareBudgetVerdict | undefined
 
     // Foursquare search
     if (foursquareKey) {
-      enrichmentPromises.push(searchFoursquare(venueName, foursquareKey))
+      providers.push({ source: 'foursquare', run: async () => {
+        foursquareBudget = await reserveFoursquareApiCalls(serviceClient, 'enrichment-preview', 1)
+        if (!foursquareBudget.allowed) throw new ProviderUnavailable()
+        return searchFoursquare(venueName, foursquareKey)
+      } })
     }
 
     // Google Places search
     if (googleKey) {
-      enrichmentPromises.push(searchGooglePlaces(venueName, googleKey))
+      providers.push({ source: 'google', run: () => searchGooglePlaces(venueName, googleKey) })
     }
 
     // TomTom search
     if (tomtomKey) {
-      enrichmentPromises.push(searchTomTom(venueName, tomtomKey))
+      providers.push({ source: 'tomtom', run: () => searchTomTom(venueName, tomtomKey) })
     }
 
     // TripAdvisor search
     if (tripadvisorKey) {
-      enrichmentPromises.push(searchTripAdvisor(venueName, tripadvisorKey))
+      providers.push({ source: 'tripadvisor', run: () => searchTripAdvisor(venueName, tripadvisorKey) })
     }
 
     // Execute all searches in parallel
-    const results = await Promise.allSettled(enrichmentPromises)
+    const results = await Promise.allSettled(providers.map(provider => provider.run()))
     console.log(`Completed ${results.length} API searches`)
 
     // Return individual results for preview
-    const individualResults = results.map((r, i) => ({
-      source: ['foursquare', 'google', 'tomtom', 'tripadvisor'][i],
-      status: r.status,
-      data: r.status === 'fulfilled' ? r.value : null
-    })).filter(r => r.data !== null)
+    const individualResults = providerResults(providers.map(p => p.source), results)
+    const unavailable = individualResults.filter(r => r.outcome === 'unavailable').length
+    const available = results.length - unavailable
+    const success = available > 0
 
     // Also provide merged data for convenience
     const enrichedData = mergeVenueData(currentData, results)
 
     return new Response(
       JSON.stringify({ 
-        success: true, 
+        success,
         individualResults,
         mergedData: enrichedData,
-        totalSources: results.length
+        totalSources: results.length,
+        sources_available: available,
+        sources_unavailable: unavailable,
+        degraded: unavailable > 0,
+        foursquare_budget: foursquareBudget,
+        ...(success ? {} : { error: results.length ? 'All configured enrichment providers are unavailable' : 'No enrichment providers configured' })
       }),
       { 
+        status: success ? 200 : 503,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
       }
     )
@@ -112,54 +167,6 @@ Deno.serve(async (req) => {
   }
 })
 
-async function searchFoursquare(venueName: string, apiKey: string): Promise<VenueData | null> {
-  try {
-    console.log('Searching Foursquare for:', venueName)
-    
-    const searchUrl = `https://api.foursquare.com/v3/places/search?query=${encodeURIComponent(venueName)}&limit=1`
-    
-    const response = await fetch(searchUrl, {
-      headers: {
-        'Authorization': apiKey,
-        'Accept': 'application/json'
-      }
-    })
-
-    if (!response.ok) {
-      console.error('Foursquare API error:', response.status)
-      return null
-    }
-
-    const data = await response.json()
-    
-    if (!data.results || data.results.length === 0) {
-      console.log('No Foursquare results found')
-      return null
-    }
-
-    const venue = data.results[0]
-    console.log('Found Foursquare venue:', venue.name)
-
-    return {
-      name: venue.name,
-      address: venue.location?.formatted_address,
-      city: venue.location?.locality,
-      state: venue.location?.region,
-      country: venue.location?.country,
-      postal_code: venue.location?.postcode,
-      latitude: venue.geocodes?.main?.latitude,
-      longitude: venue.geocodes?.main?.longitude,
-      category: venue.categories?.[0]?.name,
-      website: venue.website,
-      phone: venue.tel,
-      rating: venue.rating
-    }
-  } catch (error) {
-    console.error('Foursquare search error:', error)
-    return null
-  }
-}
-
 async function searchGooglePlaces(venueName: string, apiKey: string): Promise<VenueData | null> {
   try {
     console.log('Searching Google Places for:', venueName)
@@ -167,14 +174,12 @@ async function searchGooglePlaces(venueName: string, apiKey: string): Promise<Ve
     // First, search for the place
     const searchUrl = `https://maps.googleapis.com/maps/api/place/findplacefromtext/json?input=${encodeURIComponent(venueName)}&inputtype=textquery&fields=place_id,name,formatted_address,geometry,rating,price_level&key=${apiKey}`
     
-    const searchResponse = await fetch(searchUrl)
+    const searchResponse = await providerFetch(searchUrl)
     
-    if (!searchResponse.ok) {
-      console.error('Google Places search error:', searchResponse.status)
-      return null
-    }
+
 
     const searchData = await searchResponse.json()
+    if (searchData.status && !['OK', 'ZERO_RESULTS'].includes(searchData.status)) throw new ProviderUnavailable()
     
     if (!searchData.candidates || searchData.candidates.length === 0) {
       console.log('No Google Places results found')
@@ -186,8 +191,9 @@ async function searchGooglePlaces(venueName: string, apiKey: string): Promise<Ve
     // Get detailed information
     const detailsUrl = `https://maps.googleapis.com/maps/api/place/details/json?place_id=${place.place_id}&fields=name,formatted_address,address_components,geometry,international_phone_number,website,rating,price_level,opening_hours,photos&key=${apiKey}`
     
-    const detailsResponse = await fetch(detailsUrl)
+    const detailsResponse = await providerFetch(detailsUrl)
     const detailsData = await detailsResponse.json()
+    if (detailsData.status && !['OK', 'ZERO_RESULTS'].includes(detailsData.status)) throw new ProviderUnavailable()
     
     if (!detailsData.result) {
       return null
@@ -221,8 +227,7 @@ async function searchGooglePlaces(venueName: string, apiKey: string): Promise<Ve
       hours: details.opening_hours?.weekday_text?.join('; ')
     }
   } catch (error) {
-    console.error('Google Places search error:', error)
-    return null
+    throw error instanceof ProviderUnavailable ? error : new ProviderUnavailable()
   }
 }
 
@@ -232,12 +237,9 @@ async function searchTomTom(venueName: string, apiKey: string): Promise<VenueDat
     
     const searchUrl = `https://api.tomtom.com/search/2/search/${encodeURIComponent(venueName)}.json?key=${apiKey}&typeahead=false&limit=1`
     
-    const response = await fetch(searchUrl)
+    const response = await providerFetch(searchUrl)
     
-    if (!response.ok) {
-      console.error('TomTom API error:', response.status)
-      return null
-    }
+
 
     const data = await response.json()
     
@@ -263,8 +265,7 @@ async function searchTomTom(venueName: string, apiKey: string): Promise<VenueDat
       category: venue.poi?.categories?.[0]
     }
   } catch (error) {
-    console.error('TomTom search error:', error)
-    return null
+    throw error instanceof ProviderUnavailable ? error : new ProviderUnavailable()
   }
 }
 
@@ -274,12 +275,9 @@ async function searchTripAdvisor(venueName: string, apiKey: string): Promise<Ven
     
     const searchUrl = `https://api.content.tripadvisor.com/api/v1/location/search?key=${apiKey}&searchQuery=${encodeURIComponent(venueName)}&language=en`
     
-    const response = await fetch(searchUrl)
+    const response = await providerFetch(searchUrl)
     
-    if (!response.ok) {
-      console.error('TripAdvisor API error:', response.status)
-      return null
-    }
+
 
     const data = await response.json()
     
@@ -295,12 +293,12 @@ async function searchTripAdvisor(venueName: string, apiKey: string): Promise<Ven
     let details = null
     try {
       const detailsUrl = `https://api.content.tripadvisor.com/api/v1/location/${venue.location_id}/details?key=${apiKey}&language=en`
-      const detailsResponse = await fetch(detailsUrl)
+      const detailsResponse = await providerFetch(detailsUrl)
       if (detailsResponse.ok) {
         details = await detailsResponse.json()
       }
-    } catch (_e) {
-      console.log('Could not fetch TripAdvisor details')
+    } catch (error) {
+      throw error instanceof ProviderUnavailable ? error : new ProviderUnavailable()
     }
 
     return {
@@ -317,8 +315,7 @@ async function searchTripAdvisor(venueName: string, apiKey: string): Promise<Ven
       phone: details?.phone
     }
   } catch (error) {
-    console.error('TripAdvisor search error:', error)
-    return null
+    throw error instanceof ProviderUnavailable ? error : new ProviderUnavailable()
   }
 }
 
@@ -337,7 +334,7 @@ function mergeVenueData(currentData: VenueData, results: PromiseSettledResult<Ve
     // Only fill empty fields, don't overwrite existing data
     Object.entries(source).forEach(([key, value]) => {
       if (value && (!merged[key as keyof VenueData] || merged[key as keyof VenueData] === '')) {
-        (merged as unknown)[key] = value
+        Object.assign(merged, { [key]: value })
       }
     })
   }

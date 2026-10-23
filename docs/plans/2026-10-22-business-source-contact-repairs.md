@@ -1,0 +1,11 @@
+# Source-backed business contacts
+
+The recurring business-quality producer previously asked for contact information already present in registered primary-venue source records. Migration `99991792712244_business_source_contact_repairs.sql` adds three bounded service-only reconcilers to its existing scheduled pass: websites, country-validated phones and AgendaQ public social profiles. Each defaults to dry run, caps requested batches at 500, uses an advisory lock and records every change in `business_brand_quality_events` with field provenance. The ordinary producer calls each with a batch of 100, preserving its existing enabled/paused controls. Interactive refreshes do not run automatic inheritance.
+
+Only active canonical organizations with one explicitly linked, open primary venue are eligible. Names and known locations must agree. Existing contacts, field provenance, waivers, conflicting values and unsupported source/platform URLs remain protected. Phone numbers use the native country-aware canonicalizer. Social links come from `raw.data.socials`; handles are never invented, and share/login/post URLs are excluded. No verification, publication or safety fields are changed.
+
+Production receipts: **50 websites** and **25 phone numbers** were filled by the prior source passes. The additional AgendaQ social pass filled **93 profiles** and corrected 93 contact findings. Its 93-case production rollback verified unchanged protected organization fields, other findings and complete venue records. The actual pass converged to zero eligible cases. These are source-backed contact facts, not a claim that the remote profile is currently reachable or human-verified.
+
+The prepared helpers passed a disposable PostgreSQL 17 suite of **45 fixtures**, covering dry runs, zero batches, conflicts, permissions, human provenance, waivers, archived organizations, closed venues, multiple locations, invalid URLs and malformed source arrays. The phone validator is explicitly stubbed in that isolated suite; the real native validator was exercised by the separate production rollback checks.
+
+This migration remains unapplied pending the normal ordered release during the concurrent email release hold. Two other unapplied matching migrations were renumbered after CI reported newer migrations on main; no applied migration or production history was renumbered.

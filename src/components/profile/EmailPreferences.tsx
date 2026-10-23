@@ -190,6 +190,7 @@ export function EmailPreferences() {
                   'trip_updates',
                   'Email me schedule changes and UTC next-day reminders for my trips',
                 ],
+                ['group_invitations', 'Email me when I receive a group invitation'],
                 ['group_requests', 'Email me the outcome of my group join requests'],
                 ['contributions', 'Email me decisions on my contributions'],
                 ['payments', 'Email me when a verified payment confirmation is ready'],

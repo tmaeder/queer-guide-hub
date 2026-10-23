@@ -1,0 +1,16 @@
+# Image CDN HEAD responses
+
+The image auditor sends HEAD before requesting image bytes. The CDN accepted GET but rejected HEAD with HTTP 405, so valid mirrored images were recorded as unreachable. A live control returned HEAD 405 and GET 200 with a 433,360-byte, 1280×960 JPEG.
+
+The Gaycities observation history contains 2,681 CDN method failures. A current-image join finds 1,375 event records still carrying a failed CDN observation (1,374 active), with 662 exact open `IMAGE_UNREACHABLE` findings. These are recheck candidates, not verified repairs: a fresh audit can still discover genuine size, decode or reuse problems.
+
+Original-image HEAD now reads R2 metadata without opening the object body. GET and HEAD share content type, real byte length, quoted ETag, cache and CORS headers. Cached thumbnail HEAD also reads metadata only; an uncached thumbnail uses the GET representation and cancels its response body. Missing assets return bodyless 404, while upload authorization and unsupported methods retain their existing guards. No image quality thresholds or stored observations are changed by the Worker fix.
+
+Validation: five Worker regressions, Worker TypeScript check, scoped ESLint and Wrangler build dry run pass. The Worker now owns a small standalone Vitest suite picked up by the existing worker-tests CI job. CI exposed a missing Vite peer dependency masked by the root installation; Vite is now declared in the Worker, and all five tests pass from a fresh standalone install outside the repository with only the Worker's actual shared sources. The Vitest config uses explicit ESM. API behavior was checked against the current [R2 Workers reference](https://developers.cloudflare.com/r2/api/workers/workers-api-reference/). Deployment and subsequent native-auditor receipts will be recorded separately; no pending reduction is credited before rechecks.
+
+
+Deployed Worker version **3c91ff47-d4c3-4235-9b74-b286536aa901**, preserving existing variables. Public and database-origin HEAD requests now return HTTP 200 with the correct MIME, 433,360-byte length and quoted ETag; the existing native cover probe passes the 1280×960 control. The earlier Worker version is recorded locally for rollback.
+
+A read-only pass inspected 174 unique current image URLs belonging to 661 originally unreviewed method-failure findings. It produced 656 passing legacy-cover proofs, including full content hashes. The bounded correction script uses the existing auditor's exclusive lease, rechecks the unchanged event/image/issue/observation revisions, and excludes hash cohorts that reach the native ten-observation reuse threshold. It does not change image criteria or waive reuse findings.
+
+**302 original HTTP-405 findings were resolved**, with 302 fresh passing native observations, null human reviewers and unchanged original negative evidence. A real 20-event rollback and every committed batch verified unchanged complete event records, source captures, quality projections/scores, human decisions and other findings/observations. The pass converged to zero eligible proofs. Nonpassing, stale, human-owned and heavily reused cases stay pending. Five additional Deno tests cover positive evidence, failed HEAD, changed MIME, truncation and off-host input.

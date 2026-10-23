@@ -166,8 +166,10 @@ export function sourceArtwork(sources: SourceEvidence[]): Array<{ url: string; s
     const slug = parsed.pathname.split('/').filter(Boolean).at(-1)
     for (const asset of source.raw.assets) {
       if (!Array.isArray(asset) || typeof asset[1] !== 'string' || !asset[1].startsWith(`/assets/events/${slug}/`)) continue
-      if (typeof asset[3] === 'number' && asset[3] > 0 && asset[3] < 800) continue
+      if (typeof asset[3] === 'number' && asset[3] > 0 && asset[3] < 450) continue
       if (typeof asset[4] === 'number' && asset[4] > 0 && asset[4] < 450) continue
+      if (typeof asset[3] === 'number' && asset[3] > 0 && typeof asset[4] === 'number' && asset[4] > 0
+        && Math.max(asset[3], asset[4]) < 800) continue
       try {
         const url = assertPublicHttpUrl(new URL(asset[1], 'https://data.agendaq.fr').href)
         if (url.hostname === 'data.agendaq.fr') output.push({ url: url.href, source_url: page })

@@ -60,3 +60,19 @@ Add a verified existing-member trip invitation flow before sending invitation em
 ## Admin audience continuation — 2026-10-21
 
 Connect saved audience definitions to the existing admin Email workspace using the established admin components. Provide typed nested rules and current consent/delivery previews, version-aware save/archive, preserved edits on failure, explicit conflict recovery and request revision guards. Keep unsaved audience edits across workspace tab changes. Display bounded definition/sample limits and exclusion evidence. Use the authorized admin API; do not enable campaign delivery or expose sensitive application traits. Campaign binding, journey editing and broader contact operations remain outstanding.
+
+## Group invitation and saved-alert continuation — 2026-10-23
+
+Continue the approved source-backed activity policy with registered-user group invitations. Capture a new invitation from its authoritative insert, only when the recipient has independently enabled the new `group_invitations` operational topic. Pin inviter membership and recipient/source identities. Link its existing unread group notification when that notification is inserted in the same invitation flow; arbitrary notification text does not establish proof. Do not backfill or send to free-text external invite addresses. Revalidate pending/unexpired invite, unchanged target/inviter/group, unread notification, active group, original inviter membership, recipient non-membership, both accounts' erasure barriers and blocks before enqueue and dispatch. A generic signed-in inbox link contains no invite token, group name or private content. Reuse operational outbox identity, quiet hours, daily reservations, export, erasure and retention.
+
+Extend the current account email-preference list with one default-off checkbox, preserving existing topics and stale-version recovery. News saved-search digests must explicitly declare their newsletter purpose so the shared provider gate rejects them; they must not reach Cloudflare by inheriting the legacy transactional default. Saved search/query operations remain usable.
+
+Group comment/reply delivery is excluded in this continuation: the current app has no comment producer or comment/read workflow beyond legacy tables. It needs an authoritative unread source and an explicit recipient scope before dispatch. Business-status delivery is also excluded until a verified owner/claimant source exists; listing email and merchant association cannot establish ownership. These exclusions do not imply full platform parity. Inbox delivery tests still require an expressly authorized mailbox.
+
+Narrow UI direction contract for the invitation continuation:
+
+- **THESIS:** A requested service email leads to an explicit, private review action; viewing never joins a group.
+- **OWN-WORLD:** Preserve Queer Guide's existing paper/ink controls, shared typography and subway ground. This extends current operational surfaces; it introduces no replacement visual world.
+- **STORY:** Choose the independent invitation opt-in in account settings; a source-backed invite may produce a generic notice; review the current invitation on the signed-in Groups page before choosing to join. Saved news searches remain usable while their delivery limitation is stated beside their preferences.
+- **FIRST VIEWPORT:** The invitation section names its task, explains that viewing does not accept, and shows readable group names with explicit review links, or a clear loading/error/empty state. The settings continuation adds one ordinary checkbox; the saved-search popover states availability before the alert preference.
+- **FORM:** Existing semantic sections, shared Button/LocalizedLink and labeled checkbox/switch controls. Bound review pages to twenty owner-scoped records, reflow long multilingual names, keep recovery controls visible, and preserve mobile touch targets. No new imagery or card system is needed.

@@ -26,3 +26,18 @@ Deno.test('gallery / thumbnail are not held to cover rules', () => {
 Deno.test('unknown dimensions are not penalised', () => {
   assertEquals(evaluateCover({}, 'cover'), null)
 })
+
+Deno.test('portrait event artwork passes without changing landscape cover or hero requirements', () => {
+  const poster = { width: 679, height: 960, bytes: 120_000 }
+  assertEquals(evaluateCover(poster, 'event_artwork'), null)
+  assertEquals(evaluateCover(poster, 'cover'), 'cover_too_small')
+  assertEquals(evaluateCover(poster, 'hero'), 'cover_too_small')
+  assertEquals(evaluateCover({ width: 800, height: 450, bytes: 40_000 }, 'event_artwork'), null)
+})
+
+Deno.test('event artwork keeps minimum dimensions, byte size and placeholder rejection', () => {
+  assertEquals(evaluateCover({ width: 449, height: 1200, bytes: 100_000 }, 'event_artwork'), 'cover_too_small')
+  assertEquals(evaluateCover({ width: 600, height: 799, bytes: 100_000 }, 'event_artwork'), 'cover_too_small')
+  assertEquals(evaluateCover({ width: 450, height: 800, bytes: 19_999 }, 'event_artwork'), 'cover_low_bytes')
+  assertEquals(evaluateCover({ width: 679, height: 960, bytes: 20_000 }, 'event_artwork'), 'near_solid_color')
+})

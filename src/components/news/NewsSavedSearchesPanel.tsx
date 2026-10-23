@@ -102,6 +102,10 @@ export function NewsSavedSearchesPanel({
 
           {user && (
             <>
+              <p id="saved-search-email-availability" className="text-sm text-muted-foreground">
+                Email delivery for saved searches is unavailable. You can save searches and alert
+                preferences for future availability.
+              </p>
               {/* Save current search */}
               {hasActiveSearch && !showSaveForm && (
                 <Button
@@ -129,10 +133,11 @@ export function NewsSavedSearchesPanel({
                       htmlFor="alert-switch"
                       className="text-xs text-muted-foreground flex items-center gap-2"
                     >
-                      <Bell size={12} /> Email alerts
+                      <Bell size={12} /> Save email alert preference
                     </label>
                     <Switch
                       id="alert-switch"
+                      aria-describedby="saved-search-email-availability"
                       checked={alertEnabled}
                       onCheckedChange={setAlertEnabled}
                     />
@@ -199,17 +204,22 @@ export function NewsSavedSearchesPanel({
                               variant="secondary"
                               style={{ padding: '0 4px', marginTop: 2 }}
                             >
-                              {s.alert_frequency} alert
+                              {s.alert_frequency} preference saved
                             </Badge>
                           )}
                         </button>
-                        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <div className="flex items-center gap-1">
                           <button
                             type="button"
                             onClick={() => void handleToggleAlert(s)}
-                            className="p-1 rounded-element hover:bg-background"
-                            aria-label={s.alert_enabled ? 'Disable alert' : 'Enable alert'}
-                            title={s.alert_enabled ? 'Disable alert' : 'Enable alert'}
+                            className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-element hover:bg-background"
+                            aria-label={
+                              s.alert_enabled ? 'Clear alert preference' : 'Save alert preference'
+                            }
+                            aria-describedby="saved-search-email-availability"
+                            title={
+                              s.alert_enabled ? 'Clear alert preference' : 'Save alert preference'
+                            }
                           >
                             {s.alert_enabled ? (
                               <Bell size={13} className="text-primary" />
@@ -220,7 +230,7 @@ export function NewsSavedSearchesPanel({
                           <button
                             type="button"
                             onClick={() => void handleDelete(s.id)}
-                            className="p-1 rounded-element hover:bg-background"
+                            className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-element hover:bg-background"
                             aria-label="Delete"
                           >
                             <Trash2

@@ -82,10 +82,10 @@ begin
  assert not public.email_dispatch_authorize(o.id,lease),'rejoin revived old membership';
  update public.group_memberships set id=old_membership where group_id=g and user_id=u;
  assert public.email_dispatch_authorize(o.id,lease);
- update auth.users set email='group-changed@example.com' where id=u;
+ perform public.email_fixture_change_mailbox(u,'group-changed@example.com');
  assert not public.email_dispatch_authorize(o.id,lease),'old mailbox sent';
  assert (public.email_group_mention_enqueue(event,jsonb_set(payload,'{to}','"group-changed@example.com"'))).id=o.id,'address change resent mention';
- update auth.users set email='group-member@example.com' where id=u;
+ perform public.email_fixture_change_mailbox(u,'group-member@example.com');
  -- A separate activity row cannot spend the same daily reservation.
  legacy:=public.email_enqueue('group-competing','group-member@example.com',payload,'dm_digest',null,u);
  assert public.email_activity_message_reason(legacy.id) is not null;
