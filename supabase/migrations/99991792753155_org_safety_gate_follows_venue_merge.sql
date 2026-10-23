@@ -1,4 +1,4 @@
--- 99991792747676_org_safety_gate_follows_venue_merge
+-- 99991792753155_org_safety_gate_follows_venue_merge
 --
 -- organizations.safety_gated is decided by trg_organizations_safety_gated
 -- (set_org_safety_gated). Two defects, one producer:
@@ -126,7 +126,7 @@ begin
     raise exception 'P1 failed: zzz_venue_gate_to_org does not fire on duplicate_of_id: %', v_def;
   end if;
 
-  if position('s.safety_gated is true' in pg_get_functiondef('public.set_org_safety_gated'::regproc)) = 0 then
+  if position('s.safety_gated is true' in regexp_replace(pg_get_functiondef('public.set_org_safety_gated'::regproc), '--[^' || chr(10) || ']*', '', 'g')) = 0 then
     raise exception 'P2 failed: set_org_safety_gated does not consult the merge survivor';
   end if;
 

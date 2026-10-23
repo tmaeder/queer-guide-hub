@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
-const MIGRATION = '99991792747622_tag_ontology_health_inlinable_facet.sql';
+const MIGRATION = '99991792752491_tag_ontology_health_inlinable_facet.sql';
 const raw = readFileSync(join(process.cwd(), 'supabase/migrations', MIGRATION), 'utf8');
 
 // The header quotes nearly every phrase these tests assert on -- the OLD slow shape,
@@ -89,6 +89,34 @@ describe('the two correlated-SRF arms become joins', () => {
   it('introduces the join and removes the correlated subquery', () => {
     expect(patchBlock).toContain('left join public.tag_usage_summary s on s.id=t.id');
     expect(patchBlock).toContain("'and coalesce(s.usage_count,0)=0'");
+  });
+});
+
+describe('comment stripping around pg_get_functiondef', () => {
+  it('counts anchors on a comment-STRIPPED copy but rewrites the original', () => {
+    // pg_get_functiondef returns the body INCLUDING its comments. Counting on the
+    // raw text matches prose as well as code, which aborted `db push` on main three
+    // times on 2026-09-20 and stranded the whole deploy queue -- nothing fails until
+    // apply time. Stripping for the REWRITE instead would delete the function's own
+    // comments from the body written back, so the two reads must stay separate.
+    expect(patchBlock).toMatch(
+      /v_bare\s*:=\s*regexp_replace\(v_src,\s*'--\[\^'\s*\|\|\s*chr\(10\)\s*\|\|\s*'\]\*',\s*''\s*,\s*'g'\)/,
+    );
+    // Every anchor count reads v_bare; none reads v_src.
+    const counts = patchBlock.match(/\(length\(v_\w+\) - length\(replace\(v_\w+,/g) ?? [];
+    expect(counts.length).toBeGreaterThanOrEqual(3);
+    for (const c of counts) expect(c).toContain('v_bare');
+    // ...while the substitutions still operate on the comment-bearing original.
+    expect(patchBlock).toMatch(/v_out\s*:=\s*replace\(v_src,/);
+    expect(patchBlock).not.toMatch(/v_out\s*:=\s*replace\(v_bare,/);
+  });
+
+  it('strips before asserting in the verify block too', () => {
+    expect(verifyBlock).toMatch(
+      /select regexp_replace\(pg_get_functiondef\(p\.oid\),\s*'--\[\^'\s*\|\|\s*chr\(10\)\s*\|\|\s*'\]\*',\s*''\s*,\s*'g'\) into v_def/,
+    );
+    // No raw read feeds an assertion.
+    expect(verifyBlock).not.toMatch(/select pg_get_functiondef\(p\.oid\) into v_def/);
   });
 });
 

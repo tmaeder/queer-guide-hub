@@ -119,7 +119,7 @@ console.error = (...a) => console.log(...a)
       rows = null
     }
 
-    // Served from a snapshot since 99991792737444 (cron `cities_directory_refresh`,
+    // Served from a snapshot since 99991792753131 (cron `cities_directory_refresh`,
     // every 10 min). A dead refresher freezes the directory with no error anywhere, so
     // staleness is a hard fail. A missing key means the RPC fell back to the live
     // compute (no snapshot row) — the 3s-timeout path — which also fails.

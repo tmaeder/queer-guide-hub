@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 const sql = readFileSync(
-  join(process.cwd(), 'supabase/migrations/99991792747676_org_safety_gate_follows_venue_merge.sql'),
+  join(process.cwd(), 'supabase/migrations/99991792753155_org_safety_gate_follows_venue_merge.sql'),
   'utf8',
 )
   .split('\n')

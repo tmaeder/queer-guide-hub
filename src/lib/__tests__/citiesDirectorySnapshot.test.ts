@@ -3,10 +3,10 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 /**
- * Guards 99991792737444 — cities_directory() served from a cron-refreshed snapshot.
+ * Guards 99991792753131 — cities_directory() served from a cron-refreshed snapshot.
  * Over COMMENT-STRIPPED SQL: the header quotes the phrases asserted here.
  */
-const MIGRATION = '99991792737444_cities_directory_snapshot.sql';
+const MIGRATION = '99991792753131_cities_directory_snapshot.sql';
 const sql = readFileSync(join(process.cwd(), 'supabase/migrations', MIGRATION), 'utf8')
   .split('\n')
   .filter((l) => !/^\s*--/.test(l))
