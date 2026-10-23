@@ -311,4 +311,27 @@ describe('AdminEditButton', () => {
       ),
     );
   });
+
+  it('exports a hotel record from the hotels detail page', async () => {
+    exportRecordMock.mockReset().mockResolvedValue(undefined);
+    useAdminRolesMock.mockReturnValue({ canManageContent: () => true, loading: false });
+    renderIn(<AdminEditButton contentType="hotels" contentId="h1" exportable />, '/hotels/x');
+    await openMenu();
+    fireEvent.click(await screen.findByText('Export record (CSV)'));
+    await waitFor(() =>
+      expect(exportRecordMock).toHaveBeenCalledWith(
+        expect.objectContaining({ tableName: 'hotels' }),
+        'h1',
+        'CSV',
+      ),
+    );
+  });
+
+  it('gives a hotel owner who is not staff no record export', () => {
+    // The owner may edit their own listing; exports sit in the staff-only menu.
+    useAdminRolesMock.mockReturnValue({ canManageContent: () => false, loading: false });
+    renderIn(<AdminEditButton contentType="hotels" contentId="h1" ownerUserId="u1" exportable />);
+    expect(screen.queryByRole('button', { name: /More admin actions/i })).toBeNull();
+    expect(screen.queryByText(/Export record/)).toBeNull();
+  });
 });
