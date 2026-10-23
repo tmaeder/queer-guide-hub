@@ -3,7 +3,7 @@ import { EmailEditor, type EmailEditorRef } from '@react-email/editor';
 import { EmailNode, composeReactEmail } from '@react-email/editor/core';
 import { StarterKit } from '@react-email/editor/extensions';
 import { EmailTheming } from '@react-email/editor/plugins';
-import { Inspector } from '@react-email/editor/ui';
+import EmailInspector from './EmailInspector';
 import Image from '@tiptap/extension-image';
 import type { JSONContent } from '@tiptap/core';
 import { closeHistory } from '@tiptap/pm/history';
@@ -297,13 +297,7 @@ export default function EmailBlockEditor({
             }
           }}
         >
-          <Inspector.Root className="email-inspector">
-            <h3 className="font-medium mb-4">Properties</h3>
-            <Inspector.Breadcrumb />
-            <Inspector.Document />
-            <Inspector.Node />
-            <Inspector.Text />
-          </Inspector.Root>
+          <EmailInspector />
         </EmailEditor>
       </div>
       <details className="rounded-element border p-4">
