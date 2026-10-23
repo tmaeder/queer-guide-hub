@@ -1,0 +1,11 @@
+# Reuse checked media within the same business identity
+
+A native export selected 82 unclaimed, unverified, automatically minted venue-only businesses with a media finding, one canonical open primary venue, exact name/geography agreement and an existing own-CDN logo. Human media ownership/revisions, waived findings, conflicting websites, platform domains, denied marks and previously cleared logo evidence are excluded.
+
+All 82 PNGs returned HTTP 200, decoded successfully and matched their content-addressed URL SHA-256. Visual inspection nevertheless found buttons, blank pixels, unrelated marks and generic institutional imagery among the results. Successful decoding is not sufficient brand identity evidence. Only 18 recognizable same-business wordmarks or chain marks were selected by the automated review; no human verification is asserted. The other 64 were not accepted automatically and are not all classified as invalid.
+
+`inherit-verified-primary-business-logos.sql` defaults to dry run. Its bounded evidence input requires a fresh own-CDN capture, successful PNG decoding, exact content hash, an explicit automated brand selection and unchanged business/venue revisions. It locks the live finding, business and venue; preserves human ownership and waivers; records a native quality event and field provenance; and asserts complete source venue records and all unrelated business fields remain unchanged. It does not directly change findings, scores or verification timestamps.
+
+The production dry run selected 18 records. The actual mutations passed a rolled-back regression before the same guarded transaction committed 18 logo fills. Native quality reassessment remains responsible for retiring completeness findings. A simultaneous manual refresh encountered a lock timeout and rolled back; it was not forced past the existing worker.
+
+The current 2,000-record city recovery run also completed without failures. An independent database read confirmed 1,026 persisted external identities and 906 source description fills. A separate earlier 400-record run confirmed 209 identities and 169 descriptions. The recovery runner now groups its bounded snapshot by country to reuse the existing resolver caches, while preserving all identity/ownership gates and skipping previously examined unresolved IDs. It does not reconcile city-quality queues itself.

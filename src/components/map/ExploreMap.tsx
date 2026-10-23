@@ -30,6 +30,8 @@ import { useFocusRing } from '@/components/map/hooks/useFocusRing';
 import { useSelectionFlyer } from '@/components/map/hooks/useSelectionFlyer';
 import { useMapInstance } from '@/components/map/hooks/useMapInstance';
 import { usePointLayers } from '@/components/map/hooks/usePointLayers';
+import { useSharedMobilityLayer } from '@/components/map/hooks/useSharedMobilityLayer';
+import { snapshotAgeMinutes } from '@/hooks/useSharedMobility';
 import { useVisitorLocation } from '@/hooks/useVisitorLocation';
 import { useToast } from '@/hooks/use-toast';
 import {
@@ -112,6 +114,8 @@ export interface ExploreMapProps {
   favoriteIds?: Set<string>;
   /** When true, only saved points render (favorites layer). */
   savedOnly?: boolean;
+  /** Monochrome overlay of rideable shared bikes & e-scooters (CH snapshot). */
+  showSharedMobility?: boolean;
   /** Cooperative gestures: wheel-scroll passes through to the page (zoom needs
    *  ⌘/ctrl+scroll, two fingers on touch). Use when the map is embedded above
    *  page content (e.g. the homepage hero) so it doesn't trap page scroll. */
@@ -159,6 +163,7 @@ export const ExploreMap = ({
   onFetchingChange,
   favoriteIds,
   savedOnly = false,
+  showSharedMobility = false,
   cooperativeGestures = false,
   showNativeNav = true,
   onMapHandle,
@@ -469,6 +474,15 @@ export const ExploreMap = ({
     prefersReducedMotion,
   });
 
+  // ── Shared bikes & e-scooters (monochrome overlay beneath the pins) ──────
+  const sharedMobility = useSharedMobilityLayer({
+    mapRef,
+    mapReady,
+    enabled: showSharedMobility,
+    viewport,
+  });
+  const sharedMobilityAge = snapshotAgeMinutes(sharedMobility?.generatedAt ?? undefined);
+
   // ── Route line + numbered stops ──────────────────────────────────────────
   // Declared after the heat effect so a route draws ABOVE the wash.
   useRouteLines({ mapRef, mapReady, enabled: plan.routes, route });
@@ -530,6 +544,21 @@ export const ExploreMap = ({
         isCounterStale={isCounterStale}
         inBoundsCount={inBoundsCount}
       />
+
+      {sharedMobility && (
+        <p
+          role="status"
+          className={`absolute left-3 z-10 m-0 max-w-[70%] rounded-element bg-card px-4 py-1.5 text-xs leading-tight shadow-soft ${linkToFullMap ? 'bottom-14' : 'bottom-3'}`}
+        >
+          {sharedMobility.tooFar
+            ? 'Zoom in to see shared bikes & e-scooters'
+            : sharedMobility.cells === 0
+              ? 'No shared bikes or e-scooters in view (data covers Switzerland)'
+              : sharedMobility.attribution
+                ? `Shared bikes & e-scooters${sharedMobilityAge != null ? ` · ${sharedMobilityAge} min ago` : ''} · ${sharedMobility.attribution}`
+                : null}
+        </p>
+      )}
 
       {/* The empty state moved to MapShell's <MapNotice>, which arbitrates it
           against the first-run nudge and the location hint — all three used to

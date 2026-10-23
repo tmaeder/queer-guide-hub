@@ -1,11 +1,20 @@
 import { useId } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { defaultRule, events, statuses, topics, type Rule } from './audienceRules';
+import { defaultRule, events, statuses, topics, recipientKinds, type Rule } from './audienceRules';
 const selectClass =
   'min-h-10 w-full rounded-element border border-input bg-background px-4 text-sm';
-const fields = ['status', 'locale', 'source', 'topic', 'created_at', 'confirmed_at'] as const;
+const fields = [
+  'status',
+  'locale',
+  'source',
+  'recipient_kind',
+  'topic',
+  'created_at',
+  'confirmed_at',
+] as const;
 const names: Record<string, string> = {
+  recipient_kind: 'Recipient type',
   status: 'Subscription status',
   locale: 'Language',
   source: 'Recorded subscription source',
@@ -20,7 +29,14 @@ function fieldRule(field: (typeof fields)[number]): Rule {
   return {
     field,
     op: 'eq',
-    value: field === 'status' ? 'subscribed' : field === 'locale' ? 'en' : '',
+    value:
+      field === 'status'
+        ? 'subscribed'
+        : field === 'locale'
+          ? 'en'
+          : field === 'recipient_kind'
+            ? 'organization'
+            : '',
   };
 }
 export function AudienceRuleEditor({
@@ -197,7 +213,10 @@ export function AudienceRuleEditor({
               ))}
             </select>
           </label>
-          {(rule.field === 'locale' || rule.field === 'source' || rule.field === 'status') && (
+          {(rule.field === 'locale' ||
+            rule.field === 'source' ||
+            rule.field === 'status' ||
+            rule.field === 'recipient_kind') && (
             <>
               <label className="text-sm">
                 Comparison
@@ -221,15 +240,15 @@ export function AudienceRuleEditor({
                   <option value="in">Is one of</option>
                 </select>
               </label>
-              {rule.field === 'status' && rule.op === 'eq' ? (
+              {(rule.field === 'status' || rule.field === 'recipient_kind') && rule.op === 'eq' ? (
                 <label className="text-sm">
-                  Status
+                  {rule.field === 'status' ? 'Status' : 'Type'}
                   <select
                     className={selectClass}
                     value={rule.value as string}
                     onChange={(e) => onChange({ ...rule, value: e.target.value })}
                   >
-                    {statuses.map((s) => (
+                    {(rule.field === 'status' ? statuses : recipientKinds).map((s) => (
                       <option key={s} value={s}>
                         {s}
                       </option>

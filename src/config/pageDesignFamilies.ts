@@ -185,6 +185,7 @@ export function pageDesignFamilyForModule(modulePath: string): PageDesignFamily 
       'Auth',
       'AuthCallback',
       'ClaimUsername',
+      'EmailUpdates',
       'ResetPassword',
       'Settings',
       'RedirectMemberWorkspace',

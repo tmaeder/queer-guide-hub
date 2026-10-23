@@ -139,6 +139,7 @@ export const MapShell = ({
   );
   const [fetching, setFetching] = useState(false);
   const [savedOnly, setSavedOnly] = useState(false);
+  const [showSharedMobility, setShowSharedMobility] = useState(false);
   const [locationHint, setLocationHint] = useState<string | null>(null);
 
   /** True once a viewport fetch has completed at least once. The empty state
@@ -443,6 +444,7 @@ export const MapShell = ({
         onFetchingChange={setFetching}
         favoriteIds={favoriteIds}
         savedOnly={savedActive}
+        showSharedMobility={showSharedMobility}
         cooperativeGestures={cooperativeGestures}
         showNativeNav={false}
         onMapHandle={setMapHandle}
@@ -488,6 +490,8 @@ export const MapShell = ({
             canSave={canSave}
             savedOnly={savedActive}
             onToggleSaved={() => setSavedOnly((v) => !v)}
+            showSharedMobility={showSharedMobility}
+            onToggleSharedMobility={() => setShowSharedMobility((v) => !v)}
             onGeolocate={handleGeolocate}
             onFitBounds={handleFitBounds}
             onShare={handleShare}

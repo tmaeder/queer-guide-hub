@@ -1,3 +1,4 @@
+import { loadEmailTemplate } from "../_shared/email-content.ts";
 import { renderEmailTemplate } from "../_shared/email-render.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.50.5";
 import { isEmailConfigured, sendEmail } from "../_shared/email.ts";
@@ -13,6 +14,7 @@ interface SendEmailRequest {
   to_email: string;
   variables: Record<string, string>;
   is_test?: boolean;
+  locale?: string;
 }
 
 const handler = async (req: Request): Promise<Response> => {
@@ -126,26 +128,21 @@ const handler = async (req: Request): Promise<Response> => {
       );
     }
 
-    // Fetch the email template from the database
-    const { data: template, error: templateError } = await supabase
-      .from("email_templates")
-      .select("*")
-      .eq("template_key", template_key)
-      .eq("is_active", true)
-      .single();
-
-    if (templateError || !template) {
-      console.error("Template not found or inactive:", templateError);
-      return new Response(
-        JSON.stringify({
-          error: `Template '${template_key}' not found or inactive`,
-        }),
-        {
-          status: 404,
-          headers: { "Content-Type": "application/json", ...cors },
-        },
-      );
+    if (
+      requestData.locale !== undefined &&
+      (typeof requestData.locale !== "string" ||
+        !/^[a-z]{2}(?:-[A-Za-z0-9]{2,8})?$/.test(requestData.locale))
+    ) {
+      return new Response(JSON.stringify({ error: "Invalid email language" }), {
+        status: 400,
+        headers: { ...cors, "Content-Type": "application/json" },
+      });
     }
+    const template = await loadEmailTemplate(
+      supabase,
+      template_key,
+      requestData.locale,
+    );
 
     let rendered;
     try {

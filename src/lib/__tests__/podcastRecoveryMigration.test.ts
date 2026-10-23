@@ -185,6 +185,7 @@ describe('the news_sources column allowlist', () => {
     const hook = readFileSync(join(__dirname, '../../hooks/useNews.tsx'), 'utf8');
     const block = hook.slice(hook.indexOf('fetchSources'), hook.indexOf('fetchSources') + 1400);
     expect(block).not.toMatch(/\.from\('news_sources'\)\s*\n\s*\.select\('\*'\)/);
-    expect(block).toMatch(/artwork_url/);
+    // Explicit list (anon has a column allowlist): only what the dropdown reads.
+    expect(block).toMatch(/\.select\('id, name, url'\)/);
   });
 });
