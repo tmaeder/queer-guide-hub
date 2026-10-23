@@ -128,3 +128,26 @@ begin
  exception when others then assert sqlerrm='Internal source outcomes only',sqlerrm;end;
  perform set_config('test.actor','',true);
 end $test$;
+
+-- Hold the actual repair lease in another PostgreSQL session. An eligible
+-- source outcome must be deferred without creating a finding/current snapshot.
+delete from event_quality_issues where event_id=(select e from fixture where n=4);
+delete from event_quality_current where event_id=(select e from fixture where n=4);
+do $contention_test$
+declare r jsonb;
+begin
+ perform dblink_connect('artwork_busy',format('host=%L port=%L dbname=%L user=%L',
+  current_setting('unix_socket_directories'),current_setting('port'),current_database(),current_user));
+ perform *from dblink('artwork_busy','select pg_advisory_lock(hashtext(''historical_graph_artwork''))')as locked(value text);
+ assert api_private.historical_graph_artwork_scope((select e from fixture where n=4))is not null;
+ r:=run_event_quality_scan(100,'historical',false);
+ assert not exists(select 1 from event_quality_current where event_id=(select e from fixture where n=4)),
+  'Busy source contract was incorrectly marked assessed';
+ assert not exists(select 1 from event_quality_issues where event_id=(select e from fixture where n=4)and status='open'),
+  'Busy source contract recreated missing-artwork work';
+ perform dblink_disconnect('artwork_busy');
+ r:=run_event_quality_scan(100,'historical',false);
+ assert exists(select 1 from event_quality_current where event_id=(select e from fixture where n=4)and media_score=0);
+ assert exists(select 1 from event_quality_issues where event_id=(select e from fixture where n=4)
+  and issue_code='IMAGE_MISSING'and status='accepted'and reviewed_by is null);
+end $contention_test$;

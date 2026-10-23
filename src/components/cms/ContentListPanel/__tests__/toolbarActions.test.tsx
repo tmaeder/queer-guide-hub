@@ -19,6 +19,13 @@ import { TooltipProvider } from '@/components/ui/tooltip';
 import { Tag } from 'lucide-react';
 import type { ContentTypeConfig, FieldConfig } from '@/types/cms';
 import type { Filter } from '../viewSpec';
+import {
+  brandListConfig,
+  hotelListConfig,
+  merchantListConfig,
+  partnerListConfig,
+} from '@/components/admin/business/organisationListConfigs';
+import { getContentType } from '@/config/contentTypes';
 import { unifiedTagsContentType } from '@/config/contentTypes/tag';
 
 /**
@@ -173,6 +180,50 @@ describe('ContentListPanel toolbarActions', () => {
       );
       expect(screen.getByRole('button', { name: 'Export Excel' })).toBeVisible();
       expect(screen.getByRole('button', { name: 'Export CSV' })).toBeVisible();
+    },
+  );
+
+  it.each([
+    ['Brands', brandListConfig],
+    ['Hotels', hotelListConfig],
+    ['Merchants', merchantListConfig],
+    ['Partners', partnerListConfig],
+  ])(
+    'the Organisations %s tab gets Excel and CSV from the workspace header',
+    async (_tab, config) => {
+      renderPanel(config, { workspace: true, hideHeader: true });
+      fireEvent.click(screen.getByRole('button', { name: 'List tools' }));
+      expect(screen.getByRole('button', { name: 'Export Excel' })).toBeVisible();
+      fireEvent.click(screen.getByRole('button', { name: 'Export CSV' }));
+      expect(exportContentType).toHaveBeenLastCalledWith(config, controller.allListColumns, 'CSV');
+      await waitFor(() =>
+        expect(screen.getByRole('button', { name: 'Export CSV' })).not.toBeDisabled(),
+      );
+    },
+  );
+
+  it('keeps Excel and CSV when a page hides the header to own its title (Milestones)', () => {
+    renderPanel(baseConfig(), { hideHeader: true });
+    expect(screen.queryByRole('button', { name: 'List tools' })).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Content tools' }));
+    expect(screen.getByRole('button', { name: 'Export Excel' })).toBeVisible();
+    expect(screen.getByRole('button', { name: 'Export CSV' })).toBeVisible();
+  });
+
+  it.each(['personalities', 'milestones', 'events', 'cities'])(
+    'the real %s config offers Excel and CSV',
+    async (id) => {
+      renderPanel(getContentType(id)!);
+      fireEvent.click(screen.getByRole('button', { name: 'Content tools' }));
+      fireEvent.click(screen.getByRole('button', { name: 'Export CSV' }));
+      expect(exportContentType).toHaveBeenLastCalledWith(
+        getContentType(id),
+        controller.allListColumns,
+        'CSV',
+      );
+      await waitFor(() =>
+        expect(screen.getByRole('button', { name: 'Export CSV' })).not.toBeDisabled(),
+      );
     },
   );
 

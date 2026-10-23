@@ -18,17 +18,43 @@ vi.mock('@/hooks/useHotels', () => ({
     refetch: vi.fn(),
   }),
 }));
-vi.mock('@/hooks/useAddressResolver', () => ({ useAddressResolver: () => ({ resolveAddress: vi.fn() }) }));
-vi.mock('@/components/admin/data-table/AdminDataTable', () => ({ AdminDataTable: () => <div>table</div> }));
+vi.mock('@/hooks/useAddressResolver', () => ({
+  useAddressResolver: () => ({ resolveAddress: vi.fn() }),
+}));
+vi.mock('@/components/admin/data-table/AdminDataTable', () => ({
+  AdminDataTable: () => <div>table</div>,
+}));
 
 import { HotelsManager } from '../HotelsManager';
 
 function wrapper({ children }: { children: ReactNode }) {
   const qc = new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: 0 } } });
-  return <MemoryRouter><QueryClientProvider client={qc}><TooltipProvider>{children}</TooltipProvider></QueryClientProvider></MemoryRouter>;
+  return (
+    <MemoryRouter>
+      <QueryClientProvider client={qc}>
+        <TooltipProvider>{children}</TooltipProvider>
+      </QueryClientProvider>
+    </MemoryRouter>
+  );
 }
 
+const listProps = vi.hoisted(() => ({ current: {} as Record<string, unknown> }));
+vi.mock('@/components/cms/ContentListPanel', () => ({
+  ContentListPanel: (props: Record<string, unknown>) => {
+    listProps.current = props;
+    return <div>list</div>;
+  },
+}));
+
 describe('HotelsManager', () => {
+  it('relies on the shared list exports instead of its own Excel button', () => {
+    // The workspace list header renders Excel + CSV (every column) for every
+    // list; a bespoke button in `tools` would show a second "Export Excel".
+    render(<HotelsManager />, { wrapper });
+    expect(listProps.current.workspace).toBe(true);
+    expect(listProps.current.tools).toBeUndefined();
+  });
+
   it('renders without crashing', () => {
     const { container } = render(<HotelsManager />, { wrapper });
     expect(container).toBeTruthy();

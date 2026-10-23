@@ -24,7 +24,7 @@ tree = ast.parse((HERE / 'run_historical_event_brevity.py').read_text())
 schema = next(ast.literal_eval(node.value) for node in tree.body if isinstance(node, ast.Assign)
               and any(isinstance(target, ast.Name) and target.id == 'schema' for target in node.targets))
 schema += """
-create schema api_private;create schema extensions;
+create schema api_private;create schema extensions;create extension dblink;
 create extension pgcrypto with schema extensions;create extension unaccent with schema extensions;
 alter table events add column images text[] default '{}',add column updated_at timestamptz default now(),
  add column field_provenance jsonb default '{}',add column last_verified_at timestamptz default now(),
@@ -73,7 +73,7 @@ previous = list((ROOT / 'supabase/migrations').glob('*_historical_event_source_c
 paths = list((ROOT / 'supabase/migrations').glob('*_historical_graph_artwork_source_outcomes.sql'))
 if len(paths) != 1 or len(previous) != 1:
     raise SystemExit('Exactly one migration per historical source contract required')
-sql = schema + function('decide_event_quality_issue') + function('run_event_quality_scan') + previous[0].read_text() + paths[0].read_text() + next((ROOT / 'supabase/migrations').glob('*_historical_graph_artwork_batch_iteration.sql')).read_text() + (HERE / 'historical_graph_artwork.sql').read_text()
+sql = schema + function('decide_event_quality_issue') + function('run_event_quality_scan') + previous[0].read_text() + paths[0].read_text() + next((ROOT / 'supabase/migrations').glob('*_historical_graph_artwork_batch_iteration.sql')).read_text() + next((ROOT / 'supabase/migrations').glob('*_historical_artwork_scan_contention.sql')).read_text() + (HERE / 'historical_graph_artwork.sql').read_text()
 with tempfile.TemporaryDirectory(prefix='qg-graph-artwork-') as tmp:
     data = Path(tmp) / 'data'
     subprocess.run([binary('initdb'), '-D', str(data), '-A', 'trust', '--no-locale'], check=True, stdout=subprocess.DEVNULL)

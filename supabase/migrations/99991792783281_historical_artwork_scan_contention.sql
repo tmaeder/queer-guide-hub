@@ -1,3 +1,4 @@
+-- Validated with a separate PostgreSQL session holding the real repair lock.
 -- A concurrent repair can temporarily hold the source contract's lease. Do
 -- not create a missing-artwork finding and mark that event fully assessed
 -- while its eligible source outcome has been deferred by that lease/row lock.

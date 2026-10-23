@@ -1,6 +1,6 @@
 import { getServiceClient, jsonResponse, errorResponse, corsResponse, requireInternalOrAdmin } from '../_shared/supabase-client.ts'
 import {
-  normalizePhone, normalizeEmail, extractDomain, normalizeName, sha256Hex,
+  normalizePhone, normalizeEmail, extractDomain, normalizeName, sha256Hex, normalizeCoordinate,
 } from '../_shared/venue-pipeline-utils.ts'
 import {
   inferAccommodationType, normalizeAmenities, normalizeStarRating,
@@ -192,17 +192,17 @@ function normalizeItem(raw: Record<string, unknown>, entityType: string): Record
   // Location — also check raw.geo.lat/lng (outsavvy, gaycities scraper format)
   const loc = (raw.location ?? {}) as Record<string, unknown>
   const geo = (raw.geo ?? {}) as Record<string, unknown>
-  const lat = Number(raw.lat ?? raw.latitude ?? loc.lat ?? geo.lat)
-  const lng = Number(raw.lng ?? raw.longitude ?? loc.lng ?? raw.lon ?? geo.lng)
-  if (Number.isFinite(lat) || Number.isFinite(lng) || raw.address || raw.city || raw.country) {
+  const lat = normalizeCoordinate(raw.lat ?? raw.latitude ?? loc.lat ?? geo.lat)
+  const lng = normalizeCoordinate(raw.lng ?? raw.longitude ?? loc.lng ?? raw.lon ?? geo.lng)
+  if (lat !== null || lng !== null || raw.address || raw.city || raw.country) {
     const country = cleanText(raw.country || loc.country || '')
     // state/postal_code accept every alias the sources actually emit — notably
     // `postcode`, which source-osm-venue has always sent and which was silently
     // dropped here, so it never reached venues.postal_code.
     // Canonical output keys are `state` and `postal_code`.
     n.location = {
-      lat: Number.isFinite(lat) ? lat : null,
-      lng: Number.isFinite(lng) ? lng : null,
+      lat,
+      lng,
       address: cleanText(raw.address || loc.address || ''),
       city:    cleanText(raw.city || loc.city || ''),
       country: country || null,

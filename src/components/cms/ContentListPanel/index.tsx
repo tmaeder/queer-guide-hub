@@ -265,6 +265,29 @@ function ContentListPanelBody(props: ContentListPanelProps) {
       />
     ));
 
+  // The standard header's tools menu (refresh, type actions, exports). A page
+  // that hides the header to own its title without using the workspace header
+  // (Milestones) still renders this menu, or it would lose its exports.
+  const contentTools = (
+    <AdminToolsPopover label="Content tools">
+      <Button
+        // A Tooltip is NOT an accessible name: its content lives in
+        // a portal and is never referenced by the trigger, so an
+        // icon-only button reads as unlabelled (axe button-name).
+        aria-label="Refresh"
+        variant="ghost"
+        size="sm"
+        className="min-h-10 justify-start gap-2"
+        onClick={() => c.loadItems()}
+      >
+        <RefreshCw size={16} aria-hidden="true" /> Refresh records
+      </Button>
+
+      {c.config?.toolbarActions?.()}
+      {exportActions}
+    </AdminToolsPopover>
+  );
+
   const viewBar = c.contentTypeId ? (
     <ViewBar
       compact={v.views.length === 0}
@@ -339,11 +362,6 @@ function ContentListPanelBody(props: ContentListPanelProps) {
           </div>
         </div>
       )}
-      {props.hideHeader && !props.workspace && config && (
-        <div className="mb-4 flex justify-end">
-          <AdminToolsPopover label="Content tools">{exportActions}</AdminToolsPopover>
-        </div>
-      )}
       {c.loadError && (
         <div
           role="alert"
@@ -360,6 +378,9 @@ function ContentListPanelBody(props: ContentListPanelProps) {
             Retry
           </Button>
         </div>
+      )}
+      {props.hideHeader && !props.workspace && (
+        <div className="mb-4 flex justify-end">{contentTools}</div>
       )}
       {!props.hideHeader && (
         <AdminArchetypeHeader
@@ -391,23 +412,7 @@ function ContentListPanelBody(props: ContentListPanelProps) {
           }
           actions={
             <>
-              <AdminToolsPopover label="Content tools">
-                <Button
-                  // A Tooltip is NOT an accessible name: its content lives in
-                  // a portal and is never referenced by the trigger, so an
-                  // icon-only button reads as unlabelled (axe button-name).
-                  aria-label="Refresh"
-                  variant="ghost"
-                  size="sm"
-                  className="min-h-10 justify-start gap-2"
-                  onClick={() => c.loadItems()}
-                >
-                  <RefreshCw size={16} aria-hidden="true" /> Refresh records
-                </Button>
-
-                {c.config?.toolbarActions?.()}
-                {exportActions}
-              </AdminToolsPopover>
+              {contentTools}
               {c.config && (
                 <Button size="sm" onClick={() => c.onCreate(c.config!.id)}>
                   <Plus size={16} className="mr-1" />

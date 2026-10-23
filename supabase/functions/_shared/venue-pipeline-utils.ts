@@ -58,9 +58,17 @@ export function isValidUrl(s: unknown): boolean {
   }
 }
 
+/** Preserve missing source coordinates; Number(null/''/false) fabricates zero. */
+export function normalizeCoordinate(raw: unknown): number | null {
+  if (typeof raw !== 'number' && typeof raw !== 'string') return null
+  if (typeof raw === 'string' && !/^[+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][+-]?\d+)?$/.test(raw.trim())) return null
+  const value = Number(raw)
+  return Number.isFinite(value) ? value : null
+}
+
 export function isValidCoord(lat: unknown, lng: unknown): boolean {
-  const a = Number(lat), b = Number(lng)
-  if (!Number.isFinite(a) || !Number.isFinite(b)) return false
+  const a = normalizeCoordinate(lat), b = normalizeCoordinate(lng)
+  if (a === null || b === null) return false
   if (Math.abs(a) > 90 || Math.abs(b) > 180) return false
   if (a === 0 && b === 0) return false // null-island
   return true

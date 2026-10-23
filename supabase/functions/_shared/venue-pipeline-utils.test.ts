@@ -1,5 +1,24 @@
 import { assertEquals } from 'https://deno.land/std@0.168.0/testing/asserts.ts'
-import { validateCityNormalized, validateCountryNormalized } from './venue-pipeline-utils.ts'
+import { isValidCoord, normalizeCoordinate, validateCityNormalized, validateCountryNormalized } from './venue-pipeline-utils.ts'
+
+Deno.test('coordinates preserve missing values instead of manufacturing the Greenwich meridian', () => {
+  for (const missing of [null, undefined, '', '  ', false, true, [], [0], {}, '0x10', 'NaN', Infinity]) {
+    assertEquals(normalizeCoordinate(missing), null)
+    assertEquals(isValidCoord(40.7341714, missing), false)
+    assertEquals(isValidCoord(missing, 8.5), false)
+  }
+})
+
+Deno.test('explicit meridian and equator coordinates remain valid; bounds and null island stay rejected', () => {
+  assertEquals(normalizeCoordinate(' 0 '), 0)
+  assertEquals(normalizeCoordinate('-37.8142454'), -37.8142454)
+  assertEquals(normalizeCoordinate('1e1'), 10)
+  assertEquals(isValidCoord(51.48, '0'), true)
+  assertEquals(isValidCoord('0', 32.58), true)
+  assertEquals(isValidCoord(0, 0), false)
+  assertEquals(isValidCoord(91, 8.5), false)
+  assertEquals(isValidCoord(47.4, 181), false)
+})
 
 /**
  * These bounds exist because `area_km2` and `elevation_m` had no validator
