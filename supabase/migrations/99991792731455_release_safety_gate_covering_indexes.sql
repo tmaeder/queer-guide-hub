@@ -3,7 +3,6 @@
 -- complete RPC took 16.5s, exceeding its existing 8s statement timeout. Cover
 -- the original predicates without changing any safety decision or gate limit.
 set lock_timeout='2s';
-
 set statement_timeout='2min';
 
 create index if not exists release_gate_venues_geography_cover_idx
@@ -20,3 +19,4 @@ create index if not exists release_gate_events_geography_cover_idx
 
 create index if not exists release_gate_organizations_geography_cover_idx
  on public.organizations(city_id,country_id,safety_gated) include(primary_venue_id);
+
