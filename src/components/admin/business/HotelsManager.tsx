@@ -30,15 +30,6 @@ import { useAuth } from '@/hooks/useAuth';
 import { useHotels } from '@/hooks/useHotels';
 import { useAddressResolver } from '@/hooks/useAddressResolver';
 import { LocationAutocomplete } from '@/components/ui/location-autocomplete';
-import { ExportExcelButton } from '@/components/admin/ExportExcelButton';
-import {
-  exportToExcel,
-  fetchAllRows,
-  formatBoolean,
-  generateFilename,
-  type ExportColumnDef,
-} from '@/utils/excelExport';
-import { formatDateTime } from '@/lib/format';
 import { useQueryClient } from '@tanstack/react-query';
 import { RefreshCw } from 'lucide-react';
 import { toast } from 'sonner';
@@ -235,23 +226,6 @@ export function HotelsManager() {
     }
   };
 
-  const handleExportExcel = async () => {
-    const columns: ExportColumnDef<Record<string, unknown>>[] = [
-      { header: 'Name', accessor: (r) => r.name },
-      { header: 'Hotel Type', accessor: (r) => r.hotel_type },
-      { header: 'City', accessor: (r) => r.city },
-      { header: 'Country', accessor: (r) => r.country },
-      { header: 'Star Rating', accessor: (r) => r.star_rating },
-      { header: 'LGBTQ Friendly', accessor: (r) => formatBoolean(r.lgbtq_friendly) },
-      { header: 'Featured', accessor: (r) => formatBoolean(r.featured) },
-      { header: 'Verified', accessor: (r) => formatBoolean(r.verified) },
-      { header: 'Website', accessor: (r) => r.website },
-      { header: 'Created At', accessor: (r) => formatDateTime(r.created_at) },
-    ];
-    const allData = await fetchAllRows('hotels', '*', { column: 'name', ascending: true });
-    await exportToExcel(allData, columns, generateFilename('hotels'));
-  };
-
   return (
     <>
       <DataTableBulkEditDialog
@@ -311,7 +285,6 @@ export function HotelsManager() {
             },
           },
         ]}
-        tools={<ExportExcelButton onExport={handleExportExcel} />}
       />
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent style={{ maxWidth: 600, maxHeight: '90vh' }} className="overflow-auto">

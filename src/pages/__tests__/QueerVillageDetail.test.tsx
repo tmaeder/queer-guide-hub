@@ -2,11 +2,12 @@
  * @vitest-environment jsdom
  */
 import { describe, it, expect, vi } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import { MemoryRouter, Route, Routes } from 'react-router';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 const village = vi.hoisted(() => ({ data: null as unknown }));
+const venueState = vi.hoisted(() => ({ venues: [] as unknown[] }));
 
 vi.mock('@/hooks/use-toast', () => ({ useToast: () => ({ toast: vi.fn() }) }));
 vi.mock('@/hooks/useAuth', () => ({
@@ -27,7 +28,7 @@ vi.mock('@/hooks/useFavorites', () => ({
   useFavorites: () => ({ toggleFavorite: vi.fn(), isFavorited: () => false }),
 }));
 vi.mock('@/hooks/useVenues', () => ({
-  useVenues: () => ({ venues: [], loading: false, fetchVenues: vi.fn() }),
+  useVenues: () => ({ venues: venueState.venues, loading: false, fetchVenues: vi.fn() }),
 }));
 vi.mock('@/hooks/useEvents', () => ({
   useEvents: () => ({ events: [], loading: false, fetchEvents: vi.fn() }),
@@ -128,5 +129,45 @@ describe('QueerVillageDetail', () => {
     // The tier, not the raw composite — the 0-100 number was retired.
     expect(screen.getByText(/equality/i)).toBeInTheDocument();
     expect(screen.queryByText('85/100')).not.toBeInTheDocument();
+  });
+
+  it('leads with the walk, discloses the map, and keeps planning under More actions', () => {
+    venueState.venues = [{ id: 'venue1', name: 'Local cafe', slug: 'local-cafe' }];
+    village.data = {
+      id: 'v1',
+      name: 'Chueca',
+      slug: 'chueca',
+      history: 'Since the 1980s.',
+      created_at: '2024-01-01',
+      latitude: 40.423,
+      longitude: -3.699,
+      cities: { id: 'c1', slug: 'madrid', name: 'Madrid' },
+      countries: { id: 'co1', slug: 'spain', name: 'Spain', equality_score: 85 },
+    };
+    renderPage();
+    const walk = document.getElementById('walk')!;
+    const about = document.getElementById('about')!;
+    expect(walk.compareDocumentPosition(about) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(screen.getByRole('link', { name: 'Open map' })).toHaveAttribute('href', '#map');
+    expect(screen.queryByTestId('map')).not.toBeInTheDocument();
+    fireEvent.click(document.getElementById('map')!.querySelector('button')!);
+    expect(screen.getByTestId('map')).toBeVisible();
+    expect(screen.queryByRole('button', { name: /Plan a trip/ })).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'More actions' }));
+    expect(screen.getByRole('button', { name: /Plan a trip/ })).toBeVisible();
+    venueState.venues = [];
+  });
+
+  it('offers one canonical save action', () => {
+    village.data = {
+      id: 'v1',
+      name: 'Chueca',
+      slug: 'chueca',
+      created_at: '2024-01-01',
+      cities: { id: 'c1', slug: 'madrid', name: 'Madrid' },
+      countries: { id: 'co1', slug: 'spain', name: 'Spain', equality_score: 85 },
+    };
+    renderPage();
+    expect(screen.getAllByRole('button', { name: 'Save to favorites' })).toHaveLength(1);
   });
 });

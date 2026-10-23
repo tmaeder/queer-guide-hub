@@ -44,7 +44,7 @@ test.describe('WebMD glossary production pass', () => {
     await expect(
       page.getByRole('heading', { name: 'Sexual Response Cycle', exact: true }),
     ).toBeVisible({ timeout: 20_000 });
-    await expect(page.locator('main')).toContainText('map, not a required sequence', {
+    await expect(page.locator('main')).toContainText('it is not a standard a body has to meet', {
       timeout: 20_000,
     });
     await expect(page.locator('main')).toContainText('satisfying sex does not require orgasm');
@@ -63,6 +63,8 @@ test.describe('WebMD glossary production pass', () => {
     await expect(page.getByRole('heading', { name: 'STI', exact: true })).toBeVisible({
       timeout: 20_000,
     });
-    await expect(page.locator('main')).toContainText('Testing, vaccination, barriers');
+    await expect(page.locator('main')).toContainText(
+      'regular testing is the main way to find them',
+    );
   });
 });

@@ -208,7 +208,11 @@ test('the page renders the band, the gallery and the named index', async ({ page
 
   const tiles = page.locator('a[href*="/marketplace/brands/"]');
   await expect(tiles.first()).toBeVisible();
-  expect(await tiles.count(), 'no maker links rendered').toBeGreaterThan(20);
+  // Poll, don't sample: the 12-tile band paints before the gallery query
+  // resolves, so a one-shot count() read 12 on a page that settles at ~180.
+  await expect
+    .poll(() => tiles.count(), { message: 'no maker links rendered', timeout: 15_000 })
+    .toBeGreaterThan(20);
 
   // The coverless makers are named rather than hidden. If this heading is
   // missing, either the split collapsed or the 214 were dropped.

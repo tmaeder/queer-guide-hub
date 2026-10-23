@@ -18,6 +18,7 @@ import {
   VillageStops,
   VillageParentCity,
   villageOccurrences,
+  villageStops,
   type VillageWithRelations,
 } from '../QueerVillageDetail.parts';
 
@@ -93,6 +94,11 @@ const stopVenues = [
 ] as never[];
 
 describe('VillageStops — module 05 (stop list)', () => {
+  it('retains the distance across the expanded stop-list boundary', () => {
+    const stops = villageStops([stopVenues[1]], stopVenues[0]);
+    expect(stops[0].walkFromPrevious).toMatch(/^~\d+ m$/);
+  });
+
   it('renders every venue as a stop, in the order given', () => {
     renderWithProviders(<VillageStops venues={stopVenues} />);
     for (const name of ['Plaza de Chueca', 'Calle Hortaleza', 'Unmapped Bar']) {

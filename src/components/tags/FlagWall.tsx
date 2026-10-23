@@ -38,7 +38,10 @@ export function FlagWall() {
               <span className="mt-2 block text-13 font-bold leading-tight">
                 {name}
                 {flag.year && (
-                  <span className="ml-2 font-normal text-muted-foreground">{flag.year}</span>
+                  <>
+                    {' '}
+                    <span className="ml-1 font-normal text-muted-foreground">{flag.year}</span>
+                  </>
                 )}
               </span>
             </>
@@ -49,7 +52,6 @@ export function FlagWall() {
                 <LocalizedLink
                   to={`/tags/${encodeURIComponent(flag.flagTagSlug)}`}
                   className="block no-underline"
-                  aria-label={name}
                 >
                   {cell}
                 </LocalizedLink>

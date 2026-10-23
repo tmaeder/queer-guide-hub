@@ -36,7 +36,7 @@ jobs:
       SUPABASE_PROJECT_REF: xqeacpakadqfxjxjcewc
     steps:
       - name: Checkout
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           fetch-depth: 2
 
@@ -68,7 +68,7 @@ jobs:
           echo "All pipeline-* functions declare verify_jwt=false."
 
       - name: Set up Deno
-        uses: denoland/setup-deno@v2
+        uses: denoland/setup-deno@22d081ff2d3a40755e97629de92e3bcbfa7cf2ed # v2
         with:
           # Matches pipeline-health.yml — Supabase Edge Runtime has
           # moved to Deno 2.x.
@@ -86,7 +86,7 @@ jobs:
         run: deno test --allow-net --allow-env --allow-read --node-modules-dir=none
 
       - name: Install Supabase CLI
-        uses: supabase/setup-cli@v3
+        uses: supabase/setup-cli@45a513f8c64c0bc8e0e3dfe572b5c95be85f6359 # v3
         with:
           # Pinned 2026-08-07: 'latest' (v2.112.0) fails `supabase link` with
           # "failed to get api keys: SchemaError(... inserted_at)" — broke the

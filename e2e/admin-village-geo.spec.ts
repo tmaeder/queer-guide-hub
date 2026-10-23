@@ -114,7 +114,11 @@ test.describe('Queer Villages CMS geography', () => {
         expect(value, `row ${r}: ${col} rendered empty`).not.toBe('');
         expect(value, `row ${r}: ${col} rendered the null placeholder`).not.toBe('--');
       }
-      const lat = Number((await rows.nth(r).locator('td').allInnerTexts())[idx.Latitude]);
+      // The cell is an inline-edit button whose sr-only prefix ("Edit Latitude:")
+      // is part of innerText, so read the trailing number rather than the whole
+      // cell. A cell holding no trailing number still fails below.
+      const latText = cells[idx.Latitude].trim();
+      const lat = Number(latText.match(/(-?\d+(?:\.\d+)?)$/)?.[1] ?? NaN);
       expect(Number.isFinite(lat), `row ${r}: latitude is not numeric`).toBe(true);
       expect(Math.abs(lat)).toBeLessThanOrEqual(90);
     }

@@ -787,6 +787,11 @@ function liveImage(url: string | null): string | null {
     // second, undocumented behaviour.
     return url;
   }
+  // Legacy snapshots reference Facebook Graph object pictures. These are API
+  // endpoints rather than durable public artwork URLs. Recorded native probes
+  // returned JSON errors (including HTTP 200), so do not publish them as
+  // images. Keep ordinary Facebook CDN images and proxy URLs on other hosts.
+  if (host === 'graph.facebook.com') return null;
   return DEAD_IMAGE_HOSTS.includes(host) ? null : url;
 }
 
@@ -828,7 +833,13 @@ export function normalizeGcEvent(
 
   const offers = (ld['offers'] ?? {}) as Record<string, unknown>;
   const ticketUrl = httpsOnly(asString(offers['url']));
-  const image = liveImage(httpsOnly(firstString(ld['image']) ?? asString(ld['thumbnailUrl'])));
+  const originalImage = httpsOnly(firstString(ld['image']) ?? asString(ld['thumbnailUrl']));
+  const image = liveImage(originalImage);
+  const artworkExclusion = detail.fromWayback === true && ld['_legacyTemplate'] === true && originalImage
+    && /^https:\/\/graph\.facebook\.com\/[1-9]\d*\/picture(?:[?&]type=(?:large|normal|square))?$/.test(originalImage)
+    ? { contract: 'gaycities-wayback-graph-artwork:v1', outcome: 'source_unavailable',
+      api_reference: originalImage, reason: 'api_reference_excluded', human_reviewed: false }
+    : null;
 
   const ldKeywords: string[] = Array.isArray(ld['keywords'])
     ? (ld['keywords'] as unknown[]).map((k) => String(k)).filter(Boolean)
@@ -878,6 +889,7 @@ export function normalizeGcEvent(
       from_wayback: detail.fromWayback === true,
       country_missing: !country,
       legacy_template: ld['_legacyTemplate'] === true,
+      ...(artworkExclusion ? { artwork_exclusion: artworkExclusion } : {}),
     },
   };
 }

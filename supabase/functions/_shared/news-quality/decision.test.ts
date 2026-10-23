@@ -132,3 +132,52 @@ Deno.test('pending entity reviews block auto-publish', () => {
   assertFalse(r.autoPublish)
   assert(r.blockedReasons.includes('entity_links_pending_review'))
 })
+
+const unusableImage = { isUsable: false, qualityScore: 0, isRelevant: false, needsReplacement: true, reason: 'podcast logo' }
+
+Deno.test('staging: an unusable image alone passes with the image suppressed', () => {
+  const r = evaluatePublishGate({
+    decision: baseDecision({ imageAssessment: unusableImage }),
+    criticalPaywall: false, truncated: false, hasEntityReviewItems: false, imageProbeOk: false,
+    stagingRelaxations: true,
+  })
+  assertEquals(r.status, 'passed')
+  assert(r.autoPublish)
+  assert(r.suppressImage)
+  assertEquals(r.blockedReasons, [])
+})
+
+Deno.test('staging: pending entity links do not hold the article', () => {
+  const r = evaluatePublishGate({
+    decision: baseDecision(),
+    criticalPaywall: false, truncated: false, hasEntityReviewItems: true, imageProbeOk: true,
+    stagingRelaxations: true,
+  })
+  assertEquals(r.status, 'passed')
+  assertFalse(r.suppressImage)
+})
+
+Deno.test('staging: an unusable image does not rescue an otherwise blocked article', () => {
+  const r = evaluatePublishGate({
+    decision: baseDecision({ imageAssessment: unusableImage, relevanceScore: 0.5 }),
+    criticalPaywall: false, truncated: false, hasEntityReviewItems: false, imageProbeOk: false,
+    stagingRelaxations: true,
+  })
+  assertEquals(r.status, 'review')
+  assertFalse(r.suppressImage)
+  assert(r.blockedReasons.includes('image_unusable'))
+  assert(r.blockedReasons.includes('low_relevance'))
+})
+
+Deno.test('without the staging flag, image and entity links still block (backfill path)', () => {
+  const img = evaluatePublishGate({
+    decision: baseDecision({ imageAssessment: unusableImage }),
+    criticalPaywall: false, truncated: false, hasEntityReviewItems: false, imageProbeOk: false,
+  })
+  assertEquals(img.status, 'review')
+  const links = evaluatePublishGate({
+    decision: baseDecision(),
+    criticalPaywall: false, truncated: false, hasEntityReviewItems: true, imageProbeOk: true,
+  })
+  assertEquals(links.status, 'review')
+})

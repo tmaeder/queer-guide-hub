@@ -601,17 +601,20 @@ export function EventFactStrip({
               <button
                 type="button"
                 onClick={() => setShowEventTz((prev) => !prev)}
-                aria-label={
-                  showEventTz
-                    ? t('events.detail.showMyTime', 'Show my time')
-                    : t('events.detail.showEventTime', 'Show event time')
-                }
                 className="flex min-h-11 items-center gap-1.5 text-2xs font-medium text-muted-foreground underline decoration-dotted underline-offset-4 hover:text-foreground"
               >
                 {showEventTz
                   ? t('events.detail.eventTime', 'Event time')
                   : t('events.detail.yourTime', 'Your time')}
                 {zoneName && ` · ${zoneName}`}
+                {/* The action rides after the visible text so the accessible
+                    name still starts with what is on screen (WCAG 2.5.3). */}
+                <span className="sr-only">
+                  {', '}
+                  {showEventTz
+                    ? t('events.detail.showMyTime', 'Show my time')
+                    : t('events.detail.showEventTime', 'Show event time')}
+                </span>
                 <ArrowLeftRight size={12} aria-hidden="true" />
               </button>
             ) : (

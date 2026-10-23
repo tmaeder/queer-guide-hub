@@ -71,17 +71,22 @@ Object.assign(
   ),
 );
 
+/** Directory group for a `taxonomy_terms` family. */
+export function classificationGroup(taxonomy: string): string {
+  return taxonomy.startsWith('profile_')
+    ? 'Profile preferences'
+    : taxonomy.startsWith('marketplace_')
+      ? 'Commerce'
+      : 'Content & profile classifications';
+}
+
 /** Every family is directly discoverable, including those sharing the term table. */
 export function getTaxonomyDestinations() {
   const tables = TAXONOMY_CATALOG.map((term) => ({ ...term, route: `/admin/content/${term.id}` }));
   const classifications = Object.entries(CLASSIFICATION_LABELS).map(([taxonomy, label]) => ({
     id: 'taxonomy_terms',
     label,
-    group: taxonomy.startsWith('profile_')
-      ? 'Profile preferences'
-      : taxonomy.startsWith('marketplace_')
-        ? 'Commerce'
-        : 'Content & profile classifications',
+    group: classificationGroup(taxonomy),
     route: `/admin/content/taxonomy_terms?taxonomy=${encodeURIComponent(taxonomy)}`,
   }));
   return [...tables, ...classifications];

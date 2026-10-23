@@ -47,14 +47,14 @@ jobs:
       packages: read
       security-events: write
     steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-node@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
         with:
           node-version: '22.20.0'
           cache: npm
       - name: Install locked browser fixture dependencies
         run: npm ci --prefer-offline --no-audit --ignore-scripts
-      - uses: actions/setup-java@v6
+      - uses: actions/setup-java@b843ebf9b913146b38da2eaa7aeddf76074ae1ad # v6
         with:
           distribution: temurin
           java-version: '21'
@@ -63,7 +63,7 @@ jobs:
       - name: Compile Android client Java8 API and run isolated TLS contracts
         run: node scripts/test-redirect-android.mjs
       - name: Initialize native CodeQL
-        uses: github/codeql-action/init@v4.38.2
+        uses: github/codeql-action/init@6f2ac81f5cd81fe351a197ba0b00d91d03cd2aee # v4.39.0
         with:
           languages: java-kotlin
           build-mode: manual
@@ -72,6 +72,6 @@ jobs:
           mvn -B -ntp -f sdk/redirects/android/pom.xml clean compile dependency:build-classpath -Dmdep.outputFile=target/contract-classpath.txt
           node scripts/lib/redirect-android-platform-build.mjs
       - name: Analyze native client
-        uses: github/codeql-action/analyze@v4.38.2
+        uses: github/codeql-action/analyze@6f2ac81f5cd81fe351a197ba0b00d91d03cd2aee # v4.39.0
         with:
           category: /language:java-kotlin/native-redirects

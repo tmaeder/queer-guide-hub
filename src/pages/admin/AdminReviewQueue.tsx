@@ -45,6 +45,18 @@ import {
 } from '@/hooks/useAdminReview';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useDebounce } from '@/hooks/useDebounce';
+import { useNewsReviewList } from '@/hooks/useNewsStagingSummaries';
+import { newsGateKey, newsReviewKey, type NewsGroupBy } from '@/lib/newsStaging';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 
 // Lead with independent, ready cases. Research, blocked jobs, raw decision rows
 // and the inclusive detector union remain separately reachable and labelled.
@@ -117,6 +129,10 @@ export default function AdminReviewQueue() {
   const query = useAdminReview(filters);
   const summary = query.summary ?? query.data;
   const items = query.data?.items ?? EMPTY_ITEMS;
+  const groupBy = (['reason', 'publication'] as const).find((g) => g === params.get('group')) as
+    NewsGroupBy | undefined;
+  const [confirmReject, setConfirmReject] = useState(false);
+  const { newsOf, reasonTitleFor, reasonTitles, groups } = useNewsReviewList(items, groupBy);
   const bulkAvailable =
     queue === 'staging' && Boolean(summary?.sources.find((s) => s.key === 'staging')?.can_bulk);
   const selectedKey = params.get('selected');
@@ -153,6 +169,18 @@ export default function AdminReviewQueue() {
     },
     [setParams],
   );
+  const runBulk = (action: 'approve' | 'reject') =>
+    bulk.mutate(
+      { ids: [...selectedIds], action, notes: bulkNotes },
+      {
+        onSuccess: (result) => {
+          setSelectedIds(new Set());
+          changeParams({ selected: null }, false);
+          toast.success(`${result.count} decisions saved`);
+        },
+        onError: (err) => toast.error(err.message),
+      },
+    );
   useEffect(() => {
     document.title = 'Review queue · Admin · Queer Guide';
   }, []);
@@ -409,7 +437,7 @@ export default function AdminReviewQueue() {
             <option value="public">Public-impact source rows</option>
           </select>
         </div>
-        <div className="grid min-w-0 grid-cols-1 gap-4 lg:grid-cols-[minmax(0,14rem)_minmax(0,1fr)_minmax(0,12rem)]">
+        <div className="grid min-w-0 grid-cols-1 gap-4 lg:grid-cols-[minmax(0,14rem)_minmax(0,1fr)_minmax(0,12rem)_minmax(0,12rem)]">
           <select
             aria-label="Review type"
             value={queue ?? (family ? `family:${family}` : 'all')}
@@ -444,6 +472,16 @@ export default function AdminReviewQueue() {
               onChange={(e) => changeParams({ q: e.target.value || null })}
             />
           </div>
+          <select
+            aria-label="Group review queue"
+            className={selectClass}
+            value={groupBy ?? ''}
+            onChange={(e) => changeParams({ group: e.target.value || null }, false)}
+          >
+            <option value="">No grouping</option>
+            <option value="reason">Group by gate reason (this page)</option>
+            <option value="publication">Group by publication (this page)</option>
+          </select>
           <select
             aria-label="Sort review queue"
             className={selectClass}
@@ -525,28 +563,61 @@ export default function AdminReviewQueue() {
                     )}
                   </div>
                 ) : (
-                  items.map((item) => (
-                    <div key={reviewKey(item)}>
-                      <TriageItemRow
-                        hideSelection={!bulkAvailable}
-                        sourceLabel={item.source_label}
-                        riskLevel={item.risk}
-                        slaHours={item.sla_hours ?? undefined}
-                        item={item}
-                        isActive={!!selected && reviewKey(selected) === reviewKey(item)}
-                        isSelected={selectedIds.has(item.id)}
-                        onSelect={() => choose(item)}
-                        onToggleCheck={() =>
-                          setSelectedIds((old) => {
-                            const next = new Set(old);
-                            if (next.has(item.id)) next.delete(item.id);
-                            else next.add(item.id);
-                            return next;
-                          })
-                        }
-                      />
-                    </div>
-                  ))
+                  (groups ?? ([['', items]] as Array<[string, ReviewItem[]]>)).map(
+                    ([groupKey, groupItems]) => (
+                      <div key={groupKey || 'all'}>
+                        {groups && (
+                          <div className="sticky top-0 z-20 flex min-h-11 items-center justify-between gap-2 border-b border-border bg-background px-4 text-xs">
+                            <span className="min-w-0 truncate font-semibold">
+                              {groupBy === 'reason' &&
+                              !['Other', 'No reason recorded'].includes(groupKey)
+                                ? (reasonTitles?.get(newsGateKey(groupKey))?.title ??
+                                  reasonTitles?.get(newsReviewKey(groupKey))?.title ?? (
+                                    <code className="bg-muted px-1 rounded-badge">{groupKey}</code>
+                                  ))
+                                : groupKey}
+                              <span className="ml-2 tabular-nums font-normal text-muted-foreground">
+                                {groupItems.length}
+                              </span>
+                            </span>
+                            {bulkAvailable && (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => setSelectedIds(new Set(groupItems.map((i) => i.id)))}
+                              >
+                                Select group
+                              </Button>
+                            )}
+                          </div>
+                        )}
+                        {groupItems.map((item) => (
+                          <div key={reviewKey(item)}>
+                            <TriageItemRow
+                              hideSelection={!bulkAvailable}
+                              sourceLabel={item.source_label}
+                              riskLevel={item.risk}
+                              slaHours={item.sla_hours ?? undefined}
+                              item={item}
+                              news={newsOf(item)}
+                              newsReasonTitle={reasonTitleFor(item)}
+                              isActive={!!selected && reviewKey(selected) === reviewKey(item)}
+                              isSelected={selectedIds.has(item.id)}
+                              onSelect={() => choose(item)}
+                              onToggleCheck={() =>
+                                setSelectedIds((old) => {
+                                  const next = new Set(old);
+                                  if (next.has(item.id)) next.delete(item.id);
+                                  else next.add(item.id);
+                                  return next;
+                                })
+                              }
+                            />
+                          </div>
+                        ))}
+                      </div>
+                    ),
+                  )
                 )}
               </div>
               {bulkAvailable && selectedIds.size > 0 && (
@@ -578,17 +649,7 @@ export default function AdminReviewQueue() {
                         size="sm"
                         disabled={bulk.isPending || mutation.isPending}
                         onClick={() =>
-                          bulk.mutate(
-                            { ids: [...selectedIds], action, notes: bulkNotes },
-                            {
-                              onSuccess: (result) => {
-                                setSelectedIds(new Set());
-                                changeParams({ selected: null }, false);
-                                toast.success(`${result.count} decisions saved`);
-                              },
-                              onError: (err) => toast.error(err.message),
-                            },
-                          )
+                          action === 'reject' ? setConfirmReject(true) : runBulk('approve')
                         }
                       >
                         {bulk.isPending
@@ -711,6 +772,21 @@ export default function AdminReviewQueue() {
           )}
         </div>
       )}
+      <AlertDialog open={confirmReject} onOpenChange={setConfirmReject}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Reject {selectedIds.size} source records?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Rejected records are not ingested. Undo only reopens the most recent single decision,
+              so a bulk rejection cannot be undone from this page.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={() => runBulk('reject')}>Reject selected</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
       <Dialog open={help} onOpenChange={setHelp}>
         <DialogContent className="max-w-sm">
           <DialogHeader>

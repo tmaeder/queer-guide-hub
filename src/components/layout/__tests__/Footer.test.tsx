@@ -34,6 +34,7 @@ vi.mock('react-i18next', () => ({
 import { Footer } from '../Footer';
 import { INTENT_NAV } from '@/config/navigation';
 import { REQUIRED_ATTRIBUTION } from '@/lib/attribution';
+import { OPEN_COOKIE_PREFERENCES_EVENT } from '@/lib/analyticsConsent';
 
 function renderFooter() {
   return render(
@@ -50,6 +51,10 @@ describe('Footer', () => {
     expect(screen.getByText('Legal')).toBeInTheDocument();
     expect(screen.getByText('Privacy')).toBeInTheDocument();
     expect(screen.getByText('Contact')).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Email updates' })).toHaveAttribute(
+      'href',
+      '/email-updates',
+    );
   });
 
   it('should render copyright', () => {
@@ -72,30 +77,33 @@ describe('Footer', () => {
     expect(container.textContent).not.toContain('ODbL');
   });
 
-  // The columns exist so the footer teaches the same six jobs the topbar does.
-  // Asserting against INTENT_NAV rather than a literal list is the point: if a
-  // seventh intent ships and the footer silently keeps rendering six, this
-  // fails — which is the drift that once made /venues unreachable.
-  it('renders one column per intent, headed by its own route', () => {
+  it('keeps every top-level intent reachable in the compact navigation row', () => {
     renderFooter();
     const nav = screen.getByRole('navigation', { name: 'Footer navigation' });
+    expect(within(nav).getAllByRole('link')).toHaveLength(INTENT_NAV.length);
     for (const intent of INTENT_NAV) {
-      const heading = within(nav).getByRole('link', { name: intent.fallback });
-      expect(heading).toHaveAttribute('href', intent.to);
+      expect(within(nav).getByRole('link', { name: intent.fallback })).toHaveAttribute(
+        'href',
+        intent.to,
+      );
     }
   });
 
-  it('renders every child link the intent declares', () => {
+  it('opens cookie preferences after consent has already been saved', () => {
     renderFooter();
-    const nav = screen.getByRole('navigation', { name: 'Footer navigation' });
-    const hrefs = within(nav)
-      .getAllByRole('link')
-      .map((a) => a.getAttribute('href'));
-    for (const intent of INTENT_NAV) {
-      for (const child of intent.children) {
-        expect(hrefs, `${intent.id} → ${child.to} missing`).toContain(child.to);
-      }
-    }
+    const listener = vi.fn();
+    window.addEventListener(OPEN_COOKIE_PREFERENCES_EVENT, listener);
+    screen.getByRole('button', { name: 'Cookie preferences' }).click();
+    expect(listener).toHaveBeenCalledOnce();
+    window.removeEventListener(OPEN_COOKIE_PREFERENCES_EVENT, listener);
+  });
+
+  it('keeps crisis support directly reachable', () => {
+    renderFooter();
+    expect(screen.getByRole('link', { name: 'Crisis lines, 24 hours' })).toHaveAttribute(
+      'href',
+      '/help',
+    );
   });
 
   // "Report something" pointed at /report for as long as this footer existed

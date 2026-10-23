@@ -93,12 +93,11 @@ export function EventsControlBar({
           variant="outline"
           className="shrink-0"
           onClick={onOpenFilters}
-          aria-label={t('pages.events.filters', 'Filters')}
           aria-expanded={filtersOpen}
           style={{ display: 'inline-flex', gap: 8 }}
         >
           <Filter size={16} />
-          <span className="hidden sm:inline">{t('pages.events.filters', 'Filters')}</span>
+          <span className="sr-only sm:not-sr-only">{t('pages.events.filters', 'Filters')}</span>
           {sheetFilterCount > 0 && (
             <span className="inline-flex h-5 min-w-5 items-center justify-center bg-foreground px-1.5 text-2xs font-bold text-background">
               {sheetFilterCount}

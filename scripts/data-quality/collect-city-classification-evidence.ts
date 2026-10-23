@@ -13,6 +13,8 @@ const currentValues = (e: Entity, property: string) => {
 const refs=(e: Entity,p: string)=>currentValues(e,p).flatMap(v=>v&&typeof v==='object'&&'id'in v&&/^Q[1-9]\d*$/.test(String(v.id))?[String(v.id)]:[])
 export function classificationEvidence(c: Candidate,e: Entity,classes: Record<string,Entity>,countries: Record<string,Entity>) {
  if(e.id!==c.wikidata_qid||'missing'in e||!e.claims||!/^Q[1-9]\d*$/.test(e.id))return null
+ // A present-day name and pin do not revive a dissolved municipality.
+ if(currentValues(e,'P576').length)return null
  const names=[...Object.values(e.labels??{}).map(v=>v.value),...Object.values(e.aliases??{}).flat().map(v=>v.value)]
  if(!names.some(n=>normalizePlaceName(n)===normalizePlaceName(c.name)))return null
  const codes=refs(e,'P17').flatMap(id=>countries[id]?currentValues(countries[id],'P297'):[])

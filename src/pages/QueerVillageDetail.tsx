@@ -16,13 +16,11 @@ import { useSlugRedirect } from '@/hooks/useSlugRedirect';
 import { mergedVillageCitySlug } from '@/lib/mergedVillageRedirects';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { useBreadcrumbs } from '@/contexts/BreadcrumbContext';
-import { SinglePage, StickyRailGroup } from '@/components/transit/SinglePage';
-import { FactGrid, type Fact } from '@/components/transit/FactGrid';
+import { SinglePage } from '@/components/transit/SinglePage';
 import { ProvenanceLine } from '@/components/transit/ProvenanceLine';
 import { TrackLoader } from '@/components/transit/TrackLoader';
 import { PageContainer } from '@/components/layout/PageContainer';
 import { GatedDetailFallback } from '@/components/safety/GatedDetailFallback';
-import { GeoCensus } from '@/components/geo/GeoCensus';
 import { GeoSafetyBanner, GeoSafetyVerdict } from '@/components/geo/GeoSafetyBlock';
 import { GeoSectionList, GeoRouteRail } from '@/components/geo/GeoSections';
 import {
@@ -45,6 +43,7 @@ import {
   VillagePhotos,
   VillageMapInset,
 } from './QueerVillageDetail.parts';
+import { LocationActionMenu, LocationExploreMore } from '@/components/geo/LocationDetail';
 
 // `equality_score` + `lgbti_criminalization` are new here: the village page had
 // no safety layer at all, which meant a district in a criminalising country
@@ -164,14 +163,6 @@ export default function QueerVillageDetail() {
   const sections: GeoSection[] = village
     ? geoSections([
         {
-          id: 'about',
-          title: t('village.section.about', 'About {{name}}', { name: village.name }),
-          content:
-            village.image_url || village.history || village.notable_landmarks?.length ? (
-              <VillageAbout village={village} onContentUpdated={refetch} t={t} />
-            ) : null,
-        },
-        {
           id: 'walk',
           title: t('village.section.walk', 'The walk'),
           note: t(
@@ -181,7 +172,21 @@ export default function QueerVillageDetail() {
           content: venuesLoading ? (
             <TrackLoader label={t('village.loadingVenues', 'Loading the stop list')} />
           ) : venues.length > 0 ? (
-            <VillageStops venues={venues} />
+            <>
+              <VillageStops venues={venues.slice(0, 8)} />
+              {venues.length > 8 && (
+                <details className="group mt-4">
+                  <summary className="inline-flex cursor-pointer list-none items-center rounded-element px-4 py-2 text-13 font-bold transition-colors hover:bg-surface-container focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring [&::-webkit-details-marker]:hidden">
+                    {t('village.walk.showAll', 'Show all {{count}} stops', {
+                      count: venues.length,
+                    })}
+                  </summary>
+                  <div className="mt-4">
+                    <VillageStops venues={venues.slice(8)} previousVenue={venues[7]} />
+                  </div>
+                </details>
+              )}
+            </>
           ) : null,
         },
         {
@@ -198,14 +203,34 @@ export default function QueerVillageDetail() {
             ) : null,
         },
         {
-          id: 'photos',
-          title: t('village.section.photos', 'Photos'),
-          content: village.images?.length ? <VillagePhotos village={village} t={t} /> : null,
+          id: 'map',
+          title: t('village.section.map', 'Map'),
+          presentation: 'disclosure',
+          mountWhenOpen: true,
+          content:
+            typeof village.latitude === 'number' && typeof village.longitude === 'number' ? (
+              <VillageMapInset village={village} venues={venues} />
+            ) : null,
+        },
+        {
+          id: 'about',
+          title: t('village.section.about', 'About {{name}}', { name: village.name }),
+          presentation: 'disclosure',
+          content:
+            village.image_url || village.history || village.notable_landmarks?.length ? (
+              <VillageAbout village={village} onContentUpdated={refetch} t={t} />
+            ) : null,
         },
         {
           id: 'city',
           title: t('village.section.city', 'On the same line'),
           content: village.cities ? <VillageParentCity village={village} t={t} /> : null,
+        },
+        {
+          id: 'photos',
+          title: t('village.section.photos', 'Photos'),
+          presentation: 'disclosure',
+          content: village.images?.length ? <VillagePhotos village={village} t={t} /> : null,
         },
       ])
     : [];
@@ -264,16 +289,6 @@ export default function QueerVillageDetail() {
     );
   }
 
-  const facts: Fact[] = [
-    { label: t('village.facts.city', 'City'), value: cityName },
-    {
-      label: t('village.facts.country', 'Country'),
-      value: countryName ? `${village.countries?.flag_emoji ?? ''} ${countryName}`.trim() : null,
-    },
-    { label: t('village.facts.venues', 'Venues'), value: venues.length || null },
-    { label: t('village.facts.events', 'Upcoming events'), value: events.length || null },
-  ];
-
   const planGeo =
     village.cities?.id && village.countries?.id
       ? {
@@ -286,36 +301,57 @@ export default function QueerVillageDetail() {
         }
       : null;
 
-  // Rendered unconditionally, zeros included — see GeoCensus. A row that
+  // Rendered unconditionally, zeros included. A row that
   // appears and disappears shifts the masthead under the reader.
   const census = [
     t('village.census.stops', '{{n}} stops', { n: venues.length }),
     t('village.census.departures', '{{n}} departures', { n: events.length }),
   ];
   if (cityName) census.push(cityName);
+  if (countryName) census.push(countryName);
 
   return (
     <SinglePage
       type="queer_village"
+      density="compact"
+      letter="Q"
       eyebrow={t('village.eyebrow', 'District · Green line')}
       title={village.name}
       status={village.featured ? t('village.facts.editorsPick', 'Editor’s pick') : undefined}
       lead={<GlossaryLinkedText text={village.description} />}
       tags={
         <div className="flex flex-col gap-4">
-          <GeoCensus type="queer_village" items={census} />
+          <p className="text-13 tabular-nums text-muted-foreground">{census.join(' · ')}</p>
           <VillageTags village={village} />
         </div>
       }
       action={
         <>
-          <PlanTripFromHereButton
-            initialGeo={planGeo}
-            label={t('village.planTrip', 'Plan a trip to {{name}}', { name: village.name })}
-          />
-          <MarkVisitedButton entityType="village" entityId={village.id} kind="visited" />
-          <MarkVisitedButton entityType="village" entityId={village.id} kind="saved" />
-          <VillageActions village={village} onContentUpdated={refetch} t={t} />
+          {typeof village.latitude === 'number' && typeof village.longitude === 'number' && (
+            <a
+              href="#map"
+              className="inline-flex min-h-11 items-center rounded-element bg-foreground px-6 py-2 text-13 font-bold text-background no-underline transition-colors hover:bg-foreground/85 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+            >
+              {t('village.action.openMap', 'Open map')}
+            </a>
+          )}
+          <button
+            type="button"
+            onClick={handleFavoriteToggle}
+            className="rounded-element px-4 py-2 text-13 font-bold transition-colors hover:bg-surface-container active:translate-y-px focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          >
+            {isFavorited(village.id)
+              ? t('village.action.favorited', 'Saved to favorites')
+              : t('village.action.favorite', 'Save to favorites')}
+          </button>
+          <LocationActionMenu label={t('common.moreActions', 'More actions')}>
+            <PlanTripFromHereButton
+              initialGeo={planGeo}
+              label={t('village.planTrip', 'Plan a trip to {{name}}', { name: village.name })}
+            />
+            <MarkVisitedButton entityType="village" entityId={village.id} kind="visited" />
+            <VillageActions village={village} onContentUpdated={refetch} t={t} />
+          </LocationActionMenu>
         </>
       }
       body={
@@ -335,26 +371,6 @@ export default function QueerVillageDetail() {
               countryId: village.countries?.id ?? null,
             }}
           />
-          {/* Spec module 01 is slot HEAD, not rail: `FactGrid` is a
-              1/2/3-column grid keyed to the VIEWPORT, so in the 360px rail its
-              cells collapse to ~110px on a desktop. Same for
-              `CountryPracticalInfo`. The rail carries the rail-slot modules —
-              map inset (16) and stat line (15). */}
-          <FactGrid facts={facts} />
-          <GeoRouteRail
-            sections={sections}
-            activeId={activeId}
-            onNavigate={select}
-            orientation="horizontal"
-            track="green"
-            label={t('village.sections', 'Sections')}
-            className="lg:hidden"
-          />
-          <GeoSectionList sections={sections} />
-        </>
-      }
-      rail={
-        <>
           <GeoSafetyVerdict
             countryId={village.countries?.id}
             equalityScore={village.countries?.equality_score}
@@ -362,31 +378,15 @@ export default function QueerVillageDetail() {
               village.countries?.slug ? `/country/${village.countries.slug}#rights` : null
             }
           />
-          <VillageMapInset
-            village={village}
-            venues={venues}
-            caption={
-              cityName
-                ? t('village.map.caption', 'Walking distance in {{city}}.', { city: cityName })
-                : undefined
-            }
+          <GeoRouteRail
+            sections={sections}
+            activeId={activeId}
+            onNavigate={select}
+            orientation="horizontal"
+            track="green"
+            label={t('village.sections', 'Sections')}
           />
-          <StickyRailGroup>
-            <GeoRouteRail
-              sections={sections}
-              activeId={activeId}
-              onNavigate={select}
-              orientation="vertical"
-              track="green"
-              label={t('village.sections', 'Sections')}
-              className="hidden lg:block"
-            />
-            <ProvenanceLine
-              addedAt={village.created_at}
-              checkedAt={village.last_verified_at ?? null}
-              correctHref="/contact"
-            />
-          </StickyRailGroup>
+          <GeoSectionList sections={sections} />
         </>
       }
       footer={
@@ -394,17 +394,55 @@ export default function QueerVillageDetail() {
           {/* Rails live in the footer, not in `sections`: each self-hides when
               empty from inside its own body, which the section filter cannot
               see, so a station would point at nothing. */}
-          <PersonalitiesForEntity
-            cityId={village.cities?.id ?? null}
-            countryId={village.countries?.id ?? null}
-            cityName={cityName ?? village.name}
+          <LocationExploreMore
+            title={t('village.exploreMore', 'Explore beyond {{name}}', { name: village.name })}
+            groups={[
+              {
+                id: 'village-people',
+                title: t('village.explorePeople', 'People and local context'),
+                summary: t(
+                  'village.explorePeopleNote',
+                  'People and stories connected to this district.',
+                ),
+                content: (
+                  <div className="flex flex-col gap-8">
+                    <PersonalitiesForEntity
+                      cityId={village.cities?.id ?? null}
+                      countryId={village.countries?.id ?? null}
+                      cityName={cityName ?? village.name}
+                    />
+                    <MoreLikeThisByTag
+                      entityType="queer_village"
+                      entityId={village.id}
+                      title={t('village.relatedByTag', 'Related by tag')}
+                    />
+                  </div>
+                ),
+              },
+              {
+                id: 'village-marketplace',
+                title: t('village.exploreMarketplace', 'Local marketplace'),
+                summary: t(
+                  'village.exploreMarketplaceNote',
+                  'Support work connected to the parent city.',
+                ),
+                content: <MarketplaceForVillage parentCityName={cityName} />,
+              },
+              {
+                id: 'village-related',
+                title: t('village.exploreRelated', 'Related districts'),
+                summary: t(
+                  'village.exploreRelatedNote',
+                  'Continue with another queer neighbourhood.',
+                ),
+                content: <SimilarItems entity={{ type: 'queer_village', id: village.id }} />,
+              },
+            ]}
           />
-          <MarketplaceForVillage parentCityName={cityName} />
-          <SimilarItems entity={{ type: 'queer_village', id: village.id }} />
-          <MoreLikeThisByTag
-            entityType="queer_village"
-            entityId={village.id}
-            title={t('village.relatedByTag', 'Related by tag')}
+          <ProvenanceLine
+            addedAt={village.created_at}
+            checkedAt={village.last_verified_at ?? null}
+            correctHref="/contact"
           />
           <section
             aria-labelledby="village-end-of-line"
@@ -436,17 +474,6 @@ export default function QueerVillageDetail() {
               )}
             </div>
           </section>
-          {/* The favourite toggle lives here rather than the masthead: it is a
-              personal bookmark, not one of the page's concrete verbs. */}
-          <button
-            type="button"
-            onClick={handleFavoriteToggle}
-            className="self-start px-4 py-2 text-13 font-bold transition-colors hover:bg-foreground hover:text-background"
-          >
-            {isFavorited(village.id)
-              ? t('village.action.favorited', 'Saved to favorites')
-              : t('village.action.favorite', 'Save to favorites')}
-          </button>
         </div>
       }
     />

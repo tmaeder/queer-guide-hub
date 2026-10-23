@@ -1,5 +1,22 @@
 # Zürich late-night mobility — OpenTrafficMap + Swiss open data
 
+## Status (2026-10-23)
+
+| Step | State | Where |
+|---|---|---|
+| 0 — OTM site survey + opentransportdata API key | **Blocked on hardware / registration.** No receiver in Zürich; no API key in repo or CI secrets. | — |
+| 1 — Timetable fact + VBZ punctuality | **Live in 9 Swiss cities** (Zürich, Geneva, Bern, Basel, Lausanne, Winterthur, Luzern, St. Gallen, Lugano; 2,358 rows). Zürich: 577 rows (weekly GH Action), 163 rows with 2023 punctuality (42 lines). `/city/zuerich` Late night block, `/going-out?city=zuerich` Getting home. | #4559, migration `99991792699660` |
+| 1b — German cities | **Shipping.** Same weekly Action reads gtfs.de (DELFI, CC BY 4.0) for Berlin, Cologne, Munich, Hamburg, Frankfurt, Stuttgart, Nürnberg, Hannover, Düsseldorf, Dresden (stops within 5 km of the centre). Night lines by name (`N12`, `NE1`); long-distance trains (ICE/IC/EC/NJ/FLX, Swiss route_type 101/102) and rail-replacement buses (`S8` bus) never count as a city's last departure; trips past 30:00 ignored (multi-day coaches). | `feat/late-night-germany` |
+| 2a — Shared bikes & e-scooters | **Live, all of Switzerland.** ~22k vehicles, ~7.9k cells, `*/5`. Map overlay (Filters → Getting around) + venue fact. | #4568, migration `99991792696992` |
+| 2b — Disruptions (SIRI-SX / GTFS-SA) | **Not built** — needs the opentransportdata.swiss API key (Step 0). | — |
+| 3 / 4 — OTM receiver, live trams, community node | **Not built** — gated on the Step 0 survey. | — |
+
+Verified on prod by `e2e/zurich-late-night-mobility.spec.ts`. Measured traps worth keeping:
+- A fixed 05:00 night cutoff read every Zürich tram's last departure as 04:59 (Saturday's first tram) → gap-based service end.
+- `/car|moped/` matched "CargoBike" and dropped all 7,967 Velospot bikes → whole-name match.
+- GBFS `free_bike_status` already includes docked bikes; adding `station_status` would double count.
+- VBZ SOLL/IST contains no night lines; the punctuality figure covers regular service only and says so.
+
 ## Context
 Goal: deeply integrate OpenTrafficMap (OTM) into Queer.Guide, combined with other open data, starting in
 Zürich. The user need it serves (from `docs/plans/2026-08-30-transit-mobility-phase-4-design.md` §1):

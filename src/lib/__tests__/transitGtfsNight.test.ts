@@ -4,9 +4,11 @@ import {
   createNightAccumulator,
   formatServiceSeconds,
   gtfsTimeToSeconds,
+  isLongDistanceRail,
   mapMode,
   parseCsvLine,
   pickServiceWeek,
+  separateNightVariants,
   serviceEnd,
 } from '../../../scripts/transit/lib/gtfs-night.mjs';
 
@@ -136,5 +138,31 @@ describe('gtfs-night', () => {
     const acc = createNightAccumulator(WEEK);
     acc.add('20261107', 'tram|9|0', 4 * 3600 + 40 * 60, 'm');
     expect(acc.result().filter((r) => r.day_class === 'friday')).toHaveLength(0);
+  });
+
+  it('relabels a night variant that shares a regular line number (St. Gallen bus 200)', () => {
+    const base = { city_id: 'c', mode: 'bus', route_ref: '200', day_class: 'friday' };
+    const out = separateNightVariants([
+      { ...base, is_night_line: false },
+      { ...base, is_night_line: true },
+      { ...base, route_ref: 'N4', is_night_line: true }, // no collision: unchanged
+    ]);
+    expect(out.map((r) => r.route_ref)).toEqual(['200', '200 (night)', 'N4']);
+  });
+
+  it('ignores departures past 06:00 next day (multi-day coach trips stamped 39:50)', () => {
+    const acc = createNightAccumulator(WEEK);
+    acc.add('20261103', 'bus|X|0', 23 * 3600, 'a');
+    acc.add('20261103', 'bus|X|0', 39 * 3600 + 50 * 60, 'b');
+    expect(formatServiceSeconds(acc.result()[0].last_departure_s)).toBe('23:00');
+  });
+
+  it('treats long-distance trains as no way home (ICE 42 in Düsseldorf, IC8 in Zürich)', () => {
+    expect(isLongDistanceRail('2', '', 'ICE 42')).toBe(true);
+    expect(isLongDistanceRail('102', 'IC', 'IC8')).toBe(true);
+    expect(isLongDistanceRail('2', '', 'FLX10')).toBe(true);
+    expect(isLongDistanceRail('109', 'S', 'S8')).toBe(false);
+    expect(isLongDistanceRail('2', '', 'RE4')).toBe(false);
+    expect(isLongDistanceRail('106', 'IR', 'IR36')).toBe(false);
   });
 });

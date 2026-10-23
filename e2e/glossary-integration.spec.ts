@@ -3,7 +3,7 @@ import { REDUCED_MOTION } from './support/reducedMotion';
 
 /**
  * Glossary integration — the tags wiki surfaced across the product
- * (2026-08-22): the 7th nav intent, the footer column, chip hover cards
+ * (2026-08-22): the 7th nav intent, the compact footer link, chip hover cards
  * and the homepage band.
  *
  * Data-dependent assertions (hover definition, band cards) navigate through
@@ -41,18 +41,15 @@ test.describe('glossary in navigation', () => {
     expect(new Set(tops.map((t) => Math.round(t))).size).toBe(1);
   });
 
-  test('footer renders a Knowledge column with its wiki links', async ({ page }) => {
+  test('footer keeps the glossary reachable from its compact Knowledge link', async ({ page }) => {
     await page.goto('/');
     const footer = page.locator('footer nav[aria-label="Footer navigation"]');
-    await expect(footer.getByRole('link', { name: 'Knowledge' })).toBeVisible();
-    await expect(footer.getByRole('link', { name: 'All terms' })).toHaveAttribute(
-      'href',
-      /\/tags$/,
-    );
-    await expect(footer.getByRole('link', { name: 'STI guide' })).toHaveAttribute(
-      'href',
-      /\/tags\/sti-guide$/,
-    );
+    const knowledge = footer.getByRole('link', { name: 'Knowledge' });
+    await expect(knowledge).toBeVisible();
+    await expect(knowledge).toHaveAttribute('href', /\/tags$/);
+    await knowledge.click();
+    await expect(page).toHaveURL(/\/tags$/);
+    await expect(page.locator('main h1')).toBeVisible();
   });
 });
 

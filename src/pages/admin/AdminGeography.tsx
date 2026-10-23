@@ -40,6 +40,7 @@ import {
   type GeographyType,
 } from '@/hooks/useGeographyCMS';
 import { cmsEditPath, livePath } from '@/lib/cmsLinks';
+import { codeToFlagEmoji } from '@/lib/countryFlag';
 
 const ICONS = { country: Globe, city: MapPin, village: Home };
 const EMPTY_FILTERS: GeographyFilters = { search: '', type: null, continent: null, region: null };
@@ -114,6 +115,7 @@ function GeographyRows({
       )}
       {rows.map((row) => {
         const Icon = ICONS[row.place_type];
+        const flag = row.place_type === 'country' ? codeToFlagEmoji(row.country_code) : null;
         const open = expanded.has(row.id);
         return (
           <div key={row.id}>
@@ -152,7 +154,16 @@ function GeographyRows({
                 className={`${ROW_COLUMNS} min-h-16 py-2 text-left focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2`}
               >
                 <span className="flex min-w-0 items-center gap-2">
-                  <Icon size={16} className="shrink-0 text-muted-foreground" aria-hidden />
+                  {flag ? (
+                    <span
+                      aria-hidden
+                      className="flex h-4 w-4 shrink-0 items-center justify-center text-15 leading-none"
+                    >
+                      {flag}
+                    </span>
+                  ) : (
+                    <Icon size={16} className="shrink-0 text-muted-foreground" aria-hidden />
+                  )}
                   <span className="min-w-0">
                     <span className="flex items-center gap-2">
                       <span className="truncate text-15 font-medium" title={row.name}>

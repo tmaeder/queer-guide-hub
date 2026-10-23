@@ -125,6 +125,8 @@ test.describe('makers directory', () => {
 
     // THE REGRESSION: localeCompare alone put "#" first, so the index opened on
     // the junkiest names in the catalogue.
+    // allTextContents() does not wait; let the A–Z list render first.
+    await expect(page.locator('main h3').first()).toBeVisible({ timeout: SETTLE });
     const headings = await page.locator('main h3').allTextContents();
     expect(headings.length).toBeGreaterThan(0);
     expect(headings[0]).toBe('A');

@@ -50,6 +50,10 @@ interface PlacesFilters {
   /** Skip the network fetch when false. Used by /map to defer the
    *  cities + countries fetch until those layers are toggled on. */
   enabled?: boolean;
+  /** PostgREST select list. Defaults to '*'. Pass the fields a caller renders:
+   *  the /map city layer asked for every column of 500 cities (5.6 MB raw per
+   *  call) to draw pins that use seven of them. */
+  columns?: string;
 }
 
 const COUNTRIES_QUERY_KEY = 'countries';
@@ -61,7 +65,7 @@ export function useOptimizedCountries(filters?: PlacesFilters) {
   const fetchCountries = async (): Promise<Country[]> => {
     let query = supabase
       .from('countries')
-      .select('*')
+      .select(filters?.columns ?? '*')
       .is('duplicate_of_id', null)
       .order('name', { ascending: true });
 
@@ -87,7 +91,9 @@ export function useOptimizedCountries(filters?: PlacesFilters) {
     const { data, error } = await query;
 
     if (error) throw error;
-    return data || [];
+    // `columns` is a runtime string, so PostgREST typegen cannot infer it; a
+    // narrowed select returns the subset of Country the caller asked for.
+    return (data || []) as unknown as Country[];
   };
 
   const {
@@ -129,7 +135,7 @@ export function useOptimizedCities(filters?: PlacesFilters & { countryId?: strin
     // cities kept appearing on country pages.
     let query = supabase
       .from('cities')
-      .select('*')
+      .select(filters?.columns ?? '*')
       .is('duplicate_of_id', null)
       .not('slug', 'like', 'tmp-%')
       .not('shell_status', 'in', '("ghost","merged")')
@@ -160,7 +166,7 @@ export function useOptimizedCities(filters?: PlacesFilters & { countryId?: strin
     const { data, error } = await query;
 
     if (error) throw error;
-    return data || [];
+    return (data || []) as unknown as City[];
   };
 
   const {

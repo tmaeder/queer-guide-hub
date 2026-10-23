@@ -8,4 +8,4 @@ Migration `99991792712263_event_image_targeted_rechecks.sql` allows up to 100 ex
 
 Validation: 13 Deno image/worker tests, 10 event-gap Vitest tests, edge typecheck and scoped ESLint pass. An eight-event disposable PostgreSQL fixture verifies bounds, grants, unsafe URLs, lifecycle exclusions, duplicate IDs, actor checks and mutual exclusion with a live worker lease. Three read-only public source probes returned HTTP 200 and passed the revised rule (665×960, 736×829 and 768×960), with no production mutation or queue reduction credited to those probes.
 
-Deployment and native rechecks await the normal release. No production image findings have yet been cleared by this change.
+The release and native reassessment completed on 2026-10-23. All 594 original `IMAGE_LOW_RESOLUTION` findings were resolved through the auditor: 593 images passed, while one failed its fresh fetch and retains an `IMAGE_UNREACHABLE` finding. This was a reclassification, not a pass. Reports and HTTP receipts preserve each batch outcome; no content or quality scores were forced.

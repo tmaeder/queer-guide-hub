@@ -54,6 +54,23 @@ Deno.test('postal drain refuses satisfied, quarantined and stale-coordinate queu
   assertEquals(postalQueueAction(queued, { ...current, latitude: 52 }), 'refresh')
 })
 
+Deno.test('postal drain holds city-centroid coordinates before Photon reverse', () => {
+  const queued = { latitude: 52.3676, longitude: 4.9041 }
+  const current = { ...queued, postal_code: null, safety_gated: false, duplicate_of_id: null }
+  assertEquals(postalQueueAction(queued, {
+    ...current,
+    field_provenance: { latitude: { source: 'derived:city_centroid' } },
+  }), 'centroid_hold')
+  assertEquals(postalQueueAction(queued, {
+    ...current,
+    field_provenance: { longitude: { source: 'derived:city_centroid' } },
+  }), 'centroid_hold')
+  assertEquals(postalQueueAction(queued, {
+    ...current,
+    field_provenance: { latitude: { source: 'official:venue_address' } },
+  }), 'geocode')
+})
+
 // The live reproduction this guard was written for.
 const KUNSTWERK = venue({
   name: 'KUNST-WERK am Kaiserhaus - Lehrwerkstatt e.V.',

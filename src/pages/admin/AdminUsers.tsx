@@ -7,9 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { ExportExcelButton } from '@/components/admin/ExportExcelButton';
-import { exportToExcel, generateFilename, type ExportColumnDef } from '@/utils/excelExport';
-import { formatDateTime } from '@/lib/format';
-import { fetchAdminUsersForExport } from '@/lib/adminUsers';
+import { exportAdminUsers } from '@/lib/adminUsersExport';
 import { AdminEntityTable } from '@/components/admin/data-table/AdminEntityTable';
 import type { AdminTableConfig, AdminColumnMeta } from '@/components/admin/data-table/types';
 import { createColumnHelper } from '@tanstack/react-table';
@@ -303,20 +301,8 @@ export default function AdminUsers() {
               Create User
             </Button>
           )}
-          <ExportExcelButton
-            onExport={async () => {
-              const cols: ExportColumnDef<Record<string, unknown>>[] = [
-                { header: 'Display Name', accessor: (r) => r.display_name },
-                { header: 'Location', accessor: (r) => r.location },
-                { header: 'User Mode', accessor: (r) => r.user_mode },
-                { header: 'Profile %', accessor: (r) => r.profile_completion_percentage },
-                { header: 'Created At', accessor: (r) => formatDateTime(r.created_at) },
-                { header: 'Last Seen', accessor: (r) => formatDateTime(r.last_seen_at) },
-              ];
-              const allData = await fetchAdminUsersForExport();
-              await exportToExcel(allData, cols, generateFilename('users'));
-            }}
-          />
+          <ExportExcelButton onExport={() => exportAdminUsers('Excel')} />
+          <ExportExcelButton format="CSV" onExport={() => exportAdminUsers('CSV')} />
         </div>
       ),
     }),

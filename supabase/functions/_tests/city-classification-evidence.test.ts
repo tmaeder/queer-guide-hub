@@ -33,3 +33,8 @@ Deno.test('classification refuses conflicting points and identities and preserve
  const village=classificationEvidence(candidate,source,{Q515:{id:'Q515',labels:{en:{value:'village'}}}},countries)
  assertEquals(village?.status,'settlement')
 })
+
+Deno.test('classification never revives a dissolved municipality from its remaining name and coordinates',()=>{
+ const source=entity()
+ assertEquals(classificationEvidence(candidate,{...source,claims:{...source.claims,P576:[statement({time:'+2020-01-01T00:00:00Z'})]}},classes,countries),null)
+})

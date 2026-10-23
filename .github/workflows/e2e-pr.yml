@@ -1,3 +1,13 @@
+# BACKEND (2026-10-23): the specs run against a LOCAL Supabase loaded from the
+# nightly production snapshot (db-snapshot.yml + scripts/ci/db-snapshot.sh),
+# not against production. Until then each run sent ~18 min of browser traffic
+# to the live database: CI e2e was 53% of production API reads, contributed to
+# the egress-quota restriction of 2026-10-20/21, and ~20 suites/hour crashed it
+# twice (2026-10-16, 2026-10-17). The PR's NEW migrations are applied on top of
+# the snapshot, so a migration is tested against the real schema before it
+# ships. Search still uses the production worker (search.queer.guide).
+# PRs that receive no secrets (forks, Dependabot) cannot decrypt the snapshot
+# and fall back to the production backend, with a warning.
 name: E2E Critical Path (PR)
 
 # Fast subset of the Playwright suite that runs on every PR.
@@ -54,15 +64,21 @@ jobs:
     # elapsed time before diagnosing — ~20m is the cap, anything shorter is a
     # supersession (runs 32268586231 and 32236106405 were superseded, not
     # timed out).
-    timeout-minutes: 20
+    timeout-minutes: 45
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
       - name: Detect relevant changes
         id: changes
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          EVENT_NAME: ${{ github.event_name }}
+          REPOSITORY: ${{ github.repository }}
+          PR_NUMBER: ${{ github.event.number }}
         run: |
-          files=$(gh api "repos/${{ github.repository }}/pulls/${{ github.event.number }}/files" \
+          if [ "$EVENT_NAME" = "merge_group" ]; then
+            echo "relevant=true" >> "$GITHUB_OUTPUT"; echo "scope=full" >> "$GITHUB_OUTPUT"; exit 0
+          fi
+          files=$(gh api "repos/$REPOSITORY/pulls/$PR_NUMBER/files" \
             --paginate --jq '.[].filename')
           echo "Changed files:"; echo "$files" | sed 's/^/  /'
           # `supabase/migrations/` is in the list because the specs below run a
@@ -99,15 +115,104 @@ jobs:
             echo "relevant=true" >> "$GITHUB_OUTPUT"
             echo "scope=full" >> "$GITHUB_OUTPUT"
             echo "::notice::Relevant paths changed - running critical-path specs."
-          elif echo "$files" | grep -qE '^supabase/migrations/'; then
+          elif echo "$files" | grep -qE '^(supabase/migrations/|scripts/ci/|\.github/workflows/db-snapshot\.yml$)'; then
+            # The narrowing above protected PRODUCTION from load. The specs now
+            # run on the local snapshot DB, so a migration gets the full suite.
             echo "relevant=true" >> "$GITHUB_OUTPUT"
-            echo "scope=migrations" >> "$GITHUB_OUTPUT"
-            echo "::notice::Migration-only diff - running the admin schema-cost specs only."
+            echo "scope=full" >> "$GITHUB_OUTPUT"
+            echo "::notice::Migration/snapshot diff - running critical-path specs on the local DB."
           else
             echo "relevant=false" >> "$GITHUB_OUTPUT"
             echo "::notice::No app/e2e paths changed - skipping specs, reporting success."
           fi
-      - uses: actions/setup-node@v7
+          if echo "$files" | grep -qE '^(scripts/ci/db-snapshot\.sh|scripts/ci/snapshot-fixtures\.mjs|scripts/ci/supabase-retry\.sh|\.github/workflows/db-snapshot\.yml)$'; then
+            echo "snapshot_changed=true" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Snapshot cache key
+        if: steps.changes.outputs.relevant == 'true'
+        id: key
+        # Same versioned key db-snapshot.yml saves under: it changes when the
+        # exporter, fixtures or snapshot workflow change (snapshot-fixtures.mjs).
+        run: echo "cache_key=$(node scripts/ci/snapshot-fixtures.mjs cache-key)" >> "$GITHUB_OUTPUT"
+      - name: Restore DB snapshot
+        if: steps.changes.outputs.relevant == 'true'
+        id: snap
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: db-snapshot.tgz.enc
+          key: ${{ steps.key.outputs.cache_key }}
+          # Fall back to the newest v2 snapshot from main (an older day or digest)
+          # rather than reading production on every run.
+          restore-keys: |
+            ${{ steps.key.outputs.cache_key }}-
+            db-snapshot-v2-
+      - uses: supabase/setup-cli@45a513f8c64c0bc8e0e3dfe572b5c95be85f6359 # v3
+        if: steps.changes.outputs.relevant == 'true'
+        with:
+          version: 2.98.2
+      - name: Prepare the database
+        if: steps.changes.outputs.relevant == 'true'
+        id: db
+        env:
+          KEY: ${{ secrets.DB_SNAPSHOT_KEY }}
+          PROD_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+          HIT: ${{ steps.snap.outputs.cache-matched-key }}
+          REBUILD: ${{ steps.changes.outputs.snapshot_changed }}
+        run: |
+          if [ -z "$KEY" ]; then
+            echo "::warning::No DB_SNAPSHOT_KEY (fork or Dependabot PR): running against the PRODUCTION backend."
+            echo "mode=prod" >> "$GITHUB_OUTPUT"; exit 0
+          fi
+          if [ "$REBUILD" = "true" ]; then
+            # This PR changes how the snapshot is built: test that, not last night's.
+            scripts/ci/db-snapshot.sh dump "$PROD_DB_URL" snapshot
+          elif [ -n "$HIT" ]; then
+            openssl enc -d -aes-256-cbc -pbkdf2 -pass env:KEY -in db-snapshot.tgz.enc | tar -xzf -
+          else
+            echo "::error::No DB snapshot in the cache. Run the 'DB snapshot' workflow on main."; exit 1
+          fi
+          echo "snapshot: ${HIT:-rebuilt in this run}" >> "$GITHUB_STEP_SUMMARY"
+
+          mkdir -p /tmp/migrations && mv supabase/migrations/*.sql /tmp/migrations/
+          # PostgREST stays unhealthy until the snapshot creates pgmq_public (config.toml
+          # exposes it); it retries the schema cache on its own, so do not wait for it.
+          scripts/ci/supabase-retry.sh start --ignore-health-check -x studio,imgproxy,inbucket,edge-runtime,logflare,vector,realtime,postgres-meta,supavisor
+          eval "$(supabase status -o env)"
+          scripts/ci/db-snapshot.sh load "$DB_URL" snapshot
+
+          # Only the PR's NEW migrations: versions production has not applied.
+          for f in $(ls /tmp/migrations/*.sql | sort); do
+            v=$(basename "$f" | cut -d_ -f1)
+            grep -qx "$v" snapshot/versions.txt && continue
+            echo "applying $(basename "$f")"
+            psql "$DB_URL" -X -q -1 -v ON_ERROR_STOP=1 -f "$f"
+          done
+          psql "$DB_URL" -X -q -c "notify pgrst, 'reload schema'"
+          for i in $(seq 30); do curl -sf "$API_URL/rest/v1/" -H "apikey: $ANON_KEY" -o /dev/null && break; sleep 2; done
+
+          # A local admin, plus synthetic admin rows the anon-only snapshot lacks.
+          pw=$(openssl rand -hex 16); echo "::add-mask::$pw"
+          email=ci-admin@example.test
+          uid=$(curl -sf "$API_URL/auth/v1/admin/users" -H "apikey: $SERVICE_ROLE_KEY" \
+            -H "Authorization: Bearer $SERVICE_ROLE_KEY" -H 'Content-Type: application/json' \
+            -d "{\"email\":\"$email\",\"password\":\"$pw\",\"email_confirm\":true}" | jq -r .id)
+          psql "$DB_URL" -X -v ON_ERROR_STOP=1 -c "insert into public.user_roles (user_id, role) values ('$uid', 'admin')"
+          # Synthetic review/archived fixtures (loopback DB only), then prove the
+          # real admin and public RPCs answer before Playwright starts.
+          DB_URL="$DB_URL" node scripts/ci/snapshot-fixtures.mjs seed-admin > /tmp/ci-review-fixtures.sql
+          psql "$DB_URL" -X -v ON_ERROR_STOP=1 -f /tmp/ci-review-fixtures.sql
+          DB_URL="$DB_URL" API_URL="$API_URL" ANON_KEY="$ANON_KEY" \
+            E2E_ADMIN_EMAIL="$email" E2E_ADMIN_PASSWORD="$pw" \
+            node scripts/ci/snapshot-fixtures.mjs verify
+
+          # Sanity: an anon read must see the glossary (it once silently copied 0 tags).
+          n=$(curl -s "$API_URL/rest/v1/unified_tags?select=id&limit=1" -H "apikey: $ANON_KEY" | jq length)
+          [ "$n" = 1 ] || { echo "::error::anon sees no unified_tags in the local DB"; exit 1; }
+
+          { echo "VITE_SUPABASE_URL=$API_URL"; echo "VITE_SUPABASE_ANON_KEY=$ANON_KEY";
+            echo "E2E_ADMIN_EMAIL=$email"; echo "E2E_ADMIN_PASSWORD=$pw"; } >> "$GITHUB_ENV"
+          echo "mode=local" >> "$GITHUB_OUTPUT"
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
         if: steps.changes.outputs.relevant == 'true'
         with:
           node-version: 22
@@ -125,21 +230,15 @@ jobs:
         if: steps.changes.outputs.relevant == 'true'
         env:
           E2E_BASE_URL: http://localhost:4173
-          E2E_ADMIN_EMAIL: ${{ secrets.E2E_ADMIN_EMAIL }}
-          E2E_ADMIN_PASSWORD: ${{ secrets.E2E_ADMIN_PASSWORD }}
-          SCOPE: ${{ steps.changes.outputs.scope }}
+          PROD_ADMIN_EMAIL: ${{ secrets.E2E_ADMIN_EMAIL }}
+          PROD_ADMIN_PASSWORD: ${{ secrets.E2E_ADMIN_PASSWORD }}
+          MODE: ${{ steps.db.outputs.mode }}
         run: |
+          if [ "$MODE" = prod ]; then
+            export E2E_ADMIN_EMAIL="$PROD_ADMIN_EMAIL" E2E_ADMIN_PASSWORD="$PROD_ADMIN_PASSWORD"
+          fi
           npx vite preview --port 4173 &
           sleep 5
-          if [ "$SCOPE" = "migrations" ]; then
-            # auth.setup.ts first for the same reason as below.
-            npx playwright test \
-              e2e/auth.setup.ts \
-              e2e/admin-inbox-renders.spec.ts \
-              e2e/admin-route-baseline.spec.ts \
-              --reporter=line
-            exit $?
-          fi
           npx playwright test \
             e2e/auth.setup.ts \
             e2e/auth-signup-renders.spec.ts \
@@ -260,7 +359,7 @@ jobs:
             --reporter=line
       - name: Upload report
         if: failure()
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
         # Non-blocking: storing a diagnostic report must not fail a job whose
         # assertions already passed. See the long note in a11y.yml — GitHub's
         # artifact service returned a persistent 403 on FinalizeArtifact on

@@ -179,13 +179,15 @@ test.describe('country map', () => {
     await openThemeMenu();
     await page.getByRole('menuitem', { name: /^dark$/i }).click();
     await expect(page.locator('html')).toHaveClass(/dark/);
-    const dark = await landFill(page);
 
     expect(light).toBeTruthy();
-    expect(dark).toBeTruthy();
     // The assertion that justifies inline <svg>. As an <img> these would be
-    // equal, because a separate document cannot see the `dark` class.
-    expect(light).not.toBe(dark);
+    // equal, because a separate document cannot see the `dark` class. Polled:
+    // the fill is read off computed style, and a single sample taken the frame
+    // the class lands read the light value on 3 of 6 nightlies (10-18..10-23).
+    await expect.poll(() => landFill(page), { timeout: 5_000 }).not.toBe(light);
+    const dark = await landFill(page);
+    expect(dark).toBeTruthy();
 
     // And in the right direction — paper land in light, ink land in dark.
     const luminance = (rgb: string) => {

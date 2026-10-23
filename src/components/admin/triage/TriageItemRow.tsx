@@ -6,6 +6,8 @@ import { cn } from '@/lib/utils';
 import { splitQualityTitle, fieldBadgeLabel } from '@/lib/qualityQueue';
 import { queueByKey, queueImpact, queueRisk } from '@/config/adminQueues';
 import type { TriageItem } from '@/hooks/useUnifiedTriageQueue';
+import type { NewsStagingSummary } from '@/hooks/useNewsStagingSummaries';
+import { NEWS_VERDICT_LABEL } from '@/lib/newsStaging';
 
 const CONTENT_TYPE_LABELS: Record<string, string> = {
   venues: 'Venue',
@@ -54,6 +56,10 @@ interface TriageItemRowProps {
   hideSelection?: boolean;
   sourceLabel?: string;
   riskLevel?: string;
+  /** News staging facts the list RPC does not carry (publication, verdict, gate reason). */
+  news?: NewsStagingSummary;
+  /** Registered title for the news item's main gate reason; absent = render the raw key. */
+  newsReasonTitle?: string;
 }
 
 export function TriageItemRow({
@@ -66,7 +72,11 @@ export function TriageItemRow({
   hideSelection = false,
   sourceLabel,
   riskLevel,
+  news,
+  newsReasonTitle,
 }: TriageItemRowProps) {
+  const [thumbBroken, setThumbBroken] = useState(false);
+  const mainReason = news?.blockedReasons[0] ?? news?.reviewReason;
   const [renderedAt] = useState(Date.now);
   const conf = confidenceLabel(item.confidence_score);
   const { name, field } = splitQualityTitle(item.title, item.meta?.field);
@@ -76,6 +86,7 @@ export function TriageItemRow({
   const contentLabel = CONTENT_TYPE_LABELS[item.content_type] ?? humanize(item.content_type);
   const queue = queueByKey(item.queue_type);
   const queueLabel =
+    news?.publication ??
     sourceLabel ??
     (item.queue_type.startsWith('quality-')
       ? 'Quality'
@@ -131,6 +142,16 @@ export function TriageItemRow({
         />
       )}
 
+      {news?.thumbnail && !thumbBroken && (
+        <img
+          src={news.thumbnail}
+          alt=""
+          loading="lazy"
+          className="h-12 w-12 shrink-0 rounded-badge object-cover"
+          onError={() => setThumbBroken(true)}
+        />
+      )}
+
       <div className="min-w-0 flex-1 space-y-1">
         {/* Title row */}
         <p className="truncate text-13 font-semibold leading-snug text-foreground">{name}</p>
@@ -149,6 +170,20 @@ export function TriageItemRow({
           >
             {contentLabel}
           </Badge>
+          {news && (
+            <Badge
+              variant={news.verdict === 'publish' ? 'default' : 'outline'}
+              className="shrink-0 text-2xs font-medium normal-case px-1.5 py-0 h-4"
+            >
+              {NEWS_VERDICT_LABEL[news.verdict]}
+            </Badge>
+          )}
+          {mainReason &&
+            (newsReasonTitle ? (
+              <span className="text-2xs text-muted-foreground truncate">{newsReasonTitle}</span>
+            ) : (
+              <code className="text-2xs bg-muted px-1 rounded-badge truncate">{mainReason}</code>
+            ))}
           {field && (
             <Badge
               variant="outline"
@@ -205,7 +240,7 @@ export function TriageItemRow({
               diff
             </Badge>
           )}
-          {item.subtitle && (
+          {item.subtitle && !news && (
             <span className="text-2xs text-muted-foreground truncate">
               {humanize(item.subtitle)}
             </span>

@@ -4,6 +4,8 @@ import { getTaxonomyDestinations } from '@/config/taxonomyCatalog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { AdminArchetypeHeader } from '@/components/admin/frames/AdminArchetypeHeader';
+import { ExportExcelButton } from '@/components/admin/ExportExcelButton';
+import { exportAllTaxonomies } from '@/lib/taxonomyExport';
 
 export function TaxonomyDirectory() {
   const [search, setSearch] = useState('');
@@ -17,6 +19,27 @@ export function TaxonomyDirectory() {
         Manage categories, tags, amenities, services, and the choices used across content and
         profiles. Deactivate used terms to preserve their existing references.
       </p>
+      <div className="flex flex-wrap gap-2">
+        <ExportExcelButton
+          label="Export all taxonomies (Excel)"
+          onExport={() => exportAllTaxonomies('Excel')}
+        />
+        <ExportExcelButton
+          format="CSV"
+          label="Export all taxonomies (CSV)"
+          onExport={() => exportAllTaxonomies('CSV')}
+        />
+        {/* Tags are ~10k rows; these skip them for a quick vocabulary-only file. */}
+        <ExportExcelButton
+          label="Export without tags (Excel)"
+          onExport={() => exportAllTaxonomies('Excel', { includeTags: false })}
+        />
+        <ExportExcelButton
+          format="CSV"
+          label="Export without tags (CSV)"
+          onExport={() => exportAllTaxonomies('CSV', { includeTags: false })}
+        />
+      </div>
       <div className="flex max-w-md flex-col gap-2">
         <Label htmlFor="taxonomy-search">Find a taxonomy</Label>
         <Input

@@ -160,6 +160,15 @@ for (const route of ROUTES) {
     test('supporting information stays available on a phone', async ({ page }) => {
       await page.setViewportSize({ width: 390, height: 844 });
       await open(page, route.path);
+      if (route.path.startsWith('/villages/')) {
+        await expect(page.getByTestId('single-rail')).toHaveCount(0);
+        await page.getByRole('link', { name: 'Open map', exact: true }).click();
+        await expect(page.locator('#map-detail')).toBeVisible();
+        await expect(
+          page.locator('article').getByRole('link', { name: 'Correct this page' }),
+        ).toBeVisible();
+        return;
+      }
       if (route.path.startsWith('/city/')) {
         // Cities put the map and safety in the opening on every viewport.
         await expect(page.getByTestId('single-rail')).toHaveCount(0);

@@ -59,7 +59,7 @@ export function CityLateNightPanel({
       label: t('cities.detail.transit.onTime', 'On time after 23:00'),
       value: t(
         'cities.detail.transit.onTimeValue',
-        '{{pct}}% of tram and bus departures ({{period}})',
+        '{{pct}}% of tram and bus departures, measured {{period}}',
         { pct: Math.round(s.punctuality.share * 100), period: s.punctuality.period },
       ),
     });

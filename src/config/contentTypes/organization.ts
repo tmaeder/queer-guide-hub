@@ -1,6 +1,8 @@
+import { createElement } from 'react';
 import { Building2 } from 'lucide-react';
 import type { ContentTypeConfig, FieldConfig } from '@/types/cms';
 import { ORG_ROLE_LABELS } from '@/lib/organizationRoles';
+import { OrganizationLocationCell, OrganizationWebsiteCell } from './organizationListCells';
 
 export const organizationFields: FieldConfig[] = [
   {
@@ -53,7 +55,27 @@ export const organizationFields: FieldConfig[] = [
     type: 'text',
     group: 'details',
     searchable: true,
+  },
+  // List-only columns, fed by `listSelect`'s cities/countries embeds.
+  {
+    name: 'location',
+    label: 'Location',
+    type: 'text',
+    group: 'external',
+    hidden: true,
+    virtual: true,
     listColumn: true,
+    listRender: (row) => createElement(OrganizationLocationCell, { row }),
+  },
+  {
+    name: 'website_link',
+    label: 'Web',
+    type: 'text',
+    group: 'external',
+    hidden: true,
+    virtual: true,
+    listColumn: true,
+    listRender: (row) => createElement(OrganizationWebsiteCell, { row }),
   },
   {
     name: 'status',
@@ -146,6 +168,7 @@ export const organizationContentType: ContentTypeConfig = {
   primaryKey: 'id',
   titleField: 'name',
   listSearchFields: ['name', 'website_domain', 'slug'],
+  listSelect: '*,cities(name,region_code),countries(code)',
   descriptionField: 'description',
   imageField: 'logo_url',
   icon: Building2,

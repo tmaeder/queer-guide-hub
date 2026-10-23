@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { ChevronDown, History, Pencil, SquareArrowOutUpRight } from 'lucide-react';
+import { ChevronDown, Download, History, Pencil, SquareArrowOutUpRight } from 'lucide-react';
+import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -19,6 +20,7 @@ import { useAdminEditMode } from '@/hooks/useAdminEditMode';
 import { useAuth } from '@/hooks/useAuth';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { cmsEditPath } from '@/lib/cmsLinks';
+import { getContentType } from '@/config/contentTypes';
 import { usePageEntity } from '@/contexts/PageEntityContext';
 
 export interface AdminEditButtonProps {
@@ -31,6 +33,8 @@ export interface AdminEditButtonProps {
   ownerUserId?: string | null;
   size?: 'sm' | 'default';
   onSaved?: () => void;
+  /** Offer Excel/CSV export of this one record (every column) in the menu. */
+  exportable?: boolean;
 }
 
 /**
@@ -63,6 +67,7 @@ export function AdminEditButton({
   ownerUserId,
   size = 'sm',
   onSaved,
+  exportable = false,
 }: AdminEditButtonProps) {
   // Detail pages already pass their canonical identity here. Publishing it
   // before the permission guard makes the same identity available to the
@@ -81,6 +86,20 @@ export function AdminEditButton({
   if (loading || (!isStaff && !isOwner)) return null;
 
   const cmsPath = cmsEditPath(contentType, contentId);
+  const exportConfig = exportable ? getContentType(contentType) : undefined;
+
+  // Loaded on click: the exporter (and exceljs behind it) has no business in
+  // a public page's bundle for the visitors who never see this menu.
+  const exportRecord = async (format: 'Excel' | 'CSV') => {
+    if (!exportConfig) return;
+    try {
+      const { exportContentRecord } =
+        await import('@/components/cms/ContentListPanel/exportContentList');
+      await exportContentRecord(exportConfig, contentId, format);
+    } catch (err) {
+      toast.error(`Export failed: ${err instanceof Error ? err.message : String(err)}`);
+    }
+  };
 
   return (
     <>
@@ -156,6 +175,18 @@ export function AdminEditButton({
                   <History size={16} className="mr-2" />
                   Revision history
                 </DropdownMenuItem>
+                {exportConfig && (
+                  <>
+                    <DropdownMenuItem onSelect={() => void exportRecord('Excel')}>
+                      <Download size={16} className="mr-2" />
+                      Export record (Excel)
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onSelect={() => void exportRecord('CSV')}>
+                      <Download size={16} className="mr-2" />
+                      Export record (CSV)
+                    </DropdownMenuItem>
+                  </>
+                )}
 
                 <DropdownMenuSeparator />
 

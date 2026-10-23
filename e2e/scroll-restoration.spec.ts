@@ -83,7 +83,7 @@ test.describe('scroll on navigation', () => {
     const left = (await scroll(page)).y;
     expect(left).toBeGreaterThan(400);
 
-    await followLink(page, '/cities');
+    await followLink(page, '/travel');
     expect((await scroll(page)).y).toBe(0);
 
     await page.goBack();
@@ -112,7 +112,7 @@ test.describe('scroll on navigation', () => {
     await page.goto('/venues');
     await waitForScrollable(page);
     await toBottom(page);
-    await followLink(page, '/cities');
+    await followLink(page, '/travel');
 
     await page.goBack();
     await page.waitForURL(/\/venues(\?|$)/);
@@ -120,7 +120,7 @@ test.describe('scroll on navigation', () => {
     await page.waitForTimeout(1500);
 
     await page.goForward();
-    await page.waitForURL(/\/cities(\?|$)/);
+    await page.waitForURL(/\/travel(\?|$)/);
     await waitForScrollable(page);
     await page.waitForTimeout(2000);
     expect((await scroll(page)).y).toBe(0);

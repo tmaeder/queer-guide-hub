@@ -19,6 +19,14 @@ import { TooltipProvider } from '@/components/ui/tooltip';
 import { Tag } from 'lucide-react';
 import type { ContentTypeConfig, FieldConfig } from '@/types/cms';
 import type { Filter } from '../viewSpec';
+import {
+  brandListConfig,
+  hotelListConfig,
+  merchantListConfig,
+  partnerListConfig,
+} from '@/components/admin/business/organisationListConfigs';
+import { getContentType } from '@/config/contentTypes';
+import { unifiedTagsContentType } from '@/config/contentTypes/tag';
 
 /**
  * `toolbarActions` is what lets a page like AdminRedirects — which carries a
@@ -96,12 +104,15 @@ function baseConfig(over: Partial<ContentTypeConfig> = {}): ContentTypeConfig {
   } as ContentTypeConfig;
 }
 
-function renderPanel(config: ContentTypeConfig | null) {
+function renderPanel(
+  config: ContentTypeConfig | null,
+  props: { workspace?: boolean; hideHeader?: boolean } = {},
+) {
   controller.config = config;
   render(
     <MemoryRouter>
       <TooltipProvider>
-        <ContentListPanel contentTypeId="redirects" />
+        <ContentListPanel contentTypeId="redirects" {...props} />
       </TooltipProvider>
     </MemoryRouter>,
   );
@@ -117,28 +128,33 @@ describe('ContentListPanel toolbarActions', () => {
     expect(controller.loadItems).toHaveBeenCalled();
   });
   it('offers CSV alongside Excel for tags even with search, filters, and pagination active', async () => {
-    const config = baseConfig({
-      id: 'unified_tags',
-      tableName: 'unified_tags',
-      titleField: 'name',
-    });
+    const config = unifiedTagsContentType;
     const original = {
       filters: controller.filters,
       search: controller.search,
+      debouncedSearch: controller.debouncedSearch,
       page: controller.page,
       allListColumns: controller.allListColumns,
     };
     controller.filters = [{ id: 'status-filter', field: 'status', op: 'eq', value: 'active' }];
     controller.search = 'filtered';
+    controller.debouncedSearch = 'filtered';
     controller.page = 3;
-    controller.allListColumns = [{ name: 'name', label: 'Name', type: 'text' } as FieldConfig];
+    controller.allListColumns = config.fields.filter((field) => field.listColumn);
+    expect(controller.allListColumns).toEqual([]);
     try {
       renderPanel(config);
       fireEvent.click(screen.getByRole('button', { name: 'Content tools' }));
       expect(screen.getByRole('button', { name: 'Export Excel' })).toBeVisible();
       fireEvent.click(screen.getByRole('button', { name: 'Export CSV' }));
       await waitFor(() =>
-        expect(exportContentType).toHaveBeenCalledWith(config, controller.allListColumns, 'CSV'),
+        // Every page, but only the rows the list currently matches.
+        expect(exportContentType).toHaveBeenCalledWith(config, controller.allListColumns, 'CSV', {
+          filters: controller.filters,
+          search: 'filtered',
+          archivedView: undefined,
+          mergedView: undefined,
+        }),
       );
       await waitFor(() =>
         expect(screen.getByRole('button', { name: 'Export CSV' })).not.toBeDisabled(),
@@ -147,6 +163,70 @@ describe('ContentListPanel toolbarActions', () => {
       Object.assign(controller, original);
     }
   });
+
+  it('offers Excel and CSV for every content type, not only tags', () => {
+    renderPanel(baseConfig());
+    fireEvent.click(screen.getByRole('button', { name: 'Content tools' }));
+    expect(screen.getByRole('button', { name: 'Export Excel' })).toBeVisible();
+    expect(screen.getByRole('button', { name: 'Export CSV' })).toBeVisible();
+  });
+
+  it('offers Excel and CSV in the workspace header too (Organisations)', () => {
+    // /admin/content/organizations renders the list with `workspace hideHeader`,
+    // whose "List tools" menu is a different header; it carried no exports.
+    renderPanel(baseConfig(), { workspace: true, hideHeader: true });
+    expect(screen.queryByRole('button', { name: 'Content tools' })).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'List tools' }));
+    expect(screen.getByRole('button', { name: 'Export Excel' })).toBeVisible();
+    fireEvent.click(screen.getByRole('button', { name: 'Export CSV' }));
+    expect(exportContentType).toHaveBeenCalledWith(
+      expect.objectContaining({ id: baseConfig().id }),
+      controller.allListColumns,
+      'CSV',
+      expect.objectContaining({ filters: controller.filters }),
+    );
+  });
+
+  it.each([
+    ['Brands', brandListConfig],
+    ['Hotels', hotelListConfig],
+    ['Merchants', merchantListConfig],
+    ['Partners', partnerListConfig],
+  ])('the Organisations %s tab gets Excel and CSV from the workspace header', (_tab, config) => {
+    renderPanel(config, { workspace: true, hideHeader: true });
+    fireEvent.click(screen.getByRole('button', { name: 'List tools' }));
+    expect(screen.getByRole('button', { name: 'Export Excel' })).toBeVisible();
+    fireEvent.click(screen.getByRole('button', { name: 'Export CSV' }));
+    expect(exportContentType).toHaveBeenLastCalledWith(
+      config,
+      controller.allListColumns,
+      'CSV',
+      expect.any(Object),
+    );
+  });
+
+  it('keeps Excel and CSV when a page hides the header to own its title (Milestones)', () => {
+    renderPanel(baseConfig(), { hideHeader: true });
+    expect(screen.queryByRole('button', { name: 'List tools' })).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Content tools' }));
+    expect(screen.getByRole('button', { name: 'Export Excel' })).toBeVisible();
+    expect(screen.getByRole('button', { name: 'Export CSV' })).toBeVisible();
+  });
+
+  it.each(['personalities', 'milestones', 'events', 'cities'])(
+    'the real %s config offers Excel and CSV',
+    (id) => {
+      renderPanel(getContentType(id)!);
+      fireEvent.click(screen.getByRole('button', { name: 'Content tools' }));
+      fireEvent.click(screen.getByRole('button', { name: 'Export CSV' }));
+      expect(exportContentType).toHaveBeenLastCalledWith(
+        getContentType(id),
+        controller.allListColumns,
+        'CSV',
+        expect.any(Object),
+      );
+    },
+  );
 
   it('renders nothing extra when a type declares none', () => {
     renderPanel(baseConfig());

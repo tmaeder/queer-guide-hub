@@ -29,7 +29,7 @@ const DEEP_ROUTES = [
   '/tags/transgender',
   // Venues / Country / City / Name — the trail that was already correct, so a
   // regression here means the shared builder broke rather than one page.
-  '/venues/checkpoint-zuerich',
+  '/venues/scum-and-villainy-cantina',
 ];
 
 const NAV = 'nav[aria-label="Breadcrumb"]';

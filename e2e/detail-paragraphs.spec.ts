@@ -75,8 +75,8 @@ const SPLIT_CASES = [
     // under test, not which slug carries it. See e2e/support/glossaryProse.ts.
     path: '/tags/silicone-injection',
     why: 'blank line — the plain case, and the one with the most rows behind it',
-    first: 'in a trans context rarely means medical silicone',
-    second: 'Scale is the core problem',
+    first: 'rarely means medical silicone',
+    second: 'People turn to it because it works immediately',
   },
   {
     path: '/city/key-west',

@@ -9,31 +9,9 @@ import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { OPEN_COOKIE_PREFERENCES_EVENT } from '@/lib/analyticsConsent';
 import { Wordmark } from '@/components/brand/Wordmark';
 import { useSiteBranding } from '@/hooks/useSiteBranding';
-import { TrackSwatch } from '@/components/transit/TrackSwatch';
 import { PAGE_GUTTER } from '@/components/layout/PageContainer';
-import { FooterTracks } from './FooterTracks';
+import './Footer.css';
 
-/**
- * Footer — the station map at the end of the line
- * ("Header and Footer.dc.html", panel 06).
- *
- * Structure is load-bearing and specified, not stylistic:
- *   1. two crossing track lines, so the page ends on the metaphor it opened on
- *   2. columns are TRACKS, not a sitemap dump — one per intent, each led by its
- *      own line swatch, so the footer teaches the same SEVEN jobs the topbar
- *      does (INTENT_NAV holds seven; "six" was stale here, in FooterTracks and
- *      in the design-system README while the grid below already said
- *      `xl:grid-cols-7`)
- *   3. the anti-discrimination policy and the crisis lines sit ABOVE the legal
- *      row, "because that is the order of importance, not the order of
- *      convention"
- *   4. legal + tagline last
- *
- * Ink flood throughout: this is the one drenched plate on the page.
- */
-
-/** Site/meta links. Deliberately NOT a third nav source — the track columns
- *  above are single-sourced from INTENT_NAV; these are the legal/meta row. */
 const legalLinks = [
   { href: '/privacy', labelKey: 'footer.privacy', fallback: 'Privacy' },
   { href: '/terms', labelKey: 'footer.terms', fallback: 'Terms' },
@@ -45,29 +23,12 @@ const legalLinks = [
   { href: '/donate', labelKey: 'footer.supportUs', fallback: 'Support Us' },
 ];
 
-/** Where "Report something" goes.
- *
- *  It pointed at `/report` for as long as this footer has existed and there
- *  has never been such a route — the anti-discrimination block's only call to
- *  action landed on the SPA's 404 board. Reporting in this product is
- *  contextual (ReportDialog / ReportContentDialog, both of which require a
- *  target entity), so there is nothing target-less to open from here; the real
- *  target-less surface is the contact form's Safety & Moderation lane, which
- *  now accepts `?category=` so the link arrives with that lane already picked. */
+// Keep the canonical feedback route for general safety concerns.
 const REPORT_HREF = '/submit/feedback?category=safety';
+const footerLink =
+  'inline-flex min-h-11 min-w-11 items-center text-13 md:min-w-0 no-underline underline-offset-4 hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-current';
 
 export interface FooterProps {
-  /**
-   * `compact` is panel 09 — "Used on print-adjacent pages, single-purpose
-   * flows, and anything inside an account. Report and hotlines never drop,
-   * whatever else does."
-   *
-   * It is a PAPER island, not a reversed plate: the full footer's ink flood is
-   * a closing statement, and a page that is a form or an account screen has
-   * not been making one. What it must not lose is the two links a reader might
-   * need in the next thirty seconds, which is why report and hotlines lead the
-   * row and the legal links follow them rather than the other way round.
-   */
   variant?: 'full' | 'compact';
 }
 
@@ -75,67 +36,32 @@ export function Footer({ variant = 'full' }: FooterProps = {}) {
   const { t } = useTranslation();
   const { pathname } = useLocation();
   const currentYear = new Date().getFullYear();
-  const localePath = pathname.replace(/^\/(?:[a-z]{2}\/)?/, '/');
-  // The compact footer's home link used a hardcoded "Queer Guide" as its
-  // accessible name while the Header reads the same value from published
-  // branding, so a rebranded /admin/design deployment still announced the
-  // stock name here.
   const branding = useSiteBranding();
   const siteName = branding.siteName ?? 'Queer Guide';
+  const localePath = pathname.replace(/^\/(?:[a-z]{2}\/)?/, '/');
 
   if (variant === 'compact') {
-    // No data-attribution row here, deliberately. The obligation attaches to
-    // pages that publish the derived work, and the compact variant is scoped
-    // to /auth, /claim-username, /onboarding, /hub and /settings — forms and
-    // account screens, none of which render the OSM-derived city diagrams or
-    // the country data. If that list ever grows to cover a content surface,
-    // this branch needs the row from the full footer below.
     return (
-      <footer className="mt-auto">
-        <div className={cn('mx-auto w-full max-w-page py-8', PAGE_GUTTER)}>
-          {/* An island: paper surface, panel radius, one soft elevation, and
-              the page colour showing on all four sides. No keyline — "It is
-              separated by its shadow and the gap around it" (panel 11). */}
-          <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-4 rounded-panel bg-card px-6 py-6 shadow-soft">
-            <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
-              <LocalizedLink
-                to="/"
-                className="inline-flex min-h-11 items-center no-underline"
-                aria-label={siteName}
-              >
-                <Wordmark className="text-title text-foreground" />
-              </LocalizedLink>
-              <p className="text-13 text-muted-foreground">
-                {t('footer.tagline', 'Every track. Every station. Everyone.')}
-              </p>
-            </div>
+      <footer className="mt-auto py-4 md:py-8">
+        <div className={cn('island-capped rounded-panel bg-card py-4', PAGE_GUTTER)}>
+          <div className="flex flex-wrap items-center justify-between gap-x-8 gap-y-0 md:gap-y-2">
+            <LocalizedLink to="/" className={footerLink} aria-label={siteName}>
+              <Wordmark className="text-title text-foreground" />
+            </LocalizedLink>
             <nav
               aria-label={t('footer.essentials', 'Footer essentials')}
-              className="flex flex-wrap items-center gap-x-6 gap-y-2 text-13 font-bold"
+              className="flex flex-wrap items-center gap-x-6 text-foreground"
             >
-              {/* Order is the priority order, not the conventional one. */}
-              <LocalizedLink
-                to={REPORT_HREF}
-                className="inline-flex min-h-11 items-center no-underline hover:underline"
-              >
+              <LocalizedLink to={REPORT_HREF} className={footerLink}>
                 {t('footer.report', 'Report')}
               </LocalizedLink>
-              <LocalizedLink
-                to="/help"
-                className="inline-flex min-h-11 items-center no-underline hover:underline"
-              >
+              <LocalizedLink to="/help" className={footerLink}>
                 {t('footer.hotlines', 'Hotlines')}
               </LocalizedLink>
-              <LocalizedLink
-                to="/privacy"
-                className="inline-flex min-h-11 items-center no-underline hover:underline"
-              >
+              <LocalizedLink to="/privacy" className={footerLink}>
                 {t('footer.privacy', 'Privacy')}
               </LocalizedLink>
-              <LocalizedLink
-                to="/terms"
-                className="inline-flex min-h-11 items-center no-underline hover:underline"
-              >
+              <LocalizedLink to="/terms" className={footerLink}>
                 {t('footer.terms', 'Terms')}
               </LocalizedLink>
             </nav>
@@ -146,220 +72,98 @@ export function Footer({ variant = 'full' }: FooterProps = {}) {
   }
 
   return (
-    <footer className="mt-auto bg-foreground text-background">
-      {/* FULL-BLEED, deliberately outside the page cap and the gutter. A track
-          runs to the edge of the map or it is not a track — capping it at
-          max-w-page and then insetting it by the gutter left a margin of dead
-          ink on both sides and made the lines read as a decorative graphic
-          dropped into a column rather than as the network the page sits on.
-          Full-bleed bands stay full-bleed; only their CONTENT takes the cap. */}
-      <FooterTracks />
-
-      {/* ── Brand, then the track columns.
-           The brand used to be a 2-wide COLUMN inside the same grid as the six
-           intents, which made an eight-across row: at the 1600 cap each intent
-           got ~180px, so every heading wrapped and the whole band read as a
-           wall. Lifting the brand onto its own line gives the six columns the
-           full measure and costs no vertical space, because the mark and the
-           tagline sit side by side rather than stacked. ─────────────── */}
-      <div className={cn('mx-auto w-full max-w-page pt-8', PAGE_GUTTER)}>
-        {/* Wordmark + tagline. The "Cupid's transit" mark that used to lead
-            this row is retired: the logo is the wordmark alone (Brand
-            Guidelines §03), and §03's clear-space rule — "Nothing sits inside
-            it — no line, no station dot, no badge" — is why the tagline sits
-            beside it rather than tucked against it. */}
-        <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
-          <Wordmark className="text-headline text-background" />
-          <p className="text-15 font-bold leading-snug">
-            {t('footer.tagline', 'Every track. Every station. Everyone.')}
-          </p>
+    <footer className="mt-auto py-4 md:py-8">
+      {/* Share the header's outer geometry, not just its content max-width. */}
+      <div
+        className={cn(
+          'island-capped relative overflow-hidden rounded-panel bg-foreground py-4 text-background md:py-6',
+          PAGE_GUTTER,
+        )}
+      >
+        <div className="flex flex-col gap-x-10 gap-y-0 md:gap-y-4 lg:flex-row lg:items-center lg:justify-between">
+          <LocalizedLink to="/" className={cn(footerLink, 'self-start')} aria-label={siteName}>
+            <Wordmark className="text-title text-background" />
+          </LocalizedLink>
+          <nav
+            aria-label="Footer navigation"
+            className="flex flex-wrap items-center gap-x-4 md:gap-x-6"
+          >
+            {INTENT_NAV.map((intent) => (
+              <LocalizedLink
+                key={intent.to}
+                to={intent.to}
+                data-track={INTENT_TRACK[intent.id] ?? 'pink'}
+                aria-current={isIntentActive(intent, localePath) ? 'page' : undefined}
+                className={cn(
+                  footerLink,
+                  'footer-route-link font-medium text-background/80 hover:text-background hover:no-underline aria-[current=page]:text-background aria-[current=page]:font-bold',
+                )}
+              >
+                <span>{t(intent.labelKey, intent.fallback)}</span>
+                <span className="footer-route-marker" aria-hidden="true" />
+              </LocalizedLink>
+            ))}
+          </nav>
         </div>
 
-        {/* One column per intent, single-sourced from INTENT_NAV (including
-            `children`) so the footer can never drift from the topbar — the
-            defect that once put /venues and /people out of reach of desktop
-            chrome. The columns LINK rather than describe: a subtitle paragraph
-            under a heading is the one thing in a footer nobody clicks. */}
-        <nav
-          // Translated: this was the one nav landmark name in the whole chrome
-          // still hardcoded in English, in an 11-locale product.
-          aria-label={t('footer.navigation', 'Footer navigation')}
-          className="mt-8 grid grid-cols-2 gap-x-6 gap-y-8 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7"
-        >
-          {INTENT_NAV.map((intent) => {
-            const active = isIntentActive(intent, localePath);
-            const track = INTENT_TRACK[intent.id] ?? 'pink';
-            return (
-              <div key={intent.to}>
-                <div className="mb-2 flex items-center gap-2">
-                  <TrackSwatch track={track} tone="ink" />
-                  <LocalizedLink
-                    to={intent.to}
-                    aria-current={active ? 'page' : undefined}
-                    className="inline-flex min-h-11 items-center text-15 font-bold text-background no-underline underline-offset-4 hover:underline"
-                  >
-                    {t(intent.labelKey, intent.fallback)}
-                  </LocalizedLink>
-                </div>
-                <ul>
-                  {intent.children.map((child) => (
-                    <li key={child.to}>
-                      <LocalizedLink
-                        to={child.to}
-                        aria-current={localePath === child.to ? 'page' : undefined}
-                        className="flex min-h-11 items-center text-13 text-background/70 no-underline underline-offset-4 hover:text-background hover:underline"
-                      >
-                        {t(child.labelKey, child.fallback)}
-                      </LocalizedLink>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            );
-          })}
-        </nav>
-      </div>
-
-      {/* ── Safety. Above the legal row on purpose: that is the order of
-           importance, not the order of convention.
-
-           One band, not two. The anti-discrimination copy and the crisis card
-           were separate blocks of near-equal weight — two 32px headlines
-           competing at the foot of the page, which is what made this part read
-           as cluttered. The policy is the quiet half now and the crisis card
-           is the loud one, because only one of them is something a reader
-           might need in the next thirty seconds. ────────────────────────── */}
-      <div className="mt-12">
-        <div
-          className={cn(
-            'mx-auto grid w-full max-w-page items-start gap-8 py-8 md:grid-cols-2',
-            PAGE_GUTTER,
-          )}
-        >
-          <div>
-            {/* Rank 4 is Space Grotesk 700, never Anton.
-                `font-sans` is REQUIRED here and is not decoration: index.css
-                puts the display face on the bare `h2` ELEMENT, unlayered, so
-                this heading rendered in Anton 400 — with `font-bold` a no-op,
-                since Anton ships one weight and `font-synthesis-weight: none`
-                suppresses the fake. The old comment here claimed the opposite
-                ("dropping font-display with it"), and the guard it cited was
-                blind to a face inherited from the tag. The opt-out had to be
-                added to that selector before this class could do anything. */}
-            <h2 className="max-w-md font-sans text-title font-bold leading-tight">
-              {t('footer.antiDiscrimination.title', "We don't do bigotry here.")}
-            </h2>
-            <p className="mt-4 max-w-md text-13 leading-relaxed text-background/70">
-              {t(
-                'footer.antiDiscrimination.body',
-                'Racism, transphobia, and discrimination are automatic grounds for getting booted off the platform. Period.',
-              )}
-            </p>
-            <LocalizedLink
-              to={REPORT_HREF}
-              className="mt-4 inline-flex min-h-11 items-center rounded-element bg-background/15 px-4 py-2 text-xs2 font-bold text-background no-underline transition-colors hover:bg-background hover:text-foreground"
-            >
+        <div className="mt-2 flex flex-col gap-x-8 gap-y-0 border-t border-background/20 py-2 md:mt-4 md:flex-row md:gap-y-2 md:py-4 md:items-center md:justify-between">
+          <p className="text-13 leading-relaxed text-background/80">
+            {t('footer.antiDiscrimination.title', "We don't do bigotry here.")}
+          </p>
+          <div className="flex flex-wrap items-center gap-x-4 md:gap-x-6">
+            <LocalizedLink to={REPORT_HREF} className={footerLink}>
               {t('footer.reportSomething', 'Report something')}
             </LocalizedLink>
-          </div>
-
-          {/* The crisis block is a link, not a card with a link in it: on the
-              one surface where seconds matter the whole box is the target.
-              Its own title says what it is, so the "In an emergency" eyebrow
-              that sat above it was a third heading saying the same thing. */}
-          <LocalizedLink
-            to="/help"
-            className="block rounded-container bg-background/10 p-6 text-background no-underline transition-colors hover:bg-background hover:text-foreground"
-          >
-            <span className="block font-display text-headline leading-tight">
+            <LocalizedLink to="/help" className={footerLink}>
               {t('footer.emergency.title', 'Crisis lines, 24 hours')}
-            </span>
-            <span className="mt-4 block text-13 leading-relaxed">
-              {t(
-                'footer.emergency.body',
-                'Trans helpline, LGBT+ crisis support, and local emergency numbers, listed by country and always one click from any page.',
-              )}
-            </span>
-          </LocalizedLink>
-        </div>
-      </div>
-
-      {/* ── Legal. Spacing, not another rule, keeps this a footnote.
-           Two tiers on purpose. Navigation and locale sit on the first line;
-           the copyright drops to a quieter second line. Inline, it competed
-           with the legal links at the same size and turned the last line into
-           a paragraph. ────────── */}
-      <div>
-        <div
-          className={cn(
-            'mx-auto flex w-full max-w-page flex-wrap items-center gap-x-6 gap-y-2 pt-6',
-            PAGE_GUTTER,
-          )}
-        >
-          {legalLinks.map((link) => (
-            <LocalizedLink
-              key={link.href}
-              to={link.href}
-              aria-current={localePath === link.href ? 'page' : undefined}
-              className="inline-flex min-h-11 items-center text-13 text-background/70 no-underline underline-offset-4 hover:text-background hover:underline"
-            >
-              {t(link.labelKey, link.fallback)}
             </LocalizedLink>
-          ))}
-          {/* The only way back into the consent dialog. It is rendered by
-              CookieConsentBanner, which stops rendering for good once a choice
-              is stored — so before this existed, a visitor who pressed "Accept
-              All" could not withdraw analytics consent from anywhere in the UI.
-              A button, not a link: it opens a dialog rather than navigating. */}
-          <button
-            type="button"
-            onClick={() => window.dispatchEvent(new CustomEvent(OPEN_COOKIE_PREFERENCES_EVENT))}
-            className="inline-flex min-h-11 items-center text-13 text-background/70 underline-offset-4 hover:text-background hover:underline"
-          >
-            {t('footer.cookiePreferences', 'Cookie preferences')}
-          </button>
-          {/* Both switchers are shared components built for a PAPER surface:
-              they render ghost buttons at `text-foreground`, which on this ink
-              plate is ink-on-ink — measured `color: rgb(17,17,17)`, i.e. two
-              ~100px-wide controls that were completely invisible on every
-              page. Recoloured here rather than in the components, which are
-              correct where they are used on paper. */}
-          {/* Hover is an underline, NOT the paper-plate invert it used to be.
-              The invert could never complete: both switcher triggers set an inline
-              `style={{ background: 'transparent' }}` (LanguageSwitcher.tsx,
-              CurrencySelector.tsx) and an inline declaration out-ranks a non-!important
-              class, so the plate stayed ink while the text flipped to `--foreground` —
-              ink on ink in light mode, paper on paper in dark. Reported as "the language
-              and currency links turn black when I hover them". Underlining matches the
-              neighbouring footer links above and needs no !important arms race with the
-              inline style. */}
-          <span className="ms-auto flex flex-wrap items-center gap-2 [&_button]:text-background [&_button:hover]:underline">
-            <LanguageSwitcher />
-            <CurrencySelector />
-            <ThemeToggle />
-          </span>
+          </div>
         </div>
 
-        <div
-          className={cn(
-            'mx-auto flex w-full max-w-page flex-wrap items-center gap-x-4 gap-y-1 pb-8 pt-4',
-            PAGE_GUTTER,
-          )}
+        <div className="border-t border-background/20 pt-2 md:pt-4">
+          <div className="flex flex-col gap-x-8 gap-y-0 md:gap-y-4 xl:flex-row xl:items-start xl:justify-between">
+            <div className="flex flex-wrap items-center gap-x-4 md:gap-x-6">
+              {legalLinks.map((link) => (
+                <LocalizedLink
+                  key={link.href}
+                  to={link.href}
+                  aria-current={localePath === link.href ? 'page' : undefined}
+                  className={cn(footerLink, 'text-background/70 hover:text-background')}
+                >
+                  {t(link.labelKey, link.fallback)}
+                </LocalizedLink>
+              ))}
+              <button
+                type="button"
+                onClick={() => window.dispatchEvent(new CustomEvent(OPEN_COOKIE_PREFERENCES_EVENT))}
+                className={cn(footerLink, 'text-start text-background/70 hover:text-background')}
+              >
+                {t('footer.cookiePreferences', 'Cookie preferences')}
+              </button>
+            </div>
+            {/* Triggers inherit the ink surface; portaled menus keep their own theme. */}
+            <div className="flex shrink-0 flex-wrap items-center gap-2 [&_button]:min-h-11 [&_button]:min-w-11 [&_button]:text-background [&_button:hover]:underline">
+              <LanguageSwitcher />
+              <CurrencySelector />
+              <ThemeToggle />
+            </div>
+          </div>
+          <p className="mt-2 text-2xs md:mt-4 text-background/70">
+            &copy; {currentYear} Queer Guide
+          </p>
+        </div>
+        <svg
+          aria-hidden="true"
+          focusable="false"
+          viewBox="0 0 128 32"
+          fill="none"
+          className="footer-route-drawing pointer-events-none absolute bottom-0 end-6 h-6 w-24 sm:w-32"
         >
-          {/* The spec's bottom row ends on a bare "© 2026". The site name is
-              kept because the footer is the only place it appears as TEXT once
-              the header wordmark became a graphic — dropping it left the page
-              with no machine-readable owner. */}
-          <span className="text-2xs text-background/50">&copy; {currentYear} Queer Guide</span>
-
-          {/* No data-attribution row here. It was removed on 2026-09-04 by an
-              explicit product decision, after being told that this footer was
-              the only public home for the credits ODbL / CC BY / CC BY-SA
-              compel — the /about colophon that also carries them is
-              members-only, so a signed-out reader now sees no credit for the
-              OSM-derived city diagrams on the homepage. `src/lib/attribution.ts`
-              is kept: it still drives the colophon's obligated tier. */}
-        </div>
+          <path className="footer-route-blue" d="M4 26h36C56 26 56 6 72 6h52" />
+          <path className="footer-route-pink" d="M4 26h32c16 0 16-10 32-10h56" />
+          <circle className="footer-route-green" cx="78" cy="16" r="3" />
+          <circle className="footer-route-yellow" cx="110" cy="6" r="3" />
+        </svg>
       </div>
     </footer>
   );

@@ -97,8 +97,8 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-node@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
         with:
           node-version: 22
           cache: npm
@@ -110,7 +110,7 @@ jobs:
         env:
           NODE_OPTIONS: --max-old-space-size=8192
           VITE_BASEMAP_ASSETS_URL: 'https://protomaps-tiles.maeder-tobiassimon.workers.dev/basemaps-assets'
-      - uses: actions/upload-artifact@v7
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
         with:
           name: dist
           path: dist/
@@ -123,8 +123,8 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-node@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
         with:
           # Pinned to match ci.yml's lint job: on newer node 22.x the eslint
           # flat-config loader crashes with ERR_INTERNAL_ASSERTION while
@@ -155,9 +155,9 @@ jobs:
       - name: Skip notice
         if: needs.changes.outputs.relevant != 'true'
         run: echo "::notice::No a11y-relevant paths changed - reporting success without scanning."
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         if: needs.changes.outputs.relevant == 'true'
-      - uses: actions/setup-node@v7
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
         if: needs.changes.outputs.relevant == 'true'
         with:
           node-version: 22
@@ -171,7 +171,7 @@ jobs:
         if: needs.changes.outputs.relevant == 'true'
       - name: Download dist
         if: needs.changes.outputs.relevant == 'true' && needs.build.result == 'success'
-        uses: actions/download-artifact@v8
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8
         with:
           name: dist
           path: dist/
@@ -194,7 +194,7 @@ jobs:
       - run: npx playwright test e2e/a11y-admin.spec.ts e2e/a11y-events.spec.ts e2e/a11y-header.spec.ts e2e/a11y-dialogs.spec.ts e2e/focus-visible.spec.ts --workers=1
         if: needs.changes.outputs.relevant == 'true'
       - if: always() && needs.changes.outputs.relevant == 'true'
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
         # Non-blocking: a failure to STORE the report must not fail a job whose
         # assertions already passed. On 2026-09-08 GitHub's artifact service
         # returned `403 Forbidden: Error from intermediary` on FinalizeArtifact
@@ -249,8 +249,8 @@ jobs:
       SCAN_CONCURRENCY: '4'
       OUT_NAME: axe-postdeploy
     steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-node@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
         with:
           node-version: 22
           cache: npm
@@ -261,7 +261,7 @@ jobs:
       - uses: ./.github/actions/setup-playwright
       - name: Download dist
         if: needs.build.result == 'success'
-        uses: actions/download-artifact@v8
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8
         with:
           name: dist
           path: dist/
@@ -326,7 +326,7 @@ jobs:
             console.log('Clean:',r.scanned,'scans, 0 serious/critical');
           "
       - if: always()
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
         # Non-blocking: a failure to STORE the report must not fail a job whose
         # assertions already passed. On 2026-09-08 GitHub's artifact service
         # returned `403 Forbidden: Error from intermediary` on FinalizeArtifact
@@ -363,8 +363,8 @@ jobs:
       matrix:
         route: ['/', '/events', '/venues', '/places', '/news', '/marketplace', '/trips/discover', '/submit', '/cities', '/hotels', '/personalities', '/help', '/pride']
     steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-node@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
         with: { node-version: 22 }
       # This job deliberately does NOT run `npm install`, so it cannot use the
       # pinned devDependency the other two jobs use — it would cost a full
@@ -375,7 +375,7 @@ jobs:
       - run: npm i -g lighthouse@12 serve@14.2.6
       - name: Download dist
         if: needs.build.result == 'success'
-        uses: actions/download-artifact@v8
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8
         with:
           name: dist
           path: dist/
@@ -438,7 +438,7 @@ jobs:
             exit 1
           fi
       - if: always()
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
         # Non-blocking: a failure to STORE the report must not fail a job whose
         # assertions already passed. On 2026-09-08 GitHub's artifact service
         # returned `403 Forbidden: Error from intermediary` on FinalizeArtifact

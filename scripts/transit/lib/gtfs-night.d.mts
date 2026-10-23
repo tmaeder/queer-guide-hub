@@ -32,3 +32,17 @@ export declare function createNightAccumulator(week: string[]): {
 };
 export declare const SERVICE_GAP_S: number;
 export declare function serviceEnd(times: number[]): { last: number; allNight: boolean };
+export declare function separateNightVariants<
+  T extends {
+    city_id: string;
+    mode: string;
+    route_ref: string;
+    day_class: string;
+    is_night_line: boolean;
+  },
+>(rows: T[]): T[];
+export declare function isLongDistanceRail(
+  routeType: string | number,
+  routeDesc?: string,
+  ref?: string,
+): boolean;

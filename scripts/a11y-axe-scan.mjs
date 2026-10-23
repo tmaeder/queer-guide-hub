@@ -153,6 +153,10 @@ try {
 }
 
 const ROUTES = routesForScope(SCOPE);
+const PIXEL_PNG = Buffer.from(
+  'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=',
+  'base64',
+);
 
 function impactRank(i) {
   return { critical: 4, serious: 3, moderate: 2, minor: 1 }[i] || 0;
@@ -177,6 +181,16 @@ async function scanVariant(browser, route, viewport, theme) {
       localStorage.setItem('ui-theme', t);
     } catch { /* storage may be unavailable */ }
   }, theme);
+  // Stub Supabase Storage image bytes. Every variant is a fresh context with an
+  // empty cache, and PR runs build locally but read prod Supabase, so this scan
+  // re-downloaded ~270 MB of city/village photos per day from Storage (egress
+  // billed). axe reads the <img> element and its alt, never the pixels; a 1x1
+  // PNG keeps every image "loaded" so fallbacks and layout stay unchanged.
+  await context.route('**/storage/v1/object/**', (r) =>
+    r.request().resourceType() === 'image'
+      ? r.fulfill({ status: 200, contentType: 'image/png', body: PIXEL_PNG })
+      : r.continue(),
+  );
 
   const page = await context.newPage();
   const url = `${BASE_URL}${route.path}`;

@@ -109,12 +109,33 @@ console.error = (...a) => console.log(...a)
     // gate would have failed on a healthy directory the moment the shape changed.
     let rows = null
     let countries = null
+    let refreshedAt = null
     try {
       const parsed = JSON.parse(text)
       rows = Array.isArray(parsed?.rows) ? parsed.rows.length : null
       countries = Array.isArray(parsed?.countries) ? parsed.countries.length : null
+      refreshedAt = parsed?.refreshed_at ?? null
     } catch {
       rows = null
+    }
+
+    // Served from a snapshot since 99991792753131 (cron `cities_directory_refresh`,
+    // every 10 min). A dead refresher freezes the directory with no error anywhere, so
+    // staleness is a hard fail. A missing key means the RPC fell back to the live
+    // compute (no snapshot row) — the 3s-timeout path — which also fails.
+    const ageMin = refreshedAt ? (Date.now() - Date.parse(refreshedAt)) / 60000 : null
+    if (ageMin == null || Number.isNaN(ageMin)) {
+      console.error(
+        '✗ cities_directory() carries no refreshed_at — it is not serving the snapshot ' +
+          '(api_private.cities_directory_snapshot empty?), so anon is back on the live 3s-risk path.',
+      )
+      FAILED = true
+    } else if (ageMin > 120) {
+      console.error(
+        `✗ cities_directory snapshot is ${Math.round(ageMin)} min old (refresh is every 10 min). ` +
+          'Check cron job cities_directory_refresh / admin_automations slug cities_directory_refresh.',
+      )
+      FAILED = true
     }
 
     // Reported BEFORE any verdict: zero rows and a 404 and a healthy directory would
@@ -4190,6 +4211,49 @@ const DISOWNED_PROSE_CEILING = 380
         if (stale > 0) {
           console.log(`  note: ${stale} rows are blocked on 'image_unusable' whose image_url is now NULL — a stated reason that outlived what it described`)
         }
+      }
+    }
+  }
+}
+
+// §18b — news staging review queue holds only real decisions.
+//
+// 99991792729790 drained the machine-held part of the queue: empty verdicts are
+// retried (3 attempts) and a verdict blocked only by an unusable image or
+// pending entity links publishes. Both counts are zero by construction; a
+// non-zero value means the staging relaxations or the retry were reverted.
+{
+  const res = await fetch(`${BASE}/rest/v1/rpc/news_staging_review_signals`, {
+    method: 'POST',
+    headers: { ...headers, 'Content-Type': 'application/json' },
+    body: '{}',
+  })
+  if (res.status === 404) {
+    console.warn('⚠ news_staging_review_signals not deployed yet (migration 99991792729790) — skipped')
+  } else if (!res.ok) {
+    console.error(`✗ news_staging_review_signals → HTTP ${res.status} ${(await res.text()).slice(0, 200)}`)
+    FAILED = true
+  } else {
+    const q = (await res.json()) ?? {}
+    if (q.probe_ok !== true) {
+      console.error('✗ news_staging_review_signals did not report probe_ok')
+      FAILED = true
+    } else {
+      const empty = Number(q.empty_held_under_cap ?? 0)
+      const relax = Number(q.relaxable_held ?? 0)
+      if (empty > 0) {
+        console.error(`✗ ${empty} empty news verdicts are held for a human before their 3 retries`)
+        FAILED = true
+      }
+      if (relax > 0) {
+        console.error(`✗ ${relax} news rows are held only by image_unusable / entity_links_pending_review`)
+        FAILED = true
+      }
+      if (Number(q.no_verdict_older_7d ?? 0) > 0) {
+        console.warn(`⚠ ${q.no_verdict_older_7d} news staging rows older than 7 days still have no verdict (quality call too slow?)`)
+      }
+      if (empty === 0 && relax === 0) {
+        console.log(`✓ news review queue holds decisions only (${q.held_total} held: ${q.judged_awaiting_human} judged, ${q.no_verdict} awaiting a verdict)`)
       }
     }
   }

@@ -28,7 +28,7 @@ on:
 
 concurrency:
   group: deploy-mirrors
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 env:
   NODE_VERSION: '22'
@@ -42,9 +42,9 @@ jobs:
       github.event_name == 'workflow_dispatch' ||
       github.event.workflow_run.conclusion == 'success'
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
-      - uses: actions/setup-node@v7
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: npm
@@ -69,7 +69,7 @@ jobs:
         run: npm run prerender
 
       - name: Upload static artifact
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
         with:
           name: dist-static
           path: dist-static/
@@ -84,7 +84,7 @@ jobs:
       github.event_name == 'workflow_dispatch' && inputs.deploy_infomaniak ||
       github.event_name == 'workflow_run'
     steps:
-      - uses: actions/download-artifact@v8
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8
         with:
           name: dist-static
           path: dist-static/
@@ -118,7 +118,7 @@ jobs:
       github.event_name == 'workflow_dispatch' && inputs.deploy_vps ||
       github.event_name == 'workflow_run'
     steps:
-      - uses: actions/download-artifact@v8
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8
         with:
           name: dist-static
           path: dist-static/
@@ -157,7 +157,7 @@ jobs:
       github.event_name == 'workflow_dispatch' && inputs.deploy_ipfs ||
       github.event_name == 'workflow_run'
     steps:
-      - uses: actions/download-artifact@v8
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8
         with:
           name: dist-static
           path: dist-static/

@@ -3,7 +3,9 @@
 # One read of production per night replaces the per-PR browser traffic that
 # e2e runs used to send to the live backend (53% of API reads, 2026-10-21).
 # The snapshot holds the schema plus rows the anon role can read, so nothing
-# in it is more private than queer.guide itself. It is still ENCRYPTED: this
+# in the public data is more private than queer.guide itself. Four static review
+# registries are also copied, matching main; private queue records are excluded.
+# It is still ENCRYPTED: this
 # repo is public, and a fork PR's workflow can restore caches from main.
 # Fork PRs get no secrets, so they cannot decrypt it.
 name: DB snapshot
@@ -12,9 +14,17 @@ on:
   schedule:
     - cron: '20 2 * * *'
   workflow_dispatch: {}
-  # e2e-local.yml calls this first on PRs that change the snapshot machinery, so
-  # the e2e job tests the change rather than last night's main snapshot.
-  workflow_call: {}
+  # Reusable prerequisite (no caller since e2e-local.yml folded into e2e-pr.yml).
+  workflow_call:
+    secrets:
+      SUPABASE_DB_URL:
+        required: true
+      DB_SNAPSHOT_KEY:
+        required: true
+    outputs:
+      cache_key:
+        description: Compatible encrypted snapshot selected or produced before E2E
+        value: ${{ jobs.snapshot.outputs.cache_key }}
 
 concurrency:
   group: db-snapshot-${{ github.ref }}
@@ -25,18 +35,43 @@ permissions:
 
 jobs:
   snapshot:
+    outputs:
+      cache_key: ${{ steps.cached.outputs.cache-matched-key || steps.key.outputs.cache_key }}
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v7
-      - uses: supabase/setup-cli@v3
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - name: Check snapshot fixture coverage and safety
+        run: node --test scripts/ci/snapshot-fixtures.test.mjs
+      - name: Select versioned daily snapshot
+        id: key
+        env:
+          REFRESH: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}
+        run: |
+          key=$(node scripts/ci/snapshot-fixtures.mjs cache-key)
+          if [ "$REFRESH" = "true" ]; then
+            key="$key-${{ github.run_id }}-${{ github.run_attempt }}"
+          fi
+          { echo "cache_key=$key"; echo "refresh=$REFRESH"; } >> "$GITHUB_OUTPUT"
+      - name: Reuse a compatible encrypted snapshot
+        id: cached
+        if: steps.key.outputs.refresh != 'true'
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: db-snapshot.tgz.enc
+          key: ${{ steps.key.outputs.cache_key }}
+          restore-keys: ${{ steps.key.outputs.cache_key }}-
+      - if: steps.cached.outputs.cache-matched-key == ''
+        uses: supabase/setup-cli@45a513f8c64c0bc8e0e3dfe572b5c95be85f6359 # v3
         with:
           version: 2.98.2
-      - name: Dump schema and anon-readable data
+      - name: Dump schema, public data, and static registries
+        if: steps.cached.outputs.cache-matched-key == ''
         env:
           DB_URL: ${{ secrets.SUPABASE_DB_URL }}
         run: scripts/ci/db-snapshot.sh dump "$DB_URL" snapshot
       - name: Pack and encrypt
+        if: steps.cached.outputs.cache-matched-key == ''
         env:
           KEY: ${{ secrets.DB_SNAPSHOT_KEY }}
         run: |
@@ -44,7 +79,8 @@ jobs:
           ls -lh db-snapshot.tgz.enc
           { echo "## DB snapshot"; echo; echo "- size: $(du -h db-snapshot.tgz.enc | cut -f1)";
             echo "- tables: $(wc -l < snapshot/manifest.txt)"; echo "- migrations: $(wc -l < snapshot/versions.txt)"; } >> "$GITHUB_STEP_SUMMARY"
-      - uses: actions/cache/save@v4
+      - if: steps.cached.outputs.cache-matched-key == ''
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: db-snapshot.tgz.enc
-          key: db-snapshot-${{ github.run_id }}
+          key: ${{ steps.key.outputs.cache_key }}

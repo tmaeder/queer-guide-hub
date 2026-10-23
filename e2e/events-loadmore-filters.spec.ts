@@ -40,7 +40,10 @@ type Query = { url: string; city: string | null; offset: string | null };
 
 /** The city predicate, or null when the query carried none — the defect. */
 function cityPredicate(url: string): string | null {
-  const m = decodeURIComponent(url).match(/or=\(city\.ilike\.[^)]*\)/);
+  // postgrest-js builds the URL with URLSearchParams, which encodes a space
+  // as "+" — and decodeURIComponent leaves "+" alone, so "New York" never
+  // matched and the candidate loop failed there.
+  const m = decodeURIComponent(url.replace(/\+/g, ' ')).match(/or=\(city\.ilike\.[^)]*\)/);
   return m ? m[0] : null;
 }
 
@@ -90,7 +93,16 @@ test.describe('/events Load more', () => {
         .poll(() => queries.filter((q) => q.city?.includes(candidate)).length, { timeout: 45_000 })
         .toBeGreaterThan(0);
 
-      if (await page.getByRole('button', { name: /load more/i }).isVisible()) {
+      // isVisible() does not wait: the request above lands before the grid
+      // and its Load more render, so every city read as "one page only".
+      const hasMore = await page
+        .getByRole('button', { name: /load more/i })
+        .waitFor({ state: 'visible', timeout: 15_000 })
+        .then(
+          () => true,
+          () => false,
+        );
+      if (hasMore) {
         city = candidate;
         break;
       }
@@ -105,22 +117,27 @@ test.describe('/events Load more', () => {
         `${PAGE_SIZE} upcoming events, so this spec can no longer reach page 2`,
     ).not.toBeNull();
 
-    const pageOne = queries.filter((q) => q.city?.includes(city!)).at(-1)!;
+    const pageOne = queries.find((q) => q.offset === '0' && q.city?.includes(city!));
+    expect(pageOne, 'no offset=0 city-scoped page 1 query was seen').toBeTruthy();
     const before = queries.length;
 
     await page.getByRole('button', { name: /load more/i }).click();
-    await expect.poll(() => queries.length, { timeout: 45_000 }).toBeGreaterThan(before);
+    await expect
+      .poll(() => queries.slice(before).filter((q) => Number(q.offset) > 0).length, {
+        timeout: 45_000,
+      })
+      .toBeGreaterThan(0);
 
-    const pageTwo = queries.slice(before).find((q) => q.offset === String(PAGE_SIZE));
-    expect(
-      pageTwo,
-      `Load more issued no offset=${PAGE_SIZE} query; saw ` +
-        JSON.stringify(queries.slice(before).map((q) => q.url)),
-    ).toBeTruthy();
-
-    // The property, not a pinned string: whatever page 1 constrained, page 2
-    // must constrain identically. Appending rows from a different query is the
-    // defect, and `null` here is exactly the shape the bug produced.
-    expect(pageTwo!.city, `page 2 dropped the ${city} filter`).toBe(pageOne.city);
+    // LoadMore's sentinel auto-loads up to two pages before the button is the
+    // only trigger (autoLoadLimit=2), so page 2 is usually already in flight by
+    // the time the button shows, and the click asks for offset 72, not 24.
+    // Every appended page — auto-loaded or clicked — must constrain exactly as
+    // page 1 did. Appending rows from a different query is the defect, and
+    // `null` is exactly the shape the bug produced.
+    const appended = queries.filter((q) => Number(q.offset) >= PAGE_SIZE);
+    expect(appended.length, 'no appended page query was seen').toBeGreaterThan(0);
+    for (const q of appended) {
+      expect(q.city, `offset=${q.offset} dropped the ${city} filter: ${q.url}`).toBe(pageOne!.city);
+    }
   });
 });

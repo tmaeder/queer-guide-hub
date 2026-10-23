@@ -254,6 +254,49 @@ function ContentListPanelBody(props: ContentListPanelProps) {
   // The controller can return undefined (no type selected); the views model
   // "no config" as null, so normalize once here rather than at each call site.
   const config = c.config ?? null;
+  // One definition for both headers (the standard one and the workspace one),
+  // so a list can never lose its exports by rendering the other header. The
+  // file matches what the list shows: same filters, search and archived/merged
+  // slice, every page.
+  const exportButtons =
+    config &&
+    (['Excel', 'CSV'] as const).map((format) => (
+      <ExportExcelButton
+        key={format}
+        format={format}
+        onExport={() =>
+          exportContentType(config, c.allListColumns, format, {
+            filters: c.filters,
+            search: c.debouncedSearch,
+            archivedView: c.archivedView,
+            mergedView: c.mergedView,
+          })
+        }
+      />
+    ));
+
+  // The standard header's tools menu (refresh, type actions, exports). A page
+  // that hides the header to own its title without using the workspace header
+  // (Milestones) still renders this menu, or it would lose its exports.
+  const contentTools = (
+    <AdminToolsPopover label="Content tools">
+      <Button
+        // A Tooltip is NOT an accessible name: its content lives in
+        // a portal and is never referenced by the trigger, so an
+        // icon-only button reads as unlabelled (axe button-name).
+        aria-label="Refresh"
+        variant="ghost"
+        size="sm"
+        className="min-h-10 justify-start gap-2"
+        onClick={() => c.loadItems()}
+      >
+        <RefreshCw size={16} aria-hidden="true" /> Refresh records
+      </Button>
+
+      {c.config?.toolbarActions?.()}
+      {exportButtons}
+    </AdminToolsPopover>
+  );
 
   const viewBar = c.contentTypeId ? (
     <ViewBar
@@ -320,6 +363,7 @@ function ContentListPanelBody(props: ContentListPanelProps) {
               )}
               {props.tools}
               {config.toolbarActions?.()}
+              {exportButtons}
             </AdminToolsPopover>
             <Button size="sm" onClick={() => c.onCreate(config.id)}>
               <Plus size={16} className="mr-1.5" />
@@ -344,6 +388,9 @@ function ContentListPanelBody(props: ContentListPanelProps) {
             Retry
           </Button>
         </div>
+      )}
+      {props.hideHeader && !props.workspace && (
+        <div className="mb-4 flex justify-end">{contentTools}</div>
       )}
       {!props.hideHeader && (
         <AdminArchetypeHeader
@@ -375,35 +422,7 @@ function ContentListPanelBody(props: ContentListPanelProps) {
           }
           actions={
             <>
-              <AdminToolsPopover label="Content tools">
-                <Button
-                  // A Tooltip is NOT an accessible name: its content lives in
-                  // a portal and is never referenced by the trigger, so an
-                  // icon-only button reads as unlabelled (axe button-name).
-                  aria-label="Refresh"
-                  variant="ghost"
-                  size="sm"
-                  className="min-h-10 justify-start gap-2"
-                  onClick={() => c.loadItems()}
-                >
-                  <RefreshCw size={16} aria-hidden="true" /> Refresh records
-                </Button>
-
-                {c.config?.toolbarActions?.()}
-                {c.config && c.allListColumns.length > 0 && (
-                  <>
-                    <ExportExcelButton
-                      onExport={() => exportContentType(c.config!, c.allListColumns)}
-                    />
-                    {c.config.id === 'unified_tags' && (
-                      <ExportExcelButton
-                        format="CSV"
-                        onExport={() => exportContentType(c.config!, c.allListColumns, 'CSV')}
-                      />
-                    )}
-                  </>
-                )}
-              </AdminToolsPopover>
+              {contentTools}
               {c.config && (
                 <Button size="sm" onClick={() => c.onCreate(c.config!.id)}>
                   <Plus size={16} className="mr-1" />

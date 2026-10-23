@@ -10,7 +10,7 @@ describe('TagFlagRailCard', () => {
     // silently swaps the full band for the rail card or vice versa.
     renderWithProviders(<TagFlagRailCard tagSlug="bear" />);
 
-    const link = screen.getByRole('link', { name: 'Bear Brotherhood Flag' });
+    const link = screen.getByRole('link', { name: 'Bear Brotherhood Flag 1995' });
     expect(link).toHaveAttribute('href', '/tags/bear-brotherhood-flag');
     expect(screen.getByText('1995')).toBeInTheDocument();
 
