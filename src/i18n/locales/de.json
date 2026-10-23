@@ -3442,7 +3442,39 @@
       "aVenue": "Ort"
     },
     "matchTag": "Match",
-    "openAlerts": "[DE] All notifications"
+    "openAlerts": "[DE] All notifications",
+    "mail": {
+      "delivery": {
+        "label": "Zustellung: {{status}}",
+        "loading": "Zustellstatus wird geprüft…",
+        "refresh": "Status aktualisieren",
+        "refreshing": "Wird aktualisiert…",
+        "error": "Der Zustellstatus konnte nicht aktualisiert werden.",
+        "lastKnown": "Zuletzt bestätigter Status: {{status}}",
+        "unavailable": "Zustellstatus nicht verfügbar",
+        "unproved": "Für diese Nachricht liegt keine bestätigte Zustellinformation vor.",
+        "states": {
+          "queued": "In Warteschlange",
+          "processing": "Wird übermittelt",
+          "accepted": "Übermittelt",
+          "deferred": "Verzögert",
+          "uncertain": "Bestätigung ausstehend",
+          "delivered": "Zugestellt",
+          "failed": "Fehlgeschlagen",
+          "bounced": "Abgelehnt",
+          "suppressed": "Versand gestoppt",
+          "complained": "Spam-Beschwerde"
+        },
+        "help": {
+          "accepted": "Die Zustellung ist noch nicht bestätigt.",
+          "uncertain": "Die Bestätigung steht aus. Prüfe den Status, bevor du eine weitere Kopie sendest.",
+          "delivered": "Der Mailserver des Empfängers hat die Nachricht angenommen. Die Ablage im Posteingang ist nicht bestätigt."
+        }
+      },
+      "scope": "Empfangene und gesendete E-Mails",
+      "sent": "Gesendet",
+      "loadError": "Nachrichten konnten nicht geladen werden. Bitte versuche es erneut."
+    }
   },
   "extension": {
     "signInGate": {

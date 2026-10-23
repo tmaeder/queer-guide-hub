@@ -70,6 +70,10 @@ export type TripFacet =
   | 'shares';
 
 export const qk = {
+  mailbox: {
+    delivery: (ownerId: Id, emailId: Id) =>
+      ['mailbox', id(ownerId), 'delivery', id(emailId)] as const,
+  },
   trip: {
     /** Every trip query, list and detail alike. The nuclear option. */
     all: () => [TRIP] as const,

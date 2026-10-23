@@ -15,6 +15,23 @@ interface Dependencies {
   dispatch?: typeof dispatchEmail;
 }
 const uuid = /^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i;
+const deliveryStates = new Set([
+  "queued",
+  "processing",
+  "accepted",
+  "deferred",
+  "uncertain",
+  "delivered",
+  "failed",
+  "bounced",
+  "suppressed",
+  "complained",
+]);
+function privateResponse(body: unknown, status: number, req: Request) {
+  const response = jsonResponse(body, status, req);
+  response.headers.set("Cache-Control", "no-store");
+  return response;
+}
 async function readBody(req: Request): Promise<Record<string, unknown>> {
   const reader = req.body?.getReader();
   if (!reader) throw new Error("invalid_message");
@@ -43,13 +60,13 @@ async function readBody(req: Request): Promise<Record<string, unknown>> {
   return body;
 }
 
-/** Persist first; every retry and provider submission uses that same identity. */
+/** Reads never send; every submission persists before crossing the provider boundary. */
 export async function handleMailboxSend(
   req: Request,
   dependencies?: Dependencies,
 ): Promise<Response> {
   if (req.method === "OPTIONS") return corsResponse(req);
-  if (req.method !== "POST") {
+  if (req.method !== "POST" && req.method !== "GET") {
     return jsonResponse({ error: "Method not allowed" }, 405, req);
   }
   const token = /^Bearer (.+)$/i.exec(req.headers.get("Authorization") ?? "")
@@ -60,6 +77,65 @@ export async function handleMailboxSend(
     const { data, error } = await db.auth.getUser(token);
     if (error || !data.user) {
       return jsonResponse({ error: "Unauthorized" }, 401, req);
+    }
+    if (req.method === "GET") {
+      const params = new URL(req.url).searchParams;
+      const emailId = params.get("email_id")?.toLowerCase();
+      if (
+        !emailId || !uuid.test(emailId) ||
+        params.getAll("email_id").length !== 1 ||
+        [...params.keys()].some((key) => key !== "email_id")
+      ) {
+        return privateResponse(
+          { error: "Invalid message reference." },
+          400,
+          req,
+        );
+      }
+      // Private proof binds the visible copy to the authenticated sender. Legacy
+      // mailbox.status values alone cannot establish that a message was delivered.
+      const source = await db.from("email_mailbox_sends")
+        .select("request_id")
+        .eq("owner_id", data.user.id)
+        .eq("mailbox_email_id", emailId)
+        .maybeSingle();
+      if (source.error) {
+        return privateResponse(
+          { error: "Delivery status could not be read." },
+          503,
+          req,
+        );
+      }
+      if (!source.data) {
+        return privateResponse({ delivery_status: null }, 200, req);
+      }
+      const receipt = await db.rpc("email_mailbox_status", {
+        p_user: data.user.id,
+        p_request: source.data.request_id,
+      });
+      if (receipt.error) {
+        return privateResponse(
+          { error: "Delivery status could not be read." },
+          receipt.error.message === "operator_account_disabled" ? 403 : 503,
+          req,
+        );
+      }
+      // Erasure/copy removal can race the two reads; reveal no stale identity.
+      if (!receipt.data || receipt.data.email_id !== emailId) {
+        return privateResponse({ delivery_status: null }, 200, req);
+      }
+      if (!deliveryStates.has(receipt.data.status)) {
+        return privateResponse(
+          { error: "Delivery status could not be read." },
+          503,
+          req,
+        );
+      }
+      return privateResponse(
+        { delivery_status: receipt.data.status },
+        200,
+        req,
+      );
     }
     if (!(dependencies?.configured ?? isEmailConfigured)()) {
       return jsonResponse({ error: "Email service not configured" }, 503, req);
@@ -181,6 +257,13 @@ export async function handleMailboxSend(
     response.headers.set("Cache-Control", "no-store");
     return response;
   } catch (error) {
+    if (req.method === "GET") {
+      return privateResponse(
+        { error: "Delivery status could not be read." },
+        503,
+        req,
+      );
+    }
     const large = error instanceof Error &&
       error.message === "message_too_large";
     const invalid = error instanceof SyntaxError ||
