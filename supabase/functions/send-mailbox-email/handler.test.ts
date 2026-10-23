@@ -141,3 +141,137 @@ Deno.test("terminal failure is retained without resending and oversized bodies a
   );
   assertEquals(oversized.calls.length, 0);
 });
+
+const copyId = "88888888-0000-4000-8000-000000000030";
+function readFixture(
+  options: {
+    source?: boolean;
+    status?: string;
+    error?: string;
+    removed?: boolean;
+  } = {},
+) {
+  const filters: [string, unknown][] = [];
+  const calls: { name: string; args: Record<string, unknown> }[] = [];
+  const chain = {
+    select: (columns: string) => {
+      assertEquals(columns, "request_id");
+      return chain;
+    },
+    eq: (column: string, value: unknown) => {
+      filters.push([column, value]);
+      return chain;
+    },
+    maybeSingle: () =>
+      Promise.resolve({
+        data: options.source === false ? null : { request_id: requestId },
+        error: null,
+      }),
+  };
+  const db = {
+    auth: {
+      getUser: () =>
+        Promise.resolve({ data: { user: { id: actor } }, error: null }),
+    },
+    from: (table: string) => {
+      assertEquals(table, "email_mailbox_sends");
+      return chain;
+    },
+    rpc: (name: string, args: Record<string, unknown>) => {
+      calls.push({ name, args });
+      assertEquals(name, "email_mailbox_status");
+      return Promise.resolve({
+        data: options.removed ? null : {
+          email_id: copyId,
+          status: options.status ?? "accepted",
+          provider_id: "private-provider",
+          outbox_id: "private-outbox",
+        },
+        error: options.error ? { message: options.error } : null,
+      });
+    },
+  } as unknown as Dependencies["db"];
+  return {
+    filters,
+    calls,
+    deps: {
+      db,
+      configured: () => {
+        throw new Error("Reads must not inspect transport");
+      },
+      dispatch: () => {
+        throw new Error("Reads must never dispatch");
+      },
+    } as Dependencies,
+  };
+}
+function readRequest(query = `email_id=${copyId}`) {
+  return new Request(`https://fixture.invalid?${query}`, {
+    headers: { Authorization: "Bearer fixture-auth" },
+  });
+}
+Deno.test("mailbox receipt GET is owner-bound, private, minimal and cannot send", async () => {
+  const f = readFixture();
+  const response = await handleMailboxSend(readRequest(), f.deps);
+  assertEquals(response.status, 200);
+  assertEquals(response.headers.get("Cache-Control"), "no-store");
+  assertEquals(await response.json(), { delivery_status: "accepted" });
+  assertEquals(f.filters, [["owner_id", actor], ["mailbox_email_id", copyId]]);
+  assertEquals(f.calls, [{
+    name: "email_mailbox_status",
+    args: { p_user: actor, p_request: requestId },
+  }]);
+});
+Deno.test("receipt GET rejects missing, duplicate or caller-authored ownership parameters before reads", async () => {
+  for (
+    const query of [
+      "",
+      "email_id=invalid",
+      `email_id=${copyId}&owner_id=${actor}`,
+      `email_id=${copyId}&email_id=${copyId}`,
+    ]
+  ) {
+    const f = readFixture();
+    assertEquals(
+      (await handleMailboxSend(readRequest(query), f.deps)).status,
+      400,
+    );
+    assertEquals(f.filters, []);
+    assertEquals(f.calls, []);
+  }
+  const f = readFixture();
+  assertEquals(
+    (await handleMailboxSend(
+      new Request(`https://fixture.invalid?email_id=${copyId}`),
+      f.deps,
+    )).status,
+    401,
+  );
+  assertEquals(f.filters, []);
+});
+Deno.test("foreign, legacy, deleted and erased copies reveal no receipt identity", async () => {
+  for (const options of [{ source: false }, { removed: true }]) {
+    const f = readFixture(options);
+    const response = await handleMailboxSend(readRequest(), f.deps);
+    assertEquals(await response.json(), { delivery_status: null });
+    assertEquals(f.calls.length, options.source === false ? 0 : 1);
+  }
+});
+Deno.test("receipt GET rejects disabled owners and unknown provider states without a delivery claim", async () => {
+  for (
+    const options of [{ error: "operator_account_disabled" }, {
+      status: "sent",
+    }, { error: "internal details must not escape" }]
+  ) {
+    const f = readFixture(options);
+    const response = await handleMailboxSend(readRequest(), f.deps);
+    assertEquals(
+      response.status,
+      options.error === "operator_account_disabled" ? 403 : 503,
+    );
+    assertEquals(await response.json(), {
+      error: "Delivery status could not be read.",
+    });
+    assertEquals(f.calls.length, 1);
+  }
+});

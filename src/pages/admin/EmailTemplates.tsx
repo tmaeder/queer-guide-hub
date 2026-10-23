@@ -94,7 +94,7 @@ export default function EmailTemplates() {
   const [mobile, setMobile] = useState(false);
   const [samples, setSamples] = useState<Record<string, string>>({});
   const [testDialog, setTestDialog] = useState(false);
-  const [recipient, setRecipient] = useState('');
+  const recipient = user?.email?.trim() ?? '';
   const [sending, setSending] = useState(false);
   const [testError, setTestError] = useState<string | null>(null);
   const [pendingAction, setPendingAction] = useState<(() => void) | null>(null);
@@ -285,7 +285,7 @@ export default function EmailTemplates() {
   const missingSamples = testVariables.filter((name) => !samples[name]?.trim());
   const sendTest = async (event: React.FormEvent) => {
     event.preventDefault();
-    if (!selected || dirty || missingSamples.length || sending) return;
+    if (!selected || dirty || !recipient || missingSamples.length || sending) return;
     setSending(true);
     setTestError(null);
     try {
@@ -298,13 +298,10 @@ export default function EmailTemplates() {
         },
       });
       if (error) throw error;
-      toast.success('Test email sent', { description: `Sent to ${recipient.trim()}` });
+      toast.success('Test email accepted', { description: `Queued for delivery to ${recipient}` });
       setTestDialog(false);
-      setRecipient('');
     } catch {
-      setTestError(
-        'Could not send the test email. Use your verified admin email address and try again.',
-      );
+      setTestError('Could not submit the test email. Your sample values are preserved. Try again.');
     } finally {
       setSending(false);
     }
@@ -810,10 +807,14 @@ export default function EmailTemplates() {
                 type="email"
                 required
                 value={recipient}
+                readOnly
                 disabled={sending}
-                onChange={(event) => setRecipient(event.target.value)}
-                placeholder="test@example.com"
+                aria-describedby="test-recipient-help"
               />
+              <p id="test-recipient-help" className="text-sm text-muted-foreground">
+                Tests go to your verified admin email address. Use the Email workspace for
+                production sends.
+              </p>
             </div>
             {sampleFields(testVariables, 'test')}
             {!!missingSamples.length && (

@@ -5,15 +5,17 @@ import { Reply, Trash2, Archive, Download } from 'lucide-react';
 import { format } from 'date-fns';
 import DOMPurify from 'dompurify';
 import type { MailboxEmail } from '@/hooks/useMailbox';
+import { EmailDeliveryStatus, type EmailDeliveryState } from './EmailDeliveryStatus';
 
 interface EmailViewProps {
   email: MailboxEmail;
   onReply?: (email: MailboxEmail) => void;
   onDelete?: (id: string) => void;
   onArchive?: (id: string) => void;
+  delivery?: EmailDeliveryState;
 }
 
-export const EmailView = ({ email, onReply, onDelete, onArchive }: EmailViewProps) => {
+export const EmailView = ({ email, onReply, onDelete, onArchive, delivery }: EmailViewProps) => {
   const sanitizedHtml = email.body_html
     ? DOMPurify.sanitize(email.body_html, {
         ALLOWED_TAGS: [
@@ -57,9 +59,9 @@ export const EmailView = ({ email, onReply, onDelete, onArchive }: EmailViewProp
   return (
     <Card className="overflow-hidden">
       <div className="p-6 pb-4">
-        <h6 className="text-base font-bold mb-2">{email.subject}</h6>
+        <h6 className="text-base font-bold mb-2 break-words">{email.subject}</h6>
         <div className="flex justify-between items-start flex-wrap gap-2">
-          <div>
+          <div className="min-w-0 break-words">
             <p className="text-sm font-semibold">
               {email.from_name || email.from_address}
             </p>
@@ -76,6 +78,9 @@ export const EmailView = ({ email, onReply, onDelete, onArchive }: EmailViewProp
             {format(new Date(email.email_date), 'PPp')}
           </span>
         </div>
+        {delivery && email.direction === 'outbound' && email.status !== 'draft' && (
+          <EmailDeliveryStatus {...delivery} />
+        )}
       </div>
 
       <div className="px-6 pb-4 flex gap-2 flex-wrap">
