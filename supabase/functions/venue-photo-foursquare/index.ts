@@ -1,41 +1,18 @@
-// Source REAL venue photos from the Foursquare 2025 Places API, coords-validated (radius=400m
-// → match is the venue at that location). Writes venues.images[]. Resumable: keyset by id via
-// `after` (driver passes back `last`). REQUIRES Foursquare account credits (429 = out of credits).
-import { getServiceClient, getCorsHeaders, corsResponse } from '../_shared/supabase-client.ts'
-const json = (b: unknown, s = 200) => new Response(JSON.stringify(b), { status: s, headers: { ...getCorsHeaders(), 'Content-Type': 'application/json' } })
+// Retired bulk writer: its first nearby search hit did not establish identity,
+// its 400px photos failed cover quality, and requesting Premium photos bypassed
+// the Pro free-tier budget. Keep an explicit terminal response for old drivers.
+import { getServiceClient, getCorsHeaders, corsResponse, requireAdmin } from '../_shared/supabase-client.ts'
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return corsResponse(req)
-  try {
-    const { batch_size = 20, after = '00000000-0000-0000-0000-000000000000' } = await req.json().catch(() => ({}))
-    const fsq = Deno.env.get('FOURSQUARE_API_KEY')
-    if (!fsq) return json({ error: 'FOURSQUARE_API_KEY not set' }, 500)
-    const sb = getServiceClient()
-    const { data: rows, error } = await sb.from('venues').select('id,name,latitude,longitude')
-      .is('duplicate_of_id', null).not('latitude', 'is', null).or('images.is.null')
-      .gt('id', after).order('id', { ascending: true }).limit(batch_size)
-    if (error) return json({ error: error.message }, 500)
-    if (!rows?.length) return json({ done: true, processed: 0, found: 0, last: after })
-    let found = 0, last = after, nocredits = 0
-    for (const v of rows) {
-      last = v.id
-      try {
-        if (!v.name || v.latitude == null) continue
-        const url = `https://places-api.foursquare.com/places/search?query=${encodeURIComponent(v.name)}&ll=${v.latitude},${v.longitude}&radius=400&limit=1&fields=fsq_place_id,name,photos`
-        const r = await fetch(url, { headers: { Authorization: `Bearer ${fsq}`, 'X-Places-Api-Version': '2025-06-17', Accept: 'application/json' } })
-        if (r.status === 429) { nocredits++; continue }
-        if (!r.ok) continue
-        const j = await r.json()
-        const place = j.results?.[0]
-        if (!place?.photos?.length) continue
-        const p = place.photos[0]
-        await sb.from('venues').update({ images: [`${p.prefix}400x400${p.suffix}`], updated_at: new Date().toISOString() }).eq('id', v.id)
-        found++
-      } catch { /* skip */ }
-    }
-    return json({ processed: rows.length, found, last, nocredits })
-  } catch (e) {
-    console.error('venue-photo-foursquare error', e)
-    return json({ error: 'internal error' }, 500)
-  }
+  const headers = { ...getCorsHeaders(req), 'Content-Type': 'application/json' }
+  if (req.method !== 'POST') return new Response(JSON.stringify({ error: 'Method not allowed' }), {
+    status: 405, headers: { ...headers, Allow: 'POST, OPTIONS' },
+  })
+  const auth = await requireAdmin(req, getServiceClient())
+  if (auth instanceof Response) return auth
+  return new Response(JSON.stringify({
+    error: 'Unsafe Foursquare photo backfill retired; use the ordinary venue image enrichment and audit workers.',
+    code: 'photo_backfill_retired', done: true, processed: 0, found: 0,
+  }), { status: 410, headers })
 })
