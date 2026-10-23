@@ -2,7 +2,7 @@
 # Build or load the CI database snapshot.
 #
 #   db-snapshot.sh dump <prod-db-url> <out-dir>   (nightly, main only)
-#   db-snapshot.sh load <local-db-url> <in-dir>   (every e2e-local run)
+#   db-snapshot.sh load <local-db-url> <in-dir>   (Critical paths, e2e-pr.yml)
 #
 # The snapshot is the production SCHEMA plus a DATA SUBSET read as the `anon`
 # role, so RLS decides what is copied: it holds only rows an anonymous visitor

@@ -1,5 +1,5 @@
 -- Synthetic admin data for the Critical paths specs run against the local
--- snapshot DB (e2e-local.yml). The snapshot copies only anon-readable rows, so
+-- snapshot DB (Critical paths, e2e-pr.yml). The snapshot copies only anon-readable rows, so
 -- every admin queue and the archived slice would otherwise be empty, and the
 -- specs that refuse to pass vacuously (admin-inbox-renders,
 -- admin-archived-lifecycle) fail. Nothing here comes from production.

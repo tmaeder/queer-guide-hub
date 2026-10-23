@@ -52,9 +52,12 @@ Do not spend time making the full replay work. Use the snapshot.
 It is encrypted with the `DB_SNAPSHOT_KEY` secret (the repo is public and
 fork PRs can restore caches) and stored in the Actions cache.
 
-`.github/workflows/e2e-local.yml` restores it into a local Supabase, applies
-only the PR's new migrations (versions not in production), seeds an admin
-user, and runs the Critical paths specs against it.
+The required **Critical paths** check (`.github/workflows/e2e-pr.yml`) restores
+it into a local Supabase, applies only the PR's new migrations (versions not in
+production), seeds an admin user plus synthetic admin rows
+(`scripts/ci/e2e-seed.sql`), and runs the specs against it. A PR that changes
+the snapshot scripts dumps a fresh snapshot inline instead. PRs without
+secrets (forks, Dependabot) fall back to the production backend.
 
 ## Rules
 
