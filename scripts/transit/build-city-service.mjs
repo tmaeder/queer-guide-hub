@@ -29,13 +29,64 @@ import {
 } from './lib/gtfs-night.mjs';
 
 export const FEED_KEY = 'ch-opentransportdata-gtfs';
+// A stop belongs to a city when its name carries the Swiss municipality prefix AND it
+// lies in a ~7 x 7 km box around the centre. Prefixes measured on the 2026 feed.
+const box = (lat, lng) => [lat - 0.06, lng - 0.09, lat + 0.06, lng + 0.09];
 export const CITIES = [
   {
     slug: 'zuerich',
     city_id: '35d1d772-8ce7-4c05-92a5-95ea7053b4bf',
     namePrefix: /^Zürich(,| |$)/,
     excludeName: /^Zürich Flughafen/,
-    bbox: [47.32, 8.448, 47.435, 8.625],
+    bbox: box(47.3769, 8.5417),
+  },
+  {
+    slug: 'geneva',
+    city_id: '4a0387c6-8b78-495a-9b75-723b2718935c',
+    namePrefix: /^Genève(,| |$)/,
+    bbox: box(46.2044, 6.1432),
+  },
+  {
+    slug: 'bern',
+    city_id: 'cbd7c40b-2cc5-418e-bb71-9efe0e1a697c',
+    namePrefix: /^Bern(,| |$)/,
+    bbox: box(46.9481, 7.4474),
+  },
+  {
+    slug: 'basel',
+    city_id: 'a0c1349b-da8a-43c4-9a64-39b6f0193fbf',
+    namePrefix: /^Basel(,| |$)/,
+    bbox: box(47.5596, 7.5886),
+  },
+  {
+    slug: 'lausanne',
+    city_id: 'c8b840da-855d-4a58-baf1-a949d0c7460f',
+    namePrefix: /^Lausanne(,| |$)/,
+    bbox: box(46.516, 6.63282),
+  },
+  {
+    slug: 'winterthur',
+    city_id: '05599810-ae82-4f75-95e5-8f31f1ecc6fe',
+    namePrefix: /^Winterthur(,| |$)/,
+    bbox: box(47.5001, 8.724),
+  },
+  {
+    slug: 'luzern',
+    city_id: 'f2c45fec-5a35-43c2-920d-9d6580527e8c',
+    namePrefix: /^Luzern(,| |$)/,
+    bbox: box(47.056923, 8.311095),
+  },
+  {
+    slug: 'st-gallen',
+    city_id: '0ddd4de6-4c53-4f44-9e65-7676e7d70b9d',
+    namePrefix: /^St\. Gallen(,| |$)/,
+    bbox: box(47.4245, 9.3767),
+  },
+  {
+    slug: 'lugano',
+    city_id: '8e69a79e-aa4f-4747-93a3-765b556f3a2d',
+    namePrefix: /^Lugano(,| |$)/,
+    bbox: box(46.0103, 8.9625),
   },
 ];
 
