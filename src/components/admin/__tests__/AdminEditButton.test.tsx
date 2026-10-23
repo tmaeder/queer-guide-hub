@@ -334,4 +334,19 @@ describe('AdminEditButton', () => {
     expect(screen.queryByRole('button', { name: /More admin actions/i })).toBeNull();
     expect(screen.queryByText(/Export record/)).toBeNull();
   });
+
+  it('exports a city record from the cities detail page', async () => {
+    exportRecordMock.mockReset().mockResolvedValue(undefined);
+    useAdminRolesMock.mockReturnValue({ canManageContent: () => true, loading: false });
+    renderIn(<AdminEditButton contentType="cities" contentId="c1" exportable />, '/city/x');
+    await openMenu();
+    fireEvent.click(await screen.findByText('Export record (Excel)'));
+    await waitFor(() =>
+      expect(exportRecordMock).toHaveBeenCalledWith(
+        expect.objectContaining({ tableName: 'cities' }),
+        'c1',
+        'Excel',
+      ),
+    );
+  });
 });
