@@ -7,6 +7,15 @@ Deno.test('keeps a normal content photo', () => {
   assertEquals(r.dropped.length, 0)
 })
 
+Deno.test('drops the observed parking advertisement without rejecting unrelated assets', () => {
+  const ad = 'https://static.hugedomains.com/images/hdv3-img/og_hugedomains.png?cache=1'
+  const other = 'https://static.hugedomains.com/images/venue-photo.jpg'
+  const spoof = 'https://static.hugedomains.com.example.org/images/hdv3-img/og_hugedomains.png'
+  const result = gateImages([ad, other, spoof])
+  assertEquals(result.kept, [other, spoof])
+  assertEquals(result.dropped, [{ url: ad, reason: 'domain_parking_advertisement' }])
+})
+
 Deno.test('drops logo.dev / clearbit logo CDNs', () => {
   const r = gateImages([
     'https://img.logo.dev/eagle-berlin.de?size=128',

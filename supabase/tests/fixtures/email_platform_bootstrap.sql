@@ -6,7 +6,7 @@ do $$ begin
  if not exists(select from pg_roles where rolname='service_role') then create role service_role bypassrls; end if;
 end $$;
 create schema auth;
-create table auth.users(id uuid primary key,email text);
+create table auth.users(id uuid primary key,email text,email_confirmed_at timestamptz);
 create table public.email_templates(
  template_key text primary key,name text not null,subject text not null,
  html_content text not null,text_content text,variables jsonb default '[]',is_active boolean default true
@@ -49,7 +49,7 @@ create table public.conversation_participants(id uuid primary key default gen_ra
 create table public.push_sent(user_id uuid references auth.users(id) on delete cascade,kind text,day_bucket date);
 grant all on public.notifications,public.conversations,public.conversation_participants,public.push_sent to service_role;
 
-create table public.community_groups(id uuid primary key default gen_random_uuid(),duplicate_of_id uuid,archived_at timestamptz);
+create table public.community_groups(id uuid primary key default gen_random_uuid(),name text not null default 'Private group',duplicate_of_id uuid,archived_at timestamptz);
 create table public.group_posts(id uuid primary key default gen_random_uuid(),group_id uuid references public.community_groups(id) on delete cascade,user_id uuid references auth.users(id) on delete cascade,mentions jsonb default '[]',content text);
 create table public.group_notifications(id uuid primary key default gen_random_uuid(),group_id uuid references public.community_groups(id) on delete cascade,user_id uuid references auth.users(id) on delete cascade,notification_type text,related_post_id uuid references public.group_posts(id) on delete cascade,related_comment_id uuid,triggered_by_user_id uuid references auth.users(id) on delete cascade,content text,read_at timestamptz,created_at timestamptz default now());
 create table public.user_relationships(user_id uuid,target_user_id uuid,relationship_type text);
@@ -82,3 +82,28 @@ create table public.group_join_requests(id uuid primary key default gen_random_u
 create table public.community_submissions(id uuid primary key default gen_random_uuid(),submitted_by uuid references auth.users(id),content_type text default 'feedback',data jsonb not null default '{}',reviewed_by uuid,reviewed_at timestamptz,status text default 'pending',is_spam boolean default false);
 create table public.donations(id uuid primary key default gen_random_uuid(),user_id uuid references auth.users(id),status text default 'pending',stripe_session_id text);
 grant all on public.events,public.group_join_requests,public.community_submissions,public.donations to service_role;
+
+-- Canonical entity contact columns used by the recipient directory.
+create table public.organizations(id uuid primary key default gen_random_uuid(),name text not null,email text,status text not null default 'active',duplicate_of_id uuid,safety_gated boolean not null default false,is_defunct boolean not null default false);
+create table public.venues(id uuid primary key default gen_random_uuid(),name text not null,email text,duplicate_of_id uuid,closed_at timestamptz,review_status text,safety_gated boolean not null default false);
+create table public.marketplace_merchants(id uuid primary key default gen_random_uuid(),display_name text not null,organization_id uuid references public.organizations(id),is_enabled boolean not null default true);
+grant all on public.organizations,public.venues,public.marketplace_merchants to service_role;
+
+-- Existing production organization foreign-key lookup index.
+create index idx_marketplace_merchants_organization_id on public.marketplace_merchants(organization_id);
+
+create table public.marketplace_listings(id uuid primary key default gen_random_uuid(),business_name text not null,contact_email text,status text not null default 'active',archived_at timestamptz,deprecated_at timestamptz,duplicate_of_id uuid,review_status text);
+grant all on public.marketplace_listings to service_role;
+
+-- Test-only source mutation, modelling Auth changing a mailbox independently of
+-- the email service role. Never included in production migrations.
+create function public.email_fixture_change_mailbox(p_user uuid,p_email text)
+returns void language sql security definer set search_path=pg_catalog as $$
+ update auth.users set email=p_email where id=p_user;
+$$;
+revoke all on function public.email_fixture_change_mailbox(uuid,text) from public,anon,authenticated;
+grant execute on function public.email_fixture_change_mailbox(uuid,text) to service_role;
+
+-- Existing group invite source used by the source-proof adapter.
+create table public.group_invites(id uuid primary key default gen_random_uuid(),group_id uuid not null references public.community_groups(id) on delete cascade,invited_by uuid not null references auth.users(id) on delete cascade,invited_user_id uuid references auth.users(id) on delete cascade,email text,token text not null default gen_random_uuid()::text,status text not null default 'pending',created_at timestamptz not null default now(),expires_at timestamptz not null default now()+interval '7 days',accepted_at timestamptz,accepted_by uuid);
+grant all on public.group_invites to service_role;

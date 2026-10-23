@@ -4,6 +4,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { AdminEmpty } from '@/components/admin/primitives/AdminEmpty';
+import { EmailExperiments } from './EmailExperiments';
+import { EmailCatalogBlocks, type PublicReference } from './EmailCatalogBlocks';
 import { reviewDocument } from './emailDocument';
 export interface Campaign {
   id: string;
@@ -37,10 +39,23 @@ interface Audience {
 }
 interface Detail {
   campaign: Campaign;
-  version: { content: { subject: string; html_content: string; text_content: string } } | null;
+  version: {
+    content: {
+      subject: string;
+      html_content: string;
+      text_content: string;
+      catalog_references?: PublicReference[];
+      resolved_locale?: string;
+      locale_fallback?: boolean;
+    };
+  } | null;
   versions: { version: number; created_at: string }[];
   reviews: { version: number; action: string; created_at: string }[];
   audiences: Audience[];
+  catalog?: {
+    evaluated_at: string;
+    blocks: { kind: string; id: string; available: boolean; title?: string; url?: string }[];
+  };
 }
 interface Props {
   campaigns: Campaign[];
@@ -70,6 +85,7 @@ export function EmailCampaigns({ campaigns, templates, refresh, audienceRevision
     [conflict, setConflict] = useState(false);
   const [notice, setNotice] = useState<string | null>(null),
     [segmentError, setSegmentError] = useState(false);
+  const [catalog, setCatalog] = useState<PublicReference[]>([]);
   const [audienceCount, setAudienceCount] = useState<number | null>(null);
   const loadSegments = useCallback(async () => {
     const request = ++audienceRequest.current;
@@ -114,6 +130,7 @@ export function EmailCampaigns({ campaigns, templates, refresh, audienceRevision
     setLocale('');
     setSchedule('');
     setSegment('');
+    setCatalog([]);
     setDirty(false);
     setConflict(false);
     setNotice(null);
@@ -141,6 +158,7 @@ export function EmailCampaigns({ campaigns, templates, refresh, audienceRevision
         setTopic(current.topic);
         setLocale(current.locale || '');
         setSegment(current.segment_id || '');
+        setCatalog(r.data.version?.content?.catalog_references ?? []);
         if (current.scheduled_at) {
           const d = new Date(current.scheduled_at);
           d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
@@ -174,6 +192,7 @@ export function EmailCampaigns({ campaigns, templates, refresh, audienceRevision
           locale: locale || null,
           scheduled_at: schedule ? new Date(schedule).toISOString() : null,
           segment_id: segment || null,
+          catalog_references: catalog,
           ...(selected ? { id: selected.id, expected_version: selected.version } : {}),
         },
       });
@@ -437,6 +456,13 @@ export function EmailCampaigns({ campaigns, templates, refresh, audienceRevision
               transactional email.
             </p>
           </div>
+          <EmailCatalogBlocks
+            value={catalog}
+            onChange={(value) => {
+              change();
+              setCatalog(value);
+            }}
+          />
           <div className="flex flex-wrap gap-2">
             <Button type="submit" disabled={conflict || !name.trim() || !template}>
               {busy ? 'Saving…' : 'Save draft'}
@@ -531,6 +557,12 @@ export function EmailCampaigns({ campaigns, templates, refresh, audienceRevision
           {content ? (
             <>
               <h3 className="font-semibold">{content.subject}</h3>
+              {content.resolved_locale && (
+                <p className="text-sm text-muted-foreground">
+                  Saved content locale: {content.resolved_locale}
+                  {content.locale_fallback ? ' · Fallback used' : ''}
+                </p>
+              )}
               <p className="text-sm text-muted-foreground">
                 Template variables remain placeholders. Remote images and links are disabled in this
                 preview.
@@ -589,6 +621,39 @@ export function EmailCampaigns({ campaigns, templates, refresh, audienceRevision
               </Button>
             </div>
           )}
+          {!!detail.catalog?.blocks.length && (
+            <section className="space-y-4" aria-label="Current public campaign blocks">
+              <h3 className="font-semibold">Current public catalog content</h3>
+              <p className="text-sm text-muted-foreground">
+                Checked {new Date(detail.catalog.evaluated_at).toLocaleString()}. Reference IDs
+                belong to the saved version; these titles resolve from current public records.
+              </p>
+              {detail.catalog.blocks.map((block) => (
+                <div key={`${block.kind}:${block.id}`} className="border-b border-border pb-4">
+                  <p className="break-words text-sm">
+                    {block.available ? block.title : `${block.kind} no longer publicly available`}
+                  </p>
+                  {block.available && block.url && (
+                    <a
+                      href={block.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-sm underline underline-offset-4"
+                    >
+                      View public record
+                    </a>
+                  )}
+                </div>
+              ))}
+            </section>
+          )}
+          <EmailExperiments
+            campaign={detail.campaign}
+            templates={templates}
+            ready={detail.audiences.some(
+              (a) => a.version === detail.campaign.version && a.status === 'ready',
+            )}
+          />
           <p className="text-sm text-muted-foreground">
             Review applies to this content version. Saving an edit resets approval. A snapshot
             records eligibility during collection; it does not freeze consent or authorize delivery.

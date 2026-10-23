@@ -1,4 +1,8 @@
 import {
+  managementForm,
+  verifyEmailChallenge,
+} from "../_shared/email-management.ts";
+import {
   getCorsHeaders,
   getServiceClient,
   jsonResponse,
@@ -16,6 +20,78 @@ Deno.serve(async (req: Request) => {
   }
   const url = new URL(req.url), action = url.searchParams.get("action");
   const db = getServiceClient();
+  if (action === "manage") {
+    const token = url.searchParams.get("token") ?? "";
+    if (!/^[a-f0-9]{64}$/.test(token)) {
+      return jsonResponse(
+        { error: "Invalid or expired management link" },
+        400,
+        req,
+      );
+    }
+    const headers = {
+      "Content-Type": "text/html; charset=utf-8",
+      "Cache-Control": "no-store",
+      "Referrer-Policy": "no-referrer",
+      "X-Frame-Options": "DENY",
+      "Content-Security-Policy":
+        "default-src 'none'; form-action 'self'; frame-ancestors 'none'; base-uri 'none'",
+    };
+    try {
+      const hash = await tokenHash(token);
+      if (req.method === "GET") {
+        const r = await db.rpc("email_management_read", { p_hash: hash });
+        if (r.error) throw r.error;
+        const form = r.data ? managementForm(token, r.data) : null;
+        if (!form) {
+          return new Response(
+            '<h1>This email link is expired or already used</h1><p>Request a new private link from <a href="https://queer.guide/email-updates">email updates</a>.</p>',
+            { status: 400, headers },
+          );
+        }
+        return new Response(form, { headers });
+      }
+      if (req.method !== "POST") {
+        return jsonResponse({ error: "Method not allowed" }, 405, req);
+      }
+      const raw = await req.text();
+      if (raw.length > 4000) {
+        return jsonResponse({ error: "Request too large" }, 413, req);
+      }
+      const form = new URLSearchParams(raw),
+        decision = form.get("decision"),
+        topics = form.getAll("topics"),
+        locale = form.get("locale");
+      if (
+        !["save", "unsubscribe"].includes(decision ?? "") ||
+        !validTopics(topics) || typeof locale !== "string" ||
+        !/^[a-z]{2}(?:-[A-Za-z]{2,8})?$/.test(locale)
+      ) return jsonResponse({ error: "Invalid email preferences" }, 400, req);
+      const r = await db.rpc("email_management_save", {
+        p_hash: hash,
+        p_topics: topics,
+        p_locale: locale,
+        p_unsubscribe: decision === "unsubscribe",
+      });
+      if (r.error) throw r.error;
+      if (r.data !== true) {
+        return new Response(
+          "<h1>This choice could not be saved</h1><p>The link may have expired or already been used. An unsubscribed mailbox needs a new confirmation to subscribe again.</p>",
+          { status: 400, headers },
+        );
+      }
+      return new Response(
+        '<h1>Email preferences saved</h1><p>Your choice is recorded. <a href="https://queer.guide/email-updates">Return to email updates</a>.</p>',
+        { headers },
+      );
+    } catch {
+      return jsonResponse(
+        { error: "Email management temporarily unavailable" },
+        503,
+        req,
+      );
+    }
+  }
   if (action === "confirm" || action === "unsubscribe") {
     const token = url.searchParams.get("token") ?? "";
     const form = subscriptionForm(action, token);
@@ -56,6 +132,29 @@ Deno.serve(async (req: Request) => {
       if (!user) {
         return jsonResponse({ error: "Authentication required" }, 401, req);
       }
+      if (action === "group_invitations") {
+        const after = url.searchParams.get("after");
+        if (
+          after &&
+          !/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i
+            .test(after)
+        ) {
+          return jsonResponse({ error: "Invalid invitation cursor" }, 400, req);
+        }
+        const page = await db.rpc("email_group_invitation_review", {
+          p_user: user.id,
+          p_after: after,
+        });
+        if (page.error) throw page.error;
+        const response = jsonResponse(
+          { ...page.data, userId: user.id },
+          200,
+          req,
+        );
+        response.headers.set("Cache-Control", "no-store");
+        response.headers.set("Referrer-Policy", "no-referrer");
+        return response;
+      }
       const { data, error } = await db.from("email_subscribers").select(
         "status,topics,locale,confirmed_at",
       ).eq("user_id", user.id).maybeSingle();
@@ -83,6 +182,53 @@ Deno.serve(async (req: Request) => {
     } catch {
       return jsonResponse({ error: "Invalid request" }, 400, req);
     }
+    if (body?.action === "request_management") {
+      if (
+        !user &&
+        !await verifyEmailChallenge(body.turnstileToken, "email-manage")
+      ) return jsonResponse({ error: "Verification required" }, 400, req);
+      const email = user?.email ?? body.email;
+      if (
+        typeof email !== "string" || email.length > 254 ||
+        !/^([^\s<>@]+)@([^\s<>@]+)\.([^\s<>@]+)$/.test(email)
+      ) return jsonResponse({ error: "Invalid email" }, 400, req);
+      const token = newEmailToken();
+      const link = new URL(
+        `${Deno.env.get("SUPABASE_URL")}/functions/v1/email-subscriptions`,
+      );
+      link.search = new URLSearchParams({ action: "manage", token }).toString();
+      const branding = await getEmailBranding();
+      const r = await db.rpc("email_management_request", {
+        p_email: email,
+        p_hash: await tokenHash(token),
+        p_key: await tokenHash(`subscription-management:${token}`),
+        p_payload: {
+          category: "transactional",
+          from: fromHeader(branding),
+          to: email.trim().toLowerCase(),
+          subject: "Your Queer Guide email preferences",
+          html: wrapHtml(
+            `<p>You requested a private email preference link.</p><p><a href="${
+              link.href.replaceAll("&", "&amp;")
+            }">Manage email preferences</a></p><p>This link works once and expires in one hour. Ignore this email if you did not request it.</p>`,
+            branding,
+          ),
+          text:
+            `Manage your Queer Guide email preferences: ${link.href}. This private link works once and expires in one hour. Ignore this email if you did not request it.`,
+          headers: {},
+        },
+      });
+      if (r.error) throw r.error;
+      return jsonResponse(
+        {
+          success: true,
+          message:
+            "If this mailbox has a confirmed subscription, a private link will be sent. Please allow an hour before requesting another.",
+        },
+        202,
+        req,
+      );
+    }
     if (body?.action === "delivery_preferences") {
       if (!user) {
         return jsonResponse({ error: "Authentication required" }, 401, req);
@@ -95,7 +241,7 @@ Deno.serve(async (req: Request) => {
           typeof body.group_mentions_enabled !== "boolean") ||
         (body.operational_topics !== undefined &&
           (!Array.isArray(body.operational_topics) ||
-            body.operational_topics.length > 5 ||
+            body.operational_topics.length > 6 ||
             new Set(body.operational_topics).size !==
               body.operational_topics.length ||
             body.operational_topics.some((topic: unknown) =>
@@ -106,6 +252,7 @@ Deno.serve(async (req: Request) => {
                 "group_requests",
                 "contributions",
                 "payments",
+                "group_invitations",
               ].includes(topic)
             ))) ||
         typeof body.quiet_hours_enabled !== "boolean" ||
@@ -190,20 +337,9 @@ Deno.serve(async (req: Request) => {
         typeof body.turnstileToken !== "string" ||
         body.turnstileToken.length > 2048
       ) return jsonResponse({ error: "Verification required" }, 400, req);
-      const verify = await fetch(
-        "https://challenges.cloudflare.com/turnstile/v0/siteverify",
-        {
-          method: "POST",
-          signal: AbortSignal.timeout(10000),
-          body: new URLSearchParams({ secret, response: body.turnstileToken }),
-        },
-      );
-      const proof = await verify.json();
-      if (
-        !proof.success ||
-        !["queer.guide", "www.queer.guide"].includes(proof.hostname) ||
-        proof.action !== "email-subscribe"
-      ) return jsonResponse({ error: "Verification failed" }, 400, req);
+      if (!await verifyEmailChallenge(body.turnstileToken, "email-subscribe")) {
+        return jsonResponse({ error: "Verification failed" }, 400, req);
+      }
       email = body.email;
     }
     if (

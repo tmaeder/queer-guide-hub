@@ -13,6 +13,7 @@ import { probeForRole } from '../_shared/image-probe.ts'
 import { assertPublicHttpUrl } from '../_shared/ssrf-guard.ts'
 
 const DETECTOR = 'event-image-quality'
+const RUNTIME_REVISION = '2026-10-22.event-artwork-v1'
 const MAX_IMAGE_BYTES = 12 * 1024 * 1024
 
 type Severity = 'critical' | 'high' | 'medium' | 'low'
@@ -81,6 +82,8 @@ async function fetchContentHash(rawUrl: string, signal: AbortSignal): Promise<st
 
 function findingForProbe(probe: Awaited<ReturnType<typeof probeForRole>>): Finding | null {
   const evidence = {
+    image_role: 'event_artwork',
+    runtime_revision: RUNTIME_REVISION,
     url: probe.url,
     http_status: probe.status ?? null,
     mime_type: probe.contentType ?? null,
@@ -117,11 +120,18 @@ Deno.serve(async (req: Request) => {
   const claimToken = crypto.randomUUID()
   try {
     const body = await req.json().catch(() => ({}))
+    const eventIds = body.event_ids
+    if (eventIds !== undefined && (!Array.isArray(eventIds) || eventIds.length > 100
+      || eventIds.some((id: unknown) => typeof id !== 'string' || !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)))) {
+      return errorResponse('event_ids must contain at most 100 UUIDs', 400, req)
+    }
     const batchSize = Math.max(0, Math.min(Number(body.batch_size ?? 25), 100))
     const dryRun = body.dry_run !== false
-    const { data: candidates, error } = await supabase.rpc('claim_event_image_quality_candidates', {
+    const { data: candidates, error } = await supabase.rpc(eventIds === undefined
+      ? 'claim_event_image_quality_candidates' : 'claim_event_image_quality_rechecks', {
       p_claim_token: claimToken,
       p_limit: batchSize,
+      ...(eventIds === undefined ? {} : { p_event_ids: eventIds }),
     })
     if (error) return errorResponse(error.message, 500, req)
 
@@ -136,7 +146,7 @@ Deno.serve(async (req: Request) => {
           const timer = setTimeout(() => controller.abort(), 15_000)
           try {
             assertPublicHttpUrl(imageUrl)
-            const probe = await probeForRole(imageUrl, 'cover', controller.signal)
+            const probe = await probeForRole(imageUrl, 'event_artwork', controller.signal)
             let contentHash: string | null = null
             let hashFailure: string | null = null
             if (probe.passed) {
@@ -274,7 +284,7 @@ Deno.serve(async (req: Request) => {
     }
     const failures = results.filter((result) => 'error' in result).length
     return jsonResponse(
-      { success: failures === 0, dry_run: dryRun, checked: results.length, failures, results },
+      { success: failures === 0, runtime_revision: RUNTIME_REVISION, dry_run: dryRun, checked: results.length, failures, results },
       failures === 0 ? 200 : 500,
       req,
     )

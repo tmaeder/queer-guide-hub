@@ -90,10 +90,10 @@ begin
  update public.trips set status='archived' where id=t;
  assert not public.email_dispatch_authorize(o.id,lease),'archived trip sent';
  update public.trips set status='planning' where id=t;
- update auth.users set email='changed-trip@example.com' where id=u;
+ perform public.email_fixture_change_mailbox(u,'changed-trip@example.com');
  assert not public.email_dispatch_authorize(o.id,lease),'stale mailbox sent';
  assert (public.email_trip_invitation_enqueue(i,jsonb_set(payload,'{to}','"changed-trip@example.com"'))).id=o.id,'address change resent invite';
- update auth.users set email='trip-guest@example.com' where id=u;
+ perform public.email_fixture_change_mailbox(u,'trip-guest@example.com');
  update public.trip_members set accepted_at=null where id=actor_m;
  assert not public.email_dispatch_authorize(o.id,lease),'pending inviter granted access';
  update public.trip_members set accepted_at=now() where id=actor_m;

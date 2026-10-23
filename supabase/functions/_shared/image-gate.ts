@@ -51,6 +51,12 @@ export function gateImages(images: unknown): ImageGateResult {
     const host = parsed.hostname.toLowerCase()
     const path = parsed.pathname.toLowerCase()
 
+    // A domain-parking vendor's shared advertisement, observed as the photo
+    // of unrelated venues. Match the asset, not every image on that domain.
+    if (host === 'static.hugedomains.com' && path === '/images/hdv3-img/og_hugedomains.png') {
+      dropped.push({ url, reason: 'domain_parking_advertisement' }); continue
+    }
+
     if (path.endsWith('.svg')) { dropped.push({ url, reason: 'svg' }); continue }
     if (isLogoHost(host)) { dropped.push({ url, reason: 'logo_host' }); continue }
 

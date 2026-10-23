@@ -86,6 +86,7 @@ export const SETTLEMENT_CODES = new Set([
 export function usableMatches(row) {
   return row.matches.filter((g) => g.distance_m !== null && g.distance_m <= 10000);
 }
+/** @param {{classes?: string[], description?: string, geonames?: {code: string}[]}} evidence */
 export function classifyEvidence({ classes = [], description = '', geonames = [] }) {
   const kind = classifyClasses(classes, description);
   if (kind === 'municipality')

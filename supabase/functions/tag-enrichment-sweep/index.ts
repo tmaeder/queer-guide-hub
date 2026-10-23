@@ -23,7 +23,7 @@
 // leaves the tag unlinked, which is the cheap and reversible outcome.
 //
 //   QUEUE to ai_suggestions (status='pending', entity_type='unified_tags'):
-//     - pure-LLM description guesses (no Wikipedia grounding)
+//     - source-grounded descriptions only; unsupported model guesses are skipped
 //     - ANY description for is_sensitive / is_adult tags
 //     (suggestion_type 'description'; applied later via applySuggestion when an
 //      admin approves in the /admin/tags review panel, which also flips
@@ -49,7 +49,6 @@ import { chatCompletion } from '../_shared/openai-client.ts'
 import { mayAdoptWikiIdentity, titleAgrees } from '../_shared/tag-wiki-guard.ts'
 import {
   TAG_STYLE_SYSTEM,
-  buildDefinePrompt,
   buildProseReviewPrompt,
   isSenseCategory,
 } from '../_shared/tag-style.ts'
@@ -166,36 +165,6 @@ async function fetchWikipediaSummary(name: string): Promise<WikiSummary | null> 
       // `titles.canonical` is the post-redirect article; `title` is its display form.
       title: j.titles?.canonical ?? j.title ?? null,
     }
-  } catch {
-    return null
-  }
-}
-
-/**
- * Pure-LLM glossary description fallback when no Wikipedia grounding exists.
- * Sense-anchored: the category rides along so an ordinary-word tag ("Furniture"
- * under Gear) is defined in its community sense, not its dictionary sense —
- * name-only prompting is how the wrong-sense prose got written in the first
- * place. A model that does not know the community sense says UNKNOWN, which
- * beats a fluent guess (queue nothing over queueing fabrication).
- */
-async function generateDescription(name: string, categoryName: string | null): Promise<string | null> {
-  try {
-    const r = await chatCompletion(supabase, {
-      callerFn: 'tag-enrichment-sweep',
-      model: 'gpt-4o-mini',
-      messages: [
-        { role: 'system', content: await withVoice(TAG_STYLE_SYSTEM, 'core') },
-        { role: 'user', content: buildDefinePrompt(name, categoryName) },
-      ],
-      temperature: 0.3,
-      max_tokens: 220,
-    })
-    // Prose responses come back as strings; ignore non-string (object) content.
-    const c = r.content as unknown
-    const text = typeof c === 'string' ? c.trim() : ''
-    if (!text || /^unknown\b/i.test(text)) return null
-    return text.length >= 30 ? text : null
   } catch {
     return null
   }
@@ -390,6 +359,7 @@ function logRpcRefusal(kind: string, tagName: string, e: { message?: string }): 
 }
 
 interface ProseRow {
+  human_reviewed: boolean
   id: string
   name: string
   category: string | null
@@ -444,6 +414,7 @@ async function prosePass(
   batchLimit: number,
   stats: {
     prose_examined: number
+    prose_preserved: number
     prose_flagged: number
     prose_queued_rewrite: number
     prose_uncertain: number
@@ -452,7 +423,7 @@ async function prosePass(
   const { data: rows } = await supabase
     .from('unified_tags')
     .select(
-      'id,name,category,description,short_description,long_description,wikidata_id,wikipedia_url,is_sensitive,is_adult',
+      'id,name,category,description,short_description,long_description,wikidata_id,wikipedia_url,is_sensitive,is_adult,human_reviewed',
     )
     .eq('status', 'active')
     .not('description', 'is', null)
@@ -460,8 +431,18 @@ async function prosePass(
     .limit(batchLimit)
   if (!rows || rows.length === 0) return
 
+  const advanceCursor = (tagId: string) => supabase.rpc('tag_enrichment_apply', { p_tag_id: tagId, p_kind: 'prose_cursor' })
+
   for (const tag of rows as ProseRow[]) {
     stats.prose_examined++
+    // Preserve reviewed definitions and advance only the derived scan cursor.
+    // Generating unsolicited rewrites here spent inference and filled review
+    // queues with proposals the native ownership guard correctly refused.
+    if (tag.human_reviewed || (!tag.wikidata_id && !tag.wikipedia_url)) {
+      await advanceCursor(tag.id)
+      stats.prose_preserved++
+      continue
+    }
     let out: ProseVerdict | null = null
     try {
       const r = await chatCompletion(supabase, {
@@ -500,7 +481,7 @@ async function prosePass(
     // human_reviewed rows too — prose_reviewed_at is a derived column the
     // audit guard exempts, and refusing it here would pin those rows at the
     // head of the queue, which is exactly what this comment warns about.
-    await supabase.rpc('tag_enrichment_apply', { p_tag_id: tag.id, p_kind: 'prose_cursor' })
+    await advanceCursor(tag.id)
     if (!out || (out.verdict !== 'wrong_subject' && out.verdict !== 'ok')) {
       stats.prose_uncertain++
       continue
@@ -797,6 +778,7 @@ Deno.serve(async (req) => {
   if (mode === 'prose') {
     const proseStats = {
       prose_examined: 0,
+      prose_preserved: 0,
       prose_flagged: 0,
       prose_queued_rewrite: 0,
       prose_uncertain: 0,
@@ -832,6 +814,7 @@ Deno.serve(async (req) => {
     links_refused: 0,
     desc_applied: 0,
     desc_queued: 0,
+    ungrounded_skipped: 0,
     cat_applied: 0,
     cat_queued: 0,
     skipped: 0,
@@ -935,16 +918,10 @@ Deno.serve(async (req) => {
             }
           }
         } else {
-          // Pure-LLM guess → always queue for review (never auto-apply).
-          const guess = await generateDescription(tag.name, tag.category)
-          if (guess) {
-            // chatCompletion routes to CF Workers AI when configured, else OpenAI.
-            const src = llmSource()
-            if (await queueDescription(tag, guess, src, 'gpt-4o-mini', 0.5)) {
-              stats.desc_queued++
-              didSomething = true
-            }
-          }
+          // A missing or refused source does not justify inventing prose.
+          // Keep the gap for factual enrichment without creating a speculative
+          // biography or community definition for staff to rubber-stamp.
+          stats.ungrounded_skipped++
         }
       }
     }

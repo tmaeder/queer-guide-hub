@@ -214,3 +214,34 @@ describe('account email preferences', () => {
     );
   });
 });
+
+it('keeps group invitations independent of group mentions and newsletter subscriptions', async () => {
+  api.invoke.mockImplementation((_name, options) =>
+    Promise.resolve({
+      data: options?.body
+        ? { delivery_preferences: { ...options.body, version: 1 } }
+        : { subscription: null, delivery_preferences: delivery },
+      error: null,
+    }),
+  );
+  render(<EmailPreferences />);
+  const invitation = await screen.findByRole('checkbox', {
+    name: 'Email me when I receive a group invitation',
+  });
+  expect(invitation).not.toBeChecked();
+  fireEvent.click(invitation);
+  fireEvent.click(screen.getByRole('button', { name: 'Save activity email settings' }));
+  await waitFor(() =>
+    expect(api.invoke).toHaveBeenCalledWith(
+      'email-subscriptions',
+      expect.objectContaining({
+        body: expect.objectContaining({
+          action: 'delivery_preferences',
+          group_mentions_enabled: false,
+          operational_topics: ['group_invitations'],
+        }),
+      }),
+    ),
+  );
+  expect(api.invoke.mock.calls.filter((c) => c[1]?.body?.action === 'subscribe')).toHaveLength(0);
+});

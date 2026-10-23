@@ -100,6 +100,7 @@ const AdminMailbox = lazyRetry(() => import('./pages/admin/AdminMailbox'));
 const AdminDiagnostics = lazyRetry(() => import('./pages/admin/QualityHub'));
 const AdminTrash = lazyRetry(() => import('./pages/admin/AdminTrash'));
 const ContentGraph = lazyRetry(() => import('./pages/admin/ContentGraph'));
+const EmailUpdates = lazyRetry(() => import('./pages/EmailUpdates'));
 const EmailPlatform = lazyRetry(() => import('./pages/admin/EmailPlatform'));
 const EmailTemplates = lazyRetry(() => import('./pages/admin/EmailTemplates'));
 const AdminPipelines = lazyRetry(() => import('./pages/admin/AdminPipelines'));
@@ -997,6 +998,7 @@ export const AppRoutes = () => {
                   <Route path="about-hub" element={<CMSRoutePage slug="about-hub" />} />
                   <Route path="about" element={<About />} />
                   <Route path="contact" element={<Contact />} />
+                  <Route path="email-updates" element={<EmailUpdates />} />
                   <Route path="vision" element={<CMSRoutePage slug="vision" />} />
                   <Route path="values" element={<CMSRoutePage slug="values" />} />
                   <Route path="press" element={<CMSRoutePage slug="press" />} />
