@@ -349,4 +349,19 @@ describe('AdminEditButton', () => {
       ),
     );
   });
+
+  it('exports a country record from the countries detail page', async () => {
+    exportRecordMock.mockReset().mockResolvedValue(undefined);
+    useAdminRolesMock.mockReturnValue({ canManageContent: () => true, loading: false });
+    renderIn(<AdminEditButton contentType="countries" contentId="k1" exportable />, '/country/x');
+    await openMenu();
+    fireEvent.click(await screen.findByText('Export record (CSV)'));
+    await waitFor(() =>
+      expect(exportRecordMock).toHaveBeenCalledWith(
+        expect.objectContaining({ tableName: 'countries' }),
+        'k1',
+        'CSV',
+      ),
+    );
+  });
 });

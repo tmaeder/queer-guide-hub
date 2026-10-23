@@ -86,6 +86,7 @@ export function CountryActions({
         contentName={country.name}
         currentData={country as Record<string, unknown>}
         onSaved={onContentUpdated}
+        exportable
       />
     </>
   );
