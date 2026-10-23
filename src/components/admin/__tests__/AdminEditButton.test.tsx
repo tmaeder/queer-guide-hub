@@ -364,4 +364,22 @@ describe('AdminEditButton', () => {
       ),
     );
   });
+
+  it('exports a village record from the villages detail page', async () => {
+    exportRecordMock.mockReset().mockResolvedValue(undefined);
+    useAdminRolesMock.mockReturnValue({ canManageContent: () => true, loading: false });
+    renderIn(
+      <AdminEditButton contentType="queer_villages" contentId="q1" exportable />,
+      '/villages/x',
+    );
+    await openMenu();
+    fireEvent.click(await screen.findByText('Export record (Excel)'));
+    await waitFor(() =>
+      expect(exportRecordMock).toHaveBeenCalledWith(
+        expect.objectContaining({ tableName: 'queer_villages' }),
+        'q1',
+        'Excel',
+      ),
+    );
+  });
 });
