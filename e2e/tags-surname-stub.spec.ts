@@ -55,7 +55,9 @@ test.describe('@smoke glossary entries do not publish a surname stub', () => {
     // 'kuenstler' was merged into `artist` by 99991792781503 (2026-10-23 Review
     // Queue sheet); its slug now redirects there, so it is no longer an active row.
     'lehrer',
-    'maler',
+    // 'maler' was renamed to `painter` by 99991792791783 (German slug to English);
+    // /tags/maler now redirects there.
+    'painter',
     'sprecher',
     'tanzer',
     'zeichner',
