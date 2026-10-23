@@ -9,7 +9,7 @@ const event = { id: '00000000-0000-0000-0000-000000000001', title: 'Queer Arts N
 
 async function harness(
   body: unknown,
-  options: { fullDescription?: boolean; failFinish?: boolean; budgetAvailable?: boolean; rawDescription?: boolean; capturedHtml?: boolean } = {},
+  options: { fullDescription?: boolean; failFinish?: boolean; budgetAvailable?: boolean; rawDescription?: boolean; capturedHtml?: boolean; imageGallery?: boolean } = {},
 ) {
   const savedFetch = globalThis.fetch
   const keys = ['SUPABASE_URL', 'SUPABASE_SERVICE_ROLE_KEY', 'EVENT_QUALITY_WEBHOOK_SECRET']
@@ -22,12 +22,23 @@ async function harness(
     const url = new URL(input instanceof Request ? input.url : String(input))
     const payload = JSON.parse(String(init?.body ?? '{}'))
     calls.push({ path: url.pathname, body: payload })
+    if (url.hostname === 'data.agendaq.fr' && options.imageGallery) {
+      const bytes = new Uint8Array(40000).fill(127)
+      bytes.set([137, 80, 78, 71, 13, 10, 26, 10], 0)
+      bytes.set([73, 72, 68, 82], 12)
+      const view = new DataView(bytes.buffer)
+      view.setUint32(16, 800); view.setUint32(20, 600)
+      return new Response(bytes, { headers: { 'Content-Type': 'image/png', 'Content-Length': String(bytes.length) } })
+    }
     let data: unknown
     if (url.pathname.endsWith('/claim_event_gaps')) data = [{
       event_id: event.id,
       event: { ...event, description: options.fullDescription ? description : '',
-        ...(options.capturedHtml ? { external_id: 'arts', start_date: '2026-11-03T19:00:00Z' } : {}) },
-      sources: options.capturedHtml ? [{ source_slug: 'agendaq', source_url: 'https://www.agendaq.fr/fr/agenda/arts', raw: {
+        ...(options.capturedHtml ? { external_id: 'arts', start_date: '2026-11-03T19:00:00Z' } : {}),
+        ...(options.imageGallery ? { images: ['https://data.agendaq.fr/assets/events/arts/tiny.png', 'https://data.agendaq.fr/assets/events/arts/poster.png'] } : {}) },
+      sources: options.imageGallery ? [{ source_slug: 'agendaq', source_url: 'https://www.agendaq.fr/fr/agenda/arts', raw: {
+        assets: [['poster', '/assets/events/arts/poster.png', 'image/png', 800, 600]],
+      } }] : options.capturedHtml ? [{ source_slug: 'agendaq', source_url: 'https://www.agendaq.fr/fr/agenda/arts', raw: {
         description: `<p>${description}</p>`, full_description: `<p>${description}</p>`, name: event.title,
         slug: 'arts', start: '2026-11-03T19:00:00Z', source_id: 'source-fixture', payload_hash: 'a'.repeat(64),
       } }] : [{ source_url: event.website, raw: options.rawDescription === false ? {} : { description } }],
@@ -44,7 +55,7 @@ async function harness(
     return new Response(JSON.stringify(data), { headers: { 'Content-Type': 'application/json' } })
   }) as typeof fetch
   try {
-    const response = await serveEventGaps('content')(new Request('https://worker.example.test', {
+    const response = await serveEventGaps(options.imageGallery ? 'image' : 'content')(new Request('https://worker.example.test', {
       method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Webhook-Secret': 'fixture-secret' }, body: JSON.stringify(body),
     }))
     return { status: response.status, body: await response.json(), calls }
@@ -96,4 +107,14 @@ Deno.test('event gaps: captured HTML enriches without page requests or inference
   const details = finish.body.p_details as Record<string, unknown>
   assert(details.method === 'captured_source_html' && details.source_payload_hash === 'a'.repeat(64), 'missing source proof')
   assert(details.network_requests === 0 && details.ai_attempts === 0, 'unexpected source fetch or inference')
+})
+
+Deno.test('event gaps: a valid captured gallery poster is promoted past a poor primary image', async () => {
+  const result = await harness({ batch_size: 1 }, { imageGallery: true, budgetAvailable: false })
+  assert(result.status === 200 && result.body.fields_filled === 1, 'gallery artwork was not promoted')
+  const finish = result.calls.find(c => c.path.endsWith('/finish_event_gap'))!
+  const images = (finish.body.p_patch as Record<string, unknown>).images as string[]
+  assert(images[0] === 'https://data.agendaq.fr/assets/events/arts/poster.png', 'wrong primary artwork')
+  assert((finish.body.p_evidence as Record<string, unknown>).previous_images instanceof Array, 'missing compare-and-swap snapshot')
+  assert(result.body.network_requests === 1 && result.body.ai_attempts === 0, 'promotion made unnecessary page or model requests')
 })

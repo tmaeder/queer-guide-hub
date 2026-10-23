@@ -110,7 +110,9 @@ export function serveEventGaps(lane: GapLane) {
         if (hasUnverifiedLongRange(c.event)) return await finish(c, {}, {}, 'review', { reason: 'unverified_long_running_schedule' })
         if (lane === 'image') {
           for (const asset of sourceArtwork(c.sources)) {
-            if (Array.isArray(c.event.images) && c.event.images.includes(asset.url)) continue
+            // A usable poster can already be in the gallery behind a broken
+            // thumbnail. It still needs promotion to the primary image.
+            if (Array.isArray(c.event.images) && c.event.images[0] === asset.url) continue
             if (!gateImages([asset.url]).kept.length) continue
             networkRequests++; stats.get(c.event_id)!.network_requests++
             const probe = await fetchPrefix(asset.url, 65_536, true).catch(() => null)
@@ -142,7 +144,7 @@ export function serveEventGaps(lane: GapLane) {
           const html = new TextDecoder().decode(fetched.bytes)
           if (lane === 'image') {
             for (const image of gateImages(imageCandidates(html, c.event, fetched.url)).kept) {
-              if (Array.isArray(c.event.images) && c.event.images.includes(image)) continue
+              if (Array.isArray(c.event.images) && c.event.images[0] === image) continue
               networkRequests++; stats.get(c.event_id)!.network_requests++
               const probe = await fetchPrefix(image, 65_536, true).catch(() => null)
               const dims = probe ? readImageDimensions(probe.bytes) : null
