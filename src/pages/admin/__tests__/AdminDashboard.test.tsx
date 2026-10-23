@@ -47,6 +47,14 @@ vi.mock('@/components/admin/triage/TriageDetailPanel', () => ({ TriageDetailPane
 vi.mock('@/components/admin/review-workspace/ReviewTaskDetail', () => ({
   ReviewTaskDetail: () => null,
 }));
+vi.mock('@/hooks/useNewsStagingSummaries', () => ({
+  useNewsReviewList: () => ({
+    newsOf: () => undefined,
+    reasonTitleFor: () => undefined,
+    reasonTitles: undefined,
+    groups: null,
+  }),
+}));
 vi.mock('@/hooks/use-mobile', () => ({ useIsMobile: () => false }));
 vi.mock('@/components/admin/triage/TriageItemRow', () => ({ TriageItemRow: () => null }));
 import AdminDashboard from '../AdminDashboard';
