@@ -21,7 +21,7 @@ export function MailDetail({ emailId }: { emailId: string }) {
   const [loading, setLoading] = useState(true);
   const [replyOpen, setReplyOpen] = useState(false);
   const [replyBody, setReplyBody] = useState('');
-  const delivery = useMailboxDelivery(email);
+  const delivery = useMailboxDelivery(email?.id === emailId ? email : null);
 
   useEffect(() => {
     let active = true;
