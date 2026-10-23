@@ -293,4 +293,22 @@ describe('AdminEditButton', () => {
       ),
     );
   });
+
+  it('exports a personality record from the personalities detail page', async () => {
+    exportRecordMock.mockReset().mockResolvedValue(undefined);
+    useAdminRolesMock.mockReturnValue({ canManageContent: () => true, loading: false });
+    renderIn(
+      <AdminEditButton contentType="personalities" contentId="p1" exportable />,
+      '/personalities/x',
+    );
+    await openMenu();
+    fireEvent.click(await screen.findByText('Export record (Excel)'));
+    await waitFor(() =>
+      expect(exportRecordMock).toHaveBeenCalledWith(
+        expect.objectContaining({ tableName: 'personalities' }),
+        'p1',
+        'Excel',
+      ),
+    );
+  });
 });
