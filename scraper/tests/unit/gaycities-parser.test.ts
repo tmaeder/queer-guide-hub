@@ -432,6 +432,23 @@ describe('normalizeGcEvent dead image hosts', () => {
     expect(norm.images).toEqual([]);
   });
 
+  it('records the historical importer limitation without claiming an image passed', () => {
+    const image = 'https://graph.facebook.com/127907260588811/picture?type=large';
+    const norm = normalizeGcEvent(detailFixture({ jsonLd: { ...ld(image), _legacyTemplate: true },
+      bodyDescription: null, fromWayback: true }), METRO);
+    if ('reject' in norm) throw new Error('unexpected reject: ' + norm.reject);
+    expect(norm.images).toEqual([]);
+    expect(norm.metadata.artwork_exclusion).toEqual({ contract: 'gaycities-wayback-graph-artwork:v1',
+      outcome: 'source_unavailable', api_reference: image, reason: 'api_reference_excluded', human_reviewed: false });
+  });
+
+  it('does not declare a historical source limitation for an ordinary current page', () => {
+    const norm = normalizeGcEvent(detailFixture({ jsonLd: ld('https://graph.facebook.com/123456/picture?type=large'),
+      bodyDescription: null }), METRO);
+    if ('reject' in norm) throw new Error('unexpected reject: ' + norm.reject);
+    expect(norm.metadata.artwork_exclusion).toBeUndefined();
+  });
+
   it.each([
     'https://scontent.example.fbcdn.net/event.jpg',
     'https://gaycities-lv.b-cdn.net/proxy?src=https://graph.facebook.com/123/picture',

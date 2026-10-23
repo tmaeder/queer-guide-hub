@@ -4,12 +4,13 @@ import { LanguageSwitcher } from '@/components/i18n/LanguageSwitcher';
 import { CurrencySelector } from '@/components/i18n/CurrencySelector';
 import { ThemeToggle } from '@/components/theme/ThemeToggle';
 import { cn } from '@/lib/utils';
-import { INTENT_NAV, isIntentActive } from '@/config/navigation';
+import { INTENT_NAV, INTENT_TRACK, isIntentActive } from '@/config/navigation';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { OPEN_COOKIE_PREFERENCES_EVENT } from '@/lib/analyticsConsent';
 import { Wordmark } from '@/components/brand/Wordmark';
 import { useSiteBranding } from '@/hooks/useSiteBranding';
 import { PAGE_GUTTER } from '@/components/layout/PageContainer';
+import './Footer.css';
 
 const legalLinks = [
   { href: '/privacy', labelKey: 'footer.privacy', fallback: 'Privacy' },
@@ -75,7 +76,7 @@ export function Footer({ variant = 'full' }: FooterProps = {}) {
       {/* Share the header's outer geometry, not just its content max-width. */}
       <div
         className={cn(
-          'island-capped rounded-panel bg-foreground py-4 text-background md:py-6',
+          'island-capped relative overflow-hidden rounded-panel bg-foreground py-4 text-background md:py-6',
           PAGE_GUTTER,
         )}
       >
@@ -91,13 +92,15 @@ export function Footer({ variant = 'full' }: FooterProps = {}) {
               <LocalizedLink
                 key={intent.to}
                 to={intent.to}
+                data-track={INTENT_TRACK[intent.id] ?? 'pink'}
                 aria-current={isIntentActive(intent, localePath) ? 'page' : undefined}
                 className={cn(
                   footerLink,
-                  'font-medium text-background/80 hover:text-background aria-[current=page]:text-background aria-[current=page]:underline',
+                  'footer-route-link font-medium text-background/80 hover:text-background hover:no-underline aria-[current=page]:text-background aria-[current=page]:font-bold',
                 )}
               >
-                {t(intent.labelKey, intent.fallback)}
+                <span>{t(intent.labelKey, intent.fallback)}</span>
+                <span className="footer-route-marker" aria-hidden="true" />
               </LocalizedLink>
             ))}
           </nav>
@@ -149,6 +152,18 @@ export function Footer({ variant = 'full' }: FooterProps = {}) {
             &copy; {currentYear} Queer Guide
           </p>
         </div>
+        <svg
+          aria-hidden="true"
+          focusable="false"
+          viewBox="0 0 128 32"
+          fill="none"
+          className="footer-route-drawing pointer-events-none absolute bottom-0 end-6 h-6 w-24 sm:w-32"
+        >
+          <path className="footer-route-blue" d="M4 26h36C56 26 56 6 72 6h52" />
+          <path className="footer-route-pink" d="M4 26h32c16 0 16-10 32-10h56" />
+          <circle className="footer-route-green" cx="78" cy="16" r="3" />
+          <circle className="footer-route-yellow" cx="110" cy="6" r="3" />
+        </svg>
       </div>
     </footer>
   );

@@ -1,4 +1,7 @@
 import { ContentListPanel } from '@/components/cms/ContentListPanel';
+import { exportContentType } from '@/components/cms/ContentListPanel/exportContentList';
+import { ExportExcelButton } from '@/components/admin/ExportExcelButton';
+import { venueContentType } from '@/config/contentTypes/venue';
 import { lazy, Suspense } from 'react';
 import { TrackLoader } from '@/components/transit/TrackLoader';
 import { Navigate, useSearchParams } from 'react-router';
@@ -96,8 +99,35 @@ export default function OrganisationsWorkspace() {
         hidden={tab !== 'directory'}
         className={`${tab === 'directory' ? 'flex' : 'hidden'} min-h-0 flex-1 flex-col`}
       >
-        <ContentListPanel contentTypeId="organizations" workspace hideHeader />
+        <ContentListPanel
+          contentTypeId="organizations"
+          workspace
+          hideHeader
+          tools={<VenueExportButtons />}
+        />
       </TabsContent>
     </Tabs>
   );
+}
+
+/**
+ * Venues have no admin list of their own: /admin/venues and
+ * /admin/content/venues both land on this directory, whose export covers the
+ * `organizations` table only. These export the `venues` table itself, with
+ * every column, in the default live (not archived) and unmerged slice.
+ */
+function VenueExportButtons() {
+  return (['Excel', 'CSV'] as const).map((format) => (
+    <ExportExcelButton
+      key={format}
+      format={format}
+      label={`Export venues (${format})`}
+      onExport={() =>
+        exportContentType(venueContentType, [], format, {
+          archivedView: 'live',
+          mergedView: 'unmerged',
+        })
+      }
+    />
+  ));
 }

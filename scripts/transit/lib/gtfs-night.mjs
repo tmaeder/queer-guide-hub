@@ -150,6 +150,9 @@ export function createNightAccumulator(week) {
 
   return {
     add(date, routeKey, t, tripId) {
+      // Past 06:00 next day is another day's service. The German feed stamps multi-day
+      // coach trips up to ~40:00, which otherwise read as a "last bus at 15:50 (+1)".
+      if (t >= DAY_S + 6 * 3600) return;
       if (nightOf.has(date)) bump(nightOf.get(date), routeKey, t, tripId, true);
       const p = prev.get(date);
       if (t < NIGHT_CUTOFF_S && p && nightOf.has(p))
@@ -219,4 +222,34 @@ export function separateNightVariants(rows) {
   return rows.map((r) =>
     r.is_night_line && regular.has(key(r)) ? { ...r, route_ref: `${r.route_ref} (night)` } : r,
   );
+}
+
+/**
+ * Long-distance trains are not a way home within a city: one ICE passing Düsseldorf at
+ * 02:43 and an IC8 leaving Zürich HB at 02:10 each became that city's "last train".
+ * Swiss feeds mark them by route_type (101 high-speed, 102 long-distance) and class
+ * code; German feeds use plain type 2 for all rail, so only the train name says it.
+ */
+const LONG_DISTANCE_CLASS = new Set([
+  'IC',
+  'ICE',
+  'EC',
+  'EN',
+  'NJ',
+  'TGV',
+  'RJ',
+  'RJX',
+  'ECE',
+  'FLX',
+  'EXT',
+]);
+export function isLongDistanceRail(routeType, routeDesc = '', ref = '') {
+  const t = Number(routeType);
+  if (t === 101 || t === 102) return true;
+  if (LONG_DISTANCE_CLASS.has(routeDesc)) return true;
+  const head = String(ref)
+    .trim()
+    .split(/[\s\d]/)[0]
+    .toUpperCase();
+  return LONG_DISTANCE_CLASS.has(head);
 }
