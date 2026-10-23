@@ -548,7 +548,9 @@ export const ExploreMap = ({
       {sharedMobility && (
         <p
           role="status"
-          className={`absolute left-3 z-10 m-0 max-w-[70%] rounded-element bg-card px-4 py-1.5 text-xs leading-tight shadow-soft ${linkToFullMap ? 'bottom-14' : 'bottom-3'}`}
+          // Top-centre, below MapShell's search/filters bar: the bottom edge belongs to the
+          // departure board, which hid this line on prod (2026-10-23).
+          className="pointer-events-none absolute left-1/2 top-16 z-10 m-0 max-w-[80%] -translate-x-1/2 rounded-element bg-card px-4 py-1.5 text-center text-xs leading-tight shadow-soft"
         >
           {sharedMobility.tooFar
             ? 'Zoom in to see shared bikes & e-scooters'
