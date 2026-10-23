@@ -3,7 +3,7 @@ import { TrackLoader } from '@/components/transit/TrackLoader';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
-import { Send} from 'lucide-react';
+import { Send } from 'lucide-react';
 import { useMailbox } from '@/hooks/useMailbox';
 import { useMailboxAddress } from '@/hooks/useMailboxAddress';
 import { RichTextEditor } from '@/components/cms/editor/RichTextEditor';
@@ -16,7 +16,7 @@ function htmlToText(html: string): string {
 
 interface ComposeEmailProps {
   replyTo?: { id: string; from_address: string; subject: string };
-  onSent?: () => void;
+  onSent?: (emailId?: string) => void;
   onCancel?: () => void;
 }
 
@@ -45,14 +45,14 @@ export const ComposeEmail = ({ replyTo, onSent, onCancel }: ComposeEmailProps) =
     const bodyText = htmlToText(bodyHtml);
 
     try {
-      await sendEmail({
+      const result = await sendEmail({
         to: to.trim(),
         subject: subject.trim(),
         body_html: bodyText ? bodyHtml : undefined,
         body_text: bodyText,
         in_reply_to_email_id: replyTo?.id,
       });
-      onSent?.();
+      onSent?.(typeof result?.email_id === 'string' ? result.email_id : undefined);
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Failed to send email');
     }
@@ -63,9 +63,7 @@ export const ComposeEmail = ({ replyTo, onSent, onCancel }: ComposeEmailProps) =
       <h6 className="text-base font-bold mb-2">{replyTo ? 'Reply' : 'New Email'}</h6>
 
       {fullEmail && (
-        <span className="text-xs text-muted-foreground mb-4 block">
-          From: {fullEmail}
-        </span>
+        <span className="text-xs text-muted-foreground mb-4 block">From: {fullEmail}</span>
       )}
 
       <div className="space-y-4">
@@ -100,9 +98,7 @@ export const ComposeEmail = ({ replyTo, onSent, onCancel }: ComposeEmailProps) =
           />
         </div>
 
-        {error && (
-          <p className="text-sm text-destructive">{error}</p>
-        )}
+        {error && <p className="text-sm text-destructive">{error}</p>}
 
         <div className="flex gap-2 justify-end">
           {onCancel && (
