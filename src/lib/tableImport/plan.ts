@@ -28,8 +28,32 @@ const system = new Set([
 export const empty = (value: unknown) =>
   value == null ||
   (typeof value === 'string' && value.trim() === '') ||
-  (Array.isArray(value) && !value.length);
-export const equal = (a: unknown, b: unknown) => JSON.stringify(a) === JSON.stringify(b);
+  (Array.isArray(value) && !value.length) ||
+  (typeof value === 'object' &&
+    value !== null &&
+    !Array.isArray(value) &&
+    Object.keys(value).length === 0);
+/** JSON objects are unordered; arrays and scalar values retain their semantics. */
+export function equal(a: unknown, b: unknown): boolean {
+  if (a === b) return true;
+  if (a === null || b === null || typeof a !== 'object' || typeof b !== 'object') return false;
+  if (a instanceof Date || b instanceof Date)
+    return a instanceof Date && b instanceof Date && a.getTime() === b.getTime();
+  if (Array.isArray(a) || Array.isArray(b))
+    return (
+      Array.isArray(a) &&
+      Array.isArray(b) &&
+      a.length === b.length &&
+      a.every((value: unknown, index) => equal(value, b[index]))
+    );
+  const left = a as Record<string, unknown>,
+    right = b as Record<string, unknown>;
+  const keys = Object.keys(left);
+  return (
+    keys.length === Object.keys(right).length &&
+    keys.every((key) => Object.hasOwn(right, key) && equal(left[key], right[key]))
+  );
+}
 export function writableFields(config: ContentTypeConfig): FieldConfig[] {
   // Real FK columns populated by editable pickers are writable even when the
   // editor hides their raw controls. Arbitrary hidden/system columns stay out.

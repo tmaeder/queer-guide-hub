@@ -187,4 +187,62 @@ describe('import planning', () => {
     expect(convertCell('one|two', field('tags'))).toEqual(['one', 'two']);
     expect(() => convertCell('[1,2]', field('tags'))).toThrow();
   });
+  it('fills empty JSON objects during enrichment while preserving populated objects', () => {
+    const content = {
+      ...config,
+      fields: [
+        ...config.fields,
+        { name: 'details', label: 'Details', type: 'json' as const, group: 'basic' as const },
+      ],
+    };
+    const input = {
+      name: 'Metadata',
+      headers: ['ID', 'Details'],
+      rows: [
+        ['one', '{"website":"https://example.org"}'],
+        ['two', '{"website":"https://example.org"}'],
+      ],
+    };
+    const rows = buildImportPlan(
+      content,
+      input,
+      { ...opts, mode: 'enrich', mapping: ['id', 'details'] },
+      [
+        { id: 'one', name: 'First', details: {} },
+        { id: 'two', name: 'Second', details: { source: 'Keep' } },
+      ],
+    );
+    expect(rows[0].action).toBe('update');
+    expect(rows[0].patch.details).toEqual({ website: 'https://example.org' });
+    expect(rows[1].action).toBe('skip');
+    expect(rows[1].patch).toEqual({});
+  });
+  it('treats JSON object key order as unchanged while retaining meaningful array order', () => {
+    const content = {
+      ...config,
+      fields: [
+        ...config.fields,
+        { name: 'details', label: 'Details', type: 'json' as const, group: 'basic' as const },
+      ],
+    };
+    const input = {
+      name: 'Metadata',
+      headers: ['ID', 'Details'],
+      rows: [
+        ['one', '{"nested":{"b":2,"a":1},"source":"kept"}'],
+        ['two', '[2,1]'],
+      ],
+    };
+    const rows = buildImportPlan(
+      content,
+      input,
+      { ...opts, mode: 'update', mapping: ['id', 'details'] },
+      [
+        { id: 'one', name: 'First', details: { source: 'kept', nested: { a: 1, b: 2 } } },
+        { id: 'two', name: 'Second', details: [1, 2] },
+      ],
+    );
+    expect(rows[0].action).toBe('skip');
+    expect(rows[1].action).toBe('update');
+  });
 });

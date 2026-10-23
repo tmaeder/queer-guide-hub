@@ -161,6 +161,21 @@ function prepared(config: ContentTypeConfig, row: PlannedRow): RecordData {
   return config.editorApi?.prepareSave ? config.editorApi.prepareSave(data) : data;
 }
 
+/** PostgreSQL array input escaping differs from JSON for NULL and control characters. */
+function postgresArrayLiteral(values: unknown[]): string {
+  return (
+    '{' +
+    values
+      .map((value) =>
+        value == null
+          ? 'NULL'
+          : '"' + String(value).replaceAll('\\', '\\\\').replaceAll('"', '\\"') + '"',
+      )
+      .join(',') +
+    '}'
+  );
+}
+
 async function saveRow(
   config: ContentTypeConfig,
   row: PlannedRow,
@@ -263,15 +278,22 @@ async function saveRow(
     ...('updated_at' in row.before! ? ['updated_at'] : []),
   ])) {
     const value = row.before![key];
-    if (value == null) query = query.is(key, null);
+    const field = config.fields.find((f) => f.name === key);
+    const json =
+      field &&
+      [
+        'json',
+        'social_links',
+        'link_list',
+        'organisation_locations',
+        'organisation_relationships',
+      ].includes(field.type);
+    // The JSON response represents SQL NULL and jsonb 'null' identically.
+    // Both are missing values; retain the id/version predicates around this OR.
+    if (value == null)
+      query = json ? query.or(`${key}.is.null,${key}.eq.null`) : query.is(key, null);
     else if (Array.isArray(value)) {
-      const field = config.fields.find((f) => f.name === key);
-      const json = field && ['json', 'social_links', 'link_list'].includes(field.type);
-      query = query.filter(
-        key,
-        'eq',
-        json ? JSON.stringify(value) : `{${value.map((v) => JSON.stringify(String(v))).join(',')}}`,
-      );
+      query = query.filter(key, 'eq', json ? JSON.stringify(value) : postgresArrayLiteral(value));
     } else if (typeof value === 'object') query = query.filter(key, 'eq', JSON.stringify(value));
     else query = query.eq(key, value);
   }
@@ -303,14 +325,12 @@ export async function applyImport(
   for (const [index, row] of selected.entries()) {
     if (signal.aborted) {
       outcomes.push(
-        ...selected
-          .slice(index)
-          .map((pending) => ({
-            row: pending.row,
-            identity: pending.identity,
-            status: 'cancelled' as const,
-            message: 'Not attempted.',
-          })),
+        ...selected.slice(index).map((pending) => ({
+          row: pending.row,
+          identity: pending.identity,
+          status: 'cancelled' as const,
+          message: 'Not attempted.',
+        })),
       );
       break;
     } else if (row.action === 'skip') {

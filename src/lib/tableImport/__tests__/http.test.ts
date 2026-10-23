@@ -12,6 +12,7 @@ vi.mock('@/integrations/supabase/untyped', () => ({
   untypedRpc: vi.fn(),
 }));
 vi.mock('@/hooks/useManagedOptions', () => ({ invalidateManagedOptions: vi.fn() }));
+let instance = 0;
 let rows: RecordData[], patches: Array<{ url: URL; body: RecordData }>;
 beforeEach(() => {
   rows = [
@@ -26,7 +27,11 @@ beforeEach(() => {
   patches = [];
   transport.getUser.mockResolvedValue({ data: { user: { id: 'admin' } }, error: null });
   const client = createClient('http://127.0.0.1:49999', 'local-test-key', {
-    auth: { persistSession: false, autoRefreshToken: false },
+    auth: {
+      persistSession: false,
+      autoRefreshToken: false,
+      storageKey: `import-http-${++instance}`,
+    },
     global: {
       fetch: async (request, init) => {
         const url = new URL(String(request));
@@ -91,4 +96,56 @@ it('uses actual PostgREST serialization for atomic array, JSON and version predi
   expect(patches[0].url.searchParams.get('details')).toBe('eq.{"note":"old"}');
   expect(patches[0].url.searchParams.get('updated_at')).toBe('eq.2026-10-23T00:00:00Z');
   expect(patches[0].body).toMatchObject({ tags: ['c'], details: { note: 'new' } });
+});
+
+it('serializes PostgreSQL NULL and literal newlines without JSON array escaping', async () => {
+  rows[0].tags = ['line\nbreak', null];
+  const content = {
+    ...config,
+    fields: [
+      ...config.fields,
+      { name: 'tags', label: 'Tags', type: 'tags' as const, group: 'basic' as const },
+    ],
+  };
+  const preview = await previewImport(
+    content,
+    { name: 'Data', headers: ['ID', 'Tags'], rows: [['one', '["fixed"]']] },
+    { mode: 'update', matchField: 'id', clearBlanks: false, mapping: ['id', 'tags'] },
+  );
+  const result = await applyImport(
+    content,
+    preview,
+    new Set(),
+    new AbortController().signal,
+    vi.fn(),
+  );
+  expect(result[0].status).toBe('updated');
+  expect(patches[0].url.searchParams.get('tags')).toBe('eq.{"line\nbreak",NULL}');
+});
+
+it('guards either null JSON representation without relaxing record identity', async () => {
+  rows[0].details = null;
+  const content = {
+    ...config,
+    fields: [
+      ...config.fields,
+      { name: 'details', label: 'Details', type: 'json' as const, group: 'basic' as const },
+    ],
+  };
+  const preview = await previewImport(
+    content,
+    { name: 'Data', headers: ['ID', 'Details'], rows: [['one', '{"source":"upload"}']] },
+    { mode: 'enrich', matchField: 'id', clearBlanks: false, mapping: ['id', 'details'] },
+  );
+  const result = await applyImport(
+    content,
+    preview,
+    new Set(),
+    new AbortController().signal,
+    vi.fn(),
+  );
+  expect(result[0].status).toBe('updated');
+  expect(patches[0].url.searchParams.get('or')).toBe('(details.is.null,details.eq.null)');
+  expect(patches[0].url.searchParams.get('id')).toBe('eq.one');
+  expect(patches[0].url.searchParams.get('updated_at')).toBe('eq.2026-10-23T00:00:00Z');
 });
