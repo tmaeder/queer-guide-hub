@@ -1,7 +1,7 @@
 import { act, renderHook, waitFor } from '@testing-library/react';
 import { MemoryRouter, useSearchParams } from 'react-router';
 import { expect, it } from 'vitest';
-import type { PropsWithChildren } from 'react';
+import { StrictMode, type PropsWithChildren } from 'react';
 import { useInboxSelection } from '../useInboxSelection';
 import { mailboxSelection } from '@/lib/mailboxSelection';
 import type { InboxItem } from '@/hooks/useInboxFeed';
@@ -9,7 +9,9 @@ const first = '88888888-0000-4000-8000-000000000030',
   second = '88888888-0000-4000-8000-000000000031';
 function wrapper({ children }: PropsWithChildren) {
   return (
-    <MemoryRouter initialEntries={[`/messages?email=${first}&keep=1`]}>{children}</MemoryRouter>
+    <StrictMode>
+      <MemoryRouter initialEntries={[`/messages?email=${first}&keep=1`]}>{children}</MemoryRouter>
+    </StrictMode>
   );
 }
 function useSelection() {
@@ -46,4 +48,19 @@ it('rejects malformed references without creating a readable selection', async (
   act(() => result.current.setParams(new URLSearchParams('email=../admin')));
   await waitFor(() => expect(result.current.selected).toBeNull());
   expect(mailboxSelection('not-a-message')).toBeNull();
+});
+
+it('clears a routed detail only when the selected filter actually changes', async () => {
+  const { result, rerender } = renderHook(
+    ({ filter }: { filter: 'mail' | 'all' }) => {
+      const [params, setParams] = useSearchParams();
+      return { ...useInboxSelection(filter, [], params, setParams), params };
+    },
+    { wrapper, initialProps: { filter: 'mail' } },
+  );
+  await waitFor(() => expect(result.current.selected?.id).toBe(`mail_${first}`));
+  rerender({ filter: 'all' });
+  await waitFor(() => expect(result.current.selected).toBeNull());
+  expect(result.current.params.has('email')).toBe(false);
+  expect(result.current.params.get('keep')).toBe('1');
 });

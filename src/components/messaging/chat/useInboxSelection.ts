@@ -26,12 +26,10 @@ export function useInboxSelection(
         : notification;
 
   // A filter click clears the previous detail; the initial URL remains authoritative.
-  const hasMountedRef = useRef(false);
+  const previousFilter = useRef(filter);
   useEffect(() => {
-    if (!hasMountedRef.current) {
-      hasMountedRef.current = true;
-      return;
-    }
+    if (previousFilter.current === filter) return;
+    previousFilter.current = filter;
     setNotification(null);
     if (
       searchParams.has('conversation') ||
@@ -44,9 +42,7 @@ export function useInboxSelection(
       next.delete('tripmail');
       setSearchParams(next, { replace: true });
     }
-    // The effect responds only to the filter, not to ordinary detail navigation.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filter]);
+  }, [filter, searchParams, setSearchParams]);
 
   const handleSelect = (item: InboxItem) => {
     setNotification(item.kind === 'notification' ? item : null);
