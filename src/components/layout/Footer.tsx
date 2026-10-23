@@ -4,12 +4,14 @@ import { LanguageSwitcher } from '@/components/i18n/LanguageSwitcher';
 import { CurrencySelector } from '@/components/i18n/CurrencySelector';
 import { ThemeToggle } from '@/components/theme/ThemeToggle';
 import { cn } from '@/lib/utils';
-import { INTENT_NAV, isIntentActive } from '@/config/navigation';
+import { INTENT_NAV, INTENT_TRACK, isIntentActive } from '@/config/navigation';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { OPEN_COOKIE_PREFERENCES_EVENT } from '@/lib/analyticsConsent';
 import { Wordmark } from '@/components/brand/Wordmark';
 import { useSiteBranding } from '@/hooks/useSiteBranding';
 import { PAGE_GUTTER } from '@/components/layout/PageContainer';
+import { paper } from '@/components/transit/iconDefs';
+import './Footer.css';
 
 const legalLinks = [
   { href: '/privacy', labelKey: 'footer.privacy', fallback: 'Privacy' },
@@ -86,13 +88,21 @@ export function Footer({ variant = 'full' }: FooterProps = {}) {
             <LocalizedLink
               key={intent.to}
               to={intent.to}
+              data-track={INTENT_TRACK[intent.id]}
               aria-current={isIntentActive(intent, localePath) ? 'page' : undefined}
               className={cn(
                 footerLink,
-                'text-title font-bold leading-snug text-background aria-[current=page]:underline',
+                'footer-destination gap-1 text-15 font-bold leading-snug text-background md:gap-2 md:text-title aria-[current=page]:underline',
               )}
             >
-              {t(intent.labelKey, intent.fallback)}
+              <span
+                aria-hidden="true"
+                className="footer-destination-icon inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-badge"
+                style={{ backgroundColor: paper }}
+              >
+                <intent.icon size={24} />
+              </span>
+              <span>{t(intent.labelKey, intent.fallback)}</span>
             </LocalizedLink>
           ))}
         </nav>
