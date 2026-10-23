@@ -38,6 +38,8 @@ const controller = {
   totalCount: 0,
   search: '',
   debouncedSearch: '',
+  archivedView: 'live',
+  mergedView: 'unmerged',
   setSearch: vi.fn(),
   sorts: [{ field: 'title', dir: 'asc' }],
   setSorts: vi.fn(),
@@ -97,12 +99,15 @@ function baseConfig(over: Partial<ContentTypeConfig> = {}): ContentTypeConfig {
   } as ContentTypeConfig;
 }
 
-function renderPanel(config: ContentTypeConfig | null) {
+function renderPanel(
+  config: ContentTypeConfig | null,
+  props: Partial<React.ComponentProps<typeof ContentListPanel>> = {},
+) {
   controller.config = config;
   render(
     <MemoryRouter>
       <TooltipProvider>
-        <ContentListPanel contentTypeId="redirects" />
+        <ContentListPanel contentTypeId="redirects" {...props} />
       </TooltipProvider>
     </MemoryRouter>,
   );
@@ -117,42 +122,40 @@ describe('ContentListPanel toolbarActions', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Refresh' }));
     expect(controller.loadItems).toHaveBeenCalled();
   });
-  it('offers CSV alongside Excel for tags even with search, filters, and pagination active', async () => {
-    const config = unifiedTagsContentType;
-    const original = {
-      filters: controller.filters,
-      search: controller.search,
-      debouncedSearch: controller.debouncedSearch,
-      page: controller.page,
-      allListColumns: controller.allListColumns,
-    };
-    controller.filters = [{ id: 'status-filter', field: 'status', op: 'eq', value: 'active' }];
-    controller.search = 'filtered';
-    controller.debouncedSearch = 'filtered';
-    controller.page = 3;
-    controller.allListColumns = config.fields.filter((field) => field.listColumn);
-    expect(controller.allListColumns).toEqual([]);
-    try {
-      renderPanel(config);
-      fireEvent.click(screen.getByRole('button', { name: 'Content tools' }));
-      expect(screen.getByRole('button', { name: 'Export Excel' })).toBeVisible();
-      fireEvent.click(screen.getByRole('button', { name: 'Export CSV' }));
-      await waitFor(() =>
-        // Every page, but only the rows the list currently matches.
-        expect(exportContentType).toHaveBeenCalledWith(config, controller.allListColumns, 'CSV', {
-          filters: controller.filters,
-          search: 'filtered',
-          archivedView: undefined,
-          mergedView: undefined,
-        }),
-      );
-      await waitFor(() =>
-        expect(screen.getByRole('button', { name: 'Export CSV' })).not.toBeDisabled(),
-      );
-    } finally {
-      Object.assign(controller, original);
-    }
-  });
+  it.each(['Excel', 'CSV'] as const)(
+    'exports all tags as %s despite search, filters, and pagination',
+    async (format) => {
+      const config = unifiedTagsContentType;
+      const original = {
+        filters: controller.filters,
+        search: controller.search,
+        debouncedSearch: controller.debouncedSearch,
+        page: controller.page,
+        allListColumns: controller.allListColumns,
+      };
+      controller.filters = [{ id: 'status-filter', field: 'status', op: 'eq', value: 'active' }];
+      controller.search = 'filtered';
+      controller.debouncedSearch = 'filtered';
+      controller.page = 3;
+      controller.allListColumns = config.fields.filter((field) => field.listColumn);
+      expect(controller.allListColumns).toEqual([]);
+      try {
+        renderPanel(config);
+        fireEvent.click(screen.getByRole('button', { name: 'Content tools' }));
+        expect(screen.getByRole('button', { name: 'Export Excel' })).toBeVisible();
+        fireEvent.click(screen.getByRole('button', { name: `Export ${format}` }));
+        await waitFor(() =>
+          expect(exportContentType).toHaveBeenCalledWith(config, controller.allListColumns, format),
+        );
+        expect(vi.mocked(exportContentType).mock.lastCall).toHaveLength(3);
+        await waitFor(() =>
+          expect(screen.getByRole('button', { name: `Export ${format}` })).not.toBeDisabled(),
+        );
+      } finally {
+        Object.assign(controller, original);
+      }
+    },
+  );
 
   it('offers Excel and CSV for every content type, not only tags', () => {
     renderPanel(baseConfig());
@@ -160,6 +163,18 @@ describe('ContentListPanel toolbarActions', () => {
     expect(screen.getByRole('button', { name: 'Export Excel' })).toBeVisible();
     expect(screen.getByRole('button', { name: 'Export CSV' })).toBeVisible();
   });
+
+  it.each([false, true])(
+    'keeps exports available with a hidden header (workspace=%s)',
+    (workspace) => {
+      renderPanel(baseConfig(), { hideHeader: true, workspace });
+      fireEvent.click(
+        screen.getByRole('button', { name: workspace ? 'List tools' : 'Content tools' }),
+      );
+      expect(screen.getByRole('button', { name: 'Export Excel' })).toBeVisible();
+      expect(screen.getByRole('button', { name: 'Export CSV' })).toBeVisible();
+    },
+  );
 
   it('renders nothing extra when a type declares none', () => {
     renderPanel(baseConfig());

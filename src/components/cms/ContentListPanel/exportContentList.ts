@@ -1,12 +1,12 @@
 /**
- * exportContentList — generic "export current content type to Excel" for the
- * unified content browser. Reuses src/utils/excelExport (lazy-loads exceljs)
+ * Export every record of a content type as Excel or CSV for the unified
+ * content browser. Reuses src/utils/excelExport (lazy-loads exceljs)
  * so the bespoke per-entity export the legacy admin pages carried is now a
  * built-in capability of /admin/content/:type.
  *
- * Columns mirror the type's configured list columns (plus the title); values
- * are formatted by field type. Exports the full table (matching the legacy
- * pages' "export all rows" behaviour), not just the current page.
+ * Columns include configured fields and remaining database columns; values
+ * are formatted by field type. List filters, search and pagination never
+ * restrict this full-table export.
  */
 
 import type { ContentTypeConfig, FieldConfig } from '@/types/cms';
@@ -19,15 +19,6 @@ import {
   type ExportColumnDef,
 } from '@/utils/excelExport';
 import { exportToCsv } from '@/utils/csvExport';
-import {
-  applyArchivedView,
-  applyContentSearch,
-  applyFilters,
-  applyMergedView,
-  type ArchivedView,
-  type MergedView,
-} from './filterOps';
-import type { Filter } from './viewSpec';
 import { formatDate, formatDateTime } from '@/lib/format';
 
 type Row = Record<string, unknown>;
@@ -61,17 +52,6 @@ function accessorFor(
         return String(v);
     }
   };
-}
-
-/**
- * The slice of the list the export should match. Omitted = every row in the
- * table, which is what the taxonomy-wide export wants.
- */
-export interface ExportScope {
-  filters?: Filter[];
-  search?: string;
-  archivedView?: ArchivedView;
-  mergedView?: MergedView;
 }
 
 /** Every column present on at least one row, in first-seen order. */
@@ -112,40 +92,34 @@ export function exportColumnsFor(
   ];
 }
 
-/** Narrow a fetch to what the list currently shows, with a stable tiebreak. */
-function scopeRefiner(config: ContentTypeConfig, scope?: ExportScope) {
-  return <Q>(query: Q): Q => {
-    let q = query as never;
-    if (scope?.search) q = applyContentSearch(q, config, scope.search) as never;
-    if (scope?.filters?.length) q = applyFilters(q, scope.filters) as never;
-    if (scope?.archivedView)
-      q = applyArchivedView(q, config.lifecycle?.archive, scope.archivedView) as never;
-    if (scope?.mergedView) q = applyMergedView(q, config.merge, scope.mergedView) as never;
-    // Offset pagination over a non-unique order can skip or repeat rows
-    // between pages; the primary key makes the order total.
-    return (q as unknown as { order: (c: string, o: object) => Q }).order(config.primaryKey, {
-      ascending: true,
-    });
-  };
-}
-
-export function fetchContentRows(config: ContentTypeConfig, scope?: ExportScope) {
-  return fetchAllRows<Row>(
+/** All records, independent of the current list view, with a total ordering. */
+export async function fetchContentRows(config: ContentTypeConfig) {
+  const rows = await fetchAllRows<Row>(
     config.tableName,
     '*',
     { column: config.titleField, ascending: true },
     1000,
-    scopeRefiner(config, scope),
+    <Q>(query: Q): Q =>
+      (query as unknown as { order: (column: string, options: object) => Q }).order(
+        config.primaryKey,
+        { ascending: true },
+      ),
   );
+  const ids = rows.map((row) => row[config.primaryKey]);
+  if (ids.some((id) => id == null) || new Set(ids).size !== rows.length) {
+    throw new Error(
+      `The ${config.tableName} export contains missing or duplicate record IDs. Please retry.`,
+    );
+  }
+  return rows;
 }
 
 export async function exportContentType(
   config: ContentTypeConfig,
   listColumns: FieldConfig[],
   format: ExportFormat = 'Excel',
-  scope?: ExportScope,
 ): Promise<void> {
-  const rows = await fetchContentRows(config, scope);
+  const rows = await fetchContentRows(config);
   // List columns lead; every other field and column follows.
   const columns = exportColumnsFor(config, rows, listColumns);
 

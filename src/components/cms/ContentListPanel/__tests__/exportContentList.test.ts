@@ -115,20 +115,11 @@ describe('content exports', () => {
     refine(q);
     expect(calls).toEqual([['order', 'id', { ascending: true }]]);
   });
-
-  it('applies the list scope: filters, archived and merged slice', async () => {
-    vi.mocked(fetchAllRows).mockClear();
-    await exportContentType(config, fields, 'Excel', {
-      filters: [{ id: 'f', field: 'status', op: 'eq', value: 'active' }],
-      archivedView: 'live',
-      mergedView: 'unmerged',
-    });
-    const refine = vi.mocked(fetchAllRows).mock.lastCall![4]!;
-    const { q, calls } = recorder();
-    refine(q);
-    expect(calls).toContainEqual(['eq', 'status', 'active']);
-    expect(calls).toContainEqual(['or', 'status.is.null,status.neq.deprecated']);
-    expect(calls).toContainEqual(['is', 'merged_into_id', null]);
-    expect(calls.at(-1)).toEqual(['order', 'id', { ascending: true }]);
+  it('rejects repeated records instead of downloading an apparently complete file', async () => {
+    vi.mocked(fetchAllRows).mockResolvedValueOnce([
+      { id: 'same', name: 'A' },
+      { id: 'same', name: 'A' },
+    ]);
+    await expect(exportContentType(config, fields, 'CSV')).rejects.toThrow('duplicate record IDs');
   });
 });

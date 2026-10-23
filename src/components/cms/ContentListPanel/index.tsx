@@ -255,6 +255,16 @@ function ContentListPanelBody(props: ContentListPanelProps) {
   // "no config" as null, so normalize once here rather than at each call site.
   const config = c.config ?? null;
 
+  const exportActions =
+    config &&
+    (['Excel', 'CSV'] as const).map((format) => (
+      <ExportExcelButton
+        key={format}
+        format={format}
+        onExport={() => exportContentType(config, c.allListColumns, format)}
+      />
+    ));
+
   const viewBar = c.contentTypeId ? (
     <ViewBar
       compact={v.views.length === 0}
@@ -318,6 +328,7 @@ function ContentListPanelBody(props: ContentListPanelProps) {
                   <Link to={config.admin.duplicatesRoute}>Review duplicates</Link>
                 </Button>
               )}
+              {props.hideHeader && exportActions}
               {props.tools}
               {config.toolbarActions?.()}
             </AdminToolsPopover>
@@ -326,6 +337,11 @@ function ContentListPanelBody(props: ContentListPanelProps) {
               Add {config.label.singular}
             </Button>
           </div>
+        </div>
+      )}
+      {props.hideHeader && !props.workspace && config && (
+        <div className="mb-4 flex justify-end">
+          <AdminToolsPopover label="Content tools">{exportActions}</AdminToolsPopover>
         </div>
       )}
       {c.loadError && (
@@ -390,23 +406,7 @@ function ContentListPanelBody(props: ContentListPanelProps) {
                 </Button>
 
                 {c.config?.toolbarActions?.()}
-                {c.config &&
-                  (['Excel', 'CSV'] as const).map((format) => (
-                    <ExportExcelButton
-                      key={format}
-                      format={format}
-                      // The file matches what the list shows: same filters,
-                      // search and archived/merged slice, every page.
-                      onExport={() =>
-                        exportContentType(c.config!, c.allListColumns, format, {
-                          filters: c.filters,
-                          search: c.debouncedSearch,
-                          archivedView: c.archivedView,
-                          mergedView: c.mergedView,
-                        })
-                      }
-                    />
-                  ))}
+                {exportActions}
               </AdminToolsPopover>
               {c.config && (
                 <Button size="sm" onClick={() => c.onCreate(c.config!.id)}>
@@ -643,6 +643,7 @@ function ContentListPanelBody(props: ContentListPanelProps) {
             () => void c.loadItems(),
           )}
           <ExportExcelButton
+            label="Export selected (Excel)"
             onExport={() =>
               exportToExcel(
                 c.items
