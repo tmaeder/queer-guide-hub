@@ -218,7 +218,10 @@
           "uncertain": "Confirmation is pending. Check the status before sending another copy.",
           "delivered": "The recipient’s mail server accepted this message. Inbox placement is not confirmed."
         }
-      }
+      },
+      "scope": "Received and sent mail",
+      "sent": "Sent",
+      "loadError": "Messages could not load. Try again."
     }
   },
   "eventTypes": {

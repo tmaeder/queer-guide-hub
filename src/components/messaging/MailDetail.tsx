@@ -7,6 +7,7 @@ import { EmailView } from '@/components/inbox/EmailView';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useMailboxDelivery } from '@/hooks/useMailboxDelivery';
+import { useNavigate, useSearchParams } from 'react-router';
 
 /**
  * Self-contained email reader + inline reply, used by the unified inbox rail
@@ -15,6 +16,8 @@ import { useMailboxDelivery } from '@/hooks/useMailboxDelivery';
  */
 export function MailDetail({ emailId }: { emailId: string }) {
   const { t } = useTranslation();
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { sendEmail, sending, markRead, moveToFolder, fetchEmailById } = useMailbox();
 
   const [email, setEmail] = useState<MailboxEmail | null>(null);
@@ -42,14 +45,21 @@ export function MailDetail({ emailId }: { emailId: string }) {
 
   const handleSendReply = async () => {
     if (!email) return;
-    await sendEmail({
-      to: email.from_address,
+    const saved = await sendEmail({
+      to: email.direction === 'outbound' ? email.to_address : email.from_address,
       subject: `Re: ${email.subject.replace(/^Re:\s*/i, '')}`,
       body_text: replyBody,
       in_reply_to_email_id: email.id,
     });
     setReplyBody('');
     setReplyOpen(false);
+    if (typeof saved?.email_id === 'string') {
+      const next = new URLSearchParams(searchParams);
+      next.delete('conversation');
+      next.delete('tripmail');
+      next.set('email', saved.email_id);
+      navigate({ search: next.toString() }, { replace: true });
+    }
   };
 
   if (loading) {
@@ -98,7 +108,8 @@ export function MailDetail({ emailId }: { emailId: string }) {
             <div className="flex items-center justify-between">
               <h3 className="text-15 font-semibold">
                 <Reply className="mr-2 inline-block h-4 w-4 align-middle" aria-hidden />
-                {t('inbox.mail.replyTo', { defaultValue: 'Reply to' })} {email.from_address}
+                {t('inbox.mail.replyTo', { defaultValue: 'Reply to' })}{' '}
+                {email.direction === 'outbound' ? email.to_address : email.from_address}
               </h3>
               <Button
                 variant="ghost"

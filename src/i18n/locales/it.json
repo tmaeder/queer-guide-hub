@@ -3470,7 +3470,10 @@
           "uncertain": "La conferma è in attesa. Controlla lo stato prima di inviare un’altra copia.",
           "delivered": "Il server di posta del destinatario ha accettato il messaggio. L’arrivo nella posta in entrata non è confermato."
         }
-      }
+      },
+      "scope": "Posta ricevuta e inviata",
+      "sent": "Inviato",
+      "loadError": "Impossibile caricare i messaggi. Riprova."
     }
   },
   "extension": {

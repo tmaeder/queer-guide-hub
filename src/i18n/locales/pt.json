@@ -3470,7 +3470,10 @@
           "uncertain": "A confirmação está pendente. Verifique o estado antes de enviar outra cópia.",
           "delivered": "O servidor de correio do destinatário aceitou esta mensagem. A chegada à caixa de entrada não está confirmada."
         }
-      }
+      },
+      "scope": "Correio recebido e enviado",
+      "sent": "Enviado",
+      "loadError": "Não foi possível carregar as mensagens. Tente novamente."
     }
   },
   "extension": {

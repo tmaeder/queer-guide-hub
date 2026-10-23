@@ -40,6 +40,9 @@ export interface RailActions {
 /** Compose the preview line: "You: " prefix + media-aware label. */
 function usePreview(item: InboxItem): string {
   const { t } = useTranslation();
+  if (item.kind === 'mail' && item.subtype === 'outbound') {
+    return `${t('inbox.mail.sent', { defaultValue: 'Sent' })}: ${item.preview}`;
+  }
   if (item.kind !== 'chat') return item.preview;
   const label = (() => {
     switch (item.last_message_subtype) {

@@ -16,6 +16,21 @@ on:
       - 'src/components/inbox/__tests__/EmailDeliveryStatus.test.tsx'
       - 'src/components/messaging/MailDetail.tsx'
       - 'src/lib/mailboxDelivery.ts'
+      - 'src/lib/mailboxFeed.ts'
+      - 'src/lib/mailboxSelection.ts'
+      - 'src/lib/__tests__/mailboxFeed.test.ts'
+      - 'src/hooks/useInboxFeed.ts'
+      - 'src/hooks/__tests__/useInboxFeed.mail.test.tsx'
+      - 'src/components/messaging/__tests__/MailboxFlow.test.tsx'
+      - 'src/components/inbox/ComposeEmail.tsx'
+      - 'src/components/inbox/__tests__/ComposeEmail.test.tsx'
+      - 'src/components/messaging/MessagingInterface.tsx'
+      - 'src/components/messaging/InboxRailItem.tsx'
+      - 'src/components/messaging/chat/useInboxSelection.ts'
+      - 'src/components/messaging/chat/useInboxSearch.ts'
+      - 'src/components/messaging/chat/__tests__/useInboxSelection.test.tsx'
+      - 'supabase/migrations/*email_mailbox_feed_index.sql'
+      - 'supabase/tests/email_mailbox_feed.sql'
       - 'src/hooks/__tests__/useMailbox*.ts*'
       - 'supabase/tests/email_mailbox_delivery.sql'
       - 'supabase/tests/email_mailbox_concurrency.py'
@@ -123,7 +138,7 @@ jobs:
           npm run typecheck
           npm run dry-run
       - name: Member preferences and admin workspace
-        run: npx vitest run src/hooks/__tests__/useMailboxDelivery.test.tsx src/components/inbox/__tests__/EmailDeliveryStatus.test.tsx src/components/inbox/__tests__/EmailView.test.tsx src/hooks/__tests__/useMailbox.test.ts src/hooks/__tests__/useMailbox.delivery.test.tsx src/components/groups/__tests__/GroupInvitationReview.test.tsx src/components/news/__tests__/NewsSavedSearchesPanel.test.tsx src/components/profile/__tests__/EmailPreferences.test.tsx src/components/trips/__tests__/TripInvitations.test.tsx src/pages/admin/__tests__/EmailPlatform.test.tsx src/components/admin/email/__tests__/EmailAudiences.test.tsx src/components/admin/email/__tests__/EmailJourneys.test.tsx src/components/admin/email/__tests__/EmailCampaigns.test.tsx src/components/admin/email/__tests__/EmailOperations.test.tsx src/components/admin/email/__tests__/EmailContent.test.tsx src/components/admin/email/__tests__/EmailContacts.test.tsx src/components/admin/email/__tests__/EmailRecipients.test.tsx src/components/admin/email/__tests__/EmailReporting.test.tsx src/pages/__tests__/EmailUpdates.test.tsx src/components/admin/email/__tests__/emailDocument.test.ts src/config/__tests__/navigation.test.ts src/config/__tests__/pageDesignFamilies.test.ts
+        run: npx vitest run src/components/messaging/__tests__/MailboxFlow.test.tsx src/hooks/__tests__/useInboxFeed.mail.test.tsx src/lib/__tests__/mailboxFeed.test.ts src/components/messaging/chat/__tests__/useInboxSelection.test.tsx src/components/inbox/__tests__/ComposeEmail.test.tsx src/hooks/__tests__/useInboxFeed.test.ts src/components/messaging/__tests__/InboxRailItem.test.tsx src/hooks/__tests__/useMailboxDelivery.test.tsx src/components/inbox/__tests__/EmailDeliveryStatus.test.tsx src/components/inbox/__tests__/EmailView.test.tsx src/hooks/__tests__/useMailbox.test.ts src/hooks/__tests__/useMailbox.delivery.test.tsx src/components/groups/__tests__/GroupInvitationReview.test.tsx src/components/news/__tests__/NewsSavedSearchesPanel.test.tsx src/components/profile/__tests__/EmailPreferences.test.tsx src/components/trips/__tests__/TripInvitations.test.tsx src/pages/admin/__tests__/EmailPlatform.test.tsx src/components/admin/email/__tests__/EmailAudiences.test.tsx src/components/admin/email/__tests__/EmailJourneys.test.tsx src/components/admin/email/__tests__/EmailCampaigns.test.tsx src/components/admin/email/__tests__/EmailOperations.test.tsx src/components/admin/email/__tests__/EmailContent.test.tsx src/components/admin/email/__tests__/EmailContacts.test.tsx src/components/admin/email/__tests__/EmailRecipients.test.tsx src/components/admin/email/__tests__/EmailReporting.test.tsx src/pages/__tests__/EmailUpdates.test.tsx src/components/admin/email/__tests__/emailDocument.test.ts src/config/__tests__/navigation.test.ts src/config/__tests__/pageDesignFamilies.test.ts
       - name: Backend contracts
         run: |
           deno test --no-config --allow-env supabase/functions/send-mailbox-email/handler.test.ts supabase/functions/news-keyword-alerts/handler.test.ts supabase/functions/_shared/email-purpose.test.ts supabase/functions/_shared/email-platform.test.ts supabase/functions/_shared/email-content.test.ts supabase/functions/_shared/email-render.test.ts supabase/functions/_shared/email-outbox.test.ts supabase/functions/_shared/email-journey-worker.test.ts
@@ -151,6 +166,7 @@ jobs:
           psql -v ON_ERROR_STOP=1 -f supabase/migrations/99991792705625_email_operator_account_check.sql
           psql -v ON_ERROR_STOP=1 -f supabase/migrations/99991792707766_email_group_invitations.sql
           psql -v ON_ERROR_STOP=1 -f supabase/migrations/99991792788296_email_mailbox_delivery.sql
+          psql -v ON_ERROR_STOP=1 -f supabase/migrations/99991792793842_email_mailbox_feed_index.sql
           # Match production; fixture Auth mutations use a test-only helper.
           psql -v ON_ERROR_STOP=1 -c 'REVOKE SELECT ON auth.users FROM service_role'
           psql -v ON_ERROR_STOP=1 -f supabase/tests/email_platform.sql
@@ -171,5 +187,6 @@ jobs:
           psql -v ON_ERROR_STOP=1 -f supabase/tests/email_platform_recipient_capacity.sql
           psql -v ON_ERROR_STOP=1 -f supabase/tests/email_platform_capacity.sql
           psql -v ON_ERROR_STOP=1 -f supabase/tests/email_mailbox_delivery.sql
+          psql -v ON_ERROR_STOP=1 -f supabase/tests/email_mailbox_feed.sql
           QG_EMAIL_CONTRACTS=1 python3 supabase/tests/email_journey_concurrency.py
           QG_EMAIL_CONTRACTS=1 python3 supabase/tests/email_mailbox_concurrency.py

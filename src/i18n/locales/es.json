@@ -3470,7 +3470,10 @@
           "uncertain": "La confirmación está pendiente. Comprueba el estado antes de enviar otra copia.",
           "delivered": "El servidor de correo del destinatario aceptó este mensaje. No se ha confirmado su llegada a la bandeja de entrada."
         }
-      }
+      },
+      "scope": "Correo recibido y enviado",
+      "sent": "Enviado",
+      "loadError": "No se pudieron cargar los mensajes. Inténtalo de nuevo."
     }
   },
   "extension": {

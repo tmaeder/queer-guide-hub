@@ -3470,7 +3470,10 @@
           "uncertain": "Die Bestätigung steht aus. Prüfe den Status, bevor du eine weitere Kopie sendest.",
           "delivered": "Der Mailserver des Empfängers hat die Nachricht angenommen. Die Ablage im Posteingang ist nicht bestätigt."
         }
-      }
+      },
+      "scope": "Empfangene und gesendete E-Mails",
+      "sent": "Gesendet",
+      "loadError": "Nachrichten konnten nicht geladen werden. Bitte versuche es erneut."
     }
   },
   "extension": {

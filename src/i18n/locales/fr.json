@@ -3474,7 +3474,10 @@
           "uncertain": "La confirmation est en attente. Vérifiez le statut avant d’envoyer une autre copie.",
           "delivered": "Le serveur de messagerie du destinataire a accepté ce message. Son arrivée dans la boîte de réception n’est pas confirmée."
         }
-      }
+      },
+      "scope": "Messages reçus et envoyés",
+      "sent": "Envoyé",
+      "loadError": "Impossible de charger les messages. Réessayez."
     }
   },
   "extension": {
