@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import type { ContentTypeConfig, FieldConfig } from '@/types/cms';
-import { exportContentType } from '../exportContentList';
+import { exportContentRecord, exportContentType } from '../exportContentList';
 import { fetchAllRows, exportToExcel } from '@/utils/excelExport';
 import { exportToCsv } from '@/utils/csvExport';
 import { unifiedTagsContentType } from '@/config/contentTypes/tag';
@@ -130,5 +130,33 @@ describe('content exports', () => {
     expect(calls).toContainEqual(['or', 'status.is.null,status.neq.deprecated']);
     expect(calls).toContainEqual(['is', 'merged_into_id', null]);
     expect(calls.at(-1)).toEqual(['order', 'id', { ascending: true }]);
+  });
+
+  it.each(['Excel', 'CSV'] as const)(
+    'exports one record as %s, fetched by primary key, every column',
+    async (format) => {
+      vi.mocked(fetchAllRows).mockClear();
+      vi.mocked(fetchAllRows).mockResolvedValueOnce([
+        { id: 't1', name: 'Active', status: 'active', extra: 'x' },
+      ]);
+      await exportContentRecord(config, 't1', format);
+      const refine = vi.mocked(fetchAllRows).mock.lastCall![4]!;
+      const { q, calls } = recorder();
+      refine(q);
+      expect(calls).toEqual([
+        ['eq', 'id', 't1'],
+        ['order', 'id', { ascending: true }],
+      ]);
+      const call = vi.mocked(format === 'CSV' ? exportToCsv : exportToExcel).mock.lastCall!;
+      expect(call[0]).toHaveLength(1);
+      expect(call[1].map((column) => column.header)).toEqual(['Title', 'status', 'extra', 'ID']);
+    },
+  );
+
+  it('refuses to download an empty file when the record cannot be read', async () => {
+    vi.mocked(fetchAllRows).mockResolvedValueOnce([]);
+    vi.mocked(exportToExcel).mockClear();
+    await expect(exportContentRecord(config, 'gone')).rejects.toThrow(/no unified_tags row/i);
+    expect(exportToExcel).not.toHaveBeenCalled();
   });
 });

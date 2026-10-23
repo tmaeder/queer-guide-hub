@@ -19,6 +19,13 @@ import { TooltipProvider } from '@/components/ui/tooltip';
 import { Tag } from 'lucide-react';
 import type { ContentTypeConfig, FieldConfig } from '@/types/cms';
 import type { Filter } from '../viewSpec';
+import {
+  brandListConfig,
+  hotelListConfig,
+  merchantListConfig,
+  partnerListConfig,
+} from '@/components/admin/business/organisationListConfigs';
+import { getContentType } from '@/config/contentTypes';
 import { unifiedTagsContentType } from '@/config/contentTypes/tag';
 
 /**
@@ -179,6 +186,47 @@ describe('ContentListPanel toolbarActions', () => {
       expect.objectContaining({ filters: controller.filters }),
     );
   });
+
+  it.each([
+    ['Brands', brandListConfig],
+    ['Hotels', hotelListConfig],
+    ['Merchants', merchantListConfig],
+    ['Partners', partnerListConfig],
+  ])('the Organisations %s tab gets Excel and CSV from the workspace header', (_tab, config) => {
+    renderPanel(config, { workspace: true, hideHeader: true });
+    fireEvent.click(screen.getByRole('button', { name: 'List tools' }));
+    expect(screen.getByRole('button', { name: 'Export Excel' })).toBeVisible();
+    fireEvent.click(screen.getByRole('button', { name: 'Export CSV' }));
+    expect(exportContentType).toHaveBeenLastCalledWith(
+      config,
+      controller.allListColumns,
+      'CSV',
+      expect.any(Object),
+    );
+  });
+
+  it('keeps Excel and CSV when a page hides the header to own its title (Milestones)', () => {
+    renderPanel(baseConfig(), { hideHeader: true });
+    expect(screen.queryByRole('button', { name: 'List tools' })).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Content tools' }));
+    expect(screen.getByRole('button', { name: 'Export Excel' })).toBeVisible();
+    expect(screen.getByRole('button', { name: 'Export CSV' })).toBeVisible();
+  });
+
+  it.each(['personalities', 'milestones', 'events', 'cities'])(
+    'the real %s config offers Excel and CSV',
+    (id) => {
+      renderPanel(getContentType(id)!);
+      fireEvent.click(screen.getByRole('button', { name: 'Content tools' }));
+      fireEvent.click(screen.getByRole('button', { name: 'Export CSV' }));
+      expect(exportContentType).toHaveBeenLastCalledWith(
+        getContentType(id),
+        controller.allListColumns,
+        'CSV',
+        expect.any(Object),
+      );
+    },
+  );
 
   it('renders nothing extra when a type declares none', () => {
     renderPanel(baseConfig());

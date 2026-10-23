@@ -32,6 +32,11 @@ vi.mock('../RevisionHistorySheet', () => ({
   },
 }));
 
+const { exportRecordMock } = vi.hoisted(() => ({ exportRecordMock: vi.fn() }));
+vi.mock('@/components/cms/ContentListPanel/exportContentList', () => ({
+  exportContentRecord: exportRecordMock,
+}));
+
 import { AdminEditButton } from '../AdminEditButton';
 
 const renderIn = (ui: React.ReactElement, initial = '/venues/some-bar') =>
@@ -236,5 +241,41 @@ describe('AdminEditButton', () => {
     useAdminRolesMock.mockReturnValue({ canManageContent: () => true, loading: false });
     renderIn(<AdminEditButton contentType="venues" contentId="v1" />);
     expect(screen.getByRole('button', { name: 'Edit all fields (Admin)' })).toBeInTheDocument();
+  });
+
+  // ── record export ───────────────────────────────────────────────────
+
+  it('offers no record export unless the page opts in', async () => {
+    useAdminRolesMock.mockReturnValue({ canManageContent: () => true, loading: false });
+    renderIn(<AdminEditButton contentType="venues" contentId="v1" />);
+    await openMenu();
+    expect(await screen.findByText('Revision history')).toBeInTheDocument();
+    expect(screen.queryByText(/Export record/)).toBeNull();
+  });
+
+  it.each([
+    ['Excel', 'Export record (Excel)'],
+    ['CSV', 'Export record (CSV)'],
+  ] as const)('exports this venue as %s', async (format, label) => {
+    exportRecordMock.mockReset().mockResolvedValue(undefined);
+    useAdminRolesMock.mockReturnValue({ canManageContent: () => true, loading: false });
+    renderIn(<AdminEditButton contentType="venues" contentId="v1" exportable />);
+    await openMenu();
+    fireEvent.click(await screen.findByText(label));
+    await waitFor(() =>
+      expect(exportRecordMock).toHaveBeenCalledWith(
+        expect.objectContaining({ tableName: 'venues' }),
+        'v1',
+        format,
+      ),
+    );
+  });
+
+  it('offers no record export for a type that is not in the registry', async () => {
+    useAdminRolesMock.mockReturnValue({ canManageContent: () => true, loading: false });
+    renderIn(<AdminEditButton contentType="venue" contentId="v1" exportable />);
+    await openMenu();
+    expect(await screen.findByText('Revision history')).toBeInTheDocument();
+    expect(screen.queryByText(/Export record/)).toBeNull();
   });
 });

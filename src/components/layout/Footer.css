@@ -1,0 +1,73 @@
+/* Small route markers reuse the same intent colors as the header. Their
+   absolute positioning keeps link targets and footer dimensions unchanged. */
+.footer-route-link {
+  --footer-route-color: hsl(var(--track-pink));
+  position: relative;
+}
+
+.footer-route-link[data-track='blue'] {
+  --footer-route-color: hsl(var(--track-blue));
+}
+
+.footer-route-link[data-track='green'] {
+  --footer-route-color: hsl(var(--track-green));
+}
+
+.footer-route-link[data-track='yellow'] {
+  --footer-route-color: hsl(var(--track-yellow));
+}
+
+.footer-route-marker {
+  position: absolute;
+  inset-inline: 0;
+  bottom: 6px;
+  height: 3px;
+  border-radius: 999px;
+  background: var(--footer-route-color);
+  transform: scaleX(0.24);
+  transform-origin: left center;
+  transition: transform var(--motion-fast) cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+:dir(rtl) .footer-route-marker {
+  transform-origin: right center;
+}
+
+.footer-route-link:hover .footer-route-marker,
+.footer-route-link:focus-visible .footer-route-marker,
+.footer-route-link[aria-current='page'] .footer-route-marker {
+  transform: scaleX(1);
+}
+
+.footer-route-drawing {
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.footer-route-blue {
+  stroke: hsl(var(--track-blue));
+}
+
+.footer-route-pink {
+  stroke: hsl(var(--track-pink));
+}
+
+.footer-route-green,
+.footer-route-yellow {
+  fill: hsl(var(--foreground));
+}
+
+.footer-route-green {
+  stroke: hsl(var(--track-green));
+}
+
+.footer-route-yellow {
+  stroke: hsl(var(--track-yellow));
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .footer-route-marker {
+    transition: none;
+  }
+}

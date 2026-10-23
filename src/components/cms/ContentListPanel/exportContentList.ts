@@ -149,10 +149,38 @@ export async function exportContentType(
   // List columns lead; every other field and column follows.
   const columns = exportColumnsFor(config, rows, listColumns);
 
+  // Name the file after the table, not the config id: workspace lists reuse a
+  // type under an id like `workspace_hotels`, which is no name for a file.
+  const filename = generateFilename(config.tableName);
   if (format === 'CSV') {
-    exportToCsv(rows, columns, generateFilename(config.id).replace(/\.xlsx$/, '.csv'));
+    exportToCsv(rows, columns, filename.replace(/\.xlsx$/, '.csv'));
   } else {
-    await exportToExcel(rows, columns, generateFilename(config.id));
+    await exportToExcel(rows, columns, filename);
+  }
+}
+
+/**
+ * Export ONE record — every column, same formatting as the list export — for
+ * the admin menu on a public detail page. Fetched fresh by primary key rather
+ * than taken from the page's data, which is a joined, display-shaped object.
+ * Throws when the row cannot be read, so the caller can say so instead of
+ * downloading an empty file.
+ */
+export async function exportContentRecord(
+  config: ContentTypeConfig,
+  id: string,
+  format: ExportFormat = 'Excel',
+): Promise<void> {
+  const rows = await fetchContentRows(config, {
+    filters: [{ id: 'record', field: config.primaryKey, op: 'eq', value: id }],
+  });
+  if (rows.length === 0) throw new Error(`No ${config.tableName} row with id ${id}`);
+  const columns = exportColumnsFor(config, rows);
+  const filename = generateFilename(`${config.tableName}-${id}`);
+  if (format === 'CSV') {
+    exportToCsv(rows, columns, filename.replace(/\.xlsx$/, '.csv'));
+  } else {
+    await exportToExcel(rows, columns, filename);
   }
 }
 
