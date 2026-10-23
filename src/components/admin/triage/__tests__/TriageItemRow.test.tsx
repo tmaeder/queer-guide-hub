@@ -330,4 +330,49 @@ describe('TriageItemRow — quality rows', () => {
     );
     expect(screen.queryByText('confirm')).toBeNull();
   });
+
+  it('shows publication, verdict, raw main reason and thumbnail for news staging', () => {
+    const { container } = render(
+      <TriageItemRow
+        item={{ ...(item as object), content_type: 'news_articles', subtitle: 'rss-news' } as never}
+        isActive={false}
+        isSelected={false}
+        onSelect={vi.fn()}
+        onToggleCheck={vi.fn()}
+        sourceLabel="Staging"
+        news={{
+          id: 'i1',
+          publication: 'PinkNews',
+          verdict: 'publish',
+          blockedReasons: ['image_unusable', 'low_quality'],
+          thumbnail: 'https://img.example.com/t.jpg',
+        }}
+      />,
+    );
+    expect(screen.getByText('PinkNews')).not.toBeNull();
+    expect(screen.queryByText('Staging')).toBeNull();
+    expect(screen.queryByText('Rss News')).toBeNull();
+    expect(screen.getByText('Publish')).not.toBeNull();
+    expect(screen.getByText('image_unusable')).not.toBeNull();
+    expect(container.querySelector('img')?.getAttribute('src')).toBe(
+      'https://img.example.com/t.jpg',
+    );
+  });
+
+  it('uses the registered reason title and the No verdict pill', () => {
+    render(
+      <TriageItemRow
+        item={{ ...(item as object), content_type: 'news_articles' } as never}
+        isActive={false}
+        isSelected={false}
+        onSelect={vi.fn()}
+        onToggleCheck={vi.fn()}
+        news={{ id: 'i1', verdict: 'none', blockedReasons: ['low_relevance'] }}
+        newsReasonTitle="Not clearly LGBTQ+ relevant"
+      />,
+    );
+    expect(screen.getByText('No verdict')).not.toBeNull();
+    expect(screen.getByText('Not clearly LGBTQ+ relevant')).not.toBeNull();
+    expect(screen.queryByText('low_relevance')).toBeNull();
+  });
 });

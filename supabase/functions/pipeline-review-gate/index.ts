@@ -248,7 +248,13 @@ Deno.serve(withErrorReporting('pipeline-review-gate', async (req) => {
         rejected++
         continue
       }
-      if (qualityStatus && enriched.auto_publish === true && !lowReliability && !forceReview) {
+      // A 'passed' verdict with nothing blocking publishes even when auto_publish
+      // was never stamped (older curated-podcast verdicts wrote the status only).
+      const blockedList = Array.isArray(enriched.auto_publish_blocked_reasons)
+        ? enriched.auto_publish_blocked_reasons as unknown[] : []
+      const publishable = enriched.auto_publish === true ||
+        (qualityStatus === 'passed' && blockedList.length === 0)
+      if (qualityStatus && publishable && !lowReliability && !forceReview) {
         if (!dryRun) {
           const { error: e } = await supabase
             .from('ingestion_staging')

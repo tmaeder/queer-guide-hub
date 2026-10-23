@@ -5,7 +5,7 @@ import { sanitizeArticle } from '../_shared/news-quality/sanitize.ts'
 import { parseQualityDecision, QUALITY_PIPELINE_VERSION, type QualityDecision } from '../_shared/news-quality/schema.ts'
 import { QUALITY_SYSTEM_PROMPT, buildQualityUserPrompt } from '../_shared/news-quality/prompts.ts'
 import { resolveEntities } from '../_shared/news-quality/entity-link.ts'
-import { evaluatePublishGate } from '../_shared/news-quality/decision.ts'
+import { evaluatePublishGate, extractionIsEmpty } from '../_shared/news-quality/decision.ts'
 import { probeImage, resolveStagedImageUrl } from '../_shared/news-quality/image-check.ts'
 import { findReplacementImage } from '../_shared/news-quality/image-replace.ts'
 import { hashImageUrl } from '../_shared/news-quality/image-hash.ts'
@@ -72,6 +72,9 @@ async function callQualityLLM(
   return parseQualityDecision(result.content)
 }
 
+// Empty/failed verdicts are retried this many times in total before review.
+const MAX_QUALITY_ATTEMPTS = 3
+
 Deno.serve(withErrorReporting('pipeline-quality-enhance', async (req) => {
   if (req.method === 'OPTIONS') return corsResponse(req)
   const _auth = await requireInternalOrAdmin(req, getServiceClient()); if (_auth instanceof Response) return _auth
@@ -107,6 +110,9 @@ Deno.serve(withErrorReporting('pipeline-quality-enhance', async (req) => {
       // enrichment_status='enriched' on our own write, so without this filter the
       // node re-selects the oldest rows every tick and the backlog never drains.
       .filter('enriched_data->>quality_status', 'is', null)
+      // Retried rows (empty/failed verdict) go behind first attempts, so a run of
+      // flaky completions cannot monopolise every batch.
+      .order('enriched_data->quality_attempts', { ascending: true, nullsFirst: true })
       .order('created_at', { ascending: true })
       .limit(batchSize)
     if (pipelineRunId) q = q.eq('pipeline_run_id', pipelineRunId)
@@ -137,7 +143,7 @@ Deno.serve(withErrorReporting('pipeline-quality-enhance', async (req) => {
 
     const pools = await loadCandidatePools(supabase)
 
-    let processed = 0, passed = 0, review = 0, rejected = 0, failed = 0, deferred = 0
+    let processed = 0, passed = 0, review = 0, rejected = 0, failed = 0, deferred = 0, retried = 0
     const deferredReasons = new Set<string>()
 
     const processItem = async (item: (typeof items)[number]) => {
@@ -190,6 +196,34 @@ Deno.serve(withErrorReporting('pipeline-quality-enhance', async (req) => {
           return
         }
         let decision: QualityDecision | null = attempt.kind === 'decision' ? attempt.decision : null
+
+        // No verdict, or a completion that parsed to an all-default record, is
+        // absence of evidence. Retry on a later run (usually a different
+        // provider) instead of handing a blank verdict to a human; only after
+        // MAX_QUALITY_ATTEMPTS does it fall through to review.
+        const prevAttempts = Number((item.enriched_data as Record<string, unknown> | null)?.quality_attempts ?? 0)
+        if ((!decision || extractionIsEmpty(decision)) && prevAttempts + 1 < MAX_QUALITY_ATTEMPTS) {
+          if (!dryRun) {
+            const { error: retryErr } = await supabase.rpc('apply_enrichment', {
+              p_staging_id:      item.id,
+              p_pipeline_run_id: pipelineRunId ?? null,
+              p_stage:           'quality-enhance',
+              p_new_enriched:    {
+                ...((item.enriched_data ?? {}) as Record<string, unknown>),
+                quality_attempts: prevAttempts + 1,
+                quality_last_error: decision ? 'empty_extraction' : 'malformed',
+                quality_last_attempt_at: new Date().toISOString(),
+              },
+              p_actor:           'pipeline-quality-enhance',
+              p_status:          'success',
+              p_error_message:   null,
+              p_duration_ms:     Date.now() - startedAt,
+            })
+            if (retryErr) console.error(`apply_enrichment retry ${item.id}: ${retryErr.message}`)
+          }
+          retried++
+          return
+        }
 
         if (!decision) {
           // Cannot make a confident call — push to review with available signals.
@@ -253,6 +287,7 @@ Deno.serve(withErrorReporting('pipeline-quality-enhance', async (req) => {
           codeResidue: sani.codeResidue,
           hasEntityReviewItems: allReviewItems.length > 0,
           imageProbeOk: effectiveImageOk,
+          stagingRelaxations: true,
         })
 
         const enrichedData = {
@@ -267,6 +302,9 @@ Deno.serve(withErrorReporting('pipeline-quality-enhance', async (req) => {
           quality_status: gate.status,
           auto_publish: gate.autoPublish,
           auto_publish_blocked_reasons: gate.blockedReasons,
+          quality_attempts: prevAttempts + 1,
+          // Commit drops the image when the article passed only without it.
+          image_suppressed: gate.suppressImage && !replacementImage,
           quality_image_probe: imageProbe,
           // Replacement (if any) — commit RPC reads top-level image_url + image_attribution.
           ...(replacementImage ? {
@@ -329,7 +367,7 @@ Deno.serve(withErrorReporting('pipeline-quality-enhance', async (req) => {
       items_failed: failed,
       items_deferred: deferred,
       ...(deferred > 0 ? { deferred_reasons: [...deferredReasons] } : {}),
-      passed, review, rejected,
+      passed, review, rejected, retried,
       pipeline_version: QUALITY_PIPELINE_VERSION,
       input_version: STAGED_NEWS_INPUT_VERSION,
       dry_run: dryRun,

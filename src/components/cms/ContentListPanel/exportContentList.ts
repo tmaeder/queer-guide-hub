@@ -59,10 +59,16 @@ export async function exportContentType(
   listColumns: FieldConfig[],
   format: 'Excel' | 'CSV' = 'Excel',
 ): Promise<void> {
-  // Title first, then the configured list columns (deduped by column name).
+  // Tags have no listColumn fields: their table uses built-in title/status
+  // columns. Export their configured fields rather than reducing the file to
+  // names alone when the list-column array is empty.
+  const exportFields =
+    config.id === 'unified_tags' && listColumns.length === 0 ? config.fields : listColumns;
+
+  // Title first, then the export fields (deduped by column name).
   const columns: ExportColumnDef<Row>[] = [
     { header: 'Title', accessor: (r) => (r[config.titleField] as string) ?? '' },
-    ...listColumns
+    ...exportFields
       .filter((f) => f.name !== config.titleField)
       .map((f) => ({ header: f.label, accessor: accessorFor(f) })),
   ];

@@ -12,12 +12,22 @@ export interface PublishGateInput {
   // Machine code (CSS/JS) the sanitizer could not fully remove. Optional so existing
   // callers keep compiling; absent means "not checked", never "verified clean".
   codeResidue?: boolean
+  // Staging-only relaxations (pipeline-quality-enhance). Off by default so the
+  // backfill, which re-judges already-published articles, keeps its behaviour.
+  //  - image: an unusable image on its own no longer holds the article; it is
+  //    published without the image (commit honours `image_suppressed`).
+  //  - entity links: the commit RPC is what writes the pending links into
+  //    entity_link_review, so blocking commit on them meant they were never
+  //    reviewed at all. Unresolved links stay unlinked until approved.
+  stagingRelaxations?: boolean
 }
 
 export interface PublishGateResult {
   autoPublish: boolean
   status: 'passed' | 'review' | 'rejected'
   blockedReasons: string[]
+  // True when the article passes only because the image is dropped.
+  suppressImage: boolean
 }
 
 const RELEVANCE_MIN = 0.75
@@ -83,19 +93,28 @@ export function evaluatePublishGate(input: PublishGateInput): PublishGateResult 
       autoPublish: false,
       status: 'review',
       blockedReasons: [...reasons, 'empty_extraction'],
+      suppressImage: false,
     }
   }
 
   // Reject outright if clearly irrelevant or paywalled hard.
   if (!d.isRelevant && d.relevanceScore < 0.3) {
-    return { autoPublish: false, status: 'rejected', blockedReasons: reasons }
+    return { autoPublish: false, status: 'rejected', blockedReasons: reasons, suppressImage: false }
   }
   if (criticalPaywall && d.qualityScoreAfter < 0.5) {
-    return { autoPublish: false, status: 'rejected', blockedReasons: reasons }
+    return { autoPublish: false, status: 'rejected', blockedReasons: reasons, suppressImage: false }
   }
 
-  if (reasons.length === 0) {
-    return { autoPublish: true, status: 'passed', blockedReasons: [] }
+  const blocking = input.stagingRelaxations
+    ? reasons.filter((r) => r !== 'image_unusable' && r !== 'entity_links_pending_review')
+    : reasons
+  if (blocking.length === 0) {
+    return {
+      autoPublish: true,
+      status: 'passed',
+      blockedReasons: [],
+      suppressImage: reasons.includes('image_unusable'),
+    }
   }
-  return { autoPublish: false, status: 'review', blockedReasons: reasons }
+  return { autoPublish: false, status: 'review', blockedReasons: reasons, suppressImage: false }
 }
