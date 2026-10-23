@@ -46,13 +46,14 @@ function isNoindex(html: string): boolean {
 }
 
 test.describe('@smoke glossary entries do not publish a surname stub', () => {
-  // The eight German occupation/common nouns. Deindexed by the thin-page gate
+  // The German occupation/common nouns (seven since kuenstler was merged). Deindexed by the thin-page gate
   // once their stub prose was nulled, so the assertion is the gate's own stamp
   // plus a document-wide absence of the stub.
   for (const slug of [
     'farber',
     'kerle',
-    'kuenstler',
+    // 'kuenstler' was merged into `artist` by 99991792781503 (2026-10-23 Review
+    // Queue sheet); its slug now redirects there, so it is no longer an active row.
     'lehrer',
     'maler',
     'sprecher',

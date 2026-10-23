@@ -29,6 +29,16 @@ export function TaxonomyDirectory() {
           label="Export all taxonomies (CSV)"
           onExport={() => exportAllTaxonomies('CSV')}
         />
+        {/* Tags are ~10k rows; these skip them for a quick vocabulary-only file. */}
+        <ExportExcelButton
+          label="Export without tags (Excel)"
+          onExport={() => exportAllTaxonomies('Excel', { includeTags: false })}
+        />
+        <ExportExcelButton
+          format="CSV"
+          label="Export without tags (CSV)"
+          onExport={() => exportAllTaxonomies('CSV', { includeTags: false })}
+        />
       </div>
       <div className="flex max-w-md flex-col gap-2">
         <Label htmlFor="taxonomy-search">Find a taxonomy</Label>

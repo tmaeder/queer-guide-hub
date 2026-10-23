@@ -254,6 +254,26 @@ function ContentListPanelBody(props: ContentListPanelProps) {
   // The controller can return undefined (no type selected); the views model
   // "no config" as null, so normalize once here rather than at each call site.
   const config = c.config ?? null;
+  // One definition for both headers (the standard one and the workspace one),
+  // so a list can never lose its exports by rendering the other header. The
+  // file matches what the list shows: same filters, search and archived/merged
+  // slice, every page.
+  const exportButtons =
+    config &&
+    (['Excel', 'CSV'] as const).map((format) => (
+      <ExportExcelButton
+        key={format}
+        format={format}
+        onExport={() =>
+          exportContentType(config, c.allListColumns, format, {
+            filters: c.filters,
+            search: c.debouncedSearch,
+            archivedView: c.archivedView,
+            mergedView: c.mergedView,
+          })
+        }
+      />
+    ));
 
   const viewBar = c.contentTypeId ? (
     <ViewBar
@@ -320,6 +340,7 @@ function ContentListPanelBody(props: ContentListPanelProps) {
               )}
               {props.tools}
               {config.toolbarActions?.()}
+              {exportButtons}
             </AdminToolsPopover>
             <Button size="sm" onClick={() => c.onCreate(config.id)}>
               <Plus size={16} className="mr-1.5" />
@@ -390,23 +411,7 @@ function ContentListPanelBody(props: ContentListPanelProps) {
                 </Button>
 
                 {c.config?.toolbarActions?.()}
-                {c.config &&
-                  (['Excel', 'CSV'] as const).map((format) => (
-                    <ExportExcelButton
-                      key={format}
-                      format={format}
-                      // The file matches what the list shows: same filters,
-                      // search and archived/merged slice, every page.
-                      onExport={() =>
-                        exportContentType(c.config!, c.allListColumns, format, {
-                          filters: c.filters,
-                          search: c.debouncedSearch,
-                          archivedView: c.archivedView,
-                          mergedView: c.mergedView,
-                        })
-                      }
-                    />
-                  ))}
+                {exportButtons}
               </AdminToolsPopover>
               {c.config && (
                 <Button size="sm" onClick={() => c.onCreate(c.config!.id)}>

@@ -1,4 +1,4 @@
-name: Transit timetable (Swiss GTFS → city_transit_service)
+name: Transit timetable (Swiss + German GTFS → city_transit_service)
 
 # "Last departure tonight" per city, derived from the national Swiss GTFS feed.
 # Design: docs/plans/2026-10-22-zurich-late-night-mobility-design.md (Step 1).
@@ -46,8 +46,25 @@ jobs:
           done
           unzip -l "$RUNNER_TEMP/gtfs.zip" | tail -1
 
-      - name: Derive and commit
+      - name: Derive and commit (Switzerland)
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
-        run: node --max-old-space-size=2048 scripts/transit/build-city-service.mjs "$RUNNER_TEMP/gtfs.zip" --commit
+        run: node --max-old-space-size=2048 scripts/transit/build-city-service.mjs "$RUNNER_TEMP/gtfs.zip" --feed ch --commit
+
+      # Germany: gtfs.de nationwide feed (DELFI e.V., CC BY 4.0). Its calendar spans only
+      # ~4 weeks ahead, so this weekly refresh is what keeps it from expiring. Runs even if
+      # the Swiss step failed: the two feeds are independent rows.
+      - name: Download German GTFS
+        if: ${{ !cancelled() }}
+        run: |
+          rm -f "$RUNNER_TEMP/gtfs.zip"
+          curl -sSfL --retry 3 -o "$RUNNER_TEMP/gtfs-de.zip" "https://download.gtfs.de/germany/free/latest.zip"
+          unzip -l "$RUNNER_TEMP/gtfs-de.zip" | tail -1
+
+      - name: Derive and commit (Germany)
+        if: ${{ !cancelled() }}
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: node --max-old-space-size=2048 scripts/transit/build-city-service.mjs "$RUNNER_TEMP/gtfs-de.zip" --feed de --commit

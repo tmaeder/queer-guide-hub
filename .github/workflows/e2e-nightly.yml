@@ -15,7 +15,10 @@ on:
         default: ''
 
 concurrency:
-  group: e2e-nightly
+  # A focused production retest must not cancel the long full-suite run.
+  # Keep focused retests serialized with each other and full suites with each
+  # other, allowing at most those two classes of production verification.
+  group: e2e-nightly-${{ inputs.test_file && 'focused' || 'full' }}
   cancel-in-progress: true
 
 permissions:

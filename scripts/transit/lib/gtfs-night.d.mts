@@ -41,3 +41,8 @@ export declare function separateNightVariants<
     is_night_line: boolean;
   },
 >(rows: T[]): T[];
+export declare function isLongDistanceRail(
+  routeType: string | number,
+  routeDesc?: string,
+  ref?: string,
+): boolean;

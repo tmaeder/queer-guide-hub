@@ -54,6 +54,16 @@ test.describe('Zürich late-night mobility', () => {
     await expect(section).not.toContainText('On time after 23:00');
   });
 
+  test('Berlin reads the German timetable, credited to DELFI', async ({ page }) => {
+    await page.goto('/city/berlin#travel');
+    await dismissConsent(page);
+    const section = page.getByRole('region', { name: 'Late night' });
+    await expect(section).toContainText('Last metro', { timeout: 20_000 });
+    await expect(section).toContainText(CLOCK);
+    await expect(section).toContainText('DELFI');
+    await expect(section).not.toContainText('opentransportdata.swiss');
+  });
+
   test('/going-out in Zürich has a Getting home section', async ({ page }) => {
     await page.goto('/going-out?city=zuerich');
     await dismissConsent(page);

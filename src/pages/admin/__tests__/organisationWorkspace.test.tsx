@@ -6,10 +6,25 @@ import { MemoryRouter, Routes, Route, useLocation } from 'react-router';
 import LegacyBusiness from '../AdminBusiness';
 import Workspace from '../OrganisationsWorkspace';
 vi.mock('@/components/cms/ContentListPanel', () => ({
-  ContentListPanel: ({ contentTypeId }: { contentTypeId: string }) => (
-    <div data-testid="directory">CMS:{contentTypeId}</div>
+  ContentListPanel: ({
+    contentTypeId,
+    tools,
+  }: {
+    contentTypeId: string;
+    tools?: React.ReactNode;
+  }) => (
+    <div data-testid="directory">
+      CMS:{contentTypeId}
+      {tools}
+    </div>
   ),
 }));
+vi.mock('@/components/cms/ContentListPanel/exportContentList', () => ({
+  exportContentType: vi.fn().mockResolvedValue(undefined),
+}));
+vi.mock('sonner', () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
+import { exportContentType } from '@/components/cms/ContentListPanel/exportContentList';
+import { venueContentType } from '@/config/contentTypes/venue';
 vi.mock('@/components/admin/frames/AdminArchetypeHeader', () => ({
   AdminArchetypeHeader: ({ title, actions }: { title: string; actions: React.ReactNode }) => (
     <>
@@ -41,6 +56,24 @@ function Destination() {
 }
 afterEach(cleanup);
 describe('Organisation workspace compatibility', () => {
+  it.each(['Excel', 'CSV'] as const)(
+    'exports the venues table itself as %s from the directory tools',
+    async (format) => {
+      vi.mocked(exportContentType).mockClear();
+      render(
+        <MemoryRouter initialEntries={['/admin/content/organizations']}>
+          <Workspace />
+        </MemoryRouter>,
+      );
+      fireEvent.click(screen.getByRole('button', { name: `Export venues (${format})` }));
+      await waitFor(() => expect(exportContentType).toHaveBeenCalledTimes(1));
+      expect(exportContentType).toHaveBeenCalledWith(venueContentType, [], format, {
+        archivedView: 'live',
+        mergedView: 'unmerged',
+      });
+    },
+  );
+
   it.each([
     [
       '/admin/business?tab=merchants&role=seller',

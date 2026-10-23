@@ -97,12 +97,15 @@ function baseConfig(over: Partial<ContentTypeConfig> = {}): ContentTypeConfig {
   } as ContentTypeConfig;
 }
 
-function renderPanel(config: ContentTypeConfig | null) {
+function renderPanel(
+  config: ContentTypeConfig | null,
+  props: { workspace?: boolean; hideHeader?: boolean } = {},
+) {
   controller.config = config;
   render(
     <MemoryRouter>
       <TooltipProvider>
-        <ContentListPanel contentTypeId="redirects" />
+        <ContentListPanel contentTypeId="redirects" {...props} />
       </TooltipProvider>
     </MemoryRouter>,
   );
@@ -159,6 +162,22 @@ describe('ContentListPanel toolbarActions', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Content tools' }));
     expect(screen.getByRole('button', { name: 'Export Excel' })).toBeVisible();
     expect(screen.getByRole('button', { name: 'Export CSV' })).toBeVisible();
+  });
+
+  it('offers Excel and CSV in the workspace header too (Organisations)', () => {
+    // /admin/content/organizations renders the list with `workspace hideHeader`,
+    // whose "List tools" menu is a different header; it carried no exports.
+    renderPanel(baseConfig(), { workspace: true, hideHeader: true });
+    expect(screen.queryByRole('button', { name: 'Content tools' })).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'List tools' }));
+    expect(screen.getByRole('button', { name: 'Export Excel' })).toBeVisible();
+    fireEvent.click(screen.getByRole('button', { name: 'Export CSV' }));
+    expect(exportContentType).toHaveBeenCalledWith(
+      expect.objectContaining({ id: baseConfig().id }),
+      controller.allListColumns,
+      'CSV',
+      expect.objectContaining({ filters: controller.filters }),
+    );
   });
 
   it('renders nothing extra when a type declares none', () => {
