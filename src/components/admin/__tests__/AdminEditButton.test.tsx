@@ -400,4 +400,22 @@ describe('AdminEditButton', () => {
       ),
     );
   });
+
+  it('exports a listing record from the marketplace detail page', async () => {
+    exportRecordMock.mockReset().mockResolvedValue(undefined);
+    useAdminRolesMock.mockReturnValue({ canManageContent: () => true, loading: false });
+    renderIn(
+      <AdminEditButton contentType="marketplace_listings" contentId="m1" exportable />,
+      '/marketplace/x',
+    );
+    await openMenu();
+    fireEvent.click(await screen.findByText('Export record (Excel)'));
+    await waitFor(() =>
+      expect(exportRecordMock).toHaveBeenCalledWith(
+        expect.objectContaining({ tableName: 'marketplace_listings' }),
+        'm1',
+        'Excel',
+      ),
+    );
+  });
 });
