@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { dismissCookieBanner } from './support/consentBanner';
 const authenticated = Boolean(
   process.env.E2E_STORAGE_STATE || (process.env.E2E_ADMIN_EMAIL && process.env.E2E_ADMIN_PASSWORD),
 );
@@ -7,6 +8,9 @@ test.describe('Review queue on mobile', () => {
   test.skip(!authenticated, 'Requires the configured admin session');
   test('fits the screen and focuses the selected decision', async ({ page }) => {
     await page.goto('/admin');
+    // First visit on a fresh context: the fixed consent banner sits over the
+    // first worklist row at 390px and intercepts the tap.
+    await dismissCookieBanner(page);
     await expect(page.getByRole('heading', { name: 'Review queue', exact: true })).toBeVisible();
     const rows = page
       .getByRole('region', { name: 'Review worklist' })
