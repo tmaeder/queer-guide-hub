@@ -37,12 +37,17 @@ dump)
   pins=$( { grep -ohE "['\"\`][a-z0-9]+([-.][a-z0-9]+)+" -r e2e | cut -c2-
             grep -ohE "/[a-z0-9]+([-.][a-z0-9]+)*" -r e2e | cut -c2-; } | grep -E '[a-z]' | sort -u | paste -sd, -)
 
-  # table|non-generated columns|pin column (slug/domain) or empty|capped?
+  # table|non-generated columns|pin column (slug/domain) or empty|capped?|sample order
   psqlq -At -F'|' -c "
     select c.relname,
            string_agg(quote_ident(a.attname), ',' order by a.attnum),
            case when bool_or(a.attname = 'slug') then 'slug' when bool_or(a.attname = 'domain') then 'domain' else '' end,
-           (pg_table_size(c.oid) > $FULL_MAX_BYTES and c.relname <> all(string_to_array('$FULL_TABLES', ',')))::int
+           (pg_table_size(c.oid) > $FULL_MAX_BYTES and c.relname <> all(string_to_array('$FULL_TABLES', ',')))::int,
+           -- A capped table keeps its rows nearest to now (events around today, else the
+           -- most recently updated): physical order is mostly old
+           -- rows, which left /travel with no upcoming Pride events (2026-10-23).
+           case when bool_or(a.attname = 'start_date') then 'abs(extract(epoch from (start_date::timestamptz - now()))) nulls last'
+                when bool_or(a.attname = 'updated_at') then 'updated_at desc nulls last' else '' end
     from pg_class c
     join pg_namespace n on n.oid = c.relnamespace
     join pg_attribute a on a.attrelid = c.oid and a.attnum > 0 and not a.attisdropped and a.attgenerated = ''
@@ -51,20 +56,21 @@ dump)
     group by c.oid, c.relname order by c.relname" > "$dir/manifest.txt"
 
   {
-    while IFS='|' read -r t cols _ _; do
+    while IFS='|' read -r t cols _; do
       case ",$CONFIG_TABLES," in *",$t,"*) echo "\\copy (select $cols from public.\"$t\") to '$dir/data/$t.csv' csv" ;; esac
     done < "$dir/manifest.txt"
     # Read exactly as PostgREST serves an anonymous visitor: some policies read
     # the JWT claims, and without them `set role anon` alone sees 0 unified_tags.
     echo "select set_config('request.jwt.claims', '{\"role\":\"anon\"}', false);"
     echo "set role anon;"
-    while IFS='|' read -r t cols pin capped; do
+    while IFS='|' read -r t cols pin capped order; do
       case ",$CONFIG_TABLES," in *",$t,"*) continue ;; esac
       q="select $cols from public.\"$t\""
+      ob=${order:+ order by $order}
       if [ "$capped" = 1 ] && [ -n "$pin" ]; then
-        q="($q where $pin = any('{$pins}')) union all ($q where not coalesce($pin = any('{$pins}'), false) limit $ROW_CAP)"
+        q="($q where $pin = any('{$pins}')) union all ($q where not coalesce($pin = any('{$pins}'), false)$ob limit $ROW_CAP)"
       elif [ "$capped" = 1 ]; then
-        q="$q limit $ROW_CAP"
+        q="$q$ob limit $ROW_CAP"
       fi
       echo "\\copy ($q) to '$dir/data/$t.csv' csv"
     done < "$dir/manifest.txt"
