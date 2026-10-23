@@ -10,7 +10,6 @@ import { OPEN_COOKIE_PREFERENCES_EVENT } from '@/lib/analyticsConsent';
 import { Wordmark } from '@/components/brand/Wordmark';
 import { useSiteBranding } from '@/hooks/useSiteBranding';
 import { PAGE_GUTTER } from '@/components/layout/PageContainer';
-import './Footer.css';
 
 const legalLinks = [
   { href: '/privacy', labelKey: 'footer.privacy', fallback: 'Privacy' },
@@ -159,15 +158,17 @@ export function Footer({ variant = 'full' }: FooterProps = {}) {
             <CurrencySelector />
             <ThemeToggle />
           </div>
+        </div>
+        <div className="mt-2 flex flex-wrap items-center justify-between gap-x-6 md:mt-4">
+          <LocalizedLink
+            to="/"
+            className={cn(footerLink, 'hover:no-underline')}
+            aria-label={siteName}
+          >
+            <Wordmark className="text-title text-background" />
+          </LocalizedLink>
           <p className="text-2xs text-background/70">&copy; {currentYear} Queer Guide</p>
         </div>
-        <LocalizedLink
-          to="/"
-          className={cn(footerLink, 'mt-2 flex w-fit max-w-full hover:no-underline md:mt-4')}
-          aria-label={siteName}
-        >
-          <Wordmark className="footer-poster-wordmark text-background" />
-        </LocalizedLink>
       </div>
     </footer>
   );

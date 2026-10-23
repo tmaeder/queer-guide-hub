@@ -1,6 +1,0 @@
-/* Poster lettering is brand artwork rather than a content type rank.
-   Keep the mobile minimum on the existing display token and cap it at
-   the page's widest composition. The home link remains a normal focus target. */
-.footer-poster-wordmark {
-  font-size: clamp(var(--text-display), 18vw, 20rem);
-}

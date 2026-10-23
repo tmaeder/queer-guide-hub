@@ -13,3 +13,9 @@ Moved the home-link wordmark below navigation and utilities and scaled its lette
 Browser checks pass at 1440, 390 and 320 px: exact header alignment, no horizontal overflow, 20 px bold primary navigation, two columns on mobile, visible targets at least 44 px, expanded secondary-link targets, keyboard focus, disclosure Enter/Space behavior, active Knowledge navigation and cookie-preference reopening. Confirmed the wordmark sits below rather than overlapping controls. Panel heights are approximately 495 px desktop, 464 px at 390 px and 496 px at 320 px; the previous mobile panels were 490 px at both widths.
 
 All 55 targeted tests passed; the 11 Footer tests also passed after final stylesheet extraction. Scoped ESLint, formatting, design detector and git diff checks pass. Desktop and mobile screenshots are saved in outputs/station-poster-footer-2026-10-23 outside the worktree. Fixed page overlays were hidden only for screenshot capture. Not deployed.
+
+## User revision: restrained wordmark
+
+The user rejected the oversized queer.guide lettering after viewing the implementation. Replaced it with the existing 20 px title-scale wordmark as a small home-link signature beside the copyright, and removed the fluid poster stylesheet. The navigation-led composition, header-aligned panel, visible essentials, disclosure and grouped preferences remain. This revision supersedes the oversized lettering requirement above and reduces footer height.
+
+Verified the restrained revision at 1440, 390 and 320 px: header alignment, no overflow, 20 px signature, 44 px visible tap targets, keyboard disclosure, active navigation and cookie preferences pass. Panel height drops to 280 px desktop, 416 px mobile and 460 px narrow mobile. Scoped lint, formatting and design detector pass. Local previews only; not deployed.
