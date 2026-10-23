@@ -418,4 +418,19 @@ describe('AdminEditButton', () => {
       ),
     );
   });
+
+  it('exports an article record from the news detail page', async () => {
+    exportRecordMock.mockReset().mockResolvedValue(undefined);
+    useAdminRolesMock.mockReturnValue({ canManageContent: () => true, loading: false });
+    renderIn(<AdminEditButton contentType="news_articles" contentId="n1" exportable />, '/news/x');
+    await openMenu();
+    fireEvent.click(await screen.findByText('Export record (CSV)'));
+    await waitFor(() =>
+      expect(exportRecordMock).toHaveBeenCalledWith(
+        expect.objectContaining({ tableName: 'news_articles' }),
+        'n1',
+        'CSV',
+      ),
+    );
+  });
 });
