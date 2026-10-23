@@ -145,10 +145,31 @@ export async function exportContentRecord(
   id: string,
   format: ExportFormat = 'Excel',
 ): Promise<void> {
-  const rows = await fetchContentRows(config, {
-    filters: [{ id: 'record', field: config.primaryKey, op: 'eq', value: id }],
-  });
+  // A detail-page export is explicitly one record. Keep its key restriction
+  // separate from the full-list API, which must never accept list filters.
+  const rows = await fetchAllRows<Row>(
+    config.tableName,
+    '*',
+    { column: config.titleField, ascending: true },
+    1000,
+    <Q>(query: Q): Q =>
+      (
+        query as unknown as {
+          eq: (
+            column: string,
+            value: string,
+          ) => {
+            order: (column: string, options: object) => Q;
+          };
+        }
+      )
+        .eq(config.primaryKey, id)
+        .order(config.primaryKey, { ascending: true }),
+  );
   if (rows.length === 0) throw new Error(`No ${config.tableName} row with id ${id}`);
+  if (rows.length !== 1 || String(rows[0][config.primaryKey]) !== id) {
+    throw new Error(`Unexpected records returned for ${config.tableName} id ${id}`);
+  }
   const columns = exportColumnsFor(config, rows);
   const filename = generateFilename(`${config.tableName}-${id}`);
   if (format === 'CSV') {
