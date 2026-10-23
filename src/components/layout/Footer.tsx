@@ -10,6 +10,7 @@ import { OPEN_COOKIE_PREFERENCES_EVENT } from '@/lib/analyticsConsent';
 import { Wordmark } from '@/components/brand/Wordmark';
 import { useSiteBranding } from '@/hooks/useSiteBranding';
 import { PAGE_GUTTER } from '@/components/layout/PageContainer';
+import './Footer.css';
 
 const legalLinks = [
   { href: '/privacy', labelKey: 'footer.privacy', fallback: 'Privacy' },
@@ -78,49 +79,42 @@ export function Footer({ variant = 'full' }: FooterProps = {}) {
           PAGE_GUTTER,
         )}
       >
-        <div className="flex flex-col gap-4 md:gap-6 xl:flex-row xl:items-start xl:justify-between">
-          <LocalizedLink to="/" className={cn(footerLink, 'self-start')} aria-label={siteName}>
-            <Wordmark className="text-headline text-background" />
-          </LocalizedLink>
-          <nav
-            aria-label="Footer navigation"
-            className="grid grid-cols-2 gap-x-4 gap-y-0 md:flex md:flex-wrap md:gap-x-6"
-          >
-            {INTENT_NAV.map((intent) => (
-              <LocalizedLink
-                key={intent.to}
-                to={intent.to}
-                aria-current={isIntentActive(intent, localePath) ? 'page' : undefined}
-                className={cn(
-                  footerLink,
-                  'text-title font-bold leading-snug text-background aria-[current=page]:underline',
-                )}
-              >
-                {t(intent.labelKey, intent.fallback)}
-              </LocalizedLink>
-            ))}
-          </nav>
-        </div>
-        <div className="mt-4 flex flex-col gap-x-8 md:mt-6 xl:flex-row xl:items-start xl:justify-between">
-          <div className="flex flex-wrap items-center gap-x-4 md:gap-x-6">
-            <LocalizedLink to={REPORT_HREF} className={footerLink}>
-              {t('footer.report', 'Report')}
-            </LocalizedLink>
-            <LocalizedLink to="/help" className={footerLink}>
-              {t('footer.crisisSupport', 'Crisis support')}
-            </LocalizedLink>
-            <LocalizedLink to="/privacy" className={footerLink}>
-              {t('footer.privacy', 'Privacy')}
-            </LocalizedLink>
-            <button
-              type="button"
-              onClick={() => window.dispatchEvent(new CustomEvent(OPEN_COOKIE_PREFERENCES_EVENT))}
-              className={cn(footerLink, 'text-start')}
+        <nav
+          aria-label="Footer navigation"
+          className="grid grid-cols-2 gap-x-4 gap-y-0 md:flex md:flex-wrap md:gap-x-6"
+        >
+          {INTENT_NAV.map((intent) => (
+            <LocalizedLink
+              key={intent.to}
+              to={intent.to}
+              aria-current={isIntentActive(intent, localePath) ? 'page' : undefined}
+              className={cn(
+                footerLink,
+                'text-title font-bold leading-snug text-background aria-[current=page]:underline',
+              )}
             >
-              {t('footer.cookiePreferences', 'Cookie preferences')}
-            </button>
-          </div>
-          <details className="group xl:max-w-md">
+              {t(intent.labelKey, intent.fallback)}
+            </LocalizedLink>
+          ))}
+        </nav>
+        <div className="mt-4 flex flex-wrap items-start gap-x-4 md:mt-6 md:gap-x-6">
+          <LocalizedLink to={REPORT_HREF} className={footerLink}>
+            {t('footer.report', 'Report')}
+          </LocalizedLink>
+          <LocalizedLink to="/help" className={footerLink}>
+            {t('footer.crisisSupport', 'Crisis support')}
+          </LocalizedLink>
+          <LocalizedLink to="/privacy" className={footerLink}>
+            {t('footer.privacy', 'Privacy')}
+          </LocalizedLink>
+          <button
+            type="button"
+            onClick={() => window.dispatchEvent(new CustomEvent(OPEN_COOKIE_PREFERENCES_EVENT))}
+            className={cn(footerLink, 'text-start')}
+          >
+            {t('footer.cookiePreferences', 'Cookie preferences')}
+          </button>
+          <details className="group min-w-0 max-w-full open:basis-full">
             <summary
               className={cn(footerLink, 'flex w-fit cursor-pointer gap-2 text-background/75')}
             >
@@ -167,6 +161,13 @@ export function Footer({ variant = 'full' }: FooterProps = {}) {
           </div>
           <p className="text-2xs text-background/70">&copy; {currentYear} Queer Guide</p>
         </div>
+        <LocalizedLink
+          to="/"
+          className={cn(footerLink, 'mt-2 flex w-fit max-w-full hover:no-underline md:mt-4')}
+          aria-label={siteName}
+        >
+          <Wordmark className="footer-poster-wordmark text-background" />
+        </LocalizedLink>
       </div>
     </footer>
   );
