@@ -48,7 +48,8 @@ Deno.serve(async (req) => {
 
     const auth = await requireAdmin(req, service)
     if (auth instanceof Response) return auth
-    const actorId = auth.userId
+    // Internal secrets identify a system invocation, not a UUID reviewer.
+    const actorId = auth.originalActorId ?? (auth.isServiceRole ? 'service-role' : auth.userId)
 
     const ctx: RouteContext = {
       req,
@@ -547,6 +548,8 @@ async function updateSuggestion(ctx: RouteContext): Promise<Response> {
     status?: 'pending' | 'approved' | 'applied' | 'rejected' | 'superseded' | 'expired'
     proposed_value?: unknown
     review_notes?: string
+    expected_updated_at?: string
+    expected_status?: 'pending' | 'approved'
   }>(ctx.req)
   if (!body.status && body.proposed_value == null && body.review_notes == null) {
     return errorResponse('no updatable fields', 400, ctx.req)
@@ -611,12 +614,20 @@ async function updateSuggestion(ctx: RouteContext): Promise<Response> {
     }
   }
 
-  const { data, error } = await ctx.service
+  let mutation = ctx.service
     .from('ai_suggestions')
     .update(update)
     .eq('id', id)
+  if (body.status === 'rejected' && body.expected_updated_at) {
+    mutation = mutation.eq('updated_at', body.expected_updated_at)
+    if (body.expected_status) mutation = mutation.eq('status', body.expected_status)
+  }
+  const { data, error } = await mutation
     .select()
     .single()
+  if (error?.code === 'PGRST116' && body.expected_updated_at) {
+    return errorResponse('Suggestion changed; reload before deciding.', 409, ctx.req)
+  }
   if (error) return errorResponse(error.message, 500, ctx.req)
   await recordAudit(ctx, 'suggestion.update', 'suggestion', id, before, data, {
     auto_applied: applied,

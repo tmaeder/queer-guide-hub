@@ -1,0 +1,247 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-22T22:46:34.944794+00:00",
+  "title": "Design System: queer.guide email activity",
+  "extensions": {
+    "colorMeta": {
+      "paper": {
+        "role": "neutral",
+        "displayName": "Warm paper",
+        "tonalRamp": [
+          "oklch(15% 0.008 60)",
+          "oklch(26% 0.008 60)",
+          "oklch(38% 0.008 60)",
+          "oklch(49% 0.008 60)",
+          "oklch(61% 0.008 60)",
+          "oklch(72% 0.008 60)",
+          "oklch(84% 0.008 60)",
+          "oklch(95% 0.008 60)"
+        ]
+      },
+      "ink": {
+        "role": "primary",
+        "displayName": "Utility ink",
+        "tonalRamp": [
+          "oklch(15% 0 0)",
+          "oklch(26% 0 0)",
+          "oklch(38% 0 0)",
+          "oklch(49% 0 0)",
+          "oklch(61% 0 0)",
+          "oklch(72% 0 0)",
+          "oklch(84% 0 0)",
+          "oklch(95% 0 0)"
+        ]
+      },
+      "muted-ink": {
+        "role": "neutral",
+        "displayName": "Muted ink",
+        "tonalRamp": [
+          "oklch(15% 0 0)",
+          "oklch(26% 0 0)",
+          "oklch(38% 0 0)",
+          "oklch(49% 0 0)",
+          "oklch(61% 0 0)",
+          "oklch(72% 0 0)",
+          "oklch(84% 0 0)",
+          "oklch(95% 0 0)"
+        ]
+      },
+      "wash": {
+        "role": "neutral",
+        "displayName": "Warm wash",
+        "tonalRamp": [
+          "oklch(15% 0.018 60)",
+          "oklch(26% 0.018 60)",
+          "oklch(38% 0.018 60)",
+          "oklch(49% 0.018 60)",
+          "oklch(61% 0.018 60)",
+          "oklch(72% 0.018 60)",
+          "oklch(84% 0.018 60)",
+          "oklch(95% 0.018 60)"
+        ]
+      },
+      "inset": {
+        "role": "neutral",
+        "displayName": "Inset wash",
+        "tonalRamp": [
+          "oklch(15% 0.014 60)",
+          "oklch(26% 0.014 60)",
+          "oklch(38% 0.014 60)",
+          "oklch(49% 0.014 60)",
+          "oklch(61% 0.014 60)",
+          "oklch(72% 0.014 60)",
+          "oklch(84% 0.014 60)",
+          "oklch(95% 0.014 60)"
+        ]
+      },
+      "control-plate": {
+        "role": "neutral",
+        "displayName": "Tonal control plate",
+        "tonalRamp": [
+          "oklch(15% 0.014 60)",
+          "oklch(26% 0.014 60)",
+          "oklch(38% 0.014 60)",
+          "oklch(49% 0.014 60)",
+          "oklch(61% 0.014 60)",
+          "oklch(72% 0.014 60)",
+          "oklch(84% 0.014 60)",
+          "oklch(95% 0.014 60)"
+        ]
+      },
+      "divider": {
+        "role": "neutral",
+        "displayName": "Section divider",
+        "tonalRamp": [
+          "oklch(15% 0.008 60)",
+          "oklch(26% 0.008 60)",
+          "oklch(38% 0.008 60)",
+          "oklch(49% 0.008 60)",
+          "oklch(61% 0.008 60)",
+          "oklch(72% 0.008 60)",
+          "oklch(84% 0.008 60)",
+          "oklch(95% 0.008 60)"
+        ]
+      },
+      "input-stroke": {
+        "role": "neutral",
+        "displayName": "Input stroke",
+        "tonalRamp": [
+          "oklch(15% 0.008 60)",
+          "oklch(26% 0.008 60)",
+          "oklch(38% 0.008 60)",
+          "oklch(49% 0.008 60)",
+          "oklch(61% 0.008 60)",
+          "oklch(72% 0.008 60)",
+          "oklch(84% 0.008 60)",
+          "oklch(95% 0.008 60)"
+        ]
+      },
+      "focus": {
+        "role": "accent",
+        "displayName": "Keyboard focus pink",
+        "tonalRamp": [
+          "oklch(15% 0.18 350)",
+          "oklch(26% 0.18 350)",
+          "oklch(38% 0.18 350)",
+          "oklch(49% 0.18 350)",
+          "oklch(61% 0.18 350)",
+          "oklch(72% 0.18 350)",
+          "oklch(84% 0.18 350)",
+          "oklch(95% 0.18 350)"
+        ]
+      }
+    },
+    "tonalRampNote": "Preview-only synthesized OKLCH ramps; normative source colors remain in DESIGN.md. No new application tokens are introduced.",
+    "shadows": [
+      {
+        "name": "soft",
+        "value": "var(--shadow-soft)",
+        "purpose": "Inherited shadow on shared outline buttons and raised fields; light source 0 16px 40px rgba(17,17,17,0.06), dark source 0 16px 40px rgba(0,0,0,0.45)."
+      }
+    ],
+    "motion": [
+      {
+        "name": "fast",
+        "value": "var(--motion-fast)",
+        "purpose": "Inherited 200ms shared control feedback; retain global reduced-motion overrides."
+      },
+      {
+        "name": "control-easing",
+        "value": "cubic-bezier(0.22,1,0.36,1)",
+        "purpose": "Shared Button transition easing."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "sm",
+        "value": "640px"
+      },
+      {
+        "name": "md",
+        "value": "768px"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary save button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Inherited shared Button variant used by this surface.",
+      "html": "<button class=\"ds-button-primary\">Save activity email settings</button>",
+      "css": ".ds-button-primary{font-family:var(--font-sans,'Space Grotesk',system-ui,sans-serif);color:hsl(var(--foreground,0 0% 6.7%));display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:0 24px;border-radius:var(--radius-element,12px);font-size:14px;font-weight:700;letter-spacing:-.025em;border:0;cursor:pointer;transition:all var(--motion-fast,200ms) cubic-bezier(.22,1,.36,1);background:hsl(var(--foreground,0 0% 6.7%));color:hsl(var(--background,60 33% 97%));}.ds-button-primary:hover{opacity:.9;}.ds-button-primary:focus-visible{outline:2px solid hsl(var(--ring,330 100% 56%));outline-offset:2px;}.ds-button-primary:active{transform:scale(.98)}.ds-button-primary:disabled{opacity:.4;pointer-events:none}"
+    },
+    {
+      "name": "Outline review button",
+      "kind": "button",
+      "refersTo": "button-outline",
+      "description": "Inherited shared Button variant used by this surface.",
+      "html": "<button class=\"ds-button-outline\">Review invitation</button>",
+      "css": ".ds-button-outline{font-family:var(--font-sans,'Space Grotesk',system-ui,sans-serif);color:hsl(var(--foreground,0 0% 6.7%));display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:0 24px;border-radius:var(--radius-element,12px);font-size:14px;font-weight:700;letter-spacing:-.025em;border:0;cursor:pointer;transition:all var(--motion-fast,200ms) cubic-bezier(.22,1,.36,1);background:hsl(var(--surface-container-high,60 15% 84.3%));box-shadow:var(--shadow-soft,0 16px 40px rgba(17,17,17,.06));}.ds-button-outline:hover{background:hsl(var(--foreground,0 0% 6.7%));color:hsl(var(--background,60 33% 97%));}.ds-button-outline:focus-visible{outline:2px solid hsl(var(--ring,330 100% 56%));outline-offset:2px;}.ds-button-outline:active{transform:scale(.98)}.ds-button-outline:disabled{opacity:.4;pointer-events:none}"
+    },
+    {
+      "name": "Ghost secondary button",
+      "kind": "button",
+      "refersTo": "button-ghost",
+      "description": "Inherited shared Button variant used by this surface.",
+      "html": "<button class=\"ds-button-ghost\">Cancel</button>",
+      "css": ".ds-button-ghost{font-family:var(--font-sans,'Space Grotesk',system-ui,sans-serif);color:hsl(var(--foreground,0 0% 6.7%));display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:0 24px;border-radius:var(--radius-element,12px);font-size:14px;font-weight:700;letter-spacing:-.025em;border:0;cursor:pointer;transition:all var(--motion-fast,200ms) cubic-bezier(.22,1,.36,1);background:transparent;padding:0 16px;}.ds-button-ghost:hover{background:hsl(var(--muted,60 22.2% 89.4%));}.ds-button-ghost:focus-visible{outline:2px solid hsl(var(--ring,330 100% 56%));outline-offset:2px;}.ds-button-ghost:active{transform:scale(.98)}.ds-button-ghost:disabled{opacity:.4;pointer-events:none}"
+    },
+    {
+      "name": "Saved-search name field",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "Shared raised input; account quiet-hour fields use their existing paper variant.",
+      "html": "<label class=\"ds-field-label\" for=\"ds-name\">Search name</label><input class=\"ds-field\" id=\"ds-name\" placeholder=\"Name this search\u2026\">",
+      "css": ".ds-field-label{font-family:var(--font-sans,'Space Grotesk',system-ui,sans-serif);color:hsl(var(--foreground,0 0% 6.7%));display:block;margin-bottom:8px;font-size:14px}.ds-field{font-family:var(--font-sans,'Space Grotesk',system-ui,sans-serif);color:hsl(var(--foreground,0 0% 6.7%));height:40px;width:100%;padding:8px 16px;border:1px solid hsl(var(--input,60 4.8% 44.9%));border-radius:var(--radius-element,12px);background:hsl(var(--surface-container-high,60 15% 84.3%));box-shadow:var(--shadow-soft,0 16px 40px rgba(17,17,17,.06));font-size:16px;transition:all var(--motion-fast,200ms)}.ds-field:focus-visible{outline:2px solid hsl(var(--ring,330 100% 56%));outline-offset:2px;}.ds-field:disabled{opacity:.5;cursor:not-allowed}@media(min-width:768px){.ds-field{font-size:14px}}"
+    },
+    {
+      "name": "Saved alert preference chip",
+      "kind": "chip",
+      "refersTo": "preference-chip",
+      "description": "Saved preference state; never a claim that email delivery is active.",
+      "html": "<span class=\"ds-preference-chip\">Daily preference saved</span>",
+      "css": ".ds-preference-chip{font-family:var(--font-sans,'Space Grotesk',system-ui,sans-serif);color:hsl(var(--foreground,0 0% 6.7%));display:inline-flex;align-items:center;background:hsl(var(--surface-container,60 15.8% 88.8%));border-radius:var(--radius-element,12px);padding:0 4px;font-weight:700;text-transform:uppercase;letter-spacing:-.025em;font-size:10px}"
+    },
+    {
+      "name": "Independent activity checkbox",
+      "kind": "custom",
+      "description": "Native labeled opt-in row, including the group-invitation setting.",
+      "html": "<div class=\"ds-opt-in\"><input id=\"ds-invitation\" type=\"checkbox\"><label for=\"ds-invitation\">Email me when I receive a group invitation</label></div>",
+      "css": ".ds-opt-in{font-family:var(--font-sans,'Space Grotesk',system-ui,sans-serif);color:hsl(var(--foreground,0 0% 6.7%));display:flex;align-items:center;gap:16px;min-height:40px;font-size:14px}.ds-opt-in input:focus-visible{outline:2px solid hsl(var(--ring,330 100% 56%));outline-offset:2px;}.ds-opt-in input:disabled+label{opacity:.5}"
+    }
+  ],
+  "narrative": {
+    "northStar": "Paper, ink, and subway wayfinding",
+    "overview": "This scoped record extends the incumbent queer.guide world: restrained editorial type, warm paper, dark operational controls, and the existing subway ground. Invitation review, email choices, and saved searches remain ordinary parts of their existing homes. They introduce no competing identity.\n\nThe interface is quiet and direct. Text explains what an action does; tonal controls distinguish the next step. The invitation name stays readable before its review action, and delivery availability appears with the preference it qualifies.",
+    "keyCharacteristics": [
+      "Paper and ink with inherited tonal controls.",
+      "Clear section hierarchy and explicit action labels.",
+      "Wrapping content with recoverable inline states."
+    ],
+    "rules": [
+      {
+        "name": "The Meaning Before Color Rule",
+        "body": "Explain delivery availability and invitation state in text; color does not carry that meaning alone.",
+        "section": "colors"
+      },
+      {
+        "name": "The Explicit Next Step Rule",
+        "body": "Review, saving a preference, and receiving email must remain distinguishable in action labels and nearby copy.",
+        "section": "components"
+      }
+    ],
+    "dos": [
+      "**Do** reuse semantic paper/ink variables, shared buttons, and existing type roles.",
+      "**Do** let long invitation names and control groups wrap without hiding their meaning.",
+      "**Do** keep availability, recovery, and focus treatment visible at the point of action.",
+      "**Do** preserve independent opt-ins and ordinary labeled controls."
+    ],
+    "donts": [
+      "**Don't** introduce a new palette, card system, or imagery for these operational sections.",
+      "**Don't** label saved alert preferences as active email delivery.",
+      "**Don't** make viewing the invitation list imply joining a group.",
+      "**Don't** promote fixture captions or a fixture's outer layout into product design rules."
+    ]
+  }
+}

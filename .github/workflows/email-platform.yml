@@ -6,6 +6,11 @@ on:
       - 'supabase/functions/**email**/**'
       - 'supabase/functions/send-username-reminder/**'
       - 'supabase/functions/dm-digest/**'
+      - 'supabase/functions/news-keyword-alerts/**'
+      - 'src/components/groups/GroupInvitationReview.tsx'
+      - 'src/components/groups/__tests__/GroupInvitationReview.test.tsx'
+      - 'src/components/news/NewsSavedSearchesPanel.tsx'
+      - 'src/components/news/__tests__/NewsSavedSearchesPanel.test.tsx'
       - 'supabase/functions/send-group-notifications/**'
       - 'supabase/functions/trip-invitations/**'
       - 'supabase/config.toml'
@@ -27,6 +32,9 @@ on:
       - 'supabase/migrations/*email_platform_trip_invitations.sql'
       - 'supabase/migrations/*email_platform_operations.sql'
       - 'supabase/migrations/*email_platform_domain_notices.sql'
+      - 'supabase/migrations/*email_platform_content_contacts.sql'
+      - 'supabase/migrations/*email_operator_account_check.sql'
+      - 'supabase/migrations/*email_group_invitations.sql'
       - 'supabase/functions/stripe-webhook/**'
       - 'supabase/tests/email_platform.sql'
       - 'supabase/tests/email_platform_privacy.sql'
@@ -38,6 +46,12 @@ on:
       - 'supabase/tests/email_platform_trip_invitations.sql'
       - 'supabase/tests/email_platform_operations.sql'
       - 'supabase/tests/email_platform_domain_notices.sql'
+      - 'supabase/tests/email_platform_content_contacts.sql'
+      - 'supabase/tests/email_operator_account_check.sql'
+      - 'supabase/tests/email_group_invitations.sql'
+      - 'supabase/tests/email_platform_measurement.sql'
+      - 'supabase/tests/email_platform_recipients.sql'
+      - 'supabase/tests/email_platform_recipient_capacity.sql'
       - 'supabase/tests/email_platform_capacity.sql'
       - 'supabase/tests/email_journey_concurrency.py'
       - 'supabase/tests/fixtures/email_platform_bootstrap.sql'
@@ -50,6 +64,8 @@ on:
       - 'src/routes.tsx'
       - 'src/components/hub/TripsStrip.tsx'
       - 'src/components/admin/email/**'
+      - 'src/pages/EmailUpdates.tsx'
+      - 'src/pages/__tests__/EmailUpdates.test.tsx'
       - 'src/pages/admin/EmailPlatform.tsx'
       - 'src/pages/admin/__tests__/EmailPlatform.test.tsx'
       - 'src/components/profile/EmailPreferences.tsx'
@@ -93,11 +109,11 @@ jobs:
           npm run typecheck
           npm run dry-run
       - name: Member preferences and admin workspace
-        run: npx vitest run src/components/profile/__tests__/EmailPreferences.test.tsx src/components/trips/__tests__/TripInvitations.test.tsx src/pages/admin/__tests__/EmailPlatform.test.tsx src/components/admin/email/__tests__/EmailAudiences.test.tsx src/components/admin/email/__tests__/EmailJourneys.test.tsx src/components/admin/email/__tests__/EmailCampaigns.test.tsx src/components/admin/email/__tests__/EmailOperations.test.tsx src/components/admin/email/__tests__/emailDocument.test.ts
+        run: npx vitest run src/components/groups/__tests__/GroupInvitationReview.test.tsx src/components/news/__tests__/NewsSavedSearchesPanel.test.tsx src/components/profile/__tests__/EmailPreferences.test.tsx src/components/trips/__tests__/TripInvitations.test.tsx src/pages/admin/__tests__/EmailPlatform.test.tsx src/components/admin/email/__tests__/EmailAudiences.test.tsx src/components/admin/email/__tests__/EmailJourneys.test.tsx src/components/admin/email/__tests__/EmailCampaigns.test.tsx src/components/admin/email/__tests__/EmailOperations.test.tsx src/components/admin/email/__tests__/EmailContent.test.tsx src/components/admin/email/__tests__/EmailContacts.test.tsx src/components/admin/email/__tests__/EmailRecipients.test.tsx src/components/admin/email/__tests__/EmailReporting.test.tsx src/pages/__tests__/EmailUpdates.test.tsx src/components/admin/email/__tests__/emailDocument.test.ts src/config/__tests__/navigation.test.ts src/config/__tests__/pageDesignFamilies.test.ts
       - name: Backend contracts
         run: |
-          deno test --no-config --allow-env supabase/functions/_shared/email-platform.test.ts supabase/functions/_shared/email-render.test.ts supabase/functions/_shared/email-outbox.test.ts supabase/functions/_shared/email-journey-worker.test.ts
-          deno check --no-config supabase/functions/stripe-webhook/index.ts supabase/functions/send-templated-email/index.ts supabase/functions/email-operations/index.ts supabase/functions/email-admin/index.ts supabase/functions/email-subscriptions/index.ts supabase/functions/email-dispatch/index.ts supabase/functions/cloudflare-email-events/index.ts supabase/functions/email-journeys/index.ts supabase/functions/send-welcome-email/index.ts supabase/functions/dm-digest/index.ts supabase/functions/send-group-notifications/index.ts supabase/functions/trip-invitations/index.ts
+          deno test --no-config --allow-env supabase/functions/news-keyword-alerts/handler.test.ts supabase/functions/_shared/email-purpose.test.ts supabase/functions/_shared/email-platform.test.ts supabase/functions/_shared/email-content.test.ts supabase/functions/_shared/email-render.test.ts supabase/functions/_shared/email-outbox.test.ts supabase/functions/_shared/email-journey-worker.test.ts
+          deno check --no-config supabase/functions/news-keyword-alerts/index.ts supabase/functions/stripe-webhook/index.ts supabase/functions/send-templated-email/index.ts supabase/functions/email-operations/index.ts supabase/functions/email-admin/index.ts supabase/functions/email-subscriptions/index.ts supabase/functions/email-dispatch/index.ts supabase/functions/cloudflare-email-events/index.ts supabase/functions/email-journeys/index.ts supabase/functions/send-welcome-email/index.ts supabase/functions/dm-digest/index.ts supabase/functions/send-group-notifications/index.ts supabase/functions/trip-invitations/index.ts
       - name: Schema, consent, outbox and access contracts
         env:
           PGHOST: localhost
@@ -117,6 +133,11 @@ jobs:
           psql -v ON_ERROR_STOP=1 -f supabase/migrations/99991792565235_email_platform_trip_invitations.sql
           psql -v ON_ERROR_STOP=1 -f supabase/migrations/99991792608890_email_platform_operations.sql
           psql -v ON_ERROR_STOP=1 -f supabase/migrations/99991792616499_email_platform_domain_notices.sql
+          psql -v ON_ERROR_STOP=1 -f supabase/migrations/99991792701247_email_platform_content_contacts.sql
+          psql -v ON_ERROR_STOP=1 -f supabase/migrations/99991792705625_email_operator_account_check.sql
+          psql -v ON_ERROR_STOP=1 -f supabase/migrations/99991792707766_email_group_invitations.sql
+          # Match production; fixture Auth mutations use a test-only helper.
+          psql -v ON_ERROR_STOP=1 -c 'REVOKE SELECT ON auth.users FROM service_role'
           psql -v ON_ERROR_STOP=1 -f supabase/tests/email_platform.sql
           psql -v ON_ERROR_STOP=1 -f supabase/tests/email_platform_privacy.sql
           psql -v ON_ERROR_STOP=1 -f supabase/tests/email_platform_segments.sql
@@ -127,5 +148,11 @@ jobs:
           psql -v ON_ERROR_STOP=1 -f supabase/tests/email_platform_trip_invitations.sql
           psql -v ON_ERROR_STOP=1 -f supabase/tests/email_platform_operations.sql
           psql -v ON_ERROR_STOP=1 -f supabase/tests/email_platform_domain_notices.sql
+          psql -v ON_ERROR_STOP=1 -f supabase/tests/email_platform_content_contacts.sql
+          psql -v ON_ERROR_STOP=1 -f supabase/tests/email_operator_account_check.sql
+          psql -v ON_ERROR_STOP=1 -f supabase/tests/email_group_invitations.sql
+          psql -v ON_ERROR_STOP=1 -f supabase/tests/email_platform_measurement.sql
+          psql -v ON_ERROR_STOP=1 -f supabase/tests/email_platform_recipients.sql
+          psql -v ON_ERROR_STOP=1 -f supabase/tests/email_platform_recipient_capacity.sql
           psql -v ON_ERROR_STOP=1 -f supabase/tests/email_platform_capacity.sql
           QG_EMAIL_CONTRACTS=1 python3 supabase/tests/email_journey_concurrency.py

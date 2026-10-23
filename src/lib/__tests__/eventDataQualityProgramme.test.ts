@@ -85,7 +85,7 @@ describe('event data quality programme', () => {
     expect(migration).toContain('event_quality_worker_leases');
     expect(imageAudit).toContain('p_claim_token: claimToken');
     expect(imageAudit).toContain('release_event_quality_worker_lease');
-    expect(imageAudit).toContain("probeForRole(imageUrl, 'cover'");
+    expect(imageAudit).toContain("probeForRole(imageUrl, 'event_artwork'");
     expect(imageAudit).toContain('content_hash: contentHash');
     expect(imageAudit).toContain('IMAGE_CONTENT_REUSED');
     expect(imageAudit).toContain('detector: DETECTOR');

@@ -5949,6 +5949,87 @@ const DISOWNED_PROSE_CEILING = 380
   }
 }
 
+// ---------------------------------------------------------------------------
+// §  Transit timetable facts (city_transit_service, 99991792699660)
+// ---------------------------------------------------------------------------
+// Written by .github/workflows/transit-gtfs-weekly.yml, which is OUTSIDE
+// admin_automations — run tracking cannot see it, so this is the only thing
+// that notices it stopped. Two different failures:
+//  * EXPIRED feed: the reader refuses it, so the Late night panel silently
+//    vanishes. Hard fail — it happens every December if the rollover breaks.
+//  * STALE fetch (>14 days = two missed weekly runs) or a non-ok parse: the
+//    last good timetable keeps serving, so it only warns.
+{
+  const res = await fetch(
+    `${BASE}/rest/v1/transit_feeds?select=feed_key,parse_status,parse_note,feed_end_date,fetched_at`,
+    { headers },
+  )
+  if (res.status === 404) {
+    console.warn('⚠ transit_feeds not deployed yet (migration 99991792699660?) — skipping')
+  } else if (!res.ok) {
+    console.error(`✗ transit_feeds returned HTTP ${res.status} — measured nothing`)
+    FAILED = true
+  } else {
+    const feeds = await res.json()
+    const today = new Date().toISOString().slice(0, 10)
+    console.log(`  transit feeds: ${feeds.length}`)
+    for (const f of feeds) {
+      const ageDays = f.fetched_at ? (Date.now() - Date.parse(f.fetched_at)) / 86400000 : Infinity
+      if (f.feed_end_date && f.feed_end_date < today) {
+        console.error(
+          `✗ transit feed ${f.feed_key} expired ${f.feed_end_date}: every city on it shows no Late ` +
+            'night panel. Check the December rollover in transit-gtfs-weekly.yml.',
+        )
+        FAILED = true
+      } else if (f.parse_status !== 'ok' || ageDays > 14) {
+        console.warn(
+          `⚠ transit feed ${f.feed_key}: status ${f.parse_status}, last fetch ` +
+            `${Number.isFinite(ageDays) ? Math.round(ageDays) + 'd' : 'never'} ago` +
+            (f.parse_note ? ` (${f.parse_note})` : '') +
+            ' — the last good timetable is still serving',
+        )
+      } else {
+        console.log(`✓ transit feed ${f.feed_key} fresh (${Math.round(ageDays)}d), valid until ${f.feed_end_date}`)
+      }
+    }
+  }
+}
+
+// ---------------------------------------------------------------------------
+// §  Shared bikes & e-scooters snapshot (shared_mobility_snapshot, 99991792696992)
+// ---------------------------------------------------------------------------
+// Refreshed */5 by shared_mobility_refresh. The UI hides counts older than 20 min,
+// so a dead refresher does not publish stale numbers — it silently removes the
+// feature. That silence is what this section exists to break. The vehicle count is
+// the denominator: an empty snapshot and a fresh one both have a recent timestamp.
+{
+  const res = await fetch(
+    `${BASE}/rest/v1/shared_mobility_snapshot?select=region,vehicles,generated_at`,
+    { headers },
+  )
+  if (res.status === 404) {
+    console.warn('⚠ shared_mobility_snapshot not deployed yet (migration 99991792696992?) — skipping')
+  } else if (!res.ok) {
+    console.error(`✗ shared_mobility_snapshot returned HTTP ${res.status} — measured nothing`)
+    FAILED = true
+  } else {
+    const [snap] = await res.json()
+    const ageMin = snap?.generated_at ? (Date.now() - Date.parse(snap.generated_at)) / 60000 : Infinity
+    if (!snap) {
+      console.error('✗ shared_mobility_snapshot has no row — the shared_mobility_refresh cron has never succeeded')
+      FAILED = true
+    } else if (ageMin > 120) {
+      console.error(
+        `✗ shared mobility snapshot is ${Math.round(ageMin)} min old against a */5 cron — venue pages ` +
+          'and the map overlay show nothing. Check admin_automations.shared_mobility_refresh (auto-paused?).',
+      )
+      FAILED = true
+    } else {
+      if (ageMin > 20) console.warn(`⚠ shared mobility snapshot ${Math.round(ageMin)} min old — UI hides counts past 20 min`)
+      console.log(`✓ shared mobility snapshot: ${snap.vehicles} vehicles, ${Math.round(ageMin)} min old`)
+    }
+  }
+}
 
 if (FAILED) {
   console.error('')

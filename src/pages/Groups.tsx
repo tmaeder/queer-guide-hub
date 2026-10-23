@@ -2,6 +2,7 @@ import { useState, useMemo } from 'react';
 import { useSearchParams } from 'react-router';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { GroupCard } from '@/components/groups/GroupCard';
+import { GroupInvitationReview } from '@/components/groups/GroupInvitationReview';
 import { GroupDiscoveryRail } from '@/components/groups/GroupDiscoveryRail';
 import { CreateGroupDialog } from '@/components/groups/CreateGroupDialog';
 import { GroupFilters } from '@/components/groups/GroupFilters';
@@ -143,6 +144,7 @@ export default function Groups() {
           ) : undefined
         }
       />
+      <GroupInvitationReview />
 
       <Tabs
         defaultValue={initialTab}

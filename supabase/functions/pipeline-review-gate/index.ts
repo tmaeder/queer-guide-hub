@@ -1,6 +1,8 @@
 import { getServiceClient, jsonResponse, errorResponse, corsResponse, requireInternalOrAdmin } from '../_shared/supabase-client.ts'
 import { withErrorReporting } from '../_shared/report-api-error.ts'
 
+const SELECTION_REVISION = '2026-10-22.actionable-verdicts-v2'
+
 // ============================================================
 // Pipeline Review Gate Node
 // Routes low-confidence items to human review queue,
@@ -34,26 +36,29 @@ Deno.serve(withErrorReporting('pipeline-review-gate', async (req) => {
     // node config { "force_review": true } in pipeline_definitions.
     const forceReview = body.force_review === true
 
-    // Process both 'auto' items (first pass) and 'pending_review' items that
-    // now have a quality_score and can be re-evaluated for auto-approval.
-    let query = supabase
-      .from('ingestion_staging')
-      .select('id, ai_confidence_score, ai_validation_status, review_status, enriched_data, target_table, source_name, entity_type')
-      .eq('ai_validation_status', 'approved')
-      .in('review_status', sweep ? ['pending_review'] : ['auto', 'pending_review'])
-      .eq('disposition', 'pending')
-      .order('created_at', { ascending: true })
-      .limit(batchSize)
+    let staleReviewsReconciled = 0
+    if (!dryRun) {
+      const { data: reconciliation, error: reconciliationError } = await supabase.rpc('reconcile_staging_gate_reviews', {
+        p_staging_id: null, p_batch: 500, p_dry_run: false,
+      })
+      if (reconciliationError) return errorResponse(`Failed to reconcile completed gate reviews: ${reconciliationError.message}`, 500, req)
+      staleReviewsReconciled = reconciliation?.reviews_reconciled ?? 0
+    }
 
-    if (pipelineRunId && !sweep) query = query.eq('pipeline_run_id', pipelineRunId)
-    // Optional scoping (mirrors pipeline-validate / pipeline-deduplicate) so a
-    // domain-specific drain (e.g. marketplace) doesn't advance other domains' rows.
-    if (entityType) query = query.eq('entity_type', entityType)
-
-    const { data: items, error } = await query
+    // Filter actionable verdicts before limiting. Unchanged manual-review news
+    // otherwise occupies every old-first batch and starves newer ready verdicts.
+    const { data, error } = await supabase.rpc('pipeline_review_gate_candidates', {
+      p_batch_size: batchSize, p_entity_type: entityType ?? null,
+      p_pipeline_run_id: pipelineRunId ?? null, p_sweep: sweep, p_force_review: forceReview,
+    })
     if (error) return errorResponse(`Failed to load items: ${error.message}`, 500, req)
+    const items = data as Array<{
+      id: string; ai_confidence_score: number | null; ai_validation_status: string;
+      review_status: string; enriched_data: Record<string, unknown> | null;
+      target_table: string | null; source_name: string | null; entity_type: string | null;
+    }> | null
     if (!items || items.length === 0) {
-      return jsonResponse({ success: true, items: 0, message: 'No items to review-gate' }, 200, req)
+      return jsonResponse({ success: true, selection_revision: SELECTION_REVISION, stale_reviews_reconciled: staleReviewsReconciled, items: 0, message: 'No items to review-gate' }, 200, req)
     }
 
     // Auto-downrank: load source_reliability for the (source, entity) pairs
@@ -215,7 +220,7 @@ Deno.serve(withErrorReporting('pipeline-review-gate', async (req) => {
               .from('ingestion_staging')
               .update({
                 review_status: 'approved',
-                review_notes: `Auto-approved: trusted submitter (${rep.approved} approved, 0 rejected)`,
+                review_notes: stewardFastTrack ? 'Auto-approved: steward trust override' : `Auto-approved: trusted submitter (${rep?.approved ?? 0} approved, 0 rejected)`,
               })
               .eq('id', item.id)
             if (!e) { approved++; trustAutoApproved++; continue }
@@ -262,7 +267,8 @@ Deno.serve(withErrorReporting('pipeline-review-gate', async (req) => {
           combined_score: combinedScore, confidence, relevance_score: relevance ?? null,
           blocked_reasons: blocked ?? null,
         })
-        ok ? sentToReview++ : failed++
+        if (ok) sentToReview++
+        else failed++
         continue
       }
       if (item.target_table === 'news_articles') {
@@ -272,7 +278,8 @@ Deno.serve(withErrorReporting('pipeline-review-gate', async (req) => {
         const ok = await sendToReview(item, enriched, 'awaiting_llm_verdict', {
           combined_score: combinedScore, confidence,
         })
-        ok ? sentToReview++ : failed++
+        if (ok) sentToReview++
+        else failed++
         continue
       }
 
@@ -296,7 +303,8 @@ Deno.serve(withErrorReporting('pipeline-review-gate', async (req) => {
           source_reliability_weight: relWeight ?? null,
           effective_min_confidence: effectiveMinConfidence,
         })
-        ok ? sentToReview++ : failed++
+        if (ok) sentToReview++
+        else failed++
       } else {
         if (!dryRun) {
           const { error: e } = await supabase
@@ -311,9 +319,11 @@ Deno.serve(withErrorReporting('pipeline-review-gate', async (req) => {
 
     return jsonResponse({
       success: true,
+      selection_revision: SELECTION_REVISION,
+      stale_reviews_reconciled: staleReviewsReconciled,
       items: approved,
       items_total: items.length,
-      items_processed: approved + sentToReview + failed,
+      items_processed: approved + sentToReview + rejected + failed,
       items_succeeded: approved,
       items_failed: failed,
       approved,

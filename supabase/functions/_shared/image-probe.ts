@@ -12,7 +12,7 @@
 
 import { probeImage, type ImageProbe } from './news-quality/image-check.ts'
 
-export type ProbeRole = 'cover' | 'hero' | 'gallery' | 'thumbnail'
+export type ProbeRole = 'cover' | 'hero' | 'event_artwork' | 'gallery' | 'thumbnail'
 
 const COVER_MIN_W = 800
 const COVER_MIN_H = 450
@@ -27,14 +27,19 @@ export interface CoverInput {
   bytes?: number
 }
 
-/** Returns a fail reason for cover/hero quality, or null if the image passes.
+/** Returns a fail reason for cover/hero/event artwork, or null if it passes.
  * Unknown dimensions are not penalised (the caller may not have decoded yet). */
 export function evaluateCover(input: CoverInput, role: ProbeRole): string | null {
-  if (role !== 'cover' && role !== 'hero') return null
+  if (role !== 'cover' && role !== 'hero' && role !== 'event_artwork') return null
   const { width, height, bytes } = input
 
   if (width && height) {
-    if (width < COVER_MIN_W || height < COVER_MIN_H) return 'cover_too_small'
+    // Event posters can be portrait. Keep the same minimum short/long edges,
+    // bytes and pixel density; orientation alone does not make artwork blurry.
+    const tooSmall = role === 'event_artwork'
+      ? Math.min(width, height) < COVER_MIN_H || Math.max(width, height) < COVER_MIN_W
+      : width < COVER_MIN_W || height < COVER_MIN_H
+    if (tooSmall) return 'cover_too_small'
     if (role === 'hero' && width / height < HERO_MIN_RATIO) return 'cover_portrait'
     if (bytes && bytes / (width * height) < MIN_BPP) return 'near_solid_color'
   }
