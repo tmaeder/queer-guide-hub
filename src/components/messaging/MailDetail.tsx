@@ -6,6 +6,7 @@ import { useMailbox, type MailboxEmail } from '@/hooks/useMailbox';
 import { EmailView } from '@/components/inbox/EmailView';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { useMailboxDelivery } from '@/hooks/useMailboxDelivery';
 
 /**
  * Self-contained email reader + inline reply, used by the unified inbox rail
@@ -20,6 +21,7 @@ export function MailDetail({ emailId }: { emailId: string }) {
   const [loading, setLoading] = useState(true);
   const [replyOpen, setReplyOpen] = useState(false);
   const [replyBody, setReplyBody] = useState('');
+  const delivery = useMailboxDelivery(email);
 
   useEffect(() => {
     let active = true;
@@ -73,6 +75,19 @@ export function MailDetail({ emailId }: { emailId: string }) {
       <div className="flex flex-col gap-4 p-4">
         <EmailView
           email={email}
+          delivery={
+            delivery.enabled
+              ? {
+                  status: delivery.data,
+                  loading: delivery.isPending,
+                  refreshing: delivery.isFetching,
+                  error: delivery.isError,
+                  onRefresh: () => {
+                    void delivery.refetch();
+                  },
+                }
+              : undefined
+          }
           onReply={() => setReplyOpen(true)}
           onArchive={(id) => void moveToFolder(id, 'archive')}
           onDelete={(id) => void moveToFolder(id, 'trash')}
