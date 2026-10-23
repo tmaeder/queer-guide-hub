@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase, SUPABASE_URL } from '@/integrations/supabase/client';
 import { untypedFrom } from '@/integrations/supabase/untyped';
 import { useAuth } from '@/hooks/useAuth';
@@ -44,6 +44,7 @@ export const useMailbox = () => {
   const [sending, setSending] = useState(false);
   const { user } = useAuth();
   const { toast } = useToast();
+  const sendRequest = useRef<{ snapshot: string; id: string } | null>(null);
 
   const fetchEmails = useCallback(
     async (folder: MailboxFolder = selectedFolder, limit = 50) => {
@@ -172,11 +173,26 @@ export const useMailbox = () => {
       in_reply_to_email_id?: string;
     }) => {
       if (!user) throw new Error('Not authenticated');
+      const snapshot = JSON.stringify([
+        user.id,
+        params.to.trim().toLowerCase(),
+        params.subject.trim(),
+        params.body_html ?? '',
+        params.body_text ?? '',
+        params.in_reply_to_email_id ?? null,
+      ]);
+      if (sendRequest.current?.snapshot !== snapshot) {
+        sendRequest.current = { snapshot, id: crypto.randomUUID() };
+      }
+      const requestId = sendRequest.current.id;
       setSending(true);
       try {
         const {
           data: { session },
         } = await supabase.auth.getSession();
+        if (!session?.access_token || session.user.id !== user.id) {
+          throw new Error('Your account changed. Reopen the message before sending.');
+        }
         const res = await fetch(`${SUPABASE_URL}/functions/v1/send-mailbox-email`, {
           method: 'POST',
           headers: {
@@ -184,11 +200,39 @@ export const useMailbox = () => {
             Authorization: `Bearer ${session?.access_token}`,
             apikey: import.meta.env.VITE_SUPABASE_ANON_KEY || '',
           },
-          body: JSON.stringify(params),
+          body: JSON.stringify({ ...params, request_id: requestId }),
         });
         const result = await res.json();
         if (!res.ok) throw new Error(result.error || 'Failed to send');
-        toast({ title: 'Email sent', description: `To: ${params.to}` });
+        if (
+          result.success !== true ||
+          typeof result.outbox_id !== 'string' ||
+          !result.outbox_id ||
+          ![
+            'queued',
+            'processing',
+            'accepted',
+            'deferred',
+            'uncertain',
+            'pending',
+            'delivered',
+          ].includes(result.delivery_status)
+        ) {
+          throw new Error('Invalid delivery response. Retry this same message.');
+        }
+        const title =
+          result.delivery_status === 'delivered'
+            ? 'Email delivered'
+            : result.delivery_status === 'accepted'
+              ? 'Email submitted'
+              : 'Delivery confirmation pending';
+        toast({
+          title,
+          description: result.email_id
+            ? 'The message and its delivery status are saved in Sent.'
+            : 'This message was already submitted. Its Sent copy has been removed.',
+        });
+        if (sendRequest.current?.id === requestId) sendRequest.current = null;
         return result;
       } catch (err: unknown) {
         toast({
