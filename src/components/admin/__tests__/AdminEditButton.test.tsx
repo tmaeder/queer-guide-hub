@@ -382,4 +382,22 @@ describe('AdminEditButton', () => {
       ),
     );
   });
+
+  it('exports a group record from the groups detail page', async () => {
+    exportRecordMock.mockReset().mockResolvedValue(undefined);
+    useAdminRolesMock.mockReturnValue({ canManageContent: () => true, loading: false });
+    renderIn(
+      <AdminEditButton contentType="community_groups" contentId="g1" exportable />,
+      '/hub/groups/g1',
+    );
+    await openMenu();
+    fireEvent.click(await screen.findByText('Export record (CSV)'));
+    await waitFor(() =>
+      expect(exportRecordMock).toHaveBeenCalledWith(
+        expect.objectContaining({ tableName: 'community_groups' }),
+        'g1',
+        'CSV',
+      ),
+    );
+  });
 });
