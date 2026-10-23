@@ -28,7 +28,12 @@ export async function fetchAdminUsersForExport(ids?: string[]) {
       p_per_page: pageSize,
     });
     rows.push(...result.data);
-    if (rows.length >= result.totalCount || result.data.length === 0) return rows;
+    if (rows.length === result.totalCount) return rows;
+    if (rows.length > result.totalCount || result.data.length === 0) {
+      throw new Error(
+        `Incomplete user export: fetched ${rows.length} of ${result.totalCount} records. Please retry.`,
+      );
+    }
   }
 }
 

@@ -114,7 +114,7 @@ export default function OrganisationsWorkspace() {
  * Venues have no admin list of their own: /admin/venues and
  * /admin/content/venues both land on this directory, whose export covers the
  * `organizations` table only. These export the `venues` table itself, with
- * every column, in the default live (not archived) and unmerged slice.
+ * every column and record, including archived and merged venues.
  */
 function VenueExportButtons() {
   return (['Excel', 'CSV'] as const).map((format) => (
@@ -122,12 +122,7 @@ function VenueExportButtons() {
       key={format}
       format={format}
       label={`Export venues (${format})`}
-      onExport={() =>
-        exportContentType(venueContentType, [], format, {
-          archivedView: 'live',
-          mergedView: 'unmerged',
-        })
-      }
+      onExport={() => exportContentType(venueContentType, [], format)}
     />
   ));
 }
