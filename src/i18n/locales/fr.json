@@ -3446,7 +3446,36 @@
       "aVenue": "Lieu"
     },
     "matchTag": "Match",
-    "openAlerts": "[FR] All notifications"
+    "openAlerts": "[FR] All notifications",
+    "mail": {
+      "delivery": {
+        "label": "Livraison : {{status}}",
+        "loading": "Vérification de la livraison…",
+        "refresh": "Actualiser le statut",
+        "refreshing": "Actualisation…",
+        "error": "Impossible d’actualiser le statut de livraison.",
+        "lastKnown": "Dernier statut vérifié : {{status}}",
+        "unavailable": "Statut de livraison indisponible",
+        "unproved": "Aucun reçu vérifié n’est disponible pour ce message.",
+        "states": {
+          "queued": "En attente",
+          "processing": "Transmission en cours",
+          "accepted": "Transmis",
+          "deferred": "Retardé",
+          "uncertain": "Confirmation en attente",
+          "delivered": "Livré",
+          "failed": "Échec",
+          "bounced": "Rejeté",
+          "suppressed": "Envoi arrêté",
+          "complained": "Signalement de spam"
+        },
+        "help": {
+          "accepted": "La livraison n’est pas encore confirmée.",
+          "uncertain": "La confirmation est en attente. Vérifiez le statut avant d’envoyer une autre copie.",
+          "delivered": "Le serveur de messagerie du destinataire a accepté ce message. Son arrivée dans la boîte de réception n’est pas confirmée."
+        }
+      }
+    }
   },
   "extension": {
     "signInGate": {
