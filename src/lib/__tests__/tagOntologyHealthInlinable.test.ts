@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
-const MIGRATION = '99991792747622_tag_ontology_health_inlinable_facet.sql';
+const MIGRATION = '99991792752491_tag_ontology_health_inlinable_facet.sql';
 const raw = readFileSync(join(process.cwd(), 'supabase/migrations', MIGRATION), 'utf8');
 
 // The header quotes nearly every phrase these tests assert on -- the OLD slow shape,
