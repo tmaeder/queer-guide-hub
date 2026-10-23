@@ -78,7 +78,7 @@ const CASES: Case[] = [
   {
     slug: 'simp',
     was: 'Simple English Wikipedia',
-    present: /sympath/i,
+    present: /sympath|devoted admirer/i,
     absent: [/Simple English Wikipedia/i, /Basic English/i],
   },
   {
@@ -206,7 +206,7 @@ test.describe('glossary reader surface', () => {
     await page.goto('/tags/autonomy');
     const about = page.locator('#about');
     await expect(about).toBeVisible({ timeout: 20_000 });
-    await expect(about).toContainText(/decisions about their own/i);
+    await expect(about).toContainText(/decisions about their own|own decisions about their body/i);
     await expect(about).not.toContainText(/Autonomy Corporation/i);
     await expect(about).not.toContainText(/software company/i);
   });

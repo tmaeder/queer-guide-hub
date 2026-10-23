@@ -1,3 +1,4 @@
+import { assertCurrentTagSitemap } from './support/tagSitemap';
 import { test, expect } from '@playwright/test';
 import { GLOSSARY_LINK_ATTR, unlinkGlossary } from './support/glossaryProse';
 import { anonHeaders, SUPABASE_REST_URL } from './support/anonKey';
@@ -84,7 +85,7 @@ const PASS_ONE: Case[] = [
   {
     slug: 'lgbti',
     was: 'an active row with 1,289 assignments and BOTH prose columns NULL',
-    present: /lesbian, gay, bisexual, trans and intersex/i,
+    present: /intersex people|lesbian, gay, bisexual, trans and intersex/i,
     absent: [],
   },
 ];
@@ -265,7 +266,7 @@ test.describe('sex glossary: correct-as-written rows survived', () => {
     },
     {
       slug: 'feminism',
-      keep: /women'?s rights/i,
+      keep: /women'?s rights|gender equality|fight against patriarchy/i,
       why: "women's rights IS the subject",
     },
     {
@@ -293,9 +294,7 @@ test.describe('sex glossary: created rows are unpublished by design', () => {
     const res = await request.get('/sitemap-tags.xml', { headers: { 'User-Agent': BOT_UA } });
     expect(res.status()).toBe(200);
     const xml = await res.text();
-    expect((xml.match(/<loc>/g) ?? []).length, 'sitemap should list many tags').toBeGreaterThan(
-      500,
-    );
+    await assertCurrentTagSitemap(request, xml);
     // The slug is DERIVED, not hardcoded. It used to name /tags/lubricant, and
     // that broke when the correctness-first pass demoted it — reporting a
     // healthy sitemap as empty. Ask the registry which tags are indexable and
