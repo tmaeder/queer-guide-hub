@@ -256,24 +256,14 @@ function ContentListPanelBody(props: ContentListPanelProps) {
   // The controller can return undefined (no type selected); the views model
   // "no config" as null, so normalize once here rather than at each call site.
   const config = c.config ?? null;
-  // One definition for both headers (the standard one and the workspace one),
-  // so a list can never lose its exports by rendering the other header. The
-  // file matches what the list shows: same filters, search and archived/merged
-  // slice, every page.
-  const exportButtons =
+
+  const exportActions =
     config &&
     (['Excel', 'CSV'] as const).map((format) => (
       <ExportExcelButton
         key={format}
         format={format}
-        onExport={() =>
-          exportContentType(config, c.allListColumns, format, {
-            filters: c.filters,
-            search: c.debouncedSearch,
-            archivedView: c.archivedView,
-            mergedView: c.mergedView,
-          })
-        }
+        onExport={() => exportContentType(config, c.allListColumns, format)}
       />
     ));
 
@@ -312,7 +302,7 @@ function ContentListPanelBody(props: ContentListPanelProps) {
 
       {importButton}
       {c.config?.toolbarActions?.()}
-      {exportButtons}
+      {exportActions}
     </AdminToolsPopover>
   );
 
@@ -379,10 +369,10 @@ function ContentListPanelBody(props: ContentListPanelProps) {
                   <Link to={config.admin.duplicatesRoute}>Review duplicates</Link>
                 </Button>
               )}
+              {props.hideHeader && exportActions}
               {props.tools}
               {importButton}
               {config.toolbarActions?.()}
-              {exportButtons}
             </AdminToolsPopover>
             <Button size="sm" onClick={() => c.onCreate(config.id)}>
               <Plus size={16} className="mr-1.5" />
@@ -677,6 +667,7 @@ function ContentListPanelBody(props: ContentListPanelProps) {
             () => void c.loadItems(),
           )}
           <ExportExcelButton
+            label="Export selected (Excel)"
             onExport={() =>
               exportToExcel(
                 c.items

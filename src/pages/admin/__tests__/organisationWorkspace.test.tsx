@@ -67,10 +67,8 @@ describe('Organisation workspace compatibility', () => {
       );
       fireEvent.click(screen.getByRole('button', { name: `Export venues (${format})` }));
       await waitFor(() => expect(exportContentType).toHaveBeenCalledTimes(1));
-      expect(exportContentType).toHaveBeenCalledWith(venueContentType, [], format, {
-        archivedView: 'live',
-        mergedView: 'unmerged',
-      });
+      expect(exportContentType).toHaveBeenCalledWith(venueContentType, [], format);
+      expect(vi.mocked(exportContentType).mock.lastCall).toHaveLength(3);
     },
   );
 

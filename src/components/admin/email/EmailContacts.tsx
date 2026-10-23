@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { EmailRecipients } from './EmailRecipients';
 import { parseContactImport } from './contactImport';
+import { exportEmailContacts } from '@/lib/emailContactExport';
 interface Contact {
   id: string;
   email: string;
@@ -124,23 +125,13 @@ export function EmailContacts() {
       setBusy(false);
     }
   }
-  async function exportPage() {
+  async function exportAll(format: 'Excel' | 'CSV') {
     setBusy(true);
     setError(null);
     try {
-      const r = await supabase.functions.invoke(
-        `email-admin?resource=contacts&format=csv${after ? `&after=${after}` : ''}`,
-        { method: 'GET' },
-      );
-      if (r.error || typeof r.data?.csv !== 'string') throw new Error('export');
-      const url = URL.createObjectURL(new Blob([r.data.csv], { type: 'text/csv;charset=utf-8' }));
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = 'queer-guide-email-contacts.csv';
-      link.click();
-      URL.revokeObjectURL(url);
+      await exportEmailContacts(format);
     } catch {
-      setError('This contact page could not be exported. Retry when available.');
+      setError('All contacts could not be exported. Retry when available.');
     } finally {
       setBusy(false);
     }
@@ -173,13 +164,16 @@ export function EmailContacts() {
           <Button variant="outline" disabled={loading || busy} onClick={() => void load(after)}>
             Refresh contacts
           </Button>
-          <Button
-            variant="outline"
-            disabled={loading || busy || !contacts.length}
-            onClick={() => void exportPage()}
-          >
-            Export this page
-          </Button>
+          {(['Excel', 'CSV'] as const).map((format) => (
+            <Button
+              key={format}
+              variant="outline"
+              disabled={loading || busy}
+              onClick={() => void exportAll(format)}
+            >
+              Export all contacts ({format})
+            </Button>
+          ))}
         </div>
       </div>
       <p className="text-sm text-muted-foreground">
