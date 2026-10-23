@@ -64,77 +64,107 @@ updates:
     directory: /workers/image-cdn
     schedule: { interval: weekly }
     groups: { npm: { patterns: ['*'], update-types: [minor, patch] } }
+    # typescript majors break typescript-eslint; see the root entry.
+    ignore: [{ dependency-name: 'typescript', update-types: ['version-update:semver-major'] }]
 
   - package-ecosystem: npm
     directory: /workers/image-ingest
     schedule: { interval: weekly }
     groups: { npm: { patterns: ['*'], update-types: [minor, patch] } }
+    # typescript majors break typescript-eslint; see the root entry.
+    ignore: [{ dependency-name: 'typescript', update-types: ['version-update:semver-major'] }]
 
   - package-ecosystem: npm
     directory: /workers/ingest
     schedule: { interval: weekly }
     groups: { npm: { patterns: ['*'], update-types: [minor, patch] } }
+    # typescript majors break typescript-eslint; see the root entry.
+    ignore: [{ dependency-name: 'typescript', update-types: ['version-update:semver-major'] }]
 
   - package-ecosystem: npm
     directory: /workers/search-proxy
     schedule: { interval: weekly }
     groups: { npm: { patterns: ['*'], update-types: [minor, patch] } }
+    # typescript majors break typescript-eslint; see the root entry.
+    ignore: [{ dependency-name: 'typescript', update-types: ['version-update:semver-major'] }]
 
   - package-ecosystem: npm
     directory: /workers/snapshot-archiver
     schedule: { interval: weekly }
     groups: { npm: { patterns: ['*'], update-types: [minor, patch] } }
+    # typescript majors break typescript-eslint; see the root entry.
+    ignore: [{ dependency-name: 'typescript', update-types: ['version-update:semver-major'] }]
 
   - package-ecosystem: npm
     directory: /workers/submit
     schedule: { interval: weekly }
     groups: { npm: { patterns: ['*'], update-types: [minor, patch] } }
+    # typescript majors break typescript-eslint; see the root entry.
+    ignore: [{ dependency-name: 'typescript', update-types: ['version-update:semver-major'] }]
 
   - package-ecosystem: npm
     directory: /workers/trip-inbox
     schedule: { interval: weekly }
     groups: { npm: { patterns: ['*'], update-types: [minor, patch] } }
+    # typescript majors break typescript-eslint; see the root entry.
+    ignore: [{ dependency-name: 'typescript', update-types: ['version-update:semver-major'] }]
 
   # Cover standalone tools, infrastructure, SDKs, and every worker package.
   - package-ecosystem: npm
     directory: /infra/mail/smtp-relay
     schedule: { interval: weekly }
     groups: { npm: { patterns: ['*'], update-types: [minor, patch] } }
+    # typescript majors break typescript-eslint; see the root entry.
+    ignore: [{ dependency-name: 'typescript', update-types: ['version-update:semver-major'] }]
 
   - package-ecosystem: npm
     directory: /sdk/redirects/typescript
     schedule: { interval: weekly }
     groups: { npm: { patterns: ['*'], update-types: [minor, patch] } }
+    # typescript majors break typescript-eslint; see the root entry.
+    ignore: [{ dependency-name: 'typescript', update-types: ['version-update:semver-major'] }]
 
   - package-ecosystem: npm
     directory: /tools/person-db
     schedule: { interval: weekly }
     groups: { npm: { patterns: ['*'], update-types: [minor, patch] } }
+    # typescript majors break typescript-eslint; see the root entry.
+    ignore: [{ dependency-name: 'typescript', update-types: ['version-update:semver-major'] }]
 
   - package-ecosystem: npm
     directory: /workers/assistant
     schedule: { interval: weekly }
     groups: { npm: { patterns: ['*'], update-types: [minor, patch] } }
+    # typescript majors break typescript-eslint; see the root entry.
+    ignore: [{ dependency-name: 'typescript', update-types: ['version-update:semver-major'] }]
 
   - package-ecosystem: npm
     directory: /workers/email-delivery
     schedule: { interval: weekly }
     groups: { npm: { patterns: ['*'], update-types: [minor, patch] } }
+    # typescript majors break typescript-eslint; see the root entry.
+    ignore: [{ dependency-name: 'typescript', update-types: ['version-update:semver-major'] }]
 
   - package-ecosystem: npm
     directory: /workers/extract
     schedule: { interval: weekly }
     groups: { npm: { patterns: ['*'], update-types: [minor, patch] } }
+    # typescript majors break typescript-eslint; see the root entry.
+    ignore: [{ dependency-name: 'typescript', update-types: ['version-update:semver-major'] }]
 
   - package-ecosystem: npm
     directory: /workers/team-inbox
     schedule: { interval: weekly }
     groups: { npm: { patterns: ['*'], update-types: [minor, patch] } }
+    # typescript majors break typescript-eslint; see the root entry.
+    ignore: [{ dependency-name: 'typescript', update-types: ['version-update:semver-major'] }]
 
   - package-ecosystem: npm
     directory: /workers/travel-inbox
     schedule: { interval: weekly }
     groups: { npm: { patterns: ['*'], update-types: [minor, patch] } }
+    # typescript majors break typescript-eslint; see the root entry.
+    ignore: [{ dependency-name: 'typescript', update-types: ['version-update:semver-major'] }]
 
   - package-ecosystem: github-actions
     directory: /
