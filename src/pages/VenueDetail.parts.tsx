@@ -398,6 +398,7 @@ export function VenueActions({
         contentName={venue.name}
         currentData={venue as Record<string, unknown>}
         onSaved={() => window.location.reload()}
+        exportable
       />
     </>
   );
