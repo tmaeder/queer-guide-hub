@@ -5,7 +5,7 @@
 | Step | State | Where |
 |---|---|---|
 | 0 — OTM site survey + opentransportdata API key | **Blocked on hardware / registration.** No receiver in Zürich; no API key in repo or CI secrets. | — |
-| 1 — Timetable fact + VBZ punctuality | **Live.** 577 Zürich rows (weekly GH Action), 163 rows with 2023 punctuality (42 lines). `/city/zuerich` Late night block, `/going-out?city=zuerich` Getting home. | #4559, migration `99991792699660` |
+| 1 — Timetable fact + VBZ punctuality | **Live in 9 Swiss cities** (Zürich, Geneva, Bern, Basel, Lausanne, Winterthur, Luzern, St. Gallen, Lugano; 2,358 rows). Zürich: 577 rows (weekly GH Action), 163 rows with 2023 punctuality (42 lines). `/city/zuerich` Late night block, `/going-out?city=zuerich` Getting home. | #4559, migration `99991792699660` |
 | 2a — Shared bikes & e-scooters | **Live, all of Switzerland.** ~22k vehicles, ~7.9k cells, `*/5`. Map overlay (Filters → Getting around) + venue fact. | #4568, migration `99991792696992` |
 | 2b — Disruptions (SIRI-SX / GTFS-SA) | **Not built** — needs the opentransportdata.swiss API key (Step 0). | — |
 | 3 / 4 — OTM receiver, live trams, community node | **Not built** — gated on the Step 0 survey. | — |
