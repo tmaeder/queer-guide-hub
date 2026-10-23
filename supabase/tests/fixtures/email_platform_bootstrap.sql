@@ -107,3 +107,19 @@ grant execute on function public.email_fixture_change_mailbox(uuid,text) to serv
 -- Existing group invite source used by the source-proof adapter.
 create table public.group_invites(id uuid primary key default gen_random_uuid(),group_id uuid not null references public.community_groups(id) on delete cascade,invited_by uuid not null references auth.users(id) on delete cascade,invited_user_id uuid references auth.users(id) on delete cascade,email text,token text not null default gen_random_uuid()::text,status text not null default 'pending',created_at timestamptz not null default now(),expires_at timestamptz not null default now()+interval '7 days',accepted_at timestamptz,accepted_by uuid);
 grant all on public.group_invites to service_role;
+
+
+-- Existing mailbox columns used by the source-backed send adapter.
+alter table public.profiles add column mailbox_address text unique;
+create table public.mailbox_emails(
+ id uuid primary key default gen_random_uuid(),owner_id uuid not null references auth.users(id) on delete cascade,
+ direction text not null,from_address text not null,from_name text,to_address text not null,subject text not null,
+ body_html text,body_text text,snippet text,status text not null default 'delivered',folder text not null default 'inbox',
+ is_read boolean not null default false,is_starred boolean not null default false,deleted_at timestamptz,updated_at timestamptz default now(),
+ in_reply_to_email_id uuid,thread_id uuid,message_id_header text,in_reply_to_header text,references_header text[],resend_id text,resend_status text,
+ constraint mailbox_emails_status_check check(status in ('draft','queued','sending','delivered','failed','bounced'))
+);
+alter table public.mailbox_emails enable row level security;
+grant all on public.mailbox_emails to service_role;
+grant select,insert,update,delete on public.mailbox_emails to authenticated;
+create policy mailbox_owner_fixture on public.mailbox_emails to authenticated using(owner_id=auth.uid()) with check(owner_id=auth.uid());
