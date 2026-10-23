@@ -65,7 +65,12 @@ export function fieldToZod(field: FieldConfig): ZodTypeAny {
     const values = field.options.map((o) => o.value);
     if (values.length >= 2) {
       const enumSchema = z.enum(values as [string, ...string[]]);
-      schema = field.type === 'multiselect' ? z.array(enumSchema) : enumSchema;
+      schema =
+        field.type === 'multiselect'
+          ? z.array(enumSchema)
+          : field.required
+            ? enumSchema
+            : z.union([enumSchema, z.literal('')]);
     }
   }
 
