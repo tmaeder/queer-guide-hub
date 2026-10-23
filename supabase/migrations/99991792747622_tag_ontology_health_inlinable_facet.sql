@@ -48,10 +48,19 @@
 -- inlining the expression is evaluated in the caller's context like any other
 -- inline expression, so unpinning adds no resolution surface.
 --
--- This also un-breaks the three other callers of tag_facet_of, which paid the
--- same per-row penalty with nobody measuring them:
--- api_private.tag_coverage_radar, public.get_marketplace_tag_facets and
--- public.run_content_graph_recompute.
+-- The three other callers of tag_facet_of pay the same per-row penalty and all
+-- get cheaper, but NONE OF THEM IS BROKEN -- measured rather than assumed,
+-- because "this also fixes N other things" sends the next reader hunting an
+-- outage that does not exist:
+--   public.run_content_graph_recompute -- cron content_graph_recompute,
+--     succeeding daily, 6.2-13.6 s per run, 0 consecutive failures.
+--   public.get_marketplace_tag_facets  -- a public RPC, so it runs under the
+--     8 s PostgREST ceiling, and sits at 480 ms cold / 226 ms warm. It filters
+--     by department/stock instead of scanning the whole table.
+--   api_private.tag_coverage_radar     -- no cron job and no registry row, so
+--     it is not on a schedule at all.
+-- tag_ontology_health is the only one that reads tag_facets TWICE AND
+-- unfiltered, which is why it is the one that hit the ceiling.
 --
 -- No functional index is built on tag_facet_of (checked: 0 rows in pg_index
 -- matching), so nothing has to be reindexed and no plan depends on its
@@ -115,6 +124,7 @@ declare
   v_sub constant text := 'and coalesce((select usage_count from public.tag_usage_summary s where s.id=t.id),0)=0';
   v_join constant text := ' left join public.tag_usage_summary s on s.id=t.id where t.status=''active''';
   v_done constant text := 'left join public.tag_usage_summary s on s.id=t.id';
+  v_bare text;
   n int;
 begin
   select pg_get_functiondef(p.oid) into v_src
@@ -125,6 +135,14 @@ begin
     raise exception 'P0 failed: api_private.tag_ontology_health not found';
   end if;
 
+  -- COUNT on a comment-stripped copy, REWRITE the original. pg_get_functiondef
+  -- returns the body including its comments, so counting on the raw text matches
+  -- prose as well as code -- which aborted `db push` on main three times on
+  -- 2026-09-20 and stranded the whole deploy queue, since nothing fails until
+  -- apply time. Stripping for the rewrite instead would DELETE the function's
+  -- own comments from the body written back, so the two reads are separate.
+  v_bare := regexp_replace(v_src, '--[^' || chr(10) || ']*', '', 'g');
+
   -- SOFT on preconditions. The join shape already being present means this body
   -- is already in the end state -- a rerun, a rebuild over a later migration, or
   -- a sibling that got here first -- and re-patching is a no-op at best. An
@@ -132,18 +150,18 @@ begin
   -- the blast radius CLAUDE.md records from two individually-correct changes.
   -- The postconditions below are what actually hold the line, and they run in
   -- both branches.
-  n := (length(v_src) - length(replace(v_src, v_done, ''))) / length(v_done);
+  n := (length(v_bare) - length(replace(v_bare, v_done, ''))) / length(v_done);
   if n = 2 then
     raise notice 'tag_ontology_health already carries both joins; nothing to patch';
   else
     -- Exactly-once anchors on the unpatched body. A silently-unmatched replace
     -- is indistinguishable from a guard that does not fire, so each count is
     -- asserted rather than hoped for.
-    n := (length(v_src) - length(replace(v_src, v_a1, ''))) / length(v_a1);
+    n := (length(v_bare) - length(replace(v_bare, v_a1, ''))) / length(v_a1);
     if n <> 1 then raise exception 'P0 failed: active_zero_usage anchor matched % times, expected 1', n; end if;
-    n := (length(v_src) - length(replace(v_src, v_a2, ''))) / length(v_a2);
+    n := (length(v_bare) - length(replace(v_bare, v_a2, ''))) / length(v_a2);
     if n <> 1 then raise exception 'P0 failed: human_reviewed_unused anchor matched % times, expected 1', n; end if;
-    n := (length(v_src) - length(replace(v_src, v_sub, ''))) / length(v_sub);
+    n := (length(v_bare) - length(replace(v_bare, v_sub, ''))) / length(v_sub);
     if n <> 2 then raise exception 'P0 failed: correlated subquery matched % times, expected 2', n; end if;
 
     v_out := replace(v_src, v_a1, replace(v_a1, ' where t.status=''active''', v_join));
@@ -205,7 +223,10 @@ begin
   -- P4: the slow shape is gone and the join is in, twice. This is the
   --     regression guard -- a later CREATE OR REPLACE that reinstates the
   --     correlated subquery fails here.
-  select pg_get_functiondef(p.oid) into v_def
+  -- Comment-stripped, for the same reason as the patch block above: an ABSENCE
+  -- check goes falsely RED when a comment mentions the symbol, and a PRESENCE
+  -- check goes falsely GREEN when it exists only in prose.
+  select regexp_replace(pg_get_functiondef(p.oid), '--[^' || chr(10) || ']*', '', 'g') into v_def
   from pg_proc p join pg_namespace n2 on n2.oid = p.pronamespace
   where n2.nspname = 'api_private' and p.proname = 'tag_ontology_health';
   if position('(select usage_count from public.tag_usage_summary s where s.id=t.id)' in v_def) > 0 then
