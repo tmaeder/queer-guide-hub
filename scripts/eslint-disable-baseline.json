@@ -1,5 +1,5 @@
 {
-  "total": 474,
+  "total": 468,
   "files": {
     "src/components/admin/CloudflareDashboard.tsx": {
       "react-hooks/set-state-in-effect": 1
@@ -683,10 +683,6 @@
     "src/hooks/useNearbyMapPoints.ts": {
       "@typescript-eslint/no-explicit-any": 1
     },
-    "src/hooks/useNews.tsx": {
-      "react-hooks/exhaustive-deps": 1,
-      "react-hooks/set-state-in-effect": 3
-    },
     "src/hooks/usePageFetchers.ts": {
       "react-hooks/set-state-in-effect": 1
     },
@@ -864,7 +860,7 @@
       "react-hooks/purity": 1
     },
     "src/pages/NewsArchive.tsx": {
-      "react-hooks/exhaustive-deps": 4
+      "react-hooks/exhaustive-deps": 2
     },
     "src/pages/NewsDetail.parts.tsx": {
       "react-hooks/set-state-in-effect": 2
