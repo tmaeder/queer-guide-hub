@@ -1,4 +1,5 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from '@/hooks/use-toast';
@@ -365,42 +366,30 @@ export function usePersonalities(autoFetch: boolean = true) {
  * Small one-shot hook for the Featured rail on /personalities.
  * Returns up to `limit` is_featured=true personalities, sorted by view_count.
  */
+// Stable empty fallback so consumers' memos/effects don't re-run every render.
+const NO_PERSONALITIES: Personality[] = [];
+
 export function useFeaturedPersonalities(limit: number = 8) {
-  const [featured, setFeatured] = useState<Personality[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { data, isLoading, error } = useQuery({
+    queryKey: ['personalities-featured', limit],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('personalities')
+        .select('*')
+        .eq('visibility', 'public')
+        .eq('is_featured', true)
+        .order('view_count', { ascending: false })
+        .limit(limit);
+      if (error) throw error;
+      return (data || []).map(transformRow);
+    },
+  });
 
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      try {
-        setLoading(true);
-        const { data, error: queryError } = await supabase
-          .from('personalities')
-          .select('*')
-          .eq('visibility', 'public')
-          .eq('is_featured', true)
-          .order('view_count', { ascending: false })
-          .limit(limit);
-
-        if (cancelled) return;
-        if (queryError) {
-          setError(queryError.message);
-          return;
-        }
-        setFeatured((data || []).map(transformRow));
-      } catch (_err) {
-        if (!cancelled) setError('Failed to load featured personalities');
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [limit]);
-
-  return { featured, loading, error };
+  return {
+    featured: data ?? NO_PERSONALITIES,
+    loading: isLoading,
+    error: error ? error.message || 'Failed to load featured personalities' : null,
+  };
 }
 
 export interface ProfessionFacet {
@@ -408,60 +397,27 @@ export interface ProfessionFacet {
   count: number;
 }
 
-// Module-level cache so facets don't refetch per render across consumers.
-let facetCache: { limit: number; data: ProfessionFacet[] } | null = null;
-
 /**
  * Returns top-N professions with counts via the `get_personality_profession_facets` RPC.
  * Falls back to an empty list on failure so the filter bar still renders.
  */
 export function useProfessionFacets(limit: number = 15) {
-  const [facets, setFacets] = useState<ProfessionFacet[]>(
-    facetCache && facetCache.limit >= limit ? facetCache.data.slice(0, limit) : [],
-  );
-  const [loading, setLoading] = useState(!facetCache || facetCache.limit < limit);
-  const mountedRef = useRef(true);
-
-  useEffect(() => {
-    mountedRef.current = true;
-    if (facetCache && facetCache.limit >= limit) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect -- effect synchronizes state with external props/data; React Compiler can't infer the sync direction. Documented exemption from the eslint.config.js staged-ratchet plan.
-      setFacets(facetCache.data.slice(0, limit));
-      setLoading(false);
-      return () => {
-        mountedRef.current = false;
-      };
-    }
-
-    (async () => {
-      try {
-        const { data, error } = await supabase.rpc('get_personality_profession_facets', {
-          lim: Math.max(limit, 20),
-        });
-        if (!mountedRef.current) return;
-        if (error) {
-          console.warn('profession facets RPC failed:', error.message);
-          setFacets([]);
-          return;
-        }
-        const rows: ProfessionFacet[] = (data || []).map((row: Record<string, unknown>) => ({
-          profession: row.profession,
-          count: Number(row.cnt ?? row.count ?? 0),
-        }));
-        facetCache = { limit: Math.max(limit, 20), data: rows };
-        setFacets(rows.slice(0, limit));
-      } catch (err) {
-        console.warn('profession facets fetch failed:', err);
-        setFacets([]);
-      } finally {
-        if (mountedRef.current) setLoading(false);
+  const lim = Math.max(limit, 20);
+  const { data, isLoading } = useQuery({
+    queryKey: ['personality-profession-facets', lim],
+    queryFn: async (): Promise<ProfessionFacet[]> => {
+      const { data, error } = await supabase.rpc('get_personality_profession_facets', { lim });
+      if (error) {
+        console.warn('profession facets RPC failed:', error.message);
+        throw error;
       }
-    })();
+      return (data || []).map((row: Record<string, unknown>) => ({
+        profession: row.profession as string,
+        count: Number(row.cnt ?? row.count ?? 0),
+      }));
+    },
+  });
 
-    return () => {
-      mountedRef.current = false;
-    };
-  }, [limit]);
-
-  return { facets, loading };
+  const facets = useMemo(() => (data ?? []).slice(0, limit), [data, limit]);
+  return { facets, loading: isLoading };
 }

@@ -8,7 +8,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { useEntityTripStatus } from '@/hooks/useEntityTripStatus';
 import { useVenueSocialSignals } from '@/hooks/useVenueSocialSignals';
-import { useEvents } from '@/hooks/useEvents';
+import { useEventsQuery } from '@/hooks/useEvents';
 import { useNearbyMapPoints } from '@/hooks/useNearbyMapPoints';
 import { useVenueSafetyScore } from '@/hooks/useVenueSafetySignals';
 import { TripAction } from '@/components/trips/TripAction';
@@ -43,6 +43,9 @@ import type {
   EntityDescriptorResult,
 } from '@/components/entity/entityDescriptor';
 
+// Same key as /venues, so the two share one cached upcoming-events list.
+const ALL_UPCOMING = {};
+
 /**
  * Venue adapter: turns the raw venue query into a normalised `EntityDescriptor`.
  * Owns the add-to-trip dialog + check-in refresh state so the shell stays dumb.
@@ -51,7 +54,7 @@ export function useVenueDescriptor(slug: string | undefined): EntityDescriptorRe
   const navigate = useLocalizedNavigate();
   const { t } = useTranslation();
   const { toast } = useToast();
-  const { events } = useEvents();
+  const { events } = useEventsQuery(ALL_UPCOMING);
 
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: ['venue-detail', slug],

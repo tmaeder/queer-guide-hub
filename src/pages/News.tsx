@@ -1,5 +1,10 @@
 import { useMemo } from 'react';
-import { useNews } from '@/hooks/useNews';
+import {
+  useNewsArticles,
+  useNewsCategories,
+  useNewsCategoryCounts,
+  useNewsSources,
+} from '@/hooks/useNews';
 import type { NewsCategory } from '@/hooks/useNews';
 import { useNewsFront } from '@/hooks/useNewsFront';
 import { useNewsStories } from '@/hooks/useNewsStories';
@@ -27,9 +32,15 @@ import { PageContainer } from '@/components/layout/PageContainer';
 
 type Article = Tables<'news_articles'> & { news_sources?: Tables<'news_sources'> };
 
+// Stable key for the unfiltered list the front page renders.
+const ALL_ARTICLES = {};
+
 export default function News() {
   const { t } = useTranslation();
-  const { articles, sources, categories, totalArticles, fetchArticles } = useNews();
+  const { articles, refetch: refetchArticles } = useNewsArticles(ALL_ARTICLES);
+  const sources = useNewsSources();
+  const categories = useNewsCategories();
+  const { totalArticles } = useNewsCategoryCounts(categories);
   // Live, self-ranking front: hotness = recency × quality × soft featured boost
   // × trending. Replaces the old `is_featured` pin that left a months-old story
   // as the permanent headline. Auto-refreshes (poll + focus) so it never goes stale.
@@ -37,7 +48,7 @@ export default function News() {
   const { count: newCount, reset: resetNewCount } = useRealtimeNewsInserts();
 
   const handleRefreshNew = () => {
-    void fetchArticles();
+    void refetchArticles();
     void refetchFront();
     resetNewCount();
     if (typeof window !== 'undefined') window.scrollTo({ top: 0, behavior: 'smooth' });

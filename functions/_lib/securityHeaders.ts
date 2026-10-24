@@ -129,6 +129,13 @@ const MEDIA_SRC = ["'self'", 'blob:', 'https:'];
 // (Design & Branding control center). Keep in sync with public/_headers font-src.
 const FONT_SRC = ["'self'", 'data:', 'https://protomaps.github.io', 'https://*.supabase.co'];
 
+// CSP violation reports go to a same-origin forwarder (functions/api/csp-report.ts)
+// that relays them to Sentry's security endpoint using the DSN from the Pages
+// env. Same-origin because public/_headers is a static file and cannot derive
+// a URL from a runtime secret. Keep in sync with public/_headers.
+export const CSP_REPORT_PATH = '/api/csp-report';
+export const CSP_REPORT_GROUP = 'csp-endpoint';
+
 export function buildContentSecurityPolicy(nonce: string): string {
   return [
     "default-src 'self'",
@@ -141,12 +148,31 @@ export function buildContentSecurityPolicy(nonce: string): string {
     `font-src ${FONT_SRC.join(' ')}`,
     `connect-src ${CONNECT_SRC.join(' ')}`,
     `frame-src ${FRAME_SRC.join(' ')}`,
+    // 'self', not 'none': the CMS live preview (src/components/cms/editor/
+    // PreviewPanel.tsx) iframes our own pages. X-Frame-Options below says
+    // SAMEORIGIN so the two agree (browsers honour this over XFO anyway).
     "frame-ancestors 'self'",
     "worker-src 'self' blob:",
     "object-src 'none'",
     "base-uri 'self'",
     "form-action 'self'",
     'upgrade-insecure-requests',
+    `report-uri ${CSP_REPORT_PATH}`,
+    `report-to ${CSP_REPORT_GROUP}`,
+  ].join('; ');
+}
+
+// Trusted Types, REPORT-ONLY. Inventories every DOM-XSS sink (innerHTML,
+// DOMParser, script src, eval, …) that receives a plain string, without
+// blocking anything. No default policy on purpose: one would accept those
+// strings silently and the report stream would go empty. Enforce only after
+// the reports reach zero and each sink sanitizes through src/lib/sanitize.ts.
+// Keep in sync with public/_headers.
+export function buildReportOnlyPolicy(): string {
+  return [
+    "require-trusted-types-for 'script'",
+    `report-uri ${CSP_REPORT_PATH}`,
+    `report-to ${CSP_REPORT_GROUP}`,
   ].join('; ');
 }
 
@@ -154,13 +180,14 @@ export function buildContentSecurityPolicy(nonce: string): string {
 // Response. The CSP is dynamic and added separately so callers can
 // reuse the same nonce as the HTML rewriter.
 export const STATIC_SECURITY_HEADERS: Readonly<Record<string, string>> = {
-  'X-Frame-Options': 'DENY',
+  'X-Frame-Options': 'SAMEORIGIN',
   'X-Content-Type-Options': 'nosniff',
   'Referrer-Policy': 'strict-origin-when-cross-origin',
   'Strict-Transport-Security': 'max-age=63072000; includeSubDomains; preload',
   'Permissions-Policy': 'camera=(), microphone=(), geolocation=(self), payment=(self), usb=()',
   'Cross-Origin-Opener-Policy': 'same-origin',
   'X-Permitted-Cross-Domain-Policies': 'none',
+  'Reporting-Endpoints': `${CSP_REPORT_GROUP}="${CSP_REPORT_PATH}"`,
 };
 
 /** Generate a 128-bit base64url nonce for per-response CSP. */
@@ -179,4 +206,5 @@ export function applySecurityHeaders(res: Response, nonce: string): void {
     res.headers.set(k, v);
   }
   res.headers.set('Content-Security-Policy', buildContentSecurityPolicy(nonce));
+  res.headers.set('Content-Security-Policy-Report-Only', buildReportOnlyPolicy());
 }

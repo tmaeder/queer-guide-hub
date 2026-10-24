@@ -19,7 +19,7 @@ import { useBreadcrumbs } from '@/contexts/BreadcrumbContext';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 import { useCMSPage } from '@/hooks/useCMSPage';
-import DOMPurify from 'dompurify';
+import { sanitizeArticle } from '@/lib/sanitize';
 import { useDetailMeta } from '@/hooks/useDetailMeta';
 import { LegalPageLayout } from '@/components/ui/LegalPageLayout';
 import { AccessibilityControls } from '@/components/accessibility/AccessibilityControls';
@@ -141,7 +141,7 @@ export default function CMSRoutePage({ slug }: CMSRoutePageProps) {
 
   // All CMS HTML is sanitized through DOMPurify before rendering.
   const sanitizedHtml = useMemo(
-    () => (page?.body_html ? DOMPurify.sanitize(page.body_html, { ADD_ATTR: ['id'] }) : ''),
+    () => (page?.body_html ? sanitizeArticle(page.body_html) : ''),
     [page],
   );
 
