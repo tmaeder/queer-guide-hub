@@ -22554,6 +22554,8 @@ export type Database = {
           created_by: string
           id: string
           revoked_at: string | null
+          routing_status: string
+          routing_rule_id: string | null
           short_id: string
           trip_id: string
         }
@@ -22562,6 +22564,8 @@ export type Database = {
           created_by: string
           id?: string
           revoked_at?: string | null
+          routing_status?: string
+          routing_rule_id?: string | null
           short_id: string
           trip_id: string
         }
@@ -22570,6 +22574,8 @@ export type Database = {
           created_by?: string
           id?: string
           revoked_at?: string | null
+          routing_status?: string
+          routing_rule_id?: string | null
           short_id?: string
           trip_id?: string
         }
