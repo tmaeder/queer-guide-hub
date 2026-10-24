@@ -5,7 +5,19 @@
 // English (P3.1 of the SEO remediation). Re-run the script after a locale
 // gets translated.
 
-export const LOCALISED_LOCALES: readonly string[] = ["en","es","fr","de","pt","it","ru","zh","ja","ko","ar"] as const;
+export const LOCALISED_LOCALES: readonly string[] = [
+  'en',
+  'es',
+  'fr',
+  'de',
+  'pt',
+  'it',
+  'ru',
+  'zh',
+  'ja',
+  'ko',
+  'ar',
+] as const;
 
 export function isLocaleLocalised(locale: string): boolean {
   return LOCALISED_LOCALES.includes(locale);

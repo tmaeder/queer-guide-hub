@@ -94,12 +94,17 @@ describe('fetchRows pagination', () => {
 
   it('surfaces a mid-pagination failure instead of silently returning a short list', async () => {
     let n = 0;
-    vi.stubGlobal('fetch', vi.fn(async () => {
-      if (n++ === 0) {
-        return new Response(JSON.stringify(Array.from({ length: 1000 }, (_, i) => ({ id: i }))), { status: 200 });
-      }
-      return new Response('boom', { status: 500 });
-    }));
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => {
+        if (n++ === 0) {
+          return new Response(JSON.stringify(Array.from({ length: 1000 }, (_, i) => ({ id: i }))), {
+            status: 200,
+          });
+        }
+        return new Response('boom', { status: 500 });
+      }),
+    );
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
     const rows = await fetchRows(env, 'venues', 'slug');
     expect(rows).toHaveLength(1000);
@@ -113,12 +118,18 @@ describe('fetchRows pagination', () => {
 
   it('preserves caller filters on every page', async () => {
     const urls: string[] = [];
-    vi.stubGlobal('fetch', vi.fn(async (url: string) => {
-      urls.push(url);
-      const off = Number(new URL(url).searchParams.get('offset'));
-      const n = off === 0 ? 1000 : 5;
-      return new Response(JSON.stringify(Array.from({ length: n }, (_, i) => ({ id: off + i }))), { status: 200 });
-    }));
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async (url: string) => {
+        urls.push(url);
+        const off = Number(new URL(url).searchParams.get('offset'));
+        const n = off === 0 ? 1000 : 5;
+        return new Response(
+          JSON.stringify(Array.from({ length: n }, (_, i) => ({ id: off + i }))),
+          { status: 200 },
+        );
+      }),
+    );
     await fetchRows(env, 'venues', 'slug', 'safety_gated=eq.false&seo_indexable=eq.true');
     expect(urls).toHaveLength(2);
     for (const u of urls) {
