@@ -11,8 +11,446 @@
         "https://queer.guide/about"
       ],
       "numberOfRuns": 3,
-      "settings": { "skipAudits": ["uses-http2"] }
+      "settings": {
+        "skipAudits": [
+          "uses-http2"
+        ]
+      }
     },
-    "upload": { "target": "filesystem", "outputDir": ".lighthouseci/report" }
+    "upload": {
+      "target": "filesystem",
+      "outputDir": ".lighthouseci/report"
+    },
+    "assert": {
+      "assertMatrix": [
+        {
+          "matchingUrlPattern": "^https://queer\\.guide/(\\?.*)?$",
+          "assertions": {
+            "categories:performance": [
+              "error",
+              {
+                "minScore": 0.25,
+                "aggregationMethod": "optimistic"
+              }
+            ],
+            "categories:accessibility": [
+              "error",
+              {
+                "minScore": 0.97,
+                "aggregationMethod": "optimistic"
+              }
+            ],
+            "categories:best-practices": [
+              "error",
+              {
+                "minScore": 0.78,
+                "aggregationMethod": "optimistic"
+              }
+            ],
+            "categories:seo": [
+              "error",
+              {
+                "minScore": 0.97,
+                "aggregationMethod": "optimistic"
+              }
+            ],
+            "largest-contentful-paint": [
+              "error",
+              {
+                "maxNumericValue": 15500,
+                "aggregationMethod": "optimistic"
+              }
+            ],
+            "total-blocking-time": [
+              "error",
+              {
+                "maxNumericValue": 400,
+                "aggregationMethod": "optimistic"
+              }
+            ],
+            "cumulative-layout-shift": [
+              "error",
+              {
+                "maxNumericValue": 0.55,
+                "aggregationMethod": "optimistic"
+              }
+            ],
+            "resource-summary:script:size": [
+              "error",
+              {
+                "maxNumericValue": 975000,
+                "aggregationMethod": "optimistic"
+              }
+            ]
+          }
+        },
+        {
+          "matchingUrlPattern": "^https://queer\\.guide\\/venues(\\?.*)?$",
+          "assertions": {
+            "categories:performance": [
+              "error",
+              {
+                "minScore": 0.27,
+                "aggregationMethod": "optimistic"
+              }
+            ],
+            "categories:accessibility": [
+              "error",
+              {
+                "minScore": 0.97,
+                "aggregationMethod": "optimistic"
+              }
+            ],
+            "categories:best-practices": [
+              "error",
+              {
+                "minScore": 0.78,
+                "aggregationMethod": "optimistic"
+              }
+            ],
+            "categories:seo": [
+              "error",
+              {
+                "minScore": 0.9,
+                "aggregationMethod": "optimistic"
+              }
+            ],
+            "largest-contentful-paint": [
+              "error",
+              {
+                "maxNumericValue": 19300,
+                "aggregationMethod": "optimistic"
+              }
+            ],
+            "total-blocking-time": [
+              "error",
+              {
+                "maxNumericValue": 650,
+                "aggregationMethod": "optimistic"
+              }
+            ],
+            "cumulative-layout-shift": [
+              "error",
+              {
+                "maxNumericValue": 0.28,
+                "aggregationMethod": "optimistic"
+              }
+            ],
+            "resource-summary:script:size": [
+              "error",
+              {
+                "maxNumericValue": 1475000,
+                "aggregationMethod": "optimistic"
+              }
+            ]
+          }
+        },
+        {
+          "matchingUrlPattern": "^https://queer\\.guide\\/events(\\?.*)?$",
+          "assertions": {
+            "categories:performance": [
+              "error",
+              {
+                "minScore": 0.41,
+                "aggregationMethod": "optimistic"
+              }
+            ],
+            "categories:accessibility": [
+              "error",
+              {
+                "minScore": 0.96,
+                "aggregationMethod": "optimistic"
+              }
+            ],
+            "categories:best-practices": [
+              "error",
+              {
+                "minScore": 0.78,
+                "aggregationMethod": "optimistic"
+              }
+            ],
+            "categories:seo": [
+              "error",
+              {
+                "minScore": 0.97,
+                "aggregationMethod": "optimistic"
+              }
+            ],
+            "largest-contentful-paint": [
+              "error",
+              {
+                "maxNumericValue": 22100,
+                "aggregationMethod": "optimistic"
+              }
+            ],
+            "total-blocking-time": [
+              "error",
+              {
+                "maxNumericValue": 450,
+                "aggregationMethod": "optimistic"
+              }
+            ],
+            "cumulative-layout-shift": [
+              "error",
+              {
+                "maxNumericValue": 0.15,
+                "aggregationMethod": "optimistic"
+              }
+            ],
+            "resource-summary:script:size": [
+              "error",
+              {
+                "maxNumericValue": 1099000,
+                "aggregationMethod": "optimistic"
+              }
+            ]
+          }
+        },
+        {
+          "matchingUrlPattern": "^https://queer\\.guide\\/cities(\\?.*)?$",
+          "assertions": {
+            "categories:performance": [
+              "error",
+              {
+                "minScore": 0.27,
+                "aggregationMethod": "optimistic"
+              }
+            ],
+            "categories:accessibility": [
+              "error",
+              {
+                "minScore": 0.97,
+                "aggregationMethod": "optimistic"
+              }
+            ],
+            "categories:best-practices": [
+              "error",
+              {
+                "minScore": 0.78,
+                "aggregationMethod": "optimistic"
+              }
+            ],
+            "categories:seo": [
+              "error",
+              {
+                "minScore": 0.97,
+                "aggregationMethod": "optimistic"
+              }
+            ],
+            "largest-contentful-paint": [
+              "error",
+              {
+                "maxNumericValue": 15700,
+                "aggregationMethod": "optimistic"
+              }
+            ],
+            "total-blocking-time": [
+              "error",
+              {
+                "maxNumericValue": 400,
+                "aggregationMethod": "optimistic"
+              }
+            ],
+            "cumulative-layout-shift": [
+              "error",
+              {
+                "maxNumericValue": 0.47,
+                "aggregationMethod": "optimistic"
+              }
+            ],
+            "resource-summary:script:size": [
+              "error",
+              {
+                "maxNumericValue": 973000,
+                "aggregationMethod": "optimistic"
+              }
+            ]
+          }
+        },
+        {
+          "matchingUrlPattern": "^https://queer\\.guide\\/travel(\\?.*)?$",
+          "assertions": {
+            "categories:performance": [
+              "error",
+              {
+                "minScore": 0.34,
+                "aggregationMethod": "optimistic"
+              }
+            ],
+            "categories:accessibility": [
+              "error",
+              {
+                "minScore": 0.97,
+                "aggregationMethod": "optimistic"
+              }
+            ],
+            "categories:best-practices": [
+              "error",
+              {
+                "minScore": 0.56,
+                "aggregationMethod": "optimistic"
+              }
+            ],
+            "categories:seo": [
+              "error",
+              {
+                "minScore": 0.97,
+                "aggregationMethod": "optimistic"
+              }
+            ],
+            "largest-contentful-paint": [
+              "error",
+              {
+                "maxNumericValue": 22200,
+                "aggregationMethod": "optimistic"
+              }
+            ],
+            "total-blocking-time": [
+              "error",
+              {
+                "maxNumericValue": 700,
+                "aggregationMethod": "optimistic"
+              }
+            ],
+            "cumulative-layout-shift": [
+              "error",
+              {
+                "maxNumericValue": 0.13,
+                "aggregationMethod": "optimistic"
+              }
+            ],
+            "resource-summary:script:size": [
+              "error",
+              {
+                "maxNumericValue": 1119000,
+                "aggregationMethod": "optimistic"
+              }
+            ]
+          }
+        },
+        {
+          "matchingUrlPattern": "^https://queer\\.guide\\/news(\\?.*)?$",
+          "assertions": {
+            "categories:performance": [
+              "error",
+              {
+                "minScore": 0.18,
+                "aggregationMethod": "optimistic"
+              }
+            ],
+            "categories:accessibility": [
+              "error",
+              {
+                "minScore": 0.96,
+                "aggregationMethod": "optimistic"
+              }
+            ],
+            "categories:best-practices": [
+              "error",
+              {
+                "minScore": 0.78,
+                "aggregationMethod": "optimistic"
+              }
+            ],
+            "categories:seo": [
+              "error",
+              {
+                "minScore": 0.97,
+                "aggregationMethod": "optimistic"
+              }
+            ],
+            "largest-contentful-paint": [
+              "error",
+              {
+                "maxNumericValue": 19800,
+                "aggregationMethod": "optimistic"
+              }
+            ],
+            "total-blocking-time": [
+              "error",
+              {
+                "maxNumericValue": 450,
+                "aggregationMethod": "optimistic"
+              }
+            ],
+            "cumulative-layout-shift": [
+              "error",
+              {
+                "maxNumericValue": 0.86,
+                "aggregationMethod": "optimistic"
+              }
+            ],
+            "resource-summary:script:size": [
+              "error",
+              {
+                "maxNumericValue": 990000,
+                "aggregationMethod": "optimistic"
+              }
+            ]
+          }
+        },
+        {
+          "matchingUrlPattern": "^https://queer\\.guide\\/about(\\?.*)?$",
+          "assertions": {
+            "categories:performance": [
+              "error",
+              {
+                "minScore": 0.27,
+                "aggregationMethod": "optimistic"
+              }
+            ],
+            "categories:accessibility": [
+              "error",
+              {
+                "minScore": 0.97,
+                "aggregationMethod": "optimistic"
+              }
+            ],
+            "categories:best-practices": [
+              "error",
+              {
+                "minScore": 0.78,
+                "aggregationMethod": "optimistic"
+              }
+            ],
+            "categories:seo": [
+              "error",
+              {
+                "minScore": 0.97,
+                "aggregationMethod": "optimistic"
+              }
+            ],
+            "largest-contentful-paint": [
+              "error",
+              {
+                "maxNumericValue": 14300,
+                "aggregationMethod": "optimistic"
+              }
+            ],
+            "total-blocking-time": [
+              "error",
+              {
+                "maxNumericValue": 400,
+                "aggregationMethod": "optimistic"
+              }
+            ],
+            "cumulative-layout-shift": [
+              "error",
+              {
+                "maxNumericValue": 0.46,
+                "aggregationMethod": "optimistic"
+              }
+            ],
+            "resource-summary:script:size": [
+              "error",
+              {
+                "maxNumericValue": 912000,
+                "aggregationMethod": "optimistic"
+              }
+            ]
+          }
+        }
+      ]
+    }
   }
 }
