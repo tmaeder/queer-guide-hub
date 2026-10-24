@@ -154,6 +154,38 @@ export async function requireInternalOrAdmin(
   return requireAdmin(req, serviceClient)
 }
 
+/**
+ * Like requireAdmin, but any of `roles` qualifies (user_roles has one row per
+ * role and has_role_jwt matches exactly, with no hierarchy). Use for staff
+ * tools the UI opens to editors/moderators: the /admin route guard defaults
+ * to editor+, so an admin-only gate there would break the UI it serves.
+ * Internal secret and service-role bearer pass, as with requireAdmin.
+ */
+export async function requireAnyRole(
+  req: Request,
+  serviceClient: SupabaseClient,
+  roles: readonly string[],
+): Promise<AdminContext | Response> {
+  if (hasInternalSecret(req)) return { userId: 'internal', isServiceRole: true, originalActorId: null }
+  const token = (req.headers.get('Authorization') ?? '').replace(/^Bearer\s+/i, '')
+  if (!token) return errorResponse('Missing authorization header', 401, req)
+  if (timingSafeEqual(token, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY'))) {
+    return { userId: 'service-role', isServiceRole: true, originalActorId: null }
+  }
+  const { data: userData, error: userError } = await serviceClient.auth.getUser(token)
+  if (userError || !userData.user) return errorResponse('Invalid authorization', 401, req)
+  const { data: rows } = await serviceClient
+    .from('user_roles')
+    .select('role')
+    .eq('user_id', userData.user.id)
+    .in('role', roles as string[])
+    .limit(1)
+  if (!rows || rows.length === 0) return errorResponse('Insufficient role', 403, req)
+  return { userId: userData.user.id, isServiceRole: false, originalActorId: null }
+}
+
+export const STAFF_ROLES = ['admin', 'moderator', 'editor'] as const
+
 export async function requireAdmin(
   req: Request,
   serviceClient: SupabaseClient
