@@ -67,6 +67,17 @@ vi.mock('@/components/tags/FollowTagButton', () => ({
   FollowTagButton: () => <button>Follow</button>,
 }));
 
+vi.mock('@/components/admin/AdminEditButton', () => ({
+  AdminEditButton: (p: { contentType: string; contentId: string; exportable?: boolean }) => (
+    <div
+      data-testid="admin-edit"
+      data-type={p.contentType}
+      data-id={p.contentId}
+      data-exportable={String(Boolean(p.exportable))}
+    />
+  ),
+}));
+
 import TagDetail from '../TagDetail';
 import {
   BreadcrumbProvider,
@@ -237,6 +248,14 @@ describe('TagDetail — page', () => {
     expect(await screen.findByTestId('village-route')).toBeInTheDocument();
     expect(fetchTagWithCategories).not.toHaveBeenCalled();
     expect(gatedRpc).not.toHaveBeenCalled();
+  });
+
+  it('offers the admin menu with record export for the tag', async () => {
+    renderPage();
+    const menu = await screen.findByTestId('admin-edit');
+    expect(menu.dataset.type).toBe('unified_tags');
+    expect(menu.dataset.id).toBe('t1');
+    expect(menu.dataset.exportable).toBe('true');
   });
 
   it('renders the term in the masthead, with its entity_kind as the status chip', async () => {
