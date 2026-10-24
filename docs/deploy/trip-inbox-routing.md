@@ -8,7 +8,7 @@ Configure a Cloudflare API token with **Email Routing Rules: Edit**, limited to 
 
 ## Deployment
 
-1. Apply `99991792791550_trip_inbox_routing.sql`.
+1. Apply `99991792821465_trip_inbox_routing.sql`.
 2. Deploy `trip-inbox-manage` with JWT verification enabled. The function also validates the user and checks `can_edit_trip` for lifecycle calls. Only admins/internal service callers may run `status` or `reconcile`.
 3. Invoke `{ "action": "status" }` as an admin to verify provider access. Invoke `{ "action": "reconcile" }` and require `success: true` before frontend rollout. It backfills active inboxes and removes rules for revoked inboxes. Re-running is safe. Check each result; retry failed rows before advertising addresses.
 4. Deploy the app. `useTripInbox` uses the authenticated endpoint for enable/revoke/regenerate, and displays only `routing_status = ready` inboxes.
