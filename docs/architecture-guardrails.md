@@ -41,6 +41,15 @@ Exceptions: Admin pages not yet launched can stay if tracked in a TODO comment a
 // TODO: Register route at /admin/audio before shipping
 ```
 
+## Service Worker (asset-heal layer 1)
+
+`public/sw.js` is live on prod (verified 2026-10-24: fresh visit registers it, it activates, the next load is controlled — `navigator.serviceWorker.controller.scriptURL === 'https://queer.guide/sw.js'`).
+
+- **Only registrar:** `PWAProvider` (`src/components/pwa/PWAProvider.tsx`, `navigator.serviceWorker.register('/sw.js', { scope: '/' })`, production builds only, after `load`). Mounted by `src/providers/AppProviders.tsx`. Not in `index.html`, the boot guard, the middleware or a Vite plugin.
+- **Why it matters:** it retries suspect `/assets/*` responses with `fetch(new Request(request, { cache: 'reload' }))`, the only fix for a poisoned year-long immutable browser-cache entry. `self.clients.claim()` makes it control the first page after install.
+- **Must stay:** `/sw.js` in `public/_routes.json` `exclude`, and its `public/_headers` blocks never `immutable`.
+- **Guard:** `src/utils/__tests__/serviceWorkerWiring.test.ts` fails if any link above is removed; `PWAProvider.test.tsx` covers the register call itself.
+
 ## Build Rules
 
 - `terser passes` must stay at `1`. Do not increase to `2` — it quadruples build time for <5% compression gain.
