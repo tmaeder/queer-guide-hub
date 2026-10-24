@@ -6,6 +6,8 @@ import { renderHook } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import type { ReactNode } from 'react';
 
+vi.mock('@/hooks/useAuth', () => ({ useAuth: () => ({ user: null }) }));
+
 vi.mock('@/integrations/supabase/client', () => {
   const builder: unknown = new Proxy(
     {},
@@ -40,7 +42,15 @@ function wrapper({ children }: { children: ReactNode }) {
 
 describe('useExploreMapData', () => {
   it('returns shape', () => {
-    const { result } = renderHook(() => useExploreMapData({ enabledLayers: [], viewport: { center: [0, 0], zoom: 2 }, filters: {} }), { wrapper });
+    const { result } = renderHook(
+      () =>
+        useExploreMapData({
+          enabledLayers: [],
+          viewport: { center: [0, 0], zoom: 2 },
+          filters: {},
+        }),
+      { wrapper },
+    );
     expect(result.current).toBeDefined();
   });
   it('exports LAYER_COLORS', () => {

@@ -11,9 +11,13 @@ import { useState, useEffect, useMemo, useCallback } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import { useSearchParams } from 'react-router';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
-import { useVenues } from '@/hooks/useVenues';
+import {
+  useVenuesFeed,
+  type VenueFilters as VenueQueryFilters,
+  type VenuesFeedRequest,
+} from '@/hooks/useVenues';
 import { useRecentVenues } from '@/hooks/useRecentVenues';
-import { useEvents } from '@/hooks/useEvents';
+import { useEventsQuery } from '@/hooks/useEvents';
 import { useMeta } from '@/hooks/useMeta';
 import { useAuth } from '@/hooks/useAuth';
 import { useDiscoveryProfile } from '@/hooks/useVenuesV2Data';
@@ -77,16 +81,6 @@ const Venues = () => {
   const { t } = useTranslation();
   const navigate = useLocalizedNavigate();
   const { user } = useAuth();
-  const {
-    venues,
-    loading,
-    error,
-    hasMore,
-    datasetTotal,
-    filteredTotal,
-    fetchVenues,
-    loadingTimedOut,
-  } = useVenues(false);
 
   useMeta({
     title: 'Venues',
@@ -102,7 +96,7 @@ const Venues = () => {
       isPartOf: { '@type': 'WebSite', name: 'Queer Guide', url: 'https://queer.guide' },
     },
   });
-  const { events } = useEvents();
+  const { events } = useEventsQuery({});
   const [_selectedVenue, setSelectedVenue] = useState<Venue | null>(null);
 
   const [searchParams, setSearchParams] = useSearchParams();
@@ -195,8 +189,9 @@ const Venues = () => {
     return f;
   }, [urlSearch, urlCategory]);
 
-  const [currentFilters, setCurrentFilters] =
-    useState<Record<string, unknown>>(buildFiltersFromUrl);
+  // Near me is the one filter the URL does not carry. The near-me toggle sets
+  // it and it holds until toggled off; it used to vanish on the next URL change.
+  const [nearMe, setNearMe] = useState(false);
 
   // Traveling preference chips — saved accessibility needs apply by default,
   // interest vibes are opt-in per session. Contributions merge into every
@@ -228,8 +223,42 @@ const Venues = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [chipKey],
   );
-  const [page, setPage] = useState(1);
   const PAGE_SIZE = 24;
+
+  /** Filters in force: the URL's, plus where the visitor is (for ranking) and
+   *  near me. Derived, not stored — the URL is the source of truth. */
+  const currentFilters = useMemo<Record<string, unknown>>(() => {
+    const f: Record<string, unknown> = { ...buildFiltersFromUrl() };
+    if (userLocation) f.userLocation = userLocation;
+    if (nearMe) f.nearMe = true;
+    return f;
+  }, [buildFiltersFromUrl, userLocation, nearMe]);
+
+  /** The list request. Saved accessibility/interest chips merge in here and
+   *  stay out of the URL. */
+  const feedRequest = useMemo<VenuesFeedRequest>(
+    () => ({
+      filters: mergeChipFilters(currentFilters) as VenueQueryFilters,
+      paged: true,
+      pageSize: PAGE_SIZE,
+      sort: sortBy,
+      useRanking: VENUES_V2_ENABLED,
+      userId: user?.id ?? null,
+    }),
+    [currentFilters, mergeChipFilters, sortBy, user?.id],
+  );
+  const {
+    venues,
+    loading,
+    error,
+    hasMore,
+    datasetTotal,
+    filteredTotal,
+    loadMore,
+    loadingMore,
+    loadingTimedOut,
+    refetch,
+  } = useVenuesFeed(feedRequest);
 
   // `userLocation` / `nearMe` are passed through currentFilters for ranking
   // but they don't count as user-applied filters — keep rails visible while
@@ -269,35 +298,10 @@ const Venues = () => {
     [updateParams],
   );
 
-  const baseFetchOptions = useCallback(
-    (extra?: { page?: number; pageSize?: number; append?: boolean; sort?: string }) => ({
-      ...extra,
-      useRanking: VENUES_V2_ENABLED,
-      userId: user?.id ?? null,
-    }),
-    [user],
-  );
-
-  /** The one next-page fetch. Was written out twice — once inside an unlatched
-   *  IntersectionObserver and once in the button's onClick — and the observer
-   *  copy could re-enter before React re-rendered with `loading=true`, calling
-   *  `setPage` again off the same stale `page` and skipping a page outright.
-   *  `LoadMore` owns the latch now; this is just the fetch. */
-  const loadNextPage = useCallback(async () => {
-    const nextPage = page + 1;
-    setPage(nextPage);
-    await fetchVenues(
-      mergeChipFilters({
-        ...currentFilters,
-        userLocation: userLocation ?? undefined,
-      }) as Parameters<typeof fetchVenues>[0],
-      baseFetchOptions({ page: nextPage, pageSize: PAGE_SIZE, append: true, sort: sortBy }),
-    );
-  }, [page, currentFilters, userLocation, mergeChipFilters, baseFetchOptions, sortBy, fetchVenues]);
-
-  const handleFiltersChange = async (filters: Record<string, unknown>) => {
-    setCurrentFilters(filters);
-    setPage(1);
+  /** VenueFilters hands over a full filter set: it goes to the URL (which the
+   *  request is derived from), and near me to its own state. */
+  const handleFiltersChange = (filters: Record<string, unknown>) => {
+    setNearMe(Boolean(filters.nearMe));
     const list = (v: unknown) =>
       Array.isArray(v) && v.length > 0 ? (v as string[]).join(',') : undefined;
     const nextParams = {
@@ -322,47 +326,11 @@ const Venues = () => {
       return (searchParams.get(k) ?? undefined) !== (v ?? undefined);
     });
     updateParams(nextParams, { replace: !nonSearchChanged });
-    await fetchVenues(
-      mergeChipFilters({ ...filters, userLocation: userLocation ?? undefined }) as Parameters<
-        typeof fetchVenues
-      >[0],
-      baseFetchOptions({ page: 1, pageSize: PAGE_SIZE, append: false, sort: sortBy }),
-    );
   };
 
   const handleViewDetails = (venue: Venue) => {
     setSelectedVenue(venue);
   };
-
-  // Refetch when URL-driven filters or sort change.
-  useEffect(() => {
-    const baseNext = { ...buildFiltersFromUrl() };
-    if (userLocation) (baseNext as Record<string, unknown>).userLocation = userLocation;
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- effect synchronizes state with external props/data; React Compiler can't infer the sync direction. Documented exemption from the eslint.config.js staged-ratchet plan.
-    setCurrentFilters(baseNext);
-    setPage(1);
-    fetchVenues(
-      mergeChipFilters(baseNext) as Parameters<typeof fetchVenues>[0],
-      baseFetchOptions({ page: 1, pageSize: PAGE_SIZE, append: false, sort: sortBy }),
-    );
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [
-    urlSearch,
-    urlCategory,
-    urlCity,
-    urlTagsKey,
-    urlAmenitiesKey,
-    urlServicesKey,
-    urlAccessibilityKey,
-    urlTargetGroupsKey,
-    urlOpenNow,
-    urlPrice,
-    urlRadius,
-    sortBy,
-    chipKey,
-    userLocation?.latitude,
-    userLocation?.longitude,
-  ]);
 
   useEffect(() => {
     if (loading || venues.length === 0 || viewMode !== 'grid') return;
@@ -538,7 +506,7 @@ const Venues = () => {
               exit={{ opacity: 0, scale: 0.98 }}
               transition={tweens.fast}
             >
-              {error && !loading && <ErrorState message={error} onRetry={() => fetchVenues()} />}
+              {error && !loading && <ErrorState message={error} onRetry={refetch} />}
 
               {showRails && <GuidesRail filters={{ entityType: 'venue', limit: 6 }} />}
 
@@ -561,7 +529,7 @@ const Venues = () => {
                   ))}
                 </div>
               )}
-              {loading && loadingTimedOut && <LoadingTimeout onRetry={() => fetchVenues()} />}
+              {loading && loadingTimedOut && <LoadingTimeout onRetry={refetch} />}
 
               {!loading &&
                 !error &&
@@ -656,8 +624,9 @@ const Venues = () => {
               {venues.length > 0 && (
                 <LoadMore
                   hasMore={hasMore}
-                  loading={loading}
-                  onLoadMore={loadNextPage}
+                  loading={loadingMore}
+                  // The next page of the request that built this list.
+                  onLoadMore={loadMore}
                   resetKey={chipKey}
                 />
               )}
