@@ -31,7 +31,6 @@ vi.mock('@/hooks/useVenues', () => ({
   useVenues: () => ({ venues: venueState.venues, loading: false, fetchVenues: vi.fn() }),
 }));
 vi.mock('@/hooks/useEvents', () => ({
-  useEvents: () => ({ events: [], loading: false, fetchEvents: vi.fn() }),
   useEventsQuery: () => ({ events: [], loading: false, isFetching: false, error: null }),
 }));
 vi.mock('@/hooks/useEntityDetail', () => ({
