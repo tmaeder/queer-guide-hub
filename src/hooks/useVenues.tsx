@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { hashKey, useInfiniteQuery, useQuery } from '@tanstack/react-query';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
@@ -284,7 +284,7 @@ export function useVenuesQuery(filters: VenueFilters | null, opts?: { keepPrevio
   };
 }
 
-interface VenuesFeedRequest {
+export interface VenuesFeedRequest {
   filters: VenueFilters;
   paged: boolean;
   pageSize: number;
@@ -296,21 +296,18 @@ interface VenuesFeedRequest {
 /**
  * The paged /venues list on useInfiniteQuery.
  *
- * The page still decides which request runs and when, through `fetchVenues`
- * with the old signature; that call now records the request, and the query key
- * is the request, so the newest request wins by construction (the old hook had
- * no ordering at all — a slow stale response could overwrite a newer one).
- * `loadMore` asks for the next page of the SAME request. Re-issuing an
- * identical request refetches.
+ * `request` is derived by the page from the URL, the visitor's location and
+ * the saved chips. The query key is the request, so the newest request wins by
+ * construction (the old hook had no ordering at all — a slow stale response
+ * could overwrite a newer one) and `loadMore` asks for the next page of the
+ * SAME request. `refetch` re-runs it (retry). `null` stays idle.
  *
  * Keyed on the viewer: venues are safety-gated and the cache is not cleared on
  * sign-out.
  */
-export function useVenuesFeed() {
+export function useVenuesFeed(request: VenuesFeedRequest | null) {
   const { user } = useAuth();
   const viewer = user?.id ?? 'anon';
-  const [request, setRequest] = useState<VenuesFeedRequest | null>(null);
-  const requestRef = useRef<VenuesFeedRequest | null>(null);
 
   const query = useInfiniteQuery({
     queryKey: ['venues-feed', viewer, request],
@@ -343,37 +340,9 @@ export function useVenuesFeed() {
     return Array.from(new Map(merged.map((v) => [v.id, v])).values());
   }, [data]);
 
-  const fetchVenues = useCallback(
-    async (
-      filters?: VenueFilters,
-      options?: {
-        page?: number;
-        pageSize?: number;
-        sort?: string;
-        useRanking?: boolean;
-        userId?: string | null;
-      },
-    ) => {
-      const next: VenuesFeedRequest = {
-        filters: filters ?? {},
-        paged: typeof options?.page === 'number',
-        pageSize: options?.pageSize ?? 24,
-        sort: options?.sort,
-        useRanking: options?.useRanking,
-        userId: options?.userId,
-      };
-      // A ref, not the state: two calls in one tick must compare against each
-      // other, and the refetch must not run inside a state updater.
-      const prev = requestRef.current;
-      if (prev && hashKey([prev]) === hashKey([next])) {
-        void refetch();
-        return;
-      }
-      requestRef.current = next;
-      setRequest(next);
-    },
-    [refetch],
-  );
+  const rerun = useCallback(() => {
+    void refetch();
+  }, [refetch]);
 
   const loadMore = useCallback(async () => {
     await fetchNextPage();
@@ -414,7 +383,7 @@ export function useVenuesFeed() {
     datasetTotal,
     /** The filtered total of the current request (first page's count). */
     filteredTotal: data?.pages[0]?.count ?? null,
-    fetchVenues,
     loadMore,
+    refetch: rerun,
   };
 }

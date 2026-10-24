@@ -1,5 +1,5 @@
 {
-  "total": 484,
+  "total": 482,
   "files": {
     "src/components/admin/CloudflareDashboard.tsx": {
       "react-hooks/set-state-in-effect": 1
@@ -928,8 +928,7 @@
       "react-hooks/exhaustive-deps": 1
     },
     "src/pages/Venues.tsx": {
-      "react-hooks/exhaustive-deps": 3,
-      "react-hooks/set-state-in-effect": 1
+      "react-hooks/exhaustive-deps": 2
     },
     "src/pages/__tests__/PersonalityDetail.parts.test.tsx": {
       "@typescript-eslint/no-explicit-any": 1

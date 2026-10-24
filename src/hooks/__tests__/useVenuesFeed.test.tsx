@@ -45,7 +45,27 @@ vi.mock('@/integrations/supabase/client', () => {
   return { supabase: { from: () => builder } };
 });
 
-import { useVenuesFeed, useVenuesQuery } from '../useVenues';
+import {
+  useVenuesFeed,
+  useVenuesQuery,
+  type VenueFilters,
+  type VenuesFeedRequest,
+} from '../useVenues';
+
+const req = (filters: VenueFilters, extra: Partial<VenuesFeedRequest> = {}): VenuesFeedRequest => ({
+  filters,
+  paged: true,
+  pageSize: 24,
+  useRanking: true,
+  ...extra,
+});
+
+function renderFeed(initial: VenuesFeedRequest | null) {
+  return renderHook(({ request }) => useVenuesFeed(request), {
+    wrapper: TestProviders,
+    initialProps: { request: initial },
+  });
+}
 
 function deferred<T>() {
   let resolve!: (v: T) => void;
@@ -75,14 +95,9 @@ describe('useVenuesFeed', () => {
     rpcMock.mockImplementation((_n: string, args: { p_filters: { search?: string } }) =>
       args.p_filters.search === 'stale' ? stale.promise : fresh.promise,
     );
-    const { result } = renderHook(() => useVenuesFeed(), { wrapper: TestProviders });
-    act(() => {
-      void result.current.fetchVenues({ search: 'stale' }, { page: 1, useRanking: true });
-    });
+    const { result, rerender } = renderFeed(req({ search: 'stale' }));
     await waitFor(() => expect(rpcMock).toHaveBeenCalledTimes(1));
-    act(() => {
-      void result.current.fetchVenues({ search: 'fresh' }, { page: 1, useRanking: true });
-    });
+    rerender({ request: req({ search: 'fresh' }) });
     await waitFor(() => expect(rpcMock).toHaveBeenCalledTimes(2));
 
     await act(async () => {
@@ -102,13 +117,9 @@ describe('useVenuesFeed', () => {
         error: null,
       }),
     );
-    const { result } = renderHook(() => useVenuesFeed(), { wrapper: TestProviders });
-    act(() => {
-      void result.current.fetchVenues(
-        { category: 'bar' },
-        { page: 1, pageSize: 2, sort: 'name', useRanking: true, userId: 'u1' },
-      );
-    });
+    const { result } = renderFeed(
+      req({ category: 'bar' }, { pageSize: 2, sort: 'name', userId: 'u1' }),
+    );
     await waitFor(() => expect(result.current.venues.map((v) => v.id)).toEqual(['a', 'b']));
     expect(result.current.hasMore).toBe(true);
     expect(result.current.filteredTotal).toBe(4);
@@ -128,19 +139,14 @@ describe('useVenuesFeed', () => {
     expect(result.current.hasMore).toBe(false);
   });
 
-  it('re-issuing the identical request refetches', async () => {
+  it('an equal request is the same query; refetch re-runs it (retry)', async () => {
     rpcMock.mockResolvedValue({ data: rankedRows(['a']), error: null });
-    const { result } = renderHook(() => useVenuesFeed(), { wrapper: TestProviders });
-    act(() => {
-      void result.current.fetchVenues({ category: 'bar' }, { page: 1, useRanking: true });
-    });
+    const { result, rerender } = renderFeed(req({ category: 'bar' }));
     await waitFor(() => expect(result.current.loading).toBe(false));
-    act(() => {
-      void result.current.fetchVenues(
-        { category: 'bar', search: undefined },
-        { page: 1, useRanking: true },
-      );
-    });
+    // A new object with undefined keys is not a different request.
+    rerender({ request: req({ category: 'bar', search: undefined }) });
+    expect(rpcMock).toHaveBeenCalledTimes(1);
+    act(() => result.current.refetch());
     await waitFor(() => expect(rpcMock).toHaveBeenCalledTimes(2));
   });
 
@@ -148,10 +154,7 @@ describe('useVenuesFeed', () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
     rpcMock.mockResolvedValue({ data: null, error: new Error('rpc down') });
     fromResult.mockReturnValue({ data: [{ id: 'direct-1' }], error: null, count: 1 });
-    const { result } = renderHook(() => useVenuesFeed(), { wrapper: TestProviders });
-    act(() => {
-      void result.current.fetchVenues({ category: 'bar' }, { page: 1, useRanking: true });
-    });
+    const { result } = renderFeed(req({ category: 'bar' }));
     await waitFor(() => expect(result.current.venues.map((v) => v.id)).toEqual(['direct-1']));
     expect(fromCalls).toContainEqual(['eq', ['category', 'bar']]);
     warn.mockRestore();
