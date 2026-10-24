@@ -20,6 +20,7 @@ import {
   hasInternalSecret,
   requireAdmin,
 } from "../_shared/supabase-client.ts";
+import { safeErrCode } from '../_shared/safe-error.ts'
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -75,7 +76,7 @@ const handler = async (req: Request): Promise<Response> => {
 
   if (profileErr) {
     console.error("profile lookup failed", profileErr);
-    return new Response(JSON.stringify({ error: profileErr.message }), {
+    return new Response(JSON.stringify({ error: safeErrCode(profileErr, [], 'send-welcome-email') }), {
       status: 500,
       headers: { ...cors, "Content-Type": "application/json" },
     });
@@ -139,7 +140,7 @@ const handler = async (req: Request): Promise<Response> => {
     });
   } catch (e) {
     console.error("welcome email send failed", e);
-    return new Response(JSON.stringify({ error: (e as Error).message }), {
+    return new Response(JSON.stringify({ error: safeErrCode(e, [], 'send-welcome-email') }), {
       status: 500,
       headers: { ...cors, "Content-Type": "application/json" },
     });

@@ -1,3 +1,4 @@
+import { timingSafeEqual } from "../../_shared/timing-safe"
 /**
  * Internal-secret gate. The extract worker is infra — only trusted callers
  * (Supabase edge functions, the submit worker, the scraper) reach it, each
@@ -7,5 +8,5 @@
 export function hasInternalSecret(req: Request, expected: string | undefined): boolean {
   if (!expected) return false;
   const provided = req.headers.get('x-internal-secret');
-  return provided === expected;
+  return timingSafeEqual(provided, expected);
 }

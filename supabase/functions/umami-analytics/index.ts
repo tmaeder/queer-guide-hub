@@ -1,5 +1,6 @@
 import { getCorsHeaders, getServiceClient } from '../_shared/supabase-client.ts';
 import { proxySecretOk } from '../_shared/track-proxy-secret.ts';
+import { safeErrCode } from '../_shared/safe-error.ts'
 
 const supabase = getServiceClient();
 
@@ -57,7 +58,7 @@ Deno.serve(async (req) => {
     if (error) {
       console.error('track_umami_event RPC error:', error);
       return new Response(
-        JSON.stringify({ success: false, error: error.message }),
+        JSON.stringify({ success: false, error: safeErrCode(error, [], 'umami-analytics') }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
       );
     }

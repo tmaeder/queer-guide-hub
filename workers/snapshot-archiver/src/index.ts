@@ -1,3 +1,4 @@
+import { timingSafeEqual } from "../../_shared/timing-safe"
 /**
  * Snapshot Archiver Worker
  *
@@ -164,7 +165,7 @@ export default {
     // rather than allowed through — this endpoint runs with the service-role
     // key, so an unset secret must not mean "no gate."
     const got = req.headers.get('x-admin-secret');
-    if (!env.ADMIN_SECRET || got !== env.ADMIN_SECRET) {
+    if (!timingSafeEqual(got, env.ADMIN_SECRET)) {
       return new Response('forbidden', { status: 403 });
     }
     const body = await req.json().catch(() => ({})) as { limit?: number };
