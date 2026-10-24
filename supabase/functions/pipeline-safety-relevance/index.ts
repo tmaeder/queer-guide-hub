@@ -2,7 +2,7 @@ import {
   getServiceClient,
   jsonResponse,
   errorResponse,
-  corsResponse, requireInternalOrAdmin } from '../_shared/supabase-client.ts'
+  corsResponse, requireInternalOrAdmin, boundedInt } from '../_shared/supabase-client.ts'
 import { llmChatCompletion } from '../_shared/llm-client.ts'
 import { withCircuitBreaker, CircuitOpenError } from '../_shared/circuit-breaker.ts'
 import {
@@ -36,7 +36,7 @@ Deno.serve(withErrorReporting('pipeline-safety-relevance', async (req) => {
     const body = await req.json().catch(() => ({}))
     const pipelineRunId = body.pipeline_run_id as string | undefined
     const nodeId = body.node_id as string | undefined
-    const batchSize = Number(body.batch_size) || BATCH_SIZE_DEFAULT
+    const batchSize = boundedInt(body.batch_size, BATCH_SIZE_DEFAULT, 200)
     const minConfidence = Number(body.min_confidence) || MIN_CONFIDENCE_DEFAULT
     const dryRun = body.dry_run === true
 
