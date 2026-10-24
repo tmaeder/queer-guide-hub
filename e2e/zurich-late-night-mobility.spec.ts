@@ -71,6 +71,15 @@ test.describe('Zürich late-night mobility', () => {
     await expect(section).not.toContainText('opentransportdata.swiss');
   });
 
+  test('Vienna reads the Wiener Linien timetable', async ({ page }) => {
+    await page.goto('/city/vienna#travel');
+    const section = page.getByRole('region', { name: 'Late night' });
+    await expect(section).toContainText('Last tram', { timeout: 20_000 });
+    await expect(section).toContainText(CLOCK);
+    await expect(section).toContainText('Wiener Linien');
+    await expect(section).not.toContainText('DELFI');
+  });
+
   test('/going-out in Zürich has a Getting home section', async ({ page }) => {
     await page.goto('/going-out?city=zuerich');
     await expect(page.getByText('Getting home', { exact: false }).first()).toBeVisible({
