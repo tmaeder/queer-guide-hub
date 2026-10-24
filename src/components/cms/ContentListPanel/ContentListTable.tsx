@@ -128,12 +128,14 @@ function EmptyState({
           <h6 className="text-lg font-semibold mb-1">
             No {config ? config.label.plural.toLowerCase() : 'items'} yet
           </h6>
-          <p className="text-sm text-muted-foreground mb-6 max-w-[360px]">
-            {config
-              ? `Create your first ${config.label.singular.toLowerCase()} to get started.`
-              : 'Content you create will appear here.'}
-          </p>
-          {config && (
+          {config?.canCreate !== false && (
+            <p className="text-sm text-muted-foreground mb-6 max-w-[360px]">
+              {config
+                ? `Create your first ${config.label.singular.toLowerCase()} to get started.`
+                : 'Content you create will appear here.'}
+            </p>
+          )}
+          {config && config.canCreate !== false && (
             <Button onClick={onCreate}>
               <Plus size={16} />
               Create {config.label.singular}

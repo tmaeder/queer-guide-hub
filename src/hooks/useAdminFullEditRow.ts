@@ -6,6 +6,8 @@ export function useAdminFullEditRow(
   contentId: string,
   enabled: boolean,
   seed: Record<string, unknown> | undefined,
+  /** The type's own loader, for records that are not one plain table row. */
+  load?: (id: string) => Promise<Record<string, unknown>>,
 ) {
   const [data, setData] = useState<Record<string, unknown>>(seed ?? {});
   const [loading, setLoading] = useState(false);
@@ -20,19 +22,25 @@ export function useAdminFullEditRow(
     let cancelled = false;
     setLoading(true);
     (async () => {
-      const { data: row, error } = await supabase
-        .from(tableName as 'venues')
-        .select('*')
-        .eq('id', contentId)
-        .maybeSingle();
+      let row: Record<string, unknown> | null;
+      if (load) {
+        row = await load(contentId).catch(() => null);
+      } else {
+        const { data, error } = await supabase
+          .from(tableName as 'venues')
+          .select('*')
+          .eq('id', contentId)
+          .maybeSingle();
+        row = error ? null : (data as Record<string, unknown> | null);
+      }
       if (cancelled) return;
       setLoading(false);
-      if (!error && row) setData(row as Record<string, unknown>);
+      if (row) setData(row);
     })();
     return () => {
       cancelled = true;
     };
-  }, [enabled, tableName, contentId, seed]);
+  }, [enabled, tableName, contentId, seed, load]);
 
   return { data, setData, loading };
 }

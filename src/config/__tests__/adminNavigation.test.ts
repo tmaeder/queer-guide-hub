@@ -259,6 +259,9 @@ describe('getRouteMinRole', () => {
       'events',
       'feedback',
       'guides',
+      // Same tier as /admin/geography, where landmarks are created, and as the
+      // RLS on geo_places / geo_landmark_profiles (admin, moderator, editor).
+      'landmarks',
       'marketplace_listings',
       'milestones',
       'news_articles',
