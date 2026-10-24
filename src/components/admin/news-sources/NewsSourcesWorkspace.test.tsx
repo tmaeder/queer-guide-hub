@@ -15,7 +15,9 @@ const mocks = vi.hoisted(() => ({
   error: false,
   pending: false,
 }));
-vi.mock('sonner', () => ({ toast: { success: vi.fn() } }));
+vi.mock('sonner', () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
+const exportMock = vi.hoisted(() => vi.fn().mockResolvedValue(undefined));
+vi.mock('@/lib/newsSourcesExport', () => ({ exportNewsSources: exportMock }));
 vi.mock('@/hooks/useNewsSourcesAdmin', async (load) => {
   const original = await load<Record<string, unknown>>();
   return {
@@ -250,5 +252,34 @@ describe('News source workspace', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Retry' }));
     expect(mocks.retry).toHaveBeenCalled();
     expect(screen.queryByRole('table')).toBeNull();
+  });
+  it('exports the filtered list as Excel and CSV', async () => {
+    mount();
+    fireEvent.change(screen.getByLabelText('Status'), { target: { value: 'error' } });
+    fireEvent.change(screen.getByLabelText('Search sources'), { target: { value: 'Pink' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Export Excel' }));
+    await waitFor(() =>
+      expect(exportMock).toHaveBeenLastCalledWith(
+        { search: 'Pink', state: 'error', unlinked: false, organizationId: undefined },
+        'Excel',
+      ),
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'Export CSV' }));
+    await waitFor(() =>
+      expect(exportMock).toHaveBeenLastCalledWith(
+        expect.objectContaining({ search: 'Pink', state: 'error' }),
+        'CSV',
+      ),
+    );
+  });
+  it('scopes the export to the publisher when embedded on an Organisation', async () => {
+    mount({ organizationId: 'pub-1' });
+    fireEvent.click(screen.getByRole('button', { name: 'Export CSV' }));
+    await waitFor(() =>
+      expect(exportMock).toHaveBeenLastCalledWith(
+        expect.objectContaining({ organizationId: 'pub-1' }),
+        'CSV',
+      ),
+    );
   });
 });

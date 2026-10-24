@@ -81,3 +81,22 @@ export function useChangeNewsAuthor() {
     },
   });
 }
+
+/**
+ * Every author matching `search`, for export. admin_news_authors returns
+ * AUTHOR_PAGE_SIZE rows per call and no total, so this pages until a short
+ * page ends the list.
+ */
+export async function fetchAllNewsAuthors(search: string): Promise<NewsAuthorRow[]> {
+  const rows: NewsAuthorRow[] = [];
+  for (let page = 0; ; page++) {
+    const { data, error } = await untypedRpc<NewsAuthorRow[]>('admin_news_authors', {
+      p_search: search,
+      p_offset: page * AUTHOR_PAGE_SIZE,
+    });
+    if (error) throw error;
+    const batch = data ?? [];
+    rows.push(...batch);
+    if (batch.length < AUTHOR_PAGE_SIZE) return rows;
+  }
+}

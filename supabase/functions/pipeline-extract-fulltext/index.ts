@@ -1,3 +1,4 @@
+import { decodeBytes } from '../_shared/decode-charset.ts'
 import { personAuthorCandidate } from '../_shared/news-author.ts'
 import { getServiceClient, jsonResponse, errorResponse, corsResponse, requireInternalOrAdmin } from '../_shared/supabase-client.ts'
 import { extractArticle } from '../_shared/news-quality/extract.ts'
@@ -52,7 +53,9 @@ async function fetchHtml(url: string): Promise<string | null> {
     if (!/text\/html|application\/xhtml/i.test(ct)) return null
     const buf = await res.arrayBuffer()
     if (buf.byteLength > MAX_HTML_BYTES) return null
-    return new TextDecoder('utf-8').decode(buf)
+    // Honour the declared charset — a forced UTF-8 decode turns Latin-1
+    // pages (queer.de) into U+FFFD, irreversibly.
+    return decodeBytes(new Uint8Array(buf), ct).text
   } catch {
     return null
   } finally {

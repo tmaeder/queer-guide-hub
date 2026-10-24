@@ -22,6 +22,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import { ExportExcelButton } from '@/components/admin/ExportExcelButton';
+import { exportAdminUser } from '@/lib/adminUsersExport';
 import { UserModerationActions } from './UserModerationActions';
 import { UserDangerZone } from './UserDangerZone';
 import { X, MapPin, Calendar, Clock, User as UserIcon, Shield, Trash2 } from 'lucide-react';
@@ -209,6 +211,19 @@ export function UserDetailSheet({ user, open, onOpenChange, onUserUpdated }: Use
                 </Badge>
               </div>
             </div>
+          </div>
+
+          {/* Same non-personal columns as the list export; see adminUsersExport.ts. */}
+          <div className="mb-6 flex flex-wrap gap-2">
+            <ExportExcelButton
+              label="Export record (Excel)"
+              onExport={() => exportAdminUser(user as unknown as Record<string, unknown>, 'Excel')}
+            />
+            <ExportExcelButton
+              format="CSV"
+              label="Export record (CSV)"
+              onExport={() => exportAdminUser(user as unknown as Record<string, unknown>, 'CSV')}
+            />
           </div>
 
           <Tabs defaultValue="overview">

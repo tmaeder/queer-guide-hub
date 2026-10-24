@@ -6,6 +6,7 @@ import { writeToStaging } from '../_shared/source-adapter.ts'
 import { withErrorReporting } from '../_shared/report-api-error.ts'
 import { assertPublicHttpUrl } from '../_shared/ssrf-guard.ts'
 import { parseRssItems, extractChannelMeta, cleanText, excerptOf, stripLoneSurrogates } from './rss-parse.ts'
+import { decodeBytes } from '../_shared/decode-charset.ts'
 import {
   isWikinewsHost,
   parseWikinewsCategoryUrl,
@@ -543,10 +544,12 @@ const BROWSER_UA =
   'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0 Safari/537.36'
 
 async function readCapped(res: Response, maxBytes: number): Promise<string> {
-  if (!res.body) return await res.text()
+  const contentType = res.headers.get('content-type')
+  if (!res.body) return decodeBytes(new Uint8Array(await res.arrayBuffer()), contentType).text
   const reader = res.body.getReader()
   const chunks: Uint8Array[] = []
   let total = 0
+  let truncated = false
   while (true) {
     const { done, value } = await reader.read()
     if (done) break
@@ -555,6 +558,7 @@ async function readCapped(res: Response, maxBytes: number): Promise<string> {
       if (value.byteLength >= room) {
         chunks.push(value.subarray(0, room))
         total += room
+        truncated = true
         await reader.cancel()
         break
       }
@@ -565,8 +569,11 @@ async function readCapped(res: Response, maxBytes: number): Promise<string> {
   const merged = new Uint8Array(total)
   let off = 0
   for (const c of chunks) { merged.set(c, off); off += c.byteLength }
-  // stream:true tolerates a multi-byte UTF-8 sequence cut at the byte budget.
-  return new TextDecoder('utf-8').decode(merged, { stream: true })
+  // Honour the feed's declared charset (header, then XML declaration):
+  // queer.de is ISO-8859-1, and a forced UTF-8 decode turned every umlaut
+  // into U+FFFD. `truncated` keeps a multi-byte sequence cut at the byte
+  // budget from tripping the undeclared-charset Latin-1 fallback.
+  return decodeBytes(merged, contentType, { truncated }).text
 }
 
 // ─── Utilities ──────────────────────
