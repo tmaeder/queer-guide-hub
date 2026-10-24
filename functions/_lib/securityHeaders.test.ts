@@ -7,6 +7,7 @@ import {
   STATIC_SECURITY_HEADERS,
   applySecurityHeaders,
   buildContentSecurityPolicy,
+  buildReportOnlyPolicy,
 } from './securityHeaders';
 
 const directives = (csp: string) =>
@@ -48,5 +49,23 @@ describe('security headers', () => {
     expect(d.get('frame-ancestors')).toBe("'self'");
     expect(file).toMatch(/^ {2}X-Frame-Options: SAMEORIGIN$/m);
     expect(file).toContain(`  Reporting-Endpoints: ${CSP_REPORT_GROUP}="${CSP_REPORT_PATH}"`);
+  });
+
+  it('reports Trusted Types violations without enforcing them', () => {
+    const ro = directives(buildReportOnlyPolicy());
+    expect(ro.get('require-trusted-types-for')).toBe("'script'");
+    expect(ro.get('report-uri')).toBe(CSP_REPORT_PATH);
+    expect(ro.get('report-to')).toBe(CSP_REPORT_GROUP);
+    expect(ro.has('trusted-types')).toBe(false); // no policy allowlist, no default policy
+    // the enforcing CSP must not pick it up
+    expect(buildContentSecurityPolicy('abc')).not.toContain('trusted-types');
+    const res = new Response('x');
+    applySecurityHeaders(res, 'n0nce');
+    expect(res.headers.get('Content-Security-Policy-Report-Only')).toBe(buildReportOnlyPolicy());
+  });
+
+  it('static public/_headers fallback carries the same report-only policy', () => {
+    const file = readFileSync(resolve(process.cwd(), 'public/_headers'), 'utf8');
+    expect(file).toContain(`  Content-Security-Policy-Report-Only: ${buildReportOnlyPolicy()}`);
   });
 });
