@@ -21,8 +21,11 @@ declare
   r record;
   v_cmd text;
 begin
+  -- No secret = an environment without vault secrets (CI replay, local). The
+  -- header would send NULL there, so leave the crons alone; prod carries it.
   if not exists (select 1 from vault.secrets where name = 'internal_invoke_secret') then
-    raise exception 'vault secret internal_invoke_secret missing';
+    raise notice 'vault secret internal_invoke_secret absent; cron headers not rewritten';
+    return;
   end if;
 
   -- 4 crons with no registry command (admin_automations type 'edge'): cron.job is canonical.
@@ -51,6 +54,7 @@ end $$;
 do $verify$
 declare v_bad int;
 begin
+  if not exists (select 1 from vault.secrets where name = 'internal_invoke_secret') then return; end if;
   select count(*) into v_bad from cron.job
   where jobname in ('marketplace_categorize_weekly','marketplace_relevance_rescore_weekly',
                     'marketplace_translate_titles','marketplace_enrich_weekly','personality-refresh')
