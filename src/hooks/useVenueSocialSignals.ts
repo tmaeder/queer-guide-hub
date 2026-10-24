@@ -11,8 +11,11 @@ export interface VenueSocialSignal {
 /**
  * Fetch social-proof counts for a batch of venue IDs in one RPC call.
  * Returns a Map<venue_id, VenueSocialSignal> for O(1) lookup when
- * rendering a list. Anonymous viewers still get `trip_usage` (public
- * trips only), just no friend counts.
+ * rendering a list.
+ *
+ * Signed-in only: the RPC is not executable by `anon` (revoked on purpose —
+ * `p_viewer_id` is caller-supplied, so an anon grant would expose any
+ * user's friend counts). Calling it signed out only produced 401s.
  *
  * Cached for 5 minutes — these change slowly and stale counts are fine.
  */
@@ -23,7 +26,7 @@ export function useVenueSocialSignals(venueIds: string[] | undefined) {
 
   return useQuery({
     queryKey: ['venue-social-signals', key, user?.id ?? 'anon'],
-    enabled: ids.length > 0,
+    enabled: !!user && ids.length > 0,
     staleTime: 5 * 60 * 1000,
     queryFn: async (): Promise<Map<string, VenueSocialSignal>> => {
       const { data, error } = await supabase.rpc('get_venue_social_signals', {
