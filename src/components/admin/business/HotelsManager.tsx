@@ -27,7 +27,7 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog';
 import { useAuth } from '@/hooks/useAuth';
-import { useHotels } from '@/hooks/useHotels';
+import { createHotel, deleteHotel, regenerateSafetyNote, updateHotel } from '@/hooks/useHotels';
 import { useAddressResolver } from '@/hooks/useAddressResolver';
 import { LocationAutocomplete } from '@/components/ui/location-autocomplete';
 import { useQueryClient } from '@tanstack/react-query';
@@ -92,7 +92,6 @@ const emptyForm = {
 
 export function HotelsManager() {
   const { user } = useAuth();
-  const { createHotel, updateHotel, deleteHotel, regenerateSafetyNote } = useHotels(false);
   const { resolveAddress } = useAddressResolver();
   const queryClient = useQueryClient();
 
