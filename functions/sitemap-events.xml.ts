@@ -1,4 +1,11 @@
-import { fetchRows, urlsetXml, xmlResponse, ORIGIN, type Env, type SitemapEntry } from './_lib/sitemap';
+import {
+  fetchRows,
+  urlsetXml,
+  xmlResponse,
+  ORIGIN,
+  type Env,
+  type SitemapEntry,
+} from './_lib/sitemap';
 
 export const onRequest: PagesFunction<Env> = async ({ env }) => {
   // P1.1 — seo_indexable gate; also drop past/cancelled events from the
