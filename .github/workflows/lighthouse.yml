@@ -55,4 +55,7 @@ jobs:
         with:
           name: lighthouse-reports-${{ matrix.form_factor }}
           path: .lighthouseci/
+          # .lighthouseci is a dot-dir; upload-artifact v4+ skips hidden files
+          # by default, so without this the reports were never uploaded.
+          include-hidden-files: true
           retention-days: 30
