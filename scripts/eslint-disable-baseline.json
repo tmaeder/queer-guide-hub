@@ -1,5 +1,5 @@
 {
-  "total": 502,
+  "total": 501,
   "files": {
     "src/components/admin/CloudflareDashboard.tsx": {
       "react-hooks/set-state-in-effect": 1
@@ -928,7 +928,7 @@
       "react-hooks/set-state-in-effect": 1
     },
     "src/pages/QueerVillageDetail.tsx": {
-      "react-hooks/refs": 2
+      "react-hooks/refs": 1
     },
     "src/pages/RedirectMemberWorkspace.tsx": {
       "react-hooks/set-state-in-effect": 1
