@@ -151,7 +151,7 @@ export function RevenuePanel({ days }: { days: string }) {
         </p>
       )}
 
-      <div className="mb-8 grid grid-cols-5 gap-4">
+      <div className="mb-8 grid grid-cols-2 gap-4 md:grid-cols-5">
         <Stat label="Clicks" value={totals.clicks.toLocaleString()} />
         <Stat label="Conversions" value={totals.conversions.toLocaleString()} />
         <Stat
