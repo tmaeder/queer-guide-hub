@@ -56,28 +56,28 @@
             "largest-contentful-paint": [
               "error",
               {
-                "maxNumericValue": 16600,
+                "maxNumericValue": 14800,
                 "aggregationMethod": "optimistic"
               }
             ],
             "total-blocking-time": [
               "error",
               {
-                "maxNumericValue": 3000,
+                "maxNumericValue": 400,
                 "aggregationMethod": "optimistic"
               }
             ],
             "cumulative-layout-shift": [
               "error",
               {
-                "maxNumericValue": 0.55,
+                "maxNumericValue": 0.51,
                 "aggregationMethod": "optimistic"
               }
             ],
             "resource-summary:script:size": [
               "error",
               {
-                "maxNumericValue": 975000,
+                "maxNumericValue": 973000,
                 "aggregationMethod": "optimistic"
               }
             ]
@@ -89,7 +89,7 @@
             "categories:performance": [
               "error",
               {
-                "minScore": 0.05,
+                "minScore": 0.11,
                 "aggregationMethod": "optimistic"
               }
             ],
@@ -117,21 +117,21 @@
             "largest-contentful-paint": [
               "error",
               {
-                "maxNumericValue": 20500,
+                "maxNumericValue": 18500,
                 "aggregationMethod": "optimistic"
               }
             ],
             "total-blocking-time": [
               "error",
               {
-                "maxNumericValue": 1600,
+                "maxNumericValue": 700,
                 "aggregationMethod": "optimistic"
               }
             ],
             "cumulative-layout-shift": [
               "error",
               {
-                "maxNumericValue": 0.62,
+                "maxNumericValue": 0.57,
                 "aggregationMethod": "optimistic"
               }
             ],
@@ -150,14 +150,14 @@
             "categories:performance": [
               "error",
               {
-                "minScore": 0.13,
+                "minScore": 0.14,
                 "aggregationMethod": "optimistic"
               }
             ],
             "categories:accessibility": [
               "error",
               {
-                "minScore": 0.96,
+                "minScore": 0.97,
                 "aggregationMethod": "optimistic"
               }
             ],
@@ -178,28 +178,28 @@
             "largest-contentful-paint": [
               "error",
               {
-                "maxNumericValue": 23300,
+                "maxNumericValue": 20100,
                 "aggregationMethod": "optimistic"
               }
             ],
             "total-blocking-time": [
               "error",
               {
-                "maxNumericValue": 1250,
+                "maxNumericValue": 650,
                 "aggregationMethod": "optimistic"
               }
             ],
             "cumulative-layout-shift": [
               "error",
               {
-                "maxNumericValue": 0.39,
+                "maxNumericValue": 0.48,
                 "aggregationMethod": "optimistic"
               }
             ],
             "resource-summary:script:size": [
               "error",
               {
-                "maxNumericValue": 1100000,
+                "maxNumericValue": 1103000,
                 "aggregationMethod": "optimistic"
               }
             ]
@@ -239,21 +239,21 @@
             "largest-contentful-paint": [
               "error",
               {
-                "maxNumericValue": 16900,
+                "maxNumericValue": 14600,
                 "aggregationMethod": "optimistic"
               }
             ],
             "total-blocking-time": [
               "error",
               {
-                "maxNumericValue": 800,
+                "maxNumericValue": 400,
                 "aggregationMethod": "optimistic"
               }
             ],
             "cumulative-layout-shift": [
               "error",
               {
-                "maxNumericValue": 0.49,
+                "maxNumericValue": 0.44,
                 "aggregationMethod": "optimistic"
               }
             ],
@@ -272,7 +272,7 @@
             "categories:performance": [
               "error",
               {
-                "minScore": 0.14,
+                "minScore": 0.15,
                 "aggregationMethod": "optimistic"
               }
             ],
@@ -300,21 +300,21 @@
             "largest-contentful-paint": [
               "error",
               {
-                "maxNumericValue": 23300,
+                "maxNumericValue": 20100,
                 "aggregationMethod": "optimistic"
               }
             ],
             "total-blocking-time": [
               "error",
               {
-                "maxNumericValue": 800,
+                "maxNumericValue": 700,
                 "aggregationMethod": "optimistic"
               }
             ],
             "cumulative-layout-shift": [
               "error",
               {
-                "maxNumericValue": 0.47,
+                "maxNumericValue": 0.43,
                 "aggregationMethod": "optimistic"
               }
             ],
@@ -333,7 +333,7 @@
             "categories:performance": [
               "error",
               {
-                "minScore": 0.12,
+                "minScore": 0.18,
                 "aggregationMethod": "optimistic"
               }
             ],
@@ -347,7 +347,7 @@
             "categories:best-practices": [
               "error",
               {
-                "minScore": 0.75,
+                "minScore": 0.78,
                 "aggregationMethod": "optimistic"
               }
             ],
@@ -361,14 +361,14 @@
             "largest-contentful-paint": [
               "error",
               {
-                "maxNumericValue": 25500,
+                "maxNumericValue": 18400,
                 "aggregationMethod": "optimistic"
               }
             ],
             "total-blocking-time": [
               "error",
               {
-                "maxNumericValue": 700,
+                "maxNumericValue": 450,
                 "aggregationMethod": "optimistic"
               }
             ],
@@ -394,7 +394,7 @@
             "categories:performance": [
               "error",
               {
-                "minScore": 0.19,
+                "minScore": 0.33,
                 "aggregationMethod": "optimistic"
               }
             ],
@@ -422,21 +422,21 @@
             "largest-contentful-paint": [
               "error",
               {
-                "maxNumericValue": 15300,
+                "maxNumericValue": 13600,
                 "aggregationMethod": "optimistic"
               }
             ],
             "total-blocking-time": [
               "error",
               {
-                "maxNumericValue": 850,
+                "maxNumericValue": 350,
                 "aggregationMethod": "optimistic"
               }
             ],
             "cumulative-layout-shift": [
               "error",
               {
-                "maxNumericValue": 0.49,
+                "maxNumericValue": 0.44,
                 "aggregationMethod": "optimistic"
               }
             ],
