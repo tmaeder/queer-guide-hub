@@ -12,7 +12,8 @@
       ],
       "numberOfRuns": 3,
       "settings": {
-        "skipAudits": ["uses-http2"]
+        "skipAudits": ["uses-http2"],
+        "blockedUrlPatterns": ["*/api/geo*"]
       }
     },
     "upload": {

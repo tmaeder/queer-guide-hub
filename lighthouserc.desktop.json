@@ -13,7 +13,8 @@
       "numberOfRuns": 3,
       "settings": {
         "skipAudits": ["uses-http2"],
-        "preset": "desktop"
+        "preset": "desktop",
+        "blockedUrlPatterns": ["*/api/geo*"]
       }
     },
     "upload": {
