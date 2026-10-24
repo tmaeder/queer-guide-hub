@@ -21,6 +21,9 @@ vi.mock('@/hooks/useSecureRoleManagement', () => ({
   useSecureRoleManagement: () => ({ assignRole: vi.fn(), removeRole: vi.fn(), loading: false }),
 }));
 
+const { exportAdminUser } = vi.hoisted(() => ({ exportAdminUser: vi.fn() }));
+vi.mock('@/lib/adminUsersExport', () => ({ exportAdminUser }));
+
 import { UserDetailSheet } from '../UserDetailSheet';
 
 function wrapper({ children }: { children: ReactNode }) {
@@ -84,4 +87,34 @@ it('loads detail fields through the admin RPC and preserves the username confirm
   await screen.findByText('Example biography');
   expect(rpc).toHaveBeenCalledWith('admin_user_detail', { p_user_id: 'u1' });
   expect(usernameQuery).toHaveBeenCalled();
+});
+
+it('exports the open user as one Excel or CSV record', async () => {
+  rpc.mockResolvedValue({ data: [], error: null });
+  usernameQuery.mockResolvedValue({ data: { username: 'example-user' }, error: null });
+  exportAdminUser.mockResolvedValue(undefined);
+  const user = {
+    id: 'p1',
+    user_id: 'u1',
+    display_name: 'Example User',
+    first_name: null,
+    last_name: null,
+    avatar_url: null,
+    location: 'Berlin',
+    user_mode: 'traveler',
+    is_online: false,
+    moderation_status: 'approved',
+    profile_completion_percentage: 40,
+    pronouns: null,
+    created_at: '2026-10-01',
+    last_seen_at: null,
+  };
+  render(<UserDetailSheet user={user} open onOpenChange={vi.fn()} onUserUpdated={vi.fn()} />, {
+    wrapper,
+  });
+  screen.getByRole('button', { name: /Export record \(Excel\)/ }).click();
+  screen.getByRole('button', { name: /Export record \(CSV\)/ }).click();
+  await vi.waitFor(() => expect(exportAdminUser).toHaveBeenCalledTimes(2));
+  expect(exportAdminUser).toHaveBeenNthCalledWith(1, user, 'Excel');
+  expect(exportAdminUser).toHaveBeenNthCalledWith(2, user, 'CSV');
 });

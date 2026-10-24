@@ -176,3 +176,25 @@ export function useDeleteNewsSource() {
     },
   });
 }
+/**
+ * Every source matching the list's current filters, for export. The browse
+ * RPC is paged at NEWS_SOURCE_PAGE_SIZE, so this walks the pages until the
+ * reported total is reached (or a short page ends it).
+ */
+export async function fetchAllNewsSources(
+  filters: Omit<SourceFilters, 'page'>,
+): Promise<SourceRecord[]> {
+  const rows: SourceRecord[] = [];
+  for (let page = 0; ; page++) {
+    const res = await rpc<SourcePage>('admin_news_sources_browse', {
+      p_search: filters.search,
+      p_state: filters.state,
+      p_organization_id: filters.organizationId ?? null,
+      p_unlinked: filters.unlinked,
+      p_offset: page * NEWS_SOURCE_PAGE_SIZE,
+    });
+    const batch = res?.rows ?? [];
+    rows.push(...batch);
+    if (batch.length < NEWS_SOURCE_PAGE_SIZE || rows.length >= (res?.total ?? 0)) return rows;
+  }
+}
