@@ -65,11 +65,21 @@ export function fieldToZod(field: FieldConfig): ZodTypeAny {
     const values = field.options.map((o) => o.value);
     if (values.length >= 2) {
       const enumSchema = z.enum(values as [string, ...string[]]);
-      schema = field.type === 'multiselect' ? z.array(enumSchema) : enumSchema;
+      schema =
+        field.type === 'multiselect'
+          ? z.array(enumSchema)
+          : field.required
+            ? enumSchema
+            : z.union([enumSchema, z.literal('')]);
     }
   }
 
   if (!field.required) {
+    // Optional contact inputs and stored records can represent absence as ''.
+    // Keep format checks for non-empty values, including whitespace-only input.
+    if (['url', 'email', 'phone'].includes(field.type)) {
+      schema = z.union([schema, z.literal('')]);
+    }
     schema = schema.optional().nullable();
   }
   return schema;

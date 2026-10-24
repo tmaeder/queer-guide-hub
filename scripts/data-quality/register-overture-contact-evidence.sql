@@ -5,7 +5,7 @@ set local statement_timeout='45s';set local lock_timeout='2s';
 set local app.actor='system:overture-contact-evidence:v1';
 do $repair$
 #variable_conflict use_column
-declare dry_run boolean:=true;r record;p jsonb;capture jsonb;source_id uuid;
+declare dry_run boolean:=coalesce(nullif(current_setting('matching.overture_dry_run',true),''),'true')::boolean;r record;p jsonb;capture jsonb;source_id uuid;
  after_row jsonb;names_match integer;changed integer:=0;input jsonb;
 begin
  perform public.assert_admin_or_internal();

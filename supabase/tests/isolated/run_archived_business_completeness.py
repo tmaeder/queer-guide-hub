@@ -45,7 +45,10 @@ create function organization_facts_only_source(eid uuid)returns jsonb language s
 paths = list((ROOT / 'supabase/migrations').glob('*_archived_business_completeness.sql'))
 if len(paths) != 1:
     raise SystemExit('Exactly one archive scope migration required')
-sql = schema + (HERE / 'archived_business_producer_fixture.sql').read_text() + paths[0].read_text() + (HERE / 'archived_business_completeness.sql').read_text()
+sql = (schema + (HERE / 'archived_business_producer_fixture.sql').read_text() + paths[0].read_text()
+       + (ROOT / 'supabase/migrations/99991792815100_business_quality_contract_lookup.sql').read_text()
+       + (HERE / 'archived_business_completeness.sql').read_text()
+       + (HERE / 'business_quality_contract_lookup.sql').read_text())
 with tempfile.TemporaryDirectory(prefix='qg-archived-business-') as tmp:
     data = Path(tmp) / 'data'
     subprocess.run([binary('initdb'), '-D', str(data), '-A', 'trust', '--no-locale', '--wal-segsize=1'], check=True, stdout=subprocess.DEVNULL)

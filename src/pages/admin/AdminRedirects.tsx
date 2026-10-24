@@ -1,7 +1,10 @@
+import { ExportExcelButton } from '@/components/admin/ExportExcelButton';
+import { exportToCsv } from '@/utils/csvExport';
+import { exportToExcel, type ExportColumnDef } from '@/utils/excelExport';
 import { RedirectBulkActions } from '@/components/admin/redirects/RedirectBulkActions';
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useSearchParams } from 'react-router';
-import { Download, Plus, RefreshCw } from 'lucide-react';
+import { Plus, RefreshCw } from 'lucide-react';
 import { AdminArchetypeHeader } from '@/components/admin/frames/AdminArchetypeHeader';
 import { useAdminShell } from '@/components/admin/shell/AdminShell';
 import { RedirectToolbarActions } from '@/components/admin/redirects/RedirectToolbarActions';
@@ -44,25 +47,16 @@ const PAGE_SIZE = 50;
 const SELECT_CLASS =
   'h-9 max-w-full rounded-element border border-input bg-background px-4 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring';
 
+const exportColumns: ExportColumnDef<InventoryRedirect>[] = [
+  { header: 'Source', accessor: (row) => row.source },
+  { header: 'Destination', accessor: (row) => row.target },
+  { header: 'HTTP status', accessor: (row) => row.statusCode },
+  { header: 'State', accessor: (row) => row.state },
+  { header: 'Origin', accessor: (row) => row.origin },
+  { header: 'Kind', accessor: (row) => row.kind },
+];
 function exportRows(rows: InventoryRedirect[]) {
-  const quote = (value: unknown) => {
-    const text = String(value ?? '');
-    return `"${(/^[=+@\-\t\r\n]/.test(text) ? "'" + text : text).replace(/"/g, '""')}"`;
-  };
-  const lines = [
-    ['Source', 'Destination', 'HTTP status', 'State', 'Origin', 'Kind'],
-    ...rows.map((row) => [row.source, row.target, row.statusCode, row.state, row.origin, row.kind]),
-  ];
-  const url = URL.createObjectURL(
-    new Blob([lines.map((line) => line.map(quote).join(',')).join('\r\n')], {
-      type: 'text/csv;charset=utf-8',
-    }),
-  );
-  const link = document.createElement('a');
-  link.href = url;
-  link.download = 'queerguide-redirects.csv';
-  link.click();
-  URL.revokeObjectURL(url);
+  exportToCsv(rows, exportColumns, 'queerguide-redirects.csv');
 }
 
 export default function AdminRedirects() {
@@ -301,15 +295,21 @@ export default function AdminRedirects() {
           <option value="updated">Newest first</option>
           <option value="source">Source A–Z</option>
         </select>
-        <Button
-          variant="outline"
-          size="sm"
-          disabled={!filtered.length}
-          onClick={() => exportRows(filtered)}
-        >
-          <Download size={14} aria-hidden className="mr-1" />
-          Export
-        </Button>
+        {(['Excel', 'CSV'] as const).map((format) => (
+          <ExportExcelButton
+            key={format}
+            format={format}
+            onExport={async () => {
+              const result = await inventory.refetch();
+              if (result.error || !result.data || result.data.errors.length) {
+                throw new Error('Could not load every redirect source. Retry before exporting.');
+              }
+              if (format === 'CSV') exportRows(result.data.rows);
+              else
+                await exportToExcel(result.data.rows, exportColumns, 'queerguide-redirects.xlsx');
+            }}
+          />
+        ))}
         <select
           className={SELECT_CLASS}
           aria-label="Filter by domain"

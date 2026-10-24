@@ -3,7 +3,7 @@ import { classifyEvidence, normalizePlaceName } from './lib/city-settlement-audi
 import { CITY_NAME_LANGS, currentStatements, type Claims, type WdLabels, type WdAliases } from '../../supabase/functions/_shared/wikidata-city.ts'
 import { distanceKm } from '../../supabase/functions/_shared/geo-link-guards.ts'
 
-type Candidate = { id: string; name: string; wikidata_qid: string; latitude: number; longitude: number; country_code: string; expected_updated_at: string; expected_fingerprint: string; previous_classification: unknown }
+type Candidate = { id: string; name: string; wikidata_qid: string; latitude: number | string | null; longitude: number | string | null; country_code: string; expected_updated_at: string; expected_fingerprint: string; previous_classification: unknown }
 type Entity = { id: string; claims?: Claims; labels?: WdLabels; aliases?: WdAliases; missing?: unknown }
 const hash = async (text: string) => [...new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(text)))].map(v=>v.toString(16).padStart(2,'0')).join('')
 const currentValues = (e: Entity, property: string) => {
@@ -11,7 +11,14 @@ const currentValues = (e: Entity, property: string) => {
  return (preferred.length?preferred:live).map(s=>s.mainsnak?.datavalue?.value)
 }
 const refs=(e: Entity,p: string)=>currentValues(e,p).flatMap(v=>v&&typeof v==='object'&&'id'in v&&/^Q[1-9]\d*$/.test(String(v.id))?[String(v.id)]:[])
+function decimalCoordinate(value: unknown): number | null {
+ if(typeof value==='number')return Number.isFinite(value)?value:null
+ if(typeof value!=='string'||! /^[+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:e[+-]?\d+)?$/i.test(value.trim()))return null
+ const parsed=Number(value.trim())
+ return Number.isFinite(parsed)?parsed:null
+}
 export function classificationEvidence(c: Candidate,e: Entity,classes: Record<string,Entity>,countries: Record<string,Entity>) {
+ const latitude=decimalCoordinate(c.latitude),longitude=decimalCoordinate(c.longitude)
  if(e.id!==c.wikidata_qid||'missing'in e||!e.claims||!/^Q[1-9]\d*$/.test(e.id))return null
  // A present-day name and pin do not revive a dissolved municipality.
  if(currentValues(e,'P576').length)return null
@@ -20,16 +27,16 @@ export function classificationEvidence(c: Candidate,e: Entity,classes: Record<st
  const codes=refs(e,'P17').flatMap(id=>countries[id]?currentValues(countries[id],'P297'):[])
  if(!codes.includes(c.country_code)||!/^[A-Z]{2}$/.test(c.country_code))return null
  const points=currentValues(e,'P625').filter((v):v is {latitude:number;longitude:number;globe:string}=>!!v&&typeof v==='object'&&'latitude'in v&&'longitude'in v&&'globe'in v&&v.globe==='http://www.wikidata.org/entity/Q2'&&typeof v.latitude==='number'&&typeof v.longitude==='number')
- if(points.length!==1||!Number.isFinite(c.latitude)||!Number.isFinite(c.longitude)||Math.abs(c.latitude)>90||Math.abs(c.longitude)>180||(!c.latitude&&!c.longitude))return null
+ if(points.length!==1||latitude===null||longitude===null||Math.abs(latitude)>90||Math.abs(longitude)>180||(!latitude&&!longitude))return null
  const point=points[0]
  if(!Number.isFinite(point.latitude)||!Number.isFinite(point.longitude)||Math.abs(point.latitude)>90||Math.abs(point.longitude)>180||(!point.latitude&&!point.longitude))return null
- const distance=distanceKm(c,{latitude:point.latitude,longitude:point.longitude})
+ const distance=distanceKm({latitude,longitude},{latitude:point.latitude,longitude:point.longitude})
  if(distance===null||distance>10)return null
  const classIds=refs(e,'P31'),labels=classIds.map(id=>classes[id]?.labels?.en?.value)
  if(!classIds.length||labels.some(v=>!v))return null
  const verdict=classifyEvidence({classes:labels.filter((label):label is string=>!!label),description:'',geonames:[]})
  if(!['municipality','settlement'].includes(verdict.status))return null
- return {...c,status:verdict.status,reason:verdict.reason,classes:labels,class_ids:classIds,country_ids:refs(e,'P17'),source_latitude:point.latitude,source_longitude:point.longitude,distance_m:distance*1000,source_url:`https://www.wikidata.org/wiki/${e.id}`,human_reviewed:false}
+ return {...c,latitude,longitude,status:verdict.status,reason:verdict.reason,classes:labels,class_ids:classIds,country_ids:refs(e,'P17'),source_latitude:point.latitude,source_longitude:point.longitude,distance_m:distance*1000,source_url:`https://www.wikidata.org/wiki/${e.id}`,human_reviewed:false}
 }
 
 if(import.meta.main){

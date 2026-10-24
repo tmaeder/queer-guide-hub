@@ -112,6 +112,7 @@ grant all on public.group_invites to service_role;
 -- Existing mailbox columns used by the source-backed send adapter.
 alter table public.profiles add column mailbox_address text unique;
 create table public.mailbox_emails(
+ email_date timestamptz not null default now(),
  id uuid primary key default gen_random_uuid(),owner_id uuid not null references auth.users(id) on delete cascade,
  direction text not null,from_address text not null,from_name text,to_address text not null,subject text not null,
  body_html text,body_text text,snippet text,status text not null default 'delivered',folder text not null default 'inbox',

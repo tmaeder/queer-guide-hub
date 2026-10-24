@@ -20,6 +20,31 @@ describe('zodFromFields', () => {
   });
 });
 
+describe('optional formatted contact fields', () => {
+  it.each([
+    ['url', 'https://example.com'],
+    ['email', 'editor@example.com'],
+    ['phone', '+49 123 456789'],
+  ] as const)(
+    'accepts absent %s values without accepting malformed populated values',
+    (type, valid) => {
+      const field = { name: 'contact', label: 'Contact', type, group: 'basic' } as const;
+      const optional = fieldToZod(field);
+      for (const value of ['', null, undefined, valid]) {
+        expect(optional.safeParse(value).success).toBe(true);
+      }
+      for (const value of ['not a contact value', '   ', 123]) {
+        expect(optional.safeParse(value).success).toBe(false);
+      }
+      const required = fieldToZod({ ...field, required: true });
+      for (const value of ['', null, undefined, 'not a contact value', '   ']) {
+        expect(required.safeParse(value).success).toBe(false);
+      }
+      expect(required.safeParse(valid).success).toBe(true);
+    },
+  );
+});
+
 describe('array-valued field types', () => {
   // TagsField calls onChange([...]) and every tags column is text[], but the
   // schema grouped 'tags' with the string types. The result was

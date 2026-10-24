@@ -85,6 +85,11 @@ jobs:
         working-directory: supabase/functions
         run: deno test --allow-net --allow-env --allow-read --node-modules-dir=none
 
+      # Catch entrypoint parse/type failures before replacing a live function.
+      - name: Check enrichment and Foursquare entrypoints
+        working-directory: supabase/functions
+        run: deno check --node-modules-dir=none enrich-venue/index.ts source-foursquare/index.ts source-foursquare-free/index.ts
+
       - name: Install Supabase CLI
         uses: supabase/setup-cli@45a513f8c64c0bc8e0e3dfe572b5c95be85f6359 # v3
         with:

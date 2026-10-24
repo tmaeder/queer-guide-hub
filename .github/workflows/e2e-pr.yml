@@ -180,6 +180,14 @@ jobs:
           eval "$(supabase status -o env)"
           scripts/ci/db-snapshot.sh load "$DB_URL" snapshot
 
+          # Private automation state is deliberately absent from the anonymous
+          # snapshot. Supply local, no-network dependencies only while this
+          # guarded migration is pending; never resurrect the retired producer.
+          if [ -f /tmp/migrations/99991792816500_event_owned_artwork_producer.sql ] && ! grep -qx '99991792816500' snapshot/versions.txt; then
+            DB_URL="$DB_URL" node scripts/ci/seed-event-artwork-migration.mjs > /tmp/ci-artwork-dependencies.sql
+            psql "$DB_URL" -X -v ON_ERROR_STOP=1 -f /tmp/ci-artwork-dependencies.sql
+          fi
+
           # Only the PR's NEW migrations: versions production has not applied.
           for f in $(ls /tmp/migrations/*.sql | sort); do
             v=$(basename "$f" | cut -d_ -f1)

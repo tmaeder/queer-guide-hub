@@ -37,7 +37,8 @@
  * helper becomes a silent no-op, and the phrase assertions go back to being
  * one glossary term away from red.
  */
-import { expect, type APIRequestContext } from '@playwright/test';
+import { expect, test, type APIRequestContext } from '@playwright/test';
+import { reviewerTagRows, hasReviewerSession } from './reviewerRegistry';
 import { anonHeaders, SUPABASE_REST_URL } from './anonKey';
 
 export const GLOSSARY_LINK_ATTR = 'data-glossary-link';
@@ -99,7 +100,7 @@ export function unlinkGlossary(html: string): string {
  * harm-reduction entries that matter most.
  */
 export interface GlossaryEntry {
-  /** Crawler `<article>` when published, else the registry prose. */
+  /** Crawler `<article>` when published, otherwise the readable registry prose. */
   prose: string;
   /** Whether the crawler is served a real body for this slug. */
   published: boolean;
@@ -134,23 +135,49 @@ export async function glossaryEntry(
   const row = await request.get(
     `${SUPABASE_REST_URL}/rest/v1/unified_tags` +
       `?slug=eq.${encodeURIComponent(slug)}` +
-      `&select=publication_role,seo_indexable,description,short_description,long_description`,
+      `&select=publication_role,seo_indexable,status,is_sensitive,description,short_description,long_description`,
     { headers },
   );
   expect(row.ok(), `could not read /tags/${slug} from the registry`).toBe(true);
-  const rows = (await row.json()) as Array<{
+  type RegistryRow = {
     publication_role: string | null;
+    status: string;
+    is_sensitive: boolean;
     description: string | null;
     short_description: string | null;
     long_description: string | null;
-  }>;
+  };
+  let rows = (await row.json()) as RegistryRow[];
+  let signInGate = false;
+  if (rows.length === 0) {
+    // A real privacy gate must withhold the anonymous row AND explicitly say
+    // sign-in is required. Content checks use the configured reviewer; the
+    // original HTML remains the anonymous gate for separate leak assertions.
+    expect(html, `/tags/${slug} vanished without an explicit sign-in gate`).toMatch(
+      /<title>\s*Sign in to view(?:\s*\||\s*<)/i,
+    );
+    test.skip(
+      !hasReviewerSession,
+      'Sensitive glossary content requires the configured reviewer session',
+    );
+    rows = await reviewerTagRows<RegistryRow>(
+      request,
+      `slug=eq.${encodeURIComponent(slug)}&select=status,is_sensitive,publication_role,description,short_description,long_description`,
+    );
+    expect(rows.length, `/tags/${slug} must exist for the reviewer`).toBe(1);
+    expect(rows[0].status).toBe('active');
+    expect(rows[0].is_sensitive, 'A sign-in gate must agree with registry sensitivity').toBe(true);
+    signInGate = true;
+  }
   expect(rows.length, `/tags/${slug} has no registry row at all`).toBe(1);
 
-  expect(
-    rows[0].publication_role,
-    `/tags/${slug} is still publication_role='article' but serves no crawler ` +
-      `<article> — this is an ACCIDENTAL deindex, not the correctness-first gate`,
-  ).not.toBe('article');
+  if (!signInGate) {
+    expect(
+      rows[0].publication_role,
+      `/tags/${slug} is still publication_role='article' but serves no crawler ` +
+        `<article> — this is an ACCIDENTAL deindex, not the correctness-first gate`,
+    ).not.toBe('article');
+  }
 
   const prose = [rows[0].description, rows[0].short_description, rows[0].long_description]
     .filter(Boolean)

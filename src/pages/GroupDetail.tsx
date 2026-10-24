@@ -306,6 +306,7 @@ export default function GroupDetail() {
                     contentName={group.name}
                     currentData={group as unknown as Record<string, unknown>}
                     size="default"
+                    exportable
                   />
                 </div>
               </div>

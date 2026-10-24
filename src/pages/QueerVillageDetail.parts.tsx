@@ -111,6 +111,7 @@ export function VillageActions({
         contentName={village.name}
         currentData={village as Record<string, unknown>}
         onSaved={onContentUpdated}
+        exportable
       />
     </>
   );

@@ -1,6 +1,7 @@
 -- Default dry run. Only fresh, source-corroborated internal city placeholders.
 -- Input: matching.city_classification_proofs from collect-city-classification-evidence.ts.
--- This resolves identity/lifecycle, not publication: seo_indexable stays false.
+-- This repairs factual identity/lifecycle only: seo_indexable stays false.
+-- Review rows remain unchanged for the native scheduled reconciler.
 begin;
 set local statement_timeout='60s';set local lock_timeout='2s';
 set local app.actor='system:corroborate-city-lifecycle:v1';
@@ -88,11 +89,8 @@ begin
   then raise exception 'Unexpected city mutation %',r.id;end if;
   insert into public.admin_review_repairs(entity_type,entity_id,reason,previous_value,next_value)
    values('city',r.id,'corroborated_city_lifecycle:v1',r.old_row,after_row);
-  update public.review_queue q set status='resolved',resolved_at=now(),
-   details=coalesce(details,'{}')||jsonb_build_object('resolution','corroborated_city_lifecycle:v1','source_url',r.source_url,
-    'resolved_automatically',true,'publication_approved',false)
-   where q.entity_type='city' and q.entity_id=r.id and q.review_type='CITY_LIFECYCLE_UNRESOLVED'
-    and q.status='pending' and q.resolved_by is null;
+  -- Native scheduled reconciliation owns review findings. This operator changes
+  -- factual identity/lifecycle fields and their source evidence only.
   repaired:=repaired+1;
  end loop;
  perform set_config('matching.city_lifecycle_result',jsonb_build_object('dry_run',dry_run,'eligible',eligible,'repaired',repaired)::text,false);

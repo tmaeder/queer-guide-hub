@@ -8,7 +8,9 @@ vi.mock('@/hooks/usePageFetchers', () => ({
   fetchEmailTemplates: api.fetch,
   upsertEmailTemplate: api.save,
 }));
-vi.mock('@/hooks/useAuth', () => ({ useAuth: () => ({ user: { id: 'u1' } }) }));
+vi.mock('@/hooks/useAuth', () => ({
+  useAuth: () => ({ user: { id: 'u1', email: 'editor@example.com' } }),
+}));
 vi.mock('@/integrations/supabase/client', () => ({
   supabase: { functions: { invoke: api.invoke } },
 }));
@@ -80,9 +82,11 @@ describe('EmailTemplates safeguards', () => {
   it('requires samples and sends the explicitly saved template version', async () => {
     await select();
     fireEvent.click(screen.getByRole('button', { name: 'Test email' }));
-    fireEvent.change(screen.getByLabelText('Recipient email'), {
-      target: { value: 'editor@example.com' },
-    });
+    expect(screen.getByLabelText('Recipient email')).toHaveValue('editor@example.com');
+    expect(screen.getByLabelText('Recipient email')).toHaveAttribute('readonly');
+    expect(screen.getByLabelText('Recipient email')).toHaveAccessibleDescription(
+      'Tests go to your verified admin email address. Use the Email workspace for production sends.',
+    );
     expect(screen.getByRole('button', { name: 'Send test' })).toBeDisabled();
     fireEvent.change(screen.getByLabelText('name'), { target: { value: 'Alex' } });
     fireEvent.click(screen.getByRole('button', { name: 'Send test' }));
@@ -96,6 +100,21 @@ describe('EmailTemplates safeguards', () => {
         },
       }),
     );
+  });
+  it('preserves samples and allows retry when a test submission fails', async () => {
+    api.invoke.mockResolvedValueOnce({ error: new Error('unavailable') });
+    await select();
+    fireEvent.click(screen.getByRole('button', { name: 'Test email' }));
+    fireEvent.change(screen.getByLabelText('name'), { target: { value: 'River' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Send test' }));
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      'Could not submit the test email. Your sample values are preserved. Try again.',
+    );
+    expect(screen.getByLabelText('name')).toHaveValue('River');
+    expect(screen.getByLabelText('Recipient email')).toHaveValue('editor@example.com');
+    fireEvent.click(screen.getByRole('button', { name: 'Send test' }));
+    await waitFor(() => expect(api.invoke).toHaveBeenCalledTimes(2));
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
   });
   it('shows a retry for a failed registry load', async () => {
     api.fetch.mockResolvedValueOnce({ data: [], error: new Error('offline') });
@@ -128,6 +147,12 @@ describe('EmailTemplates safeguards', () => {
       { name: 'Email block content' },
       { timeout: 10000 },
     );
+    const inspector = await screen.findByRole('complementary', { name: 'Email properties' });
+    await waitFor(() => {
+      for (const input of inspector.querySelectorAll('input')) {
+        expect(input).toHaveAccessibleName();
+      }
+    });
     fireEvent.click(screen.getByRole('tab', { name: 'Plain text' }));
     expect(canvas.isConnected).toBe(true);
     fireEvent.click(screen.getByRole('tab', { name: 'Email content' }));

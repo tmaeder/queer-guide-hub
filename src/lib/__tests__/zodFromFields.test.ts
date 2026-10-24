@@ -26,10 +26,18 @@ describe('fieldToZod', () => {
   });
 
   it('validates url and email', () => {
-    expect(fieldToZod(baseField({ type: 'url', required: true })).safeParse('not-a-url').success).toBe(false);
-    expect(fieldToZod(baseField({ type: 'url', required: true })).safeParse('https://x.io').success).toBe(true);
-    expect(fieldToZod(baseField({ type: 'email', required: true })).safeParse('a@b.co').success).toBe(true);
-    expect(fieldToZod(baseField({ type: 'email', required: true })).safeParse('nope').success).toBe(false);
+    expect(
+      fieldToZod(baseField({ type: 'url', required: true })).safeParse('not-a-url').success,
+    ).toBe(false);
+    expect(
+      fieldToZod(baseField({ type: 'url', required: true })).safeParse('https://x.io').success,
+    ).toBe(true);
+    expect(
+      fieldToZod(baseField({ type: 'email', required: true })).safeParse('a@b.co').success,
+    ).toBe(true);
+    expect(fieldToZod(baseField({ type: 'email', required: true })).safeParse('nope').success).toBe(
+      false,
+    );
   });
 
   it('honors min/max for numbers', () => {
@@ -52,6 +60,32 @@ describe('fieldToZod', () => {
     );
     expect(schema.safeParse('a').success).toBe(true);
     expect(schema.safeParse('c').success).toBe(false);
+  });
+
+  it('accepts a blank optional dropdown without accepting unknown choices', () => {
+    const field = baseField({
+      type: 'select',
+      options: [
+        { value: 'pending', label: 'Pending' },
+        { value: 'verified', label: 'Verified' },
+        { value: 'rejected', label: 'Rejected' },
+      ],
+    });
+    const schema = fieldToZod(field);
+    for (const value of ['', null, undefined, 'pending', 'verified', 'rejected'])
+      expect(schema.safeParse(value).success).toBe(true);
+    expect(schema.safeParse('unrecognized').success).toBe(false);
+    expect(fieldToZod({ ...field, required: true }).safeParse('').success).toBe(false);
+    expect(fieldToZod({ ...field, type: 'multiselect' }).safeParse(['']).success).toBe(false);
+  });
+
+  it('lets a tag label save while its optional Verification remains blank', () => {
+    const result = validateAgainstRegistry(contentTypeRegistry.unified_tags, {
+      name: 'Art',
+      verification_status: '',
+    });
+    expect(result.ok).toBe(true);
+    if (result.ok) expect(result.data.verification_status).toBe('');
   });
 });
 

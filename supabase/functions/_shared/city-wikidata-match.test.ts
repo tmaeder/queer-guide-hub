@@ -147,3 +147,68 @@ Deno.test('a "Name, Country" alias admits the candidate, and corroboration still
     assertEquals(r.kind, expected)
   }
 })
+
+const correctedDutchCountry = {
+  P297: [statement('NL', { rank: 'deprecated', qualifiers: { P8327: [{ snaktype: 'value', datavalue: { value: { id: 'Q29999' } } }] } })],
+  P17: [statement({ id: 'Q29999' })],
+}
+const dutchInput = { ...input, countryCode: 'NL' }
+function dutchFixture(country = correctedDutchCountry, target = { P297: [statement('NL')] }, extraCountries: string[] = []) {
+  return fixture([{ id: 'Q1', label: input.base }], {
+    ...common, Q1: { claims: { ...claims(35.47, -97.52, 'Q515', 'Q55'), P17: ['Q55', ...extraCountries].map(id => statement({ id })) } },
+    Q55: { claims: country }, Q29999: { claims: target },
+  })
+}
+Deno.test('explicit intended-subject correction requires current matching parent ISO evidence', async () => {
+  const f = dutchFixture()
+  const resolve = createCitySearchResolver(f.request, [])
+  const r = await resolve(dutchInput)
+  assertEquals(r.kind, 'selected')
+  assertEquals(r.probes[0].countryCorrections, [{ countryQid: 'Q55', intendedSubjectQid: 'Q29999', code: 'NL' }])
+  await resolve(dutchInput)
+  assertEquals(f.calls.filter(u => new URL(u).searchParams.get('ids') === 'Q29999').length, 1)
+})
+Deno.test('deprecated ISO alone or unrelated ambiguous parent never establishes country', async () => {
+  const cases = [
+    { ...correctedDutchCountry, P297: [statement('NL', { rank: 'deprecated' })] },
+    { ...correctedDutchCountry, P17: [] },
+    { ...correctedDutchCountry, P17: [statement({ id: 'Q30' })] },
+    { ...correctedDutchCountry, P131: [statement({ id: 'Q30' })] },
+    { ...correctedDutchCountry, P17: [statement({ id: 'Q29999' }, { rank: 'deprecated' })] },
+    { ...correctedDutchCountry, P17: [statement({ id: 'Q29999' }, { qualifiers: { P580: [{ snaktype: 'value', datavalue: { value: { time: '+2999-01-01T00:00:00Z' } } }] } })] },
+    { ...correctedDutchCountry, P17: [statement({ id: 'Q29999' }, { qualifiers: { P582: [{ snaktype: 'value', datavalue: { value: { time: '+1900-01-01T00:00:00Z' } } }] } })] },
+  ]
+  for (const country of cases) {
+    const f = dutchFixture(country)
+    assertEquals((await createCitySearchResolver(f.request, [])(dutchInput)).kind, 'unresolved')
+  }
+})
+Deno.test('correction target must have unambiguous current unscoped matching ISO', async () => {
+  for (const target of [
+    { P297: [] }, { P297: [statement('NL', { rank: 'deprecated' })] },
+    { P297: [statement('US')] }, { P297: [statement('NL'), statement('US')] },
+    { P297: [statement('NL', { qualifiers: { P518: [{ snaktype: 'value', datavalue: { value: { id: 'Q1' } } }] } })] },
+    { P297: [statement('NL', { qualifiers: { P580: [{ snaktype: 'value', datavalue: { value: { time: '+2999-01-01T00:00:00Z' } } }] } })] },
+  ]) {
+    const f = dutchFixture(correctedDutchCountry, target)
+    assertEquals((await createCitySearchResolver(f.request, [])(dutchInput)).kind, 'unresolved')
+  }
+})
+Deno.test('correction cannot hide another foreign or unknown current country', async () => {
+  for (const [qid, verdict] of [['Q30', 'disagree'], ['Q999', 'unknown']]) {
+    const f = dutchFixture(correctedDutchCountry, { P297: [statement('NL')] }, [qid])
+    const r = await createCitySearchResolver(f.request, [])(dutchInput)
+    assertEquals(r.probes[0].country, verdict)
+    assertEquals(r.qid, null)
+  }
+})
+Deno.test('a current direct ISO needs no correction fetch', async () => {
+  const f = dutchFixture({ ...correctedDutchCountry, P297: [statement('NL')] })
+  assertEquals((await createCitySearchResolver(f.request, [])(dutchInput)).kind, 'selected')
+  assertEquals(f.calls.some(u => new URL(u).searchParams.get('ids') === 'Q29999'), false)
+})
+Deno.test('correction target outage remains retryable and cannot become no-match', async () => {
+  const f = dutchFixture()
+  const resolve = createCitySearchResolver(url => new URL(url).searchParams.get('ids') === 'Q29999' ? Promise.resolve({ ok: false }) : f.request(url), [])
+  await assertRejects(() => resolve(dutchInput), Error, 'wikidata_candidate_unavailable')
+})

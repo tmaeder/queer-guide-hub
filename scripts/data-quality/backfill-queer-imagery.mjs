@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // Operator driver for the queer-imagery-backfill edge function.
 //
-// Re-images cities/countries (and gap-fills events) with queer + place-connected
+// Re-images cities/countries and historical milestones with queer + place-connected
 // photos. Loops the function's batch endpoint until it reports nothing due; the
 // function advances a resumable enrichment_log cursor, so hits AND misses both
 // move the pass forward and a restart just continues. Misses are expected (many
@@ -10,9 +10,9 @@
 //
 // Run:
 //   SERVICE_KEY=eyJ... node scripts/data-quality/backfill-queer-imagery.mjs --entity=city
-//   ... --entity=country | --entity=event   (run each separately)
+//   ... --entity=country | --entity=milestone   (run each separately)
 // Flags:
-//   --entity=city|country|event   (required)
+//   --entity=city|country|milestone   (required)
 //   --limit=40                    batch size (edge fn clamps to 1..100)
 //   --dry-run                     score + report, write nothing
 //   --max-batches=N               stop after N batches (default: unlimited)
@@ -36,9 +36,10 @@ const DRY_RUN = getArg('dry-run', false) === true;
 const MAX_BATCHES = Number(getArg('max-batches', 0)); // 0 = unlimited
 const SLEEP_MS = Number(getArg('sleep', 4000));
 
+if (ENTITY === 'event') { console.error('Event artwork requires a registered source; use event-image-backfill.'); process.exit(1); }
 if (!KEY) { console.error('SERVICE_KEY (or SUPABASE_SERVICE_ROLE_KEY) not set'); process.exit(1); }
-if (!['city', 'country', 'event', 'milestone'].includes(ENTITY)) {
-  console.error('--entity must be one of: city, country, event, milestone'); process.exit(1);
+if (!['city', 'country', 'milestone'].includes(ENTITY)) {
+  console.error('--entity must be one of: city, country, milestone'); process.exit(1);
 }
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
