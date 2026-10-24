@@ -9,7 +9,6 @@
 import { useCallback, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/hooks/useAuth';
 import { qk } from '@/lib/queryKeys';
 
 export interface TripInboxItem {
@@ -34,21 +33,8 @@ export interface TripInboxItem {
 
 const INBOX_DOMAIN = 'inbox.queer.guide';
 
-function randomShortId(): string {
-  // 12 chars, lowercase base32-ish — avoids look-alike chars (0/o, 1/l).
-  const alphabet = 'abcdefghijkmnpqrstuvwxyz23456789';
-  const bytes = new Uint8Array(12);
-  crypto.getRandomValues(bytes);
-  let out = '';
-  for (let i = 0; i < bytes.length; i++) {
-    out += alphabet[bytes[i]! % alphabet.length];
-  }
-  return out;
-}
-
 export function useTripInbox(tripId: string | undefined) {
   const queryClient = useQueryClient();
-  const { user } = useAuth();
 
   const inboxQuery = useQuery({
     queryKey: qk.trip.facet(tripId, 'inbox'),
@@ -58,6 +44,7 @@ export function useTripInbox(tripId: string | undefined) {
         .select('id, short_id, revoked_at, created_at')
         .eq('trip_id', tripId!)
         .is('revoked_at', null)
+        .eq('routing_status', 'ready')
         .order('created_at', { ascending: false })
         .limit(1)
         .maybeSingle();
@@ -84,42 +71,31 @@ export function useTripInbox(tripId: string | undefined) {
     staleTime: 30 * 1000,
   });
 
+  const invalidateInbox = () => {
+    void queryClient.invalidateQueries({ queryKey: qk.trip.facet(tripId, 'inbox') });
+  };
+  const manageInbox = async (action: 'enable' | 'revoke' | 'regenerate') => {
+    if (!tripId) throw new Error('no trip');
+    const { data, error } = await supabase.functions.invoke('trip-inbox-manage', {
+      body: { action, trip_id: tripId },
+    });
+    if (error) throw error;
+    if (data?.error) throw new Error(data.error);
+    return data;
+  };
   const enable = useMutation({
-    mutationFn: async () => {
-      if (!tripId) throw new Error('no trip');
-      if (!user) throw new Error('not authenticated');
-      const shortId = randomShortId();
-      const { data, error } = await supabase
-        .from('trip_inboxes')
-        .insert({ trip_id: tripId, short_id: shortId, created_by: user.id })
-        .select('id, short_id, revoked_at, created_at')
-        .single();
-      if (error) throw error;
-      return data;
-    },
-    onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: qk.trip.facet(tripId, 'inbox') });
-    },
+    mutationFn: () => manageInbox('enable'),
+    onSettled: invalidateInbox,
   });
-
   const revoke = useMutation({
-    mutationFn: async () => {
-      if (!inboxQuery.data) return;
-      const { error } = await supabase
-        .from('trip_inboxes')
-        .update({ revoked_at: new Date().toISOString() })
-        .eq('id', inboxQuery.data.id);
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: qk.trip.facet(tripId, 'inbox') });
-    },
+    mutationFn: () => manageInbox('revoke'),
+    onSettled: invalidateInbox,
   });
-
-  const regenerate = useCallback(async () => {
-    await revoke.mutateAsync();
-    await enable.mutateAsync();
-  }, [revoke, enable]);
+  const regenerateMutation = useMutation({
+    mutationFn: () => manageInbox('regenerate'),
+    onSettled: invalidateInbox,
+  });
+  const regenerate = useCallback(() => regenerateMutation.mutateAsync(), [regenerateMutation]);
 
   const slotItem = useMutation({
     mutationFn: async (itemId: string) => {

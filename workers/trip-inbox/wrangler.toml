@@ -3,10 +3,9 @@ main = "src/index.ts"
 compatibility_date = "2026-04-01"
 compatibility_flags = ["nodejs_compat"]
 
-# Email Worker bindings — the actual route `*@inbox.queer.guide` is configured
-# in the Cloudflare dashboard under Email Routing → Email Workers. Once the
-# DNS for `inbox.queer.guide` is verified, point all matching addresses at
-# this worker.
+# Each app inbox has a literal recipient rule managed by the authenticated
+# Supabase trip-inbox-manage endpoint. Cloudflare does not support subdomain
+# catch-all rules. Reconcile existing inboxes before advertising them.
 
 [vars]
 INBOX_DOMAIN = "inbox.queer.guide"
