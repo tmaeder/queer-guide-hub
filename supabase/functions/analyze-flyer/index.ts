@@ -11,7 +11,8 @@
  */
 
 import { createClient, type SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5'
-import { corsHeaders, jsonResponse, errorResponse, hasInternalSecret } from '../_shared/supabase-client.ts'
+import { getCorsHeaders, jsonResponse, errorResponse, hasInternalSecret } from '../_shared/supabase-client.ts'
+import { safeErrCode } from '../_shared/safe-error.ts'
 import { chatCompletion } from '../_shared/openai-client.ts'
 import { extractContent, type ExtractResult } from '../_shared/extract-client.ts'
 import { COUNTRY_ALIASES } from '../_shared/geo-normalize.ts'
@@ -818,7 +819,7 @@ async function fetchPageText(pageUrl: string): Promise<string> {
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders })
+    return new Response(null, { headers: getCorsHeaders(req) })
   }
 
   const startTime = Date.now()
@@ -828,7 +829,7 @@ Deno.serve(async (req) => {
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
     const cfToken = Deno.env.get('CLOUDFLARE_API_TOKEN')
 
-    if (!cfToken) return errorResponse('CLOUDFLARE_API_TOKEN not configured', 500)
+    if (!cfToken) return errorResponse('CLOUDFLARE_API_TOKEN not configured', 500, req)
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
@@ -844,13 +845,13 @@ Deno.serve(async (req) => {
       userId = as_user_id
     } else {
       const authHeader = req.headers.get('Authorization')
-      if (!authHeader) return errorResponse('Missing authorization', 401)
+      if (!authHeader) return errorResponse('Missing authorization', 401, req)
       const token = authHeader.replace('Bearer ', '')
       const { data: { user }, error: authError } = await supabase.auth.getUser(token)
-      if (authError || !user) return errorResponse('Invalid authorization', 401)
+      if (authError || !user) return errorResponse('Invalid authorization', 401, req)
       userId = user.id
       const withinLimit = await checkRateLimit(userId, supabase)
-      if (!withinLimit) return errorResponse('Rate limit exceeded (20 scans/hour)', 429)
+      if (!withinLimit) return errorResponse('Rate limit exceeded (20 scans/hour)', 429, req)
     }
 
     const urls: string[] = (Array.isArray(image_urls) ? image_urls : [])
@@ -858,7 +859,7 @@ Deno.serve(async (req) => {
       .filter((u, i, arr) => typeof u === 'string' && u.length > 0 && arr.indexOf(u) === i)
       .slice(0, MAX_IMAGES_PER_SCAN)
     if (urls.length === 0 && !text && !page_url) {
-      return errorResponse('image_url, image_urls, text, or page_url is required', 400)
+      return errorResponse('image_url, image_urls, text, or page_url is required', 400, req)
     }
 
     // A pasted link is fetched + stripped to text, then rides the text pipeline.
@@ -1026,15 +1027,16 @@ Deno.serve(async (req) => {
       // OG image of a scanned page, so the form can prefill a preview image.
       image_url: urls[0] || pageImageUrl || null,
       processing_time_ms: processingTime,
-    })
+    }, 200, req)
   } catch (error) {
     console.error('analyze-flyer error:', error)
     if (error instanceof PageUnreadableError) {
       return errorResponse(
         "We couldn't read that link. It may require a login or block automated access. Upload a screenshot of the flyer instead.",
         422,
+        req,
       )
     }
-    return errorResponse(error.message || 'Internal server error', 500)
+    return errorResponse(safeErrCode(error, [], 'analyze-flyer'), 500, req)
   }
 })
