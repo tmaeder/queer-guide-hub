@@ -125,14 +125,14 @@ Deno.test('requireAnyRole: staff passes, others and anon do not', async () => {
   Deno.env.set('SUPABASE_SERVICE_ROLE_KEY', 'svc-key')
   const roles: Record<string, string[]> = { ed: ['editor'], mem: [], adm: ['admin'] }
   let askedFor: string[] = []
-  // deno-lint-ignore no-explicit-any
-  const client: any = {
+  const fake = {
     auth: { getUser: async (t: string) => ({ data: { user: roles[t] ? { id: t } : null }, error: null }) },
     from: () => ({ select: () => ({ eq: (_c: string, uid: string) => ({ in: (_r: string, want: string[]) => {
       askedFor = want
       return { limit: async () => ({ data: (roles[uid] ?? []).filter((r) => want.includes(r)).map((role) => ({ role })) }) }
     } }) }) }),
   }
+  const client = fake as unknown as Parameters<typeof requireAnyRole>[1]
   const req = (h: Record<string, string>) => new Request('https://x', { headers: h })
   const st = async (h: Record<string, string>) => {
     const r = await requireAnyRole(req(h), client, STAFF_ROLES)
