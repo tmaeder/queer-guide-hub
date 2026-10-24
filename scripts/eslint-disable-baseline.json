@@ -1,5 +1,5 @@
 {
-  "total": 494,
+  "total": 492,
   "files": {
     "src/components/admin/CloudflareDashboard.tsx": {
       "react-hooks/set-state-in-effect": 1
@@ -641,9 +641,6 @@
     "src/hooks/useGroupMemberManagement.ts": {
       "react-hooks/set-state-in-effect": 1
     },
-    "src/hooks/useHotels.ts": {
-      "react-hooks/set-state-in-effect": 1
-    },
     "src/hooks/useImportHub.tsx": {
       "react-hooks/exhaustive-deps": 2,
       "react-hooks/set-state-in-effect": 1
@@ -862,9 +859,6 @@
       "react-hooks/set-state-in-effect": 1
     },
     "src/pages/HelpHotlines.tsx": {
-      "react-hooks/set-state-in-effect": 1
-    },
-    "src/pages/Hotels.tsx": {
       "react-hooks/set-state-in-effect": 1
     },
     "src/pages/Marketplace.tsx": {
