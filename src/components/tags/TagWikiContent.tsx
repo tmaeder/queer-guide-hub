@@ -18,7 +18,7 @@
  * document is parsed once per tag rather than once per component.
  */
 
-import DOMPurify from 'dompurify';
+import { sanitizeArticle } from '@/lib/sanitize';
 import { useMemo } from 'react';
 import { useGlossaryLinkVocabulary } from '@/hooks/useGlossaryLinkVocabulary';
 import { findGlossaryLinks, glossaryHref, type GlossaryLinkTerm } from '@/lib/glossaryLinks';
@@ -112,7 +112,7 @@ export function TagWikiContent({
   const vocabulary = useGlossaryLinkVocabulary();
 
   const clean = useMemo(() => {
-    const sanitized = DOMPurify.sanitize(html, { ADD_ATTR: ['id'] });
+    const sanitized = sanitizeArticle(html);
     if (vocabulary.length === 0) return sanitized;
     try {
       const doc = new DOMParser().parseFromString(`<body>${sanitized}</body>`, 'text/html');
