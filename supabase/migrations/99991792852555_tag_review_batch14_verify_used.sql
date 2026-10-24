@@ -17,6 +17,8 @@
 --     corrected to the place their venues are in (pi-state = Piauí, wustrow, victoria-island,
 --     salvador-lgbtq). Sentences addressed to editors ("should be confirmed", "a reviewer
 --     should check") are removed with replace(); every other sentence stays byte-identical.
+--   * bestiality is deprecated and its 4 news assignments deleted, for the same reason as
+--     zoophilia: it is not queer or kink vocabulary, and a page for it echoes an old slur.
 --   * decoration is merged into interior-design; hellpuppy, microphone, spill and tinkerbelle
 --     are deprecated (unused, no active tag to merge into).
 --
@@ -139,9 +141,11 @@ where t.status = 'active'
 insert into _b14_dep
 select t.id, t.slug, case when t.slug = 'lgbtq-unknown'
          then 'empty import placeholder with no meaning'
+         when t.slug = 'bestiality'
+         then 'not queer or kink vocabulary; a glossary page for it echoes the slur linking queerness with bestiality'
          else 'its only uses were accidental word matches on unrelated items' end, true
 from public.unified_tags t
-where t.slug = any (array['angel', 'zombie', 'goat', 'frog', 'delta', 'little-thing', 'maestro', 'slasher', 'uncle', 'devotee', 'brother', 'board-member', 'host', 'guide', 'giving', 'shapeshifter', 'vixen', 'pirate', 'lgbtq-unknown'])
+where t.slug = any (array['angel', 'zombie', 'goat', 'frog', 'delta', 'little-thing', 'maestro', 'slasher', 'uncle', 'devotee', 'brother', 'board-member', 'host', 'guide', 'giving', 'shapeshifter', 'vixen', 'pirate', 'lgbtq-unknown', 'bestiality'])
   and t.status = 'active'
   and not exists (select 1 from public.unified_tags m where m.merged_into_id = t.id);
 
