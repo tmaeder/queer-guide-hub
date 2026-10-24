@@ -39,7 +39,7 @@ describe('useVenuesV2Data', () => {
       defaultOptions: { queries: { retry: false, staleTime: Infinity } },
     });
     const wrapper = ({ children }: { children: ReactNode }) =>
-      createElement(TestProviders, { queryClient: client }, children);
+      createElement(TestProviders, { queryClient: client, children });
 
     auth.user = { id: 'u1' };
     const { result, rerender } = renderHook(() => useFeaturedVenue(), { wrapper });
