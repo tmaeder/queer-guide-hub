@@ -1,8 +1,8 @@
-import { useMemo, useEffect, useRef } from 'react';
+import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { useVenues } from '@/hooks/useVenues';
-import { useEvents } from '@/hooks/useEvents';
+import { useVenuesQuery } from '@/hooks/useVenues';
+import { useEventsQuery } from '@/hooks/useEvents';
 import { useOptimizedCities, useOptimizedCountries } from '@/hooks/usePlaces';
 import { ink, trackColor } from '@/lib/mapTokens';
 import { ROUTE_BULLET_MAP, type Track } from '@/components/transit/routeBulletMap';
@@ -150,26 +150,20 @@ export function useExploreMapData({ enabledLayers, viewport, filters }: UseExplo
 
   // ── Venues ─────────────────────────────────────────────────────────────────
   const venuesEnabled = enabledLayers.includes('venues');
-  const {
-    venues: rawVenues = [],
-    isFetching: venuesFetching,
-    fetchVenues,
-  } = useVenues(false, { skipDatasetTotal: true });
-  const fetchVenuesRef = useRef(fetchVenues);
-  // eslint-disable-next-line react-hooks/refs -- "latest value" ref pattern; effect below reads .current.
-  fetchVenuesRef.current = fetchVenues;
   const tagsKey = filters?.tags?.length ? filters.tags.join(',') : '';
-
-  useEffect(() => {
-    if (!venuesEnabled) return;
-    fetchVenuesRef.current({
-      limit: shouldUseBounds ? 200 : 500, // Reduce limit when using bounds
-      ...(filters?.search ? { search: filters.search } : {}),
-      ...(filters?.category ? { category: filters.category } : {}),
-      ...(tagsKey ? { tags: tagsKey.split(',') } : {}),
-      ...(viewportBounds ? { bounds: viewportBounds } : {}),
-    });
-  }, [venuesEnabled, filters?.search, filters?.category, tagsKey, shouldUseBounds, viewportBounds]);
+  // keepPrevious: markers stay put while a pan's query runs.
+  const { venues: rawVenues, isFetching: venuesFetching } = useVenuesQuery(
+    venuesEnabled
+      ? {
+          limit: shouldUseBounds ? 200 : 500, // Reduce limit when using bounds
+          ...(filters?.search ? { search: filters.search } : {}),
+          ...(filters?.category ? { category: filters.category } : {}),
+          ...(tagsKey ? { tags: tagsKey.split(',') } : {}),
+          ...(viewportBounds ? { bounds: viewportBounds } : {}),
+        }
+      : null,
+    { keepPrevious: true },
+  );
 
   const venueMarkers = useMemo<MapMarker[]>(() => {
     if (!venuesEnabled) return [];
@@ -190,37 +184,23 @@ export function useExploreMapData({ enabledLayers, viewport, filters }: UseExplo
 
   // ── Events ─────────────────────────────────────────────────────────────────
   const eventsEnabled = enabledLayers.includes('events');
-  const {
-    events: rawEvents = [],
-    isFetching: eventsFetching,
-    fetchEvents,
-  } = useEvents(false, { skipDatasetTotal: true });
-  const dateRangeKey = filters?.dateRange
-    ? `${filters.dateRange.start}|${filters.dateRange.end}`
-    : '';
   const dateRangeStart = filters?.dateRange?.start;
   const dateRangeEnd = filters?.dateRange?.end;
-
-  useEffect(() => {
-    if (!eventsEnabled) return;
-    fetchEvents({
-      limit: shouldUseBounds ? 150 : 300,
-      ...(filters?.search ? { search: filters.search } : {}),
-      ...(dateRangeStart && dateRangeEnd
-        ? { dateRange: { start: dateRangeStart, end: dateRangeEnd } }
-        : {}),
-      ...(viewportBounds ? { bounds: viewportBounds } : {}),
-    });
-  }, [
-    eventsEnabled,
-    filters?.search,
-    dateRangeKey,
-    dateRangeStart,
-    dateRangeEnd,
-    shouldUseBounds,
-    viewportBounds,
-    fetchEvents,
-  ]);
+  // keepPrevious: markers stay put while a pan's query runs, as they did when
+  // this was an imperative fetch whose old result held until the new one landed.
+  const { events: rawEvents, isFetching: eventsFetching } = useEventsQuery(
+    eventsEnabled
+      ? {
+          limit: shouldUseBounds ? 150 : 300,
+          ...(filters?.search ? { search: filters.search } : {}),
+          ...(dateRangeStart && dateRangeEnd
+            ? { dateRange: { start: dateRangeStart, end: dateRangeEnd } }
+            : {}),
+          ...(viewportBounds ? { bounds: viewportBounds } : {}),
+        }
+      : null,
+    { keepPrevious: true },
+  );
 
   const eventMarkers = useMemo<MapMarker[]>(() => {
     if (!eventsEnabled) return [];

@@ -12,10 +12,6 @@ const makeNewsReturn = (overrides = {}) => ({
   loading: false,
   error: null,
   fetchArticles: vi.fn(),
-  fetchTagsForArticles: vi.fn(),
-  incrementViews: vi.fn(),
-  getFeaturedArticles: vi.fn().mockResolvedValue([]),
-  getTrendingTags: vi.fn().mockResolvedValue([]),
   loadingTimedOut: false,
   ...overrides,
 });
@@ -37,7 +33,31 @@ vi.mock('@/hooks/useEntityImageAssets', () => ({
 }));
 vi.mock('@/hooks/useNewsStories', () => ({ useNewsStories: () => ({ stories: [], heroes: [] }) }));
 vi.mock('@/hooks/usePageFetchers', () => ({ fetchNamesByIds: vi.fn().mockResolvedValue({}) }));
-vi.mock('@/hooks/useNews', () => ({ useNews: useNewsMock }));
+/** The lazy initial request NewsArchive hands the feed, per render. */
+const initialRequests: Array<Record<string, unknown>> = [];
+vi.mock('@/hooks/useNews', () => ({
+  useNewsArticlesFeed: (initial?: () => Record<string, unknown>) => {
+    if (initial) initialRequests.push(initial());
+    const r = useNewsMock();
+    return {
+      articles: r.articles,
+      loading: r.loading,
+      error: r.error,
+      fetchArticles: r.fetchArticles,
+      loadingTimedOut: r.loadingTimedOut,
+    };
+  },
+  useNewsSources: () => useNewsMock().sources,
+  useNewsCategories: () => useNewsMock().categories,
+  useNewsCategoryCounts: () => ({
+    categoryCounts: useNewsMock().categoryCounts,
+    totalArticles: useNewsMock().totalArticles,
+  }),
+  useNewsArticleTags: () => useNewsMock().articleTags,
+  useFeaturedNewsArticles: () => [],
+  useTrendingNewsTags: () => [],
+  incrementArticleViews: vi.fn(),
+}));
 
 vi.mock('@/components/news/NewsCard', () => ({
   NewsCard: ({ loading }: { loading?: boolean }) =>
@@ -134,13 +154,12 @@ describe('NewsArchive page', () => {
       }),
     );
 
+    initialRequests.length = 0;
     renderWithProviders(<NewsArchive />, { route: '/news/all?right=conversion-therapy' });
 
-    await waitFor(() =>
-      expect(fetchArticles).toHaveBeenCalledWith(
-        expect.objectContaining({ tags: ['conversion-therapy'] }),
-      ),
-    );
+    // The URL's filter is on the FIRST request, not a mount-time correction.
+    expect(initialRequests[0]).toEqual(expect.objectContaining({ tags: ['conversion-therapy'] }));
+    await waitFor(() => expect(screen.getByText(/Right: Conversion therapy/)).toBeInTheDocument());
     expect(screen.getByText(/Right: Conversion therapy/)).toBeInTheDocument();
 
     await userEvent.click(screen.getByRole('button', { name: 'Remove Conversion therapy filter' }));
