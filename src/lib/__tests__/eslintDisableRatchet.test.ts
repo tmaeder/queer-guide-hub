@@ -74,7 +74,7 @@ describe('repo scan (positive control)', () => {
   it('finds the known suppressions in src/', () => {
     const files = scan();
     expect(files['src/lib/__tests__/eslintDisableRatchet.test.ts']).toBeUndefined();
-    const rules = Object.values(files).flatMap((f) => Object.keys(f as object));
+    const rules = Object.values(files).flatMap((f) => Object.keys(f));
     expect(rules).toContain('react-hooks/exhaustive-deps');
     expect(Object.keys(files).length).toBeGreaterThan(100);
   });
