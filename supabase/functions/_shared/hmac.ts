@@ -25,14 +25,20 @@ export async function signHmac(body: string, secret: string): Promise<string> {
   return `sha256=${toHex(sig)}`;
 }
 
+/**
+ * Constant-time string equality for secrets. A plain `===` returns at the
+ * first differing character, so response timing leaks how much of a guessed
+ * secret was right. Length is not secret-bearing here (all callers compare
+ * against a fixed-length configured value).
+ */
+export function timingSafeEqual(a: string | null | undefined, b: string | null | undefined): boolean {
+  if (!a || !b || a.length !== b.length) return false;
+  let diff = 0;
+  for (let i = 0; i < a.length; i++) diff |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  return diff === 0;
+}
+
 export async function verifyHmac(body: string, signature: string, secret: string): Promise<boolean> {
   if (!signature || !signature.startsWith('sha256=')) return false;
-  const expected = await signHmac(body, secret);
-  // constant-time compare on equal-length strings
-  if (expected.length !== signature.length) return false;
-  let diff = 0;
-  for (let i = 0; i < expected.length; i++) {
-    diff |= expected.charCodeAt(i) ^ signature.charCodeAt(i);
-  }
-  return diff === 0;
+  return timingSafeEqual(await signHmac(body, secret), signature);
 }

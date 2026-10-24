@@ -1,4 +1,5 @@
 import { createClient, SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5'
+import { timingSafeEqual } from './hmac.ts'
 
 const ALLOWED_ORIGINS = new Set<string>([
   'https://queer.guide',
@@ -34,6 +35,12 @@ export const corsHeaders = {
   'Access-Control-Allow-Origin': 'https://queer.guide',
 }
 
+/** Integer request param clamped to [1, max]; NaN/absent/negative → fallback. */
+export function boundedInt(value: unknown, fallback: number, max: number): number {
+  const n = Math.trunc(Number(value))
+  return Number.isFinite(n) && n >= 1 ? Math.min(n, max) : Math.min(fallback, max)
+}
+
 export function getServiceClient(): SupabaseClient {
   return createClient(
     Deno.env.get('SUPABASE_URL')!,
@@ -55,9 +62,25 @@ export function jsonResponse(data: unknown, status = 200, req?: Request): Respon
   })
 }
 
+/**
+ * Uniform error body: `{ error, success: false }`.
+ *
+ * 4xx and 502-504 messages are the handler's own words (validation, upstream
+ * or config status an admin needs) and pass through. On 500 — the catch-all
+ * where a caught `e.message` lands, carrying Postgres column/constraint names
+ * (CWE-209) — only a snake_case code the handler chose (e.g. 'upsert_failed')
+ * is returned; free text is logged server-side and replaced. ~130 call sites
+ * pass `err.message` here; this is the one choke point they all route through.
+ */
+const ERROR_CODE_RE = /^[a-z][a-z0-9_]{0,63}$/
+
 export function errorResponse(message: unknown, status = 500, req?: Request): Response {
-  const safeMessage =
+  let safeMessage =
     typeof message === 'string' && message.trim().length > 0 ? message : 'Internal server error'
+  if (status === 500 && !ERROR_CODE_RE.test(safeMessage)) {
+    if (safeMessage !== 'Internal server error') console.error(`errorResponse ${status}:`, safeMessage)
+    safeMessage = 'Internal server error'
+  }
   return jsonResponse({ error: safeMessage, success: false }, status, req)
 }
 
@@ -94,8 +117,7 @@ export interface AdminContext {
 export function hasInternalSecret(req: Request): boolean {
   const expected = Deno.env.get('INTERNAL_INVOKE_SECRET')
   if (!expected) return false
-  const provided = req.headers.get('x-internal-secret')
-  return provided === expected
+  return timingSafeEqual(req.headers.get('x-internal-secret'), expected)
 }
 
 /**
@@ -140,7 +162,7 @@ export async function requireAdmin(
 
   // Allow internal service-role invocations (workflow-dispatcher, cron, etc.)
   const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
-  if (serviceRoleKey && token === serviceRoleKey) {
+  if (timingSafeEqual(token, serviceRoleKey)) {
     const originalActor = req.headers.get('x-original-actor')
     return {
       userId: originalActor || 'service-role',

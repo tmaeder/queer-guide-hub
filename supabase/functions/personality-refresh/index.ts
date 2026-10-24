@@ -4,7 +4,7 @@
 // columns (never clobbers curated data), writes a personality_sources
 // provenance row, stamps last_refreshed_at, recomputes quality_score.
 
-import { getServiceClient, jsonResponse, errorResponse, corsResponse } from '../_shared/supabase-client.ts'
+import { getServiceClient, jsonResponse, errorResponse, corsResponse, requireInternalOrAdmin, boundedInt } from '../_shared/supabase-client.ts'
 import { withErrorReporting } from '../_shared/report-api-error.ts'
 import { fillBlanks, parseWikipediaSummary } from '../_shared/personality-enrich-core.ts'
 import { personalityQualityDimensions } from '../_shared/personality-quality.ts'
@@ -61,9 +61,12 @@ type Row = Record<string, unknown>
 Deno.serve(withErrorReporting('personality-refresh', async (req) => {
   if (req.method === 'OPTIONS') return corsResponse(req)
   const supabase = getServiceClient()
+  // Service-role client + paid LLM calls: never reachable with the public anon key.
+  const auth = await requireInternalOrAdmin(req, supabase)
+  if (auth instanceof Response) return auth
   try {
     const body = await req.json().catch(() => ({}))
-    const batchSize = Math.min((body.batch_size as number) || 25, 100)
+    const batchSize = boundedInt(body.batch_size, 25, 100)
     const dryRun = body.dry_run === true
 
     // Highest-priority stale/incomplete records first.

@@ -21,6 +21,7 @@ import {
   corsResponse,
 } from '../_shared/supabase-client.ts'
 import { anthropicMessages } from '../_shared/anthropic-shim.ts'
+import { timingSafeEqual } from '../_shared/hmac.ts'
 
 interface SlotByItem { item_id: string }
 interface SlotByPaste { trip_id: string; raw_text: string; subject?: string }
@@ -213,7 +214,7 @@ Deno.serve(async (req) => {
   // and verify trip membership through RLS via a user-scoped client.
   const authHeader = req.headers.get('Authorization') ?? ''
   const token = authHeader.replace(/^Bearer\s+/i, '')
-  const isServiceRole = !!token && token === Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
+  const isServiceRole = timingSafeEqual(token, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY'))
 
   let userId: string | null = null
   if (!isServiceRole) {
