@@ -114,7 +114,7 @@ export function LinkHealthPanel({ days }: { days: string }) {
         </Button>
       </div>
 
-      <div className="mb-8 grid grid-cols-5 gap-4">
+      <div className="mb-8 grid grid-cols-2 gap-4 md:grid-cols-5">
         {HEALTH_STATES.map((state) => (
           <Stat key={state} label={state} value={(rollup?.[state] ?? 0).toLocaleString()} />
         ))}

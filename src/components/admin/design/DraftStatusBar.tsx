@@ -25,7 +25,7 @@ export function DraftStatusBar({ controller }: { controller: DesignSettingsContr
   const enabled = controller.row?.overrides_enabled ?? true;
 
   return (
-    <div className="sticky top-0 z-10 -mx-4 mb-6 flex flex-wrap items-center gap-4 border-b bg-background px-4 py-2">
+    <div className="sticky top-0 z-10 mb-6 flex flex-wrap items-center gap-4 border-b bg-background py-2">
       <div className="flex items-center gap-2">
         <Badge variant="outline">{controller.overrideCount} overrides</Badge>
         {controller.isDirty && <Badge>unsaved changes</Badge>}
@@ -75,7 +75,11 @@ export function DraftStatusBar({ controller }: { controller: DesignSettingsContr
       </div>
 
       <PublishDiffDialog controller={controller} open={publishOpen} onOpenChange={setPublishOpen} />
-      <VersionHistorySheet controller={controller} open={historyOpen} onOpenChange={setHistoryOpen} />
+      <VersionHistorySheet
+        controller={controller}
+        open={historyOpen}
+        onOpenChange={setHistoryOpen}
+      />
       <AlertDialog open={killConfirmOpen} onOpenChange={setKillConfirmOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
