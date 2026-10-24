@@ -58,7 +58,8 @@ export function useVenueFilters({
     null,
   );
 
-  const { tags: unifiedTags, loading: tagsLoading, fetchTags } = useUnifiedTags();
+  // useUnifiedTags fetches on mount itself; a second fetchTags() here only doubled the request.
+  const { tags: unifiedTags, loading: tagsLoading } = useUnifiedTags();
   const { vocab: amenityVocab, loading: vocabLoading } = useAmenityVocabulary();
   const amenityOptions = Array.from(amenityVocab?.values() ?? [])
     .filter((a) => a.kind === 'amenity')
@@ -76,8 +77,11 @@ export function useVenueFilters({
 
   // "Save as my accessibility needs" — first-use affordance, max one
   // save-default prompt per session across all surfaces.
-  const { chips: savedAccessibilityChips, loading: prefsLoading, signedIn } =
-    usePreferenceChips(['accessibility']);
+  const {
+    chips: savedAccessibilityChips,
+    loading: prefsLoading,
+    signedIn,
+  } = usePreferenceChips(['accessibility']);
   const { show: showAccessibilityPrompt, dismiss: dismissAccessibilityPrompt } =
     useDefaultPromptGate(
       signedIn &&
@@ -85,11 +89,6 @@ export function useVenueFilters({
         savedAccessibilityChips.length === 0 &&
         selectedAccessibilityAttributes.length > 0,
     );
-
-  useEffect(() => {
-    fetchTags();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   // Sync array filters when URL-driven props change (e.g. back/forward
   // navigation). Compares joined keys so we don't fight user typing.
