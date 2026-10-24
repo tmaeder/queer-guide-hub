@@ -1,4 +1,11 @@
-import { fetchRows, urlsetXml, xmlResponse, ORIGIN, type Env, type SitemapEntry } from './_lib/sitemap';
+import {
+  fetchRows,
+  urlsetXml,
+  xmlResponse,
+  ORIGIN,
+  type Env,
+  type SitemapEntry,
+} from './_lib/sitemap';
 
 export const onRequest: PagesFunction<Env> = async ({ env }) => {
   // These two had NO gates beyond a non-null slug. The service-role fetch

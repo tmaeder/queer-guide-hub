@@ -1,4 +1,11 @@
-import { fetchRows, urlsetXml, xmlResponse, ORIGIN, type Env, type SitemapEntry } from './_lib/sitemap';
+import {
+  fetchRows,
+  urlsetXml,
+  xmlResponse,
+  ORIGIN,
+  type Env,
+  type SitemapEntry,
+} from './_lib/sitemap';
 
 export const onRequest: PagesFunction<Env> = async ({ env }) => {
   // Service key bypasses RLS — the seo_indexable + safety_gated filters must be

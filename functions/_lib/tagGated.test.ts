@@ -71,7 +71,9 @@ const READABLE: Row = {
 function mockDb(tags: Row[], { applyRls }: { applyRls: boolean }) {
   const requested: string[] = [];
   const hidden = (r: Row) =>
-    r.is_sensitive === true && r.verification_status !== 'reviewed' && r.verification_status !== 'locked';
+    r.is_sensitive === true &&
+    r.verification_status !== 'reviewed' &&
+    r.verification_status !== 'locked';
 
   vi.stubGlobal(
     'fetch',
