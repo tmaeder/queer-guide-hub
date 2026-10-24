@@ -87,6 +87,12 @@ export interface QcalEvent {
 }
 
 const SITE = 'https://qcal.app'
+/**
+ * Images are NOT served from SITE: `https://qcal.app/assets/...` answers 404
+ * (and sets a third-party `__cf_bm` cookie). qcal's own frontend builds
+ * `https://cdn.queercalendar.app/${imagePath without leading slash}`.
+ */
+const IMAGE_CDN = 'https://cdn.queercalendar.app'
 
 /**
  * Street address only — never the full one-line address.
@@ -159,7 +165,7 @@ export function normalizeQcalEvent(raw: QcalRaw): QcalEvent | null {
     end: endOk,
     timezone: (raw.timezone ?? '').trim() || null,
     description: (raw.seriesSummary ?? '').trim() || null,
-    image: raw.imagePath ? `${SITE}${raw.imagePath}` : null,
+    image: raw.imagePath ? `${IMAGE_CDN}/${raw.imagePath.replace(/^\/+/, '')}` : null,
     // qcal has no venue field at all — `full_address` is a postal address and
     // the host is an organiser, not a place. Emitting either as venue_name
     // feeds the event->venue linker a string that is not a venue, which is the

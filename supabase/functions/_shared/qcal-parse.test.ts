@@ -50,7 +50,7 @@ Deno.test('qcal: maps a full in-person event', () => {
   assertEquals(e.state, 'CA')
   assertEquals(e.postal, '92116')
   assertEquals(e.host, 'Niche Media')
-  assertEquals(e.image, 'https://qcal.app/assets/2026/09/11/afcdbc39-8de2-472c-9d58-9aa97fbc3e53.jpg')
+  assertEquals(e.image, 'https://cdn.queercalendar.app/assets/2026/09/11/afcdbc39-8de2-472c-9d58-9aa97fbc3e53.jpg')
 })
 
 Deno.test('qcal: GeoJSON is [lng, lat] and is NOT emitted swapped', () => {
