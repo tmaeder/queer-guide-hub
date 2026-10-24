@@ -20,7 +20,7 @@
 # More-specific rules below override this for static assets.
 /*
   Cache-Control: public, max-age=0, must-revalidate
-  X-Frame-Options: DENY
+  X-Frame-Options: SAMEORIGIN
   X-Content-Type-Options: nosniff
   Referrer-Policy: strict-origin-when-cross-origin
   Strict-Transport-Security: max-age=63072000; includeSubDomains; preload
@@ -28,7 +28,9 @@
   Cross-Origin-Opener-Policy: same-origin
   X-Permitted-Cross-Domain-Policies: none
   Onion-Location: http://rlxm6jtzwf2r3brzxyim6kuutj3l2b2da2ceayoe37bwrhmsz3nugcid.onion%{REQUEST_URI}
-  Content-Security-Policy: default-src 'self'; script-src 'self' https://challenges.cloudflare.com https://js.stripe.com https://maps.googleapis.com https://maps.gstatic.com https://widget.getyourguide.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; media-src 'self' blob: https:; font-src 'self' data: https://protomaps.github.io https://*.supabase.co; connect-src 'self' https://*.supabase.co https://*.maeder-tobiassimon.workers.dev https://*.queer.guide https://protomaps.github.io https://challenges.cloudflare.com https://js.stripe.com https://maps.googleapis.com https://maps.gstatic.com https://commons.wikimedia.org https://widget.getyourguide.com https://*.getyourguide.com https://api.travelpayouts.com https://pics.avs.io https://*.hotellook.com https://*.ingest.sentry.io https://*.ingest.de.sentry.io https://*.ingest.us.sentry.io https://api.open-meteo.com https://archive-api.open-meteo.com wss://*.supabase.co; frame-src 'self' https://challenges.cloudflare.com https://js.stripe.com https://widget.getyourguide.com https://*.getyourguide.com; frame-ancestors 'self'; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'; upgrade-insecure-requests
+  Content-Security-Policy: default-src 'self'; script-src 'self' https://challenges.cloudflare.com https://js.stripe.com https://maps.googleapis.com https://maps.gstatic.com https://widget.getyourguide.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; media-src 'self' blob: https:; font-src 'self' data: https://protomaps.github.io https://*.supabase.co; connect-src 'self' https://*.supabase.co https://*.maeder-tobiassimon.workers.dev https://*.queer.guide https://protomaps.github.io https://challenges.cloudflare.com https://js.stripe.com https://maps.googleapis.com https://maps.gstatic.com https://commons.wikimedia.org https://widget.getyourguide.com https://*.getyourguide.com https://api.travelpayouts.com https://pics.avs.io https://*.hotellook.com https://*.ingest.sentry.io https://*.ingest.de.sentry.io https://*.ingest.us.sentry.io https://api.open-meteo.com https://archive-api.open-meteo.com wss://*.supabase.co; frame-src 'self' https://challenges.cloudflare.com https://js.stripe.com https://widget.getyourguide.com https://*.getyourguide.com; frame-ancestors 'self'; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'; upgrade-insecure-requests; report-uri /api/csp-report; report-to csp-endpoint
+  Reporting-Endpoints: csp-endpoint="/api/csp-report"
+  Content-Security-Policy-Report-Only: require-trusted-types-for 'script'; report-uri /api/csp-report; report-to csp-endpoint
 
 # Service worker. The SW is the update escape hatch; revalidate every load.
 # no-store is intentional: a long-cached SW from an earlier incident was

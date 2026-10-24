@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef } from 'react';
+import { useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { useParams } from 'react-router';
@@ -9,8 +9,8 @@ import { MarketplaceForVillage } from '@/components/marketplace/MarketplaceForVi
 import { MarkVisitedButton } from '@/components/marks/MarkVisitedButton';
 import { useToast } from '@/hooks/use-toast';
 import { useFavorites } from '@/hooks/useFavorites';
-import { useVenues } from '@/hooks/useVenues';
-import { useEvents } from '@/hooks/useEvents';
+import { useVenuesQuery } from '@/hooks/useVenues';
+import { useEventsQuery } from '@/hooks/useEvents';
 import { useEntityDetail } from '@/hooks/useEntityDetail';
 import { useSlugRedirect } from '@/hooks/useSlugRedirect';
 import { mergedVillageCitySlug } from '@/lib/mergedVillageRedirects';
@@ -98,34 +98,24 @@ export default function QueerVillageDetail() {
   }, [mergedCitySlug, navigate]);
 
   const villageId = village?.id;
-  const { venues, loading: venuesLoading, fetchVenues } = useVenues(false);
-  const { events, fetchEvents } = useEvents(false, { skipDatasetTotal: true });
-  const fetchVenuesRef = useRef(fetchVenues);
-  // eslint-disable-next-line react-hooks/refs -- "latest value" ref pattern: keeps the freshest fetchVenues closure available to the village-change effect below without re-running on every fetchVenues identity change.
-  fetchVenuesRef.current = fetchVenues;
-  const fetchEventsRef = useRef(fetchEvents);
-  // eslint-disable-next-line react-hooks/refs -- same pattern; the events effect keys off the venue id list, not the fetcher identity.
-  fetchEventsRef.current = fetchEvents;
 
   // Filter by the VILLAGE, not by its city. This previously asked for 8 venues
   // from anywhere in the parent city, so /villages/chueca listed an Apple Store
   // and a venue 3.7 km away while all 192 venues actually linked to Chueca were
   // never shown. The stop list made it visible by printing the distance between
   // consecutive stops; the old card grid concealed it.
-  useEffect(() => {
-    if (!villageId) return;
-    fetchVenuesRef.current({ queerVillageId: villageId, limit: 24, railQuality: true });
-  }, [villageId]);
+  const { venues, loading: venuesLoading } = useVenuesQuery(
+    villageId ? { queerVillageId: villageId, limit: 24, railQuality: true } : null,
+  );
 
   const venueIdKey = venues.map((v) => v.id).join(',');
   // Events are scoped THROUGH the venues, for the same reason. `events` carries
   // no village FK, so "events in this district" can only mean "events at the
   // venues in this district"; the old query asked the parent city and
   // advertised everything in Madrid as if it were on the Chueca strip.
-  useEffect(() => {
-    if (!venueIdKey) return;
-    fetchEventsRef.current({ venueIds: venueIdKey.split(','), limit: 12 });
-  }, [venueIdKey]);
+  const { events } = useEventsQuery(
+    venueIdKey ? { venueIds: venueIdKey.split(','), limit: 12 } : null,
+  );
 
   useEffect(() => {
     if (error) {

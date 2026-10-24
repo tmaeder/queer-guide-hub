@@ -16,9 +16,7 @@ describe('ContentSanitizer', () => {
   });
 
   it('should allow permitted tags', () => {
-    const { container } = render(
-      <ContentSanitizer content="<p><strong>Bold</strong> text</p>" />,
-    );
+    const { container } = render(<ContentSanitizer content="<p><strong>Bold</strong> text</p>" />);
     expect(container.querySelector('strong')).not.toBeNull();
   });
 
@@ -43,5 +41,12 @@ describe('ContentSanitizer', () => {
     );
     const p = container.querySelector('p');
     expect(p?.getAttribute('onclick')).toBeNull();
+  });
+
+  it('keeps the text of posts that contain markup', () => {
+    const { container } = render(
+      <ContentSanitizer content="<p><strong>Bold</strong> text</p><div>more</div>" />,
+    );
+    expect(container.textContent).toBe('Bold textmore');
   });
 });

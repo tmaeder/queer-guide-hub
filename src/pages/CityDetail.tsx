@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useRef } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { useParams } from 'react-router';
 import { useTrackView } from '@/hooks/useTrackView';
@@ -8,9 +8,9 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useFavorites } from '@/hooks/useFavorites';
 import { useCityImages } from '@/hooks/useCityImages';
-import { useNews } from '@/hooks/useNews';
-import { useVenues } from '@/hooks/useVenues';
-import { useEvents } from '@/hooks/useEvents';
+import { useNewsArticles } from '@/hooks/useNews';
+import { useVenuesQuery } from '@/hooks/useVenues';
+import { useEventsQuery } from '@/hooks/useEvents';
 import { useOptimizedCountry, useOptimizedCity } from '@/hooks/usePlaces';
 import { useQueerVillages } from '@/hooks/useQueerVillages';
 import { useNearestAirport } from '@/hooks/useNearestAirport';
@@ -64,7 +64,6 @@ export default function CityDetail() {
   const { toast } = useToast();
   const { toggleFavorite, isFavorited } = useFavorites('city');
   const { fetchCityImage } = useCityImages();
-  const { articles, fetchArticles } = useNews({ autoload: false });
   const { city, loading, refetch: refetchCity } = useOptimizedCity(slug ?? '');
   useTrackView({
     type: 'city',
@@ -135,33 +134,36 @@ export default function CityDetail() {
     city?.major_airport_code,
   );
 
-  const { venues, loading: venuesLoading, fetchVenues } = useVenues(false);
-  const { events, fetchEvents } = useEvents(false);
-  const fetchVenuesRef = useRef(fetchVenues);
-  // eslint-disable-next-line react-hooks/refs -- "latest value" ref pattern; effect below reads .current.
-  fetchVenuesRef.current = fetchVenues;
-
-  useEffect(() => {
-    // Before the city resolves, an unfiltered request would fill the local
-    // guide and map with global venues and can race the city-scoped request.
-    if (!city?.id) return;
-    fetchVenuesRef.current({
-      cityId: city?.id,
-      city: city?.name,
-      countryId: city?.country_id ?? city?.countries?.id,
-      railQuality: true,
-    });
-  }, [city?.id, city?.name, city?.country_id, city?.countries?.id]);
-
-  useEffect(() => {
-    if (!city?.id) return;
-    fetchEvents({
-      cityId: city?.id,
-      city: city?.name,
-      countryId: city?.country_id ?? city?.countries?.id,
-    });
-  }, [city?.id, city?.name, city?.country_id, city?.countries?.id, fetchEvents]);
-
+  // Before the city resolves, an unfiltered request would fill the local guide
+  // and map with global venues, so the query stays idle until then.
+  const { venues, loading: venuesLoading } = useVenuesQuery(
+    city?.id
+      ? {
+          cityId: city.id,
+          city: city.name,
+          countryId: city.country_id ?? city.countries?.id,
+          railQuality: true,
+        }
+      : null,
+  );
+  // Idle until the city resolves, so no unscoped feed fires first.
+  const { events } = useEventsQuery(
+    city?.id
+      ? {
+          cityId: city.id,
+          city: city.name,
+          countryId: city.country_id ?? city.countries?.id,
+        }
+      : null,
+  );
+  const { articles } = useNewsArticles(
+    city?.id
+      ? {
+          cityIds: [city.id],
+          countryIds: city.countries?.id ? [city.countries.id] : undefined,
+        }
+      : null,
+  );
   const { country: fullCountry, loading: countryLoading } = useOptimizedCountry(
     // Fall back to the raw FK so rights still resolve when the embed is absent.
     city?.countries?.slug || city?.countries?.id || city?.country_id || '',
@@ -197,11 +199,7 @@ export default function CityDetail() {
         }
       })();
     }
-    fetchArticles({
-      cityIds: [city.id],
-      countryIds: city.countries?.id ? [city.countries.id] : undefined,
-    });
-  }, [city, syncImageUrl, fetchCityImage, fetchArticles]);
+  }, [city, syncImageUrl, fetchCityImage]);
 
   const breadcrumbs = useMemo(
     () =>

@@ -1,11 +1,7 @@
-import DOMPurify from 'dompurify';
+import { sanitizeHighlight } from '@/lib/sanitize';
 import { cn } from '@/lib/utils';
 import { RouteBullet } from '@/components/transit/RouteBullet';
 import { ROUTE_BULLET_MAP } from '@/components/transit/routeBulletMap';
-
-function sanitizeHighlight(html: string): string {
-  return DOMPurify.sanitize(html, { ALLOWED_TAGS: ['em'], ALLOWED_ATTR: [] });
-}
 
 /** Renders a result name with the query match emphasized (server highlight HTML or client fallback). */
 export function HighlightedText({
