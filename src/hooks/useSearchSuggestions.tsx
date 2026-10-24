@@ -1,5 +1,14 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { MapPin, Tag, Users, Newspaper, Globe, Building2, CalendarDays, ShoppingBag } from 'lucide-react';
+import {
+  MapPin,
+  Tag,
+  Users,
+  Newspaper,
+  Globe,
+  Building2,
+  CalendarDays,
+  ShoppingBag,
+} from 'lucide-react';
 import { fetchAutocomplete, type SearchHit } from '@/lib/searchClient';
 import { toIndexKeys } from '@/lib/searchTaxonomy';
 import { useDebounce } from '@/hooks/useDebounce';
@@ -128,29 +137,38 @@ export function useSearchSuggestions(query: string, scopeTypes?: string[]) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const scoped = !!(scopeTypes && scopeTypes.length > 0);
+  // Key on the joined scope so a new array identity with the same types
+  // does not refire the fetch.
+  const scopeKey = scopeTypes?.join(',') ?? '';
+  const scoped = scopeKey.length > 0;
   const indexKeys = useMemo(
-    () => (scoped ? toIndexKeys(scopeTypes!) : undefined),
-    [scoped, scopeTypes],
+    () => (scopeKey ? toIndexKeys(scopeKey.split(',')) : undefined),
+    [scopeKey],
   );
-  // Stable dep for effect — array identity changes shouldn't refire.
-  const indexKeysKey = useMemo(() => JSON.stringify(indexKeys ?? null), [indexKeys]);
 
   const debounced = useDebounce(query, DEBOUNCE_MS);
+  const active = !!debounced && debounced.length >= MIN_QUERY_LEN;
 
-  useEffect(() => {
-    if (!debounced || debounced.length < MIN_QUERY_LEN) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect -- effect synchronizes state with external props/data; React Compiler can't infer the sync direction. Documented exemption from the eslint.config.js staged-ratchet plan.
+  // Request identity changed → enter loading (or clear, below the minimum)
+  // during render, so the effect only does the fetch.
+  const fetchKey = active ? `${debounced}|${scopeKey}` : null;
+  const [prevFetchKey, setPrevFetchKey] = useState<string | null>(null);
+  if (fetchKey !== prevFetchKey) {
+    setPrevFetchKey(fetchKey);
+    setError(null);
+    if (fetchKey) {
+      setLoading(true);
+    } else {
       setSuggestions([]);
       setCountsByType({});
-      setError(null);
       setLoading(false);
-      return;
     }
+  }
+
+  useEffect(() => {
+    if (!active) return;
 
     let cancelled = false;
-    setLoading(true);
-    setError(null);
 
     fetchAutocomplete(debounced, indexKeys, FETCH_LIMIT)
       .then((hits) => {
@@ -175,9 +193,7 @@ export function useSearchSuggestions(query: string, scopeTypes?: string[]) {
     return () => {
       cancelled = true;
     };
-    // indexKeysKey is the stable serialization of indexKeys; safe to depend on it.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [debounced, indexKeysKey, scoped]);
+  }, [active, debounced, indexKeys, scoped]);
 
   return { suggestions, countsByType, loading, error };
 }

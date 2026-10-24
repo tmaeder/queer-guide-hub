@@ -72,13 +72,23 @@ describe('pickDefaultTrip', () => {
 
   it('picks a countdown trip only when user has started planning', () => {
     const empty = makeTrip({ id: 'empty', start_date: '2026-04-25', end_date: '2026-04-30' });
-    const planned = makeTrip({ id: 'planned', start_date: '2026-04-25', end_date: '2026-04-30', place_count: 3 });
+    const planned = makeTrip({
+      id: 'planned',
+      start_date: '2026-04-25',
+      end_date: '2026-04-30',
+      place_count: 3,
+    });
     expect(pickDefaultTrip([empty], now)).toBeNull();
     expect(pickDefaultTrip([empty, planned], now)?.id).toBe('planned');
   });
 
   it('ignores memory/archived trips', () => {
-    expect(pickDefaultTrip([makeTrip({ id: 'past', start_date: '2020-01-01', end_date: '2020-01-08' })], now)).toBeNull();
+    expect(
+      pickDefaultTrip(
+        [makeTrip({ id: 'past', start_date: '2020-01-01', end_date: '2020-01-08' })],
+        now,
+      ),
+    ).toBeNull();
   });
 });
 
@@ -99,7 +109,12 @@ describe('ActiveTripProvider', () => {
 
   it('auto-picks the single live trip', () => {
     mockUseAuth.mockReturnValue({ user: { id: 'u-1' } });
-    const live = makeTrip({ id: 'live', status: 'active', start_date: '2026-04-15', end_date: '2099-04-25' });
+    const live = makeTrip({
+      id: 'live',
+      status: 'active',
+      start_date: '2026-04-15',
+      end_date: '2099-04-25',
+    });
     mockUseTrips.mockReturnValue({ data: [live] });
     const { result } = renderHook(() => useActiveTrip(), { wrapper });
     expect(result.current.activeTrip?.id).toBe('live');
@@ -107,7 +122,12 @@ describe('ActiveTripProvider', () => {
 
   it('dismiss() persists to localStorage and marks isDismissed', () => {
     mockUseAuth.mockReturnValue({ user: { id: 'u-1' } });
-    const live = makeTrip({ id: 'live', status: 'active', start_date: '2026-04-15', end_date: '2099-04-25' });
+    const live = makeTrip({
+      id: 'live',
+      status: 'active',
+      start_date: '2026-04-15',
+      end_date: '2099-04-25',
+    });
     mockUseTrips.mockReturnValue({ data: [live] });
     const { result } = renderHook(() => useActiveTrip(), { wrapper });
     expect(result.current.isDismissed).toBe(false);
@@ -136,5 +156,19 @@ describe('ActiveTripProvider', () => {
       expect(localStorage.getItem('qg.activeTripId')).toBeNull();
       expect(localStorage.getItem('qg.activeTripDismissed')).toBeNull();
     });
+  });
+});
+
+describe('ActiveTripProvider auth restore', () => {
+  it('keeps the pinned trip while the session is still restoring', () => {
+    localStorage.setItem('qg.activeTripId', 'pinned');
+    const pinned = makeTrip({ id: 'pinned' });
+    mockUseTrips.mockReturnValue({ data: [pinned] });
+    mockUseAuth.mockReturnValue({ user: null, loading: true });
+    const { result, rerender } = renderHook(() => useActiveTrip(), { wrapper });
+    expect(localStorage.getItem('qg.activeTripId')).toBe('pinned');
+    mockUseAuth.mockReturnValue({ user: { id: 'u-1' }, loading: false });
+    rerender();
+    expect(result.current.activeTrip?.id).toBe('pinned');
   });
 });
