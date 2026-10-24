@@ -162,6 +162,20 @@ export function buildContentSecurityPolicy(nonce: string): string {
   ].join('; ');
 }
 
+// Trusted Types, REPORT-ONLY. Inventories every DOM-XSS sink (innerHTML,
+// DOMParser, script src, eval, …) that receives a plain string, without
+// blocking anything. No default policy on purpose: one would accept those
+// strings silently and the report stream would go empty. Enforce only after
+// the reports reach zero and each sink sanitizes through src/lib/sanitize.ts.
+// Keep in sync with public/_headers.
+export function buildReportOnlyPolicy(): string {
+  return [
+    "require-trusted-types-for 'script'",
+    `report-uri ${CSP_REPORT_PATH}`,
+    `report-to ${CSP_REPORT_GROUP}`,
+  ].join('; ');
+}
+
 // Static headers (non-CSP) applied to every middleware-constructed
 // Response. The CSP is dynamic and added separately so callers can
 // reuse the same nonce as the HTML rewriter.
@@ -192,4 +206,5 @@ export function applySecurityHeaders(res: Response, nonce: string): void {
     res.headers.set(k, v);
   }
   res.headers.set('Content-Security-Policy', buildContentSecurityPolicy(nonce));
+  res.headers.set('Content-Security-Policy-Report-Only', buildReportOnlyPolicy());
 }
