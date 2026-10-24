@@ -48,7 +48,7 @@ vi.mock('@/hooks/usePlaces', () => ({
   useOptimizedCountry: () => ({ country: null, loading: false }),
 }));
 vi.mock('@/hooks/useQueerVillages', () => ({
-  useQueerVillages: () => ({ villages: [], loading: false, fetchVillages: vi.fn() }),
+  useQueerVillages: () => ({ villages: [], loading: false, error: null }),
 }));
 vi.mock('@/hooks/useNearestAirport', () => ({
   useNearestAirport: () => ({ nearestAirport: null }),

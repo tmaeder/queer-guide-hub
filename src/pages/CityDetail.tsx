@@ -168,7 +168,7 @@ export default function CityDetail() {
     // Fall back to the raw FK so rights still resolve when the embed is absent.
     city?.countries?.slug || city?.countries?.id || city?.country_id || '',
   );
-  const { villages, loading: villagesLoading, fetchVillages } = useQueerVillages(false);
+  const { villages, loading: villagesLoading } = useQueerVillages({ cityId: city?.id ?? null });
 
   useEffect(() => {
     if (!city) return;
@@ -200,10 +200,6 @@ export default function CityDetail() {
       })();
     }
   }, [city, syncImageUrl, fetchCityImage]);
-
-  useEffect(() => {
-    if (city?.id) fetchVillages({ cityId: city.id });
-  }, [city?.id, fetchVillages]);
 
   const breadcrumbs = useMemo(
     () =>
