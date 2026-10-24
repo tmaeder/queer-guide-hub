@@ -31,13 +31,24 @@ export const PAGE_GUTTER = 'px-4 sm:px-6 md:px-8';
  *  roomier or tighter one; a page that needs its own bands passes `flush`. */
 export const PAGE_VERTICAL = 'py-8 md:py-12';
 
-/** Cancels PAGE_GUTTER so a child inside the container can reach the viewport
- *  edge — full-bleed sticky bars, rules, tinted bands. It MUST track the gutter
- *  ladder step for step: a flat `-mx-4` against `sm:px-6 md:px-8` leaves an 8px
- *  notch at sm and 16px at md, which is exactly what the sticky bars shipped
- *  with when the ladder became responsive under them. Re-apply PAGE_GUTTER
- *  inside so the contents stay aligned with the column. */
-export const PAGE_BLEED = '-mx-4 sm:-mx-6 md:-mx-8';
+/** Cancels PAGE_GUTTER on phones so a child inside the container can reach
+ *  the viewport edge — full-bleed sticky bars, rules, tinted bands. From md up
+ *  it is a no-op: the element sits on the column like every other block, so
+ *  nothing on a page is wider than the header's and footer's content row.
+ *
+ *  It bled at every width until 2026-10-24, and that is what made pages look
+ *  wider than their chrome: inside a two-column layout a bleed reaches the
+ *  viewport on one side only (/tags' filter bar ran to the right screen edge
+ *  with its rounded corners clipped, /tags/:slug's route strip to the left),
+ *  and once the cap engages a bleed cannot reach the edge at all — it just
+ *  hung one gutter past the column, measured on prod as bars 32px wider than
+ *  every other block at 1920. Re-apply PAGE_BLEED_GUTTER inside so contents
+ *  stay on the column at every width. */
+export const PAGE_BLEED = '-mx-4 sm:-mx-6 md:mx-0';
+
+/** The gutter to re-apply INSIDE (or on) a PAGE_BLEED element — tracks the
+ *  bleed step for step, so it is zero wherever the bleed is. */
+export const PAGE_BLEED_GUTTER = 'px-4 sm:px-6 md:px-0';
 
 /** Where a page-level sticky element must pin so the site header does not cover
  *  it. Page bars sit at z-20/z-30 — far below the header's z-40 — so this
