@@ -80,19 +80,26 @@ export function structuredEvent(html: string, ev: GapEvent): Record<string, unkn
 
 export function imageCandidates(html: string, ev: GapEvent, pageUrl: string): string[] {
   const structured = structuredEvent(html, ev)
+  // Social-preview metadata may be a publisher logo, city cover or profile
+  // photo. It cannot establish ownership of an event's artwork.
+  const sourceStart = text(structured?.startDate)
+  const sourceDay = sourceStart.slice(0, 10)
+  const eventDay = text(ev.start_date).slice(0, 10)
+  const sourceDate = Date.parse(sourceDay), eventDate = Date.parse(eventDay)
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(sourceDay) || !Number.isFinite(Date.parse(sourceStart)) || !Number.isFinite(sourceDate)
+    || !Number.isFinite(eventDate) || new Date(sourceDate).toISOString().slice(0, 10) !== sourceDay
+    || Math.abs(sourceDate - eventDate) > 86400000) return []
   const image = structured?.image
   const raw = (Array.isArray(image) ? image : [image]).map(v =>
     v && typeof v === 'object' ? (v as Record<string, unknown>).url : v)
-  for (const tag of html.match(/<meta\b[^>]*>/gi) ?? []) {
-    const property = tag.match(/(?:property|name)\s*=\s*["']([^"']+)["']/i)?.[1]
-    if (!/^(og:image(?::url|:secure_url)?|twitter:image(?::src)?)$/i.test(property ?? '')) continue
-    raw.push(tag.match(/content\s*=\s*["']([^"']+)["']/i)?.[1])
-  }
   const candidates: string[] = []
   for (const v of raw) {
     if (!text(v)) continue
     try {
       const u = assertPublicHttpUrl(new URL(text(v).replace(/&amp;/g, '&'), pageUrl).href)
+      if (['images.pexels.com', 'images.unsplash.com'].includes(u.hostname)) continue
+      if (['gayout.com', 'www.gayout.com'].includes(u.hostname)
+        && (/^\/uploads\/cities\//.test(u.pathname) || /\/(?:pexels|unsplash)[_-]/i.test(u.pathname))) continue
       if (!u.username && !u.password) candidates.push(u.href)
     } catch { /* Invalid image URL. */ }
   }
