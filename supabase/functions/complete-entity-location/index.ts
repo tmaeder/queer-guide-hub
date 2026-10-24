@@ -1,5 +1,5 @@
 import tzlookup from 'npm:tz-lookup@6.1.25'
-import { getServiceClient, requireAdmin, corsResponse, jsonResponse, errorResponse } from '../_shared/supabase-client.ts'
+import { getServiceClient, requireAdmin, corsResponse, jsonResponse, errorResponse, pgrstValue } from '../_shared/supabase-client.ts'
 import { hasValidWebhookSecret } from '../_shared/webhook-auth.ts'
 import { canQueryNamedPlace, selectFeature, type Feature } from './evidence.ts'
 import { fetchOfficialAddress } from './official-address.ts'
@@ -77,7 +77,7 @@ Deno.serve(async req => {
       if (!row.address && !coords && row.website) {
         official = await fetchOfficialAddress(row.website)
         if (official) {
-          const co = await db.from('countries').select('id,code').or(`code.eq.${official.country.toUpperCase().replace(/[^A-Z]/g, '')},name.eq.${JSON.stringify(official.country)}`).is('duplicate_of_id', null).maybeSingle()
+          const co = await db.from('countries').select('id,code').or(`code.eq.${official.country.toUpperCase().replace(/[^A-Z]/g, '')},name.eq.${pgrstValue(official.country)}`).is('duplicate_of_id', null).maybeSingle()
           must(co)
           if (!co.data || countryContradicts(code, co.data.code) || postalContradicts(row.postal_code, official.postal_code)
             || cityName && cityName.toLowerCase() !== official.city.toLowerCase()) official = null

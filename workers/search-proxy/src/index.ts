@@ -54,6 +54,7 @@ import {
 	MAX_QUERY_LEN,
 	type ValidatedFilters,
 } from "./validation";
+import { timingSafeEqual } from "../../_shared/timing-safe";
 
 export interface Env {
 	AI: Ai;
@@ -1361,7 +1362,7 @@ async function handleFeedback(request: Request, env: Env, cors: HeadersInit): Pr
 // ─────────────────────────────────────────────
 async function handleAnalytics(request: Request, env: Env, cors: HeadersInit): Promise<Response> {
 	const adminTok = request.headers.get("X-Admin-Token");
-	if (!adminTok || adminTok !== env.ADMIN_TOKEN) return json({ error: "unauthorized" }, 401, cors);
+	if (!timingSafeEqual(adminTok, env.ADMIN_TOKEN)) return json({ error: "unauthorized" }, 401, cors);
 
 	const [top, zero] = await Promise.all([
 		fetch(`${env.SUPABASE_URL}/rest/v1/v_top_queries?select=*&limit=50`, {

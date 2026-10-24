@@ -10,6 +10,7 @@
  */
 
 import { extractExif, extractJpegDimensions, extractPngDimensions } from './exif';
+import { timingSafeEqual } from '../../_shared/timing-safe';
 
 interface Env {
   IMAGES: R2Bucket;
@@ -463,7 +464,7 @@ async function supabaseQuery(env: Env, sql: string): Promise<unknown> {
 function authorize(req: Request, env: Env): boolean {
   const secret = env.ADMIN_SECRET;
   if (!secret) return false;
-  return req.headers.get('X-Admin-Secret') === secret;
+  return timingSafeEqual(req.headers.get('X-Admin-Secret'), secret);
 }
 
 function json(data: unknown, status = 200): Response {

@@ -4,7 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { MapPin, AlertTriangle, Heart, Sparkles } from 'lucide-react';
 import { format } from 'date-fns';
-import { supabase, SUPABASE_URL } from '@/integrations/supabase/client';
+import { SUPABASE_URL } from '@/integrations/supabase/client';
 import { untypedRpc } from '@/integrations/supabase/untyped';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -103,9 +103,13 @@ function SharedTripPage() {
   const { data, isLoading, error } = useQuery({
     queryKey: ['shared-trip', token],
     queryFn: async (): Promise<SharedTripData> => {
-      const { data, error } = await supabase.rpc('get_shared_trip', { p_token: token! });
+      // get_shared_trip_view returns one jsonb object (null for an unknown or
+      // expired token). Sections the share does not grant are absent server-side.
+      const { data, error } = await untypedRpc<SharedTripData>('get_shared_trip_view', {
+        p_token: token!,
+      });
       if (error) throw error;
-      return data as unknown as SharedTripData;
+      return data as SharedTripData;
     },
     enabled: !!token,
     staleTime: 5 * 60 * 1000,

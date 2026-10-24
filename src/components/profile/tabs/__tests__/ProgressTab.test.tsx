@@ -3,7 +3,7 @@
  *
  * Regression guard for the `/me/progress` blank-screen bug. The fix is
  * structural: every section in ProgressTab is wrapped in an
- * OptimizedErrorBoundary (`Guarded`) so one throwing gamification section
+ * ErrorBoundary (`Guarded`) so one throwing gamification section
  * degrades to a card instead of blanking the whole tab/route. This test locks
  * that contract — if a future refactor drops a `Guarded`, the isolation test
  * fails.
@@ -85,7 +85,7 @@ describe('ProgressTab', () => {
         <ProgressTab />
       </MemoryRouter>,
     );
-    // The throwing section degrades to the DataErrorFallback card…
+    // The throwing section degrades to the SectionErrorFallback card…
     expect(screen.getByText('Failed to load data')).toBeTruthy();
     // …while the rest of the tab shell still renders (no whole-tab blank).
     expect(screen.getByText('Visible only to you.')).toBeTruthy();

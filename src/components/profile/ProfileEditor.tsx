@@ -10,9 +10,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
 import { useToast } from '@/hooks/use-toast';
 import { OptimizedLoader } from '@/components/loading/OptimizedLoader';
-import OptimizedErrorBoundary, {
-  DataErrorFallback,
-} from '@/components/error/OptimizedErrorBoundary';
+import { ErrorBoundary, SectionErrorFallback } from '@/components/error/ErrorBoundary';
 import { TravelForwardingSettings } from '@/components/profile/TravelForwardingSettings';
 import { EmailPreferences } from '@/components/profile/EmailPreferences';
 import { PushNotificationSettings } from '@/components/profile/PushNotificationSettings';
@@ -67,14 +65,16 @@ export default function ProfileEditor(props: EditorProps) {
   const { toast } = useToast();
   if (!user) return null;
   return (
-    <OptimizedErrorBoundary fallback={DataErrorFallback}>
+    <ErrorBoundary
+      section="profile-editor"
+      fallback={({ error, onRetry }) => (
+        <SectionErrorFallback message={error?.message} onRetry={onRetry} />
+      )}
+    >
       {isLoading && !profile ? (
         <OptimizedLoader type="profile" />
       ) : error && !profile ? (
-        <DataErrorFallback
-          errors={[{ message: error }]}
-          resetErrorBoundary={() => void refetchProfile()}
-        />
+        <SectionErrorFallback message={error} onRetry={() => void refetchProfile()} />
       ) : (
         <ProfileSettingsContent
           {...props}
@@ -87,7 +87,7 @@ export default function ProfileEditor(props: EditorProps) {
           user={user}
         />
       )}
-    </OptimizedErrorBoundary>
+    </ErrorBoundary>
   );
 }
 interface LoaderProps extends EditorProps {

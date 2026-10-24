@@ -1,8 +1,6 @@
 import type { ReactNode } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import OptimizedErrorBoundary, {
-  DataErrorFallback,
-} from '@/components/error/OptimizedErrorBoundary';
+import { ErrorBoundary, SectionErrorFallback } from '@/components/error/ErrorBoundary';
 import { ScoreLevelChip } from '@/components/score/ScoreLevelChip';
 import { DomainBreakdown } from '@/components/score/DomainBreakdown';
 import { MissionsRow } from '@/components/profile/MissionsRow';
@@ -17,7 +15,16 @@ import { useCommunityScore } from '@/hooks/useCommunityScore';
 
 /** Each section is isolated so one failing gamification query can't blank the tab. */
 function Guarded({ children }: { children: ReactNode }) {
-  return <OptimizedErrorBoundary fallback={DataErrorFallback}>{children}</OptimizedErrorBoundary>;
+  return (
+    <ErrorBoundary
+      section="profile-progress"
+      fallback={({ error, onRetry }) => (
+        <SectionErrorFallback message={error?.message} onRetry={onRetry} />
+      )}
+    >
+      {children}
+    </ErrorBoundary>
+  );
 }
 
 /**

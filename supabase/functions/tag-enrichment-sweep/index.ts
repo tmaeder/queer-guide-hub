@@ -59,6 +59,7 @@ import {
   getServiceClient,
   requireInternalOrAdmin,
 } from '../_shared/supabase-client.ts'
+import { safeErrCode } from '../_shared/safe-error.ts'
 
 const supabase = getServiceClient()
 
@@ -802,7 +803,7 @@ Deno.serve(async (req) => {
     .limit(batchLimit)
 
   if (error) {
-    return new Response(JSON.stringify({ success: false, error: error.message }), {
+    return new Response(JSON.stringify({ success: false, error: safeErrCode(error, [], 'tag-enrichment-sweep') }), {
       status: 500,
       headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' },
     })
