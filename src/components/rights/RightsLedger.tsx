@@ -53,7 +53,7 @@ export function RightsLedger({
                     // Anchor target for `/rights#<slug>` — glossary tags that
                     // name a class of law link here (see tagRightTopics.ts).
                     id={topic.slug}
-                    className="flex items-center gap-4 border-b border-border py-2 scroll-mt-24"
+                    className="flex flex-wrap items-center gap-x-4 gap-y-2 border-b border-border py-2 scroll-mt-24"
                   >
                     <Icon size={16} aria-hidden="true" className="shrink-0" />
                     <span className="min-w-0 flex-1 font-medium">{topicListLabel(topic, t)}</span>
