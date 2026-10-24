@@ -8,6 +8,7 @@
 import 'https://deno.land/x/xhr@0.1.0/mod.ts'
 import { getCorsHeaders, getServiceClient, requireAdmin } from '../_shared/supabase-client.ts'
 import { stagePersonality, triggerPersonalityPipeline, type RawPersonality } from '../_shared/personality-staging.ts'
+import { safeErrCode } from '../_shared/safe-error.ts'
 
 // Robust RFC 4180-ish CSV parser — handles embedded newlines + escaped quotes.
 function parseCsv(text: string): string[][] {
@@ -129,7 +130,7 @@ Deno.serve(async (req) => {
     }), { headers: { ...cors, 'Content-Type': 'application/json' } })
   } catch (error) {
     console.error('import-personalities-csv error:', error)
-    return new Response(JSON.stringify({ error: (error as Error).message }),
+    return new Response(JSON.stringify({ error: safeErrCode(error, [], 'import-personalities-csv') }),
       { status: 500, headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } })
   }
 })

@@ -14,6 +14,7 @@ import {
   getCorsHeaders,
   requireInternalOrAdmin,
 } from "../_shared/supabase-client.ts";
+import { safeErrCode } from '../_shared/safe-error.ts'
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -65,7 +66,7 @@ Deno.serve(async (req) => {
     p_min_age_hours: 2,
   });
   if (error) {
-    return new Response(JSON.stringify({ error: error.message }), {
+    return new Response(JSON.stringify({ error: safeErrCode(error, [], 'dm-digest') }), {
       status: 500,
       headers: { ...cors, "Content-Type": "application/json" },
     });
