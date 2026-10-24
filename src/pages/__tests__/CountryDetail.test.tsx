@@ -29,12 +29,8 @@ vi.mock('@/hooks/useEvents', () => ({
   useEventsQuery: () => ({ events: [], loading: false, isFetching: false, error: null }),
 }));
 vi.mock('@/hooks/useNews', () => ({
-  useNews: () => ({
-    articles: [],
-    loading: false,
-    fetchArticles: vi.fn(),
-    incrementViews: vi.fn(),
-  }),
+  useNewsArticles: () => ({ articles: [], loading: false, error: null, refetch: vi.fn() }),
+  incrementArticleViews: vi.fn(),
 }));
 vi.mock('@/hooks/useMilestones', () => ({
   useMilestonesForCountry: () => ({ data: milestones.data }),

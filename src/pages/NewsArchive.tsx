@@ -101,8 +101,6 @@ export default function NewsArchive() {
   const categories = useNewsCategories();
   const { categoryCounts: categoryCountsFromHook, totalArticles } =
     useNewsCategoryCounts(categories);
-  const articleIds = useMemo(() => articles.map((a) => a.id as string), [articles]);
-  const articleTags = useNewsArticleTags(articleIds);
   const featuredArticles = useFeaturedNewsArticles() as unknown as FeaturedArticle[];
   const trendingTags = useTrendingNewsTags();
   const incrementViews = incrementArticleViews;
@@ -175,6 +173,8 @@ export default function NewsArchive() {
     if (initialSearch) f.search = initialSearch;
     return f;
   });
+  const articleIds = useMemo(() => articles.map((a) => a.id as string), [articles]);
+  const articleTags = useNewsArticleTags(articleIds);
   const [activeRight, setActiveRight] = useState<RightTopic | null>(initialRight);
 
   const {

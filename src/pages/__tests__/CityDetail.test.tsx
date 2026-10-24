@@ -28,7 +28,8 @@ vi.mock('@/hooks/useCityImages', () => ({
   useCityImages: () => ({ fetchCityImage: vi.fn().mockResolvedValue(null) }),
 }));
 vi.mock('@/hooks/useNews', () => ({
-  useNews: () => ({ articles: [], loading: false, fetchArticles: vi.fn() }),
+  useNewsArticles: () => ({ articles: [], loading: false, error: null, refetch: vi.fn() }),
+  incrementArticleViews: vi.fn(),
 }));
 vi.mock('@/hooks/useVenues', () => ({
   useVenuesQuery: (filters: unknown) => {

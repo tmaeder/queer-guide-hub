@@ -64,14 +64,6 @@ export default function CityDetail() {
   const { toast } = useToast();
   const { toggleFavorite, isFavorited } = useFavorites('city');
   const { fetchCityImage } = useCityImages();
-  const { articles } = useNewsArticles(
-    city?.id
-      ? {
-          cityIds: [city.id],
-          countryIds: city.countries?.id ? [city.countries.id] : undefined,
-        }
-      : null,
-  );
   const { city, loading, refetch: refetchCity } = useOptimizedCity(slug ?? '');
   useTrackView({
     type: 'city',
@@ -161,6 +153,14 @@ export default function CityDetail() {
           cityId: city.id,
           city: city.name,
           countryId: city.country_id ?? city.countries?.id,
+        }
+      : null,
+  );
+  const { articles } = useNewsArticles(
+    city?.id
+      ? {
+          cityIds: [city.id],
+          countryIds: city.countries?.id ? [city.countries.id] : undefined,
         }
       : null,
   );
