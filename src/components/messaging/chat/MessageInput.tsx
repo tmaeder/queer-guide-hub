@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { TrackLoader } from '@/components/transit/TrackLoader';
 import { useTranslation } from 'react-i18next';
-import DOMPurify from 'dompurify';
+import { sanitizeToText } from '@/lib/sanitize';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -80,10 +80,7 @@ export const MessageInput = ({
 
   // Sanitize message input to prevent XSS
   const sanitizeMessage = (input: string): string => {
-    return DOMPurify.sanitize(input, {
-      ALLOWED_TAGS: [],
-      ALLOWED_ATTR: [],
-    }).trim();
+    return sanitizeToText(input).trim();
   };
 
   const handleSubmit = (e: React.FormEvent) => {
