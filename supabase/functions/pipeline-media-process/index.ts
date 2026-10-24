@@ -2,7 +2,7 @@ import {
   getServiceClient,
   jsonResponse,
   errorResponse,
-  corsResponse, requireInternalOrAdmin } from '../_shared/supabase-client.ts'
+  corsResponse, requireInternalOrAdmin, boundedInt } from '../_shared/supabase-client.ts'
 import { withCircuitBreaker, CircuitOpenError } from '../_shared/circuit-breaker.ts'
 import { logPipelineError } from '../_shared/pipeline-error-log.ts'
 import { withErrorReporting } from '../_shared/report-api-error.ts'
@@ -176,7 +176,7 @@ Deno.serve(withErrorReporting('pipeline-media-process', async (req) => {
     const body = await req.json().catch(() => ({}))
     const pipelineRunId = body.pipeline_run_id as string | undefined
     const nodeId = body.node_id as string | undefined
-    const batchSize = Number(body.batch_size) || 20
+    const batchSize = boundedInt(body.batch_size, 20, 200)
     const dryRun = body.dry_run === true
 
     const { data: rows, error } = await supabase
