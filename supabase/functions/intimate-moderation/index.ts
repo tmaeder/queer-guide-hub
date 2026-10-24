@@ -3,6 +3,7 @@ import {
   jsonResponse,
   errorResponse,
   corsResponse,
+  hasInternalSecret,
 } from '../_shared/supabase-client.ts';
 import { llmChatCompletion } from '../_shared/llm-client.ts';
 
@@ -22,7 +23,17 @@ Deno.serve(async (req) => {
 
   try {
     const body = await req.json().catch(() => ({}));
-    const userId = (body as { user_id?: string }).user_id;
+    // The body's user_id let anyone flag any other member's intimate profile.
+    // Only the caller's own profile may be scanned (internal callers may name one).
+    let userId: string | undefined;
+    if (hasInternalSecret(req)) {
+      userId = (body as { user_id?: string }).user_id;
+    } else {
+      const token = (req.headers.get('Authorization') ?? '').replace(/^Bearer\s+/i, '');
+      const { data: u } = token ? await supabase.auth.getUser(token) : { data: { user: null } };
+      if (!u?.user) return errorResponse('auth_required', 401, req);
+      userId = u.user.id;
+    }
     const aboutText = (body as { about_intimate?: string }).about_intimate ?? '';
     const lookingText = (body as { looking_for?: string }).looking_for ?? '';
     if (!userId) return errorResponse('user_id required', 400, req);

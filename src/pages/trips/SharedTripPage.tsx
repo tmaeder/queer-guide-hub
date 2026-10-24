@@ -151,11 +151,11 @@ function SharedTripPage() {
     setMeta('og:title', title, true);
     setMeta('og:description', desc, true);
     setMeta('og:type', 'article', true);
-    const ogImage = `${SUPABASE_URL}/functions/v1/trip-og-image?trip_id=${data.trip.id}`;
+    const ogImage = `${SUPABASE_URL}/functions/v1/trip-og-image?token=${encodeURIComponent(token ?? '')}`;
     setMeta('og:image', ogImage, true);
     setMeta('twitter:card', 'summary_large_image');
     setMeta('twitter:image', ogImage);
-  }, [data?.trip, t]);
+  }, [data?.trip, t, token]);
 
   if (isLoading) return <PageLoadingState count={4} />;
 

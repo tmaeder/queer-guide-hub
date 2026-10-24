@@ -1,4 +1,4 @@
-import { corsResponse, errorResponse, getServiceClient, jsonResponse } from "../_shared/supabase-client.ts";
+import { corsResponse, errorResponse, getServiceClient, jsonResponse, requireInternalOrAdmin } from "../_shared/supabase-client.ts";
 import type { SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2.50.5";
 
 /**
@@ -52,6 +52,9 @@ Deno.serve(async (req) => {
 
   try {
     const supabase = getServiceClient();
+    // Body userId selects whose data is read/written; never caller-chosen.
+    const auth = await requireInternalOrAdmin(req, supabase);
+    if (auth instanceof Response) return auth;
     const body = await req.json();
     const { userId, sessionId, recType = "destination", limit = 10 } = body;
 

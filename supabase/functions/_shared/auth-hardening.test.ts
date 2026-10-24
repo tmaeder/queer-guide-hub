@@ -53,3 +53,41 @@ Deno.test('boundedInt', () => {
   assertEquals(boundedInt(1e9, 300, 1000), 1000)
   assertEquals(boundedInt('42', 300, 1000), 42)
 })
+
+// Source guards for the gates added to functions that verify_jwt alone left
+// open to the public anon key. Comment-stripped so prose can't satisfy them.
+const code = async (f: string) =>
+  (await Deno.readTextFile(new URL(`../${f}`, import.meta.url))).replace(/\/\/[^\n]*/g, '').replace(/\/\*[\s\S]*?\*\//g, '')
+
+Deno.test('service-role batch functions require internal/admin auth', async () => {
+  for (const f of ['marketplace-categorize', 'marketplace-relevance-rescore', 'marketplace-translate',
+                   'marketplace-enrich', 'personality-refresh', 'recommendation-engine']) {
+    const s = await code(`${f}/index.ts`)
+    const gate = s.indexOf('requireInternalOrAdmin(req')
+    assert(gate > 0, `${f}: no requireInternalOrAdmin gate`)
+    assert(gate < s.indexOf('req.json()'), `${f}: body read before the auth gate`)
+  }
+})
+
+Deno.test('intimate-moderation never trusts body user_id from a user caller', async () => {
+  const s = await code('intimate-moderation/index.ts')
+  assert(/userId = u\.user\.id/.test(s))
+  assert(/hasInternalSecret\(req\)\)\s*\{\s*userId = \(body/.test(s), 'body user_id only behind the internal secret')
+})
+
+Deno.test('upload-image-r2 requires a signed-in user and rejects SVG', async () => {
+  const s = await code('upload-image-r2/index.ts')
+  assert(/auth\.getUser\(token\)/.test(s))
+  assert(!/startsWith\('image\/'\)/.test(s), 'prefix check admits image/svg+xml')
+})
+
+Deno.test('trip-og-image resolves only a share token, never a bare trip_id', async () => {
+  const s = await code('trip-og-image/index.ts')
+  assert(!/params\.get\('trip_id'\)/.test(s))
+  assert(/from\('trip_shares'\)/.test(s) && /expires_at/.test(s))
+})
+
+Deno.test('calendar-export reads events as the caller, not service role', async () => {
+  const s = await code('calendar-export/index.ts')
+  assert(!/SUPABASE_SERVICE_ROLE_KEY/.test(s))
+})

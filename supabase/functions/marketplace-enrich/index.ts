@@ -1,4 +1,4 @@
-import { getServiceClient, jsonResponse, errorResponse, corsResponse } from '../_shared/supabase-client.ts'
+import { getServiceClient, jsonResponse, errorResponse, corsResponse, requireInternalOrAdmin, boundedInt } from '../_shared/supabase-client.ts'
 import { logPipelineError } from '../_shared/pipeline-error-log.ts'
 import { isDeadLink, classifyHttpStatus, type LinkStatus } from '../_shared/link-health.ts'
 import { extractProduct } from '../_shared/marketplace-extract.ts'
@@ -54,11 +54,13 @@ async function fetchHtml(
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return corsResponse(req)
   const supabase = getServiceClient()
+  const auth = await requireInternalOrAdmin(req, supabase)
+  if (auth instanceof Response) return auth
 
   try {
     const body = await req.json().catch(() => ({}))
-    const batchSize = Number(body.batch_size ?? body.limit ?? DEFAULT_BATCH)
-    const staleDays = Number(body.stale_days ?? 7)
+    const batchSize = boundedInt(body.batch_size ?? body.limit, DEFAULT_BATCH, 500)
+    const staleDays = boundedInt(body.stale_days, 7, 365)
     const dryRun    = body.dry_run ?? false
 
     const staleThreshold = new Date(Date.now() - staleDays * 86_400_000).toISOString()
