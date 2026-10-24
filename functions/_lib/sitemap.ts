@@ -32,7 +32,12 @@ export type SitemapEntry = {
 };
 
 const xmlEscape = (s: string) =>
-  s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&apos;');
+  s
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&apos;');
 
 export function urlsetXml(entries: SitemapEntry[]): string {
   const body = entries
@@ -135,7 +140,9 @@ export async function fetchRows(
     });
     if (!res.ok) {
       // Partial data beats no data for a sitemap, but never hide the failure.
-      console.warn(`[sitemap] ${table} page at offset ${offset} failed: ${res.status}; returning ${rows.length} rows`);
+      console.warn(
+        `[sitemap] ${table} page at offset ${offset} failed: ${res.status}; returning ${rows.length} rows`,
+      );
       return rows;
     }
     const page = (await res.json()) as Row[];
@@ -156,7 +163,9 @@ export async function fetchRows(
     // A caller-supplied cap is a deliberate editorial bound (see
     // sitemap-landings.xml). Record it, but don't cry wolf every run — a
     // warning that always fires is a warning nobody reads.
-    console.log(`[sitemap] ${table} stopped at its caller-supplied ${maxRows}-row cap (deliberate bound).`);
+    console.log(
+      `[sitemap] ${table} stopped at its caller-supplied ${maxRows}-row cap (deliberate bound).`,
+    );
   }
   return rows;
 }
