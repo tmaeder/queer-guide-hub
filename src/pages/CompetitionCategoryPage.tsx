@@ -3,6 +3,7 @@ import { Suspense, lazy, useMemo } from 'react';
 import { useSearchParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
 
+import { CompetitionAdminPanel } from '@/components/competitions/CompetitionAdminPanel';
 import { CompetitionCharts } from '@/components/competitions/CompetitionCharts';
 import { CompetitionGrid } from '@/components/competitions/CompetitionGrid';
 import { CompetitionRoster } from '@/components/competitions/CompetitionRoster';
@@ -178,6 +179,8 @@ export default function CompetitionCategoryPage({ category }: { category: Compet
        * we have no picture of.
        */}
       {!loading && !failed && <CompetitionWinnersRail entries={entries} />}
+
+      {!loading && !failed && <CompetitionAdminPanel competitions={competitions} />}
 
       <nav
         aria-label={t('competitions.viewNav', 'Choose a view')}
