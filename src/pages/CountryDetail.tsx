@@ -32,7 +32,7 @@ import { useSDGData } from '@/hooks/useSDGData';
 import { useOptimizedCountry, useOptimizedCities } from '@/hooks/usePlaces';
 import { useVenuesQuery } from '@/hooks/useVenues';
 import { useEventsQuery } from '@/hooks/useEvents';
-import { useNews } from '@/hooks/useNews';
+import { incrementArticleViews, useNewsArticles } from '@/hooks/useNews';
 import { useMilestonesForCountry } from '@/hooks/useMilestones';
 import { TransSafetyBand } from '@/components/rights/TransSafetyBand';
 import { TripCoveringBanner } from '@/components/trips/TripCoveringBanner';
@@ -102,7 +102,7 @@ export default function CountryDetail() {
     country?.id ? { countryId: country.id, limit: 12, railQuality: true } : null,
   );
   const { events } = useEventsQuery(country?.id ? { countryId: country.id, limit: 12 } : null);
-  const { articles, fetchArticles, incrementViews } = useNews({ autoload: false });
+  const { articles } = useNewsArticles(country?.id ? { countryIds: [country.id] } : null);
 
   // Hoisted rather than left inside `CountryLegalRecord`: a component that
   // returns null from its own body is invisible to the section filter, so the
@@ -138,10 +138,6 @@ export default function CountryDetail() {
       });
     }
   }, [country?.id, country?.name, track]);
-
-  useEffect(() => {
-    if (country?.id) fetchArticles({ countryIds: [country.id] });
-  }, [country?.id, fetchArticles]);
 
   useEffect(() => {
     if (!country) return;
@@ -382,7 +378,7 @@ export default function CountryDetail() {
                 articles={articles}
                 locale={i18n.language}
                 openLabel={t('cities.detail.openEvent', 'Open')}
-                onViewArticle={incrementViews}
+                onViewArticle={incrementArticleViews}
               />
             ) : null,
         },

@@ -8,7 +8,7 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useFavorites } from '@/hooks/useFavorites';
 import { useCityImages } from '@/hooks/useCityImages';
-import { useNews } from '@/hooks/useNews';
+import { useNewsArticles } from '@/hooks/useNews';
 import { useVenuesQuery } from '@/hooks/useVenues';
 import { useEventsQuery } from '@/hooks/useEvents';
 import { useOptimizedCountry, useOptimizedCity } from '@/hooks/usePlaces';
@@ -64,7 +64,14 @@ export default function CityDetail() {
   const { toast } = useToast();
   const { toggleFavorite, isFavorited } = useFavorites('city');
   const { fetchCityImage } = useCityImages();
-  const { articles, fetchArticles } = useNews({ autoload: false });
+  const { articles } = useNewsArticles(
+    city?.id
+      ? {
+          cityIds: [city.id],
+          countryIds: city.countries?.id ? [city.countries.id] : undefined,
+        }
+      : null,
+  );
   const { city, loading, refetch: refetchCity } = useOptimizedCity(slug ?? '');
   useTrackView({
     type: 'city',
@@ -192,11 +199,7 @@ export default function CityDetail() {
         }
       })();
     }
-    fetchArticles({
-      cityIds: [city.id],
-      countryIds: city.countries?.id ? [city.countries.id] : undefined,
-    });
-  }, [city, syncImageUrl, fetchCityImage, fetchArticles]);
+  }, [city, syncImageUrl, fetchCityImage]);
 
   useEffect(() => {
     if (city?.id) fetchVillages({ cityId: city.id });
