@@ -118,7 +118,7 @@ export default function Sitemap() {
       <header className="py-8">
         <PageContainer flush>
           <div className="flex items-center justify-between">
-            <LocalizedLink to="/" style={{ marginLeft: -8 }} className="font-bold">
+            <LocalizedLink to="/" className="font-bold">
               Queer Guide
             </LocalizedLink>
             <a
