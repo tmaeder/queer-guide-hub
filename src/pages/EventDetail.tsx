@@ -7,7 +7,7 @@ import { ArrowLeft } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { ErrorBoundary } from '@/components/ErrorBoundary';
+import { ErrorBoundary } from '@/components/error/ErrorBoundary';
 import { Skeleton } from '@/components/ui/skeleton';
 import { GatedDetailFallback } from '@/components/safety/GatedDetailFallback';
 import { EventMoreEvents } from '@/components/events/EventMoreEvents';
