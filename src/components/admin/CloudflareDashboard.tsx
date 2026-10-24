@@ -450,7 +450,7 @@ export function CloudflareDashboard() {
                         To use the Cloudflare dashboard, configure the following Supabase secrets:
                       </p>
                       <ol
-                        className="text-sm flex flex-col gap-1"
+                        className="text-sm flex flex-col gap-1 break-words"
                         style={{
                           color: 'hsl(var(--muted-foreground))',
                           listStyleType: 'decimal',
