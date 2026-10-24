@@ -451,6 +451,7 @@ export default function NewsDetail() {
             contentName={articleTitle}
             currentData={article as unknown as Record<string, unknown>}
             onSaved={() => window.location.reload()}
+            exportable
           />
           <ShareMenu
             url={window.location.href}
