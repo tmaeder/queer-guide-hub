@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef } from 'react';
+import { useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { useParams } from 'react-router';
@@ -9,7 +9,7 @@ import { MarketplaceForVillage } from '@/components/marketplace/MarketplaceForVi
 import { MarkVisitedButton } from '@/components/marks/MarkVisitedButton';
 import { useToast } from '@/hooks/use-toast';
 import { useFavorites } from '@/hooks/useFavorites';
-import { useVenues } from '@/hooks/useVenues';
+import { useVenuesQuery } from '@/hooks/useVenues';
 import { useEventsQuery } from '@/hooks/useEvents';
 import { useEntityDetail } from '@/hooks/useEntityDetail';
 import { useSlugRedirect } from '@/hooks/useSlugRedirect';
@@ -98,20 +98,15 @@ export default function QueerVillageDetail() {
   }, [mergedCitySlug, navigate]);
 
   const villageId = village?.id;
-  const { venues, loading: venuesLoading, fetchVenues } = useVenues(false);
-  const fetchVenuesRef = useRef(fetchVenues);
-  // eslint-disable-next-line react-hooks/refs -- "latest value" ref pattern: keeps the freshest fetchVenues closure available to the village-change effect below without re-running on every fetchVenues identity change.
-  fetchVenuesRef.current = fetchVenues;
 
   // Filter by the VILLAGE, not by its city. This previously asked for 8 venues
   // from anywhere in the parent city, so /villages/chueca listed an Apple Store
   // and a venue 3.7 km away while all 192 venues actually linked to Chueca were
   // never shown. The stop list made it visible by printing the distance between
   // consecutive stops; the old card grid concealed it.
-  useEffect(() => {
-    if (!villageId) return;
-    fetchVenuesRef.current({ queerVillageId: villageId, limit: 24, railQuality: true });
-  }, [villageId]);
+  const { venues, loading: venuesLoading } = useVenuesQuery(
+    villageId ? { queerVillageId: villageId, limit: 24, railQuality: true } : null,
+  );
 
   const venueIdKey = venues.map((v) => v.id).join(',');
   // Events are scoped THROUGH the venues, for the same reason. `events` carries

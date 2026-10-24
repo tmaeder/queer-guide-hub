@@ -22,14 +22,16 @@ vi.mock('@/hooks/useAuth', () => ({
   }),
 }));
 vi.mock('@/hooks/useVenues', () => ({
-  useVenues: () => ({
+  useVenuesFeed: () => ({
     venues: [],
     loading: false,
+    loadingMore: false,
     error: null,
     hasMore: false,
     datasetTotal: 0,
     filteredTotal: 0,
     fetchVenues: vi.fn(),
+    loadMore: vi.fn(),
     loadingTimedOut: false,
   }),
 }));

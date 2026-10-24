@@ -9,7 +9,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 const state = vi.hoisted(() => ({
   city: null as unknown,
   user: null as null | { id: string },
-  fetchVenues: vi.fn(),
+  venuesQuery: vi.fn(),
   eventsQuery: vi.fn(),
 }));
 
@@ -31,7 +31,10 @@ vi.mock('@/hooks/useNews', () => ({
   useNews: () => ({ articles: [], loading: false, fetchArticles: vi.fn() }),
 }));
 vi.mock('@/hooks/useVenues', () => ({
-  useVenues: () => ({ venues: [], loading: false, fetchVenues: state.fetchVenues }),
+  useVenuesQuery: (filters: unknown) => {
+    state.venuesQuery(filters);
+    return { venues: [], loading: false, isFetching: false, error: null };
+  },
 }));
 vi.mock('@/hooks/useEvents', () => ({
   useEventsQuery: (filters: unknown) => {
@@ -110,7 +113,7 @@ describe('CityDetail', () => {
     state.city = null;
     renderPage();
     expect(screen.getByText('City not found')).toBeInTheDocument();
-    expect(state.fetchVenues).not.toHaveBeenCalled();
+    expect(state.venuesQuery.mock.calls.every(([f]) => f === null)).toBe(true);
     // Idle until the city resolves: never asked for anything but null.
     expect(state.eventsQuery.mock.calls.every(([f]) => f === null)).toBe(true);
   });
@@ -127,7 +130,7 @@ describe('CityDetail', () => {
     renderPage();
     const h1 = screen.getByRole('heading', { level: 1, name: 'Berlin' });
     expect(h1).toBeInTheDocument();
-    expect(state.fetchVenues).toHaveBeenCalledWith(
+    expect(state.venuesQuery).toHaveBeenCalledWith(
       expect.objectContaining({ cityId: 'c1', countryId: 'co1' }),
     );
     expect(state.eventsQuery).toHaveBeenCalledWith(

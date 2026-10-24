@@ -28,7 +28,12 @@ vi.mock('@/hooks/useFavorites', () => ({
   useFavorites: () => ({ toggleFavorite: vi.fn(), isFavorited: () => false }),
 }));
 vi.mock('@/hooks/useVenues', () => ({
-  useVenues: () => ({ venues: venueState.venues, loading: false, fetchVenues: vi.fn() }),
+  useVenuesQuery: () => ({
+    venues: venueState.venues,
+    loading: false,
+    isFetching: false,
+    error: null,
+  }),
 }));
 vi.mock('@/hooks/useEvents', () => ({
   useEventsQuery: () => ({ events: [], loading: false, isFetching: false, error: null }),

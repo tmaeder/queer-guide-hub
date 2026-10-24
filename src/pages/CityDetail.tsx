@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useRef } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { useParams } from 'react-router';
 import { useTrackView } from '@/hooks/useTrackView';
@@ -9,7 +9,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useFavorites } from '@/hooks/useFavorites';
 import { useCityImages } from '@/hooks/useCityImages';
 import { useNews } from '@/hooks/useNews';
-import { useVenues } from '@/hooks/useVenues';
+import { useVenuesQuery } from '@/hooks/useVenues';
 import { useEventsQuery } from '@/hooks/useEvents';
 import { useOptimizedCountry, useOptimizedCity } from '@/hooks/usePlaces';
 import { useQueerVillages } from '@/hooks/useQueerVillages';
@@ -135,7 +135,18 @@ export default function CityDetail() {
     city?.major_airport_code,
   );
 
-  const { venues, loading: venuesLoading, fetchVenues } = useVenues(false);
+  // Before the city resolves, an unfiltered request would fill the local guide
+  // and map with global venues, so the query stays idle until then.
+  const { venues, loading: venuesLoading } = useVenuesQuery(
+    city?.id
+      ? {
+          cityId: city.id,
+          city: city.name,
+          countryId: city.country_id ?? city.countries?.id,
+          railQuality: true,
+        }
+      : null,
+  );
   // Idle until the city resolves, so no unscoped feed fires first.
   const { events } = useEventsQuery(
     city?.id
@@ -146,22 +157,6 @@ export default function CityDetail() {
         }
       : null,
   );
-  const fetchVenuesRef = useRef(fetchVenues);
-  // eslint-disable-next-line react-hooks/refs -- "latest value" ref pattern; effect below reads .current.
-  fetchVenuesRef.current = fetchVenues;
-
-  useEffect(() => {
-    // Before the city resolves, an unfiltered request would fill the local
-    // guide and map with global venues and can race the city-scoped request.
-    if (!city?.id) return;
-    fetchVenuesRef.current({
-      cityId: city?.id,
-      city: city?.name,
-      countryId: city?.country_id ?? city?.countries?.id,
-      railQuality: true,
-    });
-  }, [city?.id, city?.name, city?.country_id, city?.countries?.id]);
-
   const { country: fullCountry, loading: countryLoading } = useOptimizedCountry(
     // Fall back to the raw FK so rights still resolve when the embed is absent.
     city?.countries?.slug || city?.countries?.id || city?.country_id || '',
