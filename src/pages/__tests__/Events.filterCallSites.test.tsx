@@ -5,9 +5,10 @@
  * The bug this file exists for: four call sites in Events.tsx passed a literal
  * `{}` as the filter argument.
  *
- *   - "Load more" fetched page 2 UNFILTERED and — because it passes
- *     `append: true` — added those rows under a filtered page 1. Filter to one
- *     city, click Load more, and events from everywhere arrive below the fold.
+ *   - "Load more" fetched page 2 UNFILTERED and appended those rows under a
+ *     filtered page 1. Filter to one city, click Load more, and events from
+ *     everywhere arrive below the fold. Load more is now `loadMore()` on the
+ *     same infinite query, so it cannot carry a different filter set at all.
  *   - The error-state and loading-timeout retry buttons refetched page 1 with
  *     no filters, so recovering from a failure silently replaced the reader's
  *     filtered list with an unfiltered one.
@@ -33,6 +34,7 @@ import type { ReactNode } from 'react';
 type FetchArgs = [Record<string, unknown> | undefined, Record<string, unknown> | undefined];
 
 const fetchEvents = vi.fn();
+const loadMore = vi.fn();
 const eventsState = {
   events: [] as Array<Record<string, unknown>>,
   loading: false,
@@ -42,13 +44,14 @@ const eventsState = {
 };
 
 vi.mock('@/hooks/useEvents', () => ({
-  useEvents: () => ({
+  useEventsFeed: () => ({
     ...eventsState,
+    loadingMore: false,
     datasetTotal: 100,
-    totalCount: 100,
     fetchEvents,
-    updateAttendance: vi.fn().mockResolvedValue({ error: null }),
+    loadMore,
   }),
+  updateEventAttendance: vi.fn().mockResolvedValue({ error: null }),
 }));
 
 vi.mock('@/hooks/useMeta', () => ({ useMeta: vi.fn() }));
@@ -108,10 +111,10 @@ function renderAt(url: string) {
   return render(<Events />, { wrapper });
 }
 
-/** The most recent query that REPLACED the list (page 1, `append: false`). */
+/** The most recent query issued. Every fetchEvents call replaces the list. */
 function lastReplaceCall(): FetchArgs {
   const calls = fetchEvents.mock.calls as FetchArgs[];
-  const call = [...calls].reverse().find((c) => !c[1]?.append);
+  const call = calls[calls.length - 1];
   if (!call) throw new Error('no list-replacing query was issued');
   return call;
 }
@@ -126,7 +129,8 @@ async function waitForFilteredPageOne() {
 describe('/events — every query carries the active filters', () => {
   beforeEach(() => {
     fetchEvents.mockReset();
-    fetchEvents.mockResolvedValue({ fetched: 24, total: 100 });
+    fetchEvents.mockResolvedValue(undefined);
+    loadMore.mockReset();
     eventsState.events = [{ id: 'e1' }];
     eventsState.loading = false;
     eventsState.error = null;
@@ -134,20 +138,18 @@ describe('/events — every query carries the active filters', () => {
     eventsState.loadingTimedOut = false;
   });
 
-  it('"Load more" fetches page 2 with the same filters as page 1', async () => {
+  it('"Load more" asks for the next page of the same request, never a new filter set', async () => {
     renderAt(CITY_LINK);
-    const pageOneFilters = await waitForFilteredPageOne();
+    await waitForFilteredPageOne();
+    const before = fetchEvents.mock.calls.length;
 
     await userEvent.click(screen.getByRole('button', { name: /load more/i }));
 
-    const appendCalls = (fetchEvents.mock.calls as FetchArgs[]).filter((c) => c[1]?.append);
-    expect(appendCalls).toHaveLength(1);
-    const [pageTwoFilters, pageTwoOpts] = appendCalls[0];
-
-    expect(pageTwoOpts).toMatchObject({ page: 2, append: true });
-    // The property, not a pinned value: whatever page 1 asked for, page 2 must
-    // ask for too. Appending rows from a different query is the defect.
-    expect(pageTwoFilters).toEqual(pageOneFilters);
+    // Page 2 belongs to the request that built page 1 (useEventsFeed keys the
+    // infinite query on it — see useEventsFeed.test.tsx). Issuing a fresh
+    // fetchEvents here is the shape that once appended an unfiltered page.
+    expect(loadMore).toHaveBeenCalledTimes(1);
+    expect(fetchEvents.mock.calls.length).toBe(before);
   });
 
   it('retrying after an error re-runs the filtered query, not an unfiltered one', async () => {
@@ -188,10 +190,6 @@ describe('/events — every query carries the active filters', () => {
     renderAt('/events');
     await waitFor(() => expect(fetchEvents).toHaveBeenCalled());
 
-    await userEvent.click(screen.getByRole('button', { name: /load more/i }));
-
-    const appendCalls = (fetchEvents.mock.calls as FetchArgs[]).filter((c) => c[1]?.append);
-    expect(appendCalls).toHaveLength(1);
-    expect(appendCalls[0][0]?.cities).toBeUndefined();
+    expect(lastReplaceCall()[0]?.cities).toBeUndefined();
   });
 });

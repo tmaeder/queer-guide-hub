@@ -14,9 +14,9 @@ import {
   serializeFilterState,
   type EventSort,
 } from '@/utils/eventsQueryString';
-import type { useEvents } from '@/hooks/useEvents';
+import type { useEventsFeed } from '@/hooks/useEvents';
 
-type EventsApi = ReturnType<typeof useEvents>;
+type EventsApi = ReturnType<typeof useEventsFeed>;
 
 const PAGE_SIZE = 24;
 
@@ -26,7 +26,7 @@ const PAGE_SIZE = 24;
  * the debounced timeline-viewport refetch, and all the mount-guarded
  * re-fetch effects. Extracted verbatim from Events.tsx — behavior-preserving.
  *
- * `fetchEvents` and `events` are injected from the page's useEvents() instance
+ * `fetchEvents` and `events` are injected from the page's useEventsFeed() instance
  * so the data layer stays owned by the page.
  */
 export function useEventFilters(
@@ -172,7 +172,6 @@ export function useEventFilters(
     await fetchEvents(filters, {
       page: 1,
       pageSize: PAGE_SIZE,
-      append: false,
     });
   };
   // D6 follow-up: handlePresetSelect both calls fetchEvents() and mutates
@@ -212,7 +211,7 @@ export function useEventFilters(
           includePast: showPast || undefined,
           sort,
         },
-        { page: 1, pageSize: PAGE_SIZE, append: false },
+        { page: 1, pageSize: PAGE_SIZE },
       );
       return;
     }
@@ -253,7 +252,7 @@ export function useEventFilters(
         includePast: showPast || undefined,
         sort,
       },
-      { page: 1, pageSize: PAGE_SIZE, append: false },
+      { page: 1, pageSize: PAGE_SIZE },
     );
   };
 
@@ -328,7 +327,6 @@ export function useEventFilters(
       {
         page: 1,
         pageSize: PAGE_SIZE,
-        append: false,
       },
     );
   };
@@ -382,7 +380,7 @@ export function useEventFilters(
       bumpList();
       setCities([cityName]);
       setAutoLocationLabel(cityName);
-      fetchEvents({ cities: [cityName] }, { page: 1, pageSize: PAGE_SIZE, append: false });
+      fetchEvents({ cities: [cityName] }, { page: 1, pageSize: PAGE_SIZE });
       return;
     }
     // Every filter dimension is already in state (seeded from the query string
@@ -543,7 +541,7 @@ export function useEventFilters(
         isFree: isFree || undefined,
         sort,
       },
-      { page: 1, pageSize: PAGE_SIZE, append: false },
+      { page: 1, pageSize: PAGE_SIZE },
     );
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [debouncedViewport, viewMode]);

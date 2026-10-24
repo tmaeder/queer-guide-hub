@@ -1,5 +1,5 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
+import { hashKey, useInfiniteQuery, useQuery } from '@tanstack/react-query';
 import { useAuth } from '@/hooks/useAuth';
 import { mirrorRsvp } from '@/hooks/blueskyActivity';
 import { supabase } from '@/integrations/supabase/client';
@@ -10,7 +10,6 @@ import { dedupeEvents } from '@/utils/eventDedup';
 import { orderUpcoming } from '@/lib/eventOrdering';
 
 type Event = Database['public']['Tables']['events']['Row'];
-type EventInsert = Database['public']['Tables']['events']['Insert'];
 
 /**
  * PostgREST spelling of `COALESCE(end_date, start_date) >= iso`, the predicate
@@ -74,7 +73,7 @@ export interface EventsPageOptions {
 /**
  * One events query, with no React state: the RPC-or-client-query choice, the
  * client-side dedupe, upcoming ordering, attendee counts and the nearMe
- * filter. Both `useEvents().fetchEvents` and `useEventsQuery` run through it,
+ * filter. Both `useEventsFeed` and `useEventsQuery` run through it,
  * so the two cannot drift. Returns null when `signal` aborted mid-flight.
  */
 export async function fetchEventsPage(
@@ -396,244 +395,156 @@ export async function fetchEventsPage(
   return { events: eventsData, count };
 }
 
-/**
- * @param autoFetch  run the initial list query on mount
- * @param opts.skipDatasetTotal
- *   Skip the `count: 'exact'` probe. It is an unfiltered COUNT(*) over ~40k
- *   rows and fires on EVERY mount independently of `autoFetch`, so consumers
- *   that never read `datasetTotal` (the map) were paying for it silently.
- *   Pages that render "showing N of M" must leave this off.
- */
-export function useEvents(autoFetch: boolean = true, opts?: { skipDatasetTotal?: boolean }) {
-  const skipDatasetTotal = opts?.skipDatasetTotal ?? false;
-  /**
-   * Monotonic id of the most recently ISSUED request. Every publish is gated on
-   * still holding it, so the list reflects the newest request rather than the
-   * newest response.
-   *
-   * `fetchEvents` takes an AbortSignal, but it is optional and no caller on
-   * /events passes one, so cancellation cannot be relied on to order writes.
-   * This is the backstop that holds regardless of caller discipline — and it is
-   * needed because the inversion is systematic, not a rare interleaving: a
-   * broad query is slower than the narrow one that supersedes it.
-   */
-  const requestSeqRef = useRef(0);
-  const [events, setEvents] = useState<Event[]>([]);
-  const [loading, setLoading] = useState(autoFetch);
-  const [error, setError] = useState<string | null>(null);
-  const [hasMore, setHasMore] = useState(true);
-  const [loadingTimedOut, setLoadingTimedOut] = useState(false);
-  const [datasetTotal, setDatasetTotal] = useState<number | null>(null);
-  // D7 wanted a `totalCount` state here — the true total of the most recent
-  // filtered query, so a header could say "Showing N of M events". It was never
-  // added to this hook's return value, so nothing could ever read it; the only
-  // consumer was `fetchEvents`, which returned it stale. That is now returned
-  // directly from the query, and the state is gone rather than left writing a
-  // re-render per fetch for no reader. Re-add it here the day a header needs it.
+/** RSVP: upsert the viewer's attendance and auto-favourite on going/interested. */
+export async function updateEventAttendance(
+  eventId: string,
+  status: 'going' | 'interested' | 'not_going',
+) {
+  try {
+    const userId = (await supabase.auth.getUser()).data.user?.id;
+    if (!userId) throw new Error('Sign in to update attendance.');
+    // D4: onConflict is required — table PK is `id`, uniqueness lives on
+    // (event_id, user_id). Without it the second click hits a 23505 and
+    // we surface "Failed to update attendance".
+    const { error } = await supabase
+      .from('event_attendees')
+      .upsert({ event_id: eventId, user_id: userId, status }, { onConflict: 'event_id,user_id' });
 
-  useEffect(() => {
-    if (skipDatasetTotal) return;
-    let cancelled = false;
-    (async () => {
+    if (error) throw error;
+    mirrorRsvp(eventId, status);
+
+    // Auto-add to favorites when going or interested
+    if (status === 'going' || status === 'interested') {
+      await supabase.from('event_favorites').upsert({
+        event_id: eventId,
+        user_id: userId,
+      });
+    }
+
+    return { error: null };
+  } catch (err) {
+    return {
+      error: err instanceof Error ? err.message : 'Failed to update attendance',
+    };
+  }
+}
+
+interface FeedRequest {
+  filters: EventFilters;
+  paged: boolean;
+  pageSize: number;
+}
+
+const FEED_PAGE_SIZE = 24;
+
+/**
+ * The paged /events feed on useInfiniteQuery.
+ *
+ * `useEventFilters` still decides WHICH request runs and when — presets, near
+ * me and the timeline viewport each build their own filter set — and calls
+ * `fetchEvents(filters, { page: 1, pageSize })` to issue it. That call now just
+ * records the request; the query key is the request, so:
+ *
+ * - the newest request wins by construction, which is what the hand-rolled
+ *   request-sequence counter used to enforce;
+ * - "Load more" (`loadMore`) asks for the next page of the SAME request, so a
+ *   page can never be appended under a list built from different filters;
+ * - issuing the identical request again (RSVP refresh, error retry) refetches.
+ *
+ * Keyed on the viewer: events are safety-gated and the cache is not cleared
+ * on sign-out.
+ */
+export function useEventsFeed() {
+  const { user } = useAuth();
+  const viewer = user?.id ?? 'anon';
+  const [request, setRequest] = useState<FeedRequest | null>(null);
+  const requestRef = useRef<FeedRequest | null>(null);
+
+  const query = useInfiniteQuery({
+    queryKey: ['events-feed', viewer, request],
+    enabled: request !== null,
+    initialPageParam: 1,
+    queryFn: async ({ pageParam, signal }) => {
+      const r = request!;
+      const result = await fetchEventsPage(
+        r.filters,
+        r.paged ? { page: pageParam, pageSize: r.pageSize, signal } : { signal },
+      );
+      return result ?? { events: [], count: null };
+    },
+    getNextPageParam: (last, _all, lastPage) => {
+      const r = request;
+      if (!r?.paged || typeof last.count !== 'number') return undefined;
+      return (lastPage - 1) * r.pageSize + last.events.length < last.count
+        ? lastPage + 1
+        : undefined;
+    },
+  });
+
+  const { data, refetch, fetchNextPage } = query;
+  const events = useMemo(() => {
+    if (!data) return NO_EVENTS;
+    // Same merge the append path used: dedupe by id across pages.
+    const merged = data.pages.flatMap((p) => p.events);
+    return Array.from(new Map(merged.map((e) => [e.id, e])).values());
+  }, [data]);
+
+  const fetchEvents = useCallback(
+    async (filters?: EventFilters, options?: { page?: number; pageSize?: number }) => {
+      const next: FeedRequest = {
+        filters: filters ?? {},
+        paged: typeof options?.page === 'number',
+        pageSize: options?.pageSize ?? FEED_PAGE_SIZE,
+      };
+      // A ref, not the state: two calls in one tick must compare against each
+      // other, and the refetch must not run inside a state updater.
+      const prev = requestRef.current;
+      if (prev && hashKey([prev]) === hashKey([next])) {
+        void refetch();
+        return;
+      }
+      requestRef.current = next;
+      setRequest(next);
+    },
+    [refetch],
+  );
+
+  const loadMore = useCallback(async () => {
+    await fetchNextPage();
+  }, [fetchNextPage]);
+
+  const { data: datasetTotal = null } = useQuery({
+    // Unfiltered COUNT(*) for "showing N of M". RLS hides gated rows from
+    // anon, so the total is per viewer too.
+    queryKey: ['events-dataset-total', viewer],
+    queryFn: async () => {
       const { count } = await supabase
         .from('events')
         .select('id', { head: true, count: 'exact' })
         .is('duplicate_of_id', null);
-      if (!cancelled) setDatasetTotal(count ?? 0);
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [skipDatasetTotal]);
-
-  useEffect(() => {
-    if (!loading) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect -- effect synchronizes state with external props/data; React Compiler can't infer the sync direction. Documented exemption from the eslint.config.js staged-ratchet plan.
-      setLoadingTimedOut(false);
-      return;
-    }
-    const timer = setTimeout(() => setLoadingTimedOut(true), 15000);
-    return () => clearTimeout(timer);
-  }, [loading]);
-
-  const fetchEvents = useCallback(
-    async (
-      filters?: EventFilters,
-      options?: { page?: number; pageSize?: number; append?: boolean; signal?: AbortSignal },
-    ) => {
-      const signal = options?.signal;
-      if (signal?.aborted) return { fetched: 0, total: null as number | null };
-      const seq = ++requestSeqRef.current;
-      /** Has a later request been issued while we were awaiting? */
-      const superseded = () => seq !== requestSeqRef.current;
-      let fetchedCount = 0;
-      let resolvedTotal: number | null = null;
-      try {
-        setLoading(true);
-        setLoadingTimedOut(false);
-        const page = options?.page;
-        const pageSize = options?.pageSize ?? 24;
-        const result = await fetchEventsPage(filters, { page, pageSize, signal });
-        if (!result) return { fetched: 0, total: null as number | null };
-        const { events: eventsData, count } = result;
-
-        // Last gate before publishing: every await above is behind us, so a
-        // newer request having been issued means this result is stale and must
-        // not repaint the list (nor move `hasMore`, which describes it).
-        if (superseded()) return { fetched: 0, total: null as number | null };
-
-        if (options?.append) {
-          setEvents((prev) => {
-            const merged = [...prev, ...eventsData];
-            return Array.from(new Map(merged.map((e) => [e.id, e])).values());
-          });
-        } else {
-          setEvents(eventsData);
-        }
-
-        fetchedCount = eventsData.length;
-        resolvedTotal = typeof count === 'number' ? count : null;
-
-        if (typeof count === 'number') {
-          if (typeof page === 'number') {
-            const from = (page - 1) * pageSize;
-            setHasMore(from + eventsData.length < count);
-          } else {
-            setHasMore(false);
-          }
-        } else {
-          setHasMore(false);
-        }
-      } catch (err) {
-        if (signal?.aborted || superseded()) return { fetched: 0, total: null as number | null };
-        setError(err instanceof Error ? err.message : 'Failed to fetch events');
-      } finally {
-        // A superseded request must not clear `loading` either — the spinner
-        // belongs to the request still running, and dropping it early reads as
-        // "finished" over results that are about to change.
-        if (!signal?.aborted && !superseded()) setLoading(false);
-      }
-      // `resolvedTotal`, not the `totalCount` state. The state read is what
-      // react-hooks/exhaustive-deps flagged here, and adding it to the dep array
-      // would have been the wrong repair: this callback is deliberately stable
-      // (`[]`), so `totalCount` was pinned to its value at first render and the
-      // returned `total` could never be anything else — while the correct count
-      // was sitting in scope, already on its way into the same state setter.
-      return { fetched: fetchedCount, total: resolvedTotal } as {
-        fetched: number;
-        total: number | null;
-      };
+      return count ?? 0;
     },
-    [],
-  );
+  });
 
-  const createEvent = async (event: EventInsert) => {
-    try {
-      const { data, error } = await supabase.from('events').insert([event]).select().single();
-
-      if (error) throw error;
-      return { data, error: null };
-    } catch (err) {
-      return {
-        data: null,
-        error:
-          err instanceof Error
-            ? err.message
-            : ((err as { message?: string })?.message ?? 'Failed to create event'),
-      };
-    }
-  };
-
-  const updateEvent = async (eventId: string, eventData: Partial<EventInsert>) => {
-    try {
-      const { data, error } = await supabase
-        .from('events')
-        .update(eventData)
-        .eq('id', eventId)
-        .select()
-        .single();
-
-      if (error) throw error;
-      return { data, error: null };
-    } catch (err) {
-      return {
-        data: null,
-        error:
-          err instanceof Error
-            ? err.message
-            : ((err as { message?: string })?.message ?? 'Failed to update event'),
-      };
-    }
-  };
-
-  const deleteEvent = async (eventId: string) => {
-    try {
-      const { error } = await supabase.from('events').delete().eq('id', eventId);
-
-      if (error) throw error;
-      return { error: null };
-    } catch (err) {
-      return {
-        error: err instanceof Error ? err.message : 'Failed to delete event',
-      };
-    }
-  };
-
-  const updateAttendance = async (
-    eventId: string,
-    status: 'going' | 'interested' | 'not_going',
-  ) => {
-    try {
-      const userId = (await supabase.auth.getUser()).data.user?.id;
-      if (!userId) throw new Error('Sign in to update attendance.');
-      // D4: onConflict is required — table PK is `id`, uniqueness lives on
-      // (event_id, user_id). Without it the second click hits a 23505 and
-      // we surface "Failed to update attendance".
-      const { error } = await supabase
-        .from('event_attendees')
-        .upsert({ event_id: eventId, user_id: userId, status }, { onConflict: 'event_id,user_id' });
-
-      if (error) throw error;
-      mirrorRsvp(eventId, status);
-
-      // Auto-add to favorites when going or interested
-      if (status === 'going' || status === 'interested') {
-        await supabase.from('event_favorites').upsert({
-          event_id: eventId,
-          user_id: userId,
-        });
-      }
-
-      return { error: null };
-    } catch (err) {
-      return {
-        error: err instanceof Error ? err.message : 'Failed to update attendance',
-      };
-    }
-  };
-
+  const loading = query.isLoading;
+  const requestHash = hashKey([viewer, request]);
+  const [timedOutFor, setTimedOutFor] = useState<string | null>(null);
   useEffect(() => {
-    if (autoFetch) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect -- effect synchronizes state with external props/data; React Compiler can't infer the sync direction. Documented exemption from the eslint.config.js staged-ratchet plan.
-      fetchEvents();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [autoFetch]);
+    if (!loading) return;
+    const timer = setTimeout(() => setTimedOutFor(requestHash), 15000);
+    return () => clearTimeout(timer);
+  }, [loading, requestHash]);
 
   return {
     events,
     loading,
-    isFetching: loading,
-    loadingTimedOut,
-    error,
-    hasMore,
+    loadingMore: query.isFetchingNextPage,
+    loadingTimedOut: loading && timedOutFor === requestHash,
+    error: query.error ? query.error.message || 'Failed to fetch events' : null,
+    hasMore: query.hasNextPage,
     datasetTotal,
     fetchEvents,
-    createEvent,
-    updateEvent,
-    deleteEvent,
-    updateAttendance,
-    refetch: () => fetchEvents(),
+    loadMore,
   };
 }
 
@@ -643,7 +554,7 @@ const NO_EVENTS: Event[] = [];
 /**
  * Declarative events list for surfaces that show one filtered slice (a city,
  * a country, a village's venues, the map viewport). The paged /events feed
- * still uses `useEvents().fetchEvents`.
+ * is `useEventsFeed`.
  *
  * `filters: null` stays idle — pass it while the scope (city id, venue ids…)
  * is still loading, so no unscoped query fires first.

@@ -5,7 +5,7 @@ import { EventsHeroSpotlight } from '@/components/events/EventsHeroSpotlight';
 import { SmartEmptyState } from '@/components/events/SmartEmptyState';
 import { CoverageNote } from '@/components/intent/CoverageNote';
 import { useEventWindowCounts } from '@/hooks/useEventWindowCounts';
-import { useEvents } from '@/hooks/useEvents';
+import { updateEventAttendance, useEventsFeed } from '@/hooks/useEvents';
 import { useEventFilters } from '@/hooks/useEventFilters';
 import { useMeta } from '@/hooks/useMeta';
 import { EventCard } from '@/components/events/EventCard';
@@ -42,11 +42,15 @@ const Events = () => {
     error,
     hasMore,
     datasetTotal,
-    totalCount,
     fetchEvents,
-    updateAttendance,
+    loadMore,
+    loadingMore,
     loadingTimedOut,
-  } = useEvents(false);
+  } = useEventsFeed();
+  // Never populated: the old hook did not return a filtered total either, so
+  // the result count falls back to the rows on screen. Kept as an explicit
+  // undefined until a header needs the real number.
+  const totalCount: number | undefined = undefined;
   const { user } = useAuth();
   const { toast } = useToast();
 
@@ -65,7 +69,6 @@ const Events = () => {
   });
 
   const f = useEventFilters(fetchEvents, events);
-  const { PAGE_SIZE } = f;
 
   // Scoped to the city filter when exactly one is selected, so the chip counts
   // describe the set the reader is actually looking at rather than the globe.
@@ -85,7 +88,7 @@ const Events = () => {
       });
       return;
     }
-    const { error } = await updateAttendance(eventId, status);
+    const { error } = await updateEventAttendance(eventId, status);
     if (error) {
       toast({
         title: 'Error',
@@ -393,22 +396,12 @@ const Events = () => {
         {events.length > 0 && (
           <LoadMore
             hasMore={hasMore}
-            loading={loading}
+            loading={loadingMore}
             resetKey={f.listGeneration}
-            onLoadMore={async () => {
-              const nextPage = f.page + 1;
-              f.setPage(nextPage);
-              // The filter set is MANDATORY here, not a nicety: `append: true`
-              // means whatever comes back is added to the list on screen. This
-              // passed `{}`, so page 2 was an unfiltered query whose rows were
-              // appended under a filtered page 1 — filter to one city, click
-              // Load more, and events from everywhere appear below the fold.
-              await fetchEvents(f.buildFilters(), {
-                page: nextPage,
-                pageSize: PAGE_SIZE,
-                append: true,
-              });
-            }}
+            // The next page of the request that built this list, never a fresh
+            // filter set: appending page 2 of a different query is how an
+            // unfiltered page once landed under a filtered page 1.
+            onLoadMore={loadMore}
           />
         )}
 
