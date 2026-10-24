@@ -1,5 +1,4 @@
 import { describe, expect, it } from 'vitest';
-// @ts-expect-error -- plain .mjs script helper, no type declarations
 import { compareToBaseline, gatedAdvisories } from '../../../scripts/lib/npm-audit-ratchet.mjs';
 
 const adv = (url: string, severity: string, name = 'pkg') => ({
@@ -28,8 +27,8 @@ describe('npm audit ratchet', () => {
       { id: 'GHSA-a' },
       { id: 'GHSA-gone' },
     ]);
-    expect(added.map((a: { id: string }) => a.id)).toEqual(['GHSA-c']);
-    expect(resolved.map((b: { id: string }) => b.id)).toEqual(['GHSA-gone']);
+    expect(added.map((a) => a.id)).toEqual(['GHSA-c']);
+    expect(resolved.map((b) => b.id)).toEqual(['GHSA-gone']);
   });
 
   it('refuses something that is not an audit report', () => {
