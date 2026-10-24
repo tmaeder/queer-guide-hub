@@ -14,7 +14,7 @@
  *     filtered list with an unfiltered one.
  *   - RSVPing refreshed the list the same way, dropping the filters.
  *
- * ASSERT ON THE ARGUMENTS `fetchEvents` RECEIVES, NEVER ON RENDERED CARDS. The
+ * ASSERT ON THE REQUEST THE FEED RECEIVES, NEVER ON RENDERED CARDS. The
  * page renders whatever the mocked data layer hands back, so a card assertion
  * passes on the broken code. The only load-bearing question is what each query
  * carried. Same discipline as useEventFilters.urlHydration.test.tsx.
@@ -31,10 +31,10 @@ import { MemoryRouter } from 'react-router';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import type { ReactNode } from 'react';
 
-type FetchArgs = [Record<string, unknown> | undefined, Record<string, unknown> | undefined];
-
-const fetchEvents = vi.fn();
+/** Every request the page hands the feed, in render order. */
+const requests: Array<{ filters: Record<string, unknown> }> = [];
 const loadMore = vi.fn();
+const refetch = vi.fn();
 const eventsState = {
   events: [] as Array<Record<string, unknown>>,
   loading: false,
@@ -44,13 +44,10 @@ const eventsState = {
 };
 
 vi.mock('@/hooks/useEvents', () => ({
-  useEventsFeed: () => ({
-    ...eventsState,
-    loadingMore: false,
-    datasetTotal: 100,
-    fetchEvents,
-    loadMore,
-  }),
+  useEventsFeed: (request: { filters: Record<string, unknown> }) => {
+    requests.push(request);
+    return { ...eventsState, loadingMore: false, datasetTotal: 100, loadMore, refetch };
+  },
   updateEventAttendance: vi.fn().mockResolvedValue({ error: null }),
 }));
 
@@ -111,26 +108,25 @@ function renderAt(url: string) {
   return render(<Events />, { wrapper });
 }
 
-/** The most recent query issued. Every fetchEvents call replaces the list. */
-function lastReplaceCall(): FetchArgs {
-  const calls = fetchEvents.mock.calls as FetchArgs[];
-  const call = calls[calls.length - 1];
-  if (!call) throw new Error('no list-replacing query was issued');
-  return call;
+/** The request the page is currently showing. */
+function currentFilters() {
+  const r = requests[requests.length - 1];
+  if (!r) throw new Error('the page never handed the feed a request');
+  return r.filters;
 }
 
 async function waitForFilteredPageOne() {
   await waitFor(() => {
-    expect(lastReplaceCall()[0]).toMatchObject({ cities: ['Zürich'] });
+    expect(currentFilters()).toMatchObject({ cities: ['Zürich'] });
   });
-  return lastReplaceCall()[0];
+  return currentFilters();
 }
 
 describe('/events — every query carries the active filters', () => {
   beforeEach(() => {
-    fetchEvents.mockReset();
-    fetchEvents.mockResolvedValue(undefined);
+    requests.length = 0;
     loadMore.mockReset();
+    refetch.mockReset();
     eventsState.events = [{ id: 'e1' }];
     eventsState.loading = false;
     eventsState.error = null;
@@ -140,16 +136,15 @@ describe('/events — every query carries the active filters', () => {
 
   it('"Load more" asks for the next page of the same request, never a new filter set', async () => {
     renderAt(CITY_LINK);
-    await waitForFilteredPageOne();
-    const before = fetchEvents.mock.calls.length;
+    const pageOne = await waitForFilteredPageOne();
 
     await userEvent.click(screen.getByRole('button', { name: /load more/i }));
 
     // Page 2 belongs to the request that built page 1 (useEventsFeed keys the
-    // infinite query on it — see useEventsFeed.test.tsx). Issuing a fresh
-    // fetchEvents here is the shape that once appended an unfiltered page.
+    // infinite query on it — see useEventsFeed.test.tsx). A new request here
+    // is the shape that once appended an unfiltered page.
     expect(loadMore).toHaveBeenCalledTimes(1);
-    expect(fetchEvents.mock.calls.length).toBe(before);
+    expect(currentFilters()).toEqual(pageOne);
   });
 
   it('retrying after an error re-runs the filtered query, not an unfiltered one', async () => {
@@ -161,11 +156,10 @@ describe('/events — every query carries the active filters', () => {
     renderAt(CITY_LINK);
     await waitForFilteredPageOne();
 
-    const before = fetchEvents.mock.calls.length;
     await userEvent.click(screen.getAllByRole('button', { name: /try again|retry/i })[0]);
-    await waitFor(() => expect(fetchEvents.mock.calls.length).toBeGreaterThan(before));
-
-    expect(lastReplaceCall()[0]).toEqual(pageOneFilters);
+    // Retry re-runs the SAME request: a refetch, with the filters unchanged.
+    await waitFor(() => expect(refetch).toHaveBeenCalled());
+    expect(currentFilters()).toEqual(pageOneFilters);
   });
 
   it('retrying a slow load re-runs the filtered query', async () => {
@@ -177,19 +171,18 @@ describe('/events — every query carries the active filters', () => {
     renderAt(CITY_LINK);
     await waitForFilteredPageOne();
 
-    const before = fetchEvents.mock.calls.length;
     await userEvent.click(screen.getAllByRole('button', { name: /try again|retry/i })[0]);
-    await waitFor(() => expect(fetchEvents.mock.calls.length).toBeGreaterThan(before));
-
-    expect(lastReplaceCall()[0]).toEqual(pageOneFilters);
+    // Retry re-runs the SAME request: a refetch, with the filters unchanged.
+    await waitFor(() => expect(refetch).toHaveBeenCalled());
+    expect(currentFilters()).toEqual(pageOneFilters);
   });
 
   it('an unfiltered /events still queries unfiltered (control for the assertions above)', async () => {
     // Without this, "page 2 equals page 1" would also be satisfied by a page
     // that had quietly stopped applying filters altogether.
     renderAt('/events');
-    await waitFor(() => expect(fetchEvents).toHaveBeenCalled());
+    await waitFor(() => expect(requests.length).toBeGreaterThan(0));
 
-    expect(lastReplaceCall()[0]?.cities).toBeUndefined();
+    expect(currentFilters().cities).toBeUndefined();
   });
 });
