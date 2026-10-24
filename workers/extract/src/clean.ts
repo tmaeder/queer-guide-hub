@@ -15,6 +15,7 @@ import {
   processMultiLineLinks,
   removeSkipToContentLinks,
 } from './deepcrawl/markdown-helpers';
+import { restoreCfEmails } from './cfEmail';
 
 export interface ExtractMeta {
   title: string | null;
@@ -368,6 +369,7 @@ export function cleanHtml(
   opts: { crawl?: boolean } = {},
 ): CleanResult {
   const $ = cheerio.load(html);
+  restoreCfEmails($);
   const meta = extractMeta($, url);
   const jsonLd = extractJsonLd($);
   const microdata = extractMicrodata($);

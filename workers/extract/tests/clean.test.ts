@@ -157,3 +157,23 @@ describe('cleanHtml microdata', () => {
     expect(cleanHtml(ARTICLE_HTML, 'https://example.com/a').microdata).toBeUndefined();
   });
 });
+
+// Real Washington Blade markup (2026-10-24): Cloudflare email obfuscation.
+const CF_EMAIL_HTML = `<!doctype html><html><head><title>Center careers</title></head><body><article>
+  <p>The center runs a careers programme for LGBTQ job seekers across the region, with workshops every month and one-to-one coaching sessions for anyone who signs up in advance.</p>
+  <p>For details email <a href="/cdn-cgi/l/email-protection#2e4d4b405a4b5c" target="_blank"><span class="__cf_email__" data-cfemail="7310161d0716011012011616010033071b16171010161d0716015d1c0114">[email&#160;protected]</span></a> or visit the center's website for the full schedule.</p>
+</article></body></html>`;
+
+describe('Cloudflare email obfuscation', () => {
+  it('restores the address instead of "[email protected]"', () => {
+    const r = cleanHtml(CF_EMAIL_HTML, 'https://www.washingtonblade.com/x/');
+    expect(r.markdown).toContain('email centercareers@thedccenter.org or visit');
+    expect(r.markdown).not.toContain('protected');
+    expect(r.markdown).not.toContain('cdn-cgi');
+  });
+
+  it('leaves an undecodable placeholder alone rather than inventing an address', () => {
+    const r = cleanHtml(CF_EMAIL_HTML.replace(/data-cfemail="[0-9a-f]+"/, 'data-cfemail="zz"'), 'https://x.org/');
+    expect(r.markdown).not.toContain('centercareers');
+  });
+});
