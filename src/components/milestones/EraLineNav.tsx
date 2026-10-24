@@ -120,6 +120,13 @@ export function EraLineNav({ counts }: { counts: Map<string, number> | undefined
                 sx={pct(rtl ? h.w - h.stations[i].x : h.stations[i].x, h.w)}
                 sy={pct(h.stations[i].y, h.h)}
                 lane={i % 2 === 0 ? 'above' : 'below'}
+                edge={
+                  i === (rtl ? eras.length - 1 : 0)
+                    ? 'left'
+                    : i === (rtl ? 0 : eras.length - 1)
+                      ? 'right'
+                      : undefined
+                }
                 current={hash === `#era-${era.slug}`}
               />
             ))}
@@ -136,6 +143,7 @@ function EraStation({
   sx,
   sy,
   lane,
+  edge,
   current,
 }: {
   era: HistoryEra;
@@ -143,6 +151,9 @@ function EraStation({
   sx: string;
   sy: string;
   lane: 'above' | 'below';
+  /** The outermost plates align to their station instead of centring on it,
+   *  so a 192px plate never hangs past the page column. */
+  edge?: 'left' | 'right';
   current: boolean;
 }) {
   const { t } = useTranslation();
@@ -192,6 +203,8 @@ function EraStation({
           'card-lift flex min-w-0 flex-1 items-baseline gap-2 bg-card px-2 py-1.5 no-underline rounded-container shadow-soft',
           'lg:absolute lg:left-1/2 lg:w-48 lg:-translate-x-1/2 lg:flex-none lg:flex-col lg:items-start lg:gap-1 lg:p-4',
           lane === 'above' ? 'lg:bottom-6' : 'lg:top-6',
+          edge === 'left' && 'lg:left-0 lg:translate-x-0',
+          edge === 'right' && 'lg:left-auto lg:right-0 lg:translate-x-0',
           current && 'bg-foreground text-background',
         )}
       >

@@ -1,15 +1,15 @@
-import './es2022-shims'
-import { installSentry } from './sentry'
-import { createRoot } from 'react-dom/client'
-import App from './App.tsx'
-import './index.css'
-import i18n from './i18n'
-import { initCloudflareOptimizations } from './utils/cloudflareOptimizations'
-import { installErrorBuffer, installNetworkBuffer } from '@/utils/feedbackContext'
-import { installGlobalErrorSurfacing } from '@/utils/globalErrorSurfacing'
-import { installBuildVersionCheck } from '@/utils/buildVersion'
-import { installAnalyticsConsentLoader } from '@/utils/analyticsLoader'
-import { healBootAssets, healFailedAssets } from '@/utils/assetHeal'
+import './es2022-shims';
+import { installSentry } from './sentry';
+import { createRoot } from 'react-dom/client';
+import App from './App.tsx';
+import './index.css';
+import i18n from './i18n';
+import { initCloudflareOptimizations } from './utils/cloudflareOptimizations';
+import { installErrorBuffer, installNetworkBuffer } from '@/utils/feedbackContext';
+import { installGlobalErrorSurfacing } from '@/utils/globalErrorSurfacing';
+import { installBuildVersionCheck } from '@/utils/buildVersion';
+import { installAnalyticsConsentLoader } from '@/utils/analyticsLoader';
+import { healBootAssets, healFailedAssets } from '@/utils/assetHeal';
 
 installSentry();
 installErrorBuffer();
@@ -17,6 +17,9 @@ installNetworkBuffer();
 installGlobalErrorSurfacing();
 installBuildVersionCheck();
 installAnalyticsConsentLoader();
+// Field Core Web Vitals; consent-gated inside. Lazy so it stays off the boot path
+// (web-vitals observes buffered entries, so a late start loses nothing).
+import('@/lib/webVitals').then((m) => m.installWebVitals()).catch(() => {});
 
 initCloudflareOptimizations();
 
@@ -165,12 +168,16 @@ window.addEventListener(
 // backend wired in src/i18n. Wait for the active locale before first
 // render so non-English visitors don't see an English flash. English
 // bundles inline and resolves synchronously.
-const SUPPORTED = new Set(['en','es','fr','de','pt','it','ru','zh','ja','ko','ar']);
+const SUPPORTED = new Set(['en', 'es', 'fr', 'de', 'pt', 'it', 'ru', 'zh', 'ja', 'ko', 'ar']);
 function activeLocale(): string {
   const seg = window.location.pathname.split('/')[1];
   if (seg && SUPPORTED.has(seg)) return seg;
   let stored: string | null = null;
-  try { stored = localStorage.getItem('i18nextLng'); } catch { /* sandboxed */ }
+  try {
+    stored = localStorage.getItem('i18nextLng');
+  } catch {
+    /* sandboxed */
+  }
   const fromStorage = stored?.split('-')[0];
   if (fromStorage && SUPPORTED.has(fromStorage)) return fromStorage;
   const fromNav = (navigator.language || '').split('-')[0];
@@ -187,7 +194,7 @@ async function bootstrap() {
       // network blip — fall through to render with English fallback.
     }
   }
-  createRoot(document.getElementById("root")!).render(<App />);
+  createRoot(document.getElementById('root')!).render(<App />);
 }
 
 bootstrap();
