@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { Suspense } from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
 import { lazyOptional, lazyRetry } from '../lazyRetry';
-import { ErrorBoundary } from '@/components/ErrorBoundary';
+import { ErrorBoundary } from '@/components/error/ErrorBoundary';
 
 vi.mock('@sentry/react', () => ({ captureException: vi.fn() }));
 

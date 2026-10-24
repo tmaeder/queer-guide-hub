@@ -934,6 +934,7 @@ export default function TagDetail() {
               contentId={tag.id}
               contentName={tag.name}
               currentData={tag as unknown as Record<string, unknown>}
+              exportable
             />
           </div>
         }

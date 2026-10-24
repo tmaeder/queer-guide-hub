@@ -3,8 +3,11 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import type { ReactElement } from 'react';
 
 vi.mock('@sentry/react', () => ({ captureException: vi.fn() }));
+const healFailedAssets = vi.fn(() => Promise.resolve());
+vi.mock('@/utils/assetHeal', () => ({ healFailedAssets: () => healFailedAssets() }));
 
-import { ErrorBoundary } from '../ErrorBoundary';
+import * as Sentry from '@sentry/react';
+import { ErrorBoundary, SectionErrorFallback } from '../ErrorBoundary';
 
 function ThrowingComponent(): ReactElement {
   throw new Error('Test error');
@@ -74,5 +77,59 @@ describe('ErrorBoundary', () => {
     fireEvent.click(screen.getByText('Try Again'));
     // After retry, the throwing component throws again
     expect(screen.getByText('Something went wrong')).toBeInTheDocument();
+  });
+
+  it('reports the crash to Sentry with its section tag', () => {
+    render(
+      <ErrorBoundary section="unit-test" fallback={null}>
+        <ThrowingComponent />
+      </ErrorBoundary>,
+    );
+    expect(Sentry.captureException).toHaveBeenCalledWith(
+      expect.objectContaining({ message: 'Test error' }),
+      expect.objectContaining({ tags: expect.objectContaining({ section: 'unit-test' }) }),
+    );
+  });
+
+  it('renders the inline section fallback with its retry', () => {
+    const onRetry = vi.fn();
+    render(
+      <ErrorBoundary
+        fallback={({ error }) => (
+          <SectionErrorFallback label="sources" message={error?.message} onRetry={onRetry} />
+        )}
+      >
+        <ThrowingComponent />
+      </ErrorBoundary>,
+    );
+    expect(screen.getByText('Failed to load sources')).toBeInTheDocument();
+    expect(screen.getByText('Test error')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: /Retry/ }));
+    expect(onRetry).toHaveBeenCalled();
+  });
+
+  it('heals assets and reloads a fresh document when a chunk failed to load', async () => {
+    const replace = vi.fn();
+    const original = window.location;
+    Object.defineProperty(window, 'location', {
+      configurable: true,
+      value: { ...original, href: 'https://queer.guide/venues', replace, pathname: '/venues' },
+    });
+    function ChunkFail(): ReactElement {
+      throw new TypeError('Failed to fetch dynamically imported module: /assets/js/x.js');
+    }
+    try {
+      render(
+        <ErrorBoundary>
+          <ChunkFail />
+        </ErrorBoundary>,
+      );
+      fireEvent.click(screen.getByText('Try Again'));
+      await vi.waitFor(() => expect(replace).toHaveBeenCalled());
+      expect(healFailedAssets).toHaveBeenCalled();
+      expect(String(replace.mock.calls[0][0])).toContain('__fresh=');
+    } finally {
+      Object.defineProperty(window, 'location', { configurable: true, value: original });
+    }
   });
 });

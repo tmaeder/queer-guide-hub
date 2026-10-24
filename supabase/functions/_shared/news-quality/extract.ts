@@ -1,5 +1,6 @@
 import { personAuthorCandidate } from '../news-author.ts'
 import * as cheerio from 'https://esm.sh/cheerio@1.0.0-rc.12'
+import { restoreCfEmails } from './cf-email.ts'
 
 // Readability-lite: recover full article body + metadata from a fetched HTML page.
 // Pure + deterministic given (html, url). No network — the caller fetches.
@@ -145,6 +146,7 @@ export function extractArticle(html: string, url: string): ExtractedArticle {
   if (!html || html.length < 50) return result
 
   const $ = cheerio.load(html)
+  restoreCfEmails($)
 
   // ---- Metadata (independent of body strategy) ----
   const ld = collectJsonLd($)
