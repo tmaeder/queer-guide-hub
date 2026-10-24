@@ -433,4 +433,70 @@ describe('AdminEditButton', () => {
       ),
     );
   });
+
+  it('exports a brand record from the maker detail page', async () => {
+    exportRecordMock.mockReset().mockResolvedValue(undefined);
+    useAdminRolesMock.mockReturnValue({ canManageContent: () => true, loading: false });
+    renderIn(
+      <AdminEditButton contentType="marketplace_brands" contentId="b1" exportable />,
+      '/marketplace/brands/x',
+    );
+    await openMenu();
+    fireEvent.click(await screen.findByText('Export record (Excel)'));
+    await waitFor(() =>
+      expect(exportRecordMock).toHaveBeenCalledWith(
+        expect.objectContaining({ tableName: 'marketplace_brands' }),
+        'b1',
+        'Excel',
+      ),
+    );
+  });
+
+  it('exports an organization record from the organization detail page', async () => {
+    exportRecordMock.mockReset().mockResolvedValue(undefined);
+    useAdminRolesMock.mockReturnValue({ canManageContent: () => true, loading: false });
+    renderIn(
+      <AdminEditButton contentType="organizations" contentId="o1" exportable />,
+      '/organizations/x',
+    );
+    await openMenu();
+    fireEvent.click(await screen.findByText('Export record (CSV)'));
+    await waitFor(() =>
+      expect(exportRecordMock).toHaveBeenCalledWith(
+        expect.objectContaining({ tableName: 'organizations' }),
+        'o1',
+        'CSV',
+      ),
+    );
+  });
+
+  it('exports a milestone record from the history detail page', async () => {
+    exportRecordMock.mockReset().mockResolvedValue(undefined);
+    useAdminRolesMock.mockReturnValue({ canManageContent: () => true, loading: false });
+    renderIn(<AdminEditButton contentType="milestones" contentId="h1" exportable />, '/history/x');
+    await openMenu();
+    fireEvent.click(await screen.findByText('Export record (Excel)'));
+    await waitFor(() =>
+      expect(exportRecordMock).toHaveBeenCalledWith(
+        expect.objectContaining({ tableName: 'milestones' }),
+        'h1',
+        'Excel',
+      ),
+    );
+  });
+
+  it('exports a guide record from the guide detail page', async () => {
+    exportRecordMock.mockReset().mockResolvedValue(undefined);
+    useAdminRolesMock.mockReturnValue({ canManageContent: () => true, loading: false });
+    renderIn(<AdminEditButton contentType="guides" contentId="g1" exportable />, '/guides/x');
+    await openMenu();
+    fireEvent.click(await screen.findByText('Export record (CSV)'));
+    await waitFor(() =>
+      expect(exportRecordMock).toHaveBeenCalledWith(
+        expect.objectContaining({ tableName: 'guides' }),
+        'g1',
+        'CSV',
+      ),
+    );
+  });
 });

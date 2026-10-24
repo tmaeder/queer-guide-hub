@@ -13,6 +13,17 @@ vi.mock('@/hooks/useGuides', async (orig) => {
 });
 vi.mock('@/hooks/useGuideReadTracker', () => ({ useGuideReadTracker: () => {} }));
 vi.mock('@/hooks/useLocalizedNavigate', () => ({ useLocalizedNavigate: () => vi.fn() }));
+vi.mock('@/components/share/ShareMenu', () => ({ ShareMenu: () => null }));
+vi.mock('@/components/admin/AdminEditButton', () => ({
+  AdminEditButton: (p: { contentType: string; contentId: string; exportable?: boolean }) => (
+    <span
+      data-testid="admin-edit"
+      data-type={p.contentType}
+      data-id={p.contentId}
+      data-exportable={String(Boolean(p.exportable))}
+    />
+  ),
+}));
 
 import GuideDetail from '../GuideDetail';
 
@@ -48,5 +59,50 @@ describe('GuideDetail — SEO', () => {
     useGuideMock.mockReturnValue({ data: undefined, isLoading: true, error: null });
     renderAt('some-guide');
     expect(document.querySelector('meta[name="robots"]')).toBeNull();
+  });
+});
+
+describe('GuideDetail — admin menu', () => {
+  it('opts the guide admin menu into the record export', async () => {
+    useGuideMock.mockReturnValue({
+      data: {
+        guide: {
+          id: 'g1',
+          format: 'guide',
+          slug: 'berlin',
+          title: 'Berlin',
+          dek: null,
+          intro_md: null,
+          hero_image_path: null,
+          category: null,
+          primary_entity_type: null,
+          city_id: null,
+          audience_tags: [],
+          status: 'published',
+          starts_at: null,
+          ends_at: null,
+          criteria: {},
+          recap_article_id: null,
+          published_at: null,
+          reading_time_min: null,
+          pick_count: 0,
+          review_due_at: null,
+          is_featured: false,
+          safety_gated: false,
+          meta: {},
+          created_at: '2026-01-01T00:00:00Z',
+          updated_at: '2026-01-01T00:00:00Z',
+        },
+        picks: [],
+        sections: [],
+      },
+      isLoading: false,
+      error: null,
+    });
+    renderAt('berlin');
+    const btn = await screen.findByTestId('admin-edit');
+    expect(btn).toHaveAttribute('data-type', 'guides');
+    expect(btn).toHaveAttribute('data-id', 'g1');
+    expect(btn).toHaveAttribute('data-exportable', 'true');
   });
 });

@@ -179,6 +179,28 @@ export const FEEDS = {
       },
     ],
   },
+  at: {
+    meta: {
+      feed_key: 'at-wiener-linien',
+      provider: 'Wiener Linien',
+      country_code: 'AT',
+      source_url: 'https://www.wienerlinien.at/open-data',
+      licence: 'CC BY 4.0',
+      attribution: 'Timetable: Wiener Linien (CC BY 4.0)',
+    },
+    // Wiener Linien only, the one key-free Austrian feed: the national
+    // Mobilitätsverbünde feeds (Graz, Linz, Salzburg, Innsbruck, rail) need an account.
+    // Night lines are named N6, N25, like Germany's.
+    nightByName: true,
+    cities: [
+      {
+        slug: 'vienna',
+        city_id: '18463095-3eef-4e81-b367-1ce244a39c19',
+        centre: [48.2082, 16.3738],
+        radiusKm: 15,
+      },
+    ],
+  },
 };
 
 const args = process.argv.slice(2);
@@ -260,10 +282,16 @@ async function* rows(file) {
 async function main() {
   const t0 = Date.now();
   let feedInfo = {};
-  for await (const r of rows('feed_info.txt')) feedInfo = r;
+  // feed_info.txt is optional in GTFS and Wiener Linien omits it (unzip exits 11 =
+  // "no such file"); any other failure still aborts.
+  try {
+    for await (const r of rows('feed_info.txt')) feedInfo = r;
+  } catch (e) {
+    if (!/exited 11$/.test(e.message)) throw e;
+  }
   const calendar = [];
   for await (const c of rows('calendar.txt')) calendar.push(c);
-  // gtfs.de publishes no feed dates; its validity is the calendar's own span.
+  // gtfs.de and Wiener Linien publish no feed dates; its validity is the calendar's own span.
   if (!feedInfo.feed_start_date || !feedInfo.feed_end_date) {
     feedInfo.feed_start_date = calendar.reduce(
       (m, c) => (c.start_date < m ? c.start_date : m),
@@ -299,7 +327,7 @@ async function main() {
     if (m.mode === 'rail' && isLongDistanceRail(r.route_type, r.route_desc, ref)) continue;
     // German rail-replacement buses carry the train's name ("S8" bus in Düsseldorf at 03:10):
     // a works diversion, not the city's last bus.
-    if (NIGHT_BY_NAME && m.mode === 'bus' && /^(S|RE|RB|U)\s?\d/i.test(ref)) continue;
+    if (NIGHT_BY_NAME && m.mode === 'bus' && /^(SEV|S|RE|RB|U)\s?\d|^SEV\b/i.test(ref)) continue;
     routes.set(r.route_id, {
       ...m,
       night: m.night || (NIGHT_BY_NAME && NIGHT_LINE_NAME.test(ref)),
