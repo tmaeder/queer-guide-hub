@@ -1,4 +1,4 @@
-import { getServiceClient, jsonResponse, errorResponse, corsResponse } from '../_shared/supabase-client.ts'
+import { getServiceClient, jsonResponse, errorResponse, corsResponse, requireInternalOrAdmin, boundedInt } from '../_shared/supabase-client.ts'
 import { logPipelineError } from '../_shared/pipeline-error-log.ts'
 import { llmChatCompletion } from '../_shared/llm-client.ts'
 import {
@@ -32,13 +32,20 @@ const WALL_CLOCK_MS = 120_000
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return corsResponse(req)
   const supabase = getServiceClient()
+  // Service-role client + paid LLM calls: never reachable with the public anon key.
+  const auth = await requireInternalOrAdmin(req, supabase)
+  if (auth instanceof Response) return auth
   const startedAt = Date.now()
 
   try {
     const body = await req.json().catch(() => ({}))
-    const limit       = Number(body.limit ?? DEFAULT_LIMIT)
+    const limit       = boundedInt(body.limit, DEFAULT_LIMIT, 1000)
     const includeAll  = body.include_inactive ?? false
-    const rescoreBefore = body.rescore_before as string | undefined // ISO; only rows classified before this
+    // ISO timestamp, re-serialised so caller text never reaches the PostgREST .or() filter grammar.
+    const rawBefore = body.rescore_before
+    const beforeMs = typeof rawBefore === 'string' ? Date.parse(rawBefore) : NaN
+    if (rawBefore != null && Number.isNaN(beforeMs)) return errorResponse('invalid_rescore_before', 400, req)
+    const rescoreBefore = Number.isNaN(beforeMs) ? undefined : new Date(beforeMs).toISOString()
     const dryRun      = body.dry_run ?? false
 
     let q = supabase
