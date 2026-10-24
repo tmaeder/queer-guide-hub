@@ -13,6 +13,7 @@ import { cleanHtml } from './clean';
 import { hasInternalSecret } from './auth';
 import { assertPublicHttpUrl, UnsafeUrlError } from './ssrf';
 import { renderHtml } from './render';
+import { decodeBytes } from './decodeCharset';
 
 interface Env {
   INTERNAL_SECRET?: string;
@@ -63,7 +64,8 @@ async function fetchHtml(
     assertPublicHttpUrl(finalUrl);
     const buf = await res.arrayBuffer();
     if (buf.byteLength > maxBytes) throw new Error(`html too large: ${buf.byteLength}`);
-    return { html: new TextDecoder('utf-8').decode(buf), finalUrl };
+    // Honour the declared charset — Latin-1 pages (queer.de) otherwise become U+FFFD.
+    return { html: decodeBytes(new Uint8Array(buf), ct).text, finalUrl };
   } finally {
     clearTimeout(t);
   }
