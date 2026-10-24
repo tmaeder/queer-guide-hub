@@ -86,7 +86,7 @@ function findFill(src: string, left: string, right: string, k: number): string |
       const f = [...fills][0]
       // A recovered character is never ASCII: an ASCII byte decodes fine as
       // UTF-8, so it can never have become U+FFFD.
-      return /^[^\x00-\x7f]+$/.test(f) ? f : null
+      return [...f].every((c) => c.charCodeAt(0) > 0x7f) ? f : null
     }
     if (fills.size > 1) return null
     if (lLen >= rLen && lLen > 0) lLen--
