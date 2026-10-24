@@ -1,7 +1,7 @@
-import { useMemo, useEffect, useRef } from 'react';
+import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { useVenues } from '@/hooks/useVenues';
+import { useVenuesQuery } from '@/hooks/useVenues';
 import { useEventsQuery } from '@/hooks/useEvents';
 import { useOptimizedCities, useOptimizedCountries } from '@/hooks/usePlaces';
 import { ink, trackColor } from '@/lib/mapTokens';
@@ -150,26 +150,20 @@ export function useExploreMapData({ enabledLayers, viewport, filters }: UseExplo
 
   // ── Venues ─────────────────────────────────────────────────────────────────
   const venuesEnabled = enabledLayers.includes('venues');
-  const {
-    venues: rawVenues = [],
-    isFetching: venuesFetching,
-    fetchVenues,
-  } = useVenues(false, { skipDatasetTotal: true });
-  const fetchVenuesRef = useRef(fetchVenues);
-  // eslint-disable-next-line react-hooks/refs -- "latest value" ref pattern; effect below reads .current.
-  fetchVenuesRef.current = fetchVenues;
   const tagsKey = filters?.tags?.length ? filters.tags.join(',') : '';
-
-  useEffect(() => {
-    if (!venuesEnabled) return;
-    fetchVenuesRef.current({
-      limit: shouldUseBounds ? 200 : 500, // Reduce limit when using bounds
-      ...(filters?.search ? { search: filters.search } : {}),
-      ...(filters?.category ? { category: filters.category } : {}),
-      ...(tagsKey ? { tags: tagsKey.split(',') } : {}),
-      ...(viewportBounds ? { bounds: viewportBounds } : {}),
-    });
-  }, [venuesEnabled, filters?.search, filters?.category, tagsKey, shouldUseBounds, viewportBounds]);
+  // keepPrevious: markers stay put while a pan's query runs.
+  const { venues: rawVenues, isFetching: venuesFetching } = useVenuesQuery(
+    venuesEnabled
+      ? {
+          limit: shouldUseBounds ? 200 : 500, // Reduce limit when using bounds
+          ...(filters?.search ? { search: filters.search } : {}),
+          ...(filters?.category ? { category: filters.category } : {}),
+          ...(tagsKey ? { tags: tagsKey.split(',') } : {}),
+          ...(viewportBounds ? { bounds: viewportBounds } : {}),
+        }
+      : null,
+    { keepPrevious: true },
+  );
 
   const venueMarkers = useMemo<MapMarker[]>(() => {
     if (!venuesEnabled) return [];

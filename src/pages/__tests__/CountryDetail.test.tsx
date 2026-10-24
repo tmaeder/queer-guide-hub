@@ -23,7 +23,7 @@ vi.mock('@/hooks/usePlaces', () => ({
   useOptimizedCities: () => ({ cities: state.cities, loading: false }),
 }));
 vi.mock('@/hooks/useVenues', () => ({
-  useVenues: () => ({ venues: [], loading: false, fetchVenues: vi.fn() }),
+  useVenuesQuery: () => ({ venues: [], loading: false, isFetching: false, error: null }),
 }));
 vi.mock('@/hooks/useEvents', () => ({
   useEventsQuery: () => ({ events: [], loading: false, isFetching: false, error: null }),

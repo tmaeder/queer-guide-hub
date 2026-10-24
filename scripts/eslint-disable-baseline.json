@@ -1,5 +1,5 @@
 {
-  "total": 490,
+  "total": 484,
   "files": {
     "src/components/admin/CloudflareDashboard.tsx": {
       "react-hooks/set-state-in-effect": 1
@@ -616,9 +616,6 @@
     "src/hooks/useEventFilters.ts": {
       "react-hooks/exhaustive-deps": 1
     },
-    "src/hooks/useExploreMapData.ts": {
-      "react-hooks/refs": 1
-    },
     "src/hooks/useFavorites.tsx": {
       "react-hooks/exhaustive-deps": 2,
       "react-hooks/set-state-in-effect": 1
@@ -778,9 +775,6 @@
       "react-hooks/exhaustive-deps": 1,
       "react-hooks/set-state-in-effect": 1
     },
-    "src/hooks/useVenues.tsx": {
-      "react-hooks/set-state-in-effect": 2
-    },
     "src/hooks/useVenuesV2Data.ts": {
       "react-hooks/set-state-in-effect": 4
     },
@@ -846,14 +840,8 @@
       "queerguide/no-supabase-from-in-pages": 1,
       "react-hooks/immutability": 1
     },
-    "src/pages/CityDetail.tsx": {
-      "react-hooks/refs": 1
-    },
     "src/pages/CountryDetail.parts.tsx": {
       "@typescript-eslint/no-explicit-any": 8
-    },
-    "src/pages/CountryDetail.tsx": {
-      "react-hooks/refs": 1
     },
     "src/pages/EntityDetail.tsx": {
       "react-hooks/exhaustive-deps": 2
@@ -921,9 +909,6 @@
     },
     "src/pages/ProfessionDetail.tsx": {
       "react-hooks/set-state-in-effect": 1
-    },
-    "src/pages/QueerVillageDetail.tsx": {
-      "react-hooks/refs": 1
     },
     "src/pages/RedirectMemberWorkspace.tsx": {
       "react-hooks/set-state-in-effect": 1

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { useParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
@@ -30,7 +30,7 @@ import {
 import { useWorldBankData } from '@/hooks/useWorldBankData';
 import { useSDGData } from '@/hooks/useSDGData';
 import { useOptimizedCountry, useOptimizedCities } from '@/hooks/usePlaces';
-import { useVenues } from '@/hooks/useVenues';
+import { useVenuesQuery } from '@/hooks/useVenues';
 import { useEventsQuery } from '@/hooks/useEvents';
 import { useNews } from '@/hooks/useNews';
 import { useMilestonesForCountry } from '@/hooks/useMilestones';
@@ -98,7 +98,9 @@ export default function CountryDetail() {
   });
 
   const { cities } = useOptimizedCities({ countryId: country?.id ?? '', limit: 12 });
-  const { venues, fetchVenues } = useVenues(false);
+  const { venues } = useVenuesQuery(
+    country?.id ? { countryId: country.id, limit: 12, railQuality: true } : null,
+  );
   const { events } = useEventsQuery(country?.id ? { countryId: country.id, limit: 12 } : null);
   const { articles, fetchArticles, incrementViews } = useNews({ autoload: false });
 
@@ -125,9 +127,6 @@ export default function CountryDetail() {
   const sdgData = useSDGData(country ?? null);
 
   const [weatherData, setWeatherData] = useState<WeatherDataType>(null);
-  const fetchVenuesRef = useRef(fetchVenues);
-  // eslint-disable-next-line react-hooks/refs -- "latest value" ref; effect reads .current.
-  fetchVenuesRef.current = fetchVenues;
 
   useEffect(() => {
     if (country?.id) {
@@ -139,11 +138,6 @@ export default function CountryDetail() {
       });
     }
   }, [country?.id, country?.name, track]);
-
-  useEffect(() => {
-    if (country?.id)
-      fetchVenuesRef.current({ countryId: country.id, limit: 12, railQuality: true });
-  }, [country?.id]);
 
   useEffect(() => {
     if (country?.id) fetchArticles({ countryIds: [country.id] });

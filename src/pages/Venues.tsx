@@ -11,7 +11,7 @@ import { useState, useEffect, useMemo, useCallback } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import { useSearchParams } from 'react-router';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
-import { useVenues } from '@/hooks/useVenues';
+import { useVenuesFeed } from '@/hooks/useVenues';
 import { useRecentVenues } from '@/hooks/useRecentVenues';
 import { useEventsQuery } from '@/hooks/useEvents';
 import { useMeta } from '@/hooks/useMeta';
@@ -85,8 +85,10 @@ const Venues = () => {
     datasetTotal,
     filteredTotal,
     fetchVenues,
+    loadMore,
+    loadingMore,
     loadingTimedOut,
-  } = useVenues(false);
+  } = useVenuesFeed();
 
   useMeta({
     title: 'Venues',
@@ -228,7 +230,6 @@ const Venues = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [chipKey],
   );
-  const [page, setPage] = useState(1);
   const PAGE_SIZE = 24;
 
   // `userLocation` / `nearMe` are passed through currentFilters for ranking
@@ -270,7 +271,7 @@ const Venues = () => {
   );
 
   const baseFetchOptions = useCallback(
-    (extra?: { page?: number; pageSize?: number; append?: boolean; sort?: string }) => ({
+    (extra?: { page?: number; pageSize?: number; sort?: string }) => ({
       ...extra,
       useRanking: VENUES_V2_ENABLED,
       userId: user?.id ?? null,
@@ -278,26 +279,8 @@ const Venues = () => {
     [user],
   );
 
-  /** The one next-page fetch. Was written out twice — once inside an unlatched
-   *  IntersectionObserver and once in the button's onClick — and the observer
-   *  copy could re-enter before React re-rendered with `loading=true`, calling
-   *  `setPage` again off the same stale `page` and skipping a page outright.
-   *  `LoadMore` owns the latch now; this is just the fetch. */
-  const loadNextPage = useCallback(async () => {
-    const nextPage = page + 1;
-    setPage(nextPage);
-    await fetchVenues(
-      mergeChipFilters({
-        ...currentFilters,
-        userLocation: userLocation ?? undefined,
-      }) as Parameters<typeof fetchVenues>[0],
-      baseFetchOptions({ page: nextPage, pageSize: PAGE_SIZE, append: true, sort: sortBy }),
-    );
-  }, [page, currentFilters, userLocation, mergeChipFilters, baseFetchOptions, sortBy, fetchVenues]);
-
   const handleFiltersChange = async (filters: Record<string, unknown>) => {
     setCurrentFilters(filters);
-    setPage(1);
     const list = (v: unknown) =>
       Array.isArray(v) && v.length > 0 ? (v as string[]).join(',') : undefined;
     const nextParams = {
@@ -326,7 +309,7 @@ const Venues = () => {
       mergeChipFilters({ ...filters, userLocation: userLocation ?? undefined }) as Parameters<
         typeof fetchVenues
       >[0],
-      baseFetchOptions({ page: 1, pageSize: PAGE_SIZE, append: false, sort: sortBy }),
+      baseFetchOptions({ page: 1, pageSize: PAGE_SIZE, sort: sortBy }),
     );
   };
 
@@ -340,10 +323,9 @@ const Venues = () => {
     if (userLocation) (baseNext as Record<string, unknown>).userLocation = userLocation;
     // eslint-disable-next-line react-hooks/set-state-in-effect -- effect synchronizes state with external props/data; React Compiler can't infer the sync direction. Documented exemption from the eslint.config.js staged-ratchet plan.
     setCurrentFilters(baseNext);
-    setPage(1);
     fetchVenues(
       mergeChipFilters(baseNext) as Parameters<typeof fetchVenues>[0],
-      baseFetchOptions({ page: 1, pageSize: PAGE_SIZE, append: false, sort: sortBy }),
+      baseFetchOptions({ page: 1, pageSize: PAGE_SIZE, sort: sortBy }),
     );
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
@@ -656,8 +638,9 @@ const Venues = () => {
               {venues.length > 0 && (
                 <LoadMore
                   hasMore={hasMore}
-                  loading={loading}
-                  onLoadMore={loadNextPage}
+                  loading={loadingMore}
+                  // The next page of the request that built this list.
+                  onLoadMore={loadMore}
                   resetKey={chipKey}
                 />
               )}
