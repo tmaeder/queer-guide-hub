@@ -235,13 +235,15 @@ export function parseItunesDuration(raw: string | null): number | null {
   return secs > 0 ? secs : null
 }
 
+// Unwraps EVERY CDATA section inside the element, not just one that fills it
+// exactly. Pride Source wraps <description> in whitespace and TWO sections
+// (`\n\t<![CDATA[<img…>]]>\n\t<![CDATA[<p>…]]>\n`); the old single-section
+// regex missed it, the raw markers reached cleanText, and 21 articles were
+// published with bodies starting "]]".
 export function extractTag(xml: string, tag: string): string | null {
-  const cdataRe = new RegExp(`<${tag}[^>]*><!\\[CDATA\\[([\\s\\S]*?)\\]\\]></${tag}>`, 'i')
-  const cdataMatch = cdataRe.exec(xml)
-  if (cdataMatch) return cdataMatch[1]
   const re = new RegExp(`<${tag}[^>]*>([\\s\\S]*?)</${tag}>`, 'i')
   const m = re.exec(xml)
-  return m ? m[1] : null
+  return m ? m[1].replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g, '$1') : null
 }
 
 export function extractMediaUrl(block: string): string | null {

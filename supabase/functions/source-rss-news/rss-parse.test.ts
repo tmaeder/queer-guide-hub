@@ -463,3 +463,17 @@ Deno.test('isShowHomepage: null on either side is never a match', () => {
   assertEquals(isShowHomepage('https://x.example', null), false)
   assertEquals(isShowHomepage(null, null), false)
 })
+
+// Regression: Pride Source (pridesource.com/feed.rss) wraps <description> in
+// whitespace and TWO CDATA sections. The old extractTag only unwrapped a single
+// section filling the element exactly, so the markers survived and 21 articles
+// were published with bodies starting "]]" (2026-10-14 → 2026-10-23).
+Deno.test('parseRssItems unwraps whitespace-padded, multi-section CDATA', () => {
+  const xml = `<rss><channel><item><title>Vote</title><link>https://pridesource.com/a</link>` +
+    `<description>\n\t\t\t<![CDATA[<img src="https://pridesource.com/x.jpg" alt="x">]]>\n\t\t<![CDATA[\n\t\t\t<p>Have you made a plan to vote? Early voting begins Oct. 24.</p>\n\t\t]]>\n\t</description></item></channel></rss>`
+  const [item] = parseRssItems(xml, false, 10)
+  const body = String(item.content ?? item.description ?? '')
+  assertEquals(body.trimStart().startsWith('Have you made a plan'), true, `body was: ${JSON.stringify(body.slice(0, 80))}`)
+  assertEquals(body.includes(']]'), false)
+  assertEquals(body.includes('CDATA'), false)
+})

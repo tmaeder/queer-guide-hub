@@ -12,19 +12,42 @@ vi.mock('@/components/marketplace/MarketplaceFilteredView', () => ({
   ),
 }));
 vi.mock('@/components/routing/LocalizedLink', () => ({
-  LocalizedLink: ({ to, children }: { to: string; children: React.ReactNode }) => <a href={to}>{children}</a>,
+  LocalizedLink: ({ to, children }: { to: string; children: React.ReactNode }) => (
+    <a href={to}>{children}</a>
+  ),
 }));
 
 const brandState: { value: unknown; loading: boolean } = { value: null, loading: false };
+const adminState = { canManageContent: false, brandId: null as string | null };
+const brandIdCalls: Array<[string | undefined, boolean]> = [];
 vi.mock('@/hooks/useMarketplaceBrands', () => ({
   useMarketplaceBrand: () => ({ data: brandState.value, isLoading: brandState.loading }),
+  useMarketplaceBrandId: (slug: string | undefined, enabled: boolean) => {
+    brandIdCalls.push([slug, enabled]);
+    return { data: enabled ? adminState.brandId : undefined };
+  },
+}));
+vi.mock('@/hooks/useAdminRoles', () => ({
+  useAdminRoles: () => ({ canManageContent: () => adminState.canManageContent, loading: false }),
+}));
+vi.mock('@/components/admin/AdminEditButton', () => ({
+  AdminEditButton: (p: { contentType: string; contentId: string; exportable?: boolean }) => (
+    <div
+      data-testid="admin-edit"
+      data-type={p.contentType}
+      data-id={p.contentId}
+      data-exportable={String(Boolean(p.exportable))}
+    />
+  ),
 }));
 
 import MarketplaceBrand from '../MarketplaceBrand';
 
 function renderAt(path: string) {
   return renderWithProviders(
-    <Routes><Route path="/marketplace/brands/:slug" element={<MarketplaceBrand />} /></Routes>,
+    <Routes>
+      <Route path="/marketplace/brands/:slug" element={<MarketplaceBrand />} />
+    </Routes>,
     { route: path },
   );
 }
@@ -75,7 +98,10 @@ describe('MarketplaceBrand', () => {
     expect(screen.getByText('Queer-owned')).toBeInTheDocument();
     expect(screen.getByText('Underwear for every body.')).toBeInTheDocument();
     expect(screen.getByTestId('filtered')).toHaveAttribute('data-brand-key', 'tomboyx');
-    expect(screen.getByRole('link', { name: /Visit brand site/i })).toHaveAttribute('href', 'https://tomboyx.com');
+    expect(screen.getByRole('link', { name: /Visit brand site/i })).toHaveAttribute(
+      'href',
+      'https://tomboyx.com',
+    );
   });
 
   it('renders un-reviewed brand without trust fields', () => {
@@ -100,8 +126,44 @@ describe('brandSlug', () => {
   it('mirrors the SQL slug rule', () => {
     expect(brandSlug('TomboyX')).toBe('tomboyx');
     expect(brandSlug('  Big Bud   Press ')).toBe('big-bud-press');
-    expect(brandSlug("Ash + Chess & Co.")).toBe('ash-chess-co');
+    expect(brandSlug('Ash + Chess & Co.')).toBe('ash-chess-co');
     expect(brandSlug('***')).toBeNull();
     expect(brandSlug(null)).toBeNull();
+  });
+
+  describe('staff admin menu', () => {
+    const tomboyx = {
+      slug: 'tomboyx',
+      display_name: 'TomboyX',
+      brand_key: 'tomboyx',
+      product_count: 573,
+      website: null,
+      logo_url: null,
+      story: null,
+      ownership_tags: [],
+      is_approved: true,
+    };
+
+    it('gives staff the record export, addressed by the brand id', () => {
+      brandState.value = tomboyx;
+      adminState.canManageContent = true;
+      adminState.brandId = 'brand-uuid-1';
+      renderAt('/marketplace/brands/tomboyx');
+      const btn = screen.getByTestId('admin-edit');
+      expect(btn).toHaveAttribute('data-type', 'marketplace_brands');
+      expect(btn).toHaveAttribute('data-id', 'brand-uuid-1');
+      expect(btn).toHaveAttribute('data-exportable', 'true');
+    });
+
+    it('never looks up the id or shows the menu for a public visitor', () => {
+      brandState.value = tomboyx;
+      adminState.canManageContent = false;
+      adminState.brandId = 'brand-uuid-1';
+      brandIdCalls.length = 0;
+      renderAt('/marketplace/brands/tomboyx');
+      expect(screen.queryByTestId('admin-edit')).not.toBeInTheDocument();
+      expect(brandIdCalls.length).toBeGreaterThan(0);
+      expect(brandIdCalls.every(([, enabled]) => enabled === false)).toBe(true);
+    });
   });
 });
