@@ -656,7 +656,7 @@ const NO_EVENTS: Event[] = [];
 export function useEventsQuery(filters: EventFilters | null, opts?: { keepPrevious?: boolean }) {
   const { user } = useAuth();
   const viewer = user?.id ?? 'anon';
-  const query = useQuery({
+  const query = useQuery<Event[]>({
     queryKey: ['events', viewer, filters],
     enabled: filters !== null,
     placeholderData: opts?.keepPrevious

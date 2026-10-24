@@ -31,7 +31,7 @@ import * as eventsModule from '../useEvents';
 
 function wrapperWith(client: QueryClient) {
   return ({ children }: { children: ReactNode }) =>
-    createElement(TestProviders, { queryClient: client }, children);
+    createElement(TestProviders, { queryClient: client, children });
 }
 
 describe('useEventsQuery', () => {
