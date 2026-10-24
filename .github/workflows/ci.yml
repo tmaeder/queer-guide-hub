@@ -85,6 +85,12 @@ jobs:
       # missing _routes.json (which leaves the Functions bundle unrouted, so
       # every Pages Function 404s). Both shipped green on 2026-08-01.
       - run: npm run check:pages-routing
+      # Every install here runs --no-audit, so nothing else looks at advisories
+      # between Dependabot PRs. Ratchet against scripts/npm-audit-baseline.json:
+      # a NEW high/critical prod advisory fails; a baselined one that goes away
+      # fails too until its entry is deleted (shrink-only).
+      - name: npm audit (production deps, high+)
+        run: npm run check:npm-audit
 
   unit-test-shards:
     name: Unit tests (${{ matrix.shard }}/4)
