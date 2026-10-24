@@ -39,12 +39,20 @@ const INGEST = /\/api\/track|\/functions\/v1\/umami-analytics|search\.[^/]+\/tra
 /** Count every analytics beacon the page attempts, by pipeline. */
 function countBeacons(page: Page) {
   const urls: string[] = [];
+  const pageViewUrls: string[] = [];
   page.on('request', (r) => {
-    if (INGEST.test(r.url())) urls.push(r.url());
+    if (!INGEST.test(r.url())) return;
+    urls.push(r.url());
+    // A named event (e.g. `web_vital`) carries `name`; a page view does not.
+    if (!/"name"\s*:/.test(r.postData() ?? '')) pageViewUrls.push(r.url());
   });
   return {
     get all() {
       return urls;
+    },
+    /** Page-view beacons only — named events (web vitals etc.) excluded. */
+    get pageViews() {
+      return pageViewUrls;
     },
     /** Through the consent-gated first-party proxy. */
     get proxied() {
@@ -64,6 +72,7 @@ function countBeacons(page: Page) {
     },
     reset() {
       urls.length = 0;
+      pageViewUrls.length = 0;
     },
   };
 }
@@ -130,9 +139,7 @@ async function awaitInitialBeaconThenReset(
   page: Page,
   beacons: { all: string[]; reset: () => void },
 ) {
-  await expect
-    .poll(() => beacons.all.length, { timeout: 10_000 })
-    .toBeGreaterThan(0);
+  await expect.poll(() => beacons.all.length, { timeout: 10_000 }).toBeGreaterThan(0);
   await settle(page);
   beacons.reset();
 }
@@ -165,10 +172,9 @@ test.describe('analytics consent gate', () => {
       await settle(page);
     }
 
-    expect(
-      beacons.all,
-      'a visitor who has not consented must not be tracked at all',
-    ).toHaveLength(0);
+    expect(beacons.all, 'a visitor who has not consented must not be tracked at all').toHaveLength(
+      0,
+    );
     expect(await page.evaluate(() => typeof (window as { umami?: unknown }).umami)).toBe(
       'undefined',
     );
@@ -247,9 +253,7 @@ test.describe('analytics consent gate', () => {
     expect(beacons.all, 'DNT is a refusal even when the banner was accepted').toHaveLength(0);
   });
 
-  test('consent granted → exactly one beacon per page, all through the proxy', async ({
-    page,
-  }) => {
+  test('consent granted → exactly one beacon per page, all through the proxy', async ({ page }) => {
     await presentAsHuman(page);
     await storeConsent(page, true);
     const beacons = countBeacons(page);
@@ -257,7 +261,7 @@ test.describe('analytics consent gate', () => {
     await page.goto('/');
     await waitForAppReady(page);
     await settle(page);
-    const afterHome = beacons.all.length;
+    const afterHome = beacons.pageViews.length;
 
     await page.goto('/venues');
     await waitForAppReady(page);
@@ -265,13 +269,13 @@ test.describe('analytics consent gate', () => {
 
     // One per page view, not two. The duplicate came from a second pipeline
     // running beside the script.
-    expect(beacons.all.length, 'one page view is one beacon').toBe(2);
+    expect(beacons.pageViews.length, 'one page view is one beacon').toBe(2);
     expect(afterHome, 'the first page view is also a single beacon').toBe(1);
 
     // And all of them carry edge geo, because they went through /api/track.
     // A beacon straight at the edge function is the bypass, by definition.
     expect(beacons.direct, 'nothing may reach the ingest function directly').toHaveLength(0);
-    expect(beacons.proxied).toHaveLength(2);
+    expect(beacons.proxied.length).toBe(beacons.all.length);
   });
 
   test('scrolling one article is one page view, not one per section', async ({ page }) => {
@@ -303,7 +307,7 @@ test.describe('analytics consent gate', () => {
     await settle(page);
 
     expect(
-      beacons.all,
+      beacons.pageViews,
       'reading one article must not emit a beacon per section passed',
     ).toHaveLength(0);
   });
