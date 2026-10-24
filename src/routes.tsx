@@ -6,7 +6,7 @@ import { useSearchTelemetry } from '@/providers/SearchTelemetryProvider';
 import { AdminRouteGuard } from '@/components/security/AdminRouteGuard';
 import { LocaleRouter } from '@/components/routing/LocaleRouter';
 import { AuthAliasRedirect } from '@/components/routing/AuthAliasRedirect';
-import { ErrorBoundary } from '@/components/ErrorBoundary';
+import { ErrorBoundary } from '@/components/error/ErrorBoundary';
 import { RouteFade } from '@/components/layout/RouteFade';
 import { PageContainer } from '@/components/layout/PageContainer';
 import { PageLoadingState } from '@/components/layout/PageLoadingState';
@@ -386,7 +386,7 @@ export const AppRoutes = () => {
         {/* Content arrives quietly; Suspense owns actual loading feedback.
             The keyed error boundary resets for each destination. */}
         <RouteFade>
-          <ErrorBoundary key={location.pathname}>
+          <ErrorBoundary key={location.pathname} section="route">
             <Suspense
               fallback={
                 <PageContainer>

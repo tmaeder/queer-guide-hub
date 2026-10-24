@@ -64,7 +64,7 @@ import {
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { ErrorState } from '@/components/ui/EmptyState';
 import { classifyTripError } from '@/utils/tripError';
-import { ErrorBoundary } from '@/components/ErrorBoundary';
+import { ErrorBoundary } from '@/components/error/ErrorBoundary';
 import { PageContainer } from '@/components/layout/PageContainer';
 import { trackTripEvent } from '@/utils/tripTracking';
 import { AMBIENT_TRIP_WORKSPACE_ENABLED } from '@/lib/trips/ambientTripFlags';
