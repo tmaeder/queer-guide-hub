@@ -155,6 +155,15 @@ verify_jwt = false
 [functions.calendar-feed]
 verify_jwt = false
 
+# Token-gated by trip_shares (expiry enforced in the function). Fetched by
+# crawlers / link unfurlers (og:image) and calendar apps, which send no auth
+# header; with verify_jwt the gateway 401'd every one before the function ran.
+[functions.trip-og-image]
+verify_jwt = false
+
+[functions.trip-ical]
+verify_jwt = false
+
 [functions.import-tripadvisor-venues]
 verify_jwt = false
 
