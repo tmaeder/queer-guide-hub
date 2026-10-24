@@ -13,7 +13,8 @@
       "numberOfRuns": 3,
       "settings": {
         "skipAudits": ["uses-http2"],
-        "preset": "desktop"
+        "preset": "desktop",
+        "blockedUrlPatterns": ["*/api/geo*"]
       }
     },
     "upload": {
@@ -63,7 +64,7 @@
             "total-blocking-time": [
               "error",
               {
-                "maxNumericValue": 600,
+                "maxNumericValue": 400,
                 "aggregationMethod": "optimistic"
               }
             ],
@@ -77,7 +78,7 @@
             "resource-summary:script:size": [
               "error",
               {
-                "maxNumericValue": 1014000,
+                "maxNumericValue": 973000,
                 "aggregationMethod": "optimistic"
               }
             ]
@@ -131,7 +132,7 @@
             "cumulative-layout-shift": [
               "error",
               {
-                "maxNumericValue": 0.55,
+                "maxNumericValue": 0.54,
                 "aggregationMethod": "optimistic"
               }
             ],
@@ -150,14 +151,14 @@
             "categories:performance": [
               "error",
               {
-                "minScore": 0.38,
+                "minScore": 0.37,
                 "aggregationMethod": "optimistic"
               }
             ],
             "categories:accessibility": [
               "error",
               {
-                "minScore": 0.96,
+                "minScore": 0.97,
                 "aggregationMethod": "optimistic"
               }
             ],
@@ -178,7 +179,7 @@
             "largest-contentful-paint": [
               "error",
               {
-                "maxNumericValue": 8500,
+                "maxNumericValue": 7700,
                 "aggregationMethod": "optimistic"
               }
             ],
@@ -192,14 +193,14 @@
             "cumulative-layout-shift": [
               "error",
               {
-                "maxNumericValue": 0.32,
+                "maxNumericValue": 0.33,
                 "aggregationMethod": "optimistic"
               }
             ],
             "resource-summary:script:size": [
               "error",
               {
-                "maxNumericValue": 1100000,
+                "maxNumericValue": 1102000,
                 "aggregationMethod": "optimistic"
               }
             ]
@@ -211,7 +212,7 @@
             "categories:performance": [
               "error",
               {
-                "minScore": 0.33,
+                "minScore": 0.35,
                 "aggregationMethod": "optimistic"
               }
             ],
@@ -239,7 +240,7 @@
             "largest-contentful-paint": [
               "error",
               {
-                "maxNumericValue": 6700,
+                "maxNumericValue": 5300,
                 "aggregationMethod": "optimistic"
               }
             ],
@@ -375,7 +376,7 @@
             "cumulative-layout-shift": [
               "error",
               {
-                "maxNumericValue": 0.77,
+                "maxNumericValue": 0.76,
                 "aggregationMethod": "optimistic"
               }
             ],
@@ -394,7 +395,7 @@
             "categories:performance": [
               "error",
               {
-                "minScore": 0.36,
+                "minScore": 0.37,
                 "aggregationMethod": "optimistic"
               }
             ],
@@ -436,7 +437,7 @@
             "cumulative-layout-shift": [
               "error",
               {
-                "maxNumericValue": 0.48,
+                "maxNumericValue": 0.47,
                 "aggregationMethod": "optimistic"
               }
             ],

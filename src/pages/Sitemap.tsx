@@ -1,4 +1,5 @@
 import { slugify } from '@/lib/slugify';
+import { serializeJsonLd } from '@/lib/serializeJsonLd';
 import { useEffect, useMemo, useState } from 'react';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { Search, Link2, Hash } from 'lucide-react';
@@ -111,7 +112,7 @@ export default function Sitemap() {
     <>
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        dangerouslySetInnerHTML={{ __html: serializeJsonLd(jsonLd) }}
       />
 
       <header className="py-8">

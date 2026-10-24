@@ -1,4 +1,4 @@
-import DOMPurify from 'dompurify';
+import { sanitizeSvg } from '@/lib/sanitize';
 import { useNavigate } from 'react-router';
 import { TrackLoader } from '@/components/transit/TrackLoader';
 import { Card, CardContent } from '@/components/ui/card';
@@ -37,11 +37,7 @@ function ThumbImage({ item, size = 'full' }: { item: UnifiedMediaItem; size?: 'f
         const prefix = url.indexOf(',');
         svgContent = decodeURIComponent(url.slice(prefix + 1));
       }
-      const sanitized = DOMPurify.sanitize(svgContent, {
-        USE_PROFILES: { svg: true, svgFilters: true },
-        FORBID_TAGS: ['script', 'foreignObject'],
-        FORBID_ATTR: ['onload', 'onerror', 'onclick', 'onmouseover'],
-      });
+      const sanitized = sanitizeSvg(svgContent);
       return (
         // eslint-disable-next-line react-hooks/error-boundaries -- inline SVG render guarded by try/catch with fallback below; deliberate.
         <div
