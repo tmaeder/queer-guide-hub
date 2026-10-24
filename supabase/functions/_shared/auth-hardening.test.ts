@@ -1,6 +1,6 @@
 import { assert, assertEquals } from 'https://deno.land/std@0.224.0/assert/mod.ts'
 import { timingSafeEqual, signHmac, verifyHmac } from './hmac.ts'
-import { boundedInt, errorResponse, hasInternalSecret, jsonResponse, pgrstValue } from './supabase-client.ts'
+import { boundedInt, errorResponse, hasInternalSecret, jsonResponse, pgrstValue, requireAnyRole, STAFF_ROLES } from './supabase-client.ts'
 import { hasValidWebhookSecret } from './webhook-auth.ts'
 
 Deno.test('timingSafeEqual', () => {
@@ -118,4 +118,48 @@ Deno.test('pgrstValue keeps filter grammar out of values', () => {
   assertEquals(pgrstValue('a"b\\c'), '"a\\"b\\\\c"')
   assertEquals(pgrstValue(null), '""')
   assertEquals(pgrstValue(42), '"42"')
+})
+
+Deno.test('requireAnyRole: staff passes, others and anon do not', async () => {
+  Deno.env.set('INTERNAL_INVOKE_SECRET', 'abc123')
+  Deno.env.set('SUPABASE_SERVICE_ROLE_KEY', 'svc-key')
+  const roles: Record<string, string[]> = { ed: ['editor'], mem: [], adm: ['admin'] }
+  let askedFor: string[] = []
+  // deno-lint-ignore no-explicit-any
+  const client: any = {
+    auth: { getUser: async (t: string) => ({ data: { user: roles[t] ? { id: t } : null }, error: null }) },
+    from: () => ({ select: () => ({ eq: (_c: string, uid: string) => ({ in: (_r: string, want: string[]) => {
+      askedFor = want
+      return { limit: async () => ({ data: (roles[uid] ?? []).filter((r) => want.includes(r)).map((role) => ({ role })) }) }
+    } }) }) }),
+  }
+  const req = (h: Record<string, string>) => new Request('https://x', { headers: h })
+  const st = async (h: Record<string, string>) => {
+    const r = await requireAnyRole(req(h), client, STAFF_ROLES)
+    return r instanceof Response ? r.status : 'ok'
+  }
+  assertEquals(await st({ Authorization: 'Bearer ed' }), 'ok')
+  assertEquals(askedFor, ['admin', 'moderator', 'editor'])
+  assertEquals(await st({ Authorization: 'Bearer adm' }), 'ok')
+  assertEquals(await st({ Authorization: 'Bearer mem' }), 403)
+  assertEquals(await st({ Authorization: 'Bearer nobody' }), 401)
+  assertEquals(await st({}), 401)
+  assertEquals(await st({ 'x-internal-secret': 'abc123' }), 'ok')
+  assertEquals(await st({ 'x-internal-secret': 'abc124' }), 401)
+  assertEquals(await st({ Authorization: 'Bearer svc-key' }), 'ok')
+})
+
+Deno.test('staff/operator gates sit before the body is read', async () => {
+  for (const [f, call] of [
+    ['classify-relevance-backfill', 'requireInternalOrAdmin(req'],
+    ['push-feedback-to-github', 'requireAnyRole(req'],
+    ['story-narrate', 'requireAnyRole(req'],
+    ['cms-ai', 'requireAnyRole(req'],
+  ] as const) {
+    const s = await code(`${f}/index.ts`)
+    const gate = s.indexOf(call)
+    assert(gate > 0, `${f}: no ${call} gate`)
+    const body = s.search(/req(uest)?\.json\(\)/)
+    assert(body === -1 || gate < body, `${f}: body read before the auth gate`)
+  }
 })
