@@ -13,6 +13,7 @@ import noSonnerToastObject from './eslint-rules/no-sonner-toast-object.js';
 import adminUiPrimitives from './eslint-rules/admin-ui-primitives.js';
 import noHandRolledPageWrapper from './eslint-rules/no-hand-rolled-page-wrapper.js';
 import noUngatedAnalytics from './eslint-rules/no-ungated-analytics.js';
+import noDirectDompurify from './eslint-rules/no-direct-dompurify.js';
 
 // typescript-eslint v8 throws when its project-service auto-detect sees
 // multiple candidate root dirs (here: repo root + scraper/). Pin it via
@@ -76,6 +77,7 @@ export default tseslint.config(
           'admin-ui-primitives': adminUiPrimitives,
           'no-hand-rolled-page-wrapper': noHandRolledPageWrapper,
           'no-ungated-analytics': noUngatedAnalytics,
+          'no-direct-dompurify': noDirectDompurify,
         },
       },
     },
@@ -126,6 +128,8 @@ export default tseslint.config(
       // emitter is how AnalyticsTracker came to carry 98.9% of tracking past
       // a policy that promised consent, and how every view was counted twice.
       'queerguide/no-ungated-analytics': 'error',
+      // DOMPurify is configured in ONE place, as named profiles.
+      'queerguide/no-direct-dompurify': 'error',
       // Accessibility rules (WCAG 2.2 AA)
       'jsx-a11y/alt-text': 'error',
       'jsx-a11y/anchor-has-content': 'error',

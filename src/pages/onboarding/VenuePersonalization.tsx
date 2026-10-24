@@ -6,6 +6,7 @@
  * Routed at /onboarding/venues.
  */
 import { useEffect, useMemo, useState } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/hooks/useAuth';
@@ -63,6 +64,7 @@ const VenuePersonalization = () => {
   const { user, loading } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const queryClient = useQueryClient();
   const [step, setStep] = useState<Step>(0);
   const [categories, setCategories] = useState<string[]>([]);
   const [groups, setGroups] = useState<string[]>([]);
@@ -96,6 +98,7 @@ const VenuePersonalization = () => {
       toast({ title: t('venues.onboarding.saveError', 'Could not save'), variant: 'destructive' });
       return;
     }
+    void queryClient.invalidateQueries({ queryKey: ['discovery-profile', user.id] });
     toast({ title: t('venues.onboarding.saveSuccess', 'Tastes saved') });
     navigate('/venues');
   };

@@ -183,7 +183,11 @@ describe('the news_sources column allowlist', () => {
 
   it('the anon client no longer asks for every column', () => {
     const hook = readFileSync(join(__dirname, '../../hooks/useNews.tsx'), 'utf8');
-    const block = hook.slice(hook.indexOf('fetchSources'), hook.indexOf('fetchSources') + 1400);
+    // Anchored on the sources hook; a missing anchor would slice an empty
+    // string and make both assertions below vacuous.
+    const at = hook.indexOf('export function useNewsSources');
+    expect(at).toBeGreaterThanOrEqual(0);
+    const block = hook.slice(at, at + 2400);
     expect(block).not.toMatch(/\.from\('news_sources'\)\s*\n\s*\.select\('\*'\)/);
     // Explicit list (anon has a column allowlist): only what the dropdown reads.
     expect(block).toMatch(/\.select\('id, name, url'\)/);
