@@ -2,7 +2,8 @@
 // that were never classified. Self-contained (inline Supabase + native CF /ai/run to
 // dodge the /ai/v1 json-hang). Resumable via classified_at. Personalities intentionally
 // EXCLUDED (auto-labeling real people's LGBTQ+ status = outing risk).
-import { getServiceClient, getCorsHeaders, corsResponse } from '../_shared/supabase-client.ts'
+import { getServiceClient, getCorsHeaders, corsResponse, requireInternalOrAdmin, boundedInt } from '../_shared/supabase-client.ts'
+import { safeErrCode } from '../_shared/safe-error.ts'
 
 const json = (b: unknown, s = 200, req?: Request) =>
   new Response(JSON.stringify(b), { status: s, headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } })
@@ -30,14 +31,18 @@ Reply with ONLY a number 0.00-1.00, or the word UNKNOWN. Nothing else.`
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return corsResponse(req)
+  // Service-role writes + paid LLM calls: operator/cron only, never the anon key.
+  const auth = await requireInternalOrAdmin(req, getServiceClient())
+  if (auth instanceof Response) return auth
   try {
-    const { entity_type, batch_size = 25 } = await req.json().catch(() => ({}))
+    const { entity_type, batch_size: rawBatch } = await req.json().catch(() => ({}))
+    const batch_size = boundedInt(rawBatch, 25, 100)
     const cfg = CFG[entity_type as string]
     if (!cfg) return json({ error: 'bad entity_type (venue|event|marketplace|news)' }, 400)
 
     const sb = getServiceClient()
     const { data: rows, error } = await sb.from(cfg.table).select(cfg.cols).is('classified_at', null).limit(batch_size)
-    if (error) return json({ error: error.message }, 500)
+    if (error) return json({ error: safeErrCode(error, [], 'classify-relevance-backfill') }, 500)
     if (!rows?.length) return json({ done: true, processed: 0, ok: 0, failed: 0 })
 
     const acct = Deno.env.get('CF_ACCOUNT_ID') ?? Deno.env.get('CLOUDFLARE_ACCOUNT_ID')
