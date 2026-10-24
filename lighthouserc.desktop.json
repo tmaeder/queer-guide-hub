@@ -1,0 +1,26 @@
+{
+  "ci": {
+    "collect": {
+      "url": [
+        "https://queer.guide/",
+        "https://queer.guide/venues",
+        "https://queer.guide/events",
+        "https://queer.guide/cities",
+        "https://queer.guide/travel",
+        "https://queer.guide/news",
+        "https://queer.guide/about"
+      ],
+      "numberOfRuns": 3,
+      "settings": {
+        "skipAudits": [
+          "uses-http2"
+        ],
+        "preset": "desktop"
+      }
+    },
+    "upload": {
+      "target": "filesystem",
+      "outputDir": ".lighthouseci/report"
+    }
+  }
+}

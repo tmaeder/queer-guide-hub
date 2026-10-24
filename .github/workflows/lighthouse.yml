@@ -1,11 +1,6 @@
 name: Lighthouse CI
 on:
   workflow_dispatch:
-    inputs:
-      base_url:
-        description: Base URL to audit
-        required: false
-        default: https://queer.guide
   schedule:
     - cron: "0 7 * * 1"
   workflow_run:
@@ -19,9 +14,20 @@ permissions:
   contents: read
 jobs:
   audit:
+    name: audit (${{ matrix.form_factor }})
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 30
     if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
+    strategy:
+      fail-fast: false
+      matrix:
+        # Budgets live in the rc files and are a ratchet: set at measured prod
+        # values plus a margin, and only ever tightened.
+        include:
+          - form_factor: mobile
+            config: lighthouserc.json
+          - form_factor: desktop
+            config: lighthouserc.desktop.json
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
@@ -29,23 +35,13 @@ jobs:
           node-version: "22"
       - name: Install Lighthouse CI
         run: npm install -g "@lhci/cli@0.13.x"
-      - name: Run Lighthouse against key routes
-        env:
-          INPUT_BASE: ${{ github.event.inputs.base_url }}
-        run: |
-          BASE="${INPUT_BASE:-https://queer.guide}"
-          lhci collect \
-            --url="$BASE/" \
-            --url="$BASE/venues" \
-            --url="$BASE/events" \
-            --url="$BASE/cities" \
-            --url="$BASE/travel" \
-            --url="$BASE/news" \
-            --url="$BASE/about" \
-            --numberOfRuns=1 \
-            --settings.preset=desktop \
-            --settings.skipAudits=uses-http2
-          lhci assert --assertions.categories:performance=warn --assertions.categories:accessibility=warn --assertions.categories:seo=warn --assertions.categories:best-practices=warn || true
+      - name: Collect
+        run: lhci collect --config=${{ matrix.config }}
+      - name: Assert budgets
+        run: lhci assert --config=${{ matrix.config }}
+      - name: Write filesystem report
+        if: always()
+        run: lhci upload --config=${{ matrix.config }} || true
       - name: Upload Lighthouse reports
         if: always()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
@@ -57,6 +53,6 @@ jobs:
         # baselines) are deliberately NOT given this treatment.
         continue-on-error: true
         with:
-          name: lighthouse-reports
+          name: lighthouse-reports-${{ matrix.form_factor }}
           path: .lighthouseci/
           retention-days: 30
