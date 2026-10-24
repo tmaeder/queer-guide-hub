@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 
+import { supabase } from '@/integrations/supabase/client';
 import { untypedRpc } from '@/integrations/supabase/untyped';
 import type {
   CompetitionGrid,
@@ -80,6 +81,29 @@ export function useCompetitionHistory(personalityId: string | undefined) {
       );
       if (error) throw error;
       return data ?? [];
+    },
+  });
+}
+
+/**
+ * Primary keys for the competitions on a page, for the staff admin menu only.
+ *
+ * `competition_overview` returns slugs, not ids, and the admin menu needs the
+ * id to address the record. Callers pass `enabled` from the staff check so a
+ * public visitor never issues this query.
+ */
+export function useCompetitionIds(slugs: string[], enabled: boolean) {
+  const key = [...slugs].sort();
+  return useQuery({
+    queryKey: ['competition-ids', key],
+    enabled: enabled && key.length > 0,
+    queryFn: async (): Promise<Record<string, string>> => {
+      const { data, error } = await supabase
+        .from('competitions')
+        .select('id, slug')
+        .in('slug', key);
+      if (error) throw error;
+      return Object.fromEntries((data ?? []).map((r) => [r.slug, r.id]));
     },
   });
 }
