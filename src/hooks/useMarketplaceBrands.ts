@@ -216,6 +216,30 @@ export function useMarketplaceBrandCovers(limit = 12) {
   });
 }
 
+/**
+ * The brand's primary key, for the staff admin menu only.
+ *
+ * `get_marketplace_brand` does not return `id`, and the admin menu needs it to
+ * address the record. Callers pass `enabled` from the staff check so a public
+ * visitor never issues this query.
+ */
+export function useMarketplaceBrandId(slug: string | undefined, enabled: boolean) {
+  return useQuery({
+    queryKey: ['marketplace-brand-id', slug],
+    enabled: Boolean(slug) && enabled,
+    queryFn: async (): Promise<string | null> => {
+      const { data, error } = await supabase
+        .from('marketplace_brands')
+        .select('id')
+        .eq('slug', slug!)
+        .limit(1)
+        .maybeSingle();
+      if (error) throw error;
+      return data?.id ?? null;
+    },
+  });
+}
+
 /** Cached brand vocabulary for search-suggestion prefix matching. */
 export function useBrandVocab() {
   return useQuery({

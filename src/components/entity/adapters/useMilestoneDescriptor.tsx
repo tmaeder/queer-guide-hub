@@ -40,6 +40,7 @@ export function useMilestoneDescriptor(slug: string | undefined): EntityDescript
               contentId={milestone.id}
               contentName={milestone.title}
               currentData={milestone as unknown as Record<string, unknown>}
+              exportable
             />
           </div>
         </>

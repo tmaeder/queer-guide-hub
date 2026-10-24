@@ -69,6 +69,7 @@ export function OrgActions({ org }: { org: Organization }) {
         contentId={org.id}
         contentName={org.name}
         currentData={org as unknown as Record<string, unknown>}
+        exportable
       />
     </>
   );

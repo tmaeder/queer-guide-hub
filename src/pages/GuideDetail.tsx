@@ -168,6 +168,7 @@ const GuideDetail = () => {
             contentId={guide.id}
             contentName={guide.title}
             currentData={guide as unknown as Record<string, unknown>}
+            exportable
           />
         </div>
       </PageContainer>
