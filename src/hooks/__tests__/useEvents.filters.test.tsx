@@ -1,5 +1,4 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { renderHook, act, waitFor } from '@testing-library/react';
 
 const { rpcMock } = vi.hoisted(() => ({ rpcMock: vi.fn() }));
 
@@ -21,19 +20,16 @@ vi.mock('@/utils/fetchWithRetry', () => ({
   queryWithRetry: (fn: () => Promise<unknown>) => fn(),
 }));
 
-import { useEvents } from '../useEvents';
+import { fetchEventsPage } from '../useEvents';
 
-describe('useEvents filters → search_events RPC', () => {
+describe('fetchEventsPage filters → search_events RPC', () => {
   beforeEach(() => {
     rpcMock.mockReset();
     rpcMock.mockResolvedValue({ data: [], error: null });
   });
 
   it('sends the raw city label (server normalizes via unaccent)', async () => {
-    const { result } = renderHook(() => useEvents(false));
-    await act(async () => {
-      await result.current.fetchEvents({ city: 'Zurich' });
-    });
+    await fetchEventsPage({ city: 'Zurich' });
     expect(rpcMock).toHaveBeenCalledWith(
       'search_events',
       expect.objectContaining({ p_city: 'Zurich' }),
@@ -41,14 +37,11 @@ describe('useEvents filters → search_events RPC', () => {
   });
 
   it('passes ISO start/end for dateRange through unchanged', async () => {
-    const { result } = renderHook(() => useEvents(false));
     const dateRange = {
       start: '2026-05-21T22:00:00.000Z',
       end: '2026-05-29T21:59:59.999Z',
     };
-    await act(async () => {
-      await result.current.fetchEvents({ dateRange });
-    });
+    await fetchEventsPage({ dateRange });
     expect(rpcMock).toHaveBeenCalledWith(
       'search_events',
       expect.objectContaining({
@@ -59,12 +52,9 @@ describe('useEvents filters → search_events RPC', () => {
   });
 
   it('sends both city and date together', async () => {
-    const { result } = renderHook(() => useEvents(false));
-    await act(async () => {
-      await result.current.fetchEvents({
-        city: 'Zürich',
-        dateRange: { start: 'a', end: 'b' },
-      });
+    await fetchEventsPage({
+      city: 'Zürich',
+      dateRange: { start: 'a', end: 'b' },
     });
     expect(rpcMock).toHaveBeenCalledWith(
       'search_events',
@@ -73,13 +63,10 @@ describe('useEvents filters → search_events RPC', () => {
   });
 
   it('sends stable city and country identities for namesake-safe retrieval', async () => {
-    const { result } = renderHook(() => useEvents(false));
-    await act(async () => {
-      await result.current.fetchEvents({
-        cityId: '00000000-0000-0000-0000-000000000001',
-        city: 'Berlin',
-        countryId: '00000000-0000-0000-0000-000000000002',
-      });
+    await fetchEventsPage({
+      cityId: '00000000-0000-0000-0000-000000000001',
+      city: 'Berlin',
+      countryId: '00000000-0000-0000-0000-000000000002',
     });
     expect(rpcMock).toHaveBeenCalledWith(
       'search_events',
@@ -91,41 +78,27 @@ describe('useEvents filters → search_events RPC', () => {
     );
   });
 
-  it('surfaces RPC errors as hook error (not silent empty)', async () => {
+  it('surfaces RPC errors as a rejection (not silent empty)', async () => {
     rpcMock.mockResolvedValue({ data: null, error: new Error('rpc boom') });
-    const { result } = renderHook(() => useEvents(false));
-    await act(async () => {
-      await result.current.fetchEvents({ city: 'Zurich' });
-    });
-    await waitFor(() => expect(result.current.error).toBeTruthy());
-    expect(result.current.error).toMatch(/rpc boom/);
+    await expect(fetchEventsPage({ city: 'Zurich' })).rejects.toThrow(/rpc boom/);
   });
 
   it('empty result with no error stays empty (true empty)', async () => {
     rpcMock.mockResolvedValue({ data: [], error: null });
-    const { result } = renderHook(() => useEvents(false));
-    await act(async () => {
-      await result.current.fetchEvents({ city: 'Nowhere' });
-    });
-    expect(result.current.events).toEqual([]);
-    expect(result.current.error).toBeNull();
+    const result = await fetchEventsPage({ city: 'Nowhere' });
+    expect(result?.events).toEqual([]);
   });
 
   it('unwraps {total,event} rows into plain events', async () => {
     const event = { id: '1', title: 'Pride', city: 'Zürich', attendee_count: 0 };
     rpcMock.mockResolvedValue({ data: [{ total: 1, event }], error: null });
-    const { result } = renderHook(() => useEvents(false));
-    await act(async () => {
-      await result.current.fetchEvents({ city: 'Zurich' });
-    });
-    expect(result.current.events).toEqual([event]);
+    const result = await fetchEventsPage({ city: 'Zurich' });
+    expect(result?.events).toEqual([event]);
   });
 
   it('does NOT use RPC when only nearMe is set', async () => {
-    const { result } = renderHook(() => useEvents(false));
-    await act(async () => {
-      await result.current.fetchEvents({ nearMe: { lat: 47, lng: 8 } });
-    });
+    // The client-query mock is an inert proxy; only the routing matters here.
+    await fetchEventsPage({ nearMe: { lat: 47, lng: 8 } }).catch(() => {});
     expect(rpcMock).not.toHaveBeenCalled();
   });
 });

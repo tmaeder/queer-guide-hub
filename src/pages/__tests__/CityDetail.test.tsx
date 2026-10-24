@@ -9,8 +9,8 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 const state = vi.hoisted(() => ({
   city: null as unknown,
   user: null as null | { id: string },
-  fetchVenues: vi.fn(),
-  fetchEvents: vi.fn(),
+  venuesQuery: vi.fn(),
+  eventsQuery: vi.fn(),
 }));
 
 vi.mock('@/hooks/use-toast', () => ({ useToast: () => ({ toast: vi.fn() }) }));
@@ -28,20 +28,27 @@ vi.mock('@/hooks/useCityImages', () => ({
   useCityImages: () => ({ fetchCityImage: vi.fn().mockResolvedValue(null) }),
 }));
 vi.mock('@/hooks/useNews', () => ({
-  useNews: () => ({ articles: [], loading: false, fetchArticles: vi.fn() }),
+  useNewsArticles: () => ({ articles: [], loading: false, error: null, refetch: vi.fn() }),
+  incrementArticleViews: vi.fn(),
 }));
 vi.mock('@/hooks/useVenues', () => ({
-  useVenues: () => ({ venues: [], loading: false, fetchVenues: state.fetchVenues }),
+  useVenuesQuery: (filters: unknown) => {
+    state.venuesQuery(filters);
+    return { venues: [], loading: false, isFetching: false, error: null };
+  },
 }));
 vi.mock('@/hooks/useEvents', () => ({
-  useEvents: () => ({ events: [], loading: false, fetchEvents: state.fetchEvents }),
+  useEventsQuery: (filters: unknown) => {
+    state.eventsQuery(filters);
+    return { events: [], loading: false, isFetching: false, error: null };
+  },
 }));
 vi.mock('@/hooks/usePlaces', () => ({
   useOptimizedCity: () => ({ city: state.city, loading: false, refetch: vi.fn() }),
   useOptimizedCountry: () => ({ country: null, loading: false }),
 }));
 vi.mock('@/hooks/useQueerVillages', () => ({
-  useQueerVillages: () => ({ villages: [], loading: false, fetchVillages: vi.fn() }),
+  useQueerVillages: () => ({ villages: [], loading: false, error: null }),
 }));
 vi.mock('@/hooks/useNearestAirport', () => ({
   useNearestAirport: () => ({ nearestAirport: null }),
@@ -107,8 +114,9 @@ describe('CityDetail', () => {
     state.city = null;
     renderPage();
     expect(screen.getByText('City not found')).toBeInTheDocument();
-    expect(state.fetchVenues).not.toHaveBeenCalled();
-    expect(state.fetchEvents).not.toHaveBeenCalled();
+    expect(state.venuesQuery.mock.calls.every(([f]) => f === null)).toBe(true);
+    // Idle until the city resolves: never asked for anything but null.
+    expect(state.eventsQuery.mock.calls.every(([f]) => f === null)).toBe(true);
   });
 
   it('leads with a typographic masthead, not a photo hero', () => {
@@ -123,10 +131,10 @@ describe('CityDetail', () => {
     renderPage();
     const h1 = screen.getByRole('heading', { level: 1, name: 'Berlin' });
     expect(h1).toBeInTheDocument();
-    expect(state.fetchVenues).toHaveBeenCalledWith(
+    expect(state.venuesQuery).toHaveBeenCalledWith(
       expect.objectContaining({ cityId: 'c1', countryId: 'co1' }),
     );
-    expect(state.fetchEvents).toHaveBeenCalledWith(
+    expect(state.eventsQuery).toHaveBeenCalledWith(
       expect.objectContaining({ cityId: 'c1', countryId: 'co1' }),
     );
     // The 58vh photo bed is gone: the title is real text, not an overlay on an

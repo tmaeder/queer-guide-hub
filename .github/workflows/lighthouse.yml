@@ -8,7 +8,7 @@ on:
     types: [completed]
     branches: [main]
 concurrency:
-  group: lighthouse-ci
+  group: lighthouse-ci-${{ github.ref }}
   cancel-in-progress: false
 permissions:
   contents: read

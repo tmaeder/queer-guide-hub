@@ -70,12 +70,18 @@ export function IntentMap() {
           the stage put that bleed 96px inside the window at 1920px and the
           lines read as four short strokes with rounded ends floating in a
           margin. Full bleed is the whole point of the drawing — the section
-          already drops its gutter at `lg`, and `SubwayHero` clips. */}
-      <div className="intent-map relative">
+          already drops its gutter at `lg`, and `SubwayHero` clips.
+          The ONE cap is 120rem: the stations are positioned as percentages of
+          this stage, so past 1920 they spread beyond the page column (the
+          leftmost plate sat 240px outside it at 2560, measured on prod). Up to
+          1920 the stage is the full window, exactly as before. */}
+      <div className="intent-map relative mx-auto max-w-[120rem]">
         {/* Decorative: every label on this map is HTML. */}
         <svg
           viewBox={`0 0 ${VIEWBOX.w} ${VIEWBOX.h}`}
-          className="hidden w-full lg:block"
+          // Above the 120rem cap the tracks would stop in a hard vertical cut;
+          // an alpha mask lets them fade out instead. No effect at or below 1920.
+          className="hidden w-full lg:block min-[1921px]:[mask-image:linear-gradient(to_right,transparent,black_12%,black_88%,transparent)]"
           aria-hidden
         >
           <g

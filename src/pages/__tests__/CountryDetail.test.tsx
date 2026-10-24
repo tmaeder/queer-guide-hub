@@ -23,18 +23,14 @@ vi.mock('@/hooks/usePlaces', () => ({
   useOptimizedCities: () => ({ cities: state.cities, loading: false }),
 }));
 vi.mock('@/hooks/useVenues', () => ({
-  useVenues: () => ({ venues: [], loading: false, fetchVenues: vi.fn() }),
+  useVenuesQuery: () => ({ venues: [], loading: false, isFetching: false, error: null }),
 }));
 vi.mock('@/hooks/useEvents', () => ({
-  useEvents: () => ({ events: [], loading: false, fetchEvents: vi.fn() }),
+  useEventsQuery: () => ({ events: [], loading: false, isFetching: false, error: null }),
 }));
 vi.mock('@/hooks/useNews', () => ({
-  useNews: () => ({
-    articles: [],
-    loading: false,
-    fetchArticles: vi.fn(),
-    incrementViews: vi.fn(),
-  }),
+  useNewsArticles: () => ({ articles: [], loading: false, error: null, refetch: vi.fn() }),
+  incrementArticleViews: vi.fn(),
 }));
 vi.mock('@/hooks/useMilestones', () => ({
   useMilestonesForCountry: () => ({ data: milestones.data }),
