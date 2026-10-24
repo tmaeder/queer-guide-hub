@@ -17,6 +17,8 @@
     "build:dev": "vite build --mode development",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
+    "lint:disables": "node scripts/check-eslint-disable-ratchet.mjs",
+    "lint:disables:baseline": "node scripts/check-eslint-disable-ratchet.mjs --write",
     "lint:staged": "lint-staged",
     "knip": "knip",
     "format": "prettier --write \"src/**/*.{ts,tsx,css,json}\"",
