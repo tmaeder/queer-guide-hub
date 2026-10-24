@@ -104,7 +104,7 @@ export function EventsResultHeader({
         )}
       </p>
 
-      <div className="flex items-center gap-2">
+      <div className="flex flex-wrap items-center gap-2">
         {/* A native <select> restyled to the chip's DNA, following
             CitiesControlBar: src/components/ui/select.tsx is still on pre-rebrand
             tokens and renders as a permanently ink-filled chip, i.e. it reads as
