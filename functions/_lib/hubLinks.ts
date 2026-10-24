@@ -81,7 +81,8 @@ const HUBS: Record<string, HubSpec[]> = {
       table: 'venues',
       labelColumn: 'name',
       prefix: '/venues/',
-      filter: 'slug=not.is.null&seo_indexable=eq.true&safety_gated=eq.false&duplicate_of_id=is.null',
+      filter:
+        'slug=not.is.null&seo_indexable=eq.true&safety_gated=eq.false&duplicate_of_id=is.null',
       order: 'quality_score.desc.nullslast,slug.asc',
       limit: 60,
       heading: 'LGBTQ+ venues on Queer Guide',
@@ -176,8 +177,7 @@ const HUBS: Record<string, HubSpec[]> = {
       table: 'personalities',
       labelColumn: 'name',
       prefix: '/personalities/',
-      filter:
-        'slug=not.is.null&seo_indexable=eq.true&visibility=eq.public&duplicate_of_id=is.null',
+      filter: 'slug=not.is.null&seo_indexable=eq.true&visibility=eq.public&duplicate_of_id=is.null',
       order: 'completeness_score.desc.nullslast,slug.asc',
       limit: 60,
       heading: 'Notable LGBTQ+ people',

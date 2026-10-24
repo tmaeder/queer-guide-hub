@@ -123,8 +123,9 @@ describe('merged tag slug redirects at the edge', () => {
     await expect(resolveSlugRedirect(env, '/tags/alex-j-rgen')).resolves.toBeNull();
     // Assert the constraint travelled to the server rather than the fixture
     // happening to be empty — the failure mode this guards is a dropped filter.
-    expect(requested.some((r) => r.startsWith('unified_tags?') && r.includes('status=eq.active')))
-      .toBe(true);
+    expect(
+      requested.some((r) => r.startsWith('unified_tags?') && r.includes('status=eq.active')),
+    ).toBe(true);
   });
 
   it('returns null for a slug with no redirect at all, so the caller 404s', async () => {
@@ -196,20 +197,16 @@ describe('merged tag slug redirects at the edge', () => {
       'countries',
       '/country/new-c',
     ],
-  ])('301s a merged %s through an id-less redirect table', async (
-    _kind,
-    path,
-    redirectTable,
-    idColumn,
-    entityTable,
-    expected,
-  ) => {
-    const canonical = 'x1';
-    mockDb({
-      [entityTable]: [{ id: canonical, slug: expected.split('/').pop() }],
-      // No `id` key anywhere in these rows — exactly the prod shape.
-      [redirectTable]: [{ old_slug: path.split('/').pop(), [idColumn]: canonical }],
-    });
-    await expect(resolveSlugRedirect(env, path)).resolves.toBe(expected);
-  });
+  ])(
+    '301s a merged %s through an id-less redirect table',
+    async (_kind, path, redirectTable, idColumn, entityTable, expected) => {
+      const canonical = 'x1';
+      mockDb({
+        [entityTable]: [{ id: canonical, slug: expected.split('/').pop() }],
+        // No `id` key anywhere in these rows — exactly the prod shape.
+        [redirectTable]: [{ old_slug: path.split('/').pop(), [idColumn]: canonical }],
+      });
+      await expect(resolveSlugRedirect(env, path)).resolves.toBe(expected);
+    },
+  );
 });

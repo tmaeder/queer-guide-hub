@@ -54,7 +54,11 @@ const CORS = {
 function fail(status: number, message: string): Response {
   return new Response(JSON.stringify({ error: message }), {
     status,
-    headers: { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store', ...CORS },
+    headers: {
+      'content-type': 'application/json; charset=utf-8',
+      'cache-control': 'no-store',
+      ...CORS,
+    },
   });
 }
 
@@ -98,14 +102,18 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
 
   const row = Array.isArray(rows) ? rows[0] : undefined;
   if (!row?.version) {
-    return fail(pin ? 404 : 503, pin ? `styleguide version ${pin} not found` : 'no styleguide version is published');
+    return fail(
+      pin ? 404 : 503,
+      pin ? `styleguide version ${pin} not found` : 'no styleguide version is published',
+    );
   }
 
   // Fall back to compiled_prompt only for the default profile: that column IS
   // the full text. For a narrower profile, a missing entry means the version
   // predates profiles, and quietly handing back the full prompt would blow the
   // context budget the caller asked us to respect.
-  const prompt = row.doc?.prompts?.[profile] ?? (profile === 'full' ? row.compiled_prompt : undefined);
+  const prompt =
+    row.doc?.prompts?.[profile] ?? (profile === 'full' ? row.compiled_prompt : undefined);
   if (typeof prompt !== 'string' || prompt.length === 0) {
     return fail(404, `styleguide version ${row.version} has no "${profile}" profile`);
   }
