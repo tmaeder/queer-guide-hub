@@ -1,7 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useEffectEvent, useState } from 'react';
 import { TrackLoader } from '@/components/transit/TrackLoader';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Sparkles, RefreshCw} from 'lucide-react';
+import { Sparkles, RefreshCw } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import {
   Dialog,
@@ -56,21 +56,21 @@ export function EstimateCostsDialog({ open, onClose, tripId, members, currentUse
 
   const partySize = Math.max(1, members.length);
 
-  // Auto-run on first open when no data yet.
+  // Auto-run on open when no data yet. Only `open` triggers it; the mutation
+  // state is read at fire time.
+  const runIfEmpty = useEffectEvent(() => {
+    if (!estimate.data && !estimate.isPending) estimate.mutate({ tripId, partySize });
+  });
   useEffect(() => {
-    if (open && !estimate.data && !estimate.isPending) {
-      estimate.mutate({ tripId, partySize });
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    if (open) runIfEmpty();
   }, [open]);
 
-  // Pre-select all when data arrives.
-  useEffect(() => {
-    if (estimate.data) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect -- effect synchronizes state with external props/data; React Compiler can't infer the sync direction. Documented exemption from the eslint.config.js staged-ratchet plan.
-      setSelected(new Set(estimate.data.suggestions.map((_, i) => i)));
-    }
-  }, [estimate.data]);
+  // Pre-select all when data arrives (during render, not in an effect).
+  const [prevData, setPrevData] = useState(estimate.data);
+  if (estimate.data !== prevData) {
+    setPrevData(estimate.data);
+    if (estimate.data) setSelected(new Set(estimate.data.suggestions.map((_, i) => i)));
+  }
 
   const handleClose = () => {
     if (committing) return;

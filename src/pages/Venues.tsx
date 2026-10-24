@@ -65,6 +65,8 @@ import { useMotionTokens } from '@/lib/motion';
 
 type Venue = Database['public']['Tables']['venues']['Row'];
 
+const splitKey = (key: string): string[] => (key ? key.split(',') : []);
+
 const VALID_SORTS = new Set([
   'relevance',
   'featured',
@@ -103,27 +105,27 @@ const Venues = () => {
   const urlSearch = searchParams.get('q') ?? '';
   const urlCategory = searchParams.get('category') ?? '';
   const urlCity = searchParams.get('city') ?? '';
-  const parseList = (key: string): string[] => {
-    const raw = searchParams.get(key);
-    if (!raw) return [];
-    return raw
+  // List params are reduced to a normalized string key, and the arrays are
+  // memoized on that key, so their identity only changes when the list does.
+  const listKey = (key: string): string =>
+    (searchParams.get(key) ?? '')
       .split(',')
       .map((s) => s.trim())
-      .filter(Boolean);
-  };
-  const urlTags = parseList('tags');
-  const urlAmenities = parseList('amenities');
-  const urlServices = parseList('services');
-  const urlAccessibility = parseList('accessibility');
-  const urlTargetGroups = parseList('groups');
+      .filter(Boolean)
+      .join(',');
+  const urlTagsKey = listKey('tags');
+  const urlAmenitiesKey = listKey('amenities');
+  const urlServicesKey = listKey('services');
+  const urlAccessibilityKey = listKey('accessibility');
+  const urlTargetGroupsKey = listKey('groups');
+  const urlTags = useMemo(() => splitKey(urlTagsKey), [urlTagsKey]);
+  const urlAmenities = useMemo(() => splitKey(urlAmenitiesKey), [urlAmenitiesKey]);
+  const urlServices = useMemo(() => splitKey(urlServicesKey), [urlServicesKey]);
+  const urlAccessibility = useMemo(() => splitKey(urlAccessibilityKey), [urlAccessibilityKey]);
+  const urlTargetGroups = useMemo(() => splitKey(urlTargetGroupsKey), [urlTargetGroupsKey]);
   const urlOpenNow = searchParams.get('openNow') === '1';
   const urlPrice = searchParams.get('price') ? Number(searchParams.get('price')) : null;
   const urlRadius = searchParams.get('radius') ? Number(searchParams.get('radius')) : null;
-  const urlTagsKey = urlTags.join(',');
-  const urlAmenitiesKey = urlAmenities.join(',');
-  const urlServicesKey = urlServices.join(',');
-  const urlAccessibilityKey = urlAccessibility.join(',');
-  const urlTargetGroupsKey = urlTargetGroups.join(',');
   const rawSort = searchParams.get('sort') ?? (VENUES_V2_ENABLED ? 'relevance' : 'featured');
   const sortBy = VALID_SORTS.has(rawSort) ? rawSort : 'featured';
   const rawView = searchParams.get('view') ?? 'grid';
@@ -164,16 +166,15 @@ const Venues = () => {
     if (urlPrice) f.priceLevel = urlPrice;
     if (urlRadius) f.radiusKm = urlRadius;
     return f;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     urlSearch,
     urlCategory,
     urlCity,
-    urlTagsKey,
-    urlAmenitiesKey,
-    urlServicesKey,
-    urlAccessibilityKey,
-    urlTargetGroupsKey,
+    urlTags,
+    urlAmenities,
+    urlServices,
+    urlAccessibility,
+    urlTargetGroups,
     urlOpenNow,
     urlPrice,
     urlRadius,
@@ -202,9 +203,11 @@ const Venues = () => {
     toggle: togglePrefChip,
     forget: forgetPrefChip,
   } = usePreferenceChips(['accessibility', 'interest']);
-  const chipAccessibility = useMemo(() => accessibilitySlugsFromChips(prefChips), [prefChips]);
-  const chipTags = useMemo(() => tagsFromChips(prefChips), [prefChips]);
-  const chipKey = [...chipAccessibility, ...chipTags].join(',');
+  const chipAccessibilityKey = accessibilitySlugsFromChips(prefChips).join(',');
+  const chipTagsKey = tagsFromChips(prefChips).join(',');
+  const chipAccessibility = useMemo(() => splitKey(chipAccessibilityKey), [chipAccessibilityKey]);
+  const chipTags = useMemo(() => splitKey(chipTagsKey), [chipTagsKey]);
+  const chipKey = [chipAccessibilityKey, chipTagsKey].filter(Boolean).join(',');
   const mergeChipFilters = useCallback(
     (f: Record<string, unknown>): Record<string, unknown> => {
       const out = { ...f };
@@ -220,8 +223,7 @@ const Venues = () => {
       }
       return out;
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [chipKey],
+    [chipAccessibility, chipTags],
   );
   const PAGE_SIZE = 24;
 

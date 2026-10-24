@@ -158,7 +158,14 @@ export const UniversalSearchBar = ({
   const [mode, setMode] = useState<'search' | 'ask'>('search');
   const [showFilters, setShowFilters] = useState(false);
   const [filters, setFilters] = useState<SearchFilters>({ types: [] });
-  const [recentSearches, setRecentSearches] = useState<string[]>([]);
+  const [recentSearches, setRecentSearches] = useState<string[]>(() => {
+    try {
+      const saved = localStorage.getItem('recent-searches');
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
+  });
   const [resultsFocused, setResultsFocused] = useState<number | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const justSelectedRef = useRef(false);
@@ -229,27 +236,19 @@ export const UniversalSearchBar = ({
     recommendations.length > 0 ? 'recommended' : 'trending';
   const voice = useVoiceSearch();
 
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- effect synchronizes state with external props/data; React Compiler can't infer the sync direction. Documented exemption from the eslint.config.js staged-ratchet plan.
+  // Adjust during render instead of sync effects: a new voice transcript
+  // fills the input, and a new result set / scope resets virtual focus.
+  const [prevTranscript, setPrevTranscript] = useState(voice.transcript);
+  if (voice.transcript !== prevTranscript) {
+    setPrevTranscript(voice.transcript);
     if (voice.transcript) setQuery(voice.transcript);
-  }, [voice.transcript]);
-
-  useEffect(() => {
-    const saved = localStorage.getItem('recent-searches');
-    if (!saved) return;
-    try {
-      // eslint-disable-next-line react-hooks/set-state-in-effect -- effect synchronizes state with external props/data; React Compiler can't infer the sync direction. Documented exemption from the eslint.config.js staged-ratchet plan.
-      setRecentSearches(JSON.parse(saved));
-    } catch {
-      /* ignore */
-    }
-  }, []);
-
-  // Reset virtual focus when results change.
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- effect synchronizes state with external props/data; React Compiler can't infer the sync direction. Documented exemption from the eslint.config.js staged-ratchet plan.
+  }
+  const focusResetKey = `${suggestions.length}|${activeScope}`;
+  const [prevFocusResetKey, setPrevFocusResetKey] = useState(focusResetKey);
+  if (focusResetKey !== prevFocusResetKey) {
+    setPrevFocusResetKey(focusResetKey);
     setResultsFocused(null);
-  }, [suggestions.length, activeScope]);
+  }
 
   const saveRecentSearch = useCallback((searchTerm: string) => {
     if (!searchTerm.trim()) return;

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useEffectEvent, useMemo, useRef, useState } from 'react';
 import { TrackLoader } from '@/components/transit/TrackLoader';
 import * as maplibregl from 'maplibre-gl';
 import type { GeoJSONSource } from 'maplibre-gl';
@@ -34,11 +34,17 @@ export function EventsMapView({ events, height = 600, className }: EventsMapView
   const [mapError, setMapError] = useState(() => !isWebglSupported());
   const navigate = useLocalizedNavigate();
 
-  const geolocated = events.filter(
-    (e) => typeof e.latitude === 'number' && typeof e.longitude === 'number',
+  const geolocated = useMemo(
+    () => events.filter((e) => typeof e.latitude === 'number' && typeof e.longitude === 'number'),
+    [events],
   );
+  // Popup links navigate through the latest router without re-running the
+  // marker effect (which would re-fit the map) when `navigate` changes.
+  const openEventLink = useEffectEvent((href: string) => navigate(href));
 
-  // Init map — recreated when the theme flips so the basemap flavor follows it.
+  // Init map once. `loaded` is local: the old `mapReady` read here was the
+  // mount-time closure (always false), so the 20s backstop blanked a map that
+  // had loaded fine.
   useEffect(() => {
     if (!containerRef.current || mapRef.current || mapError) return;
 
@@ -56,7 +62,9 @@ export function EventsMapView({ events, height = 600, className }: EventsMapView
     map.addControl(new maplibregl.AttributionControl({ compact: true }), 'bottom-right');
     map.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'top-right');
 
+    let loaded = false;
     map.on('load', () => {
+      loaded = true;
       mapRef.current = map;
       setMapReady(true);
       // After mount, the container may have been sized 0 (motion scale, transitions);
@@ -67,7 +75,7 @@ export function EventsMapView({ events, height = 600, className }: EventsMapView
     // D1: only style-level errors flip the fallback; transient tile errors
     // shouldn't blank the map.
     map.on('error', (e) => {
-      if (!mapReady && e?.error && e.error.message?.toLowerCase().includes('style')) {
+      if (!loaded && e?.error && e.error.message?.toLowerCase().includes('style')) {
         setMapError(true);
       }
     });
@@ -81,7 +89,7 @@ export function EventsMapView({ events, height = 600, className }: EventsMapView
     // D1: 20s backstop tied to mapReady (the actual signal) rather than the
     // ref. The previous 5s timeout false-positived on slow tile loads.
     const timeoutId = window.setTimeout(() => {
-      if (!mapReady) setMapError(true);
+      if (!loaded) setMapError(true);
     }, 20000);
 
     return () => {
@@ -92,8 +100,7 @@ export function EventsMapView({ events, height = 600, className }: EventsMapView
       setMapReady(false);
       map.remove();
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [mapError]);
 
   // Update markers when events change
   useEffect(() => {
@@ -225,7 +232,7 @@ export function EventsMapView({ events, height = 600, className }: EventsMapView
           link?.addEventListener('click', (ev) => {
             ev.preventDefault();
             const href = link.getAttribute('href');
-            if (href) navigate(href);
+            if (href) openEventLink(href);
           });
         });
         popupRef.current = popup;
@@ -250,8 +257,7 @@ export function EventsMapView({ events, height = 600, className }: EventsMapView
         });
       }
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [events, mapReady]);
+  }, [geolocated, mapReady]);
 
   return (
     <div

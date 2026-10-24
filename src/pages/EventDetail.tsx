@@ -1,7 +1,7 @@
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { useParams } from 'react-router';
 import { useTrackView } from '@/hooks/useTrackView';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useEffectEvent, useRef, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { ArrowLeft } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
@@ -163,26 +163,30 @@ export default function EventDetail() {
       : undefined,
   });
 
-  useEffect(() => {
-    if (!user || !event) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect -- syncs RSVP state with fetched data.
-      setUserAttendance(null);
-      return;
-    }
-    setUserAttendance(event.user_attendance ?? null);
-  }, [event, user]);
+  // Re-sync the RSVP from fetched data whenever the event or user changes,
+  // during render rather than in an effect (no stale-RSVP frame).
+  const [rsvpSyncedFrom, setRsvpSyncedFrom] = useState<{
+    event: typeof event;
+    user: typeof user;
+  }>();
+  if (rsvpSyncedFrom?.event !== event || rsvpSyncedFrom?.user !== user) {
+    setRsvpSyncedFrom({ event, user });
+    setUserAttendance(user && event ? (event.user_attendance ?? null) : null);
+  }
 
+  // One page_view per event id; the title is read at fire time, not a trigger.
+  const trackPageView = useEffectEvent((id: string) => {
+    track({
+      eventType: 'page_view',
+      entityType: 'event',
+      entityId: id,
+      metadata: { title: event?.title },
+    });
+  });
+  const eventId = event?.id;
   useEffect(() => {
-    if (event?.id) {
-      track({
-        eventType: 'page_view',
-        entityType: 'event',
-        entityId: event.id,
-        metadata: { title: event.title },
-      });
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [event?.id]);
+    if (eventId) trackPageView(eventId);
+  }, [eventId]);
 
   useEffect(() => {
     if (error) {
