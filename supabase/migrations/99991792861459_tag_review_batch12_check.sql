@@ -16,7 +16,7 @@
 -- (facts that need an outside source, a body that asks a reviewer why the person is
 -- tagged, and a generic tag the review asks to remove or repurpose).
 
-select set_config('app.actor', 'migration:99991792848410_tag_review_batch12_check', true);
+select set_config('app.actor', 'migration:99991792861459_tag_review_batch12_check', true);
 
 create temp table _b12_pairs on commit drop as
 select r.src, r.tgt, s.id as src_id, t.id as tgt_id
@@ -36,7 +36,7 @@ begin
   for r in select * from _b12_pairs loop
     begin
       update public.tag_category_assignments set is_primary = false where tag_id = r.src_id and is_primary;
-      perform public.merge_tag_concept(r.tgt_id, r.src_id, 'migration:99991792848410', 'excel-review-batch12-2026-10-23');
+      perform public.merge_tag_concept(r.tgt_id, r.src_id, 'migration:99991792861459', 'excel-review-batch12-2026-10-23');
       delete from public.tag_aliases a using public.unified_tags c
        where a.canonical_tag_id = r.src_id and c.id = r.tgt_id
          and lower(btrim(a.alias_name)) = lower(btrim(c.name));
@@ -239,7 +239,7 @@ on conflict do nothing;
 update public.tag_suggestions g
    set status = 'rejected', reviewed_at = now(),
        metadata = coalesce(g.metadata, '{}'::jsonb) || jsonb_build_object(
-         'resolution', c.resolution, 'resolved_by', 'migration:99991792848410')
+         'resolution', c.resolution, 'resolved_by', 'migration:99991792861459')
   from _b12_close c
  where g.entity_id = c.id and g.entity_type = 'tag'
    and g.source = 'excel_review_2026_10_23' and g.status = 'pending'

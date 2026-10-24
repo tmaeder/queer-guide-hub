@@ -23,7 +23,7 @@
 -- (us-venue, london-based, ...) and rows that need an editorial call:
 -- news-pride, prenzlauer, us-venue, test, begine, village, gay-rights, sonntags-club, italian, uk-venue, prejudice, spanish-venue, academic-institution, uk-based, plum, mexican, buns, italian-venue, london-venue, investment, california-venue, london-based, irish, koch, japanese-venue, united-kingdom, istanbul-venue, netherlands-based, switchboard, notre-dame, electronics, social-security, sage, scottish-venue, thai, peruvian, sydney-venue, brasilian, osaka-establishment, norway-based, muscle, playstation, shinjuku-location, embassy-suites, altruism, amsterdam-based, aptos-address, australian-business, baja-california-spot, bandung-establishment, banking, body-autonomy, brisbane-venue, budapest-venue, bullring, cactus, caledonia-venue, cambridge-venue, charleston-spot, emporia-establishment, fortaleza-location, german-based, global-action, hauptbahnhof, highbury-location, homophonic, indianapolis-scene, maspalomas-venue, moda-istanbul, moers-based, norfolk-based, not-applicable, outdoor-terrazas, patience, platinum-mall, polish-venue, post-office, repair-service, russia-venue, sauna-club, shibuya-venue, sint-maarten, texas-venue, tirol-based, tokyo-spot, universalism, updates, watsonville-location, zurich-venue, lesbians-lesbians-of-color.
 
-select set_config('app.actor', 'migration:99991792840961_tag_review_batch11_merge_remove', true);
+select set_config('app.actor', 'migration:99991792861452_tag_review_batch11_merge_remove', true);
 
 -- cock-cage carries an auto "broader" edge onto chastity-belt, which is wrong: the two
 -- devices are siblings (a recorded do-not-merge pair with chastity-cage). Merging
@@ -111,7 +111,7 @@ begin
   for r in select * from _b11_pairs loop
     begin
       update public.tag_category_assignments set is_primary = false where tag_id = r.src_id and is_primary;
-      perform public.merge_tag_concept(r.tgt_id, r.src_id, 'migration:99991792840961', 'excel-review-batch11-2026-10-23');
+      perform public.merge_tag_concept(r.tgt_id, r.src_id, 'migration:99991792861452', 'excel-review-batch11-2026-10-23');
       delete from public.tag_aliases a using public.unified_tags c
        where a.canonical_tag_id = r.src_id and c.id = r.tgt_id
          and lower(btrim(a.alias_name)) = lower(btrim(c.name));
@@ -271,7 +271,7 @@ on conflict do nothing;
 update public.tag_suggestions g
    set status = 'rejected', reviewed_at = now(),
        metadata = coalesce(g.metadata, '{}'::jsonb) || jsonb_build_object(
-         'resolution', c.resolution, 'resolved_by', 'migration:99991792840961')
+         'resolution', c.resolution, 'resolved_by', 'migration:99991792861452')
   from _b11_close c
  where g.entity_id = c.id and g.entity_type = 'tag'
    and g.source = 'excel_review_2026_10_23' and g.status = 'pending'

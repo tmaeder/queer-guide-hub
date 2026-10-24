@@ -26,7 +26,7 @@
 -- are merged into them, so they cannot be deprecated without a separate decision.
 -- pirate is also a merge target, so it stays active and its row is closed as checked.
 
-select set_config('app.actor', 'migration:99991792852555_tag_review_batch14_verify_used', true);
+select set_config('app.actor', 'migration:99991792861461_tag_review_batch14_verify_used', true);
 
 update public.unified_tags set short_description = $t$Enjoys receiving sexual acts, not performing them$t$, description = $t$An alternative name for iamvanosexual: someone who enjoys having sexual acts performed on them but does not want to perform sexual acts on others.$t$, long_description = $t$Accipiosexual is a rare online micro-label and a synonym of iamvanosexual, which sits under the merosexual umbrella. It describes a sex stance rather than who someone is attracted to: the person welcomes being on the receiving end of sexual acts and is indifferent, averse or repulsed when it comes to performing them. People who use it may be on or off the asexual spectrum. Its opposite is placiosexual.$t$ where slug = 'accipiosexual' and status = 'active';
 update public.unified_tags set short_description = $t$Attraction mainly to men, masc, andro and nb genders$t$, description = $t$A multisexual micro-label, also called verian, for primary sexual attraction to male-, masculine-, androgynous- and nonbinary-aligned genders, with occasional minor attraction to female- and feminine-aligned genders.$t$, long_description = $t$Almondsexual is a rare online micro-label on the multisexual spectrum. The person is drawn mainly to men and to masculine, androgynous and nonbinary-aligned genders, with only occasional, minor attraction to women and feminine-aligned genders. Its counterpart is berrisexual, and the romantic equivalent is almondromantic. The term and flag circulated on Pinterest and were archived on Tumblr in 2023.$t$ where slug = 'almondsexual' and status = 'active';
@@ -103,7 +103,7 @@ begin
   select id into v_tgt from public.unified_tags where slug = 'interior-design' and status = 'active';
   if v_src is not null and v_tgt is not null then
     update public.tag_category_assignments set is_primary = false where tag_id = v_src and is_primary;
-    perform public.merge_tag_concept(v_tgt, v_src, 'migration:99991792852555', 'excel-review-batch14-2026-10-23');
+    perform public.merge_tag_concept(v_tgt, v_src, 'migration:99991792861461', 'excel-review-batch14-2026-10-23');
     update public.tag_aliases set canonical_tag_id = v_tgt where canonical_tag_id = v_src;
   end if;
 end
@@ -166,7 +166,7 @@ update public.tag_suggestions g
            case when d.id is not null then 'deprecated: ' || d.why
                 when t.status = 'merged' then 'merged into interior-design'
                 else 'checked: definition verified or corrected' end,
-         'resolved_by', 'migration:99991792852555')
+         'resolved_by', 'migration:99991792861461')
   from public.unified_tags t
   left join _b14_dep d on d.id = t.id
  where g.entity_id = t.id and g.entity_type = 'tag'

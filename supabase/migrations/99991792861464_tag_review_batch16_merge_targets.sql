@@ -13,7 +13,7 @@
 --     (51500101145000). The cost is a warn-only rise in
 --     tag_merge_graph_signals().target_deprecated.
 
-select set_config('app.actor', 'migration:99991792856888_tag_review_batch16_merge_targets', true);
+select set_config('app.actor', 'migration:99991792861464_tag_review_batch16_merge_targets', true);
 
 create temp table _b16_dep on commit drop as
 select t.id, t.slug,
@@ -36,7 +36,7 @@ update public.unified_tags t
 update public.tag_suggestions g
    set status = 'rejected', reviewed_at = now(),
        metadata = coalesce(g.metadata, '{}'::jsonb) || jsonb_build_object(
-         'resolution', 'deprecated: ' || d.why, 'resolved_by', 'migration:99991792856888')
+         'resolution', 'deprecated: ' || d.why, 'resolved_by', 'migration:99991792861464')
   from _b16_dep d
  where g.entity_id = d.id and g.entity_type = 'tag'
    and g.source = 'excel_review_2026_10_23' and g.status = 'pending';

@@ -20,7 +20,7 @@
 -- word exists; it does not supply a definition this site may use (non-commercial licence),
 -- so the definitions on these rows were still written without a source.
 
-select set_config('app.actor', 'migration:99991792850047_tag_review_batch13_verify_unused', true);
+select set_config('app.actor', 'migration:99991792861460_tag_review_batch13_verify_unused', true);
 
 create temp table _b13_dep on commit drop as
 select t.id, t.slug, r.why
@@ -106,7 +106,7 @@ on conflict do nothing;
 update public.tag_suggestions g
    set status = 'rejected', reviewed_at = now(),
        metadata = coalesce(g.metadata, '{}'::jsonb) || jsonb_build_object(
-         'resolution', c.resolution, 'resolved_by', 'migration:99991792850047')
+         'resolution', c.resolution, 'resolved_by', 'migration:99991792861460')
   from _b13_close c
  where g.entity_id = c.id and g.entity_type = 'tag'
    and g.source = 'excel_review_2026_10_23' and g.status = 'pending'

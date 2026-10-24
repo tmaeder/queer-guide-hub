@@ -20,7 +20,7 @@
 --   * Left pending: charite and mavie-horbiger, which other tags are merged into.
 --   * Tags that are a merge target are never deprecated here.
 
-select set_config('app.actor', 'migration:99991792854023_tag_review_batch15_merge_remove_rest', true);
+select set_config('app.actor', 'migration:99991792861463_tag_review_batch15_merge_remove_rest', true);
 
 create temp table _b15_pairs on commit drop as
 select s.id as src_id, t.id as tgt_id, r.src, r.tgt
@@ -45,7 +45,7 @@ begin
   for r in select * from _b15_pairs loop
     begin
       update public.tag_category_assignments set is_primary = false where tag_id = r.src_id and is_primary;
-      perform public.merge_tag_concept(r.tgt_id, r.src_id, 'migration:99991792854023', 'excel-review-batch15-2026-10-23');
+      perform public.merge_tag_concept(r.tgt_id, r.src_id, 'migration:99991792861463', 'excel-review-batch15-2026-10-23');
       delete from public.tag_aliases a using public.unified_tags c
        where a.canonical_tag_id = r.src_id and c.id = r.tgt_id
          and lower(btrim(a.alias_name)) = lower(btrim(c.name));
@@ -87,7 +87,7 @@ update public.tag_suggestions g
            case when d.id is not null then 'deprecated: ' || d.why
                 when t.status = 'merged' then 'merged into ' || (select slug from public.unified_tags m where m.id = t.merged_into_id)
                 else 'checked: kept' end,
-         'resolved_by', 'migration:99991792854023')
+         'resolved_by', 'migration:99991792861463')
   from public.unified_tags t
   left join _b15_dep d on d.id = t.id
  where g.entity_id = t.id and g.entity_type = 'tag'
