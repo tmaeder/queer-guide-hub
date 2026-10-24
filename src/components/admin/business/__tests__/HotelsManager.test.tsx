@@ -10,13 +10,10 @@ import type { ReactNode } from 'react';
 
 vi.mock('@/hooks/useAuth', () => ({ useAuth: () => ({ user: { id: 'u1' } }) }));
 vi.mock('@/hooks/useHotels', () => ({
-  useHotels: () => ({
-    createHotel: vi.fn(),
-    updateHotel: vi.fn(),
-    deleteHotel: vi.fn(),
-    regenerateSafetyNote: vi.fn(),
-    refetch: vi.fn(),
-  }),
+  createHotel: vi.fn(),
+  updateHotel: vi.fn(),
+  deleteHotel: vi.fn(),
+  regenerateSafetyNote: vi.fn(),
 }));
 vi.mock('@/hooks/useAddressResolver', () => ({
   useAddressResolver: () => ({ resolveAddress: vi.fn() }),
