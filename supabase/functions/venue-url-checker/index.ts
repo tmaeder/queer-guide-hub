@@ -1,4 +1,4 @@
-import { getServiceClient, jsonResponse, errorResponse, corsResponse, requireInternalOrAdmin } from '../_shared/supabase-client.ts'
+import { getServiceClient, jsonResponse, errorResponse, corsResponse, requireInternalOrAdmin, boundedInt } from '../_shared/supabase-client.ts'
 import { logPipelineError } from '../_shared/pipeline-error-log.ts'
 import { probeLink, isDeadLink } from '../_shared/link-health.ts'
 import { httpStatusSignal, insertSignals, type ExistenceSignal } from '../_shared/existence-probe.ts'
@@ -23,7 +23,7 @@ Deno.serve(async (req) => {
 
   try {
     const body = await req.json().catch(() => ({}))
-    const batchSize  = Number(body.batch_size  ?? DEFAULT_BATCH)
+    const batchSize  = boundedInt(body.batch_size, DEFAULT_BATCH, 2000)
     const staleDays  = Number(body.stale_days  ?? DEFAULT_STALE)
     const dryRun     = body.dry_run ?? false
 
