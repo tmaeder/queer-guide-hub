@@ -72,7 +72,7 @@ export function TypographySection({ controller }: { controller: DesignSettingsCo
               <span className="text-2xs uppercase tracking-wide text-muted-foreground">
                 {token.label} · --{token.key}
               </span>
-              <div className="flex items-center gap-4">
+              <div className="flex flex-wrap items-center gap-4">
                 <GlobalTokenInput token={token} controller={controller} />
                 {lhToken && <GlobalTokenInput token={lhToken} controller={controller} />}
               </div>

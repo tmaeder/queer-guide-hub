@@ -185,12 +185,12 @@ export const ApiKeysManager = () => {
       <ChatGPTConnection />
 
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
           <h2 className="text-3xl font-bold text-foreground">API Keys Management</h2>
           <p className="text-muted-foreground">Securely manage API keys for external services</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           <Button variant="outline" onClick={refreshKeys} loading={loading} size="sm">
             Refresh
           </Button>

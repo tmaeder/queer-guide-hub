@@ -19,7 +19,10 @@ const TabsList = React.forwardRef<React.ElementRef<typeof TabsPrimitive.List>, T
     <TabsPrimitive.List
       ref={ref}
       className={cn(
-        'inline-flex h-11 items-center justify-start gap-2 rounded-element bg-surface-container p-1 text-muted-foreground backdrop-blur-sm',
+        // max-w-full + overflow-x-auto: a row of tabs wider than its column
+        // scrolls inside itself instead of pushing the page sideways (measured
+        // on /admin at 390px: tab rows up to 648px wide in a 358px column).
+        'inline-flex h-11 max-w-full items-center justify-start gap-2 overflow-x-auto rounded-element bg-surface-container p-1 text-muted-foreground backdrop-blur-sm [scrollbar-width:none] [&::-webkit-scrollbar]:hidden',
         className,
       )}
       {...props}
@@ -35,7 +38,7 @@ const TabsTrigger = React.forwardRef<
   <TabsPrimitive.Trigger
     ref={ref}
     className={cn(
-      'relative inline-flex h-9 items-center justify-center whitespace-nowrap rounded-badge px-4 text-sm font-medium tracking-tight transition-all duration-normal ease-[cubic-bezier(0.22,1,0.36,1)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 hover:text-foreground active:scale-[0.97] motion-reduce:transform-none data-[state=active]:bg-foreground data-[state=active]:text-background',
+      'relative inline-flex h-9 shrink-0 items-center justify-center whitespace-nowrap rounded-badge px-4 text-sm font-medium tracking-tight transition-all duration-normal ease-[cubic-bezier(0.22,1,0.36,1)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 hover:text-foreground active:scale-[0.97] motion-reduce:transform-none data-[state=active]:bg-foreground data-[state=active]:text-background',
       className,
     )}
     {...props}

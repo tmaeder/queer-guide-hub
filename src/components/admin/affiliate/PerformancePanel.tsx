@@ -88,7 +88,7 @@ export function PerformancePanel({ days, vertical }: { days: string; vertical: s
       )}
 
       {/* Top-line totals */}
-      <div className="mb-8 grid grid-cols-4 gap-4">
+      <div className="mb-8 grid grid-cols-2 gap-4 md:grid-cols-4">
         <Stat label="Clicks" value={totals.clicks.toLocaleString()} />
         <Stat label="Impressions" value={totals.impressions.toLocaleString()} />
         <Stat label="CTR" value={totals.ctr == null ? '—' : `${(totals.ctr * 100).toFixed(1)}%`} />

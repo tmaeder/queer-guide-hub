@@ -10,7 +10,7 @@ const GROUP_ORDER: ColorGroup[] = ['core', 'surface', 'text', 'sidebar', 'feedba
 
 export function TokensTab({ controller }: { controller: DesignSettingsController }) {
   return (
-    <div className="grid gap-6 lg:grid-cols-12">
+    <div className="grid grid-cols-1 gap-6 lg:grid-cols-12 [&>*]:min-w-0">
       <div className="space-y-6 lg:col-span-7">
         {GROUP_ORDER.map((group) => (
           <Card key={group}>
