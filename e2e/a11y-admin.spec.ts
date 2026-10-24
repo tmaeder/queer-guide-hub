@@ -122,6 +122,22 @@ test.describe('Admin shell — automated a11y', () => {
       await expect(page.locator('h1')).toHaveCount(1, { timeout: 30_000 });
       await expect(page.locator('main, [role="main"], #admin-main-content').first()).toBeVisible();
 
+      // A Button that just re-enabled (a list finished fetching) fades
+      // opacity 0.4 -> 1 via `transition-[...opacity]`. Sampled mid-fade it
+      // is an ENABLED button at ~40% ink, which axe reports as 2.4:1 contrast
+      // (/admin/news-authors, nightly 2026-10-23 and 10-24, passing on retry).
+      // Let finite animations land so axe measures the settled page; infinite
+      // ones (skeleton pulse) are excluded or this would always hit the cap.
+      await page.evaluate(async () => {
+        const finite = document
+          .getAnimations()
+          .filter((a) => a.effect?.getTiming().iterations !== Infinity);
+        await Promise.race([
+          Promise.all(finite.map((a) => a.finished.catch(() => undefined))),
+          new Promise((r) => setTimeout(r, 4000)),
+        ]);
+      });
+
       const results = await new AxeBuilder({ page })
         .exclude('footer')
         .disableRules(['link-in-text-block'])
