@@ -25,6 +25,7 @@ describe('real tag registry import validation', () => {
           status: 'active',
           verification_status,
           short_description: null,
+          wikipedia_url: '',
         },
       ];
       const unchanged = buildImportPlan(
