@@ -1,6 +1,6 @@
 import { assert, assertEquals } from 'https://deno.land/std@0.224.0/assert/mod.ts'
 import { timingSafeEqual, signHmac, verifyHmac } from './hmac.ts'
-import { boundedInt, errorResponse, hasInternalSecret } from './supabase-client.ts'
+import { boundedInt, errorResponse, hasInternalSecret, jsonResponse, pgrstValue } from './supabase-client.ts'
 import { hasValidWebhookSecret } from './webhook-auth.ts'
 
 Deno.test('timingSafeEqual', () => {
@@ -96,4 +96,26 @@ Deno.test('ingest-api-error compares its secret in constant time', async () => {
   const s = await code('ingest-api-error/index.ts')
   assert(/timingSafeEqual\(req\.headers\.get\('X-Error-Secret'\), secret\)/.test(s))
   assert(!/!==\s*secret/.test(s))
+})
+
+Deno.test('jsonResponse sanitises a free-text error on 500 only', async () => {
+  const err = console.error
+  console.error = () => {}
+  try {
+    const leaky = await (jsonResponse({ success: false, error: 'column "x" does not exist', n: 3 }, 500)).json()
+    assertEquals(leaky, { success: false, error: 'Internal server error', n: 3 })
+    assertEquals((await jsonResponse({ error: 'load_failed' }, 500).json()).error, 'load_failed')
+    assertEquals((await jsonResponse({ error: 'bad input here' }, 400).json()).error, 'bad input here')
+    assertEquals(await jsonResponse([1, 2], 500).json(), [1, 2])
+  } finally {
+    console.error = err
+  }
+})
+
+Deno.test('pgrstValue keeps filter grammar out of values', () => {
+  assertEquals(pgrstValue('a.com'), '"a.com"')
+  assertEquals(pgrstValue('a.com,slug.neq.x'), '"a.com,slug.neq.x"')
+  assertEquals(pgrstValue('a"b\\c'), '"a\\"b\\\\c"')
+  assertEquals(pgrstValue(null), '""')
+  assertEquals(pgrstValue(42), '"42"')
 })

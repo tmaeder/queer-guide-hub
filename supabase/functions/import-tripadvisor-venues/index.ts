@@ -1,6 +1,6 @@
 import { createClient, SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2.50.5";
 import { enrichVenueWithAI } from '../_shared/ai-enrichment.ts';
-import { getCorsHeaders, requireAdmin, getServiceClient } from '../_shared/supabase-client.ts';
+import { getCorsHeaders, requireAdmin, getServiceClient, pgrstValue } from '../_shared/supabase-client.ts';
 import { getOrCreateCity, getOrCreateService } from '../_shared/venue-import-helpers.ts';
 
 interface TripAdvisorLocation {
@@ -218,7 +218,7 @@ Deno.serve(async (req) => {
               const { data: existingVenue } = await supabase
                 .from('venues')
                 .select('id, tripadvisor_id, data_source, external_id')
-                .or(`tripadvisor_id.eq.${venue.location_id},and(data_source.eq.tripadvisor,external_id.eq.${venue.location_id})`)
+                .or(`tripadvisor_id.eq.${pgrstValue(venue.location_id)},and(data_source.eq.tripadvisor,external_id.eq.${pgrstValue(venue.location_id)})`)
                 .maybeSingle();
 
               if (existingVenue) {

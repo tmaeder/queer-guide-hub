@@ -1,6 +1,7 @@
 import { getServiceClient, corsResponse } from '../_shared/supabase-client.ts'
 import { extractContent, type ExtractResult } from '../_shared/extract-client.ts'
 import type { SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5'
+import { safeErrCode } from '../_shared/safe-error.ts'
 
 type AnalyzeItem = {
   fields?: Record<string, { value: unknown } | unknown>
@@ -92,7 +93,7 @@ Deno.serve(async (req) => {
     .eq('is_active', true)
     .order('last_checked_at', { ascending: true, nullsFirst: true })
     .limit(batchLimit)
-  if (error) return new Response(JSON.stringify({ error: error.message }), { status: 500 })
+  if (error) return new Response(JSON.stringify({ error: safeErrCode(error, [], 'refresh-watched-urls') }), { status: 500 })
   if (!rows?.length) return new Response(JSON.stringify({ checked: 0 }), { status: 200 })
 
   const now = Date.now()

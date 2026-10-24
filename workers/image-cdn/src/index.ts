@@ -12,6 +12,7 @@
 
 import { handleAvatarResolve } from './avatarResolve';
 import { handleSocialResolve } from './socialCardResolve';
+import { timingSafeEqual } from '../../_shared/timing-safe';
 
 interface Env {
   IMAGES: R2Bucket;
@@ -273,5 +274,5 @@ function authorize(req: Request, env: Env): boolean {
   const secret = env.ADMIN_SECRET;
   if (!secret) return false;
   const provided = req.headers.get('X-Admin-Secret') || req.headers.get('Authorization')?.replace('Bearer ', '');
-  return provided === secret;
+  return timingSafeEqual(provided, secret);
 }

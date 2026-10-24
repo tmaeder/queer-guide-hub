@@ -35,6 +35,15 @@ export const corsHeaders = {
   'Access-Control-Allow-Origin': 'https://queer.guide',
 }
 
+/**
+ * Quote a value for a PostgREST logic-tree filter (`.or()` / `and()`), where
+ * `,` `(` `)` `.` are grammar. Unquoted, a value like `a.com,slug.neq.x`
+ * adds its own condition. Double-quoted with `\` and `"` escaped, it is data.
+ */
+export function pgrstValue(v: unknown): string {
+  return '"' + String(v ?? '').replace(/["\\]/g, (c) => '\\' + c) + '"'
+}
+
 /** Integer request param clamped to [1, max]; NaN/absent/negative → fallback. */
 export function boundedInt(value: unknown, fallback: number, max: number): number {
   const n = Math.trunc(Number(value))
@@ -55,33 +64,36 @@ export function getAnonClient(): SupabaseClient {
   )
 }
 
+/**
+ * The one place every JSON body leaves through. On a 500 — the catch-all
+ * where a caught `e.message` lands, carrying Postgres column/constraint names
+ * (CWE-209) — an `error` field must be a snake_case code the handler chose
+ * (e.g. 'upsert_failed'); free text is logged server-side and replaced.
+ * 4xx and 502-504 pass through: those are the handler's own words
+ * (validation, upstream or config status an admin needs).
+ */
+const ERROR_CODE_RE = /^[a-z][a-z0-9_]{0,63}$/
+const GENERIC_ERROR = 'Internal server error'
+
 export function jsonResponse(data: unknown, status = 200, req?: Request): Response {
-  return new Response(JSON.stringify(data), {
+  let body = data
+  if (status === 500 && data && typeof data === 'object' && !Array.isArray(data)) {
+    const err = (data as Record<string, unknown>).error
+    if (typeof err === 'string' && err !== GENERIC_ERROR && !ERROR_CODE_RE.test(err)) {
+      console.error('jsonResponse 500:', err)
+      body = { ...(data as Record<string, unknown>), error: GENERIC_ERROR }
+    }
+  }
+  return new Response(JSON.stringify(body), {
     status,
     headers: { ...(req ? getCorsHeaders(req) : corsHeaders), 'Content-Type': 'application/json' },
   })
 }
 
-/**
- * Uniform error body: `{ error, success: false }`.
- *
- * 4xx and 502-504 messages are the handler's own words (validation, upstream
- * or config status an admin needs) and pass through. On 500 — the catch-all
- * where a caught `e.message` lands, carrying Postgres column/constraint names
- * (CWE-209) — only a snake_case code the handler chose (e.g. 'upsert_failed')
- * is returned; free text is logged server-side and replaced. ~130 call sites
- * pass `err.message` here; this is the one choke point they all route through.
- */
-const ERROR_CODE_RE = /^[a-z][a-z0-9_]{0,63}$/
-
+/** Uniform error body `{ error, success: false }`; 500s are sanitised by jsonResponse. */
 export function errorResponse(message: unknown, status = 500, req?: Request): Response {
-  let safeMessage =
-    typeof message === 'string' && message.trim().length > 0 ? message : 'Internal server error'
-  if (status === 500 && !ERROR_CODE_RE.test(safeMessage)) {
-    if (safeMessage !== 'Internal server error') console.error(`errorResponse ${status}:`, safeMessage)
-    safeMessage = 'Internal server error'
-  }
-  return jsonResponse({ error: safeMessage, success: false }, status, req)
+  const msg = typeof message === 'string' && message.trim().length > 0 ? message : GENERIC_ERROR
+  return jsonResponse({ error: msg, success: false }, status, req)
 }
 
 export function corsResponse(req?: Request): Response {
