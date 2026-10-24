@@ -10,8 +10,11 @@ export interface EventSocialSignal {
 
 /**
  * Batch-fetch social-proof counts for events. Mirror of useVenueSocialSignals.
- * Returns a Map<event_id, EventSocialSignal>. Anon viewers get attending_count
- * but no friend signals.
+ * Returns a Map<event_id, EventSocialSignal>.
+ *
+ * Signed-in only: the RPC is not executable by `anon` (revoked on purpose —
+ * `p_viewer_id` is caller-supplied, so an anon grant would expose any
+ * user's friend counts). Calling it signed out only produced 401s.
  */
 export function useEventSocialSignals(eventIds: string[] | undefined) {
   const { user } = useAuth();
@@ -20,7 +23,7 @@ export function useEventSocialSignals(eventIds: string[] | undefined) {
 
   return useQuery({
     queryKey: ['event-social-signals', key, user?.id ?? 'anon'],
-    enabled: ids.length > 0,
+    enabled: !!user && ids.length > 0,
     staleTime: 5 * 60 * 1000,
     queryFn: async (): Promise<Map<string, EventSocialSignal>> => {
       const { data, error } = await supabase.rpc('get_event_social_signals', {
