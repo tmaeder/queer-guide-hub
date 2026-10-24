@@ -21,7 +21,11 @@ import { cn } from '@/lib/utils';
 import { Input } from '@/components/ui/input';
 import { TransitIcon } from '@/components/transit/TransitIcon';
 import type { TransitIconName } from '@/components/transit/transitIconPaths';
-import { PAGE_BLEED, STICKY_UNDER_HEADER } from '@/components/layout/PageContainer';
+import {
+  PAGE_BLEED,
+  PAGE_BLEED_GUTTER,
+  STICKY_UNDER_HEADER,
+} from '@/components/layout/PageContainer';
 import {
   TAG_SORTS,
   type TagSort,
@@ -89,7 +93,12 @@ export function TagsFilterSpine({
           PAGE_BLEED,
         )}
       >
-        <div className="mx-auto flex max-w-page flex-wrap items-center gap-x-4 gap-y-2 px-4 py-2 sm:px-6 md:px-8">
+        <div
+          className={cn(
+            'mx-auto flex max-w-page flex-wrap items-center gap-x-4 gap-y-2 py-2',
+            PAGE_BLEED_GUTTER,
+          )}
+        >
           <div className="relative min-w-0 basis-full sm:basis-auto sm:flex-1">
             <label htmlFor="tags-search" className="sr-only">
               {t('tags.spine.searchLabel', 'Search the glossary')}
