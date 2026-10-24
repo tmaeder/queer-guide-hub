@@ -91,6 +91,10 @@ jobs:
       # fails too until its entry is deleted (shrink-only).
       - name: npm audit (production deps, high+)
         run: npm run check:npm-audit
+      # functions/** (Pages edge middleware) was outside Prettier/lint-staged and
+      # drifted; this keeps it formatted now that lint-staged covers it too.
+      - name: Prettier check (functions/)
+        run: npm run format:check:functions
 
   unit-test-shards:
     name: Unit tests (${{ matrix.shard }}/4)

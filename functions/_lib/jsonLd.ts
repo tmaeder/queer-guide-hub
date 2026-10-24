@@ -4,7 +4,8 @@
  */
 import { SITE_ORIGIN, DEFAULT_OG_IMAGE } from './routeMeta';
 
-const escapeJsonLd = (s: string) => s.replace(/</g, '\\u003c').replace(/>/g, '\\u003e').replace(/&/g, '\\u0026');
+const escapeJsonLd = (s: string) =>
+  s.replace(/</g, '\\u003c').replace(/>/g, '\\u003e').replace(/&/g, '\\u0026');
 
 const renderLd = (obj: unknown) =>
   `<script type="application/ld+json">${escapeJsonLd(JSON.stringify(obj))}</script>`;
@@ -115,9 +116,8 @@ export function breadcrumbJsonLd(pathname: string, pageTitle: string): string {
   // a dangling "|…" that reads as broken markup in a result snippet. Only a
   // TRAILING pipe (with optional ellipsis) is stripped, so a title that
   // legitimately contains "|" mid-string is untouched.
-  const leaf = (pageTitle.endsWith(TITLE_SUFFIX)
-    ? pageTitle.slice(0, -TITLE_SUFFIX.length)
-    : pageTitle
+  const leaf = (
+    pageTitle.endsWith(TITLE_SUFFIX) ? pageTitle.slice(0, -TITLE_SUFFIX.length) : pageTitle
   )
     .replace(/\s*\|\s*(?:…|\.\.\.)?\s*$/, '')
     .trim();

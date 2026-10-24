@@ -395,7 +395,9 @@ async function tagLinkedContentHtml(env: Env, tagId: string, tagName: string): P
       .filter((r) => r.title && r.slug)
       .map((r) => `<li><a href="${prefix}${escape(r.slug!)}">${escape(r.title!)}</a></li>`)
       .join('\n        ');
-    return items ? `<section><h2>${escape(heading)}</h2><ul>\n        ${items}\n      </ul></section>` : '';
+    return items
+      ? `<section><h2>${escape(heading)}</h2><ul>\n        ${items}\n      </ul></section>`
+      : '';
   };
 
   return [
@@ -452,7 +454,10 @@ export function publishableCitySlug(row: Record<string, unknown>): string | null
 }
 
 /** The `<li>` city link for a crawler nav, or '' when there is no safe target. */
-export function cityLinkItem(row: Record<string, unknown>, cityText: string | null | undefined): string {
+export function cityLinkItem(
+  row: Record<string, unknown>,
+  cityText: string | null | undefined,
+): string {
   const slug = publishableCitySlug(row);
   if (!slug) return '';
   return `<li><a href="/city/${encodeURIComponent(slug)}">More in ${escape(cityText ?? slug)}</a></li>`;
@@ -572,7 +577,11 @@ async function venueDetail(env: Env, slug: string, pathname: string): Promise<De
   // description — which is why the crawler body for one of those measured 64
   // characters end to end: name, city, nav. These lines are derived from
   // structured columns, never generated prose.
-  const factLine = [labelTitle, city ? `in ${city}` : null, country && country !== city ? country : null]
+  const factLine = [
+    labelTitle,
+    city ? `in ${city}` : null,
+    country && country !== city ? country : null,
+  ]
     .filter(Boolean)
     .join(' ');
   const hoursText = formatHoursForCrawler(row.hours);
@@ -649,7 +658,12 @@ async function venueDetail(env: Env, slug: string, pathname: string): Promise<De
       : undefined,
   };
 
-  return { meta, body, jsonLd: renderLd(prune(localBusiness)), indexable: row.seo_indexable !== false };
+  return {
+    meta,
+    body,
+    jsonLd: renderLd(prune(localBusiness)),
+    indexable: row.seo_indexable !== false,
+  };
 }
 
 /**
@@ -1105,10 +1119,7 @@ async function podcastShowDetail(
 
   const meta: RouteMeta = {
     title: truncate(`${name} — Podcast${TITLE_SUFFIX}`, MAX_TITLE),
-    description: truncate(
-      description || `${name} — an LGBTQ+ podcast on Queer Guide.`,
-      MAX_DESC,
-    ),
+    description: truncate(description || `${name} — an LGBTQ+ podcast on Queer Guide.`, MAX_DESC),
     ogImage: safeOgImage(artwork ?? DEFAULT_OG_IMAGE),
   };
 
@@ -1267,7 +1278,8 @@ export function cityTitleLabel(
 ): string {
   if (!hasSameNameSibling) return name;
   const rn = regionName?.trim();
-  if (rn && !/^[0-9]+$/.test(rn) && rn.toLowerCase() !== name.toLowerCase()) return `${name}, ${rn}`;
+  if (rn && !/^[0-9]+$/.test(rn) && rn.toLowerCase() !== name.toLowerCase())
+    return `${name}, ${rn}`;
   const m = /^[A-Z]{2}-([A-Z0-9]{1,3})$/.exec(regionCode?.trim() ?? '');
   if (m && !/^[0-9]+$/.test(m[1])) return `${name}, ${m[1]}`;
   return name;
@@ -1783,9 +1795,7 @@ async function tagDetail(env: Env, slug: string, pathname: string): Promise<Deta
       status: stringField(r, 'instrument_status'),
       year: numField(r, 'adopted_year'),
     }))
-    .filter((c): c is typeof c & { title: string; url: string } =>
-      Boolean(c.title && c.url),
-    );
+    .filter((c): c is typeof c & { title: string; url: string } => Boolean(c.title && c.url));
   const citations = allCitations.filter((c) => c.type !== 'clinical_guideline');
   const clinicalCitations = allCitations.filter((c) => c.type === 'clinical_guideline');
 

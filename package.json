@@ -22,7 +22,7 @@
     "lint:disables:baseline": "node scripts/check-eslint-disable-ratchet.mjs --write",
     "lint:staged": "lint-staged",
     "knip": "knip",
-    "format": "prettier --write \"src/**/*.{ts,tsx,css,json}\"",
+    "format": "prettier --write \"src/**/*.{ts,tsx,css,json}\" \"functions/**/*.{ts,js}\"",
     "format:check": "prettier --check \"src/**/*.{ts,tsx,css,json}\"",
     "preview": "vite preview",
     "prerender": "node scripts/prerender.mjs",
@@ -58,7 +58,8 @@
     "test:redirect-integrations": "node scripts/test-redirect-integrations.mjs",
     "test:redirect-webhooks": "node scripts/test-redirect-webhooks.mjs",
     "test:redirect-qr": "node scripts/test-redirect-qr-worker.mjs",
-    "test:redirect-manifest": "node scripts/sync-redirect-inventory-manifest.mjs"
+    "test:redirect-manifest": "node scripts/sync-redirect-inventory-manifest.mjs",
+    "format:check:functions": "prettier --check \"functions/**/*.{ts,js}\""
   },
   "lint-staged": {
     "src/**/*.{ts,tsx}": [
@@ -66,6 +67,9 @@
       "eslint --fix --no-warn-ignored"
     ],
     "src/**/*.{css,json}": [
+      "prettier --write"
+    ],
+    "functions/**/*.{ts,js}": [
       "prettier --write"
     ]
   },
