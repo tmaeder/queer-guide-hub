@@ -10,7 +10,7 @@ import { ScrollManager } from '@/components/routing/ScrollManager';
 import { AppRoutes } from './routes';
 import { ExternalNavigationNotice } from '@/components/routing/ExternalNavigationNotice';
 import { RedirectAttribution } from '@/components/tracking/RedirectAttribution';
-import { ErrorBoundary } from '@/components/ErrorBoundary';
+import { ErrorBoundary } from '@/components/error/ErrorBoundary';
 
 const App = () => (
   <ErrorBoundary section="app-root">

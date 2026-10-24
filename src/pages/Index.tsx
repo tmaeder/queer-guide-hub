@@ -1,5 +1,5 @@
 import React from 'react';
-import { ErrorBoundary } from '@/components/ErrorBoundary';
+import { ErrorBoundary } from '@/components/error/ErrorBoundary';
 import { Skeleton } from '@/components/ui/skeleton';
 import { YourLines } from '@/components/home/YourLines';
 import { DeferredSection } from '@/components/home/DeferredSection';

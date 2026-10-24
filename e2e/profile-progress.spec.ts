@@ -9,7 +9,7 @@ import { test, expect } from '@playwright/test';
 // This locks the crash-regression contract against a real session: /me/progress
 // must render its tab shell (sub-tabs + footer) and never blank. Each sub-panel
 // has an unconditional, data-independent section header — if a section's error
-// boundary fired, the header would be replaced by the DataErrorFallback, so
+// boundary fired, the header would be replaced by the SectionErrorFallback, so
 // asserting the header is the "section mounted, no blank" check.
 
 const hasAuth = !!(process.env.E2E_ADMIN_EMAIL && process.env.E2E_ADMIN_PASSWORD);
