@@ -12,7 +12,7 @@ import { HotelHero } from '@/components/hotels/HotelHero';
 import { VibeChipsRow } from '@/components/hotels/VibeChipsRow';
 import { DestinationTiles } from '@/components/hotels/DestinationTiles';
 import { HotelScrollerRow } from '@/components/hotels/HotelScrollerRow';
-import { useHotels, type HotelFilters as HotelFilterType } from '@/hooks/useHotels';
+import { useHotelsFeed, type HotelFilters as HotelFilterType } from '@/hooks/useHotels';
 import { useHotelFilterMeta } from '@/hooks/useHotelFilterMeta';
 import { useFeaturedHotel, useEditorialHotels, useTopHotelCities } from '@/hooks/useHotelDiscovery';
 import { useDebounce } from '@/hooks/useDebounce';
@@ -40,7 +40,6 @@ type ViewMode = 'grid' | 'map';
 export default function Hotels() {
   const { t } = useTranslation();
   const navigate = useLocalizedNavigate();
-  const { hotels, loading, hasMore, datasetTotal, fetchHotels } = useHotels(false);
   const { data: filterMeta } = useHotelFilterMeta();
 
   const [searchParams, setSearchParams] = useSearchParams();
@@ -53,7 +52,6 @@ export default function Hotels() {
   const [view, setView] = useState<ViewMode>(() =>
     searchParams.get('view') === 'map' ? 'map' : 'grid',
   );
-  const [page, setPage] = useState(1);
 
   useMeta({
     title: 'LGBTQ+ Hotels & Stays | Queer Guide',
@@ -163,8 +161,6 @@ export default function Hotels() {
     return chips;
   }, [search, hotelType, effectivePriceRange, vibe, city]);
 
-  const isModuleEmpty = datasetTotal === 0 || (datasetTotal === null && !hasActiveFilters);
-
   const buildFilters = useCallback((): HotelFilterType => {
     const filters: HotelFilterType = {};
     if (debouncedSearch) filters.search = debouncedSearch;
@@ -175,26 +171,21 @@ export default function Hotels() {
     return filters;
   }, [debouncedSearch, hotelType, effectivePriceRange, vibe, city]);
 
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- effect synchronizes state with external props/data; React Compiler can't infer the sync direction. Documented exemption from the eslint.config.js staged-ratchet plan.
-    setPage(1);
-    fetchHotels(buildFilters(), { page: 1, mapMode: view === 'map' });
-  }, [
-    debouncedSearch,
-    hotelType,
-    effectivePriceRange,
-    vibe,
-    city,
-    view,
-    buildFilters,
-    fetchHotels,
-  ]);
-
-  const handleLoadMore = () => {
-    const nextPage = page + 1;
-    setPage(nextPage);
-    fetchHotels(buildFilters(), { page: nextPage, append: true });
-  };
+  // The list request, derived from filter state. The query key is the
+  // request, so a filter change replaces the list and the newest request wins.
+  const feedRequest = useMemo(
+    () => ({ filters: buildFilters(), mapMode: view === 'map' }),
+    [buildFilters, view],
+  );
+  const {
+    hotels,
+    loading,
+    loadingMore,
+    hasMore,
+    datasetTotal,
+    loadMore: handleLoadMore,
+  } = useHotelsFeed(feedRequest);
+  const isModuleEmpty = datasetTotal === 0 || (datasetTotal === null && !hasActiveFilters);
 
   // Discovery data — only fetch / render on the bare landing state.
   const showDiscovery = !hasActiveFilters && view === 'grid';
@@ -358,8 +349,10 @@ export default function Hotels() {
 
               {hasMore && (
                 <div className="flex justify-center mt-8">
-                  <Button variant="outline" onClick={handleLoadMore} disabled={loading}>
-                    {loading ? <TrackLoader size={16} label="Loading" className="mr-2" /> : null}
+                  <Button variant="outline" onClick={handleLoadMore} disabled={loadingMore}>
+                    {loadingMore ? (
+                      <TrackLoader size={16} label="Loading" className="mr-2" />
+                    ) : null}
                     {t('common.loadMore', 'Load More')}
                   </Button>
                 </div>

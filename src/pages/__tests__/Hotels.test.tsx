@@ -18,13 +18,17 @@ const hookState: {
 } = { hotels: [], loading: false, hasMore: false, datasetTotal: 0 };
 
 vi.mock('@/hooks/useHotels', () => ({
-  useHotels: () => ({
-    hotels: hookState.hotels,
-    loading: hookState.loading,
-    hasMore: hookState.hasMore,
-    datasetTotal: hookState.datasetTotal,
-    fetchHotels: fetchHotelsMock,
-  }),
+  useHotelsFeed: (request: unknown) => {
+    fetchHotelsMock(request);
+    return {
+      hotels: hookState.hotels,
+      loading: hookState.loading,
+      loadingMore: false,
+      hasMore: hookState.hasMore,
+      datasetTotal: hookState.datasetTotal,
+      loadMore: vi.fn(),
+    };
+  },
 }));
 
 vi.mock('@/hooks/useHotelFilterMeta', () => ({
@@ -35,7 +39,11 @@ vi.mock('@/hooks/useHotelFilterMeta', () => ({
 
 vi.mock('@/components/hotels/HotelCard', () => ({
   HotelCard: ({ hotel, loading }: { hotel?: { id: string; name: string }; loading?: boolean }) =>
-    loading ? <div data-testid="hotel-skeleton" /> : <div data-testid="hotel-card">{hotel?.name}</div>,
+    loading ? (
+      <div data-testid="hotel-skeleton" />
+    ) : (
+      <div data-testid="hotel-card">{hotel?.name}</div>
+    ),
 }));
 
 vi.mock('@/components/hotels/HotelFilters', () => ({
@@ -70,10 +78,22 @@ describe('Hotels page empty states', () => {
     hookState.datasetTotal = 0;
   });
 
+  // The request is derived from filter state, seeded from the URL, so a shared
+  // link's first request already carries its filters.
+  it('derives the first request from the URL', () => {
+    renderWithProviders(<Hotels />, { route: '/hotels?type=bnb&city=Berlin&view=map' });
+    expect(fetchHotelsMock.mock.calls[0][0]).toEqual({
+      filters: { hotel_type: 'bnb', city: 'Berlin' },
+      mapMode: true,
+    });
+  });
+
   it('renders module-empty copy when datasetTotal is 0', () => {
     renderWithProviders(<Hotels />);
     expect(screen.getByText('No hotels yet')).toBeInTheDocument();
-    expect(screen.getAllByRole('button', { name: /Submit Hotel/i }).length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByRole('button', { name: /Submit Hotel/i }).length).toBeGreaterThanOrEqual(
+      1,
+    );
     expect(screen.queryByRole('button', { name: /Reset filters/i })).not.toBeInTheDocument();
   });
 
