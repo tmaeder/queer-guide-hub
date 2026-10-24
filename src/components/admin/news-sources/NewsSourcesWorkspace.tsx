@@ -12,6 +12,8 @@ import {
   DialogTitle,
   DialogDescription,
 } from '@/components/ui/dialog';
+import { ExportExcelButton } from '@/components/admin/ExportExcelButton';
+import { exportNewsSources } from '@/lib/newsSourcesExport';
 import { NewsSourceEditor } from './NewsSourceEditor';
 import {
   NEWS_SOURCE_PAGE_SIZE,
@@ -213,6 +215,13 @@ export function NewsSourcesWorkspace({
           >
             Refresh
           </Button>
+          <ExportExcelButton
+            onExport={() => exportNewsSources({ search, state, unlinked, organizationId }, 'Excel')}
+          />
+          <ExportExcelButton
+            format="CSV"
+            onExport={() => exportNewsSources({ search, state, unlinked, organizationId }, 'CSV')}
+          />
           {organizationId && canManagePublishers && (
             <Button
               type="button"
