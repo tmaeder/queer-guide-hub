@@ -66,12 +66,25 @@ describe('event gap evidence', () => {
     expect(structuredEvent(html('Another Show'), ev)).toBeNull();
     expect(structuredEvent(html(ev.title, '2025-11-03'), ev)).toBeNull();
   });
-  it('finds relative source artwork and filters private URLs', () => {
+  it('ignores social-preview images that do not identify the event', () => {
     const html =
-      '<meta content="/poster.jpg" property="og:image"><meta name="twitter:image" content="http://localhost/private">';
-    expect(imageCandidates(html, ev, 'https://arts.example.org/show')).toEqual([
-      'https://arts.example.org/poster.jpg',
-    ]);
+      '<meta content="/poster.jpg" property="og:image"><meta name="twitter:image" content="/cover.jpg">';
+    expect(imageCandidates(html, ev, 'https://arts.example.org/show')).toEqual([]);
+  });
+  it('finds relative artwork on the matching structured event and filters private URLs', () => {
+    const ld = (startDate: string) =>
+      `<script type="application/ld+json">${JSON.stringify({
+        '@type': 'Event',
+        name: ev.title,
+        startDate,
+        image: ['/poster.jpg', 'http://localhost/private'],
+      })}</script>`;
+    expect(
+      imageCandidates(ld('2026-11-03T19:00:00Z'), ev, 'https://arts.example.org/show'),
+    ).toEqual(['https://arts.example.org/poster.jpg']);
+    expect(
+      imageCandidates(ld('2026-12-03T19:00:00Z'), ev, 'https://arts.example.org/show'),
+    ).toEqual([]);
   });
   it('uses event-owned landscape or portrait artwork with the same minimum edges', () => {
     const source = {
