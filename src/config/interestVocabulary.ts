@@ -53,7 +53,7 @@ export const INTEREST_GROUPS: readonly InterestGroup[] = [
   },
   {
     label: 'Quieter',
-    slugs: ['coffee', 'brunch', 'dining', 'books', 'sober'],
+    slugs: ['coffee', 'brunch', 'food', 'books', 'sober'],
   },
   {
     label: 'Culture',
