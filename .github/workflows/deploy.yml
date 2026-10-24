@@ -10,9 +10,11 @@ on:
       - "workers/submit/**"
       - "workers/image-cdn/**"
       - "workers/atproto-handles/**"
-      # Load-bearing: four of the five workers below compile code from
+      - "workers/extract/**"
+      # Load-bearing: five of the workers below compile code from
       # workers/_shared (search-proxy + assistant → supabase-jwt, submit →
-      # ssrf-guard + supabase-jwt-jose, image-cdn → supabase-jwt-jose). Without
+      # ssrf-guard + supabase-jwt-jose, image-cdn → supabase-jwt-jose, extract →
+      # ssrf-guard). Without
       # this line a commit touching ONLY _shared matches no path, the workflow
       # never runs, and the change ships to nobody while CI stays green — which
       # is worst for exactly the security-critical modules that live there:
@@ -131,6 +133,28 @@ jobs:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           workingDirectory: workers/atproto-handles
+          command: deploy
+
+  # extract.queer.guide: the full-text extractor every news/venue/event
+  # enrichment path calls. It had no job here, so merged fixes never shipped.
+  deploy-extract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
+        with: { node-version: "22" }
+      - run: npm ci
+        working-directory: workers/extract
+      - run: npx tsc --noEmit
+        working-directory: workers/extract
+      - run: npx vitest run
+        working-directory: workers/extract
+      - uses: cloudflare/wrangler-action@953926a2e2182532811c01a25e53647d93bf07c0 # v4
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          workingDirectory: workers/extract
           command: deploy
 
   smoke:
