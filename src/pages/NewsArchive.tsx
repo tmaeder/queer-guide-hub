@@ -162,17 +162,19 @@ export default function NewsArchive() {
   // The URL's filters are the FIRST request, so a deep link like
   // /news/all?category=politics&source=<id>&q=trump cold-loads its slice
   // instead of the unfiltered list followed by a correction.
-  const { articles, loading, error, fetchArticles, loadingTimedOut } = useNewsArticlesFeed(() => {
-    const opt = sortOptions.find((o) => o.value === initialSort);
-    const f: Record<string, unknown> = {
-      ...initialFilters,
-      sortField: opt?.field || 'published_at',
-      sortOrder: opt?.order || 'desc',
-    };
-    if (initialCategory) f.category = initialCategory;
-    if (initialSearch) f.search = initialSearch;
-    return f;
-  });
+  const { articles, loading, error, fetchArticles, refetch, loadingTimedOut } = useNewsArticlesFeed(
+    () => {
+      const opt = sortOptions.find((o) => o.value === initialSort);
+      const f: Record<string, unknown> = {
+        ...initialFilters,
+        sortField: opt?.field || 'published_at',
+        sortOrder: opt?.order || 'desc',
+      };
+      if (initialCategory) f.category = initialCategory;
+      if (initialSearch) f.search = initialSearch;
+      return f;
+    },
+  );
   const articleIds = useMemo(() => articles.map((a) => a.id as string), [articles]);
   const articleTags = useNewsArticleTags(articleIds);
   const [activeRight, setActiveRight] = useState<RightTopic | null>(initialRight);
@@ -522,6 +524,16 @@ export default function NewsArchive() {
     : getSortedArticles();
   const displayLoading = isSemanticSearch ? searchLoading : loading;
   const displayError = isSemanticSearch ? searchError : error;
+  /** Retry / Refresh re-run what is on screen. A bare fetchArticles() here
+   *  replaced the request with an unfiltered one, so retrying a filtered
+   *  archive silently showed the whole corpus. */
+  const retry = () => {
+    if (isSemanticSearch) {
+      void runSemanticSearch(quickSearch.trim(), buildSearchFilters(currentFilters), 0, sortBy);
+    } else {
+      refetch();
+    }
+  };
   const displayLoadingTimedOut = !isSemanticSearch && loadingTimedOut;
   const displayTotal = isSemanticSearch ? searchTotalHits : totalArticles;
 
@@ -874,7 +886,7 @@ export default function NewsArchive() {
           <div className={showFilters ? 'lg:col-span-3' : 'lg:col-span-4'}>
             {/* Error and loading are mutually exclusive with the list. */}
             {displayError && !displayLoading ? (
-              <ErrorState message={displayError} onRetry={() => fetchArticles()} />
+              <ErrorState message={displayError} onRetry={retry} />
             ) : null}
 
             {!displayError && displayLoading && (
@@ -885,7 +897,7 @@ export default function NewsArchive() {
               </div>
             )}
             {!displayError && displayLoading && displayLoadingTimedOut && (
-              <LoadingTimeout onRetry={() => fetchArticles()} />
+              <LoadingTimeout onRetry={retry} />
             )}
 
             {!displayLoading &&
@@ -962,7 +974,7 @@ export default function NewsArchive() {
                   mood="encouraging"
                   primaryAction={{
                     label: t('pages.news.refresh', 'Refresh'),
-                    onClick: () => fetchArticles(),
+                    onClick: retry,
                   }}
                   secondaryAction={{
                     label: t('pages.news.emptyBrowseEvents', 'Browse events'),
