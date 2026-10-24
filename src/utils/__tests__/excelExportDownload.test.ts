@@ -52,3 +52,49 @@ describe('actual Excel downloads', () => {
     },
   );
 });
+
+describe('oversized Excel download', () => {
+  it('uses the streaming path and preserves long text across documented columns', async () => {
+    const text = '🌈 news '.repeat(6000);
+    const rows = [{ id: 'record-1', text }];
+    let blob: Blob | undefined;
+    Object.defineProperty(URL, 'createObjectURL', {
+      configurable: true,
+      value: vi.fn((value: Blob) => {
+        blob = value;
+        return 'blob:streamed';
+      }),
+    });
+    Object.defineProperty(URL, 'revokeObjectURL', { configurable: true, value: vi.fn() });
+    const click = vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {});
+    await exportToExcel(
+      rows,
+      [
+        { header: 'ID', accessor: (row) => row.id },
+        { header: 'Text', accessor: (row) => row.text },
+      ],
+      'full-news.xlsx',
+    );
+    const buffer = await new Promise<ArrayBuffer>((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result as ArrayBuffer);
+      reader.onerror = () => reject(reader.error);
+      reader.readAsArrayBuffer(blob!);
+    });
+    const book = new Workbook();
+    await book.xlsx.load(buffer as never);
+    expect(book.worksheets[0].getRow(2).getCell(1).value).toBe('record-1');
+    expect(
+      String(book.worksheets[0].getRow(2).getCell(2).value) +
+        String(book.worksheets[0].getRow(2).getCell(3).value),
+    ).toBe(text);
+    expect(book.getWorksheet('Export columns')!.getRow(2).values).toEqual([
+      undefined,
+      'Data',
+      2,
+      'Text',
+      2,
+    ]);
+    expect((click.mock.instances[0] as HTMLAnchorElement).download).toBe('full-news.xlsx');
+  });
+});

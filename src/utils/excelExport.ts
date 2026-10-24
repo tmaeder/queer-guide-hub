@@ -15,6 +15,11 @@ export async function exportToExcel<T>(
   columns: ExportColumnDef<T>[],
   filename: string,
 ): Promise<void> {
+  const { needsStreamingExcel, streamingExcelBlob } = await import('./streamingExcel');
+  if (needsStreamingExcel(data, columns)) {
+    downloadExcelBlob(await streamingExcelBlob([{ name: 'Data', rows: data, columns }]), filename);
+    return;
+  }
   const ExcelJS = await import('exceljs');
   const workbook = new ExcelJS.Workbook();
   const ws = workbook.addWorksheet('Data');
@@ -69,6 +74,13 @@ export async function exportWorkbook(
   sheets: ExportSheet<Record<string, unknown>>[],
   filename: string,
 ): Promise<void> {
+  const { needsStreamingExcel, streamingExcelBlob } = await import('./streamingExcel');
+  if (sheets.some((sheet) => needsStreamingExcel(sheet.rows, sheet.columns))) {
+    const used = new Set<string>();
+    const namedSheets = sheets.map((sheet) => ({ ...sheet, name: sheetName(sheet.name, used) }));
+    downloadExcelBlob(await streamingExcelBlob(namedSheets), filename);
+    return;
+  }
   const ExcelJS = await import('exceljs');
   const workbook = new ExcelJS.Workbook();
   const used = new Set<string>();
@@ -100,6 +112,10 @@ async function downloadWorkbook(
   const blob = new Blob([buffer as BlobPart], {
     type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
   });
+  downloadExcelBlob(blob, filename);
+}
+
+function downloadExcelBlob(blob: Blob, filename: string): void {
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
