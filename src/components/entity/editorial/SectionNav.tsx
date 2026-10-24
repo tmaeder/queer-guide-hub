@@ -1,5 +1,9 @@
 import { useEffect, useRef, type ReactNode } from 'react';
-import { PAGE_BLEED, PAGE_GUTTER, STICKY_UNDER_HEADER } from '@/components/layout/PageContainer';
+import {
+  PAGE_BLEED,
+  PAGE_BLEED_GUTTER,
+  STICKY_UNDER_HEADER,
+} from '@/components/layout/PageContainer';
 import { cn } from '@/lib/utils';
 
 export interface SectionNavItem {
@@ -54,7 +58,7 @@ export function SectionNav({
       className={cn(
         'sticky z-30 mb-8 bg-background py-2',
         PAGE_BLEED,
-        PAGE_GUTTER,
+        PAGE_BLEED_GUTTER,
         STICKY_UNDER_HEADER,
         className,
       )}

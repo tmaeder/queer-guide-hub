@@ -1,6 +1,10 @@
 import { useEffect, useRef } from 'react';
 import { cn } from '@/lib/utils';
-import { PAGE_BLEED, STICKY_UNDER_HEADER } from '@/components/layout/PageContainer';
+import {
+  PAGE_BLEED,
+  PAGE_BLEED_GUTTER,
+  STICKY_UNDER_HEADER,
+} from '@/components/layout/PageContainer';
 import { StationRing } from './StationRing';
 import { TRACK_BG, type Track } from './routeBulletMap';
 
@@ -189,7 +193,10 @@ export function RouteStrip({
       >
         <ol
           ref={listRef}
-          className="flex h-12 items-center gap-4 overflow-x-auto px-4 sm:px-6 md:px-8 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+          className={cn(
+            'flex h-12 items-center gap-4 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden',
+            PAGE_BLEED_GUTTER,
+          )}
         >
           {stations.map((s, i) => {
             const isActive = s.id === activeId;
