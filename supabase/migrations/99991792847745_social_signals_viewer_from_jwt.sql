@@ -107,6 +107,14 @@ revoke all on function api_private.get_event_social_signals(uuid[], uuid) from p
 grant execute on function api_private.get_venue_social_signals(uuid[], uuid) to authenticated, service_role;
 grant execute on function api_private.get_event_social_signals(uuid[], uuid) to authenticated, service_role;
 
+-- The public wrappers: prod already denies anon (revoked in 20260916070904),
+-- but a rebuild from the migration files does not — 20260418080000 granted
+-- anon and nothing later in-tree revokes it. State it here so both agree.
+revoke all on function public.get_venue_social_signals(uuid[], uuid) from public, anon;
+revoke all on function public.get_event_social_signals(uuid[], uuid) from public, anon;
+grant execute on function public.get_venue_social_signals(uuid[], uuid) to authenticated, service_role;
+grant execute on function public.get_event_social_signals(uuid[], uuid) to authenticated, service_role;
+
 do $verify$
 declare
   v_src text;
