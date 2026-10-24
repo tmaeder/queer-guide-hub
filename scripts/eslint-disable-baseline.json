@@ -1,9 +1,6 @@
 {
   "total": 502,
   "files": {
-    "src/components/ErrorBoundary.tsx": {
-      "react-hooks/rules-of-hooks": 1
-    },
     "src/components/admin/CloudflareDashboard.tsx": {
       "react-hooks/set-state-in-effect": 1
     },
@@ -253,6 +250,9 @@
     },
     "src/components/entity/editorial/EditorialDetailLayout.tsx": {
       "react-hooks/exhaustive-deps": 3
+    },
+    "src/components/error/ErrorBoundary.tsx": {
+      "react-hooks/rules-of-hooks": 1
     },
     "src/components/events/EventHoverCard.tsx": {
       "react-hooks/purity": 1
