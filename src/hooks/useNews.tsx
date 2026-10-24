@@ -264,6 +264,9 @@ export function useNewsArticlesFeed(initial: () => NewsFilters = () => ({})) {
     },
     [refetch],
   );
+  const rerun = useCallback(() => {
+    void refetch();
+  }, [refetch]);
   const loading = query.isLoading;
   return {
     articles: query.data ?? NO_ARTICLES,
@@ -271,6 +274,8 @@ export function useNewsArticlesFeed(initial: () => NewsFilters = () => ({})) {
     loadingTimedOut: useLoadingTimedOut(loading, hashKey([request])),
     error: query.error ? query.error.message : null,
     fetchArticles,
+    /** Re-run the current request, filters and all (retry, refresh). */
+    refetch: rerun,
   };
 }
 

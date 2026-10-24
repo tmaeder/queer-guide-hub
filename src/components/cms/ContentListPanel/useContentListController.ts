@@ -335,39 +335,42 @@ export function useContentListController({
       .map((id) => getContentType(id))
       .filter((ct): ct is ContentTypeConfig => !!ct && ct.admin?.includeInAllContent !== false);
 
-    for (const ct of configs) {
-      let query = supabase
-        .from(ct.tableName as 'events')
-        .select('*', { count: 'exact' })
-        .order('updated_at', { ascending: false })
-        .limit(100);
+    // Parallel, and no `count`: the counts were never read, and awaiting ~17
+    // tables one by one summed their latencies (8.6 s field LCP, 2026-10-24).
+    const perType = await Promise.all(
+      configs.map(async (ct) => {
+        let query = supabase
+          .from(ct.tableName as 'events')
+          .select('*')
+          .order('updated_at', { ascending: false })
+          .limit(100);
 
-      if (debouncedSearch) {
-        query = applyContentSearch(query as never, ct, debouncedSearch) as typeof query;
-      }
+        if (debouncedSearch) {
+          query = applyContentSearch(query as never, ct, debouncedSearch) as typeof query;
+        }
 
-      // Threaded rather than hardcoded to 'unmerged'. There is no toggle in
-      // All-content mode today (index.tsx gates both on a chosen type), so the
-      // value can only be the default here — but hardcoding it would create a
-      // second source of truth that diverges the day a toggle is added.
-      query = applyMergedView(query as never, ct.merge, mergedView) as typeof query;
+        // Threaded rather than hardcoded to 'unmerged'. There is no toggle in
+        // All-content mode today (index.tsx gates both on a chosen type), so the
+        // value can only be the default here — but hardcoding it would create a
+        // second source of truth that diverges the day a toggle is added.
+        query = applyMergedView(query as never, ct.merge, mergedView) as typeof query;
 
-      // This loop touches EVERY registry type, tags and pages included, and the
-      // error is only logged rather than thrown so one bad type cannot blank
-      // the whole screen. That makes `applyMergedView`'s "no capability, no
-      // predicate" arm load-bearing: a predicate against a column the table
-      // does not have answers 400, and this type would silently vanish.
-      const { data, error } = await query;
-      if (error) console.error(`All content: ${ct.id} failed`, error);
+        // This loop touches EVERY registry type, tags and pages included, and the
+        // error is only logged rather than thrown so one bad type cannot blank
+        // the whole screen. That makes `applyMergedView`'s "no capability, no
+        // predicate" arm load-bearing: a predicate against a column the table
+        // does not have answers 400, and this type would silently vanish.
+        const { data, error } = await query;
+        if (error) console.error(`All content: ${ct.id} failed`, error);
 
-      // Keep the source row in the aggregate list too. Inline editors resolve
-      // their current value and writable status field from `raw`; dropping it
-      // here made a displayed fallback title open as an empty input and made
-      // aggregate-row status cells falsely read-only.
-      const mapped = (data || []).map((row: Record<string, unknown>) => toListItem(row, ct));
-
-      allItems.push(...mapped);
-    }
+        // Keep the source row in the aggregate list too. Inline editors resolve
+        // their current value and writable status field from `raw`; dropping it
+        // here made a displayed fallback title open as an empty input and made
+        // aggregate-row status cells falsely read-only.
+        return (data || []).map((row: Record<string, unknown>) => toListItem(row, ct));
+      }),
+    );
+    for (const mapped of perType) allItems.push(...mapped);
 
     allItems.sort((a, b) => {
       if (sortField === 'title') {

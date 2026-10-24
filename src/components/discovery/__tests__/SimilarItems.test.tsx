@@ -2,12 +2,13 @@
  * @vitest-environment jsdom
  */
 import { describe, it, expect, vi } from 'vitest';
-import { render, screen, waitFor } from '@testing-library/react';
-import { MemoryRouter } from 'react-router';
+import { renderWithProviders as render, screen, waitFor } from '@/test/test-utils';
 
 vi.mock('@/hooks/useSearchActions', () => ({ useTrackClick: () => vi.fn() }));
 const fetchSimilarMock = vi.fn();
-vi.mock('@/lib/searchClient', () => ({ fetchSimilar: (...args: unknown[]) => fetchSimilarMock(...args) }));
+vi.mock('@/lib/searchClient', () => ({
+  fetchSimilar: (...args: unknown[]) => fetchSimilarMock(...args),
+}));
 
 import { SimilarItems } from '../SimilarItems';
 
@@ -15,7 +16,7 @@ describe('SimilarItems', () => {
   it('renders', () => {
     fetchSimilarMock.mockResolvedValueOnce([]);
     const entity = { id: 'e1', contentType: 'venue', title: 'X' } as never;
-    const { container } = render(<MemoryRouter><SimilarItems entity={entity} /></MemoryRouter>);
+    const { container } = render(<SimilarItems entity={entity} />);
     expect(container).toBeTruthy();
   });
 
@@ -29,9 +30,7 @@ describe('SimilarItems', () => {
       },
     ]);
     render(
-      <MemoryRouter>
-        <SimilarItems entity={{ type: 'city', id: 'src-city' } as never} contentTypes={['city']} />
-      </MemoryRouter>,
+      <SimilarItems entity={{ type: 'city', id: 'src-city' } as never} contentTypes={['city']} />,
     );
     await waitFor(() => expect(screen.getByText('Berlin')).toBeTruthy());
     expect(screen.getByText('Germany')).toBeTruthy();
@@ -48,9 +47,7 @@ describe('SimilarItems', () => {
       },
     ]);
     render(
-      <MemoryRouter>
-        <SimilarItems entity={{ type: 'city', id: 'src-city' } as never} contentTypes={['city']} />
-      </MemoryRouter>,
+      <SimilarItems entity={{ type: 'city', id: 'src-city' } as never} contentTypes={['city']} />,
     );
     await waitFor(() => expect(screen.getByText('new york')).toBeTruthy());
   });
