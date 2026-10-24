@@ -3,6 +3,8 @@ import { Link } from 'react-router';
 import { authorArticlesPath } from '@/lib/adminAuthorArticles';
 import { toast } from 'sonner';
 import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
+import { ExportExcelButton } from '@/components/admin/ExportExcelButton';
+import { exportNewsAuthors } from '@/lib/newsAuthorsExport';
 import { AdminSimpleTable } from '@/components/admin/primitives/AdminSimpleTable';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -99,9 +101,13 @@ export default function AdminNewsAuthors() {
         title="News Authors"
         subtitle="Manage article bylines. Counts include archived and duplicate articles."
         actions={
-          <Button variant="outline" asChild>
-            <Link to="/admin/content/news_articles">News Articles</Link>
-          </Button>
+          <div className="flex flex-wrap gap-2">
+            <ExportExcelButton onExport={() => exportNewsAuthors(search, 'Excel')} />
+            <ExportExcelButton format="CSV" onExport={() => exportNewsAuthors(search, 'CSV')} />
+            <Button variant="outline" asChild>
+              <Link to="/admin/content/news_articles">News Articles</Link>
+            </Button>
+          </div>
         }
       />
       <div className="max-w-md space-y-2">
