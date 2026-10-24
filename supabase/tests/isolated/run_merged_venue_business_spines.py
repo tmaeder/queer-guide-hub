@@ -59,12 +59,13 @@ end $stub$;
 paths = list((ROOT / 'supabase/migrations').glob('*_merged_venue_business_spine_repairs.sql'))
 if len(paths) != 1:
     raise SystemExit('Exactly one merged venue business spine migration required')
-sql = schema + paths[0].read_text() + (Path(__file__).parent / 'merged_venue_business_spines.sql').read_text()
+selector = ROOT / 'supabase/migrations/99991792814000_business_spine_keyed_selector.sql'
+sql = schema + paths[0].read_text() + selector.read_text() + (Path(__file__).parent / 'merged_venue_business_spines.sql').read_text()
 with tempfile.TemporaryDirectory(prefix='qg-business-spines-') as tmp:
     data = Path(tmp) / 'data'
-    subprocess.run([binary('initdb'), '-D', str(data), '-A', 'trust', '--no-locale'], check=True, stdout=subprocess.DEVNULL)
+    subprocess.run([binary('initdb'), '-D', str(data), '-A', 'trust', '--no-locale', '--wal-segsize=1'], check=True, stdout=subprocess.DEVNULL)
     subprocess.run([binary('pg_ctl'), '-D', str(data), '-l', str(Path(tmp) / 'postgres.log'),
-                    '-o', f'-k {tmp} -p 55493 -c listen_addresses=', '-w', 'start'], check=True, stdout=subprocess.DEVNULL)
+                    '-o', f'-k {tmp} -p 55493 -c listen_addresses= -c min_wal_size=2MB -c max_wal_size=16MB', '-w', 'start'], check=True, stdout=subprocess.DEVNULL)
     try:
         subprocess.run([binary('psql'), '-h', tmp, '-p', '55493', '-d', 'postgres', '-v', 'ON_ERROR_STOP=1'],
                        input=sql, text=True, check=True)

@@ -1,8 +1,13 @@
-import { fireEvent, render, screen, within } from '@testing-library/react';
+import { fireEvent, render, screen, within, waitFor } from '@testing-library/react';
 import { MemoryRouter } from 'react-router';
 import { describe, expect, it, vi, beforeEach } from 'vitest';
 import AdminRedirects from '../AdminRedirects';
 import { manualRedirect, type InventoryRedirect } from '@/lib/redirects/inventory';
+
+vi.mock('@/utils/excelExport', () => ({ exportToExcel: vi.fn().mockResolvedValue(undefined) }));
+vi.mock('@/utils/csvExport', () => ({ exportToCsv: vi.fn() }));
+import { exportToExcel } from '@/utils/excelExport';
+import { exportToCsv } from '@/utils/csvExport';
 
 const mocks = vi.hoisted(() => ({
   openEditor: vi.fn(),
@@ -61,6 +66,37 @@ beforeEach(() => {
 });
 
 describe('unified redirects index', () => {
+  it.each(['Excel', 'CSV'] as const)(
+    'exports every redirect as %s independently of search and page',
+    async (format) => {
+      const data = { rows: Array.from({ length: 107 }, (_, index) => row(index)), errors: [] };
+      mocks.refetch.mockResolvedValue({ data });
+      show();
+      fireEvent.click(screen.getByRole('button', { name: 'Next' }));
+      fireEvent.change(screen.getByRole('textbox', { name: 'Search redirects' }), {
+        target: { value: 'current-106' },
+      });
+      fireEvent.click(screen.getByRole('button', { name: `Export ${format}` }));
+      await waitFor(() =>
+        expect(format === 'CSV' ? exportToCsv : exportToExcel).toHaveBeenCalledWith(
+          data.rows,
+          expect.any(Array),
+          expect.any(String),
+        ),
+      );
+    },
+  );
+
+  it('does not export an incomplete redirect inventory', async () => {
+    mocks.refetch.mockResolvedValue({ data: { rows: [row(1)], errors: ['missing source'] } });
+    show();
+    fireEvent.click(screen.getByRole('button', { name: 'Export CSV' }));
+    await waitFor(() =>
+      expect(screen.getByRole('button', { name: 'Export CSV' })).not.toBeDisabled(),
+    );
+    expect(exportToCsv).not.toHaveBeenCalled();
+  });
+
   it('filters all sources by hostname, retains deep links and clears bulk selection', () => {
     const custom = manualRedirect({
       id: 'custom',

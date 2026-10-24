@@ -11,13 +11,11 @@ test.describe('Venues — map view', () => {
     const canvas = page.locator('canvas.maplibregl-canvas');
     await expect(canvas).toBeVisible({ timeout: 15_000 });
 
-    // Results count badge appears (may say "Loading..." initially).
-    // Two components render this pill with different wording — MapResultsPill
-    // says "N results in view", the subway rebrand's MapRail (which is what
-    // /venues?view=map renders now) says "N places in view" — so match either
-    // rather than pinning one component's copy.
-    const countBadge = page.locator('text=/\\d+ (results|places) in view|Loading/');
-    await expect(countBadge).toBeVisible({ timeout: 20_000 });
+    // A runner can be geolocated somewhere with no visible venues. The map
+    // deliberately replaces its zero count with an actionable empty state.
+    // Both are settled states; a loading skeleton alone is not sufficient.
+    const settled = page.getByText(/\d+ (results|places) in view|No spots here yet/i);
+    await expect(settled).toBeVisible({ timeout: 30_000 });
   });
 
   // D1 regression guard. The base map + counter could render fine while
@@ -35,40 +33,17 @@ test.describe('Venues — map view', () => {
     const canvas = page.locator('canvas.maplibregl-canvas');
     await expect(canvas).toBeVisible({ timeout: 15_000 });
 
-    // The in-view counter starts as "Loading…" and only switches to the count
-    // once the cluster source has loaded. Wait for it to leave the loading
-    // state first (generous window for a cold source load).
-    //
-    // Matches BOTH wordings AND either casing. The subway rebrand moved this
-    // surface onto MapRail ("N places in view") while MapResultsPill still says
-    // "N results in view"; widening the wording alone still never matched,
-    // because MapRail's span carries `uppercase` and `text=` matches RENDERED
-    // text — so the node reads "80 PLACES IN VIEW" however lowercase its
-    // textContent is. Measured on production at the runner's own 1280x720:
-    // exactly one element contains "in view", `textContent` is
-    // "80 places in view", `innerText` is "80 PLACES IN VIEW", it is 97x14px at
-    // opacity 1 — present and visible the whole time the test spent 45s not
-    // finding it, and reading as a dead cluster source while the map plotted 80
-    // venues. The `i` is what was missing.
-    const counter = page.locator('text=/\\d+ (results|places) in view/i');
-    await expect(counter).toBeVisible({ timeout: 45_000 });
-
-    // The map auto-flies to the visitor's IP geolocation at zoom 10
-    // (useMapAutoFly), so the default viewport is CI-runner-dependent and may
-    // legitimately contain zero venues in bounds — the counter then reads
-    // "0 results in view" even though the source is healthy. That made this
-    // guard flaky by runner region. Zoom out to a world view, where the full
-    // venue cluster set is always in bounds, before asserting the source
-    // actually plotted features (the real D1 regression this guards).
-    const zoomOut = page.locator('.maplibregl-ctrl-zoom-out');
-    if (await zoomOut.isVisible().catch(() => false)) {
-      for (let i = 0; i < 7; i++) {
-        // force + short timeout: never let a transiently-obscured button (a
-        // "Loading" overlay repaints on each moveend) stall the 75s budget.
-        await zoomOut.click({ force: true, timeout: 2_000 }).catch(() => {});
-        await page.waitForTimeout(150); // let the debounced moveend recount
-      }
+    // Zoom before expecting a positive counter: an empty visitor area hides
+    // the counter. The current map uses accessible custom zoom controls,
+    // rather than MapLibre's retired CSS control classes.
+    const zoomOut = page.getByRole('button', { name: 'Zoom out', exact: true });
+    await expect(zoomOut).toBeVisible();
+    for (let i = 0; i < 7; i++) {
+      await zoomOut.click({ force: true, timeout: 2_000 });
+      await page.waitForTimeout(200);
     }
+    const counter = page.getByText(/\d+ (results|places) in view/i);
+    await expect(counter).toBeVisible({ timeout: 30_000 });
 
     await expect
       .poll(
@@ -110,7 +85,10 @@ test.describe('Venues — category data quality', () => {
     await page.waitForTimeout(2000);
 
     // Grab all venue card titles visible on the page.
-    const titles = await page.locator('[data-testid="venue-card"] h3, [data-testid="venue-card"] h4, .venue-card h3, .venue-card h4')
+    const titles = await page
+      .locator(
+        '[data-testid="venue-card"] h3, [data-testid="venue-card"] h4, .venue-card h3, .venue-card h4',
+      )
       .allTextContents()
       .catch(() => [] as string[]);
 
@@ -120,7 +98,9 @@ test.describe('Venues — category data quality', () => {
       const misTagged = titles.filter((t) =>
         /\b(barbershop|fitness center|hair salon|laser hair)\b/i.test(t),
       );
-      expect(misTagged, `Mis-tagged venues in bar results: ${misTagged.join(', ')}`).toHaveLength(0);
+      expect(misTagged, `Mis-tagged venues in bar results: ${misTagged.join(', ')}`).toHaveLength(
+        0,
+      );
     }
   });
 });

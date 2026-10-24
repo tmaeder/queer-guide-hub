@@ -35,12 +35,6 @@ const BOT_UA = 'Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/b
 
 const SURNAME_STUB = [/is a surname/i, /Notable people with the (surname|given name|name)/i];
 
-/** The tag's own prose block, excluding the nav/rails that follow it. */
-function articleOf(html: string): string {
-  const m = html.match(/<article[\s\S]*?<\/article>/i);
-  return m ? m[0] : '';
-}
-
 function isNoindex(html: string): boolean {
   return /<meta\s+name="robots"\s+content="[^"]*noindex/i.test(html);
 }
@@ -122,19 +116,7 @@ test.describe('a glossary summary names its own subject', () => {
   // legitimately improves the other, and pinning to the bare term would pass
   // against the drag summary this spec exists to keep out.
   test('/tags/queening is facesitting, not drag performance', async ({ request }) => {
-    const res = await request.get('/tags/queening', {
-      headers: { 'User-Agent': BOT_UA },
-    });
-    expect(res.status()).toBe(200);
-    const html = await res.text();
-
-    // Still indexable — this row was never thin, only mislabelled.
-    expect(
-      isNoindex(html),
-      '/tags/queening was deindexed; the summary fix should not have changed its prose gate',
-    ).toBe(false);
-
-    const article = articleOf(html);
+    const { prose: article, html } = await glossaryEntry(request, 'queening');
     expect(article, '/tags/queening renders no prose').toMatch(/facesitting|sitting on a partner/i);
     expect(html, '/tags/queening still publishes the drag summary').not.toMatch(
       /Drag culture performance art/i,

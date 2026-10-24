@@ -6,7 +6,6 @@
  * POST body: { entity_type, batchMode?, batchLimit?, forceUpdate?, dry_run?, ...entityParams }
  */
 
-import type { SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5'
 import { getCorsHeaders, getServiceClient, requireAdmin, errorResponse, jsonResponse } from '../_shared/supabase-client.ts'
 import { scoreImage as sharedScoreImage, pickBest, isAcceptable, MIN_ACCEPTANCE_SCORE } from '../_shared/scoreImage.ts'
 import { upsertImageAsset, deriveImageFormat } from '../_shared/image-assets.ts'
@@ -20,6 +19,8 @@ import {
   fetchWikipediaImage,
   storeImageToStorage,
 } from '../_shared/image-search.ts'
+
+type SupabaseClient = ReturnType<typeof getServiceClient>
 
 // ---------------------------------------------------------------------------
 // Entity-specific config
@@ -396,19 +397,19 @@ async function processVillage(supabase: SupabaseClient, id: string, name: string
 }
 
 // ---------------------------------------------------------------------------
-// Scored stock search (venue, event) — quality-gated, no longer "first result"
+// Scored stock search (venue) — quality-gated, no longer "first result"
 // ---------------------------------------------------------------------------
 
 /**
  * Fetch stock candidates across queries, score each with the shared scorer, and
  * return the best that clears the cover bar. Replaces the old "take the first
  * Pexels/Unsplash URL with no scoring" path that committed birds, logos, and
- * generic stock to venue/event covers.
+ * generic stock to venue covers.
  */
 async function findBestStockImage(
   queries: string[],
   subject: { name: string; place?: string | null },
-  subjectType: 'venue' | 'event',
+  subjectType: 'venue',
   pK?: string,
   uK?: string,
 ): Promise<ImageResult | null> {
@@ -473,35 +474,6 @@ async function processVenueBatch(supabase: SupabaseClient, pK: string, uK: strin
 }
 
 
-async function processEventBatch(supabase: SupabaseClient, pK: string, uK: string, limit: number, force: boolean, dryRun: boolean) {
-  const cutoff = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()
-  let q = supabase.from('events').select('id, title, city, country, event_type').gte('start_date', cutoff).order('start_date', { ascending: true }).limit(limit)
-  if (!force) q = q.or('images.is.null,images.eq.{}')
-  const { data: rows, error } = await q
-  if (error) throw new Error(error.message)
-  if (!rows?.length) return { success: true, updated: 0, message: 'nothing to do' }
-
-  let updated = 0, skipped = 0, rejected = 0
-  for (const e of rows) {
-    const lgbtqQ = `${e.event_type ?? 'pride'} LGBT event ${e.city ?? ''}`.trim()
-    const titleQ = `${e.title} ${e.city ?? ''}`.trim()
-
-    const best = await findBestStockImage([lgbtqQ, titleQ], { name: e.title, place: e.city }, 'event', pK || undefined, uK || undefined)
-    if (!best) { rejected++; continue }
-    if (dryRun) { updated++; continue }
-
-    // Mirror to R2 like the city/country branches — never store a fresh stock
-    // hotlink (images live on img.queer.guide, not third-party CDNs).
-    const storedUrl = await storeImageToStorage(supabase, best.url, 'event-images', 'events', e.id)
-    const { error: upErr } = await supabase.from('events').update({ images: [storedUrl], updated_at: new Date().toISOString() }).eq('id', e.id)
-    if (upErr) { console.error(`event ${e.id}:`, upErr.message); skipped++ }
-    else { updated++; await upsertImageAsset(supabase, { url: storedUrl, source: 'scraper', source_ref: `${best.source}:${best.source_id}`, attribution: best.photographer ?? null, alt_text: best.alt ?? null, alt_provenance: 'imported', width: best.width ?? null, height: best.height ?? null, format: deriveImageFormat(storedUrl) ?? deriveImageFormat(best.url), entity_type: 'event', entity_id: e.id, role: 'cover' }) }
-    await new Promise(r => setTimeout(r, 200))
-  }
-  return { success: true, updated, skipped, rejected, total: rows.length, dry_run: dryRun }
-}
-
-
 async function processPersonalityBatch(supabase: SupabaseClient, _pK: string, limit: number, force: boolean, dryRun: boolean) {
   let q = supabase.from('personalities').select('id, name, profession, nationality').order('updated_at', { ascending: true }).limit(limit)
   if (!force) q = q.or('image_url.is.null,image_url.eq.')
@@ -533,6 +505,11 @@ async function processPersonalityBatch(supabase: SupabaseClient, _pK: string, li
 // ---------------------------------------------------------------------------
 
 
+function linkedPlaceName(value: unknown): string {
+  const one = Array.isArray(value) ? value.length === 1 ? value[0] : null : value
+  return one && typeof one === 'object' && 'name' in one && typeof one.name === 'string' ? one.name : ''
+}
+
 async function processCityBatch(supabase: SupabaseClient, pK?: string, uK?: string, force = false, limit = 50) {
   let q = supabase.from('cities').select('id, name, countries(name)')
   if (!force) q = q.or('image_url.is.null,image_flagged.eq.true')
@@ -543,7 +520,7 @@ async function processCityBatch(supabase: SupabaseClient, pK?: string, uK?: stri
   let ok = 0, fail = 0
   for (const row of rows) {
     try {
-      const r = await processCity(supabase, row.id, row.name, row.countries?.name || '', pK, uK, force)
+      const r = await processCity(supabase, row.id, row.name, linkedPlaceName(row.countries), pK, uK, force)
       if (r.success) ok++; else fail++
     } catch (e: unknown) { fail++; console.error(`city ${row.name}:`, (e as Error).message) }
     await new Promise(r => setTimeout(r, 1500))
@@ -579,7 +556,7 @@ async function processVillageBatch(supabase: SupabaseClient, pK?: string, uK?: s
   let ok = 0, fail = 0
   for (const row of rows) {
     try {
-      const r = await processVillage(supabase, row.id, row.name, row.cities?.name || '', row.countries?.name || '', pK, uK)
+      const r = await processVillage(supabase, row.id, row.name, linkedPlaceName(row.cities), linkedPlaceName(row.countries), pK, uK)
       if (r.success) ok++; else fail++
     } catch (e: unknown) { fail++; console.error(`village ${row.name}:`, (e as Error).message) }
     await new Promise(r => setTimeout(r, 800))
@@ -591,8 +568,8 @@ async function processVillageBatch(supabase: SupabaseClient, pK?: string, uK?: s
 // Handler
 // ---------------------------------------------------------------------------
 
-type EntityType = 'city' | 'country' | 'village' | 'venue' | 'event' | 'personality'
-const VALID_ENTITY_TYPES: EntityType[] = ['city', 'country', 'village', 'venue', 'event', 'personality']
+type EntityType = 'city' | 'country' | 'village' | 'venue' | 'personality'
+const VALID_ENTITY_TYPES: EntityType[] = ['city', 'country', 'village', 'venue', 'personality']
 
 Deno.serve(async (req) => {
   const corsHeaders = getCorsHeaders(req)
@@ -604,6 +581,9 @@ Deno.serve(async (req) => {
     if (auth instanceof Response) return auth
 
     const body = req.method === 'POST' ? await req.json().catch(() => ({})) : {}
+    if (body.entity_type === 'event') {
+      return errorResponse('Event artwork requires a registered event source. Use event-image-backfill.', 409, req)
+    }
     const entityType = body.entity_type as EntityType
 
     if (!entityType || !VALID_ENTITY_TYPES.includes(entityType)) {
@@ -651,10 +631,6 @@ Deno.serve(async (req) => {
 
       case 'venue':
         result = await processVenueBatch(supabase, pK, uK, limit, force, dry)
-        break
-
-      case 'event':
-        result = await processEventBatch(supabase, pK, uK, limit, force, dry)
         break
 
       case 'personality':

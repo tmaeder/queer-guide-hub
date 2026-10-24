@@ -64,6 +64,7 @@ export function CityActions({ city, refetchCity, t }: CityActionsProps) {
         contentName={city.name}
         currentData={city as Record<string, unknown>}
         onSaved={() => refetchCity()}
+        exportable
       />
     </>
   );

@@ -761,18 +761,10 @@ function httpsOnly(url: string | null): string | null {
  * worse than no URL at all: an absent image degrades to the on-brand fallback,
  * a dead one renders Chrome's torn-page glyph.
  *
- * gaycities-featured-images-production.s3.amazonaws.com — GayCities' old image
- * CDN. Since ~2026-09 the bucket's public-read policy is gone and it answers
- * `403 AccessDenied` for EVERY key, including keys that cannot exist, under any
- * Referer or User-Agent. Live pages moved to gaycities-lv.b-cdn.net, so the
- * weekly sync no longer sees these — but a Wayback snapshot still carries the
- * old og:image, which is why this filter belongs here and not only in the
- * one-shot migration that cleared the existing rows.
- *
- * Match the BUCKET, never the provider: unrelated s3.amazonaws.com images are
- * legitimate and one is asserted in this file's own test fixture. The
- * comparison is against the parsed hostname, not a substring of the whole URL,
- * so a live host carrying the dead one in a query parameter is left alone.
+ * The old bucket's root event paths return AccessDenied, but live probes on
+ * 2026-10-24 found reachable artwork under events/originals/ and events/t/sm/.
+ * Keep those exact nested paths for the ordinary image-quality auditor. An
+ * unavailable root path is never evidence that every object on a host is dead.
  */
 const DEAD_IMAGE_HOSTS = ['gaycities-featured-images-production.s3.amazonaws.com'];
 
@@ -792,7 +784,12 @@ function liveImage(url: string | null): string | null {
   // returned JSON errors (including HTTP 200), so do not publish them as
   // images. Keep ordinary Facebook CDN images and proxy URLs on other hosts.
   if (host === 'graph.facebook.com') return null;
-  return DEAD_IMAGE_HOSTS.includes(host) ? null : url;
+  if (DEAD_IMAGE_HOSTS.includes(host)) {
+    const parsed = new URL(url);
+    return /^\/events\/(?:originals|t\/sm)\/[A-Za-z0-9._-]+\.(?:jpg|jpeg|png|webp)$/.test(parsed.pathname)
+      && !parsed.search && !parsed.hash ? url : null;
+  }
+  return url;
 }
 
 /**
@@ -835,10 +832,13 @@ export function normalizeGcEvent(
   const ticketUrl = httpsOnly(asString(offers['url']));
   const originalImage = httpsOnly(firstString(ld['image']) ?? asString(ld['thumbnailUrl']));
   const image = liveImage(originalImage);
-  const artworkExclusion = detail.fromWayback === true && ld['_legacyTemplate'] === true && originalImage
-    && /^https:\/\/graph\.facebook\.com\/[1-9]\d*\/picture(?:[?&]type=(?:large|normal|square))?$/.test(originalImage)
-    ? { contract: 'gaycities-wayback-graph-artwork:v1', outcome: 'source_unavailable',
-      api_reference: originalImage, reason: 'api_reference_excluded', human_reviewed: false }
+  const historicalArchive = detail.fromWayback === true && ld['_legacyTemplate'] === true;
+  const graphReference = originalImage && /^https:\/\/graph\.facebook\.com\/[1-9]\d*\/picture(?:[?&]type=(?:large|normal|square))?$/.test(originalImage);
+  const retiredBucket = originalImage && /^https:\/\/gaycities-featured-images-production\.s3\.amazonaws\.com\/events\/[A-Za-z0-9._-]+\.(?:jpg|jpeg|png|webp)$/.test(originalImage);
+  const artworkExclusion = historicalArchive && originalImage && (graphReference || retiredBucket)
+    ? { contract: retiredBucket ? 'gaycities-wayback-retired-bucket-artwork:v1' : 'gaycities-wayback-graph-artwork:v1',
+      outcome: 'source_unavailable', api_reference: originalImage,
+      reason: retiredBucket ? 'retired_source_bucket_excluded' : 'api_reference_excluded', human_reviewed: false }
     : null;
 
   const ldKeywords: string[] = Array.isArray(ld['keywords'])

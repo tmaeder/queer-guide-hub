@@ -2,7 +2,8 @@
 // Read-only native provider captures. No database facts, findings or source
 // availability outcomes are written. Default is a preview with no API calls.
 import { execFileSync } from 'node:child_process'
-import { readFile, writeFile } from 'node:fs/promises'
+import { readFile, writeFile, rename, mkdir } from 'node:fs/promises'
+import { dirname } from 'node:path'
 const args=process.argv.slice(2),paths=args.filter(a=>!a.startsWith('--'))
 if(paths.length!==2)throw Error('Usage: collector input.json output.json [--collect]')
 const input=JSON.parse(await readFile(paths[0],'utf8'))
@@ -25,14 +26,18 @@ async function sql(query) {
   return r.json()
 }
 
+try{await readFile(paths[1]);throw Error('Use a fresh capture journal path')}catch(error){if(error.code!=='ENOENT')throw error}
+await mkdir(dirname(paths[1]),{recursive:true})
 const report={started_at:new Date().toISOString(),read_only:true,ids:input.map(r=>r.id),receipts:[],captures:[],complete:false}
-const save=()=>writeFile(paths[1],JSON.stringify(report,null,2))
+const save=async()=>{await writeFile(`${paths[1]}.tmp`,JSON.stringify(report,null,2));await rename(`${paths[1]}.tmp`,paths[1])}
 await save()
 for(let offset=0;offset<input.length;offset+=5){
  const ids=input.slice(offset,offset+5).map(r=>r.id),payload=JSON.stringify({mode:'contact_evidence',venue_ids:ids})
- const request=await sql(`select public.automation_http_post(url:='https://${project}.supabase.co/functions/v1/enrich-venue',headers:=jsonb_build_object('Authorization','Bearer '||(select decrypted_secret from vault.decrypted_secrets where name='legacy_anon_key'),'X-Internal-Secret',(select decrypted_secret from vault.decrypted_secrets where name='internal_invoke_secret'),'Content-Type','application/json'),body:='${payload}'::jsonb,timeout_milliseconds:=100000) request_id`)
+ const receipt={ids,status:'submitting',submitted_at:new Date().toISOString()};report.receipts.push(receipt);await save()
+ let request
+ try{request=await sql(`select public.automation_http_post(url:='https://${project}.supabase.co/functions/v1/enrich-venue',headers:=jsonb_build_object('Authorization','Bearer '||(select decrypted_secret from vault.decrypted_secrets where name='legacy_anon_key'),'X-Internal-Secret',(select decrypted_secret from vault.decrypted_secrets where name='internal_invoke_secret'),'Content-Type','application/json'),body:='${payload}'::jsonb,timeout_milliseconds:=100000) request_id`)}catch(error){receipt.status='outcome_unknown';receipt.error=String(error.message).slice(0,300);await save();throw error}
  const rid=Number(request[0]?.request_id);if(!Number.isSafeInteger(rid))throw Error('Missing native request receipt')
- const receipt={request_id:rid,ids,status:'waiting'};report.receipts.push(receipt);await save()
+ receipt.request_id=rid;receipt.status='waiting';await save()
  let response
  for(let poll=0;poll<40;poll++){await new Promise(r=>setTimeout(r,5000));const found=await sql(`select status_code,timed_out,content from net._http_response where id=${rid}`);if(found.length){response=found[0];break}}
  if(!response||response.timed_out||response.status_code!==200){receipt.status='outcome_unknown';receipt.http_status=response?.status_code;await save();throw Error(`Source capture ${rid} incomplete; inspect before continuing`)}

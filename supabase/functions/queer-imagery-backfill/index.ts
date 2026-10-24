@@ -1,4 +1,3 @@
-import type { SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5'
 import {
   getServiceClient,
   jsonResponse,
@@ -23,8 +22,11 @@ import {
   storeImageToStorage,
 } from '../_shared/image-search.ts'
 
-// Queer-first re-imaging pass for cities + countries (+ gap-fill for events,
-// + archival Commons photos for history milestones — Wikimedia-only, scored by
+type SupabaseClient = ReturnType<typeof getServiceClient>
+
+// Queer-first imagery for cities/countries and archival history milestones.
+// Event artwork uses the source-owned event-image-backfill worker.
+// Archival Commons photos are Wikimedia-only, scored by
 // title/place/year overlap, persecution content excluded by the selector).
 //
 // Unlike fetch-images (which fills generic skyline/landmark stock), this only
@@ -42,8 +44,8 @@ import {
 const STEP = 'queer_image_backfill'
 const PACE_MS = 1200
 
-type EntityType = 'city' | 'country' | 'event' | 'milestone'
-const VALID: EntityType[] = ['city', 'country', 'event', 'milestone']
+type EntityType = 'city' | 'country' | 'milestone'
+const VALID: EntityType[] = ['city', 'country', 'milestone']
 
 interface DueRow {
   id: string
@@ -65,14 +67,6 @@ function buildQueries(t: EntityType, row: DueRow): string[] {
       capital ? `${capital} ${name} pride parade rainbow` : `${name} pride parade rainbow`,
       `${name} LGBTQ pride march rainbow`,
       `${name} gay pride`,
-    ].filter(Boolean)
-  }
-  if (t === 'event') {
-    // capital carries event_type, country_name carries city for events.
-    const type = capital || 'pride'
-    return [
-      `${type} LGBT pride event ${country}`.trim(),
-      `${name} ${country}`.trim(),
     ].filter(Boolean)
   }
   if (t === 'milestone') {
@@ -329,7 +323,7 @@ async function findQueerImage(
           source: img.source,
           name: row.name,
           country: row.country_name ?? undefined,
-          capital: t === 'event' ? undefined : row.capital ?? undefined,
+          capital: row.capital ?? undefined,
         })
 
   for (const query of buildQueries(t, row)) {
@@ -371,14 +365,11 @@ async function applyHit(
 ) {
   const prefix =
     t === 'country' ? 'country-images'
-    : t === 'event' ? 'event-images'
     : t === 'milestone' ? 'milestone-images'
     : 'city-images'
   const storedUrl = await storeImageToStorage(supabase, best.url, prefix, `${t}s`, row.id)
 
-  if (t === 'event') {
-    await supabase.from('events').update({ images: [storedUrl], updated_at: new Date().toISOString() }).eq('id', row.id)
-  } else if (t === 'milestone') {
+  if (t === 'milestone') {
     const { data: cur } = await supabase.from('milestones').select('image_metadata').eq('id', row.id).single()
     const prevMeta = (cur?.image_metadata && typeof cur.image_metadata === 'object') ? cur.image_metadata as Record<string, unknown> : {}
     await supabase.from('milestones').update({
@@ -440,7 +431,7 @@ async function applyHit(
     width: best.width ?? null,
     height: best.height ?? null,
     format: deriveImageFormat(storedUrl) ?? deriveImageFormat(best.url),
-    entity_type: t === 'event' ? 'event' : t,
+    entity_type: t,
     entity_id: row.id,
     role: 'cover',
   })
@@ -458,6 +449,9 @@ Deno.serve(withErrorReporting('queer-imagery-backfill', async (req) => {
 
   try {
     const body = await req.json().catch(() => ({}))
+    if ((body.entity_type ?? body.entityType) === 'event') {
+      return errorResponse('Event artwork requires a registered event source. Use event-image-backfill.', 409, req)
+    }
     const entityType = (body.entity_type ?? body.entityType) as EntityType
     if (!VALID.includes(entityType)) {
       return errorResponse(`entity_type required, one of: ${VALID.join(', ')}`, 400, req)

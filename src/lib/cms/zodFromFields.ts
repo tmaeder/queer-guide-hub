@@ -75,6 +75,11 @@ export function fieldToZod(field: FieldConfig): ZodTypeAny {
   }
 
   if (!field.required) {
+    // Optional contact inputs and stored records can represent absence as ''.
+    // Keep format checks for non-empty values, including whitespace-only input.
+    if (['url', 'email', 'phone'].includes(field.type)) {
+      schema = z.union([schema, z.literal('')]);
+    }
     schema = schema.optional().nullable();
   }
   return schema;

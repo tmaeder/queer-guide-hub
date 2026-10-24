@@ -15,6 +15,11 @@ export async function exportToExcel<T>(
   columns: ExportColumnDef<T>[],
   filename: string,
 ): Promise<void> {
+  const { needsStreamingExcel, streamingExcelBlob } = await import('./streamingExcel');
+  if (needsStreamingExcel(data, columns)) {
+    downloadExcelBlob(await streamingExcelBlob([{ name: 'Data', rows: data, columns }]), filename);
+    return;
+  }
   const ExcelJS = await import('exceljs');
   const workbook = new ExcelJS.Workbook();
   const ws = workbook.addWorksheet('Data');
@@ -69,6 +74,13 @@ export async function exportWorkbook(
   sheets: ExportSheet<Record<string, unknown>>[],
   filename: string,
 ): Promise<void> {
+  const { needsStreamingExcel, streamingExcelBlob } = await import('./streamingExcel');
+  if (sheets.some((sheet) => needsStreamingExcel(sheet.rows, sheet.columns))) {
+    const used = new Set<string>();
+    const namedSheets = sheets.map((sheet) => ({ ...sheet, name: sheetName(sheet.name, used) }));
+    downloadExcelBlob(await streamingExcelBlob(namedSheets), filename);
+    return;
+  }
   const ExcelJS = await import('exceljs');
   const workbook = new ExcelJS.Workbook();
   const used = new Set<string>();
@@ -100,6 +112,10 @@ async function downloadWorkbook(
   const blob = new Blob([buffer as BlobPart], {
     type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
   });
+  downloadExcelBlob(blob, filename);
+}
+
+function downloadExcelBlob(blob: Blob, filename: string): void {
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
@@ -120,12 +136,15 @@ export async function fetchAllRows<T>(
 ): Promise<T[]> {
   const allRows: T[] = [];
   let offset = 0;
-  let hasMore = true;
+  if (!Number.isInteger(batchSize) || batchSize <= 0) {
+    throw new Error('Export batch size must be a positive integer');
+  }
+  let expectedCount: number | null = null;
 
-  while (hasMore) {
+  while (true) {
     let query = supabase
       .from(table)
-      .select(select)
+      .select(select, { count: 'exact' })
       .range(offset, offset + batchSize - 1);
 
     if (orderBy) {
@@ -133,21 +152,35 @@ export async function fetchAllRows<T>(
     }
     if (refine) query = refine(query);
 
-    const { data, error } = await query;
+    const { data, error, count } = await query;
 
     if (error) throw new Error(`Failed to fetch ${table}: ${error.message}`);
 
     const rows = (data || []) as T[];
     allRows.push(...rows);
 
-    if (rows.length < batchSize) {
-      hasMore = false;
-    } else {
-      offset += batchSize;
+    if (typeof count === 'number') {
+      if (expectedCount !== null && count !== expectedCount) {
+        throw new Error(`The ${table} record count changed during export. Please retry.`);
+      }
+      expectedCount = count;
     }
+    if (expectedCount !== null && allRows.length === expectedCount) return allRows;
+    if (expectedCount !== null && allRows.length > expectedCount) {
+      throw new Error(`Unexpected record count while exporting ${table}. Please retry.`);
+    }
+    if (rows.length === 0) {
+      if (expectedCount !== null) {
+        throw new Error(
+          `Incomplete export of ${table}: fetched ${allRows.length} of ${expectedCount} records.`,
+        );
+      }
+      return allRows;
+    }
+    // PostgREST can cap responses below the requested batch size. Advance by
+    // the rows actually returned and continue until the count or an empty page.
+    offset += rows.length;
   }
-
-  return allRows;
 }
 
 // ---------- Formatting helpers (excel-cell-specific; generic date

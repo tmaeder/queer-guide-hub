@@ -1,3 +1,4 @@
+import { assertCurrentTagSitemap } from './support/tagSitemap';
 import { expect, test } from '@playwright/test';
 
 const BOT_UA = 'Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)';
@@ -21,10 +22,7 @@ test.describe('WebMD glossary production pass', () => {
     });
     expect(sitemapResponse.status()).toBe(200);
     const sitemap = await sitemapResponse.text();
-    expect(
-      (sitemap.match(/<loc>/g) ?? []).length,
-      'tag sitemap should be populated',
-    ).toBeGreaterThan(500);
+    await assertCurrentTagSitemap(request, sitemap);
 
     for (const slug of CREATED) {
       const response = await request.get(`/tags/${slug}`, {

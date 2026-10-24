@@ -1,0 +1,9 @@
+# Contact capture producer
+
+Venue enrichment had a duplicate block-scoped budget declaration that passed helper-only testing but caused a production `BOOT_ERROR`. Remove it and check the Deno.serve entrypoint in CI and before deployment, in addition to the discovered unit tests.
+
+Contact captures also reserved allowance for all requested identities before excluding unsupported categories and invalid coordinates. Build the eligible list first and reserve only that list. Explicit zero axes remain valid, while blank/missing values, boolean/object inputs, out-of-range coordinates and the zero pair remain invalid. A wholly ineligible batch returns without reserving allowance or making a provider request. The monthly limit and safety margin stay unchanged.
+
+The capture driver records each intended batch before submission, saves journals atomically and refuses to overwrite an existing run. It never retries unknown writes. Three pilot batches were reconciled before further ineligible reservations were stopped; they produced two actual directory captures and no corroborated contact proofs. No facts or negative availability outcomes were written for that pilot, and its conservative reservations were not refunded.
+
+Validation: seven Deno contact-evidence tests passed; the complete entrypoint passed Deno checking with `--node-modules-dir=none`; scoped ESLint and workflow YAML parsing passed. The normal deployment completed, but subsequent native code inspection caught an older live bundle. Targeted native deployment preserved current authentication and unrelated files. Version 511, hash `efc84520a674316c4e9878e8159c5d127e97424961a879a6f42c95b259ec563a`, contains one budget declaration and the eligibility-before-reservation path. Authenticated production request 98829 returned HTTP 200 with `eligible:0` and no captures, while the contact-evidence reservation count stayed at 35.

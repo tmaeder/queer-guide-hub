@@ -87,6 +87,30 @@ describe('fieldToZod', () => {
     expect(result.ok).toBe(true);
     if (result.ok) expect(result.data.verification_status).toBe('');
   });
+
+  it.each(['unverified', 'auto', 'reviewed', 'locked'])(
+    'preserves stored tag Verification %s when editing its label',
+    (verification_status) => {
+      const result = validateAgainstRegistry(contentTypeRegistry.unified_tags, {
+        name: 'Art · save verification',
+        verification_status,
+      });
+      expect(result.ok).toBe(true);
+      if (result.ok) expect(result.data.verification_status).toBe(verification_status);
+    },
+  );
+
+  it.each(['pending', 'verified', 'rejected'])(
+    'rejects tag Verification %s that the database does not allow',
+    (verification_status) => {
+      expect(
+        validateAgainstRegistry(contentTypeRegistry.unified_tags, {
+          name: 'Art',
+          verification_status,
+        }).ok,
+      ).toBe(false);
+    },
+  );
 });
 
 describe('zodFromFields — registry coverage', () => {

@@ -38,6 +38,7 @@ const DELIVERABLES = [
   'queer-guide-extension',
   'linux-visual-baselines',
   'poi-match-', // templated with the country input
+  'unit-test-shard-', // required native results consumed by the combined test gate
 ];
 
 interface Upload {
@@ -112,6 +113,18 @@ describe('upload-artifact blocking policy', () => {
       tolerated.map((u) => `${u.file}:${u.name}`),
       'deliverable uploads must stay blocking',
     ).toEqual([]);
+  });
+
+
+  it('keeps native unit shard inputs blocking and consumed by the aggregate', () => {
+    const shard = uploads.find((u) => u.file === 'ci.yml' && u.name === 'unit-test-shard-${{ matrix.shard }}');
+    expect(shard).toBeDefined();
+    expect(shard!.nonBlocking).toBe(false);
+    const workflow = readFileSync(join(WORKFLOWS, 'ci.yml'), 'utf8');
+    expect(workflow).toContain('needs: [unit-test-shards]');
+    expect(workflow).toContain('pattern: unit-test-shard-*');
+    expect(workflow).toContain('verify-inputs .unit-test-reports 4');
+    expect(workflow).toContain('--merge-reports=.unit-test-reports/blobs');
   });
 
   it('keeps the dist artifact the a11y jobs consume blocking', () => {

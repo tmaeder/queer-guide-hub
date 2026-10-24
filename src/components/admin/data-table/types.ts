@@ -1,3 +1,4 @@
+import type { ContentTypeConfig } from '@/types/cms';
 import type { ColumnDef, RowData } from '@tanstack/react-table';
 import type { LucideIcon } from 'lucide-react';
 import type { AdminTableFeatures } from './features';
@@ -84,6 +85,8 @@ export interface AdminTableConfig<TData extends RowData> {
   backfillJobs?: BackfillJob[];
   rowActions?: RowActionConfig<TData>[];
   toolbarActions?: React.ReactNode;
+  /** Uses the registered editor for this table by default; false disables file imports. */
+  importContentType?: ContentTypeConfig | false;
   defaultSort?: { column: string; direction: 'asc' | 'desc' };
   defaultPageSize?: number;
   defaultFilters?: Record<string, unknown>;

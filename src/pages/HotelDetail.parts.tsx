@@ -178,6 +178,7 @@ export function HotelHero({
             ownerUserId={hotel.created_by ?? undefined}
             currentData={hotel as Record<string, unknown>}
             onSaved={() => window.location.reload()}
+            exportable
           />
           {bookingLink && (
             <Button size="sm" asChild>

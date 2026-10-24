@@ -57,14 +57,20 @@ test.describe('glossary hover cards', () => {
   test.skip(({ isMobile }) => !!isMobile, 'hover is a pointer affordance');
 
   test('hovering a tag chip shows a definition card with an entry link', async ({ page }) => {
+    // Five bounded 8-second probes plus navigation must fit the test budget.
+    test.setTimeout(75_000);
     // Event detail pages render TagChip rows (82.5% of events carry tags), so
     // walk the first few event cards and hover the first chip found.
     await page.goto('/events');
     const cards = page.locator('main a[href*="/events/"]');
     await expect(cards.first()).toBeVisible();
-    const hrefs = (await cards.evaluateAll((els) => els.map((el) => el.getAttribute('href'))))
-      .filter((h): h is string => !!h && !h.endsWith('/events'))
-      .slice(0, 5);
+    const hrefs = [
+      ...new Set(
+        (await cards.evaluateAll((els) => els.map((el) => el.getAttribute('href')))).filter(
+          (h): h is string => !!h && !h.endsWith('/events'),
+        ),
+      ),
+    ].slice(0, 5);
 
     let chipFound = false;
     for (const href of hrefs) {

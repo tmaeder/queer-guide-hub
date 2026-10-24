@@ -74,6 +74,10 @@ update cities set latitude=59 where id=md5('19')::uuid;
 update proofs set proof=jsonb_set(proof,'{source_latitude}','59')where i=19;
 insert into proofs select * from proofs where i=20;
 create table before_cities as select id,to_jsonb(c) value from cities c;
+create table before_reviews as select id,to_jsonb(q)value from review_queue q;
+-- The operator must work even when every review mutation is forbidden.
+create function reject_review_mutations()returns trigger language plpgsql as $$begin raise exception 'Factual repair attempted a review mutation';end$$;
+create trigger review_immutable before insert or update or delete on review_queue for each statement execute function reject_review_mutations();
 select set_config('matching.city_classification_proofs',(select jsonb_agg(proof)::text from proofs),false);
 """
 operator = (ROOT / 'scripts/data-quality/reconcile-corroborated-city-lifecycle.sql').read_text()
@@ -81,6 +85,7 @@ assertions = """
 do $check$
 begin
  if(current_setting('matching.city_lifecycle_result')::jsonb->>'eligible')::int<>1 then raise exception 'Expected exactly one eligible city';end if;
+ if exists(select 1 from before_reviews b full join review_queue q using(id)where b.value is distinct from to_jsonb(q))then raise exception 'Review records changed';end if;
  if exists(select 1 from before_cities b join cities c using(id) where b.id<>md5('1')::uuid and b.value<>to_jsonb(c))then raise exception 'A refused city changed';end if;
 end $check$;
 """
@@ -93,8 +98,8 @@ apply_assert = """
 do $check$begin
  if(select count(*)from admin_review_repairs)<>1 or not exists(select 1 from cities where id=md5('1')::uuid and shell_status='real' and slug='example-1' and not seo_indexable and description='Preserve this text')
  then raise exception 'Expected one audited internal identity repair';end if;
- if not exists(select 1 from review_queue where entity_id=md5('1')::uuid and status='resolved'and resolved_by is null)
- or not exists(select 1 from geo_cms_verifications where place_id=md5('1')::uuid and status='verified')then raise exception 'Source finding not resolved';end if;
+ if not exists(select 1 from review_queue where entity_id=md5('1')::uuid and status='pending'and resolved_by is null)
+ or not exists(select 1 from geo_cms_verifications where place_id=md5('1')::uuid and status='verified')then raise exception 'Factual verification or pending review invariant failed';end if;
 end $check$;
 """
 repeat_assert = """
@@ -105,10 +110,10 @@ end $check$;
 sql = schema + operator + assertions + dry_assert + operator.replace('dry_run boolean:=true','dry_run boolean:=false') + assertions + apply_assert + operator.replace('dry_run boolean:=true','dry_run boolean:=false') + repeat_assert
 with tempfile.TemporaryDirectory(prefix='qg-city-lifecycle-') as tmp:
  data = Path(tmp) / 'data'
- subprocess.run([str(PG/'initdb'),'-D',str(data),'-A','trust','--no-locale'],check=True,stdout=subprocess.DEVNULL)
- subprocess.run([str(PG/'pg_ctl'),'-D',str(data),'-l',str(Path(tmp)/'postgres.log'),'-o',f'-k {tmp} -p 55491 -c listen_addresses=','-w','start'],check=True,stdout=subprocess.DEVNULL)
+ subprocess.run([str(PG/'initdb'),'-D',str(data),'-A','trust','--no-locale','--wal-segsize=1'],check=True,stdout=subprocess.DEVNULL)
+ subprocess.run([str(PG/'pg_ctl'),'-D',str(data),'-l',str(Path(tmp)/'postgres.log'),'-o',f'-k {tmp} -p 55491 -c listen_addresses= -c min_wal_size=2MB -c max_wal_size=16MB','-w','start'],check=True,stdout=subprocess.DEVNULL)
  try:
   subprocess.run([str(PG/'psql'),'-h',tmp,'-p','55491','-d','postgres','-v','ON_ERROR_STOP=1'],input=sql,text=True,check=True,stdout=subprocess.DEVNULL)
  finally:
   subprocess.run([str(PG/'pg_ctl'),'-D',str(data),'-m','fast','-w','stop'],check=True,stdout=subprocess.DEVNULL)
-print('PASS: 20 ownership/source cases, dry run, protected fields, audited repair and idempotency')
+print('PASS: 20 ownership/source cases, dry run, protected fields, audited repair, immutable review records and idempotency')

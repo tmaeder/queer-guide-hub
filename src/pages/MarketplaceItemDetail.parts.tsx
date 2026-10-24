@@ -498,6 +498,7 @@ export function ProductAdminRow({
         contentName={listing.title}
         currentData={listing as Record<string, unknown>}
         onSaved={onSaved ?? (() => window.location.reload())}
+        exportable
       />
     </div>
   );

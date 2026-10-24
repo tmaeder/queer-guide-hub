@@ -1,5 +1,6 @@
 import { cityClassVerdict, cityCoordVerdict } from './city-class-guard.ts'
 import { bestStatement, currentStatements, parseCityNames, CITY_NAME_LANGS, CITY_NAME_SITES, type Claims, type CityNameAlias, type WdLabels, type WdAliases, type WdSitelinks } from './wikidata-city.ts'
+import { countryCorrectionTarget, correctedCountryCode } from './city-country-correction.ts'
 import type { WikiSearchResponse } from './city-wikidata-search.ts'
 
 type Request = (url: string) => Promise<WikiSearchResponse>
@@ -11,6 +12,7 @@ export interface CitySearchInput {
 export interface CandidateProbe {
   qid: string; class: string; country: 'agree' | 'disagree' | 'unknown'; coordinates: string; distanceKm: number | null
   /** The search hit's own label is the name, not merely an alias. */
+  countryCorrections?: { countryQid: string; intendedSubjectQid: string; code: string }[]
   exactLabel: boolean
 }
 export interface CitySearchMatch {
@@ -29,6 +31,9 @@ const ids = (claims: Claims, property: string) => [...new Set(currentStatements(
  */
 export function createCitySearchResolver(request: Request, parents: ReadonlyArray<{ child_code: string; parent_code: string }>, classes = new Map<string, string>()) {
   const countries = new Map<string, string>()
+  const countryEntities = new Map<string, Entity>()
+  const correctionEntities = new Map<string, Entity>()
+  const corrections = new Map<string, { countryQid: string; intendedSubjectQid: string; code: string }>()
   async function read(url: string): Promise<Record<string, unknown>> {
     const r = await request(url)
     if (!r.ok) throw new Error('wikidata_candidate_unavailable')
@@ -43,13 +48,13 @@ export function createCitySearchResolver(request: Request, parents: ReadonlyArra
     if (qids.some(q => !result[q] || typeof result[q] !== 'object')) throw new Error('wikidata_candidate_response_invalid')
     return result
   }
-  async function warm(qids: string[], cache: Map<string, string>, props: string, extract: (e: Entity) => string) {
+  async function warm(qids: string[], cache: Map<string, string>, props: string, extract: (e: Entity, qid: string) => string) {
     const missing = [...new Set(qids)].filter(q => !cache.has(q))
     // MediaWiki accepts at most 50 anonymous entity IDs in a request.
     for (let i = 0; i < missing.length; i += 50) {
       const chunk = missing.slice(i, i + 50)
       const loaded = await entities(chunk, props)
-      for (const q of chunk) cache.set(q, extract(loaded[q]))
+      for (const q of chunk) cache.set(q, extract(loaded[q], q))
     }
   }
   const equivalent = (a: string, b: string) => a === b || parents.some(p =>
@@ -89,10 +94,28 @@ export function createCitySearchResolver(request: Request, parents: ReadonlyArra
     const loaded: Record<string, Entity> = {}
     for (let i = 0; i < qids.length; i += 50) Object.assign(loaded, await entities(qids.slice(i, i + 50), 'claims|sitelinks|labels|aliases', languages, ['enwiki', ...CITY_NAME_SITES].join('|')))
     await warm(qids.flatMap(q => ids(loaded[q].claims ?? {}, 'P31')), classes, 'labels', e => e.labels?.en?.value ?? '')
-    await warm(qids.flatMap(q => ids(loaded[q].claims ?? {}, 'P17')), countries, 'claims', e => {
+    await warm(qids.flatMap(q => ids(loaded[q].claims ?? {}, 'P17')), countries, 'claims', (e, qid) => {
+      countryEntities.set(qid, e)
       const value = bestStatement(currentStatements(e.claims?.P297))?.mainsnak?.datavalue?.value
       return typeof value === 'string' && /^[A-Za-z]{2}$/.test(value) ? value.toUpperCase() : ''
     })
+    const declarations = [...countryEntities].flatMap(([countryQid, entity]) => {
+      if (countries.get(countryQid)) return []
+      const target = countryCorrectionTarget(entity.claims ?? {})
+      return target && target.qid !== countryQid ? [{ countryQid, ...target }] : []
+    })
+    const missingTargets = [...new Set(declarations.map(d => d.qid))].filter(q => !correctionEntities.has(q))
+    for (let i = 0; i < missingTargets.length; i += 50) {
+      const chunk = missingTargets.slice(i, i + 50)
+      const fetched = await entities(chunk, 'claims')
+      for (const q of chunk) correctionEntities.set(q, fetched[q])
+    }
+    for (const d of declarations) {
+      const code = correctedCountryCode(correctionEntities.get(d.qid)?.claims ?? {})
+      if (code !== d.code) continue
+      countries.set(d.countryQid, code)
+      corrections.set(d.countryQid, { countryQid: d.countryQid, intendedSubjectQid: d.qid, code })
+    }
     for (const qid of qids) {
       const ent = loaded[qid]
       if ('missing' in ent) continue
@@ -104,10 +127,14 @@ export function createCitySearchResolver(request: Request, parents: ReadonlyArra
       const rowValid = valid(input.latitude, input.longitude)
       const pointValid = valid(point?.latitude, point?.longitude) && (!point?.globe || point.globe.endsWith('/Q2'))
       const geo = cityCoordVerdict(rowValid ? input.latitude : null, rowValid ? input.longitude : null, pointValid ? point!.latitude : null, pointValid ? point!.longitude : null)
-      const codes = ids(claims, 'P17').map(q => countries.get(q)).filter((x): x is string => !!x)
+      const countryIds = ids(claims, 'P17')
+      const countryCorrections = countryIds.flatMap(q => corrections.has(q) ? [corrections.get(q)!] : [])
+      const codes = countryIds.map(q => countries.get(q)).filter((x): x is string => !!x)
       const expected = input.countryCode?.toUpperCase()
-      const country = !expected || !codes.length ? 'unknown' : codes.some(code => equivalent(expected, code)) ? 'agree' : 'disagree'
-      probes.push({ qid, class: cls.verdict, country, coordinates: geo.verdict, distanceKm: geo.distanceKm, exactLabel: exactLabels.has(qid) })
+      const country = countryCorrections.length && expected
+        ? codes.some(code => !equivalent(expected, code)) ? 'disagree' : codes.length !== countryIds.length ? 'unknown' : 'agree'
+        : !expected || !codes.length ? 'unknown' : codes.some(code => equivalent(expected, code)) ? 'agree' : 'disagree'
+      probes.push({ ...(countryCorrections.length ? { countryCorrections } : {}), qid, class: cls.verdict, country, coordinates: geo.verdict, distanceKm: geo.distanceKm, exactLabel: exactLabels.has(qid) })
       // A nearby island/country/region with the literal name can also be an
       // alias of a city inside it. Proximity does not establish equal scope.
       if (exactLabels.has(qid) && cls.verdict === 'refused' && country !== 'disagree' && geo.verdict === 'agree' &&

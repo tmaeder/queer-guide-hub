@@ -13,6 +13,7 @@ export interface AdapterConfig {
   dryRun?: boolean
   pipelineRunId?: string
   nodeId?: string
+  refreshTerminalDispositions?: string[]
 }
 
 /**
@@ -269,7 +270,8 @@ export async function writeToStaging(
       // Re-open committed rows so the commit RPC reprocesses the changed payload.
       // Preserve ai_validation_status / classification_result (not touched here)
       // so the LLM relevance gate is NOT re-run for price/stock deltas.
-      if (existing.disposition === 'committed') {
+      const refreshable = config.refreshTerminalDispositions ?? ['committed']
+      if (refreshable.includes(existing.disposition)) {
         update.disposition = 'pending'
         update.processed_at = null
         update.error_message = null

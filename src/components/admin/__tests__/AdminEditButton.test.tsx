@@ -278,4 +278,159 @@ describe('AdminEditButton', () => {
     expect(await screen.findByText('Revision history')).toBeInTheDocument();
     expect(screen.queryByText(/Export record/)).toBeNull();
   });
+
+  it('exports an event record from the events detail page', async () => {
+    exportRecordMock.mockReset().mockResolvedValue(undefined);
+    useAdminRolesMock.mockReturnValue({ canManageContent: () => true, loading: false });
+    renderIn(<AdminEditButton contentType="events" contentId="e1" exportable />, '/events/x');
+    await openMenu();
+    fireEvent.click(await screen.findByText('Export record (CSV)'));
+    await waitFor(() =>
+      expect(exportRecordMock).toHaveBeenCalledWith(
+        expect.objectContaining({ tableName: 'events' }),
+        'e1',
+        'CSV',
+      ),
+    );
+  });
+
+  it('exports a personality record from the personalities detail page', async () => {
+    exportRecordMock.mockReset().mockResolvedValue(undefined);
+    useAdminRolesMock.mockReturnValue({ canManageContent: () => true, loading: false });
+    renderIn(
+      <AdminEditButton contentType="personalities" contentId="p1" exportable />,
+      '/personalities/x',
+    );
+    await openMenu();
+    fireEvent.click(await screen.findByText('Export record (Excel)'));
+    await waitFor(() =>
+      expect(exportRecordMock).toHaveBeenCalledWith(
+        expect.objectContaining({ tableName: 'personalities' }),
+        'p1',
+        'Excel',
+      ),
+    );
+  });
+
+  it('exports a hotel record from the hotels detail page', async () => {
+    exportRecordMock.mockReset().mockResolvedValue(undefined);
+    useAdminRolesMock.mockReturnValue({ canManageContent: () => true, loading: false });
+    renderIn(<AdminEditButton contentType="hotels" contentId="h1" exportable />, '/hotels/x');
+    await openMenu();
+    fireEvent.click(await screen.findByText('Export record (CSV)'));
+    await waitFor(() =>
+      expect(exportRecordMock).toHaveBeenCalledWith(
+        expect.objectContaining({ tableName: 'hotels' }),
+        'h1',
+        'CSV',
+      ),
+    );
+  });
+
+  it('gives a hotel owner who is not staff no record export', () => {
+    // The owner may edit their own listing; exports sit in the staff-only menu.
+    useAdminRolesMock.mockReturnValue({ canManageContent: () => false, loading: false });
+    renderIn(<AdminEditButton contentType="hotels" contentId="h1" ownerUserId="u1" exportable />);
+    expect(screen.queryByRole('button', { name: /More admin actions/i })).toBeNull();
+    expect(screen.queryByText(/Export record/)).toBeNull();
+  });
+
+  it('exports a city record from the cities detail page', async () => {
+    exportRecordMock.mockReset().mockResolvedValue(undefined);
+    useAdminRolesMock.mockReturnValue({ canManageContent: () => true, loading: false });
+    renderIn(<AdminEditButton contentType="cities" contentId="c1" exportable />, '/city/x');
+    await openMenu();
+    fireEvent.click(await screen.findByText('Export record (Excel)'));
+    await waitFor(() =>
+      expect(exportRecordMock).toHaveBeenCalledWith(
+        expect.objectContaining({ tableName: 'cities' }),
+        'c1',
+        'Excel',
+      ),
+    );
+  });
+
+  it('exports a country record from the countries detail page', async () => {
+    exportRecordMock.mockReset().mockResolvedValue(undefined);
+    useAdminRolesMock.mockReturnValue({ canManageContent: () => true, loading: false });
+    renderIn(<AdminEditButton contentType="countries" contentId="k1" exportable />, '/country/x');
+    await openMenu();
+    fireEvent.click(await screen.findByText('Export record (CSV)'));
+    await waitFor(() =>
+      expect(exportRecordMock).toHaveBeenCalledWith(
+        expect.objectContaining({ tableName: 'countries' }),
+        'k1',
+        'CSV',
+      ),
+    );
+  });
+
+  it('exports a village record from the villages detail page', async () => {
+    exportRecordMock.mockReset().mockResolvedValue(undefined);
+    useAdminRolesMock.mockReturnValue({ canManageContent: () => true, loading: false });
+    renderIn(
+      <AdminEditButton contentType="queer_villages" contentId="q1" exportable />,
+      '/villages/x',
+    );
+    await openMenu();
+    fireEvent.click(await screen.findByText('Export record (Excel)'));
+    await waitFor(() =>
+      expect(exportRecordMock).toHaveBeenCalledWith(
+        expect.objectContaining({ tableName: 'queer_villages' }),
+        'q1',
+        'Excel',
+      ),
+    );
+  });
+
+  it('exports a group record from the groups detail page', async () => {
+    exportRecordMock.mockReset().mockResolvedValue(undefined);
+    useAdminRolesMock.mockReturnValue({ canManageContent: () => true, loading: false });
+    renderIn(
+      <AdminEditButton contentType="community_groups" contentId="g1" exportable />,
+      '/hub/groups/g1',
+    );
+    await openMenu();
+    fireEvent.click(await screen.findByText('Export record (CSV)'));
+    await waitFor(() =>
+      expect(exportRecordMock).toHaveBeenCalledWith(
+        expect.objectContaining({ tableName: 'community_groups' }),
+        'g1',
+        'CSV',
+      ),
+    );
+  });
+
+  it('exports a listing record from the marketplace detail page', async () => {
+    exportRecordMock.mockReset().mockResolvedValue(undefined);
+    useAdminRolesMock.mockReturnValue({ canManageContent: () => true, loading: false });
+    renderIn(
+      <AdminEditButton contentType="marketplace_listings" contentId="m1" exportable />,
+      '/marketplace/x',
+    );
+    await openMenu();
+    fireEvent.click(await screen.findByText('Export record (Excel)'));
+    await waitFor(() =>
+      expect(exportRecordMock).toHaveBeenCalledWith(
+        expect.objectContaining({ tableName: 'marketplace_listings' }),
+        'm1',
+        'Excel',
+      ),
+    );
+  });
+
+  it('exports an article record from the news detail page', async () => {
+    exportRecordMock.mockReset().mockResolvedValue(undefined);
+    useAdminRolesMock.mockReturnValue({ canManageContent: () => true, loading: false });
+    renderIn(<AdminEditButton contentType="news_articles" contentId="n1" exportable />, '/news/x');
+    await openMenu();
+    fireEvent.click(await screen.findByText('Export record (CSV)'));
+    await waitFor(() =>
+      expect(exportRecordMock).toHaveBeenCalledWith(
+        expect.objectContaining({ tableName: 'news_articles' }),
+        'n1',
+        'CSV',
+      ),
+    );
+  });
 });
