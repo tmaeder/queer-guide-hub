@@ -1,7 +1,8 @@
 # Surfaces ESLint findings to GitHub Code Scanning as SARIF so security /
 # quality issues show up in the Security tab + PR conversation. The actual
-# merge-blocking lint gate is the `lint` job in ci.yml — this workflow is
-# reporting-only (`continue-on-error: true` on the scan step).
+# merge-blocking lint gate is the `lint` job in ci.yml — the SARIF scan here is
+# reporting-only (`continue-on-error: true`); the suppression ratchet step is
+# the one blocking step in this workflow.
 #
 # Originally added by #1235 with the GitHub-suggested template, which
 # hardcoded ESLint 8 + `--config .eslintrc.js` + `--ext`. This project ships
@@ -43,6 +44,11 @@ jobs:
         with:
           node-version-file: '.nvmrc'
           cache: 'npm'
+
+      - name: Suppression ratchet (blocking)
+        # New eslint-disable / @ts-* suppressions in src/ fail here; removed ones
+        # fail until re-baselined. Node stdlib only, so it runs before npm ci.
+        run: npm run lint:disables
 
       - name: Install dependencies
         # `npm ci` uses the project's pinned ESLint (flat-config). We layer
