@@ -32,7 +32,9 @@ describe('subway page-family coverage', () => {
 
   it('keeps the journey controller outside the per-route reset boundary', () => {
     const journey = routesSource.indexOf('<RouteFade>');
-    const resetBoundary = routesSource.indexOf('<ErrorBoundary key={location.pathname}>');
+    const resetBoundary = routesSource.indexOf(
+      '<ErrorBoundary key={location.pathname} section="route">',
+    );
 
     expect(journey).toBeGreaterThan(-1);
     expect(resetBoundary).toBeGreaterThan(journey);
