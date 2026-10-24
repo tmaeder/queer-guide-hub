@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useVisitorLocation } from '@/hooks/useVisitorLocation';
 import { useAccessibilityAttributes } from '@/hooks/useAccessibilityAttributes';
 import { useTargetGroups } from '@/hooks/useTargetGroups';
@@ -7,32 +7,28 @@ import { useTranslation } from 'react-i18next';
 import { useSearchParams } from 'react-router';
 import { useDebounce } from '@/hooks/useDebounce';
 import { getPresetDateRange, type EventPresetId } from '@/components/events/PresetChips';
-import { dedupeCitiesByNormalized } from '@/utils/dateRange';
 import {
   hasAnyFilter,
   parseFilterState,
   serializeFilterState,
   type EventSort,
 } from '@/utils/eventsQueryString';
-import type { useEvents } from '@/hooks/useEvents';
-
-type EventsApi = ReturnType<typeof useEvents>;
+import type { EventFilters, FeedRequest } from '@/hooks/useEvents';
 
 const PAGE_SIZE = 24;
 
 /**
- * Owns the entire Events-page filter state machine: 18 filter dimensions,
- * preset toggle-reversal logic, geolocation/near-me, URL serialize/hydrate,
- * the debounced timeline-viewport refetch, and all the mount-guarded
- * re-fetch effects. Extracted verbatim from Events.tsx — behavior-preserving.
+ * Owns the Events-page filter state: 18 filter dimensions, preset toggles,
+ * geolocation/near-me, URL serialize/hydrate and the timeline viewport.
  *
- * `fetchEvents` and `events` are injected from the page's useEvents() instance
- * so the data layer stays owned by the page.
+ * It does not fetch. It DERIVES the feed request from that state and returns
+ * it as `request`; the page hands it to `useEventsFeed`. There used to be one
+ * mount-guarded effect per filter dimension, each calling `fetchEvents` when
+ * its value changed, plus a suppress flag so a preset did not fire twice.
+ * Every one of them computed the same thing this memo now computes once, and
+ * whichever ran last won.
  */
-export function useEventFilters(
-  fetchEvents: EventsApi['fetchEvents'],
-  events: EventsApi['events'],
-) {
+export function useEventFilters() {
   const { t } = useTranslation();
   const { toast } = useToast();
 
@@ -46,8 +42,8 @@ export function useEventFilters(
    * It used to be hydrated by a `useEffect(..., [])` declared after the
    * mount-fetch effect, which meant the first query went out with default (or
    * geo-derived) filters and the URL's filters only reached the data layer one
-   * commit later, as a second query. `fetchEvents` applies whichever response
-   * resolves last, and the unfiltered one is the slower of the two — it counts
+   * commit later, as a second query. `fetchEvents` applied whichever response
+   * resolved last, and the unfiltered one is the slower of the two — it counts
    * the whole upcoming corpus and pays a second round-trip for attendee counts
    * on its full page of rows, where a narrow city+date query often returns
    * nothing and skips that round-trip. So the stale unfiltered response landed
@@ -58,14 +54,24 @@ export function useEventFilters(
    * there is exactly one mount fetch and it already carries the URL.
    */
   const [initialFilters] = useState(() => parseFilterState(searchParams));
-  const urlRequestedFilters = useMemo(() => hasAnyFilter(initialFilters), [initialFilters]);
+  // Geo defaulting is for a BARE /events only. A link that named any filter has
+  // already said what it wants; scoping it to the reader's own city on top of
+  // that silently changes the result set the sender shared. Read at first
+  // render, as the mount effect it replaces read it on mount — the visitor's
+  // city arriving later does not re-scope a list they are already looking at.
+  const { location: visitorLocation } = useVisitorLocation();
+  const [geoCity] = useState(() =>
+    !hasAnyFilter(initialFilters) && visitorLocation?.city ? visitorLocation.city : null,
+  );
 
   const [showFilters, setShowFilters] = useState(false);
   const [viewMode, setViewMode] = useState<'grid' | 'timeline' | 'map'>(initialFilters.view);
 
   // Filter states
   const [search, setSearch] = useState(initialFilters.q);
-  const [cities, setCities] = useState<string[]>(initialFilters.cities);
+  const [cities, setCities] = useState<string[]>(() =>
+    geoCity ? [geoCity] : initialFilters.cities,
+  );
   const [eventTypes, setEventTypes] = useState<string[]>(initialFilters.types);
   const [selectedTags, setSelectedTags] = useState<string[]>(initialFilters.tags);
   const [startDate, setStartDate] = useState<Date | undefined>(() =>
@@ -81,19 +87,7 @@ export function useEventFilters(
   const [activePreset, setActivePreset] = useState<EventPresetId | null>(null);
   const [sort, setSort] = useState<EventSort>(initialFilters.sort);
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
-  const [autoLocationLabel, setAutoLocationLabel] = useState<string | null>(null);
-  const { location: visitorLocation } = useVisitorLocation();
-  const [page, setPage] = useState(1);
-  /** Bumped wherever the result list is REPLACED rather than appended to —
-   *  every site below already calls `setPage(1)` on the same line. `LoadMore`
-   *  keys its auto-load budget off this, so a new filter set gets a fresh one.
-   *
-   *  It replaces `autoLoadedCount`, which was dead: every write in the codebase
-   *  set it to 0, nothing incremented it, and /events gated its Load-More
-   *  button on `>= 50` — so the button could never render and the page was
-   *  capped at a single page of results. */
-  const [listGeneration, setListGeneration] = useState(0);
-  const bumpList = useCallback(() => setListGeneration((n) => n + 1), []);
+  const [autoLocationLabel, setAutoLocationLabel] = useState<string | null>(geoCity);
   // New filter dimensions (Phase B.2 + B.4)
   const [accessibilityAttrs, setAccessibilityAttrs] = useState<string[]>(
     initialFilters.accessibility,
@@ -108,85 +102,109 @@ export function useEventFilters(
   const { targetGroups: tgOptions } = useTargetGroups();
 
   // Timeline viewport drives a parallel date-range fetch when timeline view is active.
-  const [timelineViewport, setTimelineViewport] = useState<{
+  const [timelineViewport, setTimelineViewportState] = useState<{
     startMs: number;
     endMs: number;
+    /** Captured when the viewport is set, so the derived request stays pure. */
+    includesPast: boolean;
   } | null>(null);
+  const setTimelineViewport = useCallback(
+    (v: { startMs: number; endMs: number } | null) =>
+      setTimelineViewportState(v ? { ...v, includesPast: v.startMs < Date.now() } : null),
+    [],
+  );
   const debouncedViewport = useDebounce(timelineViewport, 350);
 
-  // Get unique cities from events for auto-suggest
-  const availableCities = useMemo(
-    () => dedupeCitiesByNormalized(events.map((event) => event.city).filter(Boolean) as string[]),
-    [events],
-  );
+  // Debounced search — the list filters ~300ms after the user stops typing.
+  // Enter (and the filter sheet's Apply) commit the typed value at once via
+  // `handleFiltersChange`.
+  const debouncedSearch = useDebounce(search, 300);
+  const [committedSearch, setCommittedSearch] = useState<string | null>(null);
+  const effectiveSearch = committedSearch === search ? search : debouncedSearch;
 
   /**
-   * The current filter state, in the shape `fetchEvents` wants it.
+   * The feed request, derived from filter state — the ONE place a query for
+   * this list is built. Built inline per call site, the page once passed `{}`
+   * from "Load more" and both retry buttons, appending an unfiltered page 2
+   * under a filtered page 1 and silently dropping the reader's filters on retry.
    *
-   * It exists so every query for this list is built from ONE place. The
-   * construction used to be inline in `handleFiltersChange`, which always
-   * fetches page 1 and replaces the list — so the page's other call sites had
-   * nothing to reuse and passed `{}` instead. /events' "Load more" fetched an
-   * UNFILTERED page 2 and APPENDED it to a filtered list (filter to one city,
-   * click Load more, events from everywhere arrive underneath), and both retry
-   * buttons silently replaced the filtered list with an unfiltered one.
-   *
-   * Deliberately not memoized: it is called imperatively from event handlers
-   * and never passed to a dependency array, so a `useCallback` here could only
-   * add a stale-closure failure mode.
+   * In timeline view the viewport supplies the date window, as the debounced
+   * viewport fetch used to; every other view uses the filter dates.
    */
-  const buildFilters = () => {
-    const dateRange =
-      startDate && endDate
-        ? {
-            start: startDate.toISOString(),
-            end: endDate.toISOString(),
-          }
-        : undefined;
-    return {
-      search: search || undefined,
+  const request = useMemo<FeedRequest>(() => {
+    const base = {
+      search: effectiveSearch || undefined,
       cities: cities.length > 0 ? cities : undefined,
       eventTypes: eventTypes.length > 0 ? eventTypes : undefined,
       tags: selectedTags.length > 0 ? selectedTags : undefined,
-      accessibilityAttributes: accessibilityAttrs.length > 0 ? accessibilityAttrs : undefined,
-      targetGroups: targetGroupsFilter.length > 0 ? targetGroupsFilter : undefined,
-      languages: languages.length > 0 ? languages : undefined,
-      ageRestriction: ageRestriction || undefined,
-      dateRange,
-      // `&& userLocation`, not `nearMe ? userLocation : undefined`: the toggle
-      // can be on before geolocation resolves, and that shape typed the field
-      // `{lat,lng} | null | undefined` against a `{lat,lng} | undefined`
-      // parameter. Both readers test truthiness, so this is the same query.
+      // `&& userLocation`: the toggle can be on before geolocation resolves.
       nearMe: nearMe && userLocation ? userLocation : undefined,
-      includePast: showPast || undefined,
       featured: featuredOnly || undefined,
       isFree: isFree || undefined,
       sort,
     };
-  };
+    let filters: EventFilters;
+    if (viewMode === 'timeline' && debouncedViewport) {
+      filters = {
+        ...base,
+        dateRange: {
+          start: new Date(debouncedViewport.startMs).toISOString(),
+          end: new Date(debouncedViewport.endMs).toISOString(),
+        },
+        includePast: debouncedViewport.includesPast || showPast || undefined,
+      };
+    } else {
+      filters = {
+        ...base,
+        accessibilityAttributes: accessibilityAttrs.length > 0 ? accessibilityAttrs : undefined,
+        targetGroups: targetGroupsFilter.length > 0 ? targetGroupsFilter : undefined,
+        languages: languages.length > 0 ? languages : undefined,
+        ageRestriction: ageRestriction || undefined,
+        dateRange:
+          startDate && endDate
+            ? { start: startDate.toISOString(), end: endDate.toISOString() }
+            : undefined,
+        includePast: showPast || undefined,
+      };
+    }
+    return { filters, paged: true, pageSize: PAGE_SIZE };
+  }, [
+    effectiveSearch,
+    cities,
+    eventTypes,
+    selectedTags,
+    nearMe,
+    userLocation,
+    featuredOnly,
+    isFree,
+    sort,
+    viewMode,
+    debouncedViewport,
+    showPast,
+    accessibilityAttrs,
+    targetGroupsFilter,
+    languages,
+    ageRestriction,
+    startDate,
+    endDate,
+  ]);
 
-  const handleFiltersChange = async () => {
-    const filters = buildFilters();
-    setPage(1);
-    bumpList();
-    await fetchEvents(filters, {
-      page: 1,
-      pageSize: PAGE_SIZE,
-      append: false,
-    });
+  /**
+   * Commit the typed search now (Enter, Apply) instead of after the debounce.
+   * Returns false when nothing changed, so the caller can refetch instead —
+   * retry and the RSVP refresh re-run the same request.
+   */
+  const commitSearch = () => {
+    if (effectiveSearch === search) return false;
+    setCommittedSearch(search);
+    return true;
   };
-  // D6 follow-up: handlePresetSelect both calls fetchEvents() and mutates
-  // filter state that the `otherFiltersMounted` useEffect listens to. Without
-  // this skip flag we'd fire two fetches per preset toggle. The flag is set
-  // before the state batch and the useEffect drops one tick when it sees it.
-  const suppressFilterRefetch = useRef(false);
 
   const handlePresetSelect = async (preset: EventPresetId | null) => {
     // D6: toggling a preset OFF must fully reverse every state it set.
     // Previously eventType='pride' leaked after un-toggling Pride, and
     // isFree/featuredOnly were always cleared on every press (even when
     // activating a different preset that shouldn't touch them).
-    suppressFilterRefetch.current = true;
     const isToggleOff = preset === null || preset === activePreset;
     if (isToggleOff) {
       const wasActive = activePreset;
@@ -202,18 +220,6 @@ export function useEventFilters(
         setNearMe(false);
         setUserLocation(null);
       }
-      setPage(1);
-      bumpList();
-      await fetchEvents(
-        {
-          search: search || undefined,
-          cities: cities.length > 0 ? cities : undefined,
-          tags: selectedTags.length > 0 ? selectedTags : undefined,
-          includePast: showPast || undefined,
-          sort,
-        },
-        { page: 1, pageSize: PAGE_SIZE, append: false },
-      );
       return;
     }
     // Activating a new preset: reset state owned by other presets first,
@@ -237,24 +243,6 @@ export function useEventFilters(
       await handleNearMe();
       return;
     }
-    setPage(1);
-    bumpList();
-    await fetchEvents(
-      {
-        search: search || undefined,
-        cities: cities.length > 0 ? cities : undefined,
-        eventTypes: preset === 'pride' ? ['pride'] : eventTypes.length > 0 ? eventTypes : undefined,
-        tags: selectedTags.length > 0 ? selectedTags : undefined,
-        dateRange: range
-          ? { start: range.start.toISOString(), end: range.end.toISOString() }
-          : undefined,
-        featured: preset === 'featured' || undefined,
-        isFree: preset === 'free' || undefined,
-        includePast: showPast || undefined,
-        sort,
-      },
-      { page: 1, pageSize: PAGE_SIZE, append: false },
-    );
   };
 
   const handleNearMe = async () => {
@@ -273,14 +261,6 @@ export function useEventFilters(
         // Clear city filter when using near me
         setCities([]);
 
-        // Fetch events near user
-        fetchEvents({
-          search: search || undefined,
-          eventTypes: eventTypes.length > 0 ? eventTypes : undefined,
-          tags: selectedTags.length > 0 ? selectedTags : undefined,
-          nearMe: location,
-          includePast: showPast || undefined,
-        });
         toast({
           title: t('pages.events.locationFound', 'Location found'),
           description: t('pages.events.nearLocationDesc', 'Showing events near your location'),
@@ -298,12 +278,13 @@ export function useEventFilters(
     } else {
       setNearMe(false);
       setUserLocation(null);
-      handleFiltersChange();
     }
   };
 
-  const clearFilters = async () => {
+  const clearFilters = () => {
     setSearch('');
+    // Clear at once rather than after the search debounce.
+    setCommittedSearch('');
     setCities([]);
     setAutoLocationLabel(null);
     setEventTypes([]);
@@ -321,16 +302,6 @@ export function useEventFilters(
     setFeaturedOnly(false);
     setActivePreset(null);
     setSort('date-asc');
-    setPage(1);
-    bumpList();
-    await fetchEvents(
-      {},
-      {
-        page: 1,
-        pageSize: PAGE_SIZE,
-        append: false,
-      },
-    );
   };
 
   const hasActiveFilters =
@@ -367,109 +338,6 @@ export function useEventFilters(
     (ageRestriction ? 1 : 0) +
     (startDate ? 1 : 0) +
     (endDate ? 1 : 0);
-
-  const autoInitDone = useRef(false);
-  useEffect(() => {
-    if (autoInitDone.current) return;
-    autoInitDone.current = true;
-    const cityName = visitorLocation?.city;
-    // Geo defaulting is for a BARE /events only. A link that named any filter
-    // has already said what it wants; scoping it to the reader's own city on
-    // top of that silently changes the result set the sender shared.
-    if (!urlRequestedFilters && cityName) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect -- effect synchronizes state with external props/data; React Compiler can't infer the sync direction. Documented exemption from the eslint.config.js staged-ratchet plan.
-      setPage(1);
-      bumpList();
-      setCities([cityName]);
-      setAutoLocationLabel(cityName);
-      fetchEvents({ cities: [cityName] }, { page: 1, pageSize: PAGE_SIZE, append: false });
-      return;
-    }
-    // Every filter dimension is already in state (seeded from the query string
-    // at first render), so this single fetch carries the URL. With no URL
-    // filters it is the plain unfiltered browse it always was.
-    handleFiltersChange();
-    // run once on mount; visitorLocation may not yet be available but that is fine — user can still see all events
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  // Re-fetch when the past-events toggle changes
-  const showPastMounted = useRef(false);
-  useEffect(() => {
-    if (!showPastMounted.current) {
-      showPastMounted.current = true;
-      return;
-    }
-    handleFiltersChange();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [showPast]);
-
-  // Reactive city filter — fire as soon as a value is picked from the
-  // combobox. Avoids the "user picks London but list doesn't update" trap.
-  const cityMounted = useRef(false);
-  useEffect(() => {
-    if (!cityMounted.current) {
-      cityMounted.current = true;
-      return;
-    }
-    handleFiltersChange();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [cities]);
-
-  // Re-fetch when sort changes
-  const sortMounted = useRef(false);
-  useEffect(() => {
-    if (!sortMounted.current) {
-      sortMounted.current = true;
-      return;
-    }
-    handleFiltersChange();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sort]);
-
-  // D6: re-fetch when any of the remaining filter dimensions change.
-  // Pill `×` handlers call setX() but did not trigger a refetch on their
-  // own; this guard mirrors the existing cityMounted / sortMounted pattern.
-  // suppressFilterRefetch is set by handlePresetSelect to avoid double
-  // fetches when the preset handler already issued one.
-  const otherFiltersMounted = useRef(false);
-  useEffect(() => {
-    if (!otherFiltersMounted.current) {
-      otherFiltersMounted.current = true;
-      return;
-    }
-    if (suppressFilterRefetch.current) {
-      suppressFilterRefetch.current = false;
-      return;
-    }
-    handleFiltersChange();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [
-    eventTypes,
-    startDate,
-    endDate,
-    isFree,
-    featuredOnly,
-    nearMe,
-    selectedTags,
-    accessibilityAttrs,
-    targetGroupsFilter,
-    languages,
-    ageRestriction,
-  ]);
-
-  // Debounced search — apply ~300ms after the user stops typing so the
-  // list filters live. Enter still flushes immediately via onKeyDown.
-  const debouncedSearch = useDebounce(search, 300);
-  const searchMounted = useRef(false);
-  useEffect(() => {
-    if (!searchMounted.current) {
-      searchMounted.current = true;
-      return;
-    }
-    handleFiltersChange();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [debouncedSearch]);
 
   // Write the current filter state back to the query string. On first render
   // this re-serialises what we just parsed, so it is a no-op or a pure
@@ -519,35 +387,6 @@ export function useEventFilters(
   // dimension it set is now a lazy `useState` initialiser above, which runs
   // before the mount fetch instead of after it.)
 
-  // Timeline viewport → date-range refetch (debounced). Only active when
-  // the timeline view is selected so we don't interfere with grid/map.
-  const lastFetchedViewportRef = useRef<string | null>(null);
-  useEffect(() => {
-    if (viewMode !== 'timeline' || !debouncedViewport) return;
-    const key = `${debouncedViewport.startMs}-${debouncedViewport.endMs}`;
-    if (lastFetchedViewportRef.current === key) return;
-    lastFetchedViewportRef.current = key;
-    const startIso = new Date(debouncedViewport.startMs).toISOString();
-    const endIso = new Date(debouncedViewport.endMs).toISOString();
-    const includePast = debouncedViewport.startMs < Date.now();
-    fetchEvents(
-      {
-        search: search || undefined,
-        cities: cities.length > 0 ? cities : undefined,
-        eventTypes: eventTypes.length > 0 ? eventTypes : undefined,
-        tags: selectedTags.length > 0 ? selectedTags : undefined,
-        dateRange: { start: startIso, end: endIso },
-        nearMe: nearMe ? userLocation : undefined,
-        includePast: includePast || showPast || undefined,
-        featured: featuredOnly || undefined,
-        isFree: isFree || undefined,
-        sort,
-      },
-      { page: 1, pageSize: PAGE_SIZE, append: false },
-    );
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [debouncedViewport, viewMode]);
-
   return {
     PAGE_SIZE,
     // view / panel state
@@ -591,20 +430,16 @@ export function useEventFilters(
     setLanguages,
     ageRestriction,
     setAgeRestriction,
-    page,
-    setPage,
-    listGeneration,
     setTimelineViewport,
     // option sources
     accAttrOptions,
     tgOptions,
-    availableCities,
     // derived
     hasActiveFilters,
     sheetFilterCount,
     // handlers
-    buildFilters,
-    handleFiltersChange,
+    request,
+    commitSearch,
     handlePresetSelect,
     clearFilters,
   };
