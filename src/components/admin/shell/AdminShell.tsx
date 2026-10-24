@@ -38,7 +38,7 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { Menu, Search } from 'lucide-react';
 import { AdminSidebar } from './AdminSidebar';
 import { OPEN_COMMAND_PALETTE_EVENT } from '@/components/admin/command-palette/commandPaletteBus';
-import { ErrorBoundary } from '@/components/ErrorBoundary';
+import { ErrorBoundary } from '@/components/error/ErrorBoundary';
 import { getBreadcrumbsForRoute, getRouteMinRole } from '@/config/adminNavigation';
 import { hasAdoptedFrame } from '@/config/adminArchetypes';
 import { roleAtLeast } from '@/config/adminRoles';

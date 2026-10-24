@@ -1,6 +1,6 @@
 import { Suspense } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ErrorBoundary } from '@/components/ErrorBoundary';
+import { ErrorBoundary } from '@/components/error/ErrorBoundary';
 import { isWebglSupported } from '@/lib/webglSupport';
 import { lazyRetry } from '@/utils/lazyRetry';
 import type { CruisingMapProps } from './CruisingMap';
