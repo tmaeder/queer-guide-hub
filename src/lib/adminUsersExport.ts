@@ -41,3 +41,17 @@ export async function exportAdminUsers(format: 'Excel' | 'CSV'): Promise<void> {
     await exportToExcel(rows, ADMIN_USER_EXPORT_COLUMNS, filename);
   }
 }
+
+/**
+ * Export ONE user from the detail sheet, with the same non-personal columns as
+ * the list export. The row is the one the sheet already holds, so this makes
+ * no request and cannot reach a column the list export does not.
+ */
+export async function exportAdminUser(row: Row, format: 'Excel' | 'CSV'): Promise<void> {
+  const filename = generateFilename('user');
+  if (format === 'CSV') {
+    exportToCsv([row], ADMIN_USER_EXPORT_COLUMNS, filename.replace(/\.xlsx$/, '.csv'));
+  } else {
+    await exportToExcel([row], ADMIN_USER_EXPORT_COLUMNS, filename);
+  }
+}

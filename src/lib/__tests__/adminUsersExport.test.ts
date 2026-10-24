@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { ADMIN_USER_EXPORT_COLUMNS, exportAdminUsers } from '../adminUsersExport';
+import { ADMIN_USER_EXPORT_COLUMNS, exportAdminUser, exportAdminUsers } from '../adminUsersExport';
 import { fetchAdminUsersForExport } from '@/lib/adminUsers';
 import { exportToExcel } from '@/utils/excelExport';
 import { exportToCsv } from '@/utils/csvExport';
@@ -42,5 +42,41 @@ describe('exportAdminUsers', () => {
   it('writes blanks, never "null"/"undefined", for missing values', () => {
     const cells = ADMIN_USER_EXPORT_COLUMNS.map((c) => c.accessor(rows[1]));
     expect(cells).toEqual(['', '', 'local', '', '', '']);
+  });
+});
+
+describe('exportAdminUser', () => {
+  const user = {
+    display_name: 'Ana',
+    location: 'Berlin',
+    user_mode: 'traveler',
+    profile_completion_percentage: 80,
+    created_at: null,
+    last_seen_at: null,
+    email: 'ana@example.com',
+    first_name: 'Ana',
+    last_name: 'Example',
+  };
+
+  it.each([
+    ['Excel', exportToExcel, /\.xlsx$/],
+    ['CSV', exportToCsv, /\.csv$/],
+  ] as const)('%s exports the one user with the list columns', async (format, writer, ext) => {
+    vi.mocked(writer).mockClear();
+    vi.mocked(fetchAdminUsersForExport).mockClear();
+    await exportAdminUser(user, format);
+    expect(fetchAdminUsersForExport).not.toHaveBeenCalled();
+    const [data, columns, filename] = vi.mocked(writer).mock.lastCall!;
+    expect(data).toEqual([user]);
+    expect(columns).toBe(ADMIN_USER_EXPORT_COLUMNS);
+    expect(filename).toMatch(ext);
+  });
+
+  it('leaves the email and legal name out of the file', () => {
+    const headers = ADMIN_USER_EXPORT_COLUMNS.map((c) => c.header.toLowerCase());
+    const cells = ADMIN_USER_EXPORT_COLUMNS.map((c) => String(c.accessor(user)));
+    expect(headers.some((h) => /mail|first|last name/.test(h))).toBe(false);
+    expect(cells).not.toContain('ana@example.com');
+    expect(cells).not.toContain('Example');
   });
 });

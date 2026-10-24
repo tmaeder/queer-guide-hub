@@ -31,7 +31,9 @@ vi.mock('@/hooks/useNewsAuthorsAdmin', () => ({
   },
   useChangeNewsAuthor: () => ({ mutateAsync: mocks.mutate, isPending: mocks.pending }),
 }));
-vi.mock('sonner', () => ({ toast: { success: vi.fn() } }));
+vi.mock('sonner', () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
+const exportMock = vi.hoisted(() => vi.fn().mockResolvedValue(undefined));
+vi.mock('@/lib/newsAuthorsExport', () => ({ exportNewsAuthors: exportMock }));
 import AdminNewsAuthors from '../AdminNewsAuthors';
 const view = () =>
   render(
@@ -119,5 +121,13 @@ describe('News author management', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Merge Alex' }));
     expect(screen.getByRole('button', { name: 'Updating…' })).toBeDisabled();
     expect(screen.getByLabelText('Merge into author')).toBeDisabled();
+  });
+  it('exports the searched author list as Excel and CSV', async () => {
+    view();
+    fireEvent.change(screen.getByLabelText('Search authors'), { target: { value: 'Alex' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Export Excel' }));
+    await waitFor(() => expect(exportMock).toHaveBeenLastCalledWith('Alex', 'Excel'));
+    fireEvent.click(screen.getByRole('button', { name: 'Export CSV' }));
+    await waitFor(() => expect(exportMock).toHaveBeenLastCalledWith('Alex', 'CSV'));
   });
 });
