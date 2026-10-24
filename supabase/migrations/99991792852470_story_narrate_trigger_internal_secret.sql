@@ -29,9 +29,8 @@ end; $function$;
 
 do $verify$
 begin
-  if not exists (select 1 from vault.secrets where name = 'internal_invoke_secret') then
-    raise exception 'vault secret internal_invoke_secret missing';
-  end if;
+  -- No vault-secret precondition: the trigger reads it at call time, and a
+  -- local/CI rebuild has no vault secrets (that check aborted Critical paths).
   if pg_get_functiondef('public.tg_auto_story_on_insert()'::regprocedure) !~* 'x-internal-secret' then
     raise exception 'tg_auto_story_on_insert does not send x-internal-secret';
   end if;
