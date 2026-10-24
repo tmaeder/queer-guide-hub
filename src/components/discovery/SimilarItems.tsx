@@ -3,13 +3,12 @@
  * Drop into any detail page bottom.
  */
 
-import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Waypoints } from 'lucide-react';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { detailHref } from '@/lib/searchRoutes';
-import { fetchSimilar } from '@/lib/searchClient';
 import { useTrackClick, type Entity } from '@/hooks/useSearchActions';
+import { useSimilarQuery } from '@/hooks/useDiscoveryQueries';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
@@ -83,47 +82,24 @@ export function SimilarItems({
   contentTypes,
 }: Props) {
   const { t } = useTranslation();
-  const [items, setItems] = useState<SimItem[] | null>(null);
-  const [error, setError] = useState(false);
   const trackClick = useTrackClick();
-  const contentTypesKey = contentTypes ? contentTypes.join(',') : '';
-
-  useEffect(() => {
-    let cancelled = false;
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- effect synchronizes state with external props/data; React Compiler can't infer the sync direction. Documented exemption from the eslint.config.js staged-ratchet plan.
-    setItems(null);
-    setError(false);
-    const types = contentTypesKey ? contentTypesKey.split(',') : undefined;
-    // Over-fetch when restricting types so we still have `limit` rows after
-    // the (defensive) client-side filter trims any off-type leakage.
-    // Over-fetch (3×) so we still have `limit` rows after filtering the
-    // source entity and any duplicate hits the ANN returned.
-    fetchSimilar(entity, Math.min(50, limit * 3), types)
-      .then((res) => {
-        if (cancelled) return;
-        let next = res as unknown as SimItem[];
-        if (types) next = next.filter((r) => types.includes(r.content_type));
-        // D2: never include the current entity in "More like this".
-        next = next.filter((r) => !(r.content_type === entity.type && r.content_id === entity.id));
-        // Drop duplicate (content_type, content_id) hits.
-        const seen = new Set<string>();
-        next = next.filter((r) => {
-          const k = `${r.content_type}:${r.content_id}`;
-          if (seen.has(k)) return false;
-          seen.add(k);
-          return true;
-        });
-        setItems(next.slice(0, limit));
-      })
-      .catch(() => {
-        if (cancelled) return;
-        setError(true);
-      });
-    return () => {
-      cancelled = true;
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [entity.type, entity.id, limit, contentTypesKey]);
+  const { data, isError: error } = useSimilarQuery(entity, limit, contentTypes, (hits, types) => {
+    let next = hits as unknown as SimItem[];
+    // Defensive: trim any off-type leakage when restricting types.
+    if (types) next = next.filter((r) => types.includes(r.content_type));
+    // D2: never include the current entity in "More like this".
+    next = next.filter((r) => !(r.content_type === entity.type && r.content_id === entity.id));
+    // Drop duplicate (content_type, content_id) hits.
+    const seen = new Set<string>();
+    next = next.filter((r) => {
+      const k = `${r.content_type}:${r.content_id}`;
+      if (seen.has(k)) return false;
+      seen.add(k);
+      return true;
+    });
+    return next.slice(0, limit);
+  });
+  const items = data ?? null;
 
   if (error) return null;
   if (items?.length === 0) return null;
