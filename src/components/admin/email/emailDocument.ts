@@ -1,5 +1,5 @@
 import type { JSONContent } from '@tiptap/core';
-import DOMPurify from 'dompurify';
+import { sanitizeEmailDocument, sanitizeEmailReview, sanitizeLegacyEmail } from '@/lib/sanitize';
 
 export interface EmailVariable {
   name: string;
@@ -10,10 +10,7 @@ const TOKEN = /\{\{\s*([\w.-]+)\s*\}\}/g;
 
 /** A review must not execute template code, navigate or load tracking pixels. */
 export function reviewDocument(html: string): string {
-  const body = DOMPurify.sanitize(html, {
-    FORBID_TAGS: ['script', 'iframe', 'object', 'embed', 'form', 'link', 'meta', 'base'],
-    FORBID_ATTR: ['src', 'srcset', 'href', 'action', 'background', 'poster'],
-  });
+  const body = sanitizeEmailReview(html);
   return `<!doctype html><html><head><meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; img-src data:; form-action 'none'; base-uri 'none'"></head><body>${body}</body></html>`;
 }
 
@@ -60,7 +57,7 @@ export function storeBlockDocument(html: string, json: JSONContent): string {
 
 /** The sender already wraps the body in the shared brand shell. */
 export function emailBody(html: string): string {
-  const clean = DOMPurify.sanitize(html, { WHOLE_DOCUMENT: true, ADD_TAGS: ['style'] });
+  const clean = sanitizeEmailDocument(html);
   const doc = new DOMParser().parseFromString(clean, 'text/html');
   return (
     Array.from(doc.head.querySelectorAll('style'), (style) => style.outerHTML).join('') +
@@ -69,7 +66,7 @@ export function emailBody(html: string): string {
 }
 
 export function prepareLegacyHtml(html: string): string {
-  const clean = DOMPurify.sanitize(html, { ADD_ATTR: ['style'], FORBID_TAGS: ['style', 'script'] });
+  const clean = sanitizeLegacyEmail(html);
   const doc = new DOMParser().parseFromString(clean, 'text/html');
   const walker = doc.createTreeWalker(doc.body, NodeFilter.SHOW_TEXT);
   const nodes: Text[] = [];

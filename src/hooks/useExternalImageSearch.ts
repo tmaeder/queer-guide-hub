@@ -48,10 +48,11 @@ export interface UseExternalImageSearchReturn {
   clearResults: () => void;
 }
 
+// A detached element still belongs to the live document, so `innerHTML` on it
+// fetches images and fires their handlers: `<img src=x onerror=…>` in a
+// Wikipedia snippet ran. A DOMParser document is inert.
 function stripHtml(html: string): string {
-  const div = document.createElement('div');
-  div.innerHTML = html;
-  return div.textContent || div.innerText || '';
+  return new DOMParser().parseFromString(html, 'text/html').body.textContent || '';
 }
 
 export function useExternalImageSearch(): UseExternalImageSearchReturn {
@@ -91,7 +92,7 @@ export function useExternalImageSearch(): UseExternalImageSearchReturn {
       if (page === 1) {
         setResults(mapped);
       } else {
-        setResults(prev => [...prev, ...mapped]);
+        setResults((prev) => [...prev, ...mapped]);
       }
     } catch (err) {
       console.error('Pexels/Unsplash search error:', err);
@@ -121,9 +122,7 @@ export function useExternalImageSearch(): UseExternalImageSearchReturn {
         origin: '*',
       });
 
-      const resp = await fetch(
-        `https://commons.wikimedia.org/w/api.php?${params.toString()}`,
-      );
+      const resp = await fetch(`https://commons.wikimedia.org/w/api.php?${params.toString()}`);
 
       if (!resp.ok) {
         throw new Error(`Wikimedia API error: ${resp.status}`);

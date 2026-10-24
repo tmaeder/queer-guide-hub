@@ -15,7 +15,7 @@ import { useParams } from 'react-router';
 import { TrackLoader } from '@/components/transit/TrackLoader';
 
 import { Badge } from '@/components/ui/badge';
-import DOMPurify from 'dompurify';
+import { sanitizeDefault } from '@/lib/sanitize';
 import { useCMSPage } from '@/hooks/useCMSPage';
 import { useDetailMeta } from '@/hooks/useDetailMeta';
 import { PageContainer } from '@/components/layout/PageContainer';
@@ -54,7 +54,7 @@ export default function Page() {
     );
   }
 
-  const sanitizedHtml = page.body_html ? DOMPurify.sanitize(page.body_html) : '';
+  const sanitizedHtml = page.body_html ? sanitizeDefault(page.body_html) : '';
 
   return (
     <PageContainer>
