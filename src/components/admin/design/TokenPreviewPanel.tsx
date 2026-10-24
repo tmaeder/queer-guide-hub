@@ -164,7 +164,7 @@ export function TokenPreviewPanel({ draft }: { draft: BrandingDoc }) {
         <p className="text-2xs uppercase tracking-wide text-muted-foreground">
           Live preview (draft)
         </p>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <div className="flex overflow-hidden rounded-element bg-muted">
             {(['desktop', 'mobile'] as const).map((w) => (
               <Button

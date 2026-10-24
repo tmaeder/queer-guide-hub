@@ -95,60 +95,67 @@ export function StoriesKanban({ grouped, adminById, onStoryClick }: Props) {
           </>
         )}
       </div>
-      <div
-        className="grid gap-4 grid-cols-1"
-        style={{ gridTemplateColumns: `repeat(${storyColumns.length}, minmax(0,1fr))` }}
-      >
-        {storyColumns.map((col) => {
-          const items = grouped[col.id] ?? [];
-          return (
-            <div key={col.id} className="min-w-0">
-              <div
-                className="flex items-center gap-2 mb-4 px-2 py-1.5"
-                style={{
-                  backgroundColor: `color-mix(in srgb, ${col.color} 9%, transparent)`,
-                  borderRadius: 'var(--radius-element)',
-                }}
-              >
-                <p className="text-sm font-bold" style={{ color: col.color, letterSpacing: 0.3 }}>
-                  {col.label}
-                </p>
-                <span className="text-2xs text-muted-foreground">{items.length}</span>
-              </div>
+      {/* Phones scroll the board sideways with readable columns instead of
+          squeezing every column into a ~50px strip; from md up the columns
+          share the width exactly as before. */}
+      <div className="overflow-x-auto">
+        <div
+          className="grid gap-4 grid-cols-1 [--kanban-col-min:15rem] md:[--kanban-col-min:0px]"
+          style={{
+            gridTemplateColumns: `repeat(${storyColumns.length}, minmax(var(--kanban-col-min),1fr))`,
+          }}
+        >
+          {storyColumns.map((col) => {
+            const items = grouped[col.id] ?? [];
+            return (
+              <div key={col.id} className="min-w-0">
+                <div
+                  className="flex items-center gap-2 mb-4 px-2 py-1.5"
+                  style={{
+                    backgroundColor: `color-mix(in srgb, ${col.color} 9%, transparent)`,
+                    borderRadius: 'var(--radius-element)',
+                  }}
+                >
+                  <p className="text-sm font-bold" style={{ color: col.color, letterSpacing: 0.3 }}>
+                    {col.label}
+                  </p>
+                  <span className="text-2xs text-muted-foreground">{items.length}</span>
+                </div>
 
-              <div className="flex flex-col gap-2">
-                {items.length === 0 && (
-                  <span
-                    className="text-xs2 text-muted-foreground py-6 text-center"
-                    style={{ opacity: 0.5 }}
-                  >
-                    —
-                  </span>
-                )}
-                {items.map((story) => {
-                  const run = latest?.runByStory[story.id] ?? null;
-                  const retest = run ? (latest?.retestByRun[run.id] ?? null) : null;
-                  const isSelected = selected.has(story.id);
-                  return (
-                    <StoryCard
-                      key={story.id}
-                      story={story}
-                      assignee={story.assignee_id ? (adminById[story.assignee_id] ?? null) : null}
-                      latestRun={run}
-                      latestRetest={retest}
-                      selectMode={selectMode}
-                      selected={isSelected}
-                      onClick={() => {
-                        if (selectMode) toggleSelected(story.id);
-                        else onStoryClick(story);
-                      }}
-                    />
-                  );
-                })}
+                <div className="flex flex-col gap-2">
+                  {items.length === 0 && (
+                    <span
+                      className="text-xs2 text-muted-foreground py-6 text-center"
+                      style={{ opacity: 0.5 }}
+                    >
+                      —
+                    </span>
+                  )}
+                  {items.map((story) => {
+                    const run = latest?.runByStory[story.id] ?? null;
+                    const retest = run ? (latest?.retestByRun[run.id] ?? null) : null;
+                    const isSelected = selected.has(story.id);
+                    return (
+                      <StoryCard
+                        key={story.id}
+                        story={story}
+                        assignee={story.assignee_id ? (adminById[story.assignee_id] ?? null) : null}
+                        latestRun={run}
+                        latestRetest={retest}
+                        selectMode={selectMode}
+                        selected={isSelected}
+                        onClick={() => {
+                          if (selectMode) toggleSelected(story.id);
+                          else onStoryClick(story);
+                        }}
+                      />
+                    );
+                  })}
+                </div>
               </div>
-            </div>
-          );
-        })}
+            );
+          })}
+        </div>
       </div>
     </div>
   );
