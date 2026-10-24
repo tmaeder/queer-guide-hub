@@ -131,6 +131,12 @@ function StationNode({
 }) {
   const { t } = useTranslation();
   const interchange = station.id === 'interchange';
+  // The outermost plates align to their station instead of centring on it,
+  // so a plate never hangs past the page column on wide screens.
+  const xs = STATIONS.map((s) => s.x);
+  const atMin = station.x === Math.min(...xs);
+  const atMax = station.x === Math.max(...xs);
+  const edge = (rtl ? atMax : atMin) ? 'left' : (rtl ? atMin : atMax) ? 'right' : undefined;
   // `findActiveIntent('/')` is undefined, so nothing is ever current on the
   // homepage. Kept because it is correct-by-construction wherever this map
   // gets reused, and it costs one attribute.
@@ -190,6 +196,8 @@ function StationNode({
           'intent-station-link flex min-w-0 flex-1 flex-col gap-1 bg-background/95 p-4 no-underline rounded-container',
           'lg:absolute lg:left-1/2 lg:w-36 lg:flex-none lg:-translate-x-1/2 xl:w-44',
           station.lane === 'above' ? 'lg:bottom-full lg:mb-4' : 'lg:top-full lg:mt-4',
+          edge === 'left' && 'lg:left-0 lg:translate-x-0',
+          edge === 'right' && 'lg:left-auto lg:right-0 lg:translate-x-0',
         )}
       >
         {interchange && (

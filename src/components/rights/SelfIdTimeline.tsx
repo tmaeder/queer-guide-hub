@@ -77,7 +77,7 @@ export function SelfIdTimeline({ years }: { years: TimelineYear[] }) {
               onFocus={() => setSelected(col.year)}
               onClick={() => setSelected(col.year)}
               className={cn(
-                'group flex h-full flex-1 flex-col justify-end',
+                'group flex h-full min-w-0 flex-1 flex-col justify-end',
                 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background',
               )}
             >

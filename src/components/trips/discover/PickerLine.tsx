@@ -1,5 +1,5 @@
 import { cn } from '@/lib/utils';
-import { PAGE_BLEED, PAGE_GUTTER } from '@/components/layout/PageContainer';
+import { PAGE_BLEED, PAGE_BLEED_GUTTER } from '@/components/layout/PageContainer';
 import { PICKER_H, horizontalLine, pct } from '@/components/transit/lineGeometry';
 import { TRACK_BG, type Track } from '@/components/transit/routeBulletMap';
 
@@ -82,7 +82,7 @@ export function PickerLine({
     <div
       className={cn(
         PAGE_BLEED,
-        PAGE_GUTTER,
+        PAGE_BLEED_GUTTER,
         'overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden',
         className,
       )}
