@@ -71,31 +71,30 @@ function writeStorage(key: string, value: string | null) {
 }
 
 export function ActiveTripProvider({ children }: { children: React.ReactNode }) {
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const { data: trips } = useTrips();
 
   const [pinnedId, setPinnedId] = useState<string | null>(() => readStorage(STORAGE_KEY));
   const [dismissedId, setDismissedId] = useState<string | null>(() => readStorage(DISMISS_KEY));
   const [dockOpen, setDockOpen] = useState(false);
 
-  useEffect(() => {
-    if (!user) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect -- effect synchronizes state with external props/data; React Compiler can't infer the sync direction. Documented exemption from the eslint.config.js staged-ratchet plan.
+  // Sign-out clears the pin. Gated on auth having resolved: `user` is also
+  // null while the session restores, and clearing then lost the pin on reload.
+  const signedOut = !authLoading && !user;
+  const [prevSignedOut, setPrevSignedOut] = useState(false);
+  if (signedOut !== prevSignedOut) {
+    setPrevSignedOut(signedOut);
+    if (signedOut) {
       setPinnedId(null);
       setDismissedId(null);
-      writeStorage(STORAGE_KEY, null);
-      writeStorage(DISMISS_KEY, null);
     }
-  }, [user]);
+  }
+  // A dismissed trip that no longer exists is forgotten.
+  if (dismissedId && trips && !trips.some((t) => t.id === dismissedId)) setDismissedId(null);
 
-  useEffect(() => {
-    if (!dismissedId || !trips) return;
-    if (!trips.some((t) => t.id === dismissedId)) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect -- effect synchronizes state with external props/data; React Compiler can't infer the sync direction. Documented exemption from the eslint.config.js staged-ratchet plan.
-      setDismissedId(null);
-      writeStorage(DISMISS_KEY, null);
-    }
-  }, [dismissedId, trips]);
+  // Storage mirrors state; the effects are the only writers.
+  useEffect(() => writeStorage(STORAGE_KEY, pinnedId), [pinnedId]);
+  useEffect(() => writeStorage(DISMISS_KEY, dismissedId), [dismissedId]);
 
   const activeTrip = useMemo<TripListItem | null>(() => {
     if (!user) return null;
@@ -109,21 +108,15 @@ export function ActiveTripProvider({ children }: { children: React.ReactNode }) 
 
   const setActiveTripId = useCallback((id: string | null) => {
     setPinnedId(id);
-    writeStorage(STORAGE_KEY, id);
     setDismissedId(null);
-    writeStorage(DISMISS_KEY, null);
   }, []);
 
   const dismiss = useCallback(() => {
     if (!activeTrip) return;
     setDismissedId(activeTrip.id);
-    writeStorage(DISMISS_KEY, activeTrip.id);
   }, [activeTrip]);
 
-  const undismiss = useCallback(() => {
-    setDismissedId(null);
-    writeStorage(DISMISS_KEY, null);
-  }, []);
+  const undismiss = useCallback(() => setDismissedId(null), []);
 
   const value = useMemo<ActiveTripContextValue>(
     () => ({
