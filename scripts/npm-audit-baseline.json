@@ -1,0 +1,11 @@
+{
+  "_comment": "Known high/critical advisories in production deps. Shrink-only: scripts/check-npm-audit.mjs fails when an entry stops appearing. Never add an entry to make CI pass — upgrade or override the dependency instead.",
+  "advisories": [
+    {
+      "id": "https://github.com/advisories/GHSA-mrhx-c7xc-m3w5",
+      "package": "zod",
+      "severity": "high",
+      "reason": "zod <4.6.6 nested under @atproto/* (Bluesky OAuth client). No fix available upstream as of 2026-10-24."
+    }
+  ]
+}

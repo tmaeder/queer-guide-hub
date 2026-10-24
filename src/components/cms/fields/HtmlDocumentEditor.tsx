@@ -1,5 +1,5 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
-import DOMPurify from 'dompurify';
+import { sanitizeEditableDocument } from '@/lib/sanitize';
 
 interface Props {
   value: string;
@@ -12,23 +12,7 @@ const POLICY =
   "default-src 'none'; img-src https: data:; style-src 'unsafe-inline' https:; font-src https:;";
 
 function previewDocument(value: string): string {
-  const clean = DOMPurify.sanitize(value, {
-    WHOLE_DOCUMENT: true,
-    ADD_TAGS: ['style'],
-    FORBID_TAGS: [
-      'script',
-      'iframe',
-      'object',
-      'embed',
-      'form',
-      'input',
-      'button',
-      'textarea',
-      'select',
-      'base',
-      'meta',
-    ],
-  });
+  const clean = sanitizeEditableDocument(value, true);
   const document = new DOMParser().parseFromString(clean, 'text/html');
   const policy = document.createElement('meta');
   policy.httpEquiv = 'Content-Security-Policy';
@@ -68,23 +52,10 @@ export function HtmlDocumentEditor({ value, onChange, label, editable = true }: 
       const next = /<!doctype|<(?:html|head|body)[\s>]/i.test(value)
         ? '<!DOCTYPE html>' + copy.outerHTML
         : copiedBody.innerHTML;
-      const sanitized = DOMPurify.sanitize(next, {
-        WHOLE_DOCUMENT: /<!doctype|<(?:html|head|body)[\s>]/i.test(value),
-        ADD_TAGS: ['style'],
-        FORBID_TAGS: [
-          'script',
-          'iframe',
-          'object',
-          'embed',
-          'form',
-          'input',
-          'button',
-          'textarea',
-          'select',
-          'base',
-          'meta',
-        ],
-      });
+      const sanitized = sanitizeEditableDocument(
+        next,
+        /<!doctype|<(?:html|head|body)[\s>]/i.test(value),
+      );
       lastEmitted.current = sanitized;
       change.current?.(sanitized);
     });

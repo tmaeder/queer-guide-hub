@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Reply, Trash2, Archive, Download } from 'lucide-react';
 import { format } from 'date-fns';
-import DOMPurify from 'dompurify';
+import { sanitizeInboundEmail } from '@/lib/sanitize';
 import type { MailboxEmail } from '@/hooks/useMailbox';
 import { EmailDeliveryStatus, type EmailDeliveryState } from './EmailDeliveryStatus';
 
@@ -16,45 +16,10 @@ interface EmailViewProps {
 }
 
 export const EmailView = ({ email, onReply, onDelete, onArchive, delivery }: EmailViewProps) => {
-  const sanitizedHtml = email.body_html
-    ? DOMPurify.sanitize(email.body_html, {
-        ALLOWED_TAGS: [
-          'p',
-          'br',
-          'strong',
-          'b',
-          'em',
-          'i',
-          'u',
-          'a',
-          'ul',
-          'ol',
-          'li',
-          'h1',
-          'h2',
-          'h3',
-          'h4',
-          'h5',
-          'h6',
-          'blockquote',
-          'pre',
-          'code',
-          'img',
-          'table',
-          'thead',
-          'tbody',
-          'tr',
-          'th',
-          'td',
-          'div',
-          'span',
-          'hr',
-        ],
-        ALLOWED_ATTR: ['href', 'src', 'alt', 'style', 'class', 'target', 'rel'],
-      })
-    : null;
+  const sanitizedHtml = email.body_html ? sanitizeInboundEmail(email.body_html) : null;
 
-  const attachments = (email.attachments as Array<{ name: string; url: string; size?: number }>) || [];
+  const attachments =
+    (email.attachments as Array<{ name: string; url: string; size?: number }>) || [];
 
   return (
     <Card className="overflow-hidden">
@@ -62,17 +27,11 @@ export const EmailView = ({ email, onReply, onDelete, onArchive, delivery }: Ema
         <h6 className="text-base font-bold mb-2 break-words">{email.subject}</h6>
         <div className="flex justify-between items-start flex-wrap gap-2">
           <div className="min-w-0 break-words">
-            <p className="text-sm font-semibold">
-              {email.from_name || email.from_address}
-            </p>
+            <p className="text-sm font-semibold">{email.from_name || email.from_address}</p>
             {email.from_name && (
-              <span className="text-xs text-muted-foreground">
-                &lt;{email.from_address}&gt;
-              </span>
+              <span className="text-xs text-muted-foreground">&lt;{email.from_address}&gt;</span>
             )}
-            <span className="text-xs text-muted-foreground block">
-              To: {email.to_address}
-            </span>
+            <span className="text-xs text-muted-foreground block">To: {email.to_address}</span>
           </div>
           <span className="text-xs text-muted-foreground">
             {format(new Date(email.email_date), 'PPp')}
@@ -110,9 +69,7 @@ export const EmailView = ({ email, onReply, onDelete, onArchive, delivery }: Ema
             dangerouslySetInnerHTML={{ __html: sanitizedHtml }}
           />
         ) : (
-          <p className="text-sm whitespace-pre-wrap">
-            {email.body_text || '(No content)'}
-          </p>
+          <p className="text-sm whitespace-pre-wrap">{email.body_text || '(No content)'}</p>
         )}
       </div>
 
@@ -125,9 +82,7 @@ export const EmailView = ({ email, onReply, onDelete, onArchive, delivery }: Ema
               {attachments.map((att, idx) => (
                 <div key={idx} className="flex items-center gap-2 p-2 bg-muted">
                   <Download className="h-4 w-4 text-muted-foreground" />
-                  <p className="text-sm truncate flex-1">
-                    {att.filename || 'attachment'}
-                  </p>
+                  <p className="text-sm truncate flex-1">{att.filename || 'attachment'}</p>
                   <span className="text-xs text-muted-foreground">
                     {att.size_bytes ? `${Math.round(att.size_bytes / 1024)}KB` : ''}
                   </span>
