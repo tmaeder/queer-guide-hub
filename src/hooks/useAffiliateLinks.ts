@@ -1,4 +1,5 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useCallback } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import type { AffiliatePartner } from '@/lib/affiliate';
 import type { Database } from '@/integrations/supabase/types';
@@ -17,30 +18,31 @@ function rowToPartner(row: PartnerRow): AffiliatePartner {
   };
 }
 
-export function useAffiliateLinks() {
-  const [partners, setPartners] = useState<AffiliatePartner[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+const NO_PARTNERS: AffiliatePartner[] = [];
 
-  const fetchPartners = useCallback(async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      const { data, error: err } = await supabase
+export function useAffiliateLinks() {
+  const query = useQuery({
+    queryKey: ['affiliate-partners'],
+    queryFn: async () => {
+      const { data, error } = await supabase
         .from('affiliate_partners')
         .select('*')
         .order('partner_name');
-      if (err) throw err;
-      setPartners((data ?? []).map(rowToPartner));
-    } catch (e) {
-      setError(e instanceof Error ? e.message : 'Failed to fetch partners');
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+      if (error) throw error;
+      return (data ?? []).map(rowToPartner);
+    },
+  });
+  const { refetch } = query;
+  const fetchPartners = useCallback(async () => {
+    await refetch();
+  }, [refetch]);
 
   const createPartner = useCallback(async (partner: PartnerInsert) => {
-    const { data, error } = await supabase.from('affiliate_partners').insert(partner).select().single();
+    const { data, error } = await supabase
+      .from('affiliate_partners')
+      .insert(partner)
+      .select()
+      .single();
     if (error) throw error;
     return data;
   }, []);
@@ -61,8 +63,13 @@ export function useAffiliateLinks() {
     if (error) throw error;
   }, []);
 
-  // eslint-disable-next-line react-hooks/set-state-in-effect -- effect synchronizes state with external props/data; React Compiler can't infer the sync direction. Documented exemption from the eslint.config.js staged-ratchet plan.
-  useEffect(() => { fetchPartners(); }, [fetchPartners]);
-
-  return { partners, loading, error, fetchPartners, createPartner, updatePartner, deletePartner };
+  return {
+    partners: query.data ?? NO_PARTNERS,
+    loading: query.isLoading,
+    error: query.error ? query.error.message || 'Failed to fetch partners' : null,
+    fetchPartners,
+    createPartner,
+    updatePartner,
+    deletePartner,
+  };
 }
