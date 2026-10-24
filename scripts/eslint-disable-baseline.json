@@ -1,5 +1,5 @@
 {
-  "total": 492,
+  "total": 466,
   "files": {
     "src/components/admin/CloudflareDashboard.tsx": {
       "react-hooks/set-state-in-effect": 1
@@ -611,15 +611,7 @@
       "react-hooks/set-state-in-effect": 1
     },
     "src/hooks/useEventFilters.ts": {
-      "react-hooks/exhaustive-deps": 8,
-      "react-hooks/set-state-in-effect": 1
-    },
-    "src/hooks/useEvents.tsx": {
-      "react-hooks/exhaustive-deps": 1,
-      "react-hooks/set-state-in-effect": 2
-    },
-    "src/hooks/useExploreMapData.ts": {
-      "react-hooks/refs": 1
+      "react-hooks/exhaustive-deps": 1
     },
     "src/hooks/useFavorites.tsx": {
       "react-hooks/exhaustive-deps": 2,
@@ -687,10 +679,6 @@
     },
     "src/hooks/useNearbyMapPoints.ts": {
       "@typescript-eslint/no-explicit-any": 1
-    },
-    "src/hooks/useNews.tsx": {
-      "react-hooks/exhaustive-deps": 1,
-      "react-hooks/set-state-in-effect": 3
     },
     "src/hooks/usePageFetchers.ts": {
       "react-hooks/set-state-in-effect": 1
@@ -774,9 +762,6 @@
       "react-hooks/exhaustive-deps": 1,
       "react-hooks/set-state-in-effect": 1
     },
-    "src/hooks/useVenues.tsx": {
-      "react-hooks/set-state-in-effect": 2
-    },
     "src/hooks/useViewportPoints.ts": {
       "react-hooks/exhaustive-deps": 1,
       "react-hooks/refs": 2
@@ -839,14 +824,8 @@
       "queerguide/no-supabase-from-in-pages": 1,
       "react-hooks/immutability": 1
     },
-    "src/pages/CityDetail.tsx": {
-      "react-hooks/refs": 1
-    },
     "src/pages/CountryDetail.parts.tsx": {
       "@typescript-eslint/no-explicit-any": 8
-    },
-    "src/pages/CountryDetail.tsx": {
-      "react-hooks/refs": 1
     },
     "src/pages/EntityDetail.tsx": {
       "react-hooks/exhaustive-deps": 2
@@ -875,7 +854,7 @@
       "react-hooks/purity": 1
     },
     "src/pages/NewsArchive.tsx": {
-      "react-hooks/exhaustive-deps": 4
+      "react-hooks/exhaustive-deps": 2
     },
     "src/pages/NewsDetail.parts.tsx": {
       "react-hooks/set-state-in-effect": 2
@@ -912,9 +891,6 @@
     "src/pages/ProfessionDetail.tsx": {
       "react-hooks/set-state-in-effect": 1
     },
-    "src/pages/QueerVillageDetail.tsx": {
-      "react-hooks/refs": 2
-    },
     "src/pages/RedirectMemberWorkspace.tsx": {
       "react-hooks/set-state-in-effect": 1
     },
@@ -933,8 +909,7 @@
       "react-hooks/exhaustive-deps": 1
     },
     "src/pages/Venues.tsx": {
-      "react-hooks/exhaustive-deps": 3,
-      "react-hooks/set-state-in-effect": 1
+      "react-hooks/exhaustive-deps": 2
     },
     "src/pages/__tests__/PersonalityDetail.parts.test.tsx": {
       "@typescript-eslint/no-explicit-any": 1

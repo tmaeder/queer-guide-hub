@@ -1,11 +1,12 @@
 import { EventTypeLegend } from '@/components/events/EventTypeMark';
-import { lazy, Suspense, useState } from 'react';
+import { lazy, Suspense, useMemo, useState } from 'react';
+import { dedupeCitiesByNormalized } from '@/utils/dateRange';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { EventsHeroSpotlight } from '@/components/events/EventsHeroSpotlight';
 import { SmartEmptyState } from '@/components/events/SmartEmptyState';
 import { CoverageNote } from '@/components/intent/CoverageNote';
 import { useEventWindowCounts } from '@/hooks/useEventWindowCounts';
-import { useEvents } from '@/hooks/useEvents';
+import { updateEventAttendance, useEventsFeed } from '@/hooks/useEvents';
 import { useEventFilters } from '@/hooks/useEventFilters';
 import { useMeta } from '@/hooks/useMeta';
 import { EventCard } from '@/components/events/EventCard';
@@ -36,17 +37,33 @@ type Event = Database['public']['Tables']['events']['Row'];
 const Events = () => {
   const { t } = useTranslation();
   const navigate = useLocalizedNavigate();
+  const f = useEventFilters();
+  // Re-run the list (Enter, Apply, retry, RSVP refresh): commit a pending
+  // search if there is one, else refetch the same request.
   const {
     events,
     loading,
     error,
     hasMore,
     datasetTotal,
-    totalCount,
-    fetchEvents,
-    updateAttendance,
+    loadMore,
+    loadingMore,
     loadingTimedOut,
-  } = useEvents(false);
+    refetch,
+  } = useEventsFeed(f.request);
+  const rerun = () => {
+    if (!f.commitSearch()) refetch();
+  };
+  const availableCities = useMemo(
+    () => dedupeCitiesByNormalized(events.map((event) => event.city).filter(Boolean) as string[]),
+    [events],
+  );
+  // A new request replaces the list; LoadMore resets its auto-load budget on it.
+  const listKey = JSON.stringify(f.request);
+  // Never populated: the old hook did not return a filtered total either, so
+  // the result count falls back to the rows on screen. Kept as an explicit
+  // undefined until a header needs the real number.
+  const totalCount: number | undefined = undefined;
   const { user } = useAuth();
   const { toast } = useToast();
 
@@ -63,9 +80,6 @@ const Events = () => {
       isPartOf: { '@type': 'WebSite', name: 'Queer Guide', url: 'https://queer.guide' },
     },
   });
-
-  const f = useEventFilters(fetchEvents, events);
-  const { PAGE_SIZE } = f;
 
   // Scoped to the city filter when exactly one is selected, so the chip counts
   // describe the set the reader is actually looking at rather than the globe.
@@ -85,7 +99,7 @@ const Events = () => {
       });
       return;
     }
-    const { error } = await updateAttendance(eventId, status);
+    const { error } = await updateEventAttendance(eventId, status);
     if (error) {
       toast({
         title: 'Error',
@@ -100,7 +114,7 @@ const Events = () => {
       // Refresh to show updated attendance. Through the filter handler, not a
       // bare fetchEvents({}) — that reran page 1 UNFILTERED, so RSVPing to an
       // event dropped the reader's filters and replaced the list.
-      f.handleFiltersChange();
+      rerun();
     }
   };
   const handleViewDetails = (event: Event) => {
@@ -134,7 +148,7 @@ const Events = () => {
           <EventsControlBar
             search={f.search}
             onSearchChange={f.setSearch}
-            onSearchSubmit={f.handleFiltersChange}
+            onSearchSubmit={rerun}
             activePreset={f.activePreset}
             /* Counts are passed so a window that would return nothing is
                disabled and labelled rather than left as a clickable promise;
@@ -154,7 +168,7 @@ const Events = () => {
         open={f.showFilters}
         onOpenChange={f.setShowFilters}
         resultCount={totalCount ?? events.length}
-        availableCities={f.availableCities}
+        availableCities={availableCities}
         cities={f.cities}
         setCities={f.setCities}
         eventTypes={f.eventTypes}
@@ -176,7 +190,7 @@ const Events = () => {
         ageRestriction={f.ageRestriction}
         setAgeRestriction={f.setAgeRestriction}
         hasActiveFilters={f.hasActiveFilters}
-        onApply={f.handleFiltersChange}
+        onApply={rerun}
         onClear={f.clearFilters}
       />
 
@@ -272,7 +286,7 @@ const Events = () => {
         {/* Retry re-runs the CURRENT filter set. A bare `fetchEvents()` here
             retried with no filters at all, so recovering from an error quietly
             swapped the reader's filtered list for an unfiltered one. */}
-        {error && !loading && <ErrorState message={error} onRetry={f.handleFiltersChange} />}
+        {error && !loading && <ErrorState message={error} onRetry={rerun} />}
 
         {/* Loading State */}
         {loading && (
@@ -282,7 +296,7 @@ const Events = () => {
             ))}
           </div>
         )}
-        {loading && loadingTimedOut && <LoadingTimeout onRetry={f.handleFiltersChange} />}
+        {loading && loadingTimedOut && <LoadingTimeout onRetry={rerun} />}
 
         {/* Empty State */}
         {!loading &&
@@ -348,7 +362,7 @@ const Events = () => {
                   ? () => {
                       f.setStartDate(undefined);
                       f.setEndDate(undefined);
-                      f.handleFiltersChange();
+                      rerun();
                     }
                   : undefined
               }
@@ -393,22 +407,12 @@ const Events = () => {
         {events.length > 0 && (
           <LoadMore
             hasMore={hasMore}
-            loading={loading}
-            resetKey={f.listGeneration}
-            onLoadMore={async () => {
-              const nextPage = f.page + 1;
-              f.setPage(nextPage);
-              // The filter set is MANDATORY here, not a nicety: `append: true`
-              // means whatever comes back is added to the list on screen. This
-              // passed `{}`, so page 2 was an unfiltered query whose rows were
-              // appended under a filtered page 1 — filter to one city, click
-              // Load more, and events from everywhere appear below the fold.
-              await fetchEvents(f.buildFilters(), {
-                page: nextPage,
-                pageSize: PAGE_SIZE,
-                append: true,
-              });
-            }}
+            loading={loadingMore}
+            resetKey={listKey}
+            // The next page of the request that built this list, never a fresh
+            // filter set: appending page 2 of a different query is how an
+            // unfiltered page once landed under a filtered page 1.
+            onLoadMore={loadMore}
           />
         )}
 
