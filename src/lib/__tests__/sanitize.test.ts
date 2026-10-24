@@ -57,15 +57,23 @@ describe('profile-specific policy', () => {
     expect(sanitizeHighlight('<em class="x">a</em><strong>b</strong>')).toBe('<em>a</em>b');
   });
 
-  it('sanitizeUserContent applies the caller allowlist, https/relative links only', () => {
+  it('sanitizeUserContent keeps text, unwraps disallowed tags, https/relative links only', () => {
     const out = sanitizeUserContent(
-      '<a href="https://x.org" target="_blank">a</a><a href="http://x.org">b</a><div>c</div>',
-      ['a'],
+      '<p>hello <strong>world</strong></p><a href="https://x.org" target="_blank">a</a><a href="http://x.org">b</a><div>c</div>',
+      ['p', 'strong', 'a'],
       ['href', 'target'],
     );
-    // Pinned pre-existing behaviour: DOMPurify drops `target`, and KEEP_CONTENT:false
-    // keeps #text out of the allowlist, so element text is removed too.
-    expect(out).toBe('<a href="https://x.org"></a><a></a>');
+    expect(out).toBe('<p>hello <strong>world</strong></p><a href="https://x.org">a</a><a>b</a>c');
+  });
+
+  it('sanitizeUserContent drops the content of active elements', () => {
+    expect(
+      sanitizeUserContent(
+        '<script>alert(1)</script><style>p{}</style><iframe>x</iframe>ok',
+        ['p'],
+        [],
+      ),
+    ).toBe('ok');
   });
 
   it('sanitizeArticle keeps heading ids, sanitizeDefault drops nothing structural', () => {

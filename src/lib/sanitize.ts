@@ -85,7 +85,8 @@ const run = (html: string, config: Config): string => DOMPurify.sanitize(html, c
 export const sanitizeToText = (html: string): string =>
   run(html, { ALLOWED_TAGS: [], ALLOWED_ATTR: [] });
 
-/** Posts and comments: a caller-chosen inline allowlist, https/relative links only. */
+/** Posts and comments: a caller-chosen inline allowlist, https/relative links only.
+ *  Disallowed elements are unwrapped to their text. */
 export function sanitizeUserContent(
   html: string,
   allowedTags: string[] = ['p', 'br', 'strong', 'em', 'u'],
@@ -101,7 +102,10 @@ export function sanitizeUserContent(
     ALLOWED_URI_REGEXP: /^(?:https:|\/|#)/i,
     SANITIZE_DOM: true,
     SANITIZE_NAMED_PROPS: true,
-    KEEP_CONTENT: false,
+    // true, not false: DOMPurify only allows #text when KEEP_CONTENT is on, so
+    // `false` stripped every word of any post or comment containing markup.
+    // script/style/iframe content is still dropped via its FORBID_CONTENTS.
+    KEEP_CONTENT: true,
   }) as string;
 }
 
