@@ -1,5 +1,5 @@
 {
-  "total": 498,
+  "total": 490,
   "files": {
     "src/components/admin/CloudflareDashboard.tsx": {
       "react-hooks/set-state-in-effect": 1
@@ -614,8 +614,7 @@
       "react-hooks/set-state-in-effect": 1
     },
     "src/hooks/useEventFilters.ts": {
-      "react-hooks/exhaustive-deps": 8,
-      "react-hooks/set-state-in-effect": 1
+      "react-hooks/exhaustive-deps": 1
     },
     "src/hooks/useExploreMapData.ts": {
       "react-hooks/refs": 1

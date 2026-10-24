@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { hashKey, useInfiniteQuery, useQuery } from '@tanstack/react-query';
 import { useAuth } from '@/hooks/useAuth';
 import { mirrorRsvp } from '@/hooks/blueskyActivity';
@@ -429,36 +429,27 @@ export async function updateEventAttendance(
   }
 }
 
-interface FeedRequest {
+export interface FeedRequest {
   filters: EventFilters;
   paged: boolean;
   pageSize: number;
 }
 
-const FEED_PAGE_SIZE = 24;
-
 /**
  * The paged /events feed on useInfiniteQuery.
  *
- * `useEventFilters` still decides WHICH request runs and when — presets, near
- * me and the timeline viewport each build their own filter set — and calls
- * `fetchEvents(filters, { page: 1, pageSize })` to issue it. That call now just
- * records the request; the query key is the request, so:
- *
- * - the newest request wins by construction, which is what the hand-rolled
- *   request-sequence counter used to enforce;
- * - "Load more" (`loadMore`) asks for the next page of the SAME request, so a
- *   page can never be appended under a list built from different filters;
- * - issuing the identical request again (RSVP refresh, error retry) refetches.
+ * `request` is derived from filter state by `useEventFilters`; the query key
+ * is the request, so the newest request wins by construction, and "Load more"
+ * (`loadMore`) asks for the next page of the SAME request — a page can never
+ * be appended under a list built from different filters. `refetch` re-runs the
+ * current request (RSVP refresh, retry). `null` stays idle.
  *
  * Keyed on the viewer: events are safety-gated and the cache is not cleared
  * on sign-out.
  */
-export function useEventsFeed() {
+export function useEventsFeed(request: FeedRequest | null) {
   const { user } = useAuth();
   const viewer = user?.id ?? 'anon';
-  const [request, setRequest] = useState<FeedRequest | null>(null);
-  const requestRef = useRef<FeedRequest | null>(null);
 
   const query = useInfiniteQuery({
     queryKey: ['events-feed', viewer, request],
@@ -489,25 +480,9 @@ export function useEventsFeed() {
     return Array.from(new Map(merged.map((e) => [e.id, e])).values());
   }, [data]);
 
-  const fetchEvents = useCallback(
-    async (filters?: EventFilters, options?: { page?: number; pageSize?: number }) => {
-      const next: FeedRequest = {
-        filters: filters ?? {},
-        paged: typeof options?.page === 'number',
-        pageSize: options?.pageSize ?? FEED_PAGE_SIZE,
-      };
-      // A ref, not the state: two calls in one tick must compare against each
-      // other, and the refetch must not run inside a state updater.
-      const prev = requestRef.current;
-      if (prev && hashKey([prev]) === hashKey([next])) {
-        void refetch();
-        return;
-      }
-      requestRef.current = next;
-      setRequest(next);
-    },
-    [refetch],
-  );
+  const rerun = useCallback(() => {
+    void refetch();
+  }, [refetch]);
 
   const loadMore = useCallback(async () => {
     await fetchNextPage();
@@ -543,8 +518,8 @@ export function useEventsFeed() {
     error: query.error ? query.error.message || 'Failed to fetch events' : null,
     hasMore: query.hasNextPage,
     datasetTotal,
-    fetchEvents,
     loadMore,
+    refetch: rerun,
   };
 }
 

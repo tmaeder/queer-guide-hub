@@ -36,7 +36,20 @@ vi.mock('@/utils/fetchWithRetry', () => ({
   queryWithRetry: (fn: () => Promise<unknown>) => fn(),
 }));
 
-import { useEventsFeed } from '../useEvents';
+import { useEventsFeed, type EventFilters, type FeedRequest } from '../useEvents';
+
+const req = (filters: EventFilters, paged = false, pageSize = 24): FeedRequest => ({
+  filters,
+  paged,
+  pageSize,
+});
+
+function renderFeed(initial: FeedRequest | null) {
+  return renderHook(({ request }) => useEventsFeed(request), {
+    wrapper: TestProviders,
+    initialProps: { request: initial },
+  });
+}
 
 function deferred<T>() {
   let resolve!: (v: T) => void;
@@ -71,14 +84,9 @@ describe('useEventsFeed', () => {
       return args?.p_city === 'StaleCity' ? stale.promise : fresh.promise;
     });
 
-    const { result } = renderHook(() => useEventsFeed(), { wrapper: TestProviders });
-    act(() => {
-      void result.current.fetchEvents({ city: 'StaleCity' });
-    });
+    const { result, rerender } = renderFeed(req({ city: 'StaleCity' }));
     await waitFor(() => expect(searchCalls()).toHaveLength(1));
-    act(() => {
-      void result.current.fetchEvents({ city: 'FreshCity' });
-    });
+    rerender({ request: req({ city: 'FreshCity' }) });
     await waitFor(() => expect(searchCalls()).toHaveLength(2));
     expect(result.current.loading).toBe(true);
 
@@ -103,10 +111,7 @@ describe('useEventsFeed', () => {
       return Promise.resolve({ data: ids.map((id) => row(id, 4)), error: null });
     });
 
-    const { result } = renderHook(() => useEventsFeed(), { wrapper: TestProviders });
-    act(() => {
-      void result.current.fetchEvents({ cityId: 'zrh' }, { page: 1, pageSize: 2 });
-    });
+    const { result } = renderFeed(req({ cityId: 'zrh' }, true, 2));
     await waitFor(() => expect(result.current.events.map((e) => e.id)).toEqual(['a', 'b']));
     expect(result.current.hasMore).toBe(true);
 
@@ -122,18 +127,17 @@ describe('useEventsFeed', () => {
     expect(result.current.hasMore).toBe(false);
   });
 
-  it('re-issuing the identical request refetches (RSVP refresh, retry)', async () => {
-    const { result } = renderHook(() => useEventsFeed(), { wrapper: TestProviders });
-    act(() => {
-      void result.current.fetchEvents({ cityId: 'zrh' }, { page: 1 });
-    });
+  it('an equal request is the same query; refetch re-runs it (RSVP refresh, retry)', async () => {
+    const { result, rerender } = renderFeed(req({ cityId: 'zrh' }, true));
     await waitFor(() => expect(searchCalls()).toHaveLength(1));
     await waitFor(() => expect(result.current.loading).toBe(false));
 
-    act(() => {
-      // undefined keys do not make it a different request
-      void result.current.fetchEvents({ cityId: 'zrh', search: undefined }, { page: 1 });
-    });
+    // A new object with undefined keys is not a different request.
+    rerender({ request: req({ cityId: 'zrh', search: undefined }, true) });
+    expect(result.current.loading).toBe(false);
+    expect(searchCalls()).toHaveLength(1);
+
+    act(() => result.current.refetch());
     await waitFor(() => expect(searchCalls()).toHaveLength(2));
   });
 
@@ -143,15 +147,12 @@ describe('useEventsFeed', () => {
         ? Promise.resolve({ data: null, error: new Error('rpc boom') })
         : Promise.resolve({ data: [] }),
     );
-    const { result } = renderHook(() => useEventsFeed(), { wrapper: TestProviders });
-    act(() => {
-      void result.current.fetchEvents({ city: 'Zurich' });
-    });
+    const { result } = renderFeed(req({ city: 'Zurich' }));
     await waitFor(() => expect(result.current.error).toMatch(/rpc boom/));
   });
 
-  it('stays idle until the first request', () => {
-    const { result } = renderHook(() => useEventsFeed(), { wrapper: TestProviders });
+  it('stays idle on a null request', () => {
+    const { result } = renderFeed(null);
     expect(result.current.loading).toBe(false);
     expect(result.current.events).toEqual([]);
     expect(searchCalls()).toHaveLength(0);
