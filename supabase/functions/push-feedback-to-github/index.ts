@@ -12,7 +12,8 @@
  */
 
 import { createClient, SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5';
-import { getCorsHeaders } from '../_shared/supabase-client.ts';
+import { getCorsHeaders, requireAnyRole, STAFF_ROLES } from '../_shared/supabase-client.ts';
+import { safeErrCode } from '../_shared/safe-error.ts';
 
 const REPO_OWNER = 'tmaeder';
 const REPO_NAME = 'queer-guide-hub';
@@ -56,6 +57,9 @@ Deno.serve(async (req) => {
 
   if (req.method === 'OPTIONS') return new Response(null, { headers: corsHeaders });
   if (req.method !== 'POST') return json({ error: 'Method not allowed' }, 405);
+  // Files issues with the repo PAT and rewrites submission data: staff only.
+  const gate = await requireAnyRole(req, getServiceClient(), STAFF_ROLES);
+  if (gate instanceof Response) return gate;
 
   const token = Deno.env.get('GITHUB_PAT');
   if (!token) return json({ error: 'GITHUB_PAT not configured' }, 500);
@@ -77,7 +81,7 @@ Deno.serve(async (req) => {
     .select('id, github_issue_number, github_issue_url, data')
     .eq('id', body.submission_id)
     .maybeSingle();
-  if (error) return json({ error: error.message }, 500);
+  if (error) return json({ error: safeErrCode(error, [], 'push-feedback-to-github') }, 500);
   if (!sub) return json({ error: 'Submission not found' }, 404);
   if (!sub.github_issue_number) return json({ skipped: 'no linked issue' });
 
