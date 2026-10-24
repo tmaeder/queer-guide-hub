@@ -44,15 +44,21 @@ test.describe('@smoke glossary entries do not publish a surname stub', () => {
   // once their stub prose was nulled, so the assertion is the gate's own stamp
   // plus a document-wide absence of the stub.
   for (const slug of [
-    'farber',
-    'kerle',
+    // 'farber' renamed to English by 99991792821333 (batch 7); the German slug redirects here.
+    'dyer',
+    // 'kerle' renamed to English by 99991792821333 (batch 7); the German slug redirects here.
+    'guys',
     // 'kuenstler' was merged into `artist` by 99991792781503 (2026-10-23 Review
     // Queue sheet); its slug now redirects there, so it is no longer an active row.
     'lehrer',
-    'maler',
-    'sprecher',
+    // 'maler' was renamed to `painter` by 99991792821328 (German slug to English);
+    // /tags/maler now redirects there.
+    'painter',
+    // 'sprecher' renamed to English by 99991792821333 (batch 7); the German slug redirects here.
+    'speaker',
     'tanzer',
-    'zeichner',
+    // 'zeichner' renamed to English by 99991792821333 (batch 7); the German slug redirects here.
+    'illustrator',
   ]) {
     test(`/tags/${slug} publishes no surname list and is deindexed`, async ({ request }) => {
       const res = await request.get(`/tags/${slug}`, {
