@@ -1,3 +1,6 @@
+import { contentTypeRegistry, internalContentTypeRegistry } from '@/config/contentTypes';
+import { TableImportDialog } from '@/components/cms/import/TableImportDialog';
+import { writableFields } from '@/lib/tableImport/plan';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useMemo } from 'react';
 import {
@@ -236,6 +239,14 @@ export function AdminDataTable<TData extends { id: string }>({
     enabled: !isLoading && data.length > 0,
   });
 
+  const importConfig =
+    config.importContentType === false
+      ? null
+      : (config.importContentType ??
+        Object.values({ ...contentTypeRegistry, ...internalContentTypeRegistry }).find(
+          (type) => type.tableName === (mutationTable ?? tableName),
+        ));
+
   const handleRefetch = () => {
     refetch();
     onBulkEditSuccess?.();
@@ -252,7 +263,14 @@ export function AdminDataTable<TData extends { id: string }>({
         onClearFilters={clearFilters}
         totalCount={totalCount}
         isFetching={isFetching}
-        toolbarActions={toolbarActions}
+        toolbarActions={
+          <>
+            {toolbarActions}
+            {importConfig && writableFields(importConfig).length > 0 && (
+              <TableImportDialog config={importConfig} onComplete={handleRefetch} />
+            )}
+          </>
+        }
         presets={presets}
         onSavePreset={handleSavePreset}
         onApplyPreset={handleApplyPreset}
