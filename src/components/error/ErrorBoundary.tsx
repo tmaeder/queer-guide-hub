@@ -2,6 +2,7 @@ import { Component, ErrorInfo, ReactNode, useMemo, useState } from 'react';
 import * as Sentry from '@sentry/react';
 import { useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import {
   AlertTriangle,
   RefreshCw,
@@ -13,7 +14,15 @@ import {
   Clock,
 } from 'lucide-react';
 import { fileError } from '@/utils/autoFileError';
+import { healFailedAssets } from '@/utils/assetHeal';
 import { getRecentlyViewed, recentlyViewedHref } from '@/lib/recentlyViewed';
+
+/**
+ * The one error boundary. Every render-time crash goes to Sentry, Umami and
+ * the feedback board (`fileError`); the fallback is either the full-page
+ * recovery screen (default), a caller-supplied node/render function, `null`
+ * (render nothing), or `SectionErrorFallback` for an inline section.
+ */
 
 declare global {
   interface Window {
@@ -82,6 +91,14 @@ export class ErrorBoundary extends Component<Props, State> {
   }
 
   handleRetry = () => {
+    // React.lazy caches a rejected import, so resetting a boundary whose
+    // child failed to load its chunk just re-throws the same error. Once
+    // lazyRetry has given up (retry + gated reload), the only recovery is to
+    // heal the poisoned cache entries and load a fresh document.
+    if (isChunkLoadError(this.state.error)) {
+      void healFailedAssets().finally(reloadFresh);
+      return;
+    }
     this.setState({ hasError: false, error: null, errorInfo: null });
   };
 
@@ -99,6 +116,61 @@ export class ErrorBoundary extends Component<Props, State> {
 
     return this.props.children;
   }
+}
+
+const CHUNK_LOAD_ERROR_RE =
+  /Failed to fetch dynamically imported module|error loading dynamically imported module|Importing a module script failed|Loading chunk .* failed|stale\/partial chunk|'text\/html' is not a valid JavaScript MIME type/i;
+
+function isChunkLoadError(error: Error | null | undefined): boolean {
+  return (
+    !!error && (error.name === 'ChunkLoadError' || CHUNK_LOAD_ERROR_RE.test(error.message ?? ''))
+  );
+}
+
+/** Reload through a throwaway query param so a stale edge-cached document is bypassed (see main.tsx). */
+function reloadFresh() {
+  try {
+    const u = new URL(window.location.href);
+    u.searchParams.set('__fresh', String(Date.now()));
+    window.location.replace(u.toString());
+  } catch {
+    window.location.reload();
+  }
+}
+
+/**
+ * Inline fallback for one section of a page: a failing section degrades to
+ * this card while the rest of the page keeps rendering.
+ */
+export function SectionErrorFallback({
+  label = 'data',
+  message,
+  onRetry,
+}: {
+  label?: string;
+  message?: string | null;
+  onRetry?: () => void;
+}) {
+  return (
+    <Alert variant="destructive">
+      <AlertTriangle className="h-4 w-4" />
+      <AlertTitle>Failed to load {label}</AlertTitle>
+      <AlertDescription className="flex flex-col items-start gap-2">
+        {message && (
+          <details className="text-xs">
+            <summary className="cursor-pointer">Show details</summary>
+            <p className="mt-1 break-all">{message}</p>
+          </details>
+        )}
+        {onRetry && (
+          <Button onClick={onRetry} variant="outline" size="sm">
+            <RefreshCw className="h-3 w-3 mr-1" />
+            Retry
+          </Button>
+        )}
+      </AlertDescription>
+    </Alert>
+  );
 }
 
 /**

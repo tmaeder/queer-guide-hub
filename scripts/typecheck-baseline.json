@@ -1,12 +1,9 @@
 {
   "project": "tsconfig.app.json",
-  "total": 782,
+  "total": 772,
   "files": {
     "src/assets/intimate/pictograms.tsx": {
       "TS2503": 2
-    },
-    "src/components/__tests__/ErrorBoundary.test.tsx": {
-      "TS2786": 3
     },
     "src/components/admin/BulkCreateAITags.tsx": {
       "TS18046": 1,
@@ -189,13 +186,6 @@
       "TS2322": 1
     },
     "src/components/effects/__tests__/ParallaxHero.test.tsx": {
-      "TS2322": 1
-    },
-    "src/components/error/OptimizedErrorBoundary.tsx": {
-      "TS2339": 3,
-      "TS7031": 3
-    },
-    "src/components/error/__tests__/OptimizedErrorBoundary.test.tsx": {
       "TS2322": 1
     },
     "src/components/events/EventCard.tsx": {

@@ -1,4 +1,4 @@
-import { lazy, Suspense, useCallback, Component, type ReactNode } from 'react';
+import { lazy, Suspense, useCallback, type ReactNode } from 'react';
 import { useSearchParams, Link } from 'react-router';
 import { ReactFlowProvider } from '@xyflow/react';
 import {
@@ -11,6 +11,7 @@ import {
   History,
 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
+import { ErrorBoundary, SectionErrorFallback } from '@/components/error/ErrorBoundary';
 
 const OverviewTab = lazy(() => import('./tabs/OverviewTab'));
 const PipelineBuilder = lazy(() => import('./PipelineBuilder'));
@@ -104,30 +105,6 @@ function TabSkeleton() {
   );
 }
 
-class TabErrorBoundary extends Component<
-  { children: ReactNode; tab: string },
-  { error: Error | null }
-> {
-  state = { error: null as Error | null };
-  static getDerivedStateFromError(error: Error) {
-    return { error };
-  }
-  render() {
-    if (this.state.error) {
-      return (
-        <div className="flex flex-col items-center justify-center py-16 text-sm text-muted-foreground">
-          <p className="font-medium text-destructive mb-1">Failed to load {this.props.tab}</p>
-          <p className="text-xs mb-4">{this.state.error.message}</p>
-          <button className="text-xs underline" onClick={() => this.setState({ error: null })}>
-            Retry
-          </button>
-        </div>
-      );
-    }
-    return this.props.children;
-  }
-}
-
 /** Secondary pill bar switching the sub-sections of a grouped tab. */
 function SubTabs({
   subs,
@@ -159,11 +136,17 @@ function SubTabs({
           </button>
         ))}
       </div>
-      <TabErrorBoundary tab={current.label} key={current.key}>
+      <ErrorBoundary
+        section="data-ops-tab"
+        key={current.key}
+        fallback={({ error, onRetry }) => (
+          <SectionErrorFallback label={current.label} message={error?.message} onRetry={onRetry} />
+        )}
+      >
         <Suspense fallback={<TabSkeleton />}>
           <ActiveComponent />
         </Suspense>
-      </TabErrorBoundary>
+      </ErrorBoundary>
     </div>
   );
 }
@@ -205,11 +188,17 @@ export default function UnifiedDataOps() {
             ? AuditTab
             : OverviewTab;
     content = (
-      <TabErrorBoundary tab={activeTab} key={activeTab}>
+      <ErrorBoundary
+        section="data-ops-tab"
+        key={activeTab}
+        fallback={({ error, onRetry }) => (
+          <SectionErrorFallback label={activeTab} message={error?.message} onRetry={onRetry} />
+        )}
+      >
         <Suspense fallback={<TabSkeleton />}>
           <ActiveComponent />
         </Suspense>
-      </TabErrorBoundary>
+      </ErrorBoundary>
     );
   }
 
