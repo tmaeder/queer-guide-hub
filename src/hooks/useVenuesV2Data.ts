@@ -3,7 +3,7 @@
  * here (per the queerguide/no-supabase-from-in-pages lint rule) so pages
  * and components stay declarative.
  */
-import { useEffect, useState } from 'react';
+import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { untypedFrom, untypedRpc } from '@/integrations/supabase/untyped';
 import { useAuth } from '@/hooks/useAuth';
@@ -23,24 +23,34 @@ export interface LeaderboardRow {
 
 async function hydrateProfiles(rows: Array<{ user_id: string }>) {
   const ids = rows.map((r) => r.user_id);
-  if (!ids.length) return new Map<string, { display_name: string | null; avatar_url: string | null }>();
+  if (!ids.length)
+    return new Map<string, { display_name: string | null; avatar_url: string | null }>();
   const { data } = await supabase
     .from('profiles')
     .select('user_id, display_name, avatar_url')
     .in('user_id', ids);
   return new Map(
-    ((data as Array<{ user_id: string; display_name: string | null; avatar_url: string | null }>) ?? []).map(
-      (p) => [p.user_id, { display_name: p.display_name, avatar_url: p.avatar_url }],
-    ),
+    (
+      (data as Array<{
+        user_id: string;
+        display_name: string | null;
+        avatar_url: string | null;
+      }>) ?? []
+    ).map((p) => [p.user_id, { display_name: p.display_name, avatar_url: p.avatar_url }]),
   );
 }
 
+// Stable empty fallback so consumers' memos/effects don't re-run every render.
+const NONE: never[] = [];
+
+// venues are safety-gated by RLS, so every venues query keys on the viewer:
+// the app does not clear the query cache on sign-out, and an entry fetched
+// while signed in must never be served to an anonymous visitor.
 export function useFeaturedVenue() {
-  const [venue, setVenue] = useState<Venue | null>(null);
-  const [loading, setLoading] = useState(true);
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
+  const { user } = useAuth();
+  const { data, isLoading } = useQuery({
+    queryKey: ['venues-featured-hero', user?.id ?? 'anon'],
+    queryFn: async () => {
       const { data } = await supabase
         .from('venues')
         .select('*')
@@ -52,23 +62,17 @@ export function useFeaturedVenue() {
         .order('updated_at', { ascending: false })
         .limit(1)
         .maybeSingle();
-      if (cancelled) return;
-      setVenue((data as Venue) ?? null);
-      setLoading(false);
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-  return { venue, loading };
+      return (data as Venue) ?? null;
+    },
+  });
+  return { venue: data ?? null, loading: isLoading };
 }
 
 export function useEditorsPicks(limit = 8) {
-  const [venues, setVenues] = useState<Venue[]>([]);
-  const [loading, setLoading] = useState(true);
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
+  const { user } = useAuth();
+  const { data, isLoading } = useQuery({
+    queryKey: ['venues-editors-picks', user?.id ?? 'anon', limit],
+    queryFn: async () => {
       const { data } = await supabase
         .from('venues')
         .select('*')
@@ -78,25 +82,19 @@ export function useEditorsPicks(limit = 8) {
         .is('duplicate_of_id', null)
         .order('updated_at', { ascending: false })
         .limit(limit);
-      if (cancelled) return;
-      setVenues((data as Venue[]) ?? []);
-      setLoading(false);
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [limit]);
-  return { venues, loading };
+      return (data as Venue[]) ?? [];
+    },
+  });
+  return { venues: data ?? NONE, loading: isLoading };
 }
 
 export function useCityLeaderboard(cityId: string | null, limit = 5) {
-  const [rows, setRows] = useState<LeaderboardRow[]>([]);
-  const [loading, setLoading] = useState(true);
-  useEffect(() => {
-    let cancelled = false;
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- effect synchronizes state with external props/data; React Compiler can't infer the sync direction. Documented exemption from the eslint.config.js staged-ratchet plan.
-    setLoading(true);
-    (async () => {
+  const { data, isLoading, isPlaceholderData } = useQuery({
+    queryKey: ['venue-leaderboard', cityId, limit],
+    // Keep the previous city's rows on screen while the next city loads,
+    // still reporting loading, as the effect version did.
+    placeholderData: keepPreviousData,
+    queryFn: async () => {
       // The venue_leaderboard_* mat views are not API-exposed (linter 0016);
       // rpc_venue_leaderboard is the SECURITY DEFINER gateway.
       const { data } = await untypedRpc<Array<Omit<LeaderboardRow, 'display_name' | 'avatar_url'>>>(
@@ -105,63 +103,47 @@ export function useCityLeaderboard(cityId: string | null, limit = 5) {
       );
       const lb = data ?? [];
       const map = await hydrateProfiles(lb);
-      if (cancelled) return;
-      setRows(
-        lb.map((r) => ({
-          ...r,
-          display_name: map.get(r.user_id)?.display_name ?? null,
-          avatar_url: map.get(r.user_id)?.avatar_url ?? null,
-        })),
-      );
-      setLoading(false);
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [cityId, limit]);
-  return { rows, loading };
+      return lb.map((r) => ({
+        ...r,
+        display_name: map.get(r.user_id)?.display_name ?? null,
+        avatar_url: map.get(r.user_id)?.avatar_url ?? null,
+      }));
+    },
+  });
+  return { rows: data ?? NONE, loading: isLoading || isPlaceholderData };
 }
 
 export function useGlobalLeaderboard(limit = 100) {
   return useCityLeaderboard(null, limit);
 }
 
+type DiscoveryProfile = {
+  categories?: string[];
+  tags?: string[];
+  target_groups?: string[];
+  primary_city_id?: string;
+  primary_city_name?: string;
+};
+
 export function useDiscoveryProfile() {
   const { user } = useAuth();
-  const [data, setData] = useState<{
-    categories?: string[];
-    tags?: string[];
-    target_groups?: string[];
-    primary_city_id?: string;
-    primary_city_name?: string;
-  } | null>(null);
-  const [loading, setLoading] = useState(true);
-  useEffect(() => {
-    if (!user) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect -- effect synchronizes state with external props/data; React Compiler can't infer the sync direction. Documented exemption from the eslint.config.js staged-ratchet plan.
-      setData(null);
-      setLoading(false);
-      return;
-    }
-    let cancelled = false;
-    (async () => {
+  const { data, isLoading } = useQuery({
+    queryKey: ['discovery-profile', user?.id],
+    enabled: !!user,
+    queryFn: async () => {
       // discovery_profile is outside the `authenticated` column allowlist on `profiles`.
       const { data: row } = await supabase.rpc('get_my_profile').maybeSingle();
-      if (cancelled) return;
-      setData(((row as { discovery_profile?: unknown } | null)?.discovery_profile as typeof data) ?? null);
-      setLoading(false);
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [user]);
-  return { data, loading };
+      return (
+        ((row as { discovery_profile?: unknown } | null)?.discovery_profile as DiscoveryProfile) ??
+        null
+      );
+    },
+  });
+  return { data: user ? (data ?? null) : null, loading: isLoading };
 }
 
 export async function saveDiscoveryProfile(userId: string, dp: Record<string, unknown>) {
-  return untypedFrom('profiles')
-    .update({ discovery_profile: dp })
-    .eq('user_id', userId);
+  return untypedFrom('profiles').update({ discovery_profile: dp }).eq('user_id', userId);
 }
 
 export interface VisitedVenue {
@@ -176,73 +158,48 @@ export interface VisitedVenue {
 
 export function useVisitedVenues() {
   const { user } = useAuth();
-  const [venues, setVenues] = useState<VisitedVenue[]>([]);
-  const [loading, setLoading] = useState(true);
-  useEffect(() => {
-    if (!user) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect -- effect synchronizes state with external props/data; React Compiler can't infer the sync direction. Documented exemption from the eslint.config.js staged-ratchet plan.
-      setVenues([]);
-      setLoading(false);
-      return;
-    }
-    let cancelled = false;
-    (async () => {
+  const { data, isLoading } = useQuery({
+    queryKey: ['visited-venues', user?.id],
+    enabled: !!user,
+    queryFn: async (): Promise<VisitedVenue[]> => {
       const { data: checkins } = await supabase
         .from('venue_checkins')
         .select('venue_id, checked_in_at')
-        .eq('user_id', user.id)
+        .eq('user_id', user!.id)
         .order('checked_in_at', { ascending: false });
       const seen = new Map<string, string>();
       for (const c of (checkins as Array<{ venue_id: string; checked_in_at: string }>) ?? []) {
         if (!seen.has(c.venue_id)) seen.set(c.venue_id, c.checked_in_at);
       }
       const ids = Array.from(seen.keys());
-      if (ids.length === 0) {
-        if (!cancelled) {
-          setVenues([]);
-          setLoading(false);
-        }
-        return;
-      }
+      if (ids.length === 0) return [];
       const { data: vs } = await supabase
         .from('venues')
         .select('id, name, slug, city, country, images')
         .in('id', ids);
-      if (cancelled) return;
-      const list: VisitedVenue[] = ((vs as Array<Omit<VisitedVenue, 'last_checkin'>>) ?? [])
+      return ((vs as Array<Omit<VisitedVenue, 'last_checkin'>>) ?? [])
         .map((v) => ({ ...v, last_checkin: seen.get(v.id) ?? '' }))
         .sort((a, b) => b.last_checkin.localeCompare(a.last_checkin));
-      setVenues(list);
-      setLoading(false);
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [user]);
-  return { venues, loading };
+    },
+  });
+  return { venues: user ? (data ?? NONE) : NONE, loading: isLoading };
 }
 
 export function useCityAutocomplete(query: string) {
-  const [matches, setMatches] = useState<Array<{ id: string; name: string }>>([]);
-  useEffect(() => {
-    if (query.length < 2) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect -- effect synchronizes state with external props/data; React Compiler can't infer the sync direction. Documented exemption from the eslint.config.js staged-ratchet plan.
-      setMatches([]);
-      return;
-    }
-    let cancelled = false;
-    (async () => {
+  const { data } = useQuery({
+    queryKey: ['city-autocomplete', query],
+    // Keep the last matches visible while the next keystroke's query runs.
+    placeholderData: keepPreviousData,
+    enabled: query.length >= 2,
+    queryFn: async () => {
       const { data } = await supabase
         .from('cities')
         .select('id, name')
         .is('duplicate_of_id', null)
         .ilike('name', `%${query}%`)
         .limit(5);
-      if (!cancelled) setMatches((data as Array<{ id: string; name: string }>) ?? []);
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [query]);
-  return matches;
+      return (data as Array<{ id: string; name: string }>) ?? [];
+    },
+  });
+  return query.length >= 2 ? (data ?? NONE) : NONE;
 }
