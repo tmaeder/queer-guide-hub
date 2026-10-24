@@ -3,10 +3,11 @@
 // drained. Resumable (the function tracks progress via classified_at). Personalities excluded.
 // Run: node scripts/backfill-relevance-classify.mjs
 const FN = 'https://xqeacpakadqfxjxjcewc.supabase.co/functions/v1/classify-relevance-backfill';
-// Supabase anon (publishable) key — provide via env, do not hardcode:
-//   SB_ANON=$(... your project's anon key ...) node scripts/backfill-relevance-classify.mjs
-const ANON = process.env.SB_ANON;
-if (!ANON) { console.error('SB_ANON env var required (Supabase anon key)'); process.exit(1); }
+// The function is operator-only (requireInternalOrAdmin): authenticate with the
+// service-role key, never the public anon key. Provide via env, do not hardcode:
+//   SUPABASE_SERVICE_ROLE_KEY=... node scripts/backfill-relevance-classify.mjs
+const KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
+if (!KEY) { console.error('SUPABASE_SERVICE_ROLE_KEY env var required'); process.exit(1); }
 const TYPES = ['venue', 'event', 'marketplace', 'news'];
 const BATCH = 25;
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -18,7 +19,7 @@ async function callBatch(entity_type) {
   try {
     const res = await fetch(FN, {
       method: 'POST', signal: ac.signal,
-      headers: { Authorization: `Bearer ${ANON}`, 'Content-Type': 'application/json' },
+      headers: { Authorization: `Bearer ${KEY}`, apikey: KEY, 'Content-Type': 'application/json' },
       body: JSON.stringify({ entity_type, batch_size: BATCH }),
     });
     if (!res.ok) return { error: `http ${res.status}` };
