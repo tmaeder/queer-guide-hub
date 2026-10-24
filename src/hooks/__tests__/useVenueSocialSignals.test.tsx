@@ -50,10 +50,7 @@ describe('useVenueSocialSignals', () => {
       error: null,
     });
 
-    const { result } = renderHook(
-      () => useVenueSocialSignals(['v2', 'v1']),
-      { wrapper },
-    );
+    const { result } = renderHook(() => useVenueSocialSignals(['v2', 'v1']), { wrapper });
     await waitFor(() => expect(result.current.data).toBeDefined());
 
     expect(rpcMock).toHaveBeenCalledWith('get_venue_social_signals', {
@@ -66,18 +63,15 @@ describe('useVenueSocialSignals', () => {
     expect(map.get('v2')?.trip_usage).toBe(1);
   });
 
-  it('passes null viewer id when signed out', async () => {
-    rpcMock.mockResolvedValueOnce({ data: [], error: null });
-    renderHook(() => useVenueSocialSignals(['v1']), { wrapper });
-    await waitFor(() => expect(rpcMock).toHaveBeenCalled());
-
-    expect(rpcMock.mock.calls[0][1]).toEqual({
-      p_venue_ids: ['v1'],
-      p_viewer_id: null,
-    });
+  it('does not call the RPC when signed out (anon has no EXECUTE → 401)', async () => {
+    const { result } = renderHook(() => useVenueSocialSignals(['v1']), { wrapper });
+    // positive control: the query exists and is idle, not merely pending a call
+    await waitFor(() => expect(result.current.fetchStatus).toBe('idle'));
+    expect(rpcMock).not.toHaveBeenCalled();
   });
 
   it('throws on RPC error', async () => {
+    useAuthMock.mockReturnValue({ user: { id: 'u1' } });
     rpcMock.mockResolvedValueOnce({ data: null, error: { message: 'fail' } });
     const { result } = renderHook(() => useVenueSocialSignals(['v1']), { wrapper });
     await waitFor(() => expect(result.current.isError).toBe(true));
