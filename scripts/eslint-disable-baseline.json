@@ -1,0 +1,1026 @@
+{
+  "total": 502,
+  "files": {
+    "src/components/ErrorBoundary.tsx": {
+      "react-hooks/rules-of-hooks": 1
+    },
+    "src/components/admin/CloudflareDashboard.tsx": {
+      "react-hooks/set-state-in-effect": 1
+    },
+    "src/components/admin/EmailIngestionsManager.tsx": {
+      "react-hooks/set-state-in-effect": 1
+    },
+    "src/components/admin/GeographyLandmarks.tsx": {
+      "react-hooks/exhaustive-deps": 1,
+      "react-hooks/set-state-in-effect": 1
+    },
+    "src/components/admin/IngestionSourcesManager.tsx": {
+      "react-hooks/set-state-in-effect": 1
+    },
+    "src/components/admin/cockpit/FreshnessIndicator.tsx": {
+      "react-hooks/purity": 1
+    },
+    "src/components/admin/command-palette/AdminCommandPalette.tsx": {
+      "react-hooks/refs": 1,
+      "react-hooks/set-state-in-effect": 1
+    },
+    "src/components/admin/command-palette/useAdminCommandActions.tsx": {
+      "react-refresh/only-export-components": 2
+    },
+    "src/components/admin/data-table/AdminDataTable.tsx": {
+      "react-hooks/exhaustive-deps": 1
+    },
+    "src/components/admin/data-table/DataTableFilters.tsx": {
+      "react-hooks/set-state-in-effect": 1
+    },
+    "src/components/admin/data-table/types.ts": {
+      "@typescript-eslint/no-explicit-any": 1
+    },
+    "src/components/admin/design/TokenPreviewPanel.tsx": {
+      "react-hooks/exhaustive-deps": 1
+    },
+    "src/components/admin/email/EmailAudiences.tsx": {
+      "react-hooks/set-state-in-effect": 1
+    },
+    "src/components/admin/email/EmailCampaigns.tsx": {
+      "react-hooks/set-state-in-effect": 1
+    },
+    "src/components/admin/email/EmailContacts.tsx": {
+      "react-hooks/set-state-in-effect": 1
+    },
+    "src/components/admin/email/EmailExperiments.tsx": {
+      "react-hooks/set-state-in-effect": 1
+    },
+    "src/components/admin/email/EmailJourneys.tsx": {
+      "react-hooks/set-state-in-effect": 1
+    },
+    "src/components/admin/email/EmailMeasurement.tsx": {
+      "react-hooks/set-state-in-effect": 1
+    },
+    "src/components/admin/email/EmailOperations.tsx": {
+      "react-hooks/set-state-in-effect": 1
+    },
+    "src/components/admin/feedback/ApiErrorFilters.tsx": {
+      "react-refresh/only-export-components": 1
+    },
+    "src/components/admin/feedback/FeedbackBulkBar.tsx": {
+      "queerguide/admin-ui-primitives": 1
+    },
+    "src/components/admin/feedback/FeedbackCard.tsx": {
+      "react-hooks/purity": 1
+    },
+    "src/components/admin/feedback/FeedbackDetailDrawer.tsx": {
+      "react-hooks/set-state-in-effect": 1
+    },
+    "src/components/admin/feedback/FeedbackFilters.tsx": {
+      "react-hooks/exhaustive-deps": 1,
+      "react-hooks/set-state-in-effect": 1
+    },
+    "src/components/admin/feedback/RoadmapItemDrawer.tsx": {
+      "react-hooks/set-state-in-effect": 1
+    },
+    "src/components/admin/feedback/StoryDetailDrawer.tsx": {
+      "react-hooks/exhaustive-deps": 1,
+      "react-hooks/set-state-in-effect": 1
+    },
+    "src/components/admin/import-hub/SideBySideComparison.tsx": {
+      "jsx-a11y/no-static-element-interactions": 2
+    },
+    "src/components/admin/import-hub/StructuredFieldDisplay.tsx": {
+      "react-refresh/only-export-components": 1
+    },
+    "src/components/admin/inline/AdminFullEditSheet.tsx": {
+      "react-hooks/static-components": 1
+    },
+    "src/components/admin/inline/Editable.tsx": {
+      "react-hooks/static-components": 1
+    },
+    "src/components/admin/pipeline-builder/PipelineBuilder.tsx": {
+      "react-hooks/exhaustive-deps": 1,
+      "react-hooks/purity": 1,
+      "react-hooks/refs": 1,
+      "react-hooks/set-state-in-effect": 2
+    },
+    "src/components/admin/pipeline-builder/hooks/useUndoRedo.ts": {
+      "react-hooks/refs": 2
+    },
+    "src/components/admin/pipeline-builder/nodes/BaseNode.tsx": {
+      "react-hooks/static-components": 2
+    },
+    "src/components/admin/pipeline-builder/panels/CronEditor.tsx": {
+      "react-refresh/only-export-components": 1
+    },
+    "src/components/admin/pipeline-builder/panels/EdgeConditionPopover.tsx": {
+      "react-hooks/set-state-in-effect": 1
+    },
+    "src/components/admin/pipeline-builder/panels/OnboardingTour.tsx": {
+      "react-hooks/set-state-in-effect": 1
+    },
+    "src/components/admin/pipeline-builder/panels/PresenceIndicator.tsx": {
+      "react-hooks/set-state-in-effect": 1
+    },
+    "src/components/admin/pipeline-builder/panels/ScheduleDialog.tsx": {
+      "react-hooks/set-state-in-effect": 1
+    },
+    "src/components/admin/pipeline-builder/panels/TemplateLibrary.tsx": {
+      "react-hooks/set-state-in-effect": 1
+    },
+    "src/components/admin/pipeline-builder/tabs/AlertsTab.tsx": {
+      "react-hooks/static-components": 2
+    },
+    "src/components/admin/pipeline-builder/tabs/DLQTab.tsx": {
+      "react-hooks/static-components": 3
+    },
+    "src/components/admin/pipeline-builder/tabs/MonitorTab.tsx": {
+      "react-hooks/purity": 1
+    },
+    "src/components/admin/pipeline-builder/tabs/OverviewTab.tsx": {
+      "react-hooks/static-components": 5
+    },
+    "src/components/admin/redirects/RedirectQrLogos.test.tsx": {
+      "no-restricted-syntax": 1
+    },
+    "src/components/admin/search-intelligence/AnalyticsTab.tsx": {
+      "react-hooks/set-state-in-effect": 1
+    },
+    "src/components/admin/search-intelligence/IngestionQualityTab.tsx": {
+      "react-hooks/set-state-in-effect": 1
+    },
+    "src/components/admin/search-intelligence/SetupTab.tsx": {
+      "react-hooks/set-state-in-effect": 1
+    },
+    "src/components/admin/search-intelligence/SynonymsTab.tsx": {
+      "react-hooks/set-state-in-effect": 3
+    },
+    "src/components/admin/shell/AdminShell.tsx": {
+      "react-hooks/set-state-in-effect": 1,
+      "react-refresh/only-export-components": 2
+    },
+    "src/components/admin/shell/AdminSidebar.tsx": {
+      "react-hooks/exhaustive-deps": 2
+    },
+    "src/components/admin/triage/FieldDiffView.tsx": {
+      "react-refresh/only-export-components": 1
+    },
+    "src/components/admin/triage/ReviewLocationMap.tsx": {
+      "react-hooks/exhaustive-deps": 1
+    },
+    "src/components/admin/users/UserDetailSheet.tsx": {
+      "react-hooks/exhaustive-deps": 1,
+      "react-hooks/immutability": 1
+    },
+    "src/components/analytics/UmamiAnalyticsDashboard.tsx": {
+      "react-hooks/exhaustive-deps": 1,
+      "react-hooks/immutability": 1
+    },
+    "src/components/auth/AuthDialog.tsx": {
+      "react-hooks/set-state-in-effect": 1
+    },
+    "src/components/auth/PasswordStrengthMeter.tsx": {
+      "react-hooks/refs": 1,
+      "react-hooks/set-state-in-effect": 1
+    },
+    "src/components/auth/Signup.tsx": {
+      "react-hooks/exhaustive-deps": 1
+    },
+    "src/components/auth/TurnstileWidget.tsx": {
+      "react-refresh/only-export-components": 1
+    },
+    "src/components/auth/UsernameSelector.tsx": {
+      "react-hooks/set-state-in-effect": 1
+    },
+    "src/components/auth/__tests__/Signup.test.tsx": {
+      "jsx-a11y/anchor-is-valid": 1
+    },
+    "src/components/booking/HotelSearchForm.tsx": {
+      "react-refresh/only-export-components": 1
+    },
+    "src/components/breadcrumbs/BreadcrumbBar.tsx": {
+      "react-hooks/exhaustive-deps": 1
+    },
+    "src/components/cms/ContentListPanel/index.tsx": {
+      "react-hooks/exhaustive-deps": 2,
+      "react-hooks/set-state-in-effect": 1
+    },
+    "src/components/cms/ContentListPanel/useContentListController.ts": {
+      "react-hooks/exhaustive-deps": 1,
+      "react-hooks/immutability": 2,
+      "react-hooks/set-state-in-effect": 3
+    },
+    "src/components/cms/MediaLibrary/MediaGrid.tsx": {
+      "react-hooks/error-boundaries": 1
+    },
+    "src/components/cms/editor/PersonalityNotesPanel.tsx": {
+      "react-hooks/set-state-in-effect": 1
+    },
+    "src/components/cms/editor/WorkflowPanel.tsx": {
+      "react-hooks/exhaustive-deps": 1,
+      "react-hooks/immutability": 1
+    },
+    "src/components/cms/fields/ImageField.tsx": {
+      "react-hooks/set-state-in-effect": 1
+    },
+    "src/components/cms/media/ExternalImageSearch.tsx": {
+      "react-hooks/exhaustive-deps": 1
+    },
+    "src/components/cms/media/MediaPickerDialog.tsx": {
+      "react-hooks/set-state-in-effect": 1
+    },
+    "src/components/country/CountryFactSheet.tsx": {
+      "@typescript-eslint/no-explicit-any": 1
+    },
+    "src/components/country/CountryStatsBand.tsx": {
+      "@typescript-eslint/no-explicit-any": 2
+    },
+    "src/components/discovery/BentoSection.tsx": {
+      "react-refresh/only-export-components": 1
+    },
+    "src/components/discovery/RecommendedForYou.tsx": {
+      "@typescript-eslint/no-explicit-any": 1,
+      "react-hooks/set-state-in-effect": 1
+    },
+    "src/components/discovery/SimilarItems.tsx": {
+      "react-hooks/exhaustive-deps": 1,
+      "react-hooks/set-state-in-effect": 1
+    },
+    "src/components/discovery/TrendingStrip.tsx": {
+      "react-hooks/exhaustive-deps": 1,
+      "react-hooks/set-state-in-effect": 1
+    },
+    "src/components/entity/EntityDetailLayout.tsx": {
+      "react-hooks/exhaustive-deps": 2,
+      "react-hooks/set-state-in-effect": 2
+    },
+    "src/components/entity/editorial/EditorialDetailLayout.tsx": {
+      "react-hooks/exhaustive-deps": 3
+    },
+    "src/components/events/EventHoverCard.tsx": {
+      "react-hooks/purity": 1
+    },
+    "src/components/events/EventsMapView.tsx": {
+      "react-hooks/exhaustive-deps": 2
+    },
+    "src/components/events/EventsTimelineView.tsx": {
+      "react-hooks/set-state-in-effect": 1
+    },
+    "src/components/events/PresetChips.tsx": {
+      "react-refresh/only-export-components": 1
+    },
+    "src/components/events/TimelineMinimap.tsx": {
+      "jsx-a11y/no-noninteractive-element-interactions": 1,
+      "react-hooks/purity": 2
+    },
+    "src/components/footprint/ShareControls.tsx": {
+      "react-hooks/set-state-in-effect": 1
+    },
+    "src/components/guides/QuestModule.tsx": {
+      "react-hooks/set-state-in-effect": 1
+    },
+    "src/components/hub/TripsStrip.tsx": {
+      "react-hooks/set-state-in-effect": 1
+    },
+    "src/components/icons/brand.tsx": {
+      "react-refresh/only-export-components": 1
+    },
+    "src/components/intimate/SwipeDeck.tsx": {
+      "react-hooks/set-state-in-effect": 1
+    },
+    "src/components/map/EntityMap.tsx": {
+      "react-hooks/exhaustive-deps": 1
+    },
+    "src/components/map/FilterChips.tsx": {
+      "react-refresh/only-export-components": 1
+    },
+    "src/components/map/MapShell.tsx": {
+      "react-hooks/exhaustive-deps": 1
+    },
+    "src/components/map/PersonalitiesMap.tsx": {
+      "react-hooks/set-state-in-effect": 1
+    },
+    "src/components/map/hooks/useInBoundsCount.ts": {
+      "react-hooks/refs": 1
+    },
+    "src/components/map/hooks/useMapAutoFly.ts": {
+      "react-hooks/exhaustive-deps": 1
+    },
+    "src/components/map/hooks/useMapInstance.ts": {
+      "react-hooks/exhaustive-deps": 2
+    },
+    "src/components/marketplace/CuratedIdsContext.tsx": {
+      "react-hooks/exhaustive-deps": 1,
+      "react-hooks/refs": 1
+    },
+    "src/components/marketplace/MarketplaceControlBar.tsx": {
+      "react-hooks/set-state-in-effect": 1
+    },
+    "src/components/marketplace/MarketplaceFilterSheet.tsx": {
+      "react-hooks/set-state-in-effect": 1
+    },
+    "src/components/marketplace/MarketplaceFilteredView.tsx": {
+      "react-hooks/exhaustive-deps": 1,
+      "react-hooks/set-state-in-effect": 2
+    },
+    "src/components/marketplace/MarketplaceSearchSuggestions.tsx": {
+      "react-hooks/exhaustive-deps": 1,
+      "react-hooks/set-state-in-effect": 1
+    },
+    "src/components/marketplace/ZeroResultRescue.tsx": {
+      "react-hooks/exhaustive-deps": 1
+    },
+    "src/components/messaging/MailDetail.tsx": {
+      "react-hooks/set-state-in-effect": 1
+    },
+    "src/components/messaging/ShareEntityDialog.tsx": {
+      "react-hooks/exhaustive-deps": 2,
+      "react-hooks/immutability": 2,
+      "react-hooks/set-state-in-effect": 1
+    },
+    "src/components/messaging/TripEmailThread.tsx": {
+      "react-hooks/exhaustive-deps": 1
+    },
+    "src/components/messaging/chat/ChatView.tsx": {
+      "react-hooks/preserve-manual-memoization": 1,
+      "react-hooks/purity": 1,
+      "react-hooks/set-state-in-effect": 1
+    },
+    "src/components/messaging/chat/MessageInput.tsx": {
+      "react-hooks/set-state-in-effect": 1
+    },
+    "src/components/messaging/chat/useInboxSearch.ts": {
+      "react-hooks/set-state-in-effect": 1
+    },
+    "src/components/motion/MotionPage.tsx": {
+      "react-hooks/refs": 2
+    },
+    "src/components/news/editorial/LiveTicker.tsx": {
+      "react-hooks/purity": 1
+    },
+    "src/components/personalities/PersonalitiesFiltersBar.tsx": {
+      "react-hooks/exhaustive-deps": 2,
+      "react-hooks/set-state-in-effect": 1
+    },
+    "src/components/pride/PrideFilterRail.tsx": {
+      "react-refresh/only-export-components": 2
+    },
+    "src/components/pride/PrideTrips.tsx": {
+      "react-refresh/only-export-components": 1
+    },
+    "src/components/pride/PrideUpNext.tsx": {
+      "react-refresh/only-export-components": 1
+    },
+    "src/components/privacy/CookiePreferencesDialog.tsx": {
+      "react-hooks/set-state-in-effect": 1
+    },
+    "src/components/profile/AvatarQuickPick.tsx": {
+      "react-hooks/exhaustive-deps": 1
+    },
+    "src/components/profile/EmailPreferences.tsx": {
+      "react-hooks/set-state-in-effect": 1
+    },
+    "src/components/profile/TravelPreferencesEditor.tsx": {
+      "react-hooks/exhaustive-deps": 1,
+      "react-hooks/set-state-in-effect": 1
+    },
+    "src/components/profile/tabs/SavedTab.tsx": {
+      "react-hooks/exhaustive-deps": 1,
+      "react-hooks/immutability": 1
+    },
+    "src/components/pwa/InstallBanner.tsx": {
+      "react-hooks/set-state-in-effect": 2
+    },
+    "src/components/pwa/PWAProvider.tsx": {
+      "react-refresh/only-export-components": 1
+    },
+    "src/components/routing/LocaleRouter.tsx": {
+      "react-refresh/only-export-components": 1
+    },
+    "src/components/score/CommunityLevelUpToast.tsx": {
+      "@typescript-eslint/no-unused-expressions": 1
+    },
+    "src/components/search/ResultsMapView.tsx": {
+      "react-hooks/refs": 1
+    },
+    "src/components/search/SearchCalendarView.tsx": {
+      "react-hooks/exhaustive-deps": 1,
+      "react-hooks/set-state-in-effect": 1
+    },
+    "src/components/search/UniversalSearchBar.tsx": {
+      "jsx-a11y/no-noninteractive-element-interactions": 1,
+      "react-hooks/set-state-in-effect": 3
+    },
+    "src/components/security/AdminRouteGuard.tsx": {
+      "react-hooks/refs": 2
+    },
+    "src/components/security/EnhancedContentValidator.tsx": {
+      "no-control-regex": 1
+    },
+    "src/components/security/EnhancedFormValidator.tsx": {
+      "react-hooks/immutability": 1,
+      "react-hooks/purity": 1,
+      "react-refresh/only-export-components": 1
+    },
+    "src/components/status/StatusPicker.tsx": {
+      "react-hooks/purity": 1,
+      "react-hooks/set-state-in-effect": 1
+    },
+    "src/components/submission/FlyerScanUpload.tsx": {
+      "jsx-a11y/no-noninteractive-element-interactions": 1
+    },
+    "src/components/tags/__tests__/TagRelationshipGraph.test.tsx": {
+      "@ts-expect-error": 1
+    },
+    "src/components/theme/ThemeProvider.tsx": {
+      "react-refresh/only-export-components": 1
+    },
+    "src/components/transit/entityRows.tsx": {
+      "@typescript-eslint/no-explicit-any": 2
+    },
+    "src/components/transit/useActiveSection.ts": {
+      "react-hooks/exhaustive-deps": 1
+    },
+    "src/components/travel/AirportAutocomplete.tsx": {
+      "react-hooks/exhaustive-deps": 1,
+      "react-hooks/set-state-in-effect": 1
+    },
+    "src/components/trips/AddPlaceDialog.tsx": {
+      "react-hooks/set-state-in-effect": 1
+    },
+    "src/components/trips/AddReservationDialog.tsx": {
+      "react-hooks/set-state-in-effect": 1
+    },
+    "src/components/trips/AddToTripDialog.tsx": {
+      "react-hooks/set-state-in-effect": 1
+    },
+    "src/components/trips/DayCard.tsx": {
+      "react-refresh/only-export-components": 1
+    },
+    "src/components/trips/EstimateCostsDialog.tsx": {
+      "react-hooks/exhaustive-deps": 1,
+      "react-hooks/set-state-in-effect": 1
+    },
+    "src/components/trips/PlaceCommentThread.tsx": {
+      "react-hooks/set-state-in-effect": 1
+    },
+    "src/components/trips/PostTripMemoryPrompt.tsx": {
+      "react-hooks/exhaustive-deps": 1,
+      "react-hooks/set-state-in-effect": 1
+    },
+    "src/components/trips/SortablePlaceCard.tsx": {
+      "react-refresh/only-export-components": 2
+    },
+    "src/components/trips/TripDocExpiryBanner.tsx": {
+      "react-refresh/only-export-components": 1
+    },
+    "src/components/trips/TripMap.tsx": {
+      "react-hooks/exhaustive-deps": 1
+    },
+    "src/components/trips/TripPolls.tsx": {
+      "jsx-a11y/no-static-element-interactions": 1
+    },
+    "src/components/trips/TripViewSwitcher.tsx": {
+      "react-refresh/only-export-components": 1
+    },
+    "src/components/trips/__tests__/ItineraryGenerator.test.tsx": {
+      "@typescript-eslint/no-explicit-any": 1
+    },
+    "src/components/trips/create/CityCountryAutocomplete.tsx": {
+      "react-hooks/set-state-in-effect": 1
+    },
+    "src/components/ui/Image.tsx": {
+      "react-hooks/exhaustive-deps": 1
+    },
+    "src/components/ui/badge.tsx": {
+      "react-refresh/only-export-components": 1
+    },
+    "src/components/ui/button.tsx": {
+      "react-refresh/only-export-components": 1
+    },
+    "src/components/ui/location-autocomplete.tsx": {
+      "react-hooks/set-state-in-effect": 1
+    },
+    "src/components/ui/sonner.tsx": {
+      "react-refresh/only-export-components": 1
+    },
+    "src/components/ui/useGridColumns.ts": {
+      "react-hooks/exhaustive-deps": 1
+    },
+    "src/components/venues/VenueSafetySignalPrompt.tsx": {
+      "react-hooks/set-state-in-effect": 1
+    },
+    "src/components/venues/VenuesRails.tsx": {
+      "react-hooks/exhaustive-deps": 1,
+      "react-hooks/set-state-in-effect": 1
+    },
+    "src/components/venues/filters/useVenueFilters.ts": {
+      "react-hooks/exhaustive-deps": 6,
+      "react-hooks/set-state-in-effect": 6
+    },
+    "src/components/weather/WeatherForecast.tsx": {
+      "react-hooks/exhaustive-deps": 1,
+      "react-hooks/immutability": 1,
+      "react-hooks/set-state-in-effect": 1
+    },
+    "src/contexts/BreadcrumbContext.tsx": {
+      "react-hooks/exhaustive-deps": 1,
+      "react-refresh/only-export-components": 1
+    },
+    "src/contexts/PageEntityContext.tsx": {
+      "react-hooks/exhaustive-deps": 1,
+      "react-refresh/only-export-components": 1
+    },
+    "src/es2022-shims.ts": {
+      "@typescript-eslint/no-explicit-any": 1
+    },
+    "src/hooks/__tests__/useStoryRoutine.test.tsx": {
+      "@typescript-eslint/no-explicit-any": 1
+    },
+    "src/hooks/__tests__/useTargetGroups.test.tsx": {
+      "@ts-expect-error": 1
+    },
+    "src/hooks/use-mobile.tsx": {
+      "react-hooks/set-state-in-effect": 1
+    },
+    "src/hooks/useAccessibility.tsx": {
+      "react-refresh/only-export-components": 1
+    },
+    "src/hooks/useAccessibilityAttributes.tsx": {
+      "react-hooks/set-state-in-effect": 1
+    },
+    "src/hooks/useActiveTrip.tsx": {
+      "react-hooks/set-state-in-effect": 2,
+      "react-refresh/only-export-components": 3
+    },
+    "src/hooks/useAdminEditMode.tsx": {
+      "react-refresh/only-export-components": 1
+    },
+    "src/hooks/useAdminEgoNetwork.ts": {
+      "react-hooks/refs": 1,
+      "react-hooks/set-state-in-effect": 1
+    },
+    "src/hooks/useAdminFullEditRow.ts": {
+      "react-hooks/set-state-in-effect": 1
+    },
+    "src/hooks/useAdminRoles.tsx": {
+      "react-hooks/exhaustive-deps": 1,
+      "react-hooks/immutability": 1,
+      "react-hooks/set-state-in-effect": 1
+    },
+    "src/hooks/useAffiliateLinks.ts": {
+      "react-hooks/set-state-in-effect": 1
+    },
+    "src/hooks/useApiKeys.tsx": {
+      "react-hooks/exhaustive-deps": 1,
+      "react-hooks/set-state-in-effect": 1
+    },
+    "src/hooks/useAuth.tsx": {
+      "react-hooks/immutability": 1,
+      "react-refresh/only-export-components": 2
+    },
+    "src/hooks/useCMSEditor.tsx": {
+      "react-hooks/exhaustive-deps": 1
+    },
+    "src/hooks/useChatGPTConnection.ts": {
+      "react-hooks/set-state-in-effect": 1
+    },
+    "src/hooks/useCockpitRealtime.ts": {
+      "@ts-expect-error": 1
+    },
+    "src/hooks/useCommunityScore.ts": {
+      "react-hooks/set-state-in-effect": 1
+    },
+    "src/hooks/useConversationAvailability.ts": {
+      "react-hooks/set-state-in-effect": 1
+    },
+    "src/hooks/useCookieConsent.tsx": {
+      "react-hooks/set-state-in-effect": 1,
+      "react-refresh/only-export-components": 1
+    },
+    "src/hooks/useCurrency.tsx": {
+      "react-hooks/exhaustive-deps": 1,
+      "react-hooks/set-state-in-effect": 2,
+      "react-refresh/only-export-components": 1
+    },
+    "src/hooks/useDidYouMean.tsx": {
+      "react-hooks/set-state-in-effect": 1
+    },
+    "src/hooks/useEgoNetwork.ts": {
+      "react-hooks/refs": 1,
+      "react-hooks/set-state-in-effect": 1
+    },
+    "src/hooks/useEmptyStateSuggestions.tsx": {
+      "react-hooks/exhaustive-deps": 1
+    },
+    "src/hooks/useEntityImageAssets.ts": {
+      "react-hooks/set-state-in-effect": 1
+    },
+    "src/hooks/useEventFilters.ts": {
+      "react-hooks/exhaustive-deps": 8,
+      "react-hooks/set-state-in-effect": 1
+    },
+    "src/hooks/useEvents.tsx": {
+      "react-hooks/exhaustive-deps": 1,
+      "react-hooks/set-state-in-effect": 2
+    },
+    "src/hooks/useExploreMapData.ts": {
+      "react-hooks/refs": 1
+    },
+    "src/hooks/useFavorites.tsx": {
+      "react-hooks/exhaustive-deps": 2,
+      "react-hooks/set-state-in-effect": 1
+    },
+    "src/hooks/useFeedbackRealtime.ts": {
+      "react-hooks/exhaustive-deps": 1
+    },
+    "src/hooks/useGamification.ts": {
+      "react-hooks/set-state-in-effect": 1
+    },
+    "src/hooks/useGeoCountry.ts": {
+      "react-hooks/set-state-in-effect": 1
+    },
+    "src/hooks/useGranularRoles.tsx": {
+      "react-hooks/exhaustive-deps": 1,
+      "react-hooks/set-state-in-effect": 1
+    },
+    "src/hooks/useGroupMemberManagement.ts": {
+      "react-hooks/set-state-in-effect": 1
+    },
+    "src/hooks/useHotels.ts": {
+      "react-hooks/set-state-in-effect": 1
+    },
+    "src/hooks/useImportHub.tsx": {
+      "react-hooks/exhaustive-deps": 2,
+      "react-hooks/set-state-in-effect": 1
+    },
+    "src/hooks/useListingImages.ts": {
+      "react-hooks/exhaustive-deps": 1,
+      "react-hooks/set-state-in-effect": 1
+    },
+    "src/hooks/useMailbox.ts": {
+      "react-hooks/set-state-in-effect": 2
+    },
+    "src/hooks/useMailboxAddress.ts": {
+      "react-hooks/set-state-in-effect": 1
+    },
+    "src/hooks/useManagedOptions.ts": {
+      "react-hooks/exhaustive-deps": 1,
+      "react-hooks/set-state-in-effect": 1
+    },
+    "src/hooks/useMapShellState.ts": {
+      "react-hooks/refs": 1
+    },
+    "src/hooks/useMarketplace.tsx": {
+      "react-hooks/set-state-in-effect": 1
+    },
+    "src/hooks/useMarketplaceCollections.tsx": {
+      "react-hooks/set-state-in-effect": 1
+    },
+    "src/hooks/useMarketplaceListingsByIds.tsx": {
+      "react-hooks/exhaustive-deps": 1,
+      "react-hooks/set-state-in-effect": 1
+    },
+    "src/hooks/useMarketplaceQueries.tsx": {
+      "react-hooks/exhaustive-deps": 1,
+      "react-hooks/set-state-in-effect": 1
+    },
+    "src/hooks/useMarketplaceRows.tsx": {
+      "react-hooks/set-state-in-effect": 1
+    },
+    "src/hooks/useMessaging.tsx": {
+      "react-hooks/set-state-in-effect": 1
+    },
+    "src/hooks/useMeta.ts": {
+      "react-hooks/exhaustive-deps": 1
+    },
+    "src/hooks/useNearbyMapPoints.ts": {
+      "@typescript-eslint/no-explicit-any": 1
+    },
+    "src/hooks/useNews.tsx": {
+      "react-hooks/exhaustive-deps": 1,
+      "react-hooks/set-state-in-effect": 3
+    },
+    "src/hooks/usePageFetchers.ts": {
+      "react-hooks/set-state-in-effect": 1
+    },
+    "src/hooks/usePersonalities.tsx": {
+      "react-hooks/set-state-in-effect": 2
+    },
+    "src/hooks/usePersonalityQualitySummary.ts": {
+      "@typescript-eslint/no-explicit-any": 1
+    },
+    "src/hooks/usePreferenceChips.ts": {
+      "react-hooks/set-state-in-effect": 1
+    },
+    "src/hooks/usePublicCommunityScore.ts": {
+      "react-hooks/set-state-in-effect": 1
+    },
+    "src/hooks/usePublicStatus.ts": {
+      "react-hooks/set-state-in-effect": 1
+    },
+    "src/hooks/useQueerVillages.ts": {
+      "react-hooks/set-state-in-effect": 1
+    },
+    "src/hooks/useReadingStreak.ts": {
+      "react-hooks/exhaustive-deps": 1,
+      "react-hooks/set-state-in-effect": 1
+    },
+    "src/hooks/useRealtimeNewsInserts.ts": {
+      "react-hooks/purity": 1
+    },
+    "src/hooks/useRecentActivity.ts": {
+      "react-hooks/set-state-in-effect": 1
+    },
+    "src/hooks/useRecentVenues.tsx": {
+      "react-hooks/set-state-in-effect": 1
+    },
+    "src/hooks/useSOS.tsx": {
+      "react-hooks/refs": 1
+    },
+    "src/hooks/useSavedSearches.tsx": {
+      "react-hooks/set-state-in-effect": 1
+    },
+    "src/hooks/useSearch.tsx": {
+      "react-hooks/exhaustive-deps": 1,
+      "react-hooks/set-state-in-effect": 1
+    },
+    "src/hooks/useSearchRecommendations.tsx": {
+      "react-hooks/set-state-in-effect": 1
+    },
+    "src/hooks/useSearchSuggestions.tsx": {
+      "react-hooks/exhaustive-deps": 1,
+      "react-hooks/set-state-in-effect": 1
+    },
+    "src/hooks/useSecurePublicProfile.tsx": {
+      "react-hooks/exhaustive-deps": 1,
+      "react-hooks/set-state-in-effect": 1
+    },
+    "src/hooks/useSignupFunnel.ts": {
+      "react-hooks/refs": 1
+    },
+    "src/hooks/useSlugRedirect.ts": {
+      "react-hooks/exhaustive-deps": 1
+    },
+    "src/hooks/useStatus.ts": {
+      "react-hooks/purity": 1
+    },
+    "src/hooks/useSubmission.ts": {
+      "react-hooks/exhaustive-deps": 1
+    },
+    "src/hooks/useTargetGroups.tsx": {
+      "react-hooks/set-state-in-effect": 1
+    },
+    "src/hooks/useTrendingSuggestions.tsx": {
+      "react-hooks/set-state-in-effect": 1
+    },
+    "src/hooks/useUnifiedTags.tsx": {
+      "react-hooks/exhaustive-deps": 1,
+      "react-hooks/set-state-in-effect": 1
+    },
+    "src/hooks/useUserNewsReadsList.ts": {
+      "react-hooks/exhaustive-deps": 1,
+      "react-hooks/set-state-in-effect": 1
+    },
+    "src/hooks/useUserRelationships.tsx": {
+      "react-hooks/exhaustive-deps": 1,
+      "react-hooks/set-state-in-effect": 1
+    },
+    "src/hooks/useVenues.tsx": {
+      "react-hooks/set-state-in-effect": 2
+    },
+    "src/hooks/useVenuesV2Data.ts": {
+      "react-hooks/set-state-in-effect": 4
+    },
+    "src/hooks/useViewportPoints.ts": {
+      "react-hooks/exhaustive-deps": 1,
+      "react-hooks/refs": 2
+    },
+    "src/hooks/useVisitorOrigin.ts": {
+      "react-hooks/set-state-in-effect": 1
+    },
+    "src/hooks/useVoiceSearch.tsx": {
+      "react-hooks/set-state-in-effect": 1
+    },
+    "src/hooks/useWishlists.tsx": {
+      "react-hooks/set-state-in-effect": 1
+    },
+    "src/integrations/supabase/__tests__/cloudflare.test.ts": {
+      "@ts-expect-error": 1
+    },
+    "src/lib/__tests__/cityRegionAuditPayload.test.ts": {
+      "@ts-expect-error": 1
+    },
+    "src/lib/__tests__/gateRpcNotEvaluated.test.ts": {
+      "@ts-expect-error": 1
+    },
+    "src/lib/__tests__/geoAddressQueueParked.test.ts": {
+      "@ts-expect-error": 1
+    },
+    "src/lib/__tests__/geoBoundaryIso.test.ts": {
+      "@ts-expect-error": 1
+    },
+    "src/lib/__tests__/kinkStampRepair.test.ts": {
+      "@ts-expect-error": 1
+    },
+    "src/lib/__tests__/kinkStampRepair2.test.ts": {
+      "@ts-expect-error": 1
+    },
+    "src/lib/__tests__/osmAccessibilityMirror.test.ts": {
+      "@ts-expect-error": 1
+    },
+    "src/lib/__tests__/poiMatchCore.test.ts": {
+      "@ts-expect-error": 1
+    },
+    "src/lib/__tests__/realtimeSubscribe.test.ts": {
+      "@ts-expect-error": 2
+    },
+    "src/lib/__tests__/recoverMigrationDrift.test.ts": {
+      "@ts-expect-error": 1
+    },
+    "src/lib/__tests__/remoteMigrationHistoryRetry.test.ts": {
+      "@ts-expect-error": 1
+    },
+    "src/lib/__tests__/siblingMigrationCollisions.test.ts": {
+      "@ts-expect-error": 1
+    },
+    "src/lib/redirects/qrRender.ts": {
+      "no-restricted-syntax": 2
+    },
+    "src/lib/telemetryInsert.ts": {
+      "@ts-expect-error": 1
+    },
+    "src/pages/AuthCallback.tsx": {
+      "queerguide/no-supabase-from-in-pages": 1,
+      "react-hooks/immutability": 1
+    },
+    "src/pages/CityDetail.tsx": {
+      "react-hooks/refs": 1
+    },
+    "src/pages/CountryDetail.parts.tsx": {
+      "@typescript-eslint/no-explicit-any": 8
+    },
+    "src/pages/CountryDetail.tsx": {
+      "react-hooks/refs": 1
+    },
+    "src/pages/EntityDetail.tsx": {
+      "react-hooks/exhaustive-deps": 2
+    },
+    "src/pages/EventDetail.tsx": {
+      "react-hooks/exhaustive-deps": 1,
+      "react-hooks/set-state-in-effect": 1
+    },
+    "src/pages/GroupDetail.tsx": {
+      "react-hooks/set-state-in-effect": 1
+    },
+    "src/pages/HelpHotlines.tsx": {
+      "react-hooks/set-state-in-effect": 1
+    },
+    "src/pages/Hotels.tsx": {
+      "react-hooks/set-state-in-effect": 1
+    },
+    "src/pages/Marketplace.tsx": {
+      "react-hooks/exhaustive-deps": 1,
+      "react-hooks/set-state-in-effect": 1
+    },
+    "src/pages/MarketplaceItemDetail.parts.tsx": {
+      "react-hooks/exhaustive-deps": 1
+    },
+    "src/pages/MarketplaceItemDetail.tsx": {
+      "react-hooks/set-state-in-effect": 1
+    },
+    "src/pages/News.tsx": {
+      "react-hooks/purity": 1
+    },
+    "src/pages/NewsArchive.tsx": {
+      "react-hooks/exhaustive-deps": 4
+    },
+    "src/pages/NewsDetail.parts.tsx": {
+      "react-hooks/set-state-in-effect": 2
+    },
+    "src/pages/NewsStoryDetail.tsx": {
+      "react-hooks/set-state-in-effect": 1
+    },
+    "src/pages/PatternLibrary/patterns.tsx": {
+      "react-refresh/only-export-components": 1
+    },
+    "src/pages/PatternLibrary/patterns/desktop.tsx": {
+      "*": 1,
+      "@ts-nocheck": 1,
+      "@typescript-eslint/ban-ts-comment": 1
+    },
+    "src/pages/PatternLibrary/patterns/mobile.tsx": {
+      "*": 1,
+      "@ts-nocheck": 1,
+      "@typescript-eslint/ban-ts-comment": 1
+    },
+    "src/pages/PatternLibrary/patterns/shared.tsx": {
+      "*": 1,
+      "@ts-nocheck": 1,
+      "@typescript-eslint/ban-ts-comment": 1
+    },
+    "src/pages/Personalities.tsx": {
+      "react-hooks/exhaustive-deps": 3,
+      "react-hooks/refs": 1,
+      "react-hooks/set-state-in-effect": 2
+    },
+    "src/pages/PersonalityDetail.tsx": {
+      "react-hooks/set-state-in-effect": 1
+    },
+    "src/pages/ProfessionDetail.tsx": {
+      "react-hooks/set-state-in-effect": 1
+    },
+    "src/pages/QueerVillageDetail.tsx": {
+      "react-hooks/refs": 2
+    },
+    "src/pages/RedirectMemberWorkspace.tsx": {
+      "react-hooks/set-state-in-effect": 1
+    },
+    "src/pages/SearchResults.tsx": {
+      "react-hooks/exhaustive-deps": 2,
+      "react-hooks/set-state-in-effect": 2
+    },
+    "src/pages/SubmitForm.tsx": {
+      "jsx-a11y/no-static-element-interactions": 1,
+      "react-hooks/exhaustive-deps": 1
+    },
+    "src/pages/TagsIndex.tsx": {
+      "react-hooks/exhaustive-deps": 1
+    },
+    "src/pages/Travel.tsx": {
+      "react-hooks/exhaustive-deps": 1
+    },
+    "src/pages/Venues.tsx": {
+      "react-hooks/exhaustive-deps": 3,
+      "react-hooks/set-state-in-effect": 1
+    },
+    "src/pages/__tests__/PersonalityDetail.parts.test.tsx": {
+      "@typescript-eslint/no-explicit-any": 1
+    },
+    "src/pages/__tests__/ResetPassword.test.tsx": {
+      "jsx-a11y/anchor-is-valid": 1
+    },
+    "src/pages/admin/AdminAnalytics.tsx": {
+      "react-hooks/immutability": 1
+    },
+    "src/pages/admin/AdminMailbox.tsx": {
+      "jsx-a11y/no-noninteractive-element-interactions": 1
+    },
+    "src/pages/admin/AdminReviewQueue.tsx": {
+      "queerguide/admin-ui-primitives": 1,
+      "react-hooks/set-state-in-effect": 1
+    },
+    "src/pages/admin/AdminUsers.tsx": {
+      "react-hooks/purity": 1
+    },
+    "src/pages/admin/EmailPlatform.tsx": {
+      "react-hooks/set-state-in-effect": 1
+    },
+    "src/pages/admin/EmailTemplates.tsx": {
+      "react-hooks/set-state-in-effect": 1
+    },
+    "src/pages/admin/PersonalityDataSheet.tsx": {
+      "queerguide/admin-ui-primitives": 1
+    },
+    "src/pages/admin/feedback/useFeedbackData.ts": {
+      "react-hooks/refs": 1
+    },
+    "src/pages/admin/feedback/useFeedbackSelection.ts": {
+      "react-hooks/set-state-in-effect": 1
+    },
+    "src/pages/city-detail/types.ts": {
+      "@typescript-eslint/no-explicit-any": 7
+    },
+    "src/pages/intimate/IntimateDiscovery.tsx": {
+      "react-hooks/set-state-in-effect": 1
+    },
+    "src/pages/intimate/IntimateOnboard.tsx": {
+      "react-hooks/set-state-in-effect": 1
+    },
+    "src/pages/onboarding/SearchPersonalization.tsx": {
+      "@typescript-eslint/no-explicit-any": 1,
+      "react-hooks/set-state-in-effect": 1
+    },
+    "src/pages/onboarding/Welcome.tsx": {
+      "react-hooks/exhaustive-deps": 1
+    },
+    "src/pages/tools/WorkbookRunner.tsx": {
+      "react-hooks/exhaustive-deps": 1
+    },
+    "src/providers/SafeModeProvider.tsx": {
+      "react-refresh/only-export-components": 1
+    },
+    "src/providers/SearchTelemetryProvider.tsx": {
+      "react-refresh/only-export-components": 1
+    },
+    "src/test/__tests__/appliedNameMismatch.test.ts": {
+      "@ts-expect-error": 1
+    },
+    "src/test/test-utils.tsx": {
+      "react-refresh/only-export-components": 1
+    },
+    "src/utils/lazyRetry.ts": {
+      "@typescript-eslint/no-explicit-any": 2
+    },
+    "src/utils/streamingExcel.ts": {
+      "no-control-regex": 1
+    }
+  }
+}
