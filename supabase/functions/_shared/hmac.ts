@@ -1,6 +1,10 @@
 // Shared HMAC-SHA256 helpers for runner ↔ callback authentication.
 // Signature format: sha256=<hex>
 
+import { timingSafeEqual } from './timing-safe.ts';
+
+export { timingSafeEqual };
+
 const enc = new TextEncoder();
 
 async function getKey(secret: string): Promise<CryptoKey> {
@@ -23,19 +27,6 @@ export async function signHmac(body: string, secret: string): Promise<string> {
   const key = await getKey(secret);
   const sig = await crypto.subtle.sign('HMAC', key, enc.encode(body));
   return `sha256=${toHex(sig)}`;
-}
-
-/**
- * Constant-time string equality for secrets. A plain `===` returns at the
- * first differing character, so response timing leaks how much of a guessed
- * secret was right. Length is not secret-bearing here (all callers compare
- * against a fixed-length configured value).
- */
-export function timingSafeEqual(a: string | null | undefined, b: string | null | undefined): boolean {
-  if (!a || !b || a.length !== b.length) return false;
-  let diff = 0;
-  for (let i = 0; i < a.length; i++) diff |= a.charCodeAt(i) ^ b.charCodeAt(i);
-  return diff === 0;
 }
 
 export async function verifyHmac(body: string, signature: string, secret: string): Promise<boolean> {

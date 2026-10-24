@@ -1,5 +1,5 @@
 import { createClient, SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5'
-import { timingSafeEqual } from './hmac.ts'
+import { timingSafeEqual } from './timing-safe.ts'
 
 const ALLOWED_ORIGINS = new Set<string>([
   'https://queer.guide',
