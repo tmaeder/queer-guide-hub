@@ -27,6 +27,7 @@ vi.mock('@/hooks/useVenues', () => ({
 }));
 vi.mock('@/hooks/useEvents', () => ({
   useEvents: () => ({ events: [], loading: false, fetchEvents: vi.fn() }),
+  useEventsQuery: () => ({ events: [], loading: false, isFetching: false, error: null }),
 }));
 vi.mock('@/hooks/useNews', () => ({
   useNews: () => ({

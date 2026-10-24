@@ -2,7 +2,7 @@ import { useMemo, useEffect, useRef } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useVenues } from '@/hooks/useVenues';
-import { useEvents } from '@/hooks/useEvents';
+import { useEventsQuery } from '@/hooks/useEvents';
 import { useOptimizedCities, useOptimizedCountries } from '@/hooks/usePlaces';
 import { ink, trackColor } from '@/lib/mapTokens';
 import { ROUTE_BULLET_MAP, type Track } from '@/components/transit/routeBulletMap';
@@ -190,37 +190,23 @@ export function useExploreMapData({ enabledLayers, viewport, filters }: UseExplo
 
   // ── Events ─────────────────────────────────────────────────────────────────
   const eventsEnabled = enabledLayers.includes('events');
-  const {
-    events: rawEvents = [],
-    isFetching: eventsFetching,
-    fetchEvents,
-  } = useEvents(false, { skipDatasetTotal: true });
-  const dateRangeKey = filters?.dateRange
-    ? `${filters.dateRange.start}|${filters.dateRange.end}`
-    : '';
   const dateRangeStart = filters?.dateRange?.start;
   const dateRangeEnd = filters?.dateRange?.end;
-
-  useEffect(() => {
-    if (!eventsEnabled) return;
-    fetchEvents({
-      limit: shouldUseBounds ? 150 : 300,
-      ...(filters?.search ? { search: filters.search } : {}),
-      ...(dateRangeStart && dateRangeEnd
-        ? { dateRange: { start: dateRangeStart, end: dateRangeEnd } }
-        : {}),
-      ...(viewportBounds ? { bounds: viewportBounds } : {}),
-    });
-  }, [
-    eventsEnabled,
-    filters?.search,
-    dateRangeKey,
-    dateRangeStart,
-    dateRangeEnd,
-    shouldUseBounds,
-    viewportBounds,
-    fetchEvents,
-  ]);
+  // keepPrevious: markers stay put while a pan's query runs, as they did when
+  // this was an imperative fetch whose old result held until the new one landed.
+  const { events: rawEvents, isFetching: eventsFetching } = useEventsQuery(
+    eventsEnabled
+      ? {
+          limit: shouldUseBounds ? 150 : 300,
+          ...(filters?.search ? { search: filters.search } : {}),
+          ...(dateRangeStart && dateRangeEnd
+            ? { dateRange: { start: dateRangeStart, end: dateRangeEnd } }
+            : {}),
+          ...(viewportBounds ? { bounds: viewportBounds } : {}),
+        }
+      : null,
+    { keepPrevious: true },
+  );
 
   const eventMarkers = useMemo<MapMarker[]>(() => {
     if (!eventsEnabled) return [];

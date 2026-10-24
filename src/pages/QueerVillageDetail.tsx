@@ -10,7 +10,7 @@ import { MarkVisitedButton } from '@/components/marks/MarkVisitedButton';
 import { useToast } from '@/hooks/use-toast';
 import { useFavorites } from '@/hooks/useFavorites';
 import { useVenues } from '@/hooks/useVenues';
-import { useEvents } from '@/hooks/useEvents';
+import { useEventsQuery } from '@/hooks/useEvents';
 import { useEntityDetail } from '@/hooks/useEntityDetail';
 import { useSlugRedirect } from '@/hooks/useSlugRedirect';
 import { mergedVillageCitySlug } from '@/lib/mergedVillageRedirects';
@@ -99,13 +99,9 @@ export default function QueerVillageDetail() {
 
   const villageId = village?.id;
   const { venues, loading: venuesLoading, fetchVenues } = useVenues(false);
-  const { events, fetchEvents } = useEvents(false, { skipDatasetTotal: true });
   const fetchVenuesRef = useRef(fetchVenues);
   // eslint-disable-next-line react-hooks/refs -- "latest value" ref pattern: keeps the freshest fetchVenues closure available to the village-change effect below without re-running on every fetchVenues identity change.
   fetchVenuesRef.current = fetchVenues;
-  const fetchEventsRef = useRef(fetchEvents);
-  // eslint-disable-next-line react-hooks/refs -- same pattern; the events effect keys off the venue id list, not the fetcher identity.
-  fetchEventsRef.current = fetchEvents;
 
   // Filter by the VILLAGE, not by its city. This previously asked for 8 venues
   // from anywhere in the parent city, so /villages/chueca listed an Apple Store
@@ -122,10 +118,9 @@ export default function QueerVillageDetail() {
   // no village FK, so "events in this district" can only mean "events at the
   // venues in this district"; the old query asked the parent city and
   // advertised everything in Madrid as if it were on the Chueca strip.
-  useEffect(() => {
-    if (!venueIdKey) return;
-    fetchEventsRef.current({ venueIds: venueIdKey.split(','), limit: 12 });
-  }, [venueIdKey]);
+  const { events } = useEventsQuery(
+    venueIdKey ? { venueIds: venueIdKey.split(','), limit: 12 } : null,
+  );
 
   useEffect(() => {
     if (error) {

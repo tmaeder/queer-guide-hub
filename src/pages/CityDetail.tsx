@@ -10,7 +10,7 @@ import { useFavorites } from '@/hooks/useFavorites';
 import { useCityImages } from '@/hooks/useCityImages';
 import { useNews } from '@/hooks/useNews';
 import { useVenues } from '@/hooks/useVenues';
-import { useEvents } from '@/hooks/useEvents';
+import { useEventsQuery } from '@/hooks/useEvents';
 import { useOptimizedCountry, useOptimizedCity } from '@/hooks/usePlaces';
 import { useQueerVillages } from '@/hooks/useQueerVillages';
 import { useNearestAirport } from '@/hooks/useNearestAirport';
@@ -136,7 +136,16 @@ export default function CityDetail() {
   );
 
   const { venues, loading: venuesLoading, fetchVenues } = useVenues(false);
-  const { events, fetchEvents } = useEvents(false);
+  // Idle until the city resolves, so no unscoped feed fires first.
+  const { events } = useEventsQuery(
+    city?.id
+      ? {
+          cityId: city.id,
+          city: city.name,
+          countryId: city.country_id ?? city.countries?.id,
+        }
+      : null,
+  );
   const fetchVenuesRef = useRef(fetchVenues);
   // eslint-disable-next-line react-hooks/refs -- "latest value" ref pattern; effect below reads .current.
   fetchVenuesRef.current = fetchVenues;
@@ -152,15 +161,6 @@ export default function CityDetail() {
       railQuality: true,
     });
   }, [city?.id, city?.name, city?.country_id, city?.countries?.id]);
-
-  useEffect(() => {
-    if (!city?.id) return;
-    fetchEvents({
-      cityId: city?.id,
-      city: city?.name,
-      countryId: city?.country_id ?? city?.countries?.id,
-    });
-  }, [city?.id, city?.name, city?.country_id, city?.countries?.id, fetchEvents]);
 
   const { country: fullCountry, loading: countryLoading } = useOptimizedCountry(
     // Fall back to the raw FK so rights still resolve when the embed is absent.

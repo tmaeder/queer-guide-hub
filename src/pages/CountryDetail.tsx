@@ -31,7 +31,7 @@ import { useWorldBankData } from '@/hooks/useWorldBankData';
 import { useSDGData } from '@/hooks/useSDGData';
 import { useOptimizedCountry, useOptimizedCities } from '@/hooks/usePlaces';
 import { useVenues } from '@/hooks/useVenues';
-import { useEvents } from '@/hooks/useEvents';
+import { useEventsQuery } from '@/hooks/useEvents';
 import { useNews } from '@/hooks/useNews';
 import { useMilestonesForCountry } from '@/hooks/useMilestones';
 import { TransSafetyBand } from '@/components/rights/TransSafetyBand';
@@ -99,7 +99,7 @@ export default function CountryDetail() {
 
   const { cities } = useOptimizedCities({ countryId: country?.id ?? '', limit: 12 });
   const { venues, fetchVenues } = useVenues(false);
-  const { events, fetchEvents } = useEvents(false);
+  const { events } = useEventsQuery(country?.id ? { countryId: country.id, limit: 12 } : null);
   const { articles, fetchArticles, incrementViews } = useNews({ autoload: false });
 
   // Hoisted rather than left inside `CountryLegalRecord`: a component that
@@ -144,10 +144,6 @@ export default function CountryDetail() {
     if (country?.id)
       fetchVenuesRef.current({ countryId: country.id, limit: 12, railQuality: true });
   }, [country?.id]);
-
-  useEffect(() => {
-    if (country?.id) fetchEvents({ countryId: country.id, limit: 12 });
-  }, [country?.id, fetchEvents]);
 
   useEffect(() => {
     if (country?.id) fetchArticles({ countryIds: [country.id] });

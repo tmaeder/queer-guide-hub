@@ -22,6 +22,7 @@ vi.mock('@/hooks/useEntityTripStatus', () => ({
 vi.mock('@/hooks/useVenueSocialSignals', () => ({ useVenueSocialSignals: () => ({ data: null }) }));
 vi.mock('@/hooks/useEvents', () => ({
   useEvents: () => ({ events: [], loading: false, fetchEvents: vi.fn() }),
+  useEventsQuery: () => ({ events: [], loading: false, isFetching: false, error: null }),
 }));
 const useMeta = vi.fn();
 vi.mock('@/hooks/useMeta', () => ({ useMeta: (o: unknown) => useMeta(o) }));

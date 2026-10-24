@@ -13,7 +13,7 @@ import { useSearchParams } from 'react-router';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { useVenues } from '@/hooks/useVenues';
 import { useRecentVenues } from '@/hooks/useRecentVenues';
-import { useEvents } from '@/hooks/useEvents';
+import { useEventsQuery } from '@/hooks/useEvents';
 import { useMeta } from '@/hooks/useMeta';
 import { useAuth } from '@/hooks/useAuth';
 import { useDiscoveryProfile } from '@/hooks/useVenuesV2Data';
@@ -102,7 +102,7 @@ const Venues = () => {
       isPartOf: { '@type': 'WebSite', name: 'Queer Guide', url: 'https://queer.guide' },
     },
   });
-  const { events } = useEvents();
+  const { events } = useEventsQuery({});
   const [_selectedVenue, setSelectedVenue] = useState<Venue | null>(null);
 
   const [searchParams, setSearchParams] = useSearchParams();
