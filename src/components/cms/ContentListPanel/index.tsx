@@ -374,10 +374,12 @@ function ContentListPanelBody(props: ContentListPanelProps) {
               {importButton}
               {config.toolbarActions?.()}
             </AdminToolsPopover>
-            <Button size="sm" onClick={() => c.onCreate(config.id)}>
-              <Plus size={16} className="mr-1.5" />
-              Add {config.label.singular}
-            </Button>
+            {config.canCreate !== false && (
+              <Button size="sm" onClick={() => c.onCreate(config.id)}>
+                <Plus size={16} className="mr-1.5" />
+                Add {config.label.singular}
+              </Button>
+            )}
           </div>
         </div>
       )}
@@ -432,7 +434,7 @@ function ContentListPanelBody(props: ContentListPanelProps) {
           actions={
             <>
               {contentTools}
-              {c.config && (
+              {c.config && c.config.canCreate !== false && (
                 <Button size="sm" onClick={() => c.onCreate(c.config!.id)}>
                   <Plus size={16} className="mr-1" />
                   New {c.config.label.singular}

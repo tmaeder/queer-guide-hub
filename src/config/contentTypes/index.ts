@@ -19,6 +19,7 @@ import { feedbackContentType } from './feedback';
 import { milestoneContentType } from './milestone';
 import { organizationContentType } from './organization';
 import { guideContentType } from './guide';
+import { landmarkContentType } from './landmark';
 import { redirectContentType } from './redirect';
 import { vocabularyContentType } from './vocabulary';
 import {
@@ -74,6 +75,7 @@ export const contentTypeRegistry: Record<string, ContentTypeConfig> = {
   milestones: milestoneContentType,
   organizations: organizationContentType,
   guides: guideContentType,
+  landmarks: landmarkContentType,
   redirects: redirectContentType,
 
   // Controlled vocabularies. Previously standalone pages on their own shell;

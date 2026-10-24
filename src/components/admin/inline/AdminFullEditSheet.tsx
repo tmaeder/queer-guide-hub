@@ -57,6 +57,7 @@ export function AdminFullEditSheet({
     contentId,
     open && !!config,
     currentData,
+    config?.editorApi?.load,
   );
 
   const fieldsByGroup = useMemo(() => {
@@ -81,9 +82,7 @@ export function AdminFullEditSheet({
             <Pencil size={16} />
             Edit {config.label.singular}
           </SheetTitle>
-          <SheetDescription>
-            {contentName ?? contentId} · changes save per-field
-          </SheetDescription>
+          <SheetDescription>{contentName ?? contentId} · changes save per-field</SheetDescription>
         </SheetHeader>
 
         {loading ? (
@@ -146,11 +145,7 @@ export function AdminFullEditSheet({
             <AccordionItem value="panel:pipeline-audit">
               <AccordionTrigger>Pipeline &amp; audit</AccordionTrigger>
               <AccordionContent>
-                <PipelineInspector
-                  entityType={config.tableName}
-                  entityId={contentId}
-                  limit={120}
-                />
+                <PipelineInspector entityType={config.tableName} entityId={contentId} limit={120} />
               </AccordionContent>
             </AccordionItem>
           </Accordion>
@@ -211,9 +206,7 @@ function SheetField({ contentType, recordId, field, value, onSaved }: SheetField
       ) : (
         <FieldDisplay field={field} value={value} />
       )}
-      {field.helpText && (
-        <span className="text-xs text-muted-foreground">{field.helpText}</span>
-      )}
+      {field.helpText && <span className="text-xs text-muted-foreground">{field.helpText}</span>}
     </div>
   );
 }

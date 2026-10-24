@@ -499,4 +499,19 @@ describe('AdminEditButton', () => {
       ),
     );
   });
+
+  it('exports a landmark record from the place detail page', async () => {
+    exportRecordMock.mockReset().mockResolvedValue(undefined);
+    useAdminRolesMock.mockReturnValue({ canManageContent: () => true, loading: false });
+    renderIn(<AdminEditButton contentType="landmarks" contentId="l1" exportable />, '/place/x');
+    await openMenu();
+    fireEvent.click(await screen.findByText('Export record (Excel)'));
+    await waitFor(() =>
+      expect(exportRecordMock).toHaveBeenCalledWith(
+        expect.objectContaining({ tableName: 'cms_landmarks' }),
+        'l1',
+        'Excel',
+      ),
+    );
+  });
 });

@@ -14,6 +14,7 @@ import { PageContainer } from '@/components/layout/PageContainer';
 import { MapInset } from '@/components/transit/MapInset';
 import { EntityMap } from '@/components/map/EntityMap';
 import { mapUrl } from '@/lib/mapContext';
+import { AdminEditButton } from '@/components/admin/AdminEditButton';
 
 const CRUMB_HREF: Record<string, (slug: string) => string> = {
   country: (slug) => `/country/${slug}`,
@@ -176,6 +177,15 @@ export default function PlaceDetail() {
                 <LandmarkKindIcon kind={kind} className="h-3 w-3" />
                 {landmarkKindLabel(kind, t)}
               </Badge>
+              {/* No currentData: this page loads only the fields it renders,
+                  so the edit sheet loads the full record itself. */}
+              <AdminEditButton
+                contentType="landmarks"
+                contentId={place.id}
+                contentName={place.name}
+                onSaved={() => window.location.reload()}
+                exportable
+              />
             </div>
             {profile?.tags && profile.tags.length > 0 && (
               <div className="flex flex-wrap gap-2">

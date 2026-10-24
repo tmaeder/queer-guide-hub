@@ -314,6 +314,12 @@ export interface ContentTypeConfig {
     /** Maps the editor's form values to the RPC's arguments. */
     args: (saveData: Record<string, unknown>) => Record<string, unknown>;
   };
+  /**
+   * False for a type whose records are created somewhere else. Hides the
+   * list's create buttons; the type's save path should refuse a create too,
+   * so an import or a hand-built URL cannot get round it.
+   */
+  canCreate?: boolean;
   /** Transactional editor IO for identity plus internal location records. */
   editorRpc?: { load: string; save: string };
   /** Authenticated transactional IO for types managed by an Edge API. */

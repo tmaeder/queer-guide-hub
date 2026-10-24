@@ -16,6 +16,17 @@ vi.mock('@/integrations/supabase/client', () => ({
   },
 }));
 
+const untypedFromMock = vi.fn(() => ({
+  select: vi.fn().mockReturnThis(),
+  eq: vi.fn().mockReturnThis(),
+  maybeSingle: vi.fn().mockResolvedValue({ data: { id: 'l1', name: 'Tiergarten' }, error: null }),
+}));
+vi.mock('@/integrations/supabase/untyped', () => ({
+  untypedRpc: vi.fn(),
+  untypedSupabase: { from: (...args: unknown[]) => untypedFromMock(...(args as [])) },
+}));
+
+import { supabase } from '@/integrations/supabase/client';
 import { AdminFullEditSheet } from '../AdminFullEditSheet';
 
 describe('AdminFullEditSheet', () => {
@@ -82,9 +93,21 @@ describe('AdminFullEditSheet', () => {
     fireEvent.change(input, { target: { value: 'World' } });
     fireEvent.keyDown(input, { key: 'Enter' });
     await waitFor(() => {
-      expect(saveMock).toHaveBeenCalledWith(
-        expect.objectContaining({ value: 'World' }),
-      );
+      expect(saveMock).toHaveBeenCalledWith(expect.objectContaining({ value: 'World' }));
     });
+  });
+
+  it("loads a landmark through the type's own loader, not a plain table read", async () => {
+    render(
+      <AdminFullEditSheet
+        open={true}
+        onOpenChange={() => {}}
+        contentType="landmarks"
+        contentId="l1"
+        contentName="Tiergarten"
+      />,
+    );
+    await waitFor(() => expect(untypedFromMock).toHaveBeenCalledWith('cms_landmarks'));
+    expect(supabase.from).not.toHaveBeenCalledWith('cms_landmarks');
   });
 });
