@@ -91,3 +91,9 @@ Deno.test('calendar-export reads events as the caller, not service role', async 
   const s = await code('calendar-export/index.ts')
   assert(!/SUPABASE_SERVICE_ROLE_KEY/.test(s))
 })
+
+Deno.test('ingest-api-error compares its secret in constant time', async () => {
+  const s = await code('ingest-api-error/index.ts')
+  assert(/timingSafeEqual\(req\.headers\.get\('X-Error-Secret'\), secret\)/.test(s))
+  assert(!/!==\s*secret/.test(s))
+})

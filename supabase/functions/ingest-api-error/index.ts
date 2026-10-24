@@ -6,6 +6,7 @@
  */
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5'
+import { timingSafeEqual } from '../_shared/hmac.ts'
 
 interface ErrorPayload {
   service: string
@@ -52,7 +53,7 @@ Deno.serve(async (req) => {
 
   // Auth via shared secret
   const secret = Deno.env.get('API_ERROR_SECRET')
-  if (!secret || req.headers.get('X-Error-Secret') !== secret) {
+  if (!timingSafeEqual(req.headers.get('X-Error-Secret'), secret)) {
     return jsonResp({ error: 'Unauthorized' }, 401)
   }
 
